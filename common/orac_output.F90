@@ -32,6 +32,7 @@
 ! 2015/01/07, AP: Make QCFlag long to accomodate longer state vectors.
 ! 2016/01/27, GM: Add cee and cee_uncertainty.
 ! 2016/01/28, GM: Add ctp and ctt corrected and corrected_uncertianty.
+! 2016/03/02, AP: Homogenisation of I/O modules.
 !
 ! $Id$
 !
@@ -47,579 +48,602 @@ module orac_output
 
    type output_data_primary
       ! Variable IDs for data fields in primary output file
-      integer                       :: vid_time
-      integer                       :: vid_lat, vid_lon
-      integer,dimension(:), pointer :: vid_sol_zen, vid_sat_zen, vid_rel_azi
+      integer          :: vid_aot550
+      integer          :: vid_aot550_uncertainty
+      integer          :: vid_aot870
+      integer          :: vid_aot870_uncertainty
+      integer          :: vid_aer
+      integer          :: vid_aer_uncertainty
 
-      integer                       :: vid_aot550, vid_aot550_error
-      integer                       :: vid_aot870, vid_aot870_error
-      integer                       :: vid_aer, vid_aer_error
-      integer,dimension(:,:),pointer:: vid_rho, vid_rho_error
-      integer,dimension(:), pointer :: vid_swansea_s, vid_swansea_s_error
-      integer,dimension(:), pointer :: vid_swansea_p, vid_swansea_p_error
-      integer,dimension(:), pointer :: vid_diffuse_frac, vid_diffuse_frac_error
+      integer, pointer :: vid_rho(:,:)
+      integer, pointer :: vid_rho_uncertainty(:,:)
 
-      integer                       :: vid_cot, vid_cot_error
-      integer                       :: vid_cer, vid_cer_error
-      integer                       :: vid_ctp, vid_ctp_error
-      integer                       :: vid_ctp_corrected, vid_ctp_corrected_error
-      integer                       :: vid_cct, vid_cct_error
-      integer                       :: vid_stemp, vid_stemp_error
-      integer                       :: vid_cth, vid_cth_error
-      integer                       :: vid_cth_corrected, vid_cth_corrected_error
-      integer                       :: vid_ctt, vid_ctt_error
-      integer                       :: vid_ctt_corrected, vid_ctt_corrected_error
-      integer                       :: vid_cwp, vid_cwp_error
-      integer,dimension(:), pointer :: vid_cloud_albedo, vid_cloud_albedo_error
-      integer,dimension(:), pointer :: vid_cee, vid_cee_error
+      integer, pointer :: vid_swansea_s(:)
+      integer, pointer :: vid_swansea_s_uncertainty(:)
+      integer, pointer :: vid_swansea_p(:)
+      integer, pointer :: vid_swansea_p_uncertainty(:)
+      integer, pointer :: vid_diffuse_frac(:)
+      integer, pointer :: vid_diffuse_frac_uncertainty(:)
 
-      integer                       :: vid_convergence
-      integer                       :: vid_niter
-      integer                       :: vid_costja
-      integer                       :: vid_costjm
-      integer                       :: vid_qcflag
+      integer          :: vid_cot
+      integer          :: vid_cot_uncertainty
+      integer          :: vid_cer
+      integer          :: vid_cer_uncertainty
+      integer          :: vid_ctp
+      integer          :: vid_ctp_uncertainty
+      integer          :: vid_ctp_corrected
+      integer          :: vid_ctp_corrected_uncertainty
+      integer          :: vid_cc_total
+      integer          :: vid_cc_total_uncertainty
+      integer          :: vid_stemp
+      integer          :: vid_stemp_uncertainty
+      integer          :: vid_cth
+      integer          :: vid_cth_uncertainty
+      integer          :: vid_cth_corrected
+      integer          :: vid_cth_corrected_uncertainty
+      integer          :: vid_ctt
+      integer          :: vid_ctt_uncertainty
+      integer          :: vid_ctt_corrected
+      integer          :: vid_ctt_corrected_uncertainty
+      integer          :: vid_cwp
+      integer          :: vid_cwp_uncertainty
+      integer, pointer :: vid_cloud_albedo(:)
+      integer, pointer :: vid_cloud_albedo_uncertainty(:)
+      integer, pointer :: vid_cee(:)
+      integer, pointer :: vid_cee_uncertainty(:)
+      integer          :: vid_cccot_pre
 
-      integer                       :: vid_lsflag
-      integer                       :: vid_lusflag
-      integer                       :: vid_dem
-      integer                       :: vid_nisemask
+      integer          :: vid_time
+      integer          :: vid_lat
+      integer          :: vid_lon
+      integer, pointer :: vid_sol_zen(:)
+      integer, pointer :: vid_sat_zen(:)
+      integer, pointer :: vid_rel_azi(:)
 
-      integer                       :: vid_illum
+      integer          :: vid_convergence
+      integer          :: vid_niter
+      integer          :: vid_costja
+      integer          :: vid_costjm
+      integer          :: vid_qcflag
 
-      integer                       :: vid_cldtype
-      integer                       :: vid_cldmask,vid_cldmask_uncertainty
-      integer                       :: vid_cccot_pre
+      integer          :: vid_lsflag
+      integer          :: vid_lusflag
+      integer          :: vid_dem
+      integer          :: vid_nisemask
 
-      integer                       :: vid_phase
+      integer          :: vid_illum
 
-      integer                       :: vid_phase_pavolonis
+      integer          :: vid_cldtype
+      integer          :: vid_cldmask
+      integer          :: vid_cldmask_uncertainty
+
+      integer          :: vid_phase
+
+      integer          :: vid_phase_pavolonis
 
       ! Scale, offset, valid min/max for output fields
-      real(kind=dreal)              :: time_scale  = 1.0
-      real(kind=dreal)              :: time_offset = 0.0
-      real(kind=dreal)              :: time_vmin   = 0.0
-      real(kind=dreal)              :: time_vmax   = 1.0e10
+      real(sreal)   :: aot550_scale              = 0.001
+      real(sreal)   :: aot550_offset             = 0.0
+      integer(sint) :: aot550_vmin               = 0
+      integer(sint) :: aot550_vmax               = 32000
+      real(sreal)   :: aot550_uncertainty_scale  = 0.001
+      real(sreal)   :: aot550_uncertainty_offset = 0.0
+      integer(sint) :: aot550_uncertainty_vmin   = 0
+      integer(sint) :: aot550_uncertainty_vmax   = 32000
 
-      real(kind=sreal)              :: lat_scale  = 1.0
-      real(kind=sreal)              :: lat_offset = 0.0
-      real(kind=sreal)              :: lat_vmin   = -90.0
-      real(kind=sreal)              :: lat_vmax   = 90.0
-      real(kind=sreal)              :: lon_scale  = 1.0
-      real(kind=sreal)              :: lon_offset = 0.0
-      real(kind=sreal)              :: lon_vmin   = -180.0
-      real(kind=sreal)              :: lon_vmax   = 180.0
+      real(sreal)   :: aot870_scale              = 0.001
+      real(sreal)   :: aot870_offset             = 0.0
+      integer(sint) :: aot870_vmin               = 0
+      integer(sint) :: aot870_vmax               = 32000
+      real(sreal)   :: aot870_uncertainty_scale  = 0.001
+      real(sreal)   :: aot870_uncertainty_offset = 0.0
+      integer(sint) :: aot870_uncertainty_vmin   = 0
+      integer(sint) :: aot870_uncertainty_vmax   = 32000
 
-      real(kind=sreal)              :: sol_scale  = 1.0
-      real(kind=sreal)              :: sol_offset = 0.0
-      real(kind=sreal)              :: sol_vmin   = -180.0
-      real(kind=sreal)              :: sol_vmax   = 180.0
-      real(kind=sreal)              :: sat_scale  = 1.0
-      real(kind=sreal)              :: sat_offset = 0.0
-      real(kind=sreal)              :: sat_vmin   = -180.0
-      real(kind=sreal)              :: sat_vmax   = 180.0
-      real(kind=sreal)              :: azi_scale  = 1.0
-      real(kind=sreal)              :: azi_offset = 0.0
-      real(kind=sreal)              :: azi_vmin   = -180.0
-      real(kind=sreal)              :: azi_vmax   = 180.0
+      real(sreal)   :: aer_scale              = 0.001
+      real(sreal)   :: aer_offset             = 0.0
+      integer(sint) :: aer_vmin               = 0
+      integer(sint) :: aer_vmax               = 32000
+      real(sreal)   :: aer_uncertainty_scale  = 0.001
+      real(sreal)   :: aer_uncertainty_offset = 0.0
+      integer(sint) :: aer_uncertainty_vmin   = 0
+      integer(sint) :: aer_uncertainty_vmax   = 32000
 
-      real(kind=sreal)              :: aot550_scale        = 0.001
-      real(kind=sreal)              :: aot550_offset       = 0.0
-      integer(kind=sint)            :: aot550_vmin         = 0
-      integer(kind=sint)            :: aot550_vmax         = 32000
-      real(kind=sreal)              :: aot550_error_scale  = 0.001
-      real(kind=sreal)              :: aot550_error_offset = 0.0
-      integer(kind=sint)            :: aot550_error_vmin   = 0
-      integer(kind=sint)            :: aot550_error_vmax   = 32000
+      real(sreal)   :: rho_scale              = 0.0001
+      real(sreal)   :: rho_offset             = 0.0
+      integer(sint) :: rho_vmin               = 0
+      integer(sint) :: rho_vmax               = 32000
+      real(sreal)   :: rho_uncertainty_scale  = 0.00001
+      real(sreal)   :: rho_uncertainty_offset = 0.0
+      integer(sint) :: rho_uncertainty_vmin   = 0
+      integer(sint) :: rho_uncertainty_vmax   = 32000
 
-      real(kind=sreal)              :: aot870_scale        = 0.001
-      real(kind=sreal)              :: aot870_offset       = 0.0
-      integer(kind=sint)            :: aot870_vmin         = 0
-      integer(kind=sint)            :: aot870_vmax         = 32000
-      real(kind=sreal)              :: aot870_error_scale  = 0.001
-      real(kind=sreal)              :: aot870_error_offset = 0.0
-      integer(kind=sint)            :: aot870_error_vmin   = 0
-      integer(kind=sint)            :: aot870_error_vmax   = 32000
+      real(sreal)   :: swansea_s_scale              = 0.0001
+      real(sreal)   :: swansea_s_offset             = 0.0
+      integer(sint) :: swansea_s_vmin               = 0
+      integer(sint) :: swansea_s_vmax               = 32000
+      real(sreal)   :: swansea_s_uncertainty_scale  = 0.0001
+      real(sreal)   :: swansea_s_uncertainty_offset = 0.0
+      integer(sint) :: swansea_s_uncertainty_vmin   = 0
+      integer(sint) :: swansea_s_uncertainty_vmax   = 32000
 
-      real(kind=sreal)              :: aer_scale        = 0.001
-      real(kind=sreal)              :: aer_offset       = 0.0
-      integer(kind=sint)            :: aer_vmin         = 0
-      integer(kind=sint)            :: aer_vmax         = 32000
-      real(kind=sreal)              :: aer_error_scale  = 0.001
-      real(kind=sreal)              :: aer_error_offset = 0.0
-      integer(kind=sint)            :: aer_error_vmin   = 0
-      integer(kind=sint)            :: aer_error_vmax   = 32000
+      real(sreal)   :: swansea_p_scale              = 0.0001
+      real(sreal)   :: swansea_p_offset             = 0.0
+      integer(sint) :: swansea_p_vmin               = 0
+      integer(sint) :: swansea_p_vmax               = 32000
+      real(sreal)   :: swansea_p_uncertainty_scale  = 0.0001
+      real(sreal)   :: swansea_p_uncertainty_offset = 0.0
+      integer(sint) :: swansea_p_uncertainty_vmin   = 0
+      integer(sint) :: swansea_p_uncertainty_vmax   = 32000
 
-      real(kind=sreal)              :: rho_scale        = 0.0001
-      real(kind=sreal)              :: rho_offset       = 0.0
-      integer(kind=sint)            :: rho_vmin         = 0
-      integer(kind=sint)            :: rho_vmax         = 32000
-      real(kind=sreal)              :: rho_error_scale  = 0.00001
-      real(kind=sreal)              :: rho_error_offset = 0.0
-      integer(kind=sint)            :: rho_error_vmin   = 0
-      integer(kind=sint)            :: rho_error_vmax   = 32000
+      real(sreal)   :: diffuse_frac_scale              = 0.0001
+      real(sreal)   :: diffuse_frac_offset             = 0.0
+      integer(sint) :: diffuse_frac_vmin               = 0
+      integer(sint) :: diffuse_frac_vmax               = 10000
+      real(sreal)   :: diffuse_frac_uncertainty_scale  = 0.0001
+      real(sreal)   :: diffuse_frac_uncertainty_offset = 0.0
+      integer(sint) :: diffuse_frac_uncertainty_vmin   = 0
+      integer(sint) :: diffuse_frac_uncertainty_vmax   = 10000
 
-      real(kind=sreal)              :: swansea_s_scale        = 0.0001
-      real(kind=sreal)              :: swansea_s_offset       = 0.0
-      integer(kind=sint)            :: swansea_s_vmin         = 0
-      integer(kind=sint)            :: swansea_s_vmax         = 32000
-      real(kind=sreal)              :: swansea_s_error_scale  = 0.0001
-      real(kind=sreal)              :: swansea_s_error_offset = 0.0
-      integer(kind=sint)            :: swansea_s_error_vmin   = 0
-      integer(kind=sint)            :: swansea_s_error_vmax   = 32000
+      real(sreal)   :: cot_scale              = 0.01
+      real(sreal)   :: cot_offset             = 0.0
+      integer(sint) :: cot_vmin               = 0
+      integer(sint) :: cot_vmax               = 32000
+      real(sreal)   :: cot_uncertainty_scale  = 0.01
+      real(sreal)   :: cot_uncertainty_offset = 0.0
+      integer(sint) :: cot_uncertainty_vmin   = 0
+      integer(sint) :: cot_uncertainty_vmax   = 32000
 
-      real(kind=sreal)              :: swansea_p_scale        = 0.0001
-      real(kind=sreal)              :: swansea_p_offset       = 0.0
-      integer(kind=sint)            :: swansea_p_vmin         = 0
-      integer(kind=sint)            :: swansea_p_vmax         = 32000
-      real(kind=sreal)              :: swansea_p_error_scale  = 0.0001
-      real(kind=sreal)              :: swansea_p_error_offset = 0.0
-      integer(kind=sint)            :: swansea_p_error_vmin   = 0
-      integer(kind=sint)            :: swansea_p_error_vmax   = 32000
+      real(sreal)   :: cer_scale              = 0.01
+      real(sreal)   :: cer_offset             = 0.0
+      integer(sint) :: cer_vmin               = 0
+      integer(sint) :: cer_vmax               = 20000
+      real(sreal)   :: cer_uncertainty_scale  = 0.01
+      real(sreal)   :: cer_uncertainty_offset = 0.0
+      integer(sint) :: cer_uncertainty_vmin   = 0
+      integer(sint) :: cer_uncertainty_vmax   = 20000
 
-      real(kind=sreal)              :: diffuse_frac_scale        = 0.0001
-      real(kind=sreal)              :: diffuse_frac_offset       = 0.0
-      integer(kind=sint)            :: diffuse_frac_vmin         = 0
-      integer(kind=sint)            :: diffuse_frac_vmax         = 10000
-      real(kind=sreal)              :: diffuse_frac_error_scale  = 0.0001
-      real(kind=sreal)              :: diffuse_frac_error_offset = 0.0
-      integer(kind=sint)            :: diffuse_frac_error_vmin   = 0
-      integer(kind=sint)            :: diffuse_frac_error_vmax   = 10000
+      real(sreal)   :: ctp_scale              = 0.1
+      real(sreal)   :: ctp_offset             = 0.0
+      integer(sint) :: ctp_vmin               = 0
+      integer(sint) :: ctp_vmax               = 12000
+      real(sreal)   :: ctp_uncertainty_scale  = 0.1
+      real(sreal)   :: ctp_uncertainty_offset = 0.0
+      integer(sint) :: ctp_uncertainty_vmin   = 0
+      integer(sint) :: ctp_uncertainty_vmax   = 12000
 
-      real(kind=sreal)              :: cot_scale        = 0.01
-      real(kind=sreal)              :: cot_offset       = 0.0
-      integer(kind=sint)            :: cot_vmin         = 0
-      integer(kind=sint)            :: cot_vmax         = 32000
-      real(kind=sreal)              :: cot_error_scale  = 0.01
-      real(kind=sreal)              :: cot_error_offset = 0.0
-      integer(kind=sint)            :: cot_error_vmin   = 0
-      integer(kind=sint)            :: cot_error_vmax   = 32000
+      real(sreal)   :: cc_total_scale              = 0.01
+      real(sreal)   :: cc_total_offset             = 0.0
+      integer(sint) :: cc_total_vmin               = 0
+      integer(sint) :: cc_total_vmax               = 100
+      real(sreal)   :: cc_total_uncertainty_scale  = 0.01
+      real(sreal)   :: cc_total_uncertainty_offset = 0.0
+      integer(sint) :: cc_total_uncertainty_vmin   = 0
+      integer(sint) :: cc_total_uncertainty_vmax   = 10000
 
-      real(kind=sreal)              :: cer_scale        = 0.01
-      real(kind=sreal)              :: cer_offset       = 0.0
-      integer(kind=sint)            :: cer_vmin         = 0
-      integer(kind=sint)            :: cer_vmax         = 20000
-      real(kind=sreal)              :: cer_error_scale  = 0.01
-      real(kind=sreal)              :: cer_error_offset = 0.0
-      integer(kind=sint)            :: cer_error_vmin   = 0
-      integer(kind=sint)            :: cer_error_vmax   = 20000
+      real(sreal)   :: stemp_scale              = 0.01
+      real(sreal)   :: stemp_offset             = 0.0
+      integer(sint) :: stemp_vmin               = 0
+      integer(sint) :: stemp_vmax               = 32000
+      real(sreal)   :: stemp_uncertainty_scale  = 0.01
+      real(sreal)   :: stemp_uncertainty_offset = 0.0
+      integer(sint) :: stemp_uncertainty_vmin   = 0
+      integer(sint) :: stemp_uncertainty_vmax   = 32000
 
-      real(kind=sreal)              :: ctp_scale        = 0.1
-      real(kind=sreal)              :: ctp_offset       = 0.0
-      integer(kind=sint)            :: ctp_vmin         = 0
-      integer(kind=sint)            :: ctp_vmax         = 12000
-      real(kind=sreal)              :: ctp_error_scale  = 0.1
-      real(kind=sreal)              :: ctp_error_offset = 0.0
-      integer(kind=sint)            :: ctp_error_vmin   = 0
-      integer(kind=sint)            :: ctp_error_vmax   = 12000
+      real(sreal)   :: cth_scale              = 0.01
+      real(sreal)   :: cth_offset             = 0.0
+      integer(sint) :: cth_vmin               = -1000
+      integer(sint) :: cth_vmax               = 2000
+      real(sreal)   :: cth_uncertainty_scale  = 0.01
+      real(sreal)   :: cth_uncertainty_offset = 0.0
+      integer(sint) :: cth_uncertainty_vmin   = 0
+      integer(sint) :: cth_uncertainty_vmax   = 2000
 
-      real(kind=sreal)              :: cct_scale        = 0.01
-      real(kind=sreal)              :: cct_offset       = 0.0
-      integer(kind=sint)            :: cct_vmin         = 0
-      integer(kind=sint)            :: cct_vmax         = 100
-      real(kind=sreal)              :: cct_error_scale  = 0.01
-      real(kind=sreal)              :: cct_error_offset = 0.0
-      integer(kind=sint)            :: cct_error_vmin   = 0
-      integer(kind=sint)            :: cct_error_vmax   = 10000
+      real(sreal)   :: ctt_scale              = 0.01
+      real(sreal)   :: ctt_offset             = 0.0
+      integer(sint) :: ctt_vmin               = 0
+      integer(sint) :: ctt_vmax               = 32000
+      real(sreal)   :: ctt_uncertainty_scale  = 0.01
+      real(sreal)   :: ctt_uncertainty_offset = 0.0
+      integer(sint) :: ctt_uncertainty_vmin   = 0
+      integer(sint) :: ctt_uncertainty_vmax   = 32000
 
-      real(kind=sreal)              :: stemp_scale        = 0.01
-      real(kind=sreal)              :: stemp_offset       = 0.0
-      integer(kind=sint)            :: stemp_vmin         = 0
-      integer(kind=sint)            :: stemp_vmax         = 32000
-      real(kind=sreal)              :: stemp_error_scale  = 0.01
-      real(kind=sreal)              :: stemp_error_offset = 0.0
-      integer(kind=sint)            :: stemp_error_vmin   = 0
-      integer(kind=sint)            :: stemp_error_vmax   = 32000
+      real(sreal)   :: cwp_scale              = 1.0
+      real(sreal)   :: cwp_offset             = 0.0
+      integer(sint) :: cwp_vmin               = 0
+      integer(sint) :: cwp_vmax               = 32000
+      real(sreal)   :: cwp_uncertainty_scale  = 1.0
+      real(sreal)   :: cwp_uncertainty_offset = 0.0
+      integer(sint) :: cwp_uncertainty_vmin   = 0
+      integer(sint) :: cwp_uncertainty_vmax   = 32000
 
-      real(kind=sreal)              :: cth_scale        = 0.01
-      real(kind=sreal)              :: cth_offset       = 0.0
-      integer(kind=sint)            :: cth_vmin         = -1000
-      integer(kind=sint)            :: cth_vmax         = 2000
-      real(kind=sreal)              :: cth_error_scale  = 0.01
-      real(kind=sreal)              :: cth_error_offset = 0.0
-      integer(kind=sint)            :: cth_error_vmin   = 0
-      integer(kind=sint)            :: cth_error_vmax   = 2000
+      real(sreal)   :: cloud_albedo_scale              = 0.0001
+      real(sreal)   :: cloud_albedo_offset             = 0.0
+      integer(sint) :: cloud_albedo_vmin               = 0
+      integer(sint) :: cloud_albedo_vmax               = 11000
+      real(sreal)   :: cloud_albedo_uncertainty_scale  = 0.0001
+      real(sreal)   :: cloud_albedo_uncertainty_offset = 0.0
+      integer(sint) :: cloud_albedo_uncertainty_vmin   = 0
+      integer(sint) :: cloud_albedo_uncertainty_vmax   = 11000
 
-      real(kind=sreal)              :: ctt_scale        = 0.01
-      real(kind=sreal)              :: ctt_offset       = 0.0
-      integer(kind=sint)            :: ctt_vmin         = 0
-      integer(kind=sint)            :: ctt_vmax         = 32000
-      real(kind=sreal)              :: ctt_error_scale  = 0.01
-      real(kind=sreal)              :: ctt_error_offset = 0.0
-      integer(kind=sint)            :: ctt_error_vmin   = 0
-      integer(kind=sint)            :: ctt_error_vmax   = 32000
+      real(sreal)   :: cee_scale              = 0.0001
+      real(sreal)   :: cee_offset             = 0.0
+      integer(sint) :: cee_vmin               = 0
+      integer(sint) :: cee_vmax               = 11000
+      real(sreal)   :: cee_uncertainty_scale  = 0.0001
+      real(sreal)   :: cee_uncertainty_offset = 0.0
+      integer(sint) :: cee_uncertainty_vmin   = 0
+      integer(sint) :: cee_uncertainty_vmax   = 11000
 
-      real(kind=sreal)              :: cwp_scale        = 1.0
-      real(kind=sreal)              :: cwp_offset       = 0.0
-      integer(kind=sint)            :: cwp_vmin         = 0
-      integer(kind=sint)            :: cwp_vmax         = 32000
-      real(kind=sreal)              :: cwp_error_scale  = 1.0
-      real(kind=sreal)              :: cwp_error_offset = 0.0
-      integer(kind=sint)            :: cwp_error_vmin   = 0
-      integer(kind=sint)            :: cwp_error_vmax   = 32000
+      real(sreal)   :: cccot_pre_scale  = 0.001
+      real(sreal)   :: cccot_pre_offset = 0.0
+      integer(sint) :: cccot_pre_vmin   = -1000.0
+      integer(sint) :: cccot_pre_vmax   = 2000.0
 
-      real(kind=sreal)              :: cloud_albedo_scale        = 0.0001
-      real(kind=sreal)              :: cloud_albedo_offset       = 0.0
-      integer(kind=sint)            :: cloud_albedo_vmin         = 0
-      integer(kind=sint)            :: cloud_albedo_vmax         = 11000
-      real(kind=sreal)              :: cloud_albedo_error_scale  = 0.0001
-      real(kind=sreal)              :: cloud_albedo_error_offset = 0.0
-      integer(kind=sint)            :: cloud_albedo_error_vmin   = 0
-      integer(kind=sint)            :: cloud_albedo_error_vmax   = 11000
+      real(dreal)   :: time_scale  = 1.0
+      real(dreal)   :: time_offset = 0.0
+      real(dreal)   :: time_vmin   = 0.0
+      real(dreal)   :: time_vmax   = 1.0e10
 
-      real(kind=sreal)              :: cee_scale        = 0.0001
-      real(kind=sreal)              :: cee_offset       = 0.0
-      integer(kind=sint)            :: cee_vmin         = 0
-      integer(kind=sint)            :: cee_vmax         = 11000
-      real(kind=sreal)              :: cee_error_scale  = 0.0001
-      real(kind=sreal)              :: cee_error_offset = 0.0
-      integer(kind=sint)            :: cee_error_vmin   = 0
-      integer(kind=sint)            :: cee_error_vmax   = 11000
+      real(sreal)   :: lat_scale  = 1.0
+      real(sreal)   :: lat_offset = 0.0
+      real(sreal)   :: lat_vmin   = -90.0
+      real(sreal)   :: lat_vmax   = 90.0
+      real(sreal)   :: lon_scale  = 1.0
+      real(sreal)   :: lon_offset = 0.0
+      real(sreal)   :: lon_vmin   = -180.0
+      real(sreal)   :: lon_vmax   = 180.0
 
-      integer(kind=byte)            :: convergence_scale  = 1
-      integer(kind=byte)            :: convergence_offset = 0
-      integer(kind=byte)            :: convergence_vmin   = 0
-      integer(kind=byte)            :: convergence_vmax   = 1
+      real(sreal)   :: sol_scale  = 1.0
+      real(sreal)   :: sol_offset = 0.0
+      real(sreal)   :: sol_vmin   = -180.0
+      real(sreal)   :: sol_vmax   = 180.0
+      real(sreal)   :: sat_scale  = 1.0
+      real(sreal)   :: sat_offset = 0.0
+      real(sreal)   :: sat_vmin   = -180.0
+      real(sreal)   :: sat_vmax   = 180.0
+      real(sreal)   :: azi_scale  = 1.0
+      real(sreal)   :: azi_offset = 0.0
+      real(sreal)   :: azi_vmin   = -180.0
+      real(sreal)   :: azi_vmax   = 180.0
 
-      integer(kind=byte)            :: niter_scale  = 1
-      integer(kind=byte)            :: niter_offset = 0
-      integer(kind=byte)            :: niter_vmin   = 0
-      integer(kind=byte)            :: niter_vmax   = 100 ! Assigned by ReadDriver
+      integer(byte) :: convergence_scale  = 1
+      integer(byte) :: convergence_offset = 0
+      integer(byte) :: convergence_vmin   = 0
+      integer(byte) :: convergence_vmax   = 1
 
-      real(kind=sreal)              :: costja_scale  = 1.0
-      real(kind=sreal)              :: costja_offset = 0.0
-      real(kind=sreal)              :: costja_vmin   = 0.0
-      real(kind=sreal)              :: costja_vmax   = 100000.0
+      integer(byte) :: niter_scale  = 1
+      integer(byte) :: niter_offset = 0
+      integer(byte) :: niter_vmin   = 0
+      integer(byte) :: niter_vmax   = 100
 
-      real(kind=sreal)              :: costjm_scale  = 1.0
-      real(kind=sreal)              :: costjm_offset = 0.0
-      real(kind=sreal)              :: costjm_vmin   = 0.0
-      real(kind=sreal)              :: costjm_vmax   = 100000.0
+      real(sreal)   :: costja_scale  = 1.0
+      real(sreal)   :: costja_offset = 0.0
+      real(sreal)   :: costja_vmin   = 0.0
+      real(sreal)   :: costja_vmax   = 100000.0
+      real(sreal)   :: costjm_scale  = 1.0
+      real(sreal)   :: costjm_offset = 0.0
+      real(sreal)   :: costjm_vmin   = 0.0
+      real(sreal)   :: costjm_vmax   = 100000.0
 
-      integer(kind=lint)            :: qcflag_scale  = 1
-      integer(kind=lint)            :: qcflag_offset = 0
-      integer(kind=lint)            :: qcflag_vmin   = 0
-      integer(kind=lint)            :: qcflag_vmax   = 32767
+      integer(lint) :: qcflag_scale  = 1
+      integer(lint) :: qcflag_offset = 0
+      integer(lint) :: qcflag_vmin   = 0
+      integer(lint) :: qcflag_vmax   = 32767
 
-      integer(kind=byte)            :: lsflag_scale  = 1
-      integer(kind=byte)            :: lsflag_offset = 0
-      integer(kind=byte)            :: lsflag_vmin   = 0
-      integer(kind=byte)            :: lsflag_vmax   = 6
+      integer(byte) :: lsflag_scale  = 1
+      integer(byte) :: lsflag_offset = 0
+      integer(byte) :: lsflag_vmin   = 0
+      integer(byte) :: lsflag_vmax   = 6
 
-      integer(kind=byte)            :: lusflag_scale  = 1
-      integer(kind=byte)            :: lusflag_offset = 0
-      integer(kind=byte)            :: lusflag_vmin   = 1
-      integer(kind=byte)            :: lusflag_vmax   = 24
+      integer(byte) :: lusflag_scale  = 1
+      integer(byte) :: lusflag_offset = 0
+      integer(byte) :: lusflag_vmin   = 1
+      integer(byte) :: lusflag_vmax   = 24
 
-      integer(kind=sint)            :: dem_scale  = 1
-      integer(kind=sint)            :: dem_offset = 0
-      integer(kind=sint)            :: dem_vmin   = 0
-      integer(kind=sint)            :: dem_vmax   = 10000
+      integer(sint) :: dem_scale  = 1
+      integer(sint) :: dem_offset = 0
+      integer(sint) :: dem_vmin   = 0
+      integer(sint) :: dem_vmax   = 10000
 
-      integer(kind=byte)            :: nisemask_scale  = 1
-      integer(kind=byte)            :: nisemask_offset = 0
-      integer(kind=byte)            :: nisemask_vmin   = 0
-      integer(kind=byte)            :: nisemask_vmax   = 1
+      integer(byte) :: nisemask_scale  = 1
+      integer(byte) :: nisemask_offset = 0
+      integer(byte) :: nisemask_vmin   = 0
+      integer(byte) :: nisemask_vmax   = 1
 
-      integer(kind=byte)            :: illum_scale  = 1
-      integer(kind=byte)            :: illum_offset = 0
-      integer(kind=byte)            :: illum_vmin   = 1
-      integer(kind=byte)            :: illum_vmax   = 3
+      integer(byte) :: illum_scale  = 1
+      integer(byte) :: illum_offset = 0
+      integer(byte) :: illum_vmin   = 1
+      integer(byte) :: illum_vmax   = 3
 
-      integer(kind=byte)            :: cldtype_scale  = 1
-      integer(kind=byte)            :: cldtype_offset = 0
-      integer(kind=byte)            :: cldtype_vmin   = 0
-      integer(kind=byte)            :: cldtype_vmax   = 9
+      integer(byte) :: cldtype_scale  = 1
+      integer(byte) :: cldtype_offset = 0
+      integer(byte) :: cldtype_vmin   = 0
+      integer(byte) :: cldtype_vmax   = 9
 
-      integer(kind=byte)            :: cldmask_scale  = 1
-      integer(kind=byte)            :: cldmask_offset = 0
-      integer(kind=byte)            :: cldmask_vmin   = 0
-      integer(kind=byte)            :: cldmask_vmax   = 1
+      integer(byte) :: cldmask_scale  = 1
+      integer(byte) :: cldmask_offset = 0
+      integer(byte) :: cldmask_vmin   = 0
+      integer(byte) :: cldmask_vmax   = 1
+      real(sreal)   :: cldmask_uncertainty_scale  = 0.01
+      real(sreal)   :: cldmask_uncertainty_offset = 0.0
+      integer(sint) :: cldmask_uncertainty_vmin   = 0
+      integer(sint) :: cldmask_uncertainty_vmax   = 10000
 
-      real(kind=sreal)              :: cldmask_uncertainty_scale  = 0.01
-      real(kind=sreal)              :: cldmask_uncertainty_offset = 0.0
-      integer(kind=sint)            :: cldmask_uncertainty_vmin   = 0
-      integer(kind=sint)            :: cldmask_uncertainty_vmax   = 10000
+      integer(byte) :: phase_scale  = 1
+      integer(byte) :: phase_offset = 0
+      integer(byte) :: phase_vmin   = 0
+      integer(byte) :: phase_vmax   = 2
 
-      real(kind=sreal)              :: cccot_pre_scale  = 0.001
-      real(kind=sreal)              :: cccot_pre_offset = 0.0
-      integer(kind=sint)            :: cccot_pre_vmin   = -1000.0
-      integer(kind=sint)            :: cccot_pre_vmax   = 2000.0
-
-      integer(kind=byte)            :: phase_scale  = 1
-      integer(kind=byte)            :: phase_offset = 0
-      integer(kind=byte)            :: phase_vmin   = 0
-      integer(kind=byte)            :: phase_vmax   = 2
-
-      integer(kind=byte)            :: phase_pavolonis_scale  = 1
-      integer(kind=byte)            :: phase_pavolonis_offset = 0
-      integer(kind=byte)            :: phase_pavolonis_vmin   = 0
-      integer(kind=byte)            :: phase_pavolonis_vmax   = 2
+      integer(byte) :: phase_pavolonis_scale  = 1
+      integer(byte) :: phase_pavolonis_offset = 0
+      integer(byte) :: phase_pavolonis_vmin   = 0
+      integer(byte) :: phase_pavolonis_vmax   = 2
 
       ! Arrays to store output fields
-      real(kind=dreal),   dimension(:,:),     pointer :: time
+      integer(sint), pointer :: aot550(:,:)
+      integer(sint), pointer :: aot550_uncertainty(:,:)
+      integer(sint), pointer :: aot870(:,:)
+      integer(sint), pointer :: aot870_uncertainty(:,:)
+      integer(sint), pointer :: aer(:,:)
+      integer(sint), pointer :: aer_uncertainty(:,:)
 
-      real(kind=sreal),   dimension(:,:),     pointer :: lat
-      real(kind=sreal),   dimension(:,:),     pointer :: lon
+      integer(sint), pointer :: rho(:,:,:,:)
+      integer(sint), pointer :: rho_uncertainty(:,:,:,:)
 
-      real(kind=sreal),   dimension(:,:,:),   pointer :: sol_zen
-      real(kind=sreal),   dimension(:,:,:),   pointer :: sat_zen
-      real(kind=sreal),   dimension(:,:,:),   pointer :: rel_azi
+      integer(sint), pointer :: swansea_s(:,:,:)
+      integer(sint), pointer :: swansea_s_uncertainty(:,:,:)
+      integer(sint), pointer :: swansea_p(:,:,:)
+      integer(sint), pointer :: swansea_p_uncertainty(:,:,:)
+      integer(sint), pointer :: diffuse_frac(:,:,:)
+      integer(sint), pointer :: diffuse_frac_uncertainty(:,:,:)
 
-      integer(kind=sint), dimension(:,:),     pointer :: aot550
-      integer(kind=sint), dimension(:,:),     pointer :: aot550_error
+      integer(sint), pointer :: cot(:,:)
+      integer(sint), pointer :: cot_uncertainty(:,:)
+      integer(sint), pointer :: cer(:,:)
+      integer(sint), pointer :: cer_uncertainty(:,:)
+      integer(sint), pointer :: ctp(:,:)
+      integer(sint), pointer :: ctp_uncertainty(:,:)
+      integer(sint), pointer :: ctp_corrected(:,:)
+      integer(sint), pointer :: ctp_corrected_uncertainty(:,:)
+      integer(sint), pointer :: cc_total(:,:)
+      integer(sint), pointer :: cc_total_uncertainty(:,:)
+      integer(sint), pointer :: stemp(:,:)
+      integer(sint), pointer :: stemp_uncertainty(:,:)
+      integer(sint), pointer :: cth(:,:)
+      integer(sint), pointer :: cth_uncertainty(:,:)
+      integer(sint), pointer :: cth_corrected(:,:)
+      integer(sint), pointer :: cth_corrected_uncertainty(:,:)
+      integer(sint), pointer :: ctt(:,:)
+      integer(sint), pointer :: ctt_uncertainty(:,:)
+      integer(sint), pointer :: ctt_corrected(:,:)
+      integer(sint), pointer :: ctt_corrected_uncertainty(:,:)
+      integer(sint), pointer :: cwp(:,:)
+      integer(sint), pointer :: cwp_uncertainty(:,:)
+      integer(sint), pointer :: cloud_albedo(:,:,:)
+      integer(sint), pointer :: cloud_albedo_uncertainty(:,:,:)
+      integer(sint), pointer :: cee(:,:,:)
+      integer(sint), pointer :: cee_uncertainty(:,:,:)
+      integer(sint), pointer :: cccot_pre(:,:)
 
-      integer(kind=sint), dimension(:,:),     pointer :: aot870
-      integer(kind=sint), dimension(:,:),     pointer :: aot870_error
+      real(dreal),   pointer :: time(:,:)
+      real(sreal),   pointer :: lat(:,:)
+      real(sreal),   pointer :: lon(:,:)
+      real(sreal),   pointer :: sol_zen(:,:,:)
+      real(sreal),   pointer :: sat_zen(:,:,:)
+      real(sreal),   pointer :: rel_azi(:,:,:)
 
-      integer(kind=sint), dimension(:,:),     pointer :: aer
-      integer(kind=sint), dimension(:,:),     pointer :: aer_error
+      integer(byte), pointer :: convergence(:,:)
+      integer(byte), pointer :: niter(:,:)
+      real(sreal),   pointer :: costja(:,:)
+      real(sreal),   pointer :: costjm(:,:)
+      integer(sint), pointer :: qcflag(:,:)
 
-      integer(kind=sint), dimension(:,:,:,:), pointer :: rho
-      integer(kind=sint), dimension(:,:,:,:), pointer :: rho_error
+      integer(byte), pointer :: lsflag(:,:)
+      integer(byte), pointer :: lusflag(:,:)
+      integer(sint), pointer :: dem(:,:)
+      integer(byte), pointer :: nisemask(:,:)
 
-      integer(kind=sint), dimension(:,:,:),   pointer :: swansea_s
-      integer(kind=sint), dimension(:,:,:),   pointer :: swansea_s_error
+      integer(byte), pointer :: illum(:,:)
 
-      integer(kind=sint), dimension(:,:,:),   pointer :: swansea_p
-      integer(kind=sint), dimension(:,:,:),   pointer :: swansea_p_error
+      integer(byte), pointer :: cldtype(:,:)
+      integer(byte), pointer :: cldmask(:,:)
+      integer(sint), pointer :: cldmask_uncertainty(:,:)
 
-      integer(kind=sint), dimension(:,:,:),   pointer :: diffuse_frac
-      integer(kind=sint), dimension(:,:,:),   pointer :: diffuse_frac_error
-
-      integer(kind=sint), dimension(:,:),     pointer :: cot
-      integer(kind=sint), dimension(:,:),     pointer :: cot_error
-
-      integer(kind=sint), dimension(:,:),     pointer :: cer
-      integer(kind=sint), dimension(:,:),     pointer :: cer_error
-
-      integer(kind=sint), dimension(:,:),     pointer :: ctp
-      integer(kind=sint), dimension(:,:),     pointer :: ctp_error
-
-      integer(kind=sint), dimension(:,:),     pointer :: ctp_corrected
-      integer(kind=sint), dimension(:,:),     pointer :: ctp_corrected_error
-
-      integer(kind=sint), dimension(:,:),     pointer :: cct
-      integer(kind=sint), dimension(:,:),     pointer :: cct_error
-
-      integer(kind=sint), dimension(:,:),     pointer :: stemp
-      integer(kind=sint), dimension(:,:),     pointer :: stemp_error
-
-      integer(kind=sint), dimension(:,:),     pointer :: cth
-      integer(kind=sint), dimension(:,:),     pointer :: cth_error
-
-      integer(kind=sint), dimension(:,:),     pointer :: cth_corrected
-      integer(kind=sint), dimension(:,:),     pointer :: cth_corrected_error
-
-      integer(kind=sint), dimension(:,:),     pointer :: ctt
-      integer(kind=sint), dimension(:,:),     pointer :: ctt_error
-
-      integer(kind=sint), dimension(:,:),     pointer :: ctt_corrected
-      integer(kind=sint), dimension(:,:),     pointer :: ctt_corrected_error
-
-      integer(kind=sint), dimension(:,:),     pointer :: cwp
-      integer(kind=sint), dimension(:,:),     pointer :: cwp_error
-
-      integer(kind=sint), dimension(:,:,:),   pointer :: cloud_albedo
-      integer(kind=sint), dimension(:,:,:),   pointer :: cloud_albedo_error
-
-      integer(kind=sint), dimension(:,:,:),   pointer :: cee
-      integer(kind=sint), dimension(:,:,:),   pointer :: cee_error
-
-      integer(kind=byte), dimension(:,:),     pointer :: convergence
-      integer(kind=byte), dimension(:,:),     pointer :: niter
-      real(kind=sreal),   dimension(:,:),     pointer :: costja
-      real(kind=sreal),   dimension(:,:),     pointer :: costjm
-      integer(kind=lint), dimension(:,:),     pointer :: qcflag
-
-      integer(kind=byte), dimension(:,:),     pointer :: lsflag
-      integer(kind=byte), dimension(:,:),     pointer :: lusflag
-      integer(kind=sint), dimension(:,:),     pointer :: dem
-      integer(kind=byte), dimension(:,:),     pointer :: nisemask
-
-      integer(kind=byte), dimension(:,:),     pointer :: illum
-
-      integer(kind=byte), dimension(:,:),     pointer :: cldtype
-      integer(kind=byte), dimension(:,:),     pointer :: cldmask
-      integer(kind=sint), dimension(:,:),     pointer :: cldmask_uncertainty
-      integer(kind=sint), dimension(:,:),     pointer :: cccot_pre
-
-      integer(kind=byte), dimension(:,:),     pointer :: phase
-      integer(kind=byte), dimension(:,:),     pointer :: phase_pavolonis
-
+      integer(byte), pointer :: phase(:,:)
+      integer(byte), pointer :: phase_pavolonis(:,:)
    end type output_data_primary
 
 
    type output_data_secondary
-      integer                          :: vid_scanline_u
-      integer                          :: vid_scanline_v
+      ! Variable IDs for data fields in primary output file
+      integer          :: vid_aot550_ap
+      integer          :: vid_aot550_fg
+      integer          :: vid_aer_ap
+      integer          :: vid_aer_fg
 
-      integer                          :: vid_aot550_ap,vid_aot550_fg
-      integer                          :: vid_aer_ap,vid_aer_fg
+      integer, pointer :: vid_rho_ap(:,:)
+      integer, pointer :: vid_rho_fg(:,:)
+      integer, pointer :: vid_swansea_s_ap(:)
+      integer, pointer :: vid_swansea_s_fg(:)
+      integer, pointer :: vid_swansea_p_ap(:)
+      integer, pointer :: vid_swansea_p_fg(:)
 
-      integer, dimension(:,:), pointer :: vid_rho_ap, vid_rho_fg
-      integer, dimension(:),   pointer :: vid_swansea_s_ap, vid_swansea_s_fg
-      integer, dimension(:),   pointer :: vid_swansea_p_ap, vid_swansea_p_fg
+      integer          :: vid_cot_ap
+      integer          :: vid_cot_fg
+      integer          :: vid_cer_ap
+      integer          :: vid_cer_fg
+      integer          :: vid_ctp_ap
+      integer          :: vid_ctp_fg
+      integer          :: vid_stemp_ap
+      integer          :: vid_stemp_fg
+      integer, pointer :: vid_albedo(:)
 
-      integer                          :: vid_cot_ap,vid_cot_fg
-      integer                          :: vid_cer_ap,vid_cer_fg
-      integer                          :: vid_ctp_ap,vid_ctp_fg
-      integer                          :: vid_stemp_ap,vid_stemp_fg
+      integer          :: vid_scanline_u
+      integer          :: vid_scanline_v
 
-      integer, dimension(:),   pointer :: vid_albedo
-      integer, dimension(:),   pointer :: vid_channels
-      integer, dimension(:),   pointer :: vid_y0
-      integer, dimension(:),   pointer :: vid_residuals
+      integer, pointer :: vid_channels(:)
+      integer, pointer :: vid_y0(:)
+      integer, pointer :: vid_residuals(:)
 
-      integer                          :: vid_ds
-      integer, dimension(:,:), pointer :: vid_covariance
+      integer          :: vid_ds
+      integer, pointer :: vid_covariance(:,:)
 
+      ! Scale, offset, valid min/max for output fields
+      real(sreal)    :: aot550_ap_scale  = 0.001
+      real(sreal)    :: aot550_ap_offset = 0.0
+      integer(sint)  :: aot550_ap_vmin   = 0
+      integer(sint)  :: aot550_ap_vmax   = 32000
+      real(sreal)    :: aot550_fg_scale  = 0.001
+      real(sreal)    :: aot550_fg_offset = 0.0
+      integer(sint)  :: aot550_fg_vmin   = 0
+      integer(sint)  :: aot550_fg_vmax   = 32000
 
-      integer(kind=lint)               :: scanline_u_scale  = 1
-      integer(kind=lint)               :: scanline_u_offset = 0
-      integer(kind=lint)               :: scanline_u_vmin   = 1
-      integer(kind=lint)               :: scanline_u_vmax
+      real(sreal)    :: aer_ap_scale  = 0.001
+      real(sreal)    :: aer_ap_offset = 0.0
+      integer(sint)  :: aer_ap_vmin   = 0
+      integer(sint)  :: aer_ap_vmax   = 32000
+      real(sreal)    :: aer_fg_scale  = 0.001
+      real(sreal)    :: aer_fg_offset = 0.0
+      integer(sint)  :: aer_fg_vmin   = 0
+      integer(sint)  :: aer_fg_vmax   = 32000
 
-      integer(kind=lint)               :: scanline_v_scale  = 1
-      integer(kind=lint)               :: scanline_v_offset = 0
-      integer(kind=lint)               :: scanline_v_vmin   = 1
-      integer(kind=lint)               :: scanline_v_vmax
+      real(sreal)    :: rho_ap_scale  = 0.000
+      real(sreal)    :: rho_ap_offset = 0.0
+      integer(sint)  :: rho_ap_vmin   = 0
+      integer(sint)  :: rho_ap_vmax   = 32000
+      real(sreal)    :: rho_fg_scale  = 0.001
+      real(sreal)    :: rho_fg_offset = 0.0
+      integer(sint)  :: rho_fg_vmin   = 0
+      integer(sint)  :: rho_fg_vmax   = 32000
 
-      real(kind=sreal)                 :: aot550_ap_scale   = 0.001
-      real(kind=sreal)                 :: aot550_ap_offset  = 0.0
-      integer(kind=sint)               :: aot550_ap_vmin    = 0
-      integer(kind=sint)               :: aot550_ap_vmax    = 32000
+      real(sreal)    :: swansea_s_ap_scale  = 0.0001
+      real(sreal)    :: swansea_s_ap_offset = 0.0
+      integer(sint)  :: swansea_s_ap_vmin   = 0
+      integer(sint)  :: swansea_s_ap_vmax   = 32000
+      real(sreal)    :: swansea_s_fg_scale  = 0.0001
+      real(sreal)    :: swansea_s_fg_offset = 0.0
+      integer(sint)  :: swansea_s_fg_vmin   = 0
+      integer(sint)  :: swansea_s_fg_vmax   = 32000
 
-      real(kind=sreal)                 :: aot550_fg_scale   = 0.001
-      real(kind=sreal)                 :: aot550_fg_offset  = 0.0
-      integer(kind=sint)               :: aot550_fg_vmin    = 0
-      integer(kind=sint)               :: aot550_fg_vmax    = 32000
+      real(sreal)    :: swansea_p_ap_scale  = 0.0001
+      real(sreal)    :: swansea_p_ap_offset = 0.0
+      integer(sint)  :: swansea_p_ap_vmin   = 0
+      integer(sint)  :: swansea_p_ap_vmax   = 32000
+      real(sreal)    :: swansea_p_fg_scale  = 0.0001
+      real(sreal)    :: swansea_p_fg_offset = 0.0
+      integer(sint)  :: swansea_p_fg_vmin   = 0
+      integer(sint)  :: swansea_p_fg_vmax   = 32000
 
-      real(kind=sreal)                 :: aer_ap_scale      = 0.001
-      real(kind=sreal)                 :: aer_ap_offset     = 0.0
-      integer(kind=sint)               :: aer_ap_vmin       = 0
-      integer(kind=sint)               :: aer_ap_vmax       = 32000
+      real(sreal)    :: cot_ap_scale  = 0.01
+      real(sreal)    :: cot_ap_offset = 0.0
+      integer(sint)  :: cot_ap_vmin   = 0
+      integer(sint)  :: cot_ap_vmax   = 32000
+      real(sreal)    :: cot_fg_scale  = 0.01
+      real(sreal)    :: cot_fg_offset = 0.0
+      integer(sint)  :: cot_fg_vmin   = 0
+      integer(sint)  :: cot_fg_vmax   = 32000
 
-      real(kind=sreal)                 :: aer_fg_scale      = 0.001
-      real(kind=sreal)                 :: aer_fg_offset     = 0.0
-      integer(kind=sint)               :: aer_fg_vmin       = 0
-      integer(kind=sint)               :: aer_fg_vmax       = 32000
+      real(sreal)    :: cer_ap_scale  = 0.01
+      real(sreal)    :: cer_ap_offset = 0.0
+      integer(sint)  :: cer_ap_vmin   = 0
+      integer(sint)  :: cer_ap_vmax   = 20000
+      real(sreal)    :: cer_fg_scale  = 0.01
+      real(sreal)    :: cer_fg_offset = 0.0
+      integer(sint)  :: cer_fg_vmin   = 0
+      integer(sint)  :: cer_fg_vmax   = 20000
 
-      real(kind=sreal)                 :: rho_ap_scale      = 0.000
-      real(kind=sreal)                 :: rho_ap_offset     = 0.0
-      integer(kind=sint)               :: rho_ap_vmin       = 0
-      integer(kind=sint)               :: rho_ap_vmax       = 32000
+      real(sreal)    :: ctp_ap_scale  = 0.1
+      real(sreal)    :: ctp_ap_offset = 0.0
+      integer(sint)  :: ctp_ap_vmin   = 500
+      integer(sint)  :: ctp_ap_vmax   = 12000
+      real(sreal)    :: ctp_fg_scale  = 0.1
+      real(sreal)    :: ctp_fg_offset = 0.0
+      integer(sint)  :: ctp_fg_vmin   = 500
+      integer(sint)  :: ctp_fg_vmax   = 12000
 
-      real(kind=sreal)                 :: rho_fg_scale      = 0.001
-      real(kind=sreal)                 :: rho_fg_offset     = 0.0
-      integer(kind=sint)               :: rho_fg_vmin       = 0
-      integer(kind=sint)               :: rho_fg_vmax       = 32000
+      real(sreal)    :: stemp_ap_scale  = 0.01
+      real(sreal)    :: stemp_ap_offset = 100.0
+      integer(sint)  :: stemp_ap_vmin   = 0
+      integer(sint)  :: stemp_ap_vmax   = 32000
+      real(sreal)    :: stemp_fg_scale  = 0.01
+      real(sreal)    :: stemp_fg_offset = 100.0
+      integer(sint)  :: stemp_fg_vmin   = 0
+      integer(sint)  :: stemp_fg_vmax   = 32000
 
-      real(kind=sreal)                 :: swansea_s_ap_scale  = 0.0001
-      real(kind=sreal)                 :: swansea_s_ap_offset = 0.0
-      integer(kind=sint)               :: swansea_s_ap_vmin   = 0
-      integer(kind=sint)               :: swansea_s_ap_vmax   = 32000
+      real(sreal)    :: albedo_scale  = 0.0001
+      real(sreal)    :: albedo_offset = 0.0
+      integer(sint)  :: albedo_vmin   = 0
+      integer(sint)  :: albedo_vmax   = 10000
 
-      real(kind=sreal)                 :: swansea_s_fg_scale  = 0.0001
-      real(kind=sreal)                 :: swansea_s_fg_offset = 0.0
-      integer(kind=sint)               :: swansea_s_fg_vmin   = 0
-      integer(kind=sint)               :: swansea_s_fg_vmax   = 32000
+      integer(lint)  :: scanline_u_scale  = 1
+      integer(lint)  :: scanline_u_offset = 0
+      integer(lint)  :: scanline_u_vmin   = 1
+      integer(lint)  :: scanline_u_vmax
+      integer(lint)  :: scanline_v_scale  = 1
+      integer(lint)  :: scanline_v_offset = 0
+      integer(lint)  :: scanline_v_vmin   = 1
+      integer(lint)  :: scanline_v_vmax
 
-      real(kind=sreal)                 :: swansea_p_ap_scale  = 0.0001
-      real(kind=sreal)                 :: swansea_p_ap_offset = 0.0
-      integer(kind=sint)               :: swansea_p_ap_vmin   = 0
-      integer(kind=sint)               :: swansea_p_ap_vmax   = 32000
+      real(sreal),   pointer :: channels_scale(:)
+      real(sreal),   pointer :: channels_offset(:)
+      integer(sint), pointer :: channels_vmin(:)
+      integer(sint), pointer :: channels_vmax(:)
 
-      real(kind=sreal)                 :: swansea_p_fg_scale  = 0.0001
-      real(kind=sreal)                 :: swansea_p_fg_offset = 0.0
-      integer(kind=sint)               :: swansea_p_fg_vmin   = 0
-      integer(kind=sint)               :: swansea_p_fg_vmax   = 32000
+      real(sreal),   pointer :: y0_scale(:)
+      real(sreal),   pointer :: y0_offset(:)
+      integer(sint), pointer :: y0_vmin(:)
+      integer(sint), pointer :: y0_vmax(:)
 
-      real(kind=sreal)                 :: cot_ap_scale      = 0.01
-      real(kind=sreal)                 :: cot_ap_offset     = 0.0
-      integer(kind=sint)               :: cot_ap_vmin       = 0
-      integer(kind=sint)               :: cot_ap_vmax       = 32000
+      real(sreal),   pointer :: residuals_scale(:)
+      real(sreal),   pointer :: residuals_offset(:)
+      integer(sint), pointer :: residuals_vmin(:)
+      integer(sint), pointer :: residuals_vmax(:)
 
-      real(kind=sreal)                 :: cot_fg_scale      = 0.01
-      real(kind=sreal)                 :: cot_fg_offset     = 0.0
-      integer(kind=sint)               :: cot_fg_vmin       = 0
-      integer(kind=sint)               :: cot_fg_vmax       = 32000
+      real(sreal)    :: ds_scale  = 0.001
+      real(sreal)    :: ds_offset = 0.0
+      integer(sint)  :: ds_vmin   = 0
+      integer(sint)  :: ds_vmax   = 10000
 
-      real(kind=sreal)                 :: cer_ap_scale      = 0.01
-      real(kind=sreal)                 :: cer_ap_offset     = 0.0
-      integer(kind=sint)               :: cer_ap_vmin       = 0
-      integer(kind=sint)               :: cer_ap_vmax       = 20000
+      real(sreal)    :: covariance_scale  = 0.001
+      real(sreal)    :: covariance_offset = 0.0
+      integer(sint)  :: covariance_vmax   = -32000
+      integer(sint)  :: covariance_vmin   = 32000
 
-      real(kind=sreal)                 :: cer_fg_scale      = 0.01
-      real(kind=sreal)                 :: cer_fg_offset     = 0.0
-      integer(kind=sint)               :: cer_fg_vmin       = 0
-      integer(kind=sint)               :: cer_fg_vmax       = 20000
+      ! Arrays to store output fields
+      integer(sint), pointer :: aot550_ap(:,:)
+      integer(sint), pointer :: aot550_fg(:,:)
+      integer(sint), pointer :: aer_ap(:,:)
+      integer(sint), pointer :: aer_fg(:,:)
 
-      real(kind=sreal)                 :: ctp_ap_scale      = 0.1
-      real(kind=sreal)                 :: ctp_ap_offset     = 0.0
-      integer(kind=sint)               :: ctp_ap_vmin       = 500
-      integer(kind=sint)               :: ctp_ap_vmax       = 12000
+      integer(sint), pointer :: rho_ap(:,:,:,:)
+      integer(sint), pointer :: rho_fg(:,:,:,:)
 
-      real(kind=sreal)                 :: ctp_fg_scale      = 0.1
-      real(kind=sreal)                 :: ctp_fg_offset     = 0.0
-      integer(kind=sint)               :: ctp_fg_vmin       = 500
-      integer(kind=sint)               :: ctp_fg_vmax       = 12000
+      integer(sint), pointer :: swansea_s_ap(:,:,:)
+      integer(sint), pointer :: swansea_s_fg(:,:,:)
+      integer(sint), pointer :: swansea_p_ap(:,:,:)
+      integer(sint), pointer :: swansea_p_fg(:,:,:)
 
-      real(kind=sreal)                 :: stemp_ap_scale    = 0.01
-      real(kind=sreal)                 :: stemp_ap_offset   = 100.0
-      integer(kind=sint)               :: stemp_ap_vmin     = 0
-      integer(kind=sint)               :: stemp_ap_vmax     = 32000
+      integer(sint), pointer :: cot_ap(:,:)
+      integer(sint), pointer :: cot_fg(:,:)
+      integer(sint), pointer :: cer_ap(:,:)
+      integer(sint), pointer :: cer_fg(:,:)
+      integer(sint), pointer :: ctp_ap(:,:)
+      integer(sint), pointer :: ctp_fg(:,:)
+      integer(sint), pointer :: stemp_fg(:,:)
+      integer(sint), pointer :: stemp_ap(:,:)
+      integer(sint), pointer :: albedo(:,:,:)
 
-      real(kind=sreal)                 :: stemp_fg_scale    = 0.01
-      real(kind=sreal)                 :: stemp_fg_offset   = 100.0
-      integer(kind=sint)               :: stemp_fg_vmin     = 0
-      integer(kind=sint)               :: stemp_fg_vmax     = 32000
+      integer(sint), pointer :: channels(:,:,:)
+      integer(sint), pointer :: y0(:,:,:)
+      integer(sint), pointer :: residuals(:,:,:)
 
-      real(kind=sreal)                 :: albedo_scale      = 0.0001
-      real(kind=sreal)                 :: albedo_offset     = 0.0
-      integer(kind=sint)               :: albedo_vmin       = 0
-      integer(kind=sint)               :: albedo_vmax       = 10000
+      integer(sint), pointer :: ds(:,:)
 
-      real(kind=sreal),   dimension(:), pointer :: channels_scale,channels_offset
-      integer(kind=sint), dimension(:), pointer :: channels_vmin,channels_vmax
+      integer(lint), pointer :: scanline_u(:,:)
+      integer(lint), pointer :: scanline_v(:,:)
 
-      real(kind=sreal),   dimension(:), pointer :: y0_scale,y0_offset
-      integer(kind=sint), dimension(:), pointer :: y0_vmin,y0_vmax
-
-      real(kind=sreal),   dimension(:), pointer :: residuals_scale,residuals_offset
-      integer(kind=sint), dimension(:), pointer :: residuals_vmin,residuals_vmax
-
-      real(kind=sreal)                 :: ds_scale          = 0.001
-      real(kind=sreal)                 :: ds_offset         = 0.0
-      integer(kind=sint)               :: ds_vmin           = 0
-      integer(kind=sint)               :: ds_vmax           = 10000
-
-      real(kind=sreal)                 :: covariance_scale  = 0.001
-      real(kind=sreal)                 :: covariance_offset = 0.0
-      integer(kind=sint)               :: covariance_vmax   = -32000
-      integer(kind=sint)               :: covariance_vmin   = 32000
-
-
-      integer(kind=lint), dimension(:,:),     pointer :: scanline_u, scanline_v
-
-      integer(kind=sint), dimension(:,:),     pointer :: aot550_ap,aot550_fg
-      integer(kind=sint), dimension(:,:),     pointer :: aer_ap,aer_fg
-      integer(kind=sint), dimension(:,:,:,:), pointer :: rho_ap,rho_fg
-      integer(kind=sint), dimension(:,:,:),   pointer :: swansea_s_ap,swansea_s_fg
-      integer(kind=sint), dimension(:,:,:),   pointer :: swansea_p_ap,swansea_p_fg
-
-      integer(kind=sint), dimension(:,:),     pointer :: cot_ap,cot_fg
-      integer(kind=sint), dimension(:,:),     pointer :: cer_ap,cer_fg
-      integer(kind=sint), dimension(:,:),     pointer :: ctp_ap,ctp_fg
-      integer(kind=sint), dimension(:,:),     pointer :: stemp_ap,stemp_fg
-
-      integer(kind=sint), dimension(:,:,:),   pointer :: albedo
-      integer(kind=sint), dimension(:,:,:),   pointer :: channels
-      integer(kind=sint), dimension(:,:,:),   pointer :: y0
-      integer(kind=sint), dimension(:,:,:),   pointer :: residuals
-
-      integer(kind=sint), dimension(:,:),     pointer :: ds
-      real(kind=sreal),   dimension(:,:,:,:), pointer :: covariance
-
+      real(sreal),   pointer :: covariance(:,:,:,:)
    end type output_data_secondary
 
    type output_data_flags

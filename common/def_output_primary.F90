@@ -291,15 +291,15 @@ if (output_flags%do_aerosol) then
            ncid, &
            dims_var, &
            'aot550_uncertainty', &
-           output_data%vid_aot550_error, &
+           output_data%vid_aot550_uncertainty, &
            verbose, &
            long_name     = 'uncertainty in aerosol optical thickness at 550 nm', &
            standard_name = '', &
            fill_value    = sint_fill_value, &
-           scale_factor  = output_data%aot550_error_scale, &
-           add_offset    = output_data%aot550_error_offset, &
-           valid_min     = output_data%aot550_error_vmin, &
-           valid_max     = output_data%aot550_error_vmax, &
+           scale_factor  = output_data%aot550_uncertainty_scale, &
+           add_offset    = output_data%aot550_uncertainty_offset, &
+           valid_min     = output_data%aot550_uncertainty_vmin, &
+           valid_max     = output_data%aot550_uncertainty_vmax, &
            units         = '1', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
@@ -331,15 +331,15 @@ if (output_flags%do_aerosol) then
            ncid, &
            dims_var, &
            'aot870_uncertainty', &
-           output_data%vid_aot870_error, &
+           output_data%vid_aot870_uncertainty, &
            verbose, &
            long_name     = 'uncertainty in aerosol optical thickness at 870 nm', &
            standard_name = '', &
            fill_value    = sint_fill_value, &
-           scale_factor  = output_data%aot870_error_scale, &
-           add_offset    = output_data%aot870_error_offset, &
-           valid_min     = output_data%aot870_error_vmin, &
-           valid_max     = output_data%aot870_error_vmax, &
+           scale_factor  = output_data%aot870_uncertainty_scale, &
+           add_offset    = output_data%aot870_uncertainty_offset, &
+           valid_min     = output_data%aot870_uncertainty_vmin, &
+           valid_max     = output_data%aot870_uncertainty_vmax, &
            units         = '1', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
@@ -371,15 +371,15 @@ if (output_flags%do_aerosol) then
            ncid, &
            dims_var, &
            'aer_uncertainty', &
-           output_data%vid_aer_error, &
+           output_data%vid_aer_uncertainty, &
            verbose, &
            long_name     = 'effective radius uncertainty', &
            standard_name = '', &
            fill_value    = sint_fill_value, &
-           scale_factor  = output_data%aer_error_scale, &
-           add_offset    = output_data%aer_error_offset, &
-           valid_min     = output_data%aer_error_vmin, &
-           valid_max     = output_data%aer_error_vmax, &
+           scale_factor  = output_data%aer_uncertainty_scale, &
+           add_offset    = output_data%aer_uncertainty_offset, &
+           valid_min     = output_data%aer_uncertainty_vmin, &
+           valid_max     = output_data%aer_uncertainty_vmax, &
            units         = 'micrometer', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
@@ -464,15 +464,15 @@ if (output_flags%do_rho) then
                  ncid, &
                  dims_var, &
                  trim(adjustl(input_dummy2)), &
-                 output_data%vid_rho_error(i,j), &
+                 output_data%vid_rho_uncertainty(i,j), &
                  verbose, &
                  long_name     = trim(adjustl(input_dummy)), &
                  standard_name = '', &
                  fill_value    = sint_fill_value, &
-                 scale_factor  = output_data%rho_error_scale, &
-                 add_offset    = output_data%rho_error_offset, &
-                 valid_min     = output_data%rho_error_vmin, &
-                 valid_max     = output_data%rho_error_vmax, &
+                 scale_factor  = output_data%rho_uncertainty_scale, &
+                 add_offset    = output_data%rho_uncertainty_offset, &
+                 valid_min     = output_data%rho_uncertainty_vmin, &
+                 valid_max     = output_data%rho_uncertainty_vmax, &
                  units         = '1', &
                  deflate_level = deflate_level, &
                  shuffle       = shuffle_flag)
@@ -523,15 +523,15 @@ if (output_flags%do_swansea) then
            ncid, &
            dims_var, &
            trim(adjustl(input_dummy2)), &
-           output_data%vid_swansea_s_error(i), &
+           output_data%vid_swansea_s_uncertainty(i), &
            verbose, &
            long_name     = trim(adjustl(input_dummy)), &
            standard_name = '', &
            fill_value    = sint_fill_value, &
-           scale_factor  = output_data%swansea_s_error_scale, &
-           add_offset    = output_data%swansea_s_error_offset, &
-           valid_min     = output_data%swansea_s_error_vmin, &
-           valid_max     = output_data%swansea_s_error_vmax, &
+           scale_factor  = output_data%swansea_s_uncertainty_scale, &
+           add_offset    = output_data%swansea_s_uncertainty_offset, &
+           valid_min     = output_data%swansea_s_uncertainty_vmin, &
+           valid_max     = output_data%swansea_s_uncertainty_vmax, &
            units         = '1', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
@@ -577,15 +577,15 @@ if (output_flags%do_swansea) then
            ncid, &
            dims_var, &
            trim(adjustl(input_dummy2)), &
-           output_data%vid_swansea_p_error(i_view), &
+           output_data%vid_swansea_p_uncertainty(i_view), &
            verbose, &
            long_name     = trim(adjustl(input_dummy)), &
            standard_name = '', &
            fill_value    = sint_fill_value, &
-           scale_factor  = output_data%swansea_p_error_scale, &
-           add_offset    = output_data%swansea_p_error_offset, &
-           valid_min     = output_data%swansea_p_error_vmin, &
-           valid_max     = output_data%swansea_p_error_vmax, &
+           scale_factor  = output_data%swansea_p_uncertainty_scale, &
+           add_offset    = output_data%swansea_p_uncertainty_offset, &
+           valid_min     = output_data%swansea_p_uncertainty_vmin, &
+           valid_max     = output_data%swansea_p_uncertainty_vmax, &
            units         = '1', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
@@ -632,15 +632,15 @@ if (output_flags%do_swansea) then
            ncid, &
            dims_var, &
            trim(adjustl(input_dummy2)), &
-           output_data%vid_diffuse_frac_error(i), &
+           output_data%vid_diffuse_frac_uncertainty(i), &
            verbose, &
            long_name     = trim(adjustl(input_dummy)), &
            standard_name = '', &
            fill_value    = sint_fill_value, &
-           scale_factor  = output_data%diffuse_frac_error_scale, &
-           add_offset    = output_data%diffuse_frac_error_offset, &
-           valid_min     = output_data%diffuse_frac_error_vmin, &
-           valid_max     = output_data%diffuse_frac_error_vmax, &
+           scale_factor  = output_data%diffuse_frac_uncertainty_scale, &
+           add_offset    = output_data%diffuse_frac_uncertainty_offset, &
+           valid_min     = output_data%diffuse_frac_uncertainty_vmin, &
+           valid_max     = output_data%diffuse_frac_uncertainty_vmax, &
            units         = '1', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
@@ -675,15 +675,15 @@ if (output_flags%do_cloud) then
            ncid, &
            dims_var, &
            'cot_uncertainty', &
-           output_data%vid_cot_error, &
+           output_data%vid_cot_uncertainty, &
            verbose, &
            long_name     = 'cloud optical thickness uncertainty', &
            standard_name = '', &
            fill_value    = sint_fill_value, &
-           scale_factor  = output_data%cot_error_scale, &
-           add_offset    = output_data%cot_error_offset, &
-           valid_min     = output_data%cot_error_vmin, &
-           valid_max     = output_data%cot_error_vmax, &
+           scale_factor  = output_data%cot_uncertainty_scale, &
+           add_offset    = output_data%cot_uncertainty_offset, &
+           valid_min     = output_data%cot_uncertainty_vmin, &
+           valid_max     = output_data%cot_uncertainty_vmax, &
            units         = '1', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
@@ -715,15 +715,15 @@ if (output_flags%do_cloud) then
            ncid, &
            dims_var, &
            'cer_uncertainty', &
-           output_data%vid_cer_error, &
+           output_data%vid_cer_uncertainty, &
            verbose, &
            long_name     = 'cloud effective radius uncertainty', &
            standard_name = '', &
            fill_value    = sint_fill_value, &
-           scale_factor  = output_data%cer_error_scale, &
-           add_offset    = output_data%cer_error_offset, &
-           valid_min     = output_data%cer_error_vmin, &
-           valid_max     = output_data%cer_error_vmax, &
+           scale_factor  = output_data%cer_uncertainty_scale, &
+           add_offset    = output_data%cer_uncertainty_offset, &
+           valid_min     = output_data%cer_uncertainty_vmin, &
+           valid_max     = output_data%cer_uncertainty_vmax, &
            units         = 'micrometer', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
@@ -755,15 +755,15 @@ if (output_flags%do_cloud) then
            ncid, &
            dims_var, &
            'ctp_uncertainty', &
-           output_data%vid_ctp_error, &
+           output_data%vid_ctp_uncertainty, &
            verbose, &
            long_name     = 'cloud top pressure uncertainty', &
            standard_name = '', &
            fill_value    = sint_fill_value, &
-           scale_factor  = output_data%ctp_error_scale, &
-           add_offset    = output_data%ctp_error_offset, &
-           valid_min     = output_data%ctp_error_vmin, &
-           valid_max     = output_data%ctp_error_vmax, &
+           scale_factor  = output_data%ctp_uncertainty_scale, &
+           add_offset    = output_data%ctp_uncertainty_offset, &
+           valid_min     = output_data%ctp_uncertainty_vmin, &
+           valid_max     = output_data%ctp_uncertainty_vmax, &
            units         = 'hPa', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
@@ -795,15 +795,15 @@ if (output_flags%do_cloud) then
            ncid, &
            dims_var, &
            'ctp_corrected_uncertainty', &
-           output_data%vid_ctp_corrected_error, &
+           output_data%vid_ctp_corrected_uncertainty, &
            verbose, &
            long_name     = 'corrected cloud top pressure uncertainty', &
            standard_name = '', &
            fill_value    = sint_fill_value, &
-           scale_factor  = output_data%ctp_error_scale, &
-           add_offset    = output_data%ctp_error_offset, &
-           valid_min     = output_data%ctp_error_vmin, &
-           valid_max     = output_data%ctp_error_vmax, &
+           scale_factor  = output_data%ctp_uncertainty_scale, &
+           add_offset    = output_data%ctp_uncertainty_offset, &
+           valid_min     = output_data%ctp_uncertainty_vmin, &
+           valid_max     = output_data%ctp_uncertainty_vmax, &
            units         = 'hPa', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
@@ -815,15 +815,15 @@ if (output_flags%do_cloud) then
            ncid, &
            dims_var, &
            'cc_total', &
-           output_data%vid_cct, &
+           output_data%vid_cc_total, &
            verbose, &
            long_name     = 'cloud fraction', &
            standard_name = 'cloud_area_fraction', &
            fill_value    = sint_fill_value, &
-           scale_factor  = output_data%cct_scale, &
-           add_offset    = output_data%cct_offset, &
-           valid_min     = output_data%cct_vmin, &
-           valid_max     = output_data%cct_vmax, &
+           scale_factor  = output_data%cc_total_scale, &
+           add_offset    = output_data%cc_total_offset, &
+           valid_min     = output_data%cc_total_vmin, &
+           valid_max     = output_data%cc_total_vmax, &
            units         = '1', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
@@ -835,15 +835,15 @@ if (output_flags%do_cloud) then
            ncid, &
            dims_var, &
            'cc_total_uncertainty', &
-           output_data%vid_cct_error, &
+           output_data%vid_cc_total_uncertainty, &
            verbose, &
            long_name     = 'cloud fraction uncertainty', &
            standard_name = '', &
            fill_value    = sint_fill_value, &
-           scale_factor  = output_data%cct_error_scale, &
-           add_offset    = output_data%cct_error_offset, &
-           valid_min     = output_data%cct_error_vmin, &
-           valid_max     = output_data%cct_error_vmax, &
+           scale_factor  = output_data%cc_total_uncertainty_scale, &
+           add_offset    = output_data%cc_total_uncertainty_offset, &
+           valid_min     = output_data%cc_total_uncertainty_vmin, &
+           valid_max     = output_data%cc_total_uncertainty_vmax, &
            units         = '1', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
@@ -875,15 +875,15 @@ if (output_flags%do_cloud) then
            ncid, &
            dims_var, &
            'stemp_uncertainty', &
-           output_data%vid_stemp_error, &
+           output_data%vid_stemp_uncertainty, &
            verbose, &
            long_name     = 'surface temperature uncertainty', &
            standard_name = '', &
            fill_value    = sint_fill_value, &
-           scale_factor  = output_data%stemp_error_scale, &
-           add_offset    = output_data%stemp_error_offset, &
-           valid_min     = output_data%stemp_vmin, &
-           valid_max     = output_data%stemp_error_vmax, &
+           scale_factor  = output_data%stemp_uncertainty_scale, &
+           add_offset    = output_data%stemp_uncertainty_offset, &
+           valid_min     = output_data%stemp_uncertainty_vmin, &
+           valid_max     = output_data%stemp_uncertainty_vmax, &
            units         = 'kelvin', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
@@ -915,15 +915,15 @@ if (output_flags%do_cloud) then
            ncid, &
            dims_var, &
            'cth_uncertainty', &
-           output_data%vid_cth_error, &
+           output_data%vid_cth_uncertainty, &
            verbose, &
            long_name     = 'cloud top height uncertainty', &
            standard_name = '', &
            fill_value    = sint_fill_value, &
-           scale_factor  = output_data%cth_error_scale, &
-           add_offset    = output_data%cth_error_offset, &
-           valid_min     = output_data%cth_error_vmin, &
-           valid_max     = output_data%cth_error_vmax, &
+           scale_factor  = output_data%cth_uncertainty_scale, &
+           add_offset    = output_data%cth_uncertainty_offset, &
+           valid_min     = output_data%cth_uncertainty_vmin, &
+           valid_max     = output_data%cth_uncertainty_vmax, &
            units         = 'kilometer', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
@@ -955,15 +955,15 @@ if (output_flags%do_cloud) then
            ncid, &
            dims_var, &
            'cth_corrected_uncertainty', &
-           output_data%vid_cth_corrected_error, &
+           output_data%vid_cth_corrected_uncertainty, &
            verbose, &
            long_name     = 'corrected cloud top height uncertainty', &
            standard_name = '', &
            fill_value    = sint_fill_value, &
-           scale_factor  = output_data%cth_error_scale, &
-           add_offset    = output_data%cth_error_offset, &
-           valid_min     = output_data%cth_error_vmin, &
-           valid_max     = output_data%cth_error_vmax, &
+           scale_factor  = output_data%cth_uncertainty_scale, &
+           add_offset    = output_data%cth_uncertainty_offset, &
+           valid_min     = output_data%cth_uncertainty_vmin, &
+           valid_max     = output_data%cth_uncertainty_vmax, &
            units         = 'kilometer', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
@@ -995,15 +995,15 @@ if (output_flags%do_cloud) then
            ncid, &
            dims_var, &
            'ctt_uncertainty', &
-           output_data%vid_ctt_error, &
+           output_data%vid_ctt_uncertainty, &
            verbose, &
            long_name     = 'cloud top temperature uncertainty', &
            standard_name = '', &
            fill_value    = sint_fill_value, &
-           scale_factor  = output_data%ctt_error_scale, &
-           add_offset    = output_data%ctt_error_offset, &
-           valid_min     = output_data%ctt_error_vmin, &
-           valid_max     = output_data%ctt_error_vmax, &
+           scale_factor  = output_data%ctt_uncertainty_scale, &
+           add_offset    = output_data%ctt_uncertainty_offset, &
+           valid_min     = output_data%ctt_uncertainty_vmin, &
+           valid_max     = output_data%ctt_uncertainty_vmax, &
            units         = 'kelvin', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
@@ -1035,15 +1035,15 @@ if (output_flags%do_cloud) then
            ncid, &
            dims_var, &
            'ctt_corrected_uncertainty', &
-           output_data%vid_ctt_corrected_error, &
+           output_data%vid_ctt_corrected_uncertainty, &
            verbose, &
            long_name     = 'corrected cloud top temperature uncertainty', &
            standard_name = '', &
            fill_value    = sint_fill_value, &
-           scale_factor  = output_data%ctt_error_scale, &
-           add_offset    = output_data%ctt_error_offset, &
-           valid_min     = output_data%ctt_error_vmin, &
-           valid_max     = output_data%ctt_error_vmax, &
+           scale_factor  = output_data%ctt_uncertainty_scale, &
+           add_offset    = output_data%ctt_uncertainty_offset, &
+           valid_min     = output_data%ctt_uncertainty_vmin, &
+           valid_max     = output_data%ctt_uncertainty_vmax, &
            units         = 'kelvin', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
@@ -1075,15 +1075,15 @@ if (output_flags%do_cloud) then
            ncid, &
            dims_var, &
            'cwp_uncertainty', &
-           output_data%vid_cwp_error, &
+           output_data%vid_cwp_uncertainty, &
            verbose, &
            long_name     = 'cloud liquid water path uncertainty', &
            standard_name = '', &
            fill_value    = sint_fill_value, &
-           scale_factor  = output_data%cwp_error_scale, &
-           add_offset    = output_data%cwp_error_offset, &
-           valid_min     = output_data%cwp_error_vmin, &
-           valid_max     = output_data%cwp_error_vmax, &
+           scale_factor  = output_data%cwp_uncertainty_scale, &
+           add_offset    = output_data%cwp_uncertainty_offset, &
+           valid_min     = output_data%cwp_uncertainty_vmin, &
+           valid_max     = output_data%cwp_uncertainty_vmax, &
            units         = 'g/m2', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
@@ -1130,15 +1130,15 @@ if (output_flags%do_cloud) then
            ncid, &
            dims_var, &
            trim(adjustl(input_dummy2)), &
-           output_data%vid_cloud_albedo_error(i), &
+           output_data%vid_cloud_albedo_uncertainty(i), &
            verbose, &
            long_name     = trim(adjustl(input_dummy)), &
            standard_name = '', &
            fill_value    = sint_fill_value, &
-           scale_factor  = output_data%cloud_albedo_error_scale, &
-           add_offset    = output_data%cloud_albedo_error_offset, &
-           valid_min     = output_data%cloud_albedo_error_vmin, &
-           valid_max     = output_data%cloud_albedo_error_vmax, &
+           scale_factor  = output_data%cloud_albedo_uncertainty_scale, &
+           add_offset    = output_data%cloud_albedo_uncertainty_offset, &
+           valid_min     = output_data%cloud_albedo_uncertainty_vmin, &
+           valid_max     = output_data%cloud_albedo_uncertainty_vmax, &
            units         = '1', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
@@ -1186,15 +1186,15 @@ if (output_flags%do_cloud) then
            ncid, &
            dims_var, &
            trim(adjustl(input_dummy2)), &
-           output_data%vid_cee_error(i), &
+           output_data%vid_cee_uncertainty(i), &
            verbose, &
            long_name     = trim(adjustl(input_dummy)), &
            standard_name = '', &
            fill_value    = sint_fill_value, &
-           scale_factor  = output_data%cee_error_scale, &
-           add_offset    = output_data%cee_error_offset, &
-           valid_min     = output_data%cee_error_vmin, &
-           valid_max     = output_data%cee_error_vmax, &
+           scale_factor  = output_data%cee_uncertainty_scale, &
+           add_offset    = output_data%cee_uncertainty_offset, &
+           valid_min     = output_data%cee_uncertainty_vmin, &
+           valid_max     = output_data%cee_uncertainty_vmax, &
            units         = '1', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)

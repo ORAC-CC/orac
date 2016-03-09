@@ -97,7 +97,8 @@ subroutine Read_CloudFlags_nc(Ctrl, MSI_Data)
 !  call nc_read_array(ncid, "cflag", MSI_Data%CloudFlags, Ctrl%verbose)
    call nc_read_array(ncid, "cldtype", MSI_Data%cldtype, Ctrl%verbose)
    call nc_read_array(ncid, "cldmask", MSI_Data%cldmask, Ctrl%verbose)
-   call nc_read_array(ncid, "cldmask_uncertainty", MSI_Data%cldmask_uncertainty, Ctrl%verbose)
+   call nc_read_array(ncid, "cldmask_uncertainty", &
+        MSI_Data%cldmask_uncertainty, Ctrl%verbose)
    call nc_read_array(ncid, "cccot_pre", MSI_Data%cccot_pre, Ctrl%verbose)
 
    ! Merge various particle type flags (once aerosol is in)

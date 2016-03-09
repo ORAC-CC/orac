@@ -92,140 +92,140 @@ subroutine alloc_output_data_primary(ixstart, ixstop, iystart, iystop, &
 if (output_flags%do_aerosol) then
    allocate(output_data%aot550(ixstart:ixstop,iystart:iystop))
    output_data%aot550=sint_fill_value
-   allocate(output_data%aot550_error(ixstart:ixstop,iystart:iystop))
-   output_data%aot550_error=sint_fill_value
+   allocate(output_data%aot550_uncertainty(ixstart:ixstop,iystart:iystop))
+   output_data%aot550_uncertainty=sint_fill_value
 
    allocate(output_data%aot870(ixstart:ixstop,iystart:iystop))
    output_data%aot870=sint_fill_value
-   allocate(output_data%aot870_error(ixstart:ixstop,iystart:iystop))
-   output_data%aot870_error=sint_fill_value
+   allocate(output_data%aot870_uncertainty(ixstart:ixstop,iystart:iystop))
+   output_data%aot870_uncertainty=sint_fill_value
 
    allocate(output_data%aer(ixstart:ixstop,iystart:iystop))
    output_data%aer=sint_fill_value
-   allocate(output_data%aer_error(ixstart:ixstop,iystart:iystop))
-   output_data%aer_error=sint_fill_value
+   allocate(output_data%aer_uncertainty(ixstart:ixstop,iystart:iystop))
+   output_data%aer_uncertainty=sint_fill_value
 end if
 
 if (output_flags%do_rho) then
    allocate(output_data%vid_rho(Ny,MaxRho_XX))
    output_data%vid_rho=0
-   allocate(output_data%vid_rho_error(Ny,MaxRho_XX))
-   output_data%vid_rho_error=0
+   allocate(output_data%vid_rho_uncertainty(Ny,MaxRho_XX))
+   output_data%vid_rho_uncertainty=0
 
    allocate(output_data%rho(ixstart:ixstop,iystart:iystop,Ny,MaxRho_XX))
    output_data%rho=sint_fill_value
-   allocate(output_data%rho_error(ixstart:ixstop,iystart:iystop,Ny,MaxRho_XX))
-   output_data%rho_error=sint_fill_value
+   allocate(output_data%rho_uncertainty(ixstart:ixstop,iystart:iystop,Ny,MaxRho_XX))
+   output_data%rho_uncertainty=sint_fill_value
 end if
 
 if (output_flags%do_swansea) then
    allocate(output_data%vid_swansea_s(Ny))
    output_data%vid_swansea_s=0
-   allocate(output_data%vid_swansea_s_error(Ny))
-   output_data%vid_swansea_s_error=0
+   allocate(output_data%vid_swansea_s_uncertainty(Ny))
+   output_data%vid_swansea_s_uncertainty=0
 
    allocate(output_data%vid_swansea_p(NViews))
    output_data%vid_swansea_p=0
-   allocate(output_data%vid_swansea_p_error(NViews))
-   output_data%vid_swansea_p_error=0
+   allocate(output_data%vid_swansea_p_uncertainty(NViews))
+   output_data%vid_swansea_p_uncertainty=0
 
    allocate(output_data%vid_diffuse_frac(Ny))
    output_data%vid_diffuse_frac=0
-   allocate(output_data%vid_diffuse_frac_error(Ny))
-   output_data%vid_diffuse_frac_error=0
+   allocate(output_data%vid_diffuse_frac_uncertainty(Ny))
+   output_data%vid_diffuse_frac_uncertainty=0
 
    allocate(output_data%swansea_s(ixstart:ixstop,iystart:iystop,Ny))
    output_data%swansea_s=sint_fill_value
-   allocate(output_data%swansea_s_error(ixstart:ixstop,iystart:iystop,Ny))
-   output_data%swansea_s_error=sint_fill_value
+   allocate(output_data%swansea_s_uncertainty(ixstart:ixstop,iystart:iystop,Ny))
+   output_data%swansea_s_uncertainty=sint_fill_value
 
    allocate(output_data%swansea_p(ixstart:ixstop,iystart:iystop,Ny))
    output_data%swansea_p=sint_fill_value
-   allocate(output_data%swansea_p_error(ixstart:ixstop,iystart:iystop,Ny))
-   output_data%swansea_p_error=sint_fill_value
+   allocate(output_data%swansea_p_uncertainty(ixstart:ixstop,iystart:iystop,Ny))
+   output_data%swansea_p_uncertainty=sint_fill_value
 
    allocate(output_data%diffuse_frac(ixstart:ixstop,iystart:iystop,Ny))
    output_data%diffuse_frac=sint_fill_value
-   allocate(output_data%diffuse_frac_error(ixstart:ixstop,iystart:iystop,Ny))
-   output_data%diffuse_frac_error=sint_fill_value
+   allocate(output_data%diffuse_frac_uncertainty(ixstart:ixstop,iystart:iystop,Ny))
+   output_data%diffuse_frac_uncertainty=sint_fill_value
 end if
 
 if (output_flags%do_cloud) then
    allocate(output_data%vid_cloud_albedo(Ny))
    output_data%vid_cloud_albedo=0
-   allocate(output_data%vid_cloud_albedo_error(Ny))
-   output_data%vid_cloud_albedo_error=0
+   allocate(output_data%vid_cloud_albedo_uncertainty(Ny))
+   output_data%vid_cloud_albedo_uncertainty=0
 
    allocate(output_data%vid_cee(Ny))
    output_data%vid_cee=0
-   allocate(output_data%vid_cee_error(Ny))
-   output_data%vid_cee_error=0
+   allocate(output_data%vid_cee_uncertainty(Ny))
+   output_data%vid_cee_uncertainty=0
 
 
    allocate(output_data%cot(ixstart:ixstop,iystart:iystop))
    output_data%cot=sint_fill_value
-   allocate(output_data%cot_error(ixstart:ixstop,iystart:iystop))
-   output_data%cot_error=sint_fill_value
+   allocate(output_data%cot_uncertainty(ixstart:ixstop,iystart:iystop))
+   output_data%cot_uncertainty=sint_fill_value
 
    allocate(output_data%cer(ixstart:ixstop,iystart:iystop))
    output_data%cer=sint_fill_value
-   allocate(output_data%cer_error(ixstart:ixstop,iystart:iystop))
-   output_data%cer_error=sint_fill_value
+   allocate(output_data%cer_uncertainty(ixstart:ixstop,iystart:iystop))
+   output_data%cer_uncertainty=sint_fill_value
 
    allocate(output_data%ctp(ixstart:ixstop,iystart:iystop))
    output_data%ctp=sint_fill_value
-   allocate(output_data%ctp_error(ixstart:ixstop,iystart:iystop))
-   output_data%ctp_error=sint_fill_value
+   allocate(output_data%ctp_uncertainty(ixstart:ixstop,iystart:iystop))
+   output_data%ctp_uncertainty=sint_fill_value
 
    allocate(output_data%ctp_corrected(ixstart:ixstop,iystart:iystop))
    output_data%ctp_corrected=sint_fill_value
-   allocate(output_data%ctp_corrected_error(ixstart:ixstop,iystart:iystop))
-   output_data%ctp_corrected_error=sint_fill_value
+   allocate(output_data%ctp_corrected_uncertainty(ixstart:ixstop,iystart:iystop))
+   output_data%ctp_corrected_uncertainty=sint_fill_value
 
-   allocate(output_data%cct(ixstart:ixstop,iystart:iystop))
-   output_data%cct=sint_fill_value
-   allocate(output_data%cct_error(ixstart:ixstop,iystart:iystop))
-   output_data%cct_error=sint_fill_value
+   allocate(output_data%cc_total(ixstart:ixstop,iystart:iystop))
+   output_data%cc_total=sint_fill_value
+   allocate(output_data%cc_total_uncertainty(ixstart:ixstop,iystart:iystop))
+   output_data%cc_total_uncertainty=sint_fill_value
 
    allocate(output_data%stemp(ixstart:ixstop,iystart:iystop))
    output_data%stemp=sint_fill_value
-   allocate(output_data%stemp_error(ixstart:ixstop,iystart:iystop))
-   output_data%stemp_error=sint_fill_value
+   allocate(output_data%stemp_uncertainty(ixstart:ixstop,iystart:iystop))
+   output_data%stemp_uncertainty=sint_fill_value
 
    allocate(output_data%cth(ixstart:ixstop,iystart:iystop))
    output_data%cth=sint_fill_value
-   allocate(output_data%cth_error(ixstart:ixstop,iystart:iystop))
-   output_data%cth_error=sint_fill_value
+   allocate(output_data%cth_uncertainty(ixstart:ixstop,iystart:iystop))
+   output_data%cth_uncertainty=sint_fill_value
 
    allocate(output_data%cth_corrected(ixstart:ixstop,iystart:iystop))
    output_data%cth_corrected=sint_fill_value
-   allocate(output_data%cth_corrected_error(ixstart:ixstop,iystart:iystop))
-   output_data%cth_corrected_error=sint_fill_value
+   allocate(output_data%cth_corrected_uncertainty(ixstart:ixstop,iystart:iystop))
+   output_data%cth_corrected_uncertainty=sint_fill_value
 
    allocate(output_data%ctt(ixstart:ixstop,iystart:iystop))
    output_data%ctt=sint_fill_value
-   allocate(output_data%ctt_error(ixstart:ixstop,iystart:iystop))
-   output_data%ctt_error=sint_fill_value
+   allocate(output_data%ctt_uncertainty(ixstart:ixstop,iystart:iystop))
+   output_data%ctt_uncertainty=sint_fill_value
 
    allocate(output_data%ctt_corrected(ixstart:ixstop,iystart:iystop))
    output_data%ctt_corrected=sint_fill_value
-   allocate(output_data%ctt_corrected_error(ixstart:ixstop,iystart:iystop))
-   output_data%ctt_corrected_error=sint_fill_value
+   allocate(output_data%ctt_corrected_uncertainty(ixstart:ixstop,iystart:iystop))
+   output_data%ctt_corrected_uncertainty=sint_fill_value
 
    allocate(output_data%cwp(ixstart:ixstop,iystart:iystop))
    output_data%cwp=sint_fill_value
-   allocate(output_data%cwp_error(ixstart:ixstop,iystart:iystop))
-   output_data%cwp_error=sint_fill_value
+   allocate(output_data%cwp_uncertainty(ixstart:ixstop,iystart:iystop))
+   output_data%cwp_uncertainty=sint_fill_value
 
    allocate(output_data%cloud_albedo(ixstart:ixstop,iystart:iystop,Ny))
    output_data%cloud_albedo=sint_fill_value
-   allocate(output_data%cloud_albedo_error(ixstart:ixstop,iystart:iystop,Ny))
-   output_data%cloud_albedo_error=sint_fill_value
+   allocate(output_data%cloud_albedo_uncertainty(ixstart:ixstop,iystart:iystop,Ny))
+   output_data%cloud_albedo_uncertainty=sint_fill_value
 
    allocate(output_data%cee(ixstart:ixstop,iystart:iystop,Ny))
    output_data%cee=sint_fill_value
-   allocate(output_data%cee_error(ixstart:ixstop,iystart:iystop,Ny))
-   output_data%cee_error=sint_fill_value
+   allocate(output_data%cee_uncertainty(ixstart:ixstop,iystart:iystop,Ny))
+   output_data%cee_uncertainty=sint_fill_value
 
    allocate(output_data%cccot_pre(ixstart:ixstop,iystart:iystop))
    output_data%cccot_pre=sint_fill_value

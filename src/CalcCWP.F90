@@ -59,8 +59,8 @@ subroutine Calc_CWP(Ctrl, SPixel)
    else if (Ctrl%Approach == CldIce) then
       fac = (4./3.) * rhoice / qextice
    else
-      SPixel%CWP       = sreal_fill_value
-      SPixel%CWP_error = sreal_fill_value
+      SPixel%CWP             = sreal_fill_value
+      SPixel%CWP_uncertainty = sreal_fill_value
       return
    end if
 
@@ -71,9 +71,9 @@ subroutine Calc_CWP(Ctrl, SPixel)
    dcwp_dtau = fac * tenpcot * log(10.) * SPixel%Xn(IRe)
    dcwp_dr_e = fac * tenpcot
 
-   SPixel%CWP_error = dcwp_dtau * dcwp_dtau * SPixel%Sn(ITau,ITau) + &
-                      dcwp_dtau * dcwp_dr_e * SPixel%Sn(IRe,ITau) + &
-                      dcwp_dr_e * dcwp_dtau * SPixel%Sn(ITau,IRe) + &
-                      dcwp_dr_e * dcwp_dr_e * SPixel%Sn(IRe,IRe)
+   SPixel%CWP_uncertainty = dcwp_dtau * dcwp_dtau * SPixel%Sn(ITau,ITau) + &
+                            dcwp_dtau * dcwp_dr_e * SPixel%Sn(IRe,ITau) + &
+                            dcwp_dr_e * dcwp_dtau * SPixel%Sn(ITau,IRe) + &
+                            dcwp_dr_e * dcwp_dr_e * SPixel%Sn(IRe,IRe)
 
 end subroutine Calc_CWP

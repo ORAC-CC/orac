@@ -770,12 +770,12 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
        (Ctrl%Approach == CldWat .or. Ctrl%Approach == CldIce)) then
       call Calc_Corrected_CTX(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Sy)
    else
-      SPixel%CTP_corrected       = MissingXn
-      SPixel%CTP_corrected_error = MissingSn
-      SPixel%CTH_corrected       = MissingXn
-      SPixel%CTH_corrected_error = MissingSn
-      SPixel%CTT_corrected       = MissingXn
-      SPixel%CTT_corrected_error = MissingSn
+      SPixel%CTP_corrected             = MissingXn
+      SPixel%CTP_corrected_uncertainty = MissingSn
+      SPixel%CTH_corrected             = MissingXn
+      SPixel%CTH_corrected_uncertainty = MissingSn
+      SPixel%CTT_corrected             = MissingXn
+      SPixel%CTT_corrected_uncertainty = MissingSn
    end if
 
    ! Costs are divided by number of active instrument channels before output.

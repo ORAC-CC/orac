@@ -129,13 +129,15 @@ subroutine Calc_Corrected_CTX(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Sy)
    SPixel%CTH_corrected = RTM_Pc%Hc
    SPixel%CTT_corrected = RTM_Pc%Tc
    if (SPixel%Sn(IPc,IPc) .eq. MissingSn) then
-      SPixel%CTP_corrected_error = MissingSn
-      SPixel%CTH_corrected_error = MissingSn
-      SPixel%CTT_corrected_error = MissingSn
+      SPixel%CTP_corrected_uncertainty = MissingSn
+      SPixel%CTH_corrected_uncertainty = MissingSn
+      SPixel%CTT_corrected_uncertainty = MissingSn
    else
-      SPixel%CTP_corrected_error = sqrt(SPixel%Sn(IPc,IPc))
-      SPixel%CTH_corrected_error = abs(RTM_Pc%dHc_dPc) * SPixel%CTP_corrected_error
-      SPixel%CTT_corrected_error = abs(RTM_Pc%dTc_dPc) * SPixel%CTP_corrected_error
+      SPixel%CTP_corrected_uncertainty = sqrt(SPixel%Sn(IPc,IPc))
+      SPixel%CTH_corrected_uncertainty = abs(RTM_Pc%dHc_dPc) * &
+                                         SPixel%CTP_corrected_uncertainty
+      SPixel%CTT_corrected_uncertainty = abs(RTM_Pc%dTc_dPc) * &
+                                         SPixel%CTP_corrected_uncertainty
    end if
 
    if (Ctrl%Approach .ne. CldIce) then
@@ -158,17 +160,17 @@ subroutine Calc_Corrected_CTX(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Sy)
       call Allocate_GZero(GZero, SPixel)
       call Set_GZero(SPixel%Xn(ITau), SPixel%Xn(IRe), Ctrl, SPixel, SAD_LUT, &
               GZero, status)
-      call Int_LUT_TauRe(SAD_LUT%Bext, SPixel%Ind%NThermal, SAD_LUT%Grid, GZero, &
-              Ctrl, CRP_thermal, d_CRP_thermal, IBext, &
+      call Int_LUT_TauRe(SAD_LUT%Bext, SPixel%Ind%NThermal, SAD_LUT%Grid, &
+              GZero, Ctrl, CRP_thermal, d_CRP_thermal, IBext, &
               SPixel%spixel_y_thermal_to_ctrl_y_index, SPixel%Ind%YThermal, status)
       call Deallocate_GZero(GZero)
 
       ! Correct the BT11 and BT12 to that which will be observed through a
       ! transparent atmosphere.
-      T_11 = get_corrected_bt(Ctrl, SPixel, SAD_Chan, RTM_Pc, i_spixel_11_thermal, &
-                SPixel%Ym)
-      T_12 = get_corrected_bt(Ctrl, SPixel, SAD_Chan, RTM_Pc, i_spixel_12_thermal, &
-                SPixel%Ym)
+      T_11 = get_corrected_bt(Ctrl, SPixel, SAD_Chan, RTM_Pc, &
+                              i_spixel_11_thermal, SPixel%Ym)
+      T_12 = get_corrected_bt(Ctrl, SPixel, SAD_Chan, RTM_Pc, &
+                              i_spixel_12_thermal, SPixel%Ym)
 
       ! For now we assume these are zero.  In fact the are not zero w.r.t. both
       ! the measurements and Pc.
@@ -214,12 +216,12 @@ subroutine Calc_Corrected_CTX(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Sy)
 
       ! Ignore corrections less than a thresold or in the downward direction
       if (ctp_new .gt. Ctrl%CTP_correction_limit .and. ctp_new .lt. SPixel%Xn(iPc)) then
-         SPixel%CTP_corrected       = ctp_new
-         SPixel%CTP_corrected_error = ctp_new_sigma
-         SPixel%CTH_corrected       = cth_new
-         SPixel%CTH_corrected_error = cth_new_sigma
-         SPixel%CTT_corrected       = ctt_new
-         SPixel%CTT_corrected_error = ctt_new_sigma
+         SPixel%CTP_corrected             = ctp_new
+         SPixel%CTP_corrected_uncertainty = ctp_new_sigma
+         SPixel%CTH_corrected             = cth_new
+         SPixel%CTH_corrected_uncertainty = cth_new_sigma
+         SPixel%CTT_corrected             = ctt_new
+         SPixel%CTT_corrected_uncertainty = ctt_new_sigma
       end if
    end if
 

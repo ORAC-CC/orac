@@ -164,7 +164,7 @@ subroutine Get_Surface(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
    integer, dimension(SPixel%Ind%NSolar)            :: i_s, i_c
    real,    dimension(SPixel%Ind%NSolar)            :: uncertainty
    real,    dimension(SPixel%Ind%NSolar, MaxRho_XX) :: uncertainty2, additional
-   real,    dimension(Ctrl%Ind%NSolar, MaxSurf)     :: Rs, frac_error
+   real,    dimension(Ctrl%Ind%NSolar, MaxSurf)     :: Rs, frac_uncertainty
 
 
    status      = 0
@@ -198,8 +198,8 @@ subroutine Get_Surface(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
 
    ! These are copied into temporary arrays in case we ever make Ctrl%Rs terms
    ! arrays rather than scalars
-   Rs         = Ctrl%RS%b
-   frac_error = Ctrl%RS%Sb
+   Rs               = Ctrl%RS%b
+   frac_uncertainty = Ctrl%RS%Sb
 
 
    ! Get the surface reflectances
@@ -211,7 +211,7 @@ subroutine Get_Surface(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
          ! Use constant surface reflectances
          SPixel%Surface%Rs(i) = Rs(ii,i_surf)
          ! Uncertainty is a constant fraction of the reflectance
-         uncertainty(i) = Rs(ii,i_surf) * frac_error(ii,i_surf)
+         uncertainty(i) = Rs(ii,i_surf) * frac_uncertainty(ii,i_surf)
       end do
 
       ! Constant correlation between channels
@@ -270,8 +270,8 @@ subroutine Get_Surface(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
 !                SPixel%Surface%Rs2(i,IRho_DV) > RhoMax .or. &
                  SPixel%Surface%Rs2(i,IRho_DD) > RhoMax) then
 #ifdef DEBUG
-               write(*, *) 'WARNING: Get_Surface(): Invalid surface property ' // &
-                    'in pixel at: ', SPixel%Loc%X0, SPixel%Loc%Y0
+               write(*, *) 'WARNING: Get_Surface(): Invalid surface ' // &
+                    'property in pixel at: ', SPixel%Loc%X0, SPixel%Loc%Y0
 #endif
                if (Ctrl%RS%allow_a_default_surface) then
                   SPixel%Surface%Rs2(i,:) = Rs(ii,i_surf)
@@ -307,14 +307,14 @@ subroutine Get_Surface(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
 
             ! A "temporary test" from the aerosol code
             if (Ctrl%RS%add_fractional) additional(i,IRho_DD) = &
-                 frac_error(ii,i_surf) * frac_error(ii,i_surf) * &
+                 frac_uncertainty(ii,i_surf) * frac_uncertainty(ii,i_surf) * &
                  SPixel%Surface%Rs2(i,IRho_DD) * SPixel%Surface%Rs2(i,IRho_DD)
          case(SelmMeas)
             ! Uncertainty is a constant fraction of the reflectance
-            uncertainty(i) = SPixel%Surface%Rs(i) * frac_error(ii,i_surf)
+            uncertainty(i) = SPixel%Surface%Rs(i) * frac_uncertainty(ii,i_surf)
             if (Ctrl%RS%use_full_brdf) &
                  uncertainty2(i,:) = uncertainty(i)
-!                uncertainty2(i,:) = SPixel%Surface%Rs2(i,:) * frac_error(ii,i_surf)
+!                uncertainty2(i,:) = SPixel%Surface%Rs2(i,:) * frac_uncertainty(ii,i_surf)
             ! Constant correlation between channels
             correl = Ctrl%RS%Cb
          case(SelmAux)
@@ -329,8 +329,8 @@ subroutine Get_Surface(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
             if (uncertainty2(i,IRho_DD) < RhoErrMin .or. &
                 uncertainty2(i,IRho_DD) > RhoErrMax .or. &
                 any(correl < CorrMin) .or. any(correl > CorrMax)) then
-               write(*,*) 'WARNING: Get_Surface(): Invalid surface uncertainty '// &
-                    'in pixel at: ', SPixel%Loc%X0, SPixel%Loc%Y0
+               write(*,*) 'WARNING: Get_Surface(): Invalid surface '// &
+                    'uncertainty in pixel at: ', SPixel%Loc%X0, SPixel%Loc%Y0
                status = SPixelSurfErr
                return
             end if
@@ -360,7 +360,7 @@ subroutine Get_Surface(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
             ! A "temporary test" from the aerosol code
             if (Ctrl%RS%add_fractional) &
                  additional(i,IRho_DD) = additional(i,IRho_DD) + &
-                 frac_error(ii,i_surf) * frac_error(ii,i_surf) * &
+                 frac_uncertainty(ii,i_surf) * frac_uncertainty(ii,i_surf) * &
                  SPixel%Surface%Rs2(i,IRho_DD) * SPixel%Surface%Rs2(i,IRho_DD)
          end select
 

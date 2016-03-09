@@ -115,15 +115,15 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
 
       call prepare_short_packed_float( &
            input_data%cot_uncertainty(i,j), &
-           output_data%cot_error(i,j), &
-           output_data%cot_error_scale, &
-           output_data%cot_error_offset, &
-           output_data%cot_error_vmin, &
-           output_data%cot_error_vmax, &
-           sreal_fill_value, output_data%cot_error_vmax)
+           output_data%cot_uncertainty(i,j), &
+           output_data%cot_uncertainty_scale, &
+           output_data%cot_uncertainty_offset, &
+           output_data%cot_uncertainty_vmin, &
+           output_data%cot_uncertainty_vmax, &
+           sreal_fill_value, output_data%cot_uncertainty_vmax)
 
       !--------------------------------------------------------------------------
-      ! cer, cer_error
+      ! cer, cer_uncertainty
       !--------------------------------------------------------------------------
       call prepare_short_packed_float( &
            input_data%cer(i,j), output_data%cer(i,j), &
@@ -133,15 +133,15 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
 
       call prepare_short_packed_float( &
            input_data%cer_uncertainty(i,j), &
-           output_data%cer_error(i,j), &
-           output_data%cer_error_scale, &
-           output_data%cer_error_offset, &
-           output_data%cer_error_vmin, &
-           output_data%cer_error_vmax, &
-           sreal_fill_value, output_data%cer_error_vmax)
+           output_data%cer_uncertainty(i,j), &
+           output_data%cer_uncertainty_scale, &
+           output_data%cer_uncertainty_offset, &
+           output_data%cer_uncertainty_vmin, &
+           output_data%cer_uncertainty_vmax, &
+           sreal_fill_value, output_data%cer_uncertainty_vmax)
 
       !-------------------------------------------------------------------------
-      ! cwp, cwp_error
+      ! cwp, cwp_uncertainty
       !-------------------------------------------------------------------------
       call prepare_short_packed_float( &
            input_data%cwp(i,j), output_data%cwp(i,j), &
@@ -151,16 +151,16 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
 
       call prepare_short_packed_float( &
            input_data%cwp_uncertainty(i,j), &
-           output_data%cwp_error(i,j), &
-           output_data%cwp_error_scale, &
-           output_data%cwp_error_offset, &
-           output_data%cwp_error_vmin, &
-           output_data%cwp_error_vmax, &
-           sreal_fill_value, output_data%cwp_error_vmax)
+           output_data%cwp_uncertainty(i,j), &
+           output_data%cwp_uncertainty_scale, &
+           output_data%cwp_uncertainty_offset, &
+           output_data%cwp_uncertainty_vmin, &
+           output_data%cwp_uncertainty_vmax, &
+           sreal_fill_value, output_data%cwp_uncertainty_vmax)
    end if
 
    !----------------------------------------------------------------------------
-   ! ctp, ctp_error
+   ! ctp, ctp_uncertainty
    !----------------------------------------------------------------------------
    call prepare_short_packed_float( &
         input_data%ctp(i,j), output_data%ctp(i,j), &
@@ -169,13 +169,13 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
         sreal_fill_value, output_data%ctp_vmax)
 
    call prepare_short_packed_float( &
-        input_data%ctp_uncertainty(i,j), output_data%ctp_error(i,j), &
-        output_data%ctp_error_scale, output_data%ctp_error_offset, &
-        output_data%ctp_error_vmin, output_data%ctp_error_vmax, &
-        sreal_fill_value, output_data%ctp_error_vmax)
+        input_data%ctp_uncertainty(i,j), output_data%ctp_uncertainty(i,j), &
+        output_data%ctp_uncertainty_scale, output_data%ctp_uncertainty_offset, &
+        output_data%ctp_uncertainty_vmin, output_data%ctp_uncertainty_vmax, &
+        sreal_fill_value, output_data%ctp_uncertainty_vmax)
 
    !----------------------------------------------------------------------------
-   ! ctp_corrected, ctp_corrected_error
+   ! ctp_corrected, ctp_corrected_uncertainty
    !----------------------------------------------------------------------------
    call prepare_short_packed_float( &
         input_data%ctp_corrected(i,j), output_data%ctp_corrected(i,j), &
@@ -185,33 +185,33 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
 
    call prepare_short_packed_float( &
         input_data%ctp_corrected_uncertainty(i,j), &
-        output_data%ctp_corrected_error(i,j), &
-        output_data%ctp_error_scale, &
-        output_data%ctp_error_offset, &
-        output_data%ctp_error_vmin, &
-        output_data%ctp_error_vmax, &
-        sreal_fill_value, output_data%ctp_error_vmax)
+        output_data%ctp_corrected_uncertainty(i,j), &
+        output_data%ctp_uncertainty_scale, &
+        output_data%ctp_uncertainty_offset, &
+        output_data%ctp_uncertainty_vmin, &
+        output_data%ctp_uncertainty_vmax, &
+        sreal_fill_value, output_data%ctp_uncertainty_vmax)
 
    !----------------------------------------------------------------------------
-   ! cct, cct_error
+   ! cc_total, cc_total_uncertainty
    !----------------------------------------------------------------------------
    call prepare_short_packed_float( &
-        input_data%cc_total(i,j), output_data%cct(i,j), &
-        output_data%cct_scale, output_data%cct_offset, &
-        output_data%cct_vmin, output_data%cct_vmax, &
-        sreal_fill_value, output_data%cct_vmax)
+        input_data%cc_total(i,j), output_data%cc_total(i,j), &
+        output_data%cc_total_scale, output_data%cc_total_offset, &
+        output_data%cc_total_vmin, output_data%cc_total_vmax, &
+        sreal_fill_value, output_data%cc_total_vmax)
 
    call prepare_short_packed_float( &
         input_data%cc_total_uncertainty(i,j), &
-        output_data%cct_error(i,j), &
-        output_data%cct_error_scale, &
-        output_data%cct_error_offset, &
-        output_data%cct_error_vmin, &
-        output_data%cct_error_vmax, &
-        sreal_fill_value, output_data%cct_error_vmax)
+        output_data%cc_total_uncertainty(i,j), &
+        output_data%cc_total_uncertainty_scale, &
+        output_data%cc_total_uncertainty_offset, &
+        output_data%cc_total_uncertainty_vmin, &
+        output_data%cc_total_uncertainty_vmax, &
+        sreal_fill_value, output_data%cc_total_uncertainty_vmax)
 
    !----------------------------------------------------------------------------
-   ! stemp, stemp_error
+   ! stemp, stemp_uncertainty
    !----------------------------------------------------------------------------
    call prepare_short_packed_float( &
         input_data%stemp(i,j), output_data%stemp(i,j), &
@@ -221,15 +221,15 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
 
    call prepare_short_packed_float( &
         input_data%stemp_uncertainty(i,j), &
-        output_data%stemp_error(i,j), &
-        output_data%stemp_error_scale, &
-        output_data%stemp_error_offset, &
-        output_data%stemp_error_vmin, &
-        output_data%stemp_error_vmax, &
-        sreal_fill_value, output_data%stemp_error_vmax)
+        output_data%stemp_uncertainty(i,j), &
+        output_data%stemp_uncertainty_scale, &
+        output_data%stemp_uncertainty_offset, &
+        output_data%stemp_uncertainty_vmin, &
+        output_data%stemp_uncertainty_vmax, &
+        sreal_fill_value, output_data%stemp_uncertainty_vmax)
 
    !----------------------------------------------------------------------------
-   ! cth, cth_error
+   ! cth, cth_uncertainty
    !----------------------------------------------------------------------------
    call prepare_short_packed_float( &
         input_data%cth(i,j), output_data%cth(i,j), &
@@ -238,13 +238,13 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
         sreal_fill_value, output_data%cth_vmax)
 
    call prepare_short_packed_float( &
-        input_data%cth_uncertainty(i,j), output_data%cth_error(i,j), &
-        output_data%cth_error_scale, output_data%cth_error_offset, &
-        output_data%cth_error_vmin, output_data%cth_error_vmax, &
-        sreal_fill_value, output_data%cth_error_vmax)
+        input_data%cth_uncertainty(i,j), output_data%cth_uncertainty(i,j), &
+        output_data%cth_uncertainty_scale, output_data%cth_uncertainty_offset, &
+        output_data%cth_uncertainty_vmin, output_data%cth_uncertainty_vmax, &
+        sreal_fill_value, output_data%cth_uncertainty_vmax)
 
    !----------------------------------------------------------------------------
-   ! cth_corrected, cth_corrected_error
+   ! cth_corrected, cth_corrected_uncertainty
    !----------------------------------------------------------------------------
    call prepare_short_packed_float( &
         input_data%cth_corrected(i,j), output_data%cth_corrected(i,j), &
@@ -254,13 +254,13 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
 
    call prepare_short_packed_float( &
         input_data%cth_corrected_uncertainty(i,j), &
-        output_data%cth_corrected_error(i,j), &
-        output_data%cth_error_scale, output_data%cth_error_offset, &
-        output_data%cth_error_vmin, output_data%cth_error_vmax, &
-        sreal_fill_value, output_data%cth_error_vmax)
+        output_data%cth_corrected_uncertainty(i,j), &
+        output_data%cth_uncertainty_scale, output_data%cth_uncertainty_offset, &
+        output_data%cth_uncertainty_vmin, output_data%cth_uncertainty_vmax, &
+        sreal_fill_value, output_data%cth_uncertainty_vmax)
 
    !----------------------------------------------------------------------------
-   ! ctt, ctt_error
+   ! ctt, ctt_uncertainty
    !----------------------------------------------------------------------------
    call prepare_short_packed_float( &
         input_data%ctt(i,j), output_data%ctt(i,j), &
@@ -269,13 +269,13 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
         sreal_fill_value, output_data%ctt_vmax)
 
    call prepare_short_packed_float( &
-        input_data%ctt_uncertainty(i,j), output_data%ctt_error(i,j), &
-        output_data%ctt_error_scale, output_data%ctt_error_offset, &
-        output_data%ctt_error_vmin, output_data%ctt_error_vmax, &
-        sreal_fill_value, output_data%ctt_error_vmax)
+        input_data%ctt_uncertainty(i,j), output_data%ctt_uncertainty(i,j), &
+        output_data%ctt_uncertainty_scale, output_data%ctt_uncertainty_offset, &
+        output_data%ctt_uncertainty_vmin, output_data%ctt_uncertainty_vmax, &
+        sreal_fill_value, output_data%ctt_uncertainty_vmax)
 
    !----------------------------------------------------------------------------
-   ! ctt_corrected, ctt_corrected_error
+   ! ctt_corrected, ctt_corrected_uncertainty
    !----------------------------------------------------------------------------
    call prepare_short_packed_float( &
         input_data%ctt_corrected(i,j), output_data%ctt_corrected(i,j), &
@@ -285,10 +285,10 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
 
    call prepare_short_packed_float( &
         input_data%ctt_corrected_uncertainty(i,j), &
-        output_data%ctt_corrected_error(i,j), &
-        output_data%ctt_error_scale, output_data%ctt_error_offset, &
-        output_data%ctt_error_vmin, output_data%ctt_error_vmax, &
-        sreal_fill_value, output_data%ctt_error_vmax)
+        output_data%ctt_corrected_uncertainty(i,j), &
+        output_data%ctt_uncertainty_scale, output_data%ctt_uncertainty_offset, &
+        output_data%ctt_uncertainty_vmin, output_data%ctt_uncertainty_vmax, &
+        sreal_fill_value, output_data%ctt_uncertainty_vmax)
 
    !----------------------------------------------------------------------------
    ! cloud_albedo
@@ -302,12 +302,12 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
 
       call prepare_short_packed_float( &
            input_data%cloud_albedo_uncertainty(i,j,k), &
-           output_data%cloud_albedo_error(i,j,k), &
-           output_data%cloud_albedo_error_scale, &
-           output_data%cloud_albedo_error_offset, &
-           output_data%cloud_albedo_error_vmin, &
-           output_data%cloud_albedo_error_vmax, &
-           sreal_fill_value, output_data%cloud_albedo_error_vmax)
+           output_data%cloud_albedo_uncertainty(i,j,k), &
+           output_data%cloud_albedo_uncertainty_scale, &
+           output_data%cloud_albedo_uncertainty_offset, &
+           output_data%cloud_albedo_uncertainty_vmin, &
+           output_data%cloud_albedo_uncertainty_vmax, &
+           sreal_fill_value, output_data%cloud_albedo_uncertainty_vmax)
    end do
 
    !----------------------------------------------------------------------------
@@ -322,12 +322,12 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
 
       call prepare_short_packed_float( &
            input_data%cee_uncertainty(i,j,k), &
-           output_data%cee_error(i,j,k), &
-           output_data%cee_error_scale, &
-           output_data%cee_error_offset, &
-           output_data%cee_error_vmin, &
-           output_data%cee_error_vmax, &
-           sreal_fill_value, output_data%cee_error_vmax)
+           output_data%cee_uncertainty(i,j,k), &
+           output_data%cee_uncertainty_scale, &
+           output_data%cee_uncertainty_offset, &
+           output_data%cee_uncertainty_vmin, &
+           output_data%cee_uncertainty_vmax, &
+           sreal_fill_value, output_data%cee_uncertainty_vmax)
    end do
 
    !----------------------------------------------------------------------------

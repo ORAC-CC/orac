@@ -561,18 +561,18 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
             end if
          else
             ! Retrieval suffered fatal error
-            SPixel%X0                  = MissingXn
-            SPixel%Xb                  = MissingXn
-            SPixel%Xn                  = MissingXn
-            SPixel%Sn                  = MissingSn
-            SPixel%CWP                 = MissingXn
-            SPixel%CWP_error           = MissingSn
-            SPixel%CTP_corrected       = MissingXn
-            SPixel%CTP_corrected_error = MissingSn
-            SPixel%CTH_corrected       = MissingXn
-            SPixel%CTH_corrected_error = MissingSn
-            SPixel%CTT_corrected       = MissingXn
-            SPixel%CTT_corrected_error = MissingSn
+            SPixel%X0                        = MissingXn
+            SPixel%Xb                        = MissingXn
+            SPixel%Xn                        = MissingXn
+            SPixel%Sn                        = MissingSn
+            SPixel%CWP                       = MissingXn
+            SPixel%CWP_uncertainty           = MissingSn
+            SPixel%CTP_corrected             = MissingXn
+            SPixel%CTP_corrected_uncertainty = MissingSn
+            SPixel%CTH_corrected             = MissingXn
+            SPixel%CTH_corrected_uncertainty = MissingSn
+            SPixel%CTT_corrected             = MissingXn
+            SPixel%CTT_corrected_uncertainty = MissingSn
 
             ! These are not filled as they are FM related products but
             ! they are actually output so we fill them here for lack of

@@ -281,16 +281,17 @@ module SPixel_def
       real                :: SnSav(MaxStateVar, MaxStateVar)
                                           ! Error values for XnSav.
       real                :: CWP          ! Cloud water path
-      real                :: CWP_error    ! Cloud water path error
+      real                :: CWP_uncertainty
+                                          ! Cloud water path error
       real                :: CTP_corrected
-      real                :: CTP_corrected_error
+      real                :: CTP_corrected_uncertainty
       real                :: CTH_corrected
-      real                :: CTH_corrected_error
+      real                :: CTH_corrected_uncertainty
       real                :: CTT_corrected
-      real                :: CTT_corrected_error
+      real                :: CTT_corrected_uncertainty
       integer, pointer    :: spixel_y_to_ctrl_y_index(:)
                                           ! Map SPixel measurement index space to
-                                          !     CRTL   measurement index space
+                                          !     CTRL   measurement index space
       integer, pointer    :: spixel_y_solar_to_ctrl_y_index(:)
       integer, pointer    :: spixel_y_thermal_to_ctrl_y_index(:)
       integer, pointer    :: spixel_y_solar_to_ctrl_y_solar_index(:)
