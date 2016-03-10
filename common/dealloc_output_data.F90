@@ -28,6 +28,7 @@
 ! 2016/01/06, AP: Wrap do_* flags into output_flags structure.
 ! 2016/01/27, GM: Add cee and cee_uncertainty.
 ! 2016/01/28, GM: Add ctp and ctt corrected and corrected_uncertianty.
+! 2016/03/02, AP: Homogenisation of I/O modules.
 !
 ! $Id$
 !
@@ -47,125 +48,138 @@
 ! Arguments:
 ! Name        Type   In/Out/Both Description
 ! ------------------------------------------------------------------------------
-! output_data struct Both        Contents of secondard output file.
+! data        struct Both        Contents of secondard output file.
 !
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
-subroutine dealloc_output_data_primary(output_data, output_flags)
+subroutine dealloc_output_data_primary(data)
 
    implicit none
 
-   type(output_data_primary), intent(inout) :: output_data
-   type(output_data_flags),   intent(in)    :: output_flags
+   type(output_data_primary), intent(inout) :: data
 
-   deallocate(output_data%vid_sol_zen)
-   deallocate(output_data%vid_sat_zen)
-   deallocate(output_data%vid_rel_azi)
+   if (associated(data%aot550))     deallocate(data%aot550)
+   if (associated(data%aot550_uncertainty)) &
+                                    deallocate(data%aot550_uncertainty)
+   if (associated(data%aot870))     deallocate(data%aot870)
+   if (associated(data%aot870_uncertainty)) &
+                                    deallocate(data%aot870_uncertainty)
+   if (associated(data%aer))        deallocate(data%aer)
+   if (associated(data%aer_uncertainty)) &
+                                    deallocate(data%aer_uncertainty)
 
-if (output_flags%do_aerosol) then
-   deallocate(output_data%aot550)
-   deallocate(output_data%aot550_uncertainty)
-   deallocate(output_data%aot870)
-   deallocate(output_data%aot870_uncertainty)
-   deallocate(output_data%aer)
-   deallocate(output_data%aer_uncertainty)
-end if
+   if (associated(data%vid_rho))    deallocate(data%vid_rho)
+   if (associated(data%vid_rho_uncertainty)) &
+                                    deallocate(data%vid_rho_uncertainty)
+   if (associated(data%rho))        deallocate(data%rho)
+   if (associated(data%rho_uncertainty)) &
+                                    deallocate(data%rho_uncertainty)
 
-if (output_flags%do_rho) then
-   deallocate(output_data%vid_rho)
-   deallocate(output_data%vid_rho_uncertainty)
-   deallocate(output_data%rho)
-   deallocate(output_data%rho_uncertainty)
-end if
+   if (associated(data%vid_swansea_s)) &
+                                    deallocate(data%vid_swansea_s)
+   if (associated(data%vid_swansea_s_uncertainty)) &
+                                    deallocate(data%vid_swansea_s_uncertainty)
+   if (associated(data%vid_swansea_p)) &
+                                    deallocate(data%vid_swansea_p)
+   if (associated(data%vid_swansea_p_uncertainty)) &
+        deallocate(data%vid_swansea_p_uncertainty)
+   if (associated(data%vid_diffuse_frac)) &
+                                    deallocate(data%vid_diffuse_frac)
+   if (associated(data%vid_diffuse_frac_uncertainty)) &
+                                    deallocate(data%vid_diffuse_frac_uncertainty)
+   if (associated(data%swansea_s))  deallocate(data%swansea_s)
+   if (associated(data%swansea_s_uncertainty)) &
+                                    deallocate(data%swansea_s_uncertainty)
+   if (associated(data%swansea_p))  deallocate(data%swansea_p)
+   if (associated(data%swansea_p_uncertainty)) &
+                                    deallocate(data%swansea_p_uncertainty)
+   if (associated(data%diffuse_frac)) &
+                                    deallocate(data%diffuse_frac)
+   if (associated(data%diffuse_frac_uncertainty)) &
+                                    deallocate(data%diffuse_frac_uncertainty)
 
-if (output_flags%do_swansea) then
-   deallocate(output_data%vid_swansea_s)
-   deallocate(output_data%vid_swansea_s_uncertainty)
-   deallocate(output_data%vid_swansea_p)
-   deallocate(output_data%vid_swansea_p_uncertainty)
-   deallocate(output_data%vid_diffuse_frac)
-   deallocate(output_data%vid_diffuse_frac_uncertainty)
-   deallocate(output_data%swansea_s)
-   deallocate(output_data%swansea_s_uncertainty)
-   deallocate(output_data%swansea_p)
-   deallocate(output_data%swansea_p_uncertainty)
-   deallocate(output_data%diffuse_frac)
-   deallocate(output_data%diffuse_frac_uncertainty)
-end if
+   if (associated(data%vid_cloud_albedo)) &
+                                    deallocate(data%vid_cloud_albedo)
+   if (associated(data%vid_cloud_albedo_uncertainty)) &
+                                    deallocate(data%vid_cloud_albedo_uncertainty)
+   if (associated(data%vid_cee))    deallocate(data%vid_cee)
+   if (associated(data%vid_cee_uncertainty)) &
+                                    deallocate(data%vid_cee_uncertainty)
+   if (associated(data%cot))        deallocate(data%cot)
+   if (associated(data%cot_uncertainty)) &
+                                    deallocate(data%cot_uncertainty)
+   if (associated(data%cer))        deallocate(data%cer)
+   if (associated(data%cer_uncertainty)) &
+                                    deallocate(data%cer_uncertainty)
+   if (associated(data%ctp))        deallocate(data%ctp)
+   if (associated(data%ctp_uncertainty)) &
+                                    deallocate(data%ctp_uncertainty)
+   if (associated(data%ctp_corrected)) &
+                                    deallocate(data%ctp_corrected)
+   if (associated(data%ctp_corrected_uncertainty)) &
+                                    deallocate(data%ctp_corrected_uncertainty)
+   if (associated(data%cc_total))   deallocate(data%cc_total)
+   if (associated(data%cc_total_uncertainty)) &
+                                    deallocate(data%cc_total_uncertainty)
+   if (associated(data%stemp))      deallocate(data%stemp)
+   if (associated(data%stemp_uncertainty)) &
+                                    deallocate(data%stemp_uncertainty)
+   if (associated(data%cth))        deallocate(data%cth)
+   if (associated(data%cth_uncertainty)) &
+                                    deallocate(data%cth_uncertainty)
+   if (associated(data%cth_corrected)) &
+                                    deallocate(data%cth_corrected)
+   if (associated(data%cth_corrected_uncertainty)) &
+                                    deallocate(data%cth_corrected_uncertainty)
+   if (associated(data%ctt))        deallocate(data%ctt)
+   if (associated(data%ctt_uncertainty)) &
+                                    deallocate(data%ctt_uncertainty)
+   if (associated(data%ctt_corrected)) &
+                                    deallocate(data%ctt_corrected)
+   if (associated(data%ctt_corrected_uncertainty)) &
+                                    deallocate(data%ctt_corrected_uncertainty)
+   if (associated(data%cwp))        deallocate(data%cwp)
+   if (associated(data%cwp_uncertainty)) &
+                                    deallocate(data%cwp_uncertainty)
+   if (associated(data%cloud_albedo)) &
+                                    deallocate(data%cloud_albedo)
+   if (associated(data%cloud_albedo_uncertainty)) &
+                                    deallocate(data%cloud_albedo_uncertainty)
+   if (associated(data%cee))        deallocate(data%cee)
+   if (associated(data%cee_uncertainty)) &
+                                    deallocate(data%cee_uncertainty)
+   if (associated(data%cccot_pre))  deallocate(data%cccot_pre)
 
-if (output_flags%do_cloud) then
-   deallocate(output_data%vid_cloud_albedo)
-   deallocate(output_data%vid_cloud_albedo_uncertainty)
-   deallocate(output_data%vid_cee)
-   deallocate(output_data%vid_cee_uncertainty)
+   deallocate(data%convergence)
+   deallocate(data%niter)
+   deallocate(data%costja)
+   deallocate(data%costjm)
+   deallocate(data%qcflag)
 
-   deallocate(output_data%cot)
-   deallocate(output_data%cot_uncertainty)
-   deallocate(output_data%cer)
-   deallocate(output_data%cer_uncertainty)
-   deallocate(output_data%ctp)
-   deallocate(output_data%ctp_uncertainty)
-   deallocate(output_data%ctp_corrected)
-   deallocate(output_data%ctp_corrected_uncertainty)
-   deallocate(output_data%cc_total)
-   deallocate(output_data%cc_total_uncertainty)
-   deallocate(output_data%stemp)
-   deallocate(output_data%stemp_uncertainty)
+   deallocate(data%time)
+   deallocate(data%lat)
+   deallocate(data%lon)
 
-   deallocate(output_data%cth)
-   deallocate(output_data%cth_uncertainty)
-   deallocate(output_data%cth_corrected)
-   deallocate(output_data%cth_corrected_uncertainty)
-   deallocate(output_data%ctt)
-   deallocate(output_data%ctt_uncertainty)
-   deallocate(output_data%ctt_corrected)
-   deallocate(output_data%ctt_corrected_uncertainty)
-   deallocate(output_data%cwp)
-   deallocate(output_data%cwp_uncertainty)
+   deallocate(data%vid_sol_zen)
+   deallocate(data%vid_sat_zen)
+   deallocate(data%vid_rel_azi)
+   deallocate(data%sol_zen)
+   deallocate(data%sat_zen)
+   deallocate(data%rel_azi)
 
-   deallocate(output_data%cloud_albedo)
-   deallocate(output_data%cloud_albedo_uncertainty)
+   deallocate(data%lsflag)
+   deallocate(data%lusflag)
+   deallocate(data%dem)
+   deallocate(data%nisemask)
 
-   deallocate(output_data%cee)
-   deallocate(output_data%cee_uncertainty)
+   deallocate(data%illum)
 
-   deallocate(output_data%cccot_pre)
-end if
+   if (associated(data%cldmask))             deallocate(data%cldmask)
+   if (associated(data%cldmask_uncertainty)) deallocate(data%cldmask_uncertainty)
 
-   deallocate(output_data%time)
-
-   deallocate(output_data%lon)
-   deallocate(output_data%lat)
-
-   deallocate(output_data%sol_zen)
-   deallocate(output_data%sat_zen)
-   deallocate(output_data%rel_azi)
-
-   deallocate(output_data%convergence)
-   deallocate(output_data%niter)
-   deallocate(output_data%costja)
-   deallocate(output_data%costjm)
-   deallocate(output_data%qcflag)
-
-   deallocate(output_data%lsflag)
-   deallocate(output_data%lusflag)
-   deallocate(output_data%dem)
-   deallocate(output_data%nisemask)
-
-   deallocate(output_data%illum)
-
-   deallocate(output_data%cldtype)
-   deallocate(output_data%cldmask)
-if (output_flags%do_cldmask_uncertainty) then
-   deallocate(output_data%cldmask_uncertainty)
-end if
-
-   deallocate(output_data%phase)
-
-if (output_flags%do_phase_pavolonis) then
-   deallocate(output_data%phase_pavolonis)
-end if
+   if (associated(data%phase))               deallocate(data%phase)
+   if (associated(data%phase_pavolonis))     deallocate(data%phase_pavolonis)
 
 end subroutine dealloc_output_data_primary
 
@@ -182,87 +196,74 @@ end subroutine dealloc_output_data_primary
 ! Arguments:
 ! Name        Type   In/Out/Both Description
 ! ------------------------------------------------------------------------------
-! output_data struct Both        Contents of secondard output file.
-! lcovar      logic  In          Flag indicating presence of covariance matrices
+! data        struct Both        Contents of secondard output file.
 !
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
-subroutine dealloc_output_data_secondary(output_data, output_flags)
+subroutine dealloc_output_data_secondary(data)
 
    implicit none
 
-   type(output_data_secondary), intent(inout) :: output_data
-   type(output_data_flags),     intent(in)    :: output_flags
+   type(output_data_secondary), intent(inout) :: data
 
-if (output_flags%do_aerosol) then
-   deallocate(output_data%aot550_ap)
-   deallocate(output_data%aot550_fg)
-   deallocate(output_data%aer_ap)
-   deallocate(output_data%aer_fg)
-end if
+   if (associated(data%aot550_ap))        deallocate(data%aot550_ap)
+   if (associated(data%aot550_fg))        deallocate(data%aot550_fg)
+   if (associated(data%aer_ap))           deallocate(data%aer_ap)
+   if (associated(data%aer_fg))           deallocate(data%aer_fg)
 
-if (output_flags%do_rho) then
-   deallocate(output_data%vid_rho_ap)
-   deallocate(output_data%vid_rho_fg)
-   deallocate(output_data%rho_ap)
-   deallocate(output_data%rho_fg)
-end if
+   if (associated(data%vid_rho_ap))       deallocate(data%vid_rho_ap)
+   if (associated(data%vid_rho_fg))       deallocate(data%vid_rho_fg)
+   if (associated(data%rho_ap))           deallocate(data%rho_ap)
+   if (associated(data%rho_fg))           deallocate(data%rho_fg)
 
-if (output_flags%do_swansea) then
-   deallocate(output_data%vid_swansea_s_ap)
-   deallocate(output_data%vid_swansea_s_fg)
-   deallocate(output_data%vid_swansea_p_ap)
-   deallocate(output_data%vid_swansea_p_fg)
-   deallocate(output_data%swansea_s_ap)
-   deallocate(output_data%swansea_s_fg)
-   deallocate(output_data%swansea_p_ap)
-   deallocate(output_data%swansea_p_fg)
-end if
+   if (associated(data%vid_swansea_s_ap)) deallocate(data%vid_swansea_s_ap)
+   if (associated(data%vid_swansea_s_fg)) deallocate(data%vid_swansea_s_fg)
+   if (associated(data%vid_swansea_p_ap)) deallocate(data%vid_swansea_p_ap)
+   if (associated(data%vid_swansea_p_fg)) deallocate(data%vid_swansea_p_fg)
+   if (associated(data%swansea_s_ap))     deallocate(data%swansea_s_ap)
+   if (associated(data%swansea_s_fg))     deallocate(data%swansea_s_fg)
+   if (associated(data%swansea_p_ap))     deallocate(data%swansea_p_ap)
+   if (associated(data%swansea_p_fg))     deallocate(data%swansea_p_fg)
 
-   deallocate(output_data%vid_albedo)
-   deallocate(output_data%albedo)
+   if (associated(data%cot_ap))           deallocate(data%cot_ap)
+   if (associated(data%cot_fg))           deallocate(data%cot_fg)
+   if (associated(data%cer_ap))           deallocate(data%cer_ap)
+   if (associated(data%cer_fg))           deallocate(data%cer_fg)
+   if (associated(data%ctp_ap))           deallocate(data%ctp_ap)
+   if (associated(data%ctp_fg))           deallocate(data%ctp_fg)
+   if (associated(data%stemp_ap))         deallocate(data%stemp_ap)
+   if (associated(data%stemp_fg))         deallocate(data%stemp_fg)
+   if (associated(data%vid_albedo))       deallocate(data%vid_albedo)
+   if (associated(data%albedo))           deallocate(data%albedo)
 
-   deallocate(output_data%vid_channels)
-   deallocate(output_data%channels_scale)
-   deallocate(output_data%channels_offset)
-   deallocate(output_data%channels_vmin)
-   deallocate(output_data%channels_vmax)
-   deallocate(output_data%channels)
+   deallocate(data%scanline_u)
+   deallocate(data%scanline_v)
 
-   deallocate(output_data%vid_y0)
-   deallocate(output_data%y0_scale)
-   deallocate(output_data%y0_offset)
-   deallocate(output_data%y0_vmin)
-   deallocate(output_data%y0_vmax)
-   deallocate(output_data%y0)
+   deallocate(data%vid_channels)
+   deallocate(data%channels_scale)
+   deallocate(data%channels_offset)
+   deallocate(data%channels_vmin)
+   deallocate(data%channels_vmax)
+   deallocate(data%channels)
 
-   deallocate(output_data%vid_residuals)
-   deallocate(output_data%residuals_scale)
-   deallocate(output_data%residuals_offset)
-   deallocate(output_data%residuals_vmin)
-   deallocate(output_data%residuals_vmax)
-   deallocate(output_data%residuals)
+   deallocate(data%vid_y0)
+   deallocate(data%y0_scale)
+   deallocate(data%y0_offset)
+   deallocate(data%y0_vmin)
+   deallocate(data%y0_vmax)
+   deallocate(data%y0)
 
-   deallocate(output_data%scanline_u)
-   deallocate(output_data%scanline_v)
+   deallocate(data%vid_residuals)
+   deallocate(data%residuals_scale)
+   deallocate(data%residuals_offset)
+   deallocate(data%residuals_vmin)
+   deallocate(data%residuals_vmax)
+   deallocate(data%residuals)
 
-if (output_flags%do_cloud) then
-   deallocate(output_data%cot_ap)
-   deallocate(output_data%cot_fg)
-   deallocate(output_data%cer_ap)
-   deallocate(output_data%cer_fg)
-   deallocate(output_data%ctp_ap)
-   deallocate(output_data%ctp_fg)
-   deallocate(output_data%stemp_ap)
-   deallocate(output_data%stemp_fg)
-end if
+   deallocate(data%ds)
 
-   deallocate(output_data%ds)
-
-if (output_flags%do_covariance) then
-   deallocate(output_data%vid_covariance)
-   deallocate(output_data%covariance)
-end if
+   if (associated(data%vid_covariance)) deallocate(data%vid_covariance)
+   if (associated(data%covariance))     deallocate(data%covariance)
 
 end subroutine dealloc_output_data_secondary

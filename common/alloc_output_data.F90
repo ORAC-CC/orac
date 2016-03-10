@@ -34,6 +34,7 @@
 !    to identify thermal channels rather than dealing with Ch_Is.
 ! 2016/01/27, GM: Add cee and cee_uncertainty.
 ! 2016/01/28, GM: Add ctp and ctt corrected and corrected_uncertainty.
+! 2016/03/02, AP: Homogenisation of I/O modules.
 !
 ! $Id$
 !
@@ -53,254 +54,236 @@
 ! Arguments:
 ! Name        Type   In/Out/Both Description
 ! ------------------------------------------------------------------------------
-! ixstart     int    In   First index of across-track (first) dimension
-! ixstop      int    In   Last index of across-track (first) dimension
-! iystart     int    In   First index of along-track (second) dimension
-! iystop      int    In   Last index of along-track (second) dimension
-! NViews      int    In   Number of viewing angles
-! Ny          int    In   Total number of measurments
-! output_data struct Both Structure of arrays to be allocated
+! ind         struct In          Channel indexing information
+! MaxIter     int    In          Maximum number of allowed iterations
+! output_data struct Both        Structure of arrays to be allocated
 !
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
-subroutine alloc_output_data_primary(ixstart, ixstop, iystart, iystop, &
-     NViews, Ny, MaxIter, output_data, output_flags)
+subroutine alloc_output_data_primary(ind, MaxIter, data)
 
    implicit none
 
-   integer,                   intent(in)    :: ixstart
-   integer,                   intent(in)    :: ixstop
-   integer,                   intent(in)    :: iystart
-   integer,                   intent(in)    :: iystop
-   integer,                   intent(in)    :: NViews
-   integer,                   intent(in)    :: Ny
+   type(common_indices),      intent(in)    :: ind
    integer,                   intent(in)    :: MaxIter
-   type(output_data_primary), intent(inout) :: output_data
-   type(output_data_flags),   intent(in)    :: output_flags
+   type(output_data_primary), intent(inout) :: data
 
+if (ind%flags%do_aerosol) then
+   allocate(data%aot550(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%aot550 = sint_fill_value
+   allocate(data%aot550_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%aot550_uncertainty = sint_fill_value
 
-   allocate(output_data%vid_sol_zen(NViews))
-   output_data%vid_sol_zen=0
+   allocate(data%aot870(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%aot870 = sint_fill_value
+   allocate(data%aot870_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%aot870_uncertainty = sint_fill_value
 
-   allocate(output_data%vid_sat_zen(NViews))
-   output_data%vid_sat_zen=0
-
-   allocate(output_data%vid_rel_azi(NViews))
-   output_data%vid_rel_azi=0
-
-if (output_flags%do_aerosol) then
-   allocate(output_data%aot550(ixstart:ixstop,iystart:iystop))
-   output_data%aot550=sint_fill_value
-   allocate(output_data%aot550_uncertainty(ixstart:ixstop,iystart:iystop))
-   output_data%aot550_uncertainty=sint_fill_value
-
-   allocate(output_data%aot870(ixstart:ixstop,iystart:iystop))
-   output_data%aot870=sint_fill_value
-   allocate(output_data%aot870_uncertainty(ixstart:ixstop,iystart:iystop))
-   output_data%aot870_uncertainty=sint_fill_value
-
-   allocate(output_data%aer(ixstart:ixstop,iystart:iystop))
-   output_data%aer=sint_fill_value
-   allocate(output_data%aer_uncertainty(ixstart:ixstop,iystart:iystop))
-   output_data%aer_uncertainty=sint_fill_value
+   allocate(data%aer(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%aer = sint_fill_value
+   allocate(data%aer_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%aer_uncertainty = sint_fill_value
 end if
 
-if (output_flags%do_rho) then
-   allocate(output_data%vid_rho(Ny,MaxRho_XX))
-   output_data%vid_rho=0
-   allocate(output_data%vid_rho_uncertainty(Ny,MaxRho_XX))
-   output_data%vid_rho_uncertainty=0
+if (ind%flags%do_rho) then
+   allocate(data%vid_rho(ind%NSolar, MaxRho_XX))
+   data%vid_rho = 0
+   allocate(data%vid_rho_uncertainty(ind%NSolar, MaxRho_XX))
+   data%vid_rho_uncertainty = 0
 
-   allocate(output_data%rho(ixstart:ixstop,iystart:iystop,Ny,MaxRho_XX))
-   output_data%rho=sint_fill_value
-   allocate(output_data%rho_uncertainty(ixstart:ixstop,iystart:iystop,Ny,MaxRho_XX))
-   output_data%rho_uncertainty=sint_fill_value
+   allocate(data%rho(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NSolar, MaxRho_XX))
+   data%rho = sint_fill_value
+   allocate(data%rho_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1, &
+                                 ind%NSolar, MaxRho_XX))
+   data%rho_uncertainty = sint_fill_value
 end if
 
-if (output_flags%do_swansea) then
-   allocate(output_data%vid_swansea_s(Ny))
-   output_data%vid_swansea_s=0
-   allocate(output_data%vid_swansea_s_uncertainty(Ny))
-   output_data%vid_swansea_s_uncertainty=0
+if (ind%flags%do_swansea) then
+   allocate(data%vid_swansea_s(ind%NSolar))
+   data%vid_swansea_s = 0
+   allocate(data%vid_swansea_s_uncertainty(ind%NSolar))
+   data%vid_swansea_s_uncertainty = 0
 
-   allocate(output_data%vid_swansea_p(NViews))
-   output_data%vid_swansea_p=0
-   allocate(output_data%vid_swansea_p_uncertainty(NViews))
-   output_data%vid_swansea_p_uncertainty=0
+   allocate(data%vid_swansea_p(ind%NViews))
+   data%vid_swansea_p = 0
+   allocate(data%vid_swansea_p_uncertainty(ind%NViews))
+   data%vid_swansea_p_uncertainty = 0
 
-   allocate(output_data%vid_diffuse_frac(Ny))
-   output_data%vid_diffuse_frac=0
-   allocate(output_data%vid_diffuse_frac_uncertainty(Ny))
-   output_data%vid_diffuse_frac_uncertainty=0
+   allocate(data%vid_diffuse_frac(ind%NSolar))
+   data%vid_diffuse_frac = 0
+   allocate(data%vid_diffuse_frac_uncertainty(ind%NSolar))
+   data%vid_diffuse_frac_uncertainty = 0
 
-   allocate(output_data%swansea_s(ixstart:ixstop,iystart:iystop,Ny))
-   output_data%swansea_s=sint_fill_value
-   allocate(output_data%swansea_s_uncertainty(ixstart:ixstop,iystart:iystop,Ny))
-   output_data%swansea_s_uncertainty=sint_fill_value
+   allocate(data%swansea_s(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NSolar))
+   data%swansea_s = sint_fill_value
+   allocate(data%swansea_s_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NSolar))
+   data%swansea_s_uncertainty = sint_fill_value
 
-   allocate(output_data%swansea_p(ixstart:ixstop,iystart:iystop,Ny))
-   output_data%swansea_p=sint_fill_value
-   allocate(output_data%swansea_p_uncertainty(ixstart:ixstop,iystart:iystop,Ny))
-   output_data%swansea_p_uncertainty=sint_fill_value
+   allocate(data%swansea_p(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NViews))
+   data%swansea_p = sint_fill_value
+   allocate(data%swansea_p_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NViews))
+   data%swansea_p_uncertainty = sint_fill_value
 
-   allocate(output_data%diffuse_frac(ixstart:ixstop,iystart:iystop,Ny))
-   output_data%diffuse_frac=sint_fill_value
-   allocate(output_data%diffuse_frac_uncertainty(ixstart:ixstop,iystart:iystop,Ny))
-   output_data%diffuse_frac_uncertainty=sint_fill_value
+   allocate(data%diffuse_frac(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NSolar))
+   data%diffuse_frac = sint_fill_value
+   allocate(data%diffuse_frac_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1, &
+                                          ind%NSolar))
+   data%diffuse_frac_uncertainty = sint_fill_value
 end if
 
-if (output_flags%do_cloud) then
-   allocate(output_data%vid_cloud_albedo(Ny))
-   output_data%vid_cloud_albedo=0
-   allocate(output_data%vid_cloud_albedo_uncertainty(Ny))
-   output_data%vid_cloud_albedo_uncertainty=0
+if (ind%flags%do_cloud) then
+   allocate(data%vid_cloud_albedo(ind%NSolar))
+   data%vid_cloud_albedo = 0
+   allocate(data%vid_cloud_albedo_uncertainty(ind%NSolar))
+   data%vid_cloud_albedo_uncertainty = 0
 
-   allocate(output_data%vid_cee(Ny))
-   output_data%vid_cee=0
-   allocate(output_data%vid_cee_uncertainty(Ny))
-   output_data%vid_cee_uncertainty=0
+   allocate(data%vid_cee(ind%NThermal))
+   data%vid_cee = 0
+   allocate(data%vid_cee_uncertainty(ind%NThermal))
+   data%vid_cee_uncertainty = 0
 
+   allocate(data%cot(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cot = sint_fill_value
+   allocate(data%cot_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cot_uncertainty = sint_fill_value
 
-   allocate(output_data%cot(ixstart:ixstop,iystart:iystop))
-   output_data%cot=sint_fill_value
-   allocate(output_data%cot_uncertainty(ixstart:ixstop,iystart:iystop))
-   output_data%cot_uncertainty=sint_fill_value
+   allocate(data%cer(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cer = sint_fill_value
+   allocate(data%cer_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cer_uncertainty = sint_fill_value
 
-   allocate(output_data%cer(ixstart:ixstop,iystart:iystop))
-   output_data%cer=sint_fill_value
-   allocate(output_data%cer_uncertainty(ixstart:ixstop,iystart:iystop))
-   output_data%cer_uncertainty=sint_fill_value
+   allocate(data%ctp(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%ctp = sint_fill_value
+   allocate(data%ctp_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%ctp_uncertainty = sint_fill_value
 
-   allocate(output_data%ctp(ixstart:ixstop,iystart:iystop))
-   output_data%ctp=sint_fill_value
-   allocate(output_data%ctp_uncertainty(ixstart:ixstop,iystart:iystop))
-   output_data%ctp_uncertainty=sint_fill_value
+   allocate(data%ctp_corrected(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%ctp_corrected = sint_fill_value
+   allocate(data%ctp_corrected_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%ctp_corrected_uncertainty = sint_fill_value
 
-   allocate(output_data%ctp_corrected(ixstart:ixstop,iystart:iystop))
-   output_data%ctp_corrected=sint_fill_value
-   allocate(output_data%ctp_corrected_uncertainty(ixstart:ixstop,iystart:iystop))
-   output_data%ctp_corrected_uncertainty=sint_fill_value
+   allocate(data%cc_total(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cc_total = sint_fill_value
+   allocate(data%cc_total_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cc_total_uncertainty = sint_fill_value
 
-   allocate(output_data%cc_total(ixstart:ixstop,iystart:iystop))
-   output_data%cc_total=sint_fill_value
-   allocate(output_data%cc_total_uncertainty(ixstart:ixstop,iystart:iystop))
-   output_data%cc_total_uncertainty=sint_fill_value
+   allocate(data%stemp(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%stemp = sint_fill_value
+   allocate(data%stemp_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%stemp_uncertainty = sint_fill_value
 
-   allocate(output_data%stemp(ixstart:ixstop,iystart:iystop))
-   output_data%stemp=sint_fill_value
-   allocate(output_data%stemp_uncertainty(ixstart:ixstop,iystart:iystop))
-   output_data%stemp_uncertainty=sint_fill_value
+   allocate(data%cth(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cth = sint_fill_value
+   allocate(data%cth_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cth_uncertainty = sint_fill_value
 
-   allocate(output_data%cth(ixstart:ixstop,iystart:iystop))
-   output_data%cth=sint_fill_value
-   allocate(output_data%cth_uncertainty(ixstart:ixstop,iystart:iystop))
-   output_data%cth_uncertainty=sint_fill_value
+   allocate(data%cth_corrected(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cth_corrected = sint_fill_value
+   allocate(data%cth_corrected_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cth_corrected_uncertainty = sint_fill_value
 
-   allocate(output_data%cth_corrected(ixstart:ixstop,iystart:iystop))
-   output_data%cth_corrected=sint_fill_value
-   allocate(output_data%cth_corrected_uncertainty(ixstart:ixstop,iystart:iystop))
-   output_data%cth_corrected_uncertainty=sint_fill_value
+   allocate(data%ctt(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%ctt = sint_fill_value
+   allocate(data%ctt_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%ctt_uncertainty = sint_fill_value
 
-   allocate(output_data%ctt(ixstart:ixstop,iystart:iystop))
-   output_data%ctt=sint_fill_value
-   allocate(output_data%ctt_uncertainty(ixstart:ixstop,iystart:iystop))
-   output_data%ctt_uncertainty=sint_fill_value
+   allocate(data%ctt_corrected(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%ctt_corrected = sint_fill_value
+   allocate(data%ctt_corrected_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%ctt_corrected_uncertainty = sint_fill_value
 
-   allocate(output_data%ctt_corrected(ixstart:ixstop,iystart:iystop))
-   output_data%ctt_corrected=sint_fill_value
-   allocate(output_data%ctt_corrected_uncertainty(ixstart:ixstop,iystart:iystop))
-   output_data%ctt_corrected_uncertainty=sint_fill_value
+   allocate(data%cwp(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cwp = sint_fill_value
+   allocate(data%cwp_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cwp_uncertainty = sint_fill_value
 
-   allocate(output_data%cwp(ixstart:ixstop,iystart:iystop))
-   output_data%cwp=sint_fill_value
-   allocate(output_data%cwp_uncertainty(ixstart:ixstop,iystart:iystop))
-   output_data%cwp_uncertainty=sint_fill_value
+   allocate(data%cloud_albedo(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NSolar))
+   data%cloud_albedo = sint_fill_value
+   allocate(data%cloud_albedo_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1, &
+                                          ind%NSolar))
+   data%cloud_albedo_uncertainty = sint_fill_value
 
-   allocate(output_data%cloud_albedo(ixstart:ixstop,iystart:iystop,Ny))
-   output_data%cloud_albedo=sint_fill_value
-   allocate(output_data%cloud_albedo_uncertainty(ixstart:ixstop,iystart:iystop,Ny))
-   output_data%cloud_albedo_uncertainty=sint_fill_value
+   allocate(data%cee(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NThermal))
+   data%cee = sint_fill_value
+   allocate(data%cee_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NThermal))
+   data%cee_uncertainty = sint_fill_value
 
-   allocate(output_data%cee(ixstart:ixstop,iystart:iystop,Ny))
-   output_data%cee=sint_fill_value
-   allocate(output_data%cee_uncertainty(ixstart:ixstop,iystart:iystop,Ny))
-   output_data%cee_uncertainty=sint_fill_value
-
-   allocate(output_data%cccot_pre(ixstart:ixstop,iystart:iystop))
-   output_data%cccot_pre=sint_fill_value
+   allocate(data%cccot_pre(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cccot_pre = sint_fill_value
 end if
 
-   allocate(output_data%time(ixstart:ixstop,iystart:iystop))
-   output_data%time=sreal_fill_value
+   allocate(data%convergence(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%convergence = byte_fill_value
 
-   allocate(output_data%lat(ixstart:ixstop,iystart:iystop))
-   output_data%lat=sreal_fill_value
+   allocate(data%niter(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%niter = byte_fill_value
 
-   allocate(output_data%lon(ixstart:ixstop,iystart:iystop))
-   output_data%lon=sreal_fill_value
+   allocate(data%costja(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%costja = sreal_fill_value
+   allocate(data%costjm(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%costjm = sreal_fill_value
 
-   allocate(output_data%sol_zen(ixstart:ixstop,iystart:iystop,NViews))
-   output_data%sol_zen=sreal_fill_value
+   allocate(data%qcflag(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%qcflag = sint_fill_value
 
-   allocate(output_data%sat_zen(ixstart:ixstop,iystart:iystop,NViews))
-   output_data%sat_zen=sreal_fill_value
+   allocate(data%time(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%time = dreal_fill_value
 
-   allocate(output_data%rel_azi(ixstart:ixstop,iystart:iystop,NViews))
-   output_data%rel_azi=sreal_fill_value
+   allocate(data%lat(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%lat = sreal_fill_value
+   allocate(data%lon(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%lon = sreal_fill_value
 
-   allocate(output_data%convergence(ixstart:ixstop,iystart:iystop))
-   output_data%convergence=byte_fill_value
+   allocate(data%vid_sol_zen(ind%NViews))
+   data%vid_sol_zen = 0
+   allocate(data%vid_sat_zen(ind%NViews))
+   data%vid_sat_zen = 0
+   allocate(data%vid_rel_azi(ind%NViews))
+   data%vid_rel_azi = 0
+   allocate(data%sol_zen(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NViews))
+   data%sol_zen = sreal_fill_value
+   allocate(data%sat_zen(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NViews))
+   data%sat_zen = sreal_fill_value
+   allocate(data%rel_azi(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NViews))
+   data%rel_azi = sreal_fill_value
 
-   allocate(output_data%niter(ixstart:ixstop,iystart:iystop))
-   output_data%niter=byte_fill_value
+   allocate(data%lsflag(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%lsflag = byte_fill_value
+   allocate(data%lusflag(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%lusflag = byte_fill_value
+   allocate(data%dem(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%dem = sint_fill_value
+   allocate(data%nisemask(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%nisemask = byte_fill_value
 
-   allocate(output_data%costja(ixstart:ixstop,iystart:iystop))
-   output_data%costja=sint_fill_value
+   allocate(data%illum(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%illum = byte_fill_value
 
-   allocate(output_data%costjm(ixstart:ixstop,iystart:iystop))
-   output_data%costjm=sint_fill_value
+   allocate(data%cldtype(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cldtype = byte_fill_value
 
-   allocate(output_data%qcflag(ixstart:ixstop,iystart:iystop))
-   output_data%qcflag=sint_fill_value
-
-   allocate(output_data%lsflag(ixstart:ixstop,iystart:iystop))
-   output_data%lsflag=byte_fill_value
-
-   allocate(output_data%lusflag(ixstart:ixstop,iystart:iystop))
-   output_data%lusflag=byte_fill_value
-
-   allocate(output_data%dem(ixstart:ixstop,iystart:iystop))
-   output_data%dem=sint_fill_value
-
-   allocate(output_data%nisemask(ixstart:ixstop,iystart:iystop))
-   output_data%nisemask=byte_fill_value
-
-   allocate(output_data%illum(ixstart:ixstop,iystart:iystop))
-   output_data%illum=byte_fill_value
-
-   allocate(output_data%cldtype(ixstart:ixstop,iystart:iystop))
-   output_data%cldtype=byte_fill_value
-
-   allocate(output_data%cldmask(ixstart:ixstop,iystart:iystop))
-   output_data%cldmask=byte_fill_value
-
-if (output_flags%do_cldmask_uncertainty) then
-   allocate(output_data%cldmask_uncertainty(ixstart:ixstop,iystart:iystop))
-   output_data%cldmask_uncertainty=sint_fill_value
+if (ind%flags%do_cldmask) then
+   allocate(data%cldmask(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cldmask = byte_fill_value
+end if
+if (ind%flags%do_cldmask_uncertainty) then
+   allocate(data%cldmask_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cldmask_uncertainty = sint_fill_value
 end if
 
-   allocate(output_data%phase(ixstart:ixstop,iystart:iystop))
-   output_data%phase=byte_fill_value
-
-if (output_flags%do_phase_pavolonis) then
-   allocate(output_data%phase_pavolonis(ixstart:ixstop,iystart:iystop))
-   output_data%phase_pavolonis=byte_fill_value
+if (ind%flags%do_phase) then
+   allocate(data%phase(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%phase = byte_fill_value
+end if
+if (ind%flags%do_phase_pavolonis) then
+   allocate(data%phase_pavolonis(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%phase_pavolonis = byte_fill_value
 end if
 
 
    ! Set scale/offset/vmin/vmax dynamically as required
-   output_data%niter_vmax=MaxIter
+   data%niter_vmax = MaxIter
 
 end subroutine alloc_output_data_primary
 
@@ -317,203 +300,185 @@ end subroutine alloc_output_data_primary
 ! Arguments:
 ! Name        Type   In/Out/Both Description
 ! ------------------------------------------------------------------------------
-! ixstart     int    In   First index of across-track (first) dimension
-! ixstop      int    In   Last index of across-track (first) dimension
-! iystart     int    In   First index of along-track (second) dimension
-! iystop      int    In   Last index of along-track (second) dimension
-! Ny          int    In   Total number of measurments
-! Nx          int    In   Total number of retrieval parameters
-! lcovar      logic  Both Switch to allocate covariance matricies
-! output_data struct Both Structure of arrays to be allocated
+! ind         struct In          Channel indexing information
+! output_data struct Both        Structure of arrays to be allocated
 !
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
-subroutine alloc_output_data_secondary(ixstart, ixstop, iystart, iystop, &
-     NSolar, Ny, Nx, thermal, Xmax, Ymax, output_data, output_flags)
+subroutine alloc_output_data_secondary(ind, data)
 
    implicit none
 
-   integer,                     intent(in)    :: ixstart
-   integer,                     intent(in)    :: ixstop
-   integer,                     intent(in)    :: iystart
-   integer,                     intent(in)    :: iystop
-   integer,                     intent(in)    :: NSolar
-   integer,                     intent(in)    :: Ny
-   integer,                     intent(in)    :: Nx
-   logical,                     intent(in)    :: thermal(:)
-   integer,                     intent(in)    :: Xmax
-   integer,                     intent(in)    :: Ymax
-   type(output_data_secondary), intent(inout) :: output_data
-   type(output_data_flags),     intent(in)    :: output_flags
+   type(common_indices),         intent(in)    :: ind
+   type(output_data_secondary),  intent(inout) :: data
 
    integer :: i
 
+if (ind%flags%do_aerosol) then
+   allocate(data%aot550_ap(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%aot550_ap = sint_fill_value
+   allocate(data%aot550_fg(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%aot550_fg = sint_fill_value
 
-if (output_flags%do_aerosol) then
-   allocate(output_data%aot550_ap(ixstart:ixstop,iystart:iystop))
-   output_data%aot550_ap=sint_fill_value
-   allocate(output_data%aot550_fg(ixstart:ixstop,iystart:iystop))
-   output_data%aot550_fg=sint_fill_value
-
-   allocate(output_data%aer_ap(ixstart:ixstop,iystart:iystop))
-   output_data%aer_ap=sint_fill_value
-   allocate(output_data%aer_fg(ixstart:ixstop,iystart:iystop))
-   output_data%aer_fg=sint_fill_value
+   allocate(data%aer_ap(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%aer_ap = sint_fill_value
+   allocate(data%aer_fg(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%aer_fg = sint_fill_value
 end if
 
-if (output_flags%do_rho) then
-   allocate(output_data%vid_rho_ap(NSolar,MaxRho_XX))
-   output_data%vid_rho_ap=0
-   allocate(output_data%vid_rho_fg(NSolar,MaxRho_XX))
-   output_data%vid_rho_fg=0
+if (ind%flags%do_rho) then
+   allocate(data%vid_rho_ap(ind%NSolar, MaxRho_XX))
+   data%vid_rho_ap = 0
+   allocate(data%vid_rho_fg(ind%NSolar, MaxRho_XX))
+   data%vid_rho_fg = 0
 
-   allocate(output_data%rho_ap(ixstart:ixstop,iystart:iystop,NSolar,MaxRho_XX))
-   output_data%rho_ap=sint_fill_value
-   allocate(output_data%rho_fg(ixstart:ixstop,iystart:iystop,NSolar,MaxRho_XX))
-   output_data%rho_fg=sint_fill_value
+   allocate(data%rho_ap(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NSolar, MaxRho_XX))
+   data%rho_ap = sint_fill_value
+   allocate(data%rho_fg(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NSolar, MaxRho_XX))
+   data%rho_fg = sint_fill_value
 end if
 
-if (output_flags%do_swansea) then
-   allocate(output_data%vid_swansea_s_ap(NSolar))
-   output_data%vid_swansea_s_ap=0
-   allocate(output_data%vid_swansea_s_fg(NSolar))
-   output_data%vid_swansea_s_fg=0
+if (ind%flags%do_swansea) then
+   allocate(data%vid_swansea_s_ap(ind%NSolar))
+   data%vid_swansea_s_ap = 0
+   allocate(data%vid_swansea_s_fg(ind%NSolar))
+   data%vid_swansea_s_fg = 0
 
-   allocate(output_data%vid_swansea_p_ap(NSolar))
-   output_data%vid_swansea_p_ap=0
-   allocate(output_data%vid_swansea_p_fg(NSolar))
-   output_data%vid_swansea_p_fg=0
+   allocate(data%vid_swansea_p_ap(ind%NViews))
+   data%vid_swansea_p_ap = 0
+   allocate(data%vid_swansea_p_fg(ind%NViews))
+   data%vid_swansea_p_fg = 0
 
-   allocate(output_data%swansea_s_ap(ixstart:ixstop,iystart:iystop,NSolar))
-   output_data%swansea_s_ap=sint_fill_value
-   allocate(output_data%swansea_s_fg(ixstart:ixstop,iystart:iystop,NSolar))
-   output_data%swansea_s_fg=sint_fill_value
+   allocate(data%swansea_s_ap(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NSolar))
+   data%swansea_s_ap = sint_fill_value
+   allocate(data%swansea_s_fg(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NSolar))
+   data%swansea_s_fg = sint_fill_value
 
-   allocate(output_data%swansea_p_ap(ixstart:ixstop,iystart:iystop,NSolar))
-   output_data%swansea_p_ap=sint_fill_value
-   allocate(output_data%swansea_p_fg(ixstart:ixstop,iystart:iystop,NSolar))
-   output_data%swansea_p_fg=sint_fill_value
+   allocate(data%swansea_p_ap(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NViews))
+   data%swansea_p_ap = sint_fill_value
+   allocate(data%swansea_p_fg(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NViews))
+   data%swansea_p_fg = sint_fill_value
 end if
 
-if (output_flags%do_cloud) then
-   allocate(output_data%cot_ap(ixstart:ixstop,iystart:iystop))
-   output_data%cot_ap=sint_fill_value
-   allocate(output_data%cot_fg(ixstart:ixstop,iystart:iystop))
-   output_data%cot_fg=sint_fill_value
+if (ind%flags%do_cloud) then
+   allocate(data%cot_ap(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cot_ap = sint_fill_value
+   allocate(data%cot_fg(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cot_fg = sint_fill_value
 
-   allocate(output_data%cer_ap(ixstart:ixstop,iystart:iystop))
-   output_data%cer_ap=sint_fill_value
-   allocate(output_data%cer_fg(ixstart:ixstop,iystart:iystop))
-   output_data%cer_fg=sint_fill_value
+   allocate(data%cer_ap(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cer_ap = sint_fill_value
+   allocate(data%cer_fg(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cer_fg = sint_fill_value
 
-   allocate(output_data%ctp_ap(ixstart:ixstop,iystart:iystop))
-   output_data%ctp_ap=sint_fill_value
-   allocate(output_data%ctp_fg(ixstart:ixstop,iystart:iystop))
-   output_data%ctp_fg=sint_fill_value
+   allocate(data%ctp_ap(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%ctp_ap = sint_fill_value
+   allocate(data%ctp_fg(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%ctp_fg = sint_fill_value
 
-   allocate(output_data%stemp_ap(ixstart:ixstop,iystart:iystop))
-   output_data%stemp_ap=sint_fill_value
-   allocate(output_data%stemp_fg(ixstart:ixstop,iystart:iystop))
-   output_data%stemp_fg=sint_fill_value
+   allocate(data%stemp_fg(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%stemp_fg = sint_fill_value
+   allocate(data%stemp_ap(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%stemp_ap = sint_fill_value
+
+   allocate(data%vid_albedo(ind%NSolar))
+   data%vid_albedo = 0
+   allocate(data%albedo(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NSolar))
+   data%albedo = sint_fill_value
 end if
 
-   allocate(output_data%vid_albedo(Ny))
-   output_data%vid_albedo=0
-   allocate(output_data%albedo(ixstart:ixstop,iystart:iystop,Ny))
-   output_data%albedo=sint_fill_value
+   allocate(data%scanline_u(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%scanline_u = lint_fill_value
+   allocate(data%scanline_v(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%scanline_v = lint_fill_value
 
-   allocate(output_data%vid_channels(Ny))
-   output_data%vid_channels=0
-   allocate(output_data%channels_scale(Ny))
-   output_data%channels_scale=sreal_fill_value
-   allocate(output_data%channels_offset(Ny))
-   output_data%channels_offset=sreal_fill_value
-   allocate(output_data%channels_vmin(Ny))
-   output_data%channels_vmin=sint_fill_value
-   allocate(output_data%channels_vmax(Ny))
-   output_data%channels_vmax=sint_fill_value
-   allocate(output_data%channels(ixstart:ixstop,iystart:iystop,Ny))
-   output_data%channels=sint_fill_value
+   allocate(data%vid_channels(ind%Ny))
+   data%vid_channels = 0
+   allocate(data%channels_scale(ind%Ny))
+   data%channels_scale = sreal_fill_value
+   allocate(data%channels_offset(ind%Ny))
+   data%channels_offset = sreal_fill_value
+   allocate(data%channels_vmin(ind%Ny))
+   data%channels_vmin = sint_fill_value
+   allocate(data%channels_vmax(ind%Ny))
+   data%channels_vmax = sint_fill_value
+   allocate(data%channels(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%Ny))
+   data%channels = sint_fill_value
 
-   allocate(output_data%vid_y0(Ny))
-   output_data%vid_y0=0
-   allocate(output_data%y0_scale(Ny))
-   output_data%y0_scale=sreal_fill_value
-   allocate(output_data%y0_offset(Ny))
-   output_data%y0_offset=sreal_fill_value
-   allocate(output_data%y0_vmin(Ny))
-   output_data%y0_vmin=sint_fill_value
-   allocate(output_data%y0_vmax(Ny))
-   output_data%y0_vmax=sint_fill_value
-   allocate(output_data%y0(ixstart:ixstop,iystart:iystop,Ny))
-   output_data%y0=sint_fill_value
+   allocate(data%vid_y0(ind%Ny))
+   data%vid_y0 = 0
+   allocate(data%y0_scale(ind%Ny))
+   data%y0_scale = sreal_fill_value
+   allocate(data%y0_offset(ind%Ny))
+   data%y0_offset = sreal_fill_value
+   allocate(data%y0_vmin(ind%Ny))
+   data%y0_vmin = sint_fill_value
+   allocate(data%y0_vmax(ind%Ny))
+   data%y0_vmax = sint_fill_value
+   allocate(data%y0(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%Ny))
+   data%y0 = sint_fill_value
 
-   allocate(output_data%vid_residuals(Ny))
-   output_data%vid_residuals=0
-   allocate(output_data%residuals_scale(Ny))
-   output_data%residuals_scale=sreal_fill_value
-   allocate(output_data%residuals_offset(Ny))
-   output_data%residuals_offset=sreal_fill_value
-   allocate(output_data%residuals_vmin(Ny))
-   output_data%residuals_vmin=sint_fill_value
-   allocate(output_data%residuals_vmax(Ny))
-   output_data%residuals_vmax=sint_fill_value
-   allocate(output_data%residuals(ixstart:ixstop,iystart:iystop,Ny))
-   output_data%residuals=sint_fill_value
+   allocate(data%vid_residuals(ind%Ny))
+   data%vid_residuals = 0
+   allocate(data%residuals_scale(ind%Ny))
+   data%residuals_scale = sreal_fill_value
+   allocate(data%residuals_offset(ind%Ny))
+   data%residuals_offset = sreal_fill_value
+   allocate(data%residuals_vmin(ind%Ny))
+   data%residuals_vmin = sint_fill_value
+   allocate(data%residuals_vmax(ind%Ny))
+   data%residuals_vmax = sint_fill_value
+   allocate(data%residuals(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%Ny))
+   data%residuals = sint_fill_value
 
-   allocate(output_data%scanline_u(ixstart:ixstop,iystart:iystop))
-   output_data%scanline_u=lint_fill_value
-   allocate(output_data%scanline_v(ixstart:ixstop,iystart:iystop))
-   output_data%scanline_v=lint_fill_value
+   allocate(data%ds(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%ds = sint_fill_value
 
-   allocate(output_data%ds(ixstart:ixstop,iystart:iystop))
-   output_data%ds=sint_fill_value
+if (ind%flags%do_covariance) then
+   allocate(data%vid_covariance(ind%Nx, ind%Nx))
+   data%vid_covariance = 0
 
-if (output_flags%do_covariance) then
-   allocate(output_data%vid_covariance(Nx,Nx))
-   output_data%vid_covariance=0
-
-   allocate(output_data%covariance(ixstart:ixstop,iystart:iystop,Nx,Nx))
-   output_data%covariance=sreal_fill_value
+   allocate(data%covariance(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%Nx, ind%Nx))
+   data%covariance = sreal_fill_value
 end if
 
 
    ! Set scale/offset/vmin/vmax dynamically as required
-   output_data%scanline_u_vmax=Xmax
-   output_data%scanline_v_vmax=Ymax
+   data%scanline_u_vmax = ind%X1 - ind%X0 + 1
+   data%scanline_v_vmax = ind%Y1 - ind%Y0 + 1
 
-   do i=1,Ny
-      if (thermal(i)) then
-         output_data%channels_scale(i)=0.01
-         output_data%channels_offset(i)=100.0
-         output_data%channels_vmin(i)=0
-         output_data%channels_vmax(i)=32000
+   do i = 1, ind%Ny
+      if (btest(ind%Ch_Is(i), ThermalBit)) then
+         data%channels_scale(i) = 0.01
+         data%channels_offset(i) = 100.0
+         data%channels_vmin(i) = 0
+         data%channels_vmax(i) = 32000
 
-         output_data%y0_scale(i)=0.01
-         output_data%y0_offset(i)=100.0
-         output_data%y0_vmin(i)=0
-         output_data%y0_vmax(i)=32000
+         data%y0_scale(i) = 0.01
+         data%y0_offset(i) = 100.0
+         data%y0_vmin(i) = 0
+         data%y0_vmax(i) = 32000
 
-         output_data%residuals_scale(i)=0.01
-         output_data%residuals_offset(i)=100.0
-         output_data%residuals_vmin(i)=-32000
-         output_data%residuals_vmax(i)=32000
+         data%residuals_scale(i) = 0.01
+         data%residuals_offset(i) = 100.0
+         data%residuals_vmin(i) = -32000
+         data%residuals_vmax(i) = 32000
       else
-         output_data%channels_scale(i)=0.0001
-         output_data%channels_offset(i)=0.0
-         output_data%channels_vmin(i)=0
-         output_data%channels_vmax(i)=10000
+         data%channels_scale(i) = 0.0001
+         data%channels_offset(i) = 0.0
+         data%channels_vmin(i) = 0
+         data%channels_vmax(i) = 10000
 
-         output_data%y0_scale(i)=0.0001
-         output_data%y0_offset(i)=0.0
-         output_data%y0_vmin(i)=0
-         output_data%y0_vmax(i)=10000
+         data%y0_scale(i) = 0.0001
+         data%y0_offset(i) = 0.0
+         data%y0_vmin(i) = 0
+         data%y0_vmax(i) = 10000
 
-         output_data%residuals_scale(i)=0.0001
-         output_data%residuals_offset(i)=0.0
-         output_data%residuals_vmin(i)=-10000
-         output_data%residuals_vmax(i)=10000
+         data%residuals_scale(i) = 0.0001
+         data%residuals_offset(i) = 0.0
+         data%residuals_vmin(i) = -10000
+         data%residuals_vmax(i) = 10000
       end if
    end do
 

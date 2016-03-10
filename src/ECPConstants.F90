@@ -100,8 +100,6 @@ module ECP_constants
    integer, parameter :: InstNameLen      = 16      ! Max length of instrument name
 
    ! Maximum array lengths
-   integer, parameter :: MaxNumMeas       = 36      ! Max no. of measurement channels
-   integer, parameter :: MaxNumViews      = 2       ! Max no. of measurement views
    integer, parameter :: MaxNumSolar      = 24      ! Max no. of solar channels
    integer, parameter :: MaxNumThermal    = 16      ! Max no. of thermal channels
    integer, parameter :: MaxCloudType     = 5       ! Max no. of cloud types to be
@@ -254,10 +252,6 @@ module ECP_constants
    integer, parameter :: SelmMeas         = 2
    integer, parameter :: SelmAux          = 3
    integer, parameter :: SelmPrev         = 4
-
-   ! Bit positions used in Ctrl%Ind%Ch_Is flag
-   integer, parameter :: SolarBit         = 0
-   integer, parameter :: ThermalBit       = 1
 
    ! Bits used with Diag%QCFlag
    integer, parameter :: CostBit          = 0

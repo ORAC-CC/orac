@@ -50,7 +50,7 @@ subroutine alloc_input_data_primary_common(input_data,xdim1km,ydim1km,indexing)
 
    type(input_data_primary), intent(inout) :: input_data
    integer(kind=lint),       intent(in)    :: xdim1km,ydim1km
-   type(counts_and_indexes), intent(in)    :: indexing
+   type(common_indices),     intent(in)    :: indexing
 
    allocate(input_data%cot(xdim1km,ydim1km))
    input_data%cot=sreal_fill_value
@@ -148,7 +148,7 @@ subroutine alloc_input_data_primary_all(input_data,xdim1km,ydim1km,indexing)
 
    type(input_data_primary), intent(inout) :: input_data
    integer(kind=lint),       intent(in)    :: xdim1km,ydim1km
-   type(counts_and_indexes), intent(in)    :: indexing
+   type(common_indices),     intent(in)    :: indexing
 
    call alloc_input_data_primary_common(input_data,xdim1km,ydim1km,indexing)
 
@@ -207,7 +207,7 @@ subroutine alloc_input_data_primary_class(input_data,xdim1km,ydim1km,indexing)
 
    type(input_data_primary), intent(inout) :: input_data
    integer(kind=lint),       intent(in)    :: xdim1km,ydim1km
-   type(counts_and_indexes), intent(in)    :: indexing
+   type(common_indices),     intent(in)    :: indexing
 
    call alloc_input_data_primary_common(input_data,xdim1km, ydim1km,indexing)
 
@@ -223,7 +223,7 @@ subroutine alloc_input_data_secondary_common(input_data,xdim1km,ydim1km,indexing
 
    type(input_data_secondary), intent(inout) :: input_data
    integer(kind=lint),         intent(in)    :: xdim1km,ydim1km
-   type(counts_and_indexes),   intent(in)    :: indexing
+   type(common_indices),       intent(in)    :: indexing
 
    allocate(input_data%cot_ap(xdim1km,ydim1km))
    input_data%cot_ap=sreal_fill_value
@@ -266,7 +266,7 @@ subroutine alloc_input_data_secondary_all(input_data,xdim1km,ydim1km,indexing)
 
    type(input_data_secondary), intent(inout) :: input_data
    integer(kind=lint),         intent(in)    :: xdim1km,ydim1km
-   type(counts_and_indexes),   intent(in)    :: indexing
+   type(common_indices),       intent(in)    :: indexing
 
    call alloc_input_data_secondary_common(input_data,xdim1km,ydim1km,indexing)
 
@@ -288,7 +288,7 @@ subroutine alloc_input_data_secondary_class(input_data,xdim1km,ydim1km,indexing)
 
    type(input_data_secondary), intent(inout) :: input_data
    integer(kind=lint),         intent(in)    :: xdim1km,ydim1km
-   type(counts_and_indexes),   intent(in)    :: indexing
+   type(common_indices),       intent(in)    :: indexing
 
    call alloc_input_data_secondary_common(input_data,xdim1km,ydim1km,indexing)
 

@@ -168,6 +168,7 @@
 ! 2015/09/07, AP: Allow verbose to be controlled from the driver file.
 ! 2015/11/17, OS: Minor edit.
 ! 2015/12/30, AP: Move creation of NCDF files to after the main processing loop.
+! 2016/03/04, AP: Homogenisation of I/O modules.
 !
 ! $Id$
 !
@@ -189,6 +190,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    use ECP_Constants
    use Inversion
    use omp_lib
+   use orac_indexing
    use orac_ncdf
    use orac_output
    use prepare_output
@@ -221,10 +223,8 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    integer             :: i, j, jj, m
    integer             :: status  ! Status value returned from subroutines
 
-   integer             :: ixstart,ixstop,xstep
-                                  ! First and last super-pixel X locations
-   integer             :: iystart,iystop,ystep
-                                  ! First and last super-pixel Y locations
+   integer             :: xstep ! Pixels to skip when processing
+   integer             :: ystep
 
    integer             :: TotPix   = 0   ! Total number of SPixels processed
    integer             :: TotMissed= 0   ! Number of SPixels left unprocessed
@@ -238,25 +238,18 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    character(len=512)  :: qc_flag_meanings
 
    ! netcdf related variables:
-   integer :: ncid_primary,ncid_secondary,dims_var(2)
+   integer :: ncid_primary, ncid_secondary, dims_var(2)
 
    ! Additional types for the scanline output for netcdf are defined
    type(output_data_primary)   :: output_data_1
    type(output_data_secondary) :: output_data_2
-   type(output_data_flags)     :: output_flags
-
-   ! Some netcdf related indices and labels
-   integer :: iviews,iinput
 
    ! OpenMP related variables
-   integer :: n_threads,thread_num
-
-   ! Flags for different retrieval approaches for output
-   logical :: is_thermal(MaxNumMeas), rho_terms(MaxNumSolar,MaxRho_XX)
+   integer :: n_threads, thread_num
 
    ! Some more variables for OpenMP implementation
-   integer, allocatable, dimension(:) :: totpix_line,totmissed_line,totconv_line, &
-                                         totmaxj_line
+   integer, allocatable, dimension(:) :: totpix_line, totmissed_line
+   integer, allocatable, dimension(:) :: totconv_line, totmaxj_line
    integer, allocatable, dimension(:) :: aviter_line
    real,    allocatable, dimension(:) :: avj_line
 
@@ -314,15 +307,15 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 #endif
 
    ! Set output fields to be produced
-   output_flags%do_aerosol = Ctrl%Approach == AerOx  .or. Ctrl%Approach == AerSw
-   output_flags%do_cloud   = .not. output_flags%do_aerosol
-   output_flags%do_rho     = Ctrl%Approach == AerOx
-   output_flags%do_swansea = Ctrl%Approach == AerSw
-   output_flags%do_phase_pavolonis     = .false.
-   output_flags%do_cldmask             = .true.
-   output_flags%cloudmask_pre          = .false.
-   output_flags%do_cldmask_uncertainty = .true.
-   output_flags%do_covariance          = .false.
+   Ctrl%Ind%flags%do_aerosol = Ctrl%Approach == AerOx .or. Ctrl%Approach == AerSw
+   Ctrl%Ind%flags%do_cloud   = .not. Ctrl%Ind%flags%do_aerosol
+   Ctrl%Ind%flags%do_rho     = Ctrl%Approach == AerOx
+   Ctrl%Ind%flags%do_swansea = Ctrl%Approach == AerSw
+   Ctrl%Ind%flags%do_indexing            = .true.
+   Ctrl%Ind%flags%do_phase_pavolonis     = .false.
+   Ctrl%Ind%flags%do_cldmask             = .true.
+   Ctrl%Ind%flags%do_cldmask_uncertainty = .true.
+   Ctrl%Ind%flags%do_covariance          = .false.
 
 #ifdef BKP
    ! Clear the breakpoint file (if breakpoints required)
@@ -368,31 +361,22 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    ! Loop over required super pixel X0,Y0 coordinates
 
    ! Set the start/stop positions
-   if (Ctrl%Ind%X0 >= 1 .and. Ctrl%Ind%X0 <= Ctrl%Ind%XMax) then
-      ixstart = Ctrl%Ind%X0
-   else
-      ixstart = 1
-   end if
-   if (Ctrl%Ind%X1 >= 1 .and. Ctrl%Ind%X1 <= Ctrl%Ind%XMax) then
-      ixstop  = Ctrl%Ind%X1
-   else
-      ixstop  = Ctrl%Ind%XMax
-   end if
-   if (Ctrl%Ind%Y0 >= 1 .and. Ctrl%Ind%Y0 <= Ctrl%Ind%YMax) then
-      iystart = Ctrl%Ind%Y0
-   else
-      iystart = 1
-   end if
-   if (Ctrl%Ind%Y1 >= 1 .and. Ctrl%Ind%Y1 <= Ctrl%Ind%YMax) then
-      iystop  = Ctrl%Ind%Y1
-   else
-      iystop  = Ctrl%Ind%YMax
-   end if
+   if (Ctrl%Ind%X0 < 1 .or. Ctrl%Ind%X0 > Ctrl%Ind%Xmax) &
+        Ctrl%Ind%X0 = 1
+   if (Ctrl%Ind%X1 < 1 .or. Ctrl%Ind%X1 > Ctrl%Ind%Xmax) &
+        Ctrl%Ind%X1 = Ctrl%Ind%Xmax
+   if (Ctrl%Ind%Y0 < 1 .or. Ctrl%Ind%Y0 > Ctrl%Ind%Ymax) &
+        Ctrl%Ind%Y0 = 1
+   if (Ctrl%Ind%Y1 < 1 .or. Ctrl%Ind%Y1 > Ctrl%Ind%Ymax) &
+        Ctrl%Ind%Y1 = Ctrl%Ind%YMax
+
+   Ctrl%Ind%Xdim = Ctrl%Ind%X1 - Ctrl%Ind%X0 + 1
+   Ctrl%Ind%Ydim = Ctrl%Ind%Y1 - Ctrl%Ind%Y0 + 1
 
    if (Ctrl%verbose) then
-      write(*,*) 'Start line: ', iystart
-      write(*,*) 'Stop line: ', iystop
-      write(*,*) 'Total number of lines: ', (iystop - iystart) + 1
+      write(*,*) 'Start line: ', Ctrl%Ind%Y0
+      write(*,*) 'Stop line: ', Ctrl%Ind%Y1
+      write(*,*) 'Total number of lines: ', Ctrl%Ind%Ydim
    end if
 
 
@@ -438,36 +422,27 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    write(*,*) 'Adaptive processing: ',lhres,xstep,ystep
 #endif
 
-   ! Identify thermal channels (for output code)
-   is_thermal = .false.
-   do i=1,Ctrl%Ind%Ny
-      if (btest(Ctrl%Ind%Ch_Is(i), ThermalBit)) is_thermal(i) = .true.
-   end do
-
    ! Allocate output arrays
-   call alloc_output_data_primary(ixstart, ixstop, iystart, iystop, &
-        Ctrl%Ind%NViews, Ctrl%Ind%Ny, Ctrl%Invpar%MaxIter, output_data_1, &
-        output_flags)
-   call alloc_output_data_secondary(ixstart, ixstop, iystart, iystop, &
-        Ctrl%Ind%NSolar, Ctrl%Ind%Ny, MaxStateVar, is_thermal, Ctrl%Ind%XMax, &
-        Ctrl%Ind%YMax, output_data_2, output_flags)
+   call alloc_output_data_primary(Ctrl%Ind%common_indices, Ctrl%Invpar%MaxIter, &
+                                  output_data_1)
+   call alloc_output_data_secondary(Ctrl%Ind%common_indices, output_data_2)
 
    ! Set i, the counter for the image x dimension, for the first row processed.
-   i = ixstart
+   i = Ctrl%Ind%X0
 
 
    ! This is to make things easier for OpenMP
-   allocate(totpix_line(iystart:iystop))
+   allocate(totpix_line(Ctrl%Ind%Y0:Ctrl%Ind%Y1))
    totpix_line=0
-   allocate(totmissed_line(iystart:iystop))
+   allocate(totmissed_line(Ctrl%Ind%Y0:Ctrl%Ind%Y1))
    totmissed_line=0
-   allocate(totconv_line(iystart:iystop))
+   allocate(totconv_line(Ctrl%Ind%Y0:Ctrl%Ind%Y1))
    totconv_line=0
-   allocate(totmaxj_line(iystart:iystop))
+   allocate(totmaxj_line(Ctrl%Ind%Y0:Ctrl%Ind%Y1))
    totmaxj_line=0
-   allocate(aviter_line(iystart:iystop))
+   allocate(aviter_line(Ctrl%Ind%Y0:Ctrl%Ind%Y1))
    aviter_line=0
-   allocate(avj_line(iystart:iystop))
+   allocate(avj_line(Ctrl%Ind%Y0:Ctrl%Ind%Y1))
    avj_line=0.0
 
 #ifdef USE_TIMING
@@ -490,7 +465,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 
    ! Start OMP section by spawning the threads
    !$OMP PARALLEL &
-   !$OMP PRIVATE(i,j,jj,m,iviews,iinput,thread_num,RTM_Pc,SPixel) &
+   !$OMP PRIVATE(i,j,jj,m,thread_num,RTM_Pc,SPixel) &
    !$OMP PRIVATE(Diag) &
    !$OMP FIRSTPRIVATE(status)
 
@@ -523,14 +498,14 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 
    ! Start OMP parallel loop for along track direction.
    !$OMP DO SCHEDULE(GUIDED)
-   do j = iystart,iystop,ystep
+   do j = Ctrl%Ind%Y0,Ctrl%Ind%Y1,ystep
 
-!     write(*,*) 'thread,iystart,iystop,iy: ', thread_num,iystart,iystop,j
+!     write(*,*) 'thread,Ctrl%Ind%Y0,Ctrl%Ind%Y1,iy: ', thread_num,Ctrl%Ind%Y0,Ctrl%Ind%Y1,j
 
       ! Set the location of the pixel within the image (Y0)
       SPixel%Loc%Y0 = j
 
-      do i = ixstart,ixstop,xstep
+      do i = Ctrl%Ind%X0,Ctrl%Ind%X1,xstep
          SPixel%Loc%X0 = i
 
          call Zero_Diag(Ctrl, Diag)
@@ -585,10 +560,10 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 
          ! Copy output to spixel_scan_out structures
          call prepare_output_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, &
-                                     Diag, output_data_1, output_flags)
+                                     Diag, output_data_1)
 
          call prepare_output_secondary(Ctrl, i, j, MSI_Data, SPixel, Diag, &
-                                       output_data_2, output_flags)
+                                       output_data_2)
 
       end do ! End of super-pixel X loop
 
@@ -613,45 +588,40 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    write(*,115) cpu_secs
 #endif
 
-   ! Open the netcdf output files
-   if (Ctrl%verbose) write(*,*) 'path1: ',trim(Ctrl%FID%L2_primary)
-   call nc_create(Ctrl%FID%L2_primary, ncid_primary, ixstop-ixstart+1, &
-      iystop-iystart+1, dims_var, 1, global_atts, source_atts)
-
-   if (Ctrl%verbose) write(*,*) 'path2: ',trim(Ctrl%FID%L2_secondary)
-   call nc_create(Ctrl%FID%L2_secondary, ncid_secondary, ixstop-ixstart+1, &
-     iystop-iystart+1, dims_var, 2, global_atts, source_atts)
-
    ! Identify which surface terms need to be output
-   rho_terms = .false.
-   if (output_flags%do_rho) then
+   if (Ctrl%Ind%flags%do_rho) then
+      allocate(Ctrl%Ind%rho_terms(Ctrl%Ind%NSolar,MaxRho_XX))
+      Ctrl%Ind%rho_terms = .false.
       do i=1,Ctrl%Ind%NSolar
          do j=1,MaxRho_XX
-            if (any(Ctrl%X == IRs(i,j))) rho_terms(i,j) = .true.
+            if (any(Ctrl%X == IRs(i,j))) Ctrl%Ind%rho_terms(i,j) = .true.
          end do
       end do
    end if
+
+   ! Open the netcdf output files
+   if (Ctrl%verbose) write(*,*) 'path1: ',trim(Ctrl%FID%L2_primary)
+   call nc_create(Ctrl%FID%L2_primary, ncid_primary, Ctrl%Ind%Xdim, &
+        Ctrl%Ind%Ydim, dims_var, 1, global_atts, source_atts)
+
+   if (Ctrl%verbose) write(*,*) 'path2: ',trim(Ctrl%FID%L2_secondary)
+   call nc_create(Ctrl%FID%L2_secondary, ncid_secondary, Ctrl%Ind%Xdim, &
+        Ctrl%Ind%Ydim, dims_var, 2, global_atts, source_atts)
 
    ! Create NetCDF files and variables
    call build_qc_flag_masks(Ctrl, qc_flag_masks)
    call build_qc_flag_meanings(Ctrl, qc_flag_meanings)
    call def_output_primary(ncid_primary, dims_var, output_data_1, &
-        Ctrl%Ind%NViews, Ctrl%Ind%Ny, Ctrl%Ind%NSolar, Ctrl%Ind%NThermal, &
-        Ctrl%Ind%YSolar, Ctrl%Ind%YThermal, Ctrl%Ind%Y_Id,  rho_terms, &
-        qc_flag_masks, qc_flag_meanings, deflate_level, shuffle_flag, &
-        .false., output_flags)
+        Ctrl%Ind%common_indices, qc_flag_masks, qc_flag_meanings, &
+        deflate_level, shuffle_flag, .false.)
    call def_output_secondary(ncid_secondary, dims_var, output_data_2, &
-        Ctrl%Ind%NViews, Ctrl%Ind%Ny, Ctrl%Ind%NSolar, Ctrl%Ind%YSolar, &
-        Ctrl%Ind%Y_Id, is_thermal, rho_terms, deflate_level, shuffle_flag, &
-        .false., output_flags)
+        Ctrl%Ind%common_indices, deflate_level, shuffle_flag, .false.)
 
    ! Write output from spixel_scan_out structures NetCDF files
-   call write_output_primary(ncid_primary, ixstart, ixstop, iystart, iystop, &
-        output_data_1, Ctrl%Ind%NViews, Ctrl%Ind%NSolar, Ctrl%Ind%NThermal, &
-        Ctrl%Ind%YSolar, Ctrl%Ind%YThermal, Ctrl%Ind%Y_Id, output_flags)
-   call write_output_secondary(ncid_secondary, ixstart, ixstop, iystart, &
-        iystop, output_data_2, Ctrl%Ind%NViews, Ctrl%Ind%Ny, Ctrl%Ind%NSolar, &
-        Ctrl%Nx(IDay), Ctrl%Ind%Y_Id, output_flags)
+   call write_output_primary(ncid_primary, Ctrl%Ind%common_indices, &
+        output_data_1)
+   call write_output_secondary(ncid_secondary, Ctrl%Ind%common_indices, &
+        output_data_2)
 
    TotPix    = sum(totpix_line)
    Totmissed = sum(totmissed_line)
@@ -697,8 +667,8 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 
    call Dealloc_Data(Ctrl, MSI_Data)
 
-   call dealloc_output_data_primary(output_data_1, output_flags)
-   call dealloc_output_data_secondary(output_data_2, output_flags)
+   call dealloc_output_data_primary(output_data_1)
+   call dealloc_output_data_secondary(output_data_2)
 
    call Dealloc_Ctrl(Ctrl)
 

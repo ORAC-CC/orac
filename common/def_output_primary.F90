@@ -73,6 +73,7 @@
 ! 2016/01/06, AP: Wrap do_* flags into output_flags structure.
 ! 2016/01/27, GM: Add cee and cee_uncertainty.
 ! 2016/01/28, GM: Add ctp and ctt corrected and corrected_uncertianty.
+! 2016/03/04, AP: Homogenisation of I/O modules.
 !
 ! $Id$
 !
@@ -80,11 +81,9 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine def_output_primary(ncid, dims_var, output_data, NViews, &
-   Ny, NSolar, NThermal, YSolar, YThermal, Y_Id, rho_terms, qc_flag_masks, &
-   qc_flag_meanings, deflate_level, shuffle_flag, verbose, output_flags)
+subroutine def_output_primary(ncid, dims_var, output_data, indexing, &
+   qc_flag_masks, qc_flag_meanings, deflate_level, shuffle_flag, verbose)
 
-   use netcdf
    use orac_ncdf
 
    implicit none
@@ -92,20 +91,12 @@ subroutine def_output_primary(ncid, dims_var, output_data, NViews, &
    integer,                   intent(in)    :: ncid
    integer,                   intent(in)    :: dims_var(:)
    type(output_data_primary), intent(inout) :: output_data
-   integer,                   intent(in)    :: NViews
-   integer,                   intent(in)    :: Ny
-   integer,                   intent(in)    :: NSolar
-   integer,                   intent(in)    :: NThermal
-   integer,                   intent(in)    :: YSolar(:)
-   integer,                   intent(in)    :: YThermal(:)
-   integer,                   intent(in)    :: Y_Id(:)
-   logical,                   intent(in)    :: rho_terms(:,:)
+   type(common_indices),      intent(in)    :: indexing
    character(len=*),          intent(in)    :: qc_flag_masks
    character(len=*),          intent(in)    :: qc_flag_meanings
    integer,                   intent(in)    :: deflate_level
    logical,                   intent(in)    :: shuffle_flag
    logical,                   intent(in)    :: verbose
-   type(output_data_flags),   intent(in)    :: output_flags
 
    character(len=32)  :: input_num
    character(len=512) :: input_dummy
@@ -188,7 +179,7 @@ subroutine def_output_primary(ncid, dims_var, output_data, NViews, &
    !----------------------------------------------------------------------------
    ! Loop over view angles
    !----------------------------------------------------------------------------
-   do i_view=1,NViews
+   do i_view=1,indexing%NViews
 
       write(input_num,"(i4)") i_view
 
@@ -263,7 +254,7 @@ subroutine def_output_primary(ncid, dims_var, output_data, NViews, &
 
    end do
 
-if (output_flags%do_aerosol) then
+if (indexing%flags%do_aerosol) then
    !----------------------------------------------------------------------------
    ! aot550
    !----------------------------------------------------------------------------
@@ -385,16 +376,16 @@ if (output_flags%do_aerosol) then
            shuffle       = shuffle_flag)
 end if
 
-if (output_flags%do_rho) then
+if (indexing%flags%do_rho) then
    !----------------------------------------------------------------------------
    ! rho_in_channel_no_*
    !----------------------------------------------------------------------------
-   do i=1,NSolar
+   do i=1,indexing%NSolar
 
-      write(input_num,"(i4)") Y_Id(YSolar(i))
+      write(input_num,"(i4)") indexing%Y_Id(indexing%YSolar(i))
 
       do j=1,MaxRho_XX
-         if (rho_terms(i,j)) then
+         if (indexing%rho_terms(i,j)) then
             select case (j)
             case(IRho_0V)
                input_dummy='surface direct beam reflectance in channel no '//trim(adjustl(input_num))
@@ -436,12 +427,12 @@ if (output_flags%do_rho) then
    !----------------------------------------------------------------------------
    ! rho_uncertainty_in_channel_no_*
    !----------------------------------------------------------------------------
-   do i=1,NSolar
+   do i=1,indexing%NSolar
 
-      write(input_num,"(i4)") Y_Id(YSolar(i))
+      write(input_num,"(i4)") indexing%Y_Id(indexing%YSolar(i))
 
       do j=1,MaxRho_XX
-         if (rho_terms(i,j)) then
+         if (indexing%rho_terms(i,j)) then
             select case (j)
             case(IRho_0V)
                input_dummy='uncertainty in surface direct beam reflectance in channel no '//trim(adjustl(input_num))
@@ -481,13 +472,13 @@ if (output_flags%do_rho) then
    end do
 end if
 
-if (output_flags%do_swansea) then
+if (indexing%flags%do_swansea) then
    !----------------------------------------------------------------------------
    ! swansea_s_in_channel_no_*
    !----------------------------------------------------------------------------
-   do i=1,NSolar
+   do i=1,indexing%NSolar
 
-      write(input_num,"(i4)") Y_Id(YSolar(i))
+      write(input_num,"(i4)") indexing%Y_Id(indexing%YSolar(i))
 
       input_dummy='s parameter for Swansea surface reflectance model in channel no '//trim(adjustl(input_num))
       input_dummy2='swansea_s_in_channel_no_'//trim(adjustl(input_num))
@@ -513,8 +504,8 @@ if (output_flags%do_swansea) then
    !----------------------------------------------------------------------------
    ! swansea_s_uncertainty_in_channel_no_*
    !----------------------------------------------------------------------------
-   do i=1,NSolar
-      write(input_num,"(i4)") Y_Id(YSolar(i))
+   do i=1,indexing%NSolar
+      write(input_num,"(i4)") indexing%Y_Id(indexing%YSolar(i))
 
       input_dummy='uncertainty in s parameter for Swansea surface reflectance model in channel no '//trim(adjustl(input_num))
       input_dummy2='swansea_s_uncertainty_in_channel_no_'//trim(adjustl(input_num))
@@ -540,7 +531,7 @@ if (output_flags%do_swansea) then
    !----------------------------------------------------------------------------
    ! swansea_p_in_view_no_*
    !----------------------------------------------------------------------------
-   do i_view=1,NViews
+   do i_view=1,indexing%NViews
       write(input_num,"(i4)") i_view
 
       input_dummy='p parameter for Swansea surface reflectance model in view no '//trim(adjustl(input_num))
@@ -567,7 +558,7 @@ if (output_flags%do_swansea) then
    !----------------------------------------------------------------------------
    ! swansea_p_uncertainty_in_view_no_*
    !----------------------------------------------------------------------------
-   do i_view=1,NViews
+   do i_view=1,indexing%NViews
       write(input_num,"(i4)") i_view
 
       input_dummy='uncertainty in p parameter for Swansea surface reflectance model in view no '//trim(adjustl(input_num))
@@ -594,9 +585,9 @@ if (output_flags%do_swansea) then
    !----------------------------------------------------------------------------
    ! diffuse_frac_in_channel_no_*
    !----------------------------------------------------------------------------
-   do i=1,NSolar
+   do i=1,indexing%NSolar
 
-      write(input_num,"(i4)") Y_Id(YSolar(i))
+      write(input_num,"(i4)") indexing%Y_Id(indexing%YSolar(i))
 
       input_dummy='diffuse fraction of radiation in channel no '//trim(adjustl(input_num))
       input_dummy2='diffuse_frac_in_channel_no_'//trim(adjustl(input_num))
@@ -622,8 +613,8 @@ if (output_flags%do_swansea) then
    !----------------------------------------------------------------------------
    ! diffuse_frac_uncertainty_in_channel_no_*
    !----------------------------------------------------------------------------
-   do i=1,NSolar
-      write(input_num,"(i4)") Y_Id(YSolar(i))
+   do i=1,indexing%NSolar
+      write(input_num,"(i4)") indexing%Y_Id(indexing%YSolar(i))
 
       input_dummy='uncertainty in diffuse fraction of radiation in channel no '//trim(adjustl(input_num))
       input_dummy2='diffuse_frac_uncertainty_in_channel_no_'//trim(adjustl(input_num))
@@ -647,7 +638,7 @@ if (output_flags%do_swansea) then
    end do
 end if
 
-if (output_flags%do_cloud) then
+if (indexing%flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! cot
    !----------------------------------------------------------------------------
@@ -1091,9 +1082,9 @@ if (output_flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! cloud_albedo_in_channel_no_*
    !----------------------------------------------------------------------------
-   do i=1,NSolar
+   do i=1,indexing%NSolar
 
-      write(input_num,"(i4)") Y_Id(YSolar(i))
+      write(input_num,"(i4)") indexing%Y_Id(indexing%YSolar(i))
 
       input_dummy='cloud_albedo in channel no '//trim(adjustl(input_num))
       input_dummy2='cloud_albedo_in_channel_no_'//trim(adjustl(input_num))
@@ -1119,9 +1110,9 @@ if (output_flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! cloud_albedo_uncertainty_in_channel_no_*
    !----------------------------------------------------------------------------
-   do i=1,NSolar
+   do i=1,indexing%NSolar
 
-      write(input_num,"(i4)") Y_Id(YSolar(i))
+      write(input_num,"(i4)") indexing%Y_Id(indexing%YSolar(i))
 
       input_dummy='cloud_albedo_uncertainty in channel no '//trim(adjustl(input_num))
       input_dummy2='cloud_albedo_uncertainty_in_channel_no_'//trim(adjustl(input_num))
@@ -1147,9 +1138,9 @@ if (output_flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! cee_in_channel_no_*
    !----------------------------------------------------------------------------
-   do i=1,NThermal
+   do i=1,indexing%NThermal
 
-      write(input_num,"(i4)") Y_Id(YThermal(i))
+      write(input_num,"(i4)") indexing%Y_Id(indexing%YThermal(i))
 
       input_dummy='cee in channel no '//trim(adjustl(input_num))
       input_dummy2='cee_in_channel_no_'//trim(adjustl(input_num))
@@ -1175,9 +1166,9 @@ if (output_flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! cee_uncertainty_in_channel_no_*
    !----------------------------------------------------------------------------
-   do i=1,NThermal
+   do i=1,indexing%NThermal
 
-      write(input_num,"(i4)") Y_Id(YThermal(i))
+      write(input_num,"(i4)")indexing% Y_Id(indexing%YThermal(i))
 
       input_dummy='cee_uncertainty in channel no '//trim(adjustl(input_num))
       input_dummy2='cee_uncertainty_in_channel_no_'//trim(adjustl(input_num))
@@ -1493,11 +1484,11 @@ end if
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 
-if (output_flags%do_cldmask) then
+if (indexing%flags%do_cldmask) then
    !----------------------------------------------------------------------------
    ! cldmask
    !----------------------------------------------------------------------------
-   if (output_flags%cloudmask_pre) then
+  if (indexing%flags%cloudmask_pre) then
       input_dummy = 'cloudmask_pre'
    else
       input_dummy = 'cldmask'
@@ -1521,7 +1512,7 @@ if (output_flags%do_cldmask) then
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 end if
-if (output_flags%do_cldmask_uncertainty) then
+if (indexing%flags%do_cldmask_uncertainty) then
    !----------------------------------------------------------------------------
    ! cldmask_uncertainty
    !----------------------------------------------------------------------------
@@ -1543,6 +1534,7 @@ if (output_flags%do_cldmask_uncertainty) then
            shuffle       = shuffle_flag)
 end if
 
+if (indexing%flags%do_phase) then
    !----------------------------------------------------------------------------
    ! phase
    !----------------------------------------------------------------------------
@@ -1564,8 +1556,9 @@ end if
            units         = '1', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
+end if
 
-if (output_flags%do_phase_pavolonis) then
+if (indexing%flags%do_phase_pavolonis) then
    !----------------------------------------------------------------------------
    ! phase_pavolonis
    !----------------------------------------------------------------------------

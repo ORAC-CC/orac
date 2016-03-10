@@ -35,22 +35,9 @@
 
 module orac_input
 
-   use common_constants
+   use orac_indexing
 
    implicit none
-
-
-   type counts_and_indexes
-      integer          :: NViews
-      integer          :: Ny
-      integer          :: NSolar
-      integer          :: NThermal
-      integer, pointer :: YSolar(:)
-      integer, pointer :: YThermal(:)
-      integer, pointer :: Y_Id(:)
-      integer, pointer :: Ch_Is(:)
-      integer          :: Nx
-   end type counts_and_indexes
 
 
    type input_data_primary

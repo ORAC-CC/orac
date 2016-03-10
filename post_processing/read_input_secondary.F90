@@ -46,7 +46,7 @@ subroutine read_input_secondary_common(ncid, input_data, xdim, ydim, indexing, &
    integer,                    intent(in)    :: ncid
    type(input_data_secondary), intent(inout) :: input_data
    integer(kind=lint),         intent(in)    :: xdim, ydim
-   type(counts_and_indexes),   intent(in)    :: indexing
+   type(common_indices),       intent(in)    :: indexing
    logical,                    intent(in)    :: verbose
 
    integer           :: i
@@ -106,7 +106,7 @@ subroutine read_input_secondary_all(fname, input_data, xdim, ydim, indexing, &
    character(len=path_length), intent(in)    :: fname
    type(input_data_secondary), intent(inout) :: input_data
    integer(kind=lint),         intent(in)    :: xdim, ydim
-   type(counts_and_indexes),   intent(in)    :: indexing
+   type(common_indices),       intent(in)    :: indexing
    logical,                    intent(in)    :: verbose
 
    integer           :: ncid
@@ -164,7 +164,7 @@ subroutine read_input_secondary_class(fname, input_data, xdim, ydim, indexing, &
    character(len=path_length), intent(in)    :: fname
    type(input_data_secondary), intent(inout) :: input_data
    integer(kind=lint),         intent(in)    :: xdim, ydim
-   type(counts_and_indexes),   intent(in)    :: indexing
+   type(common_indices),       intent(in)    :: indexing
    logical,                    intent(in)    :: verbose
 
    integer :: ncid

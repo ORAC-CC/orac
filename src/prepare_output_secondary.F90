@@ -53,7 +53,7 @@
 !-------------------------------------------------------------------------------
 
 subroutine prepare_output_secondary(Ctrl, i, j, MSI_Data, SPixel, Diag, &
-                                    output_data, output_flags)
+                                    output_data)
 
    use CTRL_def
    use Data_def
@@ -70,7 +70,6 @@ subroutine prepare_output_secondary(Ctrl, i, j, MSI_Data, SPixel, Diag, &
    type(SPixel_t),              intent(in)    :: SPixel
    type(Diag_t),                intent(in)    :: Diag
    type(output_data_secondary), intent(inout) :: output_data
-   type(output_data_flags),     intent(in)    :: output_flags
 
    integer          :: k, kk, l
    real(kind=sreal) :: dummyreal
@@ -82,7 +81,7 @@ subroutine prepare_output_secondary(Ctrl, i, j, MSI_Data, SPixel, Diag, &
    output_data%scanline_u(i,j)=i
    output_data%scanline_v(i,j)=j
 
-if (output_flags%do_aerosol) then
+if (Ctrl%Ind%flags%do_aerosol) then
    !----------------------------------------------------------------------------
    ! aot550_ap, aot550_fg
    !----------------------------------------------------------------------------
@@ -122,7 +121,7 @@ if (output_flags%do_aerosol) then
         control=SPixel%X0(IRe))
 end if
 
-if (output_flags%do_rho) then
+if (Ctrl%Ind%flags%do_rho) then
    !----------------------------------------------------------------------------
    ! rho_ap, rho_fg
    !----------------------------------------------------------------------------
@@ -147,7 +146,7 @@ if (output_flags%do_rho) then
    end do
 end if
 
-if (output_flags%do_swansea) then
+if (Ctrl%Ind%flags%do_swansea) then
    !----------------------------------------------------------------------------
    ! swansea_s_ap, swansea_s_fg
    !----------------------------------------------------------------------------
@@ -184,7 +183,7 @@ if (output_flags%do_swansea) then
    end do
 end if
 
-if (output_flags%do_cloud) then
+if (Ctrl%Ind%flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! cot_ap, cot_fg
    !----------------------------------------------------------------------------
@@ -323,7 +322,7 @@ end if
    !----------------------------------------------------------------------------
    ! covariance
    !----------------------------------------------------------------------------
-if (output_flags%do_covariance) then
+if (Ctrl%Ind%flags%do_covariance) then
    do k=1,SPixel%Nx
       do l=1,SPixel%Nx
         call prepare_float_packed_float( &

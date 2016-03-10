@@ -42,7 +42,7 @@
 
 module orac_output
 
-   use common_constants
+   use orac_indexing
 
    implicit none
 
@@ -645,23 +645,6 @@ module orac_output
 
       real(sreal),   pointer :: covariance(:,:,:,:)
    end type output_data_secondary
-
-   type output_data_flags
-      ! Flags relevant to both files
-      logical :: do_cloud               ! Output cloud retrieval terms
-      logical :: do_aerosol             ! Output aerosol retrieval terms
-      logical :: do_rho                 ! Output retrieved surface reflectances
-      logical :: do_swansea             ! Output retrieved Swansea parameters
-
-      ! Primary file flags
-      logical :: do_phase_pavolonis     ! Output the Pavolonis cloud phase
-      logical :: do_cldmask             ! Output neural net cloud mask
-      logical :: cloudmask_pre          ! Call that cloudmask_pre instead
-      logical :: do_cldmask_uncertainty ! Output the uncertainty on that
-
-      ! Secondary file flags
-      logical :: do_covariance          ! Output the final covariance matrix
-   end type output_data_flags
 
 contains
 

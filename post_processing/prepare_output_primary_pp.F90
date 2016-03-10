@@ -53,7 +53,7 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
    implicit none
 
    integer,                   intent(in)    :: i, j
-   type(counts_and_indexes),  intent(in)    :: indexing
+   type(common_indices),      intent(in)    :: indexing
    type(input_data_primary),  intent(in)    :: input_data
    type(output_data_primary), intent(inout) :: output_data
    logical,                   intent(in)    :: output_optical_props_at_night

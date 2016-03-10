@@ -31,19 +31,18 @@
 
 subroutine Dealloc_Ctrl(Ctrl)
 
+   use orac_indexing, only: dealloc_common_indices
+
    implicit none
 
    ! Declare arguments
 
    type(Ctrl_t), intent(inout) :: Ctrl
 
-   deallocate(Ctrl%Ind%ViewIdx)
+   call dealloc_common_indices(Ctrl%Ind%common_indices)
+
    deallocate(Ctrl%Ind%WvlIdx)
-   deallocate(Ctrl%Ind%Y_ID)
    deallocate(Ctrl%Ind%ICh)
-   deallocate(Ctrl%Ind%Ch_Is)
-   deallocate(Ctrl%Ind%YSolar)
-   deallocate(Ctrl%Ind%YThermal)
    deallocate(Ctrl%Ind%YMixed)
 
    deallocate(Ctrl%RS%B)

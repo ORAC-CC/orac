@@ -71,4 +71,11 @@ module common_constants
    integer, parameter :: IRho_DD          = 4 !  "    "  rho_dd  "   "   "
    integer, parameter :: MaxRho_XX        = 4 ! Max no. of BRDF parameters
 
+   ! Bit positions used in Ch_Is flags
+   integer, parameter :: SolarBit         = 0
+   integer, parameter :: ThermalBit       = 1
+
+   integer, parameter :: MaxNumMeas       = 36 ! Max no. of measurement channels
+   integer, parameter :: MaxNumViews      = 2  ! Max no. of measurement views
+
 end module common_constants

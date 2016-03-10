@@ -793,7 +793,7 @@ subroutine swan_indexing_logic(Ctrl, SAD_Chan, SPixel, is_not_used_or_missing, &
       nch = 0
       do i_solar = 1, Ctrl%Ind%NSolar
          i_ctrl = Ctrl%Ind%YSolar(i_solar)
-         if (Ctrl%Ind%ViewIdx(i_ctrl) == i_view .and. &
+         if (Ctrl%Ind%View_Id(i_ctrl) == i_view .and. &
               .not. is_not_used_or_missing(i_ctrl)) then
             nch = nch+1
             ch(nch) = i_solar

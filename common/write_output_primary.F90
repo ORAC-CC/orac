@@ -10,12 +10,8 @@
 ! Arguments:
 ! Name        Type    In/Out/Both Description
 ! ------------------------------------------------------------------------------
-! Ctrl        struct  In          Control parameters for the retrieval
 ! ncid        integer In          File ID for open output file
-! ixstart     integer In          Starting index on first dimension of output
-! ixstop      integer In          Ending index on first dimension of output
-! iystart     integer In          Starting index on second dimension of output
-! iystop      integer In          Ending index on second dimension of output
+! ind         struct  In          Channel indexing information
 ! output_data struct  Both        Data to be written to output
 !
 ! History:
@@ -45,6 +41,7 @@
 ! 2016/01/06, AP: Add do_cldmask checks from output_flags structure.
 ! 2016/01/27, GM: Add cee and cee_uncertainty.
 ! 2016/01/28, GM: Add ctp and ctt corrected and corrected_uncertianty.
+! 2016/03/04, AP: Homogenisation of I/O modules.
 !
 ! $Id$
 !
@@ -52,268 +49,292 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine write_output_primary(ncid, ixstart, ixstop, iystart, iystop, &
-   output_data, NViews, NSolar, NThermal, YSolar, YThermal, Y_Id, output_flags)
+subroutine write_output_primary(ncid, ind, output_data)
 
    use orac_ncdf
 
    implicit none
 
    integer,                   intent(in)    :: ncid
-   integer,                   intent(in)    :: ixstart
-   integer,                   intent(in)    :: ixstop
-   integer,                   intent(in)    :: iystart
-   integer,                   intent(in)    :: iystop
+   type(common_indices),      intent(in)    :: ind
    type(output_data_primary), intent(inout) :: output_data
-   integer,                   intent(in)    :: NViews
-   integer,                   intent(in)    :: NSolar
-   integer,                   intent(in)    :: NThermal
-   integer,                   intent(in)    :: YSolar(:)
-   integer,                   intent(in)    :: YThermal(:)
-   integer,                   intent(in)    :: Y_Id(:)
-   type(output_data_flags),   intent(in)    :: output_flags
 
    character(len=32)  :: input_num
    character(len=512) :: input_dummy
    integer            :: i, j
-   integer            :: n_x
-   integer            :: n_y
 
-   n_x = ixstop - ixstart + 1
-   n_y = iystop - iystart + 1
+   call nc_write_array(ncid,'time',output_data%vid_time, &
+        output_data%time(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
 
-   call nc_write_array(ncid,'time',output_data%vid_time,&
-           output_data%time(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'lat',output_data%vid_lat, &
+        output_data%lat(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
+   call nc_write_array(ncid,'lon',output_data%vid_lon, &
+        output_data%lon(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
 
-   call nc_write_array(ncid,'lat',output_data%vid_lat,&
-           output_data%lat(ixstart:,iystart:),1,1,n_x,1,1,n_y)
-   call nc_write_array(ncid,'lon',output_data%vid_lon,&
-           output_data%lon(ixstart:,iystart:),1,1,n_x,1,1,n_y)
-
-   do i=1,NViews
+   do i=1,ind%NViews
 
       write(input_num,"(i4)") i
 
       input_dummy='solar_zenith_view_no'//trim(adjustl(input_num))
       call nc_write_array(ncid,trim(adjustl(input_dummy)), &
-              output_data%vid_sol_zen(i),output_data%sol_zen(ixstart:,:,i), &
-              1,1,n_x,1,1,n_y)
+           output_data%vid_sol_zen(i),output_data%sol_zen(ind%X0:,:,i), &
+           1,1,ind%Xdim,1,1,ind%Ydim)
 
       input_dummy='satellite_zenith_view_no'//trim(adjustl(input_num))
       call nc_write_array(ncid,trim(adjustl(input_dummy)), &
-              output_data%vid_sat_zen(i),output_data%sat_zen(ixstart:,:,i), &
-              1,1,n_x,1,1,n_y)
+           output_data%vid_sat_zen(i),output_data%sat_zen(ind%X0:,:,i), &
+           1,1,ind%Xdim,1,1,ind%Ydim)
 
       input_dummy='rel_azimuth_view_no'//trim(adjustl(input_num))
       call nc_write_array(ncid,trim(adjustl(input_dummy)), &
-              output_data%vid_rel_azi(i),output_data%rel_azi(ixstart:,:,i), &
-              1,1,n_x,1,1,n_y)
+           output_data%vid_rel_azi(i),output_data%rel_azi(ind%X0:,:,i), &
+           1,1,ind%Xdim,1,1,ind%Ydim)
 
    end do
 
-if (output_flags%do_aerosol) then
-   call nc_write_array(ncid,'aot550',output_data%vid_aot550,&
-           output_data%aot550(ixstart:,iystart:),1,1,n_x,1,1,n_y)
-   call nc_write_array(ncid,'aot550_uncertainty',output_data%vid_aot550_uncertainty,&
-           output_data%aot550_uncertainty(ixstart:,iystart:),1,1,n_x,1,1,n_y)
-   call nc_write_array(ncid,'aot870',output_data%vid_aot870,&
-           output_data%aot870(ixstart:,iystart:),1,1,n_x,1,1,n_y)
-   call nc_write_array(ncid,'aot870_uncertainty',output_data%vid_aot870_uncertainty,&
-           output_data%aot870_uncertainty(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+if (ind%flags%do_aerosol) then
+   call nc_write_array(ncid,'aot550',output_data%vid_aot550, &
+        output_data%aot550(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
+   call nc_write_array(ncid,'aot550_uncertainty', &
+        output_data%vid_aot550_uncertainty, &
+        output_data%aot550_uncertainty(ind%X0:,ind%Y0:), &
+        1,1,ind%Xdim,1,1,ind%Ydim)
+   call nc_write_array(ncid,'aot870',output_data%vid_aot870, &
+        output_data%aot870(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
+   call nc_write_array(ncid,'aot870_uncertainty', &
+        output_data%vid_aot870_uncertainty, &
+        output_data%aot870_uncertainty(ind%X0:,ind%Y0:), &
+        1,1,ind%Xdim,1,1,ind%Ydim)
 
-   call nc_write_array(ncid,'aer',output_data%vid_aer,&
-           output_data%aer(ixstart:,iystart:),1,1,n_x,1,1,n_y)
-   call nc_write_array(ncid,'aer_uncertainty',output_data%vid_aer_uncertainty,&
-           output_data%aer_uncertainty(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'aer',output_data%vid_aer, &
+        output_data%aer(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
+   call nc_write_array(ncid,'aer_uncertainty', &
+        output_data%vid_aer_uncertainty, &
+        output_data%aer_uncertainty(ind%X0:,ind%Y0:), &
+        1,1,ind%Xdim,1,1,ind%Ydim)
 end if
 
-if (output_flags%do_rho) then
-   do i=1,NSolar
+if (ind%flags%do_rho) then
+   do i=1,ind%NSolar
       do j=1,MaxRho_XX
          if (output_data%vid_rho(i,j) /= 0) then
             call nc_write_array(ncid,'rho', &
-                 output_data%vid_rho(i,j),&
-                 output_data%rho(ixstart:,iystart:,i,j),1,1,n_x,1,1,n_y)
+                 output_data%vid_rho(i,j), &
+                 output_data%rho(ind%X0:,ind%Y0:,i,j), &
+                 1,1,ind%Xdim,1,1,ind%Ydim)
             call nc_write_array(ncid,'rho_uncertainty', &
                  output_data%vid_rho_uncertainty(i,j), &
-                 output_data%rho_uncertainty(ixstart:,iystart:,i,j),1,1,n_x,1,1,n_y)
+                 output_data%rho_uncertainty(ind%X0:,ind%Y0:,i,j), &
+                 1,1,ind%Xdim,1,1,ind%Ydim)
          end if
       end do
    end do
 end if
 
-if (output_flags%do_swansea) then
-   do i=1,NSolar
+if (ind%flags%do_swansea) then
+   do i=1,ind%NSolar
       call nc_write_array(ncid,'swansea_s', &
-           output_data%vid_swansea_s(i),&
-           output_data%swansea_s(ixstart:,iystart:,i),1,1,n_x,1,1,n_y)
+           output_data%vid_swansea_s(i), &
+           output_data%swansea_s(ind%X0:,ind%Y0:,i),1,1,ind%Xdim,1,1,ind%Ydim)
       call nc_write_array(ncid,'swansea_s_uncertainty', &
-           output_data%vid_swansea_s_uncertainty(i),&
-           output_data%swansea_s_uncertainty(ixstart:,iystart:,i),1,1,n_x,1,1,n_y)
+           output_data%vid_swansea_s_uncertainty(i), &
+           output_data%swansea_s_uncertainty(ind%X0:,ind%Y0:,i), &
+           1,1,ind%Xdim,1,1,ind%Ydim)
       call nc_write_array(ncid,'diffuse_frac', &
-           output_data%vid_diffuse_frac(i),&
-           output_data%diffuse_frac(ixstart:,iystart:,i),1,1,n_x,1,1,n_y)
+           output_data%vid_diffuse_frac(i), &
+           output_data%diffuse_frac(ind%X0:,ind%Y0:,i), &
+           1,1,ind%Xdim,1,1,ind%Ydim)
       call nc_write_array(ncid,'diffuse_frac_uncertainty', &
-           output_data%vid_diffuse_frac_uncertainty(i),&
-           output_data%diffuse_frac_uncertainty(ixstart:,iystart:,i),1,1,n_x,1,1,n_y)
+           output_data%vid_diffuse_frac_uncertainty(i), &
+           output_data%diffuse_frac_uncertainty(ind%X0:,ind%Y0:,i), &
+           1,1,ind%Xdim,1,1,ind%Ydim)
    end do
 
-   do i=1,NViews
+   do i=1,ind%NViews
       call nc_write_array(ncid,'swansea_p', &
-           output_data%vid_swansea_p(i),&
-           output_data%swansea_p(ixstart:,iystart:,i),1,1,n_x,1,1,n_y)
+           output_data%vid_swansea_p(i), &
+           output_data%swansea_p(ind%X0:,ind%Y0:,i),1,1,ind%Xdim,1,1,ind%Ydim)
       call nc_write_array(ncid,'swansea_p_uncertainty', &
-           output_data%vid_swansea_p_uncertainty(i),&
-           output_data%swansea_p_uncertainty(ixstart:,iystart:,i),1,1,n_x,1,1,n_y)
+           output_data%vid_swansea_p_uncertainty(i), &
+           output_data%swansea_p_uncertainty(ind%X0:,ind%Y0:,i), &
+           1,1,ind%Xdim,1,1,ind%Ydim)
    end do
 end if
 
-if (output_flags%do_cloud) then
-   call nc_write_array(ncid,'cot',output_data%vid_cot,&
-           output_data%cot(ixstart:,iystart:),1,1,n_x,1,1,n_y)
-   call nc_write_array(ncid,'cot_uncertainty',output_data%vid_cot_uncertainty,&
-           output_data%cot_uncertainty(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+if (ind%flags%do_cloud) then
+   call nc_write_array(ncid,'cot',output_data%vid_cot, &
+        output_data%cot(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
+   call nc_write_array(ncid,'cot_uncertainty', &
+        output_data%vid_cot_uncertainty, &
+        output_data%cot_uncertainty(ind%X0:,ind%Y0:), &
+        1,1,ind%Xdim,1,1,ind%Ydim)
 
-   call nc_write_array(ncid,'cer',output_data%vid_cer,&
-           output_data%cer(ixstart:,iystart:),1,1,n_x,1,1,n_y)
-   call nc_write_array(ncid,'cer_uncertainty',output_data%vid_cer_uncertainty,&
-           output_data%cer_uncertainty(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'cer',output_data%vid_cer, &
+        output_data%cer(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
+   call nc_write_array(ncid,'cer_uncertainty', &
+        output_data%vid_cer_uncertainty, &
+        output_data%cer_uncertainty(ind%X0:,ind%Y0:), &
+        1,1,ind%Xdim,1,1,ind%Ydim)
 
-   call nc_write_array(ncid,'ctp',output_data%vid_ctp,&
-           output_data%ctp(ixstart:,iystart:),1,1,n_x,1,1,n_y)
-   call nc_write_array(ncid,'ctp_uncertainty',output_data%vid_ctp_uncertainty,&
-           output_data%ctp_uncertainty(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'ctp',output_data%vid_ctp, &
+        output_data%ctp(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
+   call nc_write_array(ncid,'ctp_uncertainty', &
+        output_data%vid_ctp_uncertainty, &
+        output_data%ctp_uncertainty(ind%X0:,ind%Y0:), &
+        1,1,ind%Xdim,1,1,ind%Ydim)
 
-   call nc_write_array(ncid,'ctp_corrected',output_data%vid_ctp_corrected,&
-           output_data%ctp_corrected(ixstart:,iystart:),1,1,n_x,1,1,n_y)
-   call nc_write_array(ncid,'ctp_corrected_uncertainty',output_data%vid_ctp_corrected_uncertainty,&
-           output_data%ctp_corrected_uncertainty(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'ctp_corrected',output_data%vid_ctp_corrected, &
+        output_data%ctp_corrected(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
+   call nc_write_array(ncid,'ctp_corrected_uncertainty', &
+        output_data%vid_ctp_corrected_uncertainty, &
+        output_data%ctp_corrected_uncertainty(ind%X0:,ind%Y0:), &
+        1,1,ind%Xdim,1,1,ind%Ydim)
 
-   call nc_write_array(ncid,'cc_total',output_data%vid_cc_total,&
-           output_data%cc_total(ixstart:,iystart:),1,1,n_x,1,1,n_y)
-   call nc_write_array(ncid,'cc_total_uncertainty',output_data%vid_cc_total_uncertainty,&
-           output_data%cc_total_uncertainty(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'cc_total',output_data%vid_cc_total, &
+        output_data%cc_total(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
+   call nc_write_array(ncid,'cc_total_uncertainty', &
+        output_data%vid_cc_total_uncertainty, &
+        output_data%cc_total_uncertainty(ind%X0:,ind%Y0:), &
+        1,1,ind%Xdim,1,1,ind%Ydim)
 
-   call nc_write_array(ncid,'stemp',output_data%vid_stemp,&
-           output_data%stemp(ixstart:,iystart:),1,1,n_x,1,1,n_y)
-   call nc_write_array(ncid,'stemp_uncertainty',output_data%vid_stemp_uncertainty,&
-           output_data%stemp_uncertainty(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'stemp',output_data%vid_stemp, &
+        output_data%stemp(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
+   call nc_write_array(ncid,'stemp_uncertainty', &
+        output_data%vid_stemp_uncertainty, &
+        output_data%stemp_uncertainty(ind%X0:,ind%Y0:), &
+        1,1,ind%Xdim,1,1,ind%Ydim)
 
-   call nc_write_array(ncid,'cth',output_data%vid_cth,&
-           output_data%cth(ixstart:,iystart:),1,1,n_x,1,1,n_y)
-   call nc_write_array(ncid,'cth_uncertainty',output_data%vid_cth_uncertainty,&
-           output_data%cth_uncertainty(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'cth',output_data%vid_cth, &
+        output_data%cth(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
+   call nc_write_array(ncid,'cth_uncertainty', &
+        output_data%vid_cth_uncertainty, &
+        output_data%cth_uncertainty(ind%X0:,ind%Y0:), &
+        1,1,ind%Xdim,1,1,ind%Ydim)
 
-   call nc_write_array(ncid,'cth_corrected',output_data%vid_cth_corrected,&
-           output_data%cth_corrected(ixstart:,iystart:),1,1,n_x,1,1,n_y)
-   call nc_write_array(ncid,'cth_corrected_uncertainty',output_data%vid_cth_corrected_uncertainty,&
-           output_data%cth_corrected_uncertainty(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'cth_corrected',output_data%vid_cth_corrected, &
+        output_data%cth_corrected(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
+   call nc_write_array(ncid,'cth_corrected_uncertainty', &
+        output_data%vid_cth_corrected_uncertainty, &
+        output_data%cth_corrected_uncertainty(ind%X0:,ind%Y0:), &
+        1,1,ind%Xdim,1,1,ind%Ydim)
 
-   call nc_write_array(ncid,'ctt',output_data%vid_ctt,&
-           output_data%ctt(ixstart:,iystart:),1,1,n_x,1,1,n_y)
-   call nc_write_array(ncid,'ctt_uncertainty',output_data%vid_ctt_uncertainty,&
-           output_data%ctt_uncertainty(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'ctt',output_data%vid_ctt, &
+        output_data%ctt(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
+   call nc_write_array(ncid,'ctt_uncertainty', &
+        output_data%vid_ctt_uncertainty, &
+        output_data%ctt_uncertainty(ind%X0:,ind%Y0:), &
+        1,1,ind%Xdim,1,1,ind%Ydim)
 
-   call nc_write_array(ncid,'ctt_corrected',output_data%vid_ctt_corrected,&
-           output_data%ctt_corrected(ixstart:,iystart:),1,1,n_x,1,1,n_y)
-   call nc_write_array(ncid,'ctt_corrected_uncertainty',output_data%vid_ctt_corrected_uncertainty,&
-           output_data%ctt_corrected_uncertainty(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'ctt_corrected',output_data%vid_ctt_corrected, &
+        output_data%ctt_corrected(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
+   call nc_write_array(ncid,'ctt_corrected_uncertainty', &
+        output_data%vid_ctt_corrected_uncertainty, &
+        output_data%ctt_corrected_uncertainty(ind%X0:,ind%Y0:), &
+        1,1,ind%Xdim,1,1,ind%Ydim)
 
-   call nc_write_array(ncid,'cwp',output_data%vid_cwp,&
-           output_data%cwp(ixstart:,iystart:),1,1,n_x,1,1,n_y)
-   call nc_write_array(ncid,'cwp_uncertainty',output_data%vid_cwp_uncertainty,&
-           output_data%cwp_uncertainty(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'cwp',output_data%vid_cwp, &
+        output_data%cwp(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
+   call nc_write_array(ncid,'cwp_uncertainty', &
+        output_data%vid_cwp_uncertainty, &
+        output_data%cwp_uncertainty(ind%X0:,ind%Y0:), &
+        1,1,ind%Xdim,1,1,ind%Ydim)
 
-   do i=1,NSolar
-      write(input_num,"(i4)") Y_Id(YSolar(i))
+   do i=1,ind%NSolar
+      write(input_num,"(i4)") ind%Y_Id(ind%YSolar(i))
 
       input_dummy='cloud_albedo_in_channel_no_'//trim(adjustl(input_num))
       call nc_write_array(ncid,trim(adjustl(input_dummy)), &
-              output_data%vid_cloud_albedo(i),&
-              output_data%cloud_albedo(ixstart:,iystart:,i), &
-              1,1,n_x,1,1,n_y)
+           output_data%vid_cloud_albedo(i), &
+           output_data%cloud_albedo(ind%X0:,ind%Y0:,i), &
+           1,1,ind%Xdim,1,1,ind%Ydim)
 
-      input_dummy='cloud_albedo_in_channel_uncertainty_no_'//trim(adjustl(input_num))
+      input_dummy='cloud_albedo_in_channel_uncertainty_no_'// &
+           trim(adjustl(input_num))
       call nc_write_array(ncid,trim(adjustl(input_dummy)), &
-              output_data%vid_cloud_albedo_uncertainty(i),&
-              output_data%cloud_albedo_uncertainty(ixstart:,iystart:,i), &
-              1,1,n_x,1,1,n_y)
+           output_data%vid_cloud_albedo_uncertainty(i), &
+           output_data%cloud_albedo_uncertainty(ind%X0:,ind%Y0:,i), &
+           1,1,ind%Xdim,1,1,ind%Ydim)
    end do
 
-   do i=1,NThermal
-      write(input_num,"(i4)") Y_Id(YThermal(i))
+   do i=1,ind%NThermal
+      write(input_num,"(i4)") ind%Y_Id(ind%YThermal(i))
 
       input_dummy='cee_in_channel_no_'//trim(adjustl(input_num))
       call nc_write_array(ncid,trim(adjustl(input_dummy)), &
-              output_data%vid_cee(i),&
-              output_data%cee(ixstart:,iystart:,i), &
-              1,1,n_x,1,1,n_y)
+           output_data%vid_cee(i), &
+           output_data%cee(ind%X0:,ind%Y0:,i), &
+           1,1,ind%Xdim,1,1,ind%Ydim)
 
       input_dummy='cee_in_channel_uncertainty_no_'//trim(adjustl(input_num))
       call nc_write_array(ncid,trim(adjustl(input_dummy)), &
-              output_data%vid_cee_uncertainty(i),&
-              output_data%cee_uncertainty(ixstart:,iystart:,i), &
-              1,1,n_x,1,1,n_y)
+           output_data%vid_cee_uncertainty(i), &
+           output_data%cee_uncertainty(ind%X0:,ind%Y0:,i), &
+           1,1,ind%Xdim,1,1,ind%Ydim)
    end do
 
-   call nc_write_array(ncid,'cccot_pre',output_data%vid_cccot_pre,&
-           output_data%cccot_pre(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'cccot_pre',output_data%vid_cccot_pre, &
+        output_data%cccot_pre(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
 end if
 
-   call nc_write_array(ncid,'convergence',output_data%vid_convergence,&
-           output_data%convergence(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'convergence',output_data%vid_convergence, &
+        output_data%convergence(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
 
-   call nc_write_array(ncid,'niter',output_data%vid_niter,&
-           output_data%niter(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'niter',output_data%vid_niter, &
+        output_data%niter(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
 
-   call nc_write_array(ncid,'costja',output_data%vid_costja,&
-           output_data%costja(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'costja',output_data%vid_costja, &
+        output_data%costja(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
 
-   call nc_write_array(ncid,'costjm',output_data%vid_costjm,&
-           output_data%costjm(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'costjm',output_data%vid_costjm, &
+        output_data%costjm(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
 
-   call nc_write_array(ncid,'qcflag',output_data%vid_qcflag,&
-           output_data%qcflag(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'qcflag',output_data%vid_qcflag, &
+        output_data%qcflag(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
 
-   call nc_write_array(ncid,'lsflag',output_data%vid_lsflag,&
-           output_data%lsflag(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'lsflag',output_data%vid_lsflag, &
+        output_data%lsflag(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
 
-   call nc_write_array(ncid,'lusflag',output_data%vid_lusflag,&
-           output_data%lusflag(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'lusflag',output_data%vid_lusflag, &
+        output_data%lusflag(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
 
-   call nc_write_array(ncid,'dem',output_data%vid_dem,&
-           output_data%dem(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'dem',output_data%vid_dem, &
+        output_data%dem(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
 
-   call nc_write_array(ncid,'nisemask',output_data%vid_nisemask,&
-           output_data%nisemask(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'nisemask',output_data%vid_nisemask, &
+        output_data%nisemask(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
 
-   call nc_write_array(ncid,'illum',output_data%vid_illum,&
-           output_data%illum(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'illum',output_data%vid_illum, &
+        output_data%illum(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
 
-   call nc_write_array(ncid,'cldtype',output_data%vid_cldtype,&
-           output_data%cldtype(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'cldtype',output_data%vid_cldtype, &
+        output_data%cldtype(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
 
-if (output_flags%do_cldmask) then
-   if (output_flags%cloudmask_pre) then
+if (ind%flags%do_cldmask) then
+   if (ind%flags%cloudmask_pre) then
       call nc_write_array(ncid,'cloudmask_pre',output_data%vid_cldmask,&
-              output_data%cldmask(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+              output_data%cldmask(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
    else
-      call nc_write_array(ncid,'cldmask',output_data%vid_cldmask,&
-              output_data%cldmask(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'cldmask',output_data%vid_cldmask, &
+        output_data%cldmask(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
    end if
 end if
-
-if (output_flags%do_cldmask_uncertainty) then
-   call nc_write_array(ncid,'cldmask_uncertainty',output_data%vid_cldmask_uncertainty,&
-           output_data%cldmask_uncertainty(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+if (ind%flags%do_cldmask_uncertainty) then
+   call nc_write_array(ncid,'cldmask_uncertainty', &
+        output_data%vid_cldmask_uncertainty, &
+        output_data%cldmask_uncertainty(ind%X0:,ind%Y0:), &
+        1,1,ind%Xdim,1,1,ind%Ydim)
 end if
 
-   call nc_write_array(ncid,'phase',output_data%vid_phase,&
-           output_data%phase(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+if (ind%flags%do_phase) then
+   call nc_write_array(ncid,'phase',output_data%vid_phase, &
+        output_data%phase(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
+end if
 
-if (output_flags%do_phase_pavolonis) then
-   call nc_write_array(ncid,'phase_pavolonis',output_data%vid_phase_pavolonis,&
-           output_data%phase_pavolonis(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+if (ind%flags%do_phase_pavolonis) then
+   call nc_write_array(ncid,'phase_pavolonis', &
+        output_data%vid_phase_pavolonis, &
+        output_data%phase_pavolonis(ind%X0:,ind%Y0:), &
+        1,1,ind%Xdim,1,1,ind%Ydim)
 end if
 
 end subroutine write_output_primary

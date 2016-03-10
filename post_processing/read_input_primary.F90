@@ -51,7 +51,7 @@ subroutine read_input_primary_common(ncid, input_data, xdim, ydim, indexing, &
    integer,                   intent(in)    :: ncid
    type(input_data_primary),  intent(inout) :: input_data
    integer(kind=lint),        intent(in)    :: xdim,ydim
-   type(counts_and_indexes),  intent(in)    :: indexing
+   type(common_indices),      intent(in)    :: indexing
    type(global_attributes_s), intent(in)    :: global_atts
    logical,                   intent(in)    :: verbose
 
@@ -167,7 +167,7 @@ subroutine read_input_primary_all(fname, input_data, xdim, ydim, indexing, &
    character(len=path_length), intent(in)    :: fname
    type(input_data_primary),   intent(inout) :: input_data
    integer(kind=lint),         intent(in)    :: xdim,ydim
-   type(counts_and_indexes),   intent(in)    :: indexing
+   type(common_indices),       intent(in)    :: indexing
    type(global_attributes_s),  intent(inout) :: global_atts
    type(source_attributes_s),  intent(inout) :: source_atts
    logical,                    intent(in)    :: verbose
@@ -226,7 +226,7 @@ subroutine read_input_primary_class(fname, input_data, xdim, ydim, indexing, &
    character(len=path_length), intent(in)    :: fname
    type(input_data_primary),   intent(inout) :: input_data
    integer(kind=lint),         intent(in)    :: xdim,ydim
-   type(counts_and_indexes),   intent(in)    :: indexing
+   type(common_indices),       intent(in)    :: indexing
    type(global_attributes_s),  intent(in)    :: global_atts
    logical,                    intent(in)    :: verbose
 

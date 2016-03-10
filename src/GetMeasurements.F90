@@ -140,7 +140,7 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
    do i = 1, SPixel%Ind%Ny
       ii = SPixel%spixel_y_to_ctrl_y_index(i)
       SPixel%Ym(i) = MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%Y0, ii)
-      SPixel%ViewIdx(i) = Ctrl%Ind%ViewIdx(ii)
+      SPixel%ViewIdx(i) = Ctrl%Ind%View_Id(ii)
    end do
 !  SPixel%Ind%NViews = maxval(SPixel%ViewIdx)
 

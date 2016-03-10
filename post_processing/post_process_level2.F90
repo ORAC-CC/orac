@@ -122,7 +122,6 @@ program post_process_level2
 subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_file)
 #endif
 
-   use common_constants
    use global_attributes
    use netcdf
    use orac_input
@@ -138,8 +137,6 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    implicit none
 
    integer,            parameter :: MaxInFiles = 32
-
-   integer,            parameter :: MaxNumMeas = 36
 
    integer(kind=byte), parameter :: IWat       = 1
    integer(kind=byte), parameter :: IIce       = 2
@@ -194,9 +191,8 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
 
    type(output_data_primary)   :: output_primary
    type(output_data_secondary) :: output_secondary
-   type(output_data_flags)     :: output_flags
 
-   type(counts_and_indexes)    :: indexing
+   type(common_indices)        :: indexing
 
    integer(kind=lint)          :: xdim,ydim
    integer(kind=lint)          :: ixstart,ixstop,iystart,iystop
@@ -211,7 +207,6 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    integer                     :: deflate_level2
    logical                     :: shuffle_flag2
 
-   logical, allocatable        :: is_thermal(:), rho_terms(:,:)
 #ifndef WRAPPER
       nargs = COMMAND_ARGUMENT_COUNT()
 #else
@@ -314,11 +309,9 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    allocate(indexing%YThermal(MaxNumMeas))
    allocate(indexing%Y_Id(MaxNumMeas))
    allocate(indexing%Ch_Is(MaxNumMeas))
-   allocate(is_thermal(MaxNumMeas))
-   allocate(rho_terms(MaxNumMeas,MaxRho_XX))
+   allocate(indexing%rho_terms(MaxNumMeas,MaxRho_XX))
    indexing%Ch_Is = 0
-   is_thermal = .false.
-   rho_terms = .false.
+   indexing%rho_terms = .false.
 
    do i = 1, MaxNumMeas
       write(input_num, "(i4)") i
@@ -341,7 +334,6 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
               indexing%Y_Id(indexing%Ny) = i
               indexing%Ch_Is(indexing%Ny) = &
                  ibset(indexing%Ch_Is(indexing%Ny), ThermalBit)
-              is_thermal(indexing%Ny) = .true.
          end if
       end if
    end do
@@ -391,6 +383,12 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    ixstop=xdim
    iystart=1
    iystop=ydim
+   indexing%X0=1
+   indexing%X1=xdim
+   indexing%Y0=1
+   indexing%Y1=ydim
+   indexing%xdim=xdim
+   indexing%ydim=ydim
 
    if (verbose) then
       write(*,*) 'Processing limits:'
@@ -503,23 +501,22 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    end do
 
    ! Hardwire outputs until different input file types supported
-   output_flags%do_cloud               = .true.
-   output_flags%do_aerosol             = .false.
-   output_flags%do_rho                 = .false.
-   output_flags%do_swansea             = .false.
-   output_flags%do_phase_pavolonis     = .true.
-   output_flags%do_cldmask             = .true.
-   output_flags%cloudmask_pre          = .true.
-   output_flags%do_cldmask_uncertainty = .false.
-   output_flags%do_covariance          = .false.
+   indexing%flags%do_cloud               = .true.
+   indexing%flags%do_aerosol             = .false.
+   indexing%flags%do_rho                 = .false.
+   indexing%flags%do_swansea             = .false.
+   indexing%flags%do_indexing            = .false.
+   indexing%flags%do_phase_pavolonis     = .true.
+   indexing%flags%do_cldmask             = .true.
+   indexing%flags%cloudmask_pre          = .true.
+   indexing%flags%do_cldmask_uncertainty = .false.
+   indexing%flags%do_phase               = .true.
+   indexing%flags%do_covariance          = .false.
 
    ! allocate the structures which hold the output in its final form
-   call alloc_output_data_primary(ixstart, ixstop, iystart, iystop, &
-        indexing%NViews, indexing%Ny, 100, output_primary, output_flags)
+   call alloc_output_data_primary(indexing, 100, output_primary)
    if (do_secondary) then
-      call alloc_output_data_secondary(ixstart, ixstop, iystart, iystop, &
-           indexing%NSolar, indexing%Ny, indexing%Nx, is_thermal, xdim, ydim, &
-           output_secondary, output_flags)
+      call alloc_output_data_secondary(indexing, output_secondary)
    end if
 
    ! open the netcdf output file
@@ -539,15 +536,14 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
       shuffle_flag2  = .false.
    end if
    call def_output_primary(ncid_primary, dims_var, output_primary, &
-        indexing%NViews, indexing%Ny, indexing%NSolar, indexing%NThermal, &
-        indexing%YSolar, indexing%YThermal, indexing%Y_Id, rho_terms, &
+        indexing, &
         input_primary(1)%qc_flag_masks, input_primary(1)%qc_flag_meanings, &
-        deflate_level2, shuffle_flag2, verbose, output_flags)
+        deflate_level2, shuffle_flag2, verbose)
    if (do_secondary) then
       call def_output_secondary(ncid_secondary, dims_var, output_secondary, &
-           indexing%NViews, indexing%Ny, indexing%NSolar, indexing%YSolar, &
-           indexing%Y_Id, is_thermal, rho_terms, deflate_level2, shuffle_flag2, &
-           verbose, output_flags)
+           indexing, &
+           deflate_level2, shuffle_flag2, &
+           verbose)
    end if
 
    ! put results in final output arrays with final datatypes
@@ -569,13 +565,9 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    end if
 
    ! write output to netcdf variables
-   call write_output_primary(ncid_primary, ixstart, ixstop, iystart, iystop, &
-        output_primary, indexing%NViews, indexing%NSolar, indexing%NThermal, &
-        indexing%YSolar, indexing%YThermal, indexing%Y_Id, output_flags)
+   call write_output_primary(ncid_primary, indexing, output_primary)
    if (do_secondary) then
-      call write_output_secondary(ncid_secondary, ixstart, ixstop, iystart, &
-           iystop, output_secondary, indexing%NViews, indexing%Ny, &
-           indexing%NSolar, indexing%Nx, indexing%Y_Id, output_flags)
+      call write_output_secondary(ncid_secondary, indexing, output_secondary)
    end if
 
    ! close output file
@@ -592,9 +584,9 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    end if
 
    ! deallocate output structure
-   call dealloc_output_data_primary(output_primary, output_flags)
+   call dealloc_output_data_primary(output_primary)
    if (do_secondary) then
-      call dealloc_output_data_secondary(output_secondary, output_flags)
+      call dealloc_output_data_secondary(output_secondary)
    end if
 
 
@@ -602,8 +594,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    deallocate(indexing%YThermal)
    deallocate(indexing%Y_Id)
    deallocate(indexing%Ch_Is)
-   deallocate(is_thermal)
-   deallocate(rho_terms)
+   deallocate(indexing%rho_terms)
 
 #ifdef WRAPPER
 end subroutine post_process_level2

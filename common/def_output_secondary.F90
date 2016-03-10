@@ -58,6 +58,7 @@
 !    fields use the same values.
 ! 2016/01/06, AP: Wrap do_* flags into output_flags structure. Pass logical array
 !    to identify thermal channels rather than dealing with Ch_Is.
+! 2016/03/04, AP: Homogenisation of I/O modules.
 !
 ! $Id$
 !
@@ -65,11 +66,9 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine def_output_secondary(ncid, dims_var, output_data, NViews, Ny, &
-   NSolar, YSolar, Y_Id, thermal, rho_terms, deflate_level, shuffle_flag, &
-   verbose, output_flags)
+subroutine def_output_secondary(ncid, dims_var, output_data, indexing, &
+   deflate_level, shuffle_flag, verbose)
 
-   use netcdf
    use orac_ncdf
 
    implicit none
@@ -77,17 +76,10 @@ subroutine def_output_secondary(ncid, dims_var, output_data, NViews, Ny, &
    integer,                     intent(in)    :: ncid
    integer,                     intent(in)    :: dims_var(:)
    type(output_data_secondary), intent(inout) :: output_data
-   integer,                     intent(in)    :: NViews
-   integer,                     intent(in)    :: Ny
-   integer,                     intent(in)    :: NSolar
-   integer,                     intent(in)    :: YSolar(:)
-   integer,                     intent(in)    :: Y_Id(:)
-   logical,                     intent(in)    :: thermal(:)
-   logical,                     intent(in)    :: rho_terms(:,:)
+   type(common_indices),        intent(in)    :: indexing
    integer,                     intent(in)    :: deflate_level
    logical,                     intent(in)    :: shuffle_flag
    logical,                     intent(in)    :: verbose
-   type(output_data_flags),     intent(in)    :: output_flags
 
    character(len=32)  :: input_num
    character(len=512) :: input_dummy, input_dummy2, input_dummy3
@@ -141,7 +133,7 @@ subroutine def_output_secondary(ncid, dims_var, output_data, NViews, Ny, &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 
-if (output_flags%do_aerosol) then
+if (indexing%flags%do_aerosol) then
    !----------------------------------------------------------------------------
    ! aot550_ap
    !----------------------------------------------------------------------------
@@ -219,13 +211,13 @@ if (output_flags%do_aerosol) then
            shuffle       = shuffle_flag)
 end if
 
-if (output_flags%do_rho) then
-   do i=1,NSolar
+if (indexing%flags%do_rho) then
+   do i=1,indexing%NSolar
 
-      write(input_num,"(i4)") Y_Id(YSolar(i))
+      write(input_num,"(i4)") indexing%Y_Id(indexing%YSolar(i))
 
       do j=1,MaxRho_XX
-         if (rho_terms(i,j)) then
+         if (indexing%rho_terms(i,j)) then
    !----------------------------------------------------------------------------
    ! rho_XX_ap_in_channel_no_*
    !----------------------------------------------------------------------------
@@ -304,10 +296,10 @@ if (output_flags%do_rho) then
    end do
 end if
 
-if (output_flags%do_swansea) then
-   do i=1,NSolar
+if (indexing%flags%do_swansea) then
+   do i=1,indexing%NSolar
 
-      write(input_num,"(i4)") Y_Id(YSolar(i))
+      write(input_num,"(i4)") indexing%Y_Id(indexing%YSolar(i))
 
    !----------------------------------------------------------------------------
    ! swansea_s_ap_in_channel_no_*
@@ -354,7 +346,7 @@ if (output_flags%do_swansea) then
            shuffle       = shuffle_flag)
    end do
 
-   do i=1,NViews
+   do i=1,indexing%NViews
 
       write(input_num,"(i4)") i
 
@@ -404,7 +396,7 @@ if (output_flags%do_swansea) then
    end do
 end if
 
-if (output_flags%do_cloud) then
+if (indexing%flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! cot_ap
    !----------------------------------------------------------------------------
@@ -566,9 +558,9 @@ if (output_flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! albedo_in_channel_no_*
    !----------------------------------------------------------------------------
-   do i=1,NSolar
+   do i=1,indexing%NSolar
 
-      write(input_num,"(i4)") Y_Id(YSolar(i))
+      write(input_num,"(i4)") indexing%Y_Id(indexing%YSolar(i))
 
       input_dummy='albedo_in_channel_no_'//trim(adjustl(input_num))
       input_dummy2='albedo in channel no '//trim(adjustl(input_num))
@@ -594,11 +586,11 @@ end if
    !----------------------------------------------------------------------------
    ! reflectance and brightness temperature _in_channel_no_*
    !----------------------------------------------------------------------------
-   do i=1,Ny
+   do i=1,indexing%Ny
 
-      write(input_num,"(i4)") Y_Id(i)
+      write(input_num,"(i4)") indexing%Y_Id(i)
 
-      if (thermal(i)) then
+      if (btest(indexing%Ch_Is(i), ThermalBit)) then
          input_dummy='brightness_temperature_in_channel_no_'//trim(adjustl(input_num))
          input_dummy2='brightness temperature in channel no '//trim(adjustl(input_num))
          input_dummy3='kelvin'
@@ -630,11 +622,11 @@ end if
    !----------------------------------------------------------------------------
    ! firstguess reflectance and brightness temperature _in_channel_no_*
    !----------------------------------------------------------------------------
-   do i=1,Ny
+   do i=1,indexing%Ny
 
-      write(input_num,"(i4)") Y_Id(i)
+      write(input_num,"(i4)") indexing%Y_Id(i)
 
-      if (thermal(i)) then
+      if (btest(indexing%Ch_Is(i), ThermalBit)) then
          input_dummy='firstguess_brightness_temperature_in_channel_no_'//trim(adjustl(input_num))
          input_dummy2='firstguess brightness temperature in channel no '//trim(adjustl(input_num))
          input_dummy3='kelvin'
@@ -665,11 +657,11 @@ end if
    !----------------------------------------------------------------------------
    ! reflectances and brightness temperature _residual_in_channel_no_*
    !----------------------------------------------------------------------------
-   do i=1,Ny
+   do i=1,indexing%Ny
 
-      write(input_num,"(i4)") Y_Id(i)
+      write(input_num,"(i4)") indexing%Y_Id(i)
 
-      if (thermal(i)) then
+      if (btest(indexing%Ch_Is(i), ThermalBit)) then
          input_dummy='brightness_temperature_residual_in_channel_no_'//trim(adjustl(input_num))
          input_dummy2='brightness temperature residual in channel no '//trim(adjustl(input_num))
          input_dummy3='kelvin'
@@ -719,7 +711,7 @@ end if
    !----------------------------------------------------------------------------
    ! covariance_matrix_element_*
    !----------------------------------------------------------------------------
-   if (output_flags%do_covariance) then
+   if (indexing%flags%do_covariance) then
 
    end if
 

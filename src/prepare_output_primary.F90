@@ -70,7 +70,7 @@
 !-------------------------------------------------------------------------------
 
 subroutine prepare_output_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
-                                  output_data, output_flags)
+                                  output_data)
 
    use CTRL_def
    use Data_def
@@ -89,7 +89,6 @@ subroutine prepare_output_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
    type(SPixel_t),            intent(in)    :: SPixel
    type(Diag_t),              intent(in)    :: Diag
    type(output_data_primary), intent(inout) :: output_data
-   type(output_data_flags),   intent(in)    :: output_flags
 
    integer            :: k, kk, l
    integer(kind=sint) :: temp_short_ctp_uncertainty
@@ -140,7 +139,7 @@ subroutine prepare_output_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
            sreal_fill_value, sreal_fill_value)
    end do
 
-if (output_flags%do_aerosol) then
+if (Ctrl%Ind%flags%do_aerosol) then
    !----------------------------------------------------------------------------
    ! aot, aot_uncertainty
    !----------------------------------------------------------------------------
@@ -182,7 +181,7 @@ if (output_flags%do_aerosol) then
         control=SPixel%Sn(IRe,IRe))
 end if
 
-if (output_flags%do_rho) then
+if (Ctrl%Ind%flags%do_rho) then
    !----------------------------------------------------------------------------
    ! rho, rho_uncertainty
    !----------------------------------------------------------------------------
@@ -212,7 +211,7 @@ if (output_flags%do_rho) then
    end do
 end if
 
-if (output_flags%do_swansea) then
+if (Ctrl%Ind%flags%do_swansea) then
    do k=1,SPixel%Ind%NSolar
       kk = SPixel%spixel_y_solar_to_ctrl_y_solar_index(k)
 
@@ -285,7 +284,7 @@ if (output_flags%do_swansea) then
    end do
 end if
 
-if (output_flags%do_cloud) then
+if (Ctrl%Ind%flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! cot, cot_uncertainty
    !----------------------------------------------------------------------------
@@ -639,11 +638,11 @@ end if
    !----------------------------------------------------------------------------
    ! cldmask
    !----------------------------------------------------------------------------
-if (output_flags%do_cldmask) then
+if (Ctrl%Ind%flags%do_cldmask) then
    output_data%cldmask(i,j)=int(MSI_Data%cldmask(SPixel%Loc%X0, &
                                                  SPixel%Loc%Y0), kind=byte)
 end if
-if (output_flags%do_cldmask_uncertainty) then
+if (Ctrl%Ind%flags%do_cldmask_uncertainty) then
    !----------------------------------------------------------------------------
    ! cldmask_uncertainty
    !----------------------------------------------------------------------------
@@ -660,6 +659,8 @@ end if
    !----------------------------------------------------------------------------
    ! phase
    !----------------------------------------------------------------------------
+if (Ctrl%Ind%flags%do_phase) then
    output_data%phase(i,j)=1_byte
+end if
 
 end subroutine prepare_output_primary

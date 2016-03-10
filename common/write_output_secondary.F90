@@ -10,14 +10,8 @@
 ! Arguments:
 ! Name        Type    In/Out/Both Description
 ! ------------------------------------------------------------------------------
-! Ctrl        struct  In          Control parameters for the retrieval
-! lcovar      logical In          Include covariance matrices in output
-! SPixel      struct  In          Details of retrieved pixel
 ! ncid        integer In          File ID for open output file
-! ixstart     integer In          Starting index on first dimension of output
-! ixstop      integer In          Ending index on first dimension of output
-! iystart     integer In          Starting index on second dimension of output
-! iystop      integer In          Ending index on second dimension of output
+! ind         struct  In          Channel indexing information
 ! output_data struct  Both        Data to be written to output
 !
 ! History:
@@ -38,6 +32,7 @@
 !    with post_processing/.
 ! 2015/12/28, AP: Add output fields for aerosol retrievals.
 ! 2016/01/06, AP: Wrap do_* flags into output_flags structure.
+! 2016/03/04, AP: Homogenisation of I/O modules.
 !
 ! $Id$
 !
@@ -45,157 +40,149 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine write_output_secondary(ncid, ixstart, ixstop, iystart, iystop, &
-   output_data, NViews, Ny, NSolar, Nx, Y_Id, output_flags)
+subroutine write_output_secondary(ncid, ind, output_data)
 
    use orac_ncdf
 
    implicit none
 
    integer,                     intent(in)    :: ncid
-   integer,                     intent(in)    :: ixstart
-   integer,                     intent(in)    :: ixstop
-   integer,                     intent(in)    :: iystart
-   integer,                     intent(in)    :: iystop
+   type(common_indices),        intent(in)    :: ind
    type(output_data_secondary), intent(inout) :: output_data
-   integer,                     intent(in)    :: NViews
-   integer,                     intent(in)    :: Ny
-   integer,                     intent(in)    :: NSolar
-   integer,                     intent(in)    :: Nx
-   integer,                     intent(in)    :: Y_Id(:)
-   type(output_data_flags),     intent(in)    :: output_flags
 
    character(len=32)  :: input_num,input_num1,input_num2
    character(len=512) :: input_dummy
    integer            :: i, j
-   integer            :: n_x
-   integer            :: n_y
 
-   n_x = ixstop - ixstart + 1
-   n_y = iystop - iystart + 1
+   call nc_write_array(ncid,'scanline_u',output_data%vid_scanline_u, &
+        output_data%scanline_u(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
+   call nc_write_array(ncid,'scanline_v',output_data%vid_scanline_v, &
+        output_data%scanline_v(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
 
-   call nc_write_array(ncid,'scanline_u',output_data%vid_scanline_u,&
-           output_data%scanline_u(ixstart:,iystart:),1,1,n_x,1,1,n_y)
-   call nc_write_array(ncid,'scanline_v',output_data%vid_scanline_v,&
-           output_data%scanline_v(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+if (ind%flags%do_aerosol) then
+   call nc_write_array(ncid,'aot550_ap',output_data%vid_aot550_ap, &
+        output_data%aot550_ap(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
+   call nc_write_array(ncid,'aot550_fg',output_data%vid_aot550_fg, &
+        output_data%aot550_fg(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
 
-if (output_flags%do_aerosol) then
-   call nc_write_array(ncid,'aot550_ap',output_data%vid_aot550_ap,&
-           output_data%aot550_ap(ixstart:,iystart:),1,1,n_x,1,1,n_y)
-   call nc_write_array(ncid,'aot550_fg',output_data%vid_aot550_fg,&
-           output_data%aot550_fg(ixstart:,iystart:),1,1,n_x,1,1,n_y)
-
-   call nc_write_array(ncid,'aer_ap',output_data%vid_aer_ap,&
-           output_data%aer_ap(ixstart:,iystart:),1,1,n_x,1,1,n_y)
-   call nc_write_array(ncid,'aer_fg',output_data%vid_aer_fg,&
-           output_data%aer_fg(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'aer_ap',output_data%vid_aer_ap, &
+        output_data%aer_ap(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
+   call nc_write_array(ncid,'aer_fg',output_data%vid_aer_fg, &
+        output_data%aer_fg(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
 end if
 
-if (output_flags%do_rho) then
-   do i=1,NSolar
+if (ind%flags%do_rho) then
+   do i=1,ind%NSolar
       do j=1,MaxRho_XX
          if (output_data%vid_rho_ap(i,j) /= 0) then
-            call nc_write_array(ncid,'rho_ap',output_data%vid_rho_ap(i,j),&
-                 output_data%rho_ap(ixstart:,iystart:,i,j),1,1,n_x,1,1,n_y)
-            call nc_write_array(ncid,'rho_fg',output_data%vid_rho_fg(i,j),&
-                 output_data%rho_fg(ixstart:,iystart:,i,j),1,1,n_x,1,1,n_y)
+            call nc_write_array(ncid,'rho_ap',output_data%vid_rho_ap(i,j), &
+                 output_data%rho_ap(ind%X0:,ind%Y0:,i,j), &
+                 1,1,ind%Xdim,1,1,ind%Ydim)
+            call nc_write_array(ncid,'rho_fg',output_data%vid_rho_fg(i,j), &
+                 output_data%rho_fg(ind%X0:,ind%Y0:,i,j), &
+                 1,1,ind%Xdim,1,1,ind%Ydim)
          end if
       end do
    end do
 end if
 
-if (output_flags%do_swansea) then
-   do i=1,NSolar
+if (ind%flags%do_swansea) then
+   do i=1,ind%NSolar
       call nc_write_array(ncid,'swansea_s_ap', &
-           output_data%vid_swansea_s_ap(i),&
-           output_data%swansea_s_ap(ixstart:,iystart:,i),1,1,n_x,1,1,n_y)
+           output_data%vid_swansea_s_ap(i), &
+           output_data%swansea_s_ap(ind%X0:,ind%Y0:,i), &
+           1,1,ind%Xdim,1,1,ind%Ydim)
       call nc_write_array(ncid,'swansea_s_fg', &
-           output_data%vid_swansea_s_fg(i),&
-           output_data%swansea_s_fg(ixstart:,iystart:,i),1,1,n_x,1,1,n_y)
+           output_data%vid_swansea_s_fg(i), &
+           output_data%swansea_s_fg(ind%X0:,ind%Y0:,i), &
+           1,1,ind%Xdim,1,1,ind%Ydim)
    end do
 
-   do i=1,NViews
+   do i=1,ind%NViews
       call nc_write_array(ncid,'swansea_p_ap', &
-           output_data%vid_swansea_p_ap(i),&
-           output_data%swansea_p_ap(ixstart:,iystart:,i),1,1,n_x,1,1,n_y)
+           output_data%vid_swansea_p_ap(i), &
+           output_data%swansea_p_ap(ind%X0:,ind%Y0:,i), &
+           1,1,ind%Xdim,1,1,ind%Ydim)
       call nc_write_array(ncid,'swansea_p_fg', &
-           output_data%vid_swansea_p_fg(i),&
-           output_data%swansea_p_fg(ixstart:,iystart:,i),1,1,n_x,1,1,n_y)
+           output_data%vid_swansea_p_fg(i), &
+           output_data%swansea_p_fg(ind%X0:,ind%Y0:,i), &
+           1,1,ind%Xdim,1,1,ind%Ydim)
    end do
 end if
 
-if (output_flags%do_cloud) then
-   call nc_write_array(ncid,'cot_ap',output_data%vid_cot_ap,&
-           output_data%cot_ap(ixstart:,iystart:),1,1,n_x,1,1,n_y)
-   call nc_write_array(ncid,'cot_fg',output_data%vid_cot_fg,&
-           output_data%cot_fg(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+if (ind%flags%do_cloud) then
+   call nc_write_array(ncid,'cot_ap',output_data%vid_cot_ap, &
+        output_data%cot_ap(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
+   call nc_write_array(ncid,'cot_fg',output_data%vid_cot_fg, &
+        output_data%cot_fg(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
 
-   call nc_write_array(ncid,'cer_ap',output_data%vid_cer_ap,&
-           output_data%cer_ap(ixstart:,iystart:),1,1,n_x,1,1,n_y)
-   call nc_write_array(ncid,'cer_fg',output_data%vid_cer_fg,&
-           output_data%cer_fg(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'cer_ap',output_data%vid_cer_ap, &
+        output_data%cer_ap(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
+   call nc_write_array(ncid,'cer_fg',output_data%vid_cer_fg, &
+        output_data%cer_fg(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
 
-   call nc_write_array(ncid,'ctp_ap',output_data%vid_ctp_ap,&
-           output_data%ctp_ap(ixstart:,iystart:),1,1,n_x,1,1,n_y)
-   call nc_write_array(ncid,'ctp_fg',output_data%vid_ctp_fg,&
-           output_data%ctp_fg(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'ctp_ap',output_data%vid_ctp_ap, &
+        output_data%ctp_ap(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
+   call nc_write_array(ncid,'ctp_fg',output_data%vid_ctp_fg, &
+        output_data%ctp_fg(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
 
-   call nc_write_array(ncid,'stemp_fg',output_data%vid_stemp_fg,&
-           output_data%stemp_fg(ixstart:,iystart:),1,1,n_x,1,1,n_y)
-   call nc_write_array(ncid,'stemp_ap',output_data%vid_stemp_ap,&
-           output_data%stemp_ap(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'stemp_fg',output_data%vid_stemp_fg, &
+        output_data%stemp_fg(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
+   call nc_write_array(ncid,'stemp_ap',output_data%vid_stemp_ap, &
+        output_data%stemp_ap(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
 
-   do i=1,NSolar
-      write(input_num,"(i4)") Y_Id(i)
+   do i=1,ind%NSolar
+      write(input_num,"(i4)") ind%Y_Id(i)
       input_dummy='albedo_in_channel_no_'//trim(adjustl(input_num))
 
       call nc_write_array(ncid,trim(adjustl(input_dummy)), &
-              output_data%vid_albedo(i),output_data%albedo(ixstart:,:,i), &
-              1,1,n_x,1,1,n_y)
+           output_data%vid_albedo(i),output_data%albedo(ind%X0:,:,i), &
+           1,1,ind%Xdim,1,1,ind%Ydim)
    end do
 end if
 
-   do i=1,Ny
-      write(input_num,"(i4)") Y_Id(i)
+   do i=1,ind%Ny
+      write(input_num,"(i4)") ind%Y_Id(i)
       input_dummy='radiance_in_channel_no_'//trim(adjustl(input_num))
 
       call nc_write_array(ncid,trim(adjustl(input_dummy)), &
-              output_data%vid_channels(i),output_data%channels(ixstart:,:,i), &
-              1,1,n_x,1,1,n_y)
+           output_data%vid_channels(i),output_data%channels(ind%X0:,:,i), &
+           1,1,ind%Xdim,1,1,ind%Ydim)
    end do
 
-   do i=1,Ny
-      write(input_num,"(i4)") Y_Id(i)
+   do i=1,ind%Ny
+      write(input_num,"(i4)") ind%Y_Id(i)
       input_dummy='firstguess_radiance_in_channel_no_'//trim(adjustl(input_num))
 
       call nc_write_array(ncid,trim(adjustl(input_dummy)), &
-              output_data%vid_y0(i),output_data%y0(ixstart:,:,i), &
-              1,1,n_x,1,1,n_y)
+           output_data%vid_y0(i),output_data%y0(ind%X0:,:,i), &
+           1,1,ind%Xdim,1,1,ind%Ydim)
    end do
 
-   do i=1,Ny
-      write(input_num,"(i4)") Y_Id(i)
-        input_dummy='radiance_residual_in_channel_no_'//trim(adjustl(input_num))
+   do i=1,ind%Ny
+      write(input_num,"(i4)") ind%Y_Id(i)
+      input_dummy='radiance_residual_in_channel_no_'//trim(adjustl(input_num))
 
-        call nc_write_array(ncid,trim(adjustl(input_dummy)), &
-                output_data%vid_residuals(i),output_data%residuals(ixstart:,:,i), &
-                1,1,n_x,1,1,n_y)
+      call nc_write_array(ncid,trim(adjustl(input_dummy)), &
+           output_data%vid_residuals(i),output_data%residuals(ind%X0:,:,i), &
+           1,1,ind%Xdim,1,1,ind%Ydim)
    end do
 
-   call nc_write_array(ncid,'degrees_of_freedom_signal',output_data%vid_ds,&
-           output_data%ds(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'degrees_of_freedom_signal',output_data%vid_ds, &
+        output_data%ds(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
 
-   if (output_flags%do_covariance) then
-      do i=1,Nx
-         do j=1,Nx
-            write(input_num1,"(i4)") i
-            write(input_num2,"(i4)") j
-            input_dummy='covariance_matrix_element_' // &
-                 trim(adjustl(input_num1))//trim(adjustl(input_num2))
-            call nc_write_array(ncid,input_dummy,output_data%vid_covariance(i,j),&
-                    output_data%covariance(ixstart:,:,i,j),1,1,n_x,1,1,n_y)
-         end do
+if (ind%flags%do_covariance) then
+   do i=1,ind%Nx
+      do j=1,ind%Nx
+         write(input_num1,"(i4)") i
+         write(input_num2,"(i4)") j
+         input_dummy='covariance_matrix_element_' // &
+              trim(adjustl(input_num1))//trim(adjustl(input_num2))
+         call nc_write_array(ncid,input_dummy, &
+              output_data%vid_covariance(i,j), &
+              output_data%covariance(ind%X0:,:,i,j),1,1,ind%Xdim,1,1,ind%Ydim)
       end do
-   end if
+   end do
+end if
 
 end subroutine write_output_secondary

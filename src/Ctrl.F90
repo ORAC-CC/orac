@@ -101,6 +101,7 @@
 module CTRL_def
 
    use ECP_constants
+   use orac_indexing, only: common_indices
 
    implicit none
 
@@ -126,33 +127,17 @@ module CTRL_def
    end type FID_t
 
    ! Indices: channel indexing and spatial grid definitions
-   type Ind_t
+   type, extends(common_indices) :: Ind_t
       ! Channel indexing variables
-      integer                :: Ny                 ! No. of instrument channels
-                                                   ! actually used
       integer                :: NAvail             ! No. of instrument channels
                                                    ! available in file
-      integer, pointer       :: Y_Id(:)            ! Instrument IDs for used chs
       integer, pointer       :: ICh(:)             ! Index used chs out of those
                                                    ! available in file
       integer                :: Y_Id_legacy(6)     ! The closest available legacy
                                                    ! channels or 0 otherwise.
-      integer                :: NSolar             ! No. of chs with solar source
-      integer                :: NThermal           ! No. of chs w/ thermal source
       integer                :: NMixed             ! Number of mixed solar/
                                                    ! thermal channels
-      integer, pointer       :: YSolar(:)          ! Array indices for solar chs
-                                                   ! out of those used (Y)
-      integer, pointer       :: YThermal(:)        ! Array indices for thermal ch
       integer, pointer       :: YMixed(:)          ! Array indices for mixed chs
-      integer, pointer       :: Ch_Is(:)           ! A bit flag of ch properties
-                                                   ! such as thermal, solar
-
-      ! View indexing variables
-      integer                :: NViews             ! Number of instrument views
-                                                   ! available
-      integer, pointer       :: ViewIdx(:)         ! Array of view values. Values
-                                                   ! between 1 and NViews.
 
       ! Wavelength indexing variables (used to identify different views of the
       ! same filter; numbered from 1 in order found in file)
@@ -164,11 +149,6 @@ module CTRL_def
                                                    ! direction
       integer                :: YMax               ! Max no. of pixels in y
                                                    ! direction
-
-      integer                :: X0                 ! Lower left pixel x coord
-      integer                :: Y0                 ! Lower left pixel y coord
-      integer                :: X1                 ! Upper right pixel x coord
-      integer                :: Y1                 ! Upper right pixel y coord
    end type Ind_t
 
    ! Surface Reflectance parameters
