@@ -386,23 +386,8 @@ if (indexing%flags%do_rho) then
 
       do j=1,MaxRho_XX
          if (indexing%rho_terms(i,j)) then
-            select case (j)
-            case(IRho_0V)
-               input_dummy='surface direct beam reflectance in channel no '//trim(adjustl(input_num))
-               input_dummy2='rho_0V_in_channel_no_'//trim(adjustl(input_num))
-
-            case(IRho_0D)
-               input_dummy='surface direct-to-diffuse reflectance in channel no '//trim(adjustl(input_num))
-               input_dummy2='rho_0D_in_channel_no_'//trim(adjustl(input_num))
-
-            case(IRho_DV)
-               input_dummy='surface diffuse-to-direct reflectance in channel no '//trim(adjustl(input_num))
-               input_dummy2='rho_DV_in_channel_no_'//trim(adjustl(input_num))
-
-            case(IRho_DD)
-               input_dummy='surface diffuse reflectance in channel no '//trim(adjustl(input_num))
-               input_dummy2='rho_DD_in_channel_no_'//trim(adjustl(input_num))
-            end select
+            call create_rho_field_name(j, 1, input_num, &
+                 input_dummy, input_dummy2)
 
             call nc_def_var_short_packed_float( &
                  ncid, &
@@ -433,23 +418,8 @@ if (indexing%flags%do_rho) then
 
       do j=1,MaxRho_XX
          if (indexing%rho_terms(i,j)) then
-            select case (j)
-            case(IRho_0V)
-               input_dummy='uncertainty in surface direct beam reflectance in channel no '//trim(adjustl(input_num))
-               input_dummy2='rho_0V_uncertainty_in_channel_no_'//trim(adjustl(input_num))
-
-            case(IRho_0D)
-               input_dummy='uncertainty in surface direct-to-diffuse reflectance in channel no '//trim(adjustl(input_num))
-               input_dummy2='rho_0D_uncertainty_in_channel_no_'//trim(adjustl(input_num))
-
-            case(IRho_DV)
-               input_dummy='uncertainty in surface diffuse-to-direct reflectance in channel no '//trim(adjustl(input_num))
-               input_dummy2='rho_DV_uncertainty_in_channel_no_'//trim(adjustl(input_num))
-
-            case(IRho_DD)
-               input_dummy='uncertainty in surface diffuse reflectance in channel no '//trim(adjustl(input_num))
-               input_dummy2='rho_DD_uncertainty_in_channel_no_'//trim(adjustl(input_num))
-            end select
+            call create_rho_field_name(j, 2, input_num, &
+                 input_dummy, input_dummy2)
 
             call nc_def_var_short_packed_float( &
                  ncid, &
