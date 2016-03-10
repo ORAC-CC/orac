@@ -115,7 +115,7 @@ def build_orac_library_path(libs):
     ld_path = ':'.join([libs[key] for key in ("SZLIB", "EPR_APILIB", "GRIBLIB",
                                               "HDF5LIB", "HDFLIB",
                                               "NCDF_FORTRAN_LIB", "NCDFLIB")])
-    os.environ["LD_LIBRARY_PATH"] = ld_path + ':' + os.environ["LD_LIBRARY_PATH"]
+    return ld_path + ':' + os.environ["LD_LIBRARY_PATH"]
 
 #-----------------------------------------------------------------------------
 
@@ -186,8 +186,9 @@ main_driver="""{in_dir}
 {channels}
 {phase}
 CTRL%NTYPES_TO_PROCESS={ntypes}
-Ctrl%TYPES_TO_PROCESS={types}
-Ctrl%VERBOSE={verbose}
+CTRL%TYPES_TO_PROCESS={types}
+CTRL%PROCESS_CLOUDY_ONLY={cloudy}
+CTRL%VERBOSE={verbose}
 CTRL%RS%USE_FULL_BRDF={use_brdf}""".format
 
 postproc_driver="""{wat_pri}
@@ -386,6 +387,8 @@ def orac_main_args(parser):
     main.add_argument('--approach', type=str, nargs='?', metavar='STRING',
                       default = None,
                       help = 'Retrieval approach to be used.')
+    main.add_argument('--cloudy', action='store_true',
+                      help = 'Process only cloudy pixels.')
     main.add_argument('--extra_lines', type=str, nargs='?', metavar='FILE',
                       default = None,
                       help = 'Name of file containing additional driver lines.')

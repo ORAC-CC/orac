@@ -156,7 +156,7 @@ def orac_preproc(args):
 
     # Form processing environment
     libs = orac_utils.read_orac_libraries(args.orac_lib)
-    orac_utils.build_orac_library_path(libs)
+    os.environ["LD_LIBRARY_PATH"] = orac_utils.build_orac_library_path(libs)
     os.environ["PATH"] = libs["NCDFLIB"][:-4] + '/bin:' + os.environ["PATH"]
     # Above assumes the end of NCDFLIB is /lib
 

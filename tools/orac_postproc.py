@@ -21,7 +21,7 @@ def orac_postproc(args):
 
     # Form processing environment
     libs = orac_utils.read_orac_libraries(args.orac_lib)
-    orac_utils.build_orac_library_path(libs)
+    os.environ["LD_LIBRARY_PATH"] = orac_utils.build_orac_library_path(libs)
 
     # form driver file
     driver = orac_utils.postproc_driver(

@@ -21,11 +21,12 @@ def orac_main(args):
 
     # Form processing environment
     libs = orac_utils.read_orac_libraries(args.orac_lib)
-    orac_utils.build_orac_library_path(libs)
+    os.environ["LD_LIBRARY_PATH"] = orac_utils.build_orac_library_path(libs)
 
     # Form mandatory driver file lines
     driver = orac_utils.main_driver(
         channels = ','.join('{:d}'.format(k) for k in args.use_channel),
+        cloudy   = args.cloudy,
         fileroot = args.fileroot,
         in_dir   = args.pre_out_dir,
         nch      = len(args.use_channel),

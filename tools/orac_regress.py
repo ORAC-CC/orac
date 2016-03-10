@@ -54,7 +54,7 @@ def compare_orac_out(f0, f1):
         else:
             if a0.dtype.kind == 'f':
                 # Allow rounding errors
-                test = np.allclose(a0, a1, equal_nan=True, rtol=1e-6, atol=0.)
+                test = np.allclose(a0, a1, equal_nan=True, rtol=1e-6, atol=1e-8)
             else:
                 # Integer outputs should be free of rounding error
                 test = False
