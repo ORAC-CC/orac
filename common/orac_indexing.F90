@@ -30,7 +30,6 @@ module orac_indexing
       ! Primary file flags
       logical :: do_phase_pavolonis     ! Output the Pavolonis cloud phase
       logical :: do_cldmask             ! Output neural net cloud mask
-      logical :: cloudmask_pre
       logical :: do_cldmask_uncertainty ! Output the uncertainty on that
       logical :: do_phase               ! Output particle type
 

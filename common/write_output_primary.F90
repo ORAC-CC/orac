@@ -310,13 +310,8 @@ end if
         output_data%cldtype(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
 
 if (ind%flags%do_cldmask) then
-   if (ind%flags%cloudmask_pre) then
-      call nc_write_array(ncid,'cloudmask_pre',output_data%vid_cldmask,&
-              output_data%cldmask(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
-   else
    call nc_write_array(ncid,'cldmask',output_data%vid_cldmask, &
         output_data%cldmask(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
-   end if
 end if
 if (ind%flags%do_cldmask_uncertainty) then
    call nc_write_array(ncid,'cldmask_uncertainty', &

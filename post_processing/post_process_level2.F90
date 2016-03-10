@@ -508,7 +508,6 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    indexing%flags%do_indexing            = .false.
    indexing%flags%do_phase_pavolonis     = .true.
    indexing%flags%do_cldmask             = .true.
-   indexing%flags%cloudmask_pre          = .true.
    indexing%flags%do_cldmask_uncertainty = .false.
    indexing%flags%do_phase               = .true.
    indexing%flags%do_covariance          = .false.

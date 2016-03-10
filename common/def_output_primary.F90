@@ -1458,15 +1458,10 @@ if (indexing%flags%do_cldmask) then
    !----------------------------------------------------------------------------
    ! cldmask
    !----------------------------------------------------------------------------
-  if (indexing%flags%cloudmask_pre) then
-      input_dummy = 'cloudmask_pre'
-   else
-      input_dummy = 'cldmask'
-   end if
    call nc_def_var_byte_packed_byte( &
            ncid, &
            dims_var, &
-           trim(adjustl(input_dummy)), &
+           'cldmask', &
            output_data%vid_cldmask, &
            verbose, &
            long_name     = 'Neural net cloud mask (radiance based)', &
