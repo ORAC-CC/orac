@@ -82,7 +82,8 @@
 !-------------------------------------------------------------------------------
 
 subroutine def_output_primary(ncid, dims_var, output_data, indexing, &
-   qc_flag_masks, qc_flag_meanings, deflate_level, shuffle_flag, verbose)
+   qc_flag_masks, qc_flag_meanings, deflate_level, shuffle_flag, verbose, &
+   ch_var, view_var)
 
    use orac_ncdf
 
@@ -97,6 +98,8 @@ subroutine def_output_primary(ncid, dims_var, output_data, indexing, &
    integer,                   intent(in)    :: deflate_level
    logical,                   intent(in)    :: shuffle_flag
    logical,                   intent(in)    :: verbose
+   integer, optional,         intent(in)    :: ch_var(:)
+   integer, optional,         intent(in)    :: view_var(:)
 
    character(len=32)  :: input_num
    character(len=512) :: input_dummy
@@ -1543,6 +1546,88 @@ if (indexing%flags%do_phase_pavolonis) then
            units         = '1', &
            flag_values   = '0b 1b 2b', &
            flag_meanings = 'clear/unknown liquid ice', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+end if
+
+if (indexing%flags%do_indexing .and. present(ch_var)) then
+   !----------------------------------------------------------------------------
+   ! y_id
+   !----------------------------------------------------------------------------
+   call nc_def_var_byte_packed_byte( &
+           ncid, &
+           ch_var, &
+           'y_id', &
+           output_data%vid_y_id, &
+           verbose, &
+           long_name     = 'instrument channel index', &
+           standard_name = '', &
+           fill_value    = byte_fill_value, &
+           scale_factor  = output_data%y_id_scale, &
+           add_offset    = output_data%y_id_offset, &
+           valid_min     = output_data%y_id_vmin, &
+           valid_max     = output_data%y_id_vmax, &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+
+   !----------------------------------------------------------------------------
+   ! ch_is
+   !----------------------------------------------------------------------------
+   call nc_def_var_byte_packed_byte( &
+           ncid, &
+           ch_var, &
+           'ch_is', &
+           output_data%vid_ch_is, &
+           verbose, &
+           long_name     = 'instrument channel flags', &
+           standard_name = '', &
+           fill_value    = byte_fill_value, &
+           scale_factor  = output_data%ch_is_scale, &
+           add_offset    = output_data%ch_is_offset, &
+           valid_min     = output_data%ch_is_vmin, &
+           valid_max     = output_data%ch_is_vmax, &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+
+   if (indexing%flags%do_rho) then
+   !----------------------------------------------------------------------------
+   ! rho_flags
+   !----------------------------------------------------------------------------
+      call nc_def_var_byte_packed_byte( &
+           ncid, &
+           ch_var, &
+           'rho_flags', &
+           output_data%vid_rho_flags, &
+           verbose, &
+           long_name     = 'surface reflectance output flags', &
+           standard_name = '', &
+           fill_value    = byte_fill_value, &
+           scale_factor  = output_data%rho_flags_scale, &
+           add_offset    = output_data%rho_flags_offset, &
+           valid_min     = output_data%rho_flags_vmin, &
+           valid_max     = output_data%rho_flags_vmax, &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+   end if
+end if
+
+if (indexing%flags%do_indexing .and. present(view_var)) then
+   !----------------------------------------------------------------------------
+   ! view_id
+   !----------------------------------------------------------------------------
+   call nc_def_var_byte_packed_byte( &
+           ncid, &
+           view_var, &
+           'view_id', &
+           output_data%vid_view_id, &
+           verbose, &
+           long_name     = 'instrument channel view index', &
+           standard_name = '', &
+           fill_value    = byte_fill_value, &
+           scale_factor  = output_data%view_id_scale, &
+           add_offset    = output_data%view_id_offset, &
+           valid_min     = output_data%view_id_vmin, &
+           valid_max     = output_data%view_id_vmax, &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 end if

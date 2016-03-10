@@ -332,4 +332,16 @@ if (ind%flags%do_phase_pavolonis) then
         1,1,ind%Xdim,1,1,ind%Ydim)
 end if
 
+   if (ind%flags%do_indexing) then
+      call nc_write_array(ncid,'y_id',output_data%vid_y_id, &
+           output_data%y_id, 1,1,ind%Ny)
+      call nc_write_array(ncid,'view_id',output_data%vid_view_id, &
+           output_data%view_id, 1,1,ind%NViews)
+      call nc_write_array(ncid,'ch_is',output_data%vid_ch_is, &
+           output_data%ch_is, 1,1,ind%Ny)
+      if (ind%flags%do_rho) &
+           call nc_write_array(ncid,'rho_flags',output_data%vid_rho_flags, &
+           output_data%rho_flags, 1,1,ind%Ny)
+   end if
+
 end subroutine write_output_primary

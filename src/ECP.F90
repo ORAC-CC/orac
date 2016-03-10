@@ -238,7 +238,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    character(len=512)  :: qc_flag_meanings
 
    ! netcdf related variables:
-   integer :: ncid_primary, ncid_secondary, dims_var(2)
+   integer :: ncid_primary, ncid_secondary, dims_var(2), ch_var(1), view_var(1)
 
    ! Additional types for the scanline output for netcdf are defined
    type(output_data_primary)   :: output_data_1
@@ -246,6 +246,8 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 
    ! OpenMP related variables
    integer :: n_threads, thread_num
+
+   integer :: bitmask
 
    ! Some more variables for OpenMP implementation
    integer, allocatable, dimension(:) :: totpix_line, totmissed_line
@@ -601,8 +603,39 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 
    ! Open the netcdf output files
    if (Ctrl%verbose) write(*,*) 'path1: ',trim(Ctrl%FID%L2_primary)
-   call nc_create(Ctrl%FID%L2_primary, ncid_primary, Ctrl%Ind%Xdim, &
-        Ctrl%Ind%Ydim, dims_var, 1, global_atts, source_atts)
+   if (Ctrl%Ind%flags%do_indexing) then
+      ! Write channel indexing, LUT class, and Ctrl%Ind%flags to output
+
+      output_data_1%y_id  = Ctrl%Ind%Y_Id
+      output_data_1%ch_is = Ctrl%Ind%Ch_Is
+
+      if (Ctrl%Ind%flags%do_rho) call make_bitmask_from_rho_terms( &
+           Ctrl%Ind%common_indices, output_data_1%rho_flags)
+
+      call make_bitmask_from_common_file_flags(Ctrl%Ind%flags, bitmask)
+
+      ! Form a list of all the views available in this file
+      ! (forseeing the eventual desire to process arbitrary views)
+      m = 0
+      do i=1,MaxNumViews
+         do j=1,Ctrl%Ind%Ny
+            if (Ctrl%Ind%View_Id(j) == i) then
+               m = m + 1
+               output_data_1%view_id(m) = i
+               exit
+            end if
+         end do
+      end do
+
+      call nc_create(Ctrl%FID%L2_primary, ncid_primary, Ctrl%Ind%Xdim, &
+           Ctrl%Ind%Ydim, dims_var, 1, global_atts, source_atts, &
+           Ctrl%Ind%Ny, ch_var, Ctrl%Ind%NViews, view_var, Ctrl%Nx(IDay), &
+           Ctrl%LUTClass, bitmask)
+   else
+      call nc_create(Ctrl%FID%L2_primary, ncid_primary, Ctrl%Ind%Xdim, &
+           Ctrl%Ind%Ydim, dims_var, 1, global_atts, source_atts)
+   end if
+
 
    if (Ctrl%verbose) write(*,*) 'path2: ',trim(Ctrl%FID%L2_secondary)
    call nc_create(Ctrl%FID%L2_secondary, ncid_secondary, Ctrl%Ind%Xdim, &
@@ -613,7 +646,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    call build_qc_flag_meanings(Ctrl, qc_flag_meanings)
    call def_output_primary(ncid_primary, dims_var, output_data_1, &
         Ctrl%Ind%common_indices, qc_flag_masks, qc_flag_meanings, &
-        deflate_level, shuffle_flag, .false.)
+        deflate_level, shuffle_flag, .false., ch_var, view_var)
    call def_output_secondary(ncid_secondary, dims_var, output_data_2, &
         Ctrl%Ind%common_indices, deflate_level, shuffle_flag, .false.)
 

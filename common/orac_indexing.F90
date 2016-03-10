@@ -82,6 +82,86 @@ module orac_indexing
 
 contains
 
+subroutine make_bitmask_from_common_file_flags(flags, bitmask)
+
+   implicit none
+
+   type(common_file_flags), intent(in)  :: flags
+   integer,                 intent(out) :: bitmask
+
+   bitmask = 0
+   if (flags%do_cloud)               bitmask = ibset(bitmask, cloud_bit)
+   if (flags%do_aerosol)             bitmask = ibset(bitmask, aerosol_bit)
+   if (flags%do_rho)                 bitmask = ibset(bitmask, rho_bit)
+   if (flags%do_swansea)             bitmask = ibset(bitmask, swansea_bit)
+   if (flags%do_indexing)            bitmask = ibset(bitmask, indexing_bit)
+   if (flags%do_phase_pavolonis)     bitmask = ibset(bitmask, pavolonis_bit)
+   if (flags%do_cldmask)             bitmask = ibset(bitmask, cldmask_bit)
+   if (flags%do_cldmask_uncertainty) bitmask = ibset(bitmask, cldmask_u_bit)
+   if (flags%do_phase)               bitmask = ibset(bitmask, phase_bit)
+   if (flags%do_covariance)          bitmask = ibset(bitmask, covariance_bit)
+
+end subroutine make_bitmask_from_common_file_flags
+
+
+subroutine set_common_file_flags_from_bitmask(bitmask, flags)
+
+   implicit none
+
+   integer,                 intent(in)  :: bitmask
+   type(common_file_flags), intent(out) :: flags
+
+   flags%do_cloud               = btest(bitmask, cloud_bit)
+   flags%do_aerosol             = btest(bitmask, aerosol_bit)
+   flags%do_rho                 = btest(bitmask, rho_bit)
+   flags%do_swansea             = btest(bitmask, swansea_bit)
+   flags%do_indexing            = btest(bitmask, indexing_bit)
+   flags%do_phase_pavolonis     = btest(bitmask, pavolonis_bit)
+   flags%do_cldmask             = btest(bitmask, cldmask_bit)
+   flags%do_cldmask_uncertainty = btest(bitmask, cldmask_u_bit)
+   flags%do_phase               = btest(bitmask, phase_bit)
+   flags%do_covariance          = btest(bitmask, covariance_bit)
+
+end subroutine set_common_file_flags_from_bitmask
+
+
+subroutine make_bitmask_from_rho_terms(ind, bitmask)
+
+   implicit none
+
+   type(common_indices), intent(in)  :: ind
+   integer(byte),        intent(out) :: bitmask(:) ! byte as an output variable
+
+   integer :: i, j
+
+   bitmask = 0
+   do i=1,ind%NSolar
+      do j=1,MaxRho_XX
+         if (ind%rho_terms(i,j)) bitmask(i) = ibset(bitmask(i), j)
+      end do
+   end do
+
+end subroutine make_bitmask_from_rho_terms
+
+
+subroutine set_rho_terms_from_bitmask(bitmask, ind)
+
+   implicit none
+
+   integer,              intent(in)  :: bitmask(:)
+   type(common_indices), intent(out) :: ind
+
+   integer :: i, j
+
+   do i=1,ind.NSolar
+      do j=1,MaxRho_XX
+         ind%rho_terms(i,j) = btest(bitmask(i), j)
+      end do
+   end do
+
+end subroutine set_rho_terms_from_bitmask
+
+
 subroutine create_rho_field_name(rho_index, mode, input_num, &
                                  field_name, description)
 

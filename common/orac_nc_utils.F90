@@ -29,7 +29,8 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine nc_create(path, ncid, nx, ny, dims_var, type, global_atts, source_atts)
+subroutine nc_create(path, ncid, nx, ny, dims_var, type, global_atts, &
+     source_atts, nch, ch_var, nview, view_var, nstate, LUT_class, do_flags)
 
    use netcdf
 
@@ -50,6 +51,14 @@ subroutine nc_create(path, ncid, nx, ny, dims_var, type, global_atts, source_att
 
    type(global_attributes_s), intent(inout) :: global_atts
    type(source_attributes_s), intent(inout) :: source_atts
+
+   integer,          optional,intent(in)    :: nch
+   integer,          optional,intent(out)   :: ch_var(1)
+   integer,          optional,intent(in)    :: nview
+   integer,          optional,intent(out)   :: view_var(1)
+   integer,          optional,intent(in)    :: nstate
+   character(len=*), optional,intent(in)    :: LUT_class
+   integer,          optional,intent(in)    :: do_flags
 
    ! Local
    integer :: ierr
@@ -78,6 +87,53 @@ subroutine nc_create(path, ncid, nx, ny, dims_var, type, global_atts, source_att
       stop error_stop_code
    end if
 
+   ! Optionally define channel dimension
+   if (present(nch) .and. present(ch_var)) then
+      ierr = nf90_def_dim(ncid, 'channels', nch, ch_var(1))
+      if (ierr .ne. NF90_NOERR) then
+         write(*,*) 'ERROR: nf90_def_dim(): dim_name = channels, ydim = ', ch_var
+         stop error_stop_code
+      end if
+   end if
+
+   ! Optionally define view dimension
+   if (present(nview) .and. present(view_var)) then
+      ierr = nf90_def_dim(ncid, 'views', nview, view_var(1))
+      if (ierr .ne. NF90_NOERR) then
+         write(*,*) 'ERROR: nf90_def_dim(): dim_name = views, ydim = ', view_var
+         stop error_stop_code
+      end if
+   end if
+
+   ! Define length attributes (which should eventually become dimensions)
+   if (present(nstate)) then
+      ierr = nf90_put_att(ncid, NF90_GLOBAL, 'NState', nstate)
+      if (ierr.ne.NF90_NOERR) then
+         write(*,*) 'ERROR: nf90_put_att(), ', trim(nf90_strerror(ierr)), &
+              ', name: NState'
+         stop error_stop_code
+      end if
+   end if
+
+   ! Optionally list the LUT class used for this file
+   if (present(LUT_class)) then
+      ierr = nf90_put_att(ncid, NF90_GLOBAL, 'LUT_class', trim(LUT_class))
+      if (ierr.ne.NF90_NOERR) then
+         write(*,*) 'ERROR: nf90_put_att(), ', trim(nf90_strerror(ierr)), &
+              ', name: LUT_class'
+         stop error_stop_code
+      end if
+   end if
+
+   ! Optionally store the flags of output_flags
+   if (present(do_flags)) then
+      ierr = nf90_put_att(ncid, NF90_GLOBAL, 'do_flags', do_flags)
+      if (ierr.ne.NF90_NOERR) then
+         write(*,*) 'ERROR: nf90_put_att(), ', trim(nf90_strerror(ierr)), &
+              ', name: do_flags'
+         stop error_stop_code
+      end if
+   end if
 
    !----------------------------------------------------------------------------
    ! Write global attributes to the netcdf output

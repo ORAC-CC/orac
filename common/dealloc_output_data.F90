@@ -181,6 +181,11 @@ subroutine dealloc_output_data_primary(data)
    if (associated(data%phase))               deallocate(data%phase)
    if (associated(data%phase_pavolonis))     deallocate(data%phase_pavolonis)
 
+   if (associated(data%y_id))                deallocate(data%y_id)
+   if (associated(data%view_id))             deallocate(data%view_id)
+   if (associated(data%ch_is))               deallocate(data%ch_is)
+   if (associated(data%rho_flags))           deallocate(data%rho_flags)
+
 end subroutine dealloc_output_data_primary
 
 

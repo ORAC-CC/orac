@@ -281,6 +281,20 @@ if (ind%flags%do_phase_pavolonis) then
    data%phase_pavolonis = byte_fill_value
 end if
 
+if (ind%flags%do_indexing) then
+   allocate(data%y_id(ind%Ny))
+   data%y_id = byte_fill_value
+   allocate(data%view_id(ind%NViews))
+   data%view_id = byte_fill_value
+   allocate(data%ch_is(ind%Ny))
+   data%ch_is = byte_fill_value
+
+   if (ind%flags%do_rho) then
+      allocate(data%rho_flags(ind%Ny))
+      data%rho_flags = byte_fill_value
+   end if
+end if
+
 
    ! Set scale/offset/vmin/vmax dynamically as required
    data%niter_vmax = MaxIter

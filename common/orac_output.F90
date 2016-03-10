@@ -121,6 +121,11 @@ module orac_output
 
       integer          :: vid_phase_pavolonis
 
+      integer          :: vid_y_id
+      integer          :: vid_view_id
+      integer          :: vid_rho_flags
+      integer          :: vid_ch_is
+
       ! Scale, offset, valid min/max for output fields
       real(sreal)   :: aot550_scale              = 0.001
       real(sreal)   :: aot550_offset             = 0.0
@@ -380,6 +385,26 @@ module orac_output
       integer(byte) :: phase_pavolonis_vmin   = 0
       integer(byte) :: phase_pavolonis_vmax   = 2
 
+      integer(byte) :: y_id_scale  = 1
+      integer(byte) :: y_id_offset = 0
+      integer(byte) :: y_id_vmin   = 1
+      integer(byte) :: y_id_vmax   = MaxNumMeas
+
+      integer(byte) :: view_id_scale  = 1
+      integer(byte) :: view_id_offset = 0
+      integer(byte) :: view_id_vmin   = 1
+      integer(byte) :: view_id_vmax   = MaxNumViews
+
+      integer(byte) :: ch_is_scale  = 1
+      integer(byte) :: ch_is_offset = 0
+      integer(byte) :: ch_is_vmin   = 0
+      integer(byte) :: ch_is_vmax   = 3
+
+      integer(byte) :: rho_flags_scale  = 1
+      integer(byte) :: rho_flags_offset = 0
+      integer(byte) :: rho_flags_vmin   = 0
+      integer(byte) :: rho_flags_vmax   = 15
+
       ! Arrays to store output fields
       integer(sint), pointer :: aot550(:,:)
       integer(sint), pointer :: aot550_uncertainty(:,:)
@@ -452,6 +477,11 @@ module orac_output
 
       integer(byte), pointer :: phase(:,:)
       integer(byte), pointer :: phase_pavolonis(:,:)
+
+      integer(byte), pointer :: y_id(:)
+      integer(byte), pointer :: view_id(:)
+      integer(byte), pointer :: ch_is(:)
+      integer(byte), pointer :: rho_flags(:)
    end type output_data_primary
 
 
