@@ -83,6 +83,58 @@ module orac_indexing
 
 contains
 
+subroutine create_rho_field_name(rho_index, mode, input_num, &
+                                 field_name, description)
+
+   implicit none
+
+   integer,                    intent(in)  :: rho_index
+   integer,                    intent(in)  :: mode
+   character(len=*),           intent(in)  :: input_num
+   character(len=*),           intent(out) :: field_name
+   character(len=*), optional, intent(out) :: description
+
+   character(len=512) :: descr1, descr2, field1, field2
+
+   select case (rho_index)
+   case(IRho_0V)
+      descr1 = 'surface direct beam reflectance'
+      field1 = '0V'
+   case(IRho_0D)
+      descr1 = 'surface direct-to-diffuse reflectance'
+      field1 = '0D'
+   case(IRho_DV)
+      descr1 = 'surface diffuse-to-direct reflectance'
+      field1 = 'DV'
+   case(IRho_DD)
+      descr1 = 'surface diffuse reflectance'
+      field1 = 'DD'
+   end select
+
+   select case (mode)
+   case(1)
+      descr2 = ''
+      field2 = ''
+   case(2)
+      descr2 = 'uncertainty in '
+      field2 = '_uncertainty'
+   case(3)
+      descr2 = 'a priori '
+      field2 = '_ap'
+   case(4)
+      descr2 = 'first guess'
+      field2 = '_fg'
+   end select
+
+   field_name = 'rho_'//trim(adjustl(field1))//trim(adjustl(field2))// &
+        '_in_channel_no_'//trim(adjustl(input_num))
+
+   if (present(description)) description = trim(adjustl(descr2))// &
+        trim(adjustl(descr1))//'in channel no '//trim(adjustl(input_num))
+
+end subroutine create_rho_field_name
+
+
 subroutine dealloc_common_indices(ind)
 
    implicit none

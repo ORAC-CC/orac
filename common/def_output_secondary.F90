@@ -221,23 +221,8 @@ if (indexing%flags%do_rho) then
    !----------------------------------------------------------------------------
    ! rho_XX_ap_in_channel_no_*
    !----------------------------------------------------------------------------
-            select case (j)
-            case(IRho_0V)
-               input_dummy='surface direct beam reflectance a priori in channel no '//trim(adjustl(input_num))
-               input_dummy2='rho_0V_ap_in_channel_no_'//trim(adjustl(input_num))
-
-            case(IRho_0D)
-               input_dummy='surface direct-to-diffuse reflectance a priori in channel no '//trim(adjustl(input_num))
-               input_dummy2='rho_0D_ap_in_channel_no_'//trim(adjustl(input_num))
-
-            case(IRho_DV)
-               input_dummy='surface diffuse-to-direct reflectance a priori in channel no '//trim(adjustl(input_num))
-               input_dummy2='rho_DV_ap_in_channel_no_'//trim(adjustl(input_num))
-
-            case(IRho_DD)
-               input_dummy='surface diffuse reflectance a priori in channel no '//trim(adjustl(input_num))
-               input_dummy2='rho_DD_ap_in_channel_no_'//trim(adjustl(input_num))
-            end select
+            call create_rho_field_name(j, 3, input_num, &
+                 input_dummy, input_dummy2)
 
             call nc_def_var_short_packed_float( &
                  ncid, &
@@ -258,23 +243,8 @@ if (indexing%flags%do_rho) then
    !----------------------------------------------------------------------------
    ! rho_XX_fg_in_channel_no_*
    !----------------------------------------------------------------------------
-            select case (j)
-            case(IRho_0V)
-               input_dummy='surface direct beam reflectance first guess in channel no '//trim(adjustl(input_num))
-               input_dummy2='rho_0V_fg_in_channel_no_'//trim(adjustl(input_num))
-
-            case(IRho_0D)
-               input_dummy='surface direct-to-diffuse reflectance first guess in channel no '//trim(adjustl(input_num))
-               input_dummy2='rho_0D_fg_in_channel_no_'//trim(adjustl(input_num))
-
-            case(IRho_DV)
-               input_dummy='surface diffuse-to-direct reflectance first guess in channel no '//trim(adjustl(input_num))
-               input_dummy2='rho_DV_fg_in_channel_no_'//trim(adjustl(input_num))
-
-            case(IRho_DD)
-               input_dummy='surface diffuse reflectance first guess in channel no '//trim(adjustl(input_num))
-               input_dummy2='rho_DD_fg_in_channel_no_'//trim(adjustl(input_num))
-            end select
+            call create_rho_field_name(j, 4, input_num, &
+                 input_dummy, input_dummy2)
 
             call nc_def_var_short_packed_float( &
                  ncid, &
