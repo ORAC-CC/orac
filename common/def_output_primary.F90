@@ -390,7 +390,7 @@ if (indexing%flags%do_rho) then
       do j=1,MaxRho_XX
          if (indexing%rho_terms(i,j)) then
             call create_rho_field_name(j, 1, input_num, &
-                 input_dummy, input_dummy2)
+                 input_dummy2, input_dummy)
 
             call nc_def_var_short_packed_float( &
                  ncid, &
@@ -422,7 +422,7 @@ if (indexing%flags%do_rho) then
       do j=1,MaxRho_XX
          if (indexing%rho_terms(i,j)) then
             call create_rho_field_name(j, 2, input_num, &
-                 input_dummy, input_dummy2)
+                 input_dummy2, input_dummy)
 
             call nc_def_var_short_packed_float( &
                  ncid, &

@@ -195,21 +195,24 @@ subroutine create_rho_field_name(rho_index, mode, input_num, &
       descr2 = ''
       field2 = ''
    case(2)
-      descr2 = 'uncertainty in '
+      descr2 = 'uncertainty in'
       field2 = '_uncertainty'
    case(3)
-      descr2 = 'a priori '
+      descr2 = 'a priori'
       field2 = '_ap'
    case(4)
       descr2 = 'first guess'
       field2 = '_fg'
    end select
 
-   field_name = 'rho_'//trim(adjustl(field1))//trim(adjustl(field2))// &
+   field_name = 'rho_'//trim(field1)//trim(field2)// &
         '_in_channel_no_'//trim(adjustl(input_num))
 
-   if (present(description)) description = trim(adjustl(descr2))// &
-        trim(adjustl(descr1))//'in channel no '//trim(adjustl(input_num))
+   if (present(description)) then
+      description = trim(descr2)//' '//trim(descr1)
+      description = trim(adjustl(description))// &
+           ' in channel no '//trim(adjustl(input_num))
+   end if
 
 end subroutine create_rho_field_name
 

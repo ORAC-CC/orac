@@ -227,10 +227,10 @@ if (indexing%flags%do_rho) then
             call nc_def_var_short_packed_float( &
                  ncid, &
                  dims_var, &
-                 trim(adjustl(input_dummy2)), &
+                 trim(adjustl(input_dummy)), &
                  output_data%vid_rho_ap(i,j), &
                  verbose, &
-                 long_name     = trim(adjustl(input_dummy)), &
+                 long_name     = trim(adjustl(input_dummy2)), &
                  standard_name = '', &
                  fill_value    = sint_fill_value, &
                  scale_factor  = output_data%rho_ap_scale, &
@@ -249,10 +249,10 @@ if (indexing%flags%do_rho) then
             call nc_def_var_short_packed_float( &
                  ncid, &
                  dims_var, &
-                 trim(adjustl(input_dummy2)), &
+                 trim(adjustl(input_dummy)), &
                  output_data%vid_rho_fg(i,j), &
                  verbose, &
-                 long_name     = trim(adjustl(input_dummy)), &
+                 long_name     = trim(adjustl(input_dummy2)), &
                  standard_name = '', &
                  fill_value    = sint_fill_value, &
                  scale_factor  = output_data%rho_fg_scale, &
@@ -274,8 +274,8 @@ if (indexing%flags%do_swansea) then
    !----------------------------------------------------------------------------
    ! swansea_s_ap_in_channel_no_*
    !----------------------------------------------------------------------------
-      input_dummy='s parameter a priori in channel no '//trim(adjustl(input_num))
-      input_dummy2='swansea_s_ap_in_channel_no_'//trim(adjustl(input_num))
+      input_dummy2='s parameter a priori in channel no '//trim(adjustl(input_num))
+      input_dummy='swansea_s_ap_in_channel_no_'//trim(adjustl(input_num))
 
       call nc_def_var_short_packed_float( &
            ncid, &
@@ -296,8 +296,8 @@ if (indexing%flags%do_swansea) then
    !----------------------------------------------------------------------------
    ! swansea_s_fg_in_channel_no_*
    !----------------------------------------------------------------------------
-      input_dummy='s parameter first guess in channel no '//trim(adjustl(input_num))
-      input_dummy2='swansea_s_fg_in_channel_no_'//trim(adjustl(input_num))
+      input_dummy2='s parameter first guess in channel no '//trim(adjustl(input_num))
+      input_dummy='swansea_s_fg_in_channel_no_'//trim(adjustl(input_num))
 
       call nc_def_var_short_packed_float( &
            ncid, &
@@ -323,8 +323,8 @@ if (indexing%flags%do_swansea) then
    !----------------------------------------------------------------------------
    ! swansea_p_ap_in_channel_no_*
    !----------------------------------------------------------------------------
-      input_dummy='p parameter a priori in channel no '//trim(adjustl(input_num))
-      input_dummy2='swansea_p_ap_in_channel_no_'//trim(adjustl(input_num))
+      input_dummy2='p parameter a priori in channel no '//trim(adjustl(input_num))
+      input_dummy='swansea_p_ap_in_channel_no_'//trim(adjustl(input_num))
 
       call nc_def_var_short_packed_float( &
            ncid, &
@@ -345,8 +345,8 @@ if (indexing%flags%do_swansea) then
    !----------------------------------------------------------------------------
    ! swansea_p_fg_in_channel_no_*
    !----------------------------------------------------------------------------
-      input_dummy='p parameter first guess in channel no '//trim(adjustl(input_num))
-      input_dummy2='swansea_p_fg_in_channel_no_'//trim(adjustl(input_num))
+      input_dummy2='p parameter first guess in channel no '//trim(adjustl(input_num))
+      input_dummy='swansea_p_fg_in_channel_no_'//trim(adjustl(input_num))
 
       call nc_def_var_short_packed_float( &
            ncid, &
