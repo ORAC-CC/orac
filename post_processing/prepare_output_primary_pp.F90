@@ -46,9 +46,11 @@
 subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
    output_optical_props_at_night)
 
+   use constants_cloud_typing_pavolonis
    use orac_input
    use orac_ncdf
    use orac_output
+   use postproc_constants
 
    implicit none
 
@@ -58,8 +60,7 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
    type(output_data_primary), intent(inout) :: output_data
    logical,                   intent(in)    :: output_optical_props_at_night
 
-   integer          :: k
-   real(kind=sreal) :: temp_real
+   integer :: k, l
 
 
    !----------------------------------------------------------------------------
@@ -86,24 +87,161 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
    !----------------------------------------------------------------------------
    do k=1,indexing%NViews
       call prepare_float_packed_float( &
-           input_data%satellite_zenith_view_no1(i,j), output_data%sat_zen(i,j,k), &
+           input_data%sat_zen(i,j,k), output_data%sat_zen(i,j,k), &
            output_data%sol_scale, output_data%sol_offset, &
            output_data%sol_vmin, output_data%sol_vmax, &
            sreal_fill_value, sreal_fill_value)
       call prepare_float_packed_float( &
-           input_data%solar_zenith_view_no1(i,j), output_data%sol_zen(i,j,k), &
+           input_data%sol_zen(i,j,k), output_data%sol_zen(i,j,k), &
            output_data%sat_scale, output_data%sat_offset, &
            output_data%sat_vmin, output_data%sat_vmax, &
            sreal_fill_value, sreal_fill_value)
       call prepare_float_packed_float( &
-           input_data%rel_azimuth_view_no1(i,j), output_data%rel_azi(i,j,k), &
+           input_data%rel_azi(i,j,k), output_data%rel_azi(i,j,k), &
            output_data%azi_scale, output_data%azi_offset, &
            output_data%azi_vmin, output_data%azi_vmax, &
            sreal_fill_value, sreal_fill_value)
    end do
 
+if (indexing%flags%do_aerosol) then
    !----------------------------------------------------------------------------
-   ! cot, cot_error
+   ! aot, aot_uncertainty
+   !----------------------------------------------------------------------------
+   call prepare_short_packed_float( &
+        input_data%aot550(i,j), output_data%aot550(i,j), &
+        output_data%aot550_scale, output_data%aot550_offset, &
+        output_data%aot550_vmin, output_data%aot550_vmax, &
+        sreal_fill_value, output_data%aot550_vmax)
+
+   call prepare_short_packed_float( &
+        input_data%aot550_uncertainty(i,j), &
+        output_data%aot550_uncertainty(i,j), &
+        output_data%aot550_uncertainty_scale, &
+        output_data%aot550_uncertainty_offset, &
+        output_data%aot550_uncertainty_vmin, &
+        output_data%aot550_uncertainty_vmax, &
+        sreal_fill_value, output_data%aot550_uncertainty_vmax)
+
+   call prepare_short_packed_float( &
+        input_data%aot870(i,j), output_data%aot870(i,j), &
+        output_data%aot870_scale, output_data%aot870_offset, &
+        output_data%aot870_vmin, output_data%aot870_vmax, &
+        sreal_fill_value, output_data%aot870_vmax)
+
+   call prepare_short_packed_float( &
+        input_data%aot870_uncertainty(i,j), &
+        output_data%aot870_uncertainty(i,j), &
+        output_data%aot870_uncertainty_scale, &
+        output_data%aot870_uncertainty_offset, &
+        output_data%aot870_uncertainty_vmin, &
+        output_data%aot870_uncertainty_vmax, &
+        sreal_fill_value, output_data%aot870_uncertainty_vmax)
+
+   !----------------------------------------------------------------------------
+   ! aer, aer_uncertainty
+   !----------------------------------------------------------------------------
+   call prepare_short_packed_float( &
+        input_data%aer(i,j), output_data%aer(i,j), &
+        output_data%aer_scale, output_data%aer_offset, &
+        output_data%aer_vmin, output_data%aer_vmax, &
+        sreal_fill_value, output_data%aer_vmax)
+
+   call prepare_short_packed_float( &
+        input_data%aer_uncertainty(i,j), output_data%aer_uncertainty(i,j), &
+        output_data%aer_uncertainty_scale, output_data%aer_uncertainty_offset, &
+        output_data%aer_uncertainty_vmin, output_data%aer_uncertainty_vmax, &
+        sreal_fill_value, output_data%aer_uncertainty_vmax)
+end if
+
+if (indexing%flags%do_rho) then
+   !----------------------------------------------------------------------------
+   ! rho, rho_uncertainty
+   !----------------------------------------------------------------------------
+   do k=1,indexing%NSolar
+      do l=1,MaxRho_XX
+         if (indexing%rho_terms(k,l)) then
+            call prepare_short_packed_float( &
+                 input_data%rho(i,j,k,l), output_data%rho(i,j,k,l), &
+                 output_data%rho_scale, output_data%rho_offset, &
+                 output_data%rho_vmin, output_data%rho_vmax, &
+                 sreal_fill_value, output_data%rho_vmax)
+
+            call prepare_short_packed_float( &
+                 input_data%rho_uncertainty(i,j,k,l), &
+                 output_data%rho_uncertainty(i,j,k,l), &
+                 output_data%rho_uncertainty_scale, &
+                 output_data%rho_uncertainty_offset, &
+                 output_data%rho_uncertainty_vmin, &
+                 output_data%rho_uncertainty_vmax, &
+                 sreal_fill_value, output_data%rho_uncertainty_vmax)
+         end if
+      end do
+   end do
+end if
+
+if (indexing%flags%do_swansea) then
+   do k=1,indexing%NSolar
+   !----------------------------------------------------------------------------
+   ! swansea_s, swansea_s_uncertainty
+   !----------------------------------------------------------------------------
+      call prepare_short_packed_float( &
+           input_data%swansea_s(i,j,k), output_data%swansea_s(i,j,k), &
+           output_data%swansea_s_scale, output_data%swansea_s_offset, &
+           output_data%swansea_s_vmin, output_data%swansea_s_vmax, &
+           sreal_fill_value, output_data%swansea_s_vmax)
+
+      call prepare_short_packed_float( &
+           input_data%swansea_s_uncertainty(i,j,k), &
+           output_data%swansea_s_uncertainty(i,j,k), &
+           output_data%swansea_s_uncertainty_scale, &
+           output_data%swansea_s_uncertainty_offset, &
+           output_data%swansea_s_uncertainty_vmin, &
+           output_data%swansea_s_uncertainty_vmax, &
+           sreal_fill_value, output_data%swansea_s_uncertainty_vmax)
+
+   !----------------------------------------------------------------------------
+   ! diffuse_frac, diffuse_frac_uncertainty
+   !----------------------------------------------------------------------------
+      call prepare_short_packed_float( &
+           input_data%diffuse_frac(i,j,k), output_data%diffuse_frac(i,j,k), &
+           output_data%diffuse_frac_scale, output_data%diffuse_frac_offset, &
+           output_data%diffuse_frac_vmin, output_data%diffuse_frac_vmax, &
+           sreal_fill_value, output_data%diffuse_frac_vmax)
+
+      call prepare_short_packed_float( &
+           input_data%diffuse_frac_uncertainty(i,j,k), &
+           output_data%diffuse_frac_uncertainty(i,j,k), &
+           output_data%diffuse_frac_uncertainty_scale, &
+           output_data%diffuse_frac_uncertainty_offset, &
+           output_data%diffuse_frac_uncertainty_vmin, &
+           output_data%diffuse_frac_uncertainty_vmax, &
+           sreal_fill_value, output_data%diffuse_frac_uncertainty_vmax)
+   end do
+
+   !----------------------------------------------------------------------------
+   ! swansea_p, swansea_p_uncertainty
+   !----------------------------------------------------------------------------
+   do k=1,indexing%NViews
+      call prepare_short_packed_float( &
+           input_data%swansea_p(i,j,k), output_data%swansea_p(i,j,k), &
+           output_data%swansea_p_scale, output_data%swansea_p_offset, &
+           output_data%swansea_p_vmin, output_data%swansea_p_vmax, &
+           sreal_fill_value, output_data%swansea_p_vmax)
+
+      call prepare_short_packed_float( &
+           input_data%swansea_p_uncertainty(i,j,k), &
+           output_data%swansea_p_uncertainty(i,j,k), &
+           output_data%swansea_p_uncertainty_scale, &
+           output_data%swansea_p_uncertainty_offset, &
+           output_data%swansea_p_uncertainty_vmin, &
+           output_data%swansea_p_uncertainty_vmax, &
+           sreal_fill_value, output_data%swansea_p_uncertainty_vmax)
+   end do
+end if
+
+if (indexing%flags%do_cloud) then
+   !----------------------------------------------------------------------------
+   ! cot, cot_uncertainty
    !----------------------------------------------------------------------------
    if (input_data%illum(i,j) .eq. 1_byte .or. output_optical_props_at_night) then
 
@@ -338,6 +476,7 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
         output_data%cccot_pre_scale, output_data%cccot_pre_offset, &
         output_data%cccot_pre_vmin, output_data%cccot_pre_vmax, &
         sreal_fill_value, sint_fill_value)
+end if
 
    !----------------------------------------------------------------------------
    ! convergence, niter
@@ -401,17 +540,34 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
    !----------------------------------------------------------------------------
    ! cldmask
    !----------------------------------------------------------------------------
+if (indexing%flags%do_cldmask) then
    output_data%cldmask(i,j)=input_data%cldmask(i,j)
+end if
+if (indexing%flags%do_cldmask_uncertainty) then
+   !----------------------------------------------------------------------------
+   ! cldmask_uncertainty
+   !----------------------------------------------------------------------------
+   call prepare_short_packed_float( &
+        input_data%cldmask_uncertainty(i,j), &
+        output_data%cldmask_uncertainty(i,j), &
+        output_data%cldmask_uncertainty_scale, &
+        output_data%cldmask_uncertainty_offset, &
+        output_data%cldmask_uncertainty_vmin, &
+        output_data%cldmask_uncertainty_vmax, &
+        sreal_fill_value, sint_fill_value)
+end if
 
    !----------------------------------------------------------------------------
    ! phase
    !----------------------------------------------------------------------------
-   if (input_data%phase(i,j) .eq. byte_fill_value) then
-      output_data%phase(i,j) = byte_fill_value
-   else
-      output_data%phase(i,j) = input_data%phase(i,j)
-   end if
+if (indexing%flags%do_phase) then
+   output_data%phase(i,j) = input_data%phase(i,j)
+end if
 
+   !----------------------------------------------------------------------------
+   ! phase_pavolonis
+   !----------------------------------------------------------------------------
+if (indexing%flags%do_phase_pavolonis) then
    if (     input_data%cldtype(i,j) .eq. 0) then
       output_data%phase_pavolonis(i,j) = 0 ! phase = clear
    else if (input_data%cldtype(i,j) .lt. 5 &
@@ -421,10 +577,10 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
       output_data%phase_pavolonis(i,j) = 2 ! phase = ice
    else if (input_data%cldtype(i,j) .eq. 10 ) then
       output_data%phase_pavolonis(i,j) = 0 ! phase = clear
-
    else
       output_data%phase_pavolonis(i,j) = byte_fill_value ! for all
       ! other values (should not occur)
    end if
+end if
 
- end subroutine prepare_output_primary_pp
+end subroutine prepare_output_primary_pp

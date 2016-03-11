@@ -31,6 +31,7 @@
 ! 2015/10/22, GM: Add cloud albedo uncertainty.
 ! 2016/01/27, GM: Add cee and cee_uncertainty.
 ! 2016/01/28, GM: Add ctp and ctt corrected and corrected_uncertianty.
+! 2016/03/04, AP: Homogenisation of I/O modules.
 !
 ! $Id$
 !
@@ -38,91 +39,161 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine read_input_primary_common(ncid, input_data, xdim, ydim, indexing, &
-                                     global_atts, verbose)
+subroutine read_input_primary_common(ncid, input_data, indexing, verbose)
 
-   use global_attributes
-   use netcdf
    use orac_ncdf
-   use postproc_constants
 
    implicit none
 
-   integer,                   intent(in)    :: ncid
-   type(input_data_primary),  intent(inout) :: input_data
-   integer(kind=lint),        intent(in)    :: xdim,ydim
-   type(common_indices),      intent(in)    :: indexing
-   type(global_attributes_s), intent(in)    :: global_atts
-   logical,                   intent(in)    :: verbose
+   integer,                  intent(in)    :: ncid
+   type(input_data_primary), intent(inout) :: input_data
+   type(input_indices),      intent(in)    :: indexing
+   logical,                  intent(in)    :: verbose
 
-   integer            :: i, ii
+   integer            :: i, j
    integer            :: ierr
    integer            :: varid
    character(len=32)  :: input_num
    character(len=512) :: input_dummy
 
+if (indexing%flags%do_aerosol) then
+   call nc_read_packed_array(ncid, "aot550", input_data%aot550, verbose)
+   call nc_read_packed_array(ncid, "aot550_uncertainty", &
+        input_data%aot550_uncertainty, verbose)
+   call nc_read_packed_array(ncid, "aot870", input_data%aot870, verbose)
+   call nc_read_packed_array(ncid, "aot870_uncertainty", &
+        input_data%aot870_uncertainty, verbose)
+
+   call nc_read_packed_array(ncid, "aer", input_data%aer, verbose)
+   call nc_read_packed_array(ncid, "aer_uncertainty", &
+        input_data%aer_uncertainty, verbose)
+end if
+
+if (indexing%flags%do_rho) then
+   do i=1,indexing%NSolar
+      write(input_num, "(i4)") indexing%Y_Id(indexing%YSolar(i))
+
+      do j=1,MaxRho_XX
+         if (indexing%rho_terms(i,j)) then
+            call create_rho_field_name(j, 1, input_num, input_dummy)
+            call nc_read_packed_array(ncid, input_dummy, &
+                 input_data%rho(:,:,i,j), verbose)
+
+            call create_rho_field_name(j, 2, input_num, input_dummy)
+            call nc_read_packed_array(ncid, input_dummy, &
+                 input_data%rho_uncertainty(:,:,i,j), verbose)
+         end if
+      end do
+   end do
+end if
+
+if (indexing%flags%do_swansea) then
+   do i=1,indexing%NSolar
+      write(input_num, "(i4)") indexing%Y_Id(indexing%YSolar(i))
+
+      input_dummy='swansea_s_in_channel_no_'//trim(adjustl(input_num))
+      call nc_read_packed_array(ncid, input_dummy, &
+           input_data%swansea_s(:,:,i), verbose)
+      input_dummy='swansea_s_uncertainty_in_channel_no_'// &
+           trim(adjustl(input_num))
+      call nc_read_packed_array(ncid, input_dummy, &
+           input_data%swansea_s_uncertainty(:,:,i), verbose)
+
+      input_dummy='diffuse_frac_in_channel_no_'//trim(adjustl(input_num))
+      call nc_read_packed_array(ncid, input_dummy, &
+           input_data%diffuse_frac(:,:,i), verbose)
+      input_dummy='diffuse_frac_uncertainty_in_channel_no_'// &
+           trim(adjustl(input_num))
+      call nc_read_packed_array(ncid, input_dummy, &
+           input_data%diffuse_frac_uncertainty(:,:,i), verbose)
+   end do
+
+   do i=1,indexing%NViews
+      write(input_num, "(i4)") i
+
+      input_dummy='swansea_p_in_view_no_'//trim(adjustl(input_num))
+      call nc_read_packed_array(ncid, input_dummy, &
+           input_data%swansea_p(:,:,i), verbose)
+      input_dummy='swansea_p_uncertainty_in_view_no_'// &
+           trim(adjustl(input_num))
+      call nc_read_packed_array(ncid, input_dummy, &
+           input_data%swansea_p_uncertainty(:,:,i), verbose)
+   end do
+end if
+
+if (indexing%flags%do_cloud) then
    call nc_read_packed_array(ncid, "cot", input_data%cot, verbose)
-   call nc_read_packed_array(ncid, "cot_uncertainty", input_data%cot_uncertainty, verbose)
+   call nc_read_packed_array(ncid, "cot_uncertainty", &
+        input_data%cot_uncertainty, verbose)
 
    call nc_read_packed_array(ncid, "cer", input_data%cer, verbose)
-   call nc_read_packed_array(ncid, "cer_uncertainty", input_data%cer_uncertainty, verbose)
+   call nc_read_packed_array(ncid, "cer_uncertainty", &
+        input_data%cer_uncertainty, verbose)
 
    call nc_read_packed_array(ncid, "ctp", input_data%ctp, verbose)
-   call nc_read_packed_array(ncid, "ctp_uncertainty", input_data%ctp_uncertainty, verbose)
+   call nc_read_packed_array(ncid, "ctp_uncertainty", &
+        input_data%ctp_uncertainty, verbose)
 
-   call nc_read_packed_array(ncid, "ctp_corrected", input_data%ctp_corrected, verbose)
-   call nc_read_packed_array(ncid, "ctp_corrected_uncertainty", input_data%ctp_corrected_uncertainty, verbose)
+   call nc_read_packed_array(ncid, "ctp_corrected", &
+        input_data%ctp_corrected, verbose)
+   call nc_read_packed_array(ncid, "ctp_corrected_uncertainty", &
+        input_data%ctp_corrected_uncertainty, verbose)
 
    call nc_read_packed_array(ncid, "cc_total", input_data%cc_total, verbose)
-   call nc_read_packed_array(ncid, "cc_total_uncertainty", input_data%cc_total_uncertainty, verbose)
+   call nc_read_packed_array(ncid, "cc_total_uncertainty", &
+        input_data%cc_total_uncertainty, verbose)
 
    call nc_read_packed_array(ncid, "stemp", input_data%stemp, verbose)
-   call nc_read_packed_array(ncid, "stemp_uncertainty", input_data%stemp_uncertainty, verbose)
+   call nc_read_packed_array(ncid, "stemp_uncertainty", &
+        input_data%stemp_uncertainty, verbose)
 
    call nc_read_packed_array(ncid, "cth", input_data%cth, verbose)
-   call nc_read_packed_array(ncid, "cth_uncertainty", input_data%cth_uncertainty, verbose)
+   call nc_read_packed_array(ncid, "cth_uncertainty", &
+        input_data%cth_uncertainty, verbose)
 
-   call nc_read_packed_array(ncid, "cth_corrected", input_data%cth_corrected, verbose)
-   call nc_read_packed_array(ncid, "cth_corrected_uncertainty", input_data%cth_corrected_uncertainty, verbose)
+   call nc_read_packed_array(ncid, "cth_corrected", &
+        input_data%cth_corrected, verbose)
+   call nc_read_packed_array(ncid, "cth_corrected_uncertainty", &
+        input_data%cth_corrected_uncertainty, verbose)
 
    call nc_read_packed_array(ncid, "ctt", input_data%ctt, verbose)
-   call nc_read_packed_array(ncid, "ctt_uncertainty", input_data%ctt_uncertainty, verbose)
+   call nc_read_packed_array(ncid, "ctt_uncertainty", &
+        input_data%ctt_uncertainty, verbose)
 
-   call nc_read_packed_array(ncid, "ctt_corrected", input_data%ctt_corrected, verbose)
-   call nc_read_packed_array(ncid, "ctt_corrected_uncertainty", input_data%ctt_corrected_uncertainty, verbose)
+   call nc_read_packed_array(ncid, "ctt_corrected", &
+        input_data%ctt_corrected, verbose)
+   call nc_read_packed_array(ncid, "ctt_corrected_uncertainty", &
+        input_data%ctt_corrected_uncertainty, verbose)
 
    call nc_read_packed_array(ncid, "cwp", input_data%cwp, verbose)
-   call nc_read_packed_array(ncid, "cwp_uncertainty", input_data%cwp_uncertainty, verbose)
+   call nc_read_packed_array(ncid, "cwp_uncertainty", &
+        input_data%cwp_uncertainty, verbose)
 
-   ii = 1
-   do i=1,indexing%Ny
-      if (btest(indexing%Ch_Is(i), SolarBit)) then
-         write(input_num,"(i4)") indexing%Y_Id(i)
-         input_dummy='cloud_albedo_in_channel_no_'//trim(adjustl(input_num))
-         call nc_read_packed_array(ncid, input_dummy, input_data%cloud_albedo(:,:,ii), verbose)
+   do i=1,indexing%NSolar
+      write(input_num,"(i4)") indexing%Y_Id(indexing%YSolar(i))
 
-         write(input_num,"(i4)") indexing%Y_Id(i)
-         input_dummy='cloud_albedo_uncertainty_in_channel_no_'//trim(adjustl(input_num))
-         call nc_read_packed_array(ncid, input_dummy, input_data%cloud_albedo_uncertainty(:,:,ii), verbose)
+      input_dummy='cloud_albedo_in_channel_no_'//trim(adjustl(input_num))
+      call nc_read_packed_array(ncid, input_dummy, &
+           input_data%cloud_albedo(:,:,i), verbose)
 
-         ii = ii + 1
-      end if
+      input_dummy='cloud_albedo_uncertainty_in_channel_no_'// &
+           trim(adjustl(input_num))
+      call nc_read_packed_array(ncid, input_dummy, &
+           input_data%cloud_albedo_uncertainty(:,:,i), verbose)
    end do
 
-   ii = 1
-   do i=1,indexing%Ny
-      if (btest(indexing%Ch_Is(i), ThermalBit)) then
-         write(input_num,"(i4)") indexing%Y_Id(i)
-         input_dummy='cee_in_channel_no_'//trim(adjustl(input_num))
-         call nc_read_packed_array(ncid, input_dummy, input_data%cee(:,:,ii), verbose)
+   do i=1,indexing%NThermal
+      write(input_num,"(i4)") indexing%Y_Id(indexing%YThermal(i))
 
-         write(input_num,"(i4)") indexing%Y_Id(i)
-         input_dummy='cee_uncertainty_in_channel_no_'//trim(adjustl(input_num))
-         call nc_read_packed_array(ncid, input_dummy, input_data%cee_uncertainty(:,:,ii), verbose)
+      input_dummy='cee_in_channel_no_'//trim(adjustl(input_num))
+      call nc_read_packed_array(ncid, input_dummy, &
+           input_data%cee(:,:,i), verbose)
 
-         ii = ii + 1
-      end if
+      input_dummy='cee_uncertainty_in_channel_no_'//trim(adjustl(input_num))
+      call nc_read_packed_array(ncid, input_dummy, &
+           input_data%cee_uncertainty(:,:,i), verbose)
    end do
+end if
 
    call nc_read_array(ncid, "convergence", input_data%convergence, verbose)
    call nc_read_array(ncid, "niter", input_data%niter, verbose)
@@ -138,13 +209,13 @@ subroutine read_input_primary_common(ncid, input_data, xdim, ydim, indexing, &
    ierr = nf90_get_att(ncid, varid, 'flag_masks', input_data%qc_flag_masks)
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_get_att(), ', trim(nf90_strerror(ierr)), &
-          ', variable: qcflag, name: flag_masks'
+           ', variable: qcflag, name: flag_masks'
       stop error_stop_code
    end if
    ierr = nf90_get_att(ncid, varid, 'flag_meanings', input_data%qc_flag_meanings)
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_get_att(), ', trim(nf90_strerror(ierr)), &
-          ', variable: qcflag, name: flag_meanings'
+           ', variable: qcflag, name: flag_meanings'
       stop error_stop_code
    end if
    call nc_read_array(ncid, "qcflag", input_data%qcflag, verbose)
@@ -153,43 +224,106 @@ subroutine read_input_primary_common(ncid, input_data, xdim, ydim, indexing, &
 end subroutine read_input_primary_common
 
 
-subroutine read_input_primary_all(fname, input_data, xdim, ydim, indexing, &
-                                  global_atts, source_atts, verbose)
+subroutine read_input_primary_optional(ncid, input_data, indexing, &
+     read_flags, verbose)
 
-   use global_attributes
-   use netcdf
    use orac_ncdf
-   use source_attributes
-   use postproc_constants
 
    implicit none
 
-   character(len=path_length), intent(in)    :: fname
+   integer,                  intent(in)    :: ncid
+   type(input_data_primary), intent(inout) :: input_data
+   type(input_indices),      intent(in)    :: indexing
+   type(common_file_flags),  intent(inout) :: read_flags
+   logical,                  intent(in)    :: verbose
+
+   integer            :: i
+   character(len=32)  :: input_num
+   character(len=512) :: input_dummy
+
+   do i=1,indexing%NViews
+      if (indexing%read_optional_view_field(i)) then
+         write(input_num,"(i1)") i
+
+         input_dummy = "solar_zenith_view_no"//trim(adjustl(input_num))
+         call nc_read_array(ncid, trim(adjustl(input_dummy)), &
+              input_data%sol_zen(:,:,i), verbose)
+
+         input_dummy ="satellite_zenith_view_no"//trim(adjustl(input_num))
+         call nc_read_array(ncid, trim(adjustl(input_dummy)), &
+              input_data%sat_zen(:,:,i), verbose)
+
+         input_dummy ="rel_azimuth_view_no"//trim(adjustl(input_num))
+         call nc_read_array(ncid, trim(adjustl(input_dummy)), &
+              input_data%rel_azi(:,:,i), verbose)
+      end if
+   end do
+
+if (indexing%flags%do_cloud .and. read_flags%do_cloud) then
+   call nc_read_packed_array(ncid, "cccot_pre", input_data%cccot_pre, verbose)
+   read_flags%do_cloud = .false.
+end if
+
+if (indexing%flags%do_cldmask .and. read_flags%do_cldmask) then
+   call nc_read_array(ncid, "cldmask", input_data%cldmask, verbose)
+   read_flags%do_cldmask = .false.
+end if
+
+if (indexing%flags%do_cldmask_uncertainty .and. &
+     read_flags%do_cldmask_uncertainty) then
+   call nc_read_packed_array(ncid, "cldmask_uncertainty", &
+        input_data%cldmask_uncertainty, verbose)
+   read_flags%do_cldmask_uncertainty = .false.
+end if
+
+if (indexing%flags%do_phase .and. read_flags%do_phase) then
+   call nc_read_array(ncid, "phase", input_data%phase, verbose)
+   read_flags%do_phase = .false.
+end if
+
+if (indexing%flags%do_phase_pavolonis .and. &
+     read_flags%do_phase_pavolonis) then
+   call nc_read_array(ncid, "phase_pavolonis", &
+        input_data%phase_pavolonis, verbose)
+   read_flags%do_phase_pavolonis = .false.
+end if
+
+end subroutine read_input_primary_optional
+
+
+subroutine read_input_primary_once(nfile, fname, input_data, indexing, &
+     loop_ind, global_atts, source_atts, verbose)
+
+   use global_attributes
+   use orac_ncdf
+   use source_attributes
+
+   implicit none
+
+   integer,                    intent(in)    :: nfile
+   character(len=path_length), intent(in)    :: fname(:)
    type(input_data_primary),   intent(inout) :: input_data
-   integer(kind=lint),         intent(in)    :: xdim,ydim
-   type(common_indices),       intent(in)    :: indexing
+   type(input_indices),        intent(in)    :: indexing
+   type(input_indices),        intent(in)    :: loop_ind(:)
    type(global_attributes_s),  intent(inout) :: global_atts
    type(source_attributes_s),  intent(inout) :: source_atts
    logical,                    intent(in)    :: verbose
 
-   integer :: ncid
+   integer                 :: ncid, i
+   type(common_file_flags) :: read_flags
 
-   if (verbose) write(*,*) 'Opening primary input file: ', trim(fname)
-   call nc_open(ncid,fname)
+   ! Flag which optional fields to be read. Set false as they are read.
+   read_flags = indexing%flags
+
+   ! Read universally common fields from first input file
+   call nc_open(ncid, fname(1))
 
    call nc_get_common_attributes(ncid, global_atts, source_atts)
-
-   call read_input_primary_common(ncid, input_data, xdim, ydim, indexing, &
-      global_atts, verbose)
 
    call nc_read_array(ncid, "time", input_data%time, verbose)
 
    call nc_read_array(ncid, "lon", input_data%lon, verbose)
    call nc_read_array(ncid, "lat", input_data%lat, verbose)
-
-   call nc_read_array(ncid, "solar_zenith_view_no1", input_data%solar_zenith_view_no1, verbose)
-   call nc_read_array(ncid, "satellite_zenith_view_no1", input_data%satellite_zenith_view_no1, verbose)
-   call nc_read_array(ncid, "rel_azimuth_view_no1", input_data%rel_azimuth_view_no1, verbose)
 
    call nc_read_array(ncid, "lsflag", input_data%lsflag, verbose)
    call nc_read_array(ncid, "lusflag", input_data%lusflag, verbose)
@@ -198,45 +332,47 @@ subroutine read_input_primary_all(fname, input_data, xdim, ydim, indexing, &
 
    call nc_read_array(ncid, "illum", input_data%illum, verbose)
    call nc_read_array(ncid, "cldtype", input_data%cldtype, verbose)
-   call nc_read_array(ncid, "cldmask", input_data%cldmask, verbose)
-   call nc_read_packed_array(ncid, "cldmask_uncertainty", input_data%cldmask_uncertainty, verbose)
-   call nc_read_packed_array(ncid, "cccot_pre", input_data%cccot_pre, verbose)
 
-   if (verbose) write(*,*) 'Closing primary input file.'
+   call read_input_primary_optional(ncid, input_data, loop_ind(1), &
+        read_flags, verbose)
+
    if (nf90_close(ncid) .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_close()'
       stop error_stop_code
    end if
 
-!  call nc_read_array(ncid, "phase", input_data%phase, verbose)
+   do i=2,nfile
+      call nc_open(ncid,fname(i))
+      call read_input_primary_optional(ncid, input_data, loop_ind(i), &
+           read_flags, verbose)
+      if (nf90_close(ncid) .ne. NF90_NOERR) then
+         write(*,*) 'ERROR: nf90_close()'
+         stop error_stop_code
+      end if
+   end do
 
-end subroutine read_input_primary_all
+end subroutine read_input_primary_once
 
 
-subroutine read_input_primary_class(fname, input_data, xdim, ydim, indexing, &
-                                    global_atts, verbose)
+subroutine read_input_primary_class(fname, input_data, indexing, verbose)
 
-   use global_attributes
-   use netcdf
    use orac_ncdf
-   use postproc_constants
 
    implicit none
 
    character(len=path_length), intent(in)    :: fname
    type(input_data_primary),   intent(inout) :: input_data
-   integer(kind=lint),         intent(in)    :: xdim,ydim
-   type(common_indices),       intent(in)    :: indexing
-   type(global_attributes_s),  intent(in)    :: global_atts
+   type(input_indices),        intent(in)    :: indexing
    logical,                    intent(in)    :: verbose
 
    integer :: ncid
 
+   if (verbose) write(*,*) 'Opening primary input file: ', trim(fname)
    call nc_open(ncid,fname)
 
-   call read_input_primary_common(ncid, input_data, xdim, ydim, indexing, &
-      global_atts, verbose)
+   call read_input_primary_common(ncid, input_data, indexing, verbose)
 
+   if (verbose) write(*,*) 'Closing primary input file.'
    if (nf90_close(ncid) .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_close()'
       stop error_stop_code

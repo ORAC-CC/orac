@@ -34,6 +34,7 @@
 ! 2015/10/22, GM: Add cloud albedo uncertainty.
 ! 2016/01/27, GM: Add cee and cee_uncertainty.
 ! 2016/01/28, GM: Add ctp and ctt corrected and corrected_uncertianty.
+! 2016/03/02, AP: Homogenisation of I/O modules.
 !
 ! $Id$
 !
@@ -41,148 +42,186 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine dealloc_input_data_primary_common(input_data)
-
-   use postproc_constants
+subroutine dealloc_input_data_primary_common(data)
 
    implicit none
 
-   type(input_data_primary), intent(inout) :: input_data
+   type(input_data_primary), intent(inout) :: data
 
-   deallocate(input_data%cot)
-   deallocate(input_data%cot_uncertainty)
-   deallocate(input_data%cer)
-   deallocate(input_data%cer_uncertainty)
-   deallocate(input_data%ctp)
-   deallocate(input_data%ctp_uncertainty)
-   deallocate(input_data%ctp_corrected)
-   deallocate(input_data%ctp_corrected_uncertainty)
-   deallocate(input_data%cct)
-   deallocate(input_data%cct_uncertainty)
-   deallocate(input_data%cc_total)
-   deallocate(input_data%cc_total_uncertainty)
-   deallocate(input_data%stemp)
-   deallocate(input_data%stemp_uncertainty)
-   deallocate(input_data%cth)
-   deallocate(input_data%cth_uncertainty)
-   deallocate(input_data%cth_corrected)
-   deallocate(input_data%cth_corrected_uncertainty)
-   deallocate(input_data%ctt)
-   deallocate(input_data%ctt_uncertainty)
-   deallocate(input_data%ctt_corrected)
-   deallocate(input_data%ctt_corrected_uncertainty)
-   deallocate(input_data%cwp)
-   deallocate(input_data%cwp_uncertainty)
-   deallocate(input_data%cloud_albedo)
-   deallocate(input_data%cloud_albedo_uncertainty)
-   deallocate(input_data%cee)
-   deallocate(input_data%cee_uncertainty)
-   deallocate(input_data%convergence)
-   deallocate(input_data%niter)
-   deallocate(input_data%costja)
-   deallocate(input_data%costjm)
-   deallocate(input_data%qcflag)
+   if (associated(data%aot550))        deallocate(data%aot550)
+   if (associated(data%aot550_uncertainty)) &
+                                       deallocate(data%aot550_uncertainty)
+   if (associated(data%aot870))        deallocate(data%aot870)
+   if (associated(data%aot870_uncertainty)) &
+                                       deallocate(data%aot870_uncertainty)
+   if (associated(data%aer))           deallocate(data%aer)
+   if (associated(data%aer_uncertainty)) &
+                                       deallocate(data%aer_uncertainty)
+
+   if (associated(data%rho))           deallocate(data%rho)
+   if (associated(data%rho_uncertainty)) &
+                                       deallocate(data%rho_uncertainty)
+
+   if (associated(data%swansea_s))     deallocate(data%swansea_s)
+   if (associated(data%swansea_s_uncertainty)) &
+                                       deallocate(data%swansea_s_uncertainty)
+   if (associated(data%swansea_p))     deallocate(data%swansea_p)
+   if (associated(data%swansea_p_uncertainty)) &
+                                       deallocate(data%swansea_p_uncertainty)
+   if (associated(data%diffuse_frac))  deallocate(data%diffuse_frac)
+   if (associated(data%diffuse_frac_uncertainty)) &
+                                       deallocate(data%diffuse_frac_uncertainty)
+
+   if (associated(data%cot))           deallocate(data%cot)
+   if (associated(data%cot_uncertainty)) &
+                                       deallocate(data%cot_uncertainty)
+   if (associated(data%cer))           deallocate(data%cer)
+   if (associated(data%cer_uncertainty)) &
+                                       deallocate(data%cer_uncertainty)
+   if (associated(data%ctp))           deallocate(data%ctp)
+   if (associated(data%ctp_uncertainty)) &
+                                       deallocate(data%ctp_uncertainty)
+   if (associated(data%ctp_corrected)) deallocate(data%ctp_corrected)
+   if (associated(data%ctp_corrected_uncertainty)) &
+                                       deallocate(data%ctp_corrected_uncertainty)
+   if (associated(data%cc_total))      deallocate(data%cc_total)
+   if (associated(data%cc_total_uncertainty)) &
+                                       deallocate(data%cc_total_uncertainty)
+   if (associated(data%stemp))         deallocate(data%stemp)
+   if (associated(data%stemp_uncertainty)) &
+                                       deallocate(data%stemp_uncertainty)
+   if (associated(data%cth))           deallocate(data%cth)
+   if (associated(data%cth_uncertainty)) &
+                                       deallocate(data%cth_uncertainty)
+   if (associated(data%cth_corrected)) deallocate(data%cth_corrected)
+   if (associated(data%cth_corrected_uncertainty)) &
+                                       deallocate(data%cth_corrected_uncertainty)
+   if (associated(data%ctt))           deallocate(data%ctt)
+   if (associated(data%ctt_uncertainty)) &
+                                       deallocate(data%ctt_uncertainty)
+   if (associated(data%ctt_corrected)) deallocate(data%ctt_corrected)
+   if (associated(data%ctt_corrected_uncertainty)) &
+                                       deallocate(data%ctt_corrected_uncertainty)
+   if (associated(data%cwp))           deallocate(data%cwp)
+   if (associated(data%cwp_uncertainty)) &
+                                       deallocate(data%cwp_uncertainty)
+   if (associated(data%cloud_albedo))  deallocate(data%cloud_albedo)
+   if (associated(data%cloud_albedo_uncertainty)) &
+                                       deallocate(data%cloud_albedo_uncertainty)
+   if (associated(data%cee))           deallocate(data%cee)
+   if (associated(data%cee_uncertainty)) &
+                                       deallocate(data%cee_uncertainty)
+
+   deallocate(data%convergence)
+   deallocate(data%niter)
+   deallocate(data%costja)
+   deallocate(data%costjm)
+   deallocate(data%qcflag)
 
 end subroutine dealloc_input_data_primary_common
 
 
-subroutine dealloc_input_data_primary_all(input_data)
-
-   use postproc_constants
+subroutine dealloc_input_data_primary_all(data)
 
    implicit none
 
-   type(input_data_primary), intent(inout) :: input_data
+   type(input_data_primary), intent(inout) :: data
 
-   call dealloc_input_data_primary_common(input_data)
+   call dealloc_input_data_primary_common(data)
 
-   deallocate(input_data%time)
-   deallocate(input_data%lat)
-   deallocate(input_data%lon)
-   deallocate(input_data%solar_zenith_view_no1)
-   deallocate(input_data%satellite_zenith_view_no1)
-   deallocate(input_data%rel_azimuth_view_no1)
-   deallocate(input_data%lsflag)
-   deallocate(input_data%lusflag)
-   deallocate(input_data%dem)
-   deallocate(input_data%nisemask)
-   deallocate(input_data%illum)
-   deallocate(input_data%cldtype)
-   deallocate(input_data%cldmask)
-   deallocate(input_data%cldmask_uncertainty)
-   deallocate(input_data%cccot_pre)
-   deallocate(input_data%phase)
+   if (associated(data%cccot_pre)) deallocate(data%cccot_pre)
+
+   deallocate(data%time)
+   deallocate(data%lat)
+   deallocate(data%lon)
+   deallocate(data%sol_zen)
+   deallocate(data%sat_zen)
+   deallocate(data%rel_azi)
+
+   deallocate(data%lsflag)
+   deallocate(data%lusflag)
+   deallocate(data%dem)
+   deallocate(data%nisemask)
+
+   deallocate(data%illum)
+
+   deallocate(data%cldtype)
+   if (associated(data%cldmask))             deallocate(data%cldmask)
+   if (associated(data%cldmask_uncertainty)) deallocate(data%cldmask_uncertainty)
+
+   if (associated(data%phase))               deallocate(data%phase)
+   if (associated(data%phase_pavolonis))     deallocate(data%phase_pavolonis)
 
 end subroutine dealloc_input_data_primary_all
 
 
-subroutine dealloc_input_data_primary_class(input_data)
-
-   use postproc_constants
+subroutine dealloc_input_data_primary_class(data)
 
    implicit none
 
-   type(input_data_primary), intent(inout) :: input_data
+   type(input_data_primary), intent(inout) :: data
 
-   call dealloc_input_data_primary_common(input_data)
+   call dealloc_input_data_primary_common(data)
 
 end subroutine dealloc_input_data_primary_class
 
 
-subroutine dealloc_input_data_common(input_data)
-
-   use postproc_constants
+subroutine dealloc_input_data_secondary_common(data)
 
    implicit none
 
-   type(input_data_secondary), intent(inout) :: input_data
+   type(input_data_secondary), intent(inout) :: data
 
-   deallocate(input_data%ctp_ap)
-   deallocate(input_data%ctp_fg)
-   deallocate(input_data%cer_ap)
-   deallocate(input_data%cer_fg)
-   deallocate(input_data%cot_ap)
-   deallocate(input_data%cot_fg)
-   deallocate(input_data%stemp_ap)
-   deallocate(input_data%stemp_fg)
+   if (associated(data%aot550_ap))    deallocate(data%aot550_ap)
+   if (associated(data%aot550_fg))    deallocate(data%aot550_fg)
+   if (associated(data%aer_ap))       deallocate(data%aer_ap)
+   if (associated(data%aer_fg))       deallocate(data%aer_fg)
 
-   deallocate(input_data%y0)
+   if (associated(data%rho_ap))       deallocate(data%rho_ap)
+   if (associated(data%rho_fg))       deallocate(data%rho_fg)
 
-   deallocate(input_data%residuals)
+   if (associated(data%swansea_s_ap)) deallocate(data%swansea_s_ap)
+   if (associated(data%swansea_s_fg)) deallocate(data%swansea_s_fg)
+   if (associated(data%swansea_p_ap)) deallocate(data%swansea_p_ap)
+   if (associated(data%swansea_p_fg)) deallocate(data%swansea_p_fg)
 
-   deallocate(input_data%ds)
+   if (associated(data%cot_ap))       deallocate(data%cot_ap)
+   if (associated(data%cot_fg))       deallocate(data%cot_fg)
+   if (associated(data%cer_ap))       deallocate(data%cer_ap)
+   if (associated(data%cer_fg))       deallocate(data%cer_fg)
+   if (associated(data%ctp_ap))       deallocate(data%ctp_ap)
+   if (associated(data%ctp_fg))       deallocate(data%ctp_fg)
+   if (associated(data%stemp_ap))     deallocate(data%stemp_ap)
+   if (associated(data%stemp_fg))     deallocate(data%stemp_fg)
 
-end subroutine dealloc_input_data_common
+   deallocate(data%y0)
+   deallocate(data%residuals)
+   deallocate(data%ds)
+
+end subroutine dealloc_input_data_secondary_common
 
 
-subroutine dealloc_input_data_secondary_all(input_data)
-
-   use postproc_constants
+subroutine dealloc_input_data_secondary_all(data)
 
    implicit none
 
-   type(input_data_secondary), intent(inout) :: input_data
+   type(input_data_secondary), intent(inout) :: data
 
-   call dealloc_input_data_common(input_data)
+   call dealloc_input_data_secondary_common(data)
 
-!  deallocate(input_data%scanline_u)
-!  deallocate(input_data%scanline_v)
+   if (associated(data%albedo)) deallocate(data%albedo)
 
-   deallocate(input_data%albedo)
-
-   deallocate(input_data%channels)
+   deallocate(data%channels)
 
 end subroutine dealloc_input_data_secondary_all
 
 
-subroutine dealloc_input_data_secondary_class(input_data)
-
-   use postproc_constants
+subroutine dealloc_input_data_secondary_class(data)
 
    implicit none
 
-   type(input_data_secondary), intent(inout) :: input_data
+   type(input_data_secondary), intent(inout) :: data
 
-   call dealloc_input_data_common(input_data)
+   call dealloc_input_data_secondary_common(data)
 
 end subroutine dealloc_input_data_secondary_class

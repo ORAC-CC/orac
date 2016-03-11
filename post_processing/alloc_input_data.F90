@@ -34,6 +34,7 @@
 ! 2015/10/22, GM: Add cloud albedo uncertainty.
 ! 2016/01/27, GM: Add cee and cee_uncertainty.
 ! 2016/01/28, GM: Add ctp and ctt corrected and corrected_uncertianty.
+! 2016/03/02, AP: Homogenisation of I/O modules.
 !
 ! $Id$
 !
@@ -41,255 +42,320 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine alloc_input_data_primary_common(input_data,xdim1km,ydim1km,indexing)
-
-   use common_constants
-   use postproc_constants
+subroutine alloc_input_data_primary_common(ind, data)
 
    implicit none
 
-   type(input_data_primary), intent(inout) :: input_data
-   integer(kind=lint),       intent(in)    :: xdim1km,ydim1km
-   type(common_indices),     intent(in)    :: indexing
+   type(input_indices),      intent(in)    :: ind
+   type(input_data_primary), intent(inout) :: data
 
-   allocate(input_data%cot(xdim1km,ydim1km))
-   input_data%cot=sreal_fill_value
-   allocate(input_data%cot_uncertainty(xdim1km,ydim1km))
-   input_data%cot_uncertainty=sreal_fill_value
+if (ind%flags%do_aerosol) then
+   allocate(data%aot550(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%aot550 = sreal_fill_value
+   allocate(data%aot550_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%aot550_uncertainty = sreal_fill_value
 
-   allocate(input_data%cer(xdim1km,ydim1km))
-   input_data%cer=sreal_fill_value
-   allocate(input_data%cer_uncertainty(xdim1km,ydim1km))
-   input_data%cer_uncertainty=sreal_fill_value
+   allocate(data%aot870(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%aot870 = sreal_fill_value
+   allocate(data%aot870_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%aot870_uncertainty = sreal_fill_value
 
-   allocate(input_data%ctp(xdim1km,ydim1km))
-   input_data%ctp=sreal_fill_value
-   allocate(input_data%ctp_uncertainty(xdim1km,ydim1km))
-   input_data%ctp_uncertainty=sreal_fill_value
+   allocate(data%aer(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%aer = sreal_fill_value
+   allocate(data%aer_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%aer_uncertainty = sreal_fill_value
+end if
 
-   allocate(input_data%ctp_corrected(xdim1km,ydim1km))
-   input_data%ctp_corrected=sreal_fill_value
-   allocate(input_data%ctp_corrected_uncertainty(xdim1km,ydim1km))
-   input_data%ctp_corrected_uncertainty=sreal_fill_value
+if (ind%flags%do_rho) then
+   allocate(data%rho(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NSolar, MaxRho_XX))
+   data%rho = sreal_fill_value
+   allocate(data%rho_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1, &
+                                 ind%NSolar, MaxRho_XX))
+   data%rho_uncertainty = sreal_fill_value
+end if
 
-   allocate(input_data%cct(xdim1km,ydim1km))
-   input_data%cct=sreal_fill_value
-   allocate(input_data%cct_uncertainty(xdim1km,ydim1km))
-   input_data%cct_uncertainty=sreal_fill_value
+if (ind%flags%do_swansea) then
+   allocate(data%swansea_s(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NSolar))
+   data%swansea_s = sreal_fill_value
+   allocate(data%swansea_s_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1, &
+                                       ind%NSolar))
+   data%swansea_s_uncertainty = sreal_fill_value
 
-   allocate(input_data%cc_total(xdim1km,ydim1km))
-   input_data%cc_total=sreal_fill_value
-   allocate(input_data%cc_total_uncertainty(xdim1km,ydim1km))
-   input_data%cc_total_uncertainty=sreal_fill_value
+   allocate(data%swansea_p(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NViews))
+   data%swansea_p = sreal_fill_value
+   allocate(data%swansea_p_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1, &
+                                       ind%NViews))
+   data%swansea_p_uncertainty = sreal_fill_value
 
-   allocate(input_data%stemp_uncertainty(xdim1km,ydim1km))
-   input_data%stemp_uncertainty=sreal_fill_value
-   allocate(input_data%stemp(xdim1km,ydim1km))
-   input_data%stemp=sreal_fill_value
+   allocate(data%diffuse_frac(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NSolar))
+   data%diffuse_frac = sreal_fill_value
+   allocate(data%diffuse_frac_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1, &
+                                          ind%NSolar))
+   data%diffuse_frac_uncertainty = sreal_fill_value
+end if
 
-   allocate(input_data%cth(xdim1km,ydim1km))
-   input_data%cth=sreal_fill_value
-   allocate(input_data%cth_uncertainty(xdim1km,ydim1km))
-   input_data%cth_uncertainty=sreal_fill_value
+if (ind%flags%do_cloud) then
+   allocate(data%cot(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cot = sreal_fill_value
+   allocate(data%cot_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cot_uncertainty = sreal_fill_value
 
-   allocate(input_data%cth_corrected(xdim1km,ydim1km))
-   input_data%cth_corrected=sreal_fill_value
-   allocate(input_data%cth_corrected_uncertainty(xdim1km,ydim1km))
-   input_data%cth_corrected_uncertainty=sreal_fill_value
+   allocate(data%cer(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cer = sreal_fill_value
+   allocate(data%cer_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cer_uncertainty = sreal_fill_value
 
-   allocate(input_data%ctt(xdim1km,ydim1km))
-   input_data%ctt=sreal_fill_value
-   allocate(input_data%ctt_uncertainty(xdim1km,ydim1km))
-   input_data%ctt_uncertainty=sreal_fill_value
+   allocate(data%ctp(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%ctp = sreal_fill_value
+   allocate(data%ctp_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%ctp_uncertainty = sreal_fill_value
 
-   allocate(input_data%ctt_corrected(xdim1km,ydim1km))
-   input_data%ctt_corrected=sreal_fill_value
-   allocate(input_data%ctt_corrected_uncertainty(xdim1km,ydim1km))
-   input_data%ctt_corrected_uncertainty=sreal_fill_value
+   allocate(data%ctp_corrected(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%ctp_corrected = sreal_fill_value
+   allocate(data%ctp_corrected_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%ctp_corrected_uncertainty = sreal_fill_value
 
-   allocate(input_data%cwp(xdim1km,ydim1km))
-   input_data%cwp=sreal_fill_value
-   allocate(input_data%cwp_uncertainty(xdim1km,ydim1km))
-   input_data%cwp_uncertainty=sreal_fill_value
+   allocate(data%cc_total(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cc_total = sreal_fill_value
+   allocate(data%cc_total_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cc_total_uncertainty = sreal_fill_value
 
-   allocate(input_data%cloud_albedo(xdim1km,ydim1km,indexing%NSolar))
-   input_data%cloud_albedo=sreal_fill_value
-   allocate(input_data%cloud_albedo_uncertainty(xdim1km,ydim1km,indexing%NSolar))
-   input_data%cloud_albedo_uncertainty=sreal_fill_value
+   allocate(data%stemp(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%stemp = sreal_fill_value
+   allocate(data%stemp_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%stemp_uncertainty = sreal_fill_value
 
-   allocate(input_data%cee(xdim1km,ydim1km,indexing%NThermal))
-   input_data%cee=sreal_fill_value
-   allocate(input_data%cee_uncertainty(xdim1km,ydim1km,indexing%NThermal))
-   input_data%cee_uncertainty=sreal_fill_value
+   allocate(data%cth(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cth = sreal_fill_value
+   allocate(data%cth_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cth_uncertainty = sreal_fill_value
 
-   allocate(input_data%convergence(xdim1km,ydim1km))
-   input_data%convergence=byte_fill_value
+   allocate(data%cth_corrected(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cth_corrected = sreal_fill_value
+   allocate(data%cth_corrected_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cth_corrected_uncertainty = sreal_fill_value
 
-   allocate(input_data%niter(xdim1km,ydim1km))
-   input_data%niter=byte_fill_value
+   allocate(data%ctt(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%ctt = sreal_fill_value
+   allocate(data%ctt_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%ctt_uncertainty = sreal_fill_value
 
-   allocate(input_data%costja(xdim1km,ydim1km))
-   input_data%costja=sreal_fill_value
-   allocate(input_data%costjm(xdim1km,ydim1km))
-   input_data%costjm=sreal_fill_value
+   allocate(data%ctt_corrected(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%ctt_corrected = sreal_fill_value
+   allocate(data%ctt_corrected_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%ctt_corrected_uncertainty = sreal_fill_value
 
-   allocate(input_data%qcflag(xdim1km,ydim1km))
-   input_data%qcflag=sint_fill_value
+   allocate(data%cwp(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cwp = sreal_fill_value
+   allocate(data%cwp_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cwp_uncertainty = sreal_fill_value
+
+   allocate(data%cloud_albedo(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NSolar))
+   data%cloud_albedo = sreal_fill_value
+   allocate(data%cloud_albedo_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1, &
+                                          ind%NSolar))
+   data%cloud_albedo_uncertainty = sreal_fill_value
+
+   allocate(data%cee(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NThermal))
+   data%cee = sreal_fill_value
+   allocate(data%cee_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1, &
+                                 ind%NThermal))
+   data%cee_uncertainty = sreal_fill_value
+end if
+
+   allocate(data%convergence(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%convergence = byte_fill_value
+
+   allocate(data%niter(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%niter = byte_fill_value
+
+   allocate(data%costja(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%costja = sreal_fill_value
+   allocate(data%costjm(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%costjm = sreal_fill_value
+
+   allocate(data%qcflag(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%qcflag = sint_fill_value
 
 end subroutine alloc_input_data_primary_common
 
 
-subroutine alloc_input_data_primary_all(input_data,xdim1km,ydim1km,indexing)
-
-   use common_constants
-   use postproc_constants
+subroutine alloc_input_data_primary_all(ind, data)
 
    implicit none
 
-   type(input_data_primary), intent(inout) :: input_data
-   integer(kind=lint),       intent(in)    :: xdim1km,ydim1km
-   type(common_indices),     intent(in)    :: indexing
+   type(input_indices),      intent(in)    :: ind
+   type(input_data_primary), intent(inout) :: data
 
-   call alloc_input_data_primary_common(input_data,xdim1km,ydim1km,indexing)
+   call alloc_input_data_primary_common(ind, data)
 
-   allocate(input_data%time(xdim1km,ydim1km))
-   input_data%time=dreal_fill_value
+if (ind%flags%do_cloud) then
+   allocate(data%cccot_pre(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cccot_pre = sreal_fill_value
+end if
 
-   allocate(input_data%lat(xdim1km,ydim1km))
-   input_data%lat=sreal_fill_value
-   allocate(input_data%lon(xdim1km,ydim1km))
-   input_data%lon=sreal_fill_value
+   allocate(data%time(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%time = dreal_fill_value
 
-   allocate(input_data%solar_zenith_view_no1(xdim1km,ydim1km))
-   input_data%solar_zenith_view_no1=sreal_fill_value
-   allocate(input_data%satellite_zenith_view_no1(xdim1km,ydim1km))
-   input_data%satellite_zenith_view_no1=sreal_fill_value
-   allocate(input_data%rel_azimuth_view_no1(xdim1km,ydim1km))
-   input_data%rel_azimuth_view_no1=sreal_fill_value
+   allocate(data%lat(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%lat = sreal_fill_value
+   allocate(data%lon(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%lon = sreal_fill_value
 
-   allocate(input_data%lsflag(xdim1km,ydim1km))
-   input_data%lsflag=byte_fill_value
-   allocate(input_data%lusflag(xdim1km,ydim1km))
-   input_data%lusflag=byte_fill_value
+   allocate(data%sol_zen(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NViews))
+   data%sol_zen = sreal_fill_value
+   allocate(data%sat_zen(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NViews))
+   data%sat_zen = sreal_fill_value
+   allocate(data%rel_azi(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NViews))
+   data%rel_azi = sreal_fill_value
 
-   allocate(input_data%dem(xdim1km,ydim1km))
-   input_data%dem=sint_fill_value
+   allocate(data%lsflag(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%lsflag = byte_fill_value
+   allocate(data%lusflag(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%lusflag = byte_fill_value
+   allocate(data%dem(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%dem = sint_fill_value
+   allocate(data%nisemask(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%nisemask = byte_fill_value
 
-   allocate(input_data%nisemask(xdim1km,ydim1km))
-   input_data%nisemask=byte_fill_value
+   allocate(data%illum(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%illum = byte_fill_value
 
-   allocate(input_data%illum(xdim1km,ydim1km))
-   input_data%illum=byte_fill_value
+   allocate(data%cldtype(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cldtype = byte_fill_value
 
-   allocate(input_data%cldtype(xdim1km,ydim1km))
-   input_data%cldtype=byte_fill_value
+if (ind%flags%do_cldmask) then
+   allocate(data%cldmask(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cldmask = byte_fill_value
+end if
+if (ind%flags%do_cldmask_uncertainty) then
+   allocate(data%cldmask_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cldmask_uncertainty = sreal_fill_value
+end if
 
-   allocate(input_data%cldmask(xdim1km,ydim1km))
-   input_data%cldmask=byte_fill_value
-   allocate(input_data%cldmask_uncertainty(xdim1km,ydim1km))
-   input_data%cldmask_uncertainty=sreal_fill_value
-
-   allocate(input_data%cccot_pre(xdim1km,ydim1km))
-   input_data%cccot_pre=sreal_fill_value
-
-   allocate(input_data%phase(xdim1km,ydim1km))
-   input_data%phase=byte_fill_value
+if (ind%flags%do_phase) then
+   allocate(data%phase(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%phase = byte_fill_value
+end if
+if (ind%flags%do_phase_pavolonis) then
+   allocate(data%phase_pavolonis(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%phase_pavolonis = byte_fill_value
+end if
 
 end subroutine alloc_input_data_primary_all
 
 
-subroutine alloc_input_data_primary_class(input_data,xdim1km,ydim1km,indexing)
-
-   use common_constants
-   use postproc_constants
+subroutine alloc_input_data_primary_class(ind, data)
 
    implicit none
 
-   type(input_data_primary), intent(inout) :: input_data
-   integer(kind=lint),       intent(in)    :: xdim1km,ydim1km
-   type(common_indices),     intent(in)    :: indexing
+   type(input_indices),      intent(in)    :: ind
+   type(input_data_primary), intent(inout) :: data
 
-   call alloc_input_data_primary_common(input_data,xdim1km, ydim1km,indexing)
+   call alloc_input_data_primary_common(ind, data)
 
 end subroutine alloc_input_data_primary_class
 
 
-subroutine alloc_input_data_secondary_common(input_data,xdim1km,ydim1km,indexing)
-
-   use common_constants
-   use postproc_constants
+subroutine alloc_input_data_secondary_common(ind, data)
 
    implicit none
 
-   type(input_data_secondary), intent(inout) :: input_data
-   integer(kind=lint),         intent(in)    :: xdim1km,ydim1km
-   type(common_indices),       intent(in)    :: indexing
+   type(input_indices),        intent(in)    :: ind
+   type(input_data_secondary), intent(inout) :: data
 
-   allocate(input_data%cot_ap(xdim1km,ydim1km))
-   input_data%cot_ap=sreal_fill_value
-   allocate(input_data%cot_fg(xdim1km,ydim1km))
-   input_data%cot_fg=sreal_fill_value
+if (ind%flags%do_aerosol) then
+   allocate(data%aot550_ap(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%aot550_ap = sreal_fill_value
+   allocate(data%aot550_fg(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%aot550_fg = sreal_fill_value
 
-   allocate(input_data%cer_ap(xdim1km,ydim1km))
-   input_data%cer_ap=sreal_fill_value
-   allocate(input_data%cer_fg(xdim1km,ydim1km))
-   input_data%cer_fg=sreal_fill_value
+   allocate(data%aer_ap(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%aer_ap = sreal_fill_value
+   allocate(data%aer_fg(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%aer_fg = sreal_fill_value
+end if
 
-   allocate(input_data%ctp_ap(xdim1km,ydim1km))
-   input_data%ctp_ap=sreal_fill_value
-   allocate(input_data%ctp_fg(xdim1km,ydim1km))
-   input_data%ctp_fg=sreal_fill_value
+if (ind%flags%do_rho) then
+   allocate(data%rho_ap(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NSolar, MaxRho_XX))
+   data%rho_ap = sreal_fill_value
+   allocate(data%rho_fg(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NSolar, MaxRho_XX))
+   data%rho_fg = sreal_fill_value
+end if
 
-   allocate(input_data%stemp_fg(xdim1km,ydim1km))
-   input_data%stemp_fg=sreal_fill_value
-   allocate(input_data%stemp_ap(xdim1km,ydim1km))
-   input_data%stemp_ap=sreal_fill_value
+if (ind%flags%do_swansea) then
+   allocate(data%swansea_s_ap(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NSolar))
+   data%swansea_s_ap = sreal_fill_value
+   allocate(data%swansea_s_fg(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NSolar))
+   data%swansea_s_fg = sreal_fill_value
 
-   allocate(input_data%y0(xdim1km,ydim1km,indexing%Ny))
-   input_data%y0=sreal_fill_value
+   allocate(data%swansea_p_ap(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NViews))
+   data%swansea_p_ap = sreal_fill_value
+   allocate(data%swansea_p_fg(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NViews))
+   data%swansea_p_fg = sreal_fill_value
+end if
 
-   allocate(input_data%residuals(xdim1km,ydim1km,indexing%Ny))
-   input_data%residuals=sreal_fill_value
+if (ind%flags%do_cloud) then
+   allocate(data%cot_ap(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cot_ap = sreal_fill_value
+   allocate(data%cot_fg(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cot_fg = sreal_fill_value
 
-   allocate(input_data%ds(xdim1km,ydim1km))
-   input_data%ds=sreal_fill_value
+   allocate(data%cer_ap(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cer_ap = sreal_fill_value
+   allocate(data%cer_fg(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cer_fg = sreal_fill_value
+
+   allocate(data%ctp_ap(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%ctp_ap = sreal_fill_value
+   allocate(data%ctp_fg(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%ctp_fg = sreal_fill_value
+
+   allocate(data%stemp_fg(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%stemp_fg = sreal_fill_value
+   allocate(data%stemp_ap(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%stemp_ap = sreal_fill_value
+end if
+
+   allocate(data%y0(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%Ny))
+   data%y0 = sreal_fill_value
+
+   allocate(data%residuals(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%Ny))
+   data%residuals = sreal_fill_value
+
+   allocate(data%ds(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%ds = sreal_fill_value
 
 end subroutine alloc_input_data_secondary_common
 
 
-subroutine alloc_input_data_secondary_all(input_data,xdim1km,ydim1km,indexing)
-
-   use common_constants
-   use postproc_constants
+subroutine alloc_input_data_secondary_all(ind, data)
 
    implicit none
 
-   type(input_data_secondary), intent(inout) :: input_data
-   integer(kind=lint),         intent(in)    :: xdim1km,ydim1km
-   type(common_indices),       intent(in)    :: indexing
+   type(input_indices),        intent(in)    :: ind
+   type(input_data_secondary), intent(inout) :: data
 
-   call alloc_input_data_secondary_common(input_data,xdim1km,ydim1km,indexing)
+   call alloc_input_data_secondary_common(ind, data)
 
-   allocate(input_data%albedo(xdim1km,ydim1km,indexing%NSolar))
-   input_data%albedo=sreal_fill_value
+if (ind%flags%do_cloud) then
+   allocate(data%albedo(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NSolar))
+   data%albedo = sreal_fill_value
+end if
 
-   allocate(input_data%channels(xdim1km,ydim1km,indexing%Ny))
-   input_data%channels=sreal_fill_value
+   allocate(data%channels(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%Ny))
+   data%channels = sreal_fill_value
 
 end subroutine alloc_input_data_secondary_all
 
 
-subroutine alloc_input_data_secondary_class(input_data,xdim1km,ydim1km,indexing)
-
-   use common_constants
-   use postproc_constants
+subroutine alloc_input_data_secondary_class(ind, data)
 
    implicit none
 
-   type(input_data_secondary), intent(inout) :: input_data
-   integer(kind=lint),         intent(in)    :: xdim1km,ydim1km
-   type(common_indices),       intent(in)    :: indexing
+   type(input_indices),        intent(in)    :: ind
+   type(input_data_secondary), intent(inout) :: data
 
-   call alloc_input_data_secondary_common(input_data,xdim1km,ydim1km,indexing)
+   call alloc_input_data_secondary_common(ind, data)
 
 end subroutine alloc_input_data_secondary_class

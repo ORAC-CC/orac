@@ -19,6 +19,7 @@
 ! 2015/02/05, CP: Updated constants file
 ! 2015/07/10, GM: Major cleanup and made use of the NetCDF interface in the
 !    common library.
+! 2016/03/03, AP: Homogenisation of I/O modules.
 !
 ! $Id$
 !
@@ -26,26 +27,33 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine read_input_dimensions(fname,xdim,ydim,verbose)
+subroutine read_input_dimensions(fname, indexing, verbose)
 
-   use common_constants
-   use netcdf
    use orac_ncdf
-   use postproc_constants
 
    implicit none
 
    character(len=path_length), intent(in)  :: fname
-   integer(kind=lint),         intent(out) :: xdim,ydim
+   type(input_indices),        intent(out) :: indexing
    logical,                    intent(in)  :: verbose
 
-   integer :: ncid
+   integer :: ncid, ierr
 
    ! Open file
    call nc_open(ncid,fname)
 
-   xdim = nc_dim_length(ncid, 'across_track', verbose)
-   ydim = nc_dim_length(ncid, 'along_track',  verbose)
+   indexing%Xdim   = nc_dim_length(ncid, 'across_track', verbose)
+   indexing%Ydim   = nc_dim_length(ncid, 'along_track',  verbose)
+   indexing%Ny     = nc_dim_length(ncid, 'channels',     verbose)
+   indexing%NViews = nc_dim_length(ncid, 'views',        verbose)
+
+   ! Read attributes that should eventually be dimensions
+   ierr = nf90_get_att(ncid, NF90_GLOBAL, 'NState', indexing%Nx)
+   if (ierr /= NF90_NOERR) then
+      write(*,*) 'ERROR: read_input_dimensions(), ', trim(nf90_strerror(ierr)), &
+           ', name: NState'
+      stop error_stop_code
+   end if
 
    ! Close msi file
    if (nf90_close(ncid) .ne. NF90_NOERR) then

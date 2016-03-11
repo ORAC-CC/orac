@@ -26,6 +26,7 @@
 ! 2015/10/22, GM: Add cloud albedo uncertainty.
 ! 2016/01/27, GM: Add cee and cee_uncertainty.
 ! 2016/01/28, GM: Add ctp and ctt corrected and corrected_uncertianty.
+! 2016/03/02, AP: Homogenisation of I/O modules.
 !
 ! $Id$
 !
@@ -39,74 +40,389 @@ module orac_input
 
    implicit none
 
+   type, extends(common_indices) :: input_indices
+      character(len=3) :: LUTClass
+
+      integer, pointer :: loop_to_main_index(:)
+      integer, pointer :: ysolar_loop_to_main_index(:)
+      integer, pointer :: ythermal_loop_to_main_index(:)
+      integer, pointer :: view_loop_to_main_index(:)
+      logical          :: read_optional_channel_field(MaxNumMeas) = .false.
+      logical          :: read_optional_view_field(MaxNumViews)   = .false.
+   end type input_indices
+
 
    type input_data_primary
+      real(sreal),   pointer :: aot550(:,:)
+      real(sreal),   pointer :: aot550_uncertainty(:,:)
+      real(sreal),   pointer :: aot870(:,:)
+      real(sreal),   pointer :: aot870_uncertainty(:,:)
+      real(sreal),   pointer :: aer(:,:)
+      real(sreal),   pointer :: aer_uncertainty(:,:)
 
-      real(kind=dreal),    dimension(:,:),   pointer :: time
-      real(kind=sreal),    dimension(:,:),   pointer :: lat, lon
-      real(kind=sreal),    dimension(:,:),   pointer :: solar_zenith_view_no1
-      real(kind=sreal),    dimension(:,:),   pointer :: satellite_zenith_view_no1
-      real(kind=sreal),    dimension(:,:),   pointer :: rel_azimuth_view_no1
-      real(kind=sreal),    dimension(:,:),   pointer :: cot, cot_uncertainty
-      real(kind=sreal),    dimension(:,:),   pointer :: cer, cer_uncertainty
-      real(kind=sreal),    dimension(:,:),   pointer :: ctp, ctp_uncertainty
-      real(kind=sreal),    dimension(:,:),   pointer :: ctp_corrected, ctp_corrected_uncertainty
-      real(kind=sreal),    dimension(:,:),   pointer :: cct, cct_uncertainty
-      real(kind=sreal),    dimension(:,:),   pointer :: cc_total, cc_total_uncertainty
-      real(kind=sreal),    dimension(:,:),   pointer :: stemp, stemp_uncertainty
-      real(kind=sreal),    dimension(:,:),   pointer :: cth, cth_uncertainty
-      real(kind=sreal),    dimension(:,:),   pointer :: cth_corrected, cth_corrected_uncertainty
-      real(kind=sreal),    dimension(:,:),   pointer :: ctt, ctt_uncertainty
-      real(kind=sreal),    dimension(:,:),   pointer :: ctt_corrected, ctt_corrected_uncertainty
-      real(kind=sreal),    dimension(:,:),   pointer :: cwp, cwp_uncertainty
-      real(kind=sreal),    dimension(:,:,:), pointer :: cloud_albedo, cloud_albedo_uncertainty
-      real(kind=sreal),    dimension(:,:,:), pointer :: cee, cee_uncertainty
+      real(sreal),   pointer :: rho(:,:,:,:)
+      real(sreal),   pointer :: rho_uncertainty(:,:,:,:)
 
-      integer(kind=byte),  dimension(:,:),   pointer :: convergence
-      integer(kind=byte),  dimension(:,:),   pointer :: niter
-      real(kind=sreal),    dimension(:,:),   pointer :: costja
-      real(kind=sreal),    dimension(:,:),   pointer :: costjm
-      character(len=512)                             :: qc_flag_masks
-      character(len=512)                             :: qc_flag_meanings
-      integer(kind=sint),  dimension(:,:),   pointer :: qcflag
+      real(sreal),   pointer :: swansea_s(:,:,:)
+      real(sreal),   pointer :: swansea_s_uncertainty(:,:,:)
+      real(sreal),   pointer :: swansea_p(:,:,:)
+      real(sreal),   pointer :: swansea_p_uncertainty(:,:,:)
+      real(sreal),   pointer :: diffuse_frac(:,:,:)
+      real(sreal),   pointer :: diffuse_frac_uncertainty(:,:,:)
 
-      integer(kind=byte),  dimension(:,:),   pointer :: lsflag
-      integer(kind=byte),  dimension(:,:),   pointer :: lusflag
-      integer(kind=sint),  dimension(:,:),   pointer :: dem
-      integer(kind=byte),  dimension(:,:),   pointer :: nisemask
+      real(sreal),   pointer :: cot(:,:)
+      real(sreal),   pointer :: cot_uncertainty(:,:)
+      real(sreal),   pointer :: cer(:,:)
+      real(sreal),   pointer :: cer_uncertainty(:,:)
+      real(sreal),   pointer :: ctp(:,:)
+      real(sreal),   pointer :: ctp_uncertainty(:,:)
+      real(sreal),   pointer :: ctp_corrected(:,:)
+      real(sreal),   pointer :: ctp_corrected_uncertainty(:,:)
+      real(sreal),   pointer :: cc_total(:,:)
+      real(sreal),   pointer :: cc_total_uncertainty(:,:)
+      real(sreal),   pointer :: stemp(:,:)
+      real(sreal),   pointer :: stemp_uncertainty(:,:)
+      real(sreal),   pointer :: cth(:,:)
+      real(sreal),   pointer :: cth_uncertainty(:,:)
+      real(sreal),   pointer :: cth_corrected(:,:)
+      real(sreal),   pointer :: cth_corrected_uncertainty(:,:)
+      real(sreal),   pointer :: ctt(:,:)
+      real(sreal),   pointer :: ctt_uncertainty(:,:)
+      real(sreal),   pointer :: ctt_corrected(:,:)
+      real(sreal),   pointer :: ctt_corrected_uncertainty(:,:)
+      real(sreal),   pointer :: cwp(:,:)
+      real(sreal),   pointer :: cwp_uncertainty(:,:)
+      real(sreal),   pointer :: cloud_albedo(:,:,:)
+      real(sreal),   pointer :: cloud_albedo_uncertainty(:,:,:)
+      real(sreal),   pointer :: cee(:,:,:)
+      real(sreal),   pointer :: cee_uncertainty(:,:,:)
+      real(sreal),   pointer :: cccot_pre(:,:)
 
-      integer(kind=byte),  dimension(:,:),   pointer :: illum
+      real(dreal),   pointer :: time(:,:)
+      real(sreal),   pointer :: lat(:,:)
+      real(sreal),   pointer :: lon(:,:)
+      real(sreal),   pointer :: sol_zen(:,:,:)
+      real(sreal),   pointer :: sat_zen(:,:,:)
+      real(sreal),   pointer :: rel_azi(:,:,:)
 
-      integer(kind=byte),  dimension(:,:),   pointer :: cldtype
-      integer(kind=byte),  dimension(:,:),   pointer :: cldmask
-      real(kind=sreal),    dimension(:,:),   pointer :: cldmask_uncertainty
-      real(kind=sreal),    dimension(:,:),   pointer :: cccot_pre
+      integer(byte), pointer :: convergence(:,:)
+      integer(byte), pointer :: niter(:,:)
+      real(sreal),   pointer :: costja(:,:)
+      real(sreal),   pointer :: costjm(:,:)
+      integer(sint), pointer :: qcflag(:,:)
+      character(len=512)     :: qc_flag_masks
+      character(len=512)     :: qc_flag_meanings
 
-      integer(kind=byte),  dimension(:,:),   pointer :: phase
+      integer(byte), pointer :: lsflag(:,:)
+      integer(byte), pointer :: lusflag(:,:)
+      integer(sint), pointer :: dem(:,:)
+      integer(byte), pointer :: nisemask(:,:)
 
+      integer(byte), pointer :: illum(:,:)
+
+      integer(byte), pointer :: cldtype(:,:)
+      integer(byte), pointer :: cldmask(:,:)
+      real(sreal),   pointer :: cldmask_uncertainty(:,:)
+
+      integer(byte), pointer :: phase(:,:)
+      integer(byte), pointer :: phase_pavolonis(:,:)
    end type input_data_primary
 
 
    type input_data_secondary
+      real(sreal), pointer :: aot550_ap(:,:)
+      real(sreal), pointer :: aot550_fg(:,:)
+      real(sreal), pointer :: aer_ap(:,:)
+      real(sreal), pointer :: aer_fg(:,:)
 
-!     integer(kind=lint), dimension(:,:),   pointer :: scanline_u
-!     integer(kind=lint), dimension(:,:),   pointer :: scanline_v
+      real(sreal), pointer :: rho_ap(:,:,:,:)
+      real(sreal), pointer :: rho_fg(:,:,:,:)
 
-      real(kind=sreal),   dimension(:,:),   pointer :: cot_ap,cot_fg
-      real(kind=sreal),   dimension(:,:),   pointer :: cer_ap,cer_fg
-      real(kind=sreal),   dimension(:,:),   pointer :: ctp_ap,ctp_fg
-      real(kind=sreal),   dimension(:,:),   pointer :: stemp_ap,stemp_fg
+      real(sreal), pointer :: swansea_s_ap(:,:,:)
+      real(sreal), pointer :: swansea_s_fg(:,:,:)
+      real(sreal), pointer :: swansea_p_ap(:,:,:)
+      real(sreal), pointer :: swansea_p_fg(:,:,:)
 
-      real(kind=sreal),   dimension(:,:,:), pointer :: albedo
-      real(kind=sreal),   dimension(:,:,:), pointer :: channels
-      real(kind=sreal),   dimension(:,:,:), pointer :: y0
-      real(kind=sreal),   dimension(:,:,:), pointer :: residuals
+      real(sreal), pointer :: cot_ap(:,:)
+      real(sreal), pointer :: cot_fg(:,:)
+      real(sreal), pointer :: cer_ap(:,:)
+      real(sreal), pointer :: cer_fg(:,:)
+      real(sreal), pointer :: ctp_ap(:,:)
+      real(sreal), pointer :: ctp_fg(:,:)
+      real(sreal), pointer :: stemp_fg(:,:)
+      real(sreal), pointer :: stemp_ap(:,:)
+      real(sreal), pointer :: albedo(:,:,:)
 
-      real(kind=sreal),   dimension(:,:),   pointer :: ds
+      real(sreal), pointer :: channels(:,:,:)
+      real(sreal), pointer :: y0(:,:,:)
+      real(sreal), pointer :: residuals(:,:,:)
 
+      real(sreal), pointer :: ds(:,:)
    end type input_data_secondary
 
 contains
+
+subroutine determine_channel_indexing(fname, indexing, verbose)
+
+   use orac_ncdf
+
+   implicit none
+
+   character(len=*),    intent(in)    :: fname
+   type(input_indices), intent(inout) :: indexing
+   logical,             intent(in)    :: verbose
+
+   integer :: ncid, i_ch, i0, i1, j, ierr
+   integer :: do_flags, rho_flags(indexing%Ny)
+
+   call nc_open(ncid, fname)
+
+   ! Read attributes
+   ierr = nf90_get_att(ncid, NF90_GLOBAL, 'LUT_class', indexing%LUTClass)
+   if (ierr /= NF90_NOERR) then
+      write(*,*) 'ERROR: read_input_dimensions(), ', trim(nf90_strerror(ierr)), &
+           ', name: LUT_class'
+      stop error_stop_code
+   end if
+   ierr = nf90_get_att(ncid, NF90_GLOBAL, 'do_flags', do_flags)
+   if (ierr /= NF90_NOERR) then
+      write(*,*) 'ERROR: read_input_dimensions(), ', trim(nf90_strerror(ierr)), &
+           ', name: do_flags'
+      stop error_stop_code
+   end if
+
+   call set_common_file_flags_from_bitmask(do_flags, indexing%flags)
+
+   ! Read channel indexing information
+   allocate(indexing%Y_Id(   indexing%Ny))
+   allocate(indexing%View_Id(indexing%NViews))
+   allocate(indexing%Ch_Is(  indexing%Ny))
+   call nc_read_array(ncid, "y_id",    indexing%Y_Id,    verbose)
+   call nc_read_array(ncid, "view_id", indexing%View_Id, verbose)
+   call nc_read_array(ncid, "ch_is",   indexing%Ch_Is,   verbose)
+   if (indexing%flags%do_rho) &
+        call nc_read_array(ncid, "rho_flags", rho_flags, verbose)
+
+   if (nf90_close(ncid) .ne. NF90_NOERR) then
+      write(*,*) 'ERROR: nf90_close()'
+      stop error_stop_code
+   end if
+
+   ! Allocate and form indexing arrays
+   i0 = 0
+   i1 = 0
+   do i_ch = 1, indexing%Ny
+      if (btest(indexing%Ch_Is(i_ch), SolarBit)) i0 = i0 + 1
+      if (btest(indexing%Ch_Is(i_ch), ThermalBit)) i1 = i1 + 1
+   end do
+   indexing%NSolar = i0
+   indexing%NThermal = i1
+   allocate(indexing%YSolar(indexing%NSolar))
+   allocate(indexing%YThermal(indexing%NThermal))
+
+   i0 = 0
+   i1 = 0
+   do i_ch = 1, indexing%Ny
+      if (btest(indexing%Ch_Is(i_ch), SolarBit)) then
+         i0 = i0 + 1
+         indexing%YSolar(i0) = i_ch
+      end if
+      if (btest(indexing%Ch_Is(i_ch), ThermalBit)) then
+         i1 = i1 + 1
+         indexing%YThermal(i1) = i_ch
+      end if
+   end do
+
+   ! Allocate and form rho_terms array
+   if (indexing%flags%do_rho) then
+      allocate(indexing%rho_terms(indexing%NSolar, MaxRho_XX))
+      call set_rho_terms_from_bitmask(rho_flags, indexing%common_indices)
+   end if
+
+end subroutine determine_channel_indexing
+
+
+subroutine cross_reference_indexing(n, loop_ind, main_ind)
+
+   implicit none
+
+   integer,             intent(in)    :: n
+   type(input_indices), intent(inout) :: loop_ind(:)
+   type(input_indices), intent(inout) :: main_ind
+
+   integer :: i0, i1, i2, i_ch, i_file, j_ch
+   integer :: max_ch, current_max
+   integer, dimension(MaxNumMeas) :: Y_Id, View_Id, Ch_Is, YSolar, YThermal
+
+   ! Ensure files all have the same grid
+   if (any(loop_ind(2:n)%Xdim /= loop_ind(1)%Xdim) .or. &
+       any(loop_ind(2:n)%Ydim /= loop_ind(1)%Ydim)) then
+      write(*,*) 'ERROR: Inconsistent horizontal grids between input files.'
+      stop error_stop_code
+   end if
+   main_ind%Xdim = loop_ind(1)%Xdim
+   main_ind%Ydim = loop_ind(1)%Ydim
+
+   ! Activate all necessary output flags
+   main_ind%flags%do_cloud           = any(loop_ind%flags%do_cloud)
+   main_ind%flags%do_aerosol         = any(loop_ind%flags%do_aerosol)
+   main_ind%flags%do_rho             = any(loop_ind%flags%do_rho)
+   main_ind%flags%do_swansea         = any(loop_ind%flags%do_swansea)
+   main_ind%flags%do_indexing        = any(loop_ind%flags%do_indexing)
+   main_ind%flags%do_phase_pavolonis = any(loop_ind%flags%do_phase_pavolonis)
+   main_ind%flags%do_cldmask         = any(loop_ind%flags%do_cldmask)
+   main_ind%flags%do_cldmask_uncertainty = &
+                                       any(loop_ind%flags%do_cldmask_uncertainty)
+   main_ind%flags%do_phase           = any(loop_ind%flags%do_phase)
+   main_ind%flags%do_covariance      = any(loop_ind%flags%do_covariance)
+
+   ! Identify all available channels
+   i0 = 0
+   i1 = 0
+   i2 = 0
+   do i_ch = 1, MaxNumMeas
+      file_loop: do i_file = 1, n
+         do j_ch = 1, loop_ind(i_file)%Ny
+            if (loop_ind(i_file)%Y_Id(j_ch) == i_ch) then
+               i0 = i0 + 1
+               Y_Id(i0) = i_ch
+               Ch_Is(i0) = loop_ind(i_file)%Ch_Is(j_ch)
+               loop_ind(i_file)%read_optional_channel_field(j_ch) = .true.
+               if (btest(Ch_Is(i0), SolarBit)) then
+                  i1 = i1 + 1
+                  YSolar(i1) = i0
+               end if
+               if (btest(Ch_Is(i0), ThermalBit)) then
+                  i2 = i2 + 1
+                  YThermal(i2) = i0
+               end if
+               exit file_loop
+            end if
+         end do
+      end do file_loop
+   end do
+
+   ! Allocate main channel indexing arrays
+   main_ind%Ny       = i0
+   main_ind%NSolar   = i1
+   main_ind%NThermal = i2
+   allocate(main_ind%Y_Id(main_ind%Ny))
+   allocate(main_ind%Ch_Is(main_ind%Ny))
+   allocate(main_ind%YSolar(main_ind%NSolar))
+   allocate(main_ind%YThermal(main_ind%NThermal))
+   main_ind%Y_Id     = Y_Id(1:i0)
+   main_ind%Ch_Is    = Ch_Is(1:i0)
+   main_ind%YSolar   = YSolar(1:i1)
+   main_ind%YThermal = YThermal(1:i2)
+
+   nullify(main_ind%loop_to_main_index)
+   nullify(main_ind%ysolar_loop_to_main_index)
+   nullify(main_ind%ythermal_loop_to_main_index)
+
+   ! Allocate channel cross-referencing arrays
+   do i_file = 1, n
+      allocate(loop_ind(i_file)%loop_to_main_index(loop_ind(i_file)%Ny))
+      do j_ch = 1, loop_ind(i_file)%Ny
+         do i_ch = 1, main_ind%Ny
+            if (loop_ind(i_file)%Y_Id(j_ch) == main_ind%Y_Id(i_ch)) then
+               loop_ind(i_file)%loop_to_main_index(j_ch) = i_ch
+               exit
+            end if
+         end do
+      end do
+
+      allocate(loop_ind(i_file)%ysolar_loop_to_main_index( &
+           loop_ind(i_file)%NSolar))
+      do j_ch = 1, loop_ind(i_file)%NSolar
+         do i_ch = 1, main_ind%NSolar
+            if (loop_ind(i_file)%Y_Id(loop_ind(i_file)%YSolar(j_ch)) == &
+                main_ind%Y_Id(main_ind%YSolar(i_ch))) then
+               loop_ind(i_file)%ysolar_loop_to_main_index(j_ch) = i_ch
+            end if
+         end do
+      end do
+
+      allocate(loop_ind(i_file)%ythermal_loop_to_main_index( &
+           loop_ind(i_file)%NThermal))
+      do j_ch = 1, loop_ind(i_file)%NThermal
+         do i_ch = 1, main_ind%NThermal
+            if (loop_ind(i_file)%Y_Id(loop_ind(i_file)%YThermal(j_ch)) == &
+                main_ind%Y_Id(main_ind%YThermal(i_ch))) then
+               loop_ind(i_file)%ythermal_loop_to_main_index(j_ch) = i_ch
+            end if
+         end do
+      end do
+   end do
+
+   ! Identify all available views
+   i0 = 0
+   do i_ch = 1, MaxNumViews
+      view_loop: do i_file = 1, n
+         do j_ch = 1, loop_ind(i_file)%NViews
+            if (loop_ind(i_file)%View_Id(j_ch) == i_ch) then
+               i0 = i0 + 1
+               View_Id(i0) = i_ch
+               loop_ind(i_file)%read_optional_view_field(j_ch) = .true.
+               exit view_loop
+            end if
+         end do
+      end do view_loop
+   end do
+
+   ! Allocate main view indexing array
+   main_ind%NViews = i0
+   allocate(main_ind%View_Id(main_ind%NViews))
+   main_ind%View_Id = View_Id(1:i0)
+
+   nullify(main_ind%view_loop_to_main_index)
+
+   ! Allocate view cross-referencing array
+   do i_file = 1, n
+      allocate(loop_ind(i_file)%view_loop_to_main_index( &
+           loop_ind(i_file)%NViews))
+      do j_ch = 1, loop_ind(i_file)%NViews
+         do i_ch = 1, main_ind%NViews
+            if (loop_ind(i_file)%View_Id(j_ch) == main_ind%View_Id(i_ch)) then
+               loop_ind(i_file)%view_loop_to_main_index(j_ch) = i_ch
+            end if
+         end do
+      end do
+   end do
+
+   ! Allocate state vector terms
+   main_ind%Nx = maxval(loop_ind%Nx)
+   if (main_ind%flags%do_rho) then
+      allocate(main_ind%rho_terms(main_ind%NSolar, MaxRho_XX))
+      main_ind%rho_terms = .false.
+      do i_file = 1, n
+         if (loop_ind(i_file)%flags%do_rho) then
+            main_ind%rho_terms = main_ind%rho_terms .or. loop_ind(i_file)%rho_terms
+         end if
+      end do
+   end if
+
+end subroutine cross_reference_indexing
+
+
+subroutine dealloc_input_indices(indexing)
+
+   implicit none
+
+   type(input_indices), intent(inout) :: indexing
+
+   call dealloc_common_indices(indexing%common_indices)
+
+   if (associated(indexing%loop_to_main_index)) &
+        deallocate(indexing%loop_to_main_index)
+   if (associated(indexing%ysolar_loop_to_main_index)) &
+        deallocate(indexing%ysolar_loop_to_main_index)
+   if (associated(indexing%ythermal_loop_to_main_index)) &
+        deallocate(indexing%ythermal_loop_to_main_index)
+   if (associated(indexing%view_loop_to_main_index)) &
+        deallocate(indexing%view_loop_to_main_index)
+
+end subroutine dealloc_input_indices
+
 
 #include "alloc_input_data.F90"
 #include "dealloc_input_data.F90"

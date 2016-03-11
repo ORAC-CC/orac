@@ -41,4 +41,9 @@ module postproc_constants
    ! Shuffling to improve compression
    logical, parameter :: shuffle_flag=.TRUE.
 
+   ! Values of phase_pavolonis
+   integer(byte), parameter :: IPhaseClU  = 0 ! clear/unknown
+   integer(byte), parameter :: IPhaseWat  = 1 ! Water
+   integer(byte), parameter :: IPhaseIce  = 2 ! Ice
+
 end module postproc_constants

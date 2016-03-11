@@ -122,6 +122,7 @@ program post_process_level2
 subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_file)
 #endif
 
+   use common_constants
    use global_attributes
    use netcdf
    use orac_input
@@ -141,11 +142,6 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    integer(kind=byte), parameter :: IWat       = 1
    integer(kind=byte), parameter :: IIce       = 2
 
-   integer(kind=byte), parameter :: IPhaseClU  = 0 ! clear/unknoiwn
-   integer(kind=byte), parameter :: IPhaseWat  = 1 ! Water
-   integer(kind=byte), parameter :: IPhaseIce  = 2 ! Ice
-   integer(kind=byte), parameter :: IPhasemli  = 3 ! MLI
-
    integer                     :: i, j, k
 
    integer                     :: nargs
@@ -154,13 +150,8 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
 #endif
    character(len=path_length)  :: label, value
 
-   logical                     :: switch_phases, cloudy_only
-   real                        :: cot_thres, cot_thres1, cot_thres2
-   integer                     :: proc_flag(5)
-   character(len=var_length)   :: inst
+   logical                     :: switch_phases
    logical                     :: do_secondary = .false.
-
-   logical                     :: one_phase_only
 
    real                        :: cost_thresh = 0.
    real                        :: norm_prob_thresh = .75
@@ -178,53 +169,46 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
 
    character(len=path_length)  :: out_file_primary, out_file_secondary
 
-   integer                     :: ncid_primary, ncid_secondary, dims_var(2), &
-                                  varid
-   character(len=32)           :: input_num
-   character(len=var_length)   :: varname
+   integer                     :: ncid_primary, ncid_secondary, dims_var(2)
 
    type(global_attributes_s)   :: global_atts
    type(source_attributes_s)   :: source_atts
 
-   type(input_data_primary)    :: input_primary(MaxInFiles)
-   type(input_data_secondary)  :: input_secondary(MaxInFiles)
+   type(input_data_primary)    :: input_primary(0:MaxInFiles)
+   type(input_data_secondary)  :: input_secondary(0:MaxInFiles)
 
    type(output_data_primary)   :: output_primary
    type(output_data_secondary) :: output_secondary
 
-   type(common_indices)        :: indexing
-
-   integer(kind=lint)          :: xdim,ydim
-   integer(kind=lint)          :: ixstart,ixstop,iystart,iystop
+   type(input_indices)         :: indexing, loop_ind(MaxInFiles)
 
    integer(kind=byte)          :: phase_flag
    integer                     :: index_space
 
    integer                     :: i_min_costjm
-   real                        :: a_min_costjm
+   real                        :: a_max_prob, a_prob
    real                        :: sum_prob
 
    integer                     :: deflate_level2
    logical                     :: shuffle_flag2
-
 #ifndef WRAPPER
       nargs = COMMAND_ARGUMENT_COUNT()
 #else
       nargs=-1
 #endif
 
-   ! if no argument was given then read standard file
-   if (nargs .eq. 0 ) then
+   ! If no argument was given then read standard file
+   if (nargs == 0 ) then
       call get_environment_variable("ORAC_TEXTIN",path_and_file)
-   else if (nargs .eq. 1) then
+   else if (nargs == 1) then
       call get_command_argument(1,path_and_file)
-   else if (nargs .eq. -1) then
+   else if (nargs == -1) then
       index_space = index(path_and_file, " ")
       path_and_file = path_and_file(1:(index_space-1))
       if (verbose) write(*,*) 'inside postproc ',trim(adjustl(path_and_file))
    end if
 
-   ! read from an external file
+   ! Read from driver file
    open(11,file=trim(adjustl(path_and_file)), status='old', form='formatted')
 
    read(11,'(A)') in_files_primary(IWat)
@@ -239,8 +223,9 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
 
    n_in_files = 2
 
-   if (out_file_secondary .ne. '') do_secondary = .true.
+   if (out_file_secondary /= '') do_secondary = .true.
 
+   ! Optional arguments and additional files
    do while (parse_driver(11, value, label) == 0)
      call clean_driver_label(label)
      select case (label)
@@ -288,122 +273,66 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
       write(*,*) 'switch_phases = ', switch_phases
    end if
 
-   ! Here we have a general hack to get some channel indexing information from
-   ! the secondary measurement variable names.
-
-   if (verbose) write(*,*) 'Obtaining channel indexing'
-
-   indexing%Nx = 4 ! This count is hardwired for now
-   indexing%NViews = 1
-
-   if (verbose) &
-        write(*,*) 'Opening first secondary input file: ', &
-                   trim(in_files_secondary(IIce))
-   call nc_open(ncid_secondary,in_files_secondary(IIce))
-
-   indexing%Ny = 0
-   indexing%NSolar = 0
-   indexing%NThermal = 0
-
-   allocate(indexing%YSolar(MaxNumMeas))
-   allocate(indexing%YThermal(MaxNumMeas))
-   allocate(indexing%Y_Id(MaxNumMeas))
-   allocate(indexing%Ch_Is(MaxNumMeas))
-   allocate(indexing%rho_terms(MaxNumMeas,MaxRho_XX))
-   indexing%Ch_Is = 0
-   indexing%rho_terms = .false.
-
-   do i = 1, MaxNumMeas
-      write(input_num, "(i4)") i
-
-      varname = 'reflectance_in_channel_no_'//trim(adjustl(input_num))
-      if (nf90_inq_varid(ncid_secondary,varname,varid) .eq. NF90_NOERR) then
-         indexing%Ny = indexing%Ny + 1
-         indexing%NSolar = indexing%NSolar + 1
-         indexing%YSolar(indexing%NSolar) = indexing%Ny
-         indexing%Y_Id(indexing%Ny) = i
-         indexing%Ch_Is(indexing%Ny) = &
-              ibset(indexing%Ch_Is(indexing%Ny), SolarBit)
-      else
-         write(input_num, "(i4)") i
-         varname = 'brightness_temperature_in_channel_no_'//trim(adjustl(input_num))
-         if (nf90_inq_varid(ncid_secondary,varname,varid) .eq. NF90_NOERR) then
-              indexing%Ny = indexing%Ny + 1
-              indexing%NThermal = indexing%NThermal + 1
-              indexing%YThermal(indexing%NThermal) = indexing%Ny
-              indexing%Y_Id(indexing%Ny) = i
-              indexing%Ch_Is(indexing%Ny) = &
-                 ibset(indexing%Ch_Is(indexing%Ny), ThermalBit)
-         end if
-      end if
+   ! Determine which channels/views exist across all input files
+   do i = 1, n_in_files
+      call read_input_dimensions(in_files_primary(i), loop_ind(i), verbose)
+      call determine_channel_indexing(in_files_primary(i), loop_ind(i), verbose)
    end do
-   if (verbose) write(*,*) 'Closing first secondary input file.'
-   if (nf90_close(ncid_secondary) .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_close()'
-      stop error_stop_code
-   end if
+   call cross_reference_indexing(n_in_files, loop_ind, indexing)
 
+   ! Settings not inherited from input files
+   indexing%flags%do_indexing        = .false.
+   indexing%flags%do_phase_pavolonis = .true.
+   indexing%flags%do_phase           = .true.
+   ! If ever desired, processing limits should be set here from a keyword above
+   indexing%X0 = 1
+   indexing%X1 = indexing%Xdim
+   indexing%Y0 = 1
+   indexing%Y1 = indexing%Ydim
+   loop_ind(:)%X0 = 1
+   loop_ind(:)%X1 = indexing%Xdim
+   loop_ind(:)%Y0 = 1
+   loop_ind(:)%Y1 = indexing%Ydim
 
-   ! read intermediate input files and into a structures
-
-   if (verbose) write(*,*) 'Reading input dimensions'
-   call read_input_dimensions(in_files_primary(1),xdim,ydim,verbose)
-
-   if (verbose) write(*,*) '********************************'
-   if (verbose) write(*,*) 'read: ', trim(in_files_primary(1))
-   call alloc_input_data_primary_all(input_primary(1),xdim,ydim,indexing)
-   call read_input_primary_all(in_files_primary(1),input_primary(1),xdim, &
-      ydim,indexing,global_atts,source_atts,verbose)
+   ! Read once-only inputs
+   call alloc_input_data_primary_all(indexing, input_primary(0))
+   call read_input_primary_once(n_in_files, in_files_primary, &
+        input_primary(0), indexing, loop_ind, global_atts, source_atts, verbose)
    if (do_secondary) then
-      if (verbose) write(*,*) 'read: ', trim(in_files_secondary(1))
-      call alloc_input_data_secondary_all(input_secondary(1),xdim,ydim, &
-         indexing)
-      call read_input_secondary_all(in_files_secondary(1),input_secondary(1), &
-         xdim,ydim,indexing,verbose)
+      call alloc_input_data_secondary_all(indexing, input_secondary(0))
+      call read_input_secondary_once(n_in_files, in_files_secondary, &
+        input_secondary(0), indexing, loop_ind, verbose)
    end if
 
-   do i = 2, n_in_files
+   ! Read fields that vary from file to file
+   do i = 1, n_in_files
       if (verbose) write(*,*) '********************************'
       if (verbose) write(*,*) 'read: ', trim(in_files_primary(i))
-      call alloc_input_data_primary_class(input_primary(i),xdim,ydim,indexing)
-      call read_input_primary_class(in_files_primary(i),input_primary(i),xdim, &
-         ydim,indexing,global_atts,verbose)
+      call alloc_input_data_primary_class(loop_ind(i), input_primary(i))
+      call read_input_primary_class(in_files_primary(i), input_primary(i), &
+           loop_ind(i), verbose)
       if (do_secondary) then
          if (verbose) write(*,*) 'read: ', trim(in_files_secondary(i))
-         call alloc_input_data_secondary_class(input_secondary(i),xdim,ydim, &
-            indexing)
-         call read_input_secondary_class(in_files_secondary(i),input_secondary(i), &
-            xdim,ydim,indexing,verbose)
+         call alloc_input_data_secondary_class(loop_ind(i), input_secondary(i))
+         call read_input_secondary_class(in_files_secondary(i), &
+              input_secondary(i), loop_ind(i), verbose)
       end if
    end do
 
-
-   ! set the loop bounds
-   ixstart=1
-   ixstop=xdim
-   iystart=1
-   iystop=ydim
-   indexing%X0=1
-   indexing%X1=xdim
-   indexing%Y0=1
-   indexing%Y1=ydim
-   indexing%xdim=xdim
-   indexing%ydim=ydim
 
    if (verbose) then
       write(*,*) 'Processing limits:'
-      write(*,*) ixstart, ixstop
-      write(*,*) iystart, iystop
+      write(*,*) indexing%X0, indexing%X1
+      write(*,*) indexing%Y0, indexing%Y1
    end if
 
-   do j=iystart,iystop
-      do i=ixstart,ixstop
+   do j=indexing%Y0,indexing%Y1
+      do i=indexing%X0,indexing%X1
 
          ! Cloud CCI selection
          if (.not. use_bayesian_selection) then
-            ! default: ICE wins, meaning only ice structure is overwritten and used
-            ! in the end for the output
-            input_primary(IWat)%phase(i,j)=IPhaseWat
+            ! Default is ICE wins, meaning only ice structure is copied to output
+            phase_flag = 2_byte
 
             ! Information of Pavolonis cloud type
             ! C,N,F,W,S,M,I,Ci,O
@@ -411,122 +340,125 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
             ! Liquid cloud phase comprises the following categories:
             ! 0? Clear
             ! 2? fog
-            ! 3? warm liquid water clouds, and
+            ! 3? warm liquid water clouds
             ! 4? supercooled-mixed-phased clouds
 
-            ! ? Ice cloud phase comprises the following categories:
+            ! Ice cloud phase comprises the following categories:
             ! 6? opaque ice clouds/deep convection
             ! 7? nonopaque high ice clouds (e.g. cirrus)
             ! 8? cloud overlap 4 (e.g. multiple cloud layers)
 
-            ! here apply Pavolonis phase information to select retrieval phase variables
-            ! select water type overwrite ice
-            phase_flag = 2_byte
-            if (input_primary(IWat)%cldtype(i,j) .gt. SWITCHED_TO_WATER_TYPE .and. &
-                input_primary(IWat)%cldtype(i,j) .lt. SWITCHED_TO_ICE_TYPE) then
+            ! Apply Pavolonis phase information to select retrieval phase
+            ! variables select water type overwrite ice
+            if (input_primary(0)%cldtype(i,j) == FOG_TYPE .or. &
+                input_primary(0)%cldtype(i,j) == WATER_TYPE .or. &
+                input_primary(0)%cldtype(i,j) == SUPERCOOLED_TYPE) then
                phase_flag = 1_byte
-               if (switch_phases .and. & ! only reclassify if both phases were processed
-                   ((input_primary(IWat)%ctt(i,j) .ne. sreal_fill_value .and. &
-                     input_primary(IWat)%ctt(i,j) .lt. 233.16) .and. &
-                    (input_primary(IIce)%ctt(i,j) .ne. sreal_fill_value .and. &
-                     input_primary(IIce)%ctt(i,j) .lt. 273.16))) then
+               ! Only consider reclassifying if both phases were processed
+               if (switch_phases .and. &
+                   ((input_primary(IWat)%ctt(i,j) /= sreal_fill_value .and. &
+                     input_primary(IWat)%ctt(i,j) < 233.16) .and. &
+                    (input_primary(IIce)%ctt(i,j) /= sreal_fill_value .and. &
+                     input_primary(IIce)%ctt(i,j) < 273.16))) then
                   phase_flag = 2_byte
-                  input_primary(IWat)%cldtype(i,j) = SWITCHED_TO_ICE_TYPE
+                  input_primary(0)%cldtype(i,j) = SWITCHED_TO_ICE_TYPE
                end if
-            else if (input_primary(IWat)%cldtype(i,j) .gt. SWITCHED_TO_ICE_TYPE) then
+            else if (input_primary(0)%cldtype(i,j) == OPAQUE_ICE_TYPE .or. &
+                     input_primary(0)%cldtype(i,j) == CIRRUS_TYPE .or. &
+                     input_primary(0)%cldtype(i,j) == OVERLAP_TYPE .or. &
+                     input_primary(0)%cldtype(i,j) == PROB_OPAQUE_ICE_TYPE .or. &
+                     input_primary(0)%cldtype(i,j) == PROB_CLEAR_TYPE) then
                phase_flag = 2_byte
-               if (switch_phases .and. & ! only reclassify if both phases were processed
-                   ((input_primary(IWat)%ctt(i,j) .ne. sreal_fill_value .and. &
-                     input_primary(IWat)%ctt(i,j) .ge. 233.16) .and. &
-                    (input_primary(IIce)%ctt(i,j) .ne. sreal_fill_value .and. &
-                     input_primary(IIce)%ctt(i,j) .ge. 273.16))) then
+               ! Only consider reclassifying if both phases were processed
+               if (switch_phases .and. &
+                   ((input_primary(IWat)%ctt(i,j) /= sreal_fill_value .and. &
+                     input_primary(IWat)%ctt(i,j) >= 233.16) .and. &
+                    (input_primary(IIce)%ctt(i,j) /= sreal_fill_value .and. &
+                     input_primary(IIce)%ctt(i,j) >= 273.16))) then
                   phase_flag = 1_byte
-                  input_primary(IWAT)%cldtype(i,j) = SWITCHED_TO_WATER_TYPE
+                  input_primary(0)%cldtype(i,j) = SWITCHED_TO_WATER_TYPE
                end if
             end if
 
-            if (phase_flag .eq. 2_byte) then
-               call copy_class_specific_inputs(i, j, &
-                    input_primary(IWat), input_primary(IIce), &
-                    input_secondary(IWat), input_secondary(IIce), do_secondary)
-               input_primary(IWat)%phase(i,j) = IPhaseIce
+            if (phase_flag == 1_byte) then
+               call copy_class_specific_inputs(i, j, loop_ind(IWat), &
+                    input_primary(0), input_primary(IWat), &
+                    input_secondary(0), input_secondary(IWat), do_secondary)
+               input_primary(0)%phase(i,j) = IPhaseWat
+            else if (phase_flag == 2_byte) then
+               call copy_class_specific_inputs(i, j, loop_ind(IIce), &
+                    input_primary(0), input_primary(IIce), &
+                    input_secondary(0), input_secondary(IIce), do_secondary)
+               input_primary(0)%phase(i,j) = IPhaseIce
             end if
 
             ! Overwrite cc_total with cldmask for Cloud CCI
-            input_primary(IWat)%cc_total(i,j) = &
-                 input_primary(IWat)%cldmask(i,j)
-            input_primary(IWat)%cc_total_uncertainty(i,j) = &
-               input_primary(IWat)%cldmask_uncertainty(i,j)
+            input_primary(0)%cc_total(i,j) = input_primary(0)%cldmask(i,j)
+            input_primary(0)%cc_total_uncertainty(i,j) = &
+                 input_primary(0)%cldmask_uncertainty(i,j)
 
-            if (input_primary(IWat)%cc_total(i,j) .eq. 0.0) then
-               ! set phase to clear/unknown
-               input_primary(IWat)%phase(i,j)=IPhaseClU
+            if (input_primary(0)%cc_total(i,j) == 0.0) then
+               ! Set phase to clear/unknown
+               input_primary(0)%phase(i,j) = IPhaseClU
             end if
 
          ! Bayesian based selection
          else
             sum_prob = 0.
-            a_min_costjm = huge(a_min_costjm)
+            a_max_prob   = tiny(a_max_prob)
+            i_min_costjm = 0
             do k = 1, n_in_files
-               if (input_primary(k)%costjm(i,j) .lt. a_min_costjm) then
-                  a_min_costjm = input_primary(k)%costjm(i,j)
-                  i_min_costjm = k
+               if (input_primary(k)%costjm(i,j) /= sreal_fill_value) then
+                  a_prob = exp(-input_primary(k)%costjm(i,j) / 2.)
+                  sum_prob = sum_prob + a_prob
+
+                  if (a_prob > a_max_prob) then
+                     a_max_prob   = a_prob
+                     i_min_costjm = k
+                  end if
                end if
-               sum_prob = sum_prob + exp(-input_primary(k)%costjm(i,j) / 2.)
             end do
 
-            if (input_primary(i_min_costjm)%costjm(i,j) .lt. cost_thresh .or. &
-                input_primary(i_min_costjm)%costjm(i,j) / sum_prob .lt. norm_prob_thresh) then
-               call init_class_specific_inputs(i, j, input_primary(1), input_secondary(1), do_secondary)
-            else
-               if (i_min_costjm .ne. 1) then
-                  call copy_class_specific_inputs(i, j, &
-                     input_primary(1), input_primary(i_min_costjm), &
-                     input_secondary(1), input_secondary(i_min_costjm), do_secondary)
-               end if
+            if (input_primary(i_min_costjm)%costjm(i,j) >= cost_thresh .and. &
+!               a_prob / sum_prob >= norm_prob_thresh .and. &
+                input_primary(i_min_costjm)%costjm(i,j) / sum_prob >= norm_prob_thresh .and. &
+                i_min_costjm /= 0) then
+               call copy_class_specific_inputs(i, j, loop_ind(i_min_costjm), &
+                    input_primary(0), input_primary(i_min_costjm), &
+                    input_secondary(0), input_secondary(i_min_costjm), &
+                    do_secondary)
 
-               input_primary(1)%phase(i,j) = i_min_costjm
-            endif
+               input_primary(0)%phase(i,j) = i_min_costjm
+            end if
          end if
       end do
    end do
 
 
-   ! deallocate all input structures except for the first one
-   do i = 2, n_in_files
+   ! Deallocate all input structures except for the first one
+   do i = 1, n_in_files
       call dealloc_input_data_primary_class(input_primary(i))
       if (do_secondary) then
          call dealloc_input_data_secondary_class(input_secondary(i))
       end if
+      call dealloc_common_indices(loop_ind(i)%common_indices)
    end do
 
-   ! Hardwire outputs until different input file types supported
-   indexing%flags%do_cloud               = .true.
-   indexing%flags%do_aerosol             = .false.
-   indexing%flags%do_rho                 = .false.
-   indexing%flags%do_swansea             = .false.
-   indexing%flags%do_indexing            = .false.
-   indexing%flags%do_phase_pavolonis     = .true.
-   indexing%flags%do_cldmask             = .true.
-   indexing%flags%do_cldmask_uncertainty = .false.
-   indexing%flags%do_phase               = .true.
-   indexing%flags%do_covariance          = .false.
-
-   ! allocate the structures which hold the output in its final form
-   call alloc_output_data_primary(indexing, 100, output_primary)
+   ! Allocate the structures which hold the output in its final form
+   call alloc_output_data_primary(indexing%common_indices, 100, output_primary)
    if (do_secondary) then
-      call alloc_output_data_secondary(indexing, output_secondary)
+      call alloc_output_data_secondary(indexing%common_indices, output_secondary)
    end if
 
-   ! open the netcdf output file
+   ! Open the netcdf output file
    call nc_create(trim(adjustl(out_file_primary)), ncid_primary, &
-      ixstop-ixstart+1, iystop-iystart+1, dims_var, 1, global_atts, source_atts)
+        indexing%Xdim, indexing%Ydim, dims_var, 1, global_atts, source_atts)
    if (do_secondary) then
       call nc_create(trim(adjustl(out_file_secondary)), ncid_secondary, &
-         ixstop-ixstart+1, iystop-iystart+1, dims_var, 2, global_atts, source_atts)
+           indexing%Xdim, indexing%Ydim, dims_var, 2, global_atts, source_atts)
    end if
 
-   ! define netcdf variables
+   ! Define netcdf variables
    if (use_netcdf_compression) then
       deflate_level2 = deflate_level
       shuffle_flag2  = shuffle_flag
@@ -535,65 +467,61 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
       shuffle_flag2  = .false.
    end if
    call def_output_primary(ncid_primary, dims_var, output_primary, &
-        indexing, &
-        input_primary(1)%qc_flag_masks, input_primary(1)%qc_flag_meanings, &
-        deflate_level2, shuffle_flag2, verbose)
+        indexing%common_indices, input_primary(0)%qc_flag_masks, &
+        input_primary(0)%qc_flag_meanings, deflate_level2, shuffle_flag2, &
+        .false.)
    if (do_secondary) then
       call def_output_secondary(ncid_secondary, dims_var, output_secondary, &
-           indexing, &
-           deflate_level2, shuffle_flag2, &
-           verbose)
+           indexing%common_indices, deflate_level2, shuffle_flag2, .false.)
    end if
 
-   ! put results in final output arrays with final datatypes
-   do j=iystart,iystop
-      do i=ixstart,ixstop
-         call prepare_output_primary_pp(i, j, indexing, input_primary(1), &
-            output_primary, output_optical_props_at_night)
+   ! Put results in final output arrays with final datatypes
+   do j=indexing%Y0,indexing%Y1
+      do i=indexing%X0,indexing%X1
+        call prepare_output_primary_pp(i, j, indexing%common_indices, &
+            input_primary(0), output_primary, output_optical_props_at_night)
          if (do_secondary) then
-            call prepare_output_secondary_pp(i, j, indexing, input_secondary(1), &
-               output_secondary, .false.)
+            call prepare_output_secondary_pp(i, j, indexing%common_indices, &
+                 input_secondary(0), output_secondary)
          end if
       end do
    end do
 
-   ! deallocate the first input structure
-   call dealloc_input_data_primary_all(input_primary(1))
+   ! Deallocate the first input structure
+   call dealloc_input_data_primary_all(input_primary(0))
    if (do_secondary) then
-      call dealloc_input_data_secondary_all(input_secondary(1))
+      call dealloc_input_data_secondary_all(input_secondary(0))
    end if
 
-   ! write output to netcdf variables
-   call write_output_primary(ncid_primary, indexing, output_primary)
+   ! Write output to netcdf variables
+   call write_output_primary(ncid_primary, indexing%common_indices, &
+                             output_primary)
    if (do_secondary) then
-      call write_output_secondary(ncid_secondary, indexing, output_secondary)
+      call write_output_secondary(ncid_secondary, indexing%common_indices, &
+                                  output_secondary)
    end if
 
-   ! close output file
-   if (nf90_close(ncid_primary) .ne. NF90_NOERR) then
+   ! Close output file
+   if (nf90_close(ncid_primary) /= NF90_NOERR) then
       write(*,*) 'ERROR: nf90_close()'
       stop error_stop_code
    end if
 
    if (do_secondary) then
-      if (nf90_close(ncid_secondary) .ne. NF90_NOERR) then
+      if (nf90_close(ncid_secondary) /= NF90_NOERR) then
          write(*,*) 'ERROR: nf90_close()'
          stop error_stop_code
       end if
    end if
 
-   ! deallocate output structure
+   ! Deallocate output structure
    call dealloc_output_data_primary(output_primary)
    if (do_secondary) then
       call dealloc_output_data_secondary(output_secondary)
    end if
 
+   call dealloc_common_indices(indexing%common_indices)
 
-   deallocate(indexing%YSolar)
-   deallocate(indexing%YThermal)
-   deallocate(indexing%Y_Id)
-   deallocate(indexing%Ch_Is)
-   deallocate(indexing%rho_terms)
 
 #ifdef WRAPPER
 end subroutine post_process_level2

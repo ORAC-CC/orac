@@ -26,6 +26,7 @@
 ! 2015/02/07, CP: Changed to common constants and tidied up string reading of
 !    instrument
 ! 2015/07/16, GM: Major cleanup.
+! 2016/03/04, AP: Homogenisation of I/O modules.
 !
 ! $Id$
 !
@@ -33,25 +34,70 @@
 ! Not a bug but this code assumes 5 channels of instrument data.
 !-------------------------------------------------------------------------------
 
-subroutine read_input_secondary_common(ncid, input_data, xdim, ydim, indexing, &
-                                       verbose)
+subroutine read_input_secondary_common(ncid, input_data, indexing, verbose)
 
-   use common_constants
-   use netcdf
    use orac_ncdf
-   use postproc_constants
 
    implicit none
 
    integer,                    intent(in)    :: ncid
    type(input_data_secondary), intent(inout) :: input_data
-   integer(kind=lint),         intent(in)    :: xdim, ydim
-   type(common_indices),       intent(in)    :: indexing
+   type(input_indices),        intent(in)    :: indexing
    logical,                    intent(in)    :: verbose
 
-   integer           :: i
-   character(len=32) :: input_num
+   integer            :: i, j
+   character(len=32)  :: input_num
+   character(len=512) :: input_dummy, input_dummy2
 
+if (indexing%flags%do_aerosol) then
+   call nc_read_packed_array(ncid, "aot550_ap", input_data%aot550_ap, verbose)
+   call nc_read_packed_array(ncid, "aot550_fg", input_data%aot550_fg, verbose)
+   call nc_read_packed_array(ncid, "aer_ap", input_data%aer_ap, verbose)
+   call nc_read_packed_array(ncid, "aer_fg", input_data%aer_fg, verbose)
+end if
+
+if (indexing%flags%do_rho) then
+   do i=1,indexing%NSolar
+      write(input_num, "(i4)") indexing%Y_Id(indexing%YSolar(i))
+
+      do j=1,MaxRho_XX
+         if (indexing%rho_terms(i,j)) then
+            call create_rho_field_name(j, 3, input_num, input_dummy)
+            call nc_read_packed_array(ncid, trim(adjustl(input_dummy)), &
+                 input_data%rho_ap(:,:,i,j), verbose)
+            call create_rho_field_name(j, 4, input_num, input_dummy)
+            call nc_read_packed_array(ncid, trim(adjustl(input_dummy)), &
+                 input_data%rho_fg(:,:,i,j), verbose)
+         end if
+      end do
+   end do
+end if
+
+if (indexing%flags%do_swansea) then
+   do i=1,indexing%NSolar
+      write(input_num, "(i4)") indexing%Y_Id(indexing%YSolar(i))
+
+      input_dummy='swansea_s_ap_in_channel_no_'//trim(adjustl(input_num))
+      call nc_read_packed_array(ncid, trim(adjustl(input_dummy)), &
+           input_data%swansea_s_ap(:,:,i), verbose)
+      input_dummy='swansea_s_fg_in_channel_no_'//trim(adjustl(input_num))
+      call nc_read_packed_array(ncid, trim(adjustl(input_dummy)), &
+           input_data%swansea_s_fg(:,:,i), verbose)
+   end do
+
+   do i=1,indexing%NViews
+      write(input_num, "(i4)") i
+
+      input_dummy='swansea_p_ap_in_channel_no_'//trim(adjustl(input_num))
+      call nc_read_packed_array(ncid, trim(adjustl(input_dummy)), &
+           input_data%swansea_p_ap(:,:,i), verbose)
+      input_dummy='swansea_p_fg_in_channel_no_'//trim(adjustl(input_num))
+      call nc_read_packed_array(ncid, trim(adjustl(input_dummy)), &
+           input_data%swansea_p_fg(:,:,i), verbose)
+   end do
+end if
+
+if (indexing%flags%do_cloud) then
    call nc_read_packed_array(ncid, "cot_ap", input_data%cot_ap, verbose)
    call nc_read_packed_array(ncid, "cot_fg", input_data%cot_fg, verbose)
 
@@ -63,108 +109,134 @@ subroutine read_input_secondary_common(ncid, input_data, xdim, ydim, indexing, &
 
    call nc_read_packed_array(ncid, "stemp_ap", input_data%stemp_ap, verbose)
    call nc_read_packed_array(ncid, "stemp_fg", input_data%stemp_fg, verbose)
+end if
 
-   do i = 1, indexing%Ny
-      if (.not. btest(indexing%Ch_Is(i), ThermalBit)) then
-         write(input_num, "(i4)") indexing%Y_Id(i)
-         call nc_read_packed_array(ncid, 'firstguess_reflectance_in_channel_no_'// &
-            trim(adjustl(input_num)), input_data%y0(:,:,i), verbose)
+   do i=1,indexing%Ny
+      write(input_num, "(i4)") indexing%Y_Id(i)
+
+      if (btest(indexing%Ch_Is(i), ThermalBit)) then
+         input_dummy = 'firstguess_brightness_temperature_in_channel_no_'// &
+              trim(adjustl(input_num))
+         input_dummy2 = 'brightness_temperature_residual_in_channel_no_'// &
+              trim(adjustl(input_num))
       else
-         write(input_num, "(i4)") indexing%Y_Id(i)
-         call nc_read_packed_array(ncid, 'firstguess_brightness_temperature_in_channel_no_'// &
-            trim(adjustl(input_num)), input_data%y0(:,:,i), verbose)
+         input_dummy = 'firstguess_reflectance_in_channel_no_'// &
+              trim(adjustl(input_num))
+         input_dummy2 = 'reflectance_residual_in_channel_no_'// &
+              trim(adjustl(input_num))
       end if
+
+      call nc_read_packed_array(ncid, trim(adjustl(input_dummy)), &
+           input_data%y0(:,:,i), verbose)
+      call nc_read_packed_array(ncid, trim(adjustl(input_dummy2)), &
+           input_data%residuals(:,:,i), verbose)
    end do
 
-   do i = 1, indexing%Ny
-      if (.not. btest(indexing%Ch_Is(i), ThermalBit)) then
-         write(input_num, "(i4)") indexing%Y_Id(i)
-         call nc_read_packed_array(ncid, 'reflectance_residual_in_channel_no_'// &
-            trim(adjustl(input_num)), input_data%residuals(:,:,i), verbose)
-      else
-         write(input_num, "(i4)") indexing%Y_Id(i)
-         call nc_read_packed_array(ncid, 'brightness_temperature_residual_in_channel_no_'// &
-            trim(adjustl(input_num)), input_data%residuals(:,:,i), verbose)
-      end if
-   end do
-
-   call nc_read_packed_array(ncid, "degrees_of_freedom_signal", input_data%ds, verbose)
+   call nc_read_packed_array(ncid, "degrees_of_freedom_signal", &
+        input_data%ds, verbose)
 
 end subroutine read_input_secondary_common
 
 
-subroutine read_input_secondary_all(fname, input_data, xdim, ydim, indexing, &
-                                    verbose)
+subroutine read_input_secondary_optional(ncid, input_data, indexing, &
+     read_flags, verbose)
 
-   use common_constants
-   use netcdf
    use orac_ncdf
-   use postproc_constants
 
    implicit none
 
-   character(len=path_length), intent(in)    :: fname
+   integer,                    intent(in)    :: ncid
    type(input_data_secondary), intent(inout) :: input_data
-   integer(kind=lint),         intent(in)    :: xdim, ydim
-   type(common_indices),       intent(in)    :: indexing
+   type(input_indices),        intent(in)    :: indexing
+   type(common_file_flags),    intent(inout) :: read_flags
    logical,                    intent(in)    :: verbose
 
-   integer           :: ncid
-   integer           :: i
-   character(len=32) :: input_num
+   integer            :: i
+   character(len=32)  :: input_num
+   character(len=512) :: input_dummy
 
-   if (verbose) write(*,*) 'Opening secondary input file: ', trim(fname)
-   call nc_open(ncid,fname)
+if (indexing%flags%do_cloud .and. read_flags%do_cloud) then
+   do i=1,indexing%NSolar
+      write(input_num, "(i4)") indexing%Y_Id(indexing%YSolar(i))
 
-   call read_input_secondary_common(ncid, input_data, xdim, ydim, &
-      indexing, verbose)
-
-!  call nc_read_packed_array(ncid, "scanline_u", input_data%scanline_u, verbose)
-!  call nc_read_packed_array(ncid, "scanline_v", input_data%scanline_v, verbose)
-
-   do i = 1, indexing%NSolar
-      if (btest(indexing%Ch_Is(i), SolarBit)) then
-         write(input_num, "(i4)") indexing%Y_Id(i)
-         call nc_read_packed_array(ncid, 'albedo_in_channel_no_'// &
-            trim(adjustl(input_num)), input_data%albedo(:,:,i), verbose)
-      end if
+      input_dummy = 'albedo_in_channel_no_'//trim(adjustl(input_num))
+      call nc_read_packed_array(ncid, trim(adjustl(input_dummy)), &
+           input_data%albedo(:,:,i), verbose)
    end do
+   read_flags%do_cloud = .false.
+end if
 
-   do i = 1, indexing%Ny
-      if (.not. btest(indexing%Ch_Is(i), ThermalBit)) then
-         write(input_num, "(i4)") indexing%Y_Id(i)
-         call nc_read_packed_array(ncid, 'reflectance_in_channel_no_'// &
-            trim(adjustl(input_num)), input_data%channels(:,:,i), verbose)
+end subroutine read_input_secondary_optional
+
+
+subroutine read_input_secondary_once(nfile, fname, input_data, indexing, &
+     loop_ind, verbose)
+
+   use orac_ncdf
+
+   implicit none
+
+   integer,                    intent(in)    :: nfile
+   character(len=path_length), intent(in)    :: fname(:)
+   type(input_data_secondary), intent(inout) :: input_data
+   type(input_indices),        intent(in)    :: indexing
+   type(input_indices),        intent(in)    :: loop_ind(:)
+   logical,                    intent(in)    :: verbose
+
+   integer                 :: ncid, i
+   character(len=32)       :: input_num
+   character(len=512)      :: input_dummy
+   type(common_file_flags) :: read_flags
+
+   ! Flag which optional fields to be read. Turn false as they are read.
+   read_flags = indexing%flags
+
+   ! Read universally common fields from first input file
+   call nc_open(ncid, fname(1))
+
+   do i=1,indexing%Ny
+      write(input_num, "(i4)") indexing%Y_Id(i)
+
+      if (btest(indexing%Ch_Is(i), ThermalBit)) then
+         input_dummy = 'brightness_temperature_in_channel_no_'// &
+              trim(adjustl(input_num))
       else
-         write(input_num, "(i4)") indexing%Y_Id(i)
-         call nc_read_packed_array(ncid, 'brightness_temperature_in_channel_no_'// &
-            trim(adjustl(input_num)), input_data%channels(:,:,i), verbose)
+         input_dummy = 'reflectance_in_channel_no_'// trim(adjustl(input_num))
       end if
+      call nc_read_packed_array(ncid, trim(adjustl(input_dummy)), &
+           input_data%channels(:,:,i), verbose)
    end do
 
-   if (verbose) write(*,*) 'Closing secondary input file.'
+   call read_input_secondary_optional(ncid, input_data, loop_ind(1), &
+        read_flags, verbose)
+
    if (nf90_close(ncid) .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_close()'
       stop error_stop_code
    end if
 
-end subroutine read_input_secondary_all
+   do i=2,nfile
+      call nc_open(ncid,fname(i))
+      call read_input_secondary_optional(ncid, input_data, loop_ind(i), &
+           read_flags, verbose)
+      if (nf90_close(ncid) .ne. NF90_NOERR) then
+         write(*,*) 'ERROR: nf90_close()'
+         stop error_stop_code
+      end if
+   end do
+
+end subroutine read_input_secondary_once
 
 
-subroutine read_input_secondary_class(fname, input_data, xdim, ydim, indexing, &
-                                      verbose)
+subroutine read_input_secondary_class(fname, input_data, indexing, verbose)
 
-   use common_constants
-   use netcdf
    use orac_ncdf
-   use postproc_constants
 
    implicit none
 
    character(len=path_length), intent(in)    :: fname
    type(input_data_secondary), intent(inout) :: input_data
-   integer(kind=lint),         intent(in)    :: xdim, ydim
-   type(common_indices),       intent(in)    :: indexing
+   type(input_indices),        intent(in)    :: indexing
    logical,                    intent(in)    :: verbose
 
    integer :: ncid
@@ -172,8 +244,7 @@ subroutine read_input_secondary_class(fname, input_data, xdim, ydim, indexing, &
    if (verbose) write(*,*) 'Opening secondary input file: ', trim(fname)
    call nc_open(ncid,fname)
 
-   call read_input_secondary_common(ncid, input_data, xdim, ydim, &
-      indexing, verbose)
+   call read_input_secondary_common(ncid, input_data, indexing, verbose)
 
    if (verbose) write(*,*) 'Closing secondary input file.'
    if (nf90_close(ncid) .ne. NF90_NOERR) then

@@ -26,8 +26,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine prepare_output_secondary_pp(i, j, indexing, input_data, output_data, &
-                                    do_covariance)
+subroutine prepare_output_secondary_pp(i, j, indexing, input_data, output_data)
 
    use orac_input
    use orac_ncdf
@@ -39,15 +38,102 @@ subroutine prepare_output_secondary_pp(i, j, indexing, input_data, output_data, 
    type(common_indices),        intent(in)    :: indexing
    type(input_data_secondary),  intent(in)    :: input_data
    type(output_data_secondary), intent(inout) :: output_data
-   logical,                     intent(in)    :: do_covariance
 
-   integer     :: k
-   real(sreal) :: dummyreal
+   integer :: k, l
 
 
    output_data%scanline_u(i,j) = j
    output_data%scanline_v(i,j) = i
 
+if (indexing%flags%do_aerosol) then
+   !----------------------------------------------------------------------------
+   ! aot550_ap, aot550_fg
+   !----------------------------------------------------------------------------
+   call prepare_short_packed_float( &
+        input_data%aot550_ap(i,j), output_data%aot550_ap(i,j), &
+        output_data%aot550_ap_scale, output_data%aot550_ap_offset, &
+        output_data%aot550_ap_vmin, output_data%aot550_ap_vmax, &
+        sreal_fill_value, output_data%aot550_ap_vmax)
+
+   call prepare_short_packed_float( &
+        input_data%aot550_fg(i,j), output_data%aot550_fg(i,j), &
+        output_data%aot550_fg_scale, output_data%aot550_fg_offset, &
+        output_data%aot550_fg_vmin, output_data%aot550_fg_vmax, &
+        sreal_fill_value, output_data%aot550_fg_vmax)
+
+   !----------------------------------------------------------------------------
+   ! aer_ap, aer_fg
+   !----------------------------------------------------------------------------
+   call prepare_short_packed_float( &
+        input_data%aer_ap(i,j), output_data%aer_ap(i,j), &
+        output_data%aer_ap_scale, output_data%aer_ap_offset, &
+        output_data%aer_ap_vmin, output_data%aer_ap_vmax, &
+        sreal_fill_value, output_data%aer_ap_vmax)
+
+   call prepare_short_packed_float( &
+        input_data%aer_fg(i,j), output_data%aer_fg(i,j), &
+        output_data%aer_fg_scale, output_data%aer_fg_offset, &
+        output_data%aer_fg_vmin, output_data%aer_fg_vmax, &
+        sreal_fill_value, output_data%aer_fg_vmax)
+end if
+
+if (indexing%flags%do_rho) then
+   !----------------------------------------------------------------------------
+   ! rho_ap, rho_fg
+   !----------------------------------------------------------------------------
+   do k=1,indexing%NSolar
+      do l=1,MaxRho_XX
+         if (indexing%rho_terms(k,l)) then
+            call prepare_short_packed_float( &
+                 input_data%rho_ap(i,j,k,l), output_data%rho_ap(i,j,k,l), &
+                 output_data%rho_ap_scale, output_data%rho_ap_offset, &
+                 output_data%rho_ap_vmin, output_data%rho_ap_vmax, &
+                 sreal_fill_value, output_data%rho_ap_vmax)
+
+            call prepare_short_packed_float( &
+                 input_data%rho_fg(i,j,k,l), output_data%rho_fg(i,j,k,l), &
+                 output_data%rho_fg_scale, output_data%rho_fg_offset, &
+                 output_data%rho_fg_vmin, output_data%rho_fg_vmax, &
+                 sreal_fill_value, output_data%rho_fg_vmax)
+         end if
+      end do
+   end do
+end if
+
+if (indexing%flags%do_swansea) then
+   !----------------------------------------------------------------------------
+   ! swansea_s_ap, swansea_s_fg
+   !----------------------------------------------------------------------------
+   do k=1,indexing%NSolar
+      call prepare_short_packed_float( &
+           input_data%swansea_s_ap(i,j,k), output_data%swansea_s_ap(i,j,k), &
+           output_data%swansea_s_ap_scale, output_data%swansea_s_ap_offset, &
+           output_data%swansea_s_ap_vmin, output_data%swansea_s_ap_vmax, &
+           sreal_fill_value, output_data%swansea_s_ap_vmax)
+
+      call prepare_short_packed_float( &
+           input_data%swansea_s_fg(i,j,k), output_data%swansea_s_fg(i,j,k), &
+           output_data%swansea_s_fg_scale, output_data%swansea_s_fg_offset, &
+           output_data%swansea_s_fg_vmin, output_data%swansea_s_fg_vmax, &
+           sreal_fill_value, output_data%swansea_s_fg_vmax)
+   end do
+
+   do k=1,indexing%NViews
+      call prepare_short_packed_float( &
+           input_data%swansea_p_ap(i,j,k), output_data%swansea_p_ap(i,j,k), &
+           output_data%swansea_p_ap_scale, output_data%swansea_p_ap_offset, &
+           output_data%swansea_p_ap_vmin, output_data%swansea_p_ap_vmax, &
+           sreal_fill_value, output_data%swansea_p_ap_vmax)
+
+      call prepare_short_packed_float( &
+           input_data%swansea_p_fg(i,j,k), output_data%swansea_p_fg(i,j,k), &
+           output_data%swansea_p_fg_scale, output_data%swansea_p_fg_offset, &
+           output_data%swansea_p_fg_vmin, output_data%swansea_p_fg_vmax, &
+           sreal_fill_value, output_data%swansea_p_fg_vmax)
+   end do
+end if
+
+if (indexing%flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! cot_ap, cot_fg
    !----------------------------------------------------------------------------
@@ -118,6 +204,7 @@ subroutine prepare_output_secondary_pp(i, j, indexing, input_data, output_data, 
            output_data%albedo_vmin, output_data%albedo_vmax, &
            sreal_fill_value, sint_fill_value)
    end do
+end if
 
    !----------------------------------------------------------------------------
    ! channels
@@ -164,8 +251,8 @@ subroutine prepare_output_secondary_pp(i, j, indexing, input_data, output_data, 
    !----------------------------------------------------------------------------
    ! covariance
    !----------------------------------------------------------------------------
-   if (do_covariance) then
+if (indexing%flags%do_covariance) then
 
-   end if
+end if
 
 end subroutine prepare_output_secondary_pp
