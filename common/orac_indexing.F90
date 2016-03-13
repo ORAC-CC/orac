@@ -6,6 +6,7 @@
 !
 ! History:
 ! 2016/03/02, AP: Initial version, forked from orac_input and _output.
+! 2016/03/10, SP: Fixed problem that prevented gfort compilation (. -> %)
 !
 ! $Id$
 !
@@ -153,7 +154,7 @@ subroutine set_rho_terms_from_bitmask(bitmask, ind)
 
    integer :: i, j
 
-   do i=1,ind.NSolar
+   do i=1,ind%NSolar
       do j=1,MaxRho_XX
          ind%rho_terms(i,j) = btest(bitmask(i), j)
       end do
