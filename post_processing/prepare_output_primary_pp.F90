@@ -568,19 +568,24 @@ end if
    ! phase_pavolonis
    !----------------------------------------------------------------------------
 if (indexing%flags%do_phase_pavolonis) then
-   if (     input_data%cldtype(i,j) .eq. 0) then
-      output_data%phase_pavolonis(i,j) = 0 ! phase = clear
-   else if (input_data%cldtype(i,j) .lt. 5 &
-      .and. input_data%cldtype(i,j) .gt. 0) then
-      output_data%phase_pavolonis(i,j) = 1 ! phase = water
-   else if (input_data%cldtype(i,j) .gt. 4 .and. input_data%cldtype(i,j) .le. 9) then
-      output_data%phase_pavolonis(i,j) = 2 ! phase = ice
-   else if (input_data%cldtype(i,j) .eq. 10 ) then
-      output_data%phase_pavolonis(i,j) = 0 ! phase = clear
-   else
-      output_data%phase_pavolonis(i,j) = byte_fill_value ! for all
-      ! other values (should not occur)
-   end if
+   select case (input_data%cldtype(i,j))
+   case(CLEAR_TYPE, &
+        PROB_CLEAR_TYPE)
+      output_data%phase_pavolonis(i,j) = IPhaseClU
+   case(SWITCHED_TO_WATER_TYPE, &
+        FOG_TYPE, &
+        WATER_TYPE, &
+        SUPERCOOLED_TYPE)
+      output_data%phase_pavolonis(i,j) = IPhaseWat
+   case(SWITCHED_TO_ICE_TYPE, &
+        OPAQUE_ICE_TYPE, &
+        CIRRUS_TYPE, &
+        OVERLAP_TYPE, &
+        PROB_OPAQUE_ICE_TYPE)
+      output_data%phase_pavolonis(i,j) = IPhaseIce
+   case default
+      output_data%phase_pavolonis(i,j) = byte_fill_value
+   end select
 end if
 
 end subroutine prepare_output_primary_pp

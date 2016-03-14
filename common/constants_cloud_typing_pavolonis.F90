@@ -32,101 +32,101 @@ module constants_cloud_typing_pavolonis
    implicit none
 
    !--- cldmask OUTPUT
-   integer(sint) :: CLOUDY = 1
-   integer(sint) :: CLEAR = 0
+   integer(sint), parameter :: CLOUDY = 1
+   integer(sint), parameter :: CLEAR = 0
 
    !--- constants used to determine cldmask uncertainty
-   real(sreal)   :: CLEAR_UNC_MIN = 11.925 !24.364
-   real(sreal)   :: CLEAR_UNC_MAX = 49.200 !60.066
-   real(sreal)   :: CLOUDY_UNC_MIN = 1.862 !1.533
-   real(sreal)   :: CLOUDY_UNC_MAX = 55.995 !43.620
+   real(sreal),   parameter :: CLEAR_UNC_MIN = 11.925 !24.364
+   real(sreal),   parameter :: CLEAR_UNC_MAX = 49.200 !60.066
+   real(sreal),   parameter :: CLOUDY_UNC_MIN = 1.862 !1.533
+   real(sreal),   parameter :: CLOUDY_UNC_MAX = 55.995 !43.620
 
    !--- ann_cloud_mask
-   real(sreal)   :: COT_THRES_DAY_SEA_ICE = 0.4
-   real(sreal)   :: COT_THRES_DAY_LAND_ICE = 0.35
-   real(sreal)   :: COT_THRES_DAY_SEA = 0.1
-   real(sreal)   :: COT_THRES_DAY_LAND = 0.2
-   real(sreal)   :: COT_THRES_NIGHT_SEA_ICE = 0.4
-   real(sreal)   :: COT_THRES_NIGHT_LAND_ICE = 0.35
-   real(sreal)   :: COT_THRES_NIGHT_SEA = 0.2
-   real(sreal)   :: COT_THRES_NIGHT_LAND = 0.3
-   real(sreal)   :: COT_THRES_TWL_SEA_ICE = 0.4
-   real(sreal)   :: COT_THRES_TWL_LAND_ICE = 0.4
-   real(sreal)   :: COT_THRES_TWL_SEA = 0.35
-   real(sreal)   :: COT_THRES_TWL_LAND = 0.3
+   real(sreal),   parameter :: COT_THRES_DAY_SEA_ICE = 0.4
+   real(sreal),   parameter :: COT_THRES_DAY_LAND_ICE = 0.35
+   real(sreal),   parameter :: COT_THRES_DAY_SEA = 0.1
+   real(sreal),   parameter :: COT_THRES_DAY_LAND = 0.2
+   real(sreal),   parameter :: COT_THRES_NIGHT_SEA_ICE = 0.4
+   real(sreal),   parameter :: COT_THRES_NIGHT_LAND_ICE = 0.35
+   real(sreal),   parameter :: COT_THRES_NIGHT_SEA = 0.2
+   real(sreal),   parameter :: COT_THRES_NIGHT_LAND = 0.3
+   real(sreal),   parameter :: COT_THRES_TWL_SEA_ICE = 0.4
+   real(sreal),   parameter :: COT_THRES_TWL_LAND_ICE = 0.4
+   real(sreal),   parameter :: COT_THRES_TWL_SEA = 0.35
+   real(sreal),   parameter :: COT_THRES_TWL_LAND = 0.3
    !---
-   REAL(kind=sreal)   :: NOAA7_9_CH3B_BT_THRES=240 ! Dont use 3.7 µm channel at night,
+   real(sreal),   parameter :: NOAA7_9_CH3B_BT_THRES=240 ! Dont use 3.7 µm channel at night,
                                                      ! if BT of ch3b is below this value.
    !---
 
    !--- cldtype OUTPUT
-   integer(sint) :: CLEAR_TYPE = 0
-   integer(sint) :: SWITCHED_TO_WATER_TYPE = 1
-   integer(sint) :: FOG_TYPE = 2
-   integer(sint) :: WATER_TYPE = 3
-   integer(sint) :: SUPERCOOLED_TYPE = 4
-   integer(sint) :: SWITCHED_TO_ICE_TYPE = 5
-   integer(sint) :: OPAQUE_ICE_TYPE = 6
-   integer(sint) :: CIRRUS_TYPE = 7
-   integer(sint) :: OVERLAP_TYPE = 8
-   integer(sint) :: PROB_OPAQUE_ICE_TYPE = 9 ! missing ch3.7 due to low S/N
-   integer(sint) :: PROB_CLEAR_TYPE = 10 ! cold antarctic
+   integer(sint), parameter :: CLEAR_TYPE = 0
+   integer(sint), parameter :: SWITCHED_TO_WATER_TYPE = 1
+   integer(sint), parameter :: FOG_TYPE = 2
+   integer(sint), parameter :: WATER_TYPE = 3
+   integer(sint), parameter :: SUPERCOOLED_TYPE = 4
+   integer(sint), parameter :: SWITCHED_TO_ICE_TYPE = 5
+   integer(sint), parameter :: OPAQUE_ICE_TYPE = 6
+   integer(sint), parameter :: CIRRUS_TYPE = 7
+   integer(sint), parameter :: OVERLAP_TYPE = 8
+   integer(sint), parameter :: PROB_OPAQUE_ICE_TYPE = 9 ! missing ch3.7 due to low S/N
+   integer(sint), parameter :: PROB_CLEAR_TYPE = 10 ! cold antarctic
 
    !--- used for sunglint_mask, nise_mask
-   integer(sint) :: NO = 0
+   integer(sint), parameter :: NO = 0
    integer(sint) :: YES = 1
-   !--- used for ch3a_on_avhrr_flag (neither Ch3a nor Ch3b)
-   integer(sint) :: INEXISTENT = -1
+   !--- used for, parameter ch3a_on_avhrr_flag (neither Ch3a nor Ch3b)
+   integer(sint), parameter :: INEXISTENT = -1
 
    !--- USGS: land use class (24 bit flags)
    !--- Aux_file_CM_SAF_AVHRR_GAC_ori_0.05deg.nc
-   integer(sint) :: URBAN_AND_BUILTUP_LAND = 1
-   integer(sint) :: DRYLAND_CROPLAND_AND_PASTURE = 2
-   integer(sint) :: IRRIGATED_CROPLAND_AND_PASTURE = 3
-   integer(sint) :: MIXED_DRYLAND_IRRIGATED_CROPLAND_AND_PASTURE = 4
-   integer(sint) :: CROPLAND_GRASSLAND_MOSAIC = 5
-   integer(sint) :: CROPLAND_WOODLAND_MOSAIC = 6
-   integer(sint) :: GRASSLAND = 7
-   integer(sint) :: SHRUBLAND = 8
-   integer(sint) :: MIXED_SHRUBLAND_GRASSLAND = 9
-   integer(sint) :: SAVANNA = 10
-   integer(sint) :: DECIDUOUS_BROADLEAF_FOREST = 11
-   integer(sint) :: DECIDUOUS_NEEDLELEAF_FOREST = 12
-   integer(sint) :: EVERGREEN_BROADLEAF_FOREST = 13
-   integer(sint) :: EVERGREEN_NEEDLELEAF_FOREST = 14
-   integer(sint) :: MIXED_FOREST = 15
-   integer(sint) :: WATER_BODIES = 16
-   integer(sint) :: WATER_FLAG = 16       ! used in cloud_type subroutine
-   integer(sint) :: HERBACEOUS_WETLAND = 17
-   integer(sint) :: WOODED_WETLAND = 18
-   integer(sint) :: BARREN_OR_SPARSELY_VEGETATED = 19
-   integer(sint) :: DESERT_FLAG = 19      ! used in cloud_type subroutine
-   integer(sint) :: HERBACEOUS_TUNDRA = 20
-   integer(sint) :: WOODED_TUNDRA = 21
-   integer(sint) :: MIXED_TUNDRA = 22
-   integer(sint) :: BARE_GROUND_TUNDRA = 23
-   integer(sint) :: SNOW_OR_ICE = 24
+   integer(sint), parameter :: URBAN_AND_BUILTUP_LAND = 1
+   integer(sint), parameter :: DRYLAND_CROPLAND_AND_PASTURE = 2
+   integer(sint), parameter :: IRRIGATED_CROPLAND_AND_PASTURE = 3
+   integer(sint), parameter :: MIXED_DRYLAND_IRRIGATED_CROPLAND_AND_PASTURE = 4
+   integer(sint), parameter :: CROPLAND_GRASSLAND_MOSAIC = 5
+   integer(sint), parameter :: CROPLAND_WOODLAND_MOSAIC = 6
+   integer(sint), parameter :: GRASSLAND = 7
+   integer(sint), parameter :: SHRUBLAND = 8
+   integer(sint), parameter :: MIXED_SHRUBLAND_GRASSLAND = 9
+   integer(sint), parameter :: SAVANNA = 10
+   integer(sint), parameter :: DECIDUOUS_BROADLEAF_FOREST = 11
+   integer(sint), parameter :: DECIDUOUS_NEEDLELEAF_FOREST = 12
+   integer(sint), parameter :: EVERGREEN_BROADLEAF_FOREST = 13
+   integer(sint), parameter :: EVERGREEN_NEEDLELEAF_FOREST = 14
+   integer(sint), parameter :: MIXED_FOREST = 15
+   integer(sint), parameter :: WATER_BODIES = 16
+   integer(sint), parameter :: WATER_FLAG = 16       ! used in cloud_type subroutine
+   integer(sint), parameter :: HERBACEOUS_WETLAND = 17
+   integer(sint), parameter :: WOODED_WETLAND = 18
+   integer(sint), parameter :: BARREN_OR_SPARSELY_VEGETATED = 19
+   integer(sint), parameter :: DESERT_FLAG = 19      ! used in cloud_type subroutine
+   integer(sint), parameter :: HERBACEOUS_TUNDRA = 20
+   integer(sint), parameter :: WOODED_TUNDRA = 21
+   integer(sint), parameter :: MIXED_TUNDRA = 22
+   integer(sint), parameter :: BARE_GROUND_TUNDRA = 23
+   integer(sint), parameter :: SNOW_OR_ICE = 24
 
    !!--- LandCover_CCI map (22 bit flags)
 
    !--- SNOW/ICE Flag based on NISE aux. data
-   integer(sint) :: NISE_FLAG = 30        ! used in cloud_type subroutine
+   integer(sint), parameter :: NISE_FLAG = 30        ! used in cloud_type subroutine
 
 
    ! Used in original code cloud_type.f90, these apply to the sfc_type array
-!  integer(sint) :: WATER_SFC = 0
-!  integer(sint) :: EVERGREEN_NEEDLE_SFC = 1
-!  integer(sint) :: EVERGREEN_BROAD_SFC = 2
-!  integer(sint) :: DECIDUOUS_NEEDLE_SFC = 3
-!  integer(sint) :: DECIDUOUS_BROAD_SFC = 4
-!  integer(sint) :: MIXED_FORESTS_SFC = 5
-!  integer(sint) :: WOODLANDS_SFC = 6
-!  integer(sint) :: WOODED_GRASS_SFC = 7
-!  integer(sint) :: CLOSED_SHRUBS_SFC = 8
-!  integer(sint) :: OPEN_SHRUBS_SFC = 9
-!  integer(sint) :: GRASSES_SFC = 10
-!  integer(sint) :: CROPLANDS_SFC = 11
-!  integer(sint) :: BARE_SFC = 12
-!  integer(sint) :: URBAN_SFC = 13
+!  integer(sint), parameter :: WATER_SFC = 0
+!  integer(sint), parameter :: EVERGREEN_NEEDLE_SFC = 1
+!  integer(sint), parameter :: EVERGREEN_BROAD_SFC = 2
+!  integer(sint), parameter :: DECIDUOUS_NEEDLE_SFC = 3
+!  integer(sint), parameter :: DECIDUOUS_BROAD_SFC = 4
+!  integer(sint), parameter :: MIXED_FORESTS_SFC = 5
+!  integer(sint), parameter :: WOODLANDS_SFC = 6
+!  integer(sint), parameter :: WOODED_GRASS_SFC = 7
+!  integer(sint), parameter :: CLOSED_SHRUBS_SFC = 8
+!  integer(sint), parameter :: OPEN_SHRUBS_SFC = 9
+!  integer(sint), parameter :: GRASSES_SFC = 10
+!  integer(sint), parameter :: CROPLANDS_SFC = 11
+!  integer(sint), parameter :: BARE_SFC = 12
+!  integer(sint), parameter :: URBAN_SFC = 13
 
 end module CONSTANTS_CLOUD_TYPING_PAVOLONIS

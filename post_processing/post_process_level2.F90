@@ -109,11 +109,12 @@
 !    Previously, switching was wrong and, additionally, phase was ice for all
 !    cloud free pixels. This should all be resolved with this commit.
 ! 2016/02/02, GM: Add option output_optical_props_at_night.
+! 2016/03/11, AP: Read both aerosol and cloud inputs.
 !
 ! $Id$
 !
 ! Bugs:
-!    Works only with one viewing angle.
+! None known.
 !-------------------------------------------------------------------------------
 
 #ifndef WRAPPER
@@ -184,6 +185,10 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
 
    integer(kind=byte)          :: phase_flag
    integer                     :: index_space
+
+   ! Temperature limits for phase reclassification
+   real(sreal), parameter      :: switch_wat_limit = 233.16
+   real(sreal), parameter      :: switch_ice_limit = 273.16
 
    integer                     :: i_min_costjm
    real                        :: a_max_prob, a_prob
@@ -332,7 +337,6 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
          ! Cloud CCI selection
          if (.not. use_bayesian_selection) then
             ! Default is ICE wins, meaning only ice structure is copied to output
-            phase_flag = 2_byte
 
             ! Information of Pavolonis cloud type
             ! C,N,F,W,S,M,I,Ci,O
@@ -350,35 +354,38 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
 
             ! Apply Pavolonis phase information to select retrieval phase
             ! variables select water type overwrite ice
-            if (input_primary(0)%cldtype(i,j) == FOG_TYPE .or. &
-                input_primary(0)%cldtype(i,j) == WATER_TYPE .or. &
-                input_primary(0)%cldtype(i,j) == SUPERCOOLED_TYPE) then
+            select case (input_primary(0)%cldtype(i,j))
+            case(FOG_TYPE, &
+                 WATER_TYPE, &
+                 SUPERCOOLED_TYPE)
                phase_flag = 1_byte
                ! Only consider reclassifying if both phases were processed
                if (switch_phases .and. &
                    ((input_primary(IWat)%ctt(i,j) /= sreal_fill_value .and. &
-                     input_primary(IWat)%ctt(i,j) < 233.16) .and. &
+                     input_primary(IWat)%ctt(i,j) < switch_wat_limit) .and. &
                     (input_primary(IIce)%ctt(i,j) /= sreal_fill_value .and. &
-                     input_primary(IIce)%ctt(i,j) < 273.16))) then
+                     input_primary(IIce)%ctt(i,j) < switch_ice_limit))) then
                   phase_flag = 2_byte
                   input_primary(0)%cldtype(i,j) = SWITCHED_TO_ICE_TYPE
                end if
-            else if (input_primary(0)%cldtype(i,j) == OPAQUE_ICE_TYPE .or. &
-                     input_primary(0)%cldtype(i,j) == CIRRUS_TYPE .or. &
-                     input_primary(0)%cldtype(i,j) == OVERLAP_TYPE .or. &
-                     input_primary(0)%cldtype(i,j) == PROB_OPAQUE_ICE_TYPE .or. &
-                     input_primary(0)%cldtype(i,j) == PROB_CLEAR_TYPE) then
+            case(OPAQUE_ICE_TYPE, &
+                 CIRRUS_TYPE, &
+                 OVERLAP_TYPE, &
+                 PROB_OPAQUE_ICE_TYPE, &
+                 PROB_CLEAR_TYPE)
                phase_flag = 2_byte
                ! Only consider reclassifying if both phases were processed
                if (switch_phases .and. &
                    ((input_primary(IWat)%ctt(i,j) /= sreal_fill_value .and. &
-                     input_primary(IWat)%ctt(i,j) >= 233.16) .and. &
+                     input_primary(IWat)%ctt(i,j) >= switch_wat_limit) .and. &
                     (input_primary(IIce)%ctt(i,j) /= sreal_fill_value .and. &
-                     input_primary(IIce)%ctt(i,j) >= 273.16))) then
+                     input_primary(IIce)%ctt(i,j) >= switch_ice_limit))) then
                   phase_flag = 1_byte
                   input_primary(0)%cldtype(i,j) = SWITCHED_TO_WATER_TYPE
                end if
-            end if
+            case default
+               phase_flag = 2_byte
+            end select
 
             if (phase_flag == 1_byte) then
                call copy_class_specific_inputs(i, j, loop_ind(IWat), &
