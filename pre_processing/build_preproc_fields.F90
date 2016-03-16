@@ -99,7 +99,7 @@ subroutine build_preproc_fields(preproc_dims, preproc_geoloc, preproc_geo, &
          if (lon_i .gt. preproc_dims%max_lon) lon_i=preproc_dims%max_lon
          if (lat_j .gt. preproc_dims%max_lat) lat_j=preproc_dims%max_lat
 
-         if (all(imager_angles%satzen(i,j,:) .gt. sreal_fill_value)) then
+         if (all(imager_angles%satzen(i,j,:) .ne. sreal_fill_value)) then
             preproc_geo%satza(lon_i,lat_j,:)=preproc_geo%satza(lon_i,lat_j,:)+ &
                  imager_angles%satzen(i,j,:)
 
