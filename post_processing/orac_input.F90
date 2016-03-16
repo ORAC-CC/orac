@@ -237,6 +237,8 @@ subroutine determine_channel_indexing(fname, indexing, verbose)
    if (indexing%flags%do_rho) then
       allocate(indexing%rho_terms(indexing%NSolar, MaxRho_XX))
       call set_rho_terms_from_bitmask(rho_flags, indexing%common_indices)
+   else
+      nullify(indexing%rho_terms)
    end if
 
 end subroutine determine_channel_indexing
@@ -264,17 +266,18 @@ subroutine cross_reference_indexing(n, loop_ind, main_ind)
    main_ind%Ydim = loop_ind(1)%Ydim
 
    ! Activate all necessary output flags
-   main_ind%flags%do_cloud           = any(loop_ind%flags%do_cloud)
-   main_ind%flags%do_aerosol         = any(loop_ind%flags%do_aerosol)
-   main_ind%flags%do_rho             = any(loop_ind%flags%do_rho)
-   main_ind%flags%do_swansea         = any(loop_ind%flags%do_swansea)
-   main_ind%flags%do_indexing        = any(loop_ind%flags%do_indexing)
-   main_ind%flags%do_phase_pavolonis = any(loop_ind%flags%do_phase_pavolonis)
-   main_ind%flags%do_cldmask         = any(loop_ind%flags%do_cldmask)
+   main_ind%flags%do_cloud      = any(loop_ind(1:n)%flags%do_cloud)
+   main_ind%flags%do_aerosol    = any(loop_ind(1:n)%flags%do_aerosol)
+   main_ind%flags%do_rho        = any(loop_ind(1:n)%flags%do_rho)
+   main_ind%flags%do_swansea    = any(loop_ind(1:n)%flags%do_swansea)
+   main_ind%flags%do_indexing   = any(loop_ind(1:n)%flags%do_indexing)
+   main_ind%flags%do_phase_pavolonis = &
+                                  any(loop_ind(1:n)%flags%do_phase_pavolonis)
+   main_ind%flags%do_cldmask    = any(loop_ind(1:n)%flags%do_cldmask)
    main_ind%flags%do_cldmask_uncertainty = &
-                                       any(loop_ind%flags%do_cldmask_uncertainty)
-   main_ind%flags%do_phase           = any(loop_ind%flags%do_phase)
-   main_ind%flags%do_covariance      = any(loop_ind%flags%do_covariance)
+                                  any(loop_ind(1:n)%flags%do_cldmask_uncertainty)
+   main_ind%flags%do_phase      = any(loop_ind(1:n)%flags%do_phase)
+   main_ind%flags%do_covariance = any(loop_ind(1:n)%flags%do_covariance)
 
    ! Identify all available channels
    i0 = 0
@@ -399,6 +402,8 @@ subroutine cross_reference_indexing(n, loop_ind, main_ind)
             main_ind%rho_terms = main_ind%rho_terms .or. loop_ind(i_file)%rho_terms
          end if
       end do
+   else
+      nullify(main_ind%rho_terms)
    end if
 
 end subroutine cross_reference_indexing

@@ -174,6 +174,7 @@ subroutine dealloc_output_data_primary(data)
    deallocate(data%nisemask)
 
    deallocate(data%illum)
+   deallocate(data%cldtype)
 
    if (associated(data%cldmask))             deallocate(data%cldmask)
    if (associated(data%cldmask_uncertainty)) deallocate(data%cldmask_uncertainty)

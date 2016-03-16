@@ -64,6 +64,13 @@ if (ind%flags%do_aerosol) then
    data%aer = sreal_fill_value
    allocate(data%aer_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1))
    data%aer_uncertainty = sreal_fill_value
+else
+   nullify(data%aot550)
+   nullify(data%aot550_uncertainty)
+   nullify(data%aot870)
+   nullify(data%aot870_uncertainty)
+   nullify(data%aer)
+   nullify(data%aer_uncertainty)
 end if
 
 if (ind%flags%do_rho) then
@@ -72,6 +79,9 @@ if (ind%flags%do_rho) then
    allocate(data%rho_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1, &
                                  ind%NSolar, MaxRho_XX))
    data%rho_uncertainty = sreal_fill_value
+else
+   nullify(data%rho)
+   nullify(data%rho_uncertainty)
 end if
 
 if (ind%flags%do_swansea) then
@@ -92,6 +102,13 @@ if (ind%flags%do_swansea) then
    allocate(data%diffuse_frac_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1, &
                                           ind%NSolar))
    data%diffuse_frac_uncertainty = sreal_fill_value
+else
+   nullify(data%swansea_s)
+   nullify(data%swansea_s_uncertainty)
+   nullify(data%swansea_p)
+   nullify(data%swansea_p_uncertainty)
+   nullify(data%diffuse_frac)
+   nullify(data%diffuse_frac_uncertainty)
 end if
 
 if (ind%flags%do_cloud) then
@@ -161,6 +178,33 @@ if (ind%flags%do_cloud) then
    allocate(data%cee_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1, &
                                  ind%NThermal))
    data%cee_uncertainty = sreal_fill_value
+else
+   nullify(data%cot)
+   nullify(data%cot_uncertainty)
+   nullify(data%cer)
+   nullify(data%cer_uncertainty)
+   nullify(data%ctp)
+   nullify(data%ctp_uncertainty)
+   nullify(data%ctp_corrected)
+   nullify(data%ctp_corrected_uncertainty)
+   nullify(data%cc_total)
+   nullify(data%cc_total_uncertainty)
+   nullify(data%stemp)
+   nullify(data%stemp_uncertainty)
+   nullify(data%cth)
+   nullify(data%cth_uncertainty)
+   nullify(data%cth_corrected)
+   nullify(data%cth_corrected_uncertainty)
+   nullify(data%ctt)
+   nullify(data%ctt_uncertainty)
+   nullify(data%ctt_corrected)
+   nullify(data%ctt_corrected_uncertainty)
+   nullify(data%cwp)
+   nullify(data%cwp_uncertainty)
+   nullify(data%cloud_albedo)
+   nullify(data%cloud_albedo_uncertainty)
+   nullify(data%cee)
+   nullify(data%cee_uncertainty)
 end if
 
    allocate(data%convergence(ind%X0:ind%X1, ind%Y0:ind%Y1))
@@ -192,6 +236,8 @@ subroutine alloc_input_data_primary_all(ind, data)
 if (ind%flags%do_cloud) then
    allocate(data%cccot_pre(ind%X0:ind%X1, ind%Y0:ind%Y1))
    data%cccot_pre = sreal_fill_value
+else
+   nullify(data%cccot_pre)
 end if
 
    allocate(data%time(ind%X0:ind%X1, ind%Y0:ind%Y1))
@@ -227,19 +273,27 @@ end if
 if (ind%flags%do_cldmask) then
    allocate(data%cldmask(ind%X0:ind%X1, ind%Y0:ind%Y1))
    data%cldmask = byte_fill_value
+else
+   nullify(data%cldmask)
 end if
 if (ind%flags%do_cldmask_uncertainty) then
    allocate(data%cldmask_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1))
    data%cldmask_uncertainty = sreal_fill_value
+else
+   nullify(data%cldmask_uncertainty)
 end if
 
 if (ind%flags%do_phase) then
    allocate(data%phase(ind%X0:ind%X1, ind%Y0:ind%Y1))
    data%phase = byte_fill_value
+else
+   nullify(data%phase)
 end if
 if (ind%flags%do_phase_pavolonis) then
    allocate(data%phase_pavolonis(ind%X0:ind%X1, ind%Y0:ind%Y1))
    data%phase_pavolonis = byte_fill_value
+else
+   nullify(data%phase_pavolonis)
 end if
 
 end subroutine alloc_input_data_primary_all
@@ -274,6 +328,11 @@ if (ind%flags%do_aerosol) then
    data%aer_ap = sreal_fill_value
    allocate(data%aer_fg(ind%X0:ind%X1, ind%Y0:ind%Y1))
    data%aer_fg = sreal_fill_value
+else
+   nullify(data%aot550_ap)
+   nullify(data%aot550_fg)
+   nullify(data%aer_ap)
+   nullify(data%aer_fg)
 end if
 
 if (ind%flags%do_rho) then
@@ -281,6 +340,9 @@ if (ind%flags%do_rho) then
    data%rho_ap = sreal_fill_value
    allocate(data%rho_fg(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NSolar, MaxRho_XX))
    data%rho_fg = sreal_fill_value
+else
+   nullify(data%rho_ap)
+   nullify(data%rho_fg)
 end if
 
 if (ind%flags%do_swansea) then
@@ -293,6 +355,11 @@ if (ind%flags%do_swansea) then
    data%swansea_p_ap = sreal_fill_value
    allocate(data%swansea_p_fg(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NViews))
    data%swansea_p_fg = sreal_fill_value
+else
+   nullify(data%swansea_s_ap)
+   nullify(data%swansea_s_fg)
+   nullify(data%swansea_p_ap)
+   nullify(data%swansea_p_fg)
 end if
 
 if (ind%flags%do_cloud) then
@@ -315,6 +382,15 @@ if (ind%flags%do_cloud) then
    data%stemp_fg = sreal_fill_value
    allocate(data%stemp_ap(ind%X0:ind%X1, ind%Y0:ind%Y1))
    data%stemp_ap = sreal_fill_value
+else
+   nullify(data%cot_ap)
+   nullify(data%cot_fg)
+   nullify(data%cer_ap)
+   nullify(data%cer_fg)
+   nullify(data%ctp_ap)
+   nullify(data%ctp_fg)
+   nullify(data%stemp_fg)
+   nullify(data%stemp_ap)
 end if
 
    allocate(data%y0(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%Ny))
@@ -341,6 +417,8 @@ subroutine alloc_input_data_secondary_all(ind, data)
 if (ind%flags%do_cloud) then
    allocate(data%albedo(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NSolar))
    data%albedo = sreal_fill_value
+else
+   nullify(data%albedo)
 end if
 
    allocate(data%channels(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%Ny))

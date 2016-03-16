@@ -448,7 +448,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
       if (do_secondary) then
          call dealloc_input_data_secondary_class(input_secondary(i))
       end if
-      call dealloc_common_indices(loop_ind(i)%common_indices)
+      call dealloc_input_indices(loop_ind(i))
    end do
 
    ! Allocate the structures which hold the output in its final form
