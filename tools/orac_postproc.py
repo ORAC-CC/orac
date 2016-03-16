@@ -6,6 +6,7 @@ import argparse
 import os
 import subprocess
 import tempfile
+from termcolor import cprint
 
 import orac_utils
 
@@ -23,27 +24,37 @@ def orac_postproc(args):
     libs = orac_utils.read_orac_libraries(args.orac_lib)
     os.environ["LD_LIBRARY_PATH"] = orac_utils.build_orac_library_path(libs)
 
-    # form driver file
+    # Form driver file
     driver = orac_utils.postproc_driver(
         bayesian = len(args.phases) > 2 or (args.phases[0] != 'WAT' and
-                                        args.phases[1] != 'ICE'),
+                                            args.phases[1] != 'ICE'),
         compress = args.compress,
-        ice_pri  = args.main_out_dir+'/'+args.fileroot+args.phases[1]+pri,
-        ice_sec  = args.main_out_dir+'/'+args.fileroot+args.phases[1]+sec,
+        cost_tsh = args.cost_thresh,
+        ice_pri  = args.in_dir[0]+'/'+args.fileroot+args.phases[1]+pri,
+        ice_sec  = args.in_dir[0]+'/'+args.fileroot+args.phases[1]+sec,
+        opt_nght = not args.no_night_opt,
         out_pri  = args.out_dir+'/'+args.fileroot+pri,
         out_sec  = args.out_dir+'/'+args.fileroot+sec,
+        prob_tsh = args.prob_thresh,
+        switch   = args.switch_phase,
         verbose  = args.verbose,
-        wat_pri  = args.main_out_dir+'/'+args.fileroot+args.phases[0]+pri,
-        wat_sec  = args.main_out_dir+'/'+args.fileroot+args.phases[0]+sec
-        )
+        wat_pri  = args.in_dir[0]+'/'+args.fileroot+args.phases[0]+pri,
+        wat_sec  = args.in_dir[0]+'/'+args.fileroot+args.phases[0]+sec)
     for phase in args.phases[2:]:
         driver += add_driver(
-            dri  = args.main_out_dir,
+            dir  = args.in_dir[0],
             ph   = phase,
             pri  = pri,
             root = args.fileroot,
-            sec  = sec
-            )
+            sec  = sec)
+    for dir in args.in_dir[1:]:
+        for phase in args.phases:
+            driver += add_driver(
+                dir  = dir,
+                ph   = phase,
+                pri  = pri,
+                root = args.fileroot,
+                sec  = sec)
 
     if (os.path.isfile(args.out_dir+'/'+args.fileroot+pri) and args.no_clobber):
         # Skip already processed files
@@ -54,7 +65,7 @@ def orac_postproc(args):
     else:
         # Write driver file
         (fd, driver_file) = tempfile.mkstemp('.driver', 'POSTPROC.',
-                                             args.main_out_dir, True)
+                                             args.out_dir, True)
         try:
             f = os.fdopen(fd, "w")
             f.write(driver)
@@ -62,7 +73,7 @@ def orac_postproc(args):
         except IOError:
             print('Cannot create driver file '+driver_file)
 
-        # Call main processor
+        # Call postprocessor
         if args.verbose or args.progress:
             print(orac_utils.star * 60)
             print(orac_utils.star * 5 +' post_process_level2 <<')
@@ -72,6 +83,11 @@ def orac_postproc(args):
         try:
             os.chdir(args.orac_dir + '/post_processing')
             subprocess.check_call('post_process_level2 '+driver_file,shell=True)
+        except subprocess.CalledProcessError as err:
+            cprint('Postprocessing failed with error code {}'.format(err.returncode),'red')
+            if err.output:
+                print(err.output)
+            raise StopIteration
         finally:
             os.remove(driver_file)
 

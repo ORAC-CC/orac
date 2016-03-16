@@ -92,6 +92,8 @@ def parse_with_lib(lib):
 # Read the ORAC library definitions into a Python dictionary
 def read_orac_libraries(file):
     libraries = {}
+    if os.environ['LIBBASE']:
+        libraries['LIBBASE'] = os.environ['LIBBASE']
 
     # Open ORAC library file
     with open(file, 'r') as f:
@@ -115,7 +117,9 @@ def build_orac_library_path(libs):
     ld_path = ':'.join([libs[key] for key in ("SZLIB", "EPR_APILIB", "GRIBLIB",
                                               "HDF5LIB", "HDFLIB",
                                               "NCDF_FORTRAN_LIB", "NCDFLIB")])
-    return ld_path + ':' + os.environ["LD_LIBRARY_PATH"]
+    if "LD_LIBRARY_PATH" in os.environ.keys():
+        ld_path += ':' + os.environ["LD_LIBRARY_PATH"]
+    return ld_path
 
 #-----------------------------------------------------------------------------
 
@@ -197,7 +201,10 @@ postproc_driver="""{wat_pri}
 {ice_sec}
 {out_pri}
 {out_sec}
-False
+{switch}
+COST_THRESH={cost_tsh}
+NORM_PROB_THRESH={prob_tsh}
+OUTPUT_OPTICAL_PROPS_AT_NIGHT={opt_nght}
 VERBOSE={verbose}
 USE_NETCDF_COMPRESSION={compress}
 USE_BAYESIAN_SELECTION={bayesian}""".format
@@ -210,16 +217,11 @@ home  = '/network/home/aopp/povey'
 matin = '/network/aopp/matin/eodg/shared'
 
 def orac_common_args(parser):
-    out = parser.add_argument_group('Output paths')
-    out.add_argument('-o', '--pre_out_dir', type=str,
-                     default = None,
-                     help = 'Path for preprocessor output.')
-    out.add_argument('--main_out_dir', type=str,
-                     default = None,
-                     help = 'Path for main processor output.')
-    out.add_argument('--out_dir', type=str,
-                     default = None,
-                     help = 'Path for final output.')
+    out = parser.add_argument_group('File paths')
+    out.add_argument('-o', '--out_dir', type=str, default = None,
+                     help = 'Path for output.')
+    out.add_argument('-i-','--in_dir', type=str, nargs='+', default = None,
+                     help = 'Path for input.')
 
     script = parser.add_argument_group('Script keywords')
     script.add_argument('--no_clobber', action='store_true',
@@ -239,11 +241,12 @@ def orac_common_args(parser):
                       default = os.environ['ORAC_LIB'],
                       help = 'Name and path of ORAC library specification.')
     orac.add_argument('--sh_dir', type=str, nargs='?', metavar='DIR',
-                      default = home + '/orac/scripts',
+                      default = home + '/orac/trunk/tools',
                       help = 'Path to ORAC scripts.')
     return parser
 
 def orac_common_args_check(args):
+    # Check of input dir done in routine checker
     if not os.path.isdir(args.orac_dir):
         raise ValueError('Target of --orac_dir does not exist.')
     if not os.path.isfile(args.orac_lib):
@@ -359,7 +362,12 @@ def orac_preproc_args(parser):
     return parser
 
 def orac_preproc_args_check(args):
-    if not os.path.isfile(args.file):
+    if args.in_dir == None:
+        args.in_dir = os.path.dirname(args.file)
+        args.file   = os.path.basename(args.file)
+    if not os.path.isdir(args.in_dir):
+        raise ValueError('L1B directory does not exist.')
+    if not os.path.isfile(args.in_dir+'/'+args.file):
         raise ValueError('L1B file does not exist.')
     limit_check = args.limit[0] == 0
     for limit_element in args.limit[1:]:
@@ -412,10 +420,10 @@ def orac_main_args(parser):
     return parser
 
 def orac_main_args_check(args):
-    if not os.path.isdir(args.pre_out_dir):
-        raise ValueError('Preprocessor output directory does not exist.')
-    if args.main_out_dir == None:
-        args.main_out_dir = args.pre_out_dir
+    if len(args.in_dir) > 1:
+        print('WARNING: Main processor ignores all but first in_dir.')
+    if not os.path.isdir(args.in_dir[0]):
+        raise ValueError('Preprocessed directory does not exist.')
     if not os.path.isdir(args.sad_dir):
         raise ValueError('Target of --sad_dir does not exist.')
     # No error checking yet written for channel arguments
@@ -424,18 +432,22 @@ def orac_postproc_args(parser):
     post = parser.add_argument_group('Post-processor paths')
     post.add_argument('--compress', action='store_true',
                       help = 'Use compression in NCDF outputs.')
+    post.add_argument('--cost_thresh', type=float, nargs='?',
+                      default = 0.0,
+                      help = 'Maximum cost to accept a pixel.')
+    post.add_argument('--no_night_opt', action='store_true',
+                      help = 'Do not output optical properties at night.')
     post.add_argument('--phases', type=str, nargs='+', metavar='PHS',
                       default = ('WAT', 'ICE'),
                       help = 'Phases to be processed.')
+    post.add_argument('--prob_thresh', type=float, nargs='?',
+                      default = 0.0,
+                      help = 'Minimum fractional probability to accept a pixel.')
+    post.add_argument('--switch_phase', action='store_true',
+                      help = 'With cloud processing, check if CTT is appropriate for the selected type..')
     return parser
 
 def orac_postproc_args_check(args):
-    if args.main_out_dir == None:
-        if args.pre_out_dir:
-            args.main_out_dir = args.pre_out_dir
-        else:
-            raise ValueError('At least one output folder must be specified.')
-    if not os.path.isdir(args.main_out_dir):
-        raise ValueError('Main processor output directory does not exist.')
-    if args.out_dir == None:
-        args.out_dir = args.main_out_dir
+    for d in args.in_dir:
+        if not os.path.isdir(d):
+            raise ValueError('Processed output directory does not exist.')

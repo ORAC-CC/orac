@@ -6,12 +6,13 @@ import argparse
 import os
 import subprocess
 import tempfile
+from termcolor import cprint
 
 import orac_utils
 
 def orac_main(args):
-    if not os.path.isdir(args.main_out_dir):
-        os.makedirs(args.main_out_dir, 0o774)
+    if not os.path.isdir(args.out_dir):
+        os.makedirs(args.out_dir, 0o774)
 
     (sensor, platform) = orac_utils.parse_sensor(args.fileroot)
     if platform == 'Envisat':
@@ -28,10 +29,10 @@ def orac_main(args):
         channels = ','.join('{:d}'.format(k) for k in args.use_channel),
         cloudy   = args.cloudy,
         fileroot = args.fileroot,
-        in_dir   = args.pre_out_dir,
+        in_dir   = args.in_dir[0],
         nch      = len(args.use_channel),
         ntypes   = len(args.types),
-        out_dir  = args.main_out_dir,
+        out_dir  = args.out_dir,
         phase    = args.phase,
         sad_dir  = args.sad_dir,
         sensor   = sensor + platform,
@@ -59,7 +60,7 @@ def orac_main(args):
         except IOError:
             print('Cannot open --extra_lines file.')
 
-    if (os.path.isfile(args.main_out_dir + '/' + args.fileroot + args.phase
+    if (os.path.isfile(args.out_dir + '/' + args.fileroot + args.phase
                        +'.primary.nc') and args.no_clobber):
         # Skip already processed files
         if args.verbose or args.progress:
@@ -69,7 +70,7 @@ def orac_main(args):
     else:
         # Write driver file
         (fd, driver_file) = tempfile.mkstemp('.'+args.phase+'.driver',
-                                             'ORAC.', args.main_out_dir, True)
+                                             'ORAC.', args.out_dir, True)
         try:
             f = os.fdopen(fd, "w")
             f.write(driver)
@@ -87,6 +88,11 @@ def orac_main(args):
         try:
             os.chdir(args.orac_dir + '/src')
             subprocess.check_call('orac '+driver_file, shell=True)
+        except subprocess.CalledProcessError as err:
+            cprint('ORAC failed with error code {}'.format(err.returncode),'red')
+            if err.output:
+                print(err.output)
+            raise StopIteration
         finally:
             os.remove(driver_file)
 

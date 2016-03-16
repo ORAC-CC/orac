@@ -25,6 +25,8 @@ pre_suf  = ('.alb.nc', '.clf.nc', '.config.nc', '.geo.nc', '.loc.nc',
             '.lsf.nc', '.lwrtm.nc', '.msi.nc', '.prtm.nc', '.swrtm.nc')
 post_suf = ('.primary.nc', '.secondary.nc')
 
+proc_took = 'Processing took {:.2f} s'
+
 # Define regression test files and swath
 regress = {}
 regress['DAYMYDS'] = RegressTest(
@@ -91,18 +93,14 @@ parser = orac_utils.orac_main_args(parser)
 parser = orac_utils.orac_postproc_args(parser)
 
 args   = parser.parse_args()
-if args.pre_out_dir:
-    pre_dir = args.pre_out_dir
-else:
-    pre_dir = os.environ['TESTOUT']
-if args.main_out_dir:
-    mai_dir = args.main_out_dir
-else:
-    mai_dir = pre_dir
+orac_utils.orac_common_args_check(args)
+
+if args.in_dir:
+    print('WARNING: --in_dir is ignored by this script.')
 if args.out_dir:
-    out_dir = args.out_dir
+    base_out_dir = args.out_dir
 else:
-    out_dir = mai_dir
+    base_out_dir = os.environ['TESTOUT']
 if args.tests == None:
     if args.long:
         args.tests = ('DAYMYD', 'NITMYD', 'AATSR', 'AVHRR')
@@ -115,14 +113,12 @@ no_clobber_copy = args.no_clobber
 
 #-----------------------------------------------------------------------------
 
-orac_utils.orac_common_args_check(args)
 for test in args.tests:
-    args.file         = regress[test].l1b
-    args.geo_dir      = regress[test].geo
-    args.limit        = regress[test].lim
-    args.pre_out_dir  = pre_dir+'/'+test
-    args.main_out_dir = mai_dir+'/'+test
-    args.out_dir      = out_dir+'/'+test
+    args.file    = regress[test].l1b
+    args.geo_dir = regress[test].geo
+    args.limit   = regress[test].lim
+    args.in_dir  = None
+    args.out_dir = base_out_dir+'/'+test
 
     termcolor.cprint(test+') Preprocessing', 'yellow', attrs=['bold'])
     orac_utils.orac_preproc_args_check(args)
@@ -131,27 +127,34 @@ for test in args.tests:
             args.no_clobber = True
         st = time.time()
 
-        args.fileroot = orac_preproc(args)
+        # Call preprocessor
+        try:
+            args.fileroot = orac_preproc(args)
+        except StopIteration:
+            break
 
         args.no_clobber = no_clobber_copy
         if args.verbose or args.progress:
-            termcolor.cprint(
-                'Preprocessing took {:.2f} s'.format(time.time()-st), 'blue')
+            termcolor.cprint(proc_took.format(time.time()-st), 'blue')
     if not args.no_compare:
-        orac_regress(args.pre_out_dir, args.fileroot, pre_suf)
+        orac_regress(args.out_dir, args.fileroot, pre_suf)
 
+    args.in_dir = [args.out_dir]
     if args.once:
         args.phase = args.phases[0]
         termcolor.cprint(test+') Main processing', 'yellow', attrs=['bold'])
         orac_utils.orac_main_args_check(args)
         if not args.only_compare:
             st = time.time()
-            orac_main(args)
+            try:
+                orac_main(args)
+            except StopIteration:
+                break
+
             if args.verbose or args.progress:
-                termcolor.cprint(
-                    'Processing took {:.2f} s'.format(time.time()-st), 'blue')
+                termcolor.cprint(proc_took.format(time.time()-st), 'blue')
         if not args.no_compare:
-            orac_regress(args.main_out_dir, args.fileroot,
+            orac_regress(args.out_dir, args.fileroot,
                          (args.phase + s for s in post_suf))
     else:
         if not args.only_compare:
@@ -161,14 +164,19 @@ for test in args.tests:
                                  attrs=['bold'])
                 args.phase = phase
                 orac_utils.orac_main_args_check(args)
-                orac_main(args)
+                try:
+                    orac_main(args)
+                except StopIteration:
+                    exit
             if args.verbose or args.progress:
-                termcolor.cprint(
-                    'Processing took {:.2f} s'.format(time.time()-st), 'blue')
+                termcolor.cprint(proc_took.format(time.time()-st), 'blue')
 
             termcolor.cprint(test+') Postprocessing', 'yellow', attrs=['bold'])
             orac_utils.orac_postproc_args_check(args)
-            orac_postproc(args)
+            try:
+                orac_postproc(args)
+            except StopIteration:
+                break
 
         if not args.no_compare:
             orac_regress(args.out_dir, args.fileroot, post_suf)

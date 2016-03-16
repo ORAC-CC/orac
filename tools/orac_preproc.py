@@ -9,6 +9,7 @@ import os
 import re
 import subprocess
 import tempfile
+from termcolor import cprint
 
 import orac_utils
 
@@ -32,9 +33,7 @@ def form_badc(
 
 def orac_preproc(args):
     # Translate arguments
-    filename = os.path.basename(args.file)
-    fileroot = filename[:filename.rfind('.')]
-    filedir = os.path.dirname(args.file)
+    fileroot = args.file[:args.file.rfind('.')]
     ggam_dir = args.ecmwf_dir + '/era_interim'
     ggas_dir = args.ecmwf_dir + '/era_interim'
     spam_dir = args.ecmwf_dir + '/era_interim'
@@ -43,33 +42,33 @@ def orac_preproc(args):
     #------------------------------------------------------------------------
 
     # Parse filename
-    (sensor, platform) = orac_utils.parse_sensor(filename)
+    (sensor, platform) = orac_utils.parse_sensor(args.file)
     if sensor == 'AATSR':
 
         # Start date and time of orbit given in filename
-        yr = int(filename[14:18])
-        mn = int(filename[18:20])
-        dy = int(filename[20:22])
-        hr = int(filename[23:25])
-        mi = int(filename[25:27])
-        sc = int(filename[27:29])
+        yr = int(args.file[14:18])
+        mn = int(args.file[18:20])
+        dy = int(args.file[20:22])
+        hr = int(args.file[23:25])
+        mi = int(args.file[25:27])
+        sc = int(args.file[27:29])
         st_time = datetime.datetime(yr, mn, dy, hr, mi, sc, 0)
 
         # File duration is given in filename
-        dur = datetime.timedelta(seconds=int(filename[30:38]))
+        dur = datetime.timedelta(seconds=int(args.file[30:38]))
 
         # Only one file for ATSR
         if args.geo_dir != None:
             print('--geo_dir is ignored with AATSR files.')
             raise Warning()
-        geo = args.file
+        geo = args.in_dir+'/'+args.file
 
     elif sensor == 'MODIS':
         # Start DOY and time of orbit given in filename
-        yr = int(filename[10:14])
-        dy = int(filename[14:17])
-        hr = int(filename[18:20])
-        mi = int(filename[20:22])
+        yr = int(args.file[10:14])
+        dy = int(args.file[14:17])
+        hr = int(args.file[18:20])
+        mi = int(args.file[20:22])
         st_time = (datetime.datetime(yr, 1, 1, hr, mi) +
                    datetime.timedelta(days=dy-1))
 
@@ -78,9 +77,9 @@ def orac_preproc(args):
 
         # Search for geolocation file
         if args.geo_dir == None:
-            args.geo_dir = filedir
-        geo_search = (args.geo_dir + '/' + filename[0:3] + '03.A' +
-                      filename[10:26] +'*hdf')
+            args.geo_dir = args.in_dir
+        geo_search = (args.geo_dir + '/' + args.file[0:3] + '03.A' +
+                      args.file[10:26] +'*hdf')
         f = glob(geo_search)
         if f:
             if len(f) == 1:
@@ -93,11 +92,11 @@ def orac_preproc(args):
 
     elif sensor == 'AVHRR':
         # Start time of orbit given in filename
-        yr = int(filename[7:11])
-        mn = int(filename[11:13])
-        dy = int(filename[13:15])
-        hr = int(filename[16:18])
-        mi = int(filename[18:20])
+        yr = int(args.file[7:11])
+        mn = int(args.file[11:13])
+        dy = int(args.file[13:15])
+        hr = int(args.file[16:18])
+        mi = int(args.file[18:20])
         st_time = datetime.datetime(yr, mn, dy, hr, mi)
 
         # Guess the duration
@@ -105,9 +104,9 @@ def orac_preproc(args):
 
         # Guess the geolocation file
         if args.geo_dir == None:
-            args.geo_dir = filedir
-        p_ = filename.rfind('_')
-        geo = args.geo_dir + '/' + filename[0:p_+1] + 'sunsatangles.h5'
+            args.geo_dir = args.in_dir
+        p_ = args.file.rfind('_')
+        geo = args.geo_dir + '/' + args.file[0:p_+1] + 'sunsatangles.h5'
 
     if not os.path.isfile(geo):
         raise NameError('Could not locate expected geolocation file '+geo)
@@ -146,8 +145,8 @@ def orac_preproc(args):
 
     #------------------------------------------------------------------------
 
-    if not os.path.isdir(args.pre_out_dir):
-        os.makedirs(args.pre_out_dir, 0o774)
+    if not os.path.isdir(args.out_dir):
+        os.makedirs(args.out_dir, 0o774)
 
     if args.uuid:
         uid = str(uuid.uuid4())
@@ -266,13 +265,13 @@ def orac_preproc(args):
         include_full_brdf = not args.lambertian,
         institution       = args.institute,
         keywords          = args.keywords,
-        l1b               = args.file,
+        l1b               = args.in_dir+'/'+args.file,
         l2_processor      = args.processor,
         license           = args.license,
         limit             = args.limit,
         modis_emis        = args.use_modis_emis,
         ncdf_version      = ncdf_version,
-        out_dir           = args.pre_out_dir,
+        out_dir           = args.out_dir,
         usgs              = args.usgs_file,
         nise              = nise,
         production_time   = production_time,
@@ -296,7 +295,7 @@ def orac_preproc(args):
     outroot = '-'.join((args.project, 'L2', 'CLOUD', 'CLD',
                         '_'.join((sensor, args.processor, platform,
                                st_time.strftime('%Y%m%d%H%M'), file_version))))
-    if (os.path.isfile(args.pre_out_dir+'/'+outroot+'.loc.nc') and
+    if (os.path.isfile(args.out_dir+'/'+outroot+'.loc.nc') and
         args.no_clobber):
         # Skip already processed files
         if args.verbose or args.progress:
@@ -306,7 +305,7 @@ def orac_preproc(args):
     else:
         # Write driver file
         (fd, driver_file) = tempfile.mkstemp('.driver', 'PREPROC.',
-                                             args.pre_out_dir, True)
+                                             args.out_dir, True)
         try:
             f = os.fdopen(fd, "w")
             f.write(driver)
@@ -323,6 +322,11 @@ def orac_preproc(args):
             print(orac_utils.star * 60)
         try:
             subprocess.check_call('orac_preproc.x '+driver_file, shell=True)
+        except subprocess.CalledProcessError as err:
+            cprint('Preprocessing failed with error code {}'.format(err.returncode),'red')
+            if err.output:
+                print(err.output)
+            raise StopIteration
         finally:
             os.remove(driver_file)
 

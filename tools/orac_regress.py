@@ -4,12 +4,16 @@ from glob import glob
 import netCDF4
 import numpy as np
 import re
+import subprocess
 from termcolor import colored
 
 #----------------------------------------------------------------------------
 
 # Compare two NCDF files
 def compare_orac_out(f0, f1):
+    # Call nccmp to compare headers, dimensions, and non-global attributes
+    subprocess.call('nccmp -m '+f0+' '+f1, shell=True)
+
     d0 = netCDF4.Dataset(f0, 'r')
     d1 = netCDF4.Dataset(f1, 'r')
 
