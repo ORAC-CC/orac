@@ -315,8 +315,8 @@ contains
          start_line, end_line, start_pix, end_pix, npix
     logical :: day
     real    :: t4_filter_thresh, nir_ref
-    real(kind=sreal),allocatable,dimension(:,:) :: skint,snow_depth,sea_ice_cover
-    integer(kind=byte), allocatable,dimension(:,:) :: snow_ice_mask
+    real(kind=sreal), allocatable, dimension(:,:) :: skint,snow_depth,sea_ice_cover
+    integer(kind=byte), allocatable, dimension(:,:) :: snow_ice_mask
     type(interpol_s), allocatable, dimension(:) :: interp
 
     ! --------------------------------------------------------------------
@@ -339,7 +339,7 @@ contains
     real(kind=sreal)   :: mu0
     real(kind=sreal)   :: esd
     real(kind=sreal)   :: c_sun
-    real(kind=sreal),dimension(2)   :: PlanckInv_out
+    real(kind=sreal), dimension(2) :: PlanckInv_out
     integer(kind=sint) :: ch1, ch2, ch3, ch4, ch5, ch6
 
     ! -- Parameters used here
@@ -396,6 +396,12 @@ contains
 
 
     ! Determine channel indexes based on instrument channel number
+    ch1 = 0
+    ch2 = 0
+    ch3 = 0
+    ch4 = 0
+    ch5 = 0
+    ch6 = 0
     if (trim(adjustl(sensor)) .eq. 'AATSR' .or. trim(adjustl(sensor)) .eq. 'ATSR2' ) then
        do i=1,channel_info%nchannels_total
           select case (channel_info%channel_ids_instr(i))
@@ -412,9 +418,7 @@ contains
           case(7)
              ch6=i
           end select
-
        end do
-
     else if (trim(adjustl(sensor)) .eq. 'AVHRR') then
        do i=1,channel_info%nchannels_total
           select case (channel_info%channel_ids_instr(i))
@@ -466,6 +470,13 @@ contains
              ch6=i
           end select
        end do
+    end if
+
+    if (.not. (ch1 .ne. 0 .and. ch2 .ne. 0 .and. (ch3 .ne. 0 .or. ch4 .ne. 0) .and. &
+               ch5 .ne. 0 .and. ch6 .ne. 0)) then
+       write(*,*) 'WARNING: Pavolonis cloud typing skipped due to an ' // &
+                  'insufficient channel selection.'
+       return
     end if
 
     allocate(skint(imager_geolocation%startx:imager_geolocation%endx, &
