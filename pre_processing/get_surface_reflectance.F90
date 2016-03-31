@@ -235,8 +235,13 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, modis_brdf_path
   if (verbose) write(*,*) 'nsea, nland: ', nsea, nland
 
 
-  source_atts%albedo_file = 'Not used (no pixels of land)'
-  source_atts%brdf_file   = 'Not used (no pixels of land)'
+  source_atts%albedo_file = 'Not used (no SW channels or no pixels of land)'
+  source_atts%brdf_file   = 'Not used (no SW channels or no pixels of land)'
+
+  ! If there are no lw channels or no land pixels in the scene, we have nothing
+  ! more to do.
+  if (channel_info%nchannels_sw == 0 .or. (nland == 0 .or. nsea == 0)) return
+
 
   !----------------------------------------------------------------------------
   ! Extract land surface reflectance

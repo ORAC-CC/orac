@@ -68,6 +68,7 @@
 !    channels.
 ! 2015/08/19, GM: Modifications to support the SEVIRI HRIT format.
 ! 2015/08/29, CP: Changes to support ATSR-2
+!
 ! $Id$
 !
 ! Bugs:

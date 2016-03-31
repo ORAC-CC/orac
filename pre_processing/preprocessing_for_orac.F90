@@ -1050,7 +1050,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
            preproc_geo, preproc_prtm, preproc_surf)
       call deallocate_imager_structures(imager_geolocation, imager_angles, &
            imager_flags, imager_time, imager_measurements, imager_pavolonis)
-      call deallocate_surface_structures(surface, include_full_brdf)
+      call deallocate_surface_structures(surface, channel_info, include_full_brdf)
 
    end do ! end looping over chunks
 

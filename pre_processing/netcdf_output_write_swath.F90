@@ -43,6 +43,7 @@
 ! 2015/01/15, AP: Eliminate channel_ids_abs.
 ! 2015/01/30, AP: Remove uscan and vscan as unnecessary.
 ! 2015/07/02, OS: added writing of cldmask_uncertainty
+! 2016/03/31, GM: Changes to support processing only SW or only LW channels.
 !
 ! $Id$
 !
@@ -112,135 +113,147 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocati
            channel_info%channel_lw_flag, &
            1, 1, channel_info%nchannels_total)
 
-   allocate(dummy_chan_vec1d(channel_info%nchannels_sw))
-   dummy_chan_vec1d=0_lint
-   ii=1
-   do i=1,channel_info%nchannels_total
-      if (channel_info%channel_sw_flag(i) .eq. 1) then
-         dummy_chan_vec1d(ii)=i
-         ii=ii+1
-      end if
-   end do
+   if (channel_info%nchannels_sw .ne. 0) then
+      allocate(dummy_chan_vec1d(channel_info%nchannels_sw))
+      dummy_chan_vec1d=0_lint
+      ii=1
+      do i=1,channel_info%nchannels_total
+         if (channel_info%channel_sw_flag(i) .eq. 1) then
+            dummy_chan_vec1d(ii)=i
+            ii=ii+1
+         end if
+      end do
 
-   call nc_write_array( &
-        netcdf_info%ncid_config, &
-        'alb_abs_ch_numbers', &
-        netcdf_info%vid_alb_abs_ch_numbers_config, &
-        dummy_chan_vec1d, &
-        1, 1, channel_info%nchannels_sw)
-   deallocate(dummy_chan_vec1d)
-
-   allocate(dummy_chan_vec1d(channel_info%nchannels_lw))
-   dummy_chan_vec1d=0_lint
-   ii=1
-   do i=1,channel_info%nchannels_total
-      if (channel_info%channel_lw_flag(i) .eq. 1) then
-         dummy_chan_vec1d(ii)=i
-         ii=ii+1
-      end if
-   end do
-
-   call nc_write_array( &
+      call nc_write_array( &
            netcdf_info%ncid_config, &
-           'emis_abs_ch_numbers', &
-           netcdf_info%vid_emis_abs_ch_numbers_config, &
+           'alb_abs_ch_numbers', &
+           netcdf_info%vid_alb_abs_ch_numbers_config, &
            dummy_chan_vec1d, &
-           1, 1, channel_info%nchannels_lw)
-   deallocate(dummy_chan_vec1d)
+           1, 1, channel_info%nchannels_sw)
+      deallocate(dummy_chan_vec1d)
+   endif
+
+   if (channel_info%nchannels_lw .ne. 0) then
+      allocate(dummy_chan_vec1d(channel_info%nchannels_lw))
+      dummy_chan_vec1d=0_lint
+      ii=1
+      do i=1,channel_info%nchannels_total
+         if (channel_info%channel_lw_flag(i) .eq. 1) then
+            dummy_chan_vec1d(ii)=i
+            ii=ii+1
+         end if
+      end do
+
+      call nc_write_array( &
+              netcdf_info%ncid_config, &
+              'emis_abs_ch_numbers', &
+              netcdf_info%vid_emis_abs_ch_numbers_config, &
+              dummy_chan_vec1d, &
+              1, 1, channel_info%nchannels_lw)
+      deallocate(dummy_chan_vec1d)
+   endif
 
 
    ! alb file (albedo and emissivity)
 
-   allocate(dummy_chan_vec1d(channel_info%nchannels_sw))
-   dummy_chan_vec1d=0_lint
-   ii=1
-   do i=1,channel_info%nchannels_total
-      if (channel_info%channel_sw_flag(i) .eq. 1) then
-         dummy_chan_vec1d(ii)=i
-         ii=ii+1
-      end if
-   end do
+   if (channel_info%nchannels_sw .ne. 0) then
+      allocate(dummy_chan_vec1d(channel_info%nchannels_sw))
+      dummy_chan_vec1d=0_lint
+      ii=1
+      do i=1,channel_info%nchannels_total
+         if (channel_info%channel_sw_flag(i) .eq. 1) then
+            dummy_chan_vec1d(ii)=i
+            ii=ii+1
+         end if
+      end do
 
-   call nc_write_array( &
-        netcdf_info%ncid_alb, &
-        'alb_abs_ch_numbers', &
-        netcdf_info%vid_alb_abs_ch_numbers, &
-        dummy_chan_vec1d, &
-        1, 1, channel_info%nchannels_sw)
-   deallocate(dummy_chan_vec1d)
-
-   allocate(dummy_chan_vec1d(channel_info%nchannels_lw))
-   dummy_chan_vec1d=0_lint
-   ii=1
-   do i=1,channel_info%nchannels_total
-      if (channel_info%channel_lw_flag(i) .eq. 1) then
-         dummy_chan_vec1d(ii)=i
-         ii=ii+1
-      end if
-   end do
-
-   call nc_write_array( &
+      call nc_write_array( &
            netcdf_info%ncid_alb, &
-           'alb_emis_ch_numbers', &
-           netcdf_info%vid_emis_abs_ch_numbers, &
+           'alb_abs_ch_numbers', &
+           netcdf_info%vid_alb_abs_ch_numbers, &
            dummy_chan_vec1d, &
-           1, 1, channel_info%nchannels_lw)
-   deallocate(dummy_chan_vec1d)
-
-   call nc_write_array( &
-           netcdf_info%ncid_alb, &
-           'alb_data', &
-           netcdf_info%vid_alb_data, &
-           surface%albedo(imager_geolocation%startx:,:,:), &
-           1, 1, n_x, &
-           1, 1, imager_geolocation%ny, &
            1, 1, channel_info%nchannels_sw)
+      deallocate(dummy_chan_vec1d)
+   end if
 
-   call nc_write_array( &
-           netcdf_info%ncid_alb, &
-           'emis_data', &
-           netcdf_info%vid_emis_data, &
-           surface%emissivity(imager_geolocation%startx:,:,:), &
-           1, 1, n_x, &
-           1, 1, imager_geolocation%ny, &
-           1, 1, channel_info%nchannels_lw)
+   if (channel_info%nchannels_lw .ne. 0) then
+      allocate(dummy_chan_vec1d(channel_info%nchannels_lw))
+      dummy_chan_vec1d=0_lint
+      ii=1
+      do i=1,channel_info%nchannels_total
+         if (channel_info%channel_lw_flag(i) .eq. 1) then
+            dummy_chan_vec1d(ii)=i
+            ii=ii+1
+         end if
+      end do
 
-   if (include_full_brdf) then
       call nc_write_array( &
               netcdf_info%ncid_alb, &
-              'rho_0v', &
-              netcdf_info%vid_rho_0v_data, &
-              surface%rho_0v(imager_geolocation%startx:,:,:), &
+              'alb_emis_ch_numbers', &
+              netcdf_info%vid_emis_abs_ch_numbers, &
+              dummy_chan_vec1d, &
+              1, 1, channel_info%nchannels_lw)
+      deallocate(dummy_chan_vec1d)
+   end if
+
+   if (channel_info%nchannels_sw .ne. 0) then
+      call nc_write_array( &
+              netcdf_info%ncid_alb, &
+              'alb_data', &
+              netcdf_info%vid_alb_data, &
+              surface%albedo(imager_geolocation%startx:,:,:), &
               1, 1, n_x, &
               1, 1, imager_geolocation%ny, &
               1, 1, channel_info%nchannels_sw)
 
-      call nc_write_array( &
-              netcdf_info%ncid_alb, &
-              'rho_0d', &
-              netcdf_info%vid_rho_0d_data, &
-              surface%rho_0d(imager_geolocation%startx:,:,:), &
-              1, 1, n_x, &
-              1, 1, imager_geolocation%ny, &
-              1, 1, channel_info%nchannels_sw)
+      if (include_full_brdf) then
+         call nc_write_array( &
+                 netcdf_info%ncid_alb, &
+                 'rho_0v', &
+                 netcdf_info%vid_rho_0v_data, &
+                 surface%rho_0v(imager_geolocation%startx:,:,:), &
+                 1, 1, n_x, &
+                 1, 1, imager_geolocation%ny, &
+                 1, 1, channel_info%nchannels_sw)
 
-      call nc_write_array( &
-              netcdf_info%ncid_alb, &
-              'rho_dv', &
-              netcdf_info%vid_rho_dv_data, &
-              surface%rho_dv(imager_geolocation%startx:,:,:), &
-              1, 1, n_x, &
-              1, 1, imager_geolocation%ny, &
-              1, 1, channel_info%nchannels_sw)
+         call nc_write_array( &
+                 netcdf_info%ncid_alb, &
+                 'rho_0d', &
+                 netcdf_info%vid_rho_0d_data, &
+                 surface%rho_0d(imager_geolocation%startx:,:,:), &
+                 1, 1, n_x, &
+                 1, 1, imager_geolocation%ny, &
+                 1, 1, channel_info%nchannels_sw)
 
+         call nc_write_array( &
+                 netcdf_info%ncid_alb, &
+                 'rho_dv', &
+                 netcdf_info%vid_rho_dv_data, &
+                 surface%rho_dv(imager_geolocation%startx:,:,:), &
+                 1, 1, n_x, &
+                 1, 1, imager_geolocation%ny, &
+                 1, 1, channel_info%nchannels_sw)
+
+         call nc_write_array( &
+                 netcdf_info%ncid_alb, &
+                 'rho_dd', &
+                 netcdf_info%vid_rho_dd_data, &
+                 surface%rho_dd(imager_geolocation%startx:,:,:), &
+                 1, 1, n_x, &
+                 1, 1, imager_geolocation%ny, &
+                 1, 1, channel_info%nchannels_sw)
+      end if
+   end if
+
+   if (channel_info%nchannels_lw .ne. 0) then
       call nc_write_array( &
               netcdf_info%ncid_alb, &
-              'rho_dd', &
-              netcdf_info%vid_rho_dd_data, &
-              surface%rho_dd(imager_geolocation%startx:,:,:), &
+              'emis_data', &
+              netcdf_info%vid_emis_data, &
+              surface%emissivity(imager_geolocation%startx:,:,:), &
               1, 1, n_x, &
               1, 1, imager_geolocation%ny, &
-              1, 1, channel_info%nchannels_sw)
+              1, 1, channel_info%nchannels_lw)
    end if
 
 

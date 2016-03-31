@@ -131,10 +131,11 @@ subroutine get_surface_emissivity(cyear, cdoy, cimss_emis_path, imager_flags, &
    nland = count(imager_flags%lsflag .eq. 1)
    if (verbose) write(*,*) 'nland: ', nland
 
-   source_atts%emissivity_file = 'Not used (no pixels of land)'
+   source_atts%emissivity_file = 'Not used (no LW channels or no pixels of land)'
 
-   ! If there are no land pixels in the scene, we have nothing more to do
-   if (nland == 0 .or. channel_info%nchannels_lw == 0) return
+   ! If there are no lw channels or no land pixels in the scene, we have nothing
+   ! more to do.
+   if (channel_info%nchannels_lw == 0 .or. nland == 0) return
 
    n_chans = channel_info%nchannels_lw
 

@@ -122,13 +122,12 @@
 ! 2015/07/02, GM: Added code to remove the Rayleigh component from the RTTOV 11
 !    computed transmittances.
 ! 2015/07/23, GM: Added specific humidity and ozone profile output.
-
 ! 2015/08/08, CP: Added ATSR2 functionality
-
 ! 2015/09/04, GM: Fix support for SEVIRI on MSG1, MSG3 and MSG4.
 ! 2015/10/19, GM: Add the option to use the MODIS emissivity product instead of
 !    the RTTOV emissivity atlas.
 ! 2016/01/27, SP: Added support for RTTOV v11.3 via the NEW_RTTOV definition
+! 2016/03/31, GM: Changes to support processing only SW or only LW channels.
 !
 ! $Id$
 !
@@ -329,61 +328,65 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
    if (verbose) write(*,*) 'Write static information to the output files'
 
    ! Write LW channel information
-   allocate(dummy_lint_1dveca(channel_info%nchannels_lw))
-   allocate(dummy_lint_1dvecb(channel_info%nchannels_lw))
-   allocate(dummy_sreal_1dveca(channel_info%nchannels_lw))
-   count=0
-   do i_coef=1,channel_info%nchannels_total
-      if (channel_info%channel_lw_flag(i_coef) == 1) then
-         count = count + 1
-         dummy_lint_1dveca(count)  = i_coef
-         dummy_lint_1dvecb(count)  = channel_info%channel_ids_instr(i_coef)
-         dummy_sreal_1dveca(count) = channel_info%channel_wl_abs(i_coef)
-      end if
-   end do
+   if (channel_info%nchannels_lw .ne. 0) then
+      allocate(dummy_lint_1dveca(channel_info%nchannels_lw))
+      allocate(dummy_lint_1dvecb(channel_info%nchannels_lw))
+      allocate(dummy_sreal_1dveca(channel_info%nchannels_lw))
+      count=0
+      do i_coef=1,channel_info%nchannels_total
+         if (channel_info%channel_lw_flag(i_coef) == 1) then
+            count = count + 1
+            dummy_lint_1dveca(count)  = i_coef
+            dummy_lint_1dvecb(count)  = channel_info%channel_ids_instr(i_coef)
+            dummy_sreal_1dveca(count) = channel_info%channel_wl_abs(i_coef)
+         end if
+      end do
 
-   call nc_write_array(netcdf_info%ncid_lwrtm, 'lw_channel_abs_ids', &
-           netcdf_info%vid_lw_channel_abs_ids, dummy_lint_1dveca, &
-           1, 1, channel_info%nchannels_lw)
-   call nc_write_array(netcdf_info%ncid_lwrtm, 'lw_channel_instr_ids', &
-           netcdf_info%vid_lw_channel_instr_ids, dummy_lint_1dvecb, &
-           1, 1, channel_info%nchannels_lw)
-   call nc_write_array(netcdf_info%ncid_lwrtm, 'lw_channel_wvl', &
-           netcdf_info%vid_lw_channel_wvl, dummy_sreal_1dveca, &
-           1, 1, channel_info%nchannels_lw)
+      call nc_write_array(netcdf_info%ncid_lwrtm, 'lw_channel_abs_ids', &
+              netcdf_info%vid_lw_channel_abs_ids, dummy_lint_1dveca, &
+              1, 1, channel_info%nchannels_lw)
+      call nc_write_array(netcdf_info%ncid_lwrtm, 'lw_channel_instr_ids', &
+              netcdf_info%vid_lw_channel_instr_ids, dummy_lint_1dvecb, &
+              1, 1, channel_info%nchannels_lw)
+      call nc_write_array(netcdf_info%ncid_lwrtm, 'lw_channel_wvl', &
+              netcdf_info%vid_lw_channel_wvl, dummy_sreal_1dveca, &
+              1, 1, channel_info%nchannels_lw)
 
-   deallocate(dummy_lint_1dveca)
-   deallocate(dummy_lint_1dvecb)
-   deallocate(dummy_sreal_1dveca)
+      deallocate(dummy_lint_1dveca)
+      deallocate(dummy_lint_1dvecb)
+      deallocate(dummy_sreal_1dveca)
+   end if
 
 
    ! Write SW channel information
-   allocate(dummy_lint_1dveca(channel_info%nchannels_sw))
-   allocate(dummy_lint_1dvecb(channel_info%nchannels_sw))
-   allocate(dummy_sreal_1dveca(channel_info%nchannels_sw))
-   count=0
-   do i_coef=1,channel_info%nchannels_total
-      if (channel_info%channel_sw_flag(i_coef) == 1) then
-         count = count + 1
-         dummy_lint_1dveca(count)  = i_coef
-         dummy_lint_1dvecb(count)  = channel_info%channel_ids_instr(i_coef)
-         dummy_sreal_1dveca(count) = channel_info%channel_wl_abs(i_coef)
-      end if
-   end do
+   if (channel_info%nchannels_sw .ne. 0) then
+      allocate(dummy_lint_1dveca(channel_info%nchannels_sw))
+      allocate(dummy_lint_1dvecb(channel_info%nchannels_sw))
+      allocate(dummy_sreal_1dveca(channel_info%nchannels_sw))
+      count=0
+      do i_coef=1,channel_info%nchannels_total
+         if (channel_info%channel_sw_flag(i_coef) == 1) then
+            count = count + 1
+            dummy_lint_1dveca(count)  = i_coef
+            dummy_lint_1dvecb(count)  = channel_info%channel_ids_instr(i_coef)
+            dummy_sreal_1dveca(count) = channel_info%channel_wl_abs(i_coef)
+         end if
+      end do
 
-   call nc_write_array(netcdf_info%ncid_swrtm, 'sw_channel_abs_ids', &
-           netcdf_info%vid_sw_channel_abs_ids, dummy_lint_1dveca, &
-           1, 1, channel_info%nchannels_sw)
-   call nc_write_array(netcdf_info%ncid_swrtm, 'sw_channel_instr_ids', &
-           netcdf_info%vid_sw_channel_instr_ids, dummy_lint_1dvecb, &
-           1, 1, channel_info%nchannels_sw)
-   call nc_write_array(netcdf_info%ncid_swrtm, 'sw_channel_wvl', &
-           netcdf_info%vid_sw_channel_wvl, dummy_sreal_1dveca, &
-           1, 1, channel_info%nchannels_sw)
+      call nc_write_array(netcdf_info%ncid_swrtm, 'sw_channel_abs_ids', &
+              netcdf_info%vid_sw_channel_abs_ids, dummy_lint_1dveca, &
+              1, 1, channel_info%nchannels_sw)
+      call nc_write_array(netcdf_info%ncid_swrtm, 'sw_channel_instr_ids', &
+              netcdf_info%vid_sw_channel_instr_ids, dummy_lint_1dvecb, &
+              1, 1, channel_info%nchannels_sw)
+      call nc_write_array(netcdf_info%ncid_swrtm, 'sw_channel_wvl', &
+              netcdf_info%vid_sw_channel_wvl, dummy_sreal_1dveca, &
+              1, 1, channel_info%nchannels_sw)
 
-   deallocate(dummy_lint_1dveca)
-   deallocate(dummy_lint_1dvecb)
-!  deallocate(dummy_sreal_1dveca)
+      deallocate(dummy_lint_1dveca)
+      deallocate(dummy_lint_1dvecb)
+!     deallocate(dummy_sreal_1dveca)
+   end if
 
 
    ! Allocate input profile structures (coefs struct not required as addclouds
@@ -524,6 +527,9 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
       if (i_coef == 1) then
          ! Longwave
          nchan = channel_info%nchannels_lw
+
+         if (nchan .eq. 0) cycle
+
          allocate(input_chan(nchan))
          input_chan = channel_info%channel_ids_rttov_coef_lw
 
@@ -533,6 +539,9 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
       else
          ! Shortwave
          nchan = channel_info%nchannels_sw
+
+         if (nchan .eq. 0) cycle
+
          allocate(input_chan(nchan))
          input_chan = channel_info%channel_ids_rttov_coef_sw
 
@@ -667,7 +676,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                   transmission%tau_total(i_) = &
                      transmission%tau_total(i_) / exp(-tau_ray_p)
                enddo
-            endif
+            end if
 
             ! Reformat and write output to NCDF files
             if (i_coef == 1) then
@@ -699,9 +708,9 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
       deallocate(emis_atlas)
       deallocate(calcemis)
    end do
-
+if (channel_info%nchannels_sw .ne. 0) then
    deallocate(dummy_sreal_1dveca)
-
+end if
    call rttov_alloc_prof(stat, nprof, profiles, nlevels, opts, DEALLOC)
    deallocate(profiles)
 

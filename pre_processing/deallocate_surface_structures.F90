@@ -17,6 +17,7 @@
 ! 2014/08/10, GM: Changes related to new BRDF support.
 ! 2014/10/23, OS: added deallocation of nise_mask
 ! 2014/12/02, GM: Remove unused surface%albedo_chan and surface%emissivity_chan.
+! 2016/03/31, GM: Changes to support processing only SW or only LW channels.
 !
 ! $Id$
 !
@@ -24,24 +25,32 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine deallocate_surface_structures(surface,include_full_brdf)
+subroutine deallocate_surface_structures(surface,channel_info,include_full_brdf)
 
+   use channel_structures
    use preproc_constants
 
    implicit none
 
-   type(surface_s), intent(inout) :: surface
-   logical,         intent(in)    :: include_full_brdf
+   type(surface_s),      intent(inout) :: surface
+   type(channel_info_s), intent(in)    :: channel_info
+   logical,              intent(in)    :: include_full_brdf
 
-   deallocate(surface%albedo)
-   deallocate(surface%emissivity)
    deallocate(surface%nise_mask)
 
-   if (include_full_brdf) then
-      deallocate(surface%rho_0v)
-      deallocate(surface%rho_0d)
-      deallocate(surface%rho_dv)
-      deallocate(surface%rho_dd)
+   if (channel_info%nchannels_sw .ne. 0) then
+      deallocate(surface%albedo)
+
+      if (include_full_brdf) then
+         deallocate(surface%rho_0v)
+         deallocate(surface%rho_0d)
+         deallocate(surface%rho_dv)
+         deallocate(surface%rho_dd)
+      end if
+   end if
+
+   if (channel_info%nchannels_lw .ne. 0) then
+      deallocate(surface%emissivity)
    end if
 
 end subroutine deallocate_surface_structures
