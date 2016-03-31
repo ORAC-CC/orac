@@ -373,10 +373,10 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
 
 
       ! define 4-D variables
-      dimids_4d(1)=netcdf_info%dimid_lw_channels
+      dimids_4d(1)=netcdf_info%dimid_sw_channels
       dimids_4d(2)=netcdf_info%dimid_levels_sw
-      dimids_4d(3)=netcdf_info%dimid_x_lw
-      dimids_4d(4)=netcdf_info%dimid_y_lw
+      dimids_4d(3)=netcdf_info%dimid_x_sw
+      dimids_4d(4)=netcdf_info%dimid_y_sw
 
       ! define tac_sw
       call nc_def_var_float_packed_float( &
