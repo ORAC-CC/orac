@@ -506,8 +506,8 @@ contains
        end do
     end do
 
-
     deallocate(interp)
+
     !-- copy land use flag array to Surface TYPE array
     imager_pavolonis%SFCTYPE = imager_flags%LUSFLAG
 
@@ -1591,6 +1591,8 @@ contains
     end do i_loop2
 
     deallocate(skint)
+    deallocate(snow_depth)
+    deallocate(sea_ice_cover)
 
     ! =====================================================================
   end subroutine CLOUD_TYPE
