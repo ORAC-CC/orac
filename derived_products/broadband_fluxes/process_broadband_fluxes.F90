@@ -48,6 +48,7 @@
 !    humidity, LTS, FTH, & column ozone) to output file.
 ! 2016/02/19, MC: Fixed bug in reading time from input file name. Index is now based
 !    the last underscore in primary file instead of the word primary.
+! 2016/03/31, MC: Added time variable to output file.
 !
 ! $Id$
 !
@@ -142,6 +143,7 @@ program process_broadband_fluxes
    real, allocatable :: PHASE(:,:)  ! Cloud phase (xp,yp)
    real, allocatable :: CTT(:,:)  ! Cloud top temperature (xp,yp)
    real, allocatable :: CTP(:,:)  ! Cloud top pressure (xp,yp)
+   real, allocatable :: TIME(:,:)  ! Time of pixel in Julian Days (xp,yp)
 
    !Total Solar Irriadiance File
    real, allocatable :: TSI_tsi_true_earth(:) !TOTAL SOLAR IRRADIANCE AT EARTH-SUN DISTANCE
@@ -221,7 +223,7 @@ program process_broadband_fluxes
 
 
    !NETCDF Output geolocation data
-   real, allocatable :: lat_data(:,:), lon_data(:,:) !latitude & longitude
+   real, allocatable :: time_data(:,:),lat_data(:,:), lon_data(:,:) !latitude & longitude
 
    !NETCDF Output TOA & BOA radiation flux data
    real, allocatable :: toa_lwup(:,:) !TOA outgoing LW flux
@@ -468,8 +470,10 @@ program process_broadband_fluxes
     allocate(CTT(xN,yN))
     allocate(CTP(xN,yN))
     allocate(PHASE(xN,yN))
+    allocate(TIME(xN,yN))
 
     !Read primary data
+    call nc_read_array(ncid, "time", TIME, verbose)
     call nc_read_array(ncid, "lat", LAT, verbose)
     call nc_read_array(ncid, "lon", LON, verbose)
     call nc_read_array(ncid, "cot", COT, verbose)
@@ -643,6 +647,7 @@ program process_broadband_fluxes
    allocate(inO3(levdim_prtm))
 
    !Allocate OUTPUT variables
+   allocate(time_data(xN,yN))
    allocate(lat_data(xN,yN))
    allocate(lon_data(xN,yN))
    allocate(retrflag(xN,yN))
@@ -671,6 +676,7 @@ program process_broadband_fluxes
    allocate(colO3(xN,yN))
 
     !Fill OUTPUT with missing
+    time_data(:,:) = sint_fill_value
     lat_data(:,:) = sint_fill_value
     lon_data(:,:) = sint_fill_value
     retrflag(:,:) = byte_fill_value
@@ -912,8 +918,9 @@ call cpu_time(cpuStart)
         pxQ = inQ(mask_vres)
         pxO3 = inO3(mask_vres)
 
-        !surface temperature
-        pxts = pxT(NLS)
+        !skin temperature - currently bottom level as defined in
+        !rttov_driver.F90
+        pxts = inT_(levdim_prtm)
 
          !print*,'latitude: ',LAT(i,j)
          !print*,'longitude: ',LON(i,j)
@@ -979,8 +986,9 @@ call cpu_time(cpuStart)
          if(nanFlag == 0) then
           !netCDF output arrays
           !Observed
-          lat_data(i,j) = LAT(i,j)
-          lon_data(i,j) = LON(i,j)
+          time_data(i,j) = TIME(i,j)
+          lat_data(i,j)  = LAT(i,j)
+          lon_data(i,j)  = LON(i,j)
 
           toa_lwup(i,j) = pxtoalwup
           toa_swup(i,j) = pxtoaswup
@@ -1097,6 +1105,28 @@ end if
         write(*,*) 'ERROR: nf90_redef()'
         stop error_stop_code
       end if
+
+      !-------------------------------------------------------------------------
+      ! time
+      !-------------------------------------------------------------------------
+       call nc_def_var_double_packed_double( &
+               ncid, &
+               dims_var, &
+               'time', &
+               TIME_vid, &
+               verbose, &
+               long_name     = 'Time in Julian days', &
+               standard_name = 'Julian Days', &
+               fill_value    = dreal_fill_value, &
+               scale_factor  = real(1, dreal), &
+               add_offset    = real(0, dreal), &
+               valid_min     = real(MINVAL(time_data), dreal), &
+               valid_max     = real(MAXVAL(time_data), dreal), &
+               units         = 'days since -4712-01-01 12:00:00', &
+               deflate_level = deflate_lv, &
+               shuffle       = shuffle_flag)
+
+
 
       !-------------------------------------------------------------------------
       ! latitude
@@ -1619,6 +1649,9 @@ end if
 
 
      !write the array to the netcdf file
+     call nc_write_array(ncid,'time',TIME_vid,&
+             time_data(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+
      call nc_write_array(ncid,'lat',LAT_vid,&
              lat_data(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 

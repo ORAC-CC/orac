@@ -94,11 +94,10 @@ subroutine collocate_aerosol2cloud(anum,aLon,aLat,xdim,ydim,cLon,cLat,aID)
 !---------------------------------------------------------------------
 
    call cpu_time(start)
-   print*,ydim
+   print*,'COLLOCATING AEROSOL (10KM) TO CLOUD (1KM)'
    !Method 1 (~12 mins) (construct index based on each satellite row)
    do iY=11,ydim-11 !loop over each scanline
 !    do iY=13499,13501 !loop over each scanline
-    print*,iY
     !longitude minimum & maximum over across scan pixels
     lonmin=minval(cLon(:,iY-10:iY+10))
     lonmax=maxval(cLon(:,iY-10:iY+10))
