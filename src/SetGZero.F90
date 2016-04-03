@@ -62,10 +62,10 @@
 
 subroutine Set_GZero(Tau, Re, Ctrl, SPixel, SAD_LUT, GZero, status)
 
-   use Ctrl_def
-   use Int_Routines_def
-   use SAD_LUT_def
-   use SPixel_def
+   use Ctrl_m
+   use Int_Routines_m
+   use SAD_LUT_m
+   use SPixel_m
 
    implicit none
 
@@ -73,7 +73,7 @@ subroutine Set_GZero(Tau, Re, Ctrl, SPixel, SAD_LUT, GZero, status)
 
    real,            intent(in)  :: Tau
    real,            intent(in)  :: Re
-   type(CTRL_t),    intent(in)  :: Ctrl
+   type(Ctrl_t),    intent(in)  :: Ctrl
    type(SPixel_t),  intent(in)  :: SPixel
    type(SAD_LUT_t), intent(in)  :: SAD_LUT
    type(GZero_t),   intent(out) :: GZero

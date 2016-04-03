@@ -106,11 +106,11 @@
 
 subroutine X_MDAD(Ctrl, SAD_Chan, SPixel, index, X, status, Err)
 
-   use Ctrl_def
-   use ECP_Constants
-   use Int_Routines_def, only : find_in_array
-   use planck
-   use SAD_Chan_def
+   use Ctrl_m
+   use ECP_Constants_m
+   use Int_Routines_m, only : find_in_array
+   use planck_m
+   use SAD_Chan_m
 
    implicit none
 

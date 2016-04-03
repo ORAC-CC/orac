@@ -49,7 +49,7 @@
 !
 ! History:
 ! 2015/02/04, GM: Original version.
-! 2015/02/04, GM: Add support to use CTRL%ReChans.  See description in Ctrl.F90
+! 2015/02/04, GM: Add support to use Ctrl%ReChans.  See description in Ctrl.F90
 !    and default values set in ReadDriver.F90.
 ! 2015/03/11, GM: Remove check for missing r_e channels. It is valid not to
 !    have any.
@@ -69,16 +69,16 @@
 
 subroutine Get_Indexing(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
 
-   use CTRL_def
-   use Data_def
-   use ECP_Constants
-   use SAD_Chan_def
+   use Ctrl_m
+   use Data_m
+   use ECP_Constants_m
+   use SAD_Chan_m
 
    implicit none
 
    ! Define arguments
 
-   type(CTRL_t),     intent(in)    :: Ctrl
+   type(Ctrl_t),     intent(in)    :: Ctrl
    type(SAD_Chan_t), intent(in)    :: SAD_Chan(:)
    type(SPixel_t),   intent(inout) :: SPixel
    type(Data_t),     intent(in)    :: MSI_Data
@@ -221,13 +221,13 @@ end subroutine Get_Indexing
 !-------------------------------------------------------------------------------
 subroutine setup_indexes(Ctrl, SAD_Chan, SPixel, is_not_used_or_missing)
 
-   use CTRL_def
-   use Int_Routines_def, only : find_in_array
-   use SAD_Chan_def
+   use Ctrl_m
+   use Int_Routines_m, only : find_in_array
+   use SAD_Chan_m
 
    implicit none
 
-   type(CTRL_t),     intent(in)    :: Ctrl
+   type(Ctrl_t),     intent(in)    :: Ctrl
    type(SAD_Chan_t), intent(in)    :: SAD_Chan(Ctrl%Ind%Ny)
    type(SPixel_t),   intent(inout) :: SPixel
    logical,          intent(in)    :: is_not_used_or_missing(:)
@@ -362,15 +362,15 @@ end subroutine setup_indexes
 subroutine cloud_indexing_logic(Ctrl, SPixel, is_not_used_or_missing, &
                                 X, XJ, XI, status)
 
-   use CTRL_def
-   use ECP_Constants
-   use Int_Routines_def, only : find_in_array
+   use Ctrl_m
+   use ECP_Constants_m
+   use Int_Routines_m, only : find_in_array
 
    implicit none
 
    ! Define arguments
 
-   type(CTRL_t),   intent(in)    :: Ctrl
+   type(Ctrl_t),   intent(in)    :: Ctrl
    type(SPixel_t), intent(inout) :: SPixel
    logical,        intent(inout) :: is_not_used_or_missing(:)
    integer,        intent(out)   :: X(:)
@@ -529,15 +529,15 @@ end subroutine cloud_indexing_logic
 subroutine cloud_indexing_logic_night(Ctrl, SPixel, is_not_used_or_missing, &
                                       X, XJ, XI, status)
 
-   use CTRL_def
-   use ECP_Constants
-   use Int_Routines_def, only : find_in_array
+   use Ctrl_m
+   use ECP_Constants_m
+   use Int_Routines_m, only : find_in_array
 
    implicit none
 
    ! Define arguments
 
-   type(CTRL_t),   intent(in)    :: Ctrl
+   type(Ctrl_t),   intent(in)    :: Ctrl
    type(SPixel_t), intent(inout) :: SPixel
    logical,        intent(inout) :: is_not_used_or_missing(:)
    integer,        intent(out)   :: X(:)
@@ -626,16 +626,16 @@ end subroutine cloud_indexing_logic_night
 subroutine aer_indexing_logic(Ctrl, SAD_Chan, SPixel, is_not_used_or_missing, &
                               X, XJ, XI, status)
 
-   use CTRL_def
-   use ECP_Constants
-   use Int_Routines_def, only : find_in_array
-   use SAD_Chan_def
+   use Ctrl_m
+   use ECP_Constants_m
+   use Int_Routines_m, only : find_in_array
+   use SAD_Chan_m
 
    implicit none
 
    ! Define arguments
 
-   type(CTRL_t),     intent(in)    :: Ctrl
+   type(Ctrl_t),     intent(in)    :: Ctrl
    type(SAD_Chan_t), intent(in)    :: SAD_Chan(:)
    type(SPixel_t),   intent(inout) :: SPixel
    logical,          intent(inout) :: is_not_used_or_missing(:)
@@ -712,16 +712,16 @@ end subroutine aer_indexing_logic
 subroutine swan_indexing_logic(Ctrl, SAD_Chan, SPixel, is_not_used_or_missing, &
                               X, XJ, XI, status)
 
-   use CTRL_def
-   use ECP_Constants
-   use Int_Routines_def, only : find_in_array
-   use SAD_Chan_def
+   use Ctrl_m
+   use ECP_Constants_m
+   use Int_Routines_m, only : find_in_array
+   use SAD_Chan_m
 
    implicit none
 
    ! Define arguments
 
-   type(CTRL_t),     intent(in)    :: Ctrl
+   type(Ctrl_t),     intent(in)    :: Ctrl
    type(SAD_Chan_t), intent(in)    :: SAD_Chan(:)
    type(SPixel_t),   intent(inout) :: SPixel
    logical,          intent(inout) :: is_not_used_or_missing(:)
@@ -849,11 +849,11 @@ end subroutine swan_indexing_logic
 !-------------------------------------------------------------------------------
 subroutine Add_to_State_Vector(Ctrl, illum, index, X, ii_x, XJ, ii_xj, &
                                XI, ii_xi, active, ch_available)
-   use CTRL_def
+   use Ctrl_m
 
    implicit none
 
-   type(CTRL_t),      intent(in)    :: Ctrl
+   type(Ctrl_t),      intent(in)    :: Ctrl
    integer,           intent(in)    :: illum  ! Illumination condition to check
    integer,           intent(in)    :: index  ! State element to search for
    integer,           intent(inout) :: X(:)   ! Active state vector
@@ -915,12 +915,12 @@ end subroutine Add_to_State_Vector
 subroutine Identify_BRDF_Terms(Ctrl, illum, min_view, min_rho, &
                                is_not_used_or_missing, &
                                X, ii_x, XJ, ii_xj, XI, ii_xi, active)
-   use CTRL_def
-   use ECP_Constants, only : IRs, MaxRho_XX
+   use Ctrl_m
+   use ECP_Constants_m, only : IRs, MaxRho_XX
 
    implicit none
 
-   type(CTRL_t),      intent(in)    :: Ctrl
+   type(Ctrl_t),      intent(in)    :: Ctrl
    integer,           intent(in)    :: illum
    integer,           intent(in)    :: min_view
    integer,           intent(in)    :: min_rho

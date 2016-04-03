@@ -38,7 +38,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-module Read_SAD_def
+module Read_SAD_m
 
 implicit none
 
@@ -46,15 +46,15 @@ contains
 
 subroutine Read_SAD(Ctrl, SAD_Chan, SAD_LUT)
 
-   use CTRL_def
-   use ECP_Constants
-   use SAD_Chan_def
-   use SAD_LUT_def
+   use Ctrl_m
+   use ECP_Constants_m
+   use SAD_Chan_m
+   use SAD_LUT_m
 
    implicit none
 
    ! Argument declarations
-   type(CTRL_t),                   intent(inout) :: Ctrl
+   type(Ctrl_t),                   intent(inout) :: Ctrl
    type(SAD_Chan_t), dimension(:), intent(inout) :: SAD_Chan
    type(SAD_LUT_t),                intent(inout) :: SAD_LUT
 
@@ -68,4 +68,4 @@ subroutine Read_SAD(Ctrl, SAD_Chan, SAD_LUT)
 
 end subroutine Read_SAD
 
-end module Read_SAD_def
+end module Read_SAD_m

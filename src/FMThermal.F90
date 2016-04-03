@@ -36,7 +36,7 @@
 ! 2000/11/16, KS: original version
 ! 2000/11/21, KS: corrections
 ! 2000/11/24, KS: brought calculation of d_T up from R2T
-! 2001/01/19, AS: Use FM_Routines_def: contains interface definition for
+! 2001/01/19, AS: Use FM_Routines_m: contains interface definition for
 !    SetCRPThermal
 ! 2001/02/09, AS: Updating to match recent changes in arguments and change in
 !    call sequence. Using constants to select parts of BT and d_BT arrays
@@ -73,20 +73,20 @@
 subroutine FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_Chan, RTM_Pc, X, GZero, &
                       BT, d_BT, R, d_R, status)
 
-   use CTRL_def
-   use ECP_Constants
-   use GZero_def
-   use planck
-   use RTM_Pc_def
-   use SAD_Chan_def
-   use SAD_LUT_def
-   use SPixel_def
+   use Ctrl_m
+   use ECP_Constants_m
+   use GZero_m
+   use planck_m
+   use RTM_Pc_m
+   use SAD_Chan_m
+   use SAD_LUT_m
+   use SPixel_m
 
    implicit none
 
    ! Define arguments
 
-   type(CTRL_t),     intent(in)    :: Ctrl
+   type(Ctrl_t),     intent(in)    :: Ctrl
    type(SAD_LUT_t),  intent(in)    :: SAD_LUT
    type(SPixel_t),   intent(in)    :: SPixel
    type(SAD_Chan_t), intent(in)    :: SAD_Chan(:)

@@ -98,9 +98,9 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-module CTRL_def
+module Ctrl_m
 
-   use ECP_constants
+   use ECP_constants_m
    use orac_indexing, only: common_indices
 
    implicit none
@@ -207,7 +207,7 @@ module CTRL_def
    end type QC_t
 
    ! Main Ctrl structure.
-   type CTRL_t
+   type Ctrl_t
       ! Terms drawn from mandatory part of driver file and config file
       type(FID_t)            :: FID
       character(InstnameLen) :: InstName           ! Instrument name
@@ -269,7 +269,7 @@ module CTRL_def
       logical                :: do_CTX_correction
       real                   :: CTP_correction_limit
 
-      ! State vector selection methods (see Selm variables in ECP_constants)
+      ! State vector selection methods (see Selm variables in ECP_constants_m)
       integer                :: Ap(MaxStateVar,MaxIllum) ! A Priori options
       integer                :: Fg(MaxStateVar,MaxIllum) ! First-guess options
 
@@ -285,10 +285,10 @@ module CTRL_def
       integer                :: X(MaxStateVar,MaxIllum)  ! State vector elements
                                                          !   to be retrieved
       integer                :: XJ(MaxStateVar,MaxIllum) ! " included in Jacobian
-   end type CTRL_t
+   end type Ctrl_t
 
 contains
 
 #include "DeallocCtrl.F90"
 
-end module CTRL_def
+end module Ctrl_m

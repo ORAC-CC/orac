@@ -86,7 +86,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-module ECP_constants
+module ECP_constants_m
 
    use common_constants
 
@@ -421,4 +421,4 @@ module ECP_constants
    ! Shuffling to improve compression
    logical, parameter :: shuffle_flag  = .False.
 
-end module ECP_constants
+end module ECP_constants_m

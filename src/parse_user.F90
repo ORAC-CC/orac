@@ -14,7 +14,7 @@
 ! $Id$
 !-------------------------------------------------------------------------------
 
-module parse_user
+module parse_user_m
    use parsing
 
    implicit none
@@ -127,4 +127,4 @@ contains
 #undef PARSE_ARRAY_INDEX_NAME_2D
 #undef PARSE_STRING_TYPE
 
-end module parse_user
+end module parse_user_m

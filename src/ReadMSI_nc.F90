@@ -101,16 +101,16 @@
 
 subroutine Read_MSI_nc(Ctrl, MSI_Data, SAD_Chan)
 
-   use CTRL_def
-   use ECP_Constants
+   use Ctrl_m
+   use ECP_Constants_m
    use orac_ncdf
-   use SAD_Chan_def
+   use SAD_Chan_m
 
    implicit none
 
    ! Argument declarations
 
-   type(CTRL_t),     intent(inout) :: Ctrl
+   type(Ctrl_t),     intent(inout) :: Ctrl
    type(Data_t),     intent(inout) :: MSI_Data
    type(SAD_Chan_t), intent(inout) :: SAD_Chan(:)
 

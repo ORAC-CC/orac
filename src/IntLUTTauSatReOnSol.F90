@@ -64,10 +64,10 @@
 subroutine Int_LUT_TauSatReOnSol(F, NChans, Grid, GZero, Ctrl, FInt, FGrads, &
      iCRP, chan_to_ctrl_index, chan_to_spixel_index, status)
 
-   use CTRL_def
-   use GZero_def
-   use Int_Routines_def
-   use SAD_LUT_def
+   use Ctrl_m
+   use GZero_m
+   use Int_Routines_m
+   use SAD_LUT_m
 
    implicit none
 
@@ -81,7 +81,7 @@ subroutine Int_LUT_TauSatReOnSol(F, NChans, Grid, GZero, Ctrl, FInt, FGrads, &
    type(GZero_t),          intent(in)   :: GZero
                                            ! Struct containing "zero'th" grid
                                            ! points
-   type(CTRL_t),           intent(in)   :: Ctrl
+   type(Ctrl_t),           intent(in)   :: Ctrl
    real, dimension(:),     intent(out)  :: FInt
                                            ! Interpolated value of F at the
                                            ! required Tau, Re values, (1 value

@@ -31,7 +31,7 @@
 ! None known.
 !---------------------------------------------------------------------
 
-module Int_LUT_Routines_def
+module Int_LUT_Routines_m
 
    implicit none
 
@@ -84,14 +84,14 @@ contains
 subroutine Int_LUT_Common(Ctrl, NChans, iCRP, Grid, GZero, G, FInt, FGrads, &
    chan_to_ctrl_index, chan_to_spixel_index, status)
 
-   use CTRL_def
-   use GZero_def
-   use Int_Routines_def
-   use SAD_LUT_def
+   use Ctrl_m
+   use GZero_m
+   use Int_Routines_m
+   use SAD_LUT_m
 
    implicit none
 
-   type(CTRL_t),                      intent(in)  :: Ctrl
+   type(Ctrl_t),                      intent(in)  :: Ctrl
    integer,                           intent(in)  :: NChans
    integer,                           intent(in)  :: iCRP
    type(LUT_Grid_t),                  intent(in)  :: Grid
@@ -225,4 +225,4 @@ subroutine Int_LUT_Common(Ctrl, NChans, iCRP, Grid, GZero, G, FInt, FGrads, &
 
 end subroutine Int_LUT_Common
 
-end module Int_LUT_Routines_def
+end module Int_LUT_Routines_m

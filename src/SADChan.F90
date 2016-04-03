@@ -24,9 +24,9 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-module SAD_Chan_def
+module SAD_Chan_m
 
-   use ECP_constants
+   use ECP_constants_m
 
    implicit none
 
@@ -180,12 +180,12 @@ end function Find_Channel
 !-------------------------------------------------------------------------------
 subroutine create_sad_filename(Ctrl, chan_num, LUT_file, lut_name)
 
-   use CTRL_def
+   use Ctrl_m
 
    implicit none
 
    ! Argument declarations
-   type(CTRL_t),           intent(in)  :: Ctrl
+   type(Ctrl_t),           intent(in)  :: Ctrl
    character(*),           intent(in)  :: chan_num
    character(*),           intent(out) :: LUT_file
    character(*), optional, intent(in)  :: lut_name
@@ -215,4 +215,4 @@ end subroutine create_sad_filename
 
 #include "ReadSADChan.F90"
 
-end module SAD_Chan_def
+end module SAD_Chan_m

@@ -59,15 +59,15 @@
 
 subroutine Interpol_Solar(Ctrl, SPixel, Pc, RTM_Pc, status)
 
-   use CTRL_def
-   use RTM_Pc_def
-   use SPixel_def
+   use Ctrl_m
+   use RTM_Pc_m
+   use SPixel_m
 
    implicit none
 
    ! Define arguments
 
-   type(CTRL_t),   intent(in)    :: Ctrl
+   type(Ctrl_t),   intent(in)    :: Ctrl
    type(SPixel_t), intent(in)    :: SPixel
    real,           intent(in)    :: Pc
    type(RTM_Pc_t), intent(inout) :: RTM_Pc

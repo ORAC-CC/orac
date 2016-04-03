@@ -2,7 +2,7 @@
 ! Name: GZero.F90
 !
 ! Purpose:
-! Defines GZero_def module used to hold information about the nearest neighbour
+! Defines GZero_m module used to hold information about the nearest neighbour
 ! grid point array indices when interpolating Look-Up Tables in the ECP.
 !
 ! History:
@@ -26,7 +26,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-module GZero_def
+module GZero_m
 
    type GZero_t
       integer, pointer :: iT0(:,:), iT1(:,:)     ! Nearest neighbour indices for Tau value
@@ -59,8 +59,8 @@ contains
 
 subroutine Allocate_GZero(GZero, SPixel)
 
-   use ECP_Constants
-   use SPixel_def
+   use ECP_Constants_m
+   use SPixel_m
 
    implicit none
 
@@ -172,4 +172,4 @@ end subroutine Deallocate_GZero
 
 #include "SetGZero.F90"
 
-end module GZero_def
+end module GZero_m

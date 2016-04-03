@@ -13,7 +13,7 @@
 ! None known.
 !---------------------------------------------------------------------
 
-module Cholesky
+module Cholesky_m
 
    implicit none
 
@@ -26,4 +26,4 @@ contains
 #include "SolveCholeskyDC.F90"
 #include "SquareCholeskyDC.F90"
 
-end module Cholesky
+end module Cholesky_m

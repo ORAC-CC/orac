@@ -133,15 +133,15 @@
 
 subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
 
-   use Ctrl_def
-   use ECP_Constants
-   use GZero_def
-   use Interpol_Routines_def
-   use planck
-   use RTM_Pc_def
-   use SAD_Chan_def
-   use SAD_LUT_def
-   use SPixel_def
+   use Ctrl_m
+   use ECP_Constants_m
+   use GZero_m
+   use Interpol_Routines_m
+   use planck_m
+   use RTM_Pc_m
+   use SAD_Chan_m
+   use SAD_LUT_m
+   use SPixel_m
 
    implicit none
 

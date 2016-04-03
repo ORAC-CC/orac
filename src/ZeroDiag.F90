@@ -45,8 +45,8 @@
 
 subroutine Zero_Diag(Ctrl, Diag)
 
-   use Ctrl_def
-   use ECP_Constants
+   use Ctrl_m
+   use ECP_Constants_m
 
    implicit none
 

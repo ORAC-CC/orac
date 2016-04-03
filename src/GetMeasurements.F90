@@ -101,17 +101,17 @@
 
 subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
 
-   use CTRL_def
-   use Data_def
-   use ECP_Constants
-   use planck
-   use SAD_Chan_def
+   use Ctrl_m
+   use Data_m
+   use ECP_Constants_m
+   use planck_m
+   use SAD_Chan_m
 
    implicit none
 
    ! Define arguments
 
-   type(CTRL_t),     intent(in)    :: Ctrl
+   type(Ctrl_t),     intent(in)    :: Ctrl
    type(SAD_Chan_t), intent(in)    :: SAD_Chan(:)
    type(SPixel_t),   intent(inout) :: SPixel
    type(Data_t),     intent(in)    :: MSI_Data

@@ -20,9 +20,9 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-module prepare_output
+module prepare_output_m
 
-   use ECP_Constants
+   use ECP_Constants_m
 
    implicit none
 
@@ -130,7 +130,7 @@ end function string_description_of_state
 ! None known.
 !-------------------------------------------------------------------------------
 subroutine build_qc_flag_masks(Ctrl, str)
-   use Ctrl_def
+   use Ctrl_m
 
    implicit none
 
@@ -177,7 +177,7 @@ end subroutine build_qc_flag_masks
 ! None known.
 !-------------------------------------------------------------------------------
 subroutine build_qc_flag_meanings(Ctrl, str)
-   use Ctrl_def
+   use Ctrl_m
 
    implicit none
 
@@ -203,4 +203,4 @@ subroutine build_qc_flag_meanings(Ctrl, str)
 end subroutine build_qc_flag_meanings
 
 
-end module prepare_output
+end module prepare_output_m

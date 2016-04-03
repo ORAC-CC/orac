@@ -185,17 +185,17 @@
 
 subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
 
-   use Cholesky
-   use Ctrl_def
-   use Diag_def
-   use ECP_Constants
-   use FM_Routines_def
-   use GZero_def
-   use Int_LUT_Routines_def
-   use RTM_Pc_def
-   use SAD_Chan_def
-   use SAD_LUT_def
-   use SPixel_def
+   use Cholesky_m
+   use Ctrl_m
+   use Diag_m
+   use ECP_Constants_m
+   use FM_Routines_m
+   use GZero_m
+   use Int_LUT_Routines_m
+   use RTM_Pc_m
+   use SAD_Chan_m
+   use SAD_LUT_m
+   use SPixel_m
 
    implicit none
 

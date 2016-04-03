@@ -13,7 +13,7 @@
 ! None known.
 !---------------------------------------------------------------------
 
-module planck
+module planck_m
 
    implicit none
 
@@ -22,4 +22,4 @@ contains
 #include "T2R.F90"
 #include "R2T.F90"
 
-end module planck
+end module planck_m

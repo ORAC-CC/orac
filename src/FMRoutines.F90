@@ -25,9 +25,9 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-module FM_Routines_def
+module FM_Routines_m
 
-   use ECP_Constants
+   use ECP_Constants_m
 
    implicit none
 
@@ -52,4 +52,4 @@ contains
 #include "SetCRPSolar.F90"
 #include "SetCRPThermal.F90"
 
-end module FM_Routines_def
+end module FM_Routines_m

@@ -37,7 +37,7 @@
 
 subroutine Dealloc_RTM(Ctrl, RTM)
 
-   use Ctrl_def
+   use Ctrl_m
 
    implicit none
 

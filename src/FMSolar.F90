@@ -42,7 +42,7 @@
 ! 2000/11/07, KS: original version
 ! 2000/11/21, KS: added X structure (state vector)
 ! 2001/01/17, AS: Changed indexing of CRP arrays to use constants to reference
-!    the different LUT values (IRBd etc) Using FM_Routines_def: contains
+!    the different LUT values (IRBd etc) Using FM_Routines_m: contains
 !    interface definition for SetCRPSolar.
 ! 2001/01/23, AS: Added GZero argument, interface to SetCRPSolar changed.
 !    Updated CRP, d_CRP and Ref, d_Ref array indexing to use constants to pick
@@ -179,7 +179,7 @@ subroutine derivative_wrt_crp_parameter_brdf(SPixel, i_param, i_equation_form, &
    CRP, d_CRP, f, Tac_0v, Tbc_0, Tbc_v, Tbc_d, Tbc_0v, Tbc_0d, Tbc_dv, Tbc_dd, &
    Rs2, d_REF, a, b, c)
 
-   use SPixel_def
+   use SPixel_m
 
    implicit none
 
@@ -265,7 +265,7 @@ subroutine derivative_wrt_rho_parameters_brdf(SPixel, i_equation_form, CRP, f, &
    Tac_0v, Tbc_0, Tbc_v, Tbc_d, Tbc_0v, Tbc_0d, Tbc_dv, Tbc_dd, &
    rho_l,  d_REF, a, b, c)
 
-   use SPixel_def
+   use SPixel_m
 
    implicit none
 
@@ -325,18 +325,18 @@ end subroutine derivative_wrt_rho_parameters_brdf
 subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, REF, &
                     d_REF, status)
 
-   use CTRL_def
-   use ECP_Constants
-   use GZero_def
-   use RTM_Pc_def
-   use SAD_LUT_def
-   use SPixel_def
+   use Ctrl_m
+   use ECP_Constants_m
+   use GZero_m
+   use RTM_Pc_m
+   use SAD_LUT_m
+   use SPixel_m
 
    implicit none
 
    ! Define arguments
 
-   type(CTRL_t),    intent(in)    :: Ctrl
+   type(Ctrl_t),    intent(in)    :: Ctrl
    type(SAD_LUT_t), intent(in)    :: SAD_LUT
    type(SPixel_t),  intent(inout) :: SPixel
    type(RTM_Pc_t),  intent(in)    :: RTM_Pc

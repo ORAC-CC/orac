@@ -13,7 +13,7 @@
 ! None known.
 !---------------------------------------------------------------------
 
-module sad_util
+module sad_util_m
 
    implicit none
 
@@ -32,7 +32,7 @@ contains
 ! Arguments:
 ! Name     Type    In/Out/Both Description
 ! ------------------------------------------------------------------------------
-! Ctrl     struct  In          Control structure defined in Ctrl_def
+! Ctrl     struct  In          Control structure defined in Ctrl_m
 ! i_chan   integer In          Number of channel
 ! chan_num string  Out         String equivalent of channel number
 !
@@ -44,11 +44,11 @@ contains
 !-------------------------------------------------------------------------------
 subroutine make_sad_chan_num(Ctrl, i_chan, chan_num)
 
-   use CTRL_def
+   use Ctrl_m
 
    implicit none
 
-   type(CTRL_t),     intent(in)  :: Ctrl
+   type(Ctrl_t),     intent(in)  :: Ctrl
    integer,          intent(in)  :: i_chan
    character(len=*), intent(out) :: chan_num
 
@@ -77,4 +77,4 @@ subroutine make_sad_chan_num(Ctrl, i_chan, chan_num)
 
 end subroutine make_sad_chan_num
 
-end module sad_util
+end module sad_util_m

@@ -26,11 +26,11 @@
 function get_corrected_bt(Ctrl, SPixel, SAD_Chan, RTM_Pc, i_spixel_y_thermal, Y) &
          result(bt)
 
-   use Ctrl_def
-   use RTM_Pc_def
-   use SAD_Chan_def
-   use SPixel_def
-   use planck
+   use Ctrl_m
+   use RTM_Pc_m
+   use SAD_Chan_m
+   use SPixel_m
+   use planck_m
 
    implicit none
 
@@ -66,22 +66,21 @@ end function get_corrected_bt
 
 subroutine Calc_Corrected_CTX(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Sy)
 
-   use CTRL_def
-   use ECP_Constants
-   use GZero_def
-   use Int_Routines_def
-   use Int_LUT_Routines_def
-   use planck
-   use RTM_Pc_def
-   use SAD_Chan_def
-   use SAD_LUT_def
-   use SPixel_def
+   use Ctrl_m
+   use ECP_Constants_m
+   use GZero_m
+   use Int_Routines_m
+   use Int_LUT_Routines_m
+   use RTM_Pc_m
+   use SAD_Chan_m
+   use SAD_LUT_m
+   use SPixel_m
 
    implicit none
 
    ! Argument declarations
 
-   type(CTRL_t),     intent(in)    :: Ctrl
+   type(Ctrl_t),     intent(in)    :: Ctrl
    type(SPixel_t),   intent(inout) :: SPixel
    type(SAD_Chan_t), intent(in)    :: SAD_Chan(:)
    type(SAD_LUT_t),  intent(in)    :: SAD_LUT

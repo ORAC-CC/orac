@@ -55,16 +55,16 @@
 subroutine prepare_output_secondary(Ctrl, i, j, MSI_Data, SPixel, Diag, &
                                     output_data)
 
-   use CTRL_def
-   use Data_def
-   use Diag_def
+   use Ctrl_m
+   use Data_m
+   use Diag_m
    use orac_ncdf
    use orac_output
-   use SPixel_def
+   use SPixel_m
 
    implicit none
 
-   type(CTRL_t),                intent(in)    :: Ctrl
+   type(Ctrl_t),                intent(in)    :: Ctrl
    integer,                     intent(in)    :: i, j
    type(Data_t),                intent(in)    :: MSI_Data
    type(SPixel_t),              intent(in)    :: SPixel

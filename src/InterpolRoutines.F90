@@ -2,7 +2,7 @@
 ! Name: InterpolRoutines.F90
 !
 ! Purpose:
-! Defines Interpol_Routines_def module, which wraps the various FM interpolation
+! Defines Interpol_Routines_m module, which wraps the various FM interpolation
 ! routines.
 !
 ! History:
@@ -15,7 +15,7 @@
 ! None known.
 !---------------------------------------------------------------------
 
-module Interpol_Routines_def
+module Interpol_Routines_m
 
    implicit none
 
@@ -60,11 +60,11 @@ contains
 !-------------------------------------------------------------------------------
 subroutine find_Pc(Ctrl, Np, P, Pc, i_Pc, status)
 
-   use CTRL_def
+   use Ctrl_m
 
    implicit none
 
-   type(CTRL_t), intent(in)  :: Ctrl
+   type(Ctrl_t), intent(in)  :: Ctrl
    integer,      intent(in)  :: Np
    real,         intent(in)  :: P(:)
    real,         intent(in)  :: Pc
@@ -110,4 +110,4 @@ subroutine find_Pc(Ctrl, Np, P, Pc, i_Pc, status)
 
 end subroutine find_Pc
 
-end module Interpol_Routines_def
+end module Interpol_Routines_m

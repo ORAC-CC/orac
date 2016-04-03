@@ -47,7 +47,7 @@
 
 subroutine linint(y,x1l,x1u,x2l,x2u,x1,x2,ansy,ansy1,ansy2)
 
-   use ECP_Constants
+   use ECP_Constants_m
 
    implicit none
 

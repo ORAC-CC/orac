@@ -78,15 +78,15 @@
 
 subroutine Get_Geometry(Ctrl, SPixel, MSI_Data, status)
 
-   use CTRL_def
-   use Data_def
-   use ECP_Constants
+   use Ctrl_m
+   use Data_m
+   use ECP_Constants_m
 
    implicit none
 
    ! Define arguments
 
-   type(CTRL_t),   intent(in)    :: Ctrl
+   type(Ctrl_t),   intent(in)    :: Ctrl
    type(SPixel_t), intent(inout) :: SPixel
    type(Data_t),   intent(in)    :: MSI_Data
    integer,        intent(out)   :: status

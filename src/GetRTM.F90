@@ -43,10 +43,10 @@
 
 subroutine Get_RTM(Ctrl, SAD_Chan, RTM, SPixel, status)
 
-   use Ctrl_def
-   use ECP_Constants
-   use RTM_def
-   use SAD_Chan_def
+   use Ctrl_m
+   use ECP_Constants_m
+   use RTM_m
+   use SAD_Chan_m
 
    implicit none
 

@@ -197,18 +197,18 @@
 
 subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
 
-   use CTRL_def
-   use Data_def
-   use ECP_Constants
-   use Int_Routines_def, only : find_in_array
-   use RTM_def
-   use SAD_Chan_def
+   use Ctrl_m
+   use Data_m
+   use ECP_Constants_m
+   use Int_Routines_m, only : find_in_array
+   use RTM_m
+   use SAD_Chan_m
 
    implicit none
 
    ! Define arguments
 
-   type(CTRL_t),        intent(in)    :: Ctrl
+   type(Ctrl_t),        intent(in)    :: Ctrl
    type(SAD_Chan_t),    intent(in)    :: SAD_Chan(:)
    type(Data_t),        intent(in)    :: MSI_Data
    type(RTM_t),         intent(in)    :: RTM

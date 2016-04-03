@@ -15,7 +15,7 @@
 ! None known.
 !---------------------------------------------------------------------
 
-module Int_Routines_def
+module Int_Routines_m
    use common_constants, only: sint, lint, sreal, dreal
 
    implicit none
@@ -93,4 +93,4 @@ contains
 #undef FIND_IN_ARRAY_TYPE
 #undef FIND_IN_ARRAY_KIND
 
-end module Int_Routines_def
+end module Int_Routines_m

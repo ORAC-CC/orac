@@ -382,13 +382,13 @@ end subroutine read_values_5d
 !-------------------------------------------------------------------------------
 subroutine Read_LUT(Ctrl, LUT_file, i_chan, SAD_LUT, i_lut, name, values)
 
-   use Ctrl_def
-   use ECP_Constants
+   use Ctrl_m
+   use ECP_Constants_m
 
    implicit none
 
    ! Argument declarations
-   type(CTRL_t),    intent(in)    :: Ctrl
+   type(Ctrl_t),    intent(in)    :: Ctrl
    character(*),    intent(in)    :: LUT_file
    integer,         intent(in)    :: i_chan
    type(SAD_LUT_t), intent(inout) :: SAD_LUT
@@ -449,13 +449,13 @@ end subroutine Read_LUT
 subroutine Read_LUT_sat(Ctrl, LUT_file, i_chan, SAD_LUT, i_lut, name, &
                         values, i_lut2, name2, values2)
 
-   use Ctrl_def
-   use ECP_Constants
+   use Ctrl_m
+   use ECP_Constants_m
 
    implicit none
 
    ! Argument declarations
-   type(CTRL_t),    intent(in)              :: Ctrl
+   type(Ctrl_t),    intent(in)              :: Ctrl
    character(*),    intent(in)              :: LUT_file
    integer,         intent(in)              :: i_chan
    type(SAD_LUT_t), intent(inout)           :: SAD_LUT
@@ -533,13 +533,13 @@ end subroutine Read_LUT_sat
 subroutine Read_LUT_sol(Ctrl, LUT_file, i_chan, SAD_LUT, i_lut, name, &
                         values, i_lut2, name2, values2)
 
-   use Ctrl_def
-   use ECP_Constants
+   use Ctrl_m
+   use ECP_Constants_m
 
    implicit none
 
    ! Argument declarations
-   type(CTRL_t),    intent(in)              :: Ctrl
+   type(Ctrl_t),    intent(in)              :: Ctrl
    character(*),    intent(in)              :: LUT_file
    integer,         intent(in)              :: i_chan
    type(SAD_LUT_t), intent(inout)           :: SAD_LUT
@@ -618,13 +618,13 @@ end subroutine Read_LUT_sol
 subroutine Read_LUT_both(Ctrl, LUT_file, i_chan, SAD_LUT, i_lut, name, &
                          values, i_lut2, name2, values2)
 
-   use Ctrl_def
-   use ECP_Constants
+   use Ctrl_m
+   use ECP_Constants_m
 
    implicit none
 
    ! Argument declarations
-   type(CTRL_t),    intent(in)              :: Ctrl
+   type(Ctrl_t),    intent(in)              :: Ctrl
    character(*),    intent(in)              :: LUT_file
    integer,         intent(in)              :: i_chan
    type(SAD_LUT_t), intent(inout)           :: SAD_LUT
@@ -740,7 +740,7 @@ end subroutine Read_LUT_both
 ! 2015/01/09, CP: Added Rfbd.
 ! 2015/01/19, GM: Use make_sad_chan_num().
 ! 2015/08/21, AP: Generalised MS NOAA7/9 fix, moving create_lut_filename into
-!    SAD_Chan_def and renaming it create_sad_filename.
+!    SAD_Chan_m and renaming it create_sad_filename.
 ! 2015/09/07, AP: Allow verbose to be controlled from the driver file.
 ! 2015/10/19, GM: Added support to read the Bext LUT for Ctrl%do_CTP_correction.
 !
@@ -749,15 +749,15 @@ end subroutine Read_LUT_both
 !-------------------------------------------------------------------------------
 subroutine Read_SAD_LUT(Ctrl, SAD_Chan, SAD_LUT)
 
-   use CTRL_def
-   use SAD_Chan_def
-   use sad_util
+   use Ctrl_m
+   use SAD_Chan_m
+   use sad_util_m
 
    implicit none
 
    ! Argument declarations
 
-   type(CTRL_t),                   intent(in)    :: Ctrl
+   type(Ctrl_t),                   intent(in)    :: Ctrl
    type(SAD_Chan_t), dimension(:), intent(in)    :: SAD_Chan
    type(SAD_LUT_t),                intent(inout) :: SAD_LUT
 

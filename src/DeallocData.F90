@@ -39,7 +39,7 @@
 
 subroutine Dealloc_Data(Ctrl, MSI_Data)
 
-   use Ctrl_def
+   use Ctrl_m
 
    implicit none
 

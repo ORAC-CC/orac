@@ -41,8 +41,8 @@
 
 subroutine X_SDAD(Ctrl, SPixel, index, X, status, Err)
 
-   use ECP_Constants
-   use Ctrl_def
+   use ECP_Constants_m
+   use Ctrl_m
 
    implicit none
 

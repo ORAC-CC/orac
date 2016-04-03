@@ -13,7 +13,7 @@
 ! None known.
 !---------------------------------------------------------------------
 
-module read_utils
+module read_utils_m
 
    implicit none
 
@@ -22,4 +22,4 @@ contains
 #include "read_config_file.F90"
 #include "read_input_dimensions.F90"
 
-end module read_utils
+end module read_utils_m

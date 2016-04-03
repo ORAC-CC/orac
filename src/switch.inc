@@ -2,8 +2,8 @@ function SWITCH_NAME(Approach, Default, &
      Cld, CldWat, CldIce, &
      Aer, AerOx, AerSw, &
      AshEyj) result(out)
-   use ECP_constants, ApCldWat => CldWat, ApCldIce => CldIce, &
-                      ApAerSw  => AerSw,  ApAerOx  => AerOx, ApAshEyj => AshEyj
+   use ECP_constants_m, ApCldWat => CldWat, ApCldIce => CldIce, &
+                        ApAerSw  => AerSw,  ApAerOx  => AerOx, ApAshEyj => AshEyj
 
    implicit none
 

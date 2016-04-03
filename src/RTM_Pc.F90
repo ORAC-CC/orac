@@ -2,7 +2,7 @@
 ! Name: RTM_Pc.F90
 !
 ! Purpose:
-! Defines the RTM_Pc_def module. This structure holds radiance and long and
+! Defines the RTM_Pc_m module. This structure holds radiance and long and
 ! short wave transmittance terms used in the forward model subroutines.
 !
 ! History:
@@ -30,7 +30,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-module RTM_Pc_def
+module RTM_Pc_m
 
    ! Some variables appear in both the LW and SW structures, and are duplicated
    ! in the top-level struct to give a set of values for all channels. Others
@@ -77,4 +77,4 @@ contains
 #include "AllocRTMPc.F90"
 #include "DeallocRTMPc.F90"
 
-end module RTM_Pc_def
+end module RTM_Pc_m

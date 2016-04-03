@@ -72,17 +72,17 @@
 subroutine prepare_output_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
                                   output_data)
 
-   use CTRL_def
-   use Data_def
-   use Diag_def
+   use Ctrl_m
+   use Data_m
+   use Diag_m
    use orac_ncdf
    use orac_output
-   use RTM_Pc_def
-   use SPixel_def
+   use RTM_Pc_m
+   use SPixel_m
 
    implicit none
 
-   type(CTRL_t),              intent(in)    :: Ctrl
+   type(Ctrl_t),              intent(in)    :: Ctrl
    integer,                   intent(in)    :: i, j
    type(Data_t),              intent(in)    :: MSI_Data
    type(RTM_Pc_t),            intent(in)    :: RTM_Pc

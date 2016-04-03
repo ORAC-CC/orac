@@ -31,13 +31,13 @@
 
 subroutine sabotage_inputs(Ctrl, MSI_Data)
 
-   use CTRL_def
+   use Ctrl_m
 
    implicit none
 
    ! Define arguments
 
-   type(CTRL_t), intent(in)    :: Ctrl
+   type(Ctrl_t), intent(in)    :: Ctrl
    type(Data_t), intent(inout) :: MSI_Data
 
    ! Local variables

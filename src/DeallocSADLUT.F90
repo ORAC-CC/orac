@@ -101,7 +101,7 @@ end subroutine Dealloc_LUT_Grid
 !-------------------------------------------------------------------------------
 subroutine Dealloc_SAD_LUT(Ctrl, SAD_LUT)
 
-   use Ctrl_def
+   use Ctrl_m
 
    implicit none
 

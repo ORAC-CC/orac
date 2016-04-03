@@ -70,17 +70,17 @@
 
 subroutine Interpol_Solar_spline(Ctrl, SPixel, Pc, RTM_Pc, status)
 
-   use CTRL_def
-   use ECP_Constants
-   use Int_Routines_def
-   use RTM_Pc_def
-   use SPixel_def
+   use Ctrl_m
+   use ECP_Constants_m
+   use Int_Routines_m
+   use RTM_Pc_m
+   use SPixel_m
 
    implicit none
 
    ! Define arguments
 
-   type(CTRL_t),   intent(in)    :: Ctrl
+   type(Ctrl_t),   intent(in)    :: Ctrl
    type(SPixel_t), intent(in)    :: SPixel
    real,           intent(in)    :: Pc
    type(RTM_Pc_t), intent(inout) :: RTM_Pc

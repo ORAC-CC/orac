@@ -104,9 +104,9 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-module SPixel_def
+module SPixel_m
 
-   use ECP_Constants
+   use ECP_Constants_m
 
    implicit none
 
@@ -291,7 +291,7 @@ module SPixel_def
       real                :: CTT_corrected_uncertainty
       integer, pointer    :: spixel_y_to_ctrl_y_index(:)
                                           ! Map SPixel measurement index space to
-                                          !     CTRL   measurement index space
+                                          !     Ctrl   measurement index space
       integer, pointer    :: spixel_y_solar_to_ctrl_y_index(:)
       integer, pointer    :: spixel_y_thermal_to_ctrl_y_index(:)
       integer, pointer    :: spixel_y_solar_to_ctrl_y_solar_index(:)
@@ -326,7 +326,7 @@ contains
 ! None known.
 !-------------------------------------------------------------------------------
 function Calculate_ND(SAD_Chan, SPixel, nd, snow) result(status)
-   use SAD_Chan_def
+   use SAD_Chan_m
 
    implicit none
 
@@ -405,4 +405,4 @@ end function Calculate_ND
 #include "GetSPixel.F90"
 #include "IntCTP.F90"
 
-end module SPixel_def
+end module SPixel_m

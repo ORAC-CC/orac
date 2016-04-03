@@ -35,7 +35,7 @@
 !-------------------------------------------------------------------------------
 subroutine Alloc_LUT_Grid(Ctrl, LUT_Grid)
 
-   use Ctrl_def
+   use Ctrl_m
 
    implicit none
 
@@ -104,7 +104,7 @@ end subroutine Alloc_LUT_Grid
 !-------------------------------------------------------------------------------
 subroutine Alloc_SAD_LUT(Ctrl, SAD_LUT)
 
-   use Ctrl_def
+   use Ctrl_m
 
    implicit none
 

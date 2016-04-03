@@ -33,15 +33,15 @@
 
 subroutine Determine_Illum(Ctrl, MSI_Data)
 
-   use CTRL_def
-   use ECP_Constants
-   use Int_Routines_def, only : find_in_array
+   use Ctrl_m
+   use ECP_Constants_m
+   use Int_Routines_m, only : find_in_array
 
    implicit none
 
    ! Argument declarations
 
-   type(CTRL_t), intent(in)    :: Ctrl
+   type(Ctrl_t), intent(in)    :: Ctrl
    type(Data_t), intent(inout) :: MSI_Data
 
    ! Local variables

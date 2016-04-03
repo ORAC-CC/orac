@@ -64,11 +64,11 @@
 
 subroutine Int_CTP(SPixel, Ctrl, BT, CTP, status)
 
-   use Ctrl_def
-   use ECP_constants, only : g_wmo, XMDADBounds
-   use Int_Routines_def
-   use planck
-   use SAD_Chan_def
+   use Ctrl_m
+   use ECP_constants_m, only : g_wmo, XMDADBounds
+   use Int_Routines_m
+   use planck_m
+   use SAD_Chan_m
 
    implicit none
 

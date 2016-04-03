@@ -24,9 +24,9 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-module Diag_def
+module Diag_m
 
-   use ECP_constants
+   use ECP_constants_m
 
    implicit none
 
@@ -85,4 +85,4 @@ contains
 #include "ZeroDiag.F90"
 #include "SetDiag.F90"
 
-end module Diag_def
+end module Diag_m

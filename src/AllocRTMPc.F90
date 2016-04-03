@@ -51,7 +51,7 @@
 
 subroutine Alloc_RTM_Pc(Ctrl, RTM_Pc)
 
-   use Ctrl_def
+   use Ctrl_m
 
    implicit none
 

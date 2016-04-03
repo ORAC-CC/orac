@@ -44,7 +44,7 @@
 
 subroutine Dealloc_SPixel(Ctrl, SPixel)
 
-   use Ctrl_def
+   use Ctrl_m
 
    implicit none
 

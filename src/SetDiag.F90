@@ -71,10 +71,10 @@
 
 subroutine Set_Diag(Ctrl, SPixel, convergence, J, Jm, Ja, iter, Y, Sy, Diag)
 
-   use Ctrl_def
-   use ECP_Constants
-   use Int_Routines_def, only : find_in_array
-   use SPixel_def
+   use Ctrl_m
+   use ECP_Constants_m
+   use Int_Routines_m, only : find_in_array
+   use SPixel_m
 
    implicit none
 

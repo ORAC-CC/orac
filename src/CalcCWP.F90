@@ -36,15 +36,15 @@
 
 subroutine Calc_CWP(Ctrl, SPixel)
 
-   use CTRL_def
-   use ECP_Constants
-   use SPixel_def
+   use Ctrl_m
+   use ECP_Constants_m
+   use SPixel_m
 
    implicit none
 
    ! Argument declarations
 
-   type(CTRL_t),   intent(in)    :: Ctrl
+   type(Ctrl_t),   intent(in)    :: Ctrl
    type(SPixel_t), intent(inout) :: SPixel
 
    ! Local variable declarations

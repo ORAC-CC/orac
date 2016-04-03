@@ -184,24 +184,24 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 
    ! Modules used by this program.
 
-   use CTRL_def
-   use Data_def
-   use Diag_def
-   use ECP_Constants
-   use Inversion
+   use Ctrl_m
+   use Data_m
+   use Diag_m
+   use ECP_Constants_m
+   use Inversion_m
    use omp_lib
    use orac_indexing
    use orac_ncdf
    use orac_output
-   use prepare_output
+   use prepare_output_m
    use read_driver_m
-   use Read_SAD_def
-   use read_utils
-   use RTM_def
-   use RTM_Pc_def
-   use SAD_Chan_def
-   use SAD_LUT_def
-   use SPixel_def
+   use Read_SAD_m
+   use read_utils_m
+   use RTM_m
+   use RTM_Pc_m
+   use SAD_Chan_m
+   use SAD_LUT_m
+   use SPixel_m
    use global_attributes
    use source_attributes
 
@@ -211,7 +211,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 
    type(global_attributes_s) :: global_atts
    type(source_attributes_s) :: source_atts
-   type(CTRL_t)              :: Ctrl
+   type(Ctrl_t)              :: Ctrl
    type(Data_t)              :: MSI_Data
    type(Diag_t)              :: Diag ! Diagnostic struct returned by Invert_Marquardt
    type(RTM_t)               :: RTM

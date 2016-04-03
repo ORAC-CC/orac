@@ -1,7 +1,7 @@
 recursive integer function PARSE_STRING_NAME_0D(in, out, ch_ids) result(status)
    use constants_cloud_typing_pavolonis
-   use Int_Routines_def, only : find_in_array
-   use ECP_Constants
+   use Int_Routines_m, only : find_in_array
+   use ECP_Constants_m
 
    implicit none
 

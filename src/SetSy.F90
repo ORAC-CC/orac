@@ -44,8 +44,8 @@
 
 subroutine Set_Sy(Ctrl, SPixel, Kj, Sj, Sy)
 
-   use Ctrl_def
-   use SPixel_def
+   use Ctrl_m
+   use SPixel_m
 
    implicit none
 

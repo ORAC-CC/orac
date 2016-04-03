@@ -24,7 +24,7 @@
 ! Arguments:
 ! Name      Type   In/Out/Both     Description
 ! ------------------------------------------------------------------------------
-! Ctrl      struct In              Control structure defined in Ctrl_def
+! Ctrl      struct In              Control structure defined in Ctrl_m
 ! SAD_Chan  array of structs (out) Channel description info.
 !
 ! History:
@@ -81,9 +81,9 @@
 
 subroutine Read_SAD_Chan(Ctrl, SAD_Chan)
 
-   use Ctrl_def
-   use ECP_Constants
-   use sad_util
+   use Ctrl_m
+   use ECP_Constants_m
+   use sad_util_m
 
    implicit none
 

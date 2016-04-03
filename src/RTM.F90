@@ -38,7 +38,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-module RTM_def
+module RTM_m
 
    type RTM_Grid_t
       real(8)          :: Lat0             ! Starting latitude
@@ -105,4 +105,4 @@ contains
 #include "ReadSwRTM_nc.F90"
 #include "ReadLwRTM_nc.F90"
 
-end module RTM_def
+end module RTM_m

@@ -76,19 +76,19 @@
 
 subroutine Interpol_Thermal_spline(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
 
-   use CTRL_def
-   use ECP_Constants
-   use Int_Routines_def
-   use planck
-   use RTM_Pc_def
-   use SAD_Chan_def
-   use SPixel_def
+   use Ctrl_m
+   use ECP_Constants_m
+   use Int_Routines_m
+   use planck_m
+   use RTM_Pc_m
+   use SAD_Chan_m
+   use SPixel_m
 
    implicit none
 
    ! Define arguments
 
-   type(CTRL_t),     intent(in)    :: Ctrl
+   type(Ctrl_t),     intent(in)    :: Ctrl
    type(SPixel_t),   intent(in)    :: SPixel
    type(SAD_Chan_t), intent(in)    :: SAD_Chan(:)
    type(RTM_Pc_t),   intent(inout) :: RTM_Pc

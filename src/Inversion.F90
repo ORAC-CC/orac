@@ -13,7 +13,7 @@
 ! None known.
 !---------------------------------------------------------------------
 
-module Inversion
+module Inversion_m
 
    implicit none
 
@@ -27,4 +27,4 @@ contains
 #include "SetLimits.F90"
 #include "SetSy.F90"
 
-end module Inversion
+end module Inversion_m

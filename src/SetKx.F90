@@ -40,9 +40,9 @@
 
 subroutine Set_Kx(Ctrl, SPixel, dY_dX, Kx, Kj)
 
-   use Ctrl_def
-   use ECP_Constants
-   use SPixel_def
+   use Ctrl_m
+   use ECP_Constants_m
+   use SPixel_m
 
    implicit none
 

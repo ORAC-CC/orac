@@ -71,15 +71,15 @@
 
 subroutine Read_ALB_nc(Ctrl, MSI_Data)
 
-   use CTRL_def
-   use ECP_Constants
+   use Ctrl_m
+   use ECP_Constants_m
    use orac_ncdf
-   use SAD_Chan_def
+   use SAD_Chan_m
 
    implicit none
 
    ! Argument declarations
-   type(CTRL_t), intent(in)    :: Ctrl
+   type(Ctrl_t), intent(in)    :: Ctrl
    type(Data_t), intent(inout) :: MSI_Data
 
    integer                     :: ncid, i, j, k, ind

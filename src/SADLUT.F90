@@ -24,9 +24,9 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-module SAD_LUT_def
+module SAD_LUT_m
 
-   use ECP_Constants
+   use ECP_Constants_m
 
    private
 
@@ -139,4 +139,4 @@ contains
 #include "AllocSADLUT.F90"
 #include "DeallocSADLUT.F90"
 
-end module SAD_LUT_def
+end module SAD_LUT_m

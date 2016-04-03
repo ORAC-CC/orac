@@ -42,10 +42,10 @@
 
 subroutine Check_Limits(X, SPixel, status)
 
-   use Ctrl_def
-   use ECP_Constants
-   use RTM_Pc_def
-   use SPixel_def
+   use Ctrl_m
+   use ECP_Constants_m
+   use RTM_Pc_m
+   use SPixel_m
 
    implicit none
 

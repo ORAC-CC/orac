@@ -74,9 +74,9 @@
 
 subroutine Alloc_SPixel(Ctrl, RTM, SPixel)
 
-   use Ctrl_def
-   use ECP_Constants
-   use RTM_def
+   use Ctrl_m
+   use ECP_Constants_m
+   use RTM_m
 
    implicit none
 

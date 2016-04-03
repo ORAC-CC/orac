@@ -51,14 +51,14 @@
 
 subroutine Read_Location_nc(Ctrl, MSI_Data)
 
-   use CTRL_def
+   use Ctrl_m
    use orac_ncdf
 
    implicit none
 
    ! Argument declarations
 
-   type(CTRL_t), intent(in)    :: Ctrl
+   type(Ctrl_t), intent(in)    :: Ctrl
    type(Data_t), intent(inout) :: MSI_Data
 
    integer :: ncid

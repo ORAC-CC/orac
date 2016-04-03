@@ -42,14 +42,14 @@ subroutine Read_Data_nc(Ctrl, MSI_Data, SAD_Chan)
 
    use netcdf
 
-   use CTRL_def
-   use SAD_Chan_def
+   use Ctrl_m
+   use SAD_Chan_m
 
    implicit none
 
    ! Define arguments
 
-   type(CTRL_t),     intent(inout) :: Ctrl
+   type(Ctrl_t),     intent(inout) :: Ctrl
    type(Data_t),     intent(inout) :: MSI_Data
    type(SAD_Chan_t), intent(inout) :: SAD_Chan(:)
 

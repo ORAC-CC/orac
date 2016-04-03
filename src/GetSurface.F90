@@ -139,15 +139,15 @@
 
 subroutine Get_Surface(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
 
-   use CTRL_def
-   use Data_def
-   use ECP_Constants
-   use SAD_Chan_def
+   use Ctrl_m
+   use Data_m
+   use ECP_Constants_m
+   use SAD_Chan_m
 
    implicit none
 
    ! Define arguments
-   type(CTRL_t),     intent(in)    :: Ctrl
+   type(Ctrl_t),     intent(in)    :: Ctrl
    type(SAD_Chan_t), intent(in)    :: SAD_Chan(:)
    type(SPixel_t),   intent(inout) :: SPixel
    type(Data_t),     intent(in)    :: MSI_Data
@@ -483,14 +483,14 @@ end subroutine Get_Surface
 ! None known.
 !-------------------------------------------------------------------------------
 subroutine Get_Surface_Swansea(Ctrl, SPixel)
-   use CTRL_def
-   use ECP_Constants
+   use Ctrl_m
+   use ECP_Constants_m
 
    implicit none
 
    ! Define arguments
 
-   type(CTRL_t),   intent(in)    :: Ctrl
+   type(Ctrl_t),   intent(in)    :: Ctrl
    type(SPixel_t), intent(inout) :: SPixel
 
    ! Define local variables

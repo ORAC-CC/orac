@@ -7,7 +7,7 @@
 !
 ! Description and Algorithm details:
 ! Reads the values from the "driver" file used to set run-time options into
-! the CTRL structure. Settings beyond the typical can be overriden in the
+! the Ctrl structure. Settings beyond the typical can be overriden in the
 ! driver using lines such as,
 !    Ctrl%Run_ID = ABCD
 ! The variable to change is identified before an = sign (with structure
@@ -18,7 +18,7 @@
 ! Arguments:
 ! Name        Type    In/Out/Both Description
 ! ------------------------------------------------------------------------------
-! Ctrl        struct  Out         Control struct defined in CTRL_def
+! Ctrl        struct  Out         Control struct defined in Ctrl_m
 ! global_atts struct  Both        Attributes for NCDF files
 ! source_atts struct  Both        Description of file inputs for NCDF files
 !
@@ -141,17 +141,17 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    use, intrinsic :: iso_fortran_env, only : input_unit
 
    use constants_cloud_typing_pavolonis
-   use CTRL_def
-   use ECP_constants
+   use Ctrl_m
+   use ECP_constants_m
    use global_attributes
-   use parse_user
-   use read_utils
+   use parse_user_m
+   use read_utils_m
    use source_attributes
 
    implicit none
 
    ! Argument declarations
-   type(CTRL_t),              intent(out)   :: Ctrl
+   type(Ctrl_t),              intent(out)   :: Ctrl
    type(global_attributes_s), intent(inout) :: global_atts
    type(source_attributes_s), intent(inout) :: source_atts
 #ifdef WRAPPER
@@ -295,11 +295,11 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       case('CTRL%APPROACH')
          if (parse_user_text(line, Ctrl%Approach) /= 0) call h_p_e(label)
       case('CTRL%DO_NEW_NIGHT_RETRIEVAL')
-         if (parse_string(line, Ctrl%do_new_night_retrieval)/= 0) call h_p_e(label)
+         if (parse_string(line, Ctrl%do_new_night_retrieval) /= 0) call h_p_e(label)
       case('CTRL%DO_CTX_CORRECTION')
-         if (parse_string(line, Ctrl%do_CTX_correction)/= 0) call h_p_e(label)
+         if (parse_string(line, Ctrl%do_CTX_correction) /= 0) call h_p_e(label)
       case('CTRL%VERBOSE')
-         if (parse_string(line, Ctrl%verbose)          /= 0) call h_p_e(label)
+         if (parse_string(line, Ctrl%verbose)           /= 0) call h_p_e(label)
       case default
          cycle
       end select
@@ -346,7 +346,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
          Ctrl%Ind%ICh(ii) = i ! Fortran array index for channel
          Ctrl%Ind%Y_ID(ii) = channel_ids_instr(i) ! Instrument channel number
 
-         ! Identify solar and thermal channels WITH RESPECT TO CTRL%IND%ICH
+         ! Identify solar and thermal channels WITH RESPECT TO Ctrl%IND%ICH
          if (channel_sw_flag(i) == 1) then
             i0 = i0+1
             Ctrl%Ind%YSolar(i0) = ii
@@ -393,7 +393,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
          Ctrl%Approach = AerOx
       else
          write(*,*) 'ERROR: Read_Driver(): Cannot determine retrieval '// &
-              'approach from LUTClass. Please set CTRL%APPROACH.'
+              'approach from LUTClass. Please set Ctrl%APPROACH.'
          stop error_stop_code
       end if
    end if
@@ -406,7 +406,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    !----------------------------------------------------------------------------
    Ctrl%Run_ID = 'none'
 
-   !----------------------- CTRL%RS -----------------------
+   !----------------------- Ctrl%RS -----------------------
    Ctrl%RS%RsSelm         = switch(a, Default=SelmAux)
    Ctrl%RS%SRsSelm        = switch(a, Default=SelmMeas, Aer=SelmCtrl)
    Ctrl%RS%use_full_brdf  = switch(a, Default=.true.,   AerSw=.false.)
@@ -444,12 +444,12 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%RS%Sb(:,ISea)  = switch(a, Default=0.2, AerOx=0.0)
    Ctrl%RS%Sb(:,ILand) = switch(a, Default=0.2, AerOx=2e-4)
 
-   !----------------------- CTRL%EqMPN --------------------
+   !----------------------- Ctrl%EqMPN --------------------
    Ctrl%EqMPN%SySelm = switch(a, Default=SelmAux, Aer=SelmMeas)
    Ctrl%EqMPN%Homog  = switch(a, Default=.true.,  Aer=.false.)
    Ctrl%EqMPN%Coreg  = switch(a, Default=.true.,  Aer=.false.)
 
-   !----------------------- CTRL%Invpar -------------------
+   !----------------------- Ctrl%Invpar -------------------
    Ctrl%Invpar%ConvTest           = switch(a, Default=.false., Aer=.true.)
    Ctrl%Invpar%MqStart            = switch(a, Default=0.001)
    Ctrl%Invpar%MqStep             = switch(a, Default=10.0)
@@ -499,7 +499,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%Invpar%XULim(IRs(:,IRho_DD))  = switch(a, Default=1.0)
    Ctrl%Invpar%XULim(ISP)             = switch(a, Default=100.0)
 
-   !----------------------- CTRL%QC -----------------------
+   !----------------------- Ctrl%QC -----------------------
    Ctrl%QC%MaxJ                 = switch(a, Default=100.0, Aer=4.0)
    Ctrl%QC%MaxS(ITau)           = switch(a, Default=0.08)
    Ctrl%QC%MaxS(IRe)            = switch(a, Default=3.0)
@@ -512,20 +512,20 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%QC%MaxS(IRs(:,IRho_DD)) = switch(a, Default=0.2)
    Ctrl%QC%MaxS(ISP)            = switch(a, Default=10.0)
 
-   !------------------- CTRL START/END POINT --------------
+   !------------------- Ctrl START/END POINT --------------
    ! Process entire file
    Ctrl%Ind%X0 = 0
    Ctrl%Ind%X1 = 0
    Ctrl%Ind%Y0 = 0
    Ctrl%Ind%Y1 = 0
 
-   !------------ CTRL ILLUMINATION CONDITIONS -------------
+   !------------ Ctrl ILLUMINATION CONDITIONS -------------
    Ctrl%MaxSolZen = 75. ! Maximum solar zenith angle
    Ctrl%MaxSatZen = 90. ! Maximum satellite zenith angle
    Ctrl%MinRelAzi = 0.  ! Used to remove sunglint (0 = no test)
    Ctrl%Sunset    = 90. ! Used to identify twilight conditions
 
-   !----------------------- CTRL SWITCHES -----------------
+   !----------------------- Ctrl SWITCHES -----------------
    Ctrl%i_equation_form = switch(a, Default=1, AerOx=2)
    Ctrl%LUTIntSelm      = switch(a, Default=LUTIntMethLinear)
    Ctrl%RTMIntSelm      = switch(a, Default=RTMIntMethLinear, Aer=RTMIntMethNone)
@@ -565,7 +565,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       Ctrl%Types_to_process    = [(i-1, i = 1, MaxTypes)]
    end if
 
-   !---------------- CTRL INDEXING CHANNELS ---------------
+   !---------------- Ctrl INDEXING CHANNELS ---------------
    ! See Ctrl.F90 for descriptions of the variables initialized below.
    Ctrl%Ind%Y_Id_legacy = 0
 
@@ -643,7 +643,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       Ctrl%ir_chans  = (/ 4, 9, 10 /)
    end if
 
-   !---------------- CTRL STATE VECTOR SELM ---------------
+   !---------------- Ctrl STATE VECTOR SELM ---------------
    ! Select the manner by which the a priori (AP) and first guess (FG) values
    ! are set before the retrieval.
    ! SelmCtrl) Use constant values prescribed in this routine.
@@ -664,7 +664,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%AP(ISP,:)            = switch(a, Default=SelmCtrl)
    ! NOTES: 1) The aerosol code used SelmSAD for Tau and Re, which drew the
    !    values from a separate driver file. This must now be managed by the
-   !    calling script setting CTRL%XB and X0, as that knows what the LUT is.
+   !    calling script setting Ctrl%XB and X0, as that knows what the LUT is.
    ! 2) Fr uses SelmMeas so the error is set to MDADErrF. Could be tidier.
 
    Ctrl%FG(ITau,:)           = switch(a, Default=SelmCtrl)
@@ -679,7 +679,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%FG(ISP,:)            = switch(a, Default=SelmCtrl)
    ! 3) Not sure why Fr is now SelmCtrl.
 
-   !----------- CTRL PRESCRIBED STATE VECTORS -------------
+   !----------- Ctrl PRESCRIBED STATE VECTORS -------------
    ! A priori values
    Ctrl%XB(ITau)           = switch(a, Default=0.8,   AerOx=-1.5,  AerSw=-0.3, &
                                                       AshEyj=0.18)
@@ -731,9 +731,9 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       end if
    end do
 
-   !------------- CTRL STATE VECTOR INDEXING --------------
+   !------------- Ctrl STATE VECTOR INDEXING --------------
    ! These arrays specify which variables should be retrieved in each
-   ! illumination condition (by the index of that variable; see ECP_constants).
+   ! illumination condition (by the index of that variable; see ECP_constants_m).
    X_Dy  = sint_fill_value
    X_Tw  = sint_fill_value
    X_Ni  = sint_fill_value
@@ -837,11 +837,11 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    do while (parse_driver(dri_lun, line, label) == 0)
       call clean_driver_label(label)
       select case (label)
-      case('CTRL%FID%DATA_DIR','CTRL%DATA_DIR')
+      case('CTRL%FID%DATA_DIR','Ctrl%DATA_DIR')
          if (parse_string(line, Ctrl%FID%Data_Dir)     /= 0) call h_p_e(label)
-      case('CTRL%FID%OUT_DIR','CTRL%OUT_DIR')
+      case('CTRL%FID%OUT_DIR','Ctrl%OUT_DIR')
          if (parse_string(line, Ctrl%FID%Out_Dir)      /= 0) call h_p_e(label)
-      case('CTRL%FID%SAD_DIR','CTRL%SAD_DIR')
+      case('CTRL%FID%SAD_DIR','Ctrl%SAD_DIR')
          if (parse_string(line, Ctrl%FID%SAD_Dir)      /= 0) call h_p_e(label)
       case('CTRL%FID%MSI')
          if (parse_string(line, Ctrl%FID%MSI)          /= 0) call h_p_e(label)
@@ -869,7 +869,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
          if (parse_string(line, Ctrl%FID%L2_secondary) /= 0) call h_p_e(label)
       case('CTRL%RUN_ID')
          if (parse_string(line, Ctrl%Run_ID)           /= 0) call h_p_e(label)
-      case('CTRL%RS%RSSELM','CTRL%RS%FLAG')
+      case('CTRL%RS%RSSELM','Ctrl%RS%FLAG')
          if (parse_user_text(line, Ctrl%RS%RsSelm)     /= 0) call h_p_e(label)
       case('CTRL%RS%SRSSELM')
          if (parse_user_text(line, Ctrl%RS%SRsSelm)    /= 0) call h_p_e(label)
@@ -942,9 +942,9 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
          if (parse_string(line, Ctrl%Sunset)           /= 0) call h_p_e(label)
       case('CTRL%I_EQUATION_FORM')
          if (parse_string(line, Ctrl%i_equation_form)  /= 0) call h_p_e(label)
-      case('CTRL%LUTINTSELM','CTRL%LUTINTFLAG')
+      case('CTRL%LUTINTSELM','Ctrl%LUTINTFLAG')
          if (parse_user_text(line, Ctrl%LUTIntSelm)    /= 0) call h_p_e(label)
-      case('CTRL%RTMINTSELM','CTRL%RTMINTFLAG')
+      case('CTRL%RTMINTSELM','Ctrl%RTMINTFLAG')
          if (parse_user_text(line, Ctrl%RTMIntSelm)    /= 0) call h_p_e(label)
       case('CTRL%CLOUDTYPE')
          if (parse_user_text(line, Ctrl%CloudType)     /= 0) call h_p_e(label)
@@ -979,19 +979,19 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
          if (parse_string(line, Ctrl%Sx)               /= 0) call h_p_e(label)
       case('CTRL%SY')
          if (parse_string(line, Ctrl%Sy)               /= 0) call h_p_e(label)
-      case('NX_DY','CTRL%NX_DY','CTRL%IND%NX_DY')
+      case('NX_DY','Ctrl%NX_DY','Ctrl%IND%NX_DY')
          if (parse_string(line, NX_DY)                 /= 0) call h_p_e(label)
-      case('X_DY','CTRL%X_DY','CTRL%IND%X_DY')
+      case('X_DY','Ctrl%X_DY','Ctrl%IND%X_DY')
          if (parse_user_text(line, X_DY, NX_DY, solar_ids) &
                                                        /= 0) call h_p_e(label)
-      case('NX_TW','CTRL%NX_TW','CTRL%IND%NX_TW')
+      case('NX_TW','Ctrl%NX_TW','Ctrl%IND%NX_TW')
          if (parse_string(line, NX_TW)                 /= 0) call h_p_e(label)
-      case('X_TW','CTRL%X_TW','CTRL%IND%X_TW')
+      case('X_TW','Ctrl%X_TW','Ctrl%IND%X_TW')
          if (parse_user_text(line, X_TW, NX_TW, solar_ids) &
                                                        /= 0) call h_p_e(label)
-      case('NX_NI','CTRL%NX_NI','CTRL%IND%NX_NI')
+      case('NX_NI','Ctrl%NX_NI','Ctrl%IND%NX_NI')
          if (parse_string(line, NX_NI)                 /= 0) call h_p_e(label)
-      case('X_NI','CTRL%X_NI','CTRL%IND%X_NI')
+      case('X_NI','Ctrl%X_NI','Ctrl%IND%X_NI')
          if (parse_user_text(line, X_NI, NX_NI, solar_ids) &
                                                        /= 0) call h_p_e(label)
       case('CTRL%NXJ_DY')
@@ -1200,7 +1200,7 @@ end subroutine Read_Driver
 ! handle_parse_error (h_p_e)
 subroutine h_p_e(label)
 
-   use ECP_constants
+   use ECP_constants_m
 
    implicit none
 

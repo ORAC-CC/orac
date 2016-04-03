@@ -39,10 +39,10 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-module Data_def
+module Data_m
 
    use common_constants, only : sreal, dreal
-   use ECP_Constants
+   use ECP_Constants_m
 
    private
 
@@ -118,4 +118,4 @@ contains
 
 #include "ReadData_nc.F90"
 
-end module Data_def
+end module Data_m

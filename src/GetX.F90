@@ -86,9 +86,9 @@
 
 subroutine Get_X(Ctrl, SAD_Chan, SPixel, status)
 
-   use CTRL_def
-   use ECP_Constants
-   use SAD_Chan_def
+   use Ctrl_m
+   use ECP_Constants_m
+   use SAD_Chan_m
 
    implicit none
 
@@ -139,9 +139,9 @@ end subroutine Get_X
 !-------------------------------------------------------------------------------
 subroutine Set_State(i, Ctrl, SPixel, SAD_Chan, status)
 
-   use CTRL_def
-   use ECP_Constants
-   use SAD_Chan_def
+   use Ctrl_m
+   use ECP_Constants_m
+   use SAD_Chan_m
 
    implicit none
 
@@ -204,9 +204,9 @@ end subroutine Set_State
 !-------------------------------------------------------------------------------
 subroutine Get_State(mode, i, Ctrl, SPixel, SAD_Chan, flag, X, status, Err)
 
-   use CTRL_def
-   use ECP_Constants
-   use SAD_Chan_def
+   use Ctrl_m
+   use ECP_Constants_m
+   use SAD_Chan_m
 
    implicit none
 

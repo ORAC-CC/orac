@@ -85,11 +85,11 @@
 subroutine Set_CRP_Solar(Ctrl, Ind, chan_to_ctrl_index, GZero, SAD_LUT, &
      CRPOut, dCRPOut, status)
 
-   use Ctrl_def
-   use GZero_def
-   use Int_LUT_Routines_def
-   use SAD_LUT_def
-   use SPixel_def
+   use Ctrl_m
+   use GZero_m
+   use Int_LUT_Routines_m
+   use SAD_LUT_m
+   use SPixel_m
 
    implicit none
 

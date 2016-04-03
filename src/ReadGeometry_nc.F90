@@ -54,15 +54,15 @@
 
 subroutine Read_Geometry_nc(Ctrl, MSI_Data)
 
-   use CTRL_def
-   use ECP_Constants
+   use Ctrl_m
+   use ECP_Constants_m
    use orac_ncdf
 
    implicit none
 
    ! Argument declarations
 
-   type(CTRL_t), intent(in)    :: Ctrl
+   type(Ctrl_t), intent(in)    :: Ctrl
    type(Data_t), intent(inout) :: MSI_Data
 
    integer :: ncid
