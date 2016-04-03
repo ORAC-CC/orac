@@ -55,7 +55,7 @@ PREPROC_OBJ_F90 = $(OBJS)/aatsr_corrections.o \
                   $(OBJS)/netcdf_output.o \
                   $(OBJS)/neural_net_preproc.o \
                   $(OBJS)/neural_net_constants.o \
-                  $(OBJS)/nise_def.o \
+                  $(OBJS)/nsidc_nise.o \
                   $(OBJS)/nr.o \
                   $(OBJS)/preparation.o \
                   $(OBJS)/preproc_constants.o \

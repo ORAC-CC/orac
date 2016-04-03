@@ -13,7 +13,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-module surface_emissivity
+module surface_emissivity_m
 
    implicit none
 
@@ -22,4 +22,4 @@ contains
 #include "get_surface_emissivity.F90"
 #include "select_modis_emiss_file.F90"
 
-end module surface_emissivity
+end module surface_emissivity_m

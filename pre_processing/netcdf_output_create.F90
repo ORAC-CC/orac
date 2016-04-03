@@ -68,11 +68,11 @@ subroutine netcdf_output_create(output_path,lwrtm_file,swrtm_file,prtm_file, &
    preproc_dims,imager_angles,imager_geolocation,netcdf_info,channel_info, &
    include_full_brdf,verbose)
 
-   use channel_structures
+   use channel_structures_m
    use global_attributes
-   use imager_structures
-   use preproc_constants
-   use preproc_structures
+   use imager_structures_m
+   use preproc_constants_m
+   use preproc_structures_m
    use source_attributes
 
    implicit none
@@ -88,15 +88,15 @@ subroutine netcdf_output_create(output_path,lwrtm_file,swrtm_file,prtm_file, &
    type(source_attributes_s),      intent(in)    :: source_atts
    character(len=date_length),     intent(in)    :: cyear,chour,cminute,cmonth, &
                                                     cday
-   type(preproc_dims_s),           intent(in)    :: preproc_dims
+   type(preproc_dims_t),           intent(in)    :: preproc_dims
 
-   type(imager_angles_s),          intent(in)    :: imager_angles
+   type(imager_angles_t),          intent(in)    :: imager_angles
 
-   type(imager_geolocation_s),     intent(in)    :: imager_geolocation
+   type(imager_geolocation_t),     intent(in)    :: imager_geolocation
 
-   type(netcdf_output_info_s),     intent(inout) :: netcdf_info
+   type(netcdf_output_info_t),     intent(inout) :: netcdf_info
 
-   type(channel_info_s),           intent(in)    :: channel_info
+   type(channel_info_t),           intent(in)    :: channel_info
    logical,                        intent(in)    :: include_full_brdf
    logical,                        intent(in)    :: verbose
 

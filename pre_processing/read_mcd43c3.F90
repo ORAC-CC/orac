@@ -45,7 +45,7 @@
 subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, white_sky, black_sky, &
                         QC, verbose, stat)
 
-   use preproc_constants
+   use preproc_constants_m
 
    implicit none
 
@@ -62,8 +62,8 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, white_sky, black_sky, 
    logical,                    intent(in) :: verbose
 
    ! Output variables
-   type(mcd43c3),             intent(out) :: mcd
-   integer*4,                 intent(out) :: stat
+   type(mcd43c3_t),            intent(out) :: mcd
+   integer*4,                  intent(out) :: stat
 
    ! Local variables
    integer                    :: i,j,k

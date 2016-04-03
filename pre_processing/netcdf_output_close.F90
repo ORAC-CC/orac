@@ -29,11 +29,11 @@
 subroutine netcdf_output_close(netcdf_info)
 
    use netcdf
-   use preproc_constants
+   use preproc_constants_m
 
    implicit none
 
-   type(netcdf_output_info_s), intent(in) :: netcdf_info
+   type(netcdf_output_info_t), intent(in) :: netcdf_info
 
    if (nf90_close(netcdf_info%ncid_alb) .ne. NF90_NOERR) then
       write (*,*) 'ERROR: netcdf_create_config(): nf90_close(): ".alb.nc"'

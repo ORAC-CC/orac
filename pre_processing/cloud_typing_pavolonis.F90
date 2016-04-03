@@ -58,7 +58,7 @@
 ! 2016/01/21  OS: Removed bug: test with AATSR flag was also applied to other
 !    sensors
 ! 2016/02/05, OS: Cloud mask now uses albedo for glint correction.
-! 2016/02/18, OS: ECMWF snow/ice mask now corrected by USGS land/sea mask 
+! 2016/02/18, OS: ECMWF snow/ice mask now corrected by USGS land/sea mask
 ! 2016/03/04, OS: bug fix in setting index when passing surface%albedo
 
 ! $Id$
@@ -121,7 +121,7 @@
 
 ! Begin of module
 !***********************************************************************
-module CLOUD_TYPING_PAVOLONIS
+module cloud_typing_pavolonis_m
   !***********************************************************************
 
   implicit none
@@ -144,7 +144,7 @@ contains
   !    defined in constants_cloud_typing_pavolonis.f90:
   !
   !    INTEGER(kind=sint) :: CLEAR_TYPE = 0
-  !    INTEGER(kind=sint) :: PROB_CLEAR_TYPE = 1 
+  !    INTEGER(kind=sint) :: PROB_CLEAR_TYPE = 1
   !    INTEGER(kind=sint) :: FOG_TYPE = 2
   !    INTEGER(kind=sint) :: WATER_TYPE = 3
   !    INTEGER(kind=sint) :: SUPERCOOLED_TYPE = 4
@@ -256,27 +256,27 @@ contains
     ! =====================================================================
 
     !-- load necessary variable fields and constants
-    use channel_structures
-    use COMMON_CONSTANTS
-    use IMAGER_STRUCTURES
-    use SURFACE_STRUCTURES
-    use NEURAL_NET_PREPROC
-    use CONSTANTS_CLOUD_TYPING_PAVOLONIS
+    use channel_structures_m
+    use common_constants
+    use imager_structures_m
+    use surface_structures_m
+    use neural_net_preproc_m
+    use constants_cloud_typing_pavolonis
     use interpol
-    use ecmwf_m, only : ecmwf_s
+    use ecmwf_m, only : ecmwf_t
 
 
     !-- parameters to be passed
 
-    type(channel_info_s),           intent(in)    :: channel_info
+    type(channel_info_t),           intent(in)    :: channel_info
     character(len=sensor_length),   intent(in)    :: sensor
-    type(surface_s),                intent(in)    :: surface
-    type(imager_flags_s),           intent(in)    :: imager_flags
-    type(imager_angles_s),          intent(in)    :: imager_angles
-    type(imager_geolocation_s),     intent(in)    :: imager_geolocation
-    type(imager_measurements_s),    intent(inout) :: imager_measurements
-    type(imager_pavolonis_s),       intent(inout) :: imager_pavolonis
-    type(ecmwf_s),                  intent(in)    :: ecmwf
+    type(surface_t),                intent(in)    :: surface
+    type(imager_flags_t),           intent(in)    :: imager_flags
+    type(imager_angles_t),          intent(in)    :: imager_angles
+    type(imager_geolocation_t),     intent(in)    :: imager_geolocation
+    type(imager_measurements_t),    intent(inout) :: imager_measurements
+    type(imager_pavolonis_t),       intent(inout) :: imager_pavolonis
+    type(ecmwf_t),                  intent(in)    :: ecmwf
     character(len=platform_length), intent(in)    :: platform
     integer(kind=sint),             intent(in)    :: doy
     logical,                        intent(in)    :: verbose
@@ -505,7 +505,7 @@ contains
           call interp_field (ecmwf%sea_ice_cover, sea_ice_cover(j,i), interp(1))
 
           if ( &
-               ((snow_depth(j,i) .GT. 0.01)    .AND. (imager_flags%LSFLAG(j,i)         .EQ. 1_byte)) .OR. & 
+               ((snow_depth(j,i) .GT. 0.01)    .AND. (imager_flags%LSFLAG(j,i)         .EQ. 1_byte)) .OR. &
                ((snow_depth(j,i) .GT. 0.01)    .AND. (imager_geolocation%latitude(j,i) .lt. -60.00)) .OR. &
                ((sea_ice_cover(j,i) .GT. 0.15) .AND. (imager_flags%LSFLAG(j,i)         .EQ. 0_byte))      &
              ) then
@@ -1634,7 +1634,7 @@ contains
 !     integer:: i
 !     integer:: j
 
-!     type(imager_geolocation_s) :: imager_geolocation
+!     type(imager_geolocation_t) :: imager_geolocation
 
 
 !     !-------------------------------------------------------------------
@@ -1820,7 +1820,7 @@ contains
 
 
 !***********************************************************************
-end module CLOUD_TYPING_PAVOLONIS
+end module cloud_typing_pavolonis_m
 !***********************************************************************
 ! End of module CLOUD_TYPING_PAVOLONIS
 

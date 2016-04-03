@@ -36,7 +36,7 @@ subroutine rearrange_ecmwf(ecmwf,highRes)
 
    implicit none
 
-   type(ecmwf_s), intent(inout) :: ecmwf
+   type(ecmwf_t), intent(inout) :: ecmwf
    logical,       intent(in)    :: highRes
 
    integer                      :: date, ind, i

@@ -77,16 +77,16 @@ subroutine read_ecmwf_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
      preproc_prtm, verbose)
 
    use orac_ncdf
-   use preproc_constants
-   use preproc_structures
+   use preproc_constants_m
+   use preproc_structures_m
 
    implicit none
 
    character(len=path_length), intent(in)    :: ecmwf_path
-   type(ecmwf_s),              intent(in)    :: ecmwf
-   type(preproc_dims_s),       intent(in)    :: preproc_dims
-   type(preproc_geoloc_s),     intent(in)    :: preproc_geoloc
-   type(preproc_prtm_s),       intent(inout) :: preproc_prtm
+   type(ecmwf_t),              intent(in)    :: ecmwf
+   type(preproc_dims_t),       intent(in)    :: preproc_dims
+   type(preproc_geoloc_t),     intent(in)    :: preproc_geoloc
+   type(preproc_prtm_t),       intent(inout) :: preproc_prtm
    logical,                    intent(in)    :: verbose
 
    integer(lint),     external            :: INTIN,INTOUT,INTF

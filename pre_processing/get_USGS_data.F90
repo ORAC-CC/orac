@@ -12,7 +12,7 @@
 ! path_to_USGS_file string in          Full path to USGS file
 !
 ! History:
-! 2014/09/23, OS: writes code to read data from USGS file.
+! 2014/09/23, OS: Writes code to read data from USGS file.
 ! 2014/12/01, CP: Added source attributes.
 ! 2014/12/31, GM: Parallelized the main loop with OpenMP.
 !
@@ -25,20 +25,20 @@
 subroutine get_USGS_data(path_to_USGS_file, imager_flags, imager_geolocation, &
      usgs, assume_full_paths, source_atts, verbose)
 
-  use imager_structures
+  use imager_structures_m
   use orac_ncdf
   use source_attributes
-  use USGS_physiography
+  use USGS_physiography_m
 
   implicit none
 
   character(len=path_length),  intent(in)    :: path_to_USGS_file
-  type(imager_flags_s),        intent(inout) :: imager_flags
-  type(imager_geolocation_s),  intent(inout) :: imager_geolocation
+  type(imager_flags_t),        intent(inout) :: imager_flags
+  type(imager_geolocation_t),  intent(inout) :: imager_geolocation
   logical,                     intent(in)    :: assume_full_paths
   type(source_attributes_s),   intent(inout) :: source_atts
   logical,                     intent(in)    :: verbose
-  type(usgs_s),                intent(out)   :: usgs
+  type(usgs_t),                intent(out)   :: usgs
 
   logical                          :: USGS_file_exist
   character(len=7)                 :: USGS_file_read

@@ -59,12 +59,12 @@
 
 subroutine allocate_preproc_prtm(preproc_dims, preproc_prtm)
 
-   use preproc_constants
+   use preproc_constants_m
 
    implicit none
 
-   type(preproc_dims_s), intent(in)  :: preproc_dims
-   type(preproc_prtm_s), intent(out) :: preproc_prtm
+   type(preproc_dims_t), intent(in)  :: preproc_dims
+   type(preproc_prtm_t), intent(out) :: preproc_prtm
 
    integer :: sx, ex, sy, ey
 
@@ -124,19 +124,19 @@ end subroutine allocate_preproc_prtm
 subroutine allocate_preproc_structures(imager_angles,preproc_dims, &
    preproc_geoloc,preproc_geo,preproc_prtm,preproc_surf,channel_info)
 
-   use channel_structures
-   use imager_structures
-   use preproc_constants
+   use channel_structures_m
+   use imager_structures_m
+   use preproc_constants_m
 
    implicit none
 
-   type(imager_angles_s),  intent(in)    :: imager_angles
-   type(preproc_dims_s),   intent(inout) :: preproc_dims
-   type(preproc_geoloc_s), intent(out)   :: preproc_geoloc
-   type(preproc_geo_s),    intent(out)   :: preproc_geo
-   type(preproc_prtm_s),   intent(out)   :: preproc_prtm
-   type(preproc_surf_s),   intent(out)   :: preproc_surf
-   type(channel_info_s),   intent(inout) :: channel_info
+   type(imager_angles_t),  intent(in)    :: imager_angles
+   type(preproc_dims_t),   intent(inout) :: preproc_dims
+   type(preproc_geoloc_t), intent(out)   :: preproc_geoloc
+   type(preproc_geo_t),    intent(out)   :: preproc_geo
+   type(preproc_prtm_t),   intent(out)   :: preproc_prtm
+   type(preproc_surf_t),   intent(out)   :: preproc_surf
+   type(channel_info_t),   intent(inout) :: channel_info
 
    integer :: nchan_sw, nchan_lw, sx, ex, sy, ey
 

@@ -12,7 +12,7 @@
 !    and ecmwf_path_file3 to parse_optional().
 ! 2016/02/02, CP: Add ecmwf_path_hr.
 ! 2016/02/02, GM: Add use_hr_ecmwf.
-! 2016/02/02, GM: Add use_ecmwf_snow_and_ice.
+! 2016/02/02, GM: Add use_ecmwf_tnow_and_ice.
 !
 ! $Id$
 !
@@ -20,7 +20,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-module utils_for_main
+module utils_for_main_m
 
    implicit none
 
@@ -30,7 +30,7 @@ contains
 subroutine parse_required(lun, value, name)
 
    use parsing
-   use preproc_constants
+   use preproc_constants_m
 
    implicit none
 
@@ -48,12 +48,12 @@ end subroutine parse_required
 
 subroutine parse_optional(label, value, n_channels, channel_ids, &
                           use_hr_ecmwf, ecmwf_time_int_method, &
-                          use_ecmwf_snow_and_ice, use_modis_emis_in_rttov, &
+                          use_ecmwf_tnow_and_ice, use_modis_emis_in_rttov, &
                           ecmwf_path, ecmwf_path2, ecmwf_path3, ecmwf_path_hr, &
                           ecmwf_path_hr_2)
 
    use parsing
-   use preproc_constants
+   use preproc_constants_m
 
    implicit none
 
@@ -63,7 +63,7 @@ subroutine parse_optional(label, value, n_channels, channel_ids, &
    integer, pointer, intent(inout) :: channel_ids(:)
    logical,          intent(inout) :: use_hr_ecmwf
    integer,          intent(inout) :: ecmwf_time_int_method
-   logical,          intent(inout) :: use_ecmwf_snow_and_ice
+   logical,          intent(inout) :: use_ecmwf_tnow_and_ice
    logical,          intent(inout) :: use_modis_emis_in_rttov
    character(len=*), intent(inout) :: ecmwf_path
    character(len=*), intent(inout) :: ecmwf_path2
@@ -90,7 +90,7 @@ subroutine parse_optional(label, value, n_channels, channel_ids, &
       if (parse_string(value, ecmwf_time_int_method) /= 0) &
          call handle_parse_error(label)
    case('USE_ECMWF_SNOW_AND_ICE')
-      if (parse_string(value, use_ecmwf_snow_and_ice) /= 0) &
+      if (parse_string(value, use_ecmwf_tnow_and_ice) /= 0) &
          call handle_parse_error(label)
    case('USE_MODIS_EMIS_IN_RTTOV')
       if (parse_string(value, use_modis_emis_in_rttov) /= 0) &
@@ -120,7 +120,7 @@ end subroutine parse_optional
 
 integer function parse_logical(string, value) result(status)
 
-   use preproc_constants
+   use preproc_constants_m
 
    implicit none
 
@@ -206,4 +206,4 @@ subroutine chunkify(n_segments, segment_starts, segment_ends, &
 
 end subroutine chunkify
 
-end module utils_for_main
+end module utils_for_main_m

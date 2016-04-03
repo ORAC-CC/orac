@@ -36,18 +36,18 @@
 subroutine write_ir_rttov(netcdf_info, preproc_dims, idim, jdim, nchan, nlev, &
      emissivity, transmission, radiance, radiance2, write_flag)
 
-   use netcdf_output, only: netcdf_output_info_s
+   use netcdf_output_m, only: netcdf_output_info_t
    use orac_ncdf
    use parkind1, only: jpim
-   use preproc_constants, only: lint, sreal, sreal_fill_value
-   use preproc_structures, only: preproc_dims_s
+   use preproc_constants_m, only: lint, sreal, sreal_fill_value
+   use preproc_structures_m, only: preproc_dims_t
    use rttov_types, only: rttov_emissivity, transmission_type, &
       radiance_type, radiance2_type
 
    implicit none
 
-   type(netcdf_output_info_s), intent(in) :: netcdf_info
-   type(preproc_dims_s),       intent(in) :: preproc_dims
+   type(netcdf_output_info_t), intent(in) :: netcdf_info
+   type(preproc_dims_t),       intent(in) :: preproc_dims
    integer(lint),              intent(in) :: idim, jdim, nchan
    integer(jpim),              intent(in) :: nlev
    type(rttov_emissivity),     intent(in) :: emissivity(:)

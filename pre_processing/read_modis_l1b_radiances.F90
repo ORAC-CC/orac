@@ -36,9 +36,9 @@
 subroutine read_modis_l1b_radiances(sensor,platform,path_to_l1b_file, &
      imager_geolocation,imager_measurements,channel_info,verbose)
 
-   use channel_structures
-   use imager_structures
-   use preproc_constants
+   use channel_structures_m
+   use imager_structures_m
+   use preproc_constants_m
 
    implicit none
 
@@ -50,9 +50,9 @@ subroutine read_modis_l1b_radiances(sensor,platform,path_to_l1b_file, &
    character(len=sensor_length),   intent(in)     :: sensor
    character(len=platform_length), intent(in)     :: platform
    character(len=path_length),     intent(in)     :: path_to_l1b_file
-   type(imager_geolocation_s),     intent(inout)  :: imager_geolocation
-   type(imager_measurements_s),    intent(inout)  :: imager_measurements
-   type(channel_info_s),           intent(in)     :: channel_info
+   type(imager_geolocation_t),     intent(inout)  :: imager_geolocation
+   type(imager_measurements_t),    intent(inout)  :: imager_measurements
+   type(channel_info_t),           intent(in)     :: channel_info
    logical,                        intent(in)     :: verbose
 
    logical                                       :: lrefl

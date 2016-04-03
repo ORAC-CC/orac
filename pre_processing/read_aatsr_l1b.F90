@@ -81,10 +81,10 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
      channel_info, platform, sensor, verbose)
 
    use iso_c_binding ! technically Fortran 2003
-   use aatsr_corrections
-   use channel_structures
-   use imager_structures
-   use preproc_constants
+   use aatsr_corrections_m
+   use channel_structures_m
+   use imager_structures_m
+   use preproc_constants_m
 
    implicit none
 
@@ -100,7 +100,7 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
            start_date, gc1_file, vc1_file, is_lut_drift_corrected) &
            bind(C,name='read_aatsr_orbit')
          use iso_c_binding ! technically Fortran 2003
-         use preproc_constants
+         use preproc_constants_m
 
          implicit none
 
@@ -124,22 +124,21 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
    end interface
 
    ! Fortran variables
-   character(len=path_length),  intent(in)    :: l1b_file, drift_file
-   type(imager_geolocation_s),  intent(inout) :: imager_geolocation
-   type(imager_measurements_s), intent(inout) :: imager_measurements
-   type(imager_angles_s),       intent(inout) :: imager_angles
-   type(imager_flags_s),        intent(inout) :: imager_flags
-   type(imager_time_s),         intent(inout) :: imager_time
-   type(channel_info_s),        intent(in)    :: channel_info
-   character(len=platform_length), intent(in) :: platform
-   character(len=sensor_length),   intent(in) :: sensor
-
-   logical,                     intent(in)    :: verbose
+   character(len=path_length),     intent(in)    :: l1b_file, drift_file
+   type(imager_geolocation_t),     intent(inout) :: imager_geolocation
+   type(imager_measurements_t),    intent(inout) :: imager_measurements
+   type(imager_angles_t),          intent(inout) :: imager_angles
+   type(imager_flags_t),           intent(inout) :: imager_flags
+   type(imager_time_t),            intent(inout) :: imager_time
+   type(channel_info_t),           intent(in)    :: channel_info
+   character(len=platform_length), intent(in)    :: platform
+   character(len=sensor_length),   intent(in)    :: sensor
+   logical,                        intent(in)    :: verbose
 
    integer                   :: i,ii,j,jj,status
    integer(byte)             :: view_selection
    real(sreal), dimension(4) :: A
-   type(aatsr_drift_lut)     :: lut
+   type(aatsr_drift_lut_t)   :: lut
    real(dreal)               :: new_drift, old_drift, drift_var
 
    ! C variables

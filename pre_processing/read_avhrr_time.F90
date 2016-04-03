@@ -30,7 +30,7 @@
 subroutine read_avhrr_time(fid, attrgroup, startepochs, endepochs)
 
    use hdf5
-   use preproc_constants
+   use preproc_constants_m
 
    implicit none
 

@@ -31,8 +31,8 @@
 
 subroutine test_rttov(profiles,preproc_dims)
 
-   use preproc_constants
-   use preproc_structures
+   use preproc_constants_m
+   use preproc_structures_m
    use rttov_types, only : &
         rttov_options,     &
         rttov_coefs,       &
@@ -45,7 +45,7 @@ subroutine test_rttov(profiles,preproc_dims)
    implicit none
 
    type(profile_type),   intent(out), Allocatable :: profiles(:)
-   type(preproc_dims_s), intent(inout)            :: preproc_dims
+   type(preproc_dims_t), intent(inout)            :: preproc_dims
 
    write(*,*)'size p',size(profiles(1)%p)
    profiles(1)%p=(/ 0.1000000, 0.2899999, 0.6900000, 1.4200000, 2.6110001, &

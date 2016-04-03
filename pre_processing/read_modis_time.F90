@@ -29,7 +29,7 @@
 
 subroutine read_modis_time(fid,SDS_name,startyy,stopyy,temp)
 
-   use preproc_constants
+   use preproc_constants_m
 
    implicit none
 

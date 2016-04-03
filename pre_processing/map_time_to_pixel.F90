@@ -51,8 +51,8 @@
 subroutine map_time_to_pixel(along_track_ratio,ixstart,ixstop,iread_start, &
      iread_stop,iread_startt,iread_stopt,ttemp,ttemp10,refjulianday)
 
-   use imager_structures
-   use preproc_constants
+   use imager_structures_m
+   use preproc_constants_m
 
    implicit none
 

@@ -45,7 +45,7 @@ subroutine deallocate_preproc_prtm(preproc_prtm)
 
    implicit none
 
-   type(preproc_prtm_s), intent(inout) :: preproc_prtm
+   type(preproc_prtm_t), intent(inout) :: preproc_prtm
 
    deallocate(preproc_prtm%pressure)
    deallocate(preproc_prtm%temperature)
@@ -72,15 +72,15 @@ end subroutine deallocate_preproc_prtm
 subroutine deallocate_preproc_structures(preproc_dims,preproc_geoloc, &
    preproc_geo,preproc_prtm,preproc_surf)
 
-   use preproc_constants
+   use preproc_constants_m
 
    implicit none
 
-   type(preproc_dims_s),   intent(inout) :: preproc_dims
-   type(preproc_geoloc_s), intent(inout) :: preproc_geoloc
-   type(preproc_geo_s),    intent(inout) :: preproc_geo
-   type(preproc_prtm_s),   intent(inout) :: preproc_prtm
-   type(preproc_surf_s),   intent(inout) :: preproc_surf
+   type(preproc_dims_t),   intent(inout) :: preproc_dims
+   type(preproc_geoloc_t), intent(inout) :: preproc_geoloc
+   type(preproc_geo_t),    intent(inout) :: preproc_geo
+   type(preproc_prtm_t),   intent(inout) :: preproc_prtm
+   type(preproc_surf_t),   intent(inout) :: preproc_surf
 
    ! preproc_dims
    deallocate(preproc_dims%counter_sw)

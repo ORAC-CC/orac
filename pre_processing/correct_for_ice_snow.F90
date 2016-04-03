@@ -108,23 +108,23 @@ subroutine correct_for_ice_snow(nise_path,imager_geolocation,surface,cyear, &
       cmonth,cday,channel_info,assume_full_path,include_full_brdf,source_atts, &
       verbose)
 
-   use channel_structures
+   use channel_structures_m
    use constants_cloud_typing_pavolonis
-   use imager_structures
-   use nise_m
-   use preproc_constants
-   use preproc_structures
+   use imager_structures_m
+   use nsidc_nise_m
+   use preproc_constants_m
+   use preproc_structures_m
    use source_attributes
-   use surface_structures
+   use surface_structures_m
 
    implicit none
 
    ! Arguments
    character(len=path_length), intent(in)    :: nise_path
-   type(imager_geolocation_s), intent(in)    :: imager_geolocation
-   type(surface_s),            intent(inout) :: surface
+   type(imager_geolocation_t), intent(in)    :: imager_geolocation
+   type(surface_t),            intent(inout) :: surface
    character(len=date_length), intent(in)    :: cyear,cmonth,cday
-   type(channel_info_s),       intent(in)    :: channel_info
+   type(channel_info_t),       intent(in)    :: channel_info
    logical,                    intent(in)    :: assume_full_path
    logical,                    intent(in)    :: include_full_brdf
    type(source_attributes_s),  intent(inout) :: source_atts
@@ -135,7 +135,7 @@ subroutine correct_for_ice_snow(nise_path,imager_geolocation,surface,cyear, &
    integer(kind=1)                  :: north=0, south=0
    integer(kind=4)                  :: stat,i,j,k,l,m,n,xi,yi,count
    real(kind=dreal)                 :: easex, easey
-   type(nise_s)                     :: nise
+   type(nise_t)                     :: nise
    real(kind=sreal), dimension(2,2) :: nise_tmp
    real(kind=sreal), dimension(8)   :: nise_tmp2
    integer                          :: iyear
@@ -380,11 +380,11 @@ end subroutine correct_for_ice_snow
 subroutine apply_ice_correction(x, y, nise, ice_albedo, snow_albedo, &
      pixel_ref, channel_info, nise_mask_flag, applied_flag)
 
-   use preproc_constants
-   use preproc_structures
+   use preproc_constants_m
+   use preproc_structures_m
    use interpol
-   use channel_structures
-   use CONSTANTS_CLOUD_TYPING_PAVOLONIS
+   use channel_structures_m
+   use constants_cloud_typing_pavolonis
 
    implicit none
 
@@ -392,7 +392,7 @@ subroutine apply_ice_correction(x, y, nise, ice_albedo, snow_albedo, &
    real,             dimension(2,2), intent(in)    :: nise
    real,             dimension(:),   intent(in)    :: ice_albedo, snow_albedo
    real(kind=sreal), dimension(:),   intent(inout) :: pixel_ref
-   type(channel_info_s),             intent(in)    :: channel_info
+   type(channel_info_t),             intent(in)    :: channel_info
    integer(kind=byte),               intent(out)   :: nise_mask_flag
    logical,                          intent(out)   :: applied_flag
 
@@ -470,34 +470,34 @@ end subroutine apply_ice_correction
 !-------------------------------------------------------------------------------
 !------------------------------------------------------------------------------
 
-subroutine correct_for_ice_snow_ecmwf(ecmwf_HR_path,imager_geolocation,imager_flags,preproc_dims,preproc_prtm, &
-                  surface,cyear,cmonth,cday,channel_info,assume_full_path,include_full_brdf, &
-                  source_atts,verbose)
+subroutine correct_for_ice_snow_ecmwf(ecmwf_HR_path,imager_geolocation, &
+     imager_flags,preproc_dims,preproc_prtm,surface,cyear,cmonth,cday, &
+     channel_info,assume_full_path,include_full_brdf,source_atts,verbose)
 
-   use channel_structures
+   use channel_structures_m
    use constants_cloud_typing_pavolonis
-   use imager_structures
-   use preproc_constants
-   use preproc_structures
+   use imager_structures_m
+   use preproc_constants_m
+   use preproc_structures_m
    use source_attributes
-   use surface_structures
+   use surface_structures_m
 
    implicit none
 
    ! Arguments
    character(len=path_length), intent(in)    :: ecmwf_HR_path
-   type(imager_geolocation_s), intent(in)    :: imager_geolocation
-   type(imager_flags_s),       intent(in)    :: imager_flags
-   type(preproc_dims_s),       intent(in)    :: preproc_dims
-   type(preproc_prtm_s),       intent(in)    :: preproc_prtm
+   type(imager_geolocation_t), intent(in)    :: imager_geolocation
+   type(imager_flags_t),       intent(in)    :: imager_flags
+   type(preproc_dims_t),       intent(in)    :: preproc_dims
+   type(preproc_prtm_t),       intent(in)    :: preproc_prtm
    logical,                    intent(in)    :: assume_full_path
    logical,                    intent(in)    :: include_full_brdf
    type(source_attributes_s),  intent(inout) :: source_atts
    logical,                    intent(in)    :: verbose
 
-   type(surface_s),            intent(inout) :: surface
+   type(surface_t),            intent(inout) :: surface
    character(len=date_length), intent(in)    :: cyear,cmonth,cday
-   type(channel_info_s),       intent(in)    :: channel_info
+   type(channel_info_t),       intent(in)    :: channel_info
 
    ! Local variables
    logical                        :: flag
@@ -535,9 +535,12 @@ subroutine correct_for_ice_snow_ecmwf(ecmwf_HR_path,imager_geolocation,imager_fl
          tmp_albedo=surface%albedo(i,j,:)
 
          if ( &
-              ((preproc_prtm%snow_depth(lon_i,lat_j)    .gt. snow_threshold) .and. (imager_flags%lsflag(i,j)         .eq. 1_byte)) .or. &
-              ((preproc_prtm%snow_depth(lon_i,lat_j)    .gt. snow_threshold) .and. (imager_geolocation%latitude(i,j) .lt. -60.00)) .or. &
-              ((preproc_prtm%sea_ice_cover(lon_i,lat_j) .gt. ice_threshold)  .and. (imager_flags%lsflag(i,j)         .eq. 0_byte)) &
+              ((preproc_prtm%snow_depth(lon_i,lat_j)    .gt. snow_threshold) .and. &
+               (imager_flags%lsflag(i,j)         .eq. 1_byte)) .or. &
+              ((preproc_prtm%snow_depth(lon_i,lat_j)    .gt. snow_threshold) .and. &
+                (imager_geolocation%latitude(i,j) .lt. -60.00)) .or. &
+              ((preproc_prtm%sea_ice_cover(lon_i,lat_j) .gt. ice_threshold)  .and. &
+                (imager_flags%lsflag(i,j)         .eq. 0_byte)) &
             ) then
            surface%nise_mask(i,j)=YES
          else
@@ -547,7 +550,7 @@ subroutine correct_for_ice_snow_ecmwf(ecmwf_HR_path,imager_geolocation,imager_fl
          flag = .false.
 
          ! calculate albedo according to fraction of sea ice
-         if ((surface%nise_mask(i,j) .eq. YES) .and. & 
+         if ((surface%nise_mask(i,j) .eq. YES) .and. &
              (preproc_prtm%snow_depth(lon_i,lat_j) .lt. snow_threshold)) then
              flag = .true.
              surface%albedo(i,j,:) = &

@@ -28,14 +28,14 @@
 
 subroutine compute_geopot_coordinate(preproc_prtm, preproc_dims, ecmwf)
 
-   use preproc_constants
-   use preproc_structures
+   use preproc_constants_m
+   use preproc_structures_m
 
    implicit none
 
-   type(preproc_prtm_s), intent(inout) :: preproc_prtm
-   type(preproc_dims_s), intent(in)    :: preproc_dims
-   type(ecmwf_s),        intent(in)    :: ecmwf
+   type(preproc_prtm_t), intent(inout) :: preproc_prtm
+   type(preproc_dims_t), intent(in)    :: preproc_dims
+   type(ecmwf_t),        intent(in)    :: ecmwf
 
    integer                             :: ii,ij,ik
    real(kind=sreal)                    :: virt_temp,p,pp1,logpp,r_ratio,alpha,sp

@@ -36,16 +36,16 @@
 subroutine allocate_surface_structures(surface,imager_geolocation,channel_info, &
                                        include_full_brdf)
 
-   use channel_structures
-   use imager_structures
-   use preproc_constants
-   use preproc_structures
+   use channel_structures_m
+   use imager_structures_m
+   use preproc_constants_m
+   use preproc_structures_m
 
    implicit none
 
-   type(surface_s),            intent(out) :: surface
-   type(imager_geolocation_s), intent(in)  :: imager_geolocation
-   type(channel_info_s),       intent(in)  :: channel_info
+   type(surface_t),            intent(out) :: surface
+   type(imager_geolocation_t), intent(in)  :: imager_geolocation
+   type(channel_info_t),       intent(in)  :: channel_info
    logical,                    intent(in)  :: include_full_brdf
 
    allocate(surface%nise_mask(&

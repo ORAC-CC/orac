@@ -36,14 +36,14 @@
 
 subroutine define_preprop_grid(imager_geolocation,preproc_dims,verbose)
 
-   use imager_structures
-   use preproc_constants
-   use preproc_structures
+   use imager_structures_m
+   use preproc_constants_m
+   use preproc_structures_m
 
    implicit none
 
-   type(imager_geolocation_s), intent(in)    :: imager_geolocation
-   type(preproc_dims_s),       intent(inout) :: preproc_dims
+   type(imager_geolocation_t), intent(in)    :: imager_geolocation
+   type(preproc_dims_t),       intent(inout) :: preproc_dims
    logical,                    intent(in)    :: verbose
 
    real(sreal), allocatable, dimension(:,:) :: lat, lon

@@ -13,7 +13,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-module read_avhrr
+module read_avhrr_m
 
    implicit none
 
@@ -30,4 +30,4 @@ include 'read_avhrr_lat_lon.F90'
 include 'read_avhrr_time.F90'
 include 'read_avhrr_time_lat_lon_angles.F90'
 
-end module read_avhrr
+end module read_avhrr_m

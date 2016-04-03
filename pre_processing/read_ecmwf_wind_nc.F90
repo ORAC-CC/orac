@@ -38,14 +38,14 @@
 subroutine read_ecmwf_wind_nc(ecmwf_path, ecmwf2path, ecmwf3path, ecmwf, &
                               high_res)
 
-   use preproc_constants
+   use preproc_constants_m
 
    implicit none
 
    character(len=*), intent(in)    :: ecmwf_path
    character(len=*), intent(in)    :: ecmwf2path
    character(len=*), intent(in)    :: ecmwf3path
-   type(ecmwf_s),    intent(inout) :: ecmwf
+   type(ecmwf_t),    intent(inout) :: ecmwf
    logical,          intent(in)    :: high_res
 
    call ecmwf_wind_init(ecmwf)
@@ -99,12 +99,12 @@ end subroutine read_ecmwf_wind_nc
 subroutine read_ecmwf_wind_file(ecmwf_path, ecmwf)
 
    use orac_ncdf
-   use preproc_constants
+   use preproc_constants_m
 
    implicit none
 
    character(len=*), intent(in)    :: ecmwf_path
-   type(ecmwf_s),    intent(inout) :: ecmwf
+   type(ecmwf_t),    intent(inout) :: ecmwf
 
    real, allocatable               :: val(:,:,:,:)
    integer                         :: fid,i,ndim,nvar,size

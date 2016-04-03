@@ -48,7 +48,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-module NEURAL_NET_PREPROC
+module neural_net_preproc_m
 
   implicit none
 
@@ -63,7 +63,7 @@ contains
 
     use constants_cloud_typing_pavolonis
     use common_constants
-    use neural_net_constants
+    use neural_net_constants_m
 
     implicit none
 
@@ -452,7 +452,7 @@ contains
     !------------------------------------------------------------------------
 
     use common_constants
-    use neural_net_constants
+    use neural_net_constants_m
 
     implicit none
 
@@ -561,5 +561,5 @@ contains
 
 
   !=========================================================================
-end module NEURAL_NET_PREPROC
+end module neural_net_preproc_m
 !=========================================================================

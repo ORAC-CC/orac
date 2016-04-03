@@ -37,12 +37,12 @@
 subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf, high_res)
 
    use grib_api
-   use preproc_constants
+   use preproc_constants_m
 
    implicit none
 
    character(len=*), intent(in)    :: ecmwf_path
-   type(ecmwf_s),    intent(inout) :: ecmwf
+   type(ecmwf_t),    intent(inout) :: ecmwf
    logical,          intent(in)    :: high_res
 
    real, allocatable, dimension(:) :: pv,lat,lon,val

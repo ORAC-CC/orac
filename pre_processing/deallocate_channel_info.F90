@@ -29,7 +29,7 @@ subroutine deallocate_channel_info(channel_info)
 
    implicit none
 
-   type(channel_info_s), intent(inout) :: channel_info
+   type(channel_info_t), intent(inout) :: channel_info
 
    deallocate(channel_info%channel_ids_instr)
    deallocate(channel_info%channel_wl_abs)

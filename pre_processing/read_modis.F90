@@ -13,7 +13,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-module read_modis
+module read_modis_m
 
    implicit none
 
@@ -31,4 +31,4 @@ include 'read_modis_lat_lon.F90'
 include 'read_modis_time.F90'
 include 'read_modis_time_lat_lon_angles.F90'
 
-end module read_modis
+end module read_modis_m

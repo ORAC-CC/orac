@@ -48,7 +48,6 @@ PREPROC_OBJ_F90=$(OBJS)/aatsr_corrections.o \
 	        $(OBJS)/allocate_imager_structures.o \
 	        $(OBJS)/allocate_preproc_structures.o \
 	        $(OBJS)/allocate_surface_structures.o \
-                $(OBJS)/attribute_structures.o \
 	        $(OBJS)/avhrr2oraclsflag.o \
                 $(OBJS)/bright_m.o \
 	        $(OBJS)/build_preproc_fields.o \
@@ -94,7 +93,7 @@ PREPROC_OBJ_F90=$(OBJS)/aatsr_corrections.o \
 	        $(OBJS)/nc_open.o \
                 $(OBJS)/nc_read_file.o \
                 $(OBJS)/netcdf_structures.o \
-	        $(OBJS)/nise_def.o \
+	        $(OBJS)/nsidc_nise.o \
                 $(OBJS)/nn_ecmwf.o \
                 $(OBJS)/open_netcdf_output.o \
 	        $(OBJS)/preparation.o \

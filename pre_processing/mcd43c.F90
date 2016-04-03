@@ -31,7 +31,7 @@ module mcd43c_m
    implicit none
 
 
-   type mcd43c1
+   type mcd43c1_t
       ! Data dimensions
       integer*4                  :: nlon
       integer*4                  :: nlat
@@ -51,10 +51,10 @@ module mcd43c_m
       real*8                     :: lat0, lat_invdel
       real*8                     :: lon0, lon_invdel
       real, allocatable          :: brdf_albedo_params(:,:,:,:)
-   end type mcd43c1
+   end type mcd43c1_t
 
 
-   type mcd43c3
+   type mcd43c3_t
       ! Data dimensions
       integer*4                  :: nlon
       integer*4                  :: nlat
@@ -75,7 +75,7 @@ module mcd43c_m
       real*8                     :: lon0, lon_invdel
       real, allocatable          :: WSA(:,:,:)
       real, allocatable          :: BSA(:,:,:)
-   end type mcd43c3
+   end type mcd43c3_t
 
 contains
 
@@ -83,7 +83,7 @@ subroutine deallocate_mcd43c1(mcd)
 
    implicit none
 
-   type(mcd43c1), intent(inout) :: mcd
+   type(mcd43c1_t), intent(inout) :: mcd
 
    deallocate(mcd%quality)
    deallocate(mcd%local_solar_noon)
@@ -100,7 +100,7 @@ subroutine deallocate_mcd43c3(mcd)
 
    implicit none
 
-   type(mcd43c3), intent(inout) :: mcd
+   type(mcd43c3_t), intent(inout) :: mcd
 
    deallocate(mcd%quality)
    deallocate(mcd%local_solar_noon)

@@ -31,12 +31,12 @@
 
 subroutine read_ecmwf_wind_dwd(ecmwf_path, ecmwf)
 
-   use preproc_constants
+   use preproc_constants_m
 
    implicit none
 
    character(len=*), intent(in)    :: ecmwf_path
-   type(ecmwf_s),    intent(inout) :: ecmwf
+   type(ecmwf_t),    intent(inout) :: ecmwf
 
    call ecmwf_wind_init(ecmwf)
 
@@ -82,12 +82,12 @@ end subroutine read_ecmwf_wind_dwd
 subroutine read_ecmwf_wind_file_dwd(ecmwf_path,ecmwf)
 
    use orac_ncdf
-   use preproc_constants
+   use preproc_constants_m
 
    implicit none
 
    character(len=*), intent(in)    :: ecmwf_path
-   type(ecmwf_s),    intent(inout) :: ecmwf
+   type(ecmwf_t),    intent(inout) :: ecmwf
 
    real, allocatable               :: val(:,:,:,:)
    integer                         :: fid,i,ndim,nvar,size

@@ -18,15 +18,15 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-module surface_structures
+module surface_structures_m
 
-   use preproc_constants
+   use preproc_constants_m
 
    implicit none
 
-   type surface_s
+   type surface_t
 
-      ! SNOW/ICE mask based on NISE aux. data
+      ! ice/snow mask based on NISE aux. data
       integer(kind=byte), dimension(:,:), pointer :: nise_mask
 
       real(kind=sreal), dimension(:,:,:), pointer :: albedo
@@ -37,11 +37,11 @@ module surface_structures
       real(kind=sreal), dimension(:,:,:), pointer :: rho_dd
 
       real(kind=sreal), dimension(:,:,:), pointer :: emissivity
-   end type surface_s
+   end type surface_t
 
 contains
 
 #include "allocate_surface_structures.F90"
 #include "deallocate_surface_structures.F90"
 
-end module surface_structures
+end module surface_structures_m

@@ -42,8 +42,8 @@
 subroutine read_modis_time_lat_lon_angles(path_to_geo_file,imager_geolocation,&
      imager_angles,imager_flags,imager_time,n_along_track,verbose)
 
-   use imager_structures
-   use preproc_constants
+   use imager_structures_m
+   use preproc_constants_m
 
    implicit none
 
@@ -51,10 +51,10 @@ subroutine read_modis_time_lat_lon_angles(path_to_geo_file,imager_geolocation,&
    include "dffunc.f90"
 
    character(len=path_length),  intent(in)  :: path_to_geo_file
-   type(imager_geolocation_s),  intent(out) :: imager_geolocation
-   type(imager_angles_s),       intent(out) :: imager_angles
-   type(imager_flags_s),        intent(in)  :: imager_flags
-   type(imager_time_s),         intent(in)  :: imager_time
+   type(imager_geolocation_t),  intent(out) :: imager_geolocation
+   type(imager_angles_t),       intent(out) :: imager_angles
+   type(imager_flags_t),        intent(in)  :: imager_flags
+   type(imager_time_t),         intent(in)  :: imager_time
    integer(kind=lint),          intent(in)  :: n_along_track
    logical,                     intent(in)  :: verbose
 

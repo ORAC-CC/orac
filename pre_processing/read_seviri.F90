@@ -16,7 +16,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-module read_seviri
+module read_seviri_m
 
    implicit none
 
@@ -49,7 +49,7 @@ subroutine read_seviri_dimensions(l1_5_file, n_across_track, n_along_track, &
                                   startx, endx, starty, endy, verbose)
 
    use iso_c_binding
-   use preproc_constants
+   use preproc_constants_m
 #ifdef INCLUDE_SEVIRI_SUPPORT
    use seviri_native_util
 #endif
@@ -146,21 +146,21 @@ subroutine read_seviri_l1_5(l1_5_file, imager_geolocation, imager_measurements, 
    imager_angles, imager_flags, imager_time, channel_info, verbose)
 
    use iso_c_binding
-   use channel_structures
-   use imager_structures
-   use preproc_constants
+   use channel_structures_m
+   use imager_structures_m
+   use preproc_constants_m
 #ifdef INCLUDE_SEVIRI_SUPPORT
    use seviri_native_util
 #endif
    implicit none
 
    character(len=path_length),  intent(in)    :: l1_5_file
-   type(imager_geolocation_s),  intent(inout) :: imager_geolocation
-   type(imager_measurements_s), intent(inout) :: imager_measurements
-   type(imager_angles_s),       intent(inout) :: imager_angles
-   type(imager_flags_s),        intent(inout) :: imager_flags
-   type(imager_time_s),         intent(inout) :: imager_time
-   type(channel_info_s),        intent(in)    :: channel_info
+   type(imager_geolocation_t),  intent(inout) :: imager_geolocation
+   type(imager_measurements_t), intent(inout) :: imager_measurements
+   type(imager_angles_t),       intent(inout) :: imager_angles
+   type(imager_flags_t),        intent(inout) :: imager_flags
+   type(imager_time_t),         intent(inout) :: imager_time
+   type(channel_info_t),        intent(in)    :: channel_info
    logical,                     intent(in)    :: verbose
 
    integer                     :: i
@@ -246,4 +246,4 @@ subroutine read_seviri_l1_5(l1_5_file, imager_geolocation, imager_measurements, 
 
 end subroutine read_seviri_l1_5
 
-end module read_seviri
+end module read_seviri_m

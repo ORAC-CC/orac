@@ -14,7 +14,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-module calender
+module calender_m
 
    private
 
@@ -78,7 +78,7 @@ contains
 
 subroutine GREG2JD(y,m,d,jd)
 
-      use preproc_constants
+      use preproc_constants_m
 
       IMPLICIT NONE
 
@@ -136,7 +136,7 @@ end subroutine GREG2JD
 
       FUNCTION GREGORIAN_GREG2JD (YEAR, MONTH, DAY, GREG_START) RESULT (GREG_FLAG)
 
-      use preproc_constants
+      use preproc_constants_m
 
       IMPLICIT NONE
 
@@ -214,7 +214,7 @@ end subroutine GREG2JD
 
 subroutine JD2GREG(jd,y,m,day)
 
-      use preproc_constants
+      use preproc_constants_m
 
       IMPLICIT NONE
 
@@ -299,7 +299,7 @@ end subroutine JD2GREG
 
 subroutine GREG2DOY(y,m,d,doy)
 
-      use preproc_constants
+      use preproc_constants_m
 
       IMPLICIT NONE
 
@@ -359,7 +359,7 @@ end subroutine GREG2DOY
 
       FUNCTION GREGORIAN_GREG2DOY (YEAR, MONTH, DAY, GREG_START) RESULT (GREG_FLAG)
 
-      use preproc_constants
+      use preproc_constants_m
 
       IMPLICIT NONE
 
@@ -448,7 +448,7 @@ end subroutine GREG2DOY
 
 subroutine DOY2GREG(doy,y,m,d)
 
-      use preproc_constants
+      use preproc_constants_m
 
       IMPLICIT NONE
 
@@ -523,7 +523,7 @@ end subroutine DOY2GREG
 
       FUNCTION GREGORIAN_DOY2GREG (YEAR, DOY, GREG_START) RESULT (GREG_FLAG)
 
-      use preproc_constants
+      use preproc_constants_m
 
       IMPLICIT NONE
 
@@ -593,4 +593,4 @@ end subroutine DOY2GREG
       END FUNCTION GREGORIAN_DOY2GREG
 
 
-end module calender
+end module calender_m

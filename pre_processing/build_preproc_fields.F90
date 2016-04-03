@@ -42,17 +42,17 @@
 subroutine build_preproc_fields(preproc_dims, preproc_geoloc, preproc_geo, &
      imager_geolocation, imager_angles)
 
-   use preproc_constants
-   use imager_structures
-   use preproc_structures
+   use preproc_constants_m
+   use imager_structures_m
+   use preproc_structures_m
 
    implicit none
 
-   type(preproc_dims_s),       intent(inout) :: preproc_dims
-   type(preproc_geoloc_s),     intent(inout) :: preproc_geoloc
-   type(preproc_geo_s),        intent(inout) :: preproc_geo
-   type(imager_geolocation_s), intent(inout) :: imager_geolocation
-   type(imager_angles_s),      intent(inout) :: imager_angles
+   type(preproc_dims_t),       intent(inout) :: preproc_dims
+   type(preproc_geoloc_t),     intent(inout) :: preproc_geoloc
+   type(preproc_geo_t),        intent(inout) :: preproc_geo
+   type(imager_geolocation_t), intent(inout) :: imager_geolocation
+   type(imager_angles_t),      intent(inout) :: imager_angles
 
    integer(kind=lint)         :: i,j,lon_i,lat_j
    real(sreal)                :: fac

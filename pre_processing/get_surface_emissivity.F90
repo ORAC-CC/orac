@@ -81,14 +81,14 @@ subroutine get_surface_emissivity(cyear, cdoy, cimss_emis_path, imager_flags, &
            imager_geolocation, channel_info, preproc_dims, preproc_geoloc, &
            assume_full_path, verbose, surface, preproc_surf, source_atts)
 
-   use channel_structures
-   use cimss_emissivity
-   use imager_structures
+   use channel_structures_m
+   use cimss_emissivity_m
+   use imager_structures_m
    use interpol
-   use preproc_constants
-   use preproc_structures
+   use preproc_constants_m
+   use preproc_structures_m
    use source_attributes
-   use surface_structures
+   use surface_structures_m
 
    implicit none
 
@@ -96,20 +96,20 @@ subroutine get_surface_emissivity(cyear, cdoy, cimss_emis_path, imager_flags, &
    character(len=date_length), intent(in)    :: cyear
    character(len=date_length), intent(in)    :: cdoy
    character(len=path_length), intent(in)    :: cimss_emis_path
-   type(imager_flags_s),       intent(in)    :: imager_flags
-   type(imager_geolocation_s), intent(in)    :: imager_geolocation
-   type(channel_info_s),       intent(in)    :: channel_info
-   type(preproc_dims_s),       intent(in)    :: preproc_dims
-   type(preproc_geoloc_s),     intent(in)    :: preproc_geoloc
+   type(imager_flags_t),       intent(in)    :: imager_flags
+   type(imager_geolocation_t), intent(in)    :: imager_geolocation
+   type(channel_info_t),       intent(in)    :: channel_info
+   type(preproc_dims_t),       intent(in)    :: preproc_dims
+   type(preproc_geoloc_t),     intent(in)    :: preproc_geoloc
    logical,                    intent(in)    :: assume_full_path
    logical,                    intent(in)    :: verbose
-   type(surface_s),            intent(inout) :: surface
-   type(preproc_surf_s),       intent(inout) :: preproc_surf
+   type(surface_t),            intent(inout) :: surface
+   type(preproc_surf_t),       intent(inout) :: preproc_surf
    type(source_attributes_s),  intent(inout) :: source_atts
 
    ! Local variables
    character(len=path_length)                         :: cimss_emis_path_file
-   type(emis_s)                                       :: emis
+   type(emis_t)                                       :: emis
    integer                                            :: n_chans
    integer,             allocatable, dimension(:)     :: ch_total_index
    integer,             allocatable, dimension(:)     :: ch_lw_index

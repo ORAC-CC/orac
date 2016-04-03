@@ -36,7 +36,7 @@
 
 subroutine read_modis_angles(fid,SDS_name,ixstart,ixstop,iystart,iystop,rtemp)
 
-   use preproc_constants
+   use preproc_constants_m
 
    implicit none
 

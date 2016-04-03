@@ -54,13 +54,13 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-module cimss_emissivity
+module cimss_emissivity_m
 
-   use preproc_constants, only : sreal_fill_value
+   use preproc_constants_m, only : sreal_fill_value
 
    implicit none
 
-   type emis_s
+   type emis_t
       !    Data dimensions
       integer(4)                                :: nlon, nlat, nbands
       !    Quality information
@@ -74,7 +74,7 @@ module cimss_emissivity
       real,       allocatable, dimension(:,:,:) :: emissivity
       !    Missing data value
       real                                      :: fill=sreal_fill_value
-   end type emis_s
+   end type emis_t
 
 contains
 
@@ -85,7 +85,7 @@ function read_cimss_emissivity(path_to_file, emis, wavelengths, verbose, flag, &
    wavenumber) result (stat)
 
    use orac_ncdf
-   use preproc_constants
+   use preproc_constants_m
 
    implicit none
 
@@ -97,7 +97,7 @@ function read_cimss_emissivity(path_to_file, emis, wavelengths, verbose, flag, &
    integer,                    intent(in), optional     :: wavenumber
 
    ! Output variables
-   type(emis_s),               intent(out)              :: emis
+   type(emis_t),               intent(out)              :: emis
    integer(kind=sint)                                   :: stat
 
    ! Local variables
@@ -111,11 +111,11 @@ function read_cimss_emissivity(path_to_file, emis, wavelengths, verbose, flag, &
    integer            :: nDim, nVar, nAtt
    integer            :: uDimID, ForNM
 
-   type cache_element
+   type cache_element_t
       real, pointer, dimension(:,:) :: a
-   end type cache_element
+   end type cache_element_t
 
-   type(cache_element), allocatable, dimension(:) :: cache
+   type(cache_element_t), allocatable, dimension(:) :: cache
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_cimss_emissivity()'
 
@@ -276,7 +276,7 @@ subroutine deallocate_emis(emis)
 
    implicit none
 
-   type(emis_s), intent(inout) :: emis
+   type(emis_t), intent(inout) :: emis
 
    if (allocated(emis%wavenumber)) deallocate(emis%wavenumber)
    if (allocated(emis%flag))       deallocate(emis%flag)
@@ -285,4 +285,4 @@ subroutine deallocate_emis(emis)
 
 end subroutine deallocate_emis
 
-end module cimss_emissivity
+end module cimss_emissivity_m

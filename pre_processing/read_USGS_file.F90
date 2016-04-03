@@ -21,13 +21,13 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-module USGS_physiography
+module USGS_physiography_m
 
-  use preproc_constants
+  use preproc_constants_m
 
   implicit none
 
-  type USGS_s
+  type USGS_t
      !    Data dimensions
      integer(4)                                      :: nlon, nlat
      real(kind=sreal)  , allocatable, dimension(:)   :: lon, lat
@@ -35,7 +35,7 @@ module USGS_physiography
      integer(kind=sint), allocatable, dimension(:,:) :: dem, lsm
      !    Missing data value
      real :: fill=sreal_fill_value
-  end type USGS_s
+  end type USGS_t
 
   integer :: usgs_lon_dim, usgs_lat_dim
 
@@ -53,7 +53,7 @@ contains
     logical,                    intent(in)    :: verbose
 
     ! Output variables
-    type(USGS_s), intent(out) :: usgs
+    type(USGS_t), intent(out) :: usgs
     integer(kind=sint) :: stat
 
     ! Local variables
@@ -102,7 +102,7 @@ contains
 
     ! input variables
     real(kind=sreal),intent(in) :: imager_lat, imager_lon
-    type(USGS_s), intent(in) :: usgs
+    type(USGS_t), intent(in) :: usgs
 
     ! output variable
     integer(kind=sint),dimension(2) :: nearest_xy
@@ -151,7 +151,7 @@ contains
 
     implicit none
 
-    type(USGS_s), intent(inout) :: usgs
+    type(USGS_t), intent(inout) :: usgs
 
     if (allocated(usgs%lon)) deallocate(usgs%lon)
     if (allocated(usgs%lon)) deallocate(usgs%lat)
@@ -163,4 +163,4 @@ contains
 
   !-----------------------------------------------------------------------------
 
-end module USGS_physiography
+end module USGS_physiography_m

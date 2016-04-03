@@ -29,7 +29,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-module preproc_constants
+module preproc_constants_m
 
    use common_constants
 
@@ -60,4 +60,4 @@ module preproc_constants
    ! Shuffling to improve compression
    logical,            parameter :: shuffle_flag=.FALSE.
 
-end module preproc_constants
+end module preproc_constants_m

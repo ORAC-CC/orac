@@ -9,7 +9,7 @@ $(OBJS)/cloud_typing_pavolonis.o: $(OBJS)/channel_structures.o $(OBJS)/ecmwf.o \
         $(OBJS)/imager_structures.o $(OBJS)/neural_net_preproc.o \
         $(OBJS)/surface_structures.o pavolonis_fill_coefficients.inc
 $(OBJS)/correct_for_ice_snow.o: $(OBJS)/channel_structures.o \
-        $(OBJS)/imager_structures.o $(OBJS)/nise_def.o \
+        $(OBJS)/imager_structures.o $(OBJS)/nsidc_nise.o \
         $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o \
         $(OBJS)/surface_structures.o
 $(OBJS)/cox_munk.o: $(OBJS)/nr.o $(OBJS)/preproc_constants.o
@@ -34,7 +34,7 @@ $(OBJS)/netcdf_output.o: $(OBJS)/channel_structures.o \
         netcdf_output_check.F90 netcdf_output_close.F90 netcdf_output_create.F90 \
         netcdf_output_create_file.F90 netcdf_output_write_swath.F90
 $(OBJS)/neural_net_preproc.o: $(OBJS)/neural_net_constants.o
-$(OBJS)/nise_def.o: $(OBJS)/preproc_constants.o read_nsidc_nise.F90
+$(OBJS)/nsidc_nise.o: $(OBJS)/preproc_constants.o read_nsidc_nise.F90
 $(OBJS)/preparation.o: $(OBJS)/calender.o $(OBJS)/imager_structures.o \
         $(OBJS)/preproc_constants.o set_ecmwf.F90
 $(OBJS)/preproc_structures.o: $(OBJS)/channel_structures.o \

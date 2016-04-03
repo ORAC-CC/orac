@@ -38,7 +38,7 @@ subroutine read_avhrr_lat_lon(fid,group,dataset,attrgroup,startx,stopx, &
      starty,stopy,rtemp)
 
    use hdf5
-   use preproc_constants
+   use preproc_constants_m
 
    implicit none
 

@@ -56,13 +56,13 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
      path_to_aatsr_drift_table, imager_geolocation,imager_angles,imager_flags, &
      imager_time,imager_measurements,channel_info,n_along_track,verbose)
 
-   use channel_structures
-   use imager_structures
-   use preproc_constants
-   use read_aatsr
-   use read_avhrr
-   use read_modis
-   use read_seviri
+   use channel_structures_m
+   use imager_structures_m
+   use preproc_constants_m
+   use read_aatsr_m
+   use read_avhrr_m
+   use read_modis_m
+   use read_seviri_m
 
    implicit none
 
@@ -71,12 +71,12 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
    character(len=path_length),     intent(in)    :: path_to_l1b_file
    character(len=path_length),     intent(in)    :: path_to_geo_file
    character(len=path_length),     intent(in)    :: path_to_aatsr_drift_table
-   type(imager_geolocation_s),     intent(inout) :: imager_geolocation
-   type(imager_angles_s),          intent(inout) :: imager_angles
-   type(imager_flags_s),           intent(inout) :: imager_flags
-   type(imager_time_s),            intent(inout) :: imager_time
-   type(imager_measurements_s),    intent(inout) :: imager_measurements
-   type(channel_info_s),           intent(in)    :: channel_info
+   type(imager_geolocation_t),     intent(inout) :: imager_geolocation
+   type(imager_angles_t),          intent(inout) :: imager_angles
+   type(imager_flags_t),           intent(inout) :: imager_flags
+   type(imager_time_t),            intent(inout) :: imager_time
+   type(imager_measurements_t),    intent(inout) :: imager_measurements
+   type(channel_info_t),           intent(in)    :: channel_info
    integer(kind=lint),             intent(in)    :: n_along_track
    logical,                        intent(in)    :: verbose
 

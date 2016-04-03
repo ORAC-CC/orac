@@ -60,9 +60,9 @@ subroutine set_ecmwf(sensor,cyear,cmonth,cday,chour,cminute,ecmwf_path,ecmwf_pat
    ecmwf_path3,ecmwf_path_file,ecmwf_path_file2,ecmwf_path_file3,ecmwf_flag, &
    imager_geolocation,imager_time,time_interp_method,time_int_fac,assume_full_path)
 
-   use calender
-   use imager_structures
-   use preproc_constants
+   use calender_m
+   use imager_structures_m
+   use preproc_constants_m
 
    implicit none
 
@@ -75,8 +75,8 @@ subroutine set_ecmwf(sensor,cyear,cmonth,cday,chour,cminute,ecmwf_path,ecmwf_pat
    character(len=*),           intent(out) :: ecmwf_path_file2(2)
    character(len=*),           intent(out) :: ecmwf_path_file3(2)
    integer,                    intent(in)  :: ecmwf_flag
-   type(imager_geolocation_s), intent(in)  :: imager_geolocation
-   type(imager_time_s),        intent(in)  :: imager_time
+   type(imager_geolocation_t), intent(in)  :: imager_geolocation
+   type(imager_time_t),        intent(in)  :: imager_time
    integer,                    intent(in)  :: time_interp_method
    real,                       intent(out) :: time_int_fac
    logical,                    intent(in)  :: assume_full_path
@@ -219,13 +219,13 @@ end subroutine set_ecmwf
 real(dreal) function find_center_time(imager_geolocation, imager_time) &
    result(center_time)
 
-   use imager_structures
-   use preproc_constants
+   use imager_structures_m
+   use preproc_constants_m
 
    implicit none
 
-   type(imager_geolocation_s), intent(in) :: imager_geolocation
-   type(imager_time_s),        intent(in) :: imager_time
+   type(imager_geolocation_t), intent(in) :: imager_geolocation
+   type(imager_time_t),        intent(in) :: imager_time
 
    integer     :: i, j
    real(dreal) :: start_time
@@ -257,7 +257,7 @@ end function find_center_time
 subroutine make_ecmwf_name(cyear,cmonth,cday,chour,ecmwf_flag,ecmwf_path, &
    ecmwf_path2,ecmwf_path3,ecmwf_path_file,ecmwf_path_file2,ecmwf_path_file3)
 
-   use preproc_constants
+   use preproc_constants_m
 
    implicit none
 

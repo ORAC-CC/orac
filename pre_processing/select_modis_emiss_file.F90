@@ -42,7 +42,7 @@
 subroutine select_modis_emiss_file(cyear,cdoy,cimss_emis_path, &
      cimss_emis_path_file)
 
-   use preproc_structures
+   use preproc_structures_m
 
    implicit none
 

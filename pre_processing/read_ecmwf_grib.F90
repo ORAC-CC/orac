@@ -69,16 +69,16 @@ subroutine read_ecmwf_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
      preproc_prtm,verbose)
 
    use grib_api
-   use preproc_constants
-   use preproc_structures
+   use preproc_constants_m
+   use preproc_structures_m
    use common_constants
 
    implicit none
 
    character(len=path_length), intent(in)    :: ecmwf_file
-   type(preproc_dims_s),       intent(in)    :: preproc_dims
-   type(preproc_geoloc_s),     intent(in)    :: preproc_geoloc
-   type(preproc_prtm_s),       intent(inout) :: preproc_prtm
+   type(preproc_dims_t),       intent(in)    :: preproc_dims
+   type(preproc_geoloc_t),     intent(in)    :: preproc_geoloc
+   type(preproc_prtm_t),       intent(inout) :: preproc_prtm
    logical,                    intent(in)    :: verbose
 
    integer(lint), parameter                 :: BUFFER = 2000000

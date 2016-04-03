@@ -38,13 +38,13 @@ subroutine read_ecmwf_wind_badc(ecmwf_path, ecmwf2path, ecmwf3path, ecmwf, &
                                 high_res)
 
    use grib_api
-   use preproc_constants
+   use preproc_constants_m
 
    implicit none
 
    character(len=*), intent(in)    :: ecmwf_path
    character(len=*), intent(in)    :: ecmwf2path, ecmwf3path
-   type(ecmwf_s),    intent(inout) :: ecmwf
+   type(ecmwf_t),    intent(inout) :: ecmwf
    logical,          intent(in)    :: high_res
 
    integer                         :: i,fid,gid,stat

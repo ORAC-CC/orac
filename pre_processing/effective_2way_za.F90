@@ -28,7 +28,7 @@
 
 subroutine effective_2way_za(sza,lza,amf,za)
 
-   use preproc_constants
+   use preproc_constants_m
 
    implicit none
 

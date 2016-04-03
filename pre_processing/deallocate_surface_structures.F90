@@ -27,13 +27,13 @@
 
 subroutine deallocate_surface_structures(surface,channel_info,include_full_brdf)
 
-   use channel_structures
-   use preproc_constants
+   use channel_structures_m
+   use preproc_constants_m
 
    implicit none
 
-   type(surface_s),      intent(inout) :: surface
-   type(channel_info_s), intent(in)    :: channel_info
+   type(surface_t),      intent(inout) :: surface
+   type(channel_info_t), intent(in)    :: channel_info
    logical,              intent(in)    :: include_full_brdf
 
    deallocate(surface%nise_mask)

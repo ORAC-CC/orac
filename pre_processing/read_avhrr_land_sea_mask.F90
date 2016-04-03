@@ -33,16 +33,16 @@ subroutine read_avhrr_land_sea_mask(path_to_geo_file,imager_geolocation, &
      imager_angles,imager_flags,imager_time)
 
    use hdf5
-   use imager_structures
-   use preproc_constants
+   use imager_structures_m
+   use preproc_constants_m
 
    implicit none
 
    character(len=path_length), intent(in)    :: path_to_geo_file
-   type(imager_geolocation_s), intent(inout) :: imager_geolocation
-   type(imager_angles_s),      intent(inout) :: imager_angles
-   type(imager_flags_s),       intent(inout) :: imager_flags
-   type(imager_time_s),        intent(inout) :: imager_time
+   type(imager_geolocation_t), intent(inout) :: imager_geolocation
+   type(imager_angles_t),      intent(inout) :: imager_angles
+   type(imager_flags_t),       intent(inout) :: imager_flags
+   type(imager_time_t),        intent(inout) :: imager_time
 
    character(len=path_length)                      :: path_to_lsmask_file
 

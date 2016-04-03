@@ -40,7 +40,7 @@
 ! 2014/06/30, GM: Apply 12um nonlinearity brightness temperature correction.
 ! 2015/11/20, GM: Minor bug fix to real constants.  For example: 26_dreal
 !    results in an 8 byte integer so that 26_dreal/60_dreal will be zero.  It
-!    should be 26._dreal to get the intended result. 
+!    should be 26._dreal to get the intended result.
 !
 ! $Id$
 !
@@ -48,20 +48,20 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-module aatsr_corrections
+module aatsr_corrections_m
 
-   use preproc_constants
+   use preproc_constants_m
 
    implicit none
 
-   type aatsr_drift_lut
+   type aatsr_drift_lut_t
       integer(kind=lint)                  :: n
       integer(kind=sint), dimension(4000) :: year, month, day
       integer(kind=sint), dimension(4000) :: hour, minute, second
       real(kind=dreal), dimension(4000)   :: julday
       real(kind=sreal), dimension(4,4000) :: ch
       real(kind=sreal), dimension(4,4000) :: er
-   end type aatsr_drift_lut
+   end type aatsr_drift_lut_t
 
    ! Month strings used in the LUT files
    character(3), dimension(12), parameter  :: monthname &
@@ -133,22 +133,24 @@ contains
 subroutine aatsr_drift_correction(start_date, vc1_file, lut, chan, new_drift, &
                                   old_drift, drift_var)
 
-   use calender
+   use calender_m
 
    implicit none
 
-   character(len=30),     intent(in)  :: start_date
-   character(len=62),     intent(in)  :: vc1_file
-   type(aatsr_drift_lut), intent(in)  :: lut
-   integer,               intent(in)  :: chan
-   real(dreal),           intent(out) :: new_drift, old_drift, drift_var
+   character(len=30),       intent(in)  :: start_date
+   character(len=62),       intent(in)  :: vc1_file
+   type(aatsr_drift_lut_t), intent(in)  :: lut
+   integer,                 intent(in)  :: chan
+   real(dreal),             intent(out) :: new_drift
+   real(dreal),             intent(out) :: old_drift
+   real(dreal),             intent(out) :: drift_var
 
-   character(len=30)                  :: sdate
-   real(kind=dreal)                   :: T0, T1, T2, T3, T4, Tn, Tvc, dT, second
-   integer(kind=sint)                 :: year, month, day, hour, minute
-   integer(sint)                      :: vc_year, vc_month, vc_day, vc_hour
-   integer(sint)                      :: vc_minute, vc_second
-   integer(sint)                      :: stat, ilow
+   character(len=30)  :: sdate
+   real(kind=dreal)   :: T0, T1, T2, T3, T4, Tn, Tvc, dT, second
+   integer(kind=sint) :: year, month, day, hour, minute
+   integer(sint)      :: vc_year, vc_month, vc_day, vc_hour
+   integer(sint)      :: vc_minute, vc_second
+   integer(sint)      :: stat, ilow
 
    ! Yearly rates for exponential correction
    real(kind=sreal), parameter, dimension(4) :: K = &
@@ -276,14 +278,14 @@ end subroutine aatsr_drift_correction
 
 subroutine aatsr_read_drift_table(drift_table, lut, stat)
 
-   use calender
-   use preproc_constants
+   use calender_m
+   use preproc_constants_m
 
    implicit none
 
    character(len=path_length), intent(in)    :: drift_table
    integer,                    intent(out)   :: stat
-   type(aatsr_drift_lut),      intent(inout) :: lut
+   type(aatsr_drift_lut_t),    intent(inout) :: lut
 
    integer            :: i, lun
    character(len=256) :: line
@@ -458,4 +460,4 @@ function aatsr_12um_nonlinearity_correction(T, u_delta_BT_2) result(delta_BT)
 
 end function aatsr_12um_nonlinearity_correction
 
-end module aatsr_corrections
+end module aatsr_corrections_m

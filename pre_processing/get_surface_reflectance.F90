@@ -117,18 +117,18 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, modis_brdf_path
      imager_flags, imager_geolocation, imager_angles, channel_info, ecmwf, &
      assume_full_path, include_full_brdf, verbose, surface, source_atts)
 
-  use channel_structures
+  use channel_structures_m
   use cox_munk_m
-  use ecmwf_m, only : ecmwf_s
+  use ecmwf_m, only : ecmwf_t
   use fill_grid_m
-  use imager_structures
+  use imager_structures_m
   use interpol
   use mcd43c_m
-  use preproc_constants
-  use preproc_structures
+  use preproc_constants_m
+  use preproc_structures_m
   use ross_thick_li_sparse_r_m
   use source_attributes
-  use surface_structures
+  use surface_structures_m
 
   implicit none
 
@@ -137,15 +137,15 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, modis_brdf_path
   character(len=date_length), intent(in)    :: cdoy
   character(len=path_length), intent(in)    :: modis_surf_path
   character(len=path_length), intent(in)    :: modis_brdf_path
-  type(imager_flags_s),       intent(in)    :: imager_flags
-  type(imager_geolocation_s), intent(in)    :: imager_geolocation
-  type(imager_angles_s),      intent(in)    :: imager_angles
-  type(channel_info_s),       intent(in)    :: channel_info
-  type(ecmwf_s),              intent(in)    :: ecmwf
+  type(imager_flags_t),       intent(in)    :: imager_flags
+  type(imager_geolocation_t), intent(in)    :: imager_geolocation
+  type(imager_angles_t),      intent(in)    :: imager_angles
+  type(channel_info_t),       intent(in)    :: channel_info
+  type(ecmwf_t),              intent(in)    :: ecmwf
   logical,                    intent(in)    :: assume_full_path
   logical,                    intent(in)    :: include_full_brdf
   logical,                    intent(in)    :: verbose
-  type(surface_s),            intent(inout) :: surface
+  type(surface_t),            intent(inout) :: surface
   type(source_attributes_s),  intent(inout) :: source_atts
 
   ! Local variables
@@ -155,8 +155,8 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, modis_brdf_path
   character(len=path_length)                      :: modis_brdf_path_file
   real(kind=sreal), allocatable, dimension(:)     :: solzalnd, satzalnd
   real(kind=sreal), allocatable, dimension(:)     :: solazlnd, relazlnd
-  type(mcd43c1)                                   :: mcdc1
-  type(mcd43c3)                                   :: mcdc3
+  type(mcd43c1_t)                                 :: mcdc1
+  type(mcd43c3_t)                                 :: mcdc3
   integer, parameter                              :: n_modbands = 7
   integer, dimension(n_modbands)                  :: modbands
   integer, parameter                              :: n_coxbands = 8
@@ -180,8 +180,8 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, modis_brdf_path
   real(kind=sreal), allocatable, dimension(:)     :: u10sea, v10sea
   real(kind=sreal), allocatable, dimension(:,:)   :: refsea
   real(kind=sreal), allocatable, dimension(:,:,:) :: rhosea
-  type(cox_munk_shared_band_type)                 :: cox_munk_shared_band(n_coxbands)
-  type(cox_munk_shared_geo_wind_type)             :: cox_munk_shared_geo_wind
+  type(cox_munk_shared_band_t)                    :: cox_munk_shared_band(n_coxbands)
+  type(cox_munk_shared_geo_wind_t)                :: cox_munk_shared_geo_wind
 
   ! General
   integer                                         :: i,j,k,ii,kk

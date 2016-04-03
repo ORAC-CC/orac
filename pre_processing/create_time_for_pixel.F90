@@ -35,15 +35,15 @@
 subroutine create_time_for_pixel(ixstart,ixstop,iystart,iystop,n_along_track, &
    startepochs,endepochs,imager_time,refjulianday)
 
-   use imager_structures
-   use preproc_constants
+   use imager_structures_m
+   use preproc_constants_m
 
    implicit none
 
    integer(kind=lint),  intent(in)    :: ixstart,ixstop,iystart,iystop
    integer(kind=lint),  intent(in)    :: n_along_track
    integer(kind=lint),  intent(in)    :: startepochs,endepochs
-   type(imager_time_s), intent(inout) :: imager_time
+   type(imager_time_t), intent(inout) :: imager_time
    real(kind=dreal),    intent(in)    :: refjulianday
 
    integer(kind=lint) :: jy

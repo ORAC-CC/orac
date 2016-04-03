@@ -54,8 +54,8 @@
 subroutine read_modis_l1b_radiances_2(fid, band, Cal_type_is_refl, &
      ixstart, ixstop, iystart, iystop, level1b_buffer, verbose)
 
-   use imager_structures
-   use preproc_constants
+   use imager_structures_m
+   use preproc_constants_m
 
    implicit none
 

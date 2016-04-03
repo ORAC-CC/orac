@@ -53,7 +53,7 @@ subroutine read_aatsr_dimensions(path_to_l1b_file,n_across_track, &
      along_track_offset2,verbose)
 
    use iso_c_binding
-   use preproc_constants
+   use preproc_constants_m
    use common_constants
 
    implicit none

@@ -31,8 +31,8 @@
 !    is efficient for computing bidirectional reflectance for many bands and is
 !    ideal for calculating rho_0d and rho_dv. It requires as input the
 !    structures
-!       cox_munk_shared_band_type,
-!       cox_munk_shared_geo_wind_type,
+!       cox_munk_shared_band_t,
+!       cox_munk_shared_geo_wind_t,
 !    computed with
 !       cox_munk3_calc_shared_band(),
 !       cox_munk3_calc_shared_geo_wind(),
@@ -44,8 +44,8 @@
 !    conditions and is *very* ideal for calculating rho_dd where the geometry
 !    is the same for each pixel as a consistent set of quadrature points. It
 !    requires as input the structures
-!       cox_munk_shared_wind_type,
-!       cox_munk_shared_band_geo_type,
+!       cox_munk_shared_wind_t,
+!       cox_munk_shared_band_geo_t,
 !    computed with
 !       cox_munk4_calc_shared_wind(),
 !       cox_munk4_calc_shared_band_geo(),
@@ -112,16 +112,16 @@
 
 module cox_munk_m
 
-   use preproc_constants
+   use preproc_constants_m
 
    implicit none
 
    private
 
-   public :: cox_munk_shared_band_type, &
-             cox_munk_shared_geo_wind_type, &
-             cox_munk_shared_wind_type, &
-             cox_munk_shared_band_geo_type, &
+   public :: cox_munk_shared_band_t, &
+             cox_munk_shared_geo_wind_t, &
+             cox_munk_shared_wind_t, &
+             cox_munk_shared_band_geo_t, &
              cox_munk, &
              cox_munk2, &
              cox_munk3_calc_shared_band, &
@@ -171,13 +171,13 @@ module cox_munk_m
    real(kind=sreal), parameter :: coef2(n_lambda)   = (/ 1.27e-2,  6.40e-3, 7.50e-3, 0.0,     0.0,     0.0,     0.0,      0.0     /)
 
 
-   type cox_munk_shared_band_type
+   type cox_munk_shared_band_t
       real(kind=sreal) :: chlabs
       real(kind=sreal) :: totbsc
       real(kind=sreal) :: eta_oc
-   end type cox_munk_shared_band_type
+   end type cox_munk_shared_band_t
 
-   type cox_munk_shared_geo_wind_type
+   type cox_munk_shared_geo_wind_t
       real(kind=sreal) :: satza
       real(kind=sreal) :: cos_solza
       real(kind=sreal) :: sin_solza
@@ -192,9 +192,9 @@ module cox_munk_m
       real(kind=sreal) :: sin_w
       real(kind=sreal) :: ergodic
       real(kind=sreal) :: a
-   end type cox_munk_shared_geo_wind_type
+   end type cox_munk_shared_geo_wind_t
 
-   type cox_munk_shared_wind_type
+   type cox_munk_shared_wind_t
       real(kind=sreal) :: ws
       real(kind=sreal) :: wd
       real(kind=sreal) :: wcfrac
@@ -204,9 +204,9 @@ module cox_munk_m
       real(kind=sreal) :: sigx
       real(kind=sreal) :: sigy
 
-   end type cox_munk_shared_wind_type
+   end type cox_munk_shared_wind_t
 
-   type cox_munk_shared_band_geo_type
+   type cox_munk_shared_band_geo_t
       real(kind=sreal) :: satza
       real(kind=sreal) :: cos_solza
       real(kind=sreal) :: sin_solza
@@ -219,7 +219,7 @@ module cox_munk_m
       real(kind=sreal) :: Zy
       real(kind=sreal) :: cosbeta
       real(kind=sreal) :: R_sf
-   end type cox_munk_shared_band_geo_type
+   end type cox_munk_shared_band_geo_t
 
 contains
 
@@ -259,7 +259,7 @@ contains
 !-------------------------------------------------------------------------------
 subroutine cox_munk(bands, solza, satza, solaz, relaz, u10, v10, rho)
 
-   use preproc_constants
+   use preproc_constants_m
 
    implicit none
 
@@ -608,7 +608,7 @@ end subroutine cox_munk
 !-------------------------------------------------------------------------------
 function zeisse_ba(theta, ws) result (ba)
 
-   use  preproc_constants
+   use preproc_constants_m
 
    implicit none
 
@@ -699,7 +699,7 @@ end function zeisse_ba
 !-------------------------------------------------------------------------------
 subroutine cox_munk2(i_band, solza, satza, solaz, relaz, u10, v10, rho)
 
-   use preproc_constants
+   use preproc_constants_m
 
    implicit none
 
@@ -951,7 +951,7 @@ end subroutine cox_munk2
 !-------------------------------------------------------------------------------
 function zeisse_ba2(theta, ws) result (ba)
 
-   use  preproc_constants
+   use preproc_constants_m
 
    implicit none
 
@@ -999,9 +999,9 @@ end function zeisse_ba2
 ! Description and Algorithm details:
 !
 ! Arguments:
-! Name   Type                      In/Out/Both Description
-! i_band integer                   In          Wavelength band index
-! shared cox_munk_shared_band_type Out         Structure with shared band values
+! Name   Type                   In/Out/Both Description
+! i_band integer                In          Wavelength band index
+! shared cox_munk_shared_band_t Out         Structure with shared band values
 !
 ! Local variables:
 ! Name Type Description
@@ -1011,10 +1011,10 @@ subroutine cox_munk3_calc_shared_band(i_band, shared)
    implicit none
 
    ! Input arguments
-   integer,                         intent(in)  :: i_band
+   integer,                      intent(in)  :: i_band
 
    ! Output arguments
-   type(cox_munk_shared_band_type), intent(out) :: shared
+   type(cox_munk_shared_band_t), intent(out) :: shared
 
    ! Wavelength dependent constants (derived)
    real(kind=sreal) :: chlbsc
@@ -1057,8 +1057,8 @@ end subroutine cox_munk3_calc_shared_band
 ! relaz  sreal  In          Relative azimuth angle (between sun and satellite)
 ! u10    sreal  In          Near surface (10m) East-West wind component (m/s)
 ! v10    sreal  In          Near surface (10m) South-North wind component (m/s)
-! shared cox_munk_shared_geo_wind_type Out Structure with shared geometry and
-!                                      wind values
+! shared cox_munk_shared_geo_wind_t Out Structure with shared geometry and
+!                                   wind values
 !
 ! Local variables:
 ! Name Type Description
@@ -1068,12 +1068,12 @@ subroutine cox_munk3_calc_shared_geo_wind(solza, satza, solaz, relaz, u10, v10, 
    implicit none
 
    ! Input arguments
-   real(kind=sreal),                    intent(in)  :: solza, satza
-   real(kind=sreal),                    intent(in)  :: solaz, relaz
-   real(kind=sreal),                    intent(in)  :: u10, v10
+   real(kind=sreal),                 intent(in)  :: solza, satza
+   real(kind=sreal),                 intent(in)  :: solaz, relaz
+   real(kind=sreal),                 intent(in)  :: u10, v10
 
    ! Output arguments
-   type(cox_munk_shared_geo_wind_type), intent(out) :: shared
+   type(cox_munk_shared_geo_wind_t), intent(out) :: shared
 
    ! Wind speed and direction
    real(kind=sreal) :: ws, wd
@@ -1200,32 +1200,32 @@ end subroutine cox_munk3_calc_shared_geo_wind
 ! Description and Algorithm details:
 !
 ! Arguments:
-! Name   Type                          In/Out/Both Description
-! i_band integer                       In          Wavelength band index
+! Name   Type                       In/Out/Both Description
+! i_band integer                    In          Wavelength band index
 ! shared_band
-!        cox_munk_shared_band_type     In          Structure with shared
-!                                                  band values
+!        cox_munk_shared_band_t     In          Structure with shared band
+!                                               values
 ! shared_geo_wind
-!        cox_munk_shared_geo_wind_type In          Structure with shared
-!                                                  geometry and wind values
-! rho    sreal                        Out          Bi-directional reflectance
+!        cox_munk_shared_geo_wind_t In          Structure with shared geometry
+!                                               and wind values
+! rho    sreal                      Out         Bi-directional reflectance
 !
 ! Local variables:
 ! Name Type Description
 !-------------------------------------------------------------------------------
 subroutine cox_munk3(i_band, shared_band, shared_geo_wind, rho)
 
-   use preproc_constants
+   use preproc_constants_m
 
    implicit none
 
    ! Input arguments
-   integer,                             intent(in)  :: i_band
-   type(cox_munk_shared_band_type),     intent(in)  :: shared_band
-   type(cox_munk_shared_geo_wind_type), intent(in)  :: shared_geo_wind
+   integer,                          intent(in)  :: i_band
+   type(cox_munk_shared_band_t),     intent(in)  :: shared_band
+   type(cox_munk_shared_geo_wind_t), intent(in)  :: shared_geo_wind
 
    ! Output arguments
-   real(kind=sreal),                    intent(out) :: rho
+   real(kind=sreal),                 intent(out) :: rho
 
    ! White cap reflection variables
    real(kind=sreal)            :: rhowc
@@ -1358,23 +1358,23 @@ end subroutine cox_munk3
 ! i_band integer In          Wavelength band index number
 ! u10    sreal   In          Near surface (10m) East-West wind component (m/s)
 ! v10    sreal   In          Near surface (10m) South-North wind component (m/s)
-! shared cox_munk_shared_wind_type Out Structure with shared band values
+! shared cox_munk_shared_wind_t Out Structure with shared band values
 !
 ! Local variables:
 ! Name Type Description
 !-------------------------------------------------------------------------------
 subroutine cox_munk4_calc_shared_wind(i_band, u10, v10, shared)
 
-   use preproc_constants
+   use preproc_constants_m
 
    implicit none
 
    ! Input arguments
-   integer,                         intent(in)  :: i_band
-   real(kind=sreal),                intent(in)  :: u10, v10
+   integer,                      intent(in)  :: i_band
+   real(kind=sreal),             intent(in)  :: u10, v10
 
    ! Output arguments
-   type(cox_munk_shared_wind_type), intent(out) :: shared
+   type(cox_munk_shared_wind_t), intent(out) :: shared
 
 
    !----------------------------------------------------------------------------
@@ -1431,7 +1431,7 @@ end subroutine cox_munk4_calc_shared_wind
 ! satza  sreal   In          Satellite zenith angle
 ! solaz  sreal   In          Solar azimuth angle (from north)
 ! relaz  sreal   In          Relative azimuth angle (between sun and satellite)
-! shared cox_munk_shared_wind_type Out Structure with shared band values
+! shared cox_munk_shared_wind_t Out Structure with shared band values
 !
 ! Local variables:
 ! Name Type Description
@@ -1441,12 +1441,12 @@ subroutine cox_munk4_calc_shared_band_geo(i_band, solza, satza, solaz, relaz, sh
    implicit none
 
    ! Input arguments
-   integer,                             intent(in)  :: i_band
-   real(kind=sreal),                    intent(in)  :: solza, satza
-   real(kind=sreal),                    intent(in)  :: solaz, relaz
+   integer,                          intent(in)  :: i_band
+   real(kind=sreal),                 intent(in)  :: solza, satza
+   real(kind=sreal),                 intent(in)  :: solaz, relaz
 
    ! Output arguments
-   type(cox_munk_shared_band_geo_type), intent(out) :: shared
+   type(cox_munk_shared_band_geo_t), intent(out) :: shared
 
    ! Under-light reflection variables
    real(kind=sreal)            :: chlabs
@@ -1614,12 +1614,12 @@ subroutine cox_munk4_interp_shared_band_geo(d_theta, theta, shared_lut, shared_o
    implicit none
 
    ! Input arguments
-   real(kind=sreal),                    intent(in) :: d_theta
-   real(kind=sreal),                    intent(in) :: theta
-   type(cox_munk_shared_band_geo_type), intent(in) :: shared_lut(:)
+   real(kind=sreal),                 intent(in) :: d_theta
+   real(kind=sreal),                 intent(in) :: theta
+   type(cox_munk_shared_band_geo_t), intent(in) :: shared_lut(:)
 
    ! Output arguments
-   type(cox_munk_shared_band_geo_type), intent(out) :: shared_out
+   type(cox_munk_shared_band_geo_t), intent(out) :: shared_out
 
    integer :: i
    integer :: ii
@@ -1661,31 +1661,31 @@ end subroutine cox_munk4_interp_shared_band_geo
 ! Description and Algorithm details:
 !
 ! Arguments:
-! Name   Type                          In/Out/Both Description
-! i_band integer                       In          Wavelength band index
+! Name   Type                       In/Out/Both Description
+! i_band integer                    In          Wavelength band index
 ! shared_wind
-!        cox_munk_shared_wind_type     In          Structure with shared
-!                                                  wind values
+!        cox_munk_shared_wind_t     In          Structure with shared wind
+!                                               values
 ! shared_band_geo
-!        cox_munk_shared_band_geo_type In          Structure with shared
-!                                                  band and geometry values
-! rho    sreal                         Out         Bi-directional reflectance
+!        cox_munk_shared_band_geo_t In          Structure with shared band and
+!                                               geometry values
+! rho    sreal                      Out         Bi-directional reflectance
 !
 ! Local variables:
 ! Name Type Description
 !-------------------------------------------------------------------------------
 subroutine cox_munk4(shared_wind, shared_band_geo, rho)
 
-   use preproc_constants
+   use preproc_constants_m
 
    implicit none
 
    ! Input arguments
-   type(cox_munk_shared_wind_type),     intent(in) :: shared_wind
-   type(cox_munk_shared_band_geo_type), intent(in) :: shared_band_geo
+   type(cox_munk_shared_wind_t),     intent(in) :: shared_wind
+   type(cox_munk_shared_band_geo_t), intent(in) :: shared_band_geo
 
    ! Output arguments
-   real(kind=sreal),                    intent(out) :: rho
+   real(kind=sreal),                 intent(out) :: rho
 
    ! Sun-glint/Cox and Munk variables
    real(kind=sreal) :: dangle
@@ -1759,7 +1759,7 @@ end subroutine cox_munk4
 !-------------------------------------------------------------------------------
 function zeisse_ba3(theta, cos_theta, ws) result (ba)
 
-   use  preproc_constants
+   use preproc_constants_m
 
    implicit none
 
@@ -1834,8 +1834,8 @@ end function zeisse_ba3
 subroutine cox_munk_rho_0v_0d_dv_and_dd(bands, solza, satza, solaz, relaz, &
    u10, v10, fill_value, rho_0v, rho_0d, rho_dv, rho_dd, verbose)
 
-   use nr
-   use preproc_constants
+   use nr_m
+   use preproc_constants_m
 
    implicit none
 
@@ -1883,12 +1883,12 @@ subroutine cox_munk_rho_0v_0d_dv_and_dd(bands, solza, satza, solaz, relaz, &
    real(kind=sreal)              :: satza2
    real(kind=sreal)              :: relaz2
 
-   type(cox_munk_shared_band_type),     allocatable :: shared_band(:)
-   type(cox_munk_shared_geo_wind_type)              :: shared_geo_wind
+   type(cox_munk_shared_band_t),     allocatable :: shared_band(:)
+   type(cox_munk_shared_geo_wind_t)              :: shared_geo_wind
 
-   type(cox_munk_shared_wind_type)                  :: shared_wind
-   type(cox_munk_shared_band_geo_type), allocatable :: shared_band_geo(:,:,:,:)
-   type(cox_munk_shared_band_geo_type)              :: shared_band_geo2
+   type(cox_munk_shared_wind_t)                  :: shared_wind
+   type(cox_munk_shared_band_geo_t), allocatable :: shared_band_geo(:,:,:,:)
+   type(cox_munk_shared_band_geo_t)              :: shared_band_geo2
 
 
    n_bands  = size(bands)

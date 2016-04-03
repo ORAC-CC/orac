@@ -30,9 +30,9 @@
 
 subroutine get_modis_time(geo_id,imager_geolocation,imager_time,n_along_track)
 
-   use calender
-   use imager_structures
-   use preproc_constants
+   use calender_m
+   use imager_structures_m
+   use preproc_constants_m
 
    implicit none
 
@@ -40,8 +40,8 @@ subroutine get_modis_time(geo_id,imager_geolocation,imager_time,n_along_track)
    include "dffunc.f90"
 
    integer(kind=lint),         intent(in)    :: geo_id
-   type(imager_geolocation_s), intent(inout) :: imager_geolocation
-   type(imager_time_s),        intent(in)    :: imager_time
+   type(imager_geolocation_t), intent(inout) :: imager_geolocation
+   type(imager_time_t),        intent(in)    :: imager_time
    integer(kind=lint),         intent(in)    :: n_along_track
 
    integer(kind=lint)         :: var_id

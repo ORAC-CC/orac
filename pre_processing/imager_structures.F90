@@ -7,7 +7,7 @@
 !
 ! History:
 ! 2011/12/19, MJ: writes sample code for MODIS L1b data.
-! 2012/02/03, MJ: adds uncertainty array to imager_measurements_s
+! 2012/02/03, MJ: adds uncertainty array to imager_measurements_t
 ! 2012/04/24, GT: Added solar azimuth angle to the
 !    imager_angles structure (needed by surface reflectance routines)
 ! 2012/04/24, GT: Added solar azimuth angle to the
@@ -28,13 +28,13 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-module imager_structures
+module imager_structures_m
 
-   use preproc_constants
+   use preproc_constants_m
 
    implicit none
 
-   type imager_measurements_s
+   type imager_measurements_t
 
       integer(kind=lint) :: nchannels
       integer(kind=lint) :: nviews
@@ -42,9 +42,9 @@ module imager_structures
       real(kind=sreal), dimension(:,:,:), pointer :: data
       real(kind=sreal), dimension(:,:,:), pointer :: uncertainty
 
-   end type imager_measurements_s
+   end type imager_measurements_t
 
-   type imager_geolocation_s
+   type imager_geolocation_t
 
       integer(kind=lint) :: nx,ny,startx,starty,endx,endy
 
@@ -53,9 +53,9 @@ module imager_structures
 
       integer(kind=sint), dimension(:,:), pointer :: dem
 
-   end type imager_geolocation_s
+   end type imager_geolocation_t
 
-   type imager_angles_s
+   type imager_angles_t
 
       integer(kind=lint) :: nviews
 
@@ -64,23 +64,23 @@ module imager_structures
       real(kind=sreal), dimension(:,:,:), pointer :: solazi
       real(kind=sreal), dimension(:,:,:), pointer :: relazi
 
-   end type imager_angles_s
+   end type imager_angles_t
 
-   type imager_flags_s
+   type imager_flags_t
 
       integer(kind=byte), dimension(:,:), pointer :: lusflag
       integer(kind=byte), dimension(:,:), pointer :: lsflag
       integer(kind=byte), dimension(:,:), pointer :: cflag
 
-   end type imager_flags_s
+   end type imager_flags_t
 
-   type imager_time_s
+   type imager_time_t
 
       real(kind=dreal), dimension(:,:), pointer :: time
 
-   end type imager_time_s
+   end type imager_time_t
 
-   type imager_pavolonis_s
+   type imager_pavolonis_t
 
       integer(kind=sint), dimension(:,:), pointer :: sunglint_mask
       integer(kind=sint), dimension(:,:), pointer :: sfctype
@@ -91,11 +91,11 @@ module imager_structures
       integer(kind=byte), dimension(:,:), pointer :: cirrus_quality
       real(kind=sreal),   dimension(:,:), pointer :: emis_ch3b
 
-   end type imager_pavolonis_s
+   end type imager_pavolonis_t
 
 contains
 
 include 'allocate_imager_structures.F90'
 include 'deallocate_imager_structures.F90'
 
-end module imager_structures
+end module imager_structures_m

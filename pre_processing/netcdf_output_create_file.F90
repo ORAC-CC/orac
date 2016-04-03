@@ -105,12 +105,12 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
 
    use netcdf
 
-   use channel_structures
+   use channel_structures_m
    use global_attributes
-   use imager_structures
+   use imager_structures_m
    use orac_ncdf
-   use preproc_constants
-   use preproc_structures
+   use preproc_constants_m
+   use preproc_structures_m
    use source_attributes
 
    implicit none
@@ -127,9 +127,9 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
    character(len=sensor_length),   intent(in)    :: sensor
    character(len=*),               intent(in)    :: path
    integer,                        intent(in)    :: type
-   type(preproc_dims_s),           intent(in)    :: preproc_dims
-   type(netcdf_output_info_s),     intent(inout) :: netcdf_info
-   type(channel_info_s),           intent(in)    :: channel_info
+   type(preproc_dims_t),           intent(in)    :: preproc_dims
+   type(netcdf_output_info_t),     intent(inout) :: netcdf_info
+   type(channel_info_t),           intent(in)    :: channel_info
    logical,                        intent(in)    :: verbose
 
    ! Local
@@ -592,11 +592,11 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
 
    use netcdf
 
-   use channel_structures
+   use channel_structures_m
    use global_attributes
-   use imager_structures
+   use imager_structures_m
    use orac_ncdf
-   use preproc_constants
+   use preproc_constants_m
    use source_attributes
 
    implicit none
@@ -613,10 +613,10 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
    character(len=sensor_length),   intent(in)    :: sensor
    character(len=*),               intent(in)    :: path
    integer,                        intent(in)    :: type
-   type(imager_geolocation_s),     intent(in)    :: imager_geolocation
-   type(imager_angles_s),          intent(in)    :: imager_angles
-   type(netcdf_output_info_s),     intent(inout) :: netcdf_info
-   type(channel_info_s),           intent(in)    :: channel_info
+   type(imager_geolocation_t),     intent(in)    :: imager_geolocation
+   type(imager_angles_t),          intent(in)    :: imager_angles
+   type(netcdf_output_info_t),     intent(inout) :: netcdf_info
+   type(channel_info_t),           intent(in)    :: channel_info
    logical,                        intent(in)    :: include_full_brdf
    logical,                        intent(in)    :: verbose
 
@@ -1272,12 +1272,12 @@ subroutine netcdf_create_config(global_atts,source_atts,cyear,cmonth,cday, &
 
    use netcdf
 
-   use channel_structures
+   use channel_structures_m
    use global_attributes
-   use imager_structures
+   use imager_structures_m
    use orac_ncdf
-   use preproc_constants
-   use preproc_structures
+   use preproc_constants_m
+   use preproc_structures_m
    use source_attributes
 
    implicit none
@@ -1293,10 +1293,10 @@ subroutine netcdf_create_config(global_atts,source_atts,cyear,cmonth,cday, &
    character(len=platform_length), intent(in)    :: platform
    character(len=sensor_length),   intent(in)    :: sensor
    character(len=*),               intent(in)    :: path
-   type(preproc_dims_s),           intent(in)    :: preproc_dims
-   type(imager_geolocation_s),     intent(in)    :: imager_geolocation
-   type(netcdf_output_info_s),     intent(inout) :: netcdf_info
-   type(channel_info_s),           intent(in)    :: channel_info
+   type(preproc_dims_t),           intent(in)    :: preproc_dims
+   type(imager_geolocation_t),     intent(in)    :: imager_geolocation
+   type(netcdf_output_info_t),     intent(inout) :: netcdf_info
+   type(channel_info_t),           intent(in)    :: channel_info
    logical,                        intent(in)    :: verbose
 
    ! Local

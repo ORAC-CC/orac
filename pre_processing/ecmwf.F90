@@ -17,7 +17,7 @@
 ! 2014/02/04, OS: Added snow_depth and sea_ice_cover fields for high res ERA
 !    data.
 ! 2015/11/26, GM: Added dup_ecmwf_allocation() and linearly_combine_ecmwfs() to
-!    facilitate linear interpolation between ecmwf_s structures.
+!    facilitate linear interpolation between ecmwf_t structures.
 ! 2015/12/17, OS: Added low_res flag.
 ! 2016/02/03, GM: Added parameter arrays avec and bvec as they were being
 !    duplicated in subroutines.
@@ -32,7 +32,7 @@
 
 module ecmwf_m
 
-   use preproc_constants
+   use preproc_constants_m
 
    implicit none
 
@@ -71,12 +71,12 @@ module ecmwf_m
        0.9796627,     0.9882701,     0.9940194,     0.9976301,     &
        1.0000000 ]
 
-   type ecmwf_s
+   type ecmwf_t
       integer(kind=lint)                        :: xdim,ydim,kdim
       real(kind=sreal), dimension(:),   pointer :: lat,lon
       real(kind=sreal), dimension(:),   pointer :: avec,bvec
       real(kind=sreal), dimension(:,:), pointer :: u10,v10,skin_temp,snow_depth,sea_ice_cover
-   end type ecmwf_s
+   end type ecmwf_t
 
 contains
 
@@ -96,7 +96,7 @@ subroutine ecmwf_wind_init(ecmwf)
 
    implicit none
 
-   type(ecmwf_s), intent(out) :: ecmwf
+   type(ecmwf_t), intent(out) :: ecmwf
 
    ecmwf%xdim=0
    ecmwf%ydim=0
@@ -117,8 +117,8 @@ subroutine dup_ecmwf_allocation(ecmwf, ecmwf2, low_res)
 
    implicit none
 
-   type(ecmwf_s), intent(in)  :: ecmwf
-   type(ecmwf_s), intent(out) :: ecmwf2
+   type(ecmwf_t), intent(in)  :: ecmwf
+   type(ecmwf_t), intent(out) :: ecmwf2
    logical,       intent(in)  :: low_res
 
    ecmwf2%xdim = ecmwf%xdim
@@ -144,9 +144,9 @@ subroutine linearly_combine_ecmwfs(a, b, ecmwf1, ecmwf2, ecmwf, low_res)
 
    real,          intent(in)  :: a
    real,          intent(in)  :: b
-   type(ecmwf_s), intent(in)  :: ecmwf1
-   type(ecmwf_s), intent(in)  :: ecmwf2
-   type(ecmwf_s), intent(out) :: ecmwf
+   type(ecmwf_t), intent(in)  :: ecmwf1
+   type(ecmwf_t), intent(in)  :: ecmwf2
+   type(ecmwf_t), intent(out) :: ecmwf
    logical,       intent(in)  :: low_res
 
    ecmwf%lat              = a * ecmwf1%lat        + b * ecmwf2%lat

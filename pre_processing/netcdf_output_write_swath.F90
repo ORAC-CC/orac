@@ -55,24 +55,24 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocati
    imager_measurements,imager_time,imager_pavolonis,netcdf_info,channel_info, &
    surface,include_full_brdf)
 
-   use channel_structures
-   use imager_structures
+   use channel_structures_m
+   use imager_structures_m
    use netcdf
    use orac_ncdf
-   use preproc_constants
-   use surface_structures
+   use preproc_constants_m
+   use surface_structures_m
 
    implicit none
 
-   type(imager_flags_s),        intent(in) :: imager_flags
-   type(imager_angles_s),       intent(in) :: imager_angles
-   type(imager_geolocation_s),  intent(in) :: imager_geolocation
-   type(imager_measurements_s), intent(in) :: imager_measurements
-   type(imager_time_s),         intent(in) :: imager_time
-   type(imager_pavolonis_s),    intent(in) :: imager_pavolonis
-   type(netcdf_output_info_s),  intent(in) :: netcdf_info
-   type(channel_info_s),        intent(in) :: channel_info
-   type(surface_s),             intent(in) :: surface
+   type(imager_flags_t),        intent(in) :: imager_flags
+   type(imager_angles_t),       intent(in) :: imager_angles
+   type(imager_geolocation_t),  intent(in) :: imager_geolocation
+   type(imager_measurements_t), intent(in) :: imager_measurements
+   type(imager_time_t),         intent(in) :: imager_time
+   type(imager_pavolonis_t),    intent(in) :: imager_pavolonis
+   type(netcdf_output_info_t),  intent(in) :: netcdf_info
+   type(channel_info_t),        intent(in) :: channel_info
+   type(surface_t),             intent(in) :: surface
    logical,                     intent(in) :: include_full_brdf
 
    integer(kind=lint)                            :: i, ii

@@ -36,7 +36,7 @@
 subroutine read_mcd43c1(path_to_file, mcd, nbands, bands, brdf_albedo_params, &
                         QC, verbose, stat)
 
-   use preproc_constants
+   use preproc_constants_m
 
    implicit none
 
@@ -52,8 +52,8 @@ subroutine read_mcd43c1(path_to_file, mcd, nbands, bands, brdf_albedo_params, &
    logical,                    intent(in) :: verbose
 
    ! Output variables
-   type(mcd43c1), intent(out)            :: mcd
-   integer*4, intent(out)                :: stat
+   type(mcd43c1_t), intent(out)           :: mcd
+   integer*4,       intent(out)           :: stat
 
    ! Local variables
    integer                    :: i,j,k

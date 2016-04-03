@@ -37,7 +37,7 @@
 
 module ross_thick_li_sparse_r_m
 
-   use preproc_constants
+   use preproc_constants_m
 
    implicit none
 
@@ -46,7 +46,7 @@ module ross_thick_li_sparse_r_m
    public :: ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd
 
    ! Structure containing auxiliary values common to all BRDF kernels
-   type brdf_aux_type
+   type brdf_aux_t
       real(kind=sreal) :: theta1
       real(kind=sreal) :: cos_theta1
       real(kind=sreal) :: sin_theta1
@@ -63,11 +63,11 @@ module ross_thick_li_sparse_r_m
       real(kind=sreal) :: cos_phi
       real(kind=sreal) :: sin_phi
       real(kind=sreal) :: sin_phi_2
-   end type brdf_aux_type
+   end type brdf_aux_t
 
-   ! Structure containing auxiliary values based on brdf_aux_type values that
-   ! are common to both the Li-Sparse-R and Li-Dense-R kernels.
-   type kernel_aux_li_r_type
+   ! Structure containing auxiliary values based on brdf_aux_t values that are
+   ! common to both the Li-Sparse-R and Li-Dense-R kernels.
+   type kernel_aux_li_r_t
       real(kind=sreal) :: a
       real(kind=sreal) :: b
       real(kind=sreal) :: c
@@ -91,21 +91,21 @@ module ross_thick_li_sparse_r_m
       real(kind=sreal) :: sin_theta_r_p
 
       real(kind=sreal) :: r
-   end type kernel_aux_li_r_type
+   end type kernel_aux_li_r_t
 
-   ! Structure containing auxiliary values based on brdf_aux_type values that
-   ! are common to both the Ross-Thin and Ross-Thick kernels.
-   type kernel_aux_ross_type
+   ! Structure containing auxiliary values based on brdf_aux_t values that are
+   ! common to both the Ross-Thin and Ross-Thick kernels.
+   type kernel_aux_ross_t
       real(kind=sreal) :: a
       real(kind=sreal) :: b
       real(kind=sreal) :: c
-   end type kernel_aux_ross_type
+   end type kernel_aux_ross_t
 
    ! Structure containing auxiliary values for the Ross-Thick_Li-Sparse_R kernel.
-   type kernel_aux_ross_thick_li_sparse_r_type
-      type(kernel_aux_ross_type) :: ross
-      type(kernel_aux_li_r_type) :: li_r
-   end type kernel_aux_ross_thick_li_sparse_r_type
+   type kernel_aux_ross_thick_li_sparse_r_t
+      type(kernel_aux_ross_t) :: ross
+      type(kernel_aux_li_r_t) :: li_r
+   end type kernel_aux_ross_thick_li_sparse_r_t
 
 contains
 
@@ -119,12 +119,12 @@ contains
 ! See file header.
 !
 ! Arguments:
-! Name   Type          In/Out/Both Description
-! aux    brdf_aux_type Out         Structure containing auxiliary values common
-!                                  to all BRDF kernels
-! theta1 real          In          Incident zenith angle
-! theta2 real          In          Viewing zenith angle
-! phi    real          In          Relative azimuth angle
+! Name   Type       In/Out/Both Description
+! aux    brdf_aux_t Out         Structure containing auxiliary values common to
+!                               all BRDF kernels
+! theta1 real       In          Incident zenith angle
+! theta2 real       In          Viewing zenith angle
+! phi    real       In          Relative azimuth angle
 !
 ! Local variables:
 ! Name Type Description
@@ -133,7 +133,7 @@ subroutine brdf_aux_calc(aux, theta1, theta2, phi)
 
    implicit none
 
-   type(brdf_aux_type), intent(out) :: aux
+   type(brdf_aux_t), intent(out) :: aux
    real(kind=sreal),    intent(in)  :: theta1
    real(kind=sreal),    intent(in)  :: theta2
    real(kind=sreal),    intent(in)  :: phi
@@ -164,21 +164,21 @@ end subroutine
 ! Name: li_aux_calc()
 !
 ! Purpose:
-! Calculate auxiliary values based on brdf_aux_type values that are common to
-! both the Li-Sparse-R and Li-Dense-R kernels.
+! Calculate auxiliary values based on brdf_aux_t values that are common to both
+! the Li-Sparse-R and Li-Dense-R kernels.
 !
 ! Description and Algorithm details:
 ! See file header.
 !
 ! Arguments:
-! Name Type                 In/Out/Both Description
-! aux  brdf_aux_type        In          Structure containing auxiliary values
-!                                       common to all BRDF kernels
-! aux2 kernel_aux_li_r_type Out         Structure containing auxiliary values
-!                                       based on brdf_aux_type values that are
-!                                       common to both the Li-Sparse-R and Li-
-!                                       Dense-R kernels.
-! p    rseal(2)             In          Li parameters
+! Name Type              In/Out/Both Description
+! aux  brdf_aux_t        In          Structure containing auxiliary values
+!                                    common to all BRDF kernels
+! aux2 kernel_aux_li_r_t Out         Structure containing auxiliary values based
+!                                    on brdf_aux_t values that are common to
+!                                    both the Li-Sparse-R and Li-
+!                                    Dense-R kernels.
+! p    rseal(2)          In          Li parameters
 !
 ! Local variables:
 ! Name Type Description
@@ -187,9 +187,9 @@ subroutine li_aux_calc(aux, aux2, p)
 
    implicit none
 
-   type(brdf_aux_type),        intent(in)  :: aux
-   type(kernel_aux_li_r_type), intent(out) :: aux2
-   real(kind=sreal),           intent(in)  :: p(2)
+   type(brdf_aux_t),        intent(in)  :: aux
+   type(kernel_aux_li_r_t), intent(out) :: aux2
+   real(kind=sreal),        intent(in)  :: p(2)
 
    aux2%tan_theta_i_p   = p(1) * aux%tan_theta1
    aux2%tan_theta_r_p   = p(1) * aux%tan_theta2
@@ -230,16 +230,16 @@ end subroutine
 ! See file header.
 !
 ! Arguments:
-! Name Type                 In/Out/Both Description
-! aux  brdf_aux_type        In          Structure containing auxiliary values
-!                                       common to all BRDF kernels
-! aux2 kernel_aux_li_r_type In          Structure containing auxiliary values
-!                                       based on brdf_aux_type values that are
-!                                       common to both the Li-Sparse-R and
-!                                       Li-Dense-R kernels.
-! p    sreal(2)             In          Li parameters
-! p_   sreal                Out         An important value
-! q    sreal                Out         An important value
+! Name Type              In/Out/Both Description
+! aux  brdf_aux_t        In          Structure containing auxiliary values
+!                                    common to all BRDF kernels
+! aux2 kernel_aux_li_r_t In          Structure containing auxiliary values
+!                                    based on brdf_aux_t values that are common
+!                                    to both the Li-Sparse-R and Li-Dense-R
+!                                    kernels.
+! p    sreal(2)          In          Li parameters
+! p_   sreal             Out         An important value
+! q    sreal             Out         An important value
 !
 ! Local variables:
 ! Name Type Description
@@ -248,11 +248,11 @@ subroutine li_common(aux, aux2, p, p_, q)
 
    implicit none
 
-   type(brdf_aux_type),        intent(in)  :: aux
-   type(kernel_aux_li_r_type), intent(in)  :: aux2
-   real(kind=sreal),           intent(in)  :: p(2)
-   real(kind=sreal),           intent(out) :: p_
-   real(kind=sreal),           intent(out) :: q
+   type(brdf_aux_t),        intent(in)  :: aux
+   type(kernel_aux_li_r_t), intent(in)  :: aux2
+   real(kind=sreal),        intent(in)  :: p(2)
+   real(kind=sreal),        intent(out) :: p_
+   real(kind=sreal),        intent(out) :: q
 
    real(kind=sreal) :: cos_ksi_p
    real(kind=sreal) :: d
@@ -289,15 +289,15 @@ end subroutine
 ! See file header.
 !
 ! Arguments:
-! Name Type                 In/Out/Both Description
-! aux  brdf_aux_type        In          Structure containing auxiliary values
-!                                       common to all BRDF kernels
-! aux2 kernel_aux_li_r_type In          Structure containing auxiliary values
-!                                       based on brdf_aux_type values that are
-!                                       common to both the Li-Sparse-R and
-!                                       Li-Dense-R kernels.
-! p    sreal(2)             In          Li parameters
-! K    sreal                Out         The kernel value
+! Name Type              In/Out/Both Description
+! aux  brdf_aux_t        In          Structure containing auxiliary values
+!                                    common to all BRDF kernels
+! aux2 kernel_aux_li_r_t In          Structure containing auxiliary values
+!                                    based on brdf_aux_t values that are common
+!                                    to both the Li-Sparse-R and
+!                                    Li-Dense-R kernels.
+! p    sreal(2)          In          Li parameters
+! K    sreal             Out         The kernel value
 !
 ! Local variables:
 ! Name Type Description
@@ -306,10 +306,10 @@ subroutine li_sparse_kernel(aux, aux2, p, K)
 
    implicit none
 
-   type(brdf_aux_type),        intent(in)  :: aux
-   type(kernel_aux_li_r_type), intent(in)  :: aux2
-   real(kind=sreal),           intent(in)  :: p(2)
-   real(kind=sreal),           intent(out) :: K
+   type(brdf_aux_t),        intent(in)  :: aux
+   type(kernel_aux_li_r_t), intent(in)  :: aux2
+   real(kind=sreal),        intent(in)  :: p(2)
+   real(kind=sreal),        intent(out) :: K
 
    real(kind=sreal) :: p_
    real(kind=sreal) :: q
@@ -325,21 +325,20 @@ end subroutine
 ! Name: ross_aux_calc()
 !
 ! Purpose:
-! Calculate auxiliary values based on brdf_aux_type values that are common to
-! both the Ross-Thin and Ross-Thick kernels.
+! Calculate auxiliary values based on brdf_aux_t values that are common to both
+! the Ross-Thin and Ross-Thick kernels.
 !
 ! Description and Algorithm details:
 ! See file header.
 !
 ! Arguments:
-! Name Type In/Out/Both Description
-! aux  brdf_aux_type        In          Structure containing auxiliary values
-!                                       common to all BRDF kernels
-! aux2 kernel_aux_li_r_type Out         Structure containing auxiliary values
-!                                       based on brdf_aux_type values that are
-!                                       common to both the Ross-thin and Ross-
-!                                       thick
-! p    sreal(0)             In          Ross parameters
+! Name Type              In/Out/Both Description
+! aux  brdf_aux_t        In          Structure containing auxiliary values
+!                                    common to all BRDF kernels
+! aux2 kernel_aux_li_r_t Out         Structure containing auxiliary values
+!                                    based on brdf_aux_t values that are common
+!                                    to both the Ross-thin and Ross-thick
+! p    sreal(0)          In          Ross parameters
 !
 ! Local variables:
 ! Name Type Description
@@ -348,9 +347,9 @@ subroutine ross_aux_calc(aux, aux2, p)
 
    implicit none
 
-   type(brdf_aux_type),        intent(in)  :: aux
-   type(kernel_aux_ross_type), intent(out) :: aux2
-   real(kind=sreal),           intent(in)  :: p(1)
+   type(brdf_aux_t),        intent(in)  :: aux
+   type(kernel_aux_ross_t), intent(out) :: aux2
+   real(kind=sreal),        intent(in)  :: p(1)
 
    aux2%a = aux%cos_theta1 * aux%cos_theta2
    aux2%b = aux%sin_theta1 * aux%sin_theta2
@@ -369,36 +368,35 @@ end subroutine
 ! See file header.
 !
 ! Arguments:
-! Name Type                 In/Out/Both Description
-! aux  brdf_aux_type        In          Structure containing auxiliary values
-!                                       common to all BRDF kernels
-! aux2 kernel_aux_li_r_type Out         Structure containing auxiliary values
-!                                       based on brdf_aux_type values that are
-!                                       common to both the Ross-thin and Ross-
-!                                       thick
-! p    sreal(0)             In          Ross parameters
-! K    sreal                Out         The kernel value
+! Name Type              In/Out/Both Description
+! aux  brdf_aux_t        In          Structure containing auxiliary values
+!                                    common to all BRDF kernels
+! aux2 kernel_aux_li_r_t Out         Structure containing auxiliary values
+!                                    based on brdf_aux_t values that are common
+!                                    to both the Ross-thin and Ross-thick
+! p    sreal(0)          In          Ross parameters
+! K    sreal             Out         The kernel value
 !
 ! Local variables:
 ! Name Type Description
 !-------------------------------------------------------------------------------
 subroutine ross_thick_kernel(aux, aux2, p, K)
 
-   use preproc_constants
+   use preproc_constants_m
 
    implicit none
 
-   type(brdf_aux_type),        intent(in)  :: aux
-   type(kernel_aux_ross_type), intent(in)  :: aux2
-   real(kind=sreal),           intent(in)  :: p(1)
-   real(kind=sreal),           intent(out) :: K
+   type(brdf_aux_t),        intent(in)  :: aux
+   type(kernel_aux_ross_t), intent(in)  :: aux2
+   real(kind=sreal),        intent(in)  :: p(1)
+   real(kind=sreal),        intent(out) :: K
 
    real(kind=sreal) :: cos_ksi
    real(kind=sreal) :: ksi
 
-   cos_ksi     = aux2%a + aux2%b * aux%cos_phi
+   cos_ksi = aux2%a + aux2%b * aux%cos_phi
 
-   ksi         = acos(cos_ksi)
+   ksi     = acos(cos_ksi)
 
    K = ((pi / 2. - ksi) * cos_ksi + sin(ksi)) / aux2%c - pi / 4.
 
@@ -409,35 +407,35 @@ end subroutine
 ! Name: ross_thick_li_sparse_r_aux_calc()
 !
 ! Purpose:
-! Calculate auxiliary values based on brdf_aux_type values for this kernel.
+! Calculate auxiliary values based on brdf_aux_t values for this kernel.
 !
 ! Description and Algorithm details:
 ! See file header.
 !
 ! Arguments:
-! Name   Type                 In/Out/Both Description
-! aux    brdf_aux_type        In          Structure containing auxiliary values
-!                                         common to all BRDF kernels
-! aux2   kernel_aux_li_r_type Out         Structure containing auxiliary values
-!                                         based on brdf_aux_type values that are
-!                                         common to the Ross-Thick_Li-Sparse_R
-!                                         kernel.
-! p_ross sreal(0)             In          Ross parameters
-! p_li   sreal(2)             In          Li   parameters
+! Name   Type              In/Out/Both Description
+! aux    brdf_aux_t        In          Structure containing auxiliary values
+!                                      common to all BRDF kernels
+! aux2   kernel_aux_li_r_t Out         Structure containing auxiliary values
+!                                      based on brdf_aux_t values that are
+!                                      common to the Ross-Thick_Li-Sparse_R
+!                                      kernel.
+! p_ross sreal(0)          In          Ross parameters
+! p_li   sreal(2)          In          Li   parameters
 !
 ! Local variables:
 ! Name Type Description
 !-------------------------------------------------------------------------------
 subroutine ross_thick_li_sparse_r_aux_calc(aux, aux_kernel, p_ross, p_li_r)
 
-   use preproc_constants
+   use preproc_constants_m
 
    implicit none
 
-   type(brdf_aux_type),                          intent(in)  :: aux
-   type(kernel_aux_ross_thick_li_sparse_r_type), intent(out) :: aux_kernel
-   real(kind=sreal),                             intent(in)  :: p_ross(1)
-   real(kind=sreal),                             intent(in)  :: p_li_r(2)
+   type(brdf_aux_t),                          intent(in)  :: aux
+   type(kernel_aux_ross_thick_li_sparse_r_t), intent(out) :: aux_kernel
+   real(kind=sreal),                          intent(in)  :: p_ross(1)
+   real(kind=sreal),                          intent(in)  :: p_li_r(2)
 
    call ross_aux_calc(aux, aux_kernel%ross, p_ross)
    call li_aux_calc  (aux, aux_kernel%li_r, p_li_r)
@@ -455,29 +453,29 @@ end subroutine
 ! See file header.
 !
 ! Arguments:
-! Name   Type                 In/Out/Both Description
-! aux    brdf_aux_type        In          Structure containing auxiliary values
-!                                         common to all BRDF kernels
-! aux2   kernel_aux_li_r_type Out         Structure containing auxiliary values
-!                                         based on brdf_aux_type values that are
-!                                         common to the Ross-Thick_Li-Sparse_R
-!                                         kernel.
-! p_ross sreal(0)             In          Ross parameters
-! p_li   sreal(2)             In          Li   parameters
-! f      sreal(3)             In          Ross-Thick_Li-Sparse_R weights
-! K      sreal                Out         The kernel value
+! Name   Type              In/Out/Both Description
+! aux    brdf_aux_t        In          Structure containing auxiliary values
+!                                      common to all BRDF kernels
+! aux2   kernel_aux_li_r_t Out         Structure containing auxiliary values
+!                                      based on brdf_aux_t values that are
+!                                      common to the Ross-Thick_Li-Sparse_R
+!                                      kernel.
+! p_ross sreal(0)          In          Ross parameters
+! p_li   sreal(2)          In          Li   parameters
+! f      sreal(3)          In          Ross-Thick_Li-Sparse_R weights
+! K      sreal             Out         The kernel value
 !
 ! Local variables:
 ! Name Type Description
 !-------------------------------------------------------------------------------
 subroutine ross_thick_li_sparse_r_kernel(aux, aux_kernel, p_ross, p_li_r, f, K)
 
-   use preproc_constants
+   use preproc_constants_m
 
    implicit none
 
-   type(brdf_aux_type),                          intent(in)  :: aux
-   type(kernel_aux_ross_thick_li_sparse_r_type), intent(in)  :: aux_kernel
+   type(brdf_aux_t),                          intent(in)  :: aux
+   type(kernel_aux_ross_thick_li_sparse_r_t), intent(in)  :: aux_kernel
    real(kind=sreal),                             intent(in)  :: p_ross(1)
    real(kind=sreal),                             intent(in)  :: p_li_r(2)
    real(kind=sreal),                             intent(in)  :: f(:)
@@ -527,8 +525,8 @@ end subroutine
 subroutine ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(n_bands, solza, satza, &
    solaz, relaz, f, fill_value, rho_0v, rho_0d, rho_dv, rho_dd, verbose)
 
-   use nr
-   use preproc_constants
+   use nr_m
+   use preproc_constants_m
 
    implicit none
 
@@ -576,12 +574,12 @@ subroutine ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(n_bands, solza, satza, &
    real(kind=sreal)              :: satza2
    real(kind=sreal)              :: relaz2
 
-   type(brdf_aux_type)                                        :: aux_brdf
-   type(brdf_aux_type), allocatable                           :: aux_brdf2(:,:)
-   type(brdf_aux_type), allocatable                           :: aux_brdf3(:,:,:)
-   type(kernel_aux_ross_thick_li_sparse_r_type)               :: aux_kernel
-   type(kernel_aux_ross_thick_li_sparse_r_type), allocatable  :: aux_kernel2(:,:)
-   type(kernel_aux_ross_thick_li_sparse_r_type), allocatable  :: aux_kernel3(:,:,:)
+   type(brdf_aux_t)                                        :: aux_brdf
+   type(brdf_aux_t), allocatable                           :: aux_brdf2(:,:)
+   type(brdf_aux_t), allocatable                           :: aux_brdf3(:,:,:)
+   type(kernel_aux_ross_thick_li_sparse_r_t)               :: aux_kernel
+   type(kernel_aux_ross_thick_li_sparse_r_t), allocatable  :: aux_kernel2(:,:)
+   type(kernel_aux_ross_thick_li_sparse_r_t), allocatable  :: aux_kernel3(:,:,:)
 
 
    n_points = size(solza)

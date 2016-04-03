@@ -44,18 +44,18 @@ subroutine allocate_imager_structures(imager_geolocation,imager_angles, &
      channel_info)
 
 
-   use channel_structures
-   use preproc_constants
+   use channel_structures_m
+   use preproc_constants_m
 
    implicit none
 
-   type(imager_geolocation_s),  intent(inout) :: imager_geolocation
-   type(imager_angles_s),       intent(out)   :: imager_angles
-   type(imager_flags_s),        intent(out)   :: imager_flags
-   type(imager_time_s),         intent(out)   :: imager_time
-   type(imager_measurements_s), intent(out)   :: imager_measurements
-   type(imager_pavolonis_s),    intent(out)   :: imager_pavolonis
-   type(channel_info_s),        intent(in)    :: channel_info
+   type(imager_geolocation_t),  intent(inout) :: imager_geolocation
+   type(imager_angles_t),       intent(out)   :: imager_angles
+   type(imager_flags_t),        intent(out)   :: imager_flags
+   type(imager_time_t),         intent(out)   :: imager_time
+   type(imager_measurements_t), intent(out)   :: imager_measurements
+   type(imager_pavolonis_t),    intent(out)   :: imager_pavolonis
+   type(channel_info_t),        intent(in)    :: channel_info
 
    allocate(imager_geolocation%latitude( &
         imager_geolocation%startx:imager_geolocation%endx, &

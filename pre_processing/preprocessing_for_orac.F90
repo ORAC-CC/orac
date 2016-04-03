@@ -262,32 +262,32 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
 #endif
 
    use common_constants
-   use channel_structures
-   use cloud_typing_pavolonis, only: cloud_type
+   use channel_structures_m
+   use cloud_typing_pavolonis_m, only: cloud_type
    use correct_for_ice_snow_m
    use ecmwf_m
    use global_attributes
    use source_attributes
    use hdf5
-   use imager_structures
+   use imager_structures_m
    use netcdf, only: nf90_inq_libvers
-   use netcdf_output
+   use netcdf_output_m
    use parsing
    use preparation_m
-   use preproc_constants
-   use preproc_structures
-   use read_aatsr
-   use read_avhrr
-   use read_modis
+   use preproc_constants_m
+   use preproc_structures_m
+   use read_aatsr_m
+   use read_avhrr_m
+   use read_modis_m
    use read_imager_m
-   use read_seviri
+   use read_seviri_m
    use rttov_driver_m
-   use setup_instrument
-   use surface_emissivity
-   use surface_reflectance
-   use surface_structures
-   use USGS_physiography
-   use utils_for_main
+   use setup_m
+   use surface_emissivity_m
+   use surface_reflectance_m
+   use surface_structures_m
+   use USGS_physiography_m
+   use utils_for_main_m
 
    implicit none
 
@@ -330,7 +330,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    logical                          :: assume_full_paths
    logical                          :: include_full_brdf
    logical                          :: use_hr_ecmwf
-   logical                          :: use_ecmwf_snow_and_ice
+   logical                          :: use_ecmwf_tnow_and_ice
    logical                          :: use_modis_emis_in_rttov
 
    logical                          :: check
@@ -374,30 +374,30 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    character(len=file_length)       :: msi_file,cf_file,lsf_file,config_file
    character(len=file_length)       :: geo_file,loc_file,alb_file
 
-   type(channel_info_s)             :: channel_info
+   type(channel_info_t)             :: channel_info
 
-   type(imager_angles_s)            :: imager_angles
-   type(imager_flags_s)             :: imager_flags
-   type(imager_geolocation_s)       :: imager_geolocation
-   type(imager_measurements_s)      :: imager_measurements
-   type(imager_time_s)              :: imager_time
-   type(imager_pavolonis_s)         :: imager_pavolonis
+   type(imager_angles_t)            :: imager_angles
+   type(imager_flags_t)             :: imager_flags
+   type(imager_geolocation_t)       :: imager_geolocation
+   type(imager_measurements_t)      :: imager_measurements
+   type(imager_time_t)              :: imager_time
+   type(imager_pavolonis_t)         :: imager_pavolonis
 
-   type(USGS_s)                     :: usgs
+   type(USGS_t)                     :: usgs
 
-   type(ecmwf_s)                    :: ecmwf,ecmwf1,ecmwf2
-   type(ecmwf_s)                    :: ecmwf_HR,ecmwf_HR1,ecmwf_HR2
+   type(ecmwf_t)                    :: ecmwf,ecmwf1,ecmwf2
+   type(ecmwf_t)                    :: ecmwf_HR,ecmwf_HR1,ecmwf_HR2
    logical                          :: low_res = .true., high_res = .false.
 
-   type(surface_s)                  :: surface
+   type(surface_t)                  :: surface
 
-   type(preproc_dims_s)             :: preproc_dims
-   type(preproc_geo_s)              :: preproc_geo
-   type(preproc_geoloc_s)           :: preproc_geoloc
-   type(preproc_prtm_s)             :: preproc_prtm,preproc_prtm1,preproc_prtm2
-   type(preproc_surf_s)             :: preproc_surf
+   type(preproc_dims_t)             :: preproc_dims
+   type(preproc_geo_t)              :: preproc_geo
+   type(preproc_geoloc_t)           :: preproc_geoloc
+   type(preproc_prtm_t)             :: preproc_prtm,preproc_prtm1,preproc_prtm2
+   type(preproc_surf_t)             :: preproc_surf
 
-   type(netcdf_output_info_s)       :: netcdf_info
+   type(netcdf_output_info_t)       :: netcdf_info
 
    integer                          :: index_space
    integer                          :: ecmwf_time_int_method
@@ -422,7 +422,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    nullify(channel_ids)
    ecmwf_time_int_method = 2
    use_hr_ecmwf = .true.
-   use_ecmwf_snow_and_ice = .true.
+   use_ecmwf_tnow_and_ice = .true.
    use_modis_emis_in_rttov = .false.
    ecmwf_path(2) = ''
    ecmwf_path_hr(1) = ''
@@ -489,7 +489,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
          call parse_line(line, value, label)
          call clean_driver_label(label)
          call parse_optional(label, value, n_channels, channel_ids, use_hr_ecmwf, &
-            ecmwf_time_int_method, use_ecmwf_snow_and_ice, use_modis_emis_in_rttov, &
+            ecmwf_time_int_method, use_ecmwf_tnow_and_ice, use_modis_emis_in_rttov, &
             ecmwf_path(2), ecmwf_path2(2), ecmwf_path3(2), ecmwf_path_hr(1), &
             ecmwf_path_hr(2))
       end do
@@ -558,7 +558,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       do while (parse_driver(11, value, label) == 0)
         call clean_driver_label(label)
         call parse_optional(label, value, n_channels, channel_ids, &
-           use_hr_ecmwf, ecmwf_time_int_method, use_ecmwf_snow_and_ice, &
+           use_hr_ecmwf, ecmwf_time_int_method, use_ecmwf_tnow_and_ice, &
            use_modis_emis_in_rttov, ecmwf_path(2), ecmwf_path2(2), &
            ecmwf_path3(2), ecmwf_path_hr(1), ecmwf_path_hr(2))
       end do
@@ -868,11 +868,11 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
                  ecmwf_time_int_fac, ecmwf_HR1, ecmwf_HR2, ecmwf_HR, high_res)
          end if
 
-         call deallocate_ecmwf_structures(ecmwf1, low_res)
-         call deallocate_ecmwf_structures(ecmwf2, low_res)
+         call deallocate_ecmwf_ttructures(ecmwf1, low_res)
+         call deallocate_ecmwf_ttructures(ecmwf2, low_res)
          if (use_hr_ecmwf) then
-            call deallocate_ecmwf_structures(ecmwf_HR1, high_res)
-            call deallocate_ecmwf_structures(ecmwf_HR2, high_res)
+            call deallocate_ecmwf_ttructures(ecmwf_HR1, high_res)
+            call deallocate_ecmwf_ttructures(ecmwf_HR2, high_res)
          end if
       end if
 
@@ -943,7 +943,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       ! Snow and Ice Data Center to detect ice and snow pixels, and correct the
       ! surface albedo.
       if (verbose) write(*,*) 'Correct for ice and snow'
-      if (.not. use_ecmwf_snow_and_ice) then
+      if (.not. use_ecmwf_tnow_and_ice) then
          call correct_for_ice_snow(nise_ice_snow_path, imager_geolocation, &
               surface, cyear, cmonth, cday, channel_info, assume_full_paths, &
               include_full_brdf, source_atts, verbose)
@@ -1042,9 +1042,9 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
 
       ! deallocate the array parts of the structures
       if (verbose) write(*,*) 'Deallocate chunk specific structures'
-      call deallocate_ecmwf_structures(ecmwf, low_res)
+      call deallocate_ecmwf_ttructures(ecmwf, low_res)
       if (use_hr_ecmwf) then
-         call deallocate_ecmwf_structures(ecmwf_HR, high_res)
+         call deallocate_ecmwf_ttructures(ecmwf_HR, high_res)
       end if
       call deallocate_preproc_structures(preproc_dims, preproc_geoloc, &
            preproc_geo, preproc_prtm, preproc_surf)

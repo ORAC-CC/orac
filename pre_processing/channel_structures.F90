@@ -22,13 +22,13 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-module channel_structures
+module channel_structures_m
 
-   use preproc_constants
+   use preproc_constants_m
 
    implicit none
 
-   type channel_info_s
+   type channel_info_t
 
       !total number of channels to be handled in any way, even if not all are
       !processed. Note that multiple views with the same channel are treated as
@@ -75,11 +75,11 @@ module channel_structures
       !correct_for_ice_snow()
       integer(kind=lint), dimension(:), pointer :: map_ids_abs_to_snow_and_ice
 
-   end type channel_info_s
+   end type channel_info_t
 
 contains
 
 include "allocate_channel_info.F90"
 include "deallocate_channel_info.F90"
 
-end module channel_structures
+end module channel_structures_m

@@ -25,7 +25,7 @@ subroutine netcdf_output_check(output_path,lwrtm_file,swrtm_file,prtm_file,confi
            cf_file,lsf_file,geo_file,loc_file,alb_file,corrupt,verbose)
 
    use netcdf
-   use preproc_constants
+   use preproc_constants_m
    use orac_ncdf
 
    implicit none

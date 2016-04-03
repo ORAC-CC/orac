@@ -147,11 +147,11 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
      preproc_geoloc,preproc_geo,preproc_prtm,preproc_surf,netcdf_info, &
      channel_info,year,month,day,use_modis_emis,verbose)
 
-   use channel_structures
-   use netcdf_output
+   use channel_structures_m
+   use netcdf_output_m
    use orac_ncdf
-   use preproc_constants
-   use preproc_structures
+   use preproc_constants_m
+   use preproc_structures_m
 
    ! rttov_const contains useful RTTOV constants
    use rttov_const, only: &
@@ -193,13 +193,13 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
    character(len=path_length),     intent(in)    :: emiss_path
    character(len=sensor_length),   intent(in)    :: sensor
    character(len=platform_length), intent(in)    :: platform
-   type(preproc_dims_s),           intent(in)    :: preproc_dims
-   type(preproc_geoloc_s),         intent(in)    :: preproc_geoloc
-   type(preproc_geo_s),            intent(in)    :: preproc_geo
-   type(preproc_prtm_s),           intent(inout) :: preproc_prtm
-   type(preproc_surf_s),           intent(in)    :: preproc_surf
-   type(netcdf_output_info_s),     intent(inout) :: netcdf_info
-   type(channel_info_s),           intent(in)    :: channel_info
+   type(preproc_dims_t),           intent(in)    :: preproc_dims
+   type(preproc_geoloc_t),         intent(in)    :: preproc_geoloc
+   type(preproc_geo_t),            intent(in)    :: preproc_geo
+   type(preproc_prtm_t),           intent(inout) :: preproc_prtm
+   type(preproc_surf_t),           intent(in)    :: preproc_surf
+   type(netcdf_output_info_t),     intent(inout) :: netcdf_info
+   type(channel_info_t),           intent(in)    :: channel_info
    integer(kind=sint),             intent(in)    :: year, month, day
    logical,                        intent(in)    :: use_modis_emis
    logical,                        intent(in)    :: verbose

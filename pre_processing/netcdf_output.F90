@@ -7,7 +7,7 @@
 ! History:
 ! 2014/05/23, GM: First version.
 ! 2014/09/16, GM: Added NETCDF_OUTPUT_FILE_* parameters and moved the structure
-!    netcdf_output_info_s into here.
+!    netcdf_output_info_t into here.
 ! 2014/09/28, GM: Remove layer dimids as they were not used any more.
 ! 2014/10/23, OS: Added output variables to clf and lsf file.
 ! 2015/01/15, AP: Eliminate channel_abs_ids.
@@ -22,7 +22,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-module netcdf_output
+module netcdf_output_m
 
    implicit none
 
@@ -37,7 +37,7 @@ module netcdf_output
    integer, parameter :: NETCDF_OUTPUT_FILE_PRTM   = 9
    integer, parameter :: NETCDF_OUTPUT_FILE_SWRTM  = 10
 
-   type netcdf_output_info_s
+   type netcdf_output_info_t
 
       ! file ids
       integer :: ncid_alb, ncid_clf, ncid_config, ncid_geo, ncid_loc, ncid_lsf,  &
@@ -118,7 +118,7 @@ module netcdf_output
       integer :: vid_tac_sw, vid_tbc_sw
       integer :: vid_solza_sw, vid_satza_sw, vid_relazi_sw
 
-   end type netcdf_output_info_s
+   end type netcdf_output_info_t
 
 contains
 
@@ -128,4 +128,4 @@ include 'netcdf_output_close.F90'
 include 'netcdf_output_check.F90'
 include 'netcdf_output_write_swath.F90'
 
-end module netcdf_output
+end module netcdf_output_m

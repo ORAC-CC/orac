@@ -29,11 +29,11 @@
 
 subroutine allocate_channel_info(channel_info)
 
-   use preproc_constants
+   use preproc_constants_m
 
    implicit none
 
-   type(channel_info_s), intent(out) :: channel_info
+   type(channel_info_t), intent(out) :: channel_info
 
    allocate(channel_info%channel_ids_instr(channel_info%nchannels_total))
    channel_info%channel_ids_instr=lint_fill_value

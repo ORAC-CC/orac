@@ -34,7 +34,7 @@
 
 subroutine read_modis_lat_lon(fid,SDS_name,startx,stopx,starty,stopy,temp)
 
-   use preproc_constants
+   use preproc_constants_m
 
    implicit none
 

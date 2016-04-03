@@ -75,7 +75,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-module setup_instrument
+module setup_m
 
    implicit none
 
@@ -85,10 +85,10 @@ subroutine setup_aatsr(l1b_path_file,geo_path_file,platform,sensor,year, &
    month,day,doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute, &
    channel_ids_user,channel_info,verbose)
 
-   use calender
-   use preproc_constants
-   use preproc_structures
-   use channel_structures
+   use calender_m
+   use preproc_constants_m
+   use preproc_structures_m
+   use channel_structures_m
 
    implicit none
 
@@ -101,7 +101,7 @@ subroutine setup_aatsr(l1b_path_file,geo_path_file,platform,sensor,year, &
    character(len=date_length),     intent(out)   :: cyear,cmonth,cday
    character(len=date_length),     intent(out)   :: cdoy,chour,cminute
    integer, pointer,               intent(in)    :: channel_ids_user(:)
-   type(channel_info_s),           intent(inout) :: channel_info
+   type(channel_info_t),           intent(inout) :: channel_info
    logical,                        intent(in)    :: verbose
 
    integer                                       :: index1
@@ -202,10 +202,10 @@ subroutine setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day, &
    doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids_user, &
    channel_info,verbose)
 
-   use calender
-   use preproc_constants
-   use preproc_structures
-   use channel_structures
+   use calender_m
+   use preproc_constants_m
+   use preproc_structures_m
+   use channel_structures_m
 
    implicit none
 
@@ -217,7 +217,7 @@ subroutine setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day, &
    character(len=date_length),     intent(out)   :: cyear,cmonth,cday
    character(len=date_length),     intent(out)   :: cdoy,chour,cminute
    integer, pointer,               intent(in)    :: channel_ids_user(:)
-   type(channel_info_s),           intent(inout) :: channel_info
+   type(channel_info_t),           intent(inout) :: channel_info
    logical,                        intent(in)    :: verbose
    integer                                       :: index1,index2
    integer                                       :: i, j, k, l
@@ -395,10 +395,10 @@ subroutine setup_modis(l1b_path_file,geo_path_file,platform,year,month,day, &
    doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids_user, &
    channel_info,verbose)
 
-   use calender
-   use channel_structures
-   use preproc_constants
-   use preproc_structures
+   use calender_m
+   use channel_structures_m
+   use preproc_constants_m
+   use preproc_structures_m
 
    implicit none
 
@@ -410,7 +410,7 @@ subroutine setup_modis(l1b_path_file,geo_path_file,platform,year,month,day, &
    character(len=date_length),     intent(out)   :: cyear,cmonth,cday
    character(len=date_length),     intent(out)   :: cdoy,chour,cminute
    integer, pointer,               intent(in)    :: channel_ids_user(:)
-   type(channel_info_s),           intent(inout) :: channel_info
+   type(channel_info_t),           intent(inout) :: channel_info
    logical,                        intent(in)    :: verbose
 
    integer                                       :: index1,index2
@@ -565,10 +565,10 @@ subroutine setup_seviri(l1b_path_file,geo_path_file,platform,year,month,day, &
    doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids_user, &
    channel_info,verbose)
 
-   use calender
-   use channel_structures
-   use preproc_constants
-   use preproc_structures
+   use calender_m
+   use channel_structures_m
+   use preproc_constants_m
+   use preproc_structures_m
 
    implicit none
 
@@ -580,7 +580,7 @@ subroutine setup_seviri(l1b_path_file,geo_path_file,platform,year,month,day, &
    character(len=date_length),     intent(out)   :: cyear,cmonth,cday
    character(len=date_length),     intent(out)   :: cdoy,chour,cminute
    integer, pointer,               intent(in)    :: channel_ids_user(:)
-   type(channel_info_s),           intent(inout) :: channel_info
+   type(channel_info_t),           intent(inout) :: channel_info
    logical,                        intent(in)    :: verbose
 
    integer                                       :: index1,index2
@@ -703,11 +703,11 @@ subroutine common_setup(channel_info, channel_ids_user, channel_ids_default, &
    all_map_ids_abs_to_ref_band_land, all_map_ids_abs_to_ref_band_sea, &
    all_map_ids_abs_to_snow_and_ice)
 
-   use channel_structures
+   use channel_structures_m
 
    implicit none
 
-   type(channel_info_s), intent(inout) :: channel_info
+   type(channel_info_t), intent(inout) :: channel_info
    integer, pointer,     intent(in)    :: channel_ids_user(:)
    integer,              intent(in)    :: channel_ids_default(:)
    real,                 intent(in)    :: all_channel_wl_abs (:)
@@ -788,4 +788,4 @@ subroutine common_setup(channel_info, channel_ids_user, channel_ids_default, &
 
 end subroutine common_setup
 
-end module setup_instrument
+end module setup_m

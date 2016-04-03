@@ -37,16 +37,16 @@
 subroutine deallocate_imager_structures(imager_geolocation,imager_angles, &
      imager_flags,imager_time,imager_measurements,imager_pavolonis)
 
-   use preproc_constants
+   use preproc_constants_m
 
    implicit none
 
-   type(imager_geolocation_s),  intent(inout) :: imager_geolocation
-   type(imager_angles_s),       intent(inout) :: imager_angles
-   type(imager_flags_s),        intent(inout) :: imager_flags
-   type(imager_time_s),         intent(inout) :: imager_time
-   type(imager_measurements_s), intent(inout) :: imager_measurements
-   type(imager_pavolonis_s),    intent(inout) :: imager_pavolonis
+   type(imager_geolocation_t),  intent(inout) :: imager_geolocation
+   type(imager_angles_t),       intent(inout) :: imager_angles
+   type(imager_flags_t),        intent(inout) :: imager_flags
+   type(imager_time_t),         intent(inout) :: imager_time
+   type(imager_measurements_t), intent(inout) :: imager_measurements
+   type(imager_pavolonis_t),    intent(inout) :: imager_pavolonis
 
    deallocate(imager_geolocation%latitude)
    deallocate(imager_geolocation%longitude)

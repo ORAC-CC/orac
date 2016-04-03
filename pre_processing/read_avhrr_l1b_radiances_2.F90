@@ -41,7 +41,7 @@ subroutine read_avhrr_l1b_radiances_2(fid,group,dataset,attrgroup, &
    startx,stopx,starty,stopy,channel_number,rtemp,verbose)
 
    use hdf5
-   use preproc_constants
+   use preproc_constants_m
 
    implicit none
 

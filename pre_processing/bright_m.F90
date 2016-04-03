@@ -52,7 +52,7 @@ CONTAINS
 !!$c!END
 !!$c-----------------------------------------------------------------------
 
-      use preproc_constants
+      use preproc_constants_m
 
       IMPLICIT NONE
 
@@ -106,7 +106,7 @@ CONTAINS
 !!$c!END
 !!$c-----------------------------------------------------------------------
 
-      use preproc_constants
+      use preproc_constants_m
 
       IMPLICIT NONE
 

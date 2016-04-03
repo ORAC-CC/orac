@@ -6,7 +6,7 @@
 !
 ! History:
 ! 2012/01/17, MJ: produces initial version of code
-! 2012/05/30, GT: Added preproc_surf_s type (containing emissivity and possibly
+! 2012/05/30, GT: Added preproc_surf_t type (containing emissivity and possibly
 !    albedo at a later date) Commented out preproc_albedo_s
 ! 2012/07/04, CP: removed dependence on nviews
 ! 2012/07/17, CP: adds in players variable
@@ -21,7 +21,7 @@
 ! 2014/05/07, AP: Removed unnecessary fields from preproc_dims.
 ! 2014/09/10, AP: Removed unnecessary LWRTM and SWRTM structures.
 ! 2015/11/26, GM: Added linearly_combine_prtms() to facilitate linear
-!    interpolation between preproc_prtm_s structures.
+!    interpolation between preproc_prtm_t structures.
 !
 ! $Id$
 !
@@ -29,13 +29,13 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-module preproc_structures
+module preproc_structures_m
 
-   use preproc_constants
+   use preproc_constants_m
 
    implicit none
 
-   type preproc_dims_s
+   type preproc_dims_t
       integer(kind=lint) :: xdim, ydim, kdim
       integer(kind=lint) :: nchan_sw, nchan_lw
       integer(kind=lint) :: min_lat, max_lat, min_lon, max_lon
@@ -44,24 +44,24 @@ module preproc_structures
       real(kind=sreal)   :: lat_offset=90.0, lon_offset=180.0
 
       integer(kind=lint), dimension(:,:), pointer :: counter_sw, counter_lw
-   end type preproc_dims_s
+   end type preproc_dims_t
 
 
    ! (geo)location
-   type preproc_geoloc_s
+   type preproc_geoloc_t
       real(kind=sreal), dimension(:), pointer :: latitude
       real(kind=sreal), dimension(:), pointer :: longitude
-   end type preproc_geoloc_s
+   end type preproc_geoloc_t
 
 
    ! geometry
-   type preproc_geo_s
+   type preproc_geo_t
       real(kind=sreal), dimension(:,:,:), pointer :: solza,solazi,satza,relazi
-   end type preproc_geo_s
+   end type preproc_geo_t
 
 
    ! ecmwf profiles and surface fields (prtm data)
-   type preproc_prtm_s
+   type preproc_prtm_t
       real(kind=sreal), dimension(:,:,:), pointer :: pressure,temperature, &
                                                      spec_hum,ozone
       real(kind=sreal), dimension(:,:,:), pointer :: phi_lev,phi_lay
@@ -73,14 +73,14 @@ module preproc_structures
       real(kind=sreal), dimension(:,:), pointer   :: snow_albedo,snow_depth
       real(kind=sreal), dimension(:,:), pointer   :: sst,sea_ice_cover
       real(kind=sreal), dimension(:,:), pointer   :: totcolwv
-   end type preproc_prtm_s
+   end type preproc_prtm_t
 
 
    ! surface albedo and emissivity
-   type preproc_surf_s
+   type preproc_surf_t
 !     real(kind=sreal), dimension(:,:,:), pointer :: albedo
       real(kind=sreal), dimension(:,:,:), pointer :: emissivity
-   end type preproc_surf_s
+   end type preproc_surf_t
 
 contains
 
@@ -94,9 +94,9 @@ subroutine linearly_combine_prtms(a, b, prtm1, prtm2, prtm)
 
    real,                 intent(in)  :: a
    real,                 intent(in)  :: b
-   type(preproc_prtm_s), intent(in)  :: prtm1
-   type(preproc_prtm_s), intent(in)  :: prtm2
-   type(preproc_prtm_s), intent(out) :: prtm
+   type(preproc_prtm_t), intent(in)  :: prtm1
+   type(preproc_prtm_t), intent(in)  :: prtm2
+   type(preproc_prtm_t), intent(out) :: prtm
 
    prtm%pressure      = a * prtm1%pressure      + b * prtm2%pressure
    prtm%temperature   = a * prtm1%temperature   + b * prtm2%temperature
@@ -119,4 +119,4 @@ subroutine linearly_combine_prtms(a, b, prtm1, prtm2, prtm)
 
 end subroutine linearly_combine_prtms
 
-end module preproc_structures
+end module preproc_structures_m

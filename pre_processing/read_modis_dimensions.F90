@@ -30,7 +30,7 @@
 
 subroutine read_modis_dimensions(path_to_geo_file,n_across_track,n_along_track)
 
-   use preproc_constants
+   use preproc_constants_m
 
    implicit none
 

@@ -13,7 +13,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-module nr
+module nr_m
 
    implicit none
 
@@ -52,4 +52,4 @@ contains
       END SUBROUTINE gauleg
 !  (C) Copr. 1986-92 Numerical Recipes Software 5.){ks91&18&12$.
 
-end module nr
+end module nr_m

@@ -12,7 +12,7 @@
 ! Name         Type     In/Out/Both Description
 ! ------------------------------------------------------------------------------
 ! path_to_file character    in      File name (and path) to read
-! nise         type(nise_s) out     NISE output structure
+! nise         type(nise_t) out     NISE output structure
 ! north        integer      in      If not zero, data for Northern
 !                                   Hemisphere will be read
 ! south        integer      in      If not zero, data for Southern
@@ -36,11 +36,11 @@ function extract_nise_grid(fid, name, gridlist, data, verbose) result(stat)
    implicit none
 
    ! Arguments
-   integer(kind=4), intent(in)    :: fid
-   character,       intent(in)    :: name*(*)
-   character,       intent(in)    :: gridlist*(*)
-   type(nise_grid), intent(inout) :: data
-   logical,         intent(in)    :: verbose
+   integer(kind=4),   intent(in)    :: fid
+   character,         intent(in)    :: name*(*)
+   character,         intent(in)    :: gridlist*(*)
+   type(nise_grid_t), intent(inout) :: data
+   logical,           intent(in)    :: verbose
 
    ! Return value
    integer(kind=4)              :: stat
@@ -151,7 +151,7 @@ subroutine deallocate_nise(nise)
 
    implicit none
 
-   type(nise_s), intent(inout) :: nise
+   type(nise_t), intent(inout) :: nise
 
    if (allocated(nise%north%age)) then
       deallocate(nise%north%age)
@@ -170,7 +170,7 @@ end subroutine deallocate_nise
 function read_nsidc_nise(path_to_file, nise, north, south, verbose) &
      result (stat)
 
-   use preproc_constants
+   use preproc_constants_m
 
    implicit none
 
@@ -184,7 +184,7 @@ function read_nsidc_nise(path_to_file, nise, north, south, verbose) &
    logical,                    intent(in)  :: verbose
 
    ! Output variables
-   type(nise_s),               intent(out) :: nise
+   type(nise_t),               intent(out) :: nise
    integer(kind=4)                         :: stat ! Function return
 
    ! Local variables

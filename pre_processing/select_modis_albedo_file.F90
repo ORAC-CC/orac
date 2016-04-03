@@ -49,7 +49,7 @@
 subroutine select_modis_albedo_file(cyear,cdoy,modis_surf_path,include_full_brdf, &
                                     modis_surf_path_file)
 
-   use preproc_structures
+   use preproc_structures_m
    use system_utils
 
    implicit none
