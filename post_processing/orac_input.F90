@@ -34,13 +34,13 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-module orac_input
+module orac_input_m
 
    use orac_indexing
 
    implicit none
 
-   type, extends(common_indices) :: input_indices
+   type, extends(common_indices) :: input_indices_t
       character(len=3) :: LUTClass
 
       integer, pointer :: loop_to_main_index(:)
@@ -49,10 +49,10 @@ module orac_input
       integer, pointer :: view_loop_to_main_index(:)
       logical          :: read_optional_channel_field(MaxNumMeas) = .false.
       logical          :: read_optional_view_field(MaxNumViews)   = .false.
-   end type input_indices
+   end type input_indices_t
 
 
-   type input_data_primary
+   type input_data_primary_t
       real(sreal),   pointer :: aot550(:,:)
       real(sreal),   pointer :: aot550_uncertainty(:,:)
       real(sreal),   pointer :: aot870(:,:)
@@ -126,10 +126,10 @@ module orac_input
 
       integer(byte), pointer :: phase(:,:)
       integer(byte), pointer :: phase_pavolonis(:,:)
-   end type input_data_primary
+   end type input_data_primary_t
 
 
-   type input_data_secondary
+   type input_data_secondary_t
       real(sreal), pointer :: aot550_ap(:,:)
       real(sreal), pointer :: aot550_fg(:,:)
       real(sreal), pointer :: aer_ap(:,:)
@@ -158,7 +158,7 @@ module orac_input
       real(sreal), pointer :: residuals(:,:,:)
 
       real(sreal), pointer :: ds(:,:)
-   end type input_data_secondary
+   end type input_data_secondary_t
 
 contains
 
@@ -168,9 +168,9 @@ subroutine determine_channel_indexing(fname, indexing, verbose)
 
    implicit none
 
-   character(len=*),    intent(in)    :: fname
-   type(input_indices), intent(inout) :: indexing
-   logical,             intent(in)    :: verbose
+   character(len=*),      intent(in)    :: fname
+   type(input_indices_t), intent(inout) :: indexing
+   logical,               intent(in)    :: verbose
 
    integer :: ncid, i_ch, i0, i1, j, ierr
    integer :: do_flags, rho_flags(indexing%Ny)
@@ -248,9 +248,9 @@ subroutine cross_reference_indexing(n, loop_ind, main_ind)
 
    implicit none
 
-   integer,             intent(in)    :: n
-   type(input_indices), intent(inout) :: loop_ind(:)
-   type(input_indices), intent(inout) :: main_ind
+   integer,               intent(in)    :: n
+   type(input_indices_t), intent(inout) :: loop_ind(:)
+   type(input_indices_t), intent(inout) :: main_ind
 
    integer :: i0, i1, i2, i_ch, i_file, j_ch
    integer :: max_ch, current_max
@@ -413,7 +413,7 @@ subroutine dealloc_input_indices(indexing)
 
    implicit none
 
-   type(input_indices), intent(inout) :: indexing
+   type(input_indices_t), intent(inout) :: indexing
 
    call dealloc_common_indices(indexing%common_indices)
 
@@ -437,4 +437,4 @@ end subroutine dealloc_input_indices
 #include "read_input_primary.F90"
 #include "read_input_secondary.F90"
 
-end module orac_input
+end module orac_input_m

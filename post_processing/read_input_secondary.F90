@@ -40,10 +40,10 @@ subroutine read_input_secondary_common(ncid, input_data, indexing, verbose)
 
    implicit none
 
-   integer,                    intent(in)    :: ncid
-   type(input_data_secondary), intent(inout) :: input_data
-   type(input_indices),        intent(in)    :: indexing
-   logical,                    intent(in)    :: verbose
+   integer,                      intent(in)    :: ncid
+   type(input_data_secondary_t), intent(inout) :: input_data
+   type(input_indices_t),        intent(in)    :: indexing
+   logical,                      intent(in)    :: verbose
 
    integer            :: i, j
    character(len=32)  :: input_num
@@ -145,11 +145,11 @@ subroutine read_input_secondary_optional(ncid, input_data, indexing, &
 
    implicit none
 
-   integer,                    intent(in)    :: ncid
-   type(input_data_secondary), intent(inout) :: input_data
-   type(input_indices),        intent(in)    :: indexing
-   type(common_file_flags),    intent(inout) :: read_flags
-   logical,                    intent(in)    :: verbose
+   integer,                      intent(in)    :: ncid
+   type(input_data_secondary_t), intent(inout) :: input_data
+   type(input_indices_t),        intent(in)    :: indexing
+   type(common_file_flags),      intent(inout) :: read_flags
+   logical,                      intent(in)    :: verbose
 
    integer            :: i
    character(len=32)  :: input_num
@@ -176,12 +176,12 @@ subroutine read_input_secondary_once(nfile, fname, input_data, indexing, &
 
    implicit none
 
-   integer,                    intent(in)    :: nfile
-   character(len=path_length), intent(in)    :: fname(:)
-   type(input_data_secondary), intent(inout) :: input_data
-   type(input_indices),        intent(in)    :: indexing
-   type(input_indices),        intent(in)    :: loop_ind(:)
-   logical,                    intent(in)    :: verbose
+   integer,                      intent(in)    :: nfile
+   character(len=path_length),   intent(in)    :: fname(:)
+   type(input_data_secondary_t), intent(inout) :: input_data
+   type(input_indices_t),        intent(in)    :: indexing
+   type(input_indices_t),        intent(in)    :: loop_ind(:)
+   logical,                      intent(in)    :: verbose
 
    integer                 :: ncid, i
    character(len=32)       :: input_num
@@ -234,10 +234,10 @@ subroutine read_input_secondary_class(fname, input_data, indexing, verbose)
 
    implicit none
 
-   character(len=path_length), intent(in)    :: fname
-   type(input_data_secondary), intent(inout) :: input_data
-   type(input_indices),        intent(in)    :: indexing
-   logical,                    intent(in)    :: verbose
+   character(len=path_length),   intent(in)    :: fname
+   type(input_data_secondary_t), intent(inout) :: input_data
+   type(input_indices_t),        intent(in)    :: indexing
+   logical,                      intent(in)    :: verbose
 
    integer :: ncid
 

@@ -45,10 +45,10 @@ subroutine read_input_primary_common(ncid, input_data, indexing, verbose)
 
    implicit none
 
-   integer,                  intent(in)    :: ncid
-   type(input_data_primary), intent(inout) :: input_data
-   type(input_indices),      intent(in)    :: indexing
-   logical,                  intent(in)    :: verbose
+   integer,                    intent(in)    :: ncid
+   type(input_data_primary_t), intent(inout) :: input_data
+   type(input_indices_t),      intent(in)    :: indexing
+   logical,                    intent(in)    :: verbose
 
    integer            :: i, j
    integer            :: ierr
@@ -231,11 +231,11 @@ subroutine read_input_primary_optional(ncid, input_data, indexing, &
 
    implicit none
 
-   integer,                  intent(in)    :: ncid
-   type(input_data_primary), intent(inout) :: input_data
-   type(input_indices),      intent(in)    :: indexing
-   type(common_file_flags),  intent(inout) :: read_flags
-   logical,                  intent(in)    :: verbose
+   integer,                    intent(in)    :: ncid
+   type(input_data_primary_t), intent(inout) :: input_data
+   type(input_indices_t),      intent(in)    :: indexing
+   type(common_file_flags),    intent(inout) :: read_flags
+   logical,                    intent(in)    :: verbose
 
    integer            :: i
    character(len=32)  :: input_num
@@ -302,9 +302,9 @@ subroutine read_input_primary_once(nfile, fname, input_data, indexing, &
 
    integer,                    intent(in)    :: nfile
    character(len=path_length), intent(in)    :: fname(:)
-   type(input_data_primary),   intent(inout) :: input_data
-   type(input_indices),        intent(in)    :: indexing
-   type(input_indices),        intent(in)    :: loop_ind(:)
+   type(input_data_primary_t), intent(inout) :: input_data
+   type(input_indices_t),      intent(in)    :: indexing
+   type(input_indices_t),      intent(in)    :: loop_ind(:)
    type(global_attributes_s),  intent(inout) :: global_atts
    type(source_attributes_s),  intent(inout) :: source_atts
    logical,                    intent(in)    :: verbose
@@ -361,8 +361,8 @@ subroutine read_input_primary_class(fname, input_data, indexing, verbose)
    implicit none
 
    character(len=path_length), intent(in)    :: fname
-   type(input_data_primary),   intent(inout) :: input_data
-   type(input_indices),        intent(in)    :: indexing
+   type(input_data_primary_t), intent(inout) :: input_data
+   type(input_indices_t),      intent(in)    :: indexing
    logical,                    intent(in)    :: verbose
 
    integer :: ncid

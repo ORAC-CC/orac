@@ -46,8 +46,8 @@ subroutine alloc_input_data_primary_common(ind, data)
 
    implicit none
 
-   type(input_indices),      intent(in)    :: ind
-   type(input_data_primary), intent(inout) :: data
+   type(input_indices_t),      intent(in)    :: ind
+   type(input_data_primary_t), intent(inout) :: data
 
 if (ind%flags%do_aerosol) then
    allocate(data%aot550(ind%X0:ind%X1, ind%Y0:ind%Y1))
@@ -228,8 +228,8 @@ subroutine alloc_input_data_primary_all(ind, data)
 
    implicit none
 
-   type(input_indices),      intent(in)    :: ind
-   type(input_data_primary), intent(inout) :: data
+   type(input_indices_t),      intent(in)    :: ind
+   type(input_data_primary_t), intent(inout) :: data
 
    call alloc_input_data_primary_common(ind, data)
 
@@ -303,8 +303,8 @@ subroutine alloc_input_data_primary_class(ind, data)
 
    implicit none
 
-   type(input_indices),      intent(in)    :: ind
-   type(input_data_primary), intent(inout) :: data
+   type(input_indices_t),      intent(in)    :: ind
+   type(input_data_primary_t), intent(inout) :: data
 
    call alloc_input_data_primary_common(ind, data)
 
@@ -315,8 +315,8 @@ subroutine alloc_input_data_secondary_common(ind, data)
 
    implicit none
 
-   type(input_indices),        intent(in)    :: ind
-   type(input_data_secondary), intent(inout) :: data
+   type(input_indices_t),        intent(in)    :: ind
+   type(input_data_secondary_t), intent(inout) :: data
 
 if (ind%flags%do_aerosol) then
    allocate(data%aot550_ap(ind%X0:ind%X1, ind%Y0:ind%Y1))
@@ -409,8 +409,8 @@ subroutine alloc_input_data_secondary_all(ind, data)
 
    implicit none
 
-   type(input_indices),        intent(in)    :: ind
-   type(input_data_secondary), intent(inout) :: data
+   type(input_indices_t),        intent(in)    :: ind
+   type(input_data_secondary_t), intent(inout) :: data
 
    call alloc_input_data_secondary_common(ind, data)
 
@@ -431,8 +431,8 @@ subroutine alloc_input_data_secondary_class(ind, data)
 
    implicit none
 
-   type(input_indices),        intent(in)    :: ind
-   type(input_data_secondary), intent(inout) :: data
+   type(input_indices_t),        intent(in)    :: ind
+   type(input_data_secondary_t), intent(inout) :: data
 
    call alloc_input_data_secondary_common(ind, data)
 

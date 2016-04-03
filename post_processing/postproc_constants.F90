@@ -29,7 +29,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-module postproc_constants
+module postproc_constants_m
 
    use common_constants
 
@@ -46,4 +46,4 @@ module postproc_constants
    integer(byte), parameter :: IPhaseWat  = 1 ! Water
    integer(byte), parameter :: IPhaseIce  = 2 ! Ice
 
-end module postproc_constants
+end module postproc_constants_m

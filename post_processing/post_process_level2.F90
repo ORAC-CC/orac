@@ -126,76 +126,76 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    use common_constants
    use global_attributes
    use netcdf
-   use orac_input
+   use orac_input_m
    use orac_ncdf
    use orac_output
    use parsing
-   use postproc_constants
-   use postproc_utils
-   use prepare_output_pp
+   use postproc_constants_m
+   use postproc_utils_m
+   use prepare_output_pp_m
    use source_attributes
    use constants_cloud_typing_pavolonis
 
    implicit none
 
-   integer,            parameter :: MaxInFiles = 32
+   integer, parameter           :: MaxInFiles = 32
 
-   integer(kind=byte), parameter :: IWat       = 1
-   integer(kind=byte), parameter :: IIce       = 2
+   integer, parameter           :: IWat = 1
+   integer, parameter           :: IIce = 2
 
-   integer                     :: i, j, k
+   integer                      :: i, j, k
 
-   integer                     :: nargs
+   integer                      :: nargs
 #ifdef WRAPPER
-   integer                     :: mytask, ntasks, lower_bound, upper_bound
+   integer                      :: mytask, ntasks, lower_bound, upper_bound
 #endif
-   character(len=path_length)  :: label, value
+   character(len=path_length)   :: label, value
 
-   logical                     :: switch_phases
-   logical                     :: do_secondary = .false.
+   logical                      :: switch_phases
+   logical                      :: do_secondary = .false.
 
-   real                        :: cost_thresh = 0.
-   real                        :: norm_prob_thresh = .75
-   logical                     :: output_optical_props_at_night = .false.
-   logical                     :: use_bayesian_selection = .false.
-   logical                     :: use_netcdf_compression = .true.
-   logical                     :: verbose = .true.
+   real                         :: cost_thresh = 0.
+   real                         :: norm_prob_thresh = .75
+   logical                      :: output_optical_props_at_night = .false.
+   logical                      :: use_bayesian_selection = .false.
+   logical                      :: use_netcdf_compression = .true.
+   logical                      :: verbose = .true.
 
-   integer                     :: n_in_files
+   integer                      :: n_in_files
 
-   character(len=path_length)  :: path_and_file
+   character(len=path_length)   :: path_and_file
 
-   character(len=path_length)  :: in_files_primary(MaxInFiles), &
-                                  in_files_secondary(MaxInFiles)
+   character(len=path_length)   :: in_files_primary(MaxInFiles), &
+                                   in_files_secondary(MaxInFiles)
 
-   character(len=path_length)  :: out_file_primary, out_file_secondary
+   character(len=path_length)   :: out_file_primary, out_file_secondary
 
-   integer                     :: ncid_primary, ncid_secondary, dims_var(2)
+   integer                      :: ncid_primary, ncid_secondary, dims_var(2)
 
-   type(global_attributes_s)   :: global_atts
-   type(source_attributes_s)   :: source_atts
+   type(global_attributes_s)    :: global_atts
+   type(source_attributes_s)    :: source_atts
 
-   type(input_data_primary)    :: input_primary(0:MaxInFiles)
-   type(input_data_secondary)  :: input_secondary(0:MaxInFiles)
+   type(input_data_primary_t)   :: input_primary(0:MaxInFiles)
+   type(input_data_secondary_t) :: input_secondary(0:MaxInFiles)
 
-   type(output_data_primary)   :: output_primary
-   type(output_data_secondary) :: output_secondary
+   type(output_data_primary)    :: output_primary
+   type(output_data_secondary)  :: output_secondary
 
-   type(input_indices)         :: indexing, loop_ind(MaxInFiles)
+   type(input_indices_t)        :: indexing, loop_ind(MaxInFiles)
 
-   integer(kind=byte)          :: phase_flag
-   integer                     :: index_space
+   integer                      :: phase_flag
+   integer                      :: index_space
 
    ! Temperature limits for phase reclassification
-   real(sreal), parameter      :: switch_wat_limit = 233.16
-   real(sreal), parameter      :: switch_ice_limit = 273.16
+   real, parameter              :: switch_wat_limit = 233.16
+   real, parameter              :: switch_ice_limit = 273.16
 
-   integer                     :: i_min_costjm
-   real                        :: a_max_prob, a_prob
-   real                        :: sum_prob
+   integer                      :: i_min_costjm
+   real                         :: a_max_prob, a_prob
+   real                         :: sum_prob
 
-   integer                     :: deflate_level2
-   logical                     :: shuffle_flag2
+   integer                      :: deflate_level2
+   logical                      :: shuffle_flag2
 #ifndef WRAPPER
       nargs = COMMAND_ARGUMENT_COUNT()
 #else

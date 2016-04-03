@@ -28,16 +28,16 @@
 
 subroutine prepare_output_secondary_pp(i, j, indexing, input_data, output_data)
 
-   use orac_input
+   use orac_input_m
    use orac_ncdf
    use orac_output
 
    implicit none
 
-   integer,                     intent(in)    :: i, j
-   type(common_indices),        intent(in)    :: indexing
-   type(input_data_secondary),  intent(in)    :: input_data
-   type(output_data_secondary), intent(inout) :: output_data
+   integer,                      intent(in)    :: i, j
+   type(common_indices),         intent(in)    :: indexing
+   type(input_data_secondary_t), intent(in)    :: input_data
+   type(output_data_secondary),  intent(inout) :: output_data
 
    integer :: k, l
 

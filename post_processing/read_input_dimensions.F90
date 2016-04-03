@@ -34,7 +34,7 @@ subroutine read_input_dimensions(fname, indexing, verbose)
    implicit none
 
    character(len=path_length), intent(in)  :: fname
-   type(input_indices),        intent(out) :: indexing
+   type(input_indices_t),      intent(out) :: indexing
    logical,                    intent(in)  :: verbose
 
    integer :: ncid, ierr

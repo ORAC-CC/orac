@@ -46,7 +46,7 @@ subroutine dealloc_input_data_primary_common(data)
 
    implicit none
 
-   type(input_data_primary), intent(inout) :: data
+   type(input_data_primary_t), intent(inout) :: data
 
    if (associated(data%aot550))        deallocate(data%aot550)
    if (associated(data%aot550_uncertainty)) &
@@ -125,7 +125,7 @@ subroutine dealloc_input_data_primary_all(data)
 
    implicit none
 
-   type(input_data_primary), intent(inout) :: data
+   type(input_data_primary_t), intent(inout) :: data
 
    call dealloc_input_data_primary_common(data)
 
@@ -159,7 +159,7 @@ subroutine dealloc_input_data_primary_class(data)
 
    implicit none
 
-   type(input_data_primary), intent(inout) :: data
+   type(input_data_primary_t), intent(inout) :: data
 
    call dealloc_input_data_primary_common(data)
 
@@ -170,7 +170,7 @@ subroutine dealloc_input_data_secondary_common(data)
 
    implicit none
 
-   type(input_data_secondary), intent(inout) :: data
+   type(input_data_secondary_t), intent(inout) :: data
 
    if (associated(data%aot550_ap))    deallocate(data%aot550_ap)
    if (associated(data%aot550_fg))    deallocate(data%aot550_fg)
@@ -205,7 +205,7 @@ subroutine dealloc_input_data_secondary_all(data)
 
    implicit none
 
-   type(input_data_secondary), intent(inout) :: data
+   type(input_data_secondary_t), intent(inout) :: data
 
    call dealloc_input_data_secondary_common(data)
 
@@ -220,7 +220,7 @@ subroutine dealloc_input_data_secondary_class(data)
 
    implicit none
 
-   type(input_data_secondary), intent(inout) :: data
+   type(input_data_secondary_t), intent(inout) :: data
 
    call dealloc_input_data_secondary_common(data)
 

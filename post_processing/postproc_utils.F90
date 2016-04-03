@@ -16,7 +16,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-module postproc_utils
+module postproc_utils_m
 
    use common_constants
 
@@ -27,18 +27,18 @@ contains
 subroutine copy_class_specific_inputs(i, j, indexing, primary2, primary1, &
                                       secondary2, secondary1, do_secondary)
 
-   use orac_input
-   use postproc_constants
+   use orac_input_m
+   use postproc_constants_m
 
    implicit none
 
-   integer,                    intent(in)    :: i, j
-   type(input_indices),        intent(in)    :: indexing
-   type(input_data_primary),   intent(inout) :: primary2
-   type(input_data_primary),   intent(in)    :: primary1
-   type(input_data_secondary), intent(inout) :: secondary2
-   type(input_data_secondary), intent(in)    :: secondary1
-   logical,                    intent(in)    :: do_secondary
+   integer,                      intent(in)    :: i, j
+   type(input_indices_t),        intent(in)    :: indexing
+   type(input_data_primary_t),   intent(inout) :: primary2
+   type(input_data_primary_t),   intent(in)    :: primary1
+   type(input_data_secondary_t), intent(inout) :: secondary2
+   type(input_data_secondary_t), intent(in)    :: secondary1
+   logical,                      intent(in)    :: do_secondary
 
    ! primary file
 if (indexing%flags%do_aerosol) then
@@ -176,4 +176,4 @@ end if
 
 end subroutine copy_class_specific_inputs
 
-end module postproc_utils
+end module postproc_utils_m

@@ -20,7 +20,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-module prepare_output_pp
+module prepare_output_pp_m
 
    implicit none
 
@@ -29,4 +29,4 @@ contains
 #include "prepare_output_primary_pp.F90"
 #include "prepare_output_secondary_pp.F90"
 
-end module prepare_output_pp
+end module prepare_output_pp_m
