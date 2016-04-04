@@ -599,6 +599,8 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
             if (any(Ctrl%X == IRs(i,j))) Ctrl%Ind%rho_terms(i,j) = .true.
          end do
       end do
+   else
+      nullify(Ctrl%Ind%rho_terms)
    end if
 
    ! Open the netcdf output files
