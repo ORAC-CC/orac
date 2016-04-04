@@ -316,6 +316,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    Ctrl%Ind%flags%do_phase_pavolonis     = .false.
    Ctrl%Ind%flags%do_cldmask             = .true.
    Ctrl%Ind%flags%do_cldmask_uncertainty = .true.
+   Ctrl%Ind%flags%do_phase               = .false.
    Ctrl%Ind%flags%do_covariance          = .false.
 
 #ifdef BKP
