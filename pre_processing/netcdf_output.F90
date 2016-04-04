@@ -11,8 +11,8 @@
 ! 2014/09/28, GM: Remove layer dimids as they were not used any more.
 ! 2014/10/23, OS: Added output variables to clf and lsf file.
 ! 2015/01/15, AP: Eliminate channel_abs_ids.
-! 2015/01/30, AP: Eliminate skint, sp, and lsf field for PRTM.
-!    Remove uscan and vscan as unnecessary.
+! 2015/01/30, AP: Eliminate skint, sp, and lsf field for PRTM. Remove uscan and
+!    vscan as unnecessary.
 ! 2015/06/24, OS: added vid and include of netcdf_output_check.F90
 ! 2015/07/23, GM: Added specific humidity and ozone vids.
 !

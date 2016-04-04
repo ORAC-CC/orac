@@ -13,8 +13,8 @@
 ! History:
 ! 2014/10/23, SS: Original version
 ! 2014/11/04, SS+OS: added constants for new cloud mask, which is now
-!    also available for twilight and additionally uses ECMWF skin
-!    temperature and flags for snow/ice and land/sea
+!    also available for twilight and additionally uses ECMWF skin temperature
+!    and flags for snow/ice and land/sea
 ! 2015/08/22, SS: added cloud masks 6-11
 ! 2016/02/18, SS: added cloud masks 12-14 for AVHRR1
 !
@@ -26,7 +26,7 @@
 
 module neural_net_constants_m
 
-  use common_constants
+  use common_constants_m
 
   implicit none
 

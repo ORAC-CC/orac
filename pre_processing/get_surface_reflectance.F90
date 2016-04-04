@@ -122,12 +122,12 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, modis_brdf_path
   use ecmwf_m, only : ecmwf_t
   use fill_grid_m
   use imager_structures_m
-  use interpol
+  use interpol_m
   use mcd43c_m
   use preproc_constants_m
   use preproc_structures_m
   use ross_thick_li_sparse_r_m
-  use source_attributes
+  use source_attributes_m
   use surface_structures_m
 
   implicit none
@@ -146,7 +146,7 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, modis_brdf_path
   logical,                    intent(in)    :: include_full_brdf
   logical,                    intent(in)    :: verbose
   type(surface_t),            intent(inout) :: surface
-  type(source_attributes_s),  intent(inout) :: source_atts
+  type(source_attributes_t),  intent(inout) :: source_atts
 
   ! Local variables
 
@@ -190,7 +190,7 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, modis_brdf_path
   integer                                         :: seacount=1
   integer                                         :: lndcount=1
 
-  type(interpol_s), allocatable, dimension(:)     :: interp
+  type(interpol_t), allocatable, dimension(:)     :: interp
 
   logical,          allocatable, dimension(:,:)   :: mask
 

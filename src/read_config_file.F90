@@ -41,9 +41,9 @@ subroutine read_config_file(Ctrl, channel_ids_instr, channel_sw_flag, &
 
    use Ctrl_m
    use ECP_constants_m, only : DriverFileIncompat
-   use orac_ncdf
-   use global_attributes
-   use source_attributes
+   use orac_ncdf_m
+   use global_attributes_m
+   use source_attributes_m
 
    implicit none
 
@@ -52,8 +52,8 @@ subroutine read_config_file(Ctrl, channel_ids_instr, channel_sw_flag, &
    integer, allocatable, dimension(:), intent(inout) :: channel_sw_flag
    integer, allocatable, dimension(:), intent(inout) :: channel_lw_flag
    real,    allocatable, dimension(:), intent(inout) :: channel_wvl
-   type(global_attributes_s),          intent(inout) :: global_atts
-   type(source_attributes_s),          intent(inout) :: source_atts
+   type(global_attributes_t),          intent(inout) :: global_atts
+   type(source_attributes_t),          intent(inout) :: source_atts
 
    integer :: ncid
 

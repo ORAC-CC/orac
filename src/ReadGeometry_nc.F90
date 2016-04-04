@@ -34,8 +34,7 @@
 !                             are read in.
 !
 ! History:
-! 2012/08/22, MJ: Uses original routine and implements reading of netcdf
-!    data.
+! 2012/08/22, MJ: Uses original routine and implements reading of netcdf data.
 ! 2013/03/12, CP: Changed definition of relative azimuth angle
 ! 2013/05/21, GT: Undid previous change made by CP. The error was in th L1B
 !    reading code in the preprocessing.
@@ -56,7 +55,7 @@ subroutine Read_Geometry_nc(Ctrl, MSI_Data)
 
    use Ctrl_m
    use ECP_Constants_m
-   use orac_ncdf
+   use orac_ncdf_m
 
    implicit none
 

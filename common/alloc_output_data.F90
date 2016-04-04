@@ -15,11 +15,11 @@
 ! 2013/01/17, MJ: Adds code to accommodate uncertainties of ctt and cth.
 ! 2013/01/23, CP: Changed illum from byte to int
 ! 2013/10/02, CP/GT: Added allocation statement for DOFS
-! 2014/01/01, GM: Fixed the range in NY for initializations. Plus,
-!    no need for explicit indexing in these cases anyway.
+! 2014/01/01, GM: Fixed the range in NY for initializations. Plus, no need for
+!    explicit indexing in these cases anyway.
 ! 2014/05/27, GM: Some cleanup.
-! 2014/10/24, OS: added allocation of cldtype, cldmask, cccot_pre,
-!    lusflag, dem, nisemask
+! 2014/10/24, OS: added allocation of cldtype, cldmask, cccot_pre, lusflag, dem,
+!    nisemask
 ! 2014/12/01, CP: Added in cloud albedo
 ! 2015/07/01, CP: Added corrected cth
 ! 2015/09/06, GM: Move into common/ from src/ and changes related to sharing
@@ -30,8 +30,8 @@
 ! 2015/12/30, AP: Move declarations of scale/offset/vmin/vmax here from def_
 !    routines for fields that could be BTs or reflectances. Have all albedo
 !    fields use the same values.
-! 2016/01/06, AP: Wrap do_* flags into output_flags structure. Pass logical array
-!    to identify thermal channels rather than dealing with Ch_Is.
+! 2016/01/06, AP: Wrap do_* flags into output_flags structure. Pass logical
+!    array to identify thermal channels rather than dealing with Ch_Is.
 ! 2016/01/27, GM: Add cee and cee_uncertainty.
 ! 2016/01/28, GM: Add ctp and ctt corrected and corrected_uncertainty.
 ! 2016/03/02, AP: Homogenisation of I/O modules.
@@ -65,9 +65,9 @@ subroutine alloc_output_data_primary(ind, MaxIter, data)
 
    implicit none
 
-   type(common_indices),      intent(in)    :: ind
-   integer,                   intent(in)    :: MaxIter
-   type(output_data_primary), intent(inout) :: data
+   type(common_indices_t),      intent(in)    :: ind
+   integer,                     intent(in)    :: MaxIter
+   type(output_data_primary_t), intent(inout) :: data
 
 if (ind%flags%do_aerosol) then
    allocate(data%aot550(ind%X0:ind%X1, ind%Y0:ind%Y1))
@@ -395,8 +395,8 @@ subroutine alloc_output_data_secondary(ind, data)
 
    implicit none
 
-   type(common_indices),         intent(in)    :: ind
-   type(output_data_secondary),  intent(inout) :: data
+   type(common_indices_t),         intent(in)    :: ind
+   type(output_data_secondary_t),  intent(inout) :: data
 
    integer :: i
 

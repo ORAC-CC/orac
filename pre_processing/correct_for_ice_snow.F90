@@ -43,14 +43,14 @@
 !    the channel do loop to correct indexing problem
 ! 2012/07/12, GT: Bux fix to previous bug fix.
 ! 2012/07/30, CP: added in year month day input
-! 2012/08/03, MJ: removes trailing "/" from path and explicitly
-!    includes it in this subroutine.
+! 2012/08/03, MJ: removes trailing "/" from path and explicitly includes it in
+!    this subroutine.
 ! 2012/08/22, MJ: implements flexible x and y dimensions start and end indices
 ! 2012/09/14, GT: Changed conversion of fraction index numbers to integers from
 !    int(x) to nint(x) (i.e. rounding), based on EASE grid documentation, and
 !    added 1, so that indices run from 1-721, rather than 0-720.
-! 2012/11/16, CP: modified how nise_path_file called no
-!    longer need year in path name
+! 2012/11/16, CP: modified how nise_path_file called no longer need year in path
+!    name
 ! 2012/12/14, CP: changed howy loop was set changed starty to startyi to loop
 !    over a granule
 ! 2012/02/25, CP: changed name of ice file because it is different for 2020
@@ -62,8 +62,8 @@
 ! 2013/05/13, GT: Fixed bugs with the calculation of nise grid coordinates
 ! 2013/05/14, GT: Fixed bugs with the calculation of nise grid in southern
 !    hemisphere
-! 2013/05/17, GT: Added code do deal with missing data along coast lines
-!    and at the poles themselves.
+! 2013/05/17, GT: Added code do deal with missing data along coast lines and at
+!    the poles themselves.
 ! 2013/05/20, CP: visual inspection of scenes showed that ice had an albedo
 !    closer to that of snow than of bare ice so albedo was modified accordingly,
 !    could be modified in the future
@@ -109,12 +109,11 @@ subroutine correct_for_ice_snow(nise_path,imager_geolocation,surface,cyear, &
       verbose)
 
    use channel_structures_m
-   use constants_cloud_typing_pavolonis
    use imager_structures_m
    use nsidc_nise_m
    use preproc_constants_m
    use preproc_structures_m
-   use source_attributes
+   use source_attributes_m
    use surface_structures_m
 
    implicit none
@@ -127,7 +126,7 @@ subroutine correct_for_ice_snow(nise_path,imager_geolocation,surface,cyear, &
    type(channel_info_t),       intent(in)    :: channel_info
    logical,                    intent(in)    :: assume_full_path
    logical,                    intent(in)    :: include_full_brdf
-   type(source_attributes_s),  intent(inout) :: source_atts
+   type(source_attributes_t),  intent(inout) :: source_atts
    logical,                    intent(in)    :: verbose
 
    ! Local variables
@@ -380,11 +379,11 @@ end subroutine correct_for_ice_snow
 subroutine apply_ice_correction(x, y, nise, ice_albedo, snow_albedo, &
      pixel_ref, channel_info, nise_mask_flag, applied_flag)
 
+   use channel_structures_m
+   use constants_cloud_typing_pavolonis_m
+   use interpol_m
    use preproc_constants_m
    use preproc_structures_m
-   use interpol
-   use channel_structures_m
-   use constants_cloud_typing_pavolonis
 
    implicit none
 
@@ -475,11 +474,11 @@ subroutine correct_for_ice_snow_ecmwf(ecmwf_HR_path,imager_geolocation, &
      channel_info,assume_full_path,include_full_brdf,source_atts,verbose)
 
    use channel_structures_m
-   use constants_cloud_typing_pavolonis
+   use constants_cloud_typing_pavolonis_m
    use imager_structures_m
    use preproc_constants_m
    use preproc_structures_m
-   use source_attributes
+   use source_attributes_m
    use surface_structures_m
 
    implicit none
@@ -492,7 +491,7 @@ subroutine correct_for_ice_snow_ecmwf(ecmwf_HR_path,imager_geolocation, &
    type(preproc_prtm_t),       intent(in)    :: preproc_prtm
    logical,                    intent(in)    :: assume_full_path
    logical,                    intent(in)    :: include_full_brdf
-   type(source_attributes_s),  intent(inout) :: source_atts
+   type(source_attributes_t),  intent(inout) :: source_atts
    logical,                    intent(in)    :: verbose
 
    type(surface_t),            intent(inout) :: surface

@@ -42,8 +42,8 @@
 ! 2000/11/07, KS: original version
 ! 2000/11/21, KS: added X structure (state vector)
 ! 2001/01/17, AS: Changed indexing of CRP arrays to use constants to reference
-!    the different LUT values (IRBd etc) Using FM_Routines_m: contains
-!    interface definition for SetCRPSolar.
+!    the different LUT values (IRBd etc) Using FM_Routines_m: contains interface
+!    definition for SetCRPSolar.
 ! 2001/01/23, AS: Added GZero argument, interface to SetCRPSolar changed.
 !    Updated CRP, d_CRP and Ref, d_Ref array indexing to use constants to pick
 !    out the values depending on Tau, Re etc.

@@ -39,7 +39,8 @@
 !    tested
 ! 2016/01/21, OS: Removed offset when correcting AATSR ch1 and ch2 data
 ! 2016/02/05, OS: Cloud mask now uses albedo for glint correction.
-! 2016/02/26, OS: Added different approach for nighttime cloud mask SST correction.
+! 2016/02/26, OS: Added different approach for nighttime cloud mask SST
+!    correction.
 ! 2016/03/04, OS: bug fix in albedo correction
 
 ! $Id$
@@ -61,8 +62,8 @@ contains
        & ch3a_on_avhrr_flag, i, j, glint_angle, sensor_name, platform, verbose)
     !------------------------------------------------------------------------
 
-    use constants_cloud_typing_pavolonis
-    use common_constants
+    use constants_cloud_typing_pavolonis_m
+    use common_constants_m
     use neural_net_constants_m
 
     implicit none
@@ -451,7 +452,7 @@ contains
        & temperature,output,noob)
     !------------------------------------------------------------------------
 
-    use common_constants
+    use common_constants_m
     use neural_net_constants_m
 
     implicit none
@@ -538,7 +539,7 @@ contains
     !this functions evaluates the sigmoidal function
     !temperature and cutoff are constants coming from outside
 
-    use common_constants
+    use common_constants_m
 
     implicit none
 

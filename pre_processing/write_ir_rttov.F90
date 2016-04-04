@@ -37,7 +37,7 @@ subroutine write_ir_rttov(netcdf_info, preproc_dims, idim, jdim, nchan, nlev, &
      emissivity, transmission, radiance, radiance2, write_flag)
 
    use netcdf_output_m, only: netcdf_output_info_t
-   use orac_ncdf
+   use orac_ncdf_m
    use parkind1, only: jpim
    use preproc_constants_m, only: lint, sreal, sreal_fill_value
    use preproc_structures_m, only: preproc_dims_t

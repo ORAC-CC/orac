@@ -33,8 +33,8 @@
 !    Ctrl%Ind%Ny-Ctrl%Ind%NThermal, not Ctrl%Ind%NSolar. Also added d_Tac_d_Pc
 !    and d_Tbc_d_Pc to LW structure.
 ! 2001/02/20, AS: Renaming variables to remove excess underscores.
-! 2001/02/26, AS: Added tests for NSolar > 0, NThermal > 0 before
-!    allocating SW and LW arrays.
+! 2001/02/26, AS: Added tests for NSolar > 0, NThermal > 0 before allocating SW
+!    and LW arrays.
 ! 2001/03/07, AS: Added dTac_dPc, dTbc_dPc to the top-level struct. The LW and
 !    SW values must be combined into these arrays for later use.
 ! 2012/01/30, MJ: Set RTM_Pc%Hc,RTM_Pc%Tc to fill value.

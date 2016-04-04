@@ -24,8 +24,8 @@
 !
 ! History:
 ! 2001/04/27, TN: Original version.
-! 2001/05/17, TN: Add Decompose_Cholesky to subroutine as
-!    decomposition is only used once.
+! 2001/05/17, TN: Add Decompose_Cholesky to subroutine as decomposition is only
+!    used once.
 ! 2001/06/05, TN: Return if decomposition fails.
 !
 ! $Id$

@@ -15,9 +15,9 @@
 ! 2014/08/05, AP: Adding missing fill value.
 ! 2014/08/06, GM: Corrected the value for Pi.
 ! 2014/08/06, GM: d2r is a derived constant. It should be computed.
-! 2014/08/30, GM: Removed pi and d2r as they are in common_constants.
-! 2014/08/31, GM: Removed unused lengths and made compress_level_*
-!    and shuffle_* names consistent with their ORAC type names.
+! 2014/08/30, GM: Removed pi and d2r as they are in common_constants_m.
+! 2014/08/31, GM: Removed unused lengths and made compress_level_* and
+!    shuffle_* names consistent with their ORAC type names.
 ! 2014/09/16, GM: Rename the deflate_level_* and shuffle_* parameters to be
 !    consistent with ORAC kinds.
 ! 2015/07/26, GM: Changed type specific deflate levels and shuffling flags to
@@ -31,7 +31,7 @@
 
 module preproc_constants_m
 
-   use common_constants
+   use common_constants_m
 
    implicit none
 

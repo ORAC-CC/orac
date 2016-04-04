@@ -36,17 +36,15 @@
 !
 ! History:
 ! 2002/05/29, CP: Original version copied from READ_MSI.
-! 2002/10/29, CP: Fixed bug too many arguments in the header
-!    removed sad_chan.
+! 2002/10/29, CP: Fixed bug too many arguments in the header removed sad_chan.
 ! 2011/06/28, CP: Remove reference to ATSR
-! 2011/12/13, CP: change format statement to make g95
-!    compatible
+! 2011/12/13, CP: change format statement to make g95 compatible
 ! 2012/09/15, CP: Initialise array
 ! 2012/09/15, CP: Changed to read from netcdf files
 ! 2013/xx/xx, MJ: Fixes bug with close of netcdf file.
-! 2013/11/18, MJ: Cleans and debugs:Loop to read albedo is indexed with
-!    ysolar as ysolar halds the channel indices as they are stored in the
-!    preprocessing file.
+! 2013/11/18, MJ: Cleans and debugs:Loop to read albedo is indexed with ysolar
+!    as ysolar halds the channel indices as they are stored in the preprocessing
+!    file.
 ! 2014/04/20, GM: Cleaned up the code.
 ! 2014/05/28, GM: Removed unused read of attribute 'Product_Date'.
 ! 2014/08/15, AP: Switching to preprocessor NCDF routines.
@@ -73,7 +71,7 @@ subroutine Read_ALB_nc(Ctrl, MSI_Data)
 
    use Ctrl_m
    use ECP_Constants_m
-   use orac_ncdf
+   use orac_ncdf_m
    use SAD_Chan_m
 
    implicit none

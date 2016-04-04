@@ -96,12 +96,13 @@
 !    (Note most subordinates flag data problems via status, but no  subordinate
 !    currently detects any error that is fatal for the program). Replaced
 !    Kevin's BITS routine for setting bit flags with the intrinsic ibset.
-! 2001/08/03, AS:  Bug fix: ibset arguments were the wrong way round! Updates for
+! 2001/08/03, AS: Bug fix: ibset arguments were the wrong way round! Updates for
 !    image segmentation. Selection of values from the MSI Data structure arrays
-!    now need to use a y value that refers to the image segment currently held in
-!    memory rather than the whole image area.  X co-ords are unchanged since the
-!    segment is the full image width. Renamed structure Data to MSI_Data since
-!    Data is a reserved word (hasn't caused any problems so far but it might).
+!    now need to use a y value that refers to the image segment currently held
+!    in memory rather than the whole image area.  X co-ords are unchanged since
+!    the segment is the full image width. Renamed structure Data to MSI_Data
+!    since Data is a reserved word (hasn't caused any problems so far but it
+!    might).
 !    Moved setting of SPixel Xc, Yc. Required before GetCloudFlags call if
 !    averaging method is central.
 ! 2001/09/18, AS: Removed Write_Log call when there are no cloudy pixels in the
@@ -163,8 +164,8 @@
 !    were processed.
 ! 2013/07/24, AP: Fixed BKP code
 ! 2014/04/30, GM: Cleaned up the code.
-! 2014/06/17, CP: modified code so retrieval performed if a single ir channel
-!    is missing
+! 2014/06/17, CP: modified code so retrieval performed if a single ir channel is
+!    missing
 ! 2014/07/25, AP: Tidying code with check_value subroutine. Fixing bug that
 !    meant SPixal wasn't necessarily set if pixel failed.
 ! 2014/08/01, GM: Checks for missing data are already performed when the
@@ -182,10 +183,11 @@
 ! 2015/02/04, GM: Changes related to the new missing channel, illumination, and
 !    channel selection code.
 ! 2015/06/02, AP: Remove Ctrl argument from check_value.
-! 2015/07/27, AP: Replace SPixel%Cloudy with check of SPixel%Type. Remove Get_LSF
-!    and SPixel%QC. Replace status checks with go to 99 in the event of failure.
-! 2015/08/19, AP: Make reading of RTM terms optional. Add alternative Get_Surface
-!    for Swansea model.
+! 2015/07/27, AP: Replace SPixel%Cloudy with check of SPixel%Type. Remove
+!    Get_LSF and SPixel%QC. Replace status checks with go to 99 in the event of
+!    failure.
+! 2015/08/19, AP: Make reading of RTM terms optional. Add alternative
+!    Get_Surface for Swansea model.
 ! 2015/12/17, GM: Get rid of the secant of the solar zenith angle division of
 !    surface reflectance.
 !

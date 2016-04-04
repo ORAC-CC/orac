@@ -86,8 +86,8 @@
 ! 2011/09/05, CA: Now calls either linear *or* cubic-spline based RTM
 !    interpolation  schemes depending on RTMIntflag
 ! 2011/12/13, CP: Deallocated GZero array at end of routine
-! 2012/01/14, CP: Changed array input into FM_Thermal and FM_Solar
-!    to avoid no contiguous arrays.
+! 2012/01/14, CP: Changed array input into FM_Thermal and FM_Solar to avoid no
+!    contiguous arrays.
 ! 2012/06/15, CP: Changed the way day was defined to use illum value
 ! 2012/08/14, MJ: Removes bug in GZero allocation that made ORAC crash.
 ! 2012/08/17, MJ: Fixed bug uninitialized variables which cause NaN crash.
@@ -118,8 +118,8 @@
 ! 2014/12/01, CP: Added in cloud albedo.
 ! 2015/01/07, AP: Eliminate write to RTM_Pc%Tac, Tbc. Now within models.
 ! 2015/01/12, CP: Bugfix to cloud albedo.
-! 2015/01/12, AP: Replacing First:Last channel indexing with generic, array-based
-!    indexing.
+! 2015/01/12, AP: Replacing First:Last channel indexing with generic,
+!    array-based indexing.
 ! 2015/01/21, AP: Finishing the previous commit.
 ! 2015/01/30, GM: Fixed a bug in the recent channel indexing changes.
 ! 2015/08/21, AP: Turn off thermal retrieval with aerosol approaches.

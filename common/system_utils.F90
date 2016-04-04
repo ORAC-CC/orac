@@ -9,7 +9,7 @@
 ! $Id$
 !-------------------------------------------------------------------------------
 
-module system_utils
+module system_utils_m
 
    implicit none
 
@@ -74,4 +74,4 @@ function match_file(dir_name, file_pattern, file_name) result(status)
 
 end function match_file
 
-end module system_utils
+end module system_utils_m

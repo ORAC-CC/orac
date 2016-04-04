@@ -172,8 +172,8 @@ end function Find_Channel
 !
 ! History:
 ! 2014/10/10, GM: Original version
-! 2015/08/21, AP: Made lut_name optional so this can generate SAD_Chan filenames.
-!    Generalised treatment of NOAA7/9.
+! 2015/08/21, AP: Made lut_name optional so this can generate SAD_Chan
+!    filenames. Generalised treatment of NOAA7/9.
 !
 ! Bugs:
 ! None known.

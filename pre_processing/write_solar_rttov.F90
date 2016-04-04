@@ -46,7 +46,7 @@ subroutine write_solar_rttov(netcdf_info, preproc_dims, coefs, idim, jdim, &
      write_flag)
 
    use netcdf_output_m, only: netcdf_output_info_t
-   use orac_ncdf
+   use orac_ncdf_m
    use parkind1, only: jpim, jprb
    use preproc_constants_m, only: lint, sreal, d2r, sreal_fill_value
    use preproc_structures_m, only: preproc_dims_t

@@ -18,8 +18,6 @@
 
 module postproc_utils_m
 
-   use common_constants
-
    implicit none
 
 contains

@@ -24,14 +24,14 @@
 ! 2001/11/28, AS: New constants for upper and lower limits used in checking in
 !    GetSPixel: flag values, lat, long, geometry, reflectances and brightness
 !    temps.
-! 2002/01/17, AS: New LwRTM error code. Re-numbered higher error codes to
-!    make room.
+! 2002/01/17, AS: New LwRTM error code. Re-numbered higher error codes to make
+!    room.
 ! 2011/02/23, AS: Added ECPLogReclen, fed up of irritating line breaks.
-! 2011/03/09, AS: New error codes for albedo files. Updated XMDAD error on
-!    a priori F.
+! 2011/03/09, AS: New error codes for albedo files. Updated XMDAD error on a
+!    priori F.
 ! 2011/04/05, AS: Removed selection methods SAD and SDAD. Codes SlmSAD, SelmSDAD
-!    removed, other Selm codes re-numbered. SelmMDAD renamed SelmMeas to
-!    improve clarity.
+!    removed, other Selm codes re-numbered. SelmMDAD renamed SelmMeas to improve
+!    clarity.
 ! 2011/04/14, AS: Extension to handle multiple views.
 !    Extended FilenameLen to allow for long paths.
 ! 2011/06/14, CP: remove maximum sizes for LUT arrays
@@ -43,8 +43,8 @@
 ! 2011/10/07, CP: added in variables to calculate CWP rho and qext
 ! 2011/11/04, CP: changed values of AUXErrTsSea/land
 ! 2011/11/25, CP: changed values maxnummeas
-! 2011/12/08, MJ: added data type definitions for netcdf output and
-!    filenamelengths
+! 2011/12/08, MJ: added data type definitions for netcdf output and filename
+!    lengths
 ! 2012/01/30, MJ: added ditherm3 as parameter.
 ! 2012/06/15, CP: added iluum error flags
 ! 2012/06/22, CP: added sacura option
@@ -88,7 +88,7 @@
 
 module ECP_constants_m
 
-   use common_constants
+   use common_constants_m
 
    implicit none
 

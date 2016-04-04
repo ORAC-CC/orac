@@ -23,7 +23,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-module common_constants
+module common_constants_m
 
    implicit none
 
@@ -78,4 +78,4 @@ module common_constants
    integer, parameter :: MaxNumMeas       = 36 ! Max no. of measurement channels
    integer, parameter :: MaxNumViews      = 2  ! Max no. of measurement views
 
-end module common_constants
+end module common_constants_m

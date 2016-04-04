@@ -24,12 +24,12 @@
 ! 2014/06/13, GM: Cleaned up the code.
 ! 2014/09/01, GM: Start using the common/orac_ncdf.F90 write_array interface.
 ! 2014/09/17, GM: Bug fix, forgot to offset y dimension of output.
-! 2014/10/24, OS: added variables cldtype, cloudmask, cccot_pre, lusflags,
-!    dem, and nisemask
+! 2014/10/24, OS: added variables cldtype, cloudmask, cccot_pre, lusflags, dem,
+!    and nisemask
 ! 2014/12/01, CP: added cloud albedo
-! 2014/12/19, AP: YSolar and YThermal now contain the index of
-!    solar/thermal channels with respect to the channels actually processed,
-!    rather than the MSI file.
+! 2014/12/19, AP: YSolar and YThermal now contain the index of solar/thermal
+!    channels with respect to the channels actually processed, ather than the
+!    MSI file.
 ! 2015/07/04, CP: Added corrected cth
 ! 2015/09/06, GM: Move into common/ from src/ and changes related to sharing
 !    with post_processing/.
@@ -51,13 +51,13 @@
 
 subroutine write_output_primary(ncid, ind, output_data)
 
-   use orac_ncdf
+   use orac_ncdf_m
 
    implicit none
 
-   integer,                   intent(in)    :: ncid
-   type(common_indices),      intent(in)    :: ind
-   type(output_data_primary), intent(inout) :: output_data
+   integer,                     intent(in)    :: ncid
+   type(common_indices_t),      intent(in)    :: ind
+   type(output_data_primary_t), intent(inout) :: output_data
 
    character(len=32)  :: input_num
    character(len=512) :: input_dummy

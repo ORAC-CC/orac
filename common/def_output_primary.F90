@@ -67,8 +67,8 @@
 ! 2015/10/24, GM: Fix flag_values and flag_meanings for lsflag.
 ! 2015/12/17, OS: Updated NetCDF time variable definition.
 ! 2015/12/28, AP: Add output fields for aerosol retrievals.
-! 2015/12/30, AP: Move declarations of scale/offset/vmin/vmax from here to alloc_
-!    routines for fields that could be BTs or reflectances.
+! 2015/12/30, AP: Move declarations of scale/offset/vmin/vmax from here to
+!    alloc_ routines for fields that could be BTs or reflectances.
 ! 2015/01/07, AP: Make QCFlag long to accomodate longer state vectors.
 ! 2016/01/06, AP: Wrap do_* flags into output_flags structure.
 ! 2016/01/27, GM: Add cee and cee_uncertainty.
@@ -85,21 +85,21 @@ subroutine def_output_primary(ncid, dims_var, output_data, indexing, &
    qc_flag_masks, qc_flag_meanings, deflate_level, shuffle_flag, verbose, &
    ch_var, view_var)
 
-   use orac_ncdf
+   use orac_ncdf_m
 
    implicit none
 
-   integer,                   intent(in)    :: ncid
-   integer,                   intent(in)    :: dims_var(:)
-   type(output_data_primary), intent(inout) :: output_data
-   type(common_indices),      intent(in)    :: indexing
-   character(len=*),          intent(in)    :: qc_flag_masks
-   character(len=*),          intent(in)    :: qc_flag_meanings
-   integer,                   intent(in)    :: deflate_level
-   logical,                   intent(in)    :: shuffle_flag
-   logical,                   intent(in)    :: verbose
-   integer, optional,         intent(in)    :: ch_var(:)
-   integer, optional,         intent(in)    :: view_var(:)
+   integer,                     intent(in)    :: ncid
+   integer,                     intent(in)    :: dims_var(:)
+   type(output_data_primary_t), intent(inout) :: output_data
+   type(common_indices_t),      intent(in)    :: indexing
+   character(len=*),            intent(in)    :: qc_flag_masks
+   character(len=*),            intent(in)    :: qc_flag_meanings
+   integer,                     intent(in)    :: deflate_level
+   logical,                     intent(in)    :: shuffle_flag
+   logical,                     intent(in)    :: verbose
+   integer, optional,           intent(in)    :: ch_var(:)
+   integer, optional,           intent(in)    :: view_var(:)
 
    character(len=32)  :: input_num
    character(len=512) :: input_dummy

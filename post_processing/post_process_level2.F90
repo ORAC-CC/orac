@@ -123,18 +123,17 @@ program post_process_level2
 subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_file)
 #endif
 
-   use common_constants
-   use global_attributes
+   use global_attributes_m
    use netcdf
    use orac_input_m
-   use orac_ncdf
-   use orac_output
-   use parsing
+   use orac_ncdf_m
+   use orac_output_m
+   use parsing_m
    use postproc_constants_m
    use postproc_utils_m
    use prepare_output_pp_m
-   use source_attributes
-   use constants_cloud_typing_pavolonis
+   use source_attributes_m
+   use constants_cloud_typing_pavolonis_m
 
    implicit none
 
@@ -172,14 +171,14 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
 
    integer                      :: ncid_primary, ncid_secondary, dims_var(2)
 
-   type(global_attributes_s)    :: global_atts
-   type(source_attributes_s)    :: source_atts
+   type(global_attributes_t)    :: global_atts
+   type(source_attributes_t)    :: source_atts
 
    type(input_data_primary_t)   :: input_primary(0:MaxInFiles)
    type(input_data_secondary_t) :: input_secondary(0:MaxInFiles)
 
-   type(output_data_primary)    :: output_primary
-   type(output_data_secondary)  :: output_secondary
+   type(output_data_primary_t)    :: output_primary
+   type(output_data_secondary_t)  :: output_secondary
 
    type(input_indices_t)        :: indexing, loop_ind(MaxInFiles)
 
@@ -452,9 +451,9 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    end do
 
    ! Allocate the structures which hold the output in its final form
-   call alloc_output_data_primary(indexing%common_indices, 100, output_primary)
+   call alloc_output_data_primary(indexing%common_indices_t, 100, output_primary)
    if (do_secondary) then
-      call alloc_output_data_secondary(indexing%common_indices, output_secondary)
+      call alloc_output_data_secondary(indexing%common_indices_t, output_secondary)
    end if
 
    ! Open the netcdf output file
@@ -474,21 +473,21 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
       shuffle_flag2  = .false.
    end if
    call def_output_primary(ncid_primary, dims_var, output_primary, &
-        indexing%common_indices, input_primary(0)%qc_flag_masks, &
+        indexing%common_indices_t, input_primary(0)%qc_flag_masks, &
         input_primary(0)%qc_flag_meanings, deflate_level2, shuffle_flag2, &
         .false.)
    if (do_secondary) then
       call def_output_secondary(ncid_secondary, dims_var, output_secondary, &
-           indexing%common_indices, deflate_level2, shuffle_flag2, .false.)
+           indexing%common_indices_t, deflate_level2, shuffle_flag2, .false.)
    end if
 
    ! Put results in final output arrays with final datatypes
    do j=indexing%Y0,indexing%Y1
       do i=indexing%X0,indexing%X1
-        call prepare_output_primary_pp(i, j, indexing%common_indices, &
+        call prepare_output_primary_pp(i, j, indexing%common_indices_t, &
             input_primary(0), output_primary, output_optical_props_at_night)
          if (do_secondary) then
-            call prepare_output_secondary_pp(i, j, indexing%common_indices, &
+            call prepare_output_secondary_pp(i, j, indexing%common_indices_t, &
                  input_secondary(0), output_secondary)
          end if
       end do
@@ -501,10 +500,10 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    end if
 
    ! Write output to netcdf variables
-   call write_output_primary(ncid_primary, indexing%common_indices, &
+   call write_output_primary(ncid_primary, indexing%common_indices_t, &
                              output_primary)
    if (do_secondary) then
-      call write_output_secondary(ncid_secondary, indexing%common_indices, &
+      call write_output_secondary(ncid_secondary, indexing%common_indices_t, &
                                   output_secondary)
    end if
 
@@ -527,7 +526,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
       call dealloc_output_data_secondary(output_secondary)
    end if
 
-   call dealloc_common_indices(indexing%common_indices)
+   call dealloc_common_indices(indexing%common_indices_t)
 
 
 #ifdef WRAPPER

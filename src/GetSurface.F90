@@ -82,34 +82,33 @@
 ! 2011/05/19, AS: Multiple views (2). Commented out setting of qc1, qc2 as these
 !    are not used and the assignment refers specifically to channels 5 and 6 of
 !    the albedo data - may change in future and may be specific to one instrument
-! 2011/06/08, AS:  Removed calls to Write_Log to improve performance
-!    (add ifdef DEBUG).
+! 2011/06/08, AS:  Removed calls to Write_Log to improve performance (add ifdef
+!    DEBUG).
 ! 2011/12/08, CP: Changed y_id to chi.
 ! 2011/12/13, CP: Added byte 2 unsigned integer routine to make g95 compatible.
 ! 2012/01/27, CA: Bugfix: added call to byte to uint routine for AUX method
 !    (ln 349)
-! 2012/05/01, CP: added in the solar factor remove
-!    Factor 1 for multiplication
+! 2012/05/01, CP: added in the solar factor, remove factor 1 for multiplication
 ! 2012/09/09, CP: changed indexing on albedo data set  have to be really
 !    Careful here as aatsr preprocessing reads out albedo for 55 channel.
 ! 2012/09/21, CP: removed albedo scaling factor as netcdf value doe not need
 !    scaling
-! 2013/10/01, GT: Bug-fix: Changed Y_ID to ChI when indexing albedo data
-!    (from MSI_Data%ALB). Y_ID gives the Channel ID numbers, rather than
-!    their index numbers within the data arrays.
+! 2013/10/01, GT: Bug-fix: Changed Y_ID to ChI when indexing albedo data (from
+!    MSI_Data%ALB). Y_ID gives the Channel ID numbers, rather than their index
+!    numbers within the data arrays.
 ! 2013/11/19, MJ: Changes channel indices to ysolar_msi as this gives the
 !    indices of the solar channels as stored in the MSI array.
 ! 2014/04/19, GM: Remove incorrect use of b1_to_ui1() for implicit conversion.
 ! 2014/04/20, GM: Cleaned up the code.
-! 2014/08/01, GM: Use of SPixel%spixel_*_y_to_ctrl_y_index(:) to properly
-!    index the right channels from the surface fields.
+! 2014/08/01, GM: Use of SPixel%spixel_*_y_to_ctrl_y_index(:) to properly index
+!    the right channels from the surface fields.
 ! 2014/09/09, GM: Changes related to new BRDF support.
 ! 2014/12/19, AP: YSolar and YThermal now contain the index of solar/thermal
 !    channels with respect to the channels actually processed, rather than the
 !    MSI file.
 ! 2015/01/15, AP: Facilitate channel indexing in arbitrary order.
-! 2015/01/15, AP: The preprocessed MODIS albedo data was always rejected for
-!    Ch5 of AATSR. There is no reason to do so. This has been removed.
+! 2015/01/15, AP: The preprocessed MODIS albedo data was always rejected for Ch5
+!    of AATSR. There is no reason to do so. This has been removed.
 ! 2015/01/20, AP: Tidying redundant code.
 ! 2015/01/21, AP: Move allocations of reflectance arrays here.
 ! 2014/01/30, AP: Replace YSeg0 with Y0 as superpixeling removed.
@@ -119,8 +118,8 @@
 !    vector onto the Rs array.
 ! 2015/12/22, AP: Rename SRsSelm==SelmCtrl to SelmMeas as it is dependent on the
 !    measurement. Add a SelmCtrl that draws a constant value from Ctrl.
-! 2015/12/29, AP: add_fractional increases the uncertainty in surface reflectance
-!    by a fraction (set by Ctrl%RS%Sb) of the current value.
+! 2015/12/29, AP: Add_fractional increases the uncertainty in surface
+!    reflectance by a fraction (set by Ctrl%RS%Sb) of the current value.
 ! 2015/01/06, AP: Fix a minor channel indexing bug when searching for solar chs.
 !    As aerosol preprocessing does not calculate Rho_DV, remove check for its
 !    validity. Add check for missing values in auxiliary uncertainties.

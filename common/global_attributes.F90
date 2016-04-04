@@ -24,13 +24,13 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-module global_attributes
+module global_attributes_m
 
-   use common_constants
+   use common_constants_m
 
    implicit none
 
-   type global_attributes_s
+   type global_attributes_t
       ! Global attribute 'Conventions' as defined by CF-1.4, section 2.6.1.
       character(len=attribute_length)      :: Conventions
 
@@ -66,6 +66,6 @@ module global_attributes
       character(len=attribute_length)      :: RTTOV_Version
 
       character(len=attribute_length)      :: file_version
-   end type global_attributes_s
+   end type global_attributes_t
 
-end module global_attributes
+end module global_attributes_m

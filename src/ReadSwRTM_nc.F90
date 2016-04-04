@@ -66,8 +66,8 @@
 ! 2014/12/19, AP: YSolar and YThermal now contain the index of solar/thermal
 !    channels with respect to the channels actually processed, rather than the
 !    MSI file.
-! 2015/03/11, GM: Do not read wavelength dependent fields if NSolar is
-!    equal to 0.
+! 2015/03/11, GM: Do not read wavelength dependent fields if NSolar is equal to
+!    0.
 ! 2015/07/03, OS: added error status variable to nc_open call
 ! 2015/07/10, OS: undo previous commit
 ! 2015/08/10, CP: added in ATSR-2 capability
@@ -82,7 +82,7 @@ subroutine Read_SwRTM_nc(Ctrl, RTM)
 
    use Ctrl_m
    use ECP_Constants_m
-   use orac_ncdf
+   use orac_ncdf_m
 
    implicit none
 

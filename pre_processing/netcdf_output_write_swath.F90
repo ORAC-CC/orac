@@ -35,8 +35,8 @@
 !    fix.
 ! 2014/05/26, GM: Some code clean up.
 ! 2014/08/10, GM: Changes related to new BRDF support.
-! 2014/09/02, GM: Use the nc_write_array interface from the orac_ncdf module
-!    in the common library.
+! 2014/09/02, GM: Use the nc_write_array interface from the orac_ncdf module in
+!    the common library.
 ! 2014/09/09, AP: Remove procflag as that's controlled by ORAC driver file.
 ! 2014/10/23, OS: added new variables to be written to output: cldtype, cldmask,
 !    cccot_pre, lusflag, dem, nisemask
@@ -58,7 +58,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocati
    use channel_structures_m
    use imager_structures_m
    use netcdf
-   use orac_ncdf
+   use orac_ncdf_m
    use preproc_constants_m
    use surface_structures_m
 

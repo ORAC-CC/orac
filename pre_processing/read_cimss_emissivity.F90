@@ -84,7 +84,7 @@ contains
 function read_cimss_emissivity(path_to_file, emis, wavelengths, verbose, flag, &
    wavenumber) result (stat)
 
-   use orac_ncdf
+   use orac_ncdf_m
    use preproc_constants_m
 
    implicit none

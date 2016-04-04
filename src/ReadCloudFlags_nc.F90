@@ -73,7 +73,7 @@ subroutine Read_CloudFlags_nc(Ctrl, MSI_Data)
 
    use Ctrl_m
    use ECP_Constants_m
-   use orac_ncdf
+   use orac_ncdf_m
 
    implicit none
 

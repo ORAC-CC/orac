@@ -37,7 +37,7 @@
 
 subroutine T2R(NChan, SAD_Chan, T, R, d_R_d_T, status)
 
-   use common_constants, only : dreal
+   use ECP_constants_m
    use SAD_Chan_m
 
    implicit none

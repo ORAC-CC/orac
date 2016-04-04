@@ -24,12 +24,12 @@
 ! 2012/08/16, MJ: Original version.
 ! 2013/02/26, CP: added in header and remove hardwiring of MSI_Data%ALB=3
 ! 2014/04/20, GM: Cleaned up the code.
-! 2014/08/18, AP: Commented out reading of scanline data as it is not
-!    actually used.
+! 2014/08/18, AP: Commented out reading of scanline data as it is not actually
+!    used.
 ! 2014/04/20, GM: Added call to Nullify_Data() as some pointers may not be
 !    associated.
-! 2015/02/04, GM: Changes related to the new missing channel, illumination,
-!    and channel selection code.
+! 2015/02/04, GM: Changes related to the new missing channel, illumination, and
+!    channel selection code.
 ! 2015/09/07, AP: Allow verbose to be controlled from the driver file.
 !
 ! $Id$

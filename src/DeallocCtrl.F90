@@ -31,7 +31,7 @@
 
 subroutine Dealloc_Ctrl(Ctrl)
 
-   use orac_indexing, only: dealloc_common_indices
+   use orac_indexing_m, only: dealloc_common_indices
 
    implicit none
 
@@ -39,7 +39,7 @@ subroutine Dealloc_Ctrl(Ctrl)
 
    type(Ctrl_t), intent(inout) :: Ctrl
 
-   call dealloc_common_indices(Ctrl%Ind%common_indices)
+   call dealloc_common_indices(Ctrl%Ind%common_indices_t)
 
    deallocate(Ctrl%Ind%WvlIdx)
    deallocate(Ctrl%Ind%ICh)

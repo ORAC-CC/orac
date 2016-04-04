@@ -34,9 +34,9 @@ subroutine nc_create(path, ncid, nx, ny, dims_var, type, global_atts, &
 
    use netcdf
 
-   use common_constants
-   use global_attributes
-   use source_attributes
+   use common_constants_m
+   use global_attributes_m
+   use source_attributes_m
 
    implicit none
 
@@ -49,8 +49,8 @@ subroutine nc_create(path, ncid, nx, ny, dims_var, type, global_atts, &
    integer,                   intent(out)   :: ncid
    integer,                   intent(out)   :: dims_var(2)
 
-   type(global_attributes_s), intent(inout) :: global_atts
-   type(source_attributes_s), intent(inout) :: source_atts
+   type(global_attributes_t), intent(inout) :: global_atts
+   type(source_attributes_t), intent(inout) :: source_atts
 
    integer,          optional,intent(in)    :: nch
    integer,          optional,intent(out)   :: ch_var(1)
@@ -193,14 +193,14 @@ subroutine nc_put_common_attributes(ncid, global_atts, source_atts)
 
    use netcdf
 
-   use global_attributes
-   use source_attributes
+   use global_attributes_m
+   use source_attributes_m
 
    implicit none
 
    integer,                   intent(in) :: ncid
-   type(global_attributes_s), intent(in) :: global_atts
-   type(source_attributes_s), intent(in) :: source_atts
+   type(global_attributes_t), intent(in) :: global_atts
+   type(source_attributes_t), intent(in) :: source_atts
 
    integer :: ierr
 
@@ -531,14 +531,14 @@ subroutine nc_get_common_attributes(ncid, global_atts, source_atts)
 
    use netcdf
 
-   use global_attributes
-   use source_attributes
+   use global_attributes_m
+   use source_attributes_m
 
    implicit none
 
    integer,                   intent(in)    :: ncid
-   type(global_attributes_s), intent(inout) :: global_atts
-   type(source_attributes_s), intent(inout) :: source_atts
+   type(global_attributes_t), intent(inout) :: global_atts
+   type(source_attributes_t), intent(inout) :: source_atts
 
    integer :: ierr
 

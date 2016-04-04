@@ -25,8 +25,8 @@
 ! 2001/01/12, KM: Original version.
 ! 2001/01/25, KM: Added checks to see if super pixel lat,lon are covered by the
 !    RTM ranges. Simplified calculation of XN and YN
-! 2001/02/21, AS: Added Tbc to LW structure. Previously missing from model
-!    data. Tsf removed from LW structure.
+! 2001/02/21, AS: Added Tbc to LW structure. Previously missing from model data.
+!    Tsf removed from LW structure.
 ! 2001/03/01, AS: Changed setting of R_Clear values. These are not present in
 !    the RTM struct as they are not read from the RTM data file.
 ! 2001/03/06, AS: Tsf required in RTM struct again.
@@ -46,8 +46,8 @@
 ! 2011/11/07, CP: Tidied up comments. no actual change.
 ! 2012/09/15, MS: Puts in coefs fudge to account for missing values.
 ! 2012/11/03, MJ: Changed Coeffs if block.
-! 2014/07/23, AP: Grid no longer assumed to defined points rather than the
-!    cells centres (as is actually the case).
+! 2014/07/23, AP: Grid no longer assumed to defined points rather than the cells
+!    centres (as is actually the case).
 ! 2014/07/23, CP: Added in extrapolation into stratosphere.
 ! 2014/07/30, GM: Cleaned up the code.
 ! 2014/07/30, GM: Put the duplicate interpolation code into subroutines.
@@ -56,11 +56,11 @@
 ! 2014/11/11, CP: Updated to include boundary layer cth correction to
 !    temperature profile
 ! 2015/01/12, AP: Replace ThermalFirst:ThermalLast indexing with YThermal.
-! 2015/01/30, AP: Remove skint and sp as redundant. Use bottom of T and P
-!    arrays in SPixel%RTM instead.
+! 2015/01/30, AP: Remove skint and sp as redundant. Use bottom of T and P arrays
+!    in SPixel%RTM instead.
 ! 2015/02/06, AP: Move T profile alteration to Int_CTP.
-! 2015/03/11, GM: Do not interpolate wavelength dependent fields if the
-!    number of measurements is equal to zero.
+! 2015/03/11, GM: Do not interpolate wavelength dependent fields if the number
+!    of measurements is equal to zero.
 ! 2015/08/18, GM: Added range checking to deal with cases where satellite zenith
 !    angle is greater than the maximum allowed by RTTOV.
 ! 2016/01/08, AP: Removed old CTP interpolation entirely.
@@ -75,7 +75,7 @@ subroutine Get_LwSwRTM(Ctrl, SAD_Chan, RTM, SPixel, status)
 
    use Ctrl_m
    use ECP_Constants_m
-   use interpol
+   use interpol_m
    use planck_m
    use RTM_m
    use SAD_Chan_m
@@ -90,7 +90,7 @@ subroutine Get_LwSwRTM(Ctrl, SAD_Chan, RTM, SPixel, status)
    type(SPixel_t),   intent(inout) :: SPixel
    integer,          intent(out)   :: status
 
-   type(interpol_s) :: interp
+   type(interpol_t) :: interp
    real             :: R(Ctrl%Ind%NThermal)
    real             :: T_Array(Ctrl%Ind%NThermal)
    type(SAD_Chan_t) :: SAD_temp(Ctrl%Ind%NThermal)

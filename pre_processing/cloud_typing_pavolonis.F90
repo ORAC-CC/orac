@@ -35,8 +35,8 @@
 ! 2015/04/16, OS+SS: removed setting prob_opaque_ice if both NIR channels are
 !    missing and replaced it with IR-only Test.
 ! 2015/04/20, SS: fixes and changes in cirrus/overlap spatial filter fix
-!    missing degree-to-radians factor for coszen, changed coszen from
-!    cos(sunZA) to cos(satZA)
+!    missing degree-to-radians factor for coszen, changed coszen from cos(sunZA)
+!    to cos(satZA)
 ! 2015/04/22, SS: introduce solar correction for reflectance channels ch1 and
 !    ch3
 ! 2015/04/29, CP: changed from Env to Envisat
@@ -257,12 +257,12 @@ contains
 
     !-- load necessary variable fields and constants
     use channel_structures_m
-    use common_constants
+    use common_constants_m
     use imager_structures_m
     use surface_structures_m
     use neural_net_preproc_m
-    use constants_cloud_typing_pavolonis
-    use interpol
+    use constants_cloud_typing_pavolonis_m
+    use interpol_m
     use ecmwf_m, only : ecmwf_t
 
 
@@ -317,7 +317,7 @@ contains
     real    :: t4_filter_thresh, nir_ref
     real(kind=sreal), allocatable, dimension(:,:) :: skint,snow_depth,sea_ice_cover
     integer(kind=byte), allocatable, dimension(:,:) :: snow_ice_mask
-    type(interpol_s), allocatable, dimension(:) :: interp
+    type(interpol_t), allocatable, dimension(:) :: interp
 
     ! --------------------------------------------------------------------
     !
@@ -1719,7 +1719,7 @@ contains
 
   function PlanckInv( input_platform, T )
 
-    use COMMON_CONSTANTS
+    use common_constants_m
 
     implicit none
 

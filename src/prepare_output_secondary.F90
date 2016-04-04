@@ -27,12 +27,11 @@
 ! 2012/09/20, CP: Remove scaling factor from albedo
 ! 2012/09/20, CP: Chanaged how svan value is set
 ! 2013/05/29, GT: Added degrees of freedom for signal
-! 2014/01/30, GM: Fixed writing of the residuals and first guess in
-!    the case of nighttime pixels.
+! 2014/01/30, GM: Fixed writing of the residuals and first guess in the case of
+!    nighttime pixels.
 ! 2014/06/13, GM: Put the code into a subroutine.
 ! 2014/06/13, GM: Cleaned up the code.
-! 2014/08/31, GM: Update to use general routines in the current
-!    module.
+! 2014/08/31, GM: Update to use general routines in the current module.
 ! 2014/01/30, AP: Replace YSeg0 with Y0 as superpixeling removed.
 ! 2015/09/06, GM: Output fill_value instead of zero for degrees of freedom for
 !    signal for non-retrieved pixels.
@@ -58,8 +57,8 @@ subroutine prepare_output_secondary(Ctrl, i, j, MSI_Data, SPixel, Diag, &
    use Ctrl_m
    use Data_m
    use Diag_m
-   use orac_ncdf
-   use orac_output
+   use orac_ncdf_m
+   use orac_output_m
    use SPixel_m
 
    implicit none
@@ -69,7 +68,7 @@ subroutine prepare_output_secondary(Ctrl, i, j, MSI_Data, SPixel, Diag, &
    type(Data_t),                intent(in)    :: MSI_Data
    type(SPixel_t),              intent(in)    :: SPixel
    type(Diag_t),                intent(in)    :: Diag
-   type(output_data_secondary), intent(inout) :: output_data
+   type(output_data_secondary_t), intent(inout) :: output_data
 
    integer          :: k, kk, l
    real(kind=sreal) :: dummyreal

@@ -23,10 +23,10 @@
 ! n    integer     In          Dimensions of A; loop limit
 !
 ! History:
-! 2001/04/20, TN: Original version. Adapted from "cholsl"
-!    in "Numerical Recipes in Fortran 90: The Art of Parallel Scientific
-!    Computing" (ISBN 0-521-57439-0), page 1039. Error handling and types
-!    changed, diagonal p incorporated in A.
+! 2001/04/20, TN: Original version. Adapted from "cholsl" in "Numerical Recipes
+!    in Fortran 90: The Art of Parallel Scientific Computing"
+!    (ISBN 0-521-57439-0), page 1039. Error handling and types changed, diagonal
+!    p incorporated in A.
 !
 ! $Id$
 !

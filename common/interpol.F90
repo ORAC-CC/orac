@@ -29,16 +29,16 @@
 ! With arrays, interp_field only checks if the first value is missing.
 !-------------------------------------------------------------------------------
 
-module interpol
+module interpol_m
 
-   use common_constants, only: sreal, sreal_fill_value
+   use common_constants_m, only: sreal, sreal_fill_value
 
    implicit none
 
-   type interpol_s
+   type interpol_t
       integer     :: x0, x1, y0, y1
       real        :: t, u
-   end type interpol_s
+   end type interpol_t
 
    interface bilinear_coef
       module procedure bilinear_coef_reg_reg,  bilinear_coef_reg_irr, &
@@ -67,7 +67,7 @@ subroutine bilinear_coef_reg_reg(xstart, x_invdel, nx, ystart, y_invdel, ny, &
    real(8),          intent(in)  :: ystart, y_invdel
    integer,          intent(in)  :: nx, ny
    real,             intent(in)  :: xout, yout
-   type(interpol_s), intent(out) :: interp
+   type(interpol_t), intent(out) :: interp
    logical,          intent(in)  :: wrap
 
    call bound_regular_grid(xstart, x_invdel, nx, xout, &
@@ -85,7 +85,7 @@ subroutine bilinear_coef_reg_irr(xstart, x_invdel, nx, ygrid, ny, &
    real,             intent(in)  :: ygrid(:)
    integer,          intent(in)  :: nx, ny
    real,             intent(in)  :: xout, yout
-   type(interpol_s), intent(out) :: interp
+   type(interpol_t), intent(out) :: interp
    logical,          intent(in)  :: wrap
 
    call bound_regular_grid(xstart, x_invdel, nx, xout, &
@@ -103,7 +103,7 @@ subroutine bilinear_coef_irr_reg(xgrid, nx, ystart, y_invdel, ny, &
    real(8),          intent(in)  :: ystart, y_invdel
    integer,          intent(in)  :: nx, ny
    real,             intent(in)  :: xout, yout
-   type(interpol_s), intent(out) :: interp
+   type(interpol_t), intent(out) :: interp
    logical,          intent(in)  :: wrap
 
    call bound_irregular_grid(xgrid, nx, xout, &
@@ -121,7 +121,7 @@ subroutine bilinear_coef_irr_irr(xgrid, nx, ygrid, ny, &
    real,             intent(in)  :: ygrid(:)
    integer,          intent(in)  :: nx, ny
    real,             intent(in)  :: xout, yout
-   type(interpol_s), intent(out) :: interp
+   type(interpol_t), intent(out) :: interp
    logical,          intent(in)  :: wrap
 
    call bound_irregular_grid(xgrid, nx, xout, &
@@ -139,7 +139,7 @@ subroutine bilinear_coef_reg_reg2(xstart, x_invdel, nx, ystart, y_invdel, ny, &
    real(8),          intent(in)  :: ystart, y_invdel
    integer,          intent(in)  :: nx, ny
    real,             intent(in)  :: xout, yout
-   type(interpol_s), intent(out) :: interp
+   type(interpol_t), intent(out) :: interp
 
    call bound_regular_grid(xstart, x_invdel, nx, xout, &
         interp%x0, interp%x1, interp%t, .true.)
@@ -156,7 +156,7 @@ subroutine bilinear_coef_reg_irr2(xstart, x_invdel, nx, ygrid, ny, &
    real,             intent(in)  :: ygrid(:)
    integer,          intent(in)  :: nx, ny
    real,             intent(in)  :: xout, yout
-   type(interpol_s), intent(out) :: interp
+   type(interpol_t), intent(out) :: interp
 
    call bound_regular_grid(xstart, x_invdel, nx, xout, &
         interp%x0, interp%x1, interp%t, .true.)
@@ -173,7 +173,7 @@ subroutine bilinear_coef_irr_reg2(xgrid, nx, ystart, y_invdel, ny, &
    real(8),          intent(in)  :: ystart, y_invdel
    integer,          intent(in)  :: nx, ny
    real,             intent(in)  :: xout, yout
-   type(interpol_s), intent(out) :: interp
+   type(interpol_t), intent(out) :: interp
 
    call bound_irregular_grid(xgrid, nx, xout, &
         interp%x0, interp%x1, interp%t, .true.)
@@ -190,7 +190,7 @@ subroutine bilinear_coef_irr_irr2(xgrid, nx, ygrid, ny, &
    real,             intent(in)  :: ygrid(:)
    integer,          intent(in)  :: nx, ny
    real,             intent(in)  :: xout, yout
-   type(interpol_s), intent(out) :: interp
+   type(interpol_t), intent(out) :: interp
 
    call bound_irregular_grid(xgrid, nx, xout, &
         interp%x0, interp%x1, interp%t, .true.)
@@ -205,7 +205,7 @@ subroutine interp_field_0d(datin, datout, interp)
 
    real,        target, intent(in)    :: datin(:,:)
    real,                intent(inout) :: datout
-   type(interpol_s),    intent(in)    :: interp
+   type(interpol_t),    intent(in)    :: interp
 
    logical     :: miss(4)
    real        :: coef(3)
@@ -232,7 +232,7 @@ subroutine interp_field_1d(datin, datout, interp)
 
    real,        target, intent(in)    :: datin(:,:,:)
    real,                intent(inout) :: datout(:)
-   type(interpol_s),    intent(in)    :: interp
+   type(interpol_t),    intent(in)    :: interp
 
    logical                            :: miss(4)
    real                               :: coef(3)
@@ -259,7 +259,7 @@ subroutine interp_field_2d(datin, datout, interp)
 
    real,        target, intent(in)    :: datin(:,:,:,:)
    real,                intent(inout) :: datout(:,:)
-   type(interpol_s),    intent(in)    :: interp
+   type(interpol_t),    intent(in)    :: interp
 
    logical                              :: miss(4)
    real                                 :: coef(3)
@@ -286,7 +286,7 @@ subroutine interp_field2_1d(datin, datout, interp)
 
    real,        target, intent(in)    :: datin(:,:,:)
    real,                intent(inout) :: datout(:)
-   type(interpol_s),    intent(in)    :: interp
+   type(interpol_t),    intent(in)    :: interp
 
    logical                            :: miss(4)
    real                               :: coef(3)
@@ -313,7 +313,7 @@ subroutine interp_field2_2d(datin, datout, interp)
 
    real,        target, intent(in)    :: datin(:,:,:,:)
    real,                intent(inout) :: datout(:,:)
-   type(interpol_s),    intent(in)    :: interp
+   type(interpol_t),    intent(in)    :: interp
 
    logical                              :: miss(4)
    real                                 :: coef(3)
@@ -334,4 +334,4 @@ subroutine interp_field2_2d(datin, datout, interp)
 
 end subroutine interp_field2_2d
 
-end module interpol
+end module interpol_m

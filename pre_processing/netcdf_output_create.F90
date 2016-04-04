@@ -69,11 +69,11 @@ subroutine netcdf_output_create(output_path,lwrtm_file,swrtm_file,prtm_file, &
    include_full_brdf,verbose)
 
    use channel_structures_m
-   use global_attributes
+   use global_attributes_m
    use imager_structures_m
    use preproc_constants_m
    use preproc_structures_m
-   use source_attributes
+   use source_attributes_m
 
    implicit none
 
@@ -84,8 +84,8 @@ subroutine netcdf_output_create(output_path,lwrtm_file,swrtm_file,prtm_file, &
                                                     geo_file,loc_file,alb_file
    character(len=platform_length), intent(in)    :: platform
    character(len=sensor_length),   intent(in)    :: sensor
-   type(global_attributes_s),      intent(in)    :: global_atts
-   type(source_attributes_s),      intent(in)    :: source_atts
+   type(global_attributes_t),      intent(in)    :: global_atts
+   type(source_attributes_t),      intent(in)    :: source_atts
    character(len=date_length),     intent(in)    :: cyear,chour,cminute,cmonth, &
                                                     cday
    type(preproc_dims_t),           intent(in)    :: preproc_dims

@@ -30,7 +30,7 @@ subroutine Read_PRTM_nc(Ctrl, RTM)
 
    use Ctrl_m
    use ECP_Constants_m
-   use orac_ncdf
+   use orac_ncdf_m
 
    implicit none
 

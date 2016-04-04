@@ -98,7 +98,7 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
      i_chunk,time_int_fac,assume_full_path,verbose)
 
    use imager_structures_m
-   use global_attributes
+   use global_attributes_m
    use preproc_constants_m
 
    implicit none
@@ -118,7 +118,7 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
                                                   ecmwf_HR_path_file(2), &
                                                   ecmwf_path_file2(2), &
                                                   ecmwf_path_file3(2)
-   type(global_attributes_s),      intent(in)  :: global_atts
+   type(global_attributes_t),      intent(in)  :: global_atts
    integer,                        intent(in)  :: ecmwf_flag
    integer,                        intent(in)  :: ecmwf_time_int_method
    type(imager_geolocation_t),     intent(in)  :: imager_geolocation

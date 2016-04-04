@@ -40,13 +40,13 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-module orac_output
+module orac_output_m
 
-   use orac_indexing
+   use orac_indexing_m
 
    implicit none
 
-   type output_data_primary
+   type output_data_primary_t
       ! Variable IDs for data fields in primary output file
       integer          :: vid_aot550
       integer          :: vid_aot550_uncertainty
@@ -482,10 +482,10 @@ module orac_output
       integer(byte), pointer :: view_id(:)
       integer(byte), pointer :: ch_is(:)
       integer(byte), pointer :: rho_flags(:)
-   end type output_data_primary
+   end type output_data_primary_t
 
 
-   type output_data_secondary
+   type output_data_secondary_t
       ! Variable IDs for data fields in primary output file
       integer          :: vid_aot550_ap
       integer          :: vid_aot550_fg
@@ -674,9 +674,10 @@ module orac_output
       integer(lint), pointer :: scanline_v(:,:)
 
       real(sreal),   pointer :: covariance(:,:,:,:)
-   end type output_data_secondary
+   end type output_data_secondary_t
 
 contains
+
 
 #include "alloc_output_data.F90"
 #include "dealloc_output_data.F90"
@@ -687,4 +688,5 @@ contains
 #include "write_output_primary.F90"
 #include "write_output_secondary.F90"
 
-end module orac_output
+
+end module orac_output_m

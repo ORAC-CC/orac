@@ -50,8 +50,8 @@
 !
 ! History:
 ! 2000/11/15, AS: Original version
-! 2000/12/01, AS: Renamed "Sol" instead of "Sun". Variables using Sun or Su
-!    also renamed Sol/So
+! 2000/12/01, AS: Renamed "Sol" instead of "Sun". Variables using Sun or Su also
+!    renamed Sol/So
 ! 2001/01/11, AS: Chans argument removed. Redundant.
 ! 2001/01/19, AS: Comments updated.
 ! 2007/05/31, AY: The code now checks which channels are using which geometry,

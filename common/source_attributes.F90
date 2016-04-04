@@ -20,14 +20,13 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-module source_attributes
+module source_attributes_m
 
-   use common_constants
+   use common_constants_m
 
    implicit none
 
-   type source_attributes_s
-
+   type source_attributes_t
       character(len=attribute_length_long) :: albedo_file
       character(len=attribute_length_long) :: brdf_file
       character(len=attribute_length_long) :: emissivity_file
@@ -36,7 +35,6 @@ module source_attributes
       character(len=attribute_length_long) :: sea_ice_file
       character(len=attribute_length_long) :: level1b_file
       character(len=attribute_length_long) :: geo_file
+   end type source_attributes_t
 
-   end type source_attributes_s
-
-end module source_attributes
+end module source_attributes_m

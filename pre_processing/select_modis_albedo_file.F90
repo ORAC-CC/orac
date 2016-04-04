@@ -30,8 +30,8 @@
 ! 2014/05/26, MJ: Added "FAILED" to error output.
 ! 2014/08/10, GM: Changes related to new BRDF support.
 ! 2014/11/26, CP: Added in 2002-2006 support.
-! 2014/12/09, GM: Added support for 2013, better error checking, and cleaned
-!    up changes made by CP.
+! 2014/12/09, GM: Added support for 2013, better error checking, and cleaned up
+!    changes made by CP.
 ! 2015/03/12, GM: Completed support for 2002 to 2014.
 ! 2015/07/05, CP: Bug fix for 2007 support
 ! 2015/08/05, CP: Added in use of climatology and fixed some bugs in file names
@@ -50,7 +50,7 @@ subroutine select_modis_albedo_file(cyear,cdoy,modis_surf_path,include_full_brdf
                                     modis_surf_path_file)
 
    use preproc_structures_m
-   use system_utils
+   use system_utils_m
 
    implicit none
 

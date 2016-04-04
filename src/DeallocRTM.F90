@@ -24,8 +24,8 @@
 ! 2012/12/12, CP: Added geopotential height
 ! 2011/09/22, CP: Remove SW%P as now the same as LW%P
 ! 2011/12/13, CP: Deallocated RTM%SW%Lon
-! 2013/12/16, GM: Add deallocation of RTM%LW%skint and
-!    RTM%LW%sp and a bit of cleanup.
+! 2013/12/16, GM: Add deallocation of RTM%LW%skint and RTM%LW%sp and a bit of
+!    cleanup.
 ! 2014/05/27, GM: Some more cleanup.
 ! 2015/01/30, AP: Eliminate redundant fields.
 !

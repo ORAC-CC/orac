@@ -38,7 +38,7 @@ subroutine read_input_dimensions_msi(fname_msi, fname_geo, xdim, ydim, vdim, &
      verbose)
 
    use ECP_Constants_m
-   use orac_ncdf
+   use orac_ncdf_m
 
    implicit none
 
@@ -85,7 +85,7 @@ subroutine read_input_dimensions_rtm(fname_prtm,fname_lwrtm,fname_swrtm, &
      xdim,ydim,levdim,channeldim_lw,channeldim_sw,verbose)
 
    use ECP_Constants_m
-   use orac_ncdf
+   use orac_ncdf_m
 
    implicit none
 

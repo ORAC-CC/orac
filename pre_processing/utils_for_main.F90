@@ -29,7 +29,7 @@ contains
 
 subroutine parse_required(lun, value, name)
 
-   use parsing
+   use parsing_m
    use preproc_constants_m
 
    implicit none
@@ -52,7 +52,7 @@ subroutine parse_optional(label, value, n_channels, channel_ids, &
                           ecmwf_path, ecmwf_path2, ecmwf_path3, ecmwf_path_hr, &
                           ecmwf_path_hr_2)
 
-   use parsing
+   use parsing_m
    use preproc_constants_m
 
    implicit none

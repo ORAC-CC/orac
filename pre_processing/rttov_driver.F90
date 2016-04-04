@@ -149,7 +149,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 
    use channel_structures_m
    use netcdf_output_m
-   use orac_ncdf
+   use orac_ncdf_m
    use preproc_constants_m
    use preproc_structures_m
 

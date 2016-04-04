@@ -98,7 +98,7 @@ end subroutine read_ecmwf_wind_nc
 
 subroutine read_ecmwf_wind_file(ecmwf_path, ecmwf)
 
-   use orac_ncdf
+   use orac_ncdf_m
    use preproc_constants_m
 
    implicit none

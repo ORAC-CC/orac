@@ -16,7 +16,7 @@
 !---------------------------------------------------------------------
 
 module Int_Routines_m
-   use common_constants, only: sint, lint, sreal, dreal
+   use common_constants_m, only: sint, lint, sreal, dreal
 
    implicit none
 

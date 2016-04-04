@@ -31,7 +31,7 @@
 
 module postproc_constants_m
 
-   use common_constants
+   use common_constants_m
 
    implicit none
 

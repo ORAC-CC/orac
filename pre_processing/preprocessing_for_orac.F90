@@ -147,13 +147,13 @@
 !    get_surface_emissivity (which now works).
 ! 2013/03/06, GT: Tidied up formatting of file header.
 ! 2013/03/06, GT: Bug fix: default along_track_offset set to 0 rather than 1 and
-!    definition of imager_geolocation%endy for whole orbits/granules
-!    altered accordingly.
+!    definition of imager_geolocation%endy for whole orbits/granules altered
+!    accordingly.
 ! 2013/03/07, CP: changed badc file read options not all files are netcdf
 ! 2013/03/19, GT: Bug fix: When reading BADC ECMWF data (NetCDF files), the ggam
 !    files were being treated as surface, rather than profile, files
-! 2013/04/08, CP:/GT fixed bug where channel_info was not passed through
-!    routine to correct for ice and snow.
+! 2013/04/08, CP/GT: fixed bug where channel_info was not passed through routine
+!    to correct for ice and snow.
 ! 2013/05/21, MJ: merges local DWD version with official version.
 ! 2013/06/03, CP: changed function find_min_max_preproc
 ! 2013/07/24, AP: a few bug fixes in the chunking code
@@ -162,8 +162,8 @@
 ! 2013/09/03, GT: Finished changes required to get AATSR night-time data
 !    reading working correctly
 ! 2013/09/06, AP: altering READ routines to take start,n as inputs rather than
-!    start,end. Removed channel_flag from and added verbose to
-!    command line arguments.
+!    start,end. Removed channel_flag from and added verbose to command line
+!    arguments.
 ! 2013/10/08, AP: altered read_aatsr_dimensions for new call.
 ! 2013/10/30, AP: Continued tidying. Altered call for find_min_max_preproc.
 ! 2013/11/05, GT: Changed type cast of cverbose to verbose variable to use
@@ -184,8 +184,7 @@
 !    mute rttov
 ! 2014/03/11, MJ: adds writing out of some flags to gain more information.
 ! 2014/04/02, GM: Get the NetCDF version from the library itself.  Left the
-!    obsolete input argument in place for now but it is over
-!    written.
+!    obsolete input argument in place for now but it is over written.
 ! 2014/04/21, GM: Added logical option assume_full_path.
 ! 2014/05/01, GM: Cleaned up the code.
 ! 2014/05/01, GM: Move some allocations/deallocations to the proper subroutine.
@@ -198,11 +197,10 @@
 ! 2014/08/10, GM: Changes related to new BRDF support.
 ! 2014/09/11, AP: Remove one level from preproc_prtm grid as it wasn't written
 !    to or necessary.
-! 2014/10/23, OS: added reading of USGS land use/DEM file; implemented
-!    Pavolonis cloud typing algorithm; built in new neural network
-!    cloud mask in preprocessing, based on radiances and auxiliary
-!    data; implemented CRAY fortran-based alternative for scratch
-!    file I/O of ERA-Interim data
+! 2014/10/23, OS: added reading of USGS land use/DEM file; implemented Pavolonis
+!    cloud typing algorithm; built in new neural network cloud mask in
+!    preprocessing, based on radiances and auxiliary data; implemented CRAY
+!    fortran-based alternative for scratch file I/O of ERA-Interim data
 ! 2014/11/04, OS: ecmwf structure is now passed as argument to Pavolonis/NN
 !    cloud mask
 ! 2014/11/21, GM: Remove the no longer used cgrid_flag from driver file input.
@@ -217,8 +215,7 @@
 !    reordering some subroutine calls and putting subroutine
 !    netcdf_create_config() back into netcdf_output_create().
 ! 2014/02/04, OS: Added calls to new SR reading ERA-Interim data from NetCDF
-!    (WRAPPER only); added call to snow/ice correction based on ERA-
-!    Interim data
+!    (WRAPPER only); added call to snow/ice correction based on ERA-Interim data
 ! 2015/02/19, GM: Added SEVIRI support.
 ! 2015/02/24, GM: Improved command line and driver file support using the
 !    parsing module in the common library including support for comments and
@@ -261,18 +258,17 @@ program preprocessing
 subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,jid)
 #endif
 
-   use common_constants
    use channel_structures_m
    use cloud_typing_pavolonis_m, only: cloud_type
    use correct_for_ice_snow_m
    use ecmwf_m
-   use global_attributes
-   use source_attributes
+   use global_attributes_m
+   use source_attributes_m
    use hdf5
    use imager_structures_m
    use netcdf, only: nf90_inq_libvers
    use netcdf_output_m
-   use parsing
+   use parsing_m
    use preparation_m
    use preproc_constants_m
    use preproc_structures_m
@@ -321,8 +317,8 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    character(len=cmd_arg_length)    :: cinclude_full_brdf
    character(len=cmd_arg_length)    :: cdummy_arg
 
-   type(global_attributes_s)        :: global_atts
-   type(source_attributes_s)        :: source_atts
+   type(global_attributes_t)        :: global_atts
+   type(source_attributes_t)        :: source_atts
    integer                          :: ecmwf_flag
    logical                          :: chunkproc
    integer(kind=sint)               :: day_night

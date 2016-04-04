@@ -23,7 +23,7 @@
                                       P,T,H,Q,O3,&
                                       ilon,ilat,iP,iT,iH,iQ,iO3)
 
-   use interpol
+   use interpol_m
 
    implicit none
 
@@ -37,7 +37,7 @@
    real, intent(out), dimension(nlev) :: iP,iT,iH,iQ,iO3 !interpolated profiles
 
    !Local variables
-   type(interpol_s) :: interp
+   type(interpol_t) :: interp
    logical :: Wrap
    integer  NLat, NLon !#of lat/lon indices
    real(8) :: Lat0, LatN, Lon0, LonN, delta_Lat, inv_delta_Lat, delta_Lon, inv_delta_Lon !inputs to bilinear

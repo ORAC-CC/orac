@@ -16,8 +16,8 @@
 !
 ! History:
 ! 2012/06/26, MJ: writes original code version.
-! 2014/02/10, AP: Improved summations. Added loop over lat,lon to move this
-!    call outside of read_ecmwf_nc.
+! 2014/02/10, AP: Improved summations. Added loop over lat,lon to move this call
+!    outside of read_ecmwf_nc.
 ! 2014/05/08, AP: Updated to new ecmwf structure.
 !
 ! $Id$

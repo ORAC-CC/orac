@@ -78,8 +78,8 @@
 !    easier generalisation to more dimensions and improves performance as some
 !    values used by several Int routines are calculated once only by the
 !    calling routine.
-! 2000/12/22, PW: Removed redundant Chans argument; all channels implicit in
-!    the LUT are interpolated.
+! 2000/12/22, PW: Removed redundant Chans argument; all channels implicit in the
+!    LUT are interpolated.
 ! 2001/01/19, AS: Comments updated.
 ! 2011/09/05, CA: Added bicubic interpolation 20th Jan 2012 changed definition
 !    of Y to remove contiguous array warning!

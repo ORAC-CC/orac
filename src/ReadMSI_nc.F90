@@ -80,8 +80,8 @@
 ! 2014/04/30, GM: Fixed a bug introduced by a previous change.
 ! 2014/08/15, AP: Switching to preprocessor NCDF routines.
 ! 2014/01/30, AP: Remove NSegs, SegSize arguments.
-! 2015/02/04, GM: Changes related to the new missing channel, illumination,
-!    and channel selection code.  In particular, setting of out-of-range
+! 2015/02/04, GM: Changes related to the new missing channel, illumination, and
+!    channel selection code.  In particular, setting of out-of-range
 !    measurements to MissingXn is now done here.
 ! 2015/06/02, AP: Add read of view direction and pixel variance.
 ! 2015/07/03, OS: Added error status variable to nc_open call
@@ -103,7 +103,7 @@ subroutine Read_MSI_nc(Ctrl, MSI_Data, SAD_Chan)
 
    use Ctrl_m
    use ECP_Constants_m
-   use orac_ncdf
+   use orac_ncdf_m
    use SAD_Chan_m
 
    implicit none

@@ -14,13 +14,13 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-module orac_indexing
+module orac_indexing_m
 
-   use common_constants
+   use common_constants_m
 
    implicit none
 
-   type common_file_flags
+   type common_file_flags_t
       ! Flags relevant to both files
       logical :: do_cloud               ! Output cloud retrieval terms
       logical :: do_aerosol             ! Output aerosol retrieval terms
@@ -36,10 +36,10 @@ module orac_indexing
 
       ! Secondary file flags
       logical :: do_covariance          ! Output the final covariance matrix
-   end type common_file_flags
+   end type common_file_flags_t
 
 
-   type common_indices
+   type common_indices_t
       ! Channel indexing
       integer          :: Ny             ! No. of instrument channels used
       integer, pointer :: Y_Id(:)        ! Instrument IDs for used chs
@@ -64,8 +64,8 @@ module orac_indexing
       integer          :: Y0             ! First pixel along track
       integer          :: Y1             ! Last pixel along track
 
-      type(common_file_flags) :: flags      ! Fields to in/output
-   end type common_indices
+      type(common_file_flags_t) :: flags ! Fields to in/output
+   end type common_indices_t
 
 
    ! common_file_flags bitmask locations
@@ -87,8 +87,8 @@ subroutine make_bitmask_from_common_file_flags(flags, bitmask)
 
    implicit none
 
-   type(common_file_flags), intent(in)  :: flags
-   integer,                 intent(out) :: bitmask
+   type(common_file_flags_t), intent(in)  :: flags
+   integer,                   intent(out) :: bitmask
 
    bitmask = 0
    if (flags%do_cloud)               bitmask = ibset(bitmask, cloud_bit)
@@ -109,8 +109,8 @@ subroutine set_common_file_flags_from_bitmask(bitmask, flags)
 
    implicit none
 
-   integer,                 intent(in)  :: bitmask
-   type(common_file_flags), intent(out) :: flags
+   integer,                   intent(in)  :: bitmask
+   type(common_file_flags_t), intent(out) :: flags
 
    flags%do_cloud               = btest(bitmask, cloud_bit)
    flags%do_aerosol             = btest(bitmask, aerosol_bit)
@@ -130,8 +130,8 @@ subroutine make_bitmask_from_rho_terms(ind, bitmask)
 
    implicit none
 
-   type(common_indices), intent(in)  :: ind
-   integer(byte),        intent(out) :: bitmask(:) ! byte as an output variable
+   type(common_indices_t), intent(in)  :: ind
+   integer(byte),          intent(out) :: bitmask(:) ! byte as an output variable
 
    integer :: i, j
 
@@ -149,8 +149,8 @@ subroutine set_rho_terms_from_bitmask(bitmask, ind)
 
    implicit none
 
-   integer,              intent(in)  :: bitmask(:)
-   type(common_indices), intent(out) :: ind
+   integer,                intent(in)  :: bitmask(:)
+   type(common_indices_t), intent(out) :: ind
 
    integer :: i, j
 
@@ -222,7 +222,7 @@ subroutine dealloc_common_indices(ind)
 
    implicit none
 
-   type(common_indices), intent(inout) :: ind
+   type(common_indices_t), intent(inout) :: ind
 
    deallocate(ind%Y_Id)
    deallocate(ind%YSolar)
@@ -233,5 +233,4 @@ subroutine dealloc_common_indices(ind)
 
 end subroutine dealloc_common_indices
 
-
-end module orac_indexing
+end module orac_indexing_m

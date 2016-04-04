@@ -33,10 +33,10 @@
 ! $Id$
 !-------------------------------------------------------------------------------
 
-module orac_ncdf
+module orac_ncdf_m
 
    use netcdf
-   use common_constants
+   use common_constants_m
 
    implicit none
 
@@ -502,4 +502,4 @@ end function nc_dim_length
 include 'orac_nc_utils.F90'
 
 
-end module orac_ncdf
+end module orac_ncdf_m

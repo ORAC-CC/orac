@@ -26,8 +26,8 @@
 ! 2012/02/28, CP: Bug fix to attributes of scanline_v
 ! 2012/02/28, CP: Added in albedo
 ! 2012/02/28, CP: Indexedy_id array correctly
-! 2013/01/25, CP: Modified how channels are labelled now reads form the
-!    input file the channel names.
+! 2013/01/25, CP: Modified how channels are labelled now reads form the input
+!    file the channel names.
 ! 2013/05/29, GT: Added degrees of freedom for signal
 ! 2013/07/24, AP: Fixed bug in writing output_data%vid_y0
 ! 2013/12/05, MJ: Fixes bug with writing of albedo and radiance and bt output.
@@ -69,17 +69,17 @@
 subroutine def_output_secondary(ncid, dims_var, output_data, indexing, &
    deflate_level, shuffle_flag, verbose)
 
-   use orac_ncdf
+   use orac_ncdf_m
 
    implicit none
 
-   integer,                     intent(in)    :: ncid
-   integer,                     intent(in)    :: dims_var(:)
-   type(output_data_secondary), intent(inout) :: output_data
-   type(common_indices),        intent(in)    :: indexing
-   integer,                     intent(in)    :: deflate_level
-   logical,                     intent(in)    :: shuffle_flag
-   logical,                     intent(in)    :: verbose
+   integer,                       intent(in)    :: ncid
+   integer,                       intent(in)    :: dims_var(:)
+   type(output_data_secondary_t), intent(inout) :: output_data
+   type(common_indices_t),        intent(in)    :: indexing
+   integer,                       intent(in)    :: deflate_level
+   logical,                       intent(in)    :: shuffle_flag
+   logical,                       intent(in)    :: verbose
 
    character(len=32)  :: input_num
    character(len=512) :: input_dummy, input_dummy2, input_dummy3

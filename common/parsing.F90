@@ -14,8 +14,8 @@
 ! $Id$
 !-------------------------------------------------------------------------------
 
-module parsing
-   use common_constants
+module parsing_m
+   use common_constants_m
 
    implicit none
 
@@ -366,5 +366,4 @@ subroutine handle_parse_error(name)
    stop error_stop_code
 end subroutine handle_parse_error
 
-
-end module parsing
+end module parsing_m

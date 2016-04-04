@@ -20,8 +20,8 @@
 ! 2001/04/24, AS: New variable for max number of phase changes in inversion
 !    (Ctrl%Invpar%MaxPhase).
 !    New arrays for specifying active state variables in day/twilight/night
-!    conditions (1 array of X and 1 array of Nx for each). Replaces the old
-!    X and Nx arrays, which were for all conditions.
+!    conditions (1 array of X and 1 array of Nx for each). Replaces the old X
+!    and Nx arrays, which were for all conditions.
 ! 2001/05/17, AS: Added CloudType parameter and measurement covariance matrix Sy.
 ! 2001/06/06, AS: FG and AP options arrays extended to two dimensions. 2nd dim
 !    allows different choices depending on the conditions (day/twilight/night).
@@ -78,12 +78,12 @@
 ! 2015/01/13, AP: Adding Ch_Is, YMixed. Removing First:Last indexes.
 ! 2015/01/30, AP: Remove Ws, Xstart, Ystart as depreciated.
 !    Remove Resoln structure as superpixeling only in preprocessing.
-! 2015/02/04, GM: Add sabotage_inputs flag and retrieval channel
-!    requirements arrays.
+! 2015/02/04, GM: Add sabotage_inputs flag and retrieval channel requirements
+!    arrays.
 ! 2015/02/04, GM: Add ReChans array.
 ! 2015/03/02, AP: Adding terms for aerosol retrieval.
-! 2015/05/25, GM: Get rid of filename Diag and flags Diagl.
-!    Neither was being used and have been rotting.
+! 2015/05/25, GM: Get rid of filename Diag and flags Diagl.  Neither was being
+!    used and have been rotting.
 ! 2015/07/27, AP: Convert Homog/Coreg into logicals. Remove Ind%Log and
 !    NInstViews. Replace process_one_phase_only with Types_to_process.
 ! 2015/08/21, AP: Tidying comments; Ordering variables logically; Adding WvlIdx;
@@ -101,7 +101,7 @@
 module Ctrl_m
 
    use ECP_constants_m
-   use orac_indexing, only: common_indices
+   use orac_indexing_m, only: common_indices_t
 
    implicit none
 
@@ -127,7 +127,7 @@ module Ctrl_m
    end type FID_t
 
    ! Indices: channel indexing and spatial grid definitions
-   type, extends(common_indices) :: Ind_t
+   type, extends(common_indices_t) :: Ind_t
       ! Channel indexing variables
       integer                :: NAvail             ! No. of instrument channels
                                                    ! available in file

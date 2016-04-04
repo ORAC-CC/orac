@@ -11,10 +11,10 @@
 ! ------------------------------------------------------------------------------
 ! Ctrl     struct  In          Control structure
 ! SPixel   struct  Both        Super-pixel structure
-! MSI_Data struct  In          Data structure. Contains the multi-spectral
-!                              image measurements, location values, geometry
-!                              etc for the current image segment, from which
-!                              the current SPixel values will be extracted.
+! MSI_Data struct  In          Data structure. Contains the multi-spectral image
+!                              measurements, location values, geometry etc for
+!                              the current image segment, from which the current
+!                              SPixel values will be extracted.
 ! status   integer Out         Error status
 !
 ! History:

@@ -121,16 +121,16 @@
 ! 2011/11/08, CP: added y0 and sx to output
 ! 2011/12/08, MJ: added code to accommodate netcdfoutput
 ! 2011/12/12, CP: remove relenlog to be compatible with f95
-! 2011/12/19, MJ: cleaned up netcdf output, introduced error
-!    reporting and added file headers.
+! 2011/12/19, MJ: cleaned up netcdf output, introduced error reporting and added
+!    file headers.
 ! 2012/01/05, CP: removed binary output files
 ! 2012/01/15, CP: added missing for ymfit
 ! 2012/03/27, MJ: changes netcdf write to 2D arrays
 ! 2012/07/13, MJ: implements option to read drifile path from command line
 ! 2012/08/14, MJ: irons out bug that made ORAC crash with gfortran
 ! 2012/08/14, MJ: changes scaling of CWP output
-! 2012/08/22, MJ: includes time in MSI structure and writes it to primary
-!    netcdf file
+! 2012/08/22, MJ: includes time in MSI structure and writes it to primary netcdf
+!    file
 ! 2012/08/22, MJ: makes adaptions to read netcdf files, start and end indices
 !    of area to be processed determined by preprocessing file contents and not
 !    hardwired any more.
@@ -141,11 +141,10 @@
 ! 2013/12/10, MJ: initializes ymfit and y0 with missingxn
 ! 2014/01/12, GM: Added some missing deallocates.
 ! 2014/01/28, GM: Cleaned up code.
-! 2014/01/29, GM: Some OpenMP fixes. Ctrl is actually shared.
-!    No need to make it private. Also many variables set to be 'privatefirst'
-!    should just be 'private', i.e. they do not need to enter the parallel
-!    loop initialised. Finally status_line was not needed. Status is private
-!    within the loop.
+! 2014/01/29, GM: Some OpenMP fixes. Ctrl is actually shared.  No need to make
+!    it private. Also many variables set to be 'privatefirst' should just be
+!    'private', i.e. they do not need to enter the parallel loop initialised.
+!    Finally status_line was not needed. Status is private within the loop.
 ! 2014/02/10, MJ: Put the correct boundaries lat/lon for adaptive processing
 !    back in.
 ! 2014/06/04, MJ: Introduced "WRAPPER" for c-preprocessor and associated
@@ -190,9 +189,9 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    use ECP_Constants_m
    use Inversion_m
    use omp_lib
-   use orac_indexing
-   use orac_ncdf
-   use orac_output
+   use orac_indexing_m
+   use orac_ncdf_m
+   use orac_output_m
    use prepare_output_m
    use read_driver_m
    use Read_SAD_m
@@ -202,15 +201,15 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    use SAD_Chan_m
    use SAD_LUT_m
    use SPixel_m
-   use global_attributes
-   use source_attributes
+   use global_attributes_m
+   use source_attributes_m
 
    ! Local variable declarations
 
    implicit none
 
-   type(global_attributes_s) :: global_atts
-   type(source_attributes_s) :: source_atts
+   type(global_attributes_t) :: global_atts
+   type(source_attributes_t) :: source_atts
    type(Ctrl_t)              :: Ctrl
    type(Data_t)              :: MSI_Data
    type(Diag_t)              :: Diag ! Diagnostic struct returned by Invert_Marquardt
@@ -241,8 +240,8 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    integer :: ncid_primary, ncid_secondary, dims_var(2), ch_var(1), view_var(1)
 
    ! Additional types for the scanline output for netcdf are defined
-   type(output_data_primary)   :: output_data_1
-   type(output_data_secondary) :: output_data_2
+   type(output_data_primary_t)   :: output_data_1
+   type(output_data_secondary_t) :: output_data_2
 
    ! OpenMP related variables
    integer :: n_threads, thread_num
@@ -425,9 +424,9 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 #endif
 
    ! Allocate output arrays
-   call alloc_output_data_primary(Ctrl%Ind%common_indices, Ctrl%Invpar%MaxIter, &
+   call alloc_output_data_primary(Ctrl%Ind%common_indices_t, Ctrl%Invpar%MaxIter, &
                                   output_data_1)
-   call alloc_output_data_secondary(Ctrl%Ind%common_indices, output_data_2)
+   call alloc_output_data_secondary(Ctrl%Ind%common_indices_t, output_data_2)
 
    ! Set i, the counter for the image x dimension, for the first row processed.
    i = Ctrl%Ind%X0
@@ -610,7 +609,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
       output_data_1%ch_is = Ctrl%Ind%Ch_Is
 
       if (Ctrl%Ind%flags%do_rho) call make_bitmask_from_rho_terms( &
-           Ctrl%Ind%common_indices, output_data_1%rho_flags)
+           Ctrl%Ind%common_indices_t, output_data_1%rho_flags)
 
       call make_bitmask_from_common_file_flags(Ctrl%Ind%flags, bitmask)
 
@@ -645,15 +644,15 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    call build_qc_flag_masks(Ctrl, qc_flag_masks)
    call build_qc_flag_meanings(Ctrl, qc_flag_meanings)
    call def_output_primary(ncid_primary, dims_var, output_data_1, &
-        Ctrl%Ind%common_indices, qc_flag_masks, qc_flag_meanings, &
+        Ctrl%Ind%common_indices_t, qc_flag_masks, qc_flag_meanings, &
         deflate_level, shuffle_flag, .false., ch_var, view_var)
    call def_output_secondary(ncid_secondary, dims_var, output_data_2, &
-        Ctrl%Ind%common_indices, deflate_level, shuffle_flag, .false.)
+        Ctrl%Ind%common_indices_t, deflate_level, shuffle_flag, .false.)
 
    ! Write output from spixel_scan_out structures NetCDF files
-   call write_output_primary(ncid_primary, Ctrl%Ind%common_indices, &
+   call write_output_primary(ncid_primary, Ctrl%Ind%common_indices_t, &
         output_data_1)
-   call write_output_secondary(ncid_secondary, Ctrl%Ind%common_indices, &
+   call write_output_secondary(ncid_secondary, Ctrl%Ind%common_indices_t, &
         output_data_2)
 
    TotPix    = sum(totpix_line)

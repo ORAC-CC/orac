@@ -122,8 +122,8 @@
 !    Mopping up from removal of phase change. Removed setting of SPixel%FGPhase
 !    as it is redundant.
 ! 2011/06/08, AS: Removed logging of errors from Invert_Cholesky and related
-!    functions, to prevent text file output slowing down execution (use
-!    ifdef DEBUG).
+!    functions, to prevent text file output slowing down execution (use ifdef
+!    DEBUG).
 ! 2011/08/08, CP: remove ref to cloud class
 ! 2011/10/03, CP: fixed debug syntax error
 ! 2011/10/18, CP: added lat/lon info to bkp output
@@ -131,24 +131,24 @@
 ! 2012/01/19, CP: stored first guess measurement. add variable minusdJ_dX=-dJ_dX.
 !    changed calls to Invert_cholesky
 ! 2012/02/24, CP: changed error_matrix call to Invert_cholesky
-! 2012/08/10, CP: defined measurement arrays more explicitly
-!    other wise crashed for night measurements
+! 2012/08/10, CP: defined measurement arrays more explicitly other wise crashed
+!    for night measurements
 ! 2012/09/14, CP: bug fix defined Diag%ss to size of nx elements (was ny)
 !    initialised Y
 ! 2012/10/02, CP: initialised variables bug fix defined Diag%ss changed how
 !    SPixel%sn calculated
 ! 2013/05/08, CP: set Diag%Y0
-! 2014/01/15, GM: Changed Invert_Cholesky() argument Diag%St
-!    to Diag%St(1:SPixel%Nx, 1:SPixel%Nx) when inverting d2J_dX2 to get
-!    Diag%St. Using just Diag%St results in use of garbage when there are
-!    inactive state variables.
-! 2014/01/15, GM: Corrected the dimensions of the assignment
-!    for the calculation of Diag%Ss from Diag%Ss(1:SPixel%Ind%Ny,1:SPixel%Ind%Ny)
-!    to Diag%Ss(1:SPixel%Nx,1:SPixel%Nx).
-! 2014/01/15, GM: Set values of J, Jm, and Ja to MissingSn in the case
-!    of failed retrievals as is done with the other values in Diag.
-! 2014/01/15, GM: Moved dynamic setting of the upper limit
-!    for CTP to the highest pressure in the profile from FM() to this routine.
+! 2014/01/15, GM: Changed Invert_Cholesky() argument Diag%St to
+!    Diag%St(1:SPixel%Nx, 1:SPixel%Nx) when inverting d2J_dX2 to get Diag%St.
+!    Using just Diag%St results in use of garbage when there are inactive state
+!    variables.
+! 2014/01/15, GM: Corrected the dimensions of the assignment for the calculation
+!    of Diag%Ss from Diag%Ss(1:SPixel%Ind%Ny,1:SPixel%Ind%Ny) to
+!    Diag%Ss(1:SPixel%Nx,1:SPixel%Nx).
+! 2014/01/15, GM: Set values of J, Jm, and Ja to MissingSn in the case of failed
+!    retrievals as is done with the other values in Diag.
+! 2014/01/15, GM: Moved dynamic setting of the upper limit for CTP to the
+!    highest pressure in the profile from FM() to this routine.
 ! 2014/01/17, GM: Cleaned up code.
 ! 2014/01/29, MJ: Fixed case where alpha can get out of bounds.
 ! 2014/02/27, CP: Added declaration of J.
@@ -160,8 +160,8 @@
 ! 2015/01/09, AP: Patch memory leak with cloud_albedo.
 ! 2015/07/28, AP: Add multiple of unit matrix with add_unit function. Put
 !    calculation of Hessian into it's own routine.
-! 2015/07/28, AP: Replace if status blocks with go to 99 to terminate processing.
-!    Reorganise main iteration loop to minimise code repetition.
+! 2015/07/28, AP: Replace if status blocks with go to 99 to terminate
+!    processing. Reorganise main iteration loop to minimise code repetition.
 ! 2015/07/29, AP: Remove mentions of phase changes. Clean algorithm description.
 !    Add RAL's false convergence test (as it's used by the aerosol retrieval).
 ! 2015/08/21, AP: Variables to include in Jacobian (but not retrieve) now listed

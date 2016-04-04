@@ -76,7 +76,7 @@
 subroutine read_ecmwf_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
      preproc_prtm, verbose)
 
-   use orac_ncdf
+   use orac_ncdf_m
    use preproc_constants_m
    use preproc_structures_m
 

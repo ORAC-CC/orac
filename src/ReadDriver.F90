@@ -26,8 +26,8 @@
 ! 2012/05/15, CP: created original file to reapce ReadDriver
 ! 2012/06/08, CP: fixed memory leaks
 ! 2012/07/13, MJ: implements option to read drifile path from command line
-! 2012/07/13, CP: changed ref_solar_sea nd ref_solar_land to
-!    reals rather than integers.
+! 2012/07/13, CP: changed ref_solar_sea nd ref_solar_land to reals rather than
+!    integers.
 ! 2012/07/26, MJ: makes some small changes, paths passed to ORAC via driver
 !    file must not have trailing forward slashes ("/"). Those are explicitly
 !    added in this routine where necessary.
@@ -140,20 +140,20 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
 
    use, intrinsic :: iso_fortran_env, only : input_unit
 
-   use constants_cloud_typing_pavolonis
+   use constants_cloud_typing_pavolonis_m
    use Ctrl_m
    use ECP_constants_m
-   use global_attributes
+   use global_attributes_m
    use parse_user_m
    use read_utils_m
-   use source_attributes
+   use source_attributes_m
 
    implicit none
 
    ! Argument declarations
    type(Ctrl_t),              intent(out)   :: Ctrl
-   type(global_attributes_s), intent(inout) :: global_atts
-   type(source_attributes_s), intent(inout) :: source_atts
+   type(global_attributes_t), intent(inout) :: global_atts
+   type(source_attributes_t), intent(inout) :: source_atts
 #ifdef WRAPPER
    character(*),              intent(inout) :: drifile
 #else

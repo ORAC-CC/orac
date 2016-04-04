@@ -35,8 +35,8 @@
 ! 2014/06/13, GM: Cleaned up the code.
 ! 2014/08/31, GM: Update to use general routines in the current module.
 ! 2014/09/17, GM: Fixed handling of missing values in some cases.
-! 2014/10/24, OS: Added variables cldtype, cldmask, cccot_pre, lusflags,
-!    dem, and nisemask.
+! 2014/10/24, OS: Added variables cldtype, cldmask, cccot_pre, lusflags, dem,
+!    and nisemask.
 ! 2014/11/15, CP: Added cloud albedo.
 ! 2014/11/25, AP: Fixed bug in writing cth|ctt_uncertainty.
 ! 2014/01/30, AP: Replace YSeg0 with Y0 as superpixeling removed.
@@ -75,8 +75,8 @@ subroutine prepare_output_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
    use Ctrl_m
    use Data_m
    use Diag_m
-   use orac_ncdf
-   use orac_output
+   use orac_ncdf_m
+   use orac_output_m
    use RTM_Pc_m
    use SPixel_m
 
@@ -88,7 +88,7 @@ subroutine prepare_output_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
    type(RTM_Pc_t),            intent(in)    :: RTM_Pc
    type(SPixel_t),            intent(in)    :: SPixel
    type(Diag_t),              intent(in)    :: Diag
-   type(output_data_primary), intent(inout) :: output_data
+   type(output_data_primary_t), intent(inout) :: output_data
 
    integer            :: k, kk, l
    integer(kind=sint) :: temp_short_ctp_uncertainty

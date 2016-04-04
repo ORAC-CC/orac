@@ -59,12 +59,12 @@
 ! 2014/02/04, MJ: Implements code for AVHRR to assign channel numbers for LUT
 !    names.
 ! 2014/05/23, GM: Cleaned up code.
-! 2014/07/01, AP:  Added check to see if SAD file exists to clarify error message
+! 2014/07/01, AP: Added check to see if SAD file exists to clarify error message
 ! 2014/08/01, GM: Use refactored code into Find_MDAD_LW() and Find_MDAD_SW() to
 !    use here and elsewhere.
-! 2014/12/19, AP: YSolar and YThermal now contain the index of solar/
-!    thermal channels with respect to the channels actually processed,
-!    rather than the  MSI file.
+! 2014/12/19, AP: YSolar and YThermal now contain the index of solar/thermal
+!    channels with respect to the channels actually processed, rather than the
+!    MSI file.
 ! 2015/01/13, AP: Remove First:Last channel indexing.
 ! 2015/01/19, GM: Use make_sad_chan_num().
 ! 2015/04/30, MS: Correct the chan_file definition for NOAA-7 and NOAA-9

@@ -8,8 +8,8 @@
 ! 2000/12/15, KS: Original version
 ! 2001/01/11, KS: Added Grid substructures for use in Get_RTM
 ! 2001/01/26, AS: Added comments to explain variable names.
-! 2001/02/21, AS: Added Tbc to LW struct. Previously missing from RTM model
-!    data file.
+! 2001/02/21, AS: Added Tbc to LW struct. Previously missing from RTM model data
+!    file.
 ! 2001/03/01, AS: Removed R_Clear from LW struct. Not available from RTM data
 !    file.
 ! 2001/03/30, AS: Added MaxLat, MinLat, MaxLon, MinLon to Grid structure, so

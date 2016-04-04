@@ -9,8 +9,8 @@
 ! 2000/10/04, AS: original version
 ! 2000/12/01, AS: Renamed Solzen variables to Solzen
 ! 2001/01/12, AS: Changing main LUT arrays (RBd etc) to allocatable.
-! 2011/06/11, CP: removed references to maximum values and
-!    changed some variables to pointers values
+! 2011/06/11, CP: removed references to maximum values and changed some
+!    variables to pointers values
 ! 2013/12/12, MJ: makes LUTs more flexible wrt channel and properties
 ! 2014/01/12, GM: Increase nmaxre to 23 for the ice LUTs.
 ! 2014/01/16, GM: Added SAD_LUT%table_use* arrays.

@@ -29,7 +29,7 @@
 
 subroutine read_input_dimensions(fname, indexing, verbose)
 
-   use orac_ncdf
+   use orac_ncdf_m
 
    implicit none
 

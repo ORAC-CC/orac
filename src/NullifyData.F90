@@ -15,8 +15,7 @@
 !
 ! History:
 ! 2014/09/10, GM: Original version
-! 2015/12/19, GM: Added nullifications for recently added
-!    variables.
+! 2015/12/19, GM: Added nullifications for recently added variables.
 ! 2015/01/30, AP: Remove uscan and vscan as unnecessary.
 ! 2015/07/03, OS: Added cldmask_uncertainty
 ! 2015/08/10, AP: Additional surface uncs.

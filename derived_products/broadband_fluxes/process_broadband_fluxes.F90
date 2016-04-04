@@ -74,11 +74,10 @@
 
 program process_broadband_fluxes
 
-   use interpol
-   use common_constants
-   use orac_ncdf
-   use global_attributes
-   use source_attributes
+   use common_constants_m
+   use orac_ncdf_m
+   use global_attributes_m
+   use source_attributes_m
    use netcdf
 
    implicit none
@@ -87,8 +86,8 @@ program process_broadband_fluxes
    integer :: ncid, i, j, k, dims_var(2)
    logical, parameter :: verbose=.true.
    logical there
-   type(global_attributes_s) :: global_atts
-   type(source_attributes_s) :: source_atts
+   type(global_attributes_t) :: global_atts
+   type(source_attributes_t) :: source_atts
 
    !Constants
    real(kind=8), parameter :: Runiv = 8314. !universal gas constant

@@ -71,7 +71,6 @@ subroutine read_ecmwf_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
    use grib_api
    use preproc_constants_m
    use preproc_structures_m
-   use common_constants
 
    implicit none
 

@@ -22,8 +22,8 @@
 !                                   algorithm applied
 !
 ! History:
-! 2012/04/23, GT: Original - based on the fill_grid.pro IDL
-!    code originally written by Don Grainger.
+! 2012/04/23, GT: Original - based on the fill_grid.pro IDL code originally
+!    written by Don Grainger.
 ! 2014/06/11, AP: extend range of interpolation
 ! 2014/08/01, AP: Restricted it again.
 !

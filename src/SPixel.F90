@@ -28,9 +28,10 @@
 ! 2001/02/21, AS: Added Tbc to LW structure. Previously missing from model data.
 !    Removed Tsf parameters from the LW structure.
 ! 2001/03/06, AS: Change in use of Tsf parameters. RTM%SW and LW now both
-!    contain Tsf, for appropriate channels. RTM overall struct contains Tsf_o and
-!    Tsf_v, for all solar channels (mixed channel values supplied from the LW RTM
-!    data). New quantities Ref_Clear and dRef_Clear_dRS added to RTM struct.
+!    contain Tsf, for appropriate channels. RTM overall struct contains Tsf_o
+!    and Tsf_v, for all solar channels (mixed channel values supplied from the
+!    LW RTM data). New quantities Ref_Clear and dRef_Clear_dRS added to RTM
+!    struct.
 ! 2001/03/07, AS: New LW value dB_dTs.
 ! 2001/04/11, AS: Changes arising from development of Invert_Marquardt. Added
 !    solar constant f0. Not strictly a SPixel value as it is the same for all
@@ -42,8 +43,9 @@
 !    current phase and cloud class  SPixel%Phase and SPixel%Class. New arrays
 !    for current upper and lower limits on state variables, XLLim and XULim.
 ! 2001/05/17, AS: Added measurement error covariance Sy.
-! 2001/06/05, AS: Added Xn and Sn to main SPixel structure. New arrays for FG and
-!    AP selection options. New indices MDAD_LW/SW and illumination flag Illum.
+! 2001/06/05, AS: Added Xn and Sn to main SPixel structure. New arrays for FG
+!    and AP selection options. New indices MDAD_LW/SW and illumination flag
+!    Illum.
 ! 2001/07/04, AS: Comments updated.  LastX0 and LastY0 added to Loc structure.
 !    Used to record the location of the last successfully retrieved solution
 !    SPixel%XnSav, so that validity of that solution at a given location can be
@@ -74,18 +76,16 @@
 ! 2012/01/15, CP: Changed netcdf definitions. Added albedo
 ! 2012/06/15, CP: Changed illum into an array of ny variables
 ! 2012/10/04, CP: Added in new variables
-! 2013/01/17, MJ: Adds code to accommodate uncertainties of ctt
-!    and cth
+! 2013/01/17, MJ: Adds code to accommodate uncertainties of ctt and cth
 ! 2013/10/02, CP/GT: Added in variable to calculate degrees of freedom of signal
 ! 2014/01/16, GM: Added spixel_y_to_ctrl_y_index.
 ! 2014/05/27, GM: Removed unused structure members and code cleanup.
 ! 2014/08/01, GM: Added more SPixel to Ctrl map indexes.
 ! 2014/09/09, GM: Changes related to new BRDF support.
 ! 2015/01/13, AP: Adding YThermal, YSolar. Removing First:Last indexes
-! 2015/01/18, GM: Put all related Get*() subroutines and
-!    check_value() subroutines into this module.
-! 2015/01/19, GM: Put XAUX.F90, XMDAD.F90, and XSDAD.F90
-!    into this module.
+! 2015/01/18, GM: Put all related Get*() subroutines and check_value()
+!    subroutines into this module.
+! 2015/01/19, GM: Put XAUX.F90, XMDAD.F90, and XSDAD.F90 into this module.
 ! 2015/01/30, AP: Remove redundant fields.
 ! 2015/02/04, GM: Changes related to the new missing channel, illumination, and
 !    channel selection code.

@@ -34,8 +34,7 @@
 !                             are read in.
 !
 ! History:
-! 2012/08/22, MJ: Uses original routine and implements reading of netcdf
-!    data.
+! 2012/08/22, MJ: Uses original routine and implements reading of netcdf data.
 ! 2014/08/02, GM: Cleaned up the code.
 ! 2014/08/15, AP: Switching to preprocessor NCDF routines.
 ! 2014/01/30, AP: Remove NSegs, SegSize arguments.
@@ -52,7 +51,7 @@
 subroutine Read_Location_nc(Ctrl, MSI_Data)
 
    use Ctrl_m
-   use orac_ncdf
+   use orac_ncdf_m
 
    implicit none
 

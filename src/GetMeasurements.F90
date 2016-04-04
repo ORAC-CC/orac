@@ -76,13 +76,12 @@
 !    otherwise the first deallocate will fail.
 !    **************** ECV work starts here *************************************
 ! 2011/02/23, AS: Cloud flags converted to real to match current ORAC data.
-! 2011/03/30, AS: Removal of super-pixel averaging. Process single pixels at
-!    X0, Y0, removed other SPixel indices Xc, Yc, Xn, Yn etc.
+! 2011/03/30, AS: Removal of super-pixel averaging. Process single pixels at X0,
+!    Y0, removed other SPixel indices Xc, Yc, Xn, Yn etc.
 ! 2011/04/21, AS: Extension to handle multiple instrument views. New SPixel
 !    array View_Idx, holds the view index values for active channels in this
 !    pixel.
-! 2012/06/15, CP:
-!    Added illum array
+! 2012/06/15, CP: Added illum array
 ! 2014/05/21, GM: Cleaned up the code.
 ! 2012/07/08, CP: Changed ilumination logic.
 ! 2014/08/01, GM: The above change requires use of

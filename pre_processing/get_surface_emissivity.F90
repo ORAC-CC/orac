@@ -84,10 +84,10 @@ subroutine get_surface_emissivity(cyear, cdoy, cimss_emis_path, imager_flags, &
    use channel_structures_m
    use cimss_emissivity_m
    use imager_structures_m
-   use interpol
+   use interpol_m
    use preproc_constants_m
    use preproc_structures_m
-   use source_attributes
+   use source_attributes_m
    use surface_structures_m
 
    implicit none
@@ -105,7 +105,7 @@ subroutine get_surface_emissivity(cyear, cdoy, cimss_emis_path, imager_flags, &
    logical,                    intent(in)    :: verbose
    type(surface_t),            intent(inout) :: surface
    type(preproc_surf_t),       intent(inout) :: preproc_surf
-   type(source_attributes_s),  intent(inout) :: source_atts
+   type(source_attributes_t),  intent(inout) :: source_atts
 
    ! Local variables
    character(len=path_length)                         :: cimss_emis_path_file
@@ -117,7 +117,7 @@ subroutine get_surface_emissivity(cyear, cdoy, cimss_emis_path, imager_flags, &
    real(kind=sreal),    allocatable, dimension(:,:)   :: counter
    integer                                            :: i,j,k,lat,lon
    integer                                            :: nland
-   type(interpol_s)                                   :: interp
+   type(interpol_t)                                   :: interp
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering get_surface_emissivity()'
 

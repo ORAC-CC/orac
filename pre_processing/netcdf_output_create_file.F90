@@ -106,18 +106,18 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
    use netcdf
 
    use channel_structures_m
-   use global_attributes
+   use global_attributes_m
    use imager_structures_m
-   use orac_ncdf
+   use orac_ncdf_m
    use preproc_constants_m
    use preproc_structures_m
-   use source_attributes
+   use source_attributes_m
 
    implicit none
 
    ! Input
-   type(global_attributes_s),      intent(in)    :: global_atts
-   type(source_attributes_s),      intent(in)    :: source_atts
+   type(global_attributes_t),      intent(in)    :: global_atts
+   type(source_attributes_t),      intent(in)    :: source_atts
    character(len=date_length),     intent(in)    :: cyear
    character(len=date_length),     intent(in)    :: cmonth
    character(len=date_length),     intent(in)    :: cday
@@ -593,17 +593,17 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
    use netcdf
 
    use channel_structures_m
-   use global_attributes
+   use global_attributes_m
    use imager_structures_m
-   use orac_ncdf
+   use orac_ncdf_m
    use preproc_constants_m
-   use source_attributes
+   use source_attributes_m
 
    implicit none
 
    ! Input
-   type(global_attributes_s),      intent(in)    :: global_atts
-   type(source_attributes_s),      intent(in)    :: source_atts
+   type(global_attributes_t),      intent(in)    :: global_atts
+   type(source_attributes_t),      intent(in)    :: source_atts
    character(len=date_length),     intent(in)    :: cyear
    character(len=date_length),     intent(in)    :: cmonth
    character(len=date_length),     intent(in)    :: cday
@@ -1273,18 +1273,18 @@ subroutine netcdf_create_config(global_atts,source_atts,cyear,cmonth,cday, &
    use netcdf
 
    use channel_structures_m
-   use global_attributes
+   use global_attributes_m
    use imager_structures_m
-   use orac_ncdf
+   use orac_ncdf_m
    use preproc_constants_m
    use preproc_structures_m
-   use source_attributes
+   use source_attributes_m
 
    implicit none
 
    ! Input
-   type(global_attributes_s),      intent(in)    :: global_atts
-   type(source_attributes_s),      intent(in)    :: source_atts
+   type(global_attributes_t),      intent(in)    :: global_atts
+   type(source_attributes_t),      intent(in)    :: source_atts
    character(len=date_length),     intent(in)    :: cyear
    character(len=date_length),     intent(in)    :: cmonth
    character(len=date_length),     intent(in)    :: cday
@@ -1464,15 +1464,15 @@ subroutine netcdf_put_common_attributes(ncid,global_atts,source_atts,title, &
 
    use netcdf
 
-   use global_attributes
-   use source_attributes
-   use orac_ncdf
+   use global_attributes_m
+   use source_attributes_m
+   use orac_ncdf_m
 
    implicit none
 
    integer,                        intent(in) :: ncid
-   type(global_attributes_s),      intent(in) :: global_atts
-   type(source_attributes_s),      intent(in) :: source_atts
+   type(global_attributes_t),      intent(in) :: global_atts
+   type(source_attributes_t),      intent(in) :: source_atts
    character(len=file_length),     intent(in) :: title
    character(len=platform_length), intent(in) :: platform
    character(len=sensor_length),   intent(in) :: sensor
@@ -1485,8 +1485,8 @@ subroutine netcdf_put_common_attributes(ncid,global_atts,source_atts,title, &
 
    character(len=platform_length) :: PLATFORM_UPPER_CASE
    integer                        :: position,length
-   type(global_attributes_s)      :: global_atts2
-   type(source_attributes_s)      :: source_atts2
+   type(global_attributes_t)      :: global_atts2
+   type(source_attributes_t)      :: source_atts2
 
    global_atts2 = global_atts
    source_atts2 = source_atts

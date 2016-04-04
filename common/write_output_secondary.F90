@@ -18,16 +18,15 @@
 ! 2011/12/19, MJ: Creates initial output for main output variables.
 ! 2012/01/05, CP: Add in reflectances and brightness temperature
 ! 2012/01/05, CP: Add in albedo
-! 2013/01/24, CP: Changed how input_dummy is set input_dummy now
-!    has name matching channel number
+! 2013/01/24, CP: Changed how input_dummy is set input_dummy now has name
+!    matching channel number
 ! 2014/06/13, GM: Put the code into a subroutine.
 ! 2014/06/13, GM: Cleaned up the code.
-! 2014/09/01, GM: Start using the common/orac_ncdf.F90 write_array
-!    interface.
+! 2014/09/01, GM: Start using the common/orac_ncdf.F90 write_array interface.
 ! 2014/09/17, GM: Bug fix, forgot to offset y dimension of output.
-! 2014/12/19, AP: YSolar and YThermal now contain the index of
-!    solar/thermal channels with respect to the channels actually processed,
-!    rather than the MSI file.
+! 2014/12/19, AP: YSolar and YThermal now contain the index of solar/thermal
+!    channels with respect to the channels actually processed, rather than the
+!    MSI file.
 ! 2015/09/06, GM: Move into common/ from src/ and changes related to sharing
 !    with post_processing/.
 ! 2015/12/28, AP: Add output fields for aerosol retrievals.
@@ -42,13 +41,13 @@
 
 subroutine write_output_secondary(ncid, ind, output_data)
 
-   use orac_ncdf
+   use orac_ncdf_m
 
    implicit none
 
-   integer,                     intent(in)    :: ncid
-   type(common_indices),        intent(in)    :: ind
-   type(output_data_secondary), intent(inout) :: output_data
+   integer,                       intent(in)    :: ncid
+   type(common_indices_t),        intent(in)    :: ind
+   type(output_data_secondary_t), intent(inout) :: output_data
 
    character(len=32)  :: input_num,input_num1,input_num2
    character(len=512) :: input_dummy

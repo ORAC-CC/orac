@@ -15,7 +15,7 @@
 !-------------------------------------------------------------------------------
 
 module parse_user_m
-   use parsing
+   use parsing_m
 
    implicit none
 

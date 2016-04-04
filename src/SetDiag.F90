@@ -53,7 +53,8 @@
 !    (MaxStateVar+2 is set). Previously all "state variable" bits were set as
 !    well. State variable bits are now set independently of the other two bits.
 !    Moved setting of SPixel%SnSav to this routine.
-! 2011/11/18, CP: Commented out Diag%y0 so it could be written to the output file
+! 2011/11/18, CP: Commented out Diag%y0 so it could be written to the output
+!    file
 ! 2012/08/10, CP: Added in measurement array indices
 ! 2014/05/21, GM: Cleaned up the code.
 ! 2015/05/25, GM: Got rid of flags Diagl and removed obvious comments.

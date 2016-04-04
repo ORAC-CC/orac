@@ -36,11 +36,11 @@
 
 module orac_input_m
 
-   use orac_indexing
+   use orac_indexing_m
 
    implicit none
 
-   type, extends(common_indices) :: input_indices_t
+   type, extends(common_indices_t) :: input_indices_t
       character(len=3) :: LUTClass
 
       integer, pointer :: loop_to_main_index(:)
@@ -164,7 +164,7 @@ contains
 
 subroutine determine_channel_indexing(fname, indexing, verbose)
 
-   use orac_ncdf
+   use orac_ncdf_m
 
    implicit none
 
@@ -236,7 +236,7 @@ subroutine determine_channel_indexing(fname, indexing, verbose)
    ! Allocate and form rho_terms array
    if (indexing%flags%do_rho) then
       allocate(indexing%rho_terms(indexing%NSolar, MaxRho_XX))
-      call set_rho_terms_from_bitmask(rho_flags, indexing%common_indices)
+      call set_rho_terms_from_bitmask(rho_flags, indexing%common_indices_t)
    else
       nullify(indexing%rho_terms)
    end if
@@ -415,16 +415,16 @@ subroutine dealloc_input_indices(indexing)
 
    type(input_indices_t), intent(inout) :: indexing
 
-   call dealloc_common_indices(indexing%common_indices)
+   call dealloc_common_indices(indexing%common_indices_t)
 
    if (associated(indexing%loop_to_main_index)) &
-        deallocate(indexing%loop_to_main_index)
+      deallocate(indexing%loop_to_main_index)
    if (associated(indexing%ysolar_loop_to_main_index)) &
-        deallocate(indexing%ysolar_loop_to_main_index)
+      deallocate(indexing%ysolar_loop_to_main_index)
    if (associated(indexing%ythermal_loop_to_main_index)) &
-        deallocate(indexing%ythermal_loop_to_main_index)
+      deallocate(indexing%ythermal_loop_to_main_index)
    if (associated(indexing%view_loop_to_main_index)) &
-        deallocate(indexing%view_loop_to_main_index)
+      deallocate(indexing%view_loop_to_main_index)
 
 end subroutine dealloc_input_indices
 

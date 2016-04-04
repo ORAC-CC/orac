@@ -15,8 +15,8 @@
 ! 2013/12/16, GM: Add deallocation of output_data%ctt_error,
 !    output_data%cth_error, and output_data_sec%ds and a bit cleanup.
 ! 2014/05/27, GM: Some cleanup.
-! 2014/10/24, OS: Added deallocation of cldtype, cldmask, cccot_pre,
-!    lusflag, dem, nisemask
+! 2014/10/24, OS: Added deallocation of cldtype, cldmask, cccot_pre, lusflag,
+!    dem, nisemask
 ! 2014/12/01, CP: Added in cloud albedo
 ! 2015/07/01, CP: Added in corrected cth
 ! 2015/09/06, GM: Move into common/ from src/ and changes related to sharing
@@ -57,7 +57,7 @@ subroutine dealloc_output_data_primary(data)
 
    implicit none
 
-   type(output_data_primary), intent(inout) :: data
+   type(output_data_primary_t), intent(inout) :: data
 
    if (associated(data%aot550))     deallocate(data%aot550)
    if (associated(data%aot550_uncertainty)) &
@@ -211,7 +211,7 @@ subroutine dealloc_output_data_secondary(data)
 
    implicit none
 
-   type(output_data_secondary), intent(inout) :: data
+   type(output_data_secondary_t), intent(inout) :: data
 
    if (associated(data%aot550_ap))        deallocate(data%aot550_ap)
    if (associated(data%aot550_fg))        deallocate(data%aot550_fg)

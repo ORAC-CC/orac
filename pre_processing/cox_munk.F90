@@ -56,8 +56,8 @@
 !
 ! History:
 ! 2012/04/16, GT: Adapted from the cox_munk.pro and zeisse_ba.pro IDL functions.
-! 2012/04/24, GT: Added estimates for coefficients (refractive index,
-!    absorption coefficient etc) at 3.7 um.
+! 2012/04/24, GT: Added estimates for coefficients (refractive index, absorption
+!    coefficient etc) at 3.7 um.
 ! 2012/07/30, CP: Initialised all allocated variables.
 ! 2012/08/30, GT: Made some corrections to underlight calculations
 ! 2012/08/30, GT: Changed call to zeisse_ba function so that theta is passed in

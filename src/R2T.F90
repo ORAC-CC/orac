@@ -40,8 +40,7 @@
 
 subroutine R2T(NChan, SAD_Chan, R, T, d_T_d_R, status)
 
-   use ECP_constants_m,    only : ditherm6
-   use common_constants, only : dreal
+   use ECP_constants_m
    use SAD_Chan_m
 
    implicit none

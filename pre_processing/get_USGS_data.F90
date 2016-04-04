@@ -26,8 +26,8 @@ subroutine get_USGS_data(path_to_USGS_file, imager_flags, imager_geolocation, &
      usgs, assume_full_paths, source_atts, verbose)
 
   use imager_structures_m
-  use orac_ncdf
-  use source_attributes
+  use orac_ncdf_m
+  use source_attributes_m
   use USGS_physiography_m
 
   implicit none
@@ -36,7 +36,7 @@ subroutine get_USGS_data(path_to_USGS_file, imager_flags, imager_geolocation, &
   type(imager_flags_t),        intent(inout) :: imager_flags
   type(imager_geolocation_t),  intent(inout) :: imager_geolocation
   logical,                     intent(in)    :: assume_full_paths
-  type(source_attributes_s),   intent(inout) :: source_atts
+  type(source_attributes_t),   intent(inout) :: source_atts
   logical,                     intent(in)    :: verbose
   type(usgs_t),                intent(out)   :: usgs
 

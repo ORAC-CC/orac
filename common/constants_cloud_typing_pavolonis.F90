@@ -25,9 +25,9 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-module constants_cloud_typing_pavolonis
+module constants_cloud_typing_pavolonis_m
 
-   use common_constants
+   use common_constants_m
 
    implicit none
 
@@ -129,4 +129,4 @@ module constants_cloud_typing_pavolonis
 !  integer(sint), parameter :: BARE_SFC = 12
 !  integer(sint), parameter :: URBAN_SFC = 13
 
-end module CONSTANTS_CLOUD_TYPING_PAVOLONIS
+end module constants_cloud_typing_pavolonis_m

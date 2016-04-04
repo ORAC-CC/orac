@@ -66,8 +66,8 @@
 ! 2014/04/18, GM: Made reading of NetCDF input more efficient by avoiding
 !    inefficient access patterns and redundancy and cleaned up the code.
 ! 2014/05/28, GM: Removed unused read of attribute 'Product_Date'.
-! 2014/07/23, AP: Grid no longer assumed to defined points rather than the
-!    cells centres (as is actually the case).
+! 2014/07/23, AP: Grid no longer assumed to defined points rather than the cells
+!    centres (as is actually the case).
 ! 2014/08/01, AP: Remove unused counter fields.
 ! 2014/08/15, AP: Switching to preprocessor NCDF routines.
 ! 2014/09/18, AP: Update to RTTOV11 output arrays in the correct shape.
@@ -77,8 +77,8 @@
 !    MSI file.
 ! 2015/01/30, AP: Remove sp and skint and redundant. Use bottom of T and P
 !    arrays in RTM instead.
-! 2015/03/11, GM: Do not read wavelength dependent fields if NThermal is
-!    equal to 0.
+! 2015/03/11, GM: Do not read wavelength dependent fields if NThermal is equal
+!    to 0.
 ! 2015/04/27, AP: Moved PRTM code into its own routine.
 ! 2015/07/03, OS: added error status variable to nc_open call
 ! 2015/07/10, OS: undo previous commit
@@ -95,7 +95,7 @@ subroutine Read_LwRTM_nc(Ctrl, RTM)
 
    use Ctrl_m
    use ECP_Constants_m
-   use orac_ncdf
+   use orac_ncdf_m
 
    implicit none
 

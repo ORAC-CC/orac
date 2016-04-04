@@ -36,7 +36,7 @@
 
 subroutine read_input_secondary_common(ncid, input_data, indexing, verbose)
 
-   use orac_ncdf
+   use orac_ncdf_m
 
    implicit none
 
@@ -141,14 +141,14 @@ end subroutine read_input_secondary_common
 subroutine read_input_secondary_optional(ncid, input_data, indexing, &
      read_flags, verbose)
 
-   use orac_ncdf
+   use orac_ncdf_m
 
    implicit none
 
    integer,                      intent(in)    :: ncid
    type(input_data_secondary_t), intent(inout) :: input_data
    type(input_indices_t),        intent(in)    :: indexing
-   type(common_file_flags),      intent(inout) :: read_flags
+   type(common_file_flags_t),      intent(inout) :: read_flags
    logical,                      intent(in)    :: verbose
 
    integer            :: i
@@ -172,7 +172,7 @@ end subroutine read_input_secondary_optional
 subroutine read_input_secondary_once(nfile, fname, input_data, indexing, &
      loop_ind, verbose)
 
-   use orac_ncdf
+   use orac_ncdf_m
 
    implicit none
 
@@ -186,7 +186,7 @@ subroutine read_input_secondary_once(nfile, fname, input_data, indexing, &
    integer                 :: ncid, i
    character(len=32)       :: input_num
    character(len=512)      :: input_dummy
-   type(common_file_flags) :: read_flags
+   type(common_file_flags_t) :: read_flags
 
    ! Flag which optional fields to be read. Turn false as they are read.
    read_flags = indexing%flags
@@ -230,7 +230,7 @@ end subroutine read_input_secondary_once
 
 subroutine read_input_secondary_class(fname, input_data, indexing, verbose)
 
-   use orac_ncdf
+   use orac_ncdf_m
 
    implicit none
 

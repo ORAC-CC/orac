@@ -46,18 +46,18 @@
 subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
    output_optical_props_at_night)
 
-   use constants_cloud_typing_pavolonis
+   use constants_cloud_typing_pavolonis_m
    use orac_input_m
-   use orac_ncdf
-   use orac_output
+   use orac_ncdf_m
+   use orac_output_m
    use postproc_constants_m
 
    implicit none
 
    integer,                    intent(in)    :: i, j
-   type(common_indices),       intent(in)    :: indexing
+   type(common_indices_t),       intent(in)    :: indexing
    type(input_data_primary_t), intent(in)    :: input_data
-   type(output_data_primary),  intent(inout) :: output_data
+   type(output_data_primary_t),  intent(inout) :: output_data
    logical,                    intent(in)    :: output_optical_props_at_night
 
    integer :: k, l

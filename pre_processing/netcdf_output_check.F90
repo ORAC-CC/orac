@@ -26,7 +26,7 @@ subroutine netcdf_output_check(output_path,lwrtm_file,swrtm_file,prtm_file,confi
 
    use netcdf
    use preproc_constants_m
-   use orac_ncdf
+   use orac_ncdf_m
 
    implicit none
 

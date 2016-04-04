@@ -23,12 +23,12 @@
 ! 2014/05/27, GM: Some cleanup.
 ! 2014/09/09, GM: Changes related to new BRDF support.
 ! 2014/09/17, GM: Added Nullify_Data()
-! 2014/10/24, OS: added variables cldtype, cldmask, cccot_pre, lusflags,
-!    dem, and nisemask
+! 2014/10/24, OS: added variables cldtype, cldmask, cccot_pre, lusflags, dem,
+!    and nisemask
 ! 2015/01/18, GM: Put all related Read*() subroutines into this module.
 ! 2015/01/30, AP: Remove uscan and vscan as unnecessary.
-! 2015/02/04, GM: Changes related to the new missing channel, illumination,
-!    and channel selection code.
+! 2015/02/04, GM: Changes related to the new missing channel, illumination, and
+!    channel selection code.
 ! 2015/04/28, AP: Added fields for surface uncertainty and correlation.
 ! 2015/07/03, OS: Added cldmask_uncertainty
 ! 2015/07/27, AP: Replace CloudFlag with Type.
@@ -41,7 +41,6 @@
 
 module Data_m
 
-   use common_constants, only : sreal, dreal
    use ECP_Constants_m
 
    private

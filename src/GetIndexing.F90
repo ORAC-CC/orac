@@ -51,14 +51,14 @@
 ! 2015/02/04, GM: Original version.
 ! 2015/02/04, GM: Add support to use Ctrl%ReChans.  See description in Ctrl.F90
 !    and default values set in ReadDriver.F90.
-! 2015/03/11, GM: Remove check for missing r_e channels. It is valid not to
-!    have any.
+! 2015/03/11, GM: Remove check for missing r_e channels. It is valid not to have
+!    any.
 ! 2015/07/30, AP: Move cloud indexing logic into its own routine.
 ! 2015/07/31, GM: Remove cloud legacy mode.
 ! 2015/08/17, AP: Add selection logics for aerosol retrievals.
 ! 2015/08/20, AP: Rather than set every state vector element, only sets those
-!    with meaning in this retrieval. Added indexing logic for aerosol retrievals.
-!    Replaced Find_MDAD with Find_Channel.
+!    with meaning in this retrieval. Added indexing logic for aerosol
+!    retrievals. Replaced Find_MDAD with Find_Channel.
 ! 2016/01/27, GM: Add indexing for the new night cloud retrieval.
 !
 ! $Id$
