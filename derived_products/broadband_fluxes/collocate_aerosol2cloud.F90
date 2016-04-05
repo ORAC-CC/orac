@@ -3,7 +3,8 @@
 !
 ! Purpose:
 ! Used to match A(A)TSR CCI aerosol retrievals (at 10 km resolution) to the 
-! 1-km (instrument) pixel retrievals in the primary and secondary CC4CL products.
+! 1-km (instrument) pixel retrievals in the primary and secondary CC4CL
+! products.
 !
 ! Inputs:
 ! anum: number of aersol cci retrievls in sinusoidal grid
@@ -15,7 +16,8 @@
 ! cLat(xdim,ydim): latitude of instrument resolution pixel for cloud product
 !
 ! Output:
-! aID(xdim,ydim): index location of aerosol cci that coincides with across/along track pixel
+! aID(xdim,ydim): index location of aerosol cci that coincides with across/along
+! track pixel
 !
 ! Subroutines:
 !   haversine.F90 --> computes great circle distance between pixels
@@ -23,16 +25,18 @@
 ! History:
 ! 2015/15/14, MC: Initial development
 ! 2015/21/14, MC: Committed to repository
-! 2015/27/14, MC: Fixed bug in longitude range for swaths acros the international dateline.
+! 2015/27/14, MC: Fixed bug in longitude range for swaths acros the
+!    international dateline.
+! 2016/04/05, GM: Real should not be used for indexing.
 !
 ! $Id$
 !
 ! Bugs:
-! potential problem with method 1: have not accounted for longitude reversal around
-! the international dateline - need to add this.
-! problem in method 2 which is currently being commented out. The code compiles and
-! runs okay but produces incorrect collocations. Needs further investigation before
-! this part is to be used.
+! Potential problem with method 1: have not accounted for longitude reversal
+! around the international dateline - need to add this.
+! Problem in method 2 which is currently being commented out. The code compiles
+! and runs okay but produces incorrect collocations. Needs further investigation
+! before this part is to be used.
 !
 !-------------------------------------------------------------------------------
 subroutine collocate_aerosol2cloud(anum,aLon,aLat,xdim,ydim,cLon,cLat,aID)
@@ -67,15 +71,15 @@ subroutine collocate_aerosol2cloud(anum,aLon,aLat,xdim,ydim,cLon,cLat,aID)
    integer :: aID3(1)
    real :: aDist3(1)
 
-   real, dimension(360,180,500) :: rID !valid up to 75 degrees
+   integer, dimension(360,180,500) :: rID !valid up to 75 degrees
    integer, dimension(360,180) :: rct
    integer :: trct
 
-   real, dimension(360,180,200) :: srID
+   integer, dimension(360,180,200) :: srID
    integer, dimension(360,180) :: srct
    integer :: strct
 
-   real, dimension(360,180,2000) :: hilatID !valid up to 85 degrees
+   integer, dimension(360,180,2000) :: hilatID !valid up to 85 degrees
    integer, dimension(360,180) :: hilatct
    integer :: hilattrct
 
@@ -251,7 +255,7 @@ if(4 .gt. 5) then
        flag=2
         tct=srct(tXID,tYID)
         do k=1,tct
-        call haversine(cLat(iX,iY),cLon(iX,iY),aLat(int(srID(tXID,tYID,k))),aLon(int(srID(tXID,tYID,k))),d)
+        call haversine(cLat(iX,iY),cLon(iX,iY),aLat(srID(tXID,tYID,k)),aLon(srID(tXID,tYID,k)),d)
         !Choose the very first aerosol pixel that is within 10 km of cloud pixel
         if(d .le. 10.) then
          aID(iX,iY) = srID(tXID,tYID,k)
@@ -267,7 +271,7 @@ if(4 .gt. 5) then
        flag=1
        tct  = rct(tXID,tYID)
        do k=1,tct
-        call haversine(cLat(iX,iY),cLon(iX,iY),aLat(int(rID(tXID,tYID,k))),aLon(int(rID(tXID,tYID,k))),d)
+        call haversine(cLat(iX,iY),cLon(iX,iY),aLat(rID(tXID,tYID,k)),aLon(rID(tXID,tYID,k)),d)
         !print*,k,cLat(iX,iY),cLon(iX,iY),aLat( rID(tXID,tYID,k)),aLon( rID(tXID,tYID,k)),d
         !Choose the very first aerosol pixel that is within 10 km of cloud pixel
         if(d .le. 10.) then
@@ -285,7 +289,7 @@ if(4 .gt. 5) then
        flag=3
         tct=hilatct(tXID,tYID)
         do k=1,tct
-        call haversine(cLat(iX,iY),cLon(iX,iY),aLat(int(hilatID(tXID,tYID,k))),aLon(int(hilatID(tXID,tYID,k))),d)
+        call haversine(cLat(iX,iY),cLon(iX,iY),aLat(hilatID(tXID,tYID,k)),aLon(hilatID(tXID,tYID,k)),d)
         !Choose the very first aerosol pixel that is within 10 km of cloud pixel
         if(d .le. 10.) then
          aID(iX,iY) = hilatID(tXID,tYID,k)
