@@ -251,7 +251,7 @@ if(4 .gt. 5) then
        flag=2
         tct=srct(tXID,tYID)
         do k=1,tct
-        call haversine(cLat(iX,iY),cLon(iX,iY),aLat( srID(tXID,tYID,k)),aLon( srID(tXID,tYID,k)),d)
+        call haversine(cLat(iX,iY),cLon(iX,iY),aLat(int(srID(tXID,tYID,k))),aLon(int(srID(tXID,tYID,k))),d)
         !Choose the very first aerosol pixel that is within 10 km of cloud pixel
         if(d .le. 10.) then
          aID(iX,iY) = srID(tXID,tYID,k)
@@ -267,7 +267,7 @@ if(4 .gt. 5) then
        flag=1
        tct  = rct(tXID,tYID)
        do k=1,tct
-        call haversine(cLat(iX,iY),cLon(iX,iY),aLat( rID(tXID,tYID,k)),aLon( rID(tXID,tYID,k)),d)
+        call haversine(cLat(iX,iY),cLon(iX,iY),aLat(int(rID(tXID,tYID,k))),aLon(int(rID(tXID,tYID,k))),d)
         !print*,k,cLat(iX,iY),cLon(iX,iY),aLat( rID(tXID,tYID,k)),aLon( rID(tXID,tYID,k)),d
         !Choose the very first aerosol pixel that is within 10 km of cloud pixel
         if(d .le. 10.) then
@@ -285,7 +285,7 @@ if(4 .gt. 5) then
        flag=3
         tct=hilatct(tXID,tYID)
         do k=1,tct
-        call haversine(cLat(iX,iY),cLon(iX,iY),aLat( hilatID(tXID,tYID,k)),aLon( hilatID(tXID,tYID,k)),d)
+        call haversine(cLat(iX,iY),cLon(iX,iY),aLat(int(hilatID(tXID,tYID,k))),aLon(int(hilatID(tXID,tYID,k))),d)
         !Choose the very first aerosol pixel that is within 10 km of cloud pixel
         if(d .le. 10.) then
          aID(iX,iY) = hilatID(tXID,tYID,k)

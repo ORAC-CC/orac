@@ -44,8 +44,8 @@ c      rday = 10
 c      day=ifix(rday)
 c      fracday = rday -ifix(rday)
 
-      call modjulianday(day, year, month, 1      , jday1)
-      call modjulianday(0  , year, 1    , 1      , jday2)
+      call modjulianday(day, year, month, 1., jday1)
+      call modjulianday(0  , year, 1    , 1., jday2)
 
 c     case study
 c      call modjulianday(20, 2008, 12, 1, jday1)
@@ -78,7 +78,7 @@ c
 
       function julday(mm,id,iyyy)
       parameter (igreg=15+31*(10+12*1582))
-      if (iyyy.eq.0) pause 'there is no year zero.'
+      if (iyyy.eq.0) stop 'there is no year zero.'
       if (iyyy.lt.0) iyyy=iyyy+1
       if (mm.gt.2) then
         jy=iyyy

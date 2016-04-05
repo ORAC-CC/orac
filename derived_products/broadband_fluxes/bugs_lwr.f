@@ -145,7 +145,7 @@
      &, pdist
       data eps,tmax,pdist /1.e-05,340.,2./
           
-      real (kind=dbl_kind), dimension(mbir)::
+      integer (kind=dbl_kind), dimension(mbir)::
      &  kg       !Nb of k-distributions per spectral intervals.  
       data kg /2,3,4,4,3,5,2,10,12,7,7,8/
 
