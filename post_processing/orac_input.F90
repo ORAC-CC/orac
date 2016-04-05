@@ -172,7 +172,7 @@ subroutine determine_channel_indexing(fname, indexing, verbose)
    type(input_indices_t), intent(inout) :: indexing
    logical,               intent(in)    :: verbose
 
-   integer :: ncid, i_ch, i0, i1, j, ierr
+   integer :: ncid, i_ch, i0, i1, ierr
    integer :: do_flags, rho_flags(indexing%Ny)
 
    call nc_open(ncid, fname)
@@ -253,7 +253,6 @@ subroutine cross_reference_indexing(n, loop_ind, main_ind)
    type(input_indices_t), intent(inout) :: main_ind
 
    integer :: i0, i1, i2, i_ch, i_file, j_ch
-   integer :: max_ch, current_max
    integer, dimension(MaxNumMeas) :: Y_Id, View_Id, Ch_Is, YSolar, YThermal
 
    ! Ensure files all have the same grid

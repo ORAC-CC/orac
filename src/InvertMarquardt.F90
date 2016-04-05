@@ -248,7 +248,6 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
    real    :: dJ_dX(SPixel%Nx)    ! 1st derivative of J wrt state variables
    real    :: d2J_dX2(SPixel%Nx, SPixel%Nx)
                                   ! 2nd derivative of J wrt state variables
-   real    :: Av_Hess             ! Average of Hessian (d2J_dX2) diagonal
    real    :: alpha               ! Marquardt control variable
    real    :: huge_value          ! largest value of real data type
    real    :: J2plus_A(SPixel%Nx, SPixel%Nx)
@@ -273,7 +272,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
                                   ! Array temporary for Diag%St
    real, dimension(SPixel%Ind%NSolar)    :: CRP, T_00, T_0d, T_all
    real, dimension(SPixel%Ind%NSolar, 2) :: d_CRP, d_T_00, d_T_0d
-   real    :: a
+!  real    :: a
    real    :: CRP_thermal(SPixel%Ind%NThermal)
    real    :: d_CRP_thermal(SPixel%Ind%NThermal, 2)
    real    :: temp(SPixel%Ind%NSolar,SPixel%Ind%NSolar)

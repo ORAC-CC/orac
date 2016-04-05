@@ -382,7 +382,7 @@ subroutine cloud_indexing_logic(Ctrl, SPixel, is_not_used_or_missing, &
 
    integer :: ii_x, ii_xj, ii_xi
    integer :: min_rho
-   integer :: i_chan, ii_chan, i_x, i_r_e_chan
+   integer :: i_chan, ii_chan, i_r_e_chan
    integer :: n_chans, n_tau_chans, n_r_e_chans, n_ir_chans, n_ir_chans2
    logical :: re_thermal
 
@@ -549,7 +549,6 @@ subroutine cloud_indexing_logic_night(Ctrl, SPixel, is_not_used_or_missing, &
 
    integer :: ii_x, ii_xj, ii_xi
    integer :: min_rho
-   integer :: i_chan
    integer :: n_chans
 
    n_chans = count(.not. is_not_used_or_missing)

@@ -90,15 +90,11 @@ subroutine Calc_Corrected_CTX(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Sy)
    ! Local variable declarations
 
    integer       :: status
-   integer       :: i
    integer       :: i_spixel_11
    integer       :: i_spixel_12
    integer       :: i_spixel_11_thermal
    integer       :: i_spixel_12_thermal
    integer       :: Y_Id(SPixel%Ind%NThermal)
-   real          :: a(1)
-   real          :: b(1)
-   real          :: R(1)
    real          :: T_11
    real          :: T_12
    real          :: T_11_l
@@ -108,7 +104,6 @@ subroutine Calc_Corrected_CTX(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Sy)
    real          :: beta_11_l_r_e
    real          :: beta_12_l_r_e
    real          :: delta_beta
-   real          :: ctt_new_l_tau
    real          :: ctt_new_l_r_e
    real          :: ctt_new_l_t11
    real          :: ctt_new_l_t12

@@ -311,7 +311,7 @@ contains
 
     ! Declare some miscelaneous variables.
 
-    integer :: i, j, index1, index2, wflg, j1, j2, &
+    integer :: i, j, index1, index2, wflg, &
          start_line, end_line, start_pix, end_pix, npix
     logical :: day
     real    :: t4_filter_thresh, nir_ref

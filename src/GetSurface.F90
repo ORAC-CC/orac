@@ -153,7 +153,7 @@ subroutine Get_Surface(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
    integer,          intent(out)   :: status
 
    ! Define local variables
-   integer :: i, ii, j, jj
+   integer :: i, ii, j
    integer :: i_surf, i_rho, j_rho, i_wvl
    logical :: surf_unc
    real    :: ndvi, ndsi
