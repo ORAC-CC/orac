@@ -49,6 +49,7 @@
 ! 2016/02/19, MC: Fixed bug in reading time from input file name. Index is now based
 !    the last underscore in primary file instead of the word primary.
 ! 2016/03/31, MC: Added time variable to output file.
+! 2016/04/06, MC: Modified aerosol_processing option to bypass collocation file creation.
 !
 ! $Id$
 !
@@ -709,11 +710,9 @@ program process_broadband_fluxes
     mask_vres(NLS)=levdim_prtm
     print*,mask_vres
 
-
 !-------------------------------------------------------------------------
 !OPTIONAL INPUTS
 !-------------------------------------------------------------------------
-
    !OPTION - PROCESS all pixels in granule if range not specified
    if(len(trim(cpxX0)) .eq. 0 .and. len(trim(cpxX1)) .eq. 0 .and. &
       len(trim(cpxY0)) .eq. 0 .and. len(trim(cpxY1)) .eq. 0) then
@@ -728,6 +727,7 @@ program process_broadband_fluxes
    allocate(AOD550(xN,yN))
    allocate(AREF(xN,yN))
    !OPTION - PROCESS aerosol
+   PRINT*,'aerosol_processing_mode: ',aerosol_processing_mode
    if(aerosol_processing_mode .ge. 1) then
     allocate(aID(xN,yN))
     !determine if netcdf file already exists
@@ -738,35 +738,32 @@ program process_broadband_fluxes
      !-------------------------------------------------------------------------
      !Make collocation netcdf file
      !-------------------------------------------------------------------------
-     call nc_open(ncid,Fprimary)
+      if(aerosol_processing_mode .eq. 2) then
+       call nc_open(ncid,Fprimary)
 
-     !get common attributes from primary file
-     call nc_get_common_attributes(ncid, global_atts, source_atts)
+       !get common attributes from primary file
+       call nc_get_common_attributes(ncid, global_atts, source_atts)
 
-      if (nf90_close(ncid) .ne. NF90_NOERR) then
-               write(*,*) 'ERROR: nf90_close()'
-         stop error_stop_code
-      end if
-
-      !dimensions
-      ixstart = 1
-      ixstop = xN
-      iystart = 1
-      iystop = yN
-      n_x = ixstop - ixstart + 1
-      n_y = iystop - iystart + 1
-
-
-     ! create netcdf file
-      call nc_create(trim(Fcollocation), ncid, ixstop-ixstart+1, &
-         iystop-iystart+1, dims_var, 1, global_atts, source_atts)
-
-         !Need this to exit data mode to define variables
-         if (nf90_redef(ncid) .ne. NF90_NOERR) then
-           write(*,*) 'ERROR: nf90_redef()'
+        if (nf90_close(ncid) .ne. NF90_NOERR) then
+                 write(*,*) 'ERROR: nf90_close()'
            stop error_stop_code
-         end if
+        end if
+        !dimensions
+        ixstart = 1
+        ixstop = xN
+        iystart = 1
+        iystop = yN
+        n_x = ixstop - ixstart + 1
+        n_y = iystop - iystart + 1
+       ! create netcdf file
+        call nc_create(trim(Fcollocation), ncid, ixstop-ixstart+1, &
+           iystop-iystart+1, dims_var, 1, global_atts, source_atts)
 
+           !Need this to exit data mode to define variables
+           if (nf90_redef(ncid) .ne. NF90_NOERR) then
+             write(*,*) 'ERROR: nf90_redef()'
+             stop error_stop_code
+           end if
          !-------------------------------------------------------------------------
          ! Aerosol Index
          !-------------------------------------------------------------------------
@@ -799,7 +796,7 @@ program process_broadband_fluxes
 
          print*,'CREATED: '
          print*,Fcollocation
-
+       endif ;aerosol_processing_mode = 2
     endif !file not there
 
    !Netcdf collocation file exists get aID
@@ -820,7 +817,7 @@ program process_broadband_fluxes
       end if
     endif !file there
 
-    !fill arrays
+    !fill arrays (aerosol index aID must exist by this point)
     do i=1,xN 
     do j=1,yN
       AOD550(i,j) = aerAOD(aID(i,j))
@@ -838,9 +835,6 @@ program process_broadband_fluxes
     enddo
     enddo
    endif
-
-!print*,aID(:,13500)
-!print*,aerAOD(aID(:,13500))
 !-------------------------------------------------------------------------
 !END OPTIONAL INPUTS SECTION
 !-------------------------------------------------------------------------
@@ -870,7 +864,7 @@ call cpu_time(cpuStart)
 
       !loop over along-track dimension
       do j=pxY0,pxY1
-!      do j=pxY0,pxY0+1 !for testing
+!      do j=pxY0,pxY0+10 !for testing
 
       !Valid lat/lon required to run (needed for SEVIRI)
       if(LAT(i,j) .ne. -999.0 .and. LON(i,j) .ne. -999.0) then
