@@ -49,6 +49,8 @@
 !    required use ecmwf_path_file*(2).
 ! 2016/01/22, GM: Bug fix: time_int_fac was not being computed for
 !    assume_full_path=.true.
+! 2016/04/03, SP: Add option to process ECMWF forecast in single NetCDF4 file
+!    Note: This should work with either the OPER or FCST streams from ECMWF.
 !
 ! $Id$
 !
@@ -295,9 +297,13 @@ subroutine make_ecmwf_name(cyear,cmonth,cday,chour,ecmwf_flag,ecmwf_path, &
       ecmwf_path_file3=trim(adjustl(ecmwf_path3))//'/spam'// &
            trim(adjustl(cyear))//trim(adjustl(cmonth))// &
            trim(adjustl(cday))//trim(adjustl(chour))//'00.grb'
+   case(4)
+      ecmwf_path_file=trim(adjustl(ecmwf_path))//'/ECMWF_OPER_'// &
+           trim(adjustl(cyear))//trim(adjustl(cmonth))// &
+           trim(adjustl(cday))//'_'//trim(adjustl(chour))//'+00.nc'
    case default
       write(*,*) 'ERROR: set_ecmwf(): Unknown ECMWF file format flag. ' // &
-               & 'Please select 0, 1, or 2.'
+               & 'Please select 0, 1, 2, 3, or 4.'
       stop error_stop_code
    end select
 

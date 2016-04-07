@@ -65,6 +65,8 @@
 !    resolution.
 ! 2015/07/03, OS: added error status variable to nc_open call
 ! 2015/07/10, OS: undo previous commit
+! 2016/04/04, SP: Added option to process ECMWF forecast/analysis data
+!                 that's stored in a single NetCDF file.
 !
 ! $Id$
 !
@@ -74,7 +76,7 @@
 !-------------------------------------------------------------------------------
 
 subroutine read_ecmwf_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
-     preproc_prtm, verbose)
+     preproc_prtm, verbose,ecmwf_flag)
 
    use orac_ncdf_m
    use preproc_constants_m
@@ -88,6 +90,7 @@ subroutine read_ecmwf_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
    type(preproc_geoloc_t),     intent(in)    :: preproc_geoloc
    type(preproc_prtm_t),       intent(inout) :: preproc_prtm
    logical,                    intent(in)    :: verbose
+   integer,                    intent(in)    :: ecmwf_flag
 
    integer(lint),     external            :: INTIN,INTOUT,INTF
    integer(lint),     parameter           :: BUFFER = 2000000
@@ -105,6 +108,7 @@ subroutine read_ecmwf_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
    logical                                :: three_d
    real(sreal)   :: dummy2d(ecmwf%xdim,ecmwf%ydim,1,1)
    real(sreal)   :: dummy3d(ecmwf%xdim,ecmwf%ydim,ecmwf%kdim,1)
+   real(sreal)   :: dummy3d_2(ecmwf%xdim,ecmwf%ydim,ecmwf%kdim)
 #ifdef WRAPPER
    real(sreal)   :: ecmwf_lon(ecmwf%xdim)
    real(sreal)   :: ecmwf_lat(ecmwf%ydim)
@@ -112,6 +116,9 @@ subroutine read_ecmwf_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
    integer(lint) :: pointer_y(preproc_dims%min_lat:preproc_dims%max_lat)
    real(sreal)   :: diff_lon(ecmwf%xdim),diff_lat(ecmwf%ydim)
 #endif
+   
+   
+   
    n=ecmwf%xdim*ecmwf%ydim
 
    ! input details of new grid (see note in read_ecmwf_grib)
@@ -227,12 +234,19 @@ subroutine read_ecmwf_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
       end select
       if (nf90_inquire_variable(fid,ivar,name) .ne. 0) &
            call h_e_e('nc', 'NF VAR INQUIRE failed.')
-
       if (three_d) then
-         call nc_read_array(fid,name,dummy3d,verbose)
+         if (ecmwf_flag.ne.4) then
+            call nc_read_array(fid,name,dummy3d,verbose)
+         else
+            call nc_read_array(fid,name,dummy3d_2,verbose)
+         endif
          do k=1,ecmwf%kdim
             old_len=n
-            old_data(1:n)=reshape(real(dummy3d(:,:,k,1),kind=8),[n])
+            if (ecmwf_flag.ne.4) then
+               old_data(1:n)=reshape(real(dummy3d(:,:,k,1),kind=8),[n])
+            else
+               old_data(1:n)=reshape(real(dummy3d_2(:,:,k),kind=8),[n])
+            endif
 
             new_len=BUFFER
 

@@ -28,6 +28,8 @@
 ! 2016/01/29, GM: Add ecmwf_wind_init() and use it in read_ecmwf_wind_nc().
 ! 2016/02/02, OS: Now reads into HR ERA structure if flag is set.
 ! 2016/02/03, GM: Move ecmwf_wind_init() into ecmwf.F90.
+! 2016/04/04, SP: Add option to process ECMWF forecast in single NetCDF4 file
+!    Note: This should work with either the OPER or FCST streams from ECMWF.
 !
 ! $Id$
 !
@@ -36,7 +38,7 @@
 !-------------------------------------------------------------------------------
 
 subroutine read_ecmwf_wind_nc(ecmwf_path, ecmwf2path, ecmwf3path, ecmwf, &
-                              high_res)
+                              high_res,ecmwf_flag)
 
    use preproc_constants_m
 
@@ -47,19 +49,16 @@ subroutine read_ecmwf_wind_nc(ecmwf_path, ecmwf2path, ecmwf3path, ecmwf, &
    character(len=*), intent(in)    :: ecmwf3path
    type(ecmwf_t),    intent(inout) :: ecmwf
    logical,          intent(in)    :: high_res
+   integer,          intent(in)    :: ecmwf_flag
 
    call ecmwf_wind_init(ecmwf)
-
-   allocate(ecmwf%avec(61))
-   allocate(ecmwf%bvec(61))
-   ecmwf%avec = avec
-   ecmwf%bvec = bvec
+   call ecmwf_abvec_init(ecmwf)   
 
    ! loop over given files (order not necessarily known)
-   call read_ecmwf_wind_file(ecmwf_path,ecmwf)
-   if (.not. high_res) then
-      call read_ecmwf_wind_file(ecmwf2path,ecmwf)
-      call read_ecmwf_wind_file(ecmwf3path,ecmwf)
+   call read_ecmwf_wind_file(ecmwf_path,ecmwf,ecmwf_flag)
+   if (.not. high_res.and.ecmwf_flag.ne.4) then
+      call read_ecmwf_wind_file(ecmwf2path,ecmwf,ecmwf_flag)
+      call read_ecmwf_wind_file(ecmwf3path,ecmwf,ecmwf_flag)
    endif
 
 end subroutine read_ecmwf_wind_nc
@@ -96,7 +95,7 @@ end subroutine read_ecmwf_wind_nc
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine read_ecmwf_wind_file(ecmwf_path, ecmwf)
+subroutine read_ecmwf_wind_file(ecmwf_path, ecmwf,ecmwf_flag)
 
    use orac_ncdf_m
    use preproc_constants_m
@@ -105,6 +104,7 @@ subroutine read_ecmwf_wind_file(ecmwf_path, ecmwf)
 
    character(len=*), intent(in)    :: ecmwf_path
    type(ecmwf_t),    intent(inout) :: ecmwf
+   integer,          intent(in)    :: ecmwf_flag
 
    real, allocatable               :: val(:,:,:,:)
    integer                         :: fid,i,ndim,nvar,size
@@ -136,7 +136,7 @@ subroutine read_ecmwf_wind_file(ecmwf_path, ecmwf)
          end if
          ! the vertical coordinate is inconsistently named between gpam and ggam
       else if ((name.eq.'hybrid' .and. ndim.eq.4) .or. &
-           name.eq.'hybrid_1') then
+           name.eq.'hybrid_1' .or. (name.eq.'hybrid' .and. ecmwf_flag.eq.4))then
          if (ecmwf%kdim .eq. 0) then
             ecmwf%kdim=size
          else
@@ -145,6 +145,7 @@ subroutine read_ecmwf_wind_file(ecmwf_path, ecmwf)
          end if
       end if
    end do
+   
 
    ! read wind fields and geolocation from files
    do i=1,nvar

@@ -35,12 +35,12 @@ subroutine compute_geopot_coordinate(preproc_prtm, preproc_dims, ecmwf)
 
    type(preproc_prtm_t), intent(inout) :: preproc_prtm
    type(preproc_dims_t), intent(in)    :: preproc_dims
-   type(ecmwf_t),        intent(in)    :: ecmwf
+   type(ecmwf_t),        intent(inout) :: ecmwf
 
    integer                             :: ii,ij,ik
    real(kind=sreal)                    :: virt_temp,p,pp1,logpp,r_ratio,alpha,sp
    real(kind=sreal)                    :: sum_term,add_term
-
+  
    r_ratio=r_water_vap/(r_dry_air-1.0_sreal)
 
    ! compute the summation terms of the sum in (2.21) and necessary terms in

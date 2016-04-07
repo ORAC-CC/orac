@@ -245,6 +245,8 @@
 !    optional.
 ! 2016/02/18, OS: if nargs = -1 (i.e. WRAPPER mode), cut off driver file name
 !    at first space; now passing imager_flags to correct_for_ice_snow_ecmwf
+! 2016/04/03, SP: Add option to process ECMWF forecast in single NetCDF4 file
+!    Note: This should work with either the OPER or FCST streams from ECMWF.
 !
 ! $Id$
 !
@@ -398,6 +400,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    integer                          :: index_space
    integer                          :: ecmwf_time_int_method
    real                             :: ecmwf_time_int_fac
+   integer                          :: ecmwf_nlevels
 
 !  integer, dimension(8)            :: values
 
@@ -487,7 +490,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
          call parse_optional(label, value, n_channels, channel_ids, use_hr_ecmwf, &
             ecmwf_time_int_method, use_ecmwf_tnow_and_ice, use_modis_emis_in_rttov, &
             ecmwf_path(2), ecmwf_path2(2), ecmwf_path3(2), ecmwf_path_hr(1), &
-            ecmwf_path_hr(2))
+            ecmwf_path_hr(2),ecmwf_nlevels)
       end do
    else
 
@@ -556,7 +559,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
         call parse_optional(label, value, n_channels, channel_ids, &
            use_hr_ecmwf, ecmwf_time_int_method, use_ecmwf_tnow_and_ice, &
            use_modis_emis_in_rttov, ecmwf_path(2), ecmwf_path2(2), &
-           ecmwf_path3(2), ecmwf_path_hr(1), ecmwf_path_hr(2))
+           ecmwf_path3(2), ecmwf_path_hr(1), ecmwf_path_hr(2),ecmwf_nlevels)
       end do
 
       close(11)
@@ -833,12 +836,31 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
          write(*,*) 'ecmwf_flag: ', ecmwf_flag
          write(*,*) 'ecmwf_path_file: ',trim(ecmwf_path_file(1))
          write(*,*) 'ecmwf_HR_path_file: ',trim(ecmwf_HR_path_file(1))
-         if (ecmwf_flag.gt.0) then
+         if (ecmwf_flag.gt.0.and.ecmwf_flag.ne.4) then
             write(*,*) 'ecmwf_path_file2: ',trim(ecmwf_path_file2(1))
             write(*,*) 'ecmwf_path_file3: ',trim(ecmwf_path_file3(1))
          end if
       end if
-
+      
+      ! Set the number of levels in the input file, defaults to 61
+      select case(ecmwf_nlevels)
+      case(60)
+         ecmwf%kdim=60
+         ecmwf1%kdim=60
+         ecmwf2%kdim=60
+      case(91)
+         ecmwf%kdim=91
+         ecmwf1%kdim=91
+         ecmwf2%kdim=91
+      case(137)
+         ecmwf%kdim=137
+         ecmwf1%kdim=137
+         ecmwf2%kdim=137
+      case default
+         ecmwf%kdim=60
+         ecmwf1%kdim=60
+         ecmwf2%kdim=60
+      end select   
       ! read surface wind fields and ECMWF dimensions
       if (ecmwf_time_int_method .ne. 2) then
          call read_ecmwf_wind(ecmwf_flag, ecmwf_path_file(1), &
@@ -910,8 +932,8 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
          call deallocate_preproc_prtm(preproc_prtm1)
          call deallocate_preproc_prtm(preproc_prtm2)
       end if
-
-      if (verbose) write(*,*) 'Compute geopotential verticle coords'
+      
+      if (verbose) write(*,*) 'Compute geopotential vertical coords'
       ! compute geopotential vertical coordinate from pressure coordinate
       call compute_geopot_coordinate(preproc_prtm, preproc_dims, ecmwf)
 

@@ -21,6 +21,8 @@
 ! 2016/02/02, GM: Make use of the high resolution ECMWF input optional.
 ! 2016/02/03, GM: Use read_ecmwf_wind_grib() to read in the HR data in case 2.
 ! 2016/02/03, GM: Set the fill_value for sea_ice_cover to sreal_fill_value.
+! 2016/04/03, SP: Add option to process ECMWF forecast in single NetCDF4 file
+!    Note: This should work with either the OPER or FCST streams from ECMWF.
 !
 ! $Id$
 !
@@ -54,15 +56,15 @@ subroutine read_ecmwf_wind(ecmwf_flag, ecmwf_path_file, ecmwf_HR_path_file, &
       end if
    case(1)
       call read_ecmwf_wind_nc(ecmwf_path_file,ecmwf_path_file2, &
-           ecmwf_path_file3,ecmwf,.false.)
+           ecmwf_path_file3,ecmwf,.false.,ecmwf_flag)
       if (verbose) write(*,*)'ecmwf_dims ncdf: ',ecmwf%xdim,ecmwf%ydim
       if (use_hr_ecmwf) then
          call read_ecmwf_wind_nc(ecmwf_HR_path_file,ecmwf_path_file2, &
-            ecmwf_path_file3,ecmwf_HR,.true.)
+            ecmwf_path_file3,ecmwf_HR,.true.,ecmwf_flag)
       end if
    case(2)
       call read_ecmwf_wind_badc(ecmwf_path_file,ecmwf_path_file2, &
-           ecmwf_path_file3,ecmwf,.false.)
+           ecmwf_path_file3,ecmwf,.false.,ecmwf_flag)
       if (verbose) write(*,*)'ecmwf_dims badc: ',ecmwf%xdim,ecmwf%ydim
       if (use_hr_ecmwf) then
          call read_ecmwf_wind_grib(ecmwf_HR_path_file,ecmwf_HR,.true.)
@@ -72,6 +74,14 @@ subroutine read_ecmwf_wind(ecmwf_flag, ecmwf_path_file, ecmwf_HR_path_file, &
       if (verbose) write(*,*)'ecmwf_dims ncdf: ',ecmwf%xdim,ecmwf%ydim,ecmwf%kdim
       if (use_hr_ecmwf) then
          call read_ecmwf_wind_dwd(ecmwf_HR_path_file,ecmwf_HR)
+      end if
+   case(4)
+      call read_ecmwf_wind_nc(ecmwf_path_file,ecmwf_path_file2, &
+           ecmwf_path_file3,ecmwf,.false.,ecmwf_flag)
+      if (verbose) write(*,*)'ecmwf_dims ncdf: ',ecmwf%xdim,ecmwf%ydim
+      if (use_hr_ecmwf) then
+         call read_ecmwf_wind_nc(ecmwf_HR_path_file,ecmwf_path_file2, &
+            ecmwf_path_file3,ecmwf_HR,.true.,ecmwf_flag)
       end if
    end select
    if (verbose) then
@@ -115,6 +125,8 @@ end subroutine read_ecmwf_wind
 ! 2015/11/26, GM: Pulled this code from the main program into this subroutine so
 !    that it could be executed twice, once for the ECMWF data on each side of
 !    the satellite acquisition.
+! 2016/04/04, SP: Added option 4, which processes ECMWF forecast/analysis data
+!                 that's stored in a single NetCDF file.
 !
 ! $Id$
 !
@@ -146,19 +158,19 @@ subroutine read_ecmwf(ecmwf_flag, ecmwf_path_file, ecmwf_path_file2, &
    case(1)
       if (verbose) write(*,*) 'Reading ecmwf path: ',trim(ecmwf_path_file)
       call read_ecmwf_nc(ecmwf_path_file,ecmwf,preproc_dims,preproc_geoloc, &
-           preproc_prtm,verbose)
+           preproc_prtm,verbose,ecmwf_flag)
 
       if (verbose) write(*,*) 'Reading ecmwf path: ',trim(ecmwf_path_file2)
       call read_ecmwf_nc(ecmwf_path_file2,ecmwf,preproc_dims,preproc_geoloc, &
-           preproc_prtm,verbose)
+           preproc_prtm,verbose,ecmwf_flag)
 
       if (verbose) write(*,*) 'Reading ecmwf path: ',trim(ecmwf_path_file3)
       call read_ecmwf_nc(ecmwf_path_file3,ecmwf,preproc_dims,preproc_geoloc, &
-           preproc_prtm,verbose)
+           preproc_prtm,verbose,ecmwf_flag)
    case(2)
       if (verbose) write(*,*) 'Reading ecmwf path: ',trim(ecmwf_path_file)
       call read_ecmwf_nc(ecmwf_path_file,ecmwf,preproc_dims,preproc_geoloc, &
-           preproc_prtm,verbose)
+           preproc_prtm,verbose,ecmwf_flag)
 
       if (verbose) write(*,*) 'Reading ecmwf path: ',trim(ecmwf_path_file2)
       call read_ecmwf_grib(ecmwf_path_file2,preproc_dims,preproc_geoloc, &
@@ -170,7 +182,12 @@ subroutine read_ecmwf(ecmwf_flag, ecmwf_path_file, ecmwf_path_file2, &
    case(3)
       if (verbose) write(*,*) 'Reading ecmwf path: ',trim(ecmwf_path_file)
       call read_ecmwf_nc(ecmwf_path_file,ecmwf,preproc_dims,preproc_geoloc, &
-           preproc_prtm,verbose)
+           preproc_prtm,verbose,ecmwf_flag)
+   case(4)
+      if (verbose) write(*,*) 'Reading ecmwf path: ',trim(ecmwf_path_file)
+      call read_ecmwf_nc(ecmwf_path_file,ecmwf,preproc_dims,preproc_geoloc, &
+           preproc_prtm,verbose,ecmwf_flag)
    end select
+   
 
 end subroutine read_ecmwf

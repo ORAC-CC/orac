@@ -477,6 +477,18 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
          ! We don't know which direction the satellite is (as it isn't output)
 !         profiles(count)%azangle     = 180. - preproc_geo%relazi(idim,jdim,1) +&
 !              preproc_geo%solazi(idim,jdim,1)
+!         write(*,*)profiles(count)%p(:nlayers)
+!         write(*,*)""
+!         write(*,*)""
+!         write(*,*) exp(preproc_prtm%lnsp(idim,jdim))
+!         write(*,*)profiles(count)%latitude,profiles(count)%longitude
+!         write(*,*)""
+!         write(*,*)""
+!         write(*,*)""
+!         write(*,*)preproc_prtm%pressure(idim,jdim,:)
+!         
+!         
+!         stop
 
          ! Write profiles structure to PRTM file (array operations needed to
          ! recast structure in form nc_write_array recognises)

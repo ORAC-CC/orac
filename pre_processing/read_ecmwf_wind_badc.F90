@@ -27,6 +27,8 @@
 !    call ecmwf_wind_init().
 ! 2016/01/27, GM: Check and trim filename length for grib_open_file().
 ! 2016/02/02, OS: Now reads into HR ERA structure if flag is set.
+! 2016/04/04, SP: Add option to process ECMWF forecast in single NetCDF4 file
+!    Note: This should work with either the OPER or FCST streams from ECMWF.
 !
 ! $Id$
 !
@@ -35,7 +37,7 @@
 !-------------------------------------------------------------------------------
 
 subroutine read_ecmwf_wind_badc(ecmwf_path, ecmwf2path, ecmwf3path, ecmwf, &
-                                high_res)
+                                high_res,ecmwf_flag)
 
    use grib_api
    use preproc_constants_m
@@ -46,6 +48,7 @@ subroutine read_ecmwf_wind_badc(ecmwf_path, ecmwf2path, ecmwf3path, ecmwf, &
    character(len=*), intent(in)    :: ecmwf2path, ecmwf3path
    type(ecmwf_t),    intent(inout) :: ecmwf
    logical,          intent(in)    :: high_res
+   integer,          intent(in)    :: ecmwf_flag
 
    integer                         :: i,fid,gid,stat
    integer                         :: PVPresent,PLPresent,level
@@ -63,7 +66,7 @@ subroutine read_ecmwf_wind_badc(ecmwf_path, ecmwf2path, ecmwf3path, ecmwf, &
    call ecmwf_wind_init(ecmwf)
 
    ! ggas NCDF file, giving U10,V10,lat,lon
-   call read_ecmwf_wind_file(ecmwf_path,ecmwf)
+   call read_ecmwf_wind_file(ecmwf_path,ecmwf,ecmwf_flag)
 
    if (high_res) return
    ! loop over GRIB files for vertical coordinate

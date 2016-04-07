@@ -74,6 +74,9 @@
 ! 2015/11/26, GM: Changes to support temporal interpolation between ecmwf files.
 ! 2015/12/17, OS: Added write of HR file 2.
 ! 2015/02/02, CP: Added optional HR path input.
+! 2016/04/04, SP: Added option to process ECMWF forecast/analysis data
+!                 that's stored in a single NetCDF file.
+!
 !
 ! $Id$
 !
@@ -185,7 +188,7 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
       write(*,*)'ecmwf_path_file_2:  ',trim(ecmwf_path_file(2))
       write(*,*)'ecmwf_HR_path_file:  ',trim(ecmwf_HR_path_file(1))
       write(*,*)'ecmwf_HR_path_file2:  ',trim(ecmwf_HR_path_file(2))
-      if (ecmwf_flag .gt. 0) then
+      if (ecmwf_flag .gt. 0.and.ecmwf_flag.ne.4) then
          write(*,*)'ecmwf_path_file2: ',trim(ecmwf_path_file2(1))
          write(*,*)'ecmwf_path_file3: ',trim(ecmwf_path_file3(1))
          write(*,*)'ecmwf_path_file2_2: ',trim(ecmwf_path_file2(2))
