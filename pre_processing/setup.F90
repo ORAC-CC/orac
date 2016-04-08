@@ -68,6 +68,7 @@
 !    channels.
 ! 2015/08/19, GM: Modifications to support the SEVIRI HRIT format.
 ! 2015/08/29, CP: Changes to support ATSR-2
+! 2016/04/08, SP: Updated MODIS sea flags for correct cox-munk bands.
 !
 ! $Id$
 !
@@ -482,10 +483,10 @@ subroutine setup_modis(l1b_path_file,geo_path_file,platform,year,month,day, &
 
    integer, parameter :: all_map_ids_abs_to_ref_band_sea(all_nchannels_total)  = &
       (/ 3,         4,         1,         2,         5,         6, &
-         7,         0,         0,         0,         0,         0, &
-         0,         0,         0,         0,         0,         0, &
-         0,         8,         0,         0,         0,         0, &
-         0,         0,         0,         0,         0,         0, &
+         7,         1,         1,         1,         2,         2, &
+         3,         3,         3,         4,         4,         4, &
+         4,         8,         8,         8,         8,         0, &
+         0,         5,         0,         0,         0,         0, &
          0,         0,         0,         0,         0,         0 /)
 
    integer, parameter :: all_map_ids_abs_to_snow_and_ice(all_nchannels_total)  = &

@@ -99,6 +99,7 @@
 ! 2015/03/10, GM: Added support for 4.69, 0.55, 1.24, and 2.13 um. Now AATSR
 !    channel 1 and MODIS channels 3, 4, 5, and 7 will work. Also, corrected
 !    some of the wavelength dependent constants.
+! 2016/04/08, SP: Corrected 4.69 micron to 0.47 micron.
 !
 ! $Id$
 !
@@ -145,7 +146,7 @@ module cox_munk_m
    !----------------------------------------------------------------------------
    integer,          parameter :: n_lambda = 8
 
-   real(kind=sreal), parameter :: lambda(n_lambda)  = (/ 4.69,     0.55,    0.65,    0.87,    1.24,    1.60,    2.13,     3.7     /)
+   real(kind=sreal), parameter :: lambda(n_lambda)  = (/ 0.47,     0.55,    0.65,    0.87,    1.24,    1.60,    2.13,     3.7     /)
 
    ! Clean sea water refractive indices
    real(kind=sreal), parameter :: nr(n_lambda)      = (/ 1.345,    1.341,   1.338,   1.334,   1.327,   1.323,   1.313e+0, 1.374   /)
