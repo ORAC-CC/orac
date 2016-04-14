@@ -53,7 +53,7 @@ $(OBJS)/read_avhrr.o: $(OBJS)/calender.o $(OBJS)/channel_structures.o \
 $(OBJS)/read_cimss_emissivity.o: $(OBJS)/preproc_constants.o
 $(OBJS)/read_imager.o: $(OBJS)/channel_structures.o $(OBJS)/imager_structures.o \
         $(OBJS)/preproc_constants.o $(OBJS)/read_aatsr.o $(OBJS)/read_avhrr.o \
-        $(OBJS)/read_modis.o $(OBJS)/read_seviri.o
+        $(OBJS)/read_modis.o $(OBJS)/read_seviri.o $(OBJS)/read_himawari.o
 $(OBJS)/read_modis.o: $(OBJS)/bright_m.o $(OBJS)/calender.o \
         $(OBJS)/channel_structures.o $(OBJS)/imager_structures.o \
         $(OBJS)/preproc_constants.o get_modis_time.F90 map_time_to_pixel.F90 \
@@ -93,7 +93,7 @@ $(OBJS)/preprocessing_for_orac.o: $(OBJS)/channel_structures.o \
         $(OBJS)/preparation.o $(OBJS)/preproc_constants.o \
         $(OBJS)/preproc_structures.o $(OBJS)/read_USGS_file.o \
         $(OBJS)/read_aatsr.o $(OBJS)/read_avhrr.o $(OBJS)/read_imager.o \
-        $(OBJS)/read_modis.o $(OBJS)/read_seviri.o $(OBJS)/rttov_driver.o \
-        $(OBJS)/setup.o $(OBJS)/surface_emissivity.o \
+        $(OBJS)/read_modis.o $(OBJS)/read_seviri.o $(OBJS)/read_himawari.o \
+        $(OBJS)/rttov_driver.o $(OBJS)/setup.o $(OBJS)/surface_emissivity.o \
         $(OBJS)/surface_reflectance.o $(OBJS)/surface_structures.o \
         $(OBJS)/utils_for_main.o

@@ -247,6 +247,7 @@
 !    at first space; now passing imager_flags to correct_for_ice_snow_ecmwf
 ! 2016/04/03, SP: Add option to process ECMWF forecast in single NetCDF4 file
 !    Note: This should work with either the OPER or FCST streams from ECMWF.
+! 2016/04/11, SP: Added initial support for Himawari-8 AHI
 !
 ! $Id$
 !
@@ -279,6 +280,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    use read_modis_m
    use read_imager_m
    use read_seviri_m
+   use read_himawari_m
    use rttov_driver_m
    use setup_m
    use surface_emissivity_m
@@ -688,6 +690,15 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       ! be checked independently relative to the actual image, both done in the
       ! following call.
       call read_seviri_dimensions(geo_path_file,n_across_track,n_along_track, &
+                                  startx,endx,starty,endy,verbose)
+   else if (trim(adjustl(sensor)) .eq. 'AHI') then
+      call setup_himawari8(l1b_path_file,geo_path_file,platform,year,month,day, &
+           doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids, &
+           channel_info,verbose)
+
+      ! Get dimensions of the AHI image.
+      ! At present only full-disk images are supported
+      call read_himawari_dimensions(geo_path_file,n_across_track,n_along_track, &
                                   startx,endx,starty,endy,verbose)
 
    else

@@ -21,7 +21,7 @@
 # 2014/10/23, Oliver Sus: Changes related to USGS, Pavolonis, and NN cloud mask.
 # 2015/02/19, Greg McGarragh: Added the read_seviri module.
 # 2015/02/24, Greg McGarragh: Added the utils_for_main module.
-#
+# 2016/04/08, Simon Proud: Added the read_himawari module.
 # Notes:
 # It appears that -lopenjpeg needs to be included in the LIBS list since on some
 # systems RTTOV seems to require it.
@@ -65,6 +65,7 @@ PREPROC_OBJ_F90 = $(OBJS)/aatsr_corrections.o \
                   $(OBJS)/read_cimss_emissivity.o \
                   $(OBJS)/read_imager.o \
                   $(OBJS)/read_modis.o \
+                  $(OBJS)/read_himawari.o \
                   $(OBJS)/read_seviri.o \
                   $(OBJS)/read_USGS_file.o \
                   $(OBJS)/ross_thick_li_sparse_r.o \

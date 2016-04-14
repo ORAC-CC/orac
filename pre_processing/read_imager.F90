@@ -39,6 +39,7 @@
 !    as land/sea information is now read in SR read_USGS_file
 ! 2015/02/19, GM: Added SEVIRI support.
 ! 2015/08/08, CP: Added ATSR2 functionality
+! 2016/04/08, SP: Added Himawari support.
 !
 ! $Id$
 !
@@ -63,6 +64,7 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
    use read_avhrr_m
    use read_modis_m
    use read_seviri_m
+   use read_himawari_m
 
    implicit none
 
@@ -129,6 +131,15 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
       ! Read the L1B data, according to the dimensions and offsets specified in
       ! imager_geolocation
       call read_seviri_l1_5(path_to_l1b_file, &
+           imager_geolocation,imager_measurements,imager_angles, &
+           imager_flags,imager_time,channel_info,verbose)
+
+      !in absence of proper mask set everything to "1" for cloud mask
+      imager_flags%cflag = 1
+   else if (trim(adjustl(sensor)) .eq. 'AHI') then
+      ! Read the L1B data, according to the dimensions and offsets specified in
+      ! imager_geolocation
+      call read_himawari_bin(path_to_l1b_file, &
            imager_geolocation,imager_measurements,imager_angles, &
            imager_flags,imager_time,channel_info,verbose)
 

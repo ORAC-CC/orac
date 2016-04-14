@@ -42,6 +42,7 @@
 ! 2016/02/26, OS: Added different approach for nighttime cloud mask SST
 !    correction.
 ! 2016/03/04, OS: bug fix in albedo correction
+! 2016/04/14, SP: Added support for Himawari/AHI
 
 ! $Id$
 !
@@ -333,7 +334,7 @@ contains
     else
 
        if (verbose) then
-          write(*,*) "Solar zenith angle < 0 in neural_net_preproc"
+!          write(*,*) "Solar zenith angle < 0 in neural_net_preproc"
        endif
 
        ! --- end of day/night if loop

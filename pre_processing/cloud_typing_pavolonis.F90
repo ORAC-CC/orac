@@ -60,6 +60,7 @@
 ! 2016/02/05, OS: Cloud mask now uses albedo for glint correction.
 ! 2016/02/18, OS: ECMWF snow/ice mask now corrected by USGS land/sea mask
 ! 2016/03/04, OS: bug fix in setting index when passing surface%albedo
+! 2016/04/14, SP: Added support for Himawari/AHI
 
 ! $Id$
 !
@@ -467,6 +468,23 @@ contains
           case(9)
              ch5=i
           case(10)
+             ch6=i
+          end select
+       end do
+    else if (trim(adjustl(sensor)) .eq. 'AHI') then
+       do i=1,channel_info%nchannels_total
+          select case (channel_info%channel_ids_instr(i))
+          case(3)
+             ch1=i
+          case(4)
+             ch2=i
+          case(5)
+             ch3=i
+          case(7)
+             ch4=i
+          case(14)
+             ch5=i
+          case(15)
              ch6=i
           end select
        end do
@@ -1734,7 +1752,7 @@ contains
     integer(kind=byte) :: index ! index of row containing platform-specific coefficients
     real(kind=sreal),parameter :: Planck_C1 = 1.19104E-5 ! 2hc^2 in mW m-2 sr-1 (cm-1)-4
     real(kind=sreal),parameter :: Planck_C2 = 1.43877 ! hc/k  in K (cm-1)-1
-    real(kind=sreal), dimension(4,17) :: coefficients ! coefficients containing variables
+    real(kind=sreal), dimension(4,18) :: coefficients ! coefficients containing variables
 
     ! select approproate row of coefficient values
     select case (input_platform)
@@ -1772,8 +1790,10 @@ contains
        index = 15
     case ("MSG1", "MSG2", "MSG3", "MSG4")
        index = 16
-    case ("default")
+    case ("Himawari")
        index = 17
+   case ("default")
+      index = 18
     case default
        write(*,*) "Error: Platform name does not match local string in function PlanckInv"
        write(*,*) "Input platform name = ", input_platform
@@ -1807,8 +1827,9 @@ contains
          2647.409,  0.999336,  0.48184, 4.822, & !aqua
          2675.166,  0.996344,  1.72695, 5.030, & !env (aatsr)
          2568.832,  0.995400,  3.43800, 4.660, & !msg1, msg2
+         2575.767,  0.999000,  0.46500, 4.688, & !himawari8
          2670.000,  0.998000,  1.75000, 5.000  & !default
-         /), (/ 4, 17 /) )
+         /), (/ 4, 18 /) )
 
     PlanckInv(1) = Planck_C1 * coefficients( 1 , index )**3 / &
          ( exp( Planck_C2 * coefficients( 1 , index ) / &

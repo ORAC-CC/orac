@@ -128,6 +128,7 @@
 !    the RTTOV emissivity atlas.
 ! 2016/01/27, SP: Added support for RTTOV v11.3 via the NEW_RTTOV definition
 ! 2016/03/31, GM: Changes to support processing only SW or only LW channels.
+! 2016/04/11, SP: Added Himawari processing capability.
 !
 ! $Id$
 !
@@ -296,6 +297,14 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
          coef_file = 'rtcoef_msg_3_seviri.dat'
       else if (trim(platform) == 'MSG4') then
          coef_file = 'rtcoef_msg_4_seviri.dat'
+      else
+         write(*,*) 'ERROR: rttov_driver(): Invalid SEVIRI platform: ', &
+                    trim(platform)
+         stop error_stop_code
+      end if
+   case('AHI')
+      if (trim(platform) == 'Himawari') then
+         coef_file = 'rtcoef_himawari_8_ahi.dat'
       else
          write(*,*) 'ERROR: rttov_driver(): Invalid SEVIRI platform: ', &
                     trim(platform)

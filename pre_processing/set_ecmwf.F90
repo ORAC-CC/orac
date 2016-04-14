@@ -101,7 +101,6 @@ subroutine set_ecmwf(sensor,cyear,cmonth,cday,chour,cminute,ecmwf_path,ecmwf_pat
 
       time_int_fac = (jday - jday0) / (jday1 - jday0)
    end if
-
    if (assume_full_path) then
       ! for ecmwf_flag=2, ensure NCDF file is listed in ecmwf_pathout
       if (index(ecmwf_path(1),'.nc') .gt. 0) then
@@ -143,7 +142,6 @@ subroutine set_ecmwf(sensor,cyear,cmonth,cday,chour,cminute,ecmwf_path,ecmwf_pat
             ecmwf_path_file3(1))
       else if (time_interp_method .eq. 1) then
          ! Pick the closest ERA interim file wrt sensor time
-
          if (jday - jday0 .lt. jday1 - jday) then
             jday2 = jday0
          else
