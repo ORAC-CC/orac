@@ -24,6 +24,8 @@ function mk_cldmodel_false_color_cloud,x,h,pink=pink,sim=sim,i37=i37,n32=n32,tc=
 	if sz(0) ne 1 then message,'X should be 1D'
 	if keyword_set(sim) then y=transpose(x.yn) else y=transpose(x.y)
 	if keyword_set(alb) then  alb=transpose(x.alb)
+	
+        
 	nx=n_elements(y(*,0))
 	if keyword_set(pink) then begin
                 ich=get_nns([8.7,11,12],h.s.mwl)      ; identify std false colour channel
@@ -43,7 +45,7 @@ function mk_cldmodel_false_color_cloud,x,h,pink=pink,sim=sim,i37=i37,n32=n32,tc=
 print,ich
         	im=reform(y(*,ich),nx,1,3)
 im(*,*,2)=im(*,*,0)+(im(*,*,2)-im(*,*,0))*8
-;stop
+
         	im=im*450
         	wh=where(im gt 255,nw) & if nw gt 0 then im(wh)=255
         	wh=where(im lt 0,nw) & if nw gt 0 then im(wh)=0
@@ -57,19 +59,17 @@ im(*,*,2)=im(*,*,0)+(im(*,*,2)-im(*,*,0))*8
         	wh=where(im lt 0,nw) & if nw gt 0 then im(wh)=0
         	im=((im/255)^0.7)*255
 	endif else begin
+
         	ich=get_nns([1.6,0.8,0.63],h.s.mwl)      ; identify std false colour channel
         	im=reform(y(*,ich),nx,1,3)
-;stop
-;print,'a',range(im)
 
         	im=im*450
-;print,'b',range(im)
-;stop
+
         	wh=where(im gt 255,nw) & if nw gt 0 then im(wh)=255
         	wh=where(im lt 0,nw) & if nw gt 0 then im(wh)=0
         
-	im=((im/255)^0.7)*255
-print,'c',range(im)
+                im=((im/255)^0.7)*255
+
 	endelse
         im=reform(im)
 ;
@@ -77,8 +77,7 @@ print,'c',range(im)
 ;the same scale
 ;
         if not keyword_set(n32) then im=mk_32bit_image(im(*,0),im(*,1),im(*,2),cmax=255,cmin=0)
-print,'e',range(im)
-;stop
+
 	return,im
 
 end
