@@ -35,6 +35,9 @@ pro mk_quick_lowres_plots,filein=filein,ps=ps,fdir=fdir,i37=i37,lowres=lowres
 ;
 
 if ~keyword_set(filein) then files='/misc/wantage_static/cpoulsen/cloud_ecv/postproc/2008/06/20/ESACCI-L2-CLOUD-CLD-AATSR_CC4CL_Envisat_200806202211_fv2.0.secondary.nc'
+if keyword_set(filein) then files=filein
+print,files
+
 filep=strreplace(files,'secondary','primary')
 
 if ~keyword_set(fdir) then fdir=file_dirname(files)
