@@ -28,7 +28,7 @@
 ; $Id$
 ;-
 ;==========================================================================
-pro mk_quick_lowres_plots,filein=filein,ps=ps,fdir=fdir,i37=i37,lowres=lowres
+pro mk_quick_lowres_plots,filein=filein,ps=ps,fdir=fdir,i37=i37,lowres=lowres,clean=clean
 
 ;
 ;readin the secondary file and rename some of the variables
@@ -40,9 +40,15 @@ print,files
 
 filep=strreplace(files,'secondary','primary')
 
+print,files
+print,filep
+
 if ~keyword_set(fdir) then fdir=file_dirname(files)
 fb=file_basename(filep,'.primary.nc')
 psfi=fdir+'/'+fb+'.ps'
+pspdf=fdir+'/'+fb+'.pdf'
+check=file_search(pspdf,count=cdim)
+if cdim eq 1 then goto,skipfile
 
 if keyword_set(ps) then ps_open,psfi
 nxa=11
@@ -71,8 +77,9 @@ REFLECTANCE_IN_CHANNEL_NO_4=ncdf_get(files,strlowcase('REFLECTANCE_IN_CHANNEL_NO
 
 
 BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_5=ncdf_get(files,strlowcase('BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_5'))
-BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_6=ncdf_get(files,strlowcase('BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_6'))
-BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_7=ncdf_get(files,strlowcase('BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_7'))
+;BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_6=ncdf_get(files,strlowcase('BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_6'))
+;BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_7=ncdf_get(files,strlowcase('BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_7'))
+
 
 nlines=n_elements(REFLECTANCE_IN_CHANNEL_NO_2.value(1,*))
 
@@ -96,6 +103,11 @@ for i=0,nplots-1 do begin
    
    
    meas(0,*,*)=REFLECTANCE_IN_CHANNEL_NO_2.value(*,nys:nye)*REFLECTANCE_IN_CHANNEL_NO_2.scale_factor+REFLECTANCE_IN_CHANNEL_NO_2.add_offset
+
+;print, max(meas(0,*,*))
+
+if max(meas(0,*,*)) lt .05 then goto,skip
+
    
    meas(1,*,*)=REFLECTANCE_IN_CHANNEL_NO_3.value(*,nys:nye)*REFLECTANCE_IN_CHANNEL_NO_3.scale_factor+REFLECTANCE_IN_CHANNEL_NO_3.add_offset
    
@@ -106,9 +118,9 @@ print,'using 3.7'
       meas(2,*,*)=REFLECTANCE_IN_CHANNEL_NO_4.value(*,nys:nye)*REFLECTANCE_IN_CHANNEL_NO_4.scale_factor+REFLECTANCE_IN_CHANNEL_NO_4.add_offset
    endelse
    
-   meas(3,*,*)=BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_6.value(*,nys:nye)*BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_6.scale_factor+BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_6.add_offset
+;   meas(3,*,*)=BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_6.value(*,nys:nye)*BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_6.scale_factor+BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_6.add_offset
    
-   meas(4,*,*)=BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_7.value(*,nys:nye)*BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_7.scale_factor+BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_7.add_offset
+;   meas(4,*,*)=BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_7.value(*,nys:nye)*BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_7.scale_factor+BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_7.add_offset
    
 ;
 ; plot a map and approx position of data
@@ -145,7 +157,7 @@ print,'using 3.7'
    
    xc={y:newmeas}
    
-   ha_sav=rd_sav('/misc/cluster_home/cpoulsen/orac_svn/plot_code/src/ha.sav')
+   ha_sav=rd_sav('ha.sav')
    ha_sav.sv.zstar=0 
    sv_temp=ha_sav.sv
    s_temp=ha_sav.s
@@ -180,8 +192,20 @@ print,'using 3.7'
    quick_cim_prc,kml=kmlfi,ha_temp.sg,reform(u.value(*,nys:nye),512000),reform(v.value(*,nys:nye),512000),im_mea,ur=ur,vr=vr,num=2,fac=fac,$
                  position=ypos(p1,p2,mask=mask),chars=chs,title='False colour - meas',image=image,lev=lev,_EXTRA=extra,ext=ext,/tru,/axti,/b32,lcb=lcb,bcb=bcb,nodata=256l*256l*256l-1,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
 any_key
-endfor;nplots
+skip:
 
+
+
+
+endfor;nplots
+skipfile:
 if keyword_set(ps) then ps_close,/pdf
+check=file_search(pspdf,count=cdim)
+
+if keyword_set(clean) then begin
+if cdim gt 0 then spawn, 'rm '+files
+if cdim gt 0 then print, 'rm '+files
+
+endif
 
 end
