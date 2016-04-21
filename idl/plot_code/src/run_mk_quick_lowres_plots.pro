@@ -4,7 +4,7 @@
 
 
 
-pro run_mk_quick_lowres_plots,atsr2=atsr2,dirin=dirin
+pro run_mk_quick_lowres_plots,atsr2=atsr2,dirin=dirin,clean=clean
 
 version='fv2.0'
 year=['2003','2002','2004','2005','2006','2007','2008','2009','2010','2011','2012']
@@ -13,8 +13,8 @@ month=i2s(indgen(12)+1,2)
 day=i2s(indgen(31)+1,2)
 ;for testing
 year=['2008']
-month=['01']
-day=['01']
+month=['01','02','03','04']
+
 if ~keyword_set(dirin) then dirin='/group_workspaces/cems/cloud_ecv/public/'
 inst='AATSR'
 if keyword_set(atsr2) then inst='ATSR2'
@@ -26,7 +26,7 @@ for y=0,nyear-1 do begin
    for m=0,nmonth-1 do begin
       for d=0,nday-1 do begin
          
-         file1= dirin+year(y)+'/lv2/'+month(m)+'/'+day(d)+'/*'+inst+'*'+version+'.prim*.nc'
+         file1= dirin+year(y)+'/lv2/'+month(m)+'/'+day(d)+'/*'+inst+'*'+version+'.sec*.nc'
          
          filein=file_search(file1, count=adim)
          print,'adim',adim,file1
