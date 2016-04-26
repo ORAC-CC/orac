@@ -852,7 +852,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
             write(*,*) 'ecmwf_path_file3: ',trim(ecmwf_path_file3(1))
          end if
       end if
-      
+
       ! Set the number of levels in the input file, defaults to 61
       select case(ecmwf_nlevels)
       case(60)
@@ -871,7 +871,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
          ecmwf%kdim=60
          ecmwf1%kdim=60
          ecmwf2%kdim=60
-      end select   
+      end select
       ! read surface wind fields and ECMWF dimensions
       if (ecmwf_time_int_method .ne. 2) then
          call read_ecmwf_wind(ecmwf_flag, ecmwf_path_file(1), &
@@ -943,7 +943,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
          call deallocate_preproc_prtm(preproc_prtm1)
          call deallocate_preproc_prtm(preproc_prtm2)
       end if
-      
+
       if (verbose) write(*,*) 'Compute geopotential vertical coords'
       ! compute geopotential vertical coordinate from pressure coordinate
       call compute_geopot_coordinate(preproc_prtm, preproc_dims, ecmwf)

@@ -495,8 +495,8 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 !         write(*,*)""
 !         write(*,*)""
 !         write(*,*)preproc_prtm%pressure(idim,jdim,:)
-!         
-!         
+!
+!
 !         stop
 
          ! Write profiles structure to PRTM file (array operations needed to

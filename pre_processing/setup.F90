@@ -783,11 +783,11 @@ subroutine setup_himawari8(l1b_path_file,geo_path_file,platform,year,month,day, 
 
    platform="Himawari"
    if (verbose) write(*,*)"Satellite is: ",platform
-   
+
    ! The code below extracts date/time info from the segment name.
    ! Note that it requires the segment name to be in the generic format
    ! that's specified by the JMA. Weird filenames will break things.
-   
+
    index2=index(trim(adjustl(l1b_path_file)),'HS_H')
    ! get year, doy, hour and minute as strings
    index2=index2+7
@@ -814,7 +814,7 @@ subroutine setup_himawari8(l1b_path_file,geo_path_file,platform,year,month,day, 
       all_map_ids_abs_to_ref_band_land, all_map_ids_abs_to_ref_band_sea, &
       all_map_ids_abs_to_snow_and_ice)
 
-   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_himawari8()'   
+   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_himawari8()'
 
 end subroutine setup_himawari8
 

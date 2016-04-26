@@ -122,20 +122,19 @@ for test in args.tests:
 
     termcolor.cprint(test+') Preprocessing', 'yellow', attrs=['bold'])
     orac_utils.orac_preproc_args_check(args)
-    if not args.only_compare:
-        if not args.clobber_pre:
-            args.no_clobber = True
-        st = time.time()
+    if not args.clobber_pre:
+        args.no_clobber = True
+    st = time.time()
 
-        # Call preprocessor
-        try:
-            args.fileroot = orac_preproc(args)
-        except StopIteration:
-            break
+    # Call preprocessor
+    try:
+        args.fileroot = orac_preproc(args)
+    except StopIteration:
+        break
 
-        args.no_clobber = no_clobber_copy
-        if args.verbose or args.progress:
-            termcolor.cprint(proc_took.format(time.time()-st), 'blue')
+    args.no_clobber = no_clobber_copy
+    if args.verbose or args.progress:
+        termcolor.cprint(proc_took.format(time.time()-st), 'blue')
     if not args.no_compare:
         orac_regress(args.out_dir, args.fileroot, pre_suf)
 

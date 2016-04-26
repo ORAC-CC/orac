@@ -1844,4 +1844,3 @@ contains
 end module cloud_typing_pavolonis_m
 !***********************************************************************
 ! End of module CLOUD_TYPING_PAVOLONIS
-

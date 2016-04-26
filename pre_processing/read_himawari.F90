@@ -29,7 +29,7 @@
 ! It can be downloaded from:
 !    https://github.com/simonrp84/Himawari_HSD_Reader/
 ! To link with this util you must add:
-!     -DINCLUDE_HIMAWARI_SUPPORT 
+!     -DINCLUDE_HIMAWARI_SUPPORT
 ! and a link to the HSD_Reader lib directory to your orac LIB file.
 !
 ! History:
@@ -96,10 +96,10 @@ subroutine read_himawari_dimensions(l1_5_file, n_across_track, n_along_track, &
    ! are scaled from 0.5 or 1km to this 2km resolution.
    n_along_track  = 5500
    n_across_track = 5500
-   
+
    startx=1
    starty=1
-   
+
    endx=n_columns
    endy=n_lines
 
@@ -113,7 +113,7 @@ end subroutine read_himawari_dimensions
 !
 ! Purpose:
 ! To read the requested Himawari data from HSD-format file segments.
-! To compute geolocation and solar position information for each pixel in the 
+! To compute geolocation and solar position information for each pixel in the
 ! AHI image.
 !
 ! Description and Algorithm details:
@@ -171,7 +171,7 @@ subroutine read_himawari_bin(infile,imager_geolocation, imager_measurements, &
    allocate(band_ids(n_bands))
    band_ids = channel_info%channel_ids_instr
    allocate(band_units(n_bands))
-   
+
    ! We want everything in reflectance or BT
    do i = 1, n_bands
       band_units(i) = HIMAWARI_UNIT_RBT
@@ -189,9 +189,9 @@ subroutine read_himawari_bin(infile,imager_geolocation, imager_measurements, &
 
    if (verbose) write(*,*) 'Calling AHI_Main_Read() from ' // &
                            'the himawari_read module'
-            
-   ! Load all the data                        
-   if (AHI_Main_Read(trim(infile)//C_NULL_CHAR,preproc,n_bands,band_ids,0,1)  .ne. 0) then        
+
+   ! Load all the data
+   if (AHI_Main_Read(trim(infile)//C_NULL_CHAR,preproc,n_bands,band_ids,0,1)  .ne. 0) then
       write(*,*) 'ERROR: in read_himawari_read(), calling ' // &
                  'AHI_Main_Read(), filename = ', trim(infile)
       stop error_stop_code
@@ -200,16 +200,16 @@ subroutine read_himawari_bin(infile,imager_geolocation, imager_measurements, &
    ! Copy arrays between the reader and ORAC. This could (should!) be done more efficiently.
 	imager_time%time(:,:) 			   =	preproc%time
 	imager_geolocation%latitude(:,:)	=	preproc%lat
-	imager_geolocation%longitude(:,:)=	preproc%lon  
-	imager_angles%solzen(:,:,1)		=	preproc%sza 
-	imager_angles%solazi(:,:,1)		=	preproc%saa 
+	imager_geolocation%longitude(:,:)=	preproc%lon
+	imager_angles%solzen(:,:,1)		=	preproc%sza
+	imager_angles%solazi(:,:,1)		=	preproc%saa
 	imager_angles%satzen(:,:,1)		=	preproc%vza
-	imager_angles%relazi(:,:,1)		=	preproc%vaa 
-	imager_measurements%data(:,:,:)	=	preproc%indata 
+	imager_angles%relazi(:,:,1)		=	preproc%vaa
+	imager_measurements%data(:,:,:)	=	preproc%indata
 
    deallocate(band_ids)
    deallocate(band_units)
-   
+
    ! Check units to remove anything that's out-of-range.
    ! Can be complicated for Himawari as it takes some deep space measurements. But the lat/lon should prevent
    ! those from being processed, even though image data will exist.

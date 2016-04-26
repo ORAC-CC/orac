@@ -167,7 +167,7 @@ module ECP_constants_m
    real, parameter    :: AUXErrTsSea      = 2.0     ! Error on a priori Ts if set by AUX method (sea value).
 
    ! For conversion from month/day to day number within year.
-   integer, parameter, dimension(12) :: days_in_month = &
+   integer, parameter :: days_in_month(12) = &
       (/ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 /)
 
    ! Codes for RTM interpolation (to Pc) methods

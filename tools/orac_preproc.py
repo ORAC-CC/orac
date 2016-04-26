@@ -8,6 +8,7 @@ from glob import glob
 import os
 import re
 import subprocess
+import sys
 import tempfile
 from termcolor import cprint
 
@@ -204,14 +205,11 @@ def orac_preproc(args):
     try:
         tmp3 = subprocess.check_output("svn --version", shell=True,
                                        universal_newlines=True)
-    except OSError:
-        raise SystemError('SVN software not present.')
-    m3 = re.search('svn, version (.+?)\n', tmp3)
-    if m3:
+        m3 = re.search('svn, version (.+?)\n', tmp3)
         svn_version = m3.group(1)
-    else:
+    except:
         svn_version = 'n/a'
-        print('Format of svn --version may have changed.')
+        print('Unable to call SVN.')
 
     # Fetch repository commit number
     if args.version:
@@ -220,18 +218,14 @@ def orac_preproc(args):
         try:
             tmp4 = subprocess.check_output("svn info", shell=True,
                                            universal_newlines=True)
-        except:
-            file_version = 'R0'
-            print('Preprocessor folder not under version control.')
-        m4 = re.search('Revision: (\d+?)\n', tmp4)
-        if m4:
+            m4 = re.search('Revision: (\d+?)\n', tmp4)
             if args.clean:
                 file_version = 'R' + m4.group(1)
             else:
                 file_version = 'R{}'.format(int(m4.group(1))+1)
-        else:
+        except:
             file_version = 'R0'
-            print('Format of svn info may have changed.')
+            print('Unable to determine revision number.')
 
     #------------------------------------------------------------------------
 
@@ -298,11 +292,11 @@ def orac_preproc(args):
     if (os.path.isfile(args.out_dir+'/'+outroot+'.loc.nc') and
         args.no_clobber):
         # Skip already processed files
-        if args.verbose or args.progress:
+        if sys.stdout.isatty() and (args.verbose or args.progress):
             print(orac_utils.star * 60)
             print(orac_utils.star * 5 +' '+fileroot+' already preprocessed')
             print(orac_utils.star * 60)
-    else:
+    elif (not args.only_compare):
         # Write driver file
         (fd, driver_file) = tempfile.mkstemp('.driver', 'PREPROC.',
                                              args.out_dir, True)
@@ -314,7 +308,7 @@ def orac_preproc(args):
             print('Cannot create driver file '+driver_file)
 
         # Call preprocessor
-        if args.verbose or args.progress:
+        if sys.stdout.isatty() and (args.verbose or args.progress):
             print(orac_utils.star * 60)
             print(orac_utils.star * 5 +' orac_preproc.x <<')
             print(orac_utils.star * 5 +' '+
@@ -323,9 +317,10 @@ def orac_preproc(args):
         try:
             subprocess.check_call('orac_preproc.x '+driver_file, shell=True)
         except subprocess.CalledProcessError as err:
-            cprint('Preprocessing failed with error code {}'.format(err.returncode),'red')
-            if err.output:
-                print(err.output)
+            if sys.stdout.isatty():
+                cprint('Preprocessing failed with error code {}'.format(err.returncode),'red')
+                if err.output:
+                    print(err.output)
             raise StopIteration
         finally:
             os.remove(driver_file)
