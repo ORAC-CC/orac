@@ -27,6 +27,7 @@
 ! 2016/02/02, OS: Now also reads sea-ice cover and snow depth from HR ERA file.
 ! 2016/02/03, GM: Changes/fixes to read the HR ERA GRIB file: no vertical
 !    coordinate and no wind.
+! 2016/04/26, AP: For high res files, abvec now set with init routine.
 !
 ! $Id$
 !
@@ -80,8 +81,6 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf, high_res)
       call grib_get(gid,'pv',pv,stat)
       if (stat .ne. 0) call h_e_e('wind_grib', 'Error getting PV.')
       nk=npv/2-1
-   else
-      nk=0
    endif
 
    ! read dimensions
@@ -99,9 +98,9 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf, high_res)
    ! allocate permanent arrays
    allocate(ecmwf%lon(ni))
    allocate(ecmwf%lat(nj))
-   allocate(ecmwf%avec(nk+1))
-   allocate(ecmwf%bvec(nk+1))
    if (.not. high_res) then
+      allocate(ecmwf%avec(nk+1))
+      allocate(ecmwf%bvec(nk+1))
       allocate(ecmwf%u10(ni,nj))
       allocate(ecmwf%v10(ni,nj))
    end if
@@ -174,17 +173,16 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf, high_res)
    call grib_close_file(fid)
 
    ! set ECMWF dimensions
-   if (nk .ne. nlevels) call h_e_e('wind_grib', 'Inconsistent vertical levels.')
 
    ecmwf%xdim=ni
    ecmwf%ydim=nj
    ecmwf%kdim=nk
    if (.not. high_res) then
+      if (nk .ne. nlevels) call h_e_e('wind_grib', 'Inconsistent vertical levels.')
       ecmwf%avec=pv(1:nk+1)
       ecmwf%bvec=pv(nk+2:)
    else
-      ecmwf%avec=avec(1:nk+1)
-      ecmwf%bvec=bvec(1:nk+1)
+      call ecmwf_abvec_init(ecmwf)
    end if
 
    ! clean-up

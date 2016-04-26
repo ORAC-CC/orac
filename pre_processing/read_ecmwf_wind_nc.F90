@@ -30,6 +30,7 @@
 ! 2016/02/03, GM: Move ecmwf_wind_init() into ecmwf.F90.
 ! 2016/04/04, SP: Add option to process ECMWF forecast in single NetCDF4 file
 !    Note: This should work with either the OPER or FCST streams from ECMWF.
+! 2016/04/26, AP: Make paths 2 and 3 optional so this wrapper is more general.
 !
 ! $Id$
 !
@@ -37,32 +38,26 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine read_ecmwf_wind_nc(ecmwf_path, ecmwf2path, ecmwf3path, ecmwf, &
-                              high_res,ecmwf_flag)
+subroutine read_ecmwf_wind_nc(ecmwf, ecmwf_path, ecmwf2path, ecmwf3path)
 
    use preproc_constants_m
 
    implicit none
 
-   character(len=*), intent(in)    :: ecmwf_path
-   character(len=*), intent(in)    :: ecmwf2path
-   character(len=*), intent(in)    :: ecmwf3path
-   type(ecmwf_t),    intent(inout) :: ecmwf
-   logical,          intent(in)    :: high_res
-   integer,          intent(in)    :: ecmwf_flag
+   type(ecmwf_t),    intent(inout)        :: ecmwf
+   character(len=*), intent(in)           :: ecmwf_path
+   character(len=*), intent(in), optional :: ecmwf2path
+   character(len=*), intent(in), optional :: ecmwf3path
 
    call ecmwf_wind_init(ecmwf)
-   call ecmwf_abvec_init(ecmwf)   
+   call ecmwf_abvec_init(ecmwf)
 
    ! loop over given files (order not necessarily known)
-   call read_ecmwf_wind_file(ecmwf_path,ecmwf,ecmwf_flag)
-   if (.not. high_res.and.ecmwf_flag.ne.4) then
-      call read_ecmwf_wind_file(ecmwf2path,ecmwf,ecmwf_flag)
-      call read_ecmwf_wind_file(ecmwf3path,ecmwf,ecmwf_flag)
-   endif
+   call read_ecmwf_wind_nc_file(ecmwf_path,ecmwf)
+   if (present(ecmwf2path)) call read_ecmwf_wind_nc_file(ecmwf2path,ecmwf)
+   if (present(ecmwf3path)) call read_ecmwf_wind_nc_file(ecmwf3path,ecmwf)
 
 end subroutine read_ecmwf_wind_nc
-
 
 !-------------------------------------------------------------------------------
 ! Name: read_ecmwf_wind_file
@@ -90,12 +85,13 @@ end subroutine read_ecmwf_wind_nc
 ! 2014/05/07, AP: First version.
 ! 2014/11/04, AP: Added skin_temp reading.
 ! 2015/11/17, OS: Added snow_depth and sea_ice_cover reading.
+! 2016/04/26, AP: Merge with _dwd version.
 !
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine read_ecmwf_wind_file(ecmwf_path, ecmwf,ecmwf_flag)
+subroutine read_ecmwf_wind_nc_file(ecmwf_path, ecmwf)
 
    use orac_ncdf_m
    use preproc_constants_m
@@ -104,7 +100,6 @@ subroutine read_ecmwf_wind_file(ecmwf_path, ecmwf,ecmwf_flag)
 
    character(len=*), intent(in)    :: ecmwf_path
    type(ecmwf_t),    intent(inout) :: ecmwf
-   integer,          intent(in)    :: ecmwf_flag
 
    real, allocatable               :: val(:,:,:,:)
    integer                         :: fid,i,ndim,nvar,size
@@ -116,41 +111,42 @@ subroutine read_ecmwf_wind_file(ecmwf_path, ecmwf,ecmwf_flag)
 
    ! check field dimensions for consistency
    if (nf90_inquire(fid,ndim,nvar) .ne. 0) &
-        call h_e_e('wind_file', 'Bad inquire.')
+        call h_e_e('wind_nc_file', 'Bad inquire.')
    do i=1,ndim
       if (nf90_inquire_dimension(fid,i,name,size) .ne. 0) &
-           call h_e_e('wind_file', 'Bad dimension.')
-      if (name .eq. 'longitude') then
+           call h_e_e('wind_nc_file', 'Bad dimension.')
+      select case (name)
+      case('lon','longitude')
          if (ecmwf%xdim .eq. 0) then
             ecmwf%xdim=size
          else
             if (ecmwf%xdim .ne. size) &
-                 call h_e_e('wind_file', 'Inconsistent lon.')
+                 call h_e_e('wind_nc_file', 'Inconsistent lon.')
          end if
-      else if (name .eq. 'latitude') then
+      case('lat','latitude')
          if (ecmwf%ydim .eq. 0) then
             ecmwf%ydim=size
          else
             if (ecmwf%ydim .ne. size) &
-                 call h_e_e('wind_file', 'Inconsistent lat.')
+                 call h_e_e('wind_nc_file', 'Inconsistent lat.')
          end if
-         ! the vertical coordinate is inconsistently named between gpam and ggam
-      else if ((name.eq.'hybrid' .and. ndim.eq.4) .or. &
-           name.eq.'hybrid_1' .or. (name.eq.'hybrid' .and. ecmwf_flag.eq.4))then
+      case ('nhym','hybrid','hybrid_1')
+         ! the vertical coordinate is incorrectly named in gpam so skip it
+         if (name .eq. 'hybrid' .and. size .eq. 1) cycle
+
          if (ecmwf%kdim .eq. 0) then
             ecmwf%kdim=size
          else
             if (ecmwf%kdim .ne. size) &
-                 call h_e_e('wind_file', 'Inconsistent vertical.')
+                 call h_e_e('wind_nc_file', 'Inconsistent vertical.')
          end if
-      end if
+      end select
    end do
-   
 
    ! read wind fields and geolocation from files
    do i=1,nvar
       if (nf90_inquire_variable(fid,i,name) .ne. 0) &
-           call h_e_e('wind_file', 'Bad variable.')
+           call h_e_e('wind_nc_file', 'Bad variable.')
       select case (name)
       case('longitude')
          if (.not.associated(ecmwf%lon)) then
@@ -206,6 +202,6 @@ subroutine read_ecmwf_wind_file(ecmwf_path, ecmwf,ecmwf_flag)
    end do
 
    if (nf90_close(fid) .ne. NF90_NOERR) &
-        call h_e_e('wind_file', 'File could not close.')
+        call h_e_e('wind_nc_file', 'File could not close.')
 
-end subroutine read_ecmwf_wind_file
+end subroutine read_ecmwf_wind_nc_file

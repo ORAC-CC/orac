@@ -39,7 +39,7 @@ module ecmwf_m
    implicit none
    real(kind=sreal),   pointer :: avec(:)
    real(kind=sreal),   pointer :: bvec(:)
-   
+
    type ecmwf_t
       integer(kind=lint)                        :: xdim,ydim,kdim
       real(kind=sreal), dimension(:),   pointer :: lat,lon
@@ -55,7 +55,6 @@ contains
 #include "read_ecmwf_wind_nc.F90"
 #include "read_ecmwf_wind_grib.F90"
 #include "read_ecmwf_wind_badc.F90"
-#include "read_ecmwf_wind_dwd.F90"
 #include "read_ecmwf_nc.F90"
 #include "read_ecmwf_grib.F90"
 #include "rearrange_ecmwf.F90"
@@ -69,7 +68,7 @@ subroutine ecmwf_abvec_init(ecmwf)
 
    implicit none
    type(ecmwf_t), intent(inout) :: ecmwf
-      
+
    select case(ecmwf%kdim)
    case(60)
       allocate(ecmwf%avec(ecmwf%kdim+1))
@@ -107,7 +106,7 @@ subroutine ecmwf_abvec_init(ecmwf)
        0.7715966,     0.8112534,     0.8473749,     0.8796569,     &
        0.9078839,     0.9319403,     0.9518215,     0.9676452,     &
        0.9796627,     0.9882701,     0.9940194,     0.9976301,     &
-       1.0000000 ]    
+       1.0000000 ]
    case(91)
       allocate(ecmwf%avec(ecmwf%kdim+1))
       allocate(ecmwf%bvec(ecmwf%kdim+1))
@@ -133,7 +132,7 @@ subroutine ecmwf_abvec_init(ecmwf)
        10471.310547, 9405.222656,  8356.25293,   7335.164551,  &
        6353.920898,  5422.802734,  4550.21582,   3743.464355,  &
        3010.146973,  2356.202637,  1784.854614,  1297.656128,  &
-       895.193542,   576.314148,   336.772369,   162.043427,   & 
+       895.193542,   576.314148,   336.772369,   162.043427,   &
        54.208336,    6.575628,     0.00316,      0.0000000]
       ecmwf%bvec = &
       [0.0000000,    0.0000000,    0.0000000,    0.0000000,   &
@@ -159,7 +158,7 @@ subroutine ecmwf_abvec_init(ecmwf)
        0.875518,     0.897767,     0.917651,     0.935157,    &
        0.950274,     0.963007,     0.973466,     0.982238,    &
        0.989153,     0.994204,     0.99763,      1.0]
-       
+
    case(137)
       allocate(ecmwf%avec(ecmwf%kdim+1))
       allocate(ecmwf%bvec(ecmwf%kdim+1))
@@ -272,17 +271,17 @@ subroutine ecmwf_abvec_init(ecmwf)
        0.7715966,     0.8112534,     0.8473749,     0.8796569,     &
        0.9078839,     0.9319403,     0.9518215,     0.9676452,     &
        0.9796627,     0.9882701,     0.9940194,     0.9976301,     &
-       1.0000000 ]   
-   end select 
-   
+       1.0000000 ]
+   end select
+
 !   ecmwf%avec = avec
 !   ecmwf%bvec = bvec
-   
+
 !    write(*,*)"KDIM:",ecmwf%kdim
 !    write(*,*)"AVEC:",ecmwf%avec(10),ecmwf%avec(20),ecmwf%avec(30),ecmwf%avec(40)
 !    write(*,*)"BVEC:",ecmwf%bvec(10),ecmwf%bvec(20),ecmwf%bvec(30),ecmwf%bvec(40)
- 
-end subroutine ecmwf_abvec_init  
+
+end subroutine ecmwf_abvec_init
 
 subroutine ecmwf_wind_init(ecmwf)
 

@@ -23,6 +23,8 @@
 ! 2016/02/03, GM: Set the fill_value for sea_ice_cover to sreal_fill_value.
 ! 2016/04/03, SP: Add option to process ECMWF forecast in single NetCDF4 file
 !    Note: This should work with either the OPER or FCST streams from ECMWF.
+! 2016/04/26, AP: There are no high res files compatible with ecmwf_flag=1.
+!    Merge _dwd routines with _nc.
 !
 ! $Id$
 !
@@ -55,33 +57,30 @@ subroutine read_ecmwf_wind(ecmwf_flag, ecmwf_path_file, ecmwf_HR_path_file, &
          call read_ecmwf_wind_grib(ecmwf_HR_path_file,ecmwf_HR,.true.)
       end if
    case(1)
-      call read_ecmwf_wind_nc(ecmwf_path_file,ecmwf_path_file2, &
-           ecmwf_path_file3,ecmwf,.false.,ecmwf_flag)
+      call read_ecmwf_wind_nc(ecmwf,ecmwf_path_file,ecmwf_path_file2, &
+           ecmwf_path_file3)
       if (verbose) write(*,*)'ecmwf_dims ncdf: ',ecmwf%xdim,ecmwf%ydim
       if (use_hr_ecmwf) then
-         call read_ecmwf_wind_nc(ecmwf_HR_path_file,ecmwf_path_file2, &
-            ecmwf_path_file3,ecmwf_HR,.true.,ecmwf_flag)
+         call read_ecmwf_wind_grib(ecmwf_HR_path_file,ecmwf_HR,.true.)
       end if
    case(2)
       call read_ecmwf_wind_badc(ecmwf_path_file,ecmwf_path_file2, &
-           ecmwf_path_file3,ecmwf,.false.,ecmwf_flag)
+           ecmwf_path_file3,ecmwf)
       if (verbose) write(*,*)'ecmwf_dims badc: ',ecmwf%xdim,ecmwf%ydim
       if (use_hr_ecmwf) then
          call read_ecmwf_wind_grib(ecmwf_HR_path_file,ecmwf_HR,.true.)
       end if
    case(3)
-      call read_ecmwf_wind_dwd(ecmwf_path_file,ecmwf)
+      call read_ecmwf_wind_nc(ecmwf,ecmwf_path_file)
       if (verbose) write(*,*)'ecmwf_dims ncdf: ',ecmwf%xdim,ecmwf%ydim,ecmwf%kdim
       if (use_hr_ecmwf) then
-         call read_ecmwf_wind_dwd(ecmwf_HR_path_file,ecmwf_HR)
+         call read_ecmwf_wind_nc(ecmwf_HR,ecmwf_HR_path_file)
       end if
    case(4)
-      call read_ecmwf_wind_nc(ecmwf_path_file,ecmwf_path_file2, &
-           ecmwf_path_file3,ecmwf,.false.,ecmwf_flag)
+      call read_ecmwf_wind_nc(ecmwf,ecmwf_path_file)
       if (verbose) write(*,*)'ecmwf_dims ncdf: ',ecmwf%xdim,ecmwf%ydim
       if (use_hr_ecmwf) then
-         call read_ecmwf_wind_nc(ecmwf_HR_path_file,ecmwf_path_file2, &
-            ecmwf_path_file3,ecmwf_HR,.true.,ecmwf_flag)
+         call read_ecmwf_wind_nc(ecmwf_HR,ecmwf_HR_path_file)
       end if
    end select
    if (verbose) then
