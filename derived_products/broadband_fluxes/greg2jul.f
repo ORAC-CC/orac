@@ -24,7 +24,7 @@ c      if(numargs .ne. 3) then
 c         write(*,*) '  incorrect usage. '
 c         write(*,*) '    greg2jul day month year'
 c         stop
-c      endif
+c      end if
 c                                get first command line argument
 c      ireturn = getarg(1,string)
 c
@@ -59,9 +59,9 @@ c
       subroutine modjulianday(day, year, month, fracday, jday)
 c
 c      calculate the julian day from day, month, year and fraction of a day
-c 
+c
       implicit none
-c     
+c
       real jday, fracday
 c
       integer julday,day,month,year,julianday
@@ -86,12 +86,11 @@ c
       else
         jy=iyyy-1
         jm=mm+13
-      endif
+      end if
       julday=int(365.25*jy)+int(30.6001*jm)+id+1720995
       if (id+31*(mm+12*iyyy).ge.igreg) then
         ja=int(0.01*jy)
         julday=julday+2-ja+int(0.25*ja)
-      endif
+      end if
       return
       end
-

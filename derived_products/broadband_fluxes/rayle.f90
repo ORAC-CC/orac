@@ -15,9 +15,9 @@ subroutine rayle (&
 
    use kinds
    use bugsrad_physconst, only:  n_av, gravity, mw_dry_air, ri
-        
+
    implicit none
-             
+
 !-----------------------------------------------------------------------
 ! REFERENCES:
 ! Multitasked version of rayle.f from G. Stephens. Rayle computes the
@@ -36,7 +36,7 @@ subroutine rayle (&
 !   Band average values are weighted by a top-of-atmosphere solar
 !   spectrum obtained from Modtran 4.1 (see Anderson et al., 2000),
 !   and based on Kurucz, 1995
-!   
+!
 
 
 ! SUBROUTINES CALLED:
@@ -47,7 +47,7 @@ subroutine rayle (&
 
 ! INCLUDED COMMONS:
 !     none.
- 
+
 ! ARGUMENT LIST VARIABLES:
 !     INPUT ARGUMENTS:
 !     ----------------
@@ -57,13 +57,13 @@ subroutine rayle (&
 
       real (kind=dbl_kind), intent(in), dimension(:,:):: &  !(ncol,nlm+1)
      pp   !Level pressure                                     (hPa).
-     
+
 !     OUTPUT ARGUMENTS:
 !     -----------------
       real (kind=dbl_kind), intent(out), dimension(:,:):: & !(ncol,nlm)
      wray  & !Rayleigh single scattering albedo                    (-).
     ,tray    !Rayleigh optical depth                               (-).
-     
+
 ! LOCAL VARIABLES:
       integer (kind=int_kind):: &
      i  & !Horizontal index.
@@ -83,7 +83,7 @@ subroutine rayle (&
       !Now remaining levels
       do l = 2, nlm
          tray(:,l) = (pp(:,l+1)-pp(:,l))*fact
-      enddo
+      end do
       wray(:,:) = 1.0
       return
       end subroutine rayle

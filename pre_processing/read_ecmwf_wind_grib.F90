@@ -81,7 +81,7 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf, high_res)
       call grib_get(gid,'pv',pv,stat)
       if (stat .ne. 0) call h_e_e('wind_grib', 'Error getting PV.')
       nk=npv/2-1
-   endif
+   end if
 
    ! read dimensions
    call grib_get(gid,'Ni',ni,stat)

@@ -38,51 +38,51 @@ subroutine netcdf_output_close(netcdf_info)
    if (nf90_close(netcdf_info%ncid_alb) .ne. NF90_NOERR) then
       write (*,*) 'ERROR: netcdf_create_config(): nf90_close(): ".alb.nc"'
       stop error_stop_code
-   endif
+   end if
 
    if (nf90_close(netcdf_info%ncid_clf) .ne. NF90_NOERR) then
       write (*,*) 'ERROR: netcdf_create_config(): nf90_close(): ".clf.nc"'
       stop error_stop_code
-   endif
+   end if
 
    if (nf90_close(netcdf_info%ncid_config) .ne. NF90_NOERR) then
       write (*,*) 'ERROR: netcdf_create_config(): nf90_close(): ".config.nc"'
       stop error_stop_code
-   endif
+   end if
 
    if (nf90_close(netcdf_info%ncid_geo) .ne. NF90_NOERR) then
       write (*,*) 'ERROR: netcdf_create_config(): nf90_close(): ".geo.nc"'
       stop error_stop_code
-   endif
+   end if
 
    if (nf90_close(netcdf_info%ncid_loc) .ne. NF90_NOERR) then
       write (*,*) 'ERROR: netcdf_create_config(): nf90_close(): ".loc.nc"'
       stop error_stop_code
-   endif
+   end if
 
    if (nf90_close(netcdf_info%ncid_lsf) .ne. NF90_NOERR) then
       write (*,*) 'ERROR: netcdf_create_config(): nf90_close(): ".lsf.nc"'
       stop error_stop_code
-   endif
+   end if
 
    if (nf90_close(netcdf_info%ncid_lwrtm) .ne. NF90_NOERR) then
       write (*,*) 'ERROR: netcdf_create_config(): nf90_close(): ".lwrtm.nc"'
       stop error_stop_code
-   endif
+   end if
 
    if (nf90_close(netcdf_info%ncid_msi) .ne. NF90_NOERR) then
       write (*,*) 'ERROR: netcdf_create_config(): nf90_close(): ".msi.nc"'
       stop error_stop_code
-   endif
+   end if
 
    if (nf90_close(netcdf_info%ncid_prtm) .ne. NF90_NOERR) then
       write (*,*) 'ERROR: netcdf_create_config(): nf90_close(): ".prtm.nc"'
       stop error_stop_code
-   endif
+   end if
 
    if (nf90_close(netcdf_info%ncid_swrtm) .ne. NF90_NOERR) then
       write (*,*) 'ERROR: netcdf_create_config(): nf90_close(): ".swrtm.nc"'
       stop error_stop_code
-   endif
+   end if
 
 end subroutine netcdf_output_close

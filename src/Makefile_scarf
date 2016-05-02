@@ -335,8 +335,8 @@ ORAC_OBJ=         $(OBJS)/alloc_spixel_scan_out.o \
                   $(OBJS)/ZeroDiag.o
 
 #
-ORAC_OBJ_SEL =   $(OBJS)/ECPparallel_ecmwf.o 
-#ORAC_OBJ_SEL =   $(OBJS)/ECP.o 
+ORAC_OBJ_SEL =   $(OBJS)/ECPparallel_ecmwf.o
+#ORAC_OBJ_SEL =   $(OBJS)/ECP.o
 
 ORAC_OBJ_MAIN=  $(ORAC_OBJ) $(ORAC_OBJ_SEL)
 

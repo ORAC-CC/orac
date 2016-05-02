@@ -5,13 +5,13 @@
 
 
 !-----------------------------------------------------------------------
- 
+
       subroutine two_rt_lw_sel
      +                 (
      +                    ncol , nlm ,  mbs , mbir , ib
      +,                 tauclr ,  es ,   bf ,   fu , fd
      +                 )
- 
+
       use kinds
 
 
@@ -24,7 +24,7 @@
 ! two_rt_lw replaces two_rt and add written by G. Stephens. two_rt_lw
 ! computes the spectral fluxes using a two-stream approximation method.
 ! Philip Partain, Philip Gabriel, and Laura D. Fowler/graben (09-08-99).
- 
+
 ! MODIFICATIONS:
 ! * changed declarations to adapt the code from BUGS4 to BUGS5.
 !   Laura D. Fowler/slikrock (02-01-00).
@@ -37,12 +37,12 @@
 
 ! INCLUDED COMMONS:
 !     none.
- 
+
 ! ARGUMENT LIST VARIABLES:
 ! All arrays indexed as nlm correspond to variables defined in the
 ! middle of layers. All arrays indexed as nlm+1 correspond to variables
 ! defined at levels at the top and bottom of layers.
- 
+
 !     INPUT ARGUMENTS:
 !     ----------------
       integer (kind=int_kind), intent(in)::
@@ -51,27 +51,27 @@
      &, mbs    !Number of SW spectral intervals.
      &, mbir   !Number of IR spectral intervals.
      &, ib     !Index of spectral interval.
- 
+
       real (kind=dbl_kind), intent(in), dimension(ncol,mbir)::
      &  es     ! Spectral surface emissivity                       (-).
       real (kind=dbl_kind), intent(in), dimension(ncol,nlm)::
      &  tauclr !Optical depth                                      (-).
       real (kind=dbl_kind), intent(in), dimension(ncol,nlm+1)::
      &  bf     !Planck function                                    (-).
- 
+
 !     OUTPUT ARGUMENTS:
 !     -----------------
       real (kind=dbl_kind), intent(out), dimension(ncol,nlm+1)::
      &  fd    !Spectral downward flux                          (W/m^2).
      &, fu    !Spectral upward flux                            (W/m^2).
- 
+
 ! LOCAL VARIABLES:
 
       integer(kind=int_kind)
      &  i     !Horizontal index.
      &, l     !Vertical index.
      &, ibms  !Index of spectral interval.
- 
+
       real (kind=dbl_kind), dimension(nlm)::
      &  sigu
      &, sigd
@@ -85,11 +85,11 @@
 
 !----------------------------------------------------------------------
 
- 
+
       ibms = ib - mbs
- 
+
       do 1000 i = 1, ncol
- 
+
           !TOA/BOA initializations
           fu(i,nlm+1) = bf(i,nlm+1)*es(i,ibms)
           fd(i,1) = 0.
@@ -106,13 +106,13 @@
               cc = 0.5
               sigu(l) = (aa*bf(i,l)+bb*bf(i,l+1))*cc
               sigd(l) = (bb*bf(i,l)+aa*bf(i,l+1))*cc
-            endif
+            end if
             fd(i,l+1) = sigd(l) + exptau(l) * fd(i,l)
-          enddo
- 
+          end do
+
           do l=nlm,1,-1
             fu(i,l) = sigu(l) + exptau(l) * fu(i,l+1)
-          enddo
+          end do
 
 1000  continue
 

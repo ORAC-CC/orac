@@ -398,7 +398,7 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
                  deflate_level = deflate_level, &
                  shuffle = shuffle_flag, &
                  fill_value = sreal_fill_value)
-      endif
+      end if
 
 
    else if (type .eq. NETCDF_OUTPUT_FILE_PRTM) then

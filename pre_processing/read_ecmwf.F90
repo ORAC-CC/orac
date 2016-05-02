@@ -187,6 +187,6 @@ subroutine read_ecmwf(ecmwf_flag, ecmwf_path_file, ecmwf_path_file2, &
       call read_ecmwf_nc(ecmwf_path_file,ecmwf,preproc_dims,preproc_geoloc, &
            preproc_prtm,verbose,ecmwf_flag)
    end select
-   
+
 
 end subroutine read_ecmwf

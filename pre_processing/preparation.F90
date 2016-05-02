@@ -179,9 +179,9 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
 
       if (ecmwf_time_int_method .eq. 2) then
       	 ecmwf_HR_path_file(2)=ecmwf_path_hr(2)
-      endif
+      end if
 
-   endif
+   end if
 
    if (verbose) then
       write(*,*)'ecmwf_path_file:  ',trim(ecmwf_path_file(1))

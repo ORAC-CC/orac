@@ -57,13 +57,13 @@
          m = ( emis_data(modID2(I)) - emis_data(modID1(I)) ) / ( modBand(modID2(I)) - modBand(modID1(I)) )
          b = emis_data(modID1(I)) - m*modBand(modID1(I))
          emis_bugsrad(I) = m*bugsBand(I) + b
-       enddo
+       end do
        !Bands 8 - 12 fill with MODIS band 36
        emis_bugsrad(9)  = 1.0!emis_data(13)
        emis_bugsrad(10) = 1.0!emis_data(13)
        emis_bugsrad(11) = 1.0!emis_data(13)
        emis_bugsrad(12) = 1.0!emis_data(13)
-   endif
+   end if
 
    ! Heritage Spectral Channel Range
    if(nc_emis .EQ. 3) then
@@ -82,14 +82,14 @@
         b = emis_data(modID1(I)) - m*modBand(modID1(I))
         emis_bugsrad(I) = m*bugsBand(I) + b
         !PRINT*,I,emis_bugsrad(I),m,b,emis_data(modID2(I)), emis_data(modID1(I)),modBand(modID1(I)),modBand(modID2(I)),bugsBand(I)
-      enddo
+      end do
       !Bands 8 - 12 fill with MODIS band 36
       emis_bugsrad(8)  = 1.0!emis_data(3)
       emis_bugsrad(9)  = 1.0!emis_data(3)
       emis_bugsrad(10) = 1.0!emis_data(3)
       emis_bugsrad(11) = 1.0!emis_data(3)
       emis_bugsrad(12) = 1.0!emis_data(3)
-   endif
+   end if
 
    ! ocean surface
    if( emis_data(1) .LE. 0.) emis_bugsrad(:) = 1.0

@@ -11,9 +11,9 @@
      +              )
 
       use kinds
-      
+
       implicit none
-             
+
 !-----------------------------------------------------------------------
 ! REFERENCES:
 ! comscp2 combines the single scattering properties computed in comscp1
@@ -38,7 +38,7 @@
 
 ! ARGUMENT LIST VARIABLES:
 ! All arrays indexed as nlm correspond to variables defined in the
-! middle of layers. In this subroutine, all the arrays are defined as 
+! middle of layers. In this subroutine, all the arrays are defined as
 ! local arrays in BUGSswr.
 
 !     INPUT ARGUMENTS:
@@ -46,7 +46,7 @@
       integer (kind=int_kind), intent(in)::
      &  ncol   !Length of sub-domain..
      &, nlm    !Number of layers.
-     
+
       real (kind=dbl_kind), dimension(ncol,nlm)::
      &  tg     !Optical depth of non-gray gases                    (-).
      &, fwclr  !Clear-sky single scattering albedo from comscp1    (-).
@@ -66,12 +66,12 @@
      &  wcclr  !Clear-sky single scattering albedo                 (-).
      &, wccld  !All-sky single scattering albedo                   (-).
 
-! LOCAL LIST VARIABLES:    
+! LOCAL LIST VARIABLES:
 
       integer (kind=int_kind)::
      &  i      !Horizontal index.
      &, l      !Vertical index.
-     
+
 !-----------------------------------------------------------------------
 
       do l = 1, nlm
@@ -79,23 +79,23 @@
 
             tcclr(i,l) = tcclr1(i,l) + tg(i,l)
             tccld(i,l) = tccld1(i,l) + tg(i,l)
- 
+
             if(tcclr(i,l).gt.0.) then
               wcclr(i,l) = fwclr(i,l)/tcclr(i,l)
             else
               wcclr(i,l) = 0.
-            endif
+            end if
             wcclr(i,l)  = min(.999999_dbl_kind,wcclr(i,l))
- 
+
             if(tccld(i,l).gt.0.) then
                wccld(i,l) = fwcld(i,l)/tccld(i,l)
             else
                wccld(i,l) = 0.
-            endif
+            end if
             wccld(i,l) = min(.999999_dbl_kind,wccld(i,l))
 
-     	   enddo
-	enddo
+     	   end do
+	end do
 
 	return
 	end subroutine comscp2

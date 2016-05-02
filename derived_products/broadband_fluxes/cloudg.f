@@ -25,12 +25,12 @@
 ! This routine has been modified to include the the corrections to
 ! ADT for spherical particles based upon the work of David Mitchell
 ! DRI.  All the derivations have been carried out for the modified
-! gamma distribution assuming that m=0.5 (em in program), a 
+! gamma distribution assuming that m=0.5 (em in program), a
 ! parameter in eqn (5) of Mitchell (1994).
- 
+
 ! tcld, wcld, asycld are the optical depth, single scattering albedo,
 ! and asymmetry parameter of cloud particles based on the use of
-! ADT theory as used by Stephens et al (1990). Effective radius re  
+! ADT theory as used by Stephens et al (1990). Effective radius re
 ! is input (in microns) and the water content is in g/m3.  The logical
 ! variable flag is .false. for water and .true. for ice.
 
@@ -76,11 +76,11 @@
       real (kind=dbl_kind), intent(in), dimension(ncol,nlm)::
      &  tt     !Temperature                                        (K).
      &, wcont  !Cloud water/ice content                       (g/m^-3).
-     &, re     !Cloud effective radius                            (mu).      
+     &, re     !Cloud effective radius                            (mu).
 
       real (kind=dbl_kind), intent(in), dimension(ncol,nlm+1)::
      &  pp     !Level pressure                                   (hPa).
-     
+
 !     OUTPUT ARGUMENTS:
 !     -----------------
       real (kind=dbl_kind), intent(out), dimension(ncol,nlm)::
@@ -91,7 +91,7 @@
 ! LOCAL VARIABLES:
       complex (kind=dbl_kind)::
      &  cm,um
-          
+
       integer (kind=int_kind)::
      &  i, l
 
@@ -101,7 +101,7 @@
      &,   ext ,    f2 ,    f3 ,  no
      &,    p0 ,    p1 ,    p2 ,  pi
      &,    rm ,    xm ,    vm ,  rho_water
-     
+
 !-----------------------------------------------------------------------
 
 !---- initialize local and output arrays:
@@ -114,7 +114,7 @@
 
       pi  = acos(-1.)
       eps = 1.e-5
-      
+
       if(flag) then
          !Ice case
          cnr = cnri(ib)
@@ -124,10 +124,10 @@
          cnr = cnrw(ib)
          cni = cniw(ib)
          rho_water = 1.0e6   !gm^-3
-      endif
+      end if
 
 !--   constants depending upon the characteristic width of the distribu
-!     tion.(these may be made to vary with hydrometeor species and thus 
+!     tion.(these may be made to vary with hydrometeor species and thus
 !     pdist could be made to depend upon level and column numbers).
 
 !     p0    = 0.
@@ -140,7 +140,7 @@
 !---- calculate cloud optical properties:
 
       do l = 1, nlm
-         do i = 1, ncol 
+         do i = 1, ncol
             if(wcont(i,l) .gt. eps) then
                dz=29.286*log(pp(i,l+1)/pp(i,l)) * tt(i,l)
                rm = re(i,l)/p2
@@ -183,12 +183,12 @@
                       print *,tt(i,l)
                       print *,re(i,l)
                       stop
-                 endif
-               endif
+                 end if
+               end if
                asycld(i,l)=0.85  !default, overridden in bugs_swr(), bugs_lwr()
-             endif
-         enddo
-      enddo
+             end if
+         end do
+      end do
 
       return
       end subroutine cloudg

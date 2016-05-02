@@ -474,8 +474,8 @@ subroutine ross_thick_li_sparse_r_kernel(aux, aux_kernel, p_ross, p_li_r, f, K)
 
    implicit none
 
-   type(brdf_aux_t),                          intent(in)  :: aux
-   type(kernel_aux_ross_thick_li_sparse_r_t), intent(in)  :: aux_kernel
+   type(brdf_aux_t),                             intent(in)  :: aux
+   type(kernel_aux_ross_thick_li_sparse_r_t),    intent(in)  :: aux_kernel
    real(kind=sreal),                             intent(in)  :: p_ross(1)
    real(kind=sreal),                             intent(in)  :: p_li_r(2)
    real(kind=sreal),                             intent(in)  :: f(:)
@@ -617,7 +617,7 @@ subroutine ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(n_bands, solza, satza, &
       if (solza(i) .gt. maxsza_twi) then
             rho_0v(:, i) = fill_value
             cycle
-      endif
+      end if
 
       solza2 = solza(i) * d2r
       satza2 = satza(i) * d2r
@@ -651,7 +651,7 @@ subroutine ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(n_bands, solza, satza, &
       if (solza(i) .gt. maxsza_twi) then
             rho_0d(:, i) = fill_value
             cycle
-      endif
+      end if
 
       solza2 = solza(i) * d2r
       do j = 1, n_quad_theta

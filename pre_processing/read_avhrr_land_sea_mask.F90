@@ -61,7 +61,7 @@ subroutine read_avhrr_land_sea_mask(path_to_geo_file,imager_geolocation, &
       write(*,*) 'ERROR: read_avhrr_land_sea_mask(): AVHRR physiography ' // &
                 & 'file does not exist, filename: ', trim(path_to_lsmask_file)
       stop error_stop_code
-   endif
+   end if
 
    !allocate temporary data
    allocate(btemp(imager_geolocation%startx:imager_geolocation%endx, &

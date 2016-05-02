@@ -26,7 +26,7 @@ recursive integer function PARSE_STRING_NAME_1D(in, data, n_in, ch_ids) result(s
       ! If not commas, delimit with whitespace
       delim=' '
       id = index(remnant, delim)
-   endif
+   end if
 
    ! Split string at delimiter,
    do while (id > 0 .and. i < n)
@@ -44,12 +44,12 @@ recursive integer function PARSE_STRING_NAME_1D(in, data, n_in, ch_ids) result(s
    if (id /= 0) then
       status = PARSE_ERR_TOO_FEW
       return
-   endif
+   end if
 
    if (i /= n) then
       status = PARSE_ERR_TOO_MANY
       return
-   endif
+   end if
 
    ! Final element
    status = PARSE_STRING_NAME_0D(remnant, data(i), ch_ids=ch_ids)
@@ -89,7 +89,7 @@ recursive integer function PARSE_STRING_NAME_2D(in, data, n1_in, n2_in, ch_ids) 
       ! If not semicolons, delimit with commas
       delim=','
       id = index(remnant, delim)
-   endif
+   end if
 
    ! Split string at delimiter,
    do while (id > 0 .and. i < n2)
@@ -107,12 +107,12 @@ recursive integer function PARSE_STRING_NAME_2D(in, data, n1_in, n2_in, ch_ids) 
    if (id /= 0) then
       status = PARSE_ERR_TOO_FEW
       return
-   endif
+   end if
 
    if (i /= n2) then
       status = PARSE_ERR_TOO_MANY
       return
-   endif
+   end if
 
    ! Final element
    status = PARSE_STRING_NAME_1D(remnant, data(:, i), n1, ch_ids=ch_ids)

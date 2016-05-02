@@ -116,9 +116,9 @@ subroutine read_ecmwf_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
    integer(lint) :: pointer_y(preproc_dims%min_lat:preproc_dims%max_lat)
    real(sreal)   :: diff_lon(ecmwf%xdim),diff_lat(ecmwf%ydim)
 #endif
-   
-   
-   
+
+
+
    n=ecmwf%xdim*ecmwf%ydim
 
    ! input details of new grid (see note in read_ecmwf_grib)
@@ -170,14 +170,14 @@ subroutine read_ecmwf_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
         do i=preproc_dims%min_lon,preproc_dims%max_lon
           diff_lon=abs(ecmwf_lon-preproc_geoloc%longitude(i))
           pointer_x(i)=minloc(diff_lon,1)
-        enddo
+        end do
 
         do j=preproc_dims%min_lat,preproc_dims%max_lat
           diff_lat=abs(ecmwf_lat-preproc_geoloc%latitude(j))
           pointer_y(j)=minloc(diff_lat,1)
-        enddo
+        end do
 
-      endif
+      end if
 #endif
 
       ! determine if field should be read
@@ -239,14 +239,14 @@ subroutine read_ecmwf_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
             call nc_read_array(fid,name,dummy3d,verbose)
          else
             call nc_read_array(fid,name,dummy3d_2,verbose)
-         endif
+         end if
          do k=1,ecmwf%kdim
             old_len=n
             if (ecmwf_flag.ne.4) then
                old_data(1:n)=reshape(real(dummy3d(:,:,k,1),kind=8),[n])
             else
                old_data(1:n)=reshape(real(dummy3d_2(:,:,k),kind=8),[n])
-            endif
+            end if
 
             new_len=BUFFER
 

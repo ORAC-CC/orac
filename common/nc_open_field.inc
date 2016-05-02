@@ -29,7 +29,7 @@
       print*,'ERROR: nc_read_file(): Could not locate variable ',trim(name)
       print*,trim(nf90_strerror(ierr))
       stop error_stop_code
-   endif
+   end if
 
    ! read field attributes
    fv_flag = .false.

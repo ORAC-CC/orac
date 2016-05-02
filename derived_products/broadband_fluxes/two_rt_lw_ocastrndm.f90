@@ -8,14 +8,14 @@ subroutine two_rt_lw_gsolap                &
        fd_all , fd_clr , c_maximal, cf_max,&
        cf_random)
 
- 
+
    use kinds
    implicit none
 
 !-----------------------------------------------------------------------
 ! REFERENCES:
 ! Alternate cloud overlap calculations
- 
+
 
 ! SUBROUTINES CALLED:
 !     none.
@@ -25,17 +25,17 @@ subroutine two_rt_lw_gsolap                &
 
 ! INCLUDED COMMONS:
 !     none.
- 
+
 ! ARGUMENT LIST VARIABLES:
 !     INPUT ARGUMENTS:
 !     ----------------
    integer (kind=int_kind), intent(in):: &
-     ncol,      & !Length of sub-domain. 
+     ncol,      & !Length of sub-domain.
      nlm,       & !Number of layers.
      mbs,       & !Number of SW spectral intervals.
      mbir,      & !Number of IR spectral intervals.
      ib           !Index of spectral interval.
- 
+
    real (kind=dbl_kind), intent(in), dimension(ncol) :: &
      c_maximal
 
@@ -55,7 +55,7 @@ subroutine two_rt_lw_gsolap                &
 
    real (kind=dbl_kind), intent(in), dimension(ncol,nlm+1):: &
      bf           !Planck function                                 (W/m^2).
- 
+
 !     OUTPUT ARGUMENTS:
 !     -----------------
    real (kind=dbl_kind), intent(out), dimension(ncol,nlm+1):: &
@@ -63,14 +63,14 @@ subroutine two_rt_lw_gsolap                &
      fd_clr,    & !Clear sky spectral downward flux
      fu_all,    & !All-sky spectral upward flux                            (W/m^2).
      fu_clr       !Clear sky spectral upward flux
- 
+
 ! LOCAL VARIABLES:
 ! ----------------
    integer (kind=int_kind) :: &
      i,         & !Horizontal index.
      l,         & !Vertical index.
      ibms         !Index of spectral interval.
- 
+
    real (kind=dbl_kind), dimension(nlm):: &
      rr_clr,    & !
      rr_cld,    & !
@@ -153,8 +153,8 @@ subroutine two_rt_lw_gsolap                &
             cc = diffac*(1.-oms)/kappa**2
             sigu_clr(l) = cc*(aa*bf(i,l)+bb*bf(i,l+1))
             sigd_clr(l) = cc*(bb*bf(i,l)+aa*bf(i,l+1))
-         endif
-      enddo
+         end if
+      end do
 
       !CLEAR SKY adding
       re(1) = 0.
@@ -166,7 +166,7 @@ subroutine two_rt_lw_gsolap                &
                  + tr_clr(l)*re(l)*sigu_clr(l))*prop
          vu(l)   = (rr_clr(l)*vd(l) + sigu_clr(l))*prop
          td(l)   = prop
-      enddo
+      end do
 
       !CLEAR SKY flux calculation
       fu_clr(i,nlm+1) = es(i,ibms)*bf(i,nlm+1)
@@ -174,7 +174,7 @@ subroutine two_rt_lw_gsolap                &
       do l = nlm+1, 2, -1
          fd_clr(i,l)   = re(l)*fu_clr(i,l) + vd(l)
          fu_clr(i,l-1) = tr_clr(l-1)*fu_clr(i,l)*td(l-1) + vu(l-1)
-      enddo
+      end do
       !END CLEAR SKY CALC
 
 
@@ -204,8 +204,8 @@ subroutine two_rt_lw_gsolap                &
             cc = diffac*(1.-oms)/kappa**2
             sigu_cld(l) = cc*(aa*bf(i,l)+bb*bf(i,l+1))
             sigd_cld(l) = cc*(bb*bf(i,l)+aa*bf(i,l+1))
-         endif
-      enddo
+         end if
+      end do
 
 
       !BEGIN MAXIMALLY OVERLAPPED CALC
@@ -215,8 +215,8 @@ subroutine two_rt_lw_gsolap                &
          tr_tmp(l) = cf_max(i,l)*tr_cld(l) + (1. - cf_max(i,l))*tr_clr(l)
          sigu_tmp(l) = cf_max(i,l)*sigu_cld(l) + (1. - cf_max(i,l))*sigu_clr(l)
          sigd_tmp(l) = cf_max(i,l)*sigd_cld(l) + (1. - cf_max(i,l))*sigd_clr(l)
-      enddo
-      !MAXIMALLY OVERLAPPED adding 
+      end do
+      !MAXIMALLY OVERLAPPED adding
       re(1) = 0.
       vd(1) = 0.
       do l = 1, nlm
@@ -226,13 +226,13 @@ subroutine two_rt_lw_gsolap                &
                    + tr_tmp(l)*re(l)*sigu_tmp(l))*prop
          vu(l)   = (rr_tmp(l)*vd(l) + sigu_tmp(l))*prop
          td(l)   = prop
-      enddo
+      end do
       !MAXIMALLY OVERLAPPED flux calculation
       fu_max(nlm+1) = es(i,ibms)*bf(i,nlm+1)
       do l = nlm+1, 2, -1
          fd_max(l)   = re(l)*fu_max(l) + vd(l)
          fu_max(l-1) = tr_tmp(l-1)*fu_max(l)*td(l-1) + vu(l-1)
-      enddo
+      end do
       !END MAXIMALLY-OVERLAPPED CALC
 
 
@@ -242,7 +242,7 @@ subroutine two_rt_lw_gsolap                &
          tr_tmp(l) = cf_random(i,l)*tr_cld(l) + (1. - cf_random(i,l))*tr_clr(l)
          sigu_tmp(l) = cf_random(i,l)*sigu_cld(l) + (1. - cf_random(i,l))*sigu_clr(l)
          sigd_tmp(l) = cf_random(i,l)*sigd_cld(l) + (1. - cf_random(i,l))*sigd_clr(l)
-      enddo
+      end do
 
       !RANDOMLY-OVERLAPPED adding
       re(1) = 0.
@@ -253,14 +253,14 @@ subroutine two_rt_lw_gsolap                &
          vd(l+1) = sigd_tmp(l) + (tr_tmp(l)*vd(l) + tr_tmp(l)*re(l)*sigu_tmp(l))*prop
          vu(l) = (rr_tmp(l)*vd(l) + sigu_tmp(l))*prop
          td(l) = prop
-      enddo
+      end do
 
       !RANDOMLY-OVERLAPPED flux calculation
       fu_rndm(nlm+1) = es(i,ibms)*bf(i,nlm+1)
       do l = nlm+1, 2, -1
          fd_rndm(l)   = re(l)*fu_rndm(l) + vd(l)
          fu_rndm(l-1) = tr_tmp(l-1)*fu_rndm(l)*td(l-1) + vu(l-1)
-      enddo
+      end do
       !END RANDOMLY-OVERLAPPED CALC
 
       !ALL-SKY: Begin
@@ -270,8 +270,8 @@ subroutine two_rt_lw_gsolap                &
       do l = 1, nlm
          fd_all(i,l+1) = (1. - c_maximal(i))*fd_rndm(l+1) + c_maximal(i)*fd_max(l+1)
          fu_all(i,l) = (1. - c_maximal(i))*fu_rndm(l) + c_maximal(i)*fu_max(l)
-      enddo
-   
-   enddo !Loop over columns 
+      end do
+
+   end do !Loop over columns
    return
    end subroutine two_rt_lw_gsolap

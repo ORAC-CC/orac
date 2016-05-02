@@ -128,7 +128,7 @@ subroutine two_rt_sw_gsolap                          &
       fddif_rndm,  &    !Random-overlap fraction spectral diffuse downward flux (W/m^2)
       fudif_max,  &    !Maximum-overlap fraction spectral diffuse upward flux (W/m^2)
       fudif_rndm        !Random-overlap fraction spectral diffuse upward flux (W/m^2)
-      
+
 
       fddir_clr = 0.
       fddir_all = 0.
@@ -147,7 +147,7 @@ subroutine two_rt_sw_gsolap                          &
 ! Begin loop over all columns
    do i = 1, ncol
 
-      !Clear layer properties 
+      !Clear layer properties
       direct_s(1) = 1.
       direct_us(1) = 1.
       do l = 1, nlm
@@ -182,7 +182,7 @@ subroutine two_rt_sw_gsolap                          &
             fact = 1./eps
          else
             fact = 1./fact
-         endif
+         end if
 
          cc = oms*slr(i)*fact
          g3 = 0.5 - 0.75*asy*amu0(i)
@@ -191,7 +191,7 @@ subroutine two_rt_sw_gsolap                          &
          bb = g4*(t + 1./amu0(i)) + g3*r
          sigu_clr_fract(l) = cc*((aa - rr_clr(l)*bb) - aa*tr_clr(l)*exptau_s_clr(l))
          sigd_clr_fract(l) = cc*(-bb*tr_clr(l) + (bb-rr_clr(l)*aa)*exptau_s_clr(l))
-      enddo
+      end do
 
       !CLEAR-SKY adding
       re(1) = 0.
@@ -202,7 +202,7 @@ subroutine two_rt_sw_gsolap                          &
          vd(l+1) = sigd_clr_fract(l)*direct_s(l) + (tr_clr(l)*vd(l) + tr_clr(l)*re(l)*sigu_clr_fract(l)*direct_s(l))*prop
          vu(l) = (rr_clr(l)*vd(l) + sigu_clr_fract(l)*direct_s(l))*prop
          td(l) = prop
-      enddo
+      end do
 
       !CLEAR-SKY diffuse flux calculation
       fddif_clr(i,1) = 0.
@@ -212,15 +212,15 @@ subroutine two_rt_sw_gsolap                          &
       do l = nlm+1, 2, -1
          fddif_clr(i,l) = re(l)*fudif_clr(i,l) + vd(l)
          fudif_clr(i,l-1) = tr_clr(l-1)*fudif_clr(i,l)*td(l-1) + vu(l-1)
-      enddo
- 
+      end do
+
       !CLEAR-SKY direct flux calculation, with delta-M descaling
       fddir_clr(i,1) = amu0(i)*slr(i)
       do l = 1, nlm
          fd_total = fddif_clr(i,1)+amu0(i)*slr(i)*direct_s(l+1)
          fddir_clr(i,l+1) = amu0(i)*slr(i)*direct_us(l+1)
          fddif_clr(i,l+1) = fd_total - fddir_clr(i,l+1)
-      enddo
+      end do
       !END CLEAR-SKY CALC
 
       !Cloudy layer properties
@@ -258,7 +258,7 @@ subroutine two_rt_sw_gsolap                          &
             fact = 1./eps
          else
             fact = 1./fact
-         endif
+         end if
 
          cc = oms*slr(i)*fact
          g3 = 0.5 - 0.75*asy*amu0(i)
@@ -269,7 +269,7 @@ subroutine two_rt_sw_gsolap                          &
          sigu(l) = sigu_cld_fract(l)*direct_s(l)
          sigd_cld_fract(l) = cc*(-bb*tr_cld(l) + (bb-rr_cld(l)*aa)*exptau_s_cld(l))
          sigd(l) = sigd_cld_fract(l)*direct_s(l)
-      enddo
+      end do
 
       !BEGIN MAXIMALLY OVERLAPPED CALC
       !For layers where 0. < cf_max < 1., treat as randomly combined
@@ -282,7 +282,7 @@ subroutine two_rt_sw_gsolap                          &
          sigd_tmp_fract(l) = cf_max(i,l)*sigd_cld_fract(l) + (1. - cf_max(i,l))*sigd_clr_fract(l)
          direct_s(l+1) = (cf_max(i,l)*exptau_s_cld(l) + (1. - cf_max(i,l))*exptau_s_clr(l))*direct_s(l)
          direct_us(l+1) = (cf_max(i,l)*exptau_us_cld(l) + (1. - cf_max(i,l))*exptau_us_clr(l))*direct_us(l)
-      enddo
+      end do
       !MAXIMALLY OVERLAPPED adding
       re(1) = 0.
       vd(1) = 0.
@@ -292,7 +292,7 @@ subroutine two_rt_sw_gsolap                          &
          vd(l+1) = sigd_tmp_fract(l)*direct_s(l) + (tr_tmp(l)*vd(l) + tr_tmp(l)*re(l)*sigu_tmp_fract(l)*direct_s(l))*prop
          vu(l) = (rr_tmp(l)*vd(l) + sigu_tmp_fract(l)*direct_s(l))*prop
          td(l) = prop
-      enddo
+      end do
 
       !MAXIMALLY OVERLAPPED diffuse flux calculation
       fddif_max(1) = 0.
@@ -302,15 +302,15 @@ subroutine two_rt_sw_gsolap                          &
       do l = nlm+1, 2, -1
          fddif_max(l) = re(l)*fudif_max(l) + vd(l)
          fudif_max(l-1) = tr_tmp(l-1)*fudif_max(l)*td(l-1) + vu(l-1)
-      enddo
- 
+      end do
+
       !MAXIMALLY OVERLAPPED direct flux calculation
       fddir_max(1) = amu0(i)*slr(i)
       do l = 1, nlm
          fd_total = amu0(i)*slr(i)*direct_s(l+1) + fddif_max(l+1)
          fddir_max(l+1) = amu0(i)*slr(i)*direct_us(l+1)
          fddif_max(l+1) = fd_total - fddir_max(l+1)
-      enddo
+      end do
       !END MAXIMALLY OVERLAPPED CALC
 
       !BEGIN RANDOMLY-OVERLAPPED CALC
@@ -323,7 +323,7 @@ subroutine two_rt_sw_gsolap                          &
          sigd_tmp_fract(l) = cf_random(i,l)*sigd_cld_fract(l) + (1. - cf_random(i,l))*sigd_clr_fract(l)
          direct_s(l+1) = (cf_random(i,l)*exptau_s_cld(l) + (1. - cf_random(i,l))*exptau_s_clr(l))*direct_s(l)
          direct_us(l+1) = (cf_random(i,l)*exptau_us_cld(l) + (1. - cf_random(i,l))*exptau_us_clr(l))*direct_us(l)
-     enddo
+     end do
      !RANDOMLY-OVERLAPPED adding
       re(1) = 0.
       vd(1) = 0.
@@ -333,7 +333,7 @@ subroutine two_rt_sw_gsolap                          &
          vd(l+1) = sigd_tmp_fract(l)*direct_s(l) + (tr_tmp(l)*vd(l) + tr_tmp(l)*re(l)*sigu_tmp_fract(l)*direct_s(l))*prop
          vu(l) = (rr_tmp(l)*vd(l) + sigu_tmp_fract(l)*direct_s(l))*prop
          td(l) = prop
-      enddo
+      end do
 
       !RANDOMLY-OVERLAPPED diffuse flux calculation
       fddif_rndm(1) = 0.
@@ -343,15 +343,15 @@ subroutine two_rt_sw_gsolap                          &
       do l = nlm+1, 2, -1
          fddif_rndm(l) = re(l)*fudif_rndm(l) + vd(l)
          fudif_rndm(l-1) = tr_tmp(l-1)*fudif_rndm(l)*td(l-1) + vu(l-1)
-      enddo
-      
+      end do
+
       !RANDOMLY-OVERLAPPED direct flux calculation
       fddir_rndm(1) = amu0(i)*slr(i)
       do l = 1, nlm
          fd_total = amu0(i)*slr(i)*direct_s(l+1) + fddif_rndm(l+1)
-         fddir_rndm(l+1) = amu0(i)*slr(i)*direct_us(l+1) 
+         fddir_rndm(l+1) = amu0(i)*slr(i)*direct_us(l+1)
          fddif_rndm(l+1) = fd_total - fddir_rndm(l+1)
-      enddo
+      end do
       !END RANDOMLY-OVERLAPPED CALC
       !BEGIN ALL-SKY CALC
       !This is the combined maximally- and randomly overlapped portions of the sky
@@ -362,6 +362,6 @@ subroutine two_rt_sw_gsolap                          &
          fddif_all(i,l+1) = (1. - c_maximal(i))*fddif_rndm(l+1) + c_maximal(i)*fddif_max(l+1)
          fddir_all(i,l+1) = (1. - c_maximal(i))*fddir_rndm(l+1) + c_maximal(i)*fddir_max(l+1)
          fudif_all(i,l) = (1. - c_maximal(i))*fudif_rndm(l) + c_maximal(i)*fudif_max(l)
-      enddo
-   enddo ! Loop over columns
-   end subroutine 
+      end do
+   end do ! Loop over columns
+   end subroutine

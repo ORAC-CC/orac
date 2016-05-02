@@ -27,14 +27,14 @@
 subroutine compute_fth(nlm,P,T,Q,FTH)
 
    implicit none
-   
+
    integer, intent(in) :: nlm
 
    !meteorological profiles
    real, intent(in), dimension(nlm+1) :: &
     P   ,& !pressure profile at SAT. pixel            (hPa).
-    T   ,& !temperature profile at SAT. pixel           (K).  
-    Q      !specific humidity profile at SAT. pixel     (kg/kg).  
+    T   ,& !temperature profile at SAT. pixel           (K).
+    Q      !specific humidity profile at SAT. pixel     (kg/kg).
 
    !OUTPUT
    real, intent(out) :: FTH
@@ -60,7 +60,7 @@ subroutine compute_fth(nlm,P,T,Q,FTH)
       Es850=6.112*EXP( 17.67*(T850-273.) / ( (T850-273.)+243.5 ) ) ![hPa]
       FTH = E850(1) / ES850(1)
       !PRINT*,'FTH = ',FTH
-   endif
+   end if
 
    return
 end subroutine compute_fth

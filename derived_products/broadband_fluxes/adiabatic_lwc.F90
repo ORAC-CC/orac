@@ -2,10 +2,10 @@
 ! Name: adiabatic_lwc.F90
 !
 ! Purpose:
-! Theoretical calculation of the adiabatic rate of increase of liquid 
-! water content with respect to height. This quantity is a function of 
-! temperature and pressure. It can be used to derive the adiabatic liquid 
-! water path/content in clouds, whereby the general form is: 
+! Theoretical calculation of the adiabatic rate of increase of liquid
+! water content with respect to height. This quantity is a function of
+! temperature and pressure. It can be used to derive the adiabatic liquid
+! water path/content in clouds, whereby the general form is:
 ! LWP = 1/2 * fad * gamma_ad * h^2, where fad is the
 ! degree of adiabaticity, gamma_ad is the adiabatic rate of increase of
 ! liquid water content with respect to height (calculated here) and h
@@ -19,7 +19,7 @@
 ! pressure (hPa)
 !
 ! Output:
-! adiabatic rate of increase of liquid water content with 
+! adiabatic rate of increase of liquid water content with
 ! respect to height (g/m3/km)
 !
 ! History:
@@ -75,4 +75,3 @@
 
    return
 end subroutine adiabatic_lwc
-

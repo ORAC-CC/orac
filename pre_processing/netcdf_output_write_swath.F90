@@ -131,7 +131,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocati
            dummy_chan_vec1d, &
            1, 1, channel_info%nchannels_sw)
       deallocate(dummy_chan_vec1d)
-   endif
+   end if
 
    if (channel_info%nchannels_lw .ne. 0) then
       allocate(dummy_chan_vec1d(channel_info%nchannels_lw))
@@ -151,7 +151,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocati
               dummy_chan_vec1d, &
               1, 1, channel_info%nchannels_lw)
       deallocate(dummy_chan_vec1d)
-   endif
+   end if
 
 
    ! alb file (albedo and emissivity)

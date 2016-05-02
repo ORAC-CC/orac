@@ -158,7 +158,7 @@ subroutine Get_Indexing(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
       else
          call cloud_indexing_logic_night(Ctrl, SPixel, is_not_used_or_missing, &
               X, XJ, XI, status)
-      endif
+      end if
    case (AerOx)
       call aer_indexing_logic(Ctrl, SAD_Chan, SPixel, is_not_used_or_missing, &
                               X, XJ, XI, status)

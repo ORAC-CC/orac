@@ -148,7 +148,7 @@ subroutine read_input_secondary_optional(ncid, input_data, indexing, &
    integer,                      intent(in)    :: ncid
    type(input_data_secondary_t), intent(inout) :: input_data
    type(input_indices_t),        intent(in)    :: indexing
-   type(common_file_flags_t),      intent(inout) :: read_flags
+   type(common_file_flags_t),    intent(inout) :: read_flags
    logical,                      intent(in)    :: verbose
 
    integer            :: i

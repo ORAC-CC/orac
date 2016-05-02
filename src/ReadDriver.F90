@@ -548,7 +548,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
          Ctrl%NTypes_to_process   = 5
          Ctrl%Types_to_process(4) = CLEAR_TYPE
          Ctrl%Types_to_process(5) = PROB_CLEAR_TYPE
-      endif
+      end if
    else if (Ctrl%Approach == CldIce) then
       Ctrl%NTypes_to_process   = 4
       Ctrl%Types_to_process(1) = OPAQUE_ICE_TYPE
@@ -559,7 +559,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
          Ctrl%NTypes_to_process   = 6
          Ctrl%Types_to_process(5) = CLEAR_TYPE
          Ctrl%Types_to_process(6) = PROB_CLEAR_TYPE
-      endif
+      end if
    else
       ! Accept everything
       Ctrl%NTypes_to_process   = MaxTypes

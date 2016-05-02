@@ -141,13 +141,13 @@ subroutine select_modis_emiss_file(cyear,cdoy,cimss_emis_path, &
       cimss_emis_path_file=trim(adjustl(cimss_emis_path))// &
          '/global_emis_inf10_monthFilled_MYD11C3.AXXXX'// &
          trim(adjustl(emis_date_s))//'.041'//'.nc'
-	 else  
+	 else
       cimss_emis_path_file=trim(adjustl(cimss_emis_path))// &
          '/global_emis_inf10_monthFilled_MYD11C3.A'// &
          trim(adjustl(cyear))// &
          trim(adjustl(emis_date_s))//'.041'//'.nc'
-   endif
-   endif
+   end if
+   end if
 
    ! Check that the defined file exists and is readable
    inquire(file=trim(cimss_emis_path_file), exist=cimss_emis_file_exist, &

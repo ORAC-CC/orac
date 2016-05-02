@@ -45,7 +45,7 @@ subroutine midlatsum1(z,P,T,rh2o,ro3,NLS)
       rh2o(i)=rrh20(NLS-i+1)
       ro3(i)=rro3(NLS-i+1)
    end do
-   
-  
+
+
    return
 end subroutine midlatsum1

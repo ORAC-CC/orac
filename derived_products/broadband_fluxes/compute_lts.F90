@@ -33,7 +33,7 @@ subroutine compute_lts(nlm,P,T,LTS)
    !meteorological profiles
    real, intent(in), dimension(nlm+1) :: &
     P   ,& !pressure profile at SAT. pixel            (hPa).
-    T      !temperature profile at SAT. pixel           (K).  
+    T      !temperature profile at SAT. pixel           (K).
 
    !OUTPUT
    real, intent(out) :: LTS
@@ -60,7 +60,7 @@ subroutine compute_lts(nlm,P,T,LTS)
       LTS = theta700(1) - thetaSFC(1)
        !print*,id1,id2,P(id1),P(id2),T(id1),T(id2),m,T700,TSFC,PSFC
        !print*,thetaSFC,theta700,LTS
-   endif
+   end if
 
    return
 end subroutine compute_lts

@@ -18,14 +18,14 @@
      +,                  tboapar, tboapardif, ttoapar
      +,                  tresat
      +,                  emis,rho0d,rhodd)
-      
+
       use kinds
 
-      
+
       implicit none
 
 !------------------------------------------------------------------------
-! bugs_rad is the driver for the parameterization of the cloud fraction, 
+! bugs_rad is the driver for the parameterization of the cloud fraction,
 ! cloud optical properties, and long and short wave radiative fluxes.
 
 ! REFERENCES:
@@ -39,12 +39,12 @@
 
 ! SUBROUTINES CALLED:
 !     EAUcf     :Calculation of the cloud fraction.
-!     EAUcfQPs  :Calculation of diagnostics related to EAUcf. 
+!     EAUcfQPs  :Calculation of diagnostics related to EAUcf.
 !     BUGSlwr   :Calculation of LW radiative heating rates and fluxes.
 !     BUGSswr   :Calculation of SW radiative heating rates and fluxes.
 !     BUGSradQPs:Calculation of diagnostics related to BUGSlwr and
 !                BUGSswr.
-! note: EAUcf, EAUcfQPs, and BUGSradQPs are not called in the offline 
+! note: EAUcf, EAUcfQPs, and BUGSradQPs are not called in the offline
 !       version of this code.
 
 ! FUNCTIONS CALLED:
@@ -98,7 +98,7 @@
       real, intent(in) :: emis(12) !Spectral surface emissivity for each LW band
       real, intent(in) :: rho0d(6) !Spectral direct surface albedo for each SW band
       real, intent(in) :: rhodd(6) !Spectral diffuse surface albedo for each SW band
-      
+
 
 
 !     OUTPUT ARGUMENTS:
@@ -113,7 +113,7 @@
      &, radnbcc    !SFC near-ir direct clear net SW radiation  (W/m^-2).
      &, radndcc    !SFC near-ir diffuse clear net SW radiation (W/m^-2).
 
-      real (kind=dbl_kind), dimension(len,nlm+1):: 
+      real (kind=dbl_kind), dimension(len,nlm+1)::
      &  fdsw       !Downward SW flux                           (W/m^-2).
      &, fusw       !Upward SW flux                             (W/m^-2).
      &, fdlw       !Downward LW flux                           (W/m^-2).
@@ -124,7 +124,7 @@
      &, fulwcl     !Upward clear-sky LW flux                   (W/m^-2).
       real (kind=dbl_kind), dimension(nlen,nlm)::
      &  atl        !All-sky LW radiative heating rate             (K/s).
-     &, asl        !All-sky SW radiative heating rate             (K/s).      
+     &, asl        !All-sky SW radiative heating rate             (K/s).
      &, atlcl      !Clear-sky LW radiative heating rate           (K/s).
      &, aslcl      !Clear-sky SW radiative heating rate           (K/s).
 
@@ -147,7 +147,7 @@
 
       logical (kind=log_kind), dimension(len)::
      &  bitx      !Scans daytime grid-points                       (-).
-     
+
       integer (kind=int_kind)::
      &  i, l, ll
      &, nnp        !Number of layers plus one (TOA "sponge" layer).
@@ -155,10 +155,10 @@
 
       integer (kind=int_kind), dimension(len)::
      &  iday       !Location of daytime grid-points.
-     
+
       real (kind=dbl_kind)::
      &  heat_fac   !Mutiplying factor         .
- 
+
       real (kind=dbl_kind), dimension(len)::
      &  ts_loc     !Local surface temperature                       (K).
      &, amu0_loc   !Local cosine of solar zenith angle              (-).
@@ -232,7 +232,7 @@
      &, b3_day     !As b3, but for daytime grid points              (-).
      &, b4_day     !As b4, but for daytime grid points              (-).
 
-      real (kind=dbl_kind), dimension(:), allocatable::      
+      real (kind=dbl_kind), dimension(:), allocatable::
      &  radvbc_day !As radvbc_loc, but for daytime grid-points (W/m^-2).
      &, radvdc_day !As radvbc_loc, but for daytime grid-points (W/m^-2).
      &, radnbc_day !As radnbc_loc, but for daytime grid-points (W/m^-2).
@@ -318,7 +318,7 @@
       acldmx(1:len) = 0.
       do l = 1, nlm
          acldmx(1:len) = max(acldmx(1:len),acld_loc(1:len,l))
-      enddo
+      end do
 
 
 
@@ -332,15 +332,15 @@
           else
             b1(i,l) = (1.0 - max(acld_loc(i,l),acld_loc(i,l-1))) /
      *              (1.0 - acld_loc(i,l-1))
-          endif
+          end if
           if (acld_loc(i,l-1).eq.0.0) then
             b3(i,l) = 1.0
           else
             b3(i,l) = min(acld_loc(i,l),acld_loc(i,l-1)) /
      &                acld_loc(i,l-1)
-          endif
-        enddo
- 
+          end if
+        end do
+
         b2(i,nlm) = 1.0 - acld_loc(i,nlm)
         b4(i,nlm) = 1.0
         do l = 1,nlm-1
@@ -349,18 +349,18 @@
           else
             b2(i,l) = (1.0 - max(acld_loc(i,l),acld_loc(i,l+1))) /
      *              (1.0 - acld_loc(i,l+1))
-          endif
+          end if
           if (acld_loc(i,l+1).eq.0.0) then
             b4(i,l) = 1.0
           else
             b4(i,l) = min(acld_loc(i,l),acld_loc(i,l+1)) /
      &                acld_loc(i,l+1)
-          endif
-        enddo
-      enddo
+          end if
+        end do
+      end do
 !      do l = 1,nlm
 !        print *,l,acld_loc(1,l),b1(1,l),b2(1,l),b3(1,l),b4(1,l)
-!      enddo
+!      end do
 
 
       do l = 1, nnp
@@ -369,7 +369,7 @@
          cwrho(1:len,l) = den*1000.*qcwl_loc(1:len,l)*acld_loc(1:len,l)
          cirho(1:len,l) = den*1000.*qcil_loc(1:len,l)*acld_loc(1:len,l)
          o3mix(1:len,l) = o3l_loc(1:len,l)
-      enddo                  
+      end do
 
 
 !--   3. call to the bugs_rad longwave radiation code:
@@ -385,7 +385,7 @@
      +,          emis)
 
 !     print*,'---- exit subroutine bugs_lwr:'
-         
+
 !--   4. call to the bugs_rad shortwave radiation code:
 
 !--   note: slr needs to be modified to accomodate the difference in
@@ -393,24 +393,24 @@
       slr_loc(1:len) = slr_loc(1:len) * s0/1339.945
 
 !--   note: computation of the shortwave radiative heating rates and
-!     fluxes are made for daytime grid-points only: 
+!     fluxes are made for daytime grid-points only:
       bitx(1:len) = amu0_loc(1:len) .ge. 0.01
       nday = 0
       do i = 1, len
-         if(bitx(i)) then 
+         if(bitx(i)) then
             nday       = nday + 1
-            iday(nday) = i 
-         endif
-      enddo
+            iday(nday) = i
+         end if
+      end do
       if(nday .eq. 0) goto 1000
 
       allocate(ts_day(nday))
       allocate(amu0_day(nday))
       allocate(slr_day(nday))
-      allocate(alvdr_day(nday))      
-      allocate(alndr_day(nday))      
+      allocate(alvdr_day(nday))
+      allocate(alndr_day(nday))
       allocate(alvdf_day(nday))
-      allocate(alndf_day(nday))      
+      allocate(alndf_day(nday))
       allocate(acldmx_day(nday))
       allocate(pl_day(nday,nnp))
       allocate(dpl_day(nday,nnp))
@@ -428,9 +428,9 @@
       allocate(pl2_day(nday,nnp+1))
 
       allocate(fdsw_day(nday,nnp+1))
-      allocate(fdswcl_day(nday,nnp+1))      
+      allocate(fdswcl_day(nday,nnp+1))
       allocate(fusw_day(nday,nnp+1))
-      allocate(fuswcl_day(nday,nnp+1))           
+      allocate(fuswcl_day(nday,nnp+1))
       allocate(radvbc_day(nday))
       allocate(radvdc_day(nday))
       allocate(radnbc_day(nday))
@@ -492,7 +492,7 @@
       fdswcl(iday(1:nday),:)    = fdswcl_day(1:nday,:)
       fusw(iday(1:nday),:)      = fusw_day(1:nday,:)
       fuswcl(iday(1:nday),:)    = fuswcl_day(1:nday,:)
-      
+
       tboapar=boapar(1)
       tboapardif=boapardif(1)
       ttoapar=toapar(1)
@@ -500,10 +500,10 @@
       deallocate(ts_day)
       deallocate(amu0_day)
       deallocate(slr_day)
-      deallocate(alvdr_day)      
-      deallocate(alndr_day)      
+      deallocate(alvdr_day)
+      deallocate(alndr_day)
       deallocate(alvdf_day)
-      deallocate(alndf_day)      
+      deallocate(alndf_day)
       deallocate(acldmx_day)
       deallocate(pl_day)
       deallocate(dpl_day)
@@ -527,7 +527,7 @@
       deallocate(radnbcc_day)
       deallocate(radndcc_day)
       deallocate(fdsw_day)
-      deallocate(fdswcl_day)      
+      deallocate(fdswcl_day)
       deallocate(fusw_day)
       deallocate(fuswcl_day)
 
@@ -549,8 +549,8 @@
          delfcl(1:len)  = fuswcl(1:len,ll)-fdswcl(1:len,ll)
      +                  - fuswcl(1:len,ll+1) + fdswcl(1:len,ll+1)
          asl(1:len,l)   = -heat_fac*delf/dpl(1:len,l)
-         aslcl(1:len,l) = -heat_fac*delfcl/dpl(1:len,l)             
-      enddo 
+         aslcl(1:len,l) = -heat_fac*delfcl/dpl(1:len,l)
+      end do
 
 
 !---- back to full arrays:
@@ -562,7 +562,7 @@
       radvdcc(1:len) = radvdcc_loc(1:len)
       radnbcc(1:len) = radnbcc_loc(1:len)
       radndcc(1:len) = radndcc_loc(1:len)
-      
+
 
 !     print*,'---- exit subroutine bugs_rad:'
       return

@@ -1,7 +1,7 @@
 
 
 ! CVS:  $Id: continuum.F90,v 1.1 2007/05/30 15:52:47 norm Exp $
-! CVS:  $Name:  $ 
+! CVS:  $Name:  $
 module continuum
 
 use kinds
@@ -106,7 +106,7 @@ subroutine gascon                &
    use kinds,             only:  int_kind, dbl_kind
    use bugsrad_physconst, only:  gravity, r_d, f_virt
    implicit none
-      
+
 !-----------------------------------------------------------------------
 ! MODIFICATIONS:
 ! * changed declarations to adapt the code from BUGS4 to BUGS5.
@@ -118,7 +118,7 @@ subroutine gascon                &
 ! REFERENCES:
 ! Parameterized CKD_2.1 continuum absorption.
 ! adapted from the Fu-Liou 4-stream radiative transfer model original
-! code by Fred Rose. use radparams_0898. 
+! code by Fred Rose. use radparams_0898.
 ! Phil Partain/graben (04/04/00).
 
 ! send comments to partain@atmos.colostate.edu.
@@ -136,7 +136,7 @@ subroutine gascon                &
 ! INPUT ARGUMENTS:
 ! ----------------
    integer (kind=int_kind), intent(in):: &
-      ncol & !Length of sub-domain.       
+      ncol & !Length of sub-domain.
      ,nlm  & !Number of layers.
      ,ib     !Spectral interval.
 
@@ -163,8 +163,8 @@ subroutine gascon                &
 
    real (kind=dbl_kind)::  &
       dz, amnt, patm, tv
- 
-   tgm(:,:) = 0. 
+
+   tgm(:,:) = 0.
    if( iflb(ib) .eq. 0) return
    do i = 1, ncol
       do l = 1, nlm
@@ -176,10 +176,10 @@ subroutine gascon                &
             dz       = (r_d/gravity)*tv*log(pp(i,l+1)/pp(i,l))* &
                           0.001_dbl_kind
             tgm(i,l) = parm_ckd24(iflb(ib),amnt,patm,tt(i,l),dz)
-         endif
-      enddo
-   enddo
- 
+         end if
+      end do
+   end do
+
    return
 end subroutine gascon
 
@@ -243,7 +243,7 @@ function parm_ckd24(iband,amnt,patm,temp,dz) result(ckd24_tau)
    elseif (dz > 1.50) then
       factor = 1.50/dz
       dz1    = 1.50
-   endif
+   end if
    amnt1=amnt*factor
 
 ! Regression is now broken up into TWO parts one for small

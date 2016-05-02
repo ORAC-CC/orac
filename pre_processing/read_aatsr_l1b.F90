@@ -337,7 +337,7 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
    ! temporary for now
    if (trim(adjustl(sensor)) .eq. 'ATSR2') then
       is_lut_drift_corrected = .true.
-   endif
+   end if
 
    ! convert elevation angles read into zenith angles
    imager_angles%solzen = 90.0 - imager_angles%solzen
@@ -413,8 +413,8 @@ end if ! drift corrected
                end do
             end do
          end if
-      enddo
-   endif
+      end do
+   end if
 
 if (is_lut_drift_corrected) then
    do i=1,channel_info%nchannels_total
@@ -425,9 +425,9 @@ if (is_lut_drift_corrected) then
          imager_measurements%data(:,:,i) = imager_measurements%data(:,:,i)*0.01
          imager_measurements%uncertainty(:,:,i) = &
               imager_measurements%uncertainty(:,:,i) * 0.01
-      endif
-   enddo
-endif
+      end if
+   end do
+end if
 
    ! copy time values into rows from nadir (which we're presumably viewing) and
    ! translate to Julian time

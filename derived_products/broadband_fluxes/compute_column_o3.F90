@@ -25,13 +25,13 @@
 subroutine compute_column_o3(nlm,H,O3,colO3)
 
    implicit none
-   
+
    integer, intent(in) :: nlm
 
    !meteorological profiles
    real, intent(in), dimension(nlm+1) :: &
     H   ,& !height profile at SAT. pixel               (hPa).
-    O3     !temperature profile at SAT. pixel        (kg/kg).  
+    O3     !temperature profile at SAT. pixel        (kg/kg).
 
    !OUTPUT
    real, intent(out) :: colO3
@@ -45,6 +45,6 @@ subroutine compute_column_o3(nlm,H,O3,colO3)
       !print*,H(i),H(i)-H(i+1)
     colO3 = colO3+((O3(i)+O3(i+1))/2.) * (H(i)-H(i+1))*1000000.
     !print*,((O3(i)+O3(i+1))/2.) * (H(i)-H(i+1)),colO3
-   enddo
+   end do
    return
 end subroutine compute_column_o3

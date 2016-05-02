@@ -6,7 +6,7 @@
 
 !-----------------------------------------------------------------------
       subroutine driver_read(tsi,theta,asfcswr,asfcnir,&
-                             cref,ccot,hctop,hcbase,&                            
+                             cref,ccot,hctop,hcbase,&
                              hctopID,hcbaseID,&
                              pxZ,pxP,pxT,pxQ,pxO3,&
                              toalwup,toaswdn,toaswup,&
@@ -39,7 +39,7 @@
 
 ! FUNCTIONS CALLED:
 !     none.
- 
+
 ! INCLUDED COMMON BLOCKS:
 !     none.
 
@@ -105,7 +105,7 @@
         fdlwcl,&     !CLEAR-sky LW downwelling flux                 (W/m^2).
         fuswcl,&     !CLEAR-sky SW upwelling flux                 (W/m^2).
         fdswcl       !CLEAR-sky SW downwelling flux                 (W/m^2).
-      
+
 
       real, parameter :: bugs_solar_constant = 1360.
       real  solar_factor
@@ -113,7 +113,7 @@
       !For timing
       real, dimension(2) :: tarray
       real :: dtime, elapsed
-      
+
       ! For reading the file
       character(LEN=1)   ::  l0
       character(LEN=200) ::  line
@@ -131,7 +131,7 @@
      !print*,pxZ
      !print*,pxT
 
-!---- 1. READ PROFILE DATA FROM FILE:  
+!---- 1. READ PROFILE DATA FROM FILE:
 
 
       nlm = 30
@@ -141,7 +141,7 @@
        allocate(ts(nlen) , amu0(nlen) , slr(nlen))
 
        allocate(alvdr(nlen) , alndr(nlen) , alvdf(nlen), alndf(nlen))
-       allocate(umco2(nlen), umch4(nlen), umn2o(nlen))     
+       allocate(umco2(nlen), umch4(nlen), umn2o(nlen))
        allocate(pl(nlen,nlm), dpl(nlen,nlm), tl(nlen,nlm), ql(nlen,nlm), &
        qcwl(nlen,nlm) , qcil(nlen,nlm), qrwl(nlen,nlm), qril(nlen,nlm),  &
        o3l(nlen,nlm), acld(nlen,nlm))
@@ -159,7 +159,7 @@
    pl2(1,:) = pxP(1:)
    do l=1,nlm
     pl(1,l) = pxP(l) + ( pxP(l+1)-pxP(l) ) / 2.
-   enddo
+   end do
    pl2(1,:) = pxP(1:)
 
 
@@ -182,22 +182,22 @@
    umco2(1)=380.
    umch4(1)=1.80
    umn2o(1)=0.26
-  
+
       do l=1,nlm
         dpl(1,l) = pl2(1,l+1)-pl2(1,l)
-      enddo
+      end do
 
 ! clouds?  Hardcoded here, can read in if you want to.
       LWP=((5./9.)*cref*ccot)
       CWC=LWP/((hctop-hcbase)*1000.)
-     
+
       !initialize
       qcwl(1,:) = 0.0 !cloud water mixing ratio (kg/kg)
       qcil(1,:) = 0.0 !cloud ice mixing ratio (kg/kg)
       qrwl(1,:) = 0.0 !rain mixing ratio
       qril(1,:) = 0.0 !snow mixing ratio
       acld(1,:) = 0.0 !layer cloud fraction
-      
+
       !assign cloud to specific level
       acld(1,hctopID(1):hcbaseID(1)) = 1.0
 
@@ -208,15 +208,15 @@
        print*,acld
        print*,' '
        print*,qcwl
-       stop 
-      endif
+       stop
+      end if
 
 
 
 !---- 2. COPY PROFILE TO ALL COLUMNS:
 ! copy the same column to all columns (only useful if testing multiple
 ! identical columns for timing, otherwise, it doesn't hurt)
-      do i=1,nlen       
+      do i=1,nlen
         pl2(i,:) = pl2(1,:)
         pl(i,:) = pl(1,:)
         dpl(i,:) = dpl(1,:)
@@ -232,7 +232,7 @@
         alvdf(i) = alvdf(1)
         alndr(i) = alndr(1)
         alndf(i) = alndf(1)
-      enddo
+      end do
 
 !---- 3. SPECIFY OTHER VARIABLES:
 !      amu0(:) = 1.0
@@ -253,8 +253,8 @@
                     acld, umco2, umch4, umn2o, &
                     fdswcl,fuswcl,fdlwcl,fulwcl,boapar,boapardif,toapar)
       elapsed = dtime(tarray)
-      
-      
+
+
 !---- 5. OUTPUT RESULTS:
 ! print fluxes in W/m2, heating rates in K/day.
       !print *, "Dtime: ", elapsed
@@ -263,13 +263,13 @@
       !do l=1,nlm+1
       !  print '(I4,5(F12.3))',l,pl2(1,l),fdsw(1,l),fusw(1,l), &
       !                                   fdlw(1,l),fulw(1,l)
-      !enddo
+      !end do
       !print *, 'Heating Rates   Play              SW            LW'
       !print *, '                  Pa           K/day         K/day'
-      !do l=1,nlm  
+      !do l=1,nlm
       !  print '(I4,6X, F12.3,2(F15.5))', &
       !         l,pl(1,l),asl(1,l)*86400.,atl(1,l)*86400. !K/day
-      !enddo
+      !end do
 
       toalwup = fulw(1,1)
       toaswdn = fdsw(1,1)
@@ -284,7 +284,7 @@
       boalwdnclr = fdlwcl(1,nlm+1)
       boaswdnclr = fdswcl(1,nlm+1)
       boaswupclr = fuswcl(1,nlm+1)
-      
+
       end subroutine driver_read
 
 !-----------------------------------------------------------------------

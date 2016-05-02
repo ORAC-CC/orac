@@ -63,7 +63,7 @@
         b = rho_0d(modID1(I)) - m*modBand(modID1(I))
         rho0d_bugsrad(I) = m*bugsBand(I) + b
         IF(rho0d_bugsrad(I) .ge. 1.) rho0d_bugsrad(I) = 1.0
-      enddo
+      end do
       rho0d_bugsrad(1) = ( rho_0d(3)+rho_0d(4)+rho_0d(1) ) / 3.
       !print*,'rho_0d = ',rho_0d_bugs_sfc_albedo
 
@@ -73,11 +73,11 @@
         b = rho_dd(modID1(I)) - m*modBand(modID1(I))
         rhodd_bugsrad(I) = m*bugsBand(I) + b
         IF(rhodd_bugsrad(I) .ge. 1.) rhodd_bugsrad(I) = 1.0
-      enddo
+      end do
       rhodd_bugsrad(1) = ( rho_dd(3)+rho_dd(4)+rho_dd(1) ) / 3.
       !print*,'rho_dd = ',rho_dd_bugs_sfc_albedo
 
-   endif
+   end if
 
    ! Heritage Spectral Channel Range
    if(nc_alb .EQ. 4) then
@@ -92,7 +92,7 @@
         b = rho_0d(modID1(I)) - m*modBand(modID1(I))
         rho0d_bugsrad(I) = m*bugsBand(I) + b
         IF(rho0d_bugsrad(I) .ge. 1.) rho0d_bugsrad(I) = 1.0
-      enddo
+      end do
       rho0d_bugsrad(1) = rho_0d(1)
 
       ! rho_dd
@@ -101,9 +101,9 @@
         b = rho_dd(modID1(I)) - m*modBand(modID1(I))
         rhodd_bugsrad(I) = m*bugsBand(I) + b
         IF(rhodd_bugsrad(I) .ge. 1.) rhodd_bugsrad(I) = 1.0
-      enddo
+      end do
       rhodd_bugsrad(1) = rho_dd(1)
-   endif
+   end if
 
    return
 end subroutine preprocess_bugsrad_sfc_albedo

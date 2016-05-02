@@ -49,8 +49,8 @@ subroutine netcdf_output_check(output_path,lwrtm_file,swrtm_file,prtm_file,confi
       if (nf90_close(ncid) .ne. NF90_NOERR) then
          write (*,*) 'ERROR: netcdf_create_config(): nf90_close(): ".alb.nc"'
          stop error_stop_code
-      endif
-   endif
+      end if
+   end if
 
    if (verbose) write(*,*) 'Cloud flag file: ', trim(cf_file)
    call nc_open(ncid, trim(adjustl(output_path))//'/'//trim(adjustl(cf_file)), ierr)
@@ -62,8 +62,8 @@ subroutine netcdf_output_check(output_path,lwrtm_file,swrtm_file,prtm_file,confi
       if (nf90_close(ncid) .ne. NF90_NOERR) then
          write (*,*) 'ERROR: netcdf_create_config(): nf90_close(): ".clf.nc"'
          stop error_stop_code
-      endif
-   endif
+      end if
+   end if
 
    if (verbose) write(*,*) 'Config file: ', trim(config_file)
    call nc_open(ncid, trim(adjustl(output_path))//'/'//trim(adjustl(config_file)), ierr)
@@ -75,8 +75,8 @@ subroutine netcdf_output_check(output_path,lwrtm_file,swrtm_file,prtm_file,confi
       if (nf90_close(ncid) .ne. NF90_NOERR) then
          write (*,*) 'ERROR: netcdf_create_config(): nf90_close(): ".config.nc"'
          stop error_stop_code
-      endif
-   endif
+      end if
+   end if
 
    if (verbose) write(*,*) 'Geometry file: ', trim(geo_file)
    call nc_open(ncid, trim(adjustl(output_path))//'/'//trim(adjustl(geo_file)), ierr)
@@ -88,8 +88,8 @@ subroutine netcdf_output_check(output_path,lwrtm_file,swrtm_file,prtm_file,confi
       if (nf90_close(ncid) .ne. NF90_NOERR) then
          write (*,*) 'ERROR: netcdf_create_config(): nf90_close(): ".geo.nc"'
          stop error_stop_code
-      endif
-   endif
+      end if
+   end if
 
    if (verbose) write(*,*) 'Location file: ', trim(loc_file)
    call nc_open(ncid, trim(adjustl(output_path))//'/'//trim(adjustl(loc_file)), ierr)
@@ -101,8 +101,8 @@ subroutine netcdf_output_check(output_path,lwrtm_file,swrtm_file,prtm_file,confi
       if (nf90_close(ncid) .ne. NF90_NOERR) then
          write (*,*) 'ERROR: netcdf_create_config(): nf90_close(): ".loc.nc"'
          stop error_stop_code
-      endif
-   endif
+      end if
+   end if
 
    if (verbose) write(*,*) 'Land/sea file: ', trim(lsf_file)
    call nc_open(ncid, trim(adjustl(output_path))//'/'//trim(adjustl(lsf_file)), ierr)
@@ -114,8 +114,8 @@ subroutine netcdf_output_check(output_path,lwrtm_file,swrtm_file,prtm_file,confi
       if (nf90_close(ncid) .ne. NF90_NOERR) then
          write (*,*) 'ERROR: netcdf_create_config(): nf90_close(): ".lsf.nc"'
          stop error_stop_code
-      endif
-   endif
+      end if
+   end if
 
    if (verbose) write(*,*) 'LwRTM file: ', trim(lwrtm_file)
    call nc_open(ncid, trim(adjustl(output_path))//'/'//trim(adjustl(lwrtm_file)), ierr)
@@ -127,8 +127,8 @@ subroutine netcdf_output_check(output_path,lwrtm_file,swrtm_file,prtm_file,confi
       if (nf90_close(ncid) .ne. NF90_NOERR) then
          write (*,*) 'ERROR: netcdf_create_config(): nf90_close(): ".lwrtm.nc"'
          stop error_stop_code
-      endif
-   endif
+      end if
+   end if
 
    if (verbose) write(*,*) 'Imagery file: ', trim(msi_file)
    call nc_open(ncid, trim(adjustl(output_path))//'/'//trim(adjustl(msi_file)), ierr)
@@ -140,8 +140,8 @@ subroutine netcdf_output_check(output_path,lwrtm_file,swrtm_file,prtm_file,confi
       if (nf90_close(ncid) .ne. NF90_NOERR) then
          write (*,*) 'ERROR: netcdf_create_config(): nf90_close(): ".msi.nc"'
          stop error_stop_code
-      endif
-   endif
+      end if
+   end if
 
    if (verbose) write(*,*) 'Prtm file: ', trim(prtm_file)
    call nc_open(ncid, trim(adjustl(output_path))//'/'//trim(adjustl(prtm_file)), ierr)
@@ -153,8 +153,8 @@ subroutine netcdf_output_check(output_path,lwrtm_file,swrtm_file,prtm_file,confi
       if (nf90_close(ncid) .ne. NF90_NOERR) then
          write (*,*) 'ERROR: netcdf_create_config(): nf90_close(): ".prtm.nc"'
          stop error_stop_code
-      endif
-   endif
+      end if
+   end if
 
    if (verbose) write(*,*) 'SwRTM file: ', trim(swrtm_file)
    call nc_open(ncid, trim(adjustl(output_path))//'/'//trim(adjustl(swrtm_file)), ierr)
@@ -166,7 +166,7 @@ subroutine netcdf_output_check(output_path,lwrtm_file,swrtm_file,prtm_file,confi
       if (nf90_close(ncid) .ne. NF90_NOERR) then
          write (*,*) 'ERROR: netcdf_create_config(): nf90_close(): ".swrtm.nc"'
          stop error_stop_code
-      endif
-   endif
+      end if
+   end if
 
  end subroutine netcdf_output_check

@@ -15,7 +15,7 @@ module bugsrad_planck
                        57.891546,    -1.4745788,       0.14577775e-01, -0.68637478e-04,  0.14707480e-06, -0.98862337e-10, &     !Band 3    as a function of temperature and band.
                        21.837317,    -0.63194381,      0.71338812e-02, -0.38569394e-04,  0.95685257e-07, -0.76188561e-10, &     !Band 4
                       0.83155466,    -0.15281669,      0.31020500e-02, -0.23768837e-04,  0.74605666e-07, -0.67494167e-10, &     !Band 5
-                      -19.432674,     0.37744942,     -0.22166529e-02,  0.11663914e-05,  0.22128830e-07, -0.28943829e-10, &     !Band 6 
+                      -19.432674,     0.37744942,     -0.22166529e-02,  0.11663914e-05,  0.22128830e-07, -0.28943829e-10, &     !Band 6
                       -51.844021,      1.2280373,     -0.10600353e-01,  0.38135251e-04, -0.45111018e-07,  0.16679671e-10, &     !Band 7
                       -31.210771,     0.85737498,     -0.87947387e-02,  0.39416747e-04, -0.67469797e-07,  0.43711306e-10, &     !Band 8
                       -5.4417604,     0.28970317,     -0.44571665e-02,  0.26395273e-04, -0.52111967e-07,  0.37627129e-10, &     !Band 9
@@ -44,22 +44,22 @@ module bugsrad_planck
          real (kind=dbl_kind), intent(out), dimension(:,:) :: &
             bf
 
-         
+
          !Local variables
          integer (kind=int_kind) :: &
             i_lay     !Layer index
          real(kind=dbl_kind), dimension(NCOL) :: &
              tmp      !Tmp var to hold interface temperature
 
-    
-         !Blackbody emission at top-of-model                        
+
+         !Blackbody emission at top-of-model
          bf(:,1) = b(1,nbir)+tt(:,1)*(b(2,nbir)+tt(:,1)*(b(3,nbir)+tt(:,1)*(b(4,nbir)+tt(:,1)*(b(5,nbir)+tt(:,1)*b(6,nbir)))))
          !Emission at remaining interfaces
          do i_lay = 2,nlm
               tmp(:) = 0.5*(tt(:,i_lay-1)+tt(:,i_lay))
               bf(:,i_lay)= b(1,nbir)+tmp(:)*(b(2,nbir)+tmp(:)*(b(3,nbir)+tmp(:)*(b(4,nbir)+tmp(:)*(b(5,nbir)+tmp(:)*b(6,nbir)))))
-           !enddo
-         enddo
+           !end do
+         end do
          !Surface emission
          bf(:,nlm+1) = b(1,nbir)+ts(:)*(b(2,nbir)+ts(:)*(b(3,nbir)+ts(:)*(b(4,nbir)+ts(:)*(b(5,nbir)+ts(:)*b(6,nbir)))))
          return

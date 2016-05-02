@@ -436,7 +436,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       if (nargs .lt. 47) then
          write(*,*) 'ERROR: not enough command line arguments'
          stop error_stop_code
-      endif
+      end if
 
       call get_command_argument(1,sensor)
       call get_command_argument(2,l1b_path_file)
@@ -603,7 +603,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    if (n_channels .ne. 0 .and. .not. associated(channel_ids)) then
       write(*,*) 'ERROR: options n_channels and channel_ids must be used together'
       stop error_stop_code
-   endif
+   end if
 
 
    if (ecmwf_path(2) .eq. '') ecmwf_path(2) = ecmwf_path(1)
@@ -1051,7 +1051,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
                  platform,sensor,global_atts,source_atts,cyear,cmonth,cday,chour, &
                  cminute,preproc_dims,imager_angles,imager_geolocation,netcdf_info, &
                  channel_info,include_full_brdf,verbose)
-         endif
+         end if
 
       end do
 

@@ -363,7 +363,7 @@ subroutine correct_for_ice_snow(nise_path,imager_geolocation,surface,cyear, &
             surface%rho_0d(i,j,:) = surface%albedo(i,j,:)
             surface%rho_dv(i,j,:) = surface%albedo(i,j,:)
             surface%rho_dd(i,j,:) = surface%albedo(i,j,:)
-         endif
+         end if
       end do
    end do
    ! Tidy up the nise structure created by the read_nsidc_snow call
@@ -438,14 +438,14 @@ subroutine apply_ice_correction(x, y, nise, ice_albedo, snow_albedo, &
       applied_flag = .true.
       do i=1,channel_info%nchannels_sw
          pixel_ref(i) = snow_albedo(channel_info%map_ids_abs_to_snow_and_ice(i))
-      enddo
+      end do
       nise_mask_flag = YES
    else if (pixel_ice(1).eq.1.) then
       ! completely icy
       applied_flag = .true.
       do i=1,channel_info%nchannels_sw
          pixel_ref(i) = ice_albedo (channel_info%map_ids_abs_to_snow_and_ice(i))
-      enddo
+      end do
       nise_mask_flag = YES
    else if (pixel_ice(1).gt.0.) then
       ! somewhat icy
@@ -544,7 +544,7 @@ subroutine correct_for_ice_snow_ecmwf(ecmwf_HR_path,imager_geolocation, &
            surface%nise_mask(i,j)=YES
          else
            surface%nise_mask(i,j)=NO
-         endif
+         end if
 
          flag = .false.
 
@@ -571,7 +571,7 @@ subroutine correct_for_ice_snow_ecmwf(ecmwf_HR_path,imager_geolocation, &
              flag = .true.
              surface%albedo(i,j,:) = snow_albedo
 
-         endif
+         end if
 
          if (include_full_brdf .and. flag) then
             surface%rho_0v(i,j,:) = surface%albedo(i,j,:)
@@ -579,8 +579,8 @@ subroutine correct_for_ice_snow_ecmwf(ecmwf_HR_path,imager_geolocation, &
             surface%rho_dv(i,j,:) = surface%albedo(i,j,:)
             surface%rho_dd(i,j,:) = surface%albedo(i,j,:)
          end if
-      enddo
-    enddo
+      end do
+    end do
 
 end subroutine correct_for_ice_snow_ecmwf
 

@@ -2,7 +2,7 @@
 ! Name: collocate_aerosol2cloud.F90
 !
 ! Purpose:
-! Used to match A(A)TSR CCI aerosol retrievals (at 10 km resolution) to the 
+! Used to match A(A)TSR CCI aerosol retrievals (at 10 km resolution) to the
 ! 1-km (instrument) pixel retrievals in the primary and secondary CC4CL
 ! products.
 !
@@ -61,7 +61,7 @@ subroutine collocate_aerosol2cloud(anum,aLon,aLat,xdim,ydim,cLon,cLat,aID)
    real, dimension(xdim,ydim) :: cU
    real, dimension(xdim,ydim) :: cV
    integer :: i,j,k,iY,iX,tct
-   integer, dimension(2000) :: tID  
+   integer, dimension(2000) :: tID
    real :: lonmin,lonmax,latmin,latmax
    real :: d
    real :: start,finish
@@ -108,7 +108,7 @@ subroutine collocate_aerosol2cloud(anum,aLon,aLat,xdim,ydim,cLon,cLat,aID)
     Wrap=0
     !international dateline fix
     if(abs(lonmin) .gt. 175. .or. abs(lonmax) .gt. 175.) Wrap=1
-      
+
 
     !latitude min&max over across scan pixels
     latmin=minval(cLat(:,iY-10:iY+10))
@@ -123,18 +123,18 @@ subroutine collocate_aerosol2cloud(anum,aLon,aLat,xdim,ydim,cLon,cLat,aID)
        if(aLat(k) .ge. latmin-0.15 .and. aLat(k) .le. latmax+0.15 .and. aLon(k) .ge. lonmin-0.15 .and. aLon(k) .le. lonmax+0.15) then
         tID(tct) = k
         tct=tct+1
-       endif
-      endif
+       end if
+      end if
 
       !international dateline
       if(Wrap .eq. 1) then
        if( (aLat(k) .ge. latmin-0.15 .and. aLat(k) .le. latmax+0.15) .and. (aLon(k) .lt. -175. .or. aLon(k) .gt. 175.) ) then
         tID(tct) = k
         tct=tct+1
-       endif
-      endif
+       end if
+      end if
 
-    enddo
+    end do
     !print*,iY,': 2'
     if(tct .gt. 1) then
 
@@ -154,7 +154,7 @@ subroutine collocate_aerosol2cloud(anum,aLon,aLat,xdim,ydim,cLon,cLat,aID)
            aID2(act2) = tID(k)
            aDist2(act2) = d
            act2=act2+1
-         endif !within 15 km
+         end if !within 15 km
          !if(iY .eq. 1491) print*,iY,iX,': 6',k,d,act2
 
          !select nearest neighbor
@@ -163,15 +163,15 @@ subroutine collocate_aerosol2cloud(anum,aLon,aLat,xdim,ydim,cLon,cLat,aID)
            aDist3 = aDist2(minloc(aDist2(1:act2-1)))
            aID(iX,iY) = aID3(1)
            aDist(iX,iY) = aDist3(1)
-         endif
+         end if
          !if(iY .eq. 1491) print*,iY,iX,': 7',k,d,act2
 
-        enddo !loop over aerosol in geographic range
+        end do !loop over aerosol in geographic range
        !print*,iY,': 8'
 
-      enddo !x-loop over across track pixels
-    endif !range  
-   enddo !y-loop over along-track pixels
+      end do !x-loop over across track pixels
+    end if !range
+   end do !y-loop over along-track pixels
 
 
 
@@ -193,12 +193,12 @@ if(4 .gt. 5) then
     latmax = j-90
       lonID(i) = i-181
       latID(j) = j-91
-      Wrap=0 
+      Wrap=0
       if(lonmin .eq. -180. .or. lonmax .eq. 180.) then
         Wrap=1
         lonmin = 178.5
         lonmax = -178.5
-      endif
+      end if
 
     strct=1
     trct=1
@@ -209,26 +209,26 @@ if(4 .gt. 5) then
         if(aLat(k) .ge. latmin .and. aLat(k) .lt. latmax .and. aLon(k) .ge. lonmin .and. aLon(k) .lt. lonmax) then
           srID(i,j,strct)=k
           strct=strct+1
-        endif
+        end if
 
       !could be outside box
       if(aLat(k) .ge. latmin-0.135 .and. aLat(k) .lt. latmax+0.135 .and. aLon(k) .ge. lonmin-0.5 .and. aLon(k) .lt. lonmax+0.5) then
         rID(i,j,trct)=k
         trct=trct+1
-      endif
+      end if
 
       !probably outside box high/latitudes
       if(aLat(k) .ge. latmin-1.35 .and. aLat(k) .lt. latmax+1.35 .and. aLon(k) .ge. lonmin-1.5 .and. aLon(k) .lt. lonmax+1.5) then
         hilatID(i,j,hilattrct)=k
         hilattrct=hilattrct+1
-      endif
-    enddo
+      end if
+    end do
     rct(i,j) = trct
     srct(i,j) = strct
     hilatct(i,j) = hilattrct
 
-   enddo
-   enddo
+   end do
+   end do
    !maximum pixels in a grid-box
    print*,maxval(rct)
    print*,maxval(srct)
@@ -261,10 +261,10 @@ if(4 .gt. 5) then
          aID(iX,iY) = srID(tXID,tYID,k)
          aDist(iX,iY) = d
          exit !break out of loop once you find a pair within 10 km
-        endif !within 10 km       
-       enddo      
-      endif
- 
+        end if !within 10 km
+       end do
+      end if
+
       !data point is near the edge of the window
       !use composite 2 (slower collocation over larger number of points that can exist outside of grid-box)
       if( abs(cLon(iX,iY)-lonID(int(cLon(iX,iY))+181)) .lt. 0.15 .or. abs(cLat(iX,iY)-latID(int(cLat(iX,iY))+181)) .lt. 0.15 ) then
@@ -278,11 +278,11 @@ if(4 .gt. 5) then
          aID(iX,iY) = rID(tXID,tYID,k)
          aDist(iX,iY) = d
          exit !break out of loop once you find a pair within 10 km
-        endif !within 10 km       
-       enddo      
-      endif
+        end if !within 10 km
+       end do
+      end if
 
-    endif !low-latitude
+    end if !low-latitude
 
     !high-latitude
     if( abs(cLat(iX,iY)) .ge. 75. .and. abs(cLat(iX,iY)) .lt. 85.) then
@@ -295,15 +295,15 @@ if(4 .gt. 5) then
          aID(iX,iY) = hilatID(tXID,tYID,k)
          aDist(iX,iY) = d
          exit !break out of loop once you find a pair within 10 km
-        endif !within 10 km       
-       enddo 
-    endif
+        end if !within 10 km
+       end do
+    end if
 
     !over-the-pole
     if( abs(cLat(iX,iY)) .ge. 85.) then
        flag=4
        !needs to be coded
-    endif
+    end if
 
       if(flag .eq. 0) then
        print*,cLon(iX,iY),cLat(iX,iY)
@@ -313,12 +313,12 @@ if(4 .gt. 5) then
        print*,''
        print*,'flag = 0; something went wrong!'
        stop
-      endif
+      end if
 
-    endif !data in region
-   enddo
-   enddo
-endif !skip approach
+    end if !data in region
+   end do
+   end do
+end if !skip approach
 
 call cpu_time(finish)
 print*,finish-start,' seconds elapsed'
@@ -335,7 +335,7 @@ subroutine haversine(deglat1,deglon1,deglat2,deglon2,dist)
           real :: a,c,dist,dlat,dlon,lat1,lat2
           real,parameter :: radius = 6372.8
           real,parameter :: Pi = 3.1415927
- 
+
           dlat = (deglat2-deglat1)*Pi/180.
           dlon = (deglon2-deglon1)*Pi/180.
           lat1 = (deglat1)*Pi/180.

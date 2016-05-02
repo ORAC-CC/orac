@@ -108,7 +108,7 @@ contains
        glint_mask = YES
     else
        glint_mask = NO
-    endif
+    end if
 
     if ( channel1 .eq. sreal_fill_value ) then
        ch1 = channel1
@@ -118,21 +118,21 @@ contains
        if (trim(adjustl(sensor_name)) .eq. 'AATSR' ) ch1 = 0.8542 * ch1
        if ((lsflag .eq. 0_byte) .and. (niseflag .eq. NO) .and. (albedo1 .ge. 0.)) ch1 = max(ch1 - albedo1 * 100. / 2., 0.)
        ch1 = min(106.,ch1) ! Dont allow reflectance to be higher than trained
-    endif
+    end if
 
     if ( channel2 .eq. sreal_fill_value ) then
        if ( (trim(adjustl(sensor_name)) .eq. 'MODIS') .and. ch1 .gt. 50. ) then
           ch2 = min(104., ch1 * 1.03)
        else
           ch2 = channel2
-       endif
+       end if
     else
        ch2 = channel2 * 100.
        if (trim(adjustl(sensor_name)) .eq. 'MODIS' ) ch2 = 0.8336 * ch2 + 1.749
        if (trim(adjustl(sensor_name)) .eq. 'AATSR' ) ch2 = 0.7787 * ch2
        if ((lsflag .eq. 0_byte) .and. (niseflag .eq. NO) .and. (albedo2 .gt. 0.)) ch2 = max(ch2 - albedo2 * 100. / 2., 0.)
        ch2 = min(104.,ch2) ! Dont allow reflectance to be higher than trained
-    endif
+    end if
 
     if ( channel3b .eq. sreal_fill_value ) then
        ch3b = channel3b
@@ -140,7 +140,7 @@ contains
        ch3b = channel3b
        if (trim(adjustl(sensor_name)) .eq. 'MODIS' ) ch3b = 0.9944 * ch3b + 1.152
        if (trim(adjustl(sensor_name)) .eq. 'AATSR' ) ch3b = 1.0626 * ch3b - 15.777
-    endif
+    end if
 
     if ( channel4 .eq. sreal_fill_value ) then
        ch4 = channel4
@@ -148,7 +148,7 @@ contains
        ch4 = channel4
        if (trim(adjustl(sensor_name)) .eq. 'MODIS' ) ch4 = 0.9742 * ch4 + 7.205
        if (trim(adjustl(sensor_name)) .eq. 'AATSR' ) ch4 = 0.9793 * ch4 + 5.366
-    endif
+    end if
 
     if ( channel5 .eq. sreal_fill_value ) then
        ch5 = channel5
@@ -159,7 +159,7 @@ contains
        ! use following instead of previous line if AATSR channel 5 (12 um)...
        ! ...is NOT "non-linearity" corrected
        ! if (trim(adjustl(sensor_name)) .eq. 'AATSR' ) ch5 = 0.9901 * ch5 + 2.568
-    endif
+    end if
 
     btd_ch4_ch5  = ch4 - ch5
     btd_ch4_ch3b = ch4 - ch3b
@@ -178,12 +178,12 @@ contains
 !       if ( ( ch3b .lt. NOAA7_9_CH3B_BT_THRES ) .and. ( (trim(adjustl(platform)) .eq. 'noaa7') &
 !            .or. (trim(adjustl(platform)) .eq. 'noaa9') ) ) then
 !          illum_nn = 2
-!       endif
+!       end if
     else
        illum_nn = 0
        ! if solzen is negative, do not call neural net
        call_neural_net = .FALSE.
-    endif
+    end if
 
     threshold_used = sreal_fill_value
 
@@ -232,7 +232,7 @@ contains
        elseif ( lsflag .eq. 1_byte ) then
           threshold_used = COT_THRES_DAY_LAND
           if ( niseflag .eq. YES  ) threshold_used = COT_THRES_DAY_LAND_ICE
-       endif
+       end if
 
     elseif ( illum_nn .eq. 2 )  then
 
@@ -280,7 +280,7 @@ contains
        elseif ( lsflag .eq. 1_byte ) then
           threshold_used = COT_THRES_TWL_LAND
           if ( niseflag .eq. YES  ) threshold_used = COT_THRES_TWL_LAND_ICE
-       endif
+       end if
 
     elseif ( illum_nn .eq. 3 ) then
 
@@ -329,16 +329,16 @@ contains
        elseif ( lsflag .eq. 1_byte ) then
           threshold_used = COT_THRES_NIGHT_LAND
           if ( niseflag .eq. YES  ) threshold_used = COT_THRES_NIGHT_LAND_ICE
-       endif
+       end if
 
     else
 
        if (verbose) then
 !          write(*,*) "Solar zenith angle < 0 in neural_net_preproc"
-       endif
+       end if
 
        ! --- end of day/night if loop
-    endif
+    end if
 
     !this should never happen and is only the case if lsflag is neither 0 nor 1
     if ( threshold_used .eq. sreal_fill_value ) call_neural_net=.false.
@@ -361,18 +361,18 @@ contains
 !       output = output + min( 0., (1./6. * ( (glint_angle / 50. )**2. -1.) ) )
 !       if ((lsflag .eq. 0_byte) .and. (niseflag .eq. NO)) output = output - albedo(1)
 !          output = output + min( 0., (1./6. * ( (glint_angle / 25. ) -1.) ) )
-!       endif
+!       end if
 
        ! Testing ice-free sea skin temperature correction
        if  (( lsflag .eq. 0_byte ) .AND. (niseflag .eq. NO) .and. &
             (illum_nn .ne. 3) ) then
           output = output - ((300.- skint)/30.)*0.15
-       endif
+       end if
 
        if  (( lsflag .eq. 0_byte ) .AND. (niseflag .eq. NO) .and. &
             (illum_nn .eq. 3) ) then
           output = output - ((300.- skint)/30.)*0.3
-       endif
+       end if
 
        ! --- ensure that CCCOT is within 0 - 1 range
        cccot_pre = max( min( output, 1.0 ), 0.0)
@@ -389,7 +389,7 @@ contains
           cldflag = CLOUDY
        else
           cldflag = CLEAR
-       endif
+       end if
 
 
        ! calculate Uncertainty with pre calculated calipso scores
@@ -402,7 +402,7 @@ contains
           cld_uncertainty = ( CLOUDY_UNC_MAX - CLOUDY_UNC_MIN ) * (norm_diff_cc_th -1 )**2 + CLOUDY_UNC_MIN
        else
           cld_uncertainty = sreal_fill_value
-       endif
+       end if
 
        ! here we go.
        ! What are we doing if at least 1 input parameter is not in trained range
@@ -431,16 +431,16 @@ contains
                & .and. ch5 .lt. 0) then
              cldflag = byte_fill_value
              cld_uncertainty = sreal_fill_value
-          endif
+          end if
           ! end of noob if-loop
-       endif
+       end if
 
     else
 
        cldflag = byte_fill_value
        cld_uncertainty = sreal_fill_value
 
-    endif
+    end if
 
     !------------------------------------------------------------------------
   end subroutine ann_cloud_mask
@@ -485,7 +485,7 @@ contains
        noob=0_lint
     else
        noob=1_lint
-    endif
+    end if
 
     !-----------------------------------------------------------------------
 
@@ -494,7 +494,7 @@ contains
     do iinput=1,ninput
        input(iinput)=scales(iinput,1)+scales(iinput,2)*(input(iinput) &
             & -minmax_train(iinput,1))
-    enddo
+    end do
 
     !apply constant to additional input element
     input(ninput+1)=bias_i
@@ -508,7 +508,7 @@ contains
        call sigmoide_function(temperature/float(ninput),cutoff &
             & ,vector_res1(ineuron),sigmoide)
        intermed(ineuron)=sigmoide
-    enddo
+    end do
 
     !extend intermediate result by one element
     intermed(nneurons+1)=bias_h

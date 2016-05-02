@@ -169,7 +169,7 @@ subroutine setup_aatsr(l1b_path_file,geo_path_file,platform,sensor,year, &
    else
       platform='ERS2'
       index1=index(trim(adjustl(l1b_path_file)),'.E2',back=.true.)
-   endif
+   end if
 
    ! Get year, month, day, hour and minute as strings
    cyear=trim(adjustl(l1b_path_file(index1-45:index1-42)))
@@ -727,31 +727,38 @@ subroutine setup_himawari8(l1b_path_file,geo_path_file,platform,year,month,day, 
    ! Static instrument channel definitions. (These should not be changed.)
    integer, parameter :: all_nchannels_total = 16
 
-       ! 1,     2,     3,   4,    5,    6,    7,    8,    9,     10,    11
+       ! 1,       2,       3,       4,       5,      6,      7,      8
    real,    parameter :: all_channel_wl_abs(all_nchannels_total) = &
-      (/ 0.47063,0.51000	, 0.63914,0.85670,1.6101,2.2568,3.8853,6.2429,6.9410,&
-       7.3467,8.5926,9.6372,10.4073,11.2395,12.3806,13.2807/)
+      (/ 0.47063, 0.51000, 0.63914, 0.85670, 1.6101, 2.2568, 3.8853, 6.2429, &
+         6.9410,  7.3467,  8.5926,  9.6372,  10.4073,11.2395,12.3806,13.2807 /)
 
    integer, parameter :: all_channel_sw_flag(all_nchannels_total) = &
-      (/ 1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0/)
+      (/ 1,       1,       1,       1,       1,       1,       1,       0, &
+         0,       0,       0,       0,       0,       0,       0,       0/)
 
    integer, parameter :: all_channel_lw_flag(all_nchannels_total) = &
-      (/ 0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1/)
+      (/ 0,       0,       0,       0,       0,       0,       1,       1, &
+         1,       1,       1,       1,       1,       1,       1       ,1/)
 
    integer, parameter :: all_channel_ids_rttov_coef_sw(all_nchannels_total) = &
-      (/ 1,2,3,4,5,6,7,0,0,0,0,0,0,0,0,0 /)
+      (/ 1,       2,       3,       4,       5,       6,       7,       0, &
+         0,       0,       0,       0,       0,       0,       0,       0 /)
 
    integer, parameter :: all_channel_ids_rttov_coef_lw(all_nchannels_total) = &
-      (/ 0,0,0,0,0,0,1,2,3,4,5,6,7,8,9,10 /)
+      (/ 0,       0,       0,       0,       0,       0,       1,       2, &
+         3,       4,       5,       6,       7,       8,       9,       10 /)
 
    integer, parameter :: all_map_ids_abs_to_ref_band_land(all_nchannels_total) = &
-      (/ 3,4,1,2,6,7,0,0,0,0,0,0,0,0,0,0 /)
+      (/ 3,       4,       1,       2,       6,       7,       0,       0, &
+         0,       0,       0,       0,       0,       0,       0,       0 /)
 
    integer, parameter :: all_map_ids_abs_to_ref_band_sea(all_nchannels_total)  = &
-      (/ 2,2,3,4,6,7,8,0,0,0,0,0,0,0,0,0 /)
+      (/ 2,       2,       3,       4,       6,       7,       8,       0, &
+         0,       0,       0,       0,       0,       0,       0,       0 /)
 
    integer, parameter :: all_map_ids_abs_to_snow_and_ice(all_nchannels_total)  = &
-      (/ 1,1,1,2,3,3,4,0,0,0,0,0,0,0,0,0 /)
+      (/ 1,       1,       1,       2,       3,       3,       4,       0, &
+         0,       0,       0,       0,       0,       0,       0,       0 /)
 
 
    ! Only this below needs to be set to change the desired default channels. All
@@ -773,8 +780,8 @@ subroutine setup_himawari8(l1b_path_file,geo_path_file,platform,year,month,day, 
    if (trim(adjustl(l1b_path_file)) .ne. &
        trim(adjustl(geo_path_file))) then
       write(*,*)
-      write(*,*) 'ERROR: setup_himawari8(): Geolocation and L1b files are for ' // &
-               & 'different times'
+      write(*,*) 'ERROR: setup_himawari8(): Geolocation and L1b files are ' // &
+                 'for different times'
       write(*,*) 'l1b_path_file: ', trim(adjustl(geo_path_file))
       write(*,*) 'geo_path_file: ', trim(adjustl(l1b_path_file))
 
@@ -848,7 +855,7 @@ subroutine common_setup(channel_info, channel_ids_user, channel_ids_default, &
       channel_info%nchannels_total = size(channel_ids_user)
    else
       channel_info%nchannels_total = size(channel_ids_default)
-   endif
+   end if
 
    channel_info%nviews = 1
 
@@ -858,7 +865,7 @@ subroutine common_setup(channel_info, channel_ids_user, channel_ids_default, &
       channel_info%channel_ids_instr = channel_ids_user
    else
       channel_info%channel_ids_instr = channel_ids_default
-   endif
+   end if
 
    do i = 1, channel_info%nchannels_total
       channel_info%channel_wl_abs (i) = &

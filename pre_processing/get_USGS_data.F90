@@ -88,8 +88,8 @@ subroutine get_USGS_data(path_to_USGS_file, imager_flags, imager_geolocation, &
         imager_geolocation%dem(i,j) = usgs%dem(nearest_xy(2), nearest_xy(1))
         imager_flags%lusflag(i,j) = usgs%lus(nearest_xy(2), nearest_xy(1))
 
-     enddo
-  enddo
+     end do
+  end do
 !$OMP END DO
 !$OMP END PARALLEL
 

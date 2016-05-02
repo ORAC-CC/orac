@@ -94,26 +94,26 @@ subroutine read_seviri_dimensions(l1_5_file, n_across_track, n_along_track, &
                     'fall within the actual SEVIRI image starting at: ', &
                     i_line + 1
          stop error_stop_code
-      endif
+      end if
       if (endy - 1 .gt. i_line   + n_lines - 1) then
          write(*,*) 'ERROR: user defined endy: ', endy, ', does not ' // &
                     'fall within the actual SEVIRI image ending at: ', &
                     i_line   + n_lines
          stop error_stop_code
-      endif
+      end if
       if (startx - 1 .lt.  i_column) then
          write(*,*) 'ERROR: user defined startx: ', startx, ', does not ' // &
                     'fall within the actual SEVIRI image starting at: ', &
                     i_column + 1
          stop error_stop_code
-      endif
+      end if
       if (endx - 1 .gt. i_column + n_columns - 1) then
          write(*,*) 'ERROR: user defined endx: ', endx, ', does not ' // &
                     'fall within the actual SEVIRI image ending at: ', &
                     i_column + n_columns
          stop error_stop_code
-      endif
-   endif
+      end if
+   end if
 #else
    write(*,*) 'ERROR: the ORAC pre-processor has not been compiled with ' // &
               'SEVIRI support. Recompile with -DINCLUDE_SEVIRI_SUPPORT.'

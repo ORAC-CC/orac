@@ -480,24 +480,6 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
          if (preproc_prtm%snow_albedo(idim,jdim) > 0.) &
               profiles(count)%snow_frac = 1.
          profiles(count)%zenangle    = preproc_geo%satza(idim,jdim,1)
-         ! Only needed if addsolar=.true. Multiple views not yet important
-!         profiles(count)%sunzenangle = preproc_geo%solza(idim,jdim,1)
-!         profiles(count)%sunazangle  = preproc_geo%solazi(idim,jdim,1)
-         ! We don't know which direction the satellite is (as it isn't output)
-!         profiles(count)%azangle     = 180. - preproc_geo%relazi(idim,jdim,1) +&
-!              preproc_geo%solazi(idim,jdim,1)
-!         write(*,*)profiles(count)%p(:nlayers)
-!         write(*,*)""
-!         write(*,*)""
-!         write(*,*) exp(preproc_prtm%lnsp(idim,jdim))
-!         write(*,*)profiles(count)%latitude,profiles(count)%longitude
-!         write(*,*)""
-!         write(*,*)""
-!         write(*,*)""
-!         write(*,*)preproc_prtm%pressure(idim,jdim,:)
-!
-!
-!         stop
 
          ! Write profiles structure to PRTM file (array operations needed to
          ! recast structure in form nc_write_array recognises)
@@ -691,12 +673,12 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                      ! Corrected level transmittances
                      transmission%tau_levels(j_, i_) = &
                         transmission%tau_levels(j_, i_) / exp(-tau_ray_p)
-                  enddo
+                  end do
 
                   ! Corrected total transmittances
                   transmission%tau_total(i_) = &
                      transmission%tau_total(i_) / exp(-tau_ray_p)
-               enddo
+               end do
             end if
 
             ! Reformat and write output to NCDF files

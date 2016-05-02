@@ -30,7 +30,7 @@
       print*,'ERROR: nc_read_file(): Could not read variable ',trim(name)
       print*,trim(nf90_strerror(ierr))
       stop error_stop_code
-   endif
+   end if
 
    ! replace file's fill value with our own and apply scale factor/offset
    if (fv_flag) &
@@ -38,7 +38,7 @@
    if (vr_flag) then
       where (arr_packed.lt.vmin) arr = fill
       where (arr_packed.gt.vmax) arr = fill
-   endif
+   end if
    where (arr_packed.ne.fv) arr = sf*arr_packed + of
 
    ! additional information for print out
@@ -49,5 +49,5 @@
       if (vr_flag) then
            print*,'Field valid min: ',sf*vmin + of
            print*,'Field valid max: ',sf*vmax + of
-      endif
+      end if
    end if

@@ -16,12 +16,12 @@
       use kinds
 
       implicit none
-             
+
 !-----------------------------------------------------------------------
 ! REFERENCES:
 ! comscp1 combines single scattering properties due to Rayleigh absorp
 ! tion, aerosols, water continuum, gray gaseous absorption, ice crystals
-! and water droplets. 
+! and water droplets.
 ! Laura D. Fowler/slikrock (08-12-97).
 
 ! send comments to laura@slikrock.atmos.colostate.edu and
@@ -42,7 +42,7 @@
 
 ! ARGUMENT LIST VARIABLES:
 ! All arrays indexed as nlm correspond to variables defined in the
-! middle of layers. In this subroutine, all the arrays are defined as 
+! middle of layers. In this subroutine, all the arrays are defined as
 ! local arrays in BUGSswr.
 
 !     INPUT ARGUMENTS:
@@ -50,7 +50,7 @@
       integer (kind=int_kind), intent(in)::
      &  ncol    !Length of sub-domain..
      &, nlm     !Number of layers.
-     
+
       real (kind=dbl_kind), intent(in), dimension(ncol,nlm)::
      &  asyaer  !Asymmetry factor of aerosols                      (-).
      &, asycldi !Asymmetry factor of ice clouds                    (-).
@@ -76,7 +76,7 @@
      &, fwclr   !Total clear-sky single-scattering albedo          (-).
      &, fwcld   !Total cloudy single-scattering albedo             (-).
 
-! LOCAL LIST VARIABLES:    
+! LOCAL LIST VARIABLES:
 
       integer (kind=int_kind)::
      &  i       !Horizontal index.
@@ -84,7 +84,7 @@
 
       real (kind=dbl_kind)::
      &  wwray,wwaer,wwcldi,wwcldw
-     
+
 !-----------------------------------------------------------------------
 
       do l = 1, nlm
@@ -100,23 +100,23 @@
 
             fwclr(i,l)  = wwray+wwaer
             fwcld(i,l)  = fwclr(i,l)+wwcldi+wwcldw
- 
+
             if(fwclr(i,l).gt.1.e-10) then
                asyclr(i,l) = (asyaer(i,l)*wwaer)/fwclr(i,l)
             else
                asyclr(i,l) = 1.
-            endif
- 
+            end if
+
             if(fwcld(i,l).gt.1.e-10) then
                asycld(i,l) = (asyaer(i,l)*wwaer+asycldi(i,l)*wwcldi
      +                     +  asycldw(i,l)*wwcldw)
      +                     / fwcld(i,l)
             else
                asycld(i,l) = 1.
-            endif
+            end if
 
-         enddo
-      enddo
+         end do
+      end do
 
       return
       end subroutine comscp1

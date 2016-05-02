@@ -4,7 +4,7 @@
 ! CVS:  $Name:  $
 
 !-----------------------------------------------------------------------
- 
+
       subroutine two_rt_lw_iter
      +              (
      +                    ncol ,    nlm ,  mbs ,   mbir
@@ -26,7 +26,7 @@
 ! two_rt_lw replaces two_rt and add written by G. Stephens. two_rt_lw
 ! computes the spectral fluxes using a two-stream approximation method.
 ! Philip Partain, Philip Gabriel, and Laura D. Fowler/graben (09-08-99).
- 
+
 ! MODIFICATIONS:
 ! * changed declarations to adapt the code from BUGS4 to BUGS5.
 !   Laura D. Fowler/slikrock (02-01-00).
@@ -39,12 +39,12 @@
 
 ! INCLUDED COMMONS:
 !     none.
- 
+
 ! ARGUMENT LIST VARIABLES:
 ! All arrays indexed as nlm correspond to variables defined in the
 ! middle of layers. All arrays indexed as nlm+1 correspond to variables
 ! defined at levels at the top and bottom of layers.
- 
+
 !     INPUT ARGUMENTS:
 !     ----------------
       logical (kind=log_kind), intent(in)::
@@ -56,7 +56,7 @@
      &, mbs    !Number of SW spectral intervals.
      &, mbir   !Number of IR spectral intervals.
      &, ib     !Index of spectral interval.
- 
+
       real (kind=dbl_kind), intent(in), dimension(ncol,mbir)::
      &  es    !Spectral surface emissivity                         (-).
 
@@ -75,13 +75,13 @@
 
       real (kind=dbl_kind), intent(in), dimension(ncol,nlm+1)::
      &  bf    !Planck function                                 (W/m^2).
- 
+
 !     OUTPUT ARGUMENTS:
 !     -----------------
       real (kind=dbl_kind), intent(out), dimension(ncol,nlm+1)::
      &  fd     !Spectral downward flux                         (W/m^2).
      &, fu     !Spectral upward flux                           (W/m^2).
- 
+
 ! LOCAL VARIABLES:
 
       integer(kind=int_kind)
@@ -130,7 +130,7 @@
      &,  kappa ,   oms ,  prop ,r, rinf
      &,      t ,  taus , omega
       data diffac /2./
- 
+
 ! SELECTION RULE VARIABLES
 
       logical (kind=log_kind)::
@@ -142,24 +142,24 @@
      &, tauscat
       data tausthresh / 0.001 /
       data wcthresh   / 0.975 /
- 
+
 !----------------------------------------------------------------------
       nsr = 4*nlm + 2
       nsmx = 16*nlm - 6
 
       fd(:,1) = 0.
- 
+
       ibms = ib - mbs
- 
+
       do i = 1, ncol
- 
+
 !---- 2. DO LONGWAVE:
          do l = 1, nlm
             !ALL SKY
             fact = asym(i,l)*asym(i,l)
             oms  = ((1.-fact)*wc(i,l))/(1.-fact*wc(i,l))
             taus   = (1.-fact*wc(i,l))*tau(i,l)
- 
+
             beta0 = (4.+asym(i,l))/(8.*(1.+asym(i,l)))
             t = diffac*(1.-oms*(1.-beta0))     !-0.25
             r = diffac*oms*beta0               !-0.25
@@ -183,13 +183,13 @@
                cc = diffac*(1.-oms)/kappa**2
                sigucld(l) = cldamt(i,l)*cc*(aa*bf(i,l)+bb*bf(i,l+1))
                sigdcld(l) = cldamt(i,l)*cc*(bb*bf(i,l)+aa*bf(i,l+1))
-            endif
+            end if
 
             !CLEAR SKY
             fact = asyclr(i,l)*asyclr(i,l)
             oms  = ((1.-fact)*wcclr(i,l))/(1.-fact*wcclr(i,l))
             taus   = (1.-fact*wcclr(i,l))*tauclr(i,l)
- 
+
             beta0 = (4.+asyclr(i,l))/(8.*(1.+asyclr(i,l)))
             t = diffac*(1.-oms*(1.-beta0))     !-0.25
             r = diffac*oms*beta0               !-0.25
@@ -215,11 +215,11 @@
      *                      bb*bf(i,l+1))
                sigdclr(l) = (1.0-cldamt(i,l))*cc*(bb*bf(i,l)+
      *                      aa*bf(i,l+1))
-            endif
+            end if
 
-         enddo
+         end do
 
- 
+
 !---- 1. LOAD SMX VECTOR
         nir(:) = 4
 
@@ -286,7 +286,7 @@
           smx(n+13) = -trclr(l+1) * b1(i,l+1)
           smx(n+14) = -rrclr(l+1) * (1.-b4(i,l+1))
           smx(n+15) = -rrclr(l+1) * b2(i,l+1)
-        enddo
+        end do
 
         ir = 4*nlm
 
@@ -303,10 +303,10 @@
           b(l*4-2) = siguclr(l)
           b(l*4-1) = sigdcld(l)
           b(l*4)   = sigdclr(l)
-        enddo
+        end do
         b(nlm*4+1) = cldamt(i,nlm)*es(i,ibms)*bf(i,nlm+1)
         b(nlm*4+2) = (1.-cldamt(i,nlm))*es(i,ibms)*bf(i,nlm+1)
-        
+
 
 
 
@@ -323,28 +323,28 @@
                jj = idc(kk)
                t = t + smx(kk) * fvc(jj)
                kk = kk + 1
-             enddo
+             end do
              t = t + fvc(ii)
              fvc(ii) = fvc(ii) + omega * (b(ii)-t)
              error(ii) = b(ii) - t
-           enddo
+           end do
 
            if (maxval(abs(error)) .le. 0.05) then
              !print *,omega,iter,' iterations'
              exit
-           endif
-        enddo
+           end if
+        end do
 
 
 !---- 3. SUM CLEAR AND CLOUDY FLUXES
         do l = 1,nlm+1
           fu(i,l) = fvc(l*4-3)+fvc(l*4-2)
-        enddo
+        end do
         do l = 1,nlm
           fd(i,l+1) = fvc(l*4-1)+fvc(l*4)
-        enddo
- 
+        end do
+
       end do  !i=1,ncol
- 
+
       return
       end

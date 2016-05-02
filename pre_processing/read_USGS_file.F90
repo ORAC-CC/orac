@@ -117,7 +117,7 @@ contains
           imager_latlon = imager_lat
        else
           imager_latlon = imager_lon
-       endif
+       end if
        latlon_1000 = floor(imager_latlon * 1000.)
        latlon_base = floor(imager_latlon * 10.) * 100
        check50 = latlon_1000 - latlon_base
@@ -126,22 +126,22 @@ contains
              latlon_dummy = latlon_base + 75
           else
              latlon_dummy = latlon_base + 25
-          endif
+          end if
        else
           if (check50 .le. -50) then
              latlon_dummy = latlon_base - 75
           else
              latlon_dummy = latlon_base - 25
-          endif
+          end if
 
-       endif
+       end if
        nearest_latlon = latlon_dummy / 1000.
        if (i .eq. 1) then
           nearest_xy(1) = minloc(abs(usgs%lat - nearest_latlon), DIM=1)
        else
           nearest_xy(2) = minloc(abs(usgs%lon - nearest_latlon), DIM=1)
-       endif
-    enddo
+       end if
+    end do
 
   end function nearest_USGS
 

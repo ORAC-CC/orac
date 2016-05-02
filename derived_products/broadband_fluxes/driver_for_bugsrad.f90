@@ -5,7 +5,7 @@
 
 !-----------------------------------------------------------------------
       subroutine driver_for_bugsrad(nlm,tsi,theta,asfcswrdr,asfcnirdr,asfcswrdf,asfcnirdf,tsfc,&
-                             phaseflag,cref,ccot,hctop,hcbase,&                            
+                             phaseflag,cref,ccot,hctop,hcbase,&
                              hctopID,hcbaseID,&
                              pxZ,pxP,pxT,pxQ,pxO3,&
                              toalwup,toaswdn,toaswup,&
@@ -44,7 +44,7 @@
 
 ! FUNCTIONS CALLED:
 !     none.
- 
+
 ! INCLUDED COMMON BLOCKS:
 !     none.
 
@@ -59,7 +59,7 @@
        real, intent(in) :: &
          tsi       ,&   !totoal solar irradiance              (W/m2).
          theta     ,&   !cosine of solar zenith angle            (-).
-         phaseflag ,&   !cloud phase=0 clear, = 1water, =2ice    (-).     
+         phaseflag ,&   !cloud phase=0 clear, = 1water, =2ice    (-).
          cref      ,&   !satellite cloud effective radius       (um).
          ccot      ,&   !satellite cloud optical depth           (-).
          hctop     ,&   !satellite cloud top height             (km).
@@ -134,7 +134,7 @@
       real (kind=dbl_kind), dimension(nlen,nlm+1) :: &
         pl2          !Level pressure                                (hPa).
 
-      real (kind=dbl_kind), dimension(nlen,nlm+1) :: &      
+      real (kind=dbl_kind), dimension(nlen,nlm+1) :: &
         fulw,&       !All-sky LW upwelling flux                   (W/m^2).
         fdlw,&       !All-sky LW downwelling flux                 (W/m^2).
         fusw,&       !All-sky SW upwelling flux                   (W/m^2).
@@ -156,7 +156,7 @@
 !-----------------------------------------------------------------------
 
    !tune incoming solar radiation to TSI measurements
-   solar_factor = tsi/bugs_solar_constant 
+   solar_factor = tsi/bugs_solar_constant
    !print*,tsi,solar_factor
 !   pxP(1) = pxP(1)+0.5
 !   pxP(2) = pxP(2)+1.5
@@ -168,7 +168,7 @@
     ql(1,l) = pxQ(l+1) - ( pxQ(l+1)-pxQ(l) ) / 2.
     o3l(1,l) = pxO3(l+1) - ( pxO3(l+1)-pxO3(l) ) / 2.
     dpl(1,l) = pxP(l+1)-pxP(l)
-   enddo
+   end do
    pl2(1,:) = pxP
 
    !print*,pl
@@ -178,7 +178,7 @@
    !print*,o3l
    !print*,dpl
 
-   !read surface quantities 
+   !read surface quantities
    ts(1)=tsfc
    amu0(1)=theta
    alvdr(1)=asfcswrdr
@@ -190,33 +190,33 @@
    umco2(1)=380.
    umch4(1)=1.80
    umn2o(1)=0.26
-  
-! Clouds     
+
+! Clouds
    !initialize profile
    qcwl(1,:) = 0.0 !cloud water mixing ratio (kg/kg)
    qcil(1,:) = 0.0 !cloud ice mixing ratio (kg/kg)
    qrwl(1,:) = 0.0 !rain mixing ratio
    qril(1,:) = 0.0 !snow mixing ratio
    acld(1,:) = 0.0 !layer cloud fraction
-      
+
    !assign cloud to vertical layer
    acld(1,hctopID(1):hcbaseID(1)) = 1.0
 
    !compute cloud water mixing ratio
-   if(phaseflag .eq. 1) then 
+   if(phaseflag .eq. 1) then
     LWP=((5./9.)*cref*ccot) * (5./6.)
     CWC=LWP/((hctop-hcbase)*1000.)
     !mixing ratio = CWC / density of air (density = p/RT)
     qcwl(1,hctopID(1):hcbaseID(1))=(CWC/(pl(1,hctopID(1):hcbaseID(1)) &
                        *100./(287.*tl(1,hctopID(1):hcbaseID(1)))))/1000.
-   endif
-   if(phaseflag .eq. 2) then 
+   end if
+   if(phaseflag .eq. 2) then
     LWP=((5./9.)*cref*ccot) * (5./6.)
     CWC=LWP/((hctop-hcbase)*1000.)
     qcil(1,hctopID(1):hcbaseID(1))=(CWC/( pl(1,hctopID(1):hcbaseID(1)) &
                        *100./(287.*tl(1,hctopID(1):hcbaseID(1)))))/1000.
-   endif
-   
+   end if
+
    !read solar factor
    slr(:) = solar_factor
 
@@ -234,8 +234,8 @@
                     gravity,cp_dry_air,asl,atl,fdsw,fusw,fdlw,fulw, &
                     acld, umco2, umch4, umn2o, &
                     fdswcl,fuswcl,fdlwcl,fulwcl,boapar,boapardif,toapar,cref,&
-                    emis,rho0d,rhodd)      
-      
+                    emis,rho0d,rhodd)
+
 !---- OUTPUT RESULTS:
 ! print fluxes in W/m2, heating rates in K/day.
       !print *, " Fluxes   Plev       SW_DN       SW_UP       LW_DN       LW_UP"
@@ -243,21 +243,21 @@
       !do l=1,nlm+1
       !  print '(I4,5(F12.3))',l,pl2(1,l),fdsw(1,l),fusw(1,l), &
       !                                   fdlw(1,l),fulw(1,l)
-      !enddo
+      !end do
 
       !print *, "CLR Fluxes   Plev       SW_DN       SW_UP       LW_DN       LW_UP"
       !print *, "            Pa       W/m^2       W/m^2       W/m^2       W/m^2"
       !do l=1,nlm+1
       !  print '(I4,5(F12.3))',l,pl2(1,l),fdswcl(1,l),fuswcl(1,l), &
       !                                   fdlwcl(1,l),fulwcl(1,l)
-      !enddo
+      !end do
 
 !      print *, 'Heating Rates   Play              SW            LW'
 !      print *, '                  Pa           K/day         K/day'
-!      do l=1,nlm  
+!      do l=1,nlm
 !        print '(I4,6X, F12.3,2(F15.5))', &
 !               l,pl(1,l),asl(1,l)*86400.,atl(1,l)*86400. !K/day
-!      enddo
+!      end do
 
       !assign values to specific output variables
       toalwup = fulw(1,1)

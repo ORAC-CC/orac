@@ -39,12 +39,12 @@
 !    actually a byte and it was not being initialized leading to garbage output.
 !    Also set the flag_values and flag meanings attributes.
 ! 2015/12/10, MC: Removed nighttime and twilight retrievals (solar zenith angle < 80)
-! 2015/12/21, MC: Added optional argument and collocation routine to process 
+! 2015/12/21, MC: Added optional argument and collocation routine to process
 !    radiative fluxes using aerosol cci data.
 ! 2016/01/12, MC: Added Liang (2000) surface albedo model which converts narrowband
 !    albedo radiances for each channel into broadband albedo for direct visible,
 !    diffuse visible, direct near-IR, and diffuse-IR as required inputs for BUGSrad.
-! 2016/02/19, MC: Added meteorological variables (surface temperature, pressure, 
+! 2016/02/19, MC: Added meteorological variables (surface temperature, pressure,
 !    humidity, LTS, FTH, & column ozone) to output file.
 ! 2016/02/19, MC: Fixed bug in reading time from input file name. Index is now based
 !    the last underscore in primary file instead of the word primary.
@@ -57,7 +57,7 @@
 ! None known.
 !
 ! Examples
-! bsub -q lotus -W 06:00 -R "order[-r15s:pg]" -o /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/bugsrad.out -e /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/bugsrad.err -J BUGSrad 
+! bsub -q lotus -W 06:00 -R "order[-r15s:pg]" -o /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/bugsrad.out -e /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/bugsrad.err -J BUGSrad
 !
 ! MODIS
 !./process_broadband_fluxes /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/postproc/ESACCI-L2-CLOUD-CLD-MODIS_ORAC_AQUA_200803200710_V1.0.primary.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/ESACCI-L2-CLOUD-CLD-MODIS_ORAC_AQUA_200803200710_V1.0.prtm.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/ESACCI-L2-CLOUD-CLD-MODIS_ORAC_AQUA_200803200710_V1.0.alb.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/data/tsi/tsi.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/derived_products/ESACCI-L2-CLOUD-CLD-MODIS_ORAC_AQUA_200803200710_V1.1.bugsrad.nc
@@ -113,9 +113,9 @@ program process_broadband_fluxes
    real, allocatable :: inH(:)  ! Height - interpolated
    real, allocatable :: inQ(:)  ! Humidity - interpolated
    real, allocatable :: inO3(:) ! Ozone - interpolated
-   real, allocatable :: lon_prtm(:,:)  ! Longitude values         
+   real, allocatable :: lon_prtm(:,:)  ! Longitude values
    real, allocatable :: lat_prtm(:,:)  ! Latitude values
-   real, allocatable :: tlon_prtm(:)  ! Longitude values         
+   real, allocatable :: tlon_prtm(:)  ! Longitude values
    real, allocatable :: tlat_prtm(:)  ! Latitude values
    real, allocatable :: dummy1d(:)
    integer(kind=lint) :: xdim_prtm,ydim_prtm,levdim_prtm !PRTM dimensions
@@ -288,7 +288,7 @@ program process_broadband_fluxes
 
    real, allocatable :: boa_qsfc(:,:) !BOA vapour pressure
      integer boa_qsfc_vid
- 
+
    real, allocatable :: lts(:,:) !LTS (LOWER TROPOSPHERE STABILITY)
      integer lts_vid
 
@@ -320,7 +320,7 @@ program process_broadband_fluxes
    !NetCDF output dimensions
    integer :: &
       ixstart,ixstop,xstep  ,& ! First and last super-pixel X locations
-      iystart,iystop,ystep  ,& ! First and last super-pixel Y locations  
+      iystart,iystop,ystep  ,& ! First and last super-pixel Y locations
       n_x, n_y
 
    !debugging
@@ -349,9 +349,9 @@ program process_broadband_fluxes
 !Get File Names
 
    !Read manditory arguments (file names)
-   call get_command_argument(1, Fprimary)  
-   call get_command_argument(2, FPRTM)  
-   call get_command_argument(3, FALB)  
+   call get_command_argument(1, Fprimary)
+   call get_command_argument(2, FPRTM)
+   call get_command_argument(3, FALB)
    call get_command_argument(4, FTSI)
    call get_command_argument(5, fname)
     print*,'primary file: ',trim(Fprimary)
@@ -364,7 +364,7 @@ program process_broadband_fluxes
    call get_command_argument(6, Faerosol)
     aerosol_processing_mode = 0
     if(len(trim(Faerosol)) .gt. 1.) aerosol_processing_mode = 1 !collocate aerosol2cloud
-   
+
    call get_command_argument(7, Fcollocation)
     if(len(trim(Fcollocation)) .gt. 1.) aerosol_processing_mode = 2 !collocate & save file
 
@@ -385,7 +385,7 @@ program process_broadband_fluxes
       pxY0=value
       read(cpxY1,*) value
       pxY1=value
-    endif
+    end if
 
     !single pixel
     if(len(trim(cpxX0)) .ne. 0 .and. len(trim(cpxX1)) .eq. 0 .and. &
@@ -398,7 +398,7 @@ program process_broadband_fluxes
       read(cpxY0,*) value
       pxY0=value
       pxY1=value
-    endif
+    end if
 
 !-------------------------------------------------------------------------------
    !Read time string from file
@@ -421,7 +421,7 @@ program process_broadband_fluxes
 !-------------------------------------------------------------------------------
    ! Open TSI file
    call nc_open(ncid,FTSI)
-   
+
     !Allocate arrays
     allocate(TSI_tsi_true_earth(nTSI))
     allocate(TSI_tsi_1au(nTSI))
@@ -454,10 +454,10 @@ program process_broadband_fluxes
 
    ! Open PRIMARY file
    call nc_open(ncid,Fprimary)
-   
+
     !Get satellite dimensions
     xN = nc_dim_length(ncid, 'across_track', verbose)
-    yN = nc_dim_length(ncid, 'along_track', verbose)    
+    yN = nc_dim_length(ncid, 'along_track', verbose)
 
     !Allocate arrays
     allocate(LAT(xN,yN))
@@ -484,7 +484,7 @@ program process_broadband_fluxes
     call nc_read_array(ncid, "ctp", CTP, verbose)
     call nc_read_array(ncid, "cth", CTH, verbose)
     call nc_read_array(ncid, "solar_zenith_view_no1", SOLZ, verbose)
-   
+
     ! Close file
     if (nf90_close(ncid) .ne. NF90_NOERR) then
        write(*,*) 'ERROR: read_input_dimensions_lwrtm(): Error closing ' // &
@@ -513,7 +513,7 @@ program process_broadband_fluxes
     xdim_prtm = nc_dim_length(ncid, 'nlon_rtm', verbose)
     ydim_prtm = nc_dim_length(ncid, 'nlat_rtm', verbose)
     levdim_prtm = nc_dim_length(ncid, 'nlevels_rtm', verbose)
-   
+
     !Allocate arrays
     allocate(P(levdim_prtm, xdim_prtm, ydim_prtm))
     allocate(T(levdim_prtm, xdim_prtm, ydim_prtm))
@@ -521,9 +521,9 @@ program process_broadband_fluxes
     allocate(Q(levdim_prtm, xdim_prtm, ydim_prtm))
     allocate(O3(levdim_prtm, xdim_prtm, ydim_prtm))
     allocate(lon_prtm(xdim_prtm, ydim_prtm))
-    allocate(lat_prtm(xdim_prtm, ydim_prtm))    
+    allocate(lat_prtm(xdim_prtm, ydim_prtm))
     allocate(tlon_prtm(xdim_prtm))
-    allocate(tlat_prtm(ydim_prtm))    
+    allocate(tlat_prtm(ydim_prtm))
 
     !Read PRTM data
     call nc_read_array(ncid, "pprofile_rtm", P, verbose)
@@ -561,7 +561,7 @@ program process_broadband_fluxes
     H  = (H/9.81)/1000. !to put to km
     Q  = Q*(Rdryair/Rwetair)*(1e-6) !ppmv --> kg/kg
     O3 = O3*(Rdryair/Rozone)*(1e-6) !ppmv --> kg/kg
- 
+
     !call collocate_prtm_profile(LON(pxX0,pxY0),LAT(pxX0,pxY0),&
     !          xdim_prtm,ydim_prtm,tlon_prtm,tlat_prtm,tlonid,tlatid)
     !print*,tlonid,tlatid
@@ -597,7 +597,7 @@ program process_broadband_fluxes
     call nc_read_array(ncid, "emis_data", emis_data, verbose)
     call nc_read_array(ncid, "alb_abs_ch_numbers", alb_abs_ch_numbers, verbose)
     call nc_read_array(ncid, "emis_abs_ch_numbers", emis_abs_ch_numbers, verbose)
- 
+
     ! Close file
     if (nf90_close(ncid) .ne. NF90_NOERR) then
        write(*,*) 'ERROR: read_input_dimensions_lwrtm(): Error closing ' // &
@@ -613,7 +613,7 @@ program process_broadband_fluxes
 
     !Get dimension
     nc_aer = nc_dim_length(ncid, 'pixel_number', verbose)
-   
+
     !Allocate arrays
     allocate(aerLon(nc_aer))
     allocate(aerLat(nc_aer))
@@ -633,7 +633,7 @@ program process_broadband_fluxes
        write(*,*) 'ERROR: ',Faerosol
        stop error_stop_code
     end if
-  endif
+  end if
 
 !-------------------------------------------------------------------------------
 ! Allocate arrays
@@ -702,9 +702,9 @@ program process_broadband_fluxes
     boa_qsfc(:,:) = sint_fill_value
 
    !re-grid PRTM vertical profile to match bugsrad resolution (NLS)
-   do i=1,NLS 
+   do i=1,NLS
     mask_vres(i)=floor(i*(levdim_prtm/(NLS*1.)))
-   enddo
+   end do
     !top and bottom of BUGSrad profile need to be at the same level as PRTM
     mask_vres(1)=1
     mask_vres(NLS)=levdim_prtm
@@ -722,7 +722,7 @@ program process_broadband_fluxes
       pxX1=xN
       pxY0=1
       pxY1=yN
-    endif
+    end if
 
    allocate(AOD550(xN,yN))
    allocate(AREF(xN,yN))
@@ -796,8 +796,8 @@ program process_broadband_fluxes
 
          print*,'CREATED: '
          print*,Fcollocation
-       endif ;aerosol_processing_mode = 2
-    endif !file not there
+       end if ;aerosol_processing_mode = 2
+    end if !file not there
 
    !Netcdf collocation file exists get aID
     if(there) then
@@ -808,33 +808,33 @@ program process_broadband_fluxes
 
      !Read collocation data
      call nc_read_array(ncid, "aID", aID, verbose)
- 
+
      ! Close file
       if (nf90_close(ncid) .ne. NF90_NOERR) then
         write(*,*) 'ERROR:  ' // &
                    'LWRTM file: ', Fcollocation
         stop error_stop_code
       end if
-    endif !file there
+    end if !file there
 
     !fill arrays (aerosol index aID must exist by this point)
-    do i=1,xN 
+    do i=1,xN
     do j=1,yN
       AOD550(i,j) = aerAOD(aID(i,j))
       AREF(i,j) = aerREF(aID(i,j))
-    enddo
-    enddo
+    end do
+    end do
 
-   endif !end aerosol collocation option
+   end if !end aerosol collocation option
    if(aerosol_processing_mode .eq. 0) then
     !fill arrays
-    do i=1,xN 
+    do i=1,xN
     do j=1,yN
       AOD550(i,j) = -999.
       AREF(i,j) = -999.
-    enddo
-    enddo
-   endif
+    end do
+    end do
+   end if
 !-------------------------------------------------------------------------
 !END OPTIONAL INPUTS SECTION
 !-------------------------------------------------------------------------
@@ -878,7 +878,7 @@ call cpu_time(cpuStart)
       call preprocess_bugsrad_sfc_emissivity(nc_emis,emis_data(i,j,:),emis_bugsrad)
        !print*,'BUGSrad (blacksky) ',rho_0d_bugsrad
        !print*,'BUGSrad (whitesky) ',rho_dd_bugsrad
-       !print*,'BUGSrad emissivity ',emis_bugsrad         
+       !print*,'BUGSrad emissivity ',emis_bugsrad
 
        ! solar zenith angle
        pxTheta = COS( SOLZ(i,j) * Pi/180.)
@@ -886,7 +886,7 @@ call cpu_time(cpuStart)
 
        ! solar zenith angle condition (remove nighttime & twilight)
 !       if( SOLZ(i,j) .lt. 80.) then
- 
+
         !meteorology
         call interpolate_meteorology(lon_prtm,lat_prtm,levdim_prtm,&
                                 xdim_prtm,ydim_prtm,P,T,H,Q,O3,&
@@ -926,7 +926,7 @@ call cpu_time(cpuStart)
          !print*,'SAT retr. COT = ',COT(i,j)
          !print*,'SAT retr. cc_tot = ',cc_tot(i,j)
          !print*,'Aerosol Optical Depth: ',aerAOD(aID(i,j))
-         !print*,'Aerosol Effective Radius: ',aerREF(aID(i,j))     
+         !print*,'Aerosol Effective Radius: ',aerREF(aID(i,j))
 
         !cloud base & top height calculation
         call preprocess_bugsrad(cc_tot(i,j),AREF(i,j),AOD550(i,j),phase(i,j),&
@@ -945,7 +945,7 @@ call cpu_time(cpuStart)
          !print*,'Hctop = ',pxHctop,' HctopID: ',pxHctopID
          !print*,'Hcbase = ',pxHcbase,' HcbaseID: ',pxHcbaseID
          !print*,'Regime: ',pxregime
-         !print*,'TOTAL SOLAR IRRADIANCE: ',pxTSI 
+         !print*,'TOTAL SOLAR IRRADIANCE: ',pxTSI
 
          call driver_for_bugsrad(NL,pxTSI,pxtheta,pxAsfcSWRdr,pxAsfcNIRdr,pxAsfcSWRdf,pxAsfcNIRdf,pxts,&
                           pxPhaseFlag,pxREF,pxCOT,pxHctop,pxHcbase,&
@@ -1004,7 +1004,7 @@ call cpu_time(cpuStart)
           boa_par_tot(i,j) = bpar
           boa_par_dif(i,j) = bpardif
 
-         endif !valid data
+         end if !valid data
 
 
          ! meteorology data to output in netCDF file
@@ -1019,10 +1019,10 @@ call cpu_time(cpuStart)
          fth(i,j) = pxFTH
          colO3(i,j) = pxcolO3
 
-!       endif   !valid solar zenith angle
-      endif   !valid geolocation data
-    enddo !j-loop
-   enddo !i-loop
+!       end if   !valid solar zenith angle
+      end if   !valid geolocation data
+    end do !j-loop
+   end do !i-loop
 call cpu_time(cpuFinish)
 print*,cpuFinish-cpuStart,' seconds elapsed'
 
@@ -1049,19 +1049,19 @@ if(px_processing_mode .eq. 1 .or. px_processing_mode .eq. 2) then
   print*,'fth :',fth(i,j)
   print*,'colO3 :',colO3(i,j)
 
-  !write profile of last pixel to ascii file 
+  !write profile of last pixel to ascii file
   !(to write out more than 1 pixel would take tremendous memory)
   open(unit=1,file=trim(fname),status="new",action="write")
    write(unit=1, fmt=*) " Fluxes   Plev       SW_DN       SW_UP       LW_DN       LW_UP"
    write(unit=1, fmt=*) "            Pa       W/m^2       W/m^2       W/m^2       W/m^2"
   do k=1,NLS
     write(unit=1, fmt="(I4,5(F12.3))") k,pxP(k),dswfx(1,k),uswfx(1,k),dlwfx(1,k),ulwfx(1,k)
-  enddo
+  end do
   close(unit=1)
 
- enddo
- enddo
-endif
+ end do
+ end do
+end if
 
 !-------------------------------------------------------------------------
 !Make output netcdf file
@@ -1728,6 +1728,6 @@ end if
 
 print*,'CREATED:'
 print*,TRIM(fname)
-endif !netCDF mode
+end if !netCDF mode
 
 end program process_broadband_fluxes

@@ -9,7 +9,7 @@
       real, intent(in), dimension(ydim) :: latarr
       integer, intent(out) :: lonid,latid
       integer :: i,j,minid(1)
-      
+
       !local
       real, dimension(20) :: all_lonID,all_latID,all_dist
       integer :: ct
@@ -27,10 +27,10 @@
           all_dist(ct)=sqrt( (lonval-lonarr(i))**2. + (latval-latarr(j))**2.)
           ct=ct+1
          !print*,i,j
-         endif
-        enddo
-       endif
-       enddo
+         end if
+        end do
+       end if
+       end do
        !print*,all_lonID(1:ct-1)
        !print*,all_latID(1:ct-1)
        !print*,all_dist(1:ct-1)
