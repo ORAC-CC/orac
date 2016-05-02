@@ -142,11 +142,6 @@ subroutine allocate_imager_structures(imager_geolocation,imager_angles, &
         1:imager_geolocation%ny))
    imager_pavolonis%cldmask_uncertainty=sreal_fill_value
 
-   allocate(imager_pavolonis%sunglint_mask( &
-        imager_geolocation%startx:imager_geolocation%endx, &
-        1:imager_geolocation%ny))
-   imager_pavolonis%sunglint_mask=sint_fill_value
-
    allocate(imager_pavolonis%cccot_pre( &
         imager_geolocation%startx:imager_geolocation%endx, &
         1:imager_geolocation%ny))

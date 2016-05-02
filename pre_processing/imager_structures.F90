@@ -82,7 +82,6 @@ module imager_structures_m
 
    type imager_pavolonis_t
 
-      integer(kind=sint), dimension(:,:), pointer :: sunglint_mask
       integer(kind=sint), dimension(:,:), pointer :: sfctype
       integer(kind=byte), dimension(:,:), pointer :: cldtype
       integer(kind=byte), dimension(:,:), pointer :: cldmask

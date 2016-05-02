@@ -61,7 +61,6 @@ subroutine deallocate_imager_structures(imager_geolocation,imager_angles, &
    deallocate(imager_time%time)
    deallocate(imager_measurements%data)
    deallocate(imager_measurements%uncertainty)
-   deallocate(imager_pavolonis%sunglint_mask)
    deallocate(imager_pavolonis%cldtype)
    deallocate(imager_pavolonis%sfctype)
    deallocate(imager_pavolonis%cldmask)

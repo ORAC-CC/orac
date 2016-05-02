@@ -15,7 +15,7 @@
      +,                    fdlw , fdlwcl ,  fulw , fulwcl
      +,               sel_rules , resat
      +,               emis)
-     
+
       use kinds
       use bugsrad_planck, only:  planck
       use gases_ckd, only:  gases, stanpir,pscale
@@ -89,7 +89,7 @@
 
       real (kind=dbl_kind), intent(in),  dimension(ncol)::
      &  ts    !Surface temperature                                 (K).
-     &, cldmax!Maximum cloud fraction                              (-). 
+     &, cldmax!Maximum cloud fraction                              (-).
 
       real (kind=dbl_kind), intent(in), dimension(ncol,nlm)::
      &  ppl!Layer pressure                                       (hPa).
@@ -113,7 +113,7 @@
 
 !     OUTPUT ARGUMENTS:
 !     -----------------
-      real (kind=dbl_kind), intent(out), dimension(ncol,nlm+1):: 
+      real (kind=dbl_kind), intent(out), dimension(ncol,nlm+1)::
      &  fdlw  !Downward LW flux                                (W/m^2).
      &, fdlwcl!Downward clear-ksy LW flux                      (W/m^2).
      &, fulw  !Upward LW flux                                  (W/m^2).
@@ -125,9 +125,9 @@
      &  mb    !Total number of spectral intervals.
      &, mbs   !Number of shortwave (SW) spectral intervals.
      &, mbir  !Number of shortwave (LW) spectral intervals.
-      parameter(mb=18,mbs=6,mbir=12)        
+      parameter(mb=18,mbs=6,mbir=12)
 
-      integer (kind=int_kind)::    
+      integer (kind=int_kind)::
      &  i     !Horizontal index.
      &, l     !Vertical index.
      &, ib    !Index of spectral interval.
@@ -144,9 +144,9 @@
      &, eps      !Threshold for cloud optical properties              .
      &, pdist
       data eps,tmax,pdist /1.e-05,340.,2./
-          
-      integer (kind=dbl_kind), dimension(mbir)::
-     &  kg       !Nb of k-distributions per spectral intervals.  
+
+      integer (kind=int_kind), dimension(mbir)::
+     &  kg       !Nb of k-distributions per spectral intervals.
       data kg /2,3,4,4,3,5,2,10,12,7,7,8/
 
       real (kind=dbl_kind), dimension(mbir)::
@@ -163,7 +163,7 @@
       real (kind=dbl_kind), dimension(ncol,mbir)::
      & es       !Spectral surface emissivity                       (-).
 
-      real (kind=dbl_kind), dimension(ncol,nlm):: 
+      real (kind=dbl_kind), dimension(ncol,nlm)::
      &  rew     !Effective radius for cloud water                 (mu).
      &, rei     !Effective radius for cloud ice                   (mu).
      &, ttem    !Local temperature                                 (K).
@@ -216,7 +216,7 @@
      &,         4.0674e-1,3.6362e-1 ,5.2930e-1/
 
 !--- cnri and cnii (ice clouds):
-      data cnri/1.3266,1.2986,1.2826,1.2556,1.2963,1.3956 
+      data cnri/1.3266,1.2986,1.2826,1.2556,1.2963,1.3956
      &,         1.3324,1.2960,1.3121,1.3126,1.2903,1.2295
      &,         1.1803,1.5224,1.5572,1.5198,1.4993,1.7026/
       data cnii/7.0696e-9,9.1220e-7,1.2189e-4,5.7648e-4,4.3144e-2
@@ -226,7 +226,7 @@
 
 !---- spectral band center:
       data xlam/0.45  ,1.0   ,1.6  ,2.2  ,3.0   ,3.75  ,4.878 ,5.556
-     &,         6.452 ,7.547 ,8.511,9.615,11.236,13.605,16.529,21.277 
+     &,         6.452 ,7.547 ,8.511,9.615,11.236,13.605,16.529,21.277
      &,         29.412,71.403/
 
 !-----------------------------------------------------------------------
@@ -248,8 +248,8 @@
       do l = 1, nlm
          do i = 1, ncol
             ttem(i,l) = min(tmax,tt(i,l))
-          enddo
-      enddo
+          end do
+      end do
 
 !---- note: this will be changed to accomodate the spectral dependence
 !     the surface emissivity:
@@ -257,13 +257,13 @@
 !      do ib = 1, mbir
 !         do i = 1, ncol
 !            es(i,ib) = 1.
-!         enddo
-!      enddo
+!         end do
+!      end do
 ! NEW CODE that inputs spectral emissivity
 ! Matt Christensen 02/24/16
       do i = 1, ncol
         es(i,:) = emis(:)
-      enddo
+      end do
 
 !--   pressure scaling:
 
@@ -271,9 +271,9 @@
 
 !---- 1. loop over the mbir spectral intervals starts here:
 
-      do ib = mbs+1, mb                 
+      do ib = mbs+1, mb
          ibmbs = ib - mbs
-         
+
          tray(:,:)   = 0.
          wray(:,:)   = 0.
          taer(:,:)   = 0.
@@ -306,10 +306,10 @@
             do i = 1, ncol
                if(cwrho(i,l) .ge. eps) asycldw(i,l) = asym_wat(ibmbs)
                if(cirho(i,l) .ge. eps) asycldi(i,l) = asym_ice(ibmbs)
-            enddo
-         enddo    
+            end do
+         end do
 
-!---- 1.2 water vapor continuum:             
+!---- 1.2 water vapor continuum:
 
          call gascon
      +           (ncol , nlm, ib ,   pp
@@ -329,7 +329,7 @@
      +,           asycldi , asycldw ,  tau1 , tauclr1
      +,              asym ,  asyclr , fwcld ,   fwclr
      +           )
-           
+
 !---- loop over the k-probability distributions starts here:
 
          do ig = 1, kg(ibmbs)
@@ -384,12 +384,12 @@
             fdlwcl(:,:) = fdlwcl(:,:) + fdgcl(:,:)*hk
             fulwcl(:,:) = fulwcl(:,:) + fugcl(:,:)*hk
 
-         enddo ! end k-distribution
+         end do ! end k-distribution
 
-      enddo ! end spectral interval
-      
+      end do ! end spectral interval
+
 
       return
       end subroutine bugs_lwr
-      
+
 c-----------------------------------------------------------------------

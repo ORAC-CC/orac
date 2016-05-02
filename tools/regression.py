@@ -111,6 +111,8 @@ if args.clean:
     args.no_compare = True
 no_clobber_copy = args.no_clobber
 
+terminate = False
+
 #-----------------------------------------------------------------------------
 
 for test in args.tests:
@@ -166,7 +168,10 @@ for test in args.tests:
                 try:
                     orac_main(args)
                 except StopIteration:
-                    exit
+                    terminate = True
+                    break
+            if terminate:
+                break
             if args.verbose or args.progress:
                 termcolor.cprint(proc_took.format(time.time()-st), 'blue')
 

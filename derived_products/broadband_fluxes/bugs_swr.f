@@ -67,7 +67,7 @@
 !     two_rt_sw       : two-stream parameterization.
 
 ! FUNCTIONS CALLED:
-!     none. 
+!     none.
 
 ! INCLUDED COMMONS:
 !     none.
@@ -146,16 +146,16 @@
      &  boapar  !Base of atmosphere Band 1 flux   (W/m^-2).
      &, boapardif  !Base of atmosphere Band 1 flux   (W/m^-2).
      &, toapar  !top of atmosphere Band 1 flux   (W/m^-2).
-     
-! LOCAL VARIABLES:  
+
+! LOCAL VARIABLES:
 
       integer (kind=int_kind)::
      &  mb      !Total number of spectral intervals.
      &, mbs     !Number of shortwave (SW) spectral intervals.
      &, mbir    !Number of shortwave (LW) spectral intervals.
-      parameter(mb=18,mbs=6,mbir=12)        
+      parameter(mb=18,mbs=6,mbir=12)
 
-      integer (kind=int_kind) ::    
+      integer (kind=int_kind) ::
      &  i       !Horizontal index.
      &, l       !Vertical index.
      &, ib      !Index of spectral interval.
@@ -170,16 +170,16 @@
      &, tmax    !Temperature threshold                              (K).
      &, eps     !Threshold for cloud optical properties                .
      &, pdist
-      data eps,tmax,pdist /1.e-05,340.,2./     
-      
-      integer (kind=dbl_kind), dimension(mbs):: 
-     &  kg      !Nb of k-distributions per spectral intervals.  
-      data kg /10,8,12,7,12,5/  
+      data eps,tmax,pdist /1.e-05,340.,2./
+
+      integer (kind=int_kind), dimension(mbs)::
+     &  kg      !Nb of k-distributions per spectral intervals.
+      data kg /10,8,12,7,12,5/
 
       real (kind=dbl_kind), dimension(mbs)::
      &  asym_wat!Spectral asymmetry factor of water clouds.
      &, asym_ice!Spectral asymmetry factor of ice clouds.
-     &, ri      !Coefficients related to Rayleigh absorption.     
+     &, ri      !Coefficients related to Rayleigh absorption.
       data ri / 0.9022e-5, 0.5282e-6, 0.5722e-7
      &,         0.1433e-7, 0.4526e-8, 0.1529e-8 /
 
@@ -258,7 +258,7 @@
 
 !---- spectral band center:
       data xlam/0.45  ,1.0   ,1.6  ,2.2  ,3.0   ,3.75  ,4.878 ,5.556
-     &,         6.452 ,7.547 ,8.511,9.615,11.236,13.605,16.529,21.277 
+     &,         6.452 ,7.547 ,8.511,9.615,11.236,13.605,16.529,21.277
      &,         29.412,71.403/
 
 !-----------------------------------------------------------------------
@@ -302,8 +302,8 @@
       do l = 1, nlm
          do i = 1, ncol
             ttem(i,l) = min(tmax,tt(i,l))
-          enddo
-      enddo
+          end do
+      end do
 
 !---- note: this will be changed to accomodate the spectral dependence
 !     the surface albedo:
@@ -313,13 +313,13 @@
 !        asdir(i,2:6) = alndr(i)
 !        asdif(i,1)   = alvdf(i)
 !        asdif(i,2:6) = alndf(i)
-!      enddo
+!      end do
 ! NEW code
 ! Matt Christensen 02/24/16
       do i = 1, ncol
         asdir(i,:)   = rho0d(:)
         asdif(i,:)   = rhodd(:)
-      enddo
+      end do
 
 !--   pressure scaling:
 
@@ -327,8 +327,8 @@
 
 !---- 1. loop over the mbs spectral intervals starts here:
 
-      do ib = 1, mbs         
-      
+      do ib = 1, mbs
+
          tgm(:,:)      = 0.
          taer(:,:)     = 0.
          waer(:,:)     = 0.
@@ -374,8 +374,8 @@
             do i = 1, ncol
                if(cwrho(i,l).ge.eps) asycldw(i,l) = asym_wat(ib)
                if(cirho(i,l).ge.eps) asycldi(i,l) = asym_ice(ib)
-            enddo
-         enddo
+            end do
+         end do
 
 !---- 1.3 combines single-scattering properties for gray absorption:
 
@@ -392,9 +392,9 @@
 
 !---- loop over the k-probability distributions starts here:
 
-         do ig = 1, kg(ib) 
+         do ig = 1, kg(ib)
 
-!---- 1.4 non-gray gaseous absorption:         
+!---- 1.4 non-gray gaseous absorption:
 
             call gases
      +              ( ncol ,   nlm ,    ib ,    ig
@@ -428,10 +428,10 @@
      +,              fdgcldir ,fdgcldif , sel_rules
      +              )
 
-            fdsw(:,:)     = fdsw(:,:)   
+            fdsw(:,:)     = fdsw(:,:)
      +                    + (fdgdir(:,:)+fdgdif(:,:))*hk
             fusw(:,:)     = fusw(:,:)   + fugdif(:,:)*hk
-            fdswcl(:,:)   = fdswcl(:,:) 
+            fdswcl(:,:)   = fdswcl(:,:)
      +                    + (fdgcldir(:,:)+fdgcldif(:,:)) * hk
             fuswcl(:,:)   = fuswcl(:,:) + fugcldif(:,:)*hk
 
@@ -456,7 +456,7 @@
                   radndc(:) = radndc(:) + fdgdif(:,nlm+1)*hk
                   radndccl(:) = radndccl(:) + fdgcldif(:,nlm+1)*hk
 
-            end select 
+            end select
 
 !---- 1.8 computes photosynthetic active radiation - Matt Christensen 11/3/15
         !Calculate PAR (400-700nm) from band 1 (200-689nm)
@@ -468,31 +468,30 @@
         ! W1 = 0.746274 & W2 = 0.032175
         !shortwave channel
         !band 1 (74.6% weight from this channel)
-        if(ib .eq. 1 .and. ig .eq. 10) then 
+        if(ib .eq. 1 .and. ig .eq. 10) then
           boapar(1)   = fdsw(1,nlm)    * 0.746274
           boapardif(1)= fdswdif(1,nlm) * 0.746274
           toapar(1)   = fdsw(1,1)      * 0.746274
-        endif
+        end if
 
         !band 2 (3.2% weight from this channel)
          !note bands are being added 1 each time so need to subtract
          !total-band1 to get band2
         if(ib .eq. 2 .and. ig .eq. 8) then
           !print*,boapar,boapardif,toapar
-          boapar(1)   = boapar(1)    + 
+          boapar(1)   = boapar(1)    +
      &                 (fdsw(1,nlm)   -    boapar(1)/0.746274)*0.032175
           boapardif(1)= boapardif(1) +
      &                 (fdswdif(1,nlm)- boapardif(1)/0.746274)*0.032175
           toapar(1)=toapar(1)+
      &                 (fdsw(1,nlm)   -    toapar(1)/0.746274)*0.032175
           !print*,boapar,boapardif,toapar
-        endif
+        end if
 
-         enddo ! end k-distribution
-      enddo ! end spectral interval
+         end do ! end k-distribution
+      end do ! end spectral interval
 
       return
       end subroutine bugs_swr
 
 !-----------------------------------------------------------------------
-

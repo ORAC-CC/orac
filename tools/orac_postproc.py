@@ -89,7 +89,8 @@ def orac_postproc(args):
                 print(err.output)
             raise StopIteration
         finally:
-            os.remove(driver_file)
+            if not args.keep_driver:
+                os.remove(driver_file)
 
     return
 

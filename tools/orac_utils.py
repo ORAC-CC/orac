@@ -224,6 +224,8 @@ def orac_common_args(parser):
                      help = 'Path for input.')
 
     script = parser.add_argument_group('Script keywords')
+    script.add_argument('--keep_driver', action='store_true',
+                        help = 'Retain driver files after processing.')
     script.add_argument('--no_clobber', action='store_true',
                         help = 'Retain existing output files.')
     script.add_argument('--lambertian', action='store_true',
