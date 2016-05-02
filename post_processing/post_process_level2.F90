@@ -110,11 +110,12 @@
 !    cloud free pixels. This should all be resolved with this commit.
 ! 2016/02/02, GM: Add option output_optical_props_at_night.
 ! 2016/03/11, AP: Read both aerosol and cloud inputs.
+! 2016/04/28, AP: Add multiple views.
 !
 ! $Id$
 !
 ! Bugs:
-! None known.
+! - Use of input_primary%cldtype is hardwired to view element 1.
 !-------------------------------------------------------------------------------
 
 #ifndef WRAPPER
@@ -169,7 +170,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
 
    character(len=path_length)   :: out_file_primary, out_file_secondary
 
-   integer                      :: ncid_primary, ncid_secondary, dims_var(2)
+   integer                      :: ncid_primary, ncid_secondary, dims_var(3)
 
    type(global_attributes_t)    :: global_atts
    type(source_attributes_t)    :: source_atts
@@ -353,7 +354,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
 
             ! Apply Pavolonis phase information to select retrieval phase
             ! variables select water type overwrite ice
-            select case (input_primary(0)%cldtype(i,j))
+            select case (input_primary(0)%cldtype(i,j,1))
             case(FOG_TYPE, &
                  WATER_TYPE, &
                  SUPERCOOLED_TYPE)
@@ -365,7 +366,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
                     (input_primary(IIce)%ctt(i,j) /= sreal_fill_value .and. &
                      input_primary(IIce)%ctt(i,j) < switch_ice_limit))) then
                   phase_flag = 2_byte
-                  input_primary(0)%cldtype(i,j) = SWITCHED_TO_ICE_TYPE
+                  input_primary(0)%cldtype(i,j,1) = SWITCHED_TO_ICE_TYPE
                end if
             case(OPAQUE_ICE_TYPE, &
                  CIRRUS_TYPE, &
@@ -380,7 +381,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
                     (input_primary(IIce)%ctt(i,j) /= sreal_fill_value .and. &
                      input_primary(IIce)%ctt(i,j) >= switch_ice_limit))) then
                   phase_flag = 1_byte
-                  input_primary(0)%cldtype(i,j) = SWITCHED_TO_WATER_TYPE
+                  input_primary(0)%cldtype(i,j,1) = SWITCHED_TO_WATER_TYPE
                end if
             case default
                phase_flag = 2_byte
@@ -399,9 +400,9 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
             end if
 
             ! Overwrite cc_total with cldmask for Cloud CCI
-            input_primary(0)%cc_total(i,j) = input_primary(0)%cldmask(i,j)
+            input_primary(0)%cc_total(i,j) = input_primary(0)%cldmask(i,j,1)
             input_primary(0)%cc_total_uncertainty(i,j) = &
-                 input_primary(0)%cldmask_uncertainty(i,j)
+                 input_primary(0)%cldmask_uncertainty(i,j,1)
 
             if (input_primary(0)%cc_total(i,j) == 0.0) then
                ! Set phase to clear/unknown
@@ -458,10 +459,12 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
 
    ! Open the netcdf output file
    call nc_create(trim(adjustl(out_file_primary)), ncid_primary, &
-        indexing%Xdim, indexing%Ydim, dims_var, 1, global_atts, source_atts)
+        indexing%Xdim, indexing%Ydim, indexing%NViews, dims_var, 1, &
+        global_atts, source_atts)
    if (do_secondary) then
       call nc_create(trim(adjustl(out_file_secondary)), ncid_secondary, &
-           indexing%Xdim, indexing%Ydim, dims_var, 2, global_atts, source_atts)
+           indexing%Xdim, indexing%Ydim, indexing%NViews, dims_var, 2, &
+           global_atts, source_atts)
    end if
 
    ! Define netcdf variables

@@ -62,6 +62,7 @@
 ! 2016/01/27, GM: Add cloud emissivity and cloud emissivity uncertainty.
 ! 2016/01/28, GM: Add ctp and ctt corrected and corrected_uncertianty.
 ! 2016/03/04, AP: Tidy prepare_*_packed_float.
+! 2016/04/28, AP: Add multiple views.
 !
 ! $Id$
 !
@@ -553,12 +554,14 @@ if (Ctrl%Ind%flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! cccot_pre
    !----------------------------------------------------------------------------
-   call prepare_short_packed_float( &
-        MSI_Data%cccot_pre(SPixel%Loc%X0, SPixel%Loc%Y0), &
-        output_data%cccot_pre(i,j), &
-        output_data%cccot_pre_scale, output_data%cccot_pre_offset, &
-        output_data%cccot_pre_vmin, output_data%cccot_pre_vmax, &
-        sreal_fill_value, sint_fill_value)
+   do k=1,Ctrl%Ind%NViews
+      call prepare_short_packed_float( &
+           MSI_Data%cccot_pre(SPixel%Loc%X0, SPixel%Loc%Y0,k), &
+           output_data%cccot_pre(i,j,k), &
+           output_data%cccot_pre_scale, output_data%cccot_pre_offset, &
+           output_data%cccot_pre_vmin, output_data%cccot_pre_vmax, &
+           sreal_fill_value, sint_fill_value)
+   end do
 end if
 
    !----------------------------------------------------------------------------
@@ -632,28 +635,30 @@ end if
    !----------------------------------------------------------------------------
    ! cldtype
    !----------------------------------------------------------------------------
-   output_data%cldtype(i,j)=int(MSI_Data%cldtype(SPixel%Loc%X0, &
-                                                 SPixel%Loc%Y0), kind=byte)
+   output_data%cldtype(i,j,:)=int(MSI_Data%cldtype(SPixel%Loc%X0, &
+                                                   SPixel%Loc%Y0,:), kind=byte)
 
    !----------------------------------------------------------------------------
    ! cldmask
    !----------------------------------------------------------------------------
 if (Ctrl%Ind%flags%do_cldmask) then
-   output_data%cldmask(i,j)=int(MSI_Data%cldmask(SPixel%Loc%X0, &
-                                                 SPixel%Loc%Y0), kind=byte)
+   output_data%cldmask(i,j,:)=int(MSI_Data%cldmask(SPixel%Loc%X0, &
+                                                   SPixel%Loc%Y0,:), kind=byte)
 end if
 if (Ctrl%Ind%flags%do_cldmask_uncertainty) then
    !----------------------------------------------------------------------------
    ! cldmask_uncertainty
    !----------------------------------------------------------------------------
-   call prepare_short_packed_float( &
-        MSI_Data%cldmask_uncertainty(SPixel%Loc%X0, SPixel%Loc%Y0), &
-        output_data%cldmask_uncertainty(i,j), &
-        output_data%cldmask_uncertainty_scale, &
-        output_data%cldmask_uncertainty_offset, &
-        output_data%cldmask_uncertainty_vmin, &
-        output_data%cldmask_uncertainty_vmax, &
-        sreal_fill_value, sint_fill_value)
+   do k=1,Ctrl%Ind%NViews
+      call prepare_short_packed_float( &
+           MSI_Data%cldmask_uncertainty(SPixel%Loc%X0, SPixel%Loc%Y0, k), &
+           output_data%cldmask_uncertainty(i,j,k), &
+           output_data%cldmask_uncertainty_scale, &
+           output_data%cldmask_uncertainty_offset, &
+           output_data%cldmask_uncertainty_vmin, &
+           output_data%cldmask_uncertainty_vmax, &
+           sreal_fill_value, sint_fill_value)
+   end do
 end if
 
    !----------------------------------------------------------------------------

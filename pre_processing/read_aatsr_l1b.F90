@@ -69,6 +69,8 @@
 !    assumes we  are using the latest calibrated version of AATSR data v 2.1/3.0
 ! 2015/11/15, CP: Corrects implementataion of 12um non linearity correction.
 ! 2015/11/26, GM: Translate AATSR time to Julian time.
+! 2016/04/07, SP: Changed channel indexing for 2nd view, now channels in view 2
+!                 start with channel 8. This simplifies things (no multiple Ch1s)
 !
 ! $Id$
 !
@@ -281,6 +283,7 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
             stop error_stop_code
          end select
       else if (view(i) .eq. 2) then
+         ch(i) = ch(i) - 7
          select case (ch(i))
          case (1)
             fch1 = c_loc(imager_measurements%data(startx,1,i))

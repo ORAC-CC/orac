@@ -583,6 +583,7 @@ end subroutine netcdf_create_rtm
 ! 2014/09/28, GM: Removed the option for chunking. Chunking will not help
 !    any more as the variables are written by the preprocessor and read by the
 !    main processor in the order in which they are stored.
+! 2016/04/28, AP: Make multiple views mandatory.
 !
 !-------------------------------------------------------------------------------
 
@@ -808,9 +809,21 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
          stop error_stop_code
       end if
 
+      if (nf90_def_dim(netcdf_info%ncid_clf, 'nv_cf', &
+          imager_angles%nviews, &
+          netcdf_info%dimid_v_cf) .ne. NF90_NOERR) then
+         write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
+            & 'name: nvcf'
+         stop error_stop_code
+      end if
+
 
       dimids_2d(1)=netcdf_info%dimid_x_cf
       dimids_2d(2)=netcdf_info%dimid_y_cf
+
+      dimids_3d(1)=netcdf_info%dimid_x_cf
+      dimids_3d(2)=netcdf_info%dimid_y_cf
+      dimids_3d(3)=netcdf_info%dimid_v_cf
 
       ! define cflag
       call nc_def_var_byte_packed_byte( &
@@ -826,7 +839,7 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
       ! define cldtype variable
       call nc_def_var_byte_packed_byte( &
               netcdf_info%ncid_clf, &
-              dimids_2d, &
+              dimids_3d, &
               'cldtype', &
               netcdf_info%vid_cldtype, &
               verbose, &
@@ -837,7 +850,7 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
       ! define cldmask variable
       call nc_def_var_byte_packed_byte( &
               netcdf_info%ncid_clf, &
-              dimids_2d, &
+              dimids_3d, &
               'cldmask', &
               netcdf_info%vid_cldmask, &
               verbose, &
@@ -848,7 +861,7 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
       ! define cldmask_uncertainty variable
       call nc_def_var_float_packed_float( &
               netcdf_info%ncid_clf, &
-              dimids_2d, &
+              dimids_3d, &
               'cldmask_uncertainty', &
               netcdf_info%vid_cldmask_unc, &
               verbose, &
@@ -859,7 +872,7 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
       ! define cccot_pre variable
       call nc_def_var_float_packed_float( &
               netcdf_info%ncid_clf, &
-              dimids_2d, &
+              dimids_3d, &
               'cccot_pre', &
               netcdf_info%vid_cccot_pre, &
               verbose, &

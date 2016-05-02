@@ -35,6 +35,7 @@
 ! 2016/01/27, GM: Add cee and cee_uncertainty.
 ! 2016/01/28, GM: Add ctp and ctt corrected and corrected_uncertianty.
 ! 2016/03/02, AP: Homogenisation of I/O modules.
+! 2016/04/28, AP: Add multiple views.
 !
 ! $Id$
 !
@@ -234,7 +235,7 @@ subroutine alloc_input_data_primary_all(ind, data)
    call alloc_input_data_primary_common(ind, data)
 
 if (ind%flags%do_cloud) then
-   allocate(data%cccot_pre(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   allocate(data%cccot_pre(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NViews))
    data%cccot_pre = sreal_fill_value
 else
    nullify(data%cccot_pre)
@@ -267,17 +268,17 @@ end if
    allocate(data%illum(ind%X0:ind%X1, ind%Y0:ind%Y1))
    data%illum = byte_fill_value
 
-   allocate(data%cldtype(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   allocate(data%cldtype(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NViews))
    data%cldtype = byte_fill_value
 
 if (ind%flags%do_cldmask) then
-   allocate(data%cldmask(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   allocate(data%cldmask(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NViews))
    data%cldmask = byte_fill_value
 else
    nullify(data%cldmask)
 end if
 if (ind%flags%do_cldmask_uncertainty) then
-   allocate(data%cldmask_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   allocate(data%cldmask_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NViews))
    data%cldmask_uncertainty = sreal_fill_value
 else
    nullify(data%cldmask_uncertainty)

@@ -44,6 +44,7 @@
 ! 2015/01/30, AP: Remove uscan and vscan as unnecessary.
 ! 2015/07/02, OS: added writing of cldmask_uncertainty
 ! 2016/03/31, GM: Changes to support processing only SW or only LW channels.
+! 2016/04/28, AP: Make multiple views mandatory.
 !
 ! $Id$
 !
@@ -271,33 +272,37 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocati
            netcdf_info%ncid_clf, &
            'cldtype', &
            netcdf_info%vid_cldtype, &
-           imager_pavolonis%cldtype(imager_geolocation%startx:,:), &
+           imager_pavolonis%cldtype(imager_geolocation%startx:,:,:), &
            1, 1, n_x, &
-           1, 1, imager_geolocation%ny)
+           1, 1, imager_geolocation%ny, &
+           1, 1, channel_info%nviews)
 
    call nc_write_array( &
            netcdf_info%ncid_clf, &
            'cldmask', &
            netcdf_info%vid_cldmask, &
-           imager_pavolonis%cldmask(imager_geolocation%startx:,:), &
+           imager_pavolonis%cldmask(imager_geolocation%startx:,:,:), &
            1, 1, n_x, &
-           1, 1, imager_geolocation%ny)
+           1, 1, imager_geolocation%ny, &
+           1, 1, channel_info%nviews)
 
    call nc_write_array( &
            netcdf_info%ncid_clf, &
            'cldmask_uncertainty', &
            netcdf_info%vid_cldmask_unc, &
-           imager_pavolonis%cldmask_uncertainty(imager_geolocation%startx:,:), &
+           imager_pavolonis%cldmask_uncertainty(imager_geolocation%startx:,:,:), &
            1, 1, n_x, &
-           1, 1, imager_geolocation%ny)
+           1, 1, imager_geolocation%ny, &
+           1, 1, channel_info%nviews)
 
    call nc_write_array( &
            netcdf_info%ncid_clf, &
            'cccot_pre', &
            netcdf_info%vid_cccot_pre, &
-           imager_pavolonis%cccot_pre(imager_geolocation%startx:,:), &
+           imager_pavolonis%cccot_pre(imager_geolocation%startx:,:,:), &
            1, 1, n_x, &
-           1, 1, imager_geolocation%ny)
+           1, 1, imager_geolocation%ny, &
+           1, 1, channel_info%nviews)
 
    ! geo file (solzen, satzen, solaz, relazi)
 

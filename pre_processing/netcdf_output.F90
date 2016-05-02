@@ -48,7 +48,7 @@ module netcdf_output_m
       integer :: dimid_lw_channels, dimid_sw_channels
 
       integer :: dimid_x_alb, dimid_y_alb
-      integer :: dimid_x_cf,  dimid_y_cf
+      integer :: dimid_x_cf,  dimid_y_cf,  dimid_v_cf
       integer :: dimid_x_geo, dimid_y_geo, dimid_v_geo
       integer :: dimid_x_loc, dimid_y_loc
       integer :: dimid_x_lsf, dimid_y_lsf

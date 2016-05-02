@@ -74,6 +74,7 @@
 ! 2016/01/27, GM: Add cee and cee_uncertainty.
 ! 2016/01/28, GM: Add ctp and ctt corrected and corrected_uncertianty.
 ! 2016/03/04, AP: Homogenisation of I/O modules.
+! 2016/04/28, AP: Add multiple views.
 !
 ! $Id$
 !
@@ -81,16 +82,16 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine def_output_primary(ncid, dims_var, output_data, indexing, &
+subroutine def_output_primary(ncid, dim3d_var, output_data, indexing, &
    qc_flag_masks, qc_flag_meanings, deflate_level, shuffle_flag, verbose, &
-   ch_var, view_var)
+   ch_var)
 
    use orac_ncdf_m
 
    implicit none
 
    integer,                     intent(in)    :: ncid
-   integer,                     intent(in)    :: dims_var(:)
+   integer,                     intent(in)    :: dim3d_var(:)
    type(output_data_primary_t), intent(inout) :: output_data
    type(common_indices_t),      intent(in)    :: indexing
    character(len=*),            intent(in)    :: qc_flag_masks
@@ -99,14 +100,16 @@ subroutine def_output_primary(ncid, dims_var, output_data, indexing, &
    logical,                     intent(in)    :: shuffle_flag
    logical,                     intent(in)    :: verbose
    integer, optional,           intent(in)    :: ch_var(:)
-   integer, optional,           intent(in)    :: view_var(:)
 
    character(len=32)  :: input_num
    character(len=512) :: input_dummy
    character(len=512) :: input_dummy2
    integer            :: i, j
    integer            :: i_view
+   integer            :: dims_var(2), view_var(1)
 
+   dims_var = dim3d_var(1:2)
+   view_var = dim3d_var(3)
 
    !----------------------------------------------------------------------------
    !
@@ -1169,7 +1172,7 @@ if (indexing%flags%do_cloud) then
    !----------------------------------------------------------------------------
    call nc_def_var_short_packed_float( &
            ncid, &
-           dims_var, &
+           dim3d_var, &
            'cccot_pre', &
            output_data%vid_cccot_pre, &
            verbose, &
@@ -1440,7 +1443,7 @@ end if
 
    call nc_def_var_byte_packed_byte( &
            ncid, &
-           dims_var, &
+           dim3d_var, &
            'cldtype', &
            output_data%vid_cldtype, &
            verbose, &
@@ -1463,7 +1466,7 @@ if (indexing%flags%do_cldmask) then
    !----------------------------------------------------------------------------
    call nc_def_var_byte_packed_byte( &
            ncid, &
-           dims_var, &
+           dim3d_var, &
            'cldmask', &
            output_data%vid_cldmask, &
            verbose, &
@@ -1486,7 +1489,7 @@ if (indexing%flags%do_cldmask_uncertainty) then
    !----------------------------------------------------------------------------
    call nc_def_var_short_packed_float( &
            ncid, &
-           dims_var, &
+           dim3d_var, &
            'cldmask_uncertainty', &
            output_data%vid_cldmask_uncertainty, &
            verbose, &
@@ -1611,7 +1614,7 @@ if (indexing%flags%do_indexing .and. present(ch_var)) then
    end if
 end if
 
-if (indexing%flags%do_indexing .and. present(view_var)) then
+if (indexing%flags%do_indexing) then
    !----------------------------------------------------------------------------
    ! view_id
    !----------------------------------------------------------------------------

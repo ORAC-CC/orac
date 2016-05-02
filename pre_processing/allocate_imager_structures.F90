@@ -32,6 +32,7 @@
 ! 2014/12/01, OS: added imager_pavolonis%emis_ch3b
 ! 2015/01/30, AP: Remove uscan and vscan as unnecessary.
 ! 2015/07/02, OS: added allocation of cldmask_uncertainty
+! 2016/04/09, SP: Added multiple views
 !
 ! $Id$
 !
@@ -124,7 +125,7 @@ subroutine allocate_imager_structures(imager_geolocation,imager_angles, &
 
    allocate(imager_pavolonis%cldtype( &
         imager_geolocation%startx:imager_geolocation%endx, &
-        1:imager_geolocation%ny))
+        1:imager_geolocation%ny,imager_angles%nviews))
    imager_pavolonis%cldtype=byte_fill_value
 
    allocate(imager_pavolonis%sfctype( &
@@ -134,27 +135,27 @@ subroutine allocate_imager_structures(imager_geolocation,imager_angles, &
 
    allocate(imager_pavolonis%cldmask( &
         imager_geolocation%startx:imager_geolocation%endx, &
-        1:imager_geolocation%ny))
+        1:imager_geolocation%ny,imager_angles%nviews))
    imager_pavolonis%cldmask=byte_fill_value
 
    allocate(imager_pavolonis%cldmask_uncertainty( &
         imager_geolocation%startx:imager_geolocation%endx, &
-        1:imager_geolocation%ny))
+        1:imager_geolocation%ny,imager_angles%nviews))
    imager_pavolonis%cldmask_uncertainty=sreal_fill_value
 
    allocate(imager_pavolonis%cccot_pre( &
         imager_geolocation%startx:imager_geolocation%endx, &
-        1:imager_geolocation%ny))
+        1:imager_geolocation%ny,imager_angles%nviews))
    imager_pavolonis%cccot_pre=sreal_fill_value
 
    allocate(imager_pavolonis%cirrus_quality( &
         imager_geolocation%startx:imager_geolocation%endx, &
-        1:imager_geolocation%ny))
+        1:imager_geolocation%ny,imager_angles%nviews))
    imager_pavolonis%cirrus_quality=byte_fill_value
 
    allocate(imager_pavolonis%emis_ch3b( &
         imager_geolocation%startx:imager_geolocation%endx, &
-        1:imager_geolocation%ny))
+        1:imager_geolocation%ny,imager_angles%nviews))
    imager_pavolonis%emis_ch3b=sreal_fill_value
 
 end subroutine allocate_imager_structures

@@ -42,6 +42,7 @@
 ! 2016/01/27, GM: Add cee and cee_uncertainty.
 ! 2016/01/28, GM: Add ctp and ctt corrected and corrected_uncertianty.
 ! 2016/03/04, AP: Homogenisation of I/O modules.
+! 2016/04/28, AP: Add multiple views.
 !
 ! $Id$
 !
@@ -273,7 +274,8 @@ if (ind%flags%do_cloud) then
    end do
 
    call nc_write_array(ncid,'cccot_pre',output_data%vid_cccot_pre, &
-        output_data%cccot_pre(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
+        output_data%cccot_pre(ind%X0:,ind%Y0:,:),1,1,ind%Xdim,1,1,ind%Ydim, &
+        1,1,ind%NViews)
 end if
 
    call nc_write_array(ncid,'convergence',output_data%vid_convergence, &
@@ -307,17 +309,19 @@ end if
         output_data%illum(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
 
    call nc_write_array(ncid,'cldtype',output_data%vid_cldtype, &
-        output_data%cldtype(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
+        output_data%cldtype(ind%X0:,ind%Y0:,:),1,1,ind%Xdim,1,1,ind%Ydim, &
+        1,1,ind%NViews)
 
 if (ind%flags%do_cldmask) then
    call nc_write_array(ncid,'cldmask',output_data%vid_cldmask, &
-        output_data%cldmask(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
+        output_data%cldmask(ind%X0:,ind%Y0:,:),1,1,ind%Xdim,1,1,ind%Ydim, &
+        1,1,ind%NViews)
 end if
 if (ind%flags%do_cldmask_uncertainty) then
    call nc_write_array(ncid,'cldmask_uncertainty', &
         output_data%vid_cldmask_uncertainty, &
-        output_data%cldmask_uncertainty(ind%X0:,ind%Y0:), &
-        1,1,ind%Xdim,1,1,ind%Ydim)
+        output_data%cldmask_uncertainty(ind%X0:,ind%Y0:,:), &
+        1,1,ind%Xdim,1,1,ind%Ydim,1,1,ind%NViews)
 end if
 
 if (ind%flags%do_phase) then

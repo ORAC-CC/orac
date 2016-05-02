@@ -32,6 +32,7 @@
 ! 2015/04/28, AP: Added fields for surface uncertainty and correlation.
 ! 2015/07/03, OS: Added cldmask_uncertainty
 ! 2015/07/27, AP: Replace CloudFlag with Type.
+! 2016/04/28, AP: Add multiple views.
 !
 ! $Id$
 !
@@ -70,10 +71,10 @@ module Data_m
       real,               pointer :: rho_dv(:,:,:)
       real,               pointer :: rho_dd(:,:,:)
       integer(byte),      pointer :: Type(:,:)
-      integer(byte),      pointer :: cldtype(:,:)
-      integer(byte),      pointer :: cldmask(:,:)
-      real,               pointer :: cldmask_uncertainty(:,:)
-      real,               pointer :: cccot_pre(:,:)
+      integer(byte),      pointer :: cldtype(:,:,:)
+      integer(byte),      pointer :: cldmask(:,:,:)
+      real,               pointer :: cldmask_uncertainty(:,:,:)
+      real,               pointer :: cccot_pre(:,:,:)
       type(Geometry_t)            :: Geometry
       type(Location_t)            :: Location
       integer(byte),      pointer :: LSFlags(:,:)

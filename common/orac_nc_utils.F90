@@ -24,13 +24,14 @@
 !
 ! History:
 ! 2015/07/16, GM: Original version.
+! 2016/04/28, AP: Make multiple views mandatory.
 !
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine nc_create(path, ncid, nx, ny, dims_var, type, global_atts, &
-     source_atts, nch, ch_var, nview, view_var, nstate, LUT_class, do_flags)
+subroutine nc_create(path, ncid, nx, ny, nview, dims_var, type, global_atts, &
+     source_atts, nch, ch_var, nstate, LUT_class, do_flags)
 
    use netcdf
 
@@ -43,19 +44,18 @@ subroutine nc_create(path, ncid, nx, ny, dims_var, type, global_atts, &
    ! Input
    character(len=*),          intent(in)    :: path
    integer,                   intent(in)    :: nx, ny
+   integer,                   intent(in)    :: nview
    integer,                   intent(in)    :: type
 
    ! Output
    integer,                   intent(out)   :: ncid
-   integer,                   intent(out)   :: dims_var(2)
+   integer,                   intent(out)   :: dims_var(3)
 
    type(global_attributes_t), intent(inout) :: global_atts
    type(source_attributes_t), intent(inout) :: source_atts
 
    integer,          optional,intent(in)    :: nch
    integer,          optional,intent(out)   :: ch_var(1)
-   integer,          optional,intent(in)    :: nview
-   integer,          optional,intent(out)   :: view_var(1)
    integer,          optional,intent(in)    :: nstate
    character(len=*), optional,intent(in)    :: LUT_class
    integer,          optional,intent(in)    :: do_flags
@@ -87,20 +87,17 @@ subroutine nc_create(path, ncid, nx, ny, dims_var, type, global_atts, &
       stop error_stop_code
    end if
 
+   ierr = nf90_def_dim(ncid, 'views', nview, dims_var(3))
+   if (ierr .ne. NF90_NOERR) then
+      write(*,*) 'ERROR: nf90_def_dim(): dim_name = views, vdim = ', dims_var(3)
+      stop error_stop_code
+   end if
+
    ! Optionally define channel dimension
    if (present(nch) .and. present(ch_var)) then
       ierr = nf90_def_dim(ncid, 'channels', nch, ch_var(1))
       if (ierr .ne. NF90_NOERR) then
          write(*,*) 'ERROR: nf90_def_dim(): dim_name = channels, ydim = ', ch_var
-         stop error_stop_code
-      end if
-   end if
-
-   ! Optionally define view dimension
-   if (present(nview) .and. present(view_var)) then
-      ierr = nf90_def_dim(ncid, 'views', nview, view_var(1))
-      if (ierr .ne. NF90_NOERR) then
-         write(*,*) 'ERROR: nf90_def_dim(): dim_name = views, ydim = ', view_var
          stop error_stop_code
       end if
    end if

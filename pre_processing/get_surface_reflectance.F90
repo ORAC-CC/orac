@@ -260,7 +260,6 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, &
          allocate(satzalnd(nland))
          allocate(solazlnd(nland))
          allocate(relazlnd(nland))
-         allocate(wgtlnd(3,channel_info%nchannels_sw,nland))
          allocate(rholnd(channel_info%nchannels_sw,nland,4))
       end if
 
@@ -287,6 +286,9 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, &
       if (verbose) write(*,*) 'n channels for land reflectance: ', n_ref_chans
 
       allocate(bands(n_ref_chans))
+      if (include_full_brdf) then
+         allocate(wgtlnd(3,n_ref_chans,nland))
+      end if
 
       ! Identify bands required
       ii = 1
@@ -429,14 +431,7 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, &
                call fill_grid(tmp_data, sreal_fill_value, fg_mask)
 
                do lndcount = 1, nland
-                  call interp_field(tmp_data, tmp_val, interp(lndcount))
-
-                  do k = 1, channel_info%nchannels_sw
-                     if (channel_info%map_ids_abs_to_ref_band_land(k) .eq. &
-                         bands(i)) then
-                        wgtlnd(j,k,lndcount) = tmp_val
-                     end if
-                  end do
+                  call interp_field(tmp_data, wgtlnd(j,i,lndcount), interp(lndcount))
                end do
             end do
          end if

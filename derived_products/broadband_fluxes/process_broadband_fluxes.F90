@@ -84,7 +84,7 @@ program process_broadband_fluxes
    implicit none
 
    character(path_length) :: Fprimary,FPRTM,FTSI,FALB,fname,Faerosol,Fcollocation
-   integer :: ncid, i, j, k, dims_var(2)
+   integer :: ncid, i, j, k, dims_var(2), dim3d_var(3)
    logical, parameter :: verbose=.true.
    logical there
    type(global_attributes_t) :: global_atts
@@ -321,7 +321,7 @@ program process_broadband_fluxes
    integer :: &
       ixstart,ixstop,xstep  ,& ! First and last super-pixel X locations
       iystart,iystop,ystep  ,& ! First and last super-pixel Y locations
-      n_x, n_y
+      n_x, n_y, n_v
 
    !debugging
    integer :: nanFlag
@@ -755,9 +755,11 @@ program process_broadband_fluxes
         iystop = yN
         n_x = ixstop - ixstart + 1
         n_y = iystop - iystart + 1
+        n_v = 1
        ! create netcdf file
         call nc_create(trim(Fcollocation), ncid, ixstop-ixstart+1, &
-           iystop-iystart+1, dims_var, 1, global_atts, source_atts)
+           iystop-iystart+1, n_v, dim3d_var, 1, global_atts, source_atts)
+        dims_var = dim3d_var(1:2)
 
            !Need this to exit data mode to define variables
            if (nf90_redef(ncid) .ne. NF90_NOERR) then
@@ -1087,11 +1089,12 @@ end if
    iystop = yN
    n_x = ixstop - ixstart + 1
    n_y = iystop - iystart + 1
-
+   n_v = 1
 
   ! create netcdf file
    call nc_create(trim(fname), ncid, ixstop-ixstart+1, &
-      iystop-iystart+1, dims_var, 1, global_atts, source_atts)
+      iystop-iystart+1, n_v, dim3d_var, 1, global_atts, source_atts)
+   dims_var = dim3d_var(1:2)
 
       !Need this to exit data mode to define variables
       if (nf90_redef(ncid) .ne. NF90_NOERR) then

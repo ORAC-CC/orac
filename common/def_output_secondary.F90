@@ -66,7 +66,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine def_output_secondary(ncid, dims_var, output_data, indexing, &
+subroutine def_output_secondary(ncid, dim3d_var, output_data, indexing, &
    deflate_level, shuffle_flag, verbose)
 
    use orac_ncdf_m
@@ -74,7 +74,7 @@ subroutine def_output_secondary(ncid, dims_var, output_data, indexing, &
    implicit none
 
    integer,                       intent(in)    :: ncid
-   integer,                       intent(in)    :: dims_var(:)
+   integer,                       intent(in)    :: dim3d_var(:)
    type(output_data_secondary_t), intent(inout) :: output_data
    type(common_indices_t),        intent(in)    :: indexing
    integer,                       intent(in)    :: deflate_level
@@ -84,6 +84,9 @@ subroutine def_output_secondary(ncid, dims_var, output_data, indexing, &
    character(len=32)  :: input_num
    character(len=512) :: input_dummy, input_dummy2, input_dummy3
    integer            :: i, j
+   integer            :: dims_var(2)
+
+   dims_var = dim3d_var(1:2)
 
 
    !----------------------------------------------------------------------------

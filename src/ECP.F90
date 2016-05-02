@@ -237,7 +237,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    character(len=512)  :: qc_flag_meanings
 
    ! netcdf related variables:
-   integer :: ncid_primary, ncid_secondary, dims_var(2), ch_var(1), view_var(1)
+   integer :: ncid_primary, ncid_secondary, dims_var(3), ch_var(1)
 
    ! Additional types for the scanline output for netcdf are defined
    type(output_data_primary_t)   :: output_data_1
@@ -630,25 +630,25 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
       end do
 
       call nc_create(Ctrl%FID%L2_primary, ncid_primary, Ctrl%Ind%Xdim, &
-           Ctrl%Ind%Ydim, dims_var, 1, global_atts, source_atts, &
-           Ctrl%Ind%Ny, ch_var, Ctrl%Ind%NViews, view_var, Ctrl%Nx(IDay), &
+           Ctrl%Ind%Ydim, Ctrl%Ind%NViews, dims_var, 1, global_atts,  &
+           source_atts, Ctrl%Ind%Ny, ch_var, Ctrl%Nx(IDay), &
            Ctrl%LUTClass, bitmask)
    else
       call nc_create(Ctrl%FID%L2_primary, ncid_primary, Ctrl%Ind%Xdim, &
-           Ctrl%Ind%Ydim, dims_var, 1, global_atts, source_atts)
+           Ctrl%Ind%Ydim, Ctrl%Ind%NViews, dims_var, 1, global_atts, source_atts)
    end if
 
 
    if (Ctrl%verbose) write(*,*) 'path2: ',trim(Ctrl%FID%L2_secondary)
    call nc_create(Ctrl%FID%L2_secondary, ncid_secondary, Ctrl%Ind%Xdim, &
-        Ctrl%Ind%Ydim, dims_var, 2, global_atts, source_atts)
+        Ctrl%Ind%Ydim, Ctrl%Ind%NViews, dims_var, 2, global_atts, source_atts)
 
    ! Create NetCDF files and variables
    call build_qc_flag_masks(Ctrl, qc_flag_masks)
    call build_qc_flag_meanings(Ctrl, qc_flag_meanings)
    call def_output_primary(ncid_primary, dims_var, output_data_1, &
         Ctrl%Ind%common_indices_t, qc_flag_masks, qc_flag_meanings, &
-        deflate_level, shuffle_flag, .false., ch_var, view_var)
+        deflate_level, shuffle_flag, .false., ch_var)
    call def_output_secondary(ncid_secondary, dims_var, output_data_2, &
         Ctrl%Ind%common_indices_t, deflate_level, shuffle_flag, .false.)
 

@@ -27,6 +27,7 @@
 ! 2016/01/27, GM: Add cee and cee_uncertainty.
 ! 2016/01/28, GM: Add ctp and ctt corrected and corrected_uncertianty.
 ! 2016/03/02, AP: Homogenisation of I/O modules.
+! 2016/04/28, AP: Add multiple views.
 !
 ! $Id$
 !
@@ -96,7 +97,7 @@ module orac_input_m
       real(sreal),   pointer :: cloud_albedo_uncertainty(:,:,:)
       real(sreal),   pointer :: cee(:,:,:)
       real(sreal),   pointer :: cee_uncertainty(:,:,:)
-      real(sreal),   pointer :: cccot_pre(:,:)
+      real(sreal),   pointer :: cccot_pre(:,:,:)
 
       real(dreal),   pointer :: time(:,:)
       real(sreal),   pointer :: lat(:,:)
@@ -120,9 +121,9 @@ module orac_input_m
 
       integer(byte), pointer :: illum(:,:)
 
-      integer(byte), pointer :: cldtype(:,:)
-      integer(byte), pointer :: cldmask(:,:)
-      real(sreal),   pointer :: cldmask_uncertainty(:,:)
+      integer(byte), pointer :: cldtype(:,:,:)
+      integer(byte), pointer :: cldmask(:,:,:)
+      real(sreal),   pointer :: cldmask_uncertainty(:,:,:)
 
       integer(byte), pointer :: phase(:,:)
       integer(byte), pointer :: phase_pavolonis(:,:)

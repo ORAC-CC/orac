@@ -471,11 +471,13 @@ if (indexing%flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! cccot_pre
    !----------------------------------------------------------------------------
-   call prepare_short_packed_float( &
-        input_data%cccot_pre(i,j), output_data%cccot_pre(i,j), &
-        output_data%cccot_pre_scale, output_data%cccot_pre_offset, &
-        output_data%cccot_pre_vmin, output_data%cccot_pre_vmax, &
-        sreal_fill_value, sint_fill_value)
+   do k=1,indexing%NViews
+      call prepare_short_packed_float( &
+           input_data%cccot_pre(i,j,k), output_data%cccot_pre(i,j,k), &
+           output_data%cccot_pre_scale, output_data%cccot_pre_offset, &
+           output_data%cccot_pre_vmin, output_data%cccot_pre_vmax, &
+           sreal_fill_value, sint_fill_value)
+   end do
 end if
 
    !----------------------------------------------------------------------------
@@ -535,26 +537,28 @@ end if
    !----------------------------------------------------------------------------
    ! cldtype
    !----------------------------------------------------------------------------
-   output_data%cldtype(i,j)=input_data%cldtype(i,j)
+   output_data%cldtype(i,j,:)=input_data%cldtype(i,j,:)
 
    !----------------------------------------------------------------------------
    ! cldmask
    !----------------------------------------------------------------------------
 if (indexing%flags%do_cldmask) then
-   output_data%cldmask(i,j)=input_data%cldmask(i,j)
+   output_data%cldmask(i,j,:)=input_data%cldmask(i,j,:)
 end if
 if (indexing%flags%do_cldmask_uncertainty) then
    !----------------------------------------------------------------------------
    ! cldmask_uncertainty
    !----------------------------------------------------------------------------
-   call prepare_short_packed_float( &
-        input_data%cldmask_uncertainty(i,j), &
-        output_data%cldmask_uncertainty(i,j), &
-        output_data%cldmask_uncertainty_scale, &
-        output_data%cldmask_uncertainty_offset, &
-        output_data%cldmask_uncertainty_vmin, &
-        output_data%cldmask_uncertainty_vmax, &
-        sreal_fill_value, sint_fill_value)
+   do k=1,indexing%NViews
+      call prepare_short_packed_float( &
+           input_data%cldmask_uncertainty(i,j,k), &
+           output_data%cldmask_uncertainty(i,j,k), &
+           output_data%cldmask_uncertainty_scale, &
+           output_data%cldmask_uncertainty_offset, &
+           output_data%cldmask_uncertainty_vmin, &
+           output_data%cldmask_uncertainty_vmax, &
+           sreal_fill_value, sint_fill_value)
+   end do
 end if
 
    !----------------------------------------------------------------------------
@@ -568,7 +572,7 @@ end if
    ! phase_pavolonis
    !----------------------------------------------------------------------------
 if (indexing%flags%do_phase_pavolonis) then
-   select case (input_data%cldtype(i,j))
+   select case (input_data%cldtype(i,j,1))
    case(CLEAR_TYPE, &
         PROB_CLEAR_TYPE)
       output_data%phase_pavolonis(i,j) = IPhaseClU
