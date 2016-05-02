@@ -128,6 +128,7 @@
 !    the RTTOV emissivity atlas.
 ! 2016/01/27, SP: Added support for RTTOV v11.3 via the NEW_RTTOV definition
 ! 2016/03/31, GM: Changes to support processing only SW or only LW channels.
+! 2016/04/09, SP: Added multiple views
 ! 2016/04/11, SP: Added Himawari processing capability.
 !
 ! $Id$
@@ -243,8 +244,13 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
    ! Useful aliases
    integer,                 parameter   :: ALLOC=1, DEALLOC=0
 
+   ! View variables
+   integer(kind=sint)                   :: cview,nchans_v
+   integer,                 allocatable :: chan_pos(:)
+
    real                                 :: p_0, sec_vza, lambda, tau_ray_0, &
                                            tau_ray_p
+
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering rttov_driver()'
 
@@ -479,7 +485,6 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
          ! Use poor man's approach to snow fraction
          if (preproc_prtm%snow_albedo(idim,jdim) > 0.) &
               profiles(count)%snow_frac = 1.
-         profiles(count)%zenangle    = preproc_geo%satza(idim,jdim,1)
 
          ! Write profiles structure to PRTM file (array operations needed to
          ! recast structure in form nc_write_array recognises)
@@ -525,28 +530,68 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
    ! Do RTTOV calculations for long and shortwave in turn
    if (verbose) write(*,*) 'Do RTTOV calculations'
 
+   ! Loop over view geometries
+do cview=1,channel_info%nviews
+   if (verbose) write(*,*) ' - Calculating for viewing geometry number', cview
+
+   count = 0
+   do jdim=preproc_dims%min_lat,preproc_dims%max_lat
+      do idim=preproc_dims%min_lon,preproc_dims%max_lon
+         count = count + 1
+         profiles(count)%zenangle = preproc_geo%satza(idim,jdim,cview)
+      end do
+   end do
+
    do i_coef=1,2
       ! Set factors that differ between long and shortwave
       if (i_coef == 1) then
          ! Longwave
-         nchan = channel_info%nchannels_lw
+         nchan = 0
+
+         ! Loop to determine how many LW channels exist with a given view
+         do i_=1,channel_info%nchannels_lw
+            if (channel_info%lw_view_ids(i_) .eq. cview) nchan = nchan + 1
+         end do
 
          if (nchan .eq. 0) cycle
 
          allocate(input_chan(nchan))
-         input_chan = channel_info%channel_ids_rttov_coef_lw
+         allocate(chan_pos(nchan))
+
+         j_ = 1
+         do i_=1,channel_info%nchannels_lw
+            if (channel_info%lw_view_ids(i_) .eq. cview) then
+               chan_pos(j_) = i_
+               input_chan(j_) = channel_info%channel_ids_rttov_coef_lw(i_)
+               j_ = j_ + 1
+            end if
+         end do
 
          ! This assumes the recommended structure of the RTTOV coef library
          coef_full_path = trim(adjustl(coef_path))//'/rttov7pred54L/'// &
               trim(adjustl(coef_file))
       else
          ! Shortwave
-         nchan = channel_info%nchannels_sw
+         nchan = 0
+
+         ! Loop to determine how many SW channels exist with a given view
+         do i_=1,channel_info%nchannels_sw
+            if (channel_info%sw_view_ids(i_) .eq. cview) nchan = nchan + 1
+         end do
 
          if (nchan .eq. 0) cycle
 
          allocate(input_chan(nchan))
-         input_chan = channel_info%channel_ids_rttov_coef_sw
+         allocate(chan_pos(nchan))
+
+         j_ = 1
+         do i_=1,channel_info%nchannels_sw
+            if (channel_info%sw_view_ids(i_) .eq. cview) then
+               chan_pos(j_) = i_
+               input_chan(j_) = channel_info%channel_ids_rttov_coef_sw(i_)
+               j_ = j_ + 1
+            end if
+         end do
 
          coef_full_path = trim(adjustl(coef_path))//'/rttov9pred54L/'// &
               trim(adjustl(coef_file))
@@ -683,15 +728,20 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 
             ! Reformat and write output to NCDF files
             if (i_coef == 1) then
-               call write_ir_rttov(netcdf_info, preproc_dims, &
-                    idim-preproc_dims%min_lon+1, jdim-preproc_dims%min_lat+1, &
-                    nchan, profiles(count)%nlevels, emissivity, transmission, &
-                    radiance, radiance2, write_rttov)
+               do i_=1,nchan
+                  call write_ir_rttov(netcdf_info, preproc_dims, &
+                       idim-preproc_dims%min_lon+1, jdim-preproc_dims%min_lat+1, &
+                       profiles(count)%nlevels, emissivity, transmission, &
+                       radiance, radiance2, write_rttov, chan_pos(i_), i_)
+               end do
             else
-               call write_solar_rttov(netcdf_info, preproc_dims, coefs, &
-                    idim-preproc_dims%min_lon+1, jdim-preproc_dims%min_lat+1, &
-                    nchan, profiles(count)%nlevels, profiles(count)%zenangle, &
-                    emissivity, transmission, radiance, radiance2, write_rttov)
+               do i_=1,nchan
+                  call write_solar_rttov(netcdf_info, preproc_dims, coefs, &
+                       idim-preproc_dims%min_lon+1, jdim-preproc_dims%min_lat+1, &
+                       profiles(count)%nlevels, profiles(count)%zenangle, &
+                       emissivity, transmission, radiance, radiance2, &
+                       write_rttov, chan_pos(i_), i_)
+               end do
             end if
          end do
       end do
@@ -710,7 +760,10 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
       deallocate(emissivity)
       deallocate(emis_atlas)
       deallocate(calcemis)
-   end do
+      deallocate(chan_pos)
+   end do !coef loop
+end do  !view loop
+
 if (channel_info%nchannels_sw .ne. 0) then
    deallocate(dummy_sreal_1dveca)
 end if

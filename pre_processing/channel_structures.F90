@@ -15,6 +15,7 @@
 !    map_ids_abs_to_ref_band_sea and removed channel_proc_flag.
 ! 2015/01/15, AP: Eliminate channel_ids_abs.
 ! 2015/03/04, GM: Added map_ids_abs_to_snow_and_ice.
+! 2016/04/08, SP: Added variables to cope with multiple view sensors
 !
 ! $Id$
 !
@@ -56,6 +57,8 @@ module channel_structures_m
 
       !arrays containing the viewing geometry index for each channel
       integer(kind=lint), dimension(:), pointer :: channel_view_ids
+      integer(kind=lint), dimension(:), pointer :: lw_view_ids
+      integer(kind=lint), dimension(:), pointer :: sw_view_ids
 
       !arrays containing 0/1 flags to identify to which part (sw/lw) of the
       !spectrum they are assigned. could be used to determine the number of

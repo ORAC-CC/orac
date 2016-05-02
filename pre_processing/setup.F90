@@ -68,8 +68,11 @@
 !    channels.
 ! 2015/08/19, GM: Modifications to support the SEVIRI HRIT format.
 ! 2015/08/29, CP: Changes to support ATSR-2
+! 2016/04/07, SP: Reformulated to support multiple views
+! 2016/04/08, SP: Added multiple views for ATSR series sensors
 ! 2016/04/08, SP: Updated MODIS sea flags for correct cox-munk bands.
 ! 2016/04/11, SP: Added Himawari-8 support
+! 2016/04/10, SP: Changes in common setup to support multiple views
 !
 ! $Id$
 !
@@ -110,33 +113,44 @@ subroutine setup_aatsr(l1b_path_file,geo_path_file,platform,sensor,year, &
 
 
    ! Static instrument channel definitions. (These should not be changed.)
-   integer, parameter :: all_nchannels_total = 7
+   integer, parameter :: all_nchannels_total = 14
 
        ! 1,    2,    3,    4,    5,    6,    7
    real,    parameter :: all_channel_wl_abs (all_nchannels_total) = &
-      (/ 0.55, 0.67, 0.87, 1.61, 3.74, 10.8, 12.0 /)
+      (/ 0.55, 0.67, 0.87, 1.61, 3.74, 10.8, 12.0, &
+         0.55, 0.67, 0.87, 1.61, 3.74, 10.8, 12.0 /)
 
    integer, parameter :: all_channel_sw_flag(all_nchannels_total) = &
-      (/ 1,    1,    1,    1,    1,    0,    0/)
+      (/ 1,    1,    1,    1,    1,    0,    0,    &
+         1,    1,    1,    1,    1,    0,    0 /)
 
    integer, parameter :: all_channel_lw_flag(all_nchannels_total) = &
-      (/ 0,    0,    0,    0,    1,    1,    1 /)
+      (/ 0,    0,    0,    0,    1,    1,    1,    &
+         0,    0,    0,    0,    1,    1,    1 /)
 
    integer, parameter :: all_channel_ids_rttov_coef_sw(all_nchannels_total) = &
-      (/ 7,    6,    5,    4,    3,    0,    0 /)
+      (/ 7,    6,    5,    4,    3,    0,    0,    &
+         7,    6,    5,    4,    3,    0,    0 /)
 
    integer, parameter :: all_channel_ids_rttov_coef_lw(all_nchannels_total) = &
-      (/ 0,    0,    0,    0,    3,    2,    1 /)
+      (/ 0,    0,    0,    0,    3,    2,    1,    &
+         0,    0,    0,    0,    3,    2,    1 /)
 
    integer, parameter :: all_map_ids_abs_to_ref_band_land(all_nchannels_total) = &
-      (/ 4,    1,    2,    6,    0,    0,    0 /)
+      (/ 4,    1,    2,    6,    0,    0,    0,    &
+         4,    1,    2,    6,    0,    0,    0 /)
 
    integer, parameter :: all_map_ids_abs_to_ref_band_sea(all_nchannels_total)  = &
-      (/ 2,    3,    4,    6,    8,    0,    0 /)
+      (/ 2,    3,    4,    6,    8,    0,    0,    &
+         2,    3,    4,    6,    8,    0,    0 /)
 
    integer, parameter :: all_map_ids_abs_to_snow_and_ice(all_nchannels_total)  = &
-      (/ 1,    1,    2,    3,    4,    0,    0 /)
+      (/ 1,    1,    2,    3,    4,    0,    0,    &
+         1,    1,    2,    3,    4,    0,    0 /)
 
+   integer, parameter :: all_map_ids_view_number(all_nchannels_total)  = &
+      (/ 1,    1,    1,    1,    1,    1,    1,    &
+         2,    2,    2,    2,    2,    2,    2 /)
 
    ! Only this below needs to be set to change the desired default channels. All
    ! other channel related arrays/indexes are set automatically given the static
@@ -188,12 +202,15 @@ subroutine setup_aatsr(l1b_path_file,geo_path_file,platform,sensor,year, &
    call GREG2DOY(year, month, day, doy)
    write(cdoy, '(i3.3)') doy
 
+   ! The ATSR series has dual view capability
+   channel_info%nviews  = 2
+
    ! now set up the channels
    call common_setup(channel_info, channel_ids_user, channel_ids_default, &
       all_channel_wl_abs, all_channel_sw_flag, all_channel_lw_flag, &
       all_channel_ids_rttov_coef_sw, all_channel_ids_rttov_coef_lw, &
       all_map_ids_abs_to_ref_band_land, all_map_ids_abs_to_ref_band_sea, &
-      all_map_ids_abs_to_snow_and_ice)
+      all_map_ids_abs_to_snow_and_ice,all_map_ids_view_number)
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_aatsr()'
 
@@ -253,6 +270,9 @@ subroutine setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day, &
 
    integer, parameter :: all_map_ids_abs_to_snow_and_ice(all_nchannels_total)  = &
       (/ 1,    2,      3,    4,    0,    0 /)
+
+   integer, parameter :: all_map_ids_view_number(all_nchannels_total)  = &
+      (/ 1,    1,      1,    1,    1,    1 /)
 
 
    ! Only this below needs to be set to change the desired default channels. All
@@ -381,12 +401,15 @@ subroutine setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day, &
    call GREG2DOY(year,month,day,doy)
    write(cdoy, '(i3.3)') doy
 
+   ! AVHRR only has a single viewing geometry
+   channel_info%nviews = 1
+
    ! now set up the channels
    call common_setup(channel_info, channel_ids_user, channel_ids_default, &
       all_channel_wl_abs, all_channel_sw_flag, all_channel_lw_flag, &
       all_channel_ids_rttov_coef_sw, all_channel_ids_rttov_coef_lw, &
       all_map_ids_abs_to_ref_band_land, all_map_ids_abs_to_ref_band_sea, &
-      all_map_ids_abs_to_snow_and_ice)
+      all_map_ids_abs_to_snow_and_ice,all_map_ids_view_number)
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_avhrr()'
 
@@ -498,6 +521,14 @@ subroutine setup_modis(l1b_path_file,geo_path_file,platform,year,month,day, &
          0,         0,         0,         0,         0,         0, &
          0,         0,         0,         0,         0,         0 /)
 
+   integer, parameter :: all_map_ids_view_number(all_nchannels_total)  = &
+      (/ 1,         1,         1,         1,         1,         1, &
+         1,         1,         1,         1,         1,         1, &
+         1,         1,         1,         1,         1,         1, &
+         1,         1,         1,         1,         1,         1, &
+         1,         1,         1,         1,         1,         1, &
+         1,         1,         1,         1,         1,         1 /)
+
 
    ! Only this below needs to be set to change the desired default channels. All
    ! other channel related arrays/indexes are set automatically given the static
@@ -551,12 +582,15 @@ subroutine setup_modis(l1b_path_file,geo_path_file,platform,year,month,day, &
    write(cmonth, '(i2.2)') month
    write(cday, '(i2.2)') day
 
+   ! MODIS only has a single viewing geometry
+   channel_info%nviews = 1
+
    ! now set up the channels
    call common_setup(channel_info, channel_ids_user, channel_ids_default, &
       all_channel_wl_abs, all_channel_sw_flag, all_channel_lw_flag, &
       all_channel_ids_rttov_coef_sw, all_channel_ids_rttov_coef_lw, &
       all_map_ids_abs_to_ref_band_land, all_map_ids_abs_to_ref_band_sea, &
-      all_map_ids_abs_to_snow_and_ice)
+      all_map_ids_abs_to_snow_and_ice,all_map_ids_view_number)
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_modis()'
 
@@ -615,6 +649,9 @@ subroutine setup_seviri(l1b_path_file,geo_path_file,platform,year,month,day, &
 
    integer, parameter :: all_map_ids_abs_to_snow_and_ice(all_nchannels_total)  = &
       (/ 1,     2,    3,    4,    0,    0,    0,    0,    0,     0,     0 /)
+
+   integer, parameter :: all_map_ids_view_number(all_nchannels_total)  = &
+      (/ 1,     1,    1,    1,    1,    1,    1,    1,    1,     1,     1 /)
 
 
    ! Only this below needs to be set to change the desired default channels. All
@@ -687,12 +724,15 @@ subroutine setup_seviri(l1b_path_file,geo_path_file,platform,year,month,day, &
    call GREG2DOY(year, month, day, doy)
    write(cdoy, '(i3.3)') doy
 
+   ! SEVIRI only has a single viewing geometry
+   channel_info%nviews = 1
+
    ! now set up the channels
    call common_setup(channel_info, channel_ids_user, channel_ids_default, &
       all_channel_wl_abs, all_channel_sw_flag, all_channel_lw_flag, &
       all_channel_ids_rttov_coef_sw, all_channel_ids_rttov_coef_lw, &
       all_map_ids_abs_to_ref_band_land, all_map_ids_abs_to_ref_band_sea, &
-      all_map_ids_abs_to_snow_and_ice)
+      all_map_ids_abs_to_snow_and_ice,all_map_ids_view_number)
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_seviri()'
 
@@ -759,6 +799,9 @@ subroutine setup_himawari8(l1b_path_file,geo_path_file,platform,year,month,day, 
    integer, parameter :: all_map_ids_abs_to_snow_and_ice(all_nchannels_total)  = &
       (/ 1,       1,       1,       2,       3,       3,       4,       0, &
          0,       0,       0,       0,       0,       0,       0,       0 /)
+   integer, parameter :: all_map_ids_view_number(all_nchannels_total)  = &
+      (/ 1,       1,       1,       1,       1,       1,       1,       1, &
+         1,       1,       1,       1,       1,       1,       1,       1 /)
 
 
    ! Only this below needs to be set to change the desired default channels. All
@@ -819,7 +862,7 @@ subroutine setup_himawari8(l1b_path_file,geo_path_file,platform,year,month,day, 
       all_channel_wl_abs, all_channel_sw_flag, all_channel_lw_flag, &
       all_channel_ids_rttov_coef_sw, all_channel_ids_rttov_coef_lw, &
       all_map_ids_abs_to_ref_band_land, all_map_ids_abs_to_ref_band_sea, &
-      all_map_ids_abs_to_snow_and_ice)
+      all_map_ids_abs_to_snow_and_ice,all_map_ids_view_number)
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_himawari8()'
 
@@ -829,7 +872,7 @@ subroutine common_setup(channel_info, channel_ids_user, channel_ids_default, &
    all_channel_wl_abs, all_channel_sw_flag, all_channel_lw_flag, &
    all_channel_ids_rttov_coef_sw, all_channel_ids_rttov_coef_lw, &
    all_map_ids_abs_to_ref_band_land, all_map_ids_abs_to_ref_band_sea, &
-   all_map_ids_abs_to_snow_and_ice)
+   all_map_ids_abs_to_snow_and_ice,all_map_ids_view_number)
 
    use channel_structures_m
 
@@ -846,10 +889,14 @@ subroutine common_setup(channel_info, channel_ids_user, channel_ids_default, &
    integer,              intent(in)    :: all_map_ids_abs_to_ref_band_land(:)
    integer,              intent(in)    :: all_map_ids_abs_to_ref_band_sea(:)
    integer,              intent(in)    :: all_map_ids_abs_to_snow_and_ice(:)
+   integer,              intent(in)    :: all_map_ids_view_number(:)
 
-   integer :: i
+   integer, dimension(:),allocatable   :: unique_views
+
+   integer :: i,j,n_views
    integer :: i_sw
    integer :: i_lw
+
 
    if (associated(channel_ids_user)) then
       channel_info%nchannels_total = size(channel_ids_user)
@@ -857,8 +904,7 @@ subroutine common_setup(channel_info, channel_ids_user, channel_ids_default, &
       channel_info%nchannels_total = size(channel_ids_default)
    end if
 
-   channel_info%nviews = 1
-
+   allocate(unique_views(channel_info%nchannels_total))
    call allocate_channel_info(channel_info)
 
    if (associated(channel_ids_user)) then
@@ -875,18 +921,36 @@ subroutine common_setup(channel_info, channel_ids_user, channel_ids_default, &
          all_channel_sw_flag(channel_info%channel_ids_instr(i))
       channel_info%channel_lw_flag(i) = &
          all_channel_lw_flag(channel_info%channel_ids_instr(i))
+      channel_info%channel_view_ids(i) = &
+         all_map_ids_view_number(channel_info%channel_ids_instr(i))
    end do
 
-   channel_info%channel_view_ids = 1
+   ! This section computes the actual number of views in the scene
+   ! It loops over all channels to determine unique views
+   n_views = 1
+   unique_views(1) = channel_info%channel_view_ids(1)
+   first: do i=2,channel_info%nchannels_total
+      do j=1,n_views
+         if (unique_views(j) == channel_info%channel_view_ids(i)) then
+            cycle first
+         end if
+      end do
+      n_views = n_views + 1
+      unique_views(n_views) = channel_info%channel_view_ids(i)
+   end do first
+
+   channel_info%nviews = n_views
 
    channel_info%nchannels_sw = &
       sum(channel_info%channel_sw_flag(1:channel_info%nchannels_total))
    allocate(channel_info%channel_ids_rttov_coef_sw(channel_info%nchannels_sw))
+   allocate(channel_info%sw_view_ids(channel_info%nchannels_sw))
    channel_info%channel_ids_rttov_coef_sw = 0
 
    channel_info%nchannels_lw = &
       sum(channel_info%channel_lw_flag(1:channel_info%nchannels_total))
    allocate(channel_info%channel_ids_rttov_coef_lw(channel_info%nchannels_lw))
+   allocate(channel_info%lw_view_ids(channel_info%nchannels_lw))
    channel_info%channel_ids_rttov_coef_lw = 0
 
    i_sw = 1
@@ -895,6 +959,8 @@ subroutine common_setup(channel_info, channel_ids_user, channel_ids_default, &
       if (channel_info%channel_sw_flag(i) .ne. 0) then
          channel_info%channel_ids_rttov_coef_sw(i_sw) = &
             all_channel_ids_rttov_coef_sw(channel_info%channel_ids_instr(i))
+
+         channel_info%sw_view_ids(i_sw) = channel_info%channel_view_ids(i)
 
          channel_info%map_ids_abs_to_ref_band_land(i_sw) = &
             all_map_ids_abs_to_ref_band_land(channel_info%channel_ids_instr(i))
@@ -910,6 +976,9 @@ subroutine common_setup(channel_info, channel_ids_user, channel_ids_default, &
       if (channel_info%channel_lw_flag(i) .ne. 0) then
          channel_info%channel_ids_rttov_coef_lw(i_lw) = &
             all_channel_ids_rttov_coef_lw(channel_info%channel_ids_instr(i))
+
+         channel_info%lw_view_ids(i_lw) = channel_info%channel_view_ids(i)
+
          i_lw = i_lw + 1
       end if
    end do

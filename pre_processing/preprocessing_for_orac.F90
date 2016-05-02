@@ -707,6 +707,9 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
 
    end if ! end of sensor selection
 
+   ! We now have the number of viewing geometries. Put this in imager_angles
+   imager_angles%nviews = channel_info%nviews
+
    if (verbose) then
       write(*,*) 'WE ARE PROCESSING ',trim(platform),' FOR ORBIT',year,month, &
                                                                   day,hour,minute

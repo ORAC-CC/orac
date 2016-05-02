@@ -34,6 +34,7 @@
 ! 2014/11/28, GM: A previous fix to the correction of transmittance for mass
 !    path (amf_recip) in rttov_driver() was incorrect. The relevant code then
 !    got moved into here.  The correct fix has now been implemented.
+! 2016/04/09, SP: Write one channel at a time, to facilitate multiple views.
 !
 ! $Id$
 !
@@ -42,8 +43,8 @@
 !-------------------------------------------------------------------------------
 
 subroutine write_solar_rttov(netcdf_info, preproc_dims, coefs, idim, jdim, &
-     nchan, nlev, satza, emissivity, transmission, radiance, radiance2, &
-     write_flag)
+     nlev, satza, emissivity, transmission, radiance, radiance2, &
+     write_flag, chan_num, chanvar)
 
    use netcdf_output_m, only: netcdf_output_info_t
    use orac_ncdf_m
@@ -58,7 +59,7 @@ subroutine write_solar_rttov(netcdf_info, preproc_dims, coefs, idim, jdim, &
    type(netcdf_output_info_t), intent(in) :: netcdf_info
    type(preproc_dims_t),       intent(in) :: preproc_dims
    type(rttov_coefs),          intent(in) :: coefs
-   integer(lint),              intent(in) :: idim, jdim, nchan
+   integer(lint),              intent(in) :: idim, jdim
    integer(jpim),              intent(in) :: nlev
    real(jprb),                 intent(in) :: satza
    type(rttov_emissivity),     intent(in) :: emissivity(:)
@@ -66,33 +67,33 @@ subroutine write_solar_rttov(netcdf_info, preproc_dims, coefs, idim, jdim, &
    type(radiance_type),        intent(in) :: radiance
    type(radiance2_type),       intent(in) :: radiance2
    logical,                    intent(in) :: write_flag
+   integer,                    intent(in) :: chan_num
+   integer,                    intent(in) :: chanvar
 
-   integer                                :: jch
    real(sreal)                            :: amf_recip
-   real(sreal), dimension(nchan,nlev,1,1) :: dummy_tac, dummy_tbc
+   real(sreal), dimension(1,nlev,1,1)     :: dummy_tac, dummy_tbc
+   character(128)                         :: tacn,tbcn
 
    if (write_flag) then
       ! The reciprocal of the air mass factor
       amf_recip = cos(satza*d2r)
 
       ! Calculate required above/below cloud transmittances
-      do jch=1,nchan
-         ! Identify which transmittance to output from the channel type
-         ! (see p.113 of RTTOV v 11 Users Guide)
-         if (coefs%coef%ss_val_chn(jch) == 2) then
-            ! Transmission from level to TOA
-            dummy_tac(jch,:,1,1) = transmission%tausun_levels_path1(:,jch)**amf_recip
-            ! Transmission from surface to level
-            dummy_tbc(jch,:,1,1) = transmission%tausun_total_path1(jch)**amf_recip &
-                 / dummy_tac(jch,:,1,1)
-         else
-            ! Transmission from level to TOA
-            dummy_tac(jch,:,1,1) = transmission%tau_levels(:,jch)**amf_recip
-            ! Transmission from surface to level
-            dummy_tbc(jch,:,1,1) = transmission%tau_total(jch)**amf_recip &
-                 / dummy_tac(jch,:,1,1)
-         end if
-      end do
+      ! Identify which transmittance to output from the channel type
+      ! (see p.113 of RTTOV v 11 Users Guide)
+      if (coefs%coef%ss_val_chn(chan_num) == 2) then
+         ! Transmission from level to TOA
+         dummy_tac(1,:,1,1) = transmission%tausun_levels_path1(:,chan_num)**amf_recip
+         ! Transmission from surface to level
+         dummy_tbc(1,:,1,1) = transmission%tausun_total_path1(chan_num)**amf_recip &
+              / dummy_tac(1,:,1,1)
+      else
+         ! Transmission from level to TOA
+         dummy_tac(1,:,1,1) = transmission%tau_levels(:,chan_num)**amf_recip
+         ! Transmission from surface to level
+         dummy_tbc(1,:,1,1) = transmission%tau_total(chan_num)**amf_recip &
+              / dummy_tac(1,:,1,1)
+      end if
    else
       ! Write fill values
       dummy_tac = sreal_fill_value
@@ -100,13 +101,13 @@ subroutine write_solar_rttov(netcdf_info, preproc_dims, coefs, idim, jdim, &
    end if
 
    ! Write outputs
-   call nc_write_array(netcdf_info%ncid_swrtm, 'tac_sw', &
+   call nc_write_array(netcdf_info%ncid_swrtm, "tac_sw", &
                        netcdf_info%vid_tac_sw, dummy_tac, &
-                       1, 1, nchan, 1, 1, nlev, &
+                       1, chan_num, 1, 1, 1, nlev, &
                        1, idim, 1, 1, jdim, 1)
-   call nc_write_array(netcdf_info%ncid_swrtm, 'tbc_sw', &
+   call nc_write_array(netcdf_info%ncid_swrtm, "tbc_sw", &
                        netcdf_info%vid_tbc_sw, dummy_tbc, &
-                       1, 1, nchan, 1, 1, nlev, &
+                       1, chan_num, 1, 1, 1, nlev, &
                        1, idim, 1, 1, jdim, 1)
 
 end subroutine write_solar_rttov
