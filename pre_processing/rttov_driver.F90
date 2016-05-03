@@ -522,251 +522,262 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
    end do
 
    ! Write fields not in profiles structure
-!   call nc_write_array(netcdf_info%ncid_prtm, 'lsf_rtm', &
-!        netcdf_info%vid_lsf_pw, &
-!        preproc_prtm%land_sea_mask, &
-!        1, 1, preproc_dims%xdim, 1, 1, preproc_dims%ydim)
+!  call nc_write_array(netcdf_info%ncid_prtm, 'lsf_rtm', &
+!       netcdf_info%vid_lsf_pw, &
+!       preproc_prtm%land_sea_mask, &
+!       1, 1, preproc_dims%xdim, 1, 1, preproc_dims%ydim)
 
    ! Do RTTOV calculations for long and shortwave in turn
    if (verbose) write(*,*) 'Do RTTOV calculations'
 
    ! Loop over view geometries
-do cview=1,channel_info%nviews
-   if (verbose) write(*,*) ' - Calculating for viewing geometry number', cview
+   do cview=1,channel_info%nviews
+      if (verbose) write(*,*) ' - Calculating for viewing geometry number', cview
 
-   count = 0
-   do jdim=preproc_dims%min_lat,preproc_dims%max_lat
-      do idim=preproc_dims%min_lon,preproc_dims%max_lon
-         count = count + 1
-         profiles(count)%zenangle = preproc_geo%satza(idim,jdim,cview)
-      end do
-   end do
-
-   do i_coef=1,2
-      ! Set factors that differ between long and shortwave
-      if (i_coef == 1) then
-         ! Longwave
-         nchan = 0
-
-         ! Loop to determine how many LW channels exist with a given view
-         do i_=1,channel_info%nchannels_lw
-            if (channel_info%lw_view_ids(i_) .eq. cview) nchan = nchan + 1
-         end do
-
-         if (nchan .eq. 0) cycle
-
-         allocate(input_chan(nchan))
-         allocate(chan_pos(nchan))
-
-         j_ = 1
-         do i_=1,channel_info%nchannels_lw
-            if (channel_info%lw_view_ids(i_) .eq. cview) then
-               chan_pos(j_) = i_
-               input_chan(j_) = channel_info%channel_ids_rttov_coef_lw(i_)
-               j_ = j_ + 1
-            end if
-         end do
-
-         ! This assumes the recommended structure of the RTTOV coef library
-         coef_full_path = trim(adjustl(coef_path))//'/rttov7pred54L/'// &
-              trim(adjustl(coef_file))
-      else
-         ! Shortwave
-         nchan = 0
-
-         ! Loop to determine how many SW channels exist with a given view
-         do i_=1,channel_info%nchannels_sw
-            if (channel_info%sw_view_ids(i_) .eq. cview) nchan = nchan + 1
-         end do
-
-         if (nchan .eq. 0) cycle
-
-         allocate(input_chan(nchan))
-         allocate(chan_pos(nchan))
-
-         j_ = 1
-         do i_=1,channel_info%nchannels_sw
-            if (channel_info%sw_view_ids(i_) .eq. cview) then
-               chan_pos(j_) = i_
-               input_chan(j_) = channel_info%channel_ids_rttov_coef_sw(i_)
-               j_ = j_ + 1
-            end if
-         end do
-
-         coef_full_path = trim(adjustl(coef_path))//'/rttov9pred54L/'// &
-              trim(adjustl(coef_file))
-      end if
-
-      if (verbose) write(*,*) 'Read coefficients'
-      call rttov_read_coefs(stat, coefs, opts, form_coef='formatted', &
-           channels=input_chan, file_coef=coef_full_path)
-      if (stat /= errorstatus_success) then
-         write(*,*) 'ERROR: rttov_read_coefs(), errorstatus = ', stat
-         stop error_stop_code
-      end if
-
-      ! Force all SW channels to be processed
-      if (i_coef == 2) coefs%coef%ss_val_chn = 1
-
-      if (verbose) write(*,*) 'Allocate channel and emissivity arrays'
-      allocate(chanprof(nchan))
-      allocate(emissivity(nchan))
-      allocate(emis_atlas(nchan))
-      allocate(calcemis(nchan))
-
-      chanprof%prof = 1
-      do j=1,nchan
-         chanprof(j)%chan = j
-      end do
-
-      if (verbose) write(*,*) 'Allocate RTTOV structures'
-      call rttov_alloc_rad(stat, nchan, radiance, nlayers, ALLOC, radiance2, &
-           init=.true._jplm)
-      if (stat /= errorstatus_success) then
-         write(*,*) 'ERROR: rttov_alloc_rad(), errorstatus = ', stat
-         stop error_stop_code
-      end if
-      call rttov_alloc_transmission(stat, transmission, nlayers, nchan, ALLOC, &
-           init=.true._jplm)
-      if (stat /= errorstatus_success) then
-         write(*,*) 'ERROR: rttov_alloc_transmission(), errorstatus = ', stat
-         stop error_stop_code
-      end if
-      call rttov_alloc_traj(stat, 1, nchan, opts, nlevels, coefs, &
-           ALLOC, traj=traj)
-      if (stat /= errorstatus_success) then
-         write(*,*) 'ERROR: rttov_alloc_traj(), errorstatus = ', stat
-         stop error_stop_code
-      end if
-
-      if (verbose) write(*,*) 'Fetch emissivity atlas'
-      imonth=month
-      call rttov_setup_emis_atlas(stat, opts, imonth, coefs, emiss_path, &
-           ir_atlas_single_instrument=.true._jplm)
-      if (stat /= errorstatus_success) then
-         write(*,*) 'ERROR: rttov_setup_emis_atlas(), errorstatus = ', stat
-         stop error_stop_code
-      end if
-
-      ! Loop over profiles (as the conditions for processing LW and SW are
-      ! different, we can't just pass the whole array)
       count = 0
-      if (verbose) write(*,*) 'Run RTTOV'
       do jdim=preproc_dims%min_lat,preproc_dims%max_lat
          do idim=preproc_dims%min_lon,preproc_dims%max_lon
             count = count + 1
-
-            ! Process points that contain information and satisfy the zenith
-            ! angle restrictions of the coefficient file
-            if ((i_coef == 1 .and. preproc_dims%counter_lw(idim,jdim) > 0 .and. &
-                 profiles(count)%zenangle < zenmax) .or. &
-                (i_coef == 2 .and. preproc_dims%counter_sw(idim,jdim) > 0 .and. &
-                 profiles(count)%zenangle < zenmaxv9)) then
-
-               if (i_coef == 1) then
-                  ! Fetch emissivity from atlas
-                  call rttov_get_emis(stat, opts, chanprof, profiles(count:count), &
-                       coefs, emissivity=emis_atlas)
-                  if (stat /= errorstatus_success) then
-                     write(*,*) 'ERROR: rttov_get_emis(), errorstatus = ', stat
-                     stop error_stop_code
-                  end if
-                  emissivity%emis_in = emis_atlas
-
-                  ! Fetch emissivity from the MODIS CIMSS emissivity product
-                  if (i_coef == 1 .and. use_modis_emis) then
-                     where (preproc_surf%emissivity(idim,jdim,:) .ne. sreal_fill_value)
-                        emissivity%emis_in = preproc_surf%emissivity(idim,jdim,:)
-                     end where
-                  end if
-
-                  calcemis = emissivity%emis_in <= dither
-               end if
-
-               ! Call RTTOV for this profile
-               call rttov_direct(stat, chanprof, opts, profiles(count:count), &
-                    coefs, transmission, radiance, radiance2, calcemis, &
-                    emissivity, traj=traj)
-               if (stat /= errorstatus_success) then
-                  write(*,*) 'ERROR: rttov_direct(), errorstatus = ', stat
-                  stop error_stop_code
-               end if
-
-               write_rttov = .true.
-            else
-               write_rttov = .false.
-            end if
-
-            ! Remove the Rayleigh component from the RTTOV tranmittances.
-            ! (Private comunication from Philip Watts.)
-            if (i_coef == 2) then
-               p_0 = 1013.
-
-               sec_vza = 1. / cos(profiles(count)%zenangle * d2r)
-
-               do i_ = 1, nchan
-                  ! Rayleigh optical thickness for the atmosphere down to 1013
-                  ! hPa (Hansen and Travis, 1974)
-                  lambda = dummy_sreal_1dveca(i_)
-                  tau_ray_0 = .008569 * lambda**(-4) * &
-                     (1. + .0113 * lambda**(-2) + .00013 * lambda**(-4))
-
-                  do j_ = 1, nlevels
-                     ! Pressure and path dependent Rayleigh optical thickness
-                     tau_ray_p = tau_ray_0 * profiles(count)%p(j_) / p_0 * sec_vza
-
-                     ! Corrected level transmittances
-                     transmission%tau_levels(j_, i_) = &
-                        transmission%tau_levels(j_, i_) / exp(-tau_ray_p)
-                  end do
-
-                  ! Corrected total transmittances
-                  transmission%tau_total(i_) = &
-                     transmission%tau_total(i_) / exp(-tau_ray_p)
-               end do
-            end if
-
-            ! Reformat and write output to NCDF files
-            if (i_coef == 1) then
-               do i_=1,nchan
-                  call write_ir_rttov(netcdf_info, preproc_dims, &
-                       idim-preproc_dims%min_lon+1, jdim-preproc_dims%min_lat+1, &
-                       profiles(count)%nlevels, emissivity, transmission, &
-                       radiance, radiance2, write_rttov, chan_pos(i_), i_)
-               end do
-            else
-               do i_=1,nchan
-                  call write_solar_rttov(netcdf_info, preproc_dims, coefs, &
-                       idim-preproc_dims%min_lon+1, jdim-preproc_dims%min_lat+1, &
-                       profiles(count)%nlevels, profiles(count)%zenangle, &
-                       emissivity, transmission, radiance, radiance2, &
-                       write_rttov, chan_pos(i_), i_)
-               end do
-            end if
+            profiles(count)%zenangle = preproc_geo%satza(idim,jdim,cview)
          end do
       end do
 
+      do i_coef=1,2
+         ! Set factors that differ between long and shortwave
+         if (i_coef == 1) then
+            ! Longwave
+            nchan = 0
 
-      if (verbose) write(*,*) 'Deallocate structures'
+            ! Loop to determine how many LW channels exist with a given view
+            do i_=1,channel_info%nchannels_lw
+               if (channel_info%lw_view_ids(i_) .eq. cview) nchan = nchan + 1
+            end do
 
-      call rttov_deallocate_emis_atlas(coefs)
-      call rttov_alloc_traj(stat, 1, nchan, opts, nlevels, coefs, DEALLOC, traj)
-      call rttov_alloc_transmission(stat, transmission, nlayers, nevals, DEALLOC)
-      call rttov_alloc_rad(stat, nevals, radiance, nlayers, DEALLOC, radiance2)
-      call rttov_dealloc_coefs(stat, coefs)
+            if (nchan .eq. 0) cycle
 
-      deallocate(input_chan)
-      deallocate(chanprof)
-      deallocate(emissivity)
-      deallocate(emis_atlas)
-      deallocate(calcemis)
-      deallocate(chan_pos)
-   end do !coef loop
-end do  !view loop
+            allocate(input_chan(nchan))
+            allocate(chan_pos(nchan))
 
-if (channel_info%nchannels_sw .ne. 0) then
-   deallocate(dummy_sreal_1dveca)
-end if
+            j_ = 1
+            do i_=1,channel_info%nchannels_lw
+               if (channel_info%lw_view_ids(i_) .eq. cview) then
+                  chan_pos(j_) = i_
+                  input_chan(j_) = channel_info%channel_ids_rttov_coef_lw(i_)
+                  j_ = j_ + 1
+               end if
+            end do
+
+            ! This assumes the recommended structure of the RTTOV coef library
+            coef_full_path = trim(adjustl(coef_path))//'/rttov7pred54L/'// &
+                 trim(adjustl(coef_file))
+         else
+            ! Shortwave
+            nchan = 0
+
+            ! Loop to determine how many SW channels exist with a given view
+            do i_=1,channel_info%nchannels_sw
+               if (channel_info%sw_view_ids(i_) .eq. cview) nchan = nchan + 1
+            end do
+
+            if (nchan .eq. 0) cycle
+
+            allocate(input_chan(nchan))
+            allocate(chan_pos(nchan))
+
+            j_ = 1
+            do i_=1,channel_info%nchannels_sw
+               if (channel_info%sw_view_ids(i_) .eq. cview) then
+                  chan_pos(j_) = i_
+                  input_chan(j_) = channel_info%channel_ids_rttov_coef_sw(i_)
+                  j_ = j_ + 1
+               end if
+            end do
+
+            coef_full_path = trim(adjustl(coef_path))//'/rttov9pred54L/'// &
+                 trim(adjustl(coef_file))
+         end if
+
+         if (verbose) write(*,*) 'Read coefficients'
+         call rttov_read_coefs(stat, coefs, opts, form_coef='formatted', &
+              channels=input_chan, file_coef=coef_full_path)
+         if (stat /= errorstatus_success) then
+            write(*,*) 'ERROR: rttov_read_coefs(), errorstatus = ', stat
+            stop error_stop_code
+         end if
+
+         ! Force all SW channels to be processed
+         if (i_coef == 2) coefs%coef%ss_val_chn = 1
+
+         if (verbose) write(*,*) 'Allocate channel and emissivity arrays'
+         allocate(chanprof(nchan))
+         allocate(emissivity(nchan))
+         allocate(emis_atlas(nchan))
+         allocate(calcemis(nchan))
+
+         chanprof%prof = 1
+         do j=1,nchan
+            chanprof(j)%chan = j
+         end do
+
+         if (verbose) write(*,*) 'Allocate RTTOV structures'
+         call rttov_alloc_rad(stat, nchan, radiance, nlayers, ALLOC, radiance2, &
+              init=.true._jplm)
+         if (stat /= errorstatus_success) then
+            write(*,*) 'ERROR: rttov_alloc_rad(), errorstatus = ', stat
+            stop error_stop_code
+         end if
+         call rttov_alloc_transmission(stat, transmission, nlayers, nchan, &
+              ALLOC, init=.true._jplm)
+         if (stat /= errorstatus_success) then
+            write(*,*) 'ERROR: rttov_alloc_transmission(), errorstatus = ', stat
+            stop error_stop_code
+         end if
+         call rttov_alloc_traj(stat, 1, nchan, opts, nlevels, coefs, &
+              ALLOC, traj=traj)
+         if (stat /= errorstatus_success) then
+            write(*,*) 'ERROR: rttov_alloc_traj(), errorstatus = ', stat
+            stop error_stop_code
+         end if
+
+         if (verbose) write(*,*) 'Fetch emissivity atlas'
+         imonth=month
+         call rttov_setup_emis_atlas(stat, opts, imonth, coefs, emiss_path, &
+              ir_atlas_single_instrument=.true._jplm)
+         if (stat /= errorstatus_success) then
+            write(*,*) 'ERROR: rttov_setup_emis_atlas(), errorstatus = ', stat
+            stop error_stop_code
+         end if
+
+         ! Loop over profiles (as the conditions for processing LW and SW are
+         ! different, we can't just pass the whole array)
+         count = 0
+         if (verbose) write(*,*) 'Run RTTOV'
+         do jdim=preproc_dims%min_lat,preproc_dims%max_lat
+            do idim=preproc_dims%min_lon,preproc_dims%max_lon
+               count = count + 1
+
+               ! Process points that contain information and satisfy the zenith
+               ! angle restrictions of the coefficient file
+               if ((i_coef == 1 .and. &
+                    preproc_dims%counter_lw(idim,jdim) > 0 .and. &
+                    profiles(count)%zenangle < zenmax) .or. &
+                   (i_coef == 2 .and. &
+                    preproc_dims%counter_sw(idim,jdim) > 0 .and. &
+                    profiles(count)%zenangle < zenmaxv9)) then
+
+                  if (i_coef == 1) then
+                     ! Fetch emissivity from atlas
+                     call rttov_get_emis(stat, opts, chanprof, &
+                          profiles(count:count), coefs, emissivity=emis_atlas)
+                     if (stat /= errorstatus_success) then
+                        write(*,*) 'ERROR: rttov_get_emis(), errorstatus = ', &
+                             stat
+                        stop error_stop_code
+                     end if
+                     emissivity%emis_in = emis_atlas
+
+                     ! Fetch emissivity from the MODIS CIMSS emissivity product
+                     if (use_modis_emis) then
+                        where (preproc_surf%emissivity(idim,jdim,:) .ne. &
+                             sreal_fill_value)
+                           emissivity%emis_in = &
+                                preproc_surf%emissivity(idim,jdim,:)
+                        end where
+                     end if
+
+                     calcemis = emissivity%emis_in <= dither
+                  end if
+
+                  ! Call RTTOV for this profile
+                  call rttov_direct(stat, chanprof, opts, &
+                       profiles(count:count), coefs, transmission, radiance, &
+                       radiance2, calcemis, emissivity, traj=traj)
+                  if (stat /= errorstatus_success) then
+                     write(*,*) 'ERROR: rttov_direct(), errorstatus = ', stat
+                     stop error_stop_code
+                  end if
+
+                  write_rttov = .true.
+               else
+                  write_rttov = .false.
+               end if
+
+               ! Remove the Rayleigh component from the RTTOV tranmittances.
+               ! (Private comunication from Philip Watts.)
+               if (i_coef == 2) then
+                  p_0 = 1013.
+
+                  sec_vza = 1. / cos(profiles(count)%zenangle * d2r)
+
+                  do i_ = 1, nchan
+                     ! Rayleigh optical thickness for the atmosphere down to 1013
+                     ! hPa (Hansen and Travis, 1974)
+                     lambda = dummy_sreal_1dveca(i_)
+                     tau_ray_0 = .008569 * lambda**(-4) * &
+                          (1. + .0113 * lambda**(-2) + .00013 * lambda**(-4))
+
+                     do j_ = 1, nlevels
+                        ! Pressure and path dependent Rayleigh optical thickness
+                        tau_ray_p = tau_ray_0 * profiles(count)%p(j_) / p_0 * &
+                             sec_vza
+
+                        ! Corrected level transmittances
+                        transmission%tau_levels(j_, i_) = &
+                             transmission%tau_levels(j_, i_) / exp(-tau_ray_p)
+                     end do
+
+                     ! Corrected total transmittances
+                     transmission%tau_total(i_) = &
+                          transmission%tau_total(i_) / exp(-tau_ray_p)
+                  end do
+               end if
+
+               ! Reformat and write output to NCDF files
+               if (i_coef == 1) then
+                  do i_=1,nchan
+                     call write_ir_rttov(netcdf_info, preproc_dims, &
+                          idim-preproc_dims%min_lon+1, &
+                          jdim-preproc_dims%min_lat+1, &
+                          profiles(count)%nlevels, emissivity, transmission, &
+                          radiance, radiance2, write_rttov, chan_pos(i_), i_)
+                  end do
+               else
+                  do i_=1,nchan
+                     call write_solar_rttov(netcdf_info, preproc_dims, coefs, &
+                          idim-preproc_dims%min_lon+1, &
+                          jdim-preproc_dims%min_lat+1, &
+                          profiles(count)%nlevels, profiles(count)%zenangle, &
+                          emissivity, transmission, radiance, radiance2, &
+                          write_rttov, chan_pos(i_), i_)
+                  end do
+               end if
+            end do
+         end do
+
+
+         if (verbose) write(*,*) 'Deallocate structures'
+
+         call rttov_deallocate_emis_atlas(coefs)
+         call rttov_alloc_traj(stat, 1, nchan, opts, nlevels, coefs, DEALLOC, &
+              traj)
+         call rttov_alloc_transmission(stat, transmission, nlayers, nevals, &
+              DEALLOC)
+         call rttov_alloc_rad(stat, nevals, radiance, nlayers, DEALLOC, &
+              radiance2)
+         call rttov_dealloc_coefs(stat, coefs)
+
+         deallocate(input_chan)
+         deallocate(chanprof)
+         deallocate(emissivity)
+         deallocate(emis_atlas)
+         deallocate(calcemis)
+         deallocate(chan_pos)
+      end do !coef loop
+   end do  !view loop
+
+   if (channel_info%nchannels_sw .ne. 0) then
+      deallocate(dummy_sreal_1dveca)
+   end if
    call rttov_alloc_prof(stat, nprof, profiles, nlevels, opts, DEALLOC)
    deallocate(profiles)
 
