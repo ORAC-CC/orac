@@ -810,37 +810,37 @@ subroutine Read_SAD_LUT(Ctrl, SAD_Chan, SAD_LUT)
 
       ! Read the Rd and Rfd LUTs from the Rd file for all channels (solar and
       ! thermal)
-      call create_sad_filename(Ctrl, chan_num, LUT_File, 'RD')
+      LUT_File = create_sad_filename(Ctrl, chan_num, 'RD')
       call Read_LUT_sat(Ctrl, LUT_file, i, SAD_LUT, IRd, "Rd", SAD_LUT%Rd, &
                         i_lut2 = IRfd, name2 = "Rfd", values2 = SAD_LUT%Rfd)
 
       ! Read the Td and Tfd LUTs from the Td file for all channels (solar and
       ! thermal)
-      call create_sad_filename(Ctrl, chan_num, LUT_File, 'TD')
+      LUT_File = create_sad_filename(Ctrl, chan_num, 'TD')
       call Read_LUT_sat(Ctrl, LUT_file, i, SAD_LUT, ITd, "Td", SAD_LUT%Td, &
                         i_lut2 = ITfd, name2 = "Tfd", values2 = SAD_LUT%Tfd)
 
       ! Read solar channel LUTs
       if (SAD_Chan(i)%Solar%Flag > 0) then
          ! Read the Rbd LUT from the Rbd files
-         call create_sad_filename(Ctrl, chan_num, LUT_File, 'RBD')
+         LUT_File = create_sad_filename(Ctrl, chan_num, 'RBD')
          call Read_LUT_both(Ctrl, LUT_file, i, SAD_LUT, IRbd, "Rbd", &
                             SAD_LUT%Rbd)
 
          ! Read the Rd file into the Rfbd table.  This is a temporary solution
          ! until the Rfbd table becomes available in the Rbd file.  Rd is close
          ! but not the same as Rfbd.
-         call create_sad_filename(Ctrl, chan_num, LUT_File, 'RD')
+         LUT_File = create_sad_filename(Ctrl, chan_num, 'RD')
          call Read_LUT_sol(Ctrl, LUT_file, i, SAD_LUT, IRfbd, "Rd", &
                            SAD_LUT%Rfbd)
 
          ! Read the Tb file LUT from the Tb files
-         call create_sad_filename(Ctrl, chan_num, LUT_File, 'TB')
+         LUT_File = create_sad_filename(Ctrl, chan_num, 'TB')
          call Read_LUT_sol(Ctrl, LUT_file, i, SAD_LUT, ITb, "Tb", &
                            SAD_LUT%Tb)
 
          ! Read the Tbd and Tfbd LUTs from the Tbd files
-         call create_sad_filename(Ctrl, chan_num, LUT_File, 'TBD')
+         LUT_File = create_sad_filename(Ctrl, chan_num, 'TBD')
          call Read_LUT_both(Ctrl, LUT_file, i, SAD_LUT, ITbd, "Tbd", &
                             SAD_LUT%Tbd, i_lut2 = ITfbd, name2 = "Tfbd", &
                             values2 = SAD_LUT%Tfbd)
@@ -849,12 +849,12 @@ subroutine Read_SAD_LUT(Ctrl, SAD_Chan, SAD_LUT)
       ! Read thermal channel LUTs
       if (SAD_Chan(i)%Thermal%Flag > 0) then
          ! Read the Em file
-         call create_sad_filename(Ctrl, chan_num, LUT_File, 'EM')
+         LUT_File = create_sad_filename(Ctrl, chan_num, 'EM')
          call Read_LUT_sat(Ctrl, LUT_file, i, SAD_LUT, IEm, "EM", SAD_LUT%Em)
 
          if (Ctrl%do_CTX_correction .and. Ctrl%Approach .eq. CldIce) then
             ! Read the Bext file
-            call create_sad_filename(Ctrl, chan_num, LUT_File, 'Bext')
+            LUT_File = create_sad_filename(Ctrl, chan_num, 'Bext')
             call Read_LUT(Ctrl, LUT_file, i, SAD_LUT, IBext, "Bext", SAD_LUT%Bext)
          end if
       end if

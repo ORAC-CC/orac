@@ -122,7 +122,7 @@ subroutine Read_SAD_Chan(Ctrl, SAD_Chan)
       if (Ctrl%verbose) &
            write(*,*) 'SAD Channel number: ', trim(adjustl(chan_num))
 
-      call create_sad_filename(Ctrl, chan_num, chan_file)
+      chan_file = create_sad_filename(Ctrl, chan_num)
       if (Ctrl%verbose) write(*,*) 'chan_file read in: ',trim(adjustl(chan_file))
 
       ! Check if file exists

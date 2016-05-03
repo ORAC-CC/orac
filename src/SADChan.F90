@@ -174,11 +174,12 @@ end function Find_Channel
 ! 2014/10/10, GM: Original version
 ! 2015/08/21, AP: Made lut_name optional so this can generate SAD_Chan
 !    filenames. Generalised treatment of NOAA7/9.
+! 2016/05/03, AP: Convert to a function and make chan_num optional.
 !
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
-subroutine create_sad_filename(Ctrl, chan_num, LUT_file, lut_name)
+function create_sad_filename(Ctrl, chan_num, lut_name) result(LUT_File)
 
    use Ctrl_m
 
@@ -186,11 +187,11 @@ subroutine create_sad_filename(Ctrl, chan_num, LUT_file, lut_name)
 
    ! Argument declarations
    type(Ctrl_t),           intent(in)  :: Ctrl
-   character(*),           intent(in)  :: chan_num
-   character(*),           intent(out) :: LUT_file
+   character(*), optional, intent(in)  :: chan_num
    character(*), optional, intent(in)  :: lut_name
+   character(FilenameLen)              :: LUT_file
 
-   character(InstnameLen)    :: InstName
+   character(InstnameLen)              :: InstName
 
    InstName = Ctrl%InstName
    ! NOAA files use (I0) formatting in their filename; LUT files use (I2).
@@ -201,16 +202,24 @@ subroutine create_sad_filename(Ctrl, chan_num, LUT_file, lut_name)
       end if
    end if
 
-   if (present(lut_name)) then
-      LUT_file = trim(Ctrl%FID%SAD_Dir) // trim(InstName) // '_' // &
-                 trim(Ctrl%LUTClass) // '_' // trim(lut_name) // '_' // &
-                 trim(chan_num) // '.sad'
+   if (present(chan_num)) then
+      if (present(lut_name)) then
+         LUT_file = trim(Ctrl%FID%SAD_Dir) // trim(InstName) // '_' // &
+                    trim(Ctrl%LUTClass) // '_' // trim(lut_name) // '_' // &
+                    trim(chan_num) // '.sad'
+      else
+         LUT_file = trim(Ctrl%FID%SAD_Dir) // trim(InstName) // '_' // &
+                    trim(chan_num) // '.sad'
+      end if
    else
-      LUT_file = trim(Ctrl%FID%SAD_Dir) // trim(InstName) // '_' // &
-                 trim(chan_num) // '.sad'
+      if (present(lut_name)) then
+         LUT_file = trim(Ctrl%FID%SAD_Dir) // trim(InstName) // '_' // &
+                    trim(Ctrl%LUTClass) // '_' // trim(lut_name) // '.sad'
+      else
+         LUT_file = trim(Ctrl%FID%SAD_Dir) // trim(InstName) // '.sad'
+      end if
    end if
-
-end subroutine create_sad_filename
+end function create_sad_filename
 
 
 #include "ReadSADChan.F90"
