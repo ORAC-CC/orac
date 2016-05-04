@@ -73,5 +73,7 @@ subroutine Zero_Diag(Ctrl, Diag)
    Diag%cloud_emissivity_s = sreal_fill_value
    Diag%diffuse_frac       = sreal_fill_value
    Diag%diffuse_frac_s     = sreal_fill_value
+   Diag%aot870             = MissingXn
+   Diag%aot870_uncertainty = MissingSn
 
 end subroutine Zero_Diag

@@ -253,6 +253,8 @@ module Ctrl_m
                                                    ! run the retrieval
       integer                :: Surfaces_to_skip   ! Setting to ILand or ISea
                                                    ! skips all respective pixels
+      integer                :: second_aot_ch(1)   ! Output second AOT value at
+                                                   ! wavelength of this channel
       logical                :: verbose            ! Controls output to terminal
 
       ! Variables used by cloud_indexing_logic (first three ignore driver)

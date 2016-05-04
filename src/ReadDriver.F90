@@ -536,6 +536,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%sabotage_inputs     = .false.
    Ctrl%process_cloudy_only = .true.
    Ctrl%surfaces_to_skip    = 0_byte
+   Ctrl%second_aot_ch       = 3 ! Assuming AATSR
 
    ! Set cloud types to process depending on requested LUT
    Ctrl%Types_to_process = byte_fill_value
@@ -983,6 +984,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       case('CTRL%SURFACES_TO_SKIP')
          if (parse_user_text(line, Ctrl%surfaces_to_skip) &
                                                        /= 0) call h_p_e(label)
+      case('CTRL%SECOND_AOT_CH')
+         if (parse_user_text(line, Ctrl%second_aot_ch) /= 0) call h_p_e(label)
       case('CTRL%RECHANS')
          if (parse_user_text(line, Ctrl%ReChans)       /= 0) call h_p_e(label)
       case('CTRL%AP')

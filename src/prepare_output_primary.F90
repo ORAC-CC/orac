@@ -63,6 +63,7 @@
 ! 2016/01/28, GM: Add ctp and ctt corrected and corrected_uncertianty.
 ! 2016/03/04, AP: Tidy prepare_*_packed_float.
 ! 2016/04/28, AP: Add multiple views.
+! 2016/05/03, AP: Add AOT at a second wavelength.
 !
 ! $Id$
 !
@@ -160,6 +161,24 @@ if (Ctrl%Ind%flags%do_aerosol) then
         output_data%aot550_uncertainty_vmin, &
         output_data%aot550_uncertainty_vmax, &
         MissingSn, output_data%aot550_uncertainty_vmax, &
+        control=SPixel%Sn(ITau,ITau))
+
+   temp_real_ot = 10.0**Diag%aot870
+   call prepare_short_packed_float( &
+        temp_real_ot, output_data%aot870(i,j), &
+        output_data%aot870_scale, output_data%aot870_offset, &
+        output_data%aot870_vmin, output_data%aot870_vmax, &
+        MissingXn, output_data%aot870_vmax, &
+        control=SPixel%Xn(ITau))
+
+   temp_real = sqrt(Diag%aot870_uncertainty) * temp_real_ot * alog(10.0)
+   call prepare_short_packed_float( &
+        temp_real, output_data%aot870_uncertainty(i,j), &
+        output_data%aot870_uncertainty_scale, &
+        output_data%aot870_uncertainty_offset, &
+        output_data%aot870_uncertainty_vmin, &
+        output_data%aot870_uncertainty_vmax, &
+        MissingSn, output_data%aot870_uncertainty_vmax, &
         control=SPixel%Sn(ITau,ITau))
 
    !----------------------------------------------------------------------------

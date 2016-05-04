@@ -38,6 +38,7 @@ module Int_LUT_Routines_m
    private
 
    public :: Interp3dLUT, &
+             Int_LUT_Re, &
              Int_LUT_TauRe, &
              Int_LUT_TauSatRe, &
              Int_LUT_TauSatReOnSol, &
@@ -53,6 +54,7 @@ contains
 
 #include "Interp3dLUT.F90"
 
+#include "IntLUTRe.F90"
 #include "IntLUTTauRe.F90"
 #include "IntLUTTauSatRe.F90"
 #include "IntLUTTauSatReOnSol.F90"

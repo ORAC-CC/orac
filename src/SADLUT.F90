@@ -128,6 +128,10 @@ module SAD_LUT_m
       real, pointer :: Em(:,:,:,:)
                        ! Diffuse emissivity
                        ! Dimensions: channel, Tau, SatZen, Re
+
+      real, pointer :: BextRat(:,:)
+                       ! Ratio of AOD at some wavelength to that at 550 nm
+                       ! Dimensions: Re
    end type SAD_LUT_t
 
 contains

@@ -176,6 +176,7 @@
 ! 2016/01/27, GM: Compute corrected CTH for both day and night.
 ! 2016/02/18, OS: Making sure CEE is within 0-1.
 ! 2016/02/24, OS: Avoid negative CEE uncertainties.
+! 2016/05/03, AP: Add output of AOD at a second wavelength.
 !
 ! $Id$
 !
@@ -277,6 +278,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
    real    :: d_CRP_thermal(SPixel%Ind%NThermal, 2)
    real    :: temp(SPixel%Ind%NSolar,SPixel%Ind%NSolar)
    real    :: temp_thermal(SPixel%Ind%NThermal,SPixel%Ind%NThermal)
+   real    :: BextRat(1), d_BextRat(1)
    type(GZero_t) :: GZero
 
 #ifdef BKP
@@ -775,6 +777,26 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
       SPixel%CTH_corrected_uncertainty = MissingSn
       SPixel%CTT_corrected             = MissingXn
       SPixel%CTT_corrected_uncertainty = MissingSn
+   end if
+
+   ! Evaluate AOD at 870 nm
+   if (Ctrl%Approach == AerOx .or. Ctrl%Approach == AerSw) then
+      call Allocate_GZero(GZero, SPixel)
+
+      call Set_GZero(SPixel%Xn(iTau), SPixel%Xn(iRe), Ctrl, Spixel, SAD_LUT, &
+           GZero, stat)
+      if (stat /= 0) go to 99
+
+      call Int_LUT_Re(SAD_LUT%BextRat, 1, SAD_LUT%Grid, GZero, Ctrl, &
+           BextRat, d_BextRat, iBextRat, stat)
+      if (stat /= 0) go to 99
+
+      Diag%aot870 = SPixel%Xn(iTau) + log10(BextRat(1))
+
+      Diag%aot870_uncertainty = Spixel%Sn(iTau,iTau) + &
+           (d_BextRat(1) / (BextRat(1) * log(10.0)))**2 * SPixel%Sn(iRe,iRe)
+
+      call Deallocate_GZero(GZero)
    end if
 
    ! Costs are divided by number of active instrument channels before output.

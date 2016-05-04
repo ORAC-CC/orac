@@ -8,6 +8,7 @@
 ! History:
 ! 2014/10/10, GM: Original version.
 ! 2015/03/18, OS: Needed to add "/" for LUT file path
+! 2016/05/02, AP: Add routines to read 1D BextRat tables.
 !
 ! $Id$
 !
@@ -364,10 +365,74 @@ end subroutine read_values_5d
 
 
 !-------------------------------------------------------------------------------
+! Name: Read_LUT_rat
+!
+! Purpose:
+! Read a BextRat LUT
+!
+! Algorithm:
+!
+! Arguments:
+! Name Type In/Out/Both Description
+!
+! History:
+! 2016/05/03, AP: Original version
+!
+! Bugs:
+! None known.
+!-------------------------------------------------------------------------------
+subroutine Read_LUT_rat(Ctrl, LUT_file, SAD_LUT, i_chan, i_lut, name, values)
+
+   use Ctrl_m
+   use ECP_Constants_m
+
+   implicit none
+
+   ! Argument declarations
+   type(Ctrl_t),    intent(in)    :: Ctrl
+   character(*),    intent(in)    :: LUT_file
+   type(SAD_LUT_t), intent(inout) :: SAD_LUT
+   integer,         intent(in)    :: i_chan
+   integer,         intent(in)    :: i_lut
+   character(*),    intent(in)    :: name
+   real,            intent(inout) :: values(:,:)
+
+   ! Local variables
+   real    :: tmp_values(1, SAD_LUT%Grid%nmaxtau, SAD_LUT%Grid%nmaxre)
+   integer :: lun
+   integer :: iostat
+
+   call Find_LUN(lun)
+   open(unit = lun, file = LUT_file, status = 'old', iostat = iostat)
+   if (iostat .ne. 0) then
+      write(*,*) 'ERROR: Read_LUT_ch(): Error opening file: ', trim(LUT_file)
+      stop LUTFileOpenErr
+   end if
+
+   SAD_LUT%table_used_for_channel(i_chan, i_lut) = .true.
+
+   SAD_LUT%table_uses_solzen(i_lut) = .false.
+   SAD_LUT%table_uses_relazi(i_lut) = .false.
+   SAD_LUT%table_uses_satzen(i_lut) = .false.
+
+   ! Read the grid dimensions (temporarily 2D)
+   call read_grid_dimensions(LUT_file, lun, i_chan, SAD_LUT, .false., .false., &
+                             .false., i_lut)
+
+   ! Read in the i_lut array (temporarily 2D)
+   call read_values_2d(LUT_file, name, lun, i_chan, i_lut, SAD_LUT%Grid%nTau, &
+                       SAD_LUT%Grid%nRe, tmp_values)
+   values(i_chan,:) = tmp_values(1,1,1:SAD_LUT%Grid%nRe(i_chan,i_lut))
+
+   close(unit = lun)
+
+end subroutine Read_LUT_rat
+
+!-------------------------------------------------------------------------------
 ! Name: Read_LUT
 !
 ! Purpose:
-! Read an LUT that has a variable satellite zenith angle
+! Read an LUT over effective radius and optical depth
 !
 ! Algorithm:
 !
@@ -403,7 +468,7 @@ subroutine Read_LUT(Ctrl, LUT_file, i_chan, SAD_LUT, i_lut, name, values)
    call Find_LUN(lun)
    open(unit = lun, file = LUT_file, status = 'old', iostat = iostat)
    if (iostat .ne. 0) then
-      write(*,*) 'ERROR: Read_LUT_sat(): Error opening file: ', trim(LUT_file)
+      write(*,*) 'ERROR: Read_LUT(): Error opening file: ', trim(LUT_file)
       stop LUTFileOpenErr
    end if
 
@@ -859,6 +924,14 @@ subroutine Read_SAD_LUT(Ctrl, SAD_Chan, SAD_LUT)
          end if
       end if
    end do
+
+   ! Read AOD conversion table
+   if (Ctrl%Approach == AerOx .or. Ctrl%Approach == AerSw) then
+      call make_sad_chan_num(Ctrl, Ctrl%second_aot_ch(1), chan_num)
+      LUT_File = create_sad_filename(Ctrl, chan_num, 'BextRat')
+      call Read_LUT_rat(Ctrl, LUT_File, SAD_LUT, 1, IBextRat, "BextRat", &
+           SAD_LUT%BextRat)
+   end if
 
 #ifdef BKP
    if (Ctrl%Bkpl >= BkpL_Read_LUT_1) then

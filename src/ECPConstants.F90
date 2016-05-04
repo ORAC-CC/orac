@@ -104,7 +104,7 @@ module ECP_constants_m
    integer, parameter :: MaxNumThermal    = 16      ! Max no. of thermal channels
    integer, parameter :: MaxCloudType     = 5       ! Max no. of cloud types to be
    integer, parameter :: MaxPLevels       = 50      ! Max no. of pressure levels (in SPixel RTM arrays)
-   integer, parameter :: MaxCRProps       = 12      ! Max no. of properties in SAD_LUT arrays
+   integer, parameter :: MaxCRProps       = 13      ! Max no. of properties in SAD_LUT arrays
    integer, parameter :: MaxTypes         = 10      ! Number of possible cloud/aerosol types
 
 
@@ -203,6 +203,7 @@ module ECP_constants_m
    integer, parameter :: ITd              = 10      !  "    "  Td   "   "   "
    integer, parameter :: ITFd             = 11      !  "    "  TFd  "   "   "
    integer, parameter :: IEm              = 12      !  "    "  Em   "   "   "
+   integer, parameter :: IBextRat         = 13      !  "    "  BextRat ""   "
 
    ! Index of XIndex array in GetSurface
    integer, parameter :: ISwan_S          = 1

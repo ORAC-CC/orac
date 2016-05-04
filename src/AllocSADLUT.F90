@@ -159,4 +159,8 @@ subroutine Alloc_SAD_LUT(Ctrl, SAD_LUT)
                SAD_LUT%Grid%nmaxsatzen, SAD_LUT%Grid%nmaxre))
    end if
 
+   if (Ctrl%Approach == AerOx .or. Ctrl%Approach == AerSw) then
+      allocate(SAD_LUT%BextRat(Ctrl%Ind%Ny, SAD_LUT%Grid%nmaxre))
+   end if
+
 end subroutine Alloc_SAD_LUT

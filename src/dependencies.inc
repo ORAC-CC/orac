@@ -22,7 +22,7 @@ $(OBJS)/InterpolRoutines.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o \
         $(OBJS)/SPixel.o $(OBJS)/planck.o InterpolSolar.F90 \
         InterpolSolar_spline.F90 InterpolThermal.F90 InterpolThermal_spline.F90
 $(OBJS)/IntLUTRoutines.o: $(OBJS)/Ctrl.o $(OBJS)/GZero.o $(OBJS)/IntRoutines.o \
-        $(OBJS)/SADLUT.o IntLUTTauRe.F90 IntLUTTauSatRe.F90 \
+        $(OBJS)/SADLUT.o IntLUTRe.F90 IntLUTTauRe.F90 IntLUTTauSatRe.F90 \
         IntLUTTauSatReOnSol.F90 IntLUTTauSatSolAziRe.F90 IntLUTTauSolRe.F90 \
         Interp3dLUT.F90
 $(OBJS)/Inversion.o: $(OBJS)/Cholesky.o $(OBJS)/Ctrl.o $(OBJS)/Diag.o \

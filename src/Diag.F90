@@ -78,6 +78,9 @@ module Diag_m
                                     ! Diffuse fraction of radiance
       real          :: diffuse_frac_s(MaxNumSolar)
                                     ! Diffuse fraction variance
+      real          :: aot870       ! Aerosol optical depth at 870 nm
+      real          :: aot870_uncertainty
+                                    ! Uncertainty in aot870
    end type Diag_t
 
 contains
