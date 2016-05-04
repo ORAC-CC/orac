@@ -27,6 +27,7 @@
 !    instrument
 ! 2015/07/16, GM: Major cleanup.
 ! 2016/03/04, AP: Homogenisation of I/O modules.
+! 2016/05/04, AP: Fix read of optional, channel-dependent fields.
 !
 ! $Id$
 !
@@ -155,15 +156,32 @@ subroutine read_input_secondary_optional(ncid, input_data, indexing, &
    character(len=32)  :: input_num
    character(len=512) :: input_dummy
 
+   do i=1,indexing%Ny
+      if (indexing%read_optional_channel_field(i)) then
+         write(input_num, "(i4)") indexing%Y_Id(i)
+
+         if (btest(indexing%Ch_Is(i), ThermalBit)) then
+            input_dummy = 'brightness_temperature_in_channel_no_'// &
+                 trim(adjustl(input_num))
+         else
+            input_dummy = 'reflectance_in_channel_no_'// trim(adjustl(input_num))
+         end if
+         call nc_read_packed_array(ncid, trim(adjustl(input_dummy)), &
+              input_data%channels(:,:,i), verbose)
+      end if
+   end do
+
 if (indexing%flags%do_cloud .and. read_flags%do_cloud) then
    do i=1,indexing%NSolar
-      write(input_num, "(i4)") indexing%Y_Id(indexing%YSolar(i))
+      if (indexing%read_optional_channel_field(indexing%YSolar(i))) then
+         write(input_num, "(i4)") indexing%Y_Id(indexing%YSolar(i))
 
-      input_dummy = 'albedo_in_channel_no_'//trim(adjustl(input_num))
-      call nc_read_packed_array(ncid, trim(adjustl(input_dummy)), &
-           input_data%albedo(:,:,i), verbose)
+         input_dummy = 'albedo_in_channel_no_'//trim(adjustl(input_num))
+         call nc_read_packed_array(ncid, trim(adjustl(input_dummy)), &
+              input_data%albedo(:,:,i), verbose)
+      end if
    end do
-   read_flags%do_cloud = .false.
+!  read_flags%do_cloud = .false.
 end if
 
 end subroutine read_input_secondary_optional
@@ -193,19 +211,6 @@ subroutine read_input_secondary_once(nfile, fname, input_data, indexing, &
 
    ! Read universally common fields from first input file
    call nc_open(ncid, fname(1))
-
-   do i=1,indexing%Ny
-      write(input_num, "(i4)") indexing%Y_Id(i)
-
-      if (btest(indexing%Ch_Is(i), ThermalBit)) then
-         input_dummy = 'brightness_temperature_in_channel_no_'// &
-              trim(adjustl(input_num))
-      else
-         input_dummy = 'reflectance_in_channel_no_'// trim(adjustl(input_num))
-      end if
-      call nc_read_packed_array(ncid, trim(adjustl(input_dummy)), &
-           input_data%channels(:,:,i), verbose)
-   end do
 
    call read_input_secondary_optional(ncid, input_data, loop_ind(1), &
         read_flags, verbose)
