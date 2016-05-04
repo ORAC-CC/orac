@@ -110,7 +110,7 @@ module orac_input_m
       integer(byte), pointer :: niter(:,:)
       real(sreal),   pointer :: costja(:,:)
       real(sreal),   pointer :: costjm(:,:)
-      integer(sint), pointer :: qcflag(:,:)
+      integer(lint), pointer :: qcflag(:,:)
       character(len=512)     :: qc_flag_masks
       character(len=512)     :: qc_flag_meanings
 

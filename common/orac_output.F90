@@ -463,7 +463,7 @@ module orac_output_m
       integer(byte), pointer :: niter(:,:)
       real(sreal),   pointer :: costja(:,:)
       real(sreal),   pointer :: costjm(:,:)
-      integer(sint), pointer :: qcflag(:,:)
+      integer(lint), pointer :: qcflag(:,:)
 
       integer(byte), pointer :: lsflag(:,:)
       integer(byte), pointer :: lusflag(:,:)
