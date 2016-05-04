@@ -356,7 +356,7 @@ if (.not. is_lut_drift_corrected) then
    if (verbose) write(*,*) 'apply calibration corrections'
 
    do i=1,channel_info%nchannels_total
-      j=channel_info%channel_ids_instr(i)
+      j = int(ch(i))
 
       ! SW drift correction
       if (j.le.4) then
@@ -404,7 +404,7 @@ end if ! drift corrected
    ! NB might need to remove this in future versions
    if (trim(adjustl(sensor)) .eq. 'AATSR') then
       do i=1,channel_info%nchannels_total
-         j=channel_info%channel_ids_instr(i)
+         j = int(ch(i))
          ! 12um nonlinearity_correction
          if (j .eq. 7) then
             do ii=imager_geolocation%startx,imager_geolocation%endx
@@ -421,7 +421,7 @@ end if ! drift corrected
 
 if (is_lut_drift_corrected) then
    do i=1,channel_info%nchannels_total
-      j=channel_info%channel_ids_instr(i)
+      j = int(ch(i))
       if (j.le.4) then
          ! AATSR L1B reflectances are stored as percentage values, so scale to
          ! the fractional value used by ORAC
