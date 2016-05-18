@@ -130,6 +130,7 @@
 ! 2016/03/31, GM: Changes to support processing only SW or only LW channels.
 ! 2016/04/09, SP: Added multiple views
 ! 2016/04/11, SP: Added Himawari processing capability.
+! 2016/05/19, SP: Added VIIRS/Suomi-NPP processing capability.
 !
 ! $Id$
 !
@@ -312,7 +313,15 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
       if (trim(platform) == 'Himawari') then
          coef_file = 'rtcoef_himawari_8_ahi.dat'
       else
-         write(*,*) 'ERROR: rttov_driver(): Invalid SEVIRI platform: ', &
+         write(*,*) 'ERROR: rttov_driver(): Invalid HIMAWARI platform: ', &
+                    trim(platform)
+         stop error_stop_code
+      end if
+   case('VIIRS')
+      if (trim(platform) == 'SuomiNPP') then
+         coef_file = 'rtcoef_jpss_0_viirs.dat'
+      else
+         write(*,*) 'ERROR: rttov_driver(): Invalid VIIRS platform: ', &
                     trim(platform)
          stop error_stop_code
       end if

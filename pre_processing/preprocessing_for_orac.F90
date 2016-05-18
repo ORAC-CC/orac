@@ -248,6 +248,7 @@
 ! 2016/04/03, SP: Add option to process ECMWF forecast in single NetCDF4 file
 !    Note: This should work with either the OPER or FCST streams from ECMWF.
 ! 2016/04/11, SP: Added initial support for Himawari-8 AHI
+! 2016/05/16, SP: Added initial support for Suomi-NPP  VIIRS
 !
 ! $Id$
 !
@@ -281,6 +282,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    use read_imager_m
    use read_seviri_m
    use read_himawari_m
+   use read_viirs_m
    use rttov_driver_m
    use setup_m
    use surface_emissivity_m
@@ -700,7 +702,15 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       ! At present only full-disk images are supported
       call read_himawari_dimensions(geo_path_file,n_across_track,n_along_track, &
                                   startx,endx,starty,endy,verbose)
+   else if (trim(adjustl(sensor)) .eq. 'VIIRS') then
+      call setup_viirs(l1b_path_file,geo_path_file,platform,year,month,day, &
+           doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids, &
+           channel_info,verbose)
 
+      ! Get dimensions of the AHI image.
+      ! At present only full-disk images are supported
+      call read_viirs_dimensions(geo_path_file,n_across_track,n_along_track, &
+                                  startx,endx,starty,endy,verbose)
    else
       write(*,*) 'ERROR: Invalid sensor: ', trim(adjustl(sensor))
       stop error_stop_code

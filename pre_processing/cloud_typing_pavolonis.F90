@@ -62,6 +62,7 @@
 ! 2016/03/04, OS: bug fix in setting index when passing surface%albedo
 ! 2016/04/14, SP: Added support for Himawari/AHI
 ! 2016/04/09, SP: Add multiple views.
+! 2016/05/17, SP: Added support for the VIIRS instrument
 !
 ! $Id$
 !
@@ -560,6 +561,23 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
             case(14)
                ch5=i
             case(15)
+               ch6=i
+            end select
+         end do
+      else if (trim(adjustl(sensor)) .eq. 'VIIRS') then
+         do i=1,channel_info%nchannels_total
+            select case (channel_info%channel_ids_instr(i))
+            case(5)
+               ch1=i
+            case(7)
+               ch2=i
+            case(10)
+               ch3=i
+            case(12)
+               ch4=i
+            case(15)
+               ch5=i
+            case(16)
                ch6=i
             end select
          end do
@@ -1772,7 +1790,7 @@ function PlanckInv( input_platform, T )
    integer(kind=byte) :: index ! index of row containing platform-specific coefficients
    real(kind=sreal),parameter :: Planck_C1 = 1.19104E-5 ! 2hc^2 in mW m-2 sr-1 (cm-1)-4
    real(kind=sreal),parameter :: Planck_C2 = 1.43877 ! hc/k  in K (cm-1)-1
-   real(kind=sreal), dimension(4,18) :: coefficients ! coefficients containing variables
+   real(kind=sreal), dimension(4,19) :: coefficients ! coefficients containing variables
 
    ! select approproate row of coefficient values
    select case (input_platform)
@@ -1808,12 +1826,20 @@ function PlanckInv( input_platform, T )
       index = 15
    case ("ERS2")
       index = 15
-   case ("MSG1", "MSG2", "MSG3", "MSG4")
+   case ("MSG1")
+      index = 16
+   case ("MSG2")
+      index = 16
+   case ("MSG3")
+      index = 16
+   case ("MSG4")
       index = 16
    case ("Himawari")
       index = 17
-   case ("default")
+   case ("SuomiNPP")
       index = 18
+   case ("default")
+      index = 19
    case default
       write(*,*) "Error: Platform name does not match local string in function PlanckInv"
       write(*,*) "Input platform name = ", input_platform
@@ -1830,26 +1856,29 @@ function PlanckInv( input_platform, T )
    ! a = T2
    ! b = T1
    coefficients = reshape( (/ &
-                                !        v          a         b     solcon
-        2684.523,  0.997083,  1.94314, 5.061, & !noaa07
-        2690.045,  0.997111,  1.87782, 5.081, & !noaa09
-        2680.050,  0.996657,  1.73316, 5.077, & !noaa11
-        2651.771,  0.996999,  1.89956, 4.948, & !noaa12
-        2654.250,  0.996176,  1.87812, 4.973, & !noaa14
-        2695.974,  0.998015,  1.62126, 5.088, & !noaa15
-        2681.254,  0.998271,  1.67456, 5.033, & !noaa16
-        2669.141,  0.997335,  1.69576, 5.008, & !noaa17
-        2660.647,  0.997145,  1.71735, 4.981, & !noaa18
-        2670.242,  0.997411,  1.68202, 5.010, & !noaa19
-        2687.039,  0.996570,  2.05823, 5.077, & !metop02
-        2687.039,  0.996570,  2.05823, 5.077, & !metopa
-        2641.775,  0.999341,  0.47705, 4.804, & !terra
-        2647.409,  0.999336,  0.48184, 4.822, & !aqua
-        2675.166,  0.996344,  1.72695, 5.030, & !env (aatsr)
-        2568.832,  0.995400,  3.43800, 4.660, & !msg1, msg2
-        2575.767,  0.999000,  0.46500, 4.688, & !himawari8
-        2670.000,  0.998000,  1.75000, 5.000  & !default
-        /), (/ 4, 18 /) )
+!        	v    		   a        b     	solcon   satname
+       		2684.523,  0.997083,  1.94314, 5.061, & !noaa07
+	        	2690.045,  0.997111,  1.87782, 5.081, & !noaa09
+	        	2680.050,  0.996657,  1.73316, 5.077, & !noaa11
+	        	2651.771,  0.996999,  1.89956, 4.948, & !noaa12
+	        	2654.250,  0.996176,  1.87812, 4.973, & !noaa14
+	        	2695.974,  0.998015,  1.62126, 5.088, & !noaa15
+	        	2681.254,  0.998271,  1.67456, 5.033, & !noaa16
+	        	2669.141,  0.997335,  1.69576, 5.008, & !noaa17
+	        	2660.647,  0.997145,  1.71735, 4.981, & !noaa18
+	        	2670.242,  0.997411,  1.68202, 5.010, & !noaa19
+	        	2687.039,  0.996570,  2.05823, 5.077, & !metop02
+	        	2687.039,  0.996570,  2.05823, 5.077, & !metopa
+	        	2641.775,  0.999341,  0.47705, 4.804, & !terra
+	        	2647.409,  0.999336,  0.48184, 4.822, & !aqua
+	        	2675.166,  0.996344,  1.72695, 5.030, & !env (aatsr)
+	        	2568.832,  0.995400,  3.43800, 4.660, & !msg1, msg2
+		      2575.767,  0.999000,  0.46500, 4.688, & !himawari8
+				2675.393,	0.998,	1.747,	5.029,&	!viirs
+				2670.000,	0.998,	1.750,	5.012&	!default
+        /), (/ 4, 19 /) )
+
+
 
    PlanckInv(1) = Planck_C1 * coefficients( 1 , index )**3 / &
         ( exp( Planck_C2 * coefficients( 1 , index ) / &
