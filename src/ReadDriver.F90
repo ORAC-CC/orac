@@ -113,6 +113,9 @@
 !    values.
 ! 2016/01/27, GM: Changes for the new night cloud retrieval.
 ! 2016/04/12, SP: Updated to support Himawari/AHI
+! 2016/05/17, SP: Updated to support SuomiNPP/VIIRS
+! 2016/05/18, SP: Added sanity check to ensure sensor is supported. Prevents
+!                 segfault if Ctrl INDEXING CHANNELS if-statements don't succeed
 !
 ! $Id$
 !
@@ -660,6 +663,26 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       Ctrl%r_e_chans = (/ 5, 6, 7 /)
       allocate(Ctrl%ir_chans(3))
       Ctrl%ir_chans  = (/ 7, 14, 15 /)
+   else if (Ctrl%InstName(1:5) .eq. 'VIIRS') then
+      Ctrl%Ind%Y_Id_legacy(I_legacy_0_6x) = 5
+      Ctrl%Ind%Y_Id_legacy(I_legacy_0_8x) = 7
+      Ctrl%Ind%Y_Id_legacy(I_legacy_1_6x) = 10
+      Ctrl%Ind%Y_Id_legacy(I_legacy_3_xx) = 12
+      Ctrl%Ind%Y_Id_legacy(I_legacy_11_x) = 15
+      Ctrl%Ind%Y_Id_legacy(I_legacy_12_x) = 16
+
+      allocate(Ctrl%ReChans(5))
+      Ctrl%ReChans = (/ 12, 10, 8, 9, 11 /)
+
+      allocate(Ctrl%tau_chans(4))
+      Ctrl%tau_chans = (/ 5, 7, 3, 4 /)
+      allocate(Ctrl%r_e_chans(4))
+      Ctrl%r_e_chans = (/ 8, 10, 11, 12 /)
+      allocate(Ctrl%ir_chans(3))
+      Ctrl%ir_chans  = (/ 12, 15, 16, 14 /)
+   else
+   	write(*,*)"Unrecognised sensor/platform:",trim(Ctrl%InstName)
+   	stop
    end if
 
    !---------------- Ctrl STATE VECTOR SELM ---------------
