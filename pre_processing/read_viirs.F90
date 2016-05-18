@@ -51,7 +51,7 @@ contains
 ! It will always process the full scene. This will be fixed.
 !-------------------------------------------------------------------------------
 subroutine read_viirs_dimensions(geo_file, n_across_track, n_along_track, &
-                                  startx, endx, starty, endy, verbose)
+                                 startx, endx, starty, endy, verbose)
 
    use iso_c_binding
    use preproc_constants_m
@@ -64,33 +64,33 @@ subroutine read_viirs_dimensions(geo_file, n_across_track, n_along_track, &
    integer(lint),          intent(inout) :: startx, endx, starty, endy
    logical,                intent(in)    :: verbose
 
-   integer 			:: i_line, i_column
-   integer			:: n_lines, n_columns
+   integer :: i_line, i_column
+   integer :: n_lines, n_columns
 
-   integer(HID_T) :: file_id       ! File identifier
-	integer(HID_T) :: dset_id       ! Dataset identifier
-	integer(HID_T) :: dataspace     ! Dataspace identifier
-	integer(HID_T) :: filespace     ! Dataspace identifier
-	integer(HID_T) :: memspace      ! memspace identifier
-	integer(HID_T) :: cparms        !dataset creatation property identifier
+   integer(HID_T) :: file_id        ! File identifier
+   integer(HID_T) :: dset_id   ! Dataset identifier
+   integer(HID_T) :: dataspace ! Dataspace identifier
+   integer(HID_T) :: filespace ! Dataspace identifier
+   integer(HID_T) :: memspace  ! Memspace identifier
+   integer(HID_T) :: cparms    ! Dataset creatation property identifier
 
-	integer			:: error, error_n
-	integer 			:: rankr, rank_chunk
-	integer(HSIZE_T), DIMENSION(2) :: dimsr, maxdimsr
+   integer			  :: error, error_n
+   integer 			  :: rankr, rank_chunk
+   integer(HSIZE_T), DIMENSION(2) :: dimsr, maxdimsr
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< read_viirs_dimensions()'
 
-	!Open the file.
-	CALL h5fopen_f (geo_file, H5F_ACC_RDONLY_F, file_id, error)
+   ! Open the file.
+   CALL h5fopen_f (geo_file, H5F_ACC_RDONLY_F, file_id, error)
 
-	!Open the  dataset.
-	CALL h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO-TC_All/Latitude", dset_id, error)
+   ! Open the  dataset.
+   CALL h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO-TC_All/Latitude", dset_id, error)
 
-	!Get dataset's dataspace handle.
+   ! Get dataset's dataspace handle.
    CALL h5dget_space_f(dset_id, dataspace, error)
 
-	!Get dataspace's dimensinons.
-	CALL h5sget_simple_extent_dims_f(dataspace, dimsr, maxdimsr, error)
+   ! Get dataspace's dimensinons.
+   CALL h5sget_simple_extent_dims_f(dataspace, dimsr, maxdimsr, error)
 
    startx=1
    starty=1
@@ -133,12 +133,12 @@ subroutine read_viirs(infile,geofile,imager_geolocation, imager_measurements, &
    imager_angles, imager_flags, imager_time, channel_info, verbose)
 
    use iso_c_binding
+   use calender_m
    use channel_structures_m
+   use HDF5
    use imager_structures_m
    use preproc_constants_m
    use system_utils_m
-   use calender_m
-   use HDF5
 
    implicit none
 
@@ -152,38 +152,36 @@ subroutine read_viirs(infile,geofile,imager_geolocation, imager_measurements, &
    type(channel_info_t),        intent(in)    :: channel_info
    logical,                     intent(in)    :: verbose
 
-   integer                     :: i,j
-   integer(c_int)              :: n_bands
-   integer(c_int), allocatable :: band_ids(:)
-   integer(c_int), allocatable :: band_units(:)
-   integer                     :: startx, nx
-   integer                     :: starty, ny
-   integer(c_int)              :: line0, line1
-   integer(c_int)              :: column0, column1
+   integer                          :: i,j
+   integer(c_int)                   :: n_bands
+   integer(c_int), allocatable      :: band_ids(:)
+   integer(c_int), allocatable      :: band_units(:)
+   integer                          :: startx, nx
+   integer                          :: starty, ny
+   integer(c_int)                   :: line0, line1
+   integer(c_int)                   :: column0, column1
+   integer                          :: index1,index2
+   integer(kind=sint)               :: year,month,day,doy
+   integer(kind=sint)               :: hour1,minute1,second1
+   integer(kind=sint)               :: hour2,minute2,second2
+   double precision                 :: dfrac1,dfrac2,jd1,jd2,slo
+   character(len=date_length)       :: cyear,cmonth,cday
+   character(len=date_length)       :: chour1,cminute1,csec1
+   character(len=date_length)       :: chour2,cminute2,csec2
+   integer(HSIZE_T), dimension(1:2) :: pxcount
 
-   integer                     :: index1,index2
-   integer(kind=sint)          :: year,month,day,doy
-   integer(kind=sint)          :: hour1,minute1,second1
-   integer(kind=sint)          :: hour2,minute2,second2
-   double precision 				 :: dfrac1,dfrac2,jd1,jd2,slo
-   character(len=date_length)  :: cyear,cmonth,cday
-   character(len=date_length)  :: chour1,cminute1,csec1
-   character(len=date_length)  :: chour2,cminute2,csec2
-   integer(HSIZE_T), dimension(1:2)    :: pxcount
-
-   integer(HID_T) 				:: file_id       ! File identifier
-	integer(HID_T) 				:: dset_id       ! Dataset identifier
-	integer							:: error, error_n
-
-	real, allocatable				::	data0(:,:)
-	integer, allocatable			::	data1(:,:)
-	real								::	factors(2)
-   character(len=path_length) :: bandfile
-   character(len=path_length) :: banddir
-   character(len=path_length) :: varname,facname
-   character(len=3) 				:: band
-   character(len=path_length) :: regex
-   logical							:: file_exists
+   integer(HID_T)                   :: file_id
+   integer(HID_T)                   :: dset_id
+   integer                          :: error, error_n
+   real, allocatable                :: data0(:,:)
+   integer, allocatable             :: data1(:,:)
+   real                             :: factors(2)
+   character(len=path_length)       :: bandfile
+   character(len=path_length)       :: banddir
+   character(len=path_length)       :: varname,facname
+   character(len=3)                 :: band
+   character(len=path_length)       :: regex
+   logical                          :: file_exists
 
    ! Figure out the channels to process
    n_bands = channel_info%nchannels_total
@@ -196,11 +194,12 @@ subroutine read_viirs(infile,geofile,imager_geolocation, imager_measurements, &
    nx     = imager_geolocation%nx
    starty = imager_geolocation%starty
    ny     = imager_geolocation%ny
-	allocate(data0(nx,ny))
-	allocate(data1(nx,ny))
 
-	pxcount(1)=nx
-	pxcount(2)=ny
+   allocate(data0(nx,ny))
+   allocate(data1(nx,ny))
+
+   pxcount(1) = nx
+   pxcount(2) = ny
 
    line0   = starty - 1
    line1   = starty - 1 + ny - 1
@@ -208,15 +207,15 @@ subroutine read_viirs(infile,geofile,imager_geolocation, imager_measurements, &
    column1 = startx - 1 + nx - 1
 
 
-   ! This section computes the time value for each pixel in the image
-   ! It does this by examinine the start and end times listed in the
-   ! l1b filename.
-   ! The time value is constant across each image line (approximately true, good enough
-   ! as far as we're concerned). Each line is calculated simply by using the start
-   ! time as an offset for a linear fit. The line slope is: (end_time-start_time) / ny
+   ! This section computes the time value for each pixel in the image. It does
+   ! this by examinine the start and end times listed in the l1b filename. The
+   ! time value is constant across each image line (approximately true, good
+   ! enough as far as we're concerned). Each line is calculated simply by using
+   ! the start time as an offset for a linear fit. The line slope is:
+   ! (end_time-start_time) / ny.
 
-   ! Technically we could use data in the geofile (GMTCO) instead, but it gives same result
-   ! whilst taking a lot of extra I/O
+   ! Technically we could use data in the geofile (GMTCO) instead, but it gives
+   ! same result whilst taking a lot of extra I/O
    index2=index(trim(adjustl(geofile)),'npp_d',.true.)
    ! get year, doy, hour and minute as strings
    index2=index2+5
@@ -257,8 +256,10 @@ subroutine read_viirs(infile,geofile,imager_geolocation, imager_measurements, &
    call GREG2JD(year,month,day,jd2)
 
    ! Add on a fraction to account for the start / end times
-   dfrac1	=	(float(hour1)/24.0)+(float(minute1)/(24.0*60.0))+(float(second1)/(24.0*60.0*60.0))
-   dfrac2	=	(float(hour2)/24.0)+(float(minute2)/(24.0*60.0))+(float(second2)/(24.0*60.0*60.0))
+   dfrac1	=	(float(hour1)/24.0) + (float(minute1)/(24.0*60.0)) + &
+                        (float(second1)/(24.0*60.0*60.0))
+   dfrac2	=	(float(hour2)/24.0) + (float(minute2)/(24.0*60.0)) + &
+                        (float(second2)/(24.0*60.0*60.0))
    jd1	=	jd1 + dfrac1
    jd2	=	jd2 + dfrac2
 
@@ -273,84 +274,97 @@ subroutine read_viirs(infile,geofile,imager_geolocation, imager_measurements, &
    ! First it loads geo/angle info from GMTCO file.
    call h5open_f(error)
    call h5fopen_f (geofile, H5F_ACC_RDONLY_F, file_id, error)
-	call h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO-TC_All/Latitude", dset_id, error)
-	call h5dread_f(dset_id, H5T_NATIVE_REAL, data0, pxcount, error)
-	imager_geolocation%latitude(:,:) = data0
-	call h5dclose_f(dset_id, error)
-	call h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO-TC_All/Longitude", dset_id, error)
-	call h5dread_f(dset_id, H5T_NATIVE_REAL, data0, pxcount, error)
-	imager_geolocation%longitude(:,:) = data0
-	call h5dclose_f(dset_id, error)
-	call h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO-TC_All/SolarZenithAngle", dset_id, error)
-	call h5dread_f(dset_id, H5T_NATIVE_REAL, data0, pxcount, error)
-	imager_angles%solzen(:,:,1) = data0
-	call h5dclose_f(dset_id, error)
-	call h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO-TC_All/SolarAzimuthAngle", dset_id, error)
-	call h5dread_f(dset_id, H5T_NATIVE_REAL, data0, pxcount, error)
-	imager_angles%solazi(:,:,1) = data0
-	call h5dclose_f(dset_id, error)
-	call h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO-TC_All/SatelliteZenithAngle", dset_id, error)
-	call h5dread_f(dset_id, H5T_NATIVE_REAL, data0, pxcount, error)
-	imager_angles%satzen(:,:,1) = data0
-	call h5dclose_f(dset_id, error)
-	call h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO-TC_All/SatelliteAzimuthAngle", dset_id, error)
-	call h5dread_f(dset_id, H5T_NATIVE_REAL, data0, pxcount, error)
-	imager_angles%relazi(:,:,1) = data0
-	call h5dclose_f(dset_id, error)
-	call h5fclose_f(file_id, error)
+   call h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO-TC_All/Latitude", &
+                  dset_id, error)
+   call h5dread_f(dset_id, H5T_NATIVE_REAL, data0, pxcount, error)
+   imager_geolocation%latitude(:,:) = data0
+   call h5dclose_f(dset_id, error)
+   call h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO-TC_All/Longitude", &
+                  dset_id, error)
+   call h5dread_f(dset_id, H5T_NATIVE_REAL, data0, pxcount, error)
+   imager_geolocation%longitude(:,:) = data0
+   call h5dclose_f(dset_id, error)
+   call h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO-TC_All/SolarZenithAngle", &
+                  dset_id, error)
+   call h5dread_f(dset_id, H5T_NATIVE_REAL, data0, pxcount, error)
+   imager_angles%solzen(:,:,1) = data0
+   call h5dclose_f(dset_id, error)
+   call h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO-TC_All/SolarAzimuthAngle", &
+                  dset_id, error)
+   call h5dread_f(dset_id, H5T_NATIVE_REAL, data0, pxcount, error)
+   imager_angles%solazi(:,:,1) = data0
+   call h5dclose_f(dset_id, error)
+   call h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO-TC_All/SatelliteZenithAngle", &
+                  dset_id, error)
+   call h5dread_f(dset_id, H5T_NATIVE_REAL, data0, pxcount, error)
+   imager_angles%satzen(:,:,1) = data0
+   call h5dclose_f(dset_id, error)
+   call h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO-TC_All/SatelliteAzimuthAngle", &
+                  dset_id, error)
+   call h5dread_f(dset_id, H5T_NATIVE_REAL, data0, pxcount, error)
+   imager_angles%relazi(:,:,1) = data0
+   call h5dclose_f(dset_id, error)
+   call h5fclose_f(file_id, error)
 
-	! Move on to image data, in this case from individual SVM files (per-band)
+   ! Move on to image data, in this case from individual SVM files (per-band)
 
-	index2=index(trim(adjustl(infile)),'SVM',.true.)
-	do i=1,n_bands
-		banddir	=	infile(1:index2-2)
-		write (band, "(I2.2)") band_ids(i)
-		regex	=	trim(infile(index2:index2+2))//trim(adjustl(band))//trim(infile(index2+5:index2+35))//"*"
-		! Check if we find the appropriate band
-		if (match_file(trim(banddir), trim(regex), bandfile) .ne. 0) then
-      	write(*,*) 'ERROR: read_viirs(): Unable to locate VIIRS SVM ' // &
-         	'file: ', trim(banddir)//'/'//trim(regex)
-      	stop error_stop_code
-   	end if
+   index2=index(trim(adjustl(infile)),'SVM',.true.)
+   do i=1,n_bands
+      banddir =	infile(1:index2-2)
+      write (band, "(I2.2)") band_ids(i)
+      regex   =	trim(infile(index2:index2+2))//trim(adjustl(band))// &
+                trim(infile(index2+5:index2+35))//"*"
 
-      !Setup and read the relevant refl/bt/factors
-   	bandfile	=	trim(banddir)//'/'//trim(bandfile)
-		write (band, "(I2)") band_ids(i)
-		band="M"//trim(adjustl(band))
-		call h5fopen_f(bandfile, H5F_ACC_RDONLY_F, file_id, error)
-		if (band_ids(i) .lt. 12) then
-			varname="//All_Data/VIIRS-"//trim(adjustl(band))//"-SDR_All/Reflectance"
-			facname="//All_Data/VIIRS-"//trim(adjustl(band))//"-SDR_All/ReflectanceFactors"
-		elseif (band_ids(i) .ge. 12) then
-			varname="//All_Data/VIIRS-"//trim(adjustl(band))//"-SDR_All/BrightnessTemperature"
-			facname="//All_Data/VIIRS-"//trim(adjustl(band))//"-SDR_All/BrightnessTemperatureFactors"
-		endif
-		! Standard case, data is integer
-		if (band_ids(i) .ne. 13) then
-			call h5dopen_f(file_id, trim(adjustl(varname)), dset_id, error)
-			call h5dread_f(dset_id, H5T_NATIVE_INTEGER, data1, pxcount, error)
-			call h5dclose_f(dset_id, error)
-			call h5dopen_f(file_id, trim(adjustl(facname)), dset_id, error)
-			call h5dread_f(dset_id, H5T_NATIVE_REAL, factors, pxcount, error)
-			call h5dclose_f(dset_id, error)
-			call h5fclose_f(file_id, error)
+      ! Check if we find the appropriate band
+      if (match_file(trim(banddir), trim(regex), bandfile) .ne. 0) then
+         write(*,*) 'ERROR: read_viirs(): Unable to locate VIIRS SVM ' // &
+                    'file: ', trim(banddir)//'/'//trim(regex)
+         stop error_stop_code
+      end if
 
-			! Scale and account for missing values
-			imager_measurements%data(:,:,i) = factors(2) + (data1*factors(1))
-			where(data1 .gt. 65500) imager_measurements%data(:,:,i)=sreal_fill_value
-		! Band 13, data is float
-		else
-			call h5dopen_f(file_id, trim(adjustl(varname)), dset_id, error)
-			call h5dread_f(dset_id, H5T_NATIVE_REAL, data0, pxcount, error)
-			call h5dclose_f(dset_id, error)
-			call h5fclose_f(file_id, error)
+      ! Setup and read the relevant refl/bt/factors
+      bandfile = trim(banddir)//'/'//trim(bandfile)
+      write (band, "(I2)") band_ids(i)
+      band = "M"//trim(adjustl(band))
+      call h5fopen_f(bandfile, H5F_ACC_RDONLY_F, file_id, error)
+      if (band_ids(i) .lt. 12) then
+         varname = "//All_Data/VIIRS-"//trim(adjustl(band))//"-SDR_All/Reflectance"
+         facname = "//All_Data/VIIRS-"//trim(adjustl(band))//"-SDR_All/ReflectanceFactors"
+      elseif (band_ids(i) .ge. 12) then
+         varname = "//All_Data/VIIRS-"//trim(adjustl(band))//"-SDR_All/BrightnessTemperature"
+         facname = "//All_Data/VIIRS-"//trim(adjustl(band))//"-SDR_All/BrightnessTemperatureFactors"
+      endif
 
-			! Account for missing values, data doesn't need scaling
-			imager_measurements%data(:,:,i) = data0
-			where(data0 .lt. -999) imager_measurements%data(:,:,i)=sreal_fill_value
-		endif
-		if (verbose) write(*,*)i,band_ids(i),maxval(imager_measurements%data(:,:,i)),minval(imager_measurements%data(:,:,i))
-	enddo
+      ! Standard case, data is integer
+      if (band_ids(i) .ne. 13) then
+         call h5dopen_f(file_id, trim(adjustl(varname)), dset_id, error)
+         call h5dread_f(dset_id, H5T_NATIVE_INTEGER, data1, pxcount, error)
+         call h5dclose_f(dset_id, error)
+         call h5dopen_f(file_id, trim(adjustl(facname)), dset_id, error)
+         call h5dread_f(dset_id, H5T_NATIVE_REAL, factors, pxcount, error)
+         call h5dclose_f(dset_id, error)
+         call h5fclose_f(file_id, error)
+
+         ! Scale and account for missing values
+         imager_measurements%data(:,:,i) = factors(2) + (data1*factors(1))
+         where(data1 .gt. 65500) imager_measurements%data(:,:,i) = sreal_fill_value
+
+      ! Band 13, data is float
+      else
+         call h5dopen_f(file_id, trim(adjustl(varname)), dset_id, error)
+         call h5dread_f(dset_id, H5T_NATIVE_REAL, data0, pxcount, error)
+         call h5dclose_f(dset_id, error)
+         call h5fclose_f(file_id, error)
+
+         ! Account for missing values, data doesn't need scaling
+         imager_measurements%data(:,:,i) = data0
+         where(data0 .lt. -999) imager_measurements%data(:,:,i)=sreal_fill_value
+      endif
+
+      if (verbose) &
+         write(*,*)i,band_ids(i),maxval(imager_measurements%data(:,:,i)), &
+                                 minval(imager_measurements%data(:,:,i))
+   enddo
 
    deallocate(band_ids)
    deallocate(band_units)
@@ -358,13 +372,18 @@ subroutine read_viirs(infile,geofile,imager_geolocation, imager_measurements, &
    call h5close_f(error)
 
    ! Check units to remove anything that's out-of-range.
-   where(imager_geolocation%latitude(startx:,:) .lt. -900) imager_geolocation%latitude(startx:,:)=sreal_fill_value
-   where(imager_geolocation%longitude(startx:,:) .lt. -900) imager_geolocation%longitude(startx:,:)=sreal_fill_value
-   where(imager_angles%solazi(startx:,:,1) .lt. -900) imager_angles%solazi(startx:,:,1)=sreal_fill_value
-   where(imager_angles%solzen(startx:,:,1) .lt. -900) imager_angles%solzen(startx:,:,1)=sreal_fill_value
-   where(imager_angles%satzen(startx:,:,1) .lt. -900) imager_angles%satzen(startx:,:,1)=sreal_fill_value
-   where(imager_angles%relazi(startx:,:,1) .lt. -900) imager_angles%relazi(startx:,:,1)=sreal_fill_value
-
+   where(imager_geolocation%latitude(startx:,:)  .lt. -900) &
+      imager_geolocation%latitude(startx:,:)=sreal_fill_value
+   where(imager_geolocation%longitude(startx:,:) .lt. -900) &
+      imager_geolocation%longitude(startx:,:)=sreal_fill_value
+   where(imager_angles%solazi(startx:,:,1)       .lt. -900) &
+      imager_angles%solazi(startx:,:,1)=sreal_fill_value
+   where(imager_angles%solzen(startx:,:,1)       .lt. -900) &
+      imager_angles%solzen(startx:,:,1)=sreal_fill_value
+   where(imager_angles%satzen(startx:,:,1)       .lt. -900) &
+      imager_angles%satzen(startx:,:,1)=sreal_fill_value
+   where(imager_angles%relazi(startx:,:,1)       .lt. -900) &
+      imager_angles%relazi(startx:,:,1)=sreal_fill_value
 
    ! Rescale zens + azis into correct format
    where(imager_angles%solazi(startx:,:,1) .ne. sreal_fill_value .and. &

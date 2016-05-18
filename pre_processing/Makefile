@@ -64,9 +64,9 @@ PREPROC_OBJ_F90 = $(OBJS)/aatsr_corrections.o \
                   $(OBJS)/read_aatsr.o \
                   $(OBJS)/read_avhrr.o \
                   $(OBJS)/read_cimss_emissivity.o \
+                  $(OBJS)/read_himawari.o \
                   $(OBJS)/read_imager.o \
                   $(OBJS)/read_modis.o \
-                  $(OBJS)/read_himawari.o \
                   $(OBJS)/read_viirs.o \
                   $(OBJS)/read_seviri.o \
                   $(OBJS)/read_USGS_file.o \

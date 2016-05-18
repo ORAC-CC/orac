@@ -163,17 +163,17 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
         zenmax, zenmaxv9
 
    ! rttov_types contains definitions of all RTTOV data types
-   use rttov_types, only:    &
-        rttov_options,       &
-        rttov_coefs,         &
-        rttov_chanprof,      &
-        profile_type,        &
-        rttov_emissivity,    &
-        rttov_reflectance,   &
-        transmission_type,   &
-        radiance_type,       &
-        radiance2_type,      &
-        rttov_traj
+   use rttov_types, only: &
+       rttov_options,     &
+       rttov_coefs,       &
+       rttov_chanprof,    &
+       profile_type,      &
+       rttov_emissivity,  &
+       rttov_reflectance, &
+       transmission_type, &
+       radiance_type,     &
+       radiance2_type,    &
+       rttov_traj
 
    ! jpim, jprb and jplm are the RTTOV integer, real and logical KINDs
    use parkind1, only: jpim, jprb, jplm

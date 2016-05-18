@@ -20,10 +20,9 @@
 !    ss: Segment number (00 -> 10)
 !
 ! Example: HS_H08_20150801_0300_B01_FLDK_R10_S0910.DAT
-! In the future other satellites will be launched. Then H08 will become
-! H09, etc. This isn't currently supported.
-! Not a big issue, though, as calibration info is contained in the files.
-! Nothing external is needed in terms of calib.
+! In the future other satellites will be launched. Then H08 will become H09,
+! etc. This isn't currently supported. Not a big issue, though, as calibration
+! info is contained in the files. Nothing external is needed in terms of calib.
 !
 ! Reading Himawari data requires the external HSD_Reader library.
 ! It can be downloaded from:
@@ -74,7 +73,7 @@ contains
 ! It will always process the full disk. This will be fixed.
 !-------------------------------------------------------------------------------
 subroutine read_himawari_dimensions(l1_5_file, n_across_track, n_along_track, &
-                                  startx, endx, starty, endy, verbose)
+                                    startx, endx, starty, endy, verbose)
 
    use iso_c_binding
    use preproc_constants_m
@@ -129,7 +128,7 @@ end subroutine read_himawari_dimensions
 ! channel_info        struct  both Members within are populated
 ! verbose             logical in   If true then print verbose information.
 !-------------------------------------------------------------------------------
-subroutine read_himawari_bin(infile,imager_geolocation, imager_measurements, &
+subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
    imager_angles, imager_flags, imager_time, channel_info, verbose)
 
    use iso_c_binding
@@ -161,7 +160,7 @@ subroutine read_himawari_bin(infile,imager_geolocation, imager_measurements, &
    integer(c_int)              :: column0, column1
 
 #ifdef INCLUDE_HIMAWARI_SUPPORT
-   type(himawari_t_data)  :: preproc
+   type(himawari_t_data) :: preproc
 #endif
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_himawari_bin()'
 #ifdef INCLUDE_HIMAWARI_SUPPORT
@@ -191,35 +190,44 @@ subroutine read_himawari_bin(infile,imager_geolocation, imager_measurements, &
                            'the himawari_read module'
 
    ! Load all the data
-   if (AHI_Main_Read(trim(infile)//C_NULL_CHAR,preproc,n_bands,band_ids,0,1)  .ne. 0) then
+   if (AHI_Main_Read(trim(infile)//C_NULL_CHAR,preproc,n_bands,band_ids,0,1) &
+       .ne. 0) then
       write(*,*) 'ERROR: in read_himawari_read(), calling ' // &
                  'AHI_Main_Read(), filename = ', trim(infile)
       stop error_stop_code
    end if
 
    ! Copy arrays between the reader and ORAC. This could (should!) be done more efficiently.
-	imager_time%time(:,:) 			   =	preproc%time
-	imager_geolocation%latitude(:,:)	=	preproc%lat
-	imager_geolocation%longitude(:,:)=	preproc%lon
-	imager_angles%solzen(:,:,1)		=	preproc%sza
-	imager_angles%solazi(:,:,1)		=	preproc%saa
-	imager_angles%satzen(:,:,1)		=	preproc%vza
-	imager_angles%relazi(:,:,1)		=	preproc%vaa
-	imager_measurements%data(:,:,:)	=	preproc%indata
+   imager_time%time(:,:)             = preproc%time
+   imager_geolocation%latitude(:,:)  = preproc%lat
+   imager_geolocation%longitude(:,:) = preproc%lon
+   imager_angles%solzen(:,:,1)       = preproc%sza
+   imager_angles%solazi(:,:,1)       = preproc%saa
+   imager_angles%satzen(:,:,1)       = preproc%vza
+   imager_angles%relazi(:,:,1)       = preproc%vaa
+   imager_measurements%data(:,:,:)   = preproc%indata
 
    deallocate(band_ids)
    deallocate(band_units)
 
    ! Check units to remove anything that's out-of-range.
-   ! Can be complicated for Himawari as it takes some deep space measurements. But the lat/lon should prevent
-   ! those from being processed, even though image data will exist.
-   where(imager_measurements%data(startx:,:,:) .lt. -900) imager_measurements%data(startx:,:,:)=sreal_fill_value
-   where(imager_geolocation%latitude(startx:,:) .lt. -900) imager_geolocation%latitude(startx:,:)=sreal_fill_value
-   where(imager_geolocation%longitude(startx:,:) .lt. -900) imager_geolocation%longitude(startx:,:)=sreal_fill_value
-   where(imager_angles%solazi(startx:,:,1) .lt. -900) imager_angles%solazi(startx:,:,1)=sreal_fill_value
-   where(imager_angles%solzen(startx:,:,1) .lt. -900) imager_angles%solzen(startx:,:,1)=sreal_fill_value
-   where(imager_angles%satzen(startx:,:,1) .lt. -900) imager_angles%satzen(startx:,:,1)=sreal_fill_value
-   where(imager_angles%relazi(startx:,:,1) .lt. -900) imager_angles%relazi(startx:,:,1)=sreal_fill_value
+   ! Can be complicated for Himawari as it takes some deep space measurements.
+   ! But the lat/lon should prevent those from being processed, even though
+   ! image data will exist.
+   where(imager_measurements%data(startx:,:,:)   .lt. -900) &
+      imager_measurements%data(startx:,:,:)=sreal_fill_value
+   where(imager_geolocation%latitude(startx:,:)  .lt. -900) &
+      imager_geolocation%latitude(startx:,:)=sreal_fill_value
+   where(imager_geolocation%longitude(startx:,:) .lt. -900) &
+      imager_geolocation%longitude(startx:,:)=sreal_fill_value
+   where(imager_angles%solazi(startx:,:,1)       .lt. -900) &
+      imager_angles%solazi(startx:,:,1)=sreal_fill_value
+   where(imager_angles%solzen(startx:,:,1)       .lt. -900) &
+      imager_angles%solzen(startx:,:,1)=sreal_fill_value
+   where(imager_angles%satzen(startx:,:,1)       .lt. -900) &
+      imager_angles%satzen(startx:,:,1)=sreal_fill_value
+   where(imager_angles%relazi(startx:,:,1)       .lt. -900) &
+      imager_angles%relazi(startx:,:,1)=sreal_fill_value
 
 
    ! Rescale zens + azis into correct format
@@ -237,7 +245,6 @@ subroutine read_himawari_bin(infile,imager_geolocation, imager_measurements, &
               'HIMAWARI support. Recompile with -DINCLUDE_HIMAWARI_SUPPORT.'
    stop error_stop_code
 #endif
-!   endwhere
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_himawari_bin()'
 

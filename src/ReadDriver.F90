@@ -112,8 +112,8 @@
 !    dependent on the path controlling arguments since they control default
 !    values.
 ! 2016/01/27, GM: Changes for the new night cloud retrieval.
-! 2016/04/12, SP: Updated to support Himawari/AHI
-! 2016/05/17, SP: Updated to support SuomiNPP/VIIRS
+! 2016/04/12, SP: Updated to support Himawari/AHI.
+! 2016/05/17, SP: Updated to support SuomiNPP/VIIRS.
 ! 2016/05/18, SP: Added sanity check to ensure sensor is supported. Prevents
 !                 segfault if Ctrl INDEXING CHANNELS if-statements don't succeed
 !
@@ -591,6 +591,23 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       Ctrl%r_e_chans = (/ 4, 5 /)
       allocate(Ctrl%ir_chans(3))
       Ctrl%ir_chans  = (/ 5, 6, 7 /)
+   else if (Ctrl%InstName(1:3) .eq. 'AHI') then
+      Ctrl%Ind%Y_Id_legacy(I_legacy_0_6x) = 3
+      Ctrl%Ind%Y_Id_legacy(I_legacy_0_8x) = 4
+      Ctrl%Ind%Y_Id_legacy(I_legacy_1_6x) = 5
+      Ctrl%Ind%Y_Id_legacy(I_legacy_3_xx) = 7
+      Ctrl%Ind%Y_Id_legacy(I_legacy_11_x) = 14
+      Ctrl%Ind%Y_Id_legacy(I_legacy_12_x) = 15
+
+      allocate(Ctrl%ReChans(3))
+      Ctrl%ReChans = (/ 7, 5, 6 /)
+
+      allocate(Ctrl%tau_chans(4))
+      Ctrl%tau_chans = (/ 1, 2, 3, 4 /)
+      allocate(Ctrl%r_e_chans(3))
+      Ctrl%r_e_chans = (/ 5, 6, 7 /)
+      allocate(Ctrl%ir_chans(3))
+      Ctrl%ir_chans  = (/ 7, 14, 15 /)
    else if (Ctrl%InstName(1:5) .eq. 'AVHRR') then
       Ctrl%Ind%Y_Id_legacy(I_legacy_0_6x) = 1
       Ctrl%Ind%Y_Id_legacy(I_legacy_0_8x) = 2
@@ -646,23 +663,6 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       Ctrl%r_e_chans = (/ 3, 4 /)
       allocate(Ctrl%ir_chans(3))
       Ctrl%ir_chans  = (/ 4, 9, 10 /)
-   else if (Ctrl%InstName(1:3) .eq. 'AHI') then
-      Ctrl%Ind%Y_Id_legacy(I_legacy_0_6x) = 3
-      Ctrl%Ind%Y_Id_legacy(I_legacy_0_8x) = 4
-      Ctrl%Ind%Y_Id_legacy(I_legacy_1_6x) = 5
-      Ctrl%Ind%Y_Id_legacy(I_legacy_3_xx) = 7
-      Ctrl%Ind%Y_Id_legacy(I_legacy_11_x) = 14
-      Ctrl%Ind%Y_Id_legacy(I_legacy_12_x) = 15
-
-      allocate(Ctrl%ReChans(3))
-      Ctrl%ReChans = (/ 7, 5, 6 /)
-
-      allocate(Ctrl%tau_chans(4))
-      Ctrl%tau_chans = (/ 1, 2, 3, 4 /)
-      allocate(Ctrl%r_e_chans(3))
-      Ctrl%r_e_chans = (/ 5, 6, 7 /)
-      allocate(Ctrl%ir_chans(3))
-      Ctrl%ir_chans  = (/ 7, 14, 15 /)
    else if (Ctrl%InstName(1:5) .eq. 'VIIRS') then
       Ctrl%Ind%Y_Id_legacy(I_legacy_0_6x) = 5
       Ctrl%Ind%Y_Id_legacy(I_legacy_0_8x) = 7

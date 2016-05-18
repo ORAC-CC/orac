@@ -52,7 +52,7 @@ subroutine parse_optional(label, value, n_channels, channel_ids, &
                           use_hr_ecmwf, ecmwf_time_int_method, &
                           use_ecmwf_tnow_and_ice, use_modis_emis_in_rttov, &
                           ecmwf_path, ecmwf_path2, ecmwf_path3, ecmwf_path_hr, &
-                          ecmwf_path_hr_2,ecmwf_nlevels)
+                          ecmwf_path_hr_2, ecmwf_nlevels)
 
    use parsing_m
    use preproc_constants_m
@@ -108,13 +108,13 @@ subroutine parse_optional(label, value, n_channels, channel_ids, &
       if (parse_string(value, ecmwf_path3) /= 0) &
          call handle_parse_error(label)
    case('ECMWF_PATH_HR')
-      if (parse_string(value, ecmwf_path_hr)  /= 0) &
+      if (parse_string(value, ecmwf_path_hr) /= 0) &
          call handle_parse_error(label)
    case('ECMWF_PATH_HR_2')
-      if (parse_string(value, ecmwf_path_hr_2)  /= 0) &
+      if (parse_string(value, ecmwf_path_hr_2) /= 0) &
          call handle_parse_error(label)
    case('ECMWF_NLEVELS')
-      if (parse_string(value, ecmwf_nlevels)  /= 0) &
+      if (parse_string(value, ecmwf_nlevels) /= 0) &
          call handle_parse_error(label)
    case default
       write(*,*) 'ERROR: Unknown option: ', trim(label)
