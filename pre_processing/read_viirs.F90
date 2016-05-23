@@ -12,6 +12,9 @@
 !
 ! History:
 ! 2016/05/17, SP: Initial version.
+! 2016/05/19, SP: Bugfix to prevent stack smashing when HDF5 file from NOAA
+!                 doesn't conform to their own standard.
+! 2016/05/23, SP: Some tidying and better commenting
 !
 !
 ! Bugs:
@@ -165,17 +168,23 @@ subroutine read_viirs(infile,geofile,imager_geolocation, imager_measurements, &
    integer(kind=sint)               :: hour1,minute1,second1
    integer(kind=sint)               :: hour2,minute2,second2
    double precision                 :: dfrac1,dfrac2,jd1,jd2,slo
+
+   ! Variables for computing start and end times
    character(len=date_length)       :: cyear,cmonth,cday
    character(len=date_length)       :: chour1,cminute1,csec1
    character(len=date_length)       :: chour2,cminute2,csec2
-   integer(HSIZE_T), dimension(1:2) :: pxcount
 
+   ! Used for reading the HDF5 files correctly (prevents stack smashing)
+   integer(HSIZE_T), dimension(1:2) :: pxcount
+   integer(HSIZE_T), dimension(1)   :: pxcount_fac
+
+   ! Various variables for reading the HDF5 data and choosing filenames
    integer(HID_T)                   :: file_id
    integer(HID_T)                   :: dset_id
    integer                          :: error, error_n
    real, allocatable                :: data0(:,:)
    integer, allocatable             :: data1(:,:)
-   real                             :: factors(2)
+   real                             :: factors(8)
    character(len=path_length)       :: bandfile
    character(len=path_length)       :: banddir
    character(len=path_length)       :: varname,facname
@@ -195,17 +204,22 @@ subroutine read_viirs(infile,geofile,imager_geolocation, imager_measurements, &
    starty = imager_geolocation%starty
    ny     = imager_geolocation%ny
 
-   allocate(data0(nx,ny))
-   allocate(data1(nx,ny))
+   ! Setup the temporary data arrays.
+   ! Two are needed as VIIRS data is usually UINT but sometimes FLOAT
+   allocate(data0(nx,ny)) !Float, also used for geoinfo
+   allocate(data1(nx,ny)) !UInt, used for most channels
 
+   ! Size of the SDR/GEO arrays in the HDF5 files
    pxcount(1) = nx
    pxcount(2) = ny
+
+   ! Size of the 'factors' array that stores slope/offset for channel data
+   pxcount_fac(1) = 8
 
    line0   = starty - 1
    line1   = starty - 1 + ny - 1
    column0 = startx - 1
    column1 = startx - 1 + nx - 1
-
 
    ! This section computes the time value for each pixel in the image. It does
    ! this by examinine the start and end times listed in the l1b filename. The
@@ -341,7 +355,7 @@ subroutine read_viirs(infile,geofile,imager_geolocation, imager_measurements, &
          call h5dread_f(dset_id, H5T_NATIVE_INTEGER, data1, pxcount, error)
          call h5dclose_f(dset_id, error)
          call h5dopen_f(file_id, trim(adjustl(facname)), dset_id, error)
-         call h5dread_f(dset_id, H5T_NATIVE_REAL, factors, pxcount, error)
+         call h5dread_f(dset_id, H5T_NATIVE_REAL, factors, pxcount_fac, error)
          call h5dclose_f(dset_id, error)
          call h5fclose_f(file_id, error)
 
