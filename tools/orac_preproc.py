@@ -120,7 +120,13 @@ def orac_preproc(args):
             nise = (args.nise_dir + st_time.strftime('/NISE.002/%Y.%m.%d/'+
                                                  'NISE_SSMIF13_%Y%m%d.HDFEOS'))
             if not os.path.isfile(nise):
-                raise NameError('Cannot locate NISE file '+nise)
+                nise = (args.nise_dir + st_time.strftime('/NISE.004/'+
+                                                 'NISE_SSMISF17_%Y%m%d.HDFEOS'))
+                if not os.path.isfile(nise):
+                    nise = (args.nise_dir + st_time.strftime('/NISE.002/'+
+                                                 'NISE_SSMIF13_%Y%m%d.HDFEOS'))
+                    if not os.path.isfile(nise):
+                        raise NameError('Cannot locate NISE file '+nise)
 
     # Select previous surface reflectance and emissivity files
     alb  = orac_utils.date_back_search(args.mcd43_dir, st_time,
@@ -242,7 +248,7 @@ def orac_preproc(args):
         conventions       = args.cfconvention,
         creator_email     = args.email,
         creator_url       = args.url,
-        day_flag          = 3, # 0=1=Day, 2=Night
+        day_flag          = args.day_flag, # 0=1=Day, 2=Night
         dellat            = args.dellat,
         dellon            = args.dellon,
         ecmwf_flag        = 2, # Use ECMWF files stored at BADC (2 NCDF, 1 GRIB)

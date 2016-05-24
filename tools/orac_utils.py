@@ -220,7 +220,7 @@ def orac_common_args(parser):
     out = parser.add_argument_group('File paths')
     out.add_argument('-o', '--out_dir', type=str, default = None,
                      help = 'Path for output.')
-    out.add_argument('-i-','--in_dir', type=str, nargs='+', default = None,
+    out.add_argument('-i','--in_dir', type=str, nargs='+', default = None,
                      help = 'Path for input.')
 
     script = parser.add_argument_group('Script keywords')
@@ -250,11 +250,11 @@ def orac_common_args(parser):
 def orac_common_args_check(args):
     # Check of input dir done in routine checker
     if not os.path.isdir(args.orac_dir):
-        raise ValueError('Target of --orac_dir does not exist.')
+        raise ValueError('Target of --orac_dir does not exist: '+args.orac_dir)
     if not os.path.isfile(args.orac_lib):
-        raise ValueError('Target of --orac_lib does not exist.')
+        raise ValueError('Target of --orac_lib does not exist: '+args.orac_lib)
     if not os.path.isdir(args.sh_dir):
-        raise ValueError('Target of --sh_dir does not exist.')
+        raise ValueError('Target of --sh_dir does not exist: '+args.sh_dir)
 
 def orac_preproc_args(parser):
     key = parser.add_argument_group('Preprocessor keywords')
@@ -264,6 +264,9 @@ def orac_preproc_args(parser):
     key.add_argument('--geo_dir', type=str, nargs='?', metavar='DIR',
                      default = None,
                      help = 'Path to the geolocation file.')
+    key.add_argument('--day_flag', type=int, nargs='?', choices=[0,1,2,3],
+                     default = 3,
+                     help = '1=Process day only, 2=Night only, 0|3=Both')
     key.add_argument('--dellat', type=float, nargs='?', metavar='VALUE',
                      default = 1.38888889,
                      help = 'Reciprocal of latitude grid resolution.')
@@ -352,7 +355,7 @@ def orac_preproc_args(parser):
                        default = matin + '/emos_files',
                        help = 'Path to ECMWF files from the BADC.')
     other.add_argument('--nise_dir', type=str, nargs='?', metavar='DIR',
-                       default = greg + '/n5eil01u.ecs.nsidc.org/SAN/OTHR',
+                       default = '/network/aopp/matin/eodg/nise',
                        help = 'Path to NISE products.')
     other.add_argument('--calib_file', type=str, nargs='?', metavar='FILE',
                        default = matin+'/AATSR_VIS_DRIFT_V03-00.DAT',
@@ -361,6 +364,12 @@ def orac_preproc_args(parser):
                        default = matin+
                        '/Aux_file_CM_SAF_AVHRR_GAC_ori_0.05deg.nc',
                        help = 'Name and path of USGS DEM.')
+
+    comp = parser.add_mutually_exclusive_group()
+    comp.add_argument('--no_compare', action='store_true',
+                      help = 'Do not compare outputs to the previous version.')
+    comp.add_argument('--only_compare', action='store_true',
+                      help = 'Do not process outputs of the current version.')
     return parser
 
 def orac_preproc_args_check(args):
@@ -368,29 +377,30 @@ def orac_preproc_args_check(args):
         args.in_dir = os.path.dirname(args.file)
         args.file   = os.path.basename(args.file)
     if not os.path.isdir(args.in_dir):
-        raise ValueError('L1B directory does not exist.')
+        raise ValueError('L1B directory does not exist: '+args.in_dir)
     if not os.path.isfile(args.in_dir+'/'+args.file):
-        raise ValueError('L1B file does not exist.')
+        raise ValueError('L1B file does not exist: '+args.in_dir+'/'+args.file)
     limit_check = args.limit[0] == 0
     for limit_element in args.limit[1:]:
         if (limit_element == 0) ^ limit_check:
             raise UserWarning('All elements of --limit should be non-zero.')
     if not os.path.isdir(args.atlas_dir):
-        raise ValueError('Target of --atlas_dir does not exist.')
+        raise ValueError('Target of --atlas_dir does not exist: '+args.atlas_dir)
     if not os.path.isfile(args.calib_file):
-        raise ValueError('AATSR calibration file does not exist.')
+        raise ValueError('AATSR calibration file does not exist: '+
+                         args.calib_file)
     if not os.path.isdir(args.coef_dir):
-        raise ValueError('Target of --coef_dir does not exist.')
+        raise ValueError('Target of --coef_dir does not exist: '+args.coef_dir)
     if not os.path.isdir(args.ecmwf_dir):
-        raise ValueError('Target of --ecmwf_dir does not exist.')
+        raise ValueError('Target of --ecmwf_dir does not exist: '+args.ecmwf_dir)
     if not os.path.isdir(args.emis_dir):
-        raise ValueError('Target of --emis_dir does not exist.')
+        raise ValueError('Target of --emis_dir does not exist: '+args.emis_dir)
     if not os.path.isdir(args.mcd43_dir):
-        raise ValueError('Target of --mcd43_dir does not exist.')
+        raise ValueError('Target of --mcd43_dir does not exist: '+args.mcd43_dir)
     if not os.path.isdir(args.nise_dir):
-        raise ValueError('Target of --nise_dir does not exist.')
+        raise ValueError('Target of --nise_dir does not exist: '+args.nise_dir)
     if not os.path.isfile(args.usgs_file):
-        raise ValueError('USGS file does not exist.')
+        raise ValueError('USGS file does not exist: '+args.usgs_file)
 
 def orac_main_args(parser):
     main = parser.add_argument_group('Main processor paths')
@@ -410,8 +420,8 @@ def orac_main_args(parser):
     main.add_argument('--types', type=int, nargs='+', metavar='#',
                       default = (0,1,2,3,4,5,6,7,8,9),
                       help = 'Pavolonis cloud types to process.')
-    main.add_argument('--use_channel', type=bool, nargs='+', metavar='T/F',
-                      default = (True, True, True, True, True, True),
+    main.add_argument('--use_channel', type=int, nargs='+', metavar='T/F',
+                      default = (1, 1, 1, 1, 1, 1),
                       help = 'Channels to be evaluated by main processor.')
 
     ls = main.add_mutually_exclusive_group()
@@ -425,9 +435,10 @@ def orac_main_args_check(args):
     if len(args.in_dir) > 1:
         print('WARNING: Main processor ignores all but first in_dir.')
     if not os.path.isdir(args.in_dir[0]):
-        raise ValueError('Preprocessed directory does not exist.')
+        raise ValueError('Preprocessed directory does not exist: '+
+                         args.in_dir[0])
     if not os.path.isdir(args.sad_dir):
-        raise ValueError('Target of --sad_dir does not exist.')
+        raise ValueError('Target of --sad_dir does not exist: '+args.sad_dir)
     # No error checking yet written for channel arguments
 
 def orac_postproc_args(parser):
@@ -452,4 +463,5 @@ def orac_postproc_args(parser):
 def orac_postproc_args_check(args):
     for d in args.in_dir:
         if not os.path.isdir(d):
-            raise ValueError('Processed output directory does not exist.')
+            raise ValueError('Processed output directory does not exist: '+
+                             os.path.isdir(d))

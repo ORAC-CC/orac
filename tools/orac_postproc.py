@@ -42,13 +42,13 @@ def orac_postproc(args):
         wat_sec  = args.in_dir[0]+'/'+args.fileroot+args.phases[0]+sec)
     for phase in args.phases[2:]:
         driver += add_driver(
-            dir  = args.in_dir[0],
+            dir  = args.in_dir[1],
             ph   = phase,
             pri  = pri,
             root = args.fileroot,
             sec  = sec)
-    for dir in args.in_dir[1:]:
-        for phase in args.phases:
+    for dir in args.in_dir[2:]:
+        for phase in args.phases[2:]:
             driver += add_driver(
                 dir  = dir,
                 ph   = phase,

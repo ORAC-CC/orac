@@ -74,11 +74,6 @@ reg.add_argument('--clobber_pre', action='store_true',
                  help = 'Overwrite existing preprocessed files. Default behaviour leaves them alone.')
 reg.add_argument('-l', '--long', action='store_true',
                  help = 'Process full orbits rather than short segments.')
-comp = reg.add_mutually_exclusive_group()
-comp.add_argument('--no_compare', action='store_true',
-                 help = 'Do not compare outputs to the previous version.')
-comp.add_argument('--only_compare', action='store_true',
-                  help = 'Do not process outputs of the current version.')
 reg.add_argument('--once', action='store_true',
                  help = 'Only run the first phase (probably WAT).')
 reg.add_argument('-t', '--tests', type=str, nargs='+', metavar='TEST',
