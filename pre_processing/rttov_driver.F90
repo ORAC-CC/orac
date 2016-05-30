@@ -131,6 +131,7 @@
 ! 2016/04/09, SP: Added multiple views
 ! 2016/04/11, SP: Added Himawari processing capability.
 ! 2016/05/19, SP: Added VIIRS/Suomi-NPP processing capability.
+! 2016/05/27, SP: Updates to enable RTTOV to work correctly with multi-views
 !
 ! $Id$
 !
@@ -148,7 +149,7 @@ contains
 
 subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
      preproc_geoloc,preproc_geo,preproc_prtm,preproc_surf,netcdf_info, &
-     channel_info,year,month,day,use_modis_emis,verbose)
+     channel_info,year,month,day,use_modis_emis, verbose)
 
    use channel_structures_m
    use netcdf_output_m
@@ -757,11 +758,13 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                           jdim-preproc_dims%min_lat+1, &
                           profiles(count)%nlevels, profiles(count)%zenangle, &
                           emissivity, transmission, radiance, radiance2, &
-                          write_rttov, chan_pos(i_), i_)
+                          write_rttov, chan_pos(i_), &
+                          channel_info%sw_rttov_viewone_id(i_), i_)
                   end do
                end if
             end do
          end do
+
 
 
          if (verbose) write(*,*) 'Deallocate structures'

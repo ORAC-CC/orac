@@ -249,6 +249,7 @@
 !    Note: This should work with either the OPER or FCST streams from ECMWF.
 ! 2016/04/11, SP: Added initial support for Himawari-8 AHI
 ! 2016/05/16, SP: Added initial support for Suomi-NPP  VIIRS
+! 2016/04/30, SP: Fixed bug in multi-view processing
 !
 ! $Id$
 !

@@ -16,6 +16,7 @@
 ! 2015/01/15, AP: Eliminate channel_ids_abs.
 ! 2015/03/04, GM: Added map_ids_abs_to_snow_and_ice.
 ! 2016/04/08, SP: Added variables to cope with multiple view sensors
+! 2016/05/27, SP: Updates to enable RTTOV to work correctly with multi-views
 !
 ! $Id$
 !
@@ -59,6 +60,8 @@ module channel_structures_m
       integer(kind=lint), dimension(:), pointer :: channel_view_ids
       integer(kind=lint), dimension(:), pointer :: lw_view_ids
       integer(kind=lint), dimension(:), pointer :: sw_view_ids
+      integer(kind=lint), dimension(:), pointer :: lw_rttov_viewone_id
+      integer(kind=lint), dimension(:), pointer :: sw_rttov_viewone_id
 
       !arrays containing 0/1 flags to identify to which part (sw/lw) of the
       !spectrum they are assigned. could be used to determine the number of

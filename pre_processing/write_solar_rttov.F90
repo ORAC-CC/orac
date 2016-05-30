@@ -35,6 +35,7 @@
 !    path (amf_recip) in rttov_driver() was incorrect. The relevant code then
 !    got moved into here.  The correct fix has now been implemented.
 ! 2016/04/09, SP: Write one channel at a time, to facilitate multiple views.
+! 2016/04/30, SP: Fixed bug in multi-view processing
 !
 ! $Id$
 !
@@ -44,7 +45,7 @@
 
 subroutine write_solar_rttov(netcdf_info, preproc_dims, coefs, idim, jdim, &
      nlev, satza, emissivity, transmission, radiance, radiance2, &
-     write_flag, chan_num, chanvar)
+     write_flag, chan_num, rttov_num, chanvar)
 
    use netcdf_output_m, only: netcdf_output_info_t
    use orac_ncdf_m
@@ -68,6 +69,7 @@ subroutine write_solar_rttov(netcdf_info, preproc_dims, coefs, idim, jdim, &
    type(radiance2_type),       intent(in) :: radiance2
    logical,                    intent(in) :: write_flag
    integer,                    intent(in) :: chan_num
+   integer,                    intent(in) :: rttov_num
    integer,                    intent(in) :: chanvar
 
    real(sreal)                            :: amf_recip
@@ -81,17 +83,17 @@ subroutine write_solar_rttov(netcdf_info, preproc_dims, coefs, idim, jdim, &
       ! Calculate required above/below cloud transmittances
       ! Identify which transmittance to output from the channel type
       ! (see p.113 of RTTOV v 11 Users Guide)
-      if (coefs%coef%ss_val_chn(chan_num) == 2) then
+      if (coefs%coef%ss_val_chn(rttov_num) == 2) then
          ! Transmission from level to TOA
-         dummy_tac(1,:,1,1) = transmission%tausun_levels_path1(:,chan_num)**amf_recip
+         dummy_tac(1,:,1,1) = transmission%tausun_levels_path1(:,rttov_num)**amf_recip
          ! Transmission from surface to level
-         dummy_tbc(1,:,1,1) = transmission%tausun_total_path1(chan_num)**amf_recip &
+         dummy_tbc(1,:,1,1) = transmission%tausun_total_path1(rttov_num)**amf_recip &
               / dummy_tac(1,:,1,1)
       else
          ! Transmission from level to TOA
-         dummy_tac(1,:,1,1) = transmission%tau_levels(:,chan_num)**amf_recip
+         dummy_tac(1,:,1,1) = transmission%tau_levels(:,rttov_num)**amf_recip
          ! Transmission from surface to level
-         dummy_tbc(1,:,1,1) = transmission%tau_total(chan_num)**amf_recip &
+         dummy_tbc(1,:,1,1) = transmission%tau_total(rttov_num)**amf_recip &
               / dummy_tac(1,:,1,1)
       end if
    else
