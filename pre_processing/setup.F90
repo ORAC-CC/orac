@@ -1115,33 +1115,32 @@ subroutine common_setup(channel_info, channel_ids_user, channel_ids_default, &
          channel_info%map_ids_abs_to_snow_and_ice (i_sw) = &
             all_map_ids_abs_to_snow_and_ice (channel_info%channel_ids_instr(i))
 
-			! RTTOV only has one set of channel coefficients - it doesn't repeat for
-			! instruments with multiple view angles.
-			! Therefore we have to select the equivalent RTTOV channel (in view = 1)
-			! for each of the actual instrument views (view > 1).
-			! For simplicity we also calculate for view = 1.
-	      do j=1,channel_info%nchannels_total
-				if ((channel_info%channel_view_ids(j) .eq. 1) .and. &
-				(channel_info%channel_wl_abs(j) .eq. channel_info%channel_wl_abs(i))) &
-				then
-					channel_info%sw_rttov_viewone_id(i_sw) = j
-				endif
-	      enddo
+         ! RTTOV only has one set of channel coefficients - it doesn't
+         ! repeat for instruments with multiple view angles. Therefore we
+         ! have to select the equivalent RTTOV channel (in view = 1) for
+         ! each of the actual instrument views (view > 1). For simplicity
+         ! we also calculate for view = 1.
+         do j=1,channel_info%nchannels_total
+            if ((channel_info%channel_view_ids(j) .eq. 1) .and. &
+                (channel_info%channel_wl_abs(j) .eq. channel_info%channel_wl_abs(i))) then
+               channel_info%sw_rttov_viewone_id(i_sw) = j
+            end if
+	 end do
          i_sw = i_sw + 1
       end if
+
       if (channel_info%channel_lw_flag(i) .ne. 0) then
          channel_info%channel_ids_rttov_coef_lw(i_lw) = &
             all_channel_ids_rttov_coef_lw(channel_info%channel_ids_instr(i))
 
          channel_info%lw_view_ids(i_lw) = channel_info%channel_view_ids(i)
 
-	      do j=1,channel_info%nchannels_total
-				if ((channel_info%channel_view_ids(j) .eq. 1) .and. &
-				(channel_info%channel_wl_abs(j) .eq. channel_info%channel_wl_abs(i))) &
-				then
-					channel_info%lw_rttov_viewone_id(i_lw) = j
-				endif
-	      enddo
+         do j=1,channel_info%nchannels_total
+            if ((channel_info%channel_view_ids(j) .eq. 1) .and. &
+                (channel_info%channel_wl_abs(j) .eq. channel_info%channel_wl_abs(i))) then
+               channel_info%lw_rttov_viewone_id(i_lw) = j
+            end if
+	 end do
 
          i_lw = i_lw + 1
       end if

@@ -149,7 +149,7 @@ contains
 
 subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
      preproc_geoloc,preproc_geo,preproc_prtm,preproc_surf,netcdf_info, &
-     channel_info,year,month,day,use_modis_emis, verbose)
+     channel_info,year,month,day,use_modis_emis,verbose)
 
    use channel_structures_m
    use netcdf_output_m
@@ -764,7 +764,6 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                end if
             end do
          end do
-
 
 
          if (verbose) write(*,*) 'Deallocate structures'

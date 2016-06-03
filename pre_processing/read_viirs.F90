@@ -283,7 +283,8 @@ subroutine read_viirs(infile,geofile,imager_geolocation, imager_measurements, &
    ! Put correct julian date into each location in the time array
    do j=1,ny
    	imager_time%time(:,j) = jd1+(slo*float(j))
-   enddo
+   end do
+
    ! This bit reads all the data.
    ! First it loads geo/angle info from GMTCO file.
    call h5open_f(error)
@@ -344,10 +345,10 @@ subroutine read_viirs(infile,geofile,imager_geolocation, imager_measurements, &
       if (band_ids(i) .lt. 12) then
          varname = "//All_Data/VIIRS-"//trim(adjustl(band))//"-SDR_All/Reflectance"
          facname = "//All_Data/VIIRS-"//trim(adjustl(band))//"-SDR_All/ReflectanceFactors"
-      elseif (band_ids(i) .ge. 12) then
+      else if (band_ids(i) .ge. 12) then
          varname = "//All_Data/VIIRS-"//trim(adjustl(band))//"-SDR_All/BrightnessTemperature"
          facname = "//All_Data/VIIRS-"//trim(adjustl(band))//"-SDR_All/BrightnessTemperatureFactors"
-      endif
+      end if
 
       ! Standard case, data is integer
       if (band_ids(i) .ne. 13) then
@@ -373,12 +374,12 @@ subroutine read_viirs(infile,geofile,imager_geolocation, imager_measurements, &
          ! Account for missing values, data doesn't need scaling
          imager_measurements%data(:,:,i) = data0
          where(data0 .lt. -999) imager_measurements%data(:,:,i)=sreal_fill_value
-      endif
+      end if
 
       if (verbose) &
          write(*,*)i,band_ids(i),maxval(imager_measurements%data(:,:,i)), &
                                  minval(imager_measurements%data(:,:,i))
-   enddo
+   end do
 
    deallocate(band_ids)
    deallocate(band_units)
@@ -408,7 +409,7 @@ subroutine read_viirs(infile,geofile,imager_geolocation, imager_measurements, &
       where (imager_angles%relazi(:,:,1) .gt. 180.)
          imager_angles%relazi(:,:,1) = 360. - imager_angles%relazi(:,:,1)
       endwhere
-   endwhere
+   end where
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_viirs()'
 
