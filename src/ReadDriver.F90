@@ -115,7 +115,9 @@
 ! 2016/04/12, SP: Updated to support Himawari/AHI.
 ! 2016/05/17, SP: Updated to support SuomiNPP/VIIRS.
 ! 2016/05/18, SP: Added sanity check to ensure sensor is supported. Prevents
-!                 segfault if Ctrl INDEXING CHANNELS if-statements don't succeed
+!    segfault if Ctrl INDEXING CHANNELS if-statements don't succeed
+! 2016/06/06, GM: Set Ctrl%RS%solar_factor and Ctrl%get_T_dv_from_T_0d based on
+!    Ctrl%i_equation_form.  Change default value of Ctrl%i_equation_form to 3.
 !
 ! $Id$
 !
@@ -417,7 +419,6 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%RS%Cb             = switch(a, Default=0.2,      Aer=0.4)
    Ctrl%RS%add_fractional = switch(a, Default=.false.,  AerOx=.true.)
    Ctrl%RS%diagonal_SRs   = switch(a, Default=.false.,  AerOx=.true.)
-   Ctrl%RS%solar_factor   = switch(a, Default=.true.,   Aer=.false.)
 
    ! Select assumed surface reflectance based on wavelength
    Ctrl%RS%allow_a_default_surface = .true.
@@ -530,7 +531,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%Sunset    = 90. ! Used to identify twilight conditions
 
    !----------------------- Ctrl SWITCHES -----------------
-   Ctrl%i_equation_form = switch(a, Default=1, AerOx=2)
+   Ctrl%i_equation_form = switch(a, Default=3, AerOx=1)
    Ctrl%LUTIntSelm      = switch(a, Default=LUTIntMethLinear)
    Ctrl%RTMIntSelm      = switch(a, Default=RTMIntMethLinear, Aer=RTMIntMethNone)
    Ctrl%CloudType       = switch(a, Default=1,                Aer=2)
@@ -930,8 +931,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
          if (parse_string(line, Ctrl%RS%add_fractional)/= 0) call h_p_e(label)
       case('CTRL%RS%DIAGONAL_SRS')
          if (parse_string(line, Ctrl%RS%diagonal_SRs)  /= 0) call h_p_e(label)
-      case('CTRL%RS%SOLAR_FACTOR')
-         if (parse_string(line, Ctrl%RS%solar_factor)  /= 0) call h_p_e(label)
+!     case('CTRL%RS%SOLAR_FACTOR')
+!        if (parse_string(line, Ctrl%RS%solar_factor)  /= 0) call h_p_e(label)
       case('CTRL%EQMPN%SYSELM')
          if (parse_user_text(line, Ctrl%EqMPN%SySelm)  /= 0) call h_p_e(label)
       case('CTRL%EQMPN%HOMOG')
@@ -1069,6 +1070,46 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    ! ---------------------------------------------------------------------------
    ! Things that have to be after the optional lines
    ! ---------------------------------------------------------------------------
+
+   ! Whether or not to multiply surface reflectance terms by cos(theta_0)
+   ! depends on Ctrl%i_equation_form.
+   select case (Ctrl%i_equation_form)
+   case(1)
+      Ctrl%RS%solar_factor = .false.
+   case(2)
+      Ctrl%RS%solar_factor = .true.
+   case(3)
+      Ctrl%RS%solar_factor = .false.
+   case(4)
+      Ctrl%RS%solar_factor = .true.
+   case default
+      write(*,*) 'ERROR: ReadDriver(): Invalid Ctrl%i_equation_form: ', &
+                 Ctrl%i_equation_form
+      stop error_stop_code
+   end select
+
+   ! T_dv (or TD using the old naming convention) is not correctly produced in
+   ! either RAL's or GT's LUT code.  It should approach zero as the optical
+   ! thickness approaches zero as scattering is required to scatter diffuse
+   ! radiation into the satellite viewing angle beam.  In the current LUTs it
+   ! approaches unity instead.  Analogously, T_0d (or TFBD using the old naming
+   ! convention) must also approach zero as the optical thickness approaches
+   ! zero since scattering is required to scatter radiation out of the beam to
+   ! produce diffuse radiation.  In this case the LUTs are correct and since
+   ! T_dv(theta) = T_0d(theta) we can obtain T_dv from T_0d by using the
+   ! satellite viewing angle instead of the solar zenith angle.
+   !
+   ! Interestingly, equations 1 and 2 use a simplification that breaks down as
+   ! optical thickness approaches zero and the incorrect values for T_dv provide
+   ! a compensating effect and is therefore required as is.  This is very likely
+   ! the reason this problem went unnoticed until the reciprocity-obeying form
+   ! (equations 3 and 4) were introduced.
+   if (Ctrl%i_equation_form .eq. 3 .or. Ctrl%i_equation_form .eq. 4) then
+      Ctrl%get_T_dv_from_T_0d = .true.
+   else
+      Ctrl%get_T_dv_from_T_0d = .false.
+   end if
+
    ! Copy individual illumination arrays into main block
    Ctrl%Nx(IDay)     = Nx_Dy
    Ctrl%Nx(ITwi)     = Nx_Tw

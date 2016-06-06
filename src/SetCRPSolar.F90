@@ -75,6 +75,8 @@
 !    offsets.
 ! 2015/10/21, GM: Removed interpolation for cloud albedo as it is now done
 !    elsewhere.
+! 2016/06/06, GM: Obtain the operator T_dv (TD) from the T_0d (TFBD) LUT when
+!    Ctrl%get_T_dv_from_T_0d=.true.
 !
 ! $Id$
 !
@@ -148,9 +150,16 @@ subroutine Set_CRP_Solar(Ctrl, Ind, chan_to_ctrl_index, GZero, SAD_LUT, &
            SAD_LUT%Grid, GZero, Ctrl, CRPOut(:,ITFbd), dCRPOut(:,ITFBd,:), &
            ITFBd, chan_to_ctrl_index, Ind%YSolar, status)
 
-   call Int_LUT_TauSatRe(SAD_LUT%Td, Ind%NSolar, &
-           SAD_LUT%Grid, GZero, Ctrl, CRPOut(:,ITd), dCRPOut(:,ITd,:), &
-           ITd, chan_to_ctrl_index, Ind%YSolar, status)
+   ! See detailed description of Ctrl%get_T_dv_from_T_0d in ReadDriver.F90
+   if (.not. Ctrl%get_T_dv_from_T_0d) then
+      call Int_LUT_TauSatRe(SAD_LUT%Td, Ind%NSolar, &
+              SAD_LUT%Grid, GZero, Ctrl, CRPOut(:,ITd), dCRPOut(:,ITd,:), &
+              ITd, chan_to_ctrl_index, Ind%YSolar, status)
+   else
+      call Int_LUT_TauSatRe(SAD_LUT%Tfbd, Ind%NSolar, &
+              SAD_LUT%Grid, GZero, Ctrl, CRPOut(:,ITd), dCRPOut(:,ITd,:), &
+              ITd, chan_to_ctrl_index, Ind%YSolar, status)
+   end if
 
    call Int_LUT_TauRe(SAD_LUT%Tfd, Ind%NSolar, &
            SAD_LUT%Grid, GZero, Ctrl, CRPOut(:,ITFd), dCRPOut(:,ITFd,:), &

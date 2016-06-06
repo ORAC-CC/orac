@@ -91,6 +91,7 @@
 ! 2015/09/07, AP: Allow verbose to be controlled from the driver file.
 ! 2015/11/18, GM: Add Y_Id_legacy(6).
 ! 2016/02/02, GM: Add allow_a_default_surface.
+! 2016/06/06, GM: Add get_T_dv_from_T_0d.
 !
 ! $Id$
 !
@@ -235,6 +236,8 @@ module Ctrl_m
       integer                :: i_equation_form    ! Selects equation used in
                                                    ! FMSolar if Surface%
                                                    ! use_full_brdf = .true.
+      logical                :: get_T_dv_from_T_0d ! See detailed description in
+                                                   ! ReadDriver.F90
       integer                :: LUTIntSelm         ! LUT Interpolation flag,
                                                    ! See LUTIntMeth variables.
       integer                :: RTMIntSelm         ! RTM Interpolation flag,
