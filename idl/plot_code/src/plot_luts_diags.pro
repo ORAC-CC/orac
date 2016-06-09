@@ -51,7 +51,7 @@ if ~keyword_set(iphi) then iphi=6
 ;print,x.solar.wl
 
 if strpos(inst,'VHRR') gt 0  then nir_index=3
-if inst eq 'AATSR' then nir_index=4 ;3.7
+if inst eq 'AATSR' then nir_index=4 ;3.7 3-1.6
 ;nir_index=3 ;1.6
 
 nir_ice=fltarr(n_elements(xice.solar.LOPD),n_elements(xice.solar.lutre))
@@ -152,6 +152,12 @@ mask=[[0,1],[2,3]]
 
  p1=[0.02,0.02,0.99,0.93]
 	 p2=[0.1,0.1,0.98,0.96]
+quick_cc,xwat.solar.rbd[4, *, *, isat, isol,iphi],10^xwat.solar.lopd,xwat.solar.LUTRE,xtitle='opd',ytitle='RE',title='WAT 3.7',chars=1,range=[0,60],position=ypos(p1,p2,mask=mask),dtitle='RBD'
+
+
+quick_cc,xice.solar.rbd[4, *, 0:9, isat, isol,iphi],10^xice.solar.lopd,xice.solar.LUTRE[0:9],xtitle='opd',ytitle='RE',title='ICE 3.7',chars=1,range=[0,60],position=ypos(p1,p2,mask=mask),dtitle='RBD'
+
+
 quick_cc,xwat.solar.rbd[3, *, *, isat, isol,iphi],10^xwat.solar.lopd,xwat.solar.LUTRE,xtitle='opd',ytitle='RE',title='WAT 1.6',chars=1,range=[0,60],position=ypos(p1,p2,mask=mask),dtitle='RBD'
 
 
@@ -167,6 +173,10 @@ quick_cc,xice.solar.rbd[1, *, 0:9, isat, isol,iphi],10^xice.solar.lopd,xice.sola
 any_key
 
 quick_cc,xice.solar.rbd[3, *, *, isat, isol,iphi],10^xice.solar.lopd,xice.solar.LUTRE,xtitle='opd',ytitle='RE',title='ICE 1.6',chars=1,range=[0,60],position=ypos(p1,p2,mask=mask),dtitle='RBD'
+
+
+
+quick_cc,xice.solar.rbd[4, *, *, isat, isol,iphi],10^xice.solar.lopd,xice.solar.LUTRE,xtitle='opd',ytitle='RE',title='ICE 3.7',chars=1,range=[0,60],position=ypos(p1,p2,mask=mask),dtitle='RBD'
 
 if keyword_set(ps) then ps_close,/pdf
 
