@@ -46,7 +46,9 @@ $(OBJS)/%.o: %.c
 
 
 # Main target list
-all: liborac_common.a
+all: liborac_common.a parser
+
+parser: generate_parser
 
 # Main library build
 liborac_common.a: $(COMMON_OBJ) Makefile
@@ -57,7 +59,18 @@ depend:
 	@../tools/make_depend.pl $(COMMON_OBJ_F90) > dependencies.inc
 
 clean tidy:
-	rm -f $(OBJS)/*.o $(OBJS)/*.mod *.a
+	rm -f $(OBJS)/*.o $(OBJS)/*.mod *.a generate_parser
+
+
+# Build generate_parser executable
+generate_parser.tab.c generate_parser.tab.h: generate_parser.y
+	bison $?
+
+generate_parser.c: generate_parser.tab.h generate_parser.lex
+	flex generate_parser.lex
+
+generate_parser: generate_parser.c generate_parser.tab.c generate_parser.h
+	$(CC) -o $@ $(CFLAGS) $^
 
 
 # Utilities to change source code extensions when moving between DEC Unix and
