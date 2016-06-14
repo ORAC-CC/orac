@@ -48,7 +48,7 @@ $(OBJS)/%.o: %.c
 # Main target list
 all: liborac_common.a parser
 
-parser: generate_parser
+parser: generate_parser struct_parser.tab.cc
 
 # Main library build
 liborac_common.a: $(COMMON_OBJ) Makefile
@@ -71,6 +71,10 @@ generate_parser.c: generate_parser.tab.h generate_parser.lex
 
 generate_parser: generate_parser.c generate_parser.tab.c generate_parser.h
 	$(CC) -o $@ $(CFLAGS) $^
+
+# A generic driver file grammar
+struct_parser.tab.cc struct_parser.tab.hh: struct_parser.y
+	bison $?
 
 
 # Utilities to change source code extensions when moving between DEC Unix and

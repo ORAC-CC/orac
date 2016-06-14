@@ -227,20 +227,35 @@ $(OBJS)/%.o: %.F90 $(ORAC_COMMON)/liborac_common.a
 # Main target list
 all: orac
 
+# Build parser for driver files from Ctrl, common_constants, and ECPConstants
+STRUCT_NAME     = Ctrl
+STRUCT_TYPE     = Ctrl_t
+PARSER_NAME     = read_ctrl
+PARSER_SOURCE   = $(ORAC_COMMON)/common_constants.F90 \
+	$(ORAC_COMMON)/orac_indexing.F90 ECPConstants.F90 Ctrl.F90
+USE_STATEMENTS  = "use Ctrl_m; use ECP_constants_m"
+PLACE           = $(OBJS)/$(PARSER_NAME)
+PARSER_INC      = -I$(ORAC_COMMON) -I../src/$(OBJ)
+include $(ORAC_COMMON)/Makefile_struct_parser
+$(OBJS)/ReadDriver.o: $(PLACE).f.o
+$(PLACE).f.o: $(OBJS)/ECPConstants.o $(OBJS)/Ctrl.o
+
+
 # Main program build
 orac: $(ORAC_OBJ_MAIN) liborac.a $(ORAC_COMMON)/liborac_common.a Makefile
 	$(F90) -o orac $(LFLAGS) $(ORAC_OBJ_MAIN) liborac.a $(ORAC_COMMON)/liborac_common.a -I./$(OBJS) $(LIBS)
 
 # Main library build
-liborac.a: $(ORAC_OBJ) Makefile
-	ar -rs liborac.a $(ORAC_OBJ)
+liborac.a: $(ORAC_OBJ) $(PARSER_OBJ) Makefile
+	ar -rs liborac.a $(ORAC_OBJ) $(PARSER_OBJ)
+
 
 # Rebuild dependencies housed in dependencies.inc
 depend:
 	@../tools/make_depend.pl $(ORAC_OBJ) $(ORAC_OBJ_MAIN) > dependencies.inc
 
 clean tidy:
-	rm -f $(OBJS)/*.o $(OBJS)/*.mod *.a orac
+	rm -f $(OBJS)/*.o $(OBJS)/*.mod *.a orac $(PARSER_CLEAN)
 
 
 # Utilities to change source code extensions when moving between DEC Unix and

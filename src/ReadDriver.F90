@@ -151,6 +151,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    use ECP_constants_m
    use global_attributes_m
    use parse_user_m
+   use read_ctrl_m
    use read_utils_m
    use source_attributes_m
 
@@ -182,6 +183,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    integer, dimension(MaxStateVar)    :: XJ_Dy, XJ_Tw, XJ_Ni
    integer                            :: a ! Short name for Ctrl%Approach
    real                               :: wvl_threshold
+   logical                            :: new_driver_format
 
 
    Ctrl%verbose = .true.
@@ -230,10 +232,17 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    end if
    rewind dri_lun
 
+   new_driver_format = line(1:18) .eq. '# ORAC Driver File'
+
    !----------------------------------------------------------------------------
    ! Read the driver file
    !----------------------------------------------------------------------------
+   if (new_driver_format) then
+      close(dri_lun)
+      call read_ctrl(drifile, Ctrl)
+   else
       call old_driver_first_read(dri_lun, Ctrl)
+   end if
 
    ! Set filenames
    root_filename   = trim(Ctrl%FID%Data_Dir)//'/'//trim(Ctrl%FID%Filename)
@@ -815,11 +824,15 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    ! Consider optional lines of driver file
    !----------------------------------------------------------------------------
 
+   if (new_driver_format) then
+      call read_ctrl(drifile, Ctrl)
+   else
       call old_driver_second_read(dri_lun, Ctrl, Nx_Dy, Nx_Tw, Nx_Ni, NXJ_Dy, &
            NXJ_Tw, NXJ_Ni, X_Dy, X_Tw, X_Ni, XJ_Dy, XJ_Tw, XJ_Ni)
       if (drifile /= '-') then
          close(unit=dri_lun)
       end if
+   end if
 
 
    ! ---------------------------------------------------------------------------

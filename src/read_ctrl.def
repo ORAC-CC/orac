@@ -1,0 +1,22 @@
+// Define constant values
+int nsurf = MAXSURF_TOKEN;
+int three = 3;
+int two   = 2;
+
+#define COMMON_INDICES_T_Y_Id_DIMS      COMMON_INDICES_T_VARIABLE.Ny
+#define COMMON_INDICES_T_YSolar_DIMS    COMMON_INDICES_T_VARIABLE.NSolar
+#define COMMON_INDICES_T_YThermal_DIMS  COMMON_INDICES_T_VARIABLE.NThermal
+#define COMMON_INDICES_T_View_Id_DIMS   COMMON_INDICES_T_VARIABLE.Ny
+#define COMMON_INDICES_T_Ch_Is_DIMS     COMMON_INDICES_T_VARIABLE.Ny
+#define COMMON_INDICES_T_rho_terms_DIMS COMMON_INDICES_T_VARIABLE.NSolar, &nsurf
+#define IND_T_ICh_DIMS                  COMMON_INDICES_T_VARIABLE.Ny
+#define IND_T_YMixed_DIMS               IND_T_VARIABLE.NMixed
+#define IND_T_WvlIdx_DIMS               COMMON_INDICES_T_VARIABLE.Ny
+#define IND_T_channel_proc_flag_DIMS    IND_T_VARIABLE.NAvail
+#define SURFREF_T_B_DIMS                COMMON_INDICES_T_VARIABLE.NSolar, &nsurf
+#define SURFREF_T_Sb_DIMS               COMMON_INDICES_T_VARIABLE.NSolar, &nsurf
+#define CTRL_T_tau_chans_DIMS           &three
+#define CTRL_T_r_e_chans_DIMS           &two
+#define CTRL_T_ir_chans_DIMS            &three
+#define CTRL_T_ReChans_DIMS             &two
+#define CTRL_T_Sy_DIMS                  COMMON_INDICES_T_VARIABLE.Ny, COMMON_INDICES_T_VARIABLE.Ny
