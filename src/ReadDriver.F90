@@ -240,11 +240,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
        parse_string(line, Ctrl%FID%SAD_Dir) /= 0) call h_p_e('Ctrl%FID%SAD_Dir')
 
    ! Set filenames
-   Ctrl%FID%Data_Dir = trim(Ctrl%FID%Data_Dir)//'/'
-   Ctrl%FID%Out_Dir  = trim(Ctrl%FID%Out_Dir)//'/'
-   Ctrl%FID%SAD_Dir  = trim(Ctrl%FID%SAD_Dir)//'/'
-
-   root_filename   = trim(Ctrl%FID%Data_Dir)//trim(Ctrl%FID%Filename)
+   root_filename   = trim(Ctrl%FID%Data_Dir)//'/'//trim(Ctrl%FID%Filename)
    Ctrl%FID%Config = trim(root_filename)//'.config.nc'
    Ctrl%FID%MSI    = trim(root_filename)//'.msi.nc'
    Ctrl%FID%LWRTM  = trim(root_filename)//'.lwrtm.nc'
@@ -284,7 +280,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       call h_p_e('Ctrl%LUTClass')
 
    ! Output filenames
-   outname=trim(Ctrl%FID%Out_Dir)//trim(Ctrl%FID%Filename)//trim(Ctrl%LUTClass)
+   outname=trim(Ctrl%FID%Out_Dir)//'/'//trim(Ctrl%FID%Filename)//trim(Ctrl%LUTClass)
    Ctrl%FID%L2_primary   = trim(outname)//'.primary.nc'
    Ctrl%FID%L2_secondary = trim(outname)//'.secondary.nc'
    Ctrl%FID%BkP          = trim(outname)//'.bkp'

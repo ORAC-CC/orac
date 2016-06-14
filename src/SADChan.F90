@@ -204,19 +204,19 @@ function create_sad_filename(Ctrl, chan_num, lut_name) result(LUT_File)
 
    if (present(chan_num)) then
       if (present(lut_name)) then
-         LUT_file = trim(Ctrl%FID%SAD_Dir) // trim(InstName) // '_' // &
+         LUT_file = trim(Ctrl%FID%SAD_Dir) // '/' // trim(InstName) // '_' // &
                     trim(Ctrl%LUTClass) // '_' // trim(lut_name) // '_' // &
                     trim(chan_num) // '.sad'
       else
-         LUT_file = trim(Ctrl%FID%SAD_Dir) // trim(InstName) // '_' // &
+         LUT_file = trim(Ctrl%FID%SAD_Dir) // '/' // trim(InstName) // '_' // &
                     trim(chan_num) // '.sad'
       end if
    else
       if (present(lut_name)) then
-         LUT_file = trim(Ctrl%FID%SAD_Dir) // trim(InstName) // '_' // &
+         LUT_file = trim(Ctrl%FID%SAD_Dir) // '/' // trim(InstName) // '_' // &
                     trim(Ctrl%LUTClass) // '_' // trim(lut_name) // '.sad'
       else
-         LUT_file = trim(Ctrl%FID%SAD_Dir) // trim(InstName) // '.sad'
+         LUT_file = trim(Ctrl%FID%SAD_Dir) // '/' // trim(InstName) // '.sad'
       end if
    end if
 end function create_sad_filename
