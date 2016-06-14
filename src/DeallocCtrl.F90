@@ -44,6 +44,7 @@ subroutine Dealloc_Ctrl(Ctrl)
    deallocate(Ctrl%Ind%WvlIdx)
    deallocate(Ctrl%Ind%ICh)
    deallocate(Ctrl%Ind%YMixed)
+   deallocate(Ctrl%Ind%channel_proc_flag)
 
    deallocate(Ctrl%RS%B)
    deallocate(Ctrl%RS%Sb)

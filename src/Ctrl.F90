@@ -150,6 +150,8 @@ module Ctrl_m
                                                    ! direction
       integer                :: YMax               ! Max no. of pixels in y
                                                    ! direction
+
+      integer, pointer       :: channel_proc_flag(:)
    end type Ind_t
 
    ! Surface Reflectance parameters

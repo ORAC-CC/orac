@@ -153,6 +153,8 @@
 #   22nd Aug 2014, Greg McGarragh: Use the library file instead of the object
 #    list for the executable and make the executable dependent on the library
 #    file. Now 'make' will build both the executable and library in one command.
+#   13th June 2016, Adam Povey:
+#      Add driver file parser. Remove inaccurate notes.
 #
 # Notes:
 # 1) The C preprocessor is used to allow conditional compilation (files with
@@ -170,25 +172,6 @@
 # the BKP macro used for conditional compilation, such that breakpoint code is
 # included. (Also available in some routines is DEBUG code). Breakpoint levels
 # are defined for each routine in ECPConstants.f90.
-#
-# 4) To compile using log output, do make <program> FFLAGS=-DDEBUG orac
-#
-# 5) Object lists for some early test harnesses are out of date since not all
-# test harnesses were re-compiled and re-run as development proceeded. In
-# general, HarnessFM, Harness FMSolar and Thermal were kept up to date.
-#
-# 6) Portability between DEC Unix/Linux:
-#   6.1) Source file names: extensions are .f90 on DEC Unix, .F90 for some Linux
-#        compilers (ifort accepts .f90 on Linux).
-#        Rename all source code and globally edit dependencies in this file
-#        TAKING CARE not to change the SUFFIX rules!
-#        To rename source files automatically, use "make DEC2Linux" or
-#        make "Linux2DEC"
-#   6.2) Read_Driver uses a getenv call. On the DEC Unix system getenv is
-#        declared external in ReadDriver.f90.
-#        For the Absoft compiler the external declaration must be removed and
-#        -L$ABSOFT/lib -lU77 added to the link command in order to link in
-#        the libU77.a library.
 
 
 # Set files from which compiler, flags, and libraries are set. archfile also

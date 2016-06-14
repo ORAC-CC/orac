@@ -171,12 +171,11 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    integer                            :: ios
    integer                            :: dri_lun
    character(FilenameLen)             :: root_filename
-   character(FilenameLen)             :: outname, line, label
+   character(FilenameLen)             :: outname, line
    logical                            :: file_exists
-   integer, allocatable, dimension(:) :: channel_ids_instr, channel_proc_flag
+   integer, allocatable, dimension(:) :: channel_ids_instr
    integer, allocatable, dimension(:) :: channel_sw_flag, channel_lw_flag
    real,    allocatable, dimension(:) :: channel_wvl
-   integer, allocatable, dimension(:) :: solar_ids
    integer                            :: Nx_Dy, Nx_Tw, Nx_Ni
    integer                            :: NXJ_Dy, NXJ_Tw, NXJ_Ni
    integer, dimension(MaxStateVar)    :: X_Dy, X_Tw, X_Ni
@@ -222,22 +221,19 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       end if
    end if
 
+   ! Identify version of driver file
+   read(dri_lun, '(A)', iostat=ios) line
+   if (ios /= 0) then
+      write(*,*) 'ERROR: ReadDriver(): Unable to read driver file: ', &
+                 trim(drifile)
+      stop DriverFileOpenErr
+   end if
+   rewind dri_lun
 
    !----------------------------------------------------------------------------
    ! Read the driver file
    !----------------------------------------------------------------------------
-   ! Read folder paths
-   if (parse_driver(dri_lun, line) /= 0 .or. &
-       parse_string(line, Ctrl%FID%Data_Dir) /= 0) call h_p_e('Ctrl%FID%Data_Dir')
-
-   if (parse_driver(dri_lun, line) /= 0 .or. &
-       parse_string(line, Ctrl%FID%Filename) /= 0) call h_p_e('Ctrl%FID%Filename')
-
-   if (parse_driver(dri_lun, line) /= 0 .or. &
-       parse_string(line, Ctrl%FID%Out_Dir) /= 0) call h_p_e('Ctrl%FID%Out_Dir')
-
-   if (parse_driver(dri_lun, line) /= 0 .or. &
-       parse_string(line, Ctrl%FID%SAD_Dir) /= 0) call h_p_e('Ctrl%FID%SAD_Dir')
+      call old_driver_first_read(dri_lun, Ctrl)
 
    ! Set filenames
    root_filename   = trim(Ctrl%FID%Data_Dir)//'/'//trim(Ctrl%FID%Filename)
@@ -252,33 +248,6 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%FID%Loc    = trim(root_filename)//'.loc.nc'
    Ctrl%FID%Alb    = trim(root_filename)//'.alb.nc'
 
-   ! Read name of instrument
-   if (parse_driver(dri_lun, line) /= 0 .or. &
-       parse_string(line, Ctrl%InstName) /= 0) call h_p_e('Ctrl%InstName')
-
-   ! Number of channels in preprocessing file
-   ! (this is actually not really necessary as we have that in the config file)
-   if (parse_driver(dri_lun, line) /= 0 .or. &
-       parse_string(line, Ctrl%Ind%NAvail) /= 0) &
-      call h_p_e('number of channels expected in preproc files')
-
-   ! Read processing flag from driver
-   allocate(channel_proc_flag(Ctrl%Ind%NAvail))
-   if (parse_driver(dri_lun, line) /= 0 .or. &
-       parse_string(line, channel_proc_flag) /= 0) call h_p_e('channel flags')
-   if (sum(channel_proc_flag) < 1 .or. &
-       sum(channel_proc_flag) > Ctrl%Ind%NAvail .or. &
-       any(channel_proc_flag /= 0 .and. channel_proc_flag /= 1)) then
-      write(*,*) 'ERROR: ReadDriver(): channel flag from driver wrong: ', &
-                 channel_proc_flag
-      stop DriverFileIncompat
-   end if
-
-   ! Read in cloud class (aka phase of no aerosols processed)
-   if (parse_driver(dri_lun, line) /= 0 .or. &
-       parse_string(line, Ctrl%LUTClass) /= 0) &
-      call h_p_e('Ctrl%LUTClass')
-
    ! Output filenames
    outname=trim(Ctrl%FID%Out_Dir)//'/'//trim(Ctrl%FID%Filename)//trim(Ctrl%LUTClass)
    Ctrl%FID%L2_primary   = trim(outname)//'.primary.nc'
@@ -291,29 +260,6 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%do_new_night_retrieval = .true.
    Ctrl%do_CTX_correction      = .true.
 
-   do while (parse_driver(dri_lun, line, label) == 0)
-      call clean_driver_label(label)
-      select case (label)
-      case('CTRL%APPROACH')
-         if (parse_user_text(line, Ctrl%Approach) /= 0) call h_p_e(label)
-      case('CTRL%DO_NEW_NIGHT_RETRIEVAL')
-         if (parse_string(line, Ctrl%do_new_night_retrieval) /= 0) call h_p_e(label)
-      case('CTRL%DO_CTX_CORRECTION')
-         if (parse_string(line, Ctrl%do_CTX_correction) /= 0) call h_p_e(label)
-      case('CTRL%VERBOSE')
-         if (parse_string(line, Ctrl%verbose)           /= 0) call h_p_e(label)
-      case default
-         cycle
-      end select
-   end do
-
-   ! Done with first pass through driver file.  Move file position to the end of
-   ! the mandatory arguments which is the beginning of the optional arguments.
-   rewind dri_lun
-   do i = 1, 8
-      read(dri_lun, *)
-   end do
-
    ! Read channel related info
    call read_config_file(Ctrl, channel_ids_instr, channel_sw_flag, &
      channel_lw_flag, channel_wvl, global_atts, source_atts)
@@ -323,11 +269,11 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       Ctrl%Ind%Xmax, Ctrl%Ind%YMax, Ctrl%Ind%NViews, Ctrl%verbose)
 
    ! Determine the number of channels to be used.
-   Ctrl%Ind%Ny       = count(channel_proc_flag == 1)
-   Ctrl%Ind%NSolar   = count(channel_sw_flag == 1 .and. channel_proc_flag == 1)
-   Ctrl%Ind%NThermal = count(channel_lw_flag == 1 .and. channel_proc_flag == 1)
+   Ctrl%Ind%Ny       = count(Ctrl%Ind%channel_proc_flag == 1)
+   Ctrl%Ind%NSolar   = count(channel_sw_flag == 1 .and. Ctrl%Ind%channel_proc_flag == 1)
+   Ctrl%Ind%NThermal = count(channel_lw_flag == 1 .and. Ctrl%Ind%channel_proc_flag == 1)
    Ctrl%Ind%NMixed   = count(channel_sw_flag == 1 .and. channel_lw_flag == 1 &
-                             .and. channel_proc_flag == 1)
+                             .and. Ctrl%Ind%channel_proc_flag == 1)
 
    ! Produce channel indexing arrays
    allocate(Ctrl%Ind%ICh(Ctrl%Ind%Ny))
@@ -343,7 +289,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    i2 = 0
    do i = 1, Ctrl%Ind%NAvail
       ! Identify processing channels WITH RESPECT TO THE PREPROC FILE
-      if (channel_proc_flag(i) == 1) then
+      if (Ctrl%Ind%channel_proc_flag(i) == 1) then
          ii = ii+1
          Ctrl%Ind%ICh(ii) = i ! Fortran array index for channel
          Ctrl%Ind%Y_ID(ii) = channel_ids_instr(i) ! Instrument channel number
@@ -868,6 +814,425 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    !----------------------------------------------------------------------------
    ! Consider optional lines of driver file
    !----------------------------------------------------------------------------
+
+      call old_driver_second_read(dri_lun, Ctrl, Nx_Dy, Nx_Tw, Nx_Ni, NXJ_Dy, &
+           NXJ_Tw, NXJ_Ni, X_Dy, X_Tw, X_Ni, XJ_Dy, XJ_Tw, XJ_Ni)
+      if (drifile /= '-') then
+         close(unit=dri_lun)
+      end if
+
+
+   ! ---------------------------------------------------------------------------
+   ! Things that have to be after the optional lines
+   ! ---------------------------------------------------------------------------
+
+   ! Whether or not to multiply surface reflectance terms by cos(theta_0)
+   ! depends on Ctrl%i_equation_form.
+   select case (Ctrl%i_equation_form)
+   case(1)
+      Ctrl%RS%solar_factor = .false.
+   case(2)
+      Ctrl%RS%solar_factor = .true.
+   case(3)
+      Ctrl%RS%solar_factor = .false.
+   case(4)
+      Ctrl%RS%solar_factor = .true.
+   case default
+      write(*,*) 'ERROR: ReadDriver(): Invalid Ctrl%i_equation_form: ', &
+                 Ctrl%i_equation_form
+      stop error_stop_code
+   end select
+
+   ! T_dv (or TD using the old naming convention) is not correctly produced in
+   ! either RAL's or GT's LUT code.  It should approach zero as the optical
+   ! thickness approaches zero as scattering is required to scatter diffuse
+   ! radiation into the satellite viewing angle beam.  In the current LUTs it
+   ! approaches unity instead.  Analogously, T_0d (or TFBD using the old naming
+   ! convention) must also approach zero as the optical thickness approaches
+   ! zero since scattering is required to scatter radiation out of the beam to
+   ! produce diffuse radiation.  In this case the LUTs are correct and since
+   ! T_dv(theta) = T_0d(theta) we can obtain T_dv from T_0d by using the
+   ! satellite viewing angle instead of the solar zenith angle.
+   !
+   ! Interestingly, equations 1 and 2 use a simplification that breaks down as
+   ! optical thickness approaches zero and the incorrect values for T_dv provide
+   ! a compensating effect and is therefore required as is.  This is very likely
+   ! the reason this problem went unnoticed until the reciprocity-obeying form
+   ! (equations 3 and 4) were introduced.
+   if (Ctrl%i_equation_form .eq. 3 .or. Ctrl%i_equation_form .eq. 4) then
+      Ctrl%get_T_dv_from_T_0d = .true.
+   else
+      Ctrl%get_T_dv_from_T_0d = .false.
+   end if
+
+   ! Copy individual illumination arrays into main block
+   Ctrl%Nx(IDay)     = Nx_Dy
+   Ctrl%Nx(ITwi)     = Nx_Tw
+   Ctrl%Nx(INight)   = Nx_Ni
+   Ctrl%X(:,IDay)    = X_Dy
+   Ctrl%X(:,ITwi)    = X_Tw
+   Ctrl%X(:,INight)  = X_Ni
+
+   Ctrl%NXJ(IDay)    = NXJ_Dy
+   Ctrl%NXJ(ITwi)    = NXJ_Tw
+   Ctrl%NXJ(INight)  = NXJ_Ni
+   Ctrl%XJ(:,IDay)   = XJ_Dy
+   Ctrl%XJ(:,ITwi)   = XJ_Tw
+   Ctrl%XJ(:,INight) = XJ_Ni
+
+   if (Ctrl%verbose) then
+      write(*,*) 'Driver file: ',       trim(drifile)
+      write(*,*) 'Input directory: ',   trim(Ctrl%FID%Data_Dir)
+      write(*,*) 'Input filename: ',    trim(Ctrl%FID%Filename)
+      write(*,*) 'Output directory: ',  trim(Ctrl%FID%Out_Dir)
+      write(*,*) 'LUT directory: ',     trim(Ctrl%FID%SAD_Dir)
+      write(*,*) 'Ctrl%FID%Data_Dir: ', trim(Ctrl%FID%Data_Dir)
+      write(*,*) 'Ctrl%FID%Out_Dir: ',  trim(Ctrl%FID%Out_Dir)
+      write(*,*) 'Ctrl%FID%SAD_Dir: ',  trim(Ctrl%FID%SAD_Dir)
+      write(*,*) 'Ctrl%FID%Config: ',   trim(Ctrl%FID%Config)
+      write(*,*) 'Ctrl%InstName: ',     trim(Ctrl%InstName)
+      write(*,*) 'Number of channels expected in preproc files: ',Ctrl%Ind%NAvail
+      write(*,*) 'channel flag from driver: ', Ctrl%Ind%channel_proc_flag
+      write(*,*) 'Ny,NSolar,NThermal,NMixed: ', Ctrl%Ind%Ny, Ctrl%Ind%NSolar, &
+           Ctrl%Ind%NThermal, Ctrl%Ind%NMixed
+      write(*,*) 'Ctrl%Ind%ICh: ',          Ctrl%Ind%ICh
+      write(*,*) 'Ctrl%Ind%Y_ID: ',         Ctrl%Ind%Y_ID
+      write(*,*) 'Ctrl%Ind%YSolar: ',       Ctrl%Ind%YSolar
+      write(*,*) 'Ctrl%Ind%YThermal: ',     Ctrl%Ind%YThermal
+      write(*,*) 'Ctrl%Ind%YMixed: ',       Ctrl%Ind%YMixed
+      write(*,*) 'Ctrl%LUTClass: ',         trim(Ctrl%LUTClass)
+      write(*,*) 'Ctrl%FID%L2_primary: ',   trim(Ctrl%FID%L2_primary)
+      write(*,*) 'Ctrl%FID%L2_secondary: ', trim(Ctrl%FID%L2_secondary)
+      write(*,*) 'Ctrl%FID%BkP: ',          trim(Ctrl%FID%BkP)
+   end if
+
+   !----------------------------------------------------------------------------
+   ! Now do some checks
+   !----------------------------------------------------------------------------
+   ! Check that the first-guess methods for all variables are legal in ORAC
+   ! and supported. Not all legal values are supported for all variables.
+   ! N.B. not all supported methods can be used in all conditions and this is
+   ! NOT CHECKED here.
+
+   do j = 1, MaxIllum ! loop over day, twi, night values for FG
+      do i = 1, MaxStateVar
+         select case (Ctrl%FG(i,j))
+         case (SelmCtrl)
+            continue
+
+         case (SelmMeas)
+            if (i == IRe .or. i == ITs) then
+               write(*,*) 'ERROR: Read_Driver(): MDAD method not supported ' // &
+                    'for setting first guess Re, Ts'
+               stop FGMethErr
+            end if
+
+         case (SelmAux)
+            if (i /= ITs .and. .not. any(i == IRs)) then
+               write(*,*) 'ERROR: Read_Driver(): AUX method ONLY supported ' // &
+                    'for setting first guess Ts and Rs'
+               stop FGMethErr
+            end if
+
+         case default
+            write(*,*) 'ERROR: Read_Driver(): Invalid method ', &
+                 'for first-guess state variable ',i
+            stop FGMethErr
+         end select
+      end do
+   end do
+
+   ! Check validity of a priori selection options. Not all legal values are
+   ! supported for all variables.
+   do j = 1, MaxIllum
+      do i = 1, MaxStateVar
+         select case (Ctrl%AP(i,j))
+         case (SelmCtrl)
+            continue
+
+         case (SelmMeas)
+            if (i == IRe .or. i == ITs) then
+               write(*,*) 'ERROR: Read_Driver(): MDAD method not supported ' // &
+                    'for setting a priori Re, Ts'
+               stop APMethErr
+            end if
+
+         case (SelmAux)
+            if (i /= ITs .and. .not. any(i == IRs)) then
+               write(*,*) 'ERROR: Read_Driver(): AUX method ONLY supported ' // &
+                    'for setting a priori Ts and Rs'
+               stop APMethErr
+            end if
+
+         case default
+            write(*,*) 'ERROR: Read_Driver(): Invalid method for a priori ' // &
+                 'state variable ',i
+            stop APMethErr
+         end select
+      end do
+   end do
+
+   ! Check validity of surface reflectance flag
+   select case (Ctrl%RS%RsSelm)
+   case (SelmCtrl)
+      if (Ctrl%RS%use_full_brdf) then
+         write(*,*) 'ERROR: Read_Driver(): Setting surface reflectance by '//  &
+              'Ctrl method assumes a Lambertian surface and cannot be used '// &
+              'alongside the full BRDF.'
+         stop GetSurfaceMeth
+      end if
+      if (Ctrl%RS%SRsSelm /= SelmCtrl .and. Ctrl%RS%SRsSelm /= SelmMeas) then
+         write(*,*) 'ERROR: Read_Driver(): Surface reflectance uncertainty '// &
+              'must be set by Ctrl or Meas method when surface reflectance is.'
+         stop GetSurfaceMeth
+      end if
+   case (SelmAux)
+      if (Ctrl%RS%SRsSelm /= SelmCtrl .and. Ctrl%RS%SRsSelm /= SelmAux .and. &
+           Ctrl%RS%SRsSelm /= SelmMeas) then
+         write(*,*) 'ERROR: Read_Driver(): surface reflectance uncertainty '// &
+              ' method not supported.'
+         stop GetSurfaceMeth
+      end if
+      if (Ctrl%RS%SRsSelm == SelmAux .and. .not. Ctrl%RS%use_full_brdf) then
+         write(*,*) 'ERROR: Read_Driver(): Full BRDF required with '//&
+              'auxilliary surface uncertainties.'
+         stop GetSurfaceMeth
+      end if
+      if (Ctrl%RS%SRsSelm == SelmCtrl .and. Ctrl%RS%add_fractional .and. &
+           .not. Ctrl%RS%use_full_brdf) then
+         write(*,*) 'ERROR: Read_Driver(): add_fractional is not currently '//&
+              'functional for the Lambertian surface with SRsSelm == Ctrl.'
+         stop GetSurfaceMeth
+      end if
+      if (Ctrl%RS%SRsSelm == SelmMeas .and. Ctrl%RS%add_fractional) then
+         write(*,*) 'WARNING: Read_Driver(): add_fractional is ignored '//&
+              'with SRsSelm == Meas.'
+      end if
+   case (SelmMeas)
+      write(*,*) 'ERROR: Read_Driver(): surface reflectance method not supported'
+      stop GetSurfaceMeth
+   case default
+      write(*,*) 'ERROR: Read_Driver(): invalid surface reflectance method'
+      stop GetSurfaceMeth
+   end select
+
+   ! For now, AerSw approach does not allow for non-Lambertian surface
+   if (Ctrl%Approach == AerSw .and. Ctrl%RS%use_full_brdf) then
+      write(*,*) 'ERROR: Read_Driver(): Use of the Swansea surface '// &
+           'reflectance model and full BRDF equations not supported'
+      stop GetSurfaceMeth
+   end if
+
+   ! Clean up
+
+   deallocate(channel_ids_instr)
+   deallocate(channel_sw_flag)
+   deallocate(channel_lw_flag)
+   deallocate(channel_wvl)
+
+end subroutine Read_Driver
+
+
+! handle_parse_error (h_p_e)
+subroutine h_p_e(label)
+
+   use ECP_constants_m
+
+   implicit none
+
+   character(len=*), intent(in) :: label
+
+   write(*,*) 'ERROR: ReadDriver(): Error parsing value for: ',trim(label)
+
+   stop error_stop_code
+
+end subroutine h_p_e
+
+
+!-------------------------------------------------------------------------------
+! Name: switch
+!
+! Purpose:
+! Character-efficient wrapper for switch case statements in Read_Driver.
+! If additional values for Ctrl%Approach are added, they should be included here.
+!
+! Algorithm:
+! If argument for current mode is set, return that value. If not but generic
+! argument for current mode (i.e. Cld or Aer) is set, return that value.
+! Otherwise, return default value.
+!
+! Arguments:
+! Name    Type In/Out/Both Description
+! ------------------------------------------------------------------------------
+! a       int In           MANDATORY ARGUMENT. Value of Ctrl%Approach.
+! Default any In           MANDATORY ARGUMENT. Value to return if the argument
+!                          of this mode is not set.
+! Cld     any In           Value for CldWat and CldIce approaches.
+! CldWat  any In           Value for CldWat approach.
+! CldIce  any In           Value for CldIce approach.
+! Aer     any In           Value for AerOx and AerSw approaches.
+! AerOx   any In           Value for AerOx approach.
+! AerSw   any In           Value for AerSw approach.
+! AshEyj  any In           Value for AshEyj approach.
+! out     any Out          Return value.
+!
+! History:
+! 2015/08/19, AP: Original version
+!
+! Bugs:
+! None known.
+!-------------------------------------------------------------------------------
+#define SWITCH_TYPE logical
+#define SWITCH_NAME switch_logic
+#define SWITCH_FILL .false.
+#include "switch.inc"
+#undef SWITCH_TYPE
+#undef SWITCH_NAME
+#undef SWITCH_FILL
+
+#define SWITCH_TYPE integer(kind=byte)
+#define SWITCH_NAME switch_byte
+#define SWITCH_FILL byte_fill_value
+#include "switch.inc"
+#undef SWITCH_TYPE
+#undef SWITCH_NAME
+#undef SWITCH_FILL
+
+#define SWITCH_TYPE integer(kind=sint)
+#define SWITCH_NAME switch_sint
+#define SWITCH_FILL sint_fill_value
+#include "switch.inc"
+#undef SWITCH_TYPE
+#undef SWITCH_NAME
+#undef SWITCH_FILL
+
+#define SWITCH_TYPE integer(kind=lint)
+#define SWITCH_NAME switch_lint
+#define SWITCH_FILL lint_fill_value
+#include "switch.inc"
+#undef SWITCH_TYPE
+#undef SWITCH_NAME
+#undef SWITCH_FILL
+
+#define SWITCH_TYPE real(kind=sreal)
+#define SWITCH_NAME switch_sreal
+#define SWITCH_FILL sreal_fill_value
+#include "switch.inc"
+#undef SWITCH_TYPE
+#undef SWITCH_NAME
+#undef SWITCH_FILL
+
+#define SWITCH_TYPE real(kind=dreal)
+#define SWITCH_NAME switch_dreal
+#define SWITCH_FILL dreal_fill_value
+#include "switch.inc"
+#undef SWITCH_TYPE
+#undef SWITCH_NAME
+#undef SWITCH_FILL
+
+#define SWITCH_TYPE character(len=FilenameLen)
+#define SWITCH_NAME switch_char
+#define SWITCH_FILL ''
+#include "switch.inc"
+#undef SWITCH_TYPE
+#undef SWITCH_NAME
+#undef SWITCH_FILL
+
+subroutine old_driver_first_read(dri_lun, Ctrl)
+
+   use Ctrl_m
+   use parse_user_m
+
+   implicit none
+
+   integer,      intent(in)    :: dri_lun
+   type(Ctrl_t), intent(inout) :: Ctrl
+
+   character(FilenameLen) :: line, label
+   integer                :: i
+
+   ! Read folder paths
+   if (parse_driver(dri_lun, line) /= 0 .or. &
+       parse_string(line, Ctrl%FID%Data_Dir) /= 0) call h_p_e('Ctrl%FID%Data_Dir')
+
+   if (parse_driver(dri_lun, line) /= 0 .or. &
+       parse_string(line, Ctrl%FID%Filename) /= 0) call h_p_e('Ctrl%FID%Filename')
+
+   if (parse_driver(dri_lun, line) /= 0 .or. &
+       parse_string(line, Ctrl%FID%Out_Dir) /= 0) call h_p_e('Ctrl%FID%Out_Dir')
+
+   if (parse_driver(dri_lun, line) /= 0 .or. &
+       parse_string(line, Ctrl%FID%SAD_Dir) /= 0) call h_p_e('Ctrl%FID%SAD_Dir')
+
+   ! Read name of instrument
+   if (parse_driver(dri_lun, line) /= 0 .or. &
+       parse_string(line, Ctrl%InstName) /= 0) call h_p_e('Ctrl%InstName')
+
+   ! Number of channels in preprocessing file
+   if (parse_driver(dri_lun, line) /= 0 .or. &
+       parse_string(line, Ctrl%Ind%NAvail) /= 0) &
+      call h_p_e('number of channels expected in preproc files')
+
+   ! Read processing flag from driver
+   allocate(Ctrl%Ind%channel_proc_flag(Ctrl%Ind%NAvail))
+   if (parse_driver(dri_lun, line) /= 0 .or. &
+       parse_string(line, Ctrl%Ind%channel_proc_flag) /= 0) call h_p_e('channel flags')
+   if (sum(Ctrl%Ind%channel_proc_flag) < 1 .or. &
+       sum(Ctrl%Ind%channel_proc_flag) > Ctrl%Ind%NAvail .or. &
+       any(Ctrl%Ind%channel_proc_flag /= 0 .and. Ctrl%Ind%channel_proc_flag /= 1)) then
+      write(*,*) 'ERROR: ReadDriver(): channel flag from driver wrong: ', &
+                 Ctrl%Ind%channel_proc_flag
+      stop DriverFileIncompat
+   end if
+
+   ! Read in cloud class (aka phase of no aerosols processed)
+   if (parse_driver(dri_lun, line) /= 0 .or. &
+       parse_string(line, Ctrl%LUTClass) /= 0) &
+      call h_p_e('Ctrl%LUTClass')
+
+   do while (parse_driver(dri_lun, line, label) == 0)
+      call clean_driver_label(label)
+      select case (label)
+      case('CTRL%APPROACH')
+         if (parse_user_text(line, Ctrl%Approach) /= 0) call h_p_e(label)
+      case('CTRL%DO_NEW_NIGHT_RETRIEVAL')
+         if (parse_string(line, Ctrl%do_new_night_retrieval) /= 0) call h_p_e(label)
+      case('CTRL%DO_CTX_CORRECTION')
+         if (parse_string(line, Ctrl%do_CTX_correction) /= 0) call h_p_e(label)
+      case('CTRL%VERBOSE')
+         if (parse_string(line, Ctrl%verbose)           /= 0) call h_p_e(label)
+      case default
+         cycle
+      end select
+   end do
+
+   ! Done with first pass through driver file.  Move file position to the end of
+   ! the mandatory arguments which is the beginning of the optional arguments.
+   rewind dri_lun
+   do i = 1, 8
+      read(dri_lun, *)
+   end do
+
+end subroutine old_driver_first_read
+
+subroutine old_driver_second_read(dri_lun, Ctrl, Nx_Dy, Nx_Tw, Nx_Ni, NXJ_Dy, &
+   NXJ_Tw, NXJ_Ni, X_Dy, X_Tw, X_Ni, XJ_Dy, XJ_Tw, XJ_Ni)
+
+   use Ctrl_m
+   use parse_user_m
+
+   implicit none
+
+   integer,      intent(in)                            :: dri_lun
+   type(Ctrl_t), intent(inout)                         :: Ctrl
+   integer,      intent(inout)                         :: Nx_Dy, Nx_Tw, Nx_Ni
+   integer,      intent(inout)                         :: NXJ_Dy, NXJ_Tw, NXJ_Ni
+   integer,      intent(inout), dimension(MaxStateVar) :: X_Dy, X_Tw, X_Ni
+   integer,      intent(inout), dimension(MaxStateVar) :: XJ_Dy, XJ_Tw, XJ_Ni
+
+   character(FilenameLen) :: line, label
+   integer, allocatable   :: solar_ids(:)
+
    ! Array temporary needed for human-readable solar channel indexing
    allocate(solar_ids(Ctrl%Ind%NSolar))
    solar_ids = Ctrl%Ind%Y_ID(Ctrl%Ind%YSolar)
@@ -927,8 +1292,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
          if (parse_string(line, Ctrl%RS%add_fractional)/= 0) call h_p_e(label)
       case('CTRL%RS%DIAGONAL_SRS')
          if (parse_string(line, Ctrl%RS%diagonal_SRs)  /= 0) call h_p_e(label)
-!     case('CTRL%RS%SOLAR_FACTOR')
-!        if (parse_string(line, Ctrl%RS%solar_factor)  /= 0) call h_p_e(label)
+      case('CTRL%RS%SOLAR_FACTOR')
+         if (parse_string(line, Ctrl%RS%solar_factor)  /= 0) call h_p_e(label)
       case('CTRL%EQMPN%SYSELM')
          if (parse_user_text(line, Ctrl%EqMPN%SySelm)  /= 0) call h_p_e(label)
       case('CTRL%EQMPN%HOMOG')
@@ -1062,325 +1427,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       end select
    end do
 
-
-   ! ---------------------------------------------------------------------------
-   ! Things that have to be after the optional lines
-   ! ---------------------------------------------------------------------------
-
-   ! Whether or not to multiply surface reflectance terms by cos(theta_0)
-   ! depends on Ctrl%i_equation_form.
-   select case (Ctrl%i_equation_form)
-   case(1)
-      Ctrl%RS%solar_factor = .false.
-   case(2)
-      Ctrl%RS%solar_factor = .true.
-   case(3)
-      Ctrl%RS%solar_factor = .false.
-   case(4)
-      Ctrl%RS%solar_factor = .true.
-   case default
-      write(*,*) 'ERROR: ReadDriver(): Invalid Ctrl%i_equation_form: ', &
-                 Ctrl%i_equation_form
-      stop error_stop_code
-   end select
-
-   ! T_dv (or TD using the old naming convention) is not correctly produced in
-   ! either RAL's or GT's LUT code.  It should approach zero as the optical
-   ! thickness approaches zero as scattering is required to scatter diffuse
-   ! radiation into the satellite viewing angle beam.  In the current LUTs it
-   ! approaches unity instead.  Analogously, T_0d (or TFBD using the old naming
-   ! convention) must also approach zero as the optical thickness approaches
-   ! zero since scattering is required to scatter radiation out of the beam to
-   ! produce diffuse radiation.  In this case the LUTs are correct and since
-   ! T_dv(theta) = T_0d(theta) we can obtain T_dv from T_0d by using the
-   ! satellite viewing angle instead of the solar zenith angle.
-   !
-   ! Interestingly, equations 1 and 2 use a simplification that breaks down as
-   ! optical thickness approaches zero and the incorrect values for T_dv provide
-   ! a compensating effect and is therefore required as is.  This is very likely
-   ! the reason this problem went unnoticed until the reciprocity-obeying form
-   ! (equations 3 and 4) were introduced.
-   if (Ctrl%i_equation_form .eq. 3 .or. Ctrl%i_equation_form .eq. 4) then
-      Ctrl%get_T_dv_from_T_0d = .true.
-   else
-      Ctrl%get_T_dv_from_T_0d = .false.
-   end if
-
-   ! Copy individual illumination arrays into main block
-   Ctrl%Nx(IDay)     = Nx_Dy
-   Ctrl%Nx(ITwi)     = Nx_Tw
-   Ctrl%Nx(INight)   = Nx_Ni
-   Ctrl%X(:,IDay)    = X_Dy
-   Ctrl%X(:,ITwi)    = X_Tw
-   Ctrl%X(:,INight)  = X_Ni
-
-   Ctrl%NXJ(IDay)    = NXJ_Dy
-   Ctrl%NXJ(ITwi)    = NXJ_Tw
-   Ctrl%NXJ(INight)  = NXJ_Ni
-   Ctrl%XJ(:,IDay)   = XJ_Dy
-   Ctrl%XJ(:,ITwi)   = XJ_Tw
-   Ctrl%XJ(:,INight) = XJ_Ni
-
-   if (Ctrl%verbose) then
-      write(*,*) 'Driver file: ',       trim(drifile)
-      write(*,*) 'Input directory: ',   trim(Ctrl%FID%Data_Dir)
-      write(*,*) 'Input filename: ',    trim(Ctrl%FID%Filename)
-      write(*,*) 'Output directory: ',  trim(Ctrl%FID%Out_Dir)
-      write(*,*) 'LUT directory: ',     trim(Ctrl%FID%SAD_Dir)
-      write(*,*) 'Ctrl%FID%Data_Dir: ', trim(Ctrl%FID%Data_Dir)
-      write(*,*) 'Ctrl%FID%Out_Dir: ',  trim(Ctrl%FID%Out_Dir)
-      write(*,*) 'Ctrl%FID%SAD_Dir: ',  trim(Ctrl%FID%SAD_Dir)
-      write(*,*) 'Ctrl%FID%Config: ',   trim(Ctrl%FID%Config)
-      write(*,*) 'Ctrl%InstName: ',     trim(Ctrl%InstName)
-      write(*,*) 'Number of channels expected in preproc files: ',Ctrl%Ind%NAvail
-      write(*,*) 'channel flag from driver: ', channel_proc_flag
-      write(*,*) 'Ny,NSolar,NThermal,NMixed: ', Ctrl%Ind%Ny, Ctrl%Ind%NSolar, &
-           Ctrl%Ind%NThermal, Ctrl%Ind%NMixed
-      write(*,*) 'Ctrl%Ind%ICh: ',          Ctrl%Ind%ICh
-      write(*,*) 'Ctrl%Ind%Y_ID: ',         Ctrl%Ind%Y_ID
-      write(*,*) 'Ctrl%Ind%YSolar: ',       Ctrl%Ind%YSolar
-      write(*,*) 'Ctrl%Ind%YThermal: ',     Ctrl%Ind%YThermal
-      write(*,*) 'Ctrl%Ind%YMixed: ',       Ctrl%Ind%YMixed
-      write(*,*) 'Ctrl%LUTClass: ',         trim(Ctrl%LUTClass)
-      write(*,*) 'Ctrl%FID%L2_primary: ',   trim(Ctrl%FID%L2_primary)
-      write(*,*) 'Ctrl%FID%L2_secondary: ', trim(Ctrl%FID%L2_secondary)
-      write(*,*) 'Ctrl%FID%BkP: ',          trim(Ctrl%FID%BkP)
-   end if
-
-   !----------------------------------------------------------------------------
-   ! Now do some checks
-   !----------------------------------------------------------------------------
-   ! Check that the first-guess methods for all variables are legal in ORAC
-   ! and supported. Not all legal values are supported for all variables.
-   ! N.B. not all supported methods can be used in all conditions and this is
-   ! NOT CHECKED here.
-
-   do j = 1, MaxIllum ! loop over day, twi, night values for FG
-      do i = 1, MaxStateVar
-         select case (Ctrl%FG(i,j))
-         case (SelmCtrl)
-            continue
-
-         case (SelmMeas)
-            if (i == IRe .or. i == ITs) then
-               write(*,*) 'ERROR: Read_Driver(): MDAD method not supported ' // &
-                    'for setting first guess Re, Ts'
-               stop FGMethErr
-            end if
-
-         case (SelmAux)
-            if (i /= ITs .and. .not. any(i == IRs)) then
-               write(*,*) 'ERROR: Read_Driver(): AUX method ONLY supported ' // &
-                    'for setting first guess Ts and Rs'
-               stop FGMethErr
-            end if
-
-         case default
-            write(*,*) 'ERROR: Read_Driver(): Invalid method ', &
-                 'for first-guess state variable ',i
-            stop FGMethErr
-         end select
-      end do
-   end do
-
-   ! Check validity of a priori selection options. Not all legal values are
-   ! supported for all variables.
-   do j = 1, MaxIllum
-      do i = 1, MaxStateVar
-         select case (Ctrl%AP(i,j))
-         case (SelmCtrl)
-            continue
-
-         case (SelmMeas)
-            if (i == IRe .or. i == ITs) then
-               write(*,*) 'ERROR: Read_Driver(): MDAD method not supported ' // &
-                    'for setting a priori Re, Ts'
-               stop APMethErr
-            end if
-
-         case (SelmAux)
-            if (i /= ITs .and. .not. any(i == IRs)) then
-               write(*,*) 'ERROR: Read_Driver(): AUX method ONLY supported ' // &
-                    'for setting a priori Ts and Rs'
-               stop APMethErr
-            end if
-
-         case default
-            write(*,*) 'ERROR: Read_Driver(): Invalid method for a priori ' // &
-                 'state variable ',i
-            stop APMethErr
-         end select
-      end do
-   end do
-
-   ! Check validity of surface reflectance flag
-   select case (Ctrl%RS%RsSelm)
-   case (SelmCtrl)
-      if (Ctrl%RS%use_full_brdf) then
-         write(*,*) 'ERROR: Read_Driver(): Setting surface reflectance by '//  &
-              'Ctrl method assumes a Lambertian surface and cannot be used '// &
-              'alongside the full BRDF.'
-         stop GetSurfaceMeth
-      end if
-      if (Ctrl%RS%SRsSelm /= SelmCtrl .and. Ctrl%RS%SRsSelm /= SelmMeas) then
-         write(*,*) 'ERROR: Read_Driver(): Surface reflectance uncertainty '// &
-              'must be set by Ctrl or Meas method when surface reflectance is.'
-         stop GetSurfaceMeth
-      end if
-   case (SelmAux)
-      if (Ctrl%RS%SRsSelm /= SelmCtrl .and. Ctrl%RS%SRsSelm /= SelmAux .and. &
-           Ctrl%RS%SRsSelm /= SelmMeas) then
-         write(*,*) 'ERROR: Read_Driver(): surface reflectance uncertainty '// &
-              ' method not supported.'
-         stop GetSurfaceMeth
-      end if
-      if (Ctrl%RS%SRsSelm == SelmAux .and. .not. Ctrl%RS%use_full_brdf) then
-         write(*,*) 'ERROR: Read_Driver(): Full BRDF required with '//&
-              'auxilliary surface uncertainties.'
-         stop GetSurfaceMeth
-      end if
-      if (Ctrl%RS%SRsSelm == SelmCtrl .and. Ctrl%RS%add_fractional .and. &
-           .not. Ctrl%RS%use_full_brdf) then
-         write(*,*) 'ERROR: Read_Driver(): add_fractional is not currently '//&
-              'functional for the Lambertian surface with SRsSelm == Ctrl.'
-         stop GetSurfaceMeth
-      end if
-      if (Ctrl%RS%SRsSelm == SelmMeas .and. Ctrl%RS%add_fractional) then
-         write(*,*) 'WARNING: Read_Driver(): add_fractional is ignored '//&
-              'with SRsSelm == Meas.'
-      end if
-   case (SelmMeas)
-      write(*,*) 'ERROR: Read_Driver(): surface reflectance method not supported'
-      stop GetSurfaceMeth
-   case default
-      write(*,*) 'ERROR: Read_Driver(): invalid surface reflectance method'
-      stop GetSurfaceMeth
-   end select
-
-   ! For now, AerSw approach does not allow for non-Lambertian surface
-   if (Ctrl%Approach == AerSw .and. Ctrl%RS%use_full_brdf) then
-      write(*,*) 'ERROR: Read_Driver(): Use of the Swansea surface '// &
-           'reflectance model and full BRDF equations not supported'
-      stop GetSurfaceMeth
-   end if
-
-   ! Clean up
-   if (drifile /= '-') then
-      close(unit=dri_lun)
-   end if
-
-   deallocate(channel_ids_instr)
-   deallocate(channel_sw_flag)
-   deallocate(channel_lw_flag)
-   deallocate(channel_wvl)
    deallocate(solar_ids)
 
-end subroutine Read_Driver
-
-
-! handle_parse_error (h_p_e)
-subroutine h_p_e(label)
-
-   use ECP_constants_m
-
-   implicit none
-
-   character(len=*), intent(in) :: label
-
-   write(*,*) 'ERROR: ReadDriver(): Error parsing value for: ',trim(label)
-
-   stop error_stop_code
-
-end subroutine h_p_e
-
-
-!-------------------------------------------------------------------------------
-! Name: switch
-!
-! Purpose:
-! Character-efficient wrapper for switch case statements in Read_Driver.
-! If additional values for Ctrl%Approach are added, they should be included here.
-!
-! Algorithm:
-! If argument for current mode is set, return that value. If not but generic
-! argument for current mode (i.e. Cld or Aer) is set, return that value.
-! Otherwise, return default value.
-!
-! Arguments:
-! Name    Type In/Out/Both Description
-! ------------------------------------------------------------------------------
-! a       int In           MANDATORY ARGUMENT. Value of Ctrl%Approach.
-! Default any In           MANDATORY ARGUMENT. Value to return if the argument
-!                          of this mode is not set.
-! Cld     any In           Value for CldWat and CldIce approaches.
-! CldWat  any In           Value for CldWat approach.
-! CldIce  any In           Value for CldIce approach.
-! Aer     any In           Value for AerOx and AerSw approaches.
-! AerOx   any In           Value for AerOx approach.
-! AerSw   any In           Value for AerSw approach.
-! AshEyj  any In           Value for AshEyj approach.
-! out     any Out          Return value.
-!
-! History:
-! 2015/08/19, AP: Original version
-!
-! Bugs:
-! None known.
-!-------------------------------------------------------------------------------
-#define SWITCH_TYPE logical
-#define SWITCH_NAME switch_logic
-#define SWITCH_FILL .false.
-#include "switch.inc"
-#undef SWITCH_TYPE
-#undef SWITCH_NAME
-#undef SWITCH_FILL
-
-#define SWITCH_TYPE integer(kind=byte)
-#define SWITCH_NAME switch_byte
-#define SWITCH_FILL byte_fill_value
-#include "switch.inc"
-#undef SWITCH_TYPE
-#undef SWITCH_NAME
-#undef SWITCH_FILL
-
-#define SWITCH_TYPE integer(kind=sint)
-#define SWITCH_NAME switch_sint
-#define SWITCH_FILL sint_fill_value
-#include "switch.inc"
-#undef SWITCH_TYPE
-#undef SWITCH_NAME
-#undef SWITCH_FILL
-
-#define SWITCH_TYPE integer(kind=lint)
-#define SWITCH_NAME switch_lint
-#define SWITCH_FILL lint_fill_value
-#include "switch.inc"
-#undef SWITCH_TYPE
-#undef SWITCH_NAME
-#undef SWITCH_FILL
-
-#define SWITCH_TYPE real(kind=sreal)
-#define SWITCH_NAME switch_sreal
-#define SWITCH_FILL sreal_fill_value
-#include "switch.inc"
-#undef SWITCH_TYPE
-#undef SWITCH_NAME
-#undef SWITCH_FILL
-
-#define SWITCH_TYPE real(kind=dreal)
-#define SWITCH_NAME switch_dreal
-#define SWITCH_FILL dreal_fill_value
-#include "switch.inc"
-#undef SWITCH_TYPE
-#undef SWITCH_NAME
-#undef SWITCH_FILL
-
-#define SWITCH_TYPE character(len=FilenameLen)
-#define SWITCH_NAME switch_char
-#define SWITCH_FILL ''
-#include "switch.inc"
-#undef SWITCH_TYPE
-#undef SWITCH_NAME
-#undef SWITCH_FILL
+end subroutine old_driver_second_read
 
 end module read_driver_m
