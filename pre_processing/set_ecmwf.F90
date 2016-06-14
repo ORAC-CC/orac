@@ -90,12 +90,6 @@ subroutine set_ecmwf(sensor,cyear,cmonth,cday,chour,cminute,ecmwf_path,ecmwf_pat
    real(dreal)   :: day_real
    character     :: cera_year*4, cera_month*2, cera_day*2, cera_hour*2
 
-   write(*,*)len_trim(cyear),cyear
-   write(*,*)len_trim(cmonth),cmonth
-   write(*,*)len_trim(cday),cday
-   write(*,*)len_trim(chour),chour
-   write(*,*)len_trim(cminute),cminute
-
    ! Rather than deal with whether the next 6 hour file is in the next month,
    ! in the next year, or if the year is a leap year it is more straight
    ! forward to convert to Julian day space, then operate, then convert back.
@@ -188,11 +182,6 @@ subroutine set_ecmwf(sensor,cyear,cmonth,cday,chour,cminute,ecmwf_path,ecmwf_pat
          write(cera_month, '(I2.2)') month
          write(cera_day,   '(I2.2)') day
          write(cera_hour,  '(I2.2)') hour
-         write(*,*)"STUFF"
-         write(*,*)cera_year,year
-         write(*,*)cera_month,month
-         write(*,*)cera_day,day
-         write(*,*)cera_hour,hour
 
          call make_ecmwf_name(cera_year,cera_month,cera_day,cera_hour,ecmwf_flag, &
             ecmwf_path(1),ecmwf_path2(1),ecmwf_path3(1),ecmwf_path_file(1), &
