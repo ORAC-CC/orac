@@ -1,0 +1,68 @@
+# Makefile for a driver file parser. The following variables must be defined:
+# CC, CPP, FC, CFLAGS, FFLAGS) Their usual meanings
+# INC, LIBS) Paths for include files and libraries for the modules used to
+#    generate this parser.
+# ORAC_COMMON) Path to the common folder in the ORAC trunk.
+# OBJS) Name of the folder into which object files are stored.
+# STRUCT_NAME) The variable name given to the structure into which the driver
+#    file contents will be written.
+# PARSER_NAME) Name for the various parser routines.
+# PARSER_SOURCE) A list of files to be used to generate this parser.
+# USE_STATEMENTS) A list of the required Fortran use statements.
+# DIM_DEFINITIONS) Name of file defining the dimensions of allocatable arrays
+#
+# History:
+# 2016/06/13, AP: Original version
+#
+
+PARSER_OBJ = $(PLACE).tab.o $(PLACE).c.o $(PLACE).f.o
+PARSER_CLEAN = $(PLACE).h $(PLACE)*.inc $(PLACE)*.o
+
+FLAGS = -DWRAPPER_NAME_C=$(PARSER_NAME)_c   -DWRAPPER_NAME_F=$(PARSER_NAME) \
+        -DWRAPPER_NAME_FC=$(PARSER_NAME)_fc -DINC_PATH=$(PLACE) \
+        -DMODULE_NAME=$(PARSER_NAME)_m      -DCLASS_NAME=$(PARSER_NAME)_class \
+        -DUSE_STATEMENTS=$(USE_STATEMENTS)  -DPARENT_STRUCT_TYPE=$(STRUCT_TYPE) \
+        -D$(STRUCT_TYPE_UPP)_VARIABLE=strct -DDIM_DEFINITIONS=$(PARSER_NAME).def
+
+STRUCT_TYPE_UPP = $(shell echo $(STRUCT_TYPE) | tr '[:lower:]' '[:upper:]')
+
+
+# Run that exe on the requested source files
+$(PLACE)%inc: $(ORAC_COMMON)/generate_parser $(PARSER_SOURCE)
+	$(ORAC_COMMON)/generate_parser $(PLACE) $(PARSER_SOURCE)
+
+# Compile generic driver file grammar using generated C header file
+$(PLACE).tab.o:
+	$(CPP) -o $@ -c $(FLAGS) $(CFLAGS) $(PARSER_INC) $(ORAC_COMMON)/struct_parser.tab.cc
+
+# Generate and compile driver file parser from part files
+$(PARSER_NAME).cc:
+	sed -e '/FLEX_DEFINITIONS/ {' -e 'r $(PLACE).l_def.inc' -e 'd' -e '}' \
+            -e '/FLEX_RULES/ {' -e 'r $(PLACE).l_rul.inc' -e 'd' -e '}' \
+	    -e 's/STRUCT_NAME/$(STRUCT_NAME)/' \
+            -e 's/STRUCT_CONDITION/$(STRUCT_TYPE_UPP)_SC/' \
+            $(ORAC_COMMON)/struct_parser.lex > $(PARSER_NAME).lex
+	flex -o $@ $(PARSER_NAME).lex
+
+$(PLACE).c.o:
+	$(CPP) -o $@ -c $(FLAGS) $(CFLAGS) $(PARSER_INC) $(PARSER_NAME).cc
+
+# Compile Fortran wrapper for driver file parser, using cpp explicitly to make
+# use of more modern operators
+$(PLACE).f.o:
+	cpp -std=c89 $(FLAGS) $(PARSER_INC) $(ORAC_COMMON)/struct_parser.F90 > \
+	    $(PARSER_NAME).F90
+	$(F90) -o $@ -c -nocpp $(FLAGS) $(FFLAGS) $(INC) $(AUXFLAGS) $(PARSER_NAME).F90
+
+# Dependencies
+$(PLACE).h: $(PLACE).l_rul.inc
+$(PLACE).tab.o: $(ORAC_COMMON)/struct_parser.tab.cc \
+      $(ORAC_COMMON)/struct_parser.hh $(ORAC_COMMON)/struct_parser.h $(PLACE).h
+$(PARSER_NAME).cc: $(ORAC_COMMON)/struct_parser.tab.hh \
+      $(ORAC_COMMON)/struct_parser.lex $(PLACE).l_rul.inc $(PLACE).l_def.inc
+$(PLACE).c.o: $(PARSER_NAME).cc $(ORAC_COMMON)/struct_parser.tab.hh \
+      $(ORAC_COMMON)/struct_parser.hh $(ORAC_COMMON)/struct_parser.h \
+      $(PLACE).h $(PLACE).c_arg.inc $(PLACE).c_cpy.inc $(PLACE).c_cpy2.inc
+$(PLACE).f.o: $(ORAC_COMMON)/struct_parser.F90 $(ORAC_COMMON)/fort_alloc.inc \
+      $(PLACE).h $(PLACE).f_arg.inc $(PLACE).f_def.inc $(PLACE).f_arr.inc \
+      $(PLACE).f_cpy.inc $(PLACE).f_arg2.inc $(PLACE).f_cpy2.inc
