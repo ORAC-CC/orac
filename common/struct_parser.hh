@@ -6,6 +6,7 @@ PURPOSE:
 HISTORY:
    20 Apr 2016, ACP: Initial version
    09 Jun 2016, ACP: Final version
+   15 Jun 2016, ACP: Ignore unallocated arrays (that have length of zero)
 */
 
 #include <stdio.h>
@@ -62,6 +63,9 @@ template<typename T> Target<T>::Target(T* variable,
 template<typename T> void Target<T>::set_slice(int slice[DIM_MAX][2]) {
     int i;
 
+    // Ignore unallocated arrays
+    if (len[0] == 0 || len[1] == 0) return;
+
     for (i=0; i<DIM_MAX; i++) {
         if (slice[i][0] < 0 || slice[i][0] >= len[i]) {
             throw "Invalid start of array slice";
@@ -82,6 +86,9 @@ template<typename T> void Target<T>::set_slice(int slice[DIM_MAX][2]) {
 // Copy data from Matrix buffer into target array
 template<typename T> void Target<T>::read_buf(Matrix* buffer) {
     int i, j, i_, j_;
+
+    // Ignore unallocated arrays
+    if (len[0] == 0 || len[1] == 0) return;
 
     // As the driver file is in Fortran format, [1] is the slow dimension
     if (buffer->size() != read_end[1]-read_srt[1]+1) {
