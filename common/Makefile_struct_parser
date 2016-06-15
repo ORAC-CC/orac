@@ -13,6 +13,7 @@
 #
 # History:
 # 2016/06/13, AP: Original version
+# 2016/06/15, AP: gfortran and ifort use different C preprocessors
 #
 
 PARSER_OBJ = $(PLACE).tab.o $(PLACE).c.o $(PLACE).f.o
@@ -48,11 +49,16 @@ $(PLACE).c.o:
 	$(CPP) -o $@ -c $(FLAGS) $(CFLAGS) $(PARSER_INC) $(PARSER_NAME).cc
 
 # Compile Fortran wrapper for driver file parser, using cpp explicitly to make
-# use of more modern operators
+# use of more modern operators. (The cpp used by gfortran is too old to deal
+# with some of the statements in struct_parser.F90.)
 $(PLACE).f.o:
+ifeq ($(F90),gfortran)
 	cpp -std=c89 $(FLAGS) $(PARSER_INC) $(ORAC_COMMON)/struct_parser.F90 > \
 	    $(PARSER_NAME).F90
-	$(F90) -o $@ -c -nocpp $(FLAGS) $(FFLAGS) $(INC) $(AUXFLAGS) $(PARSER_NAME).F90
+	$(F90) -o $@ -c -nocpp $(FLAGS) $(FFLAGS) $(INC) -I$(ORAC_COMMON)/obj $(AUXFLAGS) $(PARSER_NAME).F90
+else
+	$(F90) -o $@ -c $(FLAGS) $(FFLAGS) $(INC) -I$(ORAC_COMMON)/obj $(AUXFLAGS) $(ORAC_COMMON)/struct_parser.F90
+endif
 
 # Dependencies
 $(PLACE).h: $(PLACE).l_rul.inc
