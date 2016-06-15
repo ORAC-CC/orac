@@ -661,6 +661,7 @@ subroutine read_ctrl(filename, strct)
          strct%XJ, &
 # 53 "../common/struct_parser.F90" 2
       stat, c_filename)
+   if (stat /= 0) stop error_stop_code
 
    ! Copy arrays allocated in wrapper into structure
 # 1 "../src/obj/read_ctrl.f_cpy2.inc" 1
@@ -701,7 +702,7 @@ subroutine read_ctrl(filename, strct)
    if (size(strct%ir_chans,1) /= CTRL_T__ir_chans_dim0) call c_f_pointer(CTRL_T__ir_chans, strct%ir_chans, [CTRL_T__ir_chans_dim0])
    if (size(strct%ReChans,1) /= CTRL_T__ReChans_dim0) call c_f_pointer(CTRL_T__ReChans, strct%ReChans, [CTRL_T__ReChans_dim0])
    if (size(strct%Sy,1) /= CTRL_T__Sy_dim0 .or. size(strct%Sy,2) /= CTRL_T__Sy_dim1) call c_f_pointer(CTRL_T__Sy, strct%Sy, [CTRL_T__Sy_dim0,CTRL_T__Sy_dim1])
-# 57 "../common/struct_parser.F90" 2
+# 58 "../common/struct_parser.F90" 2
 
 end subroutine read_ctrl
 
@@ -752,7 +753,7 @@ subroutine fort_alloc_bool_2d(ptr, n0, n1, m0, m1) bind(C,name="fort_alloc_bool_
    end if
 
 end subroutine fort_alloc_bool_2d
-# 65 "../common/struct_parser.F90" 2
+# 66 "../common/struct_parser.F90" 2
 
 
 
@@ -803,7 +804,7 @@ subroutine fort_alloc_int_2d(ptr, n0, n1, m0, m1) bind(C,name="fort_alloc_int_2d
    end if
 
 end subroutine fort_alloc_int_2d
-# 73 "../common/struct_parser.F90" 2
+# 74 "../common/struct_parser.F90" 2
 
 
 
@@ -854,7 +855,7 @@ subroutine fort_alloc_float_2d(ptr, n0, n1, m0, m1) bind(C,name="fort_alloc_floa
    end if
 
 end subroutine fort_alloc_float_2d
-# 81 "../common/struct_parser.F90" 2
+# 82 "../common/struct_parser.F90" 2
 
 
 

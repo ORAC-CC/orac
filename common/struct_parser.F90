@@ -6,6 +6,7 @@
 !    contents into a Fortran structure.
 ! HISTORY:
 !    09 Jun 2016, ACP: Initial version
+!    15 Jun 2016, ACP: Errors in the new-format driver file should be terminal
 !
 #include "struct_parser.h"
 
@@ -51,6 +52,7 @@ subroutine WRAPPER_NAME_F(filename, strct)
    call WRAPPER_NAME_FC( &
 #include XCAT3(INC_PATH, f_arg2, inc)
       stat, c_filename)
+   if (stat /= 0) stop error_stop_code
 
    ! Copy arrays allocated in wrapper into structure
 #include XCAT3(INC_PATH, f_cpy2, inc)
