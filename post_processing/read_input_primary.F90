@@ -32,12 +32,36 @@
 ! 2016/01/27, GM: Add cee and cee_uncertainty.
 ! 2016/01/28, GM: Add ctp and ctt corrected and corrected_uncertianty.
 ! 2016/03/04, AP: Homogenisation of I/O modules.
+! 2016/06/10, SP: Updates for bayesian selection without huge memory usage.
 !
 ! $Id$
 !
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
+
+subroutine read_input_primary_cost_only(ncid, input_data, indexing, verbose)
+
+   use orac_ncdf_m
+
+   implicit none
+
+   integer,                    intent(in)    :: ncid
+   type(input_data_primary_t), intent(inout) :: input_data
+   type(input_indices_t),      intent(in)    :: indexing
+   logical,                    intent(in)    :: verbose
+
+   integer            :: i, j
+   integer            :: ierr
+   integer            :: varid
+   character(len=32)  :: input_num
+   character(len=512) :: input_dummy
+
+   call nc_read_array(ncid, "costja", input_data%costja, verbose)
+   call nc_read_array(ncid, "costjm", input_data%costjm, verbose)
+
+end subroutine read_input_primary_cost_only
+
 
 subroutine read_input_primary_common(ncid, input_data, indexing, verbose)
 
@@ -55,6 +79,7 @@ subroutine read_input_primary_common(ncid, input_data, indexing, verbose)
    integer            :: varid
    character(len=32)  :: input_num
    character(len=512) :: input_dummy
+
 
 if (indexing%flags%do_aerosol) then
    call nc_read_packed_array(ncid, "aot550", input_data%aot550, verbose)
@@ -354,7 +379,7 @@ subroutine read_input_primary_once(nfile, fname, input_data, indexing, &
 end subroutine read_input_primary_once
 
 
-subroutine read_input_primary_class(fname, input_data, indexing, verbose)
+subroutine read_input_primary_class(fname, input_data, indexing, costonly, verbose)
 
    use orac_ncdf_m
 
@@ -363,14 +388,18 @@ subroutine read_input_primary_class(fname, input_data, indexing, verbose)
    character(len=path_length), intent(in)    :: fname
    type(input_data_primary_t), intent(inout) :: input_data
    type(input_indices_t),      intent(in)    :: indexing
+   logical,                    intent(in)    :: costonly
    logical,                    intent(in)    :: verbose
 
    integer :: ncid
 
    if (verbose) write(*,*) 'Opening primary input file: ', trim(fname)
    call nc_open(ncid,fname)
-
-   call read_input_primary_common(ncid, input_data, indexing, verbose)
+   if (.not. costonly) then
+      call read_input_primary_common(ncid, input_data, indexing, verbose)
+   else
+      call read_input_primary_cost_only(ncid, input_data, indexing, verbose)
+   endif
 
    if (verbose) write(*,*) 'Closing primary input file.'
    if (nf90_close(ncid) .ne. NF90_NOERR) then

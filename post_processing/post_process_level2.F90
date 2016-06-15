@@ -111,6 +111,7 @@
 ! 2016/02/02, GM: Add option output_optical_props_at_night.
 ! 2016/03/11, AP: Read both aerosol and cloud inputs.
 ! 2016/04/28, AP: Add multiple views.
+! 2016/06/06, SP: Updates for bayesian selection without huge memory usage.
 !
 ! $Id$
 !
@@ -158,6 +159,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    real                         :: norm_prob_thresh = .75
    logical                      :: output_optical_props_at_night = .false.
    logical                      :: use_bayesian_selection = .false.
+   logical                      :: use_new_bayesian_selection = .false.
    logical                      :: use_netcdf_compression = .true.
    logical                      :: verbose = .true.
 
@@ -246,6 +248,9 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
      case('USE_BAYESIAN_SELECTION')
         if (parse_string(value, use_bayesian_selection) /= 0) &
            call handle_parse_error(label)
+     case('USE_NEW_BAYESIAN_SELECTION')
+        if (parse_string(value, use_new_bayesian_selection) /= 0) &
+           call handle_parse_error(label)
      case('USE_NETCDF_COMPRESSION')
         if (parse_string(value, use_netcdf_compression) /= 0) &
            call handle_parse_error(label)
@@ -266,6 +271,11 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
         stop error_stop_code
      end select
    end do
+
+   ! If we're using new bayesian selection then ensure both bayesian flags are true
+   if (use_new_bayesian_selection) then
+      use_bayesian_selection = .true.
+   end if
 
    if (verbose) then
       write(*,*) 'path_and_file = ', trim(path_and_file)
@@ -299,6 +309,11 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    loop_ind(:)%Y0 = 1
    loop_ind(:)%Y1 = indexing%Ydim
 
+   ! Allocate the array used in bayesian selection of type
+   ! This is needed for minimisation of memory overhead, only costs are loaded
+   ! in the first instance. Later other data is loaded but only for the best class
+   allocate(indexing%best_infile(indexing%X0:indexing%X1, indexing%Y0:indexing%Y1))
+
    ! Read once-only inputs
    call alloc_input_data_primary_all(indexing, input_primary(0))
    call read_input_primary_once(n_in_files, in_files_primary, &
@@ -308,22 +323,82 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
       call read_input_secondary_once(n_in_files, in_files_secondary, &
         input_secondary(0), indexing, loop_ind, verbose)
    end if
-
    ! Read fields that vary from file to file
-   do i = 1, n_in_files
-      if (verbose) write(*,*) '********************************'
-      if (verbose) write(*,*) 'read: ', trim(in_files_primary(i))
-      call alloc_input_data_primary_class(loop_ind(i), input_primary(i))
-      call read_input_primary_class(in_files_primary(i), input_primary(i), &
-           loop_ind(i), verbose)
+   if (use_new_bayesian_selection .neqv. .true.) then
+      do i = 1, n_in_files
+         if (verbose) write(*,*) '********************************'
+         if (verbose) write(*,*) 'read: ', trim(in_files_primary(i))
+         call alloc_input_data_primary_class(loop_ind(i), input_primary(i))
+         call read_input_primary_class(in_files_primary(i), input_primary(i), &
+              loop_ind(i), .False.,verbose)
+         if (do_secondary) then
+            if (verbose) write(*,*) 'read: ', trim(in_files_secondary(i))
+            call alloc_input_data_secondary_class(loop_ind(i), input_secondary(i))
+            call read_input_secondary_class(in_files_secondary(i), &
+                 input_secondary(i), loop_ind(i), verbose)
+         end if
+      end do
+   else
+      ! Allocate a primary array to store temporary input data
+      call alloc_input_data_primary_all(indexing, input_primary(1))
       if (do_secondary) then
-         if (verbose) write(*,*) 'read: ', trim(in_files_secondary(i))
-         call alloc_input_data_secondary_class(loop_ind(i), input_secondary(i))
-         call read_input_secondary_class(in_files_secondary(i), &
-              input_secondary(i), loop_ind(i), verbose)
-      end if
-   end do
+         call alloc_input_data_secondary_all(indexing, input_secondary(1))
+      endif
 
+      ! Load only the cost values from input files
+      do i = 1, n_in_files
+         call alloc_input_data_only_cost(loop_ind(i), input_primary(i))
+         call read_input_primary_class(in_files_primary(i), input_primary(i), &
+              loop_ind(i), .True.,verbose)
+      end do
+
+      ! Find the input file with the lowest cost for each pixel
+      do j=indexing%Y0,indexing%Y1
+         do i=indexing%X0,indexing%X1
+            sum_prob = 0.
+            a_max_prob   = tiny(a_max_prob)
+            i_min_costjm = 0
+            do k = 1, n_in_files
+               if (input_primary(k)%costjm(i,j) /= sreal_fill_value) then
+                  a_prob = exp(-input_primary(k)%costjm(i,j) / 2.)
+                  sum_prob = sum_prob + a_prob
+
+                  if (a_prob > a_max_prob) then
+                     a_max_prob   = a_prob
+                     i_min_costjm = k
+                  end if
+               end if
+            end do
+            if (input_primary(i_min_costjm)%costjm(i,j) >= cost_thresh .and. &
+               input_primary(i_min_costjm)%costjm(i,j) / sum_prob >= norm_prob_thresh .and. &
+               i_min_costjm /= 0) then
+                  input_primary(0)%phase(i,j) = i_min_costjm
+            end if
+         end do
+      end do
+      do k = 1, n_in_files
+         if (verbose) write(*,*) '********************************'
+         if (verbose) write(*,*) 'read: ', trim(in_files_primary(k))
+         call read_input_primary_class(in_files_primary(k), input_primary(1), &
+              loop_ind(k), .False.,verbose)
+         if (do_secondary) then
+            if (verbose) write(*,*) 'read: ', trim(in_files_secondary(k))
+            call read_input_secondary_class(in_files_secondary(k), &
+                 input_secondary(1), loop_ind(k), verbose)
+         end if
+         do j=indexing%Y0,indexing%Y1
+            do i=indexing%X0,indexing%X1
+               if (input_primary(0)%phase(i,j) .eq. k) then
+                  call copy_class_specific_inputs(i, j, loop_ind(k), &
+                       input_primary(0), input_primary(1), &
+                       input_secondary(0), input_secondary(1), &
+                       do_secondary)
+                  input_primary(0)%phase(i,j) = k
+               endif
+            end do
+         end do
+      end do
+   endif
 
    if (verbose) then
       write(*,*) 'Processing limits:'
@@ -410,7 +485,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
             end if
 
          ! Bayesian based selection
-         else
+         else if (.not. use_new_bayesian_selection) then
             sum_prob = 0.
             a_max_prob   = tiny(a_max_prob)
             i_min_costjm = 0
@@ -441,7 +516,6 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
       end do
    end do
 
-
    ! Deallocate all input structures except for the first one
    do i = 1, n_in_files
       call dealloc_input_data_primary_class(input_primary(i))
@@ -449,6 +523,9 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
          call dealloc_input_data_secondary_class(input_secondary(i))
       end if
       call dealloc_input_indices(loop_ind(i))
+      if (use_new_bayesian_selection) then
+         exit
+      end if
    end do
 
    ! Allocate the structures which hold the output in its final form

@@ -36,12 +36,27 @@
 ! 2016/01/28, GM: Add ctp and ctt corrected and corrected_uncertianty.
 ! 2016/03/02, AP: Homogenisation of I/O modules.
 ! 2016/04/28, AP: Add multiple views.
+! 2016/06/13, SP: Updates for bayesian selection without huge memory usage.
 !
 ! $Id$
 !
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
+
+subroutine alloc_input_data_only_cost(ind,data)
+
+   implicit none
+
+   type(input_indices_t),      intent(in)    :: ind
+   type(input_data_primary_t), intent(inout) :: data
+
+   allocate(data%costja(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%costja = sreal_fill_value
+   allocate(data%costjm(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%costjm = sreal_fill_value
+
+end subroutine alloc_input_data_only_cost
 
 subroutine alloc_input_data_primary_common(ind, data)
 
@@ -213,11 +228,14 @@ end if
 
    allocate(data%niter(ind%X0:ind%X1, ind%Y0:ind%Y1))
    data%niter = byte_fill_value
-
-   allocate(data%costja(ind%X0:ind%X1, ind%Y0:ind%Y1))
-   data%costja = sreal_fill_value
-   allocate(data%costjm(ind%X0:ind%X1, ind%Y0:ind%Y1))
-   data%costjm = sreal_fill_value
+   if (.not. associated(data%costja)) then
+      allocate(data%costja(ind%X0:ind%X1, ind%Y0:ind%Y1))
+      data%costja = sreal_fill_value
+   endif
+   if (.not. associated(data%costjm)) then
+      allocate(data%costjm(ind%X0:ind%X1, ind%Y0:ind%Y1))
+      data%costjm = sreal_fill_value
+   endif
 
    allocate(data%qcflag(ind%X0:ind%X1, ind%Y0:ind%Y1))
    data%qcflag = sint_fill_value

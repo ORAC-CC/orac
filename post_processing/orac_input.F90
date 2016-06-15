@@ -28,6 +28,7 @@
 ! 2016/01/28, GM: Add ctp and ctt corrected and corrected_uncertianty.
 ! 2016/03/02, AP: Homogenisation of I/O modules.
 ! 2016/04/28, AP: Add multiple views.
+! 2016/06/06, SP: New variable for bayesian selection without huge memory usage.
 !
 ! $Id$
 !
@@ -50,6 +51,7 @@ module orac_input_m
       integer, pointer :: view_loop_to_main_index(:)
       logical          :: read_optional_channel_field(MaxNumMeas) = .false.
       logical          :: read_optional_view_field(MaxNumViews)   = .false.
+      logical, pointer :: best_infile(:,:)
    end type input_indices_t
 
 
