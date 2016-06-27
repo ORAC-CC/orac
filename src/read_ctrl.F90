@@ -12,9 +12,10 @@
 ! contents into a Fortran structure.
 ! HISTORY:
 ! 09 Jun 2016, ACP: Initial version
+! 15 Jun 2016, ACP: Errors in the new-format driver file should be terminal
 !
 # 1 "../common/struct_parser.h" 1
-# 11 "../common/struct_parser.F90" 2
+# 12 "../common/struct_parser.F90" 2
 
 module read_ctrl_m
    implicit none
@@ -170,7 +171,7 @@ subroutine read_ctrl(filename, strct)
          CTRL_T__NxJ, &
          CTRL_T__X, &
          CTRL_T__XJ, &
-# 25 "../common/struct_parser.F90" 2
+# 26 "../common/struct_parser.F90" 2
          stat, filename) bind(C,name="read_ctrl_c")
          use Ctrl_m; use ECP_constants_m
          use iso_c_binding
@@ -289,7 +290,7 @@ subroutine read_ctrl(filename, strct)
          integer :: CTRL_T__NxJ(3)
          integer :: CTRL_T__X(5 + 24*4 + 2, 3)
          integer :: CTRL_T__XJ(5 + 24*4 + 2, 3)
-# 31 "../common/struct_parser.F90" 2
+# 32 "../common/struct_parser.F90" 2
 # 1 "../src/obj/read_ctrl.f_arr.inc" 1
          type(c_ptr) :: COMMON_INDICES_T__Y_Id
          integer :: COMMON_INDICES_T__Y_Id_dim0
@@ -329,7 +330,7 @@ subroutine read_ctrl(filename, strct)
          type(c_ptr) :: CTRL_T__Sy
          integer :: CTRL_T__Sy_dim0
          integer :: CTRL_T__Sy_dim1
-# 32 "../common/struct_parser.F90" 2
+# 33 "../common/struct_parser.F90" 2
          integer :: stat
          character(c_char) :: filename(path_length)
       end subroutine read_ctrl_fc
@@ -378,7 +379,7 @@ subroutine read_ctrl(filename, strct)
          type(c_ptr) :: CTRL_T__Sy
          integer :: CTRL_T__Sy_dim0
          integer :: CTRL_T__Sy_dim1
-# 42 "../common/struct_parser.F90" 2
+# 43 "../common/struct_parser.F90" 2
 
    integer :: stat
    character(kind=c_char,len=path_length) :: c_filename
@@ -512,7 +513,7 @@ subroutine read_ctrl(filename, strct)
       CTRL_T__Sy_dim0 = 0
       CTRL_T__Sy_dim1 = 0
    end if
-# 48 "../common/struct_parser.F90" 2
+# 49 "../common/struct_parser.F90" 2
 
    ! Call C wrapper function
    c_filename = trim(filename)//C_NULL_CHAR
@@ -659,7 +660,7 @@ subroutine read_ctrl(filename, strct)
          strct%NxJ, &
          strct%X, &
          strct%XJ, &
-# 53 "../common/struct_parser.F90" 2
+# 54 "../common/struct_parser.F90" 2
       stat, c_filename)
    if (stat /= 0) stop error_stop_code
 
@@ -702,7 +703,7 @@ subroutine read_ctrl(filename, strct)
    if (size(strct%ir_chans,1) /= CTRL_T__ir_chans_dim0) call c_f_pointer(CTRL_T__ir_chans, strct%ir_chans, [CTRL_T__ir_chans_dim0])
    if (size(strct%ReChans,1) /= CTRL_T__ReChans_dim0) call c_f_pointer(CTRL_T__ReChans, strct%ReChans, [CTRL_T__ReChans_dim0])
    if (size(strct%Sy,1) /= CTRL_T__Sy_dim0 .or. size(strct%Sy,2) /= CTRL_T__Sy_dim1) call c_f_pointer(CTRL_T__Sy, strct%Sy, [CTRL_T__Sy_dim0,CTRL_T__Sy_dim1])
-# 58 "../common/struct_parser.F90" 2
+# 59 "../common/struct_parser.F90" 2
 
 end subroutine read_ctrl
 
@@ -753,7 +754,7 @@ subroutine fort_alloc_bool_2d(ptr, n0, n1, m0, m1) bind(C,name="fort_alloc_bool_
    end if
 
 end subroutine fort_alloc_bool_2d
-# 66 "../common/struct_parser.F90" 2
+# 67 "../common/struct_parser.F90" 2
 
 
 
@@ -804,7 +805,7 @@ subroutine fort_alloc_int_2d(ptr, n0, n1, m0, m1) bind(C,name="fort_alloc_int_2d
    end if
 
 end subroutine fort_alloc_int_2d
-# 74 "../common/struct_parser.F90" 2
+# 75 "../common/struct_parser.F90" 2
 
 
 
@@ -855,7 +856,7 @@ subroutine fort_alloc_float_2d(ptr, n0, n1, m0, m1) bind(C,name="fort_alloc_floa
    end if
 
 end subroutine fort_alloc_float_2d
-# 82 "../common/struct_parser.F90" 2
+# 83 "../common/struct_parser.F90" 2
 
 
 

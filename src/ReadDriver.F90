@@ -186,7 +186,11 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    logical                            :: new_driver_format
 
 
+   ! Initialise some important variables
    Ctrl%verbose = .true.
+   Ctrl%Approach = -1
+   Ctrl%do_new_night_retrieval = .true.
+   Ctrl%do_CTX_correction      = .true.
 
 
    !----------------------------------------------------------------------------
@@ -262,12 +266,6 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%FID%L2_primary   = trim(outname)//'.primary.nc'
    Ctrl%FID%L2_secondary = trim(outname)//'.secondary.nc'
    Ctrl%FID%BkP          = trim(outname)//'.bkp'
-
-   ! Read code path controlling options from the driver file.
-   Ctrl%Approach = -1
-
-   Ctrl%do_new_night_retrieval = .true.
-   Ctrl%do_CTX_correction      = .true.
 
    ! Read channel related info
    call read_config_file(Ctrl, channel_ids_instr, channel_sw_flag, &
