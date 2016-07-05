@@ -104,8 +104,8 @@ subroutine read_viirs_dimensions(geo_file, n_across_track, n_along_track, &
    n_across_track = endx
    n_along_track = endy
 
-   write(*,*)startx,starty
-   write(*,*)endx,endy
+   call h5dclose_f(dset_id, error)
+   call h5fclose_f(file_id, error)
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> read_viirs_dimensions()'
 
