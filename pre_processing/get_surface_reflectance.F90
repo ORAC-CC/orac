@@ -107,6 +107,7 @@
 ! 2015/11/21, GM: Fixed use of channel_info%nchannels_sw where it should have
 !    been n_ref_chans.
 ! 2016/05/02, AP: Added multiple views.
+! 2016/07/07, SP: Corrected to run if only land or only sea pixels are present.
 !
 ! $Id$
 !
@@ -243,9 +244,8 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, &
    source_atts%albedo_file = 'Not used (no SW channels or no pixels of land)'
    source_atts%brdf_file   = 'Not used (no SW channels or no pixels of land)'
 
-   ! If there are no lw channels or no land pixels in the scene, we have nothing
-   ! more to do.
-   if (channel_info%nchannels_sw == 0 .or. (nland == 0 .or. nsea == 0)) return
+   ! If there are no lw channels, we have nothing more to do.
+   if (channel_info%nchannels_sw == 0) return
 
 
    !----------------------------------------------------------------------------
