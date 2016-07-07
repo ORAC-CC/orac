@@ -665,8 +665,9 @@ HISTORY:
 #include "generate_parser.tab.h"
 
 FILE* open_part_file(const char* path, const char* suff);
+#define YY_NO_INPUT 1
 
-#line 670 "generate_parser.c"
+#line 671 "generate_parser.c"
 
 #define INITIAL 0
 #define NAMING 1
@@ -726,8 +727,6 @@ extern int yywrap (void );
 #endif
 #endif
 
-    static void yyunput (int c,char *buf_ptr  );
-    
 #ifndef yytext_ptr
 static void yy_flex_strncpy (char *,yyconst char *,int );
 #endif
@@ -854,10 +853,10 @@ YY_DECL
 	register char *yy_cp, *yy_bp;
 	register int yy_act;
     
-#line 23 "generate_parser.lex"
+#line 25 "generate_parser.lex"
 
      /* ---------- Rules ---------- */
-#line 861 "generate_parser.c"
+#line 860 "generate_parser.c"
 
 	if ( !(yy_init) )
 		{
@@ -952,201 +951,201 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 25 "generate_parser.lex"
+#line 27 "generate_parser.lex"
 { ; /* Ignore comments */ }
 	YY_BREAK
 case 2:
 /* rule 2 can match eol */
 YY_RULE_SETUP
-#line 26 "generate_parser.lex"
+#line 28 "generate_parser.lex"
 { ; /* Continue current state to next line */ }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 27 "generate_parser.lex"
+#line 29 "generate_parser.lex"
 { BEGIN(NAMING); return(DELIM); }
 	YY_BREAK
 case 4:
 /* rule 4 can match eol */
 YY_RULE_SETUP
-#line 28 "generate_parser.lex"
+#line 30 "generate_parser.lex"
 { BEGIN(INITIAL); }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 30 "generate_parser.lex"
+#line 32 "generate_parser.lex"
 { return(CHAR); }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 31 "generate_parser.lex"
+#line 33 "generate_parser.lex"
 { return(STR); }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 32 "generate_parser.lex"
+#line 34 "generate_parser.lex"
 { return(CONTAINS); }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 33 "generate_parser.lex"
+#line 35 "generate_parser.lex"
 { return(DOUBLE); }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 34 "generate_parser.lex"
+#line 36 "generate_parser.lex"
 { return(END); }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 35 "generate_parser.lex"
+#line 37 "generate_parser.lex"
 { return(EXTENDS); }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 36 "generate_parser.lex"
+#line 38 "generate_parser.lex"
 { return(IMPLICIT); }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 37 "generate_parser.lex"
+#line 39 "generate_parser.lex"
 { return(INT); }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 38 "generate_parser.lex"
+#line 40 "generate_parser.lex"
 { return(KIND); }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 39 "generate_parser.lex"
+#line 41 "generate_parser.lex"
 { return(LINT); }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 40 "generate_parser.lex"
+#line 42 "generate_parser.lex"
 { return(BOOL); }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 41 "generate_parser.lex"
+#line 43 "generate_parser.lex"
 { return(MODULE); }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 42 "generate_parser.lex"
+#line 44 "generate_parser.lex"
 { return(ONLY); }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 43 "generate_parser.lex"
+#line 45 "generate_parser.lex"
 { return(PARAM); }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 44 "generate_parser.lex"
+#line 46 "generate_parser.lex"
 { return(ALLOC); }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 45 "generate_parser.lex"
+#line 47 "generate_parser.lex"
 { return(FLOAT); }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 46 "generate_parser.lex"
+#line 48 "generate_parser.lex"
 { return(INT); }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 47 "generate_parser.lex"
+#line 49 "generate_parser.lex"
 { return(FLOAT); }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 48 "generate_parser.lex"
+#line 50 "generate_parser.lex"
 { return(SUBROUT); }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 49 "generate_parser.lex"
+#line 51 "generate_parser.lex"
 { return(TYPE); }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 50 "generate_parser.lex"
+#line 52 "generate_parser.lex"
 { return(USE); }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 51 "generate_parser.lex"
+#line 53 "generate_parser.lex"
 { return(INCLUDE); }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 53 "generate_parser.lex"
+#line 55 "generate_parser.lex"
 { return(EQ); }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 54 "generate_parser.lex"
+#line 56 "generate_parser.lex"
 { return(':'); }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 55 "generate_parser.lex"
+#line 57 "generate_parser.lex"
 { return(','); }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 56 "generate_parser.lex"
+#line 58 "generate_parser.lex"
 { return('('); }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 57 "generate_parser.lex"
+#line 59 "generate_parser.lex"
 { return(')'); }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 59 "generate_parser.lex"
+#line 61 "generate_parser.lex"
 {
                      strcpy(yylval.sval, "false"); return(NUM); }
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 61 "generate_parser.lex"
+#line 63 "generate_parser.lex"
 {
                      strcpy(yylval.sval, "true"); return(NUM); }
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 64 "generate_parser.lex"
+#line 66 "generate_parser.lex"
 { strcpy(yylval.sval, yytext); return(NUM); }
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 65 "generate_parser.lex"
+#line 67 "generate_parser.lex"
 { memcpy(yylval.sval, yytext+1, yyleng-2);
                      yylval.sval[yyleng-2]='\0';
                      return(NAME); }
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 68 "generate_parser.lex"
+#line 70 "generate_parser.lex"
 { strcpy(yylval.sval, yytext); return(NAME); }
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 70 "generate_parser.lex"
+#line 72 "generate_parser.lex"
 { ; /* Ignore undeclared characters */ }
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 72 "generate_parser.lex"
+#line 74 "generate_parser.lex"
 YY_FATAL_ERROR( "flex scanner jammed" );
 	YY_BREAK
-#line 1150 "generate_parser.c"
+#line 1149 "generate_parser.c"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(NAMING):
 	yyterminate();
@@ -1474,47 +1473,6 @@ static int yy_get_next_buffer (void)
 	yy_is_jam = (yy_current_state == 169);
 
 	return yy_is_jam ? 0 : yy_current_state;
-}
-
-    static void yyunput (int c, register char * yy_bp )
-{
-	register char *yy_cp;
-    
-    yy_cp = (yy_c_buf_p);
-
-	/* undo effects of setting up yytext */
-	*yy_cp = (yy_hold_char);
-
-	if ( yy_cp < YY_CURRENT_BUFFER_LVALUE->yy_ch_buf + 2 )
-		{ /* need to shift things up to make room */
-		/* +2 for EOB chars. */
-		register int number_to_move = (yy_n_chars) + 2;
-		register char *dest = &YY_CURRENT_BUFFER_LVALUE->yy_ch_buf[
-					YY_CURRENT_BUFFER_LVALUE->yy_buf_size + 2];
-		register char *source =
-				&YY_CURRENT_BUFFER_LVALUE->yy_ch_buf[number_to_move];
-
-		while ( source > YY_CURRENT_BUFFER_LVALUE->yy_ch_buf )
-			*--dest = *--source;
-
-		yy_cp += (int) (dest - source);
-		yy_bp += (int) (dest - source);
-		YY_CURRENT_BUFFER_LVALUE->yy_n_chars =
-			(yy_n_chars) = YY_CURRENT_BUFFER_LVALUE->yy_buf_size;
-
-		if ( yy_cp < YY_CURRENT_BUFFER_LVALUE->yy_ch_buf + 2 )
-			YY_FATAL_ERROR( "flex scanner push-back overflow" );
-		}
-
-	*--yy_cp = (char) c;
-
-    if ( c == '\n' ){
-        --yylineno;
-    }
-
-	(yytext_ptr) = yy_bp;
-	(yy_hold_char) = *yy_cp;
-	(yy_c_buf_p) = yy_cp;
 }
 
 #ifndef YY_NO_INPUT
@@ -2157,7 +2115,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 72 "generate_parser.lex"
+#line 74 "generate_parser.lex"
 
 
 
@@ -2200,6 +2158,9 @@ int main(int argc, char const* argv[]) {
 
     // Write permanent headers for files
     fputs("#ifndef WRAPPER_DEF_H\n#define WRAPPER_DEF_H\n", f[C_DEF]);
+
+    // To avoid gcc warning maybe-uninitialized
+    stat = 0;
 
     // Run parser on each input file in turn
     for (i=2; i<argc; i++) {

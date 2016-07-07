@@ -2851,8 +2851,6 @@ extern int yywrap (void );
 #endif
 #endif
 
-    static void yyunput (int c,char *buf_ptr  );
-    
 #ifndef yytext_ptr
 static void yy_flex_strncpy (char *,yyconst char *,int );
 #endif
@@ -2979,7 +2977,7 @@ YY_DECL
 	register char *yy_cp, *yy_bp;
 	register int yy_act;
     
-#line 57 "read_ctrl.lex"
+#line 58 "read_ctrl.lex"
 
 
 
@@ -2988,7 +2986,7 @@ YY_DECL
 
 
      /* ---------- Parsing rules ---------- */
-#line 2992 "read_ctrl.cc"
+#line 2990 "read_ctrl.cc"
 
 	if ( !(yy_init) )
 		{
@@ -3083,315 +3081,315 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 65 "read_ctrl.lex"
+#line 66 "read_ctrl.lex"
 {
       yylval->val = BYTE_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 68 "read_ctrl.lex"
+#line 69 "read_ctrl.lex"
 {
       yylval->val = SINT_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 71 "read_ctrl.lex"
+#line 72 "read_ctrl.lex"
 {
       yylval->val = LINT_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 74 "read_ctrl.lex"
+#line 75 "read_ctrl.lex"
 {
       yylval->val = SREAL_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 77 "read_ctrl.lex"
+#line 78 "read_ctrl.lex"
 {
       yylval->val = DREAL_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 80 "read_ctrl.lex"
+#line 81 "read_ctrl.lex"
 {
       yylval->val = CMD_ARG_LENGTH_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 83 "read_ctrl.lex"
+#line 84 "read_ctrl.lex"
 {
       yylval->val = FILE_LENGTH_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 86 "read_ctrl.lex"
+#line 87 "read_ctrl.lex"
 {
       yylval->val = PATH_LENGTH_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 89 "read_ctrl.lex"
+#line 90 "read_ctrl.lex"
 {
       yylval->val = DATE_LENGTH_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 92 "read_ctrl.lex"
+#line 93 "read_ctrl.lex"
 {
       yylval->val = PLATFORM_LENGTH_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 95 "read_ctrl.lex"
+#line 96 "read_ctrl.lex"
 {
       yylval->val = SENSOR_LENGTH_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 98 "read_ctrl.lex"
+#line 99 "read_ctrl.lex"
 {
       yylval->val = ATTRIBUTE_LENGTH_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 101 "read_ctrl.lex"
+#line 102 "read_ctrl.lex"
 {
       yylval->val = ATTRIBUTE_LENGTH_LONG_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 104 "read_ctrl.lex"
+#line 105 "read_ctrl.lex"
 {
       yylval->val = UNITLENGTH_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 107 "read_ctrl.lex"
+#line 108 "read_ctrl.lex"
 {
       yylval->val = VAR_LENGTH_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 110 "read_ctrl.lex"
+#line 111 "read_ctrl.lex"
 {
       yylval->val = MAX_NC_NAME_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 113 "read_ctrl.lex"
+#line 114 "read_ctrl.lex"
 {
       yylval->val = MAX_VAR_DIMS_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 116 "read_ctrl.lex"
+#line 117 "read_ctrl.lex"
 {
       yylval->val = ERROR_STOP_CODE_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 119 "read_ctrl.lex"
+#line 120 "read_ctrl.lex"
 {
       yylval->val = BYTE_FILL_VALUE_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 122 "read_ctrl.lex"
+#line 123 "read_ctrl.lex"
 {
       yylval->val = SINT_FILL_VALUE_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 125 "read_ctrl.lex"
+#line 126 "read_ctrl.lex"
 {
       yylval->val = LINT_FILL_VALUE_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 128 "read_ctrl.lex"
+#line 129 "read_ctrl.lex"
 {
       yylval->val = SREAL_FILL_VALUE_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 131 "read_ctrl.lex"
+#line 132 "read_ctrl.lex"
 {
       yylval->val = DREAL_FILL_VALUE_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 134 "read_ctrl.lex"
+#line 135 "read_ctrl.lex"
 {
       yylval->val = PI_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 137 "read_ctrl.lex"
+#line 138 "read_ctrl.lex"
 {
       yylval->val = IRHO_0V_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 140 "read_ctrl.lex"
+#line 141 "read_ctrl.lex"
 {
       yylval->val = IRHO_0D_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 143 "read_ctrl.lex"
+#line 144 "read_ctrl.lex"
 {
       yylval->val = IRHO_DV_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 146 "read_ctrl.lex"
+#line 147 "read_ctrl.lex"
 {
       yylval->val = IRHO_DD_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 149 "read_ctrl.lex"
+#line 150 "read_ctrl.lex"
 {
       yylval->val = MAXRHO_XX_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 152 "read_ctrl.lex"
+#line 153 "read_ctrl.lex"
 {
       yylval->val = SOLARBIT_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 155 "read_ctrl.lex"
+#line 156 "read_ctrl.lex"
 {
       yylval->val = THERMALBIT_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 158 "read_ctrl.lex"
+#line 159 "read_ctrl.lex"
 {
       yylval->val = MAXNUMMEAS_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 161 "read_ctrl.lex"
+#line 162 "read_ctrl.lex"
 {
       yylval->val = MAXNUMVIEWS_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 164 "read_ctrl.lex"
+#line 165 "read_ctrl.lex"
 {
       yylval->bool_v = new Target<bool> (COMMON_FILE_FLAGS_T_VARIABLE.do_cloud);
       BEGIN(INITIAL); return(token::BOOL_VAR); }
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 167 "read_ctrl.lex"
+#line 168 "read_ctrl.lex"
 {
       yylval->bool_v = new Target<bool> (COMMON_FILE_FLAGS_T_VARIABLE.do_aerosol);
       BEGIN(INITIAL); return(token::BOOL_VAR); }
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 170 "read_ctrl.lex"
+#line 171 "read_ctrl.lex"
 {
       yylval->bool_v = new Target<bool> (COMMON_FILE_FLAGS_T_VARIABLE.do_rho);
       BEGIN(INITIAL); return(token::BOOL_VAR); }
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 173 "read_ctrl.lex"
+#line 174 "read_ctrl.lex"
 {
       yylval->bool_v = new Target<bool> (COMMON_FILE_FLAGS_T_VARIABLE.do_swansea);
       BEGIN(INITIAL); return(token::BOOL_VAR); }
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 176 "read_ctrl.lex"
+#line 177 "read_ctrl.lex"
 {
       yylval->bool_v = new Target<bool> (COMMON_FILE_FLAGS_T_VARIABLE.do_indexing);
       BEGIN(INITIAL); return(token::BOOL_VAR); }
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 179 "read_ctrl.lex"
+#line 180 "read_ctrl.lex"
 {
       yylval->bool_v = new Target<bool> (COMMON_FILE_FLAGS_T_VARIABLE.do_phase_pavolonis);
       BEGIN(INITIAL); return(token::BOOL_VAR); }
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 182 "read_ctrl.lex"
+#line 183 "read_ctrl.lex"
 {
       yylval->bool_v = new Target<bool> (COMMON_FILE_FLAGS_T_VARIABLE.do_cldmask);
       BEGIN(INITIAL); return(token::BOOL_VAR); }
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 185 "read_ctrl.lex"
+#line 186 "read_ctrl.lex"
 {
       yylval->bool_v = new Target<bool> (COMMON_FILE_FLAGS_T_VARIABLE.do_cldmask_uncertainty);
       BEGIN(INITIAL); return(token::BOOL_VAR); }
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 188 "read_ctrl.lex"
+#line 189 "read_ctrl.lex"
 {
       yylval->bool_v = new Target<bool> (COMMON_FILE_FLAGS_T_VARIABLE.do_phase);
       BEGIN(INITIAL); return(token::BOOL_VAR); }
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 191 "read_ctrl.lex"
+#line 192 "read_ctrl.lex"
 {
       yylval->bool_v = new Target<bool> (COMMON_FILE_FLAGS_T_VARIABLE.do_covariance);
       BEGIN(INITIAL); return(token::BOOL_VAR); }
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 194 "read_ctrl.lex"
+#line 195 "read_ctrl.lex"
 {
       yylval->int_v = new Target<int> (COMMON_INDICES_T_VARIABLE.Ny);
       BEGIN(INITIAL); return(token::INT_VAR); }
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 197 "read_ctrl.lex"
+#line 198 "read_ctrl.lex"
 {
       fort_alloc_int_1d(&COMMON_INDICES_T_VARIABLE.Y_Id, &COMMON_INDICES_T_VARIABLE.Y_Id_dim0, COMMON_INDICES_T_Y_Id_DIMS);
       yylval->int_v = new Target<int> (COMMON_INDICES_T_VARIABLE.Y_Id, COMMON_INDICES_T_VARIABLE.Y_Id_dim0);
@@ -3399,14 +3397,14 @@ YY_RULE_SETUP
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 201 "read_ctrl.lex"
+#line 202 "read_ctrl.lex"
 {
       yylval->int_v = new Target<int> (COMMON_INDICES_T_VARIABLE.NSolar);
       BEGIN(INITIAL); return(token::INT_VAR); }
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 204 "read_ctrl.lex"
+#line 205 "read_ctrl.lex"
 {
       fort_alloc_int_1d(&COMMON_INDICES_T_VARIABLE.YSolar, &COMMON_INDICES_T_VARIABLE.YSolar_dim0, COMMON_INDICES_T_YSolar_DIMS);
       yylval->int_v = new Target<int> (COMMON_INDICES_T_VARIABLE.YSolar, COMMON_INDICES_T_VARIABLE.YSolar_dim0);
@@ -3414,14 +3412,14 @@ YY_RULE_SETUP
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 208 "read_ctrl.lex"
+#line 209 "read_ctrl.lex"
 {
       yylval->int_v = new Target<int> (COMMON_INDICES_T_VARIABLE.NThermal);
       BEGIN(INITIAL); return(token::INT_VAR); }
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 211 "read_ctrl.lex"
+#line 212 "read_ctrl.lex"
 {
       fort_alloc_int_1d(&COMMON_INDICES_T_VARIABLE.YThermal, &COMMON_INDICES_T_VARIABLE.YThermal_dim0, COMMON_INDICES_T_YThermal_DIMS);
       yylval->int_v = new Target<int> (COMMON_INDICES_T_VARIABLE.YThermal, COMMON_INDICES_T_VARIABLE.YThermal_dim0);
@@ -3429,14 +3427,14 @@ YY_RULE_SETUP
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 215 "read_ctrl.lex"
+#line 216 "read_ctrl.lex"
 {
       yylval->int_v = new Target<int> (COMMON_INDICES_T_VARIABLE.NViews);
       BEGIN(INITIAL); return(token::INT_VAR); }
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 218 "read_ctrl.lex"
+#line 219 "read_ctrl.lex"
 {
       fort_alloc_int_1d(&COMMON_INDICES_T_VARIABLE.View_Id, &COMMON_INDICES_T_VARIABLE.View_Id_dim0, COMMON_INDICES_T_View_Id_DIMS);
       yylval->int_v = new Target<int> (COMMON_INDICES_T_VARIABLE.View_Id, COMMON_INDICES_T_VARIABLE.View_Id_dim0);
@@ -3444,7 +3442,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 52:
 YY_RULE_SETUP
-#line 222 "read_ctrl.lex"
+#line 223 "read_ctrl.lex"
 {
       fort_alloc_int_1d(&COMMON_INDICES_T_VARIABLE.Ch_Is, &COMMON_INDICES_T_VARIABLE.Ch_Is_dim0, COMMON_INDICES_T_Ch_Is_DIMS);
       yylval->int_v = new Target<int> (COMMON_INDICES_T_VARIABLE.Ch_Is, COMMON_INDICES_T_VARIABLE.Ch_Is_dim0);
@@ -3452,14 +3450,14 @@ YY_RULE_SETUP
 	YY_BREAK
 case 53:
 YY_RULE_SETUP
-#line 226 "read_ctrl.lex"
+#line 227 "read_ctrl.lex"
 {
       yylval->int_v = new Target<int> (COMMON_INDICES_T_VARIABLE.Nx);
       BEGIN(INITIAL); return(token::INT_VAR); }
 	YY_BREAK
 case 54:
 YY_RULE_SETUP
-#line 229 "read_ctrl.lex"
+#line 230 "read_ctrl.lex"
 {
       fort_alloc_bool_2d(&COMMON_INDICES_T_VARIABLE.rho_terms, &COMMON_INDICES_T_VARIABLE.rho_terms_dim0, &COMMON_INDICES_T_VARIABLE.rho_terms_dim1, COMMON_INDICES_T_rho_terms_DIMS);
       yylval->bool_v = new Target<bool> (COMMON_INDICES_T_VARIABLE.rho_terms, COMMON_INDICES_T_VARIABLE.rho_terms_dim0, COMMON_INDICES_T_VARIABLE.rho_terms_dim1);
@@ -3467,1973 +3465,1973 @@ YY_RULE_SETUP
 	YY_BREAK
 case 55:
 YY_RULE_SETUP
-#line 233 "read_ctrl.lex"
+#line 234 "read_ctrl.lex"
 {
       yylval->int_v = new Target<int> (COMMON_INDICES_T_VARIABLE.Xdim);
       BEGIN(INITIAL); return(token::INT_VAR); }
 	YY_BREAK
 case 56:
 YY_RULE_SETUP
-#line 236 "read_ctrl.lex"
+#line 237 "read_ctrl.lex"
 {
       yylval->int_v = new Target<int> (COMMON_INDICES_T_VARIABLE.X0);
       BEGIN(INITIAL); return(token::INT_VAR); }
 	YY_BREAK
 case 57:
 YY_RULE_SETUP
-#line 239 "read_ctrl.lex"
+#line 240 "read_ctrl.lex"
 {
       yylval->int_v = new Target<int> (COMMON_INDICES_T_VARIABLE.X1);
       BEGIN(INITIAL); return(token::INT_VAR); }
 	YY_BREAK
 case 58:
 YY_RULE_SETUP
-#line 242 "read_ctrl.lex"
+#line 243 "read_ctrl.lex"
 {
       yylval->int_v = new Target<int> (COMMON_INDICES_T_VARIABLE.Ydim);
       BEGIN(INITIAL); return(token::INT_VAR); }
 	YY_BREAK
 case 59:
 YY_RULE_SETUP
-#line 245 "read_ctrl.lex"
+#line 246 "read_ctrl.lex"
 {
       yylval->int_v = new Target<int> (COMMON_INDICES_T_VARIABLE.Y0);
       BEGIN(INITIAL); return(token::INT_VAR); }
 	YY_BREAK
 case 60:
 YY_RULE_SETUP
-#line 248 "read_ctrl.lex"
+#line 249 "read_ctrl.lex"
 {
       yylval->int_v = new Target<int> (COMMON_INDICES_T_VARIABLE.Y1);
       BEGIN(INITIAL); return(token::INT_VAR); }
 	YY_BREAK
 case 61:
 YY_RULE_SETUP
-#line 251 "read_ctrl.lex"
+#line 252 "read_ctrl.lex"
 {
       BEGIN(COMMON_FILE_FLAGS_T_SC); }
 	YY_BREAK
 case 62:
 YY_RULE_SETUP
-#line 253 "read_ctrl.lex"
+#line 254 "read_ctrl.lex"
 {
       yylval->val = CLOUD_BIT_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 63:
 YY_RULE_SETUP
-#line 256 "read_ctrl.lex"
+#line 257 "read_ctrl.lex"
 {
       yylval->val = AEROSOL_BIT_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 64:
 YY_RULE_SETUP
-#line 259 "read_ctrl.lex"
+#line 260 "read_ctrl.lex"
 {
       yylval->val = RHO_BIT_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 65:
 YY_RULE_SETUP
-#line 262 "read_ctrl.lex"
+#line 263 "read_ctrl.lex"
 {
       yylval->val = SWANSEA_BIT_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 66:
 YY_RULE_SETUP
-#line 265 "read_ctrl.lex"
+#line 266 "read_ctrl.lex"
 {
       yylval->val = INDEXING_BIT_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 67:
 YY_RULE_SETUP
-#line 268 "read_ctrl.lex"
+#line 269 "read_ctrl.lex"
 {
       yylval->val = PAVOLONIS_BIT_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 68:
 YY_RULE_SETUP
-#line 271 "read_ctrl.lex"
+#line 272 "read_ctrl.lex"
 {
       yylval->val = CLDMASK_BIT_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 69:
 YY_RULE_SETUP
-#line 274 "read_ctrl.lex"
+#line 275 "read_ctrl.lex"
 {
       yylval->val = CLDMASK_U_BIT_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 70:
 YY_RULE_SETUP
-#line 277 "read_ctrl.lex"
+#line 278 "read_ctrl.lex"
 {
       yylval->val = PHASE_BIT_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 71:
 YY_RULE_SETUP
-#line 280 "read_ctrl.lex"
+#line 281 "read_ctrl.lex"
 {
       yylval->val = COVARIANCE_BIT_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 72:
 YY_RULE_SETUP
-#line 283 "read_ctrl.lex"
+#line 284 "read_ctrl.lex"
 {
       yylval->val = FILENAMELEN_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 73:
 YY_RULE_SETUP
-#line 286 "read_ctrl.lex"
+#line 287 "read_ctrl.lex"
 {
       yylval->val = INSTNAMELEN_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 74:
 YY_RULE_SETUP
-#line 289 "read_ctrl.lex"
+#line 290 "read_ctrl.lex"
 {
       yylval->val = MAXNUMSOLAR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 75:
 YY_RULE_SETUP
-#line 292 "read_ctrl.lex"
+#line 293 "read_ctrl.lex"
 {
       yylval->val = MAXNUMTHERMAL_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 76:
 YY_RULE_SETUP
-#line 295 "read_ctrl.lex"
+#line 296 "read_ctrl.lex"
 {
       yylval->val = MAXCLOUDTYPE_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 77:
 YY_RULE_SETUP
-#line 298 "read_ctrl.lex"
+#line 299 "read_ctrl.lex"
 {
       yylval->val = MAXPLEVELS_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 78:
 YY_RULE_SETUP
-#line 301 "read_ctrl.lex"
+#line 302 "read_ctrl.lex"
 {
       yylval->val = MAXCRPROPS_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 79:
 YY_RULE_SETUP
-#line 304 "read_ctrl.lex"
+#line 305 "read_ctrl.lex"
 {
       yylval->val = MAXTYPES_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 80:
 YY_RULE_SETUP
-#line 307 "read_ctrl.lex"
+#line 308 "read_ctrl.lex"
 {
       yylval->val = DITHERM3_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 81:
 YY_RULE_SETUP
-#line 310 "read_ctrl.lex"
+#line 311 "read_ctrl.lex"
 {
       yylval->val = DITHERM6_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 82:
 YY_RULE_SETUP
-#line 313 "read_ctrl.lex"
+#line 314 "read_ctrl.lex"
 {
       yylval->val = DITHERM15_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 83:
 YY_RULE_SETUP
-#line 316 "read_ctrl.lex"
+#line 317 "read_ctrl.lex"
 {
       yylval->val = FLAGMIN_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 84:
 YY_RULE_SETUP
-#line 319 "read_ctrl.lex"
+#line 320 "read_ctrl.lex"
 {
       yylval->val = FLAGMAX_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 85:
 YY_RULE_SETUP
-#line 322 "read_ctrl.lex"
+#line 323 "read_ctrl.lex"
 {
       yylval->val = TYPEMIN_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 86:
 YY_RULE_SETUP
-#line 325 "read_ctrl.lex"
+#line 326 "read_ctrl.lex"
 {
       yylval->val = TYPEMAX_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 87:
 YY_RULE_SETUP
-#line 328 "read_ctrl.lex"
+#line 329 "read_ctrl.lex"
 {
       yylval->val = SOLZENMIN_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 88:
 YY_RULE_SETUP
-#line 331 "read_ctrl.lex"
+#line 332 "read_ctrl.lex"
 {
       yylval->val = SATZENMIN_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 89:
 YY_RULE_SETUP
-#line 334 "read_ctrl.lex"
+#line 335 "read_ctrl.lex"
 {
       yylval->val = SATZENMAX_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 90:
 YY_RULE_SETUP
-#line 337 "read_ctrl.lex"
+#line 338 "read_ctrl.lex"
 {
       yylval->val = RELAZIMIN_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 91:
 YY_RULE_SETUP
-#line 340 "read_ctrl.lex"
+#line 341 "read_ctrl.lex"
 {
       yylval->val = RELAZIMAX_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 92:
 YY_RULE_SETUP
-#line 343 "read_ctrl.lex"
+#line 344 "read_ctrl.lex"
 {
       yylval->val = LATMIN_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 93:
 YY_RULE_SETUP
-#line 346 "read_ctrl.lex"
+#line 347 "read_ctrl.lex"
 {
       yylval->val = LATMAX_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 94:
 YY_RULE_SETUP
-#line 349 "read_ctrl.lex"
+#line 350 "read_ctrl.lex"
 {
       yylval->val = LONMIN_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 95:
 YY_RULE_SETUP
-#line 352 "read_ctrl.lex"
+#line 353 "read_ctrl.lex"
 {
       yylval->val = LONMAX_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 96:
 YY_RULE_SETUP
-#line 355 "read_ctrl.lex"
+#line 356 "read_ctrl.lex"
 {
       yylval->val = REFMIN_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 97:
 YY_RULE_SETUP
-#line 358 "read_ctrl.lex"
+#line 359 "read_ctrl.lex"
 {
       yylval->val = REFMAX_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 98:
 YY_RULE_SETUP
-#line 361 "read_ctrl.lex"
+#line 362 "read_ctrl.lex"
 {
       yylval->val = BTMIN_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 99:
 YY_RULE_SETUP
-#line 364 "read_ctrl.lex"
+#line 365 "read_ctrl.lex"
 {
       yylval->val = BTMAX_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 100:
 YY_RULE_SETUP
-#line 367 "read_ctrl.lex"
+#line 368 "read_ctrl.lex"
 {
       yylval->val = RHOMIN_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 101:
 YY_RULE_SETUP
-#line 370 "read_ctrl.lex"
+#line 371 "read_ctrl.lex"
 {
       yylval->val = RHOMAX_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 102:
 YY_RULE_SETUP
-#line 373 "read_ctrl.lex"
+#line 374 "read_ctrl.lex"
 {
       yylval->val = RHOERRMIN_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 103:
 YY_RULE_SETUP
-#line 376 "read_ctrl.lex"
+#line 377 "read_ctrl.lex"
 {
       yylval->val = RHOERRMAX_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 104:
 YY_RULE_SETUP
-#line 379 "read_ctrl.lex"
+#line 380 "read_ctrl.lex"
 {
       yylval->val = CORRMIN_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 105:
 YY_RULE_SETUP
-#line 382 "read_ctrl.lex"
+#line 383 "read_ctrl.lex"
 {
       yylval->val = CORRMAX_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 106:
 YY_RULE_SETUP
-#line 385 "read_ctrl.lex"
+#line 386 "read_ctrl.lex"
 {
       yylval->val = TXCMIN_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 107:
 YY_RULE_SETUP
-#line 388 "read_ctrl.lex"
+#line 389 "read_ctrl.lex"
 {
       yylval->val = TXCMAX_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 108:
 YY_RULE_SETUP
-#line 391 "read_ctrl.lex"
+#line 392 "read_ctrl.lex"
 {
       yylval->val = RXCMIN_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 109:
 YY_RULE_SETUP
-#line 394 "read_ctrl.lex"
+#line 395 "read_ctrl.lex"
 {
       yylval->val = RXCMAX_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 110:
 YY_RULE_SETUP
-#line 397 "read_ctrl.lex"
+#line 398 "read_ctrl.lex"
 {
       yylval->val = EMSMIN_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 111:
 YY_RULE_SETUP
-#line 400 "read_ctrl.lex"
+#line 401 "read_ctrl.lex"
 {
       yylval->val = EMSMAX_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 112:
 YY_RULE_SETUP
-#line 403 "read_ctrl.lex"
+#line 404 "read_ctrl.lex"
 {
       yylval->val = MISSINGXN_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 113:
 YY_RULE_SETUP
-#line 406 "read_ctrl.lex"
+#line 407 "read_ctrl.lex"
 {
       yylval->val = MISSINGSN_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 114:
 YY_RULE_SETUP
-#line 409 "read_ctrl.lex"
+#line 410 "read_ctrl.lex"
 {
       yylval->val = RHOWAT_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 115:
 YY_RULE_SETUP
-#line 412 "read_ctrl.lex"
+#line 413 "read_ctrl.lex"
 {
       yylval->val = RHOICE_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 116:
 YY_RULE_SETUP
-#line 415 "read_ctrl.lex"
+#line 416 "read_ctrl.lex"
 {
       yylval->val = QEXTWAT_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 117:
 YY_RULE_SETUP
-#line 418 "read_ctrl.lex"
+#line 419 "read_ctrl.lex"
 {
       yylval->val = QEXTICE_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 118:
 YY_RULE_SETUP
-#line 421 "read_ctrl.lex"
+#line 422 "read_ctrl.lex"
 {
       yylval->val = G_WMO_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 119:
 YY_RULE_SETUP
-#line 424 "read_ctrl.lex"
+#line 425 "read_ctrl.lex"
 {
       yylval->val = MDADERRTAU_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 120:
 YY_RULE_SETUP
-#line 427 "read_ctrl.lex"
+#line 428 "read_ctrl.lex"
 {
       yylval->val = MDADERRPC_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 121:
 YY_RULE_SETUP
-#line 430 "read_ctrl.lex"
+#line 431 "read_ctrl.lex"
 {
       yylval->val = MDADERRF_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 122:
 YY_RULE_SETUP
-#line 433 "read_ctrl.lex"
+#line 434 "read_ctrl.lex"
 {
       yylval->val = AUXERRTSLAND_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 123:
 YY_RULE_SETUP
-#line 436 "read_ctrl.lex"
+#line 437 "read_ctrl.lex"
 {
       yylval->val = AUXERRTSSEA_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 124:
 YY_RULE_SETUP
-#line 439 "read_ctrl.lex"
+#line 440 "read_ctrl.lex"
 {
       yylval->val = RTMINTMETHLINEAR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 125:
 YY_RULE_SETUP
-#line 442 "read_ctrl.lex"
+#line 443 "read_ctrl.lex"
 {
       yylval->val = RTMINTMETHSPLINE_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 126:
 YY_RULE_SETUP
-#line 445 "read_ctrl.lex"
+#line 446 "read_ctrl.lex"
 {
       yylval->val = RTMINTMETHNONE_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 127:
 YY_RULE_SETUP
-#line 448 "read_ctrl.lex"
+#line 449 "read_ctrl.lex"
 {
       yylval->val = LUTINTMETHLINEAR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 128:
 YY_RULE_SETUP
-#line 451 "read_ctrl.lex"
+#line 452 "read_ctrl.lex"
 {
       yylval->val = LUTINTMETHBICUBIC_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 129:
 YY_RULE_SETUP
-#line 454 "read_ctrl.lex"
+#line 455 "read_ctrl.lex"
 {
       yylval->val = N_LEGACY_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 130:
 YY_RULE_SETUP
-#line 457 "read_ctrl.lex"
+#line 458 "read_ctrl.lex"
 {
       yylval->val = I_LEGACY_0_6X_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 131:
 YY_RULE_SETUP
-#line 460 "read_ctrl.lex"
+#line 461 "read_ctrl.lex"
 {
       yylval->val = I_LEGACY_0_8X_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 132:
 YY_RULE_SETUP
-#line 463 "read_ctrl.lex"
+#line 464 "read_ctrl.lex"
 {
       yylval->val = I_LEGACY_1_6X_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 133:
 YY_RULE_SETUP
-#line 466 "read_ctrl.lex"
+#line 467 "read_ctrl.lex"
 {
       yylval->val = I_LEGACY_3_XX_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 134:
 YY_RULE_SETUP
-#line 469 "read_ctrl.lex"
+#line 470 "read_ctrl.lex"
 {
       yylval->val = I_LEGACY_11_X_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 135:
 YY_RULE_SETUP
-#line 472 "read_ctrl.lex"
+#line 473 "read_ctrl.lex"
 {
       yylval->val = I_LEGACY_12_X_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 136:
 YY_RULE_SETUP
-#line 475 "read_ctrl.lex"
+#line 476 "read_ctrl.lex"
 {
       yylval->val = IBEXT_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 137:
 YY_RULE_SETUP
-#line 478 "read_ctrl.lex"
+#line 479 "read_ctrl.lex"
 {
       yylval->val = IRBD_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 138:
 YY_RULE_SETUP
-#line 481 "read_ctrl.lex"
+#line 482 "read_ctrl.lex"
 {
       yylval->val = IRFBD_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 139:
 YY_RULE_SETUP
-#line 484 "read_ctrl.lex"
+#line 485 "read_ctrl.lex"
 {
       yylval->val = IRD_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 140:
 YY_RULE_SETUP
-#line 487 "read_ctrl.lex"
+#line 488 "read_ctrl.lex"
 {
       yylval->val = IRFD_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 141:
 YY_RULE_SETUP
-#line 490 "read_ctrl.lex"
+#line 491 "read_ctrl.lex"
 {
       yylval->val = ITB_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 142:
 YY_RULE_SETUP
-#line 493 "read_ctrl.lex"
+#line 494 "read_ctrl.lex"
 {
       yylval->val = ITB_U_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 143:
 YY_RULE_SETUP
-#line 496 "read_ctrl.lex"
+#line 497 "read_ctrl.lex"
 {
       yylval->val = ITBD_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 144:
 YY_RULE_SETUP
-#line 499 "read_ctrl.lex"
+#line 500 "read_ctrl.lex"
 {
       yylval->val = ITFBD_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 145:
 YY_RULE_SETUP
-#line 502 "read_ctrl.lex"
+#line 503 "read_ctrl.lex"
 {
       yylval->val = ITD_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 146:
 YY_RULE_SETUP
-#line 505 "read_ctrl.lex"
+#line 506 "read_ctrl.lex"
 {
       yylval->val = ITFD_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 147:
 YY_RULE_SETUP
-#line 508 "read_ctrl.lex"
+#line 509 "read_ctrl.lex"
 {
       yylval->val = IEM_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 148:
 YY_RULE_SETUP
-#line 511 "read_ctrl.lex"
+#line 512 "read_ctrl.lex"
 {
       yylval->val = IBEXTRAT_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 149:
 YY_RULE_SETUP
-#line 514 "read_ctrl.lex"
+#line 515 "read_ctrl.lex"
 {
       yylval->val = ISWAN_S_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 150:
 YY_RULE_SETUP
-#line 517 "read_ctrl.lex"
+#line 518 "read_ctrl.lex"
 {
       yylval->val = ISWAN_P_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 151:
 YY_RULE_SETUP
-#line 520 "read_ctrl.lex"
+#line 521 "read_ctrl.lex"
 {
       yylval->val = MAXSWAN_X_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 152:
 YY_RULE_SETUP
-#line 523 "read_ctrl.lex"
+#line 524 "read_ctrl.lex"
 {
       yylval->val = ISEA_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 153:
 YY_RULE_SETUP
-#line 526 "read_ctrl.lex"
+#line 527 "read_ctrl.lex"
 {
       yylval->val = ILAND_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 154:
 YY_RULE_SETUP
-#line 529 "read_ctrl.lex"
+#line 530 "read_ctrl.lex"
 {
       yylval->val = MAXSURF_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 155:
 YY_RULE_SETUP
-#line 532 "read_ctrl.lex"
+#line 533 "read_ctrl.lex"
 {
       yylval->val = ITAU_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 156:
 YY_RULE_SETUP
-#line 535 "read_ctrl.lex"
+#line 536 "read_ctrl.lex"
 {
       yylval->val = IRE_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 157:
 YY_RULE_SETUP
-#line 538 "read_ctrl.lex"
+#line 539 "read_ctrl.lex"
 {
       yylval->val = IPC_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 158:
 YY_RULE_SETUP
-#line 541 "read_ctrl.lex"
+#line 542 "read_ctrl.lex"
 {
       yylval->val = IFR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 159:
 YY_RULE_SETUP
-#line 544 "read_ctrl.lex"
+#line 545 "read_ctrl.lex"
 {
       yylval->val = ITS_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 160:
 YY_RULE_SETUP
-#line 547 "read_ctrl.lex"
+#line 548 "read_ctrl.lex"
 {
       yylval->val = IDAY_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 161:
 YY_RULE_SETUP
-#line 550 "read_ctrl.lex"
+#line 551 "read_ctrl.lex"
 {
       yylval->val = ITWI_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 162:
 YY_RULE_SETUP
-#line 553 "read_ctrl.lex"
+#line 554 "read_ctrl.lex"
 {
       yylval->val = INIGHT_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 163:
 YY_RULE_SETUP
-#line 556 "read_ctrl.lex"
+#line 557 "read_ctrl.lex"
 {
       yylval->val = MAXILLUM_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 164:
 YY_RULE_SETUP
-#line 559 "read_ctrl.lex"
+#line 560 "read_ctrl.lex"
 {
       yylval->val = SELMCTRL_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 165:
 YY_RULE_SETUP
-#line 562 "read_ctrl.lex"
+#line 563 "read_ctrl.lex"
 {
       yylval->val = SELMMEAS_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 166:
 YY_RULE_SETUP
-#line 565 "read_ctrl.lex"
+#line 566 "read_ctrl.lex"
 {
       yylval->val = SELMAUX_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 167:
 YY_RULE_SETUP
-#line 568 "read_ctrl.lex"
+#line 569 "read_ctrl.lex"
 {
       yylval->val = SELMPREV_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 168:
 YY_RULE_SETUP
-#line 571 "read_ctrl.lex"
+#line 572 "read_ctrl.lex"
 {
       yylval->val = COSTBIT_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 169:
 YY_RULE_SETUP
-#line 574 "read_ctrl.lex"
+#line 575 "read_ctrl.lex"
 {
       yylval->val = CLDWAT_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 170:
 YY_RULE_SETUP
-#line 577 "read_ctrl.lex"
+#line 578 "read_ctrl.lex"
 {
       yylval->val = CLDICE_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 171:
 YY_RULE_SETUP
-#line 580 "read_ctrl.lex"
+#line 581 "read_ctrl.lex"
 {
       yylval->val = AEROX_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 172:
 YY_RULE_SETUP
-#line 583 "read_ctrl.lex"
+#line 584 "read_ctrl.lex"
 {
       yylval->val = AERSW_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 173:
 YY_RULE_SETUP
-#line 586 "read_ctrl.lex"
+#line 587 "read_ctrl.lex"
 {
       yylval->val = ASHEYJ_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 174:
 YY_RULE_SETUP
-#line 589 "read_ctrl.lex"
+#line 590 "read_ctrl.lex"
 {
       yylval->val = BKPL_FM_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 175:
 YY_RULE_SETUP
-#line 592 "read_ctrl.lex"
+#line 593 "read_ctrl.lex"
 {
       yylval->val = BKPL_FM_SOLAR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 176:
 YY_RULE_SETUP
-#line 595 "read_ctrl.lex"
+#line 596 "read_ctrl.lex"
 {
       yylval->val = BKPL_FM_THERMAL_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 177:
 YY_RULE_SETUP
-#line 598 "read_ctrl.lex"
+#line 599 "read_ctrl.lex"
 {
       yylval->val = BKPL_GET_SPIXEL_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 178:
 YY_RULE_SETUP
-#line 601 "read_ctrl.lex"
+#line 602 "read_ctrl.lex"
 {
       yylval->val = BKPL_INTERPOL_SOLAR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 179:
 YY_RULE_SETUP
-#line 604 "read_ctrl.lex"
+#line 605 "read_ctrl.lex"
 {
       yylval->val = BKPL_INTERPOL_THERMAL_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 180:
 YY_RULE_SETUP
-#line 607 "read_ctrl.lex"
+#line 608 "read_ctrl.lex"
 {
       yylval->val = BKPL_INVERTMARQUARDT_1_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 181:
 YY_RULE_SETUP
-#line 610 "read_ctrl.lex"
+#line 611 "read_ctrl.lex"
 {
       yylval->val = BKPL_INVERTMARQUARDT_2_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 182:
 YY_RULE_SETUP
-#line 613 "read_ctrl.lex"
+#line 614 "read_ctrl.lex"
 {
       yylval->val = BKPL_INVERTMARQUARDT_3_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 183:
 YY_RULE_SETUP
-#line 616 "read_ctrl.lex"
+#line 617 "read_ctrl.lex"
 {
       yylval->val = BKPL_INVERTMARQUARDT_4_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 184:
 YY_RULE_SETUP
-#line 619 "read_ctrl.lex"
+#line 620 "read_ctrl.lex"
 {
       yylval->val = BKPL_READ_LUT_1_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 185:
 YY_RULE_SETUP
-#line 622 "read_ctrl.lex"
+#line 623 "read_ctrl.lex"
 {
       yylval->val = BKPL_READ_LUT_2_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 186:
 YY_RULE_SETUP
-#line 625 "read_ctrl.lex"
+#line 626 "read_ctrl.lex"
 {
       yylval->val = DRIVERFILEOPENERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 187:
 YY_RULE_SETUP
-#line 628 "read_ctrl.lex"
+#line 629 "read_ctrl.lex"
 {
       yylval->val = DRIVERFILEREADERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 188:
 YY_RULE_SETUP
-#line 631 "read_ctrl.lex"
+#line 632 "read_ctrl.lex"
 {
       yylval->val = DRIVERFILENOTFOUND_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 189:
 YY_RULE_SETUP
-#line 634 "read_ctrl.lex"
+#line 635 "read_ctrl.lex"
 {
       yylval->val = DRIVERFILEDATAERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 190:
 YY_RULE_SETUP
-#line 637 "read_ctrl.lex"
+#line 638 "read_ctrl.lex"
 {
       yylval->val = AMETHINVALID_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 191:
 YY_RULE_SETUP
-#line 640 "read_ctrl.lex"
+#line 641 "read_ctrl.lex"
 {
       yylval->val = LIMITMETHINVALID_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 192:
 YY_RULE_SETUP
-#line 643 "read_ctrl.lex"
+#line 644 "read_ctrl.lex"
 {
       yylval->val = SEGSIZEINVALID_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 193:
 YY_RULE_SETUP
-#line 646 "read_ctrl.lex"
+#line 647 "read_ctrl.lex"
 {
       yylval->val = DRIVERFILEINCOMPAT_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 194:
 YY_RULE_SETUP
-#line 649 "read_ctrl.lex"
+#line 650 "read_ctrl.lex"
 {
       yylval->val = BADLUTCLASS_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 195:
 YY_RULE_SETUP
-#line 652 "read_ctrl.lex"
+#line 653 "read_ctrl.lex"
 {
       yylval->val = ICFILEOPENERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 196:
 YY_RULE_SETUP
-#line 655 "read_ctrl.lex"
+#line 656 "read_ctrl.lex"
 {
       yylval->val = ICFILEREADERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 197:
 YY_RULE_SETUP
-#line 658 "read_ctrl.lex"
+#line 659 "read_ctrl.lex"
 {
       yylval->val = INSTIDINVALID_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 198:
 YY_RULE_SETUP
-#line 661 "read_ctrl.lex"
+#line 662 "read_ctrl.lex"
 {
       yylval->val = CTRLDATAINVALID_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 199:
 YY_RULE_SETUP
-#line 664 "read_ctrl.lex"
+#line 665 "read_ctrl.lex"
 {
       yylval->val = CHANFILEOPENERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 200:
 YY_RULE_SETUP
-#line 667 "read_ctrl.lex"
+#line 668 "read_ctrl.lex"
 {
       yylval->val = CHANFILEREADERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 201:
 YY_RULE_SETUP
-#line 670 "read_ctrl.lex"
+#line 671 "read_ctrl.lex"
 {
       yylval->val = CHANFILEDATAERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 202:
 YY_RULE_SETUP
-#line 673 "read_ctrl.lex"
+#line 674 "read_ctrl.lex"
 {
       yylval->val = CCFILEOPENERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 203:
 YY_RULE_SETUP
-#line 676 "read_ctrl.lex"
+#line 677 "read_ctrl.lex"
 {
       yylval->val = CCFILEREADERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 204:
 YY_RULE_SETUP
-#line 679 "read_ctrl.lex"
+#line 680 "read_ctrl.lex"
 {
       yylval->val = CCNCLASSERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 205:
 YY_RULE_SETUP
-#line 682 "read_ctrl.lex"
+#line 683 "read_ctrl.lex"
 {
       yylval->val = CCSELECTERROR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 206:
 YY_RULE_SETUP
-#line 685 "read_ctrl.lex"
+#line 686 "read_ctrl.lex"
 {
       yylval->val = CCDEFAULTERROR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 207:
 YY_RULE_SETUP
-#line 688 "read_ctrl.lex"
+#line 689 "read_ctrl.lex"
 {
       yylval->val = LUTFILEOPENERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 208:
 YY_RULE_SETUP
-#line 691 "read_ctrl.lex"
+#line 692 "read_ctrl.lex"
 {
       yylval->val = LUTFILEREADERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 209:
 YY_RULE_SETUP
-#line 694 "read_ctrl.lex"
+#line 695 "read_ctrl.lex"
 {
       yylval->val = LUTFILEDATAERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 210:
 YY_RULE_SETUP
-#line 697 "read_ctrl.lex"
+#line 698 "read_ctrl.lex"
 {
       yylval->val = MSIFILEOPENERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 211:
 YY_RULE_SETUP
-#line 700 "read_ctrl.lex"
+#line 701 "read_ctrl.lex"
 {
       yylval->val = MSIFILEREADHEADERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 212:
 YY_RULE_SETUP
-#line 703 "read_ctrl.lex"
+#line 704 "read_ctrl.lex"
 {
       yylval->val = MSIFILEREADDATAERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 213:
 YY_RULE_SETUP
-#line 706 "read_ctrl.lex"
+#line 707 "read_ctrl.lex"
 {
       yylval->val = MSIFILEEOFERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 214:
 YY_RULE_SETUP
-#line 709 "read_ctrl.lex"
+#line 710 "read_ctrl.lex"
 {
       yylval->val = MSIFILECLOSEERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 215:
 YY_RULE_SETUP
-#line 712 "read_ctrl.lex"
+#line 713 "read_ctrl.lex"
 {
       yylval->val = CFFILEOPENERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 216:
 YY_RULE_SETUP
-#line 715 "read_ctrl.lex"
+#line 716 "read_ctrl.lex"
 {
       yylval->val = CFFILEREADHEADERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 217:
 YY_RULE_SETUP
-#line 718 "read_ctrl.lex"
+#line 719 "read_ctrl.lex"
 {
       yylval->val = CFFILEREADDATAERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 218:
 YY_RULE_SETUP
-#line 721 "read_ctrl.lex"
+#line 722 "read_ctrl.lex"
 {
       yylval->val = CFFILEEOFERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 219:
 YY_RULE_SETUP
-#line 724 "read_ctrl.lex"
+#line 725 "read_ctrl.lex"
 {
       yylval->val = CFFILECLOSEERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 220:
 YY_RULE_SETUP
-#line 727 "read_ctrl.lex"
+#line 728 "read_ctrl.lex"
 {
       yylval->val = LSFILEOPENERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 221:
 YY_RULE_SETUP
-#line 730 "read_ctrl.lex"
+#line 731 "read_ctrl.lex"
 {
       yylval->val = LSFILEREADHEADERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 222:
 YY_RULE_SETUP
-#line 733 "read_ctrl.lex"
+#line 734 "read_ctrl.lex"
 {
       yylval->val = LSFILEREADDATAERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 223:
 YY_RULE_SETUP
-#line 736 "read_ctrl.lex"
+#line 737 "read_ctrl.lex"
 {
       yylval->val = LSFILEEOFERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 224:
 YY_RULE_SETUP
-#line 739 "read_ctrl.lex"
+#line 740 "read_ctrl.lex"
 {
       yylval->val = LSFILECLOSEERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 225:
 YY_RULE_SETUP
-#line 742 "read_ctrl.lex"
+#line 743 "read_ctrl.lex"
 {
       yylval->val = GEOMFILEOPENERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 226:
 YY_RULE_SETUP
-#line 745 "read_ctrl.lex"
+#line 746 "read_ctrl.lex"
 {
       yylval->val = GEOMFILEREADHEADERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 227:
 YY_RULE_SETUP
-#line 748 "read_ctrl.lex"
+#line 749 "read_ctrl.lex"
 {
       yylval->val = GEOMFILEREADDATAERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 228:
 YY_RULE_SETUP
-#line 751 "read_ctrl.lex"
+#line 752 "read_ctrl.lex"
 {
       yylval->val = GEOMFILEEOFERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 229:
 YY_RULE_SETUP
-#line 754 "read_ctrl.lex"
+#line 755 "read_ctrl.lex"
 {
       yylval->val = GEOMFILECLOSEERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 230:
 YY_RULE_SETUP
-#line 757 "read_ctrl.lex"
+#line 758 "read_ctrl.lex"
 {
       yylval->val = INTTRANSERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 231:
 YY_RULE_SETUP
-#line 760 "read_ctrl.lex"
+#line 761 "read_ctrl.lex"
 {
       yylval->val = LOCFILEOPENERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 232:
 YY_RULE_SETUP
-#line 763 "read_ctrl.lex"
+#line 764 "read_ctrl.lex"
 {
       yylval->val = LOCFILEREADHEADERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 233:
 YY_RULE_SETUP
-#line 766 "read_ctrl.lex"
+#line 767 "read_ctrl.lex"
 {
       yylval->val = LOCFILEREADDATAERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 234:
 YY_RULE_SETUP
-#line 769 "read_ctrl.lex"
+#line 770 "read_ctrl.lex"
 {
       yylval->val = LOCFILEEOFERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 235:
 YY_RULE_SETUP
-#line 772 "read_ctrl.lex"
+#line 773 "read_ctrl.lex"
 {
       yylval->val = LOCFILECLOSEERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 236:
 YY_RULE_SETUP
-#line 775 "read_ctrl.lex"
+#line 776 "read_ctrl.lex"
 {
       yylval->val = LWRTMRTMFILEOPENERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 237:
 YY_RULE_SETUP
-#line 778 "read_ctrl.lex"
+#line 779 "read_ctrl.lex"
 {
       yylval->val = LWRTMRTMINSTERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 238:
 YY_RULE_SETUP
-#line 781 "read_ctrl.lex"
+#line 782 "read_ctrl.lex"
 {
       yylval->val = LWRTMRTMDATEERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 239:
 YY_RULE_SETUP
-#line 784 "read_ctrl.lex"
+#line 785 "read_ctrl.lex"
 {
       yylval->val = LWRTMCHANERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 240:
 YY_RULE_SETUP
-#line 787 "read_ctrl.lex"
+#line 788 "read_ctrl.lex"
 {
       yylval->val = LWRTMREADERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 241:
 YY_RULE_SETUP
-#line 790 "read_ctrl.lex"
+#line 791 "read_ctrl.lex"
 {
       yylval->val = LWRTMPFILEOPENERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 242:
 YY_RULE_SETUP
-#line 793 "read_ctrl.lex"
+#line 794 "read_ctrl.lex"
 {
       yylval->val = LWRTMPROFDATEERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 243:
 YY_RULE_SETUP
-#line 796 "read_ctrl.lex"
+#line 797 "read_ctrl.lex"
 {
       yylval->val = LWRTMPROFNLATERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 244:
 YY_RULE_SETUP
-#line 799 "read_ctrl.lex"
+#line 800 "read_ctrl.lex"
 {
       yylval->val = LWRTMPROFNLONERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 245:
 YY_RULE_SETUP
-#line 802 "read_ctrl.lex"
+#line 803 "read_ctrl.lex"
 {
       yylval->val = LWRTMPROFERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 246:
 YY_RULE_SETUP
-#line 805 "read_ctrl.lex"
+#line 806 "read_ctrl.lex"
 {
       yylval->val = LWRTMPROFREADERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 247:
 YY_RULE_SETUP
-#line 808 "read_ctrl.lex"
+#line 809 "read_ctrl.lex"
 {
       yylval->val = SWRTMRTMFILEOPENERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 248:
 YY_RULE_SETUP
-#line 811 "read_ctrl.lex"
+#line 812 "read_ctrl.lex"
 {
       yylval->val = SWRTMRTMINSTERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 249:
 YY_RULE_SETUP
-#line 814 "read_ctrl.lex"
+#line 815 "read_ctrl.lex"
 {
       yylval->val = SWRTMRTMDATEERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 250:
 YY_RULE_SETUP
-#line 817 "read_ctrl.lex"
+#line 818 "read_ctrl.lex"
 {
       yylval->val = SWRTMCHANERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 251:
 YY_RULE_SETUP
-#line 820 "read_ctrl.lex"
+#line 821 "read_ctrl.lex"
 {
       yylval->val = SWRTMREADERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 252:
 YY_RULE_SETUP
-#line 823 "read_ctrl.lex"
+#line 824 "read_ctrl.lex"
 {
       yylval->val = SWRTMPFILEOPENERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 253:
 YY_RULE_SETUP
-#line 826 "read_ctrl.lex"
+#line 827 "read_ctrl.lex"
 {
       yylval->val = SWRTMPROFDATEERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 254:
 YY_RULE_SETUP
-#line 829 "read_ctrl.lex"
+#line 830 "read_ctrl.lex"
 {
       yylval->val = SWRTMPROFNLATERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 255:
 YY_RULE_SETUP
-#line 832 "read_ctrl.lex"
+#line 833 "read_ctrl.lex"
 {
       yylval->val = SWRTMPROFNLONERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 256:
 YY_RULE_SETUP
-#line 835 "read_ctrl.lex"
+#line 836 "read_ctrl.lex"
 {
       yylval->val = SWRTMPROFERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 257:
 YY_RULE_SETUP
-#line 838 "read_ctrl.lex"
+#line 839 "read_ctrl.lex"
 {
       yylval->val = SWRTMPROFREADERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 258:
 YY_RULE_SETUP
-#line 841 "read_ctrl.lex"
+#line 842 "read_ctrl.lex"
 {
       yylval->val = SPIXELINDEXING_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 259:
 YY_RULE_SETUP
-#line 844 "read_ctrl.lex"
+#line 845 "read_ctrl.lex"
 {
       yylval->val = SPIXELMIXED_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 260:
 YY_RULE_SETUP
-#line 847 "read_ctrl.lex"
+#line 848 "read_ctrl.lex"
 {
       yylval->val = SPIXELCLOUDPIX_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 261:
 YY_RULE_SETUP
-#line 850 "read_ctrl.lex"
+#line 851 "read_ctrl.lex"
 {
       yylval->val = SPIXELAMETH_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 262:
 YY_RULE_SETUP
-#line 853 "read_ctrl.lex"
+#line 854 "read_ctrl.lex"
 {
       yylval->val = SPIXELINVALID_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 263:
 YY_RULE_SETUP
-#line 856 "read_ctrl.lex"
+#line 857 "read_ctrl.lex"
 {
       yylval->val = SPIXELTYPE_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 264:
 YY_RULE_SETUP
-#line 859 "read_ctrl.lex"
+#line 860 "read_ctrl.lex"
 {
       yylval->val = SPIXELSKIP_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 265:
 YY_RULE_SETUP
-#line 862 "read_ctrl.lex"
+#line 863 "read_ctrl.lex"
 {
       yylval->val = SPIXELGEOMSOL_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 266:
 YY_RULE_SETUP
-#line 865 "read_ctrl.lex"
+#line 866 "read_ctrl.lex"
 {
       yylval->val = SPIXELGEOMSAT_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 267:
 YY_RULE_SETUP
-#line 868 "read_ctrl.lex"
+#line 869 "read_ctrl.lex"
 {
       yylval->val = SPIXELGEOMREL_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 268:
 YY_RULE_SETUP
-#line 871 "read_ctrl.lex"
+#line 872 "read_ctrl.lex"
 {
       yylval->val = SPIXELSURFGLINT_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 269:
 YY_RULE_SETUP
-#line 874 "read_ctrl.lex"
+#line 875 "read_ctrl.lex"
 {
       yylval->val = SPIXELLOCLAT_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 270:
 YY_RULE_SETUP
-#line 877 "read_ctrl.lex"
+#line 878 "read_ctrl.lex"
 {
       yylval->val = SPIXELLOCLON_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 271:
 YY_RULE_SETUP
-#line 880 "read_ctrl.lex"
+#line 881 "read_ctrl.lex"
 {
       yylval->val = SPIXELSURFERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 272:
 YY_RULE_SETUP
-#line 883 "read_ctrl.lex"
+#line 884 "read_ctrl.lex"
 {
       yylval->val = BKPFILEOPENERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 273:
 YY_RULE_SETUP
-#line 886 "read_ctrl.lex"
+#line 887 "read_ctrl.lex"
 {
       yylval->val = GETRTMLWMAXLAT_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 274:
 YY_RULE_SETUP
-#line 889 "read_ctrl.lex"
+#line 890 "read_ctrl.lex"
 {
       yylval->val = GETRTMLWMINLAT_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 275:
 YY_RULE_SETUP
-#line 892 "read_ctrl.lex"
+#line 893 "read_ctrl.lex"
 {
       yylval->val = GETRTMLWMAXLON_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 276:
 YY_RULE_SETUP
-#line 895 "read_ctrl.lex"
+#line 896 "read_ctrl.lex"
 {
       yylval->val = GETRTMLWMINLON_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 277:
 YY_RULE_SETUP
-#line 898 "read_ctrl.lex"
+#line 899 "read_ctrl.lex"
 {
       yylval->val = GETSURFACEMETH_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 278:
 YY_RULE_SETUP
-#line 901 "read_ctrl.lex"
+#line 902 "read_ctrl.lex"
 {
       yylval->val = GETSURFACENDNOCH_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 279:
 YY_RULE_SETUP
-#line 904 "read_ctrl.lex"
+#line 905 "read_ctrl.lex"
 {
       yylval->val = GETRSCENTPIX_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 280:
 YY_RULE_SETUP
-#line 907 "read_ctrl.lex"
+#line 908 "read_ctrl.lex"
 {
       yylval->val = GETRSAVMETH_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 281:
 YY_RULE_SETUP
-#line 910 "read_ctrl.lex"
+#line 911 "read_ctrl.lex"
 {
       yylval->val = GETLWSWRTMLAT_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 282:
 YY_RULE_SETUP
-#line 913 "read_ctrl.lex"
+#line 914 "read_ctrl.lex"
 {
       yylval->val = GETLWSWRTMLON_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 283:
 YY_RULE_SETUP
-#line 916 "read_ctrl.lex"
+#line 917 "read_ctrl.lex"
 {
       yylval->val = APMETHERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 284:
 YY_RULE_SETUP
-#line 919 "read_ctrl.lex"
+#line 920 "read_ctrl.lex"
 {
       yylval->val = FGMETHERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 285:
 YY_RULE_SETUP
-#line 922 "read_ctrl.lex"
+#line 923 "read_ctrl.lex"
 {
       yylval->val = CLOUDCLASSMETHERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 286:
 YY_RULE_SETUP
-#line 925 "read_ctrl.lex"
+#line 926 "read_ctrl.lex"
 {
       yylval->val = XMDADMETH_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 287:
 YY_RULE_SETUP
-#line 928 "read_ctrl.lex"
+#line 929 "read_ctrl.lex"
 {
       yylval->val = XMDADBOUNDS_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 288:
 YY_RULE_SETUP
-#line 931 "read_ctrl.lex"
+#line 932 "read_ctrl.lex"
 {
       yylval->val = XSDADMETH_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 289:
 YY_RULE_SETUP
-#line 934 "read_ctrl.lex"
+#line 935 "read_ctrl.lex"
 {
       yylval->val = INVCHOLNOTPOSDEF_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 290:
 YY_RULE_SETUP
-#line 937 "read_ctrl.lex"
+#line 938 "read_ctrl.lex"
 {
       yylval->val = OUTFILEOPENERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 291:
 YY_RULE_SETUP
-#line 940 "read_ctrl.lex"
+#line 941 "read_ctrl.lex"
 {
       yylval->val = DIAGFILEWRITEERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 292:
 YY_RULE_SETUP
-#line 943 "read_ctrl.lex"
+#line 944 "read_ctrl.lex"
 {
       yylval->val = ALBFILEOPENERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 293:
 YY_RULE_SETUP
-#line 946 "read_ctrl.lex"
+#line 947 "read_ctrl.lex"
 {
       yylval->val = ALBFILEREADHEADERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 294:
 YY_RULE_SETUP
-#line 949 "read_ctrl.lex"
+#line 950 "read_ctrl.lex"
 {
       yylval->val = ALBFILEREADDATAERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 295:
 YY_RULE_SETUP
-#line 952 "read_ctrl.lex"
+#line 953 "read_ctrl.lex"
 {
       yylval->val = ALBFILEEOFERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 296:
 YY_RULE_SETUP
-#line 955 "read_ctrl.lex"
+#line 956 "read_ctrl.lex"
 {
       yylval->val = SCANFILEOPENERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 297:
 YY_RULE_SETUP
-#line 958 "read_ctrl.lex"
+#line 959 "read_ctrl.lex"
 {
       yylval->val = SCANFILEREADHEADERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 298:
 YY_RULE_SETUP
-#line 961 "read_ctrl.lex"
+#line 962 "read_ctrl.lex"
 {
       yylval->val = SCANFILEREADDATAERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 299:
 YY_RULE_SETUP
-#line 964 "read_ctrl.lex"
+#line 965 "read_ctrl.lex"
 {
       yylval->val = SCANFILEEOFERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 300:
 YY_RULE_SETUP
-#line 967 "read_ctrl.lex"
+#line 968 "read_ctrl.lex"
 {
       yylval->val = SCANFILECLOSEERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 301:
 YY_RULE_SETUP
-#line 970 "read_ctrl.lex"
+#line 971 "read_ctrl.lex"
 {
       yylval->val = LUTINTFLAGERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 302:
 YY_RULE_SETUP
-#line 973 "read_ctrl.lex"
+#line 974 "read_ctrl.lex"
 {
       yylval->val = RTMINTFLAGERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 303:
 YY_RULE_SETUP
-#line 976 "read_ctrl.lex"
+#line 977 "read_ctrl.lex"
 {
       yylval->val = CWP_CALCERROR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 304:
 YY_RULE_SETUP
-#line 979 "read_ctrl.lex"
+#line 980 "read_ctrl.lex"
 {
       yylval->val = ILLUMFILEOPENERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 305:
 YY_RULE_SETUP
-#line 982 "read_ctrl.lex"
+#line 983 "read_ctrl.lex"
 {
       yylval->val = ILLUMFILEREADHEADERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 306:
 YY_RULE_SETUP
-#line 985 "read_ctrl.lex"
+#line 986 "read_ctrl.lex"
 {
       yylval->val = ILLUMFILEREADDATAERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 307:
 YY_RULE_SETUP
-#line 988 "read_ctrl.lex"
+#line 989 "read_ctrl.lex"
 {
       yylval->val = ILLUMFILEEOFERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 308:
 YY_RULE_SETUP
-#line 991 "read_ctrl.lex"
+#line 992 "read_ctrl.lex"
 {
       yylval->val = PRIMARYFILEOPENERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 309:
 YY_RULE_SETUP
-#line 994 "read_ctrl.lex"
+#line 995 "read_ctrl.lex"
 {
       yylval->val = SECONDARYFILEOPENERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 310:
 YY_RULE_SETUP
-#line 997 "read_ctrl.lex"
+#line 998 "read_ctrl.lex"
 {
       yylval->val = PRIMARYFILEDEFINITIONERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 311:
 YY_RULE_SETUP
-#line 1000 "read_ctrl.lex"
+#line 1001 "read_ctrl.lex"
 {
       yylval->val = SECONDARYFILEDEFINITIONERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 312:
 YY_RULE_SETUP
-#line 1003 "read_ctrl.lex"
+#line 1004 "read_ctrl.lex"
 {
       yylval->val = PRIMARYFILEWRITEERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 313:
 YY_RULE_SETUP
-#line 1006 "read_ctrl.lex"
+#line 1007 "read_ctrl.lex"
 {
       yylval->val = SECONDARYFILEWRITEERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 314:
 YY_RULE_SETUP
-#line 1009 "read_ctrl.lex"
+#line 1010 "read_ctrl.lex"
 {
       yylval->val = PRIMARYFILECLOSEERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 315:
 YY_RULE_SETUP
-#line 1012 "read_ctrl.lex"
+#line 1013 "read_ctrl.lex"
 {
       yylval->val = SECONDARYFILECLOSEERR_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 316:
 YY_RULE_SETUP
-#line 1015 "read_ctrl.lex"
+#line 1016 "read_ctrl.lex"
 {
       yylval->val = DEFLATE_LEVEL_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 317:
 YY_RULE_SETUP
-#line 1018 "read_ctrl.lex"
+#line 1019 "read_ctrl.lex"
 {
       yylval->val = SHUFFLE_FLAG_TOKEN;
       return(token::NUM); }
 	YY_BREAK
 case 318:
 YY_RULE_SETUP
-#line 1021 "read_ctrl.lex"
+#line 1022 "read_ctrl.lex"
 {
       yylval->str_v = FID_T_VARIABLE.Data_Dir;
       BEGIN(INITIAL); return(token::STR_VAR); }
 	YY_BREAK
 case 319:
 YY_RULE_SETUP
-#line 1024 "read_ctrl.lex"
+#line 1025 "read_ctrl.lex"
 {
       yylval->str_v = FID_T_VARIABLE.Out_Dir;
       BEGIN(INITIAL); return(token::STR_VAR); }
 	YY_BREAK
 case 320:
 YY_RULE_SETUP
-#line 1027 "read_ctrl.lex"
+#line 1028 "read_ctrl.lex"
 {
       yylval->str_v = FID_T_VARIABLE.SAD_Dir;
       BEGIN(INITIAL); return(token::STR_VAR); }
 	YY_BREAK
 case 321:
 YY_RULE_SETUP
-#line 1030 "read_ctrl.lex"
+#line 1031 "read_ctrl.lex"
 {
       yylval->str_v = FID_T_VARIABLE.Filename;
       BEGIN(INITIAL); return(token::STR_VAR); }
 	YY_BREAK
 case 322:
 YY_RULE_SETUP
-#line 1033 "read_ctrl.lex"
+#line 1034 "read_ctrl.lex"
 {
       yylval->str_v = FID_T_VARIABLE.Config;
       BEGIN(INITIAL); return(token::STR_VAR); }
 	YY_BREAK
 case 323:
 YY_RULE_SETUP
-#line 1036 "read_ctrl.lex"
+#line 1037 "read_ctrl.lex"
 {
       yylval->str_v = FID_T_VARIABLE.MSI;
       BEGIN(INITIAL); return(token::STR_VAR); }
 	YY_BREAK
 case 324:
 YY_RULE_SETUP
-#line 1039 "read_ctrl.lex"
+#line 1040 "read_ctrl.lex"
 {
       yylval->str_v = FID_T_VARIABLE.LWRTM;
       BEGIN(INITIAL); return(token::STR_VAR); }
 	YY_BREAK
 case 325:
 YY_RULE_SETUP
-#line 1042 "read_ctrl.lex"
+#line 1043 "read_ctrl.lex"
 {
       yylval->str_v = FID_T_VARIABLE.SWRTM;
       BEGIN(INITIAL); return(token::STR_VAR); }
 	YY_BREAK
 case 326:
 YY_RULE_SETUP
-#line 1045 "read_ctrl.lex"
+#line 1046 "read_ctrl.lex"
 {
       yylval->str_v = FID_T_VARIABLE.PRTM;
       BEGIN(INITIAL); return(token::STR_VAR); }
 	YY_BREAK
 case 327:
 YY_RULE_SETUP
-#line 1048 "read_ctrl.lex"
+#line 1049 "read_ctrl.lex"
 {
       yylval->str_v = FID_T_VARIABLE.LS;
       BEGIN(INITIAL); return(token::STR_VAR); }
 	YY_BREAK
 case 328:
 YY_RULE_SETUP
-#line 1051 "read_ctrl.lex"
+#line 1052 "read_ctrl.lex"
 {
       yylval->str_v = FID_T_VARIABLE.CF;
       BEGIN(INITIAL); return(token::STR_VAR); }
 	YY_BREAK
 case 329:
 YY_RULE_SETUP
-#line 1054 "read_ctrl.lex"
+#line 1055 "read_ctrl.lex"
 {
       yylval->str_v = FID_T_VARIABLE.Geo;
       BEGIN(INITIAL); return(token::STR_VAR); }
 	YY_BREAK
 case 330:
 YY_RULE_SETUP
-#line 1057 "read_ctrl.lex"
+#line 1058 "read_ctrl.lex"
 {
       yylval->str_v = FID_T_VARIABLE.Loc;
       BEGIN(INITIAL); return(token::STR_VAR); }
 	YY_BREAK
 case 331:
 YY_RULE_SETUP
-#line 1060 "read_ctrl.lex"
+#line 1061 "read_ctrl.lex"
 {
       yylval->str_v = FID_T_VARIABLE.Alb;
       BEGIN(INITIAL); return(token::STR_VAR); }
 	YY_BREAK
 case 332:
 YY_RULE_SETUP
-#line 1063 "read_ctrl.lex"
+#line 1064 "read_ctrl.lex"
 {
       yylval->str_v = FID_T_VARIABLE.BkP;
       BEGIN(INITIAL); return(token::STR_VAR); }
 	YY_BREAK
 case 333:
 YY_RULE_SETUP
-#line 1066 "read_ctrl.lex"
+#line 1067 "read_ctrl.lex"
 {
       yylval->str_v = FID_T_VARIABLE.L2_primary;
       BEGIN(INITIAL); return(token::STR_VAR); }
 	YY_BREAK
 case 334:
 YY_RULE_SETUP
-#line 1069 "read_ctrl.lex"
+#line 1070 "read_ctrl.lex"
 {
       yylval->str_v = FID_T_VARIABLE.L2_secondary;
       BEGIN(INITIAL); return(token::STR_VAR); }
 	YY_BREAK
 case 335:
 YY_RULE_SETUP
-#line 1072 "read_ctrl.lex"
+#line 1073 "read_ctrl.lex"
 {
       yylval->int_v = new Target<int> (IND_T_VARIABLE.NAvail);
       BEGIN(INITIAL); return(token::INT_VAR); }
 	YY_BREAK
 case 336:
 YY_RULE_SETUP
-#line 1075 "read_ctrl.lex"
+#line 1076 "read_ctrl.lex"
 {
       fort_alloc_int_1d(&IND_T_VARIABLE.ICh, &IND_T_VARIABLE.ICh_dim0, IND_T_ICh_DIMS);
       yylval->int_v = new Target<int> (IND_T_VARIABLE.ICh, IND_T_VARIABLE.ICh_dim0);
@@ -5441,21 +5439,21 @@ YY_RULE_SETUP
 	YY_BREAK
 case 337:
 YY_RULE_SETUP
-#line 1079 "read_ctrl.lex"
+#line 1080 "read_ctrl.lex"
 {
       yylval->int_v = new Target<int> (IND_T_VARIABLE.Y_Id_legacy, 6);
       BEGIN(INITIAL); return(token::INT_VAR); }
 	YY_BREAK
 case 338:
 YY_RULE_SETUP
-#line 1082 "read_ctrl.lex"
+#line 1083 "read_ctrl.lex"
 {
       yylval->int_v = new Target<int> (IND_T_VARIABLE.NMixed);
       BEGIN(INITIAL); return(token::INT_VAR); }
 	YY_BREAK
 case 339:
 YY_RULE_SETUP
-#line 1085 "read_ctrl.lex"
+#line 1086 "read_ctrl.lex"
 {
       fort_alloc_int_1d(&IND_T_VARIABLE.YMixed, &IND_T_VARIABLE.YMixed_dim0, IND_T_YMixed_DIMS);
       yylval->int_v = new Target<int> (IND_T_VARIABLE.YMixed, IND_T_VARIABLE.YMixed_dim0);
@@ -5463,14 +5461,14 @@ YY_RULE_SETUP
 	YY_BREAK
 case 340:
 YY_RULE_SETUP
-#line 1089 "read_ctrl.lex"
+#line 1090 "read_ctrl.lex"
 {
       yylval->int_v = new Target<int> (IND_T_VARIABLE.NWvl);
       BEGIN(INITIAL); return(token::INT_VAR); }
 	YY_BREAK
 case 341:
 YY_RULE_SETUP
-#line 1092 "read_ctrl.lex"
+#line 1093 "read_ctrl.lex"
 {
       fort_alloc_int_1d(&IND_T_VARIABLE.WvlIdx, &IND_T_VARIABLE.WvlIdx_dim0, IND_T_WvlIdx_DIMS);
       yylval->int_v = new Target<int> (IND_T_VARIABLE.WvlIdx, IND_T_VARIABLE.WvlIdx_dim0);
@@ -5478,21 +5476,21 @@ YY_RULE_SETUP
 	YY_BREAK
 case 342:
 YY_RULE_SETUP
-#line 1096 "read_ctrl.lex"
+#line 1097 "read_ctrl.lex"
 {
       yylval->int_v = new Target<int> (IND_T_VARIABLE.XMax);
       BEGIN(INITIAL); return(token::INT_VAR); }
 	YY_BREAK
 case 343:
 YY_RULE_SETUP
-#line 1099 "read_ctrl.lex"
+#line 1100 "read_ctrl.lex"
 {
       yylval->int_v = new Target<int> (IND_T_VARIABLE.YMax);
       BEGIN(INITIAL); return(token::INT_VAR); }
 	YY_BREAK
 case 344:
 YY_RULE_SETUP
-#line 1102 "read_ctrl.lex"
+#line 1103 "read_ctrl.lex"
 {
       fort_alloc_int_1d(&IND_T_VARIABLE.channel_proc_flag, &IND_T_VARIABLE.channel_proc_flag_dim0, IND_T_channel_proc_flag_DIMS);
       yylval->int_v = new Target<int> (IND_T_VARIABLE.channel_proc_flag, IND_T_VARIABLE.channel_proc_flag_dim0);
@@ -5500,35 +5498,35 @@ YY_RULE_SETUP
 	YY_BREAK
 case 345:
 YY_RULE_SETUP
-#line 1106 "read_ctrl.lex"
+#line 1107 "read_ctrl.lex"
 {
       yylval->int_v = new Target<int> (SURFREF_T_VARIABLE.RsSelm);
       BEGIN(INITIAL); return(token::INT_VAR); }
 	YY_BREAK
 case 346:
 YY_RULE_SETUP
-#line 1109 "read_ctrl.lex"
+#line 1110 "read_ctrl.lex"
 {
       yylval->int_v = new Target<int> (SURFREF_T_VARIABLE.SRsSelm);
       BEGIN(INITIAL); return(token::INT_VAR); }
 	YY_BREAK
 case 347:
 YY_RULE_SETUP
-#line 1112 "read_ctrl.lex"
+#line 1113 "read_ctrl.lex"
 {
       yylval->bool_v = new Target<bool> (SURFREF_T_VARIABLE.use_full_brdf);
       BEGIN(INITIAL); return(token::BOOL_VAR); }
 	YY_BREAK
 case 348:
 YY_RULE_SETUP
-#line 1115 "read_ctrl.lex"
+#line 1116 "read_ctrl.lex"
 {
       yylval->bool_v = new Target<bool> (SURFREF_T_VARIABLE.allow_a_default_surface);
       BEGIN(INITIAL); return(token::BOOL_VAR); }
 	YY_BREAK
 case 349:
 YY_RULE_SETUP
-#line 1118 "read_ctrl.lex"
+#line 1119 "read_ctrl.lex"
 {
       fort_alloc_float_2d(&SURFREF_T_VARIABLE.B, &SURFREF_T_VARIABLE.B_dim0, &SURFREF_T_VARIABLE.B_dim1, SURFREF_T_B_DIMS);
       yylval->float_v = new Target<float> (SURFREF_T_VARIABLE.B, SURFREF_T_VARIABLE.B_dim0, SURFREF_T_VARIABLE.B_dim1);
@@ -5536,7 +5534,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 350:
 YY_RULE_SETUP
-#line 1122 "read_ctrl.lex"
+#line 1123 "read_ctrl.lex"
 {
       fort_alloc_float_2d(&SURFREF_T_VARIABLE.Sb, &SURFREF_T_VARIABLE.Sb_dim0, &SURFREF_T_VARIABLE.Sb_dim1, SURFREF_T_Sb_DIMS);
       yylval->float_v = new Target<float> (SURFREF_T_VARIABLE.Sb, SURFREF_T_VARIABLE.Sb_dim0, SURFREF_T_VARIABLE.Sb_dim1);
@@ -5544,344 +5542,344 @@ YY_RULE_SETUP
 	YY_BREAK
 case 351:
 YY_RULE_SETUP
-#line 1126 "read_ctrl.lex"
+#line 1127 "read_ctrl.lex"
 {
       yylval->float_v = new Target<float> (SURFREF_T_VARIABLE.Cb);
       BEGIN(INITIAL); return(token::FLOAT_VAR); }
 	YY_BREAK
 case 352:
 YY_RULE_SETUP
-#line 1129 "read_ctrl.lex"
+#line 1130 "read_ctrl.lex"
 {
       yylval->bool_v = new Target<bool> (SURFREF_T_VARIABLE.add_fractional);
       BEGIN(INITIAL); return(token::BOOL_VAR); }
 	YY_BREAK
 case 353:
 YY_RULE_SETUP
-#line 1132 "read_ctrl.lex"
+#line 1133 "read_ctrl.lex"
 {
       yylval->bool_v = new Target<bool> (SURFREF_T_VARIABLE.diagonal_SRs);
       BEGIN(INITIAL); return(token::BOOL_VAR); }
 	YY_BREAK
 case 354:
 YY_RULE_SETUP
-#line 1135 "read_ctrl.lex"
+#line 1136 "read_ctrl.lex"
 {
       yylval->bool_v = new Target<bool> (SURFREF_T_VARIABLE.solar_factor);
       BEGIN(INITIAL); return(token::BOOL_VAR); }
 	YY_BREAK
 case 355:
 YY_RULE_SETUP
-#line 1138 "read_ctrl.lex"
+#line 1139 "read_ctrl.lex"
 {
       yylval->int_v = new Target<int> (EQMPN_T_VARIABLE.SySelm);
       BEGIN(INITIAL); return(token::INT_VAR); }
 	YY_BREAK
 case 356:
 YY_RULE_SETUP
-#line 1141 "read_ctrl.lex"
+#line 1142 "read_ctrl.lex"
 {
       yylval->bool_v = new Target<bool> (EQMPN_T_VARIABLE.Homog);
       BEGIN(INITIAL); return(token::BOOL_VAR); }
 	YY_BREAK
 case 357:
 YY_RULE_SETUP
-#line 1144 "read_ctrl.lex"
+#line 1145 "read_ctrl.lex"
 {
       yylval->bool_v = new Target<bool> (EQMPN_T_VARIABLE.CoReg);
       BEGIN(INITIAL); return(token::BOOL_VAR); }
 	YY_BREAK
 case 358:
 YY_RULE_SETUP
-#line 1147 "read_ctrl.lex"
+#line 1148 "read_ctrl.lex"
 {
       yylval->bool_v = new Target<bool> (INVPAR_T_VARIABLE.ConvTest);
       BEGIN(INITIAL); return(token::BOOL_VAR); }
 	YY_BREAK
 case 359:
 YY_RULE_SETUP
-#line 1150 "read_ctrl.lex"
+#line 1151 "read_ctrl.lex"
 {
       yylval->float_v = new Target<float> (INVPAR_T_VARIABLE.MqStart);
       BEGIN(INITIAL); return(token::FLOAT_VAR); }
 	YY_BREAK
 case 360:
 YY_RULE_SETUP
-#line 1153 "read_ctrl.lex"
+#line 1154 "read_ctrl.lex"
 {
       yylval->float_v = new Target<float> (INVPAR_T_VARIABLE.MqStep);
       BEGIN(INITIAL); return(token::FLOAT_VAR); }
 	YY_BREAK
 case 361:
 YY_RULE_SETUP
-#line 1156 "read_ctrl.lex"
+#line 1157 "read_ctrl.lex"
 {
       yylval->int_v = new Target<int> (INVPAR_T_VARIABLE.MaxIter);
       BEGIN(INITIAL); return(token::INT_VAR); }
 	YY_BREAK
 case 362:
 YY_RULE_SETUP
-#line 1159 "read_ctrl.lex"
+#line 1160 "read_ctrl.lex"
 {
       yylval->float_v = new Target<float> (INVPAR_T_VARIABLE.Ccj);
       BEGIN(INITIAL); return(token::FLOAT_VAR); }
 	YY_BREAK
 case 363:
 YY_RULE_SETUP
-#line 1162 "read_ctrl.lex"
+#line 1163 "read_ctrl.lex"
 {
       yylval->float_v = new Target<float> (INVPAR_T_VARIABLE.XScale, MAXSTATEVAR_TOKEN);
       BEGIN(INITIAL); return(token::FLOAT_VAR); }
 	YY_BREAK
 case 364:
 YY_RULE_SETUP
-#line 1165 "read_ctrl.lex"
+#line 1166 "read_ctrl.lex"
 {
       yylval->float_v = new Target<float> (INVPAR_T_VARIABLE.XLLim, MAXSTATEVAR_TOKEN);
       BEGIN(INITIAL); return(token::FLOAT_VAR); }
 	YY_BREAK
 case 365:
 YY_RULE_SETUP
-#line 1168 "read_ctrl.lex"
+#line 1169 "read_ctrl.lex"
 {
       yylval->float_v = new Target<float> (INVPAR_T_VARIABLE.XULim, MAXSTATEVAR_TOKEN);
       BEGIN(INITIAL); return(token::FLOAT_VAR); }
 	YY_BREAK
 case 366:
 YY_RULE_SETUP
-#line 1171 "read_ctrl.lex"
+#line 1172 "read_ctrl.lex"
 {
       yylval->bool_v = new Target<bool> (INVPAR_T_VARIABLE.always_take_GN);
       BEGIN(INITIAL); return(token::BOOL_VAR); }
 	YY_BREAK
 case 367:
 YY_RULE_SETUP
-#line 1174 "read_ctrl.lex"
+#line 1175 "read_ctrl.lex"
 {
       yylval->bool_v = new Target<bool> (INVPAR_T_VARIABLE.dont_iter_convtest);
       BEGIN(INITIAL); return(token::BOOL_VAR); }
 	YY_BREAK
 case 368:
 YY_RULE_SETUP
-#line 1177 "read_ctrl.lex"
+#line 1178 "read_ctrl.lex"
 {
       yylval->bool_v = new Target<bool> (INVPAR_T_VARIABLE.disable_Ss);
       BEGIN(INITIAL); return(token::BOOL_VAR); }
 	YY_BREAK
 case 369:
 YY_RULE_SETUP
-#line 1180 "read_ctrl.lex"
+#line 1181 "read_ctrl.lex"
 {
       yylval->float_v = new Target<float> (QC_T_VARIABLE.MaxJ);
       BEGIN(INITIAL); return(token::FLOAT_VAR); }
 	YY_BREAK
 case 370:
 YY_RULE_SETUP
-#line 1183 "read_ctrl.lex"
+#line 1184 "read_ctrl.lex"
 {
       yylval->float_v = new Target<float> (QC_T_VARIABLE.MaxS, MAXSTATEVAR_TOKEN);
       BEGIN(INITIAL); return(token::FLOAT_VAR); }
 	YY_BREAK
 case 371:
 YY_RULE_SETUP
-#line 1186 "read_ctrl.lex"
+#line 1187 "read_ctrl.lex"
 {
       BEGIN(FID_T_SC); }
 	YY_BREAK
 case 372:
 YY_RULE_SETUP
-#line 1188 "read_ctrl.lex"
+#line 1189 "read_ctrl.lex"
 {
       yylval->str_v = CTRL_T_VARIABLE.InstName;
       BEGIN(INITIAL); return(token::STR_VAR); }
 	YY_BREAK
 case 373:
 YY_RULE_SETUP
-#line 1191 "read_ctrl.lex"
+#line 1192 "read_ctrl.lex"
 {
       yylval->str_v = CTRL_T_VARIABLE.LUTClass;
       BEGIN(INITIAL); return(token::STR_VAR); }
 	YY_BREAK
 case 374:
 YY_RULE_SETUP
-#line 1194 "read_ctrl.lex"
+#line 1195 "read_ctrl.lex"
 {
       yylval->int_v = new Target<int> (CTRL_T_VARIABLE.Approach);
       BEGIN(INITIAL); return(token::INT_VAR); }
 	YY_BREAK
 case 375:
 YY_RULE_SETUP
-#line 1197 "read_ctrl.lex"
+#line 1198 "read_ctrl.lex"
 {
       BEGIN(IND_T_SC); }
 	YY_BREAK
 case 376:
 YY_RULE_SETUP
-#line 1199 "read_ctrl.lex"
+#line 1200 "read_ctrl.lex"
 {
       yylval->int_v = new Target<int> (CTRL_T_VARIABLE.DOY);
       BEGIN(INITIAL); return(token::INT_VAR); }
 	YY_BREAK
 case 377:
 YY_RULE_SETUP
-#line 1202 "read_ctrl.lex"
+#line 1203 "read_ctrl.lex"
 {
       yylval->str_v = CTRL_T_VARIABLE.Run_ID;
       BEGIN(INITIAL); return(token::STR_VAR); }
 	YY_BREAK
 case 378:
 YY_RULE_SETUP
-#line 1205 "read_ctrl.lex"
+#line 1206 "read_ctrl.lex"
 {
       BEGIN(SURFREF_T_SC); }
 	YY_BREAK
 case 379:
 YY_RULE_SETUP
-#line 1207 "read_ctrl.lex"
+#line 1208 "read_ctrl.lex"
 {
       BEGIN(EQMPN_T_SC); }
 	YY_BREAK
 case 380:
 YY_RULE_SETUP
-#line 1209 "read_ctrl.lex"
+#line 1210 "read_ctrl.lex"
 {
       BEGIN(INVPAR_T_SC); }
 	YY_BREAK
 case 381:
 YY_RULE_SETUP
-#line 1211 "read_ctrl.lex"
+#line 1212 "read_ctrl.lex"
 {
       BEGIN(QC_T_SC); }
 	YY_BREAK
 case 382:
 YY_RULE_SETUP
-#line 1213 "read_ctrl.lex"
+#line 1214 "read_ctrl.lex"
 {
       yylval->float_v = new Target<float> (CTRL_T_VARIABLE.MaxSolZen);
       BEGIN(INITIAL); return(token::FLOAT_VAR); }
 	YY_BREAK
 case 383:
 YY_RULE_SETUP
-#line 1216 "read_ctrl.lex"
+#line 1217 "read_ctrl.lex"
 {
       yylval->float_v = new Target<float> (CTRL_T_VARIABLE.MaxSatZen);
       BEGIN(INITIAL); return(token::FLOAT_VAR); }
 	YY_BREAK
 case 384:
 YY_RULE_SETUP
-#line 1219 "read_ctrl.lex"
+#line 1220 "read_ctrl.lex"
 {
       yylval->float_v = new Target<float> (CTRL_T_VARIABLE.MinRelAzi);
       BEGIN(INITIAL); return(token::FLOAT_VAR); }
 	YY_BREAK
 case 385:
 YY_RULE_SETUP
-#line 1222 "read_ctrl.lex"
+#line 1223 "read_ctrl.lex"
 {
       yylval->float_v = new Target<float> (CTRL_T_VARIABLE.Sunset);
       BEGIN(INITIAL); return(token::FLOAT_VAR); }
 	YY_BREAK
 case 386:
 YY_RULE_SETUP
-#line 1225 "read_ctrl.lex"
+#line 1226 "read_ctrl.lex"
 {
       yylval->int_v = new Target<int> (CTRL_T_VARIABLE.i_equation_form);
       BEGIN(INITIAL); return(token::INT_VAR); }
 	YY_BREAK
 case 387:
 YY_RULE_SETUP
-#line 1228 "read_ctrl.lex"
+#line 1229 "read_ctrl.lex"
 {
       yylval->bool_v = new Target<bool> (CTRL_T_VARIABLE.get_T_dv_from_T_0d);
       BEGIN(INITIAL); return(token::BOOL_VAR); }
 	YY_BREAK
 case 388:
 YY_RULE_SETUP
-#line 1231 "read_ctrl.lex"
+#line 1232 "read_ctrl.lex"
 {
       yylval->int_v = new Target<int> (CTRL_T_VARIABLE.LUTIntSelm);
       BEGIN(INITIAL); return(token::INT_VAR); }
 	YY_BREAK
 case 389:
 YY_RULE_SETUP
-#line 1234 "read_ctrl.lex"
+#line 1235 "read_ctrl.lex"
 {
       yylval->int_v = new Target<int> (CTRL_T_VARIABLE.RTMIntSelm);
       BEGIN(INITIAL); return(token::INT_VAR); }
 	YY_BREAK
 case 390:
 YY_RULE_SETUP
-#line 1237 "read_ctrl.lex"
+#line 1238 "read_ctrl.lex"
 {
       yylval->int_v = new Target<int> (CTRL_T_VARIABLE.CloudType);
       BEGIN(INITIAL); return(token::INT_VAR); }
 	YY_BREAK
 case 391:
 YY_RULE_SETUP
-#line 1240 "read_ctrl.lex"
+#line 1241 "read_ctrl.lex"
 {
       yylval->int_v = new Target<int> (CTRL_T_VARIABLE.Bkpl);
       BEGIN(INITIAL); return(token::INT_VAR); }
 	YY_BREAK
 case 392:
 YY_RULE_SETUP
-#line 1243 "read_ctrl.lex"
+#line 1244 "read_ctrl.lex"
 {
       yylval->float_v = new Target<float> (CTRL_T_VARIABLE.Max_SDAD);
       BEGIN(INITIAL); return(token::FLOAT_VAR); }
 	YY_BREAK
 case 393:
 YY_RULE_SETUP
-#line 1246 "read_ctrl.lex"
+#line 1247 "read_ctrl.lex"
 {
       yylval->bool_v = new Target<bool> (CTRL_T_VARIABLE.sabotage_inputs);
       BEGIN(INITIAL); return(token::BOOL_VAR); }
 	YY_BREAK
 case 394:
 YY_RULE_SETUP
-#line 1249 "read_ctrl.lex"
+#line 1250 "read_ctrl.lex"
 {
       yylval->bool_v = new Target<bool> (CTRL_T_VARIABLE.process_cloudy_only);
       BEGIN(INITIAL); return(token::BOOL_VAR); }
 	YY_BREAK
 case 395:
 YY_RULE_SETUP
-#line 1252 "read_ctrl.lex"
+#line 1253 "read_ctrl.lex"
 {
       yylval->int_v = new Target<int> (CTRL_T_VARIABLE.NTypes_to_process);
       BEGIN(INITIAL); return(token::INT_VAR); }
 	YY_BREAK
 case 396:
 YY_RULE_SETUP
-#line 1255 "read_ctrl.lex"
+#line 1256 "read_ctrl.lex"
 {
       yylval->char_v = new Target<char> (CTRL_T_VARIABLE.Types_to_process, MAXTYPES_TOKEN);
       BEGIN(INITIAL); return(token::CHAR_VAR); }
 	YY_BREAK
 case 397:
 YY_RULE_SETUP
-#line 1258 "read_ctrl.lex"
+#line 1259 "read_ctrl.lex"
 {
       yylval->int_v = new Target<int> (CTRL_T_VARIABLE.Surfaces_to_skip);
       BEGIN(INITIAL); return(token::INT_VAR); }
 	YY_BREAK
 case 398:
 YY_RULE_SETUP
-#line 1261 "read_ctrl.lex"
+#line 1262 "read_ctrl.lex"
 {
       yylval->int_v = new Target<int> (CTRL_T_VARIABLE.second_aot_ch, 1);
       BEGIN(INITIAL); return(token::INT_VAR); }
 	YY_BREAK
 case 399:
 YY_RULE_SETUP
-#line 1264 "read_ctrl.lex"
+#line 1265 "read_ctrl.lex"
 {
       yylval->bool_v = new Target<bool> (CTRL_T_VARIABLE.verbose);
       BEGIN(INITIAL); return(token::BOOL_VAR); }
 	YY_BREAK
 case 400:
 YY_RULE_SETUP
-#line 1267 "read_ctrl.lex"
+#line 1268 "read_ctrl.lex"
 {
       fort_alloc_int_1d(&CTRL_T_VARIABLE.tau_chans, &CTRL_T_VARIABLE.tau_chans_dim0, CTRL_T_tau_chans_DIMS);
       yylval->int_v = new Target<int> (CTRL_T_VARIABLE.tau_chans, CTRL_T_VARIABLE.tau_chans_dim0);
@@ -5889,7 +5887,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 401:
 YY_RULE_SETUP
-#line 1271 "read_ctrl.lex"
+#line 1272 "read_ctrl.lex"
 {
       fort_alloc_int_1d(&CTRL_T_VARIABLE.r_e_chans, &CTRL_T_VARIABLE.r_e_chans_dim0, CTRL_T_r_e_chans_DIMS);
       yylval->int_v = new Target<int> (CTRL_T_VARIABLE.r_e_chans, CTRL_T_VARIABLE.r_e_chans_dim0);
@@ -5897,7 +5895,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 402:
 YY_RULE_SETUP
-#line 1275 "read_ctrl.lex"
+#line 1276 "read_ctrl.lex"
 {
       fort_alloc_int_1d(&CTRL_T_VARIABLE.ir_chans, &CTRL_T_VARIABLE.ir_chans_dim0, CTRL_T_ir_chans_DIMS);
       yylval->int_v = new Target<int> (CTRL_T_VARIABLE.ir_chans, CTRL_T_VARIABLE.ir_chans_dim0);
@@ -5905,7 +5903,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 403:
 YY_RULE_SETUP
-#line 1279 "read_ctrl.lex"
+#line 1280 "read_ctrl.lex"
 {
       fort_alloc_int_1d(&CTRL_T_VARIABLE.ReChans, &CTRL_T_VARIABLE.ReChans_dim0, CTRL_T_ReChans_DIMS);
       yylval->int_v = new Target<int> (CTRL_T_VARIABLE.ReChans, CTRL_T_VARIABLE.ReChans_dim0);
@@ -5913,63 +5911,63 @@ YY_RULE_SETUP
 	YY_BREAK
 case 404:
 YY_RULE_SETUP
-#line 1283 "read_ctrl.lex"
+#line 1284 "read_ctrl.lex"
 {
       yylval->bool_v = new Target<bool> (CTRL_T_VARIABLE.do_new_night_retrieval);
       BEGIN(INITIAL); return(token::BOOL_VAR); }
 	YY_BREAK
 case 405:
 YY_RULE_SETUP
-#line 1286 "read_ctrl.lex"
+#line 1287 "read_ctrl.lex"
 {
       yylval->bool_v = new Target<bool> (CTRL_T_VARIABLE.do_CTX_correction);
       BEGIN(INITIAL); return(token::BOOL_VAR); }
 	YY_BREAK
 case 406:
 YY_RULE_SETUP
-#line 1289 "read_ctrl.lex"
+#line 1290 "read_ctrl.lex"
 {
       yylval->float_v = new Target<float> (CTRL_T_VARIABLE.CTP_correction_limit);
       BEGIN(INITIAL); return(token::FLOAT_VAR); }
 	YY_BREAK
 case 407:
 YY_RULE_SETUP
-#line 1292 "read_ctrl.lex"
+#line 1293 "read_ctrl.lex"
 {
       yylval->int_v = new Target<int> (CTRL_T_VARIABLE.Ap, MAXSTATEVAR_TOKEN, MAXILLUM_TOKEN);
       BEGIN(INITIAL); return(token::INT_VAR); }
 	YY_BREAK
 case 408:
 YY_RULE_SETUP
-#line 1295 "read_ctrl.lex"
+#line 1296 "read_ctrl.lex"
 {
       yylval->int_v = new Target<int> (CTRL_T_VARIABLE.Fg, MAXSTATEVAR_TOKEN, MAXILLUM_TOKEN);
       BEGIN(INITIAL); return(token::INT_VAR); }
 	YY_BREAK
 case 409:
 YY_RULE_SETUP
-#line 1298 "read_ctrl.lex"
+#line 1299 "read_ctrl.lex"
 {
       yylval->float_v = new Target<float> (CTRL_T_VARIABLE.Xb, MAXSTATEVAR_TOKEN);
       BEGIN(INITIAL); return(token::FLOAT_VAR); }
 	YY_BREAK
 case 410:
 YY_RULE_SETUP
-#line 1301 "read_ctrl.lex"
+#line 1302 "read_ctrl.lex"
 {
       yylval->float_v = new Target<float> (CTRL_T_VARIABLE.X0, MAXSTATEVAR_TOKEN);
       BEGIN(INITIAL); return(token::FLOAT_VAR); }
 	YY_BREAK
 case 411:
 YY_RULE_SETUP
-#line 1304 "read_ctrl.lex"
+#line 1305 "read_ctrl.lex"
 {
       yylval->float_v = new Target<float> (CTRL_T_VARIABLE.Sx, MAXSTATEVAR_TOKEN);
       BEGIN(INITIAL); return(token::FLOAT_VAR); }
 	YY_BREAK
 case 412:
 YY_RULE_SETUP
-#line 1307 "read_ctrl.lex"
+#line 1308 "read_ctrl.lex"
 {
       fort_alloc_float_2d(&CTRL_T_VARIABLE.Sy, &CTRL_T_VARIABLE.Sy_dim0, &CTRL_T_VARIABLE.Sy_dim1, CTRL_T_Sy_DIMS);
       yylval->float_v = new Target<float> (CTRL_T_VARIABLE.Sy, CTRL_T_VARIABLE.Sy_dim0, CTRL_T_VARIABLE.Sy_dim1);
@@ -5977,28 +5975,28 @@ YY_RULE_SETUP
 	YY_BREAK
 case 413:
 YY_RULE_SETUP
-#line 1311 "read_ctrl.lex"
+#line 1312 "read_ctrl.lex"
 {
       yylval->int_v = new Target<int> (CTRL_T_VARIABLE.Nx, MAXILLUM_TOKEN);
       BEGIN(INITIAL); return(token::INT_VAR); }
 	YY_BREAK
 case 414:
 YY_RULE_SETUP
-#line 1314 "read_ctrl.lex"
+#line 1315 "read_ctrl.lex"
 {
       yylval->int_v = new Target<int> (CTRL_T_VARIABLE.NxJ, MAXILLUM_TOKEN);
       BEGIN(INITIAL); return(token::INT_VAR); }
 	YY_BREAK
 case 415:
 YY_RULE_SETUP
-#line 1317 "read_ctrl.lex"
+#line 1318 "read_ctrl.lex"
 {
       yylval->int_v = new Target<int> (CTRL_T_VARIABLE.X, MAXSTATEVAR_TOKEN, MAXILLUM_TOKEN);
       BEGIN(INITIAL); return(token::INT_VAR); }
 	YY_BREAK
 case 416:
 YY_RULE_SETUP
-#line 1320 "read_ctrl.lex"
+#line 1321 "read_ctrl.lex"
 {
       yylval->int_v = new Target<int> (CTRL_T_VARIABLE.XJ, MAXSTATEVAR_TOKEN, MAXILLUM_TOKEN);
       BEGIN(INITIAL); return(token::INT_VAR); }
@@ -6006,7 +6004,7 @@ YY_RULE_SETUP
 /* Rule for parent structure */
 case 417:
 YY_RULE_SETUP
-#line 1325 "read_ctrl.lex"
+#line 1326 "read_ctrl.lex"
 {
     BEGIN(CTRL_T_SC); }
 	YY_BREAK
@@ -6014,77 +6012,77 @@ YY_RULE_SETUP
 /* Things to ignore */
 case 418:
 YY_RULE_SETUP
-#line 1331 "read_ctrl.lex"
+#line 1332 "read_ctrl.lex"
 ;
 	YY_BREAK
 case 419:
 YY_RULE_SETUP
-#line 1332 "read_ctrl.lex"
+#line 1333 "read_ctrl.lex"
 ;
 	YY_BREAK
 /* Syntactic punctuation */
 case 420:
 /* rule 420 can match eol */
 YY_RULE_SETUP
-#line 1335 "read_ctrl.lex"
+#line 1336 "read_ctrl.lex"
 return(token::ENDL);   // One command per line
 	YY_BREAK
 case 421:
 YY_RULE_SETUP
-#line 1336 "read_ctrl.lex"
+#line 1337 "read_ctrl.lex"
 return(token::EQ);     // Delimit variable from value
 	YY_BREAK
 case 422:
 YY_RULE_SETUP
-#line 1337 "read_ctrl.lex"
+#line 1338 "read_ctrl.lex"
 return(token::OPENB);  // Begin array slice
 	YY_BREAK
 case 423:
 YY_RULE_SETUP
-#line 1338 "read_ctrl.lex"
+#line 1339 "read_ctrl.lex"
 return(token::CLOSEB); // End array slice
 	YY_BREAK
 case 424:
 YY_RULE_SETUP
-#line 1339 "read_ctrl.lex"
+#line 1340 "read_ctrl.lex"
 return(token::COMMA);  // 1D array delimiter
 	YY_BREAK
 case 425:
 YY_RULE_SETUP
-#line 1340 "read_ctrl.lex"
+#line 1341 "read_ctrl.lex"
 return(token::SEMI);   // 2D array delimiter
 	YY_BREAK
 case 426:
 YY_RULE_SETUP
-#line 1341 "read_ctrl.lex"
+#line 1342 "read_ctrl.lex"
 return(token::COLON);  // Dimension delimiter
 	YY_BREAK
 /* Data */
 case 427:
 YY_RULE_SETUP
-#line 1344 "read_ctrl.lex"
+#line 1345 "read_ctrl.lex"
 { yylval->val = atof(yytext);
                             return(token::NUM); }  // Float or ints
 	YY_BREAK
 case 428:
 YY_RULE_SETUP
-#line 1346 "read_ctrl.lex"
+#line 1347 "read_ctrl.lex"
 { yylval->str = new std::string(yytext, yyleng-1);
                             yylval->str->erase(0, 1);
                             return(token::WORD); } // Quoted string
 	YY_BREAK
 case 429:
 YY_RULE_SETUP
-#line 1349 "read_ctrl.lex"
+#line 1350 "read_ctrl.lex"
 { yylval->str = new std::string(yytext, yyleng);
                             return(token::WORD); } // String
 	YY_BREAK
 case 430:
 YY_RULE_SETUP
-#line 1352 "read_ctrl.lex"
+#line 1353 "read_ctrl.lex"
 YY_FATAL_ERROR( "flex scanner jammed" );
 	YY_BREAK
-#line 6088 "read_ctrl.cc"
+#line 6086 "read_ctrl.cc"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(COMMON_FILE_FLAGS_T_SC):
 case YY_STATE_EOF(COMMON_INDICES_T_SC):
@@ -6420,47 +6418,6 @@ static int yy_get_next_buffer (void)
 	yy_is_jam = (yy_current_state == 2882);
 
 	return yy_is_jam ? 0 : yy_current_state;
-}
-
-    static void yyunput (int c, register char * yy_bp )
-{
-	register char *yy_cp;
-    
-    yy_cp = (yy_c_buf_p);
-
-	/* undo effects of setting up yytext */
-	*yy_cp = (yy_hold_char);
-
-	if ( yy_cp < YY_CURRENT_BUFFER_LVALUE->yy_ch_buf + 2 )
-		{ /* need to shift things up to make room */
-		/* +2 for EOB chars. */
-		register int number_to_move = (yy_n_chars) + 2;
-		register char *dest = &YY_CURRENT_BUFFER_LVALUE->yy_ch_buf[
-					YY_CURRENT_BUFFER_LVALUE->yy_buf_size + 2];
-		register char *source =
-				&YY_CURRENT_BUFFER_LVALUE->yy_ch_buf[number_to_move];
-
-		while ( source > YY_CURRENT_BUFFER_LVALUE->yy_ch_buf )
-			*--dest = *--source;
-
-		yy_cp += (int) (dest - source);
-		yy_bp += (int) (dest - source);
-		YY_CURRENT_BUFFER_LVALUE->yy_n_chars =
-			(yy_n_chars) = YY_CURRENT_BUFFER_LVALUE->yy_buf_size;
-
-		if ( yy_cp < YY_CURRENT_BUFFER_LVALUE->yy_ch_buf + 2 )
-			YY_FATAL_ERROR( "flex scanner push-back overflow" );
-		}
-
-	*--yy_cp = (char) c;
-
-    if ( c == '\n' ){
-        --yylineno;
-    }
-
-	(yytext_ptr) = yy_bp;
-	(yy_hold_char) = *yy_cp;
-	(yy_c_buf_p) = yy_cp;
 }
 
 #ifndef YY_NO_INPUT
@@ -7103,7 +7060,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 1352 "read_ctrl.lex"
+#line 1353 "read_ctrl.lex"
 
 
 

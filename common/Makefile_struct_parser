@@ -1,5 +1,5 @@
 # Makefile for a driver file parser. The following variables must be defined:
-# CC, CPP, FC, CFLAGS, FFLAGS) Their usual meanings
+# CC, CXX, FC, CFLAGS, FFLAGS) Their usual meanings
 # INC, LIBS) Paths for include files and libraries for the modules used to
 #    generate this parser.
 # ORAC_COMMON) Path to the common folder in the ORAC trunk.
@@ -34,7 +34,7 @@ $(PLACE)%inc: $(ORAC_COMMON)/generate_parser $(PARSER_SOURCE)
 
 # Compile generic driver file grammar using generated C header file
 $(PLACE).tab.o:
-	$(CPP) -o $@ -c $(FLAGS) $(CFLAGS) $(PARSER_INC) $(ORAC_COMMON)/struct_parser.tab.cc
+	$(CXX) -o $@ -c $(FLAGS) $(CFLAGS) $(PARSER_INC) $(ORAC_COMMON)/struct_parser.tab.cc
 
 # Generate and compile driver file parser from part files
 $(PARSER_NAME).cc:
@@ -46,7 +46,7 @@ $(PARSER_NAME).cc:
 	flex -o $@ $(PARSER_NAME).lex
 
 $(PLACE).c.o:
-	$(CPP) -o $@ -c $(FLAGS) $(CFLAGS) $(PARSER_INC) $(PARSER_NAME).cc
+	$(CXX) -o $@ -c $(FLAGS) $(CFLAGS) $(PARSER_INC) $(PARSER_NAME).cc
 
 # Compile Fortran wrapper for driver file parser, using cpp explicitly to make
 # use of more modern operators. (The cpp used by gfortran is too old to deal

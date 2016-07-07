@@ -70,7 +70,7 @@ generate_parser.c: generate_parser.tab.h generate_parser.lex
 	flex generate_parser.lex
 
 generate_parser: generate_parser.c generate_parser.tab.c generate_parser.h
-	$(CC) -o $@ $(CFLAGS) $^
+	$(CC) -o $@ $(CFLAGS) generate_parser.c generate_parser.tab.c
 
 # A generic driver file grammar
 struct_parser.tab.cc struct_parser.tab.hh: struct_parser.y

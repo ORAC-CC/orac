@@ -38,6 +38,7 @@ extern "C" {
 %option warn nodefault
 %option noyywrap
 %option yylineno
+%option nounput
 
      /* ---------- Token definitions ---------- */
 FLEX_DEFINITIONS

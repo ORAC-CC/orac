@@ -17,6 +17,8 @@ FILE* open_part_file(const char* path, const char* suff);
 %option outfile="generate_parser.c"
 %option yylineno
 %option noyywrap
+%option noinput
+%option nounput
 
 %x NAMING
 
@@ -110,6 +112,9 @@ int main(int argc, char const* argv[]) {
 
     // Write permanent headers for files
     fputs("#ifndef WRAPPER_DEF_H\n#define WRAPPER_DEF_H\n", f[C_DEF]);
+
+    // To avoid gcc warning maybe-uninitialized
+    stat = 0;
 
     // Run parser on each input file in turn
     for (i=2; i<argc; i++) {

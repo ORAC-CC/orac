@@ -64,12 +64,17 @@
 /* Copy the first part of user declarations.  */
 #line 23 "generate_parser.y" /* yacc.c:339  */
 
+#include <ctype.h>
+
 #include "generate_parser.h"
+
+int yylex();
+void yyerror(FILE* f[], const char* filename, char *s);
 
 // Locals
 char current_type[STR_LEN];
 
-#line 73 "generate_parser.tab.c" /* yacc.c:339  */
+#line 78 "generate_parser.tab.c" /* yacc.c:339  */
 
 # ifndef YY_NULLPTR
 #  if defined __cplusplus && 201103L <= __cplusplus
@@ -136,12 +141,12 @@ extern int yydebug;
 typedef union YYSTYPE YYSTYPE;
 union YYSTYPE
 {
-#line 31 "generate_parser.y" /* yacc.c:355  */
+#line 36 "generate_parser.y" /* yacc.c:355  */
 
     char sval[STR_LEN];
     char stck[3][STR_LEN];
 
-#line 145 "generate_parser.tab.c" /* yacc.c:355  */
+#line 150 "generate_parser.tab.c" /* yacc.c:355  */
 };
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1
@@ -156,7 +161,7 @@ int yyparse (FILE* f[], const char* filename);
 
 /* Copy the second part of user declarations.  */
 
-#line 160 "generate_parser.tab.c" /* yacc.c:358  */
+#line 165 "generate_parser.tab.c" /* yacc.c:358  */
 
 #ifdef short
 # undef short
@@ -456,15 +461,15 @@ static const yytype_uint8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    49,    49,    51,    53,    54,    55,    56,    59,    60,
-      61,    63,    64,    67,    68,    71,    72,    74,    75,    76,
-      77,    78,    80,    82,    85,    87,    93,    94,    96,    99,
-     100,   103,   111,   122,   133,   141,   149,   155,   156,   157,
-     160,   162,   164,   167,   170,   173,   176,   179,   182,   187,
-     188,   189,   192,   194,   196,   197,   199,   199,   199,   199,
-     199,   199,   199,   201,   202,   204,   204,   204,   204,   204,
-     204,   204,   204,   205,   205,   205,   205,   205,   205,   206,
-     206,   206,   206,   206,   206,   206,   207,   207,   207,   207
+       0,    54,    54,    56,    58,    59,    60,    61,    64,    65,
+      66,    68,    69,    72,    73,    76,    77,    79,    80,    81,
+      82,    83,    85,    87,    90,    92,    98,    99,   101,   104,
+     105,   108,   116,   127,   138,   146,   154,   160,   161,   162,
+     165,   167,   169,   172,   175,   178,   181,   184,   187,   192,
+     193,   194,   197,   199,   201,   202,   204,   204,   204,   204,
+     204,   204,   204,   206,   207,   209,   209,   209,   209,   209,
+     209,   209,   209,   210,   210,   210,   210,   210,   210,   211,
+     211,   211,   211,   211,   211,   211,   212,   212,   212,   212
 };
 #endif
 
@@ -1349,35 +1354,35 @@ yyreduce:
   switch (yyn)
     {
         case 25:
-#line 87 "generate_parser.y" /* yacc.c:1646  */
+#line 92 "generate_parser.y" /* yacc.c:1646  */
     {
                     // Declare current structure is this type
                     strupp(current_type, (yyvsp[0].sval));
                     print_struct_in_def(f, current_type, (yyvsp[-1].sval));
                 }
-#line 1359 "generate_parser.tab.c" /* yacc.c:1646  */
+#line 1364 "generate_parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 26:
-#line 93 "generate_parser.y" /* yacc.c:1646  */
+#line 98 "generate_parser.y" /* yacc.c:1646  */
     { strcpy((yyval.sval), (yyvsp[-2].sval)); }
-#line 1365 "generate_parser.tab.c" /* yacc.c:1646  */
+#line 1370 "generate_parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 27:
-#line 94 "generate_parser.y" /* yacc.c:1646  */
+#line 99 "generate_parser.y" /* yacc.c:1646  */
     { (yyval.sval)[0] = '\0'; }
-#line 1371 "generate_parser.tab.c" /* yacc.c:1646  */
+#line 1376 "generate_parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 28:
-#line 96 "generate_parser.y" /* yacc.c:1646  */
+#line 101 "generate_parser.y" /* yacc.c:1646  */
     { fprintf(f[C_DEF], "} %s;\n\n", (yyvsp[0].sval)); }
-#line 1377 "generate_parser.tab.c" /* yacc.c:1646  */
+#line 1382 "generate_parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 31:
-#line 103 "generate_parser.y" /* yacc.c:1646  */
+#line 108 "generate_parser.y" /* yacc.c:1646  */
     {
                     // A string
                     print_var_in_c_def(f, (yyvsp[0].sval), "char");
@@ -1386,11 +1391,11 @@ yyreduce:
                     print_var_in_f(f, current_type, (yyvsp[0].sval),
                                    "character(c_char)","*");
                 }
-#line 1390 "generate_parser.tab.c" /* yacc.c:1646  */
+#line 1395 "generate_parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 32:
-#line 111 "generate_parser.y" /* yacc.c:1646  */
+#line 116 "generate_parser.y" /* yacc.c:1646  */
     {
                     // A 1D allocatable array
                     print_var_in_c_def(f, (yyvsp[-3].sval), (yyvsp[-7].stck)[TYPE_C]);
@@ -1402,11 +1407,11 @@ yyreduce:
                                              (yyvsp[-7].stck)[TYPE_C], 1);
                     print_alloc_in_f(f, current_type, (yyvsp[-3].sval), 1);
                 }
-#line 1406 "generate_parser.tab.c" /* yacc.c:1646  */
+#line 1411 "generate_parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 33:
-#line 122 "generate_parser.y" /* yacc.c:1646  */
+#line 127 "generate_parser.y" /* yacc.c:1646  */
     {
                     // A 2D allocatable array
                     print_var_in_c_def(f, (yyvsp[-5].sval), (yyvsp[-9].stck)[TYPE_C]);
@@ -1418,11 +1423,11 @@ yyreduce:
                                              (yyvsp[-9].stck)[TYPE_C], 2);
                     print_alloc_in_f(f, current_type, (yyvsp[-5].sval), 2);
                }
-#line 1422 "generate_parser.tab.c" /* yacc.c:1646  */
+#line 1427 "generate_parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 34:
-#line 133 "generate_parser.y" /* yacc.c:1646  */
+#line 138 "generate_parser.y" /* yacc.c:1646  */
     {
                     // A static array or scalar
                     print_var_in_c_def(f, (yyvsp[-1].sval), (yyvsp[-3].stck)[TYPE_C]);
@@ -1431,131 +1436,131 @@ yyreduce:
                     print_var_in_c_wrapper(f, current_type, (yyvsp[-1].sval), (yyvsp[-3].stck)[TYPE_C]);
                     print_var_in_f(f, current_type, (yyvsp[-1].sval), (yyvsp[-3].stck)[TYPE_F], (yyvsp[0].sval));
                 }
-#line 1435 "generate_parser.tab.c" /* yacc.c:1646  */
+#line 1440 "generate_parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 35:
-#line 141 "generate_parser.y" /* yacc.c:1646  */
+#line 146 "generate_parser.y" /* yacc.c:1646  */
     {
                     // Sort out tree of names within structure
                     print_struct_in_c_def(f, (yyvsp[-3].sval), current_type, (yyvsp[0].sval));
                     print_struct_in_x_rul(f, (yyvsp[-3].sval), current_type, (yyvsp[0].sval));
                     print_struct_in_f(f, (yyvsp[-3].sval), current_type, (yyvsp[0].sval));
                 }
-#line 1446 "generate_parser.tab.c" /* yacc.c:1646  */
+#line 1451 "generate_parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 36:
-#line 149 "generate_parser.y" /* yacc.c:1646  */
+#line 154 "generate_parser.y" /* yacc.c:1646  */
     {
                     print_const_in_c_def(f, (yyvsp[-2].sval), (yyvsp[0].sval));
                     print_const_in_x_rul(f, (yyvsp[-2].sval));
                     print_const_in_f(f, (yyvsp[-2].sval), (yyvsp[0].sval));
                 }
-#line 1456 "generate_parser.tab.c" /* yacc.c:1646  */
+#line 1461 "generate_parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 40:
-#line 160 "generate_parser.y" /* yacc.c:1646  */
+#line 165 "generate_parser.y" /* yacc.c:1646  */
     {
                                          memcpy((yyval.stck), (yyvsp[-1].stck), STR_LEN*3); }
-#line 1463 "generate_parser.tab.c" /* yacc.c:1646  */
+#line 1468 "generate_parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 41:
-#line 162 "generate_parser.y" /* yacc.c:1646  */
+#line 167 "generate_parser.y" /* yacc.c:1646  */
     {
                                          memcpy((yyval.stck), (yyvsp[-1].stck), STR_LEN*3); }
-#line 1470 "generate_parser.tab.c" /* yacc.c:1646  */
+#line 1475 "generate_parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 42:
-#line 164 "generate_parser.y" /* yacc.c:1646  */
+#line 169 "generate_parser.y" /* yacc.c:1646  */
     { memcpy((yyval.stck), (yyvsp[0].stck), STR_LEN*3); }
-#line 1476 "generate_parser.tab.c" /* yacc.c:1646  */
+#line 1481 "generate_parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 43:
-#line 167 "generate_parser.y" /* yacc.c:1646  */
+#line 172 "generate_parser.y" /* yacc.c:1646  */
     { strcpy((yyval.stck)[TYPE_UPP], "BOOL");
                                          strcpy((yyval.stck)[TYPE_C], "bool");
                                          strcpy((yyval.stck)[TYPE_F], "logical"); }
-#line 1484 "generate_parser.tab.c" /* yacc.c:1646  */
+#line 1489 "generate_parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 44:
-#line 170 "generate_parser.y" /* yacc.c:1646  */
+#line 175 "generate_parser.y" /* yacc.c:1646  */
     { strcpy((yyval.stck)[TYPE_UPP], "CHAR");
                                          strcpy((yyval.stck)[TYPE_C], "char");
                                          strcpy((yyval.stck)[TYPE_F], "integer(byte)"); }
-#line 1492 "generate_parser.tab.c" /* yacc.c:1646  */
+#line 1497 "generate_parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 45:
-#line 173 "generate_parser.y" /* yacc.c:1646  */
+#line 178 "generate_parser.y" /* yacc.c:1646  */
     { strcpy((yyval.stck)[TYPE_UPP], "INT");
                                          strcpy((yyval.stck)[TYPE_C], "int");
                                          strcpy((yyval.stck)[TYPE_F], "integer"); }
-#line 1500 "generate_parser.tab.c" /* yacc.c:1646  */
+#line 1505 "generate_parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 46:
-#line 176 "generate_parser.y" /* yacc.c:1646  */
+#line 181 "generate_parser.y" /* yacc.c:1646  */
     { strcpy((yyval.stck)[TYPE_UPP], "INT");
                                          strcpy((yyval.stck)[TYPE_C], "long int");
                                          strcpy((yyval.stck)[TYPE_F], "integer(lint)"); }
-#line 1508 "generate_parser.tab.c" /* yacc.c:1646  */
+#line 1513 "generate_parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 47:
-#line 179 "generate_parser.y" /* yacc.c:1646  */
+#line 184 "generate_parser.y" /* yacc.c:1646  */
     { strcpy((yyval.stck)[TYPE_UPP], "FLOAT");
                                          strcpy((yyval.stck)[TYPE_C], "float");
                                          strcpy((yyval.stck)[TYPE_F], "real"); }
-#line 1516 "generate_parser.tab.c" /* yacc.c:1646  */
+#line 1521 "generate_parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 48:
-#line 182 "generate_parser.y" /* yacc.c:1646  */
+#line 187 "generate_parser.y" /* yacc.c:1646  */
     { strcpy((yyval.stck)[TYPE_UPP], "FLOAT");
                                          strcpy((yyval.stck)[TYPE_C], "double");
                                          strcpy((yyval.stck)[TYPE_F], "real(dreal)"); }
-#line 1524 "generate_parser.tab.c" /* yacc.c:1646  */
+#line 1529 "generate_parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 49:
-#line 187 "generate_parser.y" /* yacc.c:1646  */
+#line 192 "generate_parser.y" /* yacc.c:1646  */
     { sprintf((yyval.sval), "%s, %s", (yyvsp[-3].sval), (yyvsp[-1].sval)); }
-#line 1530 "generate_parser.tab.c" /* yacc.c:1646  */
+#line 1535 "generate_parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 50:
-#line 188 "generate_parser.y" /* yacc.c:1646  */
+#line 193 "generate_parser.y" /* yacc.c:1646  */
     { sprintf((yyval.sval), "%s", (yyvsp[-1].sval)); }
-#line 1536 "generate_parser.tab.c" /* yacc.c:1646  */
+#line 1541 "generate_parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 51:
-#line 189 "generate_parser.y" /* yacc.c:1646  */
+#line 194 "generate_parser.y" /* yacc.c:1646  */
     { strcpy((yyval.sval), ""); }
-#line 1542 "generate_parser.tab.c" /* yacc.c:1646  */
+#line 1547 "generate_parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 52:
-#line 192 "generate_parser.y" /* yacc.c:1646  */
+#line 197 "generate_parser.y" /* yacc.c:1646  */
     { strupp((yyval.sval), (yyvsp[0].sval));
                                          strcat((yyval.sval), "_TOKEN"); }
-#line 1549 "generate_parser.tab.c" /* yacc.c:1646  */
+#line 1554 "generate_parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 53:
-#line 194 "generate_parser.y" /* yacc.c:1646  */
+#line 199 "generate_parser.y" /* yacc.c:1646  */
     { strcpy((yyval.sval), (yyvsp[0].sval)); }
-#line 1555 "generate_parser.tab.c" /* yacc.c:1646  */
+#line 1560 "generate_parser.tab.c" /* yacc.c:1646  */
     break;
 
 
-#line 1559 "generate_parser.tab.c" /* yacc.c:1646  */
+#line 1564 "generate_parser.tab.c" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -1783,7 +1788,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 210 "generate_parser.y" /* yacc.c:1906  */
+#line 215 "generate_parser.y" /* yacc.c:1906  */
 
 
 // Make string upper case

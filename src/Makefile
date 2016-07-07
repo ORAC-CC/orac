@@ -232,7 +232,7 @@ STRUCT_NAME     = Ctrl
 STRUCT_TYPE     = Ctrl_t
 PARSER_NAME     = read_ctrl
 PARSER_SOURCE   = $(ORAC_COMMON)/common_constants.F90 \
-	$(ORAC_COMMON)/orac_indexing.F90 ECPConstants.F90 Ctrl.F90
+                  $(ORAC_COMMON)/orac_indexing.F90 ECPConstants.F90 Ctrl.F90
 USE_STATEMENTS  = "use Ctrl_m; use ECP_constants_m"
 PLACE           = $(OBJS)/$(PARSER_NAME)
 PARSER_INC      = -I$(ORAC_COMMON) -I../src/$(OBJ)

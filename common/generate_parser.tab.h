@@ -77,7 +77,7 @@ extern int yydebug;
 typedef union YYSTYPE YYSTYPE;
 union YYSTYPE
 {
-#line 31 "generate_parser.y" /* yacc.c:1909  */
+#line 36 "generate_parser.y" /* yacc.c:1909  */
 
     char sval[STR_LEN];
     char stck[3][STR_LEN];

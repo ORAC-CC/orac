@@ -21,7 +21,12 @@
 %parse-param {FILE* f[]} {const char* filename}
 
 %{
+#include <ctype.h>
+
 #include "generate_parser.h"
+
+int yylex();
+void yyerror(FILE* f[], const char* filename, char *s);
 
 // Locals
 char current_type[STR_LEN];
