@@ -247,9 +247,10 @@
 !    at first space; now passing imager_flags to correct_for_ice_snow_ecmwf
 ! 2016/04/03, SP: Add option to process ECMWF forecast in single NetCDF4 file
 !    Note: This should work with either the OPER or FCST streams from ECMWF.
-! 2016/04/11, SP: Added initial support for Himawari-8 AHI
-! 2016/05/16, SP: Added initial support for Suomi-NPP  VIIRS
-! 2016/04/30, SP: Fixed bug in multi-view processing
+! 2016/04/11, SP: Added support for Himawari-8 AHI
+! 2016/05/16, SP: Added support for Suomi-NPP  VIIRS
+! 2016/05/30, SP: Fixed bug in multi-view processing
+! 2016/06/28, SP: Added initial support for Sentinel-3 SLSTR
 !
 ! $Id$
 !
@@ -284,6 +285,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    use read_seviri_m
    use read_himawari_m
    use read_viirs_m
+   use read_slstr_m
    use rttov_driver_m
    use setup_m
    use surface_emissivity_m
@@ -708,9 +710,18 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
            doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids, &
            channel_info,verbose)
 
-      ! Get dimensions of the AHI image.
-      ! At present only full-disk images are supported
+      ! Get dimensions of the VIIRS image.
+      ! At present the full scene will always be processed
       call read_viirs_dimensions(geo_path_file,n_across_track,n_along_track, &
+                                  startx,endx,starty,endy,verbose)
+   else if (trim(adjustl(sensor)) .eq. 'SLSTR') then
+      call setup_slstr(l1b_path_file,geo_path_file,platform,year,month,day, &
+           doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids, &
+           channel_info,verbose)
+
+      ! Get dimensions of the SLSTR image.
+      ! At present the full scene will always be processed
+      call read_slstr_dimensions(l1b_path_file,n_across_track,n_along_track, &
                                   startx,endx,starty,endy,verbose)
    else
       write(*,*) 'ERROR: Invalid sensor: ', trim(adjustl(sensor))

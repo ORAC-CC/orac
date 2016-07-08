@@ -132,6 +132,7 @@
 ! 2016/04/11, SP: Added Himawari processing capability.
 ! 2016/05/19, SP: Added VIIRS/Suomi-NPP processing capability.
 ! 2016/05/27, SP: Updates to enable RTTOV to work correctly with multi-views
+! 2016/07/05, SP: Added SLSTR/Sentinel-3 processing capability.
 !
 ! $Id$
 !
@@ -323,6 +324,14 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
          coef_file = 'rtcoef_jpss_0_viirs.dat'
       else
          write(*,*) 'ERROR: rttov_driver(): Invalid VIIRS platform: ', &
+                    trim(platform)
+         stop error_stop_code
+      end if
+   case('SLSTR')
+      if (trim(platform) == 'Sen3') then
+         coef_file = 'rtcoef_sentinel3_1_slstr.dat'
+      else
+         write(*,*) 'ERROR: rttov_driver(): Invalid SLSTR platform: ', &
                     trim(platform)
          stop error_stop_code
       end if

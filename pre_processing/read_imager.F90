@@ -41,6 +41,7 @@
 ! 2015/08/08, CP: Added ATSR2 functionality
 ! 2016/04/08, SP: Added Himawari support.
 ! 2016/05/16, SP: Added Suomi-NPP support.
+! 2016/06/28, SP: Added SLSTR-Sentinel3 support.
 !
 ! $Id$
 !
@@ -67,6 +68,7 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
    use read_seviri_m
    use read_himawari_m
    use read_viirs_m
+   use read_slstr_m
 
    implicit none
 
@@ -151,6 +153,15 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
       ! Read the L1B data, according to the dimensions and offsets specified in
       ! imager_geolocation
       call read_viirs(path_to_l1b_file, path_to_geo_file, &
+           imager_geolocation,imager_measurements,imager_angles, &
+           imager_flags,imager_time,channel_info,verbose)
+
+      !in absence of proper mask set everything to "1" for cloud mask
+      imager_flags%cflag = 1
+   else if (trim(adjustl(sensor)) .eq. 'SLSTR') then
+      ! Read the L1B data, according to the dimensions and offsets specified in
+      ! imager_geolocation
+      call read_slstr(path_to_l1b_file, path_to_geo_file, &
            imager_geolocation,imager_measurements,imager_angles, &
            imager_flags,imager_time,channel_info,verbose)
 
