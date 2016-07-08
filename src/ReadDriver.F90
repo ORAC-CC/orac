@@ -118,6 +118,7 @@
 !    segfault if Ctrl INDEXING CHANNELS if-statements don't succeed
 ! 2016/06/06, GM: Set Ctrl%RS%solar_factor and Ctrl%get_T_dv_from_T_0d based on
 !    Ctrl%i_equation_form.  Change default value of Ctrl%i_equation_form to 3.
+! 2016/06/05, SP: Updated to support Sentinel-3/SLSTR.
 !
 ! $Id$
 !
@@ -628,8 +629,25 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       Ctrl%tau_chans = (/ 5, 7, 3, 4 /)
       allocate(Ctrl%r_e_chans(4))
       Ctrl%r_e_chans = (/ 8, 10, 11, 12 /)
-      allocate(Ctrl%ir_chans(3))
+      allocate(Ctrl%ir_chans(4))
       Ctrl%ir_chans  = (/ 12, 15, 16, 14 /)
+   else if (Ctrl%InstName(1:10) .eq. 'SLSTR-Sen3') then
+      Ctrl%Ind%Y_Id_legacy(I_legacy_0_6x) = 2
+      Ctrl%Ind%Y_Id_legacy(I_legacy_0_8x) = 3
+      Ctrl%Ind%Y_Id_legacy(I_legacy_1_6x) = 5
+      Ctrl%Ind%Y_Id_legacy(I_legacy_3_xx) = 7
+      Ctrl%Ind%Y_Id_legacy(I_legacy_11_x) = 8
+      Ctrl%Ind%Y_Id_legacy(I_legacy_12_x) = 9
+
+      allocate(Ctrl%ReChans(4))
+      Ctrl%ReChans = (/ 7, 5, 4, 6 /)
+
+      allocate(Ctrl%tau_chans(3))
+      Ctrl%tau_chans = (/ 2, 3, 1 /)
+      allocate(Ctrl%r_e_chans(4))
+      Ctrl%r_e_chans = (/ 4, 5, 6, 7 /)
+      allocate(Ctrl%ir_chans(3))
+      Ctrl%ir_chans  = (/ 7, 8, 9 /)
    else
    	write(*,*)"Unrecognised sensor/platform:",trim(Ctrl%InstName)
    	stop
