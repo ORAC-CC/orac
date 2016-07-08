@@ -400,7 +400,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%RS%Sb(:,ILand) = switch(a, Default=0.2, AerOx=2e-4)
 
    !----------------------- Ctrl%EqMPN --------------------
-   Ctrl%EqMPN%SySelm = switch(a, Default=SelmAux, Aer=SelmMeas)
+   Ctrl%EqMPN%SySelm = switch(a, Default=SelmAux)
    Ctrl%EqMPN%Homog  = switch(a, Default=.true.,  Aer=.false.)
    Ctrl%EqMPN%Coreg  = switch(a, Default=.true.,  Aer=.false.)
 
