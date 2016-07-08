@@ -640,10 +640,10 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       Ctrl%Ind%Y_Id_legacy(I_legacy_12_x) = 9
 
       allocate(Ctrl%ReChans(4))
-      Ctrl%ReChans = (/ 7, 5, 4, 6 /)
+      Ctrl%ReChans = (/ 7, 5, 6, 4 /)
 
       allocate(Ctrl%tau_chans(3))
-      Ctrl%tau_chans = (/ 2, 3, 1 /)
+      Ctrl%tau_chans = (/ 1, 2, 3 /)
       allocate(Ctrl%r_e_chans(4))
       Ctrl%r_e_chans = (/ 4, 5, 6, 7 /)
       allocate(Ctrl%ir_chans(3))
