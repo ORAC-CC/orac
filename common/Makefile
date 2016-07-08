@@ -61,6 +61,10 @@ depend:
 clean tidy:
 	rm -f $(OBJS)/*.o $(OBJS)/*.mod *.a generate_parser
 
+clean_parser:
+	rm -f generate_parser.tab.c generate_parser.tab.h generate_parser.c struct_parser.tab.cc struct_parser.tab.hh position.hh location.hh stack.hh
+
+
 
 # Build generate_parser executable
 generate_parser.tab.c generate_parser.tab.h: generate_parser.y

@@ -27,6 +27,8 @@ FLAGS = -DWRAPPER_NAME_C=$(PARSER_NAME)_c   -DWRAPPER_NAME_F=$(PARSER_NAME) \
 
 STRUCT_TYPE_UPP = $(shell echo $(STRUCT_TYPE) | tr '[:lower:]' '[:upper:]')
 
+clean_parser:
+	rm -f $(PARSER_NAME).lex $(PARSER_NAME).cc $(PARSER_NAME).F90
 
 # Run that exe on the requested source files
 $(PLACE)%inc: $(ORAC_COMMON)/generate_parser $(PARSER_SOURCE)

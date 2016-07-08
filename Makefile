@@ -18,3 +18,7 @@ clean tidy:
 	cd src && $(MAKE) clean
 	cd post_processing && $(MAKE) clean
 	cd derived_products/broadband_fluxes && $(MAKE) clean
+
+clean_parser:
+	cd common && $(MAKE) clean_parser
+	cd src && $(MAKE) clean_parser
