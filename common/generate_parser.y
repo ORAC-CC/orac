@@ -18,7 +18,8 @@
 %defines
 
  // Arguments for the parser function
-%parse-param {FILE* f[]} {const char* filename}
+%parse-param {FILE* f[]}
+%parse-param {const char* filename}
 
 %{
 #include <ctype.h>
