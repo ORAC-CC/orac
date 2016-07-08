@@ -277,7 +277,7 @@ subroutine read_slstr_visdata(indir,inband,outarr,imager_angles,sx,sy,nx,ny)
    allocate(data3(nx,ny))
 
    ! Preliminary solar irradiances, these should be checked once final values available
-   irradiances = (/ 1837.39, 1525.94, 956.17, 365.90, 248.33, 78.33, 0, 0, 0 /)
+   irradiances = (/ 1837.39, 1525.94, 956.17, 365.90, 248.33, 78.33, 0., 0., 0. /)
 
    ! Open the netcdf file
    ierr=nf90_open(path=trim(adjustl(filename)),mode=NF90_NOWRITE,ncid=fid)
