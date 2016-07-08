@@ -64,13 +64,13 @@ $(OBJS)/read_modis.o: $(OBJS)/bright_m.o $(OBJS)/calender.o \
         read_modis_l1b_radiances.F90 read_modis_l1b_radiances_2.F90 \
         read_modis_land_sea_mask.F90 read_modis_lat_lon.F90 read_modis_time.F90 \
         read_modis_time_lat_lon_angles.F90
-$(OBJS)/read_viirs.o: $(OBJS)/calender.o $(OBJS)/channel_structures.o \
-        $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o
+$(OBJS)/read_seviri.o: $(OBJS)/channel_structures.o $(OBJS)/imager_structures.o \
+        $(OBJS)/preproc_constants.o
 $(OBJS)/read_slstr.o: $(OBJS)/calender.o $(OBJS)/channel_structures.o \
         $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o \
         read_slstr_funcs.F90 read_slstr_main.F90
-$(OBJS)/read_seviri.o: $(OBJS)/channel_structures.o $(OBJS)/imager_structures.o \
-        $(OBJS)/preproc_constants.o
+$(OBJS)/read_viirs.o: $(OBJS)/calender.o $(OBJS)/channel_structures.o \
+        $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o
 $(OBJS)/read_USGS_file.o: $(OBJS)/preproc_constants.o
 $(OBJS)/ross_thick_li_sparse_r.o: $(OBJS)/nr.o $(OBJS)/preproc_constants.o
 $(OBJS)/rttov_driver.o: $(OBJS)/channel_structures.o $(OBJS)/netcdf_output.o \
