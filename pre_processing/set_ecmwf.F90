@@ -26,6 +26,7 @@
 ! ecmwf_path2out string out If badc, full path to appropriate GGAS file.
 ! ecmwf_path3out string out If badc, full path to appropriate GPAM file.
 ! ecmwf_flag     int    in  0: A single GRB file; 1: 3 NCDF files; 2: BADC files
+!                           4: One ECMWF forecast GRB file
 ! assume_full_path
 !                logic  in  T: inputs are filenames; F: folder names
 !

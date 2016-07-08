@@ -125,7 +125,7 @@ end subroutine read_ecmwf_wind
 !    that it could be executed twice, once for the ECMWF data on each side of
 !    the satellite acquisition.
 ! 2016/04/04, SP: Added option 4, which processes ECMWF forecast/analysis data
-!                 that's stored in a single NetCDF file.
+!    that's stored in a single NetCDF file.
 !
 ! $Id$
 !
