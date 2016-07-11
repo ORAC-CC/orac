@@ -14,7 +14,7 @@
 %locations
 
  // Arguments for the parser function
-%define parser_class_name {CLASS_NAME}
+%define parser_class_name "CLASS_NAME"
 %parse-param {PARENT_STRUCT_TYPE &strct}
 %lex-param   {PARENT_STRUCT_TYPE &strct}
 
