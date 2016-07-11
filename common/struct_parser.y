@@ -18,6 +18,9 @@
 %parse-param {PARENT_STRUCT_TYPE &strct}
 %lex-param   {PARENT_STRUCT_TYPE &strct}
 
+ // Use this instead if using bison 2.X
+ //%define parser_class_name "CLASS_NAME"
+
 %{
 #include "struct_parser.hh"
 
