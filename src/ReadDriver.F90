@@ -481,7 +481,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%Sunset    = 90. ! Used to identify twilight conditions
 
    !----------------------- Ctrl SWITCHES -----------------
-   Ctrl%i_equation_form = switch(a, Default=3, AerOx=1)
+   Ctrl%i_equation_form = switch(a, Default=3, AerOx=1, AerSw=0)
    Ctrl%LUTIntSelm      = switch(a, Default=LUTIntMethLinear)
    Ctrl%RTMIntSelm      = switch(a, Default=RTMIntMethLinear, Aer=RTMIntMethNone)
    Ctrl%CloudType       = switch(a, Default=1,                Aer=2)
@@ -855,9 +855,16 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    ! Things that have to be after the optional lines
    ! ---------------------------------------------------------------------------
 
+   if (Ctrl%i_equation_form > 0 .and. .not. Ctrl%RS%use_full_brdf) then
+      write(*,*) 'ERROR: ReadDriver(): i_equation_form requires full brdf.'
+      stop error_stop_code
+   end if
+
    ! Whether or not to multiply surface reflectance terms by cos(theta_0)
    ! depends on Ctrl%i_equation_form.
    select case (Ctrl%i_equation_form)
+   case(0)
+      Ctrl%RS%solar_factor = .false.
    case(1)
       Ctrl%RS%solar_factor = .false.
    case(2)
