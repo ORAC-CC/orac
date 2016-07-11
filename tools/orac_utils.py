@@ -138,9 +138,12 @@ def call_exe(args,    # Arguments of scripts
     """Call an ORAC executable, managing the necessary driver file"""
 
     # Optionally print command and driver file contents to StdOut
-    if args.verbose or args.script_verbose:
+    if args.verbose or args.script_verbose or args.just_driver:
         colours.cprint(exe + ' <<<', colouring['header'])
         colours.cprint(driver, colouring['text'])
+
+    if args.just_driver:
+        return
 
     # Write driver file
     (fd, driver_file) = tempfile.mkstemp('.driver', os.path.basename(exe),
@@ -244,6 +247,10 @@ def compare_orac_out(f0, f1):
 
             a0 = d0.variables[key]
             a1 = d1.variables[key]
+
+            # Turn off masking, so completely NaN fields can be equal
+            a0.set_auto_mask(False)
+            a1.set_auto_mask(False)
 
             compare_nc_atts(a0, a1, f1)
 
@@ -438,6 +445,11 @@ def read_orac_libraries(filename):
 
     return libraries
 
+#-----------------------------------------------------------------------------
+
+# Function to parse a string into a boolean value
+def str2bool(value):
+    return value.lower() in ("yes", "y", "true", "t", "1")
 
 #-----------------------------------------------------------------------------
 #----- INSTRUMENT/CLASS DEFINITIONS ------------------------------------------
@@ -530,6 +542,10 @@ def args_common(parser, regression=False):
         parser.add_argument('target', type=str,
                             help = 'File to be processed')
 
+    # Add boolean parsing function to register (type='bool', not type=bool)
+    # http://stackoverflow.com/questions/15008758/parsing-boolean-values-with-argparse
+    parser.register('type', 'bool', str2bool)
+
     out = parser.add_argument_group('Common arguments paths')
     out.add_argument('-i','--in_dir', type=str, nargs='+',
                      help = 'Path for input.')
@@ -543,6 +559,8 @@ def args_common(parser, regression=False):
                      help = 'Name and path of ORAC library specification.')
 
     key = parser.add_argument_group('Common keyword arguments')
+    key.add_argument('-J', '--just_driver', action='store_true',
+                     help = 'Only print the driver file.')
     key.add_argument('-k', '--keep_driver', action='store_true',
                      help = 'Retain driver files after processing.')
     key.add_argument('--no_clobber', action='store_true',
@@ -747,7 +765,8 @@ def args_main(parser):
     """Define arguments for main processor script."""
 
     main = parser.add_argument_group('Main processor arguments')
-    main.add_argument('-a', '--approach', type=str, nargs='?', metavar='STRING',
+    main.add_argument('-a', '--approach', type=str, nargs='?',
+                      choices = ('CldWat', 'CldIce', 'AerOx', 'AerSw', 'AshEyj'),
                       help = 'Retrieval approach to be used.')
     main.add_argument('--extra_lines', type=str, nargs='?', metavar='FILE',
                       help = 'Name of file containing additional driver lines.')
@@ -761,7 +780,7 @@ def args_main(parser):
                       help = 'Path to SAD and LUT files.')
     main.add_argument('--types', type=int, nargs='+', metavar='#',
                       help = 'Pavolonis cloud types to process.')
-    main.add_argument('--use_channel', type=bool, nargs='+', metavar='T/F',
+    main.add_argument('--use_channel', type='bool', nargs='+', metavar='T/F',
                       default = [True, True, True, True, True, True],
                       help = 'Channels to be evaluated by main processor.')
 
