@@ -62,51 +62,51 @@ subroutine WRAPPER_NAME_F(filename, STRUCT_NAME)
 end subroutine WRAPPER_NAME_F
 
 
-! Will write at most 'size' driver characters into the character array 'buf'.
+! Will write at most 'length' driver characters into the character array 'buf'.
 ! Returns the actual number of characters written or if the output was truncated
-! to 'size' it returns the number of characters that would have been written if
-! enough space had been available.  By setting size to zero a dry-run can be
-! performed in order to obtain the required size of the buffer.
-integer function PRINTER_NAME(STRUCT_NAME, buf, size) result(count)
+! to 'length' it returns the number of characters that would have been written
+! if enough space had been available.  By setting length to zero a dry-run can
+! be performed in order to obtain the required length of the buffer.
+integer function PRINTER_NAME(STRUCT_NAME, buf, length) result(count)
    USE_STATEMENTS
    use iso_c_binding
    implicit none
 
    type(PARENT_STRUCT_TYPE), intent(in)    :: STRUCT_NAME
    character, target,        intent(inout) :: buf(:)
-   integer,                  intent(in)    :: size
+   integer,                  intent(in)    :: length
 
    interface
-      integer(c_int) function print_string(buf, size, name, value) &
+      integer(c_int) function print_string(buf, length, name, value) &
          bind(C, name="parser_print_string")
          use iso_c_binding
          implicit none
          character(c_char), intent(inout)     :: buf(*)
-         integer(c_int),    intent(in), value :: size
+         integer(c_int),    intent(in), value :: length
          character(c_char), intent(in)        :: name(*)
          character(c_char), intent(in)        :: value(*)
       end function print_string
    end interface
 
    interface
-      integer(c_int) function print_bool_scalar(buf, size, name, value) &
+      integer(c_int) function print_bool_scalar(buf, length, name, value) &
          bind(C, name="parser_print_bool_scalar")
          use iso_c_binding
          implicit none
          character(c_char), intent(inout)     :: buf(*)
-         integer(c_int),    intent(in), value :: size
+         integer(c_int),    intent(in), value :: length
          character(c_char), intent(in)        :: name(*)
          logical,           intent(in), value :: value
       end function print_bool_scalar
    end interface
 
    interface
-      integer(c_int) function print_bool_array(buf, size, name, value, n_dims, dims) &
+      integer(c_int) function print_bool_array(buf, length, name, value, n_dims, dims) &
          bind(C, name="parser_print_bool_array")
          use iso_c_binding
          implicit none
          character(c_char), intent(inout)     :: buf(*)
-         integer(c_int),    intent(in), value :: size
+         integer(c_int),    intent(in), value :: length
          character(c_char), intent(in)        :: name(*)
          logical,           intent(in)        :: value(*)
          integer(c_int),    intent(in), value :: n_dims
@@ -115,24 +115,24 @@ integer function PRINTER_NAME(STRUCT_NAME, buf, size) result(count)
    end interface
 
    interface
-      integer(c_int) function print_char_scalar(buf, size, name, value) &
+      integer(c_int) function print_char_scalar(buf, length, name, value) &
          bind(C, name="parser_print_char_scalar")
          use iso_c_binding
          implicit none
          character(c_char),      intent(inout)     :: buf(*)
-         integer(c_int),         intent(in), value :: size
+         integer(c_int),         intent(in), value :: length
          character(c_char),      intent(in)        :: name(*)
          integer(c_signed_char), intent(in), value :: value
       end function print_char_scalar
    end interface
 
    interface
-      integer(c_int) function print_char_array(buf, size, name, value, n_dims, dims) &
+      integer(c_int) function print_char_array(buf, length, name, value, n_dims, dims) &
          bind(C, name="parser_print_char_array")
          use iso_c_binding
          implicit none
          character(c_char),      intent(inout)      :: buf(*)
-         integer(c_int),         intent(in), value  :: size
+         integer(c_int),         intent(in), value  :: length
          character(c_char),      intent(in)         :: name(*)
          integer(c_signed_char), intent(in)         :: value(*)
          integer(c_int),         intent(in), value  :: n_dims
@@ -141,24 +141,24 @@ integer function PRINTER_NAME(STRUCT_NAME, buf, size) result(count)
    end interface
 
    interface
-      integer(c_int) function print_int_scalar(buf, size, name, value) &
+      integer(c_int) function print_int_scalar(buf, length, name, value) &
          bind(C, name="parser_print_int_scalar")
          use iso_c_binding
          implicit none
          character(c_char), intent(inout)     :: buf(*)
-         integer(c_int),    intent(in), value :: size
+         integer(c_int),    intent(in), value :: length
          character(c_char), intent(in)        :: name(*)
          integer(c_int),    intent(in), value :: value
       end function print_int_scalar
    end interface
 
    interface
-      integer(c_int) function print_int_array(buf, size, name, value, n_dims, dims) &
+      integer(c_int) function print_int_array(buf, length, name, value, n_dims, dims) &
          bind(C, name="parser_print_int_array")
          use iso_c_binding
          implicit none
          character(c_char), intent(inout)     :: buf(*)
-         integer(c_int),    intent(in), value :: size
+         integer(c_int),    intent(in), value :: length
          character(c_char), intent(in)        :: name(*)
          integer(c_int),    intent(in)        :: value(*)
          integer(c_int),    intent(in), value :: n_dims
@@ -167,24 +167,24 @@ integer function PRINTER_NAME(STRUCT_NAME, buf, size) result(count)
    end interface
 
    interface
-      integer(c_int) function print_float_scalar(buf, size, name, value) &
+      integer(c_int) function print_float_scalar(buf, length, name, value) &
          bind(C, name="parser_print_float_scalar")
          use iso_c_binding
          implicit none
          character(c_char), intent(inout)     :: buf(*)
-         integer(c_int),    intent(in), value :: size
+         integer(c_int),    intent(in), value :: length
          character(c_char), intent(in)        :: name(*)
          real(c_float),     intent(in), value :: value
       end function print_float_scalar
    end interface
 
    interface
-      integer(c_int) function print_float_array(buf, size, name, value, n_dims, dims) &
+      integer(c_int) function print_float_array(buf, length, name, value, n_dims, dims) &
          bind(C, name="parser_print_float_array")
          use iso_c_binding
          implicit none
          character(c_char), intent(inout)     :: buf(*)
-         integer(c_int),    intent(in), value :: size
+         integer(c_int),    intent(in), value :: length
          character(c_char), intent(in)        :: name(*)
          real(c_float),     intent(in)        :: value(*)
          integer(c_int),    intent(in), value :: n_dims
@@ -202,7 +202,7 @@ integer function PRINTER_NAME(STRUCT_NAME, buf, size) result(count)
 
     count = count + 1
 
-    if (size .gt. 0) buf(count) = ' '
+    if (length .gt. 0) buf(count) = ' '
 
 end function PRINTER_NAME
 

@@ -483,9 +483,9 @@ void print_alloc_in_f(FILE* f[], char* parent_struct, char* name, int alloc) {
 // Print string print code into Fortran interface
 void print_print_str_in_f(FILE* f[], char* parent_struct, char* name) {
 
-    fprintf(f[F_PRI], "   if (size .gt. 0) ptr => buf(count+1:)\n");
+    fprintf(f[F_PRI], "   if (length .gt. 0) ptr => buf(count+1:)\n");
 
-    fprintf(f[F_PRI], "   count = count + print_string(ptr, max(0, size - count), "
+    fprintf(f[F_PRI], "   count = count + print_string(ptr, max(0, length - count), "
             "XSTR(%s_VARIABLE)//\'%%\'//XSTR(%s)//C_NULL_CHAR, trim(%s_VARIABLE%%%s)"
             "//C_NULL_CHAR)\n", parent_struct, name, parent_struct, name);
 }
@@ -505,7 +505,7 @@ void print_print_var_in_f(FILE* f[], char* parent_struct, char* name,
                      "%s_VARIABLE%%%s", parent_struct, name, parent_struct, name);
     else
          n = snprintf(tmp, STR_LEN, "XSTR(%s_VARIABLE)//\'%%\'//XSTR(%s)//C_NULL_CHAR, "
-                      "%s_VARIABLE%%%s, rank(%s_VARIABLE%%%s), shape(%s_VARIABLE%%%s)",
+                      "%s_VARIABLE%%%s, size(shape(%s_VARIABLE%%%s)), shape(%s_VARIABLE%%%s)",
                       parent_struct, name, parent_struct, name, parent_struct, name,
                       parent_struct, name);
     if (n >= STR_LEN) {
@@ -513,31 +513,31 @@ void print_print_var_in_f(FILE* f[], char* parent_struct, char* name,
         exit(1);
     }
 
-    fprintf(f[F_PRI], "   if (size .gt. 0) ptr => buf(count+1:)\n");
+    fprintf(f[F_PRI], "   if (length .gt. 0) ptr => buf(count+1:)\n");
 
     if (strcmp(type_c, "bool") == 0) {
         if (is_scaler)
-            fprintf(f[F_PRI], "   count = count + print_bool_scalar(ptr, max(0, size - count), %s)\n", tmp);
+            fprintf(f[F_PRI], "   count = count + print_bool_scalar(ptr, max(0, length - count), %s)\n", tmp);
         else
-            fprintf(f[F_PRI], "   count = count + print_bool_array(ptr, max(0, size - count), %s)\n", tmp);
+            fprintf(f[F_PRI], "   count = count + print_bool_array(ptr, max(0, length - count), %s)\n", tmp);
     }
     else if (strcmp(type_c, "char") == 0) {
         if (is_scaler)
-            fprintf(f[F_PRI], "   count = count + print_char_scalar(ptr, max(0, size - count), %s)\n", tmp);
+            fprintf(f[F_PRI], "   count = count + print_char_scalar(ptr, max(0, length - count), %s)\n", tmp);
         else
-            fprintf(f[F_PRI], "   count = count + print_char_array(ptr, max(0, size - count), %s)\n", tmp);
+            fprintf(f[F_PRI], "   count = count + print_char_array(ptr, max(0, length - count), %s)\n", tmp);
     }
     else if (strcmp(type_c, "int") == 0) {
         if (is_scaler)
-            fprintf(f[F_PRI], "   count = count + print_int_scalar(ptr, max(0, size - count), %s)\n", tmp);
+            fprintf(f[F_PRI], "   count = count + print_int_scalar(ptr, max(0, length - count), %s)\n", tmp);
         else
-            fprintf(f[F_PRI], "   count = count + print_int_array(ptr, max(0, size - count), %s)\n", tmp);
+            fprintf(f[F_PRI], "   count = count + print_int_array(ptr, max(0, length - count), %s)\n", tmp);
     }
     else if (strcmp(type_c, "float") == 0) {
         if (is_scaler)
-            fprintf(f[F_PRI], "   count = count + print_float_scalar(ptr, max(0, size - count), %s)\n", tmp);
+            fprintf(f[F_PRI], "   count = count + print_float_scalar(ptr, max(0, length - count), %s)\n", tmp);
         else
-            fprintf(f[F_PRI], "   count = count + print_float_array(ptr, max(0, size - count), %s)\n", tmp);
+            fprintf(f[F_PRI], "   count = count + print_float_array(ptr, max(0, length - count), %s)\n", tmp);
     }
     else {
         fprintf(stderr, "INTERNAL ERROR: Invalid c_type: %s, name = %s\n", type_c, name);
