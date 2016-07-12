@@ -201,9 +201,7 @@ subroutine read_input_secondary_once(nfile, fname, input_data, indexing, &
    type(input_indices_t),        intent(in)    :: loop_ind(:)
    logical,                      intent(in)    :: verbose
 
-   integer                 :: ncid, i
-   character(len=32)       :: input_num
-   character(len=512)      :: input_dummy
+   integer                   :: ncid, i
    type(common_file_flags_t) :: read_flags
 
    ! Flag which optional fields to be read. Turn false as they are read.

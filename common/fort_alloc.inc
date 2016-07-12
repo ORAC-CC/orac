@@ -2,9 +2,9 @@ subroutine FORT_ALLOC_NAME_1D(ptr, n0, m0) bind(C,name=XSTR(FORT_ALLOC_NAME_1D))
    use iso_c_binding
    implicit none
 
-   type(c_ptr), intent(inout) :: ptr
-   integer,     intent(inout) :: n0
-   integer,     intent(in)    :: m0
+   type(c_ptr),    intent(inout) :: ptr
+   integer(c_int), intent(inout) :: n0
+   integer(c_int), intent(in)    :: m0
    FORT_ALLOC_TYPE, pointer   :: arr(:)
 
    if (n0 /= m0) then
@@ -23,9 +23,9 @@ subroutine FORT_ALLOC_NAME_2D(ptr, n0, n1, m0, m1) bind(C,name=XSTR(FORT_ALLOC_N
    use iso_c_binding
    implicit none
 
-   type(c_ptr), intent(inout) :: ptr
-   integer,     intent(inout) :: n0, n1
-   integer,     intent(in)    :: m0, m1
+   type(c_ptr),    intent(inout) :: ptr
+   integer(c_int), intent(inout) :: n0, n1
+   integer(c_int), intent(in)    :: m0, m1
    FORT_ALLOC_TYPE, pointer   :: arr(:,:)
 
    if (n0 /= m0 .or. n1 /= m1) then

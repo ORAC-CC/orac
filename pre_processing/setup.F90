@@ -1033,12 +1033,10 @@ subroutine setup_slstr(l1b_path_file,geo_path_file,platform,year,month,day, &
    type(channel_info_t),           intent(inout) :: channel_info
    logical,                        intent(in)    :: verbose
 
-   character(len=path_length) :: geo_dtstr, l1b_dtstr
-
-   integer                    :: index1, index2
+   integer :: index2
 
    ! Variables for dealing with netcdf files (required for timestamping)
-   integer fid,did,ierr
+   integer fid,ierr
    character(len=path_length) :: geo_start, l1b_start
 
 

@@ -248,7 +248,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
    integer,                 parameter   :: ALLOC=1, DEALLOC=0
 
    ! View variables
-   integer(kind=sint)                   :: cview,nchans_v
+   integer(kind=sint)                   :: cview
    integer,                 allocatable :: chan_pos(:)
 
    real                                 :: p_0, sec_vza, lambda, tau_ray_0, &

@@ -51,12 +51,6 @@ subroutine read_input_primary_cost_only(ncid, input_data, indexing, verbose)
    type(input_indices_t),      intent(in)    :: indexing
    logical,                    intent(in)    :: verbose
 
-   integer            :: i, j
-   integer            :: ierr
-   integer            :: varid
-   character(len=32)  :: input_num
-   character(len=512) :: input_dummy
-
    call nc_read_array(ncid, "costja", input_data%costja, verbose)
    call nc_read_array(ncid, "costjm", input_data%costjm, verbose)
 

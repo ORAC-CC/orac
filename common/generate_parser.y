@@ -486,7 +486,8 @@ void print_print_str_in_f(FILE* f[], char* parent_struct, char* name) {
     fprintf(f[F_PRI], "   if (size .gt. 0) ptr => buf(count+1:)\n");
 
     fprintf(f[F_PRI], "   count = count + print_string(ptr, max(0, size - count), "
-            "XSTR(%s_VARIABLE)//\'%%\'//XSTR(%s)//C_NULL_CHAR, trim(%s_VARIABLE%%%s)//C_NULL_CHAR)\n", parent_struct, name, parent_struct, name);
+            "XSTR(%s_VARIABLE)//\'%%\'//XSTR(%s)//C_NULL_CHAR, trim(%s_VARIABLE%%%s)"
+            "//C_NULL_CHAR)\n", parent_struct, name, parent_struct, name);
 }
 
 // Print variable print code into Fortran interface

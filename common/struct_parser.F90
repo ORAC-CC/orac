@@ -77,7 +77,7 @@ integer function PRINTER_NAME(STRUCT_NAME, buf, size) result(count)
    integer,                  intent(in)    :: size
 
    interface
-      integer function print_string(buf, size, name, value) &
+      integer(c_int) function print_string(buf, size, name, value) &
          bind(C, name="parser_print_string")
          use iso_c_binding
          implicit none
@@ -89,7 +89,7 @@ integer function PRINTER_NAME(STRUCT_NAME, buf, size) result(count)
    end interface
 
    interface
-      integer function print_bool_scalar(buf, size, name, value) &
+      integer(c_int) function print_bool_scalar(buf, size, name, value) &
          bind(C, name="parser_print_bool_scalar")
          use iso_c_binding
          implicit none
@@ -101,7 +101,7 @@ integer function PRINTER_NAME(STRUCT_NAME, buf, size) result(count)
    end interface
 
    interface
-      integer function print_bool_array(buf, size, name, value, n_dims, dims) &
+      integer(c_int) function print_bool_array(buf, size, name, value, n_dims, dims) &
          bind(C, name="parser_print_bool_array")
          use iso_c_binding
          implicit none
@@ -115,7 +115,7 @@ integer function PRINTER_NAME(STRUCT_NAME, buf, size) result(count)
    end interface
 
    interface
-      integer function print_char_scalar(buf, size, name, value) &
+      integer(c_int) function print_char_scalar(buf, size, name, value) &
          bind(C, name="parser_print_char_scalar")
          use iso_c_binding
          implicit none
@@ -127,7 +127,7 @@ integer function PRINTER_NAME(STRUCT_NAME, buf, size) result(count)
    end interface
 
    interface
-      integer function print_char_array(buf, size, name, value, n_dims, dims) &
+      integer(c_int) function print_char_array(buf, size, name, value, n_dims, dims) &
          bind(C, name="parser_print_char_array")
          use iso_c_binding
          implicit none
@@ -141,7 +141,7 @@ integer function PRINTER_NAME(STRUCT_NAME, buf, size) result(count)
    end interface
 
    interface
-      integer function print_int_scalar(buf, size, name, value) &
+      integer(c_int) function print_int_scalar(buf, size, name, value) &
          bind(C, name="parser_print_int_scalar")
          use iso_c_binding
          implicit none
@@ -153,7 +153,7 @@ integer function PRINTER_NAME(STRUCT_NAME, buf, size) result(count)
    end interface
 
    interface
-      integer function print_int_array(buf, size, name, value, n_dims, dims) &
+      integer(c_int) function print_int_array(buf, size, name, value, n_dims, dims) &
          bind(C, name="parser_print_int_array")
          use iso_c_binding
          implicit none
@@ -167,7 +167,7 @@ integer function PRINTER_NAME(STRUCT_NAME, buf, size) result(count)
    end interface
 
    interface
-      integer function print_float_scalar(buf, size, name, value) &
+      integer(c_int) function print_float_scalar(buf, size, name, value) &
          bind(C, name="parser_print_float_scalar")
          use iso_c_binding
          implicit none
@@ -179,7 +179,7 @@ integer function PRINTER_NAME(STRUCT_NAME, buf, size) result(count)
    end interface
 
    interface
-      integer function print_float_array(buf, size, name, value, n_dims, dims) &
+      integer(c_int) function print_float_array(buf, size, name, value, n_dims, dims) &
          bind(C, name="parser_print_float_array")
          use iso_c_binding
          implicit none

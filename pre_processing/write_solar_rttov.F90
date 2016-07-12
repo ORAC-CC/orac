@@ -72,9 +72,8 @@ subroutine write_solar_rttov(netcdf_info, preproc_dims, coefs, idim, jdim, &
    integer,                    intent(in) :: rttov_num
    integer,                    intent(in) :: chanvar
 
-   real(sreal)                            :: amf_recip
-   real(sreal), dimension(1,nlev,1,1)     :: dummy_tac, dummy_tbc
-   character(128)                         :: tacn,tbcn
+   real(sreal)                        :: amf_recip
+   real(sreal), dimension(1,nlev,1,1) :: dummy_tac, dummy_tbc
 
    if (write_flag) then
       ! The reciprocal of the air mass factor
