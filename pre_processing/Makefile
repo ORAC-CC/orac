@@ -136,5 +136,5 @@ Linux2DEC:
 # Fortran 90 dependencies
 include dependencies.inc
 
-# Fortran 90 on C dependecies
-read_aatsr_l1b.o: read_aatsr_orbit.o
+# C dependecies
+$(OBJS)/read_aatsr_orbit.o: read_aatsr_orbit.h

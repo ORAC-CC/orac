@@ -92,8 +92,8 @@ void WRAPPER_NAME_C(
     int* stat, const char* filename) {
     // Open file and parser
     yyin = fopen(filename, "r");
-    PARENT_STRUCT_TYPE strct;
-    yy::CLASS_NAME parser(strct);
+    PARENT_STRUCT_TYPE STRUCT_NAME;
+    yy::CLASS_NAME parser(STRUCT_NAME);
 
 #include XCAT3(INC_PATH, c_cpy, inc)
 

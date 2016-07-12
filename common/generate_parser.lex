@@ -109,6 +109,8 @@ int main(int argc, char const* argv[]) {
     f[F_CP1] = open_part_file(argv[1], "f_cpy.inc");
     // Fortran code to copy newly allocated pointers
     f[F_CP2] = open_part_file(argv[1], "f_cpy2.inc");
+    // Fortran code to print variables in Fortran
+    f[F_PRI] = open_part_file(argv[1], "f_pri.inc");
 
     // Write permanent headers for files
     fputs("#ifndef WRAPPER_DEF_H\n#define WRAPPER_DEF_H\n", f[C_DEF]);

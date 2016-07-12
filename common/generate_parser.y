@@ -13,6 +13,7 @@
     06 Apr 2016, ACP: Initial version (with apologies to experienced coders)
     21 Apr 2016, ACP: Produces both C and lex outputs.
     09 Jun 2016, ACP: Final version
+    11 Jul 2016, GRM: Add printer support.
  */
 %language "C"
 %defines
@@ -23,6 +24,7 @@
 
 %{
 #include <ctype.h>
+#include <stdlib.h>
 
 #include "generate_parser.h"
 
@@ -113,6 +115,8 @@ variable:       STR dims DELIM NAME {
                     print_var_in_c_wrapper(f, current_type, $4, "char");
                     print_var_in_f(f, current_type, $4,
                                    "character(c_char)","*");
+                    print_print_str_in_f(f, current_type, $4);
+
                 }
         |       declaration ',' ALLOC DELIM NAME '(' ':' ')' {
                     // A 1D allocatable array
@@ -124,6 +128,8 @@ variable:       STR dims DELIM NAME {
                     print_alloc_in_c_wrapper(f, current_type, $5,
                                              $1[TYPE_C], 1);
                     print_alloc_in_f(f, current_type, $5, 1);
+                    print_print_var_in_f(f, current_type, $5, $1[TYPE_C],
+                                         " ", 1);
                 }
         |       declaration ',' ALLOC DELIM NAME '(' ':' ',' ':' ')' {
                     // A 2D allocatable array
@@ -135,6 +141,8 @@ variable:       STR dims DELIM NAME {
                     print_alloc_in_c_wrapper(f, current_type, $5,
                                              $1[TYPE_C], 2);
                     print_alloc_in_f(f, current_type, $5, 2);
+                    print_print_var_in_f(f, current_type, $5, $1[TYPE_C],
+                                         " ", 2);
                }
         |       declaration DELIM NAME dims {
                     // A static array or scalar
@@ -143,6 +151,8 @@ variable:       STR dims DELIM NAME {
                                        $1[TYPE_UPP], $4, 0);
                     print_var_in_c_wrapper(f, current_type, $3, $1[TYPE_C]);
                     print_var_in_f(f, current_type, $3, $1[TYPE_F], $4);
+                    print_print_var_in_f(f, current_type, $3, $1[TYPE_C],
+                                         $4, 0);
                 }
         |       TYPE '(' NAME ')' DELIM NAME {
                     // Sort out tree of names within structure
@@ -468,4 +478,68 @@ void print_alloc_in_f(FILE* f[], char* parent_struct, char* name, int alloc) {
     // Close statements
     fputs("   end if\n", f[F_CP1]);
     fputs("])\n", f[F_CP2]);
+}
+
+// Print string print code into Fortran interface
+void print_print_str_in_f(FILE* f[], char* parent_struct, char* name) {
+
+    fprintf(f[F_PRI], "   if (size .gt. 0) ptr => buf(count+1:)\n");
+
+    fprintf(f[F_PRI], "   count = count + print_string(ptr, max(0, size - count), "
+            "XSTR(%s_VARIABLE)//\'%%\'//XSTR(%s)//C_NULL_CHAR, trim(%s_VARIABLE%%%s)//C_NULL_CHAR)\n", parent_struct, name, parent_struct, name);
+}
+
+// Print variable print code into Fortran interface
+void print_print_var_in_f(FILE* f[], char* parent_struct, char* name,
+                          char* type_c, char* len, int alloc) {
+
+    int n;
+    int is_scaler;
+    char tmp[STR_LEN];
+
+    is_scaler = alloc == 0 && len[0] == '\0';
+
+    if (is_scaler)
+         n = snprintf(tmp, STR_LEN, "XSTR(%s_VARIABLE)//\'%%\'//XSTR(%s)//C_NULL_CHAR, "
+                     "%s_VARIABLE%%%s", parent_struct, name, parent_struct, name);
+    else
+         n = snprintf(tmp, STR_LEN, "XSTR(%s_VARIABLE)//\'%%\'//XSTR(%s)//C_NULL_CHAR, "
+                      "%s_VARIABLE%%%s, rank(%s_VARIABLE%%%s), shape(%s_VARIABLE%%%s)",
+                      parent_struct, name, parent_struct, name, parent_struct, name,
+                      parent_struct, name);
+    if (n >= STR_LEN) {
+        fprintf(stderr, "INTERNAL ERROR: Buffer overflow.  Increase STR_LEN\n");
+        exit(1);
+    }
+
+    fprintf(f[F_PRI], "   if (size .gt. 0) ptr => buf(count+1:)\n");
+
+    if (strcmp(type_c, "bool") == 0) {
+        if (is_scaler)
+            fprintf(f[F_PRI], "   count = count + print_bool_scalar(ptr, max(0, size - count), %s)\n", tmp);
+        else
+            fprintf(f[F_PRI], "   count = count + print_bool_array(ptr, max(0, size - count), %s)\n", tmp);
+    }
+    else if (strcmp(type_c, "char") == 0) {
+        if (is_scaler)
+            fprintf(f[F_PRI], "   count = count + print_char_scalar(ptr, max(0, size - count), %s)\n", tmp);
+        else
+            fprintf(f[F_PRI], "   count = count + print_char_array(ptr, max(0, size - count), %s)\n", tmp);
+    }
+    else if (strcmp(type_c, "int") == 0) {
+        if (is_scaler)
+            fprintf(f[F_PRI], "   count = count + print_int_scalar(ptr, max(0, size - count), %s)\n", tmp);
+        else
+            fprintf(f[F_PRI], "   count = count + print_int_array(ptr, max(0, size - count), %s)\n", tmp);
+    }
+    else if (strcmp(type_c, "float") == 0) {
+        if (is_scaler)
+            fprintf(f[F_PRI], "   count = count + print_float_scalar(ptr, max(0, size - count), %s)\n", tmp);
+        else
+            fprintf(f[F_PRI], "   count = count + print_float_array(ptr, max(0, size - count), %s)\n", tmp);
+    }
+    else {
+        fprintf(stderr, "INTERNAL ERROR: Invalid c_type: %s, name = %s\n", type_c, name);
+        exit(1);
+    }
 }

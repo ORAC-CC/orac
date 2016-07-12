@@ -33,24 +33,28 @@
 #define F_AR2 9
 #define F_CP1 10
 #define F_CP2 11
-#define N_INC_FILES 12
+#define F_PRI 12
+#define N_INC_FILES 13
 
 // Function declarations
-void print_alloc_in_c_wrapper(FILE** , char* , char* , char* , int );
-void print_alloc_in_f(FILE** , char* , char* , int );
-void print_const_in_c_def(FILE** , char* , char* );
-void print_const_in_f(FILE** , char* , char* );
-void print_const_in_x_rul(FILE** , char* );
-void print_dim_in_c_def(FILE** , char* , int );
-void print_str_in_x_rul(FILE** , char* , char* );
-void print_struct_in_c_def(FILE** , char* , char* , char* );
-void print_struct_in_def(FILE** , char* , char* );
-void print_struct_in_f(FILE** , char* , char* , char* );
-void print_struct_in_x_rul(FILE** , char* , char* , char* );
-void print_var_in_c_def(FILE** , char* , char* );
-void print_var_in_c_wrapper(FILE** , char* , char* , char* );
-void print_var_in_f(FILE** , char* , char* , char* , char* );
-void print_var_in_x_rul(FILE** , char* , char* , char* , char* , char* , int );
 char* strupp(char* , char* );
+void print_struct_in_c_def(FILE** , char* , char* , char* );
+void print_var_in_c_def(FILE** , char* , char* );
+void print_dim_in_c_def(FILE** , char* , int );
+void print_const_in_c_def(FILE** , char* , char* );
+void print_const_in_x_rul(FILE** , char* );
+void print_str_in_x_rul(FILE** , char* , char* );
+void print_struct_in_x_rul(FILE** , char* , char* , char* );
+void print_var_in_x_rul(FILE** , char* , char* , char* , char* , char* , int );
+void print_struct_in_def(FILE** , char* , char* );
+void print_var_in_c_wrapper(FILE** , char* , char* , char* );
+void print_alloc_in_c_wrapper(FILE** , char* , char* , char* , int );
+void print_struct_in_f(FILE** , char* , char* , char* );
+void print_const_in_f(FILE** , char* , char* );
+void print_var_in_f(FILE** , char* , char* , char* , char* );
+void print_alloc_in_f(FILE** , char* , char* , int );
+void print_print_str_in_f(FILE* f[], char* parent_struct, char* name);
+void print_print_var_in_f(FILE* f[], char* parent_struct, char* name, char* type_c,
+                          char* len, int alloc);
 
 #endif

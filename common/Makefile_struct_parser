@@ -19,11 +19,12 @@
 PARSER_OBJ = $(PLACE).tab.o $(PLACE).c.o $(PLACE).f.o
 PARSER_CLEAN = $(PLACE).h $(PLACE)*.inc $(PLACE)*.o
 
-FLAGS = -DWRAPPER_NAME_C=$(PARSER_NAME)_c   -DWRAPPER_NAME_F=$(PARSER_NAME) \
+FLAGS = -DWRAPPER_NAME_C=$(PARSER_NAME)_c -DWRAPPER_NAME_F=$(PARSER_NAME) \
         -DWRAPPER_NAME_FC=$(PARSER_NAME)_fc -DINC_PATH=$(PLACE) \
-        -DMODULE_NAME=$(PARSER_NAME)_m      -DCLASS_NAME=$(PARSER_NAME)_class \
-        -DUSE_STATEMENTS=$(USE_STATEMENTS)  -DPARENT_STRUCT_TYPE=$(STRUCT_TYPE) \
-        -D$(STRUCT_TYPE_UPP)_VARIABLE=strct -DDIM_DEFINITIONS=$(PARSER_NAME).def
+        -DMODULE_NAME=$(PARSER_NAME)_m -DPRINTER_NAME=$(PRINTER_NAME) \
+        -DCLASS_NAME=$(PARSER_NAME)_class -DUSE_STATEMENTS=$(USE_STATEMENTS) \
+        -DPARENT_STRUCT_TYPE=$(STRUCT_TYPE) -DSTRUCT_NAME=$(STRUCT_NAME) \
+        -D$(STRUCT_TYPE_UPP)_VARIABLE=$(STRUCT_NAME) -DDIM_DEFINITIONS=$(PARSER_NAME).def
 
 STRUCT_TYPE_UPP = $(shell echo $(STRUCT_TYPE) | tr '[:lower:]' '[:upper:]')
 
@@ -73,4 +74,4 @@ $(PLACE).c.o: $(PARSER_NAME).cc $(ORAC_COMMON)/struct_parser.tab.hh \
       $(PLACE).h $(PLACE).c_arg.inc $(PLACE).c_cpy.inc $(PLACE).c_cpy2.inc
 $(PLACE).f.o: $(ORAC_COMMON)/struct_parser.F90 $(ORAC_COMMON)/fort_alloc.inc \
       $(PLACE).h $(PLACE).f_arg.inc $(PLACE).f_def.inc $(PLACE).f_arr.inc \
-      $(PLACE).f_cpy.inc $(PLACE).f_arg2.inc $(PLACE).f_cpy2.inc
+      $(PLACE).f_cpy.inc $(PLACE).f_arg2.inc $(PLACE).f_cpy2.inc $(PLACE).f_pri.inc

@@ -1,13 +1,13 @@
-/*
-NAME:
-   parse_driver.hh
-PURPOSE:
-   C++ header for flex/bison parser to read text files into a Fortran structure.
-HISTORY:
-   20 Apr 2016, ACP: Initial version
-   09 Jun 2016, ACP: Final version
-   15 Jun 2016, ACP: Ignore unallocated arrays (that have length of zero)
-*/
+ /*
+ NAME:
+    parse_driver.hh
+ PURPOSE:
+    C++ header for flex/bison parser to read text files into a Fortran structure.
+ HISTORY:
+    20 Apr 2016, ACP: Initial version
+    09 Jun 2016, ACP: Final version
+    15 Jun 2016, ACP: Ignore unallocated arrays (that have length of zero)
+ */
 
 #include <stdio.h>
 #include <string.h>
@@ -23,17 +23,17 @@ HISTORY:
 
 #include XCAT2(INC_PATH, h)
 
-// Pass Ctrl structure into parser
+// Pass structure into parser
 #define YY_DECL int yylex(yy::CLASS_NAME::semantic_type *yylval, \
                           yy::CLASS_NAME::location_type *yylloc, \
-                          PARENT_STRUCT_TYPE &strct)
+                          PARENT_STRUCT_TYPE &STRUCT_NAME)
 
 // Read buffer types
 typedef std::vector<std::vector<float> > Matrix;
 const std::vector<float> empty_vector;
 
 
-/*--------- Template class for pointers to Ctrl structure elements --------*/
+/*--------- Template class for pointers to structure elements --------*/
 template<typename T> class Target {
 private:
     T*  ptr;               // Pointer to Fortran data

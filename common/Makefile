@@ -25,7 +25,8 @@ COMMON_OBJ_F90 =$(OBJS)/common_constants.o \
                 $(OBJS)/source_attributes.o \
                 $(OBJS)/system_utils.o
 
-COMMON_OBJ_C = $(OBJS)/system_utils_c.o
+COMMON_OBJ_C = $(OBJS)/struct_parser_utils.o \
+               $(OBJS)/system_utils_c.o
 
 COMMON_OBJ   = $(COMMON_OBJ_F90) $(COMMON_OBJ_C)
 
@@ -62,8 +63,9 @@ clean tidy:
 	rm -f $(OBJS)/*.o $(OBJS)/*.mod *.a generate_parser
 
 clean_parser:
-	rm -f generate_parser.tab.c generate_parser.tab.h generate_parser.c struct_parser.tab.cc struct_parser.tab.hh position.hh location.hh stack.hh
-
+	rm -f generate_parser.tab.c generate_parser.tab.h generate_parser.c \
+              struct_parser.tab.cc struct_parser.tab.hh position.hh location.hh \
+              stack.hh
 
 
 # Build generate_parser executable
@@ -95,5 +97,5 @@ Linux2DEC:
 # Fortran 90 dependencies
 include dependencies.inc
 
-# Fortran 90 on C dependecies
-system_utils.o: system_utils_c.o
+# C dependencies
+$(OBJS)/struct_parser_utils.o: struct_parser_utils.c print_data_template.h
