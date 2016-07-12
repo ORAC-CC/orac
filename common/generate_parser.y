@@ -272,7 +272,7 @@ void print_str_in_x_rul(FILE* f[], char* parent_struct, char* name) {
     fprintf(f[X_RUL], "      yylval->str_v = %s_VARIABLE.%s;\n",
             parent_struct, name);
     fprintf(f[X_RUL], "      BEGIN(INITIAL); return(token::STR_VAR); }\n");
-    fprintf(f[F_CP2], "   call strip_c_nulls(%s_VARIABLE%%%s)\n",
+    fprintf(f[F_CP2], "   call c_to_fortran_str(%s_VARIABLE%%%s)\n",
             parent_struct, name);
 }
 

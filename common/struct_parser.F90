@@ -85,7 +85,7 @@ end subroutine WRAPPER_NAME_F
 #undef FORT_ALLOC_TYPE
 
 
-subroutine strip_c_nulls(str)
+subroutine c_to_fortran_str(str)
    use iso_c_binding, only: C_NULL_CHAR
    implicit none
 
@@ -93,8 +93,10 @@ subroutine strip_c_nulls(str)
    integer :: i
 
    do i=1,len(str)
-      if (str(i:i) == C_NULL_CHAR) str(i:i) = ' '
+      if (str(i:i) == C_NULL_CHAR) exit
    end do
-end subroutine strip_c_nulls
+
+   str(i:len(str)) = ' '
+end subroutine c_to_fortran_str
 
 end module MODULE_NAME
