@@ -6,7 +6,8 @@
 !
 ! History:
 ! 2016/03/02, AP: Initial version, forked from orac_input and _output.
-! 2016/03/10, SP: Fixed problem that prevented gfort compilation (. -> %)
+! 2016/03/10, SP: Fixed problem that prevented gfort compilation (. -> %).
+! 2016/07/11, GM: Add nullify_common_indices().
 !
 ! $Id$
 !
@@ -216,6 +217,22 @@ subroutine create_rho_field_name(rho_index, mode, input_num, &
    end if
 
 end subroutine create_rho_field_name
+
+
+subroutine nullify_common_indices(ind)
+
+   implicit none
+
+   type(common_indices_t), intent(inout) :: ind
+
+   nullify(ind%Y_Id)
+   nullify(ind%YSolar)
+   nullify(ind%YThermal)
+   nullify(ind%View_Id)
+   nullify(ind%Ch_Is)
+   nullify(ind%rho_terms)
+
+end subroutine nullify_common_indices
 
 
 subroutine dealloc_common_indices(ind)

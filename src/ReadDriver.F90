@@ -187,9 +187,12 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    logical                            :: new_driver_format
 
 
+   call Nullify_Ctrl(Ctrl)
+
+
    ! Initialise some important variables
-   Ctrl%verbose = .true.
-   Ctrl%Approach = -1
+   Ctrl%verbose                = .true.
+   Ctrl%Approach               = -1
    Ctrl%do_new_night_retrieval = .true.
    Ctrl%do_CTX_correction      = .true.
 

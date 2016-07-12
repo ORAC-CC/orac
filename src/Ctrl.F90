@@ -92,6 +92,7 @@
 ! 2015/11/18, GM: Add Y_Id_legacy(6).
 ! 2016/02/02, GM: Add allow_a_default_surface.
 ! 2016/06/06, GM: Add get_T_dv_from_T_0d.
+! 2016/07/11, GM: Add Nullify_Ctrl().
 !
 ! $Id$
 !
@@ -295,6 +296,37 @@ module Ctrl_m
    end type Ctrl_t
 
 contains
+
+subroutine Nullify_Ctrl(Ctrl)
+
+   use orac_indexing_m, only: nullify_common_indices
+
+   implicit none
+
+   ! Declare arguments
+
+   type(Ctrl_t), intent(inout) :: Ctrl
+
+   call nullify_common_indices(Ctrl%Ind%common_indices_t)
+
+   nullify(Ctrl%Ind%WvlIdx)
+   nullify(Ctrl%Ind%ICh)
+   nullify(Ctrl%Ind%YMixed)
+   nullify(Ctrl%Ind%channel_proc_flag)
+
+   nullify(Ctrl%RS%B)
+   nullify(Ctrl%RS%Sb)
+
+   nullify(Ctrl%Sy)
+
+   nullify(Ctrl%tau_chans)
+   nullify(Ctrl%r_e_chans)
+   nullify(Ctrl%ir_chans)
+
+   nullify(Ctrl%ReChans)
+
+end subroutine Nullify_Ctrl
+
 
 #include "DeallocCtrl.F90"
 
