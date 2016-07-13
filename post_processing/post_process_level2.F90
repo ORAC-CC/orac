@@ -125,7 +125,7 @@
 program post_process_level2
 #else
 subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_file)
-#end if
+#endif
 
    use chunk_utils_m
    use global_attributes_m
@@ -152,7 +152,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    integer                      :: nargs
 #ifdef WRAPPER
    integer                      :: mytask, ntasks, lower_bound, upper_bound
-#end if
+#endif
    character(len=path_length)   :: label, value
 
    logical                      :: switch_phases
@@ -216,7 +216,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
       nargs = COMMAND_ARGUMENT_COUNT()
 #else
       nargs=-1
-#end if
+#endif
 
    ! If no argument was given then read standard file
    if (nargs == 0 ) then
@@ -694,4 +694,4 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
 end subroutine post_process_level2
 #else
 end program post_process_level2
-#end if
+#endif
