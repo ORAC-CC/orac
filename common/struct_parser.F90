@@ -89,32 +89,6 @@ integer function PRINTER_NAME(STRUCT_NAME, buf, length) result(count)
    end interface
 
    interface
-      integer(c_int) function print_bool_scalar(buf, length, name, value) &
-         bind(C, name="parser_print_bool_scalar")
-         use iso_c_binding
-         implicit none
-         character(c_char), intent(inout)     :: buf(*)
-         integer(c_int),    intent(in), value :: length
-         character(c_char), intent(in)        :: name(*)
-         logical,           intent(in), value :: value
-      end function print_bool_scalar
-   end interface
-
-   interface
-      integer(c_int) function print_bool_array(buf, length, name, value, n_dims, dims) &
-         bind(C, name="parser_print_bool_array")
-         use iso_c_binding
-         implicit none
-         character(c_char), intent(inout)     :: buf(*)
-         integer(c_int),    intent(in), value :: length
-         character(c_char), intent(in)        :: name(*)
-         logical,           intent(in)        :: value(*)
-         integer(c_int),    intent(in), value :: n_dims
-         integer(c_int),    intent(in)        :: dims(*)
-      end function print_bool_array
-   end interface
-
-   interface
       integer(c_int) function print_char_scalar(buf, length, name, value) &
          bind(C, name="parser_print_char_scalar")
          use iso_c_binding
@@ -207,6 +181,89 @@ integer function PRINTER_NAME(STRUCT_NAME, buf, length) result(count)
 end function PRINTER_NAME
 
 
+integer(c_int) function print_bool_scalar(buf, length, name, value) result(count)
+   use iso_c_binding
+
+   implicit none
+
+   character, intent(inout) :: buf(*)
+   integer,   intent(in)    :: length
+   character, intent(in)    :: name(*)
+   logical,   intent(in)    :: value
+
+   interface
+      integer(c_int) function print_bool_scalar2(buf, length, name, value) &
+         bind(C, name="parser_print_bool_scalar")
+         use iso_c_binding
+         implicit none
+         character(c_char), intent(inout)     :: buf(*)
+         integer(c_int),    intent(in), value :: length
+         character(c_char), intent(in)        :: name(*)
+         integer(c_int),    intent(in), value :: value
+      end function print_bool_scalar2
+   end interface
+
+   integer(c_int) :: value2
+
+   if (value) then
+       value2 = 1
+   else
+       value2 = 0
+   end if
+
+   count = print_bool_scalar2(buf, length, name, value2)
+end function print_bool_scalar
+
+
+integer(c_int) function print_bool_array(buf, length, name, value, n_dims, dims) result(count)
+   use iso_c_binding
+
+   implicit none
+
+   character(c_char), intent(inout)     :: buf(*)
+   integer(c_int),    intent(in), value :: length
+   character(c_char), intent(in)        :: name(*)
+   logical,           intent(in)        :: value(*)
+   integer(c_int),    intent(in), value :: n_dims
+   integer(c_int),    intent(in)        :: dims(*)
+
+   interface
+      integer(c_int) function print_bool_array2(buf, length, name, value, n_dims, dims) &
+         bind(C, name="parser_print_bool_array")
+         use iso_c_binding
+         implicit none
+         character(c_char), intent(inout)     :: buf(*)
+         integer(c_int),    intent(in), value :: length
+         character(c_char), intent(in)        :: name(*)
+         integer(c_int),    intent(in)        :: value(*)
+         integer(c_int),    intent(in), value :: n_dims
+         integer(c_int),    intent(in)        :: dims(*)
+      end function print_bool_array2
+   end interface
+
+   integer                     :: i
+   integer                     :: n
+   integer(c_int), allocatable :: value2(:)
+
+   n = 1
+   do i = 1, n_dims
+       n = n * dims(i)
+   end do
+
+   allocate(value2(n))
+
+   where (value(1:n))
+       value2 = 1
+   else where
+       value2 = 0
+   end where
+
+   count = print_bool_array2(buf, length, name, value2, n_dims, dims)
+
+   deallocate(value2)
+end function print_bool_array
+
+
 ! Routines called from C to allocate arrays
 #define FORT_ALLOC_NAME_1D fort_alloc_bool_1d
 #define FORT_ALLOC_NAME_2D fort_alloc_bool_2d
@@ -235,6 +292,7 @@ end function PRINTER_NAME
 
 subroutine c_to_fortran_str(str)
    use iso_c_binding, only: C_NULL_CHAR
+
    implicit none
 
    character(*), intent(inout) :: str
