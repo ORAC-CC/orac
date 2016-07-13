@@ -858,11 +858,6 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    ! Things that have to be after the optional lines
    ! ---------------------------------------------------------------------------
 
-   if (Ctrl%i_equation_form > 0 .and. .not. Ctrl%RS%use_full_brdf) then
-      write(*,*) 'ERROR: ReadDriver(): i_equation_form requires full brdf.'
-      stop error_stop_code
-   end if
-
    ! Whether or not to multiply surface reflectance terms by cos(theta_0)
    ! depends on Ctrl%i_equation_form.
    select case (Ctrl%i_equation_form)
@@ -1056,7 +1051,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    end select
 
    ! For now, AerSw approach does not allow for non-Lambertian surface
-   if (Ctrl%Approach == AerSw .and. Ctrl%RS%use_full_brdf) then
+   if (Ctrl%Approach == AerSw .and. (Ctrl%i_equation_form > 0 .or. &
+         Ctrl%RS%use_full_brdf)) then
       write(*,*) 'ERROR: Read_Driver(): Use of the Swansea surface '// &
            'reflectance model and full BRDF equations not supported'
       stop GetSurfaceMeth
