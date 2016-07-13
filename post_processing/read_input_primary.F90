@@ -280,34 +280,34 @@ subroutine read_input_primary_optional(ncid, input_data, indexing, &
               input_data%rel_azi(:,:,i), verbose,startp=(/ 1, sval /))
       end if
    end do
-	if (indexing%flags%do_cloud .and. read_flags%do_cloud) then
-		call nc_read_packed_array(ncid, "cccot_pre", input_data%cccot_pre, verbose,startp=(/ 1, sval, 1 /))
-		read_flags%do_cloud = .false.
-	end if
+   if (indexing%flags%do_cloud .and. read_flags%do_cloud) then
+      call nc_read_packed_array(ncid, "cccot_pre", input_data%cccot_pre, verbose,startp=(/ 1, sval, 1 /))
+      read_flags%do_cloud = .false.
+   end if
 
-	if (indexing%flags%do_cldmask .and. read_flags%do_cldmask) then
-		call nc_read_array(ncid, "cldmask", input_data%cldmask, verbose,startp=(/ 1, sval /))
-		read_flags%do_cldmask = .false.
-	end if
+   if (indexing%flags%do_cldmask .and. read_flags%do_cldmask) then
+      call nc_read_array(ncid, "cldmask", input_data%cldmask, verbose,startp=(/ 1, sval /))
+      read_flags%do_cldmask = .false.
+   end if
 
-	if (indexing%flags%do_cldmask_uncertainty .and. &
-		  read_flags%do_cldmask_uncertainty) then
-		call nc_read_packed_array(ncid, "cldmask_uncertainty", &
-		     input_data%cldmask_uncertainty, verbose,startp=(/ 1, sval /))
-		read_flags%do_cldmask_uncertainty = .false.
-	end if
+   if (indexing%flags%do_cldmask_uncertainty .and. &
+        read_flags%do_cldmask_uncertainty) then
+      call nc_read_packed_array(ncid, "cldmask_uncertainty", &
+           input_data%cldmask_uncertainty, verbose,startp=(/ 1, sval /))
+      read_flags%do_cldmask_uncertainty = .false.
+   end if
 
-	if (indexing%flags%do_phase .and. read_flags%do_phase) then
-		call nc_read_array(ncid, "phase", input_data%phase, verbose,startp=(/ 1, sval /))
-		read_flags%do_phase = .false.
-	end if
+   if (indexing%flags%do_phase .and. read_flags%do_phase) then
+      call nc_read_array(ncid, "phase", input_data%phase, verbose,startp=(/ 1, sval /))
+      read_flags%do_phase = .false.
+   end if
 
-	if (indexing%flags%do_phase_pavolonis .and. &
-		  read_flags%do_phase_pavolonis) then
-		call nc_read_array(ncid, "phase_pavolonis", &
-		     input_data%phase_pavolonis, verbose,startp=(/ 1, sval /))
-		read_flags%do_phase_pavolonis = .false.
-	end if
+   if (indexing%flags%do_phase_pavolonis .and. &
+        read_flags%do_phase_pavolonis) then
+      call nc_read_array(ncid, "phase_pavolonis", &
+           input_data%phase_pavolonis, verbose,startp=(/ 1, sval /))
+      read_flags%do_phase_pavolonis = .false.
+   end if
 
 end subroutine read_input_primary_optional
 

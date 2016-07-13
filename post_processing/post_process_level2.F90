@@ -330,21 +330,21 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    loop_ind(:)%Y1 = indexing%Ydim
 
    if (use_chunks .neqv. .true.) then
-	   n_chunks = 1
+      n_chunks = 1
 
-   	allocate(chunk_starts(n_chunks))
-	   allocate(chunk_ends(n_chunks))
+      allocate(chunk_starts(n_chunks))
+      allocate(chunk_ends(n_chunks))
 
-	   chunk_starts(1) = 1
-	   chunk_ends(1)   = indexing%Ydim
-	else
-	   n_segments = 1
+      chunk_starts(1) = 1
+      chunk_ends(1)   = indexing%Ydim
+   else
+      n_segments = 1
       segment_starts(1) = 1
       segment_ends(1)   = indexing%Ydim
 
-		chunksize = 4096
+      chunksize = 4096
 
-		n_chunks = calc_n_chunks(n_segments, segment_starts, segment_ends, &
+      n_chunks = calc_n_chunks(n_segments, segment_starts, segment_ends, &
                                chunksize)
 
       allocate(chunk_starts(n_chunks))
@@ -354,7 +354,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
                     n_chunks, chunk_starts, chunk_ends)
 
 
-	endif
+   endif
 
   if (verbose) then
       write(*,*) 'The number of chunks to be processed: ', n_chunks
@@ -364,324 +364,324 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
       end do
    end if
 
-	! Allocate the structures which hold the output in its final form
-	call alloc_output_data_primary(indexing%common_indices_t, 100, output_primary)
-	if (do_secondary) then
-	   call alloc_output_data_secondary(indexing%common_indices_t, output_secondary)
-	end if
+   ! Allocate the structures which hold the output in its final form
+   call alloc_output_data_primary(indexing%common_indices_t, 100, output_primary)
+   if (do_secondary) then
+      call alloc_output_data_secondary(indexing%common_indices_t, output_secondary)
+   end if
 
    do i_chunk=1,n_chunks !Chunking
 
-  		if (use_chunks .and. verbose) write(*,*) 'Processing chunk: ', i_chunk, 'between',chunk_starts(i_chunk),'and',chunk_ends(i_chunk)
+        if (use_chunks .and. verbose) write(*,*) 'Processing chunk: ', i_chunk, 'between',chunk_starts(i_chunk),'and',chunk_ends(i_chunk)
 
-		loop_ind(:)%Y0 = chunk_starts(i_chunk)
-		loop_ind(:)%Y1 = chunk_ends(i_chunk)
-		indexing%Y0 = chunk_starts(i_chunk)
-		indexing%Y1 = chunk_ends(i_chunk)
-   	! Allocate the array used in bayesian selection of type
-   	! This is needed for minimisation of memory overhead, only costs are loaded
-  	 	! in the first instance. Later other data is loaded but only for the best class
-  	 	allocate(indexing%best_infile(indexing%X0:indexing%X1, indexing%Y0:indexing%Y1))
+      loop_ind(:)%Y0 = chunk_starts(i_chunk)
+      loop_ind(:)%Y1 = chunk_ends(i_chunk)
+      indexing%Y0 = chunk_starts(i_chunk)
+      indexing%Y1 = chunk_ends(i_chunk)
+      ! Allocate the array used in bayesian selection of type
+      ! This is needed for minimisation of memory overhead, only costs are loaded
+         ! in the first instance. Later other data is loaded but only for the best class
+         allocate(indexing%best_infile(indexing%X0:indexing%X1, indexing%Y0:indexing%Y1))
 
-		! Read once-only inputs
-		call alloc_input_data_primary_all(indexing, input_primary(0))
-		call read_input_primary_once(n_in_files, in_files_primary, &
-		     input_primary(0), indexing, loop_ind, global_atts, source_atts, &
-		     chunk_starts( i_chunk), verbose)
-		if (do_secondary) then
-		   call alloc_input_data_secondary_all(indexing, input_secondary(0))
-		   call read_input_secondary_once(n_in_files, in_files_secondary, &
-		     input_secondary(0), indexing, loop_ind, &
-		     chunk_starts( i_chunk), verbose)
-		end if
-		! Read fields that vary from file to file
-		if (use_new_bayesian_selection .neqv. .true.) then
-		   do i = 1, n_in_files
-		      if (verbose) write(*,*) '********************************'
-		      if (verbose) write(*,*) 'read: ', trim(in_files_primary(i))
-		      call alloc_input_data_primary_class(loop_ind(i), input_primary(i))
-		      call read_input_primary_class(in_files_primary(i), input_primary(i), &
-		           loop_ind(i), .False., chunk_starts( i_chunk), verbose)
-		      if (do_secondary) then
-		         if (verbose) write(*,*) 'read: ', trim(in_files_secondary(i))
-		         call alloc_input_data_secondary_class(loop_ind(i), input_secondary(i))
-		         call read_input_secondary_class(in_files_secondary(i), &
-		              input_secondary(i), loop_ind(i), chunk_starts( i_chunk), verbose)
-		      end if
-		   end do
-		else
-		   ! Allocate a primary array to store temporary input data
-		   call alloc_input_data_primary_all(indexing, input_primary(1))
-		   if (do_secondary) then
-		      call alloc_input_data_secondary_all(indexing, input_secondary(1))
-		   endif
+      ! Read once-only inputs
+      call alloc_input_data_primary_all(indexing, input_primary(0))
+      call read_input_primary_once(n_in_files, in_files_primary, &
+           input_primary(0), indexing, loop_ind, global_atts, source_atts, &
+           chunk_starts( i_chunk), verbose)
+      if (do_secondary) then
+         call alloc_input_data_secondary_all(indexing, input_secondary(0))
+         call read_input_secondary_once(n_in_files, in_files_secondary, &
+           input_secondary(0), indexing, loop_ind, &
+           chunk_starts( i_chunk), verbose)
+      end if
+      ! Read fields that vary from file to file
+      if (use_new_bayesian_selection .neqv. .true.) then
+         do i = 1, n_in_files
+            if (verbose) write(*,*) '********************************'
+            if (verbose) write(*,*) 'read: ', trim(in_files_primary(i))
+            call alloc_input_data_primary_class(loop_ind(i), input_primary(i))
+            call read_input_primary_class(in_files_primary(i), input_primary(i), &
+                 loop_ind(i), .False., chunk_starts( i_chunk), verbose)
+            if (do_secondary) then
+               if (verbose) write(*,*) 'read: ', trim(in_files_secondary(i))
+               call alloc_input_data_secondary_class(loop_ind(i), input_secondary(i))
+               call read_input_secondary_class(in_files_secondary(i), &
+                    input_secondary(i), loop_ind(i), chunk_starts( i_chunk), verbose)
+            end if
+         end do
+      else
+         ! Allocate a primary array to store temporary input data
+         call alloc_input_data_primary_all(indexing, input_primary(1))
+         if (do_secondary) then
+            call alloc_input_data_secondary_all(indexing, input_secondary(1))
+         endif
 
-		   ! Load only the cost values from input files
-		   do i = 1, n_in_files
-		      call alloc_input_data_only_cost(loop_ind(i), input_primary(i))
-		      call read_input_primary_class(in_files_primary(i), input_primary(i), &
-		           loop_ind(i), .True.,chunk_starts( i_chunk), verbose)
-		   end do
+         ! Load only the cost values from input files
+         do i = 1, n_in_files
+            call alloc_input_data_only_cost(loop_ind(i), input_primary(i))
+            call read_input_primary_class(in_files_primary(i), input_primary(i), &
+                 loop_ind(i), .True.,chunk_starts( i_chunk), verbose)
+         end do
 
-		   ! Find the input file with the lowest cost for each pixel
-		   do j=indexing%Y0,indexing%Y1
-		      do i=indexing%X0,indexing%X1
-		         sum_prob = 0.
-		         a_max_prob   = tiny(a_max_prob)
-		         i_min_costjm = 0
-		         do k = 1, n_in_files
-		            if (input_primary(k)%costjm(i,j) /= sreal_fill_value) then
-		               a_prob = exp(-input_primary(k)%costjm(i,j) / 2.)
-		               sum_prob = sum_prob + a_prob
+         ! Find the input file with the lowest cost for each pixel
+         do j=indexing%Y0,indexing%Y1
+            do i=indexing%X0,indexing%X1
+               sum_prob = 0.
+               a_max_prob   = tiny(a_max_prob)
+               i_min_costjm = 0
+               do k = 1, n_in_files
+                  if (input_primary(k)%costjm(i,j) /= sreal_fill_value) then
+                     a_prob = exp(-input_primary(k)%costjm(i,j) / 2.)
+                     sum_prob = sum_prob + a_prob
 
-		               if (a_prob > a_max_prob) then
-		                  a_max_prob   = a_prob
-		                  i_min_costjm = k
-		               end if
-		            end if
-		         end do
-		         if (input_primary(i_min_costjm)%costjm(i,j) >= cost_thresh .and. &
-		            input_primary(i_min_costjm)%costjm(i,j) / sum_prob >= norm_prob_thresh .and. &
-		            i_min_costjm /= 0) then
-		               input_primary(0)%phase(i,j) = i_min_costjm
-		         end if
-		      end do
-		   end do
-		   do k = 1, n_in_files
-		      if (verbose) write(*,*) '********************************'
-		      if (verbose) write(*,*) 'read: ', trim(in_files_primary(k))
-		      call read_input_primary_class(in_files_primary(k), input_primary(1), &
-		           loop_ind(k), .False.,chunk_starts( i_chunk), verbose)
-		      if (do_secondary) then
-		         if (verbose) write(*,*) 'read: ', trim(in_files_secondary(k))
-		         call read_input_secondary_class(in_files_secondary(k), &
-		              input_secondary(1), loop_ind(k),chunk_starts( i_chunk),  verbose)
-		      end if
-		      do j=indexing%Y0,indexing%Y1
-		         do i=indexing%X0,indexing%X1
-		            if (input_primary(0)%phase(i,j) .eq. k) then
-		               call copy_class_specific_inputs(i, j, loop_ind(k), &
-		                    input_primary(0), input_primary(1), &
-		                    input_secondary(0), input_secondary(1), &
-		                    do_secondary)
-		               input_primary(0)%phase(i,j) = k
-		            endif
-		         end do
-		      end do
-		   end do
-		endif
+                     if (a_prob > a_max_prob) then
+                        a_max_prob   = a_prob
+                        i_min_costjm = k
+                     end if
+                  end if
+               end do
+               if (input_primary(i_min_costjm)%costjm(i,j) >= cost_thresh .and. &
+                  input_primary(i_min_costjm)%costjm(i,j) / sum_prob >= norm_prob_thresh .and. &
+                  i_min_costjm /= 0) then
+                     input_primary(0)%phase(i,j) = i_min_costjm
+               end if
+            end do
+         end do
+         do k = 1, n_in_files
+            if (verbose) write(*,*) '********************************'
+            if (verbose) write(*,*) 'read: ', trim(in_files_primary(k))
+            call read_input_primary_class(in_files_primary(k), input_primary(1), &
+                 loop_ind(k), .False.,chunk_starts( i_chunk), verbose)
+            if (do_secondary) then
+               if (verbose) write(*,*) 'read: ', trim(in_files_secondary(k))
+               call read_input_secondary_class(in_files_secondary(k), &
+                    input_secondary(1), loop_ind(k),chunk_starts( i_chunk),  verbose)
+            end if
+            do j=indexing%Y0,indexing%Y1
+               do i=indexing%X0,indexing%X1
+                  if (input_primary(0)%phase(i,j) .eq. k) then
+                     call copy_class_specific_inputs(i, j, loop_ind(k), &
+                          input_primary(0), input_primary(1), &
+                          input_secondary(0), input_secondary(1), &
+                          do_secondary)
+                     input_primary(0)%phase(i,j) = k
+                  endif
+               end do
+            end do
+         end do
+      endif
 
-		if (verbose) then
-		   write(*,*) 'Processing limits:'
-		   write(*,*) indexing%X0, indexing%X1
-		   write(*,*) indexing%Y0, indexing%Y1
-		end if
+      if (verbose) then
+         write(*,*) 'Processing limits:'
+         write(*,*) indexing%X0, indexing%X1
+         write(*,*) indexing%Y0, indexing%Y1
+      end if
 
-		do j=indexing%Y0,indexing%Y1
-		   do i=indexing%X0,indexing%X1
+      do j=indexing%Y0,indexing%Y1
+         do i=indexing%X0,indexing%X1
 
-		      ! Cloud CCI selection
-		      if (.not. use_bayesian_selection) then
-		         ! Default is ICE wins, meaning only ice structure is copied to output
+            ! Cloud CCI selection
+            if (.not. use_bayesian_selection) then
+               ! Default is ICE wins, meaning only ice structure is copied to output
 
-		         ! Information of Pavolonis cloud type
-		         ! C,N,F,W,S,M,I,Ci,O
+               ! Information of Pavolonis cloud type
+               ! C,N,F,W,S,M,I,Ci,O
 
-		         ! Liquid cloud phase comprises the following categories:
-		         ! 0? Clear
-		         ! 2? fog
-		         ! 3? warm liquid water clouds
-		         ! 4? supercooled-mixed-phased clouds
+               ! Liquid cloud phase comprises the following categories:
+               ! 0? Clear
+               ! 2? fog
+               ! 3? warm liquid water clouds
+               ! 4? supercooled-mixed-phased clouds
 
-		         ! Ice cloud phase comprises the following categories:
-		         ! 6? opaque ice clouds/deep convection
-		         ! 7? nonopaque high ice clouds (e.g. cirrus)
-		         ! 8? cloud overlap 4 (e.g. multiple cloud layers)
+               ! Ice cloud phase comprises the following categories:
+               ! 6? opaque ice clouds/deep convection
+               ! 7? nonopaque high ice clouds (e.g. cirrus)
+               ! 8? cloud overlap 4 (e.g. multiple cloud layers)
 
-		         ! Apply Pavolonis phase information to select retrieval phase
-		         ! variables select water type overwrite ice
-		         select case (input_primary(0)%cldtype(i,j,1))
-		         case(FOG_TYPE, &
-		              WATER_TYPE, &
-		              SUPERCOOLED_TYPE)
-		            phase_flag = 1_byte
-		            ! Only consider reclassifying if both phases were processed
-		            if (switch_phases .and. &
-		                ((input_primary(IWat)%ctt(i,j) /= sreal_fill_value .and. &
-		                  input_primary(IWat)%ctt(i,j) < switch_wat_limit) .and. &
-		                 (input_primary(IIce)%ctt(i,j) /= sreal_fill_value .and. &
-		                  input_primary(IIce)%ctt(i,j) < switch_ice_limit))) then
-		               phase_flag = 2_byte
-		               input_primary(0)%cldtype(i,j,1) = SWITCHED_TO_ICE_TYPE
-		            end if
-		         case(OPAQUE_ICE_TYPE, &
-		              CIRRUS_TYPE, &
-		              OVERLAP_TYPE, &
-		              PROB_OPAQUE_ICE_TYPE, &
-		              PROB_CLEAR_TYPE)
-		            phase_flag = 2_byte
-		            ! Only consider reclassifying if both phases were processed
-		            if (switch_phases .and. &
-		                ((input_primary(IWat)%ctt(i,j) /= sreal_fill_value .and. &
-		                  input_primary(IWat)%ctt(i,j) >= switch_wat_limit) .and. &
-		                 (input_primary(IIce)%ctt(i,j) /= sreal_fill_value .and. &
-		                  input_primary(IIce)%ctt(i,j) >= switch_ice_limit))) then
-		               phase_flag = 1_byte
-		               input_primary(0)%cldtype(i,j,1) = SWITCHED_TO_WATER_TYPE
-		            end if
-		         case default
-		            phase_flag = 2_byte
-		         end select
+               ! Apply Pavolonis phase information to select retrieval phase
+               ! variables select water type overwrite ice
+               select case (input_primary(0)%cldtype(i,j,1))
+               case(FOG_TYPE, &
+                    WATER_TYPE, &
+                    SUPERCOOLED_TYPE)
+                  phase_flag = 1_byte
+                  ! Only consider reclassifying if both phases were processed
+                  if (switch_phases .and. &
+                      ((input_primary(IWat)%ctt(i,j) /= sreal_fill_value .and. &
+                        input_primary(IWat)%ctt(i,j) < switch_wat_limit) .and. &
+                       (input_primary(IIce)%ctt(i,j) /= sreal_fill_value .and. &
+                        input_primary(IIce)%ctt(i,j) < switch_ice_limit))) then
+                     phase_flag = 2_byte
+                     input_primary(0)%cldtype(i,j,1) = SWITCHED_TO_ICE_TYPE
+                  end if
+               case(OPAQUE_ICE_TYPE, &
+                    CIRRUS_TYPE, &
+                    OVERLAP_TYPE, &
+                    PROB_OPAQUE_ICE_TYPE, &
+                    PROB_CLEAR_TYPE)
+                  phase_flag = 2_byte
+                  ! Only consider reclassifying if both phases were processed
+                  if (switch_phases .and. &
+                      ((input_primary(IWat)%ctt(i,j) /= sreal_fill_value .and. &
+                        input_primary(IWat)%ctt(i,j) >= switch_wat_limit) .and. &
+                       (input_primary(IIce)%ctt(i,j) /= sreal_fill_value .and. &
+                        input_primary(IIce)%ctt(i,j) >= switch_ice_limit))) then
+                     phase_flag = 1_byte
+                     input_primary(0)%cldtype(i,j,1) = SWITCHED_TO_WATER_TYPE
+                  end if
+               case default
+                  phase_flag = 2_byte
+               end select
 
-		         if (phase_flag == 1_byte) then
-		            call copy_class_specific_inputs(i, j, loop_ind(IWat), &
-		                 input_primary(0), input_primary(IWat), &
-		                 input_secondary(0), input_secondary(IWat), do_secondary)
-		            input_primary(0)%phase(i,j) = IPhaseWat
-		         else if (phase_flag == 2_byte) then
-		            call copy_class_specific_inputs(i, j, loop_ind(IIce), &
-		                 input_primary(0), input_primary(IIce), &
-		                 input_secondary(0), input_secondary(IIce), do_secondary)
-		            input_primary(0)%phase(i,j) = IPhaseIce
-		         end if
+               if (phase_flag == 1_byte) then
+                  call copy_class_specific_inputs(i, j, loop_ind(IWat), &
+                       input_primary(0), input_primary(IWat), &
+                       input_secondary(0), input_secondary(IWat), do_secondary)
+                  input_primary(0)%phase(i,j) = IPhaseWat
+               else if (phase_flag == 2_byte) then
+                  call copy_class_specific_inputs(i, j, loop_ind(IIce), &
+                       input_primary(0), input_primary(IIce), &
+                       input_secondary(0), input_secondary(IIce), do_secondary)
+                  input_primary(0)%phase(i,j) = IPhaseIce
+               end if
 
-		         ! Overwrite cc_total with cldmask for Cloud CCI
-		         input_primary(0)%cc_total(i,j) = input_primary(0)%cldmask(i,j,1)
-		         input_primary(0)%cc_total_uncertainty(i,j) = &
-		              input_primary(0)%cldmask_uncertainty(i,j,1)
+               ! Overwrite cc_total with cldmask for Cloud CCI
+               input_primary(0)%cc_total(i,j) = input_primary(0)%cldmask(i,j,1)
+               input_primary(0)%cc_total_uncertainty(i,j) = &
+                    input_primary(0)%cldmask_uncertainty(i,j,1)
 
-		         if (input_primary(0)%cc_total(i,j) == 0.0) then
-		            ! Set phase to clear/unknown
-		            input_primary(0)%phase(i,j) = IPhaseClU
-		         end if
+               if (input_primary(0)%cc_total(i,j) == 0.0) then
+                  ! Set phase to clear/unknown
+                  input_primary(0)%phase(i,j) = IPhaseClU
+               end if
 
-		      ! Bayesian based selection
-		      else if (.not. use_new_bayesian_selection) then
-		         sum_prob = 0.
-		         a_max_prob   = tiny(a_max_prob)
-		         i_min_costjm = 0
-		         do k = 1, n_in_files
-		            if (input_primary(k)%costjm(i,j) /= sreal_fill_value) then
-		               a_prob = exp(-input_primary(k)%costjm(i,j) / 2.)
-		               sum_prob = sum_prob + a_prob
+            ! Bayesian based selection
+            else if (.not. use_new_bayesian_selection) then
+               sum_prob = 0.
+               a_max_prob   = tiny(a_max_prob)
+               i_min_costjm = 0
+               do k = 1, n_in_files
+                  if (input_primary(k)%costjm(i,j) /= sreal_fill_value) then
+                     a_prob = exp(-input_primary(k)%costjm(i,j) / 2.)
+                     sum_prob = sum_prob + a_prob
 
-		               if (a_prob > a_max_prob) then
-		                  a_max_prob   = a_prob
-		                  i_min_costjm = k
-		               end if
-		            end if
-		         end do
+                     if (a_prob > a_max_prob) then
+                        a_max_prob   = a_prob
+                        i_min_costjm = k
+                     end if
+                  end if
+               end do
 
-		         if (input_primary(i_min_costjm)%costjm(i,j) >= cost_thresh .and. &
-	!               a_prob / sum_prob >= norm_prob_thresh .and. &
-		             input_primary(i_min_costjm)%costjm(i,j) / sum_prob >= norm_prob_thresh .and. &
-		             i_min_costjm /= 0) then
-		            call copy_class_specific_inputs(i, j, loop_ind(i_min_costjm), &
-		                 input_primary(0), input_primary(i_min_costjm), &
-		                 input_secondary(0), input_secondary(i_min_costjm), &
-		                 do_secondary)
+               if (input_primary(i_min_costjm)%costjm(i,j) >= cost_thresh .and. &
+   !               a_prob / sum_prob >= norm_prob_thresh .and. &
+                   input_primary(i_min_costjm)%costjm(i,j) / sum_prob >= norm_prob_thresh .and. &
+                   i_min_costjm /= 0) then
+                  call copy_class_specific_inputs(i, j, loop_ind(i_min_costjm), &
+                       input_primary(0), input_primary(i_min_costjm), &
+                       input_secondary(0), input_secondary(i_min_costjm), &
+                       do_secondary)
 
-		            input_primary(0)%phase(i,j) = i_min_costjm
-		         end if
-		      end if
-		   end do
-		end do
+                  input_primary(0)%phase(i,j) = i_min_costjm
+               end if
+            end if
+         end do
+      end do
 
-		! Deallocate all input structures except for the first one
-		do i = 1, n_in_files
-		   call dealloc_input_data_primary_class(input_primary(i))
-		   if (do_secondary) then
-		      call dealloc_input_data_secondary_class(input_secondary(i))
-		   end if
-		end do
+      ! Deallocate all input structures except for the first one
+      do i = 1, n_in_files
+         call dealloc_input_data_primary_class(input_primary(i))
+         if (do_secondary) then
+            call dealloc_input_data_secondary_class(input_secondary(i))
+         end if
+      end do
 
-		! Put results in final output arrays with final datatypes
+      ! Put results in final output arrays with final datatypes
 
-		do j=indexing%Y0,indexing%Y1
-			do i=indexing%X0,indexing%X1
-			  call prepare_output_primary_pp(i, j, indexing%common_indices_t, &
-			      input_primary(0), output_primary, output_optical_props_at_night)
-			   if (do_secondary) then
-			      call prepare_output_secondary_pp(i, j, indexing%common_indices_t, &
-			           input_secondary(0), output_secondary)
-			   end if
-			end do
-		end do
-		if (i_chunk .lt. n_chunks) then
-			! Deallocate the first input structure
-			call dealloc_input_data_primary_all(input_primary(0))
-			if (do_secondary) then
-				call dealloc_input_data_secondary_all(input_secondary(0))
-			end if
-		endif
+      do j=indexing%Y0,indexing%Y1
+         do i=indexing%X0,indexing%X1
+           call prepare_output_primary_pp(i, j, indexing%common_indices_t, &
+               input_primary(0), output_primary, output_optical_props_at_night)
+            if (do_secondary) then
+               call prepare_output_secondary_pp(i, j, indexing%common_indices_t, &
+                    input_secondary(0), output_secondary)
+            end if
+         end do
+      end do
+      if (i_chunk .lt. n_chunks) then
+         ! Deallocate the first input structure
+         call dealloc_input_data_primary_all(input_primary(0))
+         if (do_secondary) then
+            call dealloc_input_data_secondary_all(input_secondary(0))
+         end if
+      endif
 
-	end do !Chunking
+   end do !Chunking
 
-	do i = 1, n_in_files
-	   call dealloc_input_indices(loop_ind(i))
-	end do
+   do i = 1, n_in_files
+      call dealloc_input_indices(loop_ind(i))
+   end do
 
-	indexing%Y0=1
+   indexing%Y0=1
 
-	! Open the netcdf output file
-	call nc_create(trim(adjustl(out_file_primary)), ncid_primary, &
-	     indexing%Xdim, indexing%Ydim, indexing%NViews, dims_var, 1, &
-	     global_atts, source_atts)
-	if (do_secondary) then
-	   call nc_create(trim(adjustl(out_file_secondary)), ncid_secondary, &
-	        indexing%Xdim, indexing%Ydim, indexing%NViews, dims_var, 2, &
-	        global_atts, source_atts)
-	end if
+   ! Open the netcdf output file
+   call nc_create(trim(adjustl(out_file_primary)), ncid_primary, &
+        indexing%Xdim, indexing%Ydim, indexing%NViews, dims_var, 1, &
+        global_atts, source_atts)
+   if (do_secondary) then
+      call nc_create(trim(adjustl(out_file_secondary)), ncid_secondary, &
+           indexing%Xdim, indexing%Ydim, indexing%NViews, dims_var, 2, &
+           global_atts, source_atts)
+   end if
 
-	!		 Define netcdf variables
-	if (use_netcdf_compression) then
-	   deflate_level2 = deflate_level
-	   shuffle_flag2  = shuffle_flag
-	else
-	   deflate_level2 = 0
-	   shuffle_flag2  = .false.
-		end if
-	call def_output_primary(ncid_primary, dims_var, output_primary, &
-	     indexing%common_indices_t, input_primary(0)%qc_flag_masks, &
-	     input_primary(0)%qc_flag_meanings, deflate_level2, shuffle_flag2, &
-	     .false.)
-	if (do_secondary) then
-	   call def_output_secondary(ncid_secondary, dims_var, output_secondary, &
-	        indexing%common_indices_t, deflate_level2, shuffle_flag2, .false.)
-	end if
+   !       Define netcdf variables
+   if (use_netcdf_compression) then
+      deflate_level2 = deflate_level
+      shuffle_flag2  = shuffle_flag
+   else
+      deflate_level2 = 0
+      shuffle_flag2  = .false.
+      end if
+   call def_output_primary(ncid_primary, dims_var, output_primary, &
+        indexing%common_indices_t, input_primary(0)%qc_flag_masks, &
+        input_primary(0)%qc_flag_meanings, deflate_level2, shuffle_flag2, &
+        .false.)
+   if (do_secondary) then
+      call def_output_secondary(ncid_secondary, dims_var, output_secondary, &
+           indexing%common_indices_t, deflate_level2, shuffle_flag2, .false.)
+   end if
 
-	! Deallocate the first input structure
-	call dealloc_input_data_primary_all(input_primary(0))
-	if (do_secondary) then
-		call dealloc_input_data_secondary_all(input_secondary(0))
-	end if
+   ! Deallocate the first input structure
+   call dealloc_input_data_primary_all(input_primary(0))
+   if (do_secondary) then
+      call dealloc_input_data_secondary_all(input_secondary(0))
+   end if
 
-	! Write output to netcdf variables
-	call write_output_primary(ncid_primary, indexing%common_indices_t, &
-	                          output_primary)
-	if (do_secondary) then
-	   call write_output_secondary(ncid_secondary, indexing%common_indices_t, &
-	                               output_secondary)
-	end if
+   ! Write output to netcdf variables
+   call write_output_primary(ncid_primary, indexing%common_indices_t, &
+                             output_primary)
+   if (do_secondary) then
+      call write_output_secondary(ncid_secondary, indexing%common_indices_t, &
+                                  output_secondary)
+   end if
 
-!		 Close output file
-	if (nf90_close(ncid_primary) /= NF90_NOERR) then
-	   write(*,*) 'ERROR: nf90_close()'
-	   stop error_stop_code
-	end if
+!       Close output file
+   if (nf90_close(ncid_primary) /= NF90_NOERR) then
+      write(*,*) 'ERROR: nf90_close()'
+      stop error_stop_code
+   end if
 
-	if (do_secondary) then
-	   if (nf90_close(ncid_secondary) /= NF90_NOERR) then
-	      write(*,*) 'ERROR: nf90_close()'
-	      stop error_stop_code
-	   end if
-	end if
+   if (do_secondary) then
+      if (nf90_close(ncid_secondary) /= NF90_NOERR) then
+         write(*,*) 'ERROR: nf90_close()'
+         stop error_stop_code
+      end if
+   end if
 
-	! Deallocate output structure
-	call dealloc_output_data_primary(output_primary)
-	if (do_secondary) then
-	   call dealloc_output_data_secondary(output_secondary)
-	end if
+   ! Deallocate output structure
+   call dealloc_output_data_primary(output_primary)
+   if (do_secondary) then
+      call dealloc_output_data_secondary(output_secondary)
+   end if
 
    call dealloc_common_indices(indexing%common_indices_t)
 

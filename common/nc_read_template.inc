@@ -21,7 +21,7 @@ subroutine NC_READ_NAME_1D(ncid, name, val, verbose, dim, ind, startp)
    stride = 1
 
    if (present(startp)) then
-   	start=startp
+      start=startp
    endif
 
    include 'nc_open_field.inc'
@@ -68,7 +68,7 @@ subroutine NC_READ_NAME_2D(ncid, name, val, verbose, dim, ind, startp)
    stride = 1
 
    if (present(startp)) then
-   	start=startp
+      start=startp
    endif
 
    include 'nc_open_field.inc'
@@ -121,7 +121,7 @@ subroutine NC_READ_NAME_3D(ncid, name, val, verbose, dim, ind, startp)
    stride = 1
 
    if (present(startp)) then
-   	start=startp
+      start=startp
    endif
 
    include 'nc_open_field.inc'
@@ -177,7 +177,7 @@ subroutine NC_READ_NAME_4D(ncid, name, val, verbose, dim, ind, startp)
    stride = 1
 
    if (present(startp)) then
-   	start=startp
+      start=startp
    endif
 
    include 'nc_open_field.inc'
@@ -236,7 +236,7 @@ subroutine NC_READ_PACKED_NAME_1D(ncid, name, val, verbose, dim, ind, startp)
    stride = 1
 
    if (present(startp)) then
-   	start=startp
+      start=startp
    endif
 
    include 'nc_open_field.inc'
@@ -285,7 +285,7 @@ subroutine NC_READ_PACKED_NAME_2D(ncid, name, val, verbose, dim, ind, startp)
    stride = 1
 
    if (present(startp)) then
-   	start=startp
+      start=startp
    endif
 
    include 'nc_open_field.inc'
@@ -351,7 +351,7 @@ subroutine NC_READ_PACKED_NAME_3D(ncid, name, val, verbose, dim, ind, startp)
    stride = 1
 
    if (present(startp)) then
-   	start=startp
+      start=startp
    endif
 
    include 'nc_open_field.inc'
@@ -422,7 +422,7 @@ subroutine NC_READ_PACKED_NAME_4D(ncid, name, val, verbose, dim, ind, startp)
    stride = 1
 
    if (present(startp)) then
-   	start=startp
+      start=startp
    endif
 
    include 'nc_open_field.inc'
