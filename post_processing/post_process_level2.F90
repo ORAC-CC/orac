@@ -113,7 +113,7 @@
 ! 2016/04/28, AP: Add multiple views.
 ! 2016/06/06, SP: Updates for bayesian selection without huge memory usage.
 ! 2016/07/09, SP: Further memory usage options: Can now use 'chunking' to reduce
-!                 the amount of memory used. Works in same way as preproc option
+!    the amount of memory used. Works in same way as preproc option.
 !
 ! $Id$
 !
@@ -125,7 +125,7 @@
 program post_process_level2
 #else
 subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_file)
-#endif
+#end if
 
    use chunk_utils_m
    use global_attributes_m
@@ -152,7 +152,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    integer                      :: nargs
 #ifdef WRAPPER
    integer                      :: mytask, ntasks, lower_bound, upper_bound
-#endif
+#end if
    character(len=path_length)   :: label, value
 
    logical                      :: switch_phases
@@ -216,7 +216,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
       nargs = COMMAND_ARGUMENT_COUNT()
 #else
       nargs=-1
-#endif
+#end if
 
    ! If no argument was given then read standard file
    if (nargs == 0 ) then
@@ -226,7 +226,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    else if (nargs == -1) then
       index_space = index(path_and_file, " ")
       path_and_file = path_and_file(1:(index_space-1))
-      if (verbose) write(*,*) 'inside postproc ',trim(adjustl(path_and_file))
+      if (verbose) write(*,*) 'inside postproc ', trim(adjustl(path_and_file))
    end if
 
    ! Read from driver file
@@ -319,6 +319,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    indexing%flags%do_indexing        = .false.
    indexing%flags%do_phase_pavolonis = .true.
    indexing%flags%do_phase           = .true.
+
    ! If ever desired, processing limits should be set here from a keyword above
    indexing%X0 = 1
    indexing%X1 = indexing%Xdim
@@ -352,15 +353,15 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
 
       call chunkify(n_segments, segment_starts, segment_ends, chunksize, &
                     n_chunks, chunk_starts, chunk_ends)
-
-
-   endif
+   end if
 
   if (verbose) then
       write(*,*) 'The number of chunks to be processed: ', n_chunks
-      write(*,*) 'The chunks to be processed are (i_chunk, chunk_start, chunk_end, chunk_size):'
+      write(*,*) 'The chunks to be processed are (i_chunk, chunk_start, ' // &
+                 'chunk_end, chunk_size):'
       do i_chunk = 1, n_chunks
-         write(*,*) i_chunk, chunk_starts(i_chunk), chunk_ends(i_chunk),chunk_ends(i_chunk)-chunk_starts(i_chunk)+1
+         write(*,*) i_chunk, chunk_starts(i_chunk), chunk_ends(i_chunk), &
+                    chunk_ends(i_chunk)-chunk_starts(i_chunk)+1
       end do
    end if
 
@@ -370,18 +371,20 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
       call alloc_output_data_secondary(indexing%common_indices_t, output_secondary)
    end if
 
-   do i_chunk=1,n_chunks !Chunking
-
-        if (use_chunks .and. verbose) write(*,*) 'Processing chunk: ', i_chunk, 'between',chunk_starts(i_chunk),'and',chunk_ends(i_chunk)
+   do i_chunk=1,n_chunks ! Chunking
+       if (use_chunks .and. verbose) &
+          write(*,*) 'Processing chunk: ', i_chunk, 'between', chunk_starts(i_chunk), &
+                     'and',chunk_ends(i_chunk)
 
       loop_ind(:)%Y0 = chunk_starts(i_chunk)
       loop_ind(:)%Y1 = chunk_ends(i_chunk)
       indexing%Y0 = chunk_starts(i_chunk)
       indexing%Y1 = chunk_ends(i_chunk)
       ! Allocate the array used in bayesian selection of type
-      ! This is needed for minimisation of memory overhead, only costs are loaded
-         ! in the first instance. Later other data is loaded but only for the best class
-         allocate(indexing%best_infile(indexing%X0:indexing%X1, indexing%Y0:indexing%Y1))
+      ! This is needed for minimisation of memory overhead, only costs are
+      ! loaded in the first instance. Later other data is loaded but only for
+      ! the best class
+      allocate(indexing%best_infile(indexing%X0:indexing%X1, indexing%Y0:indexing%Y1))
 
       ! Read once-only inputs
       call alloc_input_data_primary_all(indexing, input_primary(0))
@@ -391,9 +394,10 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
       if (do_secondary) then
          call alloc_input_data_secondary_all(indexing, input_secondary(0))
          call read_input_secondary_once(n_in_files, in_files_secondary, &
-           input_secondary(0), indexing, loop_ind, &
-           chunk_starts( i_chunk), verbose)
+              input_secondary(0), indexing, loop_ind, chunk_starts( i_chunk), &
+              verbose)
       end if
+
       ! Read fields that vary from file to file
       if (use_new_bayesian_selection .neqv. .true.) then
          do i = 1, n_in_files
@@ -414,7 +418,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
          call alloc_input_data_primary_all(indexing, input_primary(1))
          if (do_secondary) then
             call alloc_input_data_secondary_all(indexing, input_secondary(1))
-         endif
+         end if
 
          ! Load only the cost values from input files
          do i = 1, n_in_files
@@ -465,11 +469,11 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
                           input_secondary(0), input_secondary(1), &
                           do_secondary)
                      input_primary(0)%phase(i,j) = k
-                  endif
+                  end if
                end do
             end do
          end do
-      endif
+      end if
 
       if (verbose) then
          write(*,*) 'Processing limits:'
@@ -613,7 +617,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
          if (do_secondary) then
             call dealloc_input_data_secondary_all(input_secondary(0))
          end if
-      endif
+      end if
 
    end do !Chunking
 
@@ -664,7 +668,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
                                   output_secondary)
    end if
 
-!       Close output file
+   ! Close output file
    if (nf90_close(ncid_primary) /= NF90_NOERR) then
       write(*,*) 'ERROR: nf90_close()'
       stop error_stop_code
@@ -690,4 +694,4 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
 end subroutine post_process_level2
 #else
 end program post_process_level2
-#endif
+#end if

@@ -331,7 +331,7 @@ subroutine read_input_primary_once(nfile, fname, input_data, indexing, &
    integer,                    intent(in)    :: sval
    logical,                    intent(in)    :: verbose
 
-   integer                 :: ncid, i
+   integer                   :: ncid, i
    type(common_file_flags_t) :: read_flags
 
    ! Flag which optional fields to be read. Set false as they are read.
@@ -397,7 +397,7 @@ subroutine read_input_primary_class(fname, input_data, indexing, costonly, sval,
       call read_input_primary_common(ncid, input_data, indexing, sval, verbose)
    else
       call read_input_primary_cost_only(ncid, input_data, indexing, sval, verbose)
-   endif
+   end if
 
    if (verbose) write(*,*) 'Closing primary input file.'
    if (nf90_close(ncid) .ne. NF90_NOERR) then

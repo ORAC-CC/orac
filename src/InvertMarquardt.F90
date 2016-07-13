@@ -751,9 +751,9 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
 
       where (CRP_thermal .lt. 0.)
          CRP_thermal = 0.
-      elsewhere (CRP_thermal .gt. 1.)
+      else where (CRP_thermal .gt. 1.)
          CRP_thermal = 1.
-      endwhere
+      end where
 
       Diag%cloud_emissivity(1:SPixel%Ind%NThermal) = CRP_thermal
 

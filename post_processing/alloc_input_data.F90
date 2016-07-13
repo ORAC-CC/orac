@@ -231,11 +231,11 @@ end if
    if (.not. associated(data%costja)) then
       allocate(data%costja(ind%X0:ind%X1, ind%Y0:ind%Y1))
       data%costja = sreal_fill_value
-   endif
+   end if
    if (.not. associated(data%costjm)) then
       allocate(data%costjm(ind%X0:ind%X1, ind%Y0:ind%Y1))
       data%costjm = sreal_fill_value
-   endif
+   end if
 
    allocate(data%qcflag(ind%X0:ind%X1, ind%Y0:ind%Y1))
    data%qcflag = sint_fill_value

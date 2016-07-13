@@ -109,7 +109,7 @@ subroutine Read_CloudFlags_nc(Ctrl, MSI_Data)
       ! Invalidate clear-sky pixels to 0 to avoid their processing
       where (MSI_Data%cldmask(:,:,1) .eq. 0)
          MSI_Data%Type = byte_fill_value
-      endwhere
+      end where
    end if
 
    ! Close cloud flag file

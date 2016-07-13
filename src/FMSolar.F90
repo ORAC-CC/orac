@@ -750,7 +750,7 @@ else
          ! Set rho_l for all BRDF terms proportional to this state vector element
          where (SPixel%Surface%XIndex == IRs(ii,j))
             rho_l = SPixel%Surface%Ratios
-         elsewhere
+         else where
             rho_l = 0.0
          end where
          ! If no dependence, skip this derivative

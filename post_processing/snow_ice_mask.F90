@@ -166,7 +166,7 @@ subroutine snow_ice_mask(input_primary,input_secondary,snow_ice_flag,cinst,i,j)
 if (ch5 .lt. 100)  then
 !12um saturated over ice this means clear
 snow_ice_flag=1
-endif
+end if
 
 
 
