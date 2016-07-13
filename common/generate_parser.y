@@ -38,7 +38,7 @@ char current_type[STR_LEN];
 /* Definitions */
 %union {
     char sval[STR_LEN];
-    char stck[3][STR_LEN];
+    char stck[N_STCK][STR_LEN];
 }
 
 %token DELIM EQ
@@ -150,7 +150,7 @@ variable:       STR dims DELIM NAME {
                     print_var_in_x_rul(f, current_type, $3, $1[TYPE_C],
                                        $1[TYPE_UPP], $4, 0);
                     print_var_in_c_wrapper(f, current_type, $3, $1[TYPE_C]);
-                    print_var_in_f(f, current_type, $3, $1[TYPE_F], $4);
+                    print_var_in_f(f, current_type, $3, $1[TYPE_FC], $4);
                     print_print_var_in_f(f, current_type, $3, $1[TYPE_C],
                                          $4, 0);
                 }
@@ -174,30 +174,36 @@ parameter:      declaration ',' PARAM DELIM NAME EQ val {
         ;
  // A variable's type declaration, such as "integer(lint)"
 declaration:    datatype '(' datatype ')' {
-                                         memcpy($$, $3, STR_LEN*3); }
+                                         memcpy($$, $3, STR_LEN*N_STCK); }
         |       datatype '(' KIND EQ datatype ')' {
-                                         memcpy($$, $5, STR_LEN*3); }
-        |       datatype               { memcpy($$, $1, STR_LEN*3); }
+                                         memcpy($$, $5, STR_LEN*N_STCK); }
+        |       datatype               { memcpy($$, $1, STR_LEN*N_STCK); }
         ;
  // A Fortran data type
 datatype:       BOOL                   { strcpy($$[TYPE_UPP], "BOOL");
-                                         strcpy($$[TYPE_C], "bool");
-                                         strcpy($$[TYPE_F], "logical"); }
+                                         strcpy($$[TYPE_C],   "bool");
+                                         strcpy($$[TYPE_F],   "logical");
+                                         strcpy($$[TYPE_FC],  "logical"); }
         |       CHAR                   { strcpy($$[TYPE_UPP], "CHAR");
-                                         strcpy($$[TYPE_C], "char");
-                                         strcpy($$[TYPE_F], "integer(byte)"); }
+                                         strcpy($$[TYPE_C],   "char");
+                                         strcpy($$[TYPE_F],   "integer(byte)");
+                                         strcpy($$[TYPE_FC],  "integer(c_signed_char)"); }
         |       INT                    { strcpy($$[TYPE_UPP], "INT");
-                                         strcpy($$[TYPE_C], "int");
-                                         strcpy($$[TYPE_F], "integer"); }
+                                         strcpy($$[TYPE_C],   "int");
+                                         strcpy($$[TYPE_F],   "integer");
+                                         strcpy($$[TYPE_FC],  "integer(c_int)"); }
         |       LINT                   { strcpy($$[TYPE_UPP], "INT");
-                                         strcpy($$[TYPE_C], "long int");
-                                         strcpy($$[TYPE_F], "integer(lint)"); }
+                                         strcpy($$[TYPE_C],   "long int");
+                                         strcpy($$[TYPE_F],   "integer(lint)");
+                                         strcpy($$[TYPE_FC],  "integer(c_long)"); }
         |       FLOAT                  { strcpy($$[TYPE_UPP], "FLOAT");
-                                         strcpy($$[TYPE_C], "float");
-                                         strcpy($$[TYPE_F], "real"); }
+                                         strcpy($$[TYPE_C],   "float");
+                                         strcpy($$[TYPE_F],   "real");
+                                         strcpy($$[TYPE_FC],  "real(c_float)"); }
         |       DOUBLE                 { strcpy($$[TYPE_UPP], "FLOAT");
-                                         strcpy($$[TYPE_C], "double");
-                                         strcpy($$[TYPE_F], "real(dreal)"); }
+                                         strcpy($$[TYPE_C],   "double");
+                                         strcpy($$[TYPE_F],   "real(dreal)");
+                                         strcpy($$[TYPE_FC],  "real(c_double)"); }
         ;
  // Dimensions of an array (flattening 2D arrays so we can use pointers later)
 dims:           '(' val ',' val ')'    { sprintf($$, "%s, %s", $2, $4); }
@@ -448,7 +454,7 @@ void print_alloc_in_f(FILE* f[], char* parent_struct, char* name, int alloc) {
     // Add dimension variables
     for (i=0; i<alloc; i++) {
         fprintf(f[F_ARG], "         %s__%s_dim%d, &\n", parent_struct, name, i);
-        fprintf(f[F_AR1], "         integer :: %s__%s_dim%d\n",
+        fprintf(f[F_AR1], "         integer(c_int) :: %s__%s_dim%d\n",
                 parent_struct, name, i);
         fprintf(f[F_AR2], "         %s__%s_dim%d, &\n", parent_struct, name, i);
 

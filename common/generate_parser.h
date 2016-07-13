@@ -19,6 +19,8 @@
 #define TYPE_UPP 0
 #define TYPE_C   1
 #define TYPE_F   2
+#define TYPE_FC  3
+#define N_TYPES  4
 
 // Subscripts of f FILE pointer array
 #define C_DEF 0
@@ -35,6 +37,8 @@
 #define F_CP2 11
 #define F_PRI 12
 #define N_INC_FILES 13
+
+#define N_STCK N_TYPES
 
 // Function declarations
 char* strupp(char* , char* );
