@@ -401,7 +401,11 @@ subroutine cross_reference_indexing(n, loop_ind, main_ind)
       main_ind%rho_terms = .false.
       do i_file = 1, n
          if (loop_ind(i_file)%flags%do_rho) then
-            main_ind%rho_terms = main_ind%rho_terms .or. loop_ind(i_file)%rho_terms
+            do j_ch = 1, loop_ind(i_file)%NSolar
+               i_ch = loop_ind(i_file)%ysolar_loop_to_main_index(j_ch)
+               main_ind%rho_terms(i_ch,:) = main_ind%rho_terms(i_ch,:) .or. &
+                    loop_ind(i_file)%rho_terms(j_ch,:)
+            end do
          end if
       end do
    else
