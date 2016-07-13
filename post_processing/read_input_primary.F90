@@ -98,11 +98,11 @@ if (indexing%flags%do_rho) then
          if (indexing%rho_terms(i,j)) then
             call create_rho_field_name(j, 1, input_num, input_dummy)
             call nc_read_packed_array(ncid, input_dummy, &
-                 input_data%rho(:,:,i,j), verbose,startp=(/ 1, sval /))
+                 input_data%rho(:,:,i,j), verbose,startp=(/ 1, sval, 1, 1 /))
 
             call create_rho_field_name(j, 2, input_num, input_dummy)
             call nc_read_packed_array(ncid, input_dummy, &
-                 input_data%rho_uncertainty(:,:,i,j), verbose,startp=(/ 1, sval /))
+                 input_data%rho_uncertainty(:,:,i,j), verbose,startp=(/ 1, sval, 1, 1 /))
          end if
       end do
    end do
@@ -114,19 +114,19 @@ if (indexing%flags%do_swansea) then
 
       input_dummy='swansea_s_in_channel_no_'//trim(adjustl(input_num))
       call nc_read_packed_array(ncid, input_dummy, &
-           input_data%swansea_s(:,:,i), verbose,startp=(/ 1, sval /))
+           input_data%swansea_s(:,:,i), verbose,startp=(/ 1, sval, 1 /))
       input_dummy='swansea_s_uncertainty_in_channel_no_'// &
            trim(adjustl(input_num))
       call nc_read_packed_array(ncid, input_dummy, &
-           input_data%swansea_s_uncertainty(:,:,i), verbose,startp=(/ 1, sval /))
+           input_data%swansea_s_uncertainty(:,:,i), verbose,startp=(/ 1, sval, 1 /))
 
       input_dummy='diffuse_frac_in_channel_no_'//trim(adjustl(input_num))
       call nc_read_packed_array(ncid, input_dummy, &
-           input_data%diffuse_frac(:,:,i), verbose,startp=(/ 1, sval /))
+           input_data%diffuse_frac(:,:,i), verbose,startp=(/ 1, sval, 1 /))
       input_dummy='diffuse_frac_uncertainty_in_channel_no_'// &
            trim(adjustl(input_num))
       call nc_read_packed_array(ncid, input_dummy, &
-           input_data%diffuse_frac_uncertainty(:,:,i), verbose,startp=(/ 1, sval /))
+           input_data%diffuse_frac_uncertainty(:,:,i), verbose,startp=(/ 1, sval, 1 /))
    end do
 
    do i=1,indexing%NViews
@@ -134,11 +134,11 @@ if (indexing%flags%do_swansea) then
 
       input_dummy='swansea_p_in_view_no_'//trim(adjustl(input_num))
       call nc_read_packed_array(ncid, input_dummy, &
-           input_data%swansea_p(:,:,i), verbose,startp=(/ 1, sval /))
+           input_data%swansea_p(:,:,i), verbose,startp=(/ 1, sval, 1 /))
       input_dummy='swansea_p_uncertainty_in_view_no_'// &
            trim(adjustl(input_num))
       call nc_read_packed_array(ncid, input_dummy, &
-           input_data%swansea_p_uncertainty(:,:,i), verbose,startp=(/ 1, sval /))
+           input_data%swansea_p_uncertainty(:,:,i), verbose,startp=(/ 1, sval, 1 /))
    end do
 end if
 
@@ -195,12 +195,12 @@ if (indexing%flags%do_cloud) then
 
       input_dummy='cloud_albedo_in_channel_no_'//trim(adjustl(input_num))
       call nc_read_packed_array(ncid, input_dummy, &
-           input_data%cloud_albedo(:,:,i), verbose,startp=(/ 1, sval /))
+           input_data%cloud_albedo(:,:,i), verbose,startp=(/ 1, sval, 1 /))
 
       input_dummy='cloud_albedo_uncertainty_in_channel_no_'// &
            trim(adjustl(input_num))
       call nc_read_packed_array(ncid, input_dummy, &
-           input_data%cloud_albedo_uncertainty(:,:,i), verbose,startp=(/ 1, sval /))
+           input_data%cloud_albedo_uncertainty(:,:,i), verbose,startp=(/ 1, sval, 1 /))
    end do
 
    do i=1,indexing%NThermal
@@ -208,11 +208,11 @@ if (indexing%flags%do_cloud) then
 
       input_dummy='cee_in_channel_no_'//trim(adjustl(input_num))
       call nc_read_packed_array(ncid, input_dummy, &
-           input_data%cee(:,:,i), verbose,startp=(/ 1, sval /))
+           input_data%cee(:,:,i), verbose,startp=(/ 1, sval, 1 /))
 
       input_dummy='cee_uncertainty_in_channel_no_'//trim(adjustl(input_num))
       call nc_read_packed_array(ncid, input_dummy, &
-           input_data%cee_uncertainty(:,:,i), verbose,startp=(/ 1, sval /))
+           input_data%cee_uncertainty(:,:,i), verbose,startp=(/ 1, sval, 1 /))
    end do
 end if
 
@@ -269,15 +269,15 @@ subroutine read_input_primary_optional(ncid, input_data, indexing, &
 
          input_dummy = "solar_zenith_view_no"//trim(adjustl(input_num))
          call nc_read_array(ncid, trim(adjustl(input_dummy)), &
-              input_data%sol_zen(:,:,i), verbose,startp=(/ 1,sval /))
+              input_data%sol_zen(:,:,i), verbose,startp=(/ 1, sval, 1 /))
 
          input_dummy ="satellite_zenith_view_no"//trim(adjustl(input_num))
          call nc_read_array(ncid, trim(adjustl(input_dummy)), &
-              input_data%sat_zen(:,:,i), verbose,startp=(/ 1, sval /))
+              input_data%sat_zen(:,:,i), verbose,startp=(/ 1, sval, 1 /))
 
          input_dummy ="rel_azimuth_view_no"//trim(adjustl(input_num))
          call nc_read_array(ncid, trim(adjustl(input_dummy)), &
-              input_data%rel_azi(:,:,i), verbose,startp=(/ 1, sval /))
+              input_data%rel_azi(:,:,i), verbose,startp=(/ 1, sval, 1 /))
       end if
    end do
    if (indexing%flags%do_cloud .and. read_flags%do_cloud) then
@@ -286,14 +286,14 @@ subroutine read_input_primary_optional(ncid, input_data, indexing, &
    end if
 
    if (indexing%flags%do_cldmask .and. read_flags%do_cldmask) then
-      call nc_read_array(ncid, "cldmask", input_data%cldmask, verbose,startp=(/ 1, sval /))
+      call nc_read_array(ncid, "cldmask", input_data%cldmask, verbose,startp=(/ 1, sval, 1 /))
       read_flags%do_cldmask = .false.
    end if
 
    if (indexing%flags%do_cldmask_uncertainty .and. &
         read_flags%do_cldmask_uncertainty) then
       call nc_read_packed_array(ncid, "cldmask_uncertainty", &
-           input_data%cldmask_uncertainty, verbose,startp=(/ 1, sval /))
+           input_data%cldmask_uncertainty, verbose,startp=(/ 1, sval, 1 /))
       read_flags%do_cldmask_uncertainty = .false.
    end if
 
