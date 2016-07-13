@@ -251,6 +251,7 @@
 ! 2016/05/16, SP: Added support for Suomi-NPP  VIIRS
 ! 2016/05/30, SP: Fixed bug in multi-view processing
 ! 2016/06/28, SP: Added initial support for Sentinel-3 SLSTR
+! 2016/07/11, SP: Chunk routines now in the common directory
 !
 ! $Id$
 !
@@ -265,6 +266,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
 #endif
 
    use channel_structures_m
+   use chunk_utils_m
    use cloud_typing_pavolonis_m, only: cloud_type
    use correct_for_ice_snow_m
    use ecmwf_m

@@ -15,6 +15,7 @@ include $(ORAC_LIB)
 
 # Define object files to be linked.
 COMMON_OBJ_F90 =$(OBJS)/common_constants.o \
+                $(OBJS)/chunk_utils.o \
                 $(OBJS)/constants_cloud_typing_pavolonis.o \
                 $(OBJS)/global_attributes.o \
                 $(OBJS)/interpol.o \

@@ -29,6 +29,7 @@
 ! 2015/03/20, CP: changed to creator url and website
 ! 2015/07/10, OS: added optional error_status return argument
 ! 2015/07/16, GM: Added support to read packed data to nc_read routines.
+! 2016/07/11, SP: Added new variable to read functions: startp
 !
 ! $Id$
 !-------------------------------------------------------------------------------
@@ -300,6 +301,8 @@ end function nc_dim_length
 !                     the field to be read that will only be partially read.
 ! ind     integer In  Optional. If set, specifies the indices of the dimension
 !                     specified above to be read.
+! startp  integer In  Optional. If set, specifies the position in the netcdf
+!                     file to start reading data
 !
 ! History:
 ! 2014/02/10, AP: Original version, replacing nc_read_file.F90
@@ -308,6 +311,7 @@ end function nc_dim_length
 ! 2014/09/03, GM: Added vl to handle valid_<limit> temporary auxiliary values.
 ! 2015/07/09, GM: Used poor man's C-preprocessor based templates.
 ! 2015/07/16, GM: Added support to read packed data.
+! 2016/07/11, SP: Addednew variable: startp
 !
 ! Bugs:
 ! None known.

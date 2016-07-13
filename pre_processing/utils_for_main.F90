@@ -15,6 +15,7 @@
 ! 2016/02/02, GM: Add use_ecmwf_tnow_and_ice.
 ! 2016/04/05, SP: Added ECMWF_NLEVELS option to choose between 60,91 and 137
 !                 level ECMWF input files.
+! 2016/07/11, SP: Removed chunking routines to separate library in chunk_utils
 !
 ! $Id$
 !
@@ -153,63 +154,5 @@ integer function parse_logical(string, value) result(status)
    end if
 
 end function parse_logical
-
-
-function calc_n_chunks(n_segments, segment_starts, segment_ends, &
-                       chunk_size) result (n_chunks)
-
-   implicit none
-
-   integer, intent(in) :: n_segments
-   integer, intent(in) :: segment_starts(n_segments)
-   integer, intent(in) :: segment_ends(n_segments)
-   integer, intent(in) :: chunk_size
-   integer             :: n_chunks
-
-   integer :: i
-
-   n_chunks = 0
-
-   do i = 1, n_segments
-      n_chunks = n_chunks + (segment_ends(i) - segment_starts(i)) / chunk_size + 1
-   end do
-
-end function calc_n_chunks
-
-
-subroutine chunkify(n_segments, segment_starts, segment_ends, &
-                    chunk_size, n_chunks, chunk_starts, chunk_ends)
-
-   implicit none
-
-   integer, intent(in)  :: n_segments
-   integer, intent(in)  :: segment_starts(n_segments)
-   integer, intent(in)  :: segment_ends(n_segments)
-   integer, intent(in)  :: chunk_size
-   integer, intent(out) :: n_chunks
-   integer, intent(out) :: chunk_starts(*)
-   integer, intent(out) :: chunk_ends(*)
-
-   integer :: i
-
-   n_chunks = 1
-
-   do i = 1, n_segments
-      chunk_starts(n_chunks) = segment_starts(i)
-
-      do while (chunk_starts(n_chunks) + chunk_size .lt. segment_ends(i))
-         chunk_ends(n_chunks) = chunk_starts(n_chunks) + chunk_size - 1
-         n_chunks = n_chunks + 1
-         chunk_starts(n_chunks) = chunk_starts(n_chunks - 1) + chunk_size
-      end do
-
-      chunk_ends(n_chunks) = segment_ends(i)
-
-      n_chunks = n_chunks + 1
-   end do
-
-   n_chunks = n_chunks - 1
-
-end subroutine chunkify
 
 end module utils_for_main_m

@@ -1,4 +1,4 @@
-subroutine NC_READ_NAME_1D(ncid, name, val, verbose, dim, ind)
+subroutine NC_READ_NAME_1D(ncid, name, val, verbose, dim, ind, startp)
    implicit none
 
    integer,                                 intent(in)    :: ncid
@@ -6,6 +6,7 @@ subroutine NC_READ_NAME_1D(ncid, name, val, verbose, dim, ind)
    NC_READ_TYPE(kind=NC_READ_KIND), target, intent(inout) :: val(:)
    logical,                                 intent(in)    :: verbose
    integer, optional,                       intent(in)    :: dim, ind(:)
+   integer, optional,                       intent(in)    :: startp(:)
 
    integer                                  :: ierr, vid, i
    integer, dimension(1)                    :: start, counter, stride
@@ -18,6 +19,10 @@ subroutine NC_READ_NAME_1D(ncid, name, val, verbose, dim, ind)
    start = 1
    counter = size(val,1)
    stride = 1
+
+   if (present(startp)) then
+   	start=startp
+   endif
 
    include 'nc_open_field.inc'
 
@@ -39,7 +44,7 @@ subroutine NC_READ_NAME_1D(ncid, name, val, verbose, dim, ind)
 end subroutine NC_READ_NAME_1D
 
 
-subroutine NC_READ_NAME_2D(ncid, name, val, verbose, dim, ind)
+subroutine NC_READ_NAME_2D(ncid, name, val, verbose, dim, ind, startp)
    implicit none
 
    integer,           intent(in)                          :: ncid
@@ -47,6 +52,7 @@ subroutine NC_READ_NAME_2D(ncid, name, val, verbose, dim, ind)
    NC_READ_TYPE(kind=NC_READ_KIND), target, intent(inout) :: val(:,:)
    logical,           intent(in)                          :: verbose
    integer, optional, intent(in)                          :: dim, ind(:)
+   integer, optional, intent(in)                          :: startp(:)
 
    integer                                  :: ierr, vid, i
    integer, dimension(2)                    :: start, counter, stride
@@ -60,6 +66,10 @@ subroutine NC_READ_NAME_2D(ncid, name, val, verbose, dim, ind)
    counter(1) = size(val,1)
    counter(2) = size(val,2)
    stride = 1
+
+   if (present(startp)) then
+   	start=startp
+   endif
 
    include 'nc_open_field.inc'
 
@@ -86,7 +96,7 @@ subroutine NC_READ_NAME_2D(ncid, name, val, verbose, dim, ind)
 end subroutine NC_READ_NAME_2D
 
 
-subroutine NC_READ_NAME_3D(ncid, name, val, verbose, dim, ind)
+subroutine NC_READ_NAME_3D(ncid, name, val, verbose, dim, ind, startp)
    implicit none
 
    integer,           intent(in)                          :: ncid
@@ -94,6 +104,7 @@ subroutine NC_READ_NAME_3D(ncid, name, val, verbose, dim, ind)
    NC_READ_TYPE(kind=NC_READ_KIND), target, intent(inout) :: val(:,:,:)
    logical,           intent(in)                          :: verbose
    integer, optional, intent(in)                          :: dim, ind(:)
+   integer, optional, intent(in)                          :: startp(:)
 
    integer                                  :: ierr, vid, i
    integer, dimension(3)                    :: start, counter, stride
@@ -108,6 +119,10 @@ subroutine NC_READ_NAME_3D(ncid, name, val, verbose, dim, ind)
    counter(2) = size(val,2)
    counter(3) = size(val,3)
    stride = 1
+
+   if (present(startp)) then
+   	start=startp
+   endif
 
    include 'nc_open_field.inc'
 
@@ -136,7 +151,7 @@ subroutine NC_READ_NAME_3D(ncid, name, val, verbose, dim, ind)
 end subroutine NC_READ_NAME_3D
 
 
-subroutine NC_READ_NAME_4D(ncid, name, val, verbose, dim, ind)
+subroutine NC_READ_NAME_4D(ncid, name, val, verbose, dim, ind, startp)
    implicit none
 
    integer,                                 intent(in)    :: ncid
@@ -144,6 +159,7 @@ subroutine NC_READ_NAME_4D(ncid, name, val, verbose, dim, ind)
    NC_READ_TYPE(kind=NC_READ_KIND), target, intent(inout) :: val(:,:,:,:)
    logical,                                 intent(in)    :: verbose
    integer, optional,                       intent(in)    :: dim, ind(:)
+   integer, optional, intent(in)                          :: startp(:)
 
    integer                                  :: ierr, vid, i
    integer, dimension(4)                    :: start, counter, stride
@@ -159,6 +175,10 @@ subroutine NC_READ_NAME_4D(ncid, name, val, verbose, dim, ind)
    counter(3) = size(val,3)
    counter(4) = size(val,4)
    stride = 1
+
+   if (present(startp)) then
+   	start=startp
+   endif
 
    include 'nc_open_field.inc'
 
@@ -191,7 +211,7 @@ end subroutine NC_READ_NAME_4D
 
 #ifdef NC_RD_P_TYPE
 
-subroutine NC_READ_PACKED_NAME_1D(ncid, name, val, verbose, dim, ind)
+subroutine NC_READ_PACKED_NAME_1D(ncid, name, val, verbose, dim, ind, startp)
    implicit none
 
    integer,                                 intent(in)    :: ncid
@@ -199,6 +219,7 @@ subroutine NC_READ_PACKED_NAME_1D(ncid, name, val, verbose, dim, ind)
    NC_READ_TYPE(kind=NC_READ_KIND), target, intent(inout) :: val(:)
    logical,                                 intent(in)    :: verbose
    integer, optional,                       intent(in)    :: dim, ind(:)
+   integer, optional, intent(in)                          :: startp(:)
 
    integer                                  :: ierr, vid, i
    integer, dimension(1)                    :: start, counter, stride
@@ -213,6 +234,10 @@ subroutine NC_READ_PACKED_NAME_1D(ncid, name, val, verbose, dim, ind)
    start = 1
    counter = size(val,1)
    stride = 1
+
+   if (present(startp)) then
+   	start=startp
+   endif
 
    include 'nc_open_field.inc'
 
@@ -234,7 +259,7 @@ subroutine NC_READ_PACKED_NAME_1D(ncid, name, val, verbose, dim, ind)
 end subroutine NC_READ_PACKED_NAME_1D
 
 
-subroutine NC_READ_PACKED_NAME_2D(ncid, name, val, verbose, dim, ind)
+subroutine NC_READ_PACKED_NAME_2D(ncid, name, val, verbose, dim, ind, startp)
    implicit none
 
    integer,                                 intent(in)    :: ncid
@@ -242,6 +267,7 @@ subroutine NC_READ_PACKED_NAME_2D(ncid, name, val, verbose, dim, ind)
    NC_READ_TYPE(kind=NC_READ_KIND), target, intent(inout) :: val(:,:)
    logical,                                 intent(in)    :: verbose
    integer, optional,                       intent(in)    :: dim, ind(:)
+   integer, optional,                       intent(in)    :: startp(:)
 
    integer                                      :: ierr, vid, i
    integer, dimension(2)                        :: start, counter, stride
@@ -257,6 +283,10 @@ subroutine NC_READ_PACKED_NAME_2D(ncid, name, val, verbose, dim, ind)
    counter(1) = size(val,1)
    counter(2) = size(val,2)
    stride = 1
+
+   if (present(startp)) then
+   	start=startp
+   endif
 
    include 'nc_open_field.inc'
 
@@ -294,7 +324,7 @@ subroutine NC_READ_PACKED_NAME_2D(ncid, name, val, verbose, dim, ind)
 end subroutine NC_READ_PACKED_NAME_2D
 
 
-subroutine NC_READ_PACKED_NAME_3D(ncid, name, val, verbose, dim, ind)
+subroutine NC_READ_PACKED_NAME_3D(ncid, name, val, verbose, dim, ind, startp)
    implicit none
 
    integer,           intent(in)                          :: ncid
@@ -302,6 +332,7 @@ subroutine NC_READ_PACKED_NAME_3D(ncid, name, val, verbose, dim, ind)
    NC_READ_TYPE(kind=NC_READ_KIND), target, intent(inout) :: val(:,:,:)
    logical,           intent(in)                          :: verbose
    integer, optional, intent(in)                          :: dim, ind(:)
+   integer, optional, intent(in)                          :: startp(:)
 
    integer                                      :: ierr, vid, i
    integer, dimension(3)                        :: start, counter, stride
@@ -318,6 +349,10 @@ subroutine NC_READ_PACKED_NAME_3D(ncid, name, val, verbose, dim, ind)
    counter(2) = size(val,2)
    counter(3) = size(val,3)
    stride = 1
+
+   if (present(startp)) then
+   	start=startp
+   endif
 
    include 'nc_open_field.inc'
 
@@ -359,7 +394,7 @@ subroutine NC_READ_PACKED_NAME_3D(ncid, name, val, verbose, dim, ind)
 end subroutine NC_READ_PACKED_NAME_3D
 
 
-subroutine NC_READ_PACKED_NAME_4D(ncid, name, val, verbose, dim, ind)
+subroutine NC_READ_PACKED_NAME_4D(ncid, name, val, verbose, dim, ind, startp)
    implicit none
 
    integer,                                 intent(in)    :: ncid
@@ -367,6 +402,7 @@ subroutine NC_READ_PACKED_NAME_4D(ncid, name, val, verbose, dim, ind)
    NC_READ_TYPE(kind=NC_READ_KIND), target, intent(inout) :: val(:,:,:,:)
    logical,                                 intent(in)    :: verbose
    integer, optional,                       intent(in)    :: dim, ind(:)
+   integer, optional,                       intent(in)    :: startp(:)
 
    integer                                      :: ierr, vid, i
    integer, dimension(4)                        :: start, counter, stride
@@ -384,6 +420,10 @@ subroutine NC_READ_PACKED_NAME_4D(ncid, name, val, verbose, dim, ind)
    counter(3) = size(val,3)
    counter(4) = size(val,4)
    stride = 1
+
+   if (present(startp)) then
+   	start=startp
+   endif
 
    include 'nc_open_field.inc'
 

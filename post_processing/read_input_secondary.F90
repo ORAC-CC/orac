@@ -35,7 +35,7 @@
 ! Not a bug but this code assumes 5 channels of instrument data.
 !-------------------------------------------------------------------------------
 
-subroutine read_input_secondary_common(ncid, input_data, indexing, verbose)
+subroutine read_input_secondary_common(ncid, input_data, indexing, sval, verbose)
 
    use orac_ncdf_m
 
@@ -44,6 +44,7 @@ subroutine read_input_secondary_common(ncid, input_data, indexing, verbose)
    integer,                      intent(in)    :: ncid
    type(input_data_secondary_t), intent(inout) :: input_data
    type(input_indices_t),        intent(in)    :: indexing
+   integer,                      intent(in)    :: sval
    logical,                      intent(in)    :: verbose
 
    integer            :: i, j
@@ -65,10 +66,10 @@ if (indexing%flags%do_rho) then
          if (indexing%rho_terms(i,j)) then
             call create_rho_field_name(j, 3, input_num, input_dummy)
             call nc_read_packed_array(ncid, trim(adjustl(input_dummy)), &
-                 input_data%rho_ap(:,:,i,j), verbose)
+                 input_data%rho_ap(:,:,i,j), verbose,startp=(/ 1, sval /))
             call create_rho_field_name(j, 4, input_num, input_dummy)
             call nc_read_packed_array(ncid, trim(adjustl(input_dummy)), &
-                 input_data%rho_fg(:,:,i,j), verbose)
+                 input_data%rho_fg(:,:,i,j), verbose,startp=(/ 1, sval /))
          end if
       end do
    end do
@@ -80,10 +81,10 @@ if (indexing%flags%do_swansea) then
 
       input_dummy='swansea_s_ap_in_channel_no_'//trim(adjustl(input_num))
       call nc_read_packed_array(ncid, trim(adjustl(input_dummy)), &
-           input_data%swansea_s_ap(:,:,i), verbose)
+           input_data%swansea_s_ap(:,:,i), verbose,startp=(/ 1, sval /))
       input_dummy='swansea_s_fg_in_channel_no_'//trim(adjustl(input_num))
       call nc_read_packed_array(ncid, trim(adjustl(input_dummy)), &
-           input_data%swansea_s_fg(:,:,i), verbose)
+           input_data%swansea_s_fg(:,:,i), verbose,startp=(/ 1, sval /))
    end do
 
    do i=1,indexing%NViews
@@ -91,25 +92,25 @@ if (indexing%flags%do_swansea) then
 
       input_dummy='swansea_p_ap_in_channel_no_'//trim(adjustl(input_num))
       call nc_read_packed_array(ncid, trim(adjustl(input_dummy)), &
-           input_data%swansea_p_ap(:,:,i), verbose)
+           input_data%swansea_p_ap(:,:,i), verbose,startp=(/ 1, sval /))
       input_dummy='swansea_p_fg_in_channel_no_'//trim(adjustl(input_num))
       call nc_read_packed_array(ncid, trim(adjustl(input_dummy)), &
-           input_data%swansea_p_fg(:,:,i), verbose)
+           input_data%swansea_p_fg(:,:,i), verbose,startp=(/ 1, sval /))
    end do
 end if
 
 if (indexing%flags%do_cloud) then
-   call nc_read_packed_array(ncid, "cot_ap", input_data%cot_ap, verbose)
-   call nc_read_packed_array(ncid, "cot_fg", input_data%cot_fg, verbose)
+   call nc_read_packed_array(ncid, "cot_ap", input_data%cot_ap, verbose,startp=(/ 1, sval /))
+   call nc_read_packed_array(ncid, "cot_fg", input_data%cot_fg, verbose,startp=(/ 1, sval /))
 
-   call nc_read_packed_array(ncid, "cer_ap", input_data%cer_ap, verbose)
-   call nc_read_packed_array(ncid, "cer_fg", input_data%cer_fg, verbose)
+   call nc_read_packed_array(ncid, "cer_ap", input_data%cer_ap, verbose,startp=(/ 1, sval /))
+   call nc_read_packed_array(ncid, "cer_fg", input_data%cer_fg, verbose,startp=(/ 1, sval /))
 
-   call nc_read_packed_array(ncid, "ctp_ap", input_data%ctp_ap, verbose)
-   call nc_read_packed_array(ncid, "ctp_fg", input_data%ctp_fg, verbose)
+   call nc_read_packed_array(ncid, "ctp_ap", input_data%ctp_ap, verbose,startp=(/ 1, sval /))
+   call nc_read_packed_array(ncid, "ctp_fg", input_data%ctp_fg, verbose,startp=(/ 1, sval /))
 
-   call nc_read_packed_array(ncid, "stemp_ap", input_data%stemp_ap, verbose)
-   call nc_read_packed_array(ncid, "stemp_fg", input_data%stemp_fg, verbose)
+   call nc_read_packed_array(ncid, "stemp_ap", input_data%stemp_ap, verbose,startp=(/ 1, sval /))
+   call nc_read_packed_array(ncid, "stemp_fg", input_data%stemp_fg, verbose,startp=(/ 1, sval /))
 end if
 
    do i=1,indexing%Ny
@@ -128,9 +129,9 @@ end if
       end if
 
       call nc_read_packed_array(ncid, trim(adjustl(input_dummy)), &
-           input_data%y0(:,:,i), verbose)
+           input_data%y0(:,:,i), verbose,startp=(/ 1, sval /))
       call nc_read_packed_array(ncid, trim(adjustl(input_dummy2)), &
-           input_data%residuals(:,:,i), verbose)
+           input_data%residuals(:,:,i), verbose,startp=(/ 1, sval /))
    end do
 
    call nc_read_packed_array(ncid, "degrees_of_freedom_signal", &
@@ -140,7 +141,7 @@ end subroutine read_input_secondary_common
 
 
 subroutine read_input_secondary_optional(ncid, input_data, indexing, &
-     read_flags, verbose)
+     read_flags, sval, verbose)
 
    use orac_ncdf_m
 
@@ -150,6 +151,7 @@ subroutine read_input_secondary_optional(ncid, input_data, indexing, &
    type(input_data_secondary_t), intent(inout) :: input_data
    type(input_indices_t),        intent(in)    :: indexing
    type(common_file_flags_t),    intent(inout) :: read_flags
+   integer,                      intent(in)    :: sval
    logical,                      intent(in)    :: verbose
 
    integer            :: i
@@ -167,7 +169,7 @@ subroutine read_input_secondary_optional(ncid, input_data, indexing, &
             input_dummy = 'reflectance_in_channel_no_'// trim(adjustl(input_num))
          end if
          call nc_read_packed_array(ncid, trim(adjustl(input_dummy)), &
-              input_data%channels(:,:,i), verbose)
+              input_data%channels(:,:,i), verbose,startp=(/ 1, sval /))
       end if
    end do
 
@@ -178,7 +180,7 @@ if (indexing%flags%do_cloud .and. read_flags%do_cloud) then
 
          input_dummy = 'albedo_in_channel_no_'//trim(adjustl(input_num))
          call nc_read_packed_array(ncid, trim(adjustl(input_dummy)), &
-              input_data%albedo(:,:,i), verbose)
+              input_data%albedo(:,:,i), verbose,startp=(/ 1, sval /))
       end if
    end do
 !  read_flags%do_cloud = .false.
@@ -188,7 +190,7 @@ end subroutine read_input_secondary_optional
 
 
 subroutine read_input_secondary_once(nfile, fname, input_data, indexing, &
-     loop_ind, verbose)
+     loop_ind, sval, verbose)
 
    use orac_ncdf_m
 
@@ -199,6 +201,7 @@ subroutine read_input_secondary_once(nfile, fname, input_data, indexing, &
    type(input_data_secondary_t), intent(inout) :: input_data
    type(input_indices_t),        intent(in)    :: indexing
    type(input_indices_t),        intent(in)    :: loop_ind(:)
+   integer,                      intent(in)    :: sval
    logical,                      intent(in)    :: verbose
 
    integer                   :: ncid, i
@@ -211,7 +214,7 @@ subroutine read_input_secondary_once(nfile, fname, input_data, indexing, &
    call nc_open(ncid, fname(1))
 
    call read_input_secondary_optional(ncid, input_data, loop_ind(1), &
-        read_flags, verbose)
+        read_flags, sval, verbose)
 
    if (nf90_close(ncid) .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_close()'
@@ -221,7 +224,7 @@ subroutine read_input_secondary_once(nfile, fname, input_data, indexing, &
    do i=2,nfile
       call nc_open(ncid,fname(i))
       call read_input_secondary_optional(ncid, input_data, loop_ind(i), &
-           read_flags, verbose)
+           read_flags, sval, verbose)
       if (nf90_close(ncid) .ne. NF90_NOERR) then
          write(*,*) 'ERROR: nf90_close()'
          stop error_stop_code
@@ -231,7 +234,7 @@ subroutine read_input_secondary_once(nfile, fname, input_data, indexing, &
 end subroutine read_input_secondary_once
 
 
-subroutine read_input_secondary_class(fname, input_data, indexing, verbose)
+subroutine read_input_secondary_class(fname, input_data, indexing, sval, verbose)
 
    use orac_ncdf_m
 
@@ -240,6 +243,7 @@ subroutine read_input_secondary_class(fname, input_data, indexing, verbose)
    character(len=path_length),   intent(in)    :: fname
    type(input_data_secondary_t), intent(inout) :: input_data
    type(input_indices_t),        intent(in)    :: indexing
+   integer,                      intent(in)    :: sval
    logical,                      intent(in)    :: verbose
 
    integer :: ncid
@@ -247,7 +251,7 @@ subroutine read_input_secondary_class(fname, input_data, indexing, verbose)
    if (verbose) write(*,*) 'Opening secondary input file: ', trim(fname)
    call nc_open(ncid,fname)
 
-   call read_input_secondary_common(ncid, input_data, indexing, verbose)
+   call read_input_secondary_common(ncid, input_data, indexing, sval, verbose)
 
    if (verbose) write(*,*) 'Closing secondary input file.'
    if (nf90_close(ncid) .ne. NF90_NOERR) then

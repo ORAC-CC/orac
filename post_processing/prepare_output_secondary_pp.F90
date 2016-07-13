@@ -35,12 +35,11 @@ subroutine prepare_output_secondary_pp(i, j, indexing, input_data, output_data)
    implicit none
 
    integer,                      intent(in)    :: i, j
-   type(common_indices_t),         intent(in)    :: indexing
+   type(common_indices_t),       intent(in)    :: indexing
    type(input_data_secondary_t), intent(in)    :: input_data
-   type(output_data_secondary_t),  intent(inout) :: output_data
+   type(output_data_secondary_t),intent(inout) :: output_data
 
    integer :: k, l
-
 
    output_data%scanline_u(i,j) = j
    output_data%scanline_v(i,j) = i
