@@ -13,6 +13,8 @@
 ! 2016/06/14, SP: First version.
 ! 2016/07/07, SP: Updated to make the code more sensible, some efficiency
 !                 improvements too, should be more accurate for VIS resampling
+! 2016/07/13, SP: Fix so that code doesn't crash when dealing with SLSTR's
+!                 occasionally nonsensical array sizes.
 !
 !
 ! Bugs:
@@ -158,6 +160,7 @@ subroutine read_slstr_tirdata(indir,inband,outarr,sx,sy,nx,ny)
 
    use netcdf
    use preproc_constants_m
+   use orac_ncdf_m
 
    character(len=path_length),  intent(in)   :: indir
    integer,  intent(in)                      :: inband
@@ -179,6 +182,7 @@ subroutine read_slstr_tirdata(indir,inband,outarr,sx,sy,nx,ny)
    integer tmp,numDims, numAtts, i
 
    integer fid,did,ierr,curband,index2,j
+   integer endx,endy
 
    ! Find the filename required for this channel
    call get_slstr_imnames(indir,inband,filename,bandname)
@@ -189,6 +193,11 @@ subroutine read_slstr_tirdata(indir,inband,outarr,sx,sy,nx,ny)
       print*,'ERROR: read_slstr_tirdata(): Error opening file ',trim(filename)
       stop
    endif
+
+   !Check dimensions so we load the right amount of NetCDF file
+   endy=nc_dim_length(fid,'rows',.false.)
+   endx=nc_dim_length(fid,'columns',.false.)
+
    ! Check that the dataset exists
    ierr=nf90_inq_varid(fid, trim(bandname), did)
    if (ierr.ne.NF90_NOERR) then
@@ -199,17 +208,17 @@ subroutine read_slstr_tirdata(indir,inband,outarr,sx,sy,nx,ny)
    ! Get anciliary values (fill, scale, offset)
    ierr = nf90_get_att(fid, did, "_FillValue", filval)
    if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: get_slstr_tirdata(): Error getting ',trim(fillname),' from file ',trim(filename)
+      print*,'ERROR: read_slstr_tirdata(): Error getting ',trim(fillname),' from file ',trim(filename)
       stop
    endif
    ierr = nf90_get_att(fid, did, "scale_factor", sclval)
    if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: get_slstr_tirdata(): Error getting ',trim(sclname),' from file ',trim(filename)
+      print*,'ERROR: read_slstr_tirdata(): Error getting ',trim(sclname),' from file ',trim(filename)
       stop
    endif
    ierr = nf90_get_att(fid, did,"add_offset", offval)
    if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: get_slstr_tirdata(): Error getting ',trim(offname),' from file ',trim(filename)
+      print*,'ERROR: read_slstr_tirdata(): Error getting ',trim(offname),' from file ',trim(filename)
       stop
    endif
 
@@ -221,7 +230,7 @@ subroutine read_slstr_tirdata(indir,inband,outarr,sx,sy,nx,ny)
    endif
    ierr = nf90_close(fid)
    if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: read_slstr(): Error closing file ',trim(filename)
+      print*,'ERROR: read_slstr_tirdata(): Error closing file ',trim(filename)
       stop
    endif
 
@@ -238,6 +247,7 @@ subroutine read_slstr_visdata(indir,inband,outarr,imager_angles,sx,sy,nx,ny)
    use netcdf
    use preproc_constants_m
    use imager_structures_m
+   use orac_ncdf_m
 
    character(len=path_length),  intent(in)   :: indir
    integer,  intent(in)                      :: inband
@@ -245,12 +255,12 @@ subroutine read_slstr_visdata(indir,inband,outarr,imager_angles,sx,sy,nx,ny)
    integer,intent(in)                        :: sy
    integer,intent(in)                        :: nx
    integer,intent(in)                        :: ny
-   real(kind=sreal),intent(out)               :: outarr(nx,ny)
+   real(kind=sreal),intent(out)              :: outarr(nx,ny)
    type(imager_angles_t),       intent(in)   :: imager_angles
 
-   real,allocatable                             :: data1(:,:)
-   real,allocatable                             :: data2(:,:)
-   real,allocatable                             :: data3(:,:)
+   real,allocatable                          :: data1(:,:)
+   real,allocatable                          :: data2(:,:)
+   real,allocatable                          :: data3(:,:)
    real(kind=sreal), dimension(9)            :: irradiances
 
    character(len=path_length)       :: filename
@@ -263,6 +273,8 @@ subroutine read_slstr_visdata(indir,inband,outarr,imager_angles,sx,sy,nx,ny)
    integer tmp,numDims, numAtts, i
 
    integer fid,did,ierr,curband,index2,j
+
+   integer endx,endy
 
    if (inband .lt. 1 .or. inband .gt. 9) then
       write(*,*)'SLSTR input band must be in range 1-9. Here we have',inband
@@ -282,41 +294,48 @@ subroutine read_slstr_visdata(indir,inband,outarr,imager_angles,sx,sy,nx,ny)
    ! Open the netcdf file
    ierr=nf90_open(path=trim(adjustl(filename)),mode=NF90_NOWRITE,ncid=fid)
    if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: read_slstr_tirdata(): Error opening file ',trim(filename)
+      print*,'ERROR: read_slstr_visdata(): Error opening file ',trim(filename)
       stop
    endif
+
+   !Check dimensions so we load the right amount of NetCDF file
+   endy=nc_dim_length(fid,'rows',.false.)
+   endx=nc_dim_length(fid,'columns',.false.)
+
    ! Check that the dataset exists
    ierr=nf90_inq_varid(fid, trim(bandname), did)
    if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: read_slstr_tirdata(): Error opening dataset ',trim(filename),"in",trim(bandname)
+      print*,'ERROR: read_slstr_visdata(): Error opening dataset ',trim(filename),"in",trim(bandname)
       stop
    endif
 
    ! Get anciliary values (fill, scale, offset)
    ierr = nf90_get_att(fid, did, "_FillValue", filval)
    if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: get_slstr_tirdata(): Error getting ',trim(fillname),' from file ',trim(filename)
+      print*,'ERROR: read_slstr_visdata(): Error getting ',trim(fillname),' from file ',trim(filename)
       stop
    endif
    ierr = nf90_get_att(fid, did, "scale_factor", sclval)
    if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: get_slstr_tirdata(): Error getting ',trim(sclname),' from file ',trim(filename)
+      print*,'ERROR: read_slstr_visdata(): Error getting ',trim(sclname),' from file ',trim(filename)
       stop
    endif
    ierr = nf90_get_att(fid, did,"add_offset", offval)
    if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: get_slstr_tirdata(): Error getting ',trim(offname),' from file ',trim(filename)
+      print*,'ERROR: read_slstr_visdata(): Error getting ',trim(offname),' from file ',trim(filename)
       stop
    endif
+
    ! Get the actual data
-   ierr = nf90_get_var(fid, did, data1)
+   ierr = nf90_get_var(fid, did, data1,count=(/ endx,endy /))
    if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: read_slstr_tirdata(): Error reading dataset ',trim(filename),"in",trim(bandname)
+      print*,'ERROR: read_slstr_visdata(): Error reading dataset ',trim(filename),"in",trim(bandname)
+      print*,trim(nf90_strerror(ierr))
       stop
    endif
    ierr = nf90_close(fid)
    if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: read_slstr(): Error closing file ',trim(filename)
+      print*,'ERROR: read_slstr_visdata(): Error closing file ',trim(filename)
       stop
    endif
    ! Resample the data to the TIR grid size.
