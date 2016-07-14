@@ -114,7 +114,9 @@ try:
                 for f in glob.glob(d + '/' + fileroot + '*nc'):
                     g = ou.find_previous_orac_file(f)
                     if g == None:
-                        raise ou.FileMissing('previous version', f)
+                        warnings.warn('Could not locate previous file: '+f,
+                                      ou.OracWarning)
+                        continue
 
                     ou.compare_orac_out(f, g)
 

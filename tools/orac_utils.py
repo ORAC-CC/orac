@@ -425,8 +425,11 @@ def read_orac_libraries(filename):
     """Read the ORAC library definitions into a Python dictionary"""
 
     libraries = {}
-    if os.environ['LIBBASE']:
-        libraries['LIBBASE'] = os.environ['LIBBASE']
+    try:
+        if os.environ['LIBBASE']:
+            libraries['LIBBASE'] = os.environ['LIBBASE']
+    except KeyError:
+        pass
 
     # Open ORAC library file
     with open(filename, 'r') as f:
@@ -816,6 +819,8 @@ def args_postproc(parser):
     """Define arguments for postprocessor script."""
 
     post = parser.add_argument_group('Post-processor paths')
+    post.add_argument('--chunking', action='store_true',
+                      help = 'Chunk the reading/writing files to save memory.')
     post.add_argument('--compress', action='store_true',
                       help = 'Use compression in NCDF outputs.')
     post.add_argument('--cost_thresh', type=float, nargs='?',
@@ -1267,9 +1272,11 @@ COST_THRESH={cost_tsh}
 NORM_PROB_THRESH={prob_tsh}
 OUTPUT_OPTICAL_PROPS_AT_NIGHT={opt_nght}
 VERBOSE={verbose}
+USE_CHUNKING={chunking}
 USE_NETCDF_COMPRESSION={compress}
 USE_BAYESIAN_SELECTION={bayesian}""".format(
         bayesian = args.phases != ['WAT', 'ICE'],
+        chunking = args.chunking,
         compress = args.compress,
         cost_tsh = args.cost_thresh,
         ice_pri  = files[1][0],
