@@ -95,10 +95,8 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
            nx, ny, startx, starty, stat, lat, lon, &
            nsza, niza, nsaz, nraz, nflg, nqul, nday, &
            nch1, nch2, nch3, nch4, nch5, nch6, nch7, &
-           ner1, ner2, ner3, ner4, ner5, ner6, ner7, &
            fsza, fiza, fsaz, fraz, fflg, fqul, fday, &
            fch1, fch2, fch3, fch4, fch5, fch6, fch7, &
-           fer1, fer2, fer3, fer4, fer5, fer6, fer7, &
            start_date, gc1_file, vc1_file, is_lut_drift_corrected) &
            bind(C,name='read_aatsr_orbit')
          use iso_c_binding ! technically Fortran 2003
@@ -118,10 +116,8 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
          type(c_ptr) :: lat, lon
          type(c_ptr) :: nsza, niza, nsaz, nraz
          type(c_ptr) :: nch1, nch2, nch3, nch4, nch5, nch6, nch7
-         type(c_ptr) :: ner1, ner2, ner3, ner4, ner5, ner6, ner7
          type(c_ptr) :: fsza, fiza, fsaz, fraz
          type(c_ptr) :: fch1, fch2, fch3, fch4, fch5, fch6, fch7
-         type(c_ptr) :: fer1, fer2, fer3, fer4, fer5, fer6, fer7
       end subroutine read_aatsr_orbit
    end interface
 
@@ -157,10 +153,8 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
    type(c_ptr) :: lat, lon
    type(c_ptr) :: nsza, niza, nsaz, nraz
    type(c_ptr) :: nch1, nch2, nch3, nch4, nch5, nch6, nch7
-   type(c_ptr) :: ner1, ner2, ner3, ner4, ner5, ner6, ner7
    type(c_ptr) :: fsza, fiza, fsaz, fraz
    type(c_ptr) :: fch1, fch2, fch3, fch4, fch5, fch6, fch7
-   type(c_ptr) :: fer1, fer2, fer3, fer4, fer5, fer6, fer7
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_aatsr_l1b()'
 
@@ -178,13 +172,6 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
    nch5 = c_null_ptr
    nch6 = c_null_ptr
    nch7 = c_null_ptr
-   ner1 = c_null_ptr
-   ner2 = c_null_ptr
-   ner3 = c_null_ptr
-   ner4 = c_null_ptr
-   ner5 = c_null_ptr
-   ner6 = c_null_ptr
-   ner7 = c_null_ptr
    fsza = c_null_ptr
    fiza = c_null_ptr
    fsaz = c_null_ptr
@@ -196,13 +183,6 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
    fch5 = c_null_ptr
    fch6 = c_null_ptr
    fch7 = c_null_ptr
-   fer1 = c_null_ptr
-   fer2 = c_null_ptr
-   fer3 = c_null_ptr
-   fer4 = c_null_ptr
-   fer5 = c_null_ptr
-   fer6 = c_null_ptr
-   fer7 = c_null_ptr
 
    ! copy function arguments into dummy variables
    nch = int(channel_info%nchannels_total, c_short)
@@ -258,25 +238,18 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
          select case (ch(i))
          case (1)
             nch1 = c_loc(imager_measurements%data(startx,1,i))
-            ner1 = c_loc(imager_measurements%uncertainty(startx,1,i))
          case (2)
             nch2 = c_loc(imager_measurements%data(startx,1,i))
-            ner2 = c_loc(imager_measurements%uncertainty(startx,1,i))
          case (3)
             nch3 = c_loc(imager_measurements%data(startx,1,i))
-            ner3 = c_loc(imager_measurements%uncertainty(startx,1,i))
          case (4)
             nch4 = c_loc(imager_measurements%data(startx,1,i))
-            ner4 = c_loc(imager_measurements%uncertainty(startx,1,i))
          case (5)
             nch5 = c_loc(imager_measurements%data(startx,1,i))
-            ner5 = c_loc(imager_measurements%uncertainty(startx,1,i))
          case (6)
             nch6 = c_loc(imager_measurements%data(startx,1,i))
-            ner6 = c_loc(imager_measurements%uncertainty(startx,1,i))
          case (7)
             nch7 = c_loc(imager_measurements%data(startx,1,i))
-            ner7 = c_loc(imager_measurements%uncertainty(startx,1,i))
          case default
             write(*,*) 'ERROR: read_aatsr_l1b(): Channel ',ch(i),', view ', &
                        view(i),' not defined for AATSR.'
@@ -287,25 +260,18 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
          select case (ch(i))
          case (1)
             fch1 = c_loc(imager_measurements%data(startx,1,i))
-            fer1 = c_loc(imager_measurements%uncertainty(startx,1,i))
-        case (2)
+         case (2)
             fch2 = c_loc(imager_measurements%data(startx,1,i))
-            fer2 = c_loc(imager_measurements%uncertainty(startx,1,i))
          case (3)
             fch3 = c_loc(imager_measurements%data(startx,1,i))
-            fer3 = c_loc(imager_measurements%uncertainty(startx,1,i))
          case (4)
             fch4 = c_loc(imager_measurements%data(startx,1,i))
-            fer4 = c_loc(imager_measurements%uncertainty(startx,1,i))
          case (5)
             fch5 = c_loc(imager_measurements%data(startx,1,i))
-            fer5 = c_loc(imager_measurements%uncertainty(startx,1,i))
          case (6)
             fch6 = c_loc(imager_measurements%data(startx,1,i))
-            fer6 = c_loc(imager_measurements%uncertainty(startx,1,i))
          case (7)
             fch7 = c_loc(imager_measurements%data(startx,1,i))
-            fer7 = c_loc(imager_measurements%uncertainty(startx,1,i))
          case default
             write(*,*) 'ERROR: read_aatsr_l1b(): Channel ',ch(i),', view ', &
                        view(i),' not defined for AATSR.'
@@ -328,10 +294,8 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
         nx, ny, startx, starty, stat, lat, lon, &
         nsza, niza, nsaz, nraz, nflg, nqul, nday, &
         nch1, nch2, nch3, nch4, nch5, nch6, nch7, &
-        ner1, ner2, ner3, ner4, ner5, ner6, ner7, &
         fsza, fiza, fsaz, fraz, fflg, fqul, fday, &
         fch1, fch2, fch3, fch4, fch5, fch6, fch7, &
-        fer1, fer2, fer3, fer4, fer5, fer6, fer7, &
         start_date, gc1_file, vc1_file, is_lut_drift_corrected)
 
    if (verbose) write(*,*) 'C function returned with status ', stat
@@ -363,8 +327,6 @@ if (.not. is_lut_drift_corrected) then
          ! AATSR L1B reflectances are stored as percentage values, so scale to
          ! the fractional value used by ORAC
          imager_measurements%data(:,:,i) = imager_measurements%data(:,:,i)*0.01
-         imager_measurements%uncertainty(:,:,i) = &
-              imager_measurements%uncertainty(:,:,i) * 0.01
 
          ! determine if non-linearity correction has been applied
          if (j.eq.4 .and. gc1_file .eq. &
@@ -389,12 +351,6 @@ if (.not. is_lut_drift_corrected) then
                  'old_drift:',old_drift,'drift_var:',drift_var
             imager_measurements%data(:,:,i) = &
                  (old_drift/new_drift) * imager_measurements%data(:,:,i)
-            ! propagate errors in above, with none on old_drift
-            imager_measurements%uncertainty(:,:,i) = sqrt( &
-                 imager_measurements%uncertainty(:,:,i) &
-                 *imager_measurements%uncertainty(:,:,i) + &
-                 drift_var*imager_measurements%data(:,:,i) &
-                 *imager_measurements%data(:,:,i)) / new_drift
          end if
       end if ! j.le.4
    end do ! channel info%nchannels_total
@@ -426,8 +382,6 @@ if (is_lut_drift_corrected) then
          ! AATSR L1B reflectances are stored as percentage values, so scale to
          ! the fractional value used by ORAC
          imager_measurements%data(:,:,i) = imager_measurements%data(:,:,i)*0.01
-         imager_measurements%uncertainty(:,:,i) = &
-              imager_measurements%uncertainty(:,:,i) * 0.01
       end if
    end do
 end if

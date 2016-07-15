@@ -25,15 +25,11 @@ void read_aatsr_orbit(const char *l1b_file, const bool *verbose,
                       float **nsza, float **niza, float **nsaz, float **nraz,
                       short  *nflg, short  *nqul, double *nday,
                       float **nch1, float **nch2, float **nch3, float **nch4,
-                      float **nch5, float **nch6, float **nch7, float **ner1,
-                      float **ner2, float **ner3, float **ner4, float **ner5,
-                      float **ner6, float **ner7,
+                      float **nch5, float **nch6, float **nch7,
                       float **fsza, float **fiza, float **fsaz, float **fraz,
                       short  *fflg, short  *fqul, double *fday,
                       float **fch1, float **fch2, float **fch3, float **fch4,
-                      float **fch5, float **fch6, float **fch7, float **fer1,
-                      float **fer2, float **fer3, float **fer4, float **fer5,
-                      float **fer6, float **fer7,
+                      float **fch5, float **fch6, float **fch7,
                       char start_date[30], char gc1_file[62], char vc1_file[62],
                       bool *is_lut_drift_corrected)
 {
@@ -52,8 +48,6 @@ void read_aatsr_orbit(const char *l1b_file, const bool *verbose,
                             {*fsza,*fiza,*fsaz,iaz,*fraz} };
   float *ch_array[2][7] = { {*nch1,*nch2,*nch3,*nch4,*nch5,*nch6,*nch7},
                             {*fch1,*fch2,*fch3,*fch4,*fch5,*fch6,*fch7} };
-  float *er_array[2][7] = { {*ner1,*ner2,*ner3,*ner4,*ner5,*ner6,*ner7},
-                            {*fer1,*fer2,*fer3,*fer4,*fer5,*fer6,*fer7} };
   short *fg_array[2][2] = { {nflg, nqul},
                             {fflg, fqul} };
   double *dy_array[2]   =   {nday, fday};
@@ -189,33 +183,6 @@ void read_aatsr_orbit(const char *l1b_file, const bool *verbose,
     fetch_aatsr_float_values(pid, ch_label[view[j]-1][ch[j]-1], *nx, *ny,
                              *startx, *starty, ch_array[view[j]-1][ch[j]-1],
                              *verbose);
-
-    // Set error information
-    if (ch[j] == 1) {
-      for (k=0; k<*ny; k++) { for (i=0; i<*nx; i++) {
-          er_array[view[j]-1][ch[j]-1][i + k * *nx] =
-            ch_array[view[j]-1][ch[j]-1][i + k * *nx] * 0.024 + 2.5; } } }
-    else if (ch[j] == 2) {
-      for (k=0; k<*ny; k++) { for (i=0; i<*nx; i++) {
-          er_array[view[j]-1][ch[j]-1][i + k * *nx] =
-            ch_array[view[j]-1][ch[j]-1][i + k * *nx] * 0.032 + 2.5; } } }
-    else if (ch[j] == 3) {
-      for (k=0; k<*ny; k++) { for (i=0; i<*nx; i++) {
-          er_array[view[j]-1][ch[j]-1][i + k * *nx] =
-            ch_array[view[j]-1][ch[j]-1][i + k * *nx] * 0.032 + 2.5; } } }
-    else if (ch[j] == 4) {
-      for (k=0; k<*ny; k++) { for (i=0; i<*nx; i++) {
-          er_array[view[j]-1][ch[j]-1][i + k * *nx] =
-            ch_array[view[j]-1][ch[j]-1][i + k * *nx] * 0.032 + 2.5; } } }
-    else if (ch[j] == 5) {
-      for (k=0; k<*ny; k++) { for (i=0; i<*nx; i++) {
-          er_array[view[j]-1][ch[j]-1][i + k * *nx] = 0.08; } } }
-    else if (ch[j] == 6) {
-      for (k=0; k<*ny; k++) { for (i=0; i<*nx; i++) {
-          er_array[view[j]-1][ch[j]-1][i + k * *nx] = 0.04; } } }
-    else if (ch[j] == 7) {
-      for (k=0; k<*ny; k++) { for (i=0; i<*nx; i++) {
-          er_array[view[j]-1][ch[j]-1][i + k * *nx] = 0.04; } } }
   }
 
   // Close files

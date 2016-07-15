@@ -73,7 +73,6 @@
 ! nqul|fqul     short  Out Nadir|forward confid flags.
 ! nday|fday     double Out Nadir|forward Julian date of measurement.
 ! nch1-7|fch1-7 float  Out Nadir|forward measurements for channel 1-7.
-! ner1-7|fer1-7 float  Out Nadir|forward uncertainties for channel 1-7.
 ! start_date    char   Out String giving the beginning of the observation.
 ! gc1_file      char   Out Name of the general calibration file applied.
 ! vc1_file      char   Out Name of the visible calibration file applied.
@@ -100,15 +99,11 @@ void read_aatsr_orbit(const char *l1b_file, const bool *verbose,
                       float **nsza, float **niza, float **nsaz, float **nraz,
                       short  *nflg, short  *nqul, double *nday,
                       float **nch1, float **nch2, float **nch3, float **nch4,
-                      float **nch5, float **nch6, float **nch7, float **ner1,
-                      float **ner2, float **ner3, float **ner4, float **ner5,
-                      float **ner6, float **ner7,
+                      float **nch5, float **nch6, float **nch7,
                       float **fsza, float **fiza, float **fsaz, float **fraz,
                       short  *fflg, short  *fqul, double *fday,
                       float **fch1, float **fch2, float **fch3, float **fch4,
-                      float **fch5, float **fch6, float **fch7, float **fer1,
-                      float **fer2, float **fer3, float **fer4, float **fer5,
-                      float **fer6, float **fer7,
+                      float **fch5, float **fch6, float **fch7,
                       char start_date[30], char gc1_file[62], char vc1_file[62],
                       bool *is_lut_drift_corrected);
 
