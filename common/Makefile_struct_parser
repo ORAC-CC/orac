@@ -32,7 +32,7 @@ clean_parser:
 	rm -f $(PARSER_NAME).lex $(PARSER_NAME).cc $(PARSER_NAME).F90
 
 # Run that exe on the requested source files
-$(PLACE)%inc: $(ORAC_COMMON)/generate_parser $(PARSER_SOURCE)
+$(PLACE).h: $(ORAC_COMMON)/generate_parser $(PARSER_SOURCE)
 	$(ORAC_COMMON)/generate_parser $(PLACE) $(PARSER_SOURCE)
 
 # Compile generic driver file grammar using generated C header file
@@ -40,13 +40,15 @@ $(PLACE).tab.o:
 	$(CXX) -o $@ -c $(FLAGS) $(CFLAGS) $(PARSER_INC) $(ORAC_COMMON)/struct_parser.tab.cc
 
 # Generate and compile driver file parser from part files
-$(PARSER_NAME).cc:
+$(PARSER_NAME).lex:
 	sed -e '/FLEX_DEFINITIONS/ {' -e 'r $(PLACE).l_def.inc' -e 'd' -e '}' \
             -e '/FLEX_RULES/ {' -e 'r $(PLACE).l_rul.inc' -e 'd' -e '}' \
 	    -e 's/STRUCT_NAME/$(STRUCT_NAME)/' \
             -e 's/STRUCT_CONDITION/$(STRUCT_TYPE_UPP)_SC/' \
             $(ORAC_COMMON)/struct_parser.lex > $(PARSER_NAME).lex
-	flex -o $@ $(PARSER_NAME).lex
+
+$(PARSER_NAME).cc:
+	flex $(FLEXFLAGS) -o $@ $(PARSER_NAME).lex
 
 $(PLACE).c.o:
 	$(CXX) -o $@ -c $(FLAGS) $(CFLAGS) $(PARSER_INC) $(PARSER_NAME).cc
@@ -64,11 +66,23 @@ else
 endif
 
 # Dependencies
-$(PLACE).h: $(PLACE).l_rul.inc
+$(PLACE).l_rul.inc: $(PLACE).h
+$(PLACE).l_def.inc: $(PLACE).h
+$(PLACE).c_arg.inc: $(PLACE).h
+$(PLACE).c_cpy.inc: $(PLACE).h
+$(PLACE).c_cpy2.inc: $(PLACE).h
+$(PLACE).f_arg.inc: $(PLACE).h
+$(PLACE).f_arg2.inc: $(PLACE).h
+$(PLACE).f_arr.inc: $(PLACE).h
+$(PLACE).f_def.inc: $(PLACE).h
+$(PLACE).f_cpy.inc: $(PLACE).h
+$(PLACE).f_cpy2.inc: $(PLACE).h
+$(PLACE).f_pri.inc: $(PLACE).h
 $(PLACE).tab.o: $(ORAC_COMMON)/struct_parser.tab.cc \
       $(ORAC_COMMON)/struct_parser.hh $(ORAC_COMMON)/struct_parser.h $(PLACE).h
-$(PARSER_NAME).cc: $(ORAC_COMMON)/struct_parser.tab.hh \
+$(PARSER_NAME).lex: $(ORAC_COMMON)/struct_parser.tab.hh \
       $(ORAC_COMMON)/struct_parser.lex $(PLACE).l_rul.inc $(PLACE).l_def.inc
+$(PARSER_NAME).cc: $(PARSER_NAME).lex
 $(PLACE).c.o: $(PARSER_NAME).cc $(ORAC_COMMON)/struct_parser.tab.hh \
       $(ORAC_COMMON)/struct_parser.hh $(ORAC_COMMON)/struct_parser.h \
       $(PLACE).h $(PLACE).c_arg.inc $(PLACE).c_cpy.inc $(PLACE).c_cpy2.inc
