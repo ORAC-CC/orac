@@ -162,7 +162,7 @@ subroutine Read_MSI_nc(Ctrl, MSI_Data, SAD_Chan)
    ! Read variance data if requested (for aerosol retrieval)
    if (Ctrl%EqMPN%SySelm == SelmMeas) then
       allocate(MSI_Data%SD(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, Ctrl%Ind%Ny))
-      call nc_read_array(ncid, "var_data", MSI_Data%SD, Ctrl%verbose, &
+      call nc_read_array(ncid, "sd_data", MSI_Data%SD, Ctrl%verbose, &
                          3, Ctrl%Ind%ICh)
    end if
 
@@ -190,11 +190,17 @@ subroutine Read_MSI_nc(Ctrl, MSI_Data, SAD_Chan)
                if (MSI_Data%MSI(k,j,i) < BTMin .or. &
                    MSI_Data%MSI(k,j,i) > BTMax) then
                   MSI_Data%MSI(k,j,i) = sreal_fill_value
+
+                  if (Ctrl%EqMPN%SySelm == SelmMeas) &
+                       MSI_Data%SD(k,j,i) = sreal_fill_value
                end if
             else
                if (MSI_Data%MSI(k,j,i) < RefMin .or. &
                    MSI_Data%MSI(k,j,i) > RefMax) then
                   MSI_Data%MSI(k,j,i) = sreal_fill_value
+
+                  if (Ctrl%EqMPN%SySelm == SelmMeas) &
+                       MSI_Data%SD(k,j,i) = sreal_fill_value
                end if
             end if
          end do
