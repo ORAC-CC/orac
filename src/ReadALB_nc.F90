@@ -133,17 +133,17 @@ subroutine Read_ALB_nc(Ctrl, MSI_Data)
    if (Ctrl%RS%SRsSelm == SelmAux) then
       ! Read surface reflectance uncertainties
       allocate(MSI_Data%rho_dd_unc(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, Ctrl%Ind%NSolar))
-      call nc_read_array(ncid, "rho_dd_err", MSI_Data%rho_dd_unc, Ctrl%verbose, 3, subs)
+      call nc_read_array(ncid, "rho_dd_unc", MSI_Data%rho_dd_unc, Ctrl%verbose, 3, subs)
 
       ! Read additional uncertainty terms (in RhoDD over land)
       allocate(MSI_Data%svd_unc(Ctrl%Ind%NSolar))
-      call nc_read_array(ncid, "svd_err", MSI_Data%svd_unc, Ctrl%verbose, 1, subs)
+      call nc_read_array(ncid, "svd_unc", MSI_Data%svd_unc, Ctrl%verbose, 1, subs)
       allocate(MSI_Data%veg_unc(Ctrl%Ind%NSolar))
-      call nc_read_array(ncid, "veg_err", MSI_Data%veg_unc, Ctrl%verbose, 1, subs)
+      call nc_read_array(ncid, "veg_unc", MSI_Data%veg_unc, Ctrl%verbose, 1, subs)
       allocate(MSI_Data%bare_unc(Ctrl%Ind%NSolar))
-      call nc_read_array(ncid, "bare_err", MSI_Data%bare_unc, Ctrl%verbose, 1, subs)
+      call nc_read_array(ncid, "bare_unc", MSI_Data%bare_unc, Ctrl%verbose, 1, subs)
       allocate(MSI_Data%snow_unc(Ctrl%Ind%NSolar))
-      call nc_read_array(ncid, "snow_err", MSI_Data%snow_unc, Ctrl%verbose, 1, subs)
+      call nc_read_array(ncid, "snow_unc", MSI_Data%snow_unc, Ctrl%verbose, 1, subs)
 
       ! Read surface reflectance correlations. The third dimension of this is
       ! every permutation of the Solar channels, so some work is necessary to
