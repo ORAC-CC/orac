@@ -41,5 +41,9 @@ subroutine deallocate_channel_info(channel_info)
    deallocate(channel_info%map_ids_abs_to_ref_band_land)
    deallocate(channel_info%map_ids_abs_to_ref_band_sea)
    deallocate(channel_info%map_ids_abs_to_snow_and_ice)
+   deallocate(channel_info%channel_fractional_uncertainty)
+   deallocate(channel_info%channel_minimum_uncertainty)
+   deallocate(channel_info%channel_fm_lnd_uncertainty)
+   deallocate(channel_info%channel_fm_sea_uncertainty)
 
 end subroutine deallocate_channel_info

@@ -86,6 +86,9 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
    integer(kind=lint),             intent(in)    :: n_along_track
    logical,                        intent(in)    :: verbose
 
+   integer :: i, j, k
+   real    :: meas_unc, fm_unc
+
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_imager()'
 
    if (verbose) write(*,*) 'sensor: ',           trim(sensor)
@@ -172,6 +175,35 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
       write(*,*) 'ERROR: read_imager(): Invalid sensor: ', trim(adjustl(sensor))
       stop error_stop_code
    end if
+
+   ! Estimate measurement uncertainty
+   do k = 1, channel_info%nchannels_total
+      do j = 1, imager_geolocation%ny
+         do i = imager_geolocation%startx, imager_geolocation%endx
+            ! Measurement uncertainty is a constant fraction
+            meas_unc = imager_measurements%data(i,j,k) * &
+                 channel_info%channel_fractional_uncertainty(k)
+
+            ! There is a digitization limit on that uncertainty
+            if (meas_unc < channel_info%channel_minimum_uncertainty(k)) &
+                 meas_unc = channel_info%channel_minimum_uncertainty(k)
+
+            ! Forward model is a function of surface (see A Sayer's thesis)
+            if (imager_flags%lsflag(i,j) .eq. 1) then
+               fm_unc = imager_measurements%data(i,j,k) * &
+                    channel_info%channel_fm_lnd_uncertainty(k)
+            else
+               fm_unc = imager_measurements%data(i,j,k) * &
+                    channel_info%channel_fm_sea_uncertainty(k)
+            end if
+
+            ! Combine uncertainties in quadrature
+            imager_measurements%uncertainty(i,j,k) = &
+                 sqrt(meas_unc*meas_unc + fm_unc*fm_unc)
+         end do
+      end do
+   end do
+
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_imager()'
 

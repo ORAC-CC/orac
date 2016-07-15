@@ -81,6 +81,12 @@ module channel_structures_m
       !correct_for_ice_snow()
       integer(kind=lint), dimension(:), pointer :: map_ids_abs_to_snow_and_ice
 
+      ! Uncertainty estimates, used by read_imager()
+      real(kind=sreal),   dimension(:), pointer :: channel_fractional_uncertainty
+      real(kind=sreal),   dimension(:), pointer :: channel_minimum_uncertainty
+      real(kind=sreal),   dimension(:), pointer :: channel_fm_lnd_uncertainty
+      real(kind=sreal),   dimension(:), pointer :: channel_fm_sea_uncertainty
+
    end type channel_info_t
 
 contains

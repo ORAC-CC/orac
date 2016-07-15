@@ -1221,6 +1221,17 @@ end if
               deflate_level = deflate_level, &
               shuffle = shuffle_flag, &
               fill_value = sreal_fill_value)
+
+      ! define msi_data
+      call nc_def_var_float_packed_float( &
+              netcdf_info%ncid_msi, &
+              dimids_3d, &
+              'sd_data', &
+              netcdf_info%vid_sd_data, &
+              verbose, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
+              fill_value = sreal_fill_value)
    end if
 
    ! set up attributes common to all output files

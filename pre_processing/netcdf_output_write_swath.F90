@@ -449,5 +449,14 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocati
            1, 1, imager_geolocation%ny, &
            1, 1, channel_info%nchannels_total)
 
+   call nc_write_array( &
+           netcdf_info%ncid_msi, &
+           'sd_data', &
+           netcdf_info%vid_sd_data, &
+           imager_measurements%uncertainty(imager_geolocation%startx:,:,:), &
+           1, 1, n_x, &
+           1, 1, imager_geolocation%ny, &
+           1, 1, channel_info%nchannels_total)
+
 
 end subroutine netcdf_output_write_swath

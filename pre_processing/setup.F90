@@ -76,6 +76,7 @@
 ! 2016/05/16, SP: Added Suomi-NPP support.
 ! 2016/05/27, SP: Updates to enable RTTOV to work correctly with multi-views
 ! 2016/06/14, SP: Added Sentinel-3 SLSTR support.
+! 2016/07/15, AP: Add uncertainty estimates. Only AATSR currently filled in.
 !
 ! $Id$
 !
@@ -155,6 +156,29 @@ subroutine setup_aatsr(l1b_path_file,geo_path_file,platform,sensor,year, &
       (/ 1,    1,    1,    1,    1,    1,    1,    &
          2,    2,    2,    2,    2,    2,    2 /)
 
+   ! All values drawn from finetocoarse.pro by Haiyan Huang (following
+   ! measurement_errors.pro by Sayer), except ch 5/12 which come from deleted
+   ! parts of read_aatsr_orbit.c
+   real,    parameter :: all_channel_fractional_uncertainty(all_nchannels_total) = &
+      (/ 0.024, 0.032, 0.020, 0.033, 0.080, 0.023, 0.250, &
+         0.024, 0.032, 0.020, 0.033, 0.080, 0.025, 0.250 /)
+
+   real,    parameter :: all_channel_minimum_uncertainty(all_nchannels_total) = &
+      (/ 0.0005, 0.0003, 0.0003, 0.0003, 0.08, 0.025, 0.25, &
+         0.0005, 0.0003, 0.0003, 0.0003, 0.08, 0.025, 0.25 /)
+
+   real,    parameter :: all_channel_numerical_uncertainty(all_nchannels_total) = &
+      (/ 0.0081, 0.0067, 0.0066, 0.0068, 0.0, 0.0, 0.0, &
+         0.0081, 0.0067, 0.0066, 0.0068, 0.0, 0.0, 0.0 /)
+
+   real,    parameter :: all_channel_lnd_uncertainty(all_nchannels_total) = &
+      (/ 0.0161, 0.0225, 0.0297, 0.0371, 0.0, 0.0, 0.0, &
+         0.0119, 0.0175, 0.0279, 0.0345, 0.0, 0.0, 0.0 /)
+
+   real,    parameter :: all_channel_sea_uncertainty(all_nchannels_total) = &
+      (/ 0.0200, 0.0236, 0.0263, 0.0461, 0.0, 0.0, 0.0, &
+         0.0132, 0.0150, 0.0161, 0.0294, 0.0, 0.0, 0.0 /)
+
    ! Only this below needs to be set to change the desired default channels. All
    ! other channel related arrays/indexes are set automatically given the static
    ! instrument channel definition above.
@@ -171,7 +195,7 @@ subroutine setup_aatsr(l1b_path_file,geo_path_file,platform,sensor,year, &
        trim(adjustl(geo_path_file))) then
       write(*,*)
       write(*,*) 'ERROR: setup_aatsr(): Geolocation and L1b files are for ' // &
-               & 'different orbits'
+                 'different orbits'
       write(*,*) 'l1b_path_file: ', trim(adjustl(geo_path_file))
       write(*,*) 'geo_path_file: ', trim(adjustl(l1b_path_file))
 
@@ -213,7 +237,10 @@ subroutine setup_aatsr(l1b_path_file,geo_path_file,platform,sensor,year, &
       all_channel_wl_abs, all_channel_sw_flag, all_channel_lw_flag, &
       all_channel_ids_rttov_coef_sw, all_channel_ids_rttov_coef_lw, &
       all_map_ids_abs_to_ref_band_land, all_map_ids_abs_to_ref_band_sea, &
-      all_map_ids_abs_to_snow_and_ice,all_map_ids_view_number)
+      all_map_ids_abs_to_snow_and_ice, all_map_ids_view_number, &
+      all_channel_fractional_uncertainty, all_channel_minimum_uncertainty, &
+      all_channel_numerical_uncertainty, all_channel_lnd_uncertainty, &
+      all_channel_sea_uncertainty)
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_aatsr()'
 
@@ -277,6 +304,18 @@ subroutine setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day, &
    integer, parameter :: all_map_ids_view_number(all_nchannels_total)  = &
       (/ 1,    1,      1,    1,    1,    1 /)
 
+   real,    parameter :: all_channel_fractional_uncertainty(all_nchannels_total) = &
+      (/ 0.,   0.,     0.,   0.,   0.,   0. /)
+
+   real,    parameter :: all_channel_minimum_uncertainty(all_nchannels_total) = &
+      (/ 0.,   0.,     0.,   0.,   0.,   0. /)
+
+   real,    parameter :: all_channel_numerical_uncertainty(all_nchannels_total) = &
+      (/ 0.,   0.,     0.,   0.,   0.,   0. /)
+   real,    parameter :: all_channel_lnd_uncertainty(all_nchannels_total) = &
+      (/ 0.,   0.,     0.,   0.,   0.,   0. /)
+   real,    parameter :: all_channel_sea_uncertainty(all_nchannels_total) = &
+      (/ 0.,   0.,     0.,   0.,   0.,   0. /)
 
    ! Only this below needs to be set to change the desired default channels. All
    ! other channel related arrays/indexes are set automatically given the static
@@ -294,109 +333,109 @@ subroutine setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day, &
 
    if (trim(adjustl(l1b_path_file(i+1:i+8))) .eq.'ECC_GAC_') then
 
-       if (verbose) write(*,*) ' *** new avhrr input file'
+      if (verbose) write(*,*) ' *** new avhrr input file'
 
-       ! check if l1b and geo file are for the same orbit
-       index1=index(trim(adjustl(l1b_path_file)),'ECC_GAC_avhrr',back=.true.)
-       index2=index(trim(adjustl(geo_path_file)),'ECC_GAC_sunsatangles',back=.true.)
+      ! check if l1b and geo file are for the same orbit
+      index1=index(trim(adjustl(l1b_path_file)),'ECC_GAC_avhrr',back=.true.)
+      index2=index(trim(adjustl(geo_path_file)),'ECC_GAC_sunsatangles',back=.true.)
 
-       if (trim(adjustl(l1b_path_file(1:index1-1))) .ne. &
+      if (trim(adjustl(l1b_path_file(1:index1-1))) .ne. &
            trim(adjustl(geo_path_file(1:index2-1)))) then
-          write(*,*)
-          write(*,*) 'ERROR: setup_avhrr(): Geolocation and L1b files are for ' // &
-                   & 'different orbits'
-          write(*,*) 'l1b_path_file: ', trim(adjustl(geo_path_file))
-          write(*,*) 'geo_path_file: ', trim(adjustl(l1b_path_file))
+         write(*,*)
+         write(*,*) 'ERROR: setup_avhrr(): Geolocation and L1b files are for ' // &
+              'different orbits'
+         write(*,*) 'l1b_path_file: ', trim(adjustl(geo_path_file))
+         write(*,*) 'geo_path_file: ', trim(adjustl(l1b_path_file))
 
-          stop error_stop_code
-       end if
+         stop error_stop_code
+      end if
 
-       str1 = l1b_path_file
-       do k=1, 4
-           l=len(trim(str1))
-           j=index(str1,'_', back=.true.)
+      str1 = l1b_path_file
+      do k=1, 4
+         l=len(trim(str1))
+         j=index(str1,'_', back=.true.)
 
-           str2=str1
-           str1=str1(1:j-1)
-           str2=str2(j+1:)
+         str2=str1
+         str1=str1(1:j-1)
+         str2=str2(j+1:)
 
-           if (k .eq. 2) then
-               ! get year, month, day, hour and minute as strings
-               cyear=trim(adjustl(str2(1:4)))
-               cmonth=trim(adjustl(str2(5:6)))
-               cday=trim(adjustl(str2(7:8)))
-               chour=trim(adjustl(str2(10:11)))
-               cminute=trim(adjustl(str2(12:13)))
-           end if
+         if (k .eq. 2) then
+            ! get year, month, day, hour and minute as strings
+            cyear=trim(adjustl(str2(1:4)))
+            cmonth=trim(adjustl(str2(5:6)))
+            cday=trim(adjustl(str2(7:8)))
+            chour=trim(adjustl(str2(10:11)))
+            cminute=trim(adjustl(str2(12:13)))
+         end if
 
-           if (k .eq. 4) then
-               ! which avhrr are we processing?
-               platform=trim(adjustl(str2))
-           end if
-       end do
+         if (k .eq. 4) then
+            ! which avhrr are we processing?
+            platform=trim(adjustl(str2))
+         end if
+      end do
 
-       ! get year, month, day, hour and minute as integers
-       read(cyear(1:len_trim(cyear)), '(I4)') year
-       read(cmonth, '(I2)') month
-       read(cday, '(I2)') day
-       read(chour(1:len_trim(chour)), '(I2)') hour
-       read(cminute(1:len_trim(cminute)), '(I2)') minute
+      ! get year, month, day, hour and minute as integers
+      read(cyear(1:len_trim(cyear)), '(I4)') year
+      read(cmonth, '(I2)') month
+      read(cday, '(I2)') day
+      read(chour(1:len_trim(chour)), '(I2)') hour
+      read(cminute(1:len_trim(cminute)), '(I2)') minute
 
    else
 
-       if (verbose) write(*,*) ' *** old avhrr input file'
+      if (verbose) write(*,*) ' *** old avhrr input file'
 
-       ! check if l1b and angles file are for the same orbit
-       index1=index(trim(adjustl(l1b_path_file)),'_avhrr',back=.true.)
-       index2=index(trim(adjustl(geo_path_file)),'_sunsatangles',back=.true.)
+      ! check if l1b and angles file are for the same orbit
+      index1=index(trim(adjustl(l1b_path_file)),'_avhrr',back=.true.)
+      index2=index(trim(adjustl(geo_path_file)),'_sunsatangles',back=.true.)
 
-       if (trim(adjustl(l1b_path_file(1:index1-1))) .ne. &
+      if (trim(adjustl(l1b_path_file(1:index1-1))) .ne. &
            trim(adjustl(geo_path_file(1:index2-1)))) then
-          write(*,*)
-          write(*,*) 'ERROR: setup_avhrr(): Geolocation and L1b files are for ' // &
-                   & 'different orbits'
-          write(*,*) 'l1b_path_file: ', trim(adjustl(geo_path_file))
-          write(*,*) 'geo_path_file: ', trim(adjustl(l1b_path_file))
+         write(*,*)
+         write(*,*) 'ERROR: setup_avhrr(): Geolocation and L1b files are for ' // &
+                    'different orbits'
+         write(*,*) 'l1b_path_file: ', trim(adjustl(geo_path_file))
+         write(*,*) 'geo_path_file: ', trim(adjustl(l1b_path_file))
 
-          stop error_stop_code
-       end if
+         stop error_stop_code
+      end if
 
-       str1 = l1b_path_file
-       do k=1, 7
-           l=len(trim(str1))
-           j=index(str1,'_', back=.true.)
+      str1 = l1b_path_file
+      do k=1, 7
+         l=len(trim(str1))
+         j=index(str1,'_', back=.true.)
 
-           str2=str1
-           str1=str1(1:j-1)
-           str2=str2(j+1:)
+         str2=str1
+         str1=str1(1:j-1)
+         str2=str2(j+1:)
 
-           if (k .eq. 6) then
-               ! get hour and minute as strings
-               chour=trim(adjustl(str2(1:2)))
-               cminute=trim(adjustl(str2(3:4)))
-           end if
-           if (k .eq. 7) then
-               ! get year, month, day as strings
-               cyear=trim(adjustl(str2(1:4)))
-               cmonth=trim(adjustl(str2(5:6)))
-               cday=trim(adjustl(str2(7:8)))
-           end if
-       end do
+         if (k .eq. 6) then
+            ! get hour and minute as strings
+            chour=trim(adjustl(str2(1:2)))
+            cminute=trim(adjustl(str2(3:4)))
+         end if
+         if (k .eq. 7) then
+            ! get year, month, day as strings
+            cyear=trim(adjustl(str2(1:4)))
+            cmonth=trim(adjustl(str2(5:6)))
+            cday=trim(adjustl(str2(7:8)))
+         end if
+      end do
 
-       ! one last time for platform
-       l=len(trim(str1))
-       j=index(str1,'/', back=.true.)
-       str2=str1
-       str1=str1(1:j-1)
-       str2=str2(j+1:)
-       platform=trim(adjustl(str2))
+      ! one last time for platform
+      l=len(trim(str1))
+      j=index(str1,'/', back=.true.)
+      str2=str1
+      str1=str1(1:j-1)
+      str2=str2(j+1:)
+      platform=trim(adjustl(str2))
 
-       ! get year, month, day, hour and minute as integers
-       read(cyear(1:len_trim(cyear)), '(I4)') year
-       read(cmonth, '(I2)') month
-       read(cday, '(I2)') day
-       read(chour(1:len_trim(chour)), '(I2)') hour
-       read(cminute(1:len_trim(cminute)), '(I2)') minute
+      ! get year, month, day, hour and minute as integers
+      read(cyear(1:len_trim(cyear)), '(I4)') year
+      read(cmonth, '(I2)') month
+      read(cday, '(I2)') day
+      read(chour(1:len_trim(chour)), '(I2)') hour
+      read(cminute(1:len_trim(cminute)), '(I2)') minute
 
    end if
 
@@ -412,7 +451,10 @@ subroutine setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day, &
       all_channel_wl_abs, all_channel_sw_flag, all_channel_lw_flag, &
       all_channel_ids_rttov_coef_sw, all_channel_ids_rttov_coef_lw, &
       all_map_ids_abs_to_ref_band_land, all_map_ids_abs_to_ref_band_sea, &
-      all_map_ids_abs_to_snow_and_ice,all_map_ids_view_number)
+      all_map_ids_abs_to_snow_and_ice, all_map_ids_view_number, &
+      all_channel_fractional_uncertainty, all_channel_minimum_uncertainty, &
+      all_channel_numerical_uncertainty, all_channel_lnd_uncertainty, &
+      all_channel_sea_uncertainty)
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_avhrr()'
 
@@ -483,6 +525,24 @@ subroutine setup_himawari8(l1b_path_file,geo_path_file,platform,year,month,day, 
       (/ 1,       1,       1,       1,       1,       1,       1,       1, &
          1,       1,       1,       1,       1,       1,       1,       1 /)
 
+   real,    parameter :: all_channel_fractional_uncertainty(all_nchannels_total) = &
+      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0., &
+         0.,      0.,      0.,      0.,      0.,      0.,      0.,      0. /)
+
+   real,    parameter :: all_channel_minimum_uncertainty(all_nchannels_total) = &
+      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0., &
+         0.,      0.,      0.,      0.,      0.,      0.,      0.,      0. /)
+
+   real,    parameter :: all_channel_numerical_uncertainty(all_nchannels_total) = &
+      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0., &
+         0.,      0.,      0.,      0.,      0.,      0.,      0.,      0. /)
+   real,    parameter :: all_channel_lnd_uncertainty(all_nchannels_total) = &
+      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0., &
+         0.,      0.,      0.,      0.,      0.,      0.,      0.,      0. /)
+   real,    parameter :: all_channel_sea_uncertainty(all_nchannels_total) = &
+      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0., &
+         0.,      0.,      0.,      0.,      0.,      0.,      0.,      0. /)
+
 
    ! Only this below needs to be set to change the desired default channels. All
    ! other channel related arrays/indexes are set automatically given the static
@@ -544,7 +604,10 @@ subroutine setup_himawari8(l1b_path_file,geo_path_file,platform,year,month,day, 
       all_channel_wl_abs, all_channel_sw_flag, all_channel_lw_flag, &
       all_channel_ids_rttov_coef_sw, all_channel_ids_rttov_coef_lw, &
       all_map_ids_abs_to_ref_band_land, all_map_ids_abs_to_ref_band_sea, &
-      all_map_ids_abs_to_snow_and_ice,all_map_ids_view_number)
+      all_map_ids_abs_to_snow_and_ice, all_map_ids_view_number, &
+      all_channel_fractional_uncertainty, all_channel_minimum_uncertainty, &
+      all_channel_numerical_uncertainty, all_channel_lnd_uncertainty, &
+      all_channel_sea_uncertainty)
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_himawari8()'
 
@@ -664,6 +727,44 @@ subroutine setup_modis(l1b_path_file,geo_path_file,platform,year,month,day, &
          1,         1,         1,         1,         1,         1, &
          1,         1,         1,         1,         1,         1 /)
 
+   real,    parameter :: all_channel_fractional_uncertainty(all_nchannels_total) = &
+      (/ 0.,        0.,        0.,        0.,        0.,        0., &
+         0.,        0.,        0.,        0.,        0.,        0., &
+         0.,        0.,        0.,        0.,        0.,        0., &
+         0.,        0.,        0.,        0.,        0.,        0., &
+         0.,        0.,        0.,        0.,        0.,        0., &
+         0.,        0.,        0.,        0.,        0.,        0. /)
+
+   real,    parameter :: all_channel_minimum_uncertainty(all_nchannels_total) = &
+      (/ 0.,        0.,        0.,        0.,        0.,        0., &
+         0.,        0.,        0.,        0.,        0.,        0., &
+         0.,        0.,        0.,        0.,        0.,        0., &
+         0.,        0.,        0.,        0.,        0.,        0., &
+         0.,        0.,        0.,        0.,        0.,        0., &
+         0.,        0.,        0.,        0.,        0.,        0. /)
+
+   real,    parameter :: all_channel_numerical_uncertainty(all_nchannels_total) = &
+      (/ 0.,        0.,        0.,        0.,        0.,        0., &
+         0.,        0.,        0.,        0.,        0.,        0., &
+         0.,        0.,        0.,        0.,        0.,        0., &
+         0.,        0.,        0.,        0.,        0.,        0., &
+         0.,        0.,        0.,        0.,        0.,        0., &
+         0.,        0.,        0.,        0.,        0.,        0. /)
+   real,    parameter :: all_channel_lnd_uncertainty(all_nchannels_total) = &
+      (/ 0.,        0.,        0.,        0.,        0.,        0., &
+         0.,        0.,        0.,        0.,        0.,        0., &
+         0.,        0.,        0.,        0.,        0.,        0., &
+         0.,        0.,        0.,        0.,        0.,        0., &
+         0.,        0.,        0.,        0.,        0.,        0., &
+         0.,        0.,        0.,        0.,        0.,        0. /)
+   real,    parameter :: all_channel_sea_uncertainty(all_nchannels_total) = &
+      (/ 0.,        0.,        0.,        0.,        0.,        0., &
+         0.,        0.,        0.,        0.,        0.,        0., &
+         0.,        0.,        0.,        0.,        0.,        0., &
+         0.,        0.,        0.,        0.,        0.,        0., &
+         0.,        0.,        0.,        0.,        0.,        0., &
+         0.,        0.,        0.,        0.,        0.,        0. /)
+
 
    ! Only this below needs to be set to change the desired default channels. All
    ! other channel related arrays/indexes are set automatically given the static
@@ -725,7 +826,10 @@ subroutine setup_modis(l1b_path_file,geo_path_file,platform,year,month,day, &
       all_channel_wl_abs, all_channel_sw_flag, all_channel_lw_flag, &
       all_channel_ids_rttov_coef_sw, all_channel_ids_rttov_coef_lw, &
       all_map_ids_abs_to_ref_band_land, all_map_ids_abs_to_ref_band_sea, &
-      all_map_ids_abs_to_snow_and_ice,all_map_ids_view_number)
+      all_map_ids_abs_to_snow_and_ice, all_map_ids_view_number, &
+      all_channel_fractional_uncertainty, all_channel_minimum_uncertainty, &
+      all_channel_numerical_uncertainty, all_channel_lnd_uncertainty, &
+      all_channel_sea_uncertainty)
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_modis()'
 
@@ -787,6 +891,19 @@ subroutine setup_seviri(l1b_path_file,geo_path_file,platform,year,month,day, &
 
    integer, parameter :: all_map_ids_view_number(all_nchannels_total)  = &
       (/ 1,     1,    1,    1,    1,    1,    1,    1,    1,     1,     1 /)
+
+   real,    parameter :: all_channel_fractional_uncertainty(all_nchannels_total) = &
+      (/ 0.,    0.,   0.,   0.,   0.,   0.,   0.,   0.,   0.,    0.,    0. /)
+
+   real,    parameter :: all_channel_minimum_uncertainty(all_nchannels_total) = &
+      (/ 0.,    0.,   0.,   0.,   0.,   0.,   0.,   0.,   0.,    0.,    0. /)
+
+   real,    parameter :: all_channel_numerical_uncertainty(all_nchannels_total) = &
+      (/ 0.,    0.,   0.,   0.,   0.,   0.,   0.,   0.,   0.,    0.,    0. /)
+   real,    parameter :: all_channel_lnd_uncertainty(all_nchannels_total) = &
+      (/ 0.,    0.,   0.,   0.,   0.,   0.,   0.,   0.,   0.,    0.,    0. /)
+   real,    parameter :: all_channel_sea_uncertainty(all_nchannels_total) = &
+      (/ 0.,    0.,   0.,   0.,   0.,   0.,   0.,   0.,   0.,    0.,    0. /)
 
 
    ! Only this below needs to be set to change the desired default channels. All
@@ -867,7 +984,10 @@ subroutine setup_seviri(l1b_path_file,geo_path_file,platform,year,month,day, &
       all_channel_wl_abs, all_channel_sw_flag, all_channel_lw_flag, &
       all_channel_ids_rttov_coef_sw, all_channel_ids_rttov_coef_lw, &
       all_map_ids_abs_to_ref_band_land, all_map_ids_abs_to_ref_band_sea, &
-      all_map_ids_abs_to_snow_and_ice,all_map_ids_view_number)
+      all_map_ids_abs_to_snow_and_ice, all_map_ids_view_number, &
+      all_channel_fractional_uncertainty, all_channel_minimum_uncertainty, &
+      all_channel_numerical_uncertainty, all_channel_lnd_uncertainty, &
+      all_channel_sea_uncertainty)
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_seviri()'
 
@@ -936,9 +1056,28 @@ subroutine setup_viirs(l1b_path_file,geo_path_file,platform,year,month,day, &
    integer, parameter :: all_map_ids_abs_to_snow_and_ice(all_nchannels_total)  = &
       (/ 1,       1,       1,       1,       1,       1,       2,       3, &
          3,       3,       3,       4,       0,       0,       0,       0 /)
+
    integer, parameter :: all_map_ids_view_number(all_nchannels_total)  = &
       (/ 1,       1,       1,       1,       1,       1,       1,       1, &
          1,       1,       1,       1,       1,       1,       1,       1 /)
+
+   real,    parameter :: all_channel_fractional_uncertainty(all_nchannels_total) = &
+      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0., &
+         0.,      0.,      0.,      0.,      0.,      0.,      0.,      0. /)
+
+   real,    parameter :: all_channel_minimum_uncertainty(all_nchannels_total) = &
+      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0., &
+         0.,      0.,      0.,      0.,      0.,      0.,      0.,      0. /)
+
+   real,    parameter :: all_channel_numerical_uncertainty(all_nchannels_total) = &
+      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0., &
+         0.,      0.,      0.,      0.,      0.,      0.,      0.,      0. /)
+   real,    parameter :: all_channel_lnd_uncertainty(all_nchannels_total) = &
+      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0., &
+         0.,      0.,      0.,      0.,      0.,      0.,      0.,      0. /)
+   real,    parameter :: all_channel_sea_uncertainty(all_nchannels_total) = &
+      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0., &
+         0.,      0.,      0.,      0.,      0.,      0.,      0.,      0. /)
 
 
    ! Only this below needs to be set to change the desired default channels. All
@@ -1003,11 +1142,15 @@ subroutine setup_viirs(l1b_path_file,geo_path_file,platform,year,month,day, &
       all_channel_wl_abs, all_channel_sw_flag, all_channel_lw_flag, &
       all_channel_ids_rttov_coef_sw, all_channel_ids_rttov_coef_lw, &
       all_map_ids_abs_to_ref_band_land, all_map_ids_abs_to_ref_band_sea, &
-      all_map_ids_abs_to_snow_and_ice,all_map_ids_view_number)
+      all_map_ids_abs_to_snow_and_ice, all_map_ids_view_number, &
+      all_channel_fractional_uncertainty, all_channel_minimum_uncertainty, &
+      all_channel_numerical_uncertainty, all_channel_lnd_uncertainty, &
+      all_channel_sea_uncertainty)
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_viirs()'
 
 end subroutine setup_viirs
+
 
 subroutine setup_slstr(l1b_path_file,geo_path_file,platform,year,month,day, &
    doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids_user, &
@@ -1074,9 +1217,29 @@ subroutine setup_slstr(l1b_path_file,geo_path_file,platform,year,month,day, &
    integer, parameter :: all_map_ids_abs_to_snow_and_ice(all_nchannels_total)  = &
       (/ 1,       1,       2,       3,       3,       3,       4,       0,      0, &
          1,       1,       2,       3,       3,       3,       4,       0,      0  /)
+
    integer, parameter :: all_map_ids_view_number(all_nchannels_total)  = &
       (/ 1,       1,       1,       1,       1,       1,       1,       1,      1,&
          2,       2,       2,       2,       2,       2,       2,       2,      1  /)
+
+   real,    parameter :: all_channel_fractional_uncertainty(all_nchannels_total) = &
+      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0.,     0., &
+         0.,      0.,      0.,      0.,      0.,      0.,      0.,      0.,     0. /)
+
+   real,    parameter :: all_channel_minimum_uncertainty(all_nchannels_total) = &
+      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0.,     0., &
+         0.,      0.,      0.,      0.,      0.,      0.,      0.,      0.,     0. /)
+
+   real,    parameter :: all_channel_numerical_uncertainty(all_nchannels_total) = &
+      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0.,     0., &
+         0.,      0.,      0.,      0.,      0.,      0.,      0.,      0.,     0. /)
+   real,    parameter :: all_channel_lnd_uncertainty(all_nchannels_total) = &
+      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0.,     0., &
+         0.,      0.,      0.,      0.,      0.,      0.,      0.,      0.,     0. /)
+   real,    parameter :: all_channel_sea_uncertainty(all_nchannels_total) = &
+      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0.,     0., &
+         0.,      0.,      0.,      0.,      0.,      0.,      0.,      0.,     0. /)
+
 
    ! Only this below needs to be set to change the desired default channels. All
    ! other channel related arrays/indexes are set automatically given the static
@@ -1158,17 +1321,24 @@ subroutine setup_slstr(l1b_path_file,geo_path_file,platform,year,month,day, &
       all_channel_wl_abs, all_channel_sw_flag, all_channel_lw_flag, &
       all_channel_ids_rttov_coef_sw, all_channel_ids_rttov_coef_lw, &
       all_map_ids_abs_to_ref_band_land, all_map_ids_abs_to_ref_band_sea, &
-      all_map_ids_abs_to_snow_and_ice,all_map_ids_view_number)
+      all_map_ids_abs_to_snow_and_ice, all_map_ids_view_number, &
+      all_channel_fractional_uncertainty, all_channel_minimum_uncertainty, &
+      all_channel_numerical_uncertainty, all_channel_lnd_uncertainty, &
+      all_channel_sea_uncertainty)
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_slstr()'
 
 end subroutine setup_slstr
 
+
 subroutine common_setup(channel_info, channel_ids_user, channel_ids_default, &
    all_channel_wl_abs, all_channel_sw_flag, all_channel_lw_flag, &
    all_channel_ids_rttov_coef_sw, all_channel_ids_rttov_coef_lw, &
    all_map_ids_abs_to_ref_band_land, all_map_ids_abs_to_ref_band_sea, &
-   all_map_ids_abs_to_snow_and_ice,all_map_ids_view_number)
+   all_map_ids_abs_to_snow_and_ice, all_map_ids_view_number, &
+   all_channel_fractional_uncertainty, all_channel_minimum_uncertainty, &
+   all_channel_numerical_uncertainty, all_channel_lnd_uncertainty, &
+   all_channel_sea_uncertainty)
 
    use channel_structures_m
 
@@ -1186,6 +1356,11 @@ subroutine common_setup(channel_info, channel_ids_user, channel_ids_default, &
    integer,              intent(in)    :: all_map_ids_abs_to_ref_band_sea(:)
    integer,              intent(in)    :: all_map_ids_abs_to_snow_and_ice(:)
    integer,              intent(in)    :: all_map_ids_view_number(:)
+   real,                 intent(in)    :: all_channel_fractional_uncertainty(:)
+   real,                 intent(in)    :: all_channel_minimum_uncertainty(:)
+   real,                 intent(in)    :: all_channel_numerical_uncertainty(:)
+   real,                 intent(in)    :: all_channel_lnd_uncertainty(:)
+   real,                 intent(in)    :: all_channel_sea_uncertainty(:)
 
    integer, dimension(:),allocatable   :: unique_views
 
@@ -1219,6 +1394,23 @@ subroutine common_setup(channel_info, channel_ids_user, channel_ids_default, &
          all_channel_lw_flag(channel_info%channel_ids_instr(i))
       channel_info%channel_view_ids(i) = &
          all_map_ids_view_number(channel_info%channel_ids_instr(i))
+
+      channel_info%channel_fractional_uncertainty(i) = &
+         all_channel_fractional_uncertainty(channel_info%channel_ids_instr(i))
+      channel_info%channel_minimum_uncertainty(i) = &
+         all_channel_minimum_uncertainty(channel_info%channel_ids_instr(i))
+
+      ! Forward model uncertainties combine numerical and surface errors
+      channel_info%channel_fm_lnd_uncertainty(i) = sqrt( &
+         all_channel_numerical_uncertainty(channel_info%channel_ids_instr(i)) * &
+         all_channel_numerical_uncertainty(channel_info%channel_ids_instr(i)) + &
+         all_channel_lnd_uncertainty(channel_info%channel_ids_instr(i)) * &
+         all_channel_lnd_uncertainty(channel_info%channel_ids_instr(i)))
+      channel_info%channel_fm_sea_uncertainty(i) = sqrt( &
+         all_channel_numerical_uncertainty(channel_info%channel_ids_instr(i)) * &
+         all_channel_numerical_uncertainty(channel_info%channel_ids_instr(i)) + &
+         all_channel_sea_uncertainty(channel_info%channel_ids_instr(i)) * &
+         all_channel_sea_uncertainty(channel_info%channel_ids_instr(i)))
    end do
 
    ! This section computes the actual number of views in the scene
@@ -1280,7 +1472,7 @@ subroutine common_setup(channel_info, channel_ids_user, channel_ids_default, &
                 (channel_info%channel_wl_abs(j) .eq. channel_info%channel_wl_abs(i))) then
                channel_info%sw_rttov_viewone_id(i_sw) = j
             end if
-    end do
+         end do
          i_sw = i_sw + 1
       end if
 
@@ -1295,7 +1487,7 @@ subroutine common_setup(channel_info, channel_ids_user, channel_ids_default, &
                 (channel_info%channel_wl_abs(j) .eq. channel_info%channel_wl_abs(i))) then
                channel_info%lw_rttov_viewone_id(i_lw) = j
             end if
-    end do
+         end do
 
          i_lw = i_lw + 1
       end if
