@@ -356,6 +356,10 @@ void print_struct_in_def(FILE* f[], char* type, char* exten_name) {
                 upp_exten_name, type, exten_name, exten_name, exten_name);
         fprintf(f[F_DEF], "#define %s_VARIABLE %s_VARIABLE%%%s\n",
                 upp_exten_name, type, exten_name);
+
+        // Extend the previous definition of the parent class
+        fprintf(f[X_SED], "sed -i -e 's/<%s_SC/<%s_SC,%s_SC/' ${1}\n",
+                upp_exten_name, upp_exten_name, type);
     }
 }
 

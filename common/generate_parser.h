@@ -36,7 +36,8 @@
 #define F_CP1 10
 #define F_CP2 11
 #define F_PRI 12
-#define N_INC_FILES 13
+#define X_SED 13
+#define N_INC_FILES 14
 
 #define N_STCK N_TYPES
 

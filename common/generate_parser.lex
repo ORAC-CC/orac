@@ -91,6 +91,8 @@ int main(int argc, char const* argv[]) {
     f[X_RUL] = open_part_file(argv[1], "l_rul.inc");
     // Start conditions for those Flex rules
     f[X_DEF] = open_part_file(argv[1], "l_def.inc");
+    // Script call to make type-extension replacements
+    f[X_SED] = open_part_file(argv[1], "sed.sh");
     // Arguments of the parser wrapper C fct
     f[C_ARG] = open_part_file(argv[1], "c_arg.inc");
     // Contents of wrapper fct, copying Fortran pointers to C
@@ -114,6 +116,7 @@ int main(int argc, char const* argv[]) {
 
     // Write permanent headers for files
     fputs("#ifndef WRAPPER_DEF_H\n#define WRAPPER_DEF_H\n", f[C_DEF]);
+    fputs("#!/bin/bash\n", f[X_SED]);
 
     // To avoid gcc warning maybe-uninitialized
     stat = 0;

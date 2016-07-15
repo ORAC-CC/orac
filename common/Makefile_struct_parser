@@ -46,6 +46,7 @@ $(PARSER_NAME).lex:
 	    -e 's/STRUCT_NAME/$(STRUCT_NAME)/' \
             -e 's/STRUCT_CONDITION/$(STRUCT_TYPE_UPP)_SC/' \
             $(ORAC_COMMON)/struct_parser.lex > $(PARSER_NAME).lex
+	$(PLACE).sed.sh $(PARSER_NAME).lex
 
 $(PARSER_NAME).cc:
 	flex $(FLEXFLAGS) -o $@ $(PARSER_NAME).lex
@@ -78,10 +79,12 @@ $(PLACE).f_def.inc: $(PLACE).h
 $(PLACE).f_cpy.inc: $(PLACE).h
 $(PLACE).f_cpy2.inc: $(PLACE).h
 $(PLACE).f_pri.inc: $(PLACE).h
+$(PLACE).sed.sh: $(PLACE).h
 $(PLACE).tab.o: $(ORAC_COMMON)/struct_parser.tab.cc \
       $(ORAC_COMMON)/struct_parser.hh $(ORAC_COMMON)/struct_parser.h $(PLACE).h
 $(PARSER_NAME).lex: $(ORAC_COMMON)/struct_parser.tab.hh \
-      $(ORAC_COMMON)/struct_parser.lex $(PLACE).l_rul.inc $(PLACE).l_def.inc
+      $(ORAC_COMMON)/struct_parser.lex $(PLACE).l_rul.inc $(PLACE).l_def.inc \
+      $(PLACE).sed.sh
 $(PARSER_NAME).cc: $(PARSER_NAME).lex
 $(PLACE).c.o: $(PARSER_NAME).cc $(ORAC_COMMON)/struct_parser.tab.hh \
       $(ORAC_COMMON)/struct_parser.hh $(ORAC_COMMON)/struct_parser.h \
