@@ -52,10 +52,10 @@ subroutine read_input_secondary_common(ncid, input_data, indexing, sval, verbose
    character(len=512) :: input_dummy, input_dummy2
 
 if (indexing%flags%do_aerosol) then
-   call nc_read_packed_array(ncid, "aot550_ap", input_data%aot550_ap, verbose,startp=(/ 1, sval /))
-   call nc_read_packed_array(ncid, "aot550_fg", input_data%aot550_fg, verbose,startp=(/ 1, sval /))
-   call nc_read_packed_array(ncid, "aer_ap", input_data%aer_ap, verbose,startp=(/ 1, sval /))
-   call nc_read_packed_array(ncid, "aer_fg", input_data%aer_fg, verbose,startp=(/ 1, sval /))
+   call nc_read_packed_array(ncid, "aot550_ap", input_data%aot550_ap, verbose, startp = [1, sval])
+   call nc_read_packed_array(ncid, "aot550_fg", input_data%aot550_fg, verbose, startp = [1, sval])
+   call nc_read_packed_array(ncid, "aer_ap", input_data%aer_ap, verbose, startp = [1, sval])
+   call nc_read_packed_array(ncid, "aer_fg", input_data%aer_fg, verbose, startp = [1, sval])
 end if
 
 if (indexing%flags%do_rho) then
@@ -66,10 +66,10 @@ if (indexing%flags%do_rho) then
          if (indexing%rho_terms(i,j)) then
             call create_rho_field_name(j, 3, input_num, input_dummy)
             call nc_read_packed_array(ncid, trim(adjustl(input_dummy)), &
-                 input_data%rho_ap(:,:,i,j), verbose,startp=(/ 1, sval, 1 , 1 /))
+                 input_data%rho_ap(:,:,i,j), verbose, startp = [1, sval, 1 , 1])
             call create_rho_field_name(j, 4, input_num, input_dummy)
             call nc_read_packed_array(ncid, trim(adjustl(input_dummy)), &
-                 input_data%rho_fg(:,:,i,j), verbose,startp=(/ 1, sval, 1 , 1 /))
+                 input_data%rho_fg(:,:,i,j), verbose, startp = [1, sval, 1 , 1])
          end if
       end do
    end do
@@ -81,10 +81,10 @@ if (indexing%flags%do_swansea) then
 
       input_dummy='swansea_s_ap_in_channel_no_'//trim(adjustl(input_num))
       call nc_read_packed_array(ncid, trim(adjustl(input_dummy)), &
-           input_data%swansea_s_ap(:,:,i), verbose,startp=(/ 1, sval, 1 /))
+           input_data%swansea_s_ap(:,:,i), verbose, startp = [1, sval, 1])
       input_dummy='swansea_s_fg_in_channel_no_'//trim(adjustl(input_num))
       call nc_read_packed_array(ncid, trim(adjustl(input_dummy)), &
-           input_data%swansea_s_fg(:,:,i), verbose,startp=(/ 1, sval, 1 /))
+           input_data%swansea_s_fg(:,:,i), verbose, startp = [1, sval, 1])
    end do
 
    do i=1,indexing%NViews
@@ -92,25 +92,25 @@ if (indexing%flags%do_swansea) then
 
       input_dummy='swansea_p_ap_in_channel_no_'//trim(adjustl(input_num))
       call nc_read_packed_array(ncid, trim(adjustl(input_dummy)), &
-           input_data%swansea_p_ap(:,:,i), verbose,startp=(/ 1, sval, 1 /))
+           input_data%swansea_p_ap(:,:,i), verbose, startp = [1, sval, 1])
       input_dummy='swansea_p_fg_in_channel_no_'//trim(adjustl(input_num))
       call nc_read_packed_array(ncid, trim(adjustl(input_dummy)), &
-           input_data%swansea_p_fg(:,:,i), verbose,startp=(/ 1, sval, 1 /))
+           input_data%swansea_p_fg(:,:,i), verbose, startp = [1, sval, 1])
    end do
 end if
 
 if (indexing%flags%do_cloud) then
-   call nc_read_packed_array(ncid, "cot_ap", input_data%cot_ap, verbose,startp=(/ 1, sval /))
-   call nc_read_packed_array(ncid, "cot_fg", input_data%cot_fg, verbose,startp=(/ 1, sval /))
+   call nc_read_packed_array(ncid, "cot_ap", input_data%cot_ap, verbose, startp = [1, sval])
+   call nc_read_packed_array(ncid, "cot_fg", input_data%cot_fg, verbose, startp = [1, sval])
 
-   call nc_read_packed_array(ncid, "cer_ap", input_data%cer_ap, verbose,startp=(/ 1, sval /))
-   call nc_read_packed_array(ncid, "cer_fg", input_data%cer_fg, verbose,startp=(/ 1, sval /))
+   call nc_read_packed_array(ncid, "cer_ap", input_data%cer_ap, verbose, startp = [1, sval])
+   call nc_read_packed_array(ncid, "cer_fg", input_data%cer_fg, verbose, startp = [1, sval])
 
-   call nc_read_packed_array(ncid, "ctp_ap", input_data%ctp_ap, verbose,startp=(/ 1, sval /))
-   call nc_read_packed_array(ncid, "ctp_fg", input_data%ctp_fg, verbose,startp=(/ 1, sval /))
+   call nc_read_packed_array(ncid, "ctp_ap", input_data%ctp_ap, verbose, startp = [1, sval])
+   call nc_read_packed_array(ncid, "ctp_fg", input_data%ctp_fg, verbose, startp = [1, sval])
 
-   call nc_read_packed_array(ncid, "stemp_ap", input_data%stemp_ap, verbose,startp=(/ 1, sval /))
-   call nc_read_packed_array(ncid, "stemp_fg", input_data%stemp_fg, verbose,startp=(/ 1, sval /))
+   call nc_read_packed_array(ncid, "stemp_ap", input_data%stemp_ap, verbose, startp = [1, sval])
+   call nc_read_packed_array(ncid, "stemp_fg", input_data%stemp_fg, verbose, startp = [1, sval])
 end if
 
    do i=1,indexing%Ny
@@ -129,9 +129,9 @@ end if
       end if
 
       call nc_read_packed_array(ncid, trim(adjustl(input_dummy)), &
-           input_data%y0(:,:,i), verbose,startp=(/ 1, sval /))
+           input_data%y0(:,:,i), verbose, startp = [1, sval])
       call nc_read_packed_array(ncid, trim(adjustl(input_dummy2)), &
-           input_data%residuals(:,:,i), verbose,startp=(/ 1, sval /))
+           input_data%residuals(:,:,i), verbose, startp = [1, sval])
    end do
 
    call nc_read_packed_array(ncid, "degrees_of_freedom_signal", &
@@ -169,7 +169,7 @@ subroutine read_input_secondary_optional(ncid, input_data, indexing, &
             input_dummy = 'reflectance_in_channel_no_'// trim(adjustl(input_num))
          end if
          call nc_read_packed_array(ncid, trim(adjustl(input_dummy)), &
-              input_data%channels(:,:,i), verbose,startp=(/ 1, sval /))
+              input_data%channels(:,:,i), verbose, startp = [1, sval])
       end if
    end do
 
@@ -180,7 +180,7 @@ if (indexing%flags%do_cloud .and. read_flags%do_cloud) then
 
          input_dummy = 'albedo_in_channel_no_'//trim(adjustl(input_num))
          call nc_read_packed_array(ncid, trim(adjustl(input_dummy)), &
-              input_data%albedo(:,:,i), verbose,startp=(/ 1, sval /))
+              input_data%albedo(:,:,i), verbose, startp = [1, sval])
       end if
    end do
 !  read_flags%do_cloud = .false.
