@@ -36,6 +36,7 @@
 ! 2016/01/28, GM: Add ctp and ctt corrected and corrected_uncertainty.
 ! 2016/03/02, AP: Homogenisation of I/O modules.
 ! 2016/04/28, AP: Add multiple views.
+! 2016/07/08, GM: Add fields for cloud layer 2.
 !
 ! $Id$
 !
@@ -271,6 +272,58 @@ else
    nullify(data%cccot_pre)
 end if
 
+if (ind%flags%do_cloud_layer_2) then
+   allocate(data%cot2(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cot2 = sint_fill_value
+   allocate(data%cot2_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cot2_uncertainty = sint_fill_value
+
+   allocate(data%cer2(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cer2 = sint_fill_value
+   allocate(data%cer2_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cer2_uncertainty = sint_fill_value
+
+   allocate(data%ctp2(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%ctp2 = sint_fill_value
+   allocate(data%ctp2_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%ctp2_uncertainty = sint_fill_value
+
+   allocate(data%cc_total2(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cc_total2 = sint_fill_value
+   allocate(data%cc_total2_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cc_total2_uncertainty = sint_fill_value
+
+   allocate(data%cth2(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cth2 = sint_fill_value
+   allocate(data%cth2_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cth2_uncertainty = sint_fill_value
+
+   allocate(data%ctt2(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%ctt2 = sint_fill_value
+   allocate(data%ctt2_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%ctt2_uncertainty = sint_fill_value
+
+   allocate(data%cwp2(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cwp2 = sint_fill_value
+   allocate(data%cwp2_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cwp2_uncertainty = sint_fill_value
+else
+   nullify(data%cot2)
+   nullify(data%cot2_uncertainty)
+   nullify(data%cer2)
+   nullify(data%cer2_uncertainty)
+   nullify(data%ctp2)
+   nullify(data%ctp2_uncertainty)
+   nullify(data%cc_total2)
+   nullify(data%cc_total2_uncertainty)
+   nullify(data%cth2)
+   nullify(data%cth2_uncertainty)
+   nullify(data%ctt2)
+   nullify(data%ctt2_uncertainty)
+   nullify(data%cwp2)
+   nullify(data%cwp2_uncertainty)
+end if
+
    allocate(data%convergence(ind%X0:ind%X1, ind%Y0:ind%Y1))
    data%convergence = byte_fill_value
 
@@ -502,6 +555,30 @@ else
    nullify(data%stemp_ap)
    nullify(data%vid_albedo)
    nullify(data%albedo)
+end if
+
+if (ind%flags%do_cloud_layer_2) then
+   allocate(data%cot2_ap(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cot2_ap = sint_fill_value
+   allocate(data%cot2_fg(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cot2_fg = sint_fill_value
+
+   allocate(data%cer2_ap(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cer2_ap = sint_fill_value
+   allocate(data%cer2_fg(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cer2_fg = sint_fill_value
+
+   allocate(data%ctp2_ap(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%ctp2_ap = sint_fill_value
+   allocate(data%ctp2_fg(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%ctp2_fg = sint_fill_value
+else
+   nullify(data%cot2_ap)
+   nullify(data%cot2_fg)
+   nullify(data%cer2_ap)
+   nullify(data%cer2_fg)
+   nullify(data%ctp2_ap)
+   nullify(data%ctp2_fg)
 end if
 
    allocate(data%scanline_u(ind%X0:ind%X1, ind%Y0:ind%Y1))

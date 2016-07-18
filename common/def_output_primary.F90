@@ -75,6 +75,7 @@
 ! 2016/01/28, GM: Add ctp and ctt corrected and corrected_uncertianty.
 ! 2016/03/04, AP: Homogenisation of I/O modules.
 ! 2016/04/28, AP: Add multiple views.
+! 2016/07/08, GM: Add fields for cloud layer 2.
 !
 ! $Id$
 !
@@ -814,7 +815,171 @@ if (indexing%flags%do_cloud) then
            units         = '1', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
+end if
 
+if (indexing%flags%do_cloud_layer_2) then
+   !----------------------------------------------------------------------------
+   ! cot2
+   !----------------------------------------------------------------------------
+   call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           'cot2', &
+           output_data%vid_cot2, &
+           verbose, &
+           long_name     = 'cloud optical thickness of layer 2', &
+           standard_name = 'atmosphere_optical_thickness_due_to_cloud_layer_2', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%cot_scale, &
+           add_offset    = output_data%cot_offset, &
+           valid_min     = output_data%cot_vmin, &
+           valid_max     = output_data%cot_vmax, &
+           units         = '1', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+
+   !----------------------------------------------------------------------------
+   ! cot2_uncertainty
+   !----------------------------------------------------------------------------
+   call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           'cot2_uncertainty', &
+           output_data%vid_cot2_uncertainty, &
+           verbose, &
+           long_name     = 'cloud optical thickness of layer 2 uncertainty', &
+           standard_name = '', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%cot_uncertainty_scale, &
+           add_offset    = output_data%cot_uncertainty_offset, &
+           valid_min     = output_data%cot_uncertainty_vmin, &
+           valid_max     = output_data%cot_uncertainty_vmax, &
+           units         = '1', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+
+   !----------------------------------------------------------------------------
+   ! cer2
+   !----------------------------------------------------------------------------
+   call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           'cer2', &
+           output_data%vid_cer2, &
+           verbose, &
+           long_name     = 'cloud effective radius of layer 2', &
+           standard_name = 'effective_radius_of_cloud_condensed_water_particles_at_cloud_top_in_layer_2', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%cer_scale, &
+           add_offset    = output_data%cer_offset, &
+           valid_min     = output_data%cer_vmin, &
+           valid_max     = output_data%cer_vmax, &
+           units         = 'micrometer', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+
+   !----------------------------------------------------------------------------
+   ! cer2_uncertainty
+   !----------------------------------------------------------------------------
+   call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           'cer2_uncertainty', &
+           output_data%vid_cer2_uncertainty, &
+           verbose, &
+           long_name     = 'cloud effective radius of layer 2 uncertainty', &
+           standard_name = '', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%cer_uncertainty_scale, &
+           add_offset    = output_data%cer_uncertainty_offset, &
+           valid_min     = output_data%cer_uncertainty_vmin, &
+           valid_max     = output_data%cer_uncertainty_vmax, &
+           units         = 'micrometer', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+
+   !----------------------------------------------------------------------------
+   ! ctp2
+   !----------------------------------------------------------------------------
+   call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           'ctp2', &
+           output_data%vid_ctp2, &
+           verbose, &
+           long_name     = 'cloud top pressure of layer 2', &
+           standard_name = 'air_pressure_at_cloud_top_of_layer_2', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%ctp_scale, &
+           add_offset    = output_data%ctp_offset, &
+           valid_min     = output_data%ctp_vmin, &
+           valid_max     = output_data%ctp_vmax, &
+           units         = 'hPa', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+
+   !----------------------------------------------------------------------------
+   ! ctp2_uncertainty
+   !----------------------------------------------------------------------------
+   call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           'ctp2_uncertainty', &
+           output_data%vid_ctp2_uncertainty, &
+           verbose, &
+           long_name     = 'cloud top pressure of layer 2 uncertainty', &
+           standard_name = '', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%ctp_uncertainty_scale, &
+           add_offset    = output_data%ctp_uncertainty_offset, &
+           valid_min     = output_data%ctp_uncertainty_vmin, &
+           valid_max     = output_data%ctp_uncertainty_vmax, &
+           units         = 'hPa', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+
+   !----------------------------------------------------------------------------
+   ! cc_total2
+   !----------------------------------------------------------------------------
+   call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           'cc_total2', &
+           output_data%vid_cc_total2, &
+           verbose, &
+           long_name     = 'cloud fraction of layer 2', &
+           standard_name = 'cloud_area_fraction_of_layer_2', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%cc_total_scale, &
+           add_offset    = output_data%cc_total_offset, &
+           valid_min     = output_data%cc_total_vmin, &
+           valid_max     = output_data%cc_total_vmax, &
+           units         = '1', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+
+   !----------------------------------------------------------------------------
+   ! cc_total2_uncertainty
+   !----------------------------------------------------------------------------
+   call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           'cc_total2_uncertainty', &
+           output_data%vid_cc_total2_uncertainty, &
+           verbose, &
+           long_name     = 'cloud fraction of layer 2 uncertainty', &
+           standard_name = '', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%cc_total_uncertainty_scale, &
+           add_offset    = output_data%cc_total_uncertainty_offset, &
+           valid_min     = output_data%cc_total_uncertainty_vmin, &
+           valid_max     = output_data%cc_total_uncertainty_vmax, &
+           units         = '1', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+end if
+
+if (indexing%flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! stemp
    !----------------------------------------------------------------------------
@@ -1054,6 +1219,131 @@ if (indexing%flags%do_cloud) then
            units         = 'g/m2', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
+end if
+
+if (indexing%flags%do_cloud_layer_2) then
+   !----------------------------------------------------------------------------
+   ! cth2
+   !----------------------------------------------------------------------------
+   call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           'cth2', &
+           output_data%vid_cth2, &
+           verbose, &
+           long_name     = 'cloud top height of layer 2', &
+           standard_name = 'cloud_top_altitude_of_layer_2', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%cth_scale, &
+           add_offset    = output_data%cth_offset, &
+           valid_min     = output_data%cth_vmin, &
+           valid_max     = output_data%cth_vmax, &
+           units         = 'kilometer', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+
+   !----------------------------------------------------------------------------
+   ! cth2_uncertainty
+   !----------------------------------------------------------------------------
+   call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           'cth2_uncertainty', &
+           output_data%vid_cth2_uncertainty, &
+           verbose, &
+           long_name     = 'cloud top height of layer 2 uncertainty', &
+           standard_name = '', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%cth_uncertainty_scale, &
+           add_offset    = output_data%cth_uncertainty_offset, &
+           valid_min     = output_data%cth_uncertainty_vmin, &
+           valid_max     = output_data%cth_uncertainty_vmax, &
+           units         = 'kilometer', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+
+   !----------------------------------------------------------------------------
+   ! ctt2
+   !----------------------------------------------------------------------------
+   call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           'ctt2', &
+           output_data%vid_ctt2, &
+           verbose, &
+           long_name     = 'cloud top temperature of layer 2', &
+           standard_name = 'air_temperature_at_cloud_top_of_layer_2', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%ctt_scale, &
+           add_offset    = output_data%ctt_offset, &
+           valid_min     = output_data%ctt_vmin, &
+           valid_max     = output_data%ctt_vmax, &
+           units         = 'kelvin', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+
+   !----------------------------------------------------------------------------
+   ! ctt2_uncertainty
+   !----------------------------------------------------------------------------
+   call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           'ctt2_uncertainty', &
+           output_data%vid_ctt2_uncertainty, &
+           verbose, &
+           long_name     = 'cloud top temperature of layer 2 uncertainty', &
+           standard_name = '', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%ctt_uncertainty_scale, &
+           add_offset    = output_data%ctt_uncertainty_offset, &
+           valid_min     = output_data%ctt_uncertainty_vmin, &
+           valid_max     = output_data%ctt_uncertainty_vmax, &
+           units         = 'kelvin', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+
+   !----------------------------------------------------------------------------
+   ! cwp2
+   !----------------------------------------------------------------------------
+   call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           'cwp2', &
+           output_data%vid_cwp2, &
+           verbose, &
+           long_name     = 'cloud liquid water path of layer 2', &
+           standard_name = 'atmosphere_mass_content_of_cloud_liquid_water_of_layer_2', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%cwp_scale, &
+           add_offset    = output_data%cwp_offset, &
+           valid_min     = output_data%cwp_vmin, &
+           valid_max     = output_data%cwp_vmax, &
+           units         = 'g/m2', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+
+   !----------------------------------------------------------------------------
+   ! cwp2_uncertainty
+   !----------------------------------------------------------------------------
+   call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           'cwp2_uncertainty', &
+           output_data%vid_cwp2_uncertainty, &
+           verbose, &
+           long_name     = 'cloud liquid water path of layer 2 uncertainty', &
+           standard_name = '', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%cwp_uncertainty_scale, &
+           add_offset    = output_data%cwp_uncertainty_offset, &
+           valid_min     = output_data%cwp_uncertainty_vmin, &
+           valid_max     = output_data%cwp_uncertainty_vmax, &
+           units         = 'g/m2', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+end if
+
+if (indexing%flags%do_cloud) then
 
    !----------------------------------------------------------------------------
    ! cloud_albedo_in_channel_no_*

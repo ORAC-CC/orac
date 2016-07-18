@@ -34,6 +34,7 @@
 ! 2016/01/28, GM: Add ctp and ctt corrected and corrected_uncertianty.
 ! 2016/03/02, AP: Homogenisation of I/O modules.
 ! 2016/04/28, AP: Add multiple views.
+! 2016/07/08, GM: Add fields for cloud layer 2.
 !
 ! $Id$
 !
@@ -76,8 +77,19 @@ module orac_output_m
       integer          :: vid_ctp_corrected_uncertainty
       integer          :: vid_cc_total
       integer          :: vid_cc_total_uncertainty
+
+      integer          :: vid_cot2
+      integer          :: vid_cot2_uncertainty
+      integer          :: vid_cer2
+      integer          :: vid_cer2_uncertainty
+      integer          :: vid_ctp2
+      integer          :: vid_ctp2_uncertainty
+      integer          :: vid_cc_total2
+      integer          :: vid_cc_total2_uncertainty
+
       integer          :: vid_stemp
       integer          :: vid_stemp_uncertainty
+
       integer          :: vid_cth
       integer          :: vid_cth_uncertainty
       integer          :: vid_cth_corrected
@@ -88,10 +100,19 @@ module orac_output_m
       integer          :: vid_ctt_corrected_uncertainty
       integer          :: vid_cwp
       integer          :: vid_cwp_uncertainty
+
+      integer          :: vid_cth2
+      integer          :: vid_cth2_uncertainty
+      integer          :: vid_ctt2
+      integer          :: vid_ctt2_uncertainty
+      integer          :: vid_cwp2
+      integer          :: vid_cwp2_uncertainty
+
       integer, pointer :: vid_cloud_albedo(:)
       integer, pointer :: vid_cloud_albedo_uncertainty(:)
       integer, pointer :: vid_cee(:)
       integer, pointer :: vid_cee_uncertainty(:)
+
       integer          :: vid_cccot_pre
 
       integer          :: vid_time
@@ -434,8 +455,19 @@ module orac_output_m
       integer(sint), pointer :: ctp_corrected_uncertainty(:,:)
       integer(sint), pointer :: cc_total(:,:)
       integer(sint), pointer :: cc_total_uncertainty(:,:)
+
+      integer(sint), pointer :: cot2(:,:)
+      integer(sint), pointer :: cot2_uncertainty(:,:)
+      integer(sint), pointer :: cer2(:,:)
+      integer(sint), pointer :: cer2_uncertainty(:,:)
+      integer(sint), pointer :: ctp2(:,:)
+      integer(sint), pointer :: ctp2_uncertainty(:,:)
+      integer(sint), pointer :: cc_total2(:,:)
+      integer(sint), pointer :: cc_total2_uncertainty(:,:)
+
       integer(sint), pointer :: stemp(:,:)
       integer(sint), pointer :: stemp_uncertainty(:,:)
+
       integer(sint), pointer :: cth(:,:)
       integer(sint), pointer :: cth_uncertainty(:,:)
       integer(sint), pointer :: cth_corrected(:,:)
@@ -446,10 +478,19 @@ module orac_output_m
       integer(sint), pointer :: ctt_corrected_uncertainty(:,:)
       integer(sint), pointer :: cwp(:,:)
       integer(sint), pointer :: cwp_uncertainty(:,:)
+
+      integer(sint), pointer :: cth2(:,:)
+      integer(sint), pointer :: cth2_uncertainty(:,:)
+      integer(sint), pointer :: ctt2(:,:)
+      integer(sint), pointer :: ctt2_uncertainty(:,:)
+      integer(sint), pointer :: cwp2(:,:)
+      integer(sint), pointer :: cwp2_uncertainty(:,:)
+
       integer(sint), pointer :: cloud_albedo(:,:,:)
       integer(sint), pointer :: cloud_albedo_uncertainty(:,:,:)
       integer(sint), pointer :: cee(:,:,:)
       integer(sint), pointer :: cee_uncertainty(:,:,:)
+
       integer(sint), pointer :: cccot_pre(:,:,:)
 
       real(dreal),   pointer :: time(:,:)
@@ -506,8 +547,15 @@ module orac_output_m
       integer          :: vid_cer_fg
       integer          :: vid_ctp_ap
       integer          :: vid_ctp_fg
+      integer          :: vid_cot2_ap
+      integer          :: vid_cot2_fg
+      integer          :: vid_cer2_ap
+      integer          :: vid_cer2_fg
+      integer          :: vid_ctp2_ap
+      integer          :: vid_ctp2_fg
       integer          :: vid_stemp_ap
       integer          :: vid_stemp_fg
+
       integer, pointer :: vid_albedo(:)
 
       integer          :: vid_scanline_u
@@ -661,8 +709,15 @@ module orac_output_m
       integer(sint), pointer :: cer_fg(:,:)
       integer(sint), pointer :: ctp_ap(:,:)
       integer(sint), pointer :: ctp_fg(:,:)
+      integer(sint), pointer :: cot2_ap(:,:)
+      integer(sint), pointer :: cot2_fg(:,:)
+      integer(sint), pointer :: cer2_ap(:,:)
+      integer(sint), pointer :: cer2_fg(:,:)
+      integer(sint), pointer :: ctp2_ap(:,:)
+      integer(sint), pointer :: ctp2_fg(:,:)
       integer(sint), pointer :: stemp_fg(:,:)
       integer(sint), pointer :: stemp_ap(:,:)
+
       integer(sint), pointer :: albedo(:,:,:)
 
       integer(sint), pointer :: channels(:,:,:)

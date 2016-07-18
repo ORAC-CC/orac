@@ -310,6 +310,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    ! Set output fields to be produced
    Ctrl%Ind%flags%do_aerosol = Ctrl%Approach == AerOx .or. Ctrl%Approach == AerSw
    Ctrl%Ind%flags%do_cloud   = .not. Ctrl%Ind%flags%do_aerosol
+   Ctrl%Ind%flags%do_cloud_layer_2 = .false.
    Ctrl%Ind%flags%do_rho     = Ctrl%Approach == AerOx
    Ctrl%Ind%flags%do_swansea = Ctrl%Approach == AerSw
    Ctrl%Ind%flags%do_indexing            = .true.

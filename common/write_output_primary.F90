@@ -43,6 +43,7 @@
 ! 2016/01/28, GM: Add ctp and ctt corrected and corrected_uncertianty.
 ! 2016/03/04, AP: Homogenisation of I/O modules.
 ! 2016/04/28, AP: Add multiple views.
+! 2016/07/08, GM: Add fields for cloud layer 2.
 !
 ! $Id$
 !
@@ -276,6 +277,57 @@ if (ind%flags%do_cloud) then
    call nc_write_array(ncid,'cccot_pre',output_data%vid_cccot_pre, &
         output_data%cccot_pre(ind%X0:,ind%Y0:,:),1,1,ind%Xdim,1,1,ind%Ydim, &
         1,1,ind%NViews)
+end if
+
+if (ind%flags%do_cloud_layer_2) then
+   call nc_write_array(ncid,'cot2',output_data%vid_cot2, &
+        output_data%cot2(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
+   call nc_write_array(ncid,'cot2_uncertainty', &
+        output_data%vid_cot2_uncertainty, &
+        output_data%cot2_uncertainty(ind%X0:,ind%Y0:), &
+        1,1,ind%Xdim,1,1,ind%Ydim)
+
+   call nc_write_array(ncid,'cer2',output_data%vid_cer2, &
+        output_data%cer2(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
+   call nc_write_array(ncid,'cer2_uncertainty', &
+        output_data%vid_cer2_uncertainty, &
+        output_data%cer2_uncertainty(ind%X0:,ind%Y0:), &
+        1,1,ind%Xdim,1,1,ind%Ydim)
+
+   call nc_write_array(ncid,'ctp2',output_data%vid_ctp2, &
+        output_data%ctp2(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
+   call nc_write_array(ncid,'ctp2_uncertainty', &
+        output_data%vid_ctp2_uncertainty, &
+        output_data%ctp2_uncertainty(ind%X0:,ind%Y0:), &
+        1,1,ind%Xdim,1,1,ind%Ydim)
+
+   call nc_write_array(ncid,'cc_total2',output_data%vid_cc_total2, &
+        output_data%cc_total2(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
+   call nc_write_array(ncid,'cc_total2_uncertainty', &
+        output_data%vid_cc_total2_uncertainty, &
+        output_data%cc_total2_uncertainty(ind%X0:,ind%Y0:), &
+        1,1,ind%Xdim,1,1,ind%Ydim)
+
+   call nc_write_array(ncid,'cth2',output_data%vid_cth2, &
+        output_data%cth2(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
+   call nc_write_array(ncid,'cth2_uncertainty', &
+        output_data%vid_cth2_uncertainty, &
+        output_data%cth2_uncertainty(ind%X0:,ind%Y0:), &
+        1,1,ind%Xdim,1,1,ind%Ydim)
+
+   call nc_write_array(ncid,'ctt2',output_data%vid_ctt2, &
+        output_data%ctt2(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
+   call nc_write_array(ncid,'ctt2_uncertainty', &
+        output_data%vid_ctt2_uncertainty, &
+        output_data%ctt2_uncertainty(ind%X0:,ind%Y0:), &
+        1,1,ind%Xdim,1,1,ind%Ydim)
+
+   call nc_write_array(ncid,'cwp2',output_data%vid_cwp2, &
+        output_data%cwp2(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
+   call nc_write_array(ncid,'cwp2_uncertainty', &
+        output_data%vid_cwp2_uncertainty, &
+        output_data%cwp2_uncertainty(ind%X0:,ind%Y0:), &
+        1,1,ind%Xdim,1,1,ind%Ydim)
 end if
 
    call nc_write_array(ncid,'convergence',output_data%vid_convergence, &

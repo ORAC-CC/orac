@@ -8,6 +8,7 @@
 ! 2016/03/02, AP: Initial version, forked from orac_input and _output.
 ! 2016/03/10, SP: Fixed problem that prevented gfort compilation (. -> %).
 ! 2016/07/11, GM: Add nullify_common_indices().
+! 2016/07/08, GM: Add flag for cloud layer 2.
 !
 ! $Id$
 !
@@ -24,6 +25,7 @@ module orac_indexing_m
    type common_file_flags_t
       ! Flags relevant to both files
       logical :: do_cloud               ! Output cloud retrieval terms
+      logical :: do_cloud_layer_2       ! Output cloud retrieval terms
       logical :: do_aerosol             ! Output aerosol retrieval terms
       logical :: do_rho                 ! Output retrieved surface reflectances
       logical :: do_swansea             ! Output retrieved Swansea parameters
@@ -70,16 +72,17 @@ module orac_indexing_m
 
 
    ! common_file_flags bitmask locations
-   integer, parameter :: cloud_bit      = 0
-   integer, parameter :: aerosol_bit    = 1
-   integer, parameter :: rho_bit        = 2
-   integer, parameter :: swansea_bit    = 3
-   integer, parameter :: indexing_bit   = 4
-   integer, parameter :: pavolonis_bit  = 5
-   integer, parameter :: cldmask_bit    = 6
-   integer, parameter :: cldmask_u_bit  = 7
-   integer, parameter :: phase_bit      = 8
-   integer, parameter :: covariance_bit = 9
+   integer, parameter :: cloud_bit         = 0
+   integer, parameter :: cloud_layer_2_bit = 1
+   integer, parameter :: aerosol_bit       = 2
+   integer, parameter :: rho_bit           = 3
+   integer, parameter :: swansea_bit       = 4
+   integer, parameter :: indexing_bit      = 5
+   integer, parameter :: pavolonis_bit     = 6
+   integer, parameter :: cldmask_bit       = 7
+   integer, parameter :: cldmask_u_bit     = 8
+   integer, parameter :: phase_bit         = 9
+   integer, parameter :: covariance_bit    = 10
 
 
 contains
@@ -93,6 +96,7 @@ subroutine make_bitmask_from_common_file_flags(flags, bitmask)
 
    bitmask = 0
    if (flags%do_cloud)               bitmask = ibset(bitmask, cloud_bit)
+   if (flags%do_cloud_layer_2)       bitmask = ibset(bitmask, cloud_layer_2_bit)
    if (flags%do_aerosol)             bitmask = ibset(bitmask, aerosol_bit)
    if (flags%do_rho)                 bitmask = ibset(bitmask, rho_bit)
    if (flags%do_swansea)             bitmask = ibset(bitmask, swansea_bit)
@@ -114,6 +118,7 @@ subroutine set_common_file_flags_from_bitmask(bitmask, flags)
    type(common_file_flags_t), intent(out) :: flags
 
    flags%do_cloud               = btest(bitmask, cloud_bit)
+   flags%do_cloud_layer_2       = btest(bitmask, cloud_layer_2_bit)
    flags%do_aerosol             = btest(bitmask, aerosol_bit)
    flags%do_rho                 = btest(bitmask, rho_bit)
    flags%do_swansea             = btest(bitmask, swansea_bit)

@@ -59,6 +59,7 @@
 ! 2016/01/06, AP: Wrap do_* flags into output_flags structure. Pass logical array
 !    to identify thermal channels rather than dealing with Ch_Is.
 ! 2016/03/04, AP: Homogenisation of I/O modules.
+! 2016/07/08, GM: Add fields for cloud layer 2.
 !
 ! $Id$
 !
@@ -487,7 +488,129 @@ if (indexing%flags%do_cloud) then
            units         = 'hPa', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
+end if
 
+if (indexing%flags%do_cloud_layer_2) then
+   !----------------------------------------------------------------------------
+   ! cot2_ap
+   !----------------------------------------------------------------------------
+   call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           'cot2_ap', &
+           output_data%vid_cot2_ap, &
+           verbose, &
+           long_name     = 'cloud optical thickness of layer 2 a priori', &
+           standard_name = 'atmosphere_optical_thickness_due_to_cloud of_layer_2 a_priori', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%cot_ap_scale, &
+           add_offset    = output_data%cot_ap_offset, &
+           valid_min     = output_data%cot_ap_vmin, &
+           valid_max     = output_data%cot_ap_vmax, &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+
+   !----------------------------------------------------------------------------
+   ! cot2_fg
+   !----------------------------------------------------------------------------
+   call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           'cot2_fg', &
+           output_data%vid_cot2_fg, &
+           verbose, &
+           long_name     = 'cloud optical thickness of layer 2 first guess', &
+           standard_name = 'atmosphere_optical_thickness_due_to_cloud of_layer_2 first_guess', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%cot_fg_scale, &
+           add_offset    = output_data%cot_fg_offset, &
+           valid_min     = output_data%cot_fg_vmin, &
+           valid_max     = output_data%cot_fg_vmax, &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+
+   !----------------------------------------------------------------------------
+   ! cer2_ap
+   !----------------------------------------------------------------------------
+   call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           'cer2_ap', &
+           output_data%vid_cer2_ap, &
+           verbose, &
+           long_name     = 'cloud effective radius of layer 2 a priori', &
+           standard_name = 'effective_radius_of_cloud_condensed_water_particle_at_cloud_top of_layer_2 a_priori', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%cer_ap_scale, &
+           add_offset    = output_data%cer_ap_offset, &
+           valid_min     = output_data%cer_ap_vmin, &
+           valid_max     = output_data%cer_ap_vmax, &
+           units         = 'micrometer', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+
+   !----------------------------------------------------------------------------
+   ! cer2_fg
+   !----------------------------------------------------------------------------
+   call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           'cer2_fg', &
+           output_data%vid_cer2_fg, &
+           verbose, &
+           long_name     = 'cloud effective radius of layer 2 first guess', &
+           standard_name = 'effective_radius_of_cloud_condensed_water_particle_at_cloud_top of_layer_2 first_guess', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%cer_fg_scale, &
+           add_offset    = output_data%cer_fg_offset, &
+           valid_min     = output_data%cer_fg_vmin, &
+           valid_max     = output_data%cer_fg_vmax, &
+           units         = 'micrometer', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+
+   !----------------------------------------------------------------------------
+   ! ctp2_ap
+   !----------------------------------------------------------------------------
+   call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           'ctp2_ap', &
+           output_data%vid_ctp2_ap, &
+           verbose, &
+           long_name     = 'cloud top pressure of layer 2 a priori', &
+           standard_name = 'air_pressure_at_cloud_top of_layer_2 a_priori', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%ctp_ap_scale, &
+           add_offset    = output_data%ctp_ap_offset, &
+           valid_min     = output_data%ctp_ap_vmin, &
+           valid_max     = output_data%ctp_ap_vmax, &
+           units         = 'hPa', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+
+   !----------------------------------------------------------------------------
+   ! ctp2_fg
+   !----------------------------------------------------------------------------
+   call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           'ctp2_fg', &
+           output_data%vid_ctp2_fg, &
+           verbose, &
+           long_name     = 'cloud top pressure of layer 2 first guess', &
+           standard_name = 'air_pressure_at_cloud_top of_layer_2 first_guess', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%ctp_fg_scale, &
+           add_offset    = output_data%ctp_fg_offset, &
+           valid_min     = output_data%ctp_fg_vmin, &
+           valid_max     = output_data%ctp_fg_vmax, &
+           units         = 'hPa', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+end if
+
+if (indexing%flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! stemp_ap
    !----------------------------------------------------------------------------

@@ -140,6 +140,23 @@ if (ind%flags%do_cloud) then
    end do
 end if
 
+if (ind%flags%do_cloud_layer_2) then
+   call nc_write_array(ncid,'cot2_ap',output_data%vid_cot2_ap, &
+        output_data%cot2_ap(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
+   call nc_write_array(ncid,'cot2_fg',output_data%vid_cot2_fg, &
+        output_data%cot2_fg(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
+
+   call nc_write_array(ncid,'cer2_ap',output_data%vid_cer2_ap, &
+        output_data%cer2_ap(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
+   call nc_write_array(ncid,'cer2_fg',output_data%vid_cer2_fg, &
+        output_data%cer2_fg(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
+
+   call nc_write_array(ncid,'ctp2_ap',output_data%vid_ctp2_ap, &
+        output_data%ctp2_ap(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
+   call nc_write_array(ncid,'ctp2_fg',output_data%vid_ctp2_fg, &
+        output_data%ctp2_fg(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
+end if
+
    do i=1,ind%Ny
       write(input_num,"(i4)") ind%Y_Id(i)
       input_dummy='radiance_in_channel_no_'//trim(adjustl(input_num))
