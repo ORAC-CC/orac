@@ -36,7 +36,7 @@ void read_aatsr_orbit(const char *l1b_file, const bool *verbose,
   float *iaz;
   const char *ax_label[2][4], *ch_label[2][7], *fg_label[2][2], *dy_label[2];
   int view_present[2] = { 0, 0 };
-  uint i, j, k;
+  uint i, j;
   iaz = calloc(*nx * *ny, sizeof(float));
   if (iaz == NULL) {
     printf("ERROR: read_aatsr_orbit(): Insufficient memory available.");
