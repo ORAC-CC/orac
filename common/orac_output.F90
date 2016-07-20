@@ -249,11 +249,11 @@ module orac_output_m
       integer(sint) :: cc_total_uncertainty_vmax   = 10000
 
       real(sreal)   :: stemp_scale              = 0.01
-      real(sreal)   :: stemp_offset             = 0.0
+      real(sreal)   :: stemp_offset             = 100.0
       integer(sint) :: stemp_vmin               = 0
       integer(sint) :: stemp_vmax               = 32000
       real(sreal)   :: stemp_uncertainty_scale  = 0.01
-      real(sreal)   :: stemp_uncertainty_offset = 0.0
+      real(sreal)   :: stemp_uncertainty_offset = 100.0
       integer(sint) :: stemp_uncertainty_vmin   = 0
       integer(sint) :: stemp_uncertainty_vmax   = 32000
 
