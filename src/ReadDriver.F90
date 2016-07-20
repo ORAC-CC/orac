@@ -769,8 +769,14 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       X_Dy(1) = ITau
       X_Dy(2) = IRe
       do i = 1, Ctrl%Ind%NSolar
-         Nx_Dy = Nx_Dy+1
-         X_Dy(Nx_Dy) = IRs(i,IRho_DD)
+         ! Only accept the first view
+         ! ACP: This avoids outputting every view, while keeping the ability to
+         ! retrieve whatever BRDF terms we like. When we get around to nviews>2,
+         ! this approach should be reassessed.
+         if (Ctrl%Ind%View_Id(Ctrl%Ind%YSolar(i)) == 1) then
+            Nx_Dy = Nx_Dy+1
+            X_Dy(Nx_Dy) = IRs(i,IRho_DD)
+         end if
       end do
       Nx_Tw = 0
       Nx_Ni = 0
@@ -786,8 +792,11 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       X_Dy(1) = ITau
       X_Dy(2) = IRe
       do i = 1, Ctrl%Ind%NSolar
-         Nx_Dy = Nx_Dy+1
-         X_Dy(Nx_Dy) = ISS(i)
+         ! Only accept the first view
+         if (Ctrl%Ind%View_Id(Ctrl%Ind%YSolar(i)) == 1) then
+            Nx_Dy = Nx_Dy+1
+            X_Dy(Nx_Dy) = ISS(i)
+         end if
       end do
       do i = 1, Ctrl%Ind%NViews
          Nx_Dy = Nx_Dy+1
