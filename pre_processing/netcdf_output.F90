@@ -83,7 +83,7 @@ module netcdf_output_m
       integer :: vid_msi_instr_ch_numbers_config, &
                  vid_msi_abs_ch_wl_config, vid_msi_ch_lwflag_config, &
                  vid_msi_ch_swflag_config, vid_alb_abs_ch_numbers_config, &
-                 vid_emis_abs_ch_numbers_config
+                 vid_emis_abs_ch_numbers_config, vid_msi_ch_view_config
 
       ! geo file
       integer :: vid_solzen, vid_satzen, vid_solaz, vid_relazi

@@ -114,6 +114,13 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocati
            channel_info%channel_lw_flag, &
            1, 1, channel_info%nchannels_total)
 
+   call nc_write_array( &
+           netcdf_info%ncid_config, &
+           'msi_ch_view', &
+           netcdf_info%vid_msi_ch_view_config, &
+           channel_info%channel_view_ids, &
+           1, 1, channel_info%nchannels_total)
+
    if (channel_info%nchannels_sw .ne. 0) then
       allocate(dummy_chan_vec1d(channel_info%nchannels_sw))
       dummy_chan_vec1d=0_lint

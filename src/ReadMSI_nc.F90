@@ -167,9 +167,9 @@ subroutine Read_MSI_nc(Ctrl, MSI_Data, SAD_Chan)
    end if
 
    ! Read channel view indices from file (all channels)
-   allocate(Ctrl%Ind%View_Id(Ctrl%Ind%Ny))
-   call nc_read_array(ncid, "msi_ch_view", Ctrl%Ind%View_Id, Ctrl%verbose, &
-                      1, Ctrl%Ind%ICh)
+!  allocate(Ctrl%Ind%View_Id(Ctrl%Ind%Ny))
+!  call nc_read_array(ncid, "msi_ch_view", Ctrl%Ind%View_Id, Ctrl%verbose, &
+!                     1, Ctrl%Ind%ICh)
    if (minval(Ctrl%Ind%View_Id) < 1 .or. &
        maxval(Ctrl%Ind%View_Id) > Ctrl%Ind%NViews) then
       write(*,*) 'ERROR: Read_MSI_nc(): Invalid view indexing in input files.'

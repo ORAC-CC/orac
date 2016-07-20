@@ -1441,6 +1441,14 @@ subroutine netcdf_create_config(global_atts,source_atts,cyear,cmonth,cday, &
            verbose, &
            fill_value = lint_fill_value)
 
+   call nc_def_var_long_packed_long( &
+           netcdf_info%ncid_config, &
+           dimids_1d, &
+           'msi_ch_view', &
+           netcdf_info%vid_msi_ch_view_config, &
+           verbose, &
+           fill_value = lint_fill_value)
+
    dimids_1d(1) = netcdf_info%dimid_c_config_alb
 
    call nc_def_var_long_packed_long( &

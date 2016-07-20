@@ -178,6 +178,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    integer, allocatable, dimension(:) :: channel_ids_instr
    integer, allocatable, dimension(:) :: channel_sw_flag, channel_lw_flag
    real,    allocatable, dimension(:) :: channel_wvl
+   integer, allocatable, dimension(:) :: channel_view
    integer                            :: Nx_Dy, Nx_Tw, Nx_Ni
    integer                            :: NXJ_Dy, NXJ_Tw, NXJ_Ni
    integer, dimension(MaxStateVar)    :: X_Dy, X_Tw, X_Ni
@@ -273,7 +274,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
 
    ! Read channel related info
    call read_config_file(Ctrl, channel_ids_instr, channel_sw_flag, &
-     channel_lw_flag, channel_wvl, global_atts, source_atts)
+     channel_lw_flag, channel_wvl, channel_view, global_atts, source_atts)
 
    ! Read dimensions of preprocessing swath files
    call read_input_dimensions_msi(Ctrl%FID%MSI, Ctrl%FID%Geo, &
@@ -290,6 +291,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    allocate(Ctrl%Ind%ICh(Ctrl%Ind%Ny))
    allocate(Ctrl%Ind%Y_ID(Ctrl%Ind%Ny))
    allocate(Ctrl%Ind%Ch_Is(Ctrl%Ind%Ny))
+   allocate(Ctrl%Ind%View_Id(Ctrl%Ind%Ny))
    Ctrl%Ind%Ch_Is = 0
    if (Ctrl%Ind%NSolar > 0)   allocate(Ctrl%Ind%YSolar(Ctrl%Ind%NSolar))
    if (Ctrl%Ind%NThermal > 0) allocate(Ctrl%Ind%YThermal(Ctrl%Ind%NThermal))
@@ -304,6 +306,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
          ii = ii+1
          Ctrl%Ind%ICh(ii) = i ! Fortran array index for channel
          Ctrl%Ind%Y_ID(ii) = channel_ids_instr(i) ! Instrument channel number
+         Ctrl%Ind%View_Id(ii) = channel_view(i)   ! Channel view number
 
          ! Identify solar and thermal channels WITH RESPECT TO Ctrl%IND%ICH
          if (channel_sw_flag(i) == 1) then
@@ -1085,6 +1088,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    deallocate(channel_sw_flag)
    deallocate(channel_lw_flag)
    deallocate(channel_wvl)
+   deallocate(channel_view)
 
 end subroutine Read_Driver
 
