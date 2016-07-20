@@ -84,7 +84,7 @@ subroutine def_output_secondary(ncid, dim3d_var, output_data, indexing, &
 
    character(len=32)  :: input_num
    character(len=512) :: input_dummy, input_dummy2, input_dummy3
-   integer            :: i, j
+   integer            :: i, j, i_rho
    integer            :: dims_var(2)
 
    dims_var = dim3d_var(1:2)
@@ -216,12 +216,15 @@ if (indexing%flags%do_aerosol) then
 end if
 
 if (indexing%flags%do_rho) then
+   i_rho = 0
    do i=1,indexing%NSolar
 
       write(input_num,"(i4)") indexing%Y_Id(indexing%YSolar(i))
 
       do j=1,MaxRho_XX
          if (indexing%rho_terms(i,j)) then
+            i_rho = i_rho + 1
+
    !----------------------------------------------------------------------------
    ! rho_XX_ap_in_channel_no_*
    !----------------------------------------------------------------------------
@@ -232,7 +235,7 @@ if (indexing%flags%do_rho) then
                  ncid, &
                  dims_var, &
                  trim(adjustl(input_dummy)), &
-                 output_data%vid_rho_ap(i,j), &
+                 output_data%vid_rho_ap(i_rho), &
                  verbose, &
                  long_name     = trim(adjustl(input_dummy2)), &
                  standard_name = '', &
@@ -254,7 +257,7 @@ if (indexing%flags%do_rho) then
                  ncid, &
                  dims_var, &
                  trim(adjustl(input_dummy)), &
-                 output_data%vid_rho_fg(i,j), &
+                 output_data%vid_rho_fg(i_rho), &
                  verbose, &
                  long_name     = trim(adjustl(input_dummy2)), &
                  standard_name = '', &
@@ -271,54 +274,59 @@ if (indexing%flags%do_rho) then
 end if
 
 if (indexing%flags%do_swansea) then
+   i_rho = 0
    do i=1,indexing%NSolar
+      if (indexing%ss_terms(i)) then
+         i_rho = i_rho + 1
 
-      write(input_num,"(i4)") indexing%Y_Id(indexing%YSolar(i))
+         write(input_num,"(i4)") indexing%Y_Id(indexing%YSolar(i))
 
    !----------------------------------------------------------------------------
    ! swansea_s_ap_in_channel_no_*
    !----------------------------------------------------------------------------
-      input_dummy2='s parameter a priori in channel no '//trim(adjustl(input_num))
-      input_dummy='swansea_s_ap_in_channel_no_'//trim(adjustl(input_num))
+         input_dummy2='s parameter a priori in channel no '//trim(adjustl(input_num))
+         input_dummy='swansea_s_ap_in_channel_no_'//trim(adjustl(input_num))
 
-      call nc_def_var_short_packed_float( &
-           ncid, &
-           dims_var, &
-           trim(adjustl(input_dummy)), &
-           output_data%vid_swansea_s_ap(i), &
-           verbose, &
-           long_name     = trim(adjustl(input_dummy2)), &
-           standard_name = '', &
-           fill_value    = sint_fill_value, &
-           scale_factor  = output_data%swansea_s_ap_scale, &
-           add_offset    = output_data%swansea_s_ap_offset, &
-           valid_min     = output_data%swansea_s_ap_vmin, &
-           valid_max     = output_data%swansea_s_ap_vmax, &
-           deflate_level = deflate_level, &
-           shuffle       = shuffle_flag)
+         call nc_def_var_short_packed_float( &
+              ncid, &
+              dims_var, &
+              trim(adjustl(input_dummy)), &
+              output_data%vid_swansea_s_ap(i_rho), &
+              verbose, &
+              long_name     = trim(adjustl(input_dummy2)), &
+              standard_name = '', &
+              fill_value    = sint_fill_value, &
+              scale_factor  = output_data%swansea_s_ap_scale, &
+              add_offset    = output_data%swansea_s_ap_offset, &
+              valid_min     = output_data%swansea_s_ap_vmin, &
+              valid_max     = output_data%swansea_s_ap_vmax, &
+              deflate_level = deflate_level, &
+              shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
    ! swansea_s_fg_in_channel_no_*
    !----------------------------------------------------------------------------
-      input_dummy2='s parameter first guess in channel no '//trim(adjustl(input_num))
-      input_dummy='swansea_s_fg_in_channel_no_'//trim(adjustl(input_num))
+         input_dummy2='s parameter first guess in channel no '//trim(adjustl(input_num))
+         input_dummy='swansea_s_fg_in_channel_no_'//trim(adjustl(input_num))
 
-      call nc_def_var_short_packed_float( &
-           ncid, &
-           dims_var, &
-           trim(adjustl(input_dummy)), &
-           output_data%vid_swansea_s_fg(i), &
-           verbose, &
-           long_name     = trim(adjustl(input_dummy2)), &
-           standard_name = '', &
-           fill_value    = sint_fill_value, &
-           scale_factor  = output_data%swansea_s_fg_scale, &
-           add_offset    = output_data%swansea_s_fg_offset, &
-           valid_min     = output_data%swansea_s_fg_vmin, &
-           valid_max     = output_data%swansea_s_fg_vmax, &
-           deflate_level = deflate_level, &
-           shuffle       = shuffle_flag)
+         call nc_def_var_short_packed_float( &
+              ncid, &
+              dims_var, &
+              trim(adjustl(input_dummy)), &
+              output_data%vid_swansea_s_fg(i_rho), &
+              verbose, &
+              long_name     = trim(adjustl(input_dummy2)), &
+              standard_name = '', &
+              fill_value    = sint_fill_value, &
+              scale_factor  = output_data%swansea_s_fg_scale, &
+              add_offset    = output_data%swansea_s_fg_offset, &
+              valid_min     = output_data%swansea_s_fg_vmin, &
+              valid_max     = output_data%swansea_s_fg_vmax, &
+              deflate_level = deflate_level, &
+              shuffle       = shuffle_flag)
+      end if
    end do
+
 
    do i=1,indexing%NViews
 

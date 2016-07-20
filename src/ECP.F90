@@ -591,19 +591,6 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    write(*,115) cpu_secs
 #endif
 
-   ! Identify which surface terms need to be output
-   if (Ctrl%Ind%flags%do_rho) then
-      allocate(Ctrl%Ind%rho_terms(Ctrl%Ind%NSolar,MaxRho_XX))
-      Ctrl%Ind%rho_terms = .false.
-      do i=1,Ctrl%Ind%NSolar
-         do j=1,MaxRho_XX
-            if (any(Ctrl%X == IRs(i,j))) Ctrl%Ind%rho_terms(i,j) = .true.
-         end do
-      end do
-   else
-      nullify(Ctrl%Ind%rho_terms)
-   end if
-
    ! Open the netcdf output files
    if (Ctrl%verbose) write(*,*) 'path1: ',trim(Ctrl%FID%L2_primary)
    if (Ctrl%Ind%flags%do_indexing) then
@@ -612,7 +599,8 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
       output_data_1%y_id  = Ctrl%Ind%Y_Id
       output_data_1%ch_is = Ctrl%Ind%Ch_Is
 
-      if (Ctrl%Ind%flags%do_rho) call make_bitmask_from_rho_terms( &
+      if (Ctrl%Ind%flags%do_rho .or. Ctrl%Ind%flags%do_swansea) &
+           call make_bitmask_from_rho_terms( &
            Ctrl%Ind%common_indices_t, output_data_1%rho_flags)
 
       call make_bitmask_from_common_file_flags(Ctrl%Ind%flags, bitmask)

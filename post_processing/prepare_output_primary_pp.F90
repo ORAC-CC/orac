@@ -60,7 +60,7 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
    type(output_data_primary_t),intent(inout) :: output_data
    logical,                    intent(in)    :: output_optical_props_at_night
 
-   integer :: k, l
+   integer :: k, l, i_rho
 
    !----------------------------------------------------------------------------
    ! time
@@ -156,18 +156,21 @@ if (indexing%flags%do_rho) then
    !----------------------------------------------------------------------------
    ! rho, rho_uncertainty
    !----------------------------------------------------------------------------
+   i_rho = 0
    do k=1,indexing%NSolar
       do l=1,MaxRho_XX
          if (indexing%rho_terms(k,l)) then
+            i_rho = i_rho + 1
+
             call prepare_short_packed_float( &
-                 input_data%rho(i,j,k,l), output_data%rho(i,j,k,l), &
+                 input_data%rho(i,j,i_rho), output_data%rho(i,j,i_rho), &
                  output_data%rho_scale, output_data%rho_offset, &
                  output_data%rho_vmin, output_data%rho_vmax, &
                  sreal_fill_value, output_data%rho_vmax)
 
             call prepare_short_packed_float( &
-                 input_data%rho_uncertainty(i,j,k,l), &
-                 output_data%rho_uncertainty(i,j,k,l), &
+                 input_data%rho_uncertainty(i,j,i_rho), &
+                 output_data%rho_uncertainty(i,j,i_rho), &
                  output_data%rho_uncertainty_scale, &
                  output_data%rho_uncertainty_offset, &
                  output_data%rho_uncertainty_vmin, &
@@ -179,42 +182,47 @@ if (indexing%flags%do_rho) then
 end if
 
 if (indexing%flags%do_swansea) then
+   i_rho = 0
    do k=1,indexing%NSolar
+      if (indexing%ss_terms(k)) then
+            i_rho = i_rho + 1
+
    !----------------------------------------------------------------------------
    ! swansea_s, swansea_s_uncertainty
    !----------------------------------------------------------------------------
-      call prepare_short_packed_float( &
-           input_data%swansea_s(i,j,k), output_data%swansea_s(i,j,k), &
-           output_data%swansea_s_scale, output_data%swansea_s_offset, &
-           output_data%swansea_s_vmin, output_data%swansea_s_vmax, &
-           sreal_fill_value, output_data%swansea_s_vmax)
+            call prepare_short_packed_float( &
+                 input_data%swansea_s(i,j,i_rho), output_data%swansea_s(i,j,i_rho), &
+                 output_data%swansea_s_scale, output_data%swansea_s_offset, &
+                 output_data%swansea_s_vmin, output_data%swansea_s_vmax, &
+                 sreal_fill_value, output_data%swansea_s_vmax)
 
-      call prepare_short_packed_float( &
-           input_data%swansea_s_uncertainty(i,j,k), &
-           output_data%swansea_s_uncertainty(i,j,k), &
-           output_data%swansea_s_uncertainty_scale, &
-           output_data%swansea_s_uncertainty_offset, &
-           output_data%swansea_s_uncertainty_vmin, &
-           output_data%swansea_s_uncertainty_vmax, &
-           sreal_fill_value, output_data%swansea_s_uncertainty_vmax)
+            call prepare_short_packed_float( &
+                 input_data%swansea_s_uncertainty(i,j,i_rho), &
+                 output_data%swansea_s_uncertainty(i,j,i_rho), &
+                 output_data%swansea_s_uncertainty_scale, &
+                 output_data%swansea_s_uncertainty_offset, &
+                 output_data%swansea_s_uncertainty_vmin, &
+                 output_data%swansea_s_uncertainty_vmax, &
+                 sreal_fill_value, output_data%swansea_s_uncertainty_vmax)
 
    !----------------------------------------------------------------------------
    ! diffuse_frac, diffuse_frac_uncertainty
    !----------------------------------------------------------------------------
-      call prepare_short_packed_float( &
-           input_data%diffuse_frac(i,j,k), output_data%diffuse_frac(i,j,k), &
-           output_data%diffuse_frac_scale, output_data%diffuse_frac_offset, &
-           output_data%diffuse_frac_vmin, output_data%diffuse_frac_vmax, &
-           sreal_fill_value, output_data%diffuse_frac_vmax)
+            call prepare_short_packed_float( &
+                 input_data%diffuse_frac(i,j,i_rho), output_data%diffuse_frac(i,j,i_rho), &
+                 output_data%diffuse_frac_scale, output_data%diffuse_frac_offset, &
+                 output_data%diffuse_frac_vmin, output_data%diffuse_frac_vmax, &
+                 sreal_fill_value, output_data%diffuse_frac_vmax)
 
-      call prepare_short_packed_float( &
-           input_data%diffuse_frac_uncertainty(i,j,k), &
-           output_data%diffuse_frac_uncertainty(i,j,k), &
-           output_data%diffuse_frac_uncertainty_scale, &
-           output_data%diffuse_frac_uncertainty_offset, &
-           output_data%diffuse_frac_uncertainty_vmin, &
-           output_data%diffuse_frac_uncertainty_vmax, &
-           sreal_fill_value, output_data%diffuse_frac_uncertainty_vmax)
+            call prepare_short_packed_float( &
+                 input_data%diffuse_frac_uncertainty(i,j,i_rho), &
+                 output_data%diffuse_frac_uncertainty(i,j,i_rho), &
+                 output_data%diffuse_frac_uncertainty_scale, &
+                 output_data%diffuse_frac_uncertainty_offset, &
+                 output_data%diffuse_frac_uncertainty_vmin, &
+                 output_data%diffuse_frac_uncertainty_vmax, &
+                 sreal_fill_value, output_data%diffuse_frac_uncertainty_vmax)
+         end if
    end do
 
    !----------------------------------------------------------------------------

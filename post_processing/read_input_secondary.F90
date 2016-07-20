@@ -47,7 +47,7 @@ subroutine read_input_secondary_common(ncid, input_data, indexing, sval, verbose
    integer,                      intent(in)    :: sval
    logical,                      intent(in)    :: verbose
 
-   integer            :: i, j
+   integer            :: i, j, i_rho
    character(len=32)  :: input_num
    character(len=512) :: input_dummy, input_dummy2
 
@@ -59,32 +59,40 @@ if (indexing%flags%do_aerosol) then
 end if
 
 if (indexing%flags%do_rho) then
+   i_rho = 0
    do i=1,indexing%NSolar
       write(input_num, "(i4)") indexing%Y_Id(indexing%YSolar(i))
 
       do j=1,MaxRho_XX
          if (indexing%rho_terms(i,j)) then
+            i_rho = i_rho + 1
+
             call create_rho_field_name(j, 3, input_num, input_dummy)
             call nc_read_packed_array(ncid, trim(adjustl(input_dummy)), &
-                 input_data%rho_ap(:,:,i,j), verbose, startp = [1, sval])
+                 input_data%rho_ap(:,:,i_rho), verbose, startp = [1, sval])
             call create_rho_field_name(j, 4, input_num, input_dummy)
             call nc_read_packed_array(ncid, trim(adjustl(input_dummy)), &
-                 input_data%rho_fg(:,:,i,j), verbose, startp = [1, sval])
+                 input_data%rho_fg(:,:,i_rho), verbose, startp = [1, sval])
          end if
       end do
    end do
 end if
 
 if (indexing%flags%do_swansea) then
+   i_rho = 0
    do i=1,indexing%NSolar
-      write(input_num, "(i4)") indexing%Y_Id(indexing%YSolar(i))
+      if (indexing%ss_terms(i)) then
+         i_rho = i_rho + 1
 
-      input_dummy='swansea_s_ap_in_channel_no_'//trim(adjustl(input_num))
-      call nc_read_packed_array(ncid, trim(adjustl(input_dummy)), &
-           input_data%swansea_s_ap(:,:,i), verbose, startp = [1, sval])
-      input_dummy='swansea_s_fg_in_channel_no_'//trim(adjustl(input_num))
-      call nc_read_packed_array(ncid, trim(adjustl(input_dummy)), &
-           input_data%swansea_s_fg(:,:,i), verbose, startp = [1, sval])
+         write(input_num, "(i4)") indexing%Y_Id(indexing%YSolar(i))
+
+         input_dummy='swansea_s_ap_in_channel_no_'//trim(adjustl(input_num))
+         call nc_read_packed_array(ncid, trim(adjustl(input_dummy)), &
+              input_data%swansea_s_ap(:,:,i_rho), verbose, startp = [1, sval])
+         input_dummy='swansea_s_fg_in_channel_no_'//trim(adjustl(input_num))
+         call nc_read_packed_array(ncid, trim(adjustl(input_dummy)), &
+              input_data%swansea_s_fg(:,:,i_rho), verbose, startp = [1, sval])
+      end if
    end do
 
    do i=1,indexing%NViews

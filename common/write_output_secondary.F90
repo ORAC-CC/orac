@@ -71,22 +71,18 @@ if (ind%flags%do_aerosol) then
 end if
 
 if (ind%flags%do_rho) then
-   do i=1,ind%NSolar
-      do j=1,MaxRho_XX
-         if (output_data%vid_rho_ap(i,j) /= 0) then
-            call nc_write_array(ncid,'rho_ap',output_data%vid_rho_ap(i,j), &
-                 output_data%rho_ap(ind%X0:,ind%Y0:,i,j), &
-                 1,1,ind%Xdim,1,1,ind%Ydim)
-            call nc_write_array(ncid,'rho_fg',output_data%vid_rho_fg(i,j), &
-                 output_data%rho_fg(ind%X0:,ind%Y0:,i,j), &
-                 1,1,ind%Xdim,1,1,ind%Ydim)
-         end if
-      end do
+   do i=1,ind%Nrho
+      call nc_write_array(ncid,'rho_ap',output_data%vid_rho_ap(i), &
+           output_data%rho_ap(ind%X0:,ind%Y0:,i), &
+           1,1,ind%Xdim,1,1,ind%Ydim)
+      call nc_write_array(ncid,'rho_fg',output_data%vid_rho_fg(i), &
+           output_data%rho_fg(ind%X0:,ind%Y0:,i), &
+           1,1,ind%Xdim,1,1,ind%Ydim)
    end do
 end if
 
 if (ind%flags%do_swansea) then
-   do i=1,ind%NSolar
+   do i=1,ind%Nss
       call nc_write_array(ncid,'swansea_s_ap', &
            output_data%vid_swansea_s_ap(i), &
            output_data%swansea_s_ap(ind%X0:,ind%Y0:,i), &

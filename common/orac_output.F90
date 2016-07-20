@@ -35,6 +35,8 @@
 ! 2016/03/02, AP: Homogenisation of I/O modules.
 ! 2016/04/28, AP: Add multiple views.
 ! 2016/07/08, GM: Add fields for cloud layer 2.
+! 2016/07/19, AP: Reduce rho and swansea_s to only contain terms that were
+!    retrieved. This is indicated by the rho|ss_terms array (and Nrho|Nss).
 !
 ! $Id$
 !
@@ -57,8 +59,8 @@ module orac_output_m
       integer          :: vid_aer
       integer          :: vid_aer_uncertainty
 
-      integer, pointer :: vid_rho(:,:)
-      integer, pointer :: vid_rho_uncertainty(:,:)
+      integer, pointer :: vid_rho(:)
+      integer, pointer :: vid_rho_uncertainty(:)
 
       integer, pointer :: vid_swansea_s(:)
       integer, pointer :: vid_swansea_s_uncertainty(:)
@@ -435,8 +437,8 @@ module orac_output_m
       integer(sint), pointer :: aer(:,:)
       integer(sint), pointer :: aer_uncertainty(:,:)
 
-      integer(sint), pointer :: rho(:,:,:,:)
-      integer(sint), pointer :: rho_uncertainty(:,:,:,:)
+      integer(sint), pointer :: rho(:,:,:)
+      integer(sint), pointer :: rho_uncertainty(:,:,:)
 
       integer(sint), pointer :: swansea_s(:,:,:)
       integer(sint), pointer :: swansea_s_uncertainty(:,:,:)
@@ -534,8 +536,8 @@ module orac_output_m
       integer          :: vid_aer_ap
       integer          :: vid_aer_fg
 
-      integer, pointer :: vid_rho_ap(:,:)
-      integer, pointer :: vid_rho_fg(:,:)
+      integer, pointer :: vid_rho_ap(:)
+      integer, pointer :: vid_rho_fg(:)
       integer, pointer :: vid_swansea_s_ap(:)
       integer, pointer :: vid_swansea_s_fg(:)
       integer, pointer :: vid_swansea_p_ap(:)
@@ -695,8 +697,8 @@ module orac_output_m
       integer(sint), pointer :: aer_ap(:,:)
       integer(sint), pointer :: aer_fg(:,:)
 
-      integer(sint), pointer :: rho_ap(:,:,:,:)
-      integer(sint), pointer :: rho_fg(:,:,:,:)
+      integer(sint), pointer :: rho_ap(:,:,:)
+      integer(sint), pointer :: rho_fg(:,:,:)
 
       integer(sint), pointer :: swansea_s_ap(:,:,:)
       integer(sint), pointer :: swansea_s_fg(:,:,:)

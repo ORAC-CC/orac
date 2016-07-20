@@ -119,6 +119,8 @@
 ! 2016/06/06, GM: Set Ctrl%RS%solar_factor and Ctrl%get_T_dv_from_T_0d based on
 !    Ctrl%i_equation_form.  Change default value of Ctrl%i_equation_form to 3.
 ! 2016/06/05, SP: Updated to support Sentinel-3/SLSTR.
+! 2016/07/19, AP: Reduce rho and swansea_s to only contain terms that were
+!    retrieved. This is indicated by the rho|ss_terms array (and Nrho|Nss).
 !
 ! $Id$
 !
@@ -944,6 +946,38 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%XJ(:,IDay)   = XJ_Dy
    Ctrl%XJ(:,ITwi)   = XJ_Tw
    Ctrl%XJ(:,INight) = XJ_Ni
+
+   ! Identify which surface fields are in use
+   Ctrl%Ind%Nss = 0
+   Ctrl%Ind%Nrho = 0
+   if (Ctrl%Approach == AerSw) then
+      if (Ctrl%Ind%NSolar > 0) allocate(Ctrl%Ind%ss_terms(Ctrl%Ind%NSolar))
+
+      ! Count number of surface terms retrieved
+      do i = 1, Ctrl%Ind%NSolar
+         if (any(Ctrl%X == ISS(i))) then
+            Ctrl%Ind%Nss = Ctrl%Ind%Nss + 1
+            Ctrl%Ind%ss_terms(i) = .true.
+         else
+            Ctrl%Ind%ss_terms(i) = .false.
+         end if
+      end do
+   else
+      ! As above, but for Rho variables
+      if (Ctrl%Ind%NSolar > 0) &
+           allocate(Ctrl%Ind%rho_terms(Ctrl%Ind%NSolar, MaxRho_XX))
+
+      do j = 1, MaxRho_XX
+         do i = 1, Ctrl%Ind%NSolar
+            if (any(Ctrl%X == IRs(i,j))) then
+               Ctrl%Ind%Nrho = Ctrl%Ind%Nrho + 1
+               Ctrl%Ind%rho_terms(i,j) = .true.
+            else
+               Ctrl%Ind%rho_terms(i,j) = .false.
+            end if
+         end do
+      end do
+   end if
 
    if (Ctrl%verbose) then
       write(*,*) 'Driver file: ',       trim(drifile)

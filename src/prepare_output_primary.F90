@@ -92,7 +92,7 @@ subroutine prepare_output_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
    type(Diag_t),              intent(in)    :: Diag
    type(output_data_primary_t), intent(inout) :: output_data
 
-   integer            :: k, kk, l
+   integer            :: k, kk, l, i_rho
    integer(kind=sint) :: temp_short_ctp_uncertainty
    real(kind=sreal)   :: temp_real, temp_real_ot, temp_real_ctp_uncertainty
 
@@ -205,21 +205,23 @@ if (Ctrl%Ind%flags%do_rho) then
    !----------------------------------------------------------------------------
    ! rho, rho_uncertainty
    !----------------------------------------------------------------------------
+   i_rho = 0
    do k=1,SPixel%Ind%NSolar
       kk = SPixel%spixel_y_solar_to_ctrl_y_solar_index(k)
 
       do l=1,MaxRho_XX
-         if (any(SPixel%X .eq. IRs(kk,l))) then
+         if (Ctrl%Ind%rho_terms(kk,l)) then
+            i_rho = i_rho + 1
 
             call prepare_short_packed_float( &
-                 SPixel%Xn(IRs(kk,l)), output_data%rho(i,j,kk,l), &
+                 SPixel%Xn(IRs(kk,l)), output_data%rho(i,j,i_rho), &
                  output_data%rho_scale, output_data%rho_offset, &
                  output_data%rho_vmin, output_data%rho_vmax, &
                  MissingXn, output_data%rho_vmax)
 
             temp_real = sqrt(SPixel%Sn(IRs(kk,l),IRs(kk,l)))
             call prepare_short_packed_float( &
-                 temp_real, output_data%rho_uncertainty(i,j,kk,l), &
+                 temp_real, output_data%rho_uncertainty(i,j,i_rho), &
                  output_data%rho_uncertainty_scale, &
                  output_data%rho_uncertainty_offset, &
                  output_data%rho_uncertainty_vmin, &
@@ -232,50 +234,55 @@ if (Ctrl%Ind%flags%do_rho) then
 end if
 
 if (Ctrl%Ind%flags%do_swansea) then
+   i_rho = 0
    do k=1,SPixel%Ind%NSolar
       kk = SPixel%spixel_y_solar_to_ctrl_y_solar_index(k)
+
+      if (Ctrl%Ind%ss_terms(kk)) then
+         i_rho = i_rho + 1
 
    !----------------------------------------------------------------------------
    ! swansea_s, swansea_s_uncertainty
    !----------------------------------------------------------------------------
-      call prepare_short_packed_float( &
-           SPixel%Xn(ISS(kk)), output_data%swansea_s(i,j,kk), &
-           output_data%swansea_s_scale, &
-           output_data%swansea_s_offset, &
-           output_data%swansea_s_vmin, &
-           output_data%swansea_s_vmax, &
-           MissingXn, output_data%swansea_s_vmax)
+         call prepare_short_packed_float( &
+              SPixel%Xn(ISS(kk)), output_data%swansea_s(i,j,i_rho), &
+              output_data%swansea_s_scale, &
+              output_data%swansea_s_offset, &
+              output_data%swansea_s_vmin, &
+              output_data%swansea_s_vmax, &
+              MissingXn, output_data%swansea_s_vmax)
 
-      temp_real = sqrt(SPixel%Sn(ISS(kk),ISS(kk)))
-      call prepare_short_packed_float( &
-           temp_real, output_data%swansea_s_uncertainty(i,j,kk), &
-           output_data%swansea_s_uncertainty_scale, &
-           output_data%swansea_s_uncertainty_offset, &
-           output_data%swansea_s_uncertainty_vmin, &
-           output_data%swansea_s_uncertainty_vmax, &
-           MissingSn, output_data%swansea_s_uncertainty_vmax, &
-           control=SPixel%Sn(ISS(kk),ISS(kk)))
+         temp_real = sqrt(SPixel%Sn(ISS(kk),ISS(kk)))
+         call prepare_short_packed_float( &
+              temp_real, output_data%swansea_s_uncertainty(i,j,i_rho), &
+              output_data%swansea_s_uncertainty_scale, &
+              output_data%swansea_s_uncertainty_offset, &
+              output_data%swansea_s_uncertainty_vmin, &
+              output_data%swansea_s_uncertainty_vmax, &
+              MissingSn, output_data%swansea_s_uncertainty_vmax, &
+              control=SPixel%Sn(ISS(kk),ISS(kk)))
 
    !----------------------------------------------------------------------------
    ! diffuse_frac, diffuse_frac_uncertainty
    !----------------------------------------------------------------------------
-      call prepare_short_packed_float( &
-           Diag%diffuse_frac(k), output_data%diffuse_frac(i,j,kk), &
-           output_data%diffuse_frac_scale, &
-           output_data%diffuse_frac_offset, &
-           output_data%diffuse_frac_vmin, &
-           output_data%diffuse_frac_vmax, &
-           sreal_fill_value, output_data%diffuse_frac_vmax)
+         call prepare_short_packed_float( &
+              Diag%diffuse_frac(k), output_data%diffuse_frac(i,j,i_rho), &
+              output_data%diffuse_frac_scale, &
+              output_data%diffuse_frac_offset, &
+              output_data%diffuse_frac_vmin, &
+              output_data%diffuse_frac_vmax, &
+              sreal_fill_value, output_data%diffuse_frac_vmax)
 
-      temp_real=sqrt(Diag%diffuse_frac_s(k))
-      call prepare_short_packed_float( &
-           temp_real, output_data%diffuse_frac_uncertainty(i,j,kk), &
-           output_data%diffuse_frac_uncertainty_scale, &
-           output_data%diffuse_frac_uncertainty_offset, &
-           output_data%diffuse_frac_uncertainty_vmin, &
-           output_data%diffuse_frac_uncertainty_vmax, &
-           sreal_fill_value, output_data%diffuse_frac_uncertainty_vmax, &
-           control=Diag%diffuse_frac_s(k))
+         temp_real=sqrt(Diag%diffuse_frac_s(k))
+         call prepare_short_packed_float( &
+              temp_real, output_data%diffuse_frac_uncertainty(i,j,i_rho), &
+              output_data%diffuse_frac_uncertainty_scale, &
+              output_data%diffuse_frac_uncertainty_offset, &
+              output_data%diffuse_frac_uncertainty_vmin, &
+              output_data%diffuse_frac_uncertainty_vmax, &
+              sreal_fill_value, output_data%diffuse_frac_uncertainty_vmax, &
+              control=Diag%diffuse_frac_s(k))
+      end if
    end do
 
    !----------------------------------------------------------------------------

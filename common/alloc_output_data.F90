@@ -96,15 +96,14 @@ else
 end if
 
 if (ind%flags%do_rho) then
-   allocate(data%vid_rho(ind%NSolar, MaxRho_XX))
+   allocate(data%vid_rho(ind%Nrho))
    data%vid_rho = 0
-   allocate(data%vid_rho_uncertainty(ind%NSolar, MaxRho_XX))
+   allocate(data%vid_rho_uncertainty(ind%Nrho))
    data%vid_rho_uncertainty = 0
 
-   allocate(data%rho(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NSolar, MaxRho_XX))
+   allocate(data%rho(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%Nrho))
    data%rho = sint_fill_value
-   allocate(data%rho_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1, &
-                                 ind%NSolar, MaxRho_XX))
+   allocate(data%rho_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%Nrho))
    data%rho_uncertainty = sint_fill_value
 else
    nullify(data%vid_rho)
@@ -114,9 +113,9 @@ else
 end if
 
 if (ind%flags%do_swansea) then
-   allocate(data%vid_swansea_s(ind%NSolar))
+   allocate(data%vid_swansea_s(ind%Nss))
    data%vid_swansea_s = 0
-   allocate(data%vid_swansea_s_uncertainty(ind%NSolar))
+   allocate(data%vid_swansea_s_uncertainty(ind%Nss))
    data%vid_swansea_s_uncertainty = 0
 
    allocate(data%vid_swansea_p(ind%NViews))
@@ -124,14 +123,14 @@ if (ind%flags%do_swansea) then
    allocate(data%vid_swansea_p_uncertainty(ind%NViews))
    data%vid_swansea_p_uncertainty = 0
 
-   allocate(data%vid_diffuse_frac(ind%NSolar))
+   allocate(data%vid_diffuse_frac(ind%Nss))
    data%vid_diffuse_frac = 0
-   allocate(data%vid_diffuse_frac_uncertainty(ind%NSolar))
+   allocate(data%vid_diffuse_frac_uncertainty(ind%Nss))
    data%vid_diffuse_frac_uncertainty = 0
 
-   allocate(data%swansea_s(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NSolar))
+   allocate(data%swansea_s(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%Nss))
    data%swansea_s = sint_fill_value
-   allocate(data%swansea_s_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NSolar))
+   allocate(data%swansea_s_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%Nss))
    data%swansea_s_uncertainty = sint_fill_value
 
    allocate(data%swansea_p(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NViews))
@@ -139,10 +138,10 @@ if (ind%flags%do_swansea) then
    allocate(data%swansea_p_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NViews))
    data%swansea_p_uncertainty = sint_fill_value
 
-   allocate(data%diffuse_frac(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NSolar))
+   allocate(data%diffuse_frac(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%Nss))
    data%diffuse_frac = sint_fill_value
    allocate(data%diffuse_frac_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1, &
-                                          ind%NSolar))
+                                          ind%Nss))
    data%diffuse_frac_uncertainty = sint_fill_value
 else
    nullify(data%vid_swansea_s)
@@ -408,7 +407,7 @@ if (ind%flags%do_indexing) then
    allocate(data%ch_is(ind%Ny))
    data%ch_is = byte_fill_value
 
-   if (ind%flags%do_rho) then
+   if (ind%flags%do_rho .or. ind%flags%do_swansea) then
       allocate(data%rho_flags(ind%Ny))
       data%rho_flags = byte_fill_value
    else
@@ -472,14 +471,14 @@ else
 end if
 
 if (ind%flags%do_rho) then
-   allocate(data%vid_rho_ap(ind%NSolar, MaxRho_XX))
+   allocate(data%vid_rho_ap(ind%Nrho))
    data%vid_rho_ap = 0
-   allocate(data%vid_rho_fg(ind%NSolar, MaxRho_XX))
+   allocate(data%vid_rho_fg(ind%Nrho))
    data%vid_rho_fg = 0
 
-   allocate(data%rho_ap(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NSolar, MaxRho_XX))
+   allocate(data%rho_ap(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%Nrho))
    data%rho_ap = sint_fill_value
-   allocate(data%rho_fg(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NSolar, MaxRho_XX))
+   allocate(data%rho_fg(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%Nrho))
    data%rho_fg = sint_fill_value
 else
    nullify(data%vid_rho_ap)
@@ -489,9 +488,9 @@ else
 end if
 
 if (ind%flags%do_swansea) then
-   allocate(data%vid_swansea_s_ap(ind%NSolar))
+   allocate(data%vid_swansea_s_ap(ind%Nss))
    data%vid_swansea_s_ap = 0
-   allocate(data%vid_swansea_s_fg(ind%NSolar))
+   allocate(data%vid_swansea_s_fg(ind%Nss))
    data%vid_swansea_s_fg = 0
 
    allocate(data%vid_swansea_p_ap(ind%NViews))
@@ -499,9 +498,9 @@ if (ind%flags%do_swansea) then
    allocate(data%vid_swansea_p_fg(ind%NViews))
    data%vid_swansea_p_fg = 0
 
-   allocate(data%swansea_s_ap(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NSolar))
+   allocate(data%swansea_s_ap(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%Nss))
    data%swansea_s_ap = sint_fill_value
-   allocate(data%swansea_s_fg(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NSolar))
+   allocate(data%swansea_s_fg(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%Nss))
    data%swansea_s_fg = sint_fill_value
 
    allocate(data%swansea_p_ap(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NViews))

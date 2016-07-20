@@ -70,7 +70,7 @@ subroutine prepare_output_secondary(Ctrl, i, j, MSI_Data, SPixel, Diag, &
    type(Diag_t),                intent(in)    :: Diag
    type(output_data_secondary_t), intent(inout) :: output_data
 
-   integer          :: k, kk, l
+   integer          :: k, kk, l, i_rho
    real(kind=sreal) :: dummyreal
 
 
@@ -124,19 +124,22 @@ if (Ctrl%Ind%flags%do_rho) then
    !----------------------------------------------------------------------------
    ! rho_ap, rho_fg
    !----------------------------------------------------------------------------
+   i_rho = 0
    do k=1,SPixel%Ind%NSolar
       kk = SPixel%spixel_y_solar_to_ctrl_y_solar_index(k)
 
       do l=1,MaxRho_XX
-         if (any(SPixel%X .eq. IRs(kk,l))) then
+         if (Ctrl%Ind%rho_terms(kk,l)) then
+            i_rho = i_rho + 1
+
             call prepare_short_packed_float( &
-                 SPixel%Xb(IRs(kk,l)), output_data%rho_ap(i,j,kk,l), &
+                 SPixel%Xb(IRs(kk,l)), output_data%rho_ap(i,j,i_rho), &
                  output_data%rho_ap_scale, output_data%rho_ap_offset, &
                  output_data%rho_ap_vmin, output_data%rho_ap_vmax, &
                  MissingXn, sint_fill_value)
 
             call prepare_short_packed_float( &
-                 SPixel%X0(IRs(kk,l)), output_data%rho_fg(i,j,kk,l), &
+                 SPixel%X0(IRs(kk,l)), output_data%rho_fg(i,j,i_rho), &
                  output_data%rho_fg_scale, output_data%rho_fg_offset, &
                  output_data%rho_fg_vmin, output_data%rho_fg_vmax, &
                  MissingXn, sint_fill_value)
@@ -149,20 +152,25 @@ if (Ctrl%Ind%flags%do_swansea) then
    !----------------------------------------------------------------------------
    ! swansea_s_ap, swansea_s_fg
    !----------------------------------------------------------------------------
+   i_rho = 0
    do k=1,SPixel%Ind%NSolar
       kk = SPixel%spixel_y_solar_to_ctrl_y_solar_index(k)
 
-      call prepare_short_packed_float( &
-           SPixel%Xb(ISS(kk)), output_data%swansea_s_ap(i,j,k), &
-           output_data%swansea_s_ap_scale, output_data%swansea_s_ap_offset, &
-           output_data%swansea_s_ap_vmin, output_data%swansea_s_ap_vmax, &
-           MissingXn, output_data%swansea_s_ap_vmax)
+      if (Ctrl%Ind%ss_terms(kk)) then
+         i_rho = i_rho + 1
 
-      call prepare_short_packed_float( &
-           SPixel%X0(ISS(kk)), output_data%swansea_s_fg(i,j,k), &
-           output_data%swansea_s_fg_scale, output_data%swansea_s_fg_offset, &
-           output_data%swansea_s_fg_vmin, output_data%swansea_s_fg_vmax, &
-           MissingXn, output_data%swansea_s_fg_vmax)
+         call prepare_short_packed_float( &
+              SPixel%Xb(ISS(kk)), output_data%swansea_s_ap(i,j,i_rho), &
+              output_data%swansea_s_ap_scale, output_data%swansea_s_ap_offset, &
+              output_data%swansea_s_ap_vmin, output_data%swansea_s_ap_vmax, &
+              MissingXn, output_data%swansea_s_ap_vmax)
+
+         call prepare_short_packed_float( &
+              SPixel%X0(ISS(kk)), output_data%swansea_s_fg(i,j,i_rho), &
+              output_data%swansea_s_fg_scale, output_data%swansea_s_fg_offset, &
+              output_data%swansea_s_fg_vmin, output_data%swansea_s_fg_vmax, &
+              MissingXn, output_data%swansea_s_fg_vmax)
+      end if
    end do
 
    do k=1,Ctrl%Ind%NViews

@@ -39,7 +39,7 @@ subroutine prepare_output_secondary_pp(i, j, indexing, input_data, output_data)
    type(input_data_secondary_t), intent(in)    :: input_data
    type(output_data_secondary_t),intent(inout) :: output_data
 
-   integer :: k, l
+   integer :: k, l, i_rho
 
    output_data%scanline_u(i,j) = j
    output_data%scanline_v(i,j) = i
@@ -80,17 +80,20 @@ if (indexing%flags%do_rho) then
    !----------------------------------------------------------------------------
    ! rho_ap, rho_fg
    !----------------------------------------------------------------------------
+   i_rho = 0
    do k=1,indexing%NSolar
       do l=1,MaxRho_XX
          if (indexing%rho_terms(k,l)) then
+            i_rho = i_rho + 1
+
             call prepare_short_packed_float( &
-                 input_data%rho_ap(i,j,k,l), output_data%rho_ap(i,j,k,l), &
+                 input_data%rho_ap(i,j,i_rho), output_data%rho_ap(i,j,i_rho), &
                  output_data%rho_ap_scale, output_data%rho_ap_offset, &
                  output_data%rho_ap_vmin, output_data%rho_ap_vmax, &
                  sreal_fill_value, output_data%rho_ap_vmax)
 
             call prepare_short_packed_float( &
-                 input_data%rho_fg(i,j,k,l), output_data%rho_fg(i,j,k,l), &
+                 input_data%rho_fg(i,j,i_rho), output_data%rho_fg(i,j,i_rho), &
                  output_data%rho_fg_scale, output_data%rho_fg_offset, &
                  output_data%rho_fg_vmin, output_data%rho_fg_vmax, &
                  sreal_fill_value, output_data%rho_fg_vmax)
@@ -103,18 +106,23 @@ if (indexing%flags%do_swansea) then
    !----------------------------------------------------------------------------
    ! swansea_s_ap, swansea_s_fg
    !----------------------------------------------------------------------------
+   i_rho = 0
    do k=1,indexing%NSolar
-      call prepare_short_packed_float( &
-           input_data%swansea_s_ap(i,j,k), output_data%swansea_s_ap(i,j,k), &
-           output_data%swansea_s_ap_scale, output_data%swansea_s_ap_offset, &
-           output_data%swansea_s_ap_vmin, output_data%swansea_s_ap_vmax, &
-           sreal_fill_value, output_data%swansea_s_ap_vmax)
+      if (indexing%ss_terms(k)) then
+         i_rho = i_rho + 1
 
-      call prepare_short_packed_float( &
-           input_data%swansea_s_fg(i,j,k), output_data%swansea_s_fg(i,j,k), &
-           output_data%swansea_s_fg_scale, output_data%swansea_s_fg_offset, &
-           output_data%swansea_s_fg_vmin, output_data%swansea_s_fg_vmax, &
-           sreal_fill_value, output_data%swansea_s_fg_vmax)
+         call prepare_short_packed_float( &
+              input_data%swansea_s_ap(i,j,i_rho), output_data%swansea_s_ap(i,j,i_rho), &
+              output_data%swansea_s_ap_scale, output_data%swansea_s_ap_offset, &
+              output_data%swansea_s_ap_vmin, output_data%swansea_s_ap_vmax, &
+              sreal_fill_value, output_data%swansea_s_ap_vmax)
+
+         call prepare_short_packed_float( &
+              input_data%swansea_s_fg(i,j,i_rho), output_data%swansea_s_fg(i,j,i_rho), &
+              output_data%swansea_s_fg_scale, output_data%swansea_s_fg_offset, &
+              output_data%swansea_s_fg_vmin, output_data%swansea_s_fg_vmax, &
+              sreal_fill_value, output_data%swansea_s_fg_vmax)
+      end if
    end do
 
    do k=1,indexing%NViews

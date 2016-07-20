@@ -9,6 +9,8 @@
 ! 2015/10/22, GM: Add cloud albedo uncertainty.
 ! 2016/01/27, GM: Add cee and cee_uncertainty.
 ! 2016/01/28, GM: Add ctp and ctt corrected and corrected_uncertianty.
+! 2016/07/19, AP: Reduce rho and swansea_s to only contain terms that were
+!    retrieved. This is indicated by the rho|ss_terms array (and Nrho|Nss).
 !
 ! $Id$
 !
@@ -49,24 +51,24 @@ if (indexing%flags%do_aerosol) then
 end if
 
 if (indexing%flags%do_rho) then
-   primary2%rho(i,j,indexing%ysolar_loop_to_main_index,:) &
-                                       = primary1%rho(i,j,:,:)
-   primary2%rho_uncertainty(i,j,indexing%ysolar_loop_to_main_index,:) &
-                                       = primary1%rho_uncertainty(i,j,:,:)
+   primary2%rho(i,j,indexing%rho_loop_to_rho_main_index) &
+                                       = primary1%rho(i,j,:)
+   primary2%rho_uncertainty(i,j,indexing%rho_loop_to_rho_main_index) &
+                                       = primary1%rho_uncertainty(i,j,:)
 end if
 
 if (indexing%flags%do_swansea) then
-   primary2%swansea_s(i,j,indexing%ysolar_loop_to_main_index) &
+   primary2%swansea_s(i,j,indexing%ss_loop_to_ss_main_index) &
                                        = primary1%swansea_s(i,j,:)
-   primary2%swansea_s_uncertainty(i,j,indexing%ysolar_loop_to_main_index) &
+   primary2%swansea_s_uncertainty(i,j,indexing%ss_loop_to_ss_main_index) &
                                        = primary1%swansea_s_uncertainty(i,j,:)
    primary2%swansea_p(i,j,indexing%view_loop_to_main_index) &
                                        = primary1%swansea_p(i,j,:)
    primary2%swansea_p_uncertainty(i,j,indexing%view_loop_to_main_index) &
                                        = primary1%swansea_p_uncertainty(i,j,:)
-   primary2%diffuse_frac(i,j,indexing%ysolar_loop_to_main_index) &
+   primary2%diffuse_frac(i,j,indexing%ss_loop_to_ss_main_index) &
                                        = primary1%diffuse_frac(i,j,:)
-   primary2%diffuse_frac_uncertainty(i,j,indexing%ysolar_loop_to_main_index) &
+   primary2%diffuse_frac_uncertainty(i,j,indexing%ss_loop_to_ss_main_index) &
                                        = primary1%diffuse_frac_uncertainty(i,j,:)
 end if
 
@@ -132,16 +134,16 @@ if (do_secondary) then
    end if
 
    if (indexing%flags%do_rho) then
-      secondary2%rho_ap(i,j,indexing%ysolar_loop_to_main_index,:) &
-                                       = secondary1%rho_ap(i,j,:,:)
-      secondary2%rho_fg(i,j,indexing%ysolar_loop_to_main_index,:) &
-                                       = secondary1%rho_fg(i,j,:,:)
+      secondary2%rho_ap(i,j,indexing%rho_loop_to_rho_main_index) &
+                                       = secondary1%rho_ap(i,j,:)
+      secondary2%rho_fg(i,j,indexing%rho_loop_to_rho_main_index) &
+                                       = secondary1%rho_fg(i,j,:)
    end if
 
    if (indexing%flags%do_swansea) then
-      secondary2%swansea_s_ap(i,j,indexing%ysolar_loop_to_main_index) &
+      secondary2%swansea_s_ap(i,j,indexing%ss_loop_to_ss_main_index) &
                                        = secondary1%swansea_s_ap(i,j,:)
-      secondary2%swansea_s_fg(i,j,indexing%ysolar_loop_to_main_index) &
+      secondary2%swansea_s_fg(i,j,indexing%ss_loop_to_ss_main_index) &
                                        = secondary1%swansea_s_fg(i,j,:)
       secondary2%swansea_p_ap(i,j,indexing%view_loop_to_main_index) &
                                        = secondary1%swansea_p_ap(i,j,:)

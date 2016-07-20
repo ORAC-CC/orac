@@ -29,6 +29,8 @@
 ! 2016/03/02, AP: Homogenisation of I/O modules.
 ! 2016/04/28, AP: Add multiple views.
 ! 2016/06/06, SP: New variable for bayesian selection without huge memory usage.
+! 2016/07/19, AP: Reduce rho and swansea_s to only contain terms that were
+!    retrieved. This is indicated by the rho|ss_terms array (and Nrho|Nss).
 !
 ! $Id$
 !
@@ -49,6 +51,8 @@ module orac_input_m
       integer, pointer :: ysolar_loop_to_main_index(:)
       integer, pointer :: ythermal_loop_to_main_index(:)
       integer, pointer :: view_loop_to_main_index(:)
+      integer, pointer :: rho_loop_to_rho_main_index(:)
+      integer, pointer :: ss_loop_to_ss_main_index(:)
       logical          :: read_optional_channel_field(MaxNumMeas) = .false.
       logical          :: read_optional_view_field(MaxNumViews)   = .false.
 !     logical, pointer :: best_infile(:,:)
@@ -63,8 +67,8 @@ module orac_input_m
       real(sreal),   pointer :: aer(:,:)
       real(sreal),   pointer :: aer_uncertainty(:,:)
 
-      real(sreal),   pointer :: rho(:,:,:,:)
-      real(sreal),   pointer :: rho_uncertainty(:,:,:,:)
+      real(sreal),   pointer :: rho(:,:,:)
+      real(sreal),   pointer :: rho_uncertainty(:,:,:)
 
       real(sreal),   pointer :: swansea_s(:,:,:)
       real(sreal),   pointer :: swansea_s_uncertainty(:,:,:)
@@ -138,8 +142,8 @@ module orac_input_m
       real(sreal), pointer :: aer_ap(:,:)
       real(sreal), pointer :: aer_fg(:,:)
 
-      real(sreal), pointer :: rho_ap(:,:,:,:)
-      real(sreal), pointer :: rho_fg(:,:,:,:)
+      real(sreal), pointer :: rho_ap(:,:,:)
+      real(sreal), pointer :: rho_fg(:,:,:)
 
       real(sreal), pointer :: swansea_s_ap(:,:,:)
       real(sreal), pointer :: swansea_s_fg(:,:,:)
@@ -203,7 +207,7 @@ subroutine determine_channel_indexing(fname, indexing, verbose)
    call nc_read_array(ncid, "y_id",    indexing%Y_Id,    verbose)
    call nc_read_array(ncid, "view_id", indexing%View_Id, verbose)
    call nc_read_array(ncid, "ch_is",   indexing%Ch_Is,   verbose)
-   if (indexing%flags%do_rho) &
+   if (indexing%flags%do_rho .or. indexing%flags%do_swansea) &
         call nc_read_array(ncid, "rho_flags", rho_flags, verbose)
 
    if (nf90_close(ncid) .ne. NF90_NOERR) then
@@ -237,8 +241,9 @@ subroutine determine_channel_indexing(fname, indexing, verbose)
    end do
 
    ! Allocate and form rho_terms array
-   if (indexing%flags%do_rho) then
+   if (indexing%flags%do_rho .or. indexing%flags%do_swansea) then
       allocate(indexing%rho_terms(indexing%NSolar, MaxRho_XX))
+      allocate(indexing%ss_terms(indexing%NSolar))
       call set_rho_terms_from_bitmask(rho_flags, indexing%common_indices_t)
    end if
 
@@ -253,7 +258,7 @@ subroutine cross_reference_indexing(n, loop_ind, main_ind)
    type(input_indices_t), intent(inout) :: loop_ind(:)
    type(input_indices_t), intent(inout) :: main_ind
 
-   integer :: i0, i1, i2, i_ch, i_file, j_ch
+   integer :: i0, i1, i2, i_ch, i_file, j_ch, k_rho
    integer, dimension(MaxNumMeas) :: Y_Id, View_Id, Ch_Is, YSolar, YThermal
 
    ! Ensure files all have the same grid
@@ -389,6 +394,7 @@ subroutine cross_reference_indexing(n, loop_ind, main_ind)
    ! Allocate state vector terms
    main_ind%Nx = maxval(loop_ind%Nx)
    if (main_ind%flags%do_rho) then
+      ! Identify which rho terms are retrieved in any input
       allocate(main_ind%rho_terms(main_ind%NSolar, MaxRho_XX))
       main_ind%rho_terms = .false.
       do i_file = 1, n
@@ -397,6 +403,77 @@ subroutine cross_reference_indexing(n, loop_ind, main_ind)
                i_ch = loop_ind(i_file)%ysolar_loop_to_main_index(j_ch)
                main_ind%rho_terms(i_ch,:) = main_ind%rho_terms(i_ch,:) .or. &
                     loop_ind(i_file)%rho_terms(j_ch,:)
+            end do
+         end if
+      end do
+      main_ind%Nrho = count(main_ind%rho_terms)
+
+      ! Identify where each file's rho terms are in the main structure
+      do i_file = 1, n
+         if (loop_ind(i_file)%flags%do_rho) then
+            allocate(loop_ind(i_file)%rho_loop_to_rho_main_index( &
+                 loop_ind(i_file)%Nrho))
+
+            i0 = 0
+            i1 = 0
+            do i_ch = 1, main_ind%NSolar
+               ! Search for the inverse of ysolar_loop_to_main_index
+               ch_search_rho: do j_ch = 1, loop_ind(i_file)%NSolar
+                  if (loop_ind(i_file)%Y_Id(loop_ind(i_file)%YSolar(j_ch)) == &
+                       main_ind%Y_Id(main_ind%YSolar(i_ch))) exit ch_search_rho
+               end do ch_search_rho
+
+               do k_rho = 1, MaxRho_XX
+                  if (main_ind%rho_terms(i_ch,k_rho)) i0 = i0 + 1
+
+                  if (j_ch <= loop_ind(i_file)%NSolar) then
+                     if (loop_ind(i_file)%rho_terms(j_ch,k_rho)) then
+                        i1 = i1 + 1
+                        loop_ind(i_file)%rho_loop_to_rho_main_index(i1) = i0
+                     end if
+                  end if
+               end do
+            end do
+         end if
+      end do
+   end if
+
+   ! As above, but for ss_terms
+   if (main_ind%flags%do_swansea) then
+      allocate(main_ind%ss_terms(main_ind%NSolar))
+      main_ind%ss_terms = .false.
+      do i_file = 1, n
+         if (loop_ind(i_file)%flags%do_swansea) then
+            do j_ch = 1, loop_ind(i_file)%NSolar
+               i_ch = loop_ind(i_file)%ysolar_loop_to_main_index(j_ch)
+               main_ind%ss_terms(i_ch) = main_ind%ss_terms(i_ch) .or. &
+                    loop_ind(i_file)%ss_terms(j_ch)
+            end do
+         end if
+      end do
+      main_ind%Nss = count(main_ind%ss_terms)
+
+      do i_file = 1, n
+         if (loop_ind(i_file)%flags%do_swansea) then
+            allocate(loop_ind(i_file)%ss_loop_to_ss_main_index( &
+                 loop_ind(i_file)%Nss))
+
+            i0 = 0
+            i1 = 0
+            do i_ch = 1, main_ind%NSolar
+               ch_search_ss: do j_ch = 1, loop_ind(i_file)%NSolar
+                  if (loop_ind(i_file)%Y_Id(loop_ind(i_file)%YSolar(j_ch)) == &
+                       main_ind%Y_Id(main_ind%YSolar(i_ch))) exit ch_search_ss
+               end do ch_search_ss
+
+               if (main_ind%ss_terms(i_ch)) i0 = i0 + 1
+
+               if (j_ch <= loop_ind(i_file)%NSolar) then
+                  if (loop_ind(i_file)%ss_terms(j_ch)) then
+                     i1 = i1 + 1
+                     loop_ind(i_file)%ss_loop_to_ss_main_index(i1) = i0
+                  end if
+               end if
             end do
          end if
       end do
@@ -417,6 +494,8 @@ subroutine nullify_indexing(indexing)
    nullify(indexing%ysolar_loop_to_main_index)
    nullify(indexing%ythermal_loop_to_main_index)
    nullify(indexing%view_loop_to_main_index)
+   nullify(indexing%rho_loop_to_rho_main_index)
+   nullify(indexing%ss_loop_to_ss_main_index)
 !  nullify(indexing%best_infile)
 
 end subroutine nullify_indexing
@@ -438,6 +517,10 @@ subroutine dealloc_input_indices(indexing)
       deallocate(indexing%ythermal_loop_to_main_index)
    if (associated(indexing%view_loop_to_main_index)) &
       deallocate(indexing%view_loop_to_main_index)
+   if (associated(indexing%rho_loop_to_rho_main_index)) &
+      deallocate(indexing%rho_loop_to_rho_main_index)
+   if (associated(indexing%ss_loop_to_ss_main_index)) &
+      deallocate(indexing%ss_loop_to_ss_main_index)
 !  if (associated(indexing%best_infile)) &
 !     deallocate(indexing%best_inffile)
 

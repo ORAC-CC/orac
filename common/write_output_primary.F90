@@ -117,24 +117,20 @@ if (ind%flags%do_aerosol) then
 end if
 
 if (ind%flags%do_rho) then
-   do i=1,ind%NSolar
-      do j=1,MaxRho_XX
-         if (output_data%vid_rho(i,j) /= 0) then
-            call nc_write_array(ncid,'rho', &
-                 output_data%vid_rho(i,j), &
-                 output_data%rho(ind%X0:,ind%Y0:,i,j), &
-                 1,1,ind%Xdim,1,1,ind%Ydim)
-            call nc_write_array(ncid,'rho_uncertainty', &
-                 output_data%vid_rho_uncertainty(i,j), &
-                 output_data%rho_uncertainty(ind%X0:,ind%Y0:,i,j), &
-                 1,1,ind%Xdim,1,1,ind%Ydim)
-         end if
-      end do
+   do i=1,ind%Nrho
+      call nc_write_array(ncid,'rho', &
+           output_data%vid_rho(i), &
+           output_data%rho(ind%X0:,ind%Y0:,i), &
+           1,1,ind%Xdim,1,1,ind%Ydim)
+      call nc_write_array(ncid,'rho_uncertainty', &
+           output_data%vid_rho_uncertainty(i), &
+           output_data%rho_uncertainty(ind%X0:,ind%Y0:,i), &
+           1,1,ind%Xdim,1,1,ind%Ydim)
    end do
 end if
 
 if (ind%flags%do_swansea) then
-   do i=1,ind%NSolar
+   do i=1,ind%Nss
       call nc_write_array(ncid,'swansea_s', &
            output_data%vid_swansea_s(i), &
            output_data%swansea_s(ind%X0:,ind%Y0:,i),1,1,ind%Xdim,1,1,ind%Ydim)
@@ -395,7 +391,7 @@ end if
            output_data%view_id, 1,1,ind%NViews)
       call nc_write_array(ncid,'ch_is',output_data%vid_ch_is, &
            output_data%ch_is, 1,1,ind%Ny)
-      if (ind%flags%do_rho) &
+      if (ind%flags%do_rho .or. ind%flags%do_swansea) &
            call nc_write_array(ncid,'rho_flags',output_data%vid_rho_flags, &
            output_data%rho_flags, 1,1,ind%Ny)
    end if

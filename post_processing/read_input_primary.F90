@@ -69,7 +69,7 @@ subroutine read_input_primary_common(ncid, input_data, indexing, sval, verbose)
    integer,                    intent(in)    :: sval
    logical,                    intent(in)    :: verbose
 
-   integer            :: i, j
+   integer            :: i, j, i_rho
    integer            :: ierr
    integer            :: varid
    character(len=32)  :: input_num
@@ -90,42 +90,50 @@ if (indexing%flags%do_aerosol) then
 end if
 
 if (indexing%flags%do_rho) then
+   i_rho = 0
    do i=1,indexing%NSolar
       write(input_num, "(i4)") indexing%Y_Id(indexing%YSolar(i))
 
       do j=1,MaxRho_XX
          if (indexing%rho_terms(i,j)) then
+            i_rho = i_rho + 1
+
             call create_rho_field_name(j, 1, input_num, input_dummy)
             call nc_read_packed_array(ncid, input_dummy, &
-                 input_data%rho(:,:,i,j), verbose, startp = [1, sval])
+                 input_data%rho(:,:,i_rho), verbose, startp = [1, sval])
 
             call create_rho_field_name(j, 2, input_num, input_dummy)
             call nc_read_packed_array(ncid, input_dummy, &
-                 input_data%rho_uncertainty(:,:,i,j), verbose, startp = [1, sval])
+                 input_data%rho_uncertainty(:,:,i_rho), verbose, startp = [1, sval])
          end if
       end do
    end do
 end if
 
 if (indexing%flags%do_swansea) then
+   i_rho = 0
    do i=1,indexing%NSolar
-      write(input_num, "(i4)") indexing%Y_Id(indexing%YSolar(i))
+      if (indexing%ss_terms(i)) then
+         i_rho = i_rho + 1
 
-      input_dummy='swansea_s_in_channel_no_'//trim(adjustl(input_num))
-      call nc_read_packed_array(ncid, input_dummy, &
-           input_data%swansea_s(:,:,i), verbose, startp = [1, sval])
-      input_dummy='swansea_s_uncertainty_in_channel_no_'// &
-           trim(adjustl(input_num))
-      call nc_read_packed_array(ncid, input_dummy, &
-           input_data%swansea_s_uncertainty(:,:,i), verbose, startp = [1, sval])
+         write(input_num, "(i4)") indexing%Y_Id(indexing%YSolar(i))
 
-      input_dummy='diffuse_frac_in_channel_no_'//trim(adjustl(input_num))
-      call nc_read_packed_array(ncid, input_dummy, &
-           input_data%diffuse_frac(:,:,i), verbose, startp = [1, sval])
-      input_dummy='diffuse_frac_uncertainty_in_channel_no_'// &
-           trim(adjustl(input_num))
-      call nc_read_packed_array(ncid, input_dummy, &
-           input_data%diffuse_frac_uncertainty(:,:,i), verbose, startp = [1, sval])
+         input_dummy='swansea_s_in_channel_no_'//trim(adjustl(input_num))
+         call nc_read_packed_array(ncid, input_dummy, &
+              input_data%swansea_s(:,:,i_rho), verbose, startp = [1, sval])
+         input_dummy='swansea_s_uncertainty_in_channel_no_'// &
+              trim(adjustl(input_num))
+         call nc_read_packed_array(ncid, input_dummy, &
+              input_data%swansea_s_uncertainty(:,:,i_rho), verbose, startp = [1, sval])
+
+         input_dummy='diffuse_frac_in_channel_no_'//trim(adjustl(input_num))
+         call nc_read_packed_array(ncid, input_dummy, &
+              input_data%diffuse_frac(:,:,i_rho), verbose, startp = [1, sval])
+         input_dummy='diffuse_frac_uncertainty_in_channel_no_'// &
+              trim(adjustl(input_num))
+         call nc_read_packed_array(ncid, input_dummy, &
+              input_data%diffuse_frac_uncertainty(:,:,i_rho), verbose, startp = [1, sval])
+      end if
    end do
 
    do i=1,indexing%NViews

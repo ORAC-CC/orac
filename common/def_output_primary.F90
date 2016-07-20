@@ -107,7 +107,7 @@ subroutine def_output_primary(ncid, dim3d_var, output_data, indexing, &
    character(len=512) :: input_dummy
    character(len=512) :: input_dummy2
    integer            :: i, j
-   integer            :: i_view
+   integer            :: i_view, i_rho
    integer            :: dims_var(2), view_var(1)
 
    dims_var = dim3d_var(1:2)
@@ -388,12 +388,15 @@ if (indexing%flags%do_rho) then
    !----------------------------------------------------------------------------
    ! rho_in_channel_no_*
    !----------------------------------------------------------------------------
+   i_rho = 0
    do i=1,indexing%NSolar
 
       write(input_num,"(i4)") indexing%Y_Id(indexing%YSolar(i))
 
       do j=1,MaxRho_XX
          if (indexing%rho_terms(i,j)) then
+            i_rho = i_rho + 1
+
             call create_rho_field_name(j, 1, input_num, &
                  input_dummy2, input_dummy)
 
@@ -401,7 +404,7 @@ if (indexing%flags%do_rho) then
                  ncid, &
                  dims_var, &
                  trim(adjustl(input_dummy2)), &
-                 output_data%vid_rho(i,j), &
+                 output_data%vid_rho(i_rho), &
                  verbose, &
                  long_name     = trim(adjustl(input_dummy)), &
                  standard_name = '', &
@@ -420,12 +423,15 @@ if (indexing%flags%do_rho) then
    !----------------------------------------------------------------------------
    ! rho_uncertainty_in_channel_no_*
    !----------------------------------------------------------------------------
+   i_rho = 0
    do i=1,indexing%NSolar
 
       write(input_num,"(i4)") indexing%Y_Id(indexing%YSolar(i))
 
       do j=1,MaxRho_XX
          if (indexing%rho_terms(i,j)) then
+            i_rho = i_rho + 1
+
             call create_rho_field_name(j, 2, input_num, &
                  input_dummy2, input_dummy)
 
@@ -433,7 +439,7 @@ if (indexing%flags%do_rho) then
                  ncid, &
                  dims_var, &
                  trim(adjustl(input_dummy2)), &
-                 output_data%vid_rho_uncertainty(i,j), &
+                 output_data%vid_rho_uncertainty(i_rho), &
                  verbose, &
                  long_name     = trim(adjustl(input_dummy)), &
                  standard_name = '', &
@@ -454,57 +460,65 @@ if (indexing%flags%do_swansea) then
    !----------------------------------------------------------------------------
    ! swansea_s_in_channel_no_*
    !----------------------------------------------------------------------------
+   i_rho = 0
    do i=1,indexing%NSolar
+      if (indexing%ss_terms(i)) then
+         i_rho = i_rho + 1
 
-      write(input_num,"(i4)") indexing%Y_Id(indexing%YSolar(i))
+         write(input_num,"(i4)") indexing%Y_Id(indexing%YSolar(i))
 
-      input_dummy='s parameter for Swansea surface reflectance model in channel no '//trim(adjustl(input_num))
-      input_dummy2='swansea_s_in_channel_no_'//trim(adjustl(input_num))
+         input_dummy='s parameter for Swansea surface reflectance model in channel no '//trim(adjustl(input_num))
+         input_dummy2='swansea_s_in_channel_no_'//trim(adjustl(input_num))
 
-      call nc_def_var_short_packed_float( &
-           ncid, &
-           dims_var, &
-           trim(adjustl(input_dummy2)), &
-           output_data%vid_swansea_s(i), &
-           verbose, &
-           long_name     = trim(adjustl(input_dummy)), &
-           standard_name = '', &
-           fill_value    = sint_fill_value, &
-           scale_factor  = output_data%swansea_s_scale, &
-           add_offset    = output_data%swansea_s_offset, &
-           valid_min     = output_data%swansea_s_vmin, &
-           valid_max     = output_data%swansea_s_vmax, &
-           units         = '1', &
-           deflate_level = deflate_level, &
-           shuffle       = shuffle_flag)
+         call nc_def_var_short_packed_float( &
+              ncid, &
+              dims_var, &
+              trim(adjustl(input_dummy2)), &
+              output_data%vid_swansea_s(i_rho), &
+              verbose, &
+              long_name     = trim(adjustl(input_dummy)), &
+              standard_name = '', &
+              fill_value    = sint_fill_value, &
+              scale_factor  = output_data%swansea_s_scale, &
+              add_offset    = output_data%swansea_s_offset, &
+              valid_min     = output_data%swansea_s_vmin, &
+              valid_max     = output_data%swansea_s_vmax, &
+              units         = '1', &
+              deflate_level = deflate_level, &
+              shuffle       = shuffle_flag)
+      end if
    end do
 
    !----------------------------------------------------------------------------
    ! swansea_s_uncertainty_in_channel_no_*
    !----------------------------------------------------------------------------
+   i_rho = 0
    do i=1,indexing%NSolar
+      if (indexing%ss_terms(i)) then
+         i_rho = i_rho + 1
 
-      write(input_num,"(i4)") indexing%Y_Id(indexing%YSolar(i))
+         write(input_num,"(i4)") indexing%Y_Id(indexing%YSolar(i))
 
-      input_dummy='uncertainty in s parameter for Swansea surface reflectance model in channel no '//trim(adjustl(input_num))
-      input_dummy2='swansea_s_uncertainty_in_channel_no_'//trim(adjustl(input_num))
+         input_dummy='uncertainty in s parameter for Swansea surface reflectance model in channel no '//trim(adjustl(input_num))
+         input_dummy2='swansea_s_uncertainty_in_channel_no_'//trim(adjustl(input_num))
 
-      call nc_def_var_short_packed_float( &
-           ncid, &
-           dims_var, &
-           trim(adjustl(input_dummy2)), &
-           output_data%vid_swansea_s_uncertainty(i), &
-           verbose, &
-           long_name     = trim(adjustl(input_dummy)), &
-           standard_name = '', &
-           fill_value    = sint_fill_value, &
-           scale_factor  = output_data%swansea_s_uncertainty_scale, &
-           add_offset    = output_data%swansea_s_uncertainty_offset, &
-           valid_min     = output_data%swansea_s_uncertainty_vmin, &
-           valid_max     = output_data%swansea_s_uncertainty_vmax, &
-           units         = '1', &
-           deflate_level = deflate_level, &
-           shuffle       = shuffle_flag)
+         call nc_def_var_short_packed_float( &
+              ncid, &
+              dims_var, &
+              trim(adjustl(input_dummy2)), &
+              output_data%vid_swansea_s_uncertainty(i_rho), &
+              verbose, &
+              long_name     = trim(adjustl(input_dummy)), &
+              standard_name = '', &
+              fill_value    = sint_fill_value, &
+              scale_factor  = output_data%swansea_s_uncertainty_scale, &
+              add_offset    = output_data%swansea_s_uncertainty_offset, &
+              valid_min     = output_data%swansea_s_uncertainty_vmin, &
+              valid_max     = output_data%swansea_s_uncertainty_vmax, &
+              units         = '1', &
+              deflate_level = deflate_level, &
+              shuffle       = shuffle_flag)
+      end if
    end do
 
    !----------------------------------------------------------------------------
@@ -566,57 +580,65 @@ if (indexing%flags%do_swansea) then
    !----------------------------------------------------------------------------
    ! diffuse_frac_in_channel_no_*
    !----------------------------------------------------------------------------
+   i_rho = 0
    do i=1,indexing%NSolar
+      if (indexing%ss_terms(i)) then
+         i_rho = i_rho + 1
 
-      write(input_num,"(i4)") indexing%Y_Id(indexing%YSolar(i))
+         write(input_num,"(i4)") indexing%Y_Id(indexing%YSolar(i))
 
-      input_dummy='diffuse fraction of radiation in channel no '//trim(adjustl(input_num))
-      input_dummy2='diffuse_frac_in_channel_no_'//trim(adjustl(input_num))
+         input_dummy='diffuse fraction of radiation in channel no '//trim(adjustl(input_num))
+         input_dummy2='diffuse_frac_in_channel_no_'//trim(adjustl(input_num))
 
-      call nc_def_var_short_packed_float( &
-           ncid, &
-           dims_var, &
-           trim(adjustl(input_dummy2)), &
-           output_data%vid_diffuse_frac(i), &
-           verbose, &
-           long_name     = trim(adjustl(input_dummy)), &
-           standard_name = '', &
-           fill_value    = sint_fill_value, &
-           scale_factor  = output_data%diffuse_frac_scale, &
-           add_offset    = output_data%diffuse_frac_offset, &
-           valid_min     = output_data%diffuse_frac_vmin, &
-           valid_max     = output_data%diffuse_frac_vmax, &
-           units         = '1', &
-           deflate_level = deflate_level, &
-           shuffle       = shuffle_flag)
+         call nc_def_var_short_packed_float( &
+              ncid, &
+              dims_var, &
+              trim(adjustl(input_dummy2)), &
+              output_data%vid_diffuse_frac(i_rho), &
+              verbose, &
+              long_name     = trim(adjustl(input_dummy)), &
+              standard_name = '', &
+              fill_value    = sint_fill_value, &
+              scale_factor  = output_data%diffuse_frac_scale, &
+              add_offset    = output_data%diffuse_frac_offset, &
+              valid_min     = output_data%diffuse_frac_vmin, &
+              valid_max     = output_data%diffuse_frac_vmax, &
+              units         = '1', &
+              deflate_level = deflate_level, &
+              shuffle       = shuffle_flag)
+      end if
    end do
 
    !----------------------------------------------------------------------------
    ! diffuse_frac_uncertainty_in_channel_no_*
    !----------------------------------------------------------------------------
+   i_rho = 0
    do i=1,indexing%NSolar
+      if (indexing%ss_terms(i)) then
+         i_rho = i_rho + 1
 
-      write(input_num,"(i4)") indexing%Y_Id(indexing%YSolar(i))
+         write(input_num,"(i4)") indexing%Y_Id(indexing%YSolar(i))
 
-      input_dummy='uncertainty in diffuse fraction of radiation in channel no '//trim(adjustl(input_num))
-      input_dummy2='diffuse_frac_uncertainty_in_channel_no_'//trim(adjustl(input_num))
+         input_dummy='uncertainty in diffuse fraction of radiation in channel no '//trim(adjustl(input_num))
+         input_dummy2='diffuse_frac_uncertainty_in_channel_no_'//trim(adjustl(input_num))
 
-      call nc_def_var_short_packed_float( &
-           ncid, &
-           dims_var, &
-           trim(adjustl(input_dummy2)), &
-           output_data%vid_diffuse_frac_uncertainty(i), &
-           verbose, &
-           long_name     = trim(adjustl(input_dummy)), &
-           standard_name = '', &
-           fill_value    = sint_fill_value, &
-           scale_factor  = output_data%diffuse_frac_uncertainty_scale, &
-           add_offset    = output_data%diffuse_frac_uncertainty_offset, &
-           valid_min     = output_data%diffuse_frac_uncertainty_vmin, &
-           valid_max     = output_data%diffuse_frac_uncertainty_vmax, &
-           units         = '1', &
-           deflate_level = deflate_level, &
-           shuffle       = shuffle_flag)
+         call nc_def_var_short_packed_float( &
+              ncid, &
+              dims_var, &
+              trim(adjustl(input_dummy2)), &
+              output_data%vid_diffuse_frac_uncertainty(i_rho), &
+              verbose, &
+              long_name     = trim(adjustl(input_dummy)), &
+              standard_name = '', &
+              fill_value    = sint_fill_value, &
+              scale_factor  = output_data%diffuse_frac_uncertainty_scale, &
+              add_offset    = output_data%diffuse_frac_uncertainty_offset, &
+              valid_min     = output_data%diffuse_frac_uncertainty_vmin, &
+              valid_max     = output_data%diffuse_frac_uncertainty_vmax, &
+              units         = '1', &
+              deflate_level = deflate_level, &
+              shuffle       = shuffle_flag)
+      end if
    end do
 end if
 
@@ -1901,7 +1923,7 @@ if (indexing%flags%do_indexing .and. present(ch_var)) then
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 
-   if (indexing%flags%do_rho) then
+   if (indexing%flags%do_rho .or. indexing%flags%do_swansea) then
    !----------------------------------------------------------------------------
    ! rho_flags
    !----------------------------------------------------------------------------

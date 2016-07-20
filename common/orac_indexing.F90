@@ -9,6 +9,8 @@
 ! 2016/03/10, SP: Fixed problem that prevented gfort compilation (. -> %).
 ! 2016/07/11, GM: Add nullify_common_indices().
 ! 2016/07/08, GM: Add flag for cloud layer 2.
+! 2016/07/19, AP: Reduce rho and swansea_s to only contain terms that were
+!    retrieved. This is indicated by the rho|ss_terms array (and Nrho|Nss).
 !
 ! $Id$
 !
@@ -57,7 +59,10 @@ module orac_indexing_m
 
       ! State vector
       integer          :: Nx             ! Dimension of covariance matrix
-      logical, pointer :: rho_terms(:,:) ! Flags use of surface property
+      integer          :: Nrho           ! No. of BRDF terms retrieved
+      logical, pointer :: rho_terms(:,:) ! Flags retrieval of BRDF term
+      integer          :: Nss            ! No. of Swansea s terms retrieved
+      logical, pointer :: ss_terms(:)    ! Flags retrieval of Swansea s term
 
       ! Instrument swath
       integer          :: Xdim           ! Across track dimension
@@ -142,11 +147,20 @@ subroutine make_bitmask_from_rho_terms(ind, bitmask)
    integer :: i, j
 
    bitmask = 0
-   do i=1,ind%NSolar
-      do j=1,MaxRho_XX
-         if (ind%rho_terms(i,j)) bitmask(i) = ibset(bitmask(i), j)
+
+   if (associated(ind%ss_terms)) then
+      do i=1,ind%NSolar
+         if (ind%ss_terms(i)) bitmask(i) = ibset(bitmask(i), 0)
       end do
-   end do
+   end if
+
+   if (associated(ind%rho_terms)) then
+      do i=1,ind%NSolar
+         do j=1,MaxRho_XX
+            if (ind%rho_terms(i,j)) bitmask(i) = ibset(bitmask(i), j)
+         end do
+      end do
+   end if
 
 end subroutine make_bitmask_from_rho_terms
 
@@ -161,10 +175,15 @@ subroutine set_rho_terms_from_bitmask(bitmask, ind)
    integer :: i, j
 
    do i=1,ind%NSolar
+      ind%ss_terms(i) = btest(bitmask(i), 0)
+
       do j=1,MaxRho_XX
          ind%rho_terms(i,j) = btest(bitmask(i), j)
       end do
    end do
+
+   ind%Nss  = count(ind%ss_terms)
+   ind%Nrho = count(ind%rho_terms)
 
 end subroutine set_rho_terms_from_bitmask
 
@@ -236,6 +255,7 @@ subroutine nullify_common_indices(ind)
    nullify(ind%View_Id)
    nullify(ind%Ch_Is)
    nullify(ind%rho_terms)
+   nullify(ind%ss_terms)
 
 end subroutine nullify_common_indices
 
@@ -252,6 +272,7 @@ subroutine dealloc_common_indices(ind)
    deallocate(ind%View_Id)
    deallocate(ind%Ch_Is)
    if (associated(ind%rho_terms)) deallocate(ind%rho_terms)
+   if (associated(ind%ss_terms)) deallocate(ind%ss_terms)
 
 end subroutine dealloc_common_indices
 
