@@ -452,7 +452,9 @@ void print_alloc_in_f(FILE* f[], char* parent_struct, char* name, int alloc) {
     fputs("))\n", f[F_CP1]);
 
     // When leaving Fortran wrapper, if array is allocated, override strct
-    fprintf(f[F_CP2], "   if (.not. associated(%s_VARIABLE%%%s) .or. ",
+    fprintf(f[F_CP2], "   if (c_associated(%s__%s)) then\n",
+            parent_struct, name);
+    fprintf(f[F_CP2], "      if (.not. associated(%s_VARIABLE%%%s) .or. ",
             parent_struct, name);
 
     // Add dimension variables
@@ -487,7 +489,7 @@ void print_alloc_in_f(FILE* f[], char* parent_struct, char* name, int alloc) {
 
     // Close statements
     fputs("   end if\n", f[F_CP1]);
-    fputs("])\n", f[F_CP2]);
+    fputs("])\n   end if\n", f[F_CP2]);
 }
 
 // Print string print code into Fortran interface
