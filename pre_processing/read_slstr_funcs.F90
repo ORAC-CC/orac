@@ -15,6 +15,8 @@
 !                 improvements too, should be more accurate for VIS resampling
 ! 2016/07/13, SP: Fix so that code doesn't crash when dealing with SLSTR's
 !                 occasionally nonsensical array sizes.
+! 2016/07/20, SP: Read the solar irradiance data from file rather than assuming
+!                 pre-launch default values
 !
 !
 ! Bugs:
@@ -269,7 +271,7 @@ subroutine read_slstr_visdata(indir,inband,outarr,imager_angles,sx,sy,nx,ny)
 
    real    :: filval,sclval,offval
 
-   integer :: fid,did,ierr
+   integer :: fid,did,ierr,j
 
    integer :: endx,endy
 
@@ -285,8 +287,20 @@ subroutine read_slstr_visdata(indir,inband,outarr,imager_angles,sx,sy,nx,ny)
    allocate(data2(nx,ny))
    allocate(data3(nx,ny))
 
-   ! Preliminary solar irradiances, these should be checked once final values available
-   irradiances = (/ 1837.39, 1525.94, 956.17, 365.90, 248.33, 78.33, 0., 0., 0. /)
+   irradiances(:)=0.
+
+   ! Read the solar irradiances from viscal file
+   do j=1,6
+      call slstr_get_irrad(irradiances,indir,j)
+   end do
+
+   ! Open the netcdf file
+   ierr=nf90_open(path=trim(adjustl(filename)),mode=NF90_NOWRITE,ncid=fid)
+   if (ierr.ne.NF90_NOERR) then
+      print*,'ERROR: read_slstr_visdata(): Error opening file ',trim(filename)
+      stop
+   endif
+
 
    ! Open the netcdf file
    ierr=nf90_open(path=trim(adjustl(filename)),mode=NF90_NOWRITE,ncid=fid)
@@ -703,3 +717,69 @@ subroutine slstr_resample_geom(indata,outdata,nx1,ny1,nx2,ny2,startx,step)
 
 end subroutine slstr_resample_geom
 
+! Retrieves the solar irradiances from the relevant file
+subroutine slstr_get_irrad(irrad,indir,inband)
+
+   use netcdf
+   use preproc_constants_m
+   use orac_ncdf_m
+
+   character(len=path_length),     intent(in)     :: indir
+   real(kind=sreal), dimension(9), intent(inout)  :: irrad
+   integer,     intent(in)                        :: inband
+
+
+   character(len=path_length)   :: fname,bname
+   integer fid,did,ierr,curband,index2,j,endx,endy
+   character(len=3)             :: band
+
+   real, allocatable            :: data(:,:)
+
+   write (band, "(I1.1)") inband
+
+   fname   =   trim(indir) // "viscal.nc"
+   bname   =   "S"//trim(band)//"_solar_irradiances"
+
+   ! Open the netcdf file
+   ierr=nf90_open(path=trim(adjustl(fname)),mode=NF90_NOWRITE,ncid=fid)
+   if (ierr.ne.NF90_NOERR) then
+      print*,'ERROR: read_slstr_visdata(): Error opening file ',trim(fname)
+      stop
+   endif
+   ! Check that the dataset exists
+   ierr=nf90_inq_varid(fid, trim(bname), did)
+   if (ierr.ne.NF90_NOERR) then
+      print*,'ERROR: read_slstr_visdata(): Error opening dataset ',trim(bname)," in ",trim(fname)
+      stop
+   endif
+
+   if (inband .le. 3) then
+      !Check dimensions so we load the right amount of NetCDF file
+      endy=nc_dim_length(fid,'visible_detectors',.false.)
+      endx=nc_dim_length(fid,'views',.false.)
+   else
+      !Check dimensions so we load the right amount of NetCDF file
+      endy=nc_dim_length(fid,'swir_detectors',.false.)
+      endx=nc_dim_length(fid,'views',.false.)
+   endif
+   allocate(data(endx,endy))
+
+   ! Get the actual data
+   ierr = nf90_get_var(fid, did, data)
+   if (ierr.ne.NF90_NOERR) then
+      print*,'ERROR: read_slstr_visdata(): Error reading dataset ',trim("S1_solar_irradiances")," in ",trim(fname)
+      print*,trim(nf90_strerror(ierr))
+      stop
+   endif
+
+   ierr = nf90_close(fid)
+   if (ierr.ne.NF90_NOERR) then
+      print*,'ERROR: read_slstr_visdata(): Error closing file ',trim(fname)
+      stop
+   endif
+
+   irrad(inband)=data(1,1)
+
+   deallocate(data)
+
+end subroutine slstr_get_irrad
