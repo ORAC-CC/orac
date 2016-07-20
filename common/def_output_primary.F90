@@ -85,7 +85,7 @@
 
 subroutine def_output_primary(ncid, dim3d_var, output_data, indexing, &
    qc_flag_masks, qc_flag_meanings, deflate_level, shuffle_flag, verbose, &
-   ch_var)
+   ch_var, phases)
 
    use orac_ncdf_m
 
@@ -100,7 +100,8 @@ subroutine def_output_primary(ncid, dim3d_var, output_data, indexing, &
    integer,                     intent(in)    :: deflate_level
    logical,                     intent(in)    :: shuffle_flag
    logical,                     intent(in)    :: verbose
-   integer, optional,           intent(in)    :: ch_var(:)
+   integer,          optional,  intent(in)    :: ch_var(:)
+   character(len=3), optional,  intent(in)    :: phases(:)
 
    character(len=32)  :: input_num
    character(len=512) :: input_dummy
@@ -1803,6 +1804,20 @@ if (indexing%flags%do_phase) then
    !----------------------------------------------------------------------------
    ! phase
    !----------------------------------------------------------------------------
+   if (present(phases)) then
+      input_dummy = phases(1)
+      input_dummy2 = '1b'
+      do i = 2, size(phases)
+         input_dummy = trim(input_dummy) // ' ' // phases(i)
+
+         write(input_num,"(I4,A)") i, 'b'
+         input_dummy2 = trim(input_dummy2) // ' ' // trim(adjustl(input_num))
+      end do
+   else
+      input_dummy = 'clear/unknown liquid ice'
+      input_dummy2 = '0b 1b 2b'
+   end if
+
    call nc_def_var_byte_packed_byte( &
            ncid, &
            dims_var, &
@@ -1816,8 +1831,8 @@ if (indexing%flags%do_phase) then
            add_offset    = output_data%phase_offset, &
            valid_min     = output_data%phase_vmin, &
            valid_max     = output_data%phase_vmax, &
-           flag_values   = '0b 1b 2b', &
-           flag_meanings = 'clear/unknown liquid ice', &
+           flag_values   = input_dummy2, &
+           flag_meanings = input_dummy, &
            units         = '1', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)

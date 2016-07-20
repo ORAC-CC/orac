@@ -625,10 +625,6 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
 
    end do !Chunking
 
-   do i = 1, n_in_files
-      call dealloc_input_indices(loop_ind(i))
-   end do
-
    indexing%Y0=1
 
    ! Open the netcdf output file
@@ -652,11 +648,15 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    call def_output_primary(ncid_primary, dims_var, output_primary, &
         indexing%common_indices_t, input_primary(0)%qc_flag_masks, &
         input_primary(0)%qc_flag_meanings, deflate_level2, shuffle_flag2, &
-        .false.)
+        .false., phases=loop_ind(1:n_in_files)%LUTClass)
    if (do_secondary) then
       call def_output_secondary(ncid_secondary, dims_var, output_secondary, &
            indexing%common_indices_t, deflate_level2, shuffle_flag2, .false.)
    end if
+
+   do i = 1, n_in_files
+      call dealloc_input_indices(loop_ind(i))
+   end do
 
    ! Deallocate the first input structure
    call dealloc_input_data_primary_all(input_primary(0))
