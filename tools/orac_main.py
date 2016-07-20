@@ -25,3 +25,5 @@ try:
     ou.call_exe(args, args.orac_dir+'/src/orac', driver)
 except ou.OracError as err:
     cprint('ERROR) ' + err.message, ou.colouring['error'])
+except KeyboardInterrupt:
+    cprint('Execution halted by user.', ou.colouring['error'])

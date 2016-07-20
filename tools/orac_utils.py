@@ -1,7 +1,8 @@
 # Library of Python 2.7 functions used to call and regress ORAC
-# 16 Feb 2016, ACP: Initial Python 3.2 version
-# 22 Jun 2016, ACP: Initial Python 2.7 version
+# 16 Feb 2016, AP: Initial Python 3.2 version
+# 22 Jun 2016, AP: Initial Python 2.7 version
 # 08 Jul 2016, AP: Debugging against more awkward python environments
+# 20 Jul 2016, AP: Remove shell=True from subprocess calls.
 
 import argparse
 import colours
@@ -67,7 +68,7 @@ class InconsistentDim(Regression):
 class FieldMissing(Regression):
     def __init__(self, filename, variable):
         Regression.__init__(self, filename, variable, 'warning',
-                            'Field not present in new file')
+                            'Field not present in one file')
 
 class RoundingError(Regression):
     def __init__(self, filename, variable):
@@ -165,7 +166,7 @@ def call_exe(args,    # Arguments of scripts
     # Call program
     try:
         st = time.time()
-        subprocess.check_call(exe + ' ' + driver_file, shell=True)
+        subprocess.check_call([exe, driver_file])
         if args.timing:
             colours.cprint(exe + ' took {:f}s'.format(time.time() - st),
                            colouring['timing'])
@@ -178,7 +179,7 @@ def call_exe(args,    # Arguments of scripts
 
 #-----------------------------------------------------------------------------
 
-def compare_nc_atts(d0, d1, f):
+def compare_nc_atts(d0, d1, f, var):
     # Check is any attributes added/removed
     atts = set(d0.ncattrs()).symmetric_difference(d1.ncattrs())
     if len(atts) > 0:
@@ -191,9 +192,9 @@ def compare_nc_atts(d0, d1, f):
 
         if (d0.__dict__[key] != d1.__dict__[key] and
             key not in defaults.atts_to_ignore):
-            warnings.warn(Regression(f, key, 'warning',
-                'Changed attribute ({:s} vs {:s})'.format(d0.__dict__[key],
-                                                          d1.__dict__[key])),
+            warnings.warn(Regression(f, var + ',' + key, 'warning',
+                'Changed attribute ({} vs {})'.format(d0.__dict__[key],
+                                                      d1.__dict__[key])),
                 stacklevel=3)
 
 #-----------------------------------------------------------------------------
@@ -233,7 +234,7 @@ def compare_orac_out(f0, f1):
                               stacklevel=2)
 
         # Check attributes
-        compare_nc_atts(d0, d1, f1)
+        compare_nc_atts(d0, d1, f1, key)
 
         # Check if any variables added/removed
         vars = set(d0.variables.keys()).symmetric_difference(d1.variables.keys())
@@ -252,7 +253,7 @@ def compare_orac_out(f0, f1):
             a0.set_auto_mask(False)
             a1.set_auto_mask(False)
 
-            compare_nc_atts(a0, a1, f1)
+            compare_nc_atts(a0, a1, f1, key)
 
             if a0.size != a1.size:
                 warnings.warn(InconsistentDim(f1, key, a0.size, a1.size),
@@ -356,7 +357,7 @@ def get_svn_revision():
     """Call SVN to determine repository revision number"""
 
     try:
-        tmp = subprocess.check_output("svn info", shell=True,
+        tmp = subprocess.check_output(["svn", "info"],
                                       universal_newlines=True)
         m = re.search('Revision: (\d+?)\n', tmp)
         return int(m.group(1))
@@ -1022,7 +1023,7 @@ def build_preproc_driver(args):
 
     # Fetch ECMWF version from header of NCDF file
     try:
-        tmp1 = subprocess.check_output("ncdump -h "+ggas[0], shell=True,
+        tmp1 = subprocess.check_output(["ncdump", "-h", ggas[0]],
                                        universal_newlines=True)
     except OSError:
         raise FileMissing('ECMWF ggas file', ggas[0])
@@ -1047,7 +1048,7 @@ def build_preproc_driver(args):
     cwd = os.getcwd()
     os.chdir(args.orac_dir + '/pre_processing')
     try:
-        tmp3 = subprocess.check_output("svn --version", shell=True,
+        tmp3 = subprocess.check_output(["svn", "--version"],
                                        universal_newlines=True)
         m3 = re.search('svn, version (.+?)\n', tmp3)
         svn_version = m3.group(1)
@@ -1256,6 +1257,9 @@ def build_postproc_driver(args):
     for phs in args.phases:
         for d in args.in_dir:
             pri.extend(glob.glob(d +'/' + args.target + phs + '.primary.nc'))
+
+    if len(pri) < 2:
+        raise FileMissing('more than one processed file', pri[0])
 
     # Assume secondary files are in the same folder as the primary
     files = zip(pri, [re.sub('primary', 'secondary', t) for t in pri])

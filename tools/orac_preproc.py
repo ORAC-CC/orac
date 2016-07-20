@@ -28,4 +28,5 @@ try:
         cprint(outroot, ou.colouring['pass'])
 except ou.OracError as err:
     cprint('ERROR) ' + err.message, ou.colouring['error'])
-
+except KeyboardInterrupt:
+    cprint('Execution halted by user.', ou.colouring['error'])
