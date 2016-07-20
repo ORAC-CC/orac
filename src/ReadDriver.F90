@@ -656,8 +656,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       allocate(Ctrl%ir_chans(3))
       Ctrl%ir_chans  = (/ 7, 8, 9 /)
    else
-   	write(*,*)"Unrecognised sensor/platform:",trim(Ctrl%InstName)
-   	stop
+      write(*,*)"Unrecognised sensor/platform:",trim(Ctrl%InstName)
+      stop
    end if
 
    !---------------- Ctrl STATE VECTOR SELM ---------------

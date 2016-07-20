@@ -80,7 +80,7 @@
 
 subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
      imager_measurements, imager_angles, imager_flags, imager_time, &
-     channel_info, platform, sensor, verbose)
+     channel_info, sensor, verbose)
 
    use iso_c_binding ! technically Fortran 2003
    use aatsr_corrections_m
@@ -129,7 +129,6 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
    type(imager_flags_t),           intent(inout) :: imager_flags
    type(imager_time_t),            intent(inout) :: imager_time
    type(channel_info_t),           intent(in)    :: channel_info
-   character(len=platform_length), intent(in)    :: platform
    character(len=sensor_length),   intent(in)    :: sensor
    logical,                        intent(in)    :: verbose
 

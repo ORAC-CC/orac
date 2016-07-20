@@ -67,18 +67,11 @@ subroutine read_viirs_dimensions(geo_file, n_across_track, n_along_track, &
    integer(lint),          intent(inout) :: startx, endx, starty, endy
    logical,                intent(in)    :: verbose
 
-   integer :: i_line, i_column
-   integer :: n_lines, n_columns
-
-   integer(HID_T) :: file_id        ! File identifier
+   integer(HID_T) :: file_id   ! File identifier
    integer(HID_T) :: dset_id   ! Dataset identifier
    integer(HID_T) :: dataspace ! Dataspace identifier
-   integer(HID_T) :: filespace ! Dataspace identifier
-   integer(HID_T) :: memspace  ! Memspace identifier
-   integer(HID_T) :: cparms    ! Dataset creatation property identifier
 
-   integer			  :: error, error_n
-   integer 			  :: rankr, rank_chunk
+   integer                        :: error
    integer(HSIZE_T), DIMENSION(2) :: dimsr, maxdimsr
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< read_viirs_dimensions()'
@@ -133,7 +126,7 @@ end subroutine read_viirs_dimensions
 ! verbose             logical in   If true then print verbose information.
 !-------------------------------------------------------------------------------
 subroutine read_viirs(infile,geofile,imager_geolocation, imager_measurements, &
-   imager_angles, imager_flags, imager_time, channel_info, verbose)
+   imager_angles, imager_time, channel_info, verbose)
 
    use iso_c_binding
    use calender_m
@@ -150,7 +143,6 @@ subroutine read_viirs(infile,geofile,imager_geolocation, imager_measurements, &
    type(imager_geolocation_t),  intent(inout) :: imager_geolocation
    type(imager_measurements_t), intent(inout) :: imager_measurements
    type(imager_angles_t),       intent(inout) :: imager_angles
-   type(imager_flags_t),        intent(inout) :: imager_flags
    type(imager_time_t),         intent(inout) :: imager_time
    type(channel_info_t),        intent(in)    :: channel_info
    logical,                     intent(in)    :: verbose
@@ -163,8 +155,8 @@ subroutine read_viirs(infile,geofile,imager_geolocation, imager_measurements, &
    integer                          :: starty, ny
    integer(c_int)                   :: line0, line1
    integer(c_int)                   :: column0, column1
-   integer                          :: index1,index2
-   integer(kind=sint)               :: year,month,day,doy
+   integer                          :: index2
+   integer(kind=sint)               :: year,month,day
    integer(kind=sint)               :: hour1,minute1,second1
    integer(kind=sint)               :: hour2,minute2,second2
    double precision                 :: dfrac1,dfrac2,jd1,jd2,slo
@@ -181,7 +173,7 @@ subroutine read_viirs(infile,geofile,imager_geolocation, imager_measurements, &
    ! Various variables for reading the HDF5 data and choosing filenames
    integer(HID_T)                   :: file_id
    integer(HID_T)                   :: dset_id
-   integer                          :: error, error_n
+   integer                          :: error
    real, allocatable                :: data0(:,:)
    integer, allocatable             :: data1(:,:)
    real                             :: factors(8)
@@ -190,7 +182,6 @@ subroutine read_viirs(infile,geofile,imager_geolocation, imager_measurements, &
    character(len=path_length)       :: varname,facname
    character(len=3)                 :: band
    character(len=path_length)       :: regex
-   logical                          :: file_exists
 
    ! Figure out the channels to process
    n_bands = channel_info%nchannels_total
@@ -270,19 +261,19 @@ subroutine read_viirs(infile,geofile,imager_geolocation, imager_measurements, &
    call GREG2JD(year,month,day,jd2)
 
    ! Add on a fraction to account for the start / end times
-   dfrac1	=	(float(hour1)/24.0) + (float(minute1)/(24.0*60.0)) + &
+   dfrac1 = (float(hour1)/24.0) + (float(minute1)/(24.0*60.0)) + &
                         (float(second1)/(24.0*60.0*60.0))
-   dfrac2	=	(float(hour2)/24.0) + (float(minute2)/(24.0*60.0)) + &
+   dfrac2 = (float(hour2)/24.0) + (float(minute2)/(24.0*60.0)) + &
                         (float(second2)/(24.0*60.0*60.0))
-   jd1	=	jd1 + dfrac1
-   jd2	=	jd2 + dfrac2
+   jd1 = jd1 + dfrac1
+   jd2 = jd2 + dfrac2
 
    ! Compute linear regression slope
-   slo	=	(jd2-jd1)/ny
+   slo = (jd2-jd1)/ny
 
    ! Put correct julian date into each location in the time array
    do j=1,ny
-   	imager_time%time(:,j) = jd1+(slo*float(j))
+      imager_time%time(:,j) = jd1+(slo*float(j))
    end do
 
    ! This bit reads all the data.
@@ -325,9 +316,9 @@ subroutine read_viirs(infile,geofile,imager_geolocation, imager_measurements, &
 
    index2=index(trim(adjustl(infile)),'SVM',.true.)
    do i=1,n_bands
-      banddir =	infile(1:index2-2)
+      banddir = infile(1:index2-2)
       write (band, "(I2.2)") band_ids(i)
-      regex   =	trim(infile(index2:index2+2))//trim(adjustl(band))// &
+      regex   = trim(infile(index2:index2+2))//trim(adjustl(band))// &
                 trim(infile(index2+5:index2+35))//"*"
 
       ! Check if we find the appropriate band

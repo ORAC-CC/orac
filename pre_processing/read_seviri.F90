@@ -137,13 +137,12 @@ end subroutine read_seviri_dimensions
 ! imager_geolocation  struct  both Members within are populated
 ! imager_measurements struct  both Members within are populated
 ! imager_angles       struct  both Members within are populated
-! imager_flags        struct  both Members within are populated
 ! imager_time         struct  both Members within are populated
 ! channel_info        struct  both Members within are populated
 ! verbose             logical in   If true then print verbose information.
 !-------------------------------------------------------------------------------
 subroutine read_seviri_l1_5(l1_5_file, imager_geolocation, imager_measurements, &
-   imager_angles, imager_flags, imager_time, channel_info, verbose)
+   imager_angles, imager_time, channel_info, verbose)
 
    use iso_c_binding
    use channel_structures_m
@@ -158,7 +157,6 @@ subroutine read_seviri_l1_5(l1_5_file, imager_geolocation, imager_measurements, 
    type(imager_geolocation_t),  intent(inout) :: imager_geolocation
    type(imager_measurements_t), intent(inout) :: imager_measurements
    type(imager_angles_t),       intent(inout) :: imager_angles
-   type(imager_flags_t),        intent(inout) :: imager_flags
    type(imager_time_t),         intent(inout) :: imager_time
    type(channel_info_t),        intent(in)    :: channel_info
    logical,                     intent(in)    :: verbose

@@ -984,7 +984,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       ! select correct emissivity file and calculate the emissivity over land
       if (verbose) write(*,*) 'Get surface emissivity'
       call get_surface_emissivity(cyear, cdoy, cimss_emiss_path, imager_flags, &
-           imager_geolocation, channel_info, preproc_dims, preproc_geoloc, &
+           imager_geolocation, channel_info, preproc_dims, &
            assume_full_paths, verbose, surface, preproc_surf, source_atts)
 
       ! select correct reflectance files and calculate surface reflectance
@@ -1006,8 +1006,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       else
          call correct_for_ice_snow_ecmwf(ecmwf_HR_path_file(1), &
               imager_geolocation, imager_flags, preproc_dims, preproc_prtm, &
-              surface, cyear, cmonth, cday, channel_info, assume_full_paths, &
-              include_full_brdf, source_atts, verbose)
+              surface, include_full_brdf, source_atts, verbose)
       end if
 
       if (verbose) write(*,*) 'Calculate Pavolonis cloud phase with high '// &

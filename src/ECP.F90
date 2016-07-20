@@ -219,7 +219,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    type(SAD_LUT_t)           :: SAD_LUT
    type(SPixel_t)            :: SPixel
 
-   integer             :: i, j, jj, m
+   integer             :: i, j, m
    integer             :: status  ! Status value returned from subroutines
 
    integer             :: xstep ! Pixels to skip when processing
@@ -468,7 +468,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 
    ! Start OMP section by spawning the threads
    !$OMP PARALLEL &
-   !$OMP PRIVATE(i,j,jj,m,thread_num,RTM_Pc,SPixel) &
+   !$OMP PRIVATE(i,j,m,thread_num,RTM_Pc,SPixel) &
    !$OMP PRIVATE(Diag) &
    !$OMP FIRSTPRIVATE(status)
 

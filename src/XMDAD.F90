@@ -104,20 +104,18 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine X_MDAD(Ctrl, SAD_Chan, SPixel, index, X, status, Err)
+subroutine X_MDAD(Ctrl, SPixel, index, X, status, Err)
 
    use Ctrl_m
    use ECP_Constants_m
    use Int_Routines_m, only : find_in_array
    use planck_m
-   use SAD_Chan_m
 
    implicit none
 
    ! Declare arguments
 
    type(Ctrl_t),     intent(in)    :: Ctrl
-   type(SAD_Chan_t), intent(in)    :: SAD_Chan(:)
    type(SPixel_t),   intent(inout) :: SPixel
    integer,          intent(in)    :: index
    real,             intent(out)   :: X

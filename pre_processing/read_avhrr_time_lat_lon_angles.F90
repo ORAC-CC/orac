@@ -16,7 +16,6 @@
 ! path_to_geo_file   string in   Full path to geolocation data
 ! imager_geolocation struct both Summary of pixel positions
 ! imager_angles      struct both Summary of sun/satellite viewing angles
-! imager_flags       struct both Summary of land/sea/ice flags
 ! imager_time        struct both Summary of pixel observation time
 ! n_along_track      lint   in   Number of pixels in the direction of travel
 ! verbose            logic  in   T: print status information; F: don't
@@ -35,7 +34,7 @@
 !-------------------------------------------------------------------------------
 
 subroutine read_avhrr_time_lat_lon_angles(path_to_geo_file,imager_geolocation,&
-     imager_angles,imager_flags,imager_time,n_along_track,verbose)
+     imager_angles,imager_time,n_along_track,verbose)
 
    use calender_m
    use hdf5
@@ -47,7 +46,6 @@ subroutine read_avhrr_time_lat_lon_angles(path_to_geo_file,imager_geolocation,&
    character(len=path_length),  intent(in)    :: path_to_geo_file
    type(imager_geolocation_t),  intent(inout) :: imager_geolocation
    type(imager_angles_t),       intent(inout) :: imager_angles
-   type(imager_flags_t),        intent(inout) :: imager_flags
    type(imager_time_t),         intent(inout) :: imager_time
    integer(kind=lint),          intent(in)    :: n_along_track
    logical,                     intent(in)    :: verbose

@@ -26,7 +26,6 @@
 ! Name           Type    In/Out/Both Description
 ! ------------------------------------------------------------------------------
 ! Ctrl           struct  In   Control structure
-! SAD_Chan       struct  In   SAD channel structure
 ! SPixel         struct  Both Super-pixel structure (contains the phase and
 !                             AP, FG arrays to be set).
 ! status         integer Out  Error status
@@ -84,17 +83,15 @@
 ! Does not facilitate correlation between surface reflectance terms.
 !-------------------------------------------------------------------------------
 
-subroutine Get_X(Ctrl, SAD_Chan, SPixel, status)
+subroutine Get_X(Ctrl, SPixel, status)
 
    use Ctrl_m
    use ECP_Constants_m
-   use SAD_Chan_m
 
    implicit none
 
    ! Declare arguments
    type(Ctrl_t),     intent(in)    :: Ctrl
-   type(SAD_Chan_t), intent(in)    :: SAD_Chan(:)
    type(SPixel_t),   intent(inout) :: SPixel
    integer,          intent(out)   :: status
 
@@ -106,13 +103,13 @@ subroutine Get_X(Ctrl, SAD_Chan, SPixel, status)
    ! Set all required state vector elements
    SPixel%Sx = 0.
    do i = 1, SPixel%Nx
-      call Set_State(SPixel%X(i), Ctrl, SPixel, SAD_Chan, status)
+      call Set_State(SPixel%X(i), Ctrl, SPixel, status)
    end do
    do i = 1, SPixel%NXJ
-      call Set_State(SPixel%XJ(i), Ctrl, SPixel, SAD_Chan, status)
+      call Set_State(SPixel%XJ(i), Ctrl, SPixel, status)
    end do
    do i = 1, SPixel%NXI
-      call Set_State(SPixel%XI(i), Ctrl, SPixel, SAD_Chan, status)
+      call Set_State(SPixel%XI(i), Ctrl, SPixel, status)
    end do
 
 end subroutine Get_X
@@ -137,11 +134,10 @@ end subroutine Get_X
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
-subroutine Set_State(i, Ctrl, SPixel, SAD_Chan, status)
+subroutine Set_State(i, Ctrl, SPixel, status)
 
    use Ctrl_m
    use ECP_Constants_m
-   use SAD_Chan_m
 
    implicit none
 
@@ -149,19 +145,18 @@ subroutine Set_State(i, Ctrl, SPixel, SAD_Chan, status)
    integer,          intent(in)    :: i
    type(Ctrl_t),     intent(in)    :: Ctrl
    type(SPixel_t),   intent(inout) :: SPixel
-   type(SAD_Chan_t), intent(in)    :: SAD_Chan(:)
    integer,          intent(out)   :: status
 
 
    ! Set a priori
-   call Get_State(SPixel%AP(i), i, Ctrl, SPixel, SAD_Chan, 0, SPixel%Xb(i), &
+   call Get_State(SPixel%AP(i), i, Ctrl, SPixel, 0, SPixel%Xb(i), &
                   status, SPixel%Sx)
 
    ! Set first guess
    if (SPixel%FG(i) /= SelmCtrl .and. SPixel%FG(i) == SPixel%AP(i)) then
       SPixel%X0(i) = SPixel%Xb(i)
    else
-      call Get_State(SPixel%FG(i), i, Ctrl, SPixel, SAD_Chan, 1, SPixel%X0(i), &
+      call Get_State(SPixel%FG(i), i, Ctrl, SPixel, 1, SPixel%X0(i), &
                      status)
    end if
 
@@ -202,11 +197,10 @@ end subroutine Set_State
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
-subroutine Get_State(mode, i, Ctrl, SPixel, SAD_Chan, flag, X, status, Err)
+subroutine Get_State(mode, i, Ctrl, SPixel, flag, X, status, Err)
 
    use Ctrl_m
    use ECP_Constants_m
-   use SAD_Chan_m
 
    implicit none
 
@@ -215,7 +209,6 @@ subroutine Get_State(mode, i, Ctrl, SPixel, SAD_Chan, flag, X, status, Err)
    integer,          intent(in)    :: i
    type(Ctrl_t),     intent(in)    :: Ctrl
    type(SPixel_t),   intent(inout) :: SPixel
-   type(SAD_Chan_t), intent(in)    :: SAD_Chan(:)
    integer,          intent(in)    :: flag
    real,             intent(out)   :: X
    integer,          intent(out)   :: status
@@ -230,7 +223,7 @@ subroutine Get_State(mode, i, Ctrl, SPixel, SAD_Chan, flag, X, status, Err)
 
    select case (mode)
    case (SelmMeas) ! Draw state from measurement vector
-      call X_MDAD(Ctrl, SAD_Chan, SPixel, i, X, status, err_temp)
+      call X_MDAD(Ctrl, SPixel, i, X, status, err_temp)
       if (status == XMDADBounds) then
 #ifdef DEBUG
          write(*,*) 'WARNING: X_MDAD(): Out-of-bounds interpolation'

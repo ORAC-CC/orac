@@ -34,7 +34,7 @@
 ! - Shouldn't upwelling radiance be assigned to the level above it's layer?
 !-------------------------------------------------------------------------------
 
-subroutine write_ir_rttov(netcdf_info, preproc_dims, idim, jdim, nlev, &
+subroutine write_ir_rttov(netcdf_info, idim, jdim, nlev, &
      emissivity, transmission, radiance, radiance2, write_flag, chan_num, chanvar)
 
    use netcdf_output_m, only: netcdf_output_info_t
@@ -48,7 +48,6 @@ subroutine write_ir_rttov(netcdf_info, preproc_dims, idim, jdim, nlev, &
    implicit none
 
    type(netcdf_output_info_t), intent(in) :: netcdf_info
-   type(preproc_dims_t),       intent(in) :: preproc_dims
    integer(lint),              intent(in) :: idim, jdim
    integer(jpim),              intent(in) :: nlev
    type(rttov_emissivity),     intent(in) :: emissivity(:)

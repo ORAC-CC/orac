@@ -40,7 +40,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine read_input_primary_cost_only(ncid, input_data, indexing, sval, verbose)
+subroutine read_input_primary_cost_only(ncid, input_data, sval, verbose)
 
    use orac_ncdf_m
 
@@ -48,7 +48,6 @@ subroutine read_input_primary_cost_only(ncid, input_data, indexing, sval, verbos
 
    integer,                    intent(in)    :: ncid
    type(input_data_primary_t), intent(inout) :: input_data
-   type(input_indices_t),      intent(in)    :: indexing
    integer,                    intent(in)    :: sval
    logical,                    intent(in)    :: verbose
 
@@ -396,7 +395,7 @@ subroutine read_input_primary_class(fname, input_data, indexing, costonly, sval,
    if (.not. costonly) then
       call read_input_primary_common(ncid, input_data, indexing, sval, verbose)
    else
-      call read_input_primary_cost_only(ncid, input_data, indexing, sval, verbose)
+      call read_input_primary_cost_only(ncid, input_data, sval, verbose)
    end if
 
    if (verbose) write(*,*) 'Closing primary input file.'

@@ -754,7 +754,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                ! Reformat and write output to NCDF files
                if (i_coef == 1) then
                   do i_=1,nchan
-                     call write_ir_rttov(netcdf_info, preproc_dims, &
+                     call write_ir_rttov(netcdf_info, &
                           idim-preproc_dims%min_lon+1, &
                           jdim-preproc_dims%min_lat+1, &
                           profiles(count)%nlevels, emissivity, transmission, &
@@ -762,13 +762,13 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                   end do
                else
                   do i_=1,nchan
-                     call write_solar_rttov(netcdf_info, preproc_dims, coefs, &
+                     call write_solar_rttov(netcdf_info, coefs, &
                           idim-preproc_dims%min_lon+1, &
                           jdim-preproc_dims%min_lat+1, &
                           profiles(count)%nlevels, profiles(count)%zenangle, &
-                          emissivity, transmission, radiance, radiance2, &
+                          transmission, &
                           write_rttov, chan_pos(i_), &
-                          channel_info%sw_rttov_viewone_id(i_), i_)
+                          channel_info%sw_rttov_viewone_id(i_))
                   end do
                end if
             end do

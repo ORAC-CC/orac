@@ -58,9 +58,9 @@ contains
 
 !------------------------------------------------------------------------
 subroutine ann_cloud_mask(channel1, channel2, channel3b, channel4, channel5, &
-     & solzen, satzen, dem, niseflag, lsflag, &
-     & lusflag, albedo1, albedo2, cccot_pre, cldflag, cld_uncertainty, lat, lon, skint, &
-     & ch3a_on_avhrr_flag, i, j, glint_angle, sensor_name, platform, verbose)
+     solzen, satzen, niseflag, lsflag, &
+     albedo1, albedo2, cccot_pre, cldflag, cld_uncertainty, skint, &
+     ch3a_on_avhrr_flag, glint_angle, sensor_name, platform, verbose)
    !------------------------------------------------------------------------
 
    use constants_cloud_typing_pavolonis_m
@@ -85,12 +85,10 @@ subroutine ann_cloud_mask(channel1, channel2, channel3b, channel4, channel5, &
    ! INPUT from cloud_type subroutine (module cloud_typing_pavolonis.F90)
    character(len=sensor_length),   intent(in)    :: sensor_name
    character(len=platform_length), intent(in)    :: platform
-   integer(kind=byte), intent(in) :: lsflag, lusflag, niseflag
+   integer(kind=byte), intent(in) :: lsflag, niseflag
    integer(kind=sint), intent(in) :: ch3a_on_avhrr_flag
-   integer(kind=lint), intent(in) :: dem
-   real(kind=sreal),   intent(in) :: solzen, lat, lon, skint, satzen, glint_angle, albedo1, albedo2
+   real(kind=sreal),   intent(in) :: solzen, skint, satzen, glint_angle, albedo1, albedo2
    real(kind=sreal),   intent(in) :: channel1, channel2, channel3b, channel4, channel5
-   integer(kind=lint), intent(in) :: i, j
    logical,            intent(in) :: verbose
 
    ! OUTPUT to cloud_type subroutine (module cloud_typing_pavolonis.F90)

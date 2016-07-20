@@ -59,7 +59,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine set_ecmwf(sensor,cyear,cmonth,cday,chour,cminute,ecmwf_path,ecmwf_path2, &
+subroutine set_ecmwf(cyear,cmonth,cday,chour,ecmwf_path,ecmwf_path2, &
    ecmwf_path3,ecmwf_path_file,ecmwf_path_file2,ecmwf_path_file3,ecmwf_flag, &
    imager_geolocation,imager_time,time_interp_method,time_int_fac,assume_full_path)
 
@@ -69,8 +69,7 @@ subroutine set_ecmwf(sensor,cyear,cmonth,cday,chour,cminute,ecmwf_path,ecmwf_pat
 
    implicit none
 
-   character(len=*),           intent(in)  :: sensor
-   character(len=*),           intent(in)  :: cyear,cmonth,cday,chour,cminute
+   character(len=*),           intent(in)  :: cyear,cmonth,cday,chour
    character(len=*),           intent(in)  :: ecmwf_path(2)
    character(len=*),           intent(in)  :: ecmwf_path2(2)
    character(len=*),           intent(in)  :: ecmwf_path3(2)

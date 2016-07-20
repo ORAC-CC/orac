@@ -796,19 +796,15 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
                  imager_measurements%DATA(i,j,ch6), &
                  imager_angles%SOLZEN(i,j,cview), &
                  imager_angles%SATZEN(i,j,cview), &
-                 int(imager_geolocation%DEM(i,j), lint), &
-                 snow_ice_mask(i,j), imager_flags%LSFLAG(i,j), &
-                 imager_flags%LUSFLAG(i,j), &
+                 snow_ice_mask(i,j), &
+                 imager_flags%LSFLAG(i,j), &
                  surface%albedo(i,j,ch1), &
                  surface%albedo(i,j,ch2), &
                  imager_pavolonis%CCCOT_pre(i,j,cview), &
                  imager_pavolonis%CLDMASK(i,j,cview) , &
                  imager_pavolonis%CLDMASK_UNCERTAINTY(i,j,cview) , &
-                 imager_geolocation%LATITUDE(i,j) , &
-                 imager_geolocation%LONGITUDE(i,j) , &
                  skint(i,j) , &
                  ch3a_on_avhrr_flag, &
-                 i, j, &
                  glint_angle, &
                  sensor, &
                  platform, &

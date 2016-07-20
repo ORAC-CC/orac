@@ -106,7 +106,7 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
 
       call read_aatsr_l1b(path_to_l1b_file,path_to_aatsr_drift_table, &
            imager_geolocation,imager_measurements,imager_angles, &
-           imager_flags,imager_time,channel_info,platform,sensor,verbose)
+           imager_flags,imager_time,channel_info,sensor,verbose)
 
       !in absence of proper mask set everything to "1" for cloud mask
       imager_flags%cflag = 1
@@ -114,7 +114,7 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
    else if (trim(adjustl(sensor)) .eq. 'AVHRR') then
       !read the angles and lat/lon info of the orbit
       call read_avhrr_time_lat_lon_angles(path_to_geo_file,imager_geolocation, &
-           imager_angles,imager_flags,imager_time,n_along_track,verbose)
+           imager_angles,imager_time,n_along_track,verbose)
 
       !read the (subset) of the orbit etc. SW:reflectances, LW:brightness temp
       call read_avhrr_l1b_radiances(sensor,platform,path_to_l1b_file, &
@@ -139,7 +139,7 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
       ! imager_geolocation
       call read_seviri_l1_5(path_to_l1b_file, &
            imager_geolocation,imager_measurements,imager_angles, &
-           imager_flags,imager_time,channel_info,verbose)
+           imager_time,channel_info,verbose)
 
       !in absence of proper mask set everything to "1" for cloud mask
       imager_flags%cflag = 1
@@ -148,7 +148,7 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
       ! imager_geolocation
       call read_himawari_bin(path_to_l1b_file, &
            imager_geolocation,imager_measurements,imager_angles, &
-           imager_flags,imager_time,channel_info,verbose)
+           imager_time,channel_info,verbose)
 
       !in absence of proper mask set everything to "1" for cloud mask
       imager_flags%cflag = 1
@@ -157,16 +157,16 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
       ! imager_geolocation
       call read_viirs(path_to_l1b_file, path_to_geo_file, &
            imager_geolocation,imager_measurements,imager_angles, &
-           imager_flags,imager_time,channel_info,verbose)
+           imager_time,channel_info,verbose)
 
       !in absence of proper mask set everything to "1" for cloud mask
       imager_flags%cflag = 1
    else if (trim(adjustl(sensor)) .eq. 'SLSTR') then
       ! Read the L1B data, according to the dimensions and offsets specified in
       ! imager_geolocation
-      call read_slstr(path_to_l1b_file, path_to_geo_file, &
+      call read_slstr(path_to_l1b_file, &
            imager_geolocation,imager_measurements,imager_angles, &
-           imager_flags,imager_time,channel_info,verbose)
+           imager_time,channel_info,verbose)
 
       !in absence of proper mask set everything to "1" for cloud mask
       imager_flags%cflag = 1

@@ -482,6 +482,7 @@ if (indexing%flags%do_swansea) then
    ! swansea_s_uncertainty_in_channel_no_*
    !----------------------------------------------------------------------------
    do i=1,indexing%NSolar
+
       write(input_num,"(i4)") indexing%Y_Id(indexing%YSolar(i))
 
       input_dummy='uncertainty in s parameter for Swansea surface reflectance model in channel no '//trim(adjustl(input_num))
@@ -509,6 +510,7 @@ if (indexing%flags%do_swansea) then
    ! swansea_p_in_view_no_*
    !----------------------------------------------------------------------------
    do i_view=1,indexing%NViews
+
       write(input_num,"(i4)") i_view
 
       input_dummy='p parameter for Swansea surface reflectance model in view no '//trim(adjustl(input_num))
@@ -536,6 +538,7 @@ if (indexing%flags%do_swansea) then
    ! swansea_p_uncertainty_in_view_no_*
    !----------------------------------------------------------------------------
    do i_view=1,indexing%NViews
+
       write(input_num,"(i4)") i_view
 
       input_dummy='uncertainty in p parameter for Swansea surface reflectance model in view no '//trim(adjustl(input_num))
@@ -591,6 +594,7 @@ if (indexing%flags%do_swansea) then
    ! diffuse_frac_uncertainty_in_channel_no_*
    !----------------------------------------------------------------------------
    do i=1,indexing%NSolar
+
       write(input_num,"(i4)") indexing%Y_Id(indexing%YSolar(i))
 
       input_dummy='uncertainty in diffuse fraction of radiation in channel no '//trim(adjustl(input_num))

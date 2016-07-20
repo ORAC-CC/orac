@@ -31,24 +31,24 @@ subroutine get_slstr_startend(imager_time,fname,ny)
    use imager_structures_m
    use calender_m
 
-   type(imager_time_t),         intent(inout) :: imager_time
-   character(len=path_length),  intent(in)    :: fname
-   integer,                     intent(in)    :: ny
+   type(imager_time_t),        intent(inout) :: imager_time
+   character(len=path_length), intent(in)    :: fname
+   integer,                    intent(in)    :: ny
 
 
-   integer(kind=sint)               :: year1,month1,day1,doy1
-   integer(kind=sint)               :: year2,month2,day2,doy2
-   integer(kind=sint)               :: hour1,minute1,second1
-   integer(kind=sint)               :: hour2,minute2,second2
-   double precision                 :: dfrac1,dfrac2,jd1,jd2,slo
+   integer(kind=sint)         :: year1,month1,day1
+   integer(kind=sint)         :: year2,month2,day2
+   integer(kind=sint)         :: hour1,minute1,second1
+   integer(kind=sint)         :: hour2,minute2,second2
+   reaL(kind=dreal)           :: dfrac1,dfrac2,jd1,jd2,slo
 
    ! Variables for computing start and end times
-   character(len=date_length)       :: cyear1,cmonth1,cday1
-   character(len=date_length)       :: cyear2,cmonth2,cday2
-   character(len=date_length)       :: chour1,cminute1,csec1
-   character(len=date_length)       :: chour2,cminute2,csec2
+   character(len=date_length) :: cyear1,cmonth1,cday1
+   character(len=date_length) :: cyear2,cmonth2,cday2
+   character(len=date_length) :: chour1,cminute1,csec1
+   character(len=date_length) :: chour2,cminute2,csec2
 
-   integer fid,did,ierr,curband,index2,j
+   integer                    :: fid,ierr,index2,j
    character(len=path_length) :: l1b_start, l1b_end
 
    ! Convert start and end times to julian
@@ -56,22 +56,22 @@ subroutine get_slstr_startend(imager_time,fname,ny)
    ierr=nf90_open(path=trim(adjustl(fname)),mode=NF90_NOWRITE,ncid=fid)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: get_slstr_startend(): Error opening file ',trim(fname)
-      stop
+      stop error_stop_code
    endif
    ierr = nf90_get_att(fid, nf90_global, "start_time", l1b_start)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: get_slstr_startend(): Error getting start_time from file ',trim(fname)
-      stop
+      stop error_stop_code
    endif
    ierr = nf90_get_att(fid, nf90_global, "stop_time", l1b_end)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: get_slstr_startend(): Error getting end_time from file ',trim(fname)
-      stop
+      stop error_stop_code
    endif
    ierr = nf90_close(fid)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: read_slstr(): Error closing file ',trim(fname)
-      stop
+      stop error_stop_code
    endif
 
    index2=1
@@ -135,11 +135,11 @@ subroutine get_slstr_imnames(indir,inband,fname,bname)
    use preproc_constants_m
 
    character(len=path_length),  intent(in)    :: indir
-   integer,  intent(in)                       :: inband
+   integer,                     intent(in)    :: inband
    character(len=path_length),  intent(out)   :: fname
    character(len=path_length),  intent(out)   :: bname
 
-   character(len=3)                 :: band
+   character(len=3) :: band
 
    write (band, "(I1.1)") inband
    if (inband.le.6) then
@@ -150,7 +150,7 @@ subroutine get_slstr_imnames(indir,inband,fname,bname)
       bname = 'S'//trim(band)//'_BT_in'
    else
       write(*,*)"Incorrect band:",inband,". This is not supported for SLSTR (1-9 only)."
-      stop
+      stop error_stop_code
    endif
 
 end subroutine get_slstr_imnames
@@ -162,27 +162,25 @@ subroutine read_slstr_tirdata(indir,inband,outarr,sx,sy,nx,ny)
    use preproc_constants_m
    use orac_ncdf_m
 
-   character(len=path_length),  intent(in)   :: indir
-   integer,  intent(in)                      :: inband
-   integer,intent(in)                        :: sx
-   integer,intent(in)                        :: sy
-   integer,intent(in)                        :: nx
-   integer,intent(in)                        :: ny
-   real(kind=sreal),intent(out)               :: outarr(nx,ny)
+   character(len=path_length),  intent(in)  :: indir
+   integer,                     intent(in)  :: inband
+   integer,                     intent(in)  :: sx
+   integer,                     intent(in)  :: sy
+   integer,                     intent(in)  :: nx
+   integer,                     intent(in)  :: ny
+   real(kind=sreal),            intent(out) :: outarr(nx,ny)
 
-   real                                         :: data1(nx,ny)
+   real                       :: data1(nx,ny)
 
-   character(len=path_length)       :: filename
-   character(len=path_length)       :: bandname
-   character(len=path_length)       :: fillname
-   character(len=path_length)       :: sclname
-   character(len=path_length)       :: offname
+   character(len=path_length) :: filename
+   character(len=path_length) :: bandname
+   character(len=path_length) :: fillname
+   character(len=path_length) :: sclname
+   character(len=path_length) :: offname
 
-   real    filval,sclval,offval
-   integer tmp,numDims, numAtts, i
-
-   integer fid,did,ierr,curband,index2,j
-   integer endx,endy
+   real    :: filval,sclval,offval
+   integer :: fid,did,ierr
+   integer :: endx,endy
 
    ! Find the filename required for this channel
    call get_slstr_imnames(indir,inband,filename,bandname)
@@ -191,7 +189,7 @@ subroutine read_slstr_tirdata(indir,inband,outarr,sx,sy,nx,ny)
    ierr=nf90_open(path=trim(adjustl(filename)),mode=NF90_NOWRITE,ncid=fid)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: read_slstr_tirdata(): Error opening file ',trim(filename)
-      stop
+      stop error_stop_code
    endif
 
    !Check dimensions so we load the right amount of NetCDF file
@@ -202,36 +200,36 @@ subroutine read_slstr_tirdata(indir,inband,outarr,sx,sy,nx,ny)
    ierr=nf90_inq_varid(fid, trim(bandname), did)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: read_slstr_tirdata(): Error opening dataset ',trim(filename),"in",trim(bandname)
-      stop
+      stop error_stop_code
    endif
 
    ! Get anciliary values (fill, scale, offset)
    ierr = nf90_get_att(fid, did, "_FillValue", filval)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: read_slstr_tirdata(): Error getting ',trim(fillname),' from file ',trim(filename)
-      stop
+      stop error_stop_code
    endif
    ierr = nf90_get_att(fid, did, "scale_factor", sclval)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: read_slstr_tirdata(): Error getting ',trim(sclname),' from file ',trim(filename)
-      stop
+      stop error_stop_code
    endif
    ierr = nf90_get_att(fid, did,"add_offset", offval)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: read_slstr_tirdata(): Error getting ',trim(offname),' from file ',trim(filename)
-      stop
+      stop error_stop_code
    endif
 
    ! Get the actual data
    ierr = nf90_get_var(fid, did, data1)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: read_slstr_tirdata(): Error reading dataset ',trim(filename),"in",trim(bandname)
-      stop
+      stop error_stop_code
    endif
    ierr = nf90_close(fid)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: read_slstr_tirdata(): Error closing file ',trim(filename)
-      stop
+      stop error_stop_code
    endif
 
    ! Apply scale, offset and then fill for bad data
@@ -250,35 +248,34 @@ subroutine read_slstr_visdata(indir,inband,outarr,imager_angles,sx,sy,nx,ny)
    use orac_ncdf_m
 
    character(len=path_length),  intent(in)   :: indir
-   integer,  intent(in)                      :: inband
-   integer,intent(in)                        :: sx
-   integer,intent(in)                        :: sy
-   integer,intent(in)                        :: nx
-   integer,intent(in)                        :: ny
-   real(kind=sreal),intent(out)              :: outarr(nx,ny)
+   integer,                     intent(in)   :: inband
+   integer,                     intent(in)   :: sx
+   integer,                     intent(in)   :: sy
+   integer,                     intent(in)   :: nx
+   integer,                     intent(in)   :: ny
+   real(kind=sreal),            intent(out)  :: outarr(nx,ny)
    type(imager_angles_t),       intent(in)   :: imager_angles
 
-   real,allocatable                          :: data1(:,:)
-   real,allocatable                          :: data2(:,:)
-   real,allocatable                          :: data3(:,:)
-   real(kind=sreal), dimension(9)            :: irradiances
+   real, allocatable              :: data1(:,:)
+   real, allocatable              :: data2(:,:)
+   real, allocatable              :: data3(:,:)
+   real(kind=sreal), dimension(9) :: irradiances
 
-   character(len=path_length)       :: filename
-   character(len=path_length)       :: bandname
-   character(len=path_length)       :: fillname
-   character(len=path_length)       :: sclname
-   character(len=path_length)       :: offname
+   character(len=path_length)     :: filename
+   character(len=path_length)     :: bandname
+   character(len=path_length)     :: fillname
+   character(len=path_length)     :: sclname
+   character(len=path_length)     :: offname
 
-   real    filval,sclval,offval
-   integer tmp,numDims, numAtts, i
+   real    :: filval,sclval,offval
 
-   integer fid,did,ierr,curband,index2,j
+   integer :: fid,did,ierr
 
-   integer endx,endy
+   integer :: endx,endy
 
    if (inband .lt. 1 .or. inband .gt. 9) then
       write(*,*)'SLSTR input band must be in range 1-9. Here we have',inband
-      stop
+      stop error_stop_code
    endif
 
    ! Find the filename required for this channel
@@ -295,7 +292,7 @@ subroutine read_slstr_visdata(indir,inband,outarr,imager_angles,sx,sy,nx,ny)
    ierr=nf90_open(path=trim(adjustl(filename)),mode=NF90_NOWRITE,ncid=fid)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: read_slstr_visdata(): Error opening file ',trim(filename)
-      stop
+      stop error_stop_code
    endif
 
    !Check dimensions so we load the right amount of NetCDF file
@@ -306,24 +303,24 @@ subroutine read_slstr_visdata(indir,inband,outarr,imager_angles,sx,sy,nx,ny)
    ierr=nf90_inq_varid(fid, trim(bandname), did)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: read_slstr_visdata(): Error opening dataset ',trim(filename),"in",trim(bandname)
-      stop
+      stop error_stop_code
    endif
 
    ! Get anciliary values (fill, scale, offset)
    ierr = nf90_get_att(fid, did, "_FillValue", filval)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: read_slstr_visdata(): Error getting ',trim(fillname),' from file ',trim(filename)
-      stop
+      stop error_stop_code
    endif
    ierr = nf90_get_att(fid, did, "scale_factor", sclval)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: read_slstr_visdata(): Error getting ',trim(sclname),' from file ',trim(filename)
-      stop
+      stop error_stop_code
    endif
    ierr = nf90_get_att(fid, did,"add_offset", offval)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: read_slstr_visdata(): Error getting ',trim(offname),' from file ',trim(filename)
-      stop
+      stop error_stop_code
    endif
 
    ! Get the actual data
@@ -331,12 +328,12 @@ subroutine read_slstr_visdata(indir,inband,outarr,imager_angles,sx,sy,nx,ny)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: read_slstr_visdata(): Error reading dataset ',trim(filename),"in",trim(bandname)
       print*,trim(nf90_strerror(ierr))
-      stop
+      stop error_stop_code
    endif
    ierr = nf90_close(fid)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: read_slstr_visdata(): Error closing file ',trim(filename)
-      stop
+      stop error_stop_code
    endif
    ! Resample the data to the TIR grid size.
    call slstr_resample_vis_to_tir(data1,data2,nx,ny,filval)
@@ -365,16 +362,16 @@ subroutine slstr_resample_vis_to_tir(inarr,outarr,nx,ny,fill)
 
    use preproc_constants_m
 
-   integer,intent(in)                        :: nx
-   integer,intent(in)                        :: ny
-   real,intent(in)                           :: fill
-   real(kind=sreal),intent(in)               :: inarr(nx*2,ny*2)
-   real(kind=sreal),intent(out)               :: outarr(nx,ny)
+   integer,          intent(in)  :: nx
+   integer,          intent(in)  :: ny
+   real,             intent(in)  :: fill
+   real(kind=sreal), intent(in)  :: inarr(nx*2,ny*2)
+   real(kind=sreal), intent(out) :: outarr(nx,ny)
 
-   real tmpval
+   real    :: tmpval
 
-   integer x,y
-   integer newx,newy,counter
+   integer :: x,y
+   integer :: newx,newy,counter
 
    newx=1
    do x=1,nx*2-1,2
@@ -416,16 +413,16 @@ subroutine read_slstr_demdata(indir,data_arr,nx,ny)
    use imager_structures_m
    use netcdf
 
-   integer,intent(in)                         :: nx
-   integer,intent(in)                         :: ny
-   character(len=path_length),  intent(in)    :: indir
-   integer(kind=sint),intent(out)             :: data_arr(nx,ny)
+   integer,                    intent(in)  :: nx
+   integer,                    intent(in)  :: ny
+   character(len=path_length), intent(in)  :: indir
+   integer(kind=sint),         intent(out) :: data_arr(nx,ny)
 
-   integer(kind=sint),allocatable::   data(:,:)
-   character(len=path_length)   ::   geofile
-   character(len=path_length)   ::   var
-   integer                     ::   fid,did,ierr,curband,index2,j
-   real                        ::   filval,sclval,offval
+   integer(kind=sint), allocatable ::  data(:,:)
+   character(len=path_length)      :: geofile
+   character(len=path_length)      :: var
+   integer                         :: fid,did,ierr
+   real                            :: filval,sclval,offval
 
    allocate(data(nx,ny))
 
@@ -436,38 +433,38 @@ subroutine read_slstr_demdata(indir,data_arr,nx,ny)
    ierr=nf90_open(path=trim(adjustl(geofile)),mode=NF90_NOWRITE,ncid=fid)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: read_slstr_geodata(): Error opening file ',trim(geofile)
-      stop
+      stop error_stop_code
    endif
    ierr=nf90_inq_varid(fid, trim(var), did)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: read_slstr_geodata(): Error opening dataset ',trim(var)," in ",trim(geofile)
-      stop
+      stop error_stop_code
    endif
 
    ierr = nf90_get_att(fid, did, "_FillValue", filval)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: get_slstr_geodata(): Error getting FillValue from file ',trim(geofile)
-      stop
+      stop error_stop_code
    endif
    ierr = nf90_get_att(fid, did, "scale_factor", sclval)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: get_slstr_geodata(): Error getting scale_factor from file ',trim(geofile)
-      stop
+      stop error_stop_code
    endif
    ierr = nf90_get_att(fid, did,"add_offset", offval)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: get_slstr_geodata(): Error getting add_offset from file ',trim(geofile)
-      stop
+      stop error_stop_code
    endif
    ierr = nf90_get_var(fid, did, data)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: read_slstr_geodata(): Error reading dataset ',trim(var)," in ",trim(geofile)
-      stop
+      stop error_stop_code
    endif
    ierr = nf90_close(fid)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: read_slstr_geodata(): Error closing file ',trim(geofile)
-      stop
+      stop error_stop_code
    endif
 
    ! Scale and offset results, then apply the fill value
@@ -484,17 +481,17 @@ subroutine read_slstr_lldata(indir,data_arr,nx,ny,proclat)
    use imager_structures_m
    use netcdf
 
-   integer,intent(in)                         :: nx
-   integer,intent(in)                         :: ny
-   character(len=path_length),  intent(in)    :: indir
-   real(kind=sreal),intent(out)               :: data_arr(nx,ny)
-   logical                                    :: proclat
+   integer,                    intent(in)  :: nx
+   integer,                    intent(in)  :: ny
+   character(len=path_length), intent(in)  :: indir
+   real(kind=sreal),           intent(out) :: data_arr(nx,ny)
+   logical,                    intent(in)  :: proclat
 
-   integer(kind=sreal),allocatable::   data(:,:)
-   character(len=path_length)       ::   geofile
-   character(len=path_length)     ::   var
-   integer                         ::   fid,did,ierr,curband,index2,j
-   real                            ::   filval,sclval,offval
+   integer(kind=sreal), allocatable :: data(:,:)
+   character(len=path_length)       :: geofile
+   character(len=path_length)       :: var
+   integer                          :: fid,did,ierr
+   real                             :: filval,sclval,offval
 
    allocate(data(nx,ny))
    if (proclat .eqv. .true.) then
@@ -508,38 +505,38 @@ subroutine read_slstr_lldata(indir,data_arr,nx,ny,proclat)
    ierr=nf90_open(path=trim(adjustl(geofile)),mode=NF90_NOWRITE,ncid=fid)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: read_slstr_geodata(): Error opening file ',trim(geofile)
-      stop
+      stop error_stop_code
    endif
    ierr=nf90_inq_varid(fid, trim(var), did)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: read_slstr_geodata(): Error opening dataset ',trim(var)," in ",trim(geofile)
-      stop
+      stop error_stop_code
    endif
 
    ierr = nf90_get_att(fid, did, "_FillValue", filval)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: get_slstr_geodata(): Error getting FillValue from file ',trim(geofile)
-      stop
+      stop error_stop_code
    endif
    ierr = nf90_get_att(fid, did, "scale_factor", sclval)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: get_slstr_geodata(): Error getting scale_factor from file ',trim(geofile)
-      stop
+      stop error_stop_code
    endif
    ierr = nf90_get_att(fid, did,"add_offset", offval)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: get_slstr_geodata(): Error getting add_offset from file ',trim(geofile)
-      stop
+      stop error_stop_code
    endif
    ierr = nf90_get_var(fid, did, data)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: read_slstr_geodata(): Error reading dataset ',trim(var)," in ",trim(geofile)
-      stop
+      stop error_stop_code
    endif
    ierr = nf90_close(fid)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: read_slstr_geodata(): Error closing file ',trim(geofile)
-      stop
+      stop error_stop_code
    endif
 
    data_arr   =   data*sclval + offval
@@ -558,16 +555,14 @@ subroutine read_slstr_satsol(indir,imager_angles,nx,ny,startx)
    use imager_structures_m
    use netcdf
 
-   integer,intent(in)                         :: nx
-   integer,intent(in)                         :: ny
-   integer,intent(in)                         :: startx
-   character(len=path_length),  intent(in)    :: indir
-   type(imager_angles_t),       intent(inout) :: imager_angles
+   integer,                    intent(in)    :: nx
+   integer,                    intent(in)    :: ny
+   integer,                    intent(in)    :: startx
+   character(len=path_length), intent(in)    :: indir
+   type(imager_angles_t),      intent(inout) :: imager_angles
 
-   character(len=path_length)       ::   geofile
-   character(len=path_length)     ::   var
-   integer                         ::   fid,did,ierr,curband,index2,j
-   real                            ::   filval,sclval,offval
+   character(len=path_length) ::   geofile
+   integer                    ::   fid,ierr
 
    ! Input file, on the geometry grid (tn)
    geofile = trim(indir)//'geometry_tn.nc'
@@ -576,7 +571,7 @@ subroutine read_slstr_satsol(indir,imager_angles,nx,ny,startx)
    ierr=nf90_open(path=trim(adjustl(geofile)),mode=NF90_NOWRITE,ncid=fid)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: read_slstr_geodata(): Error opening file ',trim(geofile)
-      stop
+      stop error_stop_code
    endif
 
    ! Retrieve each variable and resample from tn to in grid
@@ -588,7 +583,7 @@ subroutine read_slstr_satsol(indir,imager_angles,nx,ny,startx)
    ierr = nf90_close(fid)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: read_slstr_get_one_geom(): Error closing file ',trim(geofile)
-      stop
+      stop error_stop_code
    endif
 
    ! Check bounds, compute the raa
@@ -626,22 +621,21 @@ end subroutine read_slstr_satsol
 ! Get one of the geometry variables, then resample to the correct grid
 subroutine slstr_get_one_geom(nx,ny,fid,var,odata,geofile)
 
-
    use preproc_constants_m
    use imager_structures_m
    use netcdf
 
-   integer,intent(in)                         :: nx
-   integer,intent(in)                         :: ny
-   integer,  intent(in)                       :: fid
-   character(len=*),  intent(in)              :: var
-   real(kind=sreal),intent(out)               :: odata(nx,ny)
-   character(len=path_length),  intent(in)    :: geofile
+   integer,                    intent(in)  :: nx
+   integer,                    intent(in)  :: ny
+   integer,                    intent(in)  :: fid
+   character(len=*),           intent(in)  :: var
+   real(kind=sreal),           intent(out) :: odata(nx,ny)
+   character(len=path_length), intent(in)  :: geofile
 
-   real(kind=sreal),allocatable::   tdata(:,:)
+   real(kind=sreal), allocatable :: tdata(:,:)
 
-   integer did,ierr
-   integer xstep,ystep
+   integer :: did,ierr
+   integer :: xstep,ystep
 
    ! Hardcoded TX grid. We should really do something more robust here
    xstep=130
@@ -652,13 +646,13 @@ subroutine slstr_get_one_geom(nx,ny,fid,var,odata,geofile)
    ierr=nf90_inq_varid(fid, trim(var), did)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: read_slstr_get_one_geom(): Error opening dataset ',trim(var)," in ",trim(geofile)
-      stop
+      stop error_stop_code
    endif
    ierr = nf90_get_var(fid, did, tdata)
 
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: read_slstr_get_one_geom(): Error reading dataset ',trim(var)," in ",trim(geofile)
-      stop
+      stop error_stop_code
    endif
 
    ! Do the resampling.
@@ -672,18 +666,18 @@ subroutine slstr_resample_geom(indata,outdata,nx1,ny1,nx2,ny2,startx,step)
    use preproc_constants_m
    use imager_structures_m
 
-   integer,intent(in)                         :: nx1
-   integer,intent(in)                         :: ny1
-   integer,intent(in)                         :: nx2
-   integer,intent(in)                         :: ny2
-   integer,intent(in)                         :: startx
-   integer,intent(in)                         :: step
+   integer,          intent(in)  :: nx1
+   integer,          intent(in)  :: ny1
+   integer,          intent(in)  :: nx2
+   integer,          intent(in)  :: ny2
+   integer,          intent(in)  :: startx
+   integer,          intent(in)  :: step
 
-   real(kind=sreal),intent(in)                :: indata(nx2,ny2)
-   real(kind=sreal),intent(out)               :: outdata(nx1,ny1)
+   real(kind=sreal), intent(in)  :: indata(nx2,ny2)
+   real(kind=sreal), intent(out) :: outdata(nx1,ny1)
 
-   integer          ::  i,j,k,xpos
-   real(kind=sreal) ::  slo,off,tmp1,tmp2
+   integer          :: i,j,k,xpos
+   real(kind=sreal) :: slo,off
 
    ! This section loops over each pixel in the input solar/sat geom file
    ! By default the y-axis is the same (1200px) but the x axis is 16km

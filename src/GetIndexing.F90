@@ -160,10 +160,10 @@ subroutine Get_Indexing(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
               X, XJ, XI, status)
       end if
    case (AerOx)
-      call aer_indexing_logic(Ctrl, SAD_Chan, SPixel, is_not_used_or_missing, &
+      call aer_indexing_logic(Ctrl, SPixel, is_not_used_or_missing, &
                               X, XJ, XI, status)
    case (AerSw)
-      call swan_indexing_logic(Ctrl, SAD_Chan, SPixel, is_not_used_or_missing, &
+      call swan_indexing_logic(Ctrl, SPixel, is_not_used_or_missing, &
                                X, XJ, XI, status)
    end select
    if (status /= 0) return
@@ -622,20 +622,18 @@ end subroutine cloud_indexing_logic_night
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
-subroutine aer_indexing_logic(Ctrl, SAD_Chan, SPixel, is_not_used_or_missing, &
+subroutine aer_indexing_logic(Ctrl, SPixel, is_not_used_or_missing, &
                               X, XJ, XI, status)
 
    use Ctrl_m
    use ECP_Constants_m
    use Int_Routines_m, only : find_in_array
-   use SAD_Chan_m
 
    implicit none
 
    ! Define arguments
 
    type(Ctrl_t),     intent(in)    :: Ctrl
-   type(SAD_Chan_t), intent(in)    :: SAD_Chan(:)
    type(SPixel_t),   intent(inout) :: SPixel
    logical,          intent(inout) :: is_not_used_or_missing(:)
    integer,          intent(out)   :: X(:)
@@ -708,20 +706,18 @@ end subroutine aer_indexing_logic
 ! The wvl and view checks are not actually independent, so the result could be
 ! different if their order is inverted.
 !-------------------------------------------------------------------------------
-subroutine swan_indexing_logic(Ctrl, SAD_Chan, SPixel, is_not_used_or_missing, &
+subroutine swan_indexing_logic(Ctrl, SPixel, is_not_used_or_missing, &
                               X, XJ, XI, status)
 
    use Ctrl_m
    use ECP_Constants_m
    use Int_Routines_m, only : find_in_array
-   use SAD_Chan_m
 
    implicit none
 
    ! Define arguments
 
    type(Ctrl_t),     intent(in)    :: Ctrl
-   type(SAD_Chan_t), intent(in)    :: SAD_Chan(:)
    type(SPixel_t),   intent(inout) :: SPixel
    logical,          intent(inout) :: is_not_used_or_missing(:)
    integer,          intent(out)   :: X(:)

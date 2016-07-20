@@ -55,8 +55,6 @@ subroutine read_slstr_dimensions(img_file, n_across_track, n_along_track, &
    integer(lint),          intent(inout) :: startx, endx, starty, endy
    logical,                intent(in)    :: verbose
 
-   integer :: i_line, i_column
-   integer :: n_lines, n_columns
    integer :: fid,ierr
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< read_slstr_dimensions()'
@@ -89,17 +87,15 @@ end subroutine read_slstr_dimensions
 ! Arguments:
 ! Name                Type    In/Out/Both Description
 ! infile              string  in   Full path to any M-band image file
-! geofile             string  in   Full path to the GMTCO geolocation file
 ! imager_geolocation  struct  both Members within are populated
 ! imager_measurements struct  both Members within are populated
 ! imager_angles       struct  both Members within are populated
-! imager_flags        struct  both Members within are populated
 ! imager_time         struct  both Members within are populated
 ! channel_info        struct  both Members within are populated
 ! verbose             logical in   If true then print verbose information.
 !-------------------------------------------------------------------------------
-subroutine read_slstr(infile,geofile,imager_geolocation, imager_measurements, &
-   imager_angles, imager_flags, imager_time, channel_info, verbose)
+subroutine read_slstr(infile,imager_geolocation, imager_measurements, &
+   imager_angles, imager_time, channel_info, verbose)
 
    use iso_c_binding
    use calender_m
@@ -114,11 +110,9 @@ subroutine read_slstr(infile,geofile,imager_geolocation, imager_measurements, &
    implicit none
 
    character(len=path_length),  intent(in)    :: infile
-   character(len=path_length),  intent(in)    :: geofile
    type(imager_geolocation_t),  intent(inout) :: imager_geolocation
    type(imager_measurements_t), intent(inout) :: imager_measurements
    type(imager_angles_t),       intent(inout) :: imager_angles
-   type(imager_flags_t),        intent(inout) :: imager_flags
    type(imager_time_t),         intent(inout) :: imager_time
    type(channel_info_t),        intent(in)    :: channel_info
    logical,                     intent(in)    :: verbose
@@ -131,16 +125,9 @@ subroutine read_slstr(infile,geofile,imager_geolocation, imager_measurements, &
    integer                          :: starty, ny
    integer(c_int)                   :: line0, line1
    integer(c_int)                   :: column0, column1
-   integer                          :: index1,index2
 
-
-   character(len=path_length)       :: filename
    character(len=path_length)       :: indir
-   character(len=path_length)       :: regex
-   logical                          :: file_exists
 
-   integer fid,did,ierr,curband
-   character(len=path_length) :: l1b_start, l1b_end
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< read_slstr()'
 

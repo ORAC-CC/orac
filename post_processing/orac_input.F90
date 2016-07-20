@@ -51,7 +51,7 @@ module orac_input_m
       integer, pointer :: view_loop_to_main_index(:)
       logical          :: read_optional_channel_field(MaxNumMeas) = .false.
       logical          :: read_optional_view_field(MaxNumViews)   = .false.
-      logical, pointer :: best_infile(:,:)
+!     logical, pointer :: best_infile(:,:)
    end type input_indices_t
 
 
@@ -431,6 +431,8 @@ subroutine dealloc_input_indices(indexing)
       deallocate(indexing%ythermal_loop_to_main_index)
    if (associated(indexing%view_loop_to_main_index)) &
       deallocate(indexing%view_loop_to_main_index)
+!  if (associated(indexing%best_infile)) &
+!     deallocate(indexing%best_inffile)
 
 end subroutine dealloc_input_indices
 

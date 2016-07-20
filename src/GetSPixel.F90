@@ -340,7 +340,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
       end if ! End of NSolar > 0
    end if ! End of RTMIntMeth /= RTMIntMethNone
 
-   call Get_X(Ctrl, SAD_Chan, SPixel, status)
+   call Get_X(Ctrl, SPixel, status)
 !  if (status /= 0) go to 99 ! Skip further data reading
 
 

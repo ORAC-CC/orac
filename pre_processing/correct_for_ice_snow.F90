@@ -470,8 +470,8 @@ end subroutine apply_ice_correction
 !------------------------------------------------------------------------------
 
 subroutine correct_for_ice_snow_ecmwf(ecmwf_HR_path,imager_geolocation, &
-     imager_flags,preproc_dims,preproc_prtm,surface,cyear,cmonth,cday, &
-     channel_info,assume_full_path,include_full_brdf,source_atts,verbose)
+     imager_flags,preproc_dims,preproc_prtm,surface, &
+     include_full_brdf,source_atts,verbose)
 
    use channel_structures_m
    use constants_cloud_typing_pavolonis_m
@@ -489,14 +489,11 @@ subroutine correct_for_ice_snow_ecmwf(ecmwf_HR_path,imager_geolocation, &
    type(imager_flags_t),       intent(in)    :: imager_flags
    type(preproc_dims_t),       intent(in)    :: preproc_dims
    type(preproc_prtm_t),       intent(in)    :: preproc_prtm
-   logical,                    intent(in)    :: assume_full_path
    logical,                    intent(in)    :: include_full_brdf
    type(source_attributes_t),  intent(inout) :: source_atts
    logical,                    intent(in)    :: verbose
 
    type(surface_t),            intent(inout) :: surface
-   character(len=date_length), intent(in)    :: cyear,cmonth,cday
-   type(channel_info_t),       intent(in)    :: channel_info
 
    ! Local variables
    logical                        :: flag

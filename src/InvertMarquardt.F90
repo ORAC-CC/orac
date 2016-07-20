@@ -823,7 +823,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
    ! Set_Diag also checks whether the solution state was good enough to use in
    ! SDAD first guess and a priori setting, and if so saves Xn and Sn in SPixel
    ! (XnSav and SnSav).
-   call Set_Diag(Ctrl, SPixel, convergence, J, Jm, Ja, iter, Y, Sy, Diag)
+   call Set_Diag(Ctrl, SPixel, convergence, J, Jm, Ja, iter, Diag)
 
    ! Write final solution and close breakpoint output file
 #ifdef BKP

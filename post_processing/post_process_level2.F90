@@ -193,7 +193,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    integer                      :: index_space
 
    ! New variables for chunked post-processing
-   integer                      :: chunksize,curchunk
+   integer                      :: chunksize
    integer                      :: i_chunk
    integer                      :: n_chunks
    integer, allocatable         :: chunk_starts(:)
@@ -384,7 +384,10 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
       ! This is needed for minimisation of memory overhead, only costs are
       ! loaded in the first instance. Later other data is loaded but only for
       ! the best class
-      allocate(indexing%best_infile(indexing%X0:indexing%X1, indexing%Y0:indexing%Y1))
+!     allocate(indexing%best_infile(indexing%X0:indexing%X1, indexing%Y0:indexing%Y1))
+!     do i = 1, n_in_files
+!        nullify(indexing%best_infile)
+!     end do
 
       ! Read once-only inputs
       call alloc_input_data_primary_all(indexing, input_primary(0))

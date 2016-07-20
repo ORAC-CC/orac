@@ -85,9 +85,6 @@ subroutine read_himawari_dimensions(l1_5_file, n_across_track, n_along_track, &
    integer(lint),          intent(inout) :: startx, endx, starty, endy
    logical,                intent(in)    :: verbose
 
-   integer :: i_line, i_column
-   integer :: n_lines, n_columns
-
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< read_himawari_dimensions()'
 
    ! These are constant for the full disk image.
@@ -99,8 +96,8 @@ subroutine read_himawari_dimensions(l1_5_file, n_across_track, n_along_track, &
    startx=1
    starty=1
 
-   endx=n_columns
-   endy=n_lines
+   endx=n_across_track
+   endy=n_along_track
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> read_himawari_dimensions()'
 
@@ -123,13 +120,12 @@ end subroutine read_himawari_dimensions
 ! imager_geolocation  struct  both Members within are populated
 ! imager_measurements struct  both Members within are populated
 ! imager_angles       struct  both Members within are populated
-! imager_flags        struct  both Members within are populated
 ! imager_time         struct  both Members within are populated
 ! channel_info        struct  both Members within are populated
 ! verbose             logical in   If true then print verbose information.
 !-------------------------------------------------------------------------------
 subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
-   imager_angles, imager_flags, imager_time, channel_info, verbose)
+   imager_angles, imager_time, channel_info, verbose)
 
    use iso_c_binding
    use channel_structures_m
@@ -145,7 +141,6 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
    type(imager_geolocation_t),  intent(inout) :: imager_geolocation
    type(imager_measurements_t), intent(inout) :: imager_measurements
    type(imager_angles_t),       intent(inout) :: imager_angles
-   type(imager_flags_t),        intent(inout) :: imager_flags
    type(imager_time_t),         intent(inout) :: imager_time
    type(channel_info_t),        intent(in)    :: channel_info
    logical,                     intent(in)    :: verbose

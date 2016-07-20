@@ -70,7 +70,7 @@
 ! the setting of QCFlag will fail.
 !-------------------------------------------------------------------------------
 
-subroutine Set_Diag(Ctrl, SPixel, convergence, J, Jm, Ja, iter, Y, Sy, Diag)
+subroutine Set_Diag(Ctrl, SPixel, convergence, J, Jm, Ja, iter, Diag)
 
    use Ctrl_m
    use ECP_Constants_m
@@ -89,10 +89,6 @@ subroutine Set_Diag(Ctrl, SPixel, convergence, J, Jm, Ja, iter, Y, Sy, Diag)
                                                   ! contributions to cost from
                                                   ! measurements and a priori)
    integer,        intent(in)    :: iter          ! Inversion iteration counter
-   real,           intent(in)    :: Y(:)          ! Calculated "measurements" at
-                                                  ! final state.
-   real,           intent(in)    :: Sy(:,:)       ! Error covariance in
-                                                  ! measurements
    type(Diag_t),   intent(inout) :: Diag          ! Diagnostic structure
 
    ! Local variables

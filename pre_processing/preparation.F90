@@ -159,7 +159,7 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
    if (verbose) write(*,*) 'assume_full_path: ',      assume_full_path
 
    ! determine ecmwf path/filename
-   call set_ecmwf(sensor,cyear,cmonth,cday,chour,cminute, &
+   call set_ecmwf(cyear,cmonth,cday,chour, &
                   ecmwf_path,     ecmwf_path2,     ecmwf_path3, &
                   ecmwf_path_file,ecmwf_path_file2,ecmwf_path_file3, &
                   ecmwf_flag,imager_geolocation,imager_time, &
@@ -171,14 +171,14 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
    if (ecmwf_path_hr(1) .eq. '') then
       call build_ecmwf_HR_file_from_LR(ecmwf_path_file(1), ecmwf_HR_path_file(1))
       if (ecmwf_time_int_method .eq. 2) then
-      	 call build_ecmwf_HR_file_from_LR(ecmwf_path_file(2), ecmwf_HR_path_file(2))
+         call build_ecmwf_HR_file_from_LR(ecmwf_path_file(2), ecmwf_HR_path_file(2))
       end if
 
    else
       ecmwf_HR_path_file(1)=ecmwf_path_hr(1)
 
       if (ecmwf_time_int_method .eq. 2) then
-      	 ecmwf_HR_path_file(2)=ecmwf_path_hr(2)
+         ecmwf_HR_path_file(2)=ecmwf_path_hr(2)
       end if
 
    end if

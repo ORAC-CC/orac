@@ -17,15 +17,11 @@
 ! Name           Type   In/Out/Both Description
 ! ------------------------------------------------------------------------------
 ! netcdf_info    struct in   Summary of NCDF file properties.
-! preproc_dims   struct in   Summary of preprocessing grid definitions
 ! i              int    in   X (lon) array index of grid cell
 ! j              int    in   Y (lat) array index of grid call
 ! nchan          int    in   # of channels used
 ! nlevels        int    in   # of vertical levels used
-! emissivity     struct in   RTTOV-derived surface emissivity
 ! transmission   struct in   RTTOV-derived atmospheric transmission
-! radiance       struct in   RTTOV-derived atmospheric radiance
-! radiance2      struct in   RTTOV-derived secondary atmospheric radiances
 ! write_flag     logic  in   T: Write values; F: Write fill-values
 !
 ! History:
@@ -43,9 +39,9 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine write_solar_rttov(netcdf_info, preproc_dims, coefs, idim, jdim, &
-     nlev, satza, emissivity, transmission, radiance, radiance2, &
-     write_flag, chan_num, rttov_num, chanvar)
+subroutine write_solar_rttov(netcdf_info, coefs, idim, jdim, &
+     nlev, satza, transmission, &
+     write_flag, chan_num, rttov_num)
 
    use netcdf_output_m, only: netcdf_output_info_t
    use orac_ncdf_m
@@ -58,19 +54,14 @@ subroutine write_solar_rttov(netcdf_info, preproc_dims, coefs, idim, jdim, &
    implicit none
 
    type(netcdf_output_info_t), intent(in) :: netcdf_info
-   type(preproc_dims_t),       intent(in) :: preproc_dims
    type(rttov_coefs),          intent(in) :: coefs
    integer(lint),              intent(in) :: idim, jdim
    integer(jpim),              intent(in) :: nlev
    real(jprb),                 intent(in) :: satza
-   type(rttov_emissivity),     intent(in) :: emissivity(:)
    type(transmission_type),    intent(in) :: transmission
-   type(radiance_type),        intent(in) :: radiance
-   type(radiance2_type),       intent(in) :: radiance2
    logical,                    intent(in) :: write_flag
    integer,                    intent(in) :: chan_num
    integer,                    intent(in) :: rttov_num
-   integer,                    intent(in) :: chanvar
 
    real(sreal)                        :: amf_recip
    real(sreal), dimension(1,nlev,1,1) :: dummy_tac, dummy_tbc

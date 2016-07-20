@@ -78,7 +78,7 @@
 !-------------------------------------------------------------------------------
 
 subroutine get_surface_emissivity(cyear, cdoy, cimss_emis_path, imager_flags, &
-           imager_geolocation, channel_info, preproc_dims, preproc_geoloc, &
+           imager_geolocation, channel_info, preproc_dims, &
            assume_full_path, verbose, surface, preproc_surf, source_atts)
 
    use channel_structures_m
@@ -100,7 +100,6 @@ subroutine get_surface_emissivity(cyear, cdoy, cimss_emis_path, imager_flags, &
    type(imager_geolocation_t), intent(in)    :: imager_geolocation
    type(channel_info_t),       intent(in)    :: channel_info
    type(preproc_dims_t),       intent(in)    :: preproc_dims
-   type(preproc_geoloc_t),     intent(in)    :: preproc_geoloc
    logical,                    intent(in)    :: assume_full_path
    logical,                    intent(in)    :: verbose
    type(surface_t),            intent(inout) :: surface
