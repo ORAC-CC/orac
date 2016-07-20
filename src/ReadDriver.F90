@@ -291,9 +291,9 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    allocate(Ctrl%Ind%Y_ID(Ctrl%Ind%Ny))
    allocate(Ctrl%Ind%Ch_Is(Ctrl%Ind%Ny))
    Ctrl%Ind%Ch_Is = 0
-   allocate(Ctrl%Ind%YSolar(Ctrl%Ind%NSolar))
-   allocate(Ctrl%Ind%YThermal(Ctrl%Ind%NThermal))
-   allocate(Ctrl%Ind%YMixed(Ctrl%Ind%NMixed))
+   if (Ctrl%Ind%NSolar > 0)   allocate(Ctrl%Ind%YSolar(Ctrl%Ind%NSolar))
+   if (Ctrl%Ind%NThermal > 0) allocate(Ctrl%Ind%YThermal(Ctrl%Ind%NThermal))
+   if (Ctrl%Ind%NMixed > 0)   allocate(Ctrl%Ind%YMixed(Ctrl%Ind%NMixed))
    ii = 0
    i0 = 0
    i1 = 0
@@ -377,7 +377,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%RS%allow_a_default_surface = .true.
 
    wvl_threshold = 0.05
-   allocate(Ctrl%RS%B(Ctrl%Ind%NSolar, MaxSurf))
+   if (Ctrl%Ind%NSolar > 0) allocate(Ctrl%RS%B(Ctrl%Ind%NSolar, MaxSurf))
    do i = 1, Ctrl%Ind%NSolar
       ii = Ctrl%Ind%ICh(Ctrl%Ind%YSolar(i))
 
@@ -398,9 +398,11 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       end if
    end do
 
-   allocate(Ctrl%RS%Sb(Ctrl%Ind%NSolar, MaxSurf))
-   Ctrl%RS%Sb(:,ISea)  = switch(a, Default=0.2, AerOx=0.0)
-   Ctrl%RS%Sb(:,ILand) = switch(a, Default=0.2, AerOx=2e-4)
+   if (Ctrl%Ind%NSolar > 0) then
+      allocate(Ctrl%RS%Sb(Ctrl%Ind%NSolar, MaxSurf))
+      Ctrl%RS%Sb(:,ISea)  = switch(a, Default=0.2, AerOx=0.0)
+      Ctrl%RS%Sb(:,ILand) = switch(a, Default=0.2, AerOx=2e-4)
+   end if
 
    !----------------------- Ctrl%EqMPN --------------------
    Ctrl%EqMPN%SySelm = switch(a, Default=SelmAux)
@@ -948,9 +950,12 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
            Ctrl%Ind%NThermal, Ctrl%Ind%NMixed
       write(*,*) 'Ctrl%Ind%ICh: ',          Ctrl%Ind%ICh
       write(*,*) 'Ctrl%Ind%Y_ID: ',         Ctrl%Ind%Y_ID
-      write(*,*) 'Ctrl%Ind%YSolar: ',       Ctrl%Ind%YSolar
-      write(*,*) 'Ctrl%Ind%YThermal: ',     Ctrl%Ind%YThermal
-      write(*,*) 'Ctrl%Ind%YMixed: ',       Ctrl%Ind%YMixed
+      if (Ctrl%Ind%NSolar > 0) &
+           write(*,*) 'Ctrl%Ind%YSolar: ',       Ctrl%Ind%YSolar
+      if (Ctrl%Ind%NThermal > 0) &
+           write(*,*) 'Ctrl%Ind%YThermal: ',     Ctrl%Ind%YThermal
+      if (Ctrl%Ind%NMixed > 0) &
+           write(*,*) 'Ctrl%Ind%YMixed: ',       Ctrl%Ind%YMixed
       write(*,*) 'Ctrl%LUTClass: ',         trim(Ctrl%LUTClass)
       write(*,*) 'Ctrl%FID%L2_primary: ',   trim(Ctrl%FID%L2_primary)
       write(*,*) 'Ctrl%FID%L2_secondary: ', trim(Ctrl%FID%L2_secondary)

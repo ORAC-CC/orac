@@ -247,8 +247,8 @@ subroutine dealloc_common_indices(ind)
    type(common_indices_t), intent(inout) :: ind
 
    deallocate(ind%Y_Id)
-   deallocate(ind%YSolar)
-   deallocate(ind%YThermal)
+   if (associated(ind%YSolar)) deallocate(ind%YSolar)
+   if (associated(ind%YThermal)) deallocate(ind%YThermal)
    deallocate(ind%View_Id)
    deallocate(ind%Ch_Is)
    if (associated(ind%rho_terms)) deallocate(ind%rho_terms)

@@ -43,11 +43,11 @@ subroutine Dealloc_Ctrl(Ctrl)
 
    deallocate(Ctrl%Ind%WvlIdx)
    deallocate(Ctrl%Ind%ICh)
-   deallocate(Ctrl%Ind%YMixed)
+   if (associated(Ctrl%Ind%YMixed)) deallocate(Ctrl%Ind%YMixed)
    deallocate(Ctrl%Ind%channel_proc_flag)
 
-   deallocate(Ctrl%RS%B)
-   deallocate(Ctrl%RS%Sb)
+   if (associated(Ctrl%RS%B)) deallocate(Ctrl%RS%B)
+   if (associated(Ctrl%RS%Sb)) deallocate(Ctrl%RS%Sb)
 
    deallocate(Ctrl%Sy)
 
@@ -55,7 +55,6 @@ subroutine Dealloc_Ctrl(Ctrl)
    deallocate(Ctrl%r_e_chans)
    deallocate(Ctrl%ir_chans)
 
-   if (associated(Ctrl%ReChans)) &
-      deallocate(Ctrl%ReChans)
+   if (associated(Ctrl%ReChans)) deallocate(Ctrl%ReChans)
 
 end subroutine Dealloc_Ctrl

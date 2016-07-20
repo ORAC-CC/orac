@@ -128,6 +128,14 @@ subroutine Get_LwSwRTM(Ctrl, SAD_Chan, RTM, SPixel, status)
       call interp_field2(RTM%LW%Rbc_up,  SPixel%RTM%LW%Rbc_up,  interp)
       if (any(SPixel%RTM%LW%Rbc_up < RxcMin .or. SPixel%RTM%LW%Rbc_up > RxcMax)) &
          status = -1
+
+      ! Set dB_dTs using the surface temperature. (T2R needs an array of T
+      ! values, one per channel, to convert).
+
+      T_Array = SPixel%RTM%T(SPixel%RTM%Np)
+      SAD_temp = SAD_Chan(Ctrl%Ind%YThermal)
+      if (status == 0) call T2R(Ctrl%Ind%NThermal, SAD_temp, T_Array, R, &
+           SPixel%RTM%LW%dB_dTs, status)
    end if
 
    ! Set surface level to TOA transmittances
@@ -153,14 +161,5 @@ subroutine Get_LwSwRTM(Ctrl, SAD_Chan, RTM, SPixel, status)
 #endif
    ! Set surface level to TOA transmittances
    SPixel%RTM%SW%Tsf = SPixel%RTM%SW%Tac(:,RTM%Np)
-
-   ! Set dB_dTs using the surface temperature. (T2R needs an array of T values,
-   ! one per channel, to convert).
-
-   T_Array = SPixel%RTM%T(SPixel%RTM%Np)
-   SAD_temp = SAD_Chan(Ctrl%Ind%YThermal)
-   if (status == 0) &
-      call T2R(Ctrl%Ind%NThermal, SAD_temp, T_Array, R, SPixel%RTM%LW%dB_dTs, &
-               status)
 
 end subroutine Get_LwSwRTM
