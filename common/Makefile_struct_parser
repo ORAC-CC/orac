@@ -46,6 +46,7 @@ $(PARSER_NAME).lex:
 	    -e 's/STRUCT_NAME/$(STRUCT_NAME)/' \
             -e 's/STRUCT_CONDITION/$(STRUCT_TYPE_UPP)_SC/' \
             $(ORAC_COMMON)/struct_parser.lex > $(PARSER_NAME).lex
+	chmod 0744 $(PLACE).sed.sh
 	$(PLACE).sed.sh $(PARSER_NAME).lex
 
 $(PARSER_NAME).cc:
