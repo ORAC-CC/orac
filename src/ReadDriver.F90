@@ -450,7 +450,11 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
                                                                  CldIce=100.0)
    Ctrl%Invpar%XULim(IPc)             = switch(a, Default=1200.0)
    Ctrl%Invpar%XULim(IFr)             = switch(a, Default=1.0)
-   Ctrl%Invpar%XULim(ITs)             = switch(a, Default=320.0)
+   if ((Ctrl%InstName(1:5) .eq. 'AATSR') .or. (Ctrl%InstName(1:5) .eq. 'ATSR2')) then
+      Ctrl%Invpar%XULim(ITs)             = switch(a, Default=320.0)
+   else
+      Ctrl%Invpar%XULim(ITs)             = switch(a, Default=400.0)
+   endif
    Ctrl%Invpar%XULim(IRs(:,IRho_0V))  = switch(a, Default=1.0,   AerSw=100.0)
    Ctrl%Invpar%XULim(IRs(:,IRho_0D))  = switch(a, Default=1.0)
    Ctrl%Invpar%XULim(IRs(:,IRho_DV))  = switch(a, Default=1.0)
@@ -491,7 +495,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%Bkpl                = 3
    Ctrl%Max_SDAD            = 10.0
    Ctrl%sabotage_inputs     = .false.
-   Ctrl%process_cloudy_only = .true.
+   Ctrl%process_cloudy_only = .false.
    Ctrl%surfaces_to_skip    = 0_byte
    Ctrl%second_aot_ch       = 3 ! Assuming AATSR
 
