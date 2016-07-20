@@ -240,8 +240,6 @@ subroutine determine_channel_indexing(fname, indexing, verbose)
    if (indexing%flags%do_rho) then
       allocate(indexing%rho_terms(indexing%NSolar, MaxRho_XX))
       call set_rho_terms_from_bitmask(rho_flags, indexing%common_indices_t)
-   else
-      nullify(indexing%rho_terms)
    end if
 
 end subroutine determine_channel_indexing
@@ -320,10 +318,6 @@ subroutine cross_reference_indexing(n, loop_ind, main_ind)
    main_ind%YSolar   = YSolar(1:i1)
    main_ind%YThermal = YThermal(1:i2)
 
-   nullify(main_ind%loop_to_main_index)
-   nullify(main_ind%ysolar_loop_to_main_index)
-   nullify(main_ind%ythermal_loop_to_main_index)
-
    ! Allocate channel cross-referencing arrays
    do i_file = 1, n
       allocate(loop_ind(i_file)%loop_to_main_index(loop_ind(i_file)%Ny))
@@ -379,8 +373,6 @@ subroutine cross_reference_indexing(n, loop_ind, main_ind)
    allocate(main_ind%View_Id(main_ind%NViews))
    main_ind%View_Id = View_Id(1:i0)
 
-   nullify(main_ind%view_loop_to_main_index)
-
    ! Allocate view cross-referencing array
    do i_file = 1, n
       allocate(loop_ind(i_file)%view_loop_to_main_index( &
@@ -408,11 +400,26 @@ subroutine cross_reference_indexing(n, loop_ind, main_ind)
             end do
          end if
       end do
-   else
-      nullify(main_ind%rho_terms)
    end if
 
 end subroutine cross_reference_indexing
+
+
+subroutine nullify_indexing(indexing)
+
+   implicit none
+
+   type(input_indices_t), intent(inout) :: indexing
+
+   call nullify_common_indices(indexing%common_indices_t)
+
+   nullify(indexing%loop_to_main_index)
+   nullify(indexing%ysolar_loop_to_main_index)
+   nullify(indexing%ythermal_loop_to_main_index)
+   nullify(indexing%view_loop_to_main_index)
+!  nullify(indexing%best_infile)
+
+end subroutine nullify_indexing
 
 
 subroutine dealloc_input_indices(indexing)

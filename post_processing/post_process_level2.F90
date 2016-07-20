@@ -311,6 +311,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
       call read_input_dimensions(in_files_primary(i), loop_ind(i), verbose)
       call determine_channel_indexing(in_files_primary(i), loop_ind(i), verbose)
    end do
+   call nullify_indexing(indexing)
    call cross_reference_indexing(n_in_files, loop_ind, indexing)
 
    n_chunks=1
