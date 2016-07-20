@@ -144,6 +144,7 @@ program process_broadband_fluxes
    real, allocatable :: CTT(:,:)  ! Cloud top temperature (xp,yp)
    real, allocatable :: CTP(:,:)  ! Cloud top pressure (xp,yp)
    real, allocatable :: TIME(:,:)  ! Time of pixel in Julian Days (xp,yp)
+   real, allocatable :: STEMP(:,:)  ! Surface temperature from primary files (xp,yp)
 
    !Total Solar Irriadiance File
    real, allocatable :: TSI_tsi_true_earth(:) !TOTAL SOLAR IRRADIANCE AT EARTH-SUN DISTANCE
@@ -471,6 +472,7 @@ program process_broadband_fluxes
     allocate(CTP(xN,yN))
     allocate(PHASE(xN,yN))
     allocate(TIME(xN,yN))
+    allocate(STEMP(xN,yN))
 
     !Read primary data
     call nc_read_array(ncid, "time", TIME, verbose)
@@ -484,7 +486,8 @@ program process_broadband_fluxes
     call nc_read_array(ncid, "ctp", CTP, verbose)
     call nc_read_array(ncid, "cth", CTH, verbose)
     call nc_read_array(ncid, "solar_zenith_view_no1", SOLZ, verbose)
-
+    call nc_read_array(ncid, "stemp", STEMP, verbose)
+   
     ! Close file
     if (nf90_close(ncid) .ne. NF90_NOERR) then
        write(*,*) 'ERROR: read_input_dimensions_lwrtm(): Error closing ' // &
@@ -915,7 +918,13 @@ call cpu_time(cpuStart)
 
         !skin temperature - currently bottom level as defined in
         !rttov_driver.F90
-        pxts = inT_(levdim_prtm)
+        !pxts = inT_(levdim_prtm)
+        !check if STEMP is valid, if not use ECMWF value.
+        if((STEMP(i,j) .lt. 0) .or. (STEMP(i,j) .gt. 400)) then
+           pxts = inT_(levdim_prtm)
+        else
+           pxts = STEMP(i,j)
+        endif
 
          !print*,'latitude: ',LAT(i,j)
          !print*,'longitude: ',LON(i,j)
