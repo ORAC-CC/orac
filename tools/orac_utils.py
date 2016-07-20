@@ -783,6 +783,7 @@ def args_main(parser):
                       default = defaults.sad_dir,
                       help = 'Path to SAD and LUT files.')
     main.add_argument('--types', type=int, nargs='+', metavar='#',
+                      default = range(0,11),
                       help = 'Pavolonis cloud types to process.')
     main.add_argument('--use_channel', type='bool', nargs='+', metavar='T/F',
                       default = [True, True, True, True, True, True],

@@ -105,7 +105,7 @@ module ECP_constants_m
    integer, parameter :: MaxCloudType     = 5       ! Max no. of cloud types to be
    integer, parameter :: MaxPLevels       = 50      ! Max no. of pressure levels (in SPixel RTM arrays)
    integer, parameter :: MaxCRProps       = 13      ! Max no. of properties in SAD_LUT arrays
-   integer, parameter :: MaxTypes         = 10      ! Number of possible cloud/aerosol types
+   integer, parameter :: MaxTypes         = 11      ! Number of possible cloud/aerosol types
 
 
    ! Tolerance values
