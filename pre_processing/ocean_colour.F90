@@ -9,7 +9,7 @@
 !
 ! History:
 ! 2016/07/12, GT: First version
-! $Id: 
+! $Id:
 !
 ! Bugs:
 ! None known.
@@ -117,7 +117,7 @@ end subroutine deallocate_occci
 ! occci occci_t   Out    Output data structure
 ! wavelengths     In     An array of wavelengths of the bands for which the
 !      sreal             ocean colour is needed.
-! verbose logical In     If set, the routine will print out messages  
+! verbose logical In     If set, the routine will print out messages
 !
 ! Local variables:
 !
@@ -165,7 +165,7 @@ function read_oceancolour_cci(path_to_file, occci, wavelengths, verbose) &
 
 
   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_oceancolour_cci()'
-  
+
   if (verbose) write(*,*) 'path_to_file: ', trim(path_to_file)
   if (verbose) write(*,*) 'wavelengths: ',  wavelengths
 
@@ -234,7 +234,7 @@ function read_oceancolour_cci(path_to_file, occci, wavelengths, verbose) &
   stat = nf90_get_att(fid, vid, "_FillValue", occci%fill_value)
 
   ! Now deal with the wavelengths requested. The approach here is to
-  ! provide the extact wavelength if there is a match with what is 
+  ! provide the extact wavelength if there is a match with what is
   ! provided by OceanColour_cci, or provide the bracketting wavelengths
   ! otherwise
   ! Store the wavelength pairs which correspond to each input wavelength
@@ -271,7 +271,7 @@ function read_oceancolour_cci(path_to_file, occci, wavelengths, verbose) &
   ! Loop over the required data fields and read into the output structure
   j=1
   do i=1,occci_nwl
-     if (occci_rd(i)) then 
+     if (occci_rd(i)) then
         occci%wavelength(j) = occci_wl(i)
         where(iwavelength .eq. i)
            occci%iwavelength = j
@@ -281,7 +281,7 @@ function read_oceancolour_cci(path_to_file, occci, wavelengths, verbose) &
         occci%atot(:,:,j) = cache
         call nc_read_array(fid, occci_bbpvar(i), cache, verbose)
         occci%bbs(:,:,j) = cache
-        j=j+1 
+        j=j+1
      end if
   end do
 
@@ -289,7 +289,7 @@ function read_oceancolour_cci(path_to_file, occci, wavelengths, verbose) &
   if (nf90_close(fid) /= NF90_NOERR) then
      write(*,*) 'ERROR: read_oceancolour_cci(): Error closing file.'
      stop error_stop_code
-  else 
+  else
      if (verbose) write(*,*) 'Data file closed'
   end if
 
@@ -311,14 +311,14 @@ end function read_oceancolour_cci
 ! wavelength range where OCCCI data is relevant - any bands outside this range
 ! (currently limited to under 800 nm) use the default water absorption and
 ! backscatter values defined in the cox_munk module.
-! Unless the "assume_full_path" switch is set, the routine first determines 
+! Unless the "assume_full_path" switch is set, the routine first determines
 ! the path and OCCCI filename to read, based on the year and month. If the
 ! request year/month lie outside the coverage of OCCCI, the year will be set to
 ! 'XXXX', which is expected to contain a climatology product.
 ! read_oceancolour_cci() is then called, using these wavelengths and path.
 ! The coordinates and coefficients for bilinear interpolation of the OCCCI data
 ! onto the instrument grid are then determined using bilinear_coef(), and a mask
-! indicating which OCCCI data points cover the instrument swath is created. 
+! indicating which OCCCI data points cover the instrument swath is created.
 ! Data gaps in the OCCCI data are then filled using fill_grid, using the swath
 ! mask to limit the filling to only relevant pixels.
 ! The OCCCI data is then linearly interpolated in wavelength, to match the
@@ -354,13 +354,14 @@ end function read_oceancolour_cci
 !-------------------------------------------------------------------------------
 subroutine get_ocean_colour(cyear, cmonth, occci_path, lat, lon, &
      channel_info, ocean_colour, assume_full_path, verbose)
-  
+
   use preproc_constants_m
   use cox_munk_constants_m
   use channel_structures_m
   use interpol_m
   use fill_grid_m
   use system_utils_m
+  use netcdf
 
   implicit none
 
@@ -449,9 +450,9 @@ subroutine get_ocean_colour(cyear, cmonth, occci_path, lat, lon, &
   end if
 
   ! Determine the path to the OceanColour_cci data file needed
-  if (assume_full_path) then 
-     occci_path_file = occci_path 
-  else 
+  if (assume_full_path) then
+     occci_path_file = occci_path
+  else
      occci_path_full = trim(adjustl(occci_path))//'/'//trim(adjustl(cyear))
      occci_file_regex = 'ESACCI-OC-L3S-IOP-MERGED-1M_MONTHLY_4km_GEO_PML_OC.v._QAA-'// &
           trim(adjustl(cyear))//trim(adjustl(cmonth))//'-fv.\..\.nc'
@@ -479,7 +480,7 @@ subroutine get_ocean_colour(cyear, cmonth, occci_path, lat, lon, &
   end if
 
   ! Read the data
-  if (read_oceancolour_cci(occci_path_file, occci, wavelengths, verbose)) then
+  if (read_oceancolour_cci(occci_path_file, occci, wavelengths, verbose) .ne. NF90_NOERR) then
      write(*,*) 'ERROR: read_oceancolour_cci: Problem encountered '// &
           'reading OceanColour_cci file: ',trim(occci_path_file)
      stop error_stop_code
@@ -487,12 +488,12 @@ subroutine get_ocean_colour(cyear, cmonth, occci_path, lat, lon, &
 
   ! Use nearest neighbour to fill missing data in the Ocean Colour data
   ! Note we can't allocate the tmp_data array until we've created the
-  ! occci structure 
+  ! occci structure
   allocate(tmp_data(occci%nlon,occci%nlat))
   allocate(tmp_data2(occci%nlon,occci%nlat))
   tmp_data  = 0.
   tmp_data2 = 0.
-  
+
   ! Also create a bit mask that controls where we apply the data filling,
   ! limiting it to the region covered by the imager data
   allocate(fg_mask(occci%nlon,occci%nlat))
@@ -517,7 +518,7 @@ subroutine get_ocean_colour(cyear, cmonth, occci_path, lat, lon, &
   do i = 1, occci%nwavelength
      tmp_data = occci%atot(:,:,i)
      call fill_grid(tmp_data, sreal_fill_value, fg_mask)
-     
+
      tmp_data2 = occci%bbs(:,:,i)
      call fill_grid(tmp_data2, sreal_fill_value, fg_mask)
 
@@ -563,7 +564,7 @@ subroutine get_ocean_colour(cyear, cmonth, occci_path, lat, lon, &
         ocean_colour(have_data_idx(i),:)%totbsc = &
              totalbsc(channel_info%map_ids_abs_to_ref_band_sea(have_data_idx(i)))
      end where
-  end do     
+  end do
 
   deallocate(wavelengths)
   deallocate(have_data_idx)
