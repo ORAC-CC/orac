@@ -1,7 +1,12 @@
 # Library of Python 2.7 functions used to call and regress ORAC
-# 16 Feb 2016, AP: Initial Python 3.2 version
-# 22 Jun 2016, AP: Initial Python 2.7 version
+# 16 Feb 2016, ACP: Initial Python 3.2 version
+# 22 Jun 2016, ACP: Initial Python 2.7 version
 # 08 Jul 2016, AP: Debugging against more awkward python environments
+# 14 Jul 2016, GT: Debugging on CEMS:
+#                  Added support for a simple directory structure of
+#                  YYYY subdir for NISE data
+#                  Made paths to MCD43C1 and MCD43C2 data separate
+#                  arguments 
 # 20 Jul 2016, AP: Remove shell=True from subprocess calls.
 
 import argparse
@@ -669,9 +674,12 @@ def args_preproc(parser):
     surf.add_argument('--emis_dir', type=str, nargs='?', metavar='DIR',
                       default = defaults.emis_dir,
                       help = 'Path to MODIS emissivity files.')
-    surf.add_argument('--mcd43_dir', type=str, nargs='?', metavar='DIR',
-                      default = defaults.mcd43_dir,
-                      help = 'Path to MCD43C1 and C3 files.')
+    surf.add_argument('--mcd43c3_dir', type=str, nargs='?', metavar='DIR',
+                      default = defaults.mcd43c3_dir,
+                      help = 'Path to MCD43C3 files.')
+    surf.add_argument('--mcd43c1_dir', type=str, nargs='?', metavar='DIR',
+                      default = defaults.mcd43c1_dir,
+                      help = 'Path to MCD43C1 files.')
 
     rttov = parser.add_argument_group('RTTOV file paths')
     rttov.add_argument('--atlas_dir', type=str, nargs='?', metavar='DIR',
@@ -754,8 +762,10 @@ def check_args_preproc(args):
         raise FileMissing('ECMWF GGAS directory', args.ggas_dir)
     if not os.path.isdir(args.hr_dir):
         raise FileMissing('ECMWF high resolution directory', args.hr_dir)
-    if not os.path.isdir(args.mcd43_dir):
-        raise FileMissing('MODIS MCD43 directory', args.mcd43_dir)
+    if not os.path.isdir(args.mcd43c3_dir):
+        raise FileMissing('MODIS MCD43C1 directory', args.mcd43c1_dir)
+    if not os.path.isdir(args.mcd43c1_dir):
+        raise FileMissing('MODIS MCD43C3 directory', args.mcd43c3_dir)
     if not os.path.isdir(args.nise_dir):
         raise FileMissing('NISE directory', args.nise_dir)
     if not os.path.isdir(args.spam_dir):
@@ -946,13 +956,19 @@ def build_preproc_driver(args):
             nise = (args.nise_dir + st_time.strftime('/NISE.002/%Y.%m.%d/'+
                                                      'NISE_SSMIF13_%Y%m%d.HDFEOS'))
             if not os.path.isfile(nise):
-                raise FileMissing('NISE', nise)
+                nise = (args.nise_dir + st_time.strftime('/%Y/'+
+                                                         'NISE_SSMIF13_%Y%m%d.HDFEOS'))
+                if not os.path.isfile(nise):
+                    nise = (args.nise_dir + st_time.strftime('/%Y/'+
+                                                             'NISE_SSMIF17_%Y%m%d.HDFEOS'))
+                    if not os.path.isfile(nise):
+                        raise FileMissing('NISE', nise)
 
     # Select previous surface reflectance and emissivity files
-    alb  = date_back_search(args.mcd43_dir, st_time,
+    alb  = date_back_search(args.mcd43c3_dir, st_time,
                             '/%Y/MCD43C3.A%Y%j.005.*.hdf')
     if not args.lambertian:
-        brdf = date_back_search(args.mcd43_dir, st_time,
+        brdf = date_back_search(args.mcd43c1_dir, st_time,
                                 '/%Y/MCD43C1.A%Y%j.005.*.hdf')
     if not args.use_modis_emis:
         emis = date_back_search(args.emis_dir, st_time,
@@ -990,6 +1006,9 @@ def build_preproc_driver(args):
         # These files don't zero-pad the hour for some reason
         hr_ecmwf = [args.hr_dir + time.strftime('/ERA_Interim_an_%Y%m%d_') +
                     '{:d}+00_HR.grb'.format(time.hour*100) for time in bounds]
+        if not os.path.isfile(hr_ecmwf[0]):
+            hr_ecmwf = [args.hr_dir + time.strftime('/%Y/%m/%d/ERA_Interim_an_%Y%m%d_') +
+                        '{:d}+00_HR.grb'.format(time.hour*100) for time in bounds]
         for f in hr_ecmwf:
             if not os.path.isfile(f):
                 raise FileMissing('HR ECMWF file', f)
