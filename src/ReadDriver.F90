@@ -502,7 +502,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%Bkpl                = 3
    Ctrl%Max_SDAD            = 10.0
    Ctrl%sabotage_inputs     = .false.
-   Ctrl%process_cloudy_only = .false.
+   Ctrl%process_cloudy_only = .true.
    Ctrl%surfaces_to_skip    = 0_byte
    Ctrl%second_aot_ch       = 3 ! Assuming AATSR
 
