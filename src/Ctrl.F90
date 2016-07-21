@@ -91,6 +91,7 @@
 ! 2015/09/07, AP: Allow verbose to be controlled from the driver file.
 ! 2015/11/18, GM: Add Y_Id_legacy(6).
 ! 2016/02/02, GM: Add allow_a_default_surface.
+! 2016/05/31, GT: Added Ctrl%process_aerosol_only flag
 ! 2016/06/06, GM: Add get_T_dv_from_T_0d.
 ! 2016/07/11, GM: Add Nullify_Ctrl().
 !
@@ -253,6 +254,7 @@ module Ctrl_m
                                                    ! acceptable for using SDAD.
       logical                :: sabotage_inputs    ! See sabotage_input_data.F90
       logical                :: process_cloudy_only
+      logical                :: process_aerosol_only
       integer                :: NTypes_to_process  ! # of valid values in above
       integer(byte)          :: Types_to_process(MaxTypes) ! Pavolonis (or other)
                                                    ! type codes for pixels to

@@ -182,7 +182,6 @@ include $(ORAC_ARCH)
 
 ORAC_COMMON = ../common
 
-
 # Define object files to be linked.
 ORAC_OBJ = $(OBJS)/Cholesky.o \
            $(OBJS)/Ctrl.o \
@@ -243,7 +242,7 @@ $(PLACE).f.o: $(OBJS)/ECPConstants.o $(OBJS)/Ctrl.o
 
 
 # Main program build
-orac: $(ORAC_OBJ_MAIN) liborac.a $(ORAC_COMMON)/liborac_common.a Makefile
+orac: $(ORAC_OBJ_MAIN) $(ORAC_OBJ) liborac.a $(ORAC_COMMON)/liborac_common.a Makefile
 	$(F90) -o orac $(LFLAGS) $(ORAC_OBJ_MAIN) liborac.a $(ORAC_COMMON)/liborac_common.a -I./$(OBJS) $(LIBS)
 
 # Main library build

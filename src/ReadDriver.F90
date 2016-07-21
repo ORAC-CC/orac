@@ -116,6 +116,7 @@
 ! 2016/05/17, SP: Updated to support SuomiNPP/VIIRS.
 ! 2016/05/18, SP: Added sanity check to ensure sensor is supported. Prevents
 !    segfault if Ctrl INDEXING CHANNELS if-statements don't succeed
+! 2016/05/31, GT: Added Ctrl%process_aerosol_only flag
 ! 2016/06/06, GM: Set Ctrl%RS%solar_factor and Ctrl%get_T_dv_from_T_0d based on
 !    Ctrl%i_equation_form.  Change default value of Ctrl%i_equation_form to 3.
 ! 2016/06/05, SP: Updated to support Sentinel-3/SLSTR.
@@ -499,12 +500,13 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%LUTIntSelm      = switch(a, Default=LUTIntMethLinear)
    Ctrl%RTMIntSelm      = switch(a, Default=RTMIntMethLinear, Aer=RTMIntMethNone)
    Ctrl%CloudType       = switch(a, Default=1,                Aer=2)
-   Ctrl%Bkpl                = 3
-   Ctrl%Max_SDAD            = 10.0
-   Ctrl%sabotage_inputs     = .false.
-   Ctrl%process_cloudy_only = .true.
-   Ctrl%surfaces_to_skip    = 0_byte
-   Ctrl%second_aot_ch       = 3 ! Assuming AATSR
+   Ctrl%Bkpl                 = 3
+   Ctrl%Max_SDAD             = 10.0
+   Ctrl%sabotage_inputs      = .false.
+   Ctrl%process_cloudy_only  = .true.
+   Ctrl%process_aerosol_only = .false.
+   Ctrl%surfaces_to_skip     = 0_byte
+   Ctrl%second_aot_ch        = 3 ! Assuming AATSR
 
    ! Set cloud types to process depending on requested LUT
    Ctrl%Types_to_process = byte_fill_value
@@ -1463,6 +1465,9 @@ subroutine old_driver_second_read(dri_lun, Ctrl, Nx_Dy, Nx_Tw, Nx_Ni, NXJ_Dy, &
          if (parse_string(line, Ctrl%sabotage_inputs)  /= 0) call h_p_e(label)
       case('CTRL%PROCESS_CLOUDY_ONLY')
          if (parse_string(line, Ctrl%process_cloudy_only) &
+                                                       /= 0) call h_p_e(label)
+      case('CTRL%PROCESS_AEROSOL_ONLY')
+         if (parse_string(line, Ctrl%process_aerosol_only) &
                                                        /= 0) call h_p_e(label)
       case('CTRL%NTYPES_TO_PROCESS')
          if (parse_string(line, Ctrl%NTypes_to_process)/= 0) call h_p_e(label)
