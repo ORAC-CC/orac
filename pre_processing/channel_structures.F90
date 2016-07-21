@@ -17,6 +17,7 @@
 ! 2015/03/04, GM: Added map_ids_abs_to_snow_and_ice.
 ! 2016/04/08, SP: Added variables to cope with multiple view sensors
 ! 2016/05/27, SP: Updates to enable RTTOV to work correctly with multi-views
+! 2016/07/01, GT: Added map_ids_sw_to_channel and map_ids_lw_to_channel
 !
 ! $Id$
 !
@@ -55,6 +56,12 @@ module channel_structures_m
       ! i.e. For all AATSR channels in both views, this would be
       ! (/ 0.55, 0.67, 0.87, 1.6, 3.7, 11, 12, 0.55, 0.67, 0.87, 1.6, 3.7, 11, 12 /)
       real(kind=sreal), dimension(:), pointer :: channel_wl_abs
+
+      !arrays linking sw and lw indexed arrays to channel indexed arrays
+      ! useful when dealing with multiple view instruments, where sw
+      ! and lw channels aren't contiguous in the channel listing
+      integer(kind=lint), dimension(:), pointer :: map_ids_sw_to_channel
+      integer(kind=lint), dimension(:), pointer :: map_ids_lw_to_channel
 
       !arrays containing the viewing geometry index for each channel
       integer(kind=lint), dimension(:), pointer :: channel_view_ids

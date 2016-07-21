@@ -252,6 +252,9 @@
 ! 2016/05/30, SP: Fixed bug in multi-view processing
 ! 2016/06/28, SP: Added initial support for Sentinel-3 SLSTR
 ! 2016/07/11, SP: Chunk routines now in the common directory
+! 2016/05/31, GT: Added use_l1_land_mask optional argument to prevent USGS
+!                 DEM from overwriting the land/sea mask provided by L1 data
+!                 (assuming the L1 data provides one!)
 !
 ! $Id$
 !
@@ -313,6 +316,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    character(len=path_length)       :: nise_ice_snow_path
    character(len=path_length)       :: modis_albedo_path
    character(len=path_length)       :: modis_brdf_path
+   character(len=path_length)       :: occci_path
    character(len=path_length)       :: cimss_emiss_path
    character(len=path_length)       :: output_path
    character(len=path_length)       :: aatsr_calib_path_file
@@ -336,9 +340,11 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    logical                          :: verbose
    logical                          :: assume_full_paths
    logical                          :: include_full_brdf
+   logical                          :: use_occci
    logical                          :: use_hr_ecmwf
    logical                          :: use_ecmwf_tnow_and_ice
    logical                          :: use_modis_emis_in_rttov
+   logical                          :: use_l1_land_mask
 
    logical                          :: check
    integer                          :: nargs
@@ -432,11 +438,15 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    use_hr_ecmwf = .true.
    use_ecmwf_tnow_and_ice = .true.
    use_modis_emis_in_rttov = .false.
+   use_l1_land_mask = .false.
    ecmwf_path(2) = ''
    ecmwf_path_hr(1) = ''
    ecmwf_path_hr(2) = ''
    ecmwf_path2(2) = ''
    ecmwf_path3(2) = ''
+   occci_path = ''
+   use_occci = .false.
+
 
    ! if more than one argument passed, all inputs on command line
    if (nargs .gt. 1) then
@@ -499,7 +509,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
          call parse_optional(label, value, n_channels, channel_ids, use_hr_ecmwf, &
             ecmwf_time_int_method, use_ecmwf_tnow_and_ice, use_modis_emis_in_rttov, &
             ecmwf_path(2), ecmwf_path2(2), ecmwf_path3(2), ecmwf_path_hr(1), &
-            ecmwf_path_hr(2),ecmwf_nlevels)
+            ecmwf_path_hr(2), ecmwf_nlevels, use_l1_land_mask, occci_path, use_occci)
       end do
    else
 
@@ -568,7 +578,8 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
         call parse_optional(label, value, n_channels, channel_ids, &
            use_hr_ecmwf, ecmwf_time_int_method, use_ecmwf_tnow_and_ice, &
            use_modis_emis_in_rttov, ecmwf_path(2), ecmwf_path2(2), &
-           ecmwf_path3(2), ecmwf_path_hr(1), ecmwf_path_hr(2),ecmwf_nlevels)
+           ecmwf_path3(2), ecmwf_path_hr(1), ecmwf_path_hr(2), &
+           ecmwf_nlevels, use_l1_land_mask, occci_path, use_occci)
       end do
 
       close(11)
@@ -979,7 +990,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       ! NOTE: variable imager_flags%lsflag is overwritten by USGS data !!!
       if (verbose) write(*,*) 'Reading USGS path: ',trim(USGS_path_file)
       call get_USGS_data(USGS_path_file, imager_flags, imager_geolocation, &
-           usgs, assume_full_paths, source_atts, verbose)
+           usgs, assume_full_paths, use_l1_land_mask, source_atts, verbose)
 
       ! select correct emissivity file and calculate the emissivity over land
       if (verbose) write(*,*) 'Get surface emissivity'
@@ -990,9 +1001,10 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       ! select correct reflectance files and calculate surface reflectance
       ! over land and ocean
       if (verbose) write(*,*) 'Get surface reflectance'
-      call get_surface_reflectance(cyear, cdoy, modis_albedo_path, &
-           modis_brdf_path, imager_flags, imager_geolocation, imager_angles, &
-           channel_info, ecmwf, assume_full_paths, include_full_brdf, verbose, &
+      call get_surface_reflectance(cyear, cdoy, cmonth, &
+            modis_albedo_path, modis_brdf_path, occci_path, imager_flags, &
+           imager_geolocation, imager_angles, channel_info, ecmwf, &
+           assume_full_paths, include_full_brdf, use_occci, verbose, &
            surface, source_atts)
 
       ! Use the Near-real-time Ice and Snow Extent (NISE) data from the National

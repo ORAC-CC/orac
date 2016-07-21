@@ -15,6 +15,8 @@
 ! 2014/09/23, OS: Writes code to read data from USGS file.
 ! 2014/12/01, CP: Added source attributes.
 ! 2014/12/31, GM: Parallelized the main loop with OpenMP.
+! 2016/05/31, GT: Added use_l1_land_mask argument, which provides the option of
+!                 not replacing the existing imager_flags%lsflag with DEM values
 !
 ! $Id$
 !
@@ -23,7 +25,7 @@
 !-------------------------------------------------------------------------------
 
 subroutine get_USGS_data(path_to_USGS_file, imager_flags, imager_geolocation, &
-     usgs, assume_full_paths, source_atts, verbose)
+     usgs, assume_full_paths, use_l1_land_mask, source_atts, verbose)
 
    use imager_structures_m
    use orac_ncdf_m
@@ -36,6 +38,7 @@ subroutine get_USGS_data(path_to_USGS_file, imager_flags, imager_geolocation, &
    type(imager_flags_t),        intent(inout) :: imager_flags
    type(imager_geolocation_t),  intent(inout) :: imager_geolocation
    logical,                     intent(in)    :: assume_full_paths
+   logical,                     intent(in)    :: use_l1_land_mask
    type(source_attributes_t),   intent(inout) :: source_atts
    logical,                     intent(in)    :: verbose
    type(usgs_t),                intent(out)   :: usgs
@@ -93,11 +96,18 @@ subroutine get_USGS_data(path_to_USGS_file, imager_flags, imager_geolocation, &
    !$OMP END DO
    !$OMP END PARALLEL
 
-   ! Reset land surface flag to 1, i.e. all land
-   imager_flags%lsflag = 1
-   ! Set pixels to 0 where land use flags equals water flag value (=16)
-   where(imager_flags%lusflag .eq. 16) imager_flags%lsflag = 0 ! Change hard-coded
-   ! value to sym%water_flag from pavolonis_constants
+   ! Reset the land/sea mask using that provided by the DEM, unless the
+   ! use_l1_land_mask optional argument has been passed to the main preproc
+   ! routine
+   if (.not.use_l1_land_mask) then
+      ! Reset land surface flag to 1, i.e. all land
+      imager_flags%lsflag = 1
+      ! Set pixels to 0 where land use flags equals water flag value (=16)
+      where(imager_flags%lusflag .eq. 16) imager_flags%lsflag = 0 ! Change hard-coded
+      ! value to sym%water_flag from pavolonis_constants
+   else
+      if (verbose) write(*,*) 'Note: USGS DEM land/sea mask not applied'
+   end if
 
    call deallocate_usgs(usgs)
 

@@ -52,6 +52,9 @@
 !    assume_full_path=.true.
 ! 2016/04/03, SP: Add option to process ECMWF forecast in single NetCDF4 file
 !    Note: This should work with either the OPER or FCST streams from ECMWF.
+! 2016/05/26, GT: Added code for automatically constructing the filenames
+!                 of the HR ERA data (copied from changes made, but committed
+!                 to R3970 version of code by CP)
 !
 ! $Id$
 !
@@ -70,9 +73,9 @@ subroutine set_ecmwf(cyear,cmonth,cday,chour,ecmwf_path,ecmwf_path2, &
    implicit none
 
    character(len=*),           intent(in)  :: cyear,cmonth,cday,chour
-   character(len=*),           intent(in)  :: ecmwf_path(2)
-   character(len=*),           intent(in)  :: ecmwf_path2(2)
-   character(len=*),           intent(in)  :: ecmwf_path3(2)
+   character(len=*),           intent(inout)  :: ecmwf_path(2)
+   character(len=*),           intent(inout)  :: ecmwf_path2(2)
+   character(len=*),           intent(inout)  :: ecmwf_path3(2)
    character(len=*),           intent(out) :: ecmwf_path_file(2)
    character(len=*),           intent(out) :: ecmwf_path_file2(2)
    character(len=*),           intent(out) :: ecmwf_path_file3(2)
@@ -85,10 +88,14 @@ subroutine set_ecmwf(cyear,cmonth,cday,chour,ecmwf_path,ecmwf_path2, &
 
    integer       :: i_path
    integer(sint) :: year, month, day, hour
+   integer(sint) :: year2, month2, day2, hour2
    integer       :: day_before
    real(dreal)   :: jday, jday0, jday1, jday2
-   real(dreal)   :: day_real
+   real(dreal)   :: day_real,day_real2
    character     :: cera_year*4, cera_month*2, cera_day*2, cera_hour*2
+   character     :: cera_year2*4, cera_month2*2, cera_day2*2, cera_hour2*2
+
+   i_path=1
 
    ! Rather than deal with whether the next 6 hour file is in the next month,
    ! in the next year, or if the year is a leap year it is more straight
@@ -183,11 +190,40 @@ subroutine set_ecmwf(cyear,cmonth,cday,chour,ecmwf_path,ecmwf_path2, &
          write(cera_day,   '(I2.2)') day
          write(cera_hour,  '(I2.2)') hour
 
-         call make_ecmwf_name(cera_year,cera_month,cera_day,cera_hour,ecmwf_flag, &
-            ecmwf_path(1),ecmwf_path2(1),ecmwf_path3(1),ecmwf_path_file(1), &
-            ecmwf_path_file2(1), ecmwf_path_file3(1))
+         call JD2GREG(jday, year2, month2, day_real2)
+         day2  = int(day_real2, sint)
+         hour2 = int((day_real2 - day2) * 24._dreal, sint)
 
-         day_before = day
+         write(cera_year2,  '(I4.4)') year2
+         write(cera_month2, '(I2.2)') month2
+         write(cera_day2,   '(I2.2)') day2
+         write(cera_hour2,  '(I2.2)') hour2
+
+         if ( cera_day2 .ne. cday) then
+            ! this means the mid ppoint of the lv1b file
+            ! is on the next day usually occurs last file of the day
+            i_path=2
+
+            call make_ecmwf_name(cera_year,cera_month,cera_day,cera_hour,ecmwf_flag, &
+                 ecmwf_path(i_path),ecmwf_path2(i_path),ecmwf_path3(i_path), &
+                 ecmwf_path_file(1),ecmwf_path_file2(1),ecmwf_path_file3(1))
+            
+            ecmwf_path(1)= ecmwf_path(i_path)
+            ecmwf_path2(1)=ecmwf_path2(i_path)
+            ecmwf_path3(1)=ecmwf_path3(i_path)
+            !	  ecmwf_path_file(1)=ecmwf_path_file(2)
+            !	  ecmwf_path_file2(1)=ecmwf_path_file2(2)
+            !	  ecmwf_path_file3(1)=ecmwf_path_file3(2)
+	 else
+            ! Pick the ERA interim files before and after wrt sensor time
+     
+            call make_ecmwf_name(cera_year,cera_month,cera_day,cera_hour,ecmwf_flag, &
+                 ecmwf_path(1),ecmwf_path2(1),ecmwf_path3(1),ecmwf_path_file(1), &
+                 ecmwf_path_file2(1), ecmwf_path_file3(1))
+         endif
+
+         ! now look at the next file
+         day_before = day   
 
          call JD2GREG(jday1, year, month, day_real)
          day = int(day_real, sint)
@@ -197,16 +233,19 @@ subroutine set_ecmwf(cyear,cmonth,cday,chour,ecmwf_path,ecmwf_path2, &
          write(cera_month, '(I2.2)') month
          write(cera_day,   '(I2.2)') day
          write(cera_hour,  '(I2.2)') hour
-
-         if (day_before .eq. day) then
+         if (day_before .eq. day .and. i_path .ne. 2) then
             i_path = 1
          else
-            i_path = 2
+	    if (day_before .ne. day) then
+               i_path = 2
+	    endif
+	    if (day_before .eq. day .and. i_path .eq. 2) then
+	       i_path = 2
+	    endif
          end if
-
          call make_ecmwf_name(cera_year,cera_month,cera_day,cera_hour,ecmwf_flag, &
-            ecmwf_path(i_path),ecmwf_path2(i_path),ecmwf_path3(i_path), &
-            ecmwf_path_file(2),ecmwf_path_file2(2), ecmwf_path_file3(2))
+              ecmwf_path(i_path),ecmwf_path2(i_path),ecmwf_path3(i_path), &
+              ecmwf_path_file(2),ecmwf_path_file2(2), ecmwf_path_file3(2))
       else
          write(*,*) 'ERROR: invalid set_ecmwf() time_interp_method: ', time_interp_method
          stop error_stop_code

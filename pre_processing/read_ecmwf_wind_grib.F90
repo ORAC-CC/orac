@@ -28,6 +28,8 @@
 ! 2016/02/03, GM: Changes/fixes to read the HR ERA GRIB file: no vertical
 !    coordinate and no wind.
 ! 2016/04/26, AP: For high res files, abvec now set with init routine.
+! 2016/05/26, GT: Moved ecmwf%kdim=nk statement inside if (.not. high_res) block,
+!    as nk is undefined in the high_res case
 !
 ! $Id$
 !
@@ -52,6 +54,8 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf, high_res)
    integer                         :: i,n,ni,nj,nk,npv,ni_,nj_
    integer                         :: param,level,nlevels
 
+   write(*,*) len(trim(ecmwf_path))
+   write(*,*) trim(ecmwf_path)
    if (len(trim(ecmwf_path)) .gt. 1024) call h_e_e('wind_grib', &
          'Filename argument string ecmwf_path is too long.  It must be ' // &
          'limited to a length of 1024 due to a bug in grib_api.')
@@ -60,7 +64,7 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf, high_res)
    call grib_open_file(fid,trim(ecmwf_path),'r',stat)
    if (stat .ne. 0) call h_e_e('wind_grib', 'Error opening GRIB field.')
    call grib_new_from_file(fid,gid,stat)
-   if (stat .ne. 0) call h_e_e('wind_grib', 'Error getting GRIB_ID.')
+   if (stat .ne. 0) call h_e_e('wind_grib', 'Error getting GRIB_ID. '//trim(ecmwf_path))
    if (gid .eq. GRIB_END_OF_FILE) call h_e_e('wind_grib', 'Empty GRIB file.')
 
    if (.not. high_res) then

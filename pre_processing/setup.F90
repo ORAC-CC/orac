@@ -76,6 +76,8 @@
 ! 2016/05/16, SP: Added Suomi-NPP support.
 ! 2016/05/27, SP: Updates to enable RTTOV to work correctly with multi-views
 ! 2016/06/14, SP: Added Sentinel-3 SLSTR support.
+! 2016/07/01, GT: Added allocation and population of 
+!                 channel_info%map_ids_sw_to_channel and %map_ids_lw_to_channel
 ! 2016/07/15, AP: Add uncertainty estimates. Only AATSR currently filled in.
 !
 ! $Id$
@@ -1431,6 +1433,7 @@ subroutine common_setup(channel_info, channel_ids_user, channel_ids_default, &
 
    channel_info%nchannels_sw = &
       sum(channel_info%channel_sw_flag(1:channel_info%nchannels_total))
+   allocate(channel_info%map_ids_sw_to_channel(channel_info%nchannels_sw))
    allocate(channel_info%channel_ids_rttov_coef_sw(channel_info%nchannels_sw))
    allocate(channel_info%sw_rttov_viewone_id(channel_info%nchannels_sw))
    allocate(channel_info%sw_view_ids(channel_info%nchannels_sw))
@@ -1438,6 +1441,7 @@ subroutine common_setup(channel_info, channel_ids_user, channel_ids_default, &
 
    channel_info%nchannels_lw = &
       sum(channel_info%channel_lw_flag(1:channel_info%nchannels_total))
+   allocate(channel_info%map_ids_lw_to_channel(channel_info%nchannels_lw))
    allocate(channel_info%channel_ids_rttov_coef_lw(channel_info%nchannels_lw))
    allocate(channel_info%lw_rttov_viewone_id(channel_info%nchannels_lw))
    allocate(channel_info%lw_view_ids(channel_info%nchannels_lw))
@@ -1448,6 +1452,7 @@ subroutine common_setup(channel_info, channel_ids_user, channel_ids_default, &
    i_lw = 1
    do i = 1, channel_info%nchannels_total
       if (channel_info%channel_sw_flag(i) .ne. 0) then
+         channel_info%map_ids_sw_to_channel(i_sw) = i
          channel_info%channel_ids_rttov_coef_sw(i_sw) = &
             all_channel_ids_rttov_coef_sw(channel_info%channel_ids_instr(i))
 
@@ -1477,6 +1482,7 @@ subroutine common_setup(channel_info, channel_ids_user, channel_ids_default, &
       end if
 
       if (channel_info%channel_lw_flag(i) .ne. 0) then
+         channel_info%map_ids_lw_to_channel(i_lw) = i
          channel_info%channel_ids_rttov_coef_lw(i_lw) = &
             all_channel_ids_rttov_coef_lw(channel_info%channel_ids_instr(i))
 

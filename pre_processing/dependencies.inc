@@ -12,7 +12,12 @@ $(OBJS)/correct_for_ice_snow.o: $(OBJS)/channel_structures.o \
         $(OBJS)/imager_structures.o $(OBJS)/nsidc_nise.o \
         $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o \
         $(OBJS)/surface_structures.o
-$(OBJS)/cox_munk.o: $(OBJS)/nr.o $(OBJS)/preproc_constants.o
+$(OBJS)/cox_munk_constants.o: $(OBJS)/preproc_constants.o
+$(OBJS)/ocean_colour.o: $(OBJS)/channel_structures.o \
+        $(OBJS)/cox_munk_constants.o $(OBJS)/fill_grid.o \
+        $(OBJS)/preproc_constants.o
+$(OBJS)/cox_munk.o: $(OBJS)/cox_munk_constants.o $(OBJS)/nr.o \
+        $(OBJS)/ocean_colour.o $(OBJS)/preproc_constants.o
 $(OBJS)/define_preprop_grid.o: $(OBJS)/imager_structures.o \
         $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o
 $(OBJS)/ecmwf.o: $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o \
@@ -84,11 +89,11 @@ $(OBJS)/surface_emissivity.o: $(OBJS)/channel_structures.o \
         $(OBJS)/surface_structures.o get_surface_emissivity.F90 \
         select_modis_emiss_file.F90
 $(OBJS)/surface_reflectance.o: $(OBJS)/channel_structures.o $(OBJS)/cox_munk.o \
-        $(OBJS)/ecmwf.o $(OBJS)/fill_grid.o $(OBJS)/imager_structures.o \
-        $(OBJS)/mcd43c.o $(OBJS)/preproc_constants.o \
-        $(OBJS)/preproc_structures.o $(OBJS)/ross_thick_li_sparse_r.o \
-        $(OBJS)/surface_structures.o get_surface_reflectance.F90 \
-        select_modis_albedo_file.F90
+        $(OBJS)/cox_munk_constants.o $(OBJS)/ecmwf.o $(OBJS)/fill_grid.o \
+        $(OBJS)/imager_structures.o $(OBJS)/mcd43c.o $(OBJS)/ocean_colour.o \
+        $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o \
+        $(OBJS)/ross_thick_li_sparse_r.o $(OBJS)/surface_structures.o \
+        get_surface_reflectance.F90 select_modis_albedo_file.F90
 $(OBJS)/surface_structures.o: $(OBJS)/channel_structures.o \
         $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o \
         $(OBJS)/preproc_structures.o allocate_surface_structures.F90 \
