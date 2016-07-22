@@ -1947,7 +1947,7 @@ if (.false.) then
          rho_0d(:, i) = fill_value
          cycle
       end if
-      
+
       do j = 1, n_quad_theta
          satza2 = qx_theta(j) / d2r
          aa = 0.
@@ -1957,7 +1957,7 @@ if (.false.) then
             call cox_munk3_calc_shared_geo_wind(solza(i), satza2, 0., relaz2, &
                                                 u10(i), v10(i), shared_geo_wind)
             do l = 1, n_bands
-               ! If we have the Ocean_colour_cci data, then use it. 
+               ! If we have the Ocean_colour_cci data, then use it.
                ! Otherwise ocean_colour will just contain the default
                ! values for our bands.
                if (ocean_colour(l,1)%have_data) then
