@@ -13,6 +13,7 @@
 ! History:
 ! 2016/06/14, SP: Initial version.
 ! 2016/07/08, SP: Bug fixes.
+! 2016/07/22, SP: Implement the second view (oblique).
 !
 !
 ! Bugs:
@@ -125,9 +126,18 @@ subroutine read_slstr(infile,imager_geolocation, imager_measurements, &
    integer                          :: starty, ny
    integer(c_int)                   :: line0, line1
    integer(c_int)                   :: column0, column1
+   integer                           ::   matchcol
 
    character(len=path_length)       :: indir
 
+   real(kind=sreal),allocatable      ::   txlats(:,:)
+   real(kind=sreal),allocatable      ::   txlons(:,:)
+   real(kind=sreal),allocatable      ::   oblats(:,:)
+   real(kind=sreal),allocatable      ::   oblons(:,:)
+   real(kind=sreal),allocatable     ::   interp(:,:,:)
+
+   integer                           :: txnx,txny
+   integer                           :: obnx,obny,obl_off
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< read_slstr()'
 
@@ -136,7 +146,6 @@ subroutine read_slstr(infile,imager_geolocation, imager_measurements, &
    allocate(band_ids(n_bands))
    band_ids = channel_info%channel_ids_instr
    allocate(band_units(n_bands))
-
 
    startx = imager_geolocation%startx
    nx     = imager_geolocation%nx
@@ -154,26 +163,74 @@ subroutine read_slstr(infile,imager_geolocation, imager_measurements, &
    j=index(infile,'/',.true.)
    indir=infile(1:j)
 
+   if (verbose) write(*,*)"Reading geoinformation data for SLSTR grids"
 
-   if (verbose) write(*,*)"Reading geoinformation data for SLSTR thermal grid"
+   ! Find size of tx grid. Should be 130,1200 but occasionally isn't
+   call get_slstr_txgridsize(indir,txnx,txny)
 
+   ! Then allocate arrays for tx data
+   allocate(txlats(txnx,txny))
+   allocate(txlons(txnx,txny))
+
+   ! Find size of oblique view grid.
+   call get_slstr_obgridsize(indir,obnx,obny)
+
+   ! Then allocate arrays for oblique data
+   allocate(oblats(obnx,obny))
+   allocate(oblons(obnx,obny))
+
+   ! And one for the interpolation results
+   allocate(interp(nx,ny,3))
+
+   ! Read primary dem, lat and lon
    call read_slstr_demdata(indir,imager_geolocation%dem,nx,ny)
-   call read_slstr_lldata(indir,imager_geolocation%latitude,nx,ny,.true.)
-   call read_slstr_lldata(indir,imager_geolocation%longitude,nx,ny,.false.)
+   call read_slstr_lldata(indir,imager_geolocation%latitude,nx,ny,.true.,'in')
+   call read_slstr_lldata(indir,imager_geolocation%longitude,nx,ny,.false.,'in')
+
+   ! Read reduced grid lat/lon
+   call read_slstr_lldata(indir,txlats,txnx,txny,.true.,'tx')
+   call read_slstr_lldata(indir,txlons,txnx,txny,.false.,'tx')
+
+   ! Read oblique view lat/lon
+   call read_slstr_lldata(indir,oblats,obnx,obny,.true.,'io')
+   call read_slstr_lldata(indir,oblons,obnx,obny,.false.,'io')
+
+   ! Get alignment factor between oblique and nadir views
+   call slstr_get_alignment(nx,ny,obnx,obny,imager_geolocation%longitude,oblons,obl_off)
+
+   ! Get interpolation factors between reduced and TIR grid for each pixel
+   call slstr_get_interp(imager_geolocation%longitude,txlons,txnx,txnx,nx,ny,interp)
+
+   deallocate(txlats)
+   deallocate(txlons)
 
    if (verbose) write(*,*)"Reading geometry data for SLSTR geo grid"
 
-   call read_slstr_satsol(indir,imager_angles,nx,ny,startx)
+   ! Read satellite and solar angles for the nadir viewing geometry
+   call read_slstr_satsol(indir,imager_angles,interp,txnx,txny,nx,ny,startx,1)
+   ! Read satellite and solar angles for the nadir viewing geometry
+   call read_slstr_satsol(indir,imager_angles,interp,txnx,txny,nx,ny,startx,2)
+
+   deallocate(interp)
 
    ! This bit reads all the data.
    do i=1,n_bands
       if (verbose) write(*,*)"Reading SLSTR data for band",band_ids(i)
-      if (band_ids(i).ge.7) then
-         call read_slstr_tirdata(indir,band_ids(i),imager_measurements%data(:,:,i),&
-            startx,starty,nx,ny)
-      else
+      if (band_ids(i) .lt. 7) then
          call read_slstr_visdata(indir,band_ids(i),imager_measurements%data(:,:,i),&
-            imager_angles,startx,starty,nx,ny)
+            imager_angles,startx,starty,nx,ny,nx,ny,0,1)
+      elseif (band_ids(i) .le. 9) then
+         call read_slstr_tirdata(indir,band_ids(i),imager_measurements%data(:,:,i),&
+            startx,starty,nx,ny,nx,ny,0)
+      elseif (band_ids(i) .lt. 16) then
+         call read_slstr_visdata(indir,band_ids(i),imager_measurements%data(:,:,i),&
+            imager_angles,startx,starty,obnx,obny,nx,ny,obl_off-1,2)
+      elseif (band_ids(i) .le. 18) then
+         call read_slstr_tirdata(indir,band_ids(i),imager_measurements%data(:,:,i),&
+            startx,starty,obnx,obny,nx,ny,obl_off-1)
+      else
+         write(*,*)"Invalid band_id! Must be in range 1->18",band_ids(i)
+         stop
       endif
    end do
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_slstr()'

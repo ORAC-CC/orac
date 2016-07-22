@@ -1138,6 +1138,9 @@ subroutine setup_viirs(l1b_path_file,geo_path_file,platform,year,month,day, &
    call GREG2DOY(year, month, day, doy)
    write(cdoy, '(i3.3)') doy
 
+   ! VIIRS only has a single viewing geometry
+   channel_info%nviews = 1
+
 
    ! now set up the channels
    call common_setup(channel_info, channel_ids_user, channel_ids_default, &
@@ -1222,7 +1225,7 @@ subroutine setup_slstr(l1b_path_file,geo_path_file,platform,year,month,day, &
 
    integer, parameter :: all_map_ids_view_number(all_nchannels_total)  = &
       (/ 1,       1,       1,       1,       1,       1,       1,       1,      1,&
-         2,       2,       2,       2,       2,       2,       2,       2,      1  /)
+         2,       2,       2,       2,       2,       2,       2,       2,      2  /)
 
    real,    parameter :: all_channel_fractional_uncertainty(all_nchannels_total) = &
       (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0.,     0., &
@@ -1317,6 +1320,9 @@ subroutine setup_slstr(l1b_path_file,geo_path_file,platform,year,month,day, &
    call GREG2DOY(year, month, day, doy)
    write(cdoy, '(i3.3)') doy
 
+
+   ! SLSTR has two views, nadir and oblique
+   channel_info%nviews = 2
 
    ! now set up the channels
    call common_setup(channel_info, channel_ids_user, channel_ids_default, &
