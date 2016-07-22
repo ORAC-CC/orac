@@ -53,8 +53,8 @@
 ! 2016/04/03, SP: Add option to process ECMWF forecast in single NetCDF4 file
 !    Note: This should work with either the OPER or FCST streams from ECMWF.
 ! 2016/05/26, GT: Added code for automatically constructing the filenames
-!                 of the HR ERA data (copied from changes made, but committed
-!                 to R3970 version of code by CP)
+!    of the HR ERA data (copied from changes made, but committed to R3970
+!    version of code by CP)
 !
 ! $Id$
 !
@@ -207,7 +207,7 @@ subroutine set_ecmwf(cyear,cmonth,cday,chour,ecmwf_path,ecmwf_path2, &
             call make_ecmwf_name(cera_year,cera_month,cera_day,cera_hour,ecmwf_flag, &
                  ecmwf_path(i_path),ecmwf_path2(i_path),ecmwf_path3(i_path), &
                  ecmwf_path_file(1),ecmwf_path_file2(1),ecmwf_path_file3(1))
-            
+
             ecmwf_path(1)= ecmwf_path(i_path)
             ecmwf_path2(1)=ecmwf_path2(i_path)
             ecmwf_path3(1)=ecmwf_path3(i_path)
@@ -216,14 +216,14 @@ subroutine set_ecmwf(cyear,cmonth,cday,chour,ecmwf_path,ecmwf_path2, &
             !	  ecmwf_path_file3(1)=ecmwf_path_file3(2)
 	 else
             ! Pick the ERA interim files before and after wrt sensor time
-     
+
             call make_ecmwf_name(cera_year,cera_month,cera_day,cera_hour,ecmwf_flag, &
                  ecmwf_path(1),ecmwf_path2(1),ecmwf_path3(1),ecmwf_path_file(1), &
                  ecmwf_path_file2(1), ecmwf_path_file3(1))
          endif
 
          ! now look at the next file
-         day_before = day   
+         day_before = day
 
          call JD2GREG(jday1, year, month, day_real)
          day = int(day_real, sint)

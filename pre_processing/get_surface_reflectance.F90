@@ -648,7 +648,7 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
             end if
             do i = 1, n_ref_chans
                ii = band_to_sw_index(i)
-               
+
                call cox_munk3(bands(i), cox_munk_shared_geo_wind, &
                     ocean_colour(ii,j_oc), refsea(ii, j))
             end do

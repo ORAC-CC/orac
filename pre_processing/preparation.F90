@@ -75,10 +75,10 @@
 ! 2015/12/17, OS: Added write of HR file 2.
 ! 2015/02/02, CP: Added optional HR path input.
 ! 2016/04/04, SP: Added option to process ECMWF forecast/analysis data
-!                 that's stored in a single NetCDF file.
+!    that's stored in a single NetCDF file.
 ! 2016/05/26, GT: Added code for automatically constructing the filenames
-!                 of the HR ERA data (copied from changes made, but committed
-!                 to R3970 version of code by CP)
+!    of the HR ERA data (copied from changes made, but committed to R3970
+!    version of code by CP)
 !
 ! $Id$
 !
@@ -203,15 +203,15 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
          ecmwf_hour_hr='600'
       endif
 
-      if (hh .eq. '12') then 
+      if (hh .eq. '12') then
          ecmwf_hour_hr='1200'
       endif
 
-      if (hh .eq. '18') then 
+      if (hh .eq. '18') then
          ecmwf_hour_hr='1800'
       endif
 
-      hr_ext='ERA_Interim_an_'//trim(adjustl(yyyy))//trim(adjustl(mm))//trim(adjustl(dd))//'_'//trim(adjustl(ecmwf_hour_hr))//'+00_HR.grb' 
+      hr_ext='ERA_Interim_an_'//trim(adjustl(yyyy))//trim(adjustl(mm))//trim(adjustl(dd))//'_'//trim(adjustl(ecmwf_hour_hr))//'+00_HR.grb'
       if (verbose) write(*,*)'hr_ext',trim(hr_ext)
       ecmwf_HR_path_file(1)=trim(adjustl(ecmwf_path_hr(1)))//trim(adjustl(hr_ext))
 
@@ -233,20 +233,20 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
          if (hh .eq. '00') then
             ecmwf_hour_hr='0'
          endif
-         
+
          if (hh .eq. '06') then
             ecmwf_hour_hr='600'
          endif
 
-         if (hh .eq. '12') then 
+         if (hh .eq. '12') then
             ecmwf_hour_hr='1200'
          endif
 
-         if (hh .eq. '18') then 
+         if (hh .eq. '18') then
             ecmwf_hour_hr='1800'
          endif
 
-         hr_ext='/'//trim(adjustl(yyyy))//'/'//trim(adjustl(mm))//'/'//trim(adjustl(dd))//'/ERA_Interim_an_'//trim(adjustl(yyyy))//trim(adjustl(mm))//trim(adjustl(dd))//'_'//trim(adjustl(ecmwf_hour_hr))//'+00_HR.grb' 
+         hr_ext='/'//trim(adjustl(yyyy))//'/'//trim(adjustl(mm))//'/'//trim(adjustl(dd))//'/ERA_Interim_an_'//trim(adjustl(yyyy))//trim(adjustl(mm))//trim(adjustl(dd))//'_'//trim(adjustl(ecmwf_hour_hr))//'+00_HR.grb'
          if (verbose) write(*,*)'hr_ext',trim(hr_ext)
          ecmwf_HR_path_file(1)=trim(adjustl(ecmwf_path_hr(1)))//trim(adjustl(hr_ext))
 
@@ -258,7 +258,7 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
          temp_file=ecmwf_path_file(2)
          ecmwf_file_length = len(trim(ecmwf_path(2)))
          cut_off = index(trim(adjustl(temp_file)),'.',back=.true.)
-         
+
          yyyy = trim(adjustl(temp_file(ecmwf_file_length+6:(cut_off-9))))
          mm = trim(adjustl(temp_file(ecmwf_file_length+10:(cut_off-7))))
          dd= trim(adjustl(temp_file(ecmwf_file_length+12:(cut_off-5))))
@@ -272,15 +272,15 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
             ecmwf_hour_hr='600'
          endif
 
-         if (hh .eq. '12') then 
+         if (hh .eq. '12') then
             ecmwf_hour_hr='1200'
          endif
 
-         if (hh .eq. '18') then 
+         if (hh .eq. '18') then
             ecmwf_hour_hr='1800'
          endif
 
-         hr_ext='/'//trim(adjustl(yyyy))//'/'//trim(adjustl(mm))//'/'//trim(adjustl(dd))//'/ERA_Interim_an_'//trim(adjustl(yyyy))//trim(adjustl(mm))//trim(adjustl(dd))//'_'//trim(adjustl(ecmwf_hour_hr))//'+00_HR.grb' 
+         hr_ext='/'//trim(adjustl(yyyy))//'/'//trim(adjustl(mm))//'/'//trim(adjustl(dd))//'/ERA_Interim_an_'//trim(adjustl(yyyy))//trim(adjustl(mm))//trim(adjustl(dd))//'_'//trim(adjustl(ecmwf_hour_hr))//'+00_HR.grb'
          if (verbose) write(*,*)'hr_ext: ',trim(hr_ext)
          ecmwf_HR_path_file(2)=trim(adjustl(ecmwf_path_hr(1)))//trim(adjustl(hr_ext))
       end if

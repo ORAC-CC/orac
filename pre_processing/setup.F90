@@ -76,8 +76,8 @@
 ! 2016/05/16, SP: Added Suomi-NPP support.
 ! 2016/05/27, SP: Updates to enable RTTOV to work correctly with multi-views
 ! 2016/06/14, SP: Added Sentinel-3 SLSTR support.
-! 2016/07/01, GT: Added allocation and population of 
-!                 channel_info%map_ids_sw_to_channel and %map_ids_lw_to_channel
+! 2016/07/01, GT: Added allocation and population of
+!    channel_info%map_ids_sw_to_channel and %map_ids_lw_to_channel
 ! 2016/07/15, AP: Add uncertainty estimates. Only AATSR currently filled in.
 !
 ! $Id$

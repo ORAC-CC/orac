@@ -9,9 +9,10 @@
 ! 2016/07/12, GT: Separated out from cox_munk_m, so that these constants could
 !                 be used by ocean_colour_m before cox_munk_m is defined (as
 !                 cox_munk_m now depends on ocean_colour_m!)
-! 2016/07/13, GT: Added in total absorption and backscatter arrsys.
-! $Id:
-! 
+! 2016/07/13, GT: Added in total absorption and backscatter arrays.
+!
+! $Id$
+!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
