@@ -1,12 +1,10 @@
 # Library of Python 2.7 functions used to call and regress ORAC
-# 16 Feb 2016, ACP: Initial Python 3.2 version
-# 22 Jun 2016, ACP: Initial Python 2.7 version
+# 16 Feb 2016, AP: Initial Python 3.2 version
+# 22 Jun 2016, AP: Initial Python 2.7 version
 # 08 Jul 2016, AP: Debugging against more awkward python environments
 # 14 Jul 2016, GT: Debugging on CEMS:
-#                  Added support for a simple directory structure of
-#                  YYYY subdir for NISE data
-#                  Made paths to MCD43C1 and MCD43C2 data separate
-#                  arguments 
+#    Added support for a simple directory structure of YYYY subdir for NISE data
+#    Made paths to MCD43C1 and MCD43C2 data separate arguments
 # 20 Jul 2016, AP: Remove shell=True from subprocess calls.
 
 import argparse
@@ -625,8 +623,12 @@ def args_preproc(parser):
     key.add_argument('-l', '--limit', type=int, nargs=4, default=(0, 0, 0, 0),
                      metavar=('X0', 'X1', 'Y0', 'Y1'),
                      help = 'First/last pixel in across/along-track directions.')
+    key.add_argument('--l1_land_mask', action='store_true',
+                     help = 'Use the imager landmask rather than the USGS.')
     key.add_argument('--use_modis_emis', action='store_true',
                      help = 'Use MODIS surface emissivity rather than RTTOV.')
+    key.add_argument('--use_oc', action='store_true',
+                     help = 'Use the Ocean Colour CCI backscatter product.')
 
     att = parser.add_argument_group('Global attribute values')
     att.add_argument('--cfconvention', type=str, nargs='?', metavar='STRING',
@@ -680,6 +682,9 @@ def args_preproc(parser):
     surf.add_argument('--mcd43c1_dir', type=str, nargs='?', metavar='DIR',
                       default = defaults.mcd43c1_dir,
                       help = 'Path to MCD43C1 files.')
+    surf.add_argument('--occci_dir', type=str, nargs='?', metavar='DIR',
+                      default = defaults.occci_dir,
+                      help = 'Path to Ocean Colour CCI files.')
 
     rttov = parser.add_argument_group('RTTOV file paths')
     rttov.add_argument('--atlas_dir', type=str, nargs='?', metavar='DIR',
@@ -714,6 +719,9 @@ def args_preproc(parser):
     ecmwf.add_argument('--hr_dir', type=str, nargs='?', metavar='DIR',
                        default = defaults.hr_dir,
                        help = 'Path to high resolution ECMWF files.')
+    ecmwf.add_argument('--ecmwf_nlevels', type=int, nargs='?',
+                       choices = (60, 91 , 137), default = 60,
+                       help = 'Number of levels in the ECMWF file used.')
 
     other = parser.add_argument_group('Other paths')
     other.add_argument('--emos_dir', type=str, nargs='?', metavar='DIR',
@@ -766,6 +774,8 @@ def check_args_preproc(args):
         raise FileMissing('MODIS MCD43C1 directory', args.mcd43c1_dir)
     if not os.path.isdir(args.mcd43c1_dir):
         raise FileMissing('MODIS MCD43C3 directory', args.mcd43c3_dir)
+    if not os.path.isdir(args.occci_dir):
+        raise FileMissing('OC CCI directory', args.occci_dir)
     if not os.path.isdir(args.nise_dir):
         raise FileMissing('NISE directory', args.nise_dir)
     if not os.path.isdir(args.spam_dir):
@@ -1013,6 +1023,10 @@ def build_preproc_driver(args):
             if not os.path.isfile(f):
                 raise FileMissing('HR ECMWF file', f)
 
+    occci = args.occci_dir + time.strftime(
+            '/ESACCI-OC-L3S-IOP-MERGED-1M_MONTHLY_4km_GEO_PML_OC4v6_QAA-'
+            '%Y%m-fv2.0.nc')
+
     #------------------------------------------------------------------------
 
     if args.uuid:
@@ -1141,7 +1155,11 @@ USE_HR_ECMWF={use_ecmwf_hr}
 ECMWF_PATH_HR={ecmwf_hr[0]}
 ECMWF_PATH_HR_2={ecmwf_hr[1]}
 USE_ECMWF_SNOW_AND_ICE={ecmwf_nise}
-USE_MODIS_EMIS_IN_RTTOV={modis_emis}""".format(
+USE_MODIS_EMIS_IN_RTTOV={modis_emis}
+ECMWF_NLEVELS={ecmwf_nlevels}
+USE_L1_LAND_MASK={l1_land_mask}
+USE_OCCCI={use_occci}
+OCCCI_PATH={occci_file}""".format(
         alb               = alb,
         assume_full_paths = True, # Above file searching returns paths nor dirs
         atlas             = args.atlas_dir,
@@ -1160,6 +1178,7 @@ USE_MODIS_EMIS_IN_RTTOV={modis_emis}""".format(
         ecmwf_hr          = hr_ecmwf,
         ecmwf_int_method  = args.single_ecmwf,
         ecmwf_nise        = args.use_ecmwf_snow,
+        ecmwf_nlevels     = args.ecmwf_nlevels,
         ecmwf_version     = ecmwf_version,
         emis              = emis,
         file_version      = file_version,
@@ -1170,15 +1189,17 @@ USE_MODIS_EMIS_IN_RTTOV={modis_emis}""".format(
         include_full_brdf = not args.lambertian,
         institution       = args.institute,
         keywords          = args.keywords,
+        l1_land_mask      = args.l1_land_mask,
         l1b               = file,
         l2_processor      = args.processor,
         license           = args.license,
         limit             = args.limit,
         modis_emis        = args.use_modis_emis,
         ncdf_version      = ncdf_version,
+        nise              = nise,
+        occci_file        = occci,
         out_dir           = args.out_dir,
         usgs              = args.usgs_file,
-        nise              = nise,
         production_time   = production_time,
         project           = args.project,
         references        = args.references,
@@ -1189,6 +1210,7 @@ USE_MODIS_EMIS_IN_RTTOV={modis_emis}""".format(
         svn_version       = svn_version,
         uuid              = uid,
         use_ecmwf_hr      = not args.skip_ecmwf_hr,
+        use_occci         = args.use_oc,
         verbose           = args.verbose
     )
 
@@ -1226,8 +1248,10 @@ Ctrl%Ind%NAvail            = {nch}
 Ctrl%Ind%Channel_Proc_Flag = {channels}
 Ctrl%LUTClass              = {phase}
 Ctrl%Process_Cloudy_Only   = {cloudy}
+Ctrl%Process_Aerosol_Only  = {aerosoly}
 Ctrl%Verbose               = {verbose}
 Ctrl%RS%Use_Full_BRDF      = {use_brdf}""".format(
+        aerosoly = args.aerosol_only,
         channels = ','.join('{:d}'.format(k) for k in args.use_channel),
         cloudy   = args.cloud_only,
         fileroot = args.target,

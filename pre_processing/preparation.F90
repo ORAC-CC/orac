@@ -180,8 +180,12 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
          call build_ecmwf_HR_file_from_LR(ecmwf_path_file(2), ecmwf_HR_path_file(2))
       end if
 
+   else if (assume_full_path) then
+      ecmwf_HR_path_file(1)=ecmwf_path_hr(1)
+      if (ecmwf_time_int_method .eq. 2) &
+           ecmwf_HR_path_file(2)=ecmwf_path_hr(2)
    else
-      
+
       !
       !get year month day hour and construct hr file which has a different name
       !

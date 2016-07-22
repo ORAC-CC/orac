@@ -580,9 +580,11 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
       else
          allocate(ocean_colour(channel_info%nchannels_sw,1))
          do i = 1, channel_info%nchannels_sw
+            ii = channel_info%map_ids_abs_to_ref_band_sea(i)
+
             ocean_colour(i,1)%have_data = .false.
-            ocean_colour(i,1)%totabs = baseabs(channel_info%map_ids_abs_to_ref_band_sea(i))
-            ocean_colour(i,1)%totbsc = basebsc(channel_info%map_ids_abs_to_ref_band_sea(i))
+            ocean_colour(i,1)%totabs = totalabs(ii)
+            ocean_colour(i,1)%totbsc = totalbsc(ii)
          end do
       end if
 
