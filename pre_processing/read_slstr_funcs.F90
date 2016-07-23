@@ -310,6 +310,8 @@ subroutine read_slstr_visdata(indir,inband,outarr,imager_angles,sx,sy,nx,ny,inx,
    allocate(data2(nx,ny))
    allocate(data3(nx,ny))
 
+   data1(:,:)=sreal_fill_value
+
    irradiances(:)=0.
 
    ! Read the solar irradiances from viscal file
@@ -365,7 +367,7 @@ subroutine read_slstr_visdata(indir,inband,outarr,imager_angles,sx,sy,nx,ny,inx,
    endif
 
    ! Get the actual data
-   ierr = nf90_get_var(fid, did, data1)!,count=(/ endx,endy /))
+   ierr = nf90_get_var(fid, did, data1,count=(/ endx,endy /))
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: read_slstr_visdata(): Error reading dataset ',trim(filename)," in ",trim(bandname)
       print*,trim(nf90_strerror(ierr))
