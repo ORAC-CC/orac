@@ -122,6 +122,8 @@
 ! 2016/06/05, SP: Updated to support Sentinel-3/SLSTR.
 ! 2016/07/19, AP: Reduce rho and swansea_s to only contain terms that were
 !    retrieved. This is indicated by the rho|ss_terms array (and Nrho|Nss).
+! 2016/07/20, WJ: Add check for instrument for setting max stemp value and
+!    set max to 400K (instead of 320K) for cases other than ATSR2/AATSR.
 !
 ! $Id$
 !

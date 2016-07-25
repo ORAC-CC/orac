@@ -50,6 +50,8 @@
 !    the last underscore in primary file instead of the word primary.
 ! 2016/03/31, MC: Added time variable to output file.
 ! 2016/04/06, MC: Modified aerosol_processing option to bypass collocation file creation.
+! 2016/07/20, WJ: Added surface temperature from ORAC retrieval and uses this instead of
+!    ECMWF skin temperature where possible.
 !
 ! $Id$
 !

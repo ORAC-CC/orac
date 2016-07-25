@@ -37,6 +37,8 @@
 ! 2016/07/08, GM: Add fields for cloud layer 2.
 ! 2016/07/19, AP: Reduce rho and swansea_s to only contain terms that were
 !    retrieved. This is indicated by the rho|ss_terms array (and Nrho|Nss).
+! 2016/07/20, WJ: Change offset for stemp output to 100. to support values
+!    greater than 320K for instruments other than ATSR2/AATSR.
 !
 ! $Id$
 !
