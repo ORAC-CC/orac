@@ -70,8 +70,6 @@ subroutine read_input_primary_common(ncid, input_data, indexing, sval, verbose)
    logical,                    intent(in)    :: verbose
 
    integer            :: i, j, i_rho
-   integer            :: ierr
-   integer            :: varid
    character(len=32)  :: input_num
    character(len=512) :: input_dummy
 
@@ -228,32 +226,14 @@ end if
    call nc_read_array(ncid, "costja", input_data%costja, verbose, startp = [1, sval])
    call nc_read_array(ncid, "costjm", input_data%costjm, verbose, startp = [1, sval])
 
-   ierr = nf90_inq_varid(ncid, "qcflag", varid)
-   if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: nc_read_file(): Could not locate variable ', trim("qcflag")
-      print*,trim(nf90_strerror(ierr))
-      stop error_stop_code
-   end if
-   ierr = nf90_get_att(ncid, varid, 'flag_masks', input_data%qc_flag_masks)
-   if (ierr.ne.NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_get_att(), ', trim(nf90_strerror(ierr)), &
-           ', variable: qcflag, name: flag_masks'
-      stop error_stop_code
-   end if
-   ierr = nf90_get_att(ncid, varid, 'flag_meanings', input_data%qc_flag_meanings)
-   if (ierr.ne.NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_get_att(), ', trim(nf90_strerror(ierr)), &
-           ', variable: qcflag, name: flag_meanings'
-      stop error_stop_code
-   end if
    call nc_read_array(ncid, "qcflag", input_data%qcflag, verbose, startp = [1, sval])
    where(input_data%qcflag .eq. sint_fill_value) input_data%qcflag = -1
 
 end subroutine read_input_primary_common
 
 
-subroutine read_input_primary_optional(ncid, input_data, indexing, &
-     read_flags, sval, verbose)
+subroutine read_input_primary_optional(ncid, input_data, indexing, read_flags, &
+     sval, verbose)
 
    use orac_ncdf_m
 
@@ -338,7 +318,9 @@ subroutine read_input_primary_once(nfile, fname, input_data, indexing, &
    integer,                    intent(in)    :: sval
    logical,                    intent(in)    :: verbose
 
-   integer                   :: ncid, i
+   integer                   :: i
+   integer                   :: ierr
+   integer                   :: ncid, varid
    type(common_file_flags_t) :: read_flags
 
    ! Flag which optional fields to be read. Set false as they are read.
@@ -362,6 +344,25 @@ subroutine read_input_primary_once(nfile, fname, input_data, indexing, &
    call nc_read_array(ncid, "illum", input_data%illum, verbose, startp = [1, sval])
    call nc_read_array(ncid, "cldtype", input_data%cldtype, verbose, startp = [1, sval, 1])
 
+   ierr = nf90_inq_varid(ncid, "qcflag", varid)
+   if (ierr.ne.NF90_NOERR) then
+      write(*,*) 'ERROR: nf90_inq_varid(), ', trim(nf90_strerror(ierr)), &
+           ', variable: qcflag'
+      stop error_stop_code
+   end if
+   ierr = nf90_get_att(ncid, varid, 'flag_masks', input_data%qc_flag_masks)
+   if (ierr.ne.NF90_NOERR) then
+      write(*,*) 'ERROR: nf90_get_att(), ', trim(nf90_strerror(ierr)), &
+           ', variable: qcflag, name: flag_masks'
+      stop error_stop_code
+   end if
+   ierr = nf90_get_att(ncid, varid, 'flag_meanings', input_data%qc_flag_meanings)
+   if (ierr.ne.NF90_NOERR) then
+      write(*,*) 'ERROR: nf90_get_att(), ', trim(nf90_strerror(ierr)), &
+           ', variable: qcflag, name: flag_meanings'
+      stop error_stop_code
+   end if
+
    call read_input_primary_optional(ncid, input_data, loop_ind(1), &
         read_flags, sval, verbose)
 
@@ -383,7 +384,8 @@ subroutine read_input_primary_once(nfile, fname, input_data, indexing, &
 end subroutine read_input_primary_once
 
 
-subroutine read_input_primary_class(fname, input_data, indexing, costonly, sval, verbose)
+subroutine read_input_primary_class(fname, input_data, indexing, costonly, &
+     sval, verbose)
 
    use orac_ncdf_m
 

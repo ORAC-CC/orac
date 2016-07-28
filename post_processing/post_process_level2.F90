@@ -637,14 +637,14 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
            global_atts, source_atts)
    end if
 
-   !       Define netcdf variables
+   ! Define netcdf variables
    if (use_netcdf_compression) then
       deflate_level2 = deflate_level
       shuffle_flag2  = shuffle_flag
    else
       deflate_level2 = 0
       shuffle_flag2  = .false.
-      end if
+   end if
    call def_output_primary(ncid_primary, dims_var, output_primary, &
         indexing%common_indices_t, input_primary(0)%qc_flag_masks, &
         input_primary(0)%qc_flag_meanings, deflate_level2, shuffle_flag2, &
