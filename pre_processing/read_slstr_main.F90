@@ -4,9 +4,9 @@
 ! Purpose:
 ! Module for SLSTR I/O routines.
 ! To run the preprocessor with SLSTR use:
-! SLSTR as the sensor name (1st line of driver)
-! Any S-band radiance file (eg: S4_radiance_an.nc) as the data file (2nd line)
-! The corresponding tx file (eg: geodetic_tx.nc) as the geo file (3rd line)
+!    SLSTR as the sensor name (1st line of driver)
+!    Any S-band radiance file (eg: S4_radiance_an.nc) as the data file (2nd line)
+!    The corresponding tx file (eg: geodetic_tx.nc) as the geo file (3rd line)
 !
 ! All M-band filenames to be read must have the same filename format!
 !
@@ -14,7 +14,6 @@
 ! 2016/06/14, SP: Initial version.
 ! 2016/07/08, SP: Bug fixes.
 ! 2016/07/22, SP: Implement the second view (oblique).
-!
 !
 ! Bugs:
 ! Currently this will only work with the nadir view. Oblique view not supported.
@@ -118,26 +117,26 @@ subroutine read_slstr(infile,imager_geolocation, imager_measurements, &
    type(channel_info_t),        intent(in)    :: channel_info
    logical,                     intent(in)    :: verbose
 
-   integer                          :: i,j
-   integer(c_int)                   :: n_bands
-   integer(c_int), allocatable      :: band_ids(:)
-   integer(c_int), allocatable      :: band_units(:)
-   integer                          :: startx, nx
-   integer                          :: starty, ny
-   integer(c_int)                   :: line0, line1
-   integer(c_int)                   :: column0, column1
-   integer                           ::   matchcol
+   integer                      :: i,j
+   integer(c_int)               :: n_bands
+   integer(c_int), allocatable  :: band_ids(:)
+   integer(c_int), allocatable  :: band_units(:)
+   integer                      :: startx, nx
+   integer                      :: starty, ny
+   integer(c_int)               :: line0, line1
+   integer(c_int)               :: column0, column1
+   integer                      :: matchcol
 
-   character(len=path_length)       :: indir
+   character(len=path_length)   :: indir
 
-   real(kind=sreal),allocatable      ::   txlats(:,:)
-   real(kind=sreal),allocatable      ::   txlons(:,:)
-   real(kind=sreal),allocatable      ::   oblats(:,:)
-   real(kind=sreal),allocatable      ::   oblons(:,:)
-   real(kind=sreal),allocatable     ::   interp(:,:,:)
+   real(kind=sreal),allocatable :: txlats(:,:)
+   real(kind=sreal),allocatable :: txlons(:,:)
+   real(kind=sreal),allocatable :: oblats(:,:)
+   real(kind=sreal),allocatable :: oblons(:,:)
+   real(kind=sreal),allocatable :: interp(:,:,:)
 
-   integer                           :: txnx,txny
-   integer                           :: obnx,obny,obl_off
+   integer                      :: txnx,txny
+   integer                      :: obnx,obny,obl_off
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< read_slstr()'
 
@@ -163,7 +162,7 @@ subroutine read_slstr(infile,imager_geolocation, imager_measurements, &
    j=index(infile,'/',.true.)
    indir=infile(1:j)
 
-   if (verbose) write(*,*)"Reading geoinformation data for SLSTR grids"
+   if (verbose) write(*,*)'Reading geoinformation data for SLSTR grids'
 
    ! Find size of tx grid. Should be 130,1200 but occasionally isn't
    call get_slstr_txgridsize(indir,txnx,txny)
@@ -204,7 +203,7 @@ subroutine read_slstr(infile,imager_geolocation, imager_measurements, &
    deallocate(txlats)
    deallocate(txlons)
 
-   if (verbose) write(*,*)"Reading geometry data for SLSTR geo grid"
+   if (verbose) write(*,*)'Reading geometry data for SLSTR geo grid'
 
    ! Read satellite and solar angles for the nadir viewing geometry
    call read_slstr_satsol(indir,imager_angles,interp,txnx,txny,nx,ny,startx,1)
@@ -215,7 +214,7 @@ subroutine read_slstr(infile,imager_geolocation, imager_measurements, &
 
    ! This bit reads all the data.
    do i=1,n_bands
-      if (verbose) write(*,*)"Reading SLSTR data for band",band_ids(i)
+      if (verbose) write(*,*)'Reading SLSTR data for band',band_ids(i)
       if (band_ids(i) .lt. 7) then
          call read_slstr_visdata(indir,band_ids(i),imager_measurements%data(:,:,i),&
             imager_angles,startx,starty,nx,ny,nx,ny,0,1)
@@ -229,7 +228,7 @@ subroutine read_slstr(infile,imager_geolocation, imager_measurements, &
          call read_slstr_tirdata(indir,band_ids(i),imager_measurements%data(:,:,i),&
             startx,starty,obnx,obny,nx,ny,obl_off-1)
       else
-         write(*,*)"Invalid band_id! Must be in range 1->18",band_ids(i)
+         write(*,*)'Invalid band_id! Must be in range 1->18',band_ids(i)
          stop
       endif
    end do
