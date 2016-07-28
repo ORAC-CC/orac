@@ -80,9 +80,9 @@ subroutine Read_ALB_nc(Ctrl, MSI_Data)
    type(Ctrl_t), intent(in)    :: Ctrl
    type(Data_t), intent(inout) :: MSI_Data
 
-   integer                     :: ncid, i, j, k, ind
-   integer(kind=lint)          :: NAlb, NCor
-   integer(kind=lint), allocatable, dimension(:) :: alb_instr_ch_numbers, subs
+   integer                                           :: ncid, i, j, k, ind
+   integer(kind=lint)                                :: NAlb, NCor
+   integer(kind=lint), allocatable, dimension(:)     :: alb_instr_ch_numbers, subs
    integer(kind=lint), allocatable, dimension(:,:)   :: cor_ch_numbers
    real(kind=sreal),   allocatable, dimension(:,:,:) :: cor_temp
 

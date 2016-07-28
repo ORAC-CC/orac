@@ -31,10 +31,10 @@ subroutine Find_Lun(lun)
 
    integer, intent(out) :: lun
 
-   integer              :: i
-   logical              :: found_lun
-   logical              :: lun_exists
-   logical              :: lun_used
+   integer :: i
+   logical :: found_lun
+   logical :: lun_exists
+   logical :: lun_used
 
    found_lun = .false.
 

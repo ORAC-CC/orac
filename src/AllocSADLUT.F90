@@ -41,8 +41,8 @@ subroutine Alloc_LUT_Grid(Ctrl, LUT_Grid)
 
    ! Declare arguments
 
-   type(Ctrl_t),     intent(in)    :: Ctrl
-   type(LUT_Grid_t), intent(out)   :: LUT_Grid
+   type(Ctrl_t),     intent(in)  :: Ctrl
+   type(LUT_Grid_t), intent(out) :: LUT_Grid
 
    allocate(LUT_Grid%MaxTau(Ctrl%Ind%Ny,maxcrprops))
    allocate(LUT_Grid%MinTau(Ctrl%Ind%Ny,maxcrprops))

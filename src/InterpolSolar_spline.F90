@@ -90,8 +90,7 @@ subroutine Interpol_Solar_spline(Ctrl, SPixel, Pc, RTM_Pc, status)
 
    integer :: i
    integer :: j
-   integer :: Solar(SPixel%Ind%NSolar)     ! Indices of solar channels
-                                           ! for RTM_Pc%SW
+   integer :: Solar(SPixel%Ind%NSolar) ! Indices of solar channels for RTM_Pc%SW
    real    :: dP ! Fractional distance of Pc from bottom of interval
    real    :: P1 ! Fractional distance of Pc from top of interval
    real    :: k0 ! Spline coefficient

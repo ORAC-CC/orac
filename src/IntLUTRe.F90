@@ -88,25 +88,22 @@ subroutine Int_LUT_Re(F, NChans, Grid, GZero, Ctrl, FInt, FGrads, iCRP, status)
 
    ! Argument declarations
 
-   real,              intent(in)   :: F(:,:)
-                                           ! The array to be interpolated.
-   integer,           intent(in)   :: NChans
-   type(LUT_Grid_t),  intent(in)   :: Grid
-                                           ! LUT grid data
-   type(GZero_t),     intent(in)   :: GZero
-                                           ! Struct containing "zero'th" grid
-                                           ! points
-   type(Ctrl_t),      intent(in)   :: Ctrl
-   real,              intent(out)  :: FInt(:)
-                                           ! Interpolated value of F at the
-                                           ! required Tau, Re values, (1 value
-                                           ! per channel).
-   real,              intent(out)  :: FGrads(:)
-                                           ! Gradients of F wrt Tau and Re at
-                                           ! required Tau, Re values, (1 value
-                                           ! per channel).
-   integer,           intent(in)   :: iCRP
-   integer,           intent(out)  :: status
+   real,              intent(in)  :: F(:,:)
+                                     ! The array to be interpolated.
+   integer,           intent(in)  :: NChans
+   type(LUT_Grid_t),  intent(in)  :: Grid
+                                     ! LUT grid data
+   type(GZero_t),     intent(in)  :: GZero
+                                     ! Struct containing "zero'th" grid points
+   type(Ctrl_t),      intent(in)  :: Ctrl
+   real,              intent(out) :: FInt(:)
+                                     ! Interpolated value of F at the required
+                                     ! Tau, Re values, (1 value per channel).
+   real,              intent(out) :: FGrads(:)
+                                     ! Gradients of F wrt Tau and Re at required
+                                     ! Tau, Re values, (1 value per channel).
+   integer,           intent(in)  :: iCRP
+   integer,           intent(out) :: status
 
    ! Local variables
    integer :: i

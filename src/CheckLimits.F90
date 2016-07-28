@@ -52,7 +52,7 @@ subroutine Check_Limits(X, SPixel, status)
    ! Argument declarations
 
    real,           intent(inout) :: X(:)
-   type(SPixel_t), intent(inout) :: SPixel
+   type(SPixel_t), intent(in)    :: SPixel
    integer,        intent(out)   :: status
 
    ! Local variable declarations

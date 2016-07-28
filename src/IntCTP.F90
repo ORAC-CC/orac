@@ -72,15 +72,15 @@ subroutine Int_CTP(SPixel, Ctrl, BT, CTP, status)
 
    implicit none
 
-   type(SPixel_t), intent(inout)  :: SPixel           ! Contains RTM profiles
-   type(Ctrl_t),   intent(in)  :: Ctrl             ! Contains control information
-   real,           intent(in)  :: BT               ! Brightness temp to interpol
-   real,           intent(out) :: CTP              ! Interpolated cloud top pre
-   integer,        intent(out) :: status           ! Indicates out-of-bounds
+   type(SPixel_t), intent(inout) :: SPixel      ! Contains RTM profiles
+   type(Ctrl_t),   intent(in)    :: Ctrl        ! Contains control information
+   real,           intent(in)    :: BT          ! Brightness temp to interpol
+   real,           intent(out)   :: CTP         ! Interpolated cloud top pre
+   integer,        intent(out)   :: status      ! Indicates out-of-bounds
 
-   real,    parameter :: min_tropopause = 30.0     ! Heighest p allowed for trop
-   real,    parameter :: max_tropopause = 500.0    ! Lowest p allowed for trop
-   integer, parameter :: depth          = 2        ! # layers added to inversions
+   real,    parameter :: min_tropopause = 30.0  ! Heighest p allowed for trop
+   real,    parameter :: max_tropopause = 500.0 ! Lowest p allowed for trop
+   integer, parameter :: depth          = 2     ! # layers added to inversions
 
    integer                          :: nz       ! Number of vertical levels
    integer                          :: k, l     ! Indexing variables

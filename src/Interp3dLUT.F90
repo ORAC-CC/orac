@@ -43,34 +43,34 @@ subroutine Interp3dLUT(chan, F, xGrid, yGrid, delx, dely, CurX, CurY, FInt, &
 
    ! Argument declarations
 
-   integer,                intent(in)    :: chan
-                                         ! Channel number (1st index of array F)
-   real, dimension(:,:,:), intent(inout) :: F
-                                         ! The 2-d  (ignoring chan) array to be
-                                         ! interpolated.
-   real, dimension(:),     intent(inout) :: xGrid
-                                         ! x-values for F
-   real, dimension(:),     intent(inout) :: yGrid
-                                         ! y-values for F
-   real,                   intent(in)    :: delx, dely
-                                         ! Grid step in x and y
-   real,                   intent(in)    :: CurX, CurY
-                                         ! The "current" x and y values, i.e.
-                                         ! the point where we want to find the
-                                         ! interpolated value.
-   real,                   intent(out)   :: FInt
-                                         ! Interpolated value of F at CurX, CurY
-   real,                   intent(out)   :: dFdx, dFdy
-                                         ! Gradients of F wrt x and y at CurX, CurY
+   integer,                intent(in)  :: chan
+                                       ! Channel number (1st index of array F)
+   real, dimension(:,:,:), intent(in)  :: F
+                                       ! The 2-d  (ignoring chan) array to be
+                                       ! interpolated.
+   real, dimension(:),     intent(in)  :: xGrid
+                                       ! x-values for F
+   real, dimension(:),     intent(in)  :: yGrid
+                                       ! y-values for F
+   real,                   intent(in)  :: delx, dely
+                                       ! Grid step in x and y
+   real,                   intent(in)  :: CurX, CurY
+                                       ! The "current" x and y values, i.e. the
+                                       ! point where we want to find the
+                                       ! interpolated value.
+   real,                   intent(out) :: FInt
+                                       ! Interpolated value of F at CurX, CurY
+   real,                   intent(out) :: dFdx, dFdy
+                                       ! Gradients of F wrt x and y at CurX, CurY
 
    ! Local variables
 
-   integer :: ix0, ix1, iy0, iy1      ! Array indices (in xGrid, yGrid) for the
-                                      ! nearest neighbour grid points.
-   real    :: k0, k1                  ! Intermediate interpolated values
-   real    :: dx, dy                  ! Distance from required x,y values to
-                                      ! next (lower) LUT grid point, as a
-                                      ! fraction of the LUT cell length in x,y.
+   integer :: ix0, ix1, iy0, iy1 ! Array indices (in xGrid, yGrid) for the
+                                 ! nearest neighbour grid points.
+   real    :: k0, k1             ! Intermediate interpolated values
+   real    :: dx, dy             ! Distance from required x,y values to
+                                 ! next (lower) LUT grid point, as a
+                                 ! fraction of the LUT cell length in x,y.
 
 
    ! Find the array indices of the nearest neighbour grid points

@@ -47,12 +47,12 @@ subroutine X_SDAD(Ctrl, SPixel, index, X, status, Err)
    implicit none
 
    ! Declare arguments
-   type(Ctrl_t),   intent(in)    :: Ctrl
-   type(SPixel_t), intent(inout) :: SPixel
-   integer,        intent(in)    :: index
-   real,           intent(out)   :: X
-   integer,        intent(out)   :: status
-   real, optional, intent(out)   :: Err
+   type(Ctrl_t),   intent(in)  :: Ctrl
+   type(SPixel_t), intent(in)  :: SPixel
+   integer,        intent(in)  :: index
+   real,           intent(out) :: X
+   integer,        intent(out) :: status
+   real, optional, intent(out) :: Err
 
    ! Declare local variables
    integer :: NPix

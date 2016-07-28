@@ -76,8 +76,8 @@ subroutine Interpol_Solar(Ctrl, SPixel, Pc, RTM_Pc, status)
    ! Define local variables
 
    integer :: i
-   integer :: Solar(SPixel%Ind%NSolar)     ! Indices of solar channels
-                                           ! for RTM_Pc%SW
+   integer :: Solar(SPixel%Ind%NSolar)     ! Indices of solar channels for
+                                           ! RTM_Pc%SW
    real    :: delta_p                      ! Difference in pressure between
                                            ! consecutive RTM levels
    real    :: delta_Tac(SPixel%Ind%NSolar) ! Difference in Tac between
