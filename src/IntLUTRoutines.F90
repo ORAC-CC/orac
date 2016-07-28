@@ -24,6 +24,8 @@
 ! 2014/09/09, GM: Added IntLUTTauSatReOnSol.F90 for new BRDF support.
 ! 2014/10/16, GM: Moved a large amount of code that was common to all IntLUT*
 !    subroutines into Int_LUT_Common()
+! 2016/07/27, GM: Add ITauCRP and IReCRP indices since with the multilayer
+!    retrieval ITau and IRe for a particular layer may not be 1 and 2.
 !
 ! $Id$
 !
@@ -37,7 +39,9 @@ module Int_LUT_Routines_m
 
    private
 
-   public :: Interp3dLUT, &
+   public :: ITauCRP, IReCRP, &
+             MaxCRPParams, &
+             Interp3dLUT, &
              Int_LUT_Re, &
              Int_LUT_TauRe, &
              Int_LUT_TauSatRe, &
@@ -49,6 +53,11 @@ module Int_LUT_Routines_m
    integer, parameter :: iX0  =  0
    integer, parameter :: iX1  =  1
    integer, parameter :: iXp1 =  2
+
+   integer, parameter :: ITauCRP = 1
+   integer, parameter :: IReCRP  = 2
+
+   integer, parameter :: MaxCRPParams  = 2
 
 contains
 

@@ -43,12 +43,13 @@
 ! ------------------------------------------------------------------------------
 ! Ctrl     struct       In          Control structure
 ! SPixel   alloc struct In          Super pixel structure
-! SAD_Chan struct arr   In          Array of SAD_Chan structures
-! SAD_LUT  struct arr   In          Array of SAD_LUT structures
-! RTM_Pc   struct       Both        Array to hold RTM data interpolated to
-!                                   current Pc value. Passed in because it
-!                                   contains allocated arrays. Populated and
-!                                   used locally
+! SAD_Chan struct arr   In          Array of SAD_Chan structures for each
+!                                   channel
+! SAD_LUT  struct arr   In          Array of SAD_LUT structures for each layer.
+! RTM_Pc   struct       Both        Array to hold RTM data for each layer.
+!                                   Interpolated to current Pc value. Passed in
+!                                   because it contains allocated arrays.
+!                                   Populated and used locally.
 ! X        real arr     In          State vector
 ! Y        real arr     Out         Calculated measurement vector
 ! dY_dX    real arr     Out         Gradient in Y wrt state parameters and Rs
@@ -123,7 +124,8 @@
 ! 2015/01/21, AP: Finishing the previous commit.
 ! 2015/01/30, GM: Fixed a bug in the recent channel indexing changes.
 ! 2015/08/21, AP: Turn off thermal retrieval with aerosol approaches.
-! 2015/10/21, GM: Removed cloud albedo output as it is now evaluated elsewhere.
+! 2015/10/21, GM: Remove cloud albedo output as it is now evaluated elsewhere.
+! 2016/07/27, GM: Changes for the multilayer retrieval.
 !
 ! $Id$
 !
@@ -136,6 +138,7 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
    use Ctrl_m
    use ECP_Constants_m
    use GZero_m
+   use Int_LUT_Routines_m
    use Interpol_Routines_m
    use planck_m
    use RTM_Pc_m
@@ -148,10 +151,10 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
    ! Declare arguments
 
    type(Ctrl_t),     intent(in)    :: Ctrl
-   type(SPixel_t),   intent(inout) :: SPixel
+   type(SPixel_t),   intent(in)    :: SPixel
    type(SAD_Chan_t), intent(in)    :: SAD_Chan(:)
-   type(SAD_LUT_t),  intent(in)    :: SAD_LUT
-   type(RTM_Pc_t),   intent(inout) :: RTM_Pc
+   type(SAD_LUT_t),  intent(in)    :: SAD_LUT(:)
+   type(RTM_Pc_t),   intent(inout) :: RTM_Pc(:)
    real,             intent(in)    :: X(:)
    real,             intent(out)   :: Y(:)
    real,             intent(out)   :: dY_dX(:,:)
@@ -159,16 +162,25 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
 
    ! Declare local variables
 
-   integer          :: i
-   type(GZero_t)    :: GZero
-   real             :: CRP(SPixel%Ind%NSolar, MaxCRProps)
-   real             :: d_CRP(SPixel%Ind%NSolar, MaxCRProps, 2)
+   integer          :: i, ii
+   type(GZero_t)    :: GZero(2)
    real             :: BT(SPixel%Ind%NThermal)
    real             :: d_BT(SPixel%Ind%NThermal, MaxStateVar)
    real             :: Rad(SPixel%Ind%NThermal)
    real             :: d_Rad(SPixel%Ind%NThermal, MaxStateVar)
    real             :: Ref(SPixel%Ind%NSolar)
    real             :: d_Ref(SPixel%Ind%NSolar, MaxStateVar)
+   real             :: Ref_0d(SPixel%Ind%NSolar)
+   real             :: d_Ref_0d(SPixel%Ind%NSolar, MaxStateVar)
+   real             :: Ref_dv(SPixel%Ind%NSolar)
+   real             :: d_Ref_dv(SPixel%Ind%NSolar, MaxStateVar)
+   real             :: Ref_dd(SPixel%Ind%NSolar)
+   real             :: d_Ref_dd(SPixel%Ind%NSolar, MaxStateVar)
+   real             :: d_Ref2(SPixel%Ind%NSolar, MaxStateVar)
+   real             :: d_Ref_0d2(SPixel%Ind%NSolar, MaxStateVar)
+   real             :: d_Ref_dv2(SPixel%Ind%NSolar, MaxStateVar)
+   real             :: d_Ref_dd2(SPixel%Ind%NSolar, MaxStateVar)
+   real             :: d_Ref_dRs2(SPixel%Ind%NSolar, MaxRho_XX)
    real             :: Y_R(SPixel%Ind%NMixed)
    real             :: T(SPixel%Ind%NMixed)
    real             :: dT_dR(SPixel%Ind%NMixed)
@@ -188,8 +200,14 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
    dy_dX = 0.0
 
    ! Call Set_GZero (results used in both FM_Thermal and FM_Solar).
-   call Allocate_GZero(GZero, SPixel)
-   call Set_GZero(X(iTau), X(iRe), Ctrl, SPixel, SAD_LUT, GZero, status)
+   call Allocate_GZero(GZero(1), SPixel)
+   call Set_GZero(X(iTau), X(iRe), Ctrl, SPixel, SAD_LUT(1), GZero(1), status)
+
+   ! If the two layer retrieval is active call Set_GZero for the second layer.
+   if (Ctrl%Approach == AppCld2L) then
+      call Allocate_GZero(GZero(2), SPixel)
+      call Set_GZero(X(iTau2), X(iRe2), Ctrl, SPixel, SAD_LUT(2), GZero(2), status)
+   end if
 
    ! Evaluate long and short wave transmittance values (depending on whether it
    ! is daytime, twilight or nighttime).
@@ -197,7 +215,7 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
    ! Call thermal forward model (required for day, twilight and night)
    ! ACP: Temporarily turn off Thermal entirely for aerosol retrieval
    if (SPixel%Ind%NThermal > 0 .and. status == 0 .and. &
-        Ctrl%Approach /= AerOx .and. Ctrl%Approach /= AerSw) then
+        Ctrl%Approach /= AppAerOx .and. Ctrl%Approach /= AppAerSw) then
       SAD_therm = SAD_Chan( &
            SPixel%spixel_y_thermal_to_ctrl_y_index(1:SPixel%Ind%NThermal))
 
@@ -206,10 +224,22 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
       select case (Ctrl%RTMIntSelm)
       case (RTMIntMethLinear)
          call Interpol_Thermal(Ctrl, SPixel, X(iPc), &
-              SAD_therm, RTM_Pc, status)
+                               SAD_therm, RTM_Pc(1), status)
+         ! If the two layer retrieval is active call Interpol_Thermal for the
+         ! second layer.
+         if (Ctrl%Approach == AppCld2L) then
+            call Interpol_Thermal(Ctrl, SPixel, X(iPc2), &
+                                  SAD_therm, RTM_Pc(2), status)
+         end if
       case (RTMIntMethSpline)
          call Interpol_Thermal_spline(Ctrl, SPixel, X(iPc), &
-              SAD_therm, RTM_Pc, status)
+                                      SAD_therm, RTM_Pc(1), status)
+         ! If the two layer retrieval is active call Interpol_Thermal for the
+         ! second layer.
+         if (Ctrl%Approach == AppCld2L) then
+            call Interpol_Thermal_spline(Ctrl, SPixel, X(iPc2), &
+                                         SAD_therm, RTM_Pc(2), status)
+         end if
       case (RTMIntMethNone)
          write(*,*) 'ERROR: FM(): Thermal forward model requires RTTOV inputs.'
          stop RTMIntflagErr
@@ -221,8 +251,8 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
       end select
 
       ! Call thermal forward model (required for day, twilight and night)
-      call FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_therm, &
-              RTM_Pc, X, GZero, BT, d_BT, Rad, d_Rad, status)
+      call FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_therm, RTM_Pc, X, GZero, BT, &
+           d_BT, Rad, d_Rad, status)
 
       ! Copy results into output vectors
       Y(SPixel%Ind%YThermal) = BT
@@ -235,9 +265,15 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
       ! Interpol_Solar populates the SW part of RTM_Pc.
       select case (Ctrl%RTMIntSelm)
       case (RTMIntMethLinear)
-         call Interpol_Solar(Ctrl, SPixel, X(iPc), RTM_Pc, status)
+         call Interpol_Solar(Ctrl, SPixel, X(iPc), RTM_Pc(1), status)
+         if (Ctrl%Approach == AppCld2L) then
+            call Interpol_Solar(Ctrl, SPixel, X(iPc2), RTM_Pc(2), status)
+         end if
       case (RTMIntMethSpline)
-         call Interpol_Solar_spline(Ctrl, SPixel, X(iPc), RTM_Pc, status)
+         call Interpol_Solar_spline(Ctrl, SPixel, X(iPc), RTM_Pc(1), status)
+         if (Ctrl%Approach == AppCld2L) then
+            call Interpol_Solar_spline(Ctrl, SPixel, X(iPc2), RTM_Pc(2), status)
+         end if
       case (RTMIntMethNone)
       case default
          write(*,*) 'ERROR: FM(): Invalid value for Ctrl%RTMIntSelm: ', &
@@ -248,13 +284,54 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
 
       ! Call short wave forward model. Note that solar channels only are
       ! passed (including mixed channels).
-      CRP   = 0.0
-      d_CRP = 0.0
-
       Ref   = 0.0
       d_Ref = 0.0
-      call FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, &
-           Ref, d_Ref, status)
+      if (Ctrl%Approach /= AppCld2L) then
+         ! A single call for bidirectional reflectance is required when there
+         ! is only one particle layer.
+         call FM_Solar(Ctrl, SAD_LUT(1), SPixel, 0, RTM_Pc(1), RTM_Pc(1), X, &
+              GZero(1), Ref, d_Ref, status)
+      else
+         ! When there are two layers the first call is to obtain BRDF
+         ! parameters of the lower layer combined with the atmosphere and
+         ! surface below.
+         call FM_Solar(Ctrl, SAD_LUT(2), SPixel, 2, RTM_Pc(2), RTM_Pc(1), X, &
+              GZero(2), Ref, d_Ref, status, Ref_0d=Ref_0d, d_Ref_0d=d_Ref_0d, &
+              Ref_dv=Ref_dv, d_Ref_dv=d_Ref_dv, Ref_dd=Ref_dd, d_Ref_dd=d_Ref_dd)
+
+         ! Bidirectional is returned sun normalized whereas BRDF parameters
+         ! should not be sun normalized so we invert the normalization.
+         if (Ctrl%i_equation_form == 1 .or. Ctrl%i_equation_form == 3) then
+            Ref   = Ref   * SPixel%Geom%SEC_o(1)
+            d_Ref = d_Ref * SPixel%Geom%SEC_o(1)
+         end if
+
+         ! Save the BRDF derivatives for propagation through the top layer.
+         d_Ref2    = d_Ref
+         d_Ref_0d2 = d_Ref_0d
+         d_Ref_dv2 = d_Ref_dv
+         d_Ref_dd2 = d_Ref_dd
+
+         ! Call FM_Solar() again for the top layer where the BRDF parameters
+         ! obtained from the first call are input as the surface BRDF parameters
+         ! and our output is the bidirectional reflectance of the top layer and
+         ! the associated derivatives w.r.t parameters in the top layer with all
+         ! other derivatives (w.r.t parameters in the bottom layer and the
+         ! surface) set to zero.
+         call FM_Solar(Ctrl, SAD_LUT(1), SPixel, 1, RTM_Pc(1), RTM_Pc(2), X, &
+              GZero(1), Ref, d_Ref, status,RsX=Ref,RsX_0d=Ref_0d,RsX_dv=Ref_dv, &
+              RsX_dd=Ref_dd, d_Ref_dRs2=d_Ref_dRs2)
+
+         ! Propagate derivatives w.r.t parameters in the bottom layer and the
+         ! surface though the top layer using derivatives w.r.t to the input
+         ! surface BRDF parameters of the second call to FM_Solar(), d_Ref_dRs2.
+         call propagate_d_Ref_dRs2(SPixel%Nx, SPixel%X, d_Ref, d_Ref_dRs2, &
+                                   d_Ref2, d_Ref_0d2, d_Ref_dv2, d_Ref_dd2)
+         call propagate_d_Ref_dRs2(SPixel%NxI, SPixel%XI, d_Ref, d_Ref_dRs2, &
+                                   d_Ref2, d_Ref_0d2, d_Ref_dv2, d_Ref_dd2)
+         call propagate_d_Ref_dRs2(SPixel%NxJ, SPixel%XJ, d_Ref, d_Ref_dRs2, &
+                                   d_Ref2, d_Ref_0d2, d_Ref_dv2, d_Ref_dd2)
+      end if
 
       ! Copy results into output vectors (may overwrite mixed chs)
       Y(SPixel%Ind%YSolar) = Ref
@@ -301,9 +378,10 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
       end if ! status == 0 from R2T
    end if ! SPixel%Ind%NMixed > 0
 
-   call Deallocate_GZero(GZero)
-
-
+   call Deallocate_GZero(GZero(1))
+   if (Ctrl%Approach == AppCld2L) then
+      call Deallocate_GZero(GZero(2))
+   end if
    ! Open breakpoint file if required, and write our reflectances and gradients.
 
 #ifdef BKP
@@ -366,3 +444,31 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
 #endif
 
 end subroutine FM
+
+
+subroutine propagate_d_Ref_dRs2(Nx, X, d_Ref, d_Ref_dRs2, d_Ref0, d_Ref_0d0, &
+                                d_Ref_dv0, d_Ref_dd0)
+
+   implicit none
+
+   integer, intent(in)    :: Nx
+   integer, intent(in)    :: X(:)
+   real,    intent(inout) :: d_Ref(:,:)
+   real,    intent(in)    :: d_Ref_dRs2(:,:)
+   real,    intent(in)    :: d_Ref0(:,:)
+   real,    intent(in)    :: d_Ref_0d0(:,:)
+   real,    intent(in)    :: d_Ref_dv0(:,:)
+   real,    intent(in)    :: d_Ref_dd0(:,:)
+
+   integer :: i, ii
+
+   do i = 1, Nx
+      ii = X(i)
+
+      d_Ref(:,ii) = d_Ref(:,ii) + d_Ref_dRs2(:,1) * d_Ref0(:,ii)
+      d_Ref(:,ii) = d_Ref(:,ii) + d_Ref_dRs2(:,2) * d_Ref_0d0(:,ii)
+      d_Ref(:,ii) = d_Ref(:,ii) + d_Ref_dRs2(:,3) * d_Ref_dv0(:,ii)
+      d_Ref(:,ii) = d_Ref(:,ii) + d_Ref_dRs2(:,4) * d_Ref_dd0(:,ii)
+   end do
+
+end subroutine propagate_d_Ref_dRs2

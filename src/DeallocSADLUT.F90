@@ -137,7 +137,7 @@ subroutine Dealloc_SAD_LUT(Ctrl, SAD_LUT)
       deallocate(SAD_LUT%Em)
    end if
 
-   if (Ctrl%Approach == AerOx .or. Ctrl%Approach == AerSw) then
+   if (Ctrl%Approach == AppAerOx .or. Ctrl%Approach == AppAerSw) then
       deallocate(SAD_LUT%BextRat)
    end if
 

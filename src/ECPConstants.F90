@@ -79,6 +79,9 @@
 !    Approach along with SelmPrev.
 ! 2015/10/19, GM: Added index for Bext LUT.
 ! 2015/11/19, GM: Added index values for the Ctrl%Ind%Y_Id_legacy index.
+! 2016/07/27, GM: Added Class constants and renamed Approach constants to
+!    distinguish them from the Class constants to support the multilayer
+!    retrieval.
 !
 ! $Id$
 !
@@ -104,7 +107,7 @@ module ECP_constants_m
    integer, parameter :: MaxNumThermal    = 16      ! Max no. of thermal channels
    integer, parameter :: MaxCloudType     = 5       ! Max no. of cloud types to be
    integer, parameter :: MaxPLevels       = 50      ! Max no. of pressure levels (in SPixel RTM arrays)
-   integer, parameter :: MaxCRProps       = 13      ! Max no. of properties in SAD_LUT arrays
+   integer, parameter :: MaxCRProps       = 14      ! Max no. of properties in SAD_LUT arrays
    integer, parameter :: MaxTypes         = 11      ! Number of possible cloud/aerosol types
 
 
@@ -192,18 +195,19 @@ module ECP_constants_m
    ! Index of CRP array parameter in interpolated arrays (e.g. CRPOut in
    ! functions Set_CRP_Solar and Set_CRP_Thermal).
    integer, parameter :: IBext            = 1       ! Index of Bext data in array
-   integer, parameter :: IRBd             = 2       !  "    "  RBd  "   "   "
-   integer, parameter :: IRFBd            = 3       !  "    "  RFBd "   "   "
-   integer, parameter :: IRd              = 4       !  "    "  Rd   "   "   "
-   integer, parameter :: IRFd             = 5       !  "    "  RFd  "   "   "
-   integer, parameter :: ITB              = 6       !  "    "  TB   "   "   "
-   integer, parameter :: ITB_u            = 7       !  "    "  TB   "   "   "
-   integer, parameter :: ITBd             = 8       !  "    "  TBd  "   "   "
-   integer, parameter :: ITFBd            = 9       !  "    "  TFBd "   "   "
-   integer, parameter :: ITd              = 10      !  "    "  Td   "   "   "
-   integer, parameter :: ITFd             = 11      !  "    "  TFd  "   "   "
-   integer, parameter :: IEm              = 12      !  "    "  Em   "   "   "
-   integer, parameter :: IBextRat         = 13      !  "    "  BextRat ""   "
+   integer, parameter :: IBextRat         = 2       ! "     "  BextRat " "  "
+   integer, parameter :: IRBd             = 3       ! "     "  RBd     " "  "
+   integer, parameter :: IRFBd            = 4       ! "     "  RFBd    " "  "
+   integer, parameter :: IRd              = 5       ! "     "  Rd      " "  "
+   integer, parameter :: IRFd             = 6       ! "     "  RFd     " "  "
+   integer, parameter :: ITB              = 7       ! "     "  TB      " "  "
+   integer, parameter :: ITB_u            = 8       ! "     "  TB_u    " "  "
+   integer, parameter :: ITBd             = 9       ! "     "  TBd     " "  "
+   integer, parameter :: ITFBd            = 10      ! "     "  TFBd    " "  "
+   integer, parameter :: ITFBd_u          = 11      ! "     "  TFBd_u  " "  "
+   integer, parameter :: ITd              = 12      ! "     "  Td      " "  "
+   integer, parameter :: ITFd             = 13      ! "     "  TFd     " "  "
+   integer, parameter :: IEm              = 14      ! "     "  Em      " "  "
 
    ! Index of XIndex array in GetSurface
    integer, parameter :: ISwan_S          = 1
@@ -220,12 +224,14 @@ module ECP_constants_m
    ! and Invert_Marquardt
    integer, parameter :: ITau             = 1       ! Index of tau, cloud optical depth
    integer, parameter :: IRe              = 2       ! Index of re, effective radius
-
-   ! Index of values in X (state vector) array - use ITau, IRe from above, plus
    integer, parameter :: IPc              = 3       ! Index of Pc, cloud pressure
    integer, parameter :: IFr              = 4       ! Index of F, cloud fraction (can't
                                                     ! use "If", unfortunately)
-   integer, parameter :: ITs              = 5       ! Index of Ts, surface temperature
+   integer, parameter :: ITau2            = 5
+   integer, parameter :: IRe2             = 6
+   integer, parameter :: IPc2             = 7
+   integer, parameter :: IFr2             = 8
+   integer, parameter :: ITs              = 9       ! Index of Ts, surface temperature
 
    ! Oxford surface reflectance parameters. Though we're unlikely to retrieve
    ! all the BRDF parameters, space needs to be made in the Jacobian.
@@ -258,12 +264,18 @@ module ECP_constants_m
    integer, parameter :: CostBit          = 0
 
 
+   ! Retrieval classes (for Ctrl%Class)
+   integer, parameter :: ClsCldWat = 1
+   integer, parameter :: ClsCldIce = 2
+   integer, parameter :: ClsAerOx  = 3
+   integer, parameter :: ClsAerSw  = 4
+   integer, parameter :: ClsAshEyj = 5
+
    ! Retrieval approaches (for Ctrl%Approach)
-   integer, parameter :: CldWat = 1
-   integer, parameter :: CldIce = 2
-   integer, parameter :: AerOx  = 3
-   integer, parameter :: AerSw  = 4
-   integer, parameter :: AshEyj = 5
+   integer, parameter :: AppCld1L  = 1
+   integer, parameter :: AppCld2L  = 2
+   integer, parameter :: AppAerOx  = 3
+   integer, parameter :: AppAerSw  = 4
 
 
    ! Breakpoint levels for individual subroutines.  The parameter name is

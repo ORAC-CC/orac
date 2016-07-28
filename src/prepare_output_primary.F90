@@ -16,7 +16,9 @@
 ! j           int     In          Along-track pixel to output
 ! MSI_Data    struct  In          Imager data structure
 ! SPixel      struct  In          Retrieval pixel structure
-! Diag        struct  In          Diagonstic structure
+! RTM_Pc      array of structs    RTM_Pc structs for each layer
+!                     In
+! Diag        struct  In          Diagnostic structure
 ! output_data struct  Both        Results structure
 !
 ! History:
@@ -64,6 +66,7 @@
 ! 2016/03/04, AP: Tidy prepare_*_packed_float.
 ! 2016/04/28, AP: Add multiple views.
 ! 2016/05/03, AP: Add AOT at a second wavelength.
+! 2016/07/27, GM: Add output fields for the multilayer retrieval.
 !
 ! $Id$
 !
@@ -71,7 +74,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine prepare_output_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
+subroutine prepare_output_primary(Ctrl, i, j, MSI_Data, SPixel, RTM_Pc, Diag, &
                                   output_data)
 
    use Ctrl_m
@@ -84,12 +87,12 @@ subroutine prepare_output_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
 
    implicit none
 
-   type(Ctrl_t),              intent(in)    :: Ctrl
-   integer,                   intent(in)    :: i, j
-   type(Data_t),              intent(in)    :: MSI_Data
-   type(RTM_Pc_t),            intent(in)    :: RTM_Pc
-   type(SPixel_t),            intent(in)    :: SPixel
-   type(Diag_t),              intent(in)    :: Diag
+   type(Ctrl_t),                intent(in)    :: Ctrl
+   integer,                     intent(in)    :: i, j
+   type(Data_t),                intent(in)    :: MSI_Data
+   type(SPixel_t),              intent(in)    :: SPixel
+   type(RTM_Pc_t),              intent(in)    :: RTM_Pc(:)
+   type(Diag_t),                intent(in)    :: Diag
    type(output_data_primary_t), intent(inout) :: output_data
 
    integer            :: k, kk, l, i_rho
@@ -428,13 +431,13 @@ if (Ctrl%Ind%flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! cth, cth_uncertainty
    !----------------------------------------------------------------------------
-   temp_real = RTM_Pc%Hc/g_wmo/1000. ! now it's in km
+   temp_real = RTM_Pc(1)%Hc/g_wmo/1000. ! now it's in km
    call prepare_short_packed_float( &
         temp_real, output_data%cth(i,j), &
         output_data%cth_scale, output_data%cth_offset, &
         output_data%cth_vmin, output_data%cth_vmax, &
         MissingXn, output_data%cth_vmax, &
-        control=RTM_Pc%Hc)
+        control=RTM_Pc(1)%Hc)
 
    ! If ctp_uncertainty is good compute cth_uncertainty
    if (temp_real_ctp_uncertainty .eq. sreal_fill_value) then
@@ -444,7 +447,7 @@ if (Ctrl%Ind%flags%do_cloud) then
    else if (temp_short_ctp_uncertainty .gt. output_data%ctp_uncertainty_vmax) then
       output_data%cth_uncertainty(i,j)=output_data%cth_uncertainty_vmax
    else
-      temp_real=abs(RTM_Pc%dHc_dPc/g_wmo/1000.)*temp_real_ctp_uncertainty
+      temp_real=abs(RTM_Pc(1)%dHc_dPc/g_wmo/1000.)*temp_real_ctp_uncertainty
       call prepare_short_packed_float( &
            temp_real, output_data%cth_uncertainty(i,j), &
            output_data%cth_uncertainty_scale, &
@@ -477,7 +480,7 @@ if (Ctrl%Ind%flags%do_cloud) then
    ! ctt, ctt_uncertainty
    !----------------------------------------------------------------------------
    call prepare_short_packed_float( &
-        RTM_Pc%Tc, output_data%ctt(i,j), &
+        RTM_Pc(1)%Tc, output_data%ctt(i,j), &
         output_data%ctt_scale, output_data%ctt_offset, &
         output_data%ctt_vmin, output_data%ctt_vmax, &
         MissingXn, output_data%ctt_vmax)
@@ -490,7 +493,7 @@ if (Ctrl%Ind%flags%do_cloud) then
    else if (temp_short_ctp_uncertainty .gt. output_data%ctp_uncertainty_vmax) then
       output_data%ctt_uncertainty(i,j)=output_data%ctt_uncertainty_vmax
    else
-      temp_real=abs(RTM_Pc%dTc_dPc)*temp_real_ctp_uncertainty
+      temp_real=abs(RTM_Pc(1)%dTc_dPc)*temp_real_ctp_uncertainty
       call prepare_short_packed_float( &
            temp_real, output_data%ctt_uncertainty(i,j), &
            output_data%ctt_uncertainty_scale, output_data%ctt_uncertainty_offset, &
@@ -588,6 +591,157 @@ if (Ctrl%Ind%flags%do_cloud) then
            output_data%cccot_pre_vmin, output_data%cccot_pre_vmax, &
            sreal_fill_value, sint_fill_value)
    end do
+end if
+
+if (Ctrl%Ind%flags%do_cloud_layer_2) then
+   !----------------------------------------------------------------------------
+   ! cot2, cot2_uncertainty
+   !----------------------------------------------------------------------------
+   temp_real_ot = 10.0**SPixel%Xn(ITau2)
+   call prepare_short_packed_float( &
+        temp_real_ot, output_data%cot2(i,j), &
+        output_data%cot_scale, output_data%cot_offset, &
+        output_data%cot_vmin, output_data%cot_vmax, &
+        MissingXn, output_data%cot_vmax, &
+        control=SPixel%Xn(ITau2))
+
+   temp_real = sqrt(SPixel%Sn(ITau2,ITau2)) * temp_real_ot * alog(10.0)
+   call prepare_short_packed_float( &
+        temp_real, output_data%cot2_uncertainty(i,j), &
+        output_data%cot_uncertainty_scale, output_data%cot_uncertainty_offset, &
+        output_data%cot_uncertainty_vmin, output_data%cot_uncertainty_vmax, &
+        MissingSn, output_data%cot_uncertainty_vmax, &
+        control=SPixel%Sn(ITau2,ITau2))
+
+   !----------------------------------------------------------------------------
+   ! cer2, cer2_uncertainty
+   !----------------------------------------------------------------------------
+   call prepare_short_packed_float( &
+        SPixel%Xn(IRe2), output_data%cer2(i,j), &
+        output_data%cer_scale, output_data%cer_offset, &
+        output_data%cer_vmin, output_data%cer_vmax, &
+        MissingXn, output_data%cer_vmax)
+
+   temp_real = sqrt(SPixel%Sn(IRe2,IRe2))
+   call prepare_short_packed_float( &
+        temp_real, output_data%cer2_uncertainty(i,j), &
+        output_data%cer_uncertainty_scale, output_data%cer_uncertainty_offset, &
+        output_data%cer_uncertainty_vmin, output_data%cer_uncertainty_vmax, &
+        MissingSn, output_data%cer_uncertainty_vmax, &
+        control=SPixel%Sn(IRe2,IRe2))
+
+   !----------------------------------------------------------------------------
+   ! ctp2, ctp2_uncertainty
+   !----------------------------------------------------------------------------
+   call prepare_short_packed_float( &
+        SPixel%Xn(IPc2), output_data%ctp2(i,j), &
+        output_data%ctp_scale, output_data%ctp_offset, &
+        output_data%ctp_vmin, output_data%ctp_vmax, &
+        MissingXn, output_data%ctp_vmax)
+
+   if (SPixel%Sn(IPc2,IPc2) .eq. MissingSn) then
+      temp_real_ctp_uncertainty=sreal_fill_value
+   else
+      temp_real_ctp_uncertainty = sqrt(SPixel%Sn(IPc2,IPc2))
+      temp_short_ctp_uncertainty = int((temp_real_ctp_uncertainty - &
+                                  output_data%ctp_uncertainty_offset) / &
+                                  output_data%ctp_uncertainty_scale, kind=sint)
+   end if
+   call prepare_short_packed_float( &
+        temp_real_ctp_uncertainty, output_data%ctp2_uncertainty(i,j), &
+        output_data%ctp_uncertainty_scale, output_data%ctp_uncertainty_offset, &
+        output_data%ctp_uncertainty_vmin, output_data%ctp_uncertainty_vmax, &
+        sreal_fill_value, output_data%ctp_uncertainty_vmax)
+
+   !----------------------------------------------------------------------------
+   ! cc_total2, cc_total2_uncertainty
+   !----------------------------------------------------------------------------
+   call prepare_short_packed_float( &
+        SPixel%Xn(IFr2), output_data%cc_total2(i,j), &
+        output_data%cc_total_scale, output_data%cc_total_offset, &
+        output_data%cc_total_vmin, output_data%cc_total_vmax, &
+        MissingXn, output_data%cc_total_vmax)
+
+   temp_real = sqrt(SPixel%Sn(IFr2,IFr2))
+   call prepare_short_packed_float( &
+        temp_real, output_data%cc_total2_uncertainty(i,j), &
+        output_data%cc_total_uncertainty_scale, &
+        output_data%cc_total_uncertainty_offset, &
+        output_data%cc_total_uncertainty_vmin, &
+        output_data%cc_total_uncertainty_vmax, &
+        MissingSn, output_data%cc_total_uncertainty_vmax, &
+        SPixel%Sn(IFr2,IFr2))
+
+   !----------------------------------------------------------------------------
+   ! cth2, cth2_uncertainty
+   !----------------------------------------------------------------------------
+   temp_real = RTM_Pc(2)%Hc/g_wmo/1000. ! now it's in km
+   call prepare_short_packed_float( &
+        temp_real, output_data%cth2(i,j), &
+        output_data%cth_scale, output_data%cth_offset, &
+        output_data%cth_vmin, output_data%cth_vmax, &
+        MissingXn, output_data%cth_vmax, &
+        control=RTM_Pc(2)%Hc)
+
+   ! If ctp_uncertainty is good compute cth_uncertainty
+   if (temp_real_ctp_uncertainty .eq. sreal_fill_value) then
+      output_data%cth2_uncertainty(i,j)=sint_fill_value
+   else if (temp_short_ctp_uncertainty .lt. output_data%ctp_uncertainty_vmin) then
+      output_data%cth2_uncertainty(i,j)=sint_fill_value
+   else if (temp_short_ctp_uncertainty .gt. output_data%ctp_uncertainty_vmax) then
+      output_data%cth2_uncertainty(i,j)=output_data%cth_uncertainty_vmax
+   else
+      temp_real=abs(RTM_Pc(2)%dHc_dPc/g_wmo/1000.)*temp_real_ctp_uncertainty
+      call prepare_short_packed_float( &
+           temp_real, output_data%cth2_uncertainty(i,j), &
+           output_data%cth_uncertainty_scale, &
+           output_data%cth_uncertainty_offset, &
+           output_data%cth_uncertainty_vmin, &
+           output_data%cth_uncertainty_vmax, &
+           sreal_fill_value, output_data%cth_uncertainty_vmax)
+   end if
+
+   !----------------------------------------------------------------------------
+   ! ctt2, ctt2_uncertainty
+   !----------------------------------------------------------------------------
+   call prepare_short_packed_float( &
+        RTM_Pc(2)%Tc, output_data%ctt2(i,j), &
+        output_data%ctt_scale, output_data%ctt_offset, &
+        output_data%ctt_vmin, output_data%ctt_vmax, &
+        MissingXn, output_data%ctt_vmax)
+
+   ! If ctp_uncertainty is good compute ctt_uncertainty
+   if (temp_real_ctp_uncertainty .eq. sreal_fill_value) then
+      output_data%ctt2_uncertainty(i,j)=sint_fill_value
+   else if (temp_short_ctp_uncertainty .lt. output_data%ctp_uncertainty_vmin) then
+      output_data%ctt2_uncertainty(i,j)=sint_fill_value
+   else if (temp_short_ctp_uncertainty .gt. output_data%ctp_uncertainty_vmax) then
+      output_data%ctt2_uncertainty(i,j)=output_data%ctt_uncertainty_vmax
+   else
+      temp_real=abs(RTM_Pc(2)%dTc_dPc)*temp_real_ctp_uncertainty
+      call prepare_short_packed_float( &
+           temp_real, output_data%ctt2_uncertainty(i,j), &
+           output_data%ctt_uncertainty_scale, output_data%ctt_uncertainty_offset, &
+           output_data%ctt_uncertainty_vmin, output_data%ctt_uncertainty_vmax, &
+           sreal_fill_value, output_data%ctt_uncertainty_vmax)
+   end if
+
+   !----------------------------------------------------------------------------
+   ! cwp, cwp_uncertainty
+   !----------------------------------------------------------------------------
+   call prepare_short_packed_float( &
+        SPixel%CWP2, output_data%cwp2(i,j), &
+        output_data%cwp_scale, output_data%cwp_offset, &
+        output_data%cwp_vmin, output_data%cwp_vmax, &
+        MissingXn, output_data%cwp_vmax)
+
+   temp_real = sqrt(SPixel%CWP2_uncertainty)
+   call prepare_short_packed_float( &
+        temp_real, output_data%cwp2_uncertainty(i,j), &
+        output_data%cwp_uncertainty_scale, output_data%cwp_uncertainty_offset, &
+        output_data%cwp_uncertainty_vmin, output_data%cwp_uncertainty_vmax, &
+        MissingSn, output_data%cwp_uncertainty_vmax, &
+        control=SPixel%CWP_uncertainty)
 end if
 
    !----------------------------------------------------------------------------

@@ -6,7 +6,7 @@
 ! the cloud water path.
 !
 ! Description and Algorithm details:
-! 1) Evaluate (4/3) * COT * CER * density / extinction_coefficient.
+! 1) Evaluate 4/3 * COT * CER * density / extinction_coefficient.
 ! 2) Propagate COT and CER uncertainty through #1 to get CWP uncertainty.
 !
 ! Arguments:
@@ -27,6 +27,7 @@
 ! 2016/02/26, GM: Correct computation of CWP uncertainty which was missing a
 !    fac**2 factor.  Then reformulated the computation in the form of standard
 !    propagation of COT and CER uncertainty through the CWP computation.
+! 2016/07/27, GM: Changes for the multilayer retrieval.
 !
 ! $Id$
 !
@@ -49,31 +50,62 @@ subroutine Calc_CWP(Ctrl, SPixel)
 
    ! Local variable declarations
 
+   call Calc_CWP2(Ctrl, SPixel, Ctrl%Class, ITau, IRe, &
+                  SPixel%CWP, SPixel%CWP_uncertainty)
+
+   if (Ctrl%Approach == AppCld2L) then
+      call Calc_CWP2(Ctrl, SPixel, Ctrl%Class, ITau2, IRe2, &
+                     SPixel%CWP2, SPixel%CWP2_uncertainty)
+   end if
+
+end subroutine Calc_CWP
+
+
+subroutine Calc_CWP2(Ctrl, SPixel, Class, ITauX, IReX, CWP, CWP_uncertainty)
+
+   use Ctrl_m
+   use ECP_Constants_m
+   use SPixel_m
+
+   implicit none
+
+   ! Argument declarations
+
+   type(Ctrl_t),   intent(in)  :: Ctrl
+   type(SPixel_t), intent(in)  :: SPixel
+   integer,        intent(in)  :: Class
+   integer,        intent(in)  :: ITauX
+   integer,        intent(in)  :: IReX
+   real,           intent(out) :: CWP
+   real,           intent(out) :: CWP_uncertainty
+
+   ! Local variable declarations
+
    real :: fac
    real :: tenpcot
    real :: dcwp_dtau
    real :: dcwp_dr_e
 
-   if (Ctrl%Approach == CldWat) then
-      fac = (4./3.) * rhowat / qextwat
-   else if (Ctrl%Approach == CldIce) then
-      fac = (4./3.) * rhoice / qextice
+   if (Class == ClsCldWat) then
+      fac = 4./3. * rhowat / qextwat
+   else if (Class == ClsCldIce) then
+      fac = 4./3. * rhoice / qextice
    else
-      SPixel%CWP             = sreal_fill_value
-      SPixel%CWP_uncertainty = sreal_fill_value
+      CWP             = sreal_fill_value
+      CWP_uncertainty = sreal_fill_value
       return
    end if
 
-   tenpcot = 10.**SPixel%Xn(ITau)
+   tenpcot = 10.**SPixel%Xn(ITauX)
 
-   SPixel%CWP = fac * tenpcot * SPixel%Xn(IRe)
+   CWP = fac * tenpcot * SPixel%Xn(IReX)
 
-   dcwp_dtau = fac * tenpcot * log(10.) * SPixel%Xn(IRe)
+   dcwp_dtau = fac * tenpcot * log(10.) * SPixel%Xn(IReX)
    dcwp_dr_e = fac * tenpcot
 
-   SPixel%CWP_uncertainty = dcwp_dtau * dcwp_dtau * SPixel%Sn(ITau,ITau) + &
-                            dcwp_dtau * dcwp_dr_e * SPixel%Sn(IRe,ITau) + &
-                            dcwp_dr_e * dcwp_dtau * SPixel%Sn(ITau,IRe) + &
-                            dcwp_dr_e * dcwp_dr_e * SPixel%Sn(IRe,IRe)
+   CWP_uncertainty = dcwp_dtau * dcwp_dtau * SPixel%Sn(ITauX,ITauX) + &
+                     dcwp_dtau * dcwp_dr_e * SPixel%Sn(IReX,ITauX) + &
+                     dcwp_dr_e * dcwp_dtau * SPixel%Sn(ITauX,IReX) + &
+                     dcwp_dr_e * dcwp_dr_e * SPixel%Sn(IReX,IReX)
 
-end subroutine Calc_CWP
+end subroutine Calc_CWP2

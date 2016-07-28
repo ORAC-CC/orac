@@ -72,7 +72,7 @@
 !    New to Ind struct: Nviews and View_Idx.
 ! 2012/10/07, CP: Added in CWP variable and CWP error
 ! 2012/12/08, MJ: Added data types and structures for netcdf output.
-! 2012/01/08, CP: Added channel info  for netcdfoutput.
+! 2012/01/08, CP: Added channel info  for netcdf output.
 ! 2012/01/15, CP: Changed netcdf definitions. Added albedo
 ! 2012/06/15, CP: Changed illum into an array of ny variables
 ! 2012/10/04, CP: Added in new variables
@@ -92,11 +92,13 @@
 ! 2015/03/02, AP: Adding terms for aerosol retrieval. Remove Ctrl argument from
 !    check_value routines. Remove check_value.
 ! 2015/07/29, AP: Remove QC.
-! 2015/08/13, AP: Add Calculate_ND for NDVI and NDSI calculcation.
-! 2015/11/18, GM: Add CTH_corrected and CTH_corrected_error (uncertainty).
+! 2015/08/13, AP: Add Calculate_ND for NDVI and NDSI calculation.
+! 2015/11/18, GM: Add CTH_corrected and CTH_corrected_uncertainty.
 ! 2016/01/20, GM: Move fields in RTM_LW_t and RTM_SW_t that are common to both
 !    up one level into SPixel_RTM_t.
-! 2016/01/28, GM: Add ctp and ctt corrected and corrected_uncertianty.
+! 2016/01/28, GM: Add CTP and CTT corrected and corrected_uncertianty.
+! 2016/07/27, GM: Add CWP2 and CWP2_uncertainty for the layer 2 of the multi-
+!    layer retrieval.
 !
 ! $Id$
 !
@@ -163,8 +165,9 @@ module SPixel_m
       type(RTM_LW_t)      :: LW           ! Long wave RTM parameters
       real, pointer       :: Tsf_o(:)     ! Transmittance along solar slant path
       real, pointer       :: Tsf_v(:)     ! Transmittance along view slant path
-      real, pointer       :: REF_clear(:) ! TOA reflectance for clear conditions
-      real, pointer       :: dREF_clear_dRs(:) ! Gradient of clear ref. w.r.t.
+      real, pointer       :: Ref_clear(:) ! TOA reflectance for clear conditions
+      real, pointer       :: dRef_clear_dRs(:)
+                                          ! Gradient of clear ref. w.r.t.
                                           ! surface albedo
    end type SPixel_RTM_t
 
@@ -222,8 +225,8 @@ module SPixel_m
                                           ! 11 um. Used in MDAD method to set
                                           ! FG (AP) cloud pressure and phase
       integer             :: MDAD_SW      ! Index of channel at (or nearest to)
-                                          ! 0.67. Used in MDAD method for setting
-                                          ! FG (AP) cloud optical depth
+                                          ! 0.67. Used in MDAD method for
+                                          ! setting FG (AP) cloud optical depth
    end type SPixel_Ind_t
 
 
@@ -282,7 +285,10 @@ module SPixel_m
                                           ! Error values for XnSav.
       real                :: CWP          ! Cloud water path
       real                :: CWP_uncertainty
-                                          ! Cloud water path error
+                                          ! Cloud water path uncertainty
+      real                :: CWP2         ! Cloud water path (layer 2)
+      real                :: CWP2_uncertainty
+                                          ! Cloud water path uncertainty (layer 2)
       real                :: CTP_corrected
       real                :: CTP_corrected_uncertainty
       real                :: CTH_corrected

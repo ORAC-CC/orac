@@ -229,7 +229,7 @@ subroutine Get_Surface(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
          end if
 
          ! Copy surface reflectances from MSI files
-         SPixel%Surface%Rs(i) = MSI_Data%ALB(SPixel%Loc%X0, SPixel%Loc%Y0, ii) /&
+         SPixel%Surface%Rs(i) = MSI_Data%ALB(SPixel%Loc%X0, SPixel%Loc%Y0, ii) / &
                                 solar_factor
          if (Ctrl%RS%use_full_brdf) then
             SPixel%Surface%Rs2(i,IRho_0V) = MSI_Data%rho_0v(SPixel%Loc%X0, &

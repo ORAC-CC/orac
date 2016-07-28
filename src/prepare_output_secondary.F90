@@ -44,6 +44,7 @@
 !    isn't standard Fortran.
 ! 2016/03/04, AP: Tidy prepare_*_packed_float. Make MissingXn the only value
 !    checked for in X, X0, Xb (sreal_fill_value had been ocassionally checked).
+! 2016/07/27, GM: Add output fields for the multilayer retrieval.
 !
 ! $Id$
 !
@@ -63,11 +64,11 @@ subroutine prepare_output_secondary(Ctrl, i, j, MSI_Data, SPixel, Diag, &
 
    implicit none
 
-   type(Ctrl_t),                intent(in)    :: Ctrl
-   integer,                     intent(in)    :: i, j
-   type(Data_t),                intent(in)    :: MSI_Data
-   type(SPixel_t),              intent(in)    :: SPixel
-   type(Diag_t),                intent(in)    :: Diag
+   type(Ctrl_t),                  intent(in)    :: Ctrl
+   integer,                       intent(in)    :: i, j
+   type(Data_t),                  intent(in)    :: MSI_Data
+   type(SPixel_t),                intent(in)    :: SPixel
+   type(Diag_t),                  intent(in)    :: Diag
    type(output_data_secondary_t), intent(inout) :: output_data
 
    integer          :: k, kk, l, i_rho
@@ -266,6 +267,57 @@ if (Ctrl%Ind%flags%do_cloud) then
            output_data%albedo_vmin, output_data%albedo_vmax, &
            sreal_fill_value, sint_fill_value)
    end do
+end if
+
+if (Ctrl%Ind%flags%do_cloud_layer_2) then
+   !----------------------------------------------------------------------------
+   ! cot2_ap, cot2_fg
+   !----------------------------------------------------------------------------
+   dummyreal = 10.0**SPixel%Xb(ITau2)
+   call prepare_short_packed_float( &
+        dummyreal, output_data%cot2_ap(i,j), &
+        output_data%cot_ap_scale, output_data%cot_ap_offset, &
+        output_data%cot_ap_vmin, output_data%cot_ap_vmax, &
+        MissingXn, output_data%cot_ap_vmax, &
+        control=SPixel%Xb(ITau2))
+
+   dummyreal = 10.0**SPixel%X0(ITau2)
+   call prepare_short_packed_float( &
+        dummyreal, output_data%cot2_fg(i,j), &
+        output_data%cot_fg_scale, output_data%cot_fg_offset, &
+        output_data%cot_fg_vmin, output_data%cot_fg_vmax, &
+        MissingXn, output_data%cot_fg_vmax, &
+        control=SPixel%X0(ITau2))
+
+   !----------------------------------------------------------------------------
+   ! cer2_ap, cer2_fg
+   !----------------------------------------------------------------------------
+   call prepare_short_packed_float( &
+        SPixel%Xb(IRe2), output_data%cer2_ap(i,j), &
+        output_data%cer_ap_scale, output_data%cer_ap_offset, &
+        output_data%cer_ap_vmin, output_data%cer_ap_vmax, &
+        MissingXn, output_data%cer_ap_vmax)
+
+   call prepare_short_packed_float( &
+        SPixel%X0(IRe2), output_data%cer2_fg(i,j), &
+        output_data%cer_fg_scale, output_data%cer_fg_offset, &
+        output_data%cer_fg_vmin, output_data%cer_fg_vmax, &
+        MissingXn, output_data%cer_fg_vmax)
+
+   !----------------------------------------------------------------------------
+   ! ctp2_ap, ctp2_fg
+   !----------------------------------------------------------------------------
+   call prepare_short_packed_float( &
+        SPixel%Xb(IPc2), output_data%ctp2_ap(i,j), &
+        output_data%ctp_ap_scale, output_data%ctp_ap_offset, &
+        output_data%ctp_ap_vmin, output_data%ctp_ap_vmax, &
+        MissingXn, output_data%ctp_ap_vmax)
+
+   call prepare_short_packed_float( &
+        SPixel%X0(IPc2), output_data%ctp2_fg(i,j), &
+        output_data%ctp_fg_scale, output_data%ctp_fg_offset, &
+        output_data%ctp_fg_vmin, output_data%ctp_fg_vmax, &
+        MissingXn, output_data%ctp_fg_vmax)
 end if
 
    !----------------------------------------------------------------------------

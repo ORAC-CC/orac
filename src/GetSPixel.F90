@@ -210,12 +210,12 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
 
    ! Define arguments
 
-   type(Ctrl_t),        intent(in)    :: Ctrl
-   type(SAD_Chan_t),    intent(in)    :: SAD_Chan(:)
-   type(Data_t),        intent(in)    :: MSI_Data
-   type(RTM_t),         intent(in)    :: RTM
-   type(SPixel_t),      intent(inout) :: SPixel
-   integer,             intent(out)   :: status
+   type(CTRL_t),     intent(in)    :: Ctrl
+   type(SAD_Chan_t), intent(in)    :: SAD_Chan(:)
+   type(Data_t),     intent(in)    :: MSI_Data
+   type(RTM_t),      intent(in)    :: RTM
+   type(SPixel_t),   intent(inout) :: SPixel
+   integer,          intent(out)   :: status
 
    ! Define local variables
 
@@ -259,7 +259,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
    if (status /= 0) go to 99 ! Skip further data reading
 
    if (SPixel%Ind%NSolar > 0) then
-      if (Ctrl%Approach == AerSw) then
+      if (Ctrl%Approach == AppAerSw) then
          call Get_Surface_Swansea(Ctrl, SPixel)
       else
          call Get_Surface(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
@@ -332,11 +332,11 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
 
          ! Calculate top of atmosphere reflectance for clear conditions
          ! (all arrays are sized NSolar).
-         SPixel%RTM%REF_clear = SPixel%Surface%Rs * SPixel%RTM%Tsf_o * &
+         SPixel%RTM%Ref_clear = SPixel%Surface%Rs * SPixel%RTM%Tsf_o * &
                                 SPixel%RTM%Tsf_v
 
-         ! Gradient of REF_clear w.r.t. surface albedo
-         SPixel%RTM%dREF_clear_dRs = SPixel%RTM%Tsf_o * SPixel%RTM%Tsf_v
+         ! Gradient of Ref_clear w.r.t. surface albedo
+         SPixel%RTM%dRef_clear_dRs = SPixel%RTM%Tsf_o * SPixel%RTM%Tsf_v
       end if ! End of NSolar > 0
    end if ! End of RTMIntMeth /= RTMIntMethNone
 
@@ -372,8 +372,9 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
       write(bkp_lun,'(a,2(f7.1,1x))')' Lat, lon: ',SPixel%Loc%Lat,SPixel%Loc%Lon
       write(bkp_lun,'(a,L1)')' Land flag ',SPixel%Surface%Land
       do view=1,Ctrl%Ind%NViews
-         write(bkp_lun,'(a,i3,3(a,f7.1))')' View ', view,' sat zen ',SPixel%Geom%SatZen(view),&
-              '  sol zen ',SPixel%Geom%SolZen(view), ' rel azi ',SPixel%Geom%RelAzi(view)
+         write(bkp_lun,'(a,i3,3(a,f7.1))')' View ', view,' sat zen ', &
+              Pixel%Geom%SatZen(view), '  sol zen ',SPixel%Geom%SolZen(view), &
+              ' rel azi ',SPixel%Geom%RelAzi(view)
       end do
       write(bkp_lun,'(a,i4)')' Status: ',status
       !     write(bkp_lun,'(a,i4)')' QC flag: ',SPixel%QC

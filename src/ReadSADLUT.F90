@@ -764,6 +764,7 @@ end subroutine Read_LUT_both
 !                             Read_SAD_Chan()
 ! SAD_LUT  struct out         Structure to hold the values from the LUT
 !                             files.
+! i_layer  int    In          Layer index.
 !
 ! History:
 ! 2000/10/13, AS: Original version
@@ -808,11 +809,12 @@ end subroutine Read_LUT_both
 !    SAD_Chan_m and renaming it create_sad_filename.
 ! 2015/09/07, AP: Allow verbose to be controlled from the driver file.
 ! 2015/10/19, GM: Added support to read the Bext LUT for Ctrl%do_CTP_correction.
+! 2016/07/27, GM: Read LUTs for layer 2 when the multilayer retrieval is active.
 !
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
-subroutine Read_SAD_LUT(Ctrl, SAD_Chan, SAD_LUT)
+subroutine Read_SAD_LUT(Ctrl, SAD_Chan, SAD_LUT, i_layer)
 
    use Ctrl_m
    use SAD_Chan_m
@@ -822,9 +824,10 @@ subroutine Read_SAD_LUT(Ctrl, SAD_Chan, SAD_LUT)
 
    ! Argument declarations
 
-   type(Ctrl_t),                   intent(in)    :: Ctrl
-   type(SAD_Chan_t), dimension(:), intent(in)    :: SAD_Chan
-   type(SAD_LUT_t),                intent(inout) :: SAD_LUT
+   type(Ctrl_t),     intent(in)    :: Ctrl
+   type(SAD_Chan_t), intent(in)    :: SAD_Chan(:)
+   type(SAD_LUT_t),  intent(inout) :: SAD_LUT
+   integer,          intent(in)    :: i_layer
 
    ! Local variables
 
@@ -875,37 +878,37 @@ subroutine Read_SAD_LUT(Ctrl, SAD_Chan, SAD_LUT)
 
       ! Read the Rd and Rfd LUTs from the Rd file for all channels (solar and
       ! thermal)
-      LUT_File = create_sad_filename(Ctrl, chan_num, 'RD')
+      LUT_File = create_sad_filename(Ctrl, chan_num, i_layer, 'RD')
       call Read_LUT_sat(Ctrl, LUT_file, i, SAD_LUT, IRd, "Rd", SAD_LUT%Rd, &
                         i_lut2 = IRfd, name2 = "Rfd", values2 = SAD_LUT%Rfd)
 
       ! Read the Td and Tfd LUTs from the Td file for all channels (solar and
       ! thermal)
-      LUT_File = create_sad_filename(Ctrl, chan_num, 'TD')
+      LUT_File = create_sad_filename(Ctrl, chan_num, i_layer, 'TD')
       call Read_LUT_sat(Ctrl, LUT_file, i, SAD_LUT, ITd, "Td", SAD_LUT%Td, &
                         i_lut2 = ITfd, name2 = "Tfd", values2 = SAD_LUT%Tfd)
 
       ! Read solar channel LUTs
       if (SAD_Chan(i)%Solar%Flag > 0) then
          ! Read the Rbd LUT from the Rbd files
-         LUT_File = create_sad_filename(Ctrl, chan_num, 'RBD')
+         LUT_File = create_sad_filename(Ctrl, chan_num, i_layer, 'RBD')
          call Read_LUT_both(Ctrl, LUT_file, i, SAD_LUT, IRbd, "Rbd", &
                             SAD_LUT%Rbd)
 
          ! Read the Rd file into the Rfbd table.  This is a temporary solution
          ! until the Rfbd table becomes available in the Rbd file.  Rd is close
          ! but not the same as Rfbd.
-         LUT_File = create_sad_filename(Ctrl, chan_num, 'RD')
+         LUT_File = create_sad_filename(Ctrl, chan_num, i_layer, 'RD')
          call Read_LUT_sol(Ctrl, LUT_file, i, SAD_LUT, IRfbd, "Rd", &
                            SAD_LUT%Rfbd)
 
          ! Read the Tb file LUT from the Tb files
-         LUT_File = create_sad_filename(Ctrl, chan_num, 'TB')
+         LUT_File = create_sad_filename(Ctrl, chan_num, i_layer, 'TB')
          call Read_LUT_sol(Ctrl, LUT_file, i, SAD_LUT, ITb, "Tb", &
                            SAD_LUT%Tb)
 
          ! Read the Tbd and Tfbd LUTs from the Tbd files
-         LUT_File = create_sad_filename(Ctrl, chan_num, 'TBD')
+         LUT_File = create_sad_filename(Ctrl, chan_num, i_layer, 'TBD')
          call Read_LUT_both(Ctrl, LUT_file, i, SAD_LUT, ITbd, "Tbd", &
                             SAD_LUT%Tbd, i_lut2 = ITfbd, name2 = "Tfbd", &
                             values2 = SAD_LUT%Tfbd)
@@ -914,21 +917,21 @@ subroutine Read_SAD_LUT(Ctrl, SAD_Chan, SAD_LUT)
       ! Read thermal channel LUTs
       if (SAD_Chan(i)%Thermal%Flag > 0) then
          ! Read the Em file
-         LUT_File = create_sad_filename(Ctrl, chan_num, 'EM')
+         LUT_File = create_sad_filename(Ctrl, chan_num, i_layer, 'EM')
          call Read_LUT_sat(Ctrl, LUT_file, i, SAD_LUT, IEm, "EM", SAD_LUT%Em)
 
-         if (Ctrl%do_CTX_correction .and. Ctrl%Approach .eq. CldIce) then
+         if (Ctrl%do_CTX_correction .and. Ctrl%Class .eq. ClsCldICE) then
             ! Read the Bext file
-            LUT_File = create_sad_filename(Ctrl, chan_num, 'Bext')
+            LUT_File = create_sad_filename(Ctrl, chan_num, i_layer, 'Bext')
             call Read_LUT(Ctrl, LUT_file, i, SAD_LUT, IBext, "Bext", SAD_LUT%Bext)
          end if
       end if
    end do
 
    ! Read AOD conversion table
-   if (Ctrl%Approach == AerOx .or. Ctrl%Approach == AerSw) then
+   if (Ctrl%Approach == AppAerOx .or. Ctrl%Approach == AppAerSw) then
       call make_sad_chan_num(Ctrl, Ctrl%second_aot_ch(1), chan_num)
-      LUT_File = create_sad_filename(Ctrl, chan_num, 'BextRat')
+      LUT_File = create_sad_filename(Ctrl, chan_num, i_layer, 'BextRat')
       call Read_LUT_rat(Ctrl, LUT_File, SAD_LUT, 1, IBextRat, "BextRat", &
            SAD_LUT%BextRat)
    end if

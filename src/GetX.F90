@@ -325,7 +325,7 @@ subroutine Get_State(mode, i, Ctrl, SPixel, flag, X, status, Err)
          X = Ctrl%Xb(i)
       end if
       ! If surface reflectance, correct for solar zenith angle
-      if (Ctrl%Approach /= AerSw .and. Ctrl%RS%solar_factor) then
+      if (Ctrl%Approach /= AppAerSw .and. Ctrl%RS%solar_factor) then
          do is = 1, SPixel%Ind%NSolar
             ic = SPixel%spixel_y_solar_to_ctrl_y_solar_index(is)
 

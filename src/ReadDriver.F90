@@ -124,6 +124,7 @@
 !    retrieved. This is indicated by the rho|ss_terms array (and Nrho|Nss).
 ! 2016/07/20, WJ: Add check for instrument for setting max stemp value and
 !    set max to 400K (instead of 320K) for cases other than ATSR2/AATSR.
+! 2016/07/27, GM: Changes and additions for the multilayer retrieval.
 !
 ! $Id$
 !
@@ -137,11 +138,17 @@
 module read_driver_m
    implicit none
 
-   interface switch
+   interface switch_app
       module procedure &
-           switch_logic, switch_byte,  switch_sint, switch_lint, &
-           switch_sreal, switch_dreal, switch_char
-   end interface switch
+           switch_app_logic, switch_app_byte,  switch_app_sint, switch_app_lint, &
+           switch_app_sreal, switch_app_dreal, switch_app_char
+   end interface switch_app
+
+   interface switch_cls
+      module procedure &
+           switch_cls_logic, switch_cls_byte,  switch_cls_sint, switch_cls_lint, &
+           switch_cls_sreal, switch_cls_dreal, switch_cls_char
+   end interface switch_cls
 contains
 
 #ifdef WRAPPER
@@ -188,7 +195,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    integer                            :: NXJ_Dy, NXJ_Tw, NXJ_Ni
    integer, dimension(MaxStateVar)    :: X_Dy, X_Tw, X_Ni
    integer, dimension(MaxStateVar)    :: XJ_Dy, XJ_Tw, XJ_Ni
-   integer                            :: a ! Short name for Ctrl%Approach
+   integer                            :: a     ! Short name for Ctrl%Approach
+   integer                            :: c, c2 ! Short name for Ctrl%Class
    real                               :: wvl_threshold
    logical                            :: new_driver_format
 
@@ -199,6 +207,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    ! Initialise some important variables
    Ctrl%verbose                = .true.
    Ctrl%Approach               = -1
+   Ctrl%Class                  = -1
+   Ctrl%Class2                 = -1
    Ctrl%do_new_night_retrieval = .true.
    Ctrl%do_CTX_correction      = .true.
 
@@ -222,7 +232,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       ! Check drifile exists
       inquire(file=drifile, exist=file_exists)
       if (.not. file_exists) then
-         write(*,*) 'ERROR: ReadDriver(): Driver file pointed to by ' // &
+         write(*,*) 'ERROR: Read_Driver(): Driver file pointed to by ' // &
                     'ORAC_DRIVER does not exist: ', trim(drifile)
          stop DriverFileNotFound
       end if
@@ -231,7 +241,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       call find_lun(dri_lun)
       open(unit=dri_lun, file=drifile, iostat=ios)
       if (ios /= 0) then
-         write(*,*) 'ERROR: ReadDriver(): Unable to open driver file: ', &
+         write(*,*) 'ERROR: Read_Driver(): Unable to open driver file: ', &
                     trim(drifile)
          stop DriverFileOpenErr
       end if
@@ -240,13 +250,13 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    ! Identify version of driver file
    read(dri_lun, '(A)', iostat=ios) line
    if (ios /= 0) then
-      write(*,*) 'ERROR: ReadDriver(): Unable to read driver file: ', &
+      write(*,*) 'ERROR: Read_Driver(): Unable to read driver file: ', &
                  trim(drifile)
       stop DriverFileOpenErr
    end if
    rewind dri_lun
 
-   new_driver_format = line(1:18) .eq. '# ORAC Driver File'
+   new_driver_format = line(1:18) == '# ORAC Driver File'
 
    !----------------------------------------------------------------------------
    ! Read the driver file
@@ -351,16 +361,41 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    if (Ctrl%Approach == -1) then
       ! Approach not set, so deduce from LUTClass
       if (Ctrl%LUTClass(1:3) == 'WAT') then
-         Ctrl%Approach = CldWat
+         Ctrl%Approach = AppCld1L
+         Ctrl%Class    = ClsCldWat
       else if (Ctrl%LUTClass(1:3) == 'ICE') then
-         Ctrl%Approach = CldIce
+         Ctrl%Approach = AppCld1L
+         Ctrl%Class    = ClsCldIce
       else if (Ctrl%LUTClass(1:3) == 'EYJ') then
-         Ctrl%Approach = AshEyj
-      else if (Ctrl%LUTClass(1:1) == 'A') then
-         Ctrl%Approach = AerOx
+         Ctrl%Approach = AppCld1L
+         Ctrl%Class    = ClsAshEyj
+     else if (Ctrl%LUTClass(1:1) == 'A') then
+         Ctrl%Approach = AppAerOx
+         Ctrl%Class    = ClsAerOx
       else
          write(*,*) 'ERROR: Read_Driver(): Cannot determine retrieval '// &
-              'approach from LUTClass. Please set Ctrl%APPROACH.'
+                    'approach from LUTClass. Please set Ctrl%Approach.'
+         stop error_stop_code
+      end if
+   end if
+
+   if (Ctrl%Class == -1) then
+      ! Class not set, so deduce it from the LUTClass and/or Approach
+      if (Ctrl%Approach == AppCld1L .and. Ctrl%LUTClass(1:3) == 'WAT') then
+         Ctrl%Class = ClsCldWat
+      else if (Ctrl%Approach == AppCld1L .and. Ctrl%LUTClass(1:3) == 'ICE') then
+         Ctrl%Class = ClsCldIce
+      else if (Ctrl%Approach == AppCld1L .and. Ctrl%LUTClass(1:3) == 'EYJ') then
+         Ctrl%Class = ClsAshEyj
+      else if (Ctrl%Approach == AppCld2L) then
+         Ctrl%Class  = ClsCldIce
+         Ctrl%Class2 = ClsCldWat
+      else if (Ctrl%Approach == AppAerOx) then
+         Ctrl%Class = ClsAerOx
+      else if (Ctrl%Approach == AppAerSw) then
+         Ctrl%Class = ClsAerSw
+      else
+         write(*,*) 'ERROR: Read_Driver(): Invalid Ctrl%Approach:', Ctrl%Approach
          stop error_stop_code
       end if
    end if
@@ -368,18 +403,26 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    ! Use a short name for Ctrl%Approach
    a = Ctrl%Approach
 
+   ! Use a short name for Ctrl%Class
+   c  = Ctrl%Class
+   if (Ctrl%Approach /= AppCld2L) then
+      c2 = Ctrl%Class
+   else
+      c2 = Ctrl%Class2
+   end if
+
    !----------------------------------------------------------------------------
    ! Set default values of the Ctrl structure
    !----------------------------------------------------------------------------
    Ctrl%Run_ID = 'none'
 
    !----------------------- Ctrl%RS -----------------------
-   Ctrl%RS%RsSelm         = switch(a, Default=SelmAux)
-   Ctrl%RS%SRsSelm        = switch(a, Default=SelmMeas, Aer=SelmCtrl)
-   Ctrl%RS%use_full_brdf  = switch(a, Default=.true.,   AerSw=.false.)
-   Ctrl%RS%Cb             = switch(a, Default=0.2,      Aer=0.4)
-   Ctrl%RS%add_fractional = switch(a, Default=.false.,  AerOx=.true.)
-   Ctrl%RS%diagonal_SRs   = switch(a, Default=.false.,  AerOx=.true.)
+   Ctrl%RS%RsSelm         = switch_app(a, Default=SelmAux)
+   Ctrl%RS%SRsSelm        = switch_app(a, Default=SelmMeas, Aer=SelmCtrl)
+   Ctrl%RS%use_full_brdf  = switch_app(a, Default=.true.,   AerSw=.false.)
+   Ctrl%RS%Cb             = switch_app(a, Default=0.2,      Aer=0.4)
+   Ctrl%RS%add_fractional = switch_app(a, Default=.false.,  AerOx=.true.)
+   Ctrl%RS%diagonal_SRs   = switch_app(a, Default=.false.,  AerOx=.true.)
 
    ! Select assumed surface reflectance based on wavelength
    Ctrl%RS%allow_a_default_surface = .true.
@@ -390,17 +433,17 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       ii = Ctrl%Ind%ICh(Ctrl%Ind%YSolar(i))
 
       if (abs(channel_wvl(ii) - 0.55) < wvl_threshold) then      ! AATSR Ch1
-         Ctrl%RS%B(i,ISea)  = switch(a, Default=0.05, Aer=0.01)
-         Ctrl%RS%B(i,ILand) = switch(a, Default=0.15, Aer=0.20)
+         Ctrl%RS%B(i,ISea)  = switch_app(a, Default=0.05, Aer=0.01)
+         Ctrl%RS%B(i,ILand) = switch_app(a, Default=0.15, Aer=0.20)
       else if (abs(channel_wvl(ii) - 0.67) < wvl_threshold) then ! AATSR Ch2
-         Ctrl%RS%B(i,ISea)  = switch(a, Default=0.02, Aer=0.005)
-         Ctrl%RS%B(i,ILand) = switch(a, Default=0.10, Aer=0.15)
+         Ctrl%RS%B(i,ISea)  = switch_app(a, Default=0.02, Aer=0.005)
+         Ctrl%RS%B(i,ILand) = switch_app(a, Default=0.10, Aer=0.15)
       else if (abs(channel_wvl(ii) - 0.87) < wvl_threshold) then ! AATSR Ch3
-         Ctrl%RS%B(i,ISea)  = switch(a, Default=0.01, Aer=0.0001)
-         Ctrl%RS%B(i,ILand) = switch(a, Default=0.01, Aer=0.10)
+         Ctrl%RS%B(i,ISea)  = switch_app(a, Default=0.01, Aer=0.0001)
+         Ctrl%RS%B(i,ILand) = switch_app(a, Default=0.01, Aer=0.10)
       else if (abs(channel_wvl(ii) - 1.6) < wvl_threshold) then  ! AATSR Ch4
-         Ctrl%RS%B(i,ISea)  = switch(a, Default=0.01, Aer=0.00)
-         Ctrl%RS%B(i,ILand) = switch(a, Default=0.01, Aer=0.01)
+         Ctrl%RS%B(i,ISea)  = switch_app(a, Default=0.01, Aer=0.00)
+         Ctrl%RS%B(i,ILand) = switch_app(a, Default=0.01, Aer=0.01)
       else ! No opinion on channel
          Ctrl%RS%B(i,:)     = 0.0
       end if
@@ -408,81 +451,99 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
 
    if (Ctrl%Ind%NSolar > 0) then
       allocate(Ctrl%RS%Sb(Ctrl%Ind%NSolar, MaxSurf))
-      Ctrl%RS%Sb(:,ISea)  = switch(a, Default=0.2, AerOx=0.0)
-      Ctrl%RS%Sb(:,ILand) = switch(a, Default=0.2, AerOx=2e-4)
+      Ctrl%RS%Sb(:,ISea)  = switch_app(a, Default=0.2, AerOx=0.0)
+      Ctrl%RS%Sb(:,ILand) = switch_app(a, Default=0.2, AerOx=2e-4)
    end if
 
    !----------------------- Ctrl%EqMPN --------------------
-   Ctrl%EqMPN%SySelm = switch(a, Default=SelmAux)
-   Ctrl%EqMPN%Homog  = switch(a, Default=.true.,  Aer=.false.)
-   Ctrl%EqMPN%Coreg  = switch(a, Default=.true.,  Aer=.false.)
+   Ctrl%EqMPN%SySelm = switch_app(a, Default=SelmAux)
+   Ctrl%EqMPN%Homog  = switch_app(a, Default=.true.,  Aer=.false.)
+   Ctrl%EqMPN%Coreg  = switch_app(a, Default=.true.,  Aer=.false.)
 
    !----------------------- Ctrl%Invpar -------------------
-   Ctrl%Invpar%ConvTest           = switch(a, Default=.false., Aer=.true.)
-   Ctrl%Invpar%MqStart            = switch(a, Default=0.001)
-   Ctrl%Invpar%MqStep             = switch(a, Default=10.0)
-   Ctrl%Invpar%MaxIter            = switch(a, Default=40,      Aer=25)
-   Ctrl%Invpar%Ccj                = switch(a, Default=0.05,    AerSw=0.001)
-   Ctrl%Invpar%always_take_GN     = switch(a, Default=.false., AerOx=.true.)
-   Ctrl%Invpar%dont_iter_convtest = switch(a, Default=.false., Aer=.true.)
-   Ctrl%Invpar%disable_Ss         = switch(a, Default=.false., Aer=.true.)
+   Ctrl%Invpar%ConvTest           = switch_app(a, Default=.false., Aer=.true.)
+   Ctrl%Invpar%MqStart            = switch_app(a, Default=0.001)
+   Ctrl%Invpar%MqStep             = switch_app(a, Default=10.0)
+   Ctrl%Invpar%MaxIter            = switch_app(a, Default=40,      Aer=25)
+   Ctrl%Invpar%Ccj                = switch_app(a, Default=0.05,    AerSw=0.001)
+   Ctrl%Invpar%always_take_GN     = switch_app(a, Default=.false., AerOx=.true.)
+   Ctrl%Invpar%dont_iter_convtest = switch_app(a, Default=.false., Aer=.true.)
+   Ctrl%Invpar%disable_Ss         = switch_app(a, Default=.false., Aer=.true.)
 
    ! Scale used to avoid pivots in matrix inversion. Terms that a mode shouldn't
    ! touch are zeroed to
    ! NOTES: 1) Aerosol LUTs use log Re while cloud uses linear Re.
    ! 2) For the Swansea retrieval, IRho_DD is equivalent to ISS.
-   Ctrl%Invpar%XScale(ITau)           = switch(a, Default=10.0, AerSw=1.0)
-   Ctrl%Invpar%XScale(IRe)            = switch(a, Default=1.0,  AerOx=10.0)
-   Ctrl%Invpar%XScale(IPc)            = switch(a, Default=1.0)
-   Ctrl%Invpar%XScale(IFr)            = switch(a, Default=1000.0)
-   Ctrl%Invpar%XScale(ITs)            = switch(a, Default=1.0)
-   Ctrl%Invpar%XScale(IRs(:,IRho_0V)) = switch(a, Default=1.0,  AerOx=1000.0)
-   Ctrl%Invpar%XScale(IRs(:,IRho_0D)) = switch(a, Default=1.0,  AerOx=1000.0)
-   Ctrl%Invpar%XScale(IRs(:,IRho_DV)) = switch(a, Default=1.0,  AerOx=1000.0)
-   Ctrl%Invpar%XScale(IRs(:,IRho_DD)) = switch(a, Default=1.0,  AerOx=1000.0)
-   Ctrl%Invpar%XScale(ISP)            = switch(a, Default=1.0)
+   Ctrl%Invpar%XScale(ITau)           = switch_cls(c, Default=10.0, AerSw=1.0)
+   Ctrl%Invpar%XScale(IRe)            = switch_cls(c, Default=1.0,  AerOx=10.0)
+   Ctrl%Invpar%XScale(IPc)            = switch_cls(c, Default=1.0)
+   Ctrl%Invpar%XScale(IFr)            = switch_cls(c, Default=1000.0)
+   Ctrl%Invpar%XScale(ITau2)          = switch_cls(c2,Default=10.0, AerSw=1.0)
+   Ctrl%Invpar%XScale(IRe2)           = switch_cls(c2,Default=1.0,  AerOx=10.0)
+   Ctrl%Invpar%XScale(IPc2)           = switch_cls(c2,Default=1.0)
+   Ctrl%Invpar%XScale(IFr2)           = switch_cls(c2,Default=1000.0)
+   Ctrl%Invpar%XScale(ITs)            = switch_app(a, Default=1.0)
+   Ctrl%Invpar%XScale(IRs(:,IRho_0V)) = switch_app(a, Default=1.0,  AerOx=1000.0)
+   Ctrl%Invpar%XScale(IRs(:,IRho_0D)) = switch_app(a, Default=1.0,  AerOx=1000.0)
+   Ctrl%Invpar%XScale(IRs(:,IRho_DV)) = switch_app(a, Default=1.0,  AerOx=1000.0)
+   Ctrl%Invpar%XScale(IRs(:,IRho_DD)) = switch_app(a, Default=1.0,  AerOx=1000.0)
+   Ctrl%Invpar%XScale(ISP)            = switch_app(a, Default=1.0)
    ! Lower limit
-   Ctrl%Invpar%XLLim(ITau)            = switch(a, Default=-3.0, Aer=-2.0)
-   Ctrl%Invpar%XLLim(IRe)             = switch(a, Default=0.1,  Aer=-2.0, &
-                                                                AshEyj=0.01)
-   Ctrl%Invpar%XLLim(IPc)             = switch(a, Default=10.0)
-   Ctrl%Invpar%XLLim(IFr)             = switch(a, Default=0.0)
-   Ctrl%Invpar%XLLim(ITs)             = switch(a, Default=250.0)
-   Ctrl%Invpar%XLLim(IRs(:,IRho_0V))  = switch(a, Default=0.00001, Cld=0.)
-   Ctrl%Invpar%XLLim(IRs(:,IRho_0D))  = switch(a, Default=0.00001, Cld=0.)
-   Ctrl%Invpar%XLLim(IRs(:,IRho_DV))  = switch(a, Default=0.00001, Cld=0.)
-   Ctrl%Invpar%XLLim(IRs(:,IRho_DD))  = switch(a, Default=0.00001, Cld=0.)
-   Ctrl%Invpar%XLLim(ISP)             = switch(a, Default=0.00001)
+   Ctrl%Invpar%XLLim(ITau)            = switch_cls(c, Default=-3.0, Aer=-2.0)
+   Ctrl%Invpar%XLLim(IRe)             = switch_cls(c, Default=0.1,  Aer=-2.0, &
+                                                                    AshEyj=0.01)
+   Ctrl%Invpar%XLLim(IPc)             = switch_cls(c, Default=10.0)
+   Ctrl%Invpar%XLLim(IFr)             = switch_cls(c, Default=0.0)
+   Ctrl%Invpar%XLLim(ITau2)           = switch_cls(c2,Default=-3.0)
+   Ctrl%Invpar%XLLim(IRe2)            = switch_cls(c2,Default=0.1)
+   Ctrl%Invpar%XLLim(IPc2)            = switch_cls(c2,Default=10.0)
+   Ctrl%Invpar%XLLim(IFr2)            = switch_cls(c2,Default=0.0)
+   Ctrl%Invpar%XLLim(ITs)             = switch_app(a, Default=250.0)
+   Ctrl%Invpar%XLLim(IRs(:,IRho_0V))  = switch_app(a, Default=0.00001, Cld=0.)
+   Ctrl%Invpar%XLLim(IRs(:,IRho_0D))  = switch_app(a, Default=0.00001, Cld=0.)
+   Ctrl%Invpar%XLLim(IRs(:,IRho_DV))  = switch_app(a, Default=0.00001, Cld=0.)
+   Ctrl%Invpar%XLLim(IRs(:,IRho_DD))  = switch_app(a, Default=0.00001, Cld=0.)
+   Ctrl%Invpar%XLLim(ISP)             = switch_app(a, Default=0.00001)
    ! Upper limit
-   Ctrl%Invpar%XULim(ITau)            = switch(a, Default=2.408, Aer=0.7)
-   Ctrl%Invpar%XULim(IRe)             = switch(a, Default=1.0,   AshEyj=20.0, &
-                                                                 CldWat=35.0, &
-                                                                 CldIce=100.0)
-   Ctrl%Invpar%XULim(IPc)             = switch(a, Default=1200.0)
-   Ctrl%Invpar%XULim(IFr)             = switch(a, Default=1.0)
+   Ctrl%Invpar%XULim(ITau)            = switch_cls(c, Default=2.408, Aer=0.7)
+   Ctrl%Invpar%XULim(IRe)             = switch_cls(c, Default=1.0,   AshEyj=20.0, &
+                                                                     CldWat=35.0, &
+                                                                     CldIce=100.0)
+   Ctrl%Invpar%XULim(IPc)             = switch_cls(c, Default=1200.0)
+   Ctrl%Invpar%XULim(IFr)             = switch_cls(c, Default=1.0)
+   Ctrl%Invpar%XULim(ITau2)           = switch_cls(c2,Default=2.408, Aer=0.7)
+   Ctrl%Invpar%XULim(IRe2)            = switch_cls(c2,Default=1.0,   AshEyj=20.0, &
+                                                                     CldWat=35.0, &
+                                                                     CldIce=100.0)
+   Ctrl%Invpar%XULim(IPc2)            = switch_cls(c2,Default=1200.0)
+   Ctrl%Invpar%XULim(IFr2)            = switch_cls(c2,Default=1.0)
    if ((Ctrl%InstName(1:5) .eq. 'AATSR') .or. (Ctrl%InstName(1:5) .eq. 'ATSR2')) then
-      Ctrl%Invpar%XULim(ITs)             = switch(a, Default=320.0)
+      Ctrl%Invpar%XULim(ITs)          = switch_app(a, Default=320.0)
    else
-      Ctrl%Invpar%XULim(ITs)             = switch(a, Default=400.0)
-   endif
-   Ctrl%Invpar%XULim(IRs(:,IRho_0V))  = switch(a, Default=1.0,   AerSw=100.0)
-   Ctrl%Invpar%XULim(IRs(:,IRho_0D))  = switch(a, Default=1.0)
-   Ctrl%Invpar%XULim(IRs(:,IRho_DV))  = switch(a, Default=1.0)
-   Ctrl%Invpar%XULim(IRs(:,IRho_DD))  = switch(a, Default=1.0)
-   Ctrl%Invpar%XULim(ISP)             = switch(a, Default=100.0)
+      Ctrl%Invpar%XULim(ITs)          = switch_app(a, Default=400.0)
+   end if
+   Ctrl%Invpar%XULim(IRs(:,IRho_0V))  = switch_app(a, Default=1.0,   AerSw=100.0)
+   Ctrl%Invpar%XULim(IRs(:,IRho_0D))  = switch_app(a, Default=1.0)
+   Ctrl%Invpar%XULim(IRs(:,IRho_DV))  = switch_app(a, Default=1.0)
+   Ctrl%Invpar%XULim(IRs(:,IRho_DD))  = switch_app(a, Default=1.0)
+   Ctrl%Invpar%XULim(ISP)             = switch_app(a, Default=100.0)
 
    !----------------------- Ctrl%QC -----------------------
-   Ctrl%QC%MaxJ                 = switch(a, Default=100.0, Aer=4.0)
-   Ctrl%QC%MaxS(ITau)           = switch(a, Default=0.08)
-   Ctrl%QC%MaxS(IRe)            = switch(a, Default=3.0)
-   Ctrl%QC%MaxS(IPc)            = switch(a, Default=200.0)
-   Ctrl%QC%MaxS(IFr)            = switch(a, Default=0.2)
-   Ctrl%QC%MaxS(ITs)            = switch(a, Default=2.0)
-   Ctrl%QC%MaxS(IRs(:,IRho_0V)) = switch(a, Default=0.2,   AerSw=10.0)
-   Ctrl%QC%MaxS(IRs(:,IRho_0D)) = switch(a, Default=0.2) ! No idea of a sensible
-   Ctrl%QC%MaxS(IRs(:,IRho_DV)) = switch(a, Default=0.2) ! value for these
-   Ctrl%QC%MaxS(IRs(:,IRho_DD)) = switch(a, Default=0.2)
-   Ctrl%QC%MaxS(ISP)            = switch(a, Default=10.0)
+   Ctrl%QC%MaxJ                 = switch_app(a, Default=100.0, Aer=4.0)
+   Ctrl%QC%MaxS(ITau)           = switch_cls(c, Default=0.08)
+   Ctrl%QC%MaxS(IRe)            = switch_cls(c, Default=3.0)
+   Ctrl%QC%MaxS(IPc)            = switch_cls(c, Default=200.0)
+   Ctrl%QC%MaxS(IFr)            = switch_cls(c, Default=0.2)
+   Ctrl%QC%MaxS(ITau2)          = switch_cls(c2,Default=0.08)
+   Ctrl%QC%MaxS(IRe2)           = switch_cls(c2,Default=3.0)
+   Ctrl%QC%MaxS(IPc2)           = switch_cls(c2,Default=200.0)
+   Ctrl%QC%MaxS(IFr2)           = switch_cls(c2,Default=0.2)
+   Ctrl%QC%MaxS(ITs)            = switch_app(a, Default=2.0)
+   Ctrl%QC%MaxS(IRs(:,IRho_0V)) = switch_app(a, Default=0.2,   AerSw=10.0)
+   Ctrl%QC%MaxS(IRs(:,IRho_0D)) = switch_app(a, Default=0.2) ! No idea of a sensible
+   Ctrl%QC%MaxS(IRs(:,IRho_DV)) = switch_app(a, Default=0.2) ! value for these
+   Ctrl%QC%MaxS(IRs(:,IRho_DD)) = switch_app(a, Default=0.2)
+   Ctrl%QC%MaxS(ISP)            = switch_app(a, Default=10.0)
 
    !------------------- Ctrl START/END POINT --------------
    ! Process entire file
@@ -498,10 +559,10 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%Sunset    = 90. ! Used to identify twilight conditions
 
    !----------------------- Ctrl SWITCHES -----------------
-   Ctrl%i_equation_form = switch(a, Default=3, AerOx=1, AerSw=0)
-   Ctrl%LUTIntSelm      = switch(a, Default=LUTIntMethLinear)
-   Ctrl%RTMIntSelm      = switch(a, Default=RTMIntMethLinear, Aer=RTMIntMethNone)
-   Ctrl%CloudType       = switch(a, Default=1,                Aer=2)
+   Ctrl%i_equation_form = switch_app(a, Default=3, AerOx=1, AerSw=0)
+   Ctrl%LUTIntSelm      = switch_app(a, Default=LUTIntMethLinear)
+   Ctrl%RTMIntSelm      = switch_app(a, Default=RTMIntMethLinear, Aer=RTMIntMethNone)
+   Ctrl%CloudType       = switch_app(a, Default=1,                Aer=2)
    Ctrl%Bkpl                 = 3
    Ctrl%Max_SDAD             = 10.0
    Ctrl%sabotage_inputs      = .false.
@@ -512,7 +573,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
 
    ! Set cloud types to process depending on requested LUT
    Ctrl%Types_to_process = byte_fill_value
-   if (Ctrl%Approach == CldWat) then
+   if (Ctrl%Approach == AppCld1L .and. Ctrl%Class == ClsCldWat) then
       Ctrl%NTypes_to_process   = 3
       Ctrl%Types_to_process(1) = FOG_TYPE
       Ctrl%Types_to_process(2) = WATER_TYPE
@@ -522,7 +583,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
          Ctrl%Types_to_process(4) = CLEAR_TYPE
          Ctrl%Types_to_process(5) = PROB_CLEAR_TYPE
       end if
-   else if (Ctrl%Approach == CldIce) then
+   else if (Ctrl%Approach == AppCld1L .and. Ctrl%Class == ClsCldIce) then
       Ctrl%NTypes_to_process   = 4
       Ctrl%Types_to_process(1) = OPAQUE_ICE_TYPE
       Ctrl%Types_to_process(2) = CIRRUS_TYPE
@@ -533,6 +594,9 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
          Ctrl%Types_to_process(5) = CLEAR_TYPE
          Ctrl%Types_to_process(6) = PROB_CLEAR_TYPE
       end if
+   else if (Ctrl%Approach == AppCld2L) then
+      Ctrl%NTypes_to_process   = 1
+      Ctrl%Types_to_process(1) = OVERLAP_TYPE
    else
       ! Accept everything
       Ctrl%NTypes_to_process   = MaxTypes
@@ -543,7 +607,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    ! See Ctrl.F90 for descriptions of the variables initialized below.
    Ctrl%Ind%Y_Id_legacy = 0
 
-   if (Ctrl%InstName(1:5) .eq. 'AATSR' .or. Ctrl%InstName(1:5) .eq. 'ATSR2') then
+   if (Ctrl%InstName(1:5) == 'AATSR' .or. Ctrl%InstName(1:5) == 'ATSR2') then
       Ctrl%Ind%Y_Id_legacy(I_legacy_0_6x) = 2
       Ctrl%Ind%Y_Id_legacy(I_legacy_0_8x) = 3
       Ctrl%Ind%Y_Id_legacy(I_legacy_1_6x) = 4
@@ -560,7 +624,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       Ctrl%r_e_chans = (/ 4, 5 /)
       allocate(Ctrl%ir_chans(3))
       Ctrl%ir_chans  = (/ 5, 6, 7 /)
-   else if (Ctrl%InstName(1:3) .eq. 'AHI') then
+   else if (Ctrl%InstName(1:3) == 'AHI') then
       Ctrl%Ind%Y_Id_legacy(I_legacy_0_6x) = 3
       Ctrl%Ind%Y_Id_legacy(I_legacy_0_8x) = 4
       Ctrl%Ind%Y_Id_legacy(I_legacy_1_6x) = 5
@@ -577,7 +641,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       Ctrl%r_e_chans = (/ 5, 6, 7 /)
       allocate(Ctrl%ir_chans(3))
       Ctrl%ir_chans  = (/ 7, 14, 15 /)
-   else if (Ctrl%InstName(1:5) .eq. 'AVHRR') then
+   else if (Ctrl%InstName(1:5) == 'AVHRR') then
       Ctrl%Ind%Y_Id_legacy(I_legacy_0_6x) = 1
       Ctrl%Ind%Y_Id_legacy(I_legacy_0_8x) = 2
       Ctrl%Ind%Y_Id_legacy(I_legacy_1_6x) = 3
@@ -586,7 +650,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       Ctrl%Ind%Y_Id_legacy(I_legacy_12_x) = 6
 
       allocate(Ctrl%ReChans(2))
-      if (Ctrl%InstName(7:12) .eq. 'NOAA17') then
+      if (Ctrl%InstName(7:12) == 'NOAA17') then
          Ctrl%ReChans = (/ 3, 4 /)
       else
          Ctrl%ReChans = (/ 4, 3 /)
@@ -598,7 +662,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       Ctrl%r_e_chans = (/ 3, 4 /)
       allocate(Ctrl%ir_chans(3))
       Ctrl%ir_chans  = (/ 4, 5, 6 /)
-   else if (Ctrl%InstName(1:5) .eq. 'MODIS') then
+   else if (Ctrl%InstName(1:5) == 'MODIS') then
       Ctrl%Ind%Y_Id_legacy(I_legacy_0_6x) = 1
       Ctrl%Ind%Y_Id_legacy(I_legacy_0_8x) = 2
       Ctrl%Ind%Y_Id_legacy(I_legacy_1_6x) = 6
@@ -615,7 +679,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       Ctrl%r_e_chans = (/ 5, 6, 7, 20 /)
       allocate(Ctrl%ir_chans(3))
       Ctrl%ir_chans  = (/ 20, 31, 32 /)
-   else if (Ctrl%InstName(1:6) .eq. 'SEVIRI') then
+   else if (Ctrl%InstName(1:6) == 'SEVIRI') then
       Ctrl%Ind%Y_Id_legacy(I_legacy_0_6x) = 1
       Ctrl%Ind%Y_Id_legacy(I_legacy_0_8x) = 2
       Ctrl%Ind%Y_Id_legacy(I_legacy_1_6x) = 3
@@ -632,7 +696,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       Ctrl%r_e_chans = (/ 3, 4 /)
       allocate(Ctrl%ir_chans(3))
       Ctrl%ir_chans  = (/ 4, 9, 10 /)
-   else if (Ctrl%InstName(1:5) .eq. 'VIIRS') then
+   else if (Ctrl%InstName(1:5) == 'VIIRS') then
       Ctrl%Ind%Y_Id_legacy(I_legacy_0_6x) = 5
       Ctrl%Ind%Y_Id_legacy(I_legacy_0_8x) = 7
       Ctrl%Ind%Y_Id_legacy(I_legacy_1_6x) = 10
@@ -649,7 +713,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       Ctrl%r_e_chans = (/ 8, 10, 11, 12 /)
       allocate(Ctrl%ir_chans(4))
       Ctrl%ir_chans  = (/ 12, 15, 16, 14 /)
-   else if (Ctrl%InstName(1:10) .eq. 'SLSTR-Sen3') then
+   else if (Ctrl%InstName(1:10) == 'SLSTR-Sen3') then
       Ctrl%Ind%Y_Id_legacy(I_legacy_0_6x) = 2
       Ctrl%Ind%Y_Id_legacy(I_legacy_0_8x) = 3
       Ctrl%Ind%Y_Id_legacy(I_legacy_1_6x) = 5
@@ -667,8 +731,9 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       allocate(Ctrl%ir_chans(3))
       Ctrl%ir_chans  = (/ 7, 8, 9 /)
    else
-      write(*,*)"Unrecognised sensor/platform:",trim(Ctrl%InstName)
-      stop
+      write(*,*) 'ERROR: Read_Driver(): Unrecognised sensor/platform: ', &
+                   trim(Ctrl%InstName)
+      stop error_stop_code
    end if
 
    !---------------- Ctrl STATE VECTOR SELM ---------------
@@ -680,72 +745,107 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
 
    ! Currently these are identical for all illuminations. To be different, make
    ! three copies of the line and replace : with IDay, ITwi, and INight.
-   Ctrl%AP(ITau,:)           = switch(a, Default=SelmCtrl)
-   Ctrl%AP(IRe,:)            = switch(a, Default=SelmCtrl)
-   Ctrl%AP(IPc,:)            = switch(a, Default=SelmCtrl)
-   Ctrl%AP(IFr,:)            = switch(a, Default=SelmMeas)
-   Ctrl%AP(ITs,:)            = switch(a, Default=SelmAux)
-   Ctrl%AP(IRs(:,IRho_0V),:) = switch(a, Default=SelmAux, AerSw=SelmCtrl)
-   Ctrl%AP(IRs(:,IRho_0D),:) = switch(a, Default=SelmAux)
-   Ctrl%AP(IRs(:,IRho_DV),:) = switch(a, Default=SelmAux)
-   Ctrl%AP(IRs(:,IRho_DD),:) = switch(a, Default=SelmAux)
-   Ctrl%AP(ISP,:)            = switch(a, Default=SelmCtrl)
-   ! NOTES: 1) The aerosol code used SelmSAD for Tau and Re, which drew the
-   !    values from a separate driver file. This must now be managed by the
-   !    calling script setting Ctrl%XB and X0, as that knows what the LUT is.
-   ! 2) Fr uses SelmMeas so the error is set to MDADErrF. Could be tidier.
+   Ctrl%AP(ITau,:)           = switch_cls(c, Default=SelmCtrl)
+   Ctrl%AP(IRe,:)            = switch_cls(c, Default=SelmCtrl)
+   Ctrl%AP(IPc,:)            = switch_cls(c, Default=SelmCtrl)
+   Ctrl%AP(IFr,:)            = switch_cls(c, Default=SelmMeas)
+   Ctrl%AP(ITau2,:)          = switch_cls(c2,Default=SelmCtrl)
+   Ctrl%AP(IRe2,:)           = switch_cls(c2,Default=SelmCtrl)
+   Ctrl%AP(IPc2,:)           = switch_cls(c2,Default=SelmCtrl)
+   Ctrl%AP(IFr2,:)           = switch_cls(c2,Default=SelmCtrl)
+   Ctrl%AP(ITs,:)            = switch_app(a, Default=SelmAux)
+   Ctrl%AP(IRs(:,IRho_0V),:) = switch_app(a, Default=SelmAux, AerSw=SelmCtrl)
+   Ctrl%AP(IRs(:,IRho_0D),:) = switch_app(a, Default=SelmAux)
+   Ctrl%AP(IRs(:,IRho_DV),:) = switch_app(a, Default=SelmAux)
+   Ctrl%AP(IRs(:,IRho_DD),:) = switch_app(a, Default=SelmAux)
+   Ctrl%AP(ISP,:)            = switch_app(a, Default=SelmCtrl)
 
-   Ctrl%FG(ITau,:)           = switch(a, Default=SelmCtrl)
-   Ctrl%FG(IRe,:)            = switch(a, Default=SelmCtrl)
-   Ctrl%FG(IPc,:)            = switch(a, Default=SelmMeas)
-   Ctrl%FG(IFr,:)            = switch(a, Default=SelmCtrl)
-   Ctrl%FG(ITs,:)            = switch(a, Default=SelmAux)
-   Ctrl%FG(IRs(:,IRho_0V),:) = switch(a, Default=SelmAux, AerSw=SelmCtrl)
-   Ctrl%FG(IRs(:,IRho_0D),:) = switch(a, Default=SelmAux)
-   Ctrl%FG(IRs(:,IRho_DV),:) = switch(a, Default=SelmAux)
-   Ctrl%FG(IRs(:,IRho_DD),:) = switch(a, Default=SelmAux)
-   Ctrl%FG(ISP,:)            = switch(a, Default=SelmCtrl)
+   ! NOTES:
+   ! 1) The aerosol code used SelmSAD for Tau and Re, which drew the values from
+   !    a separate driver file. This must now be managed by the calling script
+   !    setting Ctrl%XB and X0, as that knows what the LUT is.
+   ! 2) Fr uses SelmMeas so the error is set to MDADErrF. Could be tidier.
+   Ctrl%FG(ITau,:)           = switch_cls(c, Default=SelmCtrl)
+   Ctrl%FG(IRe,:)            = switch_cls(c, Default=SelmCtrl)
+   Ctrl%FG(IPc,:)            = switch_cls(c, Default=SelmMeas)
+   Ctrl%FG(IFr,:)            = switch_cls(c ,Default=SelmCtrl)
+   Ctrl%FG(ITau2,:)          = switch_cls(c2,Default=SelmCtrl)
+   Ctrl%FG(IRe2,:)           = switch_cls(c2,Default=SelmCtrl)
+   Ctrl%FG(IPc2,:)           = switch_cls(c2,Default=SelmCtrl)
+   Ctrl%FG(IFr2,:)           = switch_cls(c2,Default=SelmCtrl)
+   Ctrl%FG(ITs,:)            = switch_app(a, Default=SelmAux)
+   Ctrl%FG(IRs(:,IRho_0V),:) = switch_app(a, Default=SelmAux, AerSw=SelmCtrl)
+   Ctrl%FG(IRs(:,IRho_0D),:) = switch_app(a, Default=SelmAux)
+   Ctrl%FG(IRs(:,IRho_DV),:) = switch_app(a, Default=SelmAux)
+   Ctrl%FG(IRs(:,IRho_DD),:) = switch_app(a, Default=SelmAux)
+   Ctrl%FG(ISP,:)            = switch_app(a, Default=SelmCtrl)
    ! 3) Not sure why Fr is now SelmCtrl.
 
    !----------- Ctrl PRESCRIBED STATE VECTORS -------------
    ! A priori values
-   Ctrl%XB(ITau)           = switch(a, Default=0.8,   AerOx=-1.5,  AerSw=-0.3, &
-                                                      AshEyj=0.18)
-   Ctrl%XB(IRe)            = switch(a, Default=-0.07, AshEyj=0.7, &
-                                                      CldWat=12.,  CldIce=30.)
-   Ctrl%XB(IPc)            = switch(a, Default=900.,  AshEyj=600., CldIce=400.)
-   Ctrl%XB(IFr)            = switch(a, Default=1.0)
-   Ctrl%XB(ITs)            = switch(a, Default=300.0)
-   Ctrl%XB(IRs(:,IRho_0V)) = switch(a, Default=0.01,  AerSw=0.1)
-   Ctrl%XB(IRs(:,IRho_0D)) = switch(a, Default=0.01)
-   Ctrl%XB(IRs(:,IRho_DV)) = switch(a, Default=0.01)
-   Ctrl%XB(IRs(:,IRho_DD)) = switch(a, Default=0.01)
-   Ctrl%XB(ISP)            = switch(a, Default=0.3)
+   if (Ctrl%Approach /= AppCld2L) then
+      Ctrl%XB(ITau)        = switch_cls(c, Default=0.8,   AerOx=-1.5,  AerSw=-0.3, &
+                                                          AshEyj=0.18)
+      Ctrl%XB(IRe)         = switch_cls(c, Default=-0.07, AshEyj=0.7, &
+                                                          CldWat=12.,  CldIce=30.)
+      Ctrl%XB(IPc)         = switch_cls(c, Default=900.,  AshEyj=600., CldIce=400.)
+      Ctrl%XB(IFr)         = switch_cls(c, Default=1.0)
+   else
+      Ctrl%XB(ITau)        = switch_cls(c, Default=0.1)
+      Ctrl%XB(IRe)         = switch_cls(c, Default=30.0)
+      Ctrl%XB(IPc)         = switch_cls(c, Default=245.0)
+      Ctrl%XB(IFr)         = switch_cls(c, Default=1.0)
+      Ctrl%XB(ITau2)       = switch_cls(c, Default=0.8)
+      Ctrl%XB(IRe2)        = switch_cls(c, Default=12.0)
+      Ctrl%XB(IPc2)        = switch_cls(c, Default=800.0)
+      Ctrl%XB(IFr2)        = switch_cls(c, Default=1.0)
+   end if
+   Ctrl%XB(ITs)            = switch_app(a, Default=300.0)
+   Ctrl%XB(IRs(:,IRho_0V)) = switch_app(a, Default=0.01,  AerSw=0.1)
+   Ctrl%XB(IRs(:,IRho_0D)) = switch_app(a, Default=0.01)
+   Ctrl%XB(IRs(:,IRho_DV)) = switch_app(a, Default=0.01)
+   Ctrl%XB(IRs(:,IRho_DD)) = switch_app(a, Default=0.01)
+   Ctrl%XB(ISP)            = switch_app(a, Default=0.3)
    ! First guess values
-   Ctrl%X0(ITau)           = switch(a, Default=0.8,   AerOx=-1.5,  AerSw=-0.3, &
-                                                      AshEyj=0.18)
-   Ctrl%X0(IRe)            = switch(a, Default=-0.07, AshEyj=0.7, &
-                                                      CldWat=12.,  CldIce=30.)
-   Ctrl%X0(IPc)            = switch(a, Default=900.,  AshEyj=600., CldIce=400.)
-   Ctrl%X0(IFr)            = switch(a, Default=1.0)
-   Ctrl%X0(ITs)            = switch(a, Default=300.0)
-   Ctrl%X0(IRs(:,IRho_0V)) = switch(a, Default=0.01,  AerSw=0.5)
-   Ctrl%X0(IRs(:,IRho_0D)) = switch(a, Default=0.01)
-   Ctrl%X0(IRs(:,IRho_DV)) = switch(a, Default=0.01)
-   Ctrl%X0(IRs(:,IRho_DD)) = switch(a, Default=0.01)
-   Ctrl%X0(ISP)            = switch(a, Default=0.3)
+   if (Ctrl%Approach /= AppCld2L) then
+      Ctrl%X0(ITau)        = switch_cls(c, Default=0.8,   AerOx=-1.5,  AerSw=-0.3, &
+                                                          AshEyj=0.18)
+      Ctrl%X0(IRe)         = switch_cls(c, Default=-0.07, AshEyj=0.7, &
+                                                          CldWat=12.,  CldIce=30.)
+      Ctrl%X0(IPc)         = switch_cls(c, Default=900.,  AshEyj=600., CldIce=400.)
+      Ctrl%X0(IFr)         = switch_cls(c, Default=1.0)
+   else
+      Ctrl%X0(ITau)        = switch_cls(c, Default=0.1)
+      Ctrl%X0(IRe)         = switch_cls(c, Default=30.0)
+      Ctrl%X0(IPc)         = switch_cls(c, Default=245.0)
+      Ctrl%X0(IFr)         = switch_cls(c, Default=1.0)
+      Ctrl%X0(ITau2)       = switch_cls(c, Default=0.8)
+      Ctrl%X0(IRe2)        = switch_cls(c, Default=12.0)
+      Ctrl%X0(IPc2)        = switch_cls(c, Default=800.0)
+      Ctrl%X0(IFr2)        = switch_cls(c, Default=1.0)
+   end if
+   Ctrl%X0(ITs)            = switch_app(a, Default=300.0)
+   Ctrl%X0(IRs(:,IRho_0V)) = switch_app(a, Default=0.01,  AerSw=0.5)
+   Ctrl%X0(IRs(:,IRho_0D)) = switch_app(a, Default=0.01)
+   Ctrl%X0(IRs(:,IRho_DV)) = switch_app(a, Default=0.01)
+   Ctrl%X0(IRs(:,IRho_DD)) = switch_app(a, Default=0.01)
+   Ctrl%X0(ISP)            = switch_app(a, Default=0.3)
    ! A priori uncertainty
-   Ctrl%Sx(ITau)           = switch(a, Default=1.0e+08, Aer=2.0)
-   Ctrl%Sx(IRe)            = switch(a, Default=1.0e+08, Aer=0.5)
-   Ctrl%Sx(IPc)            = switch(a, Default=1.0e+08)
-   Ctrl%Sx(IFr)            = switch(a, Default=1.0e+08)
-   Ctrl%Sx(ITs)            = switch(a, Default=1.0e+08)
-   Ctrl%Sx(IRs(:,IRho_0V)) = switch(a, Default=1.0e+08, AerSw=1.0)
-   Ctrl%Sx(IRs(:,IRho_0D)) = switch(a, Default=1.0e+08)
-   Ctrl%Sx(IRs(:,IRho_DV)) = switch(a, Default=1.0e+08)
-   Ctrl%Sx(IRs(:,IRho_DD)) = switch(a, Default=1.0e+08, AerOx=0.05)
-   Ctrl%Sx(ISP(1))         = switch(a, Default=1.0e+08, AerSw=0.01)
-   Ctrl%Sx(ISP(2:))        = switch(a, Default=1.0e+08, AerSw=0.5)
+   Ctrl%Sx(ITau)           = switch_cls(c, Default=1.0e+08, Aer=2.0)
+   Ctrl%Sx(IRe)            = switch_cls(c, Default=1.0e+08, Aer=0.5)
+   Ctrl%Sx(IPc)            = switch_cls(c, Default=1.0e+08)
+   Ctrl%Sx(IFr)            = switch_cls(c, Default=1.0e+08)
+   Ctrl%Sx(ITau2)          = switch_cls(c2,Default=1.0e+08, Aer=2.0)
+   Ctrl%Sx(IRe2)           = switch_cls(c2,Default=1.0e+08, Aer=0.5)
+   Ctrl%Sx(IPc2)           = switch_cls(c2,Default=1.0e+08)
+   Ctrl%Sx(IFr2)           = switch_cls(c2,Default=1.0e+08)
+   Ctrl%Sx(ITs)            = switch_app(a, Default=1.0e+08)
+   Ctrl%Sx(IRs(:,IRho_0V)) = switch_app(a, Default=1.0e+08, AerSw=1.0)
+   Ctrl%Sx(IRs(:,IRho_0D)) = switch_app(a, Default=1.0e+08)
+   Ctrl%Sx(IRs(:,IRho_DV)) = switch_app(a, Default=1.0e+08)
+   Ctrl%Sx(IRs(:,IRho_DD)) = switch_app(a, Default=1.0e+08, AerOx=0.05)
+   Ctrl%Sx(ISP(1))         = switch_app(a, Default=1.0e+08, AerSw=0.01)
+   Ctrl%Sx(ISP(2:))        = switch_app(a, Default=1.0e+08, AerSw=0.5)
    ! NOTE: The nadir P value doesn't really need to be retrieved.
 
    ! Measurement covariance
@@ -768,7 +868,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    XJ_Dy = sint_fill_value
    XJ_Tw = sint_fill_value
    XJ_Ni = sint_fill_value
-   if (Ctrl%Approach == AerOx) then
+   if (Ctrl%Approach == AppAerOx) then
       ! Retrieve optical depth, effective radius, and white sky albedo in all
       ! channels (it'll work out which duplicate views later). No night/twilight.
       Nx_Dy   = 2
@@ -791,7 +891,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       NXJ_Dy = 0
       NXJ_Tw = 0
       NXJ_Ni = 0
-   else if (Ctrl%Approach == AerSw) then
+   else if (Ctrl%Approach == AppAerSw) then
       ! Retrieve optical depth, effective radius, and Swansea parameters in all
       ! channels (it'll work out which duplicate views later). No night/twilight.
       Nx_Dy   = 2
@@ -815,7 +915,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       NXJ_Dy = 0
       NXJ_Tw = 0
       NXJ_Ni = 0
-   else
+   else if (Ctrl%Approach == AppCld1L) then
       ! By day, retrieve optical depth, effective radius, cloud top pressure and
       ! surface temperature.
       Nx_Dy    = 4
@@ -845,8 +945,6 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
          Nx_Ni   = 2
          X_Ni(1) = IPc
          X_Ni(2) = ITs
-         NXJ_Ni  = NXJ_Dy
-         XJ_Ni   = XJ_Dy
       else
          ! At night retrieve optical depth, effective radius, cloud top pressure
          ! and surface temperature.
@@ -855,9 +953,63 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
          X_Ni(2)  = IRe
          X_Ni(3)  = IPc
          X_Ni(4)  = ITs
-         NXJ_Ni   = NXJ_Dy
-         XJ_Ni    = XJ_Dy
       end if
+
+      NXJ_Ni  = NXJ_Dy
+      XJ_Ni   = XJ_Dy
+   else if (Ctrl%Approach == AppCld2L) then
+      ! By day, retrieve optical depth, effective radius, cloud top pressure and
+      ! surface temperature.
+      Nx_Dy    = 7
+      X_Dy(1)  = ITau
+      X_Dy(2)  = IRe
+      X_Dy(3)  = IPc
+      X_Dy(4)  = ITau2
+      X_Dy(5)  = IRe2
+      X_Dy(6)  = IPc2
+      X_Dy(7)  = ITs
+
+      ! Include white sky albedo in Jacobian.
+      NXJ_Dy   = 0
+      do i = 1, Ctrl%Ind%NSolar
+         NXJ_Dy = NXJ_Dy+1
+         XJ_Dy(NXJ_Dy) = IRs(i,IRho_DD)
+      end do
+
+      ! In twilight retrieve cloud top pressure and surface. Include white sky
+      ! albedo in Jacobian.
+      Nx_Tw   = 3
+      X_Tw(1) = IPc
+      X_Tw(2) = IPc2
+      X_Tw(3) = ITs
+      NXJ_Tw  = NXJ_Dy
+      XJ_Tw   = XJ_Dy
+
+      if (.not. Ctrl%do_new_night_retrieval) then
+         ! At night retrieve cloud top pressure and surface. Include white sky
+         ! albedo in Jacobian.
+         Nx_Ni   = 3
+         X_Ni(1) = IPc
+         X_Ni(2) = IPc2
+         X_Ni(3) = ITs
+      else
+         ! At night retrieve optical depth, effective radius, cloud top pressure
+         ! and surface temperature.
+         Nx_Ni    = 7
+         X_Ni(1)  = ITau
+         X_Ni(2)  = IRe
+         X_Ni(3)  = IPc
+         X_Ni(4)  = ITau2
+         X_Ni(5)  = IRe2
+         X_Ni(6)  = IPc2
+         X_Ni(7)  = ITs
+      end if
+
+      NXJ_Ni  = NXJ_Dy
+      XJ_Ni   = XJ_Dy
+   else
+   	write(*,*) 'ERROR: Read_Driver(): Invalid Ctrl%Approach: ', Ctrl%Approach
+   	stop error_stop_code
    end if
 
    Ctrl%CTP_correction_limit = 100.
@@ -883,14 +1035,14 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    ! ---------------------------------------------------------------------------
 
    if (Ctrl%RS%use_full_brdf .and. Ctrl%i_equation_form == 0) then
-      write(*,*) 'ERROR: ReadDriver(): Ctrl%RS%use_full_brdf = true cannot ' // &
+      write(*,*) 'ERROR: Read_Driver(): Ctrl%RS%use_full_brdf = true cannot ' // &
                  'be used with i_equation_form = 0'
       stop error_stop_code
    end if
 
    if (.not. Ctrl%RS%use_full_brdf .and. Ctrl%i_equation_form > 0) then
       Ctrl%i_equation_form = 0
-!     write(*,*) 'ERROR: ReadDriver(): Ctrl%RS%use_full_brdf = false cannot ' // &
+!     write(*,*) 'ERROR: Read_Driver(): Ctrl%RS%use_full_brdf = false cannot ' // &
 !                'be used with i_equation_form > 0'
 !     stop error_stop_code
    end if
@@ -909,7 +1061,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    case(4)
       Ctrl%RS%solar_factor = .true.
    case default
-      write(*,*) 'ERROR: ReadDriver(): Invalid Ctrl%i_equation_form: ', &
+      write(*,*) 'ERROR: Read_Driver(): Invalid Ctrl%i_equation_form: ', &
                  Ctrl%i_equation_form
       stop error_stop_code
    end select
@@ -930,7 +1082,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    ! a compensating effect and is therefore required as is.  This is very likely
    ! the reason this problem went unnoticed until the reciprocity-obeying form
    ! (equations 3 and 4) were introduced.
-   if (Ctrl%i_equation_form .eq. 3 .or. Ctrl%i_equation_form .eq. 4) then
+   if (Ctrl%i_equation_form == 3 .or. Ctrl%i_equation_form == 4) then
       Ctrl%get_T_dv_from_T_0d = .true.
    else
       Ctrl%get_T_dv_from_T_0d = .false.
@@ -954,7 +1106,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    ! Identify which surface fields are in use
    Ctrl%Ind%Nss = 0
    Ctrl%Ind%Nrho = 0
-   if (Ctrl%Approach == AerSw) then
+   if (Ctrl%Approach == AppAerSw) then
       if (Ctrl%Ind%NSolar > 0) allocate(Ctrl%Ind%ss_terms(Ctrl%Ind%NSolar))
 
       ! Count number of surface terms retrieved
@@ -1041,8 +1193,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
             end if
 
          case default
-            write(*,*) 'ERROR: Read_Driver(): Invalid method ', &
-                 'for first-guess state variable ',i
+            write(*,*) 'ERROR: Read_Driver(): Invalid method for ' // &
+                 'first-guess state variable: ', i
             stop FGMethErr
          end select
       end do
@@ -1095,7 +1247,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    case (SelmAux)
       if (Ctrl%RS%SRsSelm /= SelmCtrl .and. Ctrl%RS%SRsSelm /= SelmAux .and. &
            Ctrl%RS%SRsSelm /= SelmMeas) then
-         write(*,*) 'ERROR: Read_Driver(): surface reflectance uncertainty '// &
+         write(*,*) 'ERROR: Read_Driver(): Surface reflectance uncertainty '// &
               ' method not supported.'
          stop GetSurfaceMeth
       end if
@@ -1115,15 +1267,15 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
               'with SRsSelm == Meas.'
       end if
    case (SelmMeas)
-      write(*,*) 'ERROR: Read_Driver(): surface reflectance method not supported'
+      write(*,*) 'ERROR: Read_Driver(): Surface reflectance method not supported'
       stop GetSurfaceMeth
    case default
-      write(*,*) 'ERROR: Read_Driver(): invalid surface reflectance method'
+      write(*,*) 'ERROR: Read_Driver(): Invalid surface reflectance method'
       stop GetSurfaceMeth
    end select
 
    ! For now, AerSw approach does not allow for non-Lambertian surface
-   if (Ctrl%Approach == AerSw .and. Ctrl%RS%use_full_brdf) then
+   if (Ctrl%Approach == AppAerSw .and. Ctrl%RS%use_full_brdf) then
       write(*,*) 'ERROR: Read_Driver(): Use of the Swansea surface '// &
            'reflectance model and full BRDF equations not supported'
       stop GetSurfaceMeth
@@ -1149,7 +1301,7 @@ subroutine h_p_e(label)
 
    character(len=*), intent(in) :: label
 
-   write(*,*) 'ERROR: ReadDriver(): Error parsing value for: ',trim(label)
+   write(*,*) 'ERROR: Read_Driver(): Error parsing value for: ',trim(label)
 
    stop error_stop_code
 
@@ -1190,59 +1342,73 @@ end subroutine h_p_e
 ! None known.
 !-------------------------------------------------------------------------------
 #define SWITCH_TYPE logical
-#define SWITCH_NAME switch_logic
+#define SWITCH_NAME_APP switch_app_logic
+#define SWITCH_NAME_CLS switch_cls_logic
 #define SWITCH_FILL .false.
 #include "switch.inc"
 #undef SWITCH_TYPE
-#undef SWITCH_NAME
+#undef SWITCH_NAME_APP
+#undef SWITCH_NAME_CLS
 #undef SWITCH_FILL
 
 #define SWITCH_TYPE integer(kind=byte)
-#define SWITCH_NAME switch_byte
+#define SWITCH_NAME_APP switch_app_byte
+#define SWITCH_NAME_CLS switch_cls_byte
 #define SWITCH_FILL byte_fill_value
 #include "switch.inc"
 #undef SWITCH_TYPE
-#undef SWITCH_NAME
+#undef SWITCH_NAME_APP
+#undef SWITCH_NAME_CLS
 #undef SWITCH_FILL
 
 #define SWITCH_TYPE integer(kind=sint)
-#define SWITCH_NAME switch_sint
+#define SWITCH_NAME_APP switch_app_sint
+#define SWITCH_NAME_CLS switch_cls_sint
 #define SWITCH_FILL sint_fill_value
 #include "switch.inc"
 #undef SWITCH_TYPE
-#undef SWITCH_NAME
+#undef SWITCH_NAME_APP
+#undef SWITCH_NAME_CLS
 #undef SWITCH_FILL
 
 #define SWITCH_TYPE integer(kind=lint)
-#define SWITCH_NAME switch_lint
+#define SWITCH_NAME_APP switch_app_lint
+#define SWITCH_NAME_CLS switch_cls_lint
 #define SWITCH_FILL lint_fill_value
 #include "switch.inc"
 #undef SWITCH_TYPE
-#undef SWITCH_NAME
+#undef SWITCH_NAME_APP
+#undef SWITCH_NAME_CLS
 #undef SWITCH_FILL
 
 #define SWITCH_TYPE real(kind=sreal)
-#define SWITCH_NAME switch_sreal
+#define SWITCH_NAME_APP switch_app_sreal
+#define SWITCH_NAME_CLS switch_cls_sreal
 #define SWITCH_FILL sreal_fill_value
 #include "switch.inc"
 #undef SWITCH_TYPE
-#undef SWITCH_NAME
+#undef SWITCH_NAME_APP
+#undef SWITCH_NAME_CLS
 #undef SWITCH_FILL
 
 #define SWITCH_TYPE real(kind=dreal)
-#define SWITCH_NAME switch_dreal
+#define SWITCH_NAME_APP switch_app_dreal
+#define SWITCH_NAME_CLS switch_cls_dreal
 #define SWITCH_FILL dreal_fill_value
 #include "switch.inc"
 #undef SWITCH_TYPE
-#undef SWITCH_NAME
+#undef SWITCH_NAME_APP
+#undef SWITCH_NAME_CLS
 #undef SWITCH_FILL
 
 #define SWITCH_TYPE character(len=FilenameLen)
-#define SWITCH_NAME switch_char
+#define SWITCH_NAME_APP switch_app_char
+#define SWITCH_NAME_CLS switch_cls_char
 #define SWITCH_FILL ''
 #include "switch.inc"
 #undef SWITCH_TYPE
-#undef SWITCH_NAME
+#undef SWITCH_NAME_APP
+#undef SWITCH_NAME_CLS
 #undef SWITCH_FILL
 
 subroutine old_driver_first_read(dri_lun, Ctrl)
@@ -1270,6 +1436,7 @@ subroutine old_driver_first_read(dri_lun, Ctrl)
 
    if (parse_driver(dri_lun, line) /= 0 .or. &
        parse_string(line, Ctrl%FID%SAD_Dir) /= 0) call h_p_e('Ctrl%FID%SAD_Dir')
+   Ctrl%FID%SAD_Dir2 = Ctrl%FID%SAD_Dir
 
    ! Read name of instrument
    if (parse_driver(dri_lun, line) /= 0 .or. &
@@ -1287,7 +1454,7 @@ subroutine old_driver_first_read(dri_lun, Ctrl)
    if (sum(Ctrl%Ind%channel_proc_flag) < 1 .or. &
        sum(Ctrl%Ind%channel_proc_flag) > Ctrl%Ind%NAvail .or. &
        any(Ctrl%Ind%channel_proc_flag /= 0 .and. Ctrl%Ind%channel_proc_flag /= 1)) then
-      write(*,*) 'ERROR: ReadDriver(): channel flag from driver wrong: ', &
+      write(*,*) 'ERROR: Read_Driver(): channel flag from driver wrong: ', &
                  Ctrl%Ind%channel_proc_flag
       stop DriverFileIncompat
    end if
@@ -1296,18 +1463,23 @@ subroutine old_driver_first_read(dri_lun, Ctrl)
    if (parse_driver(dri_lun, line) /= 0 .or. &
        parse_string(line, Ctrl%LUTClass) /= 0) &
       call h_p_e('Ctrl%LUTClass')
+   Ctrl%LUTClass2 = Ctrl%LUTClass
 
    do while (parse_driver(dri_lun, line, label) == 0)
       call clean_driver_label(label)
       select case (label)
       case('CTRL%APPROACH')
-         if (parse_user_text(line, Ctrl%Approach) /= 0) call h_p_e(label)
+         if (parse_user_text(line, Ctrl%Approach)            /= 0) call h_p_e(label)
+      case('CTRL%CLASS')
+         if (parse_user_text(line, Ctrl%Class)               /= 0) call h_p_e(label)
+      case('CTRL%CLASS2')
+         if (parse_user_text(line, Ctrl%Class2)              /= 0) call h_p_e(label)
       case('CTRL%DO_NEW_NIGHT_RETRIEVAL')
          if (parse_string(line, Ctrl%do_new_night_retrieval) /= 0) call h_p_e(label)
       case('CTRL%DO_CTX_CORRECTION')
-         if (parse_string(line, Ctrl%do_CTX_correction) /= 0) call h_p_e(label)
+         if (parse_string(line, Ctrl%do_CTX_correction)      /= 0) call h_p_e(label)
       case('CTRL%VERBOSE')
-         if (parse_string(line, Ctrl%verbose)           /= 0) call h_p_e(label)
+         if (parse_string(line, Ctrl%verbose)                /= 0) call h_p_e(label)
       case default
          cycle
       end select
@@ -1348,12 +1520,14 @@ subroutine old_driver_second_read(dri_lun, Ctrl, Nx_Dy, Nx_Tw, Nx_Ni, NXJ_Dy, &
    do while (parse_driver(dri_lun, line, label) == 0)
       call clean_driver_label(label)
       select case (label)
-      case('CTRL%FID%DATA_DIR','Ctrl%DATA_DIR')
+      case('CTRL%FID%DATA_DIR','CTRL%DATA_DIR')
          if (parse_string(line, Ctrl%FID%Data_Dir)     /= 0) call h_p_e(label)
-      case('CTRL%FID%OUT_DIR','Ctrl%OUT_DIR')
+      case('CTRL%FID%OUT_DIR','CTRL%OUT_DIR')
          if (parse_string(line, Ctrl%FID%Out_Dir)      /= 0) call h_p_e(label)
-      case('CTRL%FID%SAD_DIR','Ctrl%SAD_DIR')
+      case('CTRL%FID%SAD_DIR','CTRL%SAD_DIR')
          if (parse_string(line, Ctrl%FID%SAD_Dir)      /= 0) call h_p_e(label)
+      case('CTRL%FID%SAD_DIR2','CTRL%SAD_DIR2')
+         if (parse_string(line, Ctrl%FID%SAD_Dir2)     /= 0) call h_p_e(label)
       case('CTRL%FID%MSI')
          if (parse_string(line, Ctrl%FID%MSI)          /= 0) call h_p_e(label)
       case('CTRL%FID%LWRTM')
@@ -1378,6 +1552,8 @@ subroutine old_driver_second_read(dri_lun, Ctrl, Nx_Dy, Nx_Tw, Nx_Ni, NXJ_Dy, &
          if (parse_string(line, Ctrl%FID%L2_primary)   /= 0) call h_p_e(label)
       case('CTRL%FID%L2_SECONDARY')
          if (parse_string(line, Ctrl%FID%L2_secondary) /= 0) call h_p_e(label)
+      case('CTRL%LUTCLASS2')
+         if (parse_string(line, Ctrl%LUTClass2)        /= 0) call h_p_e(label)
       case('CTRL%RUN_ID')
          if (parse_string(line, Ctrl%Run_ID)           /= 0) call h_p_e(label)
       case('CTRL%RS%RSSELM','Ctrl%RS%FLAG')
@@ -1526,13 +1702,15 @@ subroutine old_driver_second_read(dri_lun, Ctrl, Nx_Dy, Nx_Tw, Nx_Ni, NXJ_Dy, &
          if (parse_user_text(line, XJ_NI, NXJ_NI, solar_ids) &
                                                        /= 0) call h_p_e(label)
       case('CTRL%APPROACH', &
+           'CTRL%CLASS', &
+           'CTRL%CLASS2', &
            'CTRL%DO_NEW_NIGHT_RETRIEVAL', &
            'CTRL%DO_CTX_CORRECTION', &
            'CTRL%VERBOSE')
          cycle ! These arguments have already been parsed in the first pass
                ! through the driver file.
       case default
-         write(*,*) 'ERROR: ReadDriver(): Unknown option: ',trim(label)
+         write(*,*) 'ERROR: Read_Driver(): Unknown option: ',trim(label)
          stop error_stop_code
       end select
    end do

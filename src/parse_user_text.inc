@@ -76,6 +76,14 @@ recursive integer function PARSE_STRING_NAME_0D(in, out, ch_ids) result(status)
             out = IPc
          case('IFR')
             out = IFr
+         case('ITAU2')
+            out = ITau
+         case('IRE2')
+            out = IRe
+         case('IPC2')
+            out = IPc
+         case('IFR2')
+            out = IFr
          case('ITS')
             out = ITs
          ! BRDF parameter indices
@@ -97,16 +105,28 @@ recursive integer function PARSE_STRING_NAME_0D(in, out, ch_ids) result(status)
          case('SELMPREV')
             out = SelmPrev
          ! Retrieval approaches
-         case('CLDWAT')
-            out = CldWat
-         case('CLDICE')
-            out = CldIce
+         case('CLSCLDWAT')
+            out = ClsCldWat
+         case('CLSCLDICE')
+            out = ClsCldIce
+         case('CLSAEROX')
+            out = ClsAerOx
+         case('CLSAERSW')
+            out = ClsAerSw
+         case('CLSASHEYJ')
+            out = ClsAshEyj
+         case('APPCLD1L')
+            out = AppCld1L
+         case('APPCLD2L')
+            out = AppCld2L
          case('AEROX')
-            out = AerOx
+            out = AppAerOx
          case('AERSW')
-            out = AerSw
-         case('ASHEYJ')
-            out = AshEyj
+            out = AppAerSw
+         case('APPAEROX')
+            out = AppAerOx
+         case('APPAERSW')
+            out = AppAerSw
          ! XIndex indices
          case('ISWAN_S')
             out = ISwan_S

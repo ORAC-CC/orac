@@ -15,22 +15,23 @@
 ! Convert the radiances and radiance gradients to brightness temperatures.
 !
 ! Arguments:
-! Name     Type   In/Out/Both Description
+! Name     Type      In/Out/Both Description
 ! ------------------------------------------------------------------------------
-! Ctrl     struct In          Control structure
-! SAD_LUT  struct In          SAD look up table
-! SPixel   struct Both        Super-pixel structure
-! SAD_Chan array of structs   SAD channel structures: only the
-!                 In          thermal channel part of the array is passed in.
-! RTM_Pc   struct In          Contains transmittances, radiances
-!                             and their derivatives
-! X        real array In      State vector
-! GZero
-! BT       real array Out     Part cloudy brightness temperatures
-! d_BT     real array Out     Gradients in part cloudy brightness temps.
-! R        real array Out     Part cloudy radiance calculated at Pc
-! d_R      real array Out     Part cloudy radiance gradients calculated at Pc.
-! status   int    Out         Error status
+! Ctrl     struct           In    Control structure
+! SAD_LUT  struct           In    SAD look up table
+! SPixel   struct           Both  Super-pixel structure
+! SAD_Chan array of structs In    SAD channel structures. Only the thermal
+!                                 channel part of the array is passed in.
+! RTM_Pc   array of structs In    Contains transmittances, radiances and their
+!                                 derivatives for each layer
+! X        real array       In    State vector
+! GZero    array of structs In    "Zero'th point" grid info for SAD_LUT CRP
+!                                 array interpolation for each layer
+! BT       real array       Out   Part cloudy brightness temperatures
+! d_BT     real array       Out   Gradients in part cloudy brightness temps.
+! R        real array       Out   TOA partly cloudy radiances
+! d_R      real array       Out   TOA partly cloudy radiance gradients
+! status   int              Out   Error status
 !
 ! History:
 ! 2000/11/16, KS: original version
@@ -63,6 +64,7 @@
 ! 2015/01/12, AP: Remove CRP arguments.
 ! 2015/01/21, GM: Fixed some cases were the required 'Thermal' subscripts were
 !    missing.
+! 2016/07/22, GM: Extensive changes for multilayer support.
 !
 ! $Id$
 !
@@ -70,12 +72,101 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_Chan, RTM_Pc, X, GZero, &
-                      BT, d_BT, R, d_R, status)
+subroutine derivative_wrt_crp_parameter_layer_1(i_p_crp, Thermal, SPixel, RTM_Pc, &
+   CRP, d_CRP, d_CRP2, CRP2, f, Tmc, Rmc_up, Rmc_dwn, d_R)
 
-   use Ctrl_m
+   use RTM_Pc_m
+   use SPixel_m
+
+   implicit none
+
+   integer,        intent(in)  :: i_p_crp
+   integer,        intent(in)  :: Thermal(:)
+   type(SPixel_t), intent(in)  :: SPixel
+   type(RTM_Pc_t), intent(in)  :: RTM_Pc(:)
+   real,           intent(in)  :: CRP(:, :)
+   real,           intent(in)  :: CRP2(:, :)
+   real,           intent(in)  :: d_CRP(:, :, :)
+   real,           intent(in)  :: d_CRP2(:, :, :)
+   real,           intent(in)  :: f
+   real,           intent(in)  :: Tmc(:)
+   real,           intent(in)  :: Rmc_up(:)
+   real,           intent(in)  :: Rmc_dwn(:)
+   real,           intent(out) :: d_R(:)
+
+   real :: a(SPixel%Ind%NThermal)
+   real :: b(SPixel%Ind%NThermal)
+   real :: c(SPixel%Ind%NThermal)
+
+   a = (((RTM_Pc(2)%LW%Rbc_up(Thermal) * CRP2(:,IT_dv) + &
+          RTM_Pc(2)%LW%B(Thermal) * CRP2(:,IEm)) * Tmc + &
+         Rmc_up) * d_CRP(:,IT_dv,i_p_crp) + &
+        RTM_Pc(1)%LW%B(Thermal) * d_CRP(:,IEm,i_p_crp) &
+       ) * RTM_Pc(1)%LW%Tac(Thermal)
+
+   b = Tmc * RTM_Pc(1)%LW%Tac(Thermal) * CRP2(:,IR_dv) * &
+       (d_CRP(:,IT_dv,i_p_crp) * &
+          (Rmc_dwn + (RTM_Pc(1)%LW%B(Thermal) * CRP(:,IEm) + &
+                      RTM_Pc(1)%LW%Rac_dwn(Thermal) * CRP(:,IT_dv)) * Tmc) + &
+        CRP(:,IT_dv) * &
+                    ((RTM_Pc(1)%LW%B(Thermal) * d_CRP(:,IEm, i_p_crp) + &
+                      RTM_Pc(1)%LW%Rac_dwn(Thermal) * d_CRP(:,IT_dv,i_p_crp)) * Tmc))
+
+   c = RTM_Pc(1)%LW%Rac_dwn(Thermal) * d_CRP(:,IR_dv,i_p_crp) * RTM_Pc(1)%LW%Tac(Thermal)
+
+   d_R = f * (a + b + c)
+
+end subroutine derivative_wrt_crp_parameter_layer_1
+
+
+subroutine derivative_wrt_crp_parameter_layer_2(i_p_crp, Thermal, SPixel, RTM_Pc, &
+   CRP, d_CRP, d_CRP2, CRP2, f, Tmc, Rmc_up, Rmc_dwn, d_R)
+
+   use RTM_Pc_m
+   use SPixel_m
+
+   implicit none
+
+   integer,        intent(in)  :: i_p_crp
+   integer,        intent(in)  :: Thermal(:)
+   type(SPixel_t), intent(in)  :: SPixel
+   type(RTM_Pc_t), intent(in)  :: RTM_Pc(:)
+   real,           intent(in)  :: CRP(:, :)
+   real,           intent(in)  :: CRP2(:, :)
+   real,           intent(in)  :: d_CRP(:, :, :)
+   real,           intent(in)  :: d_CRP2(:, :, :)
+   real,           intent(in)  :: f
+   real,           intent(in)  :: Tmc(:)
+   real,           intent(in)  :: Rmc_up(:)
+   real,           intent(in)  :: Rmc_dwn(:)
+   real,           intent(out) :: d_R(:)
+
+   real :: a(SPixel%Ind%NThermal)
+   real :: b(SPixel%Ind%NThermal)
+   real :: c(SPixel%Ind%NThermal)
+
+   a = (RTM_Pc(2)%LW%Rbc_up(Thermal) * d_CRP2(:,IT_dv,i_p_crp) + &
+        RTM_Pc(2)%LW%B(Thermal) * d_CRP2(:,IEm,i_p_crp)) * &
+       Tmc * CRP(:,IT_dv) * RTM_Pc(1)%LW%Tac(Thermal)
+
+   b = Tmc * RTM_Pc(1)%LW%Tac(Thermal) * CRP(:,IT_dv) * d_CRP2(:,IR_dv,i_p_crp) * &
+       (Rmc_dwn + (RTM_Pc(1)%LW%B(Thermal) * CRP(:,IEm) + &
+        RTM_Pc(1)%LW%Rac_dwn(Thermal) * CRP(:,IT_dv)) * Tmc)
+
+   c = 0.
+
+   d_R = f * (a + b + c)
+
+end subroutine derivative_wrt_crp_parameter_layer_2
+
+
+subroutine FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_Chan, RTM_Pc, X, GZero, BT, &
+                      d_BT, R, d_R, status)
+
+   use CTRL_m
    use ECP_Constants_m
    use GZero_m
+   use Int_LUT_Routines_m
    use planck_m
    use RTM_Pc_m
    use SAD_Chan_m
@@ -87,12 +178,12 @@ subroutine FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_Chan, RTM_Pc, X, GZero, &
    ! Define arguments
 
    type(Ctrl_t),     intent(in)    :: Ctrl
-   type(SAD_LUT_t),  intent(in)    :: SAD_LUT
+   type(SAD_LUT_t),  intent(in)    :: SAD_LUT(:)
    type(SPixel_t),   intent(in)    :: SPixel
    type(SAD_Chan_t), intent(in)    :: SAD_Chan(:)
-   type(RTM_Pc_t),   intent(inout) :: RTM_Pc
+   type(RTM_Pc_t),   intent(inout) :: RTM_Pc(:)
    real,             intent(in)    :: X(:)
-   type(GZero_t),    intent(in)    :: GZero
+   type(GZero_t),    intent(in)    :: GZero(:)
    real,             intent(out)   :: BT(:)
    real,             intent(out)   :: d_BT(:,:)
    real,             intent(out)   :: R(:)
@@ -101,31 +192,50 @@ subroutine FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_Chan, RTM_Pc, X, GZero, &
 
    ! Define local variables
 
-   real    :: CRP(SPixel%Ind%NThermal, MaxCRProps)
-   real    :: d_CRP(SPixel%Ind%NThermal, MaxCRProps, 2)
    integer :: i
    integer :: Thermal(SPixel%Ind%NThermal)
    real    :: delta_Ts
+   real    :: f2
+   real    :: a(SPixel%Ind%NThermal)
+   real    :: b(SPixel%Ind%NThermal)
+   real    :: c(SPixel%Ind%NThermal)
+   real    :: CRP(SPixel%Ind%NThermal, MaxCRProps)
+   real    :: CRP2(SPixel%Ind%NThermal, MaxCRProps)
+   real    :: d_CRP(SPixel%Ind%NThermal, MaxCRProps, MaxCRPParams)
+   real    :: d_CRP2(SPixel%Ind%NThermal, MaxCRProps, MaxCRPParams)
+   real    :: Es_dB_dTs(SPixel%Ind%NThermal)
    real    :: R_clear(SPixel%Ind%NThermal)
    real    :: R_over(SPixel%Ind%NThermal)
-   real    :: Es_dB_dTs(SPixel%Ind%NThermal)
    real    :: fTac(SPixel%Ind%NThermal)
    real    :: dT_dR(SPixel%Ind%NThermal)
+   real    :: Tmc(SPixel%Ind%NThermal)
+   real    :: Rmc_up(SPixel%Ind%NThermal)
+   real    :: Rmc_dwn(SPixel%Ind%NThermal)
+   real    :: Tmc_l(SPixel%Ind%NThermal)
+   real    :: Rmc_up_l(SPixel%Ind%NThermal)
+   real    :: Rmc_dwn_l(SPixel%Ind%NThermal)
 #ifdef BKP
    integer :: j       ! For breakpoint output loops
    integer :: bkp_lun ! Unit number for breakpoint file
    integer :: ios     ! I/O status for breakpoint file
 #endif
    status = 0
-   d_R = 0
+   d_R    = 0
 
    ! Subscripts for thermal channels in RTM arrays
    Thermal = SPixel%spixel_y_thermal_to_ctrl_y_thermal_index(:SPixel%Ind%NThermal)
 
    ! Set up the LW cloud radiative properties
+   ! Layer 1
    call Set_CRP_Thermal(Ctrl, SPixel%Ind, &
         SPixel%spixel_y_thermal_to_ctrl_y_index, &
-        GZero, SAD_LUT, CRP, d_CRP, status)
+        GZero(1), SAD_LUT(1), CRP, d_CRP, status)
+   if (Ctrl%Approach == AppCld2L) then
+      ! Layer 2
+      call Set_CRP_Thermal(Ctrl, SPixel%Ind, &
+           SPixel%spixel_y_thermal_to_ctrl_y_index, &
+           GZero(2), SAD_LUT(2), CRP2, d_CRP2, status)
+   end if
 
    ! Calculate delta_Ts
    delta_Ts = X(ITs) - SPixel%RTM%T(SPixel%RTM%Np)
@@ -138,50 +248,172 @@ subroutine FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_Chan, RTM_Pc, X, GZero, &
       (delta_Ts * Es_dB_dTs * SPixel%RTM%LW%Tac(Thermal,1))
 
    ! Update below cloud radiance after interpolation to Pc
-   RTM_Pc%LW%Rbc_up(Thermal) = RTM_Pc%LW%Rbc_up(Thermal) + &
-      (delta_Ts * Es_dB_dTs * RTM_Pc%LW%Tbc(Thermal))
+   RTM_Pc(1)%LW%Rbc_up(Thermal) = RTM_Pc(1)%LW%Rbc_up(Thermal) + &
+      (delta_Ts * Es_dB_dTs * RTM_Pc(1)%LW%Tbc(Thermal))
+if (Ctrl%Approach .ne. AppCld2L) then
+   ! Calculate overcast radiances at TOA
+   R_over = (RTM_Pc(1)%LW%Rbc_up(Thermal)  * CRP(:,IT_dv)  + &
+             RTM_Pc(1)%LW%B(Thermal)       * CRP(:,IEm)  + &
+             RTM_Pc(1)%LW%Rac_dwn(Thermal) * CRP(:,IR_dv)) * &
+             RTM_Pc(1)%LW%Tac(Thermal) + RTM_Pc(1)%LW%Rac_up(Thermal)
 
-   ! Calculate overcast radiances at cloud pressure level
-   R_over = (RTM_Pc%LW%Rbc_up(Thermal)  * CRP(:,IT_dv)  + &
-             RTM_Pc%LW%B(Thermal)       * CRP(:,IEm)  + &
-             RTM_Pc%LW%Rac_dwn(Thermal) * CRP(:,IR_dv)) * &
-             RTM_Pc%LW%Tac(Thermal) + RTM_Pc%LW%Rac_up(Thermal)
-
-   ! Calculate part cloudy radiances (a linear combination of R_clear and R_over)
-   R = (X(IFr) * R_over) + ((1.0 - X(IFr)) * R_clear)
+   ! Calculate partly cloudy radiances at TOA (a linear combination of R_clear
+   ! and R_over)
+   R = X(IFr) * R_over + (1.0 - X(IFr)) * R_clear
 
    ! Calculate product X%frac*Tac (for efficiency)
-   fTac = X(IFr) * RTM_Pc%LW%Tac(Thermal)
+   fTac = X(IFr) * RTM_Pc(1)%LW%Tac(Thermal)
 
    ! Calculate radiance gradients
 
    ! Gradient w.r.t. cloud optical depth, tau
-   d_R(:,ITau) = fTac * (RTM_Pc%LW%Rbc_up(Thermal)  * d_CRP(:,IT_dv,ITau) + &
-                         RTM_Pc%LW%B(Thermal)       * d_CRP(:,IEm,ITau) + &
-                         RTM_Pc%LW%Rac_dwn(Thermal) * d_CRP(:,IR_dv,ITau))
+   d_R(:,ITau) = fTac * (RTM_Pc(1)%LW%Rbc_up(Thermal)  * d_CRP(:,IT_dv,ITau) + &
+                         RTM_Pc(1)%LW%B(Thermal)       * d_CRP(:,IEm,ITau) + &
+                         RTM_Pc(1)%LW%Rac_dwn(Thermal) * d_CRP(:,IR_dv,ITau))
 
    ! Gradient w.r.t. effective radius, re
-   d_R(:,IRe) = fTac * (RTM_Pc%LW%Rbc_up(Thermal)  * d_CRP(:,IT_dv,IRe) + &
-                        RTM_Pc%LW%B(Thermal)       * d_CRP(:,IEm,IRe) + &
-                        RTM_Pc%LW%Rac_dwn(Thermal) * d_CRP(:,IR_dv,IRe))
+   d_R(:,IRe) = fTac * (RTM_Pc(1)%LW%Rbc_up(Thermal)  * d_CRP(:,IT_dv,IRe) + &
+                        RTM_Pc(1)%LW%B(Thermal)       * d_CRP(:,IEm,IRe) + &
+                        RTM_Pc(1)%LW%Rac_dwn(Thermal) * d_CRP(:,IR_dv,IRe))
 
    ! Gradient w.r.t. cloud pressure, Pc
-   d_R(:,IPc) = X(IFr) * (RTM_Pc%LW%dTac_dPc(Thermal) * &
-                          (RTM_Pc%LW%Rbc_up(Thermal)  * CRP(:,IT_dv) + &
-                           RTM_Pc%LW%B(Thermal)       * CRP(:,IEm) + &
-                           RTM_Pc%LW%Rac_dwn(Thermal) * CRP(:,IR_dv)) + &
-                          RTM_Pc%LW%dRac_up_dPc(Thermal)) &
-              + fTac * (RTM_Pc%LW%dRbc_up_dPc(Thermal)  * CRP(:,IT_dv) + &
-                        RTM_Pc%LW%dB_dPc(Thermal)       * CRP(:,IEm) + &
-                        RTM_Pc%LW%dRac_dwn_dPc(Thermal) * CRP(:,IR_dv))
+   d_R(:,IPc) = X(IFr) * (RTM_Pc(1)%LW%dTac_dPc(Thermal) * &
+                          (RTM_Pc(1)%LW%Rbc_up(Thermal)  * CRP(:,IT_dv) + &
+                           RTM_Pc(1)%LW%B(Thermal)       * CRP(:,IEm) + &
+                           RTM_Pc(1)%LW%Rac_dwn(Thermal) * CRP(:,IR_dv)) + &
+                          RTM_Pc(1)%LW%dRac_up_dPc(Thermal)) &
+              + fTac * (RTM_Pc(1)%LW%dRbc_up_dPc(Thermal)  * CRP(:,IT_dv) + &
+                        RTM_Pc(1)%LW%dB_dPc(Thermal)       * CRP(:,IEm) + &
+                        RTM_Pc(1)%LW%dRac_dwn_dPc(Thermal) * CRP(:,IR_dv))
 
    ! Gradient w.r.t. cloud fraction, f
    d_R(:,IFr) = R_over - R_clear
 
    ! Gradient w.r.t. surface temperature, Ts
-   d_R(:,ITs) = fTac * Es_dB_dTs * RTM_Pc%LW%Tbc(Thermal) * CRP(:,IT_dv) + &
+   d_R(:,ITs) = fTac * Es_dB_dTs * RTM_Pc(1)%LW%Tbc(Thermal) * CRP(:,IT_dv) + &
       (1.0 - X(IFr)) * Es_dB_dTs * SPixel%RTM%LW%Tac(Thermal,1)
+else
+   ! Update below cloud radiance after interpolation to Pc
+   RTM_Pc(2)%LW%Rbc_up(Thermal) = RTM_Pc(2)%LW%Rbc_up(Thermal) + &
+      (delta_Ts * Es_dB_dTs * RTM_Pc(2)%LW%Tbc(Thermal))
 
+   ! Transmittance from the lower layer to the upper layer
+   Tmc = RTM_Pc(2)%LW%Tac(Thermal) / RTM_Pc(1)%LW%Tac(Thermal)
+
+   ! Radiance from the atmopshere between the layers
+   Rmc_up = (RTM_Pc(2)%LW%Rac_up (Thermal) - RTM_Pc(1)%LW%Rac_up (Thermal)) / &
+             RTM_Pc(1)%LW%Tac(Thermal)
+   Rmc_dwn = RTM_Pc(2)%LW%Rac_dwn(Thermal) - RTM_Pc(1)%LW%Rac_dwn(Thermal) * Tmc
+
+   a = (((RTM_Pc(2)%LW%Rbc_up(Thermal) * CRP2(:,IT_dv) + &
+          RTM_Pc(2)%LW%B(Thermal) * CRP2(:,IEm)) * Tmc + &
+         Rmc_up) * CRP(:,IT_dv) + &
+        RTM_Pc(1)%LW%B(Thermal) * CRP (:,IEm) &
+       ) * RTM_Pc(1)%LW%Tac(Thermal) + &
+        RTM_Pc(1)%LW%Rac_up(Thermal)
+
+   b = Tmc * CRP(:,IT_dv) * RTM_Pc(1)%LW%Tac(Thermal) * CRP2(:,IR_dv) * &
+       (Rmc_dwn + (RTM_Pc(1)%LW%B(Thermal) * CRP(:,IEm) + &
+        RTM_Pc(1)%LW%Rac_dwn(Thermal) * CRP(:,IT_dv)) * Tmc)
+
+   c = RTM_Pc(1)%LW%Rac_dwn(Thermal) * CRP(:,IR_dv) * RTM_Pc(1)%LW%Tac(Thermal)
+
+   ! Calculate overcast radiances at TOA
+   R_over = a + b + c
+
+   ! Calculate partly cloudy radiances at TOA (a linear combination of R_clear
+   ! and R_over)
+   f2 = X(IFr) + X(IFr2) - X(IFr) * X(IFr2)
+   R = f2 * R_over + (1.0 - f2) * R_clear
+
+   ! Gradient w.r.t. cloud optical depth, tau in layer 1
+   call derivative_wrt_crp_parameter_layer_1(ITauCRP, Thermal, SPixel, RTM_Pc, &
+        CRP, d_CRP, d_CRP2, CRP2, f2, Tmc, Rmc_up, Rmc_dwn, d_R(:,ITau))
+
+   ! Gradient w.r.t. effective radius, re in layer 1
+   call derivative_wrt_crp_parameter_layer_1(IReCRP,  Thermal, SPixel, RTM_Pc, &
+        CRP, d_CRP, d_CRP2, CRP2, f2, Tmc, Rmc_up, Rmc_dwn, d_R(:,IRe))
+
+   ! Gradient w.r.t. cloud pressure, Pc in layer 1
+   Tmc_l = - Tmc * RTM_Pc(1)%LW%dTac_dPc(Thermal) / RTM_Pc(1)%LW%Tac(Thermal)
+
+   Rmc_up_l = (- RTM_Pc(1)%LW%dRac_up_dPc(Thermal) - &
+      Rmc_up * RTM_Pc(1)%LW%dTac_dPc(Thermal)) / RTM_Pc(1)%LW%Tac(Thermal)
+
+   Rmc_dwn_l = - RTM_Pc(1)%LW%dRac_dwn_dPc(Thermal) * Tmc
+
+   a = RTM_Pc(2)%LW%Rbc_up(Thermal) * CRP2(:,IT_dv) * CRP(:,IT_dv) * &
+          (Tmc_l * RTM_Pc(1)%LW%Tac(Thermal) + &
+           Tmc * RTM_Pc(1)%LW%dTac_dPc(Thermal)) + &
+       RTM_Pc(2)%LW%B(Thermal) * CRP2(:,IEm) * CRP(:,IT_dv) * &
+          (Tmc_l * RTM_Pc(1)%LW%Tac(Thermal) + &
+           Tmc * RTM_Pc(1)%LW%dTac_dPc(Thermal)) + &
+       CRP(:,IEm) * (RTM_Pc(1)%LW%dB_dPc(Thermal) * RTM_Pc(1)%LW%Tac(Thermal)  + &
+                     RTM_Pc(1)%LW%B(Thermal) * RTM_Pc(1)%LW%dTac_dPc(Thermal)) + &
+       CRP(:,IT_dv) * (Rmc_up_l * RTM_Pc(1)%LW%Tac(Thermal) + &
+                       Rmc_up * RTM_Pc(1)%LW%dTac_dPc(Thermal)) + &
+       RTM_Pc(1)%LW%dRac_up_dPc(Thermal)
+
+   b = CRP(:,IT_dv) * CRP2(:,IR_dv) * &
+          ((Tmc_l * RTM_Pc(1)%LW%Tac(Thermal) + &
+            Tmc * RTM_Pc(1)%LW%dTac_dPc(Thermal)) * &
+             (Rmc_dwn + &
+              (RTM_Pc(1)%LW%B(Thermal) * CRP(:,IEm) + &
+               RTM_Pc(1)%LW%Rac_dwn(Thermal) * CRP(:,IT_dv)) * Tmc) + &
+           Tmc * RTM_Pc(1)%LW%Tac(Thermal) * &
+             (Rmc_dwn_l + &
+              (RTM_Pc(1)%LW%dB_dPc(Thermal) * Tmc + &
+               RTM_Pc(1)%LW%B(Thermal) * Tmc_l) * CRP(:,IEm) + &
+              (RTM_Pc(1)%LW%dRac_dwn_dPc(Thermal) * Tmc + &
+               RTM_Pc(1)%LW%Rac_dwn(Thermal) * Tmc_l) * CRP(:,IT_dv)))
+
+   c = CRP(:,IR_dv) * &
+          (RTM_Pc(1)%LW%dRac_dwn_dPc(Thermal) * RTM_Pc(1)%LW%Tac(Thermal) + &
+           RTM_Pc(1)%LW%Rac_dwn(Thermal) * RTM_Pc(1)%LW%dTac_dPc(Thermal))
+
+   d_R(:,IPc) = f2 * (a + b + c)
+
+   ! Gradient w.r.t. cloud fraction, f in layer 1
+   d_R(:,IFr) = (1. - X(IFr2)) * (R_over - R_clear)
+
+   ! Gradient w.r.t. cloud optical depth, tau in layer 2
+   call derivative_wrt_crp_parameter_layer_2(ITauCRP, Thermal, SPixel, RTM_Pc, &
+        CRP, d_CRP, d_CRP2, CRP2, f2, Tmc, Rmc_up, Rmc_dwn, d_R(:,ITau2))
+
+   ! Gradient w.r.t. effective radius, re in layer 2
+   call derivative_wrt_crp_parameter_layer_2(IReCRP,  Thermal, SPixel, RTM_Pc, &
+        CRP, d_CRP, d_CRP2, CRP2, f2, Tmc, Rmc_up, Rmc_dwn, d_R(:,IRe2))
+
+   ! Gradient w.r.t. cloud pressure, Pc in layer 2
+   Tmc_l = RTM_Pc(2)%LW%dTac_dPc(Thermal) / RTM_Pc(1)%LW%Tac(Thermal)
+
+   Rmc_up_l = RTM_Pc(2)%LW%dRac_up_dPc(Thermal) / RTM_Pc(1)%LW%Tac(Thermal)
+
+   Rmc_dwn_l = - RTM_Pc(2)%LW%dRac_dwn_dPc(Thermal)
+
+   a = RTM_Pc(2)%LW%dRbc_up_dPc(Thermal) * CRP2(:,IT_dv) * Tmc * &
+          CRP(:,IT_dv) * RTM_Pc(1)%LW%Tac(Thermal) + &
+       RTM_Pc(2)%LW%dB_dPc(Thermal)      * CRP2(:,IEm)   * Tmc * &
+          CRP(:,IT_dv) * RTM_Pc(1)%LW%Tac(Thermal)
+
+   b = CRP(:,IT_dv) * RTM_Pc(1)%LW%Tac(Thermal) * CRP2(:,IR_dv) * &
+      (Tmc_l * (Rmc_dwn   + (RTM_Pc(1)%LW%B(Thermal) * CRP(:,IEm) + &
+                             RTM_Pc(1)%LW%Rac_dwn(Thermal) * CRP(:,IT_dv)) * Tmc) + &
+       Tmc   * (Rmc_dwn_l + (RTM_Pc(1)%LW%B(Thermal) * CRP(:,IEm) + &
+                             RTM_Pc(1)%LW%Rac_dwn(Thermal) * CRP(:,IT_dv)) * Tmc_l))
+
+   c = 0.
+
+   d_R(:,IPc2) = f2 * (a + b + c)
+
+   ! Gradient w.r.t. cloud fraction, f in layer 2
+   d_R(:,IFr2) = (1. - X(IFr)) * (R_over - R_clear)
+
+   ! Gradient w.r.t. surface temperature, Ts
+   d_R(:,ITs) = f2 * Es_dB_dTs * RTM_Pc(2)%LW%Tbc(Thermal) * CRP2(:,IT_dv) * &
+                   Tmc * CRP(:,IT_dv) * RTM_Pc(1)%LW%Tac(Thermal) + &
+                (1. - f2) * Es_dB_dTs * SPixel%RTM%LW%Tac(Thermal,1)
+end if
    ! Convert radiances to brightness temperatures
    call R2T(SPixel%Ind%NThermal, SAD_Chan, R, BT, dT_dR, status)
 
@@ -225,8 +457,8 @@ subroutine FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_Chan, RTM_Pc, X, GZero, &
 
       do i=1,SPixel%Ind%NThermal
          write(bkp_lun,'(a,i2,3(a,f9.4))') 'Channel index: ', i, &
-              ' R_Clear: ', R_Clear(i), '  Rbc_up: ', RTM_Pc%LW%Rbc_up(Thermal(i)), &
-              '  R_Over: ',R_Over(i)
+              ' R_Clear: ', R_Clear(i), '  Rbc_up: ', &
+              RTM_Pc(1)%LW%Rbc_up(Thermal(i)), '  R_Over: ',R_Over(i)
       end do
       write(bkp_lun,'(/)')
 

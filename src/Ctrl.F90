@@ -65,7 +65,7 @@
 !    the number of possible viewing angles for the instrument.
 ! 2011/07/01, CP: added in extra output files.
 ! 2011/07/28, CP: added in scan line files files.
-! 2011/09/05, CA:: added LUT/RTM interpolation switches.
+! 2011/09/05, CA: added LUT/RTM interpolation switches.
 ! 2011/11/25, CP: add ChI channel indice variable.
 ! 2011/12/13, MJ: added netcdf filenames to type FID_t
 ! 2012/05/23, CP: removed threshold def
@@ -91,9 +91,11 @@
 ! 2015/09/07, AP: Allow verbose to be controlled from the driver file.
 ! 2015/11/18, GM: Add Y_Id_legacy(6).
 ! 2016/02/02, GM: Add allow_a_default_surface.
-! 2016/05/31, GT: Added Ctrl%process_aerosol_only flag
+! 2016/05/31, GT: Added Ctrl%process_aerosol_only flag.
 ! 2016/06/06, GM: Add get_T_dv_from_T_0d.
 ! 2016/07/11, GM: Add Nullify_Ctrl().
+! 2016/07/27, GM: Add variables Class, Class2, LUTClass2, FID%SAD_Dir2 to
+!    support the multilayer retrieval.
 !
 ! $Id$
 !
@@ -113,6 +115,7 @@ module Ctrl_m
       character(FilenameLen) :: Data_Dir           ! Directory of input files
       character(FilenameLen) :: Out_Dir            ! Directory for output files
       character(FilenameLen) :: SAD_Dir            ! Directory of SAD files
+      character(FilenameLen) :: SAD_Dir2           ! Directory of SAD files
       character(FilenameLen) :: Filename           ! Basename of input files
       character(FilenameLen) :: Config             ! Configuration
       character(FilenameLen) :: MSI                ! Multi-Spectral Image
@@ -216,9 +219,15 @@ module Ctrl_m
       ! Terms drawn from mandatory part of driver file and config file
       type(FID_t)            :: FID
       character(InstnameLen) :: InstName           ! Instrument name
+      integer                :: Class              ! Controls details related to
+                                                   ! class (liquid water, ice,
+                                                   ! ash, aerosol, etc.)
+      integer                :: Class2             ! Class for layer 2
       character(3)           :: LUTClass           ! Name of LUT to use
+      character(3)           :: LUTClass2          ! LUTClass for layer 2
       integer                :: Approach           ! Controls manner of retrieval
                                                    ! performed. See ECPConstants.
+
       ! Terms that aren't controlled by the driver file
       type(Ind_t)            :: Ind
       integer                :: DOY                ! Day number in year of data.

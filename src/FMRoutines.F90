@@ -37,8 +37,9 @@ module FM_Routines_m
    integer, parameter :: IR_dd = IRFd
    integer, parameter :: IT_00 = ITB
    integer, parameter :: IT_vv = ITB_u
-   integer, parameter :: IT_dv = ITd
    integer, parameter :: IT_0d = ITFBd
+   integer, parameter :: IT_vd = ITFBd_u
+   integer, parameter :: IT_dv = ITd
    integer, parameter :: IT_dd = ITFd
 
    integer, parameter :: ISv   = 3

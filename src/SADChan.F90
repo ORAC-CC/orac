@@ -172,14 +172,15 @@ end function Find_Channel
 !
 ! History:
 ! 2014/10/10, GM: Original version
-! 2015/08/21, AP: Made lut_name optional so this can generate SAD_Chan
+! 2015/08/21, AP: Made crp_name optional so this can generate SAD_Chan
 !    filenames. Generalised treatment of NOAA7/9.
 ! 2016/05/03, AP: Convert to a function and make chan_num optional.
+! 2016/07/27, GM: Changes for the multilayer retrieval.
 !
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
-function create_sad_filename(Ctrl, chan_num, lut_name) result(LUT_File)
+function create_sad_filename(Ctrl, chan_num, i_layer, crp_name) result(filename)
 
    use Ctrl_m
 
@@ -188,10 +189,38 @@ function create_sad_filename(Ctrl, chan_num, lut_name) result(LUT_File)
    ! Argument declarations
    type(Ctrl_t),           intent(in)  :: Ctrl
    character(*), optional, intent(in)  :: chan_num
-   character(*), optional, intent(in)  :: lut_name
-   character(FilenameLen)              :: LUT_file
+   integer,      optional, intent(in)  :: i_layer
+   character(*), optional, intent(in)  :: crp_name
+   character(FilenameLen)              :: filename
 
-   character(InstnameLen)              :: InstName
+   if (.not. present(i_layer) .or. i_layer .eq. 1) then
+      filename = create_sad_filename2(Ctrl, chan_num, Ctrl%FID%SAD_Dir, &
+                                      Ctrl%LUTClass, crp_name)
+   else
+      filename = create_sad_filename2(Ctrl, chan_num, Ctrl%FID%SAD_Dir2, &
+                                      Ctrl%LUTClass2, crp_name)
+   end if
+
+end function create_sad_filename
+
+
+function create_sad_filename2(Ctrl, chan_num, SAD_Dir, LUTClass, crp_name) &
+   result(filename)
+
+   use Ctrl_m
+
+   implicit none
+
+   ! Argument declarations
+   type(Ctrl_t),           intent(in)  :: Ctrl
+   character(*), optional, intent(in)  :: chan_num
+   character(*),           intent(in)  :: SAD_Dir
+   character(*),           intent(in)  :: LUTClass
+   character(*), optional, intent(in)  :: crp_name
+
+   character(FilenameLen)              :: filename
+
+   character(InstNameLen) :: InstName
 
    InstName = Ctrl%InstName
    ! NOAA files use (I0) formatting in their filename; LUT files use (I2).
@@ -203,23 +232,24 @@ function create_sad_filename(Ctrl, chan_num, lut_name) result(LUT_File)
    end if
 
    if (present(chan_num)) then
-      if (present(lut_name)) then
-         LUT_file = trim(Ctrl%FID%SAD_Dir) // '/' // trim(InstName) // '_' // &
-                    trim(Ctrl%LUTClass) // '_' // trim(lut_name) // '_' // &
+      if (present(crp_name)) then
+         filename = trim(SAD_Dir) // '/' // trim(InstName) // '_' // &
+                    trim(LUTClass) // '_' // trim(crp_name) // '_' // &
                     trim(chan_num) // '.sad'
       else
-         LUT_file = trim(Ctrl%FID%SAD_Dir) // '/' // trim(InstName) // '_' // &
+         filename = trim(SAD_Dir) // '/' // trim(InstName) // '_' // &
                     trim(chan_num) // '.sad'
       end if
    else
-      if (present(lut_name)) then
-         LUT_file = trim(Ctrl%FID%SAD_Dir) // '/' // trim(InstName) // '_' // &
-                    trim(Ctrl%LUTClass) // '_' // trim(lut_name) // '.sad'
+      if (present(crp_name)) then
+         filename = trim(SAD_Dir) // '/' // trim(InstName) // '_' // &
+                    trim(LUTClass) // '_' // trim(crp_name) // '.sad'
       else
-         LUT_file = trim(Ctrl%FID%SAD_Dir) // '/' // trim(InstName) // '.sad'
+         filename = trim(SAD_Dir) // '/' // trim(InstName) // '.sad'
       end if
    end if
-end function create_sad_filename
+
+end function create_sad_filename2
 
 
 #include "ReadSADChan.F90"

@@ -168,6 +168,7 @@
 ! 2015/11/17, OS: Minor edit.
 ! 2015/12/30, AP: Move creation of NCDF files to after the main processing loop.
 ! 2016/03/04, AP: Homogenisation of I/O modules.
+! 2016/07/27, GM: Changes for the multilayer retrieval.
 !
 ! $Id$
 !
@@ -214,9 +215,9 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    type(Data_t)              :: MSI_Data
    type(Diag_t)              :: Diag ! Diagnostic struct returned by Invert_Marquardt
    type(RTM_t)               :: RTM
-   type(RTM_Pc_t)            :: RTM_Pc
+   type(RTM_Pc_t)            :: RTM_Pc(2)
    type(SAD_Chan_t), allocatable, dimension(:) :: SAD_Chan
-   type(SAD_LUT_t)           :: SAD_LUT
+   type(SAD_LUT_t)           :: SAD_LUT(2)
    type(SPixel_t)            :: SPixel
 
    integer             :: i, j, m
@@ -308,11 +309,13 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 #endif
 
    ! Set output fields to be produced
-   Ctrl%Ind%flags%do_aerosol = Ctrl%Approach == AerOx .or. Ctrl%Approach == AerSw
-   Ctrl%Ind%flags%do_cloud   = .not. Ctrl%Ind%flags%do_aerosol
-   Ctrl%Ind%flags%do_cloud_layer_2 = .false.
-   Ctrl%Ind%flags%do_rho     = Ctrl%Approach == AerOx
-   Ctrl%Ind%flags%do_swansea = Ctrl%Approach == AerSw
+   Ctrl%Ind%flags%do_aerosol             = Ctrl%Approach == AppAerOx .or. &
+                                           Ctrl%Approach == AppAerSw
+   Ctrl%Ind%flags%do_cloud               = Ctrl%Approach == AppCld1L .or. &
+                                           Ctrl%Approach == AppCld2L
+   Ctrl%Ind%flags%do_cloud_layer_2       = Ctrl%Approach == AppCld2L
+   Ctrl%Ind%flags%do_rho                 = Ctrl%Approach == AppAerOx
+   Ctrl%Ind%flags%do_swansea             = Ctrl%Approach == AppAerSw
    Ctrl%Ind%flags%do_indexing            = .true.
    Ctrl%Ind%flags%do_phase_pavolonis     = .false.
    Ctrl%Ind%flags%do_cldmask             = .true.
@@ -355,7 +358,6 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
       if (Ctrl%Ind%NSolar > 0) &
            call Read_SwRTM_nc(Ctrl, RTM)
    end if
-
 
    !----------------------------------------------------------------------------
    ! Product generation section
@@ -478,7 +480,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    !$OMP END CRITICAL
 #endif
 
-   !  Allocate sizes of SPixel sub-structure arrays
+   ! Allocate structures required in the main loop
    call Alloc_SPixel(Ctrl, RTM, SPixel)
 
    if (Ctrl%RTMIntSelm == RTMIntMethNone) then
@@ -487,8 +489,12 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
       RTM_Pc%dHc_dPc = sreal_fill_value
       RTM_Pc%dTc_dPc = sreal_fill_value
    else
-      ! Set RTM pressure values in SPixel (will not change from here on)
-      call Alloc_RTM_Pc(Ctrl, RTM_Pc)
+      call Alloc_RTM_Pc(Ctrl, RTM_Pc(1))
+      if (Ctrl%Approach == AppCld2L) then
+         call Alloc_RTM_Pc(Ctrl, RTM_Pc(2))
+      end if
+
+      ! Number of pressure levels in SPixel will not change from here on
       SPixel%RTM%Np = RTM%Np
       SPixel%RTM%NP = RTM%Np
    end if
@@ -520,8 +526,8 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 
          ! Nothing wrong so do the inversion.
          if (status == 0) &
-            call Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, &
-                                  RTM_Pc, Diag, status)
+            call Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, &
+                                  Diag, status)
 
          if (status == 0) then
             ! Calculate the Cloud water path CWP
@@ -545,6 +551,8 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
             SPixel%Sn                        = MissingSn
             SPixel%CWP                       = MissingXn
             SPixel%CWP_uncertainty           = MissingSn
+            SPixel%CWP2                      = MissingXn
+            SPixel%CWP2_uncertainty          = MissingSn
             SPixel%CTP_corrected             = MissingXn
             SPixel%CTP_corrected_uncertainty = MissingSn
             SPixel%CTH_corrected             = MissingXn
@@ -562,7 +570,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
          end if
 
          ! Copy output to spixel_scan_out structures
-         call prepare_output_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, &
+         call prepare_output_primary(Ctrl, i, j, MSI_Data, SPixel, RTM_Pc, &
                                      Diag, output_data_1)
 
          call prepare_output_secondary(Ctrl, i, j, MSI_Data, SPixel, Diag, &
@@ -575,7 +583,12 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    !$OMP END DO
 
    call Dealloc_SPixel(Ctrl, SPixel)
-   if (Ctrl%RTMIntSelm /= RTMIntMethNone) call Dealloc_RTM_Pc(Ctrl, RTM_Pc)
+   if (Ctrl%RTMIntSelm /= RTMIntMethNone) then
+      call Dealloc_RTM_Pc(Ctrl, RTM_Pc(1))
+      if (Ctrl%Approach == AppCld2L) then
+         call Dealloc_RTM_Pc(Ctrl, RTM_Pc(2))
+      end if
+   end if
 
    !$OMP END PARALLEL
 
@@ -685,7 +698,10 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    ! before deallocating the array of structs.
 
    deallocate(SAD_Chan)
-   call Dealloc_SAD_LUT(Ctrl, SAD_LUT)
+   call Dealloc_SAD_LUT(Ctrl, SAD_LUT(1))
+   if (Ctrl%Approach == AppCld2L) then
+      call Dealloc_SAD_LUT(Ctrl, SAD_LUT(2))
+   end if
 
    if (Ctrl%RTMIntSelm /= RTMIntMethNone) call Dealloc_RTM(Ctrl, RTM)
 

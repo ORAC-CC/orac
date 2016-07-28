@@ -60,6 +60,7 @@
 !    with meaning in this retrieval. Added indexing logic for aerosol
 !    retrievals. Replaced Find_MDAD with Find_Channel.
 ! 2016/01/27, GM: Add indexing for the new night cloud retrieval.
+! 2016/07/27, GM: Add indexing for two layer cloud retieval.
 !
 ! $Id$
 !
@@ -150,19 +151,22 @@ subroutine Get_Indexing(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
 
    ! Select appropriate logic for channel selection
    select case (Ctrl%Approach)
-   case (CldWat, CldIce, AshEyj)
+   case (AppCld1L)
       if (.not. Ctrl%do_new_night_retrieval &
           .or. SPixel%Illum(1) .eq. IDay .or. SPixel%Illum(1) .eq. ITwi) then
          call cloud_indexing_logic(Ctrl, SPixel, is_not_used_or_missing, &
-              X, XJ, XI, status)
+                                   X, XJ, XI, status)
       else
          call cloud_indexing_logic_night(Ctrl, SPixel, is_not_used_or_missing, &
-              X, XJ, XI, status)
+                                          X, XJ, XI, status)
       end if
-   case (AerOx)
+   case (AppCld2L)
+      call cloud_indexing_logic_two_layer(Ctrl, SPixel, is_not_used_or_missing, &
+                                          X, XJ, XI, status)
+   case (AppAerOx)
       call aer_indexing_logic(Ctrl, SPixel, is_not_used_or_missing, &
                               X, XJ, XI, status)
-   case (AerSw)
+   case (AppAerSw)
       call swan_indexing_logic(Ctrl, SPixel, is_not_used_or_missing, &
                                X, XJ, XI, status)
    end select
@@ -510,7 +514,7 @@ end subroutine cloud_indexing_logic
 
 
 !-------------------------------------------------------------------------------
-! Name: cloud_indexing_logic_night
+! Name: cloud_indexing_logic_new_night
 !
 ! Purpose:
 ! Determines state vector elements required for a cloud retrieval at night.
@@ -601,6 +605,88 @@ subroutine cloud_indexing_logic_night(Ctrl, SPixel, is_not_used_or_missing, &
    SPixel%NXI = ii_xi
 
 end subroutine cloud_indexing_logic_night
+
+
+!-------------------------------------------------------------------------------
+! Name: cloud_indexing_logic_two_layer
+!
+! Purpose:
+! Determines state vector elements required for a cloud retrieval at night.
+!
+! Algorithm:
+!
+! Arguments:
+! Name Type In/Out/Both Description
+!
+! History:
+! 2015/12/31, GM: Original version
+!
+! Bugs:
+! None known.
+!-------------------------------------------------------------------------------
+subroutine cloud_indexing_logic_two_layer(Ctrl, SPixel, is_not_used_or_missing, &
+                                          X, XJ, XI, status)
+
+   use Ctrl_m
+   use ECP_Constants_m
+   use Int_Routines_m, only : find_in_array
+
+   implicit none
+
+   ! Define arguments
+
+   type(CTRL_t),   intent(in)    :: Ctrl
+   type(SPixel_t), intent(inout) :: SPixel
+   logical,        intent(inout) :: is_not_used_or_missing(:)
+   integer,        intent(out)   :: X(:)
+   integer,        intent(out)   :: XJ(:)
+   integer,        intent(out)   :: XI(:)
+   integer,        intent(inout) :: status
+
+   ! Define local variables
+
+   integer :: ii_x, ii_xj, ii_xi
+   integer :: min_rho
+   integer :: i_chan
+   integer :: n_chans
+
+   n_chans = count(.not. is_not_used_or_missing)
+
+   if (n_chans .lt. Ctrl%Ind%Ny) then
+      status = SPixelIndexing
+      return
+   end if
+
+   ! Select the active state variables
+   ii_x  = 0
+   ii_xj = 0
+   ii_xi = 0
+
+   call Add_to_State_Vector(Ctrl, SPixel%Illum(1), ITau,  X, ii_x, XJ, ii_xj, XI, ii_xi, active = .true.)
+   call Add_to_State_Vector(Ctrl, SPixel%Illum(1), IRe,   X, ii_x, XJ, ii_xj, XI, ii_xi, active = .true.)
+   call Add_to_State_Vector(Ctrl, SPixel%Illum(1), IPc,   X, ii_x, XJ, ii_xj, XI, ii_xi, active = .true.)
+   call Add_to_State_Vector(Ctrl, SPixel%Illum(1), ITau2, X, ii_x, XJ, ii_xj, XI, ii_xi, active = .true.)
+   call Add_to_State_Vector(Ctrl, SPixel%Illum(1), IRe2,  X, ii_x, XJ, ii_xj, XI, ii_xi, active = .true.)
+   call Add_to_State_Vector(Ctrl, SPixel%Illum(1), IPc2,  X, ii_x, XJ, ii_xj, XI, ii_xi, active = .true.)
+   call Add_to_State_Vector(Ctrl, SPixel%Illum(1), ITs,   X, ii_x, XJ, ii_xj, XI, ii_xi, active = .true.)
+
+   call Add_to_State_Vector(Ctrl, SPixel%Illum(1), IFr,   X, ii_x, XJ, ii_xj, XI, ii_xi, active = .false.)
+   call Add_to_State_Vector(Ctrl, SPixel%Illum(1), IFr2,  X, ii_x, XJ, ii_xj, XI, ii_xi, active = .false.)
+
+   ! Add BRDF terms to parameter vector
+   if (Ctrl%RS%use_full_brdf) then
+      min_rho = 1
+   else
+      min_rho = MaxRho_XX
+   end if
+   call Identify_BRDF_Terms(Ctrl, SPixel%Illum(1), 1, min_rho, &
+        is_not_used_or_missing, X, ii_x, XJ, ii_xj, XI, ii_xi, .false.)
+
+   SPixel%Nx  = ii_x
+   SPixel%NXJ = ii_xj
+   SPixel%NXI = ii_xi
+
+end subroutine cloud_indexing_logic_two_layer
 
 
 !-------------------------------------------------------------------------------

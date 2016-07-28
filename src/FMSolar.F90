@@ -15,28 +15,54 @@
 !   Calculate derivatives of reflectance w.r.t. all other variables.
 !
 ! Arguments:
-! Name    Type        In/Out/Both Description
+! Name     Type        In/Out/Both Description
 ! ------------------------------------------------------------------------------
-! Ctrl    struct      In          Control structure
-! SAD_LUT struct      In          SAD look up table
-! SPixel  struct      In          Super-pixel structure
-! RTM_Pc  struct      In          Contains transmittances, radiances and their
-!                                 derivatives
-! X       real array  In          State vector
-! GZero   struct      In          "Zero'th point" grid info for SAD_LUT CRP
-!                                 array interpolation.
-! CRP     float array In          Interpolated cloud radiative properties
-!                                 (calculated by SetCRPSolar, but an input
-!                                 argument because CRP for Td for the mixed
-!                                 channels is set by SetCRPThermal. Only the
-!                                 solar channels should be passed by the
-!                                 calling routine).
-! d_CRP   float array In          Grads. of interpolated cloud rad. properties
-!                                 (see comment for CRP).
-! REF     float array Out         TOA reflectances for part cloudy conditions
-! d_REF   float array Out         Derivatives d[ref]/d[tau,Re,pc,f,Ts,Rs]t
-! status  int         Out         Status from Set_CRP_Solar/breakpoint file
-!                                 open
+! Ctrl     struct      In          Control structure
+! SAD_LUT  struct      In          SAD look up table
+! SPixel   struct      In          Super-pixel structure
+! i_layer  int         In          0: 1-layer model
+!                                  1: layer 1 (upper) call of two-layer model
+!                                  2: layer 2 (lower) call of two-layer model
+! RTM_Pc   struct      In          Contains transmittances, radiances and their
+!                                  derivatives for the layer of the call
+! RTM_Pc2  struct      In          RTM_Pc of the other layer of the two-layer
+!                                  model, i.e. if i_layer=2 the this is the
+!                                  RTM_Pc for layer 1
+! X        real array  In          State vector
+! GZero    struct      In          "Zero'th point" grid info for SAD_LUT CRP
+!                                  array interpolation.
+! CRP      float array In          Interpolated cloud radiative properties
+!                                  (calculated by SetCRPSolar, but an input
+!                                  argument because CRP for Td for the mixed
+!                                  channels is set by SetCRPThermal. Only the
+!                                  solar channels should be passed by the
+!                                  calling routine).
+! d_CRP    float array In          Grads. of interpolated cloud rad. properties
+!                                  (see comment for CRP).
+! Ref      float array Out         TOA bidirectional reflectances for partly
+!                                  cloudy conditions
+! d_Ref    float array Out         Derivatives d[ref]/d[x]
+! status   int         Out         Status from Set_CRP_Solar/breakpoint file
+!                                  open
+! Ref_0d   float array Out         Optional TOA directional-diffuse reflectances
+!                                  for partly cloudy conditions
+! d_Ref_0d float array Out         Optional Derivatives d[ref_0d]/d[x]
+! Ref_dv   float array Out         Optional TOA diffuse-directional reflectances
+!                                  for partly cloudy conditions
+! d_Ref_dv float array Out         Optional Derivatives d[ref_dv]/d[x]
+! Ref_dd   float array Out         Optional TOA diffuse-diffuse reflectances for
+!                                  partly cloudy conditions
+! d_Ref_dd float array Out         Optional Derivatives d[ref_dd]/d[x]
+! RsX      float array In          Optional overriding bidirectional surface
+!                                  reflectance
+! RsX_0d   float array In          Optional overriding directional-diffuse
+!                                  surface reflectance
+! RsX_dv   float array In          Optional overriding diffuse-directional
+!                                  surface reflectance
+! RsX_dd   float array In          Optional overriding diffuse-diffuse surface
+!                                  reflectance
+! d_Ref_dRs2 float array Out       Optional derivatives w.r.t surface BRDF
+!                                  parameters
 !
 ! History:
 ! 2000/11/07, KS: original version
@@ -105,6 +131,9 @@
 !    normalized like equation 1 whereas equation 4 is still sun normalized like
 !    equation 3.  See detailed comments which also indicate that equations 2 and
 !    4 are incorrectly sun normalized and will be removed in the future.
+! 2016/07/27, GM: Extensive changes for multilayer support with several new
+!    optional inputs and outputs to perform multilayer simulations with two
+!    consecutive calls.
 !
 ! $Id$
 !
@@ -112,12 +141,15 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine d_derivative_wrt_crp_parameter(i_param, T_0d, T_00, d_T_0d, d_T_00, &
-     T_all, d_D)
+#define USE_REVISED_REF_0D .true.
+
+subroutine d_derivative_wrt_crp_parameter(i_param, i_p_crp, T_0d, T_00, &
+   d_T_0d, d_T_00, T_all, d_D)
 
    implicit none
 
    integer, intent(in)  :: i_param
+   integer, intent(in)  :: i_p_crp
    real,    intent(in)  :: T_0d(:)
    real,    intent(in)  :: T_00(:)
    real,    intent(in)  :: d_T_0d(:,:)
@@ -125,18 +157,19 @@ subroutine d_derivative_wrt_crp_parameter(i_param, T_0d, T_00, d_T_0d, d_T_00, &
    real,    intent(in)  :: T_all(:)
    real,    intent(out) :: d_D(:,:)
 
-   d_D(:,i_param) = (d_T_0d(:,i_param) * T_00 - d_T_00(:,i_param) * T_0d) / &
+   d_D(:,i_param) = (d_T_0d(:,i_p_crp) * T_00 - d_T_00(:,i_p_crp) * T_0d) / &
                     (T_all * T_all)
 
 end subroutine d_derivative_wrt_crp_parameter
 
 
-subroutine rs_derivative_wrt_crp_parameter(i_param, gamma, s, p, CRP, d_CRP, &
-     T_all, d_Rs)
+subroutine rs_derivative_wrt_crp_parameter(i_param, i_p_crp, gamma, s, p, CRP, &
+   d_CRP, T_all, d_Rs)
 
    implicit none
 
    integer, intent(in)  :: i_param
+   integer, intent(in)  :: i_p_crp
    real,    intent(in)  :: gamma
    real,    intent(in)  :: s(:)
    real,    intent(in)  :: p(:)
@@ -145,51 +178,51 @@ subroutine rs_derivative_wrt_crp_parameter(i_param, gamma, s, p, CRP, d_CRP, &
    real,    intent(in)  :: T_all(:)
    real,    intent(out) :: d_Rs(:,:)
 
-   call d_derivative_wrt_crp_parameter(i_param, CRP(:,IT_0d), CRP(:,IT_00), &
-        d_CRP(:,IT_0d,:), d_CRP(:,IT_00,:), T_all, d_Rs)
-   d_Rs(:,i_param) = s * (gamma - p) * d_Rs(:,i_param)
+   call d_derivative_wrt_crp_parameter(i_param, i_p_crp, CRP(:,IT_0d), &
+        CRP(:,IT_00), d_CRP(:,IT_0d,:), d_CRP(:,IT_00,:), T_all, d_Rs)
+   d_Rs(:,i_param) = s * (gamma - p) * d_Rs(:,i_p_crp)
 
 end subroutine rs_derivative_wrt_crp_parameter
 
 
-subroutine derivative_wrt_crp_parameter(i_param, Rs, CRP, d_CRP, f, Tac_0v, &
-   Tbc2, T_all, S, S_dnom, d_Rs, d_REF)
+subroutine derivative_wrt_crp_parameter(i_p_crp, Rs, CRP, d_CRP, f, Tac_0v, &
+   Tbc2, T_all, S, S_dnom, d_Rs, d_Ref)
 
    implicit none
 
-   integer,        intent(in)  :: i_param
-   real,           intent(in)  :: Rs(:)
-   real,           intent(in)  :: CRP(:,:)
-   real,           intent(in)  :: d_CRP(:,:,:)
-   real,           intent(in)  :: f
-   real,           intent(in)  :: Tac_0v(:)
-   real,           intent(in)  :: Tbc2(:)
-   real,           intent(in)  :: T_all(:)
-   real,           intent(in)  :: S(:)
-   real,           intent(in)  :: S_dnom(:)
-   real,           intent(in)  :: d_Rs(:,:)
-   real,           intent(out) :: d_REF(:,:)
+   integer, intent(in)  :: i_p_crp
+   real,    intent(in)  :: Rs(:)
+   real,    intent(in)  :: CRP(:,:)
+   real,    intent(in)  :: d_CRP(:,:,:)
+   real,    intent(in)  :: f
+   real,    intent(in)  :: Tac_0v(:)
+   real,    intent(in)  :: Tbc2(:)
+   real,    intent(in)  :: T_all(:)
+   real,    intent(in)  :: S(:)
+   real,    intent(in)  :: S_dnom(:)
+   real,    intent(in)  :: d_Rs(:)
+   real,    intent(out) :: d_Ref(:)
 
-   d_REF(:,i_param) = f * Tac_0v * ( &
-      d_CRP(:,IR_0v,i_param) + &
+   d_Ref = f * Tac_0v * ( &
+      d_CRP(:,IR_0v,i_p_crp) + &
       Tbc2 / S_dnom * Rs * ( &
-         T_all * d_CRP(:,IT_dv,i_param) + &
-         CRP(:,IT_dv) * (d_CRP(:,IT_00,i_param) + d_CRP(:,IT_0d,i_param))) + &
-      S / S_dnom * (d_Rs(:,i_param) / Rs + Rs * Tbc2 * d_CRP(:,IR_dd,i_param)))
+         T_all * d_CRP(:,IT_dv,i_p_crp) + &
+         CRP(:,IT_dv) * (d_CRP(:,IT_00,i_p_crp) + d_CRP(:,IT_0d,i_p_crp))) + &
+      S / S_dnom * (d_Rs(:) / Rs + Rs * Tbc2 * d_CRP(:,IR_dd,i_p_crp)))
 
 end subroutine derivative_wrt_crp_parameter
 
 
-subroutine derivative_wrt_crp_parameter_brdf(SPixel, i_param, i_equation_form, &
+subroutine derivative_wrt_crp_parameter_brdf_0v(SPixel, i_p_crp, i_equation_form, &
    CRP, d_CRP, f, Tac_0v, Tbc_0, Tbc_v, Tbc_d, Tbc_0v, Tbc_0d, Tbc_dv, Tbc_dd, &
-   Rs2, d_REF, a, b, c)
+   Rs2, d_Ref, a, b, c)
 
    use SPixel_m
 
    implicit none
 
    type(SPixel_t), intent(in)  :: SPixel
-   integer,        intent(in)  :: i_param
+   integer,        intent(in)  :: i_p_crp
    integer,        intent(in)  :: i_equation_form
    real,           intent(in)  :: CRP(:,:)
    real,           intent(in)  :: d_CRP(:,:,:)
@@ -203,78 +236,238 @@ subroutine derivative_wrt_crp_parameter_brdf(SPixel, i_param, i_equation_form, &
    real,           intent(in)  :: Tbc_dv(:)
    real,           intent(in)  :: Tbc_dd(:)
    real,           intent(in)  :: Rs2(:,:)
-   real,           intent(out) :: d_REF(SPixel%Ind%NSolar)
+   real,           intent(out) :: d_Ref(:)
    real,           intent(in)  :: a(:)
    real,           intent(in)  :: b(:)
    real,           intent(in)  :: c(:)
 
-   real :: d_l(SPixel%Ind%NSolar)
-   real :: REF_over_l(SPixel%Ind%NSolar)
+   real :: e_l(SPixel%Ind%NSolar)
+   real :: Ref_over_l(SPixel%Ind%NSolar)
 
-   if (i_equation_form .eq. 1) then
-      d_l = d_CRP(:,IR_0v,i_param) + &
-           ((d_CRP(:,IT_00,i_param) * (Rs2(:,IRho_0V) - &
+   if (i_equation_form == 1) then
+      e_l = d_CRP(:,IR_0v,i_p_crp) + &
+           ((d_CRP(:,IT_00,i_p_crp) * (Rs2(:,IRho_0V) - &
                Rs2(:,IRho_0D)) * CRP(:,IT_vv) + CRP(:,IT_00) * &
                (Rs2(:,IRho_0V) - Rs2(:,IRho_0D)) * &
-               d_CRP(:,IT_vv,i_param)) * Tbc_0v + &
-            ((d_CRP(:,IT_00,i_param) * Rs2(:,IRho_0D) * Tbc_0 + &
-               d_CRP(:,IT_0d,i_param) * Rs2(:,IRho_DD) * Tbc_d) * c + &
-               b * d_CRP(:,IT_dv,i_param) * Tbc_d) / a + &
-            b * c * Rs2(:,IRho_DD) * d_CRP(:,IR_dd,i_param) * Tbc_dd / (a*a)) &
+               d_CRP(:,IT_vv,i_p_crp)) * Tbc_0v + &
+            ((d_CRP(:,IT_00,i_p_crp) * Rs2(:,IRho_0D) * Tbc_0 + &
+               d_CRP(:,IT_0d,i_p_crp) * Rs2(:,IRho_DD) * Tbc_d) * c + &
+               b * d_CRP(:,IT_dv,i_p_crp) * Tbc_d) / a + &
+            b * c * Rs2(:,IRho_DD) * d_CRP(:,IR_dd,i_p_crp) * Tbc_dd / (a*a)) &
            / SPixel%Geom%SEC_o(1)
-   else if (i_equation_form .eq. 2) then
-      d_l = d_CRP(:,IR_0v,i_param) + &
-            (d_CRP(:,IT_00,i_param) * (Rs2(:,IRho_0V) - &
+   else if (i_equation_form == 2) then
+      e_l = d_CRP(:,IR_0v,i_p_crp) + &
+            (d_CRP(:,IT_00,i_p_crp) * (Rs2(:,IRho_0V) - &
                Rs2(:,IRho_0D)) * CRP(:,IT_vv) + CRP(:,IT_00) * &
                (Rs2(:,IRho_0V) - Rs2(:,IRho_0D)) * &
-               d_CRP(:,IT_vv,i_param)) * Tbc_0v + &
-            ((d_CRP(:,IT_00,i_param) * Rs2(:,IRho_0D) * Tbc_0 + &
-               d_CRP(:,IT_0d,i_param) * Rs2(:,IRho_DD) * Tbc_d) * c + &
-               b * d_CRP(:,IT_dv,i_param) * Tbc_d) / a + &
-            b * c * Rs2(:,IRho_DD) * d_CRP(:,IR_dd,i_param) * Tbc_dd / (a*a)
-   else if (i_equation_form .eq. 3) then
-      d_l = d_CRP(:,IR_0v,i_param) + &
-           ((d_CRP(:,IT_00,i_param) * Rs2(:,IRho_0V) * CRP(:,IT_vv) + &
-               CRP(:,IT_00) * Rs2(:,IRho_0V) * d_CRP(:,IT_vv,i_param)) * &
+               d_CRP(:,IT_vv,i_p_crp)) * Tbc_0v + &
+            ((d_CRP(:,IT_00,i_p_crp) * Rs2(:,IRho_0D) * Tbc_0 + &
+               d_CRP(:,IT_0d,i_p_crp) * Rs2(:,IRho_DD) * Tbc_d) * c + &
+               b * d_CRP(:,IT_dv,i_p_crp) * Tbc_d) / a + &
+            b * c * Rs2(:,IRho_DD) * d_CRP(:,IR_dd,i_p_crp) * Tbc_dd / (a*a)
+   else if (i_equation_form == 3) then
+      e_l = d_CRP(:,IR_0v,i_p_crp) + &
+           ((d_CRP(:,IT_00,i_p_crp) * Rs2(:,IRho_0V) * CRP(:,IT_vv) + &
+               CRP(:,IT_00) * Rs2(:,IRho_0V) * d_CRP(:,IT_vv,i_p_crp)) * &
                Tbc_0v + &
-            (d_CRP(:,IT_0d,i_param) * Rs2(:,IRho_DV) * CRP(:,IT_vv) + &
-               CRP(:,IT_0d) * Rs2(:,IRho_DV) * d_CRP(:,IT_vv,i_param)) * &
+            (d_CRP(:,IT_0d,i_p_crp) * Rs2(:,IRho_DV) * CRP(:,IT_vv) + &
+               CRP(:,IT_0d) * Rs2(:,IRho_DV) * d_CRP(:,IT_vv,i_p_crp)) * &
                Tbc_dv + &
-            ((d_CRP(:,IT_00,i_param) * Rs2(:,IRho_0D) * Tbc_0 + &
-               d_CRP(:,IT_0d,i_param) * Rs2(:,IRho_DD) * Tbc_d) * c + &
-               b * (d_CRP(:,IT_dv,i_param) * Tbc_d + d_CRP(:,IR_dd,i_param) * &
+            ((d_CRP(:,IT_00,i_p_crp) * Rs2(:,IRho_0D) * Tbc_0 + &
+               d_CRP(:,IT_0d,i_p_crp) * Rs2(:,IRho_DD) * Tbc_d) * c + &
+               b * (d_CRP(:,IT_dv,i_p_crp) * Tbc_d + d_CRP(:,IR_dd,i_p_crp) * &
                Rs2(:,IRho_DV) * CRP(:,IT_vv) * Tbc_dd * Tbc_v + &
-               CRP(:,IR_dd) * Rs2(:,IRho_DV) * d_CRP(:,IT_vv,i_param) * &
+               CRP(:,IR_dd) * Rs2(:,IRho_DV) * d_CRP(:,IT_vv,i_p_crp) * &
                Tbc_dd * Tbc_v)) / a + &
-            b * c * Rs2(:,IRho_DD) * d_CRP(:,IR_dd,i_param) * Tbc_dd / (a*a)) &
+            b * c * Rs2(:,IRho_DD) * d_CRP(:,IR_dd,i_p_crp) * Tbc_dd / (a*a)) &
            / SPixel%Geom%SEC_o(1)
    else
-      d_l = d_CRP(:,IR_0v,i_param) + &
-            (d_CRP(:,IT_00,i_param) * Rs2(:,IRho_0V) * CRP(:,IT_vv) + &
-               CRP(:,IT_00) * Rs2(:,IRho_0V) * d_CRP(:,IT_vv,i_param)) * &
+      e_l = d_CRP(:,IR_0v,i_p_crp) + &
+            (d_CRP(:,IT_00,i_p_crp) * Rs2(:,IRho_0V) * CRP(:,IT_vv) + &
+               CRP(:,IT_00) * Rs2(:,IRho_0V) * d_CRP(:,IT_vv,i_p_crp)) * &
                Tbc_0v + &
-            (d_CRP(:,IT_0d,i_param) * Rs2(:,IRho_DV) * CRP(:,IT_vv) + &
-               CRP(:,IT_0d) * Rs2(:,IRho_DV) * d_CRP(:,IT_vv,i_param)) * &
+            (d_CRP(:,IT_0d,i_p_crp) * Rs2(:,IRho_DV) * CRP(:,IT_vv) + &
+               CRP(:,IT_0d) * Rs2(:,IRho_DV) * d_CRP(:,IT_vv,i_p_crp)) * &
                Tbc_dv + &
-            ((d_CRP(:,IT_00,i_param) * Rs2(:,IRho_0D) * Tbc_0 + &
-               d_CRP(:,IT_0d,i_param) * Rs2(:,IRho_DD) * Tbc_d) * c + &
-               b * (d_CRP(:,IT_dv,i_param) * Tbc_d + d_CRP(:,IR_dd,i_param) * &
+            ((d_CRP(:,IT_00,i_p_crp) * Rs2(:,IRho_0D) * Tbc_0 + &
+               d_CRP(:,IT_0d,i_p_crp) * Rs2(:,IRho_DD) * Tbc_d) * c + &
+               b * (d_CRP(:,IT_dv,i_p_crp) * Tbc_d + d_CRP(:,IR_dd,i_p_crp) * &
                Rs2(:,IRho_DV) * CRP(:,IT_vv) * Tbc_dd * Tbc_v + &
-               CRP(:,IR_dd) * Rs2(:,IRho_DV) * d_CRP(:,IT_vv,i_param) * &
+               CRP(:,IR_dd) * Rs2(:,IRho_DV) * d_CRP(:,IT_vv,i_p_crp) * &
                Tbc_dd * Tbc_v)) / a + &
-            b * c * Rs2(:,IRho_DD) * d_CRP(:,IR_dd,i_param) * Tbc_dd / (a*a)
+            b * c * Rs2(:,IRho_DD) * d_CRP(:,IR_dd,i_p_crp) * Tbc_dd / (a*a)
    end if
 
-   REF_over_l = Tac_0v * d_l
+   Ref_over_l = Tac_0v * e_l
 
-   d_REF = f * REF_over_l
+   d_Ref = f * Ref_over_l
 
-end subroutine derivative_wrt_crp_parameter_brdf
+end subroutine derivative_wrt_crp_parameter_brdf_0v
+
+
+subroutine derivative_wrt_crp_parameter_brdf_0d(SPixel, i_p_crp, i_equation_form, &
+   CRP, d_CRP, f, Tac_0d, Tbc_0, Tbc_v, Tbc_d, Tbc_0v, Tbc_0d, Tbc_dv, Tbc_dd, &
+   Rs2, d_Ref, a, b, c)
+
+   use SPixel_m
+
+   implicit none
+
+   type(SPixel_t), intent(in)  :: SPixel
+   integer,        intent(in)  :: i_p_crp
+   integer,        intent(in)  :: i_equation_form
+   real,           intent(in)  :: CRP(:,:)
+   real,           intent(in)  :: d_CRP(:,:,:)
+   real,           intent(in)  :: f
+   real,           intent(in)  :: Tac_0d(:)
+   real,           intent(in)  :: Tbc_0(:)
+   real,           intent(in)  :: Tbc_v(:)
+   real,           intent(in)  :: Tbc_d(:)
+   real,           intent(in)  :: Tbc_0v(:)
+   real,           intent(in)  :: Tbc_0d(:)
+   real,           intent(in)  :: Tbc_dv(:)
+   real,           intent(in)  :: Tbc_dd(:)
+   real,           intent(in)  :: Rs2(:,:)
+   real,           intent(out) :: d_Ref(:)
+   real,           intent(in)  :: a(:)
+   real,           intent(in)  :: b(:)
+   real,           intent(in)  :: c(:)
+
+   real :: e_l(SPixel%Ind%NSolar)
+   real :: Ref_over_l(SPixel%Ind%NSolar)
+
+   if (i_equation_form == 1 .or. i_equation_form == 3) then
+if (USE_REVISED_REF_0D) then
+      e_l = d_CRP(:,IR_0d,i_p_crp) + &
+            ((d_CRP(:,IT_00,i_p_crp) * Rs2(:,IRho_0d) * Tbc_0 + &
+              d_CRP(:,IT_0d,i_p_crp) * Rs2(:,IRho_dd) * Tbc_d) * c + &
+             b * d_CRP(:,IT_dd,i_p_crp) * Tbc_d) / a + &
+            (b * c * Rs2(:,IRho_DD) * d_CRP(:,IR_dd,i_p_crp) * Tbc_dd) / (a*a)
+else
+      e_l = d_CRP(:,IR_0d,i_p_crp) + &
+            (d_CRP(:,IT_00,i_p_crp) * Rs2(:,IRho_0V) * CRP(:,IT_vd) + &
+             CRP(:,IT_00) * Rs2(:,IRho_0V) * d_CRP(:,IT_vd,i_p_crp)) * Tbc_0v + &
+            ((d_CRP(:,IT_00,i_p_crp) * Rs2(:,IRho_0d) * Tbc_0 + &
+              d_CRP(:,IT_0d,i_p_crp) * Rs2(:,IRho_dd) * Tbc_d) * c + &
+             b * d_CRP(:,IT_dd,i_p_crp) * Tbc_d) / a + &
+            (b * c * Rs2(:,IRho_DD) * d_CRP(:,IR_dd,i_p_crp) * Tbc_dd) / (a*a)
+end if
+   else
+      write (*,*) 'ERROR: FM_Solar(), directional-diffuse reflectance not' // &
+         ' supported with i_equation_form = ', i_equation_form
+      stop error_stop_code
+   end if
+
+   Ref_over_l = Tac_0d * e_l
+
+   d_Ref = f * Ref_over_l
+
+end subroutine derivative_wrt_crp_parameter_brdf_0d
+
+
+subroutine derivative_wrt_crp_parameter_brdf_dv(SPixel, i_p_crp, i_equation_form, &
+   CRP, d_CRP, f, Tac_dv, Tbc_0, Tbc_v, Tbc_d, Tbc_0v, Tbc_0d, Tbc_dv, Tbc_dd, &
+   Rs2, d_Ref, a, b, c, d)
+
+   use SPixel_m
+
+   implicit none
+
+   type(SPixel_t), intent(in)  :: SPixel
+   integer,        intent(in)  :: i_p_crp
+   integer,        intent(in)  :: i_equation_form
+   real,           intent(in)  :: CRP(:,:)
+   real,           intent(in)  :: d_CRP(:,:,:)
+   real,           intent(in)  :: f
+   real,           intent(in)  :: Tac_dv(:)
+   real,           intent(in)  :: Tbc_0(:)
+   real,           intent(in)  :: Tbc_v(:)
+   real,           intent(in)  :: Tbc_d(:)
+   real,           intent(in)  :: Tbc_0v(:)
+   real,           intent(in)  :: Tbc_0d(:)
+   real,           intent(in)  :: Tbc_dv(:)
+   real,           intent(in)  :: Tbc_dd(:)
+   real,           intent(in)  :: Rs2(:,:)
+   real,           intent(out) :: d_Ref(:)
+   real,           intent(in)  :: a(:)
+   real,           intent(in)  :: b(:)
+   real,           intent(in)  :: c(:)
+   real,           intent(in)  :: d(:)
+
+   real :: e_l(SPixel%Ind%NSolar)
+   real :: Ref_over_l(SPixel%Ind%NSolar)
+
+   if (i_equation_form == 1 .or. i_equation_form == 3) then
+      e_l = d_CRP(:,IR_dv,i_p_crp) + &
+            (d_CRP(:,IT_dd,i_p_crp) * Tbc_d * d + &
+             c * (Rs2(:,IRho_DV) * d_CRP(:,IT_vv,i_p_crp) * Tbc_v + &
+                  Rs2(:,IRho_DD) * d_CRP(:,IT_dv,i_p_crp) * Tbc_d)) / a + &
+            c * d * Rs2(:,IRho_DD) * d_CRP(:,IR_dd,i_p_crp) * Tbc_dd / (a*a)
+   else
+      write (*,*) 'ERROR: FM_Solar(), diffuse-directional reflectance not' // &
+         ' supported with i_equation_form = ', i_equation_form
+      stop error_stop_code
+   end if
+
+   Ref_over_l = Tac_dv * e_l
+
+   d_Ref = f * Ref_over_l
+
+end subroutine derivative_wrt_crp_parameter_brdf_dv
+
+
+subroutine derivative_wrt_crp_parameter_brdf_dd(SPixel, i_p_crp, i_equation_form, &
+   CRP, d_CRP, f, Tac_dd, Tbc_0, Tbc_v, Tbc_d, Tbc_0v, Tbc_0d, Tbc_dv, Tbc_dd, &
+   Rs2, d_Ref, a, b)
+
+   use SPixel_m
+
+   implicit none
+
+   type(SPixel_t), intent(in)  :: SPixel
+   integer,        intent(in)  :: i_p_crp
+   integer,        intent(in)  :: i_equation_form
+   real,           intent(in)  :: CRP(:,:)
+   real,           intent(in)  :: d_CRP(:,:,:)
+   real,           intent(in)  :: f
+   real,           intent(in)  :: Tac_dd(:)
+   real,           intent(in)  :: Tbc_0(:)
+   real,           intent(in)  :: Tbc_v(:)
+   real,           intent(in)  :: Tbc_d(:)
+   real,           intent(in)  :: Tbc_0v(:)
+   real,           intent(in)  :: Tbc_0d(:)
+   real,           intent(in)  :: Tbc_dv(:)
+   real,           intent(in)  :: Tbc_dd(:)
+   real,           intent(in)  :: Rs2(:,:)
+   real,           intent(out) :: d_Ref(:)
+   real,           intent(in)  :: a(:)
+   real,           intent(in)  :: b(:)
+
+   real :: e_l(SPixel%Ind%NSolar)
+   real :: Ref_over_l(SPixel%Ind%NSolar)
+
+   if (i_equation_form == 1 .or. i_equation_form == 3) then
+      e_l = d_CRP(:,IR_dd,i_p_crp) + &
+            (2. * CRP(:,IT_dd) * d_CRP(:,IT_dd,i_p_crp) * &
+             Rs2(:,IRho_dd) * Tbc_dd) / a + &
+            CRP(:,IT_dd)**2 * Rs2(:,IRho_dd) * Tbc_dd * &
+            Rs2(:,IRho_dd) * d_CRP(:,IR_dd,i_p_crp) * Tbc_dd / (a*a)
+   else
+      write (*,*) 'ERROR: FM_Solar(), diffuse-diffuse reflectance not' // &
+         ' supported with i_equation_form = ', i_equation_form
+      stop error_stop_code
+   end if
+
+   Ref_over_l = Tac_dd * e_l
+
+   d_Ref = f * Ref_over_l
+
+end subroutine derivative_wrt_crp_parameter_brdf_dd
 
 
 subroutine derivative_wrt_rho_parameters_brdf(SPixel, i_equation_form, CRP, f, &
-   Tac_0v, Tbc_0, Tbc_v, Tbc_d, Tbc_0v, Tbc_0d, Tbc_dv, Tbc_dd, &
-   rho_l,  d_REF, a, b, c)
+   Tac_0v, Tbc_0, Tbc_v, Tbc_d, Tbc_0v, Tbc_0d, Tbc_dv, Tbc_dd, rho_l, d_Ref, &
+   a, b, c)
 
    use SPixel_m
 
@@ -293,27 +486,27 @@ subroutine derivative_wrt_rho_parameters_brdf(SPixel, i_equation_form, CRP, f, &
    real,           intent(in)  :: Tbc_dv(:)
    real,           intent(in)  :: Tbc_dd(:)
    real,           intent(in)  :: rho_l(:,:)
-   real,           intent(out) :: d_REF(SPixel%Ind%NSolar)
+   real,           intent(out) :: d_Ref(:)
    real,           intent(in)  :: a(:)
    real,           intent(in)  :: b(:)
    real,           intent(in)  :: c(:)
 
-   real :: d_l(SPixel%Ind%NSolar)
-   real :: REF_over_l(SPixel%Ind%NSolar)
+   real :: e_l(SPixel%Ind%NSolar)
+   real :: Ref_over_l(SPixel%Ind%NSolar)
 
-   if (i_equation_form .eq. 1) then
-      d_l =( CRP(:,IT_00) * (rho_l(:,IRho_0V) - rho_l(:,IRho_0D)) * CRP(:,IT_vv) * Tbc_0v &
+   if (i_equation_form == 1) then
+      e_l =( CRP(:,IT_00) * (rho_l(:,IRho_0V) - rho_l(:,IRho_0D)) * CRP(:,IT_vv) * Tbc_0v &
           + (CRP(:,IT_00) * rho_l(:,IRho_0D) * Tbc_0 + &
              CRP(:,IT_0d) * rho_l(:,IRho_DD) * Tbc_d) * c / a &
           +  b * c * rho_l(:,IRho_DD) * CRP(:,IR_dd) * Tbc_dd / (a*a)) &
           / SPixel%Geom%SEC_o(1)
-   else if (i_equation_form .eq. 2) then
-      d_l =  CRP(:,IT_00) * (rho_l(:,IRho_0V) - rho_l(:,IRho_0D)) * CRP(:,IT_vv) * Tbc_0v &
+   else if (i_equation_form == 2) then
+      e_l =  CRP(:,IT_00) * (rho_l(:,IRho_0V) - rho_l(:,IRho_0D)) * CRP(:,IT_vv) * Tbc_0v &
           + (CRP(:,IT_00) * rho_l(:,IRho_0D) * Tbc_0 + &
              CRP(:,IT_0d) * rho_l(:,IRho_DD) * Tbc_d) * c / a &
           +  b * c * rho_l(:,IRho_DD) * CRP(:,IR_dd) * Tbc_dd / (a*a)
-   else if (i_equation_form .eq. 3) then
-      d_l =( CRP(:,IT_00) * rho_l(:,IRho_0V) * CRP(:,IT_vv) * Tbc_0v &
+   else if (i_equation_form == 3) then
+      e_l =( CRP(:,IT_00) * rho_l(:,IRho_0V) * CRP(:,IT_vv) * Tbc_0v &
           +  CRP(:,IT_0d) * rho_l(:,IRho_DV) * CRP(:,IT_vv) * Tbc_dv &
           + (CRP(:,IT_00) * rho_l(:,IRho_0D) * Tbc_0 + &
              CRP(:,IT_0d) * rho_l(:,IRho_DD) * Tbc_d) * c / a &
@@ -321,7 +514,7 @@ subroutine derivative_wrt_rho_parameters_brdf(SPixel, i_equation_form, CRP, f, &
           +  b * c * rho_l(:,IRho_DD) * CRP(:,IR_dd) * Tbc_dd / (a*a)) &
           / SPixel%Geom%SEC_o(1)
    else
-      d_l =  CRP(:,IT_00) * rho_l(:,IRho_0V) * CRP(:,IT_vv) * Tbc_0v &
+      e_l =  CRP(:,IT_00) * rho_l(:,IRho_0V) * CRP(:,IT_vv) * Tbc_0v &
           +  CRP(:,IT_0d) * rho_l(:,IRho_DV) * CRP(:,IT_vv) * Tbc_dv &
           + (CRP(:,IT_00) * rho_l(:,IRho_0D) * Tbc_0 + &
              CRP(:,IT_0d) * rho_l(:,IRho_DD) * Tbc_d) * c / a &
@@ -329,19 +522,21 @@ subroutine derivative_wrt_rho_parameters_brdf(SPixel, i_equation_form, CRP, f, &
           +  b * c * rho_l(:,IRho_DD) * CRP(:,IR_dd) * Tbc_dd / (a*a)
    end if
 
-   REF_over_l = Tac_0v * d_l
+   Ref_over_l = Tac_0v * e_l
 
-   d_REF = f * REF_over_l + (1.0-f) * SPixel%RTM%dREF_clear_dRs * rho_l(:,IRho_DD)
+   d_Ref = f * Ref_over_l + (1.0-f) * SPixel%RTM%dRef_clear_dRs * rho_l(:,IRho_DD)
 
 end subroutine derivative_wrt_rho_parameters_brdf
 
 
-subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, REF, &
-                    d_REF, status)
+subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, i_layer, RTM_Pc, RTM_Pc2, X, GZero, &
+   Ref, d_Ref, status, Ref_0d, d_Ref_0d, Ref_dv, d_Ref_dv, Ref_dd, d_Ref_dd, &
+   RsX, RsX_0d, RsX_dv, RsX_dd, d_Ref_dRs2)
 
    use Ctrl_m
    use ECP_Constants_m
    use GZero_m
+   use Int_LUT_Routines_m
    use RTM_Pc_m
    use SAD_LUT_m
    use SPixel_m
@@ -352,50 +547,102 @@ subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, REF, &
 
    type(Ctrl_t),    intent(in)    :: Ctrl
    type(SAD_LUT_t), intent(in)    :: SAD_LUT
-   type(SPixel_t),  intent(inout) :: SPixel
+   type(SPixel_t),  intent(in)    :: SPixel
+   integer,         intent(in)    :: i_layer
    type(RTM_Pc_t),  intent(in)    :: RTM_Pc
+   type(RTM_Pc_t),  intent(in)    :: RTM_Pc2
    real,            intent(in)    :: X(:)
    type(GZero_t),   intent(in)    :: GZero
-   real,            intent(inout) :: CRP(:,:)
-   real,            intent(inout) :: d_CRP(:,:,:)
-   real,            intent(out)   :: REF(:)
-   real,            intent(out)   :: d_REF(:,:)
+   real,            intent(inout) :: Ref(:)
+   real,            intent(inout) :: d_Ref(:,:)
    integer,         intent(out)   :: status
+   real, optional,  intent(inout) :: Ref_0d(:)
+   real, optional,  intent(inout) :: d_Ref_0d(:,:)
+   real, optional,  intent(inout) :: Ref_dv(:)
+   real, optional,  intent(inout) :: d_Ref_dv(:,:)
+   real, optional,  intent(inout) :: Ref_dd(:)
+   real, optional,  intent(inout) :: d_Ref_dd(:,:)
+   real, optional,  intent(inout) :: RsX(:)
+   real, optional,  intent(inout) :: RsX_0d(:)
+   real, optional,  intent(inout) :: RsX_dv(:)
+   real, optional,  intent(inout) :: RsX_dd(:)
+   real, optional,  intent(inout) :: d_Ref_dRs2(:,:)
+
    ! Referencing of different properties stored in CRP and d_CRP: the last index
    ! of the CRP array refers to the property. Hence ITB is the index of TB, etc.
 
    ! Define local variables
    integer                            :: i, ii, j
+   integer                            :: ITauX, IReX, IPcX, IFrX
+   real                               :: dif_trans_fac
    integer                            :: Solar(SPixel%Ind%NSolar)
-   real                               :: REF_over(SPixel%Ind%NSolar)
+   real                               :: CRP(SPixel%Ind%NSolar, MaxCRProps)
+   real                               :: d_CRP(SPixel%Ind%NSolar, MaxCRProps, &
+                                               MaxCRPParams)
+   real                               :: Ref_over(SPixel%Ind%NSolar)
+   real                               :: Ref_over_0d(SPixel%Ind%NSolar)
+   real                               :: Ref_over_dv(SPixel%Ind%NSolar)
+   real                               :: Ref_over_dd(SPixel%Ind%NSolar)
+   real                               :: Ref_over_l(SPixel%Ind%NSolar)
+
    ! Atmospheric transmittances
-   real, dimension(SPixel%Ind%NSolar) :: Tac_0, Tac_v, Tac_0v
+   real, dimension(SPixel%Ind%NSolar) :: Tac_0, Tac_v, Tac_d
+   real, dimension(SPixel%Ind%NSolar) :: Tac_0v, Tac_0d, Tac_dv, Tac_dd
    real, dimension(SPixel%Ind%NSolar) :: Tbc_0, Tbc_v, Tbc_d
    real, dimension(SPixel%Ind%NSolar) :: Tbc_0v, Tbc_0d, Tbc_dv, Tbc_dd
+   real, dimension(SPixel%Ind%NSolar) :: Tsf_0v, Tsf_0d, Tsf_dv, Tsf_dd
+
    ! Derivatives of those wrt Pc
    real, dimension(SPixel%Ind%NSolar) :: Tac_0_l, Tac_v_l, Tac_0v_l
    real, dimension(SPixel%Ind%NSolar) :: Tbc_0_l, Tbc_v_l, Tbc_d_l, Tbc_dd_l
-   real, dimension(SPixel%Ind%NSolar) :: d_l, REF_over_l
+   real, dimension(SPixel%Ind%NSolar) :: Tsf_0v_l
+
    ! Lambertian surface model terms
    real, dimension(SPixel%Ind%NSolar) :: T_all
+
    ! Swansea surface model terms
    real, dimension(SPixel%Ind%NSolar) :: Ss, Sp, Sd, Sa
+   real                               :: Rs(SPixel%Ind%NSolar)
+   real                               :: Rs2(SPixel%Ind%NSolar,MaxRho_XX)
    real                               :: d_Rs(SPixel%Ind%NSolar,4)
-   real,    parameter                 :: gamma = 0.3
-   real,    parameter                 :: onemg = 1.0 - gamma
-   ! BRDF forward model terms
-   real, dimension(SPixel%Ind%NSolar) :: a, b, c, d
-   ! Used to determine d_REF(:,IRs); gives ratio between element and the term
+   real, parameter                    :: gamma = 0.3
+   real, parameter                    :: onemg = 1.0 - gamma
+
+   ! Auxilary variables
+   real, dimension(SPixel%Ind%NSolar) :: a, b, c, c_0d, c_dv, c_dd, d_dv, e, &
+                                         e_0d, e_dv, e_dd, e_l
+   real                               :: g, h
+
+   ! Used to determine d_Ref(:,IRs); gives ratio between element and the term
    ! that is retrieved.
    real                               :: rho_l(SPixel%Ind%NSolar, MaxRho_XX)
 #ifdef BKP
    integer :: bkp_lun ! Unit number for breakpoint file
    integer :: ios     ! I/O status for breakpoint file
 #endif
+   status = 0.
 
-   status = 0
-   d_REF  = 0
-   d_Rs   = 0
+   CRP    = 0.
+   d_CRP  = 0.
+   Rs     = 0.
+   d_Rs   = 0.
+   Rs2    = 0.
+
+   ! Choose the appropriate layer specific parameter indices.
+   if (i_layer < 2) then
+      ITauX = ITau
+      IReX  = IRe
+      IPcX  = IPc
+      IFrX  = IFr
+   else
+      ITauX = ITau2
+      IReX  = IRe2
+      IPcX  = IPc2
+      IFrX  = IFr2
+   end if
+
+   ! Diffuse transmittance mass path
+   dif_trans_fac = 1. ! 1. / cos(66. * d2r)
 
    ! Subscripts for solar channels in RTM arrays
    Solar = SPixel%spixel_y_solar_to_ctrl_y_solar_index(:SPixel%Ind%NSolar)
@@ -404,18 +651,27 @@ subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, REF, &
    call Set_CRP_Solar(Ctrl, SPixel%Ind, SPixel%spixel_y_solar_to_ctrl_y_index, &
         GZero, SAD_LUT, CRP, d_CRP, status)
 
-
    ! Fetch surface reflectance
-   if (Ctrl%RS%use_full_brdf) then
+   if (i_layer == 1) then
+      ! Surface BRDF parameters have been input directly by the caller.
+      Rs2(:,IRho_0V) = RsX
+      Rs2(:,IRho_0D) = RsX_0d
+      Rs2(:,IRho_DV) = RsX_dv
+      Rs2(:,IRho_DD) = RsX_dd
+   else if (Ctrl%RS%use_full_brdf) then
       ! Copy surface reflectances from X to SPixel%Surface
       do j = 1, MaxRho_XX
-         SPixel%Surface%Rs2(:,j) = X(SPixel%Surface%XIndex(:,j)) * &
-                                   SPixel%Surface%Ratios(:,j)
+         Rs2(:,j) = X(SPixel%Surface%XIndex(:,j)) * &
+                      SPixel%Surface%Ratios(:,j)
       end do
    else
       T_all = CRP(:,IT_00) + CRP(:,IT_0d) ! Direct + diffuse transmission
 
-      if (Ctrl%Approach == AerSw) then
+      if (Ctrl%Approach /= AppAerSw) then
+         ! Copy Lambertian surface reflectances from X to SPixel%Surface
+         Rs = X(SPixel%Surface%XIndex(:,IRho_DD)) * &
+                SPixel%Surface%Ratios(:,IRho_DD)
+      else
          ! D is proportion of the downward transmission which is diffuse
          Sd = CRP(:,IT_0d) / T_all
 
@@ -425,7 +681,7 @@ subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, REF, &
 
          ! Calculate surface reflectance with Swansea surface
          Sa = 1.0 - onemg * Ss ! Denominator
-         SPixel%Surface%Rs = &
+         Rs = &
               ! Forward model as written in ATBD
               (1.0 - Sd) * (Sp * Ss + gamma * onemg * Ss * Ss / Sa) + &
               Sd * gamma * Ss / Sa
@@ -433,29 +689,31 @@ subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, REF, &
 !             Sp * Ss + Sd * Ss * (gamma - Sp) + gamma * onemg * Ss * Ss / Sa
 
          ! Derivatives of Rs wrt state vector terms
-         call rs_derivative_wrt_crp_parameter(ITau, gamma, Ss, Sp, CRP, d_CRP, &
-              T_all, d_Rs)
-         call rs_derivative_wrt_crp_parameter(IRe,  gamma, Ss, Sp, CRP, d_CRP, &
-              T_all, d_Rs)
+         call rs_derivative_wrt_crp_parameter(ITauX, ITauCRP, gamma, Ss, Sp, &
+              CRP, d_CRP, T_all, d_Rs)
+         call rs_derivative_wrt_crp_parameter(IReX,  IReCRP,  gamma, Ss, Sp, &
+              CRP, d_CRP, T_all, d_Rs)
          ! Derivative wrt s vector (Using hardcoded second index for d_Rs as we
          ! only need to reference the s vector in this routine)
          d_Rs(:,ISv) = Sp + Sd * (gamma - Sp) + &
               gamma * onemg * Ss * (1.0 + Sa) / (Sa * Sa)
          ! Derivative wrt p vector
          d_Rs(:,IPv) = Ss * (1.0 - Sd)
-      else
-         ! Cloud Lambertian surface
-         SPixel%Surface%Rs = X(SPixel%Surface%XIndex(:,IRho_DD)) * &
-                             SPixel%Surface%Ratios(:,IRho_DD)
       end if
    end if
 
+   d_Ref = 0.
+   if (present(d_Ref_0d)) d_Ref_0d = 0.
+   if (present(d_Ref_dv)) d_Ref_dv = 0.
+   if (present(d_Ref_dd)) d_Ref_dd = 0.
 
    if (Ctrl%RTMIntSelm == RTMIntMethNone) then
       ! Above/below cloud transmittances are 1 for infinite extent cloud/aerosol
       Tac_0  = 1.0
       Tac_v  = 1.0
       Tac_0v = 1.0
+      Tac_0d = 1.0
+      Tac_dd = 1.0
       Tbc_0  = 1.0
       Tbc_v  = 1.0
       Tbc_d  = 1.0
@@ -465,36 +723,77 @@ subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, REF, &
       Tbc_dd = 1.0
    else
       do i = 1, SPixel%Ind%NSolar
-         ! Calculate above cloud (ac) beam transmittances
-         ! At solar zenith angle:
-         Tac_0(i) = RTM_Pc%SW%Tac(Solar(i)) ** &
-              SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i)))
-         ! At sensor viewing angle:
-         Tac_v(i) = RTM_Pc%SW%Tac(Solar(i)) ** &
-              SPixel%Geom%SEC_v(SPixel%ViewIdx(SPixel%Ind%YSolar(i)))
+         ! Calculate above cloud (ac) beam transmittances.
+         if (i_layer == 2) then
+            ! In this case this is the first call of two-layer use called for
+            ! the lower layer where the outputs are BRDF parameters representing
+            ! the combination of the lower layer and the atmosphere and surface
+            ! below and should not include above cloud extinction.
 
-         ! Calculate below cloud (bc) beam transmittances
-         ! At solar zenith angle:
-         Tbc_0(i) = RTM_Pc%SW%Tbc(Solar(i)) ** &
-              SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i)))
-         ! At sensor viewing angle:
-         Tbc_v(i) = RTM_Pc%SW%Tbc(Solar(i)) ** &
-              SPixel%Geom%SEC_v(SPixel%ViewIdx(SPixel%Ind%YSolar(i)))
+            ! At solar zenith angle:
+            Tac_0(i) = 1.
+            ! At sensor viewing angle:
+            Tac_v(i) = 1.
+            ! Diffuse:
+            Tac_d(i) = 1.
+         else
+            ! At solar zenith angle:
+            Tac_0(i) = RTM_Pc%SW%Tac(Solar(i)) ** &
+                 SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i)))
+            ! At sensor viewing angle:
+            Tac_v(i) = RTM_Pc%SW%Tac(Solar(i)) ** &
+                 SPixel%Geom%SEC_v(SPixel%ViewIdx(SPixel%Ind%YSolar(i)))
+            ! Diffuse:
+            Tac_d(i) = RTM_Pc%SW%Tac(Solar(i)) ** dif_trans_fac
+         end if
 
-         ! Calculate below cloud (bc) diffuse transmittances
-         Tbc_d(i) = RTM_Pc%SW%Tbc(Solar(i)) ! ** (1. / cos(66. * d2r))
+         ! Calculate below cloud (bc) beam transmittances.
+         if (i_layer == 1) then
+            ! In this case this is the second call of two-layer use called for
+            ! upper layer where below cloud transmittances should not include
+            ! the atmosphere below the lower layer.
+            g = RTM_Pc%SW%Tbc(Solar(i)) / RTM_Pc2%SW%Tbc(Solar(i))
+
+            ! At solar zenith angle:
+            Tbc_0(i) = g ** &
+                 SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i)))
+            ! At sensor viewing angle:
+            Tbc_v(i) = g ** &
+                 SPixel%Geom%SEC_v(SPixel%ViewIdx(SPixel%Ind%YSolar(i)))
+            ! Diffuse:
+            Tbc_d(i) = g ** dif_trans_fac
+         else
+            ! At solar zenith angle:
+            Tbc_0(i) = RTM_Pc%SW%Tbc(Solar(i)) ** &
+                 SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i)))
+            ! At sensor viewing angle:
+            Tbc_v(i) = RTM_Pc%SW%Tbc(Solar(i)) ** &
+                 SPixel%Geom%SEC_v(SPixel%ViewIdx(SPixel%Ind%YSolar(i)))
+            ! Diffuse:
+            Tbc_d(i) = RTM_Pc%SW%Tbc(Solar(i)) ** dif_trans_fac
+         end if
       end do
 
-      ! Calculate solar transmittance from TOA to cloud-top times the viewing
-      ! transmittance from cloud-top to TOA
+      ! Calculate transmittance from TOA to cloud times transmittance from
+      ! cloud to TOA.
       Tac_0v = Tac_0 * Tac_v
+      Tac_0d = Tac_0 * Tac_d
+      Tac_dv = Tac_d * Tac_v
+      Tac_dd = Tac_d * Tac_d
 
-      ! Calculate transmittance from cloud to surface times transmittance from
-      ! surface to cloud
+      ! Calculate transmittances from cloud to surface times transmittance from
+      ! surface to cloud.
       Tbc_0v = Tbc_0 * Tbc_v
       Tbc_0d = Tbc_0 * Tbc_d
       Tbc_dv = Tbc_d * Tbc_v
       Tbc_dd = Tbc_d * Tbc_d
+
+      ! Calculate transmittances from TOA to surface times transmittance from
+      ! surface to TOA.
+      Tsf_0v = Tac_0 * Tbc_0 * Tac_v * Tbc_v
+      Tsf_0d = Tac_0 * Tbc_0 * Tac_d * Tbc_d
+      Tsf_dv = Tac_d * Tbc_d * Tac_v * Tbc_v
+      Tsf_dd = Tac_d * Tbc_d * Tac_d * Tbc_d
    end if
 
 
@@ -505,62 +804,62 @@ if (.not. Ctrl%RS%use_full_brdf) then
    ! Calculate auxillary quantities used for the reflectance and its
    ! derivatives
 
-   a = 1.0 - SPixel%Surface%Rs * CRP(:,IR_dd) * Tbc_dd
+   a = 1.0 - Rs * CRP(:,IR_dd) * Tbc_dd
 
-   d = T_all * SPixel%Surface%Rs * CRP(:,IT_dv) * Tbc_dd / a
+   b = T_all * Rs * CRP(:,IT_dv) * Tbc_dd / a
 
    ! Calculate overcast reflectance
-   REF_over = Tac_0v * (CRP(:,IR_0v) + d)
+   Ref_over = Tac_0v * (CRP(:,IR_0v) + b)
 
    ! Calculate top of atmosphere reflectance for fractional cloud cover
-   REF = X(IFr) * REF_over + (1.0-X(IFr)) * SPixel%RTM%REF_clear
+   Ref = X(IFrX) * Ref_over + (1.0-X(IFrX)) * SPixel%RTM%Ref_clear
 
    ! Derivative w.r.t. cloud optical depth, Tau
-   call derivative_wrt_crp_parameter(ITau, SPixel%Surface%Rs, CRP, d_CRP, &
-        X(IFr), Tac_0v, Tbc_dd, T_all, d, a, d_Rs, d_REF)
+   call derivative_wrt_crp_parameter(ITauCRP, Rs, CRP, d_CRP, X(IFrX), Tac_0v, &
+        Tbc_dd, T_all, b, a, d_Rs(:,ITauX), d_Ref(:,ITauX))
 
    ! Derivative w.r.t. effective radius, r_e
-   call derivative_wrt_crp_parameter(IRe,  SPixel%Surface%Rs, CRP, d_CRP, &
-        X(IFr), Tac_0v, Tbc_dd, T_all, d, a, d_Rs, d_REF)
+   call derivative_wrt_crp_parameter(IReCRP,  Rs, CRP, d_CRP, X(IFrX), Tac_0v, &
+        Tbc_dd, T_all, b, a, d_Rs(:,IReX),  d_Ref(:,IReX))
 
    ! Derivative w.r.t. cloud-top pressure, P_c
    if (Ctrl%RTMIntSelm /= RTMIntMethNone) then
       do i = 1, SPixel%Ind%NSolar
-         d_REF(i,IPc) = X(IFr) * &
+         d_Ref(i,IPcX) = X(IFrX) * &
             (1.0 * RTM_Pc%SW%dTac_dPc(Solar(i)) * &
                    (SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i))) + &
                     SPixel%Geom%SEC_v(SPixel%ViewIdx(SPixel%Ind%YSolar(i)))) &
-                 * REF_over(i) / RTM_Pc%SW%Tac(Solar(i))) + &
-            (2.0 * RTM_Pc%SW%dTbc_dPc(Solar(i)) * Tac_0v(i) * d(i) * &
+                 * Ref_over(i) / RTM_Pc%SW%Tac(Solar(i))) + &
+            (2.0 * RTM_Pc%SW%dTbc_dPc(Solar(i)) * Tac_0v(i) * b(i) * &
                    RTM_Pc%SW%Tbc(Solar(i)) * &
-                   (1.0/Tbc_dd(i) + CRP(i,IR_dd) * SPixel%Surface%Rs(i) / a(i)))
+                   (1.0/Tbc_dd(i) + CRP(i,IR_dd) * Rs(i) / a(i)))
       end do
    end if
 
    ! Derivative w.r.t. cloud fraction, f
-   d_REF(:,IFr) = REF_over - SPixel%RTM%REF_clear
+   d_Ref(:,IFrX) = Ref_over - SPixel%RTM%Ref_clear
 
    ! Derivative w.r.t. surface temperature, T_s
-!  d_REF(:,ITs) = 0.0 ! Constant and zero
+!  d_Ref(:,ITs) = 0.0 ! Constant and zero
 
    ! Derivative w.r.t. surface reflectance, R_s
    do i = 1, SPixel%Ind%NSolar
       ii = SPixel%spixel_y_solar_to_ctrl_y_solar_index(i)
-      d_REF(i,IRs(ii,IRho_DD)) = ( &
-           X(IFr) * Tac_0v(i) * Tbc_dd(i) / a(i) * (T_all(i) * CRP(i,IT_dv) + &
-                                                    d(i) * CRP(i,IR_dd)) + &
-           (1.0-X(IFr)) * SPixel%RTM%dREF_clear_dRs(i))
+      d_Ref(i,IRs(ii,IRho_DD)) = ( &
+           X(IFrX) * Tac_0v(i) * Tbc_dd(i) / a(i) * (T_all(i) * CRP(i,IT_dv) + &
+                                                     b(i) * CRP(i,IR_dd)) + &
+           (1.0-X(IFrX)) * SPixel%RTM%dRef_clear_dRs(i))
    end do
 
-   if (Ctrl%Approach == AerSw) then
+   if (Ctrl%Approach == AppAerSw) then
       ! Derivatives wrt Swansea surface parameters
       do i = 1, SPixel%Ind%NSolar
          ii = SPixel%spixel_y_solar_to_ctrl_y_solar_index(i)
 
-         d_REF(i,SPixel%Surface%XIndex(i,ISwan_S)) = &
-              d_REF(i,IRs(ii,IRho_DD)) * d_Rs(i,ISv)
-         d_REF(i,SPixel%Surface%XIndex(i,ISwan_P)) = &
-              d_REF(i,IRs(ii,IRho_DD)) * d_Rs(i,IPv)
+         d_Ref(i,SPixel%Surface%XIndex(i,ISwan_S)) = &
+              d_Ref(i,IRs(ii,IRho_DD)) * d_Rs(i,ISv)
+         d_Ref(i,SPixel%Surface%XIndex(i,ISwan_P)) = &
+              d_Ref(i,IRs(ii,IRho_DD)) * d_Rs(i,IPv)
       end do
    end if
 
@@ -571,12 +870,12 @@ else
    ! Calculate auxillary quantities used for the reflectance and its
    ! derivatives
 
-   a = 1. - SPixel%Surface%Rs2(:,IRho_DD) * CRP(:,IR_dd) * Tbc_dd
+   a = 1. - Rs2(:,IRho_DD) * CRP(:,IR_dd) * Tbc_dd
 
-   b = CRP(:,IT_00) * SPixel%Surface%Rs2(:,IRho_0D) * Tbc_0 + CRP(:,IT_0d) * &
-          SPixel%Surface%Rs2(:,IRho_DD) * Tbc_d
+   b = CRP(:,IT_00) * Rs2(:,IRho_0D) * Tbc_0 + CRP(:,IT_0d) * &
+          Rs2(:,IRho_DD) * Tbc_d
 
-   ! Calculate overcast reflectance.
+   ! Calculate overcast bidirectional reflectance
    !
    ! This reflectance should be sun normalized [scaled by cos(theta_0)].  The
    ! bidirectional reflectance of the cloud/aerosol layer CRP(:,IR_0v) is in the
@@ -597,177 +896,416 @@ else
    ! Equations 3 and 4 obey the principal of reciprocity and produce slightly
    ! better results.
 
-   if (Ctrl%i_equation_form .eq. 1) then
+   if (Ctrl%i_equation_form == 1) then
       c = CRP(:,IT_dv) * Tbc_d
 
-      d = CRP(:,IR_0v) + &
-         (CRP(:,IT_00) * (SPixel%Surface%Rs2(:,IRho_0V) - SPixel%Surface%Rs2(:,IRho_0D)) * &
+      e = CRP(:,IR_0v) + &
+         (CRP(:,IT_00) * (Rs2(:,IRho_0V) - Rs2(:,IRho_0D)) * &
              CRP(:,IT_vv) * Tbc_0v + &
           b * c / a) / SPixel%Geom%SEC_o(1) ! Only nadir zenith used
-
-      REF_over = Tac_0v * d
-   else if (Ctrl%i_equation_form .eq. 2) then
+   else if (Ctrl%i_equation_form == 2) then
       c = CRP(:,IT_dv) * Tbc_d
 
-      d = CRP(:,IR_0v) + &
-          CRP(:,IT_00) * (SPixel%Surface%Rs2(:,IRho_0V) - SPixel%Surface%Rs2(:,IRho_0D)) * &
+      e = CRP(:,IR_0v) + &
+          CRP(:,IT_00) * (Rs2(:,IRho_0V) - Rs2(:,IRho_0D)) * &
              CRP(:,IT_vv) * Tbc_0v + &
           b * c / a
-
-      REF_over = Tac_0v * d
-   else if (Ctrl%i_equation_form .eq. 3) then
-      c = CRP(:,IT_dv) * Tbc_d + CRP(:,IR_dd) * SPixel%Surface%Rs2(:,IRho_DV) * &
+   else if (Ctrl%i_equation_form == 3) then
+      c = CRP(:,IT_dv) * Tbc_d + CRP(:,IR_dd) * Rs2(:,IRho_DV) * &
              CRP(:,IT_vv) * Tbc_dd * Tbc_v
-
-      d = CRP(:,IR_0v) + &
-         (CRP(:,IT_00) * SPixel%Surface%Rs2(:,IRho_0V) * CRP(:,IT_vv) * Tbc_0v + &
-          CRP(:,IT_0d) * SPixel%Surface%Rs2(:,IRho_DV) * CRP(:,IT_vv) * Tbc_dv + &
+      e = CRP(:,IR_0v) + &
+         (CRP(:,IT_00) * Rs2(:,IRho_0V) * CRP(:,IT_vv) * Tbc_0v + &
+          CRP(:,IT_0d) * Rs2(:,IRho_DV) * CRP(:,IT_vv) * Tbc_dv + &
           b * c / a) / SPixel%Geom%SEC_o(1) ! Only nadir zenith used
-
-      REF_over = Tac_0v * d
    else
-      c = CRP(:,IT_dv) * Tbc_d + CRP(:,IR_dd) * SPixel%Surface%Rs2(:,IRho_DV) * &
+      c = CRP(:,IT_dv) * Tbc_d + CRP(:,IR_dd) * Rs2(:,IRho_DV) * &
              CRP(:,IT_vv) * Tbc_dd * Tbc_v
 
-      d = CRP(:,IR_0v) + &
-          CRP(:,IT_00) * SPixel%Surface%Rs2(:,IRho_0V) * CRP(:,IT_vv) * Tbc_0v + &
-          CRP(:,IT_0d) * SPixel%Surface%Rs2(:,IRho_DV) * CRP(:,IT_vv) * Tbc_dv + &
+      e = CRP(:,IR_0v) + &
+          CRP(:,IT_00) * Rs2(:,IRho_0V) * CRP(:,IT_vv) * Tbc_0v + &
+          CRP(:,IT_0d) * Rs2(:,IRho_DV) * CRP(:,IT_vv) * Tbc_dv + &
           b * c / a
-
-      REF_over = Tac_0v * d
    end if
 
-   ! Calculate top of atmosphere reflectance for fractional cloud cover
-   REF = X(IFr) * REF_over + (1.0-X(IFr)) * SPixel%RTM%REF_clear
+   Ref_over = Tac_0v * e
+
+   ! Calculate top of atmosphere bidirectional reflectance for fractional cloud
+   ! cover
+   if (i_layer == 0) then
+      Ref = X(IFrX) * Ref_over + (1.0-X(IFrX)) * SPixel%RTM%Ref_clear
+   else
+      Ref = X(IFrX) * Ref_over + (1.0-X(IFrX)) * Rs2(:,IRho_0V) * Tsf_0v
+   end if
+
+   ! Calculate overcast directional-diffuse reflectance
+   if (present(Ref_0d)) then
+      if (Ctrl%i_equation_form == 1 .or. Ctrl%i_equation_form == 3) then
+         c_0d = CRP(:,IT_dd) * Tbc_d
+if (USE_REVISED_REF_0D) then
+         e_0d = CRP(:,IR_0d) + b * c_0d / a
+else
+         e_0d = CRP(:,IR_0d) + &
+            CRP(:,IT_00) * Rs2(:,IRho_0V) * CRP(:,IT_vd) * Tbc_0v + &
+            b * c_0d / a
+end if
+         Ref_over_0d = Tac_0d * e_0d
+      else
+         write (*,*) 'ERROR: FM_Solar(), directional-diffuse reflectance not' // &
+            ' supported with i_equation_form = ', Ctrl%i_equation_form
+         stop error_stop_code
+      end if
+
+      ! Calculate top of atmosphere directional-diffuse reflectance for
+      ! fractional cloud cover
+      Ref_0d = X(IFrX) * Ref_over_0d + (1.0-X(IFrX)) * Rs2(:,IRho_0D) * Tsf_0d
+   end if
+
+   ! Calculate overcast diffuse-directional reflectance
+   if (present(Ref_dv)) then
+      if (Ctrl%i_equation_form == 1 .or. Ctrl%i_equation_form == 3) then
+         c_dv = CRP(:,IT_dd) * Tbc_d
+
+         d_dv = Rs2(:,IRho_DV) * CRP(:,IT_vv) * Tbc_v + &
+                Rs2(:,IRho_DD) * CRP(:,IT_dv) * Tbc_d
+
+         e_dv = CRP(:,IR_dv) + c_dv * d_dv / a
+
+         Ref_over_dv = Tac_0d * e_dv
+      else
+         write (*,*) 'ERROR: FM_Solar(), diffuse-directional reflectance not' // &
+            ' supported with i_equation_form = ', Ctrl%i_equation_form
+         stop error_stop_code
+      end if
+
+      ! Calculate top of atmosphere diffuse-directional reflectance for
+      ! fractional cloud cover
+      Ref_dv = X(IFrX) * Ref_over_dv + (1.0-X(IFrX)) * Rs2(:,IRho_DV) * Tsf_dv
+   end if
+
+   ! Calculate overcast diffuse-diffuse reflectance
+   if (present(Ref_dd)) then
+      if (Ctrl%i_equation_form == 1 .or. Ctrl%i_equation_form == 3) then
+         e_dd = CRP(:,IR_dd) + &
+            (CRP(:,IT_dd)**2 * Rs2(:,IRho_dd) * Tbc_dd) / a
+
+         Ref_over_dd = Tac_dd * e_dd
+      else
+         write (*,*) 'ERROR: FM_Solar(), diffuse-diffuse reflectance not' // &
+            ' supported with i_equation_form = ', Ctrl%i_equation_form
+         stop error_stop_code
+      end if
+
+      ! Calculate top of atmosphere diffuse-diffuse reflectance for fractional
+      ! cloud cover
+      Ref_dd = X(IFrX) * Ref_over_dd + (1.0-X(IFrX)) * Rs2(:,IRho_DD) * Tsf_dd
+   end if
 
    ! Calculate derivatives of reflectance w.r.t. all other variables or part
    ! cloudy conditions
 
-   ! Derivative w.r.t. cloud optical depth, Tau
-   call derivative_wrt_crp_parameter_brdf(SPixel, ITau, Ctrl%i_equation_form, CRP, &
-      d_CRP, X(IFr), Tac_0v, Tbc_0, Tbc_v, Tbc_d, Tbc_0v, Tbc_0d, Tbc_dv, &
-      Tbc_dd, SPixel%Surface%Rs2, d_REF(:,ITau), a, b, c)
+   ! Derivative of bidirectional reflectance w.r.t. cloud optical depth
+   call derivative_wrt_crp_parameter_brdf_0v(SPixel, ITauCRP, &
+        Ctrl%i_equation_form, CRP, d_CRP, X(IFrX), Tac_0v, Tbc_0, Tbc_v, &
+        Tbc_d, Tbc_0v, Tbc_0d, Tbc_dv, Tbc_dd, Rs2, d_Ref(:,ITauX), a, b, c)
 
-   ! Derivative w.r.t. effective radius, r_e
-   call derivative_wrt_crp_parameter_brdf(SPixel, IRe,  Ctrl%i_equation_form, CRP, &
-      d_CRP, X(IFr), Tac_0v, Tbc_0, Tbc_v, Tbc_d, Tbc_0v, Tbc_0d, Tbc_dv, &
-      Tbc_dd, SPixel%Surface%Rs2, d_REF(:,IRe), a, b, c)
+   ! Derivative of bidirectional reflectance w.r.t. effective radius
+   call derivative_wrt_crp_parameter_brdf_0v(SPixel, IReCRP, &
+        Ctrl%i_equation_form, CRP, d_CRP, X(IFrX), Tac_0v, Tbc_0, Tbc_v, &
+        Tbc_d, Tbc_0v, Tbc_0d, Tbc_dv, Tbc_dd, Rs2, d_Ref(:,IReX), a, b, c)
+
+   if (present(d_Ref_0d)) then
+      ! Derivative of directional-diffuse reflectance w.r.t. cloud optical depth
+      call derivative_wrt_crp_parameter_brdf_0d(SPixel, ITauCRP, &
+           Ctrl%i_equation_form, CRP, d_CRP, X(IFrX), Tac_0d, Tbc_0, Tbc_v, &
+           Tbc_d, Tbc_0v, Tbc_0d, Tbc_dv, Tbc_dd, Rs2, d_Ref_0d(:,ITauX), &
+           a, b, c_0d)
+
+      ! Derivative of directional-diffuse reflectance w.r.t. effective radius
+      call derivative_wrt_crp_parameter_brdf_0d(SPixel, IReCRP, &
+           Ctrl%i_equation_form, CRP, d_CRP, X(IFrX), Tac_0d, Tbc_0, Tbc_v, &
+           Tbc_d, Tbc_0v, Tbc_0d, Tbc_dv, Tbc_dd, Rs2, d_Ref_0d(:,IReX), &
+           a, b, c_0d)
+   end if
+
+   if (present(d_Ref_dv)) then
+      ! Derivative of diffuse-directional reflectance w.r.t. cloud optical depth
+      call derivative_wrt_crp_parameter_brdf_dv(SPixel, ITauCRP, &
+           Ctrl%i_equation_form, CRP, d_CRP, X(IFrX), Tac_dv, Tbc_0, Tbc_v, &
+           Tbc_d, Tbc_0v, Tbc_0d, Tbc_dv, Tbc_dd, Rs2, d_Ref_dv(:,ITauX), &
+           a, b, c_dv, d_dv)
+
+      ! Derivative of diffuse-directional reflectance w.r.t. effective radius
+      call derivative_wrt_crp_parameter_brdf_dv(SPixel, IReCRP, &
+           Ctrl%i_equation_form, CRP, d_CRP, X(IFrX), Tac_dv, Tbc_0, Tbc_v, &
+           Tbc_d, Tbc_0v, Tbc_0d, Tbc_dv, Tbc_dd, Rs2, d_Ref_dv(:,IReX), &
+           a, b, c_dv, d_dv)
+   end if
+
+   if (present(d_Ref_dd)) then
+      ! Derivative of diffuse-diffuse reflectance w.r.t. cloud optical depth
+      call derivative_wrt_crp_parameter_brdf_dd(SPixel, ITauCRP, &
+           Ctrl%i_equation_form, CRP, d_CRP, X(IFrX), Tac_dd, Tbc_0, Tbc_v, &
+           Tbc_d, Tbc_0v, Tbc_0d, Tbc_dv, Tbc_dd, Rs2, d_Ref_dd(:,ITauX), a, b)
+
+      ! Derivative of diffuse-diffuse reflectance w.r.t. effective radius
+      call derivative_wrt_crp_parameter_brdf_dd(SPixel, IReCRP, &
+           Ctrl%i_equation_form, CRP, d_CRP, X(IFrX), Tac_dd, Tbc_0, Tbc_v, &
+           Tbc_d, Tbc_0v, Tbc_0d, Tbc_dv, Tbc_dd, Rs2, d_Ref_dd(:,IReX), a, b)
+   end if
 
    ! Calculate the derivatives of the above cloud (ac) beam transmittances
    if (Ctrl%RTMIntSelm /= RTMIntMethNone) then
       do i = 1, SPixel%Ind%NSolar
-         ! Above cloud at solar zenith angle:
-         Tac_0_l(i) = RTM_Pc%SW%dTac_dPc(Solar(i)) * &
-            SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i))) * &
-            RTM_Pc%SW%Tac(Solar(i)) ** &
-               (SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i))) - 1.)
-         ! Above cloud at viewing angle:
-         Tac_v_l(i) = RTM_Pc%SW%dTac_dPc(Solar(i)) * &
-            SPixel%Geom%SEC_v(SPixel%ViewIdx(SPixel%Ind%YSolar(i))) * &
-            RTM_Pc%SW%Tac(Solar(i)) ** &
-               (SPixel%Geom%SEC_v(SPixel%ViewIdx(SPixel%Ind%YSolar(i))) - 1.)
+         if (i_layer == 2) then
+            ! Above cloud at solar zenith angle:
+            Tac_0_l(i) = 0.
+            ! Above cloud at viewing angle:
+            Tac_v_l(i) = 0.
+         else
+            ! Above cloud at solar zenith angle:
+            Tac_0_l(i) = RTM_Pc%SW%dTac_dPc(Solar(i)) * &
+               SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i))) * &
+               RTM_Pc%SW%Tac(Solar(i)) ** &
+                  (SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i))) - 1.)
+            ! Above cloud at viewing angle:
+            Tac_v_l(i) = RTM_Pc%SW%dTac_dPc(Solar(i)) * &
+               SPixel%Geom%SEC_v(SPixel%ViewIdx(SPixel%Ind%YSolar(i))) * &
+               RTM_Pc%SW%Tac(Solar(i)) ** &
+                  (SPixel%Geom%SEC_v(SPixel%ViewIdx(SPixel%Ind%YSolar(i))) - 1.)
+         end if
       end do
 
-      ! Calculate the derivative of the solar transmittance from TOA to cloud-top
-      ! times the viewing transmittance from cloud-top to TOA
+      ! Calculate the derivative of the solar transmittance from TOA to cloud-
+      ! top times the viewing transmittance from cloud-top to TOA
       Tac_0v_l = Tac_0_l * Tac_v + Tac_0 * Tac_v_l
 
       ! Calculate the derivatives of the below cloud (bc) beam transmittances
       do i = 1, SPixel%Ind%NSolar
-         ! At solar zenith angle:
-         Tbc_0_l(i) = RTM_Pc%SW%dTbc_dPc(Solar(i)) * &
-            SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i))) * &
-            RTM_Pc%SW%Tbc(Solar(i)) ** &
-               (SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i))) - 1.)
-         ! At sensor viewing angle:
-         Tbc_v_l(i) = RTM_Pc%SW%dTbc_dPc(Solar(i)) * &
-            SPixel%Geom%SEC_v(SPixel%ViewIdx(SPixel%Ind%YSolar(i))) * &
-            RTM_Pc%SW%Tbc(Solar(i)) ** &
-               (SPixel%Geom%SEC_v(SPixel%ViewIdx(SPixel%Ind%YSolar(i))) - 1.)
-         ! Diffuse
-         Tbc_d_l(i) = RTM_Pc%SW%dTbc_dPc(Solar(i)) ! &
-!        * (1. / cos(66. * d2r)) * RTM_Pc%SW%Tbc(i) ** (1. / cos(66. * d2r) - 1.)
+         if (i_layer == 1) then
+            h = RTM_Pc%SW%dTbc_dPc(Solar(i)) / RTM_Pc2%SW%Tbc(Solar(i))
+
+            ! At solar zenith angle:
+            Tbc_0_l(i) = h * &
+               SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i))) * &
+               g ** (SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i))) - 1.)
+            ! At sensor viewing angle:
+            Tbc_v_l(i) = h * &
+               SPixel%Geom%SEC_v(SPixel%ViewIdx(SPixel%Ind%YSolar(i))) * &
+               g ** (SPixel%Geom%SEC_v(SPixel%ViewIdx(SPixel%Ind%YSolar(i))) - 1.)
+            ! Diffuse
+            Tbc_d_l(i) = h * dif_trans_fac * g ** (dif_trans_fac - 1.)
+         else
+            ! At solar zenith angle:
+            Tbc_0_l(i) = RTM_Pc%SW%dTbc_dPc(Solar(i)) * &
+               SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i))) * &
+               RTM_Pc%SW%Tbc(Solar(i)) ** &
+                    (SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i))) - 1.)
+            ! At sensor viewing angle:
+            Tbc_v_l(i) = RTM_Pc%SW%dTbc_dPc(Solar(i)) * &
+               SPixel%Geom%SEC_v(SPixel%ViewIdx(SPixel%Ind%YSolar(i))) * &
+               RTM_Pc%SW%Tbc(Solar(i)) ** &
+                    (SPixel%Geom%SEC_v(SPixel%ViewIdx(SPixel%Ind%YSolar(i))) - 1.)
+            ! Diffuse
+            Tbc_d_l(i) = RTM_Pc%SW%dTbc_dPc(Solar(i)) * dif_trans_fac * &
+               RTM_Pc%SW%Tbc(i) ** (dif_trans_fac - 1.)
+         end if
       end do
 
       ! Calculate the derivative of the diffuse transmittance from cloud to
       ! surface times transmittance from surface to cloud
       Tbc_dd_l = 2. * Tbc_d_l * Tbc_d
 
-      ! Derivative w.r.t. cloud-top pressure, P_c
-      if (Ctrl%i_equation_form .eq. 1) then
-         d_l = (CRP(:,IT_00) * (SPixel%Surface%Rs2(:,IRho_0V) - SPixel%Surface%Rs2(:,IRho_0D)) * &
+      Tsf_0v_l = Tac_0_l * Tbc_0   * Tac_v   * Tbc_v + &
+                 Tac_0   * Tbc_0_l * Tac_v   * Tbc_v + &
+                 Tac_0   * Tbc_0   * Tac_v_l * Tbc_v + &
+                 Tac_0   * Tbc_0   * Tac_v   * Tbc_v_l
+
+      ! Derivative of bidirectionals reflectance w.r.t. cloud-top pressure, P_c
+      if (Ctrl%i_equation_form == 1) then
+         e_l = (CRP(:,IT_00) * (Rs2(:,IRho_0V) - Rs2(:,IRho_0D)) * &
                   CRP(:,IT_vv) * (Tbc_0_l * Tbc_v + Tbc_0 * Tbc_v_l) + &
-               ((CRP(:,IT_00) * SPixel%Surface%Rs2(:,IRho_0D) * Tbc_0_l + CRP(:,IT_0d) * &
-                  SPixel%Surface%Rs2(:,IRho_DD) * Tbc_d_l) * c + b * (                   &
+               ((CRP(:,IT_00) * Rs2(:,IRho_0D) * Tbc_0_l + CRP(:,IT_0d) * &
+                  Rs2(:,IRho_DD) * Tbc_d_l) * c + b * (                   &
                   CRP(:,IT_dv) * Tbc_d_l)) / a + &
-               b * c * SPixel%Surface%Rs2(:,IRho_DD) * CRP(:,IR_dd) * Tbc_dd_l / (a*a)) / SPixel%Geom%SEC_o(1)
-      else if (Ctrl%i_equation_form .eq. 2) then
-         d_l = CRP(:,IT_00) * (SPixel%Surface%Rs2(:,IRho_0V) - SPixel%Surface%Rs2(:,IRho_0D)) * &
+               b * c * Rs2(:,IRho_DD) * CRP(:,IR_dd) * Tbc_dd_l / (a*a)) / &
+               SPixel%Geom%SEC_o(1)
+      else if (Ctrl%i_equation_form == 2) then
+         e_l = CRP(:,IT_00) * (Rs2(:,IRho_0V) - Rs2(:,IRho_0D)) * &
                   CRP(:,IT_vv) * (Tbc_0_l * Tbc_v + Tbc_0 * Tbc_v_l) + &
-               ((CRP(:,IT_00) * SPixel%Surface%Rs2(:,IRho_0D) * Tbc_0_l + CRP(:,IT_0d) * &
-                  SPixel%Surface%Rs2(:,IRho_DD) * Tbc_d_l) * c + b * (                   &
+               ((CRP(:,IT_00) * Rs2(:,IRho_0D) * Tbc_0_l + CRP(:,IT_0d) * &
+                  Rs2(:,IRho_DD) * Tbc_d_l) * c + b * (                   &
                   CRP(:,IT_dv) * Tbc_d_l)) / a + &
-               b * c * SPixel%Surface%Rs2(:,IRho_DD) * CRP(:,IR_dd) * Tbc_dd_l / (a*a)
-      else if (Ctrl%i_equation_form .eq. 3) then
-         d_l = (CRP(:,IT_00) * SPixel%Surface%Rs2(:,IRho_0V) * CRP(:,IT_vv) * (Tbc_0_l * &
+               b * c * Rs2(:,IRho_DD) * CRP(:,IR_dd) * Tbc_dd_l / (a*a)
+      else if (Ctrl%i_equation_form == 3) then
+         e_l = (CRP(:,IT_00) * Rs2(:,IRho_0V) * CRP(:,IT_vv) * (Tbc_0_l * &
                   Tbc_v + Tbc_0 * Tbc_v_l) + &
-                CRP(:,IT_0d) * SPixel%Surface%Rs2(:,IRho_DV) * CRP(:,IT_vv) * (Tbc_d_l * &
+                CRP(:,IT_0d) * Rs2(:,IRho_DV) * CRP(:,IT_vv) * (Tbc_d_l * &
                   Tbc_v + Tbc_d * Tbc_v_l) + &
-               ((CRP(:,IT_00) * SPixel%Surface%Rs2(:,IRho_0D) * Tbc_0_l + CRP(:,IT_0d) * &
-                  SPixel%Surface%Rs2(:,IRho_DD) * Tbc_d_l) * c + b * (CRP(:,IT_dv) * &
-                  Tbc_d_l + CRP(:,IR_dd) * SPixel%Surface%Rs2(:,IRho_DV) * CRP(:,IT_vv) * &
-                  Tbc_dd_l * Tbc_v + CRP(:,IR_dd) * SPixel%Surface%Rs2(:,IRho_DV) * &
+               ((CRP(:,IT_00) * Rs2(:,IRho_0D) * Tbc_0_l + CRP(:,IT_0d) * &
+                  Rs2(:,IRho_DD) * Tbc_d_l) * c + b * (CRP(:,IT_dv) * &
+                  Tbc_d_l + CRP(:,IR_dd) * Rs2(:,IRho_DV) * CRP(:,IT_vv) * &
+                  Tbc_dd_l * Tbc_v + CRP(:,IR_dd) * Rs2(:,IRho_DV) * &
                   CRP(:,IT_vv) * Tbc_dd * Tbc_v_l)) / a + &
-               b * c * SPixel%Surface%Rs2(:,IRho_DD) * CRP(:,IR_dd) * Tbc_dd_l / (a*a)) / SPixel%Geom%SEC_o(1)
+               b * c * Rs2(:,IRho_DD) * CRP(:,IR_dd) * Tbc_dd_l / (a*a)) / &
+               SPixel%Geom%SEC_o(1)
       else
-         d_l = CRP(:,IT_00) * SPixel%Surface%Rs2(:,IRho_0V) * CRP(:,IT_vv) * (Tbc_0_l * &
+         e_l = CRP(:,IT_00) * Rs2(:,IRho_0V) * CRP(:,IT_vv) * (Tbc_0_l * &
                   Tbc_v + Tbc_0 * Tbc_v_l) + &
-               CRP(:,IT_0d) * SPixel%Surface%Rs2(:,IRho_DV) * CRP(:,IT_vv) * (Tbc_d_l * &
+               CRP(:,IT_0d) * Rs2(:,IRho_DV) * CRP(:,IT_vv) * (Tbc_d_l * &
                   Tbc_v + Tbc_d * Tbc_v_l) + &
-               ((CRP(:,IT_00) * SPixel%Surface%Rs2(:,IRho_0D) * Tbc_0_l + CRP(:,IT_0d) * &
-                  SPixel%Surface%Rs2(:,IRho_DD) * Tbc_d_l) * c + b * (CRP(:,IT_dv) * &
-                  Tbc_d_l + CRP(:,IR_dd) * SPixel%Surface%Rs2(:,IRho_DV) * CRP(:,IT_vv) * &
-                  Tbc_dd_l * Tbc_v + CRP(:,IR_dd) * SPixel%Surface%Rs2(:,IRho_DV) * &
+               ((CRP(:,IT_00) * Rs2(:,IRho_0D) * Tbc_0_l + CRP(:,IT_0d) * &
+                  Rs2(:,IRho_DD) * Tbc_d_l) * c + b * (CRP(:,IT_dv) * &
+                  Tbc_d_l + CRP(:,IR_dd) * Rs2(:,IRho_DV) * CRP(:,IT_vv) * &
+                  Tbc_dd_l * Tbc_v + CRP(:,IR_dd) * Rs2(:,IRho_DV) * &
                   CRP(:,IT_vv) * Tbc_dd * Tbc_v_l)) / a + &
-               b * c * SPixel%Surface%Rs2(:,IRho_DD) * CRP(:,IR_dd) * Tbc_dd_l / (a*a)
+               b * c * Rs2(:,IRho_DD) * CRP(:,IR_dd) * Tbc_dd_l / (a*a)
       end if
 
-      REF_over_l = Tac_0v_l * d + Tac_0v * d_l
+      Ref_over_l = Tac_0v_l * e + Tac_0v * e_l
 
-      d_REF(:,IPc) = X(IFr) * REF_over_l
+      if (i_layer /= 2) then
+            d_Ref(:,IPcX) = X(IFrX) * Ref_over_l
+      else
+            ! In the case of the lower layer in the two-layer case the clear-sky
+            ! reflectance is only for the lower layer down and is therefore dep-
+            ! endent on the cloud-top pressure, P_c of the lower layer.
+            d_Ref(:,IPcX) = X(IFrX) * Ref_over_l + &
+                            (1.0-X(IFrX)) * Rs2(:,IRho_0V) * Tsf_0v_l
+      end if
+
+      if (present(d_Ref_0d)) then
+         ! Derivative of directional-diffuse reflectance w.r.t. cloud-top
+         ! pressure, P_c
+         if (Ctrl%i_equation_form == 1 .or. Ctrl%i_equation_form == 3) then
+if (USE_REVISED_REF_0D) then
+            e_l = ((CRP(:,IT_00) * Rs2(:,IRho_0D) * Tbc_0_l + &
+                    CRP(:,IT_0d) * Rs2(:,IRho_DD) * Tbc_d_l) * c_0d + &
+                   b * CRP(:,IT_dd) * Tbc_d_l) / a + &
+                  b * c_0d * Rs2(:,IRho_DD) * CRP(:,IR_dd) * Tbc_dd_l / (a*a)
+else
+            e_l = CRP(:,IT_00) * Rs2(:,IRho_0V) * CRP(:,IT_vd) * &
+                  (Tbc_0_l * Tbc_v + Tbc_0 * Tbc_v_l) + &
+                  ((CRP(:,IT_00) * Rs2(:,IRho_0D) * Tbc_0_l + &
+                    CRP(:,IT_0d) * Rs2(:,IRho_DD) * Tbc_d_l) * c_0d + &
+                   b * CRP(:,IT_dd) * Tbc_d_l) / a + &
+                  b * c_0d * Rs2(:,IRho_DD) * CRP(:,IR_dd) * Tbc_dd_l / (a*a)
+end if
+         else
+            write (*,*) 'ERROR: FM_Solar(), directional-diffuse reflectance not' // &
+               ' supported with i_equation_form = ', Ctrl%i_equation_form
+            stop error_stop_code
+         end if
+
+         Ref_over_l = Tac_0v_l * e_0d + Tac_0v * e_l
+
+         d_Ref_0d(:,IPcX) = X(IFrX) * Ref_over_l
+      end if
+
+      if (present(d_Ref_dv)) then
+         ! Derivative of diffuse-directional reflectance w.r.t. cloud-top
+         ! pressure, P_c
+         if (Ctrl%i_equation_form == 1 .or. Ctrl%i_equation_form == 3) then
+            e_l = (CRP(:,IT_dd) * Tbc_d_l * d_dv + &
+                   c_dv * (Rs2(:,IRho_DV) * CRP(:,IT_vv) * Tbc_v_l + &
+                           Rs2(:,IRho_DD) * CRP(:,IT_dv) * Tbc_d_l)) / a + &
+                  c_dv * d_dv * Rs2(:,IRho_DD) * CRP(:,IR_dd) * Tbc_dd_l / (a*a)
+         else
+            write (*,*) 'ERROR: FM_Solar(), diffuse-diffuse reflectance not' // &
+               ' supported with i_equation_form = ', Ctrl%i_equation_form
+            stop error_stop_code
+         end if
+
+         Ref_over_l = Tac_0v_l * e_dv + Tac_0v * e_l
+
+         d_Ref_dv(:,IPcX) = X(IFrX) * Ref_over_l
+      end if
+
+      if (present(d_Ref_dd)) then
+         ! Derivative of diffuse-diffuse reflectance w.r.t. cloud-top
+         ! pressure, P_c
+         if (Ctrl%i_equation_form == 1 .or. Ctrl%i_equation_form == 3) then
+            e_l = CRP(:,IT_dd)**2 * Rs2(:,IRho_dd) * Tbc_dd_l / a + &
+                 (CRP(:,IT_dd)**2 * Rs2(:,IRho_dd) * Tbc_dd * &
+                  Rs2(:,IRho_dd) * CRP(:,IR_dd) * Tbc_dd_l) / (a*a)
+         else
+            write (*,*) 'ERROR: FM_Solar(), diffuse-diffuse reflectance not' // &
+               ' supported with i_equation_form = ', Ctrl%i_equation_form
+            stop error_stop_code
+         end if
+
+         Ref_over_l = Tac_0v_l * e_dd + Tac_0v * e_l
+
+         d_Ref_dd(:,IPcX) = X(IFrX) * Ref_over_l
+      end if
    end if
 
    ! Derivative w.r.t. cloud fraction, f
-   d_REF(:,IFr) = REF_over - SPixel%RTM%REF_clear
+   if (i_layer == 0) then
+      d_Ref(:,IFrX) = Ref_over - SPixel%RTM%Ref_clear
+   else
+         d_Ref(:,IFrX) = Ref_over - Rs2(:,IRho_0V) * Tsf_0v
+         if (present(d_Ref_0d)) &
+            d_Ref_0d(:,IFrX) = Ref_over_0d - Rs2(:,IRho_0D) * Tsf_0d
+         if (present(d_Ref_dv)) &
+            d_Ref_dv(:,IFrX) = Ref_over_dv - Rs2(:,IRho_DV) * Tsf_dv
+         if (present(d_Ref_dd)) &
+            d_Ref_dd(:,IFrX) = Ref_over_dd - Rs2(:,IRho_DD) * Tsf_dd
+   end if
 
-   ! Derivative w.r.t. surface temperature, T_s
-!  d_REF(:,ITs) = 0.0 ! No dependence
+   ! Derivative w.r.t. surface temperature, T_s (no dependence)
+   d_Ref(:,ITs) = 0.0
+   if (present(d_Ref_0d)) d_Ref_0d(:,ITs) = 0.0
+   if (present(d_Ref_dv)) d_Ref_dv(:,ITs) = 0.0
+   if (present(d_Ref_dd)) d_Ref_dd(:,ITs) = 0.0
 
    ! Derivative w.r.t. BRDF reflectance parameters, rho_xx
-   do j = MaxRho_XX, MaxRho_XX ! NOTE: Only evaluate Rho_DD for now
-      do i = 1, SPixel%Ind%NSolar
-         ii = SPixel%spixel_y_solar_to_ctrl_y_solar_index(i)
-         ! Set rho_l for all BRDF terms proportional to this state vector element
-         where (SPixel%Surface%XIndex == IRs(ii,j))
-            rho_l = SPixel%Surface%Ratios
-         else where
-            rho_l = 0.0
-         end where
-         ! If no dependence, skip this derivative
-         if (sum(rho_l) == 0.0) cycle
+   if (i_layer /= 1) then
+      do j = MaxRho_XX, MaxRho_XX ! NOTE: Only evaluate Rho_DD for now
+         do i = 1, SPixel%Ind%NSolar
+            ii = SPixel%spixel_y_solar_to_ctrl_y_solar_index(i)
+
+            ! Set rho_l for all BRDF terms proportional to this state vector
+            ! element
+            where (SPixel%Surface%XIndex == IRs(ii,j))
+               rho_l = SPixel%Surface%Ratios
+            else where
+               rho_l = 0.0
+            end where
+
+            ! If no dependence, skip this derivative
+            if (sum(rho_l) == 0.0) cycle
+
+            call derivative_wrt_rho_parameters_brdf(SPixel, Ctrl%i_equation_form, &
+                 CRP, X(IFrX), Tac_0v, Tbc_0, Tbc_v, Tbc_d, Tbc_0v, Tbc_0d, &
+                 Tbc_dv, Tbc_dd, rho_l, d_Ref(:,IRs(ii,j)), a, b, c)
+
+            if (present(d_Ref_0d)) d_Ref_0d(:,IRs(ii,j)) = 0.0
+            if (present(d_Ref_dv)) d_Ref_dv(:,IRs(ii,j)) = 0.0
+            if (present(d_Ref_dd)) d_Ref_dd(:,IRs(ii,j)) = 0.0
+         end do
+      end do
+   end if
+
+   ! Optionally provide derivatives w.r.t surface BRDF parameters useful in the
+   ! two-layer case to propagate derivatives w.r.t lower layer parameters and
+   ! surface parameters through the upper layer.
+   if (present(d_Ref_dRs2)) then
+      do j = 1, MaxRho_XX
+         rho_l      = 0.
+         rho_l(:,j) = 1.
 
          call derivative_wrt_rho_parameters_brdf(SPixel, Ctrl%i_equation_form, &
-              CRP, X(IFr), Tac_0v, Tbc_0, Tbc_v, Tbc_d, Tbc_0v, Tbc_0d, &
-              Tbc_dv, Tbc_dd, rho_l, d_REF(:,IRs(ii,j)), a, b, c)
+              CRP, X(IFrX), Tac_0v, Tbc_0, Tbc_v, Tbc_d, Tbc_0v, Tbc_0d, &
+              Tbc_dv, Tbc_dd, rho_l, d_Ref_dRs2(:,j), a, b, c)
       end do
-   end do
+   end if
 end if
 
    ! Account for solar factor scaling applied in GetSurface()
    if (Ctrl%RS%solar_factor) then
       do i = 1, SPixel%Ind%NSolar
          ii = SPixel%spixel_y_solar_to_ctrl_y_solar_index(i)
-         d_REF(i,IRs(ii,IRho_DD)) = d_REF(i,IRs(ii,IRho_DD)) / &
+         d_Ref(i,IRs(ii,IRho_DD)) = d_Ref(i,IRs(ii,IRho_DD)) / &
               SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i)))
       end do
    end if

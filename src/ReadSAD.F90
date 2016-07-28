@@ -14,10 +14,10 @@
 ! ------------------------------------------------------------------------------
 ! Ctrl       struct  In          ECP control structure. Passed to all
 !                                subordinate routines.
-! SAD_Chan   array of structs    Instrument channel info. Populated by
-!                    Out         Read_Chan
-! SAD_LUT    array of structs    Cloud Radiative Property Look Up Tables
-!                    Out         Populated by Read_LUT.
+! SAD_Chan   array of structs    Instrument channel info for each channel.
+!                    Out         Populated by=Read_Chan
+! SAD_LUT    array of structs    Cloud Radiative Property Look Up Tables for
+!                    Out         layer. Populated by Read_LUT.
 !
 ! History:
 ! 2000/09/06, AS: Original version.
@@ -31,6 +31,8 @@
 ! 2011/12/05, CP: Removed instrument config file.
 ! 2014/05/23, GM: Cleaned up code.
 ! 2015/09/07, AP: Allow verbose to be controlled from the driver file.
+! 2016/07/27, GM: Read SAD stuff for layer 2 when the multilayer retrieval is
+!    active.
 !
 ! $Id$
 !
@@ -54,9 +56,9 @@ subroutine Read_SAD(Ctrl, SAD_Chan, SAD_LUT)
    implicit none
 
    ! Argument declarations
-   type(Ctrl_t),                   intent(inout) :: Ctrl
-   type(SAD_Chan_t), dimension(:), intent(inout) :: SAD_Chan
-   type(SAD_LUT_t),                intent(inout) :: SAD_LUT
+   type(Ctrl_t),     intent(inout) :: Ctrl
+   type(SAD_Chan_t), intent(inout) :: SAD_Chan(:)
+   type(SAD_LUT_t),  intent(inout) :: SAD_LUT(:)
 
    if (Ctrl%verbose) write(*,*) 'Reading SAD files'
 
@@ -64,7 +66,10 @@ subroutine Read_SAD(Ctrl, SAD_Chan, SAD_LUT)
    call Read_SAD_Chan(Ctrl, SAD_Chan)
 
    ! Read Look up tables
-   call Read_SAD_LUT (Ctrl, SAD_Chan, SAD_LUT)
+   call Read_SAD_LUT (Ctrl, SAD_Chan, SAD_LUT(1), 1)
+   if (Ctrl%Approach == AppCld2L) then
+      call Read_SAD_LUT (Ctrl, SAD_Chan, SAD_LUT(2), 2)
+   end if
 
 end subroutine Read_SAD
 

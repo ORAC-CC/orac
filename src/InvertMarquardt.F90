@@ -80,12 +80,13 @@
 ! SPixel   struct  Both        Super pixel data. Contains current
 !                              measurements, active state variables, first
 !                              guess and a priori info.
-! SAD_Chan array   In          Measurement channel characteristics
-!          of structs
-! SAD_LUT  struct  In          Cloud radiative property look up tables.
+! SAD_Chan array   In          Measurement channel characteristics for each
+!          of structs          channel.
+! SAD_LUT  struct  In          Cloud radiative property look up tables for each
+!          of structs          layer.
 ! RTM_Pc   struct  In          Radiative transfer model data interpolated to
-!                              the current cloud pressure Pc.
-! Diag     struct  In          Diagonstic structure
+!          of structs          the current cloud pressure Pc for each layer.
+! Diag     struct  In          Diagnostic structure
 ! status   integer Both        ECP status/error flag.
 !
 ! History:
@@ -177,6 +178,7 @@
 ! 2016/02/18, OS: Making sure CEE is within 0-1.
 ! 2016/02/24, OS: Avoid negative CEE uncertainties.
 ! 2016/05/03, AP: Add output of AOD at a second wavelength.
+! 2016/07/27, GM: Changes related to the multilayer retrieval support.
 !
 ! $Id$
 !
@@ -205,8 +207,8 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
    type(Ctrl_t),     intent(in)    :: Ctrl
    type(SPixel_t),   intent(inout) :: SPixel
    type(SAD_Chan_t), intent(in)    :: SAD_Chan(:)
-   type(SAD_LUT_t),  intent(in)    :: SAD_LUT
-   type(RTM_Pc_t),   intent(inout) :: RTM_Pc
+   type(SAD_LUT_t),  intent(in)    :: SAD_LUT(:)
+   type(RTM_Pc_t),   intent(inout) :: RTM_Pc(:)
    type(Diag_t),     intent(out)   :: Diag
    integer,          intent(out)   :: stat
 
@@ -280,7 +282,6 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
    real    :: temp_thermal(SPixel%Ind%NThermal,SPixel%Ind%NThermal)
    real    :: BextRat(1), d_BextRat(1)
    type(GZero_t) :: GZero
-
 #ifdef BKP
    integer :: bkp_lun             ! Unit number for breakpoint file
    integer :: ios                 ! I/O status for breakpoint file
@@ -595,7 +596,6 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
             close(unit=bkp_lun)
          end if
 #endif
-
       if (iter == Ctrl%Invpar%MaxIter .or. convergence) exit
 
       iter = iter + 1
@@ -674,28 +674,28 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
    ! ************* END ERROR ANALYSIS *************
 
    ! Output diffuse fraction so surface reflectance can be calculated by users
-   if (Ctrl%Approach == AerSw) then
+   if (Ctrl%Approach == AppAerSw) then
       call Allocate_GZero(GZero, SPixel)
 
-      call Set_GZero(SPixel%Xn(ITau), SPixel%Xn(IRe), Ctrl, SPixel, SAD_LUT, &
+      call Set_GZero(SPixel%Xn(ITau), SPixel%Xn(IRe), Ctrl, SPixel, SAD_LUT(1), &
            GZero, stat)
       if (stat /= 0) go to 99 ! Terminate processing this pixel
 
-      call Int_LUT_TauSolRe(SAD_LUT%TB, SPixel%Ind%NSolar, SAD_LUT%Grid, &
+      call Int_LUT_TauSolRe(SAD_LUT(1)%TB, SPixel%Ind%NSolar, SAD_LUT(1)%Grid, &
            GZero, Ctrl, T_0d, d_T_0d, ITB, &
            SPixel%spixel_y_solar_to_ctrl_y_index, SPixel%Ind%YSolar, stat)
       if (stat /= 0) go to 99 ! Terminate processing this pixel
-      call Int_LUT_TauSolRe(SAD_LUT%TFBd, SPixel%Ind%NSolar, SAD_LUT%Grid, &
+      call Int_LUT_TauSolRe(SAD_LUT(1)%TFBd, SPixel%Ind%NSolar, SAD_LUT(1)%Grid, &
            GZero, Ctrl, T_00, d_T_00, ITFBd, &
            SPixel%spixel_y_solar_to_ctrl_y_index, SPixel%Ind%YSolar, stat)
       if (stat /= 0) go to 99 ! Terminate processing this pixel
 
       T_all = T_0d + T_00
       Diag%diffuse_frac(1:SPixel%Ind%NSolar) = T_0d / T_all
-      call d_derivative_wrt_crp_parameter(ITau, T_00, T_0d, d_T_0d, d_T_00, &
-           T_all, d_CRP)
-      call d_derivative_wrt_crp_parameter(IRe,  T_00, T_0d, d_T_0d, d_T_00, &
-           T_all, d_CRP)
+      call d_derivative_wrt_crp_parameter(ITau, ITauCRP, T_00, T_0d, d_T_0d, &
+           d_T_00, T_all, d_CRP)
+      call d_derivative_wrt_crp_parameter(IRe,  IReCRP,  T_00, T_0d, d_T_0d, &
+           d_T_00, T_all, d_CRP)
 
       temp = matmul(matmul(d_CRP, SPixel%Sn((/ITau,IRe/), (/ITau,IRe/))), &
            transpose(d_CRP))
@@ -707,15 +707,15 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
    end if
 
    ! Evaluate cloud_albedo
-   if ((Ctrl%Approach == CldWat .or. Ctrl%Approach == CldIce) .and. &
-        SPixel%Ind%NSolar > 0) then
+   if ((Ctrl%Approach == AppCld1L .or. Ctrl%Approach == AppCld2L) .and. &
+       SPixel%Ind%NSolar > 0) then
       call Allocate_GZero(GZero, SPixel)
 
-      call Set_GZero(SPixel%Xn(ITau), SPixel%Xn(IRe), Ctrl, SPixel, SAD_LUT, &
+      call Set_GZero(SPixel%Xn(ITau), SPixel%Xn(IRe), Ctrl, SPixel, SAD_LUT(1), &
            GZero, stat)
       if (stat /= 0) go to 99 ! Terminate processing this pixel
 
-      call Int_LUT_TauSolRe(SAD_LUT%Rfbd, SPixel%Ind%NSolar, SAD_LUT%Grid, &
+      call Int_LUT_TauSolRe(SAD_LUT(1)%Rfbd, SPixel%Ind%NSolar, SAD_LUT(1)%Grid, &
            GZero, Ctrl, CRP, d_CRP, IRfbd, &
            SPixel%spixel_y_solar_to_ctrl_y_index, SPixel%Ind%YSolar, stat)
       if (stat /= 0) go to 99 ! Terminate processing this pixel
@@ -732,19 +732,18 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
    end if
 
    ! Evaluate cloud effective emissivity
-   if ((Ctrl%Approach == CldWat .or. Ctrl%Approach == CldIce) .and. &
-        SPixel%Ind%NThermal > 0 .and. any(SPixel%X == ITau) .and. &
-        any(SPixel%X == IRe)) then
+   if ((Ctrl%Approach == AppCld1L .or. Ctrl%Approach == AppCld2L) .and. &
+       SPixel%Ind%NThermal > 0 .and. any(SPixel%X == ITau) .and. any(SPixel%X == IRe)) then
       call Allocate_GZero(GZero, SPixel)
 
 !     a = SPixel%Geom%Satzen(1)
 !     SPixel%Geom%Satzen(1) = 0.
-      call Set_GZero(SPixel%Xn(ITau), SPixel%Xn(IRe), Ctrl, SPixel, SAD_LUT, &
+      call Set_GZero(SPixel%Xn(ITau), SPixel%Xn(IRe), Ctrl, SPixel, SAD_LUT(1), &
          GZero, stat)
       if (stat /= 0) go to 99 ! Terminate processing this pixel
 !     SPixel%Geom%Satzen(1) = a
 
-      call Int_LUT_TauSatRe(SAD_LUT%Em, SPixel%Ind%NThermal, SAD_LUT%Grid, &
+      call Int_LUT_TauSatRe(SAD_LUT(1)%Em, SPixel%Ind%NThermal, SAD_LUT(1)%Grid, &
          GZero, Ctrl, CRP_thermal, d_CRP_thermal, IEm, &
          SPixel%spixel_y_thermal_to_ctrl_y_index, SPixel%Ind%YThermal, stat)
       if (stat /= 0) go to 99 ! Terminate processing this pixel
@@ -768,8 +767,8 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
 
    ! Evaluate corrected CTX
    if (Ctrl%do_CTX_correction .and. &
-       (Ctrl%Approach == CldWat .or. Ctrl%Approach == CldIce)) then
-      call Calc_Corrected_CTX(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Sy)
+      (Ctrl%Approach == AppCld1L .or. Ctrl%Approach == AppCld2L)) then
+      call Calc_Corrected_CTX(Ctrl, SPixel, SAD_Chan, SAD_LUT(1), RTM_Pc(1), Sy)
    else
       SPixel%CTP_corrected             = MissingXn
       SPixel%CTP_corrected_uncertainty = MissingSn
@@ -780,14 +779,14 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
    end if
 
    ! Evaluate AOD at 870 nm
-   if (Ctrl%Approach == AerOx .or. Ctrl%Approach == AerSw) then
+   if (Ctrl%Approach == AppAerOx .or. Ctrl%Approach == AppAerSw) then
       call Allocate_GZero(GZero, SPixel)
 
-      call Set_GZero(SPixel%Xn(iTau), SPixel%Xn(iRe), Ctrl, Spixel, SAD_LUT, &
+      call Set_GZero(SPixel%Xn(iTau), SPixel%Xn(iRe), Ctrl, Spixel, SAD_LUT(1), &
            GZero, stat)
       if (stat /= 0) go to 99
 
-      call Int_LUT_Re(SAD_LUT%BextRat, 1, SAD_LUT%Grid, GZero, Ctrl, &
+      call Int_LUT_Re(SAD_LUT(1)%BextRat, 1, SAD_LUT(1)%Grid, GZero, Ctrl, &
            BextRat, d_BextRat, iBextRat, stat)
       if (stat /= 0) go to 99
 

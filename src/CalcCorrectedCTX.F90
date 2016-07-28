@@ -36,10 +36,10 @@ function get_corrected_bt(Ctrl, SPixel, SAD_Chan, RTM_Pc, i_spixel_y_thermal, Y)
 
    type(Ctrl_t),     intent(in) :: Ctrl
    type(SPixel_t),   intent(in) :: SPixel
-   type(SAD_Chan_t), intent(in) :: SAD_Chan(Ctrl%Ind%Ny)
+   type(SAD_Chan_t), intent(in) :: SAD_Chan(:)
    type(RTM_Pc_t),   intent(in) :: RTM_Pc
    integer,          intent(in) :: i_spixel_y_thermal
-   real,             intent(in) :: Y(SPixel%Ind%Ny)
+   real,             intent(in) :: Y(:)
 
    real                         :: bt
 
@@ -134,7 +134,8 @@ subroutine Calc_Corrected_CTX(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Sy)
                                          SPixel%CTP_corrected_uncertainty
    end if
 
-   if (Ctrl%Approach .ne. CldIce) then
+   ! Only correct for ice
+   if (Ctrl%Class .ne. ClsCldIce) then
       return
    end if
 
@@ -205,7 +206,7 @@ subroutine Calc_Corrected_CTX(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Sy)
       ctp_new_sigma = abs(ctt_new_sigma / RTM_Pc%dTc_dPc)
 
       ! Propagate from CTP to CTH
-      cth_new        = RTM_Pc%Hc     + delta_ctp * RTM_Pc%dHc_dPc
+      cth_new       = RTM_Pc%Hc      + delta_ctp * RTM_Pc%dHc_dPc
       cth_new_sigma = abs(ctp_new_sigma * RTM_Pc%dHc_dPc)
 
       ! Ignore corrections less than a thresold or in the downward direction

@@ -133,7 +133,7 @@ subroutine X_MDAD(Ctrl, SPixel, index, X, status, Err)
    ! Parameters supported are Tau, Pc and f.
    select case (index)
 
-   case (ITau) ! Cloud optical depth, Tau
+   case (ITau, ITau2) ! Cloud optical depth, Tau
 
       if ((SPixel%Illum(1) == IDay) .and. &
           SPixel%Ind%MDAD_SW > 0) then
@@ -160,7 +160,7 @@ subroutine X_MDAD(Ctrl, SPixel, index, X, status, Err)
          status = XMDADMeth
       end if
 
-   case (IPc) ! Cloud pressure, Pc
+   case (IPc, IPc2) ! Cloud pressure, Pc
 
       if (SPixel%Ind%MDAD_LW > 0) then
          if (SPixel%Ym(SPixel%Ind%MDAD_LW) /= MissingXn) then
@@ -173,7 +173,8 @@ subroutine X_MDAD(Ctrl, SPixel, index, X, status, Err)
          end if
       else ! Can't calculate Pc if required LW channels not selected
          status = XMDADMeth
-!         write(*,*) 'WARNING: X_MDAD(): Cant calculate Pc if required LW channels not selected'
+!         write(*,*) 'WARNING: X_MDAD(): Cant calculate Pc if required LW ' // &
+!                    'channels not selected'
       end if
 
    case (IFr) ! Cloud fraction, f
