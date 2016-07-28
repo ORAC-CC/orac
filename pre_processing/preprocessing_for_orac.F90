@@ -342,7 +342,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    logical                          :: include_full_brdf
    logical                          :: use_occci
    logical                          :: use_hr_ecmwf
-   logical                          :: use_ecmwf_tnow_and_ice
+   logical                          :: use_ecmwf_snow_and_ice
    logical                          :: use_modis_emis_in_rttov
    logical                          :: use_l1_land_mask
 
@@ -436,7 +436,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    nullify(channel_ids)
    ecmwf_time_int_method = 2
    use_hr_ecmwf = .true.
-   use_ecmwf_tnow_and_ice = .true.
+   use_ecmwf_snow_and_ice = .true.
    use_modis_emis_in_rttov = .false.
    use_l1_land_mask = .false.
    ecmwf_path(2) = ''
@@ -507,7 +507,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
          call parse_line(line, value, label)
          call clean_driver_label(label)
          call parse_optional(label, value, n_channels, channel_ids, use_hr_ecmwf, &
-            ecmwf_time_int_method, use_ecmwf_tnow_and_ice, use_modis_emis_in_rttov, &
+            ecmwf_time_int_method, use_ecmwf_snow_and_ice, use_modis_emis_in_rttov, &
             ecmwf_path(2), ecmwf_path2(2), ecmwf_path3(2), ecmwf_path_hr(1), &
             ecmwf_path_hr(2), ecmwf_nlevels, use_l1_land_mask, occci_path, use_occci)
       end do
@@ -576,7 +576,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       do while (parse_driver(11, value, label) == 0)
         call clean_driver_label(label)
         call parse_optional(label, value, n_channels, channel_ids, &
-           use_hr_ecmwf, ecmwf_time_int_method, use_ecmwf_tnow_and_ice, &
+           use_hr_ecmwf, ecmwf_time_int_method, use_ecmwf_snow_and_ice, &
            use_modis_emis_in_rttov, ecmwf_path(2), ecmwf_path2(2), &
            ecmwf_path3(2), ecmwf_path_hr(1), ecmwf_path_hr(2), &
            ecmwf_nlevels, use_l1_land_mask, occci_path, use_occci)
@@ -935,11 +935,11 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
                  ecmwf_time_int_fac, ecmwf_HR1, ecmwf_HR2, ecmwf_HR, high_res)
          end if
 
-         call deallocate_ecmwf_ttructures(ecmwf1, low_res)
-         call deallocate_ecmwf_ttructures(ecmwf2, low_res)
+         call deallocate_ecmwf_structures(ecmwf1, low_res)
+         call deallocate_ecmwf_structures(ecmwf2, low_res)
          if (use_hr_ecmwf) then
-            call deallocate_ecmwf_ttructures(ecmwf_HR1, high_res)
-            call deallocate_ecmwf_ttructures(ecmwf_HR2, high_res)
+            call deallocate_ecmwf_structures(ecmwf_HR1, high_res)
+            call deallocate_ecmwf_structures(ecmwf_HR2, high_res)
          end if
       end if
 
@@ -1011,7 +1011,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       ! Snow and Ice Data Center to detect ice and snow pixels, and correct the
       ! surface albedo.
       if (verbose) write(*,*) 'Correct for ice and snow'
-      if (.not. use_ecmwf_tnow_and_ice) then
+      if (.not. use_ecmwf_snow_and_ice) then
          call correct_for_ice_snow(nise_ice_snow_path, imager_geolocation, &
               surface, cyear, cmonth, cday, channel_info, assume_full_paths, &
               include_full_brdf, source_atts, verbose)
@@ -1109,9 +1109,9 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
 
       ! deallocate the array parts of the structures
       if (verbose) write(*,*) 'Deallocate chunk specific structures'
-      call deallocate_ecmwf_ttructures(ecmwf, low_res)
+      call deallocate_ecmwf_structures(ecmwf, low_res)
       if (use_hr_ecmwf) then
-         call deallocate_ecmwf_ttructures(ecmwf_HR, high_res)
+         call deallocate_ecmwf_structures(ecmwf_HR, high_res)
       end if
       call deallocate_preproc_structures(preproc_dims, preproc_geoloc, &
            preproc_geo, preproc_prtm, preproc_surf)

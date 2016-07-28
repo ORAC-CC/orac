@@ -1,8 +1,8 @@
 !-------------------------------------------------------------------------------
-! Name: deallocate_ecmwf_ttructures.F90
+! Name: deallocate_ecmwf_structures.F90
 !
 ! Purpose:
-! Deallocate the array parts of the types defined in ecmwf_ttructures.F90
+! Deallocate the array parts of the types defined in ecmwf_structures.F90
 !
 ! Description and Algorithm details:
 ! 1) Deallocate all arrays.
@@ -25,7 +25,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine deallocate_ecmwf_ttructures(ecmwf, low_res)
+subroutine deallocate_ecmwf_structures(ecmwf, low_res)
 
    use preproc_constants_m
 
@@ -44,4 +44,4 @@ subroutine deallocate_ecmwf_ttructures(ecmwf, low_res)
    deallocate(ecmwf%snow_depth)
    deallocate(ecmwf%sea_ice_cover)
 
-end subroutine deallocate_ecmwf_ttructures
+end subroutine deallocate_ecmwf_structures

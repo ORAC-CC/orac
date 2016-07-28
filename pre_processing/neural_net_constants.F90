@@ -3937,7 +3937,7 @@ module neural_net_constants_m
         & -1.029371490E+02 /
 
 
-   ! 9.) day_pygac_ecmwf_tnow_ice_usgs_land_sea_nn
+   ! 9.) day_pygac_ecmwf_snow_ice_usgs_land_sea_nn
    real, parameter :: temperature_ex9=1.0,bias_h_ex9=1.0, &
         bias_i_ex9=1.0,cutoff_ex9=80.0
 
@@ -4484,7 +4484,7 @@ module neural_net_constants_m
         & 2.211278915E+01 /
 
 
-   !10.) twilight_pygac_ecmwf_tnow_ice_usgs_land_sea_nn
+   !10.) twilight_pygac_ecmwf_snow_ice_usgs_land_sea_nn
    real, parameter :: temperature_ex10=1.0,bias_h_ex10=1.0, &
         bias_i_ex10=1.0, cutoff_ex10=80.0
 
@@ -4925,7 +4925,7 @@ module neural_net_constants_m
         & -5.764546585E+01 /
 
 
-   ! 11.) night_pygac_ecmwf_tnow_ice_usgs_land_sea_nn
+   ! 11.) night_pygac_ecmwf_snow_ice_usgs_land_sea_nn
    real, parameter :: temperature_ex11=1.0,bias_h_ex11=1.0, &
         bias_i_ex11=1.0,cutoff_ex11=80.0
 
