@@ -72,6 +72,7 @@
 ! 2015/07/14, AP: Replacing **2 with multiplication.
 ! 2015/08/21, AP: Generalised MS last fix.
 ! 2015/09/07, AP: Allow verbose to be controlled from the driver file.
+! 2016/07/28, GM: Remove hidden setting of Ctrl%Ind%NMixed.
 !
 ! $Id$
 !
@@ -89,8 +90,8 @@ subroutine Read_SAD_Chan(Ctrl, SAD_Chan)
 
    ! Arguments
 
-   type(Ctrl_t),                   intent(inout) :: Ctrl
-   type(SAD_Chan_t), dimension(:), intent(inout) :: SAD_Chan
+   type(Ctrl_t),     intent(in)    :: Ctrl
+   type(SAD_Chan_t), intent(inout) :: SAD_Chan(:)
 
    ! Local variables
 
@@ -103,10 +104,10 @@ subroutine Read_SAD_Chan(Ctrl, SAD_Chan)
    integer                :: NSolar, NThermal ! Local values used to check
                                               ! whether selected channels match
                                               ! totals indicated in driver file.
-   logical                :: file_exists
+   logical :: file_exists
 
-   NThermal        = 0
-   NSolar          = 0
+   NThermal = 0
+   NSolar   = 0
 
    if (Ctrl%verbose) &
         write(*,*) 'Number of channels used, Ctrl%Ind%Ny: ',Ctrl%Ind%Ny
@@ -236,8 +237,5 @@ subroutine Read_SAD_Chan(Ctrl, SAD_Chan)
       write(*,*) 'ERROR: Read_SAD_Chan(): Error in NThermal value in driver file'
       stop DriverFileDataErr
    end if
-
-   ! Number of channels with both solar and thermal components (needed in FM).
-   Ctrl%Ind%NMixed = Ctrl%Ind%NSolar + Ctrl%Ind%NThermal - Ctrl%Ind%Ny
 
 end subroutine Read_SAD_Chan

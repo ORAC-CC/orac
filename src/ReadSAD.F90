@@ -56,7 +56,7 @@ subroutine Read_SAD(Ctrl, SAD_Chan, SAD_LUT)
    implicit none
 
    ! Argument declarations
-   type(Ctrl_t),     intent(inout) :: Ctrl
+   type(Ctrl_t),     intent(in)    :: Ctrl
    type(SAD_Chan_t), intent(inout) :: SAD_Chan(:)
    type(SAD_LUT_t),  intent(inout) :: SAD_LUT(:)
 
