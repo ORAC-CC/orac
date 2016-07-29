@@ -20,6 +20,8 @@
 ! 2016/07/22, SP: Implement second (oblique) view. Also, correct initial version
 !    of the geometry resampling. Now operates more accurately.
 !
+! $Id$
+!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

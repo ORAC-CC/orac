@@ -15,6 +15,8 @@
 ! 2016/07/08, SP: Bug fixes.
 ! 2016/07/22, SP: Implement the second view (oblique).
 !
+! $Id$
+!
 ! Bugs:
 ! Currently this will only work with the nadir view. Oblique view not supported.
 !-------------------------------------------------------------------------------
