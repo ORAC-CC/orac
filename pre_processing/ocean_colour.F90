@@ -9,42 +9,43 @@
 !
 ! History:
 ! 2016/07/12, GT: First version
+!
 ! $Id:
 !
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
 module ocean_colour_m
-  use preproc_constants_m
+   use preproc_constants_m
 
-  implicit none
+   implicit none
 
-  private
+   private
 
-  public :: ocean_colour_t, &
-            occci_t, &
-            read_oceancolour_cci, &
-            get_ocean_colour
+   public :: ocean_colour_t, &
+             occci_t, &
+             read_oceancolour_cci, &
+             get_ocean_colour
 
-  type ocean_colour_t
-     logical                       :: have_data
-     real(kind=sreal)              :: wl
-     real(kind=sreal)              :: totabs
-     real(kind=sreal)              :: totbsc
-  end type ocean_colour_t
+   type ocean_colour_t
+      logical                       :: have_data
+      real(kind=sreal)              :: wl
+      real(kind=sreal)              :: totabs
+      real(kind=sreal)              :: totbsc
+   end type ocean_colour_t
 
-  type occci_t
-     integer                       :: nlon
-     integer                       :: nlat
-     real(kind=dreal)              :: lon0, lon_invdel
-     real(kind=dreal)              :: lat0, lat_invdel
-     integer                       :: nwavelength
-     real(kind=sreal)              :: fill_value
-     integer, allocatable          :: iwavelength(:,:)
-     real(kind=sreal), allocatable :: wavelength(:)
-     real(kind=sreal), allocatable :: atot(:,:,:)
-     real(kind=sreal), allocatable :: bbs(:,:,:)
-  end type occci_t
+   type occci_t
+      integer                       :: nlon
+      integer                       :: nlat
+      real(kind=dreal)              :: lon0, lon_invdel
+      real(kind=dreal)              :: lat0, lat_invdel
+      integer                       :: nwavelength
+      real(kind=sreal)              :: fill_value
+      integer, allocatable          :: iwavelength(:,:)
+      real(kind=sreal), allocatable :: wavelength(:)
+      real(kind=sreal), allocatable :: atot(:,:,:)
+      real(kind=sreal), allocatable :: bbs(:,:,:)
+   end type occci_t
 
 contains
 
@@ -66,16 +67,16 @@ contains
 !-------------------------------------------------------------------------------
 subroutine deallocate_occci(occci)
 
-  implicit none
+   implicit none
 
-  type(occci_t), intent(inout) :: occci
+   type(occci_t), intent(inout) :: occci
 
-  if ( allocated(occci%wavelength) ) then
-     deallocate(occci%iwavelength)
-     deallocate(occci%wavelength)
-     deallocate(occci%atot)
-     deallocate(occci%bbs)
-  endif
+   if (allocated(occci%wavelength)) then
+      deallocate(occci%iwavelength)
+      deallocate(occci%wavelength)
+      deallocate(occci%atot)
+      deallocate(occci%bbs)
+   endif
 
 end subroutine deallocate_occci
 
@@ -127,174 +128,173 @@ end subroutine deallocate_occci
 function read_oceancolour_cci(path_to_file, occci, wavelengths, verbose) &
      result (stat)
 
-  use orac_ncdf_m
-  use preproc_constants_m
+   use orac_ncdf_m
+   use preproc_constants_m
 
-  implicit none
+   implicit none
 
-  ! Input variables
-  character(len=path_length), intent(in)               :: path_to_file
-  real,                       intent(in)               :: wavelengths(:)
-  logical,                    intent(in)               :: verbose
+   ! Input variables
+   character(len=path_length), intent(in)               :: path_to_file
+   real,                       intent(in)               :: wavelengths(:)
+   logical,                    intent(in)               :: verbose
 
-  ! Output variables
-  type(occci_t),              intent(out)              :: occci
-  integer(kind=sint)                                   :: stat
-
-
-  ! Local variables
-  integer,          parameter :: occci_nwl = 6
-  real(kind=sreal), parameter :: occci_wl(occci_nwl) = &
-       (/ 0.412, 0.443, 0.490, 0.510, 0.555, 0.670 /)
-  character(len=8), parameter :: occci_atotvar(occci_nwl) = &
-       (/ 'atot_412', 'atot_443', 'atot_490', 'atot_510','atot_555', 'atot_670' /)
-  character(len=7), parameter :: occci_bbpvar(occci_nwl) = &
-       (/ 'bbp_412', 'bbp_443', 'bbp_490', 'bbp_510','bbp_555', 'bbp_670' /)
-
-  integer                     :: i, j
-  integer                     :: nwl
-  logical                     :: occci_rd(occci_nwl)
-  integer                     :: fid, vid, ndim, nvar, natt, uDimID, ForNM
-  integer                     :: timeid, lonid, latid
-  integer                     :: ntime, nlon ,nlat, nrd
-  integer, allocatable        :: iwavelength(:,:)
-  real(kind=dreal)            :: lonmin, latmin
-  real(kind=dreal)            :: lonres, latres
-  character(len=21)           :: slonres, slatres
-  real(kind=sreal), allocatable :: cache(:,:)
+   ! Output variables
+   type(occci_t),              intent(out)              :: occci
+   integer(kind=sint)                                   :: stat
 
 
-  if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_oceancolour_cci()'
+   ! Local variables
+   integer,          parameter :: occci_nwl = 6
+   real(kind=sreal), parameter :: occci_wl(occci_nwl) = &
+        (/ 0.412, 0.443, 0.490, 0.510, 0.555, 0.670 /)
+   character(len=8), parameter :: occci_atotvar(occci_nwl) = &
+        (/ 'atot_412', 'atot_443', 'atot_490', 'atot_510','atot_555', 'atot_670' /)
+   character(len=7), parameter :: occci_bbpvar(occci_nwl) = &
+        (/ 'bbp_412', 'bbp_443', 'bbp_490', 'bbp_510','bbp_555', 'bbp_670' /)
 
-  if (verbose) write(*,*) 'path_to_file: ', trim(path_to_file)
-  if (verbose) write(*,*) 'wavelengths: ',  wavelengths
-
-  nwl = size(wavelengths)
-  ! Allocate the array which holds the index numbers of the occci band
-  ! pairs which bracket each input band
-  allocate(iwavelength(2,nwl))      ! Holds index nos. wrt all OCCCI bands
-  allocate(occci%iwavelength(2,nwl))! Holds index nos. wrt to OCCCI band actually read
-
-  ! Open NetCDF file and extract information about it
-  call nc_open(fid, path_to_file)
-  stat = nf90_inquire(fid, nDim, nVar, nAtt, uDimID, ForNM)
-
-  ! Variables needed: atot (total absorption), bbp (particulate backscatter)
-  ! Available wavelengths: 412, 443, 490, 510, 555, 670 nm.
- if (verbose) write(*,*) 'Extracting dimension IDs'
-  ! Extract the array dimensions
-  stat = nf90_inq_dimid(fid, 'time', timeid)
-  stat = nf90_inq_dimid(fid, 'lon',  lonid)
-  stat = nf90_inq_dimid(fid, 'lat',  latid)
-  ! Check that the time dimension is 1, and extract the lat/lon dimensions
-  stat = nf90_inquire_dimension(fid, timeid, len=ntime)
-  stat = nf90_inquire_dimension(fid, lonid, len=nlon)
-  stat = nf90_inquire_dimension(fid, latid, len=nlat)
-  if (verbose) write(*,*) 'Dimensions are (time, lon, lat): ',ntime,nlon,nlat
-  if (ntime .gt. 1) then
-     write(*,*) 'Error: read_oceancolour_cci: Time dimension is not 1. '//&
-          'Not expecting multi-temporal data. Filename: ', &
-          trim(path_to_file), ' dimtime: ', ntime
-     stop error_stop_code
-  end if
-
-  ! Define the lat/lon arrays in the output structure
-  occci%nlon = nlon
-  occci%nlat = nlat
-  !allocate(occci%lon(nlon))
-  !allocate(occci%lat(nlat))
-  ! Read the data into these arrays
-  !call nc_read_array(fid, lon, occci%lon, verbose)
-  !call nc_read_array(fid, lat, occci%lat, verbose)
-  ! Rather than reading (and storing) the entire lat/lon arrays, we
-  ! assume we are dealing with a regular grid and simply calculate the
-  ! grid spacing
-  if (verbose) write(*,*) 'Extracting grid attributes and building lat/lon grid:'
-  ! Read the grid attributes needed...
-  stat = nf90_get_att(fid, NF90_GLOBAL, "geospatial_lon_min", lonmin)
-  stat = nf90_get_att(fid, NF90_GLOBAL, 'geospatial_lon_resolution', slonres)
-  read(slonres,*) lonres
-  stat = nf90_get_att(fid, NF90_GLOBAL, 'geospatial_lat_min', latmin)
-  stat = nf90_get_att(fid, NF90_GLOBAL, 'geospatial_lat_resolution', slatres)
-  read(slatres,*) latres
-  ! Populate the output structure... note that we store the mid-point of
-  ! each grid cell
-  occci%lon0       = lonmin + lonres/2.0
-  occci%lon_invdel = 1.0 / lonres
-  occci%lat0       = latmin + latres/2.0
-  occci%lat_invdel = 1.0 / latres
-
-  if (verbose) then
-     write(*,*) 'lon0, lon_invdel: ', occci%lon0, occci%lon_invdel
-     write(*,*) 'lat0, lat_invdel: ', occci%lat0, occci%lat_invdel
-  endif
-
-  ! Extract the fill value used in the OCCCI data
-  stat = nf90_inq_varid(fid, "atot_412", vid)
-  stat = nf90_get_att(fid, vid, "_FillValue", occci%fill_value)
-
-  ! Now deal with the wavelengths requested. The approach here is to
-  ! provide the extact wavelength if there is a match with what is
-  ! provided by OceanColour_cci, or provide the bracketting wavelengths
-  ! otherwise
-  ! Store the wavelength pairs which correspond to each input wavelength
-  ! so the calling routine can do the interpolation
-  if (verbose) write(*,*) 'Selecting bands to read based on wavelength'
-  do i = 1,nwl
-     j=1
-     do while ( (occci_wl(j) .le. wavelengths(i)) .and. (j .lt. occci_nwl) )
-        j=j+1
-     end do
-     j=j-1
-     occci_rd(j) = .true.
-     iwavelength(:,i) = j
-     if ( j .eq.  occci_nwl ) then
-        occci_rd(j-1) = .true.
-        iwavelength(1,i) = j-1
-     else if ( occci_wl(1) .gt. wavelengths(i) ) then
-        occci_rd(2) = .true.
-        iwavelength(2,i) = 2
-     else if ( occci_wl(j) .ne. wavelengths(i) ) then
-        occci_rd(j+1) = .true.
-        iwavelength(2,i) = j+1
-     end if
-  end do
+   integer                     :: i, j
+   integer                     :: nwl
+   logical                     :: occci_rd(occci_nwl)
+   integer                     :: fid, vid, ndim, nvar, natt, uDimID, ForNM
+   integer                     :: timeid, lonid, latid
+   integer                     :: ntime, nlon ,nlat, nrd
+   integer, allocatable        :: iwavelength(:,:)
+   real(kind=dreal)            :: lonmin, latmin
+   real(kind=dreal)            :: lonres, latres
+   character(len=21)           :: slonres, slatres
+   real(kind=sreal), allocatable :: cache(:,:)
 
 
-  ! Now allocate the storage for the required data in the output structures
-  nrd = count(occci_rd)
-  allocate(occci%wavelength(nrd))
-  allocate(occci%atot(nlon,nlat,nrd))
-  allocate(occci%bbs(nlon,nlat,nrd))
-  allocate(cache(nlon,nlat))
+   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_oceancolour_cci()'
 
-  ! Loop over the required data fields and read into the output structure
-  j=1
-  do i=1,occci_nwl
-     if (occci_rd(i)) then
-        occci%wavelength(j) = occci_wl(i)
-        where(iwavelength .eq. i)
-           occci%iwavelength = j
-        end where
-        if (verbose) write(*,*) 'Reading data for Wvl: ',occci%wavelength(j)
-        call nc_read_array(fid, occci_atotvar(i), cache, verbose)
-        occci%atot(:,:,j) = cache
-        call nc_read_array(fid, occci_bbpvar(i), cache, verbose)
-        occci%bbs(:,:,j) = cache
-        j=j+1
-     end if
-  end do
+   if (verbose) write(*,*) 'path_to_file: ', trim(path_to_file)
+   if (verbose) write(*,*) 'wavelengths: ',  wavelengths
 
-  ! Close the data file
-  if (nf90_close(fid) /= NF90_NOERR) then
-     write(*,*) 'ERROR: read_oceancolour_cci(): Error closing file.'
-     stop error_stop_code
-  else
-     if (verbose) write(*,*) 'Data file closed'
-  end if
+   nwl = size(wavelengths)
+   ! Allocate the array which holds the index numbers of the occci band
+   ! pairs which bracket each input band
+   allocate(iwavelength(2,nwl))      ! Holds index nos. wrt all OCCCI bands
+   allocate(occci%iwavelength(2,nwl))! Holds index nos. wrt to OCCCI band actually read
 
-  deallocate(cache)
-  if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_oceancolour_cci()'
+   ! Open NetCDF file and extract information about it
+   call nc_open(fid, path_to_file)
+   stat = nf90_inquire(fid, nDim, nVar, nAtt, uDimID, ForNM)
+
+   ! Variables needed: atot (total absorption), bbp (particulate backscatter)
+   ! Available wavelengths: 412, 443, 490, 510, 555, 670 nm.
+   if (verbose) write(*,*) 'Extracting dimension IDs'
+   ! Extract the array dimensions
+   stat = nf90_inq_dimid(fid, 'time', timeid)
+   stat = nf90_inq_dimid(fid, 'lon',  lonid)
+   stat = nf90_inq_dimid(fid, 'lat',  latid)
+   ! Check that the time dimension is 1, and extract the lat/lon dimensions
+   stat = nf90_inquire_dimension(fid, timeid, len=ntime)
+   stat = nf90_inquire_dimension(fid, lonid, len=nlon)
+   stat = nf90_inquire_dimension(fid, latid, len=nlat)
+   if (verbose) write(*,*) 'Dimensions are (time, lon, lat): ',ntime,nlon,nlat
+   if (ntime .gt. 1) then
+      write(*,*) 'Error: read_oceancolour_cci: Time dimension is not 1. ' // &
+           'Not expecting multi-temporal data. Filename: ', &
+           trim(path_to_file), ' dimtime: ', ntime
+      stop error_stop_code
+   end if
+
+   ! Define the lat/lon arrays in the output structure
+   occci%nlon = nlon
+   occci%nlat = nlat
+   !allocate(occci%lon(nlon))
+   !allocate(occci%lat(nlat))
+   ! Read the data into these arrays
+   !call nc_read_array(fid, lon, occci%lon, verbose)
+   !call nc_read_array(fid, lat, occci%lat, verbose)
+   ! Rather than reading (and storing) the entire lat/lon arrays, we
+   ! assume we are dealing with a regular grid and simply calculate the
+   ! grid spacing
+   if (verbose) write(*,*) 'Extracting grid attributes and building lat/lon grid:'
+   ! Read the grid attributes needed...
+   stat = nf90_get_att(fid, NF90_GLOBAL, "geospatial_lon_min", lonmin)
+   stat = nf90_get_att(fid, NF90_GLOBAL, 'geospatial_lon_resolution', slonres)
+   read(slonres,*) lonres
+   stat = nf90_get_att(fid, NF90_GLOBAL, 'geospatial_lat_min', latmin)
+   stat = nf90_get_att(fid, NF90_GLOBAL, 'geospatial_lat_resolution', slatres)
+   read(slatres,*) latres
+   ! Populate the output structure... note that we store the mid-point of
+   ! each grid cell
+   occci%lon0       = lonmin + lonres/2.0
+   occci%lon_invdel = 1.0 / lonres
+   occci%lat0       = latmin + latres/2.0
+   occci%lat_invdel = 1.0 / latres
+
+   if (verbose) then
+      write(*,*) 'lon0, lon_invdel: ', occci%lon0, occci%lon_invdel
+      write(*,*) 'lat0, lat_invdel: ', occci%lat0, occci%lat_invdel
+   endif
+
+   ! Extract the fill value used in the OCCCI data
+   stat = nf90_inq_varid(fid, "atot_412", vid)
+   stat = nf90_get_att(fid, vid, "_FillValue", occci%fill_value)
+
+   ! Now deal with the wavelengths requested. The approach here is to
+   ! provide the extact wavelength if there is a match with what is
+   ! provided by OceanColour_cci, or provide the bracketting wavelengths
+   ! otherwise
+   ! Store the wavelength pairs which correspond to each input wavelength
+   ! so the calling routine can do the interpolation
+   if (verbose) write(*,*) 'Selecting bands to read based on wavelength'
+   do i = 1,nwl
+      j=1
+      do while ( (occci_wl(j) .le. wavelengths(i)) .and. (j .lt. occci_nwl) )
+         j=j+1
+      end do
+      j=j-1
+      occci_rd(j) = .true.
+      iwavelength(:,i) = j
+      if (j .eq.  occci_nwl) then
+         occci_rd(j-1) = .true.
+         iwavelength(1,i) = j-1
+      else if (occci_wl(1) .gt. wavelengths(i)) then
+         occci_rd(2) = .true.
+         iwavelength(2,i) = 2
+      else if (occci_wl(j) .ne. wavelengths(i)) then
+         occci_rd(j+1) = .true.
+         iwavelength(2,i) = j+1
+      end if
+   end do
+
+   ! Now allocate the storage for the required data in the output structures
+   nrd = count(occci_rd)
+   allocate(occci%wavelength(nrd))
+   allocate(occci%atot(nlon,nlat,nrd))
+   allocate(occci%bbs(nlon,nlat,nrd))
+   allocate(cache(nlon,nlat))
+
+   ! Loop over the required data fields and read into the output structure
+   j=1
+   do i=1,occci_nwl
+      if (occci_rd(i)) then
+         occci%wavelength(j) = occci_wl(i)
+         where(iwavelength .eq. i)
+            occci%iwavelength = j
+         end where
+         if (verbose) write(*,*) 'Reading data for Wvl: ',occci%wavelength(j)
+         call nc_read_array(fid, occci_atotvar(i), cache, verbose)
+         occci%atot(:,:,j) = cache
+         call nc_read_array(fid, occci_bbpvar(i), cache, verbose)
+         occci%bbs(:,:,j) = cache
+         j=j+1
+      end if
+   end do
+
+   ! Close the data file
+   if (nf90_close(fid) /= NF90_NOERR) then
+      write(*,*) 'ERROR: read_oceancolour_cci(): Error closing file.'
+      stop error_stop_code
+   else
+      if (verbose) write(*,*) 'Data file closed'
+   end if
+
+   deallocate(cache)
+   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_oceancolour_cci()'
 
 end function read_oceancolour_cci
 
@@ -355,227 +355,225 @@ end function read_oceancolour_cci
 subroutine get_ocean_colour(cyear, cmonth, occci_path, lat, lon, &
      channel_info, ocean_colour, assume_full_path, verbose)
 
-  use preproc_constants_m
-  use cox_munk_constants_m
-  use channel_structures_m
-  use interpol_m
-  use fill_grid_m
-  use system_utils_m
-  use netcdf
+   use preproc_constants_m
+   use cox_munk_constants_m
+   use channel_structures_m
+   use interpol_m
+   use fill_grid_m
+   use system_utils_m
+   use netcdf
 
-  implicit none
+   implicit none
 
-  ! Input arguments
-  character(len=4), intent(in)           :: cyear
-  character(len=2), intent(in)           :: cmonth
-  character(len=path_length), intent(in) :: occci_path
-  real(kind=sreal), intent(in)           :: lat(:)
-  real(kind=sreal), intent(in)           :: lon(:)
-  type(channel_info_t), intent(in)       :: channel_info
-  logical, intent(in)                    :: assume_full_path
-  logical, intent(in)                    :: verbose
+   ! Input arguments
+   character(len=4), intent(in)           :: cyear
+   character(len=2), intent(in)           :: cmonth
+   character(len=path_length), intent(in) :: occci_path
+   real(kind=sreal), intent(in)           :: lat(:)
+   real(kind=sreal), intent(in)           :: lon(:)
+   type(channel_info_t), intent(in)       :: channel_info
+   logical, intent(in)                    :: assume_full_path
+   logical, intent(in)                    :: verbose
 
-  ! Output arguments
-  type(ocean_colour_t), allocatable, intent(out) :: ocean_colour(:,:)
+   ! Output arguments
+   type(ocean_colour_t), allocatable, intent(out) :: ocean_colour(:,:)
 
-  ! Local variables
-  integer(kind=lint)                :: i,j,k,l,ii
-  integer(kind=lint)                :: iv(1)
-  integer                           :: nbands, nbands_occci
-  integer(kind=lint)                :: nsea
-  real(kind=sreal), allocatable     :: wavelengths(:)
-  integer(kind=lint), allocatable   :: have_data_idx(:)
-  integer                           :: iyear, imonth
-  character(len=4)                  :: cyear2
-  character(len=path_length)        :: occci_path_file
-  character(len=path_length)        :: occci_path_full
-  character(len=path_length)        :: occci_file_regex
-  character(len=path_length)        :: occci_file
-  logical                           :: occci_file_exist=.false.
-  character(len=7)                  :: occci_file_read
-  type(occci_t)                     :: occci
-  real(kind=sreal), allocatable     :: tmp_data(:,:), tmp_data2(:,:)
-  real(kind=sreal)                  :: tmp_val
-  integer(kind=byte), allocatable   :: fg_mask(:,:)
-  integer(kind=lint)                :: seacount
-  type(interpol_t), allocatable     :: interp(:)
-  real(kind=sreal)                  :: dwl
+   ! Local variables
+   integer(kind=lint)              :: i,j,k,l,ii
+   integer(kind=lint)              :: iv(1)
+   integer                         :: nbands, nbands_occci
+   integer(kind=lint)              :: nsea
+   real(kind=sreal), allocatable   :: wavelengths(:)
+   integer(kind=lint), allocatable :: have_data_idx(:)
+   integer                         :: iyear, imonth
+   character(len=4)                :: cyear2
+   character(len=path_length)      :: occci_path_file
+   character(len=path_length)      :: occci_path_full
+   character(len=path_length)      :: occci_file_regex
+   character(len=path_length)      :: occci_file
+   logical                         :: occci_file_exist=.false.
+   character(len=7)                :: occci_file_read
+   type(occci_t)                   :: occci
+   real(kind=sreal), allocatable   :: tmp_data(:,:), tmp_data2(:,:)
+   real(kind=sreal)                :: tmp_val
+   integer(kind=byte), allocatable :: fg_mask(:,:)
+   integer(kind=lint)              :: seacount
+   type(interpol_t), allocatable   :: interp(:)
+   real(kind=sreal)                :: dwl
 
-  if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering get_ocean_colour()'
+   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering get_ocean_colour()'
 
-  ! Generate the list of wavelengths required. We ignore multiple views
-  ! here, as the read_oceancolour_cci ensures that the required data is
-  ! only read once
-  nbands=channel_info%nchannels_sw
-  nsea=size(lat)
+   ! Generate the list of wavelengths required. We ignore multiple views
+   ! here, as the read_oceancolour_cci ensures that the required data is
+   ! only read once
+   nbands=channel_info%nchannels_sw
+   nsea=size(lat)
 
-  ! Allocate the output structure
-  allocate(ocean_colour(nbands,nsea))
-  allocate(interp(nsea))
+   ! Allocate the output structure
+   allocate(ocean_colour(nbands,nsea))
+   allocate(interp(nsea))
 
-  ! Check which bands lie within the OCCCI wavelength coverage.
-  ! Any bands which lie outside this range are assumed to have the base
-  ! absorption and backscatter values from cox_munk_constants_m.
-  nbands_occci = count(channel_info%channel_wl_abs .lt. 0.8)
-  allocate(wavelengths(nbands_occci))
-  allocate(have_data_idx(nbands_occci))
-  ii=1
-  do i = 1, nbands
-     if (channel_info%channel_wl_abs(channel_info%map_ids_sw_to_channel(i)) &
-          .lt. 0.8) then
-        wavelengths(ii) = &
-             channel_info%channel_wl_abs(channel_info%map_ids_sw_to_channel(i))
-        have_data_idx(ii) = i
-        ocean_colour(i,:)%wl = wavelengths(ii)
-        ii = ii+1
-     else
-        ocean_colour(i,:)%have_data = .false.
-        ocean_colour(i,:)%wl = &
-             channel_info%channel_wl_abs(channel_info%map_ids_sw_to_channel(i))
-        ocean_colour(i,:)%totabs = totalabs(channel_info%map_ids_abs_to_ref_band_sea(i))
-        ocean_colour(i,:)%totbsc = totalbsc(channel_info%map_ids_abs_to_ref_band_sea(i))
-     end if
-  end do
+   ! Check which bands lie within the OCCCI wavelength coverage.
+   ! Any bands which lie outside this range are assumed to have the base
+   ! absorption and backscatter values from cox_munk_constants_m.
+   nbands_occci = count(channel_info%channel_wl_abs .lt. 0.8)
+   allocate(wavelengths(nbands_occci))
+   allocate(have_data_idx(nbands_occci))
+   ii=1
+   do i = 1, nbands
+      if (channel_info%channel_wl_abs(channel_info%map_ids_sw_to_channel(i)) &
+           .lt. 0.8) then
+         wavelengths(ii) = &
+              channel_info%channel_wl_abs(channel_info%map_ids_sw_to_channel(i))
+         have_data_idx(ii) = i
+         ocean_colour(i,:)%wl = wavelengths(ii)
+         ii = ii+1
+      else
+         ocean_colour(i,:)%have_data = .false.
+         ocean_colour(i,:)%wl = &
+              channel_info%channel_wl_abs(channel_info%map_ids_sw_to_channel(i))
+         ocean_colour(i,:)%totabs = totalabs(channel_info%map_ids_abs_to_ref_band_sea(i))
+         ocean_colour(i,:)%totbsc = totalbsc(channel_info%map_ids_abs_to_ref_band_sea(i))
+      end if
+   end do
 
-
-  read(cyear, *) iyear
-  read(cmonth, *) imonth
-  ! Check that our data is within the OceanColour_cci data record
-  if ( (iyear .lt. 1997) .or. &
+   read(cyear, *) iyear
+   read(cmonth, *) imonth
+   ! Check that our data is within the OceanColour_cci data record
+   if ((iyear .lt. 1997) .or. &
        ((iyear .eq. 1997) .and. (imonth .lt. 9)) .or. &
-       (iyear .gt. 2013) ) then
-     cyear2 = 'XXXX'
-  else
-     cyear2 = cyear
-  end if
+       (iyear .gt. 2013)) then
+      cyear2 = 'XXXX'
+   else
+      cyear2 = cyear
+   end if
 
-  ! Determine the path to the OceanColour_cci data file needed
-  if (assume_full_path) then
-     occci_path_file = occci_path
-  else
-     occci_path_full = trim(adjustl(occci_path))//'/'//trim(adjustl(cyear))
-     occci_file_regex = 'ESACCI-OC-L3S-IOP-MERGED-1M_MONTHLY_4km_GEO_PML_OC.v._QAA-'// &
-          trim(adjustl(cyear))//trim(adjustl(cmonth))//'-fv.\..\.nc'
-     if (match_file(trim(occci_path_full), trim(occci_file_regex), occci_file) .ne. 0) then
-        write(*,*) 'ERROR: get_ocean_colour(): Unable to locate OceanColour_cci data: ', &
-             trim(occci_path_full)//'/'//trim(occci_file_regex)
-        stop error_stop_code
-     end if
-     occci_path_file = trim(occci_path_full)//'/'//trim(occci_file)
-  end if
-  if (verbose) write(*,*) 'OCCCI data file: ', trim(occci_path_file)
+   ! Determine the path to the OceanColour_cci data file needed
+   if (assume_full_path) then
+      occci_path_file = occci_path
+   else
+      occci_path_full = trim(adjustl(occci_path))//'/'//trim(adjustl(cyear))
+      occci_file_regex = 'ESACCI-OC-L3S-IOP-MERGED-1M_MONTHLY_4km_GEO_PML_OC.v._QAA-'// &
+           trim(adjustl(cyear))//trim(adjustl(cmonth))//'-fv.\..\.nc'
+      if (match_file(trim(occci_path_full), trim(occci_file_regex), occci_file) .ne. 0) then
+         write(*,*) 'ERROR: get_ocean_colour(): Unable to locate OceanColour_cci data: ', &
+              trim(occci_path_full)//'/'//trim(occci_file_regex)
+         stop error_stop_code
+      end if
+      occci_path_file = trim(occci_path_full)//'/'//trim(occci_file)
+   end if
+   if (verbose) write(*,*) 'OCCCI data file: ', trim(occci_path_file)
 
-  ! Check that this file exists and is readable
-  inquire(file=trim(occci_path_file), exist=occci_file_exist, &
-       read=occci_file_read)
-  if (.not.occci_file_exist) then
-     write(*,*) "ERROR: get_ocean_colour(): OceanColour_cci data "// &
-          "file  doesn't exist: ", trim(occci_path_file)
-     stop error_stop_code
-  end if
-  if (trim(occci_file_read) .eq. 'NO') then
-     write(*,*) "ERROR: get_ocean_colour(): OceanColour_cci data "// &
-          "file isn\'t readable: ", trim(occci_path_file)
-     stop error_stop_code
-  end if
+   ! Check that this file exists and is readable
+   inquire(file=trim(occci_path_file), exist=occci_file_exist, &
+        read=occci_file_read)
+   if (.not.occci_file_exist) then
+      write(*,*) "ERROR: get_ocean_colour(): OceanColour_cci data "// &
+           "file  doesn't exist: ", trim(occci_path_file)
+      stop error_stop_code
+   end if
+   if (trim(occci_file_read) .eq. 'NO') then
+      write(*,*) "ERROR: get_ocean_colour(): OceanColour_cci data "// &
+           "file isn\'t readable: ", trim(occci_path_file)
+      stop error_stop_code
+   end if
 
-  ! Read the data
-  if (read_oceancolour_cci(occci_path_file, occci, wavelengths, verbose) .ne. NF90_NOERR) then
-     write(*,*) 'ERROR: read_oceancolour_cci: Problem encountered '// &
-          'reading OceanColour_cci file: ',trim(occci_path_file)
-     stop error_stop_code
-  end if
+   ! Read the data
+   if (read_oceancolour_cci(occci_path_file, occci, wavelengths, verbose) .ne. NF90_NOERR) then
+      write(*,*) 'ERROR: read_oceancolour_cci: Problem encountered '// &
+           'reading OceanColour_cci file: ',trim(occci_path_file)
+      stop error_stop_code
+   end if
 
-  ! Use nearest neighbour to fill missing data in the Ocean Colour data
-  ! Note we can't allocate the tmp_data array until we've created the
-  ! occci structure
-  allocate(tmp_data(occci%nlon,occci%nlat))
-  allocate(tmp_data2(occci%nlon,occci%nlat))
-  tmp_data  = 0.
-  tmp_data2 = 0.
+   ! Use nearest neighbour to fill missing data in the Ocean Colour data
+   ! Note we can't allocate the tmp_data array until we've created the
+   ! occci structure
+   allocate(tmp_data(occci%nlon,occci%nlat))
+   allocate(tmp_data2(occci%nlon,occci%nlat))
+   tmp_data  = 0.
+   tmp_data2 = 0.
 
-  ! Also create a bit mask that controls where we apply the data filling,
-  ! limiting it to the region covered by the imager data
-  allocate(fg_mask(occci%nlon,occci%nlat))
-  fg_mask = 0
+   ! Also create a bit mask that controls where we apply the data filling,
+   ! limiting it to the region covered by the imager data
+   allocate(fg_mask(occci%nlon,occci%nlat))
+   fg_mask = 0
 
-  ! Locate pixels surrounding each sea pixel from the imager structures
-  ! Also flag required pixels from the occci data, assuming a regular
-  ! grid
-  do i = 1, nsea
-     call bilinear_coef(occci%lon0, occci%lon_invdel, occci%nlon, &
-          occci%lat0, occci%lat_invdel, occci%nlat, lon(i), lat(i), &
-          interp(i))
-     fg_mask(interp(i)%x0, interp(i)%y0) = 1
-     fg_mask(interp(i)%x1, interp(i)%y0) = 1
-     fg_mask(interp(i)%x0, interp(i)%y1) = 1
-     fg_mask(interp(i)%x1, interp(i)%y1) = 1
-  end do
+   ! Locate pixels surrounding each sea pixel from the imager structures
+   ! Also flag required pixels from the occci data, assuming a regular
+   ! grid
+   do i = 1, nsea
+      call bilinear_coef(occci%lon0, occci%lon_invdel, occci%nlon, &
+           occci%lat0, occci%lat_invdel, occci%nlat, lon(i), lat(i), &
+           interp(i))
+      fg_mask(interp(i)%x0, interp(i)%y0) = 1
+      fg_mask(interp(i)%x1, interp(i)%y0) = 1
+      fg_mask(interp(i)%x0, interp(i)%y1) = 1
+      fg_mask(interp(i)%x1, interp(i)%y1) = 1
+   end do
 
-  ! Now we fill in the gaps in the OC_cci data. We do this before
-  ! interpolating in wavelength because the missing pixels are not
-  ! necessarily the same for all the OC_cci bands
-  do i = 1, occci%nwavelength
-     tmp_data = occci%atot(:,:,i)
-     call fill_grid(tmp_data, sreal_fill_value, fg_mask)
+   ! Now we fill in the gaps in the OC_cci data. We do this before
+   ! interpolating in wavelength because the missing pixels are not
+   ! necessarily the same for all the OC_cci bands
+   do i = 1, occci%nwavelength
+      tmp_data = occci%atot(:,:,i)
+      call fill_grid(tmp_data, sreal_fill_value, fg_mask)
 
-     tmp_data2 = occci%bbs(:,:,i)
-     call fill_grid(tmp_data2, sreal_fill_value, fg_mask)
+      tmp_data2 = occci%bbs(:,:,i)
+      call fill_grid(tmp_data2, sreal_fill_value, fg_mask)
 
-     occci%atot(:,:,i) = tmp_data
-     occci%bbs(:,:,i) = tmp_data2
-  end do
+      occci%atot(:,:,i) = tmp_data
+      occci%bbs(:,:,i) = tmp_data2
+   end do
 
-  ! Now we interpolate in wavelength, again using the fg_mask to only
-  ! apply the calculation to the pixels we're actually interested in
-  do i = 1, nbands_occci
-     j = occci%iwavelength(1,i)
-     k = occci%iwavelength(2,i)
-     if (j .eq. k) then
-        where(fg_mask .eq. 1)
-           tmp_data  = occci%atot(:,:,j)
-           tmp_data2 = occci%bbs(:,:,j)
-        end where
-     else
-        dwl = (wavelengths(i)-occci%wavelength(j))/ &
-             (occci%wavelength(k)-occci%wavelength(j))
-        where(fg_mask .eq. 1)
-           tmp_data  = occci%atot(:,:,j) +             &
-                (occci%atot(:,:,k)-occci%atot(:,:,j)) * dwl
-           tmp_data2 = occci%bbs(:,:,j) +              &
-                (occci%bbs(:,:,k)-occci%bbs(:,:,j)) * dwl
-        end where
-     end if
+   ! Now we interpolate in wavelength, again using the fg_mask to only
+   ! apply the calculation to the pixels we're actually interested in
+   do i = 1, nbands_occci
+      j = occci%iwavelength(1,i)
+      k = occci%iwavelength(2,i)
+      if (j .eq. k) then
+         where(fg_mask .eq. 1)
+            tmp_data  = occci%atot(:,:,j)
+            tmp_data2 = occci%bbs(:,:,j)
+         end where
+      else
+         dwl = (wavelengths(i)-occci%wavelength(j))/ &
+              (occci%wavelength(k)-occci%wavelength(j))
+         where(fg_mask .eq. 1)
+            tmp_data  = occci%atot(:,:,j) + &
+                 (occci%atot(:,:,k)-occci%atot(:,:,j)) * dwl
+            tmp_data2 = occci%bbs(:,:,j) + &
+                 (occci%bbs(:,:,k)-occci%bbs(:,:,j)) * dwl
+         end where
+      end if
 
-     ! Finally, copy the data into the output structure, ready for
-     ! use in cox_munk
-     do j = 1, nsea
-        ocean_colour(have_data_idx(i),j)%have_data = .true.
-        call interp_field(tmp_data, tmp_val, interp(j))
-        ocean_colour(have_data_idx(i),j)%totabs = tmp_val
-        call interp_field(tmp_data2, tmp_val, interp(j))
-        ocean_colour(have_data_idx(i),j)%totbsc = tmp_val
-     end do
-     ! Do a final check for fill values in this data, and replace with
-     ! the defaults defined in cox-munk
-     where(ocean_colour(have_data_idx(i),:)%totabs .eq. sreal_fill_value)
-        ocean_colour(have_data_idx(i),:)%totabs = &
-             totalabs(channel_info%map_ids_abs_to_ref_band_sea(have_data_idx(i)))
-        ocean_colour(have_data_idx(i),:)%totbsc = &
-             totalbsc(channel_info%map_ids_abs_to_ref_band_sea(have_data_idx(i)))
-     end where
-  end do
+      ! Finally, copy the data into the output structure, ready for
+      ! use in cox_munk
+      do j = 1, nsea
+         ocean_colour(have_data_idx(i),j)%have_data = .true.
+         call interp_field(tmp_data, tmp_val, interp(j))
+         ocean_colour(have_data_idx(i),j)%totabs = tmp_val
+         call interp_field(tmp_data2, tmp_val, interp(j))
+         ocean_colour(have_data_idx(i),j)%totbsc = tmp_val
+      end do
+      ! Do a final check for fill values in this data, and replace with
+      ! the defaults defined in cox-munk
+      where(ocean_colour(have_data_idx(i),:)%totabs .eq. sreal_fill_value)
+         ocean_colour(have_data_idx(i),:)%totabs = &
+              totalabs(channel_info%map_ids_abs_to_ref_band_sea(have_data_idx(i)))
+         ocean_colour(have_data_idx(i),:)%totbsc = &
+              totalbsc(channel_info%map_ids_abs_to_ref_band_sea(have_data_idx(i)))
+      end where
+   end do
 
-  deallocate(wavelengths)
-  deallocate(have_data_idx)
-  deallocate(interp)
-  deallocate(tmp_data)
-  deallocate(tmp_data2)
-  deallocate(fg_mask)
+   deallocate(wavelengths)
+   deallocate(have_data_idx)
+   deallocate(interp)
+   deallocate(tmp_data)
+   deallocate(tmp_data2)
+   deallocate(fg_mask)
 
-  if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving get_ocean_colour()'
+   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving get_ocean_colour()'
 
 end subroutine get_ocean_colour
-
 
 end module ocean_colour_m

@@ -252,9 +252,9 @@
 ! 2016/05/30, SP: Fixed bug in multi-view processing
 ! 2016/06/28, SP: Added initial support for Sentinel-3 SLSTR
 ! 2016/07/11, SP: Chunk routines now in the common directory
-! 2016/05/31, GT: Added use_l1_land_mask optional argument to prevent USGS
-!                 DEM from overwriting the land/sea mask provided by L1 data
-!                 (assuming the L1 data provides one!)
+! 2016/05/31, GT: Added use_l1_land_mask optional argument to prevent USGS DEM
+!    from overwriting the land/sea mask provided by L1 data (assuming the L1
+!    data provides one!).
 !
 ! $Id$
 !
@@ -444,9 +444,8 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    ecmwf_path_hr(2) = ''
    ecmwf_path2(2) = ''
    ecmwf_path3(2) = ''
-   occci_path = ''
    use_occci = .false.
-
+   occci_path = ''
 
    ! if more than one argument passed, all inputs on command line
    if (nargs .gt. 1) then
@@ -509,7 +508,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
          call parse_optional(label, value, n_channels, channel_ids, use_hr_ecmwf, &
             ecmwf_time_int_method, use_ecmwf_snow_and_ice, use_modis_emis_in_rttov, &
             ecmwf_path(2), ecmwf_path2(2), ecmwf_path3(2), ecmwf_path_hr(1), &
-            ecmwf_path_hr(2), ecmwf_nlevels, use_l1_land_mask, occci_path, use_occci)
+            ecmwf_path_hr(2), ecmwf_nlevels, use_l1_land_mask, use_occci, occci_path)
       end do
    else
 
@@ -579,7 +578,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
            use_hr_ecmwf, ecmwf_time_int_method, use_ecmwf_snow_and_ice, &
            use_modis_emis_in_rttov, ecmwf_path(2), ecmwf_path2(2), &
            ecmwf_path3(2), ecmwf_path_hr(1), ecmwf_path_hr(2), &
-           ecmwf_nlevels, use_l1_land_mask, occci_path, use_occci)
+           ecmwf_nlevels, use_l1_land_mask, use_occci, occci_path)
       end do
 
       close(11)
@@ -717,7 +716,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       ! Get dimensions of the AHI image.
       ! At present only full-disk images are supported
       call read_himawari_dimensions(geo_path_file,n_across_track,n_along_track, &
-                                  startx,endx,starty,endy,verbose)
+                                    startx,endx,starty,endy,verbose)
    else if (trim(adjustl(sensor)) .eq. 'VIIRS') then
       call setup_viirs(l1b_path_file,geo_path_file,platform,year,month,day, &
            doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids, &
@@ -726,7 +725,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       ! Get dimensions of the VIIRS image.
       ! At present the full scene will always be processed
       call read_viirs_dimensions(geo_path_file,n_across_track,n_along_track, &
-                                  startx,endx,starty,endy,verbose)
+                                 startx,endx,starty,endy,verbose)
    else if (trim(adjustl(sensor)) .eq. 'SLSTR') then
       call setup_slstr(l1b_path_file,geo_path_file,platform,year,month,day, &
            doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids, &
@@ -735,7 +734,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       ! Get dimensions of the SLSTR image.
       ! At present the full scene will always be processed
       call read_slstr_dimensions(l1b_path_file,n_across_track,n_along_track, &
-                                  startx,endx,starty,endy,verbose)
+                                 startx,endx,starty,endy,verbose)
    else
       write(*,*) 'ERROR: Invalid sensor: ', trim(adjustl(sensor))
       stop error_stop_code
@@ -910,6 +909,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
          ecmwf1%kdim=60
          ecmwf2%kdim=60
       end select
+
       ! read surface wind fields and ECMWF dimensions
       if (ecmwf_time_int_method .ne. 2) then
          call read_ecmwf_wind(ecmwf_flag, ecmwf_path_file(1), &

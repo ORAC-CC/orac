@@ -169,46 +169,46 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
    integer, parameter :: read_qc   = 0 ! 1 = read QC/ancillaty data
 
    ! Land surface reflectance
-   character(len=path_length)       :: modis_surf_path_file
-   character(len=path_length)       :: modis_brdf_path_file
-   real,               allocatable  :: solzalnd(:), satzalnd(:)
-   real,               allocatable  :: solazlnd(:), relazlnd(:)
-   type(mcd43c1_t)                  :: mcdc1
-   type(mcd43c3_t)                  :: mcdc3
-   integer,            parameter    :: n_modbands = 7
-   integer                          :: modbands(n_modbands)
-   integer,            parameter    :: n_coxbands = 8
-   integer                          :: coxbands(n_coxbands)
-   integer,            allocatable  :: bands(:), band_to_sw_index(:)
-   integer                          :: n_ref_chans
-   real,               allocatable  :: tmp_data(:,:)
-   integer(kind=byte), allocatable  :: fg_mask(:,:)
-   real,               allocatable  :: wsalnd(:,:)
-   real,               allocatable  :: wgtlnd(:,:,:)
-   real,               allocatable  :: rholnd(:,:,:), tmprho(:,:,:)
-   real                             :: tmp_val
-   integer                          :: stat
+   character(len=path_length)        :: modis_surf_path_file
+   character(len=path_length)        :: modis_brdf_path_file
+   real,               allocatable   :: solzalnd(:), satzalnd(:)
+   real,               allocatable   :: solazlnd(:), relazlnd(:)
+   type(mcd43c1_t)                   :: mcdc1
+   type(mcd43c3_t)                   :: mcdc3
+   integer,            parameter     :: n_modbands = 7
+   integer                           :: modbands(n_modbands)
+   integer,            parameter     :: n_coxbands = 8
+   integer                           :: coxbands(n_coxbands)
+   integer,            allocatable   :: bands(:), band_to_sw_index(:)
+   integer                           :: n_ref_chans
+   real,               allocatable   :: tmp_data(:,:)
+   integer(kind=byte), allocatable   :: fg_mask(:,:)
+   real,               allocatable   :: wsalnd(:,:)
+   real,               allocatable   :: wgtlnd(:,:,:)
+   real,               allocatable   :: rholnd(:,:,:), tmprho(:,:,:)
+   real                              :: tmp_val
+   integer                           :: stat
 
    ! Sea surface reflectance
-   real,               allocatable  :: solzasea(:,:), satzasea(:,:)
-   real,               allocatable  :: solazsea(:,:), relazsea(:,:)
-   real,               allocatable  :: u10sea(:), v10sea(:)
-   real,               allocatable  :: latsea(:), lonsea(:)
-   real,               allocatable  :: refsea(:,:)
-   real,               allocatable  :: rhosea(:,:,:)
-   type(cox_munk_shared_geo_wind_t) :: cox_munk_shared_geo_wind
+   real,               allocatable   :: solzasea(:,:), satzasea(:,:)
+   real,               allocatable   :: solazsea(:,:), relazsea(:,:)
+   real,               allocatable   :: u10sea(:), v10sea(:)
+   real,               allocatable   :: latsea(:), lonsea(:)
+   real,               allocatable   :: refsea(:,:)
+   real,               allocatable   :: rhosea(:,:,:)
+   type(cox_munk_shared_geo_wind_t)  :: cox_munk_shared_geo_wind
    type(ocean_colour_t), allocatable :: ocean_colour(:,:)
 
    ! General
-   integer                          :: i,j,k,ii,kk,i_view,j_oc
-   logical                          :: flag
-   integer                          :: nsea=0, nland=0
-   integer                          :: seacount=1
-   integer                          :: lndcount=1
+   integer                           :: i,j,k,ii,kk,i_view,j_oc
+   logical                           :: flag
+   integer                           :: nsea=0, nland=0
+   integer                           :: seacount=1
+   integer                           :: lndcount=1
 
-   type(interpol_t),   allocatable  :: interp(:)
+   type(interpol_t),   allocatable   :: interp(:)
 
-   logical,            allocatable  :: mask(:,:)
+   logical,            allocatable   :: mask(:,:)
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering get_surface_reflectance()'
 
@@ -264,6 +264,9 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
    ! Extract land surface reflectance
    !----------------------------------------------------------------------------
    if (nland .gt. 0) then
+      if (verbose) write(*,*) &
+         'get_surface_reflectance(): Beginning LAND SURFACE REFLECTANCE calculation'
+
       ! Allocate and populate the local arrays required for land pixels
       allocate(wsalnd(channel_info%nchannels_sw,nland))
       allocate(interp(nland))
@@ -510,7 +513,9 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
    ! Compute sea surface reflectance
    !----------------------------------------------------------------------------
    if (nsea .gt. 0) then
-      if (verbose) write(*,*) 'get_surface_reflectance(): Beginning SEA SURFACE REFLECTANCE calculation'
+      if (verbose) write(*,*) &
+         'get_surface_reflectance(): Beginning SEA SURFACE REFLECTANCE calculation'
+
       ! Allocate and populate the local arrays required for sea pixels
       allocate(solzasea(nsea,imager_angles%nviews))
       allocate(satzasea(nsea,imager_angles%nviews))
@@ -570,6 +575,7 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
             end if
          end do
       end do
+
       ! If requested, use OceanColour_cci data to set backscatter and
       ! extinction of the sea water
       if (use_occci) then
@@ -638,9 +644,8 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
          end do
 
          do j = 1, nsea
-            call cox_munk3_calc_shared_geo_wind( &
-                 solzasea(j,k), satzasea(j,k), solazsea(j,k), &
-                 relazsea(j,k), u10sea(j), v10sea(j), &
+            call cox_munk3_calc_shared_geo_wind(solzasea(j,k), satzasea(j,k), &
+                 solazsea(j,k), relazsea(j,k), u10sea(j), v10sea(j), &
                  cox_munk_shared_geo_wind)
 
             if (use_occci) then

@@ -16,7 +16,7 @@
 ! 2014/12/01, CP: Added source attributes.
 ! 2014/12/31, GM: Parallelized the main loop with OpenMP.
 ! 2016/05/31, GT: Added use_l1_land_mask argument, which provides the option of
-!                 not replacing the existing imager_flags%lsflag with DEM values
+!    not replacing the existing imager_flags%lsflag with DEM values
 !
 ! $Id$
 !
@@ -100,7 +100,7 @@ subroutine get_USGS_data(path_to_USGS_file, imager_flags, imager_geolocation, &
    ! Reset the land/sea mask using that provided by the DEM, unless the
    ! use_l1_land_mask optional argument has been passed to the main preproc
    ! routine
-   if (.not.use_l1_land_mask) then
+   if (.not. use_l1_land_mask) then
       ! Reset land surface flag to 1, i.e. all land
       imager_flags%lsflag = 1
       ! Set pixels to 0 where land use flags equals water flag value (=16)

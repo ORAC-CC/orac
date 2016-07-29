@@ -314,8 +314,10 @@ subroutine setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day, &
 
    real,    parameter :: all_channel_numerical_uncertainty(all_nchannels_total) = &
       (/ 0.,   0.,     0.,   0.,   0.,   0. /)
+
    real,    parameter :: all_channel_lnd_uncertainty(all_nchannels_total) = &
       (/ 0.,   0.,     0.,   0.,   0.,   0. /)
+
    real,    parameter :: all_channel_sea_uncertainty(all_nchannels_total) = &
       (/ 0.,   0.,     0.,   0.,   0.,   0. /)
 
@@ -538,9 +540,11 @@ subroutine setup_himawari8(l1b_path_file,geo_path_file,platform,year,month,day, 
    real,    parameter :: all_channel_numerical_uncertainty(all_nchannels_total) = &
       (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0., &
          0.,      0.,      0.,      0.,      0.,      0.,      0.,      0. /)
+
    real,    parameter :: all_channel_lnd_uncertainty(all_nchannels_total) = &
       (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0., &
          0.,      0.,      0.,      0.,      0.,      0.,      0.,      0. /)
+
    real,    parameter :: all_channel_sea_uncertainty(all_nchannels_total) = &
       (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0., &
          0.,      0.,      0.,      0.,      0.,      0.,      0.,      0. /)
@@ -752,6 +756,7 @@ subroutine setup_modis(l1b_path_file,geo_path_file,platform,year,month,day, &
          0.,        0.,        0.,        0.,        0.,        0., &
          0.,        0.,        0.,        0.,        0.,        0., &
          0.,        0.,        0.,        0.,        0.,        0. /)
+
    real,    parameter :: all_channel_lnd_uncertainty(all_nchannels_total) = &
       (/ 0.,        0.,        0.,        0.,        0.,        0., &
          0.,        0.,        0.,        0.,        0.,        0., &
@@ -759,6 +764,7 @@ subroutine setup_modis(l1b_path_file,geo_path_file,platform,year,month,day, &
          0.,        0.,        0.,        0.,        0.,        0., &
          0.,        0.,        0.,        0.,        0.,        0., &
          0.,        0.,        0.,        0.,        0.,        0. /)
+
    real,    parameter :: all_channel_sea_uncertainty(all_nchannels_total) = &
       (/ 0.,        0.,        0.,        0.,        0.,        0., &
          0.,        0.,        0.,        0.,        0.,        0., &
@@ -902,8 +908,10 @@ subroutine setup_seviri(l1b_path_file,geo_path_file,platform,year,month,day, &
 
    real,    parameter :: all_channel_numerical_uncertainty(all_nchannels_total) = &
       (/ 0.,    0.,   0.,   0.,   0.,   0.,   0.,   0.,   0.,    0.,    0. /)
+
    real,    parameter :: all_channel_lnd_uncertainty(all_nchannels_total) = &
       (/ 0.,    0.,   0.,   0.,   0.,   0.,   0.,   0.,   0.,    0.,    0. /)
+
    real,    parameter :: all_channel_sea_uncertainty(all_nchannels_total) = &
       (/ 0.,    0.,   0.,   0.,   0.,   0.,   0.,   0.,   0.,    0.,    0. /)
 
@@ -1074,9 +1082,11 @@ subroutine setup_viirs(l1b_path_file,geo_path_file,platform,year,month,day, &
    real,    parameter :: all_channel_numerical_uncertainty(all_nchannels_total) = &
       (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0., &
          0.,      0.,      0.,      0.,      0.,      0.,      0.,      0. /)
+
    real,    parameter :: all_channel_lnd_uncertainty(all_nchannels_total) = &
       (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0., &
          0.,      0.,      0.,      0.,      0.,      0.,      0.,      0. /)
+
    real,    parameter :: all_channel_sea_uncertainty(all_nchannels_total) = &
       (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0., &
          0.,      0.,      0.,      0.,      0.,      0.,      0.,      0. /)
@@ -1238,9 +1248,11 @@ subroutine setup_slstr(l1b_path_file,geo_path_file,platform,year,month,day, &
    real,    parameter :: all_channel_numerical_uncertainty(all_nchannels_total) = &
       (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0.,     0., &
          0.,      0.,      0.,      0.,      0.,      0.,      0.,      0.,     0. /)
+
    real,    parameter :: all_channel_lnd_uncertainty(all_nchannels_total) = &
       (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0.,     0., &
          0.,      0.,      0.,      0.,      0.,      0.,      0.,      0.,     0. /)
+
    real,    parameter :: all_channel_sea_uncertainty(all_nchannels_total) = &
       (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0.,     0., &
          0.,      0.,      0.,      0.,      0.,      0.,      0.,      0.,     0. /)
@@ -1473,11 +1485,11 @@ subroutine common_setup(channel_info, channel_ids_user, channel_ids_default, &
          channel_info%map_ids_abs_to_snow_and_ice (i_sw) = &
             all_map_ids_abs_to_snow_and_ice (channel_info%channel_ids_instr(i))
 
-         ! RTTOV only has one set of channel coefficients - it doesn't
-         ! repeat for instruments with multiple view angles. Therefore we
-         ! have to select the equivalent RTTOV channel (in view = 1) for
-         ! each of the actual instrument views (view > 1). For simplicity
-         ! we also calculate for view = 1.
+         ! RTTOV only has one set of channel coefficients - it doesn't repeat
+         ! for instruments with multiple view angles. Therefore we have to
+         ! select the equivalent RTTOV channel (in view = 1) for each of the
+         ! actual instrument views (view > 1). For simplicity we also calculate
+         ! for view = 1.
          do j=1,channel_info%nchannels_total
             if ((channel_info%channel_view_ids(j) .eq. 1) .and. &
                 (channel_info%channel_wl_abs(j) .eq. channel_info%channel_wl_abs(i))) then

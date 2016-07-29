@@ -14,11 +14,11 @@
 ! 2016/02/02, GM: Add use_hr_ecmwf.
 ! 2016/02/02, GM: Add use_ecmwf_snow_and_ice.
 ! 2016/04/05, SP: Added ECMWF_NLEVELS option to choose between 60,91 and 137
-!                 level ECMWF input files.
+!    level ECMWF input files.
 ! 2016/05/31, GT: Added use_l1_land_mask option to prevent USGS DEM from
-!                 overwriting the land/sea mask provided by L1 data
-!                 (assuming the L1 data provides one!)
-! 2016/07/11, SP: Removed chunking routines to separate library in chunk_utils
+!    overwriting the land/sea mask provided by L1 data (assuming the L1 data
+!    provides one!)
+! 2016/07/11, SP: Removed chunking routines to separate library in chunk_utils.
 !
 ! $Id$
 !
@@ -32,7 +32,6 @@ module utils_for_main_m
 
 contains
 
-
 subroutine parse_required(lun, value, name)
 
    use parsing_m
@@ -40,9 +39,9 @@ subroutine parse_required(lun, value, name)
 
    implicit none
 
-   integer,          intent(in) :: lun
-   character(len=*), intent(out):: value
-   character(len=*), intent(in) :: name
+   integer,          intent(in)  :: lun
+   character(len=*), intent(out) :: value
+   character(len=*), intent(in)  :: name
 
    character(path_length) :: line
 
@@ -57,7 +56,7 @@ subroutine parse_optional(label, value, n_channels, channel_ids, &
                           use_ecmwf_snow_and_ice, use_modis_emis_in_rttov, &
                           ecmwf_path, ecmwf_path2, ecmwf_path3, ecmwf_path_hr, &
                           ecmwf_path_hr_2, ecmwf_nlevels, use_l1_land_mask, &
-                          occci_path, use_occci)
+                          use_occci, occci_path)
 
    use parsing_m
    use preproc_constants_m
@@ -77,10 +76,10 @@ subroutine parse_optional(label, value, n_channels, channel_ids, &
    character(len=*), intent(inout) :: ecmwf_path3
    character(len=*), intent(inout) :: ecmwf_path_hr
    character(len=*), intent(inout) :: ecmwf_path_hr_2
-   character(len=*), intent(inout) :: occci_path
    integer,          intent(inout) :: ecmwf_nlevels
    logical,          intent(inout) :: use_l1_land_mask
    logical,          intent(inout) :: use_occci
+   character(len=*), intent(inout) :: occci_path
 
    select case (label)
    case('N_CHANNELS')
@@ -127,11 +126,11 @@ subroutine parse_optional(label, value, n_channels, channel_ids, &
    case('USE_L1_LAND_MASK')
       if (parse_string(value, use_l1_land_mask) /= 0) &
          call handle_parse_error(label)
-   case('OCCCI_PATH')
-      if (parse_string(value, occci_path) /=0) &
-           call handle_parse_error(label)
    case('USE_OCCCI')
-      if (parse_string(value, use_occci) /=0) &
+      if (parse_string(value, use_occci) /= 0) &
+           call handle_parse_error(label)
+   case('OCCCI_PATH')
+      if (parse_string(value, occci_path) /= 0) &
            call handle_parse_error(label)
    case default
       write(*,*) 'ERROR: Unknown option: ', trim(label)
