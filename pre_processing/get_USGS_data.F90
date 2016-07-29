@@ -27,6 +27,7 @@
 subroutine get_USGS_data(path_to_USGS_file, imager_flags, imager_geolocation, &
      usgs, assume_full_paths, use_l1_land_mask, source_atts, verbose)
 
+   use constants_cloud_typing_pavolonis_m
    use imager_structures_m
    use orac_ncdf_m
    use source_attributes_m
@@ -103,8 +104,8 @@ subroutine get_USGS_data(path_to_USGS_file, imager_flags, imager_geolocation, &
       ! Reset land surface flag to 1, i.e. all land
       imager_flags%lsflag = 1
       ! Set pixels to 0 where land use flags equals water flag value (=16)
-      where(imager_flags%lusflag .eq. 16) imager_flags%lsflag = 0 ! Change hard-coded
-      ! value to sym%water_flag from pavolonis_constants
+      where(imager_flags%lusflag .eq. WATER_BODIES) &
+         imager_flags%lsflag = 0
    else
       if (verbose) write(*,*) 'Note: USGS DEM land/sea mask not applied'
    end if
