@@ -193,7 +193,15 @@ function create_sad_filename(Ctrl, chan_num, i_layer, crp_name) result(filename)
    character(*), optional, intent(in)  :: crp_name
    character(FilenameLen)              :: filename
 
-   if (.not. present(i_layer) .or. i_layer .eq. 1) then
+   integer :: i_layer2
+
+   if (.not. present(i_layer)) then
+      i_layer2 = 1
+   else
+      i_layer2 = i_layer
+   end if
+
+   if (i_layer2 .eq. 1) then
       filename = create_sad_filename2(Ctrl, chan_num, Ctrl%FID%SAD_Dir, &
                                       Ctrl%LUTClass, crp_name)
    else
@@ -212,13 +220,13 @@ function create_sad_filename2(Ctrl, chan_num, SAD_Dir, LUTClass, crp_name) &
    implicit none
 
    ! Argument declarations
-   type(Ctrl_t),           intent(in)  :: Ctrl
-   character(*), optional, intent(in)  :: chan_num
-   character(*),           intent(in)  :: SAD_Dir
-   character(*),           intent(in)  :: LUTClass
-   character(*), optional, intent(in)  :: crp_name
+   type(Ctrl_t),           intent(in) :: Ctrl
+   character(*), optional, intent(in) :: chan_num
+   character(*),           intent(in) :: SAD_Dir
+   character(*),           intent(in) :: LUTClass
+   character(*), optional, intent(in) :: crp_name
 
-   character(FilenameLen)              :: filename
+   character(FilenameLen)             :: filename
 
    character(InstNameLen) :: InstName
 
