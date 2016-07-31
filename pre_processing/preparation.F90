@@ -78,7 +78,8 @@
 !    that's stored in a single NetCDF file.
 ! 2016/05/26, GT: Added code for automatically constructing the filenames
 !    of the HR ERA data (copied from changes made, but committed to R3970
-!    version of code by CP)
+!    version of code by CP).
+! 2016/07/31, GM: Tidying of the code drop above.
 !
 ! $Id$
 !
@@ -94,11 +95,10 @@ contains
 
 #include "set_ecmwf.F90"
 
-
 subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
      cf_file,lsf_file,geo_file,loc_file,alb_file,sensor,platform,cyear,cmonth, &
-     cday,chour,cminute,ecmwf_path,ecmwf_path_hr,ecmwf_path2,ecmwf_path3, &
-     ecmwf_path_file,ecmwf_HR_path_file,ecmwf_path_file2,ecmwf_path_file3, &
+     cday,chour,cminute,ecmwf_path,ecmwf_hr_path,ecmwf_path2,ecmwf_path3, &
+     ecmwf_path_file,ecmwf_hr_path_file,ecmwf_path_file2,ecmwf_path_file3, &
      global_atts,ecmwf_flag,ecmwf_time_int_method,imager_geolocation,imager_time, &
      i_chunk,time_int_fac,assume_full_path,verbose)
 
@@ -115,12 +115,12 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
    character(len=sensor_length),   intent(in)  :: sensor
    character(len=platform_length), intent(in)  :: platform
    character(len=date_length),     intent(in)  :: cyear,cmonth,cday,chour,cminute
-   character(len=path_length),     intent(inout)  :: ecmwf_path(2), &
-                                                  ecmwf_path_hr(2), &
+   character(len=path_length),     intent(in)  :: ecmwf_path(2), &
                                                   ecmwf_path2(2), &
                                                   ecmwf_path3(2)
+   character(len=path_length),     intent(out) :: ecmwf_hr_path(2)
    character(len=path_length),     intent(out) :: ecmwf_path_file(2), &
-                                                  ecmwf_HR_path_file(2), &
+                                                  ecmwf_hr_path_file(2), &
                                                   ecmwf_path_file2(2), &
                                                   ecmwf_path_file3(2)
    type(global_attributes_t),      intent(in)  :: global_atts
@@ -136,11 +136,7 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
    character(len=file_length) :: range_name
    character(len=file_length) :: file_base
    real                       :: startr, endr
-   character(len=32)          :: startc, endc,chunkc
-   integer                    :: cut_off, ecmwf_file_length
-   character(len=path_length) :: base, temp_file, &
-                                 hr_ext, ecmwf_hour_hr
-   character                  :: yyyy*4, mm*2, dd*2, hh*2
+   character(len=32)          :: startc, endc, chunkc
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering preparation()'
 
@@ -152,11 +148,11 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
    if (verbose) write(*,*) 'chour: ',                 trim(chour)
    if (verbose) write(*,*) 'cminute: ',               trim(cminute)
    if (verbose) write(*,*) 'ecmwf_path(1): ',         trim(ecmwf_path(1))
-   if (verbose) write(*,*) 'ecmwf_path_hr(1): ',      trim(ecmwf_path_hr(1))
+   if (verbose) write(*,*) 'ecmwf_hr_path(1): ',      trim(ecmwf_hr_path(1))
    if (verbose) write(*,*) 'ecmwf_path2(1): ',        trim(ecmwf_path2(1))
    if (verbose) write(*,*) 'ecmwf_path3(1): ',        trim(ecmwf_path3(1))
    if (verbose) write(*,*) 'ecmwf_path(2): ',         trim(ecmwf_path(2))
-   if (verbose) write(*,*) 'ecmwf_path_hr(2): ',      trim(ecmwf_path_hr(2))
+   if (verbose) write(*,*) 'ecmwf_hr_path(2): ',      trim(ecmwf_hr_path(2))
    if (verbose) write(*,*) 'ecmwf_path2(2): ',        trim(ecmwf_path2(2))
    if (verbose) write(*,*) 'ecmwf_path3(2): ',        trim(ecmwf_path3(2))
    if (verbose) write(*,*) 'ecmwf_flag: ',            ecmwf_flag
@@ -169,133 +165,14 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
                   ecmwf_path,     ecmwf_path2,     ecmwf_path3, &
                   ecmwf_path_file,ecmwf_path_file2,ecmwf_path_file3, &
                   ecmwf_flag,imager_geolocation,imager_time, &
-                  ecmwf_time_int_method,time_int_fac,assume_full_path)
-
-   ! build file path for high resolution ERA-Interim data from low resolution
-   ! file path if a specific path is not provided
-
-   if (ecmwf_path_hr(1) .eq. '') then
-      call build_ecmwf_HR_file_from_LR(ecmwf_path_file(1), ecmwf_HR_path_file(1))
-      if (ecmwf_time_int_method .eq. 2) then
-         call build_ecmwf_HR_file_from_LR(ecmwf_path_file(2), ecmwf_HR_path_file(2))
-      end if
-
-   else if (assume_full_path) then
-      ecmwf_HR_path_file(1)=ecmwf_path_hr(1)
-      if (ecmwf_time_int_method .eq. 2) &
-           ecmwf_HR_path_file(2)=ecmwf_path_hr(2)
-   else
-
-      !
-      !get year month day hour and construct hr file which has a different name
-      !
-
-      temp_file=ecmwf_path_file(1)
-      ecmwf_file_length = len(trim(ecmwf_path(1)))
-      cut_off = index(trim(adjustl(temp_file)),'.',back=.true.)
-
-      yyyy = trim(adjustl(temp_file(ecmwf_file_length+6:(cut_off-9))))
-      mm = trim(adjustl(temp_file(ecmwf_file_length+10:(cut_off-7))))
-      dd= trim(adjustl(temp_file(ecmwf_file_length+12:(cut_off-5))))
-      hh = trim(adjustl(temp_file(ecmwf_file_length+14:(cut_off-3))))
-
-      if (hh .eq. '00') then
-         ecmwf_hour_hr='0'
-      endif
-
-      if (hh .eq. '06') then
-         ecmwf_hour_hr='600'
-      endif
-
-      if (hh .eq. '12') then
-         ecmwf_hour_hr='1200'
-      endif
-
-      if (hh .eq. '18') then
-         ecmwf_hour_hr='1800'
-      endif
-
-      hr_ext='ERA_Interim_an_'//trim(adjustl(yyyy))//trim(adjustl(mm))//trim(adjustl(dd))//'_'//trim(adjustl(ecmwf_hour_hr))//'+00_HR.grb'
-      if (verbose) write(*,*)'hr_ext',trim(hr_ext)
-      ecmwf_HR_path_file(1)=trim(adjustl(ecmwf_path_hr(1)))//trim(adjustl(hr_ext))
-
-      if (ecmwf_time_int_method .eq. 2) then
-         !
-         !now get the second file
-         !
-         if (verbose) write(*,*)'prep ecmwf_path_file(1)',trim(ecmwf_path_file(1))
-         temp_file=ecmwf_path_file(1)
-         ecmwf_file_length = len(trim(ecmwf_path(1)))
-         cut_off = index(trim(adjustl(temp_file)),'.',back=.true.)
-
-         yyyy = trim(adjustl(temp_file(ecmwf_file_length+6:(cut_off-9))))
-         mm = trim(adjustl(temp_file(ecmwf_file_length+10:(cut_off-7))))
-         dd= trim(adjustl(temp_file(ecmwf_file_length+12:(cut_off-5))))
-         hh = trim(adjustl(temp_file(ecmwf_file_length+14:(cut_off-3))))
-
-
-         if (hh .eq. '00') then
-            ecmwf_hour_hr='0'
-         endif
-
-         if (hh .eq. '06') then
-            ecmwf_hour_hr='600'
-         endif
-
-         if (hh .eq. '12') then
-            ecmwf_hour_hr='1200'
-         endif
-
-         if (hh .eq. '18') then
-            ecmwf_hour_hr='1800'
-         endif
-
-         hr_ext='/'//trim(adjustl(yyyy))//'/'//trim(adjustl(mm))//'/'//trim(adjustl(dd))//'/ERA_Interim_an_'//trim(adjustl(yyyy))//trim(adjustl(mm))//trim(adjustl(dd))//'_'//trim(adjustl(ecmwf_hour_hr))//'+00_HR.grb'
-         if (verbose) write(*,*)'hr_ext',trim(hr_ext)
-         ecmwf_HR_path_file(1)=trim(adjustl(ecmwf_path_hr(1)))//trim(adjustl(hr_ext))
-
-         !
-         !now d second file
-         !
-
-         if (verbose) write(*,*)'prep ecmwf_path_file(2)',trim(ecmwf_path_file(2))
-         temp_file=ecmwf_path_file(2)
-         ecmwf_file_length = len(trim(ecmwf_path(2)))
-         cut_off = index(trim(adjustl(temp_file)),'.',back=.true.)
-
-         yyyy = trim(adjustl(temp_file(ecmwf_file_length+6:(cut_off-9))))
-         mm = trim(adjustl(temp_file(ecmwf_file_length+10:(cut_off-7))))
-         dd= trim(adjustl(temp_file(ecmwf_file_length+12:(cut_off-5))))
-         hh = trim(adjustl(temp_file(ecmwf_file_length+14:(cut_off-3))))
-
-         if (hh .eq. '00') then
-            ecmwf_hour_hr='0'
-         endif
-
-         if (hh .eq. '06') then
-            ecmwf_hour_hr='600'
-         endif
-
-         if (hh .eq. '12') then
-            ecmwf_hour_hr='1200'
-         endif
-
-         if (hh .eq. '18') then
-            ecmwf_hour_hr='1800'
-         endif
-
-         hr_ext='/'//trim(adjustl(yyyy))//'/'//trim(adjustl(mm))//'/'//trim(adjustl(dd))//'/ERA_Interim_an_'//trim(adjustl(yyyy))//trim(adjustl(mm))//trim(adjustl(dd))//'_'//trim(adjustl(ecmwf_hour_hr))//'+00_HR.grb'
-         if (verbose) write(*,*)'hr_ext: ',trim(hr_ext)
-         ecmwf_HR_path_file(2)=trim(adjustl(ecmwf_path_hr(1)))//trim(adjustl(hr_ext))
-      end if
-
-   end if
+                  ecmwf_time_int_method,time_int_fac,assume_full_path, &
+                  ecmwf_hr_path, ecmwf_hr_path_file)
 
    if (verbose) then
       write(*,*)'ecmwf_path_file:  ',trim(ecmwf_path_file(1))
       write(*,*)'ecmwf_path_file_2:  ',trim(ecmwf_path_file(2))
-      write(*,*)'ecmwf_HR_path_file:  ',trim(ecmwf_HR_path_file(1))
-      write(*,*)'ecmwf_HR_path_file2:  ',trim(ecmwf_HR_path_file(2))
+      write(*,*)'ecmwf_hr_path_file:  ',trim(ecmwf_hr_path_file(1))
+      write(*,*)'ecmwf_hr_path_file2:  ',trim(ecmwf_hr_path_file(2))
       if (ecmwf_flag .gt. 0.and.ecmwf_flag.ne.4) then
          write(*,*)'ecmwf_path_file2: ',trim(ecmwf_path_file2(1))
          write(*,*)'ecmwf_path_file3: ',trim(ecmwf_path_file3(1))
@@ -320,6 +197,7 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
    else
       range_name=''
    end if
+
    if (verbose) write(*,*) 'chunk range_name: ', trim(range_name)
 
    ! ESACCI-L2-CLOUD-CLD-${sensor}_${product_string}_${platform}_*${YYYY}${MM}${DD}${HH}${II}_${version2}.*.nc
@@ -351,26 +229,5 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving preparation()'
 
 end subroutine preparation
-
-
-subroutine build_ecmwf_HR_file_from_LR(ecmwf_path_file, ecmwf_HR_path_file)
-
-   use preproc_constants_m
-
-   implicit none
-
-   character(len=*), intent(in)  :: ecmwf_path_file
-   character(len=*), intent(out) :: ecmwf_HR_path_file
-
-   character(len=path_length) :: base,suffix
-   integer :: cut_off, ecmwf_path_file_length
-
-   cut_off = index(trim(adjustl(ecmwf_path_file)),'.',back=.true.)
-   ecmwf_path_file_length = len(trim(ecmwf_path_file))
-   base = trim(adjustl(ecmwf_path_file(1:(cut_off-1))))
-   suffix = trim(adjustl(ecmwf_path_file((cut_off+1):ecmwf_path_file_length)))
-   ecmwf_HR_path_file = trim(adjustl(base)) // '_HR.' // trim(adjustl(suffix))
-
-end subroutine build_ecmwf_HR_file_from_LR
 
 end module preparation_m

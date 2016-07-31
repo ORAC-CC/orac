@@ -36,7 +36,8 @@
 ! 2012/08/06, CP: modified to include 3 new ecmwf pths to read data from the
 !    BADC added in badc flag
 ! 2012/08/13, CP: modified badc paths
-! 2012/11/14, CP: modified badc paths to include year/month/day changed gpam ggap
+! 2012/11/14, CP: modified badc paths to include year/month/day changed gpam and
+!    ggap
 ! 2012/12/06, CP: changed how ecmwf paths are defined because of looping chunks
 !    and tidied up file
 ! 2013/03/06, CP: changed ggam from grb to netcdf file
@@ -54,7 +55,8 @@
 !    Note: This should work with either the OPER or FCST streams from ECMWF.
 ! 2016/05/26, GT: Added code for automatically constructing the filenames
 !    of the HR ERA data (copied from changes made, but committed to R3970
-!    version of code by CP)
+!    version of code by CP).
+! 2016/07/31, GM: Tidying of the code drop above.
 !
 ! $Id$
 !
@@ -64,7 +66,8 @@
 
 subroutine set_ecmwf(cyear,cmonth,cday,chour,ecmwf_path,ecmwf_path2, &
    ecmwf_path3,ecmwf_path_file,ecmwf_path_file2,ecmwf_path_file3,ecmwf_flag, &
-   imager_geolocation,imager_time,time_interp_method,time_int_fac,assume_full_path)
+   imager_geolocation,imager_time,time_interp_method,time_int_fac,assume_full_path, &
+   ecmwf_hr_path,ecmwf_hr_path_file)
 
    use calender_m
    use imager_structures_m
@@ -73,9 +76,9 @@ subroutine set_ecmwf(cyear,cmonth,cday,chour,ecmwf_path,ecmwf_path2, &
    implicit none
 
    character(len=*),           intent(in)  :: cyear,cmonth,cday,chour
-   character(len=*),           intent(inout)  :: ecmwf_path(2)
-   character(len=*),           intent(inout)  :: ecmwf_path2(2)
-   character(len=*),           intent(inout)  :: ecmwf_path3(2)
+   character(len=*),           intent(in)  :: ecmwf_path(2)
+   character(len=*),           intent(in)  :: ecmwf_path2(2)
+   character(len=*),           intent(in)  :: ecmwf_path3(2)
    character(len=*),           intent(out) :: ecmwf_path_file(2)
    character(len=*),           intent(out) :: ecmwf_path_file2(2)
    character(len=*),           intent(out) :: ecmwf_path_file3(2)
@@ -85,8 +88,10 @@ subroutine set_ecmwf(cyear,cmonth,cday,chour,ecmwf_path,ecmwf_path2, &
    integer,                    intent(in)  :: time_interp_method
    real,                       intent(out) :: time_int_fac
    logical,                    intent(in)  :: assume_full_path
+   character(len=*),           intent(out) :: ecmwf_hr_path(2)
+   character(len=*),           intent(out) :: ecmwf_hr_path_file(2)
 
-   integer       :: i_path
+   integer       :: i_path, i_path1, i_path2
    integer(sint) :: year, month, day, hour
    integer(sint) :: year2, month2, day2, hour2
    integer       :: day_before
@@ -95,19 +100,18 @@ subroutine set_ecmwf(cyear,cmonth,cday,chour,ecmwf_path,ecmwf_path2, &
    character     :: cera_year*4, cera_month*2, cera_day*2, cera_hour*2
    character     :: cera_year2*4, cera_month2*2, cera_day2*2, cera_hour2*2
 
-   i_path=1
-
    ! Rather than deal with whether the next 6 hour file is in the next month,
    ! in the next year, or if the year is a leap year it is more straight
    ! forward to convert to Julian day space, then operate, then convert back.
    if (time_interp_method .eq. 1 .or. time_interp_method .eq. 2) then
-      jday = find_center_time(imager_geolocation, imager_time)
+      jday = find_center_time(imager_geolocation, imager_time) + time_int_fac
 
       jday0 = floor(jday / (6._dreal / 24._dreal)           ) * 6._dreal / 24._dreal
       jday1 = floor(jday / (6._dreal / 24._dreal) + 1._dreal) * 6._dreal / 24._dreal
 
       time_int_fac = (jday - jday0) / (jday1 - jday0)
    end if
+
    if (assume_full_path) then
       ! for ecmwf_flag=2, ensure NCDF file is listed in ecmwf_pathout
       if (index(ecmwf_path(1),'.nc') .gt. 0) then
@@ -144,6 +148,8 @@ subroutine set_ecmwf(cyear,cmonth,cday,chour,ecmwf_path,ecmwf_path2, &
             cera_hour='00'
          end select
 
+         i_path1 = 1
+
          call make_ecmwf_name(cyear,cmonth,cday,cera_hour,ecmwf_flag,ecmwf_path(1), &
             ecmwf_path2(1),ecmwf_path3(1),ecmwf_path_file(1),ecmwf_path_file2(1), &
             ecmwf_path_file3(1))
@@ -170,13 +176,13 @@ subroutine set_ecmwf(cyear,cmonth,cday,chour,ecmwf_path,ecmwf_path2, &
          write(cera_hour,  '(I2.2)') hour
 
          if (day_before .eq. day) then
-            i_path = 1
+            i_path1 = 1
          else
-            i_path = 2
+            i_path1 = 2
          end if
 
          call make_ecmwf_name(cera_year,cera_month,cera_day,cera_hour,ecmwf_flag, &
-            ecmwf_path(i_path),ecmwf_path2(i_path),ecmwf_path3(i_path), &
+            ecmwf_path(i_path1),ecmwf_path2(i_path1),ecmwf_path3(i_path1), &
             ecmwf_path_file(1),ecmwf_path_file2(1),ecmwf_path_file3(1))
       else if (time_interp_method .eq. 2) then
          ! Pick the ERA interim files before and after wrt sensor time
@@ -199,28 +205,17 @@ subroutine set_ecmwf(cyear,cmonth,cday,chour,ecmwf_path,ecmwf_path2, &
          write(cera_day2,   '(I2.2)') day2
          write(cera_hour2,  '(I2.2)') hour2
 
-         if ( cera_day2 .ne. cday) then
-            ! this means the mid ppoint of the lv1b file
-            ! is on the next day usually occurs last file of the day
-            i_path=2
-
-            call make_ecmwf_name(cera_year,cera_month,cera_day,cera_hour,ecmwf_flag, &
-                 ecmwf_path(i_path),ecmwf_path2(i_path),ecmwf_path3(i_path), &
-                 ecmwf_path_file(1),ecmwf_path_file2(1),ecmwf_path_file3(1))
-
-            ecmwf_path(1)= ecmwf_path(i_path)
-            ecmwf_path2(1)=ecmwf_path2(i_path)
-            ecmwf_path3(1)=ecmwf_path3(i_path)
-            !	  ecmwf_path_file(1)=ecmwf_path_file(2)
-            !	  ecmwf_path_file2(1)=ecmwf_path_file2(2)
-            !	  ecmwf_path_file3(1)=ecmwf_path_file3(2)
-	 else
-            ! Pick the ERA interim files before and after wrt sensor time
-
-            call make_ecmwf_name(cera_year,cera_month,cera_day,cera_hour,ecmwf_flag, &
-                 ecmwf_path(1),ecmwf_path2(1),ecmwf_path3(1),ecmwf_path_file(1), &
-                 ecmwf_path_file2(1), ecmwf_path_file3(1))
+         if (cera_day2 .eq. cday) then
+            i_path1 = 1
+         else
+            ! The mid point is in the next day so the path to the first file is
+            ! the 2nd path provided by the user.
+            i_path1 = 2
          endif
+
+         call make_ecmwf_name(cera_year,cera_month,cera_day,cera_hour,ecmwf_flag, &
+              ecmwf_path(i_path1),ecmwf_path2(i_path1),ecmwf_path3(i_path1), &
+              ecmwf_path_file(1),ecmwf_path_file2(1),ecmwf_path_file3(1))
 
          ! now look at the next file
          day_before = day
@@ -233,22 +228,44 @@ subroutine set_ecmwf(cyear,cmonth,cday,chour,ecmwf_path,ecmwf_path2, &
          write(cera_month, '(I2.2)') month
          write(cera_day,   '(I2.2)') day
          write(cera_hour,  '(I2.2)') hour
-         if (day_before .eq. day .and. i_path .ne. 2) then
-            i_path = 1
+
+        if (i_path1 .eq. 1) then
+            if (day_before .eq. day) then
+               i_path2 = 1
+            else
+               i_path2 = 2
+            end if
          else
-	    if (day_before .ne. day) then
-               i_path = 2
-	    endif
-	    if (day_before .eq. day .and. i_path .eq. 2) then
-	       i_path = 2
-	    endif
+            i_path2 = 2
          end if
+
          call make_ecmwf_name(cera_year,cera_month,cera_day,cera_hour,ecmwf_flag, &
-              ecmwf_path(i_path),ecmwf_path2(i_path),ecmwf_path3(i_path), &
+              ecmwf_path(i_path2),ecmwf_path2(i_path2),ecmwf_path3(i_path2), &
               ecmwf_path_file(2),ecmwf_path_file2(2), ecmwf_path_file3(2))
       else
          write(*,*) 'ERROR: invalid set_ecmwf() time_interp_method: ', time_interp_method
          stop error_stop_code
+      end if
+   end if
+
+   if (ecmwf_hr_path(1) .eq. '') then
+      call build_ecmwf_HR_file_from_LR(ecmwf_path_file(1), ecmwf_hr_path_file(1))
+      if (time_interp_method .eq. 2) then
+         call build_ecmwf_HR_file_from_LR(ecmwf_path_file(2), ecmwf_hr_path_file(2))
+      end if
+   else if (assume_full_path) then
+      ecmwf_hr_path_file(1) = ecmwf_hr_path(1)
+      if (time_interp_method .eq. 2) &
+           ecmwf_hr_path_file(2) = ecmwf_hr_path(2)
+   else
+      if (time_interp_method .ne. 2) then
+         call build_ecmwf_HR_file_from_LR2(ecmwf_path(i_path1), &
+            ecmwf_path_file(1), ecmwf_hr_path(1), ecmwf_hr_path_file(1))
+      else
+         call build_ecmwf_HR_file_from_LR2(ecmwf_path(i_path1), &
+            ecmwf_path_file(1), ecmwf_hr_path(1), ecmwf_hr_path_file(1))
+         call build_ecmwf_HR_file_from_LR2(ecmwf_path(i_path2), &
+            ecmwf_path_file(2), ecmwf_hr_path(1), ecmwf_hr_path_file(2))
       end if
    end if
 
@@ -345,3 +362,70 @@ subroutine make_ecmwf_name(cyear,cmonth,cday,chour,ecmwf_flag,ecmwf_path, &
    end select
 
 end subroutine make_ecmwf_name
+
+
+subroutine build_ecmwf_HR_file_from_LR(ecmwf_path_file, ecmwf_hr_path_file)
+
+   use preproc_constants_m
+
+   implicit none
+
+   character(len=*), intent(in)  :: ecmwf_path_file
+   character(len=*), intent(out) :: ecmwf_hr_path_file
+
+   character(len=path_length) :: base,suffix
+   integer :: cut_off, ecmwf_path_file_length
+
+   cut_off = index(trim(adjustl(ecmwf_path_file)),'.',back=.true.)
+   ecmwf_path_file_length = len(trim(ecmwf_path_file))
+   base = trim(adjustl(ecmwf_path_file(1:(cut_off-1))))
+   suffix = trim(adjustl(ecmwf_path_file((cut_off+1):ecmwf_path_file_length)))
+   ecmwf_hr_path_file = trim(adjustl(base)) // '_HR.' // trim(adjustl(suffix))
+
+end subroutine build_ecmwf_HR_file_from_LR
+
+
+subroutine build_ecmwf_HR_file_from_LR2(ecmwf_path, ecmwf_path_file, &
+                                        ecmwf_hr_path, ecmwf_hr_path_file)
+
+   use preproc_constants_m
+
+   implicit none
+
+   character(len=*), intent(in)  :: ecmwf_path
+   character(len=*), intent(in)  :: ecmwf_path_file
+   character(len=*), intent(in)  :: ecmwf_hr_path
+   character(len=*), intent(out) :: ecmwf_hr_path_file
+
+   character(len=path_length) :: temp_file, &
+                                 hr_ext, ecmwf_hour_hr
+   integer                    :: cut_off, ecmwf_file_length
+   character                  :: yyyy*4, mm*2, dd*2, hh*2
+
+   temp_file = ecmwf_path_file
+   ecmwf_file_length = len(trim(ecmwf_path))
+   cut_off = index(trim(adjustl(temp_file)),'.',back=.true.)
+
+   yyyy = trim(adjustl(temp_file(ecmwf_file_length+6:(cut_off-9))))
+   mm   = trim(adjustl(temp_file(ecmwf_file_length+10:(cut_off-7))))
+   dd   = trim(adjustl(temp_file(ecmwf_file_length+12:(cut_off-5))))
+   hh   = trim(adjustl(temp_file(ecmwf_file_length+14:(cut_off-3))))
+
+   select case (hh)
+   case('00')
+      ecmwf_hour_hr='0'
+   case('06')
+      ecmwf_hour_hr='600'
+   case('12')
+      ecmwf_hour_hr='1200'
+   case('18')
+      ecmwf_hour_hr='1800'
+   end select
+
+   hr_ext ='/'//trim(adjustl(yyyy))//'/'//trim(adjustl(mm))//'/'// &
+           trim(adjustl(dd))//'/ERA_Interim_an_'//trim(adjustl(yyyy))// &
+           trim(adjustl(mm))//trim(adjustl(dd))//'_'// &
+           trim(adjustl(ecmwf_hour_hr))//'+00_HR.grb'
+   ecmwf_hr_path_file=trim(adjustl(ecmwf_hr_path))//trim(adjustl(hr_ext))
+
+end subroutine build_ecmwf_HR_file_from_LR2
