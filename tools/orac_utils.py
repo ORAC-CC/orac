@@ -8,6 +8,7 @@
 # 20 Jul 2016, AP: Remove shell=True from subprocess calls.
 
 import argparse
+import collections
 import colours
 import copy
 import datetime
@@ -36,6 +37,7 @@ colouring['header']  = 'light cyan'
 colouring['timing']  = 'magenta'
 
 class OracError(Exception):
+    """Copy of Exception class to differentiate script errors from system."""
     pass
 
 class FileMissing(OracError):
@@ -53,14 +55,20 @@ class BadValue(OracError):
         self.value = value
 
 class OracWarning(UserWarning):
+    """Variation on UserWarning class which formats and colours the output."""
     def __init__(self, desc, col='warning'):
         UserWarning.__init__(self, colours.cformat(desc, colouring[col]))
 
 class Regression(OracWarning):
     def __init__(self, filename, variable, col, desc):
         regex = re.search(r'_R(\d+)(.*)\.(.+)\.nc$', filename)
-        OracWarning.__init__(self, '{:s}) {:s}: \C{{{:s}}}{:s}'.format(
-            regex.group(3), variable, colouring[col], desc), 'text')
+        if sys.stdout.isatty():
+            text = '{:s}) {:s}: \C{{{:s}}}{:s}'.format(
+                regex.group(3), variable, colouring[col], desc)
+        else:
+            text = '{:s}) {:s}: {:s}'.format(
+                regex.group(3), variable, desc)
+        OracWarning.__init__(self, text, 'text')
 
 class InconsistentDim(Regression):
     def __init__(self, filename, variable, dim0, dim1):
@@ -150,7 +158,7 @@ def call_exe(args,    # Arguments of scripts
         return
 
     # Write driver file
-    (fd, driver_file) = tempfile.mkstemp('.driver', os.path.basename(exe),
+    (fd, driver_file) = tempfile.mkstemp('.driver', os.path.basename(exe) + '.',
                                          args.out_dir, True)
     f = os.fdopen(fd, "w")
     f.write(driver)
@@ -183,7 +191,9 @@ def call_exe(args,    # Arguments of scripts
 #-----------------------------------------------------------------------------
 
 def compare_nc_atts(d0, d1, f, var):
-    # Check is any attributes added/removed
+    """Report if the attributes of a NCDF file or variable have changed."""
+
+    # Check if any attributes added/removed
     atts = set(d0.ncattrs()).symmetric_difference(d1.ncattrs())
     if len(atts) > 0:
         warnings.warn(FieldMissing(f, ', '.join(atts)), stacklevel=3)
@@ -398,30 +408,97 @@ def parse_with_lib(lib):
 
 #----------------------------------------------------------------------------
 
-def parse_sensor(filename):
-    """Determine sensor evaluated from filename"""
+class FileName:
+    """Parses L1B or ORAC filenames to determine the instrument and measurement time
+    Member variables:
+    l1b      - Name of the level 1B imager file
+    geo      - Name of the corresponding geolocation file
+    sensor   - Capitalised name of the instrument
+    platform - Name of the satellite platform, formatted for the preprocessor
+    inst     - Combined sensor/platform, formatted for the main processor
+    time     - datetime object giving the start time of the orbit/granule
+    dur      - timedelta object giving the expected duration of the file"""
 
-    if filename[0:10] == 'ATS_TOA_1P':
-        sensor = 'AATSR'
-        platform = 'Envisat'
-    elif filename[0:8] == 'MOD021KM':
-        sensor = 'MODIS'
-        platform = 'TERRA'
-    elif filename[0:8] == 'MYD021KM':
-        sensor = 'MODIS'
-        platform = 'AQUA'
-    elif filename[0:4] == 'noaa':
-        sensor = 'AVHRR'
-        platform = 'noaa'+filename[4:6]
-    else:
-        m = re.search('-L2-CLOUD-CLD-(\w+?)_ORAC_(\w+?)_', filename)
+    def __init__(self, filename):
+        self.l1b = filename
+
+        # Work out what sensor this file comes from
+        m = re.search('ATS_TOA_1P([A-Za-z]{4})'
+                      '(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2})_'
+                      '(?P<hour>\d{2})(?P<min>\d{2})(?P<sec>\d{2})_'
+                      '(?P<duration>\d{7})(?P<phase>\d)(?P<cycle>\d{4})_'
+                      '(?P<rel_orbit>\d{5})_(?P<abs_orbit>\d{5})_'
+                      '(?P<count>\d{4})\.N1', filename)
         if m:
-            sensor = m.group(1)
-            platform = m.group(2)
-        else:
-            raise OracError('Unexpected filename format - '+filename)
+            self.sensor   = 'AATSR'
+            self.platform = 'Envisat' # For preprocessor
+            self.inst     = 'AATSR'   # For main processor
+            self.time = datetime.datetime(
+                int(m.group('year')), int(m.group('month')), int(m.group('day')),
+                int(m.group('hour')), int(m.group('min')), int(m.group('sec')), 0)
+            self.dur = datetime.timedelta(seconds=int(m.group('duration')))
+            self.geo = filename
+            return
 
-    return (sensor, platform)
+        m = re.search('M(?P<platform>[OY])D021KM\.'
+                      'A(?P<year>\d{4})(?P<doy>\d{3})\.'
+                      '(?P<hour>\d{2})(?P<min>\d{2})\.(?P<collection>\d{3})\.'
+                      '(?P<proc_time>\d{13}).*hdf', filename)
+        if m:
+            self.sensor = 'MODIS'
+            if m.group('platform') == 'O':
+                self.platform = 'TERRA'       # For preprocessor
+                self.inst     = 'MODIS-TERRA' # For main processor
+            else: # == 'Y'
+                self.platform = 'AQUA'
+                self.inst     = 'MODIS-AQUA'
+            self.time = (datetime.datetime(int(m.group('year')), 1, 1,
+                                           int(m.group('hour')),
+                                           int(m.group('min')), 0, 0) +
+                         datetime.timedelta(days=int(m.group('doy'))-1))
+            self.dur  = datetime.timedelta(minutes=5) # Approximately
+            self.geo  = ('M' + m.group('platform') + 'D03.A' + m.group('year') +
+                         m.group('doy') + '.' + m.group('hour') +
+                         m.group('min') + '.' + m.group('collection') + '.*hdf')
+            return
+
+        m = re.search('noaa(?P<platform>\d{1,2})_'
+                      '(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2})_'
+                      '(?P<hour>\d{2})(?P<min>\d{2})_(\d{5})_satproj_(\d{5})_'
+                      '(\d{5})_avhrr.h5', filename)
+        if m:
+            self.sensor   = 'AVHRR'
+            self.platform = 'noaa' + m.group('platform')
+            self.inst     = 'AVHRR-NOAA' + m.group('platform')
+            self.time = datetime.datetime(
+                int(m.group('year')), int(m.group('month')), int(m.group('day')),
+                int(m.group('hour')), int(m.group('min')), 0, 0)
+            self.dur  = datetime.timedelta(seconds=6555) # Guessing
+            # The following may be problematic with interesting dir names
+            self.geo  = filename.replace('_avhrr.h5', '_sunsatangles.h5')
+            return
+
+        m = re.search(defaults.project + '-L2-CLOUD-CLD-'
+                      '(?P<sensor>\w+)_ORAC_(?P<platform>\w+)_'
+                      '(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2})'
+                      '(?P<hour>\d{2})(?P<min>\d{2})_'
+                      'R(?P<revision>\d+).*', filename)
+        if m:
+            self.sensor   = m.group('sensor')
+            self.platform = m.group('platform')
+            if m.group('sensor') == 'AATSR':
+                # SAD file names don't include platform for ATSR instruments
+                self.inst = m.group('sensor')
+            else:
+                self.inst = m.group('sensor') + '-' + m.group('platform').upper()
+            self.time = datetime.datetime(
+                int(m.group('year')), int(m.group('month')), int(m.group('day')),
+                int(m.group('hour')), int(m.group('min')), 0, 0)
+            self.dur = None
+            self.geo = None
+            return
+
+        raise OracError('Unexpected filename format - ' + filename)
 
 #-----------------------------------------------------------------------------
 
@@ -454,8 +531,8 @@ def read_orac_libraries(filename):
 
 #-----------------------------------------------------------------------------
 
-# Function to parse a string into a boolean value
 def str2bool(value):
+    """Parse a string into a boolean value"""
     return value.lower() in ("yes", "y", "true", "t", "1")
 
 #-----------------------------------------------------------------------------
@@ -482,11 +559,18 @@ map_wvl_to_inst = {
 # Define particle type array and class
 settings = {}
 class Invpar():
+    """Container for settings to pass to an ORAC retrieval
+    Member variables:
+    var - Name of the element of the state vector
+    ap  - A priori value to use
+    fg  - First guess of this value
+    sx  - A priori uncertainty on this value"""
+
     def __init__(self,
-                 var,      # Name of variable (used to subscript state vector)
-                 ap=None,  # A priori value
-                 fg=None,  # Retrieval first guess
-                 sx=None): # A priori uncertainty
+                 var,
+                 ap=None,
+                 fg=None,
+                 sx=None):
         self.var = var
         if ap:
             self.ap = ap
@@ -498,6 +582,7 @@ class Invpar():
             self.sx = sx
 
     def driver(self):
+        """Output lines for a driver file to specify these settings"""
         driver = ''
         if self.ap != None:
             driver += "\nCtrl%XB[{:s}] = {}".format(self.var, self.ap)
@@ -508,13 +593,18 @@ class Invpar():
         return driver
 
 class ParticleType():
+    """Container for an ORAC particle type
+    Member variables:
+    inv - Tuple of Invpars giving settings to pass to retrieval
+    wvl - Wavelengths used (negative implies the second view)
+    sad - SAD file directory to use
+    ls  - If true, process land and sea separately"""
+
     def __init__(self,
-                 inv = (),    # Tuple of Invpars giving retrieval settings
+                 inv = (),
                  wvl = (0.55, 0.67, 0.87, 1.6, -0.55, -0.67, -0.87, -1.6),
-                              # Wavelengths used (-ve = 2nd view)
                  sad = defaults.aer_sad_dir,
-                              # SAD file directory
-                 ls = True):  # If true, process land and sea separately
+                 ls = True):
         self.inv = inv
         self.wvl = wvl
         self.sad = sad
@@ -720,7 +810,7 @@ def args_preproc(parser):
                        default = defaults.hr_dir,
                        help = 'Path to high resolution ECMWF files.')
     ecmwf.add_argument('--ecmwf_nlevels', type=int, nargs='?',
-                       choices = (60, 91 , 137), default = 60,
+                       choices = (60, 91, 137), default = 60,
                        help = 'Number of levels in the ECMWF file used.')
 
     other = parser.add_argument_group('Other paths')
@@ -881,18 +971,25 @@ def args_cc4cl(parser):
                       choices = range(4),
                       help = ('Level of processing to clobber:\n' +
                               '0=None, 1=Post, 2=Main+Post, 3=All (default).'))
-    cccl.add_argument('--pre_dir', type=str, nargs='?', default='pre',
-                      help = 'Name of subfolder for preprocessed output.')
-    cccl.add_argument('--main_dir', type=str, nargs='?', default='main',
-                      help = 'Name of subfolder for main processed output.')
-    cccl.add_argument('--land_dir', type=str, nargs='?', default='land',
-                      help = 'Name of subfolder for land-only aerosol output.')
-    cccl.add_argument('--sea_dir', type=str, nargs='?', default='sea',
-                      help = 'Name of subfolder for sea-only aerosol output.')
     cccl.add_argument('--aer_sad_dir', type=str, nargs='?', metavar='DIR',
                       default = defaults.aer_sad_dir,
                       help = ('Path to aerosol SAD and LUT files, ' +
                               'when different to that for cloud.'))
+    cccl.add_argument('--land_dir', type=str, nargs='?',
+                      default = defaults.land_dir,
+                      help = 'Name of subfolder for land-only aerosol output.')
+    cccl.add_argument('--log_dir', type=str, nargs='?',
+                      default = defaults.log_dir,
+                      help = 'Name of subfolder for log files from batch proc.')
+    cccl.add_argument('--main_dir', type=str, nargs='?',
+                      default = defaults.main_dir,
+                      help = 'Name of subfolder for main processed output.')
+    cccl.add_argument('--pre_dir', type=str, nargs='?',
+                      default = defaults.pre_dir,
+                      help = 'Name of subfolder for preprocessed output.')
+    cccl.add_argument('--sea_dir', type=str, nargs='?',
+                      default = defaults.sea_dir,
+                      help = 'Name of subfolder for sea-only aerosol output.')
 
 def check_args_cc4cl(args):
     """Ensure ORAC suite wrapper parser arguments are valid."""
@@ -905,87 +1002,38 @@ def check_args_cc4cl(args):
 def build_preproc_driver(args):
     """Prepare a driver file for the preprocessor."""
 
-    (sensor, platform) = parse_sensor(args.target)
-
+    inst = FileName(args.target)
     file = glob_dirs(args.in_dir, args.target, 'L1B file')
-
-    if sensor == 'AATSR':
-        # Start date and time of orbit given in filename
-        yr = int(args.target[14:18])
-        mn = int(args.target[18:20])
-        dy = int(args.target[20:22])
-        hr = int(args.target[23:25])
-        mi = int(args.target[25:27])
-        sc = int(args.target[27:29])
-        st_time = datetime.datetime(yr, mn, dy, hr, mi, sc, 0)
-
-        # File duration is given in filename
-        dur = datetime.timedelta(seconds=int(args.target[30:38]))
-
-        # Only one file for ATSR
-        geo = args.in_dir[0]+'/'+args.target
-
-    elif sensor == 'MODIS':
-        # Start DOY and time of orbit given in filename
-        yr = int(args.target[10:14])
-        dy = int(args.target[14:17])
-        hr = int(args.target[18:20])
-        mi = int(args.target[20:22])
-        st_time = (datetime.datetime(yr, 1, 1, hr, mi) +
-                   datetime.timedelta(days=dy-1))
-
-        # Guess the duration
-        dur = datetime.timedelta(minutes=5)
-
-        # Search for geolocation file
-        geo = glob_dirs(args.in_dir, args.target[0:3] + '03.A' +
-                        args.target[10:26] + '*hdf', 'MODIS geolocation file')
-
-    elif sensor == 'AVHRR':
-        # Start time of orbit given in filename
-        yr = int(args.target[7:11])
-        mn = int(args.target[11:13])
-        dy = int(args.target[13:15])
-        hr = int(args.target[16:18])
-        mi = int(args.target[18:20])
-        st_time = datetime.datetime(yr, mn, dy, hr, mi)
-
-        # Guess the duration
-        dur = datetime.timedelta(seconds=6555)
-
-        # Guess the geolocation file
-        p_ = args.target.rfind('_')
-        geo = glob_dirs(args.in_dir, args.target[0:p_+1] + 'sunsatangles.h5',
-                        'AVHRR geolocation file')
+    geo  = glob_dirs(args.in_dir, inst.geo, 'geolocation file')
 
     # Select NISE file
     if not args.use_ecmwf_snow:
-        nise = (args.nise_dir + st_time.strftime('/NISE.004/%Y.%m.%d/'+
+        nise = (args.nise_dir + inst.time.strftime('/NISE.004/%Y.%m.%d/'+
                                                  'NISE_SSMISF17_%Y%m%d.HDFEOS'))
         if not os.path.isfile(nise):
-            nise = (args.nise_dir + st_time.strftime('/NISE.002/%Y.%m.%d/'+
+            nise = (args.nise_dir + inst.time.strftime('/NISE.002/%Y.%m.%d/'+
                                                      'NISE_SSMIF13_%Y%m%d.HDFEOS'))
             if not os.path.isfile(nise):
-                nise = (args.nise_dir + st_time.strftime('/%Y/'+
+                nise = (args.nise_dir + inst.time.strftime('/%Y/'+
                                                          'NISE_SSMIF13_%Y%m%d.HDFEOS'))
                 if not os.path.isfile(nise):
-                    nise = (args.nise_dir + st_time.strftime('/%Y/'+
+                    nise = (args.nise_dir + inst.time.strftime('/%Y/'+
                                                              'NISE_SSMIF17_%Y%m%d.HDFEOS'))
                     if not os.path.isfile(nise):
                         raise FileMissing('NISE', nise)
 
     # Select previous surface reflectance and emissivity files
-    alb  = date_back_search(args.mcd43c3_dir, st_time,
+    alb  = date_back_search(args.mcd43c3_dir, inst.time,
                             '/%Y/MCD43C3.A%Y%j.005.*.hdf')
     if not args.lambertian:
-        brdf = date_back_search(args.mcd43c1_dir, st_time,
+        brdf = date_back_search(args.mcd43c1_dir, inst.time,
                                 '/%Y/MCD43C1.A%Y%j.005.*.hdf')
     if not args.use_modis_emis:
-        emis = date_back_search(args.emis_dir, st_time,
+        emis = date_back_search(args.emis_dir, inst.time,
                                 '/global_emis_inf10_monthFilled_MYD11C3.A%Y%j.041.nc')
 
     # Select ECMWF files
-    bounds = bound_time(st_time + dur//2)
+    bounds = bound_time(inst.time + inst.dur//2)
     if (args.ecmwf_flag == 0):
         ggam = form_bound_filenames(bounds, args.ggam_dir,
                                     '/%Y/%m/%d/ERA_Interim_an_%Y%m%d_%H+00.nc')
@@ -1204,7 +1252,7 @@ OCCCI_PATH={occci_file}""".format(
         project           = args.project,
         references        = args.references,
         rttov_version     = rttov_version,
-        sensor            = sensor,
+        sensor            = inst.sensor,
         spam              = spam,
         summary           = args.summary,
         svn_version       = svn_version,
@@ -1220,8 +1268,8 @@ OCCCI_PATH={occci_file}""".format(
                                                      for k in args.channel_ids))
 
     outroot = '-'.join((args.project, 'L2', 'CLOUD', 'CLD',
-                        '_'.join((sensor, args.processor, platform,
-                                  st_time.strftime('%Y%m%d%H%M'),
+                        '_'.join((inst.sensor, args.processor, inst.platform,
+                                  inst.time.strftime('%Y%m%d%H%M'),
                                   file_version))))
     return (driver, outroot)
 
@@ -1231,11 +1279,7 @@ def build_main_driver(args):
     """Prepare a driver file for the main processor."""
 
     # Deal with different treatment of platform between pre and main processors
-    (sensor, platform) = parse_sensor(args.target)
-    if platform == 'Envisat':
-        platform = ''
-    else:
-        platform = '-'+platform.upper()
+    inst = FileName(args.target)
 
     # Form mandatory driver file lines
     driver = """# ORAC Driver File
@@ -1260,7 +1304,7 @@ Ctrl%RS%Use_Full_BRDF      = {use_brdf}""".format(
         out_dir  = args.out_dir,
         phase    = args.phase,
         sad_dir  = args.sad_dir,
-        sensor   = sensor + platform,
+        sensor   = inst.inst,
         use_brdf = not (args.lambertian or args.approach == 'AerSw'),
         verbose  = args.verbose
     )
@@ -1293,17 +1337,20 @@ Ctrl%RS%Use_Full_BRDF      = {use_brdf}""".format(
 
 #-----------------------------------------------------------------------------
 
-def build_postproc_driver(args):
-    """Prepare a driver file for the postprocessor."""
+def build_postproc_driver(args, pri=None):
+    """Prepare a driver file for the postprocessor. If the optional argument pri
+    is not specified, this will search args.in_dir for primary files with name
+    given by args.target and args.phases."""
 
-    # Find all primary files of requested phases in given input folders.
-    pri = []
-    for phs in args.phases:
-        for d in args.in_dir:
-            pri.extend(glob.glob(d +'/' + args.target + phs + '.primary.nc'))
+    if pri == None:
+        # Find all primary files of requested phases in given input folders.
+        pri = []
+        for phs in args.phases:
+            for d in args.in_dir:
+                pri.extend(glob.glob(d +'/' + args.target + phs + '.primary.nc'))
 
     if len(pri) < 2:
-        raise FileMissing('more than one processed file', pri[0])
+        raise FileMissing('sufficient processed files', args.target)
 
     # Assume secondary files are in the same folder as the primary
     files = zip(pri, [re.sub('primary', 'secondary', t) for t in pri])
@@ -1351,7 +1398,9 @@ USE_BAYESIAN_SELECTION={bayesian}""".format(
 #-----------------------------------------------------------------------------
 
 class unique_list(list):
+    """Extension of list() that allows one to append only new elements"""
     def unique_append(self, element):
+        """Append element only if it is not already a member of the list"""
         if element not in self:
             self.append(element)
 
@@ -1364,12 +1413,14 @@ def cc4cl(orig):
     # Copy input arguments as we'll need to fiddle with them
     args = copy.copy(orig)
 
+    # Determine a name for this job from the filename
+    inst = FileName(args.target)
+
     # Sort out what channels are required
-    (sensor, _) = parse_sensor(args.target)
     args.channel_ids = unique_list()
     for phs in args.phases:
         for w in settings[phs].wvl:
-            args.channel_ids.unique_append(map_wvl_to_inst[sensor][w])
+            args.channel_ids.unique_append(map_wvl_to_inst[inst.sensor][w])
 
     args.channel_ids.sort()
 
@@ -1394,7 +1445,7 @@ def cc4cl(orig):
         args.sad_dir = settings[phs].sad
 
         # Identify which channels to use
-        ids_here = [map_wvl_to_inst[sensor][w] for w in settings[phs].wvl]
+        ids_here = [map_wvl_to_inst[inst.sensor][w] for w in settings[phs].wvl]
         args.use_channel = [ch in ids_here for ch in args.channel_ids]
 
         # Process land and sea separately for aerosol

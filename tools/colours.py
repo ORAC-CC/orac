@@ -76,10 +76,15 @@ def cprint_sub(match):
     # Merge those into a string
     return '\033[' +';'.join(codes)  + 'm'
 
-# Add ASCII colour flags to a string
 def cformat(text_in,     # String to be printed
             start=None,  # Format specifiers to be appended to front of string
             reset=True): # If True, resets formatting after printing.
+    """Add ASCII colour flags to a string"""
+
+    # Ignore colour on virtual terminals
+    if not sys.stdout.isatty():
+       return text_in
+
     # Lazy way of formatting entire line
     if start:
         text = '\C{' + start + '}' + text_in
@@ -92,14 +97,9 @@ def cformat(text_in,     # String to be printed
 
     return re.sub(r'\\C\{(.+?)\}', cprint_sub, text)
 
-# Wrapper print statement for cformat
 def cprint(text,        # String to be printed
            start=None,  # Format specifiers to be appended to front of string
            reset=True): # If True, resets formatting after printing.
-
-    # Ignore colour on virtual terminals
-    if sys.stdout.isatty():
-        print cformat(text, start, reset)
-    else:
-        print text
+    """Wrapper print statement for cformat"""
+    print cformat(text, start, reset)
 
