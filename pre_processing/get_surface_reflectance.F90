@@ -432,13 +432,6 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
             end do
          end do
 
-         if (verbose) then
-            do k = 1, channel_info%nchannels_sw
-               write(*,*) 'Land WSA: channel, min, max = ', &
-                    k, minval(wsalnd(i,:)), maxval(wsalnd(i,:))
-            end do
-         end if
-
          if (include_full_brdf) then
             do j = 1, 3
                tmp_data = mcdc1%brdf_albedo_params(:,:,j,i)
@@ -451,6 +444,13 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
             end do
          end if
       end do
+
+      if (verbose) then
+         do k = 1, channel_info%nchannels_sw
+               write(*,*) 'Land WSA: channel, min, max = ', &
+                    k, minval(wsalnd(k,:)), maxval(wsalnd(k,:))
+         end do
+      end if
 
       if (include_full_brdf) then
          do i_view = 1, imager_angles%nviews
