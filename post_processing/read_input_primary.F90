@@ -148,15 +148,15 @@ if (indexing%flags%do_swansea) then
 end if
 
 if (indexing%flags%do_cloud) then
-   call nc_read_packed_array(ncid, "cot", input_data%cot, verbose)
+   call nc_read_packed_array(ncid, "cot", input_data%cot, verbose, startp = [1, sval])
    call nc_read_packed_array(ncid, "cot_uncertainty", &
         input_data%cot_uncertainty, verbose, startp = [1, sval])
 
-   call nc_read_packed_array(ncid, "cer", input_data%cer, verbose)
+   call nc_read_packed_array(ncid, "cer", input_data%cer, verbose, startp = [1, sval])
    call nc_read_packed_array(ncid, "cer_uncertainty", &
         input_data%cer_uncertainty, verbose, startp = [1, sval])
 
-   call nc_read_packed_array(ncid, "ctp", input_data%ctp, verbose)
+   call nc_read_packed_array(ncid, "ctp", input_data%ctp, verbose, startp = [1, sval])
    call nc_read_packed_array(ncid, "ctp_uncertainty", &
         input_data%ctp_uncertainty, verbose, startp = [1, sval])
 
