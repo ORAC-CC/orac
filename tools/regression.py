@@ -11,6 +11,8 @@ import glob
 import local_defaults as defaults
 import orac_utils as ou
 import os
+import subprocess
+import tempfile
 import warnings
 
 
@@ -71,8 +73,11 @@ if args.all_phases:
     args.phases = ou.settings.keys()
     if args.suffix == None:
         args.suffix = 'ALL'
+    # For now, only run ATSR through all phases
     if args.long:
         args.tests = ['AATSR']
+    else:
+        args.tests = ['DAYAATSRS']
 elif args.long:
     args.tests = ['DAYMYD', 'NITMYD', 'AATSR', 'AVHRR']
 
@@ -106,19 +111,59 @@ try:
 
         # Run ORAC suite
         ou.check_args_cc4cl(args)
-        (fileroot, dirs) = ou.cc4cl(args)
+        (fileroot, dirs, jid) = ou.cc4cl(args)
 
         # Check for regressions
         if not args.benchmark:
-            for d in dirs:
-                for f in glob.glob(d + '/' + fileroot + '*nc'):
-                    g = ou.find_previous_orac_file(f)
-                    if g == None:
-                        warnings.warn('Could not locate previous file: '+f,
-                                      ou.OracWarning)
-                        continue
+            if not args.batch:
+                for d in dirs:
+                    for f in glob.glob(d + '/' + fileroot + '*nc'):
+                        g = ou.find_previous_orac_file(f)
+                        if g == None:
+                            warnings.warn('Could not locate previous file: '+f,
+                                          ou.OracWarning)
+                            continue
 
-                    ou.compare_orac_out(f, g)
+                        ou.compare_orac_out(f, g)
+            else:
+                (fd, script_file) = tempfile.mkstemp('.sh', 'regression_test.',
+                                                     args.out_dir, True)
+                f = os.fdopen(fd, "w")
+                f.write("#!/bin/bash --noprofile\n")
+                f.write("export PATH={}\n".format(os.environ['PATH']))
+                f.write("export ORAC_LIB={}\n".format(os.environ['ORAC_LIB']))
+                f.write("python <<EOF\n")
+                f.write("import os\n")
+                f.write("import glob\n")
+                f.write("import warnings\n")
+                f.write("import sys\n")
+                f.write("sys.path.append('{}/tools')\n".format(args.orac_dir))
+                f.write("import orac_utils as ou\n")
+                f.write("for d in {}:\n".format(dirs))
+                f.write("    for f in glob.glob(d + '/{}*nc'):\n".format(
+                    fileroot))
+                f.write("        g = ou.find_previous_orac_file(f)\n")
+                f.write("        if g == None:\n")
+                f.write("            warnings.warn('Could not locate previous "
+                        "file: '+f, ou.OracWarning)\n")
+                f.write("            continue\n")
+                f.write("        ou.compare_orac_out(f, g)\n")
+                f.write("os.remove('{}')\n".format(script_file))
+                f.write("EOF")
+                f.close()
+                os.chmod(script_file, 0o700)
+
+                values = dict(defaults.batch_values)
+                values['log_file'] = '{}/{}/regression_test.R{}.log'.format(
+                    args.out_dir, args.log_dir, args.revision)
+                values['err_file'] = '{}/{}/regression_test.R{}.err'.format(
+                    args.out_dir, args.log_dir, args.revision)
+                values['depend']   = jid
+
+                cmd = defaults.batch.PrintBatch(values, exe=script_file)
+                if args.verbose:
+                    cprint(cmd, ou.colouring['header'])
+                _ = subprocess.check_output(cmd.split(' '))
 
 except ou.OracError as err:
     cprint('ERROR) ' + err.message, ou.colouring['error'])
@@ -126,3 +171,6 @@ except ou.Regression as err:
     print err.message
 except KeyboardInterrupt:
     cprint('Execution halted by user.', ou.colouring['error'])
+except subprocess.CalledProcessError as err:
+    cprint('{:s} failed with error code {:d}. {:s}'.format(
+        ' '.join(err.cmd), err.returncode, err.output))

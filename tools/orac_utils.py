@@ -8,7 +8,6 @@
 # 20 Jul 2016, AP: Remove shell=True from subprocess calls.
 
 import argparse
-import collections
 import colours
 import copy
 import datetime
@@ -144,9 +143,10 @@ def build_orac_library_path(libs):
 
 #-----------------------------------------------------------------------------
 
-def call_exe(args,    # Arguments of scripts
-             exe,     # Name of executable
-             driver): # Contents of driver file for executable
+def call_exe(args,           # Arguments of scripts
+             exe,            # Name of executable
+             driver,         # Contents of driver file for executable
+             values=dict()): # Arguments of the batch queuing system
     """Call an ORAC executable, managing the necessary driver file"""
 
     # Optionally print command and driver file contents to StdOut
@@ -164,29 +164,69 @@ def call_exe(args,    # Arguments of scripts
     f.write(driver)
     f.close()
 
-    # Form processing environment
-    libs = read_orac_libraries(args.orac_lib)
-    os.environ["LD_LIBRARY_PATH"] = build_orac_library_path(libs)
+    if not args.batch:
+        # Form processing environment
+        libs = read_orac_libraries(args.orac_lib)
+        os.environ["LD_LIBRARY_PATH"] = build_orac_library_path(libs)
 
-    # Define a directory for EMOS to put it's gridding
-    try:
-        os.environ["PPDIR"] = args.emos_dir
-    except AttributeError:
-        pass
+        # Define a directory for EMOS to put it's gridding
+        try:
+            os.environ["PPDIR"] = args.emos_dir
+        except AttributeError:
+            pass
 
-    # Call program
-    try:
-        st = time.time()
-        subprocess.check_call([exe, driver_file])
-        if args.timing:
-            colours.cprint(exe + ' took {:f}s'.format(time.time() - st),
-                           colouring['timing'])
-    except subprocess.CalledProcessError as err:
-        raise OracError('{:s} failed with error code {:d}. {:s}'.format
-                        (err.cmd, err.returncode, err.output))
-    finally:
+        # Call program
+        try:
+            st = time.time()
+            subprocess.check_call([exe, driver_file])
+            if args.timing:
+                colours.cprint(exe + ' took {:f}s'.format(time.time() - st),
+                               colouring['timing'])
+            return
+        except subprocess.CalledProcessError as err:
+            raise OracError('{:s} failed with error code {:d}. {:s}'.format
+                            (' '.join(err.cmd), err.returncode, err.output))
+        finally:
+            if not args.keep_driver:
+                os.remove(driver_file)
+
+    else:
+        # Write temporary script to call executable
+        (gd, script_file) = tempfile.mkstemp('.sh', os.path.basename(exe) + '.',
+                                             args.out_dir, True)
+        g = os.fdopen(gd, "w")
+        g.write(defaults.batch_script)
+
+        # Define processing environment
+        libs = read_orac_libraries(args.orac_lib)
+        g.write("export LD_LIBRARY_PATH=" + build_orac_library_path(libs) + "\n")
+        g.write("export PPDIR=" + args.emos_dir + "\n")
+
+        # Call executable and give the script permission to execute
+        g.write(exe + ' ' + driver_file + "\n")
         if not args.keep_driver:
-            os.remove(driver_file)
+            g.write("rm -f " + driver_file + "\n")
+        g.write("rm -f " + script_file + "\n")
+        g.close()
+        os.chmod(script_file, 0o700)
+
+        try:
+            # Add default arguments to values
+            values.update(defaults.batch_values)
+
+            # Form batch queue command and call batch queuing system
+            cmd = defaults.batch.PrintBatch(values, exe=script_file)
+            if args.verbose:
+                colours.cprint(cmd, colouring['header'])
+            out = subprocess.check_output(cmd.split(' '))
+
+            # Parse job ID # and return it to the caller
+            jid = defaults.batch.ParseOut(out, 'ID')
+            return jid
+        except subprocess.CalledProcessError as err:
+            raise OracError('Failed to queue job '+exe)
+        except SyntaxError as err:
+            raise OracError(err.message)
 
 #-----------------------------------------------------------------------------
 
@@ -332,7 +372,8 @@ def dict_from_list(l):
 #-----------------------------------------------------------------------------
 
 def find_previous_orac_file(new_file):
-    """Given an ORAC filename, find the most recent predecessor in the same folder."""
+    """Given an ORAC filename, find the most recent predecessor in the
+    same folder."""
 
     # Regex for revision number
     reg = re.compile('_R(\d+)')
@@ -409,7 +450,8 @@ def parse_with_lib(lib):
 #----------------------------------------------------------------------------
 
 class FileName:
-    """Parses L1B or ORAC filenames to determine the instrument and measurement time
+    """Parses L1B or ORAC filenames to determine the instrument and
+    measurement time.
     Member variables:
     l1b      - Name of the level 1B imager file
     geo      - Name of the corresponding geolocation file
@@ -656,6 +698,8 @@ def args_common(parser, regression=False):
                      help = 'Name and path of ORAC library specification.')
 
     key = parser.add_argument_group('Common keyword arguments')
+    key.add_argument('--batch', action='store_true',
+                      help = 'Use batch processing for this call.')
     key.add_argument('-J', '--just_driver', action='store_true',
                      help = 'Only print the driver file.')
     key.add_argument('-k', '--keep_driver', action='store_true',
@@ -786,7 +830,7 @@ def args_preproc(parser):
 
     ecmwf = parser.add_argument_group('ECMWF settings')
     ecmwf.add_argument('--ecmwf_flag', type=int, choices = range(5),
-                       default = 2,
+                       default = defaults.ecmwf_flag,
                        help = 'Type of ECMWF data to read in.')
     ecmwf.add_argument('--single_ecmwf', action='store_const',
                        default = 2, const = 0,
@@ -880,8 +924,12 @@ def args_main(parser):
 
     main = parser.add_argument_group('Main processor arguments')
     main.add_argument('-a', '--approach', type=str, nargs='?',
-                      choices = ('CldWat', 'CldIce', 'AerOx', 'AerSw', 'AshEyj'),
+                      choices = ('AppCld1L', 'AppCld2L', 'AppAerOx', 'AppAerSw'),
                       help = 'Retrieval approach to be used.')
+    main.add_argument('--ret_class', type = str, nargs='?',
+                      choices = ('ClsCldWat', 'ClsCldIce', 'ClsAerOx',
+                                 'ClsAerSw', 'ClsAshEyj'),
+                      help = 'Retrieval class to be used (for layer 1).')
     main.add_argument('--extra_lines', type=str, nargs='?', metavar='FILE',
                       help = 'Name of file containing additional driver lines.')
     main.add_argument('--phase', type=str, default = 'WAT',
@@ -971,6 +1019,14 @@ def args_cc4cl(parser):
                       choices = range(4),
                       help = ('Level of processing to clobber:\n' +
                               '0=None, 1=Post, 2=Main+Post, 3=All (default).'))
+    cccl.add_argument('--dur', type=str, nargs=3,
+                      default = ('1:00', '2:00', '1:00'),
+                      help = ('Maximal duration (in HH:MM) required by the '
+                              'pre, main and post processors.'))
+    cccl.add_argument('--ram', type=int, nargs=3,
+                      default = (14000, 14000, 14000),
+                      help = ('Maximal memory (in Mb) used by the pre, main and '
+                              'post processors.'))
     cccl.add_argument('--aer_sad_dir', type=str, nargs='?', metavar='DIR',
                       default = defaults.aer_sad_dir,
                       help = ('Path to aerosol SAD and LUT files, ' +
@@ -1118,7 +1174,8 @@ def build_preproc_driver(args):
                       stacklevel=2)
 
     # Strip RTTOV version from library definition
-    m2 = re.search(r'/rttov(.+?)/lib', libs['RTTOVLIB'])
+    rttov_lib = glob.glob(libs['RTTOVLIB'] + '/librttov*_main.a')
+    m2 = re.search(r'librttov([\d\.]+)_main.a', rttov_lib[0])
     if m2:
         rttov_version = m2.group(1)
     else:
@@ -1305,25 +1362,27 @@ Ctrl%RS%Use_Full_BRDF      = {use_brdf}""".format(
         phase    = args.phase,
         sad_dir  = args.sad_dir,
         sensor   = inst.inst,
-        use_brdf = not (args.lambertian or args.approach == 'AerSw'),
+        use_brdf = not (args.lambertian or args.approach == 'AppAerSw'),
         verbose  = args.verbose
     )
 
     # Optional driver file lines
-    for var in settings[args.phase].inv:
-        driver += var.driver()
     if args.types:
         driver += "\nCtrl%NTypes_To_Process     = {:d}".format(len(args.types))
         driver += ("\nCtrl%Types_To_Process      = " +
                    ','.join(str(k) for k in args.types))
     if args.sabotage:
-        driver += "\nCtrl%Sabotage_Inputs      = true"
+        driver += "\nCtrl%Sabotage_Inputs       = true"
     if args.approach:
-        driver += "\nCtrl%Approach             = " + args.approach
+        driver += "\nCtrl%Approach              = " + args.approach
+    if args.ret_class:
+        driver += "\nCtrl%Class                 = " + args.ret_class
     if not args.sea:
-        driver += "\nCtrl%Surfaces_To_Skip     = ISea"
+        driver += "\nCtrl%Surfaces_To_Skip      = ISea"
     elif not args.land:
-        driver += "\nCtrl%Surfaces_To_Skip     = ILand"
+        driver += "\nCtrl%Surfaces_To_Skip      = ILand"
+    for var in settings[args.phase].inv:
+        driver += var.driver()
     if args.extra_lines:
         try:
             e = open(args.extra_lines, "r")
@@ -1404,17 +1463,44 @@ class unique_list(list):
         if element not in self:
             self.append(element)
 
+def do_main_proc(args, main_files, job_name, log_path, jid_pre, jid_main,
+                 written_dirs, phs, tag):
+    """Call sequence for main processor (that is repeated three times)"""
+
+    check_args_main(args)
+    out_file = args.out_dir + '/' + args.target + phs + '.primary.nc'
+    main_files.append(out_file)
+    if args.clobber >= 2 or not os.path.isfile(out_file):
+        # Settings for batch processing
+        values = {'job_name' : job_name + phs + tag,
+                  'log_file' : log_path + job_name + phs + tag + '.log',
+                  'err_file' : log_path + job_name + phs + tag + '.err',
+                  'depend'   : jid_pre,
+                  'duration' : args.dur[1],
+                  'ram'      : args.ram[1]}
+
+        main_driver = build_main_driver(args)
+        jd = call_exe(args, args.orac_dir + '/src/orac', main_driver, values)
+        if jd != None:
+            jid_main.append(jd)
+        written_dirs.unique_append(args.out_dir)
+
+
 def cc4cl(orig):
     """Run the ORAC pre, main, and post processors on a file."""
 
     written_dirs = unique_list() # Folders we actually write to
-    proc_dirs    = unique_list() # Folders processed output could be found in
 
     # Copy input arguments as we'll need to fiddle with them
     args = copy.copy(orig)
 
     # Determine a name for this job from the filename
     inst = FileName(args.target)
+    job_name = inst.time.strftime('{}.R{}_%Y-%m-%d-%H-%M_'.format(inst.inst,
+                                                                  args.revision))
+    log_path = args.out_dir + '/' + args.log_dir + '/'
+    if args.batch and not os.path.isdir(log_path):
+        os.makedirs(log_path, 0o774)
 
     # Sort out what channels are required
     args.channel_ids = unique_list()
@@ -1433,11 +1519,22 @@ def cc4cl(orig):
     # Run preprocessor (checking if we're clobbering a previous run)
     if args.clobber >= 3 or not os.path.isfile(args.out_dir + '/' +
                                                outroot + '.config.nc'):
-        call_exe(args, args.orac_dir + '/pre_processing/orac_preproc.x',
-                 pre_driver)
+        # Settings for batch processing
+        pre_values = {'job_name' : job_name + 'pre',
+                      'log_file' : log_path + job_name + 'pre.log',
+                      'err_file' : log_path + job_name + 'pre.err',
+                      'duration' : args.dur[0],
+                      'ram'      : args.ram[0]}
+
+        jid_pre = call_exe(args, args.orac_dir+'/pre_processing/orac_preproc.x',
+                           pre_driver, pre_values)
         written_dirs.unique_append(args.out_dir)
+    else:
+        jid_pre = None
 
     # Run main processor
+    jid_main    = [] # ID no. for each queued job
+    main_files  = [] # Main files that are generated
     args.target = outroot
     args.in_dir = [args.out_dir]
     for phs in args.phases:
@@ -1452,58 +1549,55 @@ def cc4cl(orig):
         if settings[phs].ls:
             if orig.land:
                 args.out_dir  = orig.out_dir + '/' + orig.land_dir
-                args.approach = 'AerSw'
+                args.approach = 'AppAerSw'
                 args.land = True
                 args.sea  = False
-                check_args_main(args)
-                proc_dirs.unique_append(args.out_dir)
-                if args.clobber >= 2 or not os.path.isfile(args.out_dir + '/' +
-                                                           outroot + phs +
-                                                           '.primary.nc'):
-                    main_driver = build_main_driver(args)
-                    call_exe(args, args.orac_dir + '/src/orac', main_driver)
-                    written_dirs.unique_append(args.out_dir)
+
+                do_main_proc(args, main_files, job_name, log_path, jid_pre,
+                             jid_main, written_dirs, phs, 'L')
 
             if orig.sea:
                 args.out_dir  = orig.out_dir + '/' + args.sea_dir
-                args.approach = 'AerOx'
+                args.approach = 'AppAerOx'
                 args.land = False
                 args.sea  = True
-                check_args_main(args)
-                proc_dirs.unique_append(args.out_dir)
-                if args.clobber >= 2 or not os.path.isfile(args.out_dir + '/' +
-                                                          outroot + phs +
-                                                          '.primary.nc'):
-                    main_driver = build_main_driver(args)
-                    call_exe(args, args.orac_dir + '/src/orac', main_driver)
-                    written_dirs.unique_append(args.out_dir)
+
+                do_main_proc(args, main_files, job_name, log_path, jid_pre,
+                             jid_main, written_dirs, phs, 'S')
 
         else:
             args.out_dir  = orig.out_dir + '/' + args.main_dir
             args.approach = orig.approach
             args.land = orig.land
             args.sea  = orig.sea
-            check_args_main(args)
-            proc_dirs.unique_append(args.out_dir)
-            if args.clobber >= 2 or not os.path.isfile(args.out_dir + '/' +
-                                                       outroot + phs +
-                                                       '.primary.nc'):
-                main_driver = build_main_driver(args)
-                call_exe(args, args.orac_dir + '/src/orac', main_driver)
-                written_dirs.unique_append(args.out_dir)
+
+            do_main_proc(args, main_files, job_name, log_path, jid_pre,
+                         jid_main, written_dirs, phs, '')
 
     # Run postprocessor
-    args.in_dir = proc_dirs
+    args.in_dir = written_dirs
     args.out_dir = orig.out_dir
     check_args_postproc(args)
     if args.clobber >= 1 or not os.path.isfile(args.out_dir + '/' +
-                                               outroot + '.primary.nc'):
-        post_driver = build_postproc_driver(args)
-        call_exe(args, args.orac_dir +
-                 '/post_processing/post_process_level2', post_driver)
+                                               outroot + '.' + args.suffix +
+                                               '.primary.nc'):
+        # Settings for batch processing
+        post_values = {'job_name' : job_name + 'post',
+                       'log_file' : log_path + job_name + 'post.log',
+                       'err_file' : log_path + job_name + 'post.err',
+                       'depend'   : jid_main,
+                       'duration' : args.dur[2],
+                       'ram'      : args.ram[2]}
+
+        post_driver = build_postproc_driver(args, main_files)
+        jid = call_exe(args,
+                       args.orac_dir + '/post_processing/post_process_level2',
+                       post_driver, post_values)
         written_dirs.unique_append(args.out_dir)
+    else:
+        jid = None
 
     # Output root filename and output folders for regression tests
-    return (outroot, written_dirs)
+    return (outroot, written_dirs, jid)
 
 #-----------------------------------------------------------------------------

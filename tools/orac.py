@@ -14,6 +14,8 @@ warnings.filterwarnings('always', category=ou.OracWarning)
 # Define parser
 parser = argparse.ArgumentParser(
     description='Run the full ORAC suite on a given Level 1B file.')
+parser.add_argument('-A', '--all_phases', action='store_true',
+                    help = 'Sets phases to run all possible tests.')
 ou.args_common(parser)
 ou.args_preproc(parser)
 ou.args_main(parser)
@@ -21,9 +23,12 @@ ou.args_postproc(parser)
 ou.args_cc4cl(parser)
 args = parser.parse_args()
 
+if args.all_phases:
+    args.phases = ou.settings.keys()
+
 try:
     ou.check_args_cc4cl(args)
-    (_,_) = ou.cc4cl(args)
+    (_,_,_) = ou.cc4cl(args)
 except ou.OracError as err:
     cprint('ERROR) ' + err.message, ou.colouring['error'])
 except KeyboardInterrupt:
