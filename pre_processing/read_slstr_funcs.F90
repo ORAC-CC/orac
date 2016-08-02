@@ -19,6 +19,7 @@
 !    pre-launch default values.
 ! 2016/07/22, SP: Implement second (oblique) view. Also, correct initial version
 !    of the geometry resampling. Now operates more accurately.
+! 2016/08/01, SP: Changed zenith angle bounds, fixed RAA for second view
 !
 ! $Id$
 !
@@ -756,6 +757,14 @@ subroutine slstr_interp_angs(in_angs,out_angs,txnx,txny,nx,ny,interp,view)
             intval = in_angs(prev,y,:)
          endif
 
+			intval(4)=abs(intval(4))
+			intval(2)=abs(intval(2))
+
+			if (intval(4) .lt. 0 .or. intval(4) .gt. 90 ) intval = sreal_fill_value
+			if (intval(2) .lt. 0 .or. intval(2) .gt. 90 ) intval = sreal_fill_value
+
+
+
          out_angs%solazi(x,y,view) = intval(3)
          out_angs%relazi(x,y,view) = intval(1)
          out_angs%solzen(x,y,view) = intval(4)
@@ -822,38 +831,43 @@ subroutine read_slstr_satsol(indir,imager_angles,interp,txnx,txny,nx,ny,startx,v
       stop error_stop_code
    endif
 
-   ! Check bounds, compute the raa
+   ! Check bounds
+   where(angles(:,:,1) .gt. 180) &
+      angles(:,:,1)=angles(:,:,1)-360.
+   where(angles(:,:,3) .gt. 180) &
+      angles(:,:,3)=angles(:,:,3)-360.
 
-   where(angles(:,:,3) .lt. -360) &
+   where(angles(:,:,3) .lt. -180) &
       angles(:,:,3)=sreal_fill_value
    where(angles(:,:,4) .lt. -90) &
       angles(:,:,4)=sreal_fill_value
    where(angles(:,:,2) .lt. -90) &
       angles(:,:,2)=sreal_fill_value
-   where(angles(:,:,1) .lt. -360) &
+   where(angles(:,:,1) .lt. -180) &
       angles(:,:,1)=sreal_fill_value
 
-   where(angles(:,:,3) .gt. 360) &
+   where(angles(:,:,3) .gt. 180) &
       angles(:,:,3)=sreal_fill_value
    where(angles(:,:,4) .gt. 90) &
       angles(:,:,4)=sreal_fill_value
    where(angles(:,:,2) .gt. 90) &
       angles(:,:,2)=sreal_fill_value
-   where(angles(:,:,1) .gt. 360) &
+   where(angles(:,:,1) .gt. 180) &
       angles(:,:,1)=sreal_fill_value
+
+   where(isnan(angles)) angles=0
 
    ! Do the interpolation to full grid
    call slstr_interp_angs(angles,imager_angles,txnx,txny,nx,ny,interp,view)
 
-
    ! Rescale zens + azis into correct format
-   where(imager_angles%solazi(startx:,:,1) .ne. sreal_fill_value .and. &
-         imager_angles%relazi(startx:,:,1) .ne. sreal_fill_value)
-      imager_angles%relazi(:,:,1) = abs(imager_angles%relazi(startx:,:,1) - &
-                                        imager_angles%solazi(startx:,:,1))
+   where(imager_angles%solazi(startx:,:,view) .ne. sreal_fill_value .and. &
+         imager_angles%relazi(startx:,:,view) .ne. sreal_fill_value)
+      imager_angles%relazi(:,:,view) = abs(imager_angles%relazi(startx:,:,view) - &
+                                        imager_angles%solazi(startx:,:,view))
 
-      where (imager_angles%relazi(:,:,1) .gt. 180.)
-         imager_angles%relazi(:,:,1) = 360. - imager_angles%relazi(:,:,1)
+      where (imager_angles%relazi(:,:,view) .gt. 180.)
+         imager_angles%relazi(:,:,view) = 360. - imager_angles%relazi(:,:,view)
       endwhere
    end where
 end subroutine read_slstr_satsol

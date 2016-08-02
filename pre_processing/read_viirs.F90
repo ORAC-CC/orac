@@ -15,6 +15,7 @@
 ! 2016/05/19, SP: Bugfix to prevent stack smashing when HDF5 file from NOAA
 !                 doesn't conform to their own standard.
 ! 2016/05/23, SP: Some tidying and better commenting
+! 2016/08/01, SP: Changed zenith angle bounds
 !
 ! $Id$
 !
@@ -378,18 +379,21 @@ subroutine read_viirs(infile,geofile,imager_geolocation, imager_measurements, &
 
    call h5close_f(error)
 
+	imager_angles%solzen(startx:,:,1) = abs(imager_angles%solzen(startx:,:,1))
+	imager_angles%satzen(startx:,:,1) = abs(imager_angles%satzen(startx:,:,1))
+
    ! Check units to remove anything that's out-of-range.
-   where(imager_geolocation%latitude(startx:,:)  .lt. -900) &
+   where(imager_geolocation%latitude(startx:,:)  .gt. 900) &
       imager_geolocation%latitude(startx:,:)=sreal_fill_value
-   where(imager_geolocation%longitude(startx:,:) .lt. -900) &
+   where(imager_geolocation%longitude(startx:,:) .gt. 900) &
       imager_geolocation%longitude(startx:,:)=sreal_fill_value
-   where(imager_angles%solazi(startx:,:,1)       .lt. -900) &
+   where(imager_angles%solazi(startx:,:,1)       .gt. 900) &
       imager_angles%solazi(startx:,:,1)=sreal_fill_value
-   where(imager_angles%solzen(startx:,:,1)       .lt. -900) &
+   where(imager_angles%solzen(startx:,:,1)       .gt. 900) &
       imager_angles%solzen(startx:,:,1)=sreal_fill_value
-   where(imager_angles%satzen(startx:,:,1)       .lt. -900) &
+   where(imager_angles%satzen(startx:,:,1)       .gt. 900) &
       imager_angles%satzen(startx:,:,1)=sreal_fill_value
-   where(imager_angles%relazi(startx:,:,1)       .lt. -900) &
+   where(imager_angles%relazi(startx:,:,1)       .gt. 900) &
       imager_angles%relazi(startx:,:,1)=sreal_fill_value
 
    ! Rescale zens + azis into correct format
