@@ -379,8 +379,8 @@ subroutine read_viirs(infile,geofile,imager_geolocation, imager_measurements, &
 
    call h5close_f(error)
 
-	imager_angles%solzen(startx:,:,1) = abs(imager_angles%solzen(startx:,:,1))
-	imager_angles%satzen(startx:,:,1) = abs(imager_angles%satzen(startx:,:,1))
+   imager_angles%solzen(startx:,:,1) = abs(imager_angles%solzen(startx:,:,1))
+   imager_angles%satzen(startx:,:,1) = abs(imager_angles%satzen(startx:,:,1))
 
    ! Check units to remove anything that's out-of-range.
    where(imager_geolocation%latitude(startx:,:)  .gt. 900) &

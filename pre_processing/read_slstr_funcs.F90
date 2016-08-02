@@ -757,11 +757,11 @@ subroutine slstr_interp_angs(in_angs,out_angs,txnx,txny,nx,ny,interp,view)
             intval = in_angs(prev,y,:)
          endif
 
-			intval(4)=abs(intval(4))
-			intval(2)=abs(intval(2))
+         intval(4)=abs(intval(4))
+         intval(2)=abs(intval(2))
 
-			if (intval(4) .lt. 0 .or. intval(4) .gt. 90 ) intval = sreal_fill_value
-			if (intval(2) .lt. 0 .or. intval(2) .gt. 90 ) intval = sreal_fill_value
+         if (intval(4) .lt. 0 .or. intval(4) .gt. 90 ) intval = sreal_fill_value
+         if (intval(2) .lt. 0 .or. intval(2) .gt. 90 ) intval = sreal_fill_value
 
 
 
