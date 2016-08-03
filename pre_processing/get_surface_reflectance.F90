@@ -208,7 +208,10 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
 
    type(interpol_t),   allocatable   :: interp(:)
 
+	! Two masks, one for overall masking and one for per-view masking
+	! This is needed as, f.ex, SLSTR views don't have the same spatial extent
    logical,            allocatable   :: mask(:,:)
+   logical,            allocatable   :: mask_v(:,:,:)
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering get_surface_reflectance()'
 
@@ -225,17 +228,23 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
    ! Mask out pixels set to fill_value and out of BRDF angular range
    allocate(mask(imager_geolocation%startx:imager_geolocation%endx, &
         1:imager_geolocation%ny))
+   allocate(mask_v(imager_geolocation%startx:imager_geolocation%endx, &
+        1:imager_geolocation%ny,imager_angles%nviews))
 
-   mask = imager_geolocation%latitude  .ne. sreal_fill_value .and. &
-        imager_geolocation%longitude .ne. sreal_fill_value
+	mask(:,:)=.false.
 
    do k = 1,imager_angles%nviews
-      mask = mask .and. &
+   	mask_v(:,:,k) = imager_geolocation%latitude  .ne. sreal_fill_value .and. &
+        imager_geolocation%longitude .ne. sreal_fill_value
+      mask_v(:,:,k) = mask_v(:,:,k) .and. &
            imager_angles%solzen(:,:,k) .ne. sreal_fill_value .and. &
            imager_angles%satzen(:,:,k) .ne. sreal_fill_value .and. &
            imager_angles%solazi(:,:,k) .ne. sreal_fill_value .and. &
            imager_angles%relazi(:,:,k) .ne. sreal_fill_value
+      mask(:,:)=mask(:,:) .or. mask_v(:,:,k)
    end do
+
+   deallocate(mask_v)
 
    ! Albedo, rho_dv, and rho_dd are all valid at night rho_0v and rho_0d are
    ! not.  At night we have two choices: (1) compute what we can (albedo, rho_dv,
