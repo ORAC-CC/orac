@@ -6,6 +6,7 @@
 #    Added support for a simple directory structure of YYYY subdir for NISE data
 #    Made paths to MCD43C1 and MCD43C2 data separate arguments
 # 20 Jul 2016, AP: Remove shell=True from subprocess calls.
+# 3  Aug 2016, SP: Fixed exception handling in the regression test function.
 
 import argparse
 import colours
@@ -338,10 +339,13 @@ def compare_orac_out(f0, f1):
                     warnings.warn(Acceptable(f1, key), stacklevel=2)
                 else:
                     warnings.warn(RoundingError(f1, key), stacklevel=2)
+    except Exception,e:
+        warnings.warn('Problem performing regression tests. '+str(e),
+                      OracWarning, stacklevel=2)
 
     finally:
-        d0.close()
-        d1.close()
+        if ('d0' in locals() or 'd0' in globals()): d0.close()
+        if ('d1' in locals() or 'd1' in globals()): d1.close()
 
 #-----------------------------------------------------------------------------
 
