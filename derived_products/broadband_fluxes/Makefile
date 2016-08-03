@@ -36,7 +36,7 @@ ORAC_OBJ = $(OBJS)/kinds.o \
            $(OBJS)/bugs_rad.o \
            $(OBJS)/comscp2.o \
            $(OBJS)/midlatsum1.o \
-           $(OBJS)/preprocess_bugsrad.o \
+           $(OBJS)/preprocess_input.o \
            $(OBJS)/interpolate_meteorology.o \
            $(OBJS)/greg2jul.o \
            $(OBJS)/collocate_prtm_profile.o \
@@ -46,7 +46,34 @@ ORAC_OBJ = $(OBJS)/kinds.o \
            $(OBJS)/compute_fth.o \
            $(OBJS)/compute_column_o3.o \
            $(OBJS)/preprocess_bugsrad_sfc_albedo.o \
-           $(OBJS)/preprocess_bugsrad_sfc_emissivity.o
+           $(OBJS)/preprocess_bugsrad_sfc_emissivity.o \
+           $(OBJS)/extras.o \
+           $(OBJS)/taucorr.o \
+           $(OBJS)/fuinput.o \
+           $(OBJS)/fuoutput.o \
+           $(OBJS)/fuprint.o \
+           $(OBJS)/entropy_lw.o \
+           $(OBJS)/icedirsfc.o \
+           $(OBJS)/ma_tip.o \
+           $(OBJS)/qsortd.o \
+           $(OBJS)/vla.o \
+           $(OBJS)/uvcor_all.o \
+           $(OBJS)/rad_multi.o \
+           $(OBJS)/seiji_k2d.o \
+           $(OBJS)/seiji_solver.o \
+           $(OBJS)/gflq.o \
+           $(OBJS)/calipso_output.o \
+           $(OBJS)/zjin.o \
+           $(OBJS)/ar_asy.o \
+           $(OBJS)/aqua_wnflt_0404.o \
+           $(OBJS)/misc.o \
+           $(OBJS)/cloud_optics.o \
+           $(OBJS)/seiji_twostreamsolv_sw_v20.o \
+           $(OBJS)/aerosols.o \
+           $(OBJS)/preprocess_fuliou_sfc_albedo.o \
+           $(OBJS)/driver_for_fuliou.o
+
+
 
 
 ORAC_OBJ_MAIN = $(OBJS)/process_broadband_fluxes.o
