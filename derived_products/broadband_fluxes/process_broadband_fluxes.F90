@@ -60,23 +60,6 @@
 !
 ! Bugs:
 ! None known.
-!
-! Examples
-! bsub -q lotus -W 06:00 -R "order[-r15s:pg]" -o /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/bugsrad.out -e /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/bugsrad.err -J BUGSrad
-!
-! MODIS
-!./process_broadband_fluxes /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/postproc/ESACCI-L2-CLOUD-CLD-MODIS_CC4CL_AQUA_200803202150_fv3.0.primary.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/ESACCI-L2-CLOUD-CLD-MODIS_CC4CL_AQUA_200803202150_fv3.0.prtm.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/ESACCI-L2-CLOUD-CLD-MODIS_CC4CL_AQUA_200803202150_fv3.0.alb.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/data/tsi_soho_sorce_1978_2015.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/derived_products/ESACCI-L2-CLOUD-CLD-MODIS_CC4CL_AQUA_200803202150_fv3.1.bugsrad.nc '1'
-!./process_broadband_fluxes /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/postproc/ESACCI-L2-CLOUD-CLD-MODIS_CC4CL_AQUA_200803202150_fv3.0.primary.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/ESACCI-L2-CLOUD-CLD-MODIS_CC4CL_AQUA_200803202150_fv3.0.prtm.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/ESACCI-L2-CLOUD-CLD-MODIS_CC4CL_AQUA_200803202150_fv3.0.alb.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/data/tsi_soho_sorce_1978_2015.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/derived_products/ESACCI-L2-CLOUD-CLD-MODIS_CC4CL_AQUA_200803202150_fv3.2.fuliout.nc '2'
-!
-! AATSR
-!./process_broadband_fluxes /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/postproc/ESACCI-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.primary.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/ESACCI-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.prtm.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/ESACCI-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.alb.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/data/tsi_soho_sorce_1978_2015.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/derived_products/ESACCI-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.bugsrad.nc '' '' 182 13487
-!
-! AATSR WITH AEROSOL
-!./process_broadband_fluxes /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/postproc/ESACCI-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.primary.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/ESACCI-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.prtm.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/ESACCI-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.alb.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/data/tsi_soho_sorce_1978_2015.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/derived_products/ESACCI-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.8.bugsrad.nc /group_workspaces/cems/aerosol_cci/public/cci_products/AATSR_ORAC_v03-02/L2/2008/2008_06_20/20080620084636-ESACCI-L2P_AEROSOL-AER_PRODUCTS-AATSR-ENVISAT-ORAC_32969-fv03.02.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/aci/collocation/200806200846_V1.0.collocation.nc 182 13487
-!
-! SEVIRI
-!./process_broadband_fluxes /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/postproc/ESACCI-L2-CLOUD-CLD-SEVIRI_ORAC_MSG2_201004161312_V1.0.primary.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/ESACCI-L2-CLOUD-CLD-SEVIRI_ORAC_MSG2_201004161312_V1.0.prtm.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/ESACCI-L2-CLOUD-CLD-SEVIRI_ORAC_MSG2_201004161312_V1.0.alb.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/data/tsi_soho_sorce_1978_2015.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/derived_products/ESACCI-L2-CLOUD-CLD-SEVIRI_ORAC_MSG2_201004161312_V1.0.bugsradTEST.nc '' '' 1500 1500
-!
 !-------------------------------------------------------------------------------
 
 program process_broadband_fluxes
@@ -887,8 +870,8 @@ call cpu_time(cpuStart)
       print*,'complete: ',i*100./(xN*1.),'%   i=',i, cpuFinish-cpuStart,' seconds elapsed'
 
       !loop over along-track dimension
-!      do j=pxY0,pxY1
-      do j=pxY0,pxY0+100 !for testing
+      do j=pxY0,pxY1
+!      do j=pxY0,pxY0+100 !for testing
 
       !Valid lat/lon required to run (needed for SEVIRI)
       if(LAT(i,j) .ne. -999.0 .and. LON(i,j) .ne. -999.0) then
