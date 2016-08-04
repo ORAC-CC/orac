@@ -315,7 +315,7 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
 
    ! Declare some miscelaneous variables.
 
-   integer :: i, j, index1, index2, wflg, cview, &
+   integer :: i, ii, j, index1, index2, wflg, cview, &
         start_line, end_line, start_pix, end_pix, npix
    logical :: day
    real    :: t4_filter_thresh, nir_ref
@@ -344,7 +344,7 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
    real(kind=sreal)   :: esd
    real(kind=sreal)   :: c_sun
    real(kind=sreal), dimension(2) :: PlanckInv_out
-   integer(kind=sint) :: ch1, ch2, ch3, ch4, ch5, ch6
+   integer(kind=sint) :: ch1, ch2, ch3, ch4, ch5, ch6, sw1, sw2
 
    ! -- Parameters used here
    !
@@ -463,14 +463,17 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
       ch6 = 0
       if (trim(adjustl(sensor)) .eq. 'AATSR' .or. trim(adjustl(sensor)) .eq. 'ATSR2' ) then
          do i=1,channel_info%nchannels_total
+            ii = channel_info%map_ids_channel_to_sw(i)
             ! If we're not looking at the second view then assume it's the first
             ! (just in case somehow cview = 3+)
             if (cview .eq. 1) then
                select case (channel_info%channel_ids_instr(i))
                case(2)
                   ch1=i
+                  sw1=ii
                case(3)
                   ch2=i
+                  sw2=ii
                case(4)
                   ch3=i
                case(5)
@@ -484,8 +487,10 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
                select case (channel_info%channel_ids_instr(i))
                case(9)
                   ch1=i
+                  sw1=ii
                case(10)
                   ch2=i
+                  sw2=ii
                case(11)
                   ch3=i
                case(12)
@@ -499,11 +504,14 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
          end do
       else if (trim(adjustl(sensor)) .eq. 'AVHRR') then
          do i=1,channel_info%nchannels_total
+            ii = channel_info%map_ids_channel_to_sw(i)
             select case (channel_info%channel_ids_instr(i))
             case(1)
                ch1=i
+               sw1=ii
             case(2)
                ch2=i
+               sw2=ii
             case(3)
                ch3=i
             case(4)
@@ -516,11 +524,14 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
          end do
       else if (trim(adjustl(sensor)) .eq. 'MODIS') then
          do i=1,channel_info%nchannels_total
+            ii = channel_info%map_ids_channel_to_sw(i)
             select case (channel_info%channel_ids_instr(i))
             case(1)
                ch1=i
+               sw1=ii
             case(2)
                ch2=i
+               sw2=ii
             case(6)
                ch3=i
             case(20)
@@ -533,11 +544,14 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
          end do
       else if (trim(adjustl(sensor)) .eq. 'SEVIRI') then
          do i=1,channel_info%nchannels_total
+            ii = channel_info%map_ids_channel_to_sw(i)
             select case (channel_info%channel_ids_instr(i))
             case(1)
                ch1=i
+               sw1=ii
             case(2)
                ch2=i
+               sw2=ii
             case(3)
                ch3=i
             case(4)
@@ -550,11 +564,14 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
          end do
       else if (trim(adjustl(sensor)) .eq. 'AHI') then
          do i=1,channel_info%nchannels_total
+            ii = channel_info%map_ids_channel_to_sw(i)
             select case (channel_info%channel_ids_instr(i))
             case(3)
                ch1=i
+               sw1=ii
             case(4)
                ch2=i
+               sw2=ii
             case(5)
                ch3=i
             case(7)
@@ -567,11 +584,14 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
          end do
       else if (trim(adjustl(sensor)) .eq. 'VIIRS') then
          do i=1,channel_info%nchannels_total
+            ii = channel_info%map_ids_channel_to_sw(i)
             select case (channel_info%channel_ids_instr(i))
             case(5)
                ch1=i
+               sw1=ii
             case(7)
                ch2=i
+               sw2=ii
             case(10)
                ch3=i
             case(12)
@@ -584,11 +604,14 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
          end do
       else if (trim(adjustl(sensor)) .eq. 'SLSTR') then
          do i=1,channel_info%nchannels_total
+            ii = channel_info%map_ids_channel_to_sw(i)
             select case (channel_info%channel_ids_instr(i))
             case(2)
                ch1=i
+               sw1=ii
             case(3)
                ch2=i
+               sw2=ii
             case(5)
                ch3=i
             case(7)
@@ -798,8 +821,8 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
                  imager_angles%SATZEN(i,j,cview), &
                  snow_ice_mask(i,j), &
                  imager_flags%LSFLAG(i,j), &
-                 surface%albedo(i,j,ch1), &
-                 surface%albedo(i,j,ch2), &
+                 surface%albedo(i,j,sw1), &
+                 surface%albedo(i,j,sw2), &
                  imager_pavolonis%CCCOT_pre(i,j,cview), &
                  imager_pavolonis%CLDMASK(i,j,cview) , &
                  imager_pavolonis%CLDMASK_UNCERTAINTY(i,j,cview) , &
