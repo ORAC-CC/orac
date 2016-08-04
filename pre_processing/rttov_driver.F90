@@ -766,9 +766,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                           idim-preproc_dims%min_lon+1, &
                           jdim-preproc_dims%min_lat+1, &
                           profiles(count)%nlevels, profiles(count)%zenangle, &
-                          transmission, &
-                          write_rttov, chan_pos(i_), &
-                          channel_info%sw_rttov_viewone_id(i_))
+                          transmission, write_rttov, chan_pos(i_), i_)
                   end do
                end if
             end do
