@@ -423,7 +423,7 @@ subroutine apply_ice_correction(x, y, nise, ice_albedo, snow_albedo, &
    ! and convert the percentage cover to a fraction
    where(nise .eq. 101)
       ice_frac = 1.0
-   elsewhere
+   else where
       ice_frac = nise / 100.
    end where
    where(nise .gt. 101) ice_frac = 0.0

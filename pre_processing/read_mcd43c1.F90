@@ -268,9 +268,9 @@ subroutine read_mcd43c1(path_to_file, mcd, nbands, bands, brdf_albedo_params, &
          ! fault if used with ifort (v11)
 !        where (tmpdata .eq. fill)
 !           mcd%brdf_albedo_params(:,:,1,i) = mcd%fill
-!        elsewhere
+!        else where
 !           mcd%brdf_albedo_params(:,:,1,i) = real(tmpdata)*scale + offset
-!        endwhere
+!        end where
 
 
          dataname = 'BRDF_Albedo_Parameter2_' // trim(BandList(bands(i)))

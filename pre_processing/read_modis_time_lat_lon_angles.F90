@@ -125,21 +125,21 @@ subroutine read_modis_time_lat_lon_angles(path_to_geo_file,imager_geolocation,&
 
        where ( imager_angles%relazi(:,:,1) .gt. 180. )
           imager_angles%relazi(:,:,1) = imager_angles%relazi(:,:,1) - 180.
-       elsewhere
+       else where
           imager_angles%relazi(:,:,1) = 180. - imager_angles%relazi(:,:,1)
-       endwhere
+       end where
 
 !      where ( temp2 .lt. 0 )
 !         temp2 = temp2 + 180
-!      elsewhere
+!      else where
 !         temp2 = temp2 - 180
-!      endwhere
+!      end where
 !
 !      imager_angles%relazi(:,:,1) = abs( temp - temp2 )
 !      where ( imager_angles%relazi(:,:,1) .gt. 180 ) imager_angles%relazi(:,:,1) = 360. - imager_angles%relazi(:,:,1)
 !      imager_angles%relazi(:,:,1) = abs( imager_angles%relazi(:,:,1) )
 
-   endwhere
+   end where
 
 
    !free temp arrays
@@ -169,7 +169,7 @@ subroutine read_modis_time_lat_lon_angles(path_to_geo_file,imager_geolocation,&
    ! which of these is most efficient is compiler-dependant
 !   where(btemp.eq.0 .or. btemp.eq.5 .or. btemp.eq.6 .or. btemp.eq.7)
 !      btemp = 0
-!   elsewhere
+!   else where
 !      btemp = 1
 !   end where
    do ix=imager_geolocation%startx,imager_geolocation%endx

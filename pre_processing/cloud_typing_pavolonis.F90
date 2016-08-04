@@ -64,6 +64,8 @@
 ! 2016/04/09, SP: Add multiple views.
 ! 2016/05/17, SP: Added support for the VIIRS instrument
 ! 2016/07/05, SP: Added support for the SLSTR instrument
+! 2016/08/04, GM: Add sw1 and sw2 indices for surface%albedo which is indexed
+!    only for SW.
 !
 ! $Id$
 !
@@ -377,8 +379,8 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
    ! imager_geolocation%NX
    ! imager_geolocation%NY
    !
-   ! imager_angles%SATZEN(i,j,imager_angles%NVIEWS)
-   ! imager_angles%SOLZEN(i,j,imager_angles%NVIEWS)
+   ! imager_angles%SATZEN(i,j,imager_angles%nviews)
+   ! imager_angles%SOLZEN(i,j,imager_angles%nviews)
    !
    ! imager_flags%LUSFLAG(i,j)
    ! imager_flags%LSFLAG(i,j)
@@ -443,17 +445,17 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
    !-- correction of SFCTYPE with NISE aux. data
    where (snow_ice_mask .eq. YES)
       imager_pavolonis%SFCTYPE = NISE_FLAG
-   endwhere
+   end where
 
    !-- initialize cloud mask as cloudy
    !where (imager_pavolonis%CLDMASK .eq. byte_fill_value)
    !imager_pavolonis%CLDMASK = CLOUDY
-   !endwhere
+   !end where
 
    ! load external file containing fill coefficients
    include 'pavolonis_fill_coefficients.inc'
 
-   v_loop: do cview=1,imager_angles%NVIEWS
+   v_loop: do cview=1,imager_angles%nviews
       ! Determine channel indexes based on instrument channel number
       ch1 = 0
       ch2 = 0
@@ -501,6 +503,26 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
                   ch6=i
                end select
             end if
+         end do
+      else if (trim(adjustl(sensor)) .eq. 'AHI') then
+         do i=1,channel_info%nchannels_total
+            ii = channel_info%map_ids_channel_to_sw(i)
+            select case (channel_info%channel_ids_instr(i))
+            case(3)
+               ch1=i
+               sw1=ii
+            case(4)
+               ch2=i
+               sw2=ii
+            case(5)
+               ch3=i
+            case(7)
+               ch4=i
+            case(14)
+               ch5=i
+            case(15)
+               ch6=i
+            end select
          end do
       else if (trim(adjustl(sensor)) .eq. 'AVHRR') then
          do i=1,channel_info%nchannels_total
@@ -562,23 +584,23 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
                ch6=i
             end select
          end do
-      else if (trim(adjustl(sensor)) .eq. 'AHI') then
+      else if (trim(adjustl(sensor)) .eq. 'SLSTR') then
          do i=1,channel_info%nchannels_total
             ii = channel_info%map_ids_channel_to_sw(i)
             select case (channel_info%channel_ids_instr(i))
-            case(3)
+            case(2)
                ch1=i
                sw1=ii
-            case(4)
+            case(3)
                ch2=i
                sw2=ii
             case(5)
                ch3=i
             case(7)
                ch4=i
-            case(14)
+            case(8)
                ch5=i
-            case(15)
+            case(9)
                ch6=i
             end select
          end do
@@ -599,26 +621,6 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
             case(15)
                ch5=i
             case(16)
-               ch6=i
-            end select
-         end do
-      else if (trim(adjustl(sensor)) .eq. 'SLSTR') then
-         do i=1,channel_info%nchannels_total
-            ii = channel_info%map_ids_channel_to_sw(i)
-            select case (channel_info%channel_ids_instr(i))
-            case(2)
-               ch1=i
-               sw1=ii
-            case(3)
-               ch2=i
-               sw2=ii
-            case(5)
-               ch3=i
-            case(7)
-               ch4=i
-            case(8)
-               ch5=i
-            case(9)
                ch6=i
             end select
          end do
@@ -709,7 +711,7 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
                ! Ch3a is used if Ch3b is not avail.
                ch3a_on_avhrr_flag = YES
 
-            elseif ( imager_measurements%DATA(i,j,ch4) .ge. 0 ) then
+            else if ( imager_measurements%DATA(i,j,ch4) .ge. 0 ) then
 
                ! Ch3b is used if avail.
                ch3a_on_avhrr_flag = NO
@@ -729,7 +731,7 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
                   ! Ch3a is used if Ch3b is not avail.
                   ch3a_on_avhrr_flag = YES
 
-               elseif ( imager_measurements%DATA(i,j,ch4) .ge. 100 ) then
+               else if ( imager_measurements%DATA(i,j,ch4) .ge. 100 ) then
 
                   ! Ch3b is used if avail.
                   ch3a_on_avhrr_flag = NO
@@ -903,15 +905,15 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
 
                      imager_pavolonis%CLDTYPE(i,j,cview) = OPAQUE_ICE_TYPE
 
-                  elseif ( (imager_measurements%DATA(i,j,ch5) > 233.16) .and. &
+                  else if ( (imager_measurements%DATA(i,j,ch5) > 233.16) .and. &
                            (imager_measurements%DATA(i,j,ch5) <= 253.16) ) then
 
                      imager_pavolonis%CLDTYPE(i,j,cview) = OPAQUE_ICE_TYPE
 
-                  elseif ( (imager_measurements%DATA(i,j,ch5) > 253.16) .and. &
+                  else if ( (imager_measurements%DATA(i,j,ch5) > 253.16) .and. &
                            (imager_measurements%DATA(i,j,ch5) <= 273.16)) then
 
-                     imager_pavolonis%CLDTYPE(i,j,cview) =SUPERCOOLED_TYPE
+                     imager_pavolonis%CLDTYPE(i,j,cview) = SUPERCOOLED_TYPE
 
                   else
 
@@ -1011,9 +1013,9 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
                        E3(index1,index2)*(ref_ch1)**4 ) - 0.1 ), &
                        MIN_BTD1112_DOVERLAP(index1,index2) - 0.1 )
 
-                  !elseif ( imager_measurements%DATA(i,j,ch1) > 60.0 .and. &
-                  !       imager_measurements%DATA(i,j,ch1) < 90.0 ) then
-               elseif ( ref_ch1 > 0.60 .and. ref_ch1 < 0.90 ) then
+               !else if ( imager_measurements%DATA(i,j,ch1) > 60.0 .and. &
+               !          imager_measurements%DATA(i,j,ch1) < 90.0 ) then
+               else if ( ref_ch1 > 0.60 .and. ref_ch1 < 0.90 ) then
 
                   BTD1112_DOVERLAP_THRES = MIN_BTD1112_DOVERLAP(index1,index2) - 0.1
 
@@ -1051,12 +1053,12 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
                   imager_pavolonis%CLDTYPE(i,j,cview) = OPAQUE_ICE_TYPE
                   wflg = 0
 
-               elseif ( (imager_measurements%DATA(i,j,ch5) > 233.16) .and. &
+               else if ( (imager_measurements%DATA(i,j,ch5) > 233.16) .and. &
                         (imager_measurements%DATA(i,j,ch5) <= 253.16) ) then
 
                   imager_pavolonis%CLDTYPE(i,j,cview) = OPAQUE_ICE_TYPE
 
-               elseif ( (imager_measurements%DATA(i,j,ch5) > 253.16) .and. &
+               else if ( (imager_measurements%DATA(i,j,ch5) > 253.16) .and. &
                         (imager_measurements%DATA(i,j,ch5) <= 273.16)) then
 
                   imager_pavolonis%CLDTYPE(i,j,cview) =SUPERCOOLED_TYPE
@@ -1096,7 +1098,7 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
                      NIR_CIRRUS_THRES = 0.20
                      NIR_PHASE_THRES  = 0.17
 
-                  elseif (imager_pavolonis%SFCTYPE(i,j) == DESERT_FLAG) then
+                  else if (imager_pavolonis%SFCTYPE(i,j) == DESERT_FLAG) then
 
                      !NIR_CIRRUS_THRES = 55.0
                      !NIR_PHASE_THRES  = 32.0
@@ -1142,7 +1144,7 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
                   !                                       !
                   !---------------------------------------!
 
-               elseif ( (ch3a_on_avhrr_flag == NO) .and. ( ref_ch1 > 0.0) ) then
+               else if ( (ch3a_on_avhrr_flag == NO) .and. ( ref_ch1 > 0.0) ) then
 
 
                   !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1158,7 +1160,7 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
                      NIR_CIRRUS_THRES = 0.12
                      NIR_PHASE_THRES  = 0.06
 
-                  elseif (imager_pavolonis%SFCTYPE(i,j) == DESERT_FLAG) then
+                  else if (imager_pavolonis%SFCTYPE(i,j) == DESERT_FLAG) then
 
                      !NIR_CIRRUS_THRES = 40.0
                      !NIR_PHASE_THRES  = 6.0
@@ -1301,7 +1303,7 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
                !
                !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-            elseif ( (imager_pavolonis%CLDMASK(i,j,cview) == CLOUDY) .and. &
+            else if ( (imager_pavolonis%CLDMASK(i,j,cview) == CLOUDY) .and. &
                  (day .eqv. .false.) ) then
 
 
@@ -1428,12 +1430,12 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
                   imager_pavolonis%CLDTYPE(i,j,cview) = OPAQUE_ICE_TYPE
                   wflg = 0
 
-               elseif ( ( imager_measurements%DATA(i,j,ch5) > 233.16 ) .and. &
+               else if ( ( imager_measurements%DATA(i,j,ch5) > 233.16 ) .and. &
                     ( imager_measurements%DATA(i,j,ch5) <= 253.16 ) ) then
 
                   imager_pavolonis%CLDTYPE(i,j,cview) = OPAQUE_ICE_TYPE
 
-               elseif ( ( imager_measurements%DATA(i,j,ch5) > 253.16 ) .and. &
+               else if ( ( imager_measurements%DATA(i,j,ch5) > 253.16 ) .and. &
                     ( imager_measurements%DATA(i,j,ch5) <= 273.16 ) ) then
 
                   imager_pavolonis%CLDTYPE(i,j,cview) = SUPERCOOLED_TYPE

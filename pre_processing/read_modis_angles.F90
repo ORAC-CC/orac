@@ -80,7 +80,7 @@ subroutine read_modis_angles(fid,SDS_name,ixstart,ixstop,iystart,iystop,rtemp)
    ! which of these is most efficient is compiler-dependant
 !   where(stemp.ge.vr(1) .and. stemp.le.vr(2))
 !      rtemp = real(stemp*sf,kind=sreal)
-!   elsewhere
+!   else where
 !      rtemp = sreal_fill_value
 !   end where
    do ix=ixstart,ixstop

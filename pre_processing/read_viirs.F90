@@ -404,7 +404,7 @@ subroutine read_viirs(infile,geofile,imager_geolocation, imager_measurements, &
 
       where (imager_angles%relazi(:,:,1) .gt. 180.)
          imager_angles%relazi(:,:,1) = 360. - imager_angles%relazi(:,:,1)
-      endwhere
+      end where
    end where
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_viirs()'

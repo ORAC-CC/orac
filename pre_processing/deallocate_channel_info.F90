@@ -18,7 +18,8 @@
 !    map_ids_abs_to_ref_band_sea and removed deallocation of channel_proc_flag.
 ! 2015/01/15, AP: Eliminate channel_ids_abs.
 ! 2015/03/04, GM: Added map_ids_abs_to_snow_and_ice.
-! 2016/07/01, GT: Added map_ids_sw_to_channel and map_ids_lw_to_channel
+! 2016/07/01, GT: Added map_ids_sw_to_channel and map_ids_lw_to_channel.
+! 2016/08/04, GM: Added map_ids_channel_to_sw and map_ids_channel_to_lw.
 !
 ! $Id$
 !

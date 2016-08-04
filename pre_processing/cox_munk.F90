@@ -425,7 +425,7 @@ subroutine cox_munk(bands, solza, satza, solaz, totbsc, totabs, relaz, u10, v10,
       ! This version explicitly catches division by 0
       where (abs(b1) .gt. dither_more .and. abs(d1) .gt. dither_more)
          t_d = 1.0 - 0.5*( (a1*a1)/(b1*b1) + (c1*c1)/(d1*d1) )
-      elsewhere
+      else where
          t_d = 0.0
       end where
 
@@ -463,7 +463,7 @@ subroutine cox_munk(bands, solza, satza, solaz, totbsc, totabs, relaz, u10, v10,
    where (abs(dangle(:)) .gt. dither_more)
       Zx(:) = (-1.0*sin(rsatza(:)) * sin(rrelaz(:))) / dangle(:)
       Zy(:) = (sin(rsolza(:)) + sin(rsatza(:)) * cos(rrelaz)) / dangle(:)
-   elsewhere
+   else where
       Zx(:) = 0.0
       Zy(:) = 0.0
    end where
@@ -489,7 +489,7 @@ subroutine cox_munk(bands, solza, satza, solaz, totbsc, totabs, relaz, u10, v10,
 
    where (abs(cosomega(:)+1.0) .gt. dither_more)
       cosbeta(:)  = (cos(rsolza(:)) + cos(rsatza(:))) / sqrt(2.0 + 2.0*cosomega(:))
-   elsewhere
+   else where
       cosbeta(:) = 0.0
    end where
 
@@ -512,7 +512,7 @@ subroutine cox_munk(bands, solza, satza, solaz, totbsc, totabs, relaz, u10, v10,
 
       where (abs(b1) .gt. dither_more .and. abs(d1) .gt. dither_more)
          R_sf(:) = 0.5*((a1(:)*a1(:))/(b1(:)*b1(:)) + (c1(:)*c1(:))/(d1(:)*d1(:)))
-      elsewhere
+      else where
          R_sf(:) = 0.0
       end where
 
@@ -520,7 +520,7 @@ subroutine cox_munk(bands, solza, satza, solaz, totbsc, totabs, relaz, u10, v10,
       dangle = 4.0 * cos(rsolza(:)) * ergodic(:) * (cosbeta(:)**4)
       where (abs(dangle(:)) .gt. dither_more)
          rhogl(i,:) = pi * p(:) * R_sf(:) / dangle(:)
-      elsewhere
+      else where
          rhogl(i,:) = 0.0
       end where
    end do
@@ -652,7 +652,7 @@ function zeisse_ba(theta, ws) result (ba)
              (C(1,3) + (C(2,3) + C(3,3)*wp)*wp)*tp)*tp
 
       ba = delta + cos(theta)
-   elsewhere
+   else where
       ba = cos(theta)
    end where
 

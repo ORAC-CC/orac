@@ -79,6 +79,7 @@
 ! 2016/07/01, GT: Added allocation and population of
 !    channel_info%map_ids_sw_to_channel and %map_ids_lw_to_channel
 ! 2016/07/15, AP: Add uncertainty estimates. Only AATSR currently filled in.
+! 2016/08/04, GM: Added map_ids_channel_to_sw and map_ids_channel_to_lw.
 !
 ! $Id$
 !
@@ -1275,39 +1276,39 @@ subroutine setup_slstr(l1b_path_file,geo_path_file,platform,year,month,day, &
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: setup_slstr(): Error opening file ',trim(l1b_path_file)
       stop
-   endif
+   end if
    ierr = nf90_get_att(fid, nf90_global, "start_time", l1b_start)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: setup_slstr(): Error getting start_time from file ',trim(l1b_path_file)
       stop
-   endif
+   end if
    ierr = nf90_close(fid)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: setup_slstr(): Error closing file ',trim(l1b_path_file)
       stop
-   endif
+   end if
 
    ierr=nf90_open(path=trim(adjustl(geo_path_file)),mode=NF90_NOWRITE,ncid=fid)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: setup_slstr(): Error opening file ',trim(geo_path_file)
       stop
-   endif
+   end if
    ierr = nf90_get_att(fid, nf90_global, "start_time", geo_start)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: setup_slstr(): Error getting start_time from file ',trim(geo_path_file)
       stop
-   endif
+   end if
    ierr = nf90_close(fid)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: setup_slstr(): Error closing file ',trim(geo_path_file)
       stop
-   endif
+   end if
    if (trim(l1b_start).ne.trim(geo_start)) then
       print*,"ERROR: Start times for geo and image granules don't match: "
       write(*,*)trim(l1b_start)
       write(*,*)trim(geo_start)
       stop
-   endif
+   end if
 
 
    platform="Sen3"

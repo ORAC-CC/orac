@@ -226,7 +226,6 @@ end subroutine Get_Indexing
 subroutine setup_indexes(Ctrl, SAD_Chan, SPixel, is_not_used_or_missing)
 
    use Ctrl_m
-   use Int_Routines_m, only : find_in_array
    use SAD_Chan_m
 
    implicit none
@@ -535,7 +534,6 @@ subroutine cloud_indexing_logic_night(Ctrl, SPixel, is_not_used_or_missing, &
 
    use Ctrl_m
    use ECP_Constants_m
-   use Int_Routines_m, only : find_in_array
 
    implicit none
 
@@ -629,7 +627,6 @@ subroutine cloud_indexing_logic_two_layer(Ctrl, SPixel, is_not_used_or_missing, 
 
    use Ctrl_m
    use ECP_Constants_m
-   use Int_Routines_m, only : find_in_array
 
    implicit none
 
@@ -713,7 +710,6 @@ subroutine aer_indexing_logic(Ctrl, SPixel, is_not_used_or_missing, &
 
    use Ctrl_m
    use ECP_Constants_m
-   use Int_Routines_m, only : find_in_array
 
    implicit none
 
@@ -797,7 +793,6 @@ subroutine swan_indexing_logic(Ctrl, SPixel, is_not_used_or_missing, &
 
    use Ctrl_m
    use ECP_Constants_m
-   use Int_Routines_m, only : find_in_array
 
    implicit none
 

@@ -247,11 +247,12 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
    deallocate(mask_v)
 
    ! Albedo, rho_dv, and rho_dd are all valid at night rho_0v and rho_0d are
-   ! not.  At night we have two choices: (1) compute what we can (albedo, rho_dv,
-   ! and rho_dd) at the expense of some processing time and set rho_0v and rho_0d
-   ! to fill, or (2) set all reflectance values to fill since the main processor
-   ! won't use them anyway.  The code below should be uncommented for option 2.
-   ! Otherwise, the case of solzen > maxsza_twi is checked at the BRDF code level
+   ! not.  At night we have two choices: (1) compute what we can (albedo,
+   ! rho_dv, and rho_dd) at the expense of some processing time and set rho_0v
+   ! and rho_0d to fill, or (2) set all reflectance values to fill since the
+   ! main processor won't use them anyway.  The code below should be uncommented
+   ! for option 2. Otherwise, the case of solzen > maxsza_twi is checked at the
+   ! BRDF code level.
 !  do k = 1, imager_angles%nviews
 !     mask = mask .and. imager_angles%solzen(:,:,k) .lt. maxsza_twi
 !  end do
@@ -734,8 +735,7 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
                end if
 
                ! The MCD43CX products do not provide reflectance in the mixed
-               ! channnels therefore we use 1-emissivity as the land surface
-               ! albedo or rho_dd
+               ! channnels therefore we use 1-emissivity.
                ii = 0
                kk = 0
                do k = 1, channel_info%nchannels_total

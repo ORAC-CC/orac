@@ -127,15 +127,15 @@ function extract_nise_grid(fid, name, gridlist, data, verbose) result(stat)
    stat = gdrdfld(gid, 'Extent', start, stride, edge, tmp_data)
    where(tmp_data .lt. 0)
       data%extent = 256 + int(tmp_data,kind=2)
-   elsewhere
+   else where
       data%extent = int(tmp_data,kind=2)
-   endwhere
+   end where
    stat = gdrdfld(gid, 'Age', start, stride, edge, tmp_data)
    where(tmp_data .lt. 0)
       data%age = 256 + tmp_data
-   elsewhere
+   else where
       data%age = tmp_data
-   endwhere
+   end where
    deallocate(tmp_data)
    ! Detact from the grid
    stat = gddetach(gid)

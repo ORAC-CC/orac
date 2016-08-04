@@ -134,9 +134,9 @@ subroutine brdf_aux_calc(aux, theta1, theta2, phi)
    implicit none
 
    type(brdf_aux_t), intent(out) :: aux
-   real(kind=sreal),    intent(in)  :: theta1
-   real(kind=sreal),    intent(in)  :: theta2
-   real(kind=sreal),    intent(in)  :: phi
+   real(kind=sreal), intent(in)  :: theta1
+   real(kind=sreal), intent(in)  :: theta2
+   real(kind=sreal), intent(in)  :: phi
 
    aux%theta1       = theta1
    aux%cos_theta1   = cos(theta1)

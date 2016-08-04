@@ -233,8 +233,8 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
 
       where (imager_angles%relazi(:,:,1) .gt. 180.)
          imager_angles%relazi(:,:,1) = 360. - imager_angles%relazi(:,:,1)
-      endwhere
-   endwhere
+      end where
+   end where
 #else
    write(*,*) 'ERROR: the ORAC pre-processor has not been compiled with ' // &
               'HIMAWARI support. Recompile with -DINCLUDE_HIMAWARI_SUPPORT.'

@@ -76,7 +76,7 @@ subroutine deallocate_occci(occci)
       deallocate(occci%wavelength)
       deallocate(occci%atot)
       deallocate(occci%bbs)
-   endif
+   end if
 
 end subroutine deallocate_occci
 
@@ -228,7 +228,7 @@ function read_oceancolour_cci(path_to_file, occci, wavelengths, verbose) &
    if (verbose) then
       write(*,*) 'lon0, lon_invdel: ', occci%lon0, occci%lon_invdel
       write(*,*) 'lat0, lat_invdel: ', occci%lat0, occci%lat_invdel
-   endif
+   end if
 
    ! Extract the fill value used in the OCCCI data
    stat = nf90_inq_varid(fid, "atot_412", vid)

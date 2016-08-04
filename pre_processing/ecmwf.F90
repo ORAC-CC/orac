@@ -354,7 +354,7 @@ subroutine linearly_combine_ecmwfs(a, b, ecmwf1, ecmwf2, ecmwf, low_res)
    where (ecmwf1%sea_ice_cover .ne. sreal_fill_value .and. &
           ecmwf2%sea_ice_cover .ne. sreal_fill_value)
       ecmwf%sea_ice_cover = a * ecmwf1%sea_ice_cover + b * ecmwf2%sea_ice_cover
-   endwhere
+   end where
 
 end subroutine linearly_combine_ecmwfs
 

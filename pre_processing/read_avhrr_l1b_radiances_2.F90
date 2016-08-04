@@ -140,7 +140,7 @@ subroutine read_avhrr_l1b_radiances_2(fid,group,dataset,attrgroup, &
    !make real numbers now
 !   where(temp.eq.missingdata .or. float(temp).eq.nodata)
 !      rtemp=sreal_fill_value
-!   elsewhere
+!   else where
 !      rtemp=temp*scale+offset
 !   end where
    do jy=starty,stopy

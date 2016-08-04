@@ -15,9 +15,10 @@
 !    map_ids_abs_to_ref_band_sea and removed channel_proc_flag.
 ! 2015/01/15, AP: Eliminate channel_ids_abs.
 ! 2015/03/04, GM: Added map_ids_abs_to_snow_and_ice.
-! 2016/04/08, SP: Added variables to cope with multiple view sensors
-! 2016/05/27, SP: Updates to enable RTTOV to work correctly with multi-views
-! 2016/07/01, GT: Added map_ids_sw_to_channel and map_ids_lw_to_channel
+! 2016/04/08, SP: Added variables to cope with multiple view sensors.
+! 2016/05/27, SP: Updates to enable RTTOV to work correctly with multi-views.
+! 2016/07/01, GT: Added map_ids_sw_to_channel and map_ids_lw_to_channel.
+! 2016/08/04, GM: Added map_ids_channel_to_sw and map_ids_channel_to_lw.
 !
 ! $Id$
 !
@@ -33,12 +34,12 @@ module channel_structures_m
 
    type channel_info_t
 
-      !total number of channels to be handled in any way, even if not all are
-      !processed. Note that multiple views with the same channel are treated as
-      !separate channels by the code. Also, you cannot assume that
-      !channels_total=nchannels_sw + nchannels_lw as some channels (3.6 microns
-      !for eg) are both solar and thermal.
-      !So, for example, all channels and dual view for AATSR would mean:
+      ! Total number of channels to be handled in any way, even if not all are
+      ! processed. Note that multiple views with the same channel are treated as
+      ! separate channels by the code. Also, you cannot assume that
+      ! channels_total=nchannels_sw + nchannels_lw as some channels (3.6 microns
+      ! for eg) are both solar and thermal.
+      ! So, for example, all channels and dual view for AATSR would mean:
       ! nchannels_total = 14 (7 wavelengths in 2 views)
       ! nchannels_sw    = 10 (first 5 wavelengths have a solar component)
       ! nchannels_lw    = 6  (last 3 wavelengths have a thermal component)
@@ -46,47 +47,47 @@ module channel_structures_m
       ! Number of different viewing geometries
       integer(kind=lint) :: nviews
 
-      !channel ids (=numbers):
-      !wrt original instrument definition
-      !Note that these values may well repeat for multi-view instruments, like
-      !AATSR: (/ 1, 2, 3, 4, 5, 6, 7, 1, 2, 3, 4, 5, 6, 7 /)
+      ! channel ids (=numbers):
+      ! wrt original instrument definition
+      ! Note that these values may well repeat for multi-view instruments, like
+      ! AATSR: (/ 1, 2, 3, 4, 5, 6, 7, 1, 2, 3, 4, 5, 6, 7 /)
       integer(kind=lint), dimension(:), pointer :: channel_ids_instr
 
-      !wavelength (in micrometers) array wrt to absolute channel numbering
+      ! Wavelength (in micrometers) array wrt to absolute channel numbering
       ! i.e. For all AATSR channels in both views, this would be
       ! (/ 0.55, 0.67, 0.87, 1.6, 3.7, 11, 12, 0.55, 0.67, 0.87, 1.6, 3.7, 11, 12 /)
       real(kind=sreal), dimension(:), pointer :: channel_wl_abs
 
-      !arrays linking sw and lw indexed arrays to channel indexed arrays
-      ! useful when dealing with multiple view instruments, where sw
-      ! and lw channels aren't contiguous in the channel listing
+      ! Arrays linking sw and lw indexed arrays to channel indexed arrays useful
+      ! when dealing with multiple view instruments, where sw and lw channels
+      ! aren't contiguous in the channel listing
       integer(kind=lint), dimension(:), pointer :: map_ids_sw_to_channel
       integer(kind=lint), dimension(:), pointer :: map_ids_lw_to_channel
       integer(kind=lint), dimension(:), pointer :: map_ids_channel_to_sw
       integer(kind=lint), dimension(:), pointer :: map_ids_channel_to_lw
 
-      !arrays containing the viewing geometry index for each channel
+      ! Arrays containing the viewing geometry index for each channel
       integer(kind=lint), dimension(:), pointer :: channel_view_ids
       integer(kind=lint), dimension(:), pointer :: lw_view_ids
       integer(kind=lint), dimension(:), pointer :: sw_view_ids
       integer(kind=lint), dimension(:), pointer :: lw_rttov_viewone_id
       integer(kind=lint), dimension(:), pointer :: sw_rttov_viewone_id
 
-      !arrays containing 0/1 flags to identify to which part (sw/lw) of the
-      !spectrum they are assigned. could be used to determine the number of
-      !channels used as well.
+      ! Arrays containing 0/1 flags to identify to which part (sw/lw) of the
+      ! spectrum they are assigned. could be used to determine the number of
+      ! channels used as well.
       integer(kind=lint), dimension(:), pointer :: channel_sw_flag
       integer(kind=lint), dimension(:), pointer :: channel_lw_flag
 
-      !channel number wrt its position in the RTTOV coefficient file
+      ! Channel number wrt its position in the RTTOV coefficient file
       integer(kind=lint), dimension(:), pointer :: channel_ids_rttov_coef_sw
       integer(kind=lint), dimension(:), pointer :: channel_ids_rttov_coef_lw
 
-      !map the channel ids to the ancillary reflectance input bands
+      ! Map the channel ids to the ancillary reflectance input bands
       integer(kind=lint), dimension(:), pointer :: map_ids_abs_to_ref_band_land
       integer(kind=lint), dimension(:), pointer :: map_ids_abs_to_ref_band_sea
 
-      !map the channel ids to the snow and ice albedo channels in
+      ! Map the channel ids to the snow and ice albedo channels in
       !correct_for_ice_snow()
       integer(kind=lint), dimension(:), pointer :: map_ids_abs_to_snow_and_ice
 

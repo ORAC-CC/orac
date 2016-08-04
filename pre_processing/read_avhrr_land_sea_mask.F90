@@ -81,7 +81,7 @@ subroutine read_avhrr_land_sea_mask(path_to_geo_file,imager_geolocation, &
 !!$             != 16:      various land types
 !   where(btemp .eq. 16)
 !      btemp = 0
-!   elsewhere
+!   else where
 !      btemp = 1
 !   end where
    do ix=imager_geolocation%startx,imager_geolocation%endx

@@ -211,7 +211,7 @@ subroutine set_ecmwf(cyear,cmonth,cday,chour,ecmwf_path,ecmwf_path2, &
             ! The mid point is in the next day so the path to the first file is
             ! the 2nd path provided by the user.
             i_path1 = 2
-         endif
+         end if
 
          call make_ecmwf_name(cera_year,cera_month,cera_day,cera_hour,ecmwf_flag, &
               ecmwf_path(i_path1),ecmwf_path2(i_path1),ecmwf_path3(i_path1), &

@@ -108,19 +108,18 @@ subroutine X_MDAD(Ctrl, SPixel, index, X, status, Err)
 
    use Ctrl_m
    use ECP_Constants_m
-   use Int_Routines_m, only : find_in_array
    use planck_m
 
    implicit none
 
    ! Declare arguments
 
-   type(Ctrl_t),     intent(in)    :: Ctrl
-   type(SPixel_t),   intent(inout) :: SPixel
-   integer,          intent(in)    :: index
-   real,             intent(out)   :: X
-   integer,          intent(out)   :: status
-   real,   optional, intent(out)   :: Err
+   type(Ctrl_t),   intent(in)    :: Ctrl
+   type(SPixel_t), intent(inout) :: SPixel
+   integer,        intent(in)    :: index
+   real,           intent(out)   :: X
+   integer,        intent(out)   :: status
+   real, optional, intent(out)   :: Err
 
    ! Declare local variables
    real, parameter :: FGOP(11) = [0.1, 0.3, 0.65, 0.8, 1.0, 1.15, 1.3, 1.5, &
