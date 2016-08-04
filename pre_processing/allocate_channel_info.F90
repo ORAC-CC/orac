@@ -41,6 +41,11 @@ subroutine allocate_channel_info(channel_info)
    allocate(channel_info%channel_wl_abs(channel_info%nchannels_total))
    channel_info%channel_wl_abs=sreal_fill_value
 
+   allocate(channel_info%map_ids_channel_to_sw(channel_info%nchannels_total))
+   channel_info%channel_ids_instr=lint_fill_value
+   allocate(channel_info%map_ids_channel_to_lw(channel_info%nchannels_total))
+   channel_info%channel_ids_instr=lint_fill_value
+
    allocate(channel_info%channel_view_ids(channel_info%nchannels_total))
    channel_info%channel_view_ids=lint_fill_value
 

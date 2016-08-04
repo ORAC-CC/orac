@@ -62,6 +62,8 @@ module channel_structures_m
       ! and lw channels aren't contiguous in the channel listing
       integer(kind=lint), dimension(:), pointer :: map_ids_sw_to_channel
       integer(kind=lint), dimension(:), pointer :: map_ids_lw_to_channel
+      integer(kind=lint), dimension(:), pointer :: map_ids_channel_to_sw
+      integer(kind=lint), dimension(:), pointer :: map_ids_channel_to_lw
 
       !arrays containing the viewing geometry index for each channel
       integer(kind=lint), dimension(:), pointer :: channel_view_ids

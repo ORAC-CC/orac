@@ -1471,6 +1471,7 @@ subroutine common_setup(channel_info, channel_ids_user, channel_ids_default, &
    do i = 1, channel_info%nchannels_total
       if (channel_info%channel_sw_flag(i) .ne. 0) then
          channel_info%map_ids_sw_to_channel(i_sw) = i
+         channel_info%map_ids_channel_to_sw(i) = i_sw
          channel_info%channel_ids_rttov_coef_sw(i_sw) = &
             all_channel_ids_rttov_coef_sw(channel_info%channel_ids_instr(i))
 
@@ -1501,6 +1502,7 @@ subroutine common_setup(channel_info, channel_ids_user, channel_ids_default, &
 
       if (channel_info%channel_lw_flag(i) .ne. 0) then
          channel_info%map_ids_lw_to_channel(i_lw) = i
+         channel_info%map_ids_channel_to_lw(i) = i_lw
          channel_info%channel_ids_rttov_coef_lw(i_lw) = &
             all_channel_ids_rttov_coef_lw(channel_info%channel_ids_instr(i))
 
