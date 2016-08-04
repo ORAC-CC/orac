@@ -74,7 +74,7 @@ module constants_cloud_typing_pavolonis_m
 
    !--- used for sunglint_mask, nise_mask
    integer(sint), parameter :: NO = 0
-   integer(sint) :: YES = 1
+   integer(sint), parameter :: YES = 1
    !--- used for, parameter ch3a_on_avhrr_flag (neither Ch3a nor Ch3b)
    integer(sint), parameter :: INEXISTENT = -1
 

@@ -944,8 +944,11 @@ def args_main(parser):
     main.add_argument('--sad_dir', type=str, nargs='?', metavar='DIR',
                       default = defaults.sad_dir,
                       help = 'Path to SAD and LUT files.')
-    main.add_argument('--types', type=int, nargs='+', metavar='#',
-                      default = range(0,11),
+    all_types = ('CLEAR', 'SWITCHED_TO_WATER', 'FOG', 'WATER', 'SUPERCOOLED',
+                 'SWITCHED_TO_ICE', 'OPAQUE_ICE', 'CIRRUS', 'OVERLAP',
+                 'PROB_OPAQUE_ICE', 'PROB_CLEAR')
+    main.add_argument('--types', type=str, nargs='+',
+                      choices = all_types, default = all_types,
                       help = 'Pavolonis cloud types to process.')
     main.add_argument('--use_channel', type='bool', nargs='+', metavar='T/F',
                       default = [True, True, True, True, True, True],
@@ -1374,7 +1377,7 @@ Ctrl%RS%Use_Full_BRDF      = {use_brdf}""".format(
     if args.types:
         driver += "\nCtrl%NTypes_To_Process     = {:d}".format(len(args.types))
         driver += ("\nCtrl%Types_To_Process      = " +
-                   ','.join(str(k) for k in args.types))
+                   ','.join(k+'_TYPE' for k in args.types))
     if args.sabotage:
         driver += "\nCtrl%Sabotage_Inputs       = true"
     if args.approach:
@@ -1582,9 +1585,9 @@ def cc4cl(orig):
     args.in_dir = written_dirs
     args.out_dir = orig.out_dir
     check_args_postproc(args)
-    if args.clobber >= 1 or not os.path.isfile(args.out_dir + '/' +
-                                               outroot + '.' + args.suffix +
-                                               '.primary.nc'):
+    final_file = args.out_dir + '/' + (
+        '.'.join((el for el in (outroot, args.suffix, 'primary', 'nc') if el)))
+    if args.clobber >= 1 or not os.path.isfile(final_file):
         # Settings for batch processing
         post_values = {'job_name' : job_name + 'post',
                        'log_file' : log_path + job_name + 'post.log',
