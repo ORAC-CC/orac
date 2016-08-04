@@ -104,7 +104,7 @@ subroutine set_ecmwf(cyear,cmonth,cday,chour,ecmwf_path,ecmwf_path2, &
    ! in the next year, or if the year is a leap year it is more straight
    ! forward to convert to Julian day space, then operate, then convert back.
    if (time_interp_method .eq. 1 .or. time_interp_method .eq. 2) then
-      jday = find_center_time(imager_geolocation, imager_time) + time_int_fac
+      jday = find_center_time(imager_geolocation, imager_time)
 
       jday0 = floor(jday / (6._dreal / 24._dreal)           ) * 6._dreal / 24._dreal
       jday1 = floor(jday / (6._dreal / 24._dreal) + 1._dreal) * 6._dreal / 24._dreal
