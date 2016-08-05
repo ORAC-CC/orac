@@ -16,6 +16,8 @@
 # 2016/06/15, AP: gfortran and ifort use different C preprocessors
 #
 
+.SUFFIXES:
+
 PARSER_OBJ = $(PLACE).tab.o $(PLACE).c.o $(PLACE).f.o
 PARSER_CLEAN = $(PLACE).h $(PLACE)*.inc $(PLACE)*.o $(PLACE)*.sed.sh
 
