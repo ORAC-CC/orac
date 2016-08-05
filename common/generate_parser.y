@@ -510,51 +510,43 @@ void print_print_var_in_f(FILE* f[], char* parent_struct, char* name,
 
     int n;
     int is_scaler;
-    char tmp[STR_LEN];
+    char tmp_name[STR_LEN];
+    char tmp_var[STR_LEN];
+    char tmp_dim[STR_LEN];
 
     is_scaler = alloc == 0 && len[0] == '\0';
 
-    if (is_scaler)
-         n = snprintf(tmp, STR_LEN, "XSTR(%s_VARIABLE)//\'%%\'//XSTR(%s)//C_NULL_CHAR, "
-                     "%s_VARIABLE%%%s", parent_struct, name, parent_struct, name);
-    else
-         n = snprintf(tmp, STR_LEN, "XSTR(%s_VARIABLE)//\'%%\'//XSTR(%s)//C_NULL_CHAR, "
-                      "%s_VARIABLE%%%s, size(shape(%s_VARIABLE%%%s)), shape(%s_VARIABLE%%%s)",
-                      parent_struct, name, parent_struct, name, parent_struct, name,
-                      parent_struct, name);
+    n = snprintf(tmp_name, STR_LEN, "XSTR(%s_VARIABLE)//\'%%\'//XSTR(%s)//C_NULL_CHAR",
+                 parent_struct, name);
     if (n >= STR_LEN) {
-        fprintf(stderr, "INTERNAL ERROR: Buffer overflow.  Increase STR_LEN\n");
+        fprintf(stderr, "INTERNAL ERROR: Buffer overflow.  Increase STR_LEN.\n");
+        exit(1);
+    }
+
+    n = snprintf(tmp_var, STR_LEN, "%s_VARIABLE%%%s", parent_struct, name);
+    if (n >= STR_LEN) {
+        fprintf(stderr, "INTERNAL ERROR: Buffer overflow.  Increase STR_LEN.\n");
+        exit(1);
+    }
+
+    n = snprintf(tmp_dim, STR_LEN, "size(shape(%s_VARIABLE%%%s)), shape(%s_VARIABLE%%%s)",
+                 parent_struct, name, parent_struct, name);
+    if (n >= STR_LEN) {
+        fprintf(stderr, "INTERNAL ERROR: Buffer overflow.  Increase STR_LEN.\n");
         exit(1);
     }
 
     fprintf(f[F_PRI], "   if (length .gt. 0) ptr => buf(count+1:)\n");
 
-    if (strcmp(type_c, "bool") == 0) {
-        if (is_scaler)
-            fprintf(f[F_PRI], "   count = count + print_bool_scalar(ptr, max(0, length - count), %s)\n", tmp);
-        else
-            fprintf(f[F_PRI], "   count = count + print_bool_array(ptr, max(0, length - count), %s)\n", tmp);
-    }
-    else if (strcmp(type_c, "char") == 0) {
-        if (is_scaler)
-            fprintf(f[F_PRI], "   count = count + print_char_scalar(ptr, max(0, length - count), %s)\n", tmp);
-        else
-            fprintf(f[F_PRI], "   count = count + print_char_array(ptr, max(0, length - count), %s)\n", tmp);
-    }
-    else if (strcmp(type_c, "int") == 0) {
-        if (is_scaler)
-            fprintf(f[F_PRI], "   count = count + print_int_scalar(ptr, max(0, length - count), %s)\n", tmp);
-        else
-            fprintf(f[F_PRI], "   count = count + print_int_array(ptr, max(0, length - count), %s)\n", tmp);
-    }
-    else if (strcmp(type_c, "float") == 0) {
-        if (is_scaler)
-            fprintf(f[F_PRI], "   count = count + print_float_scalar(ptr, max(0, length - count), %s)\n", tmp);
-        else
-            fprintf(f[F_PRI], "   count = count + print_float_array(ptr, max(0, length - count), %s)\n", tmp);
-    }
+    if (is_scaler)
+        fprintf(f[F_PRI], "   count = count + print_%s_scalar(ptr, max(0, length - count), %s, %s)\n",
+                type_c, tmp_name, tmp_var);
     else {
-        fprintf(stderr, "INTERNAL ERROR: Invalid c_type: %s, name = %s\n", type_c, name);
-        exit(1);
+        if (! alloc)
+            fprintf(f[F_PRI], "   ");
+        else
+            fprintf(f[F_PRI], "   if (associated(%s)) ", tmp_var);
+        fprintf(f[F_PRI], "count = count + print_%s_array(ptr, max(0, length - count), %s, %s, %s)\n",
+                type_c, tmp_name, tmp_var, tmp_dim);
     }
 }
