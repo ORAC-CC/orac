@@ -7,7 +7,7 @@
 !
 ! Description and Algorithm details:
 ! Reads the values from the "driver" file used to set run-time options into
-! the Ctrl structure. Settings beyond the typical can be overriden in the
+! the Ctrl structure. Settings beyond the typical can be overridden in the
 ! driver using lines such as,
 !    Ctrl%Run_ID = ABCD
 ! The variable to change is identified before an = sign (with structure
@@ -23,7 +23,7 @@
 ! source_atts struct  Both        Description of file inputs for NCDF files
 !
 ! History:
-! 2012/05/15, CP: created original file to reapce ReadDriver
+! 2012/05/15, CP: created original file to replace ReadDriver
 ! 2012/06/08, CP: fixed memory leaks
 ! 2012/07/13, MJ: implements option to read drifile path from command line
 ! 2012/07/13, CP: changed ref_solar_sea nd ref_solar_land to reals rather than
@@ -37,7 +37,7 @@
 ! 2012/09/15, CP: removed double allocation of viewidx
 ! 2012/10/01, CP: changed active variables at night to be ctp fraction and
 !    surface temperature, changed how first guess of CTP calculated at night
-!    i.e matching temperature profile changed a priori errors of state vecto
+!    i.e matching temperature profile changed a priori errors of state vector
 ! 2012/10/01, CP: added in default sx category as was not being reset after
 !    each pixel was processed
 ! 2012/10/01, MJ: changed definition of AVHRR SW variables
@@ -122,9 +122,14 @@
 ! 2016/06/05, SP: Updated to support Sentinel-3/SLSTR.
 ! 2016/07/19, AP: Reduce rho and swansea_s to only contain terms that were
 !    retrieved. This is indicated by the rho|ss_terms array (and Nrho|Nss).
-! 2016/07/20, WJ: Add check for instrument for setting max stemp value and
-!    set max to 400K (instead of 320K) for cases other than ATSR2/AATSR.
+! 2016/07/20, WJ: Add check for instrument for setting max stemp value and set
+!    max to 400K (instead of 320K) for cases other than ATSR2/AATSR.
 ! 2016/07/27, GM: Changes and additions for the multilayer retrieval.
+! 2016/08/05, GM: Add optional second command line argument: A file to dump the
+!    entire Ctrl structure as a driver file. If it is not given nothing is
+!    dumped. If it is '-' the dump is to standard output. Anything else is the
+!    name of a file to dump to. If this argument is given then execution
+!    terminates after the dump.
 !
 ! $Id$
 !
@@ -135,6 +140,7 @@
 ! If a new type of LUT i.e aerosol is added then new default values will have
 ! to be added to this routine
 !-------------------------------------------------------------------------------
+
 module read_driver_m
    implicit none
 
@@ -149,6 +155,7 @@ module read_driver_m
            switch_cls_logic, switch_cls_byte,  switch_cls_sint, switch_cls_lint, &
            switch_cls_sreal, switch_cls_dreal, switch_cls_char
    end interface switch_cls
+
 contains
 
 #ifdef WRAPPER
@@ -157,7 +164,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, drifile)
 subroutine Read_Driver(Ctrl, global_atts, source_atts)
 #endif
 
-   use, intrinsic :: iso_fortran_env, only : input_unit
+   use, intrinsic :: iso_fortran_env, only : input_unit, output_unit
 
    use constants_cloud_typing_pavolonis_m
    use Ctrl_m
@@ -183,7 +190,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    ! Local variables
    integer                            :: i,ii,i0,i1,i2,j
    integer                            :: ios
-   integer                            :: dri_lun
+   integer                            :: dri_lun, dump_lun
    character(FilenameLen)             :: root_filename
    character(FilenameLen)             :: outname, line
    logical                            :: file_exists
@@ -199,6 +206,9 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    integer                            :: c, c2 ! Short name for Ctrl%Class
    real                               :: wvl_threshold
    logical                            :: new_driver_format
+   integer                            :: size
+   character, allocatable             :: buffer(:)
+   character(FilenameLen)             :: dumpfile
 
 
    call Nullify_Ctrl(Ctrl)
@@ -217,11 +227,16 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    ! Locate the driver file
    !----------------------------------------------------------------------------
 #ifndef WRAPPER
-   if (command_argument_count() == 1) then
+   if (command_argument_count() >= 1) then
       drifile = ''
       call get_command_argument(1, drifile)
    else
       call get_environment_variable("ORAC_TEXTIN", drifile)
+   end if
+
+   dumpfile = ''
+   if (command_argument_count() == 2) then
+      call get_command_argument(2, dumpfile)
    end if
 #endif
 
@@ -257,6 +272,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    rewind dri_lun
 
    new_driver_format = line(1:18) == '# ORAC Driver File'
+
 
    !----------------------------------------------------------------------------
    ! Read the driver file
@@ -410,6 +426,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    else
       c2 = Ctrl%Class2
    end if
+
 
    !----------------------------------------------------------------------------
    ! Set default values of the Ctrl structure
@@ -1172,6 +1189,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       write(*,*) 'Ctrl%FID%BkP: ',          trim(Ctrl%FID%BkP)
    end if
 
+
    !----------------------------------------------------------------------------
    ! Now do some checks
    !----------------------------------------------------------------------------
@@ -1289,13 +1307,49 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       stop GetSurfaceMeth
    end if
 
-   ! Clean up
 
+   !----------------------------------------------------------------------------
+   ! Clean up
+   !----------------------------------------------------------------------------
    deallocate(channel_ids_instr)
    deallocate(channel_sw_flag)
    deallocate(channel_lw_flag)
    deallocate(channel_wvl)
    deallocate(channel_view)
+
+
+   !----------------------------------------------------------------------------
+   ! Dump Ctrl as a driver file.
+   !----------------------------------------------------------------------------
+   if (dumpfile /= '') then
+      size = print_ctrl(Ctrl, buffer, 0)
+      allocate(buffer(size))
+      size = print_ctrl(Ctrl, buffer, size)
+
+      if (dumpfile == '-') then
+         dump_lun = output_unit
+      else
+         call find_lun(dump_lun)
+         open(unit=dump_lun, file=dumpfile, status='replace', iostat=ios)
+         if (ios /= 0) then
+            write(*,*) 'ERROR: Read_Driver(): Unable to open dump file: ', &
+                       trim(dumpfile)
+            stop error_stop_code
+         end if
+      end if
+
+      write(dump_lun,'(*(A))') buffer(1:size-1)
+
+      if (dumpfile /= '-') then
+         close(dump_lun)
+      endif
+
+      deallocate(buffer)
+
+      call Dealloc_Ctrl(Ctrl)
+
+      stop
+   end if
 
 end subroutine Read_Driver
 
