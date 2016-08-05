@@ -5,6 +5,7 @@
     Declarations for generate_parser.
  HISTORY:
     09 Jun 2016, ACP: Initial version
+    13 Jul 2016, GRM: Add TYPE_FC, N_TYPES, N_STCK.
  */
 #ifndef GENERATE_PARSER_H
 #define GENERATE_PARSER_H

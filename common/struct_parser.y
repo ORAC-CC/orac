@@ -83,28 +83,28 @@ line:           BOOL_VAR dims EQ bools {
                                     try {
                                        $1->set_slice($2); $1->read_buf($4);
                                        delete($1); delete($4);
-                                    } catch(const char *msg) {
+                                    } catch(std::string msg) {
                                        MY_ERR(@1, msg); YYABORT; }
                 }
         |       CHAR_VAR dims EQ nums {
                                     try {
                                        $1->set_slice($2); $1->read_buf($4);
                                        delete($1); delete($4);
-                                    } catch(const char *msg) {
+                                    } catch(std::string msg) {
                                        MY_ERR(@1, msg); YYABORT; }
                 }
         |       INT_VAR dims EQ nums {
                                     try {
                                        $1->set_slice($2); $1->read_buf($4);
                                        delete($1); delete($4);
-                                    } catch(const char *msg) {
+                                    } catch(std::string msg) {
                                        MY_ERR(@1, msg); YYABORT; }
                 }
         |       FLOAT_VAR dims EQ nums {
                                     try {
                                        $1->set_slice($2); $1->read_buf($4);
                                        delete($1); delete($4);
-                                    } catch(const char *msg) {
+                                    } catch(std::string msg) {
                                        MY_ERR(@1, msg); YYABORT; }
                 }
         |       STR_VAR EQ WORD   { strcpy($1, $3->c_str());

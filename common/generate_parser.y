@@ -14,6 +14,8 @@
     21 Apr 2016, ACP: Produces both C and lex outputs.
     09 Jun 2016, ACP: Final version
     11 Jul 2016, GRM: Add printer support.
+    13 Jul 2016, GRM: Add TYPE_FC (Fortran ISO C binding type) to the result of
+       the datatype rule.
  */
 %language "C"
 %defines

@@ -7,12 +7,17 @@
     20 Apr 2016, ACP: Initial version
     09 Jun 2016, ACP: Final version
     15 Jun 2016, ACP: Ignore unallocated arrays (that have length of zero)
+    04 Aug 2016, GRM: 
  */
 
 #include <stdio.h>
 #include <string.h>
+
 #include <cstdlib>
+#include <string>
+#include <sstream>
 #include <vector>
+
 #include "struct_parser.h"
 
 #ifndef STRUCT_PARSER_H2
@@ -62,13 +67,15 @@ template<typename T> Target<T>::Target(T* variable,
 // Set limits of array reading
 template<typename T> void Target<T>::set_slice(int slice[DIM_MAX][2]) {
     int i;
+    std::ostringstream msg;
 
     // Ignore unallocated arrays
     if (len[0] == 0 || len[1] == 0) return;
 
     for (i=0; i<DIM_MAX; i++) {
         if (slice[i][0] < 0 || slice[i][0] >= len[i]) {
-            throw "Invalid start of array slice";
+            msg << "Invalid start of array slice, must be > 0 and < " << len[i];
+            throw msg.str();
         } else {
             read_srt[i] = slice[i][0];
         }
@@ -76,7 +83,9 @@ template<typename T> void Target<T>::set_slice(int slice[DIM_MAX][2]) {
         if (slice[i][1] == INT_MAX) {
             read_end[i] = len[i]-1;
         } else if (slice[i][1] < slice[i][0] || slice[i][1] >= len[i]) {
-            throw "Invalid end of array slice";
+            msg << "Invalid end of array slice, must be >= " << slice[i][0] <<
+                " and < " << len[i];
+            throw msg.str();
         } else {
             read_end[i] = slice[i][1];
         }
@@ -86,20 +95,25 @@ template<typename T> void Target<T>::set_slice(int slice[DIM_MAX][2]) {
 // Copy data from Matrix buffer into target array
 template<typename T> void Target<T>::read_buf(Matrix* buffer) {
     int i, j, i_, j_;
+    std::ostringstream msg;
 
     // Ignore unallocated arrays
     if (len[0] == 0 || len[1] == 0) return;
 
     // As the driver file is in Fortran format, [1] is the slow dimension
     if (buffer->size() != read_end[1]-read_srt[1]+1) {
-        throw "Incorrect number of rows of data provided";
+        msg << "Incorrect number of rows of data provided, expected " <<
+            read_end[1]-read_srt[1]+1;
+        throw msg.str();
     }
 
     for (j=read_srt[1]; j<=read_end[1]; j++) {
         j_ = j-read_srt[1];
 
         if (buffer->at(j_).size() != read_end[0]-read_srt[0]+1) {
-            throw "Incorrect number of columns of data provided";
+            msg << "Incorrect number of columns of data provided, expected " <<
+                read_end[0]-read_srt[0]+1;
+            throw msg.str();
         }
 
         for (i=read_srt[0]; i<=read_end[0]; i++) {
