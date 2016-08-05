@@ -33,6 +33,7 @@
 !
 ! History:
 ! 2016/02/23, SP: Initial version.
+! 2016/08/04, SP: Set NaN values in angle arrays (deep space pixels) to fill.
 !
 ! $Id$
 !
@@ -223,6 +224,11 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
       imager_angles%satzen(startx:,:,1)=sreal_fill_value
    where(imager_angles%relazi(startx:,:,1)       .lt. -900) &
       imager_angles%relazi(startx:,:,1)=sreal_fill_value
+
+   where(isnan(imager_angles%solzen)) imager_angles%solzen=sreal_fill_value
+   where(isnan(imager_angles%solazi)) imager_angles%solazi=sreal_fill_value
+   where(isnan(imager_angles%satzen)) imager_angles%satzen=sreal_fill_value
+   where(isnan(imager_angles%relazi)) imager_angles%relazi=sreal_fill_value
 
 
    ! Rescale zens + azis into correct format
