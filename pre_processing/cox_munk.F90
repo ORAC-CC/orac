@@ -2002,14 +2002,15 @@ else
    rho_0d = 0.
 
    do i = 1, n_bands
-      if (u10(i) .eq. fill_value .or. u10(i) .eq. fill_value) then
-         rho_0d(:, i) = fill_value
-         cycle
-      end if
+!     if (u10(i) .eq. fill_value .or. u10(i) .eq. fill_value) then
+!        rho_0d(:, i) = fill_value
+!        cycle
+!     end if
 !$OMP PARALLEL PRIVATE(j, l, m, a, a2, solza2, shared_wind, shared_band_geo2)
 !$OMP DO SCHEDULE(GUIDED)
       do j = 1, n_points
-         if (solza(j) .gt. maxsza_twi) then
+         if (solza(j) .gt. maxsza_twi .or. &
+            u10(j) .eq. fill_value .or. u10(j) .eq. fill_value) then
             rho_0d(:, j) = fill_value
             cycle
          end if
@@ -2112,13 +2113,18 @@ else
    rho_dv = 0.
 
    do i = 1, n_bands
-      if (u10(i) .eq. fill_value .or. u10(i) .eq. fill_value) then
-         rho_dv(:, i) = fill_value
-         cycle
-      end if
+!     if (u10(i) .eq. fill_value .or. u10(i) .eq. fill_value) then
+!        rho_dv(:, i) = fill_value
+!        cycle
+!     end if
 !$OMP PARALLEL PRIVATE(j, l, m, a, a2, satza2, shared_wind, shared_band_geo2)
 !$OMP DO SCHEDULE(GUIDED)
       do j = 1, n_points
+         if (u10(j) .eq. fill_value .or. u10(j) .eq. fill_value) then
+            rho_dv(:, j) = fill_value
+            cycle
+         end if
+
          satza2 = satza(j) * d2r
          call cox_munk4_calc_shared_wind(bands(i), u10(j), v10(j), shared_wind)
 
@@ -2173,13 +2179,18 @@ end if
    rho_dd = 0.
 
    do i = 1, n_bands
-      if (u10(i) .eq. fill_value .or. u10(i) .eq. fill_value) then
-         rho_dd(:, i) = fill_value
-         cycle
-      end if
+!     if (u10(i) .eq. fill_value .or. u10(i) .eq. fill_value) then
+!        rho_dd(:, i) = fill_value
+!        cycle
+!     end if
 !$OMP PARALLEL PRIVATE(j, k, l, m, a, a2, a3, shared_wind)
 !$OMP DO SCHEDULE(GUIDED)
       do j = 1, n_points
+         if (u10(j) .eq. fill_value .or. u10(j) .eq. fill_value) then
+            rho_dd(:, j) = fill_value
+            cycle
+         end if
+
          call cox_munk4_calc_shared_wind(int(bands(i), kind=lint), &
                                          u10(j), v10(j), shared_wind)
 
