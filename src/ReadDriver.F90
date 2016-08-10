@@ -1322,13 +1322,21 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    ! Dump Ctrl as a driver file.
    !----------------------------------------------------------------------------
    if (dumpfile /= '') then
+      ! For first run set length argument to 0 for a dry run to get the size
+      ! required for the buffer.
       size = print_ctrl(Ctrl, buffer, 0)
+
       allocate(buffer(size))
+
+      ! For the second run the size is > 0 indicating a full run that will print
+      ! to buffer.
       size = print_ctrl(Ctrl, buffer, size)
 
       if (dumpfile == '-') then
+         ! Standard output
          dump_lun = output_unit
       else
+         ! Output to file
          call find_lun(dump_lun)
          open(unit=dump_lun, file=dumpfile, status='replace', iostat=ios)
          if (ios /= 0) then
@@ -1338,6 +1346,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
          end if
       end if
 
+      ! Write the driver file
+      write(dump_lun,'(*(A))') '# ORAC Driver File'
       write(dump_lun,'(*(A))') buffer(1:size-1)
 
       if (dumpfile /= '-') then
@@ -1733,34 +1743,34 @@ subroutine old_driver_second_read(dri_lun, Ctrl, Nx_Dy, Nx_Tw, Nx_Ni, NXJ_Dy, &
          if (parse_string(line, Ctrl%Sx)               /= 0) call h_p_e(label)
       case('CTRL%SY')
          if (parse_string(line, Ctrl%Sy)               /= 0) call h_p_e(label)
-      case('NX_DY','Ctrl%NX_DY','Ctrl%IND%NX_DY')
+      case('NX_DY')
          if (parse_string(line, NX_DY)                 /= 0) call h_p_e(label)
-      case('X_DY','Ctrl%X_DY','Ctrl%IND%X_DY')
+      case('X_DY')
          if (parse_user_text(line, X_DY, NX_DY, solar_ids) &
                                                        /= 0) call h_p_e(label)
-      case('NX_TW','Ctrl%NX_TW','Ctrl%IND%NX_TW')
+      case('NX_TW')
          if (parse_string(line, NX_TW)                 /= 0) call h_p_e(label)
-      case('X_TW','Ctrl%X_TW','Ctrl%IND%X_TW')
+      case('X_TW')
          if (parse_user_text(line, X_TW, NX_TW, solar_ids) &
                                                        /= 0) call h_p_e(label)
-      case('NX_NI','Ctrl%NX_NI','Ctrl%IND%NX_NI')
+      case('NX_NI')
          if (parse_string(line, NX_NI)                 /= 0) call h_p_e(label)
-      case('X_NI','Ctrl%X_NI','Ctrl%IND%X_NI')
+      case('X_NI')
          if (parse_user_text(line, X_NI, NX_NI, solar_ids) &
                                                        /= 0) call h_p_e(label)
-      case('CTRL%NXJ_DY')
+      case('NXJ_DY')
          if (parse_string(line, NXJ_DY)                /= 0) call h_p_e(label)
-      case('CTRL%XJ_DY')
+      case('XJ_DY')
          if (parse_user_text(line, XJ_DY, NXJ_DY, solar_ids) &
                                                        /= 0) call h_p_e(label)
-      case('CTRL%NXJ_TW')
+      case('NXJ_TW')
          if (parse_string(line, NXJ_TW)                /= 0) call h_p_e(label)
-      case('CTRL%XJ_TW')
+      case('XJ_TW')
          if (parse_user_text(line, XJ_TW, NXJ_TW, solar_ids) &
                                                        /= 0) call h_p_e(label)
-      case('CTRL%NXJ_NI')
+      case('NXJ_NI')
          if (parse_string(line, NXJ_NI)                /= 0) call h_p_e(label)
-      case('CTRL%XJ_NI')
+      case('XJ_NI')
          if (parse_user_text(line, XJ_NI, NXJ_NI, solar_ids) &
                                                        /= 0) call h_p_e(label)
       case('CTRL%APPROACH', &

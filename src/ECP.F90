@@ -220,22 +220,22 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    type(SAD_LUT_t)           :: SAD_LUT(2)
    type(SPixel_t)            :: SPixel
 
-   integer             :: i, j, m
-   integer             :: status  ! Status value returned from subroutines
+   integer            :: i, j, m
+   integer            :: status ! Status value returned from subroutines
 
-   integer             :: xstep ! Pixels to skip when processing
-   integer             :: ystep
+   integer            :: xstep  ! Pixels to skip when processing
+   integer            :: ystep
 
-   integer             :: TotPix   = 0   ! Total number of SPixels processed
-   integer             :: TotMissed= 0   ! Number of SPixels left unprocessed
-   integer             :: TotConv  = 0   ! Number of successful inversions
-   integer             :: TotMaxJ  = 0   ! Number of inversions with cost > MaxQC
-   integer             :: AvIter   = 0   ! Average no. of iterations per successful
-                                         ! retrieval
-   real                :: AvJ      = 0.0 ! Average cost per successful retrieval
+   integer            :: TotPix   = 0   ! Total number of SPixels processed
+   integer            :: TotMissed= 0   ! Number of SPixels left unprocessed
+   integer            :: TotConv  = 0   ! Number of successful inversions
+   integer            :: TotMaxJ  = 0   ! Number of inversions with cost > MaxQC
+   integer            :: AvIter   = 0   ! Average no. of iterations per successful
+                                        ! retrieval
+   real               :: AvJ      = 0.0 ! Average cost per successful retrieval
 
-   character(len=512)  :: qc_flag_masks
-   character(len=512)  :: qc_flag_meanings
+   character(len=512) :: qc_flag_masks
+   character(len=512) :: qc_flag_meanings
 
    ! netcdf related variables:
    integer :: ncid_primary, ncid_secondary, dims_var(3), ch_var(1)
