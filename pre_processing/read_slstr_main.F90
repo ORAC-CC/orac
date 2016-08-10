@@ -177,9 +177,10 @@ subroutine read_slstr(infile,imager_geolocation, imager_measurements, &
    call get_slstr_obgridsize(indir,obnx,obny)
 
    ! Then allocate arrays for oblique data
-   allocate(oblats(obnx,obny))
-   allocate(oblons(obnx,obny))
-
+   if (imager_angles%nviews .eq. 2) then
+      allocate(oblats(obnx,obny))
+      allocate(oblons(obnx,obny))
+   endif
    ! And one for the interpolation results
    allocate(interp(nx,ny,3))
 
@@ -193,11 +194,12 @@ subroutine read_slstr(infile,imager_geolocation, imager_measurements, &
    call read_slstr_lldata(indir,txlons,txnx,txny,.false.,'tx')
 
    ! Read oblique view lat/lon
-   call read_slstr_lldata(indir,oblats,obnx,obny,.true.,'io')
-   call read_slstr_lldata(indir,oblons,obnx,obny,.false.,'io')
-
-   ! Get alignment factor between oblique and nadir views
-   call slstr_get_alignment(nx,ny,obnx,obny,imager_geolocation%longitude,oblons,obl_off)
+   if (imager_angles%nviews .eq. 2) then
+      call read_slstr_lldata(indir,oblats,obnx,obny,.true.,'io')
+      call read_slstr_lldata(indir,oblons,obnx,obny,.false.,'io')
+      ! Get alignment factor between oblique and nadir views
+      call slstr_get_alignment(nx,ny,obnx,obny,imager_geolocation%longitude,oblons,obl_off)
+   endif
 
    ! Get interpolation factors between reduced and TIR grid for each pixel
    call slstr_get_interp(imager_geolocation%longitude,txlons,txnx,txnx,nx,ny,interp)
@@ -209,8 +211,10 @@ subroutine read_slstr(infile,imager_geolocation, imager_measurements, &
 
    ! Read satellite and solar angles for the nadir viewing geometry
    call read_slstr_satsol(indir,imager_angles,interp,txnx,txny,nx,ny,startx,1)
-   ! Read satellite and solar angles for the nadir viewing geometry
-   call read_slstr_satsol(indir,imager_angles,interp,txnx,txny,nx,ny,startx,2)
+   if (imager_angles%nviews .eq. 2) then
+      ! Read satellite and solar angles for the nadir viewing geometry
+      call read_slstr_satsol(indir,imager_angles,interp,txnx,txny,nx,ny,startx,2)
+   endif
 
    deallocate(interp)
 

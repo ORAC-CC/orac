@@ -2010,6 +2010,7 @@ else
 !$OMP DO SCHEDULE(GUIDED)
       do j = 1, n_points
          if (solza(j) .gt. maxsza_twi .or. &
+            solza(j) .lt. 0 .or. &
             u10(j) .eq. fill_value .or. u10(j) .eq. fill_value) then
             rho_0d(:, j) = fill_value
             cycle
@@ -2120,7 +2121,7 @@ else
 !$OMP PARALLEL PRIVATE(j, l, m, a, a2, satza2, shared_wind, shared_band_geo2)
 !$OMP DO SCHEDULE(GUIDED)
       do j = 1, n_points
-         if (u10(j) .eq. fill_value .or. u10(j) .eq. fill_value) then
+         if (u10(j) .eq. fill_value .or. satza(j) .lt. 0 .or. u10(j) .eq. fill_value) then
             rho_dv(:, j) = fill_value
             cycle
          end if
