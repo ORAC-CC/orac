@@ -55,6 +55,8 @@
 ! 2016/08/03, MC: Added the Fu-Liou broadband radiative flux code and adapted procedures 
 !    to the respository.Code from: www-cave.larc.nasa.gov/ Edition 4 January 12th 2015.
 !    New option to run the ORAC brodband flux code using BUGSrad: 1 or Fu_Liou: 2.
+! 2016/08/10, MC: Debugged Fu Liou code so that clear-sky pixels can run in the retreival.
+!    Set limits to droplet effective radius (re < 30 um) for liquid clouds only in Fu Liou.
 !
 ! $Id$
 !
@@ -79,6 +81,10 @@ program process_broadband_fluxes
    logical there
    type(global_attributes_t) :: global_atts
    type(source_attributes_t) :: source_atts
+
+   !Fu Liou optional input
+   character(path_length) :: Fsolver
+   integer fu_solver_mode !1=4-stream, 2-stream gamma weighted, 2-stream
 
    !Constants
    real(kind=8), parameter :: Runiv = 8314. !universal gas constant
@@ -353,25 +359,32 @@ program process_broadband_fluxes
     print*,'output file: ',trim(fname)
 
    call get_command_argument(6, FLXalgorithm)
-    print*,'Algorithm: ',trim(flxAlgorithm)
     read(flxAlgorithm,*) value
     algorithm_processing_mode=value
     if(algorithm_processing_mode .eq. 1) print*,'Algorithm: BUGSrad'
     if(algorithm_processing_mode .eq. 2) print*,'Algorithm: FuLiou'
 
-
    !Read optional arguments
-   call get_command_argument(7, Faerosol)
+   call get_command_argument(7, Fsolver)
+    if(len(trim(Fsolver)) .ne. 0) then
+      read(Fsolver,*) value
+      fu_solver_mode = value
+      if(fu_solver_mode .eq. 1) print*,'4-stream solution'
+      if(fu_solver_mode .eq. 2) print*,'2-stream Mod. Gamma Solution'
+      if(fu_solver_mode .eq. 3) print*,'2-stream solution'
+    endif    
+
+   call get_command_argument(8, Faerosol)
     aerosol_processing_mode = 0
     if(len(trim(Faerosol)) .gt. 1.) aerosol_processing_mode = 1 !collocate aerosol2cloud
 
-   call get_command_argument(8, Fcollocation)
+   call get_command_argument(9, Fcollocation)
     if(len(trim(Fcollocation)) .gt. 1.) aerosol_processing_mode = 2 !collocate & save file
 
-   call get_command_argument(9, cpxX0)
-   call get_command_argument(10, cpxY0)
-   call get_command_argument(11, cpxX1)
-   call get_command_argument(12, cpxY1)
+   call get_command_argument(10, cpxX0)
+   call get_command_argument(11, cpxY0)
+   call get_command_argument(12, cpxX1)
+   call get_command_argument(13, cpxY1)
     !x-y range of selected pixels
     if(len(trim(cpxX0)) .ne. 0 .and. len(trim(cpxX1)) .ne. 0 .and. &
        len(trim(cpxY0)) .ne. 0 .and. len(trim(cpxY1)) .ne. 0) then
@@ -842,6 +855,10 @@ program process_broadband_fluxes
    
    if(algorithm_processing_mode .eq. 1) print*,'Algorithm: BUGSrad'
    if(algorithm_processing_mode .eq. 2) print*,'Algorithm: FuLiou'
+   if(fu_solver_mode .eq. 1) print*,'4-stream solution'
+   if(fu_solver_mode .eq. 2) print*,'2-stream Mod. Gamma Solution'
+   if(fu_solver_mode .eq. 3) print*,'2-stream solution'
+
 !-------------------------------------------------------------------------
 !END OPTIONAL INPUTS SECTION
 !-------------------------------------------------------------------------
@@ -865,13 +882,14 @@ call cpu_time(cpuStart)
     print*,'Along Track #  = ',yN
 
    !loop over cross-track dimension
+!    do i=99,101
     do i=pxX0,pxX1
       call cpu_time(cpuFinish)
       print*,'complete: ',i*100./(xN*1.),'%   i=',i, cpuFinish-cpuStart,' seconds elapsed'
 
       !loop over along-track dimension
       do j=pxY0,pxY1
-!      do j=pxY0,pxY0+100 !for testing
+!      do j=pxY0,pxY0+300 !for testing
 
       !Valid lat/lon required to run (needed for SEVIRI)
       if(LAT(i,j) .ne. -999.0 .and. LON(i,j) .ne. -999.0) then
@@ -1006,7 +1024,10 @@ call cpu_time(cpuStart)
       if(algorithm_processing_mode .eq. 2) then
 !      print*,'starting... Fu-Liou'
 !      print*,NL,pxTSI,pxtheta,pxAsfcSWRdr,pxAsfcNIRdr,pxAsfcSWRdf,pxAsfcNIRdf,pxts
-!      print*,nc_alb,rho_0d(i,j,:),rho_dd(i,j,:)
+!      print*,nc_alb
+!      print*,rho_0d(i,j,:)
+!      print*,rho_dd(i,j,:)
+!      print*,''
    call driver_for_fuliou(NL,pxTSI,pxtheta,pxAsfcSWRdr,pxAsfcNIRdr,pxAsfcSWRdf,pxAsfcNIRdf,pxts,&
                           pxPhaseFlag,pxREF,pxCOT,pxHctop,pxHcbase,&
                           pxHctopID,pxHcbaseID,&
@@ -1018,14 +1039,15 @@ call cpu_time(cpuStart)
                           bpar,bpardif,tpar,&
                           ulwfx,dlwfx,uswfx,dswfx,&
                           ulwfxclr,dlwfxclr,uswfxclr,dswfxclr,&
-                          emis_fuliou,rho_0d_fuliou,rho_dd_fuliou)
+                          emis_fuliou,rho_0d_fuliou,rho_dd_fuliou,fu_solver_mode)
 
 !           print*,'Fu Liou'
-!           print*,pxtoalwup,pxtoaswdn,pxtoaswup
+!           print*,i,j,'1',pxtoaswup
 !           print*,pxtoalwupclr,pxtoaswdn,pxtoaswupclr
 !           print*,pxboalwup,pxboalwdn,pxboaswdn,pxboaswup
 !           print*,pxboalwupclr,pxboalwdnclr,pxboaswdnclr,pxboaswupclr
 !           print*,tpar,bpar,bpardif
+
        endif
 
 
@@ -1092,6 +1114,7 @@ call cpu_time(cpuStart)
    end do !i-loop
 call cpu_time(cpuFinish)
 print*,cpuFinish-cpuStart,' seconds elapsed'
+
 
 !OPTIONAL - print to screen for selected satellite pixel/s
 if(px_processing_mode .eq. 1 .or. px_processing_mode .eq. 2) then
