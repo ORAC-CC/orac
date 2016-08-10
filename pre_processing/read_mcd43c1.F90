@@ -13,7 +13,7 @@
 ! mcd          type(mcd43c1)   out         MCD output structure
 ! nbands       integer         in          Number of bands to read
 ! bands        integer(nbands) in          The band numbers of the required data
-! brdf_params  integer         in          If not zero, the BRDF parameters will
+! brdf_params  logical         in          If not zero, the BRDF parameters will
 !                                          be read
 ! QC           intent          in          If not zero, QC and axillary data
 !                                          will be read
@@ -33,8 +33,8 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine read_mcd43c1(path_to_file, mcd, nbands, bands, brdf_albedo_params, &
-                        QC, verbose, stat)
+subroutine read_mcd43c1(path_to_file, mcd, nbands, bands, read_params, &
+                        read_QC, verbose, stat)
 
    use preproc_constants_m
 
@@ -47,8 +47,8 @@ subroutine read_mcd43c1(path_to_file, mcd, nbands, bands, brdf_albedo_params, &
    character(len=path_length), intent(in) :: path_to_file
    integer,                    intent(in) :: nbands
    integer,                    intent(in) :: bands(:)
-   integer,                    intent(in) :: brdf_albedo_params
-   integer,                    intent(in) :: QC
+   logical,                    intent(in) :: read_params
+   logical,                    intent(in) :: read_QC
    logical,                    intent(in) :: verbose
 
    ! Output variables
@@ -182,7 +182,7 @@ subroutine read_mcd43c1(path_to_file, mcd, nbands, bands, brdf_albedo_params, &
 
    ! If it's required, the QC data is read straight off (no need to loop
    ! over the bands like with the data itself)
-   if (QC .ne. 0) then
+   if (read_QC) then
       allocate(mcd%quality(mcd%nlon,mcd%nlat))
       allocate(mcd%local_solar_noon(mcd%nlon,mcd%nlat))
       allocate(mcd%percent_inputs(mcd%nlon,mcd%nlat))
@@ -227,7 +227,7 @@ subroutine read_mcd43c1(path_to_file, mcd, nbands, bands, brdf_albedo_params, &
       mcd%percent_inputs(1,1) = 127
    end if
 
-   if (brdf_albedo_params .ne. 0) then
+   if (read_params) then
       allocate(tmpdata(mcd%nlon,mcd%nlat))
 
       allocate(mcd%brdf_albedo_params(mcd%nlon,mcd%nlat,3,nbands))

@@ -108,7 +108,7 @@
 !    and 7 for sea surface reflectance.
 ! 2015/10/27, CP: Changed path for brdf files to be modis_brdf_path.
 ! 2015/11/21, GM: Fixed use of channel_info%nchannels_sw where it should have
-!    been n_ref_chans.
+!    been n_bands.
 ! 2016/05/02, AP: Added multiple views.
 ! 2016/07/07, SP: Corrected to run if only land or only sea pixels are present.
 ! 2016/07/12, GT: Added OceanColour_cci data support.
@@ -116,23 +116,23 @@
 ! $Id$
 !
 ! Bugs:
-! NB channels are hardwired in this code and not selected automatically
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
      modis_brdf_path, occci_path, imager_flags, imager_geolocation, &
-     imager_angles, channel_info, ecmwf, assume_full_path, &
-     include_full_brdf, use_occci, verbose, surface, source_atts)
+     imager_angles, channel_info, ecmwf, assume_full_path, include_full_brdf, &
+     use_occci, verbose, surface, source_atts)
 
    use channel_structures_m
    use cox_munk_m
    use cox_munk_constants_m
-   use ocean_colour_m
    use ecmwf_m, only : ecmwf_t
    use fill_grid_m
    use imager_structures_m
    use interpol_m
    use mcd43c_m
+   use ocean_colour_m
    use preproc_constants_m
    use preproc_structures_m
    use ross_thick_li_sparse_r_m
@@ -162,25 +162,29 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
 
    ! Local variables
 
-   ! Modis controls
-   integer, parameter :: read_ws   = 1 ! 1 = read white-sky albedo
-   integer, parameter :: read_bs   = 0 ! 1 = read black-sky albedo
-   integer, parameter :: read_brdf = 1 ! 1 = read brdf parameters
-   integer, parameter :: read_qc   = 0 ! 1 = read QC/ancillaty data
+   ! General
+   integer                           :: i,j,k,ii,kk,i_oc,i_view
+   logical                           :: flag
+   integer                           :: nsea, nland
+   integer                           :: seacount
+   integer                           :: lndcount
+   logical,            allocatable   :: mask(:,:)
+   integer,            allocatable   :: bands(:)
+   integer,            allocatable   :: band_to_sw_index(:)
+   real,               allocatable   :: solza(:), satza(:)
+   real,               allocatable   :: solaz(:), relaz(:)
+   type(interpol_t),   allocatable   :: interp(:)
 
    ! Land surface reflectance
    character(len=path_length)        :: modis_surf_path_file
    character(len=path_length)        :: modis_brdf_path_file
-   real,               allocatable   :: solzalnd(:), satzalnd(:)
-   real,               allocatable   :: solazlnd(:), relazlnd(:)
    type(mcd43c1_t)                   :: mcdc1
    type(mcd43c3_t)                   :: mcdc3
    integer,            parameter     :: n_modbands = 7
    integer                           :: modbands(n_modbands)
    integer,            parameter     :: n_coxbands = 8
    integer                           :: coxbands(n_coxbands)
-   integer,            allocatable   :: bands(:), band_to_sw_index(:)
-   integer                           :: n_ref_chans
+   integer                           :: n_bands
    real,               allocatable   :: tmp_data(:,:)
    integer(kind=byte), allocatable   :: fg_mask(:,:)
    real,               allocatable   :: wsalnd(:,:)
@@ -190,8 +194,6 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
    integer                           :: stat
 
    ! Sea surface reflectance
-   real,               allocatable   :: solzasea(:,:), satzasea(:,:)
-   real,               allocatable   :: solazsea(:,:), relazsea(:,:)
    real,               allocatable   :: u10sea(:), v10sea(:)
    real,               allocatable   :: latsea(:), lonsea(:)
    real,               allocatable   :: refsea(:,:)
@@ -199,19 +201,6 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
    type(cox_munk_shared_geo_wind_t)  :: cox_munk_shared_geo_wind
    type(ocean_colour_t), allocatable :: ocean_colour(:,:)
 
-   ! General
-   integer                           :: i,j,k,ii,kk,i_view,j_oc
-   logical                           :: flag
-   integer                           :: nsea=0, nland=0
-   integer                           :: seacount=1
-   integer                           :: lndcount=1
-
-   type(interpol_t),   allocatable   :: interp(:)
-
-	! Two masks, one for overall masking and one for per-view masking
-	! This is needed as, f.ex, SLSTR views don't have the same spatial extent
-   logical,            allocatable   :: mask(:,:)
-   logical,            allocatable   :: mask_v(:,:,:)
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering get_surface_reflectance()'
 
@@ -222,29 +211,24 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
    if (verbose) write(*,*) 'occci_path:      ',   trim(occci_path)
    if (verbose) write(*,*) 'assume_full_path: ',  assume_full_path
    if (verbose) write(*,*) 'include_full_brdf: ', include_full_brdf
-   if (verbose) write(*,*) 'use_occci: ', use_occci
+   if (verbose) write(*,*) 'use_occci: ',         use_occci
 
 
    ! Mask out pixels set to fill_value and out of BRDF angular range
    allocate(mask(imager_geolocation%startx:imager_geolocation%endx, &
         1:imager_geolocation%ny))
-   allocate(mask_v(imager_geolocation%startx:imager_geolocation%endx, &
-        1:imager_geolocation%ny,imager_angles%nviews))
 
-	mask(:,:)=.false.
+   mask = .false.
 
    do k = 1,imager_angles%nviews
-   	mask_v(:,:,k) = imager_geolocation%latitude  .ne. sreal_fill_value .and. &
-        imager_geolocation%longitude .ne. sreal_fill_value
-      mask_v(:,:,k) = mask_v(:,:,k) .and. &
-           imager_angles%solzen(:,:,k) .ne. sreal_fill_value .and. &
-           imager_angles%satzen(:,:,k) .ne. sreal_fill_value .and. &
-           imager_angles%solazi(:,:,k) .ne. sreal_fill_value .and. &
-           imager_angles%relazi(:,:,k) .ne. sreal_fill_value
-      mask(:,:)=mask(:,:) .or. mask_v(:,:,k)
+      mask = mask .or. &
+             imager_geolocation%latitude  .ne. sreal_fill_value .and. &
+             imager_geolocation%longitude .ne. sreal_fill_value .and. &
+             imager_angles%solzen(:,:,k)  .ne. sreal_fill_value .and. &
+             imager_angles%satzen(:,:,k)  .ne. sreal_fill_value .and. &
+             imager_angles%solazi(:,:,k)  .ne. sreal_fill_value .and. &
+             imager_angles%relazi(:,:,k)  .ne. sreal_fill_value
    end do
-
-   deallocate(mask_v)
 
    ! Albedo, rho_dv, and rho_dd are all valid at night rho_0v and rho_0d are
    ! not.  At night we have two choices: (1) compute what we can (albedo,
@@ -281,10 +265,10 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
       allocate(wsalnd(channel_info%nchannels_sw,nland))
       allocate(interp(nland))
       if (include_full_brdf) then
-         allocate(solzalnd(nland))
-         allocate(satzalnd(nland))
-         allocate(solazlnd(nland))
-         allocate(relazlnd(nland))
+         allocate(solza(nland))
+         allocate(satza(nland))
+         allocate(solaz(nland))
+         allocate(relaz(nland))
          allocate(rholnd(channel_info%nchannels_sw,nland,4))
       end if
 
@@ -292,36 +276,38 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
       ! Need to set the band numbers in terms of MODIS band numbering. These are
       ! the 0.65, 0.87(ish) and 1.6 micron bands
 
-      ! Which of these bands have been selected
+      ! Bands that are available.
       modbands = (/ 1, 2, 3, 4, 5, 6, 7 /)
 
       ! Count number of bands required (a 1-to-many mapping for multiple views)
       ii = 0
-      do j = 1, n_modbands
-         do i = 1, channel_info%nchannels_sw
-            if (channel_info%map_ids_abs_to_ref_band_land(i) .eq. &
-                modbands(j)) then
+      do i = 1, n_modbands
+         do j = 1, channel_info%nchannels_sw
+            if (channel_info%map_ids_abs_to_ref_band_land(j) .eq. &
+                modbands(i)) then
                ii = ii + 1
                exit
             end if
          end do
       end do
-      n_ref_chans = ii
+      n_bands = ii
 
-      if (verbose) write(*,*) 'n channels for land reflectance: ', n_ref_chans
+      if (verbose) write(*,*) 'n channels required for land reflectance: ', &
+                              n_bands
 
-      allocate(bands(n_ref_chans))
+      allocate(bands(n_bands))
       if (include_full_brdf) then
-         allocate(wgtlnd(3,n_ref_chans,nland))
+         allocate(wgtlnd(3,n_bands,nland))
       end if
 
       ! Identify bands required
       ii = 1
-      do j = 1, n_modbands
-         do i = 1, channel_info%nchannels_sw
-            if (channel_info%map_ids_abs_to_ref_band_land(i) .eq. &
-                modbands(j)) then
-               bands(ii) = modbands(j)
+      do i = 1, n_modbands
+         do j = 1, channel_info%nchannels_sw
+            if (channel_info%map_ids_abs_to_ref_band_land(j) .eq. &
+                modbands(i)) then
+               ! Indices of bands to be read
+               bands(ii) = modbands(i)
                ii = ii + 1
                exit
             end if
@@ -329,15 +315,14 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
       end do
 
       ! Check all pure SW channels have a band
-      kk = 0
-      do i = 1, channel_info%nchannels_total
+      do i = 1, channel_info%nchannels_sw
          if (channel_info%channel_sw_flag(i) .ne. 0) then
-            kk = kk + 1
-            if (channel_info%channel_lw_flag(i) .ne. 0) cycle
+            ii = channel_info%map_ids_sw_to_channel(i)
+            if (channel_info%channel_lw_flag(ii) .ne. 0) cycle
 
             flag = .true.
-            do j = 1, n_ref_chans
-               if (channel_info%map_ids_abs_to_ref_band_land(kk) .eq. &
+            do j = 1, n_bands
+               if (channel_info%map_ids_abs_to_ref_band_land(i) .eq. &
                    bands(j)) then
                   flag = .false.
                   exit
@@ -383,12 +368,12 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
       source_atts%brdf_file   = trim(modis_brdf_path_file)
 
       ! Read the data itself
-      call read_mcd43c3(modis_surf_path_file, mcdc3, n_ref_chans, bands, &
-           read_ws, read_bs, read_qc, verbose, stat)
+      call read_mcd43c3(modis_surf_path_file, mcdc3, n_bands, bands, &
+          .true., .false., .false., verbose, stat)
 
       if (include_full_brdf) then
-         call read_mcd43c1(modis_brdf_path_file, mcdc1, n_ref_chans, bands, &
-              read_brdf, read_qc, verbose, stat)
+         call read_mcd43c1(modis_brdf_path_file, mcdc1, n_bands, bands, &
+              .true., .false., verbose, stat)
       end if
 
       ! Fill missing data in the MODIS surface reflectance using a nearest
@@ -426,7 +411,7 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
          end do
       end do
 
-      do i = 1, n_ref_chans
+      do i = 1, n_bands
          tmp_data = mcdc3%WSA(:,:,i)
 
          call fill_grid(tmp_data, sreal_fill_value, fg_mask)
@@ -434,10 +419,10 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
          do lndcount = 1, nland
             call interp_field(tmp_data, tmp_val, interp(lndcount))
 
-            do k = 1, channel_info%nchannels_sw
-               if (channel_info%map_ids_abs_to_ref_band_land(k) .eq. &
+            do j = 1, channel_info%nchannels_sw
+               if (channel_info%map_ids_abs_to_ref_band_land(j) .eq. &
                    bands(i)) then
-                  wsalnd(k,lndcount) = tmp_val
+                  wsalnd(j,lndcount) = tmp_val
                end if
             end do
          end do
@@ -456,9 +441,9 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
       end do
 
       if (verbose) then
-         do k = 1, channel_info%nchannels_sw
+         do i = 1, channel_info%nchannels_sw
                write(*,*) 'Land WSA: channel, min, max = ', &
-                    k, minval(wsalnd(k,:)), maxval(wsalnd(k,:))
+                    i, minval(wsalnd(i,:)), maxval(wsalnd(i,:))
          end do
       end if
 
@@ -468,29 +453,29 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
             do i = 1, imager_geolocation%ny
                do j = imager_geolocation%startx, imager_geolocation%endx
                   if (imager_flags%lsflag(j,i) .eq. 1 .and. mask(j,i)) then
-                     solzalnd(lndcount) = imager_angles%solzen(j,i,i_view)
-                     satzalnd(lndcount) = imager_angles%satzen(j,i,i_view)
-                     solazlnd(lndcount) = imager_angles%solazi(j,i,i_view)
-                     relazlnd(lndcount) = imager_angles%relazi(j,i,i_view)
+                     solza(lndcount) = imager_angles%solzen(j,i,i_view)
+                     satza(lndcount) = imager_angles%satzen(j,i,i_view)
+                     solaz(lndcount) = imager_angles%solazi(j,i,i_view)
+                     relaz(lndcount) = imager_angles%relazi(j,i,i_view)
 
                      lndcount = lndcount+1
                   end if
                end do
             end do
 
-            allocate(tmprho(n_ref_chans,nland,4))
-            call ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd( &
-                 n_ref_chans, solzalnd, satzalnd, solazlnd, relazlnd, wgtlnd, &
-                 sreal_fill_value, tmprho(:,:,1), tmprho(:,:,2), tmprho(:,:,3), &
-                 tmprho(:,:,4), verbose)
+            allocate(tmprho(n_bands,nland,4))
+            call ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(n_bands, &
+                 solza, satza, solaz, relaz, wgtlnd, sreal_fill_value, &
+                 tmprho(:,:,1), tmprho(:,:,2), tmprho(:,:,3), tmprho(:,:,4), &
+                 verbose)
 
-            do k = 1, channel_info%nchannels_sw
-               if (channel_info%sw_view_ids(k) .ne. i_view) cycle
+            do i = 1, channel_info%nchannels_sw
+               if (channel_info%sw_view_ids(i) .ne. i_view) cycle
 
-               do i = 1, n_ref_chans
-                  if (channel_info%map_ids_abs_to_ref_band_land(k) .eq. &
-                       bands(i)) then
-                     rholnd(k,:,:) = tmprho(i,:,:)
+               do j = 1, n_bands
+                  if (channel_info%map_ids_abs_to_ref_band_land(i) .eq. &
+                       bands(j)) then
+                     rholnd(i,:,:) = tmprho(j,:,:)
                      exit
                   end if
                end do
@@ -508,10 +493,10 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
       deallocate(interp)
       call deallocate_mcd43c3(mcdc3)
       if (include_full_brdf) then
-         deallocate(solzalnd)
-         deallocate(satzalnd)
-         deallocate(solazlnd)
-         deallocate(relazlnd)
+         deallocate(solza)
+         deallocate(satza)
+         deallocate(solaz)
+         deallocate(relaz)
          deallocate(wgtlnd)
          call deallocate_mcd43c1(mcdc1)
       end if
@@ -527,10 +512,10 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
          'get_surface_reflectance(): Beginning SEA SURFACE REFLECTANCE calculation'
 
       ! Allocate and populate the local arrays required for sea pixels
-      allocate(solzasea(nsea,imager_angles%nviews))
-      allocate(satzasea(nsea,imager_angles%nviews))
-      allocate(solazsea(nsea,imager_angles%nviews))
-      allocate(relazsea(nsea,imager_angles%nviews))
+      allocate(solza(nsea))
+      allocate(satza(nsea))
+      allocate(solaz(nsea))
+      allocate(relaz(nsea))
       allocate(u10sea(nsea))
       allocate(v10sea(nsea))
       allocate(refsea(channel_info%nchannels_sw,nsea))
@@ -541,6 +526,20 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
          allocate(latsea(nsea))
          allocate(lonsea(nsea))
       end if
+
+      ! Extract and flatten out angles and lat/lon pixels over ocean.
+      seacount = 1
+      do i = 1, imager_geolocation%ny
+         do j = imager_geolocation%startx, imager_geolocation%endx
+            if (imager_flags%lsflag(j,i) .eq. 0 .and. mask(j,i)) then
+               if (use_occci) then
+                  latsea(seacount) = imager_geolocation%latitude(j,i)
+                  lonsea(seacount) = imager_geolocation%longitude(j,i)
+               end if
+               seacount = seacount+1
+            end if
+         end do
+      end do
 
       ! Interpolate the ECMWF wind fields onto the instrument grid
       seacount = 1
@@ -561,33 +560,8 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
       end do
       deallocate(interp)
 
-      ! Which channels do we need?
-      coxbands = (/ 1, 2, 3, 4, 5, 6, 7, 8 /)
-
-      ! Do view-independant stuff (such as reading OceanColour_cci data)
-      ! outside the view loop, so that steps aren't repeated
-      ! Extract only those pixels which are over the ocean
-      seacount = 1
-      do i = 1, imager_geolocation%ny
-         do j = imager_geolocation%startx, imager_geolocation%endx
-            if (imager_flags%lsflag(j,i) .eq. 0 .and. mask(j,i)) then
-               do k = 1, imager_angles%nviews
-                  solzasea(seacount,k) = imager_angles%solzen(j,i,k)
-                  satzasea(seacount,k) = imager_angles%satzen(j,i,k)
-                  solazsea(seacount,k) = imager_angles%solazi(j,i,k)
-                  relazsea(seacount,k) = imager_angles%relazi(j,i,k)
-               end do
-               if (use_occci) then
-                  latsea(seacount) = imager_geolocation%latitude(j,i)
-                  lonsea(seacount) = imager_geolocation%longitude(j,i)
-               end if
-               seacount = seacount+1
-            end if
-         end do
-      end do
-
-      ! If requested, use OceanColour_cci data to set backscatter and
-      ! extinction of the sea water
+      ! If requested, use OceanColour_cci data to set backscatter and extinction
+      ! of the sea water.
       if (use_occci) then
          if (verbose) write(*,*) 'Calling get_ocean_colour...'
          call get_ocean_colour(cyear, cmonth, occci_path, latsea, &
@@ -604,17 +578,20 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
          end do
       end if
 
-      ! Process views separately (chs shouldn't share bands since we define them)
-      do k = 1, imager_angles%nviews
+      ! Bands that are available.
+      coxbands = (/ 1, 2, 3, 4, 5, 6, 7, 8 /)
+
+      ! Process views separately
+      do i_view = 1, imager_angles%nviews
          ii = 0
          do i = 1, channel_info%nchannels_sw
             ! Check that the channel is in the current view
-            if (channel_info%sw_view_ids(i) .ne. k) cycle
+            if (channel_info%sw_view_ids(i) .ne. i_view) cycle
 
             flag = .true.
             do j = 1, n_coxbands
                if (channel_info%map_ids_abs_to_ref_band_sea(i) .eq. &
-                    coxbands(j)) then
+                   coxbands(j)) then
                   flag = .false.
                   ii = ii + 1
                   exit
@@ -628,24 +605,25 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
                stop error_stop_code
             end if
          end do
-         n_ref_chans = ii
+         n_bands = ii
 
-         if (verbose) write(*,*) 'n channels for sea reflectance: ', n_ref_chans
+         if (verbose) write(*,*) 'n channels required for sea reflectance: ', &
+                                 n_bands
 
-         allocate(bands(n_ref_chans))
-         allocate(band_to_sw_index(n_ref_chans))
+         allocate(bands(n_bands))
+         allocate(band_to_sw_index(n_bands))
 
          ii = 1
          do i = 1, channel_info%nchannels_sw
             ! Check that the channel is in the current view
-            if (channel_info%sw_view_ids(i) .ne. k) cycle
+            if (channel_info%sw_view_ids(i) .ne. i_view) cycle
 
             do j = 1, n_coxbands
                if (channel_info%map_ids_abs_to_ref_band_sea(i) .eq. &
                     coxbands(j)) then
-                  ! Indices of bands of be read
+                  ! Indices of bands to be computed
                   bands(ii) = j
-                  ! Indices of bands to be read wrt the shortwave channels
+                  ! A mapping of bands to be read to sw channel
                   band_to_sw_index(ii) = i
                   ii = ii + 1
                   exit
@@ -653,42 +631,53 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
             end do
          end do
 
+         seacount = 1
+         do i = 1, imager_geolocation%ny
+            do j = imager_geolocation%startx, imager_geolocation%endx
+               if (imager_flags%lsflag(j,i) .eq. 0 .and. mask(j,i)) then
+                  solza(seacount) = imager_angles%solzen(j,i,i_view)
+                  satza(seacount) = imager_angles%satzen(j,i,i_view)
+                  solaz(seacount) = imager_angles%solazi(j,i,i_view)
+                  relaz(seacount) = imager_angles%relazi(j,i,i_view)
+                  seacount = seacount+1
+               end if
+            end do
+         end do
+
          do j = 1, nsea
-            call cox_munk3_calc_shared_geo_wind(solzasea(j,k), satzasea(j,k), &
-                 solazsea(j,k), relazsea(j,k), u10sea(j), v10sea(j), &
-                 cox_munk_shared_geo_wind)
+            call cox_munk3_calc_shared_geo_wind(solza(j), satza(j), solaz(j), &
+                 relaz(j), u10sea(j), v10sea(j), cox_munk_shared_geo_wind)
 
             if (use_occci) then
-               j_oc = j
+               i_oc = j
             else
-               j_oc = 1
+               i_oc = 1
             end if
-            do i = 1, n_ref_chans
+            do i = 1, n_bands
                ii = band_to_sw_index(i)
 
                call cox_munk3(bands(i), cox_munk_shared_geo_wind, &
-                    ocean_colour(ii,j_oc), refsea(ii, j))
+                    ocean_colour(ii,i_oc), refsea(ii, j))
             end do
          end do
 
          if (verbose) then
-            do i = 1, n_ref_chans
+            do i = 1, n_bands
                ii = band_to_sw_index(i)
-               write(*,*) 'Sea refl: sw_index, wvl, min, max = ', &
-                    ii, channel_info%channel_wl_abs(channel_info%map_ids_sw_to_channel(ii)), &
+               write(*,*) 'Sea refl: sw_index, wvl, min, max = ', ii, &
+                    channel_info%channel_wl_abs(channel_info%map_ids_sw_to_channel(ii)), &
                     minval(refsea(ii,:)), maxval(refsea(ii,:))
             end do
          end if
 
          if (include_full_brdf) then
-            allocate(tmprho(n_ref_chans,nsea,4))
-            call cox_munk_rho_0v_0d_dv_and_dd(bands, solzasea(:,k), &
-                 satzasea(:,k), solazsea(:,k), relazsea(:,k), &
-                 ocean_colour(band_to_sw_index,:), u10sea, v10sea, &
-                 sreal_fill_value, tmprho(:,:,1), tmprho(:,:,2), &
-                 tmprho(:,:,3), tmprho(:,:,4), verbose)
+            allocate(tmprho(n_bands,nsea,4))
+            call cox_munk_rho_0v_0d_dv_and_dd(bands, solza(:), satza(:), &
+                 solaz(:), relaz(:), ocean_colour(band_to_sw_index,:), &
+                 u10sea, v10sea, sreal_fill_value, tmprho(:,:,1), &
+                 tmprho(:,:,2), tmprho(:,:,3), tmprho(:,:,4), verbose)
 
-            do i = 1, n_ref_chans
+            do i = 1, n_bands
                ii = band_to_sw_index(i)
                rhosea(ii,:,:) = tmprho(i,:,:)
             end do
@@ -700,10 +689,10 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
       end do
 
       ! Tidy up cox_munk input arrays
-      deallocate(solzasea)
-      deallocate(satzasea)
-      deallocate(solazsea)
-      deallocate(relazsea)
+      deallocate(solza)
+      deallocate(satza)
+      deallocate(solaz)
+      deallocate(relaz)
       deallocate(u10sea)
       deallocate(v10sea)
    end if ! End of sea surface reflectance setting

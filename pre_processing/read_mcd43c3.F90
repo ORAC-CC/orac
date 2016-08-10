@@ -13,10 +13,9 @@
 ! mcd          type(mcd43c) out     MCD output structure
 ! nbands       integer      in      Number of bands to read
 ! bands        integer(nbands) in   The band numbers of the required data
-! white_sky    integer      in      If not zero, white sky albedo will be read
-! black_sky    integer      in      If not zero, black sky albedo will be read
-! QC           intent       in      If not zero, QC and axillary data will be
-!                                   read
+! read_ws      logical      in      If true white sky albedo will be read
+! read_bs      logical      in      If true black sky albedo will be read
+! QC           logical      in      If true QC and axillary data will be read
 ! stat         integer*4    out     Status value returned by the various hdf-eos
 !                                   API routines. If an error occurs, it will be
 !                                   returned with the value -1, otherwise
@@ -42,8 +41,8 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, white_sky, black_sky, &
-                        QC, verbose, stat)
+subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, read_ws, read_bs, &
+                        read_QC, verbose, stat)
 
    use preproc_constants_m
 
@@ -56,14 +55,14 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, white_sky, black_sky, 
    character(len=path_length), intent(in) :: path_to_file
    integer,                    intent(in) :: nbands
    integer,                    intent(in) :: bands(:)
-   integer,                    intent(in) :: white_sky
-   integer,                    intent(in) :: black_sky
-   integer,                    intent(in) :: QC
+   logical,                    intent(in) :: read_ws
+   logical,                    intent(in) :: read_bs
+   logical,                    intent(in) :: read_QC
    logical,                    intent(in) :: verbose
 
    ! Output variables
-   type(mcd43c3_t),            intent(out) :: mcd
-   integer*4,                  intent(out) :: stat
+   type(mcd43c3_t),           intent(out) :: mcd
+   integer*4,                 intent(out) :: stat
 
    ! Local variables
    integer                    :: i,j,k
@@ -192,7 +191,7 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, white_sky, black_sky, 
 
    ! If it's required, the QC data is read straight off (no need to loop
    ! over the bands like with the data itself)
-   if (QC .ne. 0) then
+   if (read_QC) then
       allocate(mcd%quality(mcd%nlon,mcd%nlat))
       allocate(mcd%local_solar_noon(mcd%nlon,mcd%nlat))
       allocate(mcd%percent_inputs(mcd%nlon,mcd%nlat))
@@ -240,13 +239,13 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, white_sky, black_sky, 
    allocate(tmpdata(mcd%nlon,mcd%nlat))
 
    ! Allocate the other variables, based on which bands have been requested
-   if (white_sky .ne. 0) then
+   if (read_ws) then
       allocate(mcd%WSA(mcd%nlon, mcd%nlat, nbands))
    else
       allocate(mcd%WSA(1,1,1))
       mcd%WSA(1,1,1) = -1.0
    end if
-   if (black_sky .ne. 0) then
+   if (read_bs) then
       allocate(mcd%BSA(mcd%nlon, mcd%nlat, nbands))
    else
       allocate(mcd%BSA(1,1,1))
@@ -257,7 +256,7 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, white_sky, black_sky, 
 
    do i = 1,nbands
       ! Read the white sky albedo
-      if (white_sky .ne. 0) then
+      if (read_ws) then
          dataname = 'Albedo_WSA_' // trim(BandList(bands(i)))
 
          if (verbose) write(*,*) 'Reading variable: ', trim(dataname)
@@ -290,7 +289,7 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, white_sky, black_sky, 
       end if
 
       ! Read the black sky albedo
-      if (black_sky .ne. 0) then
+      if (read_bs) then
          dataname = 'Albedo_BSA_' // trim(BandList(bands(i)))
 
          write(*,*) 'Reading parameter: ', dataname
