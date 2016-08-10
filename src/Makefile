@@ -157,22 +157,7 @@
 #      Add driver file parser. Remove inaccurate notes.
 #
 # Notes:
-# 1) The C preprocessor is used to allow conditional compilation (files with
-# extension .f90 are automatically passed to cpp). If a unit compilation
-# produces an error this can result in creation of a .cpp file for that unit. On
-# the next attempt to compile, make finds the .cpp file first and runs g++ to
-# try to make the .o file from the .cpp. To stop this happening, use make -r.
-# (Or use the "tidy" target - N.B. you can't do this every time as a precaution
-# because if no .cpp files are found the command fails and the make stops).
 #
-# 2) The default compilation rule includes the -g flags for development and
-# debugging.
-#
-# 3) To compile using breakpoints, do make <program> FFLAGS=-DBKP. This defines
-# the BKP macro used for conditional compilation, such that breakpoint code is
-# included. (Also available in some routines is DEBUG code). Breakpoint levels
-# are defined for each routine in ECPConstants.f90.
-
 
 # Set files from which compiler, flags, and libraries are set. archfile also
 # defines the "$(OBJS)" variable, which places object and module files in a
@@ -181,6 +166,7 @@ include $(ORAC_LIB)
 include $(ORAC_ARCH)
 
 ORAC_COMMON = ../common
+
 
 # Define object files to be linked.
 ORAC_OBJ = $(OBJS)/Cholesky.o \
@@ -249,22 +235,12 @@ orac: $(ORAC_OBJ_MAIN) liborac.a $(ORAC_COMMON)/liborac_common.a Makefile
 liborac.a: $(ORAC_OBJ) $(PARSER_OBJ) Makefile
 	ar -rs liborac.a $(ORAC_OBJ) $(PARSER_OBJ)
 
-
 # Rebuild dependencies housed in dependencies.inc
 depend:
 	@../tools/make_depend.pl $(ORAC_OBJ) $(ORAC_OBJ_MAIN) > dependencies.inc
 
 clean tidy:
 	rm -f $(OBJS)/*.o $(OBJS)/*.mod *.a orac $(PARSER_CLEAN)
-
-
-# Utilities to change source code extensions when moving between DEC Unix and
-# Linux systems.
-DEC2Linux:
-	rename.csh d2l
-
-Linux2DEC:
-	rename.csh l2d
 
 
 # Object/source dependencies

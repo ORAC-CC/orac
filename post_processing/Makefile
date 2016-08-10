@@ -1,4 +1,4 @@
-# Makefile for postprocessing
+# Make file for postprocessing
 #
 # Pre 2012/08/24, CP and MJ: Provide initial version
 # 2012/08/24, MJ: creates adds "includes" for better configurability
@@ -7,6 +7,9 @@
 #    though.
 # 2015/07/16, GM: Many files removed from the object file list due to a major
 #    cleanup of the code.
+#
+# Notes:
+#
 
 # Set files from which compiler, flags, and libraries are set. archfile also
 # defines the "$(OBJS)" variable, which places object and module files in a
@@ -16,11 +19,12 @@ include $(ORAC_ARCH)
 
 ORAC_COMMON = ../common
 
+
 # Define object files to be linked.
-POSTPROC_OBJ =  $(OBJS)/orac_input.o \
-                $(OBJS)/postproc_constants.o \
-                $(OBJS)/postproc_utils.o \
-                $(OBJS)/prepare_output_pp.o  \
+POSTPROC_OBJ = $(OBJS)/orac_input.o \
+               $(OBJS)/postproc_constants.o \
+               $(OBJS)/postproc_utils.o \
+               $(OBJS)/prepare_output_pp.o  \
 
 POSTPROC_OBJ_MAIN = $(OBJS)/post_process_level2.o
 
@@ -47,7 +51,6 @@ post_process_level2: $(POSTPROC_OBJ_MAIN) libpostproc.a $(ORAC_COMMON)/liborac_c
 # Main library build
 libpostproc.a: $(POSTPROC_OBJ) Makefile
 	ar -rs libpostproc.a $(POSTPROC_OBJ)
-
 
 # Rebuild dependencies housed in dependencies.inc
 depend:

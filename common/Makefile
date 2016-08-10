@@ -14,17 +14,17 @@ include $(ORAC_LIB)
 
 
 # Define object files to be linked.
-COMMON_OBJ_F90 =$(OBJS)/common_constants.o \
-                $(OBJS)/chunk_utils.o \
-                $(OBJS)/constants_cloud_typing_pavolonis.o \
-                $(OBJS)/global_attributes.o \
-                $(OBJS)/interpol.o \
-                $(OBJS)/orac_indexing.o \
-                $(OBJS)/orac_ncdf.o \
-                $(OBJS)/orac_output.o \
-                $(OBJS)/parsing.o \
-                $(OBJS)/source_attributes.o \
-                $(OBJS)/system_utils.o
+COMMON_OBJ_F90 = $(OBJS)/chunk_utils.o \
+                 $(OBJS)/common_constants.o \
+                 $(OBJS)/constants_cloud_typing_pavolonis.o \
+                 $(OBJS)/global_attributes.o \
+                 $(OBJS)/interpol.o \
+                 $(OBJS)/orac_indexing.o \
+                 $(OBJS)/orac_ncdf.o \
+                 $(OBJS)/orac_output.o \
+                 $(OBJS)/parsing.o \
+                 $(OBJS)/source_attributes.o \
+                 $(OBJS)/system_utils.o
 
 COMMON_OBJ_C = $(OBJS)/struct_parser_utils.o \
                $(OBJS)/system_utils_c.o
@@ -82,17 +82,6 @@ generate_parser: generate_parser.c generate_parser.tab.c generate_parser.h
 # A generic driver file grammar
 struct_parser.tab.cc: struct_parser.y
 	bison $?
-
-
-# Utilities to change source code extensions when moving between DEC Unix and
-# Linux systems.
-DEC2Linux:
-	rename.csh d2l
-	rename_svn.csh d2l
-
-Linux2DEC:
-	rename.csh l2d
-	rename_svn.csh l2d
 
 
 # Fortran 90 dependencies

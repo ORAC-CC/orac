@@ -24,6 +24,7 @@
 # 2016/04/08, Simon Proud: Added the read_himawari module.
 # 2016/05/16, Simon Proud: Added the read_viirs module.
 # 2016/06/14, Simon Proud: Added the read_slstr module.
+#
 # Notes:
 # It appears that -lopenjpeg needs to be included in the LIBS list since on some
 # systems RTTOV seems to require it.
@@ -122,17 +123,6 @@ depend:
 
 clean tidy:
 	rm -f $(OBJS)/*.o $(OBJS)/*.mod *.a orac_preproc.x
-
-
-# Utilities to change source code extensions when moving between DEC Unix and
-# Linux systems.
-DEC2Linux:
-	rename.csh d2l
-	rename_svn.csh d2l
-
-Linux2DEC:
-	rename.csh l2d
-	rename_svn.csh l2d
 
 
 # Fortran 90 dependencies
