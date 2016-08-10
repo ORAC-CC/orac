@@ -1,5 +1,5 @@
    subroutine driver_for_fuliou(nlm,tsi,theta,asfcswrdr,asfcnirdr,asfcswrdf,asfcnirdf,tsfc,&
-                             phaseflag,cref,ccot,hctop,hcbase,&                            
+                             phaseflag,cref,ccot,hctop,hcbase,&
                              hctopID,hcbaseID,&
                              pxZ,pxP,pxT,pxQ,pxO3,&
                              toalwup,toaswdn,toaswup,&
@@ -33,7 +33,7 @@
        real, intent(in) :: &
          tsi       ,&   !totoal solar irradiance              (W/m2).
          theta     ,&   !cosine of solar zenith angle            (-).
-         phaseflag ,&   !cloud phase=0 clear, = 1water, =2ice    (-).     
+         phaseflag ,&   !cloud phase=0 clear, = 1water, =2ice    (-).
          cref      ,&   !satellite cloud effective radius       (um).
          ccot      ,&   !satellite cloud optical depth           (-).
          hctop     ,&   !satellite cloud top height             (km).
@@ -75,7 +75,7 @@
          boapardif ,& !All-sky BOA PAR dowelling diffuse flux (W/m2).
          toapar       !All-sky TOA PAR downwelling flux       (W/m2).
 
-      real (kind=8), dimension(1,nlm+1) :: &      
+      real (kind=8), dimension(1,nlm+1) :: &
         fulw,&       !All-sky LW upwelling flux                   (W/m^2).
         fdlw,&       !All-sky LW downwelling flux                 (W/m^2).
         fusw,&       !All-sky SW upwelling flux                   (W/m^2).
@@ -173,18 +173,18 @@ fi%lscm(1:4)=(/.false.,.true.,.true.,.false./)
 
 ! 4-STREAM SOLVER
 if(FuSolverMode .eq. 1) then
- fi%isksolve= 0 
+ fi%isksolve= 0
  fi%fourssl=1
 endif
 
 ! GAMMA-WEIGHTED 2-STREAM SOLVER
 if(FuSolverMode .eq. 2) then
- fi%isksolve= 1 
+ fi%isksolve= 1
 endif
 
 ! 2-STREAM SOLVER
 if(FuSolverMode .eq. 3) then
- fi%isksolve= 0 
+ fi%isksolve= 0
  fi%fourssl=0
 endif
 
@@ -216,7 +216,7 @@ fi%ur      =  0.8 ! Cosine View Zenith Angle (for IR Radiance)
 
 ! Clouds
 fi%fc(1)%dpi%ldpi = .false.  !Setting this avoids direct insertion of level-by-level IWC/LWC.
-fi%fc(1)%cldfrac   = 1.00000 ! Cloud Fraction (0-1) 
+fi%fc(1)%cldfrac   = 1.00000 ! Cloud Fraction (0-1)
 fi%fc(1)%novl      =   1     ! Number of cloud layers in vertical
 
 ! Cloud top and bottom pressure
@@ -228,23 +228,23 @@ fi%fc(1)%re(1) = cref
 !WATER CLOUDS CANNOT HAVE CER > 30. um
 IF(phaseflag .eq. 1 .and. cref .ge. 30.) then
  fi%fc(1)%de(1) = 29.9
- fi%fc(1)%re(1) = 29.9 
+ fi%fc(1)%re(1) = 29.9
 ENDIF
 fi%fc(1)%asp(1) = exp(0*0.1)      ! Fu 20006 Ice AspectRatio !!!!! NEW FOR 20010130
 fi%fc(1)%tau_vis(1)       = ccot  ! Cloud Visible Optical Depth ( Minnis)
-fi%fc(1)%sc(1)%mn_lin_tau =  fi%fc(1)%tau_vis(1) 
+fi%fc(1)%sc(1)%mn_lin_tau =  fi%fc(1)%tau_vis(1)
 
 ! No Cloud - need to run despite clear-sky pixel
 if(phaseflag .eq. 0) then
- fi%fc(1)%cldfrac   = 1.0   
+ fi%fc(1)%cldfrac   = 1.0
  FI%VD%cldpres(1,1,1) = 100.
  FI%VD%cldpres(2,1,1) = 150.
  fi%fc(1)%rphase(1) =  1
  fi%fc(1)%de(1) = 30.
  fi%fc(1)%re(1) = 15.
- fi%fc(1)%asp(1) = exp(0*0.1) 
+ fi%fc(1)%asp(1) = exp(0*0.1)
  fi%fc(1)%tau_vis(1) = 0.00005
- fi%fc(1)%sc(1)%mn_lin_tau = fi%fc(1)%tau_vis(1) 
+ fi%fc(1)%sc(1)%mn_lin_tau = fi%fc(1)%tau_vis(1)
 endif
 !print*,'cloud phase ',fi%fc(1)%rphase(1)
 !print*,'cloud top pressure ',FI%VD%cldpres(1,1,1)
@@ -294,7 +294,7 @@ ENDIF
 !----------------------------------------------------------------------
 
  call generate_level_scheme !! Define model Fixed layer structure pre-cloud by fixed DZ intervals...
-!  call print_vla_in 
+!  call print_vla_in
  call prepare_model_profile_fu !! CALL After all FI%VD and FI%VI structures are defined.
  call vla_interface_fu     ! uses FI%VO !! Assign Model ATM Profile and CLD Levels
 !  call print_vla_out
@@ -304,7 +304,7 @@ ENDIF
  call aer_scale_hgt(fi%nv,fi%pp,3.0,fi%aprofs(1:fi%nv,2) )
 ! RADIATVE TRANSFER --------------------------------------------------
 
-!  call print_in_fu		   ! PRINTS INPUTS  AS ASCII 
+!  call print_in_fu		   ! PRINTS INPUTS  AS ASCII
  !fi%swonlycomp=.true.
 
  call rad_multi_fu  ! CALL THE CODE !!!
@@ -315,7 +315,7 @@ ENDIF
 
       !assign values to specific output variables
 !      if(ftoa(2)%olr .gt. 0. .and. ftoa(2)%swup .gt. 0.) then
-      if(ftoa(2)%olr .gt. 0. .and. ftoa(2)%swup .gt. 0. .and. fo(2)%exist .eq. .true.) then
+      if(ftoa(2)%olr .gt. 0. .and. ftoa(2)%swup .gt. 0. .and. fo(2)%exist .eqv. .true.) then
        toalwup = ftoa(2)%olr
        toaswdn = ftoa(2)%swdn
        toaswup = ftoa(2)%swup
