@@ -43,7 +43,7 @@ module preproc_structures_m
 
       real(kind=sreal)   :: lat_offset=90.0, lon_offset=180.0
 
-      integer(kind=lint), dimension(:,:), pointer :: counter_sw, counter_lw
+      integer(kind=lint), dimension(:,:,:), pointer :: counter_sw, counter_lw
    end type preproc_dims_t
 
 

@@ -678,10 +678,10 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                ! Process points that contain information and satisfy the zenith
                ! angle restrictions of the coefficient file
                if ((i_coef == 1 .and. &
-                    preproc_dims%counter_lw(idim,jdim) > 0 .and. &
+                    preproc_dims%counter_lw(idim,jdim,cview) > 0 .and. &
                     profiles(count)%zenangle <= zenmax) .or. &
                    (i_coef == 2 .and. &
-                    preproc_dims%counter_sw(idim,jdim) > 0 .and. &
+                    preproc_dims%counter_sw(idim,jdim,cview) > 0 .and. &
                     profiles(count)%zenangle <= zenmaxv9)) then
 
                   if (i_coef == 1) then
