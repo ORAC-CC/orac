@@ -174,7 +174,7 @@ fi%lscm(1:4)=(/.false.,.true.,.true.,.false./)
 ! 4-STREAM SOLVER
 if(FuSolverMode .eq. 1) then
  fi%isksolve= 0
- fi%fourssl=1
+ fi%fourssl=.true.
 endif
 
 ! GAMMA-WEIGHTED 2-STREAM SOLVER
@@ -185,7 +185,7 @@ endif
 ! 2-STREAM SOLVER
 if(FuSolverMode .eq. 3) then
  fi%isksolve= 0
- fi%fourssl=0
+ fi%fourssl=.false.
 endif
 
 ! Cloud Microphysics
