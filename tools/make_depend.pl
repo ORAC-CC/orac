@@ -31,11 +31,14 @@
 #    declarations required by use strict.  Finally, some rearranging.
 # 2015/11/13, Greg McGarragh: Added support for includes in .f, .F, .for, .FOR,
 #    and .f90 files and added support for modules in .f90 files.
+# 2016/08/10, Greg McGarragh: Add support for source files in subdirectories
+#    specified with one or more --subdir <path> options.
 #
 #*******************************************************************************
 use strict;
 
 use File::Basename;
+use Getopt::Long;
 
 my $ext_regex_f77   = "f|for";
 my $ext_regex_f90   = "f90|F90";
@@ -45,35 +48,48 @@ my $includes_path   = "";		# Path where the include files are to be located
 my $indent_length   = 8;
 my $max_line_length = 80;
 
-my $source_file;
-my $object_file;
-my $dependency;
-
 my @source_file_list;
 my @include_file_list;
 my @include_file_list;
+
+my @subdirs;
+my @dir_list;
 
 my @dependencies2;
 
 my %module_to_mod_base;
 
-# Read command line arguments
+# Filter out and parse options
+GetOptions("subdir=s" => \@subdirs) || die("ERROR: Error in command line arguments\n");
+
+# Process command line arguments
 foreach (@ARGV) {
 	if    (index($_, "\.o")   != -1) { push(@source_file_list,  $_); }
 	elsif (index($_, "\.inc") != -1) { push(@include_file_list, $_); }
 }
 
 # Strip paths from the object files and change from object to source extensions
-opendir dir, '.';
-my @dir_list = readdir dir;
-closedir dir;
+opendir(dir, '.');
+@dir_list = readdir(dir);
+closedir(dir);
+
+foreach my $subdir (@subdirs) {
+	opendir(dir, $subdir) || die("ERROR: Subdirectory not found: $subdir\n");
+	while (readdir(dir)) {
+		push(@dir_list, "$subdir/$_");
+	}
+	closedir(dir);
+}
 
 foreach (@source_file_list) {
 	s{.*/}{};
 	s/\.o//;
-	my $regex = "^$_\.($ext_regex_fxx)\$";
+	my $regex = "(^|/)$_\.($ext_regex_fxx)\$";
 	my @filelist = grep(/$regex/, @dir_list);
-	if (scalar @filelist > 1) {
+	if (scalar @filelist == 0) {
+		die("ERROR: No source file found for base name: $_");
+	}
+	if (scalar @filelist >  1) {
 		die("ERROR: More than one extension for base name: $_");
 	}
 	$_ = $filelist[0];
@@ -85,37 +101,35 @@ foreach (@include_file_list) {
 }
 
 # Map module names to their associated source files
-foreach $source_file (@source_file_list) {
+foreach my $source_file (@source_file_list) {
 	open(FILE, $source_file) ||
 		die("Unable to open source file: $source_file");
 	while (<FILE>) {
 		/^\s*module\s+([^\s!]+)/i &&
-			($module_to_mod_base{lc($1)} = $source_file) =~ s/\.($ext_regex_f90)$//;
+                ($module_to_mod_base{lc($1)} = $source_file) =~ s/\.($ext_regex_f90)$//;
 	}
 	close(FILE);
 }
 
 # Write dependencies for each source file to standard output
-foreach $source_file (@source_file_list) {
-	$object_file = $source_file;
+foreach my $source_file (@source_file_list) {
+	my $object_file = $source_file;
+	$object_file =~ s/.*\///;
 	$object_file =~ s/\.($ext_regex_fxx)$/.o/;
 
-	get_file_depencies($source_file, $source_file);
+	get_file_depencies($source_file, $source_file, $object_file);
 
 	# Pretty print the dependencies for the Makefile
 	if (@dependencies2) {
-                my $line_length;
+		my $line_length;
 
 		@dependencies2 = &uniq(sort(@dependencies2));
-
-		$object_file = $source_file;
-		$object_file =~ s/\.($ext_regex_fxx)$/.o/;
 
 		print "$objects_path$object_file:";
 
 		$line_length = length($objects_path . $object_file) + 1;
 
-		foreach $dependency (@dependencies2) {
+		foreach my $dependency (@dependencies2) {
 			$line_length += 1 + length($dependency);
 
 			if ($line_length > $max_line_length) {
@@ -149,8 +163,9 @@ sub uniq {
 # Find dependencies for $current_file and write them as dependencies for
 # $sourcefile.  Recursively called for all included files in $current_file.
 sub get_file_depencies {
-	my $source_file   = $_[0];
-	my $current_file  = $_[1];
+	my $source_file  = $_[0];
+	my $current_file = $_[1];
+	my $object_file  = $_[2];
 
 	my @modules;
 	my @includes;
@@ -160,7 +175,7 @@ sub get_file_depencies {
 	open(FILE, $current_file) or
 		die("Unable to open source file: $current_file");
 
-        # Find used modules and included files
+	# Find used modules and included files
 	while (<FILE>) {
 		/^\s*use\s+([^\s,!]+)/i                 && push(@modules, lc($1));
 		/^\#*\s*include\s+["\']([^"\']+)["\']/i && push(@includes,   $1 );
@@ -191,7 +206,7 @@ sub get_file_depencies {
 		foreach (@includes) {
 			if (-e basename($_)) {
 				push(@dependencies, "$includes_path$_");
-                        }
+			}
 
 			if ($_ ~~ @include_file_list) {
 				push(@dependencies, "$includes_path$_");
@@ -209,11 +224,11 @@ sub get_file_depencies {
 		# current list of dependencies
 		foreach (@includes) {
 			if (-e basename($_)) {
-				get_file_depencies($source_file, $_)
-                        }
+				get_file_depencies($source_file, $_, $object_file)
+			}
 
 			if ($_ ~~ @include_file_list) {
-				get_file_depencies($source_file, $_)
+				get_file_depencies($source_file, $_, $object_file)
 			}
 		}
 
