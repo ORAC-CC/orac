@@ -1909,8 +1909,8 @@ subroutine cox_munk_rho_0v_0d_dv_and_dd(bands, solza, satza, solaz, relaz, &
 !$OMP PARALLEL PRIVATE(i, j, shared_geo_wind)
 !$OMP DO SCHEDULE(GUIDED)
    do i = 1, n_points
-      if (solza(i) .gt. maxsza_twi .or. &
-           u10(i) .eq. fill_value .or. u10(i) .eq. fill_value) then
+      if (solza(i) .lt. 0 .or. solza(i) .gt. maxsza_twi .or. satza(j) .lt. 0 .or. &
+          u10(i) .eq. fill_value .or. v10(i) .eq. fill_value) then
          rho_0v(:, i) = fill_value
          cycle
       end if
@@ -1942,8 +1942,8 @@ if (.false.) then
    allocate(aa(n_bands))
 !$OMP DO SCHEDULE(GUIDED)
    do i = 1, n_points
-      if (solza(i) .gt. maxsza_twi .or. &
-          u10(i) .eq. fill_value .or. u10(i) .eq. fill_value) then
+      if (solza(i) .lt. 0 .or. solza(i) .gt. maxsza_twi .or. &
+          u10(i) .eq. fill_value .or. v10(i) .eq. fill_value) then
          rho_0d(:, i) = fill_value
          cycle
       end if
@@ -2002,16 +2002,11 @@ else
    rho_0d = 0.
 
    do i = 1, n_bands
-!     if (u10(i) .eq. fill_value .or. u10(i) .eq. fill_value) then
-!        rho_0d(:, i) = fill_value
-!        cycle
-!     end if
 !$OMP PARALLEL PRIVATE(j, l, m, a, a2, solza2, shared_wind, shared_band_geo2)
 !$OMP DO SCHEDULE(GUIDED)
       do j = 1, n_points
-         if (solza(j) .gt. maxsza_twi .or. &
-            solza(j) .lt. 0 .or. &
-            u10(j) .eq. fill_value .or. u10(j) .eq. fill_value) then
+         if (solza(j) .lt. 0 .or. solza(j) .gt. maxsza_twi .or. &
+             u10(j) .eq. fill_value .or. v10(j) .eq. fill_value) then
             rho_0d(:, j) = fill_value
             cycle
          end if
@@ -2057,7 +2052,8 @@ if (.false.) then
    allocate(aa(n_bands))
 !$OMP DO SCHEDULE(GUIDED)
    do i = 1, n_points
-      if (u10(i) .eq. fill_value .or. u10(i) .eq. fill_value) then
+      if (satza(j) .lt. 0 .or. &
+          u10(i) .eq. fill_value .or. v10(i) .eq. fill_value) then
          rho_dv(:, i) = fill_value
          cycle
       end if
@@ -2114,14 +2110,11 @@ else
    rho_dv = 0.
 
    do i = 1, n_bands
-!     if (u10(i) .eq. fill_value .or. u10(i) .eq. fill_value) then
-!        rho_dv(:, i) = fill_value
-!        cycle
-!     end if
 !$OMP PARALLEL PRIVATE(j, l, m, a, a2, satza2, shared_wind, shared_band_geo2)
 !$OMP DO SCHEDULE(GUIDED)
       do j = 1, n_points
-         if (u10(j) .eq. fill_value .or. satza(j) .lt. 0 .or. u10(j) .eq. fill_value) then
+         if (satza(j) .lt. 0 .or. &
+             u10(j) .eq. fill_value .or. v10(j) .eq. fill_value) then
             rho_dv(:, j) = fill_value
             cycle
          end if
@@ -2180,14 +2173,10 @@ end if
    rho_dd = 0.
 
    do i = 1, n_bands
-!     if (u10(i) .eq. fill_value .or. u10(i) .eq. fill_value) then
-!        rho_dd(:, i) = fill_value
-!        cycle
-!     end if
 !$OMP PARALLEL PRIVATE(j, k, l, m, a, a2, a3, shared_wind)
 !$OMP DO SCHEDULE(GUIDED)
       do j = 1, n_points
-         if (u10(j) .eq. fill_value .or. u10(j) .eq. fill_value) then
+         if (u10(j) .eq. fill_value .or. v10(j) .eq. fill_value) then
             rho_dd(:, j) = fill_value
             cycle
          end if
