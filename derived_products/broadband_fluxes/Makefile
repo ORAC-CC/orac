@@ -86,6 +86,18 @@ $(OBJS)/%.o: %.f90 $(ORAC_COMMON)/liborac_common.a
 $(OBJS)/%.o: %.F90 $(ORAC_COMMON)/liborac_common.a
 	$(F90) -o $@ -c $(FFLAGS) $(INC) -I$(ORAC_COMMON)/obj $(AUXFLAGS) $<
 
+$(OBJS)/%.o: bugsrad/%.f $(ORAC_COMMON)/liborac_common.a
+	$(F90) -o $@ -c $(FFLAGS) $(INC) -I$(ORAC_COMMON)/obj $(AUXFLAGS) $<
+
+$(OBJS)/%.o: bugsrad/%.f90 $(ORAC_COMMON)/liborac_common.a
+	$(F90) -o $@ -c $(FFLAGS) $(INC) -I$(ORAC_COMMON)/obj $(AUXFLAGS) $<
+
+$(OBJS)/%.o: fu_liou/%.f $(ORAC_COMMON)/liborac_common.a
+	$(F90) -o $@ -c $(FFLAGS) $(INC) -I$(ORAC_COMMON)/obj $(AUXFLAGS) $<
+
+$(OBJS)/%.o: fu_liou/%.f90 $(ORAC_COMMON)/liborac_common.a
+	$(F90) -o $@ -c $(FFLAGS) $(INC) -I$(ORAC_COMMON)/obj $(AUXFLAGS) $<
+
 
 # Main target list
 all: process_broadband_fluxes
@@ -99,7 +111,7 @@ libprocess_broadband_fluxes.a: $(ORAC_OBJ) Makefile
 
 # Rebuild dependencies housed in dependencies.inc
 depend:
-	@../../tools/make_depend.pl $(ORAC_OBJ) $(ORAC_OBJ_MAIN) > dependencies.inc
+	@../../tools/make_depend.pl --subdir bugsrad --subdir fu_liou $(ORAC_OBJ) $(ORAC_OBJ_MAIN) > dependencies.inc
 
 clean tidy:
 	rm -f $(OBJS)/*.o $(OBJS)/*.mod *.a process_broadband_fluxes
