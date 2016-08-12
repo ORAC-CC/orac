@@ -61,6 +61,8 @@
 !    retrievals. Replaced Find_MDAD with Find_Channel.
 ! 2016/01/27, GM: Add indexing for the new night cloud retrieval.
 ! 2016/07/27, GM: Add indexing for two layer cloud retieval.
+! 2016/08/11, SP: Add logical flag for processing when using only 1 view from a
+!                 multiangular sensor. Prevents post-processor problems.
 !
 ! $Id$
 !
@@ -105,11 +107,12 @@ subroutine Get_Indexing(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
    SPixel%NXJ = 0
    SPixel%NXI = 0
 
+
    ! If the views have different illumination conditions then skip this pixel
    do i_view = 1, Ctrl%Ind%NViews
       SPixel%illum(i_view) = MSI_Data%illum(SPixel%Loc%X0, SPixel%Loc%Y0, i_view)
 
-      if (i_view > 1) then
+      if ((i_view > 1) .and. (Ctrl%all_channels_same_view .neqv. .true.)) then
          if (SPixel%illum(i_view - 1) /= SPixel%illum(i_view)) then
             status = SPixelIndexing
             return

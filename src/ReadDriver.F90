@@ -130,6 +130,8 @@
 !    dumped. If it is '-' the dump is to standard output. Anything else is the
 !    name of a file to dump to. If this argument is given then execution
 !    terminates after the dump.
+! 2016/08/11, SP: Add logical flag for processing when using only 1 view from a
+!                 multiangular sensor. Prevents post-processor problems.
 !
 ! $Id$
 !
@@ -357,6 +359,15 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
          end if
       end if
    end do
+
+   ! Check if all selected channels are from the same view
+   Ctrl%all_channels_same_view = .false.
+   if (all(Ctrl%Ind%View_Id .eq. Ctrl%Ind%View_Id(1))) then
+   	Ctrl%all_channels_same_view = .true.
+   else
+   	Ctrl%all_channels_same_view = .false.
+   endif
+
 
    ! Identify which channels are multiple views of the same wavelength
    allocate(Ctrl%Ind%WvlIdx(Ctrl%Ind%Ny))

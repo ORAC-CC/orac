@@ -96,6 +96,8 @@
 ! 2016/07/11, GM: Add Nullify_Ctrl().
 ! 2016/07/27, GM: Add variables Class, Class2, LUTClass2, FID%SAD_Dir2 to
 !    support the multilayer retrieval.
+! 2016/08/11, SP: Add logical flag for processing when using only 1 view from a
+!                 multiangular sensor. Prevents post-processor problems.
 !
 ! $Id$
 !
@@ -264,6 +266,7 @@ module Ctrl_m
       logical                :: sabotage_inputs    ! See sabotage_input_data.F90
       logical                :: process_cloudy_only
       logical                :: process_aerosol_only
+      logical                :: all_channels_same_view
       integer                :: NTypes_to_process  ! # of valid values in above
       integer(byte)          :: Types_to_process(MaxTypes) ! Pavolonis (or other)
                                                    ! type codes for pixels to
