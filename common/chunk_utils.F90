@@ -17,7 +17,7 @@ module chunk_utils_m
 
    private
 
-   public :: calc_n_chunks, \
+   public :: calc_n_chunks, &
              chunkify
 
 contains
