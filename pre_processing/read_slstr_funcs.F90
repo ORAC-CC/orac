@@ -785,6 +785,7 @@ subroutine read_slstr_satsol(indir,imager_angles,interp,txnx,txny,nx,ny,startx,v
    use preproc_constants_m
    use imager_structures_m
    use netcdf
+   use ieee_arithmetic 
 
    integer,                    intent(in)    :: view
    integer,                    intent(in)    :: nx
@@ -855,7 +856,7 @@ subroutine read_slstr_satsol(indir,imager_angles,interp,txnx,txny,nx,ny,startx,v
    where(angles(:,:,1) .gt. 180) &
       angles(:,:,1)=sreal_fill_value
 
-   where(isnan(angles)) angles=sreal_fill_value
+   where(ieee_is_nan(angles)) angles=sreal_fill_value
 
    ! Do the interpolation to full grid
    call slstr_interp_angs(angles,imager_angles,txnx,txny,nx,ny,interp,view)

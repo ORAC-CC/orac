@@ -132,6 +132,7 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
    use channel_structures_m
    use imager_structures_m
    use preproc_constants_m
+   use ieee_arithmetic 
 
 #ifdef INCLUDE_HIMAWARI_SUPPORT
    use himawari_readwrite
@@ -225,10 +226,10 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
    where(imager_angles%relazi(startx:,:,1)       .lt. -900) &
       imager_angles%relazi(startx:,:,1)=sreal_fill_value
 
-   where(isnan(imager_angles%solzen)) imager_angles%solzen=sreal_fill_value
-   where(isnan(imager_angles%solazi)) imager_angles%solazi=sreal_fill_value
-   where(isnan(imager_angles%satzen)) imager_angles%satzen=sreal_fill_value
-   where(isnan(imager_angles%relazi)) imager_angles%relazi=sreal_fill_value
+   where(ieee_is_nan(imager_angles%solzen)) imager_angles%solzen=sreal_fill_value
+   where(ieee_is_nan(imager_angles%solazi)) imager_angles%solazi=sreal_fill_value
+   where(ieee_is_nan(imager_angles%satzen)) imager_angles%satzen=sreal_fill_value
+   where(ieee_is_nan(imager_angles%relazi)) imager_angles%relazi=sreal_fill_value
 
 
    ! Rescale zens + azis into correct format

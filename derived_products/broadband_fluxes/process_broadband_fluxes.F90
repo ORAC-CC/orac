@@ -71,6 +71,7 @@ program process_broadband_fluxes
    use global_attributes_m
    use source_attributes_m
    use netcdf
+   use ieee_arithmetic 
 
    implicit none
 
@@ -1052,10 +1053,10 @@ call cpu_time(cpuStart)
 
 
          !catch NaN
-         if(isnan(pxtoalwup)) nanFlag=1
-         if(isnan(pxtoaswup)) nanFlag=1
-         if(isnan(pxtoalwupclr)) nanFlag=1
-         if(isnan(pxtoaswupclr)) nanFlag=1
+         if(ieee_is_nan(pxtoalwup)) nanFlag=1
+         if(ieee_is_nan(pxtoaswup)) nanFlag=1
+         if(ieee_is_nan(pxtoalwupclr)) nanFlag=1
+         if(ieee_is_nan(pxtoaswupclr)) nanFlag=1
 
          !catch unphysical values
          if(pxtoalwup .lt. 0. .or. pxtoalwup .gt. 1000.) nanFlag=1
