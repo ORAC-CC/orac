@@ -58,6 +58,7 @@
 ! 2016/08/10, MC: Debugged Fu Liou code so that clear-sky pixels can run in the retreival.
 !    Set limits to droplet effective radius (re < 30 um) for liquid clouds only in Fu Liou.
 ! 2016/08/15, MC: Arrays were incorrectly being assigned integer fill value instead of real.
+! 2016/08/15, MC: Changed output time array from float to double.
 !
 ! $Id$
 !
@@ -141,7 +142,7 @@ program process_broadband_fluxes
    real, allocatable :: PHASE(:,:)  ! Cloud phase (xp,yp)
    real, allocatable :: CTT(:,:)  ! Cloud top temperature (xp,yp)
    real, allocatable :: CTP(:,:)  ! Cloud top pressure (xp,yp)
-   real, allocatable :: TIME(:,:)  ! Time of pixel in Julian Days (xp,yp)
+   real(kind=dreal), allocatable :: TIME(:,:)  ! Time of pixel in Julian Days (xp,yp)
    real, allocatable :: STEMP(:,:)  ! Surface temperature from primary files (xp,yp)
 
    !Total Solar Irriadiance File
@@ -223,7 +224,8 @@ program process_broadband_fluxes
 
 
    !NETCDF Output geolocation data
-   real, allocatable :: time_data(:,:),lat_data(:,:), lon_data(:,:) !latitude & longitude
+   real(kind=dreal), allocatable :: time_data(:,:)
+   real, allocatable :: lat_data(:,:), lon_data(:,:) !latitude & longitude
 
    !NETCDF Output TOA & BOA radiation flux data
    real, allocatable :: toa_lwup(:,:) !TOA outgoing LW flux
@@ -519,7 +521,6 @@ program process_broadband_fluxes
 !   PRINT*,'CTT = ',CTT(pxX,pxY)
 !   PRINT*,'CTH = ',CTH(pxX,pxY)
 !   PRINT*,'SOLZ = ',SOLZ(pxX,pxY)
-
 !-------------------------------------------------------------------------------
 
 
@@ -693,7 +694,7 @@ program process_broadband_fluxes
    allocate(colO3(xN,yN))
 
     !Fill OUTPUT with missing
-    time_data(:,:) = sreal_fill_value
+    time_data(:,:) = dreal_fill_value
     lat_data(:,:)  = sreal_fill_value
     lon_data(:,:)  = sreal_fill_value
     retrflag(:,:)  = byte_fill_value
