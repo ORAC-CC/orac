@@ -57,6 +57,7 @@
 !    New option to run the ORAC brodband flux code using BUGSrad: 1 or Fu_Liou: 2.
 ! 2016/08/10, MC: Debugged Fu Liou code so that clear-sky pixels can run in the retreival.
 !    Set limits to droplet effective radius (re < 30 um) for liquid clouds only in Fu Liou.
+! 2016/08/15, MC: Arrays were incorrectly being assigned integer fill value instead of real.
 !
 ! $Id$
 !
@@ -692,30 +693,30 @@ program process_broadband_fluxes
    allocate(colO3(xN,yN))
 
     !Fill OUTPUT with missing
-    time_data(:,:) = sint_fill_value
-    lat_data(:,:) = sint_fill_value
-    lon_data(:,:) = sint_fill_value
-    retrflag(:,:) = byte_fill_value
-    toa_lwup(:,:) = sint_fill_value
-    toa_swup(:,:) = sint_fill_value
-    toa_swdn(:,:) = sint_fill_value
-    boa_lwup(:,:) = sint_fill_value
-    boa_lwdn(:,:) = sint_fill_value
-    boa_swup(:,:) = sint_fill_value
-    boa_swdn(:,:) = sint_fill_value
-    toa_lwup_clr(:,:) = sint_fill_value
-    toa_lwdn_clr(:,:) = sint_fill_value
-    toa_swup_clr(:,:) = sint_fill_value
-    boa_lwup_clr(:,:) = sint_fill_value
-    boa_lwdn_clr(:,:) = sint_fill_value
-    boa_swup_clr(:,:) = sint_fill_value
-    boa_swdn_clr(:,:) = sint_fill_value
-    toa_par_tot(:,:) = sint_fill_value
-    boa_par_tot(:,:) = sint_fill_value
-    boa_par_dif(:,:) = sint_fill_value
-    boa_tsfc(:,:) = sint_fill_value
-    boa_psfc(:,:) = sint_fill_value
-    boa_qsfc(:,:) = sint_fill_value
+    time_data(:,:) = sreal_fill_value
+    lat_data(:,:)  = sreal_fill_value
+    lon_data(:,:)  = sreal_fill_value
+    retrflag(:,:)  = byte_fill_value
+    toa_lwup(:,:)  = sreal_fill_value
+    toa_swup(:,:)  = sreal_fill_value
+    toa_swdn(:,:)  = sreal_fill_value
+    boa_lwup(:,:)  = sreal_fill_value
+    boa_lwdn(:,:)  = sreal_fill_value
+    boa_swup(:,:)  = sreal_fill_value
+    boa_swdn(:,:)  = sreal_fill_value
+    toa_lwup_clr(:,:) = sreal_fill_value
+    toa_lwdn_clr(:,:) = sreal_fill_value
+    toa_swup_clr(:,:) = sreal_fill_value
+    boa_lwup_clr(:,:) = sreal_fill_value
+    boa_lwdn_clr(:,:) = sreal_fill_value
+    boa_swup_clr(:,:) = sreal_fill_value
+    boa_swdn_clr(:,:) = sreal_fill_value
+    toa_par_tot(:,:)  = sreal_fill_value
+    boa_par_tot(:,:)  = sreal_fill_value
+    boa_par_dif(:,:)  = sreal_fill_value
+    boa_tsfc(:,:) = sreal_fill_value
+    boa_psfc(:,:) = sreal_fill_value
+    boa_qsfc(:,:) = sreal_fill_value
 
    !re-grid PRTM vertical profile to match bugsrad resolution (NLS)
    do i=1,NLS
@@ -1095,7 +1096,6 @@ call cpu_time(cpuStart)
           boa_par_dif(i,j) = bpardif
 
          end if !valid data
-
 
          ! meteorology data to output in netCDF file
          boa_tsfc(i,j) = pxT(NLS)

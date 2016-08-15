@@ -104,66 +104,66 @@
 !bands_fuliou_sw = [0.1754,0.2247,0.2439,0.2857,0.2985,0.3225,0.3575,0.4375,0.4975,0.595,0.69,0.794,0.889,1.042,1.41,1.9048,2.5,3.5088,4.0]
 !bands_fuliou_lw = [4.54,5.26,5.88,7.14,8.,9.09,10.2,12.5,14.9,18.5,25.,35.7,10000.]
 
-      ! assign missing values input variables
-       do k=1,4
-        fo(k)%exist = .false. !I think this is the only one that is actually needed
-        fo(k)%fuwn      =-999.
-        fo(k)%fdwn      =-999.
-        fo(k)%fds       =-999.
-        fo(k)%fus       =-999.
-        fo(k)%fdir      =-999.
-        fo(k)%fuir      =-999.
-        fo(k)%fuwn      =-999.
-        fo(k)%fdwn      =-999.
-        fo(k)%fdsdr     =-999.
-        fo(k)%fdsdf     =-999.
-        fo(k)%fiurt     =-999.
-        fo(k)%fiurw     =-999.
-        fo(k)%fd        =-999.
-        fo(k)%fu        =-999.
-        fo(k)%dts       =-999.
-        fo(k)%dtir      =-999.
-        fo(k)%dt        =-999.
-        fo(k)%fu_sr     =-999.
-        fo(k)%fu_sf     =-999.
-        fo(k)%trwn_flt_r=-999.
-        fo(k)%trwn_unf_r=-999.
-        fo(k)%trwn_f    =-999.
-        fo(k)%LW_entropy =-999.
-        fo(k)%SW_entropy =-999.
-        ftoa(k)%olr = -999.
-        ftoa(k)%swdn = -999.
-        ftoa(k)%swup = -999.
-        ftoa(k)%wnolr = -999.
-        ftoa(k)%totrad = -999.
-        ftoa(k)%winrad = -999.
-        fsfc(k)%lwup = -999.
-        fsfc(k)%lwdn = -999.
-        fsfc(k)%swup = -999.
-        fsfc(k)%swdn = -999.
-        fsfc(k)%swpar = -999.
-        fsfc(k)%swdif = -999.
-        fsfc(k)%swdir = -999.
-        fouv(k)%toa_par = -999.
-       enddo
+! assign missing values input variables
+do k=1,4
+ fo(k)%exist = .false. !I think this is the only one that is actually needed
+ fo(k)%fuwn      =-999.
+ fo(k)%fdwn      =-999.
+ fo(k)%fds       =-999.
+ fo(k)%fus       =-999.
+ fo(k)%fdir      =-999.
+ fo(k)%fuir      =-999.
+ fo(k)%fuwn      =-999.
+ fo(k)%fdwn      =-999.
+ fo(k)%fdsdr     =-999.
+ fo(k)%fdsdf     =-999.
+ fo(k)%fiurt     =-999.
+ fo(k)%fiurw     =-999.
+ fo(k)%fd        =-999.
+ fo(k)%fu        =-999.
+ fo(k)%dts       =-999.
+ fo(k)%dtir      =-999.
+ fo(k)%dt        =-999.
+ fo(k)%fu_sr     =-999.
+ fo(k)%fu_sf     =-999.
+ fo(k)%trwn_flt_r=-999.
+ fo(k)%trwn_unf_r=-999.
+ fo(k)%trwn_f    =-999.
+ fo(k)%LW_entropy =-999.
+ fo(k)%SW_entropy =-999.
+ ftoa(k)%olr = -999.
+ ftoa(k)%swdn = -999.
+ ftoa(k)%swup = -999.
+ ftoa(k)%wnolr = -999.
+ ftoa(k)%totrad = -999.
+ ftoa(k)%winrad = -999.
+ fsfc(k)%lwup = -999.
+ fsfc(k)%lwdn = -999.
+ fsfc(k)%swup = -999.
+ fsfc(k)%swdn = -999.
+ fsfc(k)%swpar = -999.
+ fsfc(k)%swdif = -999.
+ fsfc(k)%swdir = -999.
+ fouv(k)%toa_par = -999.
+enddo
 
-       ! assign missing values output variables
-       toalwup = -999.
-       toaswdn = -999.
-       toaswup = -999.
-       boalwup = -999.
-       boalwdn = -999.
-       boaswup = -999.
-       boaswdn = -999.
-       toalwupclr = -999.
-       toaswupclr = -999.
-       boalwupclr = -999.
-       boalwdnclr = -999.
-       boaswdnclr = -999.
-       boaswupclr = -999.
-       boapar     = -999.
-       boapardif  = -999.
-       toapar     = -999.
+! assign missing values output variables
+ toalwup = -999.
+ toaswdn = -999.
+ toaswup = -999.
+ boalwup = -999.
+ boalwdn = -999.
+ boaswup = -999.
+ boaswdn = -999.
+ toalwupclr = -999.
+ toaswupclr = -999.
+ boalwupclr = -999.
+ boalwdnclr = -999.
+ boaswdnclr = -999.
+ boaswupclr = -999.
+ boapar     = -999.
+ boapardif  = -999.
+ toapar     = -999.
 
 
 !Set Modes (TOTAL-SKY{2-AEROSOL & CLOUD}, PRISTINE{3-NOAEROSOL OR CLOUD})
@@ -313,32 +313,30 @@ ENDIF
 !  call print_out_hr	!PRINTS ASCII HEATING RATE PROFILES
 !--------------------------------------------------------------------
 
-      !assign values to specific output variables
-!      if(ftoa(2)%olr .gt. 0. .and. ftoa(2)%swup .gt. 0.) then
-      if(ftoa(2)%olr .gt. 0. .and. ftoa(2)%swup .gt. 0. .and. fo(2)%exist .eqv. .true.) then
-       toalwup = ftoa(2)%olr
-       toaswdn = ftoa(2)%swdn
-       toaswup = ftoa(2)%swup
-       boalwup = fsfc(2)%lwup
-       boalwdn = fsfc(2)%lwdn
-       boaswup = fsfc(2)%swup
-       boaswdn = fsfc(2)%swdn
-       toalwupclr = ftoa(3)%olr
-       toaswupclr = ftoa(3)%swup
-       boalwupclr = fsfc(3)%lwup
-       boalwdnclr = fsfc(3)%lwdn
-       boaswdnclr = fsfc(3)%swdn
-       boaswupclr = fsfc(3)%swup
-       boapar     = fsfc(2)%swpar
-       boapardif  = fsfc(2)%swpar * ( fsfc(2)%swdif/(fsfc(2)%swdir + fsfc(2)%swdif) )
-       toapar     = fouv(2)%toa_par
-      endif
+!assign values to specific output variables
+if(ftoa(2)%olr .gt. 0. .and. ftoa(2)%olr .lt. 1000. .and. ftoa(2)%swup .gt. 0. .and. ftoa(2)%swup .lt. 1600. .and. fo(2)%exist .eqv. .true.) then
+ toalwup = ftoa(2)%olr
+ toaswdn = ftoa(2)%swdn
+ toaswup = ftoa(2)%swup
+ boalwup = fsfc(2)%lwup
+ boalwdn = fsfc(2)%lwdn
+ boaswup = fsfc(2)%swup
+ boaswdn = fsfc(2)%swdn
+ toalwupclr = ftoa(3)%olr
+ toaswupclr = ftoa(3)%swup
+ boalwupclr = fsfc(3)%lwup
+ boalwdnclr = fsfc(3)%lwdn
+ boaswdnclr = fsfc(3)%swdn
+ boaswupclr = fsfc(3)%swup
+ boapar     = fsfc(2)%swpar
+ boapardif  = fsfc(2)%swpar * ( fsfc(2)%swdif/(fsfc(2)%swdir + fsfc(2)%swdif) )
+ toapar     = fouv(2)%toa_par
+endif
 
-      !To output profile - model levels are not same as input levels....
-      !print*,nlm,fi%nv+1
-      !print*,fo(2)%fds(1:nlm+1)
-      !fdsw(1,1:nlm+1) = fo(2)%fds(1:nlm+1)
-
+!To output profile - model levels are not same as input levels....
+!print*,nlm,fi%nv+1
+!print*,fo(2)%fds(1:nlm+1)
+!fdsw(1,1:nlm+1) = fo(2)%fds(1:nlm+1)
 
    return
 end subroutine driver_for_fuliou
