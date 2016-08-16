@@ -59,6 +59,8 @@
 !    Set limits to droplet effective radius (re < 30 um) for liquid clouds only in Fu Liou.
 ! 2016/08/15, MC: Arrays were incorrectly being assigned integer fill value instead of real.
 ! 2016/08/15, MC: Changed output time array from float to double.
+! 2016/08/16, MC: Modified code to restrict size of output netCDF file by the optional input
+!                 pixel selection range (pxX0,pxY0,pxX1,pxY1).
 !
 ! $Id$
 !
@@ -332,7 +334,6 @@ program process_broadband_fluxes
    character(path_length) :: cpxX0,cpxY0,cpxX1,cpxY1
    integer :: pxX0,pxY0,pxX1,pxY1
    integer value
-   integer px_processing_mode !=0 all pixels make netCDF, =1 multiple pixels (print to screen), =2 one pixel (print to screen)
    integer aerosol_processing_mode !=0 no processing, =1 collocate aerosol cci file, =2 collocate & save file
 
    !ECMWF-PRTM for comparing my interpolation scheme to ORAC scheme
@@ -393,22 +394,21 @@ program process_broadband_fluxes
     if(len(trim(cpxX0)) .ne. 0 .and. len(trim(cpxX1)) .ne. 0 .and. &
        len(trim(cpxY0)) .ne. 0 .and. len(trim(cpxY1)) .ne. 0) then
       print*,'PROCESS MULTIPLE SATELLITE PIXELS'
-      px_processing_mode=1
       read(cpxX0,*) value
-      pxX0=value
+      pxX0=value*1
       read(cpxX1,*) value
-      pxX1=value
+      pxX1=value*1
       read(cpxY0,*) value
-      pxY0=value
+      pxY0=value*1
       read(cpxY1,*) value
-      pxY1=value
+      pxY1=value*1
+      print*,pxX0,pxX1,pxY0,pxY1
     endif
 
     !single pixel
     if(len(trim(cpxX0)) .ne. 0 .and. len(trim(cpxX1)) .eq. 0 .and. &
        len(trim(cpxY0)) .ne. 0 .and. len(trim(cpxY1)) .eq. 0) then
       print*,'PROCESS SINGLE SATELLITE PIXEL'
-      px_processing_mode=2
       read(cpxX0,*) value
       pxX0=value
       pxX1=value
@@ -416,7 +416,6 @@ program process_broadband_fluxes
       pxY0=value
       pxY1=value
     endif
-
 !-------------------------------------------------------------------------------
    !Read time string from file
    index1=index(trim(adjustl(Fprimary)),'_',back=.true.)
@@ -735,7 +734,6 @@ program process_broadband_fluxes
    if(len(trim(cpxX0)) .eq. 0 .and. len(trim(cpxX1)) .eq. 0 .and. &
       len(trim(cpxY0)) .eq. 0 .and. len(trim(cpxY1)) .eq. 0) then
       print*,'PROCESS ALL SATELLITE PIXELS'
-      px_processing_mode=0
       pxX0=1
       pxX1=xN
       pxY0=1
@@ -870,12 +868,11 @@ program process_broadband_fluxes
 
 
 
-
-
 !-------------------------------------------------------------------------
 !BEGIN MAIN CODE
 !-------------------------------------------------------------------------
 call cpu_time(cpuStart)
+
     print*,'Processing Pixel Range:'
     print*,'x-start = ',pxX0
     print*,'y-start = ',pxY0
@@ -885,14 +882,12 @@ call cpu_time(cpuStart)
     print*,'Along Track #  = ',yN
 
    !loop over cross-track dimension
-!    do i=99,101
     do i=pxX0,pxX1
       call cpu_time(cpuFinish)
       print*,'complete: ',i*100./(xN*1.),'%   i=',i, cpuFinish-cpuStart,' seconds elapsed'
 
       !loop over along-track dimension
       do j=pxY0,pxY1
-!      do j=pxY0,pxY0+300 !for testing
 
       !Valid lat/lon required to run (needed for SEVIRI)
       if(LAT(i,j) .ne. -999.0 .and. LON(i,j) .ne. -999.0) then
@@ -993,8 +988,8 @@ call cpu_time(cpuStart)
          !print*,'Hcbase = ',pxHcbase,' HcbaseID: ',pxHcbaseID
          !print*,'Regime: ',pxregime
          !print*,'TOTAL SOLAR IRRADIANCE: ',pxTSI
-!         print*,'Hctop (hPa) = ',pxP(pxHctopID)
-!         print*,'Hcbase (hPa) = ',pxP(pxHcbaseID)
+         !print*,'Hctop (hPa) = ',pxP(pxHctopID)
+         ! print*,'Hcbase (hPa) = ',pxP(pxHcbaseID)
 
       !Call BUGSrad Algorithm
       if(algorithm_processing_mode .eq. 1) then
@@ -1117,66 +1112,24 @@ call cpu_time(cpuStart)
 call cpu_time(cpuFinish)
 print*,cpuFinish-cpuStart,' seconds elapsed'
 
-
-!OPTIONAL - print to screen for selected satellite pixel/s
-if(px_processing_mode .eq. 1 .or. px_processing_mode .eq. 2) then
- do i=pxX0,pxX1
- do j=pxY0,pxY1
-  print*,'i = ',i,' j = ',j
-  print*,'toa_swdn    : ',toa_swdn(i,j)
-  print*,'toa_lwup    : ',toa_lwup(i,j)
-  print*,'toa_lwup_clr: ',toa_lwup_clr(i,j)
-  print*,'toa_swup    : ',toa_swup(i,j)
-  print*,'toa_swup_clr: ',toa_swup_clr(i,j)
-  print*,'toa_albedo  : ',toa_swup(i,j)/toa_swdn(i,j)
-  print*,'boa_swdn    : ',boa_swdn(i,j)
-  print*,'boa_swdn_clr: ',boa_swdn_clr(i,j)
-  print*,'boa_par_tot : ',boa_par_tot(i,j)
-  print*,'boa_par_dif : ',boa_par_dif(i,j)
-  print*,'boa_lwdn    : ',boa_lwdn(i,j)
-  print*,'boa_lwup    : ',boa_lwup(i,j)
-  print*,'AOD550      : ',AOD550(i,j)
-  print*,'AREF        : ',AREF(i,j)
-  print*,'lts :',lts(i,j)
-  print*,'fth :',fth(i,j)
-  print*,'colO3 :',colO3(i,j)
-
-  !write profile of last pixel to ascii file
-  !(to write out more than 1 pixel would take tremendous memory)
-  open(unit=1,file=trim(fname),status="new",action="write")
-   write(unit=1, fmt=*) " Fluxes   Plev       SW_DN       SW_UP       LW_DN       LW_UP"
-   write(unit=1, fmt=*) "            Pa       W/m^2       W/m^2       W/m^2       W/m^2"
-  do k=1,NLS
-    write(unit=1, fmt="(I4,5(F12.3))") k,pxP(k),dswfx(1,k),uswfx(1,k),dlwfx(1,k),ulwfx(1,k)
-  end do
-  close(unit=1)
-
- end do
- end do
-end if
-
 !-------------------------------------------------------------------------
 !Make output netcdf file
 !-------------------------------------------------------------------------
-!make only if processing all satellite-pixels
-if(px_processing_mode .eq. 0) then
-
-call nc_open(ncid,Fprimary)
+ call nc_open(ncid,Fprimary)
 
 !get common attributes from primary file
-call nc_get_common_attributes(ncid, global_atts, source_atts)
+ call nc_get_common_attributes(ncid, global_atts, source_atts)
 
 if (nf90_close(ncid) .ne. NF90_NOERR) then
          write(*,*) 'ERROR: nf90_close()'
          stop error_stop_code
 end if
 
-
    !dimensions
-   ixstart = 1
-   ixstop = xN
-   iystart = 1
-   iystop = yN
+   ixstart = pxX0
+   ixstop  = pxX1
+   iystart = pxY0
+   iystop  = pxY1
    n_x = ixstop - ixstart + 1
    n_y = iystop - iystart + 1
    n_v = 1
@@ -1821,6 +1774,5 @@ end if
 
 print*,'CREATED:'
 print*,TRIM(fname)
-end if !netCDF mode
 
 end program process_broadband_fluxes
