@@ -11,17 +11,26 @@
 !   2) PRTM file (pre-processing)
 !   3) ALB file (pre-processing)
 !   4) TSI file (http://proj.badc.rl.ac.uk/svn/orac/data/tsi_soho_sorce_1978_2015.nc)
-!   5) BUGSrad output filename (user specified)
+!   5) Output filename (user specified)
+!   6) Radiation Algorithm (BUGSrad: '1'; FuLiou: '2')
 !  Optional inputs:
-!   6) Aerosol CCI file (needs to coincide with cloud file) --> use '' to skip
-!   7) Collocated aerosol-cloud netcdf file (user specified) --> use '' to skip
-!  Options 8,9,10,11 are to process individual or multiple 1km pixels
-!   8) x0, 9) y0, 10) x1, 11) y1
+!   7) FuLiou Solver ('1' 4-stream, '2' 2-Stream Modified gamma, '3' 2-Stream)
+!   8) Aerosol CCI file (needs to coincide with cloud file) --> use '' to skip
+!   9) Collocated aerosol-cloud netcdf file (user specified) --> use '' to skip
+!  Options 10,11,12,13 are to process individual or multiple 1km pixels
+!   10) x0, 11) y0, 12) x1, 13) y1
 !
 ! Subroutines:
-!   preprocess_bugsrad.F90
-!   driver_for_bugsrad.F90
 !   interpolate_meteorology.F90
+!   compute_lts.F90
+!   compute_fth.F90
+!   compute_column_o3.F90
+!   preprocess_input.F90
+!   preprocess_bugsrad_sfc_albedo.F90
+!   preprocess_bugsrad_sfc_emissivity.F90
+!   preprocess_fuliou_sfc_albedo.F90
+!   driver_for_fuliou.F90
+!   driver_for_bugsrad.F90
 !
 ! History:
 ! 2015/10/14, MC: Initial development
