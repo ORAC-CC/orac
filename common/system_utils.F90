@@ -15,7 +15,8 @@ module system_utils_m
 
    private
 
-   public :: match_file
+   public :: match_file, &
+   			 is_nan
 
 contains
 
@@ -73,5 +74,20 @@ function match_file(dir_name, file_pattern, file_name) result(status)
    file_name = file_name(1:index(file_name, C_NULL_CHAR))
 
 end function match_file
+
+elemental function is_nan(x) result(res)
+#ifndef __GFORTRAN__
+	use ieee_arithmetic, only : ieee_is_nan
+#endif
+	implicit none
+	real, intent(in) :: x
+	logical :: res
+
+#ifndef __GFORTRAN__
+	res = ieee_is_nan(x)
+#else
+	res = isnan(x)
+#endif
+end function
 
 end module system_utils_m
