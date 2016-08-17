@@ -61,7 +61,7 @@
 ! 2016/04/06, MC: Modified aerosol_processing option to bypass collocation file creation.
 ! 2016/07/20, WJ: Added surface temperature from ORAC retrieval and uses this instead of
 !    ECMWF skin temperature where possible.
-! 2016/08/03, MC: Added the Fu-Liou broadband radiative flux code and adapted procedures 
+! 2016/08/03, MC: Added the Fu-Liou broadband radiative flux code and adapted procedures
 !    to the respository.Code from: www-cave.larc.nasa.gov/ Edition 4 January 12th 2015.
 !    New option to run the ORAC brodband flux code using BUGSrad: 1 or Fu_Liou: 2.
 ! 2016/08/10, MC: Debugged Fu Liou code so that clear-sky pixels can run in the retreival.
@@ -83,8 +83,8 @@ program process_broadband_fluxes
    use orac_ncdf_m
    use global_attributes_m
    use source_attributes_m
+   use system_utils_m
    use netcdf
-   use ieee_arithmetic 
 
    implicit none
 
@@ -386,7 +386,7 @@ program process_broadband_fluxes
       if(fu_solver_mode .eq. 1) print*,'4-stream solution'
       if(fu_solver_mode .eq. 2) print*,'2-stream Mod. Gamma Solution'
       if(fu_solver_mode .eq. 3) print*,'2-stream solution'
-    endif    
+    endif
 
    call get_command_argument(8, Faerosol)
     aerosol_processing_mode = 0
@@ -511,7 +511,7 @@ program process_broadband_fluxes
     call nc_read_array(ncid, "cth", CTH, verbose)
     call nc_read_array(ncid, "solar_zenith_view_no1", SOLZ, verbose)
     call nc_read_array(ncid, "stemp", STEMP, verbose)
-   
+
     ! Close file
     if (nf90_close(ncid) .ne. NF90_NOERR) then
        write(*,*) 'ERROR: read_input_dimensions_lwrtm(): Error closing ' // &
@@ -862,7 +862,7 @@ program process_broadband_fluxes
     end do
     end do
    end if
-   
+
    if(algorithm_processing_mode .eq. 1) print*,'Algorithm: BUGSrad'
    if(algorithm_processing_mode .eq. 2) print*,'Algorithm: FuLiou'
    if(fu_solver_mode .eq. 1) print*,'4-stream solution'
@@ -1059,10 +1059,10 @@ call cpu_time(cpuStart)
 
 
          !catch NaN
-         if(ieee_is_nan(pxtoalwup)) nanFlag=1
-         if(ieee_is_nan(pxtoaswup)) nanFlag=1
-         if(ieee_is_nan(pxtoalwupclr)) nanFlag=1
-         if(ieee_is_nan(pxtoaswupclr)) nanFlag=1
+         if(is_nan(pxtoalwup)) nanFlag=1
+         if(is_nan(pxtoaswup)) nanFlag=1
+         if(is_nan(pxtoalwupclr)) nanFlag=1
+         if(is_nan(pxtoaswupclr)) nanFlag=1
 
          !catch unphysical values
          if(pxtoalwup .lt. 0. .or. pxtoalwup .gt. 1000.) nanFlag=1
