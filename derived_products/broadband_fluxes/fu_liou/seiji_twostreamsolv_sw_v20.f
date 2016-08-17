@@ -1754,7 +1754,7 @@ c This block is following eq. 45, 46, and 47 in Toon et al. (1998)
 
       do 47 j           = 2, jdble
         if (dabs(bf(jdble+1-j) - ef(jdble+1-j)*as(jdble+2-j))
-     &      .lt. 1.0d-308) then
+     &      .lt. tiny(1.0d0)) then
 c          x = abs(bf(jdble+1-j) - ef(jdble+1-j)*as(jdble+2-j))
 c     &      / (bf(jdble+1-j) - ef(jdble+1-j)*as(jdble+2-j))
           x = 1.0d308

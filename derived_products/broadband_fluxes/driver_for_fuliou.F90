@@ -278,18 +278,18 @@ fi%ee(1:12)  = emis(1:12) ! Spectral Surface Emissivity LW
 
 !Aerosols ------------------------------------------------------------
 IF(phaseflag .eq. 0) THEN
- fi%nac		     = 1	   ! One aerosol contituent is used
- fi%itps(1)	     = 2	   ! Continental see types (1-18) (SULFATE DROPLETS)
- fi%n_atau	     = 1	   ! 1 wavelength input for aerosols
- fi%a_wli(1)	     = 0.55	   ! AOT wavelength(microns) of a_taus
- fi%a_taus(1,1)	     = ccot	   ! AOT for constituent 1
+ fi%nac              = 1           ! One aerosol contituent is used
+ fi%itps(1)          = 2           ! Continental see types (1-18) (SULFATE DROPLETS)
+ fi%n_atau           = 1           ! 1 wavelength input for aerosols
+ fi%a_wli(1)         = 0.55        ! AOT wavelength(microns) of a_taus
+ fi%a_taus(1,1)      = ccot        ! AOT for constituent 1
 ENDIF
 IF(phaseflag .ne. 0) THEN
- fi%nac		     = 1	   ! One aerosol contituent is used
- fi%itps(1)	     = 2	   ! Continental see types (1-18) (SULFATE DROPLETS)
- fi%n_atau	     = 1	   ! 1 wavelength input for aerosols
- fi%a_wli(1)	     = 0.55	   ! AOT wavelength(microns) of a_taus
- fi%a_taus(1,1)	     = 0.0005	   ! AOT for constituent 1
+ fi%nac              = 1           ! One aerosol contituent is used
+ fi%itps(1)          = 2           ! Continental see types (1-18) (SULFATE DROPLETS)
+ fi%n_atau           = 1           ! 1 wavelength input for aerosols
+ fi%a_wli(1)         = 0.55        ! AOT wavelength(microns) of a_taus
+ fi%a_taus(1,1)      = 0.0005      ! AOT for constituent 1
 ENDIF
 !----------------------------------------------------------------------
 
@@ -304,13 +304,13 @@ ENDIF
  call aer_scale_hgt(fi%nv,fi%pp,3.0,fi%aprofs(1:fi%nv,2) )
 ! RADIATVE TRANSFER --------------------------------------------------
 
-!  call print_in_fu		   ! PRINTS INPUTS  AS ASCII
+!  call print_in_fu                ! PRINTS INPUTS  AS ASCII
  !fi%swonlycomp=.true.
 
  call rad_multi_fu  ! CALL THE CODE !!!
 
-!  call print_out_fu		   ! PRINTS OUTPUTS  AS ASCII
-!  call print_out_hr	!PRINTS ASCII HEATING RATE PROFILES
+!  call print_out_fu               ! PRINTS OUTPUTS  AS ASCII
+!  call print_out_hr               ! PRINTS ASCII HEATING RATE PROFILES
 !--------------------------------------------------------------------
 
 !assign values to specific output variables

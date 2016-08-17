@@ -361,11 +361,10 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    end do
 
    ! Check if all selected channels are from the same view
-   Ctrl%all_channels_same_view = .false.
    if (all(Ctrl%Ind%View_Id .eq. Ctrl%Ind%View_Id(1))) then
-   	Ctrl%all_channels_same_view = .true.
+      Ctrl%all_channels_same_view = .true.
    else
-   	Ctrl%all_channels_same_view = .false.
+      Ctrl%all_channels_same_view = .false.
    endif
 
 
@@ -1044,8 +1043,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       NXJ_Ni  = NXJ_Dy
       XJ_Ni   = XJ_Dy
    else
-   	write(*,*) 'ERROR: Read_Driver(): Invalid Ctrl%Approach: ', Ctrl%Approach
-   	stop error_stop_code
+      write(*,*) 'ERROR: Read_Driver(): Invalid Ctrl%Approach: ', Ctrl%Approach
+      stop error_stop_code
    end if
 
    Ctrl%CTP_correction_limit = 100.

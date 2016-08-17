@@ -88,7 +88,7 @@ subroutine set_ecmwf(cyear,cmonth,cday,chour,ecmwf_path,ecmwf_path2, &
    integer,                    intent(in)  :: time_interp_method
    real,                       intent(out) :: time_int_fac
    logical,                    intent(in)  :: assume_full_path
-   character(len=*),           intent(out) :: ecmwf_hr_path(2)
+   character(len=*),           intent(in)  :: ecmwf_hr_path(2)
    character(len=*),           intent(out) :: ecmwf_hr_path_file(2)
 
    integer       :: i_path, i_path1, i_path2

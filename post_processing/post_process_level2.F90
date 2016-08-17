@@ -356,7 +356,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
                     n_chunks, chunk_starts, chunk_ends)
    end if
 
-  if (verbose) then
+   if (verbose) then
       write(*,*) 'The number of chunks to be processed: ', n_chunks
       write(*,*) 'The chunks to be processed are (i_chunk, chunk_start, ' // &
                  'chunk_end, chunk_size):'
