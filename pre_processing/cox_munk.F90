@@ -1548,7 +1548,7 @@ subroutine cox_munk4_interp_shared_band_geo(d_theta, theta, shared_lut, shared_o
    real    :: a
    real    :: b
 
-   if (theta .lt. 0. .or. theta .gt. 2 * pi) then
+   if (theta .lt. 0. .or. theta .gt. 2. * pi) then
         write(*,*) 'ERROR: cox_munk4_interp_shared_band_geo(), theta = ', &
                  theta, 'is out of range'
    end if
@@ -1909,7 +1909,7 @@ subroutine cox_munk_rho_0v_0d_dv_and_dd(bands, solza, satza, solaz, relaz, &
 !$OMP PARALLEL PRIVATE(i, j, shared_geo_wind)
 !$OMP DO SCHEDULE(GUIDED)
    do i = 1, n_points
-      if (solza(i) .lt. 0 .or. solza(i) .gt. maxsza_twi .or. satza(j) .lt. 0 .or. &
+      if (solza(i) .lt. 0. .or. solza(i) .gt. maxsza_twi .or. satza(i) .lt. 0. .or. &
           u10(i) .eq. fill_value .or. v10(i) .eq. fill_value) then
          rho_0v(:, i) = fill_value
          cycle
@@ -1942,7 +1942,7 @@ if (.false.) then
    allocate(aa(n_bands))
 !$OMP DO SCHEDULE(GUIDED)
    do i = 1, n_points
-      if (solza(i) .lt. 0 .or. solza(i) .gt. maxsza_twi .or. &
+      if (solza(i) .lt. 0. .or. solza(i) .gt. maxsza_twi .or. &
           u10(i) .eq. fill_value .or. v10(i) .eq. fill_value) then
          rho_0d(:, i) = fill_value
          cycle
@@ -1981,7 +1981,7 @@ if (.false.) then
 
 ! Fast LUT version
 else
-   lut_d_theta = 2 * pi / (lut_n_theta - 1.)
+   lut_d_theta = 2. * pi / (lut_n_theta - 1.)
 
    allocate(shared_band_geo(n_bands, lut_n_theta, n_quad_theta, n_quad_phi))
 
@@ -2005,7 +2005,7 @@ else
 !$OMP PARALLEL PRIVATE(j, l, m, a, a2, solza2, shared_wind, shared_band_geo2)
 !$OMP DO SCHEDULE(GUIDED)
       do j = 1, n_points
-         if (solza(j) .lt. 0 .or. solza(j) .gt. maxsza_twi .or. &
+         if (solza(j) .lt. 0. .or. solza(j) .gt. maxsza_twi .or. &
              u10(j) .eq. fill_value .or. v10(j) .eq. fill_value) then
             rho_0d(:, j) = fill_value
             cycle
@@ -2052,7 +2052,7 @@ if (.false.) then
    allocate(aa(n_bands))
 !$OMP DO SCHEDULE(GUIDED)
    do i = 1, n_points
-      if (satza(j) .lt. 0 .or. &
+      if (satza(i) .lt. 0. .or. &
           u10(i) .eq. fill_value .or. v10(i) .eq. fill_value) then
          rho_dv(:, i) = fill_value
          cycle
@@ -2089,7 +2089,7 @@ if (.false.) then
 
 ! Fast LUT version
 else
-   lut_d_theta = 2 * pi / (lut_n_theta - 1.)
+   lut_d_theta = 2. * pi / (lut_n_theta - 1.)
 
    allocate(shared_band_geo(n_bands, n_quad_theta, lut_n_theta, n_quad_phi))
 
@@ -2113,7 +2113,7 @@ else
 !$OMP PARALLEL PRIVATE(j, l, m, a, a2, satza2, shared_wind, shared_band_geo2)
 !$OMP DO SCHEDULE(GUIDED)
       do j = 1, n_points
-         if (satza(j) .lt. 0 .or. &
+         if (satza(j) .lt. 0. .or. &
              u10(j) .eq. fill_value .or. v10(j) .eq. fill_value) then
             rho_dv(:, j) = fill_value
             cycle
