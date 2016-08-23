@@ -1027,11 +1027,11 @@ def args_cc4cl(parser):
                       help = ('Level of processing to clobber:\n' +
                               '0=None, 1=Post, 2=Main+Post, 3=All (default).'))
     cccl.add_argument('--dur', type=str, nargs=3,
-                      default = ('1:00', '2:00', '1:00'),
+                      default = ('24:00', '24:00', '24:00'),
                       help = ('Maximal duration (in HH:MM) required by the '
                               'pre, main and post processors.'))
     cccl.add_argument('--ram', type=int, nargs=3,
-                      default = (14000, 14000, 14000),
+                      default = (11000, 11000, 11000),
                       help = ('Maximal memory (in Mb) used by the pre, main and '
                               'post processors.'))
     cccl.add_argument('--aer_sad_dir', type=str, nargs='?', metavar='DIR',
@@ -1070,7 +1070,9 @@ def build_preproc_driver(args):
     geo  = glob_dirs(args.in_dir, inst.geo, 'geolocation file')
 
     # Select NISE file
-    if not args.use_ecmwf_snow:
+    if args.use_ecmwf_snow:
+        nise = ''
+    else:
         nise = (args.nise_dir + inst.time.strftime('/NISE.004/%Y.%m.%d/'+
                                                  'NISE_SSMISF17_%Y%m%d.HDFEOS'))
         if not os.path.isfile(nise):
@@ -1207,7 +1209,7 @@ def build_preproc_driver(args):
         file_version = 'R{}'.format(args.revision)
     else:
         file_version = 'R{}'.format(get_svn_revision())
-        os.chdir(cwd)
+    os.chdir(cwd)
 
     #------------------------------------------------------------------------
 
@@ -1503,7 +1505,7 @@ def cc4cl(orig):
 
     # Determine a name for this job from the filename
     inst = FileName(args.target)
-    job_name = inst.time.strftime('{}.R{}_%Y-%m-%d-%H-%M_'.format(inst.inst,
+    job_name = inst.time.strftime('{}_%Y-%m-%d-%H-%M_R{}_'.format(inst.inst,
                                                                   args.revision))
     log_path = args.out_dir + '/' + args.log_dir + '/'
     if args.batch and not os.path.isdir(log_path):
