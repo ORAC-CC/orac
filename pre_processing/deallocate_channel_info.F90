@@ -51,5 +51,9 @@ subroutine deallocate_channel_info(channel_info)
    deallocate(channel_info%channel_minimum_uncertainty)
    deallocate(channel_info%channel_fm_lnd_uncertainty)
    deallocate(channel_info%channel_fm_sea_uncertainty)
+   deallocate(channel_info%sw_rttov_viewone_id)
+   deallocate(channel_info%sw_view_ids)
+   deallocate(channel_info%lw_rttov_viewone_id)
+   deallocate(channel_info%lw_view_ids)
 
 end subroutine deallocate_channel_info
