@@ -70,6 +70,7 @@
 !
 ! History:
 ! 2016/05/03, AP: Original version
+! 2016/08/23, AP: Add cubic spline interpolation.
 !
 ! $Id$
 !
@@ -107,6 +108,8 @@ subroutine Int_LUT_Re(F, NChans, Grid, GZero, Ctrl, FInt, FGrads, iCRP, status)
 
    ! Local variables
    integer :: i
+   real    :: delta_r, delta_F, r1, k0, k1, l0, l1
+   real    :: d2F_dr2(Grid%nmaxre)
 
    status = 0
 
@@ -118,7 +121,27 @@ subroutine Int_LUT_Re(F, NChans, Grid, GZero, Ctrl, FInt, FGrads, iCRP, status)
                       (Grid%Re(i,GZero%iR1(i,iCRP),iCRP) - &
                        Grid%Re(i,GZero%iR0(i,iCRP),iCRP))
       else if (Ctrl%LUTIntSelm .eq. LUTIntMethBicubic) then
-         ! To do
+         ! Following the syntax of InterpolarSolar_spline.F90
+         call spline(Grid%Re(i,1:Grid%nRe(i,iCRP),iCRP), &
+                     F(i,1:Grid%nRe(i,iCRP)), d2F_dr2(1:Grid%nRe(i,iCRP)))
+         delta_F = F(i,GZero%iR1(i,iCRP)) - F(i,GZero%iR0(i,iCRP))
+         delta_r = Grid%Re(i,GZero%iR1(i,iCRP),iCRP) - &
+                   Grid%Re(i,GZero%iR0(i,iCRP),iCRP)
+
+         k0 = (3.0*GZero%dR(i,iCRP)*GZero%dR(i,iCRP) - 1.0) / 6.0 * delta_r
+         k1 = (3.0*GZero%R1(i,iCRP)*GZero%R1(i,iCRP) - 1.0) / 6.0 * delta_r
+         FGrads(i) = delta_F / delta_r - &
+                     k0 * d2F_dr2(GZero%iR0(i,iCRP)) + &
+                     k1 * d2F_dr2(GZero%iR1(i,iCRP))
+
+         l0 = (GZero%dR(i,iCRP)*GZero%dR(i,iCRP)*GZero%dR(i,iCRP) - &
+               GZero%dR(i,iCRP)) * delta_r * delta_r / 6.0
+         l1 = (GZero%R1(i,iCRP)*GZero%R1(i,iCRP)*GZero%R1(i,iCRP) - &
+               GZero%R1(i,iCRP)) * delta_r * delta_r / 6.0
+         FInt(i) = GZero%dR(i,iCRP) * F(i,GZero%iR0(i,iCRP)) + &
+                   GZero%R1(i,iCRP) * F(i,GZero%iR1(i,iCRP)) + &
+                   l0 * d2F_dr2(GZero%iR0(i,iCRP)) + &
+                   l1 * d2F_dr2(GZero%iR1(i,iCRP))
       end if
    end do
 
