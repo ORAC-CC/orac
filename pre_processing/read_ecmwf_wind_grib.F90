@@ -183,8 +183,6 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf, high_res)
       if (nk .ne. nlevels) call h_e_e('wind_grib', 'Inconsistent vertical levels.')
       ecmwf%avec=pv(1:nk+1)
       ecmwf%bvec=pv(nk+2:)
-   else
-      call ecmwf_abvec_init(ecmwf)
    end if
 
    ! clean-up

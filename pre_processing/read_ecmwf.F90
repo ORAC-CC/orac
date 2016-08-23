@@ -33,7 +33,8 @@
 !-------------------------------------------------------------------------------
 
 subroutine read_ecmwf_wind(ecmwf_flag, ecmwf_path_file, ecmwf_HR_path_file, &
-   ecmwf_path_file2, ecmwf_path_file3, ecmwf, ecmwf_HR, use_hr_ecmwf, verbose)
+   ecmwf_path_file2, ecmwf_path_file3, ecmwf, ecmwf_HR, use_hr_ecmwf, &
+   ecmwf_nlevels, verbose)
 
    use preproc_structures_m
 
@@ -47,7 +48,20 @@ subroutine read_ecmwf_wind(ecmwf_flag, ecmwf_path_file, ecmwf_HR_path_file, &
    type(ecmwf_t),              intent(out) :: ecmwf
    type(ecmwf_t),              intent(out) :: ecmwf_HR
    logical,                    intent(in)  :: use_hr_ecmwf
+   integer,                    intent(in)  :: ecmwf_nlevels
    logical,                    intent(in)  :: verbose
+
+   ! Set the number of levels in the input file, defaults to 61
+   select case(ecmwf_nlevels)
+   case(60)
+      ecmwf%kdim=60
+   case(91)
+      ecmwf%kdim=91
+   case(137)
+      ecmwf%kdim=137
+   case default
+      ecmwf%kdim=60
+   end select
 
    select case (ecmwf_flag)
    case(0)

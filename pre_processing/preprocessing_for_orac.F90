@@ -890,38 +890,18 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
          end if
       end if
 
-      ! Set the number of levels in the input file, defaults to 61
-      select case(ecmwf_nlevels)
-      case(60)
-         ecmwf%kdim=60
-         ecmwf1%kdim=60
-         ecmwf2%kdim=60
-      case(91)
-         ecmwf%kdim=91
-         ecmwf1%kdim=91
-         ecmwf2%kdim=91
-      case(137)
-         ecmwf%kdim=137
-         ecmwf1%kdim=137
-         ecmwf2%kdim=137
-      case default
-         ecmwf%kdim=60
-         ecmwf1%kdim=60
-         ecmwf2%kdim=60
-      end select
-
       ! read surface wind fields and ECMWF dimensions
       if (ecmwf_time_int_method .ne. 2) then
          call read_ecmwf_wind(ecmwf_flag, ecmwf_path_file(1), &
               ecmwf_HR_path_file(1), ecmwf_path_file2(1), ecmwf_path_file3(1), &
-              ecmwf, ecmwf_HR, use_hr_ecmwf, verbose)
+              ecmwf, ecmwf_HR, use_hr_ecmwf, ecmwf_nlevels, verbose)
       else
          call read_ecmwf_wind(ecmwf_flag, ecmwf_path_file(1), &
               ecmwf_HR_path_file(1), ecmwf_path_file2(1), ecmwf_path_file3(1), &
-              ecmwf1, ecmwf_HR1, use_hr_ecmwf, verbose)
+              ecmwf1, ecmwf_HR1, use_hr_ecmwf, ecmwf_nlevels, verbose)
          call read_ecmwf_wind(ecmwf_flag, ecmwf_path_file(2), &
               ecmwf_HR_path_file(2), ecmwf_path_file2(2), ecmwf_path_file3(2), &
-              ecmwf2, ecmwf_HR2, use_hr_ecmwf, verbose)
+              ecmwf2, ecmwf_HR2, use_hr_ecmwf, ecmwf_nlevels, verbose)
 
          call dup_ecmwf_allocation(ecmwf1, ecmwf, low_res)
          if (use_hr_ecmwf) then

@@ -36,10 +36,12 @@ subroutine deallocate_ecmwf_structures(ecmwf, low_res)
 
    deallocate(ecmwf%lon)
    deallocate(ecmwf%lat)
-   deallocate(ecmwf%avec)
-   deallocate(ecmwf%bvec)
-   if (low_res) deallocate(ecmwf%u10)
-   if (low_res) deallocate(ecmwf%v10)
+   if (low_res) then
+      deallocate(ecmwf%avec)
+      deallocate(ecmwf%bvec)
+      deallocate(ecmwf%u10)
+      deallocate(ecmwf%v10)
+   end if
    deallocate(ecmwf%skin_temp)
    deallocate(ecmwf%snow_depth)
    deallocate(ecmwf%sea_ice_cover)
