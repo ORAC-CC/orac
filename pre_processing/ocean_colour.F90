@@ -157,7 +157,7 @@ function read_oceancolour_cci(path_to_file, occci, wavelengths, verbose) &
    logical                     :: occci_rd(occci_nwl)
    integer                     :: fid, vid, ndim, nvar, natt, uDimID, ForNM
    integer                     :: timeid, lonid, latid
-   integer                     :: ntime, nlon ,nlat, nrd
+   integer                     :: ntime, nlon ,nlat
    integer, allocatable        :: iwavelength(:,:)
    real(kind=dreal)            :: lonmin, latmin
    real(kind=dreal)            :: lonres, latres
@@ -241,6 +241,7 @@ function read_oceancolour_cci(path_to_file, occci, wavelengths, verbose) &
    ! Store the wavelength pairs which correspond to each input wavelength
    ! so the calling routine can do the interpolation
    if (verbose) write(*,*) 'Selecting bands to read based on wavelength'
+   occci_rd = .false.
    do i = 1,nwl
       j=1
       do while ( (occci_wl(j) .le. wavelengths(i)) .and. (j .lt. occci_nwl) )
@@ -262,10 +263,10 @@ function read_oceancolour_cci(path_to_file, occci, wavelengths, verbose) &
    end do
 
    ! Now allocate the storage for the required data in the output structures
-   nrd = count(occci_rd)
-   allocate(occci%wavelength(nrd))
-   allocate(occci%atot(nlon,nlat,nrd))
-   allocate(occci%bbs(nlon,nlat,nrd))
+   occci%nwavelength = count(occci_rd)
+   allocate(occci%wavelength(occci%nwavelength))
+   allocate(occci%atot(nlon,nlat,occci%nwavelength))
+   allocate(occci%bbs(nlon,nlat,occci%nwavelength))
    allocate(cache(nlon,nlat))
 
    ! Loop over the required data fields and read into the output structure
@@ -299,7 +300,7 @@ function read_oceancolour_cci(path_to_file, occci, wavelengths, verbose) &
 end function read_oceancolour_cci
 
 !-------------------------------------------------------------------------------
-! Name: get_ocena_colour()
+! Name: get_ocean_colour()
 !
 ! Purpose:
 ! Deals with selecting the required OCCCI data file, determining which
