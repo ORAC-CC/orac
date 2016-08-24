@@ -863,7 +863,8 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       if (verbose) write(*,*) 'Read imager data'
       call read_imager(sensor,platform,l1b_path_file,geo_path_file, &
            aatsr_calib_path_file,imager_geolocation,imager_angles,imager_flags, &
-           imager_time,imager_measurements,channel_info,n_along_track,verbose)
+           imager_time,imager_measurements,channel_info,n_along_track, &
+           use_l1_land_mask,verbose)
 
       ! carry out any preparatory steps: identify required ECMWF and MODIS L3
       ! information,set paths and filenames to those required auxiliary /

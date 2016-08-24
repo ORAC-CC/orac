@@ -42,6 +42,7 @@
 ! 2016/04/08, SP: Added Himawari support.
 ! 2016/05/16, SP: Added Suomi-NPP support.
 ! 2016/06/28, SP: Added SLSTR-Sentinel3 support.
+! 2016/07/24, AP: Put back call to read_avhrr_land_sea_mask for use_l1_land_mask
 !
 ! $Id$
 !
@@ -57,7 +58,8 @@ contains
 
 subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
      path_to_aatsr_drift_table, imager_geolocation,imager_angles,imager_flags, &
-     imager_time,imager_measurements,channel_info,n_along_track,verbose)
+     imager_time,imager_measurements,channel_info,n_along_track, &
+     use_l1_land_mask,verbose)
 
    use channel_structures_m
    use imager_structures_m
@@ -84,6 +86,7 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
    type(imager_measurements_t),    intent(inout) :: imager_measurements
    type(channel_info_t),           intent(in)    :: channel_info
    integer(kind=lint),             intent(in)    :: n_along_track
+   logical,                        intent(in)    :: use_l1_land_mask
    logical,                        intent(in)    :: verbose
 
    integer :: i, j, k
@@ -115,6 +118,10 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
       !read the angles and lat/lon info of the orbit
       call read_avhrr_time_lat_lon_angles(path_to_geo_file,imager_geolocation, &
            imager_angles,imager_time,n_along_track,verbose)
+
+      if (use_l1_land_mask) &
+           call read_avhrr_land_sea_mask(path_to_geo_file, imager_geolocation, &
+                imager_flags)
 
       !read the (subset) of the orbit etc. SW:reflectances, LW:brightness temp
       call read_avhrr_l1b_radiances(sensor,platform,path_to_l1b_file, &
