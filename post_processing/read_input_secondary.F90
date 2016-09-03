@@ -162,7 +162,7 @@ subroutine read_input_secondary_optional(ncid, input_data, indexing, &
    integer,                      intent(in)    :: sval
    logical,                      intent(in)    :: verbose
 
-   integer            :: i
+   integer            :: i, ii
    character(len=32)  :: input_num
    character(len=512) :: input_dummy
 
@@ -176,8 +176,9 @@ subroutine read_input_secondary_optional(ncid, input_data, indexing, &
          else
             input_dummy = 'reflectance_in_channel_no_'// trim(adjustl(input_num))
          end if
+         ii = indexing%loop_to_main_index(i)
          call nc_read_packed_array(ncid, trim(adjustl(input_dummy)), &
-              input_data%channels(:,:,i), verbose, startp = [1, sval])
+              input_data%channels(:,:,ii), verbose, startp = [1, sval])
       end if
    end do
 
@@ -187,8 +188,9 @@ if (indexing%flags%do_cloud .and. read_flags%do_cloud) then
          write(input_num, "(i4)") indexing%Y_Id(indexing%YSolar(i))
 
          input_dummy = 'albedo_in_channel_no_'//trim(adjustl(input_num))
+         ii = indexing%ysolar_loop_to_main_index(i)
          call nc_read_packed_array(ncid, trim(adjustl(input_dummy)), &
-              input_data%albedo(:,:,i), verbose, startp = [1, sval])
+              input_data%albedo(:,:,ii), verbose, startp = [1, sval])
       end if
    end do
 !  read_flags%do_cloud = .false.

@@ -246,25 +246,26 @@ subroutine read_input_primary_optional(ncid, input_data, indexing, read_flags, &
    integer,                    intent(in)    :: sval
    logical,                    intent(in)    :: verbose
 
-   integer            :: i
+   integer            :: i, ii
    character(len=32)  :: input_num
    character(len=512) :: input_dummy
 
    do i=1,indexing%NViews
       if (indexing%read_optional_view_field(i)) then
          write(input_num,"(i1)") i
+         ii = indexing%view_loop_to_main_index(i)
 
          input_dummy = "solar_zenith_view_no"//trim(adjustl(input_num))
          call nc_read_array(ncid, trim(adjustl(input_dummy)), &
-              input_data%sol_zen(:,:,i), verbose, startp = [1, sval])
+              input_data%sol_zen(:,:,ii), verbose, startp = [1, sval])
 
          input_dummy ="satellite_zenith_view_no"//trim(adjustl(input_num))
          call nc_read_array(ncid, trim(adjustl(input_dummy)), &
-              input_data%sat_zen(:,:,i), verbose, startp = [1, sval])
+              input_data%sat_zen(:,:,ii), verbose, startp = [1, sval])
 
          input_dummy ="rel_azimuth_view_no"//trim(adjustl(input_num))
          call nc_read_array(ncid, trim(adjustl(input_dummy)), &
-              input_data%rel_azi(:,:,i), verbose, startp = [1, sval])
+              input_data%rel_azi(:,:,ii), verbose, startp = [1, sval])
       end if
    end do
    if (indexing%flags%do_cloud .and. read_flags%do_cloud) then
