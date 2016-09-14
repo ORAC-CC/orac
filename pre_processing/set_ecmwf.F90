@@ -271,9 +271,14 @@ subroutine set_ecmwf(cyear,cmonth,cday,chour,ecmwf_path,ecmwf_path2, &
 
 end subroutine set_ecmwf
 
-
+#ifdef __PGI
+real*8 function find_center_time(imager_geolocation, imager_time) &
+   result(center_time)
+#else
 real(dreal) function find_center_time(imager_geolocation, imager_time) &
    result(center_time)
+#endif
+
 
    use imager_structures_m
    use preproc_constants_m
