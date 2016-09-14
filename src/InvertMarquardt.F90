@@ -681,12 +681,12 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
            GZero, stat)
       if (stat /= 0) go to 99 ! Terminate processing this pixel
 
-      call Int_LUT_TauSolRe(SAD_LUT(1)%TB, SPixel%Ind%NSolar, SAD_LUT(1)%Grid, &
-           GZero, Ctrl, T_0d, d_T_0d, ITB, &
+      call Int_LUT_TauSolRe(SAD_LUT(1)%TFBd, SPixel%Ind%NSolar, SAD_LUT(1)%Grid, &
+           GZero, Ctrl, T_0d, d_T_0d, ITFBd, &
            SPixel%spixel_y_solar_to_ctrl_y_index, SPixel%Ind%YSolar, stat)
       if (stat /= 0) go to 99 ! Terminate processing this pixel
-      call Int_LUT_TauSolRe(SAD_LUT(1)%TFBd, SPixel%Ind%NSolar, SAD_LUT(1)%Grid, &
-           GZero, Ctrl, T_00, d_T_00, ITFBd, &
+      call Int_LUT_TauSolRe(SAD_LUT(1)%TB, SPixel%Ind%NSolar, SAD_LUT(1)%Grid, &
+           GZero, Ctrl, T_00, d_T_00, ITB, &
            SPixel%spixel_y_solar_to_ctrl_y_index, SPixel%Ind%YSolar, stat)
       if (stat /= 0) go to 99 ! Terminate processing this pixel
 
