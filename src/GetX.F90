@@ -193,6 +193,7 @@ end subroutine Set_State
 ! History:
 ! 2015/07/30, AP: Original version
 ! 2016/01/12, AP: Make treatment of solar_factor consistent with GetSurface.
+! 2016/09/07, AP: Output covariance for all variables.
 !
 ! Bugs:
 ! None known.
@@ -335,13 +336,7 @@ subroutine Get_State(mode, i, Ctrl, SPixel, flag, X, status, Err)
       end if
 
       if (present(Err)) then
-         if (any(SPixel%X == i)) then
-            Err(i,i) = Ctrl%Sx(i) * Ctrl%Sx(i) * Scale2
-         else
-            ! Assume that the inactive state variables are well known do not try
-            ! to retrieve
-            Err(i,i) = 1.0e-10 * Scale2 ! 1e-5 ** 2
-         end if
+         Err(i,i) = Ctrl%Sx(i) * Ctrl%Sx(i) * Scale2
       end if
 
       status = 0
