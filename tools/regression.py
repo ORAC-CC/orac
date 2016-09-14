@@ -71,8 +71,6 @@ args = parser.parse_args()
 
 if args.all_phases:
     args.phases = ou.settings.keys()
-    if args.suffix == None:
-        args.suffix = 'ALL'
     # For now, only run ATSR through all phases
     if args.long:
         args.tests = ['AATSR']

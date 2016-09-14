@@ -748,6 +748,7 @@ def args_preproc(parser):
 
     key = parser.add_argument_group('Preprocessor keywords')
     key.add_argument('-c', '--channel_ids', type=int, nargs='+', metavar='#',
+                     default = None,
                      help = 'Channels to be considered by the preprocessor.')
     key.add_argument('--day_flag', type=int, nargs='?', choices=[0,1,2,3],
                      default = 3,
@@ -1205,10 +1206,10 @@ def build_preproc_driver(args):
         warnings.warn('Unable to call SVN.', OracWarning, stacklevel=2)
 
     # Fetch repository commit number
-    if args.revision:
-        file_version = 'R{}'.format(args.revision)
-    else:
-        file_version = 'R{}'.format(get_svn_revision())
+    if not args.revision:
+        args.revision = get_svn_revision()
+
+    file_version = 'R{}'.format(args.revision)
     os.chdir(cwd)
 
     #------------------------------------------------------------------------
@@ -1505,17 +1506,16 @@ def cc4cl(orig):
 
     # Determine a name for this job from the filename
     inst = FileName(args.target)
-    job_name = inst.time.strftime('{}_%Y-%m-%d-%H-%M_R{}_'.format(inst.inst,
-                                                                  args.revision))
     log_path = args.out_dir + '/' + args.log_dir + '/'
     if args.batch and not os.path.isdir(log_path):
         os.makedirs(log_path, 0o774)
 
     # Sort out what channels are required
-    args.channel_ids = unique_list()
-    for phs in args.phases:
-        for w in settings[phs].wvl:
-            args.channel_ids.unique_append(map_wvl_to_inst[inst.sensor][w])
+    if args.channel_ids == None:
+        args.channel_ids = unique_list()
+        for phs in args.phases:
+            for w in settings[phs].wvl:
+                args.channel_ids.unique_append(map_wvl_to_inst[inst.sensor][w])
 
     args.channel_ids.sort()
 
@@ -1524,6 +1524,8 @@ def cc4cl(orig):
     args.out_dir += '/' + args.pre_dir
     check_args_preproc(args)
     (pre_driver, outroot) = build_preproc_driver(args)
+    job_name = inst.time.strftime('{}_%Y-%m-%d-%H-%M_R{}_'.format(inst.inst,
+                                                                  args.revision))
 
     # Run preprocessor (checking if we're clobbering a previous run)
     if args.clobber >= 3 or not os.path.isfile(args.out_dir + '/' +
