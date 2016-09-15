@@ -195,6 +195,7 @@ sub get_file_depencies {
 		# If the module is local include it as a dependency
 		foreach (@mod_bases) {
 			if ("$_.f90" ~~ @source_file_list or "$_.F90" ~~ @source_file_list) {
+				s{.*/}{};
 				push(@dependencies, "$objects_path$_.o");
 			}
 		}
