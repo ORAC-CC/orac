@@ -39,6 +39,7 @@
 !    we should not do.  Reverted this and a little cleanup.
 ! 2015/10/06, GM: Make use of subroutine match_file() in the common/system_utils
 !    module.  No more need to hard-wire processing dates.
+! 2016/09/15, SP: Allow use of collection 6 MODIS data. Default is collection 5.
 !
 ! $Id$
 !
@@ -110,9 +111,13 @@ subroutine select_modis_albedo_file(cyear,cdoy,modis_surf_path,include_full_brdf
            '\.005\..............'//'\.hdf$'
 
    if (match_file(trim(modis_surf_path), trim(regex), file_name) .ne. 0) then
-      write(*,*) 'ERROR: select_modis_albedo_file(): Unable to locate MODIS ' // &
-         'albedo file: ', trim(modis_surf_path)//'/'//trim(regex)
-      stop error_stop_code
+      regex = prefix//'\.A'//trim(adjustl(cyear2))//trim(adjustl(mcd_date_s))// &
+           '\.006\..............'//'\.hdf$'
+      if (match_file(trim(modis_surf_path), trim(regex), file_name) .ne. 0) then
+         write(*,*) 'ERROR: select_modis_albedo_file(): Unable to locate MODIS ' // &
+            'albedo file: ', trim(modis_surf_path)//'/'//trim(regex)
+         stop error_stop_code
+      endif
    end if
 
    modis_surf_path_file = trim(modis_surf_path)//'/'//trim(file_name)
