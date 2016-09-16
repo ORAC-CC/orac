@@ -226,13 +226,13 @@ subroutine read_slstr(infile,imager_geolocation, imager_measurements, &
             imager_angles,startx,starty,nx,ny,nx,ny,0,1)
       else if (band_ids(i) .le. 9) then
          call read_slstr_tirdata(indir,band_ids(i),imager_measurements%data(:,:,i),&
-            startx,starty,nx,ny,nx,ny,0)
+            startx,starty,nx,ny,nx,ny,1)
       else if (band_ids(i) .lt. 16) then
          call read_slstr_visdata(indir,band_ids(i),imager_measurements%data(:,:,i),&
             imager_angles,startx,starty,obnx,obny,nx,ny,obl_off-1,2)
       else if (band_ids(i) .le. 18) then
          call read_slstr_tirdata(indir,band_ids(i),imager_measurements%data(:,:,i),&
-            startx,starty,obnx,obny,nx,ny,obl_off-1)
+            startx,starty,obnx,obny,nx,ny,obl_off)
       else
          write(*,*)'Invalid band_id! Must be in range 1->18',band_ids(i)
          stop

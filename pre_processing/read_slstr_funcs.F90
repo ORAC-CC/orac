@@ -20,6 +20,8 @@
 ! 2016/07/22, SP: Implement second (oblique) view. Also, correct initial version
 !    of the geometry resampling. Now operates more accurately.
 ! 2016/08/01, SP: Changed zenith angle bounds, fixed RAA for second view
+! 2016/09/14, SP: Corrections for night-time processing
+! 2016/09/16, SP: Added openMP for a small performance boost
 !
 ! $Id$
 !
@@ -257,7 +259,7 @@ subroutine read_slstr_tirdata(indir,inband,outarr,sx,sy,nx,ny,inx,iny,offset)
    ! Apply scale, offset and then fill for bad data
    data2 = data1*sclval + offval
    where(data1 .eq. filval) data2=sreal_fill_value
-   outarr(offset:nx,:)=data2
+   outarr(offset:offset+nx-1,:)=data2
 
 end subroutine read_slstr_tirdata
 
@@ -380,7 +382,7 @@ subroutine read_slstr_visdata(indir,inband,outarr,imager_angles,sx,sy,nx,ny,inx,
 
    ! Apply scale, offset and then fill for bad data
    where(data2 .eq. filval) data3=sreal_fill_value
-   outarr(offset:nx,:)=data3
+   outarr(offset:nx+offset-1,:)=data3
 
    ! Convert from radiances to reflectances
    where(outarr .ne.sreal_fill_value) outarr = (pi*outarr*cos(d2r*imager_angles%solzen(:,:,view)))/irradiances(inband)
@@ -412,10 +414,10 @@ subroutine slstr_resample_vis_to_tir(inarr,outarr,nx,ny,fill)
 
    integer :: x,y
    integer :: newx,newy,counter
-
    newx=1
    do x=1,nx*2-1,2
       newy=1
+
       do y=1,ny*2-1,2
          counter=0
          tmpval=0
@@ -444,6 +446,7 @@ subroutine slstr_resample_vis_to_tir(inarr,outarr,nx,ny,fill)
       end do
       newx=newx+1
    end do
+
 end subroutine slstr_resample_vis_to_tir
 
 ! Get the DEM from the geolocation file
@@ -704,6 +707,8 @@ subroutine slstr_get_interp(in_lons,tx_lons,nxt,nyt,nxi,nyi,interp)
    real(kind=sreal) :: dists1(nxt),dists2(nxt)
    real(kind=sreal) :: firlo,seclo,slo
 
+!$OMP PARALLEL PRIVATE(x, y, dists1, dists2, firlo, seclo)
+!$OMP DO SCHEDULE(GUIDED)
    do y=1,nyi
       do x=1,nxi
          dists1 = in_lons(x,y)-tx_lons(:,y)
@@ -720,6 +725,8 @@ subroutine slstr_get_interp(in_lons,tx_lons,nxt,nyt,nxi,nyi,interp)
          interp(x,y,3) = (in_lons(x,y)-firlo)/(seclo-firlo)
       end do
    end do
+!$OMP END DO
+!$OMP END PARALLEL
 
 end subroutine slstr_get_interp
 
@@ -739,10 +746,12 @@ subroutine slstr_interp_angs(in_angs,out_angs,txnx,txny,nx,ny,interp,view)
    real(kind=sreal),      intent(in)    :: interp(nx,ny,3)
    type(imager_angles_t), intent(inout) :: out_angs
 
-   integer          :: x,y,prev,next
+   integer          :: x,y,z,prev,next
    real(kind=sreal) :: slo,intval(4)
 
    ! Loop over all pixels
+!$OMP PARALLEL PRIVATE(x, y, intval, prev, next, slo)
+!$OMP DO SCHEDULE(GUIDED)
    do x=1,nx
       do y=1,ny
          prev= interp(x,y,1)
@@ -750,19 +759,34 @@ subroutine slstr_interp_angs(in_angs,out_angs,txnx,txny,nx,ny,interp,view)
          slo = interp(x,y,3)
 
          ! Compute the interpolated angles on the TIR grid
-         if (prev .ne. next) then
-            intval = in_angs(prev,y,:) + slo*(in_angs(next,y,:)-in_angs(prev,y,:))
-         else
-            intval = in_angs(prev,y,:)
-         end if
+      	do z=1,4
+         	if (prev .ne. next) then
+         		if (in_angs(prev,y,z) .eq. sreal_fill_value) then
+         			if (in_angs(next,y,z) .eq. sreal_fill_value) then
+         				intval(z) = sreal_fill_value
+         			else
+         				intval(z) = in_angs(next,y,z)
+         			endif
+         		else
+         			if (in_angs(next,y,z) .eq. sreal_fill_value) then
+         				intval(z) = in_angs(prev,y,z)
+         			else
+         				intval = in_angs(prev,y,:) + slo*(in_angs(next,y,:)-in_angs(prev,y,:))
+         			endif
+         		endif
+         	else
+         		if (in_angs(prev,y,z) .ne. sreal_fill_value) then
+         	  		intval = in_angs(prev,y,:)
+         	  	else if (in_angs(next,y,z) .ne. sreal_fill_value) then
+         	  		intval = in_angs(next,y,:)
+         	  	else
+         			intval(z) = sreal_fill_value
+         		endif
+         	end if
+			enddo
 
-         intval(4)=abs(intval(4))
-         intval(2)=abs(intval(2))
-
-         if (intval(4) .lt. 0 .or. intval(4) .gt. 90 ) intval = sreal_fill_value
-         if (intval(2) .lt. 0 .or. intval(2) .gt. 90 ) intval = sreal_fill_value
-
-
+         if (intval(4) .lt. 0 .or. intval(4) .gt. 180 ) intval = sreal_fill_value
+         if (intval(2) .lt. 0 .or. intval(2) .gt. 180 ) intval = sreal_fill_value
 
          out_angs%solazi(x,y,view) = intval(3)
          out_angs%relazi(x,y,view) = intval(1)
@@ -771,6 +795,8 @@ subroutine slstr_interp_angs(in_angs,out_angs,txnx,txny,nx,ny,interp,view)
 
       end do
    end do
+!$OMP END DO
+!$OMP END PARALLEL
 
 end subroutine slstr_interp_angs
 
@@ -832,28 +858,14 @@ subroutine read_slstr_satsol(indir,imager_angles,interp,txnx,txny,nx,ny,startx,v
    end if
 
    ! Check bounds
-   where(angles(:,:,1) .gt. 180) &
-      angles(:,:,1)=angles(:,:,1)-360.
-   where(angles(:,:,3) .gt. 180) &
-      angles(:,:,3)=angles(:,:,3)-360.
-
-   where(angles(:,:,3) .lt. -180) &
-      angles(:,:,3)=sreal_fill_value
-   where(angles(:,:,4) .lt. -90) &
+   where(angles(:,:,4) .lt. -180) &
       angles(:,:,4)=sreal_fill_value
-   where(angles(:,:,2) .lt. -90) &
+   where(angles(:,:,2) .lt. -180) &
       angles(:,:,2)=sreal_fill_value
-   where(angles(:,:,1) .lt. -180) &
-      angles(:,:,1)=sreal_fill_value
-
-   where(angles(:,:,3) .gt. 180) &
-      angles(:,:,3)=sreal_fill_value
-   where(angles(:,:,4) .gt. 90) &
+   where(angles(:,:,4) .gt. 180) &
       angles(:,:,4)=sreal_fill_value
-   where(angles(:,:,2) .gt. 90) &
+   where(angles(:,:,2) .gt. 180) &
       angles(:,:,2)=sreal_fill_value
-   where(angles(:,:,1) .gt. 180) &
-      angles(:,:,1)=sreal_fill_value
 
    where(is_nan(angles)) angles=sreal_fill_value
 
@@ -865,10 +877,12 @@ subroutine read_slstr_satsol(indir,imager_angles,interp,txnx,txny,nx,ny,startx,v
          imager_angles%relazi(startx:,:,view) .ne. sreal_fill_value)
       imager_angles%relazi(:,:,view) = abs(imager_angles%relazi(startx:,:,view) - &
                                         imager_angles%solazi(startx:,:,view))
-
-      where (imager_angles%relazi(:,:,view) .gt. 180.)
-         imager_angles%relazi(:,:,view) = 360. - imager_angles%relazi(:,:,view)
-      end where
+   end where
+   where (imager_angles%solazi(:,:,view) .gt. 360.)
+      imager_angles%solazi(:,:,view) = 360. - imager_angles%solazi(:,:,view)
+   end where
+   where (imager_angles%relazi(:,:,view) .gt. 360.)
+      imager_angles%relazi(:,:,view) = 360. - imager_angles%relazi(:,:,view)
    end where
 end subroutine read_slstr_satsol
 
