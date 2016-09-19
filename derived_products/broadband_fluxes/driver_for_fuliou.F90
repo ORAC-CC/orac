@@ -172,7 +172,7 @@ fi%lscm(1:4)=(/.false.,.true.,.true.,.false./)
 !fi%HYBRID_SW_SOLVER = .false. !user settings only
 
 ! 4-STREAM SOLVER
-if(FuSolverMode .eq. 1) then
+if(FuSolverMode .eq. 3) then
  fi%isksolve= 0
  fi%fourssl=.true.
 endif
@@ -183,7 +183,7 @@ if(FuSolverMode .eq. 2) then
 endif
 
 ! 2-STREAM SOLVER
-if(FuSolverMode .eq. 3) then
+if(FuSolverMode .eq. 4) then
  fi%isksolve= 0
  fi%fourssl=.false.
 endif

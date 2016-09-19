@@ -12,13 +12,14 @@
 !   3) ALB file (pre-processing)
 !   4) TSI file (http://proj.badc.rl.ac.uk/svn/orac/data/tsi_soho_sorce_1978_2015.nc)
 !   5) Output filename (user specified)
-!   6) Radiation Algorithm (BUGSrad: '1'; FuLiou: '2')
-!  Optional inputs:
-!   7) FuLiou Solver ('1' 4-stream, '2' 2-Stream Modified gamma, '3' 2-Stream)
-!   8) Aerosol CCI file (needs to coincide with cloud file) --> use '' to skip
-!   9) Collocated aerosol-cloud netcdf file (user specified) --> use '' to skip
-!  Options 10,11,12,13 are to process individual or multiple 1km pixels
-!   10) x0, 11) y0, 12) x1, 13) y1
+!   6) Radiation Algorithm (BUGSrad: '1'; FuLiou-2Stream Modified Gamma: '2'; FuLiou-4stream '3' ; FuLiou-2Stream '4')
+!   7) x0, 8) y0, 9) x1, 10) y1 {required but can leave blank to specify full range}
+!
+!  Optional inputs: Use equals sign (=) with appropriate designator can be in any order
+!  cci_aerosol={filename} accepts v3.02 or v4.01 types
+!  cci_collocation={filename}
+!  modis_aerosol={filename} accepts MOD04 or MYD04 COLLECTION 6
+!  modis_cloud={filename} accepts MOD06 or MYD06 COLLECTION 6
 !
 ! Subroutines:
 !   interpolate_meteorology.F90
@@ -70,6 +71,10 @@
 ! 2016/08/15, MC: Changed output time array from float to double.
 ! 2016/08/16, MC: Modified code to restrict size of output netCDF file by the optional input
 !                 pixel selection range (pxX0,pxY0,pxX1,pxY1).
+! 2016/09/19, MC: Added option to run code using MODIS C6 aerosol (MOD04/MYD04) & cloud 
+!                 (MOD06/MYD06) instead of CCI. Added hdf reader tools for MODIS.
+!                 Re-formatted optional arguments for efficiency.
+!                 
 !
 ! $Id$
 !
@@ -89,16 +94,13 @@ program process_broadband_fluxes
    implicit none
 
    character(path_length) :: Fprimary,FPRTM,FTSI,FALB,fname,FLXalgorithm,Faerosol,Fcollocation
-   integer algorithm_processing_mode !1-BUGSrad, 2-FuLiou
+   character(path_length) :: FMOD04,FMOD06
+   integer algorithm_processing_mode !1-BUGSrad, 2-FuLiou2G, 3-FuLiou4S, 4-FuLiou 2S
    integer :: ncid, i, j, k, dims_var(2), dim3d_var(3)
    logical, parameter :: verbose=.true.
    logical there
    type(global_attributes_t) :: global_atts
    type(source_attributes_t) :: source_atts
-
-   !Fu Liou optional input
-   character(path_length) :: Fsolver
-   integer fu_solver_mode !1=4-stream, 2-stream gamma weighted, 2-stream
 
    !Constants
    real(kind=8), parameter :: Runiv = 8314. !universal gas constant
@@ -141,6 +143,8 @@ program process_broadband_fluxes
    integer :: ch1ID,ch2ID,ch3ID,ch4ID
    integer(kind=lint) :: nc_alb
    integer(kind=lint) :: nc_emis
+
+   real(kind=sreal), allocatable :: mCTP(:,:)
 
    !PRIMARY FILE
    real, allocatable :: COT(:,:)  ! Cloud Optical Depth (xp,yp)
@@ -349,7 +353,7 @@ program process_broadband_fluxes
    integer :: tlatid,tlonid
 
    !For reading time from input string
-   integer :: index1
+   integer :: index1,index2
    character(len=4) :: cyear
    character(len=2) :: cmonth
    character(len=2) :: cday
@@ -357,10 +361,11 @@ program process_broadband_fluxes
    !For CPU processing time
    real :: cpuStart,cpuFinish
 
+   integer :: nargs !number of command line arguments
+   character(path_length) :: argname, tmpname, tmpname1, tmpname2
 !-------------------------------------------------------------------------------
-!Get File Names
-
-   !Read manditory arguments (file names)
+   !Read manditory arguments
+   nargs = command_argument_count()
    call get_command_argument(1, Fprimary)
    call get_command_argument(2, FPRTM)
    call get_command_argument(3, FALB)
@@ -376,29 +381,14 @@ program process_broadband_fluxes
     read(flxAlgorithm,*) value
     algorithm_processing_mode=value
     if(algorithm_processing_mode .eq. 1) print*,'Algorithm: BUGSrad'
-    if(algorithm_processing_mode .eq. 2) print*,'Algorithm: FuLiou'
+    if(algorithm_processing_mode .eq. 2) print*,'Algorithm: FuLiou 2G'
+    if(algorithm_processing_mode .eq. 3) print*,'Algorithm: FuLiou 4S'
+    if(algorithm_processing_mode .eq. 4) print*,'Algorithm: FuLiou 2S'
 
-   !Read optional arguments
-   call get_command_argument(7, Fsolver)
-    if(len(trim(Fsolver)) .ne. 0) then
-      read(Fsolver,*) value
-      fu_solver_mode = value
-      if(fu_solver_mode .eq. 1) print*,'4-stream solution'
-      if(fu_solver_mode .eq. 2) print*,'2-stream Mod. Gamma Solution'
-      if(fu_solver_mode .eq. 3) print*,'2-stream solution'
-    endif
-
-   call get_command_argument(8, Faerosol)
-    aerosol_processing_mode = 0
-    if(len(trim(Faerosol)) .gt. 1.) aerosol_processing_mode = 1 !collocate aerosol2cloud
-
-   call get_command_argument(9, Fcollocation)
-    if(len(trim(Fcollocation)) .gt. 1.) aerosol_processing_mode = 2 !collocate & save file
-
-   call get_command_argument(10, cpxX0)
-   call get_command_argument(11, cpxY0)
-   call get_command_argument(12, cpxX1)
-   call get_command_argument(13, cpxY1)
+   call get_command_argument(7, cpxX0)
+   call get_command_argument(8, cpxY0)
+   call get_command_argument(9, cpxX1)
+   call get_command_argument(10, cpxY1)
     !x-y range of selected pixels
     if(len(trim(cpxX0)) .ne. 0 .and. len(trim(cpxX1)) .ne. 0 .and. &
        len(trim(cpxY0)) .ne. 0 .and. len(trim(cpxY1)) .ne. 0) then
@@ -414,17 +404,27 @@ program process_broadband_fluxes
       print*,pxX0,pxX1,pxY0,pxY1
     endif
 
-    !single pixel
-    if(len(trim(cpxX0)) .ne. 0 .and. len(trim(cpxX1)) .eq. 0 .and. &
-       len(trim(cpxY0)) .ne. 0 .and. len(trim(cpxY1)) .eq. 0) then
-      print*,'PROCESS SINGLE SATELLITE PIXEL'
-      read(cpxX0,*) value
-      pxX0=value
-      pxX1=value
-      read(cpxY0,*) value
-      pxY0=value
-      pxY1=value
-    endif
+    ! Read optional arguments
+    do i = 11, nargs
+      call get_command_argument(i, argname)
+      index1=index(trim(adjustl(argname)),'=',back=.true.)
+      index2=len(trim(argname))
+      tmpname1=trim(adjustl(argname(1:index1)))
+      tmpname2=trim(adjustl(argname(index1+1:index2)))
+
+      if(tmpname1 .eq. 'cci_aerosol=') then 
+       Faerosol=trim(tmpname2)
+       aerosol_processing_mode = 1
+      end if
+      if(tmpname1 .eq. 'cci_collocation=') then 
+       Fcollocation=trim(tmpname2)
+       aerosol_processing_mode = 2
+      end if
+      if(tmpname1 .eq. 'modis_aerosol=') FMOD04=trim(tmpname2)
+      if(tmpname1 .eq. 'modis_cloud=') FMOD06=trim(tmpname2)
+    end do
+
+
 !-------------------------------------------------------------------------------
    !Read time string from file
    index1=index(trim(adjustl(Fprimary)),'_',back=.true.)
@@ -444,6 +444,7 @@ program process_broadband_fluxes
    call greg2jul(pxYear,pxMonth,pxDay,pxJday)
    print*,pxYear,pxMonth,pxDay,pxJday
 !-------------------------------------------------------------------------------
+
    ! Open TSI file
    call nc_open(ncid,FTSI)
 
@@ -635,7 +636,7 @@ program process_broadband_fluxes
 
   ! Open Aerosol CCI file (optional)
   if(aerosol_processing_mode .ge. 1) then
-   call nc_open(ncid,Faerosol)
+   call nc_open(ncid,trim(Faerosol))
 
     !Get dimension
     nc_aer = nc_dim_length(ncid, 'pixel_number', verbose)
@@ -656,7 +657,7 @@ program process_broadband_fluxes
 
     ! Close file
     if (nf90_close(ncid) .ne. NF90_NOERR) then
-       write(*,*) 'ERROR: ',Faerosol
+       write(*,*) 'ERROR: ',trim(Faerosol)
        stop error_stop_code
     end if
   end if
@@ -700,6 +701,8 @@ program process_broadband_fluxes
    allocate(lts(xN,yN))
    allocate(fth(xN,yN))
    allocate(colO3(xN,yN))
+   allocate(AOD550(xN,yN))
+   allocate(AREF(xN,yN))
 
     !Fill OUTPUT with missing
     time_data(:,:) = dreal_fill_value
@@ -749,14 +752,12 @@ program process_broadband_fluxes
       pxY1=yN
     end if
 
-   allocate(AOD550(xN,yN))
-   allocate(AREF(xN,yN))
    !OPTION - PROCESS aerosol
    PRINT*,'aerosol_processing_mode: ',aerosol_processing_mode
    if(aerosol_processing_mode .ge. 1) then
     allocate(aID(xN,yN))
     !determine if netcdf file already exists
-    inquire( file=Fcollocation, exist=there )
+    inquire( file=trim(Fcollocation), exist=there )
     if(.not. there) then
      call collocate_aerosol2cloud(nc_aer,aerLon,aerLat,xN,yN,LON,LAT,aID)
 
@@ -822,7 +823,7 @@ program process_broadband_fluxes
           end if
 
          print*,'CREATED: '
-         print*,Fcollocation
+         print*,trim(Fcollocation)
        end if ;aerosol_processing_mode = 2
     end if !file not there
 
@@ -831,7 +832,7 @@ program process_broadband_fluxes
       print*,'Extracting data from:'
       write(*,*) trim(Fcollocation)
      ! Open Collocation file
-     call nc_open(ncid,Fcollocation)
+     call nc_open(ncid,trim(Fcollocation))
 
      !Read collocation data
      call nc_read_array(ncid, "aID", aID, verbose)
@@ -839,7 +840,7 @@ program process_broadband_fluxes
      ! Close file
       if (nf90_close(ncid) .ne. NF90_NOERR) then
         write(*,*) 'ERROR:  ' // &
-                   'LWRTM file: ', Fcollocation
+                   'LWRTM file: ', trim(Fcollocation)
         stop error_stop_code
       end if
     end if !file there
@@ -864,10 +865,24 @@ program process_broadband_fluxes
    end if
 
    if(algorithm_processing_mode .eq. 1) print*,'Algorithm: BUGSrad'
-   if(algorithm_processing_mode .eq. 2) print*,'Algorithm: FuLiou'
-   if(fu_solver_mode .eq. 1) print*,'4-stream solution'
-   if(fu_solver_mode .eq. 2) print*,'2-stream Mod. Gamma Solution'
-   if(fu_solver_mode .eq. 3) print*,'2-stream solution'
+   if(algorithm_processing_mode .eq. 2) print*,'Algorithm: FuLiou 2G'
+   if(algorithm_processing_mode .eq. 3) print*,'Algorithm: FuLiou 4S'
+   if(algorithm_processing_mode .eq. 4) print*,'Algorithm: FuLiou 2S'
+
+
+   !Read MODIS HDF DATA
+   if(len(trim(FMOD04)) .gt. 0 .and. &
+      len(trim(FMOD04)) .ne. path_length) then
+    print*,'Using MODIS aerosol input --> replacing ORAC'
+    call get_modis_aerosol(trim(FMOD04),xN,yN,AREF,AOD550)
+   end if
+
+   if(len(trim(FMOD06)) .gt. 0 .and. &
+      len(trim(FMOD06)) .ne. path_length) then
+    print*,'Using MODIS cloud input --> replacing ORAC'
+    call get_modis_cloud(trim(FMOD06),xN,yN,CTT,CTP,CTH,phase,REF,COT,cc_tot)
+   end if
+
 
 !-------------------------------------------------------------------------
 !END OPTIONAL INPUTS SECTION
@@ -913,7 +928,9 @@ call cpu_time(cpuStart)
       endif
 
       !FuLiou Surface Properties
-      if(algorithm_processing_mode .eq. 2) then
+      if(algorithm_processing_mode .eq. 2 .or. &
+         algorithm_processing_mode .eq. 3 .or. &
+         algorithm_processing_mode .eq. 4) then
        call preprocess_fuliou_sfc_albedo(nc_alb,rho_0d(i,j,:),rho_dd(i,j,:),rho_0d_fuliou,rho_dd_fuliou)
        call preprocess_bugsrad_sfc_emissivity(nc_emis,emis_data(i,j,:),emis_fuliou)
       endif
@@ -966,18 +983,18 @@ call cpu_time(cpuStart)
            pxts = STEMP(i,j)
         endif
 
-         !print*,'latitude: ',LAT(i,j)
-         !print*,'longitude: ',LON(i,j)
-         !print*,'solar zenith: ',SOLZ(i,j)
-         !print*,'cc_tot:  ',cc_tot(i,j)
-         !print*,'Sat Phase: ',PHASE(i,j)
-         !print*,'Sat retr. CTH = ',CTH(i,j)
-         !print*,'Sat retr. CTT = ',CTT(i,j)
-         !print*,'SAT retr. REF = ',REF(i,j)
-         !print*,'SAT retr. COT = ',COT(i,j)
-         !print*,'SAT retr. cc_tot = ',cc_tot(i,j)
-         !print*,'Aerosol Optical Depth: ',aerAOD(aID(i,j))
-         !print*,'Aerosol Effective Radius: ',aerREF(aID(i,j))
+!         print*,'latitude: ',LAT(i,j)
+!         print*,'longitude: ',LON(i,j)
+!         print*,'solar zenith: ',SOLZ(i,j)
+!         print*,'cc_tot:  ',cc_tot(i,j)
+!         print*,'Sat Phase: ',PHASE(i,j)
+!         print*,'Sat retr. CTH = ',CTH(i,j)
+!         print*,'Sat retr. CTT = ',CTT(i,j)
+!         print*,'SAT retr. REF = ',REF(i,j)
+!         print*,'SAT retr. COT = ',COT(i,j)
+!         print*,'SAT retr. cc_tot = ',cc_tot(i,j)
+!         print*,'Aerosol Optical Depth: ',AOD550(i,j)
+!         print*,'Aerosol Effective Radius: ',AREF(i,j)
 
         !cloud base & top height calculation
         call preprocess_input(cc_tot(i,j),AREF(i,j),AOD550(i,j),phase(i,j),&
@@ -990,15 +1007,15 @@ call cpu_time(cpuStart)
         nanFlag=0
 
          !debugging (print statements)
-         !print*,'phase: ',pxPhaseFlag
-         !print*,'re :',pxREF
-         !print*,'tau :',pxCOT
-         !print*,'Hctop = ',pxHctop,' HctopID: ',pxHctopID
-         !print*,'Hcbase = ',pxHcbase,' HcbaseID: ',pxHcbaseID
-         !print*,'Regime: ',pxregime
-         !print*,'TOTAL SOLAR IRRADIANCE: ',pxTSI
-         !print*,'Hctop (hPa) = ',pxP(pxHctopID)
-         ! print*,'Hcbase (hPa) = ',pxP(pxHcbaseID)
+!         print*,'phase: ',pxPhaseFlag
+!         print*,'re :',pxREF
+!         print*,'tau :',pxCOT
+!         print*,'Hctop = ',pxHctop,' HctopID: ',pxHctopID
+!         print*,'Hcbase = ',pxHcbase,' HcbaseID: ',pxHcbaseID
+!         print*,'Regime: ',pxregime
+!         print*,'TOTAL SOLAR IRRADIANCE: ',pxTSI
+!         print*,'Hctop (hPa) = ',pxP(pxHctopID)
+!         print*,'Hcbase (hPa) = ',pxP(pxHcbaseID)
 
       !Call BUGSrad Algorithm
       if(algorithm_processing_mode .eq. 1) then
@@ -1028,7 +1045,9 @@ call cpu_time(cpuStart)
        endif
 
       !Call FuLiou Algorithm
-      if(algorithm_processing_mode .eq. 2) then
+      if(algorithm_processing_mode .eq. 2 .or. &
+         algorithm_processing_mode .eq. 3 .or. &
+         algorithm_processing_mode .eq. 4) then
 !      print*,'starting... Fu-Liou'
 !      print*,NL,pxTSI,pxtheta,pxAsfcSWRdr,pxAsfcNIRdr,pxAsfcSWRdf,pxAsfcNIRdf,pxts
 !      print*,nc_alb
@@ -1046,7 +1065,8 @@ call cpu_time(cpuStart)
                           bpar,bpardif,tpar,&
                           ulwfx,dlwfx,uswfx,dswfx,&
                           ulwfxclr,dlwfxclr,uswfxclr,dswfxclr,&
-                          emis_fuliou,rho_0d_fuliou,rho_dd_fuliou,fu_solver_mode)
+                          emis_fuliou,rho_0d_fuliou,rho_dd_fuliou,&
+                          algorithm_processing_mode)
 
 !           print*,'Fu Liou'
 !           print*,i,j,'1',pxtoaswup

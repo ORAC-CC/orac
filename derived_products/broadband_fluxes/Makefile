@@ -71,6 +71,10 @@ ORAC_OBJ = $(OBJS)/kinds.o \
            $(OBJS)/seiji_twostreamsolv_sw_v20.o \
            $(OBJS)/aerosols.o \
            $(OBJS)/preprocess_fuliou_sfc_albedo.o \
+           $(OBJS)/read_hdf_sd_dims.o \
+           $(OBJS)/read_hdf_sd_data.o \
+           $(OBJS)/get_modis_aerosol.o \
+           $(OBJS)/get_modis_cloud.o \
            $(OBJS)/driver_for_fuliou.o
 
 ORAC_OBJ_MAIN = $(OBJS)/process_broadband_fluxes.o
