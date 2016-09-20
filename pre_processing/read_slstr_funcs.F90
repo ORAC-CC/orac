@@ -878,10 +878,10 @@ subroutine read_slstr_satsol(indir,imager_angles,interp,txnx,txny,nx,ny,startx,v
       imager_angles%relazi(:,:,view) = abs(imager_angles%relazi(startx:,:,view) - &
                                         imager_angles%solazi(startx:,:,view))
    end where
-   where (imager_angles%solazi(:,:,view) .gt. 360.)
+   where (imager_angles%solazi(:,:,view) .gt. 180.)
       imager_angles%solazi(:,:,view) = 360. - imager_angles%solazi(:,:,view)
    end where
-   where (imager_angles%relazi(:,:,view) .gt. 360.)
+   where (imager_angles%relazi(:,:,view) .gt. 180.)
       imager_angles%relazi(:,:,view) = 360. - imager_angles%relazi(:,:,view)
    end where
 end subroutine read_slstr_satsol

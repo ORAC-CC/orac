@@ -1192,7 +1192,8 @@ subroutine setup_slstr(l1b_path_file,geo_path_file,platform,year,month,day, &
    type(channel_info_t),           intent(inout) :: channel_info
    logical,                        intent(in)    :: verbose
 
-   integer :: index2
+   integer :: index2,second
+   character(len=date_length) :: csecond
 
    ! Variables for dealing with netcdf files (required for timestamping)
    integer fid,ierr
@@ -1323,6 +1324,7 @@ subroutine setup_slstr(l1b_path_file,geo_path_file,platform,year,month,day, &
    cday=trim(adjustl(l1b_start(index2+8:index2+9)))
    chour=trim(adjustl(l1b_start(index2+11:index2+12)))
    cminute=trim(adjustl(l1b_start(index2+14:index2+15)))
+   csecond=trim(adjustl(l1b_start(index2+17:index2+18)))
 
    ! get year, doy, hour and minute as integers
    read(cyear(1:len_trim(cyear)), '(I4)') year
@@ -1330,6 +1332,22 @@ subroutine setup_slstr(l1b_path_file,geo_path_file,platform,year,month,day, &
    read(cday(1:len_trim(cday)), '(I2)') day
    read(chour(1:len_trim(chour)), '(I2)') hour
    read(cminute(1:len_trim(cminute)), '(I2)') minute
+   read(csecond(1:len_trim(csecond)), '(I2)') second
+   if (second .gt. 30) then
+   	minute = minute+1
+		write(cminute,'(i2)') minute
+   	if (minute .ge. 60) then
+   		minute=0
+   		hour=hour+1
+			write(chour,'(i2)') hour
+			if (hour .ge. 24) then
+				hour=0
+				day = day+1
+				write(cday,'(i2)') day
+			endif
+		endif
+   endif
+
    call GREG2DOY(year, month, day, doy)
    write(cdoy, '(i3.3)') doy
 
