@@ -1333,7 +1333,7 @@ subroutine setup_slstr(l1b_path_file,geo_path_file,platform,year,month,day, &
    read(chour(1:len_trim(chour)), '(I2)') hour
    read(cminute(1:len_trim(cminute)), '(I2)') minute
    read(csecond(1:len_trim(csecond)), '(I2)') second
-   if (second .gt. 30) then
+   if (second .ge. 30) then
    	minute = minute+1
 		write(cminute,'(i2)') minute
    	if (minute .ge. 60) then
