@@ -1334,20 +1334,19 @@ subroutine setup_slstr(l1b_path_file,geo_path_file,platform,year,month,day, &
    read(cminute(1:len_trim(cminute)), '(I2)') minute
    read(csecond(1:len_trim(csecond)), '(I2)') second
    if (second .ge. 30) then
-   	minute = minute+1
-		write(cminute,'(i2)') minute
-   	if (minute .ge. 60) then
-   		minute=0
-   		hour=hour+1
-			write(chour,'(i2)') hour
-			if (hour .ge. 24) then
-				hour=0
-				day = day+1
-				write(cday,'(i2)') day
-			endif
-		endif
+      minute = minute+1
+      if (minute .ge. 60) then
+         minute=0
+         hour=hour+1
+         if (hour .ge. 24) then
+            hour=0
+            day = day+1
+            write(cday,'(i0.2)') day
+         endif
+         write(chour,'(i0.2)') hour
+      endif
+      write(cminute,'(i0.2)') minute
    endif
-
    call GREG2DOY(year, month, day, doy)
    write(cdoy, '(i3.3)') doy
 
