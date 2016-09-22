@@ -74,6 +74,8 @@
 ! 2016/09/19, MC: Added option to run code using MODIS C6 aerosol (MOD04/MYD04) & cloud 
 !                 (MOD06/MYD06) instead of CCI. Added hdf reader tools for MODIS.
 !                 Re-formatted optional arguments for efficiency.
+! 2016/09/22, MC: Added conditional statement to input pixel selection range so if 
+!                 values of zero are specified the whole range of the orbit is used.
 !                 
 !
 ! $Id$
@@ -751,6 +753,12 @@ program process_broadband_fluxes
       pxY0=1
       pxY1=yN
     end if
+   ! Override if 0's are given
+   if(pxX0 .eq. 0) pxX0=1
+   if(pxX1 .eq. 0) pxX1=xN
+   if(pxY0 .eq. 0) pxY0=1
+   if(pxY1 .eq. 0) pxY1=yN
+
 
    !OPTION - PROCESS aerosol
    PRINT*,'aerosol_processing_mode: ',aerosol_processing_mode
