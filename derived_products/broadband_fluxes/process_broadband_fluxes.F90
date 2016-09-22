@@ -407,6 +407,7 @@ program process_broadband_fluxes
     endif
 
     ! Read optional arguments
+    aerosol_processing_mode = 0
     do i = 11, nargs
       call get_command_argument(i, argname)
       index1=index(trim(adjustl(argname)),'=',back=.true.)
