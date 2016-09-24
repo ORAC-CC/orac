@@ -1041,7 +1041,7 @@ subroutine setup_viirs(l1b_path_file,geo_path_file,platform,year,month,day, &
          1.378,   1.610,   2.250,   3.700,   4.050,   8.550,   10.763,  12.013 /)
 
    integer, parameter :: all_channel_sw_flag(all_nchannels_total) = &
-      (/ 1,       1,       1,       1,       1,       1,       1,       0, &
+      (/ 1,       1,       1,       1,       1,       1,       1,       1, &
          1,       1,       1,       1,       0,       0,       0,       0/)
 
    integer, parameter :: all_channel_lw_flag(all_nchannels_total) = &
