@@ -111,7 +111,7 @@ subroutine Get_LwSwRTM(Ctrl, SAD_Chan, RTM, SPixel, status)
 
    if (Ctrl%Ind%NThermal .gt. 0) then
       call interp_field2(RTM%LW%Ems,     SPixel%RTM%LW%Ems,     interp)
-      if (any(SPixel%RTM%LW%Ems < EmsMin .or. SPixel%RTM%LW%Ems > TxcMax)) &
+      if (any(SPixel%RTM%LW%Ems < EmsMin .or. SPixel%RTM%LW%Ems > EmsMax)) &
          status = -1
       call interp_field2(RTM%LW%Tac,     SPixel%RTM%LW%Tac,     interp)
       if (any(SPixel%RTM%LW%Tac < TxcMin .or. SPixel%RTM%LW%Tac > TxcMax)) &
