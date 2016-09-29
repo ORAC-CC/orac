@@ -207,7 +207,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    real, parameter              :: switch_ice_limit = 273.16
 
    integer                      :: i_min_costjm
-   real                         :: a_max_prob, a_prob
+   real                         :: a_max_prob, a_min_cost, a_prob, a_cost
    real                         :: sum_prob
 
    integer                      :: deflate_level2
@@ -435,22 +435,23 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
          do j=indexing%Y0,indexing%Y1
             do i=indexing%X0,indexing%X1
                sum_prob = 0.
-               a_max_prob   = tiny(a_max_prob)
+               a_min_cost   = huge(a_min_cost)
                i_min_costjm = 0
                do k = 1, n_in_files
                   if (input_primary(k)%costjm(i,j) /= sreal_fill_value) then
+                     a_cost = input_primary(k)%costjm(i,j)
                      a_prob = exp(-input_primary(k)%costjm(i,j) / 2.)
                      sum_prob = sum_prob + a_prob
 
-                     if (a_prob > a_max_prob) then
+                     if (a_cost < a_min_cost) then
+                        a_min_cost   = a_cost
                         a_max_prob   = a_prob
                         i_min_costjm = k
                      end if
                   end if
                end do
-               if (input_primary(i_min_costjm)%costjm(i,j) >= cost_thresh .and. &
-                  input_primary(i_min_costjm)%costjm(i,j) / sum_prob >= norm_prob_thresh .and. &
-                  i_min_costjm /= 0) then
+               if (a_min_cost >= cost_thresh .and. i_min_costjm /= 0 .and. &
+                   a_max_prob / sum_prob >= norm_prob_thresh) then
                      input_primary(0)%phase(i,j) = i_min_costjm
                end if
             end do
@@ -566,24 +567,24 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
             ! Bayesian based selection
             else if (.not. use_new_bayesian_selection) then
                sum_prob = 0.
-               a_max_prob   = tiny(a_max_prob)
+               a_min_cost   = huge(a_min_cost)
                i_min_costjm = 0
                do k = 1, n_in_files
                   if (input_primary(k)%costjm(i,j) /= sreal_fill_value) then
+                     a_cost = input_primary(k)%costjm(i,j)
                      a_prob = exp(-input_primary(k)%costjm(i,j) / 2.)
                      sum_prob = sum_prob + a_prob
 
-                     if (a_prob > a_max_prob) then
+                     if (a_cost < a_min_cost) then
+                        a_min_cost   = a_cost
                         a_max_prob   = a_prob
                         i_min_costjm = k
                      end if
                   end if
                end do
 
-               if (input_primary(i_min_costjm)%costjm(i,j) >= cost_thresh .and. &
-   !               a_prob / sum_prob >= norm_prob_thresh .and. &
-                   input_primary(i_min_costjm)%costjm(i,j) / sum_prob >= norm_prob_thresh .and. &
-                   i_min_costjm /= 0) then
+               if (a_min_cost >= cost_thresh .and. i_min_costjm /= 0 .and. &
+                   a_max_prob / sum_prob >= norm_prob_thresh) then
                   call copy_class_specific_inputs(i, j, loop_ind(i_min_costjm), &
                        input_primary(0), input_primary(i_min_costjm), &
                        input_secondary(0), input_secondary(i_min_costjm), &
