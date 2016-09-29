@@ -118,7 +118,7 @@ depend:
 	@../../tools/make_depend.pl --subdir bugsrad --subdir fu_liou $(ORAC_OBJ) $(ORAC_OBJ_MAIN) > dependencies.inc
 
 clean tidy:
-	rm -f $(OBJS)/*.o $(OBJS)/*.mod $(OBJS)/bugsrad/*.o $(OBJS)/bugsrad/*.mod $(OBJS)/fu_liou/*.o $(OBJS)/fu_liou/*.mod *.a process_broadband_fluxes
+	rm -f $(OBJS)/*.o $(OBJS)/*.mod *.a process_broadband_fluxes
 
 
 # Object/source dependencies
