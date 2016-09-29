@@ -1054,6 +1054,15 @@ def args_cc4cl(parser):
     cccl.add_argument('--sea_dir', type=str, nargs='?',
                       default = defaults.sea_dir,
                       help = 'Name of subfolder for sea-only aerosol output.')
+    cccl.add_argument('--lnd_extra', type=str, nargs='?',
+                      default = None,
+                      help = 'Extra lines for land aerosol processing.')
+    cccl.add_argument('--sea_extra', type=str, nargs='?',
+                      default = None,
+                      help = 'Extra lines for sea aerosol processing.')
+    cccl.add_argument('--cld_extra', type=str, nargs='?',
+                      default = None,
+                      help = 'Extra lines for cloud aerosol processing.')
 
 def check_args_cc4cl(args):
     """Ensure ORAC suite wrapper parser arguments are valid."""
@@ -1563,6 +1572,7 @@ def cc4cl(orig):
                 args.approach = 'AppAerSw'
                 args.land = True
                 args.sea  = False
+                args.extra_lines = orig.lnd_extra
 
                 do_main_proc(args, main_files, job_name, log_path, jid_pre,
                              jid_main, written_dirs, phs, 'L')
@@ -1572,6 +1582,7 @@ def cc4cl(orig):
                 args.approach = 'AppAerOx'
                 args.land = False
                 args.sea  = True
+                args.extra_lines = orig.sea_extra
 
                 do_main_proc(args, main_files, job_name, log_path, jid_pre,
                              jid_main, written_dirs, phs, 'S')
@@ -1581,6 +1592,7 @@ def cc4cl(orig):
             args.approach = orig.approach
             args.land = orig.land
             args.sea  = orig.sea
+            args.extra_lines = orig.cld_extra
 
             do_main_proc(args, main_files, job_name, log_path, jid_pre,
                          jid_main, written_dirs, phs, '')
