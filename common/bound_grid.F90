@@ -154,7 +154,7 @@ subroutine bound_irregular_grid(grid, n, out, below, above, frac, wrap)
          i = (below + above) / 2
          if (out > grid(i)) then
             below = i
-         else if (out < grid(i)) then
+         else
             above = i
          end if
          if (i == old) exit
