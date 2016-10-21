@@ -105,7 +105,7 @@ subroutine allocate_imager_structures(imager_geolocation,imager_angles, &
 
    allocate(imager_flags%cflag( &
         imager_geolocation%startx:imager_geolocation%endx, &
-        1:imager_geolocation%ny))
+        1:imager_geolocation%ny,imager_angles%nviews))
    imager_flags%cflag=byte_fill_value
 
    allocate(imager_time%time( &

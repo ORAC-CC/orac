@@ -69,9 +69,9 @@ module imager_structures_m
 
    type imager_flags_t
 
-      integer(kind=byte), dimension(:,:), pointer :: lusflag
-      integer(kind=byte), dimension(:,:), pointer :: lsflag
-      integer(kind=byte), dimension(:,:), pointer :: cflag
+      integer(kind=byte), dimension(:,:),   pointer :: lusflag
+      integer(kind=byte), dimension(:,:),   pointer :: lsflag
+      integer(kind=byte), dimension(:,:,:), pointer :: cflag
 
    end type imager_flags_t
 

@@ -111,9 +111,6 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
            imager_geolocation,imager_measurements,imager_angles, &
            imager_flags,imager_time,channel_info,sensor,verbose)
 
-      !in absence of proper mask set everything to "1" for cloud mask
-      imager_flags%cflag = 1
-
    else if (trim(adjustl(sensor)) .eq. 'AVHRR') then
       !read the angles and lat/lon info of the orbit
       call read_avhrr_time_lat_lon_angles(path_to_geo_file,imager_geolocation, &

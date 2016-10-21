@@ -828,7 +828,7 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
       ! define cflag
       call nc_def_var_byte_packed_byte( &
               netcdf_info%ncid_clf, &
-              dimids_2d, &
+              dimids_3d, &
               'cflag', &
               netcdf_info%vid_cflag, &
               verbose, &

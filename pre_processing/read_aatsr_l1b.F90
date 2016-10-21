@@ -392,19 +392,28 @@ end if
    end do
 
    ! translate flags (THIS USED TO BE RATHER MORE COMPLICATED)
-   if (iand(view_selection,1_byte) .gt. 0_byte) then
+   if (iand(view_selection, 1_byte) .gt. 0_byte) then
       do i=imager_geolocation%startx,imager_geolocation%endx
          do j=1,imager_geolocation%ny
-            imager_flags%lsflag(i,j) = iand(nflg(i,j),1_c_short)
+            imager_flags%lsflag(i,j) = iand(nflg(i,j), 1_c_short)
             temp = iand(nflg(i,j),2_c_short)
-            if (temp .gt. 0) imager_flags%cflag(i,j) = temp
+            if (temp .gt. 0) then
+               imager_flags%cflag(i,j,1) = 1
+            else
+               imager_flags%cflag(i,j,1) = 0
+            end if
          end do
       end do
-   else if (iand(view_selection,2_byte) .gt. 0) then
+   end if
+   if (iand(view_selection, 2_byte) .gt. 0_byte) then
       do i=imager_geolocation%startx,imager_geolocation%endx
          do j=1,imager_geolocation%ny
-            temp = iand(fflg(i,j),2_c_short)
-            if (temp .gt. 0) imager_flags%cflag(i,j) = 1
+            temp = iand(fflg(i,j), 2_c_short)
+            if (temp .gt. 0) then
+               imager_flags%cflag(i,j,2) = 1
+            else
+               imager_flags%cflag(i,j,2) = 0
+            end if
          end do
       end do
    end if
