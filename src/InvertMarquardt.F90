@@ -673,14 +673,13 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
 
    ! ************* END ERROR ANALYSIS *************
 
-   ! Output diffuse fraction so surface reflectance can be calculated by users
+   call Allocate_GZero(GZero, SPixel%Ind%Ny)
+   call Set_GZero(SPixel%Xn(ITau), SPixel%Xn(IRe), Ctrl, SPixel, SAD_LUT(1), &
+        GZero, stat)
+   if (stat /= 0) go to 99 ! Terminate processing this pixel
+
+      ! Output diffuse fraction so surface reflectance can be calculated by users
    if (Ctrl%Approach == AppAerSw) then
-      call Allocate_GZero(GZero, SPixel)
-
-      call Set_GZero(SPixel%Xn(ITau), SPixel%Xn(IRe), Ctrl, SPixel, SAD_LUT(1), &
-           GZero, stat)
-      if (stat /= 0) go to 99 ! Terminate processing this pixel
-
       call Int_LUT_TauSolRe(SAD_LUT(1)%TFBd, SPixel%Ind%NSolar, SAD_LUT(1)%Grid, &
            GZero, Ctrl, T_0d, d_T_0d, ITFBd, &
            SPixel%spixel_y_solar_to_ctrl_y_index, SPixel%Ind%YSolar, stat)
@@ -702,19 +701,11 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
       do m = 1, SPixel%Ind%NSolar
          Diag%diffuse_frac_s(m) = temp(m, m)
       end do
-
-      call Deallocate_GZero(GZero)
    end if
 
    ! Evaluate cloud_albedo
    if ((Ctrl%Approach == AppCld1L .or. Ctrl%Approach == AppCld2L) .and. &
        SPixel%Ind%NSolar > 0) then
-      call Allocate_GZero(GZero, SPixel)
-
-      call Set_GZero(SPixel%Xn(ITau), SPixel%Xn(IRe), Ctrl, SPixel, SAD_LUT(1), &
-           GZero, stat)
-      if (stat /= 0) go to 99 ! Terminate processing this pixel
-
       call Int_LUT_TauSolRe(SAD_LUT(1)%Rfbd, SPixel%Ind%NSolar, SAD_LUT(1)%Grid, &
            GZero, Ctrl, CRP, d_CRP, IRfbd, &
            SPixel%spixel_y_solar_to_ctrl_y_index, SPixel%Ind%YSolar, stat)
@@ -727,22 +718,11 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
       do m = 1, SPixel%Ind%NSolar
          Diag%cloud_albedo_s(m) = temp(m, m)
       end do
-
-      call Deallocate_GZero(GZero)
    end if
 
    ! Evaluate cloud effective emissivity
    if ((Ctrl%Approach == AppCld1L .or. Ctrl%Approach == AppCld2L) .and. &
        SPixel%Ind%NThermal > 0 .and. any(SPixel%X == ITau) .and. any(SPixel%X == IRe)) then
-      call Allocate_GZero(GZero, SPixel)
-
-!     a = SPixel%Geom%Satzen(1)
-!     SPixel%Geom%Satzen(1) = 0.
-      call Set_GZero(SPixel%Xn(ITau), SPixel%Xn(IRe), Ctrl, SPixel, SAD_LUT(1), &
-         GZero, stat)
-      if (stat /= 0) go to 99 ! Terminate processing this pixel
-!     SPixel%Geom%Satzen(1) = a
-
       call Int_LUT_TauSatRe(SAD_LUT(1)%Em, SPixel%Ind%NThermal, SAD_LUT(1)%Grid, &
          GZero, Ctrl, CRP_thermal, d_CRP_thermal, IEm, &
          SPixel%spixel_y_thermal_to_ctrl_y_index, SPixel%Ind%YThermal, stat)
@@ -761,8 +741,6 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
       do m = 1, SPixel%Ind%NThermal
          Diag%cloud_emissivity_s(m) = max(temp_thermal(m, m), 0.)
       end do
-
-      call Deallocate_GZero(GZero)
    end if
 
    ! Evaluate corrected CTX
@@ -780,12 +758,6 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
 
    ! Evaluate AOD at 870 nm
    if (Ctrl%Approach == AppAerOx .or. Ctrl%Approach == AppAerSw) then
-      call Allocate_GZero(GZero, SPixel)
-
-      call Set_GZero(SPixel%Xn(iTau), SPixel%Xn(iRe), Ctrl, Spixel, SAD_LUT(1), &
-           GZero, stat)
-      if (stat /= 0) go to 99
-
       call Int_LUT_Re(SAD_LUT(1)%BextRat, 1, SAD_LUT(1)%Grid, GZero, Ctrl, &
            BextRat, d_BextRat, iBextRat, stat)
       if (stat /= 0) go to 99
@@ -794,9 +766,9 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
 
       Diag%aot870_uncertainty = Spixel%Sn(iTau,iTau) + &
            (d_BextRat(1) / (BextRat(1) * log(10.0)))**2 * SPixel%Sn(iRe,iRe)
-
-      call Deallocate_GZero(GZero)
    end if
+
+   call Deallocate_GZero(GZero)
 
    ! Costs are divided by number of active instrument channels before output.
    J  = J  / SPixel%Ind%Ny

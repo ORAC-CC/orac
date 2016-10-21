@@ -152,7 +152,7 @@ subroutine Calc_Corrected_CTX(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Sy)
       ! Interpolate Bext for the LUTs as function of Tau and Re.  Note that in
       ! fact Bext is in variant with Tau but this LUT has redundancy with Tau so
       ! that existing routines can be used.
-      call Allocate_GZero(GZero, SPixel)
+      call Allocate_GZero(GZero, SPixel%Ind%Ny)
       call Set_GZero(SPixel%Xn(ITau), SPixel%Xn(IRe), Ctrl, SPixel, SAD_LUT, &
               GZero, status)
       call Int_LUT_TauRe(SAD_LUT%Bext, SPixel%Ind%NThermal, SAD_LUT%Grid, &

@@ -57,73 +57,72 @@ module GZero_m
 
 contains
 
-subroutine Allocate_GZero(GZero, SPixel)
+subroutine Allocate_GZero(GZero, Ny)
 
    use ECP_Constants_m
-   use SPixel_m
 
    implicit none
 
-   type(GZero_t)  :: GZero
-   type(SPixel_t) :: SPixel
+   type(GZero_t), intent(out) :: GZero
+   integer,       intent(in)  :: Ny
 
-   allocate(GZero%iT0(SPixel%Ind%Ny,MaxCRProps))
+   allocate(GZero%iT0(Ny, MaxCRProps))
    GZero%iT0=0
-   allocate(GZero%iT1(SPixel%Ind%Ny,MaxCRProps))
+   allocate(GZero%iT1(Ny, MaxCRProps))
    GZero%iT1=0
-   allocate(GZero%iTm1(SPixel%Ind%Ny,MaxCRProps))
+   allocate(GZero%iTm1(Ny, MaxCRProps))
    GZero%iTm1=0
-   allocate(GZero%iTp1(SPixel%Ind%Ny,MaxCRProps))
+   allocate(GZero%iTp1(Ny, MaxCRProps))
    GZero%iTp1=0
-   allocate(GZero%iR0(SPixel%Ind%Ny,MaxCRProps))
+   allocate(GZero%iR0(Ny, MaxCRProps))
    GZero%iR0=0
-   allocate(GZero%iR1(SPixel%Ind%Ny,MaxCRProps))
+   allocate(GZero%iR1(Ny, MaxCRProps))
    GZero%iR1=0
-   allocate(GZero%iRm1(SPixel%Ind%Ny,MaxCRProps))
+   allocate(GZero%iRm1(Ny, MaxCRProps))
    GZero%iRm1=0
-   allocate(GZero%iRp1(SPixel%Ind%Ny,MaxCRProps))
+   allocate(GZero%iRp1(Ny, MaxCRProps))
    GZero%iRp1=0
-   allocate(GZero%iSaZ0(SPixel%Ind%Ny,MaxCRProps))
+   allocate(GZero%iSaZ0(Ny, MaxCRProps))
    GZero%iSaZ0=0
-   allocate(GZero%iSaZ1(SPixel%Ind%Ny,MaxCRProps))
+   allocate(GZero%iSaZ1(Ny, MaxCRProps))
    GZero%iSaZ1=0
-   allocate(GZero%iSoZ0(SPixel%Ind%Ny,MaxCRProps))
+   allocate(GZero%iSoZ0(Ny, MaxCRProps))
    GZero%iSoZ0=0
-   allocate(GZero%iSoZ1(SPixel%Ind%Ny,MaxCRProps))
+   allocate(GZero%iSoZ1(Ny, MaxCRProps))
    GZero%iSoZ1=0
-   allocate(GZero%iRA0(SPixel%Ind%Ny,MaxCRProps))
+   allocate(GZero%iRA0(Ny, MaxCRProps))
    GZero%iRA0=0
-   allocate(GZero%iRA1(SPixel%Ind%Ny,MaxCRProps))
+   allocate(GZero%iRA1(Ny, MaxCRProps))
    GZero%iRA1=0
-   allocate(GZero%iSaZSoZ0(SPixel%Ind%Ny,MaxCRProps))
+   allocate(GZero%iSaZSoZ0(Ny, MaxCRProps))
    GZero%iSaZSoZ0=0
-   allocate(GZero%iSaZSoZ1(SPixel%Ind%Ny,MaxCRProps))
+   allocate(GZero%iSaZSoZ1(Ny, MaxCRProps))
    GZero%iSaZSoZ1=0
 
-   allocate(GZero%dT(SPixel%Ind%Ny,MaxCRProps))
+   allocate(GZero%dT(Ny, MaxCRProps))
    GZero%dT=0.0
-   allocate(GZero%dR(SPixel%Ind%Ny,MaxCRProps))
+   allocate(GZero%dR(Ny, MaxCRProps))
    GZero%dR=0.0
-   allocate(GZero%dSaZ(SPixel%Ind%Ny,MaxCRProps))
+   allocate(GZero%dSaZ(Ny, MaxCRProps))
    GZero%dSaZ=0.
-   allocate(GZero%dSoZ(SPixel%Ind%Ny,MaxCRProps))
+   allocate(GZero%dSoZ(Ny, MaxCRProps))
    GZero%dSoZ=0.
-   allocate(GZero%dRA(SPixel%Ind%Ny,MaxCRProps))
+   allocate(GZero%dRA(Ny, MaxCRProps))
    GZero%dRA=0.
-   allocate(GZero%dSaZSoZ(SPixel%Ind%Ny,MaxCRProps))
+   allocate(GZero%dSaZSoZ(Ny, MaxCRProps))
    GZero%dSaZSoZ=0.
 
-   allocate(GZero%T1(SPixel%Ind%Ny,MaxCRProps))
+   allocate(GZero%T1(Ny, MaxCRProps))
    GZero%T1=0.0
-   allocate(GZero%R1(SPixel%Ind%Ny,MaxCRProps))
+   allocate(GZero%R1(Ny, MaxCRProps))
    GZero%R1=0.0
-   allocate(GZero%Sa1(SPixel%Ind%Ny,MaxCRProps))
+   allocate(GZero%Sa1(Ny, MaxCRProps))
    GZero%Sa1=0.
-   allocate(GZero%So1(SPixel%Ind%Ny,MaxCRProps))
+   allocate(GZero%So1(Ny, MaxCRProps))
    GZero%So1=0.
-   allocate(GZero%Ra1(SPixel%Ind%Ny,MaxCRProps))
+   allocate(GZero%Ra1(Ny, MaxCRProps))
    GZero%Ra1=0.
-   allocate(GZero%SaSo1(SPixel%Ind%Ny,MaxCRProps))
+   allocate(GZero%SaSo1(Ny, MaxCRProps))
    GZero%SaSo1=0.
 
 end subroutine Allocate_GZero
@@ -134,7 +133,7 @@ subroutine Deallocate_GZero(GZero)
 
    implicit none
 
-   type(GZero_t) :: GZero
+   type(GZero_t), intent(inout) :: GZero
 
    deallocate(GZero%iT0)
    deallocate(GZero%iT1)

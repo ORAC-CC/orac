@@ -200,12 +200,12 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
    dy_dX = 0.0
 
    ! Call Set_GZero (results used in both FM_Thermal and FM_Solar).
-   call Allocate_GZero(GZero(1), SPixel)
+   call Allocate_GZero(GZero(1), SPixel%Ind%Ny)
    call Set_GZero(X(iTau), X(iRe), Ctrl, SPixel, SAD_LUT(1), GZero(1), status)
 
    ! If the two layer retrieval is active call Set_GZero for the second layer.
    if (Ctrl%Approach == AppCld2L) then
-      call Allocate_GZero(GZero(2), SPixel)
+      call Allocate_GZero(GZero(2), SPixel%Ind%Ny)
       call Set_GZero(X(iTau2), X(iRe2), Ctrl, SPixel, SAD_LUT(2), GZero(2), status)
    end if
 
