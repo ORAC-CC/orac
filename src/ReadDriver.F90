@@ -446,7 +446,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    !----------------------- Ctrl%RS -----------------------
    Ctrl%RS%RsSelm         = switch_app(a, Default=SelmAux)
    Ctrl%RS%SRsSelm        = switch_app(a, Default=SelmMeas, Aer=SelmCtrl)
-   Ctrl%RS%use_full_brdf  = switch_app(a, Default=.true.,   AerSw=.false.)
+   Ctrl%RS%use_full_brdf  = switch_cls(c, Default=.true.,   AerSw=.false.)
    Ctrl%RS%Cb             = switch_app(a, Default=0.2,      Aer=0.4)
    Ctrl%RS%add_fractional = switch_app(a, Default=.false.,  AerOx=.true.)
    Ctrl%RS%diagonal_SRs   = switch_app(a, Default=.false.,  AerOx=.true.)
@@ -590,7 +590,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%Sunset    = 90. ! Used to identify twilight conditions
 
    !----------------------- Ctrl SWITCHES -----------------
-   Ctrl%i_equation_form = switch_app(a, Default=3, AerOx=1, AerSw=0)
+   Ctrl%i_equation_form = switch_cls(c, Default=3, AerOx=1, AerSw=0, AerBR=1)
    Ctrl%LUTIntSelm      = switch_app(a, Default=LUTIntMethLinear)
    Ctrl%RTMIntSelm      = switch_app(a, Default=RTMIntMethLinear, Aer=RTMIntMethNone)
    Ctrl%CloudType       = switch_app(a, Default=1,                Aer=2)
@@ -1299,10 +1299,10 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    ! Check validity of surface reflectance flag
    select case (Ctrl%RS%RsSelm)
    case (SelmCtrl)
-      if (Ctrl%RS%use_full_brdf) then
+      if (Ctrl%RS%use_full_brdf .and. Ctrl%Approach /= AppAerSw) then
          write(*,*) 'ERROR: Read_Driver(): Setting surface reflectance by '//  &
               'Ctrl method assumes a Lambertian surface and cannot be used '// &
-              'alongside the full BRDF.'
+              'alongside the full BRDF in cloud mode.'
          stop GetSurfaceMeth
       end if
       if (Ctrl%RS%SRsSelm /= SelmCtrl .and. Ctrl%RS%SRsSelm /= SelmMeas) then

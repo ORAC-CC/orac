@@ -270,7 +270,8 @@ module ECP_constants_m
    integer, parameter :: ClsCldIce = 2
    integer, parameter :: ClsAerOx  = 3
    integer, parameter :: ClsAerSw  = 4
-   integer, parameter :: ClsAshEyj = 5
+   integer, parameter :: ClsAerBR  = 6
+   integer, parameter :: ClsAshEyj = 7
 
    ! Retrieval approaches (for Ctrl%Approach)
    integer, parameter :: AppCld1L  = 1

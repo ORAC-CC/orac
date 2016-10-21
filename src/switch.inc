@@ -59,7 +59,7 @@ end function SWITCH_NAME_APP
 
 function SWITCH_NAME_CLS(Class, Default, &
                          Cld, CldWat, CldIce, &
-                         Aer, AerOx, AerSw, &
+                         Aer, AerOx, AerSw, AerBR, &
                          AshEyj) result(out)
    use ECP_constants_m
 
@@ -73,6 +73,7 @@ function SWITCH_NAME_CLS(Class, Default, &
    SWITCH_TYPE, optional, intent(in) :: Aer
    SWITCH_TYPE, optional, intent(in) :: AerOx
    SWITCH_TYPE, optional, intent(in) :: AerSw
+   SWITCH_TYPE, optional, intent(in) :: AerBR
    SWITCH_TYPE, optional, intent(in) :: AshEyj
    SWITCH_TYPE                       :: out
 
@@ -104,6 +105,14 @@ function SWITCH_NAME_CLS(Class, Default, &
    case(ClsAerSw)
       if (present(AerSw)) then
          out = AerSw
+      else if (present(Aer)) then
+         out = Aer
+      else
+         out = Default
+      end if
+   case(ClsAerBR)
+      if (present(AerBR)) then
+         out = AerBR
       else if (present(Aer)) then
          out = Aer
       else

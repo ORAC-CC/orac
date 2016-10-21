@@ -134,6 +134,9 @@
 ! 2016/07/27, GM: Extensive changes for multilayer support with several new
 !    optional inputs and outputs to perform multilayer simulations with two
 !    consecutive calls.
+! 2016/09/23, AP: Add Swansea G to the state vector.
+! 2016/09/24. AP: Add ClsAerBR, a BRDF form of the Swansea surface. It maps the
+!    three terms of the Swansea equation to the BRDF terms.
 !
 ! $Id$
 !
@@ -657,30 +660,25 @@ subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, i_layer, RTM_Pc, RTM_Pc2, X, GZero, &
       Rs2(:,IRho_0D) = RsX_0d
       Rs2(:,IRho_DV) = RsX_dv
       Rs2(:,IRho_DD) = RsX_dd
-   else if (Ctrl%RS%use_full_brdf) then
-      ! Copy surface reflectances from X to SPixel%Surface
-      do j = 1, MaxRho_XX
-         Rs2(:,j) = X(SPixel%Surface%XIndex(:,j)) * &
-                      SPixel%Surface%Ratios(:,j)
-      end do
-   else
+   else if (Ctrl%Approach == AppAerSw) then
       T_all = CRP(:,IT_00) + CRP(:,IT_0d) ! Direct + diffuse transmission
 
-      if (Ctrl%Approach /= AppAerSw) then
-         ! Copy Lambertian surface reflectances from X to SPixel%Surface
-         Rs = X(SPixel%Surface%XIndex(:,IRho_DD)) * &
-                SPixel%Surface%Ratios(:,IRho_DD)
+      ! Copy terms from X into tidier local variables
+      Ss = X(SPixel%Surface%XIndex(:,ISwan_S))
+      Sp = X(SPixel%Surface%XIndex(:,ISwan_P))
+      Sg = X(ISG)
+      Sa = 1.0 - (1.0 - Sg) * Ss ! Denominator
+
+      if (Ctrl%RS%use_full_brdf) then
+         ! Associate Swansea model terms to BRDF
+         Rs2(:,IRho_0V) = Sp * Ss
+         Rs2(:,IRho_DD) = Sg * Ss / Sa
+         Rs2(:,IRho_0D) = (1.0 - Sg) * Ss * Rs2(:,IRho_DD)
       else
          ! D is proportion of the downward transmission which is diffuse
          Sd = CRP(:,IT_0d) / T_all
 
-         ! Copy terms from X into tidier local variables
-         Ss = X(SPixel%Surface%XIndex(:,ISwan_S))
-         Sp = X(SPixel%Surface%XIndex(:,ISwan_P))
-         Sg = X(ISG)
-
          ! Calculate surface reflectance with Swansea surface
-         Sa = 1.0 - (1.0 - Sg) * Ss ! Denominator
          Rs = &
               ! Forward model as written in ATBD
               (1.0 - Sd) * (Sp * Ss + Sg * (1.0 - Sg) * Ss * Ss / Sa) + &
@@ -702,6 +700,18 @@ subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, i_layer, RTM_Pc, RTM_Pc2, X, GZero, &
          ! Derivative wrt gamma
          d_Rs(:,IGv) = Ss * (Sd + Ss * (1.0 - 2.0*Sg) * (1.0 - Ss) / (Sa * Sa))
       end if
+   else if (Ctrl%RS%use_full_brdf) then
+      ! Copy surface reflectances from X to SPixel%Surface
+      do j = 1, MaxRho_XX
+         Rs2(:,j) = X(SPixel%Surface%XIndex(:,j)) * &
+                      SPixel%Surface%Ratios(:,j)
+      end do
+   else
+      T_all = CRP(:,IT_00) + CRP(:,IT_0d) ! Direct + diffuse transmission
+
+      ! Copy Lambertian surface reflectances from X to SPixel%Surface
+      Rs = X(SPixel%Surface%XIndex(:,IRho_DD)) * &
+           SPixel%Surface%Ratios(:,IRho_DD)
    end if
 
    d_Ref = 0.
@@ -1264,30 +1274,78 @@ end if
 
    ! Derivative w.r.t. BRDF reflectance parameters, rho_xx
    if (i_layer /= 1) then
-      do j = MaxRho_XX, MaxRho_XX ! NOTE: Only evaluate Rho_DD for now
-         do i = 1, SPixel%Ind%NSolar
-            ii = SPixel%spixel_y_solar_to_ctrl_y_solar_index(i)
+      if (Ctrl%Approach == AppAerSw) then
+         rho_l = 0.0
 
-            ! Set rho_l for all BRDF terms proportional to this state vector
-            ! element
-            where (SPixel%Surface%XIndex == IRs(ii,j))
-               rho_l = SPixel%Surface%Ratios
-            else where
-               rho_l = 0.0
-            end where
-
-            ! If no dependence, skip this derivative
-            if (sum(rho_l) == 0.0) cycle
-
-            call derivative_wrt_rho_parameters_brdf(SPixel, Ctrl%i_equation_form, &
-                 CRP, X(IFrX), Tac_0v, Tbc_0, Tbc_v, Tbc_d, Tbc_0v, Tbc_0d, &
-                 Tbc_dv, Tbc_dd, rho_l, d_Ref(:,IRs(ii,j)), a, b, c)
-
-            if (present(d_Ref_0d)) d_Ref_0d(:,IRs(ii,j)) = 0.0
-            if (present(d_Ref_dv)) d_Ref_dv(:,IRs(ii,j)) = 0.0
-            if (present(d_Ref_dd)) d_Ref_dd(:,IRs(ii,j)) = 0.0
+         ! Derivative wrt P
+         do j = 1, MaxNumViews
+            do i = 1, SPixel%Ind%NSolar
+               if (SPixel%Surface%XIndex(i,ISwan_P) == ISP(j)) then
+                  rho_l(i,IRho_0V) = Ss(i)
+               else
+                  rho_l(i,IRho_0V) = 0.0
+               end if
+            end do
+            call derivative_wrt_rho_parameters_brdf(SPixel, &
+                 Ctrl%i_equation_form, CRP, X(IFrX), Tac_0v, Tbc_0, Tbc_v, &
+                 Tbc_d, Tbc_0v, Tbc_0d, Tbc_dv, Tbc_dd, rho_l, &
+                 d_Ref(:,ISP(j)), a, b, c)
          end do
-      end do
+
+         ! Derivative wrt S
+         do j = 1, SPixel%Ind%NSolar
+            do i = 1, SPixel%Ind%NSolar
+               if (SPixel%Surface%XIndex(i,ISwan_S) == ISS(j)) then
+                  rho_l(i,IRho_0V) = Sp(i)
+                  rho_l(i,IRho_0D) = Sg * (1.0 - Sg) * Ss(i) * &
+                       (2.0 - (1.0 - Sg) * Ss(i)) / (Sa(i) * Sa(i))
+                  rho_l(i,IRho_DD) = Sg / (Sa(i) * Sa(i))
+               else
+                  rho_l(i,:) = 0.0
+               end if
+            end do
+            call derivative_wrt_rho_parameters_brdf(SPixel, &
+                 Ctrl%i_equation_form, CRP, X(IFrX), Tac_0v, Tbc_0, Tbc_v, &
+                 Tbc_d, Tbc_0v, Tbc_0d, Tbc_dv, Tbc_dd, rho_l, &
+                 d_Ref(:,ISS(j)), a, b, c)
+         end do
+
+         ! Derivative wrt G
+         rho_l(:,IRho_0V) = 0.0
+         rho_l(:,IRho_0D) = Ss * Ss * (1.0 - Sg * (2.0 + Ss - Sg * Ss)) / &
+              (Sa * Sa)
+         rho_l(:,IRho_DD) = Ss * (1.0 - Ss) / (Sa * Sa)
+         call derivative_wrt_rho_parameters_brdf(SPixel, &
+              Ctrl%i_equation_form, CRP, X(IFrX), Tac_0v, Tbc_0, Tbc_v, &
+              Tbc_d, Tbc_0v, Tbc_0d, Tbc_dv, Tbc_dd, rho_l, &
+              d_Ref(:,ISG), a, b, c)
+      else
+         do j = MaxRho_XX, MaxRho_XX ! NOTE: Only evaluate Rho_DD for now
+            do i = 1, SPixel%Ind%NSolar
+               ii = SPixel%spixel_y_solar_to_ctrl_y_solar_index(i)
+
+               ! Set rho_l for all BRDF terms proportional to this state vector
+               ! element
+               where (SPixel%Surface%XIndex == IRs(ii,j))
+                  rho_l = SPixel%Surface%Ratios
+               else where
+                  rho_l = 0.0
+               end where
+
+               ! If no dependence, skip this derivative
+               if (sum(rho_l) == 0.0) cycle
+
+               call derivative_wrt_rho_parameters_brdf(SPixel, &
+                    Ctrl%i_equation_form, &
+                    CRP, X(IFrX), Tac_0v, Tbc_0, Tbc_v, Tbc_d, Tbc_0v, Tbc_0d, &
+                    Tbc_dv, Tbc_dd, rho_l, d_Ref(:,IRs(ii,j)), a, b, c)
+
+               if (present(d_Ref_0d)) d_Ref_0d(:,IRs(ii,j)) = 0.0
+               if (present(d_Ref_dv)) d_Ref_dv(:,IRs(ii,j)) = 0.0
+               if (present(d_Ref_dd)) d_Ref_dd(:,IRs(ii,j)) = 0.0
+            end do
+         end do
+      end if
    end if
 
    ! Optionally provide derivatives w.r.t surface BRDF parameters useful in the
