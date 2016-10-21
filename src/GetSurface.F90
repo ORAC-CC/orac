@@ -493,7 +493,7 @@ subroutine Get_Surface_Swansea(Ctrl, SPixel)
    type(SPixel_t), intent(inout) :: SPixel
 
    ! Define local variables
-   integer :: i_solar, i_ctrl, j_solar, j_ctrl
+   integer :: i_solar, i_ctrl, j_solar, j_ctrl, i_csol
    integer :: nch, i_s(SPixel%Ind%NSolar)
    logical :: checked(SPixel%Ind%NSolar)
 
@@ -507,12 +507,12 @@ subroutine Get_Surface_Swansea(Ctrl, SPixel)
    ! Copy over indices for view-dependant P parameter
    SPixel%Surface%XIndex(:, ISwan_P) = ISP(SPixel%ViewIdx)
 
-   ! For each wavelength, copy over S parameter index
    do i_solar = 1, SPixel%Ind%NSolar
       ! Skip wavelengths we've already dealt with
       if (checked(i_solar)) cycle
 
       i_ctrl = SPixel%spixel_y_solar_to_ctrl_y_index(i_solar)
+      i_csol = SPixel%spixel_y_solar_to_ctrl_y_solar_index(i_solar)
 
       ! Make a list of channels that share this wavelength
       nch = 1
@@ -529,7 +529,8 @@ subroutine Get_Surface_Swansea(Ctrl, SPixel)
          end if
       end do
 
-      SPixel%Surface%XIndex(i_s(1:nch), ISwan_S) = ISS(i_s(1))
+      ! For each wavelength, copy over index for S parameter
+      SPixel%Surface%XIndex(i_s(1:nch), ISwan_S) = ISS(i_csol)
    end do
 
 end subroutine Get_Surface_Swansea
