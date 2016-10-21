@@ -197,7 +197,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
+subroutine Get_SPixel(Ctrl, SAD_Chan, SAD_LUT, MSI_Data, RTM, SPixel, status)
 
    use Ctrl_m
    use Data_m
@@ -205,6 +205,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
    use Int_Routines_m, only : find_in_array
    use RTM_m
    use SAD_Chan_m
+   use SAD_LUT_m
 
    implicit none
 
@@ -212,6 +213,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
 
    type(CTRL_t),     intent(in)    :: Ctrl
    type(SAD_Chan_t), intent(in)    :: SAD_Chan(:)
+   type(SAD_LUT_t),  intent(in)    :: SAD_LUT(:)
    type(Data_t),     intent(in)    :: MSI_Data
    type(RTM_t),      intent(in)    :: RTM
    type(SPixel_t),   intent(inout) :: SPixel
@@ -260,7 +262,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
 
    if (SPixel%Ind%NSolar > 0) then
       if (Ctrl%Approach == AppAerSw) then
-         call Get_Surface_Swansea(Ctrl, SPixel)
+         call Get_Surface_Swansea(Ctrl, SPixel, SAD_LUT(1), MSI_Data)
       else
          call Get_Surface(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
          if (status /= 0) go to 99 ! Skip further data reading

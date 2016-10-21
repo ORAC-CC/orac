@@ -523,7 +523,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
          TotPix_line(j) = TotPix_line(j)+1
 
          ! Set up the super-pixel data values.
-         call Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
+         call Get_SPixel(Ctrl, SAD_Chan, SAD_LUT, MSI_Data, RTM, SPixel, status)
 
          ! Nothing wrong so do the inversion.
          if (status == 0) &

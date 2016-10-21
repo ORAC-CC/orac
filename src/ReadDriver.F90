@@ -903,6 +903,12 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       end if
    end do
 
+   ! Using SelmMeas with the Swansea retrieval assumes some atmospheric state to
+   ! algebratically invert the radiances and find first guesses for the S
+   ! parameters. In the absence of a better idea, these are the a priori.
+   Ctrl%RS%SS_Xb = Ctrl%Xb
+   Ctrl%RS%SS_Sx = Ctrl%Sx
+
    !------------- Ctrl STATE VECTOR INDEXING --------------
    ! These arrays specify which variables should be retrieved in each
    ! illumination condition (by the index of that variable; see ECP_constants_m).
@@ -1278,7 +1284,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
          case (SelmAux)
             if (i /= ITs .and. .not. any(i == IRs)) then
                write(*,*) 'ERROR: Read_Driver(): AUX method ONLY supported ' // &
-                    'for setting a priori Ts and Rs'
+                    'for setting a priori Ts, Rs, and S'
                stop APMethErr
             end if
 
@@ -1311,13 +1317,14 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
               ' method not supported.'
          stop GetSurfaceMeth
       end if
-      if (Ctrl%RS%SRsSelm == SelmAux .and. .not. Ctrl%RS%use_full_brdf) then
+      if (Ctrl%RS%SRsSelm == SelmAux .and. .not. Ctrl%RS%use_full_brdf .and. &
+           Ctrl%Approach /= AppAerSw) then
          write(*,*) 'ERROR: Read_Driver(): Full BRDF required with '//&
-              'auxilliary surface uncertainties.'
+              'auxilliary surface uncertainties in cloud mode.'
          stop GetSurfaceMeth
       end if
       if (Ctrl%RS%SRsSelm == SelmCtrl .and. Ctrl%RS%add_fractional .and. &
-           .not. Ctrl%RS%use_full_brdf) then
+           .not. Ctrl%RS%use_full_brdf .and. Ctrl%Approach /= AppAerSw) then
          write(*,*) 'ERROR: Read_Driver(): add_fractional is not currently '//&
               'functional for the Lambertian surface with SRsSelm == Ctrl.'
          stop GetSurfaceMeth
@@ -1327,17 +1334,25 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
               'with SRsSelm == Meas.'
       end if
    case (SelmMeas)
-      write(*,*) 'ERROR: Read_Driver(): Surface reflectance method not supported'
-      stop GetSurfaceMeth
+      if (Ctrl%Approach /= AppAerSw) then
+         write(*,*) 'ERROR: Read_Driver(): Surface reflectance method not '// &
+              'supported in cloud mode.'
+         stop GetSurfaceMeth
+      else if (Ctrl%RS%SRsSelm == SelmAux) then
+         write(*,*) 'ERROR: Read_Driver(): Surface reflectance uncertainty '// &
+              'must be set by Ctrl or Meas method when surface reflectance is.'
+         stop GetSurfaceMeth
+      end if
    case default
       write(*,*) 'ERROR: Read_Driver(): Invalid surface reflectance method'
       stop GetSurfaceMeth
    end select
 
    ! For now, AerSw approach does not allow for non-Lambertian surface
-   if (Ctrl%Approach == AppAerSw .and. Ctrl%RS%use_full_brdf) then
+   if (Ctrl%Class == ClsAerSw .and. Ctrl%RS%use_full_brdf) then
       write(*,*) 'ERROR: Read_Driver(): Use of the Swansea surface '// &
-           'reflectance model and full BRDF equations not supported'
+           'reflectance model with full BRDF equations supported via '// &
+           'Ctrl%Class = ClsAerBR'
       stop GetSurfaceMeth
    end if
 

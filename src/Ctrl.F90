@@ -179,6 +179,10 @@ module Ctrl_m
       logical                :: diagonal_SRs       ! If true SRs must be diagonal
       logical                :: solar_factor       ! In GetSurface divide surface
                                                    ! reflectances by SEC_o
+      real                   :: SS_Xb(MaxStateVar) ! A priori used by Swansea
+                                                   ! mode to guess S from meas
+      real                   :: SS_Sx(MaxStateVar) ! Uncertainy used by Swansea
+                                                   ! mode to guess S from meas
    end type SurfRef_t
 
    ! Equivalent model parameter noise flags

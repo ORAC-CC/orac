@@ -467,32 +467,71 @@ end subroutine Get_Surface
 !
 ! History:
 ! 2015/08/17, AP: Original version
+! 2016/09/23, AP: Add Meas and Aux options for first guess selection.
 !
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
-subroutine Get_Surface_Swansea(Ctrl, SPixel)
+subroutine Get_Surface_Swansea(Ctrl, SPixel, SAD_LUT, MSI_Data)
+
    use Ctrl_m
+   use Data_m
    use ECP_Constants_m
+   use GZero_m
+   use FM_Routines_m, only: Set_CRP_Solar
+   use Int_LUT_Routines_m, only: MaxCRPParams
+   use SAD_LUT_m
 
    implicit none
 
    ! Define arguments
 
-   type(Ctrl_t),   intent(in)    :: Ctrl
-   type(SPixel_t), intent(inout) :: SPixel
+   type(Ctrl_t),    intent(in)    :: Ctrl
+   type(SPixel_t),  intent(inout) :: SPixel
+   type(SAD_LUT_t), intent(in)    :: SAD_LUT
+   type(Data_t),    intent(in)    :: MSI_Data
 
    ! Define local variables
-   integer :: i_solar, i_ctrl, j_solar, j_ctrl, i_csol
+   integer :: i_solar, i_ctrl, j_solar, j_ctrl, i_surf, i_csol
    integer :: nch, i_s(SPixel%Ind%NSolar)
    logical :: checked(SPixel%Ind%NSolar)
 
+   type(GZero_t) :: GZero
+   integer       :: status
+   real          :: Sw_s, Sw_s_var, rs_unc, denom, tmp
+   real          :: CRP(SPixel%Ind%NSolar, MaxCRProps)
+   real          :: d_CRP(SPixel%Ind%NSolar, MaxCRProps, MaxCRPParams)
 
    checked = .false.
 
+   ! Reallocate surface reflectances to appropriate length
+   deallocate(SPixel%Surface%Rs)
+   allocate(SPixel%Surface%Rs(SPixel%Ind%NSolar))
+   deallocate(SPixel%Surface%SRs)
+   allocate(SPixel%Surface%SRs(SPixel%Ind%NSolar, SPixel%Ind%NSolar))
    deallocate(SPixel%Surface%XIndex)
    allocate(SPixel%Surface%XIndex(SPixel%Ind%NSolar, MaxSwan_X))
+   SPixel%Surface%Rs = 0.
+   SPixel%Surface%SRs = 0.
    SPixel%Surface%XIndex = 0
+
+   if (Ctrl%RS%RsSelm == SelmMeas) then
+      ! Interpolate LUTs using a priori
+      call Allocate_GZero(GZero, SPixel%Ind%Ny)
+      call Set_GZero(Ctrl%RS%SS_Xb(ITau), Ctrl%RS%SS_Xb(IRe), Ctrl, SPixel, &
+           SAD_LUT, GZero, status)
+      call Set_CRP_Solar(Ctrl, SPixel%Ind, &
+           SPixel%spixel_y_solar_to_ctrl_y_index, &
+           GZero, SAD_LUT, CRP, d_CRP, status)
+      call Deallocate_GZero(GZero)
+   end if
+
+   if (SPixel%Surface%Land) then
+      i_surf = ILand
+   else
+      i_surf = ISea
+   end if
+
 
    ! Copy over indices for view-dependant P parameter
    SPixel%Surface%XIndex(:, ISwan_P) = ISP(SPixel%ViewIdx)
@@ -521,6 +560,178 @@ subroutine Get_Surface_Swansea(Ctrl, SPixel)
 
       ! For each wavelength, copy over index for S parameter
       SPixel%Surface%XIndex(i_s(1:nch), ISwan_S) = ISS(i_csol)
+
+
+      ! ----- Estimate s parameter -----
+      select case (Ctrl%RS%RsSelm)
+      case(SelmCtrl)
+         ! Use constant values for s and its uncertainty
+         SPixel%Surface%Rs(i_solar) = Ctrl%RS%b(i_csol, i_surf)
+
+         ! Consistent with the routine above, Sb is a fractional uncertainty
+         tmp = Ctrl%RS%b(i_csol, i_surf) * Ctrl%RS%Sb(i_csol, i_surf)
+         SPixel%Surface%SRs(i_solar,i_solar) = tmp * tmp
+
+      case(SelmMeas)
+         ! Invert nadir radiance for S parameter
+         call Effective_Rho_Calc(SPixel%Ym(i_s(1)), SPixel%Sy(i_s(1),i_s(1)), &
+              CRP(i_s(1),:), d_CRP(i_s(1),:,:), Ctrl%RS%SS_Xb(ISP(1)), &
+              Ctrl%RS%SS_Xb(ISG), Ctrl%RS%SS_Sx(ITau), Ctrl%RS%SS_Sx(IRe), &
+              Ctrl%RS%SS_Sx(ISP(1)), Ctrl%RS%SS_Sx(ISG), &
+              Sw_s, Sw_s_var)
+
+         SPixel%Surface%Rs(i_solar) = Sw_s
+
+         select case (Ctrl%RS%SRsSelm)
+         case(SelmCtrl)
+            ! Use constant uncertainty
+            SPixel%Surface%SRs(i_solar,i_solar) = Ctrl%Sx(ISS(i_csol))
+            if (Ctrl%RS%add_fractional) then
+               tmp = Sw_s * Ctrl%RS%Sb(i_csol, i_surf)
+               SPixel%Surface%SRs(i_solar,i_solar) = &
+                 SPixel%Surface%SRs(i_solar,i_solar) + tmp * tmp
+            end if
+         case(SelmMeas)
+            ! Use uncertainty propagated from a priori
+            SPixel%Surface%SRs(i_solar,i_solar) = Sw_s_var
+         ! There's nowhere from which you could possibly draw SelmAux
+         end select
+
+      case(SelmAux)
+         ! Deduce S parameter from albedo in preprocessor files
+
+         ! There are a lot of possible methods here. There are 4 BRDF terms per
+         ! pixel (0D, DD, and 2 0V) with 4 unknowns, but the eventual result
+         ! isn't bounded to [0,1] and so doesn't help much. The easiest approach
+         ! is to use rho_0v = p * s and assume p, but that is very sensitive to
+         ! the p assumed and easily gives s > 1. The approach used below is a
+         ! rearrangement of rho_DD = g * s / (1 - (1-g) * s), which is selected
+         ! as rho_DD exists regardless of CtrL%use_full_brdf.
+
+         denom = Ctrl%RS%SS_Sx(ISG) + (1.0 - Ctrl%RS%SS_Sx(ISG)) * &
+               MSI_Data%ALB(SPixel%Loc%X0, SPixel%Loc%Y0, i_csol)
+         SPixel%Surface%Rs(i_solar) = &
+              MSI_Data%ALB(SPixel%Loc%X0, SPixel%Loc%Y0, i_csol) / denom
+
+         if (Ctrl%RS%SRsSelm == SelmCtrl) then
+            ! Use constant uncertainty
+            tmp = Sw_s * Ctrl%RS%Sb(i_csol, i_surf)
+            SPixel%Surface%SRs(i_solar,i_solar) = Ctrl%Sx(ISS(i_csol))
+            if (Ctrl%RS%add_fractional) SPixel%Surface%SRs(i_solar,i_solar) = &
+                 SPixel%Surface%SRs(i_solar,i_solar) + tmp * tmp
+         else
+            ! Use uncertainty propagated through the equation for Rs above
+            if (Ctrl%RS%SRsSelm == SelmMeas) then
+               ! Uncertainty is a constant fraction of the reflectance
+               rs_unc = MSI_Data%ALB(SPixel%Loc%X0, SPixel%Loc%Y0, i_csol) * &
+                    Ctrl%Rs%Sb(i_csol, i_surf)
+            else ! (Ctrl%RS%SRsSelm == SelmAux)
+               rs_unc = MSI_Data%rho_dd_unc(SPixel%Loc%X0, SPixel%Loc%Y0, i_csol)
+               ! ACP: Perhaps snow/veg/bare terms needed here?
+            end if
+
+            tmp = (1.0 - MSI_Data%ALB(SPixel%Loc%X0, SPixel%Loc%Y0, i_csol)) * &
+                 Ctrl%RS%SS_Sx(ISG)
+            SPixel%Surface%SRs(i_solar,i_solar) = &
+                 (Ctrl%RS%SS_Xb(ISG) * Ctrl%RS%SS_Xb(ISG) * rs_unc * rs_unc + &
+                  tmp * tmp) / (denom * denom * denom * denom)
+         end if
+      end select
    end do
 
 end subroutine Get_Surface_Swansea
+
+
+subroutine Effective_Rho_Calc(Y, Sy, CRP, d_CRP, Sw_p, Sw_g, Sx_t, Sx_r, Sx_p, &
+     Sx_g, Sw_s, var)
+
+! According to the Lambertian SU forward model,
+!    R = R_0v + \frac{ T_dv * Rs }{ 1 - R_dd * Rs }.
+! Thus,
+!    Rs = \frac{ R - R_0v }{ T_dv + R_dd * (R - R_0v) }
+!       = s * [p + D * (g - p) + g * (1-g) * s / (1 - (1-g) * s)]
+! So,
+!    Rs [1 - (1-g) * s] = s * [(1 - (1-g) * s)(p + D * (g - p)) + g * (1-g) * s]
+! Factorising in s,
+!    0 = s^2 (g - p)(1 - D)(1 - g) + s * [p * (1-D) + Rs * (1-g) + D * g] - Rs
+! Solving the quadratic, noting that D, g, and Rs fall in the range [0,1] and we
+! must satisfy s>0
+!    s = [-B + sqrt(B^2 + 4A * Rs)] / 2A    if g > p
+!      = Rs / (g + Rs * (1-g))              if g = p
+!      = [B +- sqrt(B^2 - 4|A| * Rs) / 2|A| if g < p
+! where
+!    A = (g - p)(1 - D)(1 - g)
+!    B = p * (1-D) + Rs * (1-g) + D * g
+! This routine evaluates these equations and their derivatives. See p.679 of
+! ACP's labbook for more details.
+
+   use FM_Routines_m, only: IR_0v, IT_dv, IR_dd, IT_00, IT_0d
+
+   implicit none
+
+   real, intent(in)  :: Y         ! Observed TOA reflectance
+   real, intent(in)  :: Sy        ! Variance in TOA reflectance
+   real, intent(in)  :: CRP(:)    ! LUT-interpolated aerosol radiative properties
+   real, intent(in)  :: d_CRP(:,:)! Derivatives of CRP wrt aot and aer
+   real, intent(in)  :: Sw_p      ! Swansea view parameter
+   real, intent(in)  :: Sw_g      ! Swansea gamma parameter
+   real, intent(in)  :: Sx_t      ! A priori variance in tau
+   real, intent(in)  :: Sx_r      ! A priori variance in re
+   real, intent(in)  :: Sx_p      ! A priori variance in Swansea p
+   real, intent(in)  :: Sx_g      ! A priori variance in Swansea gamma
+   real, intent(out) :: Sw_s      ! Estimated Swansea wavelength parameter
+   real, intent(out) :: var       ! Variance in effective surface reflectance
+
+   real :: dif, sum, T_all, direct, minus_g, root
+   real :: rho, rho_v, diffuse, diffuse_v, b, b_v, a, a_v
+   real :: Drho_Dy, Drho_Dx(2), Dd_Dx(2), Db_Dd, Db_Dg, Da_Dp, Da_Dd, Da_Dg, Ds_Db, Ds_Da, Ds_Drho
+
+   ! Calculate the effective surface reflectance
+   dif = Y - CRP(IR_0v)
+   sum = CRP(IT_dv) + CRP(IR_dd) * dif
+   rho = dif / sum
+
+   ! Calculate it's variance
+   Drho_Dy = CRP(IT_dv) / (sum * sum)
+   Drho_Dx = -(d_CRP(IR_0v,:) * CRP(IT_dv) + d_CRP(IT_dv,:) * dif + &
+        d_CRP(IR_dd,:) * dif * dif) / (sum * sum)
+   rho_v = sy * Drho_Dy * Drho_Dy + Sx_t * Drho_Dx(1) * Drho_Dx(1) + &
+           Sx_r * Drho_Dx(2) * Drho_Dx(2)
+
+   T_all = CRP(IT_00) + CRP(IT_0d)
+   diffuse = CRP(IT_0d) / T_all
+   direct  = 1.0 - diffuse
+   Dd_Dx = (d_CRP(IT_0d,:) * direct - d_CRP(IT_00,:) * diffuse) / T_all
+   diffuse_v = Sx_t * Dd_Dx(1) * Dd_Dx(1) + &
+               Sx_r * Dd_Dx(2) * Dd_Dx(2)
+
+   minus_g = 1.0 - Sw_g
+   b = direct * Sw_p + minus_g * rho + Sw_g * diffuse
+   Db_Dd = Sw_g - Sw_p
+   Db_Dg = diffuse - rho
+   b_v = Sx_p * direct * direct + rho_v * minus_g * minus_g + &
+         diffuse_v * Db_Dd * Db_Dd + Sx_g * Db_Dg * Db_Dg
+
+   ! Estimate s parameter
+   if (abs(Sw_p - Sw_g) < 1e-4) then
+      ! Solve linear equation
+      Sw_s = rho / b
+      var = (rho_v + b_v * Sw_s * Sw_s) / (b * b)
+   else
+      ! Solve quadratic equation
+      a = (Sw_p - Sw_g) * direct * minus_g
+      Da_Dp = direct * minus_g
+      Da_Dd = minus_g * (Sw_g - Sw_p)
+      Da_Dg = direct * (2.0 * Sw_g - 1.0 - Sw_p)
+      a_v = Sx_p * Da_Dp * Da_Dp + diffuse_v * Da_Dd * Da_Dd + &
+            Sx_g * Da_Dg * Da_Dg
+
+      root = sqrt(b * b - 4.0 * a * rho)
+      Sw_s = (b - root) / (2.0 * a)
+      Ds_Db = (1.0 - b / root) / (2.0 * a)
+      Ds_Da = (2.0 * a * rho / root - root - b) / (2.0 * a * a)
+      Ds_Drho = 1.0 / root
+      var = a_v * Ds_Da * Ds_Da + b_v * Ds_Db * Ds_Db + rho_v * Ds_Drho * Ds_Drho
+   end if
+
+end subroutine Effective_Rho_Calc
