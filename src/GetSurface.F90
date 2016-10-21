@@ -256,18 +256,8 @@ subroutine Get_Surface(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
             end if
          end if
          if (Ctrl%RS%use_full_brdf) then
-!           if (any(SPixel%Surface%Rs2(i,:) < RhoMin .or. &
-!                   SPixel%Surface%Rs2(i,:) > RhoMax)) then
-            ! TEMPORARY measure until either the aerosol preprocessing outputs
-            ! Rho_DV or i_equation_form == 0.
-            if ( SPixel%Surface%Rs2(i,IRho_0V) < RhoMin .or. &
-                 SPixel%Surface%Rs2(i,IRho_0D) < RhoMin .or. &
-!                SPixel%Surface%Rs2(i,IRho_DV) < RhoMin .or. &
-                 SPixel%Surface%Rs2(i,IRho_DD) < RhoMin .or. &
-                 SPixel%Surface%Rs2(i,IRho_0V) > RhoMax .or. &
-                 SPixel%Surface%Rs2(i,IRho_0D) > RhoMax .or. &
-!                SPixel%Surface%Rs2(i,IRho_DV) > RhoMax .or. &
-                 SPixel%Surface%Rs2(i,IRho_DD) > RhoMax) then
+           if (any(SPixel%Surface%Rs2(i,:) < RhoMin .or. &
+                   SPixel%Surface%Rs2(i,:) > RhoMax)) then
 #ifdef DEBUG
                write(*, *) 'WARNING: Get_Surface(): Invalid surface ' // &
                     'property in pixel at: ', SPixel%Loc%X0, SPixel%Loc%Y0
