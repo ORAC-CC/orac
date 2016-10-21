@@ -551,7 +551,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    else
       Ctrl%Invpar%XULim(ITs)          = switch_app(a, Default=400.0)
    end if
-   Ctrl%Invpar%XULim(IRs(:,IRho_0V))  = switch_app(a, Default=1.0,   AerSw=100.0)
+   Ctrl%Invpar%XULim(IRs(:,IRho_0V))  = switch_app(a, Default=1.0)
    Ctrl%Invpar%XULim(IRs(:,IRho_0D))  = switch_app(a, Default=1.0)
    Ctrl%Invpar%XULim(IRs(:,IRho_DV))  = switch_app(a, Default=1.0)
    Ctrl%Invpar%XULim(IRs(:,IRho_DD))  = switch_app(a, Default=1.0)
@@ -1064,6 +1064,21 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    !----------------------------------------------------------------------------
 
    if (new_driver_format) then
+      ! Copy individual illumination arrays into main block
+      Ctrl%Nx(IDay)     = Nx_Dy
+      Ctrl%Nx(ITwi)     = Nx_Tw
+      Ctrl%Nx(INight)   = Nx_Ni
+      Ctrl%X(:,IDay)    = X_Dy
+      Ctrl%X(:,ITwi)    = X_Tw
+      Ctrl%X(:,INight)  = X_Ni
+
+      Ctrl%NXJ(IDay)    = NXJ_Dy
+      Ctrl%NXJ(ITwi)    = NXJ_Tw
+      Ctrl%NXJ(INight)  = NXJ_Ni
+      Ctrl%XJ(:,IDay)   = XJ_Dy
+      Ctrl%XJ(:,ITwi)   = XJ_Tw
+      Ctrl%XJ(:,INight) = XJ_Ni
+
       call read_ctrl(drifile, Ctrl)
    else
       call old_driver_second_read(dri_lun, Ctrl, Nx_Dy, Nx_Tw, Nx_Ni, NXJ_Dy, &
@@ -1071,6 +1086,21 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       if (drifile /= '-') then
          close(unit=dri_lun)
       end if
+
+      ! Copy individual illumination arrays into main block
+      Ctrl%Nx(IDay)     = Nx_Dy
+      Ctrl%Nx(ITwi)     = Nx_Tw
+      Ctrl%Nx(INight)   = Nx_Ni
+      Ctrl%X(:,IDay)    = X_Dy
+      Ctrl%X(:,ITwi)    = X_Tw
+      Ctrl%X(:,INight)  = X_Ni
+
+      Ctrl%NXJ(IDay)    = NXJ_Dy
+      Ctrl%NXJ(ITwi)    = NXJ_Tw
+      Ctrl%NXJ(INight)  = NXJ_Ni
+      Ctrl%XJ(:,IDay)   = XJ_Dy
+      Ctrl%XJ(:,ITwi)   = XJ_Tw
+      Ctrl%XJ(:,INight) = XJ_Ni
    end if
 
 
@@ -1131,21 +1161,6 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    else
       Ctrl%get_T_dv_from_T_0d = .false.
    end if
-
-   ! Copy individual illumination arrays into main block
-   Ctrl%Nx(IDay)     = Nx_Dy
-   Ctrl%Nx(ITwi)     = Nx_Tw
-   Ctrl%Nx(INight)   = Nx_Ni
-   Ctrl%X(:,IDay)    = X_Dy
-   Ctrl%X(:,ITwi)    = X_Tw
-   Ctrl%X(:,INight)  = X_Ni
-
-   Ctrl%NXJ(IDay)    = NXJ_Dy
-   Ctrl%NXJ(ITwi)    = NXJ_Tw
-   Ctrl%NXJ(INight)  = NXJ_Ni
-   Ctrl%XJ(:,IDay)   = XJ_Dy
-   Ctrl%XJ(:,ITwi)   = XJ_Tw
-   Ctrl%XJ(:,INight) = XJ_Ni
 
    ! Identify which surface fields are in use
    Ctrl%Ind%Nss = 0
