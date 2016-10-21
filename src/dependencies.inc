@@ -51,10 +51,12 @@ $(OBJS)/SADChan.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/sad_util.o \
 $(OBJS)/SADLUT.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/SADChan.o \
         $(OBJS)/sad_util.o AllocSADLUT.F90 DeallocSADLUT.F90 ReadSADLUT.F90
 $(OBJS)/sad_util.o: $(OBJS)/Ctrl.o
-$(OBJS)/SPixel.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/ECPConstants.o \
-        $(OBJS)/IntRoutines.o $(OBJS)/RTM.o $(OBJS)/SADChan.o $(OBJS)/planck.o \
-        AllocSPixel.F90 DeallocSPixel.F90 GetGeometry.F90 GetIndexing.F90 \
-        GetLSF.F90 GetLocation.F90 GetLwSwRTM.F90 GetMeasurements.F90 GetRTM.F90 \
+$(OBJS)/SPixel.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/RTM.o \
+        AllocSPixel.F90 DeallocSPixel.F90
+$(OBJS)/SPixel_routines.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/ECPConstants.o \
+        $(OBJS)/IntRoutines.o $(OBJS)/RTM.o $(OBJS)/SADChan.o $(OBJS)/SPixel.o \
+        $(OBJS)/planck.o GetGeometry.F90 GetIndexing.F90 GetLSF.F90 \
+        GetLocation.F90 GetLwSwRTM.F90 GetMeasurements.F90 GetRTM.F90 \
         GetSPixel.F90 GetSurface.F90 GetX.F90 IntCTP.F90 XMDAD.F90 XSDAD.F90
 $(OBJS)/ECP.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/Diag.o \
         $(OBJS)/ECPConstants.o $(OBJS)/Inversion.o $(OBJS)/RTM.o \

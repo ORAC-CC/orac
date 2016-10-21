@@ -202,6 +202,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    use SAD_Chan_m
    use SAD_LUT_m
    use SPixel_m
+   use SPixel_routines_m
    use global_attributes_m
    use source_attributes_m
 

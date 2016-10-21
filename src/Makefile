@@ -192,7 +192,8 @@ ORAC_OBJ = $(OBJS)/Cholesky.o \
            $(OBJS)/SADChan.o \
            $(OBJS)/SADLUT.o \
            $(OBJS)/sad_util.o \
-           $(OBJS)/SPixel.o
+           $(OBJS)/SPixel.o \
+           $(OBJS)/SPixel_routines.o
 
 ORAC_OBJ_MAIN = $(OBJS)/ECP.o
 
