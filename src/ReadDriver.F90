@@ -515,6 +515,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%Invpar%XScale(IRs(:,IRho_DV)) = switch_app(a, Default=1.0,  AerOx=1000.0)
    Ctrl%Invpar%XScale(IRs(:,IRho_DD)) = switch_app(a, Default=1.0,  AerOx=1000.0)
    Ctrl%Invpar%XScale(ISP)            = switch_app(a, Default=1.0)
+   Ctrl%Invpar%XScale(ISG)            = switch_app(a, Default=1.0)
    ! Lower limit
    Ctrl%Invpar%XLLim(ITau)            = switch_cls(c, Default=-3.0, Aer=-2.0)
    Ctrl%Invpar%XLLim(IRe)             = switch_cls(c, Default=0.1,  Aer=-2.0, &
@@ -531,6 +532,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%Invpar%XLLim(IRs(:,IRho_DV))  = switch_app(a, Default=0.00001, Cld=0.)
    Ctrl%Invpar%XLLim(IRs(:,IRho_DD))  = switch_app(a, Default=0.00001, Cld=0.)
    Ctrl%Invpar%XLLim(ISP)             = switch_app(a, Default=0.00001)
+   Ctrl%Invpar%XLLim(ISG)             = switch_app(a, Default=0.00001)
    ! Upper limit
    Ctrl%Invpar%XULim(ITau)            = switch_cls(c, Default=2.408, Aer=0.7)
    Ctrl%Invpar%XULim(IRe)             = switch_cls(c, Default=1.0,   AshEyj=20.0, &
@@ -554,6 +556,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%Invpar%XULim(IRs(:,IRho_DV))  = switch_app(a, Default=1.0)
    Ctrl%Invpar%XULim(IRs(:,IRho_DD))  = switch_app(a, Default=1.0)
    Ctrl%Invpar%XULim(ISP)             = switch_app(a, Default=100.0)
+   Ctrl%Invpar%XULim(ISG)             = switch_app(a, Default=1.0)
 
    !----------------------- Ctrl%QC -----------------------
    Ctrl%QC%MaxJ                 = switch_app(a, Default=100.0, Aer=4.0)
@@ -571,6 +574,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%QC%MaxS(IRs(:,IRho_DV)) = switch_app(a, Default=0.2) ! value for these
    Ctrl%QC%MaxS(IRs(:,IRho_DD)) = switch_app(a, Default=0.2)
    Ctrl%QC%MaxS(ISP)            = switch_app(a, Default=10.0)
+   Ctrl%QC%MaxS(ISG)            = switch_app(a, Default=10.0)
 
    !------------------- Ctrl START/END POINT --------------
    ! Process entire file
@@ -786,6 +790,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%AP(IRs(:,IRho_DV),:) = switch_app(a, Default=SelmAux)
    Ctrl%AP(IRs(:,IRho_DD),:) = switch_app(a, Default=SelmAux)
    Ctrl%AP(ISP,:)            = switch_app(a, Default=SelmCtrl)
+   Ctrl%AP(ISG,:)            = switch_app(a, Default=SelmCtrl)
 
    ! NOTES:
    ! 1) The aerosol code used SelmSAD for Tau and Re, which drew the values from
@@ -806,6 +811,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%FG(IRs(:,IRho_DV),:) = switch_app(a, Default=SelmAux)
    Ctrl%FG(IRs(:,IRho_DD),:) = switch_app(a, Default=SelmAux)
    Ctrl%FG(ISP,:)            = switch_app(a, Default=SelmCtrl)
+   Ctrl%FG(ISG,:)            = switch_app(a, Default=SelmCtrl)
    ! 3) Not sure why Fr is now SelmCtrl.
 
    !----------- Ctrl PRESCRIBED STATE VECTORS -------------
@@ -837,6 +843,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%XB(IRs(:,IRho_DV)) = switch_app(a, Default=0.01)
    Ctrl%XB(IRs(:,IRho_DD)) = switch_app(a, Default=0.01)
    Ctrl%XB(ISP)            = switch_app(a, Default=0.3)
+   Ctrl%XB(ISG)            = switch_app(a, Default=0.3)
    ! First guess values
    if (Ctrl%Approach /= AppCld2L) then
       Ctrl%X0(ITau)        = switch_cls(c, Default=0.8,   AerOx=-1.5,  AerSw=-0.3, &
@@ -865,6 +872,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%X0(IRs(:,IRho_DV)) = switch_app(a, Default=0.01)
    Ctrl%X0(IRs(:,IRho_DD)) = switch_app(a, Default=0.01)
    Ctrl%X0(ISP)            = switch_app(a, Default=0.3)
+   Ctrl%X0(ISG)            = switch_app(a, Default=0.3)
    ! A priori uncertainty
    Ctrl%Sx(ITau)           = switch_cls(c, Default=1.0e+08, Aer=2.0)
    Ctrl%Sx(IRe)            = switch_cls(c, Default=1.0e+08, Aer=0.5)
@@ -881,6 +889,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%Sx(IRs(:,IRho_DD)) = switch_app(a, Default=1.0e+08, AerOx=0.05)
    Ctrl%Sx(ISP(1))         = switch_app(a, Default=1.0e+08, AerSw=0.01)
    Ctrl%Sx(ISP(2:))        = switch_app(a, Default=1.0e+08, AerSw=0.5)
+   Ctrl%Sx(ISG)            = switch_app(a, Default=0.1)
    ! NOTE: The nadir P value doesn't really need to be retrieved.
 
    ! Measurement covariance

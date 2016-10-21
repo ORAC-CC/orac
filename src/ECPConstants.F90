@@ -231,7 +231,8 @@ module ECP_constants_m
    integer, parameter :: IRe2             = 6
    integer, parameter :: IPc2             = 7
    integer, parameter :: IFr2             = 8
-   integer, parameter :: ITs              = 9       ! Index of Ts, surface temperature
+   integer, parameter :: ISG              = 9
+   integer, parameter :: ITs              = 10      ! Index of Ts, surface temperature
 
    ! Oxford surface reflectance parameters. Though we're unlikely to retrieve
    ! all the BRDF parameters, space needs to be made in the Jacobian.

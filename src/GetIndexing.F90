@@ -896,6 +896,7 @@ subroutine swan_indexing_logic(Ctrl, SPixel, is_not_used_or_missing, &
       call Add_to_State_Vector(Ctrl, IDay, IRe,  X, ii_x, XJ, ii_xj, XI, ii_xi)
       call Add_to_State_Vector(Ctrl, IDay, IFr,  X, ii_x, XJ, ii_xj, XI, ii_xi, &
            active = .false.)
+      call Add_to_State_Vector(Ctrl, IDay, ISG,  X, ii_x, XJ, ii_xj, XI, ii_xi)
 
       SPixel%Nx  = ii_x
       SPixel%NXJ = ii_xj

@@ -602,11 +602,10 @@ subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, i_layer, RTM_Pc, RTM_Pc2, X, GZero, &
 
    ! Swansea surface model terms
    real, dimension(SPixel%Ind%NSolar) :: Ss, Sp, Sd, Sa
+   real                               :: Sg
    real                               :: Rs(SPixel%Ind%NSolar)
    real                               :: Rs2(SPixel%Ind%NSolar,MaxRho_XX)
-   real                               :: d_Rs(SPixel%Ind%NSolar,4)
-   real, parameter                    :: gamma = 0.3
-   real, parameter                    :: onemg = 1.0 - gamma
+   real                               :: d_Rs(SPixel%Ind%NSolar,5)
 
    ! Auxilary variables
    real, dimension(SPixel%Ind%NSolar) :: a, b, c, c_0d, c_dv, c_dd, d_dv, e, &
@@ -678,27 +677,30 @@ subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, i_layer, RTM_Pc, RTM_Pc2, X, GZero, &
          ! Copy terms from X into tidier local variables
          Ss = X(SPixel%Surface%XIndex(:,ISwan_S))
          Sp = X(SPixel%Surface%XIndex(:,ISwan_P))
+         Sg = X(ISG)
 
          ! Calculate surface reflectance with Swansea surface
-         Sa = 1.0 - onemg * Ss ! Denominator
+         Sa = 1.0 - (1.0 - Sg) * Ss ! Denominator
          Rs = &
               ! Forward model as written in ATBD
-              (1.0 - Sd) * (Sp * Ss + gamma * onemg * Ss * Ss / Sa) + &
-              Sd * gamma * Ss / Sa
-            ! More efficient expression factorised in D
-!             Sp * Ss + Sd * Ss * (gamma - Sp) + gamma * onemg * Ss * Ss / Sa
+              (1.0 - Sd) * (Sp * Ss + Sg * (1.0 - Sg) * Ss * Ss / Sa) + &
+              Sd * Sg * Ss / Sa
+              ! More efficient expression factorised in D
+!             Ss * (Sp + Sd * (Sg - Sp) + Sg * (1.0 - Sg) * Ss / Sa)
 
          ! Derivatives of Rs wrt state vector terms
-         call rs_derivative_wrt_crp_parameter(ITauX, ITauCRP, gamma, Ss, Sp, &
+         call rs_derivative_wrt_crp_parameter(ITauX, ITauCRP, Sg, Ss, Sp, &
               CRP, d_CRP, T_all, d_Rs)
-         call rs_derivative_wrt_crp_parameter(IReX,  IReCRP,  gamma, Ss, Sp, &
+         call rs_derivative_wrt_crp_parameter(IReX,  IReCRP,  Sg, Ss, Sp, &
               CRP, d_CRP, T_all, d_Rs)
          ! Derivative wrt s vector (Using hardcoded second index for d_Rs as we
          ! only need to reference the s vector in this routine)
-         d_Rs(:,ISv) = Sp + Sd * (gamma - Sp) + &
-              gamma * onemg * Ss * (1.0 + Sa) / (Sa * Sa)
+         d_Rs(:,ISv) = Sp + Sd * (Sg - Sp) + &
+              Sg * (1.0 - Sg) * Ss * (1.0 + Sa) / (Sa * Sa)
          ! Derivative wrt p vector
          d_Rs(:,IPv) = Ss * (1.0 - Sd)
+         ! Derivative wrt gamma
+         d_Rs(:,IGv) = Ss * (Sd + Ss * (1.0 - 2.0*Sg) * (1.0 - Ss) / (Sa * Sa))
       end if
    end if
 
@@ -860,6 +862,8 @@ if (.not. Ctrl%RS%use_full_brdf) then
               d_Ref(i,IRs(ii,IRho_DD)) * d_Rs(i,ISv)
          d_Ref(i,SPixel%Surface%XIndex(i,ISwan_P)) = &
               d_Ref(i,IRs(ii,IRho_DD)) * d_Rs(i,IPv)
+         d_Ref(i,ISG) = &
+              d_Ref(i,IRs(ii,IRho_DD)) * d_Rs(i,IGv)
       end do
    end if
 

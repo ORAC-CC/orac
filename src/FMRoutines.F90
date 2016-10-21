@@ -44,6 +44,7 @@ module FM_Routines_m
 
    integer, parameter :: ISv   = 3
    integer, parameter :: IPv   = 4
+   integer, parameter :: IGv   = 5
 
 contains
 
