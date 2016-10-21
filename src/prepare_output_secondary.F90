@@ -183,7 +183,7 @@ if (Ctrl%Ind%flags%do_swansea) then
               MissingXn, output_data%swansea_p_ap_vmax)
 
          call prepare_short_packed_float( &
-              SPixel%X0(ISP(k)), output_data%swansea_s_fg(i,j,k), &
+              SPixel%X0(ISP(k)), output_data%swansea_p_fg(i,j,k), &
               output_data%swansea_p_fg_scale, output_data%swansea_p_fg_offset, &
               output_data%swansea_p_fg_vmin, output_data%swansea_p_fg_vmax, &
               MissingXn, output_data%swansea_p_fg_vmax)
