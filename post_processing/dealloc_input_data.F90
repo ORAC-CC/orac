@@ -112,11 +112,11 @@ subroutine dealloc_input_data_primary_common(data)
    if (associated(data%cee_uncertainty)) &
                                        deallocate(data%cee_uncertainty)
 
-   deallocate(data%convergence)
-   deallocate(data%niter)
-   deallocate(data%costja)
-   deallocate(data%costjm)
-   deallocate(data%qcflag)
+   if (associated(data%convergence))   deallocate(data%convergence)
+   if (associated(data%niter))         deallocate(data%niter)
+   if (associated(data%costja))        deallocate(data%costja)
+   if (associated(data%costjm))        deallocate(data%costjm)
+   if (associated(data%qcflag))        deallocate(data%qcflag)
 
 end subroutine dealloc_input_data_primary_common
 
