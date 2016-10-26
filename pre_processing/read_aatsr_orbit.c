@@ -9,6 +9,9 @@
       output from read_aatsr_orbit().
    01/06/2015, Greg McGarragh: Fixed a bug when requesting a startx and nx other
       than 0 and 512.
+   26/10/2016, Gareth Thomas: Fixed a bug whereby measurement time was
+       always being read from first row of orbit regardless of starty
+       value.
 
    $Id$
  **/
@@ -152,7 +155,7 @@ void read_aatsr_orbit(const char *l1b_file, const bool *verbose,
       did = epr_get_dataset_id(pid, dy_label[j]);
       rec = epr_create_record(did);
       for (i=0; i<*ny; i++) {
-        rec = epr_read_record(did, i, rec);
+        rec = epr_read_record(did, i+*starty, rec);
         fid = epr_get_field(rec, "dsr_time");
         time = epr_get_field_elem_as_mjd(fid);
         dy_array[j][i] = ((double)time->seconds +
