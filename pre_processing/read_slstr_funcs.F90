@@ -138,14 +138,16 @@ end subroutine get_slstr_startend
 
 ! Computes the name of the input file based upon the band name.
 ! This is currently hard-coded for nadir files, need to add oblique.
-subroutine get_slstr_imnames(indir,inband,fname,bname)
+subroutine get_slstr_imnames(indir,inband,fname,fname_qa,bname,irradname)
 
    use preproc_constants_m
 
    character(len=path_length),  intent(in)  :: indir
    integer,                     intent(in)  :: inband
    character(len=path_length),  intent(out) :: fname
+   character(len=path_length),  intent(out) :: fname_qa
    character(len=path_length),  intent(out) :: bname
+   character(len=path_length),  intent(out) :: irradname
 
    character(len=3) :: band
    character(len=3) :: vid
@@ -162,11 +164,15 @@ subroutine get_slstr_imnames(indir,inband,fname,bname)
 
    write (band, '(I1.1)') mod_inb
    if (mod_inb .le. 6) then
-      fname = trim(indir)//'S'//trim(band)//'_radiance_a'//trim(vid)//'.nc'
-      bname = 'S'//trim(band)//'_radiance_a'//trim(vid)
+      fname 		= trim(indir)//'S'//trim(band)//'_radiance_a'//trim(vid)//'.nc'
+      fname_qa		= trim(indir)//'S'//trim(band)//'_quality_a'//trim(vid)//'.nc'
+      bname 		= 'S'//trim(band)//'_radiance_a'//trim(vid)
+      irradname 	= 'S'//trim(band)//'_solar_irradiance_a'//trim(vid)
    else if (mod_inb .le. 9) then
-      fname = trim(indir)//'S'//trim(band)//'_BT_i'//trim(vid)//'.nc'
-      bname = 'S'//trim(band)//'_BT_i'//trim(vid)
+      fname 		= trim(indir)//'S'//trim(band)//'_BT_i'//trim(vid)//'.nc'
+      fname_qa		= trim(indir)//'S'//trim(band)//'_quality_i'//trim(vid)//'.nc'
+      bname 		= 'S'//trim(band)//'_BT_i'//trim(vid)
+      irradname	= 'NONE'
    else
       print*,'Incorrect band:',inband,'. This is not supported for SLSTR (1-18 only).'
       stop error_stop_code
@@ -196,7 +202,9 @@ subroutine read_slstr_tirdata(indir,inband,outarr,sx,sy,nx,ny,inx,iny,offset)
    real                       :: data2(nx,ny)
 
    character(len=path_length) :: filename
+   character(len=path_length) :: filename_qa
    character(len=path_length) :: bandname
+   character(len=path_length) :: irradname
    character(len=path_length) :: fillname
    character(len=path_length) :: sclname
    character(len=path_length) :: offname
@@ -206,7 +214,7 @@ subroutine read_slstr_tirdata(indir,inband,outarr,sx,sy,nx,ny,inx,iny,offset)
    integer :: endx,endy
 
    ! Find the filename required for this channel
-   call get_slstr_imnames(indir,inband,filename,bandname)
+   call get_slstr_imnames(indir,inband,filename,filename_qa,bandname,irradname)
 
    ! Open the netcdf file
    ierr=nf90_open(path=trim(adjustl(filename)),mode=NF90_NOWRITE,ncid=fid)
@@ -222,8 +230,7 @@ subroutine read_slstr_tirdata(indir,inband,outarr,sx,sy,nx,ny,inx,iny,offset)
    ! Check that the dataset exists
    ierr=nf90_inq_varid(fid, trim(bandname), did)
    if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: read_slstr_tirdata(): Error opening dataset ',trim(bandname), &
-             ' in ',trim(filename)
+      print*,'ERROR: read_slstr_tirdata(): Error opening dataset ',trim(bandname),' in ',trim(filename)
       stop error_stop_code
    end if
 
@@ -288,10 +295,12 @@ subroutine read_slstr_visdata(indir,inband,outarr,imager_angles,sx,sy,nx,ny,inx,
    real, allocatable              :: data1(:,:)
    real, allocatable              :: data2(:,:)
    real, allocatable              :: data3(:,:)
-   real(kind=sreal), dimension(18):: irradiances
+   real(kind=sreal), allocatable  :: irradiances(:)
 
    character(len=path_length)     :: filename
+   character(len=path_length)     :: filename_qa
    character(len=path_length)     :: bandname
+   character(len=path_length) 	 :: irradname
    character(len=path_length)     :: fillname
    character(len=path_length)     :: sclname
    character(len=path_length)     :: offname
@@ -300,7 +309,7 @@ subroutine read_slstr_visdata(indir,inband,outarr,imager_angles,sx,sy,nx,ny,inx,
 
    integer :: fid,did,ierr,j
 
-   integer :: endx,endy
+   integer :: endx,endy,ndet
 
    if (inband .lt. 1 .or. inband .gt. 18) then
       print*,'SLSTR input band must be in range 1-18. Here we have',inband
@@ -308,24 +317,13 @@ subroutine read_slstr_visdata(indir,inband,outarr,imager_angles,sx,sy,nx,ny,inx,
    end if
 
    ! Find the filename required for this channel
-   call get_slstr_imnames(indir,inband,filename,bandname)
+   call get_slstr_imnames(indir,inband,filename,filename_qa,bandname,irradname)
 
    allocate(data1(nx*2,ny*2))
    allocate(data2(nx,ny))
    allocate(data3(nx,ny))
 
    data1(:,:)=sreal_fill_value
-
-   irradiances(:)=0.
-
-   ! Read the solar irradiances from viscal file
-   do j=1,6
-      call slstr_get_irrad(irradiances,indir,j)
-   end do
-   ! Read the solar irradiances from viscal file
-   do j=10,15
-      call slstr_get_irrad(irradiances,indir,j)
-   end do
 
    ! Open the netcdf file
    ierr=nf90_open(path=trim(adjustl(filename)),mode=NF90_NOWRITE,ncid=fid)
@@ -341,7 +339,7 @@ subroutine read_slstr_visdata(indir,inband,outarr,imager_angles,sx,sy,nx,ny,inx,
    ! Check that the dataset exists
    ierr=nf90_inq_varid(fid, trim(bandname), did)
    if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: read_slstr_visdata(): Error opening dataset ',trim(filename),' in ',trim(bandname)
+      print*,'ERROR: read_slstr_visdata(): Error opening dataset ',trim(bandname),' in ',trim(filename)
       stop error_stop_code
    end if
 
@@ -365,13 +363,44 @@ subroutine read_slstr_visdata(indir,inband,outarr,imager_angles,sx,sy,nx,ny,inx,
    ! Get the actual data
    ierr=nf90_get_var(fid, did, data1,count=(/ endx,endy /))
    if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: read_slstr_visdata(): Error reading dataset ',trim(filename),' in ',trim(bandname)
+      print*,'ERROR: read_slstr_visdata(): Error reading dataset ',trim(bandname),' in ',trim(filename)
       print*,trim(nf90_strerror(ierr))
       stop error_stop_code
    end if
+
+	! Close this file
    ierr=nf90_close(fid)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: read_slstr_visdata(): Error closing file ',trim(filename)
+      stop error_stop_code
+   end if
+
+   ! Now we deal with the solar irradiance dataset
+   ! Open the netcdf file
+   ierr=nf90_open(path=trim(adjustl(filename_qa)),mode=NF90_NOWRITE,ncid=fid)
+   if (ierr.ne.NF90_NOERR) then
+      print*,'ERROR: read_slstr_visdata(): Error opening file ',trim(filename_qa)
+      stop error_stop_code
+   end if
+   ! Get number of detectors, should be 4
+   ndet=nc_dim_length(fid,'detectors',.false.)
+   allocate(irradiances(ndet))
+
+   ierr=nf90_inq_varid(fid, trim(irradname), did)
+   if (ierr.ne.NF90_NOERR) then
+      print*,'ERROR: read_slstr_visdata(): Error opening dataset ',trim(irradname),' in ',trim(filename_qa)
+      stop error_stop_code
+   end if
+   ierr=nf90_get_var(fid, did, irradiances,count=(/ ndet /))
+   if (ierr.ne.NF90_NOERR) then
+      print*,'ERROR: read_slstr_visdata(): Error reading dataset ',trim(irradname),' in ',trim(filename_qa)
+      print*,trim(nf90_strerror(ierr))
+      stop error_stop_code
+   end if
+
+   ierr=nf90_close(fid)
+   if (ierr.ne.NF90_NOERR) then
+      print*,'ERROR: read_slstr_visdata(): Error closing file ',trim(filename_qa)
       stop error_stop_code
    end if
 
@@ -385,7 +414,7 @@ subroutine read_slstr_visdata(indir,inband,outarr,imager_angles,sx,sy,nx,ny,inx,
    outarr(offset:nx+offset-1,:)=data3
 
    ! Convert from radiances to reflectances
-   where(outarr .ne.sreal_fill_value) outarr = (pi*outarr*cos(d2r*imager_angles%solzen(:,:,view)))/irradiances(inband)
+   where(outarr .ne.sreal_fill_value) outarr = (pi*outarr*cos(d2r*imager_angles%solzen(:,:,view)))/irradiances(1)
 
    ! Fill where sza is bad
    where(imager_angles%solzen(:,:,1) .eq. sreal_fill_value) outarr=sreal_fill_value
@@ -916,76 +945,3 @@ subroutine slstr_get_one_geom(nx,ny,fid,var,odata,geofile)
 
 
 end subroutine slstr_get_one_geom
-
-! Retrieves the solar irradiances from the relevant file
-subroutine slstr_get_irrad(irrad,indir,inband)
-
-   use netcdf
-   use preproc_constants_m
-   use orac_ncdf_m
-
-   character(len=path_length),      intent(in)    :: indir
-   real(kind=sreal), dimension(18), intent(inout) :: irrad
-   integer,                         intent(in)    :: inband
-
-
-   character(len=path_length) :: fname,bname
-   integer                    :: fid,did,ierr,curband,index2,j,endx,endy
-   character(len=3)           :: band
-   real, allocatable          :: data(:,:)
-
-   if (inband .gt. 9) then
-      curband=inband-9
-   else
-      curband=inband
-   end if
-
-   write (band, '(I1.1)') curband
-
-   fname = trim(indir) // 'viscal.nc'
-   bname = 'S'//trim(band)//'_solar_irradiances'
-
-   ! Open the netcdf file
-   ierr=nf90_open(path=trim(adjustl(fname)),mode=NF90_NOWRITE,ncid=fid)
-   if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: slstr_get_irrad(): Error opening file ',trim(fname)
-      stop
-   end if
-
-   ! Check that the dataset exists
-   ierr=nf90_inq_varid(fid, trim(bname), did)
-   if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: slstr_get_irrad(): Error opening dataset ',trim(bname),' in ',trim(fname)
-      stop
-   end if
-
-   if (curband .le. 3) then
-      ! Check dimensions so we load the right amount of NetCDF file
-      endy=nc_dim_length(fid,'visible_detectors',.false.)
-      endx=nc_dim_length(fid,'views',.false.)
-   else
-      ! Check dimensions so we load the right amount of NetCDF file
-      endy=nc_dim_length(fid,'swir_detectors',.false.)
-      endx=nc_dim_length(fid,'views',.false.)
-   end if
-   allocate(data(endx,endy))
-
-   ! Get the actual data
-   ierr=nf90_get_var(fid, did, data)
-   if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: slstr_get_irrad(): Error reading dataset ',trim('S1_solar_irradiances'),' in ',trim(fname)
-      print*,trim(nf90_strerror(ierr))
-      stop
-   end if
-
-   ierr=nf90_close(fid)
-   if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: slstr_get_irrad(): Error closing file ',trim(fname)
-      stop
-   end if
-
-   irrad(inband)=data(1,1)
-
-   deallocate(data)
-
-end subroutine slstr_get_irrad
