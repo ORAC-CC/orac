@@ -22,11 +22,13 @@
 ! 2016/08/01, SP: Changed zenith angle bounds, fixed RAA for second view
 ! 2016/09/14, SP: Corrections for night-time processing
 ! 2016/09/16, SP: Added openMP for a small performance boost
+! 2016/11/23, SP: Fixed interpolation issue for azimuth angles
+! 2016/11/24, SP: Added fudge factor to correct for bad SLSTR colocation
 !
 ! $Id$
 !
 ! Bugs:
-! None known.
+! Fudge factor for some channels, needed to correct for SLSTR's awful coloaction
 !-------------------------------------------------------------------------------
 
 ! This function retrieves the start and end times for an SLSTR scene, then
@@ -164,15 +166,15 @@ subroutine get_slstr_imnames(indir,inband,fname,fname_qa,bname,irradname)
 
    write (band, '(I1.1)') mod_inb
    if (mod_inb .le. 6) then
-      fname 		= trim(indir)//'S'//trim(band)//'_radiance_a'//trim(vid)//'.nc'
-      fname_qa		= trim(indir)//'S'//trim(band)//'_quality_a'//trim(vid)//'.nc'
-      bname 		= 'S'//trim(band)//'_radiance_a'//trim(vid)
-      irradname 	= 'S'//trim(band)//'_solar_irradiance_a'//trim(vid)
+      fname       = trim(indir)//'S'//trim(band)//'_radiance_a'//trim(vid)//'.nc'
+      fname_qa      = trim(indir)//'S'//trim(band)//'_quality_a'//trim(vid)//'.nc'
+      bname       = 'S'//trim(band)//'_radiance_a'//trim(vid)
+      irradname    = 'S'//trim(band)//'_solar_irradiance_a'//trim(vid)
    else if (mod_inb .le. 9) then
-      fname 		= trim(indir)//'S'//trim(band)//'_BT_i'//trim(vid)//'.nc'
-      fname_qa		= trim(indir)//'S'//trim(band)//'_quality_i'//trim(vid)//'.nc'
-      bname 		= 'S'//trim(band)//'_BT_i'//trim(vid)
-      irradname	= 'NONE'
+      fname       = trim(indir)//'S'//trim(band)//'_BT_i'//trim(vid)//'.nc'
+      fname_qa      = trim(indir)//'S'//trim(band)//'_quality_i'//trim(vid)//'.nc'
+      bname       = 'S'//trim(band)//'_BT_i'//trim(vid)
+      irradname   = 'NONE'
    else
       print*,'Incorrect band:',inband,'. This is not supported for SLSTR (1-18 only).'
       stop error_stop_code
@@ -181,7 +183,7 @@ subroutine get_slstr_imnames(indir,inband,fname,fname_qa,bname,irradname)
 end subroutine get_slstr_imnames
 
 ! Read the nadir-view thermal grid data from SLSTR. Need to update with oblique view
-subroutine read_slstr_tirdata(indir,inband,outarr,sx,sy,nx,ny,inx,iny,offset)
+subroutine read_slstr_tirdata(indir,inband,outarr,sx,sy,nx,ny,inx,iny,offset,view)
 
    use netcdf
    use preproc_constants_m
@@ -196,6 +198,7 @@ subroutine read_slstr_tirdata(indir,inband,outarr,sx,sy,nx,ny,inx,iny,offset)
    integer,                    intent(in)  :: inx
    integer,                    intent(in)  :: iny
    integer,                    intent(in)  :: offset
+   integer,                    intent(in)  :: view
    real(kind=sreal),           intent(out) :: outarr(inx,iny)
 
    real                       :: data1(nx,ny)
@@ -268,6 +271,14 @@ subroutine read_slstr_tirdata(indir,inband,outarr,sx,sy,nx,ny,inx,iny,offset)
    where(data1 .eq. filval) data2=sreal_fill_value
    outarr(offset:offset+nx-1,:)=data2
 
+
+   if (inband .eq. 8 .or. inband .eq. 9) then
+      outarr(:,1:ny-2)=outarr(:,3:ny)
+   endif
+   if (inband .eq. 16 .or. inband .eq. 17 .or. inband .eq. 18) then
+      outarr(1:nx-1,:)=outarr(2:nx,:)
+   endif
+
 end subroutine read_slstr_tirdata
 
 ! Read the nadir-view visible grid data from SLSTR. Need to update with oblique view
@@ -300,7 +311,7 @@ subroutine read_slstr_visdata(indir,inband,outarr,imager_angles,sx,sy,nx,ny,inx,
    character(len=path_length)     :: filename
    character(len=path_length)     :: filename_qa
    character(len=path_length)     :: bandname
-   character(len=path_length) 	 :: irradname
+   character(len=path_length)     :: irradname
    character(len=path_length)     :: fillname
    character(len=path_length)     :: sclname
    character(len=path_length)     :: offname
@@ -368,7 +379,7 @@ subroutine read_slstr_visdata(indir,inband,outarr,imager_angles,sx,sy,nx,ny,inx,
       stop error_stop_code
    end if
 
-	! Close this file
+   ! Close this file
    ierr=nf90_close(fid)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: read_slstr_visdata(): Error closing file ',trim(filename)
@@ -421,6 +432,17 @@ subroutine read_slstr_visdata(indir,inband,outarr,imager_angles,sx,sy,nx,ny,inx,
    deallocate(data1)
    deallocate(data2)
    deallocate(data3)
+   if (inband .eq. 5 .or. inband .eq. 6) then
+      outarr(1:nx-1,1:ny-1)=outarr(2:nx,2:ny)
+   endif
+   if (inband .eq. 10 .or. inband .eq. 11 .or. inband .eq. 12 .or. inband .eq. 13) then
+      outarr(1:nx-1,1:ny-1)=outarr(2:nx,2:ny)
+   endif
+   if (inband .eq. 14 .or. inband .eq. 15) then
+      outarr(1:nx-1,:)=outarr(2:nx,:)
+   endif
+
+
 
 end subroutine read_slstr_visdata
 
@@ -788,31 +810,44 @@ subroutine slstr_interp_angs(in_angs,out_angs,txnx,txny,nx,ny,interp,view)
          slo = interp(x,y,3)
 
          ! Compute the interpolated angles on the TIR grid
-      	do z=1,4
-         	if (prev .ne. next) then
-         		if (in_angs(prev,y,z) .eq. sreal_fill_value) then
-         			if (in_angs(next,y,z) .eq. sreal_fill_value) then
-         				intval(z) = sreal_fill_value
-         			else
-         				intval(z) = in_angs(next,y,z)
-         			endif
-         		else
-         			if (in_angs(next,y,z) .eq. sreal_fill_value) then
-         				intval(z) = in_angs(prev,y,z)
-         			else
-         				intval = in_angs(prev,y,:) + slo*(in_angs(next,y,:)-in_angs(prev,y,:))
-         			endif
-         		endif
-         	else
-         		if (in_angs(prev,y,z) .ne. sreal_fill_value) then
-         	  		intval = in_angs(prev,y,:)
-         	  	else if (in_angs(next,y,z) .ne. sreal_fill_value) then
-         	  		intval = in_angs(next,y,:)
-         	  	else
-         			intval(z) = sreal_fill_value
-         		endif
-         	end if
-			enddo
+         do z=1,4
+            if (prev .ne. next) then
+               if (in_angs(prev,y,z) .eq. sreal_fill_value) then
+                  if (in_angs(next,y,z) .eq. sreal_fill_value) then
+                     intval(z) = sreal_fill_value
+                  else
+                     intval(z) = in_angs(next,y,z)
+                  endif
+               else
+                  if (in_angs(next,y,z) .eq. sreal_fill_value) then
+                     intval(z) = in_angs(prev,y,z)
+                  else
+                     if (z .eq. 1 .or. z .eq. 3) then
+                        if (in_angs(prev,y,z) .gt. 315. .and. in_angs(next,y,z) .lt. 45.) then
+                           intval(z) = in_angs(prev,y,z) + slo*(in_angs(next,y,z)-(in_angs(prev,y,z)-360.))
+                        else if (in_angs(next,y,z) .gt. 315. .and. in_angs(prev,y,z) .lt. 45.) then
+                           intval(z) = in_angs(prev,y,z) + slo*((in_angs(next,y,z)-360.)-(in_angs(prev,y,z)))
+                        else
+                           intval(z) = in_angs(prev,y,z) + slo*(in_angs(next,y,z)-in_angs(prev,y,z))
+                        endif
+                     else
+                        intval(z) = in_angs(prev,y,z) + slo*(in_angs(next,y,z)-in_angs(prev,y,z))
+                     endif
+                     if (z .eq. 1 .or. z .eq. 3) then
+                        if (intval(z) .lt. 0.) intval(z)=intval(z)+360.
+                     endif
+                  endif
+               endif
+            else
+               if (in_angs(prev,y,z) .ne. sreal_fill_value) then
+                    intval(z) = in_angs(prev,y,z)
+                 else if (in_angs(next,y,z) .ne. sreal_fill_value) then
+                    intval(z) = in_angs(next,y,z)
+                 else
+                  intval(z) = sreal_fill_value
+               endif
+            end if
+         enddo
 
          if (intval(4) .lt. 0 .or. intval(4) .gt. 180 ) intval = sreal_fill_value
          if (intval(2) .lt. 0 .or. intval(2) .gt. 180 ) intval = sreal_fill_value
@@ -852,7 +887,7 @@ subroutine read_slstr_satsol(indir,imager_angles,interp,txnx,txny,nx,ny,startx,v
    type(imager_angles_t),      intent(inout) :: imager_angles
 
    character(len=path_length) :: geofile,vid
-   integer                    :: fid,ierr
+   integer                    :: fid,ierr,bob
 
    ! This stores the angles on the tx (reduced) grid.
    ! In order (1->4): vaa,vza,saa,sza
