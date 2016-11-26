@@ -24,11 +24,12 @@
 ! 2016/09/16, SP: Added openMP for a small performance boost
 ! 2016/11/23, SP: Fixed interpolation issue for azimuth angles
 ! 2016/11/24, SP: Added fudge factor to correct for bad SLSTR colocation
+! 2016/11/26, SP: Disable fudge factor, awaiting EUMETSAT fix
 !
 ! $Id$
 !
 ! Bugs:
-! Fudge factor for some channels, needed to correct for SLSTR's awful coloaction
+! SLSTR colocation is poor. Aerosol retrieval unusable. Cloud retrieval suspect.
 !-------------------------------------------------------------------------------
 
 ! This function retrieves the start and end times for an SLSTR scene, then
@@ -271,13 +272,12 @@ subroutine read_slstr_tirdata(indir,inband,outarr,sx,sy,nx,ny,inx,iny,offset,vie
    where(data1 .eq. filval) data2=sreal_fill_value
    outarr(offset:offset+nx-1,:)=data2
 
-
-   if (inband .eq. 8 .or. inband .eq. 9) then
-      outarr(:,1:ny-2)=outarr(:,3:ny)
-   endif
-   if (inband .eq. 16 .or. inband .eq. 17 .or. inband .eq. 18) then
-      outarr(1:nx-1,:)=outarr(2:nx,:)
-   endif
+!   if (inband .eq. 8 .or. inband .eq. 9) then
+!      outarr(:,1:ny-2)=outarr(:,3:ny)
+!   endif
+!   if (inband .eq. 16 .or. inband .eq. 17 .or. inband .eq. 18) then
+!      outarr(1:nx-1,:)=outarr(2:nx,:)
+!   endif
 
 end subroutine read_slstr_tirdata
 
@@ -432,17 +432,15 @@ subroutine read_slstr_visdata(indir,inband,outarr,imager_angles,sx,sy,nx,ny,inx,
    deallocate(data1)
    deallocate(data2)
    deallocate(data3)
-   if (inband .eq. 5 .or. inband .eq. 6) then
-      outarr(1:nx-1,1:ny-1)=outarr(2:nx,2:ny)
-   endif
-   if (inband .eq. 10 .or. inband .eq. 11 .or. inband .eq. 12 .or. inband .eq. 13) then
-      outarr(1:nx-1,1:ny-1)=outarr(2:nx,2:ny)
-   endif
-   if (inband .eq. 14 .or. inband .eq. 15) then
-      outarr(1:nx-1,:)=outarr(2:nx,:)
-   endif
-
-
+!   if (inband .eq. 5 .or. inband .eq. 6) then
+!      outarr(1:nx-1,1:ny-1)=outarr(2:nx,2:ny)
+!   endif
+!   if (inband .eq. 10 .or. inband .eq. 11 .or. inband .eq. 12 .or. inband .eq. 13) then
+!      outarr(1:nx-1,1:ny-1)=outarr(2:nx,2:ny)
+!   endif
+!   if (inband .eq. 14 .or. inband .eq. 15) then
+!      outarr(1:nx-1,:)=outarr(2:nx,:)
+!   endif
 
 end subroutine read_slstr_visdata
 
