@@ -806,7 +806,6 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 end subroutine rttov_driver
 
 
-#include "remove_rayleigh.F90"
 #include "write_ir_rttov.F90"
 #include "write_solar_rttov.F90"
 
