@@ -57,8 +57,9 @@ subroutine build_preproc_fields(preproc_dims, preproc_geoloc, preproc_geo, &
    integer(kind=lint)         :: i,j,k,lon_i,lat_j
    real(sreal)                :: fac
 
-   !build the arrays for the regular grid
-   !create grid resolution lat
+   ! build the arrays for the regular grid
+
+   ! create grid resolution lat
    fac = 1. / preproc_dims%dellat
    preproc_geoloc%latitude(preproc_dims%min_lat) = &
         (preproc_dims%min_lat-0.5)*fac - real(preproc_dims%lat_offset,sreal)
@@ -66,7 +67,7 @@ subroutine build_preproc_fields(preproc_dims, preproc_geoloc, preproc_geo, &
       preproc_geoloc%latitude(i) = preproc_geoloc%latitude(i-1) + fac
    end do
 
-   !create grid resolution lon
+   ! create grid resolution lon
    fac = 1. / preproc_dims%dellon
    preproc_geoloc%longitude(preproc_dims%min_lon) = &
         (preproc_dims%min_lon-0.5)*fac - real(preproc_dims%lon_offset,sreal)
@@ -74,13 +75,13 @@ subroutine build_preproc_fields(preproc_dims, preproc_geoloc, preproc_geo, &
       preproc_geoloc%longitude(i) = preproc_geoloc%longitude(i-1) + fac
    end do
 
-   !imager resolution is always higher than preprocessing resolution
-   !=>average imager properties to this coarser resolution grid.
+   ! imager resolution is always higher than preprocessing resolution
+   ! =>average imager properties to this coarser resolution grid.
 
    preproc_dims%counter_sw=0
    preproc_dims%counter_lw=0
 
-   !loop over imager data
+   ! loop over imager data
    do j=1,imager_geolocation%ny
       do i=imager_geolocation%startx,imager_geolocation%endx
 

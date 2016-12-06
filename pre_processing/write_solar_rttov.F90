@@ -17,10 +17,11 @@
 ! Name           Type   In/Out/Both Description
 ! ------------------------------------------------------------------------------
 ! netcdf_info    struct in   Summary of NCDF file properties.
-! i              int    in   X (lon) array index of grid cell
-! j              int    in   Y (lat) array index of grid call
-! nchan          int    in   # of channels used
-! nlevels        int    in   # of vertical levels used
+! coefs          struct in   rttov_coefs structure
+! idim           int    in   X (lon) array index of grid cell
+! jdim           int    in   Y (lat) array index of grid call
+! nlev           int    in   # of vertical levels used
+! satza          real   in   Satellite zenith angle
 ! transmission   struct in   RTTOV-derived atmospheric transmission
 ! write_flag     logic  in   T: Write values; F: Write fill-values
 !
@@ -39,9 +40,8 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine write_solar_rttov(netcdf_info, coefs, idim, jdim, &
-     nlev, satza, transmission, &
-     write_flag, chan_num, rttov_num)
+subroutine write_solar_rttov(netcdf_info, coefs, idim, jdim, nlev, satza, &
+     transmission, write_flag, chan_num, rttov_num)
 
    use netcdf_output_m, only: netcdf_output_info_t
    use orac_ncdf_m

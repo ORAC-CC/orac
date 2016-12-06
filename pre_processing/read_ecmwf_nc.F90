@@ -65,8 +65,8 @@
 !    resolution.
 ! 2015/07/03, OS: added error status variable to nc_open call
 ! 2015/07/10, OS: undo previous commit
-! 2016/04/04, SP: Added option to process ECMWF forecast/analysis data
-!                 that's stored in a single NetCDF file.
+! 2016/04/04, SP: Added option to process ECMWF forecast/analysis data that's
+!    stored in a single NetCDF file.
 !
 ! $Id$
 !

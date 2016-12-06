@@ -91,7 +91,7 @@ subroutine read_modis_l1b_radiances(sensor,platform,path_to_l1b_file, &
          do ix=imager_geolocation%startx,imager_geolocation%endx
             do jy=imager_geolocation%starty,imager_geolocation%endy
 
-               temp(ix,jy)=MODIS_BRIGHT(platform,temp(ix,jy), &
+               temp(ix,jy)=modis_bright(platform,temp(ix,jy), &
                     channel_info%channel_ids_instr(ich),1)
 
             end do

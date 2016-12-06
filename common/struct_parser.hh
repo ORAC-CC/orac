@@ -7,7 +7,7 @@
     20 Apr 2016, ACP: Initial version
     09 Jun 2016, ACP: Final version
     15 Jun 2016, ACP: Ignore unallocated arrays (that have length of zero)
-    04 Aug 2016, GRM: 
+    04 Aug 2016, GRM: Add dimension size/bounds info when reporting errors.
  */
 
 #include <stdio.h>

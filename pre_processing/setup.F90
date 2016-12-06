@@ -250,6 +250,161 @@ subroutine setup_aatsr(l1b_path_file,geo_path_file,platform,sensor,year, &
 end subroutine setup_aatsr
 
 
+subroutine setup_ahi(l1b_path_file,geo_path_file,platform,year,month,day, &
+   doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids_user, &
+   channel_info,verbose)
+
+   use calender_m
+   use channel_structures_m
+   use preproc_constants_m
+   use preproc_structures_m
+
+   implicit none
+
+   character(len=path_length),     intent(in)    :: l1b_path_file
+   character(len=path_length),     intent(in)    :: geo_path_file
+   character(len=platform_length), intent(out)   :: platform
+   integer(kind=sint),             intent(out)   :: year,month,day,doy
+   integer(kind=sint),             intent(out)   :: hour,minute
+   character(len=date_length),     intent(out)   :: cyear,cmonth,cday
+   character(len=date_length),     intent(out)   :: cdoy,chour,cminute
+   integer, pointer,               intent(in)    :: channel_ids_user(:)
+   type(channel_info_t),           intent(inout) :: channel_info
+   logical,                        intent(in)    :: verbose
+
+   integer :: index1,index2
+
+
+   ! Static instrument channel definitions. (These should not be changed.)
+   integer, parameter :: all_nchannels_total = 16
+
+       ! 1,       2,       3,       4,       5,      6,      7,      8
+   real,    parameter :: all_channel_wl_abs(all_nchannels_total) = &
+      (/ 0.47063, 0.51000, 0.63914, 0.85670, 1.6101, 2.2568, 3.8853, 6.2429, &
+         6.9410,  7.3467,  8.5926,  9.6372,  10.4073,11.2395,12.3806,13.2807 /)
+
+   integer, parameter :: all_channel_sw_flag(all_nchannels_total) = &
+      (/ 1,       1,       1,       1,       1,       1,       1,       0, &
+         0,       0,       0,       0,       0,       0,       0,       0/)
+
+   integer, parameter :: all_channel_lw_flag(all_nchannels_total) = &
+      (/ 0,       0,       0,       0,       0,       0,       1,       1, &
+         1,       1,       1,       1,       1,       1,       1       ,1/)
+
+   integer, parameter :: all_channel_ids_rttov_coef_sw(all_nchannels_total) = &
+      (/ 1,       2,       3,       4,       5,       6,       7,       0, &
+         0,       0,       0,       0,       0,       0,       0,       0 /)
+
+   integer, parameter :: all_channel_ids_rttov_coef_lw(all_nchannels_total) = &
+      (/ 0,       0,       0,       0,       0,       0,       1,       2, &
+         3,       4,       5,       6,       7,       8,       9,       10 /)
+
+   integer, parameter :: all_map_ids_abs_to_ref_band_land(all_nchannels_total) = &
+      (/ 3,       4,       1,       2,       6,       7,       0,       0, &
+         0,       0,       0,       0,       0,       0,       0,       0 /)
+
+   integer, parameter :: all_map_ids_abs_to_ref_band_sea(all_nchannels_total)  = &
+      (/ 2,       2,       3,       4,       6,       7,       8,       0, &
+         0,       0,       0,       0,       0,       0,       0,       0 /)
+
+   integer, parameter :: all_map_ids_abs_to_snow_and_ice(all_nchannels_total)  = &
+      (/ 1,       1,       1,       2,       3,       3,       4,       0, &
+         0,       0,       0,       0,       0,       0,       0,       0 /)
+   integer, parameter :: all_map_ids_view_number(all_nchannels_total)  = &
+      (/ 1,       1,       1,       1,       1,       1,       1,       1, &
+         1,       1,       1,       1,       1,       1,       1,       1 /)
+
+   real,    parameter :: all_channel_fractional_uncertainty(all_nchannels_total) = &
+      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0., &
+         0.,      0.,      0.,      0.,      0.,      0.,      0.,      0. /)
+
+   real,    parameter :: all_channel_minimum_uncertainty(all_nchannels_total) = &
+      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0., &
+         0.,      0.,      0.,      0.,      0.,      0.,      0.,      0. /)
+
+   real,    parameter :: all_channel_numerical_uncertainty(all_nchannels_total) = &
+      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0., &
+         0.,      0.,      0.,      0.,      0.,      0.,      0.,      0. /)
+
+   real,    parameter :: all_channel_lnd_uncertainty(all_nchannels_total) = &
+      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0., &
+         0.,      0.,      0.,      0.,      0.,      0.,      0.,      0. /)
+
+   real,    parameter :: all_channel_sea_uncertainty(all_nchannels_total) = &
+      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0., &
+         0.,      0.,      0.,      0.,      0.,      0.,      0.,      0. /)
+
+
+   ! Only this below needs to be set to change the desired default channels. All
+   ! other channel related arrays/indexes are set automatically given the static
+   ! instrument channel definition above.
+   integer, parameter :: channel_ids_default(6) = (/ 3, 4, 5, 7, 14, 15 /)
+
+
+   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering setup_himawari()'
+
+   if (verbose) write(*,*) 'l1b_path_file: ', trim(l1b_path_file)
+   if (verbose) write(*,*) 'geo_path_file: ', trim(geo_path_file)
+
+   ! check if l1b and geo file are of the same granule
+   index1=index(trim(adjustl(l1b_path_file)),'/',back=.true.)
+   index2=index(trim(adjustl(geo_path_file)),'/',back=.true.)
+
+   ! check if l1b and geo files identical
+   if (trim(adjustl(l1b_path_file)) .ne. &
+       trim(adjustl(geo_path_file))) then
+      write(*,*)
+      write(*,*) 'ERROR: setup_ahi(): Geolocation and L1b files are ' // &
+                 'for different times'
+      write(*,*) 'l1b_path_file: ', trim(adjustl(geo_path_file))
+      write(*,*) 'geo_path_file: ', trim(adjustl(l1b_path_file))
+
+      stop error_stop_code
+   end if
+
+   platform="Himawari-8"
+   if (verbose) write(*,*)"Satellite is: ",platform
+
+   ! The code below extracts date/time info from the segment name.
+   ! Note that it requires the segment name to be in the generic format
+   ! that's specified by the JMA. Weird filenames will break things.
+
+   index2=index(trim(adjustl(l1b_path_file)),'HS_H')
+
+   ! get year, doy, hour and minute as strings
+   index2=index2+7
+   cyear=trim(adjustl(l1b_path_file(index2:index2+3)))
+   cmonth=trim(adjustl(l1b_path_file(index2+4:index2+5)))
+   cday=trim(adjustl(l1b_path_file(index2+6:index2+7)))
+   chour=trim(adjustl(l1b_path_file(index2+9:index2+10)))
+   cminute=trim(adjustl(l1b_path_file(index2+11:index2+12)))
+
+   ! get year, doy, hour and minute as integers
+   read(cyear(1:len_trim(cyear)), '(I4)') year
+   read(cmonth(1:len_trim(cmonth)), '(I2)') month
+   read(cday(1:len_trim(cday)), '(I2)') day
+   read(chour(1:len_trim(chour)), '(I2)') hour
+   read(cminute(1:len_trim(cminute)), '(I2)') minute
+
+   call GREG2DOY(year, month, day, doy)
+   write(cdoy, '(i3.3)') doy
+
+
+   ! now set up the channels
+   call common_setup(channel_info, channel_ids_user, channel_ids_default, &
+      all_channel_wl_abs, all_channel_sw_flag, all_channel_lw_flag, &
+      all_channel_ids_rttov_coef_sw, all_channel_ids_rttov_coef_lw, &
+      all_map_ids_abs_to_ref_band_land, all_map_ids_abs_to_ref_band_sea, &
+      all_map_ids_abs_to_snow_and_ice, all_map_ids_view_number, &
+      all_channel_fractional_uncertainty, all_channel_minimum_uncertainty, &
+      all_channel_numerical_uncertainty, all_channel_lnd_uncertainty, &
+      all_channel_sea_uncertainty)
+
+   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_ahi()'
+
+end subroutine setup_ahi
+
+
 subroutine setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day, &
    doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids_user, &
    channel_info,verbose)
@@ -466,161 +621,6 @@ subroutine setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day, &
 end subroutine setup_avhrr
 
 
-subroutine setup_himawari8(l1b_path_file,geo_path_file,platform,year,month,day, &
-   doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids_user, &
-   channel_info,verbose)
-
-   use calender_m
-   use channel_structures_m
-   use preproc_constants_m
-   use preproc_structures_m
-
-   implicit none
-
-   character(len=path_length),     intent(in)    :: l1b_path_file
-   character(len=path_length),     intent(in)    :: geo_path_file
-   character(len=platform_length), intent(out)   :: platform
-   integer(kind=sint),             intent(out)   :: year,month,day,doy
-   integer(kind=sint),             intent(out)   :: hour,minute
-   character(len=date_length),     intent(out)   :: cyear,cmonth,cday
-   character(len=date_length),     intent(out)   :: cdoy,chour,cminute
-   integer, pointer,               intent(in)    :: channel_ids_user(:)
-   type(channel_info_t),           intent(inout) :: channel_info
-   logical,                        intent(in)    :: verbose
-
-   integer :: index1,index2
-
-
-   ! Static instrument channel definitions. (These should not be changed.)
-   integer, parameter :: all_nchannels_total = 16
-
-       ! 1,       2,       3,       4,       5,      6,      7,      8
-   real,    parameter :: all_channel_wl_abs(all_nchannels_total) = &
-      (/ 0.47063, 0.51000, 0.63914, 0.85670, 1.6101, 2.2568, 3.8853, 6.2429, &
-         6.9410,  7.3467,  8.5926,  9.6372,  10.4073,11.2395,12.3806,13.2807 /)
-
-   integer, parameter :: all_channel_sw_flag(all_nchannels_total) = &
-      (/ 1,       1,       1,       1,       1,       1,       1,       0, &
-         0,       0,       0,       0,       0,       0,       0,       0/)
-
-   integer, parameter :: all_channel_lw_flag(all_nchannels_total) = &
-      (/ 0,       0,       0,       0,       0,       0,       1,       1, &
-         1,       1,       1,       1,       1,       1,       1       ,1/)
-
-   integer, parameter :: all_channel_ids_rttov_coef_sw(all_nchannels_total) = &
-      (/ 1,       2,       3,       4,       5,       6,       7,       0, &
-         0,       0,       0,       0,       0,       0,       0,       0 /)
-
-   integer, parameter :: all_channel_ids_rttov_coef_lw(all_nchannels_total) = &
-      (/ 0,       0,       0,       0,       0,       0,       1,       2, &
-         3,       4,       5,       6,       7,       8,       9,       10 /)
-
-   integer, parameter :: all_map_ids_abs_to_ref_band_land(all_nchannels_total) = &
-      (/ 3,       4,       1,       2,       6,       7,       0,       0, &
-         0,       0,       0,       0,       0,       0,       0,       0 /)
-
-   integer, parameter :: all_map_ids_abs_to_ref_band_sea(all_nchannels_total)  = &
-      (/ 2,       2,       3,       4,       6,       7,       8,       0, &
-         0,       0,       0,       0,       0,       0,       0,       0 /)
-
-   integer, parameter :: all_map_ids_abs_to_snow_and_ice(all_nchannels_total)  = &
-      (/ 1,       1,       1,       2,       3,       3,       4,       0, &
-         0,       0,       0,       0,       0,       0,       0,       0 /)
-   integer, parameter :: all_map_ids_view_number(all_nchannels_total)  = &
-      (/ 1,       1,       1,       1,       1,       1,       1,       1, &
-         1,       1,       1,       1,       1,       1,       1,       1 /)
-
-   real,    parameter :: all_channel_fractional_uncertainty(all_nchannels_total) = &
-      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0., &
-         0.,      0.,      0.,      0.,      0.,      0.,      0.,      0. /)
-
-   real,    parameter :: all_channel_minimum_uncertainty(all_nchannels_total) = &
-      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0., &
-         0.,      0.,      0.,      0.,      0.,      0.,      0.,      0. /)
-
-   real,    parameter :: all_channel_numerical_uncertainty(all_nchannels_total) = &
-      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0., &
-         0.,      0.,      0.,      0.,      0.,      0.,      0.,      0. /)
-
-   real,    parameter :: all_channel_lnd_uncertainty(all_nchannels_total) = &
-      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0., &
-         0.,      0.,      0.,      0.,      0.,      0.,      0.,      0. /)
-
-   real,    parameter :: all_channel_sea_uncertainty(all_nchannels_total) = &
-      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0., &
-         0.,      0.,      0.,      0.,      0.,      0.,      0.,      0. /)
-
-
-   ! Only this below needs to be set to change the desired default channels. All
-   ! other channel related arrays/indexes are set automatically given the static
-   ! instrument channel definition above.
-   integer, parameter :: channel_ids_default(6) = (/ 3, 4, 5, 7, 14, 15 /)
-
-
-   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering setup_himawari()'
-
-   if (verbose) write(*,*) 'l1b_path_file: ', trim(l1b_path_file)
-   if (verbose) write(*,*) 'geo_path_file: ', trim(geo_path_file)
-
-   ! check if l1b and geo file are of the same granule
-   index1=index(trim(adjustl(l1b_path_file)),'/',back=.true.)
-   index2=index(trim(adjustl(geo_path_file)),'/',back=.true.)
-
-   ! check if l1b and geo files identical
-   if (trim(adjustl(l1b_path_file)) .ne. &
-       trim(adjustl(geo_path_file))) then
-      write(*,*)
-      write(*,*) 'ERROR: setup_himawari8(): Geolocation and L1b files are ' // &
-                 'for different times'
-      write(*,*) 'l1b_path_file: ', trim(adjustl(geo_path_file))
-      write(*,*) 'geo_path_file: ', trim(adjustl(l1b_path_file))
-
-      stop error_stop_code
-   end if
-
-   platform="Himawari"
-   if (verbose) write(*,*)"Satellite is: ",platform
-
-   ! The code below extracts date/time info from the segment name.
-   ! Note that it requires the segment name to be in the generic format
-   ! that's specified by the JMA. Weird filenames will break things.
-
-   index2=index(trim(adjustl(l1b_path_file)),'HS_H')
-
-   ! get year, doy, hour and minute as strings
-   index2=index2+7
-   cyear=trim(adjustl(l1b_path_file(index2:index2+3)))
-   cmonth=trim(adjustl(l1b_path_file(index2+4:index2+5)))
-   cday=trim(adjustl(l1b_path_file(index2+6:index2+7)))
-   chour=trim(adjustl(l1b_path_file(index2+9:index2+10)))
-   cminute=trim(adjustl(l1b_path_file(index2+11:index2+12)))
-
-   ! get year, doy, hour and minute as integers
-   read(cyear(1:len_trim(cyear)), '(I4)') year
-   read(cmonth(1:len_trim(cmonth)), '(I2)') month
-   read(cday(1:len_trim(cday)), '(I2)') day
-   read(chour(1:len_trim(chour)), '(I2)') hour
-   read(cminute(1:len_trim(cminute)), '(I2)') minute
-
-   call GREG2DOY(year, month, day, doy)
-   write(cdoy, '(i3.3)') doy
-
-
-   ! now set up the channels
-   call common_setup(channel_info, channel_ids_user, channel_ids_default, &
-      all_channel_wl_abs, all_channel_sw_flag, all_channel_lw_flag, &
-      all_channel_ids_rttov_coef_sw, all_channel_ids_rttov_coef_lw, &
-      all_map_ids_abs_to_ref_band_land, all_map_ids_abs_to_ref_band_sea, &
-      all_map_ids_abs_to_snow_and_ice, all_map_ids_view_number, &
-      all_channel_fractional_uncertainty, all_channel_minimum_uncertainty, &
-      all_channel_numerical_uncertainty, all_channel_lnd_uncertainty, &
-      all_channel_sea_uncertainty)
-
-   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_himawari8()'
-
-end subroutine setup_himawari8
-
-
 subroutine setup_modis(l1b_path_file,geo_path_file,platform,year,month,day, &
    doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids_user, &
    channel_info,verbose)
@@ -707,7 +707,7 @@ subroutine setup_modis(l1b_path_file,geo_path_file,platform,year,month,day, &
          7,         0,         0,         0,         0,         0, &
          0,         0,         0,         0,         0,         0, &
          0,         0,         0,         0,         0,         0, &
-         0,         0,         0,         0,         0,         0, &
+         0,         5,         0,         0,         0,         0, &
          0,         0,         0,         0,         0,         0 /)
 
    integer, parameter :: all_map_ids_abs_to_ref_band_sea(all_nchannels_total)  = &
@@ -1005,6 +1005,207 @@ subroutine setup_seviri(l1b_path_file,geo_path_file,platform,year,month,day, &
 end subroutine setup_seviri
 
 
+subroutine setup_slstr(l1b_path_file,geo_path_file,platform,year,month,day, &
+   doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids_user, &
+   channel_info,verbose)
+
+   use calender_m
+   use channel_structures_m
+   use preproc_constants_m
+   use preproc_structures_m
+
+   use netcdf
+
+   implicit none
+
+   character(len=path_length),     intent(in)    :: l1b_path_file
+   character(len=path_length),     intent(in)    :: geo_path_file
+   character(len=platform_length), intent(out)   :: platform
+   integer(kind=sint),             intent(out)   :: year,month,day,doy
+   integer(kind=sint),             intent(out)   :: hour,minute
+   character(len=date_length),     intent(out)   :: cyear,cmonth,cday
+   character(len=date_length),     intent(out)   :: cdoy,chour,cminute
+   integer, pointer,               intent(in)    :: channel_ids_user(:)
+   type(channel_info_t),           intent(inout) :: channel_info
+   logical,                        intent(in)    :: verbose
+
+   integer :: index2,second
+   character(len=date_length) :: csecond
+
+   ! Variables for dealing with netcdf files (required for timestamping)
+   integer fid,ierr
+   character(len=path_length) :: geo_start, l1b_start
+
+
+   ! Static instrument channel definitions. (These should not be changed.)
+   integer, parameter :: all_nchannels_total = 18
+
+       ! 1,       2,       3,       4,       5,      6,      7,      8
+   real,    parameter :: all_channel_wl_abs(all_nchannels_total) = &
+      (/ 0.555,   0.659,   0.865,   1.375,   1.640,   2.250,   3.740,   10.85,  12.00, &
+         0.555,   0.659,   0.865,   1.375,   1.640,   2.250,   3.740,   10.85,  12.00 /)
+
+   integer, parameter :: all_channel_sw_flag(all_nchannels_total) = &
+      (/ 1,       1,       1,       1,       1,       1,       1,       0,      0, &
+         1,       1,       1,       1,       1,       1,       1,       0,      0  /)
+
+   integer, parameter :: all_channel_lw_flag(all_nchannels_total) = &
+      (/ 0,       0,       0,       0,       0,       0,       1,       1,      1, &
+         0,       0,       0,       0,       0,       0,       1,       1,      1  /)
+   integer, parameter :: all_channel_ids_rttov_coef_sw(all_nchannels_total) = &
+      (/ 1,       2,       3,       4,       5,       6,       7,       8,      9, &
+         1,       2,       3,       4,       5,       6,       7,       8,      9  /)
+
+   integer, parameter :: all_channel_ids_rttov_coef_lw(all_nchannels_total) = &
+      (/ 0,       0,       0,       0,       0,       0,       1,       2,      3, &
+         0,       0,       0,       0,       0,       0,       1,       2,      3  /)
+
+   integer, parameter :: all_map_ids_abs_to_ref_band_land(all_nchannels_total) = &
+      (/ 4,       1,       2,       5,       6,       7,       0,       0,      0, &
+         4,       1,       2,       5,       6,       7,       0,       0,      0  /)
+
+   integer, parameter :: all_map_ids_abs_to_ref_band_sea(all_nchannels_total)  = &
+      (/ 2,       3,       4,       5,       6,       7,       8,       0,      0, &
+         2,       3,       4,       5,       6,       7,       8,       0,      0  /)
+
+   integer, parameter :: all_map_ids_abs_to_snow_and_ice(all_nchannels_total)  = &
+      (/ 1,       1,       2,       3,       3,       3,       4,       0,      0, &
+         1,       1,       2,       3,       3,       3,       4,       0,      0  /)
+
+   integer, parameter :: all_map_ids_view_number(all_nchannels_total)  = &
+      (/ 1,       1,       1,       1,       1,       1,       1,       1,      1,&
+         2,       2,       2,       2,       2,       2,       2,       2,      2  /)
+
+   real,    parameter :: all_channel_fractional_uncertainty(all_nchannels_total) = &
+      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0.,     0., &
+         0.,      0.,      0.,      0.,      0.,      0.,      0.,      0.,     0. /)
+
+   real,    parameter :: all_channel_minimum_uncertainty(all_nchannels_total) = &
+      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0.,     0., &
+         0.,      0.,      0.,      0.,      0.,      0.,      0.,      0.,     0. /)
+
+   real,    parameter :: all_channel_numerical_uncertainty(all_nchannels_total) = &
+      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0.,     0., &
+         0.,      0.,      0.,      0.,      0.,      0.,      0.,      0.,     0. /)
+
+   real,    parameter :: all_channel_lnd_uncertainty(all_nchannels_total) = &
+      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0.,     0., &
+         0.,      0.,      0.,      0.,      0.,      0.,      0.,      0.,     0. /)
+
+   real,    parameter :: all_channel_sea_uncertainty(all_nchannels_total) = &
+      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0.,     0., &
+         0.,      0.,      0.,      0.,      0.,      0.,      0.,      0.,     0. /)
+
+
+   ! Only this below needs to be set to change the desired default channels. All
+   ! other channel related arrays/indexes are set automatically given the static
+   ! instrument channel definition above.
+   integer, parameter :: channel_ids_default(6) = (/ 2, 3, 5, 7, 8, 9 /)
+
+
+   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering setup_slstr()'
+
+   if (verbose) write(*,*) 'l1b_path_file: ', trim(l1b_path_file)
+   if (verbose) write(*,*) 'geo_path_file: ', trim(geo_path_file)
+
+   ! check if l1b and geo file are of the same granule
+
+   ierr=nf90_open(path=trim(adjustl(l1b_path_file)),mode=NF90_NOWRITE,ncid=fid)
+   if (ierr.ne.NF90_NOERR) then
+      print*,'ERROR: setup_slstr(): Error opening file ',trim(l1b_path_file)
+      stop
+   end if
+   ierr = nf90_get_att(fid, nf90_global, "start_time", l1b_start)
+   if (ierr.ne.NF90_NOERR) then
+      print*,'ERROR: setup_slstr(): Error getting start_time from file ',trim(l1b_path_file)
+      stop
+   end if
+   ierr = nf90_close(fid)
+   if (ierr.ne.NF90_NOERR) then
+      print*,'ERROR: setup_slstr(): Error closing file ',trim(l1b_path_file)
+      stop
+   end if
+
+   ierr=nf90_open(path=trim(adjustl(geo_path_file)),mode=NF90_NOWRITE,ncid=fid)
+   if (ierr.ne.NF90_NOERR) then
+      print*,'ERROR: setup_slstr(): Error opening file ',trim(geo_path_file)
+      stop
+   end if
+   ierr = nf90_get_att(fid, nf90_global, "start_time", geo_start)
+   if (ierr.ne.NF90_NOERR) then
+      print*,'ERROR: setup_slstr(): Error getting start_time from file ',trim(geo_path_file)
+      stop
+   end if
+   ierr = nf90_close(fid)
+   if (ierr.ne.NF90_NOERR) then
+      print*,'ERROR: setup_slstr(): Error closing file ',trim(geo_path_file)
+      stop
+   end if
+   if (trim(l1b_start).ne.trim(geo_start)) then
+      print*,"ERROR: Start times for geo and image granules don't match: "
+      write(*,*)trim(l1b_start)
+      write(*,*)trim(geo_start)
+      stop
+   end if
+
+
+   platform="Sentinel-3"
+   if (verbose) write(*,*)"Satellite is: ",platform
+
+   ! The code below extracts date/time info from the l1b start time.
+
+   ! get year, doy, hour and minute as strings
+   index2=1
+   cyear=trim(adjustl(l1b_start(index2:index2+4)))
+   cmonth=trim(adjustl(l1b_start(index2+5:index2+6)))
+   cday=trim(adjustl(l1b_start(index2+8:index2+9)))
+   chour=trim(adjustl(l1b_start(index2+11:index2+12)))
+   cminute=trim(adjustl(l1b_start(index2+14:index2+15)))
+   csecond=trim(adjustl(l1b_start(index2+17:index2+18)))
+
+   ! get year, doy, hour and minute as integers
+   read(cyear(1:len_trim(cyear)), '(I4)') year
+   read(cmonth(1:len_trim(cmonth)), '(I2)') month
+   read(cday(1:len_trim(cday)), '(I2)') day
+   read(chour(1:len_trim(chour)), '(I2)') hour
+   read(cminute(1:len_trim(cminute)), '(I2)') minute
+   read(csecond(1:len_trim(csecond)), '(I2)') second
+   if (second .ge. 30) then
+      minute = minute+1
+      if (minute .ge. 60) then
+         minute=0
+         hour=hour+1
+         if (hour .ge. 24) then
+            hour=0
+            day = day+1
+            write(cday,'(i0.2)') day
+         endif
+         write(chour,'(i0.2)') hour
+      endif
+      write(cminute,'(i0.2)') minute
+   endif
+   call GREG2DOY(year, month, day, doy)
+   write(cdoy, '(i3.3)') doy
+
+
+   ! SLSTR has two views, nadir and oblique
+   channel_info%nviews = 2
+
+   ! now set up the channels
+   call common_setup(channel_info, channel_ids_user, channel_ids_default, &
+      all_channel_wl_abs, all_channel_sw_flag, all_channel_lw_flag, &
+      all_channel_ids_rttov_coef_sw, all_channel_ids_rttov_coef_lw, &
+      all_map_ids_abs_to_ref_band_land, all_map_ids_abs_to_ref_band_sea, &
+      all_map_ids_abs_to_snow_and_ice, all_map_ids_view_number, &
+      all_channel_fractional_uncertainty, all_channel_minimum_uncertainty, &
+      all_channel_numerical_uncertainty, all_channel_lnd_uncertainty, &
+      all_channel_sea_uncertainty)
+
+   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_slstr()'
+
+end subroutine setup_slstr
+
+
 subroutine setup_viirs(l1b_path_file,geo_path_file,platform,year,month,day, &
    doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids_user, &
    channel_info,verbose)
@@ -1166,207 +1367,6 @@ subroutine setup_viirs(l1b_path_file,geo_path_file,platform,year,month,day, &
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_viirs()'
 
 end subroutine setup_viirs
-
-
-subroutine setup_slstr(l1b_path_file,geo_path_file,platform,year,month,day, &
-   doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids_user, &
-   channel_info,verbose)
-
-   use calender_m
-   use channel_structures_m
-   use preproc_constants_m
-   use preproc_structures_m
-
-   use netcdf
-
-   implicit none
-
-   character(len=path_length),     intent(in)    :: l1b_path_file
-   character(len=path_length),     intent(in)    :: geo_path_file
-   character(len=platform_length), intent(out)   :: platform
-   integer(kind=sint),             intent(out)   :: year,month,day,doy
-   integer(kind=sint),             intent(out)   :: hour,minute
-   character(len=date_length),     intent(out)   :: cyear,cmonth,cday
-   character(len=date_length),     intent(out)   :: cdoy,chour,cminute
-   integer, pointer,               intent(in)    :: channel_ids_user(:)
-   type(channel_info_t),           intent(inout) :: channel_info
-   logical,                        intent(in)    :: verbose
-
-   integer :: index2,second
-   character(len=date_length) :: csecond
-
-   ! Variables for dealing with netcdf files (required for timestamping)
-   integer fid,ierr
-   character(len=path_length) :: geo_start, l1b_start
-
-
-   ! Static instrument channel definitions. (These should not be changed.)
-   integer, parameter :: all_nchannels_total = 18
-
-       ! 1,       2,       3,       4,       5,      6,      7,      8
-   real,    parameter :: all_channel_wl_abs(all_nchannels_total) = &
-      (/ 0.555,   0.659,   0.865,   1.375,   1.640,   2.250,   3.740,   10.85,  12.00, &
-         0.555,   0.659,   0.865,   1.375,   1.640,   2.250,   3.740,   10.85,  12.00 /)
-
-   integer, parameter :: all_channel_sw_flag(all_nchannels_total) = &
-      (/ 1,       1,       1,       1,       1,       1,       1,       0,      0, &
-         1,       1,       1,       1,       1,       1,       1,       0,      0  /)
-
-   integer, parameter :: all_channel_lw_flag(all_nchannels_total) = &
-      (/ 0,       0,       0,       0,       0,       0,       1,       1,      1, &
-         0,       0,       0,       0,       0,       0,       1,       1,      1  /)
-   integer, parameter :: all_channel_ids_rttov_coef_sw(all_nchannels_total) = &
-      (/ 1,       2,       3,       4,       5,       6,       7,       8,      9, &
-         1,       2,       3,       4,       5,       6,       7,       8,      9  /)
-
-   integer, parameter :: all_channel_ids_rttov_coef_lw(all_nchannels_total) = &
-      (/ 0,       0,       0,       0,       0,       0,       1,       2,      3, &
-         0,       0,       0,       0,       0,       0,       1,       2,      3  /)
-
-   integer, parameter :: all_map_ids_abs_to_ref_band_land(all_nchannels_total) = &
-      (/ 4,       1,       2,       5,       6,       7,       0,       0,      0, &
-         4,       1,       2,       5,       6,       7,       0,       0,      0  /)
-
-   integer, parameter :: all_map_ids_abs_to_ref_band_sea(all_nchannels_total)  = &
-      (/ 2,       3,       4,       5,       6,       7,       8,       0,      0, &
-         2,       3,       4,       5,       6,       7,       8,       0,      0  /)
-
-   integer, parameter :: all_map_ids_abs_to_snow_and_ice(all_nchannels_total)  = &
-      (/ 1,       1,       2,       3,       3,       3,       4,       0,      0, &
-         1,       1,       2,       3,       3,       3,       4,       0,      0  /)
-
-   integer, parameter :: all_map_ids_view_number(all_nchannels_total)  = &
-      (/ 1,       1,       1,       1,       1,       1,       1,       1,      1,&
-         2,       2,       2,       2,       2,       2,       2,       2,      2  /)
-
-   real,    parameter :: all_channel_fractional_uncertainty(all_nchannels_total) = &
-      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0.,     0., &
-         0.,      0.,      0.,      0.,      0.,      0.,      0.,      0.,     0. /)
-
-   real,    parameter :: all_channel_minimum_uncertainty(all_nchannels_total) = &
-      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0.,     0., &
-         0.,      0.,      0.,      0.,      0.,      0.,      0.,      0.,     0. /)
-
-   real,    parameter :: all_channel_numerical_uncertainty(all_nchannels_total) = &
-      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0.,     0., &
-         0.,      0.,      0.,      0.,      0.,      0.,      0.,      0.,     0. /)
-
-   real,    parameter :: all_channel_lnd_uncertainty(all_nchannels_total) = &
-      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0.,     0., &
-         0.,      0.,      0.,      0.,      0.,      0.,      0.,      0.,     0. /)
-
-   real,    parameter :: all_channel_sea_uncertainty(all_nchannels_total) = &
-      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0.,     0., &
-         0.,      0.,      0.,      0.,      0.,      0.,      0.,      0.,     0. /)
-
-
-   ! Only this below needs to be set to change the desired default channels. All
-   ! other channel related arrays/indexes are set automatically given the static
-   ! instrument channel definition above.
-   integer, parameter :: channel_ids_default(6) = (/ 2, 3, 5, 7, 8, 9 /)
-
-
-   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering setup_slstr()'
-
-   if (verbose) write(*,*) 'l1b_path_file: ', trim(l1b_path_file)
-   if (verbose) write(*,*) 'geo_path_file: ', trim(geo_path_file)
-
-   ! check if l1b and geo file are of the same granule
-
-   ierr=nf90_open(path=trim(adjustl(l1b_path_file)),mode=NF90_NOWRITE,ncid=fid)
-   if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: setup_slstr(): Error opening file ',trim(l1b_path_file)
-      stop
-   end if
-   ierr = nf90_get_att(fid, nf90_global, "start_time", l1b_start)
-   if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: setup_slstr(): Error getting start_time from file ',trim(l1b_path_file)
-      stop
-   end if
-   ierr = nf90_close(fid)
-   if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: setup_slstr(): Error closing file ',trim(l1b_path_file)
-      stop
-   end if
-
-   ierr=nf90_open(path=trim(adjustl(geo_path_file)),mode=NF90_NOWRITE,ncid=fid)
-   if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: setup_slstr(): Error opening file ',trim(geo_path_file)
-      stop
-   end if
-   ierr = nf90_get_att(fid, nf90_global, "start_time", geo_start)
-   if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: setup_slstr(): Error getting start_time from file ',trim(geo_path_file)
-      stop
-   end if
-   ierr = nf90_close(fid)
-   if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: setup_slstr(): Error closing file ',trim(geo_path_file)
-      stop
-   end if
-   if (trim(l1b_start).ne.trim(geo_start)) then
-      print*,"ERROR: Start times for geo and image granules don't match: "
-      write(*,*)trim(l1b_start)
-      write(*,*)trim(geo_start)
-      stop
-   end if
-
-
-   platform="Sen3"
-   if (verbose) write(*,*)"Satellite is: ",platform
-
-   ! The code below extracts date/time info from the l1b start time.
-
-   ! get year, doy, hour and minute as strings
-   index2=1
-   cyear=trim(adjustl(l1b_start(index2:index2+4)))
-   cmonth=trim(adjustl(l1b_start(index2+5:index2+6)))
-   cday=trim(adjustl(l1b_start(index2+8:index2+9)))
-   chour=trim(adjustl(l1b_start(index2+11:index2+12)))
-   cminute=trim(adjustl(l1b_start(index2+14:index2+15)))
-   csecond=trim(adjustl(l1b_start(index2+17:index2+18)))
-
-   ! get year, doy, hour and minute as integers
-   read(cyear(1:len_trim(cyear)), '(I4)') year
-   read(cmonth(1:len_trim(cmonth)), '(I2)') month
-   read(cday(1:len_trim(cday)), '(I2)') day
-   read(chour(1:len_trim(chour)), '(I2)') hour
-   read(cminute(1:len_trim(cminute)), '(I2)') minute
-   read(csecond(1:len_trim(csecond)), '(I2)') second
-   if (second .ge. 30) then
-      minute = minute+1
-      if (minute .ge. 60) then
-         minute=0
-         hour=hour+1
-         if (hour .ge. 24) then
-            hour=0
-            day = day+1
-            write(cday,'(i0.2)') day
-         endif
-         write(chour,'(i0.2)') hour
-      endif
-      write(cminute,'(i0.2)') minute
-   endif
-   call GREG2DOY(year, month, day, doy)
-   write(cdoy, '(i3.3)') doy
-
-
-   ! SLSTR has two views, nadir and oblique
-   channel_info%nviews = 2
-
-   ! now set up the channels
-   call common_setup(channel_info, channel_ids_user, channel_ids_default, &
-      all_channel_wl_abs, all_channel_sw_flag, all_channel_lw_flag, &
-      all_channel_ids_rttov_coef_sw, all_channel_ids_rttov_coef_lw, &
-      all_map_ids_abs_to_ref_band_land, all_map_ids_abs_to_ref_band_sea, &
-      all_map_ids_abs_to_snow_and_ice, all_map_ids_view_number, &
-      all_channel_fractional_uncertainty, all_channel_minimum_uncertainty, &
-      all_channel_numerical_uncertainty, all_channel_lnd_uncertainty, &
-      all_channel_sea_uncertainty)
-
-   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_slstr()'
-
-end subroutine setup_slstr
 
 
 subroutine common_setup(channel_info, channel_ids_user, channel_ids_default, &

@@ -12,11 +12,9 @@
 ! Name           Type   In/Out/Both Description
 ! ------------------------------------------------------------------------------
 ! netcdf_info    struct in   Summary of NCDF file properties.
-! preproc_dims   struct in   Summary of preprocessing grid definitions
-! i              int    in   X (lon) array index of grid cell
-! j              int    in   Y (lat) array index of grid call
-! nchan          int    in   # of channels used
-! nlevels        int    in   # of vertical levels used
+! idim           int    in   X (lon) array index of grid cell
+! jdim           int    in   Y (lat) array index of grid call
+! nlev           int    in   # of vertical levels used
 ! emissivity     struct in   RTTOV-derived surface emissivity
 ! transmission   struct in   RTTOV-derived atmospheric transmission
 ! radiance       struct in   RTTOV-derived atmospheric radiance
@@ -34,8 +32,8 @@
 ! - Shouldn't upwelling radiance be assigned to the level above it's layer?
 !-------------------------------------------------------------------------------
 
-subroutine write_ir_rttov(netcdf_info, idim, jdim, nlev, &
-     emissivity, transmission, radiance, radiance2, write_flag, chan_num, chanvar)
+subroutine write_ir_rttov(netcdf_info, idim, jdim, nlev, emissivity, &
+     transmission, radiance, radiance2, write_flag, chan_num, rttov_num)
 
    use netcdf_output_m, only: netcdf_output_info_t
    use orac_ncdf_m
@@ -56,7 +54,7 @@ subroutine write_ir_rttov(netcdf_info, idim, jdim, nlev, &
    type(radiance2_type),       intent(in) :: radiance2
    logical,                    intent(in) :: write_flag
    integer,                    intent(in) :: chan_num
-   integer,                    intent(in) :: chanvar
+   integer,                    intent(in) :: rttov_num
 
    real(sreal), dimension(1,1,1)      :: dummy_emis
    real(sreal), dimension(1,nlev,1,1) :: dummy_tac, dummy_tbc
@@ -64,32 +62,33 @@ subroutine write_ir_rttov(netcdf_info, idim, jdim, nlev, &
    real(sreal), dimension(1,nlev,1,1) :: dummy_rac_up, dummy_rac_down
 
    if (write_flag) then
-      ! Calculate required above/below cloud radiances and transmittances
-      ! TOA emissivity
-      dummy_emis(:,1,1) = emissivity(chanvar)%emis_out
+      ! Emissivity
+      dummy_emis(:,1,1) = emissivity(rttov_num)%emis_out
+
+      ! Calculate required above/below cloud transmittances and radiances
 
       ! Transmission from level to TOA
-      dummy_tac(1,:,1,1) = transmission%tau_levels(:,chanvar)
+      dummy_tac(1,:,1,1) = transmission%tau_levels(:,rttov_num)
       ! Transmission from surface to level
-      dummy_tbc(1,:,1,1) = transmission%tau_total(chanvar) / &
-           transmission%tau_levels(:,chanvar)
+      dummy_tbc(1,:,1,1) = transmission%tau_total(rttov_num) / &
+           transmission%tau_levels(:,rttov_num)
 
       ! Translate layers onto levels
 
       ! Upwelling radiance from surface to level
       dummy_rbc_up(1,2:,1,1) = &
-           (radiance%clear(chanvar) - radiance2%up(:,chanvar)) / &
-           transmission%tau_levels(2:,chanvar)
+           (radiance%clear(rttov_num) - radiance2%up(:,rttov_num)) / &
+           transmission%tau_levels(2:,rttov_num)
       ! Upwelling radiance from level
-      dummy_rac_up(1,2:,1,1) = radiance2%up(:,chanvar)
+      dummy_rac_up(1,2:,1,1) = radiance2%up(:,rttov_num)
       ! Downwelling radiance from level
-      dummy_rac_down(1,2:,1,1) = radiance2%down(:,chanvar)
+      dummy_rac_down(1,2:,1,1) = radiance2%down(:,rttov_num)
 
       ! Set top level to be top layer
       dummy_rbc_up(1,1,1,1) = dummy_rbc_up(1,2,1,1)
       dummy_rac_up(1,1,1,1) = dummy_rac_up(1,2,1,1)
       dummy_rac_down(1,1,1,1) = dummy_rac_down(1,2,1,1) * &
-         transmission%tau_levels(2,chanvar) / transmission%tau_levels(1,chanvar)
+         transmission%tau_levels(2,rttov_num) / transmission%tau_levels(1,rttov_num)
    else
       ! Write fill values
       dummy_emis = sreal_fill_value
@@ -99,6 +98,7 @@ subroutine write_ir_rttov(netcdf_info, idim, jdim, nlev, &
       dummy_rac_up = sreal_fill_value
       dummy_rac_down = sreal_fill_value
    end if
+
    ! Write outputs
    call nc_write_array(netcdf_info%ncid_lwrtm, 'emiss_lw', &
                        netcdf_info%vid_emiss_lw, dummy_emis, &

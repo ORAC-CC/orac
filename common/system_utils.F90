@@ -5,6 +5,7 @@
 !
 ! History:
 ! 2015/10/05, GM: Original version.
+! 2016/08/17, SP: Add function is_nan().
 !
 ! $Id$
 !-------------------------------------------------------------------------------
@@ -75,13 +76,15 @@ function match_file(dir_name, file_pattern, file_name) result(status)
 
 end function match_file
 
+
 elemental function is_nan(x) result(res)
 #ifndef __GFORTRAN__
 	use ieee_arithmetic, only : ieee_is_nan
 #endif
 	implicit none
+
 	real, intent(in) :: x
-	logical :: res
+	logical          :: res
 
 #ifndef __GFORTRAN__
 	res = ieee_is_nan(x)

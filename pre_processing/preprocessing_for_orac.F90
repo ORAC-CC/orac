@@ -432,20 +432,21 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
 #endif
 
    ! Set defaults for optional arguments/fields
-   n_channels = 0
+   n_channels              = 0
    nullify(channel_ids)
-   ecmwf_time_int_method = 2
-   use_hr_ecmwf = .true.
-   use_ecmwf_snow_and_ice = .true.
+   ecmwf_time_int_method   = 2
+   use_hr_ecmwf            = .true.
+   use_ecmwf_snow_and_ice  = .true.
    use_modis_emis_in_rttov = .false.
-   use_l1_land_mask = .false.
-   ecmwf_path(2) = ''
-   ecmwf_path_hr(1) = ''
-   ecmwf_path_hr(2) = ''
-   ecmwf_path2(2) = ''
-   ecmwf_path3(2) = ''
-   use_occci = .false.
-   occci_path = ''
+   use_l1_land_mask        = .false.
+   ecmwf_path(2)           = ''
+   ecmwf_path_hr(1)        = ''
+   ecmwf_path_hr(2)        = ''
+   ecmwf_path2(2)          = ''
+   ecmwf_path3(2)          = ''
+   ecmwf_nlevels           = 0
+   use_occci               = .false.
+   occci_path              = ''
 
    ! if more than one argument passed, all inputs on command line
    if (nargs .gt. 1) then
@@ -675,6 +676,16 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
            n_along_track, along_track_offset, day_night, loc_limit, &
            n_along_track2, along_track_offset2, verbose)
 
+   else if (trim(adjustl(sensor)) .eq. 'AHI') then
+      call setup_ahi(l1b_path_file,geo_path_file,platform,year,month,day, &
+           doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids, &
+           channel_info,verbose)
+
+      ! Get dimensions of the AHI image.
+      ! At present only full-disk images are supported
+      call read_himawari_dimensions(geo_path_file,n_across_track,n_along_track, &
+                                    startx,endx,starty,endy,verbose)
+
    else if (trim(adjustl(sensor)) .eq. 'AVHRR') then
       call setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day, &
            doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids, &
@@ -708,24 +719,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       ! following call.
       call read_seviri_dimensions(geo_path_file,n_across_track,n_along_track, &
                                   startx,endx,starty,endy,verbose)
-   else if (trim(adjustl(sensor)) .eq. 'AHI') then
-      call setup_himawari8(l1b_path_file,geo_path_file,platform,year,month,day, &
-           doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids, &
-           channel_info,verbose)
 
-      ! Get dimensions of the AHI image.
-      ! At present only full-disk images are supported
-      call read_himawari_dimensions(geo_path_file,n_across_track,n_along_track, &
-                                    startx,endx,starty,endy,verbose)
-   else if (trim(adjustl(sensor)) .eq. 'VIIRS') then
-      call setup_viirs(l1b_path_file,geo_path_file,platform,year,month,day, &
-           doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids, &
-           channel_info,verbose)
-
-      ! Get dimensions of the VIIRS image.
-      ! At present the full scene will always be processed
-      call read_viirs_dimensions(geo_path_file,n_across_track,n_along_track, &
-                                 startx,endx,starty,endy,verbose)
    else if (trim(adjustl(sensor)) .eq. 'SLSTR') then
       call setup_slstr(l1b_path_file,geo_path_file,platform,year,month,day, &
            doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids, &
@@ -735,6 +729,17 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       ! At present the full scene will always be processed
       call read_slstr_dimensions(l1b_path_file,n_across_track,n_along_track, &
                                  startx,endx,starty,endy,verbose)
+
+   else if (trim(adjustl(sensor)) .eq. 'VIIRS') then
+      call setup_viirs(l1b_path_file,geo_path_file,platform,year,month,day, &
+           doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids, &
+           channel_info,verbose)
+
+      ! Get dimensions of the VIIRS image.
+      ! At present the full scene will always be processed
+      call read_viirs_dimensions(geo_path_file,n_across_track,n_along_track, &
+                                 startx,endx,starty,endy,verbose)
+
    else
       write(*,*) 'ERROR: Invalid sensor: ', trim(adjustl(sensor))
       stop error_stop_code

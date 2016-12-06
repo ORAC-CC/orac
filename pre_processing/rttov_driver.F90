@@ -138,9 +138,11 @@
 !
 ! Bugs:
 ! - Emissivity is read in elsewhere in the code but not utilised here.
-! - BRDF not yet implimented here, so RTTOV internal calculation used.
+! - BRDF not yet implemented here, so RTTOV internal calculation used.
 ! - Possible issue with conversion from layers to levels.
 !-------------------------------------------------------------------------------
+
+#define CRAP
 
 module rttov_driver_m
 
@@ -230,8 +232,9 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
    logical                              :: write_rttov
 
    ! Loop variables
-   integer(kind=lint)                   :: i_coef, j
+   integer(kind=lint)                   :: i, j
    integer(kind=lint)                   :: i_, j_
+   integer(kind=lint)                   :: i_coef
    integer(kind=lint)                   :: count, nchan
    integer(kind=lint)                   :: idim, jdim
 
@@ -250,7 +253,6 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
    ! View variables
    integer(kind=sint)                   :: cview
    integer,                 allocatable :: chan_pos(:)
-
    real                                 :: p_0, sec_vza, lambda, tau_ray_0, &
                                            tau_ray_p
 
@@ -267,12 +269,20 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 #endif
 
 
-   ! Determine coefficient filename (vis/IR distinction made later)
+   ! Determine coefficient filename (Vis/IR distinction made later)
    select case (trim(sensor))
-   case('AATSR')
-      coef_file = 'rtcoef_envisat_1_atsr.dat'
    case('ATSR2')
       coef_file = 'rtcoef_ers_2_atsr.dat'
+   case('AATSR')
+      coef_file = 'rtcoef_envisat_1_atsr.dat'
+   case('AHI')
+      if (trim(platform) == 'Himawari') then
+         coef_file = 'rtcoef_himawari_8_ahi.dat'
+      else
+         write(*,*) 'ERROR: rttov_driver(): Invalid HIMAWARI platform: ', &
+                    trim(platform)
+         stop error_stop_code
+      end if
    case('AVHRR')
       if (index(platform,'noaa') >= 1) then
          if(platform(5:5) == '1') then
@@ -311,11 +321,11 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                     trim(platform)
          stop error_stop_code
       end if
-   case('AHI')
-      if (trim(platform) == 'Himawari') then
-         coef_file = 'rtcoef_himawari_8_ahi.dat'
+   case('SLSTR')
+      if (trim(platform) == 'Sen3') then
+         coef_file = 'rtcoef_sentinel3_1_slstr.dat'
       else
-         write(*,*) 'ERROR: rttov_driver(): Invalid HIMAWARI platform: ', &
+         write(*,*) 'ERROR: rttov_driver(): Invalid SLSTR platform: ', &
                     trim(platform)
          stop error_stop_code
       end if
@@ -327,24 +337,16 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                     trim(platform)
          stop error_stop_code
       end if
-   case('SLSTR')
-      if (trim(platform) == 'Sen3') then
-         coef_file = 'rtcoef_sentinel3_1_slstr.dat'
-      else
-         write(*,*) 'ERROR: rttov_driver(): Invalid SLSTR platform: ', &
-                    trim(platform)
-         stop error_stop_code
-      end if
    case default
-         write(*,*) 'ERROR: rttov_driver(): Invalid sensor: ', trim(sensor)
-         stop error_stop_code
+      write(*,*) 'ERROR: rttov_driver(): Invalid sensor: ', trim(sensor)
+      stop error_stop_code
    end select
 
    if (verbose) write(*,*) 'RTTOV coef file: ', trim(coef_file)
 
 
    ! Initialise options structure (leaving default settings be)
-   opts % interpolation % addinterp        = .true.  ! Interpolate input profile
+   opts % interpolation % addinterp = .true.  ! Interpolate input profile
    ! Removed as occassionally returns negative ozone at 0.005 hPa
    ! opts % interpolation % reg_limit_extrap = .true.  ! Extrapolate to 0.5 Pa
    opts % config % do_checkinput = .false. ! necessary due to negative
@@ -362,17 +364,17 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
    if (verbose) write(*,*) 'Write static information to the output files'
 
    ! Write LW channel information
-   if (channel_info%nchannels_lw .ne. 0) then
+   if (channel_info%nchannels_lw /= 0) then
       allocate(dummy_lint_1dveca(channel_info%nchannels_lw))
       allocate(dummy_lint_1dvecb(channel_info%nchannels_lw))
       allocate(dummy_sreal_1dveca(channel_info%nchannels_lw))
       count=0
-      do i_coef=1,channel_info%nchannels_total
-         if (channel_info%channel_lw_flag(i_coef) == 1) then
+      do i=1,channel_info%nchannels_total
+         if (channel_info%channel_lw_flag(i) == 1) then
             count = count + 1
-            dummy_lint_1dveca(count)  = i_coef
-            dummy_lint_1dvecb(count)  = channel_info%channel_ids_instr(i_coef)
-            dummy_sreal_1dveca(count) = channel_info%channel_wl_abs(i_coef)
+            dummy_lint_1dveca(count)  = i
+            dummy_lint_1dvecb(count)  = channel_info%channel_ids_instr(i)
+            dummy_sreal_1dveca(count) = channel_info%channel_wl_abs(i)
          end if
       end do
 
@@ -393,17 +395,17 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 
 
    ! Write SW channel information
-   if (channel_info%nchannels_sw .ne. 0) then
+   if (channel_info%nchannels_sw /= 0) then
       allocate(dummy_lint_1dveca(channel_info%nchannels_sw))
       allocate(dummy_lint_1dvecb(channel_info%nchannels_sw))
       allocate(dummy_sreal_1dveca(channel_info%nchannels_sw))
       count=0
-      do i_coef=1,channel_info%nchannels_total
-         if (channel_info%channel_sw_flag(i_coef) == 1) then
+      do i=1,channel_info%nchannels_total
+         if (channel_info%channel_sw_flag(i) == 1) then
             count = count + 1
-            dummy_lint_1dveca(count)  = i_coef
-            dummy_lint_1dvecb(count)  = channel_info%channel_ids_instr(i_coef)
-            dummy_sreal_1dveca(count) = channel_info%channel_wl_abs(i_coef)
+            dummy_lint_1dveca(count)  = i
+            dummy_lint_1dvecb(count)  = channel_info%channel_ids_instr(i)
+            dummy_sreal_1dveca(count) = channel_info%channel_wl_abs(i)
          end if
       end do
 
@@ -458,7 +460,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
               pa2hpa ! convert from Pa to hPa
          profiles(count)%t(:nlayers) = preproc_prtm%temperature(idim,jdim,:)
          ! convert from kg/kg to ppmv by multiplying with dry air molecule
-         ! weight(28.9644)/molcule weight of gas (e.g. o3  47.9982)*1.0E6
+         ! weight(28.9644)/molecule weight of gas (e.g. o3  47.9982)*1.0E6
 #ifdef NEW_RTTOV
          profiles(count)%q(:nlayers) = &
               preproc_prtm%spec_hum(idim,jdim,:)
@@ -569,17 +571,17 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 
             ! Loop to determine how many LW channels exist with a given view
             do i_=1,channel_info%nchannels_lw
-               if (channel_info%lw_view_ids(i_) .eq. cview) nchan = nchan + 1
+               if (channel_info%lw_view_ids(i_) == cview) nchan = nchan + 1
             end do
 
-            if (nchan .eq. 0) cycle
+            if (nchan == 0) cycle
 
             allocate(input_chan(nchan))
             allocate(chan_pos(nchan))
 
             j_ = 1
             do i_=1,channel_info%nchannels_lw
-               if (channel_info%lw_view_ids(i_) .eq. cview) then
+               if (channel_info%lw_view_ids(i_) == cview) then
                   chan_pos(j_) = i_
                   input_chan(j_) = channel_info%channel_ids_rttov_coef_lw(i_)
                   j_ = j_ + 1
@@ -595,17 +597,17 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 
             ! Loop to determine how many SW channels exist with a given view
             do i_=1,channel_info%nchannels_sw
-               if (channel_info%sw_view_ids(i_) .eq. cview) nchan = nchan + 1
+               if (channel_info%sw_view_ids(i_) == cview) nchan = nchan + 1
             end do
 
-            if (nchan .eq. 0) cycle
+            if (nchan == 0) cycle
 
             allocate(input_chan(nchan))
             allocate(chan_pos(nchan))
 
             j_ = 1
             do i_=1,channel_info%nchannels_sw
-               if (channel_info%sw_view_ids(i_) .eq. cview) then
+               if (channel_info%sw_view_ids(i_) == cview) then
                   chan_pos(j_) = i_
                   input_chan(j_) = channel_info%channel_ids_rttov_coef_sw(i_)
                   j_ = j_ + 1
@@ -697,7 +699,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 
                      ! Fetch emissivity from the MODIS CIMSS emissivity product
                      if (use_modis_emis) then
-                        where (preproc_surf%emissivity(idim,jdim,:) .ne. &
+                        where (preproc_surf%emissivity(idim,jdim,:) /= &
                              sreal_fill_value)
                            emissivity%emis_in = &
                                 preproc_surf%emissivity(idim,jdim,:)
@@ -722,7 +724,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                end if
 
                ! Remove the Rayleigh component from the RTTOV tranmittances.
-               ! (Private comunication from Philip Watts.)
+               ! (Private communication from Philip Watts.)
                if (i_coef == 2) then
                   p_0 = 1013.
 
@@ -793,7 +795,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
       end do !coef loop
    end do  !view loop
 
-   if (channel_info%nchannels_sw .ne. 0) then
+   if (channel_info%nchannels_sw /= 0) then
       deallocate(dummy_sreal_1dveca)
    end if
    call rttov_alloc_prof(stat, nprof, profiles, nlevels, opts, DEALLOC)
@@ -804,8 +806,9 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 end subroutine rttov_driver
 
 
-include 'write_ir_rttov.F90'
-include 'write_solar_rttov.F90'
+#include "remove_rayleigh.F90"
+#include "write_ir_rttov.F90"
+#include "write_solar_rttov.F90"
 
 
 end module rttov_driver_m

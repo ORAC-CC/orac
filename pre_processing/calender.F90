@@ -1,12 +1,12 @@
 !-------------------------------------------------------------------------------
-! Name: orac_header_template.f90
+! Name: calender.F90
 !
 ! Purpose:
 !
 ! History:
 ! 2012/06/15, MJ: collects routines and adapts them for ORAC use from
 !    http://caps.gsfc.nasa.gov/simpson/software
-! 2015/11/20: Refreshed with up steam and put into subroutines.
+! 2015/11/20: Refreshed with upstream and put into subroutines.
 !
 ! $Id$
 !
