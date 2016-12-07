@@ -255,8 +255,8 @@ subroutine cox_munk(bands, solza, satza, solaz, totbsc, totabs, relaz, u10, v10,
    integer                          :: npts, nbands
 
    ! Wavelength dependent constants (derived)
-!   real(kind=sreal)                 :: chlabs(n_lambda), chlbsc(n_lambda)
-!   real(kind=sreal)                 :: totbsc(n_lambda), eta_oc(n_lambda)
+!  real(kind=sreal)                 :: chlabs(n_lambda), chlbsc(n_lambda)
+!  real(kind=sreal)                 :: totbsc(n_lambda), eta_oc(n_lambda)
 
    ! Wind speed and direction
    real(kind=sreal), allocatable    :: ws(:), wd(:)
@@ -298,15 +298,15 @@ subroutine cox_munk(bands, solza, satza, solaz, totbsc, totabs, relaz, u10, v10,
    ! of Ocean Colour cci data...
    !----------------------------------------------------------------------------
    ! Calculate the chl-a absorption coefficient from the concentration value.
-   !chlabs = coef1*(1.0-exp(-1.61*chlconc)) + coef2*chlconc
+!  chlabs = coef1*(1.0-exp(-1.61*chlconc)) + coef2*chlconc
 
    ! Next define the back-scattering coefficients for chl-a
-   !chlbsc = 0.02*(0.5-0.25*log10(chlconc))* 0.55/lambda + 0.002
+!  chlbsc = 0.02*(0.5-0.25*log10(chlconc))* 0.55/lambda + 0.002
 
    ! Approximate median CDOM absorption from GlobCOLOUR. Note that it is only
    ! significant at 0.55 microns, so can be neglected unless that channel is
    ! incorporated
-   !cdomabs = (/ 0.013,   0.0,     0.0,     0.0,     0.0 /)
+!  cdomabs = (/ 0.013,   0.0,     0.0,     0.0,     0.0 /)
 
 
    ! Number of points and wavelength bands passed to the subroutine
@@ -387,7 +387,7 @@ subroutine cox_munk(bands, solza, satza, solaz, totbsc, totabs, relaz, u10, v10,
    ! absorption values, so we no-longer need to calculate it from chlorophyll
    ! concentration
    !----------------------------------------------------------------------------
-   !totbsc = 0.5*basebsc + chlbsc * 0.3*chlconc**0.62
+!  totbsc = 0.5*basebsc + chlbsc * 0.3*chlconc**0.62
 
    do i=1,nbands
       ! The so-called "coefficient of R"
@@ -399,7 +399,7 @@ subroutine cox_munk(bands, solza, satza, solaz, totbsc, totabs, relaz, u10, v10,
       ! Now calculate the water body reflectance, which is the coefficient of
       ! R * the backscatter, divided by the absorption (note if CDOM is
       ! included, it will appear on the bottom line of this equation)
-      !R_wb = f*totbsc(bands(i)) / (baseabs(bands(i)) + chlabs(bands(i)))
+!     R_wb = f*totbsc(bands(i)) / (baseabs(bands(i)) + chlabs(bands(i)))
       R_wb = f*totbsc(i,:) / totabs(i,:)
 
       ! Now we need to use the Fresnel equation and Snell's Law to calculate how
@@ -706,8 +706,8 @@ subroutine cox_munk2(i_band, solza, satza, solaz, relaz, totbsc, totabs, u10, v1
    real(kind=sreal), intent(out)    :: rho
 
    ! Wavelength dependent constants (derived)
-   !real(kind=sreal)                 :: chlabs(n_lambda), chlbsc(n_lambda)
-   !real(kind=sreal)                 :: totbsc(n_lambda), eta_oc(n_lambda)
+!  real(kind=sreal)                 :: chlabs(n_lambda), chlbsc(n_lambda)
+!  real(kind=sreal)                 :: totbsc(n_lambda), eta_oc(n_lambda)
    real(kind=sreal)                  :: eta_oc
 
    ! Wind speed and direction
@@ -744,15 +744,15 @@ subroutine cox_munk2(i_band, solza, satza, solaz, relaz, totbsc, totabs, u10, v1
    real(kind=sreal)                 :: rhogl
 
    ! Calculate the chl-a absorption coefficient from the concentration value.
-   !chlabs = coef1*(1.0-exp(-1.61*chlconc)) + coef2*chlconc
+!  chlabs = coef1*(1.0-exp(-1.61*chlconc)) + coef2*chlconc
 
    ! Next define the back-scattering coefficients for chl-a
-   !chlbsc = 0.02*(0.5-0.25*log10(chlconc))* 0.55/lambda + 0.002
+!  chlbsc = 0.02*(0.5-0.25*log10(chlconc))* 0.55/lambda + 0.002
 
    ! Approximate median CDOM absorption from GlobCOLOUR. Note that it is only
    ! significant at 0.55 microns, so can be neglected unless that channel is
    ! incorporated
-   !cdomabs = (/ 0.013,   0.0,     0.0,     0.0,     0.0 /)
+!  cdomabs = (/ 0.013,   0.0,     0.0,     0.0,     0.0 /)
 
 
    !----------------------------------------------------------------------------
@@ -778,7 +778,7 @@ subroutine cox_munk2(i_band, solza, satza, solaz, relaz, totbsc, totabs, u10, v1
    ! concentration and CDOM absorption defined above. Combine the various
    ! scattering coefficients defined above to give the total
    !----------------------------------------------------------------------------
-   !totbsc = 0.5*basebsc + chlbsc * 0.3*chlconc**0.62
+!  totbsc = 0.5*basebsc + chlbsc * 0.3*chlconc**0.62
    eta_oc = 0.5*basebsc(i_band) / totbsc
 
    ! The so-called "coefficient of R"
@@ -789,7 +789,7 @@ subroutine cox_munk2(i_band, solza, satza, solaz, relaz, totbsc, totabs, u10, v1
    ! Now calculate the water body reflectance, which is the coefficient of
    ! R * the backscatter, divided by the absorption (note if CDOM is
    ! included, it will appear on the bottom line of this equation)
-   !R_wb = f*totbsc(i_band) / (baseabs(i_band) + chlabs(i_band))
+!  R_wb = f*totbsc(i_band) / (baseabs(i_band) + chlabs(i_band))
    R_wb = f*totbsc / totabs
 
    ! Now we need to use the Fresnel equation and Snell's Law to calculate how
@@ -1003,20 +1003,22 @@ end function zeisse_ba2
 ! Local variables:
 ! Name Type Description
 !-------------------------------------------------------------------------------
-!subroutine cox_munk3_calc_shared_band(bands, totbsc, totabs, shared)
-!
-!   implicit none
+#ifdef MULTI_LINE_COMMENT
+
+subroutine cox_munk3_calc_shared_band(bands, totbsc, totabs, shared)
+
+   implicit none
 
    ! Input arguments
-!   integer,                      intent(in)  :: bands(:)
-!   real(kind=sreal),             intent(in)  :: totbsc(:)
-!   real(kind=sreal),             intent(in)  :: totabs(:)
+   integer,                      intent(in)  :: bands(:)
+   real(kind=sreal),             intent(in)  :: totbsc(:)
+   real(kind=sreal),             intent(in)  :: totabs(:)
 
    ! Output arguments
-!   type(cox_munk_shared_band_t), intent(out) :: shared(:)
+   type(cox_munk_shared_band_t), intent(out) :: shared(:)
 
    ! Wavelength dependent constants (derived)
-   !real(kind=sreal) :: chlbsc
+   real(kind=sreal) :: chlbsc
 
 
    !----------------------------------------------------------------------------
@@ -1024,14 +1026,14 @@ end function zeisse_ba2
    !----------------------------------------------------------------------------
 
    ! Calculate the chl-a absorption coefficient from the concentration value.
-   !shared%chlabs = coef1(i_band)*(1.0-exp(-1.61*chlconc)) + coef2(i_band)*chlconc
+   shared%chlabs = coef1(i_band)*(1.0-exp(-1.61*chlconc)) + coef2(i_band)*chlconc
 
    ! Next define the back-scattering coefficients for chl-a
-   !chlbsc = 0.02*(0.5-0.25*log10(chlconc))* 0.55/lambda(i_band) + 0.002
+   chlbsc = 0.02*(0.5-0.25*log10(chlconc))* 0.55/lambda(i_band) + 0.002
 
+end subroutine cox_munk3_calc_shared_band
 
-!end subroutine cox_munk3_calc_shared_band
-
+#endif
 
 !-------------------------------------------------------------------------------
 ! Name: cox_munk3_calc_shared_geo_wind()
@@ -1251,7 +1253,6 @@ subroutine cox_munk3(i_band, shared_geo_wind, ocean_colour, rho)
    ! backscatter and absorption values derived from the ocean colour cci data.
    ! Combine the various scattering coefficients defined above to give the total
    !----------------------------------------------------------------------------
-
    eta_oc = 0.5*basebsc(i_band) / ocean_colour%totbsc
    ! The so-called "coefficient of R"
    f = 0.6279 - (0.2227*eta_oc) - ( 0.00513*eta_oc * eta_oc ) + &
@@ -1260,7 +1261,7 @@ subroutine cox_munk3(i_band, shared_geo_wind, ocean_colour, rho)
    ! Now calculate the water body reflectance, which is the coefficient of
    ! R * the backscatter, divided by the absorption (note if CDOM is
    ! included, it will appear on the bottom line of this equation)
-   !R_wb = f*shared_band%totbsc / (baseabs(i_band) + shared_band%chlabs)
+!  R_wb = f*shared_band%totbsc / (baseabs(i_band) + shared_band%chlabs)
    R_wb = f*ocean_colour%totbsc / ocean_colour%totabs
 
    ! Now we need to use the Fresnel equation and Snell's Law to calculate how
@@ -1646,7 +1647,7 @@ subroutine cox_munk4(i_band, shared_wind, shared_band_geo, solza, satza, &
    ! Now calculate the water body reflectance, which is the coefficient of
    ! R * the backscatter, divided by the absorption (note if CDOM is
    ! included, it will appear on the bottom line of this equation)
-   !R_wb = f*totbsc / (baseabs(i_band) + chlabs)
+!  R_wb = f*totbsc / (baseabs(i_band) + chlabs)
    R_wb = f*ocean_colour%totbsc / ocean_colour%totabs
 
    ! Now we need to use the Fresnel equation and Snell's Law to calculate how
@@ -1829,13 +1830,13 @@ subroutine cox_munk_rho_0v_0d_dv_and_dd(bands, solza, satza, solaz, relaz, &
    implicit none
 
    ! Input arguments
-   integer,          intent(in)    :: bands(:)
-   real(kind=sreal), intent(in)    :: solza(:), satza(:)
-   real(kind=sreal), intent(in)    :: solaz(:), relaz(:)
-   type(ocean_colour_t), intent(in):: ocean_colour(:,:)
-   real(kind=sreal), intent(in)    :: u10(:), v10(:)
-   real(kind=sreal), intent(in)    :: fill_value
-   logical,          intent(in)    :: verbose
+   integer,              intent(in) :: bands(:)
+   real(kind=sreal),     intent(in) :: solza(:), satza(:)
+   real(kind=sreal),     intent(in) :: solaz(:), relaz(:)
+   type(ocean_colour_t), intent(in) :: ocean_colour(:,:)
+   real(kind=sreal),     intent(in) :: u10(:), v10(:)
+   real(kind=sreal),     intent(in) :: fill_value
+   logical,              intent(in) :: verbose
 
    ! Output arguments
    real(kind=sreal), intent(inout) :: rho_0v(:,:)
@@ -1906,7 +1907,7 @@ subroutine cox_munk_rho_0v_0d_dv_and_dd(bands, solza, satza, solaz, relaz, &
    !----------------------------------------------------------------------------
    if (verbose) write(*,*) 'cox_munk_rho_0v_0d_dv_and_dd(): computing rho_0v'
    !----------------------------------------------------------------------------
-!$OMP PARALLEL PRIVATE(i, j, shared_geo_wind)
+!$OMP PARALLEL PRIVATE(i, j, i_oc, shared_geo_wind)
 !$OMP DO SCHEDULE(GUIDED)
    do i = 1, n_points
       if (solza(i) .lt. 0. .or. solza(i) .gt. maxsza_twi .or. satza(i) .lt. 0. .or. &
@@ -1938,7 +1939,7 @@ subroutine cox_munk_rho_0v_0d_dv_and_dd(bands, solza, satza, solaz, relaz, &
 ! The full computation
 if (.false.) then
    rho_0d = 0.
-!$OMP PARALLEL PRIVATE(i, j, k, l, aa, a2, satza2, relaz2, shared_geo_wind)
+!$OMP PARALLEL PRIVATE(i, j, k, l, i_oc, aa, a2, satza2, relaz2, shared_geo_wind)
    allocate(aa(n_bands))
 !$OMP DO SCHEDULE(GUIDED)
    do i = 1, n_points
@@ -2002,7 +2003,7 @@ else
    rho_0d = 0.
 
    do i = 1, n_bands
-!$OMP PARALLEL PRIVATE(j, l, m, a, a2, solza2, shared_wind, shared_band_geo2)
+!$OMP PARALLEL PRIVATE(j, l, m, i_oc, a, a2, solza2, shared_wind, shared_band_geo2)
 !$OMP DO SCHEDULE(GUIDED)
       do j = 1, n_points
          if (solza(j) .lt. 0. .or. solza(j) .gt. maxsza_twi .or. &
@@ -2048,7 +2049,7 @@ end if
 ! The full computation
 if (.false.) then
    rho_dv = 0.
-!$OMP PARALLEL PRIVATE(i, j, k, l, aa, a2, solza2, relaz2, shared_geo_wind)
+!$OMP PARALLEL PRIVATE(i, j, k, l, i_oc, aa, a2, solza2, relaz2, shared_geo_wind)
    allocate(aa(n_bands))
 !$OMP DO SCHEDULE(GUIDED)
    do i = 1, n_points
@@ -2110,7 +2111,7 @@ else
    rho_dv = 0.
 
    do i = 1, n_bands
-!$OMP PARALLEL PRIVATE(j, l, m, a, a2, satza2, shared_wind, shared_band_geo2)
+!$OMP PARALLEL PRIVATE(j, l, m, i_oc, a, a2, satza2, shared_wind, shared_band_geo2)
 !$OMP DO SCHEDULE(GUIDED)
       do j = 1, n_points
          if (satza(j) .lt. 0. .or. &
@@ -2173,7 +2174,7 @@ end if
    rho_dd = 0.
 
    do i = 1, n_bands
-!$OMP PARALLEL PRIVATE(j, k, l, m, a, a2, a3, shared_wind)
+!$OMP PARALLEL PRIVATE(j, k, l, m, i_oc, a, a2, a3, shared_wind)
 !$OMP DO SCHEDULE(GUIDED)
       do j = 1, n_points
          if (u10(j) .eq. fill_value .or. v10(j) .eq. fill_value) then
