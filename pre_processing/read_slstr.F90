@@ -19,7 +19,7 @@ module read_slstr_m
 
 contains
 
-include 'read_slstr_main.F90'
-include 'read_slstr_funcs.F90'
+#include "read_slstr_main.F90"
+#include "read_slstr_funcs.F90"
 
 end module read_slstr_m

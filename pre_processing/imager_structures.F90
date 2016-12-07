@@ -95,7 +95,7 @@ module imager_structures_m
 
 contains
 
-include 'allocate_imager_structures.F90'
-include 'deallocate_imager_structures.F90'
+#include "allocate_imager_structures.F90"
+#include "deallocate_imager_structures.F90"
 
 end module imager_structures_m

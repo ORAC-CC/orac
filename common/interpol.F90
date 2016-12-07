@@ -57,7 +57,7 @@ module interpol_m
 
 contains
 
-include 'bound_grid.F90'
+#include "bound_grid.F90"
 
 subroutine bilinear_coef_reg_reg(xstart, x_invdel, nx, ystart, y_invdel, ny, &
      xout, yout, interp, wrap)
@@ -222,7 +222,7 @@ subroutine interp_field_0d(datin, datout, interp)
    top_left = datin(interp%x0, interp%y1)
    top_rght = datin(interp%x1, interp%y1)
 
-   include "interp_field.inc"
+#include "interp_field.inc"
 
 end subroutine interp_field_0d
 
@@ -249,7 +249,7 @@ subroutine interp_field_1d(datin, datout, interp)
    top_left => datin(interp%x0, interp%y1, :)
    top_rght => datin(interp%x1, interp%y1, :)
 
-   include "interp_field.inc"
+#include "interp_field.inc"
 
 end subroutine interp_field_1d
 
@@ -276,7 +276,7 @@ subroutine interp_field_2d(datin, datout, interp)
    top_left => datin(interp%x0, interp%y1, :, :)
    top_rght => datin(interp%x1, interp%y1, :, :)
 
-   include "interp_field.inc"
+#include "interp_field.inc"
 
 end subroutine interp_field_2d
 
@@ -303,7 +303,7 @@ subroutine interp_field2_1d(datin, datout, interp)
    top_left => datin(:, interp%x0, interp%y1)
    top_rght => datin(:, interp%x1, interp%y1)
 
-   include "interp_field.inc"
+#include "interp_field.inc"
 
 end subroutine interp_field2_1d
 
@@ -330,7 +330,7 @@ subroutine interp_field2_2d(datin, datout, interp)
    top_left => datin(:, :, interp%x0, interp%y1)
    top_rght => datin(:, :, interp%x1, interp%y1)
 
-   include "interp_field.inc"
+#include "interp_field.inc"
 
 end subroutine interp_field2_2d
 

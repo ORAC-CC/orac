@@ -122,10 +122,10 @@ module netcdf_output_m
 
 contains
 
-include 'netcdf_output_create.F90'
-include 'netcdf_output_create_file.F90'
-include 'netcdf_output_close.F90'
-include 'netcdf_output_check.F90'
-include 'netcdf_output_write_swath.F90'
+#include "netcdf_output_create.F90"
+#include "netcdf_output_create_file.F90"
+#include "netcdf_output_close.F90"
+#include "netcdf_output_check.F90"
+#include "netcdf_output_write_swath.F90"
 
 end module netcdf_output_m

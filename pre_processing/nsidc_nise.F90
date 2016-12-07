@@ -33,6 +33,6 @@ module nsidc_nise_m
 
 contains
 
-include 'read_nsidc_nise.F90'
+#include "read_nsidc_nise.F90"
 
 end module nsidc_nise_m

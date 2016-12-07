@@ -503,7 +503,7 @@ end function nc_dim_length
 #undef NC_WRITE_NAME_4D
 
 
-include 'orac_nc_utils.F90'
+#include "orac_nc_utils.F90"
 
 
 end module orac_ncdf_m

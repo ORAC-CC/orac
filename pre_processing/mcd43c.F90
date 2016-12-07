@@ -114,7 +114,7 @@ subroutine deallocate_mcd43c3(mcd)
 end subroutine deallocate_mcd43c3
 
 
-include 'read_mcd43c1.F90'
-include 'read_mcd43c3.F90'
+#include "read_mcd43c1.F90"
+#include "read_mcd43c3.F90"
 
 end module mcd43c_m

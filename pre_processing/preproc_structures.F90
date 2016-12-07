@@ -84,8 +84,8 @@ module preproc_structures_m
 
 contains
 
-include 'allocate_preproc_structures.F90'
-include 'deallocate_preproc_structures.F90'
+#include "allocate_preproc_structures.F90"
+#include "deallocate_preproc_structures.F90"
 
 
 subroutine linearly_combine_prtms(a, b, prtm1, prtm2, prtm)
