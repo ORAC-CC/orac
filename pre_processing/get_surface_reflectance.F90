@@ -322,8 +322,8 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
 
       ! Check all pure SW channels have a band
       do i = 1, channel_info%nchannels_sw
-         if (channel_info%channel_sw_flag(i) .ne. 0) then
-            ii = channel_info%map_ids_sw_to_channel(i)
+         ii = channel_info%map_ids_sw_to_channel(i)
+         if (channel_info%channel_sw_flag(ii) .ne. 0) then
             if (channel_info%channel_lw_flag(ii) .ne. 0) cycle
 
             flag = .true.
@@ -338,7 +338,7 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
             ! Flag channels without a MODIS band unless they are mixed
             if (flag) then
                write(*,*) 'ERROR: get_surface_reflectance(), instrument ' // &
-                    'channel ', channel_info%channel_ids_instr(i), ' does ' // &
+                    'channel ', channel_info%channel_ids_instr(ii), ' does ' // &
                     'not have a corresponding land reflectance product channel'
                stop error_stop_code
             end if
@@ -605,8 +605,9 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
             end do
 
             if (flag) then
+               ii = channel_info%map_ids_sw_to_channel(i)
                write(*,*) 'ERROR: get_surface_reflectance(), instrument ' // &
-                    'channel ', channel_info%channel_ids_instr(i), ' does ' // &
+                    'channel ', channel_info%channel_ids_instr(ii), ' does ' // &
                     'not have a corresponding ocean reflectance product channel'
                stop error_stop_code
             end if
