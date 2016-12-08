@@ -1,3 +1,7 @@
+!History:
+!CP 08/12/2016  bug fix for ifort compilation add end function statements
+!
+!
 MODULE BRIGHT
 
 IMPLICIT NONE
@@ -53,7 +57,7 @@ CONTAINS
       bright_m = sngl(c2 / &
      &  (ws * log(c1 / (1.0d+6 * dble(r) * ws**5) + 1.0d+0)))
 
-      END
+      END FUNCTION BRIGHT_M
 
 
       REAL FUNCTION BRITE_M(V, R)
@@ -107,6 +111,7 @@ CONTAINS
       brite_m = sngl(c2 * &
      &  vs / log(c1 * vs**3 / (1.0d-5 * dble(r)) + 1.0d+0))
 
-      END
+      END FUNCTION BRITE_M
 
 END MODULE BRIGHT
+

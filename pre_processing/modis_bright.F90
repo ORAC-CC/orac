@@ -1,3 +1,7 @@
+!History:
+!CP 08/12/2016  bug fix for ifort compilation add end function statements
+!
+!
       REAL FUNCTION MODIS_BRIGHT(platform_name, RAD, BAND, UNITS)
 
 !-----------------------------------------------------------------------
@@ -216,4 +220,4 @@
 
       endif
 
-      END
+      END FUNCTION MODIS_BRIGHT
