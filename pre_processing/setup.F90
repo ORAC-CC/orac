@@ -12,7 +12,7 @@
 ! 3) Set details in channel_info such as channel numbers
 !
 ! Arguments:
-! Name            Type In/Out/Both Description
+! Name          Type   In/Out/Both Description
 ! ------------------------------------------------------------------------------
 ! l1b_path_file string in          Full path to level 1B data
 ! geo_path_file string in          Full path to geolocation data
@@ -147,15 +147,15 @@ subroutine setup_aatsr(l1b_path_file,geo_path_file,platform,sensor,year, &
       (/ 4,    1,    2,    6,    0,    0,    0,    &
          4,    1,    2,    6,    0,    0,    0 /)
 
-   integer, parameter :: all_map_ids_abs_to_ref_band_sea(all_nchannels_total)  = &
-      (/ 2,    3,    4,    6,    8,    0,    0,    &
-         2,    3,    4,    6,    8,    0,    0 /)
+   integer, parameter :: all_map_ids_abs_to_ref_band_sea(all_nchannels_total) = &
+      (/ 2,    3,    4,    7,    9,    0,    0,    &
+         2,    3,    4,    7,    9,    0,    0 /)
 
-   integer, parameter :: all_map_ids_abs_to_snow_and_ice(all_nchannels_total)  = &
+   integer, parameter :: all_map_ids_abs_to_snow_and_ice(all_nchannels_total) = &
       (/ 1,    1,    2,    3,    4,    0,    0,    &
          1,    1,    2,    3,    4,    0,    0 /)
 
-   integer, parameter :: all_map_ids_view_number(all_nchannels_total)  = &
+   integer, parameter :: all_map_ids_view_number(all_nchannels_total) = &
       (/ 1,    1,    1,    1,    1,    1,    1,    &
          2,    2,    2,    2,    2,    2,    2 /)
 
@@ -278,10 +278,10 @@ subroutine setup_ahi(l1b_path_file,geo_path_file,platform,year,month,day, &
    ! Static instrument channel definitions. (These should not be changed.)
    integer, parameter :: all_nchannels_total = 16
 
-       ! 1,       2,       3,       4,       5,      6,      7,      8
+       ! 1,       2,       3,       4,       5,       6,       7,       8
    real,    parameter :: all_channel_wl_abs(all_nchannels_total) = &
-      (/ 0.47063, 0.51000, 0.63914, 0.85670, 1.6101, 2.2568, 3.8853, 6.2429, &
-         6.9410,  7.3467,  8.5926,  9.6372,  10.4073,11.2395,12.3806,13.2807 /)
+      (/ 0.47063, 0.51000, 0.63914, 0.85670, 1.6101,  2.2568,  3.8853,  6.2429, &
+         6.9410,  7.3467,  8.5926,  9.6372,  10.4073, 11.2395, 12.3806, 13.2807 /)
 
    integer, parameter :: all_channel_sw_flag(all_nchannels_total) = &
       (/ 1,       1,       1,       1,       1,       1,       1,       0, &
@@ -303,14 +303,14 @@ subroutine setup_ahi(l1b_path_file,geo_path_file,platform,year,month,day, &
       (/ 3,       4,       1,       2,       6,       7,       0,       0, &
          0,       0,       0,       0,       0,       0,       0,       0 /)
 
-   integer, parameter :: all_map_ids_abs_to_ref_band_sea(all_nchannels_total)  = &
-      (/ 2,       2,       3,       4,       6,       7,       8,       0, &
+   integer, parameter :: all_map_ids_abs_to_ref_band_sea(all_nchannels_total) = &
+      (/ 2,       2,       3,       4,       7,       8,       9,       0, &
          0,       0,       0,       0,       0,       0,       0,       0 /)
 
-   integer, parameter :: all_map_ids_abs_to_snow_and_ice(all_nchannels_total)  = &
+   integer, parameter :: all_map_ids_abs_to_snow_and_ice(all_nchannels_total) = &
       (/ 1,       1,       1,       2,       3,       3,       4,       0, &
          0,       0,       0,       0,       0,       0,       0,       0 /)
-   integer, parameter :: all_map_ids_view_number(all_nchannels_total)  = &
+   integer, parameter :: all_map_ids_view_number(all_nchannels_total) = &
       (/ 1,       1,       1,       1,       1,       1,       1,       1, &
          1,       1,       1,       1,       1,       1,       1,       1 /)
 
@@ -453,13 +453,13 @@ subroutine setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day, &
    integer, parameter :: all_map_ids_abs_to_ref_band_land(all_nchannels_total) = &
       (/ 1,    2,      6,    0,    0,    0 /)
 
-   integer, parameter :: all_map_ids_abs_to_ref_band_sea(all_nchannels_total)  = &
-      (/ 3,    4,      6,    8,    0,    0 /)
+   integer, parameter :: all_map_ids_abs_to_ref_band_sea(all_nchannels_total) = &
+      (/ 3,    4,      7,    9,    0,    0 /)
 
-   integer, parameter :: all_map_ids_abs_to_snow_and_ice(all_nchannels_total)  = &
+   integer, parameter :: all_map_ids_abs_to_snow_and_ice(all_nchannels_total) = &
       (/ 1,    2,      3,    4,    0,    0 /)
 
-   integer, parameter :: all_map_ids_view_number(all_nchannels_total)  = &
+   integer, parameter :: all_map_ids_view_number(all_nchannels_total) = &
       (/ 1,    1,      1,    1,    1,    1 /)
 
    real,    parameter :: all_channel_fractional_uncertainty(all_nchannels_total) = &
@@ -710,15 +710,15 @@ subroutine setup_modis(l1b_path_file,geo_path_file,platform,year,month,day, &
          0,         5,         0,         0,         0,         0, &
          0,         0,         0,         0,         0,         0 /)
 
-   integer, parameter :: all_map_ids_abs_to_ref_band_sea(all_nchannels_total)  = &
-      (/ 3,         4,         1,         2,         5,         6, &
-         7,         1,         1,         1,         2,         2, &
+   integer, parameter :: all_map_ids_abs_to_ref_band_sea(all_nchannels_total) = &
+      (/ 3,         4,         1,         2,         5,         7, &
+         8,         1,         1,         1,         2,         2, &
          3,         3,         3,         4,         4,         4, &
-         4,         8,         8,         8,         8,         0, &
-         0,         5,         0,         0,         0,         0, &
+         4,         9,         9,         9,         9,         0, &
+         0,         6,         0,         0,         0,         0, &
          0,         0,         0,         0,         0,         0 /)
 
-   integer, parameter :: all_map_ids_abs_to_snow_and_ice(all_nchannels_total)  = &
+   integer, parameter :: all_map_ids_abs_to_snow_and_ice(all_nchannels_total) = &
       (/ 1,         2,         1,         1,         2,         3, &
          3,         0,         0,         0,         0,         0, &
          0,         0,         0,         0,         0,         0, &
@@ -726,7 +726,7 @@ subroutine setup_modis(l1b_path_file,geo_path_file,platform,year,month,day, &
          0,         0,         0,         0,         0,         0, &
          0,         0,         0,         0,         0,         0 /)
 
-   integer, parameter :: all_map_ids_view_number(all_nchannels_total)  = &
+   integer, parameter :: all_map_ids_view_number(all_nchannels_total) = &
       (/ 1,         1,         1,         1,         1,         1, &
          1,         1,         1,         1,         1,         1, &
          1,         1,         1,         1,         1,         1, &
@@ -873,7 +873,7 @@ subroutine setup_seviri(l1b_path_file,geo_path_file,platform,year,month,day, &
    ! Static instrument channel definitions. (These should not be changed.)
    integer, parameter :: all_nchannels_total = 11
 
-       ! 1,     2,     3,   4,    5,    6,    7,    8,    9,     10,    11
+       ! 1,     2,    3,    4,    5,    6,    7,    8,    9,     10,    11
    real,    parameter :: all_channel_wl_abs(all_nchannels_total) = &
       (/ 0.635, 0.81, 1.64, 3.92, 6.25, 7.35, 8.70, 9.66, 10.80, 12.00, 13.40 /)
 
@@ -892,13 +892,13 @@ subroutine setup_seviri(l1b_path_file,geo_path_file,platform,year,month,day, &
    integer, parameter :: all_map_ids_abs_to_ref_band_land(all_nchannels_total) = &
       (/ 1,     2,    6,    0,    0,    0,    0,    0,    0,     0,     0 /)
 
-   integer, parameter :: all_map_ids_abs_to_ref_band_sea(all_nchannels_total)  = &
-      (/ 3,     4,    6,    8,    0,    0,    0,    0,    0,     0,     0 /)
+   integer, parameter :: all_map_ids_abs_to_ref_band_sea(all_nchannels_total) = &
+      (/ 3,     4,    7,    9,    0,    0,    0,    0,    0,     0,     0 /)
 
-   integer, parameter :: all_map_ids_abs_to_snow_and_ice(all_nchannels_total)  = &
+   integer, parameter :: all_map_ids_abs_to_snow_and_ice(all_nchannels_total) = &
       (/ 1,     2,    3,    4,    0,    0,    0,    0,    0,     0,     0 /)
 
-   integer, parameter :: all_map_ids_view_number(all_nchannels_total)  = &
+   integer, parameter :: all_map_ids_view_number(all_nchannels_total) = &
       (/ 1,     1,    1,    1,    1,    1,    1,    1,    1,     1,     1 /)
 
    real,    parameter :: all_channel_fractional_uncertainty(all_nchannels_total) = &
@@ -1040,7 +1040,7 @@ subroutine setup_slstr(l1b_path_file,geo_path_file,platform,year,month,day, &
    ! Static instrument channel definitions. (These should not be changed.)
    integer, parameter :: all_nchannels_total = 18
 
-       ! 1,       2,       3,       4,       5,      6,      7,      8
+       ! 1,       2,       3,       4,       5,       6,       7,       8       9
    real,    parameter :: all_channel_wl_abs(all_nchannels_total) = &
       (/ 0.555,   0.659,   0.865,   1.375,   1.640,   2.250,   3.740,   10.85,  12.00, &
          0.555,   0.659,   0.865,   1.375,   1.640,   2.250,   3.740,   10.85,  12.00 /)
@@ -1064,15 +1064,15 @@ subroutine setup_slstr(l1b_path_file,geo_path_file,platform,year,month,day, &
       (/ 4,       1,       2,       5,       6,       7,       0,       0,      0, &
          4,       1,       2,       5,       6,       7,       0,       0,      0  /)
 
-   integer, parameter :: all_map_ids_abs_to_ref_band_sea(all_nchannels_total)  = &
-      (/ 2,       3,       4,       5,       6,       7,       8,       0,      0, &
-         2,       3,       4,       5,       6,       7,       8,       0,      0  /)
+   integer, parameter :: all_map_ids_abs_to_ref_band_sea(all_nchannels_total) = &
+      (/ 2,       3,       4,       6,       7,       8,       9,       0,      0, &
+         2,       3,       4,       6,       7,       8,       9,       0,      0  /)
 
-   integer, parameter :: all_map_ids_abs_to_snow_and_ice(all_nchannels_total)  = &
+   integer, parameter :: all_map_ids_abs_to_snow_and_ice(all_nchannels_total) = &
       (/ 1,       1,       2,       3,       3,       3,       4,       0,      0, &
          1,       1,       2,       3,       3,       3,       4,       0,      0  /)
 
-   integer, parameter :: all_map_ids_view_number(all_nchannels_total)  = &
+   integer, parameter :: all_map_ids_view_number(all_nchannels_total) = &
       (/ 1,       1,       1,       1,       1,       1,       1,       1,      1,&
          2,       2,       2,       2,       2,       2,       2,       2,      2  /)
 
@@ -1236,7 +1236,7 @@ subroutine setup_viirs(l1b_path_file,geo_path_file,platform,year,month,day, &
    ! Static instrument channel definitions. (These should not be changed.)
    integer, parameter :: all_nchannels_total = 16
 
-       ! 1,       2,       3,       4,       5,      6,      7,      8
+       ! 1,       2,       3,       4,       5,       6,       7,       8
    real,    parameter :: all_channel_wl_abs(all_nchannels_total) = &
       (/ 0.412,   0.445,   0.488,   0.555,   0.672,   0.746,   0.865,   1.240, &
          1.378,   1.610,   2.250,   3.700,   4.050,   8.550,   10.763,  12.013 /)
@@ -1261,15 +1261,15 @@ subroutine setup_viirs(l1b_path_file,geo_path_file,platform,year,month,day, &
       (/ 3,       3,       3,       4,       1,       2,       2,       5, &
          5,       6,       7,       0,       0,       0,       0,       0 /)
 
-   integer, parameter :: all_map_ids_abs_to_ref_band_sea(all_nchannels_total)  = &
+   integer, parameter :: all_map_ids_abs_to_ref_band_sea(all_nchannels_total) = &
       (/ 1,       1,       1,       2,       3,       3,       4,       5, &
-         5,       6,       7,       8,       0,       0,       0,       0 /)
+         5,       7,       8,       9,       0,       0,       0,       0 /)
 
-   integer, parameter :: all_map_ids_abs_to_snow_and_ice(all_nchannels_total)  = &
+   integer, parameter :: all_map_ids_abs_to_snow_and_ice(all_nchannels_total) = &
       (/ 1,       1,       1,       1,       1,       1,       2,       3, &
          3,       3,       3,       4,       0,       0,       0,       0 /)
 
-   integer, parameter :: all_map_ids_view_number(all_nchannels_total)  = &
+   integer, parameter :: all_map_ids_view_number(all_nchannels_total) = &
       (/ 1,       1,       1,       1,       1,       1,       1,       1, &
          1,       1,       1,       1,       1,       1,       1,       1 /)
 

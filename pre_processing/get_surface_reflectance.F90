@@ -182,7 +182,7 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
    type(mcd43c3_t)                   :: mcdc3
    integer,            parameter     :: n_modbands = 7
    integer                           :: modbands(n_modbands)
-   integer,            parameter     :: n_coxbands = 8
+   integer,            parameter     :: n_coxbands = 9
    integer                           :: coxbands(n_coxbands)
    integer                           :: n_bands
    real,               allocatable   :: tmp_data(:,:)
@@ -585,7 +585,7 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
       end if
 
       ! Bands that are available.
-      coxbands = (/ 1, 2, 3, 4, 5, 6, 7, 8 /)
+      coxbands = (/ 1, 2, 3, 4, 5, 6, 7, 8, 9 /)
 
       ! Process views separately
       do i_view = 1, imager_angles%nviews

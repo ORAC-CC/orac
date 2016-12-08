@@ -1,7 +1,7 @@
-!History:
-!CP 08/12/2016  bug fix for ifort compilation add end function statements
-!
-!
+! History (relative to upstream):
+! 08/12/2016, CP: For ifort compilation add end function statements.
+
+
 MODULE BRIGHT
 
 IMPLICIT NONE
