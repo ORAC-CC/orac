@@ -62,9 +62,13 @@
 ! 2015/01/09, AP: Replacing ThF:ThL with SPixel index array. Eliminate
 !    RTM_Pc%Tac, Tbc.
 ! 2015/01/12, AP: Remove CRP arguments.
-! 2015/01/21, GM: Fixed some cases were the required 'Thermal' subscripts were
+! 2015/01/21, GM: Fixed some cases where the required 'Thermal' subscripts were
 !    missing.
 ! 2016/07/22, GM: Extensive changes for multilayer support.
+! 2016/12/08, GM: Computation of thermal clear-sky radiance and its associated
+!    derivative wrt surface temperature was using the top level to TOA
+!    transmittance when it should have been using the surface (bottom level) to
+!    TOA transmittance.
 !
 ! $Id$
 !
@@ -245,7 +249,7 @@ subroutine FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_Chan, RTM_Pc, X, GZero, BT, &
 
    ! Update clear radiances at each RTM pressure level
    R_clear = SPixel%RTM%LW%R_clear(Thermal) + &
-      (delta_Ts * Es_dB_dTs * SPixel%RTM%LW%Tac(Thermal,1))
+      (delta_Ts * Es_dB_dTs * SPixel%RTM%LW%Tsf(Thermal))
 
    ! Update below cloud radiance after interpolation to Pc
    RTM_Pc(1)%LW%Rbc_up(Thermal) = RTM_Pc(1)%LW%Rbc_up(Thermal) + &
@@ -291,7 +295,7 @@ if (Ctrl%Approach .ne. AppCld2L) then
 
    ! Gradient w.r.t. surface temperature, Ts
    d_R(:,ITs) = fTac * Es_dB_dTs * RTM_Pc(1)%LW%Tbc(Thermal) * CRP(:,IT_dv) + &
-      (1.0 - X(IFr)) * Es_dB_dTs * SPixel%RTM%LW%Tac(Thermal,1)
+      (1.0 - X(IFr)) * Es_dB_dTs * SPixel%RTM%LW%Tsf(Thermal)
 else
    ! Update below cloud radiance after interpolation to Pc
    RTM_Pc(2)%LW%Rbc_up(Thermal) = RTM_Pc(2)%LW%Rbc_up(Thermal) + &
@@ -412,7 +416,7 @@ else
    ! Gradient w.r.t. surface temperature, Ts
    d_R(:,ITs) = f2 * Es_dB_dTs * RTM_Pc(2)%LW%Tbc(Thermal) * CRP2(:,IT_dv) * &
                    Tmc * CRP(:,IT_dv) * RTM_Pc(1)%LW%Tac(Thermal) + &
-                (1. - f2) * Es_dB_dTs * SPixel%RTM%LW%Tac(Thermal,1)
+                (1. - f2) * Es_dB_dTs * SPixel%RTM%LW%Tsf(Thermal)
 end if
    ! Convert radiances to brightness temperatures
    call R2T(SPixel%Ind%NThermal, SAD_Chan, R, BT, dT_dR, status)
