@@ -9,6 +9,7 @@
 ! 2015/07/30, GM: Fixed relative azimuth angle.
 ! 2015/08/17, GM: Adapt to the newest version of seviri_native_util.
 ! 2015/08/19, GM: Modifications to support the SEVIRI HRIT format.
+! 2016/12/08, GT: Fixed solar azimuth angle.
 !
 ! $Id$
 !
@@ -228,6 +229,10 @@ subroutine read_seviri_l1_5(l1_5_file, imager_geolocation, imager_measurements, 
 
    where(imager_angles%solazi(startx:,:,1) .ne. sreal_fill_value .and. &
          imager_angles%relazi(startx:,:,1) .ne. sreal_fill_value)
+      imager_angles%solazi(:,:,1) = imager_angles%solazi(startx:,:,1) - 180.
+      where(imager_angles%solazi(:,:,1) .lt. 0.)
+         imager_angles%solazi(:,:,1) = imager_angles%solazi(:,:,1) + 360.
+      end where
       imager_angles%relazi(:,:,1) = abs(imager_angles%relazi(startx:,:,1) - &
                                         imager_angles%solazi(startx:,:,1))
 
