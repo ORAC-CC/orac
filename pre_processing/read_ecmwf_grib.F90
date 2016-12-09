@@ -57,6 +57,9 @@
 ! 2016/01/13, GM: Eliminate the need for a scratch file by reading the grib
 !    output from INTF() directly into the grib_api library code from memory with
 !    grib_new_from_message().
+! 2016/12/07, GT: Replaced call to INTF with INTF2, as INTF requires the GRIBEX
+!    subroutine from EMOSLIB when interpolating from or to a GRIB field, which
+!    is no-longer supported (or it appears functional) from v4.1.1 of the EMOSLIB
 !
 ! $Id$
 !
@@ -81,12 +84,14 @@ subroutine read_ecmwf_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
    logical,                    intent(in)    :: verbose
 
    integer(lint), parameter                 :: BUFFER = 2000000
-   integer(lint), external                  :: INTIN,INTOUT,INTF
+   integer(lint), external                  :: INTIN,INTOUT,INTF2
    integer(lint)                            :: fu,stat,nbytes
-   integer(lint)                            :: in_words,out_words
+!   integer(lint)                            :: in_words,out_words
+   integer(lint)                            :: out_bytes, out_words
    integer(lint), allocatable, dimension(:) :: in_data,out_data
    integer(lint)                            :: iblank(4)
-   real(dreal)                              :: zni(1),zno(1),grid(2),area(4)
+!   real(dreal)                              :: zni(1),zno(1),grid(2),area(4)
+   real(dreal)                              :: grid(2),area(4)
    character(len=20)                        :: charv(1)
 
    integer(lint)                            :: gid,level,param
@@ -128,12 +133,15 @@ subroutine read_ecmwf_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
       if (stat .ne. 0) call h_e_e('grib', 'Failure to read product.')
 
       ! interpolate GRIB field (into another GRIB field)
-      in_words = nbytes / lint
-      out_words = BUFFER
-      if (INTF(in_data,in_words,zni,out_data,out_words,zno) .ne. 0) &
-           call h_e_e('grib', &
-              'INTF failed. Check if 1/dellon 1/dellat are muliples of 0.001.')
-
+      ! in_words = nbytes / lint
+      ! out_words = BUFFER
+      out_bytes = BUFFER * lint
+      !if (INTF(in_data,in_words,zni,out_data,out_words,zno) .ne. 0) &
+      !     call h_e_e('grib', &
+      !       'INTF failed. Check if 1/dellon 1/dellat are muliples of 0.001.')
+      if (INTF2(in_data,nbytes,out_data,out_words) .ne. 0) &
+           call h_e_e('grib', 'INTF2 failed.')
+      out_words = out_bytes/lint
       ! load grib data into grib_api
       call grib_new_from_message(gid,out_data(1:out_words),stat)
       if (stat .ne. 0) call h_e_e('grib', 'Error getting GRIB_ID.')
