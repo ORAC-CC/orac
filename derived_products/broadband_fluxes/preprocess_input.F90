@@ -46,7 +46,7 @@
 !
 !-------------------------------------------------------------------------------
    subroutine preprocess_input(cMASK,aREF,AOD,cPHASE,&
-                                 cCTT,cCTP,cREF,cTAU,cCTH,&
+                                 cCTT,cCTP,cREF,cTAU,cCTH,InfThnCld,&
                                  NLS,zz,REDAT,TAUDAT,Hctop,Hcbase,&
                                  phaseFlag,LayerType,&
                                  regime,TopID,BaseID)
@@ -66,6 +66,8 @@
        cREF   ,&  !cloud effective droplet radius
        cCTT   ,&  !cloud top temperature
        cCTP       !cloud top pressure
+
+    integer, intent(in) :: InfThnCld !flag to use infinitely thin cloud
 
     real, intent(in), dimension(NLS) :: zz !height profile
 
@@ -244,6 +246,10 @@
 
 !--Match cloud top/base heights to vertical profile----
 !REQUIREMENT: Cloud layer needs to fill an entire bin
+
+   if( InfThnCld .eq. 1) then
+    Hctop = Hcbase
+   endif
 
    !Cloud thickness
    Hcthick=Hctop-Hcbase

@@ -76,6 +76,7 @@
 !                 Re-formatted optional arguments for efficiency.
 ! 2016/09/22, MC: Added conditional statement to input pixel selection range so if 
 !                 values of zero are specified the whole range of the orbit is used.
+! 2016/12/09, MC: Added options to examine impact of corrected CTH and infinitely thin clouds.
 !                 
 !
 ! $Id$
@@ -325,6 +326,9 @@ program process_broadband_fluxes
    integer(kind=byte), allocatable :: retrflag(:,:) !regime flag
       integer retrflag_vid
 
+   ! More options
+   integer InfThnCld, corrected_cth !infinitely thin cloud assumption & use corrected cloud top heights
+
    integer, parameter :: deflate_lv = 9
    logical, parameter :: shuffle_flag = .false.
 
@@ -407,6 +411,8 @@ program process_broadband_fluxes
     endif
 
     ! Read optional arguments
+    InfThnCld = 0
+    corrected_cth = 0
     aerosol_processing_mode = 0
     do i = 11, nargs
       call get_command_argument(i, argname)
@@ -425,6 +431,8 @@ program process_broadband_fluxes
       end if
       if(tmpname1 .eq. 'modis_aerosol=') FMOD04=trim(tmpname2)
       if(tmpname1 .eq. 'modis_cloud=') FMOD06=trim(tmpname2)
+      if(tmpname1 .eq. 'infinitely_thin_cloud=') InfThnCld=1
+      if(tmpname1 .eq. 'corrected_cth=') corrected_cth=1
     end do
 
 
@@ -510,11 +518,18 @@ program process_broadband_fluxes
     call nc_read_array(ncid, "cer", REF, verbose)
     call nc_read_array(ncid, "cc_total", CC_TOT, verbose)
     call nc_read_array(ncid, "phase", PHASE, verbose)
-    call nc_read_array(ncid, "ctt", CTT, verbose)
-    call nc_read_array(ncid, "ctp", CTP, verbose)
-    call nc_read_array(ncid, "cth", CTH, verbose)
     call nc_read_array(ncid, "solar_zenith_view_no1", SOLZ, verbose)
     call nc_read_array(ncid, "stemp", STEMP, verbose)
+    if(corrected_cth .eq. 0) then 
+     call nc_read_array(ncid, "ctt", CTT, verbose)
+     call nc_read_array(ncid, "ctp", CTP, verbose)
+     call nc_read_array(ncid, "cth", CTH, verbose)
+    endif
+    if(corrected_cth .eq. 1) then 
+     call nc_read_array(ncid, "ctt_corrected", CTT, verbose)
+     call nc_read_array(ncid, "ctp_corrected", CTP, verbose)
+     call nc_read_array(ncid, "cth_corrected", CTH, verbose)
+    endif
 
     ! Close file
     if (nf90_close(ncid) .ne. NF90_NOERR) then
@@ -1007,7 +1022,7 @@ call cpu_time(cpuStart)
 
         !cloud base & top height calculation
         call preprocess_input(cc_tot(i,j),AREF(i,j),AOD550(i,j),phase(i,j),&
-                         CTT(i,j),CTP(i,j),REF(i,j),COT(i,j),CTH(i,j),&
+                         CTT(i,j),CTP(i,j),REF(i,j),COT(i,j),CTH(i,j),InfThnCld,&
                          NLS,pxZ,pxREF,pxCOT,pxHctop,pxHcbase,&
                          pxPhaseFlag,pxLayerType,&
                          pxregime,pxHctopID,pxHcbaseID)

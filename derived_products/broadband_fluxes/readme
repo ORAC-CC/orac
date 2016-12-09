@@ -31,20 +31,28 @@ Inputs to process_broadband_fluxes.F90
    4.  TSI File
    5.  Output File Name
    6.  Algorithm ('1' is BUGSrad & '2' is Fu-Liou
-   7.  start x-pixel (left side)
-   8.  start y-pixel (bottom side)
-   9.  end x-pixel   (right side)
-   10. end y-pixel   (top side)
+   7.  start x-pixel (left side) use '' if full range
+   8.  start y-pixel (bottom side) use '' if full range
+   9.  end x-pixel   (right side) use '' if full range
+   10. end y-pixel   (top side) use '' if full range
 
   OPTIONAL: Use equals sign (=) with appropriate designator can be in any order
   cci_aerosol={filename} accepts v3.02 or v4.01 types
   cci_collocation={filename}
   modis_aerosol={filename} accepts MOD04 or MYD04 COLLECTION 6
   modis_cloud={filename} accepts MOD06 or MYD06 COLLECTION 6
+  'corrected_cth=1'      to use corrected cloud top heights instead
+  'infinitely_thin_cloud=1' to use infinitely thin cloud assumption
+
 
 Examples:
 BSUB for CEMS
 bsub -q lotus -W 06:00 -R "order[-r15s:pg]" -o /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/bugsrad.out -e /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/bugsrad.err -J BUGSrad
+
+
+
+
+./process_broadband_fluxes /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/postproc/ESACCI-L2-CLOUD-CLD-MODIS_CC4CL_AQUA_200803201155_fv2.0.primary.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/ESACCI-L2-CLOUD-CLD-MODIS_CC4CL_AQUA_200803201155_fv2.0.prtm.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/ESACCI-L2-CLOUD-CLD-MODIS_CC4CL_AQUA_200803201155_fv2.0.alb.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/data/tsi_soho_sorce_1978_2015.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/derived_products/ESACCI-L2-CLOUD-CLD-MODIS_CC4CL_AQUA_200803201155_fv9.9.bugsrad.nc '1' '' '' '' '' 'corrected_cth=1' 'infinitely_thin_cloud=1'
 
 MODIS - BUGSrad CCI cloud
 ./process_broadband_fluxes /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/postproc/ESACCI-L2-CLOUD-CLD-MODIS_CC4CL_AQUA_200803201155_fv3.2.primary.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/ESACCI-L2-CLOUD-CLD-MODIS_CC4CL_AQUA_200803201155_fv3.2.prtm.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/ESACCI-L2-CLOUD-CLD-MODIS_CC4CL_AQUA_200803201155_fv3.2.alb.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/data/tsi_soho_sorce_1978_2015.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/derived_products/ESACCI-L2-CLOUD-CLD-MODIS_CC4CL_AQUA_200803201155_fv5.5.bugsrad.nc '1'
