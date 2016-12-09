@@ -163,7 +163,7 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
    ! Local variables
 
    ! General
-   integer                           :: i,j,k,ii,kk,i_oc,i_view
+   integer                           :: i,j,k,ii,jj,kk,i_oc,i_view
    logical                           :: flag
    integer                           :: nsea, nland
    integer                           :: seacount
@@ -326,6 +326,8 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
          if (channel_info%channel_sw_flag(ii) .ne. 0) then
             if (channel_info%channel_lw_flag(ii) .ne. 0) cycle
 
+            if (channel_info%map_ids_abs_to_ref_band_land(i) .lt. 0) cycle
+
             flag = .true.
             do j = 1, n_bands
                if (channel_info%map_ids_abs_to_ref_band_land(i) .eq. &
@@ -426,9 +428,13 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
             call interp_field(tmp_data, tmp_val, interp(lndcount))
 
             do j = 1, channel_info%nchannels_sw
-               if (channel_info%map_ids_abs_to_ref_band_land(j) .eq. &
-                   bands(i)) then
-                  wsalnd(j,lndcount) = tmp_val
+               jj = channel_info%map_ids_abs_to_ref_band_land(j)
+               if (jj .lt. 0) then
+                  wsalnd(j,lndcount) = 0.
+               else
+                  if (jj .eq. bands(i)) then
+                     wsalnd(j,lndcount) = tmp_val
+                  end if
                end if
             end do
          end do
@@ -478,13 +484,17 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
             do i = 1, channel_info%nchannels_sw
                if (channel_info%sw_view_ids(i) .ne. i_view) cycle
 
-               do j = 1, n_bands
-                  if (channel_info%map_ids_abs_to_ref_band_land(i) .eq. &
-                       bands(j)) then
-                     rholnd(i,:,:) = tmprho(j,:,:)
-                     exit
-                  end if
-               end do
+               ii = channel_info%map_ids_abs_to_ref_band_land(i)
+               if (ii .lt. 0) then
+                  rholnd(i,:,:) = 0.
+               else
+                  do j = 1, n_bands
+                     if (ii .eq. bands(j)) then
+                        rholnd(i,:,:) = tmprho(j,:,:)
+                        exit
+                     end if
+                  end do
+               end if
             end do
             deallocate(tmprho)
          end do
