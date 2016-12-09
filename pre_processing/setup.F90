@@ -691,7 +691,7 @@ subroutine setup_modis(l1b_path_file,geo_path_file,platform,year,month,day, &
          7,         8,         9,         10,        11,        12, &
          13,        14,        15,        16,        17,        18, &
          19,        20,        21,        22,        23,        0, &
-         0,         24,        0,         0,         0,         0, &
+         0,         26,        0,         0,         0,         0, &
          0,         0,         0,         0,         0,         0  /)
 
    integer, parameter :: all_channel_ids_rttov_coef_lw(all_nchannels_total) = &
