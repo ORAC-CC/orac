@@ -456,7 +456,7 @@ subroutine get_ocean_colour(cyear, cmonth, occci_path, lat, lon, &
       occci_path_file = occci_path
    else
       occci_path_full = trim(adjustl(occci_path))//'/'//trim(adjustl(cyear2))
-      occci_file_regex = 'ESACCI-OC-L3S-IOP-MERGED-1M_MONTHLY_4km_GEO_PML_OC.v._QAA-'// &
+      occci_file_regex = 'ESACCI-OC-L3S-IOP-MERGED-1M_MONTHLY_4km_GEO_..._OC.v._QAA-'// &
            trim(adjustl(cyear2))//trim(adjustl(cmonth))//'-fv.\..\.nc'
       if (match_file(trim(occci_path_full), trim(occci_file_regex), occci_file) .ne. 0) then
          write(*,*) 'ERROR: get_ocean_colour(): Unable to locate OceanColour_cci data: ', &
