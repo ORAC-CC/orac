@@ -139,7 +139,7 @@ subroutine read_ecmwf_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
       !if (INTF(in_data,in_words,zni,out_data,out_words,zno) .ne. 0) &
       !     call h_e_e('grib', &
       !       'INTF failed. Check if 1/dellon 1/dellat are muliples of 0.001.')
-      if (INTF2(in_data,nbytes,out_data,out_words) .ne. 0) &
+      if (INTF2(in_data,nbytes,out_data,out_bytes) .ne. 0) &
            call h_e_e('grib', 'INTF2 failed.')
       out_words = out_bytes/lint
       ! load grib data into grib_api
