@@ -364,7 +364,6 @@ subroutine get_ocean_colour(cyear, cmonth, occci_path, lat, lon, &
    use interpol_m
    use fill_grid_m
    use system_utils_m
-   use read_ctrl_m
    use netcdf
 
    implicit none

@@ -133,7 +133,7 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
    use interpol_m
    use mcd43c_m
    use ocean_colour_m
-   use read_ctrl_m
+   use system_utils_m
    use preproc_constants_m
    use preproc_structures_m
    use ross_thick_li_sparse_r_m

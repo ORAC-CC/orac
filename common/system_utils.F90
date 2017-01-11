@@ -17,7 +17,8 @@ module system_utils_m
    private
 
    public :: match_file, &
-   			 is_nan
+   			 is_nan, &
+   			 c_to_fortran_str
 
 contains
 
@@ -92,5 +93,20 @@ elemental function is_nan(x) result(res)
 	res = isnan(x)
 #endif
 end function
+
+subroutine c_to_fortran_str(str)
+   use iso_c_binding, only: C_NULL_CHAR
+
+   implicit none
+
+   character(*), intent(inout) :: str
+   integer :: i
+
+   do i=1,len(str)
+      if (str(i:i) == C_NULL_CHAR) exit
+   end do
+
+   str(i:len(str)) = ' '
+end subroutine c_to_fortran_str
 
 end module system_utils_m
