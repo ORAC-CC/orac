@@ -322,7 +322,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
          stop error_stop_code
       end if
    case('SLSTR')
-      if (trim(platform) == 'Sen3') then
+      if (trim(platform) == 'Sentinel-3') then
          coef_file = 'rtcoef_sentinel3_1_slstr.dat'
       else
          write(*,*) 'ERROR: rttov_driver(): Invalid SLSTR platform: ', &

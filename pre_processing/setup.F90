@@ -107,7 +107,7 @@ subroutine setup_aatsr(l1b_path_file,geo_path_file,platform,sensor,year, &
    character(len=path_length),     intent(in)    :: l1b_path_file
    character(len=path_length),     intent(in)    :: geo_path_file
    character(len=platform_length), intent(out)   :: platform
-   character(len=platform_length), intent(in)    :: sensor
+   character(len=sensor_length),   intent(in)    :: sensor
    integer(kind=sint),             intent(out)   :: year,month,day,doy
    integer(kind=sint),             intent(out)   :: hour,minute
    character(len=date_length),     intent(out)   :: cyear,cmonth,cday

@@ -100,7 +100,7 @@ module ECP_constants_m
    ! Maximum string lengths
    integer, parameter :: FilenameLen      = path_length
                                                     ! Max length of filenames
-   integer, parameter :: InstNameLen      = 16      ! Max length of instrument name
+   integer, parameter :: InstNameLen      = 24      ! Max length of instrument name
 
    ! Maximum array lengths
    integer, parameter :: MaxNumSolar      = 24      ! Max no. of solar channels

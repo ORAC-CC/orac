@@ -1877,7 +1877,7 @@ function PlanckInv( input_platform, T )
       index = 17
    case ("SuomiNPP")
       index = 18
-   case ("Sen3")
+   case ("Sentinel-3")
       index = 19
    case ("default")
       index = 20

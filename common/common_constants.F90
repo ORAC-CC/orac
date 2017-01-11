@@ -39,7 +39,7 @@ module common_constants_m
    integer, parameter :: path_length=2048
 
    integer, parameter :: date_length=4
-   integer, parameter :: platform_length=8
+   integer, parameter :: platform_length=12
    integer, parameter :: sensor_length=8
 
    integer, parameter :: attribute_length=128
