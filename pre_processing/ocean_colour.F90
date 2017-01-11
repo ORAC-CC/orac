@@ -364,6 +364,7 @@ subroutine get_ocean_colour(cyear, cmonth, occci_path, lat, lon, &
    use interpol_m
    use fill_grid_m
    use system_utils_m
+   use read_ctrl_m
    use netcdf
 
    implicit none
@@ -465,6 +466,7 @@ subroutine get_ocean_colour(cyear, cmonth, occci_path, lat, lon, &
       end if
       occci_path_file = trim(occci_path_full)//'/'//trim(occci_file)
    end if
+   call c_to_fortran_str(occci_path_file)
    if (verbose) write(*,*) 'OCCCI data file: ', trim(occci_path_file)
 
    ! Check that this file exists and is readable

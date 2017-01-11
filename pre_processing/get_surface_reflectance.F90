@@ -133,6 +133,7 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
    use interpol_m
    use mcd43c_m
    use ocean_colour_m
+   use read_ctrl_m
    use preproc_constants_m
    use preproc_structures_m
    use ross_thick_li_sparse_r_m
@@ -365,6 +366,8 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
                  .true.,modis_brdf_path_file)
          end if
       end if
+      call c_to_fortran_str(modis_surf_path_file)
+      call c_to_fortran_str(modis_brdf_path_file)
       if (verbose) then
          write(*,*) 'modis_surf_path_file: ', trim(modis_surf_path_file)
          if (include_full_brdf) then
