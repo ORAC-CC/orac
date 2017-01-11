@@ -47,9 +47,10 @@
 
    ! additional information for print out
    if (verbose) then
-      if (nf90_get_att(ncid,vid,'units',unit).eq.NF90_NOERR) &
+      if (nf90_get_att(ncid,vid,'units',unit).eq.NF90_NOERR) then
+           call c_to_f_str(unit)
            print*,'Field units: ',trim(unit)
-
+      end if
       if (vr_flag) then
            print*,'Field valid min: ',sf*vmin + of
            print*,'Field valid max: ',sf*vmax + of

@@ -67,6 +67,22 @@ module orac_ncdf_m
 
 contains
 
+
+subroutine c_to_f_str(str)
+   use iso_c_binding, only: C_NULL_CHAR
+
+   implicit none
+
+   character(*), intent(inout) :: str
+   integer :: i
+
+   do i=1,len(str)
+      if (str(i:i) == C_NULL_CHAR) exit
+   end do
+
+   str(i:len(str)) = ' '
+end subroutine c_to_f_str
+
 !-------------------------------------------------------------------------------
 ! Name: nc_open
 !
