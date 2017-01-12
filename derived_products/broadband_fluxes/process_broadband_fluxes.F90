@@ -20,6 +20,7 @@
 !  cci_collocation={filename}
 !  modis_aerosol={filename} accepts MOD04 or MYD04 COLLECTION 6
 !  modis_cloud={filename} accepts MOD06 or MYD06 COLLECTION 6
+!  LUT_mode={filename} this is generated off the repository currently 
 !
 ! Subroutines:
 !   interpolate_meteorology.F90
@@ -77,7 +78,11 @@
 ! 2016/09/22, MC: Added conditional statement to input pixel selection range so if 
 !                 values of zero are specified the whole range of the orbit is used.
 ! 2016/12/09, MC: Added options to examine impact of corrected CTH and infinitely thin clouds.
-!                 
+! 2017/01/12, MC: Added driver code and option to run SW LUT for fast implementation of the broadband
+!                 flux retrieval. LUT's are currently generated offline using solar zenith angle
+!                 cloud effective radius, cloud optical depth, and broadband surface albedo applied to
+!                 the Fu-Liou model to produce LUT_BB_FLUXES.nc. Speed increased by a factor of ~200.
+!                 Relative accuracy (RMS) is between 4-8% at the TOA and Surface.
 !
 ! $Id$
 !
@@ -140,6 +145,7 @@ program process_broadband_fluxes
    !Albedo FILE
    real, allocatable :: rho_0d(:,:,:)  ! Albedo direct directional - blacksky albedo
    real, allocatable :: rho_dd(:,:,:)  ! Albedo diffuse directional - whitesky albedo
+   real, allocatable :: alb_data(:,:,:)  ! Broadband albedo
    real, allocatable :: emis_data(:,:,:)  ! Emissivity
    real, allocatable :: alb_abs_ch_numbers(:) !channels used in albedo product
    real, allocatable :: emis_abs_ch_numbers(:) !channels used in emissivity product
@@ -231,7 +237,7 @@ program process_broadband_fluxes
    !Local Flux & PAR variables
    real ::    &
       pxtoalwup,pxtoaswdn,pxtoaswup ,& !All-sky TOA fluxes
-      pxtoalwupclr,pxtoaswdnclr,pxtoaswupclr, & !Clear-Sky TOA fluxes
+      pxtoalwupclr,pxtoaswupclr, & !Clear-Sky TOA fluxes
       pxboalwup,pxboalwdn,pxboaswdn,pxboaswup ,& !All-sky BOA fluxes
       pxboalwupclr,pxboalwdnclr,pxboaswdnclr,pxboaswupclr,& !clear-sky BOA fluxes
       tpar   ,&    !toa par total
@@ -369,6 +375,17 @@ program process_broadband_fluxes
 
    integer :: nargs !number of command line arguments
    character(path_length) :: argname, tmpname, tmpname1, tmpname2
+
+   !Broadband Albedo LUT
+   real, allocatable :: LUT_toa_sw_albedo(:,:,:,:),&
+                        LUT_boa_sw_transmission(:,:,:,:),&
+                        LUT_boa_sw_albedo(:,:,:,:)
+   character(path_length) FtoaSW
+   integer :: lut_mode !=0 no processing, =1 use LUT
+   integer(kind=lint) :: nASFC,nRE,nTAU,nSOLZ
+   real, allocatable :: LUT_SFC_ALB(:),LUT_REF(:),LUT_COT(:),LUT_SOLZ(:)
+
+
 !-------------------------------------------------------------------------------
    !Read manditory arguments
    nargs = command_argument_count()
@@ -414,6 +431,7 @@ program process_broadband_fluxes
     InfThnCld = 0
     corrected_cth = 0
     aerosol_processing_mode = 0
+    lut_mode = 0
     do i = 11, nargs
       call get_command_argument(i, argname)
       index1=index(trim(adjustl(argname)),'=',back=.true.)
@@ -433,9 +451,11 @@ program process_broadband_fluxes
       if(tmpname1 .eq. 'modis_cloud=') FMOD06=trim(tmpname2)
       if(tmpname1 .eq. 'infinitely_thin_cloud=') InfThnCld=1
       if(tmpname1 .eq. 'corrected_cth=') corrected_cth=1
+      if(tmpname1 .eq. 'LUT_mode=') then 
+       FtoaSW=trim(tmpname2)
+       lut_mode = 1
+      endif
     end do
-
-
 !-------------------------------------------------------------------------------
    !Read time string from file
    index1=index(trim(adjustl(Fprimary)),'_',back=.true.)
@@ -455,7 +475,6 @@ program process_broadband_fluxes
    call greg2jul(pxYear,pxMonth,pxDay,pxJday)
    print*,pxYear,pxMonth,pxDay,pxJday
 !-------------------------------------------------------------------------------
-
    ! Open TSI file
    call nc_open(ncid,FTSI)
 
@@ -486,7 +505,41 @@ program process_broadband_fluxes
     print*,'YEAR: ',pxYear
     print*,'Calendar Day: ',pxJday
     print*,'TSI = ',pxTSI
+!-------------------------------------------------------------------------------
+  if(lut_mode .eq. 1) then
+   ! Open LUT file
+   call nc_open(ncid,FToaSW)
 
+    !Get LUT dimensions
+    nASFC = nc_dim_length(ncid, 'n_sfc_albedo', verbose)
+    nSOLZ = nc_dim_length(ncid, 'n_solar_zenith', verbose)
+    nRe   = nc_dim_length(ncid, 'n_effective_radius', verbose)
+    nTau  = nc_dim_length(ncid, 'n_optical_depth', verbose)
+
+    allocate(LUT_SFC_ALB(nASFC))
+    call nc_read_array(ncid, "surface_albedo", LUT_SFC_ALB, verbose)
+
+    allocate(LUT_SOLZ(nSOLZ))
+    call nc_read_array(ncid, "solar_zenith_angle", LUT_SOLZ, verbose)
+
+    allocate(LUT_REF(nRe))
+    call nc_read_array(ncid, "cloud_effective_radius", LUT_REF, verbose)
+
+    allocate(LUT_COT(nTau))
+    call nc_read_array(ncid, "cloud_optical_thickness", LUT_COT, verbose)
+
+    allocate(LUT_toa_sw_albedo(nASFC,nSOLZ,nRe,nTau))
+    call nc_read_array(ncid, "toa_sw_albedo", LUT_toa_sw_albedo, verbose)
+
+    allocate(LUT_boa_sw_transmission(nASFC,nSOLZ,nRe,nTau))
+    call nc_read_array(ncid, "boa_sw_transmission", LUT_boa_sw_transmission, verbose)
+
+    allocate(LUT_boa_sw_albedo(nASFC,nSOLZ,nRe,nTau))
+    call nc_read_array(ncid, "boa_sw_albedo", LUT_boa_sw_albedo, verbose)
+     
+    ! Close file
+    if (nf90_close(ncid) .ne. NF90_NOERR) stop error_stop_code
+   endif
 !-------------------------------------------------------------------------------
 
    ! Open PRIMARY file
@@ -632,6 +685,7 @@ program process_broadband_fluxes
     !Allocate arrays
     allocate(rho_dd(xN, yN, nc_alb))
     allocate(rho_0d(xN, yN, nc_alb))
+    allocate(alb_data(xN, yN, nc_alb))
     allocate(emis_data(xN, yN, nc_emis))
     allocate(alb_abs_ch_numbers(nc_alb))
     allocate(emis_abs_ch_numbers(nc_emis))
@@ -639,17 +693,23 @@ program process_broadband_fluxes
     !Read ALB data
     call nc_read_array(ncid, "rho_dd_data", rho_dd, verbose)
     call nc_read_array(ncid, "rho_0d_data", rho_0d, verbose)
+    call nc_read_array(ncid, "alb_data", alb_data, verbose)
     call nc_read_array(ncid, "emis_data", emis_data, verbose)
     call nc_read_array(ncid, "alb_abs_ch_numbers", alb_abs_ch_numbers, verbose)
     call nc_read_array(ncid, "emis_abs_ch_numbers", emis_abs_ch_numbers, verbose)
 
     ! Close file
-    if (nf90_close(ncid) .ne. NF90_NOERR) then
-       write(*,*) 'ERROR: read_input_dimensions_lwrtm(): Error closing ' // &
-                  'LWRTM file: ', FALB
-       stop error_stop_code
-    end if
-
+    if (nf90_close(ncid) .ne. NF90_NOERR) stop
+    ! Replace ALB_DATA WITH mean of rho_0d and rho_dd
+    do i=1,xN
+    do j=1,yN
+    do k=1,nc_alb
+      if(alb_data(i,j,k) .gt. 0.) then
+       alb_data(i,j,k)=(rho_0d(i,j,k)+rho_dd(i,j,k))/2.
+      endif
+    end do
+    end do
+    end do
 !-------------------------------------------------------------------------------
 
   ! Open Aerosol CCI file (optional)
@@ -862,11 +922,7 @@ program process_broadband_fluxes
      call nc_read_array(ncid, "aID", aID, verbose)
 
      ! Close file
-      if (nf90_close(ncid) .ne. NF90_NOERR) then
-        write(*,*) 'ERROR:  ' // &
-                   'LWRTM file: ', trim(Fcollocation)
-        stop error_stop_code
-      end if
+      if (nf90_close(ncid) .ne. NF90_NOERR) stop
     end if !file there
 
     !fill arrays (aerosol index aID must exist by this point)
@@ -907,6 +963,8 @@ program process_broadband_fluxes
     call get_modis_cloud(trim(FMOD06),xN,yN,CTT,CTP,CTH,phase,REF,COT,cc_tot)
    end if
 
+   if(lut_mode .eq. 0) print*,'Process using radiation model'
+   if(lut_mode .eq. 1) print*,'Process using LUT'
 
 !-------------------------------------------------------------------------
 !END OPTIONAL INPUTS SECTION
@@ -939,7 +997,6 @@ call cpu_time(cpuStart)
 
       !Valid lat/lon required to run (needed for SEVIRI)
       if(LAT(i,j) .ne. -999.0 .and. LON(i,j) .ne. -999.0) then
-
 
        !---------------------------------------------------------
        ! Surface albedo
@@ -1007,18 +1064,20 @@ call cpu_time(cpuStart)
            pxts = STEMP(i,j)
         endif
 
-!         print*,'latitude: ',LAT(i,j)
-!         print*,'longitude: ',LON(i,j)
-!         print*,'solar zenith: ',SOLZ(i,j)
-!         print*,'cc_tot:  ',cc_tot(i,j)
-!         print*,'Sat Phase: ',PHASE(i,j)
-!         print*,'Sat retr. CTH = ',CTH(i,j)
-!         print*,'Sat retr. CTT = ',CTT(i,j)
-!         print*,'SAT retr. REF = ',REF(i,j)
-!         print*,'SAT retr. COT = ',COT(i,j)
-!         print*,'SAT retr. cc_tot = ',cc_tot(i,j)
-!         print*,'Aerosol Optical Depth: ',AOD550(i,j)
-!         print*,'Aerosol Effective Radius: ',AREF(i,j)
+        !debugging (print statements)
+        !print*,'latitude: ',LAT(i,j)
+        !print*,'longitude: ',LON(i,j)
+        !print*,'solar zenith: ',SOLZ(i,j)
+        !print*,'cc_tot:  ',cc_tot(i,j)
+        !print*,'Sat Phase: ',PHASE(i,j)
+        !print*,'Sat retr. CTH = ',CTH(i,j)
+        !print*,'Sat retr. CTT = ',CTT(i,j)
+        !print*,'SAT retr. REF = ',REF(i,j)
+        !print*,'SAT retr. COT = ',COT(i,j)
+        !print*,'SAT retr. cc_tot = ',cc_tot(i,j)
+        !print*,'Aerosol Optical Depth: ',AOD550(i,j)
+        !print*,'Aerosol Effective Radius: ',AREF(i,j)
+
 
         !cloud base & top height calculation
         call preprocess_input(cc_tot(i,j),AREF(i,j),AOD550(i,j),phase(i,j),&
@@ -1027,25 +1086,27 @@ call cpu_time(cpuStart)
                          pxPhaseFlag,pxLayerType,&
                          pxregime,pxHctopID,pxHcbaseID)
 
-        !for detecting NaN's produced by BUGSrad
-        nanFlag=0
-
          !debugging (print statements)
-!         print*,'phase: ',pxPhaseFlag
-!         print*,'re :',pxREF
-!         print*,'tau :',pxCOT
-!         print*,'Hctop = ',pxHctop,' HctopID: ',pxHctopID
-!         print*,'Hcbase = ',pxHcbase,' HcbaseID: ',pxHcbaseID
-!         print*,'Regime: ',pxregime
-!         print*,'TOTAL SOLAR IRRADIANCE: ',pxTSI
-!         print*,'Hctop (hPa) = ',pxP(pxHctopID)
-!         print*,'Hcbase (hPa) = ',pxP(pxHcbaseID)
+         !print*,'phase: ',pxPhaseFlag
+         !print*,'re :',pxREF
+         !print*,'tau :',pxCOT
+         !print*,'Hctop = ',pxHctop,' HctopID: ',pxHctopID
+         !print*,'Hcbase = ',pxHcbase,' HcbaseID: ',pxHcbaseID
+         !print*,'Regime: ',pxregime
+         !print*,'TOTAL SOLAR IRRADIANCE: ',pxTSI
+         !print*,'Hctop (hPa) = ',pxP(pxHctopID)
+         !print*,'Hcbase (hPa) = ',pxP(pxHcbaseID)
 
-      !Call BUGSrad Algorithm
-      if(algorithm_processing_mode .eq. 1) then
-!      print*,'starting... BUGSrad'
-!      print*,NL,pxTSI,pxtheta,pxAsfcSWRdr,pxAsfcNIRdr,pxAsfcSWRdf,pxAsfcNIRdf,pxts
-!      print*,nc_alb,rho_0d(i,j,:),rho_dd(i,j,:)
+        !Run Full Radiation Code (not LUT mode)
+        if(lut_mode .eq. 0) then
+
+        !-------------------------------------------------------
+        !Call BUGSrad Algorithm
+        !-------------------------------------------------------
+        if(algorithm_processing_mode .eq. 1) then
+         !print*,'starting... BUGSrad'
+         !print*,NL,pxTSI,pxtheta,pxAsfcSWRdr,pxAsfcNIRdr,pxAsfcSWRdf,pxAsfcNIRdf,pxts
+         !print*,nc_alb,rho_0d(i,j,:),rho_dd(i,j,:)
          call driver_for_bugsrad(NL,pxTSI,pxtheta,pxAsfcSWRdr,pxAsfcNIRdr,pxAsfcSWRdf,pxAsfcNIRdf,pxts,&
                           pxPhaseFlag,pxREF,pxCOT,pxHctop,pxHcbase,&
                           pxHctopID,pxHcbaseID,&
@@ -1059,26 +1120,29 @@ call cpu_time(cpuStart)
                           ulwfxclr,dlwfxclr,uswfxclr,dswfxclr,&
                           emis_bugsrad,rho_0d_bugsrad,rho_dd_bugsrad)
 
-!           print*,'BUGSrad'
-!           print*,pxtoalwup,pxtoaswdn,pxtoaswup
-!           print*,pxtoalwupclr,pxtoaswdn,pxtoaswupclr
-!           print*,pxboalwup,pxboalwdn,pxboaswdn,pxboaswup
-!           print*,pxboalwupclr,pxboalwdnclr,pxboaswdnclr,pxboaswupclr
-!           print*,tpar,bpar,bpardif
+           !print*,'BUGSrad'
+           !print*,pxtoalwup,pxtoaswdn,pxtoaswup
+           !print*,pxtoalwupclr,pxtoaswdn,pxtoaswupclr
+           !print*,pxboalwup,pxboalwdn,pxboaswdn,pxboaswup
+           !print*,pxboalwupclr,pxboalwdnclr,pxboaswdnclr,pxboaswupclr
+           !print*,tpar,bpar,bpardif
 
-       endif
+         endif !BUGSrad Algorithm
 
-      !Call FuLiou Algorithm
-      if(algorithm_processing_mode .eq. 2 .or. &
-         algorithm_processing_mode .eq. 3 .or. &
-         algorithm_processing_mode .eq. 4) then
-!      print*,'starting... Fu-Liou'
-!      print*,NL,pxTSI,pxtheta,pxAsfcSWRdr,pxAsfcNIRdr,pxAsfcSWRdf,pxAsfcNIRdf,pxts
-!      print*,nc_alb
-!      print*,rho_0d(i,j,:)
-!      print*,rho_dd(i,j,:)
-!      print*,''
-   call driver_for_fuliou(NL,pxTSI,pxtheta,pxAsfcSWRdr,pxAsfcNIRdr,pxAsfcSWRdf,pxAsfcNIRdf,pxts,&
+        !-------------------------------------------------------
+        !Call FuLiou Algorithm
+        !-------------------------------------------------------
+        if(algorithm_processing_mode .eq. 2 .or. &
+           algorithm_processing_mode .eq. 3 .or. &
+           algorithm_processing_mode .eq. 4) then
+           !print*,'starting... Fu-Liou'
+           !print*,NL,pxTSI,pxtheta,pxAsfcSWRdr,pxAsfcNIRdr,pxAsfcSWRdf,pxAsfcNIRdf,pxts
+           !print*,nc_alb
+           !print*,rho_0d(i,j,:)
+           !print*,rho_dd(i,j,:)
+           !print*,''
+         call driver_for_fuliou(NL,pxTSI,pxtheta,pxAsfcSWRdr,pxAsfcNIRdr,&
+                          pxAsfcSWRdf,pxAsfcNIRdf,pxts,&
                           pxPhaseFlag,pxREF,pxCOT,pxHctop,pxHcbase,&
                           pxHctopID,pxHcbaseID,&
                           pxZ,pxP,pxT,pxQ,pxO3,&
@@ -1092,17 +1156,42 @@ call cpu_time(cpuStart)
                           emis_fuliou,rho_0d_fuliou,rho_dd_fuliou,&
                           algorithm_processing_mode)
 
-!           print*,'Fu Liou'
-!           print*,i,j,'1',pxtoaswup
-!           print*,pxtoalwupclr,pxtoaswdn,pxtoaswupclr
-!           print*,pxboalwup,pxboalwdn,pxboaswdn,pxboaswup
-!           print*,pxboalwupclr,pxboalwdnclr,pxboaswdnclr,pxboaswupclr
-!           print*,tpar,bpar,bpardif
+           !print*,'Fu Liou'
+           !print*,i,j,'1',pxtoaswup
+           !print*,pxtoalwupclr,pxtoaswdn,pxtoaswupclr
+           !print*,pxboalwup,pxboalwdn,pxboaswdn,pxboaswup
+           !print*,pxboalwupclr,pxboalwdnclr,pxboaswdnclr,pxboaswupclr
+           !print*,tpar,bpar,bpardif
 
-       endif
+         endif !FuLiou Algorithm
+
+         endif !lut_mode = 0
+
+         !-------------------------------------------------------
+         !LUT MODE
+         !-------------------------------------------------------
+         if(lut_mode .eq. 1) then
+
+          call driver_for_lut(pxTSI,pxregime,&
+                   nASFC,LUT_SFC_ALB,&
+                   nRE,lut_ref,nTAU,lut_cot,nSOLZ,lut_solz,&
+                   LUT_toa_sw_albedo(:,:,:,:),&
+                   LUT_boa_sw_transmission(:,:,:,:),&
+                   LUT_boa_sw_albedo(:,:,:,:),&
+                   alb_data(I,J,1:),REF(I,J),COT(I,J),SOLZ(I,J),&
+                   pxtoalwup,pxtoaswdn,pxtoaswup,&
+                   pxboalwup,pxboalwdn,pxboaswdn,pxboaswup,&
+                   pxtoalwupclr,pxtoaswupclr,&
+                   pxboalwupclr,pxboalwdnclr,pxboaswupclr,pxboaswdnclr,&
+                   bpar,bpardif,tpar)
+         endif
 
 
+         !-------------------------------------------------------
+         !Quality Check Retrieved Data & Fill Output Arrays
+         !-------------------------------------------------------
          !catch NaN
+         nanFlag=0
          if(is_nan(pxtoalwup)) nanFlag=1
          if(is_nan(pxtoaswup)) nanFlag=1
          if(is_nan(pxtoalwupclr)) nanFlag=1
@@ -1143,7 +1232,6 @@ call cpu_time(cpuStart)
           toa_par_tot(i,j) = tpar
           boa_par_tot(i,j) = bpar
           boa_par_dif(i,j) = bpardif
-
          end if !valid data
 
          ! meteorology data to output in netCDF file
@@ -1158,7 +1246,6 @@ call cpu_time(cpuStart)
          fth(i,j) = pxFTH
          colO3(i,j) = pxcolO3
 
-!       end if   !valid solar zenith angle
       end if   !valid geolocation data
     end do !j-loop
    end do !i-loop

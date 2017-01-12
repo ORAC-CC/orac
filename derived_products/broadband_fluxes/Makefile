@@ -75,7 +75,8 @@ ORAC_OBJ = $(OBJS)/kinds.o \
            $(OBJS)/read_hdf_sd_data.o \
            $(OBJS)/get_modis_aerosol.o \
            $(OBJS)/get_modis_cloud.o \
-           $(OBJS)/driver_for_fuliou.o
+           $(OBJS)/driver_for_fuliou.o \
+           $(OBJS)/driver_for_lut.o
 
 ORAC_OBJ_MAIN = $(OBJS)/process_broadband_fluxes.o
 
