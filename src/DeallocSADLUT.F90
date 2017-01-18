@@ -20,6 +20,8 @@
 !    allocation routine.
 ! 2015/01/09, CP: Added Rfbd.
 ! 2015/10/19, GM: Added Bext for Ctrl%do_CTP_correction.
+! 2017/01/17, GM: Eliminate the unnecessary indexing of the LUT grid wrt LUT
+!    type and channel.
 !
 ! $Id$
 !
@@ -52,26 +54,6 @@ subroutine Dealloc_LUT_Grid(LUT_Grid)
 
    type(LUT_Grid_t), intent(inout) :: LUT_Grid
 
-   deallocate(LUT_Grid%MaxTau)
-   deallocate(LUT_Grid%MinTau)
-   deallocate(LUT_Grid%dTau)
-   deallocate(LUT_Grid%nTau)
-   deallocate(LUT_Grid%MaxRe)
-   deallocate(LUT_Grid%MinRe)
-   deallocate(LUT_Grid%dRe)
-   deallocate(LUT_Grid%nRe)
-   deallocate(LUT_Grid%MaxSatzen)
-   deallocate(LUT_Grid%MinSatzen)
-   deallocate(LUT_Grid%dSatzen)
-   deallocate(LUT_Grid%nSatzen)
-   deallocate(LUT_Grid%MaxSolzen)
-   deallocate(LUT_Grid%MinSolzen)
-   deallocate(LUT_Grid%dSolzen)
-   deallocate(LUT_Grid%nSolzen)
-   deallocate(LUT_Grid%MaxRelazi)
-   deallocate(LUT_Grid%MinRelazi)
-   deallocate(LUT_Grid%dRelazi)
-   deallocate(LUT_Grid%nRelazi)
    deallocate(LUT_Grid%Tau)
    deallocate(LUT_Grid%Re)
    deallocate(LUT_Grid%Solzen)
@@ -112,13 +94,7 @@ subroutine Dealloc_SAD_LUT(Ctrl, SAD_LUT)
 
    deallocate(SAD_LUT%Wavelength)
 
-   deallocate(SAD_LUT%table_used_for_channel)
-
    call Dealloc_LUT_Grid(SAD_LUT%Grid)
-
-   if (Ctrl%do_CTX_correction) then
-      deallocate(SAD_LUT%Bext)
-   end if
 
    deallocate(SAD_LUT%Rd)
    deallocate(SAD_LUT%Rfd)
@@ -135,6 +111,10 @@ subroutine Dealloc_SAD_LUT(Ctrl, SAD_LUT)
 
    if (Ctrl%Ind%NThermal > 0) then
       deallocate(SAD_LUT%Em)
+   end if
+
+   if (Ctrl%do_CTX_correction) then
+      deallocate(SAD_LUT%Bext)
    end if
 
    if (Ctrl%Approach == AppAerOx .or. Ctrl%Approach == AppAerSw) then

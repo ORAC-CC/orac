@@ -9,6 +9,8 @@
 ! 2014/10/10, GM: Original version.
 ! 2015/03/18, OS: Needed to add "/" for LUT file path
 ! 2016/05/02, AP: Add routines to read 1D BextRat tables.
+! 2017/01/17, GM: Eliminate the unnecessary indexing of the LUT grid wrt LUT
+!    type and channel.
 !
 ! $Id$
 !
@@ -34,7 +36,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 subroutine grid_dimension_read(filename, n_name, d_name, v_name, lun, &
-                               i_chan, i_lut, nTau, dTau, MinTau, MaxTau, Tau)
+                               nTau, dTau, MinTau, MaxTau, Tau)
 
    implicit none
 
@@ -44,79 +46,34 @@ subroutine grid_dimension_read(filename, n_name, d_name, v_name, lun, &
    character(*), intent(in)    :: d_name
    character(*), intent(in)    :: v_name
    integer,      intent(in)    :: lun
-   integer,      intent(in)    :: i_chan
-   integer,      intent(in)    :: i_lut
-   integer,      intent(inout) :: nTau(:,:)
-   real,         intent(inout) :: dTau(:,:)
-   real,         intent(inout) :: MaxTau(:,:)
-   real,         intent(inout) :: MinTau(:,:)
-   real,         intent(inout) :: Tau(:,:,:)
+   integer,      intent(out)   :: nTau
+   real,         intent(out)   :: dTau
+   real,         intent(out)   :: MaxTau
+   real,         intent(out)   :: MinTau
+   real,         intent(inout) :: Tau(:)
 
    ! Local variables
    integer :: i
    integer :: iostat
 
-   read(lun, *, iostat=iostat) nTau(i_chan, i_lut), dTau(i_chan, i_lut)
+   read(lun, *, iostat=iostat) nTau, dTau
    if (iostat .ne. 0) then
       write(*,*) 'ERROR: grid_dimension_read(): Error reading ', trim(n_name), &
-         ' and ', trim(d_name), ' from SAD LUT file: ', trim(filename)
+                 ' and ', trim(d_name), ' from SAD LUT file: ', trim(filename)
       stop LUTFileReadErr
    end if
 
-   read(lun, *, iostat=iostat) (Tau(i_chan, i, i_lut), i=1, nTau(i_chan, i_lut))
+   read(lun, *, iostat=iostat) (Tau(i), i=1, nTau)
    if (iostat .ne. 0) then
       write(*,*) 'ERROR: grid_dimension_read(): Error reading ', trim(v_name), &
-                                ' from SAD LUT file: ', trim(filename)
+                 ' from SAD LUT file: ', trim(filename)
       stop LUTFileReadErr
    end if
 
-   MinTau(i_chan,i_lut)  = Tau(i_chan, 1, i_lut)
-   MaxTau(i_chan,i_lut)  = Tau(i_chan, nTau(i_chan, i_lut), i_lut)
+   MinTau = Tau(1)
+   MaxTau = Tau(nTau)
 
 end subroutine grid_dimension_read
-
-
-!-------------------------------------------------------------------------------
-! Name: grid_dimension_copy
-!
-! Purpose:
-! Read a single grid dimension.
-!
-! Algorithm:
-!
-! Arguments:
-! Name Type In/Out/Both Description
-!
-! History:
-! 2014/10/10, GM: Original version
-!
-! Bugs:
-! None known.
-!-------------------------------------------------------------------------------
-subroutine grid_dimension_copy(i_chan, i_lut1, i_lut2, nTau, dTau, MinTau, &
-                               MaxTau, Tau)
-
-   implicit none
-
-   ! Argument declarations
-   integer, intent(in)    :: i_chan
-   integer, intent(in)    :: i_lut1
-   integer, intent(in)    :: i_lut2
-   integer, intent(inout) :: nTau(:,:)
-   real,    intent(inout) :: dTau(:,:)
-   real,    intent(inout) :: MaxTau(:,:)
-   real,    intent(inout) :: MinTau(:,:)
-   real,    intent(inout) :: Tau(:,:,:)
-
-   dTau(i_chan,i_lut2)   = dTau(i_chan, i_lut1)
-   nTau(i_chan,i_lut2)   = nTau(i_chan, i_lut1)
-
-   Tau(i_chan,:,i_lut2)  = Tau(i_chan, :, i_lut1)
-
-   MinTau(i_chan,i_lut2) = MinTau(i_chan, i_lut1)
-   MaxTau(i_chan,i_lut2) = MaxTau(i_chan, i_lut1)
-
-end subroutine grid_dimension_copy
 
 
 !-------------------------------------------------------------------------------
@@ -136,97 +93,54 @@ end subroutine grid_dimension_copy
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
-subroutine read_grid_dimensions(filename, lun, i_chan, SAD_LUT, has_sol_zen, &
-                                has_sat_zen, has_rel_azi, i_lut, i_lut2)
+subroutine read_grid_dimensions(filename, lun, SAD_LUT, has_sol_zen, &
+                                has_sat_zen, has_rel_azi)
 
    implicit none
 
    ! Argument declarations
    character(*),    intent(in)           :: filename
    integer,         intent(in)           :: lun
-   integer,         intent(in)           :: i_chan
    type(SAD_LUT_t), intent(inout)        :: SAD_LUT
    logical,         intent(in)           :: has_sol_zen
    logical,         intent(in)           :: has_sat_zen
    logical,         intent(in)           :: has_rel_azi
-   integer,         intent(in)           :: i_lut
-   integer,         intent(in), optional :: i_lut2
 
    ! Read the Tau dimension
-   call grid_dimension_read(filename, 'nTau', 'dTau', 'Tau', &
-                            lun, i_chan, i_lut, &
+   call grid_dimension_read(filename, 'nTau', 'dTau', 'Tau', lun, &
                             SAD_LUT%Grid%nTau, SAD_LUT%Grid%dTau, &
                             SAD_LUT%Grid%MinTau, SAD_LUT%Grid%MaxTau, &
                             SAD_LUT%Grid%Tau)
 
-   if (present(i_lut2)) then
-      call grid_dimension_copy(i_chan, i_lut, i_lut2, &
-                               SAD_LUT%Grid%nTau, SAD_LUT%Grid%dTau, &
-                               SAD_LUT%Grid%MinTau, SAD_LUT%Grid%MaxTau, &
-                               SAD_LUT%Grid%Tau)
-   end if
-
    if (has_sat_zen) then
       ! Read the Satzen dimension
-      call grid_dimension_read(filename, 'nSatzen', 'dSatzen', 'Satzen', &
-                               lun, i_chan, i_lut, &
+      call grid_dimension_read(filename, 'nSatzen', 'dSatzen', 'Satzen', lun, &
                                SAD_LUT%Grid%nSatzen, SAD_LUT%Grid%dSatzen, &
                                SAD_LUT%Grid%MinSatzen, SAD_LUT%Grid%MaxSatzen, &
                                SAD_LUT%Grid%Satzen)
-
-      if (present(i_lut2)) then
-         call grid_dimension_copy(i_chan, i_lut, i_lut2, &
-                                  SAD_LUT%Grid%nSatzen, SAD_LUT%Grid%dSatzen, &
-                                  SAD_LUT%Grid%MinSatzen, SAD_LUT%Grid%MaxSatzen, &
-                                  SAD_LUT%Grid%Satzen)
-      end if
    end if
 
    if (has_sol_zen) then
       ! Read the Solzen dimension
-      call grid_dimension_read(filename, 'nSolzen', 'dSolzen', 'Solzen', &
-                               lun, i_chan, i_lut, &
+      call grid_dimension_read(filename, 'nSolzen', 'dSolzen', 'Solzen', lun, &
                                SAD_LUT%Grid%nSolzen, SAD_LUT%Grid%dSolzen, &
                                SAD_LUT%Grid%MinSolzen, SAD_LUT%Grid%MaxSolzen, &
                                SAD_LUT%Grid%Solzen)
-
-      if (present(i_lut2)) then
-         call grid_dimension_copy(i_chan, i_lut, i_lut2, &
-                                  SAD_LUT%Grid%nSolzen, SAD_LUT%Grid%dSolzen, &
-                                  SAD_LUT%Grid%MinSolzen, SAD_LUT%Grid%MaxSolzen, &
-                                  SAD_LUT%Grid%Solzen)
-      end if
    end if
 
    if (has_rel_azi) then
       ! Read the Relazi dimension
-      call grid_dimension_read(filename, 'nRelazi', 'dRelazi', 'Relazi', &
-                               lun, i_chan, i_lut, &
+      call grid_dimension_read(filename, 'nRelazi', 'dRelazi', 'Relazi', lun, &
                                SAD_LUT%Grid%nRelazi, SAD_LUT%Grid%dRelazi, &
                                SAD_LUT%Grid%MinRelazi, SAD_LUT%Grid%MaxRelazi, &
                                SAD_LUT%Grid%Relazi)
-
-      if (present(i_lut2)) then
-         call grid_dimension_copy(i_chan, i_lut, i_lut2, &
-                                  SAD_LUT%Grid%nRelazi, SAD_LUT%Grid%dRelazi, &
-                                  SAD_LUT%Grid%MinRelazi, SAD_LUT%Grid%MaxRelazi, &
-                                  SAD_LUT%Grid%Relazi)
-      end if
    end if
 
    ! Read the Re dimension
-   call grid_dimension_read(filename, 'nRe', 'dRe', 'Re', &
-                            lun, i_chan, i_lut, &
+   call grid_dimension_read(filename, 'nRe', 'dRe', 'Re', lun, &
                             SAD_LUT%Grid%nRe, SAD_LUT%Grid%dRe, &
                             SAD_LUT%Grid%MinRe, SAD_LUT%Grid%MaxRe, &
                             SAD_LUT%Grid%Re)
-
-   if (present(i_lut2)) then
-      call grid_dimension_copy(i_chan, i_lut, i_lut2, &
-                               SAD_LUT%Grid%nRe, SAD_LUT%Grid%dRe, &
-                               SAD_LUT%Grid%MinRe, SAD_LUT%Grid%MaxRe, &
-                               SAD_LUT%Grid%Re)
-   end if
 
 end subroutine read_grid_dimensions
 
@@ -259,8 +173,8 @@ subroutine read_values_2d(filename, v_name, lun, i_chan, i_lut, &
    integer,      intent(in)    :: lun
    integer,      intent(in)    :: i_chan
    integer,      intent(in)    :: i_lut
-   integer,      intent(inout) :: n_i(:,:)
-   integer,      intent(inout) :: n_j(:,:)
+   integer,      intent(out)   :: n_i
+   integer,      intent(out)   :: n_j
    real,         intent(inout) :: values(:,:,:)
 
    ! Local variables
@@ -268,7 +182,7 @@ subroutine read_values_2d(filename, v_name, lun, i_chan, i_lut, &
    integer :: iostat
 
    read(lun, *, iostat=iostat) ((values(i_chan, i, j), &
-      i = 1, n_i(i_chan, i_lut)), j = 1, n_j(i_chan, i_lut))
+      i = 1, n_i), j = 1, n_j)
    if (iostat .ne. 0) then
       write(*,*) 'ERROR: read_values_2d(): Error reading ', v_name, &
          ' from file: ', trim(v_name), trim(filename)
@@ -291,9 +205,9 @@ subroutine read_values_3d(filename, v_name, lun, i_chan, i_lut, &
    integer,      intent(in)    :: lun
    integer,      intent(in)    :: i_chan
    integer,      intent(in)    :: i_lut
-   integer,      intent(inout) :: n_i(:,:)
-   integer,      intent(inout) :: n_j(:,:)
-   integer,      intent(inout) :: n_k(:,:)
+   integer,      intent(out)   :: n_i
+   integer,      intent(out)   :: n_j
+   integer,      intent(out)   :: n_k
    real,         intent(inout) :: values(:,:,:,:)
 
    ! Local variables
@@ -301,8 +215,8 @@ subroutine read_values_3d(filename, v_name, lun, i_chan, i_lut, &
    integer :: iostat
 
    read(lun, *, iostat=iostat) (((values(i_chan, i, j, k), &
-      i = 1, n_i(i_chan, i_lut)), j = 1, n_j(i_chan, i_lut)), &
-      k = 1, n_k(i_chan, i_lut))
+      i = 1, n_i), j = 1, n_j), &
+      k = 1, n_k)
    if (iostat .ne. 0) then
       write(*,*) 'ERROR: read_values_3d(): Error reading ', v_name, &
          ' from file: ', trim(v_name), trim(filename)
@@ -340,11 +254,11 @@ subroutine read_values_5d(filename, v_name, lun, i_chan, i_lut, &
    integer,      intent(in)    :: lun
    integer,      intent(in)    :: i_chan
    integer,      intent(in)    :: i_lut
-   integer,      intent(inout) :: n_i(:,:)
-   integer,      intent(inout) :: n_j(:,:)
-   integer,      intent(inout) :: n_k(:,:)
-   integer,      intent(inout) :: n_l(:,:)
-   integer,      intent(inout) :: n_m(:,:)
+   integer,      intent(out)   :: n_i
+   integer,      intent(out)   :: n_j
+   integer,      intent(out)   :: n_k
+   integer,      intent(out)   :: n_l
+   integer,      intent(out)   :: n_m
    real,         intent(inout) :: values(:,:,:,:,:,:)
 
    ! Local variables
@@ -352,9 +266,9 @@ subroutine read_values_5d(filename, v_name, lun, i_chan, i_lut, &
    integer :: iostat
 
    read(lun, *, iostat=iostat) (((((values(i_chan, i, j, k, l, m), &
-      i = 1, n_i(i_chan, i_lut)), j = 1, n_j(i_chan, i_lut)), &
-      k = 1, n_k(i_chan, i_lut)), l = 1, n_l(i_chan, i_lut)), &
-      m = 1, n_m(i_chan, i_lut))
+      i = 1, n_i), j = 1, n_j), &
+      k = 1, n_k), l = 1, n_l), &
+      m = 1, n_m)
    if (iostat .ne. 0) then
       write(*,*) 'ERROR: read_values_5d(): Error reading ', v_name, &
          ' from file: ', trim(v_name), trim(filename), lun
@@ -409,20 +323,13 @@ subroutine Read_LUT_rat(Ctrl, LUT_file, SAD_LUT, i_chan, i_lut, name, values)
       stop LUTFileOpenErr
    end if
 
-   SAD_LUT%table_used_for_channel(i_chan, i_lut) = .true.
-
-   SAD_LUT%table_uses_solzen(i_lut) = .false.
-   SAD_LUT%table_uses_relazi(i_lut) = .false.
-   SAD_LUT%table_uses_satzen(i_lut) = .false.
-
    ! Read the grid dimensions (temporarily 2D)
-   call read_grid_dimensions(LUT_file, lun, i_chan, SAD_LUT, .false., .false., &
-                             .false., i_lut)
+   call read_grid_dimensions(LUT_file, lun, SAD_LUT, .false., .false., .false.)
 
    ! Read in the i_lut array (temporarily 2D)
    call read_values_2d(LUT_file, name, lun, i_chan, i_lut, SAD_LUT%Grid%nTau, &
                        SAD_LUT%Grid%nRe, tmp_values)
-   values(i_chan,:) = tmp_values(1,1,1:SAD_LUT%Grid%nRe(i_chan,i_lut))
+   values(i_chan,:) = tmp_values(1,1,1:SAD_LUT%Grid%nRe)
 
    close(unit = lun)
 
@@ -472,18 +379,11 @@ subroutine Read_LUT(Ctrl, LUT_file, i_chan, SAD_LUT, i_lut, name, values)
       stop LUTFileOpenErr
    end if
 
-   SAD_LUT%table_used_for_channel(i_chan, i_lut) = .true.
-
-   SAD_LUT%table_uses_solzen(i_lut) = .false.
-   SAD_LUT%table_uses_relazi(i_lut) = .false.
-   SAD_LUT%table_uses_satzen(i_lut) = .false.
-
    ! Read Wavelength
    read(lun, *, iostat=iostat) SAD_LUT%Wavelength(i_chan)
 
    ! Read the grid dimensions
-   call read_grid_dimensions(LUT_file, lun, i_chan, SAD_LUT, .false., .false., &
-                             .false., i_lut)
+   call read_grid_dimensions(LUT_file, lun, SAD_LUT, .false., .false., .false.)
 
    ! Read in the i_lut array
    call read_values_2d(LUT_file, name, lun, i_chan, i_lut, SAD_LUT%Grid%nTau, &
@@ -542,26 +442,11 @@ subroutine Read_LUT_sat(Ctrl, LUT_file, i_chan, SAD_LUT, i_lut, name, &
       stop LUTFileOpenErr
    end if
 
-   SAD_LUT%table_used_for_channel(i_chan, i_lut) = .true.
-
-   SAD_LUT%table_uses_solzen(i_lut) = .false.
-   SAD_LUT%table_uses_relazi(i_lut) = .false.
-   SAD_LUT%table_uses_satzen(i_lut) = .true.
-
-   if (present(i_lut2)) then
-      SAD_LUT%table_used_for_channel(i_chan, i_lut2) = .true.
-
-      SAD_LUT%table_uses_solzen(i_lut2) = .false.
-      SAD_LUT%table_uses_relazi(i_lut2) = .false.
-      SAD_LUT%table_uses_satzen(i_lut2) = .false.
-   end if
-
    ! Read Wavelength
    read(lun, *, iostat=iostat) SAD_LUT%Wavelength(i_chan)
 
    ! Read the grid dimensions
-   call read_grid_dimensions(LUT_file, lun, i_chan, SAD_LUT, .false., .true., &
-                             .false., i_lut, i_lut2)
+   call read_grid_dimensions(LUT_file, lun, SAD_LUT, .false., .true., .false.)
 
    ! Read in the i_lut array
    call read_values_3d(LUT_file, name, lun, i_chan, i_lut, &
@@ -626,26 +511,11 @@ subroutine Read_LUT_sol(Ctrl, LUT_file, i_chan, SAD_LUT, i_lut, name, &
       stop LUTFileOpenErr
    end if
 
-   SAD_LUT%table_used_for_channel(i_chan, i_lut) = .true.
-
-   SAD_LUT%table_uses_solzen(i_lut) = .true.
-   SAD_LUT%table_uses_relazi(i_lut) = .false.
-   SAD_LUT%table_uses_satzen(i_lut) = .false.
-
-   if (present(i_lut2)) then
-      SAD_LUT%table_used_for_channel(i_chan, i_lut2) = .true.
-
-      SAD_LUT%table_uses_solzen(i_lut2) = .true.
-      SAD_LUT%table_uses_relazi(i_lut2) = .false.
-      SAD_LUT%table_uses_satzen(i_lut2) = .false.
-   end if
-
    ! Read Wavelength
    read(lun, *, iostat=iostat) SAD_LUT%Wavelength(i_chan)
 
    ! Read the grid dimensions
-   call read_grid_dimensions(LUT_file, lun, i_chan, SAD_LUT, .true., .false., &
-                             .false., i_lut, i_lut2)
+   call read_grid_dimensions(LUT_file, lun, SAD_LUT, .true., .false., .false.)
 
    ! Read in the i_lut array
    call read_values_3d(LUT_file, name, lun, i_chan, i_lut, &
@@ -711,26 +581,11 @@ subroutine Read_LUT_both(Ctrl, LUT_file, i_chan, SAD_LUT, i_lut, name, &
       stop LUTFileOpenErr
    end if
 
-   SAD_LUT%table_used_for_channel(i_chan, i_lut) = .true.
-
-   SAD_LUT%table_uses_solzen(i_lut) = .true.
-   SAD_LUT%table_uses_relazi(i_lut) = .true.
-   SAD_LUT%table_uses_satzen(i_lut) = .true.
-
-   if (present(i_lut2)) then
-      SAD_LUT%table_used_for_channel(i_chan, i_lut2) = .true.
-
-      SAD_LUT%table_uses_solzen(i_lut2) = .true.
-      SAD_LUT%table_uses_relazi(i_lut2) = .false.
-      SAD_LUT%table_uses_satzen(i_lut2) = .false.
-   end if
-
    ! Read Wavelength
    read(lun, *, iostat=iostat) SAD_LUT%Wavelength(i_chan)
 
    ! Read the grid dimensions
-   call read_grid_dimensions(LUT_file, lun, i_chan, SAD_LUT, .true., .true., &
-                             .true., i_lut, i_lut2)
+   call read_grid_dimensions(LUT_file, lun, SAD_LUT, .true., .true., .true.)
 
    ! Read in the i_lut array
    call read_values_5d(LUT_file, name, lun, i_chan, i_lut, &
@@ -831,12 +686,12 @@ subroutine Read_SAD_LUT(Ctrl, SAD_Chan, SAD_LUT, i_layer)
 
    ! Local variables
 
-   integer                :: i       ! Array counters
-   character(FilenameLen) :: LUT_file! Name of LUT file
-   character(4)           :: chan_num! Channel number converted to a string
+   integer                :: i        ! Array counters
+   character(FilenameLen) :: LUT_file ! Name of LUT file
+   character(4)           :: chan_num ! Channel number converted to a string
 #ifdef BKP
-   integer                :: bkp_lun ! Unit number for breakpoint file
-   integer                :: ios     ! I/O status returned by file open etc
+   integer                :: bkp_lun  ! Unit number for breakpoint file
+   integer                :: ios      ! I/O status returned by file open etc
 #endif
 
    ! Open breakpoint file if required.
@@ -862,12 +717,6 @@ subroutine Read_SAD_LUT(Ctrl, SAD_Chan, SAD_LUT, i_layer)
    ! LUT file read function. Just pass the current SAD_LUT struct, rather than
    ! the whole array.
    call Alloc_SAD_LUT(Ctrl, SAD_LUT)
-
-   SAD_LUT%table_used_for_channel = .false.
-
-   SAD_LUT%table_uses_satzen      = .false.
-   SAD_LUT%table_uses_solzen      = .false.
-   SAD_LUT%table_uses_relazi      = .false.
 
    do i=1, Ctrl%Ind%Ny
       ! Generate channel file name from Ctrl struct info. This sets the channel

@@ -162,7 +162,7 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
 
    ! Declare local variables
 
-   integer          :: i, ii
+   integer          :: i
    type(GZero_t)    :: GZero(2)
    real             :: BT(SPixel%Ind%NThermal)
    real             :: d_BT(SPixel%Ind%NThermal, MaxStateVar)

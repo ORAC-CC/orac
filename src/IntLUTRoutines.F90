@@ -87,12 +87,14 @@ contains
 !    routines and created this one shared subroutine.
 ! 2015/01/13, AP: Switch to array-based channel indexing rather than using
 !    offsets.
+! 2017/01/17, GM: Changes related to simplification of the indexing of the LUT
+!    grid and the GZero parameters.
 !
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine Int_LUT_Common(Ctrl, NChans, iCRP, Grid, GZero, G, FInt, FGrads, &
+subroutine Int_LUT_Common(Ctrl, NChans, Grid, GZero, G, FInt, FGrads, &
    chan_to_ctrl_index, chan_to_spixel_index, status)
 
    use Ctrl_m
@@ -104,7 +106,6 @@ subroutine Int_LUT_Common(Ctrl, NChans, iCRP, Grid, GZero, G, FInt, FGrads, &
 
    type(Ctrl_t),                      intent(in)  :: Ctrl
    integer,                           intent(in)  :: NChans
-   integer,                           intent(in)  :: iCRP
    type(LUT_Grid_t),                  intent(in)  :: Grid
                                       ! LUT grid data
    type(GZero_t),                     intent(in)  :: GZero
@@ -127,7 +128,7 @@ subroutine Int_LUT_Common(Ctrl, NChans, iCRP, Grid, GZero, G, FInt, FGrads, &
                                       ! Indices for input channels wrt SPixel
    integer,                           intent(out) :: status
 
-   integer            :: i, ii, ii2
+   integer            :: i, ii2
    real, dimension(4) :: Y          ! A vector to contain the values of F at
                                     ! (iT0,iR0), (iT0,iR1), (iT1,iR1) and
                                     ! (iT1,iR0) respectively (i.e. anticlockwise
@@ -145,7 +146,6 @@ subroutine Int_LUT_Common(Ctrl, NChans, iCRP, Grid, GZero, G, FInt, FGrads, &
 
    ! Calculte the function derivatives at four LUT points around our X
    do i = 1, NChans
-      ii = chan_to_ctrl_index(i)
       ii2 = chan_to_spixel_index(i)
 
       Y(1) = G(i,iX0,iX0)
@@ -156,72 +156,52 @@ subroutine Int_LUT_Common(Ctrl, NChans, iCRP, Grid, GZero, G, FInt, FGrads, &
       ! Now call linint or the adapted Numerical Recipes BCuInt subroutine to
       ! perform the interpolation to our desired state vector
       if (Ctrl%LUTIntSelm .eq. LUTIntMethLinear) then
-         call linint(Y,Grid%Tau(ii,GZero%iT0(ii2,iCRP),iCRP), &
-                       Grid%Tau(ii,GZero%iT1(ii2,iCRP),iCRP), &
-                       Grid%Re (ii,GZero%iR0(ii2,iCRP),iCRP), &
-                       Grid%Re (ii,GZero%iR1(ii2,iCRP),iCRP), &
-                       GZero%dT(ii2,iCRP),GZero%dR(ii2,iCRP),a1,a2,a3)
+         call linint(Y, Grid%Tau(GZero%iT0(ii2)), Grid%Tau(GZero%iT1(ii2)), &
+                        Grid%Re (GZero%iR0(ii2)), Grid%Re (GZero%iR1(ii2)), &
+                        GZero%dT(ii2), GZero%dR(ii2), a1, a2, a3)
       else if (Ctrl%LUTIntSelm .eq. LUTIntMethBicubic) then
          ! WRT to Tau
          dYdTau(1) = (G(i,iX1,iX0) - G(i,iXm1,iX0)) / &
-                     (Grid%Tau(ii,GZero%iT1 (ii2,iCRP),iCRP) - &
-                      Grid%Tau(ii,GZero%iTm1(ii2,iCRP),iCRP))
+                     (Grid%Tau(GZero%iT1 (ii2)) - Grid%Tau(GZero%iTm1(ii2)))
          dYdTau(2) = (G(i,iXp1,iX0) - G(i,iX0,iX0)) / &
-                     (Grid%Tau(ii,GZero%iTp1(ii2,iCRP),iCRP) - &
-                      Grid%Tau(ii,GZero%iT0 (ii2,iCRP),iCRP))
+                     (Grid%Tau(GZero%iTp1(ii2)) - Grid%Tau(GZero%iT0 (ii2)))
          dYdTau(3) = (G(i,iXp1,iX1) - G(i,iX0,iX1)) / &
-                     (Grid%Tau(ii,GZero%iTp1(ii2,iCRP),iCRP) - &
-                      Grid%Tau(ii,GZero%iT0 (ii2,iCRP),iCRP))
+                     (Grid%Tau(GZero%iTp1(ii2)) - Grid%Tau(GZero%iT0 (ii2)))
          dYdTau(4) = (G(i,iX1,iX1) - G(i,iXm1,iX1)) / &
-                     (Grid%Tau(ii,GZero%iT1 (ii2,iCRP),iCRP) - &
-                      Grid%Tau(ii,GZero%iTm1(ii2,iCRP),iCRP))
+                     (Grid%Tau(GZero%iT1 (ii2)) - Grid%Tau(GZero%iTm1(ii2)))
 
          ! WRT to Re
          dYDRe(1)  = (G(i,iX0,iX1) - G(i,iX0,iXm1)) / &
-                     (Grid%Re (ii,GZero%iR1 (ii2,iCRP),iCRP) - &
-                      Grid%Re (ii,GZero%iRm1(ii2,iCRP),iCRP))
+                     (Grid%Re (GZero%iR1 (ii2)) - Grid%Re (GZero%iRm1(ii2)))
          dYDRe(2)  = (G(i,iX1,iX1) - G(i,iX1,iXm1)) / &
-                     (Grid%Re (ii,GZero%iR1 (ii2,iCRP),iCRP) - &
-                      Grid%Re (ii,GZero%iRm1(ii2,iCRP),iCRP))
+                     (Grid%Re (GZero%iR1 (ii2)) - Grid%Re (GZero%iRm1(ii2)))
          dYDRe(3)  = (G(i,iX1,iXp1) - G(i,iX1,iX0)) / &
-                     (Grid%Re (ii,GZero%iRp1(ii2,iCRP),iCRP) - &
-                      Grid%Re (ii,GZero%iR0 (ii2,iCRP),iCRP))
+                     (Grid%Re (GZero%iRp1(ii2)) - Grid%Re (GZero%iR0 (ii2)))
          dYDRe(4)  = (G(i,iX0,iXp1) - G(i,iX0,iX0)) / &
-                     (Grid%Re (ii,GZero%iRp1(ii2,iCRP),iCRP) - &
-                      Grid%Re (ii,GZero%iR0 (ii2,iCRP),iCRP))
+                     (Grid%Re (GZero%iRp1(ii2)) - Grid%Re (GZero%iR0 (ii2)))
 
          ! Cross derivatives (dY^2/dTaudRe)
          ddY(1) = (G(i,iX1,iX1) - G(i,iX1,iXm1) - &
                    G(i,iXm1,iX1) + G(i,iXm1,iXm1)) / &
-                  ((Grid%Tau(ii,GZero%iT1 (ii2,iCRP),iCRP) - &
-                    Grid%Tau(ii,GZero%iTm1(ii2,iCRP),iCRP)) * &
-                   (Grid%Re (ii,GZero%iR1 (ii2,iCRP),iCRP) - &
-                    Grid%Re (ii,GZero%iRm1(ii2,iCRP),iCRP)))
+                  ((Grid%Tau(GZero%iT1 (ii2)) - Grid%Tau(GZero%iTm1(ii2))) * &
+                   (Grid%Re (GZero%iR1 (ii2)) - Grid%Re (GZero%iRm1(ii2))))
          ddY(2) = (G(i,iXp1,iX1) - G(i,iXp1,iXm1) - &
                    G(i,iX0,iX1) + G(i,iX0,iXm1)) / &
-                  ((Grid%Tau(ii,GZero%iTp1(ii2,iCRP),iCRP) - &
-                    Grid%Tau(ii,GZero%iT0 (ii2,iCRP),iCRP)) * &
-                   (Grid%Re (ii,GZero%iR1 (ii2,iCRP),iCRP) - &
-                    Grid%Re (ii,GZero%iRm1(ii2,iCRP),iCRP)))
+                  ((Grid%Tau(GZero%iTp1(ii2)) - Grid%Tau(GZero%iT0 (ii2))) * &
+                   (Grid%Re (GZero%iR1 (ii2)) - Grid%Re (GZero%iRm1(ii2))))
          ddY(3) = (G(i,iXp1,iXp1) - G(i,iXp1,iX0) - &
                    G(i,iX0,iXp1) + G(i,iX0,iX0)) / &
-                  ((Grid%Tau(ii,GZero%iTp1(ii2,iCRP),iCRP) - &
-                    Grid%Tau(ii,GZero%iT0 (ii2,iCRP),iCRP)) * &
-                   (Grid%Re (ii,GZero%iRp1(ii2,iCRP),iCRP) - &
-                    Grid%Re (ii,GZero%iR0 (ii2,iCRP),iCRP)))
+                  ((Grid%Tau(GZero%iTp1(ii2)) - Grid%Tau(GZero%iT0 (ii2))) * &
+                   (Grid%Re (GZero%iRp1(ii2)) - Grid%Re (GZero%iR0 (ii2))))
          ddY(4) = (G(i,iX1,iXp1) - G(i,iX1,iX0) - &
                    G(i,iXm1,iXp1) + G(i,iXm1,iX0)) / &
-                  ((Grid%Tau(ii,GZero%iT1 (ii2,iCRP),iCRP) - &
-                    Grid%Tau(ii,GZero%iTm1(ii2,iCRP),iCRP)) * &
-                   (Grid%Re (ii,GZero%iRp1(ii2,iCRP),iCRP) - &
-                    Grid%Re (ii,GZero%iR0 (ii2,iCRP),iCRP)))
+                  ((Grid%Tau(GZero%iT1 (ii2)) - Grid%Tau(GZero%iTm1(ii2))) * &
+                   (Grid%Re (GZero%iRp1(ii2)) - Grid%Re (GZero%iR0 (ii2))))
 
-         call bcuint(Y,dYdTau,dYdRe,ddY, &
-                     Grid%Tau(ii,GZero%iT0(ii2,iCRP),iCRP), &
-                     Grid%Tau(ii,GZero%iT1(ii2,iCRP),iCRP), &
-                     Grid%Re(ii,GZero%iR0(ii2,iCRP),iCRP), &
-                     Grid%Re(ii,GZero%iR1(ii2,iCRP),iCRP), &
-                     GZero%dT(ii2,iCRP),GZero%dR(ii2,iCRP),a1,a2,a3)
+         call bcuint(Y, dYdTau, dYdRe, ddY, &
+                     Grid%Tau(GZero%iT0(ii2)), Grid%Tau(GZero%iT1(ii2)), &
+                     Grid%Re(GZero%iR0(ii2)), Grid%Re(GZero%iR1(ii2)), &
+                     GZero%dT(ii2), GZero%dR(ii2), a1, a2, a3)
       else
          write(*,*) 'ERROR: Int_LUT_Common(): Invalid value for Ctrl%LUTIntSelm: ', &
                     Ctrl%LUTIntSelm

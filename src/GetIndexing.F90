@@ -647,7 +647,6 @@ subroutine cloud_indexing_logic_two_layer(Ctrl, SPixel, is_not_used_or_missing, 
 
    integer :: ii_x, ii_xj, ii_xi
    integer :: min_rho
-   integer :: i_chan
    integer :: n_chans
 
    n_chans = count(.not. is_not_used_or_missing)

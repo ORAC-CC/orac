@@ -131,52 +131,52 @@ subroutine Set_CRP_Solar(Ctrl, Ind, chan_to_ctrl_index, GZero, SAD_LUT, &
 
    ! Call functions to interpolate the arrays
 
-   call Int_LUT_TauSatSolAziRe(SAD_LUT%Rbd, Ind%NSolar, &
-           SAD_LUT%Grid, GZero, Ctrl, CRPOut(:, IRBd), dCRPOut(:,IRBd,:), &
-           IRBd, chan_to_ctrl_index, Ind%YSolar, status)
+   call Int_LUT_TauSatSolAziRe(SAD_LUT%Rbd, Ind%NSolar, SAD_LUT%Grid, GZero, &
+           Ctrl, CRPOut(:, IRBd), dCRPOut(:,IRBd,:), chan_to_ctrl_index, &
+           Ind%YSolar, status)
 
    if (Ctrl%Approach == AppCld2L) then
-      call Int_LUT_TauSolRe(SAD_LUT%Rfbd, Ind%NSolar, &
-              SAD_LUT%Grid, GZero, Ctrl, CRPOut(:,IRFBd), dCRPOut(:,IRFBd,:), &
-              IRFBd, chan_to_ctrl_index, Ind%YSolar,  status)
+      call Int_LUT_TauSolRe(SAD_LUT%Rfbd, Ind%NSolar, SAD_LUT%Grid, GZero, &
+              Ctrl, CRPOut(:,IRFBd), dCRPOut(:,IRFBd,:), chan_to_ctrl_index, &
+              Ind%YSolar,  status)
    end if
 
-   call Int_LUT_TauRe(SAD_LUT%Rfd, Ind%NSolar, &
-           SAD_LUT%Grid, GZero, Ctrl, CRPOut(:,IRFd), dCRPOut(:,IRFd,:), &
-           IRFd,chan_to_ctrl_index, Ind%YSolar,  status)
+   call Int_LUT_TauRe(SAD_LUT%Rfd, Ind%NSolar, SAD_LUT%Grid, GZero, &
+           Ctrl, CRPOut(:,IRFd), dCRPOut(:,IRFd,:), chan_to_ctrl_index, &
+           Ind%YSolar,  status)
 
-   call Int_LUT_TauSolRe(SAD_LUT%Tb, Ind%NSolar, &
-           SAD_LUT%Grid, GZero, Ctrl, CRPOut(:,ITB), dCRPOut(:,ITB,:), &
-           ITB, chan_to_ctrl_index, Ind%YSolar, status)
+   call Int_LUT_TauSolRe(SAD_LUT%Tb, Ind%NSolar, SAD_LUT%Grid, GZero, &
+           Ctrl, CRPOut(:,ITB), dCRPOut(:,ITB,:), chan_to_ctrl_index, &
+           Ind%YSolar, status)
 
-   call Int_LUT_TauSatReOnSol(SAD_LUT%Tb, Ind%NSolar, &
-           SAD_LUT%Grid, GZero, Ctrl, CRPOut(:,ITB_u), dCRPOut(:,ITB_u,:), &
-           ITB, chan_to_ctrl_index, Ind%YSolar, status)
+   call Int_LUT_TauSatReOnSol(SAD_LUT%Tb, Ind%NSolar, SAD_LUT%Grid, GZero, &
+           Ctrl, CRPOut(:,ITB_u), dCRPOut(:,ITB_u,:), chan_to_ctrl_index, &
+           Ind%YSolar, status)
 
    call Int_LUT_TauSolRe(SAD_LUT%Tfbd, Ind%NSolar, &
            SAD_LUT%Grid, GZero, Ctrl, CRPOut(:,ITFbd), dCRPOut(:,ITFBd,:), &
-           ITFBd, chan_to_ctrl_index, Ind%YSolar, status)
+           chan_to_ctrl_index, Ind%YSolar, status)
 
     if (Ctrl%Approach == AppCld2L) then
-       call Int_LUT_TauSatReOnSol(SAD_LUT%Tfbd, Ind%NSolar, &
-               SAD_LUT%Grid, GZero, Ctrl, CRPOut(:,ITFbd_u), dCRPOut(:,ITFBd_u,:), &
-               ITFBd, chan_to_ctrl_index, Ind%YSolar, status)
+       call Int_LUT_TauSatReOnSol(SAD_LUT%Tfbd, Ind%NSolar, SAD_LUT%Grid, GZero, &
+               Ctrl, CRPOut(:,ITFbd_u), dCRPOut(:,ITFBd_u,:), chan_to_ctrl_index, &
+               Ind%YSolar, status)
     end if
 
    ! See detailed description of Ctrl%get_T_dv_from_T_0d in ReadDriver.F90
    if (.not. Ctrl%get_T_dv_from_T_0d) then
-      call Int_LUT_TauSatRe(SAD_LUT%Td, Ind%NSolar, &
-              SAD_LUT%Grid, GZero, Ctrl, CRPOut(:,ITd), dCRPOut(:,ITd,:), &
-              ITd, chan_to_ctrl_index, Ind%YSolar, status)
+      call Int_LUT_TauSatRe(SAD_LUT%Td, Ind%NSolar, SAD_LUT%Grid, GZero, &
+              Ctrl, CRPOut(:,ITd), dCRPOut(:,ITd,:), chan_to_ctrl_index, &
+              Ind%YSolar, status)
    else
-      call Int_LUT_TauSatRe(SAD_LUT%Tfbd, Ind%NSolar, &
-              SAD_LUT%Grid, GZero, Ctrl, CRPOut(:,ITd), dCRPOut(:,ITd,:), &
-              ITd, chan_to_ctrl_index, Ind%YSolar, status)
+      call Int_LUT_TauSatRe(SAD_LUT%Tfbd, Ind%NSolar, SAD_LUT%Grid, GZero, &
+              Ctrl, CRPOut(:,ITd), dCRPOut(:,ITd,:), chan_to_ctrl_index, &
+              Ind%YSolar, status)
    end if
 
-   call Int_LUT_TauRe(SAD_LUT%Tfd, Ind%NSolar, &
-           SAD_LUT%Grid, GZero, Ctrl, CRPOut(:,ITFd), dCRPOut(:,ITFd,:), &
-           ITFd, chan_to_ctrl_index, Ind%YSolar, status)
+   call Int_LUT_TauRe(SAD_LUT%Tfd, Ind%NSolar, SAD_LUT%Grid, GZero, &
+           Ctrl, CRPOut(:,ITFd), dCRPOut(:,ITFd,:), chan_to_ctrl_index, &
+           Ind%YSolar, status)
 
 #ifdef BKP
 !   write(*,*) ' SetCRPSolar: Tb values (2 channels only)'

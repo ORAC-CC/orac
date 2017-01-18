@@ -678,15 +678,15 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
         GZero, stat)
    if (stat /= 0) go to 99 ! Terminate processing this pixel
 
-      ! Output diffuse fraction so surface reflectance can be calculated by users
+   ! Output diffuse fraction so surface reflectance can be calculated by users
    if (Ctrl%Approach == AppAerSw) then
       call Int_LUT_TauSolRe(SAD_LUT(1)%TFBd, SPixel%Ind%NSolar, SAD_LUT(1)%Grid, &
-           GZero, Ctrl, T_0d, d_T_0d, ITFBd, &
-           SPixel%spixel_y_solar_to_ctrl_y_index, SPixel%Ind%YSolar, stat)
+           GZero, Ctrl, T_0d, d_T_0d, SPixel%spixel_y_solar_to_ctrl_y_index, &
+           SPixel%Ind%YSolar, stat)
       if (stat /= 0) go to 99 ! Terminate processing this pixel
       call Int_LUT_TauSolRe(SAD_LUT(1)%TB, SPixel%Ind%NSolar, SAD_LUT(1)%Grid, &
-           GZero, Ctrl, T_00, d_T_00, ITB, &
-           SPixel%spixel_y_solar_to_ctrl_y_index, SPixel%Ind%YSolar, stat)
+           GZero, Ctrl, T_00, d_T_00, SPixel%spixel_y_solar_to_ctrl_y_index, &
+           SPixel%Ind%YSolar, stat)
       if (stat /= 0) go to 99 ! Terminate processing this pixel
 
       T_all = T_0d + T_00
@@ -707,8 +707,8 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
    if ((Ctrl%Approach == AppCld1L .or. Ctrl%Approach == AppCld2L) .and. &
        SPixel%Ind%NSolar > 0) then
       call Int_LUT_TauSolRe(SAD_LUT(1)%Rfbd, SPixel%Ind%NSolar, SAD_LUT(1)%Grid, &
-           GZero, Ctrl, CRP, d_CRP, IRfbd, &
-           SPixel%spixel_y_solar_to_ctrl_y_index, SPixel%Ind%YSolar, stat)
+           GZero, Ctrl, CRP, d_CRP, SPixel%spixel_y_solar_to_ctrl_y_index, &
+           SPixel%Ind%YSolar, stat)
       if (stat /= 0) go to 99 ! Terminate processing this pixel
 
       Diag%cloud_albedo(1:SPixel%Ind%NSolar) = CRP
@@ -724,8 +724,8 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
    if ((Ctrl%Approach == AppCld1L .or. Ctrl%Approach == AppCld2L) .and. &
        SPixel%Ind%NThermal > 0 .and. any(SPixel%X == ITau) .and. any(SPixel%X == IRe)) then
       call Int_LUT_TauSatRe(SAD_LUT(1)%Em, SPixel%Ind%NThermal, SAD_LUT(1)%Grid, &
-         GZero, Ctrl, CRP_thermal, d_CRP_thermal, IEm, &
-         SPixel%spixel_y_thermal_to_ctrl_y_index, SPixel%Ind%YThermal, stat)
+         GZero, Ctrl, CRP_thermal, d_CRP_thermal, SPixel%spixel_y_thermal_to_ctrl_y_index, &
+         SPixel%Ind%YThermal, stat)
       if (stat /= 0) go to 99 ! Terminate processing this pixel
 
       where (CRP_thermal .lt. 0.)
@@ -759,7 +759,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
    ! Evaluate AOD at 870 nm
    if (Ctrl%Approach == AppAerOx .or. Ctrl%Approach == AppAerSw) then
       call Int_LUT_Re(SAD_LUT(1)%BextRat, 1, SAD_LUT(1)%Grid, GZero, Ctrl, &
-           BextRat, d_BextRat, iBextRat, stat)
+           BextRat, d_BextRat, stat)
       if (stat /= 0) go to 99
 
       Diag%aot870 = SPixel%Xn(iTau) + log10(BextRat(1))

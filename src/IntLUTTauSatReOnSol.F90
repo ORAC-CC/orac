@@ -26,7 +26,7 @@
 ! F      real array In          Function to be interpolated, i.e. array of
 !                               LUT values with dimensions (channels, Tau,
 !                               SolZen, Re).
-! NChans int         In          Number of channels in F
+! NChans int        In          Number of channels in F
 ! Grid   struct     In          LUT Grid data: see SADLUT.F90
 !                               Includes the grid values in Tau, Re, SolZen,
 !                               no. of values and step size
@@ -41,7 +41,6 @@
 !                               channels.
 ! FGrads real array Both        Interpolated gradient values in Tau and Re
 !                               for all channels.
-! iCRP   int        In           Index of cloud property to interpolate
 ! chan_to_ctrl_index             Indices of input chs within Ctrl arrays
 !        int array  In
 ! chan_to_spixel_index           Indices of input chs within SPixel arrays
@@ -54,6 +53,8 @@
 !    subroutines into Int_LUT_Common()
 ! 2015/01/13, AP: Switch to array-based channel indexing rather than using
 !    offsets.
+! 2017/01/17, GM: Changes related to simplification of the indexing of the LUT
+!    grid and the GZero parameters.
 !
 ! $Id: IntLUTTauSatRe.F90 2160 2014-05-22 16:53:08Z gmcgarragh $
 !
@@ -62,7 +63,7 @@
 !-------------------------------------------------------------------------------
 
 subroutine Int_LUT_TauSatReOnSol(F, NChans, Grid, GZero, Ctrl, FInt, FGrads, &
-     iCRP, chan_to_ctrl_index, chan_to_spixel_index, status)
+     chan_to_ctrl_index, chan_to_spixel_index, status)
 
    use Ctrl_m
    use GZero_m
@@ -90,7 +91,6 @@ subroutine Int_LUT_TauSatReOnSol(F, NChans, Grid, GZero, Ctrl, FInt, FGrads, &
                                            ! Gradients of F wrt Tau and Re at
                                            ! required Tau, Re values, (1 value
                                            ! per channel).
-   integer,                intent(in)   :: iCRP
    integer,                intent(in)   :: chan_to_ctrl_index(:)
                                            ! Indices for input chs wrt Ctrl
    integer,                intent(in)   :: chan_to_spixel_index(:)
@@ -109,32 +109,32 @@ subroutine Int_LUT_TauSatReOnSol(F, NChans, Grid, GZero, Ctrl, FInt, FGrads, &
 
    status = 0
 
-   ! Construct the input Int_LUT_Common(): Function values at four LUT points
+   ! Construct the input to Int_LUT_Common(): Function values at four LUT points
    ! around our X
    do i = 1, NChans
       ii = chan_to_ctrl_index(i)
       ii2 = chan_to_spixel_index(i)
 
-      T_index(-1) = GZero%iTm1(ii2,iCRP)
-      T_index( 0) = GZero%iT0 (ii2,iCRP)
-      T_index( 1) = GZero%iT1 (ii2,iCRP)
-      T_index( 2) = GZero%iTp1(ii2,iCRP)
-      R_index(-1) = GZero%iRm1(ii2,iCRP)
-      R_index( 0) = GZero%iR0 (ii2,iCRP)
-      R_index( 1) = GZero%iR1 (ii2,iCRP)
-      R_index( 2) = GZero%iRp1(ii2,iCRP)
+      T_index(-1) = GZero%iTm1(ii2)
+      T_index( 0) = GZero%iT0 (ii2)
+      T_index( 1) = GZero%iT1 (ii2)
+      T_index( 2) = GZero%iTp1(ii2)
+      R_index(-1) = GZero%iRm1(ii2)
+      R_index( 0) = GZero%iR0 (ii2)
+      R_index( 1) = GZero%iR1 (ii2)
+      R_index( 2) = GZero%iRp1(ii2)
 
       do j = iXm1, iXp1
          jj = T_index(j)
          do k = iXm1, iXp1
             kk = R_index(k)
-            G(i,j,k) = (GZero%SaSo1 (ii2,iCRP)  * F(ii,jj,GZero%iSaZSoZ0(ii2,iCRP),kk)) + &
-                       (GZero%dSaZSoZ(ii2,iCRP) * F(ii,jj,GZero%iSaZSoZ1(ii2,iCRP),kk))
+            G(i,j,k) = (GZero%SaSo1 (ii2)  * F(ii,jj,GZero%iSaZSoZ0(ii2),kk)) + &
+                       (GZero%dSaZSoZ(ii2) * F(ii,jj,GZero%iSaZSoZ1(ii2),kk))
          end do
       end do
    end do
 
-   call Int_LUT_Common(Ctrl, NChans, iCRP, Grid, GZero, G, FInt, FGrads, &
+   call Int_LUT_Common(Ctrl, NChans, Grid, GZero, G, FInt, FGrads, &
                        chan_to_ctrl_index, chan_to_spixel_index, status)
 
 end subroutine Int_LUT_TauSatReOnSol

@@ -611,7 +611,7 @@ subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, i_layer, RTM_Pc, RTM_Pc2, X, GZero, &
    real                               :: d_Rs(SPixel%Ind%NSolar,5)
 
    ! Auxilary variables
-   real, dimension(SPixel%Ind%NSolar) :: a, b, c, c_0d, c_dv, c_dd, d_dv, e, &
+   real, dimension(SPixel%Ind%NSolar) :: a, b, c, c_0d, c_dv, d_dv, e, &
                                          e_0d, e_dv, e_dd, e_l
    real                               :: g, h
 

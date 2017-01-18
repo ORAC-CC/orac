@@ -8,6 +8,8 @@
 ! 2014/10/10, GM: Original version
 ! 2015/01/09, CP: Added Rfbd.
 ! 2015/10/19, GM: Added Bext for Ctrl%do_CTP_correction.
+! 2017/01/17, GM: Eliminate the unnecessary indexing of the LUT grid wrt LUT
+!    type and channel.
 !
 ! $Id: AllocSADLUT.F90 2293 2014-08-13 08:56:10Z gmcgarragh $
 !
@@ -44,41 +46,11 @@ subroutine Alloc_LUT_Grid(Ctrl, LUT_Grid)
    type(Ctrl_t),     intent(in)  :: Ctrl
    type(LUT_Grid_t), intent(out) :: LUT_Grid
 
-   allocate(LUT_Grid%MaxTau(Ctrl%Ind%Ny,maxcrprops))
-   allocate(LUT_Grid%MinTau(Ctrl%Ind%Ny,maxcrprops))
-   allocate(LUT_Grid%dTau(Ctrl%Ind%Ny,maxcrprops))
-   allocate(LUT_Grid%nTau(Ctrl%Ind%Ny,maxcrprops))
-   LUT_Grid%nTau=LUT_Grid%nmaxtau
-
-   allocate(LUT_Grid%MaxRe(Ctrl%Ind%Ny,maxcrprops))
-   allocate(LUT_Grid%MinRe(Ctrl%Ind%Ny,maxcrprops))
-   allocate(LUT_Grid%dRe(Ctrl%Ind%Ny,maxcrprops))
-   allocate(LUT_Grid%nRe(Ctrl%Ind%Ny,maxcrprops))
-   LUT_Grid%nRe=LUT_Grid%nmaxre
-
-   allocate(LUT_Grid%MaxSatzen(Ctrl%Ind%Ny,maxcrprops))
-   allocate(LUT_Grid%MinSatzen(Ctrl%Ind%Ny,maxcrprops))
-   allocate(LUT_Grid%dSatzen(Ctrl%Ind%Ny,maxcrprops))
-   allocate(LUT_Grid%nSatzen(Ctrl%Ind%Ny,maxcrprops))
-   LUT_Grid%nSatzen=LUT_Grid%nmaxsatzen
-
-   allocate(LUT_Grid%MaxSolzen(Ctrl%Ind%Ny,maxcrprops))
-   allocate(LUT_Grid%MinSolzen(Ctrl%Ind%Ny,maxcrprops))
-   allocate(LUT_Grid%dSolzen(Ctrl%Ind%Ny,maxcrprops))
-   allocate(LUT_Grid%nSolzen(Ctrl%Ind%Ny,maxcrprops))
-   LUT_Grid%nSolzen=LUT_Grid%nmaxsolzen
-
-   allocate(LUT_Grid%MaxRelazi(Ctrl%Ind%Ny,maxcrprops))
-   allocate(LUT_Grid%MinRelazi(Ctrl%Ind%Ny,maxcrprops))
-   allocate(LUT_Grid%dRelazi(Ctrl%Ind%Ny,maxcrprops))
-   allocate(LUT_Grid%nRelazi(Ctrl%Ind%Ny,maxcrprops))
-   LUT_Grid%nRelazi=LUT_Grid%nmaxrelazi
-
-   allocate(LUT_Grid%Tau(Ctrl%Ind%Ny,LUT_Grid%nmaxtau,maxcrprops))
-   allocate(LUT_Grid%Re(Ctrl%Ind%Ny,LUT_Grid%nmaxre,maxcrprops))
-   allocate(LUT_Grid%Solzen(Ctrl%Ind%Ny,LUT_Grid%nmaxsolzen,maxcrprops))
-   allocate(LUT_Grid%Satzen(Ctrl%Ind%Ny,LUT_Grid%nmaxsatzen,maxcrprops))
-   allocate(LUT_Grid%Relazi(Ctrl%Ind%Ny,LUT_Grid%nmaxrelazi,maxcrprops))
+   allocate(LUT_Grid%Tau(LUT_Grid%nmaxtau))
+   allocate(LUT_Grid%Re(LUT_Grid%nmaxre))
+   allocate(LUT_Grid%Solzen(LUT_Grid%nmaxsolzen))
+   allocate(LUT_Grid%Satzen(LUT_Grid%nmaxsatzen))
+   allocate(LUT_Grid%Relazi(LUT_Grid%nmaxrelazi))
 
 end subroutine Alloc_LUT_Grid
 
@@ -120,8 +92,6 @@ subroutine Alloc_SAD_LUT(Ctrl, SAD_LUT)
    ! vary with channel number.
 
    allocate(SAD_LUT%Wavelength(Ctrl%Ind%Ny))
-
-   allocate(SAD_LUT%table_used_for_channel(Ctrl%Ind%Ny, maxcrprops))
 
    call Alloc_LUT_Grid(Ctrl, SAD_LUT%Grid)
 

@@ -156,7 +156,7 @@ subroutine Calc_Corrected_CTX(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Sy)
       call Set_GZero(SPixel%Xn(ITau), SPixel%Xn(IRe), Ctrl, SPixel, SAD_LUT, &
               GZero, status)
       call Int_LUT_TauRe(SAD_LUT%Bext, SPixel%Ind%NThermal, SAD_LUT%Grid, &
-              GZero, Ctrl, CRP_thermal, d_CRP_thermal, IBext, &
+              GZero, Ctrl, CRP_thermal, d_CRP_thermal, &
               SPixel%spixel_y_thermal_to_ctrl_y_index, SPixel%Ind%YThermal, status)
       call Deallocate_GZero(GZero)
 

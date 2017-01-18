@@ -6,17 +6,19 @@
 ! supporting routines.
 !
 ! History:
-! 2000/10/04, AS: original version
-! 2000/12/01, AS: Renamed Solzen variables to Solzen
+! 2000/10/04, AS: Original version
+! 2000/12/01, AS: Renamed Solzen variables to Solzen.
 ! 2001/01/12, AS: Changing main LUT arrays (RBd etc) to allocatable.
-! 2011/06/11, CP: removed references to maximum values and changed some
-!    variables to pointers values
-! 2013/12/12, MJ: makes LUTs more flexible wrt channel and properties
+! 2011/06/11, CP: Removed references to maximum values and changed some
+!    variables to pointers values.
+! 2013/12/12, MJ: Makes LUTs more flexible wrt channel and properties.
 ! 2014/01/12, GM: Increase nmaxre to 23 for the ice LUTs.
 ! 2014/01/16, GM: Added SAD_LUT%table_use* arrays.
 ! 2014/01/23, GM: Cleaned up the code.
 ! 2015/01/09, CP: Added Rfbd.
 ! 2015/10/19, GM: Added Bext.
+! 2017/01/17, GM: Eliminate the unnecessary indexing of the LUT grid wrt LUT
+!    type and channel.
 !
 ! $Id$
 !
@@ -37,38 +39,38 @@ module SAD_LUT_m
              Read_SAD_LUT
 
    type LUT_Grid_t
-      real,    pointer  :: MaxTau(:,:)    ! Optical depth grid max.
-      real,    pointer  :: MinTau(:,:)    !  - grid min
-      real,    pointer  :: dTau(:,:)      !  - grid spacing
-      integer, pointer  :: nTau(:,:)      !  - no. of gridpoints
-      real,    pointer  :: MaxRe(:,:)     ! Particle size grid max.
-      real,    pointer  :: MinRe(:,:)     !  - grid min
-      real,    pointer  :: dRe(:,:)       !  - grid spacing
-      integer, pointer  :: nRe(:,:)       !  - no. of gridpoints
-      real,    pointer  :: MaxSatzen(:,:) ! Satellite angle grid max.
-      real,    pointer  :: MinSatzen(:,:) !  - grid min
-      real,    pointer  :: dSatzen(:,:)   !  - grid spacing
-      integer, pointer  :: nSatzen(:,:)   !  - no. of gridpoints
-      real,    pointer  :: MaxSolzen(:,:) ! Solar angle grid max.
-      real,    pointer  :: MinSolzen(:,:) !  - grid min
-      real,    pointer  :: dSolzen(:,:)   !  - grid spacing
-      integer, pointer  :: nSolzen(:,:)   !  - no. of gridpoints
-      real,    pointer  :: MaxRelazi(:,:) ! Relative azimuth grid max.
-      real,    pointer  :: MinRelazi(:,:) !  - grid min
-      real,    pointer  :: dRelazi(:,:)   !  - grid spacing
-      integer, pointer  :: nRelazi(:,:)   !  - no. of gridpoints
+      integer :: nmaxtau    = 20
+      integer :: nmaxre     = 23
+      integer :: nmaxsolzen = 20
+      integer :: nmaxsatzen = 20
+      integer :: nmaxrelazi = 20
 
-      real,    pointer  :: Tau(:,:,:)
-      real,    pointer  :: Re(:,:,:)
-      real,    pointer  :: Solzen(:,:,:)
-      real,    pointer  :: Satzen(:,:,:)
-      real,    pointer  :: Relazi(:,:,:)
+      real     :: MaxTau    ! Optical depth grid max.
+      real     :: MinTau    !  - grid min
+      real     :: dTau      !  - grid spacing
+      integer  :: nTau      !  - no. of gridpoints
+      real     :: MaxRe     ! Particle size grid max.
+      real     :: MinRe     !  - grid min
+      real     :: dRe       !  - grid spacing
+      integer  :: nRe       !  - no. of gridpoints
+      real     :: MaxSatzen ! Satellite angle grid max.
+      real     :: MinSatzen !  - grid min
+      real     :: dSatzen   !  - grid spacing
+      integer  :: nSatzen   !  - no. of gridpoints
+      real     :: MaxSolzen ! Solar angle grid max.
+      real     :: MinSolzen !  - grid min
+      real     :: dSolzen   !  - grid spacing
+      integer  :: nSolzen   !  - no. of gridpoints
+      real     :: MaxRelazi ! Relative azimuth grid max.
+      real     :: MinRelazi !  - grid min
+      real     :: dRelazi   !  - grid spacing
+      integer  :: nRelazi   !  - no. of gridpoints
 
-      integer          :: nmaxtau    = 20
-      integer          :: nmaxre     = 23
-      integer          :: nmaxsolzen = 20
-      integer          :: nmaxsatzen = 20
-      integer          :: nmaxrelazi = 20
+      real, pointer  :: Tau(:)
+      real, pointer  :: Re(:)
+      real, pointer  :: Solzen(:)
+      real, pointer  :: Satzen(:)
+      real, pointer  :: Relazi(:)
    end type LUT_Grid_t
 
 
@@ -76,12 +78,6 @@ module SAD_LUT_m
       integer          :: Index         ! Reference index
       character(128)   :: Name          ! Optional class name
       real,    pointer :: Wavelength(:) ! Channel wavelengths
-
-      logical, pointer :: table_used_for_channel(:, :)
-
-      logical          :: table_uses_solzen(maxcrprops)
-      logical          :: table_uses_relazi(maxcrprops)
-      logical          :: table_uses_satzen(maxcrprops)
 
       type(LUT_Grid_t) :: Grid
 
