@@ -132,9 +132,6 @@ module SAD_LUT_m
 
 contains
 
-! Here we use a C preprocessor include instead of a Fortran include since
-! ReadLUT.F90 contains C preprocessor statements but the C preprocessor won't go
-! into Fortran included files.
 #include "ReadSADLUT.F90"
 #include "AllocSADLUT.F90"
 #include "DeallocSADLUT.F90"

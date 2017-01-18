@@ -11,6 +11,8 @@
 ! 2016/05/02, AP: Add routines to read 1D BextRat tables.
 ! 2017/01/17, GM: Eliminate the unnecessary indexing of the LUT grid wrt LUT
 !    type and channel.
+! 2017/01/18, GM: Add checks to make sure that all the LUTs loaded have
+!    grids consistent in dimension size, spacing and vertex values.
 !
 ! $Id$
 !
@@ -35,8 +37,8 @@
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
-subroutine grid_dimension_read(filename, n_name, d_name, v_name, lun, &
-                               nTau, dTau, MinTau, MaxTau, Tau)
+subroutine grid_dimension_read(filename, n_name, d_name, v_name, lun, nMax, &
+                               n, d, Min, Max, x)
 
    implicit none
 
@@ -46,32 +48,67 @@ subroutine grid_dimension_read(filename, n_name, d_name, v_name, lun, &
    character(*), intent(in)    :: d_name
    character(*), intent(in)    :: v_name
    integer,      intent(in)    :: lun
-   integer,      intent(out)   :: nTau
-   real,         intent(out)   :: dTau
-   real,         intent(out)   :: MaxTau
-   real,         intent(out)   :: MinTau
-   real,         intent(inout) :: Tau(:)
+   integer,      intent(in)    :: nMax
+   integer,      intent(out)   :: n
+   real,         intent(out)   :: d
+   real,         intent(out)   :: Max
+   real,         intent(out)   :: Min
+   real,         intent(inout) :: x(:)
 
    ! Local variables
    integer :: i
    integer :: iostat
+   integer :: n2
+   real    :: d2
+   real    :: x2(NMax)
 
-   read(lun, *, iostat=iostat) nTau, dTau
+   read(lun, *, iostat=iostat) n2, d2
    if (iostat .ne. 0) then
       write(*,*) 'ERROR: grid_dimension_read(): Error reading ', trim(n_name), &
                  ' and ', trim(d_name), ' from SAD LUT file: ', trim(filename)
       stop LUTFileReadErr
    end if
 
-   read(lun, *, iostat=iostat) (Tau(i), i=1, nTau)
+   if (n2 .gt. NMax) then
+      write(*,*) 'ERROR: grid_dimension_read(): LUT grid dimension size for ', &
+                 trim(v_name), ' is greater than maximum size allowed'
+      stop LUTFileReadErr
+   end if
+
+   read(lun, *, iostat=iostat) (x2(i), i=1, n2)
    if (iostat .ne. 0) then
       write(*,*) 'ERROR: grid_dimension_read(): Error reading ', trim(v_name), &
                  ' from SAD LUT file: ', trim(filename)
       stop LUTFileReadErr
    end if
 
-   MinTau = Tau(1)
-   MaxTau = Tau(nTau)
+   if (n .gt. 0) then
+      ! This dimension has already been read from a previous LUT
+      if (n2 .ne. n) then
+         write(*,*) 'ERROR: grid_dimension_read(): LUT grid dimension size for ', &
+                    trim(v_name), ' is inconsistent between LUT files'
+         stop LUTFileReadErr
+      end if
+
+      if (d2 .ne. d) then
+         write(*,*) 'ERROR: grid_dimension_read(): LUT grid dimension spacing for ', &
+                    trim(v_name), ' is inconsistent between LUT files'
+         stop LUTFileReadErr
+      end if
+
+      if (any(x2(1:n)  .ne. x(1:n))) then
+         write(*,*) 'ERROR: grid_dimension_read(): LUT grid dimension vertices for ', &
+                    trim(v_name), ' are inconsistent between LUT files'
+         stop LUTFileReadErr
+      end if
+   else
+      ! This is the first time this dimension has been encountered
+      n   = n2
+      d   = d2
+      x   = x2
+      Min = x2(1)
+      Max = x2(n2)
+   end if
 
 end subroutine grid_dimension_read
 
@@ -99,48 +136,48 @@ subroutine read_grid_dimensions(filename, lun, SAD_LUT, has_sol_zen, &
    implicit none
 
    ! Argument declarations
-   character(*),    intent(in)           :: filename
-   integer,         intent(in)           :: lun
-   type(SAD_LUT_t), intent(inout)        :: SAD_LUT
-   logical,         intent(in)           :: has_sol_zen
-   logical,         intent(in)           :: has_sat_zen
-   logical,         intent(in)           :: has_rel_azi
+   character(*),    intent(in)    :: filename
+   integer,         intent(in)    :: lun
+   type(SAD_LUT_t), intent(inout) :: SAD_LUT
+   logical,         intent(in)    :: has_sol_zen
+   logical,         intent(in)    :: has_sat_zen
+   logical,         intent(in)    :: has_rel_azi
 
    ! Read the Tau dimension
    call grid_dimension_read(filename, 'nTau', 'dTau', 'Tau', lun, &
-                            SAD_LUT%Grid%nTau, SAD_LUT%Grid%dTau, &
-                            SAD_LUT%Grid%MinTau, SAD_LUT%Grid%MaxTau, &
-                            SAD_LUT%Grid%Tau)
+                            SAD_LUT%Grid%NMaxTau, SAD_LUT%Grid%nTau, &
+                            SAD_LUT%Grid%dTau, SAD_LUT%Grid%MinTau, &
+                            SAD_LUT%Grid%MaxTau, SAD_LUT%Grid%Tau)
 
    if (has_sat_zen) then
       ! Read the Satzen dimension
       call grid_dimension_read(filename, 'nSatzen', 'dSatzen', 'Satzen', lun, &
-                               SAD_LUT%Grid%nSatzen, SAD_LUT%Grid%dSatzen, &
-                               SAD_LUT%Grid%MinSatzen, SAD_LUT%Grid%MaxSatzen, &
-                               SAD_LUT%Grid%Satzen)
+                               SAD_LUT%Grid%NMaxSatZen, SAD_LUT%Grid%nSatzen, &
+                               SAD_LUT%Grid%dSatzen, SAD_LUT%Grid%MinSatzen, &
+                               SAD_LUT%Grid%MaxSatzen, SAD_LUT%Grid%Satzen)
    end if
 
    if (has_sol_zen) then
       ! Read the Solzen dimension
       call grid_dimension_read(filename, 'nSolzen', 'dSolzen', 'Solzen', lun, &
-                               SAD_LUT%Grid%nSolzen, SAD_LUT%Grid%dSolzen, &
-                               SAD_LUT%Grid%MinSolzen, SAD_LUT%Grid%MaxSolzen, &
-                               SAD_LUT%Grid%Solzen)
+                               SAD_LUT%Grid%NMaxSolZen, SAD_LUT%Grid%nSolzen, &
+                               SAD_LUT%Grid%dSolzen, SAD_LUT%Grid%MinSolzen, &
+                               SAD_LUT%Grid%MaxSolzen, SAD_LUT%Grid%Solzen)
    end if
 
    if (has_rel_azi) then
       ! Read the Relazi dimension
       call grid_dimension_read(filename, 'nRelazi', 'dRelazi', 'Relazi', lun, &
-                               SAD_LUT%Grid%nRelazi, SAD_LUT%Grid%dRelazi, &
-                               SAD_LUT%Grid%MinRelazi, SAD_LUT%Grid%MaxRelazi, &
-                               SAD_LUT%Grid%Relazi)
+                               SAD_LUT%Grid%NMaxRelAzi, SAD_LUT%Grid%nRelazi, &
+                               SAD_LUT%Grid%dRelazi, SAD_LUT%Grid%MinRelazi, &
+                               SAD_LUT%Grid%MaxRelazi, SAD_LUT%Grid%Relazi)
    end if
 
    ! Read the Re dimension
    call grid_dimension_read(filename, 'nRe', 'dRe', 'Re', lun, &
-                            SAD_LUT%Grid%nRe, SAD_LUT%Grid%dRe, &
-                            SAD_LUT%Grid%MinRe, SAD_LUT%Grid%MaxRe, &
-                            SAD_LUT%Grid%Re)
+                            SAD_LUT%Grid%NMaxRe, SAD_LUT%Grid%nRe, &
+                            SAD_LUT%Grid%dRe, SAD_LUT%Grid%MinRe, &
+                            SAD_LUT%Grid%MaxRe, SAD_LUT%Grid%Re)
 
 end subroutine read_grid_dimensions
 
@@ -717,6 +754,14 @@ subroutine Read_SAD_LUT(Ctrl, SAD_Chan, SAD_LUT, i_layer)
    ! LUT file read function. Just pass the current SAD_LUT struct, rather than
    ! the whole array.
    call Alloc_SAD_LUT(Ctrl, SAD_LUT)
+
+   ! We initialize these to zero to identify during the reading process if these
+   ! dimensions have been read yet as not all LUTs have all dimensions.
+   SAD_LUT%Grid%nTau    = 0
+   SAD_LUT%Grid%nRe     = 0
+   SAD_LUT%Grid%nSatzen = 0
+   SAD_LUT%Grid%nSolzen = 0
+   SAD_LUT%Grid%nRelazi = 0
 
    do i=1, Ctrl%Ind%Ny
       ! Generate channel file name from Ctrl struct info. This sets the channel
