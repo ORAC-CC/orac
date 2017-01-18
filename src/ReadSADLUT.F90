@@ -787,14 +787,8 @@ subroutine Read_SAD_LUT(Ctrl, SAD_Chan, SAD_LUT, i_layer)
          ! Read the Rbd LUT from the Rbd files
          LUT_File = create_sad_filename(Ctrl, chan_num, i_layer, 'RBD')
          call Read_LUT_both(Ctrl, LUT_file, i, SAD_LUT, IRbd, "Rbd", &
-                            SAD_LUT%Rbd)
-
-         ! Read the Rd file into the Rfbd table.  This is a temporary solution
-         ! until the Rfbd table becomes available in the Rbd file.  Rd is close
-         ! but not the same as Rfbd.
-         LUT_File = create_sad_filename(Ctrl, chan_num, i_layer, 'RD')
-         call Read_LUT_sol(Ctrl, LUT_file, i, SAD_LUT, IRfbd, "Rd", &
-                           SAD_LUT%Rfbd)
+                            SAD_LUT%Rbd, i_lut2 = IRfbd, name2 = "Rfbd", &
+                            values2 = SAD_LUT%Rfbd)
 
          ! Read the Tb file LUT from the Tb files
          LUT_File = create_sad_filename(Ctrl, chan_num, i_layer, 'TB')
