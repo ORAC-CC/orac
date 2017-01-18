@@ -201,12 +201,12 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
 
    ! Call Set_GZero (results used in both FM_Thermal and FM_Solar).
    call Allocate_GZero(GZero(1), SPixel%Ind%Ny)
-   call Set_GZero(X(iTau), X(iRe), Ctrl, SPixel, SAD_LUT(1), GZero(1), status)
+   call Set_GZero(X(ITau), X(IRe), Ctrl, SPixel, SAD_LUT(1), GZero(1), status)
 
    ! If the two layer retrieval is active call Set_GZero for the second layer.
    if (Ctrl%Approach == AppCld2L) then
       call Allocate_GZero(GZero(2), SPixel%Ind%Ny)
-      call Set_GZero(X(iTau2), X(iRe2), Ctrl, SPixel, SAD_LUT(2), GZero(2), status)
+      call Set_GZero(X(ITau2), X(IRe2), Ctrl, SPixel, SAD_LUT(2), GZero(2), status)
    end if
 
    ! Evaluate long and short wave transmittance values (depending on whether it
@@ -223,21 +223,21 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
       ! Interpol_Thermal returns transmittances in the LW part of RTM_Pc.
       select case (Ctrl%RTMIntSelm)
       case (RTMIntMethLinear)
-         call Interpol_Thermal(Ctrl, SPixel, X(iPc), &
+         call Interpol_Thermal(Ctrl, SPixel, X(IPc), &
                                SAD_therm, RTM_Pc(1), status)
          ! If the two layer retrieval is active call Interpol_Thermal for the
          ! second layer.
          if (Ctrl%Approach == AppCld2L) then
-            call Interpol_Thermal(Ctrl, SPixel, X(iPc2), &
+            call Interpol_Thermal(Ctrl, SPixel, X(IPc2), &
                                   SAD_therm, RTM_Pc(2), status)
          end if
       case (RTMIntMethSpline)
-         call Interpol_Thermal_spline(Ctrl, SPixel, X(iPc), &
+         call Interpol_Thermal_spline(Ctrl, SPixel, X(IPc), &
                                       SAD_therm, RTM_Pc(1), status)
          ! If the two layer retrieval is active call Interpol_Thermal for the
          ! second layer.
          if (Ctrl%Approach == AppCld2L) then
-            call Interpol_Thermal_spline(Ctrl, SPixel, X(iPc2), &
+            call Interpol_Thermal_spline(Ctrl, SPixel, X(IPc2), &
                                          SAD_therm, RTM_Pc(2), status)
          end if
       case (RTMIntMethNone)
@@ -265,14 +265,14 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
       ! Interpol_Solar populates the SW part of RTM_Pc.
       select case (Ctrl%RTMIntSelm)
       case (RTMIntMethLinear)
-         call Interpol_Solar(Ctrl, SPixel, X(iPc), RTM_Pc(1), status)
+         call Interpol_Solar(Ctrl, SPixel, X(IPc), RTM_Pc(1), status)
          if (Ctrl%Approach == AppCld2L) then
-            call Interpol_Solar(Ctrl, SPixel, X(iPc2), RTM_Pc(2), status)
+            call Interpol_Solar(Ctrl, SPixel, X(IPc2), RTM_Pc(2), status)
          end if
       case (RTMIntMethSpline)
-         call Interpol_Solar_spline(Ctrl, SPixel, X(iPc), RTM_Pc(1), status)
+         call Interpol_Solar_spline(Ctrl, SPixel, X(IPc), RTM_Pc(1), status)
          if (Ctrl%Approach == AppCld2L) then
-            call Interpol_Solar_spline(Ctrl, SPixel, X(iPc2), RTM_Pc(2), status)
+            call Interpol_Solar_spline(Ctrl, SPixel, X(IPc2), RTM_Pc(2), status)
          end if
       case (RTMIntMethNone)
       case default

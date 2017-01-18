@@ -239,7 +239,7 @@ subroutine Get_State(mode, i, Ctrl, SPixel, flag, X, status, Err)
       if (status == 0 .and. present(Err)) &
            Err(i,i) = err_temp * err_temp * Scale2
 
-   case (SelmAUX) ! Draw from auxilliary input information
+   case (SelmAux) ! Draw from auxilliary input information
       if (i == ITs) then ! Surface temperature
          ! Error setting could be much more sophisticated. The current scheme
          ! takes no account of relative proportions of land/sea in the

@@ -545,7 +545,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
       ! each time since (a) FM might also write to it and (b) the loop may
       ! exit early if convergence is reached, leaving the file state uncertain.
 #ifdef BKP
-         if (Ctrl%Bkpl >= Bkpl_InvertMarquardt_1) then
+         if (Ctrl%Bkpl >= BkpL_InvertMarquardt_1) then
             call Find_Lun(bkp_lun)
             open(unit=bkp_lun,      &
                  file=Ctrl%FID%Bkp, &
@@ -559,7 +559,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
                write(bkp_lun,'(/,a,i2)')'Invert_Marquardt Iteration ',iter
                write(bkp_lun,'(2x,a,5(f9.3,1x))')     'State:        ',Xplus_dX
 
-               if (Ctrl%Bkpl >= Bkpl_InvertMarquardt_2) then
+               if (Ctrl%Bkpl >= BkpL_InvertMarquardt_2) then
                   write(bkp_lun,'(2x,a,11(f9.3,1x))') 'Y:            ',Y
                   write(bkp_lun,'(2x,a,e11.3)')      'alpha:          ', alpha
                   write(bkp_lun,'(2x,a,5(f9.3,1x))')  'delta_X:      ', delta_X
@@ -568,7 +568,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
                   write(bkp_lun,'(2x,a,f9.3,11x,f9.3)') 'delta J, J0:  ', &
                         delta_J/SPixel%Ind%Ny, J0/SPixel%Ind%Ny
 
-                  if (Ctrl%Bkpl >= Bkpl_InvertMarquardt_3) then
+                  if (Ctrl%Bkpl >= BkpL_InvertMarquardt_3) then
                      write(bkp_lun,'(2x,a,5(e11.3,1x))')  'Xdiff:        ',&
                            Xdiff  / Ctrl%Invpar%XScale(SPixel%X)
                      write(bkp_lun,'(2x,a,11(e11.3,1x))') 'Ydiff:        ',Ydiff
@@ -680,11 +680,11 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
 
    ! Output diffuse fraction so surface reflectance can be calculated by users
    if (Ctrl%Approach == AppAerSw) then
-      call Int_LUT_TauSolRe(SAD_LUT(1)%TFBd, SPixel%Ind%NSolar, SAD_LUT(1)%Grid, &
+      call Int_LUT_TauSolRe(SAD_LUT(1)%Tfbd, SPixel%Ind%NSolar, SAD_LUT(1)%Grid, &
            GZero, Ctrl, T_0d, d_T_0d, SPixel%spixel_y_solar_to_ctrl_y_index, &
            SPixel%Ind%YSolar, stat)
       if (stat /= 0) go to 99 ! Terminate processing this pixel
-      call Int_LUT_TauSolRe(SAD_LUT(1)%TB, SPixel%Ind%NSolar, SAD_LUT(1)%Grid, &
+      call Int_LUT_TauSolRe(SAD_LUT(1)%Tb, SPixel%Ind%NSolar, SAD_LUT(1)%Grid, &
            GZero, Ctrl, T_00, d_T_00, SPixel%spixel_y_solar_to_ctrl_y_index, &
            SPixel%Ind%YSolar, stat)
       if (stat /= 0) go to 99 ! Terminate processing this pixel
@@ -762,10 +762,10 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
            BextRat, d_BextRat, stat)
       if (stat /= 0) go to 99
 
-      Diag%aot870 = SPixel%Xn(iTau) + log10(BextRat(1))
+      Diag%aot870 = SPixel%Xn(ITau) + log10(BextRat(1))
 
-      Diag%aot870_uncertainty = Spixel%Sn(iTau,iTau) + &
-           (d_BextRat(1) / (BextRat(1) * log(10.0)))**2 * SPixel%Sn(iRe,iRe)
+      Diag%aot870_uncertainty = Spixel%Sn(ITau,ITau) + &
+           (d_BextRat(1) / (BextRat(1) * log(10.0)))**2 * SPixel%Sn(IRe,IRe)
    end if
 
    call Deallocate_GZero(GZero)
@@ -818,7 +818,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
          end if
          write(bkp_lun,'(2x,a,5(f9.3,1x))') 'State:        ',SPixel%Xn
 
-         if (Ctrl%Bkpl >= Bkpl_InvertMarquardt_2) then
+         if (Ctrl%Bkpl >= BkpL_InvertMarquardt_2) then
             write(bkp_lun,*)'Y:            ', Y
             write(bkp_lun,'(2x,a,11(f9.3,1x))')'Y-Ym:         ', &
                   Diag%YmFit(1:SPixel%Ind%Ny)

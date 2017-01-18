@@ -1146,11 +1146,11 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       stop error_stop_code
    end select
 
-   ! T_dv (or TD using the old naming convention) is not correctly produced in
+   ! T_dv (or Td using the old naming convention) is not correctly produced in
    ! either RAL's or GT's LUT code.  It should approach zero as the optical
    ! thickness approaches zero as scattering is required to scatter diffuse
    ! radiation into the satellite viewing angle beam.  In the current LUTs it
-   ! approaches unity instead.  Analogously, T_0d (or TFBD using the old naming
+   ! approaches unity instead.  Analogously, T_0d (or Tfbd using the old naming
    ! convention) must also approach zero as the optical thickness approaches
    ! zero since scattering is required to scatter radiation out of the beam to
    ! produce diffuse radiation.  In this case the LUTs are correct and since

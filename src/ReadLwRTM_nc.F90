@@ -112,7 +112,7 @@ subroutine Read_LwRTM_nc(Ctrl, RTM)
    ! etc are explicitly written as real(4) in order to reduce the file size.
 
    integer                :: ncid, chan_found, i, j
-   character(Instnamelen) :: platform, sensor, instname
+   character(InstNameLen) :: platform, sensor, instname
    integer, allocatable   :: index(:), ChanID(:)
 !  real(4), allocatable   :: WvNumber(:)
 

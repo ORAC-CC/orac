@@ -6,10 +6,10 @@
 !
 ! Description and Algorithm details:
 ! Takes the SAD LUT array of look up table values and interpolates the arrays
-! of RBd, TB etc from the LUT grid to the current point in the multi-spectral
+! of Rbd, Tb etc from the LUT grid to the current point in the multi-spectral
 ! image data.
 !
-! For each LUT array in SAD_LUT (i.e. TBd etc)
+! For each LUT array in SAD_LUT (i.e. Tbd etc)
 !    Pass GZero and SAD_LUT info to the appropriate interpolation routine
 !       (depending on the array dimensions) and interpolate the Solar channels.
 !
@@ -75,7 +75,7 @@
 !    offsets.
 ! 2015/10/21, GM: Removed interpolation for cloud albedo as it is now done
 !    elsewhere.
-! 2016/06/06, GM: Obtain the operator T_dv (TD) from the T_0d (TFBD) LUT when
+! 2016/06/06, GM: Obtain the operator T_dv (Td) from the T_0d (Tfbd) LUT when
 !    Ctrl%get_T_dv_from_T_0d=.true.
 ! 2016/07/27, GM: Add LUT interpolations for the multilayer retrieval.
 !
@@ -109,7 +109,7 @@ subroutine Set_CRP_Solar(Ctrl, Ind, chan_to_ctrl_index, GZero, SAD_LUT, &
    type(SAD_LUT_t),        intent(in)  :: SAD_LUT
    real, dimension(:,:),   intent(out) :: CRPOut
                                           ! Interpolated values returned
-                                          ! (CRPOut(1)=RBD, (2)=TB, ...)
+                                          ! (CRPOut(1)=Rbd, (2)=Tb, ...)
    real, dimension(:,:,:), intent(out) :: dCRPOut
                                           ! Interpolated gradients of CRPOut in
                                           ! Tau and Re
@@ -132,34 +132,34 @@ subroutine Set_CRP_Solar(Ctrl, Ind, chan_to_ctrl_index, GZero, SAD_LUT, &
    ! Call functions to interpolate the arrays
 
    call Int_LUT_TauSatSolAziRe(SAD_LUT%Rbd, Ind%NSolar, SAD_LUT%Grid, GZero, &
-           Ctrl, CRPOut(:, IRBd), dCRPOut(:,IRBd,:), chan_to_ctrl_index, &
+           Ctrl, CRPOut(:, IRbd), dCRPOut(:,IRbd,:), chan_to_ctrl_index, &
            Ind%YSolar, status)
 
    if (Ctrl%Approach == AppCld2L) then
       call Int_LUT_TauSolRe(SAD_LUT%Rfbd, Ind%NSolar, SAD_LUT%Grid, GZero, &
-              Ctrl, CRPOut(:,IRFBd), dCRPOut(:,IRFBd,:), chan_to_ctrl_index, &
+              Ctrl, CRPOut(:,IRfbd), dCRPOut(:,IRfbd,:), chan_to_ctrl_index, &
               Ind%YSolar,  status)
    end if
 
    call Int_LUT_TauRe(SAD_LUT%Rfd, Ind%NSolar, SAD_LUT%Grid, GZero, &
-           Ctrl, CRPOut(:,IRFd), dCRPOut(:,IRFd,:), chan_to_ctrl_index, &
+           Ctrl, CRPOut(:,IRfd), dCRPOut(:,IRfd,:), chan_to_ctrl_index, &
            Ind%YSolar,  status)
 
    call Int_LUT_TauSolRe(SAD_LUT%Tb, Ind%NSolar, SAD_LUT%Grid, GZero, &
-           Ctrl, CRPOut(:,ITB), dCRPOut(:,ITB,:), chan_to_ctrl_index, &
+           Ctrl, CRPOut(:,ITb), dCRPOut(:,ITb,:), chan_to_ctrl_index, &
            Ind%YSolar, status)
 
    call Int_LUT_TauSatReOnSol(SAD_LUT%Tb, Ind%NSolar, SAD_LUT%Grid, GZero, &
-           Ctrl, CRPOut(:,ITB_u), dCRPOut(:,ITB_u,:), chan_to_ctrl_index, &
+           Ctrl, CRPOut(:,ITb_u), dCRPOut(:,ITb_u,:), chan_to_ctrl_index, &
            Ind%YSolar, status)
 
    call Int_LUT_TauSolRe(SAD_LUT%Tfbd, Ind%NSolar, &
-           SAD_LUT%Grid, GZero, Ctrl, CRPOut(:,ITFbd), dCRPOut(:,ITFBd,:), &
+           SAD_LUT%Grid, GZero, Ctrl, CRPOut(:,ITfbd), dCRPOut(:,ITfbd,:), &
            chan_to_ctrl_index, Ind%YSolar, status)
 
     if (Ctrl%Approach == AppCld2L) then
        call Int_LUT_TauSatReOnSol(SAD_LUT%Tfbd, Ind%NSolar, SAD_LUT%Grid, GZero, &
-               Ctrl, CRPOut(:,ITFbd_u), dCRPOut(:,ITFBd_u,:), chan_to_ctrl_index, &
+               Ctrl, CRPOut(:,ITfbd_u), dCRPOut(:,ITfbd_u,:), chan_to_ctrl_index, &
                Ind%YSolar, status)
     end if
 
@@ -175,7 +175,7 @@ subroutine Set_CRP_Solar(Ctrl, Ind, chan_to_ctrl_index, GZero, SAD_LUT, &
    end if
 
    call Int_LUT_TauRe(SAD_LUT%Tfd, Ind%NSolar, SAD_LUT%Grid, GZero, &
-           Ctrl, CRPOut(:,ITFd), dCRPOut(:,ITFd,:), chan_to_ctrl_index, &
+           Ctrl, CRPOut(:,ITfd), dCRPOut(:,ITfd,:), chan_to_ctrl_index, &
            Ind%YSolar, status)
 
 #ifdef BKP
@@ -192,43 +192,43 @@ subroutine Set_CRP_Solar(Ctrl, Ind, chan_to_ctrl_index, GZero, SAD_LUT, &
 !           SAD_LUT%Tb(j, GZero%iT0, GZero%iSoZ1(j), GZero%iR0),  &
 !           SAD_LUT%Tb(j, GZero%iT1, GZero%iSoZ1(j), GZero%iR0)
 !
-!      write(*,*)' Interpolated value ',CRPOut(j,ITB)
-!      write(*,*)' Gradient values    ',(dCRPOut(j,ITB,i),i=1,2)
+!      write(*,*)' Interpolated value ',CRPOut(j,ITb)
+!      write(*,*)' Gradient values    ',(dCRPOut(j,ITb,i),i=1,2)
 !      write(*,*)
 !   end do
 
 !  For debugging: check interpolated values
-   write(*,*) ' SetCRPSolar: TFd values, solar 1st to solar last: ', &
+   write(*,*) ' SetCRPSolar: Tfd values, solar 1st to solar last: ', &
       Ind%SolarFirst,Ind%SolarLast
    do j=Ind%SolarFirst, Ind%SolarLast
       write(*,*)' Function values at top corners', &
-         SAD_LUT%TFd(j, GZero%iT0(j,ITFd), GZero%iR1(j,ITFd)), &
-         SAD_LUT%TFd(j, GZero%iT1(j,ITFd), GZero%iR1(j,ITFd))
+         SAD_LUT%Tfd(j, GZero%iT0(j,ITfd), GZero%iR1(j,ITfd)), &
+         SAD_LUT%Tfd(j, GZero%iT1(j,ITfd), GZero%iR1(j,ITfd))
       write(*,*)' Function values at bot corners', &
-         SAD_LUT%TFd(j, GZero%iT0(j,ITFd), GZero%iR0(j,ITFd)), &
-         SAD_LUT%TFd(j, GZero%iT1(j,ITFd), GZero%iR0(j,ITFd))
+         SAD_LUT%Tfd(j, GZero%iT0(j,ITfd), GZero%iR0(j,ITfd)), &
+         SAD_LUT%Tfd(j, GZero%iT1(j,ITfd), GZero%iR0(j,ITfd))
 
-      write(*,*)' Interpolated value ',CRPOut(j,ITFd)
-      write(*,*)' Gradient values    ',(dCRPOut(j,ITFd,i),i=1,2)
+      write(*,*)' Interpolated value ',CRPOut(j,ITfd)
+      write(*,*)' Gradient values    ',(dCRPOut(j,ITfd,i),i=1,2)
       write(*,*)
    end do
 
-   write(*,*) ' SetCRPSolar: RFd values'
+   write(*,*) ' SetCRPSolar: Rfd values'
    do j=Ind%SolarFirst, Ind%SolarLast
       write(*,*) 'channels',j,Ind%SolarFirst, Ind%SolarLast
       write(*,*)' Function values at top corners', &
-         SAD_LUT%RFd(j, GZero%iT0(j,IRFd), GZero%iR1(j,IRFd)), &
-         SAD_LUT%RFd(j, GZero%iT1(j,IRFd), GZero%iR1(j,IRFd))
+         SAD_LUT%RFd(j, GZero%iT0(j,IRfd), GZero%iR1(j,IRfd)), &
+         SAD_LUT%RFd(j, GZero%iT1(j,IRfd), GZero%iR1(j,IRfd))
       write(*,*)' Function values at bot corners', &
-        SAD_LUT%RFd(j, GZero%iT0(j,IRFd), GZero%iR0(j,IRFd)), &
-        SAD_LUT%RFd(j, GZero%iT1(j,IRFd), GZero%iR0(j,IRFd))
+        SAD_LUT%RFd(j, GZero%iT0(j,IRfd), GZero%iR0(j,IRfd)), &
+        SAD_LUT%RFd(j, GZero%iT1(j,IRfd), GZero%iR0(j,IRfd))
 
-      write(*,*)' Interpolated value ',CRPOut(j,IRFd)
-      write(*,*)' Gradient values    ',(dCRPOut(j,IRFd,i),i=1,2)
-      write(*,*) 'Indices of corners', GZero%iT0(j,IRFd), GZero%iT1(j,IRFd), &
-         GZero%iR0(j,IRFd), GZero%iR1(j,IRFd)
-      write(*,*) 'ranges of indices',SAD_LUT%Grid%nTau(j,IRFd), &
-         SAD_LUT%Grid%nre(j,IRFd)
+      write(*,*)' Interpolated value ',CRPOut(j,IRfd)
+      write(*,*)' Gradient values    ',(dCRPOut(j,IRfd,i),i=1,2)
+      write(*,*) 'Indices of corners', GZero%iT0(j,IRfd), GZero%iT1(j,IRfd), &
+         GZero%iR0(j,IRfd), GZero%iR1(j,IRfd)
+      write(*,*) 'ranges of indices',SAD_LUT%Grid%nTau(j,IRfd), &
+         SAD_LUT%Grid%nre(j,IRfd)
       write(*,*)
    end do
 #endif

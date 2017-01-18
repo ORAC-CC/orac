@@ -312,7 +312,7 @@ subroutine Read_LUT_rat(Ctrl, LUT_file, SAD_LUT, i_chan, i_lut, name, values)
    real,            intent(inout) :: values(:,:)
 
    ! Local variables
-   real    :: tmp_values(1, SAD_LUT%Grid%nmaxtau, SAD_LUT%Grid%nmaxre)
+   real    :: tmp_values(1, SAD_LUT%Grid%NMaxTau, SAD_LUT%Grid%NMaxRe)
    integer :: lun
    integer :: iostat
 
@@ -626,9 +626,9 @@ end subroutine Read_LUT_both
 ! 2000/11/23, AS: Channel file names updated: using 'Ch' instead of 'CH'
 ! 2001/01/09, AS: Emissivity files available. Read_LUT_EM call un-commented.
 !    Added breakpoint output. Ctrl%Ind%Y renamed Y_Id
-! 2001/01/12, AS: Arrays of LUT values (RBd etc) made allocatable. Allocate
+! 2001/01/12, AS: Arrays of LUT values (Rbd etc) made allocatable. Allocate
 !    sizes here.
-! 2001/01/18, AS: Bug fix in array allocation. Rfd, TFd arrays must always be
+! 2001/01/18, AS: Bug fix in array allocation. Rfd, Tfd arrays must always be
 !    allocated even if the choice of channels means they're unused, because they
 !    are read from the same files as Rd, Td by the same routines.
 ! 2001/02/09, AS: Using pre-defined constants (ECPConstants.f90) for breakpoint
@@ -767,9 +767,9 @@ subroutine Read_SAD_LUT(Ctrl, SAD_Chan, SAD_LUT, i_layer)
       if (SAD_Chan(i)%Thermal%Flag > 0) then
          ! Read the Em file
          LUT_File = create_sad_filename(Ctrl, chan_num, i_layer, 'EM')
-         call Read_LUT_sat(Ctrl, LUT_file, i, SAD_LUT, IEm, "EM", SAD_LUT%Em)
+         call Read_LUT_sat(Ctrl, LUT_file, i, SAD_LUT, IEm, "Em", SAD_LUT%Em)
 
-         if (Ctrl%do_CTX_correction .and. Ctrl%Class .eq. ClsCldICE) then
+         if (Ctrl%do_CTX_correction .and. Ctrl%Class .eq. ClsCldIce) then
             ! Read the Bext file
             LUT_File = create_sad_filename(Ctrl, chan_num, i_layer, 'Bext')
             call Read_LUT(Ctrl, LUT_file, i, SAD_LUT, IBext, "Bext", SAD_LUT%Bext)
@@ -824,14 +824,14 @@ subroutine Read_SAD_LUT(Ctrl, SAD_Chan, SAD_LUT, i_layer)
 #endif
 
    ! Convert from percentage to fractional values
-   SAD_LUT%Rd  = SAD_LUT%Rd / 100.
-   SAD_LUT%Td  = SAD_LUT%Td / 100.
+   SAD_LUT%Rd  = SAD_LUT%Rd  / 100.
+   SAD_LUT%Td  = SAD_LUT%Td  / 100.
    SAD_LUT%Tfd = SAD_LUT%Tfd / 100.
    SAD_LUT%Rfd = SAD_LUT%Rfd / 100.
 
    if (Ctrl%Ind%NSolar > 0) then
       SAD_LUT%Rbd  = SAD_LUT%Rbd  / 100.
-      SAD_LUT%RFbd  = SAD_LUT%RFbd  / 100.
+      SAD_LUT%RFbd = SAD_LUT%Rfbd / 100.
       SAD_LUT%Tbd  = SAD_LUT%Tbd  / 100.
       SAD_LUT%Tb   = SAD_LUT%Tb   / 100.
       SAD_LUT%Tfbd = SAD_LUT%Tfbd / 100.

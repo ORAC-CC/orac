@@ -224,7 +224,7 @@ module Ctrl_m
    type Ctrl_t
       ! Terms drawn from mandatory part of driver file and config file
       type(FID_t)            :: FID
-      character(InstnameLen) :: InstName           ! Instrument name
+      character(InstNameLen) :: InstName           ! Instrument name
       integer                :: Class              ! Controls details related to
                                                    ! class (liquid water, ice,
                                                    ! ash, aerosol, etc.)

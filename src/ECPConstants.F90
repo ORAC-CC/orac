@@ -51,7 +51,7 @@
 ! 2012/10/01, CP: added case where 1.6 of 3.7 channel is missing during the day
 ! 2013/xx/xx, MJ: changes lengths of filenames and some formatting,
 !    adds fill value for double precision.
-! 2013/11/19, MJ: changes refmax to 1.5 from 1.2 and btmin to 140.0 from 150.0
+! 2013/11/19, MJ: changes RefMax to 1.5 from 1.2 and BTMin to 140.0 from 150.0
 ! 2014/01/26, GM: Cleaned up code.
 ! 2014/04/03, MJ: adds some fill value definitions
 ! 2014/05/22, GM: Added RTMIntMeth and LUTIntMeth constants.
@@ -64,7 +64,7 @@
 ! 2014/09/09, GM: Changes related to new BRDF support.
 ! 2014/11/20, OS: increased BTMax from 330 to 350 K, thus providing retrieval
 !    results for warm land surfaces (e.g. Sahara, Namib)
-! 2015/01/09, CP: Added IRFBd for cloud albedo calculations.
+! 2015/01/09, CP: Added IRfbd for cloud albedo calculations.
 ! 2015/01/12, AP: Added bit positions for Ctrl%Ind%Ch_Is.
 ! 2015/03/03, AP: Added terms for aerosol retrieval.
 ! 2015/03/11, GM: Increase MaxNumMeas and MaxNumSolar to 36 and 20, respectively.
@@ -183,30 +183,30 @@ module ECP_constants_m
    integer, parameter :: LUTIntMethBicubic = 1
 
    ! Index of legacy channels in Ctrl%Ind%Y_Id_legacy
-   integer, parameter :: N_legacy          = 6
+   integer, parameter :: N_legacy         = 6
 
-   integer, parameter :: I_legacy_0_6x     = 1
-   integer, parameter :: I_legacy_0_8x     = 2
-   integer, parameter :: I_legacy_1_6x     = 3
-   integer, parameter :: I_legacy_3_xx     = 4
-   integer, parameter :: I_legacy_11_x     = 5
-   integer, parameter :: I_legacy_12_x     = 6
+   integer, parameter :: I_legacy_0_6x    = 1
+   integer, parameter :: I_legacy_0_8x    = 2
+   integer, parameter :: I_legacy_1_6x    = 3
+   integer, parameter :: I_legacy_3_xx    = 4
+   integer, parameter :: I_legacy_11_x    = 5
+   integer, parameter :: I_legacy_12_x    = 6
 
    ! Index of CRP array parameter in interpolated arrays (e.g. CRPOut in
    ! functions Set_CRP_Solar and Set_CRP_Thermal).
    integer, parameter :: IBext            = 1       ! Index of Bext data in array
    integer, parameter :: IBextRat         = 2       ! "     "  BextRat " "  "
-   integer, parameter :: IRBd             = 3       ! "     "  RBd     " "  "
-   integer, parameter :: IRFBd            = 4       ! "     "  RFBd    " "  "
+   integer, parameter :: IRbd             = 3       ! "     "  Rbd     " "  "
+   integer, parameter :: IRfbd            = 4       ! "     "  Rfbd    " "  "
    integer, parameter :: IRd              = 5       ! "     "  Rd      " "  "
-   integer, parameter :: IRFd             = 6       ! "     "  RFd     " "  "
-   integer, parameter :: ITB              = 7       ! "     "  TB      " "  "
-   integer, parameter :: ITB_u            = 8       ! "     "  TB_u    " "  "
-   integer, parameter :: ITBd             = 9       ! "     "  TBd     " "  "
-   integer, parameter :: ITFBd            = 10      ! "     "  TFBd    " "  "
-   integer, parameter :: ITFBd_u          = 11      ! "     "  TFBd_u  " "  "
+   integer, parameter :: IRfd             = 6       ! "     "  Rfd     " "  "
+   integer, parameter :: ITb              = 7       ! "     "  Tb      " "  "
+   integer, parameter :: ITb_u            = 8       ! "     "  Tb_u    " "  "
+   integer, parameter :: ITbd             = 9       ! "     "  Tbd     " "  "
+   integer, parameter :: ITfbd            = 10      ! "     "  Tfbd    " "  "
+   integer, parameter :: ITfbd_u          = 11      ! "     "  Tfbd_u  " "  "
    integer, parameter :: ITd              = 12      ! "     "  Td      " "  "
-   integer, parameter :: ITFd             = 13      ! "     "  TFd     " "  "
+   integer, parameter :: ITfd             = 13      ! "     "  Tfd     " "  "
    integer, parameter :: IEm              = 14      ! "     "  Em      " "  "
 
    ! Index of XIndex array in GetSurface
@@ -237,7 +237,7 @@ module ECP_constants_m
    ! Oxford surface reflectance parameters. Though we're unlikely to retrieve
    ! all the BRDF parameters, space needs to be made in the Jacobian.
    integer, parameter :: IRs(MaxNumSolar, MaxRho_XX) = &
-        reshape([(i_ECP+iTs, i_ECP = 1, MaxNumSolar*MaxRho_XX)], &
+        reshape([(i_ECP+ITs, i_ECP = 1, MaxNumSolar*MaxRho_XX)], &
                 [MaxNumSolar, MaxRho_XX])
    ! Swansea surface reflectance parameters. ISS is the wavelength-dependent
    ! s parameter and ISP is the directionally-dependent P parameter.
@@ -266,18 +266,18 @@ module ECP_constants_m
 
 
    ! Retrieval classes (for Ctrl%Class)
-   integer, parameter :: ClsCldWat = 1
-   integer, parameter :: ClsCldIce = 2
-   integer, parameter :: ClsAerOx  = 3
-   integer, parameter :: ClsAerSw  = 4
-   integer, parameter :: ClsAerBR  = 6
-   integer, parameter :: ClsAshEyj = 7
+   integer, parameter :: ClsCldWat        = 1
+   integer, parameter :: ClsCldIce        = 2
+   integer, parameter :: ClsAerOx         = 3
+   integer, parameter :: ClsAerSw         = 4
+   integer, parameter :: ClsAerBR         = 6
+   integer, parameter :: ClsAshEyj        = 7
 
    ! Retrieval approaches (for Ctrl%Approach)
-   integer, parameter :: AppCld1L  = 1
-   integer, parameter :: AppCld2L  = 2
-   integer, parameter :: AppAerOx  = 3
-   integer, parameter :: AppAerSw  = 4
+   integer, parameter :: AppCld1L         = 1
+   integer, parameter :: AppCld2L         = 2
+   integer, parameter :: AppAerOx         = 3
+   integer, parameter :: AppAerSw         = 4
 
 
    ! Breakpoint levels for individual subroutines.  The parameter name is

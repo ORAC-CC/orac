@@ -109,7 +109,7 @@ subroutine Int_LUT_Re(F, NChans, Grid, GZero, Ctrl, FInt, FGrads, status)
    ! Local variables
    integer :: i
    real    :: delta_r, delta_F, k0, k1, l0, l1
-   real    :: d2F_dr2(Grid%nmaxre)
+   real    :: d2F_dr2(Grid%NMaxRe)
 
    status = 0
 

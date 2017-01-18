@@ -123,7 +123,7 @@ subroutine Set_Diag(Ctrl, SPixel, convergence, J, Jm, Ja, iter, Diag)
    end do
 
    ! Flag legacy channels used *6 bits).
-   do m = 1, N_Legacy
+   do m = 1, N_legacy
       if (find_in_array(Ctrl%Ind%Y_Id(SPixel%spixel_y_to_ctrl_y_index(1:SPixel%Ind%Ny)), &
                         Ctrl%Ind%Y_Id_legacy(m)) .gt. 0) then
          Diag%QCFlag = ibset(Diag%QCFlag, Ctrl%Nx(IDay) + m)

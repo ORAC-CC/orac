@@ -71,7 +71,7 @@
 ! 2011/03/11, AS:  Re-applying changes made in late 2001/2.
 !    CP: changed the fractional error flag
 !    Plus correction to value in FGOP array: 1.15 instead of 1.5.
-!    iPc loop to set BT_o was reverse, i.e. Np to 1 rather than 1 to Np.
+!    IPc loop to set BT_o was reverse, i.e. Np to 1 rather than 1 to Np.
 !    iPhase: < replaced by <= in BT_o setting.
 ! 2011/03/21, AS: Removing functionality to change phase during the retrieval.
 !    Commented out handling of iPhase. Phase will be fixed at the Ctrl value.

@@ -16,8 +16,8 @@
 ! 2001/02/27, AS: Set_CRP_Thermal no longer requires argument First.
 ! 2013/12/20, GM: Cleaned up code.
 ! 2013/12/24, GM: Some intent changes.
-! 2014/12/16, GM: Added LUT name mapping: IR_0v = IRBd, etc.
-! 2015/01/09, CP: Added LUT name mapping: IR_0d = IRFBd.
+! 2014/12/16, GM: Added LUT name mapping: IR_0v = IRbd, etc.
+! 2015/01/09, CP: Added LUT name mapping: IR_0d = IRfbd.
 !
 ! $Id$
 !
@@ -31,16 +31,16 @@ module FM_Routines_m
 
    implicit none
 
-   integer, parameter :: IR_0v = IRBd
-   integer, parameter :: IR_0d = IRFBd
+   integer, parameter :: IR_0v = IRbd
+   integer, parameter :: IR_0d = IRfbd
    integer, parameter :: IR_dv = IRd
-   integer, parameter :: IR_dd = IRFd
-   integer, parameter :: IT_00 = ITB
-   integer, parameter :: IT_vv = ITB_u
-   integer, parameter :: IT_0d = ITFBd
-   integer, parameter :: IT_vd = ITFBd_u
+   integer, parameter :: IR_dd = IRfd
+   integer, parameter :: IT_00 = ITb
+   integer, parameter :: IT_vv = ITb_u
+   integer, parameter :: IT_0d = ITfbd
+   integer, parameter :: IT_vd = ITfbd_u
    integer, parameter :: IT_dv = ITd
-   integer, parameter :: IT_dd = ITFd
+   integer, parameter :: IT_dd = ITfd
 
    integer, parameter :: ISv   = 3
    integer, parameter :: IPv   = 4

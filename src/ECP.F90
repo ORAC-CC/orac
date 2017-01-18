@@ -138,7 +138,7 @@
 ! 2012/11/01, MJ: implements OpenMP parallelization of along-track loop.
 ! 2013/01/17, MJ: Adds code to accommodate uncertainties of ctt & cth
 ! 2013/12/05, MJ: initializes Diag%AK=sreal_fill_value
-! 2013/12/10, MJ: initializes ymfit and y0 with missingxn
+! 2013/12/10, MJ: initializes ymfit and y0 with MissingXn
 ! 2014/01/12, GM: Added some missing deallocates.
 ! 2014/01/28, GM: Cleaned up code.
 ! 2014/01/29, GM: Some OpenMP fixes. Ctrl is actually shared.  No need to make

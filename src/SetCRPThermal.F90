@@ -7,10 +7,10 @@
 !
 ! Description and Algorithm details:
 ! Takes the SAD LUT array of look up table values and interpolates the arrays
-! of RBd, TB etc from the LUT grid to the current point in the multi-spectral
+! of Rbd, Tb etc from the LUT grid to the current point in the multi-spectral
 ! image data.
 !
-! For each LUT array in SAD_LUT (i.e. TBd etc)
+! For each LUT array in SAD_LUT (i.e. Tbd etc)
 !    Pass GZero and SAD_LUT info to the appropriate interpolation routine
 !      (depending on the array dimensions)
 !    Note the SAD_LUT arrays are only interpolated for channels with a
@@ -84,7 +84,7 @@ subroutine Set_CRP_Thermal(Ctrl, Ind, chan_to_ctrl_index, GZero, SAD_LUT, &
    type(SAD_LUT_t),        intent(in)  :: SAD_LUT
    real, dimension(:,:),   intent(out) :: CRPOut
                                           ! Interpolated values returned
-                                          ! (CRPOut(1)=RBD, (2)=TB, ...)
+                                          ! (CRPOut(1)=Rbd, (2)=Tb, ...)
    real, dimension(:,:,:), intent(out) :: dCRPOut
                                           ! Interpolated gradients of CRPOut in
                                           ! Tau and Re

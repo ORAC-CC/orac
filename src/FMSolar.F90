@@ -68,7 +68,7 @@
 ! 2000/11/07, KS: original version
 ! 2000/11/21, KS: added X structure (state vector)
 ! 2001/01/17, AS: Changed indexing of CRP arrays to use constants to reference
-!    the different LUT values (IRBd etc) Using FM_Routines_m: contains interface
+!    the different LUT values (IRbd etc) Using FM_Routines_m: contains interface
 !    definition for SetCRPSolar.
 ! 2001/01/23, AS: Added GZero argument, interface to SetCRPSolar changed.
 !    Updated CRP, d_CRP and Ref, d_Ref array indexing to use constants to pick
@@ -572,7 +572,7 @@ subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, i_layer, RTM_Pc, RTM_Pc2, X, GZero, &
    real, optional,  intent(inout) :: d_Ref_dRs2(:,:)
 
    ! Referencing of different properties stored in CRP and d_CRP: the last index
-   ! of the CRP array refers to the property. Hence ITB is the index of TB, etc.
+   ! of the CRP array refers to the property. Hence ITb is the index of TB, etc.
 
    ! Define local variables
    integer                            :: i, ii, j
@@ -1400,15 +1400,15 @@ end if
          write(bkp_lun,'(a,i2,a,f9.4)') 'Channel index: ', i, &
               ' S:           ', S(i)
          write(bkp_lun,'(a,i2,a,f9.4)') 'Channel index: ', i, &
-              ' CRP(:,IRBd): ',CRP(i,IRBd)
+              ' CRP(:,IRbd): ',CRP(i,IRbd)
          write(bkp_lun,'(a,i2,a,f9.4)') 'Channel index: ', i, &
               ' CRP(:,ITd):  ',CRP(i,ITd)
          write(bkp_lun,'(a,i2,a,f9.4)') 'Channel index: ', i, &
-              ' CRP(:,ITB):  ',CRP(i,ITB)
+              ' CRP(:,ITB):  ',CRP(i,ITb)
          write(bkp_lun,'(a,i2,a,f9.4)') 'Channel index: ', i, &
-              ' CRP(:,ITFBd):',CRP(i,ITFBd)
+              ' CRP(:,ITFBd):',CRP(i,ITfbd)
          write(bkp_lun,'(a,i2,a,f9.4)') 'Channel index: ', i, &
-              ' CRP(:,IRFd): ',CRP(i,IRFd)
+              ' CRP(:,IRfd): ',CRP(i,IRfd)
       end do
 
       do i=1, SPixel%Ind%NSolar

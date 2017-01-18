@@ -400,7 +400,7 @@ subroutine cloud_indexing_logic(Ctrl, SPixel, is_not_used_or_missing, &
 
    if (Ctrl%RTMIntSelm == RTMIntMethNone) then
       write(*,*) 'ERROR: Get_Indexing(): Cloud retrieval requires RTTOV inputs.'
-      stop RTMIntFlagErr
+      stop RTMIntflagErr
    end if
 
    ! If it is day time, Ctrl%ReChans is associated and any channels in

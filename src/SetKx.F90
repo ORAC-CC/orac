@@ -24,8 +24,8 @@
 ! 2001/04/27, AS: Now uses SPixel instead of Ctrl for active state variable
 !    indices and channels.
 ! 2001/06/06, AS: Implicit none statement was wrongly placed.
-! 2012/01/20, CP: Bug fix changed dy_dx array changed spixe%nx to maxstatevar
-!    definition
+! 2012/01/20, CP: Bug fix: Changed dy_dx array changed spixe%nx to MaxStateVar
+!    definition.
 ! 2012/01/01, MJ: Changes Kx assignment
 ! 2014/05/21, GM: Cleaned up the code.
 ! 2015/01/15, AP: Facilitate channel indexing in arbitrary order.

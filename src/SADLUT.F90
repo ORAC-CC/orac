@@ -8,11 +8,11 @@
 ! History:
 ! 2000/10/04, AS: Original version
 ! 2000/12/01, AS: Renamed Solzen variables to Solzen.
-! 2001/01/12, AS: Changing main LUT arrays (RBd etc) to allocatable.
+! 2001/01/12, AS: Changing main LUT arrays (Rbd etc) to allocatable.
 ! 2011/06/11, CP: Removed references to maximum values and changed some
 !    variables to pointers values.
 ! 2013/12/12, MJ: Makes LUTs more flexible wrt channel and properties.
-! 2014/01/12, GM: Increase nmaxre to 23 for the ice LUTs.
+! 2014/01/12, GM: Increase NMaxRe to 23 for the ice LUTs.
 ! 2014/01/16, GM: Added SAD_LUT%table_use* arrays.
 ! 2014/01/23, GM: Cleaned up the code.
 ! 2015/01/09, CP: Added Rfbd.
@@ -39,11 +39,11 @@ module SAD_LUT_m
              Read_SAD_LUT
 
    type LUT_Grid_t
-      integer :: nmaxtau    = 20
-      integer :: nmaxre     = 23
-      integer :: nmaxsolzen = 20
-      integer :: nmaxsatzen = 20
-      integer :: nmaxrelazi = 20
+      integer :: NMaxTau    = 20
+      integer :: NMaxRe     = 23
+      integer :: NMaxSolZen = 20
+      integer :: NMaxSatZen = 20
+      integer :: NMaxRelAzi = 20
 
       real     :: MaxTau    ! Optical depth grid max.
       real     :: MinTau    !  - grid min

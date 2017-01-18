@@ -202,7 +202,7 @@ subroutine Calc_Corrected_CTX(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Sy)
       delta_ctp     = (ctt_new - RTM_Pc%Tc) / RTM_Pc%dTc_dPc
 
       ! Propagate from CTT to CTP
-      ctp_new       = SPixel%Xn(iPc) + delta_ctp
+      ctp_new       = SPixel%Xn(IPc) + delta_ctp
       ctp_new_sigma = abs(ctt_new_sigma / RTM_Pc%dTc_dPc)
 
       ! Propagate from CTP to CTH
@@ -210,7 +210,7 @@ subroutine Calc_Corrected_CTX(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Sy)
       cth_new_sigma = abs(ctp_new_sigma * RTM_Pc%dHc_dPc)
 
       ! Ignore corrections less than a thresold or in the downward direction
-      if (ctp_new .gt. Ctrl%CTP_correction_limit .and. ctp_new .lt. SPixel%Xn(iPc)) then
+      if (ctp_new .gt. Ctrl%CTP_correction_limit .and. ctp_new .lt. SPixel%Xn(IPc)) then
          SPixel%CTP_corrected             = ctp_new
          SPixel%CTP_corrected_uncertainty = ctp_new_sigma
          SPixel%CTH_corrected             = cth_new

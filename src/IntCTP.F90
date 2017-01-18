@@ -217,11 +217,11 @@ subroutine Int_CTP(SPixel, Ctrl, BT, CTP, status)
    end if
 
    ! Check output against retrieval limits
-   if (CTP < Ctrl%Invpar%XLLim(iPc)) then
-      CTP = Ctrl%Invpar%XLLim(iPc)
+   if (CTP < Ctrl%Invpar%XLLim(IPc)) then
+      CTP = Ctrl%Invpar%XLLim(IPc)
       status = XMDADBounds
-   else if (CTP > Ctrl%Invpar%XULim(iPc)) then
-      CTP = Ctrl%Invpar%XULim(iPc)
+   else if (CTP > Ctrl%Invpar%XULim(IPc)) then
+      CTP = Ctrl%Invpar%XULim(IPc)
       status = XMDADBounds
    end if
 
