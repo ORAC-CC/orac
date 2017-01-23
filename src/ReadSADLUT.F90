@@ -218,6 +218,8 @@ subroutine read_values_2d(filename, v_name, lun, i_chan, i_lut, &
    integer :: i, j
    integer :: iostat
 
+   n_i=0
+   n_j=0
    read(lun, *, iostat=iostat) ((values(i_chan, i, j), &
       i = 1, n_i), j = 1, n_j)
    if (iostat .ne. 0) then
@@ -251,6 +253,10 @@ subroutine read_values_3d(filename, v_name, lun, i_chan, i_lut, &
    integer :: i, j, k
    integer :: iostat
 
+   n_i=0
+   n_j=0
+   n_k=0
+
    read(lun, *, iostat=iostat) (((values(i_chan, i, j, k), &
       i = 1, n_i), j = 1, n_j), &
       k = 1, n_k)
@@ -276,6 +282,7 @@ end subroutine read_values_3d
 !
 ! History:
 ! 2014/10/10, GM: Original version
+! 2017/01/18, CP: defined out variables so copiled with intel fortran
 !
 ! Bugs:
 ! None known.
@@ -301,6 +308,12 @@ subroutine read_values_5d(filename, v_name, lun, i_chan, i_lut, &
    ! Local variables
    integer :: i, j, k, l, m
    integer :: iostat
+
+   n_i=0
+   n_j=0
+   n_k=0
+   n_l=0
+   n_m=0
 
    read(lun, *, iostat=iostat) (((((values(i_chan, i, j, k, l, m), &
       i = 1, n_i), j = 1, n_j), &
