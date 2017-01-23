@@ -67,6 +67,7 @@
 ! 2016/04/28, AP: Add multiple views.
 ! 2016/05/03, AP: Add AOT at a second wavelength.
 ! 2016/07/27, GM: Add output fields for the multilayer retrieval.
+! 2017/01/08, CP: added stemp
 !
 ! $Id$
 !
@@ -476,6 +477,36 @@ if (Ctrl%Ind%flags%do_cloud) then
         MissingSn, output_data%cth_uncertainty_vmax, &
         control=SPixel%CTH_corrected_uncertainty)
 
+
+
+
+
+   !----------------------------------------------------------------------------
+   ! stemp, stemp_uncertainty
+   !----------------------------------------------------------------------------
+   call prepare_short_packed_float( &
+        RTM_Pc(1)%Tc, output_data%stemp(i,j), &
+        output_data%stemp_scale, output_data%stemp_offset, &
+        output_data%stemp_vmin, output_data%stemp_vmax, &
+        MissingXn, output_data%stemp_vmax)
+
+   ! If ctp_uncertainty is good compute stemp_uncertainty
+   if (temp_real_ctp_uncertainty .eq. sreal_fill_value) then
+      output_data%stemp_uncertainty(i,j)=sint_fill_value
+   else if (temp_short_ctp_uncertainty .lt. output_data%ctp_uncertainty_vmin) then
+      output_data%stemp_uncertainty(i,j)=sint_fill_value
+   else if (temp_short_ctp_uncertainty .gt. output_data%ctp_uncertainty_vmax) then
+      output_data%stemp_uncertainty(i,j)=output_data%stemp_uncertainty_vmax
+   else
+      temp_real=abs(RTM_Pc(1)%dTc_dPc)*temp_real_ctp_uncertainty
+      call prepare_short_packed_float( &
+           temp_real, output_data%stemp_uncertainty(i,j), &
+           output_data%stemp_uncertainty_scale, output_data%stemp_uncertainty_offset, &
+           output_data%stemp_uncertainty_vmin, output_data%stemp_uncertainty_vmax, &
+           sreal_fill_value, output_data%stemp_uncertainty_vmax)
+   end if
+
+
    !----------------------------------------------------------------------------
    ! ctt, ctt_uncertainty
    !----------------------------------------------------------------------------
@@ -500,6 +531,10 @@ if (Ctrl%Ind%flags%do_cloud) then
            output_data%ctt_uncertainty_vmin, output_data%ctt_uncertainty_vmax, &
            sreal_fill_value, output_data%ctt_uncertainty_vmax)
    end if
+
+
+
+
 
    !----------------------------------------------------------------------------
    ! ctt_corrected, ctt_corrected_uncertainty
