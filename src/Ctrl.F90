@@ -98,7 +98,8 @@
 !    support the multilayer retrieval.
 ! 2016/08/11, SP: Add logical flag for processing when using only 1 view from a
 !                 multiangular sensor. Prevents post-processor problems.
-! 2017/01/09 CP: Clarified definitions of ML layer definition
+! 2017/01/09, CP: Clarified definitions of ML layer definition.
+!
 ! $Id$
 !
 ! Bugs:

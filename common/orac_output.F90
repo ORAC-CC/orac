@@ -39,7 +39,7 @@
 !    retrieved. This is indicated by the rho|ss_terms array (and Nrho|Nss).
 ! 2016/07/20, WJ: Change offset for stemp output to 100. to support values
 !    greater than 320K for instruments other than ATSR2/AATSR.
-! 2017/01/09, CP: changed phase range to include ML cloud type
+! 2017/01/09, CP: Changed phase range to include ML cloud type.
 !
 ! $Id$
 !

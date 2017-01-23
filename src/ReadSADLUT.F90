@@ -210,8 +210,8 @@ subroutine read_values_2d(filename, v_name, lun, i_chan, i_lut, &
    integer,      intent(in)    :: lun
    integer,      intent(in)    :: i_chan
    integer,      intent(in)    :: i_lut
-   integer,      intent(in)   :: n_i
-   integer,      intent(in)   :: n_j
+   integer,      intent(in)    :: n_i
+   integer,      intent(in)    :: n_j
    real,         intent(inout) :: values(:,:,:)
 
    ! Local variables
@@ -242,9 +242,9 @@ subroutine read_values_3d(filename, v_name, lun, i_chan, i_lut, &
    integer,      intent(in)    :: lun
    integer,      intent(in)    :: i_chan
    integer,      intent(in)    :: i_lut
-   integer,      intent(in)   :: n_i
-   integer,      intent(in)   :: n_j
-   integer,      intent(in)   :: n_k
+   integer,      intent(in)    :: n_i
+   integer,      intent(in)    :: n_j
+   integer,      intent(in)    :: n_k
    real,         intent(inout) :: values(:,:,:,:)
 
    ! Local variables
@@ -276,8 +276,6 @@ end subroutine read_values_3d
 !
 ! History:
 ! 2014/10/10, GM: Original version
-! 2017/01/18, CP: defined out variables so copiled with intel fortran
-! 2017/01/19, CP: bug fix above
 !
 ! Bugs:
 ! None known.
@@ -293,17 +291,16 @@ subroutine read_values_5d(filename, v_name, lun, i_chan, i_lut, &
    integer,      intent(in)    :: lun
    integer,      intent(in)    :: i_chan
    integer,      intent(in)    :: i_lut
-   integer,      intent(in)   :: n_i
-   integer,      intent(in)   :: n_j
-   integer,      intent(in)   :: n_k
-   integer,      intent(in)   :: n_l
-   integer,      intent(in )   :: n_m
+   integer,      intent(in)    :: n_i
+   integer,      intent(in)    :: n_j
+   integer,      intent(in)    :: n_k
+   integer,      intent(in)    :: n_l
+   integer,      intent(in)    :: n_m
    real,         intent(inout) :: values(:,:,:,:,:,:)
 
    ! Local variables
    integer :: i, j, k, l, m
    integer :: iostat
-
 
    read(lun, *, iostat=iostat) (((((values(i_chan, i, j, k, l, m), &
       i = 1, n_i), j = 1, n_j), &

@@ -68,7 +68,6 @@ subroutine Read_SAD(Ctrl, SAD_Chan, SAD_LUT)
    ! Read Look up tables
    call Read_SAD_LUT (Ctrl, SAD_Chan, SAD_LUT(1), 1)
    if (Ctrl%Approach == AppCld2L) then
-
       call Read_SAD_LUT (Ctrl, SAD_Chan, SAD_LUT(2), 2)
    end if
 

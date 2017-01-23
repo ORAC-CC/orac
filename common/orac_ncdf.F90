@@ -26,7 +26,7 @@
 ! 2014/12/31, GM: Removed ierr output argument from nc_def_var_*() routines as
 !    it severed no purpose since errors are handled to program exit within the
 !    routines themselves.
-! 2015/03/20, CP: changed to creator url and website
+! 2015/03/20, CP: Changed to creator url and website
 ! 2015/07/10, OS: added optional error_status return argument
 ! 2015/07/16, GM: Added support to read packed data to nc_read routines.
 ! 2016/07/11, SP: Added new variable to read functions: startp
@@ -118,7 +118,7 @@ subroutine nc_open(ncid, fname, error_status)
    ierr=nf90_open(path=trim(adjustl(fname)),mode=NF90_NOWRITE,ncid=ncid)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: nc_open(): Error opening file ',trim(fname)
-      print*,'error flag:',trim(nf90_strerror(ierr))
+      print*,trim(nf90_strerror(ierr))
       if (present(error_status)) then
          error_status = error_stop_code
       else
