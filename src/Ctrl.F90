@@ -98,7 +98,7 @@
 !    support the multilayer retrieval.
 ! 2016/08/11, SP: Add logical flag for processing when using only 1 view from a
 !                 multiangular sensor. Prevents post-processor problems.
-!
+! 2017/01/09 CP: Clarified definitions of ML layer definition
 ! $Id$
 !
 ! Bugs:
@@ -228,9 +228,9 @@ module Ctrl_m
       integer                :: Class              ! Controls details related to
                                                    ! class (liquid water, ice,
                                                    ! ash, aerosol, etc.)
-      integer                :: Class2             ! Class for layer 2
+      integer                :: Class2             ! Class for layer 2 (lower)
       character(3)           :: LUTClass           ! Name of LUT to use
-      character(3)           :: LUTClass2          ! LUTClass for layer 2
+      character(3)           :: LUTClass2          ! LUTClass for layer 2 (lower)
       integer                :: Approach           ! Controls manner of retrieval
                                                    ! performed. See ECPConstants.
 
