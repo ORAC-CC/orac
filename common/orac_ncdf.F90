@@ -118,7 +118,7 @@ subroutine nc_open(ncid, fname, error_status)
    ierr=nf90_open(path=trim(adjustl(fname)),mode=NF90_NOWRITE,ncid=ncid)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: nc_open(): Error opening file ',trim(fname)
-      print*,trim(nf90_strerror(ierr))
+      print*,'error flag:',trim(nf90_strerror(ierr))
       if (present(error_status)) then
          error_status = error_stop_code
       else

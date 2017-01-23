@@ -76,6 +76,7 @@
 ! 2016/03/04, AP: Homogenisation of I/O modules.
 ! 2016/04/28, AP: Add multiple views.
 ! 2016/07/08, GM: Add fields for cloud layer 2.
+! 2017/01/08, CP: Added multi layer phase type
 !
 ! $Id$
 !
@@ -1836,8 +1837,8 @@ if (indexing%flags%do_phase) then
          input_dummy2 = trim(input_dummy2) // ' ' // trim(adjustl(input_num))
       end do
    else
-      input_dummy = 'clear/unknown liquid ice'
-      input_dummy2 = '0b 1b 2b'
+      input_dummy = 'clear/unknown liquid ice multi_layer'
+      input_dummy2 = '0b 1b 2b 3b'
    end if
 
    call nc_def_var_byte_packed_byte( &

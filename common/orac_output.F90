@@ -39,6 +39,7 @@
 !    retrieved. This is indicated by the rho|ss_terms array (and Nrho|Nss).
 ! 2016/07/20, WJ: Change offset for stemp output to 100. to support values
 !    greater than 320K for instruments other than ATSR2/AATSR.
+! 2017/01/09, CP: changed phase range to include ML cloud type
 !
 ! $Id$
 !
@@ -404,7 +405,7 @@ module orac_output_m
       integer(byte) :: phase_scale  = 1
       integer(byte) :: phase_offset = 0
       integer(byte) :: phase_vmin   = 0
-      integer(byte) :: phase_vmax   = 2
+      integer(byte) :: phase_vmax   = 3
 
       integer(byte) :: phase_pavolonis_scale  = 1
       integer(byte) :: phase_pavolonis_offset = 0
