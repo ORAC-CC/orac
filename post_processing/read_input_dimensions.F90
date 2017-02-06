@@ -20,6 +20,7 @@
 ! 2015/07/10, GM: Major cleanup and made use of the NetCDF interface in the
 !    common library.
 ! 2016/03/03, AP: Homogenisation of I/O modules.
+! 2017/01/02, AP: filename read more robust
 !
 ! $Id$
 !
@@ -40,8 +41,8 @@ subroutine read_input_dimensions(fname, indexing, verbose)
    integer :: ncid, ierr
 
    ! Open file
-   call nc_open(ncid,fname)
 
+    call nc_open(ncid,trim(adjustl(fname)))
    call nullify_indexing(indexing)
 
    indexing%Xdim   = nc_dim_length(ncid, 'across_track', verbose)

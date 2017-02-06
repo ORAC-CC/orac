@@ -28,6 +28,7 @@
 ! 2015/07/16, GM: Major cleanup.
 ! 2016/03/04, AP: Homogenisation of I/O modules.
 ! 2016/05/04, AP: Fix read of optional, channel-dependent fields.
+! 2017/01/20, CP: made netdcf file name read more robust
 !
 ! $Id$
 !
@@ -221,7 +222,8 @@ subroutine read_input_secondary_once(nfile, fname, input_data, indexing, &
    read_flags = indexing%flags
 
    ! Read universally common fields from first input file
-   call nc_open(ncid, fname(1))
+write(*,*)'sec fname(1)',fname(1)
+  call nc_open(ncid, trim(adjustl(fname(1))))
 
    call read_input_secondary_optional(ncid, input_data, loop_ind(1), &
         read_flags, sval, verbose)
@@ -232,7 +234,8 @@ subroutine read_input_secondary_once(nfile, fname, input_data, indexing, &
    end if
 
    do i=2,nfile
-      call nc_open(ncid,fname(i))
+write(*,*)'sec fname(i)',fname(i)
+      call nc_open(ncid,trim(adjustl(fname(i))))
       call read_input_secondary_optional(ncid, input_data, loop_ind(i), &
            read_flags, sval, verbose)
       if (nf90_close(ncid) .ne. NF90_NOERR) then
@@ -259,11 +262,12 @@ subroutine read_input_secondary_class(fname, input_data, indexing, sval, verbose
    integer :: ncid
 
    if (verbose) write(*,*) 'Opening secondary input file: ', trim(fname)
-   call nc_open(ncid,fname)
+write(*,*)'sec fname',fname
+   call nc_open(ncid,trim(adjustl(fname)))
 
    call read_input_secondary_common(ncid, input_data, indexing, sval, verbose)
 
-   if (verbose) write(*,*) 'Closing secondary input file.'
+   if (verbose) write(*,*) 'Closing secondary input file.',fname
    if (nf90_close(ncid) .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_close()'
       stop error_stop_code

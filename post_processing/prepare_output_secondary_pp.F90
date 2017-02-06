@@ -19,6 +19,7 @@
 !    names for wrapper
 ! 2015/12/30, AP: Have all albedo fields use the same values.
 ! 2016/03/04, AP: Tidy prepare_*_packed_float.
+! 2017/01/04, CP: add in ML valraibles 
 !
 ! $Id$
 !
@@ -212,6 +213,67 @@ if (indexing%flags%do_cloud) then
            sreal_fill_value, sint_fill_value)
    end do
 end if
+
+
+
+if (indexing%flags%do_cloud_layer_2) then
+   !----------------------------------------------------------------------------
+   ! cot2_ap, cot2_fg
+   !----------------------------------------------------------------------------
+   call prepare_short_packed_float( &
+        input_data%cot2_ap(i,j), output_data%cot2_ap(i,j), &
+        output_data%cot_ap_scale, output_data%cot_ap_offset, &
+        output_data%cot_ap_vmin, output_data%cot_ap_vmax, &
+        sreal_fill_value, output_data%cot_ap_vmax)
+
+   call prepare_short_packed_float( &
+        input_data%cot2_fg(i,j), output_data%cot2_fg(i,j), &
+        output_data%cot_fg_scale, output_data%cot_fg_offset, &
+        output_data%cot_fg_vmin, output_data%cot_fg_vmax, &
+        sreal_fill_value, output_data%cot_fg_vmax)
+
+   !----------------------------------------------------------------------------
+   ! cer2_ap, cer2_fg
+   !----------------------------------------------------------------------------
+   call prepare_short_packed_float( &
+        input_data%cer2_ap(i,j), output_data%cer2_ap(i,j), &
+        output_data%cer_ap_scale, output_data%cer_ap_offset, &
+        output_data%cer_ap_vmin, output_data%cer_ap_vmax, &
+        sreal_fill_value, output_data%cer_ap_vmax)
+
+   call prepare_short_packed_float( &
+        input_data%cer2_fg(i,j), output_data%cer2_fg(i,j), &
+        output_data%cer_fg_scale, output_data%cer_fg_offset, &
+        output_data%cer_fg_vmin, output_data%cer_fg_vmax, &
+        sreal_fill_value, output_data%cer_fg_vmax)
+
+   !----------------------------------------------------------------------------
+   ! ctp_ap, ctp_fg
+   !----------------------------------------------------------------------------
+   call prepare_short_packed_float( &
+        input_data%ctp2_ap(i,j), output_data%ctp2_ap(i,j), &
+        output_data%ctp_ap_scale, output_data%ctp_ap_offset, &
+        output_data%ctp_ap_vmin, output_data%ctp_ap_vmax, &
+        sreal_fill_value, output_data%ctp_ap_vmax)
+
+   call prepare_short_packed_float( &
+        input_data%ctp2_fg(i,j), output_data%ctp2_fg(i,j), &
+        output_data%ctp_fg_scale, output_data%ctp_fg_offset, &
+        output_data%ctp_fg_vmin, output_data%ctp_fg_vmax, &
+        sreal_fill_value, output_data%ctp_fg_vmax)
+
+
+end if ! ML
+
+
+
+
+
+
+
+
+
+
 
    !----------------------------------------------------------------------------
    ! channels

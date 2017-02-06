@@ -36,6 +36,7 @@
 ! 2016/01/28, GM: Add ctp and ctt corrected and corrected_uncertianty.
 ! 2016/02/10, GM: Remove redundant checks for fill_value.
 ! 2016/03/04, AP: Tidy prepare_*_packed_float.
+! 2017/01/04, CP: add in multi layer cloud
 !
 ! $Id$
 !
@@ -46,6 +47,7 @@
 subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
    output_optical_props_at_night)
 
+
    use constants_cloud_typing_pavolonis_m
    use orac_input_m
    use orac_ncdf_m
@@ -53,6 +55,7 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
    use postproc_constants_m
 
    implicit none
+
 
    integer,                    intent(in)    :: i, j
    type(common_indices_t),     intent(in)    :: indexing
@@ -302,7 +305,8 @@ if (indexing%flags%do_cloud) then
            output_data%cwp_uncertainty_vmin, &
            output_data%cwp_uncertainty_vmax, &
            sreal_fill_value, output_data%cwp_uncertainty_vmax)
-   end if
+   end if !day
+
 
    !----------------------------------------------------------------------------
    ! ctp, ctp_uncertainty
@@ -486,6 +490,128 @@ if (indexing%flags%do_cloud) then
            sreal_fill_value, sint_fill_value)
    end do
 end if
+
+
+if (indexing%flags%do_cloud_layer_2) then
+
+   if (input_data%illum(i,j) .eq. 1_byte .or. output_optical_props_at_night) then
+
+
+   !----------------------------------------------------------------------------
+   ! cot2, cot2_uncertainty
+   !----------------------------------------------------------------------------
+
+
+      call prepare_short_packed_float( &
+           input_data%cot2(i,j), output_data%cot2(i,j), &
+           output_data%cot_scale, output_data%cot_offset, &
+           output_data%cot_vmin, output_data%cot_vmax, &
+           sreal_fill_value, output_data%cot_vmax)
+
+      call prepare_short_packed_float( &
+           input_data%cot2_uncertainty(i,j), &
+           output_data%cot2_uncertainty(i,j), &
+           output_data%cot_uncertainty_scale, &
+           output_data%cot_uncertainty_offset, &
+           output_data%cot_uncertainty_vmin, &
+           output_data%cot_uncertainty_vmax, &
+           sreal_fill_value, output_data%cot_uncertainty_vmax)
+
+      !--------------------------------------------------------------------------
+      ! cer2, cer2_uncertainty
+      !--------------------------------------------------------------------------
+      call prepare_short_packed_float( &
+           input_data%cer2(i,j), output_data%cer2(i,j), &
+           output_data%cer_scale, output_data%cer_offset, &
+           output_data%cer_vmin, output_data%cer_vmax, &
+           sreal_fill_value, output_data%cer_vmax)
+
+      call prepare_short_packed_float( &
+           input_data%cer2_uncertainty(i,j), &
+           output_data%cer2_uncertainty(i,j), &
+           output_data%cer_uncertainty_scale, &
+           output_data%cer_uncertainty_offset, &
+           output_data%cer_uncertainty_vmin, &
+           output_data%cer_uncertainty_vmax, &
+           sreal_fill_value, output_data%cer_uncertainty_vmax)
+
+      !-------------------------------------------------------------------------
+      ! cwp2, cwp2_uncertainty
+      !-------------------------------------------------------------------------
+      call prepare_short_packed_float( &
+           input_data%cwp2(i,j), output_data%cwp2(i,j), &
+           output_data%cwp_scale, output_data%cwp_offset, &
+           output_data%cwp_vmin, output_data%cwp_vmax, &
+           sreal_fill_value, output_data%cwp_vmax)
+
+      call prepare_short_packed_float( &
+           input_data%cwp2_uncertainty(i,j), &
+           output_data%cwp2_uncertainty(i,j), &
+           output_data%cwp_uncertainty_scale, &
+           output_data%cwp_uncertainty_offset, &
+           output_data%cwp_uncertainty_vmin, &
+           output_data%cwp_uncertainty_vmax, &
+           sreal_fill_value, output_data%cwp_uncertainty_vmax)
+
+
+
+end if ! day
+
+
+   !----------------------------------------------------------------------------
+   ! ctp2, ctp2_uncertainty
+   !----------------------------------------------------------------------------
+   call prepare_short_packed_float( &
+        input_data%ctp2(i,j), output_data%ctp2(i,j), &
+        output_data%ctp_scale, output_data%ctp_offset, &
+        output_data%ctp_vmin, output_data%ctp_vmax, &
+        sreal_fill_value, output_data%ctp_vmax)
+
+   call prepare_short_packed_float( &
+        input_data%ctp2_uncertainty(i,j), output_data%ctp2_uncertainty(i,j), &
+        output_data%ctp_uncertainty_scale, output_data%ctp_uncertainty_offset, &
+        output_data%ctp_uncertainty_vmin, output_data%ctp_uncertainty_vmax, &
+        sreal_fill_value, output_data%ctp_uncertainty_vmax)
+
+
+
+   !----------------------------------------------------------------------------
+   ! cth2, cth2_uncertainty
+   !----------------------------------------------------------------------------
+   call prepare_short_packed_float( &
+        input_data%cth2(i,j), output_data%cth2(i,j), &
+        output_data%cth_scale, output_data%cth_offset, &
+        output_data%cth_vmin, output_data%cth_vmax, &
+        sreal_fill_value, output_data%cth_vmax)
+
+   call prepare_short_packed_float( &
+        input_data%cth2_uncertainty(i,j), output_data%cth2_uncertainty(i,j), &
+        output_data%cth_uncertainty_scale, output_data%cth_uncertainty_offset, &
+        output_data%cth_uncertainty_vmin, output_data%cth_uncertainty_vmax, &
+        sreal_fill_value, output_data%cth_uncertainty_vmax)
+
+ 
+   !----------------------------------------------------------------------------
+   ! ctt2, ctt2_uncertainty
+   !----------------------------------------------------------------------------
+   call prepare_short_packed_float( &
+        input_data%ctt2(i,j), output_data%ctt2(i,j), &
+        output_data%ctt_scale, output_data%ctt_offset, &
+        output_data%ctt_vmin, output_data%ctt_vmax, &
+        sreal_fill_value, output_data%ctt_vmax)
+
+   call prepare_short_packed_float( &
+        input_data%ctt2_uncertainty(i,j), output_data%ctt2_uncertainty(i,j), &
+        output_data%ctt_uncertainty_scale, output_data%ctt_uncertainty_offset, &
+        output_data%ctt_uncertainty_vmin, output_data%ctt_uncertainty_vmax, &
+        sreal_fill_value, output_data%ctt_uncertainty_vmax)
+
+
+end if ! multi layer cloud
+
+
+
+
 
    !----------------------------------------------------------------------------
    ! convergence, niter

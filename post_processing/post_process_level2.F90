@@ -114,11 +114,13 @@
 ! 2016/06/06, SP: Updates for bayesian selection without huge memory usage.
 ! 2016/07/09, SP: Further memory usage options: Can now use 'chunking' to reduce
 !    the amount of memory used. Works in same way as preproc option.
+! 2017/01/09, CP: added ML cloud variables changed phase to multi layervalu so can be recognised in L3
 !
 ! $Id$
 !
 ! Bugs:
 ! - Use of input_primary%cldtype is hardwired to view element 1.
+! - no phase switch applied on temperature of multi layer cloud
 !-------------------------------------------------------------------------------
 
 #ifndef WRAPPER
@@ -140,12 +142,14 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    use source_attributes_m
    use constants_cloud_typing_pavolonis_m
 
+
    implicit none
 
    integer, parameter           :: MaxInFiles = 32
 
    integer, parameter           :: IWat = 1
    integer, parameter           :: IIce = 2
+   integer, parameter           :: IMul = 3
 
    integer                      :: i, j, k
 
@@ -165,6 +169,8 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    logical                      :: use_new_bayesian_selection = .false.
    logical                      :: use_netcdf_compression = .true.
    logical                      :: use_chunks = .false.
+   logical                      :: use_ml = .false.
+   logical                      :: use_mltemp = .false.
    logical                      :: verbose = .true.
 
    integer                      :: n_in_files
@@ -235,14 +241,27 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    read(11,'(A)') in_files_primary(IWat)
    read(11,'(A)') in_files_primary(IIce)
 
+   if (use_ml .eq. .true.) then
+      read(11,'(A)') in_files_primary(IMul)
+   endif
+
    read(11,'(A)') in_files_secondary(IWat)
    read(11,'(A)') in_files_secondary(IIce)
+
+   if (use_ml .eq. .true.) then
+      read(11,'(A)') in_files_secondary(IMul)
+   endif
 
    read(11,'(A)') out_file_primary
    read(11,'(A)') out_file_secondary
    read(11,*) switch_phases
 
+! if single layer cloud then
    n_in_files = 2
+! if multi layer cloud then
+  if (use_ml .eq. .true.) then
+   n_in_files = 3 
+  endif
 
    if (out_file_secondary /= '') do_secondary = .true.
 
@@ -295,11 +314,18 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    end if
 
    if (verbose) then
+      write(*,*) ' n_in_files = ',  n_in_files
       write(*,*) 'path_and_file = ', trim(path_and_file)
       write(*,*) 'primary water input = ', trim(in_files_primary(IWat))
       write(*,*) 'primary ice input = ', trim(in_files_primary(IIce))
+        if (use_ml .eq. .true.) then
+	 write(*,*) 'primary ml input = ', trim(in_files_primary(IMul))
+	endif
       write(*,*) 'secondary water input = ', trim(in_files_secondary(IWat))
       write(*,*) 'secondary ice input = ', trim(in_files_secondary(IIce))
+        if (use_ml .eq. .true.) then
+	 write(*,*) 'secondary ml input = ', trim(in_files_secondary(IMul))
+ 	endif
       write(*,*) 'primary output = ', trim(out_file_primary)
       write(*,*) 'secondary output = ', trim(out_file_secondary)
       write(*,*) 'switch_phases = ', switch_phases
@@ -365,7 +391,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
                     chunk_ends(i_chunk)-chunk_starts(i_chunk)+1
       end do
    end if
-
+write(*,*) 'allocate common routine'
    ! Allocate the structures which hold the output in its final form
    call alloc_output_data_primary(indexing%common_indices_t, 100, output_primary)
    if (do_secondary) then
@@ -390,11 +416,20 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
 !        nullify(indexing%best_infile)
 !     end do
 
-      ! Read once-only inputs
+      ! Read once-only inputs (does not include all retrieved variables on standard ones)
+if (use_ml .eq. .true.) then
       call alloc_input_data_primary_all(indexing, input_primary(0))
       call read_input_primary_once(n_in_files, in_files_primary, &
            input_primary(0), indexing, loop_ind, global_atts, source_atts, &
-           chunk_starts( i_chunk), verbose)
+           chunk_starts( i_chunk),use_ml,verbose)
+
+ else 
+
+ call alloc_input_data_primary_all(indexing, input_primary(0))
+      call read_input_primary_once(n_in_files, in_files_primary, &
+           input_primary(0), indexing, loop_ind, global_atts, source_atts, &
+           chunk_starts( i_chunk),use_ml,verbose)
+endif
       if (do_secondary) then
          call alloc_input_data_secondary_all(indexing, input_secondary(0))
          call read_input_secondary_once(n_in_files, in_files_secondary, &
@@ -405,11 +440,16 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
       ! Read fields that vary from file to file
       if (use_new_bayesian_selection .neqv. .true.) then
          do i = 1, n_in_files
+	 if ( i .eq. 3) then
+	    use_mltemp=.true.
+	  else
+	    use_mltemp=.false.
+	  endif
             if (verbose) write(*,*) '********************************'
             if (verbose) write(*,*) 'read: ', trim(in_files_primary(i))
             call alloc_input_data_primary_class(loop_ind(i), input_primary(i))
             call read_input_primary_class(in_files_primary(i), input_primary(i), &
-                 loop_ind(i), .False., chunk_starts( i_chunk), verbose)
+                 loop_ind(i), .False., chunk_starts( i_chunk), use_mltemp, verbose)
             if (do_secondary) then
                if (verbose) write(*,*) 'read: ', trim(in_files_secondary(i))
                call alloc_input_data_secondary_class(loop_ind(i), input_secondary(i))
@@ -419,16 +459,27 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
          end do
       else
          ! Allocate a primary array to store temporary input data
-         call alloc_input_data_primary_all(indexing, input_primary(1))
+ if ( use_ml .eq. .true.) then
+write(*,*)' reading all the retrieved variables multi layer'
+         call alloc_input_data_primary_all(indexing, input_primary(3))
+else
+call alloc_input_data_primary_all(indexing, input_primary(1))
+endif
          if (do_secondary) then
             call alloc_input_data_secondary_all(indexing, input_secondary(1))
          end if
 
          ! Load only the cost values from input files
          do i = 1, n_in_files
+	 if ( i .eq. 3) then
+	    use_mltemp=.true.
+	  else
+	    use_mltemp=.false.
+	  endif
+
             call alloc_input_data_only_cost(loop_ind(i), input_primary(i))
             call read_input_primary_class(in_files_primary(i), input_primary(i), &
-                 loop_ind(i), .True.,chunk_starts( i_chunk), verbose)
+                 loop_ind(i), .True.,chunk_starts( i_chunk), use_mltemp, verbose)
          end do
 
          ! Find the input file with the lowest cost for each pixel
@@ -459,20 +510,40 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
          do k = 1, n_in_files
             if (verbose) write(*,*) '********************************'
             if (verbose) write(*,*) 'read: ', trim(in_files_primary(k))
+
+	  if ( use_ml .eq. .true.) then
+	    use_mltemp=.true.
+            call read_input_primary_class(in_files_primary(k), input_primary(3), &
+                 loop_ind(k), .False.,chunk_starts( i_chunk), use_mltemp,verbose)
+	  else
+	    use_mltemp=.false.
             call read_input_primary_class(in_files_primary(k), input_primary(1), &
-                 loop_ind(k), .False.,chunk_starts( i_chunk), verbose)
+                 loop_ind(k), .False.,chunk_starts( i_chunk), use_mltemp,verbose)
+	  endif
+
+
+
             if (do_secondary) then
                if (verbose) write(*,*) 'read: ', trim(in_files_secondary(k))
                call read_input_secondary_class(in_files_secondary(k), &
                     input_secondary(1), loop_ind(k),chunk_starts( i_chunk),  verbose)
             end if
+
             do j=indexing%Y0,indexing%Y1
                do i=indexing%X0,indexing%X1
                   if (input_primary(0)%phase(i,j) .eq. k) then
+if ( use_ml .eq. .true.) then
+write(*,*) 'read in multi layer all variables bb;'
                      call copy_class_specific_inputs(i, j, loop_ind(k), &
+                          input_primary(0), input_primary(3), &
+                          input_secondary(0), input_secondary(3), &
+                          do_secondary)
+else
+call copy_class_specific_inputs(i, j, loop_ind(k), &
                           input_primary(0), input_primary(1), &
                           input_secondary(0), input_secondary(1), &
                           do_secondary)
+endif
                      input_primary(0)%phase(i,j) = k
                   end if
                end do
@@ -487,6 +558,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
       end if
 
       do j=indexing%Y0,indexing%Y1
+
          do i=indexing%X0,indexing%X1
 
             ! Cloud CCI selection
@@ -509,6 +581,9 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
 
                ! Apply Pavolonis phase information to select retrieval phase
                ! variables select water type overwrite ice
+	        if (use_ml .eq. .true.) then
+
+endif
                select case (input_primary(0)%cldtype(i,j,1))
                case(FOG_TYPE, &
                     WATER_TYPE, &
@@ -525,7 +600,6 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
                   end if
                case(OPAQUE_ICE_TYPE, &
                     CIRRUS_TYPE, &
-                    OVERLAP_TYPE, &
                     PROB_OPAQUE_ICE_TYPE, &
                     PROB_CLEAR_TYPE)
                   phase_flag = 2_byte
@@ -538,10 +612,31 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
                      phase_flag = 1_byte
                      input_primary(0)%cldtype(i,j,1) = SWITCHED_TO_WATER_TYPE
                   end if
+		  case( OVERLAP_TYPE)
+		  if (use_ml .eq. .true.) then
+                      phase_flag = 3_byte
+		   endif
+		    if (use_ml .ne. .true.) then
+		      phase_flag = 2_byte
+		      if (switch_phases .and. &
+                      ((input_primary(IWat)%ctt(i,j) /= sreal_fill_value .and. &
+                        input_primary(IWat)%ctt(i,j) >= switch_wat_limit) .and. &
+                       (input_primary(IIce)%ctt(i,j) /= sreal_fill_value .and. &
+                        input_primary(IIce)%ctt(i,j) >= switch_ice_limit))) then
+                     phase_flag = 1_byte
+                     input_primary(0)%cldtype(i,j,1) = SWITCHED_TO_WATER_TYPE
+                  endif
+    		  endif
+              
                case default
                   phase_flag = 2_byte
                end select
+	        if (use_ml .eq. .true.) then
 
+endif
+!
+!once phase is selected fill in the values 1st for wat then for ice
+!
                if (phase_flag == 1_byte) then
                   call copy_class_specific_inputs(i, j, loop_ind(IWat), &
                        input_primary(0), input_primary(IWat), &
@@ -552,7 +647,30 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
                        input_primary(0), input_primary(IIce), &
                        input_secondary(0), input_secondary(IIce), do_secondary)
                   input_primary(0)%phase(i,j) = IPhaseIce
+
+               else if (phase_flag == 3_byte) then
+!multi layer cloud
+
+                  call copy_class_specific_inputs(i, j, loop_ind(IMul), &
+                       input_primary(0), input_primary(IMul),&
+                       input_secondary(0), input_secondary(IMul),do_secondary)
+                  input_primary(0)%phase(i,j) = IPhaseMul
+
                end if
+
+
+!
+!if multi layer cloud then copy over if pavolonis overlap type
+!
+	        if (use_ml .eq. .true.) then
+
+		   if (input_primary(0)%cldtype(i,j,1) == OVERLAP_TYPE) then
+ 		      call copy_class_specific_inputs(i, j, loop_ind(IMul), &
+                       	   input_primary(0), input_primary(IMul), &
+                       	   input_secondary(0), input_secondary(IMul), do_secondary)
+		   end if
+
+		end if
 
                ! Overwrite cc_total with cldmask for Cloud CCI
                input_primary(0)%cc_total(i,j) = input_primary(0)%cldmask(i,j,1)
@@ -596,6 +714,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
          end do
       end do
 
+
       ! Deallocate all input structures except for the first one
       do i = 1, n_in_files
          call dealloc_input_data_primary_class(input_primary(i))
@@ -608,7 +727,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
 
       do j=indexing%Y0,indexing%Y1
          do i=indexing%X0,indexing%X1
-           call prepare_output_primary_pp(i, j, indexing%common_indices_t, &
+           call prepare_output_primary_pp( i, j, indexing%common_indices_t, &
                input_primary(0), output_primary, output_optical_props_at_night)
             if (do_secondary) then
                call prepare_output_secondary_pp(i, j, indexing%common_indices_t, &
@@ -616,6 +735,8 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
             end if
          end do
       end do
+
+
       if (i_chunk .lt. n_chunks) then
          ! Deallocate the first input structure
          call dealloc_input_data_primary_all(input_primary(0))
@@ -623,6 +744,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
             call dealloc_input_data_secondary_all(input_secondary(0))
          end if
       end if
+
 
    end do !Chunking
 

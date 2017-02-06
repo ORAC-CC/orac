@@ -22,6 +22,7 @@
 ! 2015/07/26, GM: Changed type specific deflate levels and shuffling flags to
 !    just one.
 ! 2015/07/26, GM: Removed unused constants.
+! 2017/01/17, CP: added flag for multi layer cloud
 !
 ! $Id$
 !
@@ -45,5 +46,6 @@ module postproc_constants_m
    integer(byte), parameter :: IPhaseClU  = 0 ! clear/unknown
    integer(byte), parameter :: IPhaseWat  = 1 ! Water
    integer(byte), parameter :: IPhaseIce  = 2 ! Ice
+   integer(byte), parameter :: IPhaseMul  = 3 ! Multi layer
 
 end module postproc_constants_m

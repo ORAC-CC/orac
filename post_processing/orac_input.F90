@@ -31,6 +31,7 @@
 ! 2016/06/06, SP: New variable for bayesian selection without huge memory usage.
 ! 2016/07/19, AP: Reduce rho and swansea_s to only contain terms that were
 !    retrieved. This is indicated by the rho|ss_terms array (and Nrho|Nss).
+! 2017/01/09, CP: added ML definitions
 !
 ! $Id$
 !
@@ -99,6 +100,22 @@ module orac_input_m
       real(sreal),   pointer :: ctt_corrected_uncertainty(:,:)
       real(sreal),   pointer :: cwp(:,:)
       real(sreal),   pointer :: cwp_uncertainty(:,:)
+
+
+      real(sreal),   pointer :: cot2(:,:)
+      real(sreal),   pointer :: cot2_uncertainty(:,:)
+      real(sreal),   pointer :: cer2(:,:)
+      real(sreal),   pointer :: cer2_uncertainty(:,:)
+      real(sreal),   pointer :: ctp2(:,:)
+      real(sreal),   pointer :: ctp2_uncertainty(:,:)
+      real(sreal),   pointer :: cth2(:,:)
+      real(sreal),   pointer :: cth2_uncertainty(:,:)
+      real(sreal),   pointer :: ctt2(:,:)
+      real(sreal),   pointer :: ctt2_uncertainty(:,:)
+      real(sreal),   pointer :: cwp2(:,:)
+      real(sreal),   pointer :: cwp2_uncertainty(:,:)
+
+
       real(sreal),   pointer :: cloud_albedo(:,:,:)
       real(sreal),   pointer :: cloud_albedo_uncertainty(:,:,:)
       real(sreal),   pointer :: cee(:,:,:)
@@ -159,6 +176,13 @@ module orac_input_m
       real(sreal), pointer :: stemp_fg(:,:)
       real(sreal), pointer :: stemp_ap(:,:)
       real(sreal), pointer :: albedo(:,:,:)
+
+      real(sreal), pointer :: cot2_ap(:,:)
+      real(sreal), pointer :: cot2_fg(:,:)
+      real(sreal), pointer :: cer2_ap(:,:)
+      real(sreal), pointer :: cer2_fg(:,:)
+      real(sreal), pointer :: ctp2_ap(:,:)
+      real(sreal), pointer :: ctp2_fg(:,:)
 
       real(sreal), pointer :: channels(:,:,:)
       real(sreal), pointer :: y0(:,:,:)
@@ -272,6 +296,7 @@ subroutine cross_reference_indexing(n, loop_ind, main_ind)
 
    ! Activate all necessary output flags
    main_ind%flags%do_cloud      = any(loop_ind(1:n)%flags%do_cloud)
+   main_ind%flags%do_cloud_layer_2      = any(loop_ind(1:n)%flags%do_cloud_layer_2)
    main_ind%flags%do_aerosol    = any(loop_ind(1:n)%flags%do_aerosol)
    main_ind%flags%do_rho        = any(loop_ind(1:n)%flags%do_rho)
    main_ind%flags%do_swansea    = any(loop_ind(1:n)%flags%do_swansea)
