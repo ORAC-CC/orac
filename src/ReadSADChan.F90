@@ -73,7 +73,6 @@
 ! 2015/08/21, AP: Generalised MS last fix.
 ! 2015/09/07, AP: Allow verbose to be controlled from the driver file.
 ! 2016/07/28, GM: Remove hidden setting of Ctrl%Ind%NMixed.
-! 2017/01/28, CP: Added thermal measurement uncertainty
 !
 ! $Id$
 !
@@ -214,14 +213,6 @@ subroutine Read_SAD_Chan(Ctrl, SAD_Chan)
          read(c_lun, *, err=999, iostat=ios) SAD_Chan(i)%Solar%Rs
          SAD_Chan(i)%Solar%Rs = SAD_Chan(i)%Solar%Rs / 100.0
       end if
-
-
-      ! Set the measurement error covariance for the channel
-      ! Thermal/mixed use NEBT, Solar use NEdR
-      if (SAD_Chan(i)%Thermal%Flag > 0) then
-         Ctrl%Sy(i,i) = SAD_Chan(i)%Thermal%NEBT
-      end if
-
 
 999   if (ios /= 0) then
          write(*,*) 'ERROR: Read_SAD_Chan(): Error reading channel ' // &
