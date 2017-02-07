@@ -132,7 +132,7 @@
 !    terminates after the dump.
 ! 2016/08/11, SP: Add logical flag for processing when using only 1 view from a
 !                 multiangular sensor. Prevents post-processor problems.
-! 2017/01/19 Added in revised uncertainty for ML case
+! 2017/01/19, CP: Add in revised uncertainty for ML case.
 !
 ! $Id$
 !
@@ -230,12 +230,11 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    ! Locate the driver file
    !----------------------------------------------------------------------------
 #ifndef WRAPPER
-   if (command_argument_count() == 1) then
+   if (command_argument_count() >= 1) then
       drifile = ''
-      write(*,*) 'driver a',drifile
       call get_command_argument(1, drifile)
    else
-      call get_environment_variable("CC4CL_TEXTIN", drifile)
+      call get_environment_variable("ORAC_TEXTIN", drifile)
    end if
 
    dumpfile = ''
@@ -430,7 +429,6 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
 
    ! Use a short name for Ctrl%Approach
    a = Ctrl%Approach
-   write(*,*)' Approach used:', Ctrl%Approach
 
    ! Use a short name for Ctrl%Class
    c  = Ctrl%Class
@@ -847,6 +845,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%XB(IRs(:,IRho_DD)) = switch_app(a, Default=0.01)
    Ctrl%XB(ISP)            = switch_app(a, Default=0.3)
    Ctrl%XB(ISG)            = switch_app(a, Default=0.3)
+
    ! First guess values
    if (Ctrl%Approach /= AppCld2L) then
       Ctrl%X0(ITau)        = switch_cls(c, Default=0.8,   AerOx=-1.5,  AerSw=-0.3, &
@@ -876,30 +875,29 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%X0(IRs(:,IRho_DD)) = switch_app(a, Default=0.01)
    Ctrl%X0(ISP)            = switch_app(a, Default=0.3)
    Ctrl%X0(ISG)            = switch_app(a, Default=0.3)
+
    ! A priori uncertainty
    if (Ctrl%Approach /= AppCld2L) then
-   Ctrl%Sx(ITau)           = switch_cls(c, Default=1.0e+08, Aer=2.0)
-   Ctrl%Sx(IRe)            = switch_cls(c, Default=1.0e+08, Aer=0.5)
-   Ctrl%Sx(IPc)            = switch_cls(c, Default=1.0e+08)
-   Ctrl%Sx(IFr)            = switch_cls(c, Default=1.0e+08)
-   Ctrl%Sx(ITau2)          = switch_cls(c2,Default=1.0e+08, Aer=2.0)
-   Ctrl%Sx(IRe2)           = switch_cls(c2,Default=1.0e+08, Aer=0.5)
-   Ctrl%Sx(IPc2)           = switch_cls(c2,Default=1.0e+08)
-   Ctrl%Sx(IFr2)           = switch_cls(c2,Default=1.0e+08)
-   Ctrl%Sx(ITs)            = switch_app(a, Default=1.0e+08)
-
+      Ctrl%Sx(ITau)        = switch_cls(c, Default=1.0e+08, Aer=2.0)
+      Ctrl%Sx(IRe)         = switch_cls(c, Default=1.0e+08, Aer=0.5)
+      Ctrl%Sx(IPc)         = switch_cls(c, Default=1.0e+08)
+      Ctrl%Sx(IFr)         = switch_cls(c, Default=1.0e+08)
+      Ctrl%Sx(ITau2)       = switch_cls(c2,Default=1.0e+08, Aer=2.0)
+      Ctrl%Sx(IRe2)        = switch_cls(c2,Default=1.0e+08, Aer=0.5)
+      Ctrl%Sx(IPc2)        = switch_cls(c2,Default=1.0e+08)
+      Ctrl%Sx(IFr2)        = switch_cls(c2,Default=1.0e+08)
+      Ctrl%Sx(ITs)         = switch_app(a, Default=1.0e+08)
    else
-   Ctrl%Sx(ITau)           = switch_cls(c, Default=1.0e+08, Aer=2.0)
-   Ctrl%Sx(IRe)            = switch_cls(c, Default=1.0e+08, Aer=0.5)
-   Ctrl%Sx(IPc)            = switch_cls(c, Default=200.0)
-   Ctrl%Sx(IFr)            = switch_cls(c, Default=1.0e+08)
-   Ctrl%Sx(ITau2)          = switch_cls(c2,Default=1.0e+08, Aer=2.0)
-   Ctrl%Sx(IRe2)           = switch_cls(c2,Default=4.0, Aer=0.5)
-   Ctrl%Sx(IPc2)           = switch_cls(c2,Default=200.0)
-   Ctrl%Sx(IFr2)           = switch_cls(c2,Default=1.0e+08)
-   Ctrl%Sx(ITs)            = switch_app(a, Default=1.0e+08)
-
-   endif
+      Ctrl%Sx(ITau)        = switch_cls(c, Default=1.0e+08, Aer=2.0)
+      Ctrl%Sx(IRe)         = switch_cls(c, Default=1.0e+08, Aer=0.5)
+      Ctrl%Sx(IPc)         = switch_cls(c, Default=200.0)
+      Ctrl%Sx(IFr)         = switch_cls(c, Default=1.0e+08)
+      Ctrl%Sx(ITau2)       = switch_cls(c2,Default=1.0e+08, Aer=2.0)
+      Ctrl%Sx(IRe2)        = switch_cls(c2,Default=4.0, Aer=0.5)
+      Ctrl%Sx(IPc2)        = switch_cls(c2,Default=200.0)
+      Ctrl%Sx(IFr2)        = switch_cls(c2,Default=1.0e+08)
+      Ctrl%Sx(ITs)         = switch_app(a, Default=1.0e+08)
+   end if
 
    Ctrl%Sx(IRs(:,IRho_0V)) = switch_app(a, Default=1.0e+08, AerSw=1.0)
    Ctrl%Sx(IRs(:,IRho_0D)) = switch_app(a, Default=1.0e+08)
@@ -908,8 +906,6 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%Sx(ISP(1))         = switch_app(a, Default=1.0e+08, AerSw=0.01)
    Ctrl%Sx(ISP(2:))        = switch_app(a, Default=1.0e+08, AerSw=0.5)
    Ctrl%Sx(ISG)            = switch_app(a, Default=0.1)
-
-
    ! NOTE: The nadir P value doesn't really need to be retrieved.
 
    ! Measurement covariance
