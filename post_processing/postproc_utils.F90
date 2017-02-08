@@ -221,9 +221,9 @@ subroutine copy_class_specific_inputs_ml(i, j, indexing, primary3, primary2, pri
    type(input_indices_t),        intent(in)    :: indexing
    type(input_data_primary_t),   intent(inout) :: primary3
    type(input_data_primary_t),   intent(in)    :: primary1
-   type(input_data_primary_t),   intent(in)    :: primary2
+   type(input_data_primary_t),   intent(inout) :: primary2
    type(input_data_secondary_t), intent(inout) :: secondary3
-   type(input_data_secondary_t), intent(in)    :: secondary2
+   type(input_data_secondary_t), intent(inout) :: secondary2
    type(input_data_secondary_t), intent(in)    :: secondary1
 
    logical,                      intent(in)    :: do_secondary
