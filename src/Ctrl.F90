@@ -204,6 +204,9 @@ module Ctrl_m
       real                   :: XScale(MaxStateVar)! Scaling parameters
       real                   :: XLLim(MaxStateVar) ! Lower limit on state
       real                   :: XULim(MaxStateVar) ! Upper limit on state
+      real                   :: Pc_dmz             ! The closest the upper and
+                                                   ! lower layer clouds are
+                                                   ! allowed to get to each other
       logical                :: always_take_GN     ! When using ConvTest, always
                                                    ! return the Gauss-Newton
                                                    ! result, even if worse.

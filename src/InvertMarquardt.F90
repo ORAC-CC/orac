@@ -456,7 +456,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
 
       ! Check bounds for active state variables - does delta_X take any state
       ! variable outside it's range? (If so, freeze it at the boundary).
-      call Check_Limits(Xplus_dX, SPixel, stat)
+      call Check_Limits(Ctrl, Xplus_dX, SPixel, stat)
       if (stat /= 0) go to 99 ! Terminate processing this pixel
 
       ! ************ START EVALUATE FORWARD MODEL ************

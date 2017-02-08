@@ -33,6 +33,8 @@
 !    argument kept for now to avoid updating function interface.
 ! 2014/05/21, GM: Cleaned up the code.
 ! 2015/07/16, AP: Removed redundant arguments.
+! 2017/02/08, GM: Added Pc and Pc2 to close or completely crossing check and
+!    fix.
 !
 ! $Id$
 !
@@ -40,7 +42,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine Check_Limits(X, SPixel, status)
+subroutine Check_Limits(Ctrl, X, SPixel, status)
 
    use Ctrl_m
    use ECP_Constants_m
@@ -51,13 +53,15 @@ subroutine Check_Limits(X, SPixel, status)
 
    ! Argument declarations
 
+   type(Ctrl_t),   intent(in)    :: Ctrl
    real,           intent(inout) :: X(:)
    type(SPixel_t), intent(in)    :: SPixel
    integer,        intent(out)   :: status
 
    ! Local variable declarations
 
-   integer :: i
+   integer :: i, j
+   real    :: P_mid
 
    status = 0
 
@@ -68,5 +72,25 @@ subroutine Check_Limits(X, SPixel, status)
           X(SPixel%X(i)) = SPixel%XLLim(SPixel%X(i))
        end if
    end do
+
+   ! If two cloud layers are present then check that if they are to close or
+   ! crossing (upper layer lower in the atmosphere than the lower).  If either
+   ! of these happen they are set a minimum distance (Ctrl%Invpar%Pc_dmz) away
+   ! from each other centered around their current center.  Note: that this
+   ! check is independent of the retrieval approach.
+   L1: do i = 1, SPixel%Nx
+      if (SPixel%X(i) == IPc) then
+         L2: do j = 1, SPixel%Nx
+            if (SPixel%X(j) == IPc2) then
+               if (X(IPc2) - X(IPc) .lt. Ctrl%Invpar%Pc_dmz) then
+                  P_mid = (X(IPc) + X(IPc2)) / 2.
+                  X(IPc)  = P_mid - Ctrl%Invpar%Pc_dmz / 2.
+                  X(IPc2) = P_mid + Ctrl%Invpar%Pc_dmz / 2.
+               end if
+               exit L1
+            end if
+         end do L2
+      end if
+   end do L1
 
 end subroutine Check_Limits
