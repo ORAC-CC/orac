@@ -36,7 +36,7 @@
 ! 2016/01/28, GM: Add ctp and ctt corrected and corrected_uncertianty.
 ! 2016/02/10, GM: Remove redundant checks for fill_value.
 ! 2016/03/04, AP: Tidy prepare_*_packed_float.
-! 2017/01/04, CP: add in multi layer cloud
+! 2017/01/09, CP: ML additions.
 !
 ! $Id$
 !
@@ -495,12 +495,9 @@ end if
 if (indexing%flags%do_cloud_layer_2) then
 
    if (input_data%illum(i,j) .eq. 1_byte .or. output_optical_props_at_night) then
-
-
-   !----------------------------------------------------------------------------
-   ! cot2, cot2_uncertainty
-   !----------------------------------------------------------------------------
-
+      !----------------------------------------------------------------------------
+      ! cot2, cot2_uncertainty
+      !----------------------------------------------------------------------------
 
       call prepare_short_packed_float( &
            input_data%cot2(i,j), output_data%cot2(i,j), &
@@ -552,11 +549,7 @@ if (indexing%flags%do_cloud_layer_2) then
            output_data%cwp_uncertainty_vmin, &
            output_data%cwp_uncertainty_vmax, &
            sreal_fill_value, output_data%cwp_uncertainty_vmax)
-
-
-
-end if ! day
-
+end if
 
    !----------------------------------------------------------------------------
    ! ctp2, ctp2_uncertainty
@@ -573,8 +566,6 @@ end if ! day
         output_data%ctp_uncertainty_vmin, output_data%ctp_uncertainty_vmax, &
         sreal_fill_value, output_data%ctp_uncertainty_vmax)
 
-
-
    !----------------------------------------------------------------------------
    ! cth2, cth2_uncertainty
    !----------------------------------------------------------------------------
@@ -590,7 +581,6 @@ end if ! day
         output_data%cth_uncertainty_vmin, output_data%cth_uncertainty_vmax, &
         sreal_fill_value, output_data%cth_uncertainty_vmax)
 
- 
    !----------------------------------------------------------------------------
    ! ctt2, ctt2_uncertainty
    !----------------------------------------------------------------------------
@@ -605,13 +595,7 @@ end if ! day
         output_data%ctt_uncertainty_scale, output_data%ctt_uncertainty_offset, &
         output_data%ctt_uncertainty_vmin, output_data%ctt_uncertainty_vmax, &
         sreal_fill_value, output_data%ctt_uncertainty_vmax)
-
-
-end if ! multi layer cloud
-
-
-
-
+end if
 
    !----------------------------------------------------------------------------
    ! convergence, niter
@@ -678,6 +662,7 @@ end if ! multi layer cloud
 if (indexing%flags%do_cldmask) then
    output_data%cldmask(i,j,:)=input_data%cldmask(i,j,:)
 end if
+
 if (indexing%flags%do_cldmask_uncertainty) then
    !----------------------------------------------------------------------------
    ! cldmask_uncertainty

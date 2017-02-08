@@ -31,7 +31,7 @@
 ! 2016/06/06, SP: New variable for bayesian selection without huge memory usage.
 ! 2016/07/19, AP: Reduce rho and swansea_s to only contain terms that were
 !    retrieved. This is indicated by the rho|ss_terms array (and Nrho|Nss).
-! 2017/01/09, CP: added ML definitions
+! 2017/01/09, CP: ML additions.
 !
 ! $Id$
 !
@@ -101,7 +101,6 @@ module orac_input_m
       real(sreal),   pointer :: cwp(:,:)
       real(sreal),   pointer :: cwp_uncertainty(:,:)
 
-
       real(sreal),   pointer :: cot2(:,:)
       real(sreal),   pointer :: cot2_uncertainty(:,:)
       real(sreal),   pointer :: cer2(:,:)
@@ -114,7 +113,6 @@ module orac_input_m
       real(sreal),   pointer :: ctt2_uncertainty(:,:)
       real(sreal),   pointer :: cwp2(:,:)
       real(sreal),   pointer :: cwp2_uncertainty(:,:)
-
 
       real(sreal),   pointer :: cloud_albedo(:,:,:)
       real(sreal),   pointer :: cloud_albedo_uncertainty(:,:,:)
@@ -295,19 +293,19 @@ subroutine cross_reference_indexing(n, loop_ind, main_ind)
    main_ind%Ydim = loop_ind(1)%Ydim
 
    ! Activate all necessary output flags
-   main_ind%flags%do_cloud      = any(loop_ind(1:n)%flags%do_cloud)
-   main_ind%flags%do_cloud_layer_2      = any(loop_ind(1:n)%flags%do_cloud_layer_2)
-   main_ind%flags%do_aerosol    = any(loop_ind(1:n)%flags%do_aerosol)
-   main_ind%flags%do_rho        = any(loop_ind(1:n)%flags%do_rho)
-   main_ind%flags%do_swansea    = any(loop_ind(1:n)%flags%do_swansea)
-   main_ind%flags%do_indexing   = any(loop_ind(1:n)%flags%do_indexing)
+   main_ind%flags%do_cloud           = any(loop_ind(1:n)%flags%do_cloud)
+   main_ind%flags%do_cloud_layer_2   = any(loop_ind(1:n)%flags%do_cloud_layer_2)
+   main_ind%flags%do_aerosol         = any(loop_ind(1:n)%flags%do_aerosol)
+   main_ind%flags%do_rho             = any(loop_ind(1:n)%flags%do_rho)
+   main_ind%flags%do_swansea         = any(loop_ind(1:n)%flags%do_swansea)
+   main_ind%flags%do_indexing        = any(loop_ind(1:n)%flags%do_indexing)
    main_ind%flags%do_phase_pavolonis = &
                                   any(loop_ind(1:n)%flags%do_phase_pavolonis)
-   main_ind%flags%do_cldmask    = any(loop_ind(1:n)%flags%do_cldmask)
+   main_ind%flags%do_cldmask         = any(loop_ind(1:n)%flags%do_cldmask)
    main_ind%flags%do_cldmask_uncertainty = &
                                   any(loop_ind(1:n)%flags%do_cldmask_uncertainty)
-   main_ind%flags%do_phase      = any(loop_ind(1:n)%flags%do_phase)
-   main_ind%flags%do_covariance = any(loop_ind(1:n)%flags%do_covariance)
+   main_ind%flags%do_phase           = any(loop_ind(1:n)%flags%do_phase)
+   main_ind%flags%do_covariance      = any(loop_ind(1:n)%flags%do_covariance)
 
    ! Identify all available channels
    i0 = 0

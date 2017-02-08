@@ -22,7 +22,7 @@
 ! 2015/07/26, GM: Changed type specific deflate levels and shuffling flags to
 !    just one.
 ! 2015/07/26, GM: Removed unused constants.
-! 2017/01/17, CP: added flag for multi layer cloud
+! 2017/01/09, CP: ML additions.
 !
 ! $Id$
 !

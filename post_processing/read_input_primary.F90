@@ -34,6 +34,7 @@
 ! 2016/03/04, AP: Homogenisation of I/O modules.
 ! 2016/06/10, SP: Updates for bayesian selection without huge memory usage.
 ! 2017/01/02, SP: Updates for multi layer cloud
+! 2017/01/09, CP: ML additions.
 !
 ! $Id$
 !
@@ -197,34 +198,6 @@ if (indexing%flags%do_cloud) then
    call nc_read_packed_array(ncid, "cwp_uncertainty", &
         input_data%cwp_uncertainty, verbose, startp = [1, sval])
 
-write(*,*)' read input primary ml',use_ml
-
-if ( use_ml .eq. .true. ) then
-   call nc_read_packed_array(ncid, "cot2", input_data%cot2, verbose, startp = [1, sval])
-   call nc_read_packed_array(ncid, "cot2_uncertainty", &
-        input_data%cot2_uncertainty, verbose, startp = [1, sval])
-
-   call nc_read_packed_array(ncid, "cer2", input_data%cer2, verbose, startp = [1, sval])
-   call nc_read_packed_array(ncid, "cer2_uncertainty", &
-        input_data%cer2_uncertainty, verbose, startp = [1, sval])
-
- call nc_read_packed_array(ncid, "cth2", input_data%cth2, verbose, startp = [1, sval])
-   call nc_read_packed_array(ncid, "cth2_uncertainty", &
-        input_data%cth2_uncertainty, verbose, startp = [1, sval])
-
-   call nc_read_packed_array(ncid, "ctt2", input_data%ctt2, verbose, startp = [1, sval])
-   call nc_read_packed_array(ncid, "ctt2_uncertainty", &
-        input_data%ctt2_uncertainty, verbose, startp = [1, sval])
-
-   call nc_read_packed_array(ncid, "cwp2", input_data%cwp2, verbose, startp = [1, sval])
-   call nc_read_packed_array(ncid, "cwp2_uncertainty", &
-        input_data%cwp2_uncertainty, verbose, startp = [1, sval])
-
-
-endif
-
-
-
    do i=1,indexing%NSolar
       write(input_num,"(i4)") indexing%Y_Id(indexing%YSolar(i))
 
@@ -249,6 +222,28 @@ endif
       call nc_read_packed_array(ncid, input_dummy, &
            input_data%cee_uncertainty(:,:,i), verbose, startp = [1, sval])
    end do
+end if
+
+if (use_ml) then
+   call nc_read_packed_array(ncid, "cot2", input_data%cot2, verbose, startp = [1, sval])
+   call nc_read_packed_array(ncid, "cot2_uncertainty", &
+        input_data%cot2_uncertainty, verbose, startp = [1, sval])
+
+   call nc_read_packed_array(ncid, "cer2", input_data%cer2, verbose, startp = [1, sval])
+   call nc_read_packed_array(ncid, "cer2_uncertainty", &
+        input_data%cer2_uncertainty, verbose, startp = [1, sval])
+
+   call nc_read_packed_array(ncid, "cth2", input_data%cth2, verbose, startp = [1, sval])
+   call nc_read_packed_array(ncid, "cth2_uncertainty", &
+        input_data%cth2_uncertainty, verbose, startp = [1, sval])
+
+   call nc_read_packed_array(ncid, "ctt2", input_data%ctt2, verbose, startp = [1, sval])
+   call nc_read_packed_array(ncid, "ctt2_uncertainty", &
+        input_data%ctt2_uncertainty, verbose, startp = [1, sval])
+
+   call nc_read_packed_array(ncid, "cwp2", input_data%cwp2, verbose, startp = [1, sval])
+   call nc_read_packed_array(ncid, "cwp2_uncertainty", &
+        input_data%cwp2_uncertainty, verbose, startp = [1, sval])
 end if
 
    call nc_read_array(ncid, "convergence", input_data%convergence, verbose, startp = [1, sval])
@@ -304,13 +299,6 @@ subroutine read_input_primary_optional(ncid, input_data, indexing, read_flags, &
       read_flags%do_cloud = .false.
    end if
 
-!!not sure about this.....
-
-   if (indexing%flags%do_cloud_layer_2 .and. read_flags%do_cloud_layer_2) then
-      call nc_read_packed_array(ncid, "cccot_pre", input_data%cccot_pre, verbose, startp = [1, sval, 1])
-      read_flags%do_cloud_layer_2 = .false.
-   end if
-
    if (indexing%flags%do_cldmask .and. read_flags%do_cldmask) then
       call nc_read_array(ncid, "cldmask", input_data%cldmask, verbose, startp = [1, sval, 1])
       read_flags%do_cldmask = .false.
@@ -339,7 +327,7 @@ end subroutine read_input_primary_optional
 
 
 subroutine read_input_primary_once(nfile, fname, input_data, indexing, &
-     loop_ind, global_atts, source_atts, sval, use_ml,verbose)
+     loop_ind, global_atts, source_atts, sval, use_ml, verbose)
 
    use global_attributes_m
    use orac_ncdf_m
@@ -349,7 +337,6 @@ subroutine read_input_primary_once(nfile, fname, input_data, indexing, &
 
    integer,                    intent(in)    :: nfile
    character(len=path_length), intent(in)    :: fname(:)
-   character(len=path_length)    :: fnametest
    type(input_data_primary_t), intent(inout) :: input_data
    type(input_indices_t),      intent(in)    :: indexing
    type(input_indices_t),      intent(in)    :: loop_ind(:)
@@ -368,17 +355,11 @@ subroutine read_input_primary_once(nfile, fname, input_data, indexing, &
    read_flags = indexing%flags
 
    ! Read universally common fields from first input file
-write(*,*) 'oncefname(1)', trim(fname(1))
-!write(*,*) 'size of fname(1)', sizeof(fname(1))
-!fnametest='/group_workspaces/cems/cloud_ecv/data_out/aatsr/postproc/2008/06/01/ESACCI-L2-CLOUD-CLD-MODIS_CC4CL_AQUA_200806010210_fv6.0WAT.primary.nc'
-
-if (use_ml .ne. .true.) then
-      call nc_open(ncid, trim(adjustl(fname(1))))
-else
-!use multi layer file as the baseline
-write(*,*) 'once ml fname(3)', trim(fname(3))
-      call nc_open(ncid, trim(adjustl(fname(3))))
-endif
+   if (.not. use_ml) then
+      call nc_open(ncid, fname(1))
+   else
+      call nc_open(ncid, trim(fname(3)))
+   end if
 
    call nc_get_common_attributes(ncid, global_atts, source_atts)
 
@@ -423,8 +404,7 @@ endif
    end if
 
    do i=2,nfile
-write(*,*) 'xxfname(i)', fname(i)
-      call nc_open(ncid,trim(adjustl(fname(i))))
+      call nc_open(ncid,fname(i))
       call read_input_primary_optional(ncid, input_data, loop_ind(i), &
            read_flags, sval, verbose)
       if (nf90_close(ncid) .ne. NF90_NOERR) then
@@ -454,8 +434,7 @@ subroutine read_input_primary_class(fname, input_data, indexing, costonly, &
    integer :: ncid
 
    if (verbose) write(*,*) 'Opening primary input file: ', trim(fname)
-write(*,*) 'fname', fname 
-  call nc_open(ncid,trim(adjustl(fname)))
+   call nc_open(ncid,fname)
    if (.not. costonly) then
       call read_input_primary_common(ncid, input_data, indexing, sval, use_ml,verbose)
    else

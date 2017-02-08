@@ -35,7 +35,7 @@
 ! 2016/01/27, GM: Add cee and cee_uncertainty.
 ! 2016/01/28, GM: Add ctp and ctt corrected and corrected_uncertianty.
 ! 2016/03/02, AP: Homogenisation of I/O modules.
-! 2017/01/09, CP: ML additions
+! 2017/01/09, CP: ML additions.
 !
 ! $Id$
 !
@@ -72,18 +72,6 @@ subroutine dealloc_input_data_primary_common(data)
    if (associated(data%diffuse_frac))  deallocate(data%diffuse_frac)
    if (associated(data%diffuse_frac_uncertainty)) &
                                        deallocate(data%diffuse_frac_uncertainty)
-   if (associated(data%cot2))                         deallocate(data%cot2)
-   if (associated(data%cot2_uncertainty))             deallocate(data%cot2_uncertainty)
-   if (associated(data%cer2))                         deallocate(data%cer2)
-   if (associated(data%cer2_uncertainty))             deallocate(data%cer2_uncertainty)
-   if (associated(data%ctp2))                         deallocate(data%ctp2)
-   if (associated(data%ctp2_uncertainty))             deallocate(data%ctp2_uncertainty)
-   if (associated(data%cth2))                         deallocate(data%cth2)
-   if (associated(data%cth2_uncertainty))             deallocate(data%cth2_uncertainty)
-   if (associated(data%ctt2))                         deallocate(data%ctt2)
-   if (associated(data%ctt2_uncertainty))             deallocate(data%ctt2_uncertainty)
-   if (associated(data%cwp2))                         deallocate(data%cwp2)
-   if (associated(data%cwp2_uncertainty))             deallocate(data%cwp2_uncertainty)
 
    if (associated(data%cot))           deallocate(data%cot)
    if (associated(data%cot_uncertainty)) &
@@ -124,6 +112,25 @@ subroutine dealloc_input_data_primary_common(data)
    if (associated(data%cee))           deallocate(data%cee)
    if (associated(data%cee_uncertainty)) &
                                        deallocate(data%cee_uncertainty)
+
+   if (associated(data%cot2))          deallocate(data%cot2)
+   if (associated(data%cot2_uncertainty)) &
+                                       deallocate(data%cot2_uncertainty)
+   if (associated(data%cer2))          deallocate(data%cer2)
+   if (associated(data%cer2_uncertainty)) &
+                                       deallocate(data%cer2_uncertainty)
+   if (associated(data%ctp2))          deallocate(data%ctp2)
+   if (associated(data%ctp2_uncertainty)) &
+                                       deallocate(data%ctp2_uncertainty)
+   if (associated(data%cth2))          deallocate(data%cth2)
+   if (associated(data%cth2_uncertainty)) &
+                                       deallocate(data%cth2_uncertainty)
+   if (associated(data%ctt2))          deallocate(data%ctt2)
+   if (associated(data%ctt2_uncertainty)) &
+                                       deallocate(data%ctt2_uncertainty)
+   if (associated(data%cwp2))          deallocate(data%cwp2)
+   if (associated(data%cwp2_uncertainty)) &
+                                       deallocate(data%cwp2_uncertainty)
 
    if (associated(data%convergence))   deallocate(data%convergence)
    if (associated(data%niter))         deallocate(data%niter)

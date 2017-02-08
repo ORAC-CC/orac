@@ -37,7 +37,7 @@
 ! 2016/03/02, AP: Homogenisation of I/O modules.
 ! 2016/04/28, AP: Add multiple views.
 ! 2016/06/13, SP: Updates for bayesian selection without huge memory usage.
-! 2017/01/09, CP: all ML cloud
+! 2017/01/09, CP: ML additions.
 !
 ! $Id$
 !
@@ -47,9 +47,8 @@
 
 subroutine alloc_input_data_only_cost(ind,data)
 
-
    implicit none
-   
+
    type(input_indices_t),      intent(in)    :: ind
    type(input_data_primary_t), intent(inout) :: data
 
@@ -60,11 +59,10 @@ subroutine alloc_input_data_only_cost(ind,data)
 
 end subroutine alloc_input_data_only_cost
 
+
 subroutine alloc_input_data_primary_common(ind, data)
 
-
    implicit none
-
 
    type(input_indices_t),      intent(in)    :: ind
    type(input_data_primary_t), intent(inout) :: data
@@ -129,8 +127,6 @@ else
 end if
 
 if (ind%flags%do_cloud) then
-
-
    allocate(data%cot(ind%X0:ind%X1, ind%Y0:ind%Y1))
    data%cot = sreal_fill_value
    allocate(data%cot_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1))
@@ -197,53 +193,6 @@ if (ind%flags%do_cloud) then
    allocate(data%cee_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1, &
                                  ind%NThermal))
    data%cee_uncertainty = sreal_fill_value
-
-
-
-
-
-
-
-
-
-if (ind%flags%do_cloud_layer_2) then
-write(*,*)' allocate multi layer variables'
-   allocate(data%cot2(ind%X0:ind%X1, ind%Y0:ind%Y1))
-   data%cot2 = sreal_fill_value
-   allocate(data%cot2_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1))
-   data%cot2_uncertainty = sreal_fill_value
-
-   allocate(data%cer2(ind%X0:ind%X1, ind%Y0:ind%Y1))
-   data%cer2 = sreal_fill_value
-   allocate(data%cer2_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1))
-   data%cer2_uncertainty = sreal_fill_value
-
-   allocate(data%ctp2(ind%X0:ind%X1, ind%Y0:ind%Y1))
-   data%ctp2 = sreal_fill_value
-   allocate(data%ctp2_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1))
-   data%ctp2_uncertainty = sreal_fill_value
-
-
- 
-   allocate(data%cth2(ind%X0:ind%X1, ind%Y0:ind%Y1))
-   data%cth2 = sreal_fill_value
-   allocate(data%cth2_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1))
-   data%cth2_uncertainty = sreal_fill_value
-
-
-   allocate(data%ctt2(ind%X0:ind%X1, ind%Y0:ind%Y1))
-   data%ctt2 = sreal_fill_value
-   allocate(data%ctt2_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1))
-   data%ctt2_uncertainty = sreal_fill_value
-
-   allocate(data%cwp2(ind%X0:ind%X1, ind%Y0:ind%Y1))
-   data%cwp2 = sreal_fill_value
-   allocate(data%cwp2_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1))
-   data%cwp2_uncertainty = sreal_fill_value
-
-end if
-
-
 else
    nullify(data%cot)
    nullify(data%cot_uncertainty)
@@ -271,8 +220,39 @@ else
    nullify(data%cloud_albedo_uncertainty)
    nullify(data%cee)
    nullify(data%cee_uncertainty)
+end if
 
 if (ind%flags%do_cloud_layer_2) then
+   allocate(data%cot2(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cot2 = sreal_fill_value
+   allocate(data%cot2_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cot2_uncertainty = sreal_fill_value
+
+   allocate(data%cer2(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cer2 = sreal_fill_value
+   allocate(data%cer2_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cer2_uncertainty = sreal_fill_value
+
+   allocate(data%ctp2(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%ctp2 = sreal_fill_value
+   allocate(data%ctp2_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%ctp2_uncertainty = sreal_fill_value
+
+   allocate(data%cth2(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cth2 = sreal_fill_value
+   allocate(data%cth2_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cth2_uncertainty = sreal_fill_value
+
+   allocate(data%ctt2(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%ctt2 = sreal_fill_value
+   allocate(data%ctt2_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%ctt2_uncertainty = sreal_fill_value
+
+   allocate(data%cwp2(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cwp2 = sreal_fill_value
+   allocate(data%cwp2_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%cwp2_uncertainty = sreal_fill_value
+else
    nullify(data%cot2)
    nullify(data%cot2_uncertainty)
    nullify(data%cer2)
@@ -285,9 +265,6 @@ if (ind%flags%do_cloud_layer_2) then
    nullify(data%ctt2_uncertainty)
    nullify(data%cwp2)
    nullify(data%cwp2_uncertainty)
-end if
-
-
 end if
 
    allocate(data%convergence(ind%X0:ind%X1, ind%Y0:ind%Y1))
@@ -479,11 +456,6 @@ else
    nullify(data%stemp_ap)
 end if
 
-
-
-
-
-
 if (ind%flags%do_cloud_layer_2) then
    allocate(data%cot2_ap(ind%X0:ind%X1, ind%Y0:ind%Y1))
    data%cot2_ap = sreal_fill_value
@@ -507,11 +479,7 @@ else
    nullify(data%cer2_fg)
    nullify(data%ctp2_ap)
    nullify(data%ctp2_fg)
-
 end if
-
-
-
 
    allocate(data%y0(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%Ny))
    data%y0 = sreal_fill_value

@@ -19,7 +19,7 @@
 !    names for wrapper
 ! 2015/12/30, AP: Have all albedo fields use the same values.
 ! 2016/03/04, AP: Tidy prepare_*_packed_float.
-! 2017/01/04, CP: add in ML valraibles 
+! 2017/01/09, CP: ML additions.
 !
 ! $Id$
 !
@@ -214,8 +214,6 @@ if (indexing%flags%do_cloud) then
    end do
 end if
 
-
-
 if (indexing%flags%do_cloud_layer_2) then
    !----------------------------------------------------------------------------
    ! cot2_ap, cot2_fg
@@ -263,17 +261,7 @@ if (indexing%flags%do_cloud_layer_2) then
         sreal_fill_value, output_data%ctp_fg_vmax)
 
 
-end if ! ML
-
-
-
-
-
-
-
-
-
-
+end if
 
    !----------------------------------------------------------------------------
    ! channels
