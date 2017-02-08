@@ -25,6 +25,7 @@
 !    Note: This should work with either the OPER or FCST streams from ECMWF.
 ! 2016/04/26, AP: There are no high res files compatible with ecmwf_flag=1.
 !    Merge _dwd routines with _nc.
+! 2017/02/04, SP: Add ecmwf_flag=5, for reading NOAA GFS forecast (EKWork)
 !
 ! $Id$
 !
@@ -53,6 +54,8 @@ subroutine read_ecmwf_wind(ecmwf_flag, ecmwf_path_file, ecmwf_HR_path_file, &
 
    ! Set the number of levels in the input file, defaults to 61
    select case(ecmwf_nlevels)
+   case(31)
+      ecmwf%kdim=31
    case(60)
       ecmwf%kdim=60
    case(91)
@@ -65,24 +68,24 @@ subroutine read_ecmwf_wind(ecmwf_flag, ecmwf_path_file, ecmwf_HR_path_file, &
 
    select case (ecmwf_flag)
    case(0)
-      call read_ecmwf_wind_grib(ecmwf_path_file,ecmwf,.false.)
+      call read_ecmwf_wind_grib(ecmwf_path_file,ecmwf,.false.,ecmwf_flag)
       if (verbose) write(*,*)'ecmwf_dims grib: ',ecmwf%xdim,ecmwf%ydim
       if (use_hr_ecmwf) then
-         call read_ecmwf_wind_grib(ecmwf_HR_path_file,ecmwf_HR,.true.)
+         call read_ecmwf_wind_grib(ecmwf_HR_path_file,ecmwf_HR,.true.,ecmwf_flag)
       end if
    case(1)
       call read_ecmwf_wind_nc(ecmwf,ecmwf_path_file,ecmwf_path_file2, &
            ecmwf_path_file3)
       if (verbose) write(*,*)'ecmwf_dims ncdf: ',ecmwf%xdim,ecmwf%ydim
       if (use_hr_ecmwf) then
-         call read_ecmwf_wind_grib(ecmwf_HR_path_file,ecmwf_HR,.true.)
+         call read_ecmwf_wind_grib(ecmwf_HR_path_file,ecmwf_HR,.true.,ecmwf_flag)
       end if
    case(2)
       call read_ecmwf_wind_badc(ecmwf_path_file,ecmwf_path_file2, &
            ecmwf_path_file3,ecmwf)
       if (verbose) write(*,*)'ecmwf_dims badc: ',ecmwf%xdim,ecmwf%ydim
       if (use_hr_ecmwf) then
-         call read_ecmwf_wind_grib(ecmwf_HR_path_file,ecmwf_HR,.true.)
+         call read_ecmwf_wind_grib(ecmwf_HR_path_file,ecmwf_HR,.true.,ecmwf_flag)
       end if
    case(3)
       call read_ecmwf_wind_nc(ecmwf,ecmwf_path_file)
@@ -96,6 +99,15 @@ subroutine read_ecmwf_wind(ecmwf_flag, ecmwf_path_file, ecmwf_HR_path_file, &
       if (use_hr_ecmwf) then
          call read_ecmwf_wind_nc(ecmwf_HR,ecmwf_HR_path_file)
       end if
+   case(5)
+      call read_ecmwf_wind_grib(ecmwf_path_file,ecmwf,.false.,ecmwf_flag)
+      if (verbose) write(*,*)'ecmwf_dims grib: ',ecmwf%xdim,ecmwf%ydim
+      if (use_hr_ecmwf) then
+         call read_ecmwf_wind_grib(ecmwf_HR_path_file,ecmwf_HR,.true.,ecmwf_flag)
+      end if
+   case default
+      write(*,*) "Incorrect ECMWF flag, must be between 0-5."
+      stop
    end select
    if (verbose) then
       write(*,*) 'U10) Min: ',minval(ecmwf%u10),', Max: ',maxval(ecmwf%u10)
@@ -166,6 +178,7 @@ subroutine read_ecmwf(ecmwf_flag, ecmwf_path_file, ecmwf_path_file2, &
 
    select case (ecmwf_flag)
    case(0)
+      if (verbose) write(*,*) 'Reading ecmwf path: ',trim(ecmwf_path_file)
       call read_ecmwf_grib(ecmwf_path_file,preproc_dims,preproc_geoloc, &
            preproc_prtm,verbose)
    case(1)
@@ -200,6 +213,10 @@ subroutine read_ecmwf(ecmwf_flag, ecmwf_path_file, ecmwf_path_file2, &
       if (verbose) write(*,*) 'Reading ecmwf path: ',trim(ecmwf_path_file)
       call read_ecmwf_nc(ecmwf_path_file,ecmwf,preproc_dims,preproc_geoloc, &
            preproc_prtm,verbose,ecmwf_flag)
+   case(5)
+      if (verbose) write(*,*) 'Reading gfs path: ',trim(ecmwf_path_file)
+      call read_gfs_grib(ecmwf_path_file,preproc_dims,preproc_geoloc, &
+           preproc_prtm,verbose)
    end select
 
 

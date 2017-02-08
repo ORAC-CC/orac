@@ -26,6 +26,7 @@
 ! 2016/04/03, SP: Add option to process ECMWF forecast in single NetCDF4 file
 !    Three new arrays added, these store the hybrid level (60,91,137)
 !    conversions.
+! 2017/02/07, SP: Added support for NOAA GFS atmosphere data (EKWork)
 !
 ! $Id$
 !
@@ -58,6 +59,7 @@ contains
 #include "read_ecmwf_wind_badc.F90"
 #include "read_ecmwf_nc.F90"
 #include "read_ecmwf_grib.F90"
+#include "read_gfs_grib.F90"
 #include "rearrange_ecmwf.F90"
 
 subroutine ecmwf_abvec_init(ecmwf)

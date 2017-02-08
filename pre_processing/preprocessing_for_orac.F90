@@ -255,6 +255,7 @@
 ! 2016/05/31, GT: Added use_l1_land_mask optional argument to prevent USGS DEM
 !    from overwriting the land/sea mask provided by L1 data (assuming the L1
 !    data provides one!).
+! 2017/02/06, SP: Added support for NOAA GFS atmosphere data (EKWork)
 !
 ! $Id$
 !
@@ -292,6 +293,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    use read_viirs_m
    use read_slstr_m
    use rttov_driver_m
+   use rttov_driver_gfs_m
    use setup_m
    use surface_emissivity_m
    use surface_reflectance_m
@@ -896,6 +898,8 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
          end if
       end if
 
+      if (ecmwf_flag .eq. 5) ecmwf_nlevels=31
+
       ! read surface wind fields and ECMWF dimensions
       if (ecmwf_time_int_method .ne. 2) then
          call read_ecmwf_wind(ecmwf_flag, ecmwf_path_file(1), &
@@ -970,7 +974,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
 
       if (verbose) write(*,*) 'Compute geopotential vertical coords'
       ! compute geopotential vertical coordinate from pressure coordinate
-      call compute_geopot_coordinate(preproc_prtm, preproc_dims, ecmwf)
+      if (ecmwf_flag .ne. 5) call compute_geopot_coordinate(preproc_prtm, preproc_dims, ecmwf)
 
       ! read USGS physiography file, including land use and DEM data
       ! NOTE: variable imager_flags%lsflag is overwritten by USGS data !!!
@@ -1027,14 +1031,21 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
            config_file,msi_file,cf_file,lsf_file,geo_file,loc_file,alb_file, &
            platform,sensor,global_atts,source_atts,cyear,cmonth,cday,chour, &
            cminute,preproc_dims,imager_angles,imager_geolocation,netcdf_info, &
-           channel_info,include_full_brdf,verbose)
+           channel_info,include_full_brdf,ecmwf_flag,verbose)
 
       ! perform RTTOV calculations
       if (verbose) write(*,*) 'Perform RTTOV calculations'
-      call rttov_driver(rttov_coef_path,rttov_emiss_path,sensor,platform, &
-           preproc_dims,preproc_geoloc,preproc_geo,preproc_prtm,preproc_surf, &
-           netcdf_info,channel_info,year,month,day,use_modis_emis_in_rttov, &
-           verbose)
+      if (ecmwf_flag .eq. 5) then
+         call rttov_driver_gfs(rttov_coef_path,rttov_emiss_path,sensor,platform, &
+              preproc_dims,preproc_geoloc,preproc_geo,preproc_prtm,preproc_surf, &
+              netcdf_info,channel_info,year,month,day,use_modis_emis_in_rttov, &
+              verbose)
+      else
+         call rttov_driver(rttov_coef_path,rttov_emiss_path,sensor,platform, &
+              preproc_dims,preproc_geoloc,preproc_geo,preproc_prtm,preproc_surf, &
+              netcdf_info,channel_info,year,month,day,use_modis_emis_in_rttov, &
+              verbose)
+      endif
 
 #ifdef WRAPPER
 

@@ -26,7 +26,7 @@
 ! ecmwf_path2out string out If badc, full path to appropriate GGAS file.
 ! ecmwf_path3out string out If badc, full path to appropriate GPAM file.
 ! ecmwf_flag     int    in  0: A single GRB file; 1: 3 NCDF files; 2: BADC files
-!                           4: One ECMWF forecast GRB file
+!                           4: One ECMWF forecast GRB file, 5 NOAA GFS grib
 ! assume_full_path
 !                logic  in  T: inputs are filenames; F: folder names
 !
@@ -57,6 +57,7 @@
 !    of the HR ERA data (copied from changes made, but committed to R3970
 !    version of code by CP).
 ! 2016/07/31, GM: Tidying of the code drop above.
+! 2017/01/31, SP: Add ecmwf_flag=5, for reading NOAA GFS forecast (EKWork)
 !
 ! $Id$
 !
@@ -100,14 +101,30 @@ subroutine set_ecmwf(cyear,cmonth,cday,chour,ecmwf_path,ecmwf_path2, &
    character     :: cera_year*4, cera_month*2, cera_day*2, cera_hour*2
    character     :: cera_year2*4, cera_month2*2, cera_day2*2, cera_hour2*2
 
+   real(dreal)   :: time_fac
+
+   ! Check that we're not trying to use full path GFS data
+   if ((ecmwf_flag .eq. 5) .and. (assume_full_path .neqv. .true.)) then
+   	write(*,*)"When using GFS data assume_full_path *must* be True."
+   	print*,ecmwf_flag,(ecmwf_flag .eq. 5),(assume_full_path .neqv. .true.)
+   	stop
+   endif
+
+   ! Use 3-hourly NOAA GFS data, otherwise use 6-hourly ECMWF data
+   if (ecmwf_flag .eq. 5) then
+      time_fac = 3._dreal
+   else
+      time_fac = 6._dreal
+   endif
+
    ! Rather than deal with whether the next 6 hour file is in the next month,
    ! in the next year, or if the year is a leap year it is more straight
    ! forward to convert to Julian day space, then operate, then convert back.
    if (time_interp_method .eq. 1 .or. time_interp_method .eq. 2) then
       jday = find_center_time(imager_geolocation, imager_time)
 
-      jday0 = floor(jday / (6._dreal / 24._dreal)           ) * 6._dreal / 24._dreal
-      jday1 = floor(jday / (6._dreal / 24._dreal) + 1._dreal) * 6._dreal / 24._dreal
+      jday0 = floor(jday / (time_fac / 24._dreal)           ) * time_fac / 24._dreal
+      jday1 = floor(jday / (time_fac / 24._dreal) + 1._dreal) * time_fac / 24._dreal
 
       time_int_fac = (jday - jday0) / (jday1 - jday0)
    end if
@@ -131,6 +148,10 @@ subroutine set_ecmwf(cyear,cmonth,cday,chour,ecmwf_path,ecmwf_path2, &
          ecmwf_path_file2 = ecmwf_path2
          ecmwf_path_file3 = ecmwf_path3
       end if
+      if (ecmwf_flag .eq. 5) then
+         ecmwf_path_file(1)  = ecmwf_path(1)
+         ecmwf_path_file(2)  = ecmwf_path2(1)
+      endif
    else
       if (time_interp_method .eq. 0) then
          ! pick last ERA interim file wrt sensor time (as on the same day)

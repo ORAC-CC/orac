@@ -30,6 +30,7 @@
 ! 2016/04/26, AP: For high res files, abvec now set with init routine.
 ! 2016/05/26, GT: Moved ecmwf%kdim=nk statement inside if (.not. high_res) block,
 !    as nk is undefined in the high_res case
+! 2017/02/07, SP: Added support for NOAA GFS atmosphere data (EKWork)
 !
 ! $Id$
 !
@@ -37,7 +38,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf, high_res)
+subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf, high_res, ecmwf_flag)
 
    use grib_api
    use preproc_constants_m
@@ -47,12 +48,14 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf, high_res)
    character(len=*), intent(in)    :: ecmwf_path
    type(ecmwf_t),    intent(inout) :: ecmwf
    logical,          intent(in)    :: high_res
+   integer,          intent(in)    :: ecmwf_flag
 
    real, allocatable, dimension(:) :: pv,lat,lon,val
    integer                         :: fid,gid,stat
    integer                         :: PVPresent,PLPresent
    integer                         :: i,n,ni,nj,nk,npv,ni_,nj_
    integer                         :: param,level,nlevels
+   character(100)                  :: ltype,lname
 
    if (len(trim(ecmwf_path)) .gt. 1024) call h_e_e('wind_grib', &
          'Filename argument string ecmwf_path is too long.  It must be ' // &
@@ -65,14 +68,17 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf, high_res)
    if (stat .ne. 0) call h_e_e('wind_grib', 'Error getting GRIB_ID. '//trim(ecmwf_path))
    if (gid .eq. GRIB_END_OF_FILE) call h_e_e('wind_grib', 'Empty GRIB file.')
 
-   if (.not. high_res) then
+
+
+   if ((.not. high_res) .and. (ecmwf_flag .ne. 5)) then
+   	PRINT*,"hihihih"
       ! ensure it contains the expected fields
       call grib_get(gid,'PVPresent',PVPresent)
       if (stat .ne. 0) call h_e_e('wind_grib', 'Error getting PVPresent.')
       if (PVPresent .eq. 0) &
-           call h_e_e('wind_grib', 'Incorrect file format. Check ECMWF_FLAG.')
+           call h_e_e('wind_grib', 'Incorrect file format. Check ECMWF_FLAG. ?UJ')
       call grib_get(gid,'PLPresent',PLPresent)
-      if (stat .ne. 0) call h_e_e('wind_grib', 'Error getting PVPresent.')
+      if (stat .ne. 0) call h_e_e('wind_grib', 'Error getting PLPresent.')
       if (PLPresent .eq. 1) &
            call h_e_e('wind_grib', 'Incorrect file formatting. Check ECMWF_FLAG.')
 
@@ -97,18 +103,27 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf, high_res)
    allocate(lat(n))
    allocate(val(n))
 
+
    ! allocate permanent arrays
    allocate(ecmwf%lon(ni))
    allocate(ecmwf%lat(nj))
+
    if (.not. high_res) then
-      allocate(ecmwf%avec(nk+1))
-      allocate(ecmwf%bvec(nk+1))
+      if (ecmwf_flag .ne. 5) allocate(ecmwf%avec(nk+1))
+      if (ecmwf_flag .ne. 5) allocate(ecmwf%bvec(nk+1))
+      if (ecmwf_flag .eq. 5) allocate(ecmwf%avec(ecmwf%kdim))
+      if (ecmwf_flag .eq. 5) allocate(ecmwf%bvec(ecmwf%kdim))
       allocate(ecmwf%u10(ni,nj))
       allocate(ecmwf%v10(ni,nj))
    end if
    allocate(ecmwf%skin_temp(ni,nj))
    allocate(ecmwf%snow_depth(ni,nj))
    allocate(ecmwf%sea_ice_cover(ni,nj))
+
+
+   ! Initialise
+   ecmwf%lon(:)=sreal_fill_value
+   ecmwf%lat(:)=sreal_fill_value
 
    nlevels=0
    do while (stat .ne. GRIB_END_OF_FILE)
@@ -119,6 +134,10 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf, high_res)
       if (stat .ne. 0 .or. nj_ .ne. nj) call h_e_e('wind_grib', 'Error with Nj.')
       call grib_get(gid,'level',level,stat)
       if (stat .ne. 0) call h_e_e('wind_grib', 'Error getting level.')
+      call grib_get(gid,'typeOfLevel',ltype,stat)
+      if (stat .ne. 0) call h_e_e('wind_grib', 'Error getting level type.')
+      call grib_get(gid,'name',lname,stat)
+      if (stat .ne. 0) call h_e_e('wind_grib', 'Error getting name.')
 
       ! count level number
       if (level .gt. nlevels) nlevels=level
@@ -126,6 +145,7 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf, high_res)
       ! if wind field, read and output
       call grib_get(gid,'parameter',param,stat)
       if (stat .ne. 0) call h_e_e('wind_grib', 'Error getting parameter.')
+
       select case (param)
       case(165)
          if (.not. high_res) then
@@ -160,11 +180,32 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf, high_res)
 
          ecmwf%sea_ice_cover=reshape(val, (/ni,nj/))
       case(141)
-         ! snow depth
+         ! snow depth (ECMWF)
          call grib_get(gid,'values',val,stat)
          if (stat .ne. 0) call h_e_e('wind_grib', 'Error reading snow_depth.')
 
          ecmwf%snow_depth=reshape(val, (/ni,nj/))
+      case(3066)
+         ! snow depth (GFS)
+         call grib_get(gid,'values',val,stat)
+         if (stat .ne. 0) call h_e_e('wind_grib', 'Error reading snow_depth.')
+
+         ecmwf%snow_depth=reshape(val, (/ni,nj/))
+         where (ecmwf%snow_depth .eq. 9999.) ecmwf%snow_depth = sreal_fill_value
+      case(130)
+         if (trim(ltype) .eq. 'surface' .and. ecmwf_flag .eq. 5) then
+            if (ecmwf_flag .eq. 5) then
+               ! skin temp (GFS) - proxied by surface temp
+               call grib_get_data(gid,lat,lon,val,stat)
+               if (stat .ne. 0) call h_e_e('wind_grib', 'Error reading skin_temp.')
+
+               ecmwf%skin_temp=reshape(val, (/ni,nj/))
+               ecmwf%lon=lon(1:ni)
+               do i=1,n,ni
+                  ecmwf%lat(1+i/ni)=lat(i)
+               end do
+            endif
+         endif
       end select
 
       ! advance file position
@@ -174,11 +215,13 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf, high_res)
 
    call grib_close_file(fid)
 
+   if (all(ecmwf%lat .eq. sreal_fill_value) .eqv. .true.) call h_e_e('wind_grib', 'No geoinfo, check skin/sfc temp in GRB.')
+
    ! set ECMWF dimensions
 
    ecmwf%xdim=ni
    ecmwf%ydim=nj
-   if (.not. high_res) then
+   if (.not. high_res .and. ecmwf_flag .ne. 5) then
       ecmwf%kdim=nk
       if (nk .ne. nlevels) call h_e_e('wind_grib', 'Inconsistent vertical levels.')
       ecmwf%avec=pv(1:nk+1)
@@ -186,7 +229,7 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf, high_res)
    end if
 
    ! clean-up
-   if (.not. high_res) then
+   if (.not. high_res .and. ecmwf_flag .ne. 5) then
       deallocate(pv)
    end if
    deallocate(lat)

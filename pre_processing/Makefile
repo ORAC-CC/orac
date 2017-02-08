@@ -21,9 +21,10 @@
 # 2014/10/23, Oliver Sus: Changes related to USGS, Pavolonis, and NN cloud mask.
 # 2015/02/19, Greg McGarragh: Added the read_seviri module.
 # 2015/02/24, Greg McGarragh: Added the utils_for_main module.
-# 2016/04/08, Simon Proud: Added the read_himawari module.
-# 2016/05/16, Simon Proud: Added the read_viirs module.
-# 2016/06/14, Simon Proud: Added the read_slstr module.
+# 2016/04/08, SP: Added the read_himawari module.
+# 2016/05/16, SP: Added the read_viirs module.
+# 2016/06/14, SP: Added the read_slstr module.
+# 2017/02/07, SP: Added support for NOAA GFS atmosphere data (EKWork)
 #
 # Notes:
 # It appears that -lopenjpeg needs to be included in the LIBS list since on some
@@ -77,6 +78,7 @@ PREPROC_OBJ_F90 = $(OBJS)/aatsr_corrections.o \
                   $(OBJS)/read_USGS_file.o \
                   $(OBJS)/ross_thick_li_sparse_r.o \
                   $(OBJS)/rttov_driver.o \
+                  $(OBJS)/rttov_driver_gfs.o \
                   $(OBJS)/setup.o \
                   $(OBJS)/surface_emissivity.o \
                   $(OBJS)/surface_reflectance.o \

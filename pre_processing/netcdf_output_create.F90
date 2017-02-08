@@ -55,6 +55,7 @@
 ! 2014/09/28, GM: Removed use_chunking argument.
 ! 2014/01/12, CP: added source attributes
 ! 2014/12/16, GM: Put back netcdf_create_config() moved out in the above change.
+! 2017/02/07, SP: Added support for NOAA GFS atmosphere data (EKWork)
 !
 ! $Id$
 !
@@ -66,7 +67,7 @@ subroutine netcdf_output_create(output_path,lwrtm_file,swrtm_file,prtm_file, &
    config_file,msi_file,cf_file,lsf_file,geo_file,loc_file,alb_file,platform, &
    sensor,global_atts,source_atts,cyear,cmonth,cday,chour,cminute, &
    preproc_dims,imager_angles,imager_geolocation,netcdf_info,channel_info, &
-   include_full_brdf,verbose)
+   include_full_brdf,ecmwf_flag,verbose)
 
    use channel_structures_m
    use global_attributes_m
@@ -98,6 +99,7 @@ subroutine netcdf_output_create(output_path,lwrtm_file,swrtm_file,prtm_file, &
 
    type(channel_info_t),           intent(in)    :: channel_info
    logical,                        intent(in)    :: include_full_brdf
+   integer,                        intent(in)    :: ecmwf_flag
    logical,                        intent(in)    :: verbose
 
 
@@ -115,7 +117,7 @@ subroutine netcdf_output_create(output_path,lwrtm_file,swrtm_file,prtm_file, &
         cminute,platform,sensor, &
         trim(adjustl(output_path))//'/'//trim(adjustl(prtm_file)), &
         NETCDF_OUTPUT_FILE_PRTM, preproc_dims, netcdf_info,channel_info, &
-        verbose)
+        ecmwf_flag,verbose)
 
    ! create lwrtm file
    call netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
@@ -123,7 +125,7 @@ subroutine netcdf_output_create(output_path,lwrtm_file,swrtm_file,prtm_file, &
         platform,sensor, &
         trim(adjustl(output_path))//'/'//trim(adjustl(lwrtm_file)), &
         NETCDF_OUTPUT_FILE_LWRTM,preproc_dims, netcdf_info,channel_info, &
-        verbose)
+        ecmwf_flag,verbose)
 
    ! create swrtm file
    call netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
@@ -131,7 +133,7 @@ subroutine netcdf_output_create(output_path,lwrtm_file,swrtm_file,prtm_file, &
         platform,sensor, &
         trim(adjustl(output_path))//'/'//trim(adjustl(swrtm_file)), &
         NETCDF_OUTPUT_FILE_SWRTM, preproc_dims, netcdf_info,channel_info, &
-        verbose)
+        ecmwf_flag,verbose)
 
 
    ! Create swath based files

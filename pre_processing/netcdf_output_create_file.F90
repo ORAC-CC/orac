@@ -92,6 +92,7 @@
 ! 2015/07/03, OS: added cldmask_uncertainty
 ! 2015/07/23, GM: Added specific humidity and ozone PRTM fields.
 ! 2016/03/31, GM: Changes to support processing only SW or only LW channels.
+! 2017/02/07, SP: Added support for NOAA GFS atmosphere data (EKWork)
 !
 ! $Id$
 !
@@ -101,7 +102,7 @@
 
 subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
      cminute, platform,sensor,path,type,preproc_dims,netcdf_info,channel_info, &
-     verbose)
+     ecmwf_flag,verbose)
 
    use netcdf
 
@@ -130,6 +131,7 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
    type(preproc_dims_t),           intent(in)    :: preproc_dims
    type(netcdf_output_info_t),     intent(inout) :: netcdf_info
    type(channel_info_t),           intent(in)    :: channel_info
+   integer,                        intent(in)    :: ecmwf_flag
    logical,                        intent(in)    :: verbose
 
    ! Local
@@ -138,12 +140,16 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
    integer                    :: dimids_1d(1)
    integer                    :: dimids_3d(3)
    integer                    :: dimids_4d(4)
-   integer(lint)              :: nlon, nlat
+   integer(lint)              :: nlon, nlat,kdim
 
 
    nlon = preproc_dims%max_lon-preproc_dims%min_lon+1
    nlat = preproc_dims%max_lat-preproc_dims%min_lat+1
 
+
+   ! Set number of vertical levels/layers here, as GFS is different to ECMWF
+   kdim = preproc_dims%kdim+1
+   if (ecmwf_flag .eq. 5) kdim=kdim-1
 
    if (type .eq. NETCDF_OUTPUT_FILE_LWRTM) then
 
@@ -175,7 +181,7 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
          end if
 
          if (nf90_def_dim(netcdf_info%ncid_lwrtm, 'nlevels_rtm', &
-             preproc_dims%kdim+1, netcdf_info%dimid_levels_lw) .ne. NF90_NOERR) then
+             kdim, netcdf_info%dimid_levels_lw) .ne. NF90_NOERR) then
             write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
                & 'name: nlevels_rtm'
             stop error_stop_code
@@ -328,7 +334,7 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
          end if
 
          if (nf90_def_dim(netcdf_info%ncid_swrtm, 'nlevels_rtm', &
-             preproc_dims%kdim+1, netcdf_info%dimid_levels_sw) .ne. NF90_NOERR) then
+             kdim, netcdf_info%dimid_levels_sw) .ne. NF90_NOERR) then
             write(*,*) 'ERROR: netcdf_create_rtm(2), nf90_create(), dimension '// &
                & 'name: nlevels_rtm'
             stop error_stop_code
@@ -430,7 +436,7 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
       end if
 
       if (nf90_def_dim(netcdf_info%ncid_prtm, 'nlevels_rtm', &
-          preproc_dims%kdim+1, netcdf_info%dimid_levels_pw) .ne. NF90_NOERR) then
+          kdim, netcdf_info%dimid_levels_pw) .ne. NF90_NOERR) then
          write(*,*) 'ERROR: netcdf_create_rtm(3), nf90_create(), dimension '// &
             & 'name: nlevels_rtm'
          stop error_stop_code

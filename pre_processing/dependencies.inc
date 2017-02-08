@@ -22,9 +22,9 @@ $(OBJS)/define_preprop_grid.o: $(OBJS)/imager_structures.o \
         $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o
 $(OBJS)/ecmwf.o: $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o \
         compute_geopot_coordinate.F90 deallocate_ecmwf_structures.F90 \
-        read_ecmwf.F90 read_ecmwf_grib.F90 read_ecmwf_nc.F90 \
-        read_ecmwf_wind_badc.F90 read_ecmwf_wind_grib.F90 read_ecmwf_wind_nc.F90 \
-        rearrange_ecmwf.F90
+        read_ecmwf.F90 read_gfs_grib.F90 read_ecmwf_grib.F90 \
+        read_ecmwf_nc.F90 read_ecmwf_wind_badc.F90 read_ecmwf_wind_grib.F90 \
+        read_ecmwf_wind_nc.F90 rearrange_ecmwf.F90
 $(OBJS)/fill_grid.o: $(OBJS)/preproc_constants.o
 $(OBJS)/get_USGS_data.o: $(OBJS)/imager_structures.o $(OBJS)/read_USGS_file.o
 $(OBJS)/imager_structures.o: $(OBJS)/channel_structures.o \
@@ -81,6 +81,9 @@ $(OBJS)/ross_thick_li_sparse_r.o: $(OBJS)/nr.o $(OBJS)/preproc_constants.o
 $(OBJS)/rttov_driver.o: $(OBJS)/channel_structures.o $(OBJS)/netcdf_output.o \
         $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o \
         write_ir_rttov.F90 write_solar_rttov.F90
+$(OBJS)/rttov_driver_gfs.o: $(OBJS)/channel_structures.o $(OBJS)/netcdf_output.o \
+        $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o \
+        write_ir_rttov.F90 write_solar_rttov.F90
 $(OBJS)/setup.o: $(OBJS)/calender.o $(OBJS)/channel_structures.o \
         $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o
 $(OBJS)/surface_emissivity.o: $(OBJS)/channel_structures.o \
@@ -108,6 +111,6 @@ $(OBJS)/preprocessing_for_orac.o: $(OBJS)/channel_structures.o \
         $(OBJS)/read_aatsr.o $(OBJS)/read_avhrr.o $(OBJS)/read_himawari.o \
         $(OBJS)/read_imager.o $(OBJS)/read_modis.o $(OBJS)/read_seviri.o \
         $(OBJS)/read_slstr.o $(OBJS)/read_viirs.o $(OBJS)/rttov_driver.o \
-        $(OBJS)/setup.o $(OBJS)/surface_emissivity.o \
+        $(OBJS)/rttov_driver_gfs.o $(OBJS)/setup.o $(OBJS)/surface_emissivity.o \
         $(OBJS)/surface_reflectance.o $(OBJS)/surface_structures.o \
         $(OBJS)/utils_for_main.o
