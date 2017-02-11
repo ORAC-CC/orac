@@ -256,6 +256,7 @@
 !    from overwriting the land/sea mask provided by L1 data (assuming the L1
 !    data provides one!).
 ! 2017/02/06, SP: Added support for NOAA GFS atmosphere data (EKWork)
+! 2017/02/10, SP: Allow reading LSM, LUM, DEM from external file (EKWork)
 !
 ! $Id$
 !
@@ -319,6 +320,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    character(len=path_length)       :: modis_albedo_path
    character(len=path_length)       :: modis_brdf_path
    character(len=path_length)       :: occci_path
+   character(len=path_length)       :: ext_lsm_path
    character(len=path_length)       :: cimss_emiss_path
    character(len=path_length)       :: output_path
    character(len=path_length)       :: aatsr_calib_path_file
@@ -343,6 +345,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    logical                          :: assume_full_paths
    logical                          :: include_full_brdf
    logical                          :: use_occci
+   logical                          :: use_predef_lsm
    logical                          :: use_hr_ecmwf
    logical                          :: use_ecmwf_snow_and_ice
    logical                          :: use_modis_emis_in_rttov
@@ -511,7 +514,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
          call parse_optional(label, value, n_channels, channel_ids, use_hr_ecmwf, &
             ecmwf_time_int_method, use_ecmwf_snow_and_ice, use_modis_emis_in_rttov, &
             ecmwf_path(2), ecmwf_path2(2), ecmwf_path3(2), ecmwf_path_hr(1), &
-            ecmwf_path_hr(2), ecmwf_nlevels, use_l1_land_mask, use_occci, occci_path)
+            ecmwf_path_hr(2), ecmwf_nlevels, use_l1_land_mask, use_occci, occci_path, use_predef_lsm, ext_lsm_path)
       end do
    else
 
@@ -581,12 +584,11 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
            use_hr_ecmwf, ecmwf_time_int_method, use_ecmwf_snow_and_ice, &
            use_modis_emis_in_rttov, ecmwf_path(2), ecmwf_path2(2), &
            ecmwf_path3(2), ecmwf_path_hr(1), ecmwf_path_hr(2), &
-           ecmwf_nlevels, use_l1_land_mask, use_occci, occci_path)
+           ecmwf_nlevels, use_l1_land_mask, use_occci, occci_path, use_predef_lsm, ext_lsm_path)
       end do
 
       close(11)
    end if
-
    ! Set this since it was removed from the command line but not removed from
    ! the global attributes.
    global_atts%L2_Processor_Version = '1.0'
@@ -625,6 +627,9 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       stop error_stop_code
    end if
 
+   ! If we're using an external land-sea file then place that into USGS filename var
+
+   if (use_predef_lsm) USGS_path_file=ext_lsm_path
 
    if (ecmwf_path(2) .eq. '') ecmwf_path(2) = ecmwf_path(1)
    if (ecmwf_path2(2) .eq. '') ecmwf_path2(2) = ecmwf_path2(1)
@@ -980,7 +985,8 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       ! NOTE: variable imager_flags%lsflag is overwritten by USGS data !!!
       if (verbose) write(*,*) 'Reading USGS path: ',trim(USGS_path_file)
       call get_USGS_data(USGS_path_file, imager_flags, imager_geolocation, &
-           usgs, assume_full_paths, use_l1_land_mask, source_atts, verbose)
+           usgs, assume_full_paths, use_l1_land_mask, source_atts, use_predef_lsm,&
+           verbose)
 
       ! select correct emissivity file and calculate the emissivity over land
       if (verbose) write(*,*) 'Get surface emissivity'

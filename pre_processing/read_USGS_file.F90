@@ -14,6 +14,7 @@
 ! History:
 ! 2014/09/23, OS: writes code to read data from USGS file.
 ! 2015/07/03, OS: added error status variable to nc_open call
+! 2017/02/10, SP: Allow reading LSM, LUM, DEM from external file (EKWork)
 !
 ! $Id$
 !
@@ -92,6 +93,54 @@ function read_USGS_file(path_to_USGS_file, usgs, verbose) result (stat)
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_USGS_file()'
 
 end function read_USGS_file
+
+function read_predef_file(path_to_file, usgs, verbose) result (stat)
+
+   use orac_ncdf_m
+
+   implicit none
+
+   ! Input variables
+   character(len=path_length), intent(in)    :: path_to_file
+   logical,                    intent(in)    :: verbose
+
+   ! Output variables
+   type(USGS_t), intent(out) :: usgs
+   integer(kind=sint) :: stat
+
+   ! Local variables
+   integer :: fid, usgs_lat_id, usgs_lon_id
+   integer :: nDim, nVar, nAtt, uDimID, ForNM
+
+   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_predef_file()'
+
+   call nc_open(fid, path_to_file)
+   ! Extract information about the file
+   stat = nf90_inquire(fid, nDim, nVar, nAtt, uDimID, ForNM)
+
+   ! dimension IDs
+   stat = nf90_inq_dimid(fid, 'x', usgs_lon_id)
+   stat = nf90_inq_dimid(fid, 'y', usgs_lat_id)
+
+   ! Extract the array dimensions
+   stat = nf90_inquire_dimension(fid, usgs_lon_id, len=usgs_lon_dim)
+   stat = nf90_inquire_dimension(fid, usgs_lat_id, len=usgs_lat_dim)
+
+   ! Read data for each variable
+   allocate(usgs%dem(usgs_lon_dim,usgs_lat_dim))
+   allocate(usgs%lus(usgs_lon_dim,usgs_lat_dim))
+   allocate(usgs%lsm(usgs_lon_dim,usgs_lat_dim))
+
+   call nc_read_array(fid, 'Elevation_Mask', usgs%dem, verbose)
+   call nc_read_array(fid, 'Land_Use_Mask', usgs%lus, verbose)
+   call nc_read_array(fid, 'Land_Sea_Mask', usgs%lsm, verbose)
+
+   ! We are now finished with the main data file
+   stat = nf90_close(fid)
+
+   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_USGS_file()'
+
+end function read_predef_file
 
 !-----------------------------------------------------------------------------
 

@@ -17,6 +17,7 @@
 ! 2014/12/31, GM: Parallelized the main loop with OpenMP.
 ! 2016/05/31, GT: Added use_l1_land_mask argument, which provides the option of
 !    not replacing the existing imager_flags%lsflag with DEM values
+! 2017/02/11, SP: Allow reading LSM, LUM, DEM from external file (EKWork)
 !
 ! $Id$
 !
@@ -25,7 +26,8 @@
 !-------------------------------------------------------------------------------
 
 subroutine get_USGS_data(path_to_USGS_file, imager_flags, imager_geolocation, &
-     usgs, assume_full_paths, use_l1_land_mask, source_atts, verbose)
+     usgs, assume_full_paths, use_l1_land_mask, source_atts, use_predef_lsm, &
+     verbose)
 
    use constants_cloud_typing_pavolonis_m
    use imager_structures_m
@@ -43,6 +45,7 @@ subroutine get_USGS_data(path_to_USGS_file, imager_flags, imager_geolocation, &
    type(source_attributes_t),   intent(inout) :: source_atts
    logical,                     intent(in)    :: verbose
    type(usgs_t),                intent(out)   :: usgs
+   logical,                     intent(in)    :: use_predef_lsm
 
    logical                          :: USGS_file_exist
    character(len=7)                 :: USGS_file_read
@@ -66,36 +69,48 @@ subroutine get_USGS_data(path_to_USGS_file, imager_flags, imager_geolocation, &
 
    source_atts%usgs_file=path_to_USGS_file
 
-   ! Read the data themselves
-   if (read_USGS_file(path_to_USGS_file, usgs, verbose) .ne. 0) then
-      write(*,*) 'ERROR: read_USGS_file(), problem reading USGS file: ', &
-           trim(path_to_USGS_file)
-      stop error_stop_code
-   end if
+   ! Check if we're using the default USGS file or something else
+   if (use_predef_lsm) then
+      ! Read the data themselves
+      if (read_predef_file(path_to_USGS_file, usgs, verbose) .ne. 0) then
+         write(*,*) 'ERROR: read_USGS_file(), problem reading USGS file: ', &
+              trim(path_to_USGS_file)
+         stop error_stop_code
+      end if
+      imager_geolocation%dem =  usgs%dem
+      imager_flags%lusflag   =  usgs%lus
+   else
+      ! Read the data themselves
+      if (read_USGS_file(path_to_USGS_file, usgs, verbose) .ne. 0) then
+         write(*,*) 'ERROR: read_USGS_file(), problem reading USGS file: ', &
+              trim(path_to_USGS_file)
+         stop error_stop_code
+      end if
 
-   ! Do collocation of imager pixels with USGS data
-   !$OMP PARALLEL PRIVATE(i, j, nearest_xy)
-   !$OMP DO SCHEDULE(GUIDED)
-   do i=imager_geolocation%startx,imager_geolocation%endx
-      do j=1,imager_geolocation%ny
+      ! Do collocation of imager pixels with USGS data
+      !$OMP PARALLEL PRIVATE(i, j, nearest_xy)
+      !$OMP DO SCHEDULE(GUIDED)
+      do i=imager_geolocation%startx,imager_geolocation%endx
+         do j=1,imager_geolocation%ny
 
-         if (imager_geolocation%latitude(i,j) .eq. sreal_fill_value .or. &
-              imager_geolocation%longitude(i,j) .eq. sreal_fill_value) &
-              cycle
+            if (imager_geolocation%latitude(i,j) .eq. sreal_fill_value .or. &
+                 imager_geolocation%longitude(i,j) .eq. sreal_fill_value) &
+                 cycle
 
-         ! Do nearest neighbour collocation for each imager pixel with USGS
-         ! data, applying a search window radius of +-0.25 degree lat/lon
-         nearest_xy = nearest_USGS(imager_geolocation%latitude(i,j), &
-              imager_geolocation%longitude(i,j), usgs)
+            ! Do nearest neighbour collocation for each imager pixel with USGS
+            ! data, applying a search window radius of +-0.25 degree lat/lon
+            nearest_xy = nearest_USGS(imager_geolocation%latitude(i,j), &
+                 imager_geolocation%longitude(i,j), usgs)
 
-         ! Assign nearest usgs pixel data to imager pixel
-         imager_geolocation%dem(i,j) = usgs%dem(nearest_xy(2), nearest_xy(1))
-         imager_flags%lusflag(i,j) = usgs%lus(nearest_xy(2), nearest_xy(1))
+            ! Assign nearest usgs pixel data to imager pixel
+            imager_geolocation%dem(i,j) = usgs%dem(nearest_xy(2), nearest_xy(1))
+            imager_flags%lusflag(i,j) = usgs%lus(nearest_xy(2), nearest_xy(1))
 
+         end do
       end do
-   end do
-   !$OMP END DO
-   !$OMP END PARALLEL
+      !$OMP END DO
+      !$OMP END PARALLEL
+   endif
 
    ! Reset the land/sea mask using that provided by the DEM, unless the
    ! use_l1_land_mask optional argument has been passed to the main preproc
