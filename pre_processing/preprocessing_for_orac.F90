@@ -441,6 +441,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    nullify(channel_ids)
    ecmwf_time_int_method   = 2
    use_hr_ecmwf            = .true.
+   use_predef_lsm          = .false.
    use_ecmwf_snow_and_ice  = .true.
    use_modis_emis_in_rttov = .false.
    use_l1_land_mask        = .false.
