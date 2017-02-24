@@ -257,6 +257,7 @@
 !    data provides one!).
 ! 2017/02/06, SP: Added support for NOAA GFS atmosphere data (EKWork)
 ! 2017/02/10, SP: Allow reading LSM, LUM, DEM from external file (EKWork)
+! 2017/02/24, SP: Allow option to disable snow/ice correction
 !
 ! $Id$
 !
@@ -348,6 +349,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    logical                          :: use_predef_lsm
    logical                          :: use_hr_ecmwf
    logical                          :: use_ecmwf_snow_and_ice
+   logical                          :: disable_snow_ice_corr
    logical                          :: use_modis_emis_in_rttov
    logical                          :: use_l1_land_mask
 
@@ -445,6 +447,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    use_ecmwf_snow_and_ice  = .true.
    use_modis_emis_in_rttov = .false.
    use_l1_land_mask        = .false.
+   disable_snow_ice_corr   = .false.
    ecmwf_path(2)           = ''
    ecmwf_path_hr(1)        = ''
    ecmwf_path_hr(2)        = ''
@@ -515,7 +518,8 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
          call parse_optional(label, value, n_channels, channel_ids, use_hr_ecmwf, &
             ecmwf_time_int_method, use_ecmwf_snow_and_ice, use_modis_emis_in_rttov, &
             ecmwf_path(2), ecmwf_path2(2), ecmwf_path3(2), ecmwf_path_hr(1), &
-            ecmwf_path_hr(2), ecmwf_nlevels, use_l1_land_mask, use_occci, occci_path, use_predef_lsm, ext_lsm_path)
+            ecmwf_path_hr(2), ecmwf_nlevels, use_l1_land_mask, use_occci, occci_path, &
+            use_predef_lsm, ext_lsm_path,disable_snow_ice_corr)
       end do
    else
 
@@ -585,7 +589,8 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
            use_hr_ecmwf, ecmwf_time_int_method, use_ecmwf_snow_and_ice, &
            use_modis_emis_in_rttov, ecmwf_path(2), ecmwf_path2(2), &
            ecmwf_path3(2), ecmwf_path_hr(1), ecmwf_path_hr(2), &
-           ecmwf_nlevels, use_l1_land_mask, use_occci, occci_path, use_predef_lsm, ext_lsm_path)
+           ecmwf_nlevels, use_l1_land_mask, use_occci, occci_path, use_predef_lsm, &
+           ext_lsm_path,disable_snow_ice_corr)
       end do
 
       close(11)
@@ -1008,14 +1013,16 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       ! Snow and Ice Data Center to detect ice and snow pixels, and correct the
       ! surface albedo.
       if (verbose) write(*,*) 'Correct for ice and snow'
-      if (.not. use_ecmwf_snow_and_ice) then
-         call correct_for_ice_snow(nise_ice_snow_path, imager_geolocation, &
-              surface, cyear, cmonth, cday, channel_info, assume_full_paths, &
-              include_full_brdf, source_atts, verbose)
-      else
-         call correct_for_ice_snow_ecmwf(ecmwf_HR_path_file(1), &
-              imager_geolocation, imager_flags, preproc_dims, preproc_prtm, &
-              surface, include_full_brdf, source_atts, verbose)
+      if (.not. disable_snow_ice_corr) then
+         if (.not. use_ecmwf_snow_and_ice) then
+            call correct_for_ice_snow(nise_ice_snow_path, imager_geolocation, &
+                 surface, cyear, cmonth, cday, channel_info, assume_full_paths, &
+                 include_full_brdf, source_atts, verbose)
+         else
+            call correct_for_ice_snow_ecmwf(ecmwf_HR_path_file(1), &
+                 imager_geolocation, imager_flags, preproc_dims, preproc_prtm, &
+                 surface, include_full_brdf, source_atts, verbose)
+         endif
       end if
 
       if (verbose) write(*,*) 'Calculate Pavolonis cloud phase with high '// &
