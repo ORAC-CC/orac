@@ -391,7 +391,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
                     chunk_ends(i_chunk)-chunk_starts(i_chunk)+1
       end do
    end if
-write(*,*) 'allocate common routine'
+
    ! Allocate the structures which hold the output in its final form
    call alloc_output_data_primary(indexing%common_indices_t, 100, output_primary)
    if (do_secondary) then
