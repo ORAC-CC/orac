@@ -33,6 +33,8 @@
 #
 # HISTORY:
 # 27 Jul 2016, AP: Initial version
+# 09 Mar 2017, GT: Bug fix to formating of job-IDs as dependencies for a new job
+#                  submission using bsub (LSF) 
 
 import re
 
@@ -66,11 +68,15 @@ class BatchSystem:
         else:
             return self.depend_arg.format(self.depend_delim.join(item))
 
-    def PrintBatch(self, values, exe=None):
+    def PrintBatch(self, values, exe=None, depend_arg=None):
         """Returns the queuing shell command. 'exe' is the thing to run."""
         arguments = [self.command]
         arguments.extend([ self.args[key](values[key])
                            for key in values.keys() if values[key] ])
+        if type(depend_arg) in [list, tuple]:
+            arguments.extend(depend_arg)
+        elif depend_arg:
+            arguments.append(depend_arg)
         if type(exe) in [list, tuple]:
             arguments.extend(exe)
         elif exe:
@@ -110,9 +116,8 @@ qsub = BatchSystem('qsub',
 
 # BSUB, used by the JASMIN cluster at RAL
 bsub = BatchSystem('bsub',
-                   'Job <(?P<ID>\d+)> is submitted to (?P<desc>\w*) queue '
-                   '<(?P<queue>[\w\.-]+)>.',
-                   '-w "done({})"', ') && done(',
+                   'Job <(?P<ID>\d+)> is submitted to (?P<desc>\w*)( ?)queue <(?P<queue>.+)>.',
+                   '-w done({})', ')&&done(',
                    {'duration' : '-W {}'.format,
                     'email'    : '-u {}'.format,
                     'err_file' : '-e {}'.format,

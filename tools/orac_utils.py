@@ -3,10 +3,13 @@
 # 22 Jun 2016, AP: Initial Python 2.7 version
 # 08 Jul 2016, AP: Debugging against more awkward python environments
 # 14 Jul 2016, GT: Debugging on CEMS:
-#    Added support for a simple directory structure of YYYY subdir for NISE data
-#    Made paths to MCD43C1 and MCD43C2 data separate arguments
+#                  Added support for a simple directory structure of
+#                  YYYY subdir for NISE data
+#                  Made paths to MCD43C1 and MCD43C2 data separate
+#                  arguments 
 # 20 Jul 2016, AP: Remove shell=True from subprocess calls.
 # 3  Aug 2016, SP: Fixed exception handling in the regression test function.
+# 09 Mar 2017, GT: Improved support for use with batch queuing systems
 
 import argparse
 import colours
@@ -135,7 +138,13 @@ def bound_time(dt=None,                                # Initial time
 def build_orac_library_path(libs):
     """Build required LD_LIBRARY_PATH variable"""
 
-    ld_path = ':'.join([libs[key] for key in ("SZLIB", "EPR_APILIB", "GRIBLIB",
+    if "GRIBLIB" in libs:
+        glib = "GRIBLIB"
+    elif "ECCODESLIB" in libs:
+        glib = "ECCODESLIB"
+    else:
+        raise OracError('Neither GRIB_API or ECCODES libraries found')
+    ld_path = ':'.join([libs[key] for key in ("SZLIB", "EPR_APILIB", glib,
                                              "HDF5LIB", "HDFLIB",
                                              "NCDF_FORTRAN_LIB", "NCDFLIB")])
     if "LD_LIBRARY_PATH" in os.environ.keys():
@@ -201,7 +210,10 @@ def call_exe(args,           # Arguments of scripts
         # Define processing environment
         libs = read_orac_libraries(args.orac_lib)
         g.write("export LD_LIBRARY_PATH=" + build_orac_library_path(libs) + "\n")
-        g.write("export PPDIR=" + args.emos_dir + "\n")
+        try:
+            g.write("export PPDIR=" + args.emos_dir + "\n")
+        except AttributeError:
+            pass
 
         # Call executable and give the script permission to execute
         g.write(exe + ' ' + driver_file + "\n")
@@ -215,12 +227,28 @@ def call_exe(args,           # Arguments of scripts
             # Add default arguments to values
             values.update(defaults.batch_values)
 
+            # Check to see if the depend_arg batch value has been
+            # supplied, and extract it from the other batch arguments
+            # if it has.
+            depend_arg = values.pop('depend_arg', None)
+            
+            # If required, add in the depend_arg arguments using the
+            # correct format
+            if depend_arg:
+                depend_arg = depend_arg.split()
+                dep_arg = defaults.batch.ParseDepend(depend_arg)
+            else:
+                dep_arg = None
+            
             # Form batch queue command and call batch queuing system
-            cmd = defaults.batch.PrintBatch(values, exe=script_file)
+            cmd = defaults.batch.PrintBatch(values, exe=script_file, depend_arg=dep_arg)
+ 
+            colours.cprint(cmd, colouring['header'])
+            
             if args.verbose:
                 colours.cprint(cmd, colouring['header'])
             out = subprocess.check_output(cmd.split(' '))
-
+            
             # Parse job ID # and return it to the caller
             jid = defaults.batch.ParseOut(out, 'ID')
             return jid
@@ -355,6 +383,7 @@ def date_back_search(fld,      # Folder to be searched
     """Search a folder for the file with timestamp nearest in the past to a given date"""
 
     dt = date
+    tried_climat = False
     while True:
         f = glob.glob(fld + dt.strftime(pattern))
         if f:
@@ -363,10 +392,17 @@ def date_back_search(fld,      # Folder to be searched
             else:
                 return f[-1]
         else:
-            if dt.year < 2006:
-                raise FileMissing(fld, pattern)
+            if not tried_climat:
+                if not glob.glob(fld +'/*'+ str(dt.year)+'*'):
+                    pattern = pattern.replace('%Y','XXXX')
+                    tried_climat = True
+                else:
+                    dt -= datetime.timedelta(days=1)
             else:
-                dt -= datetime.timedelta(days=1)
+                if not glob.glob(fld + '/*XXXX*'):
+                    raise FileMissing(fld, pattern)
+                else:
+                    dt -= datetime.timedelta(days=1)
 
 #-----------------------------------------------------------------------------
 
@@ -404,9 +440,12 @@ def form_bound_filenames(bounds,  # List of times to be
 
     out = [fld + time.strftime(format) for time in bounds]
 
-    for f in out:
-        if not os.path.isfile(f):
+    for i in range(len(out)):
+        f2 = glob.glob(out[i])
+        if not os.path.isfile(f2[len(f2)-1]):
             raise FileMissing('ECMWF file', f)
+        else:
+            out[i] = f2[len(f2)-1]
     return out
 
 #-----------------------------------------------------------------------------
@@ -522,6 +561,41 @@ class FileName:
             self.dur  = datetime.timedelta(seconds=6555) # Guessing
             # The following may be problematic with interesting dir names
             self.geo  = filename.replace('_avhrr.h5', '_sunsatangles.h5')
+            return
+
+        # Default AVHRR filename format produced by pygac (differs from
+        # DWD produced L1b data) 
+        m = re.search('ECC_GAC_avhrr_noaa(?P<platform>\d{1,2})_'
+                      '(\d{5})_(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2})'
+                      'T(?P<hour>\d{2})(?P<min>\d{2})(\d{3})Z_'
+                      '(\d{8})T(\d{7})Z.h5', filename)
+        if m:
+            self.sensor   = 'AVHRR'
+            self.platform = 'noaa' + m.group('platform')
+            self.inst     = 'AVHRR-NOAA' + m.group('platform')
+            # The time specification could be fixed, as the pygac file
+            # names include start and end times, to 0.1 seconds
+            self.time = datetime.datetime(
+                int(m.group('year')), int(m.group('month')), int(m.group('day')),
+                int(m.group('hour')), int(m.group('min')), 0, 0)
+            self.dur  = datetime.timedelta(seconds=6555) # Guessing
+            self.geo  = filename.replace('ECC_GAC_avhrr_',
+                                         'ECC_GAC_sunsatangles_')
+            return
+
+        m = re.search('H-000-MSG(?P<platform>\d{1})__-MSG(\d{1})'
+                      '________-_________-EPI______-'
+                      '(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2})'
+                      '(?P<hour>\d{2})(?P<min>\d{2})-__', filename)
+        if m:
+            self.sensor   = 'SEVIRI'
+            self.platform = 'MSG'+str(int(m.group('platform'))+7)
+            self.inst     = 'SEVIRI'+m.group('platform')
+            self.time     = datetime.datetime(
+                int(m.group('year')), int(m.group('month')), int(m.group('day')),
+                int(m.group('hour')), int(m.group('min')), 0, 0)
+            self.dur      = datetime.timedelta(seconds=900) # Guessing
+            self.geo      = filename
             return
 
         m = re.search(defaults.project + '-L2-CLOUD-CLD-'
@@ -672,6 +746,7 @@ settings['A76'] = ParticleType(inv=(tau, Invpar('IRe', ap=0.0856, sx=0.15)))
 settings['A77'] = ParticleType(inv=(tau, Invpar('IRe', ap=-0.0419, sx=0.15)))
 settings['A78'] = ParticleType(inv=(tau, Invpar('IRe', ap=-0.257, sx=0.15)))
 settings['A79'] = ParticleType(inv=(tau, Invpar('IRe', ap=-0.848, sx=0.15)))
+settings['VSA'] = ParticleType(inv=(tau, Invpar('IRe', ap=-0.848, sx=0.15)))
 
 
 #-----------------------------------------------------------------------------
@@ -1129,7 +1204,14 @@ def build_preproc_driver(args):
     elif (args.ecmwf_flag == 3):
         raise NotImplementedError('Filename syntax for --ecmwf_flag 3 unknown')
     elif (args.ecmwf_flag == 4):
-        raise NotImplementedError('Filename syntax for --ecmwf_flag 4 unknown')
+        bounds = bound_time(inst.time + inst.dur//2, 
+                            datetime.timedelta(hours=6))
+        ggam = form_bound_filenames(bounds, args.ggam_dir,
+                                    '/C3D*%m%d%H*.nc')
+        #ggam = form_bound_filenames(bounds, args.ggam_dir,
+        #                            '/ECMWF_OPER_%Y%m%d_%H+%M.nc')
+        ggas = ggam
+        spam = ggam
     else:
         raise BadValue('ecmwf_flag', args.ecmwf_flag)
 
@@ -1137,16 +1219,22 @@ def build_preproc_driver(args):
         #hr_ecmwf = form_bound_filenames(bounds, args.hr_dir,
         #                                '/ERA_Interim_an_%Y%m%d_%H+00_HR.grb')
         # These files don't zero-pad the hour for some reason
-        hr_ecmwf = [args.hr_dir + time.strftime('/ERA_Interim_an_%Y%m%d_') +
-                    '{:d}+00_HR.grb'.format(time.hour*100) for time in bounds]
+        hr_ecmwf = [args.hr_dir + 
+                    inst.time.strftime('/ERA_Interim_an_%Y%m%d_') +
+                    '{:d}+00_HR.grb'.format(inst.time.hour*100) 
+                    for inst.time in bounds]
         if not os.path.isfile(hr_ecmwf[0]):
-            hr_ecmwf = [args.hr_dir + time.strftime('/%Y/%m/%d/ERA_Interim_an_%Y%m%d_') +
-                        '{:d}+00_HR.grb'.format(time.hour*100) for time in bounds]
+            hr_ecmwf = [args.hr_dir + 
+            inst.time.strftime('/%Y/%m/%d/ERA_Interim_an_%Y%m%d_') +
+            '{:d}+00_HR.grb'.format(inst.time.hour*100) 
+            for inst.time in bounds]
         for f in hr_ecmwf:
             if not os.path.isfile(f):
                 raise FileMissing('HR ECMWF file', f)
+    else:
+        hr_ecmwf=['','']
 
-    occci = args.occci_dir + time.strftime(
+    occci = args.occci_dir + inst.time.strftime(
             '/ESACCI-OC-L3S-IOP-MERGED-1M_MONTHLY_4km_GEO_PML_OC4v6_QAA-'
             '%Y%m-fv2.0.nc')
 
@@ -1180,8 +1268,12 @@ def build_preproc_driver(args):
 
     # Fetch ECMWF version from header of NCDF file
     try:
-        tmp1 = subprocess.check_output(["ncdump", "-h", ggas[0]],
-                                       universal_newlines=True)
+        if (ggam[0])[len(ggam[0])-2:] == 'nc':
+            tmp1 = subprocess.check_output(["ncdump", "-h", ggam[0]],
+                                           universal_newlines=True)
+        else:
+            tmp1 = subprocess.check_output(["ncdump", "-h", ggas[0]],
+                                           universal_newlines=True)
     except OSError:
         raise FileMissing('ECMWF ggas file', ggas[0])
     m1 = re.search(r':history = "(.+?)" ;', tmp1)
@@ -1341,7 +1433,7 @@ OCCCI_PATH={occci_file}""".format(
     if args.channel_ids:
         driver += "\nN_CHANNELS={}".format(len(args.channel_ids))
         driver += "\nCHANNEL_IDS={}".format(','.join(str(k)
-                                                     for k in args.channel_ids))
+                                            for k in args.channel_ids))
 
     outroot = '-'.join((args.project, 'L2', 'CLOUD', 'CLD',
                         '_'.join((inst.sensor, args.processor, inst.platform,
