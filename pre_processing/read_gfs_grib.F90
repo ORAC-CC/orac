@@ -46,6 +46,7 @@
 !
 ! History:
 ! 2017/02/04, SP: Initial version (EKWork)
+! 2017/02/25, SP: Update to RTTOV v12.1 (EKWork)
 !
 ! $Id$
 !
@@ -186,14 +187,14 @@ subroutine read_gfs_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
          preproc_prtm%pressure(:,:,tlev)=level
          tlev=tlev+1
       case(157)
-      	if (all(level .ne. gfs_levlist) .or. trim(ltype) .ne. 'isobaricInhPa') cycle
+         if (all(level .ne. gfs_levlist) .or. trim(ltype) .ne. 'isobaricInhPa') cycle
          ! Relative humidity
          array => preproc_prtm%spec_hum( &
               preproc_dims%min_lon:preproc_dims%max_lon, &
               preproc_dims%min_lat:preproc_dims%max_lat,qlev)
          qlev=qlev+1
       case(156)
-      	if (all(level .ne. gfs_levlist) .or. trim(ltype) .ne. 'isobaricInhPa') cycle
+         if (all(level .ne. gfs_levlist) .or. trim(ltype) .ne. 'isobaricInhPa') cycle
          ! Geopotential
          array => preproc_prtm%phi_lev( &
               preproc_dims%min_lon:preproc_dims%max_lon, &
@@ -268,7 +269,7 @@ subroutine read_gfs_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
 
    deallocate(val)
 
-	call conv_rh_q(preproc_prtm%spec_hum,preproc_prtm%temperature,preproc_prtm%pressure,verbose)
+   call conv_rh_q(preproc_prtm%spec_hum,preproc_prtm%temperature,preproc_prtm%pressure,verbose)
 
 
    deallocate(in_data)
@@ -310,21 +311,21 @@ subroutine conv_rh_q(rh,t,p,verbose)
    allocate(pw(sh(1),sh(2),sh(3)))
    allocate(ppm(sh(1),sh(2),sh(3)))
 
-	c1	=	-7.85951783
-	c2	=	1.84408259
-	c3	=	-11.7866497
-	c4	=	22.6807411
-	c5	=	-15.9618719
-	c6	=	1.80122502
-	pc	=	220640
-	tc	=	647.096
+   c1   =   -7.85951783
+   c2   =   1.84408259
+   c3   =   -11.7866497
+   c4   =   22.6807411
+   c5   =   -15.9618719
+   c6   =   1.80122502
+   pc   =   220640
+   tc   =   647.096
 
-	th	=	1.	-	(t/tc)
-	val=	(c1*th) + (c2*(th**1.5)) + (c3*(th**3.0)) + (c4*(th**3.5)) + (c5*(th**4.0)) + (c6*(th**7.5))
-	val=	val * (tc/t)
-	pws=	pc * exp(val)
-	pw	=	pws * (rh/100.)
-	rh =	(pw / p * 1e6)/q_mixratio_to_ppmv
+   th   =   1.   -   (t/tc)
+   val=   (c1*th) + (c2*(th**1.5)) + (c3*(th**3.0)) + (c4*(th**3.5)) + (c5*(th**4.0)) + (c6*(th**7.5))
+   val=   val * (tc/t)
+   pws=   pc * exp(val)
+   pw   =   pws * (rh/100.)
+   rh =   (pw / p * 1e6)/q_mixratio_to_ppmv
 
 
 end subroutine conv_rh_q

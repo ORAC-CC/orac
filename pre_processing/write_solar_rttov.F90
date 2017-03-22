@@ -33,6 +33,7 @@
 !    got moved into here.  The correct fix has now been implemented.
 ! 2016/04/09, SP: Write one channel at a time, to facilitate multiple views.
 ! 2016/04/30, SP: Fixed bug in multi-view processing
+! 2017/02/25, SP: Update to RTTOV v12.1 (EKWork)
 !
 ! $Id$
 !

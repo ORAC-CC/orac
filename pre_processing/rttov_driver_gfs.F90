@@ -45,6 +45,7 @@
 !
 ! History:
 ! 2017/02/05, SP: Initial version
+! 2017/02/25, SP: Update to RTTOV v12.1 (EKWork)
 !
 ! $Id$
 !

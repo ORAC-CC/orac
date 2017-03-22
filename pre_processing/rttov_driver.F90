@@ -133,6 +133,7 @@
 ! 2016/05/19, SP: Added VIIRS/Suomi-NPP processing capability.
 ! 2016/05/27, SP: Updates to enable RTTOV to work correctly with multi-views
 ! 2016/07/05, SP: Added SLSTR/Sentinel-3 processing capability.
+! 2017/02/25, SP: Update to RTTOV v12.1 (EKWork)
 !
 ! $Id$
 !
@@ -141,8 +142,6 @@
 ! - BRDF not yet implemented here, so RTTOV internal calculation used.
 ! - Possible issue with conversion from layers to levels.
 !-------------------------------------------------------------------------------
-
-#define CRAP
 
 module rttov_driver_m
 
