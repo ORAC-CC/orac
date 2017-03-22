@@ -1061,8 +1061,8 @@ subroutine setup_slstr(l1b_path_file,geo_path_file,platform,year,month,day, &
          0,       0,       0,       0,       0,       0,       1,       2,      3  /)
 
    integer, parameter :: all_map_ids_abs_to_ref_band_land(all_nchannels_total) = &
-      (/ 4,       1,       2,      -1,       6,       7,       0,       0,      0, &
-         4,       1,       2,      -1,       6,       7,       0,       0,      0  /)
+      (/ 4,       1,       2,       5,       6,       7,       0,       0,      0, &
+         4,       1,       2,       5,       6,       7,       0,       0,      0  /)
 
    integer, parameter :: all_map_ids_abs_to_ref_band_sea(all_nchannels_total) = &
       (/ 2,       3,       4,       6,       7,       8,       9,       0,      0, &
