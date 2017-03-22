@@ -48,8 +48,8 @@ subroutine write_solar_rttov(netcdf_info, coefs, idim, jdim, nlev, satza, &
    use parkind1, only: jpim, jprb
    use preproc_constants_m, only: lint, sreal, d2r, sreal_fill_value
    use preproc_structures_m, only: preproc_dims_t
-   use rttov_types, only: rttov_emissivity, transmission_type, &
-        radiance_type, radiance2_type, rttov_coefs
+   use rttov_types, only: rttov_emissivity, rttov_transmission, &
+        rttov_coefs
 
    implicit none
 
@@ -58,7 +58,7 @@ subroutine write_solar_rttov(netcdf_info, coefs, idim, jdim, nlev, satza, &
    integer(lint),              intent(in) :: idim, jdim
    integer(jpim),              intent(in) :: nlev
    real(jprb),                 intent(in) :: satza
-   type(transmission_type),    intent(in) :: transmission
+   type(rttov_transmission),   intent(in) :: transmission
    logical,                    intent(in) :: write_flag
    integer,                    intent(in) :: chan_num
    integer,                    intent(in) :: rttov_num

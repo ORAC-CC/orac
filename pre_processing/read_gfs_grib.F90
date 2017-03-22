@@ -47,7 +47,7 @@
 ! History:
 ! 2017/02/04, SP: Initial version (EKWork)
 !
-! $Id: read_gfs_grib.F90 4557 2016-12-13 10:28:51Z gethomas $
+! $Id$
 !
 ! Bugs:
 ! - If you're having problems with INTF, set the environment variable JDCNDBG=1
@@ -283,7 +283,6 @@ end subroutine read_gfs_grib
 subroutine conv_rh_q(rh,t,p,verbose)
    use preproc_constants_m
    use preproc_structures_m
-   use rttov_const, only: q_mixratio_to_ppmv
 
    implicit none
 

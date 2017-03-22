@@ -83,7 +83,6 @@ PREPROC_OBJ_F90 = $(OBJS)/aatsr_corrections.o \
                   $(OBJS)/surface_emissivity.o \
                   $(OBJS)/surface_reflectance.o \
                   $(OBJS)/surface_structures.o \
-                  $(OBJS)/test_rttov.o \
                   $(OBJS)/utils_for_main.o
 
 PREPROC_OBJ_C    = $(OBJS)/read_aatsr_orbit.o

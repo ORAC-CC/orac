@@ -40,8 +40,8 @@ subroutine write_ir_rttov(netcdf_info, idim, jdim, nlev, emissivity, &
    use parkind1, only: jpim
    use preproc_constants_m, only: lint, sreal, sreal_fill_value
    use preproc_structures_m, only: preproc_dims_t
-   use rttov_types, only: rttov_emissivity, transmission_type, &
-      radiance_type, radiance2_type
+   use rttov_types, only: rttov_emissivity, rttov_transmission, &
+      rttov_radiance, rttov_radiance2
 
    implicit none
 
@@ -49,9 +49,9 @@ subroutine write_ir_rttov(netcdf_info, idim, jdim, nlev, emissivity, &
    integer(lint),              intent(in) :: idim, jdim
    integer(jpim),              intent(in) :: nlev
    type(rttov_emissivity),     intent(in) :: emissivity(:)
-   type(transmission_type),    intent(in) :: transmission
-   type(radiance_type),        intent(in) :: radiance
-   type(radiance2_type),       intent(in) :: radiance2
+   type(rttov_transmission),   intent(in) :: transmission
+   type(rttov_radiance),       intent(in) :: radiance
+   type(rttov_radiance2),      intent(in) :: radiance2
    logical,                    intent(in) :: write_flag
    integer,                    intent(in) :: chan_num
    integer,                    intent(in) :: rttov_num

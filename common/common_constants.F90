@@ -60,6 +60,14 @@ module common_constants_m
    real(kind=sreal),    parameter :: sreal_fill_value=-999.0
    real(kind=dreal),    parameter :: dreal_fill_value=-999.0
 
+
+   real(kind=dreal), parameter :: q_mixratio_to_ppmv  = 1.60771704e+6
+   real(kind=dreal), parameter :: o3_mixratio_to_ppmv = 6.03504e+5
+   real(kind=dreal), parameter :: co2_mixratio_to_ppmv= 6.58114e+5
+   real(kind=dreal), parameter :: co_mixratio_to_ppmv = 1.0340699e+6
+   real(kind=dreal), parameter :: n2o_mixratio_to_ppmv= 6.58090e+5
+   real(kind=dreal), parameter :: ch4_mixratio_to_ppmv= 1.80548e+6
+
    ! Mathematical constants
    real(kind=sreal),    parameter :: pi=3.14159265
    real(kind=sreal),    parameter :: d2r=pi/180.0

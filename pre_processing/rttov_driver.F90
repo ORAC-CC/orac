@@ -163,21 +163,24 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
    ! rttov_const contains useful RTTOV constants
    use rttov_const, only: &
         errorstatus_success, errorstatus_fatal, &
-        q_mixratio_to_ppmv, o3_mixratio_to_ppmv, &
         zenmax, zenmaxv9
 
    ! rttov_types contains definitions of all RTTOV data types
-   use rttov_types, only: &
-       rttov_options,     &
-       rttov_coefs,       &
-       rttov_chanprof,    &
-       profile_type,      &
-       rttov_emissivity,  &
-       rttov_reflectance, &
-       transmission_type, &
-       radiance_type,     &
-       radiance2_type,    &
+   use rttov_types, only:     &
+       rttov_options,         &
+       rttov_coefs,           &
+       rttov_chanprof,        &
+       rttov_profile,         &
+       rttov_emissivity,      &
+       rttov_reflectance,     &
+       rttov_transmission,    &
+       rttov_radiance,        &
+       rttov_radiance2,       &
        rttov_traj
+
+  use mod_rttov_emis_atlas, only : &
+        rttov_emis_atlas_data, &
+        atlas_type_ir, atlas_type_mw
 
    ! jpim, jprb and jplm are the RTTOV integer, real and logical KINDs
    use parkind1, only: jpim, jprb, jplm
@@ -214,14 +217,15 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
    ! RTTOV in/outputs
    type(rttov_options)                  :: opts
    type(rttov_coefs)                    :: coefs
+   type(rttov_emis_atlas_data)          :: emis_atlas
    type(rttov_chanprof),    allocatable :: chanprof(:)
-   type(profile_type),      allocatable :: profiles(:)
+   type(rttov_profile),     allocatable :: profiles(:)
    logical(kind=jplm),      allocatable :: calcemis(:)
    type(rttov_emissivity),  allocatable :: emissivity(:)
-   real(kind=jprb),         allocatable :: emis_atlas(:)
-   type(transmission_type)              :: transmission
-   type(radiance_type)                  :: radiance
-   type(radiance2_type)                 :: radiance2
+   real(kind=jprb),         allocatable :: emis_data(:)
+   type(rttov_transmission)             :: transmission
+   type(rttov_radiance)                 :: radiance
+   type(rttov_radiance2)                :: radiance2
    type(rttov_traj)                     :: traj
 
    ! RTTOV variables
@@ -505,7 +509,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
          profiles(count)%longitude = preproc_geoloc%longitude(idim)
          ! Use poor man's approach to snow fraction
          if (preproc_prtm%snow_albedo(idim,jdim) > 0.) &
-              profiles(count)%snow_frac = 1.
+              profiles(count)%skin%snow_fraction = 1.
 
          ! Write profiles structure to PRTM file (array operations needed to
          ! recast structure in form nc_write_array recognises)
@@ -632,7 +636,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
          if (verbose) write(*,*) 'Allocate channel and emissivity arrays'
          allocate(chanprof(nchan))
          allocate(emissivity(nchan))
-         allocate(emis_atlas(nchan))
+         allocate(emis_data(nchan))
          allocate(calcemis(nchan))
 
          chanprof%prof = 1
@@ -641,13 +645,13 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
          end do
 
          if (verbose) write(*,*) 'Allocate RTTOV structures'
-         call rttov_alloc_rad(stat, nchan, radiance, nlayers, ALLOC, radiance2, &
+         call rttov_alloc_rad(stat, nchan, radiance, nlevels, ALLOC, radiance2, &
               init=.true._jplm)
          if (stat /= errorstatus_success) then
             write(*,*) 'ERROR: rttov_alloc_rad(), errorstatus = ', stat
             stop error_stop_code
          end if
-         call rttov_alloc_transmission(stat, transmission, nlayers, nchan, &
+         call rttov_alloc_transmission(stat, transmission, nlevels, nchan, &
               ALLOC, init=.true._jplm)
          if (stat /= errorstatus_success) then
             write(*,*) 'ERROR: rttov_alloc_transmission(), errorstatus = ', stat
@@ -662,8 +666,8 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 
          if (verbose) write(*,*) 'Fetch emissivity atlas'
          imonth=month
-         call rttov_setup_emis_atlas(stat, opts, imonth, coefs, emiss_path, &
-              ir_atlas_single_instrument=.true._jplm)
+         call rttov_setup_emis_atlas(stat, opts, imonth, atlas_type_ir, emis_atlas, &
+              coefs=coefs, path=emiss_path)
          if (stat /= errorstatus_success) then
             write(*,*) 'ERROR: rttov_setup_emis_atlas(), errorstatus = ', stat
             stop error_stop_code
@@ -686,28 +690,26 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                     preproc_dims%counter_sw(idim,jdim,cview) > 0 .and. &
                     profiles(count)%zenangle <= zenmaxv9)) then
 
-                  if (i_coef == 1) then
-                     ! Fetch emissivity from atlas
-                     call rttov_get_emis(stat, opts, chanprof, &
-                          profiles(count:count), coefs, emissivity=emis_atlas)
-                     if (stat /= errorstatus_success) then
-                        write(*,*) 'ERROR: rttov_get_emis(), errorstatus = ', &
-                             stat
-                        stop error_stop_code
-                     end if
-                     emissivity%emis_in = emis_atlas
-
-                     ! Fetch emissivity from the MODIS CIMSS emissivity product
-                     if (use_modis_emis) then
-                        where (preproc_surf%emissivity(idim,jdim,:) /= &
-                             sreal_fill_value)
-                           emissivity%emis_in = &
-                                preproc_surf%emissivity(idim,jdim,:)
-                        end where
-                     end if
-
-                     calcemis = emissivity%emis_in <= dither
+                  ! Fetch emissivity from atlas
+                  call rttov_get_emis(stat, opts, chanprof, &
+                       profiles(count:count), coefs, emis_atlas,emis_data)
+                  if (stat /= errorstatus_success) then
+                     write(*,*) 'ERROR: rttov_get_emis(), errorstatus = ', &
+                          stat
+                     stop error_stop_code
                   end if
+                  emissivity%emis_in = emis_data
+
+                  ! Fetch emissivity from the MODIS CIMSS emissivity product
+                  if (use_modis_emis) then
+                     where (preproc_surf%emissivity(idim,jdim,:) /= &
+                          sreal_fill_value)
+                        emissivity%emis_in = &
+                             preproc_surf%emissivity(idim,jdim,:)
+                     end where
+                  end if
+
+                  calcemis = emissivity%emis_in <= dither
 
                   ! Call RTTOV for this profile
                   call rttov_direct(stat, chanprof, opts, &
@@ -777,19 +779,19 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 
          if (verbose) write(*,*) 'Deallocate structures'
 
-         call rttov_deallocate_emis_atlas(coefs)
+         call rttov_deallocate_emis_atlas(emis_atlas)
          call rttov_alloc_traj(stat, 1, nchan, opts, nlevels, coefs, DEALLOC, &
               traj)
-         call rttov_alloc_transmission(stat, transmission, nlayers, nevals, &
+         call rttov_alloc_transmission(stat, transmission, nlevels, nevals, &
               DEALLOC)
-         call rttov_alloc_rad(stat, nevals, radiance, nlayers, DEALLOC, &
+         call rttov_alloc_rad(stat, nevals, radiance, nlevels, DEALLOC, &
               radiance2)
          call rttov_dealloc_coefs(stat, coefs)
 
          deallocate(input_chan)
          deallocate(chanprof)
          deallocate(emissivity)
-         deallocate(emis_atlas)
+         deallocate(emis_data)
          deallocate(calcemis)
          deallocate(chan_pos)
       end do !coef loop
