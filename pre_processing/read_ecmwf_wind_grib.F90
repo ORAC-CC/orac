@@ -71,7 +71,6 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf, high_res, ecmwf_flag)
 
 
    if ((.not. high_res) .and. (ecmwf_flag .ne. 5)) then
-   	PRINT*,"hihihih"
       ! ensure it contains the expected fields
       call grib_get(gid,'PVPresent',PVPresent)
       if (stat .ne. 0) call h_e_e('wind_grib', 'Error getting PVPresent.')
