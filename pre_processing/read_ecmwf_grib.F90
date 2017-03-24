@@ -83,7 +83,7 @@ subroutine read_ecmwf_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
    type(preproc_prtm_t),       intent(inout) :: preproc_prtm
    logical,                    intent(in)    :: verbose
 
-   integer(lint), parameter                 :: BUFFER = 2000000
+   integer(lint), parameter                 :: BUFFER = 3000000
    integer(lint), external                  :: INTIN,INTOUT,INTF2
    integer(lint)                            :: fu,stat,nbytes
 !   integer(lint)                            :: in_words,out_words
