@@ -134,6 +134,7 @@
 ! 2016/05/27, SP: Updates to enable RTTOV to work correctly with multi-views
 ! 2016/07/05, SP: Added SLSTR/Sentinel-3 processing capability.
 ! 2017/02/25, SP: Update to RTTOV v12.1 (EKWork)
+! 2017/03/24, SP: Tidying, improved method for finding snow fraction (EKWork)
 !
 ! $Id$
 !
@@ -267,10 +268,6 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
    if (verbose) write(*,*) 'sensor: ', trim(sensor)
    if (verbose) write(*,*) 'platform: ', trim(platform)
    if (verbose) write(*,*) 'Date: ', year, month, day
-#ifdef NEW_RTTOV
-   if (verbose) write(*,*) 'Using new RTTOV version (>11.2)'
-#endif
-
 
    ! Determine coefficient filename (Vis/IR distinction made later)
    select case (trim(sensor))
@@ -452,29 +449,16 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
       do idim=preproc_dims%min_lon,preproc_dims%max_lon
          count = count + 1
 
-         ! If using RTTOV version 11.3 or greater then
          ! set gas units to 1, specifying gas input in kg/kg
-         ! (2 = ppmv moist air, 1 = kg/kg, 0 = old method, -1 = ppmv dry air)
-#ifdef NEW_RTTOV
          profiles(count)%gas_units = 1
-#endif
+
          ! Profile information
          profiles(count)%p(:nlayers) = preproc_prtm%pressure(idim,jdim,:) * &
               pa2hpa ! convert from Pa to hPa
          profiles(count)%t(:nlayers) = preproc_prtm%temperature(idim,jdim,:)
-         ! convert from kg/kg to ppmv by multiplying with dry air molecule
-         ! weight(28.9644)/molecule weight of gas (e.g. o3  47.9982)*1.0E6
-#ifdef NEW_RTTOV
-         profiles(count)%q(:nlayers) = &
-              preproc_prtm%spec_hum(idim,jdim,:)
-         profiles(count)%o3(:nlayers) = &
-              preproc_prtm%ozone(idim,jdim,:)
-#else
-         profiles(count)%q(:nlayers) = &
-              preproc_prtm%spec_hum(idim,jdim,:) * q_mixratio_to_ppmv
-         profiles(count)%o3(:nlayers) = &
-              preproc_prtm%ozone(idim,jdim,:) * o3_mixratio_to_ppmv
-#endif
+         profiles(count)%q(:nlayers) = preproc_prtm%spec_hum(idim,jdim,:)
+         profiles(count)%o3(:nlayers) = preproc_prtm%ozone(idim,jdim,:)
+
          ! Surface information
          profiles(count)%s2m%p = exp(preproc_prtm%lnsp(idim,jdim)) * pa2hpa
          profiles(count)%s2m%t = preproc_prtm%temp2(idim,jdim)
@@ -507,8 +491,13 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
          ! line 790 disagrees
          profiles(count)%longitude = preproc_geoloc%longitude(idim)
          ! Use poor man's approach to snow fraction
-         if (preproc_prtm%snow_albedo(idim,jdim) > 0.) &
-              profiles(count)%skin%snow_fraction = 1.
+         if (preproc_prtm%snow_depth(idim,jdim) > 0.05) then
+            profiles(count)%skin%snow_fraction = 1.
+         elseif (preproc_prtm%snow_depth(idim,jdim) > 0.00) then
+            profiles(count)%skin%snow_fraction = preproc_prtm%snow_depth(idim,jdim)/0.05
+         else
+            profiles(count)%skin%snow_fraction=0.
+         endif
 
          ! Write profiles structure to PRTM file (array operations needed to
          ! recast structure in form nc_write_array recognises)

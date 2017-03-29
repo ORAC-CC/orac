@@ -258,6 +258,7 @@
 ! 2017/02/06, SP: Added support for NOAA GFS atmosphere data (EKWork)
 ! 2017/02/10, SP: Allow reading LSM, LUM, DEM from external file (EKWork)
 ! 2017/02/24, SP: Allow option to disable snow/ice correction
+! 2017/03/29, SP: Add new variable for tropopause cloud emissivity (EKWork)
 !
 ! $Id$
 !
@@ -402,6 +403,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    type(imager_measurements_t)      :: imager_measurements
    type(imager_time_t)              :: imager_time
    type(imager_pavolonis_t)         :: imager_pavolonis
+   type(imager_cloud_t)             :: imager_cloud
 
    type(USGS_t)                     :: usgs
 
@@ -872,7 +874,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       if (verbose) write(*,*) 'Allocate imager and surface structures'
       call allocate_imager_structures(imager_geolocation,imager_angles, &
            imager_flags,imager_time,imager_measurements,imager_pavolonis, &
-           channel_info)
+           imager_cloud,channel_info)
 
       call allocate_surface_structures(surface,imager_geolocation,channel_info, &
            include_full_brdf)
@@ -1127,7 +1129,8 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       call deallocate_preproc_structures(preproc_dims, preproc_geoloc, &
            preproc_geo, preproc_prtm, preproc_surf)
       call deallocate_imager_structures(imager_geolocation, imager_angles, &
-           imager_flags, imager_time, imager_measurements, imager_pavolonis)
+           imager_flags, imager_time, imager_measurements, imager_pavolonis,&
+           imager_cloud)
       call deallocate_surface_structures(surface, channel_info, include_full_brdf)
 
    end do ! end looping over chunks

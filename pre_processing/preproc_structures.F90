@@ -22,6 +22,7 @@
 ! 2014/09/10, AP: Removed unnecessary LWRTM and SWRTM structures.
 ! 2015/11/26, GM: Added linearly_combine_prtms() to facilitate linear
 !    interpolation between preproc_prtm_t structures.
+! 2017/03/29, SP: Add new variable for tropopause cloud emissivity (EKWork)
 !
 ! $Id$
 !
@@ -73,6 +74,9 @@ module preproc_structures_m
       real(kind=sreal), dimension(:,:), pointer   :: snow_albedo,snow_depth
       real(kind=sreal), dimension(:,:), pointer   :: sst,sea_ice_cover
       real(kind=sreal), dimension(:,:), pointer   :: totcolwv
+
+      ! New fields for tropopause
+      real(kind=sreal), dimension(:,:), pointer   :: trop_p, trop_t
    end type preproc_prtm_t
 
 

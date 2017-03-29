@@ -48,8 +48,8 @@ PREPROC_OBJ_F90 = $(OBJS)/aatsr_corrections.o \
                   $(OBJS)/channel_structures.o \
                   $(OBJS)/cloud_typing_pavolonis.o \
                   $(OBJS)/correct_for_ice_snow.o \
-		  $(OBJS)/cox_munk_constants.o \
-		  $(OBJS)/ocean_colour.o \
+                  $(OBJS)/cox_munk_constants.o \
+                  $(OBJS)/ocean_colour.o \
                   $(OBJS)/cox_munk.o \
                   $(OBJS)/define_preprop_grid.o \
                   $(OBJS)/ecmwf.o \

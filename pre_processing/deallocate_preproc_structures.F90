@@ -34,6 +34,7 @@
 ! 2014/09/10, AP: Removed unnecessary LWRTM and SWRTM structures.
 ! 2015/11/26, GM: Refactored to include allocate_preproc_prtm() for use
 !    elsewhere.
+! 2017/03/29, SP: Add new variable for tropopause cloud emissivity (EKWork)
 !
 ! $Id$
 !
@@ -65,6 +66,9 @@ subroutine deallocate_preproc_prtm(preproc_prtm)
    deallocate(preproc_prtm%sst)
    deallocate(preproc_prtm%sea_ice_cover)
    deallocate(preproc_prtm%totcolwv)
+
+   deallocate(preproc_prtm%trop_p)
+   deallocate(preproc_prtm%trop_t)
 
 end subroutine deallocate_preproc_prtm
 

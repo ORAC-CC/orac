@@ -22,6 +22,7 @@
 ! 2015/01/30, AP: Remove uscan and vscan as unnecessary.
 ! 2015/07/02, OS: added cldmask_uncertainty
 ! 2016/04/09, SP: Added multiple views
+! 2017/03/29, SP: Add new variable for tropopause cloud emissivity (EKWork)
 !
 ! $Id$
 !
@@ -93,6 +94,11 @@ module imager_structures_m
 
    end type imager_pavolonis_t
 
+   type imager_cloud_t
+
+      real(kind=sreal), dimension(:,:),   pointer :: cloud_emis
+
+   end type imager_cloud_t
 contains
 
 #include "allocate_imager_structures.F90"

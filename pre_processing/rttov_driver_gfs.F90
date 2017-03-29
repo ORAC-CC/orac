@@ -46,6 +46,7 @@
 ! History:
 ! 2017/02/05, SP: Initial version
 ! 2017/02/25, SP: Update to RTTOV v12.1 (EKWork)
+! 2017/03/24, SP: Tidying, improved method for finding snow fraction (EKWork)
 !
 ! $Id$
 !
@@ -179,10 +180,6 @@ subroutine rttov_driver_gfs(coef_path,emiss_path,sensor,platform,preproc_dims, &
    if (verbose) write(*,*) 'sensor: ', trim(sensor)
    if (verbose) write(*,*) 'platform: ', trim(platform)
    if (verbose) write(*,*) 'Date: ', year, month, day
-#ifdef NEW_RTTOV
-   if (verbose) write(*,*) 'Using new RTTOV version (>11.2)'
-#endif
-
 
    ! Determine coefficient filename (Vis/IR distinction made later)
    select case (trim(sensor))
@@ -263,7 +260,7 @@ subroutine rttov_driver_gfs(coef_path,emiss_path,sensor,platform,preproc_dims, &
    ! Initialise options structure (leaving default settings be)
    opts % interpolation % addinterp = .true.  ! Interpolate input profile
    ! Removed as occassionally returns negative ozone at 0.005 hPa
-    opts % interpolation % reg_limit_extrap = .true.  ! Extrapolate to 0.5 Pa
+   ! opts % interpolation % reg_limit_extrap = .true.  ! Extrapolate to 0.5 Pa
    opts % config % do_checkinput = .false. ! necessary due to negative
      ! extrapolated values; from RTTOV 11 homepage: turns off RTTOV's internal
      ! checking for unphysical profile values and values outside the
@@ -275,8 +272,6 @@ subroutine rttov_driver_gfs(coef_path,emiss_path,sensor,platform,preproc_dims, &
    opts % rt_ir % addsolar   = .false. ! Do not include reflected solar
    opts % rt_ir % ozone_data = .true.  ! Include ozone profile
    opts % config % verbose   = .false. ! Display only fatal error messages
-
-!   opts%config%do_checkinput=.true.
 
    if (verbose) write(*,*) 'Write static information to the output files'
 
@@ -366,42 +361,29 @@ subroutine rttov_driver_gfs(coef_path,emiss_path,sensor,platform,preproc_dims, &
       do idim=preproc_dims%min_lon,preproc_dims%max_lon
          count = count + 1
 
-         ! If using RTTOV version 11.3 or greater then
          ! set gas units to 1, specifying gas input in kg/kg
-         ! (2 = ppmv moist air, 1 = kg/kg, 0 = old method, -1 = ppmv dry air)
-#ifdef NEW_RTTOV
          profiles(count)%gas_units = 1
-#endif
+
          ! Profile information
          profiles(count)%p(:) = preproc_prtm%pressure(idim,jdim,:)
          profiles(count)%t(:) = preproc_prtm%temperature(idim,jdim,:)
-         ! convert from kg/kg to ppmv by multiplying with dry air molecule
-         ! weight(28.9644)/molecule weight of gas (e.g. o3  47.9982)*1.0E6
-#ifdef NEW_RTTOV
-         profiles(count)%q(:) = &
-              preproc_prtm%spec_hum(idim,jdim,:)
-         profiles(count)%o3(:) = &
-              preproc_prtm%ozone(idim,jdim,:)
-#else
-         profiles(count)%q(:) = &
-              preproc_prtm%spec_hum(idim,jdim,:) * q_mixratio_to_ppmv
-         profiles(count)%o3(:) = &
-              preproc_prtm%ozone(idim,jdim,:) * o3_mixratio_to_ppmv
-#endif
+         profiles(count)%q(:) = preproc_prtm%spec_hum(idim,jdim,:)
+         profiles(count)%o3(:) = preproc_prtm%ozone(idim,jdim,:)
+
          ! Surface information
-         profiles(count)%s2m%p = exp(preproc_prtm%lnsp(idim,jdim)) * pa2hpa
+         profiles(count)%s2m%p = exp(preproc_prtm%lnsp(idim,jdim))*pa2hpa
          profiles(count)%s2m%t = preproc_prtm%temp2(idim,jdim)
          profiles(count)%s2m%u = preproc_prtm%u10(idim,jdim)
          profiles(count)%s2m%v = preproc_prtm%v10(idim,jdim)
          profiles(count)%s2m%wfetc = 100000.0
-         profiles(count)%p(nlevels) = profiles(count)%s2m%p
+!         profiles(count)%p(nlevels) = profiles(count)%s2m%p
 !         profiles(count)%t(nlevels) = preproc_prtm%skin_temp(idim,jdim)
 
          ! These features currently disabled and so do not need to be input
          profiles(count)%cfraction = 0.
 !        profiles(count)%ctp   = profiles(count)%p(profiles(count)%nlayers)
-!        profiles(count)%s2m%q = profiles(count)%q(profiles(count)%nlayers)
-!        profiles(count)%s2m%o = profiles(count)%o3(profiles(count)%nlayers)
+         profiles(count)%s2m%q = profiles(count)%q(profiles(count)%nlayers)
+         profiles(count)%s2m%o = profiles(count)%o3(profiles(count)%nlayers)
 
          profiles(count)%skin%t = preproc_prtm%skin_temp(idim,jdim)
          ! Force land emissivity from the atlas. !!CONSIDER REVISION!!
@@ -417,8 +399,13 @@ subroutine rttov_driver_gfs(coef_path,emiss_path,sensor,platform,preproc_dims, &
          ! line 790 disagrees
          profiles(count)%longitude = preproc_geoloc%longitude(idim)
          ! Use poor man's approach to snow fraction
-         if (preproc_prtm%snow_albedo(idim,jdim) > 0.) &
-              profiles(count)%skin%snow_fraction = 1.
+         if (preproc_prtm%snow_depth(idim,jdim) > 0.05) then
+            profiles(count)%skin%snow_fraction = 1.
+         elseif (preproc_prtm%snow_depth(idim,jdim) > 0.00) then
+            profiles(count)%skin%snow_fraction = preproc_prtm%snow_depth(idim,jdim)/0.05
+         else
+            profiles(count)%skin%snow_fraction=0.
+         endif
 
          ! Write profiles structure to PRTM file (array operations needed to
          ! recast structure in form nc_write_array recognises)
@@ -599,29 +586,26 @@ subroutine rttov_driver_gfs(coef_path,emiss_path,sensor,platform,preproc_dims, &
                     preproc_dims%counter_sw(idim,jdim,cview) > 0 .and. &
                     profiles(count)%zenangle <= zenmaxv9)) then
 
-                  if (i_coef == 1) then
-                     ! Fetch emissivity from atlas
-                     call rttov_get_emis(stat, opts, chanprof, &
-                          profiles(count:count), coefs, emis_atlas,emis_data)
-                     if (stat /= errorstatus_success) then
-                        write(*,*) 'ERROR: rttov_get_emis(), errorstatus = ', &
-                             stat
-                        stop error_stop_code
-                     end if
-                     emissivity%emis_in = emis_data
+                  ! Fetch emissivity from atlas
+                  call rttov_get_emis(stat, opts, chanprof, &
+                       profiles(count:count), coefs, emis_atlas,emis_data)
+                  if (stat /= errorstatus_success) then
+                     write(*,*) 'ERROR: rttov_get_emis(), errorstatus = ', &
+                          stat
+                     stop error_stop_code
+                  end if
+                  emissivity%emis_in = emis_data
 
-                     ! Fetch emissivity from the MODIS CIMSS emissivity product
-                     if (use_modis_emis) then
-                        where (preproc_surf%emissivity(idim,jdim,:) /= &
-                             sreal_fill_value)
-                           emissivity%emis_in = &
-                                preproc_surf%emissivity(idim,jdim,:)
-                        end where
-                     end if
-
-                     calcemis = emissivity%emis_in <= dither
+                  ! Fetch emissivity from the MODIS CIMSS emissivity product
+                  if (use_modis_emis) then
+                     where (preproc_surf%emissivity(idim,jdim,:) /= &
+                          sreal_fill_value)
+                        emissivity%emis_in = &
+                             preproc_surf%emissivity(idim,jdim,:)
+                     end where
                   end if
 
+                  calcemis(:)=emissivity%emis_in <= dither
                   ! Call RTTOV for this profile
                   call rttov_direct(stat, chanprof, opts, &
                        profiles(count:count), coefs, transmission, radiance, &
@@ -674,6 +658,7 @@ subroutine rttov_driver_gfs(coef_path,emiss_path,sensor,platform,preproc_dims, &
                           jdim-preproc_dims%min_lat+1, &
                           profiles(count)%nlevels, emissivity, transmission, &
                           radiance, radiance2, write_rttov, chan_pos(i_), i_)
+!                          profiles(count)%s2m%p,profiles(count)%p(:))
                   end do
                else
                   do i_=1,nchan

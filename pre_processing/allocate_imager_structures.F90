@@ -33,6 +33,7 @@
 ! 2015/01/30, AP: Remove uscan and vscan as unnecessary.
 ! 2015/07/02, OS: added allocation of cldmask_uncertainty
 ! 2016/04/09, SP: Added multiple views
+! 2017/03/29, SP: Add new variable for tropopause cloud emissivity (EKWork)
 !
 ! $Id$
 !
@@ -42,7 +43,7 @@
 
 subroutine allocate_imager_structures(imager_geolocation,imager_angles, &
      imager_flags,imager_time,imager_measurements,imager_pavolonis, &
-     channel_info)
+     imager_cloud, channel_info)
 
 
    use channel_structures_m
@@ -56,6 +57,7 @@ subroutine allocate_imager_structures(imager_geolocation,imager_angles, &
    type(imager_time_t),         intent(out)   :: imager_time
    type(imager_measurements_t), intent(out)   :: imager_measurements
    type(imager_pavolonis_t),    intent(out)   :: imager_pavolonis
+   type(imager_cloud_t),        intent(out)   :: imager_cloud
    type(channel_info_t),        intent(in)    :: channel_info
 
    allocate(imager_geolocation%latitude( &
@@ -157,5 +159,10 @@ subroutine allocate_imager_structures(imager_geolocation,imager_angles, &
         imager_geolocation%startx:imager_geolocation%endx, &
         1:imager_geolocation%ny,imager_angles%nviews))
    imager_pavolonis%emis_ch3b=sreal_fill_value
+
+   allocate(imager_cloud%cloud_emis( &
+        imager_geolocation%startx:imager_geolocation%endx, &
+        1:imager_geolocation%ny))
+   imager_cloud%cloud_emis=sreal_fill_value
 
 end subroutine allocate_imager_structures

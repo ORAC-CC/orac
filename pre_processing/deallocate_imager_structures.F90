@@ -27,6 +27,7 @@
 ! 2014/12/01, OS: added imager_pavolonis%emis_ch3b
 ! 2015/01/30, AP: Remove uscan and vscan as unnecessary.
 ! 2015/07/03, OS: Added cldmask_uncertainty
+! 2017/03/29, SP: Add new variable for tropopause cloud emissivity (EKWork)
 !
 ! $Id$
 !
@@ -35,7 +36,7 @@
 !-------------------------------------------------------------------------------
 
 subroutine deallocate_imager_structures(imager_geolocation,imager_angles, &
-     imager_flags,imager_time,imager_measurements,imager_pavolonis)
+     imager_flags,imager_time,imager_measurements,imager_pavolonis,imager_cloud)
 
    use preproc_constants_m
 
@@ -47,6 +48,7 @@ subroutine deallocate_imager_structures(imager_geolocation,imager_angles, &
    type(imager_time_t),         intent(inout) :: imager_time
    type(imager_measurements_t), intent(inout) :: imager_measurements
    type(imager_pavolonis_t),    intent(inout) :: imager_pavolonis
+   type(imager_cloud_t),        intent(inout) :: imager_cloud
 
    deallocate(imager_geolocation%latitude)
    deallocate(imager_geolocation%longitude)
@@ -68,5 +70,6 @@ subroutine deallocate_imager_structures(imager_geolocation,imager_angles, &
    deallocate(imager_pavolonis%cccot_pre)
    deallocate(imager_pavolonis%cirrus_quality)
    deallocate(imager_pavolonis%emis_ch3b)
+   deallocate(imager_cloud%cloud_emis)
 
 end subroutine deallocate_imager_structures
