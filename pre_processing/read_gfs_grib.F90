@@ -47,6 +47,8 @@
 ! History:
 ! 2017/02/04, SP: Initial version (EKWork)
 ! 2017/02/25, SP: Update to RTTOV v12.1 (EKWork)
+! 2017/03/27, SP: New technique for computing profile levels. Improves retrievals
+!                 over high altitude land regions (Tibet, f.ex) (EKWork)
 !
 ! $Id$
 !
@@ -64,26 +66,24 @@ subroutine read_gfs_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
 
    implicit none
 
-   character(len=path_length), intent(in)    :: ecmwf_file
-   type(preproc_dims_t),       intent(in)    :: preproc_dims
-   type(preproc_geoloc_t),     intent(in)    :: preproc_geoloc
-   type(preproc_prtm_t),       intent(inout) :: preproc_prtm
-   logical,                    intent(in)    :: verbose
+   character(len=path_length), intent(in)   :: ecmwf_file
+   type(preproc_dims_t),       intent(in)   :: preproc_dims
+   type(preproc_geoloc_t),     intent(in)   :: preproc_geoloc
+   type(preproc_prtm_t),       intent(inout):: preproc_prtm
+   logical,                    intent(in)   :: verbose
 
-   integer(lint), parameter                 :: BUFFER = 2000000
+   integer(lint), parameter                 :: BUFFER = 3000000
    integer(lint), external                  :: INTIN,INTOUT,INTF2
    integer(lint)                            :: fu,stat,nbytes
-!   integer(lint)                            :: in_words,out_words
    integer(lint)                            :: out_bytes, out_words
    integer(lint), allocatable, dimension(:) :: in_data,out_data
    integer(lint)                            :: iblank(4)
-!   real(dreal)                              :: zni(1),zno(1),grid(2),area(4)
    real(dreal)                              :: grid(2),area(4)
    character(len=20)                        :: charv(1)
    character(100)                           :: ltype,lname
 
    integer(lint)                            :: gid,level,param
-   integer                            :: tlev,qlev,olev,glev
+   integer                                  :: tlev,qlev,olev,glev
 
    integer(lint)                            :: n,ni,nj,i,j,plpresent
    real(sreal), dimension(:),   allocatable :: pl,val
@@ -180,12 +180,19 @@ subroutine read_gfs_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
       select case (param)
       case(130)
          ! Temperature
-         if (all(level .ne. gfs_levlist) .or. trim(ltype) .ne. 'isobaricInhPa') cycle
-         array => preproc_prtm%temperature( &
-              preproc_dims%min_lon:preproc_dims%max_lon, &
-              preproc_dims%min_lat:preproc_dims%max_lat,tlev)
-         preproc_prtm%pressure(:,:,tlev)=level
-         tlev=tlev+1
+         if (trim(ltype) .eq. 'tropopause') then
+            array => preproc_prtm%trop_t( &
+                 preproc_dims%min_lon:preproc_dims%max_lon, &
+                 preproc_dims%min_lat:preproc_dims%max_lat)
+         else if (any(level .eq. gfs_levlist) .and. trim(ltype) .eq. 'isobaricInhPa') then
+            array => preproc_prtm%temperature( &
+                 preproc_dims%min_lon:preproc_dims%max_lon, &
+                 preproc_dims%min_lat:preproc_dims%max_lat,tlev)
+            preproc_prtm%pressure(:,:,tlev)=level
+            tlev=tlev+1
+         else
+            cycle
+         endif
       case(157)
          if (all(level .ne. gfs_levlist) .or. trim(ltype) .ne. 'isobaricInhPa') cycle
          ! Relative humidity
@@ -215,10 +222,6 @@ subroutine read_gfs_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
          array => preproc_prtm%sea_ice_cover( &
               preproc_dims%min_lon:preproc_dims%max_lon, &
               preproc_dims%min_lat:preproc_dims%max_lat)
-      case(260509)
-         array => preproc_prtm%snow_albedo( &
-              preproc_dims%min_lon:preproc_dims%max_lon, &
-              preproc_dims%min_lat:preproc_dims%max_lat)
       case(3066)
          array => preproc_prtm%snow_depth( &
               preproc_dims%min_lon:preproc_dims%max_lon, &
@@ -239,11 +242,14 @@ subroutine read_gfs_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
          array => preproc_prtm%land_sea_mask( &
               preproc_dims%min_lon:preproc_dims%max_lon, &
               preproc_dims%min_lat:preproc_dims%max_lat)
+      case(54)
+         if (trim(ltype) .ne. 'tropopause') cycle
+         array => preproc_prtm%trop_p( &
+              preproc_dims%min_lon:preproc_dims%max_lon, &
+              preproc_dims%min_lat:preproc_dims%max_lat)
       case default
          cycle
       end select
-
-
 
       ! copy data into preprocessing grid
       ! a) we're inverting the y axis as ECMWF write 90->-90
@@ -260,18 +266,24 @@ subroutine read_gfs_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
               ', Max: ',maxval(array)
    end do
 
+   ! GFS pressures are in Pa rather than hPa
+   preproc_prtm%trop_p = preproc_prtm%trop_p * pa2hpa
+
+   ! GFS has no skin temperature variable
    preproc_prtm%skin_temp = preproc_prtm%temperature(:,:,tlev-1)
    preproc_prtm%phi_lev   = preproc_prtm%phi_lev*9.80665
 
-   print*,minval(preproc_prtm%skin_temp),maxval(preproc_prtm%skin_temp)
-
+   ! convert from pressure to log pressure
    preproc_prtm%lnsp = log(preproc_prtm%lnsp)
 
    deallocate(val)
 
+   ! GFS provides humidity as relative humidity (%), we need specific humidity (kg/kg)
+   ! This will convert from one to the other.
    call conv_rh_q(preproc_prtm%spec_hum,preproc_prtm%temperature,preproc_prtm%pressure,verbose)
 
-
+   ! GFS has no snow mask, so use snow depth instead. 0.1m threshold arbitrary
+   where(preproc_prtm%snow_depth .gt. 0.1) preproc_prtm%snow_albedo = 0.98
    deallocate(in_data)
    deallocate(out_data)
 
@@ -279,7 +291,153 @@ subroutine read_gfs_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
    call PBCLOSE(fu,stat)
    if (stat .ne. 0) call h_e_e('grib', 'Failed to close file.')
 
+   ! Refactor all the GFS levels so that below-surface contributions are removed.
+   call sort_gfs_levels(preproc_prtm,verbose)
+
 end subroutine read_gfs_grib
+
+
+
+
+
+
+! This function transforms the GFS fixed pressure levels into surface-relative
+! levels that are more similar to those from ECMWF. Needed to prevent below-surface
+! contributions to the transmission and radiances.
+subroutine sort_gfs_levels(preproc_prtm,verbose)
+   use preproc_constants_m
+   use preproc_structures_m
+
+   implicit none
+
+   type(preproc_prtm_t), intent(inout)  :: preproc_prtm
+   logical,              intent(in)     :: verbose
+
+   integer          :: sh(3),lb(3),ub(3),i_0,i_1,j_0,j_1,nl
+   integer          :: i,j,l,stoplev,movelev
+
+   real              :: surfp,interp
+   real,allocatable :: p(:),t(:),q(:),o(:),pl(:)
+   logical          :: stopper
+
+   if (verbose)write(*,*)">>>>>>Sort_gfs_levels>>>>>>"
+
+   ! Get the array bounds
+   sh=shape(preproc_prtm%pressure)
+   nl=sh(3)
+   lb=lbound(preproc_prtm%pressure)
+   ub=ubound(preproc_prtm%pressure)
+   i_0=lb(1)
+   i_1=ub(1)
+   j_0=lb(2)
+   j_1=ub(2)
+
+   ! Allocate temporary arrays
+   allocate(p(nl))
+   allocate(t(nl))
+   allocate(q(nl))
+   allocate(o(nl))
+   allocate(pl(nl))
+
+   ! Loop over each element
+   do i=i_0,i_1
+      do j=j_0,j_1
+         stopper = .false.
+         stoplev=0
+
+         ! Get level arrays for all data, plus surf pres
+         surfp=exp(preproc_prtm%lnsp(i,j))*pa2hpa
+         p=preproc_prtm%pressure(i,j,:)
+         t=preproc_prtm%temperature(i,j,:)
+         q=preproc_prtm%spec_hum(i,j,:)
+         o=preproc_prtm%ozone(i,j,:)
+         pl=preproc_prtm%phi_lev(i,j,:)
+
+         ! Loop over all levels to find last level above surface
+         do l=2,nl
+            if (p(l) .gt. surfp) then
+               if (stopper .neqv. .true.) then
+                  stopper=.true.
+                  ! Compute interp factor to ensure last lev = surface
+                  interp=(surfp-p(l-1))/(p(l)-p(l-1))
+                  stoplev=l-1
+               endif
+            endif
+         enddo
+
+         ! If final level of GFS data is above surface then do this
+         ! Skips otherwise (e.g: Sea or high pressure low elevation regions)
+         if (stopper .eqv. .true.) then
+
+            ! Set data for final level equal to interpolated surface data
+            p(nl) = p(stoplev) + interp * (p(stoplev+1)-p(stoplev))
+            t(nl) = t(stoplev) + interp * (t(stoplev+1)-t(stoplev))
+            q(nl) = q(stoplev) + interp * (q(stoplev+1)-q(stoplev))
+            o(nl) = o(stoplev) + interp * (o(stoplev+1)-o(stoplev))
+            pl(nl) = pl(stoplev) + interp * (pl(stoplev+1)-pl(stoplev))
+
+            ! Move all other data down, so profile is by surface
+            p(nl-stoplev:nl) = p(1:stoplev)
+            t(nl-stoplev:nl) = t(1:stoplev)
+            q(nl-stoplev:nl) = q(1:stoplev)
+            o(nl-stoplev:nl) = o(1:stoplev)
+            pl(nl-stoplev:nl) = pl(1:stoplev)
+
+            ! Fill upper levels with repeating data from final valid layer
+            do l=nl-stoplev-1,1,-1
+               p(l)=p(l+1)-(0.01*p(l+1))
+               t(l)=t(l+1)-(0.01*t(l+1))
+               q(l)=q(l+1)-(0.01*q(l+1))
+               o(l)=o(l+1)-(0.01*o(l+1))
+               pl(l)=pl(l+1)-(0.01*pl(l+1))
+            enddo
+
+            ! Send everything back into appropriate prtm grid array
+            preproc_prtm%pressure(i,j,:)=p
+            preproc_prtm%temperature(i,j,:)=t
+            preproc_prtm%spec_hum(i,j,:)=q
+            preproc_prtm%ozone(i,j,:)=o
+            preproc_prtm%phi_lev(i,j,:)=pl
+         endif
+      end do
+   end do
+
+   ! Tidy up
+   deallocate(p)
+   deallocate(t)
+   deallocate(q)
+   deallocate(o)
+   deallocate(pl)
+
+   if (verbose)write(*,*)"<<<<<<Sort_gfs_levels<<<<<<"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+end subroutine sort_gfs_levels
 
 subroutine conv_rh_q(rh,t,p,verbose)
    use preproc_constants_m
