@@ -46,6 +46,7 @@
 ! 2016/03/31, GM: Changes to support processing only SW or only LW channels.
 ! 2016/04/28, AP: Make multiple views mandatory.
 ! 2017/02/25, SP: Update to RTTOV v12.1 (EKWork)
+! 2017/03/29, SP: Add ability to calculate tropospheric cloud emissivity (EKWork)
 !
 ! $Id$
 !
@@ -54,8 +55,8 @@
 !-------------------------------------------------------------------------------
 
 subroutine netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocation, &
-   imager_measurements,imager_time,imager_pavolonis,netcdf_info,channel_info, &
-   surface,include_full_brdf)
+   imager_measurements,imager_cloud,imager_time,imager_pavolonis,netcdf_info,channel_info, &
+   surface,include_full_brdf,do_cloud_emis)
 
    use channel_structures_m
    use imager_structures_m
@@ -70,12 +71,15 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocati
    type(imager_angles_t),       intent(in) :: imager_angles
    type(imager_geolocation_t),  intent(in) :: imager_geolocation
    type(imager_measurements_t), intent(in) :: imager_measurements
+   type(imager_cloud_t),        intent(in) :: imager_cloud
    type(imager_time_t),         intent(in) :: imager_time
    type(imager_pavolonis_t),    intent(in) :: imager_pavolonis
    type(netcdf_output_info_t),  intent(in) :: netcdf_info
    type(channel_info_t),        intent(in) :: channel_info
    type(surface_t),             intent(in) :: surface
    logical,                     intent(in) :: include_full_brdf
+   logical,                     intent(in) :: do_cloud_emis
+
 
    integer(kind=lint)                            :: i, ii
    integer(kind=lint)                            :: n_x
@@ -86,7 +90,6 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocati
 
 
    ! config file
-
    call nc_write_array( &
            netcdf_info%ncid_config, &
            'msi_instr_ch_numbers', &
@@ -275,6 +278,15 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocati
            1, 1, n_x, &
            1, 1, imager_geolocation%ny, &
            1, 1, channel_info%nviews)
+
+   if (do_cloud_emis) then
+      call nc_write_array( &
+              netcdf_info%ncid_clf, &
+              'cldemis', netcdf_info%vid_cemis, &
+              imager_cloud%cloud_emis(imager_geolocation%startx:,:), &
+              1, 1, n_x, &
+              1, 1, imager_geolocation%ny)
+   endif
 
    call nc_write_array( &
            netcdf_info%ncid_clf, &

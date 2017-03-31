@@ -5,6 +5,8 @@ $(OBJS)/build_preproc_fields.o: $(OBJS)/imager_structures.o \
 $(OBJS)/calender.o: $(OBJS)/preproc_constants.o
 $(OBJS)/channel_structures.o: $(OBJS)/preproc_constants.o \
         allocate_channel_info.F90 deallocate_channel_info.F90
+$(OBJS)/cloud_emis.o: $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o \
+        $(OBJS)/ecmwf.o $(OBJS)/imager_structures.o
 $(OBJS)/cloud_typing_pavolonis.o: $(OBJS)/channel_structures.o $(OBJS)/ecmwf.o \
         $(OBJS)/imager_structures.o $(OBJS)/neural_net_preproc.o \
         $(OBJS)/surface_structures.o pavolonis_fill_coefficients.inc
@@ -104,7 +106,7 @@ $(OBJS)/surface_structures.o: $(OBJS)/channel_structures.o \
 $(OBJS)/test_rttov.o: $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o
 $(OBJS)/utils_for_main.o: $(OBJS)/preproc_constants.o
 $(OBJS)/preprocessing_for_orac.o: $(OBJS)/channel_structures.o \
-        $(OBJS)/cloud_typing_pavolonis.o $(OBJS)/correct_for_ice_snow.o \
+        $(OBJS)/cloud_typing_pavolonis.o $(OBJS)/cloud_emis.o $(OBJS)/correct_for_ice_snow.o \
         $(OBJS)/ecmwf.o $(OBJS)/imager_structures.o $(OBJS)/netcdf_output.o \
         $(OBJS)/preparation.o $(OBJS)/preproc_constants.o \
         $(OBJS)/preproc_structures.o $(OBJS)/read_USGS_file.o \

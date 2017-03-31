@@ -49,6 +49,7 @@
 ! 2017/02/25, SP: Update to RTTOV v12.1 (EKWork)
 ! 2017/03/27, SP: New technique for computing profile levels. Improves retrievals
 !                 over high altitude land regions (Tibet, f.ex) (EKWork)
+! 2017/03/30, SP: Add ability to calculate tropospheric cloud emissivity (EKWork)
 !
 ! $Id$
 !
@@ -180,11 +181,7 @@ subroutine read_gfs_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
       select case (param)
       case(130)
          ! Temperature
-         if (trim(ltype) .eq. 'tropopause') then
-            array => preproc_prtm%trop_t( &
-                 preproc_dims%min_lon:preproc_dims%max_lon, &
-                 preproc_dims%min_lat:preproc_dims%max_lat)
-         else if (any(level .eq. gfs_levlist) .and. trim(ltype) .eq. 'isobaricInhPa') then
+         if (any(level .eq. gfs_levlist) .and. trim(ltype) .eq. 'isobaricInhPa') then
             array => preproc_prtm%temperature( &
                  preproc_dims%min_lon:preproc_dims%max_lon, &
                  preproc_dims%min_lat:preproc_dims%max_lat,tlev)

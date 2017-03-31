@@ -56,6 +56,7 @@
 ! 2014/01/12, CP: added source attributes
 ! 2014/12/16, GM: Put back netcdf_create_config() moved out in the above change.
 ! 2017/02/07, SP: Added support for NOAA GFS atmosphere data (EKWork)
+! 2017/03/29, SP: Add ability to calculate tropospheric cloud emissivity (EKWork)
 !
 ! $Id$
 !
@@ -67,7 +68,7 @@ subroutine netcdf_output_create(output_path,lwrtm_file,swrtm_file,prtm_file, &
    config_file,msi_file,cf_file,lsf_file,geo_file,loc_file,alb_file,platform, &
    sensor,global_atts,source_atts,cyear,cmonth,cday,chour,cminute, &
    preproc_dims,imager_angles,imager_geolocation,netcdf_info,channel_info, &
-   include_full_brdf,ecmwf_flag,verbose)
+   include_full_brdf,ecmwf_flag,do_cloud_emis,verbose)
 
    use channel_structures_m
    use global_attributes_m
@@ -100,6 +101,7 @@ subroutine netcdf_output_create(output_path,lwrtm_file,swrtm_file,prtm_file, &
    type(channel_info_t),           intent(in)    :: channel_info
    logical,                        intent(in)    :: include_full_brdf
    integer,                        intent(in)    :: ecmwf_flag
+   logical,                        intent(in)    :: do_cloud_emis
    logical,                        intent(in)    :: verbose
 
 
@@ -143,41 +145,41 @@ subroutine netcdf_output_create(output_path,lwrtm_file,swrtm_file,prtm_file, &
         cminute,platform,sensor, &
         trim(adjustl(output_path))//'/'//trim(adjustl(alb_file)), &
         NETCDF_OUTPUT_FILE_ABL,imager_geolocation,imager_angles, &
-        netcdf_info,channel_info,include_full_brdf,verbose)
+        netcdf_info,channel_info,include_full_brdf,do_cloud_emis,verbose)
 
    ! create clf file
    call netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, &
         cminute,platform,sensor, &
         trim(adjustl(output_path))//'/'//trim(adjustl(cf_file)), &
         NETCDF_OUTPUT_FILE_CLF,imager_geolocation,imager_angles, &
-        netcdf_info,channel_info,include_full_brdf,verbose)
+        netcdf_info,channel_info,include_full_brdf,do_cloud_emis,verbose)
 
    ! create geo file
    call netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, &
         cminute,platform,sensor, &
         trim(adjustl(output_path))//'/'//trim(adjustl(geo_file)), &
         NETCDF_OUTPUT_FILE_GEO,imager_geolocation,imager_angles, &
-        netcdf_info,channel_info,include_full_brdf,verbose)
+        netcdf_info,channel_info,include_full_brdf,do_cloud_emis,verbose)
 
    ! create loc file
    call netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, &
         cminute,platform,sensor, &
         trim(adjustl(output_path))//'/'//trim(adjustl(loc_file)), &
         NETCDF_OUTPUT_FILE_LOC,imager_geolocation,imager_angles, &
-        netcdf_info,channel_info,include_full_brdf,verbose)
+        netcdf_info,channel_info,include_full_brdf,do_cloud_emis,verbose)
 
    ! create lsf file
    call netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, &
         cminute,platform,sensor, &
         trim(adjustl(output_path))//'/'//trim(adjustl(lsf_file)), &
         NETCDF_OUTPUT_FILE_LSF,imager_geolocation,imager_angles, &
-        netcdf_info,channel_info,include_full_brdf,verbose)
+        netcdf_info,channel_info,include_full_brdf,do_cloud_emis,verbose)
 
    ! create msi file
    call netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, &
         cminute,platform,sensor, &
         trim(adjustl(output_path))//'/'//trim(adjustl(msi_file)), &
         NETCDF_OUTPUT_FILE_MSI,imager_geolocation,imager_angles, &
-        netcdf_info,channel_info,include_full_brdf,verbose)
+        netcdf_info,channel_info,include_full_brdf,do_cloud_emis,verbose)
 
 end subroutine netcdf_output_create

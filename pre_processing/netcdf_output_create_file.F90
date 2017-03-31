@@ -590,12 +590,13 @@ end subroutine netcdf_create_rtm
 !    any more as the variables are written by the preprocessor and read by the
 !    main processor in the order in which they are stored.
 ! 2016/04/28, AP: Make multiple views mandatory.
+! 2017/03/29, SP: Add ability to calculate tropospheric cloud emissivity (EKWork)
 !
 !-------------------------------------------------------------------------------
 
 subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, &
    cminute,platform,sensor,path,type,imager_geolocation,imager_angles, &
-   netcdf_info,channel_info,include_full_brdf,verbose)
+   netcdf_info,channel_info,include_full_brdf,do_cloud_emis,verbose)
 
    use netcdf
 
@@ -625,6 +626,7 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
    type(netcdf_output_info_t),     intent(inout) :: netcdf_info
    type(channel_info_t),           intent(in)    :: channel_info
    logical,                        intent(in)    :: include_full_brdf
+   logical,                        intent(in)    :: do_cloud_emis
    logical,                        intent(in)    :: verbose
 
    ! Local
@@ -633,7 +635,6 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
    integer                    :: dimids_1d(1)
    integer                    :: dimids_2d(2)
    integer                    :: dimids_3d(3)
-
 
    if (type .eq. NETCDF_OUTPUT_FILE_ABL) then
 
@@ -841,6 +842,19 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
               deflate_level = deflate_level, &
               shuffle = shuffle_flag, &
               fill_value = byte_fill_value)
+
+      ! define cldemis variable
+      if (do_cloud_emis) then
+         call nc_def_var_float_packed_float( &
+                 netcdf_info%ncid_clf, &
+                 dimids_2d, &
+                 'cldemis', &
+                 netcdf_info%vid_cemis, &
+                 verbose, &
+                 deflate_level = deflate_level, &
+                 shuffle = shuffle_flag, &
+                 fill_value = sreal_fill_value)
+      endif
 
       ! define cldtype variable
       call nc_def_var_byte_packed_byte( &

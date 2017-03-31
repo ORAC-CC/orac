@@ -135,6 +135,7 @@
 ! 2016/07/05, SP: Added SLSTR/Sentinel-3 processing capability.
 ! 2017/02/25, SP: Update to RTTOV v12.1 (EKWork)
 ! 2017/03/24, SP: Tidying, improved method for finding snow fraction (EKWork)
+! 2017/03/29, SP: Switch to parallel RTTOV for performance improvement
 !
 ! $Id$
 !
@@ -194,7 +195,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 #include "rttov_alloc_rad.interface"
 #include "rttov_alloc_transmission.interface"
 #include "rttov_alloc_traj.interface"
-#include "rttov_direct.interface"
+#include "rttov_parallel_direct.interface"
 #include "rttov_deallocate_emis_atlas.interface"
 #include "rttov_dealloc_coefs.interface"
 
@@ -700,7 +701,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                   calcemis = emissivity%emis_in <= dither
 
                   ! Call RTTOV for this profile
-                  call rttov_direct(stat, chanprof, opts, &
+                  call rttov_parallel_direct(stat, chanprof, opts, &
                        profiles(count:count), coefs, transmission, radiance, &
                        radiance2, calcemis, emissivity, traj=traj)
                   if (stat /= errorstatus_success) then

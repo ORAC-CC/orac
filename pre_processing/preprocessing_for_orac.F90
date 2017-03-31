@@ -259,6 +259,7 @@
 ! 2017/02/10, SP: Allow reading LSM, LUM, DEM from external file (EKWork)
 ! 2017/02/24, SP: Allow option to disable snow/ice correction
 ! 2017/03/29, SP: Add new variable for tropopause cloud emissivity (EKWork)
+! 2017/03/29, SP: Add ability to calculate tropospheric cloud emissivity (EKWork)
 !
 ! $Id$
 !
@@ -275,6 +276,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    use channel_structures_m
    use chunk_utils_m
    use cloud_typing_pavolonis_m, only: cloud_type
+   use cloud_emis_m
    use correct_for_ice_snow_m
    use ecmwf_m
    use global_attributes_m
@@ -351,6 +353,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    logical                          :: use_hr_ecmwf
    logical                          :: use_ecmwf_snow_and_ice
    logical                          :: disable_snow_ice_corr
+   logical                          :: do_cloud_emis
    logical                          :: use_modis_emis_in_rttov
    logical                          :: use_l1_land_mask
 
@@ -418,6 +421,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    type(preproc_geoloc_t)           :: preproc_geoloc
    type(preproc_prtm_t)             :: preproc_prtm,preproc_prtm1,preproc_prtm2
    type(preproc_surf_t)             :: preproc_surf
+   type(preproc_cld_t)              :: preproc_cld
 
    type(netcdf_output_info_t)       :: netcdf_info
 
@@ -521,7 +525,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
             ecmwf_time_int_method, use_ecmwf_snow_and_ice, use_modis_emis_in_rttov, &
             ecmwf_path(2), ecmwf_path2(2), ecmwf_path3(2), ecmwf_path_hr(1), &
             ecmwf_path_hr(2), ecmwf_nlevels, use_l1_land_mask, use_occci, occci_path, &
-            use_predef_lsm, ext_lsm_path,disable_snow_ice_corr)
+            use_predef_lsm, ext_lsm_path,disable_snow_ice_corr,do_cloud_emis)
       end do
    else
 
@@ -592,7 +596,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
            use_modis_emis_in_rttov, ecmwf_path(2), ecmwf_path2(2), &
            ecmwf_path3(2), ecmwf_path_hr(1), ecmwf_path_hr(2), &
            ecmwf_nlevels, use_l1_land_mask, use_occci, occci_path, use_predef_lsm, &
-           ext_lsm_path,disable_snow_ice_corr)
+           ext_lsm_path,disable_snow_ice_corr,do_cloud_emis)
       end do
 
       close(11)
@@ -635,8 +639,10 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       stop error_stop_code
    end if
 
-   ! If we're using an external land-sea file then place that into USGS filename var
+   ! Check we're capable of computing cloud emissivity (ecmwf_flag = 5, for GFS data)
+   if (ecmwf_flag .ne. 5) do_cloud_emis=.false.
 
+   ! If we're using an external land-sea file then place that into USGS filename var
    if (use_predef_lsm) USGS_path_file=ext_lsm_path
 
    if (ecmwf_path(2) .eq. '') ecmwf_path(2) = ecmwf_path(1)
@@ -954,7 +960,8 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       ! allocate preprocessing structures
       if (verbose) write(*,*) 'Allocate preprocessing structures'
       call allocate_preproc_structures(imager_angles,preproc_dims, &
-           preproc_geoloc,preproc_geo,preproc_prtm,preproc_surf,channel_info)
+           preproc_geoloc,preproc_geo,preproc_prtm,preproc_surf,preproc_cld,&
+           channel_info)
 
       ! now read the actual data and interpolate it to the preprocessing grid
       if (verbose) write(*,*) 'Build preprocessing grid'
@@ -1047,15 +1054,20 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
            config_file,msi_file,cf_file,lsf_file,geo_file,loc_file,alb_file, &
            platform,sensor,global_atts,source_atts,cyear,cmonth,cday,chour, &
            cminute,preproc_dims,imager_angles,imager_geolocation,netcdf_info, &
-           channel_info,include_full_brdf,ecmwf_flag,verbose)
+           channel_info,include_full_brdf,ecmwf_flag,do_cloud_emis,verbose)
 
       ! perform RTTOV calculations
       if (verbose) write(*,*) 'Perform RTTOV calculations'
       if (ecmwf_flag .eq. 5) then
          call rttov_driver_gfs(rttov_coef_path,rttov_emiss_path,sensor,platform, &
               preproc_dims,preproc_geoloc,preproc_geo,preproc_prtm,preproc_surf, &
-              netcdf_info,channel_info,year,month,day,use_modis_emis_in_rttov, &
-              verbose)
+              preproc_cld,netcdf_info,channel_info,year,month,day,&
+              use_modis_emis_in_rttov, do_cloud_emis,verbose)
+         ! Call cloud emissivity function
+         if (do_cloud_emis) then
+            call get_cloud_emis(channel_info,imager_measurements,imager_geolocation,preproc_dims,&
+                  preproc_geoloc,preproc_cld,imager_cloud,ecmwf,sensor,verbose)
+         endif
       else
          call rttov_driver(rttov_coef_path,rttov_emiss_path,sensor,platform, &
               preproc_dims,preproc_geoloc,preproc_geo,preproc_prtm,preproc_surf, &
@@ -1077,7 +1089,8 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
          if (verbose) write(*,*) 'Write netcdf output files'
          call netcdf_output_write_swath(imager_flags,imager_angles, &
               imager_geolocation,imager_measurements,imager_time, &
-              imager_pavolonis,netcdf_info,channel_info,surface,include_full_brdf)
+              imager_pavolonis,netcdf_info,channel_info,surface,*
+              include_full_brdf,do_cloud_emis)
 
          ! close output netcdf files
          if (verbose) write(*,*)'Close netcdf output files'
@@ -1111,8 +1124,9 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       ! write netcdf output files
       if (verbose) write(*,*) 'Write netcdf output files'
       call netcdf_output_write_swath(imager_flags,imager_angles, &
-           imager_geolocation,imager_measurements,imager_time, &
-           imager_pavolonis,netcdf_info,channel_info,surface,include_full_brdf)
+           imager_geolocation,imager_measurements,imager_cloud,imager_time, &
+           imager_pavolonis,netcdf_info,channel_info,surface,include_full_brdf,&
+           do_cloud_emis)
 
       ! close output netcdf files
       if (verbose) write(*,*)'Close netcdf output files'
@@ -1127,7 +1141,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
          call deallocate_ecmwf_structures(ecmwf_HR, high_res)
       end if
       call deallocate_preproc_structures(preproc_dims, preproc_geoloc, &
-           preproc_geo, preproc_prtm, preproc_surf)
+           preproc_geo, preproc_prtm, preproc_surf, preproc_cld)
       call deallocate_imager_structures(imager_geolocation, imager_angles, &
            imager_flags, imager_time, imager_measurements, imager_pavolonis,&
            imager_cloud)

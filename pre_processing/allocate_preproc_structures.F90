@@ -50,6 +50,7 @@
 ! 2014/09/10, AP: Removed unnecessary LWRTM and SWRTM structures.
 ! 2015/11/26, GM: Refactored to include allocate_preproc_prtm() for use
 !    elsewhere.
+! 2017/03/29, SP: Add ability to calculate tropospheric cloud emissivity (EKWork)
 !
 ! $Id$
 !
@@ -120,14 +121,13 @@ subroutine allocate_preproc_prtm(preproc_dims, preproc_prtm)
 
    allocate(preproc_prtm%trop_p(sx:ex,sy:ey))
    preproc_prtm%trop_p=sreal_fill_value
-   allocate(preproc_prtm%trop_t(sx:ex,sy:ey))
-   preproc_prtm%trop_t=sreal_fill_value
 
 end subroutine allocate_preproc_prtm
 
 
 subroutine allocate_preproc_structures(imager_angles,preproc_dims, &
-   preproc_geoloc,preproc_geo,preproc_prtm,preproc_surf,channel_info)
+   preproc_geoloc,preproc_geo,preproc_prtm,preproc_surf,preproc_cld,&
+   channel_info)
 
    use channel_structures_m
    use imager_structures_m
@@ -141,6 +141,7 @@ subroutine allocate_preproc_structures(imager_angles,preproc_dims, &
    type(preproc_geo_t),    intent(out)   :: preproc_geo
    type(preproc_prtm_t),   intent(out)   :: preproc_prtm
    type(preproc_surf_t),   intent(out)   :: preproc_surf
+   type(preproc_cld_t),    intent(out)   :: preproc_cld
    type(channel_info_t),   intent(inout) :: channel_info
 
    integer :: nchan_sw, nchan_lw, sx, ex, sy, ey
@@ -180,5 +181,11 @@ subroutine allocate_preproc_structures(imager_angles,preproc_dims, &
    ! preproc_surf
    allocate(preproc_surf%emissivity(sx:ex,sy:ey,nchan_lw))
    preproc_surf%emissivity=sreal_fill_value
+
+   ! preproc_cld
+   allocate(preproc_cld%clear_bt(sx:ex,sy:ey,nchan_lw))
+   preproc_cld%clear_bt=0.0
+   allocate(preproc_cld%cloud_bt(sx:ex,sy:ey,nchan_lw))
+   preproc_cld%cloud_bt=0.0
 
 end subroutine allocate_preproc_structures

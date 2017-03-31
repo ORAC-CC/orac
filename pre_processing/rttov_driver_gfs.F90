@@ -47,6 +47,8 @@
 ! 2017/02/05, SP: Initial version
 ! 2017/02/25, SP: Update to RTTOV v12.1 (EKWork)
 ! 2017/03/24, SP: Tidying, improved method for finding snow fraction (EKWork)
+! 2017/03/29, SP: Switch to parallel RTTOV for performance improvement
+! 2017/03/30, SP: Add ability to calculate tropospheric cloud emissivity (EKWork)
 !
 ! $Id$
 !
@@ -63,8 +65,8 @@ implicit none
 contains
 
 subroutine rttov_driver_gfs(coef_path,emiss_path,sensor,platform,preproc_dims, &
-     preproc_geoloc,preproc_geo,preproc_prtm,preproc_surf,netcdf_info, &
-     channel_info,year,month,day,use_modis_emis,verbose)
+     preproc_geoloc,preproc_geo,preproc_prtm,preproc_surf,preproc_cld,netcdf_info, &
+     channel_info,year,month,day,use_modis_emis,do_cloud_emis,verbose)
 
    use channel_structures_m
    use netcdf_output_m
@@ -106,7 +108,7 @@ subroutine rttov_driver_gfs(coef_path,emiss_path,sensor,platform,preproc_dims, &
 #include "rttov_alloc_rad.interface"
 #include "rttov_alloc_transmission.interface"
 #include "rttov_alloc_traj.interface"
-#include "rttov_direct.interface"
+#include "rttov_parallel_direct.interface"
 #include "rttov_deallocate_emis_atlas.interface"
 #include "rttov_dealloc_coefs.interface"
 
@@ -120,10 +122,12 @@ subroutine rttov_driver_gfs(coef_path,emiss_path,sensor,platform,preproc_dims, &
    type(preproc_geo_t),            intent(in)    :: preproc_geo
    type(preproc_prtm_t),           intent(inout) :: preproc_prtm
    type(preproc_surf_t),           intent(in)    :: preproc_surf
+   type(preproc_cld_t),            intent(inout) :: preproc_cld
    type(netcdf_output_info_t),     intent(inout) :: netcdf_info
    type(channel_info_t),           intent(in)    :: channel_info
    integer(kind=sint),             intent(in)    :: year, month, day
    logical,                        intent(in)    :: use_modis_emis
+   logical,                        intent(in)    :: do_cloud_emis
    logical,                        intent(in)    :: verbose
 
    ! RTTOV in/outputs
@@ -607,7 +611,7 @@ subroutine rttov_driver_gfs(coef_path,emiss_path,sensor,platform,preproc_dims, &
 
                   calcemis(:)=emissivity%emis_in <= dither
                   ! Call RTTOV for this profile
-                  call rttov_direct(stat, chanprof, opts, &
+                  call rttov_parallel_direct(stat, chanprof, opts, &
                        profiles(count:count), coefs, transmission, radiance, &
                        radiance2, calcemis, emissivity, traj=traj)
                   if (stat /= errorstatus_success) then
@@ -658,7 +662,6 @@ subroutine rttov_driver_gfs(coef_path,emiss_path,sensor,platform,preproc_dims, &
                           jdim-preproc_dims%min_lat+1, &
                           profiles(count)%nlevels, emissivity, transmission, &
                           radiance, radiance2, write_rttov, chan_pos(i_), i_)
-!                          profiles(count)%s2m%p,profiles(count)%p(:))
                   end do
                else
                   do i_=1,nchan
@@ -672,7 +675,28 @@ subroutine rttov_driver_gfs(coef_path,emiss_path,sensor,platform,preproc_dims, &
             end do
          end do
 
+         ! Loop again for cloud radiance
+         if (do_cloud_emis) then
+            count = 0
+            if (i_coef .eq. 1) then
+            if (verbose) write(*,*) 'Run RTTOV for cloud'
+               do jdim=preproc_dims%min_lat,preproc_dims%max_lat
+                  do idim=preproc_dims%min_lon,preproc_dims%max_lon
+                     count = count + 1
+                     profiles(count)%cfraction = 1.
+                     profiles(count)%ctp = preproc_prtm%trop_p(idim,jdim)
+                     ! Call RTTOV for this profile
+                     call rttov_parallel_direct(stat, chanprof, opts, &
+                          profiles(count:count), coefs, transmission, radiance, &
+                          radiance2, calcemis, emissivity, traj=traj)
 
+                     ! Save into the appropriate arrays
+                     preproc_cld%cloud_bt(idim,jdim,:) = radiance%bt
+                     preproc_cld%clear_bt(idim,jdim,:) = radiance%bt_clear
+                  enddo
+               enddo
+            endif
+         endif
          if (verbose) write(*,*) 'Deallocate structures'
 
          call rttov_deallocate_emis_atlas(emis_atlas)

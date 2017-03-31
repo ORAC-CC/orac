@@ -23,6 +23,7 @@
 ! 2015/11/26, GM: Added linearly_combine_prtms() to facilitate linear
 !    interpolation between preproc_prtm_t structures.
 ! 2017/03/29, SP: Add new variable for tropopause cloud emissivity (EKWork)
+! 2017/03/29, SP: Add ability to calculate tropospheric cloud emissivity (EKWork)
 !
 ! $Id$
 !
@@ -76,7 +77,7 @@ module preproc_structures_m
       real(kind=sreal), dimension(:,:), pointer   :: totcolwv
 
       ! New fields for tropopause
-      real(kind=sreal), dimension(:,:), pointer   :: trop_p, trop_t
+      real(kind=sreal), dimension(:,:), pointer   :: trop_p
    end type preproc_prtm_t
 
 
@@ -85,6 +86,12 @@ module preproc_structures_m
 !     real(kind=sreal), dimension(:,:,:), pointer :: albedo
       real(kind=sreal), dimension(:,:,:), pointer :: emissivity
    end type preproc_surf_t
+
+
+   type preproc_cld_t
+      real(kind=sreal), dimension(:,:,:), pointer :: clear_bt
+      real(kind=sreal), dimension(:,:,:), pointer :: cloud_bt
+   end type preproc_cld_t
 
 contains
 
@@ -120,6 +127,7 @@ subroutine linearly_combine_prtms(a, b, prtm1, prtm2, prtm)
    prtm%sst           = a * prtm1%sst           + b * prtm2%sst
    prtm%sea_ice_cover = a * prtm1%sea_ice_cover + b * prtm2%sea_ice_cover
    prtm%totcolwv      = a * prtm1%totcolwv      + b * prtm2%totcolwv
+   prtm%trop_p        = a * prtm1%trop_p        + b * prtm2%trop_p
 
 end subroutine linearly_combine_prtms
 

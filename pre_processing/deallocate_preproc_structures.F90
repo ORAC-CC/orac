@@ -68,13 +68,12 @@ subroutine deallocate_preproc_prtm(preproc_prtm)
    deallocate(preproc_prtm%totcolwv)
 
    deallocate(preproc_prtm%trop_p)
-   deallocate(preproc_prtm%trop_t)
 
 end subroutine deallocate_preproc_prtm
 
 
 subroutine deallocate_preproc_structures(preproc_dims,preproc_geoloc, &
-   preproc_geo,preproc_prtm,preproc_surf)
+   preproc_geo,preproc_prtm,preproc_surf,preproc_cld)
 
    use preproc_constants_m
 
@@ -85,6 +84,7 @@ subroutine deallocate_preproc_structures(preproc_dims,preproc_geoloc, &
    type(preproc_geo_t),    intent(inout) :: preproc_geo
    type(preproc_prtm_t),   intent(inout) :: preproc_prtm
    type(preproc_surf_t),   intent(inout) :: preproc_surf
+   type(preproc_cld_t),    intent(inout) :: preproc_cld
 
    ! preproc_dims
    deallocate(preproc_dims%counter_sw)
@@ -105,5 +105,9 @@ subroutine deallocate_preproc_structures(preproc_dims,preproc_geoloc, &
 
    ! preproc_surf
    deallocate(preproc_surf%emissivity)
+
+   ! preproc_cld
+   deallocate(preproc_cld%clear_bt)
+   deallocate(preproc_cld%cloud_bt)
 
 end subroutine deallocate_preproc_structures
