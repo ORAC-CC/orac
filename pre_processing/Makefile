@@ -96,13 +96,13 @@ PREPROC_OBJ_MAIN = $(OBJS)/preprocessing_for_orac.o
 
 # Compilation rules
 $(OBJS)/%.o: %.f90 $(ORAC_COMMON)/liborac_common.a
-   $(F90) -o $@ -c $(FFLAGS) $(INC) -I$(ORAC_COMMON)/obj $(AUXFLAGS) $<
+	$(F90) -o $@ -c $(FFLAGS) $(INC) -I$(ORAC_COMMON)/obj $(AUXFLAGS) $<
 
 $(OBJS)/%.o: %.F90 $(ORAC_COMMON)/liborac_common.a
-   $(F90) -o $@ -c $(FFLAGS) $(INC) -I$(ORAC_COMMON)/obj $(AUXFLAGS) $<
+	$(F90) -o $@ -c $(FFLAGS) $(INC) -I$(ORAC_COMMON)/obj $(AUXFLAGS) $<
 
 $(OBJS)/%.o: %.c
-   $(CC) -o $@ -c $(CFLAGS) $(CINC) $<
+	$(CC) -o $@ -c $(CFLAGS) $(CINC) $<
 
 # Rule to prevent make from identifying Fortran .mod files as Modula2 source
 # files
@@ -114,18 +114,18 @@ all: orac_preproc.x
 
 # Main program build
 orac_preproc.x: $(PREPROC_OBJ_MAIN) libpreproc.a $(ORAC_COMMON)/liborac_common.a Makefile
-   $(F90) -o orac_preproc.x $(LFLAGS) $(PREPROC_OBJ_MAIN) libpreproc.a $(ORAC_COMMON)/liborac_common.a -I./$(OBJS) $(LIBS)
+	$(F90) -o orac_preproc.x $(LFLAGS) $(PREPROC_OBJ_MAIN) libpreproc.a $(ORAC_COMMON)/liborac_common.a -I./$(OBJS) $(LIBS)
 
 # Main library build
 libpreproc.a: $(PREPROC_OBJ) Makefile
-   ar -rs libpreproc.a $(PREPROC_OBJ)
+	ar -rs libpreproc.a $(PREPROC_OBJ)
 
 # Rebuild dependencies housed in dependencies.inc
 depend:
-   @../tools/make_depend.pl $(PREPROC_OBJ_F90) $(PREPROC_OBJ_MAIN) > dependencies.inc
+	@../tools/make_depend.pl $(PREPROC_OBJ_F90) $(PREPROC_OBJ_MAIN) > dependencies.inc
 
 clean tidy:
-   rm -f $(OBJS)/*.o $(OBJS)/*.mod *.a orac_preproc.x
+	rm -f $(OBJS)/*.o $(OBJS)/*.mod *.a orac_preproc.x
 
 
 # Fortran 90 dependencies
