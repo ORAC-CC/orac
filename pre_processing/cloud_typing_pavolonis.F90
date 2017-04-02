@@ -1873,7 +1873,9 @@ function PlanckInv( input_platform, T )
       index = 16
    case ("MSG4")
       index = 16
-   case ("Himawari")
+   case ("Himawari-8")
+      index = 17
+   case ("Himawari-9")
       index = 17
    case ("SuomiNPP")
       index = 18

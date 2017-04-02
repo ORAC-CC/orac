@@ -277,8 +277,10 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
    case('AATSR')
       coef_file = 'rtcoef_envisat_1_atsr.dat'
    case('AHI')
-      if (trim(platform) == 'Himawari') then
+      if (trim(platform) == 'Himawari-8') then
          coef_file = 'rtcoef_himawari_8_ahi.dat'
+      elseif (trim(platform) == 'Himawari-9') then
+         coef_file = 'rtcoef_himawari_9_ahi.dat'
       else
          write(*,*) 'ERROR: rttov_driver(): Invalid HIMAWARI platform: ', &
                     trim(platform)
