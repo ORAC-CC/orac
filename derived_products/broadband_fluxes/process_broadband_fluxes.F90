@@ -83,6 +83,10 @@
 !                 cloud effective radius, cloud optical depth, and broadband surface albedo applied to
 !                 the Fu-Liou model to produce LUT_BB_FLUXES.nc. Speed increased by a factor of ~200.
 !                 Relative accuracy (RMS) is between 4-8% at the TOA and Surface.
+! 2017/04/04, MC: Added scale factor for PAR based on solar spectral observations from SORCE. Weights
+!                 are computed by taking the ratio of the measured solar irradiance in the 400-700 nm
+!                 wavelength range by the estimated value based on planck radiation law and earth-sun distance.
+!                 Note, need to update tsi_soho_sorce_1978_2015.nc.
 !
 ! $Id$
 !
@@ -174,6 +178,7 @@ program process_broadband_fluxes
    real, allocatable :: TSI_tsi_1au(:) !TOTAL SOLAR IRRADIANCE AT 1-AU
    real, allocatable :: TSI_year(:) !TSI INDEX YEAR
    real, allocatable :: TSI_jday(:) !TSI INDEX Julian Day
+   real, allocatable :: TSI_par_weight(:) !TSI Weight for PAR based on SORCE data
    integer(kind=lint)  :: nTSI = 13425
 
    !AEROSOL CCI File (optional)
@@ -195,6 +200,7 @@ program process_broadband_fluxes
    integer :: pxDay   !Day
    real :: pxJday  !JULIAN DAY FROM 1 - 365
    real :: pxTSI   !Total incoming solar irradiance (true-earth)
+   real :: pxPAR_WEIGHT   !Total incoming solar irradiance (true-earth)
    real :: pxAsfc  !Surface albedo
    real :: pxAsfcSWRdr !DIRECT visible surface albedo
    real :: pxAsfcNIRdr !DIRECT near-infrared surface albedo
@@ -483,12 +489,14 @@ program process_broadband_fluxes
     allocate(TSI_tsi_1au(nTSI))
     allocate(TSI_year(nTSI))
     allocate(TSI_jday(nTSI))
+    allocate(TSI_par_weight(nTSI))
 
     !Read primary data
     call nc_read_array(ncid, "tsi_true_earth", TSI_tsi_true_earth, verbose)
     call nc_read_array(ncid, "tsi_1au", TSI_tsi_1au, verbose)
     call nc_read_array(ncid, "year", TSI_year, verbose)
     call nc_read_array(ncid, "jday", TSI_jday, verbose)
+    call nc_read_array(ncid, "par_weight", TSI_par_weight, verbose)
 
     ! Close file
     if (nf90_close(ncid) .ne. NF90_NOERR) then
@@ -500,11 +508,13 @@ program process_broadband_fluxes
     !Get TSI that coincides with input date
     do i=1,nTSI
      if(TSI_year(i) .eq. pxYear .and. TSI_jday(i) .eq. pxJday) pxTSI=TSI_tsi_true_earth(i)
+     if(TSI_year(i) .eq. pxYear .and. TSI_jday(i) .eq. pxJday) pxPAR_WEIGHT=TSI_par_weight(i)
     end do
     print*,'TSI data on date: '
     print*,'YEAR: ',pxYear
     print*,'Calendar Day: ',pxJday
     print*,'TSI = ',pxTSI
+    print*,'PAR WEIGHTS = ',pxPAR_WEIGHT
 !-------------------------------------------------------------------------------
   if(lut_mode .eq. 1) then
    ! Open LUT file
@@ -1229,9 +1239,10 @@ call cpu_time(cpuStart)
           boa_swdn_clr(i,j) = pxboaswdnclr
 
           !PAR
-          toa_par_tot(i,j) = tpar
-          boa_par_tot(i,j) = bpar
-          boa_par_dif(i,j) = bpardif
+          toa_par_tot(i,j) = tpar * pxPAR_WEIGHT
+          boa_par_tot(i,j) = bpar * pxPAR_WEIGHT
+          boa_par_dif(i,j) = bpardif * pxPAR_WEIGHT
+
          end if !valid data
 
          ! meteorology data to output in netCDF file
