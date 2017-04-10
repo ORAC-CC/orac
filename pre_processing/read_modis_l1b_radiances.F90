@@ -99,6 +99,7 @@ subroutine read_modis_l1b_radiances(sensor,platform,path_to_l1b_file, &
       end if
 
       imager_measurements%data(:,:,ich)=temp(:,:)
+      where(imager_measurements%data(:,:,ich) .lt. 0) imager_measurements%data(:,:,ich)=sreal_fill_value
    end do
 
    deallocate(temp)
