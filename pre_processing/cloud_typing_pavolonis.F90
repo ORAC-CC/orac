@@ -66,6 +66,7 @@
 ! 2016/07/05, SP: Added support for the SLSTR instrument
 ! 2016/08/04, GM: Add sw1 and sw2 indices for surface%albedo which is indexed
 !    only for SW.
+! 2017/04/08, SP: New flag to disable VIS processing, saves proc time (EKWork)
 !
 ! $Id$
 !
@@ -258,7 +259,7 @@ contains
 ! =====================================================================
 subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
      imager_angles, imager_geolocation, imager_measurements, &
-     imager_pavolonis, ecmwf, platform, doy, verbose)
+     imager_pavolonis, ecmwf, platform, doy, do_ironly, verbose)
    ! =====================================================================
 
    !-- load necessary variable fields and constants
@@ -285,6 +286,7 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
    type(ecmwf_t),                  intent(in)    :: ecmwf
    character(len=platform_length), intent(in)    :: platform
    integer(kind=sint),             intent(in)    :: doy
+   logical,                        intent(in)    :: do_ironly
    logical,                        intent(in)    :: verbose
 
 
@@ -347,6 +349,7 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
    real(kind=sreal)   :: c_sun
    real(kind=sreal), dimension(2) :: PlanckInv_out
    integer(kind=sint) :: ch1, ch2, ch3, ch4, ch5, ch6, sw1, sw2
+   real(kind=sreal)   :: solzen,ch1v,ch2v
 
    ! -- Parameters used here
    !
@@ -626,6 +629,11 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
          end do
       end if
 
+      if (do_ironly .eqv. .true. ) then
+      	ch1=99
+      	ch2=99
+      endif
+
       if (.not. (ch1 .ne. 0 .and. ch2 .ne. 0 .and. (ch3 .ne. 0 .or. ch4 .ne. 0) .and. &
            ch5 .ne. 0 .and. ch6 .ne. 0)) then
          write(*,*) 'WARNING: Pavolonis cloud typing skipped due to an ' // &
@@ -680,7 +688,10 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
       !$OMP PRIVATE(BTD1112_NOVERLAP_THRES_H) &
       !$OMP PRIVATE(BTD1112_NOVERLAP_THRES_L) &
       !$OMP PRIVATE(EMS38_NOVERLAP_THRES_H) &
-      !$OMP PRIVATE(EMS38_NOVERLAP_THRES_L)
+      !$OMP PRIVATE(EMS38_NOVERLAP_THRES_L) &
+      !$OMP PRIVATE(solzen) &
+      !$OMP PRIVATE(ch1v) &
+      !$OMP PRIVATE(ch2v)
 
       !$OMP DO SCHEDULE(GUIDED)
       !-- loop over all pixels (x)
@@ -752,12 +763,14 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
                  imager_measurements%DATA(i,j,ch6) .lt. 100. ) then
                ch7_on_atsr_flag = NO
             end if
-
-            ch2_on_atsr_flag = YES
-            if ( imager_measurements%DATA(i,j,ch2) .lt. 0. ) then
-               ch2_on_atsr_flag = NO
-            end if
-
+				if (do_ironly .neqv. .true.) then
+		         ch2_on_atsr_flag = YES
+		         if ( imager_measurements%DATA(i,j,ch2) .lt. 0. ) then
+		            ch2_on_atsr_flag = NO
+		         end if
+				else
+					ch2_on_atsr_flag = NO
+				endif
             ! check if ATSR 11um channel is missing because too warm
             !          ch6_on_atsr_flag = YES
 
@@ -810,30 +823,41 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
             BTD_Ch3b_Ch4 = imager_measurements%DATA(i,j,ch4) - &
                  imager_measurements%DATA(i,j,ch5)
 
+            ! If we're not using any VIS channels then fill ch1 and ch2
+            ! Fudge SZA to 120 deg: forces neural net into night mode
+				if (do_ironly .eqv. .true.) then
+					ch1v	=	sreal_fill_value
+					ch2v	=	sreal_fill_value
+					solzen=	120.
+				! Otherwise, behave as-before
+				else
+					ch1v	=	imager_measurements%DATA(i,j,ch1)
+					ch2v	=	imager_measurements%DATA(i,j,ch2)
+					solzen=	imager_angles%SOLZEN(i,j,cview)
+				endif
 
-
-            !-- NEURAL_NET_PREPROC subroutine
-            call ann_cloud_mask( &
-                 imager_measurements%DATA(i,j,ch1), &
-                 imager_measurements%DATA(i,j,ch2), &
-                 imager_measurements%DATA(i,j,ch4), &
-                 imager_measurements%DATA(i,j,ch5), &
-                 imager_measurements%DATA(i,j,ch6), &
-                 imager_angles%SOLZEN(i,j,cview), &
-                 imager_angles%SATZEN(i,j,cview), &
-                 snow_ice_mask(i,j), &
-                 imager_flags%LSFLAG(i,j), &
-                 surface%albedo(i,j,sw1), &
-                 surface%albedo(i,j,sw2), &
-                 imager_pavolonis%CCCOT_pre(i,j,cview), &
-                 imager_pavolonis%CLDMASK(i,j,cview) , &
-                 imager_pavolonis%CLDMASK_UNCERTAINTY(i,j,cview) , &
-                 skint(i,j) , &
-                 ch3a_on_avhrr_flag, &
-                 glint_angle, &
-                 sensor, &
-                 platform, &
-                 verbose )
+	         !-- NEURAL_NET_PREPROC subroutine
+	         call ann_cloud_mask( &
+	              ch1v, &
+	              ch2v, &
+	              imager_measurements%DATA(i,j,ch4), &
+	              imager_measurements%DATA(i,j,ch5), &
+	              imager_measurements%DATA(i,j,ch6), &
+	              solzen, &
+	              imager_angles%SATZEN(i,j,cview), &
+	              snow_ice_mask(i,j), &
+	              imager_flags%LSFLAG(i,j), &
+	              surface%albedo(i,j,sw1), &
+	              surface%albedo(i,j,sw2), &
+	              imager_pavolonis%CCCOT_pre(i,j,cview), &
+	              imager_pavolonis%CLDMASK(i,j,cview) , &
+	              imager_pavolonis%CLDMASK_UNCERTAINTY(i,j,cview) , &
+	              skint(i,j) , &
+	              ch3a_on_avhrr_flag, &
+	              glint_angle, &
+	              sensor, &
+	              platform, &
+	              verbose )
 
             ! cycle if clear, as no need to define cloud type
             if ( imager_pavolonis%CLDMASK(i,j,cview) == CLEAR ) then
@@ -940,7 +964,11 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
             imager_pavolonis%emis_ch3b(i,j,cview) = rad_ch3b / rad_ch3b_emis
 
             ! calculate true reflectances for avhrr, modis and aatsr
-            ref_ch1  = imager_measurements%DATA(i,j,ch1) / mu0
+            if (do_ironly .neqv. .true.) then
+            	ref_ch1  = imager_measurements%DATA(i,j,ch1) / mu0
+            else
+            	ref_ch1	=	sreal_fill_value
+            endif
             ref_ch3a = imager_measurements%DATA(i,j,ch3) / mu0
             ref_ch3b = ( rad_ch3b - rad_ch3b_emis ) / ( solcon_ch3b * c_sun * mu0 - rad_ch3b_emis )
             ! make sure reflectances are positive, else fill value

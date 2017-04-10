@@ -139,6 +139,22 @@ subroutine read_gfs_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
       if (stat .eq. -1) exit
       if (stat .ne. 0) call h_e_e('grib', 'Failure to read product.')
 
+		! Check if this is something we want to read
+      call grib_new_from_message(gid,in_data,stat)
+      call grib_get(gid,'parameter',param,stat)
+      if (param .ne. 130 .and. param .ne. 157 .and. &
+      	 param .ne. 156 .and. param .ne. 260131 .and. &
+      	 param .ne. 134 .and. param .ne. 31 .and. &
+      	 param .ne. 3066 .and. param .ne. 165 .and. &
+      	 param .ne. 166 .and. param .ne. 167 .and. &
+      	 param .ne. 172 .and. param .ne. 54) then
+      	 	call grib_release(gid,stat)
+      	 	cycle
+      endif
+
+		call grib_release(gid,stat)
+
+
       ! interpolate GRIB field (into another GRIB field)
       ! in_words = nbytes / lint
       ! out_words = BUFFER

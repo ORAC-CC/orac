@@ -578,7 +578,8 @@ subroutine rttov_driver_gfs(coef_path,emiss_path,sensor,platform,preproc_dims, &
          ! Loop over profiles (as the conditions for processing LW and SW are
          ! different, we can't just pass the whole array)
          count = 0
-         if (verbose) write(*,*) 'Run RTTOV'
+         if ((verbose) .and. i_coef .eq. 1) write(*,*) 'Run RTTOV Longwave'
+         if ((verbose) .and. i_coef .eq. 2) write(*,*) 'Run RTTOV Shortwave'
          do jdim=preproc_dims%min_lat,preproc_dims%max_lat
             do idim=preproc_dims%min_lon,preproc_dims%max_lon
                count = count + 1

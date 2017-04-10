@@ -281,7 +281,6 @@ subroutine ann_cloud_mask(channel1, channel2, channel3b, channel4, channel5, &
       end if
 
    elseif ( illum_nn .eq. 3 ) then
-
       ! --- night
 
       nneurons       = nneurons_ex11   !set number of neurons

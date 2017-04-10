@@ -22,6 +22,7 @@
 ! 2017/02/10, SP: Allow reading LSM, LUM, DEM from external file (EKWork)
 ! 2017/02/24, SP: Allow option to disable snow/ice correction
 ! 2017/03/29, SP: Add ability to calculate tropospheric cloud emissivity (EKWork)
+! 2017/04/08, SP: New flag to disable VIS processing, saves proc time (EKWork)
 !
 ! $Id$
 !
@@ -60,7 +61,7 @@ subroutine parse_optional(label, value, n_channels, channel_ids, &
                           ecmwf_path, ecmwf_path2, ecmwf_path3, ecmwf_path_hr, &
                           ecmwf_path_hr_2, ecmwf_nlevels, use_l1_land_mask, &
                           use_occci, occci_path,use_predef_lsm,ext_lsm_path,&
-                          disable_snow_and_ice_corr,do_cloud_emis)
+                          disable_snow_and_ice_corr,do_cloud_emis,do_ironly)
 
    use parsing_m
    use preproc_constants_m
@@ -88,6 +89,7 @@ subroutine parse_optional(label, value, n_channels, channel_ids, &
    character(len=*), intent(inout) :: ext_lsm_path
    logical,          intent(inout) :: disable_snow_and_ice_corr
    logical,          intent(inout) :: do_cloud_emis
+   logical,          intent(inout) :: do_ironly
 
    select case (label)
    case('N_CHANNELS')
@@ -151,6 +153,9 @@ subroutine parse_optional(label, value, n_channels, channel_ids, &
            call handle_parse_error(label)
    case('DO_CLOUD_EMIS')
       if (parse_string(value, do_cloud_emis) /= 0) &
+           call handle_parse_error(label)
+   case('DO_IRONLY')
+      if (parse_string(value, do_ironly) /= 0) &
            call handle_parse_error(label)
    case default
       write(*,*) 'ERROR: Unknown option: ', trim(label)

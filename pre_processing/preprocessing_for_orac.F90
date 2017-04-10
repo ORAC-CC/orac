@@ -260,6 +260,7 @@
 ! 2017/02/24, SP: Allow option to disable snow/ice correction
 ! 2017/03/29, SP: Add new variable for tropopause cloud emissivity (EKWork)
 ! 2017/03/29, SP: Add ability to calculate tropospheric cloud emissivity (EKWork)
+! 2017/04/08, SP: New flag to disable VIS processing, saves proc time (EKWork)
 !
 ! $Id$
 !
@@ -354,6 +355,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    logical                          :: use_ecmwf_snow_and_ice
    logical                          :: disable_snow_ice_corr
    logical                          :: do_cloud_emis
+   logical                          :: do_ironly
    logical                          :: use_modis_emis_in_rttov
    logical                          :: use_l1_land_mask
 
@@ -460,6 +462,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    ecmwf_path2(2)          = ''
    ecmwf_path3(2)          = ''
    ecmwf_nlevels           = 0
+   do_ironly               = .false.
    use_occci               = .false.
    occci_path              = ''
 
@@ -525,7 +528,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
             ecmwf_time_int_method, use_ecmwf_snow_and_ice, use_modis_emis_in_rttov, &
             ecmwf_path(2), ecmwf_path2(2), ecmwf_path3(2), ecmwf_path_hr(1), &
             ecmwf_path_hr(2), ecmwf_nlevels, use_l1_land_mask, use_occci, occci_path, &
-            use_predef_lsm, ext_lsm_path,disable_snow_ice_corr,do_cloud_emis)
+            use_predef_lsm, ext_lsm_path,disable_snow_ice_corr,do_cloud_emis,do_ironly)
       end do
    else
 
@@ -596,7 +599,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
            use_modis_emis_in_rttov, ecmwf_path(2), ecmwf_path2(2), &
            ecmwf_path3(2), ecmwf_path_hr(1), ecmwf_path_hr(2), &
            ecmwf_nlevels, use_l1_land_mask, use_occci, occci_path, use_predef_lsm, &
-           ext_lsm_path,disable_snow_ice_corr,do_cloud_emis)
+           ext_lsm_path,disable_snow_ice_corr,do_cloud_emis,do_ironly)
       end do
 
       close(11)
@@ -1009,41 +1012,51 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
            imager_geolocation, channel_info, preproc_dims, &
            assume_full_paths, verbose, surface, preproc_surf, source_atts)
 
-      ! select correct reflectance files and calculate surface reflectance
-      ! over land and ocean
-      if (verbose) write(*,*) 'Get surface reflectance'
-      call get_surface_reflectance(cyear, cdoy, cmonth, &
-            modis_albedo_path, modis_brdf_path, occci_path, imager_flags, &
-           imager_geolocation, imager_angles, channel_info, ecmwf, &
-           assume_full_paths, include_full_brdf, use_occci, verbose, &
-           surface, source_atts)
+		if (do_ironly .neqv. .true.) then
+		   ! select correct reflectance files and calculate surface reflectance
+		   ! over land and ocean
+		   if (verbose) write(*,*) 'Get surface reflectance'
+		   call get_surface_reflectance(cyear, cdoy, cmonth, &
+		         modis_albedo_path, modis_brdf_path, occci_path, imager_flags, &
+		        imager_geolocation, imager_angles, channel_info, ecmwf, &
+		        assume_full_paths, include_full_brdf, use_occci, verbose, &
+		        surface, source_atts)
 
-      ! Use the Near-real-time Ice and Snow Extent (NISE) data from the National
-      ! Snow and Ice Data Center to detect ice and snow pixels, and correct the
-      ! surface albedo.
-      if (verbose) write(*,*) 'Correct for ice and snow'
-      if (.not. disable_snow_ice_corr) then
-         if (.not. use_ecmwf_snow_and_ice) then
-            call correct_for_ice_snow(nise_ice_snow_path, imager_geolocation, &
-                 surface, cyear, cmonth, cday, channel_info, assume_full_paths, &
-                 include_full_brdf, source_atts, verbose)
-         else
-            call correct_for_ice_snow_ecmwf(ecmwf_HR_path_file(1), &
-                 imager_geolocation, imager_flags, preproc_dims, preproc_prtm, &
-                 surface, include_full_brdf, source_atts, verbose)
-         endif
-      end if
+		   ! Use the Near-real-time Ice and Snow Extent (NISE) data from the National
+		   ! Snow and Ice Data Center to detect ice and snow pixels, and correct the
+		   ! surface albedo.
+		   if (verbose) write(*,*) 'Correct for ice and snow'
+		   if (.not. disable_snow_ice_corr) then
+		      if (.not. use_ecmwf_snow_and_ice) then
+		         call correct_for_ice_snow(nise_ice_snow_path, imager_geolocation, &
+		              surface, cyear, cmonth, cday, channel_info, assume_full_paths, &
+		              include_full_brdf, source_atts, verbose)
+		      else
+		         call correct_for_ice_snow_ecmwf(ecmwf_HR_path_file(1), &
+		              imager_geolocation, imager_flags, preproc_dims, preproc_prtm, &
+		              surface, include_full_brdf, source_atts, verbose)
+		      endif
+		   end if
+		else
+			surface%albedo(:,:,:) = sreal_fill_value
+			if (include_full_brdf) then
+				surface%rho_0v(:,:,:) = sreal_fill_value
+				surface%rho_0d(:,:,:) = sreal_fill_value
+				surface%rho_dv(:,:,:) = sreal_fill_value
+				surface%rho_dd(:,:,:) = sreal_fill_value
+			endif
+		endif
 
       if (verbose) write(*,*) 'Calculate Pavolonis cloud phase with high '// &
            'resolution ERA surface data'
       if (.not. use_hr_ecmwf) then
          call cloud_type(channel_info, sensor, surface, imager_flags, &
               imager_angles, imager_geolocation, imager_measurements, &
-              imager_pavolonis, ecmwf, platform, doy, verbose)
+              imager_pavolonis, ecmwf, platform, doy, do_ironly, verbose)
       else
          call cloud_type(channel_info, sensor, surface, imager_flags, &
               imager_angles, imager_geolocation, imager_measurements, &
-              imager_pavolonis, ecmwf_HR, platform, doy, verbose)
+              imager_pavolonis, ecmwf_HR, platform, doy, do_ironly, verbose)
       end if
 
       ! create output netcdf files.
