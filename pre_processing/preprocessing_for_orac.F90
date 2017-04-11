@@ -261,6 +261,7 @@
 ! 2017/03/29, SP: Add new variable for tropopause cloud emissivity (EKWork)
 ! 2017/03/29, SP: Add ability to calculate tropospheric cloud emissivity (EKWork)
 ! 2017/04/08, SP: New flag to disable VIS processing, saves proc time (EKWork)
+! 2017/04/11, SP: Added ecmwf_flag=6, for working with GFS analysis files.
 !
 ! $Id$
 !
@@ -642,8 +643,8 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       stop error_stop_code
    end if
 
-   ! Check we're capable of computing cloud emissivity (ecmwf_flag = 5, for GFS data)
-   if (ecmwf_flag .ne. 5) do_cloud_emis=.false.
+   ! Check we're capable of computing cloud emissivity (ecmwf_flag = 5 or =6, for GFS data)
+   if (ecmwf_flag .ne. 5 .and. ecmwf_flag .ne. 6) do_cloud_emis=.false.
 
    ! If we're using an external land-sea file then place that into USGS filename var
    if (use_predef_lsm) USGS_path_file=ext_lsm_path
@@ -914,13 +915,15 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
          write(*,*) 'ecmwf_flag: ', ecmwf_flag
          write(*,*) 'ecmwf_path_file: ',trim(ecmwf_path_file(1))
          write(*,*) 'ecmwf_HR_path_file: ',trim(ecmwf_HR_path_file(1))
-         if (ecmwf_flag.gt.0.and.ecmwf_flag.ne.4) then
+         if (ecmwf_flag.gt.0.and.ecmwf_flag.lt.4) then
             write(*,*) 'ecmwf_path_file2: ',trim(ecmwf_path_file2(1))
             write(*,*) 'ecmwf_path_file3: ',trim(ecmwf_path_file3(1))
          end if
       end if
 
-      if (ecmwf_flag .eq. 5) ecmwf_nlevels=31
+      ! NOAA GFS has limited (pressure) levels and no HR, so set these.
+      if (ecmwf_flag .eq. 5 .or. ecmwf_flag .eq. 6) ecmwf_nlevels=31
+      if (ecmwf_flag .eq. 5 .or. ecmwf_flag .eq. 6) use_hr_ecmwf=.false.
 
       ! read surface wind fields and ECMWF dimensions
       if (ecmwf_time_int_method .ne. 2) then
@@ -997,7 +1000,8 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
 
       if (verbose) write(*,*) 'Compute geopotential vertical coords'
       ! compute geopotential vertical coordinate from pressure coordinate
-      if (ecmwf_flag .ne. 5) call compute_geopot_coordinate(preproc_prtm, preproc_dims, ecmwf)
+      if (ecmwf_flag .ne. 5 .and. ecmwf_flag .ne. 6) call &
+         compute_geopot_coordinate(preproc_prtm, preproc_dims, ecmwf)
 
       ! read USGS physiography file, including land use and DEM data
       ! NOTE: variable imager_flags%lsflag is overwritten by USGS data !!!
@@ -1012,40 +1016,40 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
            imager_geolocation, channel_info, preproc_dims, &
            assume_full_paths, verbose, surface, preproc_surf, source_atts)
 
-		if (do_ironly .neqv. .true.) then
-		   ! select correct reflectance files and calculate surface reflectance
-		   ! over land and ocean
-		   if (verbose) write(*,*) 'Get surface reflectance'
-		   call get_surface_reflectance(cyear, cdoy, cmonth, &
-		         modis_albedo_path, modis_brdf_path, occci_path, imager_flags, &
-		        imager_geolocation, imager_angles, channel_info, ecmwf, &
-		        assume_full_paths, include_full_brdf, use_occci, verbose, &
-		        surface, source_atts)
+      if (do_ironly .neqv. .true.) then
+         ! select correct reflectance files and calculate surface reflectance
+         ! over land and ocean
+         if (verbose) write(*,*) 'Get surface reflectance'
+         call get_surface_reflectance(cyear, cdoy, cmonth, &
+               modis_albedo_path, modis_brdf_path, occci_path, imager_flags, &
+              imager_geolocation, imager_angles, channel_info, ecmwf, &
+              assume_full_paths, include_full_brdf, use_occci, verbose, &
+              surface, source_atts)
 
-		   ! Use the Near-real-time Ice and Snow Extent (NISE) data from the National
-		   ! Snow and Ice Data Center to detect ice and snow pixels, and correct the
-		   ! surface albedo.
-		   if (verbose) write(*,*) 'Correct for ice and snow'
-		   if (.not. disable_snow_ice_corr) then
-		      if (.not. use_ecmwf_snow_and_ice) then
-		         call correct_for_ice_snow(nise_ice_snow_path, imager_geolocation, &
-		              surface, cyear, cmonth, cday, channel_info, assume_full_paths, &
-		              include_full_brdf, source_atts, verbose)
-		      else
-		         call correct_for_ice_snow_ecmwf(ecmwf_HR_path_file(1), &
-		              imager_geolocation, imager_flags, preproc_dims, preproc_prtm, &
-		              surface, include_full_brdf, source_atts, verbose)
-		      endif
-		   end if
-		else
-			surface%albedo(:,:,:) = sreal_fill_value
-			if (include_full_brdf) then
-				surface%rho_0v(:,:,:) = sreal_fill_value
-				surface%rho_0d(:,:,:) = sreal_fill_value
-				surface%rho_dv(:,:,:) = sreal_fill_value
-				surface%rho_dd(:,:,:) = sreal_fill_value
-			endif
-		endif
+         ! Use the Near-real-time Ice and Snow Extent (NISE) data from the National
+         ! Snow and Ice Data Center to detect ice and snow pixels, and correct the
+         ! surface albedo.
+         if (verbose) write(*,*) 'Correct for ice and snow'
+         if (.not. disable_snow_ice_corr) then
+            if (.not. use_ecmwf_snow_and_ice) then
+               call correct_for_ice_snow(nise_ice_snow_path, imager_geolocation, &
+                    surface, cyear, cmonth, cday, channel_info, assume_full_paths, &
+                    include_full_brdf, source_atts, verbose)
+            else
+               call correct_for_ice_snow_ecmwf(ecmwf_HR_path_file(1), &
+                    imager_geolocation, imager_flags, preproc_dims, preproc_prtm, &
+                    surface, include_full_brdf, source_atts, verbose)
+            endif
+         end if
+      else
+         surface%albedo(:,:,:) = sreal_fill_value
+         if (include_full_brdf) then
+            surface%rho_0v(:,:,:) = sreal_fill_value
+            surface%rho_0d(:,:,:) = sreal_fill_value
+            surface%rho_dv(:,:,:) = sreal_fill_value
+            surface%rho_dd(:,:,:) = sreal_fill_value
+         endif
+      endif
 
       if (verbose) write(*,*) 'Calculate Pavolonis cloud phase with high '// &
            'resolution ERA surface data'
@@ -1071,7 +1075,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
 
       ! perform RTTOV calculations
       if (verbose) write(*,*) 'Perform RTTOV calculations'
-      if (ecmwf_flag .eq. 5) then
+      if (ecmwf_flag .eq. 5 .or. ecmwf_flag .eq. 6) then
          call rttov_driver_gfs(rttov_coef_path,rttov_emiss_path,sensor,platform, &
               preproc_dims,preproc_geoloc,preproc_geo,preproc_prtm,preproc_surf, &
               preproc_cld,netcdf_info,channel_info,year,month,day,&

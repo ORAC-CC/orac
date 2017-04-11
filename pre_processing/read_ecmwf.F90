@@ -26,6 +26,7 @@
 ! 2016/04/26, AP: There are no high res files compatible with ecmwf_flag=1.
 !    Merge _dwd routines with _nc.
 ! 2017/02/04, SP: Add ecmwf_flag=5, for reading NOAA GFS forecast (EKWork)
+! 2017/04/11, SP: Added ecmwf_flag=6, for working with GFS analysis files.
 !
 ! $Id$
 !
@@ -102,11 +103,11 @@ subroutine read_ecmwf_wind(ecmwf_flag, ecmwf_path_file, ecmwf_HR_path_file, &
    case(5)
       call read_ecmwf_wind_grib(ecmwf_path_file,ecmwf,.false.,ecmwf_flag)
       if (verbose) write(*,*)'ecmwf_dims grib: ',ecmwf%xdim,ecmwf%ydim
-      if (use_hr_ecmwf) then
-         call read_ecmwf_wind_grib(ecmwf_HR_path_file,ecmwf_HR,.true.,ecmwf_flag)
-      end if
+   case(6)
+      call read_ecmwf_wind_grib(ecmwf_path_file,ecmwf,.false.,ecmwf_flag)
+      if (verbose) write(*,*)'ecmwf_dims grib: ',ecmwf%xdim,ecmwf%ydim
    case default
-      write(*,*) "Incorrect ECMWF flag, must be between 0-5."
+      write(*,*) "Incorrect ECMWF flag, must be between 0-6."
       stop
    end select
    if (verbose) then
@@ -214,6 +215,10 @@ subroutine read_ecmwf(ecmwf_flag, ecmwf_path_file, ecmwf_path_file2, &
       call read_ecmwf_nc(ecmwf_path_file,ecmwf,preproc_dims,preproc_geoloc, &
            preproc_prtm,verbose,ecmwf_flag)
    case(5)
+      if (verbose) write(*,*) 'Reading gfs path: ',trim(ecmwf_path_file)
+      call read_gfs_grib(ecmwf_path_file,preproc_dims,preproc_geoloc, &
+           preproc_prtm,verbose)
+   case(6)
       if (verbose) write(*,*) 'Reading gfs path: ',trim(ecmwf_path_file)
       call read_gfs_grib(ecmwf_path_file,preproc_dims,preproc_geoloc, &
            preproc_prtm,verbose)

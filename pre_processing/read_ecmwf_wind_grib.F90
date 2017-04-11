@@ -31,6 +31,7 @@
 ! 2016/05/26, GT: Moved ecmwf%kdim=nk statement inside if (.not. high_res) block,
 !    as nk is undefined in the high_res case
 ! 2017/02/07, SP: Added support for NOAA GFS atmosphere data (EKWork)
+! 2017/04/11, SP: Added ecmwf_flag=6, for working with GFS analysis files.
 !
 ! $Id$
 !
@@ -70,12 +71,12 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf, high_res, ecmwf_flag)
 
 
 
-   if ((.not. high_res) .and. (ecmwf_flag .ne. 5)) then
+   if ((.not. high_res) .and. (ecmwf_flag .ne. 5) .and. (ecmwf_flag .ne. 6)) then
       ! ensure it contains the expected fields
       call grib_get(gid,'PVPresent',PVPresent)
       if (stat .ne. 0) call h_e_e('wind_grib', 'Error getting PVPresent.')
       if (PVPresent .eq. 0) &
-           call h_e_e('wind_grib', 'Incorrect file format. Check ECMWF_FLAG. ?UJ')
+           call h_e_e('wind_grib', 'Incorrect file format. Check ECMWF_FLAG.')
       call grib_get(gid,'PLPresent',PLPresent)
       if (stat .ne. 0) call h_e_e('wind_grib', 'Error getting PLPresent.')
       if (PLPresent .eq. 1) &
@@ -112,6 +113,8 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf, high_res, ecmwf_flag)
       if (ecmwf_flag .ne. 5) allocate(ecmwf%bvec(nk+1))
       if (ecmwf_flag .eq. 5) allocate(ecmwf%avec(ecmwf%kdim))
       if (ecmwf_flag .eq. 5) allocate(ecmwf%bvec(ecmwf%kdim))
+      if (ecmwf_flag .eq. 6) allocate(ecmwf%avec(ecmwf%kdim))
+      if (ecmwf_flag .eq. 6) allocate(ecmwf%bvec(ecmwf%kdim))
       allocate(ecmwf%u10(ni,nj))
       allocate(ecmwf%v10(ni,nj))
    end if
@@ -192,8 +195,8 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf, high_res, ecmwf_flag)
          ecmwf%snow_depth=reshape(val, (/ni,nj/))
          where (ecmwf%snow_depth .eq. 9999.) ecmwf%snow_depth = sreal_fill_value
       case(130)
-         if (trim(ltype) .eq. 'surface' .and. ecmwf_flag .eq. 5) then
-            if (ecmwf_flag .eq. 5) then
+         if (trim(ltype) .eq. 'surface') then
+            if (ecmwf_flag .eq. 5 .or. ecmwf_flag .eq. 6) then
                ! skin temp (GFS) - proxied by surface temp
                call grib_get_data(gid,lat,lon,val,stat)
                if (stat .ne. 0) call h_e_e('wind_grib', 'Error reading skin_temp.')
@@ -220,7 +223,7 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf, high_res, ecmwf_flag)
 
    ecmwf%xdim=ni
    ecmwf%ydim=nj
-   if (.not. high_res .and. ecmwf_flag .ne. 5) then
+   if (.not. high_res .and. ecmwf_flag .ne. 5 .and. ecmwf_flag .ne. 6) then
       ecmwf%kdim=nk
       if (nk .ne. nlevels) call h_e_e('wind_grib', 'Inconsistent vertical levels.')
       ecmwf%avec=pv(1:nk+1)
@@ -228,7 +231,7 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf, high_res, ecmwf_flag)
    end if
 
    ! clean-up
-   if (.not. high_res .and. ecmwf_flag .ne. 5) then
+   if (.not. high_res .and. ecmwf_flag .ne. 5 .and. ecmwf_flag .ne. 6) then
       deallocate(pv)
    end if
    deallocate(lat)

@@ -26,7 +26,7 @@
 ! ecmwf_path2out string out If badc, full path to appropriate GGAS file.
 ! ecmwf_path3out string out If badc, full path to appropriate GPAM file.
 ! ecmwf_flag     int    in  0: A single GRB file; 1: 3 NCDF files; 2: BADC files
-!                           4: One ECMWF forecast GRB file, 5 NOAA GFS grib
+!                           4: One ECMWF forecast GRB file, 5 and 6 NOAA GFS grib
 ! assume_full_path
 !                logic  in  T: inputs are filenames; F: folder names
 !
@@ -58,6 +58,7 @@
 !    version of code by CP).
 ! 2016/07/31, GM: Tidying of the code drop above.
 ! 2017/01/31, SP: Add ecmwf_flag=5, for reading NOAA GFS forecast (EKWork)
+! 2017/04/11, SP: Added ecmwf_flag=6, for working with GFS analysis files.
 !
 ! $Id$
 !
@@ -105,9 +106,8 @@ subroutine set_ecmwf(cyear,cmonth,cday,chour,ecmwf_path,ecmwf_path2, &
 
    ! Check that we're not trying to use full path GFS data
    if ((ecmwf_flag .eq. 5) .and. (assume_full_path .neqv. .true.)) then
-   	write(*,*)"When using GFS data assume_full_path *must* be True."
-   	print*,ecmwf_flag,(ecmwf_flag .eq. 5),(assume_full_path .neqv. .true.)
-   	stop
+      write(*,*)"When using GFS data assume_full_path *must* be True."
+      stop
    endif
 
    ! Use 3-hourly NOAA GFS data, otherwise use 6-hourly ECMWF data
@@ -381,6 +381,10 @@ subroutine make_ecmwf_name(cyear,cmonth,cday,chour,ecmwf_flag,ecmwf_path, &
       ecmwf_path_file=trim(adjustl(ecmwf_path))//'/ECMWF_OPER_'// &
            trim(adjustl(cyear))//trim(adjustl(cmonth))// &
            trim(adjustl(cday))//'_'//trim(adjustl(chour))//'+00.nc'
+   case(6)
+      ecmwf_path_file=trim(adjustl(ecmwf_path))//'/gfs_4_'// &
+           trim(adjustl(cyear))//trim(adjustl(cmonth))// &
+           trim(adjustl(cday))//'_'//trim(adjustl(chour))//'00_000.grb2'
    case default
       write(*,*) 'ERROR: set_ecmwf(): Unknown ECMWF file format flag. ' // &
                & 'Please select 0, 1, 2, 3, or 4.'

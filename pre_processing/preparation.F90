@@ -80,6 +80,7 @@
 !    of the HR ERA data (copied from changes made, but committed to R3970
 !    version of code by CP).
 ! 2016/07/31, GM: Tidying of the code drop above.
+! 2017/04/11, SP: Added ecmwf_flag=6, for working with GFS analysis files.
 !
 ! $Id$
 !
@@ -173,7 +174,7 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
       write(*,*)'ecmwf_path_file_2:  ',trim(ecmwf_path_file(2))
       write(*,*)'ecmwf_hr_path_file:  ',trim(ecmwf_hr_path_file(1))
       write(*,*)'ecmwf_hr_path_file2:  ',trim(ecmwf_hr_path_file(2))
-      if (ecmwf_flag .gt. 0.and.ecmwf_flag.ne.4) then
+      if (ecmwf_flag .gt. 0.and.ecmwf_flag.lt.4) then
          write(*,*)'ecmwf_path_file2: ',trim(ecmwf_path_file2(1))
          write(*,*)'ecmwf_path_file3: ',trim(ecmwf_path_file3(1))
          write(*,*)'ecmwf_path_file2_2: ',trim(ecmwf_path_file2(2))
