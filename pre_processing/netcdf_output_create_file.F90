@@ -93,6 +93,7 @@
 ! 2015/07/23, GM: Added specific humidity and ozone PRTM fields.
 ! 2016/03/31, GM: Changes to support processing only SW or only LW channels.
 ! 2017/02/07, SP: Added support for NOAA GFS atmosphere data (EKWork)
+! 2017/04/11, SP: Added ecmwf_flag=6, for working with GFS analysis files.
 !
 ! $Id$
 !
@@ -150,6 +151,7 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
    ! Set number of vertical levels/layers here, as GFS is different to ECMWF
    kdim = preproc_dims%kdim+1
    if (ecmwf_flag .eq. 5) kdim=kdim-1
+   if (ecmwf_flag .eq. 6) kdim=kdim-1
 
    if (type .eq. NETCDF_OUTPUT_FILE_LWRTM) then
 
