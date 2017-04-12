@@ -109,12 +109,13 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf, high_res, ecmwf_flag)
    allocate(ecmwf%lat(nj))
 
    if (.not. high_res) then
-      if (ecmwf_flag .ne. 5) allocate(ecmwf%avec(nk+1))
-      if (ecmwf_flag .ne. 5) allocate(ecmwf%bvec(nk+1))
-      if (ecmwf_flag .eq. 5) allocate(ecmwf%avec(ecmwf%kdim))
-      if (ecmwf_flag .eq. 5) allocate(ecmwf%bvec(ecmwf%kdim))
-      if (ecmwf_flag .eq. 6) allocate(ecmwf%avec(ecmwf%kdim))
-      if (ecmwf_flag .eq. 6) allocate(ecmwf%bvec(ecmwf%kdim))
+      if (ecmwf_flag .ne. 5 .and. ecmwf_flag .ne. 6) then
+         allocate(ecmwf%avec(nk+1))
+         allocate(ecmwf%bvec(nk+1))
+      else
+         allocate(ecmwf%avec(ecmwf%kdim))
+         allocate(ecmwf%bvec(ecmwf%kdim))
+      endif
       allocate(ecmwf%u10(ni,nj))
       allocate(ecmwf%v10(ni,nj))
    end if

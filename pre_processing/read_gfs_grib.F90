@@ -499,4 +499,18 @@ subroutine conv_rh_q(rh,t,p,verbose)
    rh =   (pw / p * 1e6)/q_mixratio_to_ppmv
 
 
+   deallocate(c1)
+   deallocate(c2)
+   deallocate(c3)
+   deallocate(c4)
+   deallocate(c5)
+   deallocate(c6)
+   deallocate(pc)
+   deallocate(tc)
+   deallocate(th)
+   deallocate(val)
+   deallocate(pws)
+   deallocate(pw)
+   deallocate(ppm)
+
 end subroutine conv_rh_q
