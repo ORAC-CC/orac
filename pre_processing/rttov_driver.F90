@@ -136,6 +136,7 @@
 ! 2017/02/25, SP: Update to RTTOV v12.1 (EKWork)
 ! 2017/03/24, SP: Tidying, improved method for finding snow fraction (EKWork)
 ! 2017/03/29, SP: Switch to parallel RTTOV for performance improvement
+! 2017/04/12, SP: Allow switch to parallel RTTOV only if OPENMP is enabled.
 !
 ! $Id$
 !
@@ -195,7 +196,11 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 #include "rttov_alloc_rad.interface"
 #include "rttov_alloc_transmission.interface"
 #include "rttov_alloc_traj.interface"
+#ifdef INCLUDE_RTTOV_OPENMP
 #include "rttov_parallel_direct.interface"
+#else
+#include "rttov_direct.interface"
+#endif
 #include "rttov_deallocate_emis_atlas.interface"
 #include "rttov_dealloc_coefs.interface"
 
@@ -667,7 +672,11 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
          ! Loop over profiles (as the conditions for processing LW and SW are
          ! different, we can't just pass the whole array)
          count = 0
+#ifdef INCLUDE_RTTOV_OPENMP
+         if (verbose) write(*,*) 'Run RTTOV_Parallel'
+#else
          if (verbose) write(*,*) 'Run RTTOV'
+#endif
          do jdim=preproc_dims%min_lat,preproc_dims%max_lat
             do idim=preproc_dims%min_lon,preproc_dims%max_lon
                count = count + 1
@@ -703,9 +712,16 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                   calcemis = emissivity%emis_in <= dither
 
                   ! Call RTTOV for this profile
+#ifdef INCLUDE_RTTOV_OPENMP
                   call rttov_parallel_direct(stat, chanprof, opts, &
                        profiles(count:count), coefs, transmission, radiance, &
                        radiance2, calcemis, emissivity, traj=traj)
+#else
+                  call rttov_direct(stat, chanprof, opts, &
+                       profiles(count:count), coefs, transmission, radiance, &
+                       radiance2, calcemis, emissivity, traj=traj)
+#endif
+
                   if (stat /= errorstatus_success) then
                      write(*,*) 'ERROR: rttov_direct(), errorstatus = ', stat
                      stop error_stop_code
