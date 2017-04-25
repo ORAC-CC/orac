@@ -187,7 +187,7 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
                            'the himawari_read module'
 
    ! Load all the data
-   if (AHI_Main_Read(trim(infile)//C_NULL_CHAR,preproc,n_bands,band_ids,0,1) &
+   if (AHI_Main_Read(trim(infile)//C_NULL_CHAR,preproc,n_bands,band_ids,0,1,verbose) &
        .ne. 0) then
       write(*,*) 'ERROR: in read_himawari_read(), calling ' // &
                  'AHI_Main_Read(), filename = ', trim(infile)
@@ -203,6 +203,11 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
    imager_angles%satzen(:,:,1)       = preproc%vza
    imager_angles%relazi(:,:,1)       = preproc%vaa
    imager_measurements%data(:,:,:)   = preproc%indata
+
+   print*,imager_measurements%data(2500,2500,:)
+   print*,preproc%indata(2500,2500,:)
+
+   stop
 
    deallocate(band_ids)
    deallocate(band_units)
