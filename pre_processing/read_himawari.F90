@@ -204,11 +204,6 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
    imager_angles%relazi(:,:,1)       = preproc%vaa
    imager_measurements%data(:,:,:)   = preproc%indata
 
-   print*,imager_measurements%data(2500,2500,:)
-   print*,preproc%indata(2500,2500,:)
-
-   stop
-
    deallocate(band_ids)
    deallocate(band_units)
 
@@ -217,7 +212,7 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
    ! But the lat/lon should prevent those from being processed, even though
    ! image data will exist.
    where(imager_measurements%data(startx:,:,:)   .lt. -900) &
-      imager_measurements%data(startx:,:,:)=sreal_fill_value
+      imager_measurements%data(startx:,:,:)=sreal_fill_values
    where(imager_geolocation%latitude(startx:,:)  .lt. -900) &
       imager_geolocation%latitude(startx:,:)=sreal_fill_value
    where(imager_geolocation%longitude(startx:,:) .lt. -900) &
