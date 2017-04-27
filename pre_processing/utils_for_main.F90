@@ -23,6 +23,9 @@
 ! 2017/02/24, SP: Allow option to disable snow/ice correction
 ! 2017/03/29, SP: Add ability to calculate tropospheric cloud emissivity (EKWork)
 ! 2017/04/08, SP: New flag to disable VIS processing, saves proc time (EKWork)
+! 2017/04/26, SP: Support for loading geoinfo (lat/lon/vza/vaa) from an
+!                 external file. Supported by AHI, not yet by SEVIRI (EKWork)
+!
 !
 ! $Id$
 !
@@ -61,7 +64,8 @@ subroutine parse_optional(label, value, n_channels, channel_ids, &
                           ecmwf_path, ecmwf_path2, ecmwf_path3, ecmwf_path_hr, &
                           ecmwf_path_hr_2, ecmwf_nlevels, use_l1_land_mask, &
                           use_occci, occci_path,use_predef_lsm,ext_lsm_path,&
-                          disable_snow_and_ice_corr,do_cloud_emis,do_ironly)
+                          use_predef_geo,ext_geo_path,disable_snow_and_ice_corr,&
+                          do_cloud_emis,do_ironly)
 
    use parsing_m
    use preproc_constants_m
@@ -87,6 +91,8 @@ subroutine parse_optional(label, value, n_channels, channel_ids, &
    character(len=*), intent(inout) :: occci_path
    logical,          intent(inout) :: use_predef_lsm
    character(len=*), intent(inout) :: ext_lsm_path
+   logical,          intent(inout) :: use_predef_geo
+   character(len=*), intent(inout) :: ext_geo_path
    logical,          intent(inout) :: disable_snow_and_ice_corr
    logical,          intent(inout) :: do_cloud_emis
    logical,          intent(inout) :: do_ironly
@@ -147,6 +153,12 @@ subroutine parse_optional(label, value, n_channels, channel_ids, &
            call handle_parse_error(label)
    case('EXT_LSM_PATH')
       if (parse_string(value, ext_lsm_path) /= 0) &
+           call handle_parse_error(label)
+   case('USE_PREDEF_GEO')
+      if (parse_string(value, use_predef_geo) /= 0) &
+           call handle_parse_error(label)
+   case('EXT_GEO_PATH')
+      if (parse_string(value, ext_geo_path) /= 0) &
            call handle_parse_error(label)
    case('DISABLE_SNOW_ICE_CORR')
       if (parse_string(value, disable_snow_and_ice_corr) /= 0) &

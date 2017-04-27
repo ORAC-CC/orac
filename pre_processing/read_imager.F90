@@ -43,6 +43,9 @@
 ! 2016/05/16, SP: Added Suomi-NPP support.
 ! 2016/06/28, SP: Added SLSTR-Sentinel3 support.
 ! 2016/07/24, AP: Put back call to read_avhrr_land_sea_mask for use_l1_land_mask
+! 2017/04/26, SP: Support for loading geoinfo (lat/lon/vza/vaa) from an
+!                 external file. Supported by AHI, not yet by SEVIRI (EKWork)
+!
 !
 ! $Id$
 !
@@ -57,9 +60,9 @@ implicit none
 contains
 
 subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
-     path_to_aatsr_drift_table, imager_geolocation,imager_angles,imager_flags, &
-     imager_time,imager_measurements,channel_info,n_along_track, &
-     use_l1_land_mask,verbose)
+     path_to_aatsr_drift_table, geo_file_path,imager_geolocation,&
+     imager_angles,imager_flags, imager_time,imager_measurements,&
+     channel_info,n_along_track, use_l1_land_mask,use_predef_geo,verbose)
 
    use channel_structures_m
    use imager_structures_m
@@ -79,6 +82,7 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
    character(len=path_length),     intent(in)    :: path_to_l1b_file
    character(len=path_length),     intent(in)    :: path_to_geo_file
    character(len=path_length),     intent(in)    :: path_to_aatsr_drift_table
+   character(len=path_length),     intent(in)    :: geo_file_path
    type(imager_geolocation_t),     intent(inout) :: imager_geolocation
    type(imager_angles_t),          intent(inout) :: imager_angles
    type(imager_flags_t),           intent(inout) :: imager_flags
@@ -87,6 +91,7 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
    type(channel_info_t),           intent(in)    :: channel_info
    integer(kind=lint),             intent(in)    :: n_along_track
    logical,                        intent(in)    :: use_l1_land_mask
+   logical,                        intent(in)    :: use_predef_geo
    logical,                        intent(in)    :: verbose
 
    integer :: i, j, k
@@ -98,6 +103,7 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
    if (verbose) write(*,*) 'platform: ',         trim(platform)
    if (verbose) write(*,*) 'path_to_l1b_file: ', trim(path_to_l1b_file)
    if (verbose) write(*,*) 'path_to_geo_file: ', trim(path_to_geo_file)
+   if (verbose) write(*,*) 'geo_file_path:    ', trim(geo_file_path)
 
    !branches for the sensors
    if (trim(adjustl(sensor)) .eq. 'AATSR' .or. trim(adjustl(sensor)) .eq. 'ATSR2') then
@@ -150,9 +156,9 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
    else if (trim(adjustl(sensor)) .eq. 'AHI') then
       ! Read the L1B data, according to the dimensions and offsets specified in
       ! imager_geolocation
-      call read_himawari_bin(path_to_l1b_file, &
-           imager_geolocation,imager_measurements,imager_angles, &
-           imager_time,channel_info,verbose)
+      call read_himawari_bin(path_to_l1b_file, imager_geolocation,&
+           imager_measurements,imager_angles, imager_time,&
+           channel_info,use_predef_geo,geo_file_path,verbose)
 
       !in absence of proper mask set everything to "1" for cloud mask
       imager_flags%cflag = 1

@@ -262,6 +262,8 @@
 ! 2017/03/29, SP: Add ability to calculate tropospheric cloud emissivity (EKWork)
 ! 2017/04/08, SP: New flag to disable VIS processing, saves proc time (EKWork)
 ! 2017/04/11, SP: Added ecmwf_flag=6, for working with GFS analysis files.
+! 2017/04/26, SP: Support for loading geoinfo (lat/lon/vza/vaa) from an
+!                 external file. Supported by AHI, not yet by SEVIRI (EKWork)
 !
 ! $Id$
 !
@@ -317,6 +319,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    character(len=path_length)       :: l1b_path_file
    character(len=path_length)       :: geo_path_file
    character(len=path_length)       :: usgs_path_file
+   character(len=path_length)       :: predef_geo_file
    character(len=path_length)       :: ecmwf_path(2),ecmwf_path_file(2)
    character(len=path_length)       :: ecmwf_path_hr(2)
    character(len=path_length)       :: ecmwf_HR_path_file(2)
@@ -352,6 +355,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    logical                          :: include_full_brdf
    logical                          :: use_occci
    logical                          :: use_predef_lsm
+   logical                          :: use_predef_geo
    logical                          :: use_hr_ecmwf
    logical                          :: use_ecmwf_snow_and_ice
    logical                          :: disable_snow_ice_corr
@@ -453,6 +457,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    ecmwf_time_int_method   = 2
    use_hr_ecmwf            = .true.
    use_predef_lsm          = .false.
+   use_predef_geo          = .false.
    use_ecmwf_snow_and_ice  = .true.
    use_modis_emis_in_rttov = .false.
    use_l1_land_mask        = .false.
@@ -529,7 +534,8 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
             ecmwf_time_int_method, use_ecmwf_snow_and_ice, use_modis_emis_in_rttov, &
             ecmwf_path(2), ecmwf_path2(2), ecmwf_path3(2), ecmwf_path_hr(1), &
             ecmwf_path_hr(2), ecmwf_nlevels, use_l1_land_mask, use_occci, occci_path, &
-            use_predef_lsm, ext_lsm_path,disable_snow_ice_corr,do_cloud_emis,do_ironly)
+            use_predef_lsm, ext_lsm_path,use_predef_geo, predef_geo_file,&
+            disable_snow_ice_corr,do_cloud_emis,do_ironly)
       end do
    else
 
@@ -595,12 +601,12 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
 
       do while (parse_driver(11, value, label) == 0)
         call clean_driver_label(label)
-        call parse_optional(label, value, n_channels, channel_ids, &
-           use_hr_ecmwf, ecmwf_time_int_method, use_ecmwf_snow_and_ice, &
-           use_modis_emis_in_rttov, ecmwf_path(2), ecmwf_path2(2), &
-           ecmwf_path3(2), ecmwf_path_hr(1), ecmwf_path_hr(2), &
-           ecmwf_nlevels, use_l1_land_mask, use_occci, occci_path, use_predef_lsm, &
-           ext_lsm_path,disable_snow_ice_corr,do_cloud_emis,do_ironly)
+        call parse_optional(label, value, n_channels, channel_ids, use_hr_ecmwf, &
+           ecmwf_time_int_method, use_ecmwf_snow_and_ice, use_modis_emis_in_rttov, &
+           ecmwf_path(2), ecmwf_path2(2), ecmwf_path3(2), ecmwf_path_hr(1), &
+           ecmwf_path_hr(2), ecmwf_nlevels, use_l1_land_mask, use_occci, occci_path, &
+           use_predef_lsm, ext_lsm_path,use_predef_geo, predef_geo_file,&
+           disable_snow_ice_corr,do_cloud_emis,do_ironly)
       end do
 
       close(11)
@@ -892,9 +898,11 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       ! read imager data:
       if (verbose) write(*,*) 'Read imager data'
       call read_imager(sensor,platform,l1b_path_file,geo_path_file, &
-           aatsr_calib_path_file,imager_geolocation,imager_angles,imager_flags, &
-           imager_time,imager_measurements,channel_info,n_along_track, &
-           use_l1_land_mask,verbose)
+           aatsr_calib_path_file,predef_geo_file,imager_geolocation,&
+           imager_angles,imager_flags, imager_time,imager_measurements,&
+           channel_info,n_along_track, use_l1_land_mask,use_predef_geo,verbose)
+
+      stop
 
       ! carry out any preparatory steps: identify required ECMWF and MODIS L3
       ! information,set paths and filenames to those required auxiliary /

@@ -34,6 +34,8 @@
 ! History:
 ! 2016/02/23, SP: Initial version.
 ! 2016/08/04, SP: Set NaN values in angle arrays (deep space pixels) to fill.
+! 2017/04/25, SP: Support for verbose mode. A multitude of speed-ups and fixes
+!                 such as passing lat/lon file info to himawari util. (EKWork)
 !
 ! $Id$
 !
@@ -74,17 +76,17 @@ contains
 ! It will always process the full disk. This will be fixed.
 !-------------------------------------------------------------------------------
 subroutine read_himawari_dimensions(l1_5_file, n_across_track, n_along_track, &
-                                    startx, endx, starty, endy, verbose)
+                                    startx, endx, starty, endy,verbose)
 
    use iso_c_binding
    use preproc_constants_m
 
    implicit none
 
-   character(path_length), intent(in)    :: l1_5_file
-   integer(lint),          intent(out)   :: n_across_track, n_along_track
-   integer(lint),          intent(inout) :: startx, endx, starty, endy
-   logical,                intent(in)    :: verbose
+   character(path_length),      intent(in)    :: l1_5_file
+   integer(lint),               intent(out)   :: n_across_track, n_along_track
+   integer(lint),               intent(inout) :: startx, endx, starty, endy
+   logical,                     intent(in)    :: verbose
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< read_himawari_dimensions()'
 
@@ -126,7 +128,7 @@ end subroutine read_himawari_dimensions
 ! verbose             logical in   If true then print verbose information.
 !-------------------------------------------------------------------------------
 subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
-   imager_angles, imager_time, channel_info, verbose)
+   imager_angles, imager_time, channel_info, use_predef_geo,geo_file_path, verbose)
 
    use iso_c_binding
    use channel_structures_m
@@ -140,11 +142,13 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
    implicit none
 
    character(len=path_length),  intent(in)    :: infile
+   character(len=path_length),  intent(in)    :: geo_file_path
    type(imager_geolocation_t),  intent(inout) :: imager_geolocation
    type(imager_measurements_t), intent(inout) :: imager_measurements
    type(imager_angles_t),       intent(inout) :: imager_angles
    type(imager_time_t),         intent(inout) :: imager_time
    type(channel_info_t),        intent(in)    :: channel_info
+   logical,                     intent(in)    :: use_predef_geo
    logical,                     intent(in)    :: verbose
 
    integer                     :: i
@@ -186,17 +190,31 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
    if (verbose) write(*,*) 'Calling AHI_Main_Read() from ' // &
                            'the himawari_read module'
 
+
+
    ! Load all the data
-   if (AHI_Main_Read(trim(infile)//C_NULL_CHAR,preproc,n_bands,band_ids,0,1,verbose) &
+   if (AHI_Main_Read(trim(infile)//C_NULL_CHAR,trim(geo_file_path)//C_NULL_CHAR,preproc,n_bands,&
+   	 band_ids,0,1,use_predef_geo,verbose) &
        .ne. 0) then
       write(*,*) 'ERROR: in read_himawari_read(), calling ' // &
                  'AHI_Main_Read(), filename = ', trim(infile)
       stop error_stop_code
    end if
 
+	print*,""
+   print*,"POS",preproc%lat(2500,2500),preproc%lon(2500,2500)
+   print*,"ANG",preproc%vza(2500,2500),preproc%vaa(2500,2500)
+   print*,"ANG",preproc%sza(2500,2500),preproc%saa(2500,2500)
+	print*,""
+
+
+   stop
+
    ! Copy arrays between the reader and ORAC. This could (should!) be done more efficiently.
    imager_time%time(:,:)             = preproc%time
    imager_geolocation%latitude(:,:)  = preproc%lat
+
+
    imager_geolocation%longitude(:,:) = preproc%lon
    imager_angles%solzen(:,:,1)       = preproc%sza
    imager_angles%solazi(:,:,1)       = preproc%saa
@@ -212,7 +230,7 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
    ! But the lat/lon should prevent those from being processed, even though
    ! image data will exist.
    where(imager_measurements%data(startx:,:,:)   .lt. -900) &
-      imager_measurements%data(startx:,:,:)=sreal_fill_values
+      imager_measurements%data(startx:,:,:)=sreal_fill_value
    where(imager_geolocation%latitude(startx:,:)  .lt. -900) &
       imager_geolocation%latitude(startx:,:)=sreal_fill_value
    where(imager_geolocation%longitude(startx:,:) .lt. -900) &
