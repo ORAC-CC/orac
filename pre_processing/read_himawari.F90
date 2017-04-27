@@ -201,15 +201,6 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
       stop error_stop_code
    end if
 
-	print*,""
-   print*,"POS",preproc%lat(2500,2500),preproc%lon(2500,2500)
-   print*,"ANG",preproc%vza(2500,2500),preproc%vaa(2500,2500)
-   print*,"ANG",preproc%sza(2500,2500),preproc%saa(2500,2500)
-	print*,""
-
-
-   stop
-
    ! Copy arrays between the reader and ORAC. This could (should!) be done more efficiently.
    imager_time%time(:,:)             = preproc%time
    imager_geolocation%latitude(:,:)  = preproc%lat
