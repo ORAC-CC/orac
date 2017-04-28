@@ -98,9 +98,9 @@ subroutine setup_aatsr(l1b_path_file,geo_path_file,platform,sensor,year, &
    channel_ids_user,channel_info,verbose)
 
    use calender_m
+   use channel_structures_m
    use preproc_constants_m
    use preproc_structures_m
-   use channel_structures_m
 
    implicit none
 
@@ -408,9 +408,9 @@ subroutine setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day, &
    channel_info,verbose)
 
    use calender_m
+   use channel_structures_m
    use preproc_constants_m
    use preproc_structures_m
-   use channel_structures_m
 
    implicit none
 

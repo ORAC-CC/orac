@@ -30,7 +30,6 @@ module mcd43c_m
 
    implicit none
 
-
    type mcd43c1_t
       ! Data dimensions
       integer*4                  :: nlon

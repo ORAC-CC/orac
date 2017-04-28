@@ -108,14 +108,14 @@ subroutine set_ecmwf(cyear,cmonth,cday,chour,ecmwf_path,ecmwf_path2, &
    if ((ecmwf_flag .eq. 5) .and. (assume_full_path .neqv. .true.)) then
       write(*,*)"When using GFS data assume_full_path *must* be True."
       stop
-   endif
+   end if
 
    ! Use 3-hourly NOAA GFS data, otherwise use 6-hourly ECMWF data
    if (ecmwf_flag .eq. 5) then
       time_fac = 3._dreal
    else
       time_fac = 6._dreal
-   endif
+   end if
 
    ! Rather than deal with whether the next 6 hour file is in the next month,
    ! in the next year, or if the year is a leap year it is more straight
@@ -151,7 +151,7 @@ subroutine set_ecmwf(cyear,cmonth,cday,chour,ecmwf_path,ecmwf_path2, &
       if (ecmwf_flag .eq. 5) then
          ecmwf_path_file(1)  = ecmwf_path(1)
          ecmwf_path_file(2)  = ecmwf_path2(1)
-      endif
+      end if
    else
       if (time_interp_method .eq. 0) then
          ! pick last ERA interim file wrt sensor time (as on the same day)

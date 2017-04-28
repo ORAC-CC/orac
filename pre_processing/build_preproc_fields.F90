@@ -42,8 +42,8 @@
 subroutine build_preproc_fields(preproc_dims, preproc_geoloc, preproc_geo, &
      imager_geolocation, imager_angles)
 
-   use preproc_constants_m
    use imager_structures_m
+   use preproc_constants_m
    use preproc_structures_m
 
    implicit none

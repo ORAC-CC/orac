@@ -856,7 +856,7 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
                  deflate_level = deflate_level, &
                  shuffle = shuffle_flag, &
                  fill_value = sreal_fill_value)
-      endif
+      end if
 
       ! define cldtype variable
       call nc_def_var_byte_packed_byte( &
@@ -1519,8 +1519,8 @@ subroutine netcdf_put_common_attributes(ncid,global_atts,source_atts,title, &
    use netcdf
 
    use global_attributes_m
-   use source_attributes_m
    use orac_ncdf_m
+   use source_attributes_m
 
    implicit none
 

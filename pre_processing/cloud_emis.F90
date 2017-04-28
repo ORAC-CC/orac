@@ -26,11 +26,11 @@ subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation,&
      preproc_dims,preproc_geoloc,preproc_cld,imager_cloud,ecmwf,sensor,verbose)
 
    use channel_structures_m
+   use ecmwf_m, only : ecmwf_t
    use imager_structures_m
    use interpol_m
    use preproc_constants_m
    use preproc_structures_m
-   use ecmwf_m, only : ecmwf_t
 
    implicit none
 

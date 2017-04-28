@@ -105,6 +105,7 @@ contains
 ! None known.
 !-------------------------------------------------------------------------------
 function Find_Channel(wvn, Ny, SAD_Chan, index, min, max, mask) result(channel)
+
    implicit none
 
    real,              intent(in) :: wvn

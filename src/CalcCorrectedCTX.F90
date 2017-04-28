@@ -27,10 +27,10 @@ function get_corrected_bt(Ctrl, SPixel, SAD_Chan, RTM_Pc, i_spixel_y_thermal, Y)
          result(bt)
 
    use Ctrl_m
+   use planck_m
    use RTM_Pc_m
    use SAD_Chan_m
    use SPixel_m
-   use planck_m
 
    implicit none
 

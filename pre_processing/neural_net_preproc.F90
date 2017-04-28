@@ -63,8 +63,8 @@ subroutine ann_cloud_mask(channel1, channel2, channel3b, channel4, channel5, &
      ch3a_on_avhrr_flag, glint_angle, sensor_name, platform, verbose)
    !------------------------------------------------------------------------
 
-   use constants_cloud_typing_pavolonis_m
    use common_constants_m
+   use constants_cloud_typing_pavolonis_m
    use neural_net_constants_m
 
    implicit none

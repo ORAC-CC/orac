@@ -112,7 +112,7 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf, high_res, ecmwf_flag)
       else
          allocate(ecmwf%avec(ecmwf%kdim))
          allocate(ecmwf%bvec(ecmwf%kdim))
-      endif
+      end if
       allocate(ecmwf%u10(ni,nj))
       allocate(ecmwf%v10(ni,nj))
    end if
@@ -203,8 +203,8 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf, high_res, ecmwf_flag)
                do i=1,n,ni
                   ecmwf%lat(1+i/ni)=lat(i)
                end do
-            endif
-         endif
+            end if
+         end if
       end select
 
       ! advance file position

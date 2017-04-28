@@ -279,12 +279,11 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
 
    use channel_structures_m
    use chunk_utils_m
-   use cloud_typing_pavolonis_m, only: cloud_type
    use cloud_emis_m
+   use cloud_typing_pavolonis_m, only: cloud_type
    use correct_for_ice_snow_m
    use ecmwf_m
    use global_attributes_m
-   use source_attributes_m
    use hdf5
    use imager_structures_m
    use netcdf, only: nf90_inq_libvers
@@ -295,15 +294,16 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    use preproc_structures_m
    use read_aatsr_m
    use read_avhrr_m
-   use read_modis_m
-   use read_imager_m
-   use read_seviri_m
    use read_himawari_m
-   use read_viirs_m
+   use read_imager_m
+   use read_modis_m
+   use read_seviri_m
    use read_slstr_m
+   use read_viirs_m
    use rttov_driver_m
    use rttov_driver_gfs_m
    use setup_m
+   use source_attributes_m
    use surface_emissivity_m
    use surface_reflectance_m
    use surface_structures_m
@@ -1090,13 +1090,13 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
          if (do_cloud_emis) then
             call get_cloud_emis(channel_info,imager_measurements,imager_geolocation,preproc_dims,&
                   preproc_geoloc,preproc_cld,imager_cloud,ecmwf,sensor,verbose)
-         endif
+         end if
       else
          call rttov_driver(rttov_coef_path,rttov_emiss_path,sensor,platform, &
               preproc_dims,preproc_geoloc,preproc_geo,preproc_prtm,preproc_surf, &
               netcdf_info,channel_info,year,month,day,use_modis_emis_in_rttov, &
               verbose)
-      endif
+      end if
 
 #ifdef WRAPPER
 

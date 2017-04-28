@@ -110,7 +110,7 @@ subroutine get_USGS_data(path_to_USGS_file, imager_flags, imager_geolocation, &
       end do
       !$OMP END DO
       !$OMP END PARALLEL
-   endif
+   end if
 
    ! Reset the land/sea mask using that provided by the DEM, unless the
    ! use_l1_land_mask optional argument has been passed to the main preproc

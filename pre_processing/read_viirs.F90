@@ -59,8 +59,8 @@ subroutine read_viirs_dimensions(geo_file, n_across_track, n_along_track, &
                                  startx, endx, starty, endy, verbose)
 
    use iso_c_binding
+   use hdf5
    use preproc_constants_m
-   use HDF5
 
    implicit none
 
@@ -131,9 +131,9 @@ subroutine read_viirs(infile,geofile,imager_geolocation, imager_measurements, &
    imager_angles, imager_time, channel_info, verbose)
 
    use iso_c_binding
+   use hdf5
    use calender_m
    use channel_structures_m
-   use HDF5
    use imager_structures_m
    use preproc_constants_m
    use system_utils_m

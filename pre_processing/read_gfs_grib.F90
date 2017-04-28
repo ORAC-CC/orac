@@ -150,7 +150,7 @@ subroutine read_gfs_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
           param .ne. 172 .and. param .ne. 54) then
          call grib_release(gid,stat)
          cycle
-      endif
+      end if
 
       call grib_release(gid,stat)
 
@@ -204,7 +204,7 @@ subroutine read_gfs_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
             tlev=tlev+1
          else
             cycle
-         endif
+         end if
       case(157)
          if (all(level .ne. gfs_levlist) .or. trim(ltype) .ne. 'isobaricInhPa') cycle
          ! Relative humidity
@@ -370,9 +370,9 @@ subroutine sort_gfs_levels(preproc_prtm,verbose)
                   ! Compute interp factor to ensure last lev = surface
                   interp=(surfp-p(l-1))/(p(l)-p(l-1))
                   stoplev=l-1
-               endif
-            endif
-         enddo
+               end if
+            end if
+         end do
 
          ! If final level of GFS data is above surface then do this
          ! Skips otherwise (e.g: Sea or high pressure low elevation regions)
@@ -399,7 +399,7 @@ subroutine sort_gfs_levels(preproc_prtm,verbose)
                q(l)=q(l+1)-(0.01*q(l+1))
                o(l)=o(l+1)-(0.01*o(l+1))
                pl(l)=pl(l+1)-(0.01*pl(l+1))
-            enddo
+            end do
 
             ! Send everything back into appropriate prtm grid array
             preproc_prtm%pressure(i,j,:)=p
@@ -407,7 +407,7 @@ subroutine sort_gfs_levels(preproc_prtm,verbose)
             preproc_prtm%spec_hum(i,j,:)=q
             preproc_prtm%ozone(i,j,:)=o
             preproc_prtm%phi_lev(i,j,:)=pl
-         endif
+         end if
       end do
    end do
 

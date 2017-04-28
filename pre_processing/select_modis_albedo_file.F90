@@ -117,7 +117,7 @@ subroutine select_modis_albedo_file(cyear,cdoy,modis_surf_path,include_full_brdf
          write(*,*) 'ERROR: select_modis_albedo_file(): Unable to locate MODIS ' // &
             'albedo file: ', trim(modis_surf_path)//'/'//trim(regex)
          stop error_stop_code
-      endif
+      end if
    end if
 
    modis_surf_path_file = trim(modis_surf_path)//'/'//trim(file_name)

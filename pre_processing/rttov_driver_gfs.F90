@@ -415,7 +415,7 @@ subroutine rttov_driver_gfs(coef_path,emiss_path,sensor,platform,preproc_dims, &
             profiles(count)%skin%snow_fraction = preproc_prtm%snow_depth(idim,jdim)/0.05
          else
             profiles(count)%skin%snow_fraction=0.
-         endif
+         end if
 
          ! Write profiles structure to PRTM file (array operations needed to
          ! recast structure in form nc_write_array recognises)
@@ -721,10 +721,10 @@ subroutine rttov_driver_gfs(coef_path,emiss_path,sensor,platform,preproc_dims, &
                      ! Save into the appropriate arrays
                      preproc_cld%cloud_bt(idim,jdim,:) = radiance%bt
                      preproc_cld%clear_bt(idim,jdim,:) = radiance%bt_clear
-                  enddo
-               enddo
-            endif
-         endif
+                  end do
+               end do
+            end if
+         end if
          if (verbose) write(*,*) 'Deallocate structures'
 
          call rttov_deallocate_emis_atlas(emis_atlas)

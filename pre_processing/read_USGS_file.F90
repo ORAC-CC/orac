@@ -42,7 +42,6 @@ module USGS_physiography_m
 
 contains
 
-
 function read_USGS_file(path_to_USGS_file, usgs, verbose) result (stat)
 
    use orac_ncdf_m

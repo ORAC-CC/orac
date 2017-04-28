@@ -41,8 +41,8 @@ subroutine read_config_file(Ctrl, channel_ids_instr, channel_sw_flag, &
 
    use Ctrl_m
    use ECP_constants_m, only : DriverFileIncompat
-   use orac_ncdf_m
    use global_attributes_m
+   use orac_ncdf_m
    use source_attributes_m
 
    implicit none

@@ -48,8 +48,8 @@ subroutine read_slstr_dimensions(img_file, n_across_track, n_along_track, &
                                  startx, endx, starty, endy, verbose)
 
    use iso_c_binding
-   use preproc_constants_m
    use orac_ncdf_m
+   use preproc_constants_m
 
    implicit none
 
@@ -101,13 +101,13 @@ subroutine read_slstr(infile,imager_geolocation, imager_measurements, &
    imager_angles, imager_time, channel_info, verbose)
 
    use iso_c_binding
+   use hdf5
+   use netcdf
    use calender_m
    use channel_structures_m
    use imager_structures_m
    use preproc_constants_m
    use system_utils_m
-   use netcdf
-   use hdf5
 
 
    implicit none
@@ -181,7 +181,7 @@ subroutine read_slstr(infile,imager_geolocation, imager_measurements, &
    if (imager_angles%nviews .eq. 2) then
       allocate(oblats(obnx,obny))
       allocate(oblons(obnx,obny))
-   endif
+   end if
    ! And one for the interpolation results
    allocate(interp(nx,ny,3))
 
@@ -200,7 +200,7 @@ subroutine read_slstr(infile,imager_geolocation, imager_measurements, &
       call read_slstr_lldata(indir,oblons,obnx,obny,.false.,'io')
       ! Get alignment factor between oblique and nadir views
       call slstr_get_alignment(nx,ny,obnx,obny,imager_geolocation%longitude,oblons,obl_off)
-   endif
+   end if
 
    ! Get interpolation factors between reduced and TIR grid for each pixel
    call slstr_get_interp(imager_geolocation%longitude,txlons,txnx,txnx,nx,ny,interp)
@@ -215,7 +215,7 @@ subroutine read_slstr(infile,imager_geolocation, imager_measurements, &
    if (imager_angles%nviews .eq. 2) then
       ! Read satellite and solar angles for the nadir viewing geometry
       call read_slstr_satsol(indir,imager_angles,interp,txnx,txny,nx,ny,startx,2)
-   endif
+   end if
 
    deallocate(interp)
 

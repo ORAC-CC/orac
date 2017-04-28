@@ -126,8 +126,8 @@
 
 module cox_munk_m
 
-   use preproc_constants_m
    use cox_munk_constants_m
+   use preproc_constants_m
    use ocean_colour_m
 
    implicit none

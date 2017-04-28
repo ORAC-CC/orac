@@ -287,7 +287,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
               imager_cloud%cloud_emis(imager_geolocation%startx:,:), &
               1, 1, n_x, &
               1, 1, imager_geolocation%ny)
-   endif
+   end if
 
    call nc_write_array( &
            netcdf_info%ncid_clf, &

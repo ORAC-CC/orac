@@ -131,6 +131,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
 #endif
 
    use chunk_utils_m
+   use constants_cloud_typing_pavolonis_m
    use global_attributes_m
    use netcdf
    use orac_input_m
@@ -141,7 +142,6 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    use postproc_utils_m
    use prepare_output_pp_m
    use source_attributes_m
-   use constants_cloud_typing_pavolonis_m
 
    implicit none
 

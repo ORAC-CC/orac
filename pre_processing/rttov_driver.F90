@@ -505,7 +505,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
             profiles(count)%skin%snow_fraction = preproc_prtm%snow_depth(idim,jdim)/0.05
          else
             profiles(count)%skin%snow_fraction=0.
-         endif
+         end if
 
          ! Write profiles structure to PRTM file (array operations needed to
          ! recast structure in form nc_write_array recognises)

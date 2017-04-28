@@ -366,7 +366,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       Ctrl%all_channels_same_view = .true.
    else
       Ctrl%all_channels_same_view = .false.
-   endif
+   end if
 
 
    ! Identify which channels are multiple views of the same wavelength
@@ -1418,7 +1418,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
 
       if (dumpfile /= '-') then
          close(dump_lun)
-      endif
+      end if
 
       deallocate(buffer)
 

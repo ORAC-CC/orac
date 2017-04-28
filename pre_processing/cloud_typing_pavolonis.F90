@@ -632,7 +632,7 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
       if (do_ironly .eqv. .true. ) then
          ch1=99
          ch2=99
-      endif
+      end if
 
       if (.not. (ch1 .ne. 0 .and. ch2 .ne. 0 .and. (ch3 .ne. 0 .or. ch4 .ne. 0) .and. &
            ch5 .ne. 0 .and. ch6 .ne. 0)) then
@@ -836,7 +836,7 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
                ch1v   = imager_measurements%DATA(i,j,ch1)
                ch2v   = imager_measurements%DATA(i,j,ch2)
                solzen = imager_angles%SOLZEN(i,j,cview)
-            endif
+            end if
 
             !-- NEURAL_NET_PREPROC subroutine
             call ann_cloud_mask( &
@@ -970,7 +970,7 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
                ref_ch1 = imager_measurements%DATA(i,j,ch1) / mu0
             else
                ref_ch1 = sreal_fill_value
-            endif
+            end if
             ref_ch3a = imager_measurements%DATA(i,j,ch3) / mu0
             ref_ch3b = ( rad_ch3b - rad_ch3b_emis ) / ( solcon_ch3b * c_sun * mu0 - rad_ch3b_emis )
             ! make sure reflectances are positive, else fill value

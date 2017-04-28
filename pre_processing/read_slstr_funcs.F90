@@ -38,8 +38,8 @@
 subroutine get_slstr_startend(imager_time,fname,ny)
 
    use netcdf
-   use imager_structures_m
    use calender_m
+   use imager_structures_m
 
    type(imager_time_t),        intent(inout) :: imager_time
    character(len=path_length), intent(in)    :: fname
@@ -187,8 +187,8 @@ end subroutine get_slstr_imnames
 subroutine read_slstr_tirdata(indir,inband,outarr,sx,sy,nx,ny,inx,iny,offset,view)
 
    use netcdf
-   use preproc_constants_m
    use orac_ncdf_m
+   use preproc_constants_m
 
    character(len=path_length), intent(in)  :: indir
    integer,                    intent(in)  :: inband
@@ -274,10 +274,10 @@ subroutine read_slstr_tirdata(indir,inband,outarr,sx,sy,nx,ny,inx,iny,offset,vie
 
 !   if (inband .eq. 8 .or. inband .eq. 9) then
 !      outarr(:,1:ny-2)=outarr(:,3:ny)
-!   endif
+!   end if
 !   if (inband .eq. 16 .or. inband .eq. 17 .or. inband .eq. 18) then
 !      outarr(1:nx-1,:)=outarr(2:nx,:)
-!   endif
+!   end if
 
 end subroutine read_slstr_tirdata
 
@@ -286,9 +286,9 @@ end subroutine read_slstr_tirdata
 subroutine read_slstr_visdata(indir,inband,outarr,imager_angles,sx,sy,nx,ny,inx,iny,offset,view)
 
    use netcdf
-   use preproc_constants_m
    use imager_structures_m
    use orac_ncdf_m
+   use preproc_constants_m
 
    character(len=path_length),  intent(in)  :: indir
    integer,                     intent(in)  :: inband
@@ -434,13 +434,13 @@ subroutine read_slstr_visdata(indir,inband,outarr,imager_angles,sx,sy,nx,ny,inx,
    deallocate(data3)
 !   if (inband .eq. 5 .or. inband .eq. 6) then
 !      outarr(1:nx-1,1:ny-1)=outarr(2:nx,2:ny)
-!   endif
+!   end if
 !   if (inband .eq. 10 .or. inband .eq. 11 .or. inband .eq. 12 .or. inband .eq. 13) then
 !      outarr(1:nx-1,1:ny-1)=outarr(2:nx,2:ny)
-!   endif
+!   end if
 !   if (inband .eq. 14 .or. inband .eq. 15) then
 !      outarr(1:nx-1,:)=outarr(2:nx,:)
-!   endif
+!   end if
 
 end subroutine read_slstr_visdata
 
@@ -501,9 +501,9 @@ end subroutine slstr_resample_vis_to_tir
 ! Get the DEM from the geolocation file
 subroutine read_slstr_demdata(indir,data_arr,nx,ny)
 
-   use preproc_constants_m
-   use imager_structures_m
    use netcdf
+   use imager_structures_m
+   use preproc_constants_m
 
    integer,                    intent(in)  :: nx
    integer,                    intent(in)  :: ny
@@ -571,10 +571,10 @@ end subroutine read_slstr_demdata
 ! Read the lat/lon data on the TIR grid
 subroutine read_slstr_lldata(indir,data_arr,nx,ny,proclat,procgrid)
 
-   use preproc_constants_m
-   use imager_structures_m
    use netcdf
+   use imager_structures_m
    use orac_ncdf_m
+   use preproc_constants_m
 
    integer,                    intent(in)  :: nx
    integer,                    intent(in)  :: ny
@@ -741,8 +741,8 @@ end subroutine get_slstr_txgridsize
 ! Routine to get slope/prev/next pixel for resampling tx->in grids.
 subroutine slstr_get_interp(in_lons,tx_lons,nxt,nyt,nxi,nyi,interp)
 
-   use preproc_constants_m
    use imager_structures_m
+   use preproc_constants_m
 
    integer,                    intent(in)  :: nxt
    integer,                    intent(in)  :: nyt
@@ -783,8 +783,8 @@ end subroutine slstr_get_interp
 ! Routine to resample the azmiuth/zenith data from the tx grid to the tir grid.
 subroutine slstr_interp_angs(in_angs,out_angs,txnx,txny,nx,ny,interp,view)
 
-   use preproc_constants_m
    use imager_structures_m
+   use preproc_constants_m
 
    integer,               intent(in)    :: txnx
    integer,               intent(in)    :: txny
@@ -815,7 +815,7 @@ subroutine slstr_interp_angs(in_angs,out_angs,txnx,txny,nx,ny,interp,view)
                      intval(z) = sreal_fill_value
                   else
                      intval(z) = in_angs(next,y,z)
-                  endif
+                  end if
                else
                   if (in_angs(next,y,z) .eq. sreal_fill_value) then
                      intval(z) = in_angs(prev,y,z)
@@ -827,15 +827,15 @@ subroutine slstr_interp_angs(in_angs,out_angs,txnx,txny,nx,ny,interp,view)
                            intval(z) = in_angs(prev,y,z) + slo*((in_angs(next,y,z)-360.)-(in_angs(prev,y,z)))
                         else
                            intval(z) = in_angs(prev,y,z) + slo*(in_angs(next,y,z)-in_angs(prev,y,z))
-                        endif
+                        end if
                      else
                         intval(z) = in_angs(prev,y,z) + slo*(in_angs(next,y,z)-in_angs(prev,y,z))
-                     endif
+                     end if
                      if (z .eq. 1 .or. z .eq. 3) then
                         if (intval(z) .lt. 0.) intval(z)=intval(z)+360.
-                     endif
-                  endif
-               endif
+                     end if
+                  end if
+               end if
             else
                if (in_angs(prev,y,z) .ne. sreal_fill_value) then
                     intval(z) = in_angs(prev,y,z)
@@ -843,9 +843,9 @@ subroutine slstr_interp_angs(in_angs,out_angs,txnx,txny,nx,ny,interp,view)
                     intval(z) = in_angs(next,y,z)
                  else
                   intval(z) = sreal_fill_value
-               endif
+               end if
             end if
-         enddo
+         end do
 
          if (intval(4) .lt. 0 .or. intval(4) .gt. 180 ) intval = sreal_fill_value
          if (intval(2) .lt. 0 .or. intval(2) .gt. 180 ) intval = sreal_fill_value
@@ -869,10 +869,10 @@ end subroutine slstr_interp_angs
 ! that's actually sensible and useful.
 subroutine read_slstr_satsol(indir,imager_angles,interp,txnx,txny,nx,ny,startx,view)
 
-   use preproc_constants_m
-   use imager_structures_m
-   use system_utils_m
    use netcdf
+   use imager_structures_m
+   use preproc_constants_m
+   use system_utils_m
 
    integer,                    intent(in)    :: view
    integer,                    intent(in)    :: nx
@@ -951,9 +951,9 @@ end subroutine read_slstr_satsol
 ! Get one of the geometry variables, then resample to the correct grid
 subroutine slstr_get_one_geom(nx,ny,fid,var,odata,geofile)
 
-   use preproc_constants_m
-   use imager_structures_m
    use netcdf
+   use imager_structures_m
+   use preproc_constants_m
 
    integer,                    intent(in)  :: nx
    integer,                    intent(in)  :: ny

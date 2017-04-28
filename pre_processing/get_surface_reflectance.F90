@@ -250,7 +250,7 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
    if (nland .eq. 0 .and. nsea .eq. 0) then
       write(*,*) 'ERROR: No land or sea pixels to process, something wrong with input.'
       stop error_stop_code
-   endif
+   end if
 
    source_atts%albedo_file = 'Not used (no SW channels or no pixels of land)'
    source_atts%brdf_file   = 'Not used (no SW channels or no pixels of land)'
