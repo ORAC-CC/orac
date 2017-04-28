@@ -83,10 +83,10 @@ subroutine read_himawari_dimensions(l1_5_file, n_across_track, n_along_track, &
 
    implicit none
 
-   character(path_length),      intent(in)    :: l1_5_file
-   integer(lint),               intent(out)   :: n_across_track, n_along_track
-   integer(lint),               intent(inout) :: startx, endx, starty, endy
-   logical,                     intent(in)    :: verbose
+   character(path_length), intent(in)    :: l1_5_file
+   integer(lint),          intent(out)   :: n_across_track, n_along_track
+   integer(lint),          intent(inout) :: startx, endx, starty, endy
+   logical,                intent(in)    :: verbose
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< read_himawari_dimensions()'
 
@@ -96,8 +96,8 @@ subroutine read_himawari_dimensions(l1_5_file, n_across_track, n_along_track, &
    n_along_track  = 5500
    n_across_track = 5500
 
-   startx=1
-   starty=1
+   startx = 1
+   starty = 1
 
    endx=n_across_track
    endy=n_along_track
@@ -135,7 +135,6 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
    use imager_structures_m
    use preproc_constants_m
    use system_utils_m
-
 #ifdef INCLUDE_HIMAWARI_SUPPORT
    use himawari_readwrite
 #endif
@@ -164,8 +163,8 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
    type(himawari_t_data) :: preproc
 #endif
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_himawari_bin()'
-#ifdef INCLUDE_HIMAWARI_SUPPORT
 
+#ifdef INCLUDE_HIMAWARI_SUPPORT
    ! Figure out the channels to process
    n_bands = channel_info%nchannels_total
    allocate(band_ids(n_bands))
@@ -190,12 +189,9 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
    if (verbose) write(*,*) 'Calling AHI_Main_Read() from ' // &
                            'the himawari_read module'
 
-
-
    ! Load all the data
    if (AHI_Main_Read(trim(infile)//C_NULL_CHAR,trim(geo_file_path)//C_NULL_CHAR,preproc,n_bands,&
-   	 band_ids,0,1,use_predef_geo,verbose) &
-       .ne. 0) then
+      band_ids,0,1,use_predef_geo,verbose) .ne. 0) then
       write(*,*) 'ERROR: in read_himawari_read(), calling ' // &
                  'AHI_Main_Read(), filename = ', trim(infile)
       stop error_stop_code
@@ -221,25 +217,24 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
    ! But the lat/lon should prevent those from being processed, even though
    ! image data will exist.
    where(imager_measurements%data(startx:,:,:)   .lt. -900) &
-      imager_measurements%data(startx:,:,:)=sreal_fill_value
+      imager_measurements%data(startx:,:,:) = sreal_fill_value
    where(imager_geolocation%latitude(startx:,:)  .lt. -900) &
-      imager_geolocation%latitude(startx:,:)=sreal_fill_value
+      imager_geolocation%latitude(startx:,:) = sreal_fill_value
    where(imager_geolocation%longitude(startx:,:) .lt. -900) &
-      imager_geolocation%longitude(startx:,:)=sreal_fill_value
+      imager_geolocation%longitude(startx:,:) = sreal_fill_value
    where(imager_angles%solazi(startx:,:,1)       .lt. -900) &
-      imager_angles%solazi(startx:,:,1)=sreal_fill_value
+      imager_angles%solazi(startx:,:,1) = sreal_fill_value
    where(imager_angles%solzen(startx:,:,1)       .lt. -900) &
-      imager_angles%solzen(startx:,:,1)=sreal_fill_value
+      imager_angles%solzen(startx:,:,1) = sreal_fill_value
    where(imager_angles%satzen(startx:,:,1)       .lt. -900) &
-      imager_angles%satzen(startx:,:,1)=sreal_fill_value
+      imager_angles%satzen(startx:,:,1) = sreal_fill_value
    where(imager_angles%relazi(startx:,:,1)       .lt. -900) &
-      imager_angles%relazi(startx:,:,1)=sreal_fill_value
+      imager_angles%relazi(startx:,:,1) = sreal_fill_value
 
-   where(is_nan(imager_angles%solzen)) imager_angles%solzen=sreal_fill_value
-   where(is_nan(imager_angles%solazi)) imager_angles%solazi=sreal_fill_value
-   where(is_nan(imager_angles%satzen)) imager_angles%satzen=sreal_fill_value
-   where(is_nan(imager_angles%relazi)) imager_angles%relazi=sreal_fill_value
-
+   where(is_nan(imager_angles%solzen)) imager_angles%solzen = sreal_fill_value
+   where(is_nan(imager_angles%solazi)) imager_angles%solazi = sreal_fill_value
+   where(is_nan(imager_angles%satzen)) imager_angles%satzen = sreal_fill_value
+   where(is_nan(imager_angles%relazi)) imager_angles%relazi = sreal_fill_value
 
    ! Rescale zens + azis into correct format
    where(imager_angles%solazi(startx:,:,1) .ne. sreal_fill_value .and. &

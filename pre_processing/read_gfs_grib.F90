@@ -67,11 +67,11 @@ subroutine read_gfs_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
 
    implicit none
 
-   character(len=path_length), intent(in)   :: ecmwf_file
-   type(preproc_dims_t),       intent(in)   :: preproc_dims
-   type(preproc_geoloc_t),     intent(in)   :: preproc_geoloc
-   type(preproc_prtm_t),       intent(inout):: preproc_prtm
-   logical,                    intent(in)   :: verbose
+   character(len=path_length), intent(in)    :: ecmwf_file
+   type(preproc_dims_t),       intent(in)    :: preproc_dims
+   type(preproc_geoloc_t),     intent(in)    :: preproc_geoloc
+   type(preproc_prtm_t),       intent(inout) :: preproc_prtm
+   logical,                    intent(in)    :: verbose
 
    integer(lint), parameter                 :: BUFFER = 3000000
    integer(lint), external                  :: INTIN,INTOUT,INTF2
@@ -139,21 +139,20 @@ subroutine read_gfs_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
       if (stat .eq. -1) exit
       if (stat .ne. 0) call h_e_e('grib', 'Failure to read product.')
 
-		! Check if this is something we want to read
+      ! Check if this is something we want to read
       call grib_new_from_message(gid,in_data,stat)
       call grib_get(gid,'parameter',param,stat)
       if (param .ne. 130 .and. param .ne. 157 .and. &
-      	 param .ne. 156 .and. param .ne. 260131 .and. &
-      	 param .ne. 134 .and. param .ne. 31 .and. &
-      	 param .ne. 3066 .and. param .ne. 165 .and. &
-      	 param .ne. 166 .and. param .ne. 167 .and. &
-      	 param .ne. 172 .and. param .ne. 54) then
-      	 	call grib_release(gid,stat)
-      	 	cycle
+          param .ne. 156 .and. param .ne. 260131 .and. &
+          param .ne. 134 .and. param .ne. 31 .and. &
+          param .ne. 3066 .and. param .ne. 165 .and. &
+          param .ne. 166 .and. param .ne. 167 .and. &
+          param .ne. 172 .and. param .ne. 54) then
+         call grib_release(gid,stat)
+         cycle
       endif
 
-		call grib_release(gid,stat)
-
+      call grib_release(gid,stat)
 
       ! interpolate GRIB field (into another GRIB field)
       ! in_words = nbytes / lint
@@ -310,26 +309,23 @@ subroutine read_gfs_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
 end subroutine read_gfs_grib
 
 
-
-
-
-
 ! This function transforms the GFS fixed pressure levels into surface-relative
-! levels that are more similar to those from ECMWF. Needed to prevent below-surface
-! contributions to the transmission and radiances.
+! levels that are more similar to those from ECMWF. Needed to prevent below-
+! surface contributions to the transmission and radiances.
 subroutine sort_gfs_levels(preproc_prtm,verbose)
+
    use preproc_constants_m
    use preproc_structures_m
 
    implicit none
 
-   type(preproc_prtm_t), intent(inout)  :: preproc_prtm
-   logical,              intent(in)     :: verbose
+   type(preproc_prtm_t), intent(inout) :: preproc_prtm
+   logical,              intent(in)    :: verbose
 
    integer          :: sh(3),lb(3),ub(3),i_0,i_1,j_0,j_1,nl
    integer          :: i,j,l,stoplev,movelev
 
-   real              :: surfp,interp
+   real             :: surfp,interp
    real,allocatable :: p(:),t(:),q(:),o(:),pl(:)
    logical          :: stopper
 
@@ -424,46 +420,23 @@ subroutine sort_gfs_levels(preproc_prtm,verbose)
 
    if (verbose)write(*,*)"<<<<<<Sort_gfs_levels<<<<<<"
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 end subroutine sort_gfs_levels
 
+
 subroutine conv_rh_q(rh,t,p,verbose)
+
    use preproc_constants_m
    use preproc_structures_m
 
    implicit none
 
-   real(sreal), dimension(:,:,:), intent(inout)  :: rh
-   real(sreal), dimension(:,:,:), intent(in)     :: t
-   real(sreal), dimension(:,:,:), intent(in)     :: p
-   logical,                       intent(in)     :: verbose
+   real(sreal), dimension(:,:,:), intent(inout) :: rh
+   real(sreal), dimension(:,:,:), intent(in)    :: t
+   real(sreal), dimension(:,:,:), intent(in)    :: p
+   logical,                       intent(in)    :: verbose
 
-   real(sreal),allocatable,dimension(:,:,:) :: c1,c2,c3,c4,c5,c6,pc,tc,th,val,pws,pw,ppm
+   real(sreal), allocatable, dimension(:,:,:) :: c1,c2,c3,c4,c5,c6,pc,tc,th, &
+                                                 val, pws,pw,ppm
    integer :: sh(3)
 
    sh=shape(t)
@@ -482,22 +455,22 @@ subroutine conv_rh_q(rh,t,p,verbose)
    allocate(pw(sh(1),sh(2),sh(3)))
    allocate(ppm(sh(1),sh(2),sh(3)))
 
-   c1   =   -7.85951783
-   c2   =   1.84408259
-   c3   =   -11.7866497
-   c4   =   22.6807411
-   c5   =   -15.9618719
-   c6   =   1.80122502
-   pc   =   220640
-   tc   =   647.096
+   c1  = -7.85951783
+   c2  = 1.84408259
+   c3  = -11.7866497
+   c4  = 22.6807411
+   c5  = -15.9618719
+   c6  = 1.80122502
+   pc  = 220640
+   tc  = 647.096
 
-   th   =   1.   -   (t/tc)
-   val=   (c1*th) + (c2*(th**1.5)) + (c3*(th**3.0)) + (c4*(th**3.5)) + (c5*(th**4.0)) + (c6*(th**7.5))
-   val=   val * (tc/t)
-   pws=   pc * exp(val)
-   pw   =   pws * (rh/100.)
-   rh =   (pw / p * 1e6)/q_mixratio_to_ppmv
-
+   th  = 1.   -   (t/tc)
+   val = (c1*th) + (c2*(th**1.5)) + (c3*(th**3.0)) + (c4*(th**3.5)) + &
+         (c5*(th**4.0)) + (c6*(th**7.5))
+   val = val * (tc/t)
+   pws = pc * exp(val)
+   pw  = pws * (rh/100.)
+   rh  = (pw / p * 1e6)/q_mixratio_to_ppmv
 
    deallocate(c1)
    deallocate(c2)

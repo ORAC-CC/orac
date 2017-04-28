@@ -334,7 +334,6 @@ subroutine setup_ahi(l1b_path_file,geo_path_file,platform,year,month,day, &
       (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0., &
          0.,      0.,      0.,      0.,      0.,      0.,      0.,      0. /)
 
-
    ! Only this below needs to be set to change the desired default channels. All
    ! other channel related arrays/indexes are set automatically given the static
    ! instrument channel definition above.
@@ -388,7 +387,6 @@ subroutine setup_ahi(l1b_path_file,geo_path_file,platform,year,month,day, &
 
    call GREG2DOY(year, month, day, doy)
    write(cdoy, '(i3.3)') doy
-
 
    ! now set up the channels
    call common_setup(channel_info, channel_ids_user, channel_ids_default, &
@@ -596,7 +594,6 @@ subroutine setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day, &
       read(cday, '(I2)') day
       read(chour(1:len_trim(chour)), '(I2)') hour
       read(cminute(1:len_trim(cminute)), '(I2)') minute
-
    end if
 
    ! added doy calculation for avhrr
@@ -774,7 +771,6 @@ subroutine setup_modis(l1b_path_file,geo_path_file,platform,year,month,day, &
          0.,        0.,        0.,        0.,        0.,        0., &
          0.,        0.,        0.,        0.,        0.,        0. /)
 
-
    ! Only this below needs to be set to change the desired default channels. All
    ! other channel related arrays/indexes are set automatically given the static
    ! instrument channel definition above.
@@ -915,7 +911,6 @@ subroutine setup_seviri(l1b_path_file,geo_path_file,platform,year,month,day, &
 
    real,    parameter :: all_channel_sea_uncertainty(all_nchannels_total) = &
       (/ 0.,    0.,   0.,   0.,   0.,   0.,   0.,   0.,   0.,    0.,    0. /)
-
 
    ! Only this below needs to be set to change the desired default channels. All
    ! other channel related arrays/indexes are set automatically given the static
@@ -1096,7 +1091,6 @@ subroutine setup_slstr(l1b_path_file,geo_path_file,platform,year,month,day, &
       (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0.,     0., &
          0.,      0.,      0.,      0.,      0.,      0.,      0.,      0.,     0. /)
 
-
    ! Only this below needs to be set to change the desired default channels. All
    ! other channel related arrays/indexes are set automatically given the static
    ! instrument channel definition above.
@@ -1148,7 +1142,6 @@ subroutine setup_slstr(l1b_path_file,geo_path_file,platform,year,month,day, &
       stop
    end if
 
-
    platform="Sentinel-3"
    if (verbose) write(*,*)"Satellite is: ",platform
 
@@ -1179,14 +1172,13 @@ subroutine setup_slstr(l1b_path_file,geo_path_file,platform,year,month,day, &
             hour=0
             day = day+1
             write(cday,'(i0.2)') day
-         endif
+         end if
          write(chour,'(i0.2)') hour
-      endif
+      end if
       write(cminute,'(i0.2)') minute
-   endif
+   end if
    call GREG2DOY(year, month, day, doy)
    write(cdoy, '(i3.3)') doy
-
 
    ! SLSTR has two views, nadir and oblique
    channel_info%nviews = 2
@@ -1293,7 +1285,6 @@ subroutine setup_viirs(l1b_path_file,geo_path_file,platform,year,month,day, &
       (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0., &
          0.,      0.,      0.,      0.,      0.,      0.,      0.,      0. /)
 
-
    ! Only this below needs to be set to change the desired default channels. All
    ! other channel related arrays/indexes are set automatically given the static
    ! instrument channel definition above.
@@ -1352,7 +1343,6 @@ subroutine setup_viirs(l1b_path_file,geo_path_file,platform,year,month,day, &
 
    ! VIIRS only has a single viewing geometry
    channel_info%nviews = 1
-
 
    ! now set up the channels
    call common_setup(channel_info, channel_ids_user, channel_ids_default, &

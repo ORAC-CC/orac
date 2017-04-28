@@ -89,7 +89,8 @@ subroutine write_ir_rttov(netcdf_info, idim, jdim, nlev, emissivity, &
       dummy_rbc_up(1,1,1,1) = dummy_rbc_up(1,2,1,1)
       dummy_rac_up(1,1,1,1) = dummy_rac_up(1,2,1,1)
       dummy_rac_down(1,1,1,1) = dummy_rac_down(1,2,1,1) * &
-         transmission%tau_levels(2,rttov_num) / transmission%tau_levels(1,rttov_num)
+         transmission%tau_levels(2,rttov_num) / &
+         transmission%tau_levels(1,rttov_num)
    else
       ! Write fill values
       dummy_emis = sreal_fill_value

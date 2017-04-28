@@ -54,9 +54,10 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocation, &
-   imager_measurements,imager_cloud,imager_time,imager_pavolonis,netcdf_info,channel_info, &
-   surface,include_full_brdf,do_cloud_emis)
+subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
+   imager_geolocation,imager_measurements,imager_cloud,imager_time, &
+   imager_pavolonis,netcdf_info,channel_info,surface,include_full_brdf, &
+   do_cloud_emis)
 
    use channel_structures_m
    use imager_structures_m

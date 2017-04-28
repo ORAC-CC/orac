@@ -81,16 +81,16 @@ subroutine rttov_driver_gfs(coef_path,emiss_path,sensor,platform,preproc_dims, &
         zenmax, zenmaxv9
 
    ! rttov_types contains definitions of all RTTOV data types
-   use rttov_types, only: &
-       rttov_options,     &
-       rttov_coefs,       &
-       rttov_chanprof,    &
-       rttov_profile,     &
-       rttov_emissivity,  &
-       rttov_reflectance, &
-       rttov_transmission,&
-       rttov_radiance,    &
-       rttov_radiance2,   &
+   use rttov_types, only:  &
+       rttov_options,      &
+       rttov_coefs,        &
+       rttov_chanprof,     &
+       rttov_profile,      &
+       rttov_emissivity,   &
+       rttov_reflectance,  &
+       rttov_transmission, &
+       rttov_radiance,     &
+       rttov_radiance2,    &
        rttov_traj
 
   use mod_rttov_emis_atlas, only : &
@@ -268,15 +268,15 @@ subroutine rttov_driver_gfs(coef_path,emiss_path,sensor,platform,preproc_dims, &
 
 
    ! Initialise options structure (leaving default settings be)
-   opts % interpolation % addinterp = .true.  ! Interpolate input profile
+   opts % interpolation % addinterp = .true. ! Interpolate input profile
    ! Removed as occassionally returns negative ozone at 0.005 hPa
-   ! opts % interpolation % reg_limit_extrap = .true.  ! Extrapolate to 0.5 Pa
+   ! opts % interpolation % reg_limit_extrap = .true. ! Extrapolate to 0.5 Pa
    opts % config % do_checkinput = .false. ! necessary due to negative
-     ! extrapolated values; from RTTOV 11 homepage: turns off RTTOV's internal
-     ! checking for unphysical profile values and values outside the
-     ! regression limits (NB by doing this the extrapolated values outside
-     ! the regression limits will be reset to the limits: it will not result
-     ! in unphysical extrapolated profile values being used)
+   ! extrapolated values; from RTTOV 11 homepage: turns off RTTOV's internal
+   ! checking for unphysical profile values and values outside the
+   ! regression limits (NB by doing this the extrapolated values outside
+   ! the regression limits will be reset to the limits: it will not result
+   ! in unphysical extrapolated profile values being used)
    opts % rt_all % use_q2m   = .false. ! Do not use surface humidity
    opts % rt_all % addrefrac = .true.  ! Include refraction in path calc
    opts % rt_ir % addsolar   = .false. ! Do not include reflected solar
@@ -386,8 +386,8 @@ subroutine rttov_driver_gfs(coef_path,emiss_path,sensor,platform,preproc_dims, &
          profiles(count)%s2m%u = preproc_prtm%u10(idim,jdim)
          profiles(count)%s2m%v = preproc_prtm%v10(idim,jdim)
          profiles(count)%s2m%wfetc = 100000.0
-!         profiles(count)%p(nlevels) = profiles(count)%s2m%p
-!         profiles(count)%t(nlevels) = preproc_prtm%skin_temp(idim,jdim)
+!        profiles(count)%p(nlevels) = profiles(count)%s2m%p
+!        profiles(count)%t(nlevels) = preproc_prtm%skin_temp(idim,jdim)
 
          ! These features currently disabled and so do not need to be input
          profiles(count)%cfraction = 0.
@@ -743,7 +743,7 @@ subroutine rttov_driver_gfs(coef_path,emiss_path,sensor,platform,preproc_dims, &
          deallocate(calcemis)
          deallocate(chan_pos)
       end do !coef loop
-   end do  !view loop
+   end do !view loop
 
    if (channel_info%nchannels_sw /= 0) then
       deallocate(dummy_sreal_1dveca)

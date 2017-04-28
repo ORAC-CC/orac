@@ -39,14 +39,13 @@ module ecmwf_m
    use preproc_constants_m
 
    implicit none
-   real(kind=sreal),   pointer :: avec(:)
-   real(kind=sreal),   pointer :: bvec(:)
 
    type ecmwf_t
       integer(kind=lint)                        :: xdim,ydim,kdim
       real(kind=sreal), dimension(:),   pointer :: lat,lon
       real(kind=sreal), dimension(:),   pointer :: avec,bvec
-      real(kind=sreal), dimension(:,:), pointer :: u10,v10,skin_temp,snow_depth,sea_ice_cover
+      real(kind=sreal), dimension(:,:), pointer :: u10,v10,skin_temp, &
+                                                   snow_depth,sea_ice_cover
    end type ecmwf_t
 
 contains
@@ -241,7 +240,7 @@ subroutine ecmwf_abvec_init(ecmwf)
       ecmwf%kdim = 60
       allocate(ecmwf%avec(61))
       allocate(ecmwf%bvec(61))
-      ecmwf%avec =&
+      ecmwf%avec = &
       [0.000000,     2.000000E+01, 3.842534E+01, 6.364780E+01, &
        9.563696E+01, 1.344833E+02, 1.805844E+02, 2.347791E+02, &
        2.984958E+02, 3.739719E+02, 4.646182E+02, 5.756511E+02, &
@@ -258,7 +257,7 @@ subroutine ecmwf_abvec_init(ecmwf)
        2.063780E+03, 1.385913E+03, 8.553618E+02, 4.673335E+02, &
        2.103939E+02, 6.588924E+01, 7.367743,     0.000000,     &
        0.000000 ]
-      ecmwf%bvec =&
+      ecmwf%bvec = &
       [0.0000000,     0.0000000,     0.0000000,     0.0000000,     &
        0.0000000,     0.0000000,     0.0000000,     0.0000000,     &
        0.0000000,     0.0000000,     0.0000000,     0.0000000,     &
@@ -277,14 +276,8 @@ subroutine ecmwf_abvec_init(ecmwf)
        1.0000000 ]
    end select
 
-!   ecmwf%avec = avec
-!   ecmwf%bvec = bvec
-
-!    write(*,*)"KDIM:",ecmwf%kdim
-!    write(*,*)"AVEC:",ecmwf%avec(10),ecmwf%avec(20),ecmwf%avec(30),ecmwf%avec(40)
-!    write(*,*)"BVEC:",ecmwf%bvec(10),ecmwf%bvec(20),ecmwf%bvec(30),ecmwf%bvec(40)
-
 end subroutine ecmwf_abvec_init
+
 
 subroutine ecmwf_wind_init(ecmwf)
 

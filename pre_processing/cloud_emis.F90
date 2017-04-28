@@ -34,30 +34,30 @@ subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation,&
 
    implicit none
 
-   type(channel_info_t),           intent(in)    :: channel_info
-   type(imager_measurements_t),     intent(in)   :: imager_measurements
-   type(imager_geolocation_t),     intent(in)    :: imager_geolocation
-   type(preproc_dims_t),           intent(in)    :: preproc_dims
-   type(preproc_geoloc_t),         intent(in)    :: preproc_geoloc
-   type(preproc_cld_t),            intent(in)    :: preproc_cld
-   type(imager_cloud_t),           intent(out)   :: imager_cloud
-   type(ecmwf_t),                  intent(in)    :: ecmwf
-   character(len=sensor_length),   intent(in)    :: sensor
-   logical,                        intent(in)    :: verbose
+   type(channel_info_t),         intent(in)    :: channel_info
+   type(imager_measurements_t),  intent(in)   :: imager_measurements
+   type(imager_geolocation_t),   intent(in)    :: imager_geolocation
+   type(preproc_dims_t),         intent(in)    :: preproc_dims
+   type(preproc_geoloc_t),       intent(in)    :: preproc_geoloc
+   type(preproc_cld_t),          intent(in)    :: preproc_cld
+   type(imager_cloud_t),         intent(out)   :: imager_cloud
+   type(ecmwf_t),                intent(in)    :: ecmwf
+   character(len=sensor_length), intent(in)    :: sensor
+   logical,                      intent(in)    :: verbose
 
    real(kind=sreal), allocatable, dimension(:,:) :: cldbt,clrbt
-   type(interpol_t), allocatable, dimension(:) :: interp
+   type(interpol_t), allocatable, dimension(:)   :: interp
    integer :: i, j, chan_n, good_chan_lw, good_chan_all
 
    ! Interpolation variables
-   real     :: Lat0,Lon0,LatN,LonN, MinLat, MinLon, MaxLat, MaxLon
-   real     :: delta_lat,delta_lon,inv_delta_Lat,inv_delta_Lon
-   real      :: rad_clr,rad_cld,rad_obs,t1,t2,emis
-   real,parameter   :: c1   =   1.191042e8
-   real,parameter   :: c2   =   1.4387752e4
-   real,parameter   :: lam=   10.8
-   integer   :: NLat,NLon
-   logical   :: Wrap
+   real           :: Lat0,Lon0,LatN,LonN, MinLat, MinLon, MaxLat, MaxLon
+   real           :: delta_lat,delta_lon,inv_delta_Lat,inv_delta_Lon
+   real           :: rad_clr,rad_cld,rad_obs,t1,t2,emis
+   real,parameter :: c1   =   1.191042e8
+   real,parameter :: c2   =   1.4387752e4
+   real,parameter :: lam=   10.8
+   integer        :: NLat,NLon
+   logical        :: Wrap
 
    good_chan_lw = -1
    good_chan_all = -1
@@ -89,7 +89,8 @@ subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation,&
    ! Does the grid wrap around the international date-line?
    Wrap = MinLon <= -180. .and. MaxLon >=  180.
 
-   if (trim(adjustl(sensor)) .eq. 'AATSR' .or. trim(adjustl(sensor)) .eq. 'ATSR2' ) then
+   if (trim(adjustl(sensor)) .eq. 'AATSR' .or. &
+       trim(adjustl(sensor)) .eq. 'ATSR2') then
       chan_n = 6
    else if (trim(adjustl(sensor)) .eq. 'AHI') then
       chan_n = 13
@@ -103,19 +104,21 @@ subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation,&
       chan_n = 8
    else if (trim(adjustl(sensor)) .eq. 'VIIRS') then
       chan_n = 15
-   endif
+   end if
 
    do i=1,channel_info%nchannels_total
       if (channel_info%channel_ids_instr(i) .eq. chan_n) then
          good_chan_all = i
          good_chan_lw = channel_info%map_ids_channel_to_lw(i)
-      endif
-   enddo
+      end if
+   end do
 
    do i=1,imager_geolocation%ny
       do j=imager_geolocation%startx,imager_geolocation%endx
 
-         call bilinear_coef(preproc_geoloc%longitude, NLon, preproc_geoloc%latitude, NLat, imager_geolocation%longitude(j,i), imager_geolocation%latitude(j,i), interp(1),Wrap)
+         call bilinear_coef(preproc_geoloc%longitude, NLon, &
+              preproc_geoloc%latitude, NLat, imager_geolocation%longitude(j,i), &
+              imager_geolocation%latitude(j,i), interp(1),Wrap)
 
          call interp_field (preproc_cld%cloud_bt(:,:,good_chan_lw), cldbt(j,i), interp(1))
          call interp_field (preproc_cld%clear_bt(:,:,good_chan_lw), clrbt(j,i), interp(1))
@@ -123,17 +126,17 @@ subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation,&
    end do
    do i=1,imager_geolocation%ny
       do j=imager_geolocation%startx,imager_geolocation%endx
-         t1        =   exp(c2/(lam*cldbt(j,i)))
-         t2        =   (t1-1)
-         rad_cld   =   c1/(t2*(lam**5))
-         t1        =   exp(c2/(lam*clrbt(j,i)))
-         t2        =   (t1-1)
-         rad_clr   =   c1/(t2*(lam**5))
-         t1        =   exp(c2/(lam*imager_measurements%data(j,i,good_chan_all)))
-         t2        =   (t1-1)
-         rad_obs   =   c1/(t2*(lam**5))
+         t1      = exp(c2/(lam*cldbt(j,i)))
+         t2      = (t1-1)
+         rad_cld = c1/(t2*(lam**5))
+         t1      = exp(c2/(lam*clrbt(j,i)))
+         t2      = (t1-1)
+         rad_clr = c1/(t2*(lam**5))
+         t1      = exp(c2/(lam*imager_measurements%data(j,i,good_chan_all)))
+         t2      = (t1-1)
+         rad_obs = c1/(t2*(lam**5))
 
-         emis      =   (rad_obs-rad_clr)/(rad_cld-rad_clr)
+         emis    = (rad_obs-rad_clr)/(rad_cld-rad_clr)
          if (emis .lt. 0) emis=0.
          imager_cloud%cloud_emis(j,i) = emis
         end do

@@ -50,12 +50,12 @@ function read_USGS_file(path_to_USGS_file, usgs, verbose) result (stat)
    implicit none
 
    ! Input variables
-   character(len=path_length), intent(in)    :: path_to_USGS_file
-   logical,                    intent(in)    :: verbose
+   character(len=path_length), intent(in) :: path_to_USGS_file
+   logical,                    intent(in) :: verbose
 
    ! Output variables
    type(USGS_t), intent(out) :: usgs
-   integer(kind=sint) :: stat
+   integer(kind=sint)        :: stat
 
    ! Local variables
    integer :: fid, usgs_lat_id, usgs_lon_id
@@ -101,12 +101,12 @@ function read_predef_file(path_to_file, usgs, verbose) result (stat)
    implicit none
 
    ! Input variables
-   character(len=path_length), intent(in)    :: path_to_file
-   logical,                    intent(in)    :: verbose
+   character(len=path_length), intent(in) :: path_to_file
+   logical,                    intent(in) :: verbose
 
    ! Output variables
    type(USGS_t), intent(out) :: usgs
-   integer(kind=sint) :: stat
+   integer(kind=sint)        :: stat
 
    ! Local variables
    integer :: fid, usgs_lat_id, usgs_lon_id
@@ -150,8 +150,8 @@ function nearest_USGS(imager_lat, imager_lon, usgs) &
    implicit none
 
    ! input variables
-   real(kind=sreal),intent(in) :: imager_lat, imager_lon
-   type(USGS_t), intent(in) :: usgs
+   real(kind=sreal), intent(in) :: imager_lat, imager_lon
+   type(USGS_t),     intent(in) :: usgs
 
    ! output variable
    integer(kind=sint),dimension(2) :: nearest_xy

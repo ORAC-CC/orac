@@ -123,8 +123,7 @@ subroutine netcdf_output_create(output_path,lwrtm_file,swrtm_file,prtm_file, &
 
    ! create lwrtm file
    call netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
-        cminute,&
-        platform,sensor, &
+        cminute,platform,sensor, &
         trim(adjustl(output_path))//'/'//trim(adjustl(lwrtm_file)), &
         NETCDF_OUTPUT_FILE_LWRTM,preproc_dims, netcdf_info,channel_info, &
         ecmwf_flag,verbose)

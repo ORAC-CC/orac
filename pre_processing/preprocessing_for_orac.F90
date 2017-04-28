@@ -535,7 +535,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
             ecmwf_path(2), ecmwf_path2(2), ecmwf_path3(2), ecmwf_path_hr(1), &
             ecmwf_path_hr(2), ecmwf_nlevels, use_l1_land_mask, use_occci, occci_path, &
             use_predef_lsm, ext_lsm_path,use_predef_geo, predef_geo_file,&
-            disable_snow_ice_corr,do_cloud_emis,do_ironly)
+            disable_snow_ice_corr, do_cloud_emis,do_ironly)
       end do
    else
 
@@ -606,7 +606,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
            ecmwf_path(2), ecmwf_path2(2), ecmwf_path3(2), ecmwf_path_hr(1), &
            ecmwf_path_hr(2), ecmwf_nlevels, use_l1_land_mask, use_occci, occci_path, &
            use_predef_lsm, ext_lsm_path,use_predef_geo, predef_geo_file,&
-           disable_snow_ice_corr,do_cloud_emis,do_ironly)
+           disable_snow_ice_corr, do_cloud_emis,do_ironly)
       end do
 
       close(11)
@@ -1027,7 +1027,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
          ! over land and ocean
          if (verbose) write(*,*) 'Get surface reflectance'
          call get_surface_reflectance(cyear, cdoy, cmonth, &
-               modis_albedo_path, modis_brdf_path, occci_path, imager_flags, &
+              modis_albedo_path, modis_brdf_path, occci_path, imager_flags, &
               imager_geolocation, imager_angles, channel_info, ecmwf, &
               assume_full_paths, include_full_brdf, use_occci, verbose, &
               surface, source_atts)
@@ -1045,7 +1045,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
                call correct_for_ice_snow_ecmwf(ecmwf_HR_path_file(1), &
                     imager_geolocation, imager_flags, preproc_dims, preproc_prtm, &
                     surface, include_full_brdf, source_atts, verbose)
-            endif
+            end if
          end if
       else
          surface%albedo(:,:,:) = sreal_fill_value
@@ -1054,8 +1054,8 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
             surface%rho_0d(:,:,:) = sreal_fill_value
             surface%rho_dv(:,:,:) = sreal_fill_value
             surface%rho_dd(:,:,:) = sreal_fill_value
-         endif
-      endif
+         end if
+      end if
 
       if (verbose) write(*,*) 'Calculate Pavolonis cloud phase with high '// &
            'resolution ERA surface data'

@@ -102,7 +102,7 @@
 !-------------------------------------------------------------------------------
 
 subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
-     cminute, platform,sensor,path,type,preproc_dims,netcdf_info,channel_info, &
+     cminute,platform,sensor,path,type,preproc_dims,netcdf_info,channel_info, &
      ecmwf_flag,verbose)
 
    use netcdf

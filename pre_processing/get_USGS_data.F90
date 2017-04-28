@@ -77,8 +77,8 @@ subroutine get_USGS_data(path_to_USGS_file, imager_flags, imager_geolocation, &
               trim(path_to_USGS_file)
          stop error_stop_code
       end if
-      imager_geolocation%dem =  usgs%dem
-      imager_flags%lusflag   =  usgs%lus
+      imager_geolocation%dem = usgs%dem
+      imager_flags%lusflag   = usgs%lus
    else
       ! Read the data themselves
       if (read_USGS_file(path_to_USGS_file, usgs, verbose) .ne. 0) then
@@ -94,8 +94,8 @@ subroutine get_USGS_data(path_to_USGS_file, imager_flags, imager_geolocation, &
          do j=1,imager_geolocation%ny
 
             if (imager_geolocation%latitude(i,j) .eq. sreal_fill_value .or. &
-                 imager_geolocation%longitude(i,j) .eq. sreal_fill_value) &
-                 cycle
+                imager_geolocation%longitude(i,j) .eq. sreal_fill_value) &
+               cycle
 
             ! Do nearest neighbour collocation for each imager pixel with USGS
             ! data, applying a search window radius of +-0.25 degree lat/lon

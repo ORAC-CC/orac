@@ -99,6 +99,7 @@ module imager_structures_m
       real(kind=sreal), dimension(:,:),   pointer :: cloud_emis
 
    end type imager_cloud_t
+
 contains
 
 #include "allocate_imager_structures.F90"

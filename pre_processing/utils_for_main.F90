@@ -26,7 +26,6 @@
 ! 2017/04/26, SP: Support for loading geoinfo (lat/lon/vza/vaa) from an
 !                 external file. Supported by AHI, not yet by SEVIRI (EKWork)
 !
-!
 ! $Id$
 !
 ! Bugs:
@@ -64,8 +63,8 @@ subroutine parse_optional(label, value, n_channels, channel_ids, &
                           ecmwf_path, ecmwf_path2, ecmwf_path3, ecmwf_path_hr, &
                           ecmwf_path_hr_2, ecmwf_nlevels, use_l1_land_mask, &
                           use_occci, occci_path,use_predef_lsm,ext_lsm_path,&
-                          use_predef_geo,ext_geo_path,disable_snow_and_ice_corr,&
-                          do_cloud_emis,do_ironly)
+                          use_predef_geo, ext_geo_path, disable_snow_and_ice_corr,&
+                          do_cloud_emis, do_ironly)
 
    use parsing_m
    use preproc_constants_m

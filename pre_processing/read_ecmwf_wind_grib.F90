@@ -69,8 +69,6 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf, high_res, ecmwf_flag)
    if (stat .ne. 0) call h_e_e('wind_grib', 'Error getting GRIB_ID. '//trim(ecmwf_path))
    if (gid .eq. GRIB_END_OF_FILE) call h_e_e('wind_grib', 'Empty GRIB file.')
 
-
-
    if ((.not. high_res) .and. (ecmwf_flag .ne. 5) .and. (ecmwf_flag .ne. 6)) then
       ! ensure it contains the expected fields
       call grib_get(gid,'PVPresent',PVPresent)
@@ -103,7 +101,6 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf, high_res, ecmwf_flag)
    allocate(lat(n))
    allocate(val(n))
 
-
    ! allocate permanent arrays
    allocate(ecmwf%lon(ni))
    allocate(ecmwf%lat(nj))
@@ -122,7 +119,6 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf, high_res, ecmwf_flag)
    allocate(ecmwf%skin_temp(ni,nj))
    allocate(ecmwf%snow_depth(ni,nj))
    allocate(ecmwf%sea_ice_cover(ni,nj))
-
 
    ! Initialise
    ecmwf%lon(:)=sreal_fill_value

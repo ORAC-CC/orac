@@ -252,12 +252,10 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
       stop error_stop_code
    endif
 
-
-
    source_atts%albedo_file = 'Not used (no SW channels or no pixels of land)'
    source_atts%brdf_file   = 'Not used (no SW channels or no pixels of land)'
 
-   ! If there are no lw channels, we have nothing more to do.
+   ! If there are no sw channels, we have nothing more to do.
    if (channel_info%nchannels_sw == 0) return
 
 

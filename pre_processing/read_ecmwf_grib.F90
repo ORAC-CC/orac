@@ -86,11 +86,11 @@ subroutine read_ecmwf_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
    integer(lint), parameter                 :: BUFFER = 3000000
    integer(lint), external                  :: INTIN,INTOUT,INTF2
    integer(lint)                            :: fu,stat,nbytes
-!   integer(lint)                            :: in_words,out_words
+!  integer(lint)                            :: in_words,out_words
    integer(lint)                            :: out_bytes, out_words
    integer(lint), allocatable, dimension(:) :: in_data,out_data
    integer(lint)                            :: iblank(4)
-!   real(dreal)                              :: zni(1),zno(1),grid(2),area(4)
+!  real(dreal)                              :: zni(1),zno(1),grid(2),area(4)
    real(dreal)                              :: grid(2),area(4)
    character(len=20)                        :: charv(1)
 
@@ -114,7 +114,7 @@ subroutine read_ecmwf_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
    grid(1) = 0.5 / preproc_dims%dellon
    grid(2) = 0.5 / preproc_dims%dellat
    if (INTOUT('grid',iblank,grid,charv) .ne. 0) &
-        call h_e_e('grib', 'INTOUT grid failed.')
+      call h_e_e('grib', 'INTOUT grid failed.')
    area(1) = preproc_geoloc%latitude(preproc_dims%max_lat) + 0.01*grid(2)
    area(2) = preproc_geoloc%longitude(preproc_dims%min_lon) + 0.01*grid(1)
    area(3) = preproc_geoloc%latitude(preproc_dims%min_lat) + 0.01*grid(2)
@@ -140,7 +140,7 @@ subroutine read_ecmwf_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
       !     call h_e_e('grib', &
       !       'INTF failed. Check if 1/dellon 1/dellat are muliples of 0.001.')
       if (INTF2(in_data,nbytes,out_data,out_bytes) .ne. 0) &
-           call h_e_e('grib', 'INTF2 failed.')
+         call h_e_e('grib', 'INTF2 failed.')
       out_words = out_bytes/lint
       ! load grib data into grib_api
       call grib_new_from_message(gid,out_data(1:out_words),stat)

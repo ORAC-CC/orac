@@ -17,8 +17,8 @@ module system_utils_m
    private
 
    public :: match_file, &
-   			 is_nan, &
-   			 c_to_fortran_str
+             is_nan, &
+             c_to_fortran_str
 
 contains
 
@@ -80,17 +80,17 @@ end function match_file
 
 elemental function is_nan(x) result(res)
 #ifndef __GFORTRAN__
-	use ieee_arithmetic, only : ieee_is_nan
+   use ieee_arithmetic, only : ieee_is_nan
 #endif
-	implicit none
+   implicit none
 
-	real, intent(in) :: x
-	logical          :: res
+   real, intent(in) :: x
+   logical          :: res
 
 #ifndef __GFORTRAN__
-	res = ieee_is_nan(x)
+   res = ieee_is_nan(x)
 #else
-	res = isnan(x)
+   res = isnan(x)
 #endif
 end function
 

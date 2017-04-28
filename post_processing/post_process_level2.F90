@@ -319,12 +319,12 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
       write(*,*) 'primary water input = ', trim(in_files_primary(IWat))
       write(*,*) 'primary ice input = ', trim(in_files_primary(IIce))
       if (use_ml) then
-	 write(*,*) 'primary ml input = ', trim(in_files_primary(IMul))
+         write(*,*) 'primary ml input = ', trim(in_files_primary(IMul))
       end if
       write(*,*) 'secondary water input = ', trim(in_files_secondary(IWat))
       write(*,*) 'secondary ice input = ', trim(in_files_secondary(IIce))
       if (use_ml) then
-	 write(*,*) 'secondary ml input = ', trim(in_files_secondary(IMul))
+         write(*,*) 'secondary ml input = ', trim(in_files_secondary(IMul))
       end if
       write(*,*) 'primary output = ', trim(out_file_primary)
       write(*,*) 'secondary output = ', trim(out_file_secondary)
@@ -441,11 +441,11 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
       ! Read fields that vary from file to file
       if (use_new_bayesian_selection .neqv. .true.) then
          do i = 1, n_in_files
-	    if (i .eq. 3) then
-	       use_ml_temp=.true.
-	    else
-	       use_ml_temp=.false.
-	     end if
+            if (i .eq. 3) then
+               use_ml_temp=.true.
+            else
+               use_ml_temp=.false.
+            end if
             if (verbose) write(*,*) '********************************'
             if (verbose) write(*,*) 'read: ', trim(in_files_primary(i))
             call alloc_input_data_primary_class(loop_ind(i), input_primary(i))
@@ -472,11 +472,11 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
 
          ! Load only the cost values from input files
          do i = 1, n_in_files
-	    if (i .eq. 3) then
-	       use_ml_temp=.true.
-	    else
-	       use_ml_temp=.false.
-	    end if
+            if (i .eq. 3) then
+               use_ml_temp=.true.
+            else
+               use_ml_temp=.false.
+            end if
 
             call alloc_input_data_only_cost(loop_ind(i), input_primary(i))
             call read_input_primary_class(in_files_primary(i), input_primary(i), &
@@ -512,15 +512,15 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
             if (verbose) write(*,*) '********************************'
             if (verbose) write(*,*) 'read: ', trim(in_files_primary(k))
 
-	    if (use_ml) then
-	       use_ml_temp=.true.
+            if (use_ml) then
+               use_ml_temp=.true.
                call read_input_primary_class(in_files_primary(k), input_primary(3), &
                     loop_ind(k), .False.,chunk_starts( i_chunk), use_ml_temp,verbose)
-	    else
-	       use_ml_temp=.false.
+            else
+               use_ml_temp=.false.
                call read_input_primary_class(in_files_primary(k), input_primary(1), &
                     loop_ind(k), .False.,chunk_starts( i_chunk), use_ml_temp,verbose)
-	    end if
+            end if
 
             if (do_secondary) then
                if (verbose) write(*,*) 'read: ', trim(in_files_secondary(k))
@@ -580,7 +580,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
 
                ! Apply Pavolonis phase information to select retrieval phase
                ! variables select water type overwrite ice
-	       if (use_ml) then
+               if (use_ml) then
 
                end if
 
@@ -617,7 +617,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
                      phase_flag = 3_byte
                   else
                      phase_flag = 2_byte
-		     if (switch_phases .and. &
+                     if (switch_phases .and. &
                      ((input_primary(IWat)%ctt(i,j) /= sreal_fill_value .and. &
                        input_primary(IWat)%ctt(i,j) >= switch_wat_limit) .and. &
                       (input_primary(IIce)%ctt(i,j) /= sreal_fill_value .and. &
@@ -631,7 +631,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
                   phase_flag = 2_byte
                end select
 
-	       if (use_ml) then
+               if (use_ml) then
 
                end if
 
@@ -662,8 +662,8 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
                if (use_ml) then
                   if (input_primary(0)%cldtype(i,j,1) == OVERLAP_TYPE) then
                      call copy_class_specific_inputs(i, j, loop_ind(IMul), &
-                       	   input_primary(0), input_primary(IMul), &
-                       	   input_secondary(0), input_secondary(IMul), do_secondary)
+                          input_primary(0), input_primary(IMul), &
+                          input_secondary(0), input_secondary(IMul), do_secondary)
                    end if
                end if
 

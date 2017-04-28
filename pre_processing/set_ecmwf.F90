@@ -300,7 +300,6 @@ real(dreal) function find_center_time(imager_geolocation, imager_time) &
    result(center_time)
 #endif
 
-
    use imager_structures_m
    use preproc_constants_m
 
