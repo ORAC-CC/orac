@@ -35,6 +35,7 @@
 ! 2016/06/10, SP: Updates for bayesian selection without huge memory usage.
 ! 2017/01/02, SP: Updates for multi layer cloud
 ! 2017/01/09, CP: ML additions.
+! 2017/04/28, CP: ML bug fix added ctp2
 !
 ! $Id$
 !
@@ -236,6 +237,10 @@ if (use_ml) then
    call nc_read_packed_array(ncid, "cth2", input_data%cth2, verbose, startp = [1, sval])
    call nc_read_packed_array(ncid, "cth2_uncertainty", &
         input_data%cth2_uncertainty, verbose, startp = [1, sval])
+
+  call nc_read_packed_array(ncid, "ctp2", input_data%ctp2, verbose, startp = [1, sval])
+   call nc_read_packed_array(ncid, "ctp2_uncertainty", &
+        input_data%ctp2_uncertainty, verbose, startp = [1, sval])
 
    call nc_read_packed_array(ncid, "ctt2", input_data%ctt2, verbose, startp = [1, sval])
    call nc_read_packed_array(ncid, "ctt2_uncertainty", &
