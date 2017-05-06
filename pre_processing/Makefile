@@ -50,9 +50,8 @@ PREPROC_OBJ_F90 = $(OBJS)/aatsr_corrections.o \
                   $(OBJS)/cloud_emis.o \
                   $(OBJS)/cloud_typing_pavolonis.o \
                   $(OBJS)/correct_for_ice_snow.o \
-                  $(OBJS)/cox_munk_constants.o \
-                  $(OBJS)/ocean_colour.o \
                   $(OBJS)/cox_munk.o \
+                  $(OBJS)/cox_munk_constants.o \
                   $(OBJS)/define_preprop_grid.o \
                   $(OBJS)/ecmwf.o \
                   $(OBJS)/fill_grid.o \
@@ -61,10 +60,11 @@ PREPROC_OBJ_F90 = $(OBJS)/aatsr_corrections.o \
                   $(OBJS)/map_time_to_pixel.o \
                   $(OBJS)/mcd43c.o \
                   $(OBJS)/netcdf_output.o \
-                  $(OBJS)/neural_net_preproc.o \
                   $(OBJS)/neural_net_constants.o \
-                  $(OBJS)/nsidc_nise.o \
+                  $(OBJS)/neural_net_preproc.o \
                   $(OBJS)/nr.o \
+                  $(OBJS)/nsidc_nise.o \
+                  $(OBJS)/ocean_colour.o \
                   $(OBJS)/preparation.o \
                   $(OBJS)/preproc_constants.o \
                   $(OBJS)/preproc_structures.o \
@@ -78,6 +78,7 @@ PREPROC_OBJ_F90 = $(OBJS)/aatsr_corrections.o \
                   $(OBJS)/read_slstr.o \
                   $(OBJS)/read_viirs.o \
                   $(OBJS)/read_USGS_file.o \
+                  $(OBJS)/remove_rayleigh.o \
                   $(OBJS)/ross_thick_li_sparse_r.o \
                   $(OBJS)/rttov_driver.o \
                   $(OBJS)/rttov_driver_gfs.o \

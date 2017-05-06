@@ -74,6 +74,7 @@ subroutine rttov_driver_gfs(coef_path,emiss_path,sensor,platform,preproc_dims, &
    use orac_ncdf_m
    use preproc_constants_m
    use preproc_structures_m
+   use remove_rayleigh_m
 
    ! rttov_const contains useful RTTOV constants
    use rttov_const, only: &
@@ -643,33 +644,10 @@ subroutine rttov_driver_gfs(coef_path,emiss_path,sensor,platform,preproc_dims, &
                end if
 
                ! Remove the Rayleigh component from the RTTOV tranmittances.
-               ! (Private communication from Philip Watts.)
                if (i_coef == 2) then
-                  p_0 = 1013.
-
-                  sec_vza = 1. / cos(profiles(count)%zenangle * d2r)
-
-                  do i_ = 1, nchan
-                     ! Rayleigh optical thickness for the atmosphere down to 1013
-                     ! hPa (Hansen and Travis, 1974)
-                     lambda = dummy_sreal_1dveca(i_)
-                     tau_ray_0 = .008569 * lambda**(-4) * &
-                          (1. + .0113 * lambda**(-2) + .00013 * lambda**(-4))
-
-                     do j_ = 1, nlevels
-                        ! Pressure and path dependent Rayleigh optical thickness
-                        tau_ray_p = tau_ray_0 * profiles(count)%p(j_) / p_0 * &
-                             sec_vza
-
-                        ! Corrected level transmittances
-                        transmission%tau_levels(j_, i_) = &
-                             transmission%tau_levels(j_, i_) / exp(-tau_ray_p)
-                     end do
-
-                     ! Corrected total transmittances
-                     transmission%tau_total(i_) = &
-                          transmission%tau_total(i_) / exp(-tau_ray_p)
-                  end do
+                  call remove_rayleigh(nchan, nlevels, dummy_sreal_1dveca, &
+                       profiles(count)%zenangle, profiles(count)%p, &
+                       transmission%tau_levels, transmission%tau_total)
                end if
 
                ! Reformat and write output to NCDF files
