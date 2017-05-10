@@ -123,6 +123,9 @@ subroutine def_output_primary(ncid, dim3d_var, output_data, indexing, &
    end if
 
 
+   if (verbose) &
+        write(*,*) 'def_output_primary: using deflate_level = ',deflate_level
+
    !----------------------------------------------------------------------------
    ! time
    !----------------------------------------------------------------------------
