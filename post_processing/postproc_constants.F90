@@ -37,7 +37,7 @@ module postproc_constants_m
    implicit none
 
    ! NetCDF deflate level
-   integer, parameter :: deflate_level=9
+   integer, parameter :: deflate_level=5
 
    ! Shuffling to improve compression
    logical, parameter :: shuffle_flag=.TRUE.

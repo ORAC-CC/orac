@@ -370,7 +370,8 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
       segment_starts(1) = 1
       segment_ends(1)   = indexing%Ydim
 
-      chunksize = 4096
+!      chunksize = 4096
+      chunksize = 1024
 
       n_chunks = calc_n_chunks(n_segments, segment_starts, segment_ends, &
                                chunksize)
