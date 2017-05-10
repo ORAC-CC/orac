@@ -34,7 +34,11 @@
 # HISTORY:
 # 27 Jul 2016, AP: Initial version
 # 09 Mar 2017, GT: Bug fix to formating of job-IDs as dependencies for a new job
-#                  submission using bsub (LSF) 
+#                  submission using bsub (LSF)
+# 30 Mar 2017, GT: Changed LSF dependency setting from "done" to "ended".
+#                  Sometimes jobs that have sucessfully completed do not satisfy
+#                  the "done" condition for some reason, meaning dependency is
+#                  never resolved.
 
 import re
 
@@ -117,7 +121,8 @@ qsub = BatchSystem('qsub',
 # BSUB, used by the JASMIN cluster at RAL
 bsub = BatchSystem('bsub',
                    'Job <(?P<ID>\d+)> is submitted to (?P<desc>\w*)( ?)queue <(?P<queue>.+)>.',
-                   '-w done({})', ')&&done(',
+#                   '-w done({})', ')&&done(',
+                   '-w ended({})', ')&&ended(',
                    {'duration' : '-W {}'.format,
                     'email'    : '-u {}'.format,
                     'err_file' : '-e {}'.format,

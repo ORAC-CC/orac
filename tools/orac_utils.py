@@ -442,8 +442,8 @@ def form_bound_filenames(bounds,  # List of times to be
 
     for i in range(len(out)):
         f2 = glob.glob(out[i])
-        if not os.path.isfile(f2[len(f2)-1]):
-            raise FileMissing('ECMWF file', f)
+        if len(f2) == 0:
+            raise FileMissing('ECMWF file', out[i])
         else:
             out[i] = f2[len(f2)-1]
     return out
@@ -1004,7 +1004,8 @@ def args_main(parser):
 
     main = parser.add_argument_group('Main processor arguments')
     main.add_argument('-a', '--approach', type=str, nargs='?',
-                      choices = ('AppCld1L', 'AppCld2L', 'AppAerOx', 'AppAerSw'),
+                      choices = ('AppCld1L', 'AppCld2L', 'AppAerOx', 
+                                 'AppAerSw', 'AppAerO1'),
                       help = 'Retrieval approach to be used.')
     main.add_argument('--ret_class', type = str, nargs='?',
                       choices = ('ClsCldWat', 'ClsCldIce', 'ClsAerOx',
@@ -1205,9 +1206,9 @@ def build_preproc_driver(args):
         raise NotImplementedError('Filename syntax for --ecmwf_flag 3 unknown')
     elif (args.ecmwf_flag == 4):
         bounds = bound_time(inst.time + inst.dur//2, 
-                            datetime.timedelta(hours=6))
+                            datetime.timedelta(hours=3))
         ggam = form_bound_filenames(bounds, args.ggam_dir,
-                                    '/C3D*%m%d%H*.nc')
+                                    '/%Y/%m/%d/C3D*%m%d%H*.nc')
         #ggam = form_bound_filenames(bounds, args.ggam_dir,
         #                            '/ECMWF_OPER_%Y%m%d_%H+%M.nc')
         ggas = ggam
