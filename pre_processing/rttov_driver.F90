@@ -133,6 +133,7 @@
 ! 2016/05/19, SP: Added VIIRS/Suomi-NPP processing capability.
 ! 2016/05/27, SP: Updates to enable RTTOV to work correctly with multi-views
 ! 2016/07/05, SP: Added SLSTR/Sentinel-3 processing capability.
+! 2017/02/10, GT: Added a check for the existence of valid ozone profile data.
 ! 2017/02/25, SP: Update to RTTOV v12.1 (EKWork)
 ! 2017/03/24, SP: Tidying, improved method for finding snow fraction (EKWork)
 ! 2017/03/29, SP: Switch to parallel RTTOV for performance improvement
@@ -457,6 +458,14 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
    do jdim=preproc_dims%min_lat,preproc_dims%max_lat
       do idim=preproc_dims%min_lon,preproc_dims%max_lon
          count = count + 1
+
+         ! Check to see if the ECMWF data read in includes ozone
+         ! profiles: forecast data does not
+         if (maxval(profiles(count)%o3(:preproc_dims%kdim)) == 0.0) then
+            opts % rt_ir % ozone_data = .false. ! No valid ozone profiles!
+         else
+            opts % rt_ir % ozone_data = .true.
+         end if
 
          ! set gas units to 1, specifying gas input in kg/kg
          profiles(count)%gas_units = 1
