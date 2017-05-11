@@ -223,9 +223,9 @@ subroutine dealloc_input_data_secondary_common(data)
    if (associated(data%ctp2_fg))       deallocate(data%ctp2_fg)
 
 
-   deallocate(data%y0)
-   deallocate(data%residuals)
-   deallocate(data%ds)
+   if (associated(data%y0))            deallocate(data%y0)
+   if (associated(data%residuals))     deallocate(data%residuals)
+   if (associated(data%ds))            deallocate(data%ds)
 
 end subroutine dealloc_input_data_secondary_common
 
