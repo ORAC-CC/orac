@@ -13,6 +13,7 @@
 !    type and channel.
 ! 2017/01/18, GM: Add checks to make sure that all the LUTs loaded have
 !    grids consistent in dimension size, spacing and vertex values.
+! 2017/03/16, GT: Changes for single-view aerosol retrieval mode.
 !
 ! $Id$
 !
@@ -817,7 +818,8 @@ subroutine Read_SAD_LUT(Ctrl, SAD_Chan, SAD_LUT, i_layer)
    end do
 
    ! Read AOD conversion table
-   if (Ctrl%Approach == AppAerOx .or. Ctrl%Approach == AppAerSw) then
+   if (Ctrl%Approach == AppAerOx .or. Ctrl%Approach == AppAerSw .or. &
+       Ctrl%Approach == AppAerO1) then
       call make_sad_chan_num(Ctrl, Ctrl%second_aot_ch(1), chan_num)
       LUT_File = create_sad_filename(Ctrl, chan_num, i_layer, 'BextRat')
       call Read_LUT_rat(Ctrl, LUT_File, SAD_LUT, 1, IBextRat, "BextRat", &

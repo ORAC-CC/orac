@@ -63,6 +63,7 @@
 ! 2016/07/27, GM: Add indexing for two layer cloud retieval.
 ! 2016/08/11, SP: Add logical flag for processing when using only 1 view from a
 !                 multiangular sensor. Prevents post-processor problems.
+! 2017/03/16, GT: Changes for single-view aerosol retrieval mode.
 !
 ! $Id$
 !
@@ -172,9 +173,14 @@ subroutine Get_Indexing(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
    case (AppAerSw)
       call swan_indexing_logic(Ctrl, SPixel, is_not_used_or_missing, &
                                X, XJ, XI, status)
+   case (AppAerO1)
+      call aer_indexing_logic_1view(Ctrl, SPixel, is_not_used_or_missing, &
+                                    X, XJ, XI, status)
    end select
-   if (status /= 0) return
 
+   if (status /= 0) then
+      return
+   end if
    ! Set up the active and inactive state variable indexes and associated counts
    deallocate(SPixel%X)
    allocate(SPixel%X(SPixel%Nx))
@@ -904,6 +910,79 @@ subroutine swan_indexing_logic(Ctrl, SPixel, is_not_used_or_missing, &
 
 end subroutine swan_indexing_logic
 
+!-------------------------------------------------------------------------------
+! Name: aer_indexing_logic_1view
+!
+! Purpose:
+! Determines state vector elements required for a single view aerosol retrieval
+!
+! Algorithm:
+! 1) Use same BRDF logic as the cloud retrieval.
+! 2) If there are sufficient channels, add Tau and Re to the state vector.
+!
+! Arguments:
+! Name Type In/Out/Both Description
+!
+! History:
+! 2017/03/16, GT: Original version
+!
+! Bugs:
+! None known.
+!-------------------------------------------------------------------------------
+subroutine aer_indexing_logic_1view(Ctrl, SPixel, is_not_used_or_missing, &
+                                    X, XJ, XI, status)
+
+   use Ctrl_m
+   use ECP_Constants_m
+
+   implicit none
+
+   ! Define arguments
+
+   type(Ctrl_t),     intent(in)    :: Ctrl
+   type(SPixel_t),   intent(inout) :: SPixel
+   logical,          intent(inout) :: is_not_used_or_missing(:)
+   integer,          intent(out)   :: X(:)
+   integer,          intent(out)   :: XJ(:)
+   integer,          intent(out)   :: XI(:)
+   integer,          intent(inout) :: status
+
+   ! Define local variables
+   integer :: ii_x, ii_xj, ii_xi
+
+   integer, parameter :: min_view = 1 ! Only using a single view.
+
+   ! Daytime only
+   if (SPixel%Illum(1) /= IDay) then
+      status = SPixelIndexing
+      return
+   end if
+
+   ! Must have a least min_view valid observations to use a channel
+   ii_x  = 0             ! Number of state vector elements set
+   ii_xj = 0
+   ii_xi = 0             ! Number of parameters set
+   call Identify_BRDF_Terms(Ctrl, IDay, min_view, &
+                            MaxRho_XX, & ! Only retrieve Rho_DD.
+                            is_not_used_or_missing, &
+                            X, ii_x, XJ, ii_xj, XI, ii_xi, .true.)
+
+!   if (ii_x+2 > count(.not. is_not_used_or_missing)) then
+!      ! Insufficient wavelengths to perform retrieval
+!      status = SPixelIndexing
+!   else
+   ! As we're OK for a retrieval, add elements to the state vector
+   call Add_to_State_Vector(Ctrl, IDay, ITau, X, ii_x, XJ, ii_xj, XI, ii_xi)
+   call Add_to_State_Vector(Ctrl, IDay, IRe,  X, ii_x, XJ, ii_xj, XI, ii_xi)
+   call Add_to_State_Vector(Ctrl, IDay, IFr,  X, ii_x, XJ, ii_xj, XI, ii_xi, &
+        active = .false.)
+
+   SPixel%Nx  = ii_x
+   SPixel%NXJ = ii_xj
+   SPixel%NXI = ii_xi
+ !  end if
+
+end subroutine aer_indexing_logic_1view
 
 !-------------------------------------------------------------------------------
 ! Name: Add_to_State_Vector

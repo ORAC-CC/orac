@@ -82,6 +82,7 @@
 ! 2016/07/27, GM: Added Class constants and renamed Approach constants to
 !    distinguish them from the Class constants to support the multilayer
 !    retrieval.
+! 2017/03/16, GT: Changes for single-view aerosol retrieval mode.
 !
 ! $Id$
 !
@@ -274,10 +275,11 @@ module ECP_constants_m
    integer, parameter :: ClsAshEyj        = 7
 
    ! Retrieval approaches (for Ctrl%Approach)
-   integer, parameter :: AppCld1L         = 1
-   integer, parameter :: AppCld2L         = 2
-   integer, parameter :: AppAerOx         = 3
-   integer, parameter :: AppAerSw         = 4
+   integer, parameter :: AppCld1L         = 1 ! Single layer cloud
+   integer, parameter :: AppCld2L         = 2 ! 2-layer cloud
+   integer, parameter :: AppAerOx         = 3 ! Multi-view aeroosl with Ox FM
+   integer, parameter :: AppAerSw         = 4 ! Mulit-view aeroosl with Swansea FM
+   integer, parameter :: AppAerO1         = 5 ! Single-view aerosol (like GlobAEROSOL)
 
 
    ! Breakpoint levels for individual subroutines.  The parameter name is

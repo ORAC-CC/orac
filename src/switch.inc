@@ -1,6 +1,7 @@
 function SWITCH_NAME_APP(Approach, Default, &
                          Cld, Cld1L, Cld2L, &
-                         Aer, AerOx, AerSw) result(out)
+                         Aer, AerOx, AerSw, &
+			 AerO1) result(out)
    use ECP_constants_m
 
    implicit none
@@ -13,6 +14,7 @@ function SWITCH_NAME_APP(Approach, Default, &
    SWITCH_TYPE, optional, intent(in) :: Aer
    SWITCH_TYPE, optional, intent(in) :: AerOx
    SWITCH_TYPE, optional, intent(in) :: AerSw
+   SWITCH_TYPE, optional, intent(in) :: AerO1
    SWITCH_TYPE                       :: out
 
    select case (Approach)
@@ -47,6 +49,14 @@ function SWITCH_NAME_APP(Approach, Default, &
          out = Aer
       else
          out = Default
+      end if
+   case(AppAerO1)
+      if (present(AerO1)) then
+      	 out = AerO1
+      else if (present(Aer)) then
+      	 out = Aer
+      else
+	 out = Default
       end if
    case default
       write(*,*) 'ERROR: switch_app(): Unsupported retrieval approach, ', &

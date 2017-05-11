@@ -133,6 +133,7 @@
 ! 2016/08/11, SP: Add logical flag for processing when using only 1 view from a
 !                 multiangular sensor. Prevents post-processor problems.
 ! 2017/01/19, CP: Add in revised uncertainty for ML case.
+! 2017/03/16, GT: Changes for single-view aerosol retrieval mode.
 !
 ! $Id$
 !
@@ -421,6 +422,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
          Ctrl%Class = ClsAerOx
       else if (Ctrl%Approach == AppAerSw) then
          Ctrl%Class = ClsAerSw
+      else if (Ctrl%Approach == AppAerO1) then
+         Ctrl%Class = ClsAerOx
       else
          write(*,*) 'ERROR: Read_Driver(): Invalid Ctrl%Approach:', Ctrl%Approach
          stop error_stop_code
@@ -448,7 +451,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%RS%RsSelm         = switch_app(a, Default=SelmAux)
    Ctrl%RS%SRsSelm        = switch_app(a, Default=SelmMeas, Aer=SelmCtrl)
    Ctrl%RS%use_full_brdf  = switch_cls(c, Default=.true.,   AerSw=.false.)
-   Ctrl%RS%Cb             = switch_app(a, Default=0.2,      Aer=0.4)
+   Ctrl%RS%Cb             = switch_app(a, Default=0.2,      AerOx=0.4, &
+                                       AerSw=0.4, AerO1=0.98)
    Ctrl%RS%add_fractional = switch_app(a, Default=.false.,  AerOx=.true.)
    Ctrl%RS%diagonal_SRs   = switch_app(a, Default=.false.,  AerOx=.true.)
 
@@ -512,10 +516,14 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%Invpar%XScale(IPc2)           = switch_cls(c2,Default=1.0)
    Ctrl%Invpar%XScale(IFr2)           = switch_cls(c2,Default=1000.0)
    Ctrl%Invpar%XScale(ITs)            = switch_app(a, Default=1.0)
-   Ctrl%Invpar%XScale(IRs(:,IRho_0V)) = switch_app(a, Default=1.0,  AerOx=1000.0)
-   Ctrl%Invpar%XScale(IRs(:,IRho_0D)) = switch_app(a, Default=1.0,  AerOx=1000.0)
-   Ctrl%Invpar%XScale(IRs(:,IRho_DV)) = switch_app(a, Default=1.0,  AerOx=1000.0)
-   Ctrl%Invpar%XScale(IRs(:,IRho_DD)) = switch_app(a, Default=1.0,  AerOx=1000.0)
+   Ctrl%Invpar%XScale(IRs(:,IRho_0V)) = switch_app(a, Default=1.0,  AerOx=1000.0, &
+                                                                    AerO1=100.0)
+   Ctrl%Invpar%XScale(IRs(:,IRho_0D)) = switch_app(a, Default=1.0,  AerOx=1000.0, &
+                                                                    AerO1=100.0)
+   Ctrl%Invpar%XScale(IRs(:,IRho_DV)) = switch_app(a, Default=1.0,  AerOx=1000.0, &
+                                                                    AerO1=100.0)
+   Ctrl%Invpar%XScale(IRs(:,IRho_DD)) = switch_app(a, Default=1.0,  AerOx=1000.0, &
+                                                                    AerO1=100.0)
    Ctrl%Invpar%XScale(ISP)            = switch_app(a, Default=1.0)
    Ctrl%Invpar%XScale(ISG)            = switch_app(a, Default=1.0)
    ! Lower limit
@@ -850,9 +858,9 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    ! First guess values
    if (Ctrl%Approach /= AppCld2L) then
       Ctrl%X0(ITau)        = switch_cls(c, Default=0.8,   AerOx=-1.5,  AerSw=-0.3, &
-                                                          AshEyj=0.18)
+                                        AshEyj=0.18)
       Ctrl%X0(IRe)         = switch_cls(c, Default=-0.07, AshEyj=0.7, &
-                                                          CldWat=12.,  CldIce=30.)
+                                        CldWat=12.,  CldIce=30.)
       Ctrl%X0(IPc)         = switch_cls(c, Default=900.,  AshEyj=600., CldIce=400.)
       Ctrl%X0(IFr)         = switch_cls(c, Default=1.0)
       Ctrl%X0(ITau2)       = Ctrl%X0(ITau)
@@ -903,7 +911,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%Sx(IRs(:,IRho_0V)) = switch_app(a, Default=1.0e+08, AerSw=1.0)
    Ctrl%Sx(IRs(:,IRho_0D)) = switch_app(a, Default=1.0e+08)
    Ctrl%Sx(IRs(:,IRho_DV)) = switch_app(a, Default=1.0e+08)
-   Ctrl%Sx(IRs(:,IRho_DD)) = switch_app(a, Default=1.0e+08, AerOx=0.05)
+   Ctrl%Sx(IRs(:,IRho_DD)) = switch_app(a, Default=1.0e+08, AerOx=0.05, AerO1=0.01)
    Ctrl%Sx(ISP(1))         = switch_app(a, Default=1.0e+08, AerSw=0.01)
    Ctrl%Sx(ISP(2:))        = switch_app(a, Default=1.0e+08, AerSw=0.5)
    Ctrl%Sx(ISG)            = switch_app(a, Default=0.1)
@@ -974,6 +982,30 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       do i = 1, Ctrl%Ind%NViews
          Nx_Dy = Nx_Dy+1
          X_Dy(Nx_Dy) = ISP(i)
+      end do
+      Nx_Tw = 0
+      Nx_Ni = 0
+
+      ! No terms added to the Jacobian
+      NXJ_Dy = 0
+      NXJ_Tw = 0
+      NXJ_Ni = 0
+   else if (Ctrl%Approach == AppAerO1) then
+      ! Retrieve optical depth, effective radius, and white sky albedo in 1st
+      ! channel (albedo in other channels will scale with this value). 
+      ! No night/twilight.
+      Nx_Dy   = 2
+      X_Dy(1) = ITau
+      X_Dy(2) = IRe
+      do i = 1, Ctrl%Ind%NSolar
+         ! Only accept the first view
+         ! ACP: This avoids outputting every view, while keeping the ability to
+         ! retrieve whatever BRDF terms we like. When we get around to nviews>2,
+         ! this approach should be reassessed.
+         if (Ctrl%Ind%View_Id(Ctrl%Ind%YSolar(i)) == 1) then
+            Nx_Dy = Nx_Dy+1
+            X_Dy(Nx_Dy) = IRs(i,IRho_DD)
+         end if
       end do
       Nx_Tw = 0
       Nx_Ni = 0

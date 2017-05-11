@@ -345,11 +345,12 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, SAD_LUT, MSI_Data, RTM, SPixel, status)
    call Get_X(Ctrl, SPixel, status)
 !  if (status /= 0) go to 99 ! Skip further data reading
 
-
    ! If stat indicates a "super-pixel fatal" condition set the quality
    ! control flag bit to indicate no processing.
 99 if (status /= 0) then
-!     write(*,*) 'WARNING: Get_SPixel()', status
+#ifdef DEBUG
+     write(*,*) 'WARNING: Get_SPixel() error status', status
+#endif
    end if
 
 

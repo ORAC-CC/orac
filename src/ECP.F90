@@ -169,6 +169,7 @@
 ! 2015/12/30, AP: Move creation of NCDF files to after the main processing loop.
 ! 2016/03/04, AP: Homogenisation of I/O modules.
 ! 2016/07/27, GM: Changes for the multilayer retrieval.
+! 2017/03/16, GT: Changes for single-view aerosol retrieval mode.
 !
 ! $Id$
 !
@@ -311,11 +312,13 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 
    ! Set output fields to be produced
    Ctrl%Ind%flags%do_aerosol             = Ctrl%Approach == AppAerOx .or. &
-                                           Ctrl%Approach == AppAerSw
+                                           Ctrl%Approach == AppAerSw .or. &
+                                           Ctrl%Approach == AppAerO1
    Ctrl%Ind%flags%do_cloud               = Ctrl%Approach == AppCld1L .or. &
                                            Ctrl%Approach == AppCld2L
    Ctrl%Ind%flags%do_cloud_layer_2       = Ctrl%Approach == AppCld2L
-   Ctrl%Ind%flags%do_rho                 = Ctrl%Approach == AppAerOx
+   Ctrl%Ind%flags%do_rho                 = Ctrl%Approach == AppAerOx .or. &
+                                           Ctrl%Approach == AppAerO1
    Ctrl%Ind%flags%do_swansea             = Ctrl%Approach == AppAerSw
    Ctrl%Ind%flags%do_indexing            = .true.
    Ctrl%Ind%flags%do_phase_pavolonis     = .false.
@@ -651,9 +654,9 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    call build_qc_flag_meanings(Ctrl, qc_flag_meanings)
    call def_output_primary(ncid_primary, dims_var, output_data_1, &
         Ctrl%Ind%common_indices_t, qc_flag_masks, qc_flag_meanings, &
-        deflate_level, shuffle_flag, .false., ch_var)
+        deflate_level, shuffle_flag, Ctrl%verbose, ch_var)
    call def_output_secondary(ncid_secondary, dims_var, output_data_2, &
-        Ctrl%Ind%common_indices_t, deflate_level, shuffle_flag, .false.)
+        Ctrl%Ind%common_indices_t, deflate_level, shuffle_flag, Ctrl%verbose)
 
    ! Write output from spixel_scan_out structures NetCDF files
    call write_output_primary(ncid_primary, Ctrl%Ind%common_indices_t, &

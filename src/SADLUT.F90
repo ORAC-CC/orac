@@ -19,6 +19,7 @@
 ! 2015/10/19, GM: Added Bext.
 ! 2017/01/17, GM: Eliminate the unnecessary indexing of the LUT grid wrt LUT
 !    type and channel.
+! 2017/03/16, GT: Increased maximum size of effective radius LUT dimension.
 !
 ! $Id$
 !
@@ -40,7 +41,7 @@ module SAD_LUT_m
 
    type LUT_Grid_t
       integer :: NMaxTau    = 20
-      integer :: NMaxRe     = 23
+      integer :: NMaxRe     = 35
       integer :: NMaxSolZen = 20
       integer :: NMaxSatZen = 20
       integer :: NMaxRelAzi = 20
