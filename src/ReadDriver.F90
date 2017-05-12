@@ -762,13 +762,13 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       Ctrl%Ind%Y_Id_legacy(I_legacy_11_x) = 8
       Ctrl%Ind%Y_Id_legacy(I_legacy_12_x) = 9
 
-      allocate(Ctrl%ReChans(4))
-      Ctrl%ReChans = (/ 7, 5, 6, 4 /)
+      allocate(Ctrl%ReChans(3))
+      Ctrl%ReChans = (/ 7, 5, 6 /)
 
       allocate(Ctrl%tau_chans(3))
       Ctrl%tau_chans = (/ 1, 2, 3 /)
-      allocate(Ctrl%r_e_chans(4))
-      Ctrl%r_e_chans = (/ 4, 5, 6, 7 /)
+      allocate(Ctrl%r_e_chans(3))
+      Ctrl%r_e_chans = (/ 5, 6, 7 /)
       allocate(Ctrl%ir_chans(3))
       Ctrl%ir_chans  = (/ 7, 8, 9 /)
    else
@@ -838,13 +838,13 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       Ctrl%XB(IPc2)        = Ctrl%XB(IPc)
       Ctrl%XB(IFr2)        = Ctrl%XB(IFr)
    else
-      Ctrl%XB(ITau)        = switch_cls(c, Default=0.1)
+      Ctrl%XB(ITau)        = switch_cls(c, Default=0.05)
       Ctrl%XB(IRe)         = switch_cls(c, Default=30.0)
-      Ctrl%XB(IPc)         = switch_cls(c, Default=245.0)
+      Ctrl%XB(IPc)         = switch_cls(c, Default=200.0)
       Ctrl%XB(IFr)         = switch_cls(c, Default=1.0)
-      Ctrl%XB(ITau2)       = switch_cls(c, Default=0.8)
+      Ctrl%XB(ITau2)       = switch_cls(c, Default=50.0)
       Ctrl%XB(IRe2)        = switch_cls(c, Default=12.0)
-      Ctrl%XB(IPc2)        = switch_cls(c, Default=800.0)
+      Ctrl%XB(IPc2)        = switch_cls(c, Default=210.0)
       Ctrl%XB(IFr2)        = switch_cls(c, Default=1.0)
    end if
    Ctrl%XB(ITs)            = switch_app(a, Default=300.0)
@@ -868,13 +868,13 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       Ctrl%X0(IPc2)        = Ctrl%X0(IPc)
       Ctrl%X0(IFr2)        = Ctrl%X0(IFr)
    else
-      Ctrl%X0(ITau)        = switch_cls(c, Default=0.1)
+      Ctrl%X0(ITau)        = switch_cls(c, Default=0.05)
       Ctrl%X0(IRe)         = switch_cls(c, Default=30.0)
-      Ctrl%X0(IPc)         = switch_cls(c, Default=245.0)
+      Ctrl%X0(IPc)         = switch_cls(c, Default=200.0)
       Ctrl%X0(IFr)         = switch_cls(c, Default=1.0)
       Ctrl%X0(ITau2)       = switch_cls(c, Default=0.8)
       Ctrl%X0(IRe2)        = switch_cls(c, Default=12.0)
-      Ctrl%X0(IPc2)        = switch_cls(c, Default=800.0)
+      Ctrl%X0(IPc2)        = switch_cls(c, Default=205.0)
       Ctrl%X0(IFr2)        = switch_cls(c, Default=1.0)
    end if
    Ctrl%X0(ITs)            = switch_app(a, Default=300.0)
@@ -992,7 +992,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       NXJ_Ni = 0
    else if (Ctrl%Approach == AppAerO1) then
       ! Retrieve optical depth, effective radius, and white sky albedo in 1st
-      ! channel (albedo in other channels will scale with this value). 
+      ! channel (albedo in other channels will scale with this value).
       ! No night/twilight.
       Nx_Dy   = 2
       X_Dy(1) = ITau
