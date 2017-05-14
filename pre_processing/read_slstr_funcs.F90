@@ -25,6 +25,9 @@
 ! 2016/11/23, SP: Fixed interpolation issue for azimuth angles
 ! 2016/11/24, SP: Added fudge factor to correct for bad SLSTR colocation
 ! 2016/11/26, SP: Disable fudge factor, awaiting EUMETSAT fix
+! 2017/05/12, SP: Added 'correction' to bypass problems with S7 channel.
+!                 Now bad data (T>305K) is replaced by values from F1 channel.
+!                 This is not elegant due to F1 issues, but better than no data.
 !
 ! $Id$
 !
@@ -160,6 +163,12 @@ subroutine get_slstr_imnames(indir,inband,fname,fname_qa,bname,irradname)
    if (inband .le. 9) then
       vid='n'
       mod_inb=inband
+   elseif (inband .eq. 20) then
+      vid='n'
+      mod_inb=10
+   elseif (inband .eq. 21) then
+      vid='o'
+      mod_inb=10
    else
       vid='o'
       mod_inb=inband-9
@@ -168,13 +177,18 @@ subroutine get_slstr_imnames(indir,inband,fname,fname_qa,bname,irradname)
    write (band, '(I1.1)') mod_inb
    if (mod_inb .le. 6) then
       fname       = trim(indir)//'S'//trim(band)//'_radiance_a'//trim(vid)//'.nc'
-      fname_qa      = trim(indir)//'S'//trim(band)//'_quality_a'//trim(vid)//'.nc'
+      fname_qa    = trim(indir)//'S'//trim(band)//'_quality_a'//trim(vid)//'.nc'
       bname       = 'S'//trim(band)//'_radiance_a'//trim(vid)
-      irradname    = 'S'//trim(band)//'_solar_irradiance_a'//trim(vid)
+      irradname   = 'S'//trim(band)//'_solar_irradiance_a'//trim(vid)
    else if (mod_inb .le. 9) then
       fname       = trim(indir)//'S'//trim(band)//'_BT_i'//trim(vid)//'.nc'
-      fname_qa      = trim(indir)//'S'//trim(band)//'_quality_i'//trim(vid)//'.nc'
+      fname_qa    = trim(indir)//'S'//trim(band)//'_quality_i'//trim(vid)//'.nc'
       bname       = 'S'//trim(band)//'_BT_i'//trim(vid)
+      irradname   = 'NONE'
+   else if (mod_inb .eq. 10) then
+      fname       = trim(indir)//'F1_BT_i'//trim(vid)//'.nc'
+      fname_qa    = trim(indir)//'F1_quality_i'//trim(vid)//'.nc'
+      bname       = 'F1_BT_i'//trim(vid)
       irradname   = 'NONE'
    else
       print*,'Incorrect band:',inband,'. This is not supported for SLSTR (1-18 only).'
@@ -204,6 +218,7 @@ subroutine read_slstr_tirdata(indir,inband,outarr,sx,sy,nx,ny,inx,iny,offset,vie
 
    real                       :: data1(nx,ny)
    real                       :: data2(nx,ny)
+   real                       :: f1data(nx,ny)
 
    character(len=path_length) :: filename
    character(len=path_length) :: filename_qa
@@ -255,10 +270,13 @@ subroutine read_slstr_tirdata(indir,inband,outarr,sx,sy,nx,ny,inx,iny,offset,vie
       stop error_stop_code
    end if
 
+   print*,nx,ny,inband,trim(bandname)
+
    ! Get the actual data
    ierr=nf90_get_var(fid, did, data1)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: read_slstr_tirdata(): Error reading dataset ',trim(bandname),' in ',trim(filename)
+      print*,ierr
       stop error_stop_code
    end if
    ierr=nf90_close(fid)
@@ -329,6 +347,10 @@ subroutine read_slstr_visdata(indir,inband,outarr,imager_angles,sx,sy,nx,ny,inx,
 
    ! Find the filename required for this channel
    call get_slstr_imnames(indir,inband,filename,filename_qa,bandname,irradname)
+
+   print*,inband
+   print*,trim(filename)
+   print*,trim(bandname)
 
    allocate(data1(nx*2,ny*2))
    allocate(data2(nx,ny))
