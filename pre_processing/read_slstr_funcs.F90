@@ -959,14 +959,22 @@ subroutine read_slstr_satsol(indir,imager_angles,interp,txnx,txny,nx,ny,startx,v
    ! Rescale zens + azis into correct format
    where(imager_angles%solazi(startx:,:,view) .ne. sreal_fill_value .and. &
          imager_angles%relazi(startx:,:,view) .ne. sreal_fill_value)
-      imager_angles%relazi(:,:,view) = abs(imager_angles%relazi(startx:,:,view) - &
-                                        imager_angles%solazi(startx:,:,view))
+      imager_angles%relazi(:,:,view) = abs(imager_angles%solazi(startx:,:,view)-&
+                                           imager_angles%relazi(startx:,:,view))
+      imager_angles%relazi(:,:,view) = (180. - imager_angles%relazi(:,:,view))
+      imager_angles%solazi(:,:,view) = (180. - imager_angles%solazi(:,:,view))
    end where
    where (imager_angles%solazi(:,:,view) .gt. 180.)
-      imager_angles%solazi(:,:,view) = 360. - imager_angles%solazi(:,:,view)
+      imager_angles%solazi(:,:,view) = 180. - imager_angles%solazi(:,:,view)
    end where
    where (imager_angles%relazi(:,:,view) .gt. 180.)
-      imager_angles%relazi(:,:,view) = 360. - imager_angles%relazi(:,:,view)
+      imager_angles%relazi(:,:,view) = 180. - imager_angles%relazi(:,:,view)
+   end where
+   where (imager_angles%solazi(:,:,view) .lt. 0. .and. imager_angles%solazi(startx:,:,view) .ne. sreal_fill_value)
+      imager_angles%solazi(:,:,view) = 0. - imager_angles%solazi(:,:,view)
+   end where
+   where (imager_angles%relazi(:,:,view) .lt. 0. .and. imager_angles%relazi(startx:,:,view) .ne. sreal_fill_value )
+      imager_angles%relazi(:,:,view) = 0. - imager_angles%relazi(:,:,view)
    end where
 end subroutine read_slstr_satsol
 
