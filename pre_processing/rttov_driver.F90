@@ -142,7 +142,6 @@
 ! $Id$
 !
 ! Bugs:
-! - Emissivity is read in elsewhere in the code but not utilised here.
 ! - BRDF not yet implemented here, so RTTOV internal calculation used.
 ! - Possible issue with conversion from layers to levels.
 !-------------------------------------------------------------------------------
@@ -711,7 +710,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                   emissivity%emis_in = emis_data
 
                   ! Fetch emissivity from the MODIS CIMSS emissivity product
-                  if (use_modis_emis) then
+                  if (i_coef == 1 .and. use_modis_emis) then
                      where (preproc_surf%emissivity(idim,jdim,:) /= &
                           sreal_fill_value)
                         emissivity%emis_in = &
