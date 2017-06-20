@@ -43,6 +43,12 @@
 !    correction.
 ! 2016/03/04, OS: bug fix in albedo correction
 ! 2016/04/14, SP: Added support for Himawari/AHI
+! 2017/05/10, SS: Changed daytime ANN cloudmask, which now uses NIR data
+! 2017/05/15, SS: Added ANN trained with 1.6um, to use for AVHRRs with switching
+!    channel
+! 2017/06/20, SS: due to the lack of proper sunglint correction for early morning
+!    NOAA satellites, introduced flag correct_realy_morning_noaas (default true)
+!    to use only IR data at daytime
 
 ! $Id$
 !
@@ -52,164 +58,338 @@
 
 module neural_net_preproc_m
 
-   implicit none
+  implicit none
 
 contains
 
-!------------------------------------------------------------------------
-subroutine ann_cloud_mask(channel1, channel2, channel3b, channel4, channel5, &
-     solzen, satzen, niseflag, lsflag, &
-     albedo1, albedo2, cccot_pre, cldflag, cld_uncertainty, skint, &
-     ch3a_on_avhrr_flag, glint_angle, sensor_name, platform, verbose)
-   !------------------------------------------------------------------------
+  !------------------------------------------------------------------------
+  subroutine ann_cloud_mask(channel1, channel2, channel3a, channel3b, channel3b_ref, channel4, channel5, &
+       & solzen, satzen, niseflag, lsflag, desertflag, &
+       & albedo1, albedo2, albedo3a, cccot_pre, cldflag, cld_uncertainty, skint, &
+       & ch3a_on_avhrr_flag, glint_angle, sensor_name, platform, verbose)
+    !------------------------------------------------------------------------
 
-   use common_constants_m
-   use constants_cloud_typing_pavolonis_m
-   use neural_net_constants_m
+    use constants_cloud_typing_pavolonis_m
+    use common_constants_m
+    use neural_net_constants_m
 
-   implicit none
+    implicit none
 
-   integer(kind=sint) :: noob     !# of pixels out of bounds
-   integer(kind=sint) :: nneurons !# of employed neurons
-   integer(kind=sint) :: ninput   !# of input dimensions of ann
+    integer(kind=sint) :: noob     !# of pixels out of bounds
+    integer(kind=sint) :: nneurons !# of employed neurons
+    integer(kind=sint) :: ninput   !# of input dimensions of ann
 
-   real(kind=sreal),allocatable, dimension(:,:) :: inv,minmax_train,scales
-   real(kind=sreal),allocatable, dimension(:)   :: input,outv
+    real(kind=sreal),allocatable, dimension(:,:) :: inv,minmax_train,scales
+    real(kind=sreal),allocatable, dimension(:)   :: input,outv
 
-   real(kind=sreal) :: output
-   real(kind=sreal) :: oscales(3)
-   real(kind=sreal) :: temperature,cutoff,bias_i,bias_h
-   integer(kind=byte) :: illum_nn ! 0 = undefined, 1 = day, 2 = twilight,
-   ! 3 = night
+    real(kind=sreal) :: output
+    real(kind=sreal) :: oscales(3)
+    real(kind=sreal) :: temperature,cutoff,bias_i,bias_h
+    integer(kind=byte) :: illum_nn ! 0 = undefined, 1 = day, 2 = twilight, 3 = night
 
-   ! INPUT from cloud_type subroutine (module cloud_typing_pavolonis.F90)
-   character(len=sensor_length),   intent(in)    :: sensor_name
-   character(len=platform_length), intent(in)    :: platform
-   integer(kind=byte), intent(in) :: lsflag, niseflag
-   integer(kind=sint), intent(in) :: ch3a_on_avhrr_flag
-   real(kind=sreal),   intent(in) :: solzen, skint, satzen, glint_angle, albedo1, albedo2
-   real(kind=sreal),   intent(in) :: channel1, channel2, channel3b, channel4, channel5
-   logical,            intent(in) :: verbose
+    ! INPUT from cloud_type subroutine (module cloud_typing_pavolonis.F90)
+    character(len=sensor_length),   intent(in)    :: sensor_name
+    character(len=platform_length), intent(in)    :: platform
+    integer(kind=byte), intent(in) :: lsflag, niseflag
+    integer(kind=sint), intent(in) :: ch3a_on_avhrr_flag
+    real(kind=sreal),   intent(in) :: solzen, skint, satzen, glint_angle
+    real(kind=sreal),   intent(in) :: albedo1, albedo2, albedo3a ! cox-munk computed BRDF (bidirectional reflectance) albedo used for sunglint correction
+    real(kind=sreal),   intent(in) :: channel1, channel2, channel3a, channel3b, channel3b_ref, channel4, channel5
+    logical,            intent(in) :: verbose,desertflag
 
-   ! OUTPUT to cloud_type subroutine (module cloud_typing_pavolonis.F90)
-   integer(kind=byte), intent(out) :: cldflag
-   real(kind=sreal),   intent(out) :: cccot_pre
-   real(kind=sreal),   intent(out) :: cld_uncertainty
+    ! OUTPUT to cloud_type subroutine (module cloud_typing_pavolonis.F90)
+    integer(kind=byte), intent(out) :: cldflag
+    real(kind=sreal),   intent(out) :: cccot_pre
+    real(kind=sreal),   intent(out) :: cld_uncertainty
 
-   ! LOCAL variables
-   real(kind=sreal)   :: ch1, ch2, ch3b, ch4, ch5 , threshold_used
-   real(kind=sreal)   :: btd_ch4_ch5, btd_ch4_ch3b, norm_diff_cc_th
-   integer(kind=sint) :: glint_mask
-   logical            :: call_neural_net
+    ! LOCAL variables
+    real(kind=sreal)   :: ch1, ch2, ch3b, ref3a, ref3b, ch4, ch5 , threshold_used, ch1_uc
+    real(kind=sreal)   :: btd_ch4_ch5, btd_ch4_ch3b, norm_diff_cc_th, mu0
+    integer(kind=sint) :: glint_mask
+    logical            :: call_neural_net, do_ref3b_alb_corr,calc_true_refl,desert
 
-   if ( glint_angle .lt. 40.0 .and. glint_angle .ne. sreal_fill_value ) then
-      glint_mask = YES
-   else
-      glint_mask = NO
-   end if
+    calc_true_refl = .FALSE. ! this is .false. at the moment, change to .true. if
+                             ! future ANN's are trained with true reflectances 
 
-   if ( channel1 .eq. sreal_fill_value ) then
-      ch1 = channel1
-   else
-      ch1 = channel1 * 100.
-      if (trim(adjustl(sensor_name)) .eq. 'MODIS' ) ch1 = 0.8945 * ch1 + 2.217
-      if (trim(adjustl(sensor_name)) .eq. 'AATSR' ) ch1 = 0.8542 * ch1
-      if ((lsflag .eq. 0_byte) .and. (niseflag .eq. NO) .and. (albedo1 .ge. 0.)) ch1 = max(ch1 - albedo1 * 100. / 2., 0.)
-      ch1 = min(106.,ch1) ! Dont allow reflectance to be higher than trained
-   end if
+    mu0 = cos ( solzen * d2r )
 
-   if ( channel2 .eq. sreal_fill_value ) then
-      if ( (trim(adjustl(sensor_name)) .eq. 'MODIS') .and. ch1 .gt. 50. ) then
-         ch2 = min(104., ch1 * 1.03)
-      else
-         ch2 = channel2
-      end if
-   else
-      ch2 = channel2 * 100.
-      if (trim(adjustl(sensor_name)) .eq. 'MODIS' ) ch2 = 0.8336 * ch2 + 1.749
-      if (trim(adjustl(sensor_name)) .eq. 'AATSR' ) ch2 = 0.7787 * ch2
-      if ((lsflag .eq. 0_byte) .and. (niseflag .eq. NO) .and. (albedo2 .gt. 0.)) ch2 = max(ch2 - albedo2 * 100. / 2., 0.)
-      ch2 = min(104.,ch2) ! Dont allow reflectance to be higher than trained
-   end if
+    desert = desertflag
+    desert = .FALSE. ! as long as Albedo over land includes BRDF
 
-   if ( channel3b .eq. sreal_fill_value ) then
-      ch3b = channel3b
-   else
-      ch3b = channel3b
-      if (trim(adjustl(sensor_name)) .eq. 'MODIS' ) ch3b = 0.9944 * ch3b + 1.152
-      if (trim(adjustl(sensor_name)) .eq. 'AATSR' ) ch3b = 1.0626 * ch3b - 15.777
-   end if
+    ! not used anymore; albedo is used instead
+    if ( glint_angle .lt. 40.0 .and. glint_angle .ne. sreal_fill_value ) then
+       glint_mask = YES
+    else
+       glint_mask = NO
+    end if
 
-   if ( channel4 .eq. sreal_fill_value ) then
-      ch4 = channel4
-   else
-      ch4 = channel4
-      if (trim(adjustl(sensor_name)) .eq. 'MODIS' ) ch4 = 0.9742 * ch4 + 7.205
-      if (trim(adjustl(sensor_name)) .eq. 'AATSR' ) ch4 = 0.9793 * ch4 + 5.366
-   end if
+    if ( channel1 .eq. sreal_fill_value ) then
+       ch1 = channel1
+    else
+       ch1 = channel1 * 100.
+       if ((lsflag .eq. 0_byte .or. desert) .and. (niseflag .eq. NO) .and. (albedo1 .ge. 0.) .and. (correct_glint) ) then 
+           do_ref3b_alb_corr = .TRUE.
+           ch1_uc = ch1
+           if (ch1_uc .eq. 0 ) do_ref3b_alb_corr = .FALSE. ! avoid dividing by zero
+           ch1 = max(ch1 - min(albedo1,1.) * 100. * 0.4, 0.)
+       else
+           do_ref3b_alb_corr = .FALSE.
+       endif
+    end if
 
-   if ( channel5 .eq. sreal_fill_value ) then
-      ch5 = channel5
-   else
-      ch5 = channel5
-      if (trim(adjustl(sensor_name)) .eq. 'MODIS' ) ch5 = 0.9676 * ch5 + 8.408
-      if (trim(adjustl(sensor_name)) .eq. 'AATSR' ) ch5 = 0.9838 * ch5 + 4.255
-      ! use following instead of previous line if AATSR channel 5 (12 um)...
-      ! ...is NOT "non-linearity" corrected
-      ! if (trim(adjustl(sensor_name)) .eq. 'AATSR' ) ch5 = 0.9901 * ch5 + 2.568
-   end if
+    if ( channel2 .eq. sreal_fill_value ) then
+       if ( (trim(adjustl(sensor_name)) .eq. 'MODIS') .and. ch1 .gt. 50. ) then
+          ch2 = ch1 * 1.03
+       else
+          ch2 = channel2
+       end if
+    else
+       ch2 = channel2 * 100.
+       if ((lsflag .eq. 0_byte .or. desert) .and. (niseflag .eq. NO) .and. (albedo2 .gt. 0.) .and. (correct_glint) ) ch2 = max(ch2 - min(albedo2,1.) * 100. * 0.4, 0.)
+    end if
 
-   btd_ch4_ch5  = ch4 - ch5
-   btd_ch4_ch3b = ch4 - ch3b
+    ch3b = channel3b
 
-   ! call neural net unless solzen is negative
-   call_neural_net = .TRUE.
+    if ( ch3a_on_avhrr_flag .ne. NO ) then
+       if ( channel3a .eq. sreal_fill_value ) then
+          ref3a = channel3a
+       else
+          ! We use a 1.6um trained ANN now 
+          ref3a = channel3a * 100.
+          ! We can also use the Albedo correction of the 1.6um channel
+          if ((lsflag .eq. 0_byte .or. desert) .and. (niseflag .eq. NO) .and. (albedo3a .gt. 0.) .and. (correct_glint) ) ref3a = max(ref3a - min(albedo3a,1.) * 100. * 0.55, 0.)
+       end if
+       do_ref3b_alb_corr = .FALSE.
+    else
+       if ( channel3b_ref .eq. sreal_fill_value ) then
+          ref3b = channel3b_ref
+          do_ref3b_alb_corr = .FALSE.
+       else
+          ref3b = channel3b_ref*100.
+       end if
+    end if
 
-   if ( ( solzen .ge. 0. ) .and. (solzen  .le. 80) ) then
-      illum_nn = 1
-   elseif ( (solzen  .gt. 80) .and. (solzen .le. 90) ) then
-      illum_nn = 2
-   elseif (solzen  .gt. 90)  then
-      illum_nn = 3
-      ! use twilight net if ch3b is missing at night/twilight:
-      if ( ch3a_on_avhrr_flag .ne. NO ) illum_nn = 2
-!        if ( ( ch3b .lt. NOAA7_9_CH3B_BT_THRES ) .and. ( (trim(adjustl(platform))
-!             .or. (trim(adjustl(platform)) .eq. 'noaa9') ) ) then
-!           illum_nn = 2
-!        end if
-   else
-      illum_nn = 0
-      ! if solzen is negative, do not call neural net
-      call_neural_net = .FALSE.
-   end if
+    if ( do_ref3b_alb_corr ) then
+        !use same albedo correction as for ch1 avoid correction of high clouds
+        !with low BT differences
+        if ( ch3b .gt. 290 ) ref3b = ref3b * ch1 / ch1_uc 
+    end if
 
-   threshold_used = sreal_fill_value
+    ch4 = channel4
+    ch5 = channel5
+    btd_ch4_ch5  = ch4 - ch5
+    btd_ch4_ch3b = ch4 - ch3b
 
-   ! --- if day
-   if ( illum_nn .eq. 1 ) then
+    ! call neural net unless solzen is negative
+    call_neural_net = .TRUE.
 
-      nneurons = nneurons_ex9  !set number of neurons
-      ninput   = ninput_ex9    !set number of input parameter for the neural network
+    if ( ( solzen .ge. 0. ) .and. (solzen  .le. 80) ) then
+       illum_nn = 1                                            ! use ANN with Ref3.7
+       if  ( ch3a_on_avhrr_flag .eq. INEXISTENT ) illum_nn = 4 ! use ANN w/o any NIR info
+       if  ( ch3a_on_avhrr_flag .eq. YES ) illum_nn = 7        ! use ANN with Ref1.6
+       if  ( correct_early_morning_noaas ) then
+           !Test Use Night ANN w/o BT3.7 at daytime 
+           !The early morning Noaa sats have very strong glint dependencies
+           !at high viewing angles which is not captured by any ANN training.
+          if ( (trim(adjustl(platform)) .eq. 'noaa6') .or. (trim(adjustl(platform)) .eq. 'noaa8') .or. &
+               (trim(adjustl(platform)) .eq. 'noaa10') .or. (trim(adjustl(platform)) .eq. 'noaa12') .or. (trim(adjustl(platform)) .eq. 'noaa15') ) illum_nn = 6
+       endif
+    elseif ( (solzen  .gt. 80) .and. (solzen .le. 90) ) then
+       illum_nn = 2                                    ! use ANN with BT3.7
+       if  ( ch3a_on_avhrr_flag .ne. NO ) illum_nn = 5 ! use ANN w/o BT3.7
+    elseif (solzen  .gt. 90)  then
+       illum_nn = 3                                    ! use ANN with BT3.7
+       if  ( ch3a_on_avhrr_flag .ne. NO ) illum_nn = 6 ! use ANN w/o BT3.7
+    else
+       illum_nn = 0
+       ! if solzen is negative, do not call neural net
+       call_neural_net = .FALSE.
+    end if
+
+    threshold_used = sreal_fill_value
+
+    if ( illum_nn .eq. 1 ) then
+
+       ! DAY 
+       if ( calc_true_refl ) then
+           ch1   = ch1/mu0
+           ch2   = ch2/mu0
+           ref3b = ref3b/mu0
+       endif
+
+       nneurons = nneurons_ex27  !set number of neurons
+       ninput   = ninput_ex27    !set number of input parameter for the neural network
+
+       !ranges variables within training was performed
+       allocate(minmax_train(ninput,2))
+       minmax_train=minmax_train_ex27
+
+       !"weights" for input
+       allocate(inv(ninput+1,nneurons))
+       inv=inv_ex27
+
+       !"weights" for output
+       allocate(outv(nneurons+1))
+       outv=outv_ex27
+
+       allocate(scales(ninput,2))
+       scales=scales_ex27           !parameters to scale input?
+       oscales=oscales_ex27         !parameters to scale output?
+       temperature=temperature_ex27 !"temperature" for sigmoid function
+       cutoff=cutoff_ex27
+       bias_i=bias_i_ex27
+       bias_h=bias_h_ex27
+
+       ! input
+       allocate(input(ninput+1))
+
+       input(1) = ch1           ! ch1 600nm
+       input(2) = ch2           ! ch2 800nm
+       input(3) = ref3b         ! ch3b reflectance 3.7 µm
+       input(4) = ch4           ! ch4 11 µm
+       input(5) = ch5           ! ch5 12 µm
+       input(6) = btd_ch4_ch5   ! 11-12 µm
+       input(7) = skint         ! ERA-Interim skin temperature
+       input(8) = niseflag      ! snow/ice information
+       input(9) = lsflag        ! land/sea flag
+
+      !set threshold
+       if ( lsflag .eq. 0_byte ) then
+          threshold_used = COT_THRES_DAY_SEA
+          if ( niseflag .eq. YES  ) threshold_used = COT_THRES_DAY_SEA_ICE
+       elseif ( lsflag .eq. 1_byte ) then
+          threshold_used = COT_THRES_DAY_LAND
+          if ( niseflag .eq. YES  ) threshold_used = COT_THRES_DAY_LAND_ICE
+       end if
+
+    elseif ( illum_nn .eq. 2 )  then
+
+       ! TWILIGHT
+
+       nneurons       = nneurons_ex30   !set number of neurons
+       ninput         = ninput_ex30     !set number of input parameter for the neural network
+
+       !ranges variables within training was performed
+       allocate(minmax_train(ninput,2))
+       minmax_train=minmax_train_ex30
+
+       !"weights" for input
+       allocate(inv(ninput+1,nneurons))
+       inv=inv_ex30
+
+       !"weights" for output
+       allocate(outv(nneurons+1))
+       outv=outv_ex30
+
+       allocate(scales(ninput,2))
+       scales=scales_ex30               !parameters to scale input?
+       oscales=oscales_ex30             !parameters to scale output?
+       temperature=temperature_ex30     !"temperature" for sigmoid function
+       cutoff=cutoff_ex30
+       bias_i=bias_i_ex30
+       bias_h=bias_h_ex30
+
+       !input
+       allocate(input(ninput+1))
+
+       input(1) = ch3b          ! ch3b 3.7 µm
+       input(2) = ch4           ! ch4 11 µm
+       input(3) = btd_ch4_ch3b  ! 11-3.7 µm
+       input(4) = ch5           ! ch5 12 µm
+       input(5) = btd_ch4_ch5   ! 11-12 µm
+       input(6) = skint
+       ! exclude negative skin-rad4 temperatures at night/twilight
+       if ( (correct_skint) .and. ( skint - ch4 ) .lt. 0 ) input(6) = ch4
+       input(7) = niseflag
+       input(8) = lsflag
+
+       !set threshold
+       if ( lsflag .eq. 0_byte ) then
+          threshold_used = COT_THRES_TWL_SEA
+          if ( niseflag .eq. YES  ) threshold_used = COT_THRES_TWL_SEA_ICE
+       elseif ( lsflag .eq. 1_byte ) then
+          threshold_used = COT_THRES_TWL_LAND
+          if ( niseflag .eq. YES  ) threshold_used = COT_THRES_TWL_LAND_ICE
+       end if
+
+    elseif ( illum_nn .eq. 3 ) then
+       ! --- night
+
+       nneurons       = nneurons_ex32   !set number of neurons
+       ninput         = ninput_ex32     !set number of input parameter for the neural network
+
+       !ranges variables within training was performed
+       allocate(minmax_train(ninput,2))
+       minmax_train=minmax_train_ex32
+
+       !"weights" for input
+       allocate(inv(ninput+1,nneurons))
+       inv=inv_ex32
+
+       !"weights" for output
+       allocate(outv(nneurons+1))
+       outv=outv_ex32
+
+       allocate(scales(ninput,2))
+       scales=scales_ex32               !parameters to scale input?
+       oscales=oscales_ex32             !parameters to scale output?
+       temperature=temperature_ex32     !"temperature" for sigmoid function
+       cutoff=cutoff_ex32
+       bias_i=bias_i_ex32
+       bias_h=bias_h_ex32
+
+       !input
+       allocate(input(ninput+1))
+       input(1) = ch3b          ! ch3b 3.7µm
+       input(2) = ch4           ! ch4 11 µm
+       input(3) = btd_ch4_ch3b  ! 11-3.7 µm
+       input(4) = ch5           ! ch5 12 µm
+       input(5) = btd_ch4_ch5   ! 11-12 µm
+       input(6) = skint
+       ! exclude negative skin-rad4 temperatures at night/twilight
+       if ( (correct_skint) .and. ( skint - ch4 ) .lt. 0 ) input(6) = ch4
+       input(7) = niseflag
+       input(8) = lsflag
+
+       !set threshold
+       if ( lsflag .eq. 0_byte ) then
+          threshold_used = COT_THRES_NIGHT_SEA
+          if ( niseflag .eq. YES  ) threshold_used = COT_THRES_NIGHT_SEA_ICE
+       elseif ( lsflag .eq. 1_byte ) then
+          threshold_used = COT_THRES_NIGHT_LAND
+          if ( niseflag .eq. YES  ) threshold_used = COT_THRES_NIGHT_LAND_ICE
+       end if
+
+    elseif ( illum_nn .eq. 4 ) then
+
+      ! DAY 2 (No NIR Info avail. )
+      if ( calc_true_refl ) then
+           ch1   = ch1/mu0
+           ch2   = ch2/mu0
+      endif
+
+      nneurons = nneurons_ex28  !set number of neurons
+      ninput   = ninput_ex28    !set number of input parameter for the neural network
 
       !ranges variables within training was performed
       allocate(minmax_train(ninput,2))
-      minmax_train=minmax_train_ex9
+      minmax_train=minmax_train_ex28
 
       !"weights" for input
       allocate(inv(ninput+1,nneurons))
-      inv=inv_ex9
+      inv=inv_ex28
 
       !"weights" for output
       allocate(outv(nneurons+1))
-      outv=outv_ex9
+      outv=outv_ex28
 
       allocate(scales(ninput,2))
-      scales=scales_ex9           !parameters to scale input?
-      oscales=oscales_ex9         !parameters to scale output?
-      temperature=temperature_ex9 !"temperature" for sigmoid function
-      cutoff=cutoff_ex9
-      bias_i=bias_i_ex9
-      bias_h=bias_h_ex9
+      scales=scales_ex28           !parameters to scale input?
+      oscales=oscales_ex28         !parameters to scale output?
+      temperature=temperature_ex28 !"temperature" for sigmoid function
+      cutoff=cutoff_ex28
+      bias_i=bias_i_ex28
+      bias_h=bias_h_ex28
 
       ! input
       allocate(input(ninput+1))
@@ -232,333 +412,689 @@ subroutine ann_cloud_mask(channel1, channel2, channel3b, channel4, channel5, &
          if ( niseflag .eq. YES  ) threshold_used = COT_THRES_DAY_LAND_ICE
       end if
 
-   elseif ( illum_nn .eq. 2 )  then
+   elseif ( illum_nn .eq. 5 )  then
 
-      ! TWILIGHT
+       ! TWILIGHT 2 (no 3.7)
 
-      nneurons       = nneurons_ex10   !set number of neurons
-      ninput         = ninput_ex10     !set number of input parameter for the neural network
+       nneurons       = nneurons_ex31   !set number of neurons
+       ninput         = ninput_ex31     !set number of input parameter for the neural network
 
-      !ranges variables within training was performed
-      allocate(minmax_train(ninput,2))
-      minmax_train=minmax_train_ex10
+       !ranges variables within training was performed
+       allocate(minmax_train(ninput,2))
+       minmax_train=minmax_train_ex31
 
-      !"weights" for input
-      allocate(inv(ninput+1,nneurons))
-      inv=inv_ex10
+       !"weights" for input
+       allocate(inv(ninput+1,nneurons))
+       inv=inv_ex31
 
-      !"weights" for output
-      allocate(outv(nneurons+1))
-      outv=outv_ex10
+       !"weights" for output
+       allocate(outv(nneurons+1))
+       outv=outv_ex31
 
-      allocate(scales(ninput,2))
-      scales=scales_ex10               !parameters to scale input?
-      oscales=oscales_ex10             !parameters to scale output?
-      temperature=temperature_ex10     !"temperature" for sigmoid function
-      cutoff=cutoff_ex10
-      bias_i=bias_i_ex10
-      bias_h=bias_h_ex10
+       allocate(scales(ninput,2))
+       scales=scales_ex31               !parameters to scale input?
+       oscales=oscales_ex31             !parameters to scale output?
+       temperature=temperature_ex31     !"temperature" for sigmoid function
+       cutoff=cutoff_ex31
+       bias_i=bias_i_ex31
+       bias_h=bias_h_ex31
 
-      !input
-      allocate(input(ninput+1))
+       !input
+       allocate(input(ninput+1))
 
-      input(1) = ch4           ! ch4 11 µm
-      input(2) = ch5           ! ch5 12 µm
-      input(3) = btd_ch4_ch5   ! 11-12 µm
-      input(4) = skint
-      ! exclude negative skin-rad4 temperatures at night/twilight, this needs to be tested!!
-      if ( ( skint - ch4 ) .lt. 0 ) input(4) = ch4
-      input(5) = niseflag
-      input(6) = lsflag
+       input(1) = ch4           ! ch4 11 µm
+       input(2) = ch5           ! ch5 12 µm
+       input(3) = btd_ch4_ch5   ! 11-12 µm
+       input(4) = skint
+       ! exclude negative skin-rad4 temperatures at night/twilight
+       if ( (correct_skint) .and. ( skint - ch4 ) .lt. 0 ) input(4) = ch4
+       input(5) = niseflag
+       input(6) = lsflag
+
+       !set threshold
+       if ( lsflag .eq. 0_byte ) then
+          threshold_used = COT_THRES_TWL_SEA
+          if ( niseflag .eq. YES  ) threshold_used = COT_THRES_TWL_SEA_ICE
+       elseif ( lsflag .eq. 1_byte ) then
+          threshold_used = COT_THRES_TWL_LAND
+          if ( niseflag .eq. YES  ) threshold_used = COT_THRES_TWL_LAND_ICE
+       end if
+
+    elseif ( illum_nn .eq. 6 ) then
+
+       ! --- night 2 (no 3.7)
+
+       nneurons       = nneurons_ex33   !set number of neurons
+       ninput         = ninput_ex33     !set number of input parameter for the neural network
+
+       !ranges variables within training was performed
+       allocate(minmax_train(ninput,2))
+       minmax_train=minmax_train_ex33
+
+       !"weights" for input
+       allocate(inv(ninput+1,nneurons))
+       inv=inv_ex33
+
+       !"weights" for output
+       allocate(outv(nneurons+1))
+       outv=outv_ex33
+
+       allocate(scales(ninput,2))
+       scales=scales_ex33               !parameters to scale input?
+       oscales=oscales_ex33             !parameters to scale output?
+       temperature=temperature_ex33     !"temperature" for sigmoid function
+       cutoff=cutoff_ex33
+       bias_i=bias_i_ex33
+       bias_h=bias_h_ex33
+
+       !input
+       allocate(input(ninput+1))
+       input(1) = ch4           ! ch4 11 µm
+       input(2) = ch5           ! ch5 12 µm
+       input(3) = btd_ch4_ch5   ! 11-12 µm
+       input(4) = skint
+       ! exclude negative skin-rad4 temperatures at night/twilight
+       if ( (correct_skint) .and. ( skint - ch4 ) .lt. 0 ) input(4) = ch4
+       input(5) = niseflag
+       input(6) = lsflag
+
+       !set threshold
+       if ( lsflag .eq. 0_byte ) then
+          threshold_used = COT_THRES_NIGHT_SEA
+          if ( niseflag .eq. YES  ) threshold_used = COT_THRES_NIGHT_SEA_ICE
+       elseif ( lsflag .eq. 1_byte ) then
+          threshold_used = COT_THRES_NIGHT_LAND
+          if ( niseflag .eq. YES  ) threshold_used = COT_THRES_NIGHT_LAND_ICE
+       end if
+
+   elseif ( illum_nn .eq. 7 ) then
+
+       ! DAY 3 ( use 1.6 instead of 3.7 channel)
+       if ( calc_true_refl ) then
+           ch1   = ch1/mu0
+           ch2   = ch2/mu0
+           ref3a = ref3a/mu0
+       endif
+      
+       nneurons = nneurons_ex29  !set number of neurons
+       ninput   = ninput_ex29    !set number of input parameter for the neural network
+
+       !ranges variables within training was performed
+       allocate(minmax_train(ninput,2))
+       minmax_train=minmax_train_ex29
+
+       !"weights" for input
+       allocate(inv(ninput+1,nneurons))
+       inv=inv_ex29
+
+       !"weights" for output
+       allocate(outv(nneurons+1))
+       outv=outv_ex29
+
+       allocate(scales(ninput,2))
+       scales=scales_ex29           !parameters to scale input?
+       oscales=oscales_ex29         !parameters to scale output?
+       temperature=temperature_ex29 !"temperature" for sigmoid function
+       cutoff=cutoff_ex29
+       bias_i=bias_i_ex29
+       bias_h=bias_h_ex29
+
+       ! input
+       allocate(input(ninput+1))
+
+       input(1) = ch1           ! ch1 600nm
+       input(2) = ch2           ! ch2 800nm
+       input(3) = ref3a         ! ch3a reflectance 1.6 µm
+       input(4) = ch4           ! ch4 11 µm
+       input(5) = ch5           ! ch5 12 µm
+       input(6) = btd_ch4_ch5   ! 11-12 µm
+       input(7) = skint         ! ERA-Interim skin temperature
+       input(8) = niseflag      ! snow/ice information
+       input(9) = lsflag        ! land/sea flag
 
       !set threshold
-      if ( lsflag .eq. 0_byte ) then
-         threshold_used = COT_THRES_TWL_SEA
-         if ( niseflag .eq. YES  ) threshold_used = COT_THRES_TWL_SEA_ICE
-      elseif ( lsflag .eq. 1_byte ) then
-         threshold_used = COT_THRES_TWL_LAND
-         if ( niseflag .eq. YES  ) threshold_used = COT_THRES_TWL_LAND_ICE
-      end if
+       if ( lsflag .eq. 0_byte ) then
+          threshold_used = COT_THRES_DAY_SEA
+          if ( niseflag .eq. YES  ) threshold_used = COT_THRES_DAY_SEA_ICE
+       elseif ( lsflag .eq. 1_byte ) then
+          threshold_used = COT_THRES_DAY_LAND
+          if ( niseflag .eq. YES  ) threshold_used = COT_THRES_DAY_LAND_ICE
+       end if
 
-   elseif ( illum_nn .eq. 3 ) then
-      ! --- night
+    else
 
-      nneurons       = nneurons_ex11   !set number of neurons
-      ninput         = ninput_ex11     !set number of input parameter for the neural network
+       if (verbose) then
+          !        write(*,*) "Solar zenith angle < 0 in neural_net_preproc"
+       end if
 
-      !ranges variables within training was performed
-      allocate(minmax_train(ninput,2))
-      minmax_train=minmax_train_ex11
+       ! --- end of day/night if loop
+    end if
 
-      !"weights" for input
-      allocate(inv(ninput+1,nneurons))
-      inv=inv_ex11
+    !this should never happen and is only the case if lsflag is neither 0 nor 1
+    if ( threshold_used .eq. sreal_fill_value ) call_neural_net=.false.
 
-      !"weights" for output
-      allocate(outv(nneurons+1))
-      outv=outv_ex11
+    ! --- subroutine which carries out neural network computation
 
-      allocate(scales(ninput,2))
-      scales=scales_ex11               !parameters to scale input?
-      oscales=oscales_ex11             !parameters to scale output?
-      temperature=temperature_ex11     !"temperature" for sigmoid function
-      cutoff=cutoff_ex11
-      bias_i=bias_i_ex11
-      bias_h=bias_h_ex11
-
-      !input
-      allocate(input(ninput+1))
-      input(1) = ch3b          ! ch3b 3.7µm
-      input(2) = ch4           ! ch4 11 µm
-      input(3) = ch5           ! ch5 12 µm
-      input(4) = btd_ch4_ch3b  ! 11-3.7 µm
-      input(5) = btd_ch4_ch5   ! 11-12 µm
-      input(6) = skint
-      ! exclude negative skin-rad4 temperatures at night/twilight, this needs to be tested!!
-      if ( ( skint - ch4 ) .lt. 0 ) input(6) = ch4
-      input(7) = niseflag
-      input(8) = lsflag
-
-      !set threshold
-      if ( lsflag .eq. 0_byte ) then
-         threshold_used = COT_THRES_NIGHT_SEA
-         if ( niseflag .eq. YES  ) threshold_used = COT_THRES_NIGHT_SEA_ICE
-      elseif ( lsflag .eq. 1_byte ) then
-         threshold_used = COT_THRES_NIGHT_LAND
-         if ( niseflag .eq. YES  ) threshold_used = COT_THRES_NIGHT_LAND_ICE
-      end if
-
-   else
-
-      if (verbose) then
-!        write(*,*) "Solar zenith angle < 0 in neural_net_preproc"
-      end if
-
-      ! --- end of day/night if loop
-   end if
-
-   !this should never happen and is only the case if lsflag is neither 0 nor 1
-   if ( threshold_used .eq. sreal_fill_value ) call_neural_net=.false.
-
-   ! --- subroutine which carries out neural network computation
-
-   if ( call_neural_net ) then
+    if ( call_neural_net ) then
 
       call neural_net(nneurons,ninput,minmax_train,inv,outv, &
-           & input,scales,oscales,cutoff,bias_i,bias_h,     &
-           & temperature,output,noob)
+            & input,scales,oscales,cutoff,bias_i,bias_h,     &
+            & temperature,output,noob)
 
       ! --- correct for viewing angle effect - test phase for AVHRR
-      output = output - ( 1. / 12. * ( 1. / cos( satzen * d2r) - 1. ) )
+      if (correct_view) output = output - ( 1. / 12. * ( 1. / cos( satzen * d2r) - 1. ) )
 
-      ! --- correct for sunglint - test phase for AVHRR
-      ! This probably needs to be done in future because the sunglint correction does not
-      ! really work for AATSR ; but at the moment wait for the results
-!     if ( (trim(adjustl(sensor_name)) .eq. 'MODIS' ) .or. (trim(adjustl(sensor_name)) .eq. 'AVHRR') ) then
-!        output = output + min( 0., (1./6. * ( (glint_angle / 50. )**2. -1.) ) )
-!     if ((lsflag .eq. 0_byte) .and. (niseflag .eq. NO)) output = output - albedo(1)
-!        output = output + min( 0., (1./6. * ( (glint_angle / 25. ) -1.) ) )
-!     end if
+      if (correct_sst) then
+          ! Testing ice-free sea skin temperature correction
+          if  (( lsflag .eq. 0_byte ) .AND. (niseflag .eq. NO) .and. (mod(illum_nn,3) .eq. 1) ) then 
+              output = output - ((300.- skint)/30.)*0.30 ! daytime
+          end if
+          if  (( lsflag .eq. 0_byte ) .AND. (niseflag .eq. NO) .and. (mod(illum_nn,3) .eq. 2) ) then
+              output = output - ((300.- skint)/30.)*0.35 ! twilight
+          end if
+          if  (( lsflag .eq. 0_byte ) .AND. (niseflag .eq. NO) .and. (mod(illum_nn,3) .eq. 0) ) then
+              output = output - ((300.- skint)/30.)*0.30 ! night
+          end if
+       end if
 
-      ! Testing ice-free sea skin temperature correction
-      if  (( lsflag .eq. 0_byte ) .AND. (niseflag .eq. NO) .and. &
-           (illum_nn .ne. 3) ) then
-         output = output - ((300.- skint)/30.)*0.15
+       ! --- ensure that CCCOT is within 0 - 1 range
+       cccot_pre = max( min( output, 1.0 ), 0.0)
+
+       ! --- get rid of fields
+       deallocate(minmax_train)
+       deallocate(inv)
+       deallocate(outv)
+       deallocate(input)
+       deallocate(scales)
+
+       ! now apply threshold and create BIT mask: 0=CLEAR, 1=CLOUDY
+       if ( cccot_pre .gt. threshold_used ) then
+          cldflag = CLOUDY
+       else
+          cldflag = CLEAR
+       end if
+
+       ! calculate Uncertainty with pre calculated calipso scores
+       ! depending on normalized difference between cccot_pre and used threshold
+       if ( cldflag .eq. CLEAR ) then
+          norm_diff_cc_th = ( cccot_pre - threshold_used ) / threshold_used
+          cld_uncertainty = ( CLEAR_UNC_MAX - CLEAR_UNC_MIN ) * norm_diff_cc_th + CLEAR_UNC_MAX
+       elseif ( cldflag .eq. CLOUDY ) then
+          !v2.0 power of 2
+          !norm_diff_cc_th = ( cccot_pre - threshold_used ) / ( 1 - threshold_used )
+          !cld_uncertainty = ( CLOUDY_UNC_MAX - CLOUDY_UNC_MIN ) * ( abs(norm_diff_cc_th -1) )**2 + CLOUDY_UNC_MIN
+          !v3.0 power of 3
+          norm_diff_cc_th = ( cccot_pre - threshold_used ) / ( 1 - threshold_used )
+          cld_uncertainty = ( CLOUDY_UNC_MAX - CLOUDY_UNC_MIN ) * ( abs(norm_diff_cc_th -1) )**3 + CLOUDY_UNC_MIN
+       else
+          cld_uncertainty = sreal_fill_value
+       end if
+
+       ! noob equals 1 if one or more input parameter is not within trained range
+       if (noob .eq. 1_lint) then
+          ! give penalty; increase uncertainty because at least 1 ANN input parameter
+          ! was not within trained range
+          cld_uncertainty = cld_uncertainty * 1.1
+          ! set cloudmask to fillvalue only if all channels are negative 
+          if (ch1 .lt. 0 .and. ch2 .lt. 0 .and. ch3b .lt. 0 .and. ch4 .lt. 0 &
+               & .and. ch5 .lt. 0) then
+             cldflag = byte_fill_value
+             cld_uncertainty = sreal_fill_value
+          end if
+       end if
+    else
+       cldflag = byte_fill_value
+       cld_uncertainty = sreal_fill_value
+    end if
+
+    if (correct_w_unc) then
+        ! do this at least for noaa12
+        if (trim(adjustl(platform)) .eq. 'noaa12') then
+            if ( (cldflag .eq. CLOUDY) .and. (cld_uncertainty .gt. 35.) ) cldflag = CLEAR
+!            if   (cld_uncertainty .gt. 35.) cldflag = byte_fill_value 
+        end if
+    end if
+    !------------------------------------------------------------------------
+  end subroutine ann_cloud_mask
+  !------------------------------------------------------------------------
+
+  !------------------------------------------------------------------------
+  subroutine ann_cloud_phase(channel1, channel2, channel3a, channel3b, channel3b_ref, channel4, channel5, &
+    solzen, satzen, niseflag, lsflag, desertflag, albedo1, albedo2, albedo3a, cphcot, phase_flag, phase_uncertainty, &
+    ch3a_on_avhrr_flag, sensor_name, platform, skint, verbose)
+    !------------------------------------------------------------------------
+
+    use constants_cloud_typing_pavolonis_m
+    use common_constants_m
+    use neural_net_constants_m
+
+    implicit none
+
+    integer(kind=sint) :: noob     !# of pixels out of bounds
+    integer(kind=sint) :: nneurons !# of employed neurons
+    integer(kind=sint) :: ninput   !# of input dimensions of ann
+
+    real(kind=sreal),allocatable, dimension(:,:) :: inv,minmax_train,scales
+    real(kind=sreal),allocatable, dimension(:)   :: input,outv
+
+    real(kind=sreal) :: output
+    real(kind=sreal) :: oscales(3)
+    real(kind=sreal) :: temperature,cutoff,bias_i,bias_h
+    integer(kind=byte) :: illum_nn ! 0 = undefined, 1 = day, 2 = twilight, 3 = night
+
+    ! INPUT from cloud_type subroutine (module cloud_typing_pavolonis.F90)
+    character(len=sensor_length),   intent(in)    :: sensor_name
+    character(len=platform_length), intent(in)    :: platform
+    integer(kind=byte), intent(in) :: lsflag, niseflag
+    integer(kind=sint), intent(in) :: ch3a_on_avhrr_flag
+    real(kind=sreal),   intent(in) :: solzen, satzen, albedo1, albedo2, albedo3a, skint
+    real(kind=sreal),   intent(in) :: channel1, channel2, channel3a, channel3b, channel3b_ref, channel4, channel5
+    logical,            intent(in) :: verbose, desertflag
+
+    ! OUTPUT to cloud_type subroutine (module cloud_typing_pavolonis.F90)
+    integer(kind=byte), intent(out) :: phase_flag
+    real(kind=sreal),   intent(out) :: cphcot, phase_uncertainty
+
+    ! LOCAL variables
+    real(kind=sreal)   :: ch1, ch2, ch3b, ref3b, ch4, ch5 , threshold_used, ch1_uc
+    real(kind=sreal)   :: btd_ch4_ch5, btd_ch4_ch3b,mu0
+    logical            :: call_neural_net, do_ref3b_alb_corr, calc_true_refl
+    integer(kind=byte) :: surface_flag
+
+    calc_true_refl = .FALSE. ! this is .false. at the moment, change to .true. if
+                             ! future ANN's are trained with true reflectances 
+
+    mu0 = cos ( solzen * d2r )
+
+    surface_flag = lsflag ! land (1) or sea (0)
+    if ( desertflag ) surface_flag = 2 ! desert
+    if ( niseflag .eq. 1 .and. lsflag .eq. 0 ) surface_flag = 3 ! sea ice
+    if ( niseflag .eq. 1 .and. lsflag .eq. 1 ) surface_flag = 4 ! snow
+
+    if ( channel1 .eq. sreal_fill_value ) then
+       ch1 = channel1
+    else
+       ch1 = channel1 * 100.
+      ! correct channel reflectance over sea (sunglint) with albedo
+       if ((lsflag .eq. 0_byte) .and. (niseflag .eq. NO) .and. (albedo1 .ge. 0.) .and. (correct_glint) ) then 
+           do_ref3b_alb_corr = .TRUE.
+           ch1_uc = ch1
+           if (ch1_uc .eq. 0 ) do_ref3b_alb_corr = .FALSE. ! avoid dividing by zero
+           ch1 = max(ch1 - albedo1 * 100. / 2., 0.)
+       else
+           do_ref3b_alb_corr = .FALSE.
+       endif
+    end if
+
+    if ( channel2 .eq. sreal_fill_value ) then
+       if ( (trim(adjustl(sensor_name)) .eq. 'MODIS') .and. ch1 .gt. 50. ) then
+          ch2 = ch1 * 1.03
+       else
+          ch2 = channel2
+       end if
+    else
+       ch2 = channel2 * 100.
+       ! correct channel reflectance over sea (sunglint) with albedo
+       if ((lsflag .eq. 0_byte) .and. (niseflag .eq. NO) .and. (albedo2 .gt. 0.) .and. (correct_glint)) ch2 = max(ch2 - albedo2 * 100. / 2., 0.)
+    end if
+
+    ch3b = channel3b
+
+    if ( ch3a_on_avhrr_flag .ne. NO ) then
+       if ( channel3a .eq. sreal_fill_value ) then
+          ref3b = channel3a
+          do_ref3b_alb_corr = .FALSE.
+       else
+          ! create ref3b from ref3a using regression derived from simultanous MODIS AQUA measurements
+          if ((lsflag .eq. 0_byte) .and. (niseflag .eq. NO)) then ! SEA without ICE
+             ref3b = 0.247 * ( channel3a * 100. ) + 1.3527
+          elseif ((lsflag .eq. 0_byte) .and. (niseflag .eq. YES)) then ! SEA with ICE
+             ref3b = 0.235 * ( channel3a * 100. ) + 1.515
+          elseif ((lsflag .eq. 1_byte) .and. (niseflag .eq. YES)) then ! LAND with ICE
+             ref3b = 0.337 * ( channel3a * 100. ) - 0.241
+          elseif ((lsflag .eq. 1_byte) .and. (niseflag .eq. NO)) then ! LAND without ICE
+             ref3b = 0.361 * ( channel3a * 100. ) - 0.481
+          endif
       end if
+    else
+       ! so far, should not work for MODIS and AATSR
+       if ( channel3b_ref .eq. sreal_fill_value ) then
+          ref3b = channel3b_ref
+          do_ref3b_alb_corr = .FALSE.
+       else
+          ref3b = channel3b_ref*100.
+       end if
+    end if
 
-      if  (( lsflag .eq. 0_byte ) .AND. (niseflag .eq. NO) .and. &
-           (illum_nn .eq. 3) ) then
-         output = output - ((300.- skint)/30.)*0.3
-      end if
+    if ( do_ref3b_alb_corr .and. ch3b .gt. 290. ) ref3b = ref3b * ch1 / ch1_uc 
 
-      ! --- ensure that CCCOT is within 0 - 1 range
-      cccot_pre = max( min( output, 1.0 ), 0.0)
+    ch4 = channel4
+    ch5 = channel5
+    btd_ch4_ch5  = ch4 - ch5
+    btd_ch4_ch3b = ch4 - ch3b
 
-      ! --- get rid of fields
-      deallocate(minmax_train)
-      deallocate(inv)
-      deallocate(outv)
-      deallocate(input)
-      deallocate(scales)
+    ! call neural net unless solzen is negative
+    call_neural_net = .TRUE.
 
-      ! now apply threshold and create BIT mask: 0=CLEAR, 1=CLOUDY
-      if ( cccot_pre .gt. threshold_used ) then
-         cldflag = CLOUDY
-      else
-         cldflag = CLEAR
-      end if
+    if ( ( solzen .ge. 0. ) .and. (solzen  .le. 80) ) then
+       illum_nn = 1
+    elseif ( (solzen  .gt. 80) .and. (solzen .le. 180) ) then
+       illum_nn = 3
+    else
+       illum_nn = 0
+       ! if solzen is negative, do not call neural net
+       call_neural_net = .FALSE.
+    end if
+
+    threshold_used = sreal_fill_value
+
+    ! --- if day
+    if ( illum_nn .eq. 1 ) then
+
+       if ( calc_true_refl ) then
+           ch1   = ch1/mu0
+           ch2   = ch2/mu0
+           ref3b = ref3b/mu0
+       endif
+
+       nneurons = nneurons_ex101  !set number of neurons
+       ninput   = ninput_ex101    !set number of input parameter for the neural network
+
+       !ranges variables within training was performed
+       allocate(minmax_train(ninput,2))
+       minmax_train=minmax_train_ex101
+
+       !"weights" for input
+       allocate(inv(ninput+1,nneurons))
+       inv=inv_ex101
+
+       !"weights" for output
+       allocate(outv(nneurons+1))
+       outv=outv_ex101
+
+       allocate(scales(ninput,2))
+       scales=scales_ex101           !parameters to scale input?
+       oscales=oscales_ex101         !parameters to scale output?
+       temperature=temperature_ex101 !"temperature" for sigmoid function
+       cutoff=cutoff_ex101
+       bias_i=bias_i_ex101
+       bias_h=bias_h_ex101
+
+       ! input
+       allocate(input(ninput+1))
+
+       input(1) = ch1           ! ch1 600nm
+       input(2) = ch2           ! ch2 800nm
+       input(3) = ref3b         ! ch3b reflectance 3.7 µm
+       input(4) = ch4           ! ch4 11 µm
+       input(5) = ch5           ! ch5 12 µm
+       input(6) = btd_ch4_ch5   ! 11-12 µm
+       input(7) = surface_flag  ! surface_flag
+
+       !set threshold
+       if ( lsflag .eq. 0_byte ) then
+          threshold_used = COT_CPH_THRES_DAY_SEA
+          if ( niseflag .eq. YES  ) threshold_used = COT_CPH_THRES_DAY_SEA_ICE
+       elseif ( lsflag .eq. 1_byte ) then
+          threshold_used = COT_CPH_THRES_DAY_LAND
+          if ( niseflag .eq. YES  ) threshold_used = COT_CPH_THRES_DAY_LAND_ICE
+       end if
+
+    elseif ( illum_nn .eq. 3 )  then
+
+       ! NIGHT 
+
+       nneurons       = nneurons_ex102   !set number of neurons
+       ninput         = ninput_ex102     !set number of input parameter for the neural network
+
+       !ranges variables within training was performed
+       allocate(minmax_train(ninput,2))
+       minmax_train=minmax_train_ex102
+
+       !"weights" for input
+       allocate(inv(ninput+1,nneurons))
+       inv=inv_ex102
+
+       !"weights" for output
+       allocate(outv(nneurons+1))
+       outv=outv_ex102
+
+       allocate(scales(ninput,2))
+       scales=scales_ex102               !parameters to scale input?
+       oscales=oscales_ex102             !parameters to scale output?
+       temperature=temperature_ex102     !"temperature" for sigmoid function
+       cutoff=cutoff_ex102
+       bias_i=bias_i_ex102
+       bias_h=bias_h_ex102
+
+       !input
+       allocate(input(ninput+1))
+
+       input(1) = ch3b          ! ch3b 3.7 µm
+       input(2) = ch4           ! ch4 11 µm
+       input(3) = btd_ch4_ch3b  ! 11-3.7 µm
+       input(4) = ch5           ! ch5 12 µm
+       input(5) = btd_ch4_ch5   ! 11-12 µm
+       input(6) = surface_flag  
+
+       !set threshold
+       if ( lsflag .eq. 0_byte ) then
+          threshold_used = COT_CPH_THRES_NIGHT_SEA
+          if ( niseflag .eq. YES  ) threshold_used = COT_CPH_THRES_NIGHT_SEA_ICE
+       elseif ( lsflag .eq. 1_byte ) then
+          threshold_used = COT_CPH_THRES_NIGHT_LAND
+          if ( niseflag .eq. YES  ) threshold_used = COT_CPH_THRES_NIGHT_LAND_ICE
+       end if
+
+    else
+
+       if (verbose) then
+          !        write(*,*) "Solar zenith angle < 0 in neural_net_preproc"
+       end if
+
+       ! --- end of day/night if loop
+    end if
+
+  !this should never happen and is only the case if lsflag is neither 0 nor 1
+    if ( threshold_used .eq. sreal_fill_value ) call_neural_net=.false.
+
+    ! --- subroutine which carries out neural network computation
+
+    if ( call_neural_net ) then
+
+       call neural_net(nneurons,ninput,minmax_train,inv,outv, &
+            & input,scales,oscales,cutoff,bias_i,bias_h,     &
+            & temperature,output,noob)
+
+       ! --- correct for viewing angle effect - test phase for AVHRR
+       if (correct_view) output = output - ( 1. / 12. * ( 1. / cos( satzen * d2r) - 1. ) )
+
+       if (correct_sst) then
+          ! Testing ice-free sea skin temperature correction
+          if  (( lsflag .eq. 0_byte ) .AND. (niseflag .eq. NO) .and. &
+              (illum_nn .ne. 3) ) then
+              output = output - ((300.- skint)/30.)*0.15
+          end if
+          if  (( lsflag .eq. 0_byte ) .AND. (niseflag .eq. NO) .and. &
+              (illum_nn .eq. 3) ) then
+              output = output - ((300.- skint)/30.)*0.3
+          end if
+       end if
+
+       ! --- ensure that CCCOT is within 0 - 1 range
+       cphcot = max( min( output, 1.0 ), 0.0)
+
+       ! --- get rid of fields
+       deallocate(minmax_train)
+       deallocate(inv)
+       deallocate(outv)
+       deallocate(input)
+       deallocate(scales)
+
+       ! now apply threshold and create BIT mask: 0=CLEAR, 1=CLOUDY
+       if ( cphcot .gt. threshold_used ) then
+          phase_flag = ICE
+       else
+          phase_flag = LIQUID
+       end if
+
+       ! calculate Uncertainty with pre calculated calipso scores
+       ! depending on normalized difference between cccot_pre and used threshold
+!       if ( phase_flag .eq. ICE ) then
+!          norm_diff_cc_th = ( cphcot - threshold_used ) / threshold_used
+!          phase_uncertainty = ( CLEAR_UNC_MAX - CLEAR_UNC_MIN ) * norm_diff_cc_th + CLEAR_UNC_MAX
+!       elseif ( phase_flag .eq. LIQUID ) then
+!          norm_diff_cc_th = ( cphcot - threshold_used ) / ( 1 - threshold_used )
+!          phase_uncertainty = ( CLOUDY_UNC_MAX - CLOUDY_UNC_MIN ) * (norm_diff_cc_th -1 )**2 + CLOUDY_UNC_MIN
+!       else
+!          phase_uncertainty = sreal_fill_value
+!       end if
+
+       ! noob equals 1 if one or more input parameter is not within trained range
+       if (noob .eq. 1_lint) then
+          ! give penalty; increase uncertainty because at least 1 ANN input parameter
+          ! was not within trained range
+!          phase_uncertainty = phase_uncertainty * 1.1
+          if (ch1 .lt. 0 .and. ch2 .lt. 0 .and. ch3b .lt. 0 .and. ch4 .lt. 0 &
+               & .and. ch5 .lt. 0) then
+             phase_flag = byte_fill_value
+             phase_uncertainty = sreal_fill_value
+          end if
+       end if
+
+    else
+
+       phase_flag = byte_fill_value
+       phase_uncertainty = sreal_fill_value
+
+    end if
+
+    !------------------------------------------------------------------------
+  end subroutine ann_cloud_phase
+  !------------------------------------------------------------------------
 
 
-      ! calculate Uncertainty with pre calculated calipso scores
-      ! depending on normalized difference between cccot_pre and used threshold
-      if ( cldflag .eq. CLEAR ) then
-         norm_diff_cc_th = ( cccot_pre - threshold_used ) / threshold_used
-         cld_uncertainty = ( CLEAR_UNC_MAX - CLEAR_UNC_MIN ) * norm_diff_cc_th + CLEAR_UNC_MAX
-      elseif ( cldflag .eq. CLOUDY ) then
-         norm_diff_cc_th = ( cccot_pre - threshold_used ) / ( 1 - threshold_used )
-         cld_uncertainty = ( CLOUDY_UNC_MAX - CLOUDY_UNC_MIN ) * (norm_diff_cc_th -1 )**2 + CLOUDY_UNC_MIN
-      else
-         cld_uncertainty = sreal_fill_value
-      end if
+  !------------------------------------------------------------------------
+  subroutine neural_net(nneurons,ninput,minmax_train,inv,outv, &
+       & input,scales,oscales,cutoff,bias_i,bias_h,&
+       & temperature,output,noob)
+    !------------------------------------------------------------------------
 
-      ! here we go.
-      ! What are we doing if at least 1 input parameter is not in trained range
-      ! , e.g. fillvalue ?
-      ! For now 5 cases are defined to deal with it, choose best one later
-      ! noob equals 1 if one or more input parameter is not within trained range
-      if (noob .eq. 1_lint) then
-         ! give penalty; increase uncertainty because at least 1 ANN input parameter
-         ! was not within trained range
-         cld_uncertainty = cld_uncertainty * 1.05
+    use constants_cloud_typing_pavolonis_m
+    use common_constants_m
+    use neural_net_constants_m
 
-         ! Case 1) trust the ann and ...
-         !just do nothing
-         ! Case 2) set it to clear
-         !imager_pavolonis%CCCOT_pre(i,j)= sreal_fill_value
-         !imager_pavolonis%CLDMASK(i,j)=CLEAR
-         ! Case 3) set it to cloudy
-         !imager_pavolonis%CCCOT_pre(i,j)= 1.0
-         !imager_pavolonis%CLDMASK(i,j)=CLOUDY
-         ! Case 4) set it to fillvalue
-         !imager_pavolonis%CCCOT_pre(i,j)=sreal_fill_value
-         !imager_pavolonis%CLDMASK(i,j)=sint_fill_value
-         ! Case 5) trust ann, set cldflag to fillvalue only if all channels are
-         !         below 0. (=fillvalue)
-         if (ch1 .lt. 0 .and. ch2 .lt. 0 .and. ch3b .lt. 0 .and. ch4 .lt. 0 &
-              & .and. ch5 .lt. 0) then
-            cldflag = byte_fill_value
-            cld_uncertainty = sreal_fill_value
-         end if
-         ! end of noob if-loop
-      end if
+    implicit none
 
-   else
+    integer(kind=sint) :: noob
+    integer(kind=sint) :: iinput,ineuron
+    integer(kind=sint) :: nneurons
+    integer(kind=sint) :: ninput
 
-      cldflag = byte_fill_value
-      cld_uncertainty = sreal_fill_value
+    real(kind=sreal) :: minmax_train(ninput,2),scales(ninput,2),oscales(3),&
+         & inv(ninput+1,nneurons),outv(nneurons+1)
+    real(kind=sreal),dimension(:),intent(inout) :: input
+    real(kind=sreal) :: sigmoide
+    real(kind=sreal) :: intermed(nneurons+1),vector_res1(nneurons),scalar_res2
+    real(kind=sreal) ::temperature,bias_i,bias_h,cutoff
 
-   end if
+    logical :: lbounds
 
-   !------------------------------------------------------------------------
-end subroutine ann_cloud_mask
-!------------------------------------------------------------------------
+    real(kind=sreal),intent(out) :: output
 
+    !check if pixel has values within training min/max and flag it
+    !Just flag it make decision later stapel (09/2014)
+    lbounds=.true.
 
-!------------------------------------------------------------------------
-subroutine neural_net(nneurons,ninput,minmax_train,inv,outv, &
-     & input,scales,oscales,cutoff,bias_i,bias_h,&
-     & temperature,output,noob)
-   !------------------------------------------------------------------------
+    lbounds=all( (input(1:ninput) .ge. minmax_train(1:ninput,1)) .and. &
+         & ( input(1:ninput) .le. minmax_train(1:ninput,2) ) )
 
-   use common_constants_m
-   use neural_net_constants_m
+    if(lbounds) then
+       noob=0_lint
+    else
+       noob=1_lint
+       if (correct_bounds) then
+          do iinput=1,ninput
+             input(iinput) = min(max(input(iinput),minmax_train(iinput,1)),minmax_train(iinput,2))
+          end do
+       end if
+    end if
 
-   implicit none
+    !-----------------------------------------------------------------------
 
-   integer(kind=sint) :: noob
-   integer(kind=sint) :: iinput,ineuron
-   integer(kind=sint) :: nneurons
-   integer(kind=sint) :: ninput
+    !now do let ANN calculate no matter if input is
+    !within bounds or not stapel (09/2014)
+    do iinput=1,ninput
+       input(iinput)=scales(iinput,1)+scales(iinput,2)*(input(iinput) &
+            & -minmax_train(iinput,1))
+    end do
 
-   real(kind=sreal) :: minmax_train(ninput,2),scales(ninput,2),oscales(3),&
-        & inv(ninput+1,nneurons),outv(nneurons+1)
-   real(kind=sreal),dimension(:),intent(inout) :: input
-   real(kind=sreal) :: sigmoide
-   real(kind=sreal) :: intermed(nneurons+1),vector_res1(nneurons),scalar_res2
-   real(kind=sreal) ::temperature,bias_i,bias_h,cutoff
+    !apply constant to additional input element
+    input(ninput+1)=bias_i
 
-   logical :: lbounds
+    !perform vector*matrix multiplication of input vector with
+    !matrix of weights (ninput+1).(ninput+1,nneurons)=(nneurons)
+    vector_res1=matmul(input,inv)
 
-   real(kind=sreal),intent(out) :: output
+    !apply sigmoidal function to each element of resulting vector vector_res1
+    do ineuron=1,nneurons
+       call sigmoide_function(temperature/float(ninput),cutoff &
+            & ,vector_res1(ineuron),sigmoide)
+       intermed(ineuron)=sigmoide
+    end do
 
-   !check if pixel has values within training min/max and flag it
-   !Just flag it make decision later stapel (09/2014)
-   lbounds=.true.
+    !extend intermediate result by one element
+    intermed(nneurons+1)=bias_h
 
-   lbounds=all( (input(1:ninput) .ge. minmax_train(1:ninput,1)) .and. &
-        & ( input(1:ninput) .le. minmax_train(1:ninput,2) ) )
+    !perform scalar product of intermediate result with output vector
+    ! weights: (nneurons+1)*(nneurons+1)
 
-   if(lbounds) then
-      noob=0_lint
-   else
-      noob=1_lint
-   end if
+    !resulting in a scalar
+    scalar_res2=dot_product(intermed,outv)
 
-   !-----------------------------------------------------------------------
+    !apply sigmoidal function to scalar result
+    call sigmoide_function(temperature/float(nneurons),cutoff,scalar_res2,sigmoide)
+    output=sigmoide
 
-   !now do let ANN calculate no matter if input is
-   !within bounds or not stapel (09/2014)
-   do iinput=1,ninput
-      input(iinput)=scales(iinput,1)+scales(iinput,2)*(input(iinput) &
-           & -minmax_train(iinput,1))
-   end do
+    !rescale output
+    output=(output-oscales(1))/oscales(2)-oscales(3)
 
-   !apply constant to additional input element
-   input(ninput+1)=bias_i
-
-   !perform vector*matrix multiplication of input vector with
-   !matrix of weights (ninput+1).(ninput+1,nneurons)=(nneurons)
-   vector_res1=matmul(input,inv)
-
-   !apply sigmoidal function to each element of resultinf vector vector_res1
-   do ineuron=1,nneurons
-      call sigmoide_function(temperature/float(ninput),cutoff &
-           & ,vector_res1(ineuron),sigmoide)
-      intermed(ineuron)=sigmoide
-   end do
-
-   !extend intermediate result by one element
-   intermed(nneurons+1)=bias_h
-
-   !perform scalar product of intermediate result with output vector
-   ! weights: (nneurons+1)*(nneurons+1)
-
-   !resulting in a scalar
-   scalar_res2=dot_product(intermed,outv)
-
-   !apply sigmoidal function to scalar result
-   call sigmoide_function(temperature/float(nneurons),cutoff,scalar_res2,sigmoide)
-   output=sigmoide
-
-   !rescale output
-   output=(output-oscales(1))/oscales(2)-oscales(3)
-
-   !-------------------------------------------------------------------------
-end subroutine neural_net
-!-------------------------------------------------------------------------
+    !-------------------------------------------------------------------------
+  end subroutine neural_net
+  !-------------------------------------------------------------------------
 
 
 
 
-!-------------------------------------------------------------------------
-subroutine sigmoide_function(temperature,cutoff,input,sigmoide)
-   !-------------------------------------------------------------------------
+  !-------------------------------------------------------------------------
+  subroutine sigmoide_function(temperature,cutoff,input,sigmoide)
+    !-------------------------------------------------------------------------
 
-   !this functions evaluates the sigmoidal function
-   !temperature and cutoff are constants coming from outside
+    !this functions evaluates the sigmoidal function
+    !temperature and cutoff are constants coming from outside
 
-   use common_constants_m
+    use common_constants_m
 
-   implicit none
+    implicit none
 
-   real(kind=sreal) :: temperature,cutoff,input
-   real(kind=sreal) :: sigmoidein,sigmoidem,sigmoide
+    real(kind=sreal) :: temperature,cutoff,input
+    real(kind=sreal) :: sigmoidein,sigmoidem,sigmoide
 
-   sigmoidein=temperature*input
+    sigmoidein=temperature*input
 
-   !ifs for cutoff
-   if(sigmoidein .gt. cutoff) sigmoidein=cutoff
-   if(sigmoidein .lt. -1.0*cutoff) sigmoidein=-1.0*cutoff
+    !ifs for cutoff
+    if(sigmoidein .gt. cutoff) sigmoidein=cutoff
+    if(sigmoidein .lt. -1.0*cutoff) sigmoidein=-1.0*cutoff
 
-   sigmoidem=-1.0*sigmoidein
-   sigmoide=1.0/(1.0+exp(sigmoidem))
+    sigmoidem=-1.0*sigmoidein
+    sigmoide=1.0/(1.0+exp(sigmoidem))
 
-   !-------------------------------------------------------------------------
-end subroutine sigmoide_function
-!-------------------------------------------------------------------------
+    !-------------------------------------------------------------------------
+  end subroutine sigmoide_function
+  !-------------------------------------------------------------------------
 
 
 
-!=========================================================================
+  !=========================================================================
 end module neural_net_preproc_m
 !=========================================================================
