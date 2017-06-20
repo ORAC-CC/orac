@@ -16,6 +16,7 @@
 ! 2015/06/24, OS: added vid and include of netcdf_output_check.F90
 ! 2015/07/23, GM: Added specific humidity and ozone vids.
 ! 2017/03/29, SP: Add ability to calculate tropospheric cloud emissivity (EKWork)
+! 2017/06/20, OS: Added ann phase variable IDs
 !
 ! $Id$
 !
@@ -80,6 +81,7 @@ module netcdf_output_m
       ! clf file
       integer :: vid_cflag, vid_cemis, vid_cldtype, vid_cldmask, vid_cccot_pre, &
                  vid_cldmask_unc
+      integer :: vid_ann_phase, vid_cphcot, vid_ann_phase_unc
 
       ! config file:
       integer :: vid_msi_instr_ch_numbers_config, &
