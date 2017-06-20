@@ -40,6 +40,8 @@
 ! 2016/07/20, WJ: Change offset for stemp output to 100. to support values
 !    greater than 320K for instruments other than ATSR2/AATSR.
 ! 2017/01/09, CP: Changed phase range to include ML cloud type.
+! 2017/05/17, OS: Added variables for ann phase
+
 !
 ! $Id$
 !
@@ -143,6 +145,10 @@ module orac_output_m
       integer          :: vid_cldtype
       integer          :: vid_cldmask
       integer          :: vid_cldmask_uncertainty
+
+      integer          :: vid_ann_phase
+      integer          :: vid_ann_phase_uncertainty
+      integer          :: vid_cphcot
 
       integer          :: vid_phase
 
@@ -312,6 +318,11 @@ module orac_output_m
       integer(sint) :: cccot_pre_vmin   = -1000.0
       integer(sint) :: cccot_pre_vmax   = 2000.0
 
+      real(sreal)   :: cphcot_scale  = 0.001
+      real(sreal)   :: cphcot_offset = 0.0
+      integer(sint) :: cphcot_vmin   = -1000.0
+      integer(sint) :: cphcot_vmax   = 2000.0
+
       real(dreal)   :: time_scale  = 1.0
       real(dreal)   :: time_offset = 0.0
       real(dreal)   :: time_vmin   = 0.0
@@ -401,6 +412,15 @@ module orac_output_m
       real(sreal)   :: cldmask_uncertainty_offset = 0.0
       integer(sint) :: cldmask_uncertainty_vmin   = 0
       integer(sint) :: cldmask_uncertainty_vmax   = 10000
+
+      integer(byte) :: ann_phase_scale  = 1
+      integer(byte) :: ann_phase_offset = 0
+      integer(byte) :: ann_phase_vmin   = 0
+      integer(byte) :: ann_phase_vmax   = 2
+      real(sreal)   :: ann_phase_uncertainty_scale  = 0.01
+      real(sreal)   :: ann_phase_uncertainty_offset = 0.0
+      integer(sint) :: ann_phase_uncertainty_vmin   = 0
+      integer(sint) :: ann_phase_uncertainty_vmax   = 10000
 
       integer(byte) :: phase_scale  = 1
       integer(byte) :: phase_offset = 0
@@ -521,6 +541,10 @@ module orac_output_m
       integer(byte), pointer :: cldtype(:,:,:)
       integer(byte), pointer :: cldmask(:,:,:)
       integer(sint), pointer :: cldmask_uncertainty(:,:,:)
+
+      integer(byte), pointer :: ann_phase(:,:,:)
+      integer(sint), pointer :: ann_phase_uncertainty(:,:,:)
+      integer(sint), pointer :: cphcot(:,:,:)
 
       integer(byte), pointer :: phase(:,:)
       integer(byte), pointer :: phase_pavolonis(:,:)
