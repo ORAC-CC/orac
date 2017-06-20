@@ -77,6 +77,8 @@
 ! 2016/04/28, AP: Add multiple views.
 ! 2016/07/08, GM: Add fields for cloud layer 2.
 ! 2017/01/08, CP: Added multi layer phase type
+! 2017/05/17, OS: Added ann phase variables, ann phase uncertainty is 
+!    a placeholder
 !
 ! $Id$
 !
@@ -1507,6 +1509,7 @@ if (indexing%flags%do_cloud) then
            units         = '1', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
+
 end if
 
    !----------------------------------------------------------------------------
@@ -1821,6 +1824,73 @@ if (indexing%flags%do_cldmask_uncertainty) then
            add_offset    = output_data%cldmask_uncertainty_offset, &
            valid_min     = output_data%cldmask_uncertainty_vmin, &
            valid_max     = output_data%cldmask_uncertainty_vmax, &
+           units         = '1', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+end if
+
+if (indexing%flags%do_ann_phase) then
+   !----------------------------------------------------------------------------
+   ! ann_phase
+   !----------------------------------------------------------------------------
+   call nc_def_var_byte_packed_byte( &
+           ncid, &
+           dim3d_var, &
+           'ann_phase', &
+           output_data%vid_ann_phase, &
+           verbose, &
+           long_name     = 'Neural net cloud phase mask (radiance based)', &
+           standard_name = '', &
+           fill_value    = byte_fill_value, &
+           scale_factor  = output_data%ann_phase_scale, &
+           add_offset    = output_data%ann_phase_offset, &
+           valid_min     = output_data%ann_phase_vmin, &
+           valid_max     = output_data%ann_phase_vmax, &
+           units         = '1', &
+           flag_values   = '0b 1b 2b', &
+           flag_meanings = 'clear liquid ice', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+
+   !----------------------------------------------------------------------------
+   ! cphcot (ANN phase cloud optical thickness)
+   !----------------------------------------------------------------------------
+   call nc_def_var_short_packed_float( &
+           ncid, &
+           dim3d_var, &
+           'cphcot', &
+           output_data%vid_cphcot, &
+           verbose, &
+           long_name     = 'neural network cloud optical thickness (phase)', &
+           standard_name = '', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%cphcot_scale, &
+           add_offset    = output_data%cphcot_offset, &
+           valid_min     = output_data%cphcot_vmin, &
+           valid_max     = output_data%cphcot_vmax, &
+           units         = '1', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+   
+end if
+
+if (indexing%flags%do_ann_phase_uncertainty) then
+   !----------------------------------------------------------------------------
+   ! ann_phase_uncertainty
+   !----------------------------------------------------------------------------
+   call nc_def_var_short_packed_float( &
+           ncid, &
+           dim3d_var, &
+           'ann_phase_uncertainty', &
+           output_data%vid_ann_phase_uncertainty, &
+           verbose, &
+           long_name     = 'Neural net cloud phase mask (radiance based) uncertainty', &
+           standard_name = '', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%ann_phase_uncertainty_scale, &
+           add_offset    = output_data%ann_phase_uncertainty_offset, &
+           valid_min     = output_data%ann_phase_uncertainty_vmin, &
+           valid_max     = output_data%ann_phase_uncertainty_vmax, &
            units         = '1', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
