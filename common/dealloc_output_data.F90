@@ -30,6 +30,7 @@
 ! 2016/01/28, GM: Add ctp and ctt corrected and corrected_uncertianty.
 ! 2016/03/02, AP: Homogenisation of I/O modules.
 ! 2016/07/08, GM: Add fields for cloud layer 2.
+! 2017/05/17, OS: Added ann phase variables
 !
 ! $Id$
 !
@@ -135,6 +136,10 @@ subroutine dealloc_output_data_primary(data)
 
    if (associated(data%cccot_pre))                    deallocate(data%cccot_pre)
 
+   if (associated(data%ann_phase))                    deallocate(data%ann_phase)
+   if (associated(data%ann_phase_uncertainty))        deallocate(data%ann_phase_uncertainty)
+   if (associated(data%cphcot))                       deallocate(data%cphcot)
+ 
    deallocate(data%convergence)
    deallocate(data%niter)
    deallocate(data%costja)
