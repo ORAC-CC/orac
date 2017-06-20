@@ -1,4 +1,5 @@
-$(OBJS)/constants_cloud_typing_pavolonis.o: $(OBJS)/common_constants.o
+$(OBJS)/constants_cloud_typing_pavolonis.o: $(OBJS)/common_constants.o \
+        coefficients_spectral_response_correction.inc
 $(OBJS)/global_attributes.o: $(OBJS)/common_constants.o
 $(OBJS)/interpol.o: $(OBJS)/common_constants.o bound_grid.F90 interp_field.inc
 $(OBJS)/orac_indexing.o: $(OBJS)/common_constants.o
