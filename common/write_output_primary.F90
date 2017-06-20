@@ -44,6 +44,7 @@
 ! 2016/03/04, AP: Homogenisation of I/O modules.
 ! 2016/04/28, AP: Add multiple views.
 ! 2016/07/08, GM: Add fields for cloud layer 2.
+! 2017/05/17, OS: Added ann phase variables
 !
 ! $Id$
 !
@@ -273,6 +274,18 @@ if (ind%flags%do_cloud) then
    call nc_write_array(ncid,'cccot_pre',output_data%vid_cccot_pre, &
         output_data%cccot_pre(ind%X0:,ind%Y0:,:),1,1,ind%Xdim,1,1,ind%Ydim, &
         1,1,ind%NViews)
+
+   call nc_write_array(ncid,'ann_phase',output_data%vid_ann_phase, &
+        output_data%ann_phase(ind%X0:,ind%Y0:,:),1,1,ind%Xdim,1,1,ind%Ydim, &
+        1,1,ind%NViews)
+   call nc_write_array(ncid,'ann_phase_uncertainty', &
+        output_data%vid_ann_phase_uncertainty, &
+        output_data%ann_phase_uncertainty(ind%X0:,ind%Y0:,:), &
+        1,1,ind%Xdim,1,1,ind%Ydim,1,1,ind%NViews)
+   call nc_write_array(ncid,'cphcot',output_data%vid_cphcot, &
+        output_data%cphcot(ind%X0:,ind%Y0:,:),1,1,ind%Xdim,1,1,ind%Ydim, &
+        1,1,ind%NViews)
+
 end if
 
 if (ind%flags%do_cloud_layer_2) then
