@@ -5,7 +5,6 @@
 !
 ! History:
 ! 2015/10/05, GM: Original version.
-! 2016/08/17, SP: Add function is_nan().
 !
 ! $Id$
 !-------------------------------------------------------------------------------
@@ -19,7 +18,6 @@ module system_utils_m
    public :: match_file, &
              is_nan, &
              c_to_fortran_str
-
 contains
 
 !-------------------------------------------------------------------------------
