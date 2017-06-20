@@ -11,6 +11,7 @@
 ! 2016/07/08, GM: Add flag for cloud layer 2.
 ! 2016/07/19, AP: Reduce rho and swansea_s to only contain terms that were
 !    retrieved. This is indicated by the rho|ss_terms array (and Nrho|Nss).
+! 2017/05/17, OS: Added ann phase variables
 !
 ! $Id$
 !
@@ -37,6 +38,8 @@ module orac_indexing_m
       logical :: do_phase_pavolonis     ! Output the Pavolonis cloud phase
       logical :: do_cldmask             ! Output neural net cloud mask
       logical :: do_cldmask_uncertainty ! Output the uncertainty on that
+      logical :: do_ann_phase           ! Output neural net cloud mask
+      logical :: do_ann_phase_uncertainty ! Output the uncertainty on that
       logical :: do_phase               ! Output particle type
 
       ! Secondary file flags
@@ -86,9 +89,11 @@ module orac_indexing_m
    integer, parameter :: pavolonis_bit     = 6
    integer, parameter :: cldmask_bit       = 7
    integer, parameter :: cldmask_u_bit     = 8
-   integer, parameter :: phase_bit         = 9
-   integer, parameter :: covariance_bit    = 10
-
+   integer, parameter :: ann_phase_bit     = 9
+   integer, parameter :: ann_phase_u_bit   = 10   
+   integer, parameter :: phase_bit         = 11
+   integer, parameter :: covariance_bit    = 12
+ 
 
 contains
 
@@ -109,6 +114,8 @@ subroutine make_bitmask_from_common_file_flags(flags, bitmask)
    if (flags%do_phase_pavolonis)     bitmask = ibset(bitmask, pavolonis_bit)
    if (flags%do_cldmask)             bitmask = ibset(bitmask, cldmask_bit)
    if (flags%do_cldmask_uncertainty) bitmask = ibset(bitmask, cldmask_u_bit)
+   if (flags%do_ann_phase)           bitmask = ibset(bitmask, ann_phase_bit)
+   if (flags%do_ann_phase_uncertainty) bitmask = ibset(bitmask, ann_phase_u_bit)
    if (flags%do_phase)               bitmask = ibset(bitmask, phase_bit)
    if (flags%do_covariance)          bitmask = ibset(bitmask, covariance_bit)
 
@@ -131,6 +138,8 @@ subroutine set_common_file_flags_from_bitmask(bitmask, flags)
    flags%do_phase_pavolonis     = btest(bitmask, pavolonis_bit)
    flags%do_cldmask             = btest(bitmask, cldmask_bit)
    flags%do_cldmask_uncertainty = btest(bitmask, cldmask_u_bit)
+   flags%do_ann_phase           = btest(bitmask, ann_phase_bit)
+   flags%do_ann_phase_uncertainty = btest(bitmask, ann_phase_u_bit)
    flags%do_phase               = btest(bitmask, phase_bit)
    flags%do_covariance          = btest(bitmask, covariance_bit)
 
