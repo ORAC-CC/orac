@@ -19,6 +19,7 @@
 ! 2015/01/30, AP: Remove uscan and vscan as unnecessary.
 ! 2015/07/03, OS: Added cldmask_uncertainty
 ! 2015/08/10, AP: Additional surface uncs.
+! 2017/06/21, OS: Added ANN phase variables.
 !
 ! $Id: NullifyData.F90 2356 2014-09-10 20:42:15Z gmcgarragh $
 !
@@ -50,6 +51,9 @@ subroutine Nullify_Data(Ctrl, MSI_Data)
    nullify(MSI_Data%cldmask)
    nullify(MSI_Data%cldmask_uncertainty)
    nullify(MSI_Data%cccot_pre)
+   nullify(MSI_Data%ann_phase)
+   nullify(MSI_Data%ann_phase_uncertainty)
+   nullify(MSI_Data%cphcot)
 
    nullify(MSI_Data%Geometry%Sol)
    nullify(MSI_Data%Geometry%Sat)
