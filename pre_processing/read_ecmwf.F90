@@ -27,6 +27,7 @@
 !    Merge _dwd routines with _nc.
 ! 2017/02/04, SP: Add ecmwf_flag=5, for reading NOAA GFS forecast (EKWork)
 ! 2017/04/11, SP: Added ecmwf_flag=6, for working with GFS analysis files.
+! 2017/06/21, OS: inout declaration bug fix for cray-fortran compiler
 !
 ! $Id$
 !
@@ -47,8 +48,8 @@ subroutine read_ecmwf_wind(ecmwf_flag, ecmwf_path_file, ecmwf_HR_path_file, &
    character(len=path_length), intent(in)  :: ecmwf_HR_path_file
    character(len=path_length), intent(in)  :: ecmwf_path_file2
    character(len=path_length), intent(in)  :: ecmwf_path_file3
-   type(ecmwf_t),              intent(out) :: ecmwf
-   type(ecmwf_t),              intent(out) :: ecmwf_HR
+   type(ecmwf_t),              intent(inout) :: ecmwf
+   type(ecmwf_t),              intent(inout) :: ecmwf_HR
    logical,                    intent(in)  :: use_hr_ecmwf
    integer,                    intent(in)  :: ecmwf_nlevels
    logical,                    intent(in)  :: verbose
