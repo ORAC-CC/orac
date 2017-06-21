@@ -21,6 +21,8 @@
 ! 2015/01/15, AP: Eliminate channel_ids_abs.
 ! 2015/03/04, GM: Added map_ids_abs_to_snow_and_ice.
 ! 2016/08/04, GM: Added map_ids_channel_to_sw and map_ids_channel_to_lw.
+! 2017/06/21, OS: bug fix: with cray-fortran compiler, channel_info needs to be
+!    declared as inout if input values are to be used within SR
 !
 ! $Id$
 !
@@ -34,7 +36,7 @@ subroutine allocate_channel_info(channel_info)
 
    implicit none
 
-   type(channel_info_t), intent(out) :: channel_info
+   type(channel_info_t), intent(inout) :: channel_info
 
    allocate(channel_info%channel_ids_instr(channel_info%nchannels_total))
    channel_info%channel_ids_instr=lint_fill_value
