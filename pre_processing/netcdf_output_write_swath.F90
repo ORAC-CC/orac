@@ -47,6 +47,7 @@
 ! 2016/04/28, AP: Make multiple views mandatory.
 ! 2017/02/25, SP: Update to RTTOV v12.1 (EKWork)
 ! 2017/03/29, SP: Add ability to calculate tropospheric cloud emissivity (EKWork)
+! 2017/06/21, OS: added ann phase variables
 !
 ! $Id$
 !
@@ -325,7 +326,34 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
            1, 1, imager_geolocation%ny, &
            1, 1, channel_info%nviews)
 
-   ! geo file (solzen, satzen, solaz, relazi)
+    call nc_write_array( &
+           netcdf_info%ncid_clf, &
+           'ann_phase', &
+           netcdf_info%vid_ann_phase, &
+           imager_pavolonis%ann_phase(imager_geolocation%startx:,:,:), &
+           1, 1, n_x, &
+           1, 1, imager_geolocation%ny, &
+           1, 1, channel_info%nviews)
+
+   call nc_write_array( &
+           netcdf_info%ncid_clf, &
+           'ann_phase_uncertainty', &
+           netcdf_info%vid_ann_phase_unc, &
+           imager_pavolonis%ann_phase_uncertainty(imager_geolocation%startx:,:,:), &
+           1, 1, n_x, &
+           1, 1, imager_geolocation%ny, &
+           1, 1, channel_info%nviews)
+
+   call nc_write_array( &
+           netcdf_info%ncid_clf, &
+           'cphcot', &
+           netcdf_info%vid_cphcot, &
+           imager_pavolonis%cphcot(imager_geolocation%startx:,:,:), &
+           1, 1, n_x, &
+           1, 1, imager_geolocation%ny, &
+           1, 1, channel_info%nviews)
+
+  ! geo file (solzen, satzen, solaz, relazi)
 
    call nc_write_array( &
            netcdf_info%ncid_geo, &
