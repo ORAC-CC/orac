@@ -23,6 +23,7 @@
 ! 2015/07/02, OS: added cldmask_uncertainty
 ! 2016/04/09, SP: Added multiple views
 ! 2017/03/29, SP: Add new variable for tropopause cloud emissivity (EKWork)
+! 2017/06/21, OS: added ann phase variables
 !
 ! $Id$
 !
@@ -89,6 +90,9 @@ module imager_structures_m
       integer(kind=byte), dimension(:,:,:), pointer :: cldmask
       real(kind=sreal),   dimension(:,:,:), pointer :: cccot_pre
       real(kind=sreal),   dimension(:,:,:), pointer :: cldmask_uncertainty
+      integer(kind=byte), dimension(:,:,:), pointer :: ann_phase
+      real(kind=sreal),   dimension(:,:,:), pointer :: cphcot
+      real(kind=sreal),   dimension(:,:,:), pointer :: ann_phase_uncertainty
       integer(kind=byte), dimension(:,:,:), pointer :: cirrus_quality
       real(kind=sreal),   dimension(:,:,:), pointer :: emis_ch3b
 
