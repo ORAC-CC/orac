@@ -67,6 +67,7 @@
 ! 2016/04/28, AP: Add multiple views.
 ! 2016/05/03, AP: Add AOT at a second wavelength.
 ! 2016/07/27, GM: Add output fields for the multilayer retrieval.
+! 2017/06/21, OS: Added ANN phase variables.
 !
 ! $Id$
 !
@@ -842,7 +843,41 @@ if (Ctrl%Ind%flags%do_cldmask_uncertainty) then
    end do
 end if
 
+    !----------------------------------------------------------------------------
+! ann_phase
    !----------------------------------------------------------------------------
+if (Ctrl%Ind%flags%do_ann_phase) then
+   output_data%ann_phase(i,j,:)=int(MSI_Data%ann_phase(SPixel%Loc%X0, &
+        SPixel%Loc%Y0,:), kind=byte)
+   do k=1,Ctrl%Ind%NViews
+      call prepare_short_packed_float( &
+           MSI_Data%cphcot(SPixel%Loc%X0, SPixel%Loc%Y0, k), &
+           output_data%cphcot(i,j,k), &
+           output_data%cphcot_scale, &
+           output_data%cphcot_offset, &
+           output_data%cphcot_vmin, &
+           output_data%cphcot_vmax, &
+           sreal_fill_value, sint_fill_value)
+   end do
+end if
+
+if (Ctrl%Ind%flags%do_ann_phase_uncertainty) then
+   !----------------------------------------------------------------------------
+   ! ann_phase_uncertainty
+   !----------------------------------------------------------------------------
+   do k=1,Ctrl%Ind%NViews
+      call prepare_short_packed_float( &
+           MSI_Data%ann_phase_uncertainty(SPixel%Loc%X0, SPixel%Loc%Y0, k), &
+           output_data%ann_phase_uncertainty(i,j,k), &
+           output_data%ann_phase_uncertainty_scale, &
+           output_data%ann_phase_uncertainty_offset, &
+           output_data%ann_phase_uncertainty_vmin, &
+           output_data%ann_phase_uncertainty_vmax, &
+           sreal_fill_value, sint_fill_value)
+   end do
+end if
+
+  !----------------------------------------------------------------------------
    ! phase
    !----------------------------------------------------------------------------
 if (Ctrl%Ind%flags%do_phase) then
