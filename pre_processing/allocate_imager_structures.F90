@@ -34,6 +34,7 @@
 ! 2015/07/02, OS: added allocation of cldmask_uncertainty
 ! 2016/04/09, SP: Added multiple views
 ! 2017/03/29, SP: Add new variable for tropopause cloud emissivity (EKWork)
+! 2017/06/21, OS: allocated ann phase variables; imager_angles are now inout
 !
 ! $Id$
 !
@@ -52,7 +53,7 @@ subroutine allocate_imager_structures(imager_geolocation,imager_angles, &
    implicit none
 
    type(imager_geolocation_t),  intent(inout) :: imager_geolocation
-   type(imager_angles_t),       intent(out)   :: imager_angles
+   type(imager_angles_t),       intent(inout)   :: imager_angles
    type(imager_flags_t),        intent(out)   :: imager_flags
    type(imager_time_t),         intent(out)   :: imager_time
    type(imager_measurements_t), intent(out)   :: imager_measurements
@@ -149,6 +150,21 @@ subroutine allocate_imager_structures(imager_geolocation,imager_angles, &
         imager_geolocation%startx:imager_geolocation%endx, &
         1:imager_geolocation%ny,imager_angles%nviews))
    imager_pavolonis%cccot_pre=sreal_fill_value
+
+   allocate(imager_pavolonis%ann_phase( &
+        imager_geolocation%startx:imager_geolocation%endx, &
+        1:imager_geolocation%ny,imager_angles%nviews))
+   imager_pavolonis%ann_phase=byte_fill_value
+
+   allocate(imager_pavolonis%ann_phase_uncertainty( &
+        imager_geolocation%startx:imager_geolocation%endx, &
+        1:imager_geolocation%ny,imager_angles%nviews))
+   imager_pavolonis%ann_phase_uncertainty=sreal_fill_value
+
+   allocate(imager_pavolonis%cphcot( &
+        imager_geolocation%startx:imager_geolocation%endx, &
+        1:imager_geolocation%ny,imager_angles%nviews))
+   imager_pavolonis%cphcot=sreal_fill_value
 
    allocate(imager_pavolonis%cirrus_quality( &
         imager_geolocation%startx:imager_geolocation%endx, &
