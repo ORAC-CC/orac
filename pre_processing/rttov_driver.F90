@@ -138,6 +138,7 @@
 ! 2017/03/24, SP: Tidying, improved method for finding snow fraction (EKWork)
 ! 2017/03/29, SP: Switch to parallel RTTOV for performance improvement
 ! 2017/04/12, SP: Allow switch to parallel RTTOV only if OPENMP is enabled.
+! 2017/06/21, OS: string name adaptations for METOPA/B
 !
 ! $Id$
 !
@@ -299,8 +300,16 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
           else
             coef_file = 'rtcoef_noaa_'//platform(5:5)//'_avhrr.dat'
           end if
-      else if (index(platform,'metop') >= 1) then
-         coef_file = 'rtcoef_metop_'//platform(6:7)//'_avhrr.dat'
+       else if (index(platform,'metop') >= 1) then
+          if (platform(6:6) == "a") then
+             coef_file = 'rtcoef_metop_2_avhrr.dat'
+          elseif (platform(6:6) == "b") then
+             coef_file = 'rtcoef_metop_1_avhrr.dat'
+          else
+             write(*,*) 'ERROR: rttov_driver(): Invalid Metop platform: ', &
+                  trim(platform)
+             stop error_stop_code             
+          endif
       else
          write(*,*) 'ERROR: rttov_driver(): Invalid AVHRR platform: ', &
                     trim(platform)
