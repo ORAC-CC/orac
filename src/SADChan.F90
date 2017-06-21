@@ -17,6 +17,7 @@
 ! 2014/08/01, GM: Added Find_MDAD_SW() and Find_MDAD_LW().
 ! 2015/08/14, AP: Replace Find_MDAD() with generalised Find_Channel().
 ! 2015/08/21, AP: Move make_sad_filename() here from ReadSADLUT.
+! 2017/06/21, OS: string name fix for METOP
 !
 ! $Id$
 !
@@ -238,6 +239,18 @@ function create_sad_filename2(Ctrl, chan_num, SAD_Dir, LUTClass, crp_name) &
          InstName(12:12) = InstName(11:11)
          InstName(11:11) = '0'
       end if
+   else if (InstName(1:11) == 'AVHRR-METOP') then
+      ! For Metop, only platform name's first letter is capitalized 
+      InstName(8:11) = 'etop'
+      ! Replace MetopA with Metop2 and MetopB with Metop1
+      if (InstName(12:12) == 'A') then
+         InstName(12:12) = '2'
+      else if (InstName(12:12) == 'B') then
+         InstName(12:12) = '1'
+      else
+         write(*,*) 'ERROR: SADChan(): METOP platform name not one of METOPA or METOPB'
+         stop error_stop_code
+      endif
    end if
 
    if (present(chan_num)) then
