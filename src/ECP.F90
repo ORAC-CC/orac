@@ -170,6 +170,7 @@
 ! 2016/03/04, AP: Homogenisation of I/O modules.
 ! 2016/07/27, GM: Changes for the multilayer retrieval.
 ! 2017/03/16, GT: Changes for single-view aerosol retrieval mode.
+! 2017/06/21, OS: Added ann phase logical flags, which default to true
 !
 ! $Id$
 !
@@ -324,6 +325,8 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    Ctrl%Ind%flags%do_phase_pavolonis     = .false.
    Ctrl%Ind%flags%do_cldmask             = .true.
    Ctrl%Ind%flags%do_cldmask_uncertainty = .true.
+   Ctrl%Ind%flags%do_ann_phase           = .true.
+   Ctrl%Ind%flags%do_ann_phase_uncertainty = .true.
    Ctrl%Ind%flags%do_phase               = .false.
    Ctrl%Ind%flags%do_covariance          = .false.
 
