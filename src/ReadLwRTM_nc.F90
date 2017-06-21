@@ -84,6 +84,7 @@
 ! 2015/07/10, OS: undo previous commit
 ! 2015/08/08, CP: added in ATSR2 capability
 ! 2015/09/07, AP: Allow verbose to be controlled from the driver file.
+! 2017/06/21, OS: string name fix for METOP
 !
 ! $Id$
 !
@@ -132,6 +133,13 @@ subroutine Read_LwRTM_nc(Ctrl, RTM)
    else
       instname=trim(adjustl(sensor))//'-'//trim(adjustl(platform))
    end if
+   ! for metop, sensor name needs to be capitalized
+   if (platform(1:6) == 'metopa') then
+      instname = 'AVHRR-METOPA'
+   elseif (platform(1:6) == 'metopb') then
+      instname = 'AVHRR-METOPB'
+   endif
+      
    if (trim(adjustl(instname)) /= trim(adjustl(Ctrl%InstName))) then
       write(*,*) 'ERROR: Read_LwRTM_nc(): Instrument in LWRTM header inconsistent: ', &
                  trim(adjustl(instname)), ' /= ', trim(adjustl(Ctrl%InstName))
