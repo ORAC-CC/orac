@@ -64,6 +64,7 @@
 ! 2015/09/07, AP: Allow verbose to be controlled from the driver file.
 ! 2016/05/31, GT: Added Ctrl%process_aerosol_only code
 ! 2016/07/15, GT: Ctrl%process_aerosol_only now checks cloud mask in all views.
+! 2017/06/21, OS: Added ANN phase variables.
 !
 ! $Id$
 !
@@ -97,6 +98,10 @@ subroutine Read_CloudFlags_nc(Ctrl, MSI_Data)
    allocate(MSI_Data%cldmask_uncertainty(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, &
         Ctrl%Ind%NViews))
    allocate(MSI_Data%cccot_pre(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, Ctrl%Ind%NViews))
+   allocate(MSI_Data%ann_phase(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, Ctrl%Ind%NViews))
+   allocate(MSI_Data%ann_phase_uncertainty(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, &
+        Ctrl%Ind%NViews))
+   allocate(MSI_Data%cphcot(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, Ctrl%Ind%NViews))
 
 !  call nc_read_array(ncid, "cflag", MSI_Data%CloudFlags, Ctrl%verbose)
    call nc_read_array(ncid, "cldtype", MSI_Data%cldtype, Ctrl%verbose)
@@ -104,6 +109,10 @@ subroutine Read_CloudFlags_nc(Ctrl, MSI_Data)
    call nc_read_array(ncid, "cldmask_uncertainty", &
         MSI_Data%cldmask_uncertainty, Ctrl%verbose)
    call nc_read_array(ncid, "cccot_pre", MSI_Data%cccot_pre, Ctrl%verbose)
+   call nc_read_array(ncid, "ann_phase", MSI_Data%ann_phase, Ctrl%verbose)
+   call nc_read_array(ncid, "ann_phase_uncertainty", &
+        MSI_Data%ann_phase_uncertainty, Ctrl%verbose)
+   call nc_read_array(ncid, "cphcot", MSI_Data%cphcot, Ctrl%verbose)
 
    ! Merge various particle type flags (once aerosol is in)
    MSI_Data%Type = MSI_Data%cldtype(:,:,1) ! Nadir
