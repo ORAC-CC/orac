@@ -71,6 +71,7 @@
 ! 2015/07/03, OS: added error status variable to nc_open call
 ! 2015/07/10, OS: undo previous commit
 ! 2015/08/10, CP: added in ATSR-2 capability
+! 2017/06/21, OS: string name adaptations for METOPA/B
 !
 ! $Id$
 !
@@ -123,6 +124,13 @@ subroutine Read_SwRTM_nc(Ctrl, RTM)
    else
       instname=trim(adjustl(sensor))//'-'//trim(adjustl(platform))
    end if
+   ! for metop, sensor name needs to be capitalized
+   if (platform(1:6) == 'metopa') then
+      instname = 'AVHRR-METOPA'
+   elseif (platform(1:6) == 'metopb') then
+      instname = 'AVHRR-METOPB'
+   endif
+   
    if (trim(adjustl(instname)) /= trim(adjustl(Ctrl%InstName))) then
       write(*,*) 'ERROR: Read_SwRTM_nc(): Instrument in LWRTM header inconsistent: ', &
                  trim(adjustl(instname)), ' /= ', trim(adjustl(Ctrl%InstName))
