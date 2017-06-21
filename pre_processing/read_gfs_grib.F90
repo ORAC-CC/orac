@@ -50,6 +50,7 @@
 ! 2017/03/27, SP: New technique for computing profile levels. Improves retrievals
 !                 over high altitude land regions (Tibet, f.ex) (EKWork)
 ! 2017/03/30, SP: Add ability to calculate tropospheric cloud emissivity (EKWork)
+! 2017/06/21, OS: line continuation symbol set to &
 !
 ! $Id$
 !
@@ -93,7 +94,7 @@ subroutine read_gfs_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
    integer(lint),dimension(31)              :: gfs_levlist
 
 
-   gfs_levlist = (/1,2,3,5,7,10,20,30,50,70,100,150,200,250,300,350,\
+   gfs_levlist = (/1,2,3,5,7,10,20,30,50,70,100,150,200,250,300,350, &
                    400,450,500,550,600,650,700,750,800,850,900,925,950,975,1000/)
 
    ! Initialise level count, needed for GFS files
