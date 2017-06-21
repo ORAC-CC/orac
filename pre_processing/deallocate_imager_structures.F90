@@ -28,6 +28,7 @@
 ! 2015/01/30, AP: Remove uscan and vscan as unnecessary.
 ! 2015/07/03, OS: Added cldmask_uncertainty
 ! 2017/03/29, SP: Add new variable for tropopause cloud emissivity (EKWork)
+! 2017/06/21, OS: deallocated ann phase variables
 !
 ! $Id$
 !
@@ -68,6 +69,9 @@ subroutine deallocate_imager_structures(imager_geolocation,imager_angles, &
    deallocate(imager_pavolonis%cldmask)
    deallocate(imager_pavolonis%cldmask_uncertainty)
    deallocate(imager_pavolonis%cccot_pre)
+   deallocate(imager_pavolonis%ann_phase)
+   deallocate(imager_pavolonis%ann_phase_uncertainty)
+   deallocate(imager_pavolonis%cphcot)
    deallocate(imager_pavolonis%cirrus_quality)
    deallocate(imager_pavolonis%emis_ch3b)
    deallocate(imager_cloud%cloud_emis)
