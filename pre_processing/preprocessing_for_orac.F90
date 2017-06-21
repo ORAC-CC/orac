@@ -264,6 +264,8 @@
 ! 2017/04/11, SP: Added ecmwf_flag=6, for working with GFS analysis files.
 ! 2017/04/26, SP: Support for loading geoinfo (lat/lon/vza/vaa) from an
 !                 external file. Supported by AHI, not yet by SEVIRI (EKWork)
+! 2017/06/21, OS: added spectral response correction flag, 
+!     which defaults to false unless sensor=AATSR/AVHRR/MODIS
 !
 ! $Id$
 !
@@ -274,7 +276,7 @@
 #ifndef WRAPPER
 program preprocessing
 #else
-subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,jid)
+subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,status)
 #endif
 
    use channel_structures_m
@@ -361,6 +363,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    logical                          :: disable_snow_ice_corr
    logical                          :: do_cloud_emis
    logical                          :: do_ironly
+   logical                          :: do_spectral_response_correction
    logical                          :: use_modis_emis_in_rttov
    logical                          :: use_l1_land_mask
 
@@ -441,10 +444,11 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
 
    ! this is for the wrapper
 #ifdef WRAPPER
-   logical                          :: corrupt
-   integer                          :: check_output
-   integer                          :: mytask,ntasks,lower_bound,upper_bound
-   character(len=file_length)       :: jid
+   logical                              :: corrupt
+   integer                              :: check_output
+   integer                              :: mytask,ntasks,lower_bound,upper_bound
+   integer,intent(out)                  :: status
+   logical, allocatable, dimension(:,:) :: mask
    nargs = -1
 #else
    ! get number of arguments
@@ -462,15 +466,16 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    use_modis_emis_in_rttov = .false.
    use_l1_land_mask        = .false.
    disable_snow_ice_corr   = .false.
-   ecmwf_path(2)           = ''
-   ecmwf_path_hr(1)        = ''
-   ecmwf_path_hr(2)        = ''
-   ecmwf_path2(2)          = ''
-   ecmwf_path3(2)          = ''
+   ecmwf_path(2)           = ' '
+   ecmwf_path_hr(1)        = ' '
+   ecmwf_path_hr(2)        = ' '
+   ecmwf_path2(2)          = ' '
+   ecmwf_path3(2)          = ' '
    ecmwf_nlevels           = 0
    do_ironly               = .false.
+   do_spectral_response_correction       = .false.
    use_occci               = .false.
-   occci_path              = ''
+   occci_path              = ' '
 
    ! if more than one argument passed, all inputs on command line
    if (nargs .gt. 1) then
@@ -902,11 +907,24 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
            imager_angles,imager_flags, imager_time,imager_measurements,&
            channel_info,n_along_track, use_l1_land_mask,use_predef_geo,verbose)
 
+#ifdef WRAPPER      
+      ! do not process this orbit if no valid lat/lon data available
+      mask =  imager_geolocation%latitude.gt.sreal_fill_value .and. &
+           imager_geolocation%longitude.gt.sreal_fill_value
+      if (.not. any(mask)) then
+         write(*,*) "any mask: ", any(mask)
+         write(*,*) "maxval lat/lon:", maxval(imager_geolocation%latitude), maxval(imager_geolocation%longitude)
+         status = 1
+         return
+      endif
+#endif
+       
+
+      
       ! carry out any preparatory steps: identify required ECMWF and MODIS L3
       ! information,set paths and filenames to those required auxiliary /
       ! ancillary input...
       if (verbose) write(*,*) 'Carry out any preparatory steps'
-
       call preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
            cf_file,lsf_file,geo_file,loc_file,alb_file,sensor,platform,cyear, &
            cmonth,cday,chour,cminute,ecmwf_path,ecmwf_path_hr,ecmwf_path2, &
@@ -963,7 +981,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
             call deallocate_ecmwf_structures(ecmwf_HR2, high_res)
          end if
       end if
-
+      
       ! define preprocessing grid from user grid spacing and satellite limits
       if (verbose) write(*,*) 'Define preprocessing grid'
       preproc_dims%kdim = ecmwf%kdim
@@ -1062,11 +1080,13 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       if (.not. use_hr_ecmwf) then
          call cloud_type(channel_info, sensor, surface, imager_flags, &
               imager_angles, imager_geolocation, imager_measurements, &
-              imager_pavolonis, ecmwf, platform, doy, do_ironly, verbose)
+              imager_pavolonis, ecmwf, platform, doy, do_ironly,      &
+              do_spectral_response_correction, verbose)
       else
          call cloud_type(channel_info, sensor, surface, imager_flags, &
               imager_angles, imager_geolocation, imager_measurements, &
-              imager_pavolonis, ecmwf_HR, platform, doy, do_ironly, verbose)
+              imager_pavolonis, ecmwf_HR, platform, doy, do_ironly,   &
+              do_spectral_response_correction, verbose)
       end if
 
       ! create output netcdf files.
@@ -1111,10 +1131,10 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
          ! write netcdf output files
          if (verbose) write(*,*) 'Write netcdf output files'
          call netcdf_output_write_swath(imager_flags,imager_angles, &
-              imager_geolocation,imager_measurements,imager_time, &
-              imager_pavolonis,netcdf_info,channel_info,surface,*
+              imager_geolocation,imager_measurements,imager_cloud,imager_time, &
+              imager_pavolonis,netcdf_info,channel_info,surface, &
               include_full_brdf,do_cloud_emis)
-
+        
          ! close output netcdf files
          if (verbose) write(*,*)'Close netcdf output files'
          call netcdf_output_close(netcdf_info)
@@ -1137,7 +1157,8 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
                  config_file,msi_file,cf_file,lsf_file,geo_file,loc_file,alb_file, &
                  platform,sensor,global_atts,source_atts,cyear,cmonth,cday,chour, &
                  cminute,preproc_dims,imager_angles,imager_geolocation,netcdf_info, &
-                 channel_info,include_full_brdf,verbose)
+                 channel_info,include_full_brdf,ecmwf_flag,do_cloud_emis,verbose)
+            
          end if
 
       end do
