@@ -134,6 +134,7 @@
 !                 multiangular sensor. Prevents post-processor problems.
 ! 2017/01/19, CP: Add in revised uncertainty for ML case.
 ! 2017/03/16, GT: Changes for single-view aerosol retrieval mode.
+! 2017/06/21, OS: deactivated dumpfile and new driver format option for WRAPPER
 !
 ! $Id$
 !
@@ -175,9 +176,11 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    use ECP_constants_m
    use global_attributes_m
    use parse_user_m
-   use read_ctrl_m
    use read_utils_m
    use source_attributes_m
+#ifndef WRAPPER   
+   use read_ctrl_m
+#endif
 
    implicit none
 
@@ -242,6 +245,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    if (command_argument_count() == 2) then
       call get_command_argument(2, dumpfile)
    end if
+#else
+   dumpfile = ''
 #endif
 
    ! If drifile is '-' read the file from standard input otherwise read drifile
@@ -276,7 +281,9 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    rewind dri_lun
 
    new_driver_format = line(1:18) == '# ORAC Driver File'
-
+#ifdef WRAPPER
+   new_driver_format = .false.
+#endif
 
    !----------------------------------------------------------------------------
    ! Read the driver file
@@ -1419,6 +1426,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    !----------------------------------------------------------------------------
    ! Dump Ctrl as a driver file.
    !----------------------------------------------------------------------------
+#ifndef WRAPPER
    if (dumpfile /= '') then
       ! For first run set length argument to 0 for a dry run to get the size
       ! required for the buffer.
@@ -1458,6 +1466,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
 
       stop
    end if
+#endif   
 
 end subroutine Read_Driver
 
