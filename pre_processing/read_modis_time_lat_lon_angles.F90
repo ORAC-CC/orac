@@ -32,6 +32,8 @@
 !    forward scattering = 0 relative azimuth.
 ! 2013/09/11, AP: tidying, added n_along_track, removed modis2oraclsflag
 ! 2015/04/22, OS: bug fix in calculating relative azimuth angle
+! 2017/06/21, OS: bug fix: with cray-fortran compiler, variables need to be
+!    declared as inout if input values are to be used within SR
 !
 ! $Id$
 !
@@ -51,8 +53,8 @@ subroutine read_modis_time_lat_lon_angles(path_to_geo_file,imager_geolocation,&
    include "dffunc.f90"
 
    character(len=path_length),  intent(in)  :: path_to_geo_file
-   type(imager_geolocation_t),  intent(out) :: imager_geolocation
-   type(imager_angles_t),       intent(out) :: imager_angles
+   type(imager_geolocation_t),  intent(inout) :: imager_geolocation
+   type(imager_angles_t),       intent(inout) :: imager_angles
    type(imager_flags_t),        intent(in)  :: imager_flags
    type(imager_time_t),         intent(in)  :: imager_time
    integer(kind=lint),          intent(in)  :: n_along_track
@@ -64,7 +66,7 @@ subroutine read_modis_time_lat_lon_angles(path_to_geo_file,imager_geolocation,&
    integer                                         :: err_code
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_modis_time_lat_lon_angles()'
-
+   
    !allocate temporary data
    allocate(temp(imager_geolocation%startx:imager_geolocation%endx,&
         imager_geolocation%starty:imager_geolocation%endy))
