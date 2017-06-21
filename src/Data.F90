@@ -33,6 +33,7 @@
 ! 2015/07/03, OS: Added cldmask_uncertainty
 ! 2015/07/27, AP: Replace CloudFlag with Type.
 ! 2016/04/28, AP: Add multiple views.
+! 2017/06/21, OS: Added ANN phase variables.
 !
 ! $Id$
 !
@@ -75,6 +76,9 @@ module Data_m
       integer(byte),      pointer :: cldmask(:,:,:)
       real,               pointer :: cldmask_uncertainty(:,:,:)
       real,               pointer :: cccot_pre(:,:,:)
+      integer(byte),      pointer :: ann_phase(:,:,:)
+      real,               pointer :: ann_phase_uncertainty(:,:,:)
+      real,               pointer :: cphcot(:,:,:)
       type(Geometry_t)            :: Geometry
       type(Location_t)            :: Location
       integer(byte),      pointer :: LSFlags(:,:)
