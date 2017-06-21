@@ -30,6 +30,7 @@
 !    DEM, nisemask
 ! 2015/01/30, AP: Remove uscan and vscan as unnecessary.
 ! 2015/04/28, AP: Added fields for surface uncertainty and correlation.
+! 2017/06/21, OS: added ann phase variables
 !
 ! $Id$
 !
@@ -62,6 +63,10 @@ subroutine Dealloc_Data(Ctrl, MSI_Data)
    if (associated(MSI_Data%cldmask_uncertainty)) &
                                           deallocate(MSI_Data%cldmask_uncertainty)
    if (associated(MSI_Data%cccot_pre))    deallocate(MSI_Data%cccot_pre)
+   if (associated(MSI_Data%ann_phase))    deallocate(MSI_Data%ann_phase)
+   if (associated(MSI_Data%ann_phase_uncertainty)) &
+                                          deallocate(MSI_Data%ann_phase_uncertainty)
+   if (associated(MSI_Data%cphcot))       deallocate(MSI_Data%cphcot)
 
    if (associated(MSI_Data%Geometry%Sol)) deallocate(MSI_Data%Geometry%Sol)
    if (associated(MSI_Data%Geometry%Sat)) deallocate(MSI_Data%Geometry%Sat)
