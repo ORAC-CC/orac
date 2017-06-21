@@ -94,6 +94,7 @@
 ! 2016/03/31, GM: Changes to support processing only SW or only LW channels.
 ! 2017/02/07, SP: Added support for NOAA GFS atmosphere data (EKWork)
 ! 2017/04/11, SP: Added ecmwf_flag=6, for working with GFS analysis files.
+! 2017/06/21, OS: Added ANN phase variables
 !
 ! $Id$
 !
@@ -897,6 +898,39 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
               dimids_3d, &
               'cccot_pre', &
               netcdf_info%vid_cccot_pre, &
+              verbose, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
+              fill_value = sreal_fill_value)
+
+      ! define ann cloud_phase variable
+      call nc_def_var_byte_packed_byte( &
+              netcdf_info%ncid_clf, &
+              dimids_3d, &
+              'ann_phase', &
+              netcdf_info%vid_ann_phase, &
+              verbose, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
+              fill_value = byte_fill_value)
+
+      ! define ann cloud phase_uncertainty variable
+      call nc_def_var_float_packed_float( &
+              netcdf_info%ncid_clf, &
+              dimids_3d, &
+              'ann_phase_uncertainty', &
+              netcdf_info%vid_ann_phase_unc, &
+              verbose, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
+              fill_value = sreal_fill_value)
+
+      ! define cphcot variable
+      call nc_def_var_float_packed_float( &
+              netcdf_info%ncid_clf, &
+              dimids_3d, &
+              'cphcot', &
+              netcdf_info%vid_cphcot, &
               verbose, &
               deflate_level = deflate_level, &
               shuffle = shuffle_flag, &
