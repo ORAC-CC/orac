@@ -27,6 +27,7 @@
 !    Three new arrays added, these store the hybrid level (60,91,137)
 !    conversions.
 ! 2017/02/07, SP: Added support for NOAA GFS atmosphere data (EKWork)
+! 2017/06/21, OS: inout declaration bug fix for cray-fortran compiler
 !
 ! $Id$
 !
@@ -283,7 +284,7 @@ subroutine ecmwf_wind_init(ecmwf)
 
    implicit none
 
-   type(ecmwf_t), intent(out) :: ecmwf
+   type(ecmwf_t), intent(inout) :: ecmwf
 
    ecmwf%xdim=0
    ecmwf%ydim=0
@@ -305,7 +306,7 @@ subroutine dup_ecmwf_allocation(ecmwf, ecmwf2, low_res)
    implicit none
 
    type(ecmwf_t), intent(in)  :: ecmwf
-   type(ecmwf_t), intent(out) :: ecmwf2
+   type(ecmwf_t), intent(inout) :: ecmwf2
    logical,       intent(in)  :: low_res
 
    ecmwf2%xdim = ecmwf%xdim
@@ -335,7 +336,7 @@ subroutine linearly_combine_ecmwfs(a, b, ecmwf1, ecmwf2, ecmwf, low_res)
    real,          intent(in)  :: b
    type(ecmwf_t), intent(in)  :: ecmwf1
    type(ecmwf_t), intent(in)  :: ecmwf2
-   type(ecmwf_t), intent(out) :: ecmwf
+   type(ecmwf_t), intent(inout) :: ecmwf
    logical,       intent(in)  :: low_res
 
    ecmwf%lat               = a * ecmwf1%lat        + b * ecmwf2%lat
