@@ -36,6 +36,7 @@
 ! 2017/01/02, SP: Updates for multi layer cloud
 ! 2017/01/09, CP: ML additions.
 ! 2017/04/28, CP: ML bug fix added ctp2
+! 2017/06/22, OS: Added phase variables.
 !
 ! $Id$
 !
@@ -316,6 +317,19 @@ subroutine read_input_primary_optional(ncid, input_data, indexing, read_flags, &
       read_flags%do_cldmask_uncertainty = .false.
    end if
 
+   if (indexing%flags%do_ann_phase .and. read_flags%do_ann_phase) then
+      call nc_read_packed_array(ncid, "cphcot", input_data%cphcot, verbose, startp = [1, sval, 1])
+      call nc_read_array(ncid, "ann_phase", input_data%ann_phase, verbose, startp = [1, sval, 1])
+      read_flags%do_ann_phase = .false.
+   end if
+
+   if (indexing%flags%do_ann_phase_uncertainty .and. &
+        read_flags%do_ann_phase_uncertainty) then
+      call nc_read_packed_array(ncid, "ann_phase_uncertainty", &
+           input_data%ann_phase_uncertainty, verbose, startp = [1, sval, 1])
+      read_flags%do_ann_phase_uncertainty = .false.
+   end if
+   
    if (indexing%flags%do_phase .and. read_flags%do_phase) then
       call nc_read_array(ncid, "phase", input_data%phase, verbose, startp = [1, sval])
       read_flags%do_phase = .false.
