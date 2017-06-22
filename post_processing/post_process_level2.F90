@@ -116,7 +116,12 @@
 !    the amount of memory used. Works in same way as preproc option.
 ! 2017/01/09, CP: Added ML cloud variables and changed phase to handle ML so it
 !    can be recognised in L3.
-! 2017/01/09 CP : bug fix to ml code which was upsetting aerosol retrieval
+! 2017/01/09, CP: bug fix to ml code which was upsetting aerosol retrieval
+! 2017/06/22, OS: introduced ann phase, which is now the default for phase selection;
+!    to choose Pavolonis for phase selection, set use_ann_phase to false; NOTE:
+!    there is no overlap type when using ann phase, in which case no multilayer
+!    phase flag will be set!
+!
 ! $Id$
 !
 ! Bugs:
@@ -130,689 +135,675 @@ program post_process_level2
 subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_file)
 #endif
 
-   use chunk_utils_m
-   use global_attributes_m
-   use netcdf
-   use orac_input_m
-   use orac_ncdf_m
-   use orac_output_m
-   use parsing_m
-   use postproc_constants_m
-   use postproc_utils_m
-   use prepare_output_pp_m
-   use source_attributes_m
-   use constants_cloud_typing_pavolonis_m
+    use chunk_utils_m
+    use constants_cloud_typing_pavolonis_m
+    use global_attributes_m
+    use netcdf
+    use orac_input_m
+    use orac_ncdf_m
+    use orac_output_m
+    use parsing_m
+    use postproc_constants_m
+    use postproc_utils_m
+    use prepare_output_pp_m
+    use source_attributes_m
+    use constants_cloud_typing_pavolonis_m
 
-   implicit none
+    implicit none
 
-   integer, parameter           :: MaxInFiles = 32
+    integer, parameter           :: MaxInFiles = 32
 
-   integer, parameter           :: IWat = 1
-   integer, parameter           :: IIce = 2
-   integer, parameter           :: IMul = 3
+    integer, parameter           :: IWat = 1
+    integer, parameter           :: IIce = 2
+    integer, parameter           :: IMul = 3
 
-   integer                      :: i, j, k
+    integer                      :: i, j, k
 
-   integer                      :: nargs
+    integer                      :: nargs
 #ifdef WRAPPER
-   integer                      :: mytask, ntasks, lower_bound, upper_bound
+    integer                      :: mytask, ntasks, lower_bound, upper_bound
 #endif
-   character(len=path_length)   :: label, value
+    character(len=path_length)   :: label, value
 
-   logical                      :: switch_phases
-   logical                      :: do_secondary = .false.
+    logical                      :: switch_phases
+    logical                      :: do_secondary = .false.
 
-   real                         :: cost_thresh = 0.
-   real                         :: norm_prob_thresh = .75
-   logical                      :: output_optical_props_at_night = .false.
-   logical                      :: use_bayesian_selection = .false.
-   logical                      :: use_new_bayesian_selection = .false.
-   logical                      :: use_netcdf_compression = .true.
-   logical                      :: use_chunks = .false.
-   logical                      :: use_ml = .false. ! switch this to true if want to do multi layer retrieval
-   logical                      :: use_ml_temp = .false.
-   logical                      :: verbose = .true.
+    real                         :: cost_thresh = 0.
+    real                         :: norm_prob_thresh = .75
+    logical                      :: output_optical_props_at_night = .false.
+    logical                      :: use_bayesian_selection = .false.
+    logical                      :: use_new_bayesian_selection = .false.
+    logical                      :: use_netcdf_compression = .true.
+    logical                      :: use_chunks = .false.
+    logical                      :: use_ml = .false. ! switch this to true if want to do multi layer retrieval
+    logical                      :: use_ml_temp = .false.
+    logical                      :: use_ann_phase = .true.
+    logical                      :: verbose = .true.
 
-   integer                      :: n_in_files
+    integer                      :: n_in_files
 
-   character(len=path_length)   :: path_and_file
+    character(len=path_length)   :: path_and_file
 
-   character(len=path_length)   :: in_files_primary(MaxInFiles), &
-                                   in_files_secondary(MaxInFiles)
+    character(len=path_length)   :: in_files_primary(MaxInFiles), &
+         in_files_secondary(MaxInFiles)
 
-   character(len=path_length)   :: out_file_primary, out_file_secondary
+    character(len=path_length)   :: out_file_primary, out_file_secondary
 
-   integer                      :: ncid_primary, ncid_secondary, dims_var(3)
+    integer                      :: ncid_primary, ncid_secondary, dims_var(3)
 
-   type(global_attributes_t)    :: global_atts
-   type(source_attributes_t)    :: source_atts
+    type(global_attributes_t)    :: global_atts
+    type(source_attributes_t)    :: source_atts
 
-   type(input_data_primary_t)   :: input_primary(0:MaxInFiles)
-   type(input_data_secondary_t) :: input_secondary(0:MaxInFiles)
+    type(input_data_primary_t)   :: input_primary(0:MaxInFiles)
+    type(input_data_secondary_t) :: input_secondary(0:MaxInFiles)
 
-   type(output_data_primary_t)  :: output_primary
-   type(output_data_secondary_t):: output_secondary
+    type(output_data_primary_t)  :: output_primary
+    type(output_data_secondary_t):: output_secondary
 
-   type(input_indices_t)        :: indexing, loop_ind(MaxInFiles)
+    type(input_indices_t)        :: indexing, loop_ind(MaxInFiles)
 
-   integer                      :: phase_flag
-   integer                      :: index_space
+    integer                      :: phase_flag
+    integer                      :: index_space
 
-   ! New variables for chunked post-processing
-   integer                      :: chunksize
-   integer                      :: i_chunk
-   integer                      :: n_chunks
-   integer, allocatable         :: chunk_starts(:)
-   integer, allocatable         :: chunk_ends(:)
-   integer                      :: segment_starts(2)
-   integer                      :: segment_ends(2)
-   integer                      :: n_segments
+    ! New variables for chunked post-processing
+    integer                      :: chunksize
+    integer                      :: i_chunk
+    integer                      :: n_chunks
+    integer, allocatable         :: chunk_starts(:)
+    integer, allocatable         :: chunk_ends(:)
+    integer                      :: segment_starts(2)
+    integer                      :: segment_ends(2)
+    integer                      :: n_segments
 
-   ! Temperature limits for phase reclassification
-   real, parameter              :: switch_wat_limit = 233.16
-   real, parameter              :: switch_ice_limit = 273.16
+    ! Temperature limits for phase reclassification
+    real, parameter              :: switch_wat_limit = 233.16
+    real, parameter              :: switch_ice_limit = 273.16
 
-   integer                      :: i_min_costjm
-   real                         :: a_max_prob, a_min_cost, a_prob, a_cost
-   real                         :: sum_prob
+    integer                      :: i_min_costjm
+    real                         :: a_max_prob, a_min_cost, a_prob, a_cost
+    real                         :: sum_prob
 
-   integer                      :: deflate_level2
-   logical                      :: shuffle_flag2
+    integer                      :: deflate_level2
+    logical                      :: shuffle_flag2
 #ifndef WRAPPER
-      nargs = COMMAND_ARGUMENT_COUNT()
+    nargs = COMMAND_ARGUMENT_COUNT()
 #else
-      nargs=-1
+    nargs=-1
 #endif
 
-   ! If no argument was given then read standard file
-   if (nargs == 0 ) then
-      call get_environment_variable("ORAC_TEXTIN",path_and_file)
-   else if (nargs == 1) then
-      call get_command_argument(1,path_and_file)
-   else if (nargs == -1) then
-      index_space = index(path_and_file, " ")
-      path_and_file = path_and_file(1:(index_space-1))
-      if (verbose) write(*,*) 'inside postproc ', trim(adjustl(path_and_file))
-   end if
+    ! If no argument was given then read standard file
+    if (nargs == 0 ) then
+       call get_environment_variable("ORAC_TEXTIN",path_and_file)
+    else if (nargs == 1) then
+       call get_command_argument(1,path_and_file)
+    else if (nargs == -1) then
+       index_space = index(path_and_file, " ")
+       path_and_file = path_and_file(1:(index_space-1))
+       if (verbose) write(*,*) 'inside postproc ', trim(adjustl(path_and_file))
+    end if
 
-   ! Read from driver file
-   open(11,file=trim(adjustl(path_and_file)), status='old', form='formatted')
+    ! Read from driver file
+    open(11,file=trim(adjustl(path_and_file)), status='old', form='formatted')
 
-   read(11,'(A)') in_files_primary(IWat)
-   read(11,'(A)') in_files_primary(IIce)
+    read(11,'(A)') in_files_primary(IWat)
+    read(11,'(A)') in_files_primary(IIce)
 
-   if (use_ml) then
-      read(11,'(A)') in_files_primary(IMul)
-   end if
+    if (use_ml) then
+       read(11,'(A)') in_files_primary(IMul)
+    end if
 
-   read(11,'(A)') in_files_secondary(IWat)
-   read(11,'(A)') in_files_secondary(IIce)
+    read(11,'(A)') in_files_secondary(IWat)
+    read(11,'(A)') in_files_secondary(IIce)
 
-   if (use_ml) then
-      read(11,'(A)') in_files_secondary(IMul)
-   end if
+    if (use_ml) then
+       read(11,'(A)') in_files_secondary(IMul)
+    end if
 
-   read(11,'(A)') out_file_primary
-   read(11,'(A)') out_file_secondary
-   read(11,*) switch_phases
+    read(11,'(A)') out_file_primary
+    read(11,'(A)') out_file_secondary
+    read(11,*) switch_phases
+    close(11)
 
-   ! if single layer cloud then
-   n_in_files = 2
-   ! if multi layer cloud then
-   if (use_ml) then
-      n_in_files = 3
-   end if
+    ! if single layer cloud then
+    n_in_files = 2
+    ! if multi layer cloud then
+    if (use_ml) then
+       n_in_files = 3
+    end if
 
-   if (out_file_secondary /= '') do_secondary = .true.
+    if (out_file_secondary /= '') do_secondary = .true.
 
-   ! Optional arguments and additional files
-   do while (parse_driver(11, value, label) == 0)
-     call clean_driver_label(label)
-     select case (label)
-     case('COST_THRESH')
-        if (parse_string(value, cost_thresh) /= 0) &
-           call handle_parse_error(label)
-     case('NORM_PROB_THRESH')
-        if (parse_string(value, norm_prob_thresh) /= 0) &
-           call handle_parse_error(label)
-     case('OUTPUT_OPTICAL_PROPS_AT_NIGHT')
-        if (parse_string(value, output_optical_props_at_night) /= 0) &
-           call handle_parse_error(label)
-     case('USE_BAYESIAN_SELECTION')
-        if (parse_string(value, use_bayesian_selection) /= 0) &
-           call handle_parse_error(label)
-     case('USE_NEW_BAYESIAN_SELECTION')
-        if (parse_string(value, use_new_bayesian_selection) /= 0) &
-           call handle_parse_error(label)
-     case('USE_NETCDF_COMPRESSION')
-        if (parse_string(value, use_netcdf_compression) /= 0) &
-           call handle_parse_error(label)
-     case('USE_CHUNKING')
-        if (parse_string(value, use_chunks) /= 0) &
-           call handle_parse_error(label)
-     case('VERBOSE')
-        if (parse_string(value, verbose) /= 0) &
-           call handle_parse_error(label)
-     case('')
-        n_in_files = n_in_files + 1
-        in_files_primary(n_in_files) = value
-        if (parse_driver(11, value, label) /= 0) then
-           write(*,*) 'ERROR: Problem parsing secondary file name for ' // &
-                      'input number: ', n_in_files
-           stop error_stop_code
-        end if
-        in_files_secondary(n_in_files) = value
-     case default
-        write(*,*) 'ERROR: Unknown option: ', trim(label)
-        stop error_stop_code
-     end select
-   end do
+    ! Optional arguments and additional files
+    do while (parse_driver(11, value, label) == 0)
+       call clean_driver_label(label)
+       select case (label)
+       case('COST_THRESH')
+          if (parse_string(value, cost_thresh) /= 0) &
+               call handle_parse_error(label)
+       case('NORM_PROB_THRESH')
+          if (parse_string(value, norm_prob_thresh) /= 0) &
+               call handle_parse_error(label)
+       case('OUTPUT_OPTICAL_PROPS_AT_NIGHT')
+          if (parse_string(value, output_optical_props_at_night) /= 0) &
+               call handle_parse_error(label)
+       case('USE_BAYESIAN_SELECTION')
+          if (parse_string(value, use_bayesian_selection) /= 0) &
+               call handle_parse_error(label)
+       case('USE_NEW_BAYESIAN_SELECTION')
+          if (parse_string(value, use_new_bayesian_selection) /= 0) &
+               call handle_parse_error(label)
+       case('USE_NETCDF_COMPRESSION')
+          if (parse_string(value, use_netcdf_compression) /= 0) &
+               call handle_parse_error(label)
+       case('USE_CHUNKING')
+          if (parse_string(value, use_chunks) /= 0) &
+               call handle_parse_error(label)
+       case('VERBOSE')
+          if (parse_string(value, verbose) /= 0) &
+               call handle_parse_error(label)
+       case('')
+          n_in_files = n_in_files + 1
+          in_files_primary(n_in_files) = value
+          if (parse_driver(11, value, label) /= 0) then
+             write(*,*) 'ERROR: Problem parsing secondary file name for ' // &
+                  'input number: ', n_in_files
+             stop error_stop_code
+          end if
+          in_files_secondary(n_in_files) = value
+       case default
+          write(*,*) 'ERROR: Unknown option: ', trim(label)
+          stop error_stop_code
+       end select
+    end do
 
-   ! If we're using new bayesian selection then ensure both bayesian flags are true
-   if (use_new_bayesian_selection) then
-      use_bayesian_selection = .true.
-   end if
+    ! If we're using new bayesian selection then ensure both bayesian flags are true
+    if (use_new_bayesian_selection) then
+       use_bayesian_selection = .true.
+    end if
 
-   if (verbose) then
-      write(*,*) ' n_in_files = ',  n_in_files
-      write(*,*) 'path_and_file = ', trim(path_and_file)
-      write(*,*) 'primary water input = ', trim(in_files_primary(IWat))
-      write(*,*) 'primary ice input = ', trim(in_files_primary(IIce))
-      if (use_ml) then
-	 write(*,*) 'primary ml input = ', trim(in_files_primary(IMul))
-      end if
-      write(*,*) 'secondary water input = ', trim(in_files_secondary(IWat))
-      write(*,*) 'secondary ice input = ', trim(in_files_secondary(IIce))
-      if (use_ml) then
-	 write(*,*) 'secondary ml input = ', trim(in_files_secondary(IMul))
-      end if
-      write(*,*) 'primary output = ', trim(out_file_primary)
-      write(*,*) 'secondary output = ', trim(out_file_secondary)
-      write(*,*) 'switch_phases = ', switch_phases
-      write(*,*) 'use_chunks = ', use_chunks
-   end if
+    if (verbose) then
+       write(*,*) ' n_in_files = ',  n_in_files
+       write(*,*) 'path_and_file = ', trim(path_and_file)
+       write(*,*) 'primary water input = ', trim(in_files_primary(IWat))
+       write(*,*) 'primary ice input = ', trim(in_files_primary(IIce))
+       if (use_ml) then
+          write(*,*) 'primary ml input = ', trim(in_files_primary(IMul))
+       end if
+       write(*,*) 'secondary water input = ', trim(in_files_secondary(IWat))
+       write(*,*) 'secondary ice input = ', trim(in_files_secondary(IIce))
+       if (use_ml) then
+          write(*,*) 'secondary ml input = ', trim(in_files_secondary(IMul))
+       end if
+       write(*,*) 'primary output = ', trim(out_file_primary)
+       write(*,*) 'secondary output = ', trim(out_file_secondary)
+       write(*,*) 'switch_phases = ', switch_phases
+       write(*,*) 'use_chunks = ', use_chunks
+    end if
 
-   ! Determine which channels/views exist across all input files
-   do i = 1, n_in_files
-      call read_input_dimensions(in_files_primary(i), loop_ind(i), verbose)
-      call determine_channel_indexing(in_files_primary(i), loop_ind(i), verbose)
-   end do
-   call nullify_indexing(indexing)
-   call cross_reference_indexing(n_in_files, loop_ind, indexing)
+    ! Determine which channels/views exist across all input files
+    do i = 1, n_in_files
+       call read_input_dimensions(in_files_primary(i), loop_ind(i), verbose)
+       call determine_channel_indexing(in_files_primary(i), loop_ind(i), verbose)
+    end do
+    call nullify_indexing(indexing)
+    call cross_reference_indexing(n_in_files, loop_ind, indexing)
 
-   n_chunks=1
+    n_chunks=1
 
-   ! Settings not inherited from input files
-   indexing%flags%do_indexing        = .false.
-   indexing%flags%do_phase_pavolonis = .true.
-   indexing%flags%do_phase           = .true.
+    ! Settings not inherited from input files
+    indexing%flags%do_indexing        = .false.
+    indexing%flags%do_phase_pavolonis = .true.
+    indexing%flags%do_phase           = .true.
 
-   ! If ever desired, processing limits should be set here from a keyword above
-   indexing%X0 = 1
-   indexing%X1 = indexing%Xdim
-   indexing%Y0 = 1
-   indexing%Y1 = indexing%Ydim
-   loop_ind(:)%X0 = 1
-   loop_ind(:)%X1 = indexing%Xdim
-   loop_ind(:)%Y0 = 1
-   loop_ind(:)%Y1 = indexing%Ydim
+    ! If ever desired, processing limits should be set here from a keyword above
+    indexing%X0 = 1
+    indexing%X1 = indexing%Xdim
+    indexing%Y0 = 1
+    indexing%Y1 = indexing%Ydim
+    loop_ind(:)%X0 = 1
+    loop_ind(:)%X1 = indexing%Xdim
+    loop_ind(:)%Y0 = 1
+    loop_ind(:)%Y1 = indexing%Ydim
 
-   if (.not. use_chunks) then
-      n_chunks = 1
+    if (.not. use_chunks) then
+       n_chunks = 1
 
-      allocate(chunk_starts(n_chunks))
-      allocate(chunk_ends(n_chunks))
+       allocate(chunk_starts(n_chunks))
+       allocate(chunk_ends(n_chunks))
 
-      chunk_starts(1) = 1
-      chunk_ends(1)   = indexing%Ydim
-   else
-      n_segments = 1
-      segment_starts(1) = 1
-      segment_ends(1)   = indexing%Ydim
+       chunk_starts(1) = 1
+       chunk_ends(1)   = indexing%Ydim
+    else
+       n_segments = 1
+       segment_starts(1) = 1
+       segment_ends(1)   = indexing%Ydim
 
-!      chunksize = 4096
-      chunksize = 1024
+       !      chunksize = 4096
+       chunksize = 1024
 
-      n_chunks = calc_n_chunks(n_segments, segment_starts, segment_ends, &
-                               chunksize)
+       n_chunks = calc_n_chunks(n_segments, segment_starts, segment_ends, &
+            chunksize)
 
-      allocate(chunk_starts(n_chunks))
-      allocate(chunk_ends(n_chunks))
+       allocate(chunk_starts(n_chunks))
+       allocate(chunk_ends(n_chunks))
 
-      call chunkify(n_segments, segment_starts, segment_ends, chunksize, &
-                    n_chunks, chunk_starts, chunk_ends)
-   end if
+       call chunkify(n_segments, segment_starts, segment_ends, chunksize, &
+            n_chunks, chunk_starts, chunk_ends)
+    end if
 
-   if (verbose) then
-      write(*,*) 'The number of chunks to be processed: ', n_chunks
-      write(*,*) 'The chunks to be processed are (i_chunk, chunk_start, ' // &
-                 'chunk_end, chunk_size):'
-      do i_chunk = 1, n_chunks
-         write(*,*) i_chunk, chunk_starts(i_chunk), chunk_ends(i_chunk), &
-                    chunk_ends(i_chunk)-chunk_starts(i_chunk)+1
-      end do
-   end if
-write(*,*) 'allocate common routine'
-   ! Allocate the structures which hold the output in its final form
-   call alloc_output_data_primary(indexing%common_indices_t, 100, output_primary)
-   if (do_secondary) then
-      call alloc_output_data_secondary(indexing%common_indices_t, output_secondary)
-   end if
+    if (verbose) then
+       write(*,*) 'The number of chunks to be processed: ', n_chunks
+       write(*,*) 'The chunks to be processed are (i_chunk, chunk_start, ' // &
+            'chunk_end, chunk_size):'
+       do i_chunk = 1, n_chunks
+          write(*,*) i_chunk, chunk_starts(i_chunk), chunk_ends(i_chunk), &
+               chunk_ends(i_chunk)-chunk_starts(i_chunk)+1
+       end do
+    end if
+    if (verbose) write(*,*) 'allocate common routine'
+    ! Allocate the structures which hold the output in its final form
+    call alloc_output_data_primary(indexing%common_indices_t, 100, output_primary)
+    if (do_secondary) then
+       call alloc_output_data_secondary(indexing%common_indices_t, output_secondary)
+    end if
 
-   do i_chunk=1,n_chunks ! Chunking
+    do i_chunk=1,n_chunks ! Chunking
        if (use_chunks .and. verbose) &
-          write(*,*) 'Processing chunk: ', i_chunk, 'between', chunk_starts(i_chunk), &
-                     'and',chunk_ends(i_chunk)
+            write(*,*) 'Processing chunk: ', i_chunk, 'between', chunk_starts(i_chunk), &
+            'and',chunk_ends(i_chunk)
 
-      loop_ind(:)%Y0 = chunk_starts(i_chunk)
-      loop_ind(:)%Y1 = chunk_ends(i_chunk)
-      indexing%Y0 = chunk_starts(i_chunk)
-      indexing%Y1 = chunk_ends(i_chunk)
-      ! Allocate the array used in bayesian selection of type
-      ! This is needed for minimisation of memory overhead, only costs are
-      ! loaded in the first instance. Later other data is loaded but only for
-      ! the best class
-!     allocate(indexing%best_infile(indexing%X0:indexing%X1, indexing%Y0:indexing%Y1))
-!     do i = 1, n_in_files
-!        nullify(indexing%best_infile)
-!     end do
+       loop_ind(:)%Y0 = chunk_starts(i_chunk)
+       loop_ind(:)%Y1 = chunk_ends(i_chunk)
+       indexing%Y0 = chunk_starts(i_chunk)
+       indexing%Y1 = chunk_ends(i_chunk)
+       ! Allocate the array used in bayesian selection of type
+       ! This is needed for minimisation of memory overhead, only costs are
+       ! loaded in the first instance. Later other data is loaded but only for
+       ! the best class
+       !     allocate(indexing%best_infile(indexing%X0:indexing%X1, indexing%Y0:indexing%Y1))
+       !     do i = 1, n_in_files
+       !        nullify(indexing%best_infile)
+       !     end do
 
-      ! Read once-only inputs (does not include all retrieved variables on standard ones)
-      if (use_ml) then
-         call alloc_input_data_primary_all(indexing, input_primary(0))
-         call read_input_primary_once(n_in_files, in_files_primary, &
-              input_primary(0), indexing, loop_ind, global_atts, source_atts, &
-              chunk_starts( i_chunk),use_ml,verbose)
+       ! Read once-only inputs (does not include all retrieved variables on standard ones)
+       if (use_ml) then
+          call alloc_input_data_primary_all(indexing, input_primary(0))
+          call read_input_primary_once(n_in_files, in_files_primary, &
+               input_primary(0), indexing, loop_ind, global_atts, source_atts, &
+               chunk_starts( i_chunk),use_ml,verbose)
 
-      else
- 
-         call alloc_input_data_primary_all(indexing, input_primary(0))
-         call read_input_primary_once(n_in_files, in_files_primary, &
-              input_primary(0), indexing, loop_ind, global_atts, source_atts, &
-              chunk_starts( i_chunk),use_ml,verbose)
-      end if
+       else
 
-      if (do_secondary) then
-         call alloc_input_data_secondary_all(indexing, input_secondary(0))
-         call read_input_secondary_once(n_in_files, in_files_secondary, &
-              input_secondary(0), indexing, loop_ind, chunk_starts( i_chunk), &
-              verbose)
-      end if
+          call alloc_input_data_primary_all(indexing, input_primary(0))
+          call read_input_primary_once(n_in_files, in_files_primary, &
+               input_primary(0), indexing, loop_ind, global_atts, source_atts, &
+               chunk_starts( i_chunk),use_ml,verbose)
+       end if
 
-      ! Read fields that vary from file to file
-      if (use_new_bayesian_selection .neqv. .true.) then
-      write(*,*)'post proc n_in_files',n_in_files,use_ml
-         do i = 1, n_in_files
+       if (do_secondary) then
+          call alloc_input_data_secondary_all(indexing, input_secondary(0))
+          call read_input_secondary_once(n_in_files, in_files_secondary, &
+               input_secondary(0), indexing, loop_ind, chunk_starts( i_chunk), &
+               verbose)
+       end if
 
-	    if (use_ml) then
-	       if (i .eq. 3) then
-	          use_ml_temp=.true.
-	       endif
-	    else
-	       use_ml_temp=.false.
-	     end if
-            if (verbose) write(*,*) '********************************'
-            if (verbose) write(*,*) 'read: ', trim(in_files_primary(i))
-            call alloc_input_data_primary_class(loop_ind(i), input_primary(i))
-            call read_input_primary_class(in_files_primary(i), input_primary(i), &
-                 loop_ind(i), .False., chunk_starts( i_chunk), use_ml_temp, verbose)
-            if (do_secondary) then
-               if (verbose) write(*,*) 'read: ', trim(in_files_secondary(i))
-               call alloc_input_data_secondary_class(loop_ind(i), input_secondary(i))
-               call read_input_secondary_class(in_files_secondary(i), &
-                    input_secondary(i), loop_ind(i), chunk_starts( i_chunk), verbose)
-            end if
-         end do
-      else !use traditional selcetion method
-         ! Allocate a primary array to store temporary input data
-         if (use_ml) then
-            call alloc_input_data_primary_all(indexing, input_primary(3))
-         else
-            call alloc_input_data_primary_all(indexing, input_primary(1))
-         end if
+       ! Read fields that vary from file to file
+       if (use_new_bayesian_selection .neqv. .true.) then
+          write(*,*)'post proc n_in_files',n_in_files,use_ml
+          do i = 1, n_in_files
 
-         if (do_secondary) then
-            call alloc_input_data_secondary_all(indexing, input_secondary(1))
-         end if
+             if (use_ml) then
+                if (i .eq. 3) then
+                   use_ml_temp=.true.
+                endif
+             else
+                use_ml_temp=.false.
+             end if
+             if (verbose) write(*,*) '********************************'
+             if (verbose) write(*,*) 'read: ', trim(in_files_primary(i))
+             call alloc_input_data_primary_class(loop_ind(i), input_primary(i))
+             call read_input_primary_class(in_files_primary(i), input_primary(i), &
+                  loop_ind(i), .False., chunk_starts( i_chunk), use_ml_temp, verbose)
+             if (do_secondary) then
+                if (verbose) write(*,*) 'read: ', trim(in_files_secondary(i))
+                call alloc_input_data_secondary_class(loop_ind(i), input_secondary(i))
+                call read_input_secondary_class(in_files_secondary(i), &
+                     input_secondary(i), loop_ind(i), chunk_starts( i_chunk), verbose)
+             end if
+          end do
+       else !use traditional selcetion method
+          ! Allocate a primary array to store temporary input data
+          if (use_ml) then
+             call alloc_input_data_primary_all(indexing, input_primary(3))
+          else
+             call alloc_input_data_primary_all(indexing, input_primary(1))
+          end if
 
-         ! Load only the cost values from input files
-         do i = 1, n_in_files
-	    if (i .eq. 3) then
-	       use_ml_temp=.true.
-	    else
-	       use_ml_temp=.false.
-	    end if
+          if (do_secondary) then
+             call alloc_input_data_secondary_all(indexing, input_secondary(1))
+          end if
 
-            call alloc_input_data_only_cost(loop_ind(i), input_primary(i))
-            call read_input_primary_class(in_files_primary(i), input_primary(i), &
-                 loop_ind(i), .True.,chunk_starts( i_chunk), use_ml_temp, verbose)
-         end do
+          ! Load only the cost values from input files
+          do i = 1, n_in_files
+             if (i .eq. 3) then
+                use_ml_temp=.true.
+             else
+                use_ml_temp=.false.
+             end if
 
-         ! Find the input file with the lowest cost for each pixel
-         do j=indexing%Y0,indexing%Y1
-            do i=indexing%X0,indexing%X1
-               sum_prob = 0.
-               a_min_cost   = huge(a_min_cost)
-               i_min_costjm = 0
-               do k = 1, n_in_files
-                  if (input_primary(k)%costjm(i,j) /= sreal_fill_value) then
-                     a_cost = input_primary(k)%costjm(i,j)
-                     a_prob = exp(-input_primary(k)%costjm(i,j) / 2.)
-                     sum_prob = sum_prob + a_prob
+             call alloc_input_data_only_cost(loop_ind(i), input_primary(i))
+             call read_input_primary_class(in_files_primary(i), input_primary(i), &
+                  loop_ind(i), .True.,chunk_starts( i_chunk), use_ml_temp, verbose)
+          end do
 
-                     if (a_cost < a_min_cost) then
-                        a_min_cost   = a_cost
-                        a_max_prob   = a_prob
-                        i_min_costjm = k
-                     end if
-                  end if
-               end do
-               if (a_min_cost >= cost_thresh .and. i_min_costjm /= 0 .and. &
-                   a_max_prob / sum_prob >= norm_prob_thresh) then
-                     input_primary(0)%phase(i,j) = i_min_costjm
-               end if
-            end do
-         end do
-         do k = 1, n_in_files
-            if (verbose) write(*,*) '********************************'
-            if (verbose) write(*,*) 'read: ', trim(in_files_primary(k))
+          ! Find the input file with the lowest cost for each pixel
+          do j=indexing%Y0,indexing%Y1
+             do i=indexing%X0,indexing%X1
+                sum_prob = 0.
+                a_min_cost   = huge(a_min_cost)
+                i_min_costjm = 0
+                do k = 1, n_in_files
+                   if (input_primary(k)%costjm(i,j) /= sreal_fill_value) then
+                      a_cost = input_primary(k)%costjm(i,j)
+                      a_prob = exp(-input_primary(k)%costjm(i,j) / 2.)
+                      sum_prob = sum_prob + a_prob
 
-	    if (use_ml) then
-	       use_ml_temp=.true.
-               call read_input_primary_class(in_files_primary(k), input_primary(3), &
-                    loop_ind(k), .False.,chunk_starts( i_chunk), use_ml_temp,verbose)
-	    else
-	       use_ml_temp=.false.
-               call read_input_primary_class(in_files_primary(k), input_primary(1), &
-                    loop_ind(k), .False.,chunk_starts( i_chunk), use_ml_temp,verbose)
-	    end if
+                      if (a_cost < a_min_cost) then
+                         a_min_cost   = a_cost
+                         a_max_prob   = a_prob
+                         i_min_costjm = k
+                      end if
+                   end if
+                end do
+                if (a_min_cost >= cost_thresh .and. i_min_costjm /= 0 .and. &
+                     a_max_prob / sum_prob >= norm_prob_thresh) then
+                   input_primary(0)%phase(i,j) = i_min_costjm
+                end if
+             end do
+          end do
+          do k = 1, n_in_files
+             if (verbose) write(*,*) '********************************'
+             if (verbose) write(*,*) 'read: ', trim(in_files_primary(k))
 
-            if (do_secondary) then
-               if (verbose) write(*,*) 'read: ', trim(in_files_secondary(k))
-               call read_input_secondary_class(in_files_secondary(k), &
-                    input_secondary(1), loop_ind(k),chunk_starts( i_chunk),  verbose)
-            end if
+             if (use_ml) then
+                use_ml_temp=.true.
+                call read_input_primary_class(in_files_primary(k), input_primary(3), &
+                     loop_ind(k), .False.,chunk_starts( i_chunk), use_ml_temp,verbose)
+             else
+                use_ml_temp=.false.
+                call read_input_primary_class(in_files_primary(k), input_primary(1), &
+                     loop_ind(k), .False.,chunk_starts( i_chunk), use_ml_temp,verbose)
+             end if
 
-            do j=indexing%Y0,indexing%Y1
-               do i=indexing%X0,indexing%X1
-                  if (input_primary(0)%phase(i,j) .eq. k) then
-                     if (use_ml) then
-                        call copy_class_specific_inputs(i, j, loop_ind(k), &
-                             input_primary(0), input_primary(3), &
-                             input_secondary(0), input_secondary(3), &
-                             do_secondary)
-                     else
-                        call copy_class_specific_inputs(i, j, loop_ind(k), &
-                             input_primary(0), input_primary(1), &
-                             input_secondary(0), input_secondary(1), &
-                             do_secondary)
-                     end if
-                     input_primary(0)%phase(i,j) = k
-                  end if
-               end do
-            end do
-         end do
-      end if
+             if (do_secondary) then
+                if (verbose) write(*,*) 'read: ', trim(in_files_secondary(k))
+                call read_input_secondary_class(in_files_secondary(k), &
+                     input_secondary(1), loop_ind(k),chunk_starts( i_chunk),  verbose)
+             end if
 
-      if (verbose) then
-         write(*,*) 'Processing limits:'
-         write(*,*) indexing%X0, indexing%X1
-         write(*,*) indexing%Y0, indexing%Y1
-      end if
+             do j=indexing%Y0,indexing%Y1
+                do i=indexing%X0,indexing%X1
+                   if (input_primary(0)%phase(i,j) .eq. k) then
+                      if (use_ml) then
+                         call copy_class_specific_inputs(i, j, loop_ind(k), &
+                              input_primary(0), input_primary(3), &
+                              input_secondary(0), input_secondary(3), &
+                              do_secondary)
+                      else
+                         call copy_class_specific_inputs(i, j, loop_ind(k), &
+                              input_primary(0), input_primary(1), &
+                              input_secondary(0), input_secondary(1), &
+                              do_secondary)
+                      end if
+                      input_primary(0)%phase(i,j) = k
+                   end if
+                end do
+             end do
+          end do
+       end if
 
-      do j=indexing%Y0,indexing%Y1
+       if (verbose) then
+          write(*,*) 'Processing limits:'
+          write(*,*) indexing%X0, indexing%X1
+          write(*,*) indexing%Y0, indexing%Y1
+       end if
 
-         do i=indexing%X0,indexing%X1
+       do j=indexing%Y0,indexing%Y1
 
-            ! Cloud CCI selection
-            if (.not. use_bayesian_selection) then
-               ! Default is ICE wins, meaning only ice structure is copied to
-               ! output.
+          do i=indexing%X0,indexing%X1
 
-               ! Information of Pavolonis cloud type
-               ! C,N,F,W,S,M,I,Ci,O
+             ! Cloud CCI selection
+             if (.not. use_bayesian_selection) then
+                ! Default is ICE wins, meaning only ice structure is copied to
+                ! output.
 
-               ! Liquid cloud phase comprises the following categories:
-               ! 0? Clear
-               ! 2? fog
-               ! 3? warm liquid water clouds
-               ! 4? supercooled-mixed-phased clouds
+                ! Information of Pavolonis cloud type
+                ! C,N,F,W,S,M,I,Ci,O
 
-               ! Ice cloud phase comprises the following categories:
-               ! 6? opaque ice clouds/deep convection
-               ! 7? nonopaque high ice clouds (e.g. cirrus)
-               ! 8? cloud overlap 4 (e.g. multiple cloud layers)
+                ! Liquid cloud phase comprises the following categories:
+                ! 0? Clear
+                ! 2? fog
+                ! 3? warm liquid water clouds
+                ! 4? supercooled-mixed-phased clouds
 
-               ! Apply Pavolonis phase information to select retrieval phase
-               ! variables select water type overwrite ice
+                ! Ice cloud phase comprises the following categories:
+                ! 6? opaque ice clouds/deep convection
+                ! 7? nonopaque high ice clouds (e.g. cirrus)
+                ! 8? cloud overlap 4 (e.g. multiple cloud layers)
 
-               select case (input_primary(0)%cldtype(i,j,1))
-               case(FOG_TYPE, &
-                    WATER_TYPE, &
-                    SUPERCOOLED_TYPE)
-                  phase_flag = 1_byte
-                  ! Only consider reclassifying if both phases were processed
-                  if (switch_phases .and. &
-                      ((input_primary(IWat)%ctt(i,j) /= sreal_fill_value .and. &
+                ! Apply Pavolonis phase information to select retrieval phase
+                ! variables select water type overwrite ice
+                if (use_ann_phase) then
+                   select case (input_primary(0)%ann_phase(i,j,1))
+                   case(LIQUID)
+                      phase_flag = 1_byte
+                   case(ICE)
+                      phase_flag = 2_byte
+                   case default
+                      phase_flag = 2_byte
+                   end select
+                else
+                   select case (input_primary(0)%cldtype(i,j,1))
+                   case(FOG_TYPE, &
+                        WATER_TYPE, &
+                        SUPERCOOLED_TYPE)
+                      phase_flag = 1_byte
+                   case(OPAQUE_ICE_TYPE, &
+                        CIRRUS_TYPE, &
+                        PROB_OPAQUE_ICE_TYPE, &
+                        PROB_CLEAR_TYPE)
+                      phase_flag = 2_byte
+                   case(OVERLAP_TYPE)
+                      if (use_ml .and. &
+                           !only set if ML cost is less than SL cost
+                           (input_primary(imul)%costjm(i,j) <= input_primary(IIce)%costjm(i,j))) then
+                         phase_flag = 3_byte
+                      else
+                         phase_flag = 2_byte
+                      end if
+                   case default
+                      phase_flag = 2_byte
+                   end select
+                endif
+
+                ! Only consider reclassifying if both phases were processed
+                if (switch_phases) then
+                   ! water to ice
+                   if ((phase_flag == 1_byte) .and. &
+                        ((input_primary(IWat)%ctt(i,j) /= sreal_fill_value .and. &
                         input_primary(IWat)%ctt(i,j) < switch_wat_limit) .and. &
-                       (input_primary(IIce)%ctt(i,j) /= sreal_fill_value .and. &
+                        (input_primary(IIce)%ctt(i,j) /= sreal_fill_value .and. &
                         input_primary(IIce)%ctt(i,j) < switch_ice_limit))) then
-                     phase_flag = 2_byte
-                     input_primary(0)%cldtype(i,j,1) = SWITCHED_TO_ICE_TYPE
-                  end if
-               case(OPAQUE_ICE_TYPE, &
-                    CIRRUS_TYPE, &
-                    PROB_OPAQUE_ICE_TYPE, &
-                    PROB_CLEAR_TYPE)
-                  phase_flag = 2_byte
-                  ! Only consider reclassifying if both phases were processed
-                  if (switch_phases .and. &
-                      ((input_primary(IWat)%ctt(i,j) /= sreal_fill_value .and. &
+                      phase_flag = 2_byte
+                      input_primary(0)%cldtype(i,j,1) = SWITCHED_TO_ICE_TYPE
+                   ! ice to water
+                   elseif ((phase_flag == 2_byte) .and. &
+                        ((input_primary(IWat)%ctt(i,j) /= sreal_fill_value .and. &
                         input_primary(IWat)%ctt(i,j) >= switch_wat_limit) .and. &
-                       (input_primary(IIce)%ctt(i,j) /= sreal_fill_value .and. &
+                        (input_primary(IIce)%ctt(i,j) /= sreal_fill_value .and. &
                         input_primary(IIce)%ctt(i,j) >= switch_ice_limit))) then
-                     phase_flag = 1_byte
-                     input_primary(0)%cldtype(i,j,1) = SWITCHED_TO_WATER_TYPE
-                  end if
-               case(OVERLAP_TYPE)
-                  if (use_ml) then
-!only set if ML cost is less than SL cost
-      	  	    if (input_primary(imul)%costjm(i,j) <= input_primary(IIce)%costjm(i,j) ) then
-                       phase_flag = 3_byte
-		     else
-			phase_flag = 2_byte
-                     end if 
-                  else
-                     phase_flag = 2_byte
-		     if (switch_phases .and. &
-                     ((input_primary(IWat)%ctt(i,j) /= sreal_fill_value .and. &
-                       input_primary(IWat)%ctt(i,j) >= switch_wat_limit) .and. &
-                      (input_primary(IIce)%ctt(i,j) /= sreal_fill_value .and. &
-                       input_primary(IIce)%ctt(i,j) >= switch_ice_limit))) then
-                     phase_flag = 1_byte
-                     input_primary(0)%cldtype(i,j,1) = SWITCHED_TO_WATER_TYPE
-                  end if
-               end if
+                      phase_flag = 1_byte
+                      input_primary(0)%cldtype(i,j,1) = SWITCHED_TO_WATER_TYPE
+                   end if
+                endif
 
-               case default
-                  phase_flag = 2_byte
-               end select
+                ! Once phase is selected fill in the values 1st for wat then for
+                ! ice.
 
-	       
+                if (phase_flag == 1_byte) then
+                   call copy_class_specific_inputs(i, j, loop_ind(IWat), &
+                        input_primary(0), input_primary(IWat), &
+                        input_secondary(0), input_secondary(IWat), do_secondary)
+                   input_primary(0)%phase(i,j) = IPhaseWat
+                else if (phase_flag == 2_byte) then
+                   call copy_class_specific_inputs(i, j, loop_ind(IIce), &
+                        input_primary(0), input_primary(IIce), &
+                        input_secondary(0), input_secondary(IIce), do_secondary)
+                   input_primary(0)%phase(i,j) = IPhaseIce
+                else if (phase_flag == 3_byte) then
+                   ! Multilayer cloud
+                   call copy_class_specific_inputs(i, j, loop_ind(IMul), &
+                        input_primary(0), input_primary(IMul),&
+                        input_secondary(0), input_secondary(IMul),do_secondary)
+                   input_primary(0)%phase(i,j) = IPhaseMul
+                end if
 
-               ! Once phase is selected fill in the values 1st for wat then for
-               ! ice.
+                ! Overwrite cc_total with cldmask for Cloud CCI
+                input_primary(0)%cc_total(i,j) = input_primary(0)%cldmask(i,j,1)
+                input_primary(0)%cc_total_uncertainty(i,j) = &
+                     input_primary(0)%cldmask_uncertainty(i,j,1)
 
-               if (phase_flag == 1_byte) then
-                  call copy_class_specific_inputs(i, j, loop_ind(IWat), &
-                       input_primary(0), input_primary(IWat), &
-                       input_secondary(0), input_secondary(IWat), do_secondary)
-                  input_primary(0)%phase(i,j) = IPhaseWat
-               else if (phase_flag == 2_byte) then
-                  call copy_class_specific_inputs(i, j, loop_ind(IIce), &
-                       input_primary(0), input_primary(IIce), &
-                       input_secondary(0), input_secondary(IIce), do_secondary)
-                  input_primary(0)%phase(i,j) = IPhaseIce
+                if (input_primary(0)%cc_total(i,j) == 0.0) then
+                   ! Set phase to clear/unknown
+                   input_primary(0)%phase(i,j) = IPhaseClU
+                end if
 
-               else if (phase_flag == 3_byte) then
-                  ! Multilayer cloud
+                ! Bayesian based selection
+             else if (.not. use_new_bayesian_selection) then
+                sum_prob = 0.
+                a_min_cost = huge(a_min_cost)
+                i_min_costjm = 0.
+                do k = 1, n_in_files
+                   if (input_primary(k)%costjm(i,j) /= sreal_fill_value) then
+                      a_cost = input_primary(k)%costjm(i,j)
+                      a_prob = exp(-input_primary(k)%costjm(i,j) / 2.)
+                      sum_prob = sum_prob + a_prob
+                      if (a_cost < a_min_cost) then
+                         a_min_cost   = a_cost
+                         a_max_prob   = a_prob
+                         i_min_costjm = k
+                      end if
+                   end if
+                end do
 
-
-
-                  call copy_class_specific_inputs(i, j, loop_ind(IMul), &
-                       input_primary(0), input_primary(IMul),&
-                       input_secondary(0), input_secondary(IMul),do_secondary)
-                  input_primary(0)%phase(i,j) = IPhaseMul
-
-
-               end if
-
-
-
-               ! Overwrite cc_total with cldmask for Cloud CCI
-               input_primary(0)%cc_total(i,j) = input_primary(0)%cldmask(i,j,1)
-               input_primary(0)%cc_total_uncertainty(i,j) = &
-                    input_primary(0)%cldmask_uncertainty(i,j,1)
-
-               if (input_primary(0)%cc_total(i,j) == 0.0) then
-                  ! Set phase to clear/unknown
-                  input_primary(0)%phase(i,j) = IPhaseClU
-               end if
-
-            ! Bayesian based selection
-            else if (.not. use_new_bayesian_selection) then
-               sum_prob = 0.
-               a_min_cost   = huge(a_min_cost)
-               i_min_costjm = 0
-               do k = 1, n_in_files
-                  if (input_primary(k)%costjm(i,j) /= sreal_fill_value) then
-                     a_cost = input_primary(k)%costjm(i,j)
-                     a_prob = exp(-input_primary(k)%costjm(i,j) / 2.)
-                     sum_prob = sum_prob + a_prob
-
-                     if (a_cost < a_min_cost) then
-                        a_min_cost   = a_cost
-                        a_max_prob   = a_prob
-                        i_min_costjm = k
-                     end if
-                  end if
-               end do
-
-               if (a_min_cost >= cost_thresh .and. i_min_costjm /= 0 .and. &
-                   a_max_prob / sum_prob >= norm_prob_thresh) then
-                  call copy_class_specific_inputs(i, j, loop_ind(i_min_costjm), &
-                       input_primary(0), input_primary(i_min_costjm), &
-                       input_secondary(0), input_secondary(i_min_costjm), &
-                       do_secondary)
-
-                  input_primary(0)%phase(i,j) = i_min_costjm
-               end if
-            end if
-         end do
-      end do
+                if (a_min_cost >= cost_thresh .and. i_min_costjm /= 0 .and. &
+                     a_max_prob / sum_prob >= norm_prob_thresh) then
+                   call copy_class_specific_inputs(i, j, loop_ind(i_min_costjm), &
+                        input_primary(0), input_primary(i_min_costjm), &
+                        input_secondary(0), input_secondary(i_min_costjm), &
+                        do_secondary)
+                   input_primary(0)%phase(i,j) = i_min_costjm
+                end if
+             end if
+          end do
+       end do
 
 
-      ! Deallocate all input structures except for the first one
-      do i = 1, n_in_files
-         call dealloc_input_data_primary_class(input_primary(i))
-         if (do_secondary) then
-            call dealloc_input_data_secondary_class(input_secondary(i))
-         end if
-      end do
+       ! Deallocate all input structures except for the first one
+       do i = 1, n_in_files
+          call dealloc_input_data_primary_class(input_primary(i))
+          if (do_secondary) call dealloc_input_data_secondary_class(input_secondary(i))
+       end do
 
-      ! Put results in final output arrays with final datatypes
+       ! Put results in final output arrays with final datatypes
 
-      do j=indexing%Y0,indexing%Y1
-         do i=indexing%X0,indexing%X1
-           call prepare_output_primary_pp( i, j, indexing%common_indices_t, &
-               input_primary(0), output_primary, output_optical_props_at_night)
-            if (do_secondary) then
-               call prepare_output_secondary_pp(i, j, indexing%common_indices_t, &
-                    input_secondary(0), output_secondary)
-            end if
-         end do
-      end do
+       do j=indexing%Y0,indexing%Y1
+          do i=indexing%X0,indexing%X1
+             call prepare_output_primary_pp( i, j, indexing%common_indices_t, &
+                  input_primary(0), output_primary, output_optical_props_at_night)
+             if (do_secondary) call prepare_output_secondary_pp(i, j, indexing%common_indices_t, &
+                     input_secondary(0), output_secondary)
+          end do
+       end do
 
 
-      if (i_chunk .lt. n_chunks) then
-         ! Deallocate the first input structure
-         call dealloc_input_data_primary_all(input_primary(0))
-         if (do_secondary) then
-            call dealloc_input_data_secondary_all(input_secondary(0))
-         end if
-      end if
+       if (i_chunk .lt. n_chunks) then
+          ! Deallocate the first input structure
+          call dealloc_input_data_primary_all(input_primary(0))
+          if (do_secondary) then
+             call dealloc_input_data_secondary_all(input_secondary(0))
+          end if
+       end if
 
+    end do !Chunking
 
-   end do !Chunking
+    indexing%Y0=1
 
-   indexing%Y0=1
+    ! Open the netcdf output file
+    call nc_create(trim(adjustl(out_file_primary)), ncid_primary, &
+         indexing%Xdim, indexing%Ydim, indexing%NViews, dims_var, 1, &
+         global_atts, source_atts)
+    if (do_secondary) then
+       call nc_create(trim(adjustl(out_file_secondary)), ncid_secondary, &
+            indexing%Xdim, indexing%Ydim, indexing%NViews, dims_var, 2, &
+            global_atts, source_atts)
+    end if
 
-   ! Open the netcdf output file
-   call nc_create(trim(adjustl(out_file_primary)), ncid_primary, &
-        indexing%Xdim, indexing%Ydim, indexing%NViews, dims_var, 1, &
-        global_atts, source_atts)
-   if (do_secondary) then
-      call nc_create(trim(adjustl(out_file_secondary)), ncid_secondary, &
-           indexing%Xdim, indexing%Ydim, indexing%NViews, dims_var, 2, &
-           global_atts, source_atts)
-   end if
+    ! Define netcdf variables
+    if (use_netcdf_compression) then
+       deflate_level2 = deflate_level
+       shuffle_flag2  = shuffle_flag
+    else
+       deflate_level2 = 0
+       shuffle_flag2  = .false.
+    end if
+    call def_output_primary(ncid_primary, dims_var, output_primary, &
+         indexing%common_indices_t, input_primary(0)%qc_flag_masks, &
+         input_primary(0)%qc_flag_meanings, deflate_level2, shuffle_flag2, &
+         .false., phases=loop_ind(1:n_in_files)%LUTClass)
+    if (do_secondary) then
+       call def_output_secondary(ncid_secondary, dims_var, output_secondary, &
+            indexing%common_indices_t, deflate_level2, shuffle_flag2, .false.)
+    end if
 
-   ! Define netcdf variables
-   if (use_netcdf_compression) then
-      deflate_level2 = deflate_level
-      shuffle_flag2  = shuffle_flag
-   else
-      deflate_level2 = 0
-      shuffle_flag2  = .false.
-   end if
-   call def_output_primary(ncid_primary, dims_var, output_primary, &
-        indexing%common_indices_t, input_primary(0)%qc_flag_masks, &
-        input_primary(0)%qc_flag_meanings, deflate_level2, shuffle_flag2, &
-        .false., phases=loop_ind(1:n_in_files)%LUTClass)
-   if (do_secondary) then
-      call def_output_secondary(ncid_secondary, dims_var, output_secondary, &
-           indexing%common_indices_t, deflate_level2, shuffle_flag2, .false.)
-   end if
+    do i = 1, n_in_files
+       call dealloc_input_indices(loop_ind(i))
+    end do
 
-   do i = 1, n_in_files
-      call dealloc_input_indices(loop_ind(i))
-   end do
+    ! Deallocate the first input structure
+    call dealloc_input_data_primary_all(input_primary(0))
+    if (do_secondary) then
+       call dealloc_input_data_secondary_all(input_secondary(0))
+    end if
 
-   ! Deallocate the first input structure
-   call dealloc_input_data_primary_all(input_primary(0))
-   if (do_secondary) then
-      call dealloc_input_data_secondary_all(input_secondary(0))
-   end if
+    ! Write output to netcdf variables
+    call write_output_primary(ncid_primary, indexing%common_indices_t, &
+         output_primary)
+    if (do_secondary) then
+       call write_output_secondary(ncid_secondary, indexing%common_indices_t, &
+            output_secondary)
+    end if
 
-   ! Write output to netcdf variables
-   call write_output_primary(ncid_primary, indexing%common_indices_t, &
-                             output_primary)
-   if (do_secondary) then
-      call write_output_secondary(ncid_secondary, indexing%common_indices_t, &
-                                  output_secondary)
-   end if
+    ! Close output file
+    if (nf90_close(ncid_primary) /= NF90_NOERR) then
+       write(*,*) 'ERROR: nf90_close()'
+       stop error_stop_code
+    end if
 
-   ! Close output file
-   if (nf90_close(ncid_primary) /= NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_close()'
-      stop error_stop_code
-   end if
+    if (do_secondary) then
+       if (nf90_close(ncid_secondary) /= NF90_NOERR) then
+          write(*,*) 'ERROR: nf90_close()'
+          stop error_stop_code
+       end if
+    end if
 
-   if (do_secondary) then
-      if (nf90_close(ncid_secondary) /= NF90_NOERR) then
-         write(*,*) 'ERROR: nf90_close()'
-         stop error_stop_code
-      end if
-   end if
+    ! Deallocate output structure
+    call dealloc_output_data_primary(output_primary)
+    if (do_secondary) then
+       call dealloc_output_data_secondary(output_secondary)
+    end if
 
-   ! Deallocate output structure
-   call dealloc_output_data_primary(output_primary)
-   if (do_secondary) then
-      call dealloc_output_data_secondary(output_secondary)
-   end if
-
-   call dealloc_common_indices(indexing%common_indices_t)
-
+    call dealloc_common_indices(indexing%common_indices_t)
 
 #ifdef WRAPPER
 end subroutine post_process_level2
