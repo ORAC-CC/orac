@@ -36,6 +36,7 @@
 ! 2016/01/28, GM: Add ctp and ctt corrected and corrected_uncertianty.
 ! 2016/03/02, AP: Homogenisation of I/O modules.
 ! 2017/01/09, CP: ML additions.
+! 2017/06/22, OS: Added phase variables.
 !
 ! $Id$
 !
@@ -171,6 +172,10 @@ subroutine dealloc_input_data_primary_all(data)
 
    if (associated(data%phase))               deallocate(data%phase)
    if (associated(data%phase_pavolonis))     deallocate(data%phase_pavolonis)
+
+   if (associated(data%ann_phase))           deallocate(data%ann_phase)
+   if (associated(data%ann_phase_uncertainty)) deallocate(data%ann_phase_uncertainty)
+   if (associated(data%cphcot))              deallocate(data%cphcot)
 
 end subroutine dealloc_input_data_primary_all
 
