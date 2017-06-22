@@ -32,6 +32,7 @@
 ! 2016/07/19, AP: Reduce rho and swansea_s to only contain terms that were
 !    retrieved. This is indicated by the rho|ss_terms array (and Nrho|Nss).
 ! 2017/01/09, CP: ML additions.
+! 2017/06/22, OS: Added phase variables.
 !
 ! $Id$
 !
@@ -146,6 +147,10 @@ module orac_input_m
       integer(byte), pointer :: cldmask(:,:,:)
       real(sreal),   pointer :: cldmask_uncertainty(:,:,:)
 
+      integer(byte), pointer :: ann_phase(:,:,:)
+      real(sreal),   pointer :: ann_phase_uncertainty(:,:,:)
+      real(sreal),   pointer :: cphcot(:,:,:)
+      
       integer(byte), pointer :: phase(:,:)
       integer(byte), pointer :: phase_pavolonis(:,:)
    end type input_data_primary_t
@@ -306,6 +311,9 @@ subroutine cross_reference_indexing(n, loop_ind, main_ind)
                                   any(loop_ind(1:n)%flags%do_cldmask_uncertainty)
    main_ind%flags%do_phase           = any(loop_ind(1:n)%flags%do_phase)
    main_ind%flags%do_covariance      = any(loop_ind(1:n)%flags%do_covariance)
+   main_ind%flags%do_ann_phase  = any(loop_ind(1:n)%flags%do_ann_phase)
+   main_ind%flags%do_ann_phase_uncertainty = &
+                                  any(loop_ind(1:n)%flags%do_ann_phase_uncertainty)
 
    ! Identify all available channels
    i0 = 0
