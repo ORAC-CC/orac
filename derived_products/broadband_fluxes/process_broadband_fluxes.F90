@@ -20,7 +20,7 @@
 !  cci_collocation={filename}
 !  modis_aerosol={filename} accepts MOD04 or MYD04 COLLECTION 6
 !  modis_cloud={filename} accepts MOD06 or MYD06 COLLECTION 6
-!  LUT_mode={filename} this is generated off the repository currently 
+!  LUT_mode={filename} this is generated off the repository currently
 !
 ! Subroutines:
 !   interpolate_meteorology.F90
@@ -72,10 +72,10 @@
 ! 2016/08/15, MC: Changed output time array from float to double.
 ! 2016/08/16, MC: Modified code to restrict size of output netCDF file by the optional input
 !                 pixel selection range (pxX0,pxY0,pxX1,pxY1).
-! 2016/09/19, MC: Added option to run code using MODIS C6 aerosol (MOD04/MYD04) & cloud 
+! 2016/09/19, MC: Added option to run code using MODIS C6 aerosol (MOD04/MYD04) & cloud
 !                 (MOD06/MYD06) instead of CCI. Added hdf reader tools for MODIS.
 !                 Re-formatted optional arguments for efficiency.
-! 2016/09/22, MC: Added conditional statement to input pixel selection range so if 
+! 2016/09/22, MC: Added conditional statement to input pixel selection range so if
 !                 values of zero are specified the whole range of the orbit is used.
 ! 2016/12/09, MC: Added options to examine impact of corrected CTH and infinitely thin clouds.
 ! 2017/01/12, MC: Added driver code and option to run SW LUT for fast implementation of the broadband
@@ -87,6 +87,7 @@
 !                 are computed by taking the ratio of the measured solar irradiance in the 400-700 nm
 !                 wavelength range by the estimated value based on planck radiation law and earth-sun distance.
 !                 Note, need to update tsi_soho_sorce_1978_2015.nc.
+! 2017/06/23, OS: added WRAPPER subroutine definition and settings
 !
 ! $Id$
 !
@@ -94,319 +95,336 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
+#ifndef WRAPPER
 program process_broadband_fluxes
+#else
+  subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname, FLXalgorithm, status, Faerosol, Fcollocation)
+#endif
 
-   use common_constants_m
-   use orac_ncdf_m
-   use global_attributes_m
-   use source_attributes_m
-   use system_utils_m
-   use netcdf
+    use common_constants_m
+    use orac_ncdf_m
+    use global_attributes_m
+    use source_attributes_m
+    use system_utils_m
+    use netcdf
 
-   implicit none
+    implicit none
 
-   character(path_length) :: Fprimary,FPRTM,FTSI,FALB,fname,FLXalgorithm,Faerosol,Fcollocation
-   character(path_length) :: FMOD04,FMOD06
-   integer algorithm_processing_mode !1-BUGSrad, 2-FuLiou2G, 3-FuLiou4S, 4-FuLiou 2S
-   integer :: ncid, i, j, k, dims_var(2), dim3d_var(3)
-   logical, parameter :: verbose=.true.
-   logical there
-   type(global_attributes_t) :: global_atts
-   type(source_attributes_t) :: source_atts
+#ifndef WRAPPER
+    character(path_length) :: Fprimary,FPRTM,FTSI,FALB,fname,FLXalgorithm,Faerosol,Fcollocation
+#else
+    character(file_length),intent(in) :: Fprimary,FPRTM,FTSI,FALB,fname,FLXalgorithm
+    character(file_length),intent(inout),optional :: Faerosol,Fcollocation
+#endif    
+    
+    character(path_length) :: FMOD04,FMOD06
+    integer :: algorithm_processing_mode !1-BUGSrad, 2-FuLiou2G, 3-FuLiou4S, 4-FuLiou 2S
+    integer :: ncid, i, j, k, dims_var(2), dim3d_var(3), status
+    logical, parameter :: verbose=.true.
+    logical :: there
+    type(global_attributes_t) :: global_atts
+    type(source_attributes_t) :: source_atts
 
-   !Constants
-   real(kind=8), parameter :: Runiv = 8314. !universal gas constant
-   real(kind=8), parameter :: Rdryair = 287.05 !dry air gas constant
-   real(kind=8), parameter :: Rwetair = Runiv / 18. !moist air gas constant
-   real(kind=8), parameter :: Rozone = Runiv / 48. !ozone gas constant
+    !Constants
+    real(kind=8), parameter :: Runiv = 8314. !universal gas constant
+    real(kind=8), parameter :: Rdryair = 287.05 !dry air gas constant
+    real(kind=8), parameter :: Rwetair = Runiv / 18. !moist air gas constant
+    real(kind=8), parameter :: Rozone = Runiv / 48. !ozone gas constant
 
-   !BUGSrad setup
-!   integer, parameter :: NL = 59  !# of vertical layers in radiative flux code must be odd
-   integer, parameter :: NL = 29
-   integer, parameter :: NLS = NL+1
-   real, dimension(NLS) :: pxZ, pxP, pxT, pxQ, pxO3 !pixel level PRTM profiles
+    !BUGSrad setup
+    !   integer, parameter :: NL = 59  !# of vertical layers in radiative flux code must be odd
+    integer, parameter :: NL = 29
+    integer, parameter :: NLS = NL+1
+    real, dimension(NLS) :: pxZ, pxP, pxT, pxQ, pxO3 !pixel level PRTM profiles
 
-   !PRTM FILE
-   real, allocatable :: P(:,:,:)  ! Pressure - grid
-   real, allocatable :: T(:,:,:)  ! Temperature - grid
-   real, allocatable :: H(:,:,:)  ! Height - grid
-   real, allocatable :: Q(:,:,:)  ! Humidity - grid
-   real, allocatable :: O3(:,:,:) ! Ozone - grid
-   real, allocatable :: inP(:)  ! Pressure - interpolated
-   real, allocatable :: inT_(:)  ! Temperature - interpolated
-   real, allocatable :: inH(:)  ! Height - interpolated
-   real, allocatable :: inQ(:)  ! Humidity - interpolated
-   real, allocatable :: inO3(:) ! Ozone - interpolated
-   real, allocatable :: lon_prtm(:,:)  ! Longitude values
-   real, allocatable :: lat_prtm(:,:)  ! Latitude values
-   real, allocatable :: tlon_prtm(:)  ! Longitude values
-   real, allocatable :: tlat_prtm(:)  ! Latitude values
-   real, allocatable :: dummy1d(:)
-   integer(kind=lint) :: xdim_prtm,ydim_prtm,levdim_prtm !PRTM dimensions
-   integer(kind=lint) :: xN,yN !Satellite 1-km dimensions
-   integer, dimension(NLS) :: mask_vres !to match PRTM vertical resolution to BUGSrad
+    !PRTM FILE
+    real, allocatable :: P(:,:,:)  ! Pressure - grid
+    real, allocatable :: T(:,:,:)  ! Temperature - grid
+    real, allocatable :: H(:,:,:)  ! Height - grid
+    real, allocatable :: Q(:,:,:)  ! Humidity - grid
+    real, allocatable :: O3(:,:,:) ! Ozone - grid
+    real, allocatable :: inP(:)  ! Pressure - interpolated
+    real, allocatable :: inT_(:)  ! Temperature - interpolated
+    real, allocatable :: inH(:)  ! Height - interpolated
+    real, allocatable :: inQ(:)  ! Humidity - interpolated
+    real, allocatable :: inO3(:) ! Ozone - interpolated
+    real, allocatable :: lon_prtm(:,:)  ! Longitude values
+    real, allocatable :: lat_prtm(:,:)  ! Latitude values
+    real, allocatable :: tlon_prtm(:)  ! Longitude values
+    real, allocatable :: tlat_prtm(:)  ! Latitude values
+    real, allocatable :: dummy1d(:)
+    integer(kind=lint) :: xdim_prtm,ydim_prtm,levdim_prtm !PRTM dimensions
+    integer(kind=lint) :: xN,yN !Satellite 1-km dimensions
+    integer, dimension(NLS) :: mask_vres !to match PRTM vertical resolution to BUGSrad
 
-   !Albedo FILE
-   real, allocatable :: rho_0d(:,:,:)  ! Albedo direct directional - blacksky albedo
-   real, allocatable :: rho_dd(:,:,:)  ! Albedo diffuse directional - whitesky albedo
-   real, allocatable :: alb_data(:,:,:)  ! Broadband albedo
-   real, allocatable :: emis_data(:,:,:)  ! Emissivity
-   real, allocatable :: alb_abs_ch_numbers(:) !channels used in albedo product
-   real, allocatable :: emis_abs_ch_numbers(:) !channels used in emissivity product
-   integer :: ch1ID,ch2ID,ch3ID,ch4ID
-   integer(kind=lint) :: nc_alb
-   integer(kind=lint) :: nc_emis
+    !Albedo FILE
+    real, allocatable :: rho_0d(:,:,:)  ! Albedo direct directional - blacksky albedo
+    real, allocatable :: rho_dd(:,:,:)  ! Albedo diffuse directional - whitesky albedo
+    real, allocatable :: alb_data(:,:,:)  ! Broadband albedo
+    real, allocatable :: emis_data(:,:,:)  ! Emissivity
+    real, allocatable :: alb_abs_ch_numbers(:) !channels used in albedo product
+    real, allocatable :: emis_abs_ch_numbers(:) !channels used in emissivity product
+    integer :: ch1ID,ch2ID,ch3ID,ch4ID
+    integer(kind=lint) :: nc_alb
+    integer(kind=lint) :: nc_emis
 
-   real(kind=sreal), allocatable :: mCTP(:,:)
+    real(kind=sreal), allocatable :: mCTP(:,:)
 
-   !PRIMARY FILE
-   real, allocatable :: COT(:,:)  ! Cloud Optical Depth (xp,yp)
-   real, allocatable :: REF(:,:)  ! Cloud Effective Radius (xp,yp)
-   real, allocatable :: LAT(:,:)  ! Latitude Satellite (xp,yp)
-   real, allocatable :: LON(:,:)  ! Longitude Satellite (xp,yp)
-   real, allocatable :: CC_TOT(:,:)  ! Cloud Mask (xp,yp)
-   real, allocatable :: CTH(:,:)  ! Cloud Top Height (xp,yp)
-   real, allocatable :: SOLZ(:,:)  ! Solar zenith angle (xp,yp)
-   real, allocatable :: PHASE(:,:)  ! Cloud phase (xp,yp)
-   real, allocatable :: CTT(:,:)  ! Cloud top temperature (xp,yp)
-   real, allocatable :: CTP(:,:)  ! Cloud top pressure (xp,yp)
-   real(kind=dreal), allocatable :: TIME(:,:)  ! Time of pixel in Julian Days (xp,yp)
-   real, allocatable :: STEMP(:,:)  ! Surface temperature from primary files (xp,yp)
+    !PRIMARY FILE
+    real, allocatable :: COT(:,:)  ! Cloud Optical Depth (xp,yp)
+    real, allocatable :: REF(:,:)  ! Cloud Effective Radius (xp,yp)
+    real, allocatable :: LAT(:,:)  ! Latitude Satellite (xp,yp)
+    real, allocatable :: LON(:,:)  ! Longitude Satellite (xp,yp)
+    real, allocatable :: CC_TOT(:,:)  ! Cloud Mask (xp,yp)
+    real, allocatable :: CTH(:,:)  ! Cloud Top Height (xp,yp)
+    real, allocatable :: SOLZ(:,:)  ! Solar zenith angle (xp,yp)
+    real, allocatable :: PHASE(:,:)  ! Cloud phase (xp,yp)
+    real, allocatable :: CTT(:,:)  ! Cloud top temperature (xp,yp)
+    real, allocatable :: CTP(:,:)  ! Cloud top pressure (xp,yp)
+    real(kind=dreal), allocatable :: TIME(:,:)  ! Time of pixel in Julian Days (xp,yp)
+    real, allocatable :: STEMP(:,:)  ! Surface temperature from primary files (xp,yp)
 
-   !Total Solar Irriadiance File
-   real, allocatable :: TSI_tsi_true_earth(:) !TOTAL SOLAR IRRADIANCE AT EARTH-SUN DISTANCE
-   real, allocatable :: TSI_tsi_1au(:) !TOTAL SOLAR IRRADIANCE AT 1-AU
-   real, allocatable :: TSI_year(:) !TSI INDEX YEAR
-   real, allocatable :: TSI_jday(:) !TSI INDEX Julian Day
-   real, allocatable :: TSI_par_weight(:) !TSI Weight for PAR based on SORCE data
-   integer(kind=lint)  :: nTSI = 13425
+    !Total Solar Irriadiance File
+    real, allocatable :: TSI_tsi_true_earth(:) !TOTAL SOLAR IRRADIANCE AT EARTH-SUN DISTANCE
+    real, allocatable :: TSI_tsi_1au(:) !TOTAL SOLAR IRRADIANCE AT 1-AU
+    real, allocatable :: TSI_year(:) !TSI INDEX YEAR
+    real, allocatable :: TSI_jday(:) !TSI INDEX Julian Day
+    real, allocatable :: TSI_par_weight(:) !TSI Weight for PAR based on SORCE data
+    integer(kind=lint)  :: nTSI = 13425
 
-   !AEROSOL CCI File (optional)
-   real, allocatable :: aerLon(:)  ! longitude
-   real, allocatable :: aerLat(:)  ! latitude
-   real, allocatable :: aerAOD(:)  ! aerosol optical depth
-   real, allocatable :: aerREF(:)  ! aerosol effective radius
-   real, allocatable :: aerQflag(:)! q-flag
-   real, allocatable :: AOD550(:,:)! Aerosol optical depth at 1 km resolution
-   real, allocatable :: AREF(:,:)  ! Aerosol Effective Radius 1 km resolution
-   integer, allocatable :: aID(:,:)   ! aerosol index for i,jth locations in cloud file
-   integer(kind=lint) :: nc_aer
-      integer aID_vid
-
-
-   !Local Pixel-Scale Variables
-   integer :: pxYear  !Year
-   integer :: pxMonth !Month
-   integer :: pxDay   !Day
-   real :: pxJday  !JULIAN DAY FROM 1 - 365
-   real :: pxTSI   !Total incoming solar irradiance (true-earth)
-   real :: pxPAR_WEIGHT   !Total incoming solar irradiance (true-earth)
-   real :: pxAsfc  !Surface albedo
-   real :: pxAsfcSWRdr !DIRECT visible surface albedo
-   real :: pxAsfcNIRdr !DIRECT near-infrared surface albedo
-   real :: pxAsfcSWRdf !DIFFUSE visible surface albedo
-   real :: pxAsfcNIRdf !DIFFUSE near-infrared surface albedo
-   real :: pxTheta !cosine of solar zenith angle
-   real :: pxPhase !cloud phase
-   real :: pxMask  !cloud mask
-   real :: pxCTT   !cloud top temperature
-   real :: pxCTP   !cloud top PRESSURE
-   real :: pxaREF  !aerosol effective radius
-   real :: pxAOD  !aerosol optical depth
-   real :: pxREF   !cloud effective radius
-   real :: pxCOT   !cloud optical depth
-   real :: pxCTH   !cloud top height
-   real :: pxHctop !input cloud top height
-   real :: pxHcbase!input cloud base height
-   real :: pxLayerType !aerosol type
-   real :: pxPhaseFlag !cloud phase type
-   real :: pxts   !land/sea surface temperature
-   real pxregime
-   integer pxHctopID(1),pxHcbaseID(1)
-   real :: pxLTS
-   real :: pxFTH
-   real :: pxcolO3
-   real :: rho_0d_bugsrad(6),rho_dd_bugsrad(6),emis_bugsrad(12)
-   real :: rho_0d_fuliou(18),rho_dd_fuliou(18),emis_fuliou(12)
-
-   !radiation flux profiles
-   real (kind=8), dimension(1,NL) ::  &
-      ulwfx   ,&  !all-sky pward longwave flux
-      dlwfx   ,&  !all-sky downward longwave flux
-      uswfx   ,&  !all-sky upward shortwave flux
-      dswfx   ,&  !all-sky downward shortwave flux
-      ulwfxclr,&  !clear-sky upward longwave flux
-      dlwfxclr,&  !clear-sky downward longwave flux
-      uswfxclr,&  !clear-sky upward shortwave flux
-      dswfxclr    !clear-sky downward shortwave flux
-
-   !Local Flux & PAR variables
-   real ::    &
-      pxtoalwup,pxtoaswdn,pxtoaswup ,& !All-sky TOA fluxes
-      pxtoalwupclr,pxtoaswupclr, & !Clear-Sky TOA fluxes
-      pxboalwup,pxboalwdn,pxboaswdn,pxboaswup ,& !All-sky BOA fluxes
-      pxboalwupclr,pxboalwdnclr,pxboaswdnclr,pxboaswupclr,& !clear-sky BOA fluxes
-      tpar   ,&    !toa par total
-      bpardif,&    !boa par diffuse
-      bpar   ,&    !boa par total
-      bpardir      !boa par direct
+    !AEROSOL CCI File (optional)
+    real, allocatable :: aerLon(:)  ! longitude
+    real, allocatable :: aerLat(:)  ! latitude
+    real, allocatable :: aerAOD(:)  ! aerosol optical depth
+    real, allocatable :: aerREF(:)  ! aerosol effective radius
+    real, allocatable :: aerQflag(:)! q-flag
+    real, allocatable :: AOD550(:,:)! Aerosol optical depth at 1 km resolution
+    real, allocatable :: AREF(:,:)  ! Aerosol Effective Radius 1 km resolution
+    integer, allocatable :: aID(:,:)   ! aerosol index for i,jth locations in cloud file
+    integer(kind=lint) :: nc_aer
+    integer aID_vid
 
 
+    !Local Pixel-Scale Variables
+    integer :: pxYear  !Year
+    integer :: pxMonth !Month
+    integer :: pxDay   !Day
+    real :: pxJday  !JULIAN DAY FROM 1 - 365
+    real :: pxTSI   !Total incoming solar irradiance (true-earth)
+    real :: pxPAR_WEIGHT   !Total incoming solar irradiance (true-earth)
+    real :: pxAsfc  !Surface albedo
+    real :: pxAsfcSWRdr !DIRECT visible surface albedo
+    real :: pxAsfcNIRdr !DIRECT near-infrared surface albedo
+    real :: pxAsfcSWRdf !DIFFUSE visible surface albedo
+    real :: pxAsfcNIRdf !DIFFUSE near-infrared surface albedo
+    real :: pxTheta !cosine of solar zenith angle
+    real :: pxPhase !cloud phase
+    real :: pxMask  !cloud mask
+    real :: pxCTT   !cloud top temperature
+    real :: pxCTP   !cloud top PRESSURE
+    real :: pxaREF  !aerosol effective radius
+    real :: pxAOD  !aerosol optical depth
+    real :: pxREF   !cloud effective radius
+    real :: pxCOT   !cloud optical depth
+    real :: pxCTH   !cloud top height
+    real :: pxHctop !input cloud top height
+    real :: pxHcbase!input cloud base height
+    real :: pxLayerType !aerosol type
+    real :: pxPhaseFlag !cloud phase type
+    real :: pxts   !land/sea surface temperature
+    real pxregime
+    integer pxHctopID(1),pxHcbaseID(1)
+    real :: pxLTS
+    real :: pxFTH
+    real :: pxcolO3
+    real :: rho_0d_bugsrad(6),rho_dd_bugsrad(6),emis_bugsrad(12)
+    real :: rho_0d_fuliou(18),rho_dd_fuliou(18),emis_fuliou(12)
 
-   !NETCDF Output geolocation data
-   real(kind=dreal), allocatable :: time_data(:,:)
-   real, allocatable :: lat_data(:,:), lon_data(:,:) !latitude & longitude
+    !radiation flux profiles
+    real (kind=8), dimension(1,NL) ::  &
+         ulwfx   ,&  !all-sky pward longwave flux
+         dlwfx   ,&  !all-sky downward longwave flux
+         uswfx   ,&  !all-sky upward shortwave flux
+         dswfx   ,&  !all-sky downward shortwave flux
+         ulwfxclr,&  !clear-sky upward longwave flux
+         dlwfxclr,&  !clear-sky downward longwave flux
+         uswfxclr,&  !clear-sky upward shortwave flux
+         dswfxclr    !clear-sky downward shortwave flux
 
-   !NETCDF Output TOA & BOA radiation flux data
-   real, allocatable :: toa_lwup(:,:) !TOA outgoing LW flux
-     integer toa_lwup_vid
-
-   real, allocatable :: toa_swup(:,:) !TOA outgoing SW flux
-     integer toa_swup_vid
-
-   real, allocatable :: toa_swdn(:,:) !TOA incoming SW flux
-     integer toa_swdn_vid
-
-   real, allocatable :: boa_lwup(:,:) !BOA outgoing LW flux
-     integer boa_lwup_vid
-
-   real, allocatable :: boa_lwdn(:,:) !BOA incoming LW flux
-     integer boa_lwdn_vid
-
-   real, allocatable :: boa_swup(:,:) !BOA outgoing SW flux
-     integer boa_swup_vid
-
-   real, allocatable :: boa_swdn(:,:) !BOA incoming SW flux
-     integer boa_swdn_vid
-
-   !NETCDF Output CLEAR-SKY TOA & BOA radiation flux data
-   real, allocatable :: toa_lwup_clr(:,:) !TOA outgoing LW flux clear-sky condition
-     integer toa_lwup_clr_vid
-
-   real, allocatable :: toa_lwdn_clr(:,:) !TOA incoming LW flux clear-sky condition
-     integer toa_lwdn_clr_vid
-
-   real, allocatable :: toa_swup_clr(:,:) !TOA outgoing SW flux clear-sky condition
-     integer toa_swup_clr_vid
-
-   real, allocatable :: boa_lwup_clr(:,:) !BOA outgoing LW flux clear-sky condition
-     integer boa_lwup_clr_vid
-
-   real, allocatable :: boa_lwdn_clr(:,:) !BOA incoming LW flux clear-sky condition
-     integer boa_lwdn_clr_vid
-
-   real, allocatable :: boa_swup_clr(:,:) !BOA outgoing SW flux clear-sky condition
-     integer boa_swup_clr_vid
-
-   real, allocatable :: boa_swdn_clr(:,:) !BOA incoming SW flux clear-sky condition
-     integer boa_swdn_clr_vid
-
-   !NETCDF Output TOA & BOA PAR radiation flux data
-   real, allocatable :: toa_par_tot(:,:) !TOA PAR - total
-     integer toa_par_tot_vid
-
-   real, allocatable :: boa_par_tot(:,:) !BOA PAR - total
-     integer boa_par_tot_vid
-
-   real, allocatable :: boa_par_dif(:,:) !BOA PAR - diffuse
-     integer boa_par_dif_vid
-
-   !NETCDF Output METEOROLOGICAL VARIABLES
-   real, allocatable :: boa_tsfc(:,:) !BOA temperature
-     integer boa_tsfc_vid
-
-   real, allocatable :: boa_psfc(:,:) !BOA pressure
-     integer boa_psfc_vid
-
-   real, allocatable :: boa_qsfc(:,:) !BOA vapour pressure
-     integer boa_qsfc_vid
-
-   real, allocatable :: lts(:,:) !LTS (LOWER TROPOSPHERE STABILITY)
-     integer lts_vid
-
-   real, allocatable :: fth(:,:) !FTH (FREE TROPOSPHERE HUMIDITY 850 hPa)
-     integer fth_vid
-
-   real, allocatable :: colO3(:,:) !Column Ozone
-     integer colO3_vid
-
-   !NETCDF OUTPUT (lat/lon/time)
-      integer LAT_vid
-      integer LON_vid
-      integer TIME_vid
-
-   integer(kind=byte), allocatable :: retrflag(:,:) !regime flag
-      integer retrflag_vid
-
-   ! More options
-   integer InfThnCld, corrected_cth !infinitely thin cloud assumption & use corrected cloud top heights
-
-   integer, parameter :: deflate_lv = 9
-   logical, parameter :: shuffle_flag = .false.
-
-   !To compress data
-   real(kind=sreal) :: temp_real_var
-   integer(kind=sint) :: vmin = 0
-   integer(kind=sint) :: vmax = 32000
-   real(kind=sreal) :: var_scale = 10.0
-   real(kind=sreal) :: var_scale_geo = 100.0
-   real(kind=sreal) :: var_offset = 0.0
-
-   !NetCDF output dimensions
-   integer :: &
-      ixstart,ixstop,xstep  ,& ! First and last super-pixel X locations
-      iystart,iystop,ystep  ,& ! First and last super-pixel Y locations
-      n_x, n_y, n_v
-
-   !debugging
-   integer :: nanFlag
-
-   !Pixel selection option
-   character(path_length) :: cpxX0,cpxY0,cpxX1,cpxY1
-   integer :: pxX0,pxY0,pxX1,pxY1
-   integer value
-   integer aerosol_processing_mode !=0 no processing, =1 collocate aerosol cci file, =2 collocate & save file
-
-   !ECMWF-PRTM for comparing my interpolation scheme to ORAC scheme
-   integer :: tlatid,tlonid
-
-   !For reading time from input string
-   integer :: index1,index2
-   character(len=4) :: cyear
-   character(len=2) :: cmonth
-   character(len=2) :: cday
-
-   !For CPU processing time
-   real :: cpuStart,cpuFinish
-
-   integer :: nargs !number of command line arguments
-   character(path_length) :: argname, tmpname, tmpname1, tmpname2
-
-   !Broadband Albedo LUT
-   real, allocatable :: LUT_toa_sw_albedo(:,:,:,:),&
-                        LUT_boa_sw_transmission(:,:,:,:),&
-                        LUT_boa_sw_albedo(:,:,:,:)
-   character(path_length) FtoaSW
-   integer :: lut_mode !=0 no processing, =1 use LUT
-   integer(kind=lint) :: nASFC,nRE,nTAU,nSOLZ
-   real, allocatable :: LUT_SFC_ALB(:),LUT_REF(:),LUT_COT(:),LUT_SOLZ(:)
+    !Local Flux & PAR variables
+    real ::    &
+         pxtoalwup,pxtoaswdn,pxtoaswup ,& !All-sky TOA fluxes
+         pxtoalwupclr,pxtoaswupclr, & !Clear-Sky TOA fluxes
+         pxboalwup,pxboalwdn,pxboaswdn,pxboaswup ,& !All-sky BOA fluxes
+         pxboalwupclr,pxboalwdnclr,pxboaswdnclr,pxboaswupclr,& !clear-sky BOA fluxes
+         tpar   ,&    !toa par total
+         bpardif,&    !boa par diffuse
+         bpar   ,&    !boa par total
+         bpardir      !boa par direct
 
 
-!-------------------------------------------------------------------------------
-   !Read manditory arguments
-   nargs = command_argument_count()
-   call get_command_argument(1, Fprimary)
-   call get_command_argument(2, FPRTM)
-   call get_command_argument(3, FALB)
-   call get_command_argument(4, FTSI)
-   call get_command_argument(5, fname)
-    print*,'primary file: ',trim(Fprimary)
+
+    !NETCDF Output geolocation data
+    real(kind=dreal), allocatable :: time_data(:,:)
+    real, allocatable :: lat_data(:,:), lon_data(:,:) !latitude & longitude
+
+    !NETCDF Output TOA & BOA radiation flux data
+    real, allocatable :: toa_lwup(:,:) !TOA outgoing LW flux
+    integer toa_lwup_vid
+
+    real, allocatable :: toa_swup(:,:) !TOA outgoing SW flux
+    integer toa_swup_vid
+
+    real, allocatable :: toa_swdn(:,:) !TOA incoming SW flux
+    integer toa_swdn_vid
+
+    real, allocatable :: boa_lwup(:,:) !BOA outgoing LW flux
+    integer boa_lwup_vid
+
+    real, allocatable :: boa_lwdn(:,:) !BOA incoming LW flux
+    integer boa_lwdn_vid
+
+    real, allocatable :: boa_swup(:,:) !BOA outgoing SW flux
+    integer boa_swup_vid
+
+    real, allocatable :: boa_swdn(:,:) !BOA incoming SW flux
+    integer boa_swdn_vid
+
+    !NETCDF Output CLEAR-SKY TOA & BOA radiation flux data
+    real, allocatable :: toa_lwup_clr(:,:) !TOA outgoing LW flux clear-sky condition
+    integer toa_lwup_clr_vid
+
+    real, allocatable :: toa_lwdn_clr(:,:) !TOA incoming LW flux clear-sky condition
+    integer toa_lwdn_clr_vid
+
+    real, allocatable :: toa_swup_clr(:,:) !TOA outgoing SW flux clear-sky condition
+    integer toa_swup_clr_vid
+
+    real, allocatable :: boa_lwup_clr(:,:) !BOA outgoing LW flux clear-sky condition
+    integer boa_lwup_clr_vid
+
+    real, allocatable :: boa_lwdn_clr(:,:) !BOA incoming LW flux clear-sky condition
+    integer boa_lwdn_clr_vid
+
+    real, allocatable :: boa_swup_clr(:,:) !BOA outgoing SW flux clear-sky condition
+    integer boa_swup_clr_vid
+
+    real, allocatable :: boa_swdn_clr(:,:) !BOA incoming SW flux clear-sky condition
+    integer boa_swdn_clr_vid
+
+    !NETCDF Output TOA & BOA PAR radiation flux data
+    real, allocatable :: toa_par_tot(:,:) !TOA PAR - total
+    integer toa_par_tot_vid
+
+    real, allocatable :: boa_par_tot(:,:) !BOA PAR - total
+    integer boa_par_tot_vid
+
+    real, allocatable :: boa_par_dif(:,:) !BOA PAR - diffuse
+    integer boa_par_dif_vid
+
+    !NETCDF Output METEOROLOGICAL VARIABLES
+    real, allocatable :: boa_tsfc(:,:) !BOA temperature
+    integer boa_tsfc_vid
+
+    real, allocatable :: boa_psfc(:,:) !BOA pressure
+    integer boa_psfc_vid
+
+    real, allocatable :: boa_qsfc(:,:) !BOA vapour pressure
+    integer boa_qsfc_vid
+
+    real, allocatable :: lts(:,:) !LTS (LOWER TROPOSPHERE STABILITY)
+    integer lts_vid
+
+    real, allocatable :: fth(:,:) !FTH (FREE TROPOSPHERE HUMIDITY 850 hPa)
+    integer fth_vid
+
+    real, allocatable :: colO3(:,:) !Column Ozone
+    integer colO3_vid
+
+    !NETCDF OUTPUT (lat/lon/time)
+    integer LAT_vid
+    integer LON_vid
+    integer TIME_vid
+
+    integer(kind=byte), allocatable :: retrflag(:,:) !regime flag
+    integer retrflag_vid
+
+    ! More options
+    integer InfThnCld, corrected_cth !infinitely thin cloud assumption & use corrected cloud top heights
+
+    integer, parameter :: deflate_lv = 9
+    logical, parameter :: shuffle_flag = .false.
+
+    !To compress data
+    real(kind=sreal) :: temp_real_var
+    integer(kind=sint) :: vmin = 0
+    integer(kind=sint) :: vmax = 32000
+    real(kind=sreal) :: var_scale = 10.0
+    real(kind=sreal) :: var_scale_geo = 100.0
+    real(kind=sreal) :: var_offset = 0.0
+
+    !NetCDF output dimensions
+    integer :: &
+         ixstart,ixstop,xstep  ,& ! First and last super-pixel X locations
+         iystart,iystop,ystep  ,& ! First and last super-pixel Y locations
+         n_x, n_y, n_v
+
+    !debugging
+    integer :: nanFlag
+
+    !Pixel selection option
+    character(path_length) :: cpxX0,cpxY0,cpxX1,cpxY1
+    integer :: pxX0,pxY0,pxX1,pxY1
+    integer value
+    integer aerosol_processing_mode !=0 no processing, =1 collocate aerosol cci file, =2 collocate & save file
+
+    !ECMWF-PRTM for comparing my interpolation scheme to ORAC scheme
+    integer :: tlatid,tlonid
+
+    !For reading time from input string
+    integer :: index1,index2
+    character(len=4) :: cyear
+    character(len=2) :: cmonth
+    character(len=2) :: cday
+
+    !For CPU processing time
+    real :: cpuStart,cpuFinish
+
+    integer :: nargs !number of command line arguments
+    character(path_length) :: argname, tmpname, tmpname1, tmpname2
+
+    !Broadband Albedo LUT
+    real, allocatable :: LUT_toa_sw_albedo(:,:,:,:),&
+         LUT_boa_sw_transmission(:,:,:,:),&
+         LUT_boa_sw_albedo(:,:,:,:)
+    character(path_length) FtoaSW
+    integer :: lut_mode !=0 no processing, =1 use LUT
+    integer(kind=lint) :: nASFC,nRE,nTAU,nSOLZ
+    real, allocatable :: LUT_SFC_ALB(:),LUT_REF(:),LUT_COT(:),LUT_SOLZ(:)
+
+
+    !-------------------------------------------------------------------------------
+    !Read manditory arguments
+
+#ifndef WRAPPER    
+    nargs = command_argument_count()
+    call get_command_argument(1, Fprimary)
+    call get_command_argument(2, FPRTM)
+    call get_command_argument(3, FALB)
+    call get_command_argument(4, FTSI)
+    call get_command_argument(5, fname)
+#else
+    index1 = index(trim(adjustl(Fprimary)), " ", back=.true.)
+#endif    
+    print*,'primary file: ',trim(adjustl(Fprimary))
     print*,'prtm file : ',trim(FPRTM)
     print*,'albedo file: ',trim(FALB)
     print*,'total solar irradiance file: ',trim(FTSI)
     print*,'output file: ',trim(fname)
 
-   call get_command_argument(6, FLXalgorithm)
+#ifndef WRAPPER    
+    call get_command_argument(6, FLXalgorithm)
+#endif    
     read(flxAlgorithm,*) value
     algorithm_processing_mode=value
     if(algorithm_processing_mode .eq. 1) print*,'Algorithm: BUGSrad'
@@ -414,23 +432,29 @@ program process_broadband_fluxes
     if(algorithm_processing_mode .eq. 3) print*,'Algorithm: FuLiou 4S'
     if(algorithm_processing_mode .eq. 4) print*,'Algorithm: FuLiou 2S'
 
-   call get_command_argument(7, cpxX0)
-   call get_command_argument(8, cpxY0)
-   call get_command_argument(9, cpxX1)
-   call get_command_argument(10, cpxY1)
+#ifndef WRAPPER
+    !maybe these should be subroutine arguments; if 0, all pixels will be processed
+    call get_command_argument(7, cpxX0)
+    call get_command_argument(8, cpxY0)
+    call get_command_argument(9, cpxX1)
+    call get_command_argument(10, cpxY1)
+#else
+    ! process all pixels if in Wrapper mode
+    cpxX0 = "0"; cpxY0 = "0"; cpxX1 = "0"; cpxY1 = "0"
+#endif    
     !x-y range of selected pixels
     if(len(trim(cpxX0)) .ne. 0 .and. len(trim(cpxX1)) .ne. 0 .and. &
-       len(trim(cpxY0)) .ne. 0 .and. len(trim(cpxY1)) .ne. 0) then
-      print*,'PROCESS MULTIPLE SATELLITE PIXELS'
-      read(cpxX0,*) value
-      pxX0=value*1
-      read(cpxX1,*) value
-      pxX1=value*1
-      read(cpxY0,*) value
-      pxY0=value*1
-      read(cpxY1,*) value
-      pxY1=value*1
-      print*,pxX0,pxX1,pxY0,pxY1
+         len(trim(cpxY0)) .ne. 0 .and. len(trim(cpxY1)) .ne. 0) then
+       print*,'PROCESS MULTIPLE SATELLITE PIXELS'
+       read(cpxX0,*) value
+       pxX0=value*1
+       read(cpxX1,*) value
+       pxX1=value*1
+       read(cpxY0,*) value
+       pxY0=value*1
+       read(cpxY1,*) value
+       pxY1=value*1
+       print*,pxX0,pxX1,pxY0,pxY1
     endif
 
     ! Read optional arguments
@@ -438,51 +462,61 @@ program process_broadband_fluxes
     corrected_cth = 0
     aerosol_processing_mode = 0
     lut_mode = 0
+#ifndef WRAPPER
+    !sets Faerosol, Fcollocation, FMOD04, FMOD06, InfThnCld, corrected_cth, FtoaSW
     do i = 11, nargs
-      call get_command_argument(i, argname)
-      index1=index(trim(adjustl(argname)),'=',back=.true.)
-      index2=len(trim(argname))
-      tmpname1=trim(adjustl(argname(1:index1)))
-      tmpname2=trim(adjustl(argname(index1+1:index2)))
+       call get_command_argument(i, argname)
+       index1=index(trim(adjustl(argname)),'=',back=.true.)
+       index2=len(trim(argname))
+       tmpname1=trim(adjustl(argname(1:index1)))
+       tmpname2=trim(adjustl(argname(index1+1:index2)))
 
-      if(tmpname1 .eq. 'cci_aerosol=') then 
-       Faerosol=trim(tmpname2)
-       aerosol_processing_mode = 1
-      end if
-      if(tmpname1 .eq. 'cci_collocation=') then 
-       Fcollocation=trim(tmpname2)
-       aerosol_processing_mode = 2
-      end if
-      if(tmpname1 .eq. 'modis_aerosol=') FMOD04=trim(tmpname2)
-      if(tmpname1 .eq. 'modis_cloud=') FMOD06=trim(tmpname2)
-      if(tmpname1 .eq. 'infinitely_thin_cloud=') InfThnCld=1
-      if(tmpname1 .eq. 'corrected_cth=') corrected_cth=1
-      if(tmpname1 .eq. 'LUT_mode=') then 
-       FtoaSW=trim(tmpname2)
-       lut_mode = 1
-      endif
+       if(tmpname1 .eq. 'cci_aerosol=') then
+          Faerosol=trim(tmpname2)
+          aerosol_processing_mode = 1
+       end if
+       if(tmpname1 .eq. 'cci_collocation=') then
+          Fcollocation=trim(tmpname2)
+          aerosol_processing_mode = 2
+       end if
+       if(tmpname1 .eq. 'modis_aerosol=') FMOD04=trim(tmpname2)
+       if(tmpname1 .eq. 'modis_cloud=') FMOD06=trim(tmpname2)
+       if(tmpname1 .eq. 'infinitely_thin_cloud=') InfThnCld=1
+       if(tmpname1 .eq. 'corrected_cth=') corrected_cth=1
+       if(tmpname1 .eq. 'LUT_mode=') then
+          FtoaSW=trim(tmpname2)
+          lut_mode = 1
+       endif
     end do
-!-------------------------------------------------------------------------------
-   !Read time string from file
-   index1=index(trim(adjustl(Fprimary)),'_',back=.true.)
+#endif    
+    !-------------------------------------------------------------------------------
+    !Read time string from file
+#ifndef WRAPPER    
+    index1=index(trim(adjustl(Fprimary)),'_',back=.true.)    
     cyear=trim(adjustl(Fprimary(index1-12:index1-9)))
     cmonth=trim(adjustl(Fprimary(index1-8:index1-6)))
     cday=trim(adjustl(Fprimary(index1-6:index1-4)))
+#else
+    index1=index(trim(adjustl(Fprimary)),'/',back=.true.)    
+    cyear=trim(adjustl(Fprimary(index1+1:index1+5)))
+    cmonth=trim(adjustl(Fprimary(index1+5:index1+6)))
+    cday=trim(adjustl(Fprimary(index1+7:index1+8)))
+#endif
     print*,cyear
     print*,cmonth
     print*,cday
-   read(cyear,'(I4)') value
-   pxYear = value
-   read(cmonth,'(I2)') value
-   pxMonth = value
-   read(cday,'(I2)') value
-   pxDay = value
-   !Get calendar day
-   call greg2jul(pxYear,pxMonth,pxDay,pxJday)
-   print*,pxYear,pxMonth,pxDay,pxJday
-!-------------------------------------------------------------------------------
-   ! Open TSI file
-   call nc_open(ncid,FTSI)
+    read(cyear,'(I4)') value
+    pxYear = value
+    read(cmonth,'(I2)') value
+    pxMonth = value
+    read(cday,'(I2)') value
+    pxDay = value
+    !Get calendar day
+    call greg2jul(pxYear,pxMonth,pxDay,pxJday)
+    print*,pxYear,pxMonth,pxDay,pxJday
+    !-------------------------------------------------------------------------------
+    ! Open TSI file
+    call nc_open(ncid,FTSI)
 
     !Allocate arrays
     allocate(TSI_tsi_true_earth(nTSI))
@@ -501,59 +535,59 @@ program process_broadband_fluxes
     ! Close file
     if (nf90_close(ncid) .ne. NF90_NOERR) then
        write(*,*) 'ERROR: read_input_dimensions_lwrtm(): Error closing ' // &
-                  'LWRTM file: ', Fprimary
+            'LWRTM file: ', Fprimary
        stop error_stop_code
     end if
 
     !Get TSI that coincides with input date
     do i=1,nTSI
-     if(TSI_year(i) .eq. pxYear .and. TSI_jday(i) .eq. pxJday) pxTSI=TSI_tsi_true_earth(i)
-     if(TSI_year(i) .eq. pxYear .and. TSI_jday(i) .eq. pxJday) pxPAR_WEIGHT=TSI_par_weight(i)
+       if(TSI_year(i) .eq. pxYear .and. TSI_jday(i) .eq. pxJday) pxTSI=TSI_tsi_true_earth(i)
+       if(TSI_year(i) .eq. pxYear .and. TSI_jday(i) .eq. pxJday) pxPAR_WEIGHT=TSI_par_weight(i)
     end do
     print*,'TSI data on date: '
     print*,'YEAR: ',pxYear
     print*,'Calendar Day: ',pxJday
     print*,'TSI = ',pxTSI
     print*,'PAR WEIGHTS = ',pxPAR_WEIGHT
-!-------------------------------------------------------------------------------
-  if(lut_mode .eq. 1) then
-   ! Open LUT file
-   call nc_open(ncid,FToaSW)
+    !-------------------------------------------------------------------------------
+    if(lut_mode .eq. 1) then
+       ! Open LUT file
+       call nc_open(ncid,FToaSW)
 
-    !Get LUT dimensions
-    nASFC = nc_dim_length(ncid, 'n_sfc_albedo', verbose)
-    nSOLZ = nc_dim_length(ncid, 'n_solar_zenith', verbose)
-    nRe   = nc_dim_length(ncid, 'n_effective_radius', verbose)
-    nTau  = nc_dim_length(ncid, 'n_optical_depth', verbose)
+       !Get LUT dimensions
+       nASFC = nc_dim_length(ncid, 'n_sfc_albedo', verbose)
+       nSOLZ = nc_dim_length(ncid, 'n_solar_zenith', verbose)
+       nRe   = nc_dim_length(ncid, 'n_effective_radius', verbose)
+       nTau  = nc_dim_length(ncid, 'n_optical_depth', verbose)
 
-    allocate(LUT_SFC_ALB(nASFC))
-    call nc_read_array(ncid, "surface_albedo", LUT_SFC_ALB, verbose)
+       allocate(LUT_SFC_ALB(nASFC))
+       call nc_read_array(ncid, "surface_albedo", LUT_SFC_ALB, verbose)
 
-    allocate(LUT_SOLZ(nSOLZ))
-    call nc_read_array(ncid, "solar_zenith_angle", LUT_SOLZ, verbose)
+       allocate(LUT_SOLZ(nSOLZ))
+       call nc_read_array(ncid, "solar_zenith_angle", LUT_SOLZ, verbose)
 
-    allocate(LUT_REF(nRe))
-    call nc_read_array(ncid, "cloud_effective_radius", LUT_REF, verbose)
+       allocate(LUT_REF(nRe))
+       call nc_read_array(ncid, "cloud_effective_radius", LUT_REF, verbose)
 
-    allocate(LUT_COT(nTau))
-    call nc_read_array(ncid, "cloud_optical_thickness", LUT_COT, verbose)
+       allocate(LUT_COT(nTau))
+       call nc_read_array(ncid, "cloud_optical_thickness", LUT_COT, verbose)
 
-    allocate(LUT_toa_sw_albedo(nASFC,nSOLZ,nRe,nTau))
-    call nc_read_array(ncid, "toa_sw_albedo", LUT_toa_sw_albedo, verbose)
+       allocate(LUT_toa_sw_albedo(nASFC,nSOLZ,nRe,nTau))
+       call nc_read_array(ncid, "toa_sw_albedo", LUT_toa_sw_albedo, verbose)
 
-    allocate(LUT_boa_sw_transmission(nASFC,nSOLZ,nRe,nTau))
-    call nc_read_array(ncid, "boa_sw_transmission", LUT_boa_sw_transmission, verbose)
+       allocate(LUT_boa_sw_transmission(nASFC,nSOLZ,nRe,nTau))
+       call nc_read_array(ncid, "boa_sw_transmission", LUT_boa_sw_transmission, verbose)
 
-    allocate(LUT_boa_sw_albedo(nASFC,nSOLZ,nRe,nTau))
-    call nc_read_array(ncid, "boa_sw_albedo", LUT_boa_sw_albedo, verbose)
-     
-    ! Close file
-    if (nf90_close(ncid) .ne. NF90_NOERR) stop error_stop_code
-   endif
-!-------------------------------------------------------------------------------
+       allocate(LUT_boa_sw_albedo(nASFC,nSOLZ,nRe,nTau))
+       call nc_read_array(ncid, "boa_sw_albedo", LUT_boa_sw_albedo, verbose)
 
-   ! Open PRIMARY file
-   call nc_open(ncid,Fprimary)
+       ! Close file
+       if (nf90_close(ncid) .ne. NF90_NOERR) stop error_stop_code
+    endif
+    !-------------------------------------------------------------------------------
+
+    ! Open PRIMARY file
+    call nc_open(ncid,Fprimary)
 
     !Get satellite dimensions
     xN = nc_dim_length(ncid, 'across_track', verbose)
@@ -583,39 +617,39 @@ program process_broadband_fluxes
     call nc_read_array(ncid, "phase", PHASE, verbose)
     call nc_read_array(ncid, "solar_zenith_view_no1", SOLZ, verbose)
     call nc_read_array(ncid, "stemp", STEMP, verbose)
-    if(corrected_cth .eq. 0) then 
-     call nc_read_array(ncid, "ctt", CTT, verbose)
-     call nc_read_array(ncid, "ctp", CTP, verbose)
-     call nc_read_array(ncid, "cth", CTH, verbose)
+    if(corrected_cth .eq. 0) then
+       call nc_read_array(ncid, "ctt", CTT, verbose)
+       call nc_read_array(ncid, "ctp", CTP, verbose)
+       call nc_read_array(ncid, "cth", CTH, verbose)
     endif
-    if(corrected_cth .eq. 1) then 
-     call nc_read_array(ncid, "ctt_corrected", CTT, verbose)
-     call nc_read_array(ncid, "ctp_corrected", CTP, verbose)
-     call nc_read_array(ncid, "cth_corrected", CTH, verbose)
+    if(corrected_cth .eq. 1) then
+       call nc_read_array(ncid, "ctt_corrected", CTT, verbose)
+       call nc_read_array(ncid, "ctp_corrected", CTP, verbose)
+       call nc_read_array(ncid, "cth_corrected", CTH, verbose)
     endif
 
     ! Close file
     if (nf90_close(ncid) .ne. NF90_NOERR) then
        write(*,*) 'ERROR: read_input_dimensions_lwrtm(): Error closing ' // &
-                  'LWRTM file: ', Fprimary
+            'LWRTM file: ', Fprimary
        stop error_stop_code
     end if
-!   PRINT*,'ACROSS_TRACK PIXELS = ',xN
-!   PRINT*,'ALONG_TRACK PIXELS = ',yN
-!   PRINT*,'LATITUDE ',LAT(pxX,pxY)
-!   PRINT*,'LONGITUDE ',LON(pxX,pxY)
-!   PRINT*,'CLOUD OPTICAL THICKNESS ',COT(pxX,pxY)
-!   PRINT*,'CLOUD EFFECTIVE RADIUS ',REF(pxX,pxY)
-!   PRINT*,'CLOUD MASK ',CC_TOT(pxX,pxY)
-!   PRINT*,'PHASE ',PHASE(pxX,pxY)
-!   PRINT*,'CTT = ',CTT(pxX,pxY)
-!   PRINT*,'CTH = ',CTH(pxX,pxY)
-!   PRINT*,'SOLZ = ',SOLZ(pxX,pxY)
-!-------------------------------------------------------------------------------
+    !   PRINT*,'ACROSS_TRACK PIXELS = ',xN
+    !   PRINT*,'ALONG_TRACK PIXELS = ',yN
+    !   PRINT*,'LATITUDE ',LAT(pxX,pxY)
+    !   PRINT*,'LONGITUDE ',LON(pxX,pxY)
+    !   PRINT*,'CLOUD OPTICAL THICKNESS ',COT(pxX,pxY)
+    !   PRINT*,'CLOUD EFFECTIVE RADIUS ',REF(pxX,pxY)
+    !   PRINT*,'CLOUD MASK ',CC_TOT(pxX,pxY)
+    !   PRINT*,'PHASE ',PHASE(pxX,pxY)
+    !   PRINT*,'CTT = ',CTT(pxX,pxY)
+    !   PRINT*,'CTH = ',CTH(pxX,pxY)
+    !   PRINT*,'SOLZ = ',SOLZ(pxX,pxY)
+    !-------------------------------------------------------------------------------
 
 
-   ! Open PRTM file
-   call nc_open(ncid,FPRTM)
+    ! Open PRTM file
+    call nc_open(ncid,FPRTM)
 
     !Get PRTM dimensions
     xdim_prtm = nc_dim_length(ncid, 'nlon_rtm', verbose)
@@ -661,7 +695,7 @@ program process_broadband_fluxes
     ! Close file
     if (nf90_close(ncid) .ne. NF90_NOERR) then
        write(*,*) 'ERROR: read_input_dimensions_lwrtm(): Error closing ' // &
-                  'LWRTM file: ', FPRTM
+            'LWRTM file: ', FPRTM
        stop error_stop_code
     end if
 
@@ -683,10 +717,10 @@ program process_broadband_fluxes
     !print*,'latitude: ',tlat_prtm(tlatid)
     !print*,'satellite longitude: ',LON(pxX0,pxY0)
     !print*,'satellite latitude: ',LAT(pxX0,pxY0)
-!-------------------------------------------------------------------------------
+    !-------------------------------------------------------------------------------
 
-   ! Open ALB file
-   call nc_open(ncid,FALB)
+    ! Open ALB file
+    call nc_open(ncid,FALB)
 
     !Get #Channels
     nc_alb = nc_dim_length(ncid, 'nc_alb', verbose)
@@ -712,85 +746,85 @@ program process_broadband_fluxes
     if (nf90_close(ncid) .ne. NF90_NOERR) stop
     ! Replace ALB_DATA WITH mean of rho_0d and rho_dd
     do i=1,xN
-    do j=1,yN
-    do k=1,nc_alb
-      if(alb_data(i,j,k) .gt. 0.) then
-       alb_data(i,j,k)=(rho_0d(i,j,k)+rho_dd(i,j,k))/2.
-      endif
+       do j=1,yN
+          do k=1,nc_alb
+             if(alb_data(i,j,k) .gt. 0.) then
+                alb_data(i,j,k)=(rho_0d(i,j,k)+rho_dd(i,j,k))/2.
+             endif
+          end do
+       end do
     end do
-    end do
-    end do
-!-------------------------------------------------------------------------------
+    !-------------------------------------------------------------------------------
 
-  ! Open Aerosol CCI file (optional)
-  if(aerosol_processing_mode .ge. 1) then
-   call nc_open(ncid,trim(Faerosol))
+    ! Open Aerosol CCI file (optional)
+    if(aerosol_processing_mode .ge. 1) then
+       call nc_open(ncid,trim(Faerosol))
 
-    !Get dimension
-    nc_aer = nc_dim_length(ncid, 'pixel_number', verbose)
+       !Get dimension
+       nc_aer = nc_dim_length(ncid, 'pixel_number', verbose)
 
-    !Allocate arrays
-    allocate(aerLon(nc_aer))
-    allocate(aerLat(nc_aer))
-    allocate(aerAOD(nc_aer))
-    allocate(aerREF(nc_aer))
-    allocate(aerQflag(nc_aer))
+       !Allocate arrays
+       allocate(aerLon(nc_aer))
+       allocate(aerLat(nc_aer))
+       allocate(aerAOD(nc_aer))
+       allocate(aerREF(nc_aer))
+       allocate(aerQflag(nc_aer))
 
-    !Read Aerosol data
-    call nc_read_array(ncid, "longitude", aerLon, verbose)
-    call nc_read_array(ncid, "latitude", aerLat, verbose)
-    call nc_read_array(ncid, "AOD550", aerAOD, verbose)
-    call nc_read_array(ncid, "REFF", aerREF, verbose)
-    call nc_read_array(ncid, "quality_flag", aerQflag, verbose)
+       !Read Aerosol data
+       call nc_read_array(ncid, "longitude", aerLon, verbose)
+       call nc_read_array(ncid, "latitude", aerLat, verbose)
+       call nc_read_array(ncid, "AOD550", aerAOD, verbose)
+       call nc_read_array(ncid, "REFF", aerREF, verbose)
+       call nc_read_array(ncid, "quality_flag", aerQflag, verbose)
 
-    ! Close file
-    if (nf90_close(ncid) .ne. NF90_NOERR) then
-       write(*,*) 'ERROR: ',trim(Faerosol)
-       stop error_stop_code
+       ! Close file
+       if (nf90_close(ncid) .ne. NF90_NOERR) then
+          write(*,*) 'ERROR: ',trim(Faerosol)
+          stop error_stop_code
+       end if
     end if
-  end if
 
-!-------------------------------------------------------------------------------
-! Allocate arrays
-!-------------------------------------------------------------------------------
+    !-------------------------------------------------------------------------------
+    ! Allocate arrays
+    !-------------------------------------------------------------------------------
 
-   !Interpolated PRTM arrays
-   allocate(inP(levdim_prtm))
-   allocate(inT_(levdim_prtm))
-   allocate(inH(levdim_prtm))
-   allocate(inQ(levdim_prtm))
-   allocate(inO3(levdim_prtm))
+    !Interpolated PRTM arrays
+    allocate(inP(levdim_prtm))
+    allocate(inT_(levdim_prtm))
+    allocate(inH(levdim_prtm))
+    allocate(inQ(levdim_prtm))
+    allocate(inO3(levdim_prtm))
 
-   !Allocate OUTPUT variables
-   allocate(time_data(xN,yN))
-   allocate(lat_data(xN,yN))
-   allocate(lon_data(xN,yN))
-   allocate(retrflag(xN,yN))
-   allocate(toa_lwup(xN,yN))
-   allocate(toa_swup(xN,yN))
-   allocate(toa_swdn(xN,yN))
-   allocate(boa_lwup(xN,yN))
-   allocate(boa_lwdn(xN,yN))
-   allocate(boa_swup(xN,yN))
-   allocate(boa_swdn(xN,yN))
-   allocate(toa_lwup_clr(xN,yN))
-   allocate(toa_lwdn_clr(xN,yN))
-   allocate(toa_swup_clr(xN,yN))
-   allocate(boa_lwup_clr(xN,yN))
-   allocate(boa_lwdn_clr(xN,yN))
-   allocate(boa_swup_clr(xN,yN))
-   allocate(boa_swdn_clr(xN,yN))
-   allocate(toa_par_tot(xN,yN))
-   allocate(boa_par_tot(xN,yN))
-   allocate(boa_par_dif(xN,yN))
-   allocate(boa_tsfc(xN,yN))
-   allocate(boa_psfc(xN,yN))
-   allocate(boa_qsfc(xN,yN))
-   allocate(lts(xN,yN))
-   allocate(fth(xN,yN))
-   allocate(colO3(xN,yN))
-   allocate(AOD550(xN,yN))
-   allocate(AREF(xN,yN))
+    !Allocate OUTPUT variables
+    allocate(time_data(xN,yN))
+    allocate(lat_data(xN,yN))
+    allocate(lon_data(xN,yN))
+    allocate(retrflag(xN,yN))
+    allocate(toa_lwup(xN,yN))
+    allocate(toa_swup(xN,yN))
+    allocate(toa_swdn(xN,yN))
+    allocate(boa_lwup(xN,yN))
+    allocate(boa_lwdn(xN,yN))
+    allocate(boa_swup(xN,yN))
+    allocate(boa_swdn(xN,yN))
+    allocate(toa_lwup_clr(xN,yN))
+    allocate(toa_lwdn_clr(xN,yN))
+    allocate(toa_swup_clr(xN,yN))
+    allocate(boa_lwup_clr(xN,yN))
+    allocate(boa_lwdn_clr(xN,yN))
+    allocate(boa_swup_clr(xN,yN))
+    allocate(boa_swdn_clr(xN,yN))
+    allocate(toa_par_tot(xN,yN))
+    allocate(boa_par_tot(xN,yN))
+    allocate(boa_par_dif(xN,yN))
+    allocate(boa_tsfc(xN,yN))
+    allocate(boa_psfc(xN,yN))
+    allocate(boa_qsfc(xN,yN))
+    allocate(lts(xN,yN))
+    allocate(fth(xN,yN))
+    allocate(colO3(xN,yN))
+    allocate(AOD550(xN,yN))
+    allocate(AREF(xN,yN))
 
     !Fill OUTPUT with missing
     time_data(:,:) = dreal_fill_value
@@ -818,78 +852,78 @@ program process_broadband_fluxes
     boa_psfc(:,:) = sreal_fill_value
     boa_qsfc(:,:) = sreal_fill_value
 
-   !re-grid PRTM vertical profile to match bugsrad resolution (NLS)
-   do i=1,NLS
-    mask_vres(i)=floor(i*(levdim_prtm/(NLS*1.)))
-   end do
+    !re-grid PRTM vertical profile to match bugsrad resolution (NLS)
+    do i=1,NLS
+       mask_vres(i)=floor(i*(levdim_prtm/(NLS*1.)))
+    end do
     !top and bottom of BUGSrad profile need to be at the same level as PRTM
     mask_vres(1)=1
     mask_vres(NLS)=levdim_prtm
     print*,mask_vres
 
-!-------------------------------------------------------------------------
-!OPTIONAL INPUTS
-!-------------------------------------------------------------------------
-   !OPTION - PROCESS all pixels in granule if range not specified
-   if(len(trim(cpxX0)) .eq. 0 .and. len(trim(cpxX1)) .eq. 0 .and. &
-      len(trim(cpxY0)) .eq. 0 .and. len(trim(cpxY1)) .eq. 0) then
-      print*,'PROCESS ALL SATELLITE PIXELS'
-      pxX0=1
-      pxX1=xN
-      pxY0=1
-      pxY1=yN
+    !-------------------------------------------------------------------------
+    !OPTIONAL INPUTS
+    !-------------------------------------------------------------------------
+    !OPTION - PROCESS all pixels in granule if range not specified
+    if(len(trim(cpxX0)) .eq. 0 .and. len(trim(cpxX1)) .eq. 0 .and. &
+         len(trim(cpxY0)) .eq. 0 .and. len(trim(cpxY1)) .eq. 0) then
+       print*,'PROCESS ALL SATELLITE PIXELS'
+       pxX0=1
+       pxX1=xN
+       pxY0=1
+       pxY1=yN
     end if
-   ! Override if 0's are given
-   if(pxX0 .eq. 0) pxX0=1
-   if(pxX1 .eq. 0) pxX1=xN
-   if(pxY0 .eq. 0) pxY0=1
-   if(pxY1 .eq. 0) pxY1=yN
+    ! Override if 0's are given
+    if(pxX0 .eq. 0) pxX0=1
+    if(pxX1 .eq. 0) pxX1=xN
+    if(pxY0 .eq. 0) pxY0=1
+    if(pxY1 .eq. 0) pxY1=yN
 
 
-   !OPTION - PROCESS aerosol
-   PRINT*,'aerosol_processing_mode: ',aerosol_processing_mode
-   if(aerosol_processing_mode .ge. 1) then
-    allocate(aID(xN,yN))
-    !determine if netcdf file already exists
-    inquire( file=trim(Fcollocation), exist=there )
-    if(.not. there) then
-     call collocate_aerosol2cloud(nc_aer,aerLon,aerLat,xN,yN,LON,LAT,aID)
+    !OPTION - PROCESS aerosol
+    PRINT*,'aerosol_processing_mode: ',aerosol_processing_mode
+    if(aerosol_processing_mode .ge. 1) then
+       allocate(aID(xN,yN))
+       !determine if netcdf file already exists
+       inquire( file=trim(Fcollocation), exist=there )
+       if(.not. there) then
+          call collocate_aerosol2cloud(nc_aer,aerLon,aerLat,xN,yN,LON,LAT,aID)
 
-     !-------------------------------------------------------------------------
-     !Make collocation netcdf file
-     !-------------------------------------------------------------------------
-      if(aerosol_processing_mode .eq. 2) then
-       call nc_open(ncid,Fprimary)
+          !-------------------------------------------------------------------------
+          !Make collocation netcdf file
+          !-------------------------------------------------------------------------
+          if(aerosol_processing_mode .eq. 2) then
+             call nc_open(ncid,Fprimary)
 
-       !get common attributes from primary file
-       call nc_get_common_attributes(ncid, global_atts, source_atts)
+             !get common attributes from primary file
+             call nc_get_common_attributes(ncid, global_atts, source_atts)
 
-        if (nf90_close(ncid) .ne. NF90_NOERR) then
-                 write(*,*) 'ERROR: nf90_close()'
-           stop error_stop_code
-        end if
-        !dimensions
-        ixstart = 1
-        ixstop = xN
-        iystart = 1
-        iystop = yN
-        n_x = ixstop - ixstart + 1
-        n_y = iystop - iystart + 1
-        n_v = 1
-       ! create netcdf file
-        call nc_create(trim(Fcollocation), ncid, ixstop-ixstart+1, &
-           iystop-iystart+1, n_v, dim3d_var, 1, global_atts, source_atts)
-        dims_var = dim3d_var(1:2)
+             if (nf90_close(ncid) .ne. NF90_NOERR) then
+                write(*,*) 'ERROR: nf90_close()'
+                stop error_stop_code
+             end if
+             !dimensions
+             ixstart = 1
+             ixstop = xN
+             iystart = 1
+             iystop = yN
+             n_x = ixstop - ixstart + 1
+             n_y = iystop - iystart + 1
+             n_v = 1
+             ! create netcdf file
+             call nc_create(trim(Fcollocation), ncid, ixstop-ixstart+1, &
+                  iystop-iystart+1, n_v, dim3d_var, 1, global_atts, source_atts)
+             dims_var = dim3d_var(1:2)
 
-           !Need this to exit data mode to define variables
-           if (nf90_redef(ncid) .ne. NF90_NOERR) then
-             write(*,*) 'ERROR: nf90_redef()'
-             stop error_stop_code
-           end if
-         !-------------------------------------------------------------------------
-         ! Aerosol Index
-         !-------------------------------------------------------------------------
-          call nc_def_var_long_packed_long( &
+             !Need this to exit data mode to define variables
+             if (nf90_redef(ncid) .ne. NF90_NOERR) then
+                write(*,*) 'ERROR: nf90_redef()'
+                stop error_stop_code
+             end if
+             !-------------------------------------------------------------------------
+             ! Aerosol Index
+             !-------------------------------------------------------------------------
+             call nc_def_var_long_packed_long( &
                   ncid, &
                   dims_var, &
                   'aID', &
@@ -899,95 +933,95 @@ program process_broadband_fluxes
                   standard_name = 'aID_standard', &
                   fill_value    = lint_fill_value)
 
-         !Need to exit define mode to write data
-          if (nf90_enddef(ncid) .ne. NF90_NOERR) then
-           write(*,*) 'ERROR: nf90_enddef()'
-           stop error_stop_code
-          end if
+             !Need to exit define mode to write data
+             if (nf90_enddef(ncid) .ne. NF90_NOERR) then
+                write(*,*) 'ERROR: nf90_enddef()'
+                stop error_stop_code
+             end if
 
 
-         !write the array to the netcdf file
-         call nc_write_array(ncid,'aID',aID_vid,&
-                 aID(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+             !write the array to the netcdf file
+             call nc_write_array(ncid,'aID',aID_vid,&
+                  aID(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
-         !close netcdf file
-          if (nf90_close(ncid) .ne. NF90_NOERR) then
-             write(*,*) 'ERROR: nf90_close()'
-             stop error_stop_code
-          end if
+             !close netcdf file
+             if (nf90_close(ncid) .ne. NF90_NOERR) then
+                write(*,*) 'ERROR: nf90_close()'
+                stop error_stop_code
+             end if
 
-         print*,'CREATED: '
-         print*,trim(Fcollocation)
-       end if ;aerosol_processing_mode = 2
-    end if !file not there
+             print*,'CREATED: '
+             print*,trim(Fcollocation)
+          end if;aerosol_processing_mode = 2
+       end if !file not there
 
-   !Netcdf collocation file exists get aID
-    if(there) then
-      print*,'Extracting data from:'
-      write(*,*) trim(Fcollocation)
-     ! Open Collocation file
-     call nc_open(ncid,trim(Fcollocation))
+       !Netcdf collocation file exists get aID
+       if(there) then
+          print*,'Extracting data from:'
+          write(*,*) trim(Fcollocation)
+          ! Open Collocation file
+          call nc_open(ncid,trim(Fcollocation))
 
-     !Read collocation data
-     call nc_read_array(ncid, "aID", aID, verbose)
+          !Read collocation data
+          call nc_read_array(ncid, "aID", aID, verbose)
 
-     ! Close file
-      if (nf90_close(ncid) .ne. NF90_NOERR) stop
-    end if !file there
+          ! Close file
+          if (nf90_close(ncid) .ne. NF90_NOERR) stop
+       end if !file there
 
-    !fill arrays (aerosol index aID must exist by this point)
-    do i=1,xN
-    do j=1,yN
-      AOD550(i,j) = aerAOD(aID(i,j))
-      AREF(i,j) = aerREF(aID(i,j))
-    end do
-    end do
+       !fill arrays (aerosol index aID must exist by this point)
+       do i=1,xN
+          do j=1,yN
+             AOD550(i,j) = aerAOD(aID(i,j))
+             AREF(i,j) = aerREF(aID(i,j))
+          end do
+       end do
 
-   end if !end aerosol collocation option
-   if(aerosol_processing_mode .eq. 0) then
-    !fill arrays
-    do i=1,xN
-    do j=1,yN
-      AOD550(i,j) = -999.
-      AREF(i,j) = -999.
-    end do
-    end do
-   end if
+    end if !end aerosol collocation option
+    if(aerosol_processing_mode .eq. 0) then
+       !fill arrays
+       do i=1,xN
+          do j=1,yN
+             AOD550(i,j) = -999.
+             AREF(i,j) = -999.
+          end do
+       end do
+    end if
 
-   if(algorithm_processing_mode .eq. 1) print*,'Algorithm: BUGSrad'
-   if(algorithm_processing_mode .eq. 2) print*,'Algorithm: FuLiou 2G'
-   if(algorithm_processing_mode .eq. 3) print*,'Algorithm: FuLiou 4S'
-   if(algorithm_processing_mode .eq. 4) print*,'Algorithm: FuLiou 2S'
-
-
-   !Read MODIS HDF DATA
-   if(len(trim(FMOD04)) .gt. 0 .and. &
-      len(trim(FMOD04)) .ne. path_length) then
-    print*,'Using MODIS aerosol input --> replacing ORAC'
-    call get_modis_aerosol(trim(FMOD04),xN,yN,AREF,AOD550)
-   end if
-
-   if(len(trim(FMOD06)) .gt. 0 .and. &
-      len(trim(FMOD06)) .ne. path_length) then
-    print*,'Using MODIS cloud input --> replacing ORAC'
-    call get_modis_cloud(trim(FMOD06),xN,yN,CTT,CTP,CTH,phase,REF,COT,cc_tot)
-   end if
-
-   if(lut_mode .eq. 0) print*,'Process using radiation model'
-   if(lut_mode .eq. 1) print*,'Process using LUT'
-
-!-------------------------------------------------------------------------
-!END OPTIONAL INPUTS SECTION
-!-------------------------------------------------------------------------
+    if(algorithm_processing_mode .eq. 1) print*,'Algorithm: BUGSrad'
+    if(algorithm_processing_mode .eq. 2) print*,'Algorithm: FuLiou 2G'
+    if(algorithm_processing_mode .eq. 3) print*,'Algorithm: FuLiou 4S'
+    if(algorithm_processing_mode .eq. 4) print*,'Algorithm: FuLiou 2S'
 
 
+    !Read MODIS HDF DATA
+    if(len(trim(FMOD04)) .gt. 0 .and. &
+         len(trim(FMOD04)) .ne. path_length) then
+       print*,'Using MODIS aerosol input --> replacing ORAC'
+       call get_modis_aerosol(trim(FMOD04),xN,yN,AREF,AOD550)
+    end if
+
+    if(len(trim(FMOD06)) .gt. 0 .and. &
+         len(trim(FMOD06)) .ne. path_length) then
+       print*,'Using MODIS cloud input --> replacing ORAC'
+       call get_modis_cloud(trim(FMOD06),xN,yN,CTT,CTP,CTH,phase,REF,COT,cc_tot)
+    end if
+
+    if(lut_mode .eq. 0) print*,'Process using radiation model'
+    if(lut_mode .eq. 1) print*,'Process using LUT'
+
+    !-------------------------------------------------------------------------
+    !END OPTIONAL INPUTS SECTION
+    !-------------------------------------------------------------------------
 
 
 
-!-------------------------------------------------------------------------
-!BEGIN MAIN CODE
-!-------------------------------------------------------------------------
-call cpu_time(cpuStart)
+
+
+    !-------------------------------------------------------------------------
+    !BEGIN MAIN CODE
+    !-------------------------------------------------------------------------
+    call cpu_time(cpuStart)
 
     print*,'Processing Pixel Range:'
     print*,'x-start = ',pxX0
@@ -997,933 +1031,937 @@ call cpu_time(cpuStart)
     print*,'Across Track # = ',xN
     print*,'Along Track #  = ',yN
 
-   !loop over cross-track dimension
+    !loop over cross-track dimension
     do i=pxX0,pxX1
-      call cpu_time(cpuFinish)
-      print*,'complete: ',i*100./(xN*1.),'%   i=',i, cpuFinish-cpuStart,' seconds elapsed'
-
-      !loop over along-track dimension
-      do j=pxY0,pxY1
-
-      !Valid lat/lon required to run (needed for SEVIRI)
-      if(LAT(i,j) .ne. -999.0 .and. LON(i,j) .ne. -999.0) then
-
-       !---------------------------------------------------------
-       ! Surface albedo
-       ! interpolate narrowband BRDF radiances to broadband BUGSrad radiances
-       !---------------------------------------------------------
-      !BugsRAD Surface Properties
-      if(algorithm_processing_mode .eq. 1) then
-       call preprocess_bugsrad_sfc_albedo(nc_alb,rho_0d(i,j,:),rho_dd(i,j,:),rho_0d_bugsrad,rho_dd_bugsrad)
-       call preprocess_bugsrad_sfc_emissivity(nc_emis,emis_data(i,j,:),emis_bugsrad)
-      endif
-
-      !FuLiou Surface Properties
-      if(algorithm_processing_mode .eq. 2 .or. &
-         algorithm_processing_mode .eq. 3 .or. &
-         algorithm_processing_mode .eq. 4) then
-       call preprocess_fuliou_sfc_albedo(nc_alb,rho_0d(i,j,:),rho_dd(i,j,:),rho_0d_fuliou,rho_dd_fuliou)
-       call preprocess_bugsrad_sfc_emissivity(nc_emis,emis_data(i,j,:),emis_fuliou)
-      endif
-
-       !print*,'BUGSrad (blacksky) ',rho_0d_bugsrad
-       !print*,'BUGSrad (whitesky) ',rho_dd_bugsrad
-       !print*,'BUGSrad emissivity ',emis_bugsrad
-       !print*,'Fu Liou (blacksky) ',rho_0d_fuliou
-       !print*,'Fu Liou (whitesky) ',rho_dd_fuliou
-       !print*,'Fu Liou emissivity ',emis_fuliou
-
-       ! solar zenith angle
-       pxTheta = COS( SOLZ(i,j) * Pi/180.)
-       !print*,i,j,solz(i,j),pxTheta
-
-       ! solar zenith angle condition (remove nighttime & twilight)
-!       if( SOLZ(i,j) .lt. 80.) then
-
-        !meteorology
-        call interpolate_meteorology(lon_prtm,lat_prtm,levdim_prtm,&
-                                xdim_prtm,ydim_prtm,P,T,H,Q,O3,&
-                                LON(i,j),LAT(i,j),inP,inT_,inH,inQ,inO3)
-
-        !use to debug current interpolation scheme
-        !call collocate_prtm_profile(LON(i,j),LAT(i,j),&
-        !          xdim_prtm,ydim_prtm,tlon_prtm,tlat_prtm,tlonid,tlatid)
-        !print*,tlonid,tlatid
-        !set value
-        ! inH(:)= H(:,tlonid,tlatid)
-        ! inT_(:)= T(:,tlonid,tlatid)
-        ! inP(:)= P(:,tlonid,tlatid)
-        ! inQ(:)= Q(:,tlonid,tlatid)
-        ! inO3(:) = O3(:,tlonid,tlatid)
-        !call midlatsum1(pxZ,pxP,pxT,pxQ,pxO3,NLS) !standard profile if wanted
-
-        !collocate PRTM vertical resolution to BUGSrad profile resolution (31 levels)
-        pxZ = inH(mask_vres)
-        pxP = inP(mask_vres)
-        pxT = inT_(mask_vres)
-        pxQ = inQ(mask_vres)
-        pxO3 = inO3(mask_vres)
-
-        !skin temperature - currently bottom level as defined in
-        !rttov_driver.F90
-        !pxts = inT_(levdim_prtm)
-        !check if STEMP is valid, if not use ECMWF value.
-        if((STEMP(i,j) .lt. 0) .or. (STEMP(i,j) .gt. 400)) then
-           pxts = inT_(levdim_prtm)
-        else
-           pxts = STEMP(i,j)
-        endif
-
-        !debugging (print statements)
-        !print*,'latitude: ',LAT(i,j)
-        !print*,'longitude: ',LON(i,j)
-        !print*,'solar zenith: ',SOLZ(i,j)
-        !print*,'cc_tot:  ',cc_tot(i,j)
-        !print*,'Sat Phase: ',PHASE(i,j)
-        !print*,'Sat retr. CTH = ',CTH(i,j)
-        !print*,'Sat retr. CTT = ',CTT(i,j)
-        !print*,'SAT retr. REF = ',REF(i,j)
-        !print*,'SAT retr. COT = ',COT(i,j)
-        !print*,'SAT retr. cc_tot = ',cc_tot(i,j)
-        !print*,'Aerosol Optical Depth: ',AOD550(i,j)
-        !print*,'Aerosol Effective Radius: ',AREF(i,j)
-
-
-        !cloud base & top height calculation
-        call preprocess_input(cc_tot(i,j),AREF(i,j),AOD550(i,j),phase(i,j),&
-                         CTT(i,j),CTP(i,j),REF(i,j),COT(i,j),CTH(i,j),InfThnCld,&
-                         NLS,pxZ,pxREF,pxCOT,pxHctop,pxHcbase,&
-                         pxPhaseFlag,pxLayerType,&
-                         pxregime,pxHctopID,pxHcbaseID)
-
-         !debugging (print statements)
-         !print*,'phase: ',pxPhaseFlag
-         !print*,'re :',pxREF
-         !print*,'tau :',pxCOT
-         !print*,'Hctop = ',pxHctop,' HctopID: ',pxHctopID
-         !print*,'Hcbase = ',pxHcbase,' HcbaseID: ',pxHcbaseID
-         !print*,'Regime: ',pxregime
-         !print*,'TOTAL SOLAR IRRADIANCE: ',pxTSI
-         !print*,'Hctop (hPa) = ',pxP(pxHctopID)
-         !print*,'Hcbase (hPa) = ',pxP(pxHcbaseID)
-
-        !Run Full Radiation Code (not LUT mode)
-        if(lut_mode .eq. 0) then
-
-        !-------------------------------------------------------
-        !Call BUGSrad Algorithm
-        !-------------------------------------------------------
-        if(algorithm_processing_mode .eq. 1) then
-         !print*,'starting... BUGSrad'
-         !print*,NL,pxTSI,pxtheta,pxAsfcSWRdr,pxAsfcNIRdr,pxAsfcSWRdf,pxAsfcNIRdf,pxts
-         !print*,nc_alb,rho_0d(i,j,:),rho_dd(i,j,:)
-         call driver_for_bugsrad(NL,pxTSI,pxtheta,pxAsfcSWRdr,pxAsfcNIRdr,pxAsfcSWRdf,pxAsfcNIRdf,pxts,&
-                          pxPhaseFlag,pxREF,pxCOT,pxHctop,pxHcbase,&
-                          pxHctopID,pxHcbaseID,&
-                          pxZ,pxP,pxT,pxQ,pxO3,&
-                          pxtoalwup,pxtoaswdn,pxtoaswup,&
-                          pxboalwup,pxboalwdn,pxboaswdn,pxboaswup,&
-                          pxtoalwupclr,pxtoaswupclr,&
-                          pxboalwupclr,pxboalwdnclr,pxboaswupclr,pxboaswdnclr,&
-                          bpar,bpardif,tpar,&
-                          ulwfx,dlwfx,uswfx,dswfx,&
-                          ulwfxclr,dlwfxclr,uswfxclr,dswfxclr,&
-                          emis_bugsrad,rho_0d_bugsrad,rho_dd_bugsrad)
-
-           !print*,'BUGSrad'
-           !print*,pxtoalwup,pxtoaswdn,pxtoaswup
-           !print*,pxtoalwupclr,pxtoaswdn,pxtoaswupclr
-           !print*,pxboalwup,pxboalwdn,pxboaswdn,pxboaswup
-           !print*,pxboalwupclr,pxboalwdnclr,pxboaswdnclr,pxboaswupclr
-           !print*,tpar,bpar,bpardif
-
-         endif !BUGSrad Algorithm
-
-        !-------------------------------------------------------
-        !Call FuLiou Algorithm
-        !-------------------------------------------------------
-        if(algorithm_processing_mode .eq. 2 .or. &
-           algorithm_processing_mode .eq. 3 .or. &
-           algorithm_processing_mode .eq. 4) then
-           !print*,'starting... Fu-Liou'
-           !print*,NL,pxTSI,pxtheta,pxAsfcSWRdr,pxAsfcNIRdr,pxAsfcSWRdf,pxAsfcNIRdf,pxts
-           !print*,nc_alb
-           !print*,rho_0d(i,j,:)
-           !print*,rho_dd(i,j,:)
-           !print*,''
-         call driver_for_fuliou(NL,pxTSI,pxtheta,pxAsfcSWRdr,pxAsfcNIRdr,&
-                          pxAsfcSWRdf,pxAsfcNIRdf,pxts,&
-                          pxPhaseFlag,pxREF,pxCOT,pxHctop,pxHcbase,&
-                          pxHctopID,pxHcbaseID,&
-                          pxZ,pxP,pxT,pxQ,pxO3,&
-                          pxtoalwup,pxtoaswdn,pxtoaswup,&
-                          pxboalwup,pxboalwdn,pxboaswdn,pxboaswup,&
-                          pxtoalwupclr,pxtoaswupclr,&
-                          pxboalwupclr,pxboalwdnclr,pxboaswupclr,pxboaswdnclr,&
-                          bpar,bpardif,tpar,&
-                          ulwfx,dlwfx,uswfx,dswfx,&
-                          ulwfxclr,dlwfxclr,uswfxclr,dswfxclr,&
-                          emis_fuliou,rho_0d_fuliou,rho_dd_fuliou,&
-                          algorithm_processing_mode)
-
-           !print*,'Fu Liou'
-           !print*,i,j,'1',pxtoaswup
-           !print*,pxtoalwupclr,pxtoaswdn,pxtoaswupclr
-           !print*,pxboalwup,pxboalwdn,pxboaswdn,pxboaswup
-           !print*,pxboalwupclr,pxboalwdnclr,pxboaswdnclr,pxboaswupclr
-           !print*,tpar,bpar,bpardif
-
-         endif !FuLiou Algorithm
-
-         endif !lut_mode = 0
-
-         !-------------------------------------------------------
-         !LUT MODE
-         !-------------------------------------------------------
-         if(lut_mode .eq. 1) then
-
-          call driver_for_lut(pxTSI,pxregime,&
-                   nASFC,LUT_SFC_ALB,&
-                   nRE,lut_ref,nTAU,lut_cot,nSOLZ,lut_solz,&
-                   LUT_toa_sw_albedo(:,:,:,:),&
-                   LUT_boa_sw_transmission(:,:,:,:),&
-                   LUT_boa_sw_albedo(:,:,:,:),&
-                   alb_data(I,J,1:),REF(I,J),COT(I,J),SOLZ(I,J),&
-                   pxtoalwup,pxtoaswdn,pxtoaswup,&
-                   pxboalwup,pxboalwdn,pxboaswdn,pxboaswup,&
-                   pxtoalwupclr,pxtoaswupclr,&
-                   pxboalwupclr,pxboalwdnclr,pxboaswupclr,pxboaswdnclr,&
-                   bpar,bpardif,tpar)
-         endif
-
-
-         !-------------------------------------------------------
-         !Quality Check Retrieved Data & Fill Output Arrays
-         !-------------------------------------------------------
-         !catch NaN
-         nanFlag=0
-         if(is_nan(pxtoalwup)) nanFlag=1
-         if(is_nan(pxtoaswup)) nanFlag=1
-         if(is_nan(pxtoalwupclr)) nanFlag=1
-         if(is_nan(pxtoaswupclr)) nanFlag=1
-
-         !catch unphysical values
-         if(pxtoalwup .lt. 0. .or. pxtoalwup .gt. 1000.) nanFlag=1
-         if(pxtoaswup .lt. 0. .or. pxtoaswup .gt. 1600.) nanFlag=1
-
-         !regime type
-         retrflag(i,j) = pxregime
-
-         !valid data only
-         if(nanFlag == 0) then
-          !netCDF output arrays
-          !Observed
-          time_data(i,j) = TIME(i,j)
-          lat_data(i,j)  = LAT(i,j)
-          lon_data(i,j)  = LON(i,j)
-
-          toa_lwup(i,j) = pxtoalwup
-          toa_swup(i,j) = pxtoaswup
-          toa_swdn(i,j) = pxtoaswdn
-          boa_lwup(i,j) = pxboalwup
-          boa_lwdn(i,j) = pxboalwdn
-          boa_swup(i,j) = pxboaswup
-          boa_swdn(i,j) = pxboaswdn
-
-          !Clear-sky retrieval
-          toa_lwup_clr(i,j) = pxtoalwupclr
-          toa_swup_clr(i,j) = pxtoaswupclr
-          boa_lwup_clr(i,j) = pxboalwupclr
-          boa_lwdn_clr(i,j) = pxboalwdnclr
-          boa_swup_clr(i,j) = pxboaswupclr
-          boa_swdn_clr(i,j) = pxboaswdnclr
-
-          !PAR
-          toa_par_tot(i,j) = tpar * pxPAR_WEIGHT
-          boa_par_tot(i,j) = bpar * pxPAR_WEIGHT
-          boa_par_dif(i,j) = bpardif * pxPAR_WEIGHT
-
-         end if !valid data
-
-         ! meteorology data to output in netCDF file
-         boa_tsfc(i,j) = pxT(NLS)
-         boa_psfc(i,j) = pxP(NLS)
-         boa_qsfc(i,j) = pxQ(NLS)
-          call compute_lts(NL,pxP,pxT,pxLTS)
-          call compute_fth(NL,pxP,pxT,pxQ,pxFTH)
-          call compute_column_o3(NL,pxZ,pxO3,pxcolO3)
-
-         lts(i,j) = pxLTS
-         fth(i,j) = pxFTH
-         colO3(i,j) = pxcolO3
-
-      end if   !valid geolocation data
-    end do !j-loop
-   end do !i-loop
-call cpu_time(cpuFinish)
-print*,cpuFinish-cpuStart,' seconds elapsed'
-
-!-------------------------------------------------------------------------
-!Make output netcdf file
-!-------------------------------------------------------------------------
- call nc_open(ncid,Fprimary)
-
-!get common attributes from primary file
- call nc_get_common_attributes(ncid, global_atts, source_atts)
-
-if (nf90_close(ncid) .ne. NF90_NOERR) then
-         write(*,*) 'ERROR: nf90_close()'
-         stop error_stop_code
-end if
-
-   !dimensions
-   ixstart = pxX0
-   ixstop  = pxX1
-   iystart = pxY0
-   iystop  = pxY1
-   n_x = ixstop - ixstart + 1
-   n_y = iystop - iystart + 1
-   n_v = 1
-
-  ! create netcdf file
-   call nc_create(trim(fname), ncid, ixstop-ixstart+1, &
-      iystop-iystart+1, n_v, dim3d_var, 1, global_atts, source_atts)
-   dims_var = dim3d_var(1:2)
-
-      !Need this to exit data mode to define variables
-      if (nf90_redef(ncid) .ne. NF90_NOERR) then
-        write(*,*) 'ERROR: nf90_redef()'
-        stop error_stop_code
-      end if
-
-      !-------------------------------------------------------------------------
-      ! time
-      !-------------------------------------------------------------------------
-       call nc_def_var_double_packed_double( &
-               ncid, &
-               dims_var, &
-               'time', &
-               TIME_vid, &
-               verbose, &
-               long_name     = 'Time in Julian days', &
-               standard_name = 'Julian Days', &
-               fill_value    = dreal_fill_value, &
-               scale_factor  = real(1, dreal), &
-               add_offset    = real(0, dreal), &
-               valid_min     = real(MINVAL(time_data), dreal), &
-               valid_max     = real(MAXVAL(time_data), dreal), &
-               units         = 'days since -4712-01-01 12:00:00', &
-               deflate_level = deflate_lv, &
-               shuffle       = shuffle_flag)
-
-
-
-      !-------------------------------------------------------------------------
-      ! latitude
-      !-------------------------------------------------------------------------
-       call nc_def_var_float_packed_float( &
-               ncid, &
-               dims_var, &
-               'lat', &
-               LAT_vid, &
-               verbose, &
-               long_name     = 'latitude', &
-               standard_name = 'latitude', &
-               fill_value    = sreal_fill_value, &
-               scale_factor  = real(1), &
-               add_offset    = real(0), &
-               valid_min     = real(-90., sreal), &
-               valid_max     = real(90., sreal), &
-               units         = 'degrees', &
-               deflate_level = deflate_lv, &
-               shuffle       = shuffle_flag)
-
-
-      !-------------------------------------------------------------------------
-      ! longitude
-      !-------------------------------------------------------------------------
-       call nc_def_var_float_packed_float( &
-               ncid, &
-               dims_var, &
-               'lon', &
-               LON_vid, &
-               verbose, &
-               long_name     = 'longitude', &
-               standard_name = 'longitude', &
-               fill_value    = sreal_fill_value, &
-               scale_factor  = real(1), &
-               add_offset    = real(0), &
-               valid_min     = real(-180, sreal), &
-               valid_max     = real(180, sreal), &
-               units         = 'degrees', &
-               deflate_level = deflate_lv, &
-               shuffle       = shuffle_flag)
-
-      !-------------------------------------------------------------------------
-      ! retrieval flag
-      !-------------------------------------------------------------------------
-       call nc_def_var_byte_packed_byte( &
-               ncid, &
-               dims_var, &
-               'retrflag', &
-               retrflag_vid, &
-               verbose, &
-               long_name     = 'retrflag', &
-               standard_name = 'retrflag', &
-               fill_value    = byte_fill_value, &
-               scale_factor  = int(1, byte), &
-               add_offset    = int(0, byte), &
-               valid_min     = int(1, byte), &
-               valid_max     = int(4, byte), &
-               units         = '1', &
-               flag_values   = '1b 2b 3b 4b 5b 6b', &
-               flag_meanings = 'oc_liq-cld oc_ice-cld clear-AOD clear_no_AOD joint_aod-liq_cld joint_aod-ice_cld', &
-               deflate_level = deflate_lv, &
-               shuffle       = shuffle_flag)
-
-      !-------------------------------------------------------------------------
-      ! toa_incoming_shortwave_flux
-      !-------------------------------------------------------------------------
-       call nc_def_var_float_packed_float( &
-               ncid, &
-               dims_var, &
-               'toa_swdn', &
-               toa_swdn_vid, &
-               verbose, &
-               long_name     = 'top of atmosphere incident solar radiation', &
-               standard_name = 'toa_incoming_shortwave_flux', &
-               fill_value    = sreal_fill_value, &
-               scale_factor  = real(1), &
-               add_offset    = real(0), &
-               valid_min     = real(0, sreal), &
-               valid_max     = real(1500, sreal), &
-               units         = 'W m-2', &
-               deflate_level = deflate_lv, &
-               shuffle       = shuffle_flag)
-
-      !-------------------------------------------------------------------------
-      ! toa_outgoing_shortwave_flux
-      !-------------------------------------------------------------------------
-       call nc_def_var_float_packed_float( &
-               ncid, &
-               dims_var, &
-               'toa_swup', &
-               toa_swup_vid, &
-               verbose, &
-               long_name     = 'top of atmosphere upwelling solar radiation', &
-               standard_name = 'toa_outgoing_shortwave_flux', &
-               fill_value    = sreal_fill_value, &
-               scale_factor  = real(1), &
-               add_offset    = real(0), &
-               valid_min     = real(0, sreal), &
-               valid_max     = real(1500, sreal), &
-               units         = 'W m-2', &
-               deflate_level = deflate_lv, &
-               shuffle       = shuffle_flag)
-
-      !-------------------------------------------------------------------------
-      ! toa_outgoing_longwave_flux
-      !-------------------------------------------------------------------------
-       call nc_def_var_float_packed_float( &
-               ncid, &
-               dims_var, &
-               'toa_lwup', &
-               toa_lwup_vid, &
-               verbose, &
-               long_name     = 'top of atmosphere upwelling thermal radiation', &
-               standard_name = 'toa_outgoing_longwave_flux', &
-               fill_value    = sreal_fill_value, &
-               scale_factor  = real(1), &
-               add_offset    = real(0), &
-               valid_min     = real(0, sreal), &
-               valid_max     = real(1500, sreal), &
-               units         = 'W m-2', &
-               deflate_level = deflate_lv, &
-               shuffle       = shuffle_flag)
-
-
-
-      !-------------------------------------------------------------------------
-      ! surface_downwelling_shortwave_flux_in_air
-      !-------------------------------------------------------------------------
-       call nc_def_var_float_packed_float( &
-               ncid, &
-               dims_var, &
-               'boa_swdn', &
-               boa_swdn_vid, &
-               verbose, &
-               long_name     = 'bottom of atmosphere downwelling solar radiation', &
-               standard_name = 'surface_downwelling_shortwave_flux_in_air', &
-               fill_value    = sreal_fill_value, &
-               scale_factor  = real(1), &
-               add_offset    = real(0), &
-               valid_min     = real(0, sreal), &
-               valid_max     = real(1500, sreal), &
-               units         = 'W m-2', &
-               deflate_level = deflate_lv, &
-               shuffle       = shuffle_flag)
-
-      !-------------------------------------------------------------------------
-      ! surface_upwelling_shortwave_flux_in_air
-      !-------------------------------------------------------------------------
-       call nc_def_var_float_packed_float( &
-               ncid, &
-               dims_var, &
-               'boa_swup', &
-               boa_swup_vid, &
-               verbose, &
-               long_name     = 'bottom of atmosphere upwelling solar radiation', &
-               standard_name = 'surface_upwelling_shortwave_flux_in_air', &
-               fill_value    = sreal_fill_value, &
-               scale_factor  = real(1), &
-               add_offset    = real(0), &
-               valid_min     = real(0, sreal), &
-               valid_max     = real(1500, sreal), &
-               units         = 'W m-2', &
-               deflate_level = deflate_lv, &
-               shuffle       = shuffle_flag)
-
-      !-------------------------------------------------------------------------
-      ! surface_upwelling_longwave_flux_in_air
-      !-------------------------------------------------------------------------
-       call nc_def_var_float_packed_float( &
-               ncid, &
-               dims_var, &
-               'boa_lwup', &
-               boa_lwup_vid, &
-               verbose, &
-               long_name     = 'bottom of atmosphere upwelling thermal radiation', &
-               standard_name = 'surface_upwelling_longwave_flux_in_air', &
-               fill_value    = sreal_fill_value, &
-               scale_factor  = real(1), &
-               add_offset    = real(0), &
-               valid_min     = real(0, sreal), &
-               valid_max     = real(1500, sreal), &
-               units         = 'W m-2', &
-               deflate_level = deflate_lv, &
-               shuffle       = shuffle_flag)
-
-
-      !-------------------------------------------------------------------------
-      ! surface_downwelling_longwave_flux_in_air
-      !-------------------------------------------------------------------------
-       call nc_def_var_float_packed_float( &
-               ncid, &
-               dims_var, &
-               'boa_lwdn', &
-               boa_lwdn_vid, &
-               verbose, &
-               long_name     = 'bottom of atmosphere downwelling thermal radiation', &
-               standard_name = 'surface_downwelling_longwave_flux_in_air', &
-               fill_value    = sreal_fill_value, &
-               scale_factor  = real(1), &
-               add_offset    = real(0), &
-               valid_min     = real(0, sreal), &
-               valid_max     = real(1500, sreal), &
-               units         = 'W m-2', &
-               deflate_level = deflate_lv, &
-               shuffle       = shuffle_flag)
-
-
-
-      !-------------------------------------------------------------------------
-      ! toa_outgoing_shortwave_flux_assuming_clear_sky
-      !-------------------------------------------------------------------------
-       call nc_def_var_float_packed_float( &
-               ncid, &
-               dims_var, &
-               'toa_swup_clr', &
-               toa_swup_clr_vid, &
-               verbose, &
-               long_name     = 'top of atmosphere upwelling solar radiation', &
-               standard_name = 'toa_outgoing_shortwave_flux_assuming_clear_sky', &
-               fill_value    = sreal_fill_value, &
-               scale_factor  = real(1), &
-               add_offset    = real(0), &
-               valid_min     = real(0, sreal), &
-               valid_max     = real(1500, sreal), &
-               units         = 'W m-2', &
-               deflate_level = deflate_lv, &
-               shuffle       = shuffle_flag)
-
-      !-------------------------------------------------------------------------
-      ! toa_outgoing_longwave_flux_assuming_clear_sky
-      !-------------------------------------------------------------------------
-       call nc_def_var_float_packed_float( &
-               ncid, &
-               dims_var, &
-               'toa_lwup_clr', &
-               toa_lwup_clr_vid, &
-               verbose, &
-               long_name     = 'top of atmosphere upwelling thermal radiation', &
-               standard_name = 'toa_outgoing_longwave_flux_assuming_clear_sky', &
-               fill_value    = sreal_fill_value, &
-               scale_factor  = real(1), &
-               add_offset    = real(0), &
-               valid_min     = real(0, sreal), &
-               valid_max     = real(1500, sreal), &
-               units         = 'W m-2', &
-               deflate_level = deflate_lv, &
-               shuffle       = shuffle_flag)
-
-
-      !-------------------------------------------------------------------------
-      ! boa_downwelling_shortwave_flux_in_air_assuming_clear_sky
-      !-------------------------------------------------------------------------
-       call nc_def_var_float_packed_float( &
-               ncid, &
-               dims_var, &
-               'boa_swdn_clr', &
-               boa_swdn_clr_vid, &
-               verbose, &
-               long_name     = 'bottom of atmosphere downwelling solar radiation', &
-               standard_name = 'surface_downwelling_shortwave_flux_in_air_assuming_clear_sky', &
-               fill_value    = sreal_fill_value, &
-               scale_factor  = real(1), &
-               add_offset    = real(0), &
-               valid_min     = real(0, sreal), &
-               valid_max     = real(1500, sreal), &
-               units         = 'W m-2', &
-               deflate_level = deflate_lv, &
-               shuffle       = shuffle_flag)
-
-      !-------------------------------------------------------------------------
-      ! boa_upwelling_shortwave_flux_in_air_assuming_clear_sky
-      !-------------------------------------------------------------------------
-       call nc_def_var_float_packed_float( &
-               ncid, &
-               dims_var, &
-               'boa_swup_clr', &
-               boa_swup_clr_vid, &
-               verbose, &
-               long_name     = 'bottom of atmosphere upwelling solar radiation', &
-               standard_name = 'surface_upwelling_shortwave_flux_in_air_assuming_clear_sky', &
-               fill_value    = sreal_fill_value, &
-               scale_factor  = real(1), &
-               add_offset    = real(0), &
-               valid_min     = real(0, sreal), &
-               valid_max     = real(1500, sreal), &
-               units         = 'W m-2', &
-               deflate_level = deflate_lv, &
-               shuffle       = shuffle_flag)
-
-      !-------------------------------------------------------------------------
-      ! boa_upwelling_longwave_flux_in_air_assuming_clear_sky
-      !-------------------------------------------------------------------------
-       call nc_def_var_float_packed_float( &
-               ncid, &
-               dims_var, &
-               'boa_lwup_clr', &
-               boa_lwup_clr_vid, &
-               verbose, &
-               long_name     = 'bottom of atmosphere upwelling thermal radiation', &
-               standard_name = 'surface_upwelling_longwave_flux_in_air_assuming_clear_sky', &
-               fill_value    = sreal_fill_value, &
-               scale_factor  = real(1), &
-               add_offset    = real(0), &
-               valid_min     = real(0, sreal), &
-               valid_max     = real(1500, sreal), &
-               units         = 'W m-2', &
-               deflate_level = deflate_lv, &
-               shuffle       = shuffle_flag)
-
-
-      !-------------------------------------------------------------------------
-      ! boa_downwelling_longwave_flux_in_air_assuming_clear_sky
-      !-------------------------------------------------------------------------
-       call nc_def_var_float_packed_float( &
-               ncid, &
-               dims_var, &
-               'boa_lwdn_clr', &
-               boa_lwdn_clr_vid, &
-               verbose, &
-               long_name     = 'bottom of atmosphere downwelling thermal radiation', &
-               standard_name = 'surface_downwelling_longwave_flux_in_air_assuming_clear_sky', &
-               fill_value    = sreal_fill_value, &
-               scale_factor  = real(1), &
-               add_offset    = real(0), &
-               valid_min     = real(0, sreal), &
-               valid_max     = real(1500, sreal), &
-               units         = 'W m-2', &
-               deflate_level = deflate_lv, &
-               shuffle       = shuffle_flag)
-
-
-
-      !-------------------------------------------------------------------------
-      ! surface_diffuse_downwelling_photosynthetic_radiative_flux_in_air
-      !-------------------------------------------------------------------------
-       call nc_def_var_float_packed_float( &
-               ncid, &
-               dims_var, &
-               'boa_par_dif', &
-               boa_par_dif_vid, &
-               verbose, &
-               long_name     = 'surface diffuse par', &
-               standard_name = 'surface_diffuse_downwelling_photosynthetic_radiative_flux_in_air', &
-               fill_value    = sreal_fill_value, &
-               scale_factor  = real(1), &
-               add_offset    = real(0), &
-               valid_min     = real(0, sreal), &
-               valid_max     = real(1500, sreal), &
-               units         = 'W m-2', &
-               deflate_level = deflate_lv, &
-               shuffle       = shuffle_flag)
-
-
-      !-------------------------------------------------------------------------
-      ! surface_downwelling_photosynthetic_radiative_flux_in_air
-      !-------------------------------------------------------------------------
-       call nc_def_var_float_packed_float( &
-               ncid, &
-               dims_var, &
-               'boa_par_tot', &
-               boa_par_tot_vid, &
-               verbose, &
-               long_name     = 'surface total par', &
-               standard_name = 'surface_downwelling_photosynthetic_radiative_flux_in_air', &
-               fill_value    = sreal_fill_value, &
-               scale_factor  = real(1), &
-               add_offset    = real(0), &
-               valid_min     = real(0, sreal), &
-               valid_max     = real(1500, sreal), &
-               units         = 'W m-2', &
-               deflate_level = deflate_lv, &
-               shuffle       = shuffle_flag)
-
-      !-------------------------------------------------------------------------
-      ! toa_incoming_photosynthetic_radiative_flux
-      !-------------------------------------------------------------------------
-       call nc_def_var_float_packed_float( &
-               ncid, &
-               dims_var, &
-               'toa_par_tot', &
-               toa_par_tot_vid, &
-               verbose, &
-               long_name     = 'top of atmosphere incident par', &
-               standard_name = 'toa_incoming_photosynthetic_radiative_flux', &
-               fill_value    = sreal_fill_value, &
-               scale_factor  = real(1), &
-               add_offset    = real(0), &
-               valid_min     = real(0, sreal), &
-               valid_max     = real(1500, sreal), &
-               units         = 'W m-2', &
-               deflate_level = deflate_lv, &
-               shuffle       = shuffle_flag)
-
-      !-------------------------------------------------------------------------
-      ! surface_air_temperature
-      !-------------------------------------------------------------------------
-       call nc_def_var_float_packed_float( &
-               ncid, &
-               dims_var, &
-               'boa_tsfc', &
-               boa_tsfc_vid, &
-               verbose, &
-               long_name     = 'bottom of atmosphere air temperature', &
-               standard_name = 'surface_air_temperature', &
-               fill_value    = sreal_fill_value, &
-               scale_factor  = real(1), &
-               add_offset    = real(0), &
-               valid_min     = real(0, sreal), &
-               valid_max     = real(1500, sreal), &
-               units         = 'K', &
-               deflate_level = deflate_lv, &
-               shuffle       = shuffle_flag)
-
-      !-------------------------------------------------------------------------
-      ! surface_air_pressure
-      !-------------------------------------------------------------------------
-       call nc_def_var_float_packed_float( &
-               ncid, &
-               dims_var, &
-               'boa_psfc', &
-               boa_psfc_vid, &
-               verbose, &
-               long_name     = 'bottom of atmosphere air pressure', &
-               standard_name = 'surface_air_pressure', &
-               fill_value    = sreal_fill_value, &
-               scale_factor  = real(1), &
-               add_offset    = real(0), &
-               valid_min     = real(0, sreal), &
-               valid_max     = real(1500, sreal), &
-               units         = 'hPa', &
-               deflate_level = deflate_lv, &
-               shuffle       = shuffle_flag)
-
-      !-------------------------------------------------------------------------
-      ! surface_specific_humidity
-      !-------------------------------------------------------------------------
-       call nc_def_var_float_packed_float( &
-               ncid, &
-               dims_var, &
-               'boa_qsfc', &
-               boa_qsfc_vid, &
-               verbose, &
-               long_name     = 'bottom of atmosphere specific humidity', &
-               standard_name = 'surface_specific_humidity', &
-               fill_value    = sreal_fill_value, &
-               scale_factor  = real(1), &
-               add_offset    = real(0), &
-               valid_min     = real(0, sreal), &
-               valid_max     = real(1500, sreal), &
-               units         = 'kg/kg', &
-               deflate_level = deflate_lv, &
-               shuffle       = shuffle_flag)
-
-      !-------------------------------------------------------------------------
-      ! lower_troposphere_stability
-      !-------------------------------------------------------------------------
-       call nc_def_var_float_packed_float( &
-               ncid, &
-               dims_var, &
-               'lts', &
-               lts_vid, &
-               verbose, &
-               long_name     = 'lower troposphere stability (theta700 - theta sfc)', &
-               standard_name = 'lower_troposphere_stability', &
-               fill_value    = sreal_fill_value, &
-               scale_factor  = real(1), &
-               add_offset    = real(0), &
-               valid_min     = real(0, sreal), &
-               valid_max     = real(1500, sreal), &
-               units         = 'K', &
-               deflate_level = deflate_lv, &
-               shuffle       = shuffle_flag)
-
-      !-------------------------------------------------------------------------
-      ! free_troposphere_humidity
-      !-------------------------------------------------------------------------
-       call nc_def_var_float_packed_float( &
-               ncid, &
-               dims_var, &
-               'fth', &
-               fth_vid, &
-               verbose, &
-               long_name     = 'free troposphere humidity (RH at 850 hPa)', &
-               standard_name = 'free_troposphere_humidity', &
-               fill_value    = sreal_fill_value, &
-               scale_factor  = real(1), &
-               add_offset    = real(0), &
-               valid_min     = real(0, sreal), &
-               valid_max     = real(1500, sreal), &
-               units         = '1', &
-               deflate_level = deflate_lv, &
-               shuffle       = shuffle_flag)
-
-      !-------------------------------------------------------------------------
-      ! Column_Ozone
-      !-------------------------------------------------------------------------
-       call nc_def_var_float_packed_float( &
-               ncid, &
-               dims_var, &
-               'colO3', &
-               colO3_vid, &
-               verbose, &
-               long_name     = 'column ozone', &
-               standard_name = 'column_ozone', &
-               fill_value    = sreal_fill_value, &
-               scale_factor  = real(1), &
-               add_offset    = real(0), &
-               valid_min     = real(0, sreal), &
-               valid_max     = real(1500, sreal), &
-               units         = 'DU', &
-               deflate_level = deflate_lv, &
-               shuffle       = shuffle_flag)
-
-     !Need to exit define mode to write data
-      if (nf90_enddef(ncid) .ne. NF90_NOERR) then
+       call cpu_time(cpuFinish)
+       print*,'complete: ',i*100./(xN*1.),'%   i=',i, cpuFinish-cpuStart,' seconds elapsed'
+
+       !loop over along-track dimension
+       do j=pxY0,pxY1
+
+          !Valid lat/lon required to run (needed for SEVIRI)
+          if(LAT(i,j) .ne. -999.0 .and. LON(i,j) .ne. -999.0) then
+
+             !---------------------------------------------------------
+             ! Surface albedo
+             ! interpolate narrowband BRDF radiances to broadband BUGSrad radiances
+             !---------------------------------------------------------
+             !BugsRAD Surface Properties
+             if(algorithm_processing_mode .eq. 1) then
+                call preprocess_bugsrad_sfc_albedo(nc_alb,rho_0d(i,j,:),rho_dd(i,j,:),rho_0d_bugsrad,rho_dd_bugsrad)
+                call preprocess_bugsrad_sfc_emissivity(nc_emis,emis_data(i,j,:),emis_bugsrad)
+             endif
+
+             !FuLiou Surface Properties
+             if(algorithm_processing_mode .eq. 2 .or. &
+                  algorithm_processing_mode .eq. 3 .or. &
+                  algorithm_processing_mode .eq. 4) then
+                call preprocess_fuliou_sfc_albedo(nc_alb,rho_0d(i,j,:),rho_dd(i,j,:),rho_0d_fuliou,rho_dd_fuliou)
+                call preprocess_bugsrad_sfc_emissivity(nc_emis,emis_data(i,j,:),emis_fuliou)
+             endif
+
+             !print*,'BUGSrad (blacksky) ',rho_0d_bugsrad
+             !print*,'BUGSrad (whitesky) ',rho_dd_bugsrad
+             !print*,'BUGSrad emissivity ',emis_bugsrad
+             !print*,'Fu Liou (blacksky) ',rho_0d_fuliou
+             !print*,'Fu Liou (whitesky) ',rho_dd_fuliou
+             !print*,'Fu Liou emissivity ',emis_fuliou
+
+             ! solar zenith angle
+             pxTheta = COS( SOLZ(i,j) * Pi/180.)
+             !print*,i,j,solz(i,j),pxTheta
+
+             ! solar zenith angle condition (remove nighttime & twilight)
+             !       if( SOLZ(i,j) .lt. 80.) then
+
+             !meteorology
+             call interpolate_meteorology(lon_prtm,lat_prtm,levdim_prtm,&
+                  xdim_prtm,ydim_prtm,P,T,H,Q,O3,&
+                  LON(i,j),LAT(i,j),inP,inT_,inH,inQ,inO3)
+
+             !use to debug current interpolation scheme
+             !call collocate_prtm_profile(LON(i,j),LAT(i,j),&
+             !          xdim_prtm,ydim_prtm,tlon_prtm,tlat_prtm,tlonid,tlatid)
+             !print*,tlonid,tlatid
+             !set value
+             ! inH(:)= H(:,tlonid,tlatid)
+             ! inT_(:)= T(:,tlonid,tlatid)
+             ! inP(:)= P(:,tlonid,tlatid)
+             ! inQ(:)= Q(:,tlonid,tlatid)
+             ! inO3(:) = O3(:,tlonid,tlatid)
+             !call midlatsum1(pxZ,pxP,pxT,pxQ,pxO3,NLS) !standard profile if wanted
+
+             !collocate PRTM vertical resolution to BUGSrad profile resolution (31 levels)
+             pxZ = inH(mask_vres)
+             pxP = inP(mask_vres)
+             pxT = inT_(mask_vres)
+             pxQ = inQ(mask_vres)
+             pxO3 = inO3(mask_vres)
+
+             !skin temperature - currently bottom level as defined in
+             !rttov_driver.F90
+             !pxts = inT_(levdim_prtm)
+             !check if STEMP is valid, if not use ECMWF value.
+             if((STEMP(i,j) .lt. 0) .or. (STEMP(i,j) .gt. 400)) then
+                pxts = inT_(levdim_prtm)
+             else
+                pxts = STEMP(i,j)
+             endif
+
+             !debugging (print statements)
+             !print*,'latitude: ',LAT(i,j)
+             !print*,'longitude: ',LON(i,j)
+             !print*,'solar zenith: ',SOLZ(i,j)
+             !print*,'cc_tot:  ',cc_tot(i,j)
+             !print*,'Sat Phase: ',PHASE(i,j)
+             !print*,'Sat retr. CTH = ',CTH(i,j)
+             !print*,'Sat retr. CTT = ',CTT(i,j)
+             !print*,'SAT retr. REF = ',REF(i,j)
+             !print*,'SAT retr. COT = ',COT(i,j)
+             !print*,'SAT retr. cc_tot = ',cc_tot(i,j)
+             !print*,'Aerosol Optical Depth: ',AOD550(i,j)
+             !print*,'Aerosol Effective Radius: ',AREF(i,j)
+
+
+             !cloud base & top height calculation
+             call preprocess_input(cc_tot(i,j),AREF(i,j),AOD550(i,j),phase(i,j),&
+                  CTT(i,j),CTP(i,j),REF(i,j),COT(i,j),CTH(i,j),InfThnCld,&
+                  NLS,pxZ,pxREF,pxCOT,pxHctop,pxHcbase,&
+                  pxPhaseFlag,pxLayerType,&
+                  pxregime,pxHctopID,pxHcbaseID)
+
+             !debugging (print statements)
+             !print*,'phase: ',pxPhaseFlag
+             !print*,'re :',pxREF
+             !print*,'tau :',pxCOT
+             !print*,'Hctop = ',pxHctop,' HctopID: ',pxHctopID
+             !print*,'Hcbase = ',pxHcbase,' HcbaseID: ',pxHcbaseID
+             !print*,'Regime: ',pxregime
+             !print*,'TOTAL SOLAR IRRADIANCE: ',pxTSI
+             !print*,'Hctop (hPa) = ',pxP(pxHctopID)
+             !print*,'Hcbase (hPa) = ',pxP(pxHcbaseID)
+
+             !Run Full Radiation Code (not LUT mode)
+             if(lut_mode .eq. 0) then
+
+                !-------------------------------------------------------
+                !Call BUGSrad Algorithm
+                !-------------------------------------------------------
+                if(algorithm_processing_mode .eq. 1) then
+                   !print*,'starting... BUGSrad'
+                   !print*,NL,pxTSI,pxtheta,pxAsfcSWRdr,pxAsfcNIRdr,pxAsfcSWRdf,pxAsfcNIRdf,pxts
+                   !print*,nc_alb,rho_0d(i,j,:),rho_dd(i,j,:)
+                   call driver_for_bugsrad(NL,pxTSI,pxtheta,pxAsfcSWRdr,pxAsfcNIRdr,pxAsfcSWRdf,pxAsfcNIRdf,pxts,&
+                        pxPhaseFlag,pxREF,pxCOT,pxHctop,pxHcbase,&
+                        pxHctopID,pxHcbaseID,&
+                        pxZ,pxP,pxT,pxQ,pxO3,&
+                        pxtoalwup,pxtoaswdn,pxtoaswup,&
+                        pxboalwup,pxboalwdn,pxboaswdn,pxboaswup,&
+                        pxtoalwupclr,pxtoaswupclr,&
+                        pxboalwupclr,pxboalwdnclr,pxboaswupclr,pxboaswdnclr,&
+                        bpar,bpardif,tpar,&
+                        ulwfx,dlwfx,uswfx,dswfx,&
+                        ulwfxclr,dlwfxclr,uswfxclr,dswfxclr,&
+                        emis_bugsrad,rho_0d_bugsrad,rho_dd_bugsrad)
+
+                   !print*,'BUGSrad'
+                   !print*,pxtoalwup,pxtoaswdn,pxtoaswup
+                   !print*,pxtoalwupclr,pxtoaswdn,pxtoaswupclr
+                   !print*,pxboalwup,pxboalwdn,pxboaswdn,pxboaswup
+                   !print*,pxboalwupclr,pxboalwdnclr,pxboaswdnclr,pxboaswupclr
+                   !print*,tpar,bpar,bpardif
+
+                endif !BUGSrad Algorithm
+
+                !-------------------------------------------------------
+                !Call FuLiou Algorithm
+                !-------------------------------------------------------
+                if(algorithm_processing_mode .eq. 2 .or. &
+                     algorithm_processing_mode .eq. 3 .or. &
+                     algorithm_processing_mode .eq. 4) then
+                   !print*,'starting... Fu-Liou'
+                   !print*,NL,pxTSI,pxtheta,pxAsfcSWRdr,pxAsfcNIRdr,pxAsfcSWRdf,pxAsfcNIRdf,pxts
+                   !print*,nc_alb
+                   !print*,rho_0d(i,j,:)
+                   !print*,rho_dd(i,j,:)
+                   !print*,''
+                   call driver_for_fuliou(NL,pxTSI,pxtheta,pxAsfcSWRdr,pxAsfcNIRdr,&
+                        pxAsfcSWRdf,pxAsfcNIRdf,pxts,&
+                        pxPhaseFlag,pxREF,pxCOT,pxHctop,pxHcbase,&
+                        pxHctopID,pxHcbaseID,&
+                        pxZ,pxP,pxT,pxQ,pxO3,&
+                        pxtoalwup,pxtoaswdn,pxtoaswup,&
+                        pxboalwup,pxboalwdn,pxboaswdn,pxboaswup,&
+                        pxtoalwupclr,pxtoaswupclr,&
+                        pxboalwupclr,pxboalwdnclr,pxboaswupclr,pxboaswdnclr,&
+                        bpar,bpardif,tpar,&
+                        ulwfx,dlwfx,uswfx,dswfx,&
+                        ulwfxclr,dlwfxclr,uswfxclr,dswfxclr,&
+                        emis_fuliou,rho_0d_fuliou,rho_dd_fuliou,&
+                        algorithm_processing_mode)
+
+                   !print*,'Fu Liou'
+                   !print*,i,j,'1',pxtoaswup
+                   !print*,pxtoalwupclr,pxtoaswdn,pxtoaswupclr
+                   !print*,pxboalwup,pxboalwdn,pxboaswdn,pxboaswup
+                   !print*,pxboalwupclr,pxboalwdnclr,pxboaswdnclr,pxboaswupclr
+                   !print*,tpar,bpar,bpardif
+
+                endif !FuLiou Algorithm
+
+             endif !lut_mode = 0
+
+             !-------------------------------------------------------
+             !LUT MODE
+             !-------------------------------------------------------
+             if(lut_mode .eq. 1) then
+
+                call driver_for_lut(pxTSI,pxregime,&
+                     nASFC,LUT_SFC_ALB,&
+                     nRE,lut_ref,nTAU,lut_cot,nSOLZ,lut_solz,&
+                     LUT_toa_sw_albedo(:,:,:,:),&
+                     LUT_boa_sw_transmission(:,:,:,:),&
+                     LUT_boa_sw_albedo(:,:,:,:),&
+                     alb_data(I,J,1:),REF(I,J),COT(I,J),SOLZ(I,J),&
+                     pxtoalwup,pxtoaswdn,pxtoaswup,&
+                     pxboalwup,pxboalwdn,pxboaswdn,pxboaswup,&
+                     pxtoalwupclr,pxtoaswupclr,&
+                     pxboalwupclr,pxboalwdnclr,pxboaswupclr,pxboaswdnclr,&
+                     bpar,bpardif,tpar)
+             endif
+
+
+             !-------------------------------------------------------
+             !Quality Check Retrieved Data & Fill Output Arrays
+             !-------------------------------------------------------
+             !catch NaN
+             nanFlag=0
+             if(is_nan(pxtoalwup)) nanFlag=1
+             if(is_nan(pxtoaswup)) nanFlag=1
+             if(is_nan(pxtoalwupclr)) nanFlag=1
+             if(is_nan(pxtoaswupclr)) nanFlag=1
+
+             !catch unphysical values
+             if(pxtoalwup .lt. 0. .or. pxtoalwup .gt. 1000.) nanFlag=1
+             if(pxtoaswup .lt. 0. .or. pxtoaswup .gt. 1600.) nanFlag=1
+
+             !regime type
+             retrflag(i,j) = pxregime
+
+             !valid data only
+             if(nanFlag == 0) then
+                !netCDF output arrays
+                !Observed
+                time_data(i,j) = TIME(i,j)
+                lat_data(i,j)  = LAT(i,j)
+                lon_data(i,j)  = LON(i,j)
+
+                toa_lwup(i,j) = pxtoalwup
+                toa_swup(i,j) = pxtoaswup
+                toa_swdn(i,j) = pxtoaswdn
+                boa_lwup(i,j) = pxboalwup
+                boa_lwdn(i,j) = pxboalwdn
+                boa_swup(i,j) = pxboaswup
+                boa_swdn(i,j) = pxboaswdn
+
+                !Clear-sky retrieval
+                toa_lwup_clr(i,j) = pxtoalwupclr
+                toa_swup_clr(i,j) = pxtoaswupclr
+                boa_lwup_clr(i,j) = pxboalwupclr
+                boa_lwdn_clr(i,j) = pxboalwdnclr
+                boa_swup_clr(i,j) = pxboaswupclr
+                boa_swdn_clr(i,j) = pxboaswdnclr
+
+                !PAR
+                toa_par_tot(i,j) = tpar * pxPAR_WEIGHT
+                boa_par_tot(i,j) = bpar * pxPAR_WEIGHT
+                boa_par_dif(i,j) = bpardif * pxPAR_WEIGHT
+
+             end if !valid data
+
+             ! meteorology data to output in netCDF file
+             boa_tsfc(i,j) = pxT(NLS)
+             boa_psfc(i,j) = pxP(NLS)
+             boa_qsfc(i,j) = pxQ(NLS)
+             call compute_lts(NL,pxP,pxT,pxLTS)
+             call compute_fth(NL,pxP,pxT,pxQ,pxFTH)
+             call compute_column_o3(NL,pxZ,pxO3,pxcolO3)
+
+             lts(i,j) = pxLTS
+             fth(i,j) = pxFTH
+             colO3(i,j) = pxcolO3
+
+          end if   !valid geolocation data
+       end do !j-loop
+    end do !i-loop
+    call cpu_time(cpuFinish)
+    print*,cpuFinish-cpuStart,' seconds elapsed'
+
+    !-------------------------------------------------------------------------
+    !Make output netcdf file
+    !-------------------------------------------------------------------------
+    call nc_open(ncid,Fprimary)
+
+    !get common attributes from primary file
+    call nc_get_common_attributes(ncid, global_atts, source_atts)
+
+    if (nf90_close(ncid) .ne. NF90_NOERR) then
+       write(*,*) 'ERROR: nf90_close()'
+       stop error_stop_code
+    end if
+
+    !dimensions
+    ixstart = pxX0
+    ixstop  = pxX1
+    iystart = pxY0
+    iystop  = pxY1
+    n_x = ixstop - ixstart + 1
+    n_y = iystop - iystart + 1
+    n_v = 1
+
+    ! create netcdf file
+    call nc_create(trim(fname), ncid, ixstop-ixstart+1, &
+         iystop-iystart+1, n_v, dim3d_var, 1, global_atts, source_atts)
+    dims_var = dim3d_var(1:2)
+
+    !Need this to exit data mode to define variables
+    if (nf90_redef(ncid) .ne. NF90_NOERR) then
+       write(*,*) 'ERROR: nf90_redef()'
+       stop error_stop_code
+    end if
+
+    !-------------------------------------------------------------------------
+    ! time
+    !-------------------------------------------------------------------------
+    call nc_def_var_double_packed_double( &
+         ncid, &
+         dims_var, &
+         'time', &
+         TIME_vid, &
+         verbose, &
+         long_name     = 'Time in Julian days', &
+         standard_name = 'Julian Days', &
+         fill_value    = dreal_fill_value, &
+         scale_factor  = real(1, dreal), &
+         add_offset    = real(0, dreal), &
+         valid_min     = real(MINVAL(time_data), dreal), &
+         valid_max     = real(MAXVAL(time_data), dreal), &
+         units         = 'days since -4712-01-01 12:00:00', &
+         deflate_level = deflate_lv, &
+         shuffle       = shuffle_flag)
+
+
+
+    !-------------------------------------------------------------------------
+    ! latitude
+    !-------------------------------------------------------------------------
+    call nc_def_var_float_packed_float( &
+         ncid, &
+         dims_var, &
+         'lat', &
+         LAT_vid, &
+         verbose, &
+         long_name     = 'latitude', &
+         standard_name = 'latitude', &
+         fill_value    = sreal_fill_value, &
+         scale_factor  = real(1), &
+         add_offset    = real(0), &
+         valid_min     = real(-90., sreal), &
+         valid_max     = real(90., sreal), &
+         units         = 'degrees', &
+         deflate_level = deflate_lv, &
+         shuffle       = shuffle_flag)
+
+
+    !-------------------------------------------------------------------------
+    ! longitude
+    !-------------------------------------------------------------------------
+    call nc_def_var_float_packed_float( &
+         ncid, &
+         dims_var, &
+         'lon', &
+         LON_vid, &
+         verbose, &
+         long_name     = 'longitude', &
+         standard_name = 'longitude', &
+         fill_value    = sreal_fill_value, &
+         scale_factor  = real(1), &
+         add_offset    = real(0), &
+         valid_min     = real(-180, sreal), &
+         valid_max     = real(180, sreal), &
+         units         = 'degrees', &
+         deflate_level = deflate_lv, &
+         shuffle       = shuffle_flag)
+
+    !-------------------------------------------------------------------------
+    ! retrieval flag
+    !-------------------------------------------------------------------------
+    call nc_def_var_byte_packed_byte( &
+         ncid, &
+         dims_var, &
+         'retrflag', &
+         retrflag_vid, &
+         verbose, &
+         long_name     = 'retrflag', &
+         standard_name = 'retrflag', &
+         fill_value    = byte_fill_value, &
+         scale_factor  = int(1, byte), &
+         add_offset    = int(0, byte), &
+         valid_min     = int(1, byte), &
+         valid_max     = int(4, byte), &
+         units         = '1', &
+         flag_values   = '1b 2b 3b 4b 5b 6b', &
+         flag_meanings = 'oc_liq-cld oc_ice-cld clear-AOD clear_no_AOD joint_aod-liq_cld joint_aod-ice_cld', &
+         deflate_level = deflate_lv, &
+         shuffle       = shuffle_flag)
+
+    !-------------------------------------------------------------------------
+    ! toa_incoming_shortwave_flux
+    !-------------------------------------------------------------------------
+    call nc_def_var_float_packed_float( &
+         ncid, &
+         dims_var, &
+         'toa_swdn', &
+         toa_swdn_vid, &
+         verbose, &
+         long_name     = 'top of atmosphere incident solar radiation', &
+         standard_name = 'toa_incoming_shortwave_flux', &
+         fill_value    = sreal_fill_value, &
+         scale_factor  = real(1), &
+         add_offset    = real(0), &
+         valid_min     = real(0, sreal), &
+         valid_max     = real(1500, sreal), &
+         units         = 'W m-2', &
+         deflate_level = deflate_lv, &
+         shuffle       = shuffle_flag)
+
+    !-------------------------------------------------------------------------
+    ! toa_outgoing_shortwave_flux
+    !-------------------------------------------------------------------------
+    call nc_def_var_float_packed_float( &
+         ncid, &
+         dims_var, &
+         'toa_swup', &
+         toa_swup_vid, &
+         verbose, &
+         long_name     = 'top of atmosphere upwelling solar radiation', &
+         standard_name = 'toa_outgoing_shortwave_flux', &
+         fill_value    = sreal_fill_value, &
+         scale_factor  = real(1), &
+         add_offset    = real(0), &
+         valid_min     = real(0, sreal), &
+         valid_max     = real(1500, sreal), &
+         units         = 'W m-2', &
+         deflate_level = deflate_lv, &
+         shuffle       = shuffle_flag)
+
+    !-------------------------------------------------------------------------
+    ! toa_outgoing_longwave_flux
+    !-------------------------------------------------------------------------
+    call nc_def_var_float_packed_float( &
+         ncid, &
+         dims_var, &
+         'toa_lwup', &
+         toa_lwup_vid, &
+         verbose, &
+         long_name     = 'top of atmosphere upwelling thermal radiation', &
+         standard_name = 'toa_outgoing_longwave_flux', &
+         fill_value    = sreal_fill_value, &
+         scale_factor  = real(1), &
+         add_offset    = real(0), &
+         valid_min     = real(0, sreal), &
+         valid_max     = real(1500, sreal), &
+         units         = 'W m-2', &
+         deflate_level = deflate_lv, &
+         shuffle       = shuffle_flag)
+
+
+
+    !-------------------------------------------------------------------------
+    ! surface_downwelling_shortwave_flux_in_air
+    !-------------------------------------------------------------------------
+    call nc_def_var_float_packed_float( &
+         ncid, &
+         dims_var, &
+         'boa_swdn', &
+         boa_swdn_vid, &
+         verbose, &
+         long_name     = 'bottom of atmosphere downwelling solar radiation', &
+         standard_name = 'surface_downwelling_shortwave_flux_in_air', &
+         fill_value    = sreal_fill_value, &
+         scale_factor  = real(1), &
+         add_offset    = real(0), &
+         valid_min     = real(0, sreal), &
+         valid_max     = real(1500, sreal), &
+         units         = 'W m-2', &
+         deflate_level = deflate_lv, &
+         shuffle       = shuffle_flag)
+
+    !-------------------------------------------------------------------------
+    ! surface_upwelling_shortwave_flux_in_air
+    !-------------------------------------------------------------------------
+    call nc_def_var_float_packed_float( &
+         ncid, &
+         dims_var, &
+         'boa_swup', &
+         boa_swup_vid, &
+         verbose, &
+         long_name     = 'bottom of atmosphere upwelling solar radiation', &
+         standard_name = 'surface_upwelling_shortwave_flux_in_air', &
+         fill_value    = sreal_fill_value, &
+         scale_factor  = real(1), &
+         add_offset    = real(0), &
+         valid_min     = real(0, sreal), &
+         valid_max     = real(1500, sreal), &
+         units         = 'W m-2', &
+         deflate_level = deflate_lv, &
+         shuffle       = shuffle_flag)
+
+    !-------------------------------------------------------------------------
+    ! surface_upwelling_longwave_flux_in_air
+    !-------------------------------------------------------------------------
+    call nc_def_var_float_packed_float( &
+         ncid, &
+         dims_var, &
+         'boa_lwup', &
+         boa_lwup_vid, &
+         verbose, &
+         long_name     = 'bottom of atmosphere upwelling thermal radiation', &
+         standard_name = 'surface_upwelling_longwave_flux_in_air', &
+         fill_value    = sreal_fill_value, &
+         scale_factor  = real(1), &
+         add_offset    = real(0), &
+         valid_min     = real(0, sreal), &
+         valid_max     = real(1500, sreal), &
+         units         = 'W m-2', &
+         deflate_level = deflate_lv, &
+         shuffle       = shuffle_flag)
+
+
+    !-------------------------------------------------------------------------
+    ! surface_downwelling_longwave_flux_in_air
+    !-------------------------------------------------------------------------
+    call nc_def_var_float_packed_float( &
+         ncid, &
+         dims_var, &
+         'boa_lwdn', &
+         boa_lwdn_vid, &
+         verbose, &
+         long_name     = 'bottom of atmosphere downwelling thermal radiation', &
+         standard_name = 'surface_downwelling_longwave_flux_in_air', &
+         fill_value    = sreal_fill_value, &
+         scale_factor  = real(1), &
+         add_offset    = real(0), &
+         valid_min     = real(0, sreal), &
+         valid_max     = real(1500, sreal), &
+         units         = 'W m-2', &
+         deflate_level = deflate_lv, &
+         shuffle       = shuffle_flag)
+
+
+
+    !-------------------------------------------------------------------------
+    ! toa_outgoing_shortwave_flux_assuming_clear_sky
+    !-------------------------------------------------------------------------
+    call nc_def_var_float_packed_float( &
+         ncid, &
+         dims_var, &
+         'toa_swup_clr', &
+         toa_swup_clr_vid, &
+         verbose, &
+         long_name     = 'top of atmosphere upwelling solar radiation', &
+         standard_name = 'toa_outgoing_shortwave_flux_assuming_clear_sky', &
+         fill_value    = sreal_fill_value, &
+         scale_factor  = real(1), &
+         add_offset    = real(0), &
+         valid_min     = real(0, sreal), &
+         valid_max     = real(1500, sreal), &
+         units         = 'W m-2', &
+         deflate_level = deflate_lv, &
+         shuffle       = shuffle_flag)
+
+    !-------------------------------------------------------------------------
+    ! toa_outgoing_longwave_flux_assuming_clear_sky
+    !-------------------------------------------------------------------------
+    call nc_def_var_float_packed_float( &
+         ncid, &
+         dims_var, &
+         'toa_lwup_clr', &
+         toa_lwup_clr_vid, &
+         verbose, &
+         long_name     = 'top of atmosphere upwelling thermal radiation', &
+         standard_name = 'toa_outgoing_longwave_flux_assuming_clear_sky', &
+         fill_value    = sreal_fill_value, &
+         scale_factor  = real(1), &
+         add_offset    = real(0), &
+         valid_min     = real(0, sreal), &
+         valid_max     = real(1500, sreal), &
+         units         = 'W m-2', &
+         deflate_level = deflate_lv, &
+         shuffle       = shuffle_flag)
+
+
+    !-------------------------------------------------------------------------
+    ! boa_downwelling_shortwave_flux_in_air_assuming_clear_sky
+    !-------------------------------------------------------------------------
+    call nc_def_var_float_packed_float( &
+         ncid, &
+         dims_var, &
+         'boa_swdn_clr', &
+         boa_swdn_clr_vid, &
+         verbose, &
+         long_name     = 'bottom of atmosphere downwelling solar radiation', &
+         standard_name = 'surface_downwelling_shortwave_flux_in_air_assuming_clear_sky', &
+         fill_value    = sreal_fill_value, &
+         scale_factor  = real(1), &
+         add_offset    = real(0), &
+         valid_min     = real(0, sreal), &
+         valid_max     = real(1500, sreal), &
+         units         = 'W m-2', &
+         deflate_level = deflate_lv, &
+         shuffle       = shuffle_flag)
+
+    !-------------------------------------------------------------------------
+    ! boa_upwelling_shortwave_flux_in_air_assuming_clear_sky
+    !-------------------------------------------------------------------------
+    call nc_def_var_float_packed_float( &
+         ncid, &
+         dims_var, &
+         'boa_swup_clr', &
+         boa_swup_clr_vid, &
+         verbose, &
+         long_name     = 'bottom of atmosphere upwelling solar radiation', &
+         standard_name = 'surface_upwelling_shortwave_flux_in_air_assuming_clear_sky', &
+         fill_value    = sreal_fill_value, &
+         scale_factor  = real(1), &
+         add_offset    = real(0), &
+         valid_min     = real(0, sreal), &
+         valid_max     = real(1500, sreal), &
+         units         = 'W m-2', &
+         deflate_level = deflate_lv, &
+         shuffle       = shuffle_flag)
+
+    !-------------------------------------------------------------------------
+    ! boa_upwelling_longwave_flux_in_air_assuming_clear_sky
+    !-------------------------------------------------------------------------
+    call nc_def_var_float_packed_float( &
+         ncid, &
+         dims_var, &
+         'boa_lwup_clr', &
+         boa_lwup_clr_vid, &
+         verbose, &
+         long_name     = 'bottom of atmosphere upwelling thermal radiation', &
+         standard_name = 'surface_upwelling_longwave_flux_in_air_assuming_clear_sky', &
+         fill_value    = sreal_fill_value, &
+         scale_factor  = real(1), &
+         add_offset    = real(0), &
+         valid_min     = real(0, sreal), &
+         valid_max     = real(1500, sreal), &
+         units         = 'W m-2', &
+         deflate_level = deflate_lv, &
+         shuffle       = shuffle_flag)
+
+
+    !-------------------------------------------------------------------------
+    ! boa_downwelling_longwave_flux_in_air_assuming_clear_sky
+    !-------------------------------------------------------------------------
+    call nc_def_var_float_packed_float( &
+         ncid, &
+         dims_var, &
+         'boa_lwdn_clr', &
+         boa_lwdn_clr_vid, &
+         verbose, &
+         long_name     = 'bottom of atmosphere downwelling thermal radiation', &
+         standard_name = 'surface_downwelling_longwave_flux_in_air_assuming_clear_sky', &
+         fill_value    = sreal_fill_value, &
+         scale_factor  = real(1), &
+         add_offset    = real(0), &
+         valid_min     = real(0, sreal), &
+         valid_max     = real(1500, sreal), &
+         units         = 'W m-2', &
+         deflate_level = deflate_lv, &
+         shuffle       = shuffle_flag)
+
+
+
+    !-------------------------------------------------------------------------
+    ! surface_diffuse_downwelling_photosynthetic_radiative_flux_in_air
+    !-------------------------------------------------------------------------
+    call nc_def_var_float_packed_float( &
+         ncid, &
+         dims_var, &
+         'boa_par_dif', &
+         boa_par_dif_vid, &
+         verbose, &
+         long_name     = 'surface diffuse par', &
+         standard_name = 'surface_diffuse_downwelling_photosynthetic_radiative_flux_in_air', &
+         fill_value    = sreal_fill_value, &
+         scale_factor  = real(1), &
+         add_offset    = real(0), &
+         valid_min     = real(0, sreal), &
+         valid_max     = real(1500, sreal), &
+         units         = 'W m-2', &
+         deflate_level = deflate_lv, &
+         shuffle       = shuffle_flag)
+
+
+    !-------------------------------------------------------------------------
+    ! surface_downwelling_photosynthetic_radiative_flux_in_air
+    !-------------------------------------------------------------------------
+    call nc_def_var_float_packed_float( &
+         ncid, &
+         dims_var, &
+         'boa_par_tot', &
+         boa_par_tot_vid, &
+         verbose, &
+         long_name     = 'surface total par', &
+         standard_name = 'surface_downwelling_photosynthetic_radiative_flux_in_air', &
+         fill_value    = sreal_fill_value, &
+         scale_factor  = real(1), &
+         add_offset    = real(0), &
+         valid_min     = real(0, sreal), &
+         valid_max     = real(1500, sreal), &
+         units         = 'W m-2', &
+         deflate_level = deflate_lv, &
+         shuffle       = shuffle_flag)
+
+    !-------------------------------------------------------------------------
+    ! toa_incoming_photosynthetic_radiative_flux
+    !-------------------------------------------------------------------------
+    call nc_def_var_float_packed_float( &
+         ncid, &
+         dims_var, &
+         'toa_par_tot', &
+         toa_par_tot_vid, &
+         verbose, &
+         long_name     = 'top of atmosphere incident par', &
+         standard_name = 'toa_incoming_photosynthetic_radiative_flux', &
+         fill_value    = sreal_fill_value, &
+         scale_factor  = real(1), &
+         add_offset    = real(0), &
+         valid_min     = real(0, sreal), &
+         valid_max     = real(1500, sreal), &
+         units         = 'W m-2', &
+         deflate_level = deflate_lv, &
+         shuffle       = shuffle_flag)
+
+    !-------------------------------------------------------------------------
+    ! surface_air_temperature
+    !-------------------------------------------------------------------------
+    call nc_def_var_float_packed_float( &
+         ncid, &
+         dims_var, &
+         'boa_tsfc', &
+         boa_tsfc_vid, &
+         verbose, &
+         long_name     = 'bottom of atmosphere air temperature', &
+         standard_name = 'surface_air_temperature', &
+         fill_value    = sreal_fill_value, &
+         scale_factor  = real(1), &
+         add_offset    = real(0), &
+         valid_min     = real(0, sreal), &
+         valid_max     = real(1500, sreal), &
+         units         = 'K', &
+         deflate_level = deflate_lv, &
+         shuffle       = shuffle_flag)
+
+    !-------------------------------------------------------------------------
+    ! surface_air_pressure
+    !-------------------------------------------------------------------------
+    call nc_def_var_float_packed_float( &
+         ncid, &
+         dims_var, &
+         'boa_psfc', &
+         boa_psfc_vid, &
+         verbose, &
+         long_name     = 'bottom of atmosphere air pressure', &
+         standard_name = 'surface_air_pressure', &
+         fill_value    = sreal_fill_value, &
+         scale_factor  = real(1), &
+         add_offset    = real(0), &
+         valid_min     = real(0, sreal), &
+         valid_max     = real(1500, sreal), &
+         units         = 'hPa', &
+         deflate_level = deflate_lv, &
+         shuffle       = shuffle_flag)
+
+    !-------------------------------------------------------------------------
+    ! surface_specific_humidity
+    !-------------------------------------------------------------------------
+    call nc_def_var_float_packed_float( &
+         ncid, &
+         dims_var, &
+         'boa_qsfc', &
+         boa_qsfc_vid, &
+         verbose, &
+         long_name     = 'bottom of atmosphere specific humidity', &
+         standard_name = 'surface_specific_humidity', &
+         fill_value    = sreal_fill_value, &
+         scale_factor  = real(1), &
+         add_offset    = real(0), &
+         valid_min     = real(0, sreal), &
+         valid_max     = real(1500, sreal), &
+         units         = 'kg/kg', &
+         deflate_level = deflate_lv, &
+         shuffle       = shuffle_flag)
+
+    !-------------------------------------------------------------------------
+    ! lower_troposphere_stability
+    !-------------------------------------------------------------------------
+    call nc_def_var_float_packed_float( &
+         ncid, &
+         dims_var, &
+         'lts', &
+         lts_vid, &
+         verbose, &
+         long_name     = 'lower troposphere stability (theta700 - theta sfc)', &
+         standard_name = 'lower_troposphere_stability', &
+         fill_value    = sreal_fill_value, &
+         scale_factor  = real(1), &
+         add_offset    = real(0), &
+         valid_min     = real(0, sreal), &
+         valid_max     = real(1500, sreal), &
+         units         = 'K', &
+         deflate_level = deflate_lv, &
+         shuffle       = shuffle_flag)
+
+    !-------------------------------------------------------------------------
+    ! free_troposphere_humidity
+    !-------------------------------------------------------------------------
+    call nc_def_var_float_packed_float( &
+         ncid, &
+         dims_var, &
+         'fth', &
+         fth_vid, &
+         verbose, &
+         long_name     = 'free troposphere humidity (RH at 850 hPa)', &
+         standard_name = 'free_troposphere_humidity', &
+         fill_value    = sreal_fill_value, &
+         scale_factor  = real(1), &
+         add_offset    = real(0), &
+         valid_min     = real(0, sreal), &
+         valid_max     = real(1500, sreal), &
+         units         = '1', &
+         deflate_level = deflate_lv, &
+         shuffle       = shuffle_flag)
+
+    !-------------------------------------------------------------------------
+    ! Column_Ozone
+    !-------------------------------------------------------------------------
+    call nc_def_var_float_packed_float( &
+         ncid, &
+         dims_var, &
+         'colO3', &
+         colO3_vid, &
+         verbose, &
+         long_name     = 'column ozone', &
+         standard_name = 'column_ozone', &
+         fill_value    = sreal_fill_value, &
+         scale_factor  = real(1), &
+         add_offset    = real(0), &
+         valid_min     = real(0, sreal), &
+         valid_max     = real(1500, sreal), &
+         units         = 'DU', &
+         deflate_level = deflate_lv, &
+         shuffle       = shuffle_flag)
+
+    !Need to exit define mode to write data
+    if (nf90_enddef(ncid) .ne. NF90_NOERR) then
        write(*,*) 'ERROR: nf90_enddef()'
        stop error_stop_code
-      end if
+    end if
 
 
-     !write the array to the netcdf file
-     call nc_write_array(ncid,'time',TIME_vid,&
-             time_data(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+    !write the array to the netcdf file
+    call nc_write_array(ncid,'time',TIME_vid,&
+         time_data(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
-     call nc_write_array(ncid,'lat',LAT_vid,&
-             lat_data(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+    call nc_write_array(ncid,'lat',LAT_vid,&
+         lat_data(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
-     call nc_write_array(ncid,'lon',LON_vid,&
-             lon_data(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+    call nc_write_array(ncid,'lon',LON_vid,&
+         lon_data(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
-     call nc_write_array(ncid,'retrflag',retrflag_vid,&
-             retrflag(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+    call nc_write_array(ncid,'retrflag',retrflag_vid,&
+         retrflag(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
-     call nc_write_array(ncid,'toa_swdn',toa_swdn_vid,&
-             toa_swdn(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+    call nc_write_array(ncid,'toa_swdn',toa_swdn_vid,&
+         toa_swdn(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
-     call nc_write_array(ncid,'toa_swup',toa_swup_vid,&
-             toa_swup(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+    call nc_write_array(ncid,'toa_swup',toa_swup_vid,&
+         toa_swup(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
-     call nc_write_array(ncid,'toa_lwup',toa_lwup_vid,&
-             toa_lwup(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+    call nc_write_array(ncid,'toa_lwup',toa_lwup_vid,&
+         toa_lwup(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
-     call nc_write_array(ncid,'boa_swdn',boa_swdn_vid,&
-             boa_swdn(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+    call nc_write_array(ncid,'boa_swdn',boa_swdn_vid,&
+         boa_swdn(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
-     call nc_write_array(ncid,'boa_swup',boa_swup_vid,&
-             boa_swup(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+    call nc_write_array(ncid,'boa_swup',boa_swup_vid,&
+         boa_swup(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
-     call nc_write_array(ncid,'boa_lwup',boa_lwup_vid,&
-             boa_lwup(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+    call nc_write_array(ncid,'boa_lwup',boa_lwup_vid,&
+         boa_lwup(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
-     call nc_write_array(ncid,'boa_lwdn',boa_lwdn_vid,&
-             boa_lwdn(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+    call nc_write_array(ncid,'boa_lwdn',boa_lwdn_vid,&
+         boa_lwdn(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
-     call nc_write_array(ncid,'toa_swup_clr',toa_swup_clr_vid,&
-             toa_swup_clr(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+    call nc_write_array(ncid,'toa_swup_clr',toa_swup_clr_vid,&
+         toa_swup_clr(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
-     call nc_write_array(ncid,'toa_lwup_clr',toa_lwup_clr_vid,&
-             toa_lwup_clr(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+    call nc_write_array(ncid,'toa_lwup_clr',toa_lwup_clr_vid,&
+         toa_lwup_clr(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
-     call nc_write_array(ncid,'boa_swdn_clr',boa_swdn_clr_vid,&
-             boa_swdn_clr(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+    call nc_write_array(ncid,'boa_swdn_clr',boa_swdn_clr_vid,&
+         boa_swdn_clr(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
-     call nc_write_array(ncid,'boa_swup_clr',boa_swup_clr_vid,&
-             boa_swup_clr(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+    call nc_write_array(ncid,'boa_swup_clr',boa_swup_clr_vid,&
+         boa_swup_clr(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
-     call nc_write_array(ncid,'boa_lwup_clr',boa_lwup_clr_vid,&
-             boa_lwup_clr(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+    call nc_write_array(ncid,'boa_lwup_clr',boa_lwup_clr_vid,&
+         boa_lwup_clr(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
-     call nc_write_array(ncid,'boa_lwdn_clr',boa_lwdn_clr_vid,&
-             boa_lwdn_clr(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+    call nc_write_array(ncid,'boa_lwdn_clr',boa_lwdn_clr_vid,&
+         boa_lwdn_clr(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
-     call nc_write_array(ncid,'boa_par_dif',boa_par_dif_vid,&
-             boa_par_dif(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+    call nc_write_array(ncid,'boa_par_dif',boa_par_dif_vid,&
+         boa_par_dif(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
-     call nc_write_array(ncid,'boa_par_tot',boa_par_tot_vid,&
-             boa_par_tot(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+    call nc_write_array(ncid,'boa_par_tot',boa_par_tot_vid,&
+         boa_par_tot(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
-     call nc_write_array(ncid,'toa_par_tot',toa_par_tot_vid,&
-             toa_par_tot(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+    call nc_write_array(ncid,'toa_par_tot',toa_par_tot_vid,&
+         toa_par_tot(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
-     call nc_write_array(ncid,'boa_tsfc',boa_tsfc_vid,&
-             boa_tsfc(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+    call nc_write_array(ncid,'boa_tsfc',boa_tsfc_vid,&
+         boa_tsfc(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
-     call nc_write_array(ncid,'boa_psfc',boa_psfc_vid,&
-             boa_psfc(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+    call nc_write_array(ncid,'boa_psfc',boa_psfc_vid,&
+         boa_psfc(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
-     call nc_write_array(ncid,'boa_qsfc',boa_qsfc_vid,&
-             boa_qsfc(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+    call nc_write_array(ncid,'boa_qsfc',boa_qsfc_vid,&
+         boa_qsfc(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
-     call nc_write_array(ncid,'lts',lts_vid,&
-             lts(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+    call nc_write_array(ncid,'lts',lts_vid,&
+         lts(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
-     call nc_write_array(ncid,'fth',fth_vid,&
-             fth(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+    call nc_write_array(ncid,'fth',fth_vid,&
+         fth(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
-     call nc_write_array(ncid,'colO3',colO3_vid,&
-             colO3(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+    call nc_write_array(ncid,'colO3',colO3_vid,&
+         colO3(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
-     !close netcdf file
-      if (nf90_close(ncid) .ne. NF90_NOERR) then
-         write(*,*) 'ERROR: nf90_close()'
-         stop error_stop_code
-      end if
+    !close netcdf file
+    if (nf90_close(ncid) .ne. NF90_NOERR) then
+       write(*,*) 'ERROR: nf90_close()'
+       stop error_stop_code
+    end if
 
-print*,'CREATED:'
-print*,TRIM(fname)
+    print*,'CREATED:'
+    print*,TRIM(fname)
 
+#ifdef WRAPPER
+  end subroutine process_broadband_fluxes
+#else
 end program process_broadband_fluxes
+#endif
