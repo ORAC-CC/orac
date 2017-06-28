@@ -174,6 +174,6 @@ module constants_cloud_typing_pavolonis_m
   !  integer(sint), parameter :: BARE_SFC = 12
   !  integer(sint), parameter :: URBAN_SFC = 13
 
-  include "coefficients_spectral_response_correction.inc"
+#include "coefficients_spectral_response_correction.inc"
 
 end module constants_cloud_typing_pavolonis_m

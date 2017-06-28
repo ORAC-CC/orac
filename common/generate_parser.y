@@ -16,6 +16,8 @@
     11 Jul 2016, GRM: Add printer support.
     13 Jul 2016, GRM: Add TYPE_FC (Fortran ISO C binding type) to the result of
        the datatype rule.
+    28 Jun 2017, ACP: Include files are now being used to define constants.
+       We're going to ignore their contents.
  */
 %language "C"
 %defines
@@ -62,8 +64,10 @@ module_name:    MODULE NAME
         ;
 definitions:    definitions type_def
         |       definitions parameter
+        |       definitions include_line
         |       type_def
         |       parameter
+        |       include_line
         ;
  // External module "use" calls
 uses:           uses use_line
