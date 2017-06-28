@@ -109,7 +109,7 @@ contains
     logical            :: call_neural_net, do_ref3b_alb_corr,calc_true_refl,desert
 
     calc_true_refl = .FALSE. ! this is .false. at the moment, change to .true. if
-                             ! future ANN's are trained with true reflectances 
+                             ! future ANN's are trained with true reflectances
 
     mu0 = cos ( solzen * d2r )
 
@@ -127,7 +127,7 @@ contains
        ch1 = channel1
     else
        ch1 = channel1 * 100.
-       if ((lsflag .eq. 0_byte .or. desert) .and. (niseflag .eq. NO) .and. (albedo1 .ge. 0.) .and. (correct_glint) ) then 
+       if ((lsflag .eq. 0_byte .or. desert) .and. (niseflag .eq. NO) .and. (albedo1 .ge. 0.) .and. (correct_glint) ) then
            do_ref3b_alb_corr = .TRUE.
            ch1_uc = ch1
            if (ch1_uc .eq. 0 ) do_ref3b_alb_corr = .FALSE. ! avoid dividing by zero
@@ -154,7 +154,7 @@ contains
        if ( channel3a .eq. sreal_fill_value ) then
           ref3a = channel3a
        else
-          ! We use a 1.6um trained ANN now 
+          ! We use a 1.6um trained ANN now
           ref3a = channel3a * 100.
           ! We can also use the Albedo correction of the 1.6um channel
           if ((lsflag .eq. 0_byte .or. desert) .and. (niseflag .eq. NO) .and. (albedo3a .gt. 0.) .and. (correct_glint) ) ref3a = max(ref3a - min(albedo3a,1.) * 100. * 0.55, 0.)
@@ -172,7 +172,7 @@ contains
     if ( do_ref3b_alb_corr ) then
         !use same albedo correction as for ch1 avoid correction of high clouds
         !with low BT differences
-        if ( ch3b .gt. 290 ) ref3b = ref3b * ch1 / ch1_uc 
+        if ( ch3b .gt. 290 ) ref3b = ref3b * ch1 / ch1_uc
     end if
 
     ch4 = channel4
@@ -188,7 +188,7 @@ contains
        if  ( ch3a_on_avhrr_flag .eq. INEXISTENT ) illum_nn = 4 ! use ANN w/o any NIR info
        if  ( ch3a_on_avhrr_flag .eq. YES ) illum_nn = 7        ! use ANN with Ref1.6
        if  ( correct_early_morning_noaas ) then
-           !Test Use Night ANN w/o BT3.7 at daytime 
+           !Test Use Night ANN w/o BT3.7 at daytime
            !The early morning Noaa sats have very strong glint dependencies
            !at high viewing angles which is not captured by any ANN training.
           if ( (trim(adjustl(platform)) .eq. 'noaa6') .or. (trim(adjustl(platform)) .eq. 'noaa8') .or. &
@@ -210,7 +210,7 @@ contains
 
     if ( illum_nn .eq. 1 ) then
 
-       ! DAY 
+       ! DAY
        if ( calc_true_refl ) then
            ch1   = ch1/mu0
            ch2   = ch2/mu0
@@ -515,7 +515,7 @@ contains
            ch2   = ch2/mu0
            ref3a = ref3a/mu0
        endif
-      
+
        nneurons = nneurons_ex29  !set number of neurons
        ninput   = ninput_ex29    !set number of input parameter for the neural network
 
@@ -586,7 +586,7 @@ contains
 
       if (correct_sst) then
           ! Testing ice-free sea skin temperature correction
-          if  (( lsflag .eq. 0_byte ) .AND. (niseflag .eq. NO) .and. (mod(illum_nn,3) .eq. 1) ) then 
+          if  (( lsflag .eq. 0_byte ) .AND. (niseflag .eq. NO) .and. (mod(illum_nn,3) .eq. 1) ) then
               output = output - ((300.- skint)/30.)*0.30 ! daytime
           end if
           if  (( lsflag .eq. 0_byte ) .AND. (niseflag .eq. NO) .and. (mod(illum_nn,3) .eq. 2) ) then
@@ -635,7 +635,7 @@ contains
           ! give penalty; increase uncertainty because at least 1 ANN input parameter
           ! was not within trained range
           cld_uncertainty = cld_uncertainty * 1.1
-          ! set cloudmask to fillvalue only if all channels are negative 
+          ! set cloudmask to fillvalue only if all channels are negative
           if (ch1 .lt. 0 .and. ch2 .lt. 0 .and. ch3b .lt. 0 .and. ch4 .lt. 0 &
                & .and. ch5 .lt. 0) then
              cldflag = byte_fill_value
@@ -651,7 +651,7 @@ contains
         ! do this at least for noaa12
         if (trim(adjustl(platform)) .eq. 'noaa12') then
             if ( (cldflag .eq. CLOUDY) .and. (cld_uncertainty .gt. 35.) ) cldflag = CLEAR
-!            if   (cld_uncertainty .gt. 35.) cldflag = byte_fill_value 
+!            if   (cld_uncertainty .gt. 35.) cldflag = byte_fill_value
         end if
     end if
     !------------------------------------------------------------------------
@@ -702,7 +702,7 @@ contains
     integer(kind=byte) :: surface_flag
 
     calc_true_refl = .FALSE. ! this is .false. at the moment, change to .true. if
-                             ! future ANN's are trained with true reflectances 
+                             ! future ANN's are trained with true reflectances
 
     mu0 = cos ( solzen * d2r )
 
@@ -716,7 +716,7 @@ contains
     else
        ch1 = channel1 * 100.
       ! correct channel reflectance over sea (sunglint) with albedo
-       if ((lsflag .eq. 0_byte) .and. (niseflag .eq. NO) .and. (albedo1 .ge. 0.) .and. (correct_glint) ) then 
+       if ((lsflag .eq. 0_byte) .and. (niseflag .eq. NO) .and. (albedo1 .ge. 0.) .and. (correct_glint) ) then
            do_ref3b_alb_corr = .TRUE.
            ch1_uc = ch1
            if (ch1_uc .eq. 0 ) do_ref3b_alb_corr = .FALSE. ! avoid dividing by zero
@@ -766,7 +766,7 @@ contains
        end if
     end if
 
-    if ( do_ref3b_alb_corr .and. ch3b .gt. 290. ) ref3b = ref3b * ch1 / ch1_uc 
+    if ( do_ref3b_alb_corr .and. ch3b .gt. 290. ) ref3b = ref3b * ch1 / ch1_uc
 
     ch4 = channel4
     ch5 = channel5
@@ -842,7 +842,7 @@ contains
 
     elseif ( illum_nn .eq. 3 )  then
 
-       ! NIGHT 
+       ! NIGHT
 
        nneurons       = nneurons_ex102   !set number of neurons
        ninput         = ninput_ex102     !set number of input parameter for the neural network
@@ -875,7 +875,7 @@ contains
        input(3) = btd_ch4_ch3b  ! 11-3.7 µm
        input(4) = ch5           ! ch5 12 µm
        input(5) = btd_ch4_ch5   ! 11-12 µm
-       input(6) = surface_flag  
+       input(6) = surface_flag
 
        !set threshold
        if ( lsflag .eq. 0_byte ) then

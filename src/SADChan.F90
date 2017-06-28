@@ -240,7 +240,7 @@ function create_sad_filename2(Ctrl, chan_num, SAD_Dir, LUTClass, crp_name) &
          InstName(11:11) = '0'
       end if
    else if (InstName(1:11) == 'AVHRR-METOP') then
-      ! For Metop, only platform name's first letter is capitalized 
+      ! For Metop, only platform name's first letter is capitalized
       InstName(8:11) = 'etop'
       ! Replace MetopA with Metop2 and MetopB with Metop1
       if (InstName(12:12) == 'A') then

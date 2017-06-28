@@ -18,8 +18,8 @@
 ! 2015/12/17, OS: Added twilight NN thresholds
 ! 2015/12/17, OS: Changed twilight NN thresholds for land_ice and sea
 ! 2016/02/23, OS: Changed day land threshold to 0.2 (from 0.3)
-! 2017/05/17, OS: Added ann phase parameters and thresholds, altered cmask 
-!    thresholds, added logicals whether to do certain cccot corrections, 
+! 2017/05/17, OS: Added ann phase parameters and thresholds, altered cmask
+!    thresholds, added logicals whether to do certain cccot corrections,
 !    included regression coefficients for spectral response correction
 !
 ! $Id$
@@ -58,13 +58,13 @@ module constants_cloud_typing_pavolonis_m
   real(sreal),   parameter :: COT_THRES_TWL_SEA = 0.35!0.35
   real(sreal),   parameter :: COT_THRES_TWL_LAND = 0.45!0.3
   !---
- 
+
   !--- ann corrections
-  logical, parameter :: correct_bounds = .TRUE. ! check if input is within trained range and set  
+  logical, parameter :: correct_bounds = .TRUE. ! check if input is within trained range and set
                                                 ! input to minmax of trained
                                                 ! value if necessary
   logical, parameter :: correct_sst    = .TRUE. ! reduce cccot for very cold  sea surfaces
-  logical, parameter :: correct_view   = .TRUE. ! correct cccot depending on viewing angle  
+  logical, parameter :: correct_view   = .TRUE. ! correct cccot depending on viewing angle
   logical, parameter :: correct_skint  = .TRUE. ! if surface is colder than  BT11 temp. set
                                                 ! surface to BT11; only at night
   logical, parameter :: correct_glint  = .TRUE. ! correct input reflectances with their albedo to
@@ -73,7 +73,7 @@ module constants_cloud_typing_pavolonis_m
                                                 ! cloudy pixels , so far only
                                                 ! noaa12 and noaa15 (AM Sats
                                                 ! with strong sunglint)
-  logical, parameter :: correct_early_morning_noaas = .TRUE. ! At daytime use ANN Night w/o 3.7 
+  logical, parameter :: correct_early_morning_noaas = .TRUE. ! At daytime use ANN Night w/o 3.7
                                                              ! for Noaa12 and Noaa15 (high sunglint at high view)
 
   !--- cldphase OUTPUT

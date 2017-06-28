@@ -150,7 +150,7 @@ module orac_input_m
       integer(byte), pointer :: ann_phase(:,:,:)
       real(sreal),   pointer :: ann_phase_uncertainty(:,:,:)
       real(sreal),   pointer :: cphcot(:,:,:)
-      
+
       integer(byte), pointer :: phase(:,:)
       integer(byte), pointer :: phase_pavolonis(:,:)
    end type input_data_primary_t

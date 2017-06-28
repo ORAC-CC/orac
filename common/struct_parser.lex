@@ -107,4 +107,3 @@ void WRAPPER_NAME_C(
     yylex_destroy();
     return;
 }
-

@@ -239,7 +239,7 @@ if (use_ml) then
    call nc_read_packed_array(ncid, "cth2_uncertainty", &
         input_data%cth2_uncertainty, verbose, startp = [1, sval])
 
-  call nc_read_packed_array(ncid, "ctp2", input_data%ctp2, verbose, startp = [1, sval])
+   call nc_read_packed_array(ncid, "ctp2", input_data%ctp2, verbose, startp = [1, sval])
    call nc_read_packed_array(ncid, "ctp2_uncertainty", &
         input_data%ctp2_uncertainty, verbose, startp = [1, sval])
 
@@ -329,7 +329,7 @@ subroutine read_input_primary_optional(ncid, input_data, indexing, read_flags, &
            input_data%ann_phase_uncertainty, verbose, startp = [1, sval, 1])
       read_flags%do_ann_phase_uncertainty = .false.
    end if
-   
+
    if (indexing%flags%do_phase .and. read_flags%do_phase) then
       call nc_read_array(ncid, "phase", input_data%phase, verbose, startp = [1, sval])
       read_flags%do_phase = .false.

@@ -178,7 +178,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    use parse_user_m
    use read_utils_m
    use source_attributes_m
-#ifndef WRAPPER   
+#ifndef WRAPPER
    use read_ctrl_m
 #endif
 
@@ -1466,7 +1466,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
 
       stop
    end if
-#endif   
+#endif
 
 end subroutine Read_Driver
 

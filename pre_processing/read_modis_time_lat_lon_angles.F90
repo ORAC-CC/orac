@@ -66,7 +66,7 @@ subroutine read_modis_time_lat_lon_angles(path_to_geo_file,imager_geolocation,&
    integer                                         :: err_code
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_modis_time_lat_lon_angles()'
-   
+
    !allocate temporary data
    allocate(temp(imager_geolocation%startx:imager_geolocation%endx,&
         imager_geolocation%starty:imager_geolocation%endy))

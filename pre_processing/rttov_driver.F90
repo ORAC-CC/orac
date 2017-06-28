@@ -308,7 +308,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
           else
              write(*,*) 'ERROR: rttov_driver(): Invalid Metop platform: ', &
                   trim(platform)
-             stop error_stop_code             
+             stop error_stop_code
           endif
       else
          write(*,*) 'ERROR: rttov_driver(): Invalid AVHRR platform: ', &

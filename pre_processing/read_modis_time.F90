@@ -62,4 +62,3 @@ subroutine read_modis_time(fid,SDS_name,startyy,stopyy,temp)
    err_code=sfendacc(var_id)
 
 end subroutine read_modis_time
-

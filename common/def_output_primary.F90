@@ -77,7 +77,7 @@
 ! 2016/04/28, AP: Add multiple views.
 ! 2016/07/08, GM: Add fields for cloud layer 2.
 ! 2017/01/08, CP: Added multi layer phase type
-! 2017/05/17, OS: Added ann phase variables, ann phase uncertainty is 
+! 2017/05/17, OS: Added ann phase variables, ann phase uncertainty is
 !    a placeholder
 !
 ! $Id$
@@ -1871,7 +1871,7 @@ if (indexing%flags%do_ann_phase) then
            units         = '1', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
-   
+
 end if
 
 if (indexing%flags%do_ann_phase_uncertainty) then

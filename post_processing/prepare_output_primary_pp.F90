@@ -599,7 +599,7 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
 
   !----------------------------------------------------------------------------
   ! ANN phase
-  !----------------------------------------------------------------------------  
+  !----------------------------------------------------------------------------
   if (indexing%flags%do_ann_phase) then
      do k=1,indexing%NViews
         call prepare_short_packed_float( &
@@ -626,7 +626,7 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
   !----------------------------------------------------------------------------
   output_data%convergence(i,j)=input_data%convergence(i,j)
   output_data%niter(i,j)=input_data%niter(i,j)
-  
+
   !----------------------------------------------------------------------------
   ! costja
   !----------------------------------------------------------------------------

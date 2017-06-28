@@ -148,7 +148,7 @@ subroutine read_ecmwf_wind_nc_file(ecmwf_path, ecmwf)
       if (nf90_inquire_variable(fid,i,name) .ne. 0) &
            call h_e_e('wind_nc_file', 'Bad variable.')
       select case (name)
-      case('longitude','lon')         
+      case('longitude','lon')
          if (.not.associated(ecmwf%lon)) then
             allocate(ecmwf%lon(ecmwf%xdim))
             call nc_read_array(fid,name,ecmwf%lon,verbose)
@@ -203,5 +203,5 @@ subroutine read_ecmwf_wind_nc_file(ecmwf_path, ecmwf)
 
    if (nf90_close(fid) .ne. NF90_NOERR) &
         call h_e_e('wind_nc_file', 'File could not close.')
-   
+
 end subroutine read_ecmwf_wind_nc_file

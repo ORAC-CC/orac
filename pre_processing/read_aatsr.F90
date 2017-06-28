@@ -23,4 +23,3 @@ contains
 #include "read_aatsr_l1b.F90"
 
 end module read_aatsr_m
-

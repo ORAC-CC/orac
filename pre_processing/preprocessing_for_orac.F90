@@ -264,7 +264,7 @@
 ! 2017/04/11, SP: Added ecmwf_flag=6, for working with GFS analysis files.
 ! 2017/04/26, SP: Support for loading geoinfo (lat/lon/vza/vaa) from an
 !                 external file. Supported by AHI, not yet by SEVIRI (EKWork)
-! 2017/06/21, OS: added spectral response correction flag, 
+! 2017/06/21, OS: added spectral response correction flag,
 !     which defaults to false unless sensor=AATSR/AVHRR/MODIS
 !
 ! $Id$
@@ -907,7 +907,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
            imager_angles,imager_flags, imager_time,imager_measurements,&
            channel_info,n_along_track, use_l1_land_mask,use_predef_geo,verbose)
 
-#ifdef WRAPPER      
+#ifdef WRAPPER
       ! do not process this orbit if no valid lat/lon data available
       mask =  imager_geolocation%latitude.gt.sreal_fill_value .and. &
            imager_geolocation%longitude.gt.sreal_fill_value
@@ -918,9 +918,9 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
          return
       endif
 #endif
-       
 
-      
+
+
       ! carry out any preparatory steps: identify required ECMWF and MODIS L3
       ! information,set paths and filenames to those required auxiliary /
       ! ancillary input...
@@ -981,7 +981,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
             call deallocate_ecmwf_structures(ecmwf_HR2, high_res)
          end if
       end if
-      
+
       ! define preprocessing grid from user grid spacing and satellite limits
       if (verbose) write(*,*) 'Define preprocessing grid'
       preproc_dims%kdim = ecmwf%kdim
@@ -1134,7 +1134,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
               imager_geolocation,imager_measurements,imager_cloud,imager_time, &
               imager_pavolonis,netcdf_info,channel_info,surface, &
               include_full_brdf,do_cloud_emis)
-        
+
          ! close output netcdf files
          if (verbose) write(*,*)'Close netcdf output files'
          call netcdf_output_close(netcdf_info)
@@ -1158,7 +1158,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
                  platform,sensor,global_atts,source_atts,cyear,cmonth,cday,chour, &
                  cminute,preproc_dims,imager_angles,imager_geolocation,netcdf_info, &
                  channel_info,include_full_brdf,ecmwf_flag,do_cloud_emis,verbose)
-            
+
          end if
 
       end do

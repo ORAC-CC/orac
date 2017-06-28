@@ -90,10 +90,10 @@ module orac_indexing_m
    integer, parameter :: cldmask_bit       = 7
    integer, parameter :: cldmask_u_bit     = 8
    integer, parameter :: ann_phase_bit     = 9
-   integer, parameter :: ann_phase_u_bit   = 10   
+   integer, parameter :: ann_phase_u_bit   = 10
    integer, parameter :: phase_bit         = 11
    integer, parameter :: covariance_bit    = 12
- 
+
 
 contains
 

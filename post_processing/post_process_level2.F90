@@ -400,7 +400,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
                chunk_ends(i_chunk)-chunk_starts(i_chunk)+1
        end do
     end if
-    if (verbose) write(*,*) 'allocate common routine'
+
     ! Allocate the structures which hold the output in its final form
     call alloc_output_data_primary(indexing%common_indices_t, 100, output_primary)
     if (do_secondary) then
@@ -449,15 +449,14 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
 
        ! Read fields that vary from file to file
        if (use_new_bayesian_selection .neqv. .true.) then
-          write(*,*)'post proc n_in_files',n_in_files,use_ml
           do i = 1, n_in_files
 
              if (use_ml) then
                 if (i .eq. 3) then
-                   use_ml_temp=.true.
+                   use_ml_temp = .true.
                 endif
              else
-                use_ml_temp=.false.
+                use_ml_temp = .false.
              end if
              if (verbose) write(*,*) '********************************'
              if (verbose) write(*,*) 'read: ', trim(in_files_primary(i))
@@ -471,7 +470,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
                      input_secondary(i), loop_ind(i), chunk_starts( i_chunk), verbose)
              end if
           end do
-       else !use traditional selcetion method
+       else ! Use traditional selection method
           ! Allocate a primary array to store temporary input data
           if (use_ml) then
              call alloc_input_data_primary_all(indexing, input_primary(3))
@@ -615,7 +614,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
                       phase_flag = 2_byte
                    case(OVERLAP_TYPE)
                       if (use_ml .and. &
-                           !only set if ML cost is less than SL cost
+                           ! only set if ML cost is less than SL cost
                            (input_primary(imul)%costjm(i,j) <= input_primary(IIce)%costjm(i,j))) then
                          phase_flag = 3_byte
                       else

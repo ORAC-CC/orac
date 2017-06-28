@@ -139,7 +139,7 @@ subroutine dealloc_output_data_primary(data)
    if (associated(data%ann_phase))                    deallocate(data%ann_phase)
    if (associated(data%ann_phase_uncertainty))        deallocate(data%ann_phase_uncertainty)
    if (associated(data%cphcot))                       deallocate(data%cphcot)
- 
+
    deallocate(data%convergence)
    deallocate(data%niter)
    deallocate(data%costja)
