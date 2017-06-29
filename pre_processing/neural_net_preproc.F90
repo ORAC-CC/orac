@@ -49,6 +49,7 @@
 ! 2017/06/20, SS: due to the lack of proper sunglint correction for early morning
 !    NOAA satellites, introduced flag correct_realy_morning_noaas (default true)
 !    to use only IR data at daytime
+! 2017/06/28, SS: added new 1.6um ANN
 
 ! $Id$
 !
@@ -696,8 +697,8 @@ contains
     real(kind=sreal),   intent(out) :: cphcot, phase_uncertainty
 
     ! LOCAL variables
-    real(kind=sreal)   :: ch1, ch2, ch3b, ref3b, ch4, ch5 , threshold_used, ch1_uc
-    real(kind=sreal)   :: btd_ch4_ch5, btd_ch4_ch3b,mu0
+    real(kind=sreal)   :: ch1, ch2, ref3a, ch3b, ref3b, ch4, ch5 , threshold_used, ch1_uc
+    real(kind=sreal)   :: btd_ch4_ch5, btd_ch4_ch3b,mu0,norm_diff_cc_th
     logical            :: call_neural_net, do_ref3b_alb_corr, calc_true_refl
     integer(kind=byte) :: surface_flag
 
@@ -728,7 +729,7 @@ contains
 
     if ( channel2 .eq. sreal_fill_value ) then
        if ( (trim(adjustl(sensor_name)) .eq. 'MODIS') .and. ch1 .gt. 50. ) then
-          ch2 = ch1 * 1.03
+          ch2 = ch1 * 1.02
        else
           ch2 = channel2
        end if
@@ -742,22 +743,16 @@ contains
 
     if ( ch3a_on_avhrr_flag .ne. NO ) then
        if ( channel3a .eq. sreal_fill_value ) then
-          ref3b = channel3a
-          do_ref3b_alb_corr = .FALSE.
+          ref3a = channel3a
+          ref3b = channel3b_ref
        else
-          ! create ref3b from ref3a using regression derived from simultanous MODIS AQUA measurements
-          if ((lsflag .eq. 0_byte) .and. (niseflag .eq. NO)) then ! SEA without ICE
-             ref3b = 0.247 * ( channel3a * 100. ) + 1.3527
-          elseif ((lsflag .eq. 0_byte) .and. (niseflag .eq. YES)) then ! SEA with ICE
-             ref3b = 0.235 * ( channel3a * 100. ) + 1.515
-          elseif ((lsflag .eq. 1_byte) .and. (niseflag .eq. YES)) then ! LAND with ICE
-             ref3b = 0.337 * ( channel3a * 100. ) - 0.241
-          elseif ((lsflag .eq. 1_byte) .and. (niseflag .eq. NO)) then ! LAND without ICE
-             ref3b = 0.361 * ( channel3a * 100. ) - 0.481
-          endif
-      end if
+          ! We use a 1.6um trained ANN now 
+          ref3a = channel3a * 100.
+          ! We can also use the Albedo correction of the 1.6um channel
+          if ((lsflag .eq. 0_byte) .and. (niseflag .eq. NO) .and. (albedo3a .gt. 0.) .and. (correct_glint) ) ref3a = max(ref3a - min(albedo3a,1.) * 100. * 0.55, 0.)
+       end if
+       do_ref3b_alb_corr = .FALSE.
     else
-       ! so far, should not work for MODIS and AATSR
        if ( channel3b_ref .eq. sreal_fill_value ) then
           ref3b = channel3b_ref
           do_ref3b_alb_corr = .FALSE.
@@ -777,8 +772,11 @@ contains
     call_neural_net = .TRUE.
 
     if ( ( solzen .ge. 0. ) .and. (solzen  .le. 80) ) then
-       illum_nn = 1
-    elseif ( (solzen  .gt. 80) .and. (solzen .le. 180) ) then
+       illum_nn = 1                                            ! use ANN with Ref3.7
+       if  ( ch3a_on_avhrr_flag .eq. YES ) illum_nn = 7        ! use ANN with Ref1.6
+    elseif ( (solzen  .gt. 80) .and. (solzen .le. 90) ) then
+       illum_nn = 2
+    elseif (solzen  .gt. 90)  then
        illum_nn = 3
     else
        illum_nn = 0
@@ -840,6 +838,52 @@ contains
           if ( niseflag .eq. YES  ) threshold_used = COT_CPH_THRES_DAY_LAND_ICE
        end if
 
+   elseif ( illum_nn .eq. 2 )  then
+
+       ! NIGHT 
+
+       nneurons       = nneurons_ex103   !set number of neurons
+       ninput         = ninput_ex103     !set number of input parameter for the neural network
+
+       !ranges variables within training was performed
+       allocate(minmax_train(ninput,2))
+       minmax_train=minmax_train_ex103
+
+       !"weights" for input
+       allocate(inv(ninput+1,nneurons))
+       inv=inv_ex103
+
+       !"weights" for output
+       allocate(outv(nneurons+1))
+       outv=outv_ex103
+
+       allocate(scales(ninput,2))
+       scales=scales_ex103               !parameters to scale input?
+       oscales=oscales_ex103             !parameters to scale output?
+       temperature=temperature_ex103     !"temperature" for sigmoid function
+       cutoff=cutoff_ex103
+       bias_i=bias_i_ex103
+       bias_h=bias_h_ex103
+
+       !input
+       allocate(input(ninput+1))
+
+       input(1) = ch3b          ! ch3b 3.7 µm
+       input(2) = ch4           ! ch4 11 µm
+       input(3) = btd_ch4_ch3b  ! 11-3.7 µm
+       input(4) = ch5           ! ch5 12 µm
+       input(5) = btd_ch4_ch5   ! 11-12 µm
+       input(6) = surface_flag  
+
+       !set threshold
+       if ( lsflag .eq. 0_byte ) then
+          threshold_used = COT_CPH_THRES_TWL_SEA
+          if ( niseflag .eq. YES  ) threshold_used = COT_CPH_THRES_TWL_SEA_ICE
+       elseif ( lsflag .eq. 1_byte ) then
+          threshold_used = COT_CPH_THRES_TWL_LAND
+          if ( niseflag .eq. YES  ) threshold_used = COT_CPH_THRES_TWL_LAND_ICE
+       end if
+
     elseif ( illum_nn .eq. 3 )  then
 
        ! NIGHT
@@ -886,6 +930,57 @@ contains
           if ( niseflag .eq. YES  ) threshold_used = COT_CPH_THRES_NIGHT_LAND_ICE
        end if
 
+    elseif ( illum_nn .eq. 7 ) then
+
+       if ( calc_true_refl ) then
+           ch1   = ch1/mu0
+           ch2   = ch2/mu0
+           ref3a = ref3a/mu0
+       endif
+
+       nneurons = nneurons_ex104  !set number of neurons
+       ninput   = ninput_ex104    !set number of input parameter for the neural network
+
+       !ranges variables within training was performed
+       allocate(minmax_train(ninput,2))
+       minmax_train=minmax_train_ex104
+
+       !"weights" for input
+       allocate(inv(ninput+1,nneurons))
+       inv=inv_ex104
+
+       !"weights" for output
+       allocate(outv(nneurons+1))
+       outv=outv_ex104
+
+       allocate(scales(ninput,2))
+       scales=scales_ex104           !parameters to scale input?
+       oscales=oscales_ex104         !parameters to scale output?
+       temperature=temperature_ex104 !"temperature" for sigmoid function
+       cutoff=cutoff_ex104
+       bias_i=bias_i_ex104
+       bias_h=bias_h_ex104
+
+       ! input
+       allocate(input(ninput+1))
+
+       input(1) = ch1           ! ch1 600nm
+       input(2) = ch2           ! ch2 800nm
+       input(3) = ref3a         ! ch3a reflectance 1.6 µm
+       input(4) = ch4           ! ch4 11 µm
+       input(5) = ch5           ! ch5 12 µm
+       input(6) = btd_ch4_ch5   ! 11-12 µm
+       input(7) = surface_flag  ! surface_flag
+
+       !set threshold
+       if ( lsflag .eq. 0_byte ) then
+          threshold_used = COT_CPH_THRES_DAY_SEA
+          if ( niseflag .eq. YES  ) threshold_used = COT_CPH_THRES_DAY_SEA_ICE
+       elseif ( lsflag .eq. 1_byte ) then
+          threshold_used = COT_CPH_THRES_DAY_LAND
+          if ( niseflag .eq. YES  ) threshold_used = COT_CPH_THRES_DAY_LAND_ICE
+       end if
+
     else
 
        if (verbose) then
@@ -909,18 +1004,6 @@ contains
        ! --- correct for viewing angle effect - test phase for AVHRR
        if (correct_view) output = output - ( 1. / 12. * ( 1. / cos( satzen * d2r) - 1. ) )
 
-       if (correct_sst) then
-          ! Testing ice-free sea skin temperature correction
-          if  (( lsflag .eq. 0_byte ) .AND. (niseflag .eq. NO) .and. &
-              (illum_nn .ne. 3) ) then
-              output = output - ((300.- skint)/30.)*0.15
-          end if
-          if  (( lsflag .eq. 0_byte ) .AND. (niseflag .eq. NO) .and. &
-              (illum_nn .eq. 3) ) then
-              output = output - ((300.- skint)/30.)*0.3
-          end if
-       end if
-
        ! --- ensure that CCCOT is within 0 - 1 range
        cphcot = max( min( output, 1.0 ), 0.0)
 
@@ -931,7 +1014,7 @@ contains
        deallocate(input)
        deallocate(scales)
 
-       ! now apply threshold and create BIT mask: 0=CLEAR, 1=CLOUDY
+       ! now apply threshold and create BIT mask: 1=LIQUID, 2=ICE
        if ( cphcot .gt. threshold_used ) then
           phase_flag = ICE
        else
@@ -940,15 +1023,15 @@ contains
 
        ! calculate Uncertainty with pre calculated calipso scores
        ! depending on normalized difference between cccot_pre and used threshold
-!       if ( phase_flag .eq. ICE ) then
-!          norm_diff_cc_th = ( cphcot - threshold_used ) / threshold_used
-!          phase_uncertainty = ( CLEAR_UNC_MAX - CLEAR_UNC_MIN ) * norm_diff_cc_th + CLEAR_UNC_MAX
-!       elseif ( phase_flag .eq. LIQUID ) then
-!          norm_diff_cc_th = ( cphcot - threshold_used ) / ( 1 - threshold_used )
-!          phase_uncertainty = ( CLOUDY_UNC_MAX - CLOUDY_UNC_MIN ) * (norm_diff_cc_th -1 )**2 + CLOUDY_UNC_MIN
-!       else
-!          phase_uncertainty = sreal_fill_value
-!       end if
+       if ( phase_flag .eq. LIQUID ) then
+          norm_diff_cc_th = ( cphcot - threshold_used ) / threshold_used
+          phase_uncertainty = ( LIQUID_UNC_MAX - LIQUID_UNC_MIN ) * norm_diff_cc_th + LIQUID_UNC_MAX
+       elseif ( phase_flag .eq. ICE ) then
+          norm_diff_cc_th = ( cphcot - threshold_used ) / ( 1 - threshold_used )
+          phase_uncertainty = ( ICE_UNC_MAX - ICE_UNC_MIN ) * (norm_diff_cc_th -1 ) + ICE_UNC_MAX
+       else
+          phase_uncertainty = sreal_fill_value
+       end if
 
        ! noob equals 1 if one or more input parameter is not within trained range
        if (noob .eq. 1_lint) then
