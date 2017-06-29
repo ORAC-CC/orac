@@ -112,6 +112,7 @@ contains
     calc_true_refl = .FALSE. ! this is .false. at the moment, change to .true. if
                              ! future ANN's are trained with true reflectances
 
+
     mu0 = cos ( solzen * d2r )
 
     desert = desertflag
