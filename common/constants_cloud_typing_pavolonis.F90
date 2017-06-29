@@ -21,6 +21,8 @@
 ! 2017/05/17, OS: Added ann phase parameters and thresholds, altered cmask
 !    thresholds, added logicals whether to do certain cccot corrections,
 !    included regression coefficients for spectral response correction
+! 2017/06/29, SS: Added cloud phase uncertainty thresholds, altered cloud phase
+!    thresholds
 !
 ! $Id$
 !
@@ -39,10 +41,10 @@ module constants_cloud_typing_pavolonis_m
   integer(sint), parameter :: CLEAR = 0
 
   !--- constants used to determine cldmask uncertainty
-  real(sreal),   parameter :: CLEAR_UNC_MIN = 10.4475 !v2.0:11.925
-  real(sreal),   parameter :: CLEAR_UNC_MAX = 48.8452 !v2.0:49.200
-  real(sreal),   parameter :: CLOUDY_UNC_MIN = 0.0000 !v2.0:1.862
-  real(sreal),   parameter :: CLOUDY_UNC_MAX = 60.8194!v2.0:55.995
+  real(sreal),   parameter :: CLEAR_UNC_MIN = 10.4475  !v2.0:11.925
+  real(sreal),   parameter :: CLEAR_UNC_MAX = 48.8452  !v2.0:49.200
+  real(sreal),   parameter :: CLOUDY_UNC_MIN = 0.00000 !v2.0:1.862
+  real(sreal),   parameter :: CLOUDY_UNC_MAX = 60.8194 !v2.0:55.995
 
   !--- ann_cloud_mask_thresholds
   real(sreal),   parameter :: COT_THRES_DAY_SEA_ICE = 0.4
@@ -81,24 +83,24 @@ module constants_cloud_typing_pavolonis_m
   integer(sint), parameter :: LIQUID = 1
 
   !--- constants used to determine cldphase uncertainty
-!  real(sreal),   parameter :: LIQUID_UNC_MIN = TBD
-!  real(sreal),   parameter :: LIQUID_UNC_MAX = TBD
-!  real(sreal),   parameter :: ICE_UNC_MIN    = TBD
-!  real(sreal),   parameter :: ICE_UNC_MAX    = TBD
+  real(sreal),   parameter :: LIQUID_UNC_MIN = 9.25893 
+  real(sreal),   parameter :: LIQUID_UNC_MAX = 59.0115
+  real(sreal),   parameter :: ICE_UNC_MIN    = 0.00000
+  real(sreal),   parameter :: ICE_UNC_MAX    = 43.2141
 
   !--- ann_cloud_phase_thresholds
-  real(sreal),   parameter :: COT_CPH_THRES_DAY_SEA_ICE = 0.5
-  real(sreal),   parameter :: COT_CPH_THRES_DAY_LAND_ICE = 0.5
-  real(sreal),   parameter :: COT_CPH_THRES_DAY_SEA = 0.5
-  real(sreal),   parameter :: COT_CPH_THRES_DAY_LAND = 0.5
-  real(sreal),   parameter :: COT_CPH_THRES_NIGHT_SEA_ICE = 0.5
-  real(sreal),   parameter :: COT_CPH_THRES_NIGHT_LAND_ICE = 0.5
-  real(sreal),   parameter :: COT_CPH_THRES_NIGHT_SEA = 0.5
-  real(sreal),   parameter :: COT_CPH_THRES_NIGHT_LAND = 0.5
-  real(sreal),   parameter :: COT_CPH_THRES_TWL_SEA_ICE = 0.5
-  real(sreal),   parameter :: COT_CPH_THRES_TWL_LAND_ICE = 0.5
-  real(sreal),   parameter :: COT_CPH_THRES_TWL_SEA = 0.5
-  real(sreal),   parameter :: COT_CPH_THRES_TWL_LAND = 0.5
+  real(sreal),   parameter :: COT_CPH_THRES_DAY_SEA_ICE = 0.50
+  real(sreal),   parameter :: COT_CPH_THRES_DAY_LAND_ICE = 0.70
+  real(sreal),   parameter :: COT_CPH_THRES_DAY_SEA = 0.55
+  real(sreal),   parameter :: COT_CPH_THRES_DAY_LAND = 0.70
+  real(sreal),   parameter :: COT_CPH_THRES_NIGHT_SEA_ICE = 0.70
+  real(sreal),   parameter :: COT_CPH_THRES_NIGHT_LAND_ICE = 0.60
+  real(sreal),   parameter :: COT_CPH_THRES_NIGHT_SEA = 0.50
+  real(sreal),   parameter :: COT_CPH_THRES_NIGHT_LAND = 0.65
+  real(sreal),   parameter :: COT_CPH_THRES_TWL_SEA_ICE = 0.70
+  real(sreal),   parameter :: COT_CPH_THRES_TWL_LAND_ICE = 0.90
+  real(sreal),   parameter :: COT_CPH_THRES_TWL_SEA = 0.65
+  real(sreal),   parameter :: COT_CPH_THRES_TWL_LAND = 0.50
   !--
   real(sreal),   parameter :: NOAA7_9_CH3B_BT_THRES=240 ! Dont use 3.7 µm channel at night,
   ! if BT of ch3b is below this value.
