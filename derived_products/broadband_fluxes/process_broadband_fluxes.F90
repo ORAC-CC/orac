@@ -88,6 +88,7 @@
 !                 wavelength range by the estimated value based on planck radiation law and earth-sun distance.
 !                 Note, need to update tsi_soho_sorce_1978_2015.nc.
 ! 2017/06/23, OS: added WRAPPER subroutine definition and settings
+! 2017/06/30, OS: net nTSI to + 500, so that values of 2016 are read
 !
 ! $Id$
 !
@@ -190,7 +191,7 @@ program process_broadband_fluxes
     real, allocatable :: TSI_year(:) !TSI INDEX YEAR
     real, allocatable :: TSI_jday(:) !TSI INDEX Julian Day
     real, allocatable :: TSI_par_weight(:) !TSI Weight for PAR based on SORCE data
-    integer(kind=lint)  :: nTSI = 13425
+    integer(kind=lint)  :: nTSI = 13925
 
     !AEROSOL CCI File (optional)
     real, allocatable :: aerLon(:)  ! longitude
