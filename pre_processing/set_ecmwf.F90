@@ -93,7 +93,7 @@ subroutine set_ecmwf(cyear,cmonth,cday,chour,ecmwf_path,ecmwf_path2, &
    character(len=*),           intent(in)  :: ecmwf_hr_path(2)
    character(len=*),           intent(out) :: ecmwf_hr_path_file(2)
 
-   integer       :: i_path, i_path1, i_path2
+   integer       :: i_path1, i_path2
    integer(sint) :: year, month, day, hour
    integer(sint) :: year2, month2, day2, hour2
    integer       :: day_before

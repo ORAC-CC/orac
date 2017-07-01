@@ -382,8 +382,7 @@ subroutine get_ocean_colour(cyear, cmonth, occci_path, lat, lon, &
    type(ocean_colour_t), allocatable, intent(out) :: ocean_colour(:,:)
 
    ! Local variables
-   integer(kind=lint)              :: i,j,k,l,ii
-   integer(kind=lint)              :: iv(1)
+   integer(kind=lint)              :: i,j,k,ii
    integer                         :: nbands, nbands_occci
    integer(kind=lint)              :: nsea
    real(kind=sreal), allocatable   :: wavelengths(:)
@@ -400,7 +399,6 @@ subroutine get_ocean_colour(cyear, cmonth, occci_path, lat, lon, &
    real(kind=sreal), allocatable   :: tmp_data(:,:), tmp_data2(:,:)
    real(kind=sreal)                :: tmp_val
    integer(kind=byte), allocatable :: fg_mask(:,:)
-   integer(kind=lint)              :: seacount
    type(interpol_t), allocatable   :: interp(:)
    real(kind=sreal)                :: dwl
 

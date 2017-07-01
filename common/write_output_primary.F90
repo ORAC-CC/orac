@@ -64,7 +64,7 @@ subroutine write_output_primary(ncid, ind, output_data)
 
    character(len=32)  :: input_num
    character(len=512) :: input_dummy
-   integer            :: i, j
+   integer            :: i
 
    call nc_write_array(ncid,'time',output_data%vid_time, &
         output_data%time(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)

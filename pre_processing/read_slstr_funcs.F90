@@ -218,7 +218,6 @@ subroutine read_slstr_tirdata(indir,inband,outarr,sx,sy,nx,ny,inx,iny,offset,vie
 
    real                       :: data1(nx,ny)
    real                       :: data2(nx,ny)
-   real                       :: f1data(nx,ny)
 
    character(len=path_length) :: filename
    character(len=path_length) :: filename_qa
@@ -336,7 +335,7 @@ subroutine read_slstr_visdata(indir,inband,outarr,imager_angles,sx,sy,nx,ny,inx,
 
    real    :: filval,sclval,offval
 
-   integer :: fid,did,ierr,j
+   integer :: fid,did,ierr
 
    integer :: endx,endy,ndet
 
@@ -610,7 +609,6 @@ subroutine read_slstr_lldata(indir,data_arr,nx,ny,proclat,procgrid)
    character(len=path_length)    :: var
    integer                       :: fid,did,ierr
    real                          :: filval,sclval,offval
-   character(len=2)              :: grid
 
    sclval = 1.
    offval = 0.
@@ -776,7 +774,7 @@ subroutine slstr_get_interp(in_lons,tx_lons,nxt,nyt,nxi,nyi,interp)
 
    integer          :: x,y
    real(kind=sreal) :: dists1(nxt),dists2(nxt)
-   real(kind=sreal) :: firlo,seclo,slo
+   real(kind=sreal) :: firlo,seclo
 
 !$OMP PARALLEL PRIVATE(x, y, dists1, dists2, firlo, seclo)
 !$OMP DO SCHEDULE(GUIDED)
@@ -907,7 +905,7 @@ subroutine read_slstr_satsol(indir,imager_angles,interp,txnx,txny,nx,ny,startx,v
    type(imager_angles_t),      intent(inout) :: imager_angles
 
    character(len=path_length) :: geofile,vid
-   integer                    :: fid,ierr,bob
+   integer                    :: fid,ierr
 
    ! This stores the angles on the tx (reduced) grid.
    ! In order (1->4): vaa,vza,saa,sza

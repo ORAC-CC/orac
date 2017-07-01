@@ -265,8 +265,6 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
    ! View variables
    integer(kind=sint)                   :: cview
    integer,                 allocatable :: chan_pos(:)
-   real                                 :: p_0, sec_vza, lambda, tau_ray_0, &
-                                           tau_ray_p
 
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering rttov_driver()'

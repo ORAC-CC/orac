@@ -131,7 +131,6 @@ subroutine read_slstr(infile,imager_geolocation, imager_measurements, &
    integer                      :: starty, ny
    integer(c_int)               :: line0, line1
    integer(c_int)               :: column0, column1
-   integer                      :: matchcol
 
    character(len=path_length)   :: indir
 

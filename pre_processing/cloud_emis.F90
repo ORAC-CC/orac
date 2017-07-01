@@ -50,12 +50,12 @@ subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation,&
    integer :: i, j, chan_n, good_chan_lw, good_chan_all
 
    ! Interpolation variables
-   real           :: Lat0,Lon0,LatN,LonN, MinLat, MinLon, MaxLat, MaxLon
-   real           :: delta_lat,delta_lon,inv_delta_Lat,inv_delta_Lon
+   real           :: Lat0,Lon0,LatN,LonN, MinLon, MaxLon
+   real           :: delta_lat,delta_lon
    real           :: rad_clr,rad_cld,rad_obs,t1,t2,emis
-   real,parameter :: c1   =   1.191042e8
-   real,parameter :: c2   =   1.4387752e4
-   real,parameter :: lam=   10.8
+   real,parameter :: c1  = 1.191042e8
+   real,parameter :: c2  = 1.4387752e4
+   real,parameter :: lam = 10.8
    integer        :: NLat,NLon
    logical        :: Wrap
 

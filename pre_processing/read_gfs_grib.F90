@@ -87,8 +87,8 @@ subroutine read_gfs_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
    integer(lint)                            :: gid,level,param
    integer                                  :: tlev,qlev,olev,glev
 
-   integer(lint)                            :: n,ni,nj,i,j,plpresent
-   real(sreal), dimension(:),   allocatable :: pl,val
+   integer(lint)                            :: n,ni,nj,i,j
+   real(sreal), dimension(:),   allocatable :: val
    real(sreal), dimension(:,:), pointer     :: array
 
    integer(lint),dimension(31)              :: gfs_levlist
@@ -324,7 +324,7 @@ subroutine sort_gfs_levels(preproc_prtm,verbose)
    logical,              intent(in)    :: verbose
 
    integer          :: sh(3),lb(3),ub(3),i_0,i_1,j_0,j_1,nl
-   integer          :: i,j,l,stoplev,movelev
+   integer          :: i,j,l,stoplev
 
    real             :: surfp,interp
    real,allocatable :: p(:),t(:),q(:),o(:),pl(:)
