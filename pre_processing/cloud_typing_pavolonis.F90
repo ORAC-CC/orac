@@ -466,6 +466,17 @@ contains
     ! load external file containing fill coefficients
     include 'pavolonis_fill_coefficients.inc'
 
+    if ( (trim(adjustl(sensor)) .eq. 'AATSR' .or. trim(adjustl(sensor)) .eq. 'ATSR2' ) .OR. &
+         (trim(adjustl(sensor)) .eq. 'AVHRR') .OR. &
+         (trim(adjustl(sensor)) .eq. 'MODIS')) &
+         do_spectral_response_correction = .true.
+
+   if ( do_spectral_response_correction ) then
+      allocate(imager_data( &
+           imager_geolocation%startx:imager_geolocation%endx, &
+           1:imager_geolocation%ny,1:channel_info%nchannels_total))
+    end if
+
     v_loop: do cview=1,imager_angles%nviews
        ! Determine channel indexes based on instrument channel number
        ch1 = 0
@@ -665,14 +676,7 @@ contains
        ! that have been derived from "false" reflectances
        ! do this prior to cloud typing and NN; after that step, no further conversion has to be applied
        ! first, save imager data as it was before transformation, as only here transformed data should be used
-       if ( (trim(adjustl(sensor)) .eq. 'AATSR' .or. trim(adjustl(sensor)) .eq. 'ATSR2' ) .OR. &
-            (trim(adjustl(sensor)) .eq. 'AVHRR') .OR. &
-            (trim(adjustl(sensor)) .eq. 'MODIS')) &
-            do_spectral_response_correction = .true.
        if ( do_spectral_response_correction ) then
-          allocate(imager_data( &
-               imager_geolocation%startx:imager_geolocation%endx, &
-               1:imager_geolocation%ny,1:channel_info%nchannels_total))
           imager_data = imager_measurements%data
 
           platform_index = get_platform_index(platform)
@@ -1806,11 +1810,17 @@ contains
           !-- end of pixel loop
        end do i_loop2
 
+       ! reset imager data to untransformed values
+       if (do_spectral_response_correction) then
+          imager_measurements%data = imager_data
+       end if
+
     end do v_loop
 
-    ! reset imager data to untransformed values
-    imager_measurements%data = imager_data
-    deallocate(imager_data)
+    if (do_spectral_response_correction) then
+       deallocate(imager_data)
+    end if
+
     deallocate(skint)
     deallocate(snow_depth)
     deallocate(sea_ice_cover)
