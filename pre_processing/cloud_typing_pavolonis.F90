@@ -742,7 +742,10 @@ contains
        !$OMP PRIVATE(EMS38_NOVERLAP_THRES_L) &
        !$OMP PRIVATE(solzen) &
        !$OMP PRIVATE(ch1v) &
-       !$OMP PRIVATE(ch2v)
+       !$OMP PRIVATE(ch2v) &
+       !$OMP PRIVATE(platform_index) &
+       !$OMP PRIVATE(desertflag) &
+       !$OMP PRIVATE(bt_ch3b)
 
        !$OMP DO SCHEDULE(GUIDED)
        !-- loop over all pixels (x)
