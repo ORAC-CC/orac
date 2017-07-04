@@ -6,7 +6,7 @@
 #                  Added support for a simple directory structure of
 #                  YYYY subdir for NISE data
 #                  Made paths to MCD43C1 and MCD43C2 data separate
-#                  arguments 
+#                  arguments
 # 20 Jul 2016, AP: Remove shell=True from subprocess calls.
 # 3  Aug 2016, SP: Fixed exception handling in the regression test function.
 # 09 Mar 2017, GT: Improved support for use with batch queuing systems
@@ -231,7 +231,7 @@ def call_exe(args,           # Arguments of scripts
             # supplied, and extract it from the other batch arguments
             # if it has.
             depend_arg = values.pop('depend_arg', None)
-            
+
             # If required, add in the depend_arg arguments using the
             # correct format
             if depend_arg:
@@ -239,16 +239,16 @@ def call_exe(args,           # Arguments of scripts
                 dep_arg = defaults.batch.ParseDepend(depend_arg)
             else:
                 dep_arg = None
-            
+
             # Form batch queue command and call batch queuing system
             cmd = defaults.batch.PrintBatch(values, exe=script_file, depend_arg=dep_arg)
- 
+
             colours.cprint(cmd, colouring['header'])
-            
+
             if args.verbose:
                 colours.cprint(cmd, colouring['header'])
             out = subprocess.check_output(cmd.split(' '))
-            
+
             # Parse job ID # and return it to the caller
             jid = defaults.batch.ParseOut(out, 'ID')
             return jid
@@ -564,7 +564,7 @@ class FileName:
             return
 
         # Default AVHRR filename format produced by pygac (differs from
-        # DWD produced L1b data) 
+        # DWD produced L1b data)
         m = re.search('ECC_GAC_avhrr_noaa(?P<platform>\d{1,2})_'
                       '(\d{5})_(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2})'
                       'T(?P<hour>\d{2})(?P<min>\d{2})(\d{3})Z_'
@@ -1004,7 +1004,7 @@ def args_main(parser):
 
     main = parser.add_argument_group('Main processor arguments')
     main.add_argument('-a', '--approach', type=str, nargs='?',
-                      choices = ('AppCld1L', 'AppCld2L', 'AppAerOx', 
+                      choices = ('AppCld1L', 'AppCld2L', 'AppAerOx',
                                  'AppAerSw', 'AppAerO1'),
                       help = 'Retrieval approach to be used.')
     main.add_argument('--ret_class', type = str, nargs='?',
@@ -1205,7 +1205,7 @@ def build_preproc_driver(args):
     elif (args.ecmwf_flag == 3):
         raise NotImplementedError('Filename syntax for --ecmwf_flag 3 unknown')
     elif (args.ecmwf_flag == 4):
-        bounds = bound_time(inst.time + inst.dur//2, 
+        bounds = bound_time(inst.time + inst.dur//2,
                             datetime.timedelta(hours=3))
         ggam = form_bound_filenames(bounds, args.ggam_dir,
                                     '/%Y/%m/%d/C3D*%m%d%H*.nc')
@@ -1220,15 +1220,15 @@ def build_preproc_driver(args):
         #hr_ecmwf = form_bound_filenames(bounds, args.hr_dir,
         #                                '/ERA_Interim_an_%Y%m%d_%H+00_HR.grb')
         # These files don't zero-pad the hour for some reason
-        hr_ecmwf = [args.hr_dir + 
-                    inst.time.strftime('/ERA_Interim_an_%Y%m%d_') +
-                    '{:d}+00_HR.grb'.format(inst.time.hour*100) 
-                    for inst.time in bounds]
+        hr_ecmwf = [args.hr_dir +
+                    time.strftime('/ERA_Interim_an_%Y%m%d_') +
+                    '{:d}+00_HR.grb'.format(time.hour*100)
+                    for time in bounds]
         if not os.path.isfile(hr_ecmwf[0]):
-            hr_ecmwf = [args.hr_dir + 
-            inst.time.strftime('/%Y/%m/%d/ERA_Interim_an_%Y%m%d_') +
-            '{:d}+00_HR.grb'.format(inst.time.hour*100) 
-            for inst.time in bounds]
+            hr_ecmwf = [args.hr_dir +
+            time.strftime('/%Y/%m/%d/ERA_Interim_an_%Y%m%d_') +
+            '{:d}+00_HR.grb'.format(time.hour*100)
+            for time in bounds]
         for f in hr_ecmwf:
             if not os.path.isfile(f):
                 raise FileMissing('HR ECMWF file', f)
@@ -1286,7 +1286,7 @@ def build_preproc_driver(args):
                       stacklevel=2)
 
     # Strip RTTOV version from library definition
-    rttov_lib = glob.glob(libs['RTTOVLIB'] + '/librttov*_main.a')
+    rttov_lib = glob.glob(libs['RTTOVLIB'] + '/librttov?*_main.a')
     m2 = re.search(r'librttov([\d\.]+)_main.a', rttov_lib[0])
     if m2:
         rttov_version = m2.group(1)
