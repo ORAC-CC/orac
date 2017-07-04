@@ -50,7 +50,7 @@ subroutine read_avhrr_time_lat_lon_angles(path_to_geo_file,imager_geolocation,&
    integer(kind=lint),          intent(in)    :: n_along_track
    logical,                     intent(in)    :: verbose
 
-   integer(kind=lint)                            :: geo_id
+   integer(kind=HID_T)                           :: geo_id
 
    real(kind=sreal), allocatable, dimension(:,:) :: temp,temp2
 

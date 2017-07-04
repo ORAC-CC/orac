@@ -57,7 +57,7 @@ subroutine read_avhrr_l1b_radiances(sensor,platform,path_to_l1b_file, &
    logical,                        intent(in)    :: verbose
 
    integer                                       :: ichannel,err_code
-   integer(kind=lint)                            :: l1b_id
+   integer(kind=HID_T)                           :: l1b_id
    real(kind=sreal), allocatable, dimension(:,:) :: temp
    character(len=1)                              :: cich
    character(len=6)                              :: cimage

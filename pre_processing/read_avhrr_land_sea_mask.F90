@@ -42,7 +42,8 @@ subroutine read_avhrr_land_sea_mask(path_to_geo_file,imager_geolocation, &
 
    character(len=path_length)                      :: path_to_lsmask_file
 
-   integer(kind=lint)                              :: geo_id,ix,jy,iunderscore
+   integer(kind=HID_T)                             :: geo_id
+   integer(kind=lint)                              :: ix,jy,iunderscore
 
    integer(kind=lint), allocatable, dimension(:,:) :: btemp
 
