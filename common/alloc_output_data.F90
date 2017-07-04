@@ -195,22 +195,6 @@ subroutine alloc_output_data_primary(ind, MaxIter, data)
      allocate(data%cc_total_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1))
      data%cc_total_uncertainty = sint_fill_value
 
-     if (ind%flags%do_ann_phase) then
-        allocate(data%ann_phase(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NViews))
-        data%ann_phase = byte_fill_value
-        allocate(data%cphcot(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NViews))
-        data%cphcot = sint_fill_value
-     else
-        nullify(data%ann_phase)
-        nullify(data%cphcot)
-     end if
-     if (ind%flags%do_ann_phase_uncertainty) then
-        allocate(data%ann_phase_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NViews))
-        data%ann_phase_uncertainty = sint_fill_value
-     else
-        nullify(data%ann_phase_uncertainty)
-     end if
-
      allocate(data%stemp(ind%X0:ind%X1, ind%Y0:ind%Y1))
      data%stemp = sint_fill_value
      allocate(data%stemp_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1))
@@ -342,6 +326,22 @@ subroutine alloc_output_data_primary(ind, MaxIter, data)
      nullify(data%ctt2_uncertainty)
      nullify(data%cwp2)
      nullify(data%cwp2_uncertainty)
+  end if
+
+  if (ind%flags%do_ann_phase) then
+     allocate(data%ann_phase(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NViews))
+     data%ann_phase = byte_fill_value
+     allocate(data%cphcot(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NViews))
+     data%cphcot = sint_fill_value
+  else
+     nullify(data%ann_phase)
+     nullify(data%cphcot)
+  end if
+  if (ind%flags%do_ann_phase_uncertainty) then
+     allocate(data%ann_phase_uncertainty(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NViews))
+     data%ann_phase_uncertainty = sint_fill_value
+  else
+     nullify(data%ann_phase_uncertainty)
   end if
 
   allocate(data%convergence(ind%X0:ind%X1, ind%Y0:ind%Y1))
