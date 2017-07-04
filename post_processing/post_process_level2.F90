@@ -262,7 +262,6 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
     read(11,'(A)') out_file_primary
     read(11,'(A)') out_file_secondary
     read(11,*) switch_phases
-    close(11)
 
     ! if single layer cloud then
     n_in_files = 2
@@ -315,6 +314,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
           stop error_stop_code
        end select
     end do
+    close(11)
 
     ! If we're using new bayesian selection then ensure both bayesian flags are true
     if (use_new_bayesian_selection) then
