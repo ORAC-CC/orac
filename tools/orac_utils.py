@@ -1452,14 +1452,14 @@ def build_main_driver(args):
 
     # Form mandatory driver file lines
     driver = """# ORAC Driver File
-Ctrl%FID%Data_Dir          = {in_dir}
-Ctrl%FID%Filename          = {fileroot}
-Ctrl%FID%Out_Dir           = {out_dir}
-Ctrl%FID%SAD_Dir           = {sad_dir}
+Ctrl%FID%Data_Dir          = "{in_dir}"
+Ctrl%FID%Filename          = "{fileroot}"
+Ctrl%FID%Out_Dir           = "{out_dir}"
+Ctrl%FID%SAD_Dir           = "{sad_dir}"
 Ctrl%InstName              = {sensor}
 Ctrl%Ind%NAvail            = {nch}
 Ctrl%Ind%Channel_Proc_Flag = {channels}
-Ctrl%LUTClass              = {phase}
+Ctrl%LUTClass              = "{phase}"
 Ctrl%Process_Cloudy_Only   = {cloudy}
 Ctrl%Process_Aerosol_Only  = {aerosoly}
 Ctrl%Verbose               = {verbose}
