@@ -474,7 +474,7 @@ void print_alloc_in_f(FILE* f[], char* parent_struct, char* name, int alloc) {
                 parent_struct, name, i, parent_struct, name, i+1);
 
         if (i > 0) fputs(" .or. ", f[F_CP2]);
-        fprintf(f[F_CP2], "size(%s_VARIABLE%%%s,%d) /= %s__%s_dim%d",
+        fprintf(f[F_CP2], "&\nsize(%s_VARIABLE%%%s,%d) /= %s__%s_dim%d",
                 parent_struct, name, i+1, parent_struct, name, i);
     }
 
@@ -503,9 +503,9 @@ void print_print_str_in_f(FILE* f[], char* parent_struct, char* name) {
 
     fprintf(f[F_PRI], "   if (length .gt. 0) ptr => buf(count+1:)\n");
 
-    fprintf(f[F_PRI], "   count = count + print_string(ptr, max(0, length - count), "
-            "XSTR(%s_VARIABLE)//\'%%\'//XSTR(%s)//C_NULL_CHAR, trim(%s_VARIABLE%%%s)"
-            "//C_NULL_CHAR)\n", parent_struct, name, parent_struct, name);
+    fprintf(f[F_PRI], "   count = count + print_string(ptr, max(0, length - count), &\n");
+    fprintf(f[F_PRI], "      XSTR(%s_VARIABLE)//\'%%\'//XSTR(%s)//C_NULL_CHAR, trim(%s_VARIABLE%%%s)"
+             "//C_NULL_CHAR)\n", parent_struct, name, parent_struct, name);
 }
 
 // Print variable print code into Fortran interface
@@ -520,7 +520,7 @@ void print_print_var_in_f(FILE* f[], char* parent_struct, char* name,
 
     is_scaler = alloc == 0 && len[0] == '\0';
 
-    n = snprintf(tmp_name, STR_LEN, "XSTR(%s_VARIABLE)//\'%%\'//XSTR(%s)//C_NULL_CHAR",
+    n = snprintf(tmp_name, STR_LEN, "XSTR(%s_VARIABLE)//\'%%\'//&\nXSTR(%s)//C_NULL_CHAR",
                  parent_struct, name);
     if (n >= STR_LEN) {
         fprintf(stderr, "INTERNAL ERROR: Buffer overflow.  Increase STR_LEN.\n");
