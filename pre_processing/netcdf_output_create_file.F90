@@ -1175,7 +1175,7 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
       ! create file
       if (nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
                       netcdf_info%ncid_msi) .ne. NF90_NOERR) then
-         write(*,*)  'ERROR: netcdf_create_swath(6), nf90_create(), ' &
+         write(*,*)  'ERROR: netcdf_create_swath(6), nf90_create(), '// &
               'filename: ', path
          stop error_stop_code
       end if
