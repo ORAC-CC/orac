@@ -44,8 +44,9 @@
 !      surfaces
 !   2015/04/23, OS: Some minor edits
 !   2015/07/16, GM: Major cleanup.
-!   2015/09/16, Cp added ATSR-2
-!   2015/09/16, Cp added dem threshold cuut over antactica to account for missing 12um
+!   2015/09/16, CP: Added ATSR-2
+!   2015/09/16, CP: Added dem threshold cuut over Antarctica to account for
+!      missing 12um.
 !
 ! $Id$
 !
@@ -66,14 +67,9 @@ subroutine snow_ice_mask(input_primary,input_secondary,snow_ice_flag,cinst,i,j)
 
    implicit none
 
- type(input_data_primary)    :: input_primary(1)
+   type(input_data_primary)    :: input_primary(1)
    type(input_data_secondary)  :: input_secondary(1)
 
-!type(input_data_primary), intent(in) :: input_data_prim
-!type(input_data_secondary), intent(in) :: input_data_sec
-
-!    real(kind=sreal) ,   intent(in)  :: input_primary
-!    real(kind=sreal) , intent(in)  :: input_secondary
    integer,                    intent(out) :: snow_ice_flag
    character(len=var_length),  intent(in)  :: cinst
    integer,                    intent(in)  :: i,j
@@ -163,10 +159,10 @@ subroutine snow_ice_mask(input_primary,input_secondary,snow_ice_flag,cinst,i,j)
 !      ch5=input_secondary(1)%brightness_temperature_in_channel_no_6(i,j)
    end if
 
-if (ch5 .lt. 100)  then
-!12um saturated over ice this means clear
-snow_ice_flag=1
-end if
+   if (ch5 .lt. 100)  then
+      !12um saturated over ice this means clear
+      snow_ice_flag=1
+   end if
 
 
 
@@ -182,7 +178,7 @@ end if
    ! Istomina eq.6 day/night
    eq6_value=abs((ch3-ch5)/ch3)
 
-!   if (ch1alb .gt. alb1_thres .and. ch2alb .gt. alb2_thres) then
+!  if (ch1alb .gt. alb1_thres .and. ch2alb .gt. alb2_thres) then
       ! calculate Istomina equations
 
       ! Istomina eq.5 day/night
@@ -192,13 +188,13 @@ end if
       eq6_value=abs((ch3-ch5)/ch3)
 
       ! check what illumination eg. day/night
-      if(input_primary(1)%illum(i,j) .eq. 1_byte .or.&
-           & input_primary(1)%illum(i,j) .eq. 4_byte .or. &
-           & input_primary(1)%illum(i,j) .eq. 5_byte .or.&
-           & input_primary(1)%illum(i,j) .eq. 6_byte .or. &
-           & input_primary(1)%illum(i,j) .eq. 7_byte .or.&
-           & input_primary(1)%illum(i,j) .eq. 8_byte .or. &
-           & input_primary(1)%illum(i,j) .eq. 9_byte  ) then
+      if(input_primary(1)%illum(i,j) .eq. 1_byte .or. &
+         input_primary(1)%illum(i,j) .eq. 4_byte .or. &
+         input_primary(1)%illum(i,j) .eq. 5_byte .or. &
+         input_primary(1)%illum(i,j) .eq. 6_byte .or. &
+         input_primary(1)%illum(i,j) .eq. 7_byte .or. &
+         input_primary(1)%illum(i,j) .eq. 8_byte .or. &
+         input_primary(1)%illum(i,j) .eq. 9_byte  ) then
 
          ! day Istomina eq. 8 day only currently not used.
          eq8_value=(ch2-ch1)/ch2
@@ -221,26 +217,26 @@ end if
          end if ! istomina tests
 
          ! possibility to add some more tests based on optical depth/ height/effective radius
-         !        if (input_primary(1)%lsflag(i,j) .eq. 0_byte) then
+!        if (input_primary(1)%lsflag(i,j) .eq. 0_byte) then
          ! sea
-         !           if (input_primary(1)%cth(i,j) .lt. cth_thres_opd_sea) then
-         !              if (input_primary(1)%cot(i,j) .gt. opd_thres .and. input_primary(1)%ref(i,j) .gt. re_min .and. input_primary(1)%ref(i,j) .lt. re_max ) then
+!           if (input_primary(1)%cth(i,j) .lt. cth_thres_opd_sea) then
+!              if (input_primary(1)%cot(i,j) .gt. opd_thres .and. input_primary(1)%ref(i,j) .gt. re_min .and. input_primary(1)%ref(i,j) .lt. re_max ) then
 
-         !                 snow_ice_flag=1
+!                 snow_ice_flag=1
 
-         !              end if
-         !           end if
+!              end if
+!           end if
 
 
-         !        else
+!        else
          ! land
-         !           if (input_primary(1)%cth(i,j) .lt. cth_thres_opd_land) then
-         !              if (input_primary(1)%cot(i,j) .gt. opd_thres .and. input_primary(1)%ref(i,j) .gt. re_min .and. input_primary(1)%ref(i,j) .lt. re_max ) then
-         !                 snow_ice_flag=1
+!           if (input_primary(1)%cth(i,j) .lt. cth_thres_opd_land) then
+!              if (input_primary(1)%cot(i,j) .gt. opd_thres .and. input_primary(1)%ref(i,j) .gt. re_min .and. input_primary(1)%ref(i,j) .lt. re_max ) then
+!                 snow_ice_flag=1
 
-         !              end if
-         !           end if
-         !        end if
+!              end if
+!           end if
+!        end if
 
       else
          ! night tests
@@ -268,21 +264,21 @@ end if
       ! particually effective for grrenalnd and poles
 
       ! this test used to reduce too much iwp over greenland/poles
-!      if ((eq5_value .lt. eq5_thres_iwp) .and. (eq6_value .lt. eq6_thres_iwp)) then
-!         if (input_primary(1)%cth(i,j) .lt. cth_thres_sea) then
-!            if (input_primary(1)%ref(i,j) .gt. re_min .and. input_primary(1)%cot(i,j) .gt. opd_thres) then
-!               snow_ice_flag=1
-!            end if
-!         end if
-!      end if
+!     if ((eq5_value .lt. eq5_thres_iwp) .and. (eq6_value .lt. eq6_thres_iwp)) then
+!        if (input_primary(1)%cth(i,j) .lt. cth_thres_sea) then
+!           if (input_primary(1)%ref(i,j) .gt. re_min .and. input_primary(1)%cot(i,j) .gt. opd_thres) then
+!              snow_ice_flag=1
+!           end if
+!        end if
+!     end if
 
       ! this test used to reduce too much iwp over greenland
-!      if ((eq5_value .lt. eq5_thres_iwp) .and. (eq6_value .lt. eq6_thres_iwp)) then
-!         if (input_primary(1)%cot(i,j) .gt. opd_max) then
-!            snow_ice_flag=1
-!         end if
-!      end if
-!   end if ! albedo
+!     if ((eq5_value .lt. eq5_thres_iwp) .and. (eq6_value .lt. eq6_thres_iwp)) then
+!        if (input_primary(1)%cot(i,j) .gt. opd_max) then
+!           snow_ice_flag=1
+!        end if
+!     end if
+!  end if ! albedo
 
 
    ! this test does not require albedo test curently removed because it does not
@@ -291,12 +287,12 @@ end if
    ! apply extra strict Istomina tests that are not dependent on albedo. This
    ! test could have implications globally particually for thin cloud put too low
 
-!   if ((eq5_value .lt. eq5_thres_strict) .and. (eq6_value .lt. eq6_thres_strict)) then
-!      if (input_primary(1)%cth(i,j) .lt. cth_thres_land) then
-!         if  (input_primary(1)%ref(i,j) .gt. re_min) then
-!            snow_ice_flag=1
-!         end if
-!      end if
-!   end if
+!  if ((eq5_value .lt. eq5_thres_strict) .and. (eq6_value .lt. eq6_thres_strict)) then
+!     if (input_primary(1)%cth(i,j) .lt. cth_thres_land) then
+!        if  (input_primary(1)%ref(i,j) .gt. re_min) then
+!           snow_ice_flag=1
+!        end if
+!     end if
+!  end if
 
 end subroutine snow_ice_mask

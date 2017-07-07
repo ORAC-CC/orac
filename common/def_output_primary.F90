@@ -247,7 +247,8 @@ subroutine def_output_primary(ncid, dim3d_var, output_data, indexing, &
       ! rel_azimuth_view_no*
       !-------------------------------------------------------------------------
       input_dummy='rel_azimuth_view_no'//trim(adjustl(input_num))
-      input_dummy2='relative azimuth angle for view no '//trim(adjustl(input_num))
+      input_dummy2='relative azimuth angle for view no '// &
+           trim(adjustl(input_num))
 
       call nc_def_var_float_packed_float( &
               ncid, &
@@ -279,7 +280,8 @@ if (indexing%flags%do_aerosol) then
            output_data%vid_aot550, &
            verbose, &
            long_name     = 'aerosol optical thickness at 550 nm', &
-           standard_name = 'atmosphere_optical_thickness_due_to_ambient_aerosol_particles', &
+           standard_name = 'atmosphere_optical_thickness_due_to_ambient_' // &
+                           'aerosol_particles', &
            fill_value    = sint_fill_value, &
            scale_factor  = output_data%aot550_scale, &
            add_offset    = output_data%aot550_offset, &
@@ -298,7 +300,8 @@ if (indexing%flags%do_aerosol) then
            'aot550_uncertainty', &
            output_data%vid_aot550_uncertainty, &
            verbose, &
-           long_name     = 'uncertainty in aerosol optical thickness at 550 nm', &
+           long_name     = 'uncertainty in aerosol optical thickness at ' // &
+                           '550 nm', &
            standard_name = '', &
            fill_value    = sint_fill_value, &
            scale_factor  = output_data%aot550_uncertainty_scale, &
@@ -319,7 +322,8 @@ if (indexing%flags%do_aerosol) then
            output_data%vid_aot870, &
            verbose, &
            long_name     = 'aerosol optical thickness at 870 nm', &
-           standard_name = 'atmosphere_optical_thickness_due_to_ambient_aerosol_particles', &
+           standard_name = 'atmosphere_optical_thickness_due_to_ambient_' // &
+                           'aerosol_particles', &
            fill_value    = sint_fill_value, &
            scale_factor  = output_data%aot870_scale, &
            add_offset    = output_data%aot870_offset, &
@@ -338,7 +342,8 @@ if (indexing%flags%do_aerosol) then
            'aot870_uncertainty', &
            output_data%vid_aot870_uncertainty, &
            verbose, &
-           long_name     = 'uncertainty in aerosol optical thickness at 870 nm', &
+           long_name     = 'uncertainty in aerosol optical thickness at ' // &
+                           '870 nm', &
            standard_name = '', &
            fill_value    = sint_fill_value, &
            scale_factor  = output_data%aot870_uncertainty_scale, &
@@ -473,7 +478,8 @@ if (indexing%flags%do_swansea) then
 
          write(input_num,"(i4)") indexing%Y_Id(indexing%YSolar(i))
 
-         input_dummy='s parameter for Swansea surface reflectance model in channel no '//trim(adjustl(input_num))
+         input_dummy='s parameter for Swansea surface reflectance model in ' // &
+                     'channel no '//trim(adjustl(input_num))
          input_dummy2='swansea_s_in_channel_no_'//trim(adjustl(input_num))
 
          call nc_def_var_short_packed_float( &
@@ -505,8 +511,10 @@ if (indexing%flags%do_swansea) then
 
          write(input_num,"(i4)") indexing%Y_Id(indexing%YSolar(i))
 
-         input_dummy='uncertainty in s parameter for Swansea surface reflectance model in channel no '//trim(adjustl(input_num))
-         input_dummy2='swansea_s_uncertainty_in_channel_no_'//trim(adjustl(input_num))
+         input_dummy='uncertainty in s parameter for Swansea surface ' // &
+                     'reflectance model in channel no '//trim(adjustl(input_num))
+         input_dummy2='swansea_s_uncertainty_in_channel_no_'// &
+              trim(adjustl(input_num))
 
          call nc_def_var_short_packed_float( &
               ncid, &
@@ -534,7 +542,8 @@ if (indexing%flags%do_swansea) then
 
       write(input_num,"(i4)") i_view
 
-      input_dummy='p parameter for Swansea surface reflectance model in view no '//trim(adjustl(input_num))
+      input_dummy='p parameter for Swansea surface reflectance model in ' // &
+                  'view no '//trim(adjustl(input_num))
       input_dummy2='swansea_p_in_view_no_'//trim(adjustl(input_num))
 
       call nc_def_var_short_packed_float( &
@@ -562,7 +571,8 @@ if (indexing%flags%do_swansea) then
 
       write(input_num,"(i4)") i_view
 
-      input_dummy='uncertainty in p parameter for Swansea surface reflectance model in view no '//trim(adjustl(input_num))
+      input_dummy='uncertainty in p parameter for Swansea surface ' // &
+                  'reflectance model in view no '//trim(adjustl(input_num))
       input_dummy2='swansea_p_uncertainty_in_view_no_'//trim(adjustl(input_num))
 
       call nc_def_var_short_packed_float( &
@@ -593,7 +603,8 @@ if (indexing%flags%do_swansea) then
 
          write(input_num,"(i4)") indexing%Y_Id(indexing%YSolar(i))
 
-         input_dummy='diffuse fraction of radiation in channel no '//trim(adjustl(input_num))
+         input_dummy='diffuse fraction of radiation in channel no '// &
+              trim(adjustl(input_num))
          input_dummy2='diffuse_frac_in_channel_no_'//trim(adjustl(input_num))
 
          call nc_def_var_short_packed_float( &
@@ -625,8 +636,10 @@ if (indexing%flags%do_swansea) then
 
          write(input_num,"(i4)") indexing%Y_Id(indexing%YSolar(i))
 
-         input_dummy='uncertainty in diffuse fraction of radiation in channel no '//trim(adjustl(input_num))
-         input_dummy2='diffuse_frac_uncertainty_in_channel_no_'//trim(adjustl(input_num))
+         input_dummy='uncertainty in diffuse fraction of radiation in ' // &
+                     'channel no '//trim(adjustl(input_num))
+         input_dummy2='diffuse_frac_uncertainty_in_channel_no_'// &
+              trim(adjustl(input_num))
 
          call nc_def_var_short_packed_float( &
               ncid, &
@@ -699,7 +712,8 @@ if (indexing%flags%do_cloud) then
            output_data%vid_cer, &
            verbose, &
            long_name     = 'cloud effective radius', &
-           standard_name = 'effective_radius_of_cloud_condensed_water_particles_at_cloud_top', &
+           standard_name = 'effective_radius_of_cloud_condensed_water_' // &
+                           'particles_at_cloud_top', &
            fill_value    = sint_fill_value, &
            scale_factor  = output_data%cer_scale, &
            add_offset    = output_data%cer_offset, &
@@ -901,7 +915,8 @@ if (indexing%flags%do_cloud_layer_2) then
            output_data%vid_cer2, &
            verbose, &
            long_name     = 'cloud effective radius of layer 2', &
-           standard_name = 'effective_radius_of_cloud_condensed_water_particles_at_cloud_top_in_layer_2', &
+           standard_name = 'effective_radius_of_cloud_condensed_water_' // &
+                           'particles_at_cloud_top_in_layer_2', &
            fill_value    = sint_fill_value, &
            scale_factor  = output_data%cer_scale, &
            add_offset    = output_data%cer_offset, &
@@ -1345,7 +1360,8 @@ if (indexing%flags%do_cloud_layer_2) then
            output_data%vid_cwp2, &
            verbose, &
            long_name     = 'cloud liquid water path of layer 2', &
-           standard_name = 'atmosphere_mass_content_of_cloud_liquid_water_of_layer_2', &
+           standard_name = 'atmosphere_mass_content_of_cloud_liquid_water_' // &
+                           'of_layer_2', &
            fill_value    = sint_fill_value, &
            scale_factor  = output_data%cwp_scale, &
            add_offset    = output_data%cwp_offset, &
@@ -1413,8 +1429,10 @@ if (indexing%flags%do_cloud) then
 
       write(input_num,"(i4)") indexing%Y_Id(indexing%YSolar(i))
 
-      input_dummy='cloud_albedo_uncertainty in channel no '//trim(adjustl(input_num))
-      input_dummy2='cloud_albedo_uncertainty_in_channel_no_'//trim(adjustl(input_num))
+      input_dummy='cloud_albedo_uncertainty in channel no '// &
+           trim(adjustl(input_num))
+      input_dummy2='cloud_albedo_uncertainty_in_channel_no_'// &
+           trim(adjustl(input_num))
 
       call nc_def_var_short_packed_float( &
            ncid, &
@@ -1817,7 +1835,8 @@ if (indexing%flags%do_cldmask_uncertainty) then
            'cldmask_uncertainty', &
            output_data%vid_cldmask_uncertainty, &
            verbose, &
-           long_name     = 'Neural net cloud mask (radiance based) uncertainty', &
+           long_name     = 'Neural net cloud mask (radiance based) ' // &
+                           'uncertainty', &
            standard_name = '', &
            fill_value    = sint_fill_value, &
            scale_factor  = output_data%cldmask_uncertainty_scale, &
@@ -1884,7 +1903,8 @@ if (indexing%flags%do_ann_phase_uncertainty) then
            'ann_phase_uncertainty', &
            output_data%vid_ann_phase_uncertainty, &
            verbose, &
-           long_name     = 'Neural net cloud phase mask (radiance based) uncertainty', &
+           long_name     = 'Neural net cloud phase mask (radiance based) ' // &
+                           'uncertainty', &
            standard_name = '', &
            fill_value    = sint_fill_value, &
            scale_factor  = output_data%ann_phase_uncertainty_scale, &
@@ -1921,7 +1941,8 @@ if (indexing%flags%do_phase) then
            output_data%vid_phase, &
            verbose, &
            long_name     = 'cloud phase flag', &
-           standard_name = 'thermodynamic_phase_of_cloud_water_particles_at_cloud_top', &
+           standard_name = 'thermodynamic_phase_of_cloud_water_particles_' // &
+                           'at_cloud_top', &
            fill_value    = byte_fill_value, &
            scale_factor  = output_data%phase_scale, &
            add_offset    = output_data%phase_offset, &
@@ -1945,7 +1966,8 @@ if (indexing%flags%do_phase_pavolonis) then
            output_data%vid_phase_pavolonis, &
            verbose, &
            long_name     = 'cloud phase flag Pavolonis', &
-           standard_name = 'thermodynamic_phase_of_cloud_water_particles_at_cloud_top', &
+           standard_name = 'thermodynamic_phase_of_cloud_water_particles_' // &
+                           'at_cloud_top', &
            fill_value    = byte_fill_value, &
            scale_factor  = output_data%phase_pavolonis_scale, &
            add_offset    = output_data%phase_pavolonis_offset, &

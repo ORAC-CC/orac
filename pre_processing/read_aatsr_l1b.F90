@@ -74,8 +74,9 @@
 !
 ! $Id$
 !
-! Bugs: Current ATSR-2 needs to be hardwired to true drift correction as the
-! drift flag does not work
+! Bugs:
+!   Currently ATSR-2 needs to be hardwired to true drift correction as the
+!   drift flag does not work.
 !-------------------------------------------------------------------------------
 
 subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
@@ -278,7 +279,7 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
          end select
       else
          write(*,*) 'ERROR: read_aatsr_l1b(): View ',view(i),' not defined ' // &
-                  & 'for AATSR.'
+                    'for AATSR.'
          stop error_stop_code
       end if
    end do
@@ -311,7 +312,8 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
    if (.not. is_lut_drift_corrected) then
       if (verbose) write(*,*) 'calling read drift file ', stat
       call aatsr_read_drift_table(drift_file, lut, status)
-      if (verbose) write(*,*) 'finish drift table read returned with status ', stat
+      if (verbose) &
+           write(*,*) 'finish drift table read returned with status ', stat
    end if
 
 if (.not. is_lut_drift_corrected) then
@@ -328,7 +330,7 @@ if (.not. is_lut_drift_corrected) then
          imager_measurements%data(:,:,i) = imager_measurements%data(:,:,i)*0.01
 
          ! determine if non-linearity correction has been applied
-         if (j.eq.4 .and. gc1_file .eq. &
+         if (j .eq. 4 .and. gc1_file .eq. &
              'ATS_GC1_AXVIEC20020123_073430_20020101_000000_20200101_000000') then
             ! this correction acts on the voltage, which is -4.25*radiance
             A = pi/1.553 * (/ 1.0, -4.25, 18.0625, -76.765625 /) * &

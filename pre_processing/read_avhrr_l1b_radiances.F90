@@ -121,8 +121,8 @@ subroutine read_avhrr_l1b_radiances(sensor,platform,path_to_l1b_file, &
       case('3b','3B','4','5')
          imager_measurements%data(:,:,ichannel)=temp
       case default
-         write(*,*) 'ERROR: read_avhrr_l1b_radiances(): invalid AVHRR channel: ', &
-                    channel_number
+         write(*,*) 'ERROR: read_avhrr_l1b_radiances(): invalid AVHRR ', &
+                    'channel: ', channel_number
          stop error_stop_code
       end select
    end do

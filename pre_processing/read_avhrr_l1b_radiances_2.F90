@@ -62,7 +62,8 @@ subroutine read_avhrr_l1b_radiances_2(fid,group,dataset,attrgroup, &
    integer(kind=lint)    :: temp(startx:stopx,starty:stopy)
    real(kind=sreal)      :: nodata,missingdata,scale,offset
 
-   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_avhrr_l1b_radiances_2()'
+   if (verbose) &
+        write(*,*) '<<<<<<<<<<<<<<< Entering read_avhrr_l1b_radiances_2()'
 
    !open the data group
    call h5gopen_f(fid,group,gr_id,err_code)

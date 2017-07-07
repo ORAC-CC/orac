@@ -137,7 +137,7 @@ subroutine select_modis_emiss_file(cyear,cdoy,cimss_emis_path, &
          trim(adjustl(emis_date_s))//'.nc'
    else
    if ( year .le. 2002) then
-! use the climatological file
+      ! use the climatological file
       cimss_emis_path_file=trim(adjustl(cimss_emis_path))// &
          '/global_emis_inf10_monthFilled_MYD11C3.AXXXX'// &
          trim(adjustl(emis_date_s))//'.041'//'.nc'
@@ -153,12 +153,14 @@ subroutine select_modis_emiss_file(cyear,cdoy,cimss_emis_path, &
    inquire(file=trim(cimss_emis_path_file), exist=cimss_emis_file_exist, &
       read=cimss_emis_file_read)
    if (.not.cimss_emis_file_exist) then
-      write(*,*) 'ERROR: select_modis_emiss_file(): CIMSS surface emissivity ' // &
-               & 'file does not exist, filename: ', trim(cimss_emis_path_file)
+      write(*,*) 'ERROR: select_modis_emiss_file(): CIMSS surface ' // &
+                 'emissivity file does not exist, filename: ', &
+                 trim(cimss_emis_path_file)
       stop error_stop_code
    else if (trim(cimss_emis_file_read).eq.'NO') then
-      write(*,*) 'ERROR: select_modis_emiss_file(): CIMSS surface emissivity ' // &
-               & 'file exists but is not readable, filename: ', trim(cimss_emis_path_file)
+      write(*,*) 'ERROR: select_modis_emiss_file(): CIMSS surface ' // &
+                 'emissivity file exists but is not readable, filename: ', &
+                 trim(cimss_emis_path_file)
       stop error_stop_code
    end if
 

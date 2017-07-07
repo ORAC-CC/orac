@@ -54,10 +54,14 @@ subroutine read_input_secondary_common(ncid, input_data, indexing, sval, verbose
    character(len=512) :: input_dummy, input_dummy2
 
 if (indexing%flags%do_aerosol) then
-   call nc_read_packed_array(ncid, "aot550_ap", input_data%aot550_ap, verbose, startp = [1, sval])
-   call nc_read_packed_array(ncid, "aot550_fg", input_data%aot550_fg, verbose, startp = [1, sval])
-   call nc_read_packed_array(ncid, "aer_ap", input_data%aer_ap, verbose, startp = [1, sval])
-   call nc_read_packed_array(ncid, "aer_fg", input_data%aer_fg, verbose, startp = [1, sval])
+   call nc_read_packed_array(ncid, "aot550_ap", input_data%aot550_ap, verbose, &
+        startp = [1, sval])
+   call nc_read_packed_array(ncid, "aot550_fg", input_data%aot550_fg, verbose, &
+        startp = [1, sval])
+   call nc_read_packed_array(ncid, "aer_ap", input_data%aer_ap, verbose, &
+        startp = [1, sval])
+   call nc_read_packed_array(ncid, "aer_fg", input_data%aer_fg, verbose, &
+        startp = [1, sval])
 end if
 
 if (indexing%flags%do_rho) then
@@ -110,17 +114,25 @@ if (indexing%flags%do_swansea) then
 end if
 
 if (indexing%flags%do_cloud) then
-   call nc_read_packed_array(ncid, "cot_ap", input_data%cot_ap, verbose, startp = [1, sval])
-   call nc_read_packed_array(ncid, "cot_fg", input_data%cot_fg, verbose, startp = [1, sval])
+   call nc_read_packed_array(ncid, "cot_ap", input_data%cot_ap, verbose, &
+        startp = [1, sval])
+   call nc_read_packed_array(ncid, "cot_fg", input_data%cot_fg, verbose, &
+        startp = [1, sval])
 
-   call nc_read_packed_array(ncid, "cer_ap", input_data%cer_ap, verbose, startp = [1, sval])
-   call nc_read_packed_array(ncid, "cer_fg", input_data%cer_fg, verbose, startp = [1, sval])
+   call nc_read_packed_array(ncid, "cer_ap", input_data%cer_ap, verbose, &
+        startp = [1, sval])
+   call nc_read_packed_array(ncid, "cer_fg", input_data%cer_fg, verbose, &
+        startp = [1, sval])
 
-   call nc_read_packed_array(ncid, "ctp_ap", input_data%ctp_ap, verbose, startp = [1, sval])
-   call nc_read_packed_array(ncid, "ctp_fg", input_data%ctp_fg, verbose, startp = [1, sval])
+   call nc_read_packed_array(ncid, "ctp_ap", input_data%ctp_ap, verbose, &
+        startp = [1, sval])
+   call nc_read_packed_array(ncid, "ctp_fg", input_data%ctp_fg, verbose, &
+        startp = [1, sval])
 
-   call nc_read_packed_array(ncid, "stemp_ap", input_data%stemp_ap, verbose, startp = [1, sval])
-   call nc_read_packed_array(ncid, "stemp_fg", input_data%stemp_fg, verbose, startp = [1, sval])
+   call nc_read_packed_array(ncid, "stemp_ap", input_data%stemp_ap, verbose, &
+        startp = [1, sval])
+   call nc_read_packed_array(ncid, "stemp_fg", input_data%stemp_fg, verbose, &
+        startp = [1, sval])
 end if
 
    do i=1,indexing%Ny
@@ -195,7 +207,6 @@ if (indexing%flags%do_cloud .and. read_flags%do_cloud) then
               input_data%albedo(:,:,ii), verbose, startp = [1, sval])
       end if
    end do
-!  read_flags%do_cloud = .false.
 end if
 
 end subroutine read_input_secondary_optional

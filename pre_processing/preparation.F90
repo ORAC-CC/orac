@@ -100,8 +100,8 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
      cf_file,lsf_file,geo_file,loc_file,alb_file,sensor,platform,cyear,cmonth, &
      cday,chour,cminute,ecmwf_path,ecmwf_hr_path,ecmwf_path2,ecmwf_path3, &
      ecmwf_path_file,ecmwf_hr_path_file,ecmwf_path_file2,ecmwf_path_file3, &
-     global_atts,ecmwf_flag,ecmwf_time_int_method,imager_geolocation,imager_time, &
-     i_chunk,time_int_fac,assume_full_path,verbose)
+     global_atts,ecmwf_flag,ecmwf_time_int_method,imager_geolocation,&
+     imager_time,i_chunk,time_int_fac,assume_full_path,verbose)
 
    use imager_structures_m
    use global_attributes_m

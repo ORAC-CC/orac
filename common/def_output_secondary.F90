@@ -148,7 +148,8 @@ if (indexing%flags%do_aerosol) then
            output_data%vid_aot550_ap, &
            verbose, &
            long_name     = 'aerosol optical thickness at 550 nm a priori', &
-           standard_name = 'atmosphere_optical_thickness_due_to_ambient_aerosol_particles a_priori', &
+           standard_name = 'atmosphere_optical_thickness_due_to_ambient_' // &
+                           'aerosol_particles a_priori', &
            fill_value    = sint_fill_value, &
            scale_factor  = output_data%aot550_ap_scale, &
            add_offset    = output_data%aot550_ap_offset, &
@@ -167,7 +168,8 @@ if (indexing%flags%do_aerosol) then
            output_data%vid_aot550_fg, &
            verbose, &
            long_name     = 'aerosol optical thickness at 550 nm first guess', &
-           standard_name = 'atmosphere_optical_thickness_due_to_ambient_aerosol_particles first_guess', &
+           standard_name = 'atmosphere_optical_thickness_due_to_ambient_' // &
+                           'aerosol_particles first_guess', &
            fill_value    = sint_fill_value, &
            scale_factor  = output_data%aot550_fg_scale, &
            add_offset    = output_data%aot550_fg_offset, &
@@ -284,7 +286,8 @@ if (indexing%flags%do_swansea) then
    !----------------------------------------------------------------------------
    ! swansea_s_ap_in_channel_no_*
    !----------------------------------------------------------------------------
-         input_dummy2='s parameter a priori in channel no '//trim(adjustl(input_num))
+         input_dummy2='s parameter a priori in channel no '// &
+              trim(adjustl(input_num))
          input_dummy='swansea_s_ap_in_channel_no_'//trim(adjustl(input_num))
 
          call nc_def_var_short_packed_float( &
@@ -306,7 +309,8 @@ if (indexing%flags%do_swansea) then
    !----------------------------------------------------------------------------
    ! swansea_s_fg_in_channel_no_*
    !----------------------------------------------------------------------------
-         input_dummy2='s parameter first guess in channel no '//trim(adjustl(input_num))
+         input_dummy2='s parameter first guess in channel no '// &
+              trim(adjustl(input_num))
          input_dummy='swansea_s_fg_in_channel_no_'//trim(adjustl(input_num))
 
          call nc_def_var_short_packed_float( &
@@ -335,7 +339,8 @@ if (indexing%flags%do_swansea) then
    !----------------------------------------------------------------------------
    ! swansea_p_ap_in_channel_no_*
    !----------------------------------------------------------------------------
-      input_dummy2='p parameter a priori in channel no '//trim(adjustl(input_num))
+      input_dummy2='p parameter a priori in channel no '//&
+           trim(adjustl(input_num))
       input_dummy='swansea_p_ap_in_channel_no_'//trim(adjustl(input_num))
 
       call nc_def_var_short_packed_float( &
@@ -357,7 +362,8 @@ if (indexing%flags%do_swansea) then
    !----------------------------------------------------------------------------
    ! swansea_p_fg_in_channel_no_*
    !----------------------------------------------------------------------------
-      input_dummy2='p parameter first guess in channel no '//trim(adjustl(input_num))
+      input_dummy2='p parameter first guess in channel no '//&
+           trim(adjustl(input_num))
       input_dummy='swansea_p_fg_in_channel_no_'//trim(adjustl(input_num))
 
       call nc_def_var_short_packed_float( &
@@ -389,7 +395,8 @@ if (indexing%flags%do_cloud) then
            output_data%vid_cot_ap, &
            verbose, &
            long_name     = 'cloud optical thickness a priori', &
-           standard_name = 'atmosphere_optical_thickness_due_to_cloud a_priori', &
+           standard_name = 'atmosphere_optical_thickness_due_to_cloud ' // &
+                           'a_priori', &
            fill_value    = sint_fill_value, &
            scale_factor  = output_data%cot_ap_scale, &
            add_offset    = output_data%cot_ap_offset, &
@@ -408,7 +415,8 @@ if (indexing%flags%do_cloud) then
            output_data%vid_cot_fg, &
            verbose, &
            long_name     = 'cloud optical thickness first guess', &
-           standard_name = 'atmosphere_optical_thickness_due_to_cloud first_guess', &
+           standard_name = 'atmosphere_optical_thickness_due_to_cloud ' // &
+                           'first_guess', &
            fill_value    = sint_fill_value, &
            scale_factor  = output_data%cot_fg_scale, &
            add_offset    = output_data%cot_fg_offset, &
@@ -427,7 +435,8 @@ if (indexing%flags%do_cloud) then
            output_data%vid_cer_ap, &
            verbose, &
            long_name     = 'cloud effective radius a priori', &
-           standard_name = 'effective_radius_of_cloud_condensed_water_particle_at_cloud_top a_priori', &
+           standard_name = 'effective_radius_of_cloud_condensed_water_' // &
+                           'particle_at_cloud_top a_priori', &
            fill_value    = sint_fill_value, &
            scale_factor  = output_data%cer_ap_scale, &
            add_offset    = output_data%cer_ap_offset, &
@@ -447,7 +456,8 @@ if (indexing%flags%do_cloud) then
            output_data%vid_cer_fg, &
            verbose, &
            long_name     = 'cloud effective radius first guess', &
-           standard_name = 'effective_radius_of_cloud_condensed_water_particle_at_cloud_top first_guess', &
+           standard_name = 'effective_radius_of_cloud_condensed_water_' // &
+                           'particle_at_cloud_top first_guess', &
            fill_value    = sint_fill_value, &
            scale_factor  = output_data%cer_fg_scale, &
            add_offset    = output_data%cer_fg_offset, &
@@ -509,7 +519,8 @@ if (indexing%flags%do_cloud_layer_2) then
            output_data%vid_cot2_ap, &
            verbose, &
            long_name     = 'cloud optical thickness of layer 2 a priori', &
-           standard_name = 'atmosphere_optical_thickness_due_to_cloud of_layer_2 a_priori', &
+           standard_name = 'atmosphere_optical_thickness_due_to_cloud ' // &
+                           'of_layer_2 a_priori', &
            fill_value    = sint_fill_value, &
            scale_factor  = output_data%cot_ap_scale, &
            add_offset    = output_data%cot_ap_offset, &
@@ -528,7 +539,8 @@ if (indexing%flags%do_cloud_layer_2) then
            output_data%vid_cot2_fg, &
            verbose, &
            long_name     = 'cloud optical thickness of layer 2 first guess', &
-           standard_name = 'atmosphere_optical_thickness_due_to_cloud of_layer_2 first_guess', &
+           standard_name = 'atmosphere_optical_thickness_due_to_cloud ' // &
+                           'of_layer_2 first_guess', &
            fill_value    = sint_fill_value, &
            scale_factor  = output_data%cot_fg_scale, &
            add_offset    = output_data%cot_fg_offset, &
@@ -547,7 +559,8 @@ if (indexing%flags%do_cloud_layer_2) then
            output_data%vid_cer2_ap, &
            verbose, &
            long_name     = 'cloud effective radius of layer 2 a priori', &
-           standard_name = 'effective_radius_of_cloud_condensed_water_particle_at_cloud_top of_layer_2 a_priori', &
+           standard_name = 'effective_radius_of_cloud_condensed_water_' // &
+                           'particle_at_cloud_top of_layer_2 a_priori', &
            fill_value    = sint_fill_value, &
            scale_factor  = output_data%cer_ap_scale, &
            add_offset    = output_data%cer_ap_offset, &
@@ -567,7 +580,8 @@ if (indexing%flags%do_cloud_layer_2) then
            output_data%vid_cer2_fg, &
            verbose, &
            long_name     = 'cloud effective radius of layer 2 first guess', &
-           standard_name = 'effective_radius_of_cloud_condensed_water_particle_at_cloud_top of_layer_2 first_guess', &
+           standard_name = 'effective_radius_of_cloud_condensed_water_' // &
+                           'particle_at_cloud_top of_layer_2 first_guess', &
            fill_value    = sint_fill_value, &
            scale_factor  = output_data%cer_fg_scale, &
            add_offset    = output_data%cer_fg_offset, &
@@ -695,8 +709,10 @@ end if
       write(input_num,"(i4)") indexing%Y_Id(i)
 
       if (btest(indexing%Ch_Is(i), ThermalBit)) then
-         input_dummy='brightness_temperature_in_channel_no_'//trim(adjustl(input_num))
-         input_dummy2='brightness temperature in channel no '//trim(adjustl(input_num))
+         input_dummy='brightness_temperature_in_channel_no_'// &
+              trim(adjustl(input_num))
+         input_dummy2='brightness temperature in channel no '// &
+              trim(adjustl(input_num))
          input_dummy3='kelvin'
       else
          input_dummy='reflectance_in_channel_no_'//trim(adjustl(input_num))
@@ -731,12 +747,16 @@ end if
       write(input_num,"(i4)") indexing%Y_Id(i)
 
       if (btest(indexing%Ch_Is(i), ThermalBit)) then
-         input_dummy='firstguess_brightness_temperature_in_channel_no_'//trim(adjustl(input_num))
-         input_dummy2='firstguess brightness temperature in channel no '//trim(adjustl(input_num))
+         input_dummy='firstguess_brightness_temperature_in_channel_no_'// &
+              trim(adjustl(input_num))
+         input_dummy2='firstguess brightness temperature in channel no '// &
+              trim(adjustl(input_num))
          input_dummy3='kelvin'
       else
-         input_dummy='firstguess_reflectance_in_channel_no_'//trim(adjustl(input_num))
-         input_dummy2='firstguess reflectance in channel no '//trim(adjustl(input_num))
+         input_dummy='firstguess_reflectance_in_channel_no_'// &
+              trim(adjustl(input_num))
+         input_dummy2='firstguess reflectance in channel no '// &
+              trim(adjustl(input_num))
          input_dummy3='1'
       end if
 
@@ -766,12 +786,16 @@ end if
       write(input_num,"(i4)") indexing%Y_Id(i)
 
       if (btest(indexing%Ch_Is(i), ThermalBit)) then
-         input_dummy='brightness_temperature_residual_in_channel_no_'//trim(adjustl(input_num))
-         input_dummy2='brightness temperature residual in channel no '//trim(adjustl(input_num))
+         input_dummy='brightness_temperature_residual_in_channel_no_'// &
+              trim(adjustl(input_num))
+         input_dummy2='brightness temperature residual in channel no '// &
+              trim(adjustl(input_num))
          input_dummy3='kelvin'
       else
-         input_dummy='reflectance_residual_in_channel_no_'//trim(adjustl(input_num))
-         input_dummy2='reflectance residual in channel no '//trim(adjustl(input_num))
+         input_dummy='reflectance_residual_in_channel_no_'// &
+              trim(adjustl(input_num))
+         input_dummy2='reflectance residual in channel no '// &
+              trim(adjustl(input_num))
          input_dummy3='1'
       end if
 

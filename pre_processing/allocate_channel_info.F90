@@ -57,17 +57,24 @@ subroutine allocate_channel_info(channel_info)
    allocate(channel_info%channel_lw_flag(channel_info%nchannels_total))
    channel_info%channel_lw_flag=lint_fill_value
 
-   allocate(channel_info%map_ids_abs_to_ref_band_land(channel_info%nchannels_total))
+   allocate(channel_info%map_ids_abs_to_ref_band_land( &
+        channel_info%nchannels_total))
    channel_info%map_ids_abs_to_ref_band_land=lint_fill_value
-   allocate(channel_info%map_ids_abs_to_ref_band_sea(channel_info%nchannels_total))
+   allocate(channel_info%map_ids_abs_to_ref_band_sea( &
+        channel_info%nchannels_total))
    channel_info%map_ids_abs_to_ref_band_sea=lint_fill_value
 
-   allocate(channel_info%map_ids_abs_to_snow_and_ice(channel_info%nchannels_total))
+   allocate(channel_info%map_ids_abs_to_snow_and_ice( &
+        channel_info%nchannels_total))
    channel_info%map_ids_abs_to_snow_and_ice=lint_fill_value
 
-   allocate(channel_info%channel_fractional_uncertainty(channel_info%nchannels_total))
-   allocate(channel_info%channel_minimum_uncertainty(channel_info%nchannels_total))
-   allocate(channel_info%channel_fm_lnd_uncertainty(channel_info%nchannels_total))
-   allocate(channel_info%channel_fm_sea_uncertainty(channel_info%nchannels_total))
+   allocate(channel_info%channel_fractional_uncertainty( &
+        channel_info%nchannels_total))
+   allocate(channel_info%channel_minimum_uncertainty( &
+        channel_info%nchannels_total))
+   allocate(channel_info%channel_fm_lnd_uncertainty( &
+        channel_info%nchannels_total))
+   allocate(channel_info%channel_fm_sea_uncertainty( &
+        channel_info%nchannels_total))
 
 end subroutine allocate_channel_info

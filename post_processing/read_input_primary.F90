@@ -55,13 +55,16 @@ subroutine read_input_primary_cost_only(ncid, input_data, sval, verbose)
    integer,                    intent(in)    :: sval
    logical,                    intent(in)    :: verbose
 
-   call nc_read_array(ncid, "costja", input_data%costja, verbose, startp = [1, sval])
-   call nc_read_array(ncid, "costjm", input_data%costjm, verbose, startp = [1, sval])
+   call nc_read_array(ncid, "costja", input_data%costja, verbose, &
+        startp = [1, sval])
+   call nc_read_array(ncid, "costjm", input_data%costjm, verbose, &
+        startp = [1, sval])
 
 end subroutine read_input_primary_cost_only
 
 
-subroutine read_input_primary_common(ncid, input_data, indexing, sval, use_ml,verbose)
+subroutine read_input_primary_common(ncid, input_data, indexing, sval, use_ml, &
+        verbose)
 
    use orac_ncdf_m
 
@@ -80,14 +83,17 @@ subroutine read_input_primary_common(ncid, input_data, indexing, sval, use_ml,ve
 
 
 if (indexing%flags%do_aerosol) then
-   call nc_read_packed_array(ncid, "aot550", input_data%aot550, verbose, startp = [1, sval])
+   call nc_read_packed_array(ncid, "aot550", input_data%aot550, verbose, &
+        startp = [1, sval])
    call nc_read_packed_array(ncid, "aot550_uncertainty", &
         input_data%aot550_uncertainty, verbose, startp = [1, sval])
-   call nc_read_packed_array(ncid, "aot870", input_data%aot870, verbose, startp = [1, sval])
+   call nc_read_packed_array(ncid, "aot870", input_data%aot870, verbose, &
+        startp = [1, sval])
    call nc_read_packed_array(ncid, "aot870_uncertainty", &
         input_data%aot870_uncertainty, verbose, startp = [1, sval])
 
-   call nc_read_packed_array(ncid, "aer", input_data%aer, verbose, startp = [1, sval])
+   call nc_read_packed_array(ncid, "aer", input_data%aer, verbose, &
+        startp = [1, sval])
    call nc_read_packed_array(ncid, "aer_uncertainty", &
         input_data%aer_uncertainty, verbose, startp = [1, sval])
 end if
@@ -107,7 +113,8 @@ if (indexing%flags%do_rho) then
 
             call create_rho_field_name(j, 2, input_num, input_dummy)
             call nc_read_packed_array(ncid, input_dummy, &
-                 input_data%rho_uncertainty(:,:,i_rho), verbose, startp = [1, sval])
+                 input_data%rho_uncertainty(:,:,i_rho), verbose, &
+                 startp = [1, sval])
          end if
       end do
    end do
@@ -127,7 +134,8 @@ if (indexing%flags%do_swansea) then
          input_dummy='swansea_s_uncertainty_in_channel_no_'// &
               trim(adjustl(input_num))
          call nc_read_packed_array(ncid, input_dummy, &
-              input_data%swansea_s_uncertainty(:,:,i_rho), verbose, startp = [1, sval])
+              input_data%swansea_s_uncertainty(:,:,i_rho), verbose, &
+              startp = [1, sval])
 
          input_dummy='diffuse_frac_in_channel_no_'//trim(adjustl(input_num))
          call nc_read_packed_array(ncid, input_dummy, &
@@ -135,7 +143,8 @@ if (indexing%flags%do_swansea) then
          input_dummy='diffuse_frac_uncertainty_in_channel_no_'// &
               trim(adjustl(input_num))
          call nc_read_packed_array(ncid, input_dummy, &
-              input_data%diffuse_frac_uncertainty(:,:,i_rho), verbose, startp = [1, sval])
+              input_data%diffuse_frac_uncertainty(:,:,i_rho), verbose, &
+              startp = [1, sval])
       end if
    end do
 
@@ -153,15 +162,18 @@ if (indexing%flags%do_swansea) then
 end if
 
 if (indexing%flags%do_cloud) then
-   call nc_read_packed_array(ncid, "cot", input_data%cot, verbose, startp = [1, sval])
+   call nc_read_packed_array(ncid, "cot", input_data%cot, verbose, &
+        startp = [1, sval])
    call nc_read_packed_array(ncid, "cot_uncertainty", &
         input_data%cot_uncertainty, verbose, startp = [1, sval])
 
-   call nc_read_packed_array(ncid, "cer", input_data%cer, verbose, startp = [1, sval])
+   call nc_read_packed_array(ncid, "cer", input_data%cer, verbose, &
+        startp = [1, sval])
    call nc_read_packed_array(ncid, "cer_uncertainty", &
         input_data%cer_uncertainty, verbose, startp = [1, sval])
 
-   call nc_read_packed_array(ncid, "ctp", input_data%ctp, verbose, startp = [1, sval])
+   call nc_read_packed_array(ncid, "ctp", input_data%ctp, verbose, &
+        startp = [1, sval])
    call nc_read_packed_array(ncid, "ctp_uncertainty", &
         input_data%ctp_uncertainty, verbose, startp = [1, sval])
 
@@ -170,15 +182,18 @@ if (indexing%flags%do_cloud) then
    call nc_read_packed_array(ncid, "ctp_corrected_uncertainty", &
         input_data%ctp_corrected_uncertainty, verbose, startp = [1, sval])
 
-   call nc_read_packed_array(ncid, "cc_total", input_data%cc_total, verbose, startp = [1, sval])
+   call nc_read_packed_array(ncid, "cc_total", input_data%cc_total, verbose, &
+        startp = [1, sval])
    call nc_read_packed_array(ncid, "cc_total_uncertainty", &
         input_data%cc_total_uncertainty, verbose, startp = [1, sval])
 
-   call nc_read_packed_array(ncid, "stemp", input_data%stemp, verbose, startp = [1, sval])
+   call nc_read_packed_array(ncid, "stemp", input_data%stemp, verbose, &
+        startp = [1, sval])
    call nc_read_packed_array(ncid, "stemp_uncertainty", &
         input_data%stemp_uncertainty, verbose, startp = [1, sval])
 
-   call nc_read_packed_array(ncid, "cth", input_data%cth, verbose, startp = [1, sval])
+   call nc_read_packed_array(ncid, "cth", input_data%cth, verbose, &
+        startp = [1, sval])
    call nc_read_packed_array(ncid, "cth_uncertainty", &
         input_data%cth_uncertainty, verbose, startp = [1, sval])
 
@@ -187,7 +202,8 @@ if (indexing%flags%do_cloud) then
    call nc_read_packed_array(ncid, "cth_corrected_uncertainty", &
         input_data%cth_corrected_uncertainty, verbose, startp = [1, sval])
 
-   call nc_read_packed_array(ncid, "ctt", input_data%ctt, verbose, startp = [1, sval])
+   call nc_read_packed_array(ncid, "ctt", input_data%ctt, verbose, &
+        startp = [1, sval])
    call nc_read_packed_array(ncid, "ctt_uncertainty", &
         input_data%ctt_uncertainty, verbose, startp = [1, sval])
 
@@ -196,7 +212,8 @@ if (indexing%flags%do_cloud) then
    call nc_read_packed_array(ncid, "ctt_corrected_uncertainty", &
         input_data%ctt_corrected_uncertainty, verbose, startp = [1, sval])
 
-   call nc_read_packed_array(ncid, "cwp", input_data%cwp, verbose, startp = [1, sval])
+   call nc_read_packed_array(ncid, "cwp", input_data%cwp, verbose, &
+        startp = [1, sval])
    call nc_read_packed_array(ncid, "cwp_uncertainty", &
         input_data%cwp_uncertainty, verbose, startp = [1, sval])
 
@@ -210,7 +227,8 @@ if (indexing%flags%do_cloud) then
       input_dummy='cloud_albedo_uncertainty_in_channel_no_'// &
            trim(adjustl(input_num))
       call nc_read_packed_array(ncid, input_dummy, &
-           input_data%cloud_albedo_uncertainty(:,:,i), verbose, startp = [1, sval])
+           input_data%cloud_albedo_uncertainty(:,:,i), verbose, &
+           startp = [1, sval])
    end do
 
    do i=1,indexing%NThermal
@@ -227,37 +245,48 @@ if (indexing%flags%do_cloud) then
 end if
 
 if (use_ml) then
-   call nc_read_packed_array(ncid, "cot2", input_data%cot2, verbose, startp = [1, sval])
+   call nc_read_packed_array(ncid, "cot2", input_data%cot2, verbose, &
+        startp = [1, sval])
    call nc_read_packed_array(ncid, "cot2_uncertainty", &
         input_data%cot2_uncertainty, verbose, startp = [1, sval])
 
-   call nc_read_packed_array(ncid, "cer2", input_data%cer2, verbose, startp = [1, sval])
+   call nc_read_packed_array(ncid, "cer2", input_data%cer2, verbose, &
+        startp = [1, sval])
    call nc_read_packed_array(ncid, "cer2_uncertainty", &
         input_data%cer2_uncertainty, verbose, startp = [1, sval])
 
-   call nc_read_packed_array(ncid, "cth2", input_data%cth2, verbose, startp = [1, sval])
+   call nc_read_packed_array(ncid, "cth2", input_data%cth2, verbose, &
+        startp = [1, sval])
    call nc_read_packed_array(ncid, "cth2_uncertainty", &
         input_data%cth2_uncertainty, verbose, startp = [1, sval])
 
-   call nc_read_packed_array(ncid, "ctp2", input_data%ctp2, verbose, startp = [1, sval])
+   call nc_read_packed_array(ncid, "ctp2", input_data%ctp2, verbose, &
+        startp = [1, sval])
    call nc_read_packed_array(ncid, "ctp2_uncertainty", &
         input_data%ctp2_uncertainty, verbose, startp = [1, sval])
 
-   call nc_read_packed_array(ncid, "ctt2", input_data%ctt2, verbose, startp = [1, sval])
+   call nc_read_packed_array(ncid, "ctt2", input_data%ctt2, verbose, &
+        startp = [1, sval])
    call nc_read_packed_array(ncid, "ctt2_uncertainty", &
         input_data%ctt2_uncertainty, verbose, startp = [1, sval])
 
-   call nc_read_packed_array(ncid, "cwp2", input_data%cwp2, verbose, startp = [1, sval])
+   call nc_read_packed_array(ncid, "cwp2", input_data%cwp2, verbose, &
+        startp = [1, sval])
    call nc_read_packed_array(ncid, "cwp2_uncertainty", &
         input_data%cwp2_uncertainty, verbose, startp = [1, sval])
 end if
 
-   call nc_read_array(ncid, "convergence", input_data%convergence, verbose, startp = [1, sval])
-   call nc_read_array(ncid, "niter", input_data%niter, verbose, startp = [1, sval])
-   call nc_read_array(ncid, "costja", input_data%costja, verbose, startp = [1, sval])
-   call nc_read_array(ncid, "costjm", input_data%costjm, verbose, startp = [1, sval])
+   call nc_read_array(ncid, "convergence", input_data%convergence, verbose, &
+        startp = [1, sval])
+   call nc_read_array(ncid, "niter", input_data%niter, verbose, &
+        startp = [1, sval])
+   call nc_read_array(ncid, "costja", input_data%costja, verbose, &
+        startp = [1, sval])
+   call nc_read_array(ncid, "costjm", input_data%costjm, verbose, &
+        startp = [1, sval])
 
-   call nc_read_array(ncid, "qcflag", input_data%qcflag, verbose, startp = [1, sval])
+   call nc_read_array(ncid, "qcflag", input_data%qcflag, verbose, &
+        startp = [1, sval])
    where(input_data%qcflag .eq. sint_fill_value) input_data%qcflag = -1
 
 end subroutine read_input_primary_common
@@ -301,12 +330,14 @@ subroutine read_input_primary_optional(ncid, input_data, indexing, read_flags, &
    end do
 
    if (indexing%flags%do_cloud .and. read_flags%do_cloud) then
-      call nc_read_packed_array(ncid, "cccot_pre", input_data%cccot_pre, verbose, startp = [1, sval, 1])
+      call nc_read_packed_array(ncid, "cccot_pre", input_data%cccot_pre, &
+        verbose, startp = [1, sval, 1])
       read_flags%do_cloud = .false.
    end if
 
    if (indexing%flags%do_cldmask .and. read_flags%do_cldmask) then
-      call nc_read_array(ncid, "cldmask", input_data%cldmask, verbose, startp = [1, sval, 1])
+      call nc_read_array(ncid, "cldmask", input_data%cldmask, verbose, &
+        startp = [1, sval, 1])
       read_flags%do_cldmask = .false.
    end if
 
@@ -318,8 +349,10 @@ subroutine read_input_primary_optional(ncid, input_data, indexing, read_flags, &
    end if
 
    if (indexing%flags%do_ann_phase .and. read_flags%do_ann_phase) then
-      call nc_read_packed_array(ncid, "cphcot", input_data%cphcot, verbose, startp = [1, sval, 1])
-      call nc_read_array(ncid, "ann_phase", input_data%ann_phase, verbose, startp = [1, sval, 1])
+      call nc_read_packed_array(ncid, "cphcot", input_data%cphcot, verbose, &
+        startp = [1, sval, 1])
+      call nc_read_array(ncid, "ann_phase", input_data%ann_phase, verbose, &
+        startp = [1, sval, 1])
       read_flags%do_ann_phase = .false.
    end if
 
@@ -331,7 +364,8 @@ subroutine read_input_primary_optional(ncid, input_data, indexing, read_flags, &
    end if
 
    if (indexing%flags%do_phase .and. read_flags%do_phase) then
-      call nc_read_array(ncid, "phase", input_data%phase, verbose, startp = [1, sval])
+      call nc_read_array(ncid, "phase", input_data%phase, verbose, &
+        startp = [1, sval])
       read_flags%do_phase = .false.
    end if
 
@@ -387,13 +421,18 @@ subroutine read_input_primary_once(nfile, fname, input_data, indexing, &
    call nc_read_array(ncid, "lon", input_data%lon, verbose, startp = [1, sval])
    call nc_read_array(ncid, "lat", input_data%lat, verbose, startp = [1, sval])
 
-   call nc_read_array(ncid, "lsflag", input_data%lsflag, verbose, startp = [1, sval])
-   call nc_read_array(ncid, "lusflag", input_data%lusflag, verbose, startp = [1, sval])
+   call nc_read_array(ncid, "lsflag", input_data%lsflag, verbose, &
+        startp = [1, sval])
+   call nc_read_array(ncid, "lusflag", input_data%lusflag, verbose, &
+        startp = [1, sval])
    call nc_read_array(ncid, "dem", input_data%dem, verbose, startp = [1, sval])
-   call nc_read_array(ncid, "nisemask", input_data%nisemask, verbose, startp = [1, sval])
+   call nc_read_array(ncid, "nisemask", input_data%nisemask, verbose, &
+        startp = [1, sval])
 
-   call nc_read_array(ncid, "illum", input_data%illum, verbose, startp = [1, sval])
-   call nc_read_array(ncid, "cldtype", input_data%cldtype, verbose, startp = [1, sval, 1])
+   call nc_read_array(ncid, "illum", input_data%illum, verbose, &
+        startp = [1, sval])
+   call nc_read_array(ncid, "cldtype", input_data%cldtype, verbose, &
+        startp = [1, sval, 1])
 
    ierr = nf90_inq_varid(ncid, "qcflag", varid)
    if (ierr.ne.NF90_NOERR) then
@@ -455,7 +494,8 @@ subroutine read_input_primary_class(fname, input_data, indexing, costonly, &
    if (verbose) write(*,*) 'Opening primary input file: ', trim(fname)
    call nc_open(ncid,fname)
    if (.not. costonly) then
-      call read_input_primary_common(ncid, input_data, indexing, sval, use_ml,verbose)
+      call read_input_primary_common(ncid, input_data, indexing, sval, use_ml, &
+        verbose)
    else
       call read_input_primary_cost_only(ncid, input_data, sval, verbose)
    end if

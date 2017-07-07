@@ -208,8 +208,9 @@ end if
 end subroutine copy_class_specific_inputs
 
 
-subroutine copy_class_specific_inputs_ml(i, j, indexing, primary3, primary2, primary1,&
-                                         secondary3, secondary2, secondary1, do_secondary)
+subroutine copy_class_specific_inputs_ml(i, j, indexing, primary3, primary2, &
+                                         primary1, secondary3, secondary2, &
+                                         secondary1, do_secondary)
 
    use orac_input_m
    use postproc_constants_m

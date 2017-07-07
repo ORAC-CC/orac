@@ -77,13 +77,15 @@ subroutine nc_create(path, ncid, nx, ny, nview, dims_var, type, global_atts, &
    ! Define the 2 dimensions: lat / lon
    ierr = nf90_def_dim(ncid, 'across_track', nx, dims_var(1))
    if (ierr .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_def_dim(): dim_name = across_track, xdim = ', dims_var(1)
+      write(*,*) 'ERROR: nf90_def_dim(): dim_name = across_track, xdim = ', &
+           dims_var(1)
       stop error_stop_code
    end if
 
    ierr = nf90_def_dim(ncid, 'along_track', ny, dims_var(2))
    if (ierr .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_def_dim(): dim_name = along_track,  ydim = ', dims_var(2)
+      write(*,*) 'ERROR: nf90_def_dim(): dim_name = along_track,  ydim = ', &
+           dims_var(2)
       stop error_stop_code
    end if
 

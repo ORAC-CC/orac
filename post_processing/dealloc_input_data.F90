@@ -167,15 +167,18 @@ subroutine dealloc_input_data_primary_all(data)
    deallocate(data%illum)
 
    deallocate(data%cldtype)
-   if (associated(data%cldmask))             deallocate(data%cldmask)
-   if (associated(data%cldmask_uncertainty)) deallocate(data%cldmask_uncertainty)
+   if (associated(data%cldmask))       deallocate(data%cldmask)
+   if (associated(data%cldmask_uncertainty)) &
+                                       deallocate(data%cldmask_uncertainty)
 
-   if (associated(data%phase))               deallocate(data%phase)
-   if (associated(data%phase_pavolonis))     deallocate(data%phase_pavolonis)
+   if (associated(data%phase))         deallocate(data%phase)
+   if (associated(data%phase_pavolonis)) &
+                                       deallocate(data%phase_pavolonis)
 
-   if (associated(data%ann_phase))           deallocate(data%ann_phase)
-   if (associated(data%ann_phase_uncertainty)) deallocate(data%ann_phase_uncertainty)
-   if (associated(data%cphcot))              deallocate(data%cphcot)
+   if (associated(data%ann_phase))     deallocate(data%ann_phase)
+   if (associated(data%ann_phase_uncertainty)) &
+                                       deallocate(data%ann_phase_uncertainty)
+   if (associated(data%cphcot))        deallocate(data%cphcot)
 
 end subroutine dealloc_input_data_primary_all
 
@@ -197,27 +200,27 @@ subroutine dealloc_input_data_secondary_common(data)
 
    type(input_data_secondary_t), intent(inout) :: data
 
-   if (associated(data%aot550_ap))    deallocate(data%aot550_ap)
-   if (associated(data%aot550_fg))    deallocate(data%aot550_fg)
-   if (associated(data%aer_ap))       deallocate(data%aer_ap)
-   if (associated(data%aer_fg))       deallocate(data%aer_fg)
+   if (associated(data%aot550_ap))     deallocate(data%aot550_ap)
+   if (associated(data%aot550_fg))     deallocate(data%aot550_fg)
+   if (associated(data%aer_ap))        deallocate(data%aer_ap)
+   if (associated(data%aer_fg))        deallocate(data%aer_fg)
 
-   if (associated(data%rho_ap))       deallocate(data%rho_ap)
-   if (associated(data%rho_fg))       deallocate(data%rho_fg)
+   if (associated(data%rho_ap))        deallocate(data%rho_ap)
+   if (associated(data%rho_fg))        deallocate(data%rho_fg)
 
-   if (associated(data%swansea_s_ap)) deallocate(data%swansea_s_ap)
-   if (associated(data%swansea_s_fg)) deallocate(data%swansea_s_fg)
-   if (associated(data%swansea_p_ap)) deallocate(data%swansea_p_ap)
-   if (associated(data%swansea_p_fg)) deallocate(data%swansea_p_fg)
+   if (associated(data%swansea_s_ap))  deallocate(data%swansea_s_ap)
+   if (associated(data%swansea_s_fg))  deallocate(data%swansea_s_fg)
+   if (associated(data%swansea_p_ap))  deallocate(data%swansea_p_ap)
+   if (associated(data%swansea_p_fg))  deallocate(data%swansea_p_fg)
 
-   if (associated(data%cot_ap))       deallocate(data%cot_ap)
-   if (associated(data%cot_fg))       deallocate(data%cot_fg)
-   if (associated(data%cer_ap))       deallocate(data%cer_ap)
-   if (associated(data%cer_fg))       deallocate(data%cer_fg)
-   if (associated(data%ctp_ap))       deallocate(data%ctp_ap)
-   if (associated(data%ctp_fg))       deallocate(data%ctp_fg)
-   if (associated(data%stemp_ap))     deallocate(data%stemp_ap)
-   if (associated(data%stemp_fg))     deallocate(data%stemp_fg)
+   if (associated(data%cot_ap))        deallocate(data%cot_ap)
+   if (associated(data%cot_fg))        deallocate(data%cot_fg)
+   if (associated(data%cer_ap))        deallocate(data%cer_ap)
+   if (associated(data%cer_fg))        deallocate(data%cer_fg)
+   if (associated(data%ctp_ap))        deallocate(data%ctp_ap)
+   if (associated(data%ctp_fg))        deallocate(data%ctp_fg)
+   if (associated(data%stemp_ap))      deallocate(data%stemp_ap)
+   if (associated(data%stemp_fg))      deallocate(data%stemp_fg)
 
 
    if (associated(data%cot2_ap))       deallocate(data%cot2_ap)
@@ -243,7 +246,7 @@ subroutine dealloc_input_data_secondary_all(data)
 
    call dealloc_input_data_secondary_common(data)
 
-   if (associated(data%albedo)) deallocate(data%albedo)
+   if (associated(data%albedo))       deallocate(data%albedo)
 
    deallocate(data%channels)
 

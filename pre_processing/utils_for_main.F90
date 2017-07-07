@@ -62,9 +62,9 @@ subroutine parse_optional(label, value, n_channels, channel_ids, &
                           use_ecmwf_snow_and_ice, use_modis_emis_in_rttov, &
                           ecmwf_path, ecmwf_path2, ecmwf_path3, ecmwf_path_hr, &
                           ecmwf_path_hr_2, ecmwf_nlevels, use_l1_land_mask, &
-                          use_occci, occci_path,use_predef_lsm,ext_lsm_path,&
-                          use_predef_geo, ext_geo_path, disable_snow_and_ice_corr,&
-                          do_cloud_emis, do_ironly)
+                          use_occci, occci_path,use_predef_lsm,ext_lsm_path, &
+                          use_predef_geo, ext_geo_path, &
+                          disable_snow_and_ice_corr, do_cloud_emis, do_ironly)
 
    use parsing_m
    use preproc_constants_m

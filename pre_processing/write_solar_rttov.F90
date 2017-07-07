@@ -76,9 +76,11 @@ subroutine write_solar_rttov(netcdf_info, coefs, idim, jdim, nlev, satza, &
       ! (see p.113 of RTTOV v 11 Users Guide)
       if (coefs%coef%ss_val_chn(rttov_num) == 2) then
          ! Transmission from level to TOA
-         dummy_tac(1,:,1,1) = transmission%tausun_levels_path1(:,rttov_num)**amf_recip
+         dummy_tac(1,:,1,1) = &
+              transmission%tausun_levels_path1(:,rttov_num)**amf_recip
          ! Transmission from surface to level
-         dummy_tbc(1,:,1,1) = transmission%tausun_total_path1(rttov_num)**amf_recip &
+         dummy_tbc(1,:,1,1) = &
+              transmission%tausun_total_path1(rttov_num)**amf_recip &
               / dummy_tac(1,:,1,1)
       else
          ! Transmission from level to TOA

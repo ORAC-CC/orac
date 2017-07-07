@@ -82,7 +82,8 @@ subroutine read_viirs_dimensions(geo_file, n_across_track, n_along_track, &
    CALL h5fopen_f (geo_file, H5F_ACC_RDONLY_F, file_id, error)
 
    ! Open the  dataset.
-   CALL h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO-TC_All/Latitude", dset_id, error)
+   CALL h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO-TC_All/Latitude", &
+        dset_id, error)
 
    ! Get dataset's dataspace handle.
    CALL h5dget_space_f(dset_id, dataspace, error)
@@ -254,8 +255,8 @@ subroutine read_viirs(infile,geofile,imager_geolocation, imager_measurements, &
 
    ! Convert start and end times to julian
 
-   !!!! WARNING: Assumes both are the same (geofile name contains 2 times but only 1 date)
-   !!!! This will result in undefined behaviour if a granule spans midnight
+   !!!! WARNING: Assumes both are the same (geofile name contains 2 times but
+   !!!! only 1 date). Results in undefined behaviour if a granule spans midnight
 
    ! NOTE: Should investigate how this is dealt with in the l1b files...
 
@@ -302,13 +303,13 @@ subroutine read_viirs(infile,geofile,imager_geolocation, imager_measurements, &
    call h5dread_f(dset_id, H5T_NATIVE_REAL, data0, pxcount, error)
    imager_angles%solazi(:,:,1) = data0
    call h5dclose_f(dset_id, error)
-   call h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO-TC_All/SatelliteZenithAngle", &
-                  dset_id, error)
+   call h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO-TC_All/" // &
+                  "SatelliteZenithAngle", dset_id, error)
    call h5dread_f(dset_id, H5T_NATIVE_REAL, data0, pxcount, error)
    imager_angles%satzen(:,:,1) = data0
    call h5dclose_f(dset_id, error)
-   call h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO-TC_All/SatelliteAzimuthAngle", &
-                  dset_id, error)
+   call h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO-TC_All/" // &
+                  "SatelliteAzimuthAngle", dset_id, error)
    call h5dread_f(dset_id, H5T_NATIVE_REAL, data0, pxcount, error)
    imager_angles%relazi(:,:,1) = data0
    call h5dclose_f(dset_id, error)
@@ -336,11 +337,15 @@ subroutine read_viirs(infile,geofile,imager_geolocation, imager_measurements, &
       band = "M"//trim(adjustl(band))
       call h5fopen_f(bandfile, H5F_ACC_RDONLY_F, file_id, error)
       if (band_ids(i) .lt. 12) then
-         varname = "//All_Data/VIIRS-"//trim(adjustl(band))//"-SDR_All/Reflectance"
-         facname = "//All_Data/VIIRS-"//trim(adjustl(band))//"-SDR_All/ReflectanceFactors"
+         varname = "//All_Data/VIIRS-"//trim(adjustl(band))// &
+              "-SDR_All/Reflectance"
+         facname = "//All_Data/VIIRS-"//trim(adjustl(band))// &
+              "-SDR_All/ReflectanceFactors"
       else if (band_ids(i) .ge. 12) then
-         varname = "//All_Data/VIIRS-"//trim(adjustl(band))//"-SDR_All/BrightnessTemperature"
-         facname = "//All_Data/VIIRS-"//trim(adjustl(band))//"-SDR_All/BrightnessTemperatureFactors"
+         varname = "//All_Data/VIIRS-"//trim(adjustl(band))// &
+              "-SDR_All/BrightnessTemperature"
+         facname = "//All_Data/VIIRS-"//trim(adjustl(band))// &
+              "-SDR_All/BrightnessTemperatureFactors"
       end if
 
       ! Standard case, data is integer
@@ -355,7 +360,8 @@ subroutine read_viirs(infile,geofile,imager_geolocation, imager_measurements, &
 
          ! Scale and account for missing values
          imager_measurements%data(:,:,i) = factors(2) + (data1*factors(1))
-         where(data1 .gt. 65500) imager_measurements%data(:,:,i) = sreal_fill_value
+         where(data1 .gt. 65500) &
+              imager_measurements%data(:,:,i) = sreal_fill_value
 
       ! Band 13, data is float
       else

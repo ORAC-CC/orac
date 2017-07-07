@@ -46,7 +46,6 @@
 ! 2017/04/26, SP: Support for loading geoinfo (lat/lon/vza/vaa) from an
 !                 external file. Supported by AHI, not yet by SEVIRI (EKWork)
 !
-!
 ! $Id$
 !
 ! Bugs:
@@ -106,7 +105,8 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
    if (verbose) write(*,*) 'geo_file_path:    ', trim(geo_file_path)
 
    !branches for the sensors
-   if (trim(adjustl(sensor)) .eq. 'AATSR' .or. trim(adjustl(sensor)) .eq. 'ATSR2') then
+   if (trim(adjustl(sensor)) .eq. 'AATSR' .or. &
+       trim(adjustl(sensor)) .eq. 'ATSR2') then
       if (verbose) write(*,*) 'path_to_aatsr_drift_table: ', &
                               trim(path_to_aatsr_drift_table)
 

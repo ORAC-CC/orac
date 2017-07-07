@@ -113,15 +113,21 @@ if (indexing%flags%do_swansea) then
          i_rho = i_rho + 1
 
          call prepare_short_packed_float( &
-              input_data%swansea_s_ap(i,j,i_rho), output_data%swansea_s_ap(i,j,i_rho), &
-              output_data%swansea_s_ap_scale, output_data%swansea_s_ap_offset, &
-              output_data%swansea_s_ap_vmin, output_data%swansea_s_ap_vmax, &
+              input_data%swansea_s_ap(i,j,i_rho), &
+              output_data%swansea_s_ap(i,j,i_rho), &
+              output_data%swansea_s_ap_scale, &
+              output_data%swansea_s_ap_offset, &
+              output_data%swansea_s_ap_vmin, &
+              output_data%swansea_s_ap_vmax, &
               sreal_fill_value, output_data%swansea_s_ap_vmax)
 
          call prepare_short_packed_float( &
-              input_data%swansea_s_fg(i,j,i_rho), output_data%swansea_s_fg(i,j,i_rho), &
-              output_data%swansea_s_fg_scale, output_data%swansea_s_fg_offset, &
-              output_data%swansea_s_fg_vmin, output_data%swansea_s_fg_vmax, &
+              input_data%swansea_s_fg(i,j,i_rho), &
+              output_data%swansea_s_fg(i,j,i_rho), &
+              output_data%swansea_s_fg_scale, &
+              output_data%swansea_s_fg_offset, &
+              output_data%swansea_s_fg_vmin, &
+              output_data%swansea_s_fg_vmax, &
               sreal_fill_value, output_data%swansea_s_fg_vmax)
       end if
    end do

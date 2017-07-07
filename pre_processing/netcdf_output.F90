@@ -42,8 +42,8 @@ module netcdf_output_m
    type netcdf_output_info_t
 
       ! file ids
-      integer :: ncid_alb, ncid_clf, ncid_config, ncid_geo, ncid_loc, ncid_lsf,  &
-                 ncid_lwrtm, ncid_msi, ncid_prtm, ncid_swrtm
+      integer :: ncid_alb, ncid_clf, ncid_config, ncid_geo, ncid_loc, ncid_lsf
+      integer :: ncid_lwrtm, ncid_msi, ncid_prtm, ncid_swrtm
 
       ! fundamental dimensions ids for the different dimensions in the different
       ! files
@@ -76,7 +76,8 @@ module netcdf_output_m
       ! alb file
       integer :: vid_alb_abs_ch_numbers, vid_emis_abs_ch_numbers
       integer :: vid_alb_data, vid_emis_data
-      integer :: vid_rho_0v_data, vid_rho_0d_data, vid_rho_dv_data, vid_rho_dd_data
+      integer :: vid_rho_0v_data, vid_rho_0d_data
+      integer :: vid_rho_dv_data, vid_rho_dd_data
 
       ! clf file
       integer :: vid_cflag, vid_cemis, vid_cldtype, vid_cldmask, vid_cccot_pre, &
@@ -99,7 +100,8 @@ module netcdf_output_m
       integer :: vid_lsflag, vid_lusflag, vid_dem, vid_nisemask
 
       ! lwrtm file:
-      integer :: vid_lw_channel_abs_ids, vid_lw_channel_instr_ids, vid_lw_channel_wvl
+      integer :: vid_lw_channel_abs_ids, vid_lw_channel_instr_ids
+      integer :: vid_lw_channel_wvl
       integer :: vid_solza_lw, vid_satza_lw, vid_relazi_lw
       integer :: vid_emiss_lw
       integer :: vid_tac_lw, vid_tbc_lw
@@ -118,7 +120,8 @@ module netcdf_output_m
                  vid_qprofile_lev_pw, vid_o3profile_lev_pw
 
       ! swrtm file:
-      integer :: vid_sw_channel_abs_ids, vid_sw_channel_instr_ids, vid_sw_channel_wvl
+      integer :: vid_sw_channel_abs_ids, vid_sw_channel_instr_ids
+      integer :: vid_sw_channel_wvl
       integer :: vid_tac_sw, vid_tbc_sw
       integer :: vid_solza_sw, vid_satza_sw, vid_relazi_sw
 

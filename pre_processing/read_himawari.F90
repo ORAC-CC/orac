@@ -128,7 +128,8 @@ end subroutine read_himawari_dimensions
 ! verbose             logical in   If true then print verbose information.
 !-------------------------------------------------------------------------------
 subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
-   imager_angles, imager_time, channel_info, use_predef_geo,geo_file_path, verbose)
+   imager_angles, imager_time, channel_info, use_predef_geo,geo_file_path, &
+   verbose)
 
    use iso_c_binding
    use channel_structures_m
@@ -190,8 +191,9 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
                            'the himawari_read module'
 
    ! Load all the data
-   if (AHI_Main_Read(trim(infile)//C_NULL_CHAR,trim(geo_file_path)//C_NULL_CHAR,preproc,n_bands,&
-      band_ids,0,1,use_predef_geo,verbose) .ne. 0) then
+   if (AHI_Main_Read(trim(infile)//C_NULL_CHAR, &
+                     trim(geo_file_path)//C_NULL_CHAR, preproc, n_bands,&
+                     band_ids, 0, 1, use_predef_geo, verbose) .ne. 0) then
       write(*,*) 'ERROR: in read_himawari_read(), calling ' // &
                  'AHI_Main_Read(), filename = ', trim(infile)
       stop error_stop_code

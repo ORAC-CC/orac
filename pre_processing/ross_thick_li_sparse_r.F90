@@ -632,8 +632,8 @@ subroutine ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(n_bands, solza, satza, &
             cycle
          end if
 
-         call ross_thick_li_sparse_r_kernel(aux_brdf, aux_kernel, p_ross, p_li_r, &
-                                            f(:, j, i), rho_0v(j, i))
+         call ross_thick_li_sparse_r_kernel(aux_brdf, aux_kernel, p_ross, &
+                                            p_li_r, f(:, j, i), rho_0v(j, i))
       end do
    end do
 !$OMP END DO
@@ -659,8 +659,9 @@ subroutine ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(n_bands, solza, satza, &
          do k = 1, n_quad_phi
             relaz2 = qx_phi(k)
             call brdf_aux_calc(aux_brdf2(j,k), solza2, satza2, relaz2)
-            call ross_thick_li_sparse_r_aux_calc(aux_brdf2(j,k), aux_kernel2(j,k), &
-                                                 p_ross, p_li_r)
+            call ross_thick_li_sparse_r_aux_calc(aux_brdf2(j,k), &
+                                                 aux_kernel2(j,k), p_ross, &
+                                                 p_li_r)
          end do
       end do
 
@@ -673,8 +674,9 @@ subroutine ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(n_bands, solza, satza, &
          do k = 1, n_quad_theta
             a = 0.
             do l = 1, n_quad_phi
-               call ross_thick_li_sparse_r_kernel(aux_brdf2(k,l), aux_kernel2(k,l), &
-                                                  p_ross, p_li_r, f(:, j, i), a2)
+               call ross_thick_li_sparse_r_kernel(aux_brdf2(k,l), &
+                                                  aux_kernel2(k,l), p_ross, &
+                                                  p_li_r, f(:, j, i), a2)
                a = a + a2 * qw_phi(l)
             end do
             rho_0d(j, i) = rho_0d(j, i) + a * qx_cos_sin_qw_theta(k)
@@ -689,7 +691,8 @@ subroutine ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(n_bands, solza, satza, &
 !$OMP END PARALLEL
 
    !----------------------------------------------------------------------------
-   if (verbose) print *, 'ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(): computing rho_dv'
+   if (verbose) print *, &
+        'ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(): computing rho_dv'
    !----------------------------------------------------------------------------
    rho_dv = 0.
 !$OMP PARALLEL PRIVATE(i, j, k, l, a, a2, solza2, satza2, relaz2, aux_brdf2, aux_kernel2)
@@ -703,8 +706,9 @@ subroutine ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(n_bands, solza, satza, &
          do k = 1, n_quad_phi
             relaz2 = qx_phi(k)
             call brdf_aux_calc(aux_brdf2(j,k), solza2, satza2, relaz2)
-            call ross_thick_li_sparse_r_aux_calc(aux_brdf2(j,k), aux_kernel2(j,k), &
-                                                 p_ross, p_li_r)
+            call ross_thick_li_sparse_r_aux_calc(aux_brdf2(j,k), &
+                                                 aux_kernel2(j,k), p_ross, &
+                                                 p_li_r)
          end do
       end do
 
@@ -717,7 +721,8 @@ subroutine ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(n_bands, solza, satza, &
          do k = 1, n_quad_theta
             a = 0.
             do l = 1, n_quad_phi
-               call ross_thick_li_sparse_r_kernel(aux_brdf2(k,l), aux_kernel2(k,l), &
+               call ross_thick_li_sparse_r_kernel(aux_brdf2(k,l), &
+                                                  aux_kernel2(k,l), &
                                                   p_ross, p_li_r, f(:, j, i), a2)
                a = a + a2 * qw_phi(l)
             end do
@@ -733,7 +738,8 @@ subroutine ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(n_bands, solza, satza, &
 !$OMP END PARALLEL
 
    !----------------------------------------------------------------------------
-   if (verbose) print *, 'ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(): computing rho_dd'
+   if (verbose) print *, &
+        'ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(): computing rho_dd'
    !----------------------------------------------------------------------------
    allocate(aux_brdf3(n_quad_theta, n_quad_theta, n_quad_phi))
    allocate(aux_kernel3(n_quad_theta, n_quad_theta, n_quad_phi))
@@ -745,7 +751,8 @@ subroutine ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(n_bands, solza, satza, &
          do l = 1, n_quad_phi
             relaz2 = qx_phi(l)
             call brdf_aux_calc(aux_brdf3(j,k,l), solza2, satza2, relaz2)
-            call ross_thick_li_sparse_r_aux_calc(aux_brdf3(j,k,l), aux_kernel3(j,k,l), &
+            call ross_thick_li_sparse_r_aux_calc(aux_brdf3(j,k,l), &
+                                                 aux_kernel3(j,k,l), &
                                                  p_ross, p_li_r)
          end do
       end do
@@ -766,8 +773,10 @@ subroutine ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(n_bands, solza, satza, &
             do l = 1, n_quad_theta
                a2 = 0.
                do m = 1, n_quad_phi
-                  call ross_thick_li_sparse_r_kernel(aux_brdf3(k,l,m), aux_kernel3(k,l,m), &
-                                                     p_ross, p_li_r, f(:, j, i), a3)
+                  call ross_thick_li_sparse_r_kernel(aux_brdf3(k,l,m), &
+                                                     aux_kernel3(k,l,m), &
+                                                     p_ross, p_li_r, &
+                                                     f(:, j, i), a3)
                   a2 = a2 + a3 * qw_phi(m)
                end do
                a = a + a2 * qx_cos_sin_qw_theta(l) / pi

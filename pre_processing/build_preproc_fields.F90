@@ -102,7 +102,8 @@ subroutine build_preproc_fields(preproc_dims, preproc_geoloc, preproc_geo, &
 
          do k=1,imager_angles%nviews
             if (imager_angles%satzen(i,j,k) .ne. sreal_fill_value) then
-               preproc_geo%satza(lon_i,lat_j,k)=preproc_geo%satza(lon_i,lat_j,k)+ &
+               preproc_geo%satza(lon_i,lat_j,k) = &
+                    preproc_geo%satza(lon_i,lat_j,k) + &
                     imager_angles%satzen(i,j,k)
 
                ! count the number of L1 pixels which fall in this pixel
@@ -122,8 +123,8 @@ subroutine build_preproc_fields(preproc_dims, preproc_geoloc, preproc_geo, &
                     preproc_geo%solazi(lon_i,lat_j,k)+imager_angles%solazi(i,j,k)
 
                ! count the number of L1b pixels which fall in this pixel
-               preproc_dims%counter_sw(lon_i,lat_j,k)= &
-                    & preproc_dims%counter_sw(lon_i,lat_j,k)+1
+               preproc_dims%counter_sw(lon_i,lat_j,k) = &
+                    preproc_dims%counter_sw(lon_i,lat_j,k)+1
             end if
          end do
       end do

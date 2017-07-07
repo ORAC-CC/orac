@@ -150,7 +150,8 @@ function read_oceancolour_cci(path_to_file, occci, wavelengths, verbose) &
    real(kind=sreal), parameter :: occci_wl(occci_nwl) = &
         (/ 0.412, 0.443, 0.490, 0.510, 0.555, 0.670 /)
    character(len=8), parameter :: occci_atotvar(occci_nwl) = &
-        (/ 'atot_412', 'atot_443', 'atot_490', 'atot_510','atot_555', 'atot_670' /)
+        (/ 'atot_412', 'atot_443', 'atot_490', 'atot_510', &
+           'atot_555', 'atot_670' /)
    character(len=7), parameter :: occci_bbpvar(occci_nwl) = &
         (/ 'bbp_412', 'bbp_443', 'bbp_490', 'bbp_510','bbp_555', 'bbp_670' /)
 
@@ -212,7 +213,8 @@ function read_oceancolour_cci(path_to_file, occci, wavelengths, verbose) &
    ! Rather than reading (and storing) the entire lat/lon arrays, we
    ! assume we are dealing with a regular grid and simply calculate the
    ! grid spacing
-   if (verbose) write(*,*) 'Extracting grid attributes and building lat/lon grid:'
+   if (verbose) &
+        write(*,*) 'Extracting grid attributes and building lat/lon grid:'
    ! Read the grid attributes needed...
    stat = nf90_get_att(fid, NF90_GLOBAL, "geospatial_lon_min", lonmin)
    stat = nf90_get_att(fid, NF90_GLOBAL, 'geospatial_lon_resolution', slonres)
@@ -433,8 +435,10 @@ subroutine get_ocean_colour(cyear, cmonth, occci_path, lat, lon, &
          ocean_colour(i,:)%have_data = .false.
          ocean_colour(i,:)%wl = &
               channel_info%channel_wl_abs(channel_info%map_ids_sw_to_channel(i))
-         ocean_colour(i,:)%totabs = totalabs(channel_info%map_ids_abs_to_ref_band_sea(i))
-         ocean_colour(i,:)%totbsc = totalbsc(channel_info%map_ids_abs_to_ref_band_sea(i))
+         ocean_colour(i,:)%totabs = &
+              totalabs(channel_info%map_ids_abs_to_ref_band_sea(i))
+         ocean_colour(i,:)%totbsc = &
+              totalbsc(channel_info%map_ids_abs_to_ref_band_sea(i))
       end if
    end do
 
@@ -456,8 +460,10 @@ subroutine get_ocean_colour(cyear, cmonth, occci_path, lat, lon, &
       occci_path_full = trim(adjustl(occci_path))//'/'//trim(adjustl(cyear2))
       occci_file_regex = 'ESACCI-OC-L3S-IOP-MERGED-1M_MONTHLY_4km_GEO_..._OC.v._QAA-'// &
            trim(adjustl(cyear2))//trim(adjustl(cmonth))//'-fv.\..\.nc'
-      if (match_file(trim(occci_path_full), trim(occci_file_regex), occci_file) .ne. 0) then
-         write(*,*) 'ERROR: get_ocean_colour(): Unable to locate OceanColour_cci data: ', &
+      if (match_file(trim(occci_path_full), &
+                     trim(occci_file_regex), occci_file) .ne. 0) then
+         write(*,*) 'ERROR: get_ocean_colour(): Unable to locate ', &
+              'OceanColour_cci data: ', &
               trim(occci_path_full)//'/'//trim(occci_file_regex)
          stop error_stop_code
       end if
@@ -469,7 +475,7 @@ subroutine get_ocean_colour(cyear, cmonth, occci_path, lat, lon, &
    ! Check that this file exists and is readable
    inquire(file=trim(occci_path_file), exist=occci_file_exist, &
         read=occci_file_read)
-   if (.not.occci_file_exist) then
+   if (.not. occci_file_exist) then
       write(*,*) "ERROR: get_ocean_colour(): OceanColour_cci data "// &
            "file  doesn't exist: ", trim(occci_path_file)
       stop error_stop_code
@@ -481,7 +487,8 @@ subroutine get_ocean_colour(cyear, cmonth, occci_path, lat, lon, &
    end if
 
    ! Read the data
-   if (read_oceancolour_cci(occci_path_file, occci, wavelengths, verbose) .ne. NF90_NOERR) then
+   if (read_oceancolour_cci(occci_path_file, occci, wavelengths, verbose) .ne. &
+       NF90_NOERR) then
       write(*,*) 'ERROR: read_oceancolour_cci: Problem encountered '// &
            'reading OceanColour_cci file: ',trim(occci_path_file)
       stop error_stop_code

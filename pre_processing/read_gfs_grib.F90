@@ -103,9 +103,10 @@ subroutine read_gfs_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
    olev=1
    glev=1
 
-   ! Initialise some arrays, prevents issues with missing GFS values (only some levels)
-   preproc_prtm%spec_hum(:,:,:)=0.
-   preproc_prtm%ozone(:,:,:)=1e-10
+   ! Initialise some arrays, prevents issues with missing GFS values
+   ! (only some levels)
+   preproc_prtm%spec_hum(:,:,:) = 0.
+   preproc_prtm%ozone(:,:,:) = 1e-10
 
    ! open the GFS file
    call PBOPEN(fu, ecmwf_file, 'r', stat)
@@ -197,7 +198,8 @@ subroutine read_gfs_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
       select case (param)
       case(130)
          ! Temperature
-         if (any(level .eq. gfs_levlist) .and. trim(ltype) .eq. 'isobaricInhPa') then
+         if (any(level .eq. gfs_levlist) .and. &
+             trim(ltype) .eq. 'isobaricInhPa') then
             array => preproc_prtm%temperature( &
                  preproc_dims%min_lon:preproc_dims%max_lon, &
                  preproc_dims%min_lat:preproc_dims%max_lat,tlev)
@@ -207,14 +209,16 @@ subroutine read_gfs_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
             cycle
          end if
       case(157)
-         if (all(level .ne. gfs_levlist) .or. trim(ltype) .ne. 'isobaricInhPa') cycle
+         if (all(level .ne. gfs_levlist) .or. &
+             trim(ltype) .ne. 'isobaricInhPa') cycle
          ! Relative humidity
          array => preproc_prtm%spec_hum( &
               preproc_dims%min_lon:preproc_dims%max_lon, &
               preproc_dims%min_lat:preproc_dims%max_lat,qlev)
          qlev=qlev+1
       case(156)
-         if (all(level .ne. gfs_levlist) .or. trim(ltype) .ne. 'isobaricInhPa') cycle
+         if (all(level .ne. gfs_levlist) .or. &
+             trim(ltype) .ne. 'isobaricInhPa') cycle
          ! Geopotential
          array => preproc_prtm%phi_lev( &
               preproc_dims%min_lon:preproc_dims%max_lon, &
@@ -222,7 +226,8 @@ subroutine read_gfs_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
          glev=glev+1
       case(260131)
          ! Ozone
-         if (all(level .ne. gfs_levlist) .or. trim(ltype) .ne. 'isobaricInhPa') cycle
+         if (all(level .ne. gfs_levlist) .or. &
+             trim(ltype) .ne. 'isobaricInhPa') cycle
          array => preproc_prtm%ozone( &
               preproc_dims%min_lon:preproc_dims%max_lon, &
               preproc_dims%min_lat:preproc_dims%max_lat,olev)
@@ -291,9 +296,10 @@ subroutine read_gfs_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
 
    deallocate(val)
 
-   ! GFS provides humidity as relative humidity (%), we need specific humidity (kg/kg)
-   ! This will convert from one to the other.
-   call conv_rh_q(preproc_prtm%spec_hum,preproc_prtm%temperature,preproc_prtm%pressure,verbose)
+   ! GFS provides humidity as relative humidity (%), we need specific humidity
+   ! (kg/kg). This will convert from one to the other.
+   call conv_rh_q(preproc_prtm%spec_hum, preproc_prtm%temperature, &
+                  preproc_prtm%pressure, verbose)
 
    ! GFS has no snow mask, so use snow depth instead. 0.1m threshold arbitrary
    where(preproc_prtm%snow_depth .gt. 0.1) preproc_prtm%snow_albedo = 0.98

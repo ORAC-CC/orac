@@ -117,10 +117,10 @@
 ! 2017/01/09, CP: Added ML cloud variables and changed phase to handle ML so it
 !    can be recognised in L3.
 ! 2017/01/09, CP: bug fix to ml code which was upsetting aerosol retrieval
-! 2017/06/22, OS: introduced ann phase, which is now the default for phase selection;
-!    to choose Pavolonis for phase selection, set use_ann_phase to false; NOTE:
-!    there is no overlap type when using ann phase, in which case no multilayer
-!    phase flag will be set!
+! 2017/06/22, OS: introduced ann phase, which is now the default for phase
+!    selection; to choose Pavolonis for phase selection, set use_ann_phase to
+!    false; NOTE: there is no overlap type when using ann phase, in which case
+!    no multilayer phase flag will be set!
 !
 ! $Id$
 !
@@ -132,7 +132,8 @@
 #ifndef WRAPPER
 program post_process_level2
 #else
-subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_file)
+subroutine post_process_level2(mytask,ntasks, lower_bound, upper_bound, &
+                               path_and_file)
 #endif
 
     use chunk_utils_m
@@ -316,7 +317,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
     end do
     close(11)
 
-    ! If we're using new bayesian selection then ensure both bayesian flags are true
+    ! If using new bayesian selection then ensure both bayesian flags are true
     if (use_new_bayesian_selection) then
        use_bayesian_selection = .true.
     end if
@@ -402,15 +403,17 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
     end if
 
     ! Allocate the structures which hold the output in its final form
-    call alloc_output_data_primary(indexing%common_indices_t, 100, output_primary)
+    call alloc_output_data_primary(indexing%common_indices_t, 100, &
+         output_primary)
     if (do_secondary) then
-       call alloc_output_data_secondary(indexing%common_indices_t, output_secondary)
+       call alloc_output_data_secondary(indexing%common_indices_t, &
+            output_secondary)
     end if
 
     do i_chunk=1,n_chunks ! Chunking
        if (use_chunks .and. verbose) &
-            write(*,*) 'Processing chunk: ', i_chunk, 'between', chunk_starts(i_chunk), &
-            'and',chunk_ends(i_chunk)
+            write(*,*) 'Processing chunk: ', i_chunk, 'between', &
+                chunk_starts(i_chunk), 'and', chunk_ends(i_chunk)
 
        loop_ind(:)%Y0 = chunk_starts(i_chunk)
        loop_ind(:)%Y1 = chunk_ends(i_chunk)
@@ -461,13 +464,16 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
              if (verbose) write(*,*) '********************************'
              if (verbose) write(*,*) 'read: ', trim(in_files_primary(i))
              call alloc_input_data_primary_class(loop_ind(i), input_primary(i))
-             call read_input_primary_class(in_files_primary(i), input_primary(i), &
-                  loop_ind(i), .False., chunk_starts( i_chunk), use_ml_temp, verbose)
+             call read_input_primary_class(in_files_primary(i), &
+                  input_primary(i), loop_ind(i), .False., &
+                  chunk_starts( i_chunk), use_ml_temp, verbose)
              if (do_secondary) then
                 if (verbose) write(*,*) 'read: ', trim(in_files_secondary(i))
-                call alloc_input_data_secondary_class(loop_ind(i), input_secondary(i))
+                call alloc_input_data_secondary_class(loop_ind(i), &
+                     input_secondary(i))
                 call read_input_secondary_class(in_files_secondary(i), &
-                     input_secondary(i), loop_ind(i), chunk_starts( i_chunk), verbose)
+                     input_secondary(i), loop_ind(i), chunk_starts( i_chunk), &
+                     verbose)
              end if
           end do
        else ! Use traditional selection method
@@ -491,8 +497,9 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
              end if
 
              call alloc_input_data_only_cost(loop_ind(i), input_primary(i))
-             call read_input_primary_class(in_files_primary(i), input_primary(i), &
-                  loop_ind(i), .True.,chunk_starts( i_chunk), use_ml_temp, verbose)
+             call read_input_primary_class(in_files_primary(i), &
+                  input_primary(i), loop_ind(i), .True.,chunk_starts( i_chunk), &
+                  use_ml_temp, verbose)
           end do
 
           ! Find the input file with the lowest cost for each pixel
@@ -526,18 +533,21 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
 
              if (use_ml) then
                 use_ml_temp=.true.
-                call read_input_primary_class(in_files_primary(k), input_primary(3), &
-                     loop_ind(k), .False.,chunk_starts( i_chunk), use_ml_temp,verbose)
+                call read_input_primary_class(in_files_primary(k), &
+                     input_primary(3), loop_ind(k), .False., &
+                     chunk_starts( i_chunk), use_ml_temp, verbose)
              else
                 use_ml_temp=.false.
-                call read_input_primary_class(in_files_primary(k), input_primary(1), &
-                     loop_ind(k), .False.,chunk_starts( i_chunk), use_ml_temp,verbose)
+                call read_input_primary_class(in_files_primary(k), &
+                     input_primary(1), loop_ind(k), .False., &
+                     chunk_starts( i_chunk), use_ml_temp, verbose)
              end if
 
              if (do_secondary) then
                 if (verbose) write(*,*) 'read: ', trim(in_files_secondary(k))
                 call read_input_secondary_class(in_files_secondary(k), &
-                     input_secondary(1), loop_ind(k),chunk_starts( i_chunk),  verbose)
+                     input_secondary(1), loop_ind(k),chunk_starts( i_chunk), &
+                     verbose)
              end if
 
              do j=indexing%Y0,indexing%Y1
@@ -615,7 +625,8 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
                    case(OVERLAP_TYPE)
                       if (use_ml .and. &
                            ! only set if ML cost is less than SL cost
-                           (input_primary(imul)%costjm(i,j) <= input_primary(IIce)%costjm(i,j))) then
+                           (input_primary(imul)%costjm(i,j) <= &
+                            input_primary(IIce)%costjm(i,j))) then
                          phase_flag = 3_byte
                       else
                          phase_flag = 2_byte
@@ -629,10 +640,10 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
                 if (switch_phases) then
                    ! water to ice
                    if ((phase_flag == 1_byte) .and. &
-                        ((input_primary(IWat)%ctt(i,j) /= sreal_fill_value .and. &
-                        input_primary(IWat)%ctt(i,j) < switch_wat_limit) .and. &
+                       ((input_primary(IWat)%ctt(i,j) /= sreal_fill_value .and. &
+                         input_primary(IWat)%ctt(i,j) < switch_wat_limit) .and. &
                         (input_primary(IIce)%ctt(i,j) /= sreal_fill_value .and. &
-                        input_primary(IIce)%ctt(i,j) < switch_ice_limit))) then
+                         input_primary(IIce)%ctt(i,j) < switch_ice_limit))) then
                       phase_flag = 2_byte
                       input_primary(0)%cldtype(i,j,1) = SWITCHED_TO_ICE_TYPE
                    ! ice to water
@@ -697,10 +708,10 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
 
                 if (a_min_cost >= cost_thresh .and. i_min_costjm /= 0 .and. &
                      a_max_prob / sum_prob >= norm_prob_thresh) then
-                   call copy_class_specific_inputs(i, j, loop_ind(i_min_costjm), &
-                        input_primary(0), input_primary(i_min_costjm), &
-                        input_secondary(0), input_secondary(i_min_costjm), &
-                        do_secondary)
+                   call copy_class_specific_inputs(i, j, &
+                        loop_ind(i_min_costjm), input_primary(0), &
+                        input_primary(i_min_costjm), input_secondary(0), &
+                        input_secondary(i_min_costjm), do_secondary)
                    input_primary(0)%phase(i,j) = i_min_costjm
                 end if
              end if
@@ -711,17 +722,20 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
        ! Deallocate all input structures except for the first one
        do i = 1, n_in_files
           call dealloc_input_data_primary_class(input_primary(i))
-          if (do_secondary) call dealloc_input_data_secondary_class(input_secondary(i))
+          if (do_secondary)  &
+               call dealloc_input_data_secondary_class(input_secondary(i))
        end do
 
        ! Put results in final output arrays with final datatypes
 
        do j=indexing%Y0,indexing%Y1
           do i=indexing%X0,indexing%X1
-             call prepare_output_primary_pp( i, j, indexing%common_indices_t, &
-                  input_primary(0), output_primary, output_optical_props_at_night)
-             if (do_secondary) call prepare_output_secondary_pp(i, j, indexing%common_indices_t, &
-                     input_secondary(0), output_secondary)
+             call prepare_output_primary_pp(i, j, indexing%common_indices_t, &
+                  input_primary(0), output_primary, &
+                  output_optical_props_at_night)
+             if (do_secondary) call prepare_output_secondary_pp(i, j,  &
+                  indexing%common_indices_t, input_secondary(0), &
+                  output_secondary)
           end do
        end do
 

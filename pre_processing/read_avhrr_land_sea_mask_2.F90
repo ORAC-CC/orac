@@ -32,8 +32,8 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine read_avhrr_land_sea_mask_2(fid,group,dataset,startx,stopx,starty,stopy, &
-     btemp)
+subroutine read_avhrr_land_sea_mask_2(fid,group,dataset,startx,stopx,&
+     starty,stopy, btemp)
 
    use hdf5
    use preproc_constants_m

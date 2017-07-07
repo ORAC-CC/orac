@@ -56,9 +56,9 @@
 !-------------------------------------------------------------------------------
 
 subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
-   imager_geolocation,imager_measurements,imager_cloud,imager_time, &
-   imager_pavolonis,netcdf_info,channel_info,surface,include_full_brdf, &
-   do_cloud_emis)
+     imager_geolocation,imager_measurements,imager_cloud,imager_time, &
+     imager_pavolonis,netcdf_info,channel_info,surface,include_full_brdf, &
+     do_cloud_emis)
 
    use channel_structures_m
    use imager_structures_m
@@ -93,38 +93,38 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
 
    ! config file
    call nc_write_array( &
-           netcdf_info%ncid_config, &
-           'msi_instr_ch_numbers', &
-           netcdf_info%vid_msi_instr_ch_numbers_config, &
-           channel_info%channel_ids_instr, &
-           1, 1, channel_info%nchannels_total)
+        netcdf_info%ncid_config, &
+        'msi_instr_ch_numbers', &
+        netcdf_info%vid_msi_instr_ch_numbers_config, &
+        channel_info%channel_ids_instr, &
+        1, 1, channel_info%nchannels_total)
 
    call nc_write_array( &
-           netcdf_info%ncid_config, &
-           'msi_abs_ch_wl', &
-           netcdf_info%vid_msi_abs_ch_wl_config, &
-           channel_info%channel_wl_abs, &
-           1, 1, channel_info%nchannels_total)
+        netcdf_info%ncid_config, &
+        'msi_abs_ch_wl', &
+        netcdf_info%vid_msi_abs_ch_wl_config, &
+        channel_info%channel_wl_abs, &
+        1, 1, channel_info%nchannels_total)
    call nc_write_array( &
-           netcdf_info%ncid_config, &
-           'msi_ch_swflag', &
-           netcdf_info%vid_msi_ch_swflag_config, &
-           channel_info%channel_sw_flag, &
-           1, 1, channel_info%nchannels_total)
+        netcdf_info%ncid_config, &
+        'msi_ch_swflag', &
+        netcdf_info%vid_msi_ch_swflag_config, &
+        channel_info%channel_sw_flag, &
+        1, 1, channel_info%nchannels_total)
 
    call nc_write_array( &
-           netcdf_info%ncid_config, &
-           'msi_ch_lwflag', &
-           netcdf_info%vid_msi_ch_lwflag_config, &
-           channel_info%channel_lw_flag, &
-           1, 1, channel_info%nchannels_total)
+        netcdf_info%ncid_config, &
+        'msi_ch_lwflag', &
+        netcdf_info%vid_msi_ch_lwflag_config, &
+        channel_info%channel_lw_flag, &
+        1, 1, channel_info%nchannels_total)
 
    call nc_write_array( &
-           netcdf_info%ncid_config, &
-           'msi_ch_view', &
-           netcdf_info%vid_msi_ch_view_config, &
-           channel_info%channel_view_ids, &
-           1, 1, channel_info%nchannels_total)
+        netcdf_info%ncid_config, &
+        'msi_ch_view', &
+        netcdf_info%vid_msi_ch_view_config, &
+        channel_info%channel_view_ids, &
+        1, 1, channel_info%nchannels_total)
 
    if (channel_info%nchannels_sw .ne. 0) then
       allocate(dummy_chan_vec1d(channel_info%nchannels_sw))
@@ -158,11 +158,11 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
       end do
 
       call nc_write_array( &
-              netcdf_info%ncid_config, &
-              'emis_abs_ch_numbers', &
-              netcdf_info%vid_emis_abs_ch_numbers_config, &
-              dummy_chan_vec1d, &
-              1, 1, channel_info%nchannels_lw)
+           netcdf_info%ncid_config, &
+           'emis_abs_ch_numbers', &
+           netcdf_info%vid_emis_abs_ch_numbers_config, &
+           dummy_chan_vec1d, &
+           1, 1, channel_info%nchannels_lw)
       deallocate(dummy_chan_vec1d)
    end if
 
@@ -201,311 +201,311 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
       end do
 
       call nc_write_array( &
-              netcdf_info%ncid_alb, &
-              'alb_emis_ch_numbers', &
-              netcdf_info%vid_emis_abs_ch_numbers, &
-              dummy_chan_vec1d, &
-              1, 1, channel_info%nchannels_lw)
+           netcdf_info%ncid_alb, &
+           'alb_emis_ch_numbers', &
+           netcdf_info%vid_emis_abs_ch_numbers, &
+           dummy_chan_vec1d, &
+           1, 1, channel_info%nchannels_lw)
       deallocate(dummy_chan_vec1d)
    end if
 
    if (channel_info%nchannels_sw .ne. 0) then
       call nc_write_array( &
+           netcdf_info%ncid_alb, &
+           'alb_data', &
+           netcdf_info%vid_alb_data, &
+           surface%albedo(imager_geolocation%startx:,:,:), &
+           1, 1, n_x, &
+           1, 1, imager_geolocation%ny, &
+           1, 1, channel_info%nchannels_sw)
+
+      if (include_full_brdf) then
+         call nc_write_array( &
               netcdf_info%ncid_alb, &
-              'alb_data', &
-              netcdf_info%vid_alb_data, &
-              surface%albedo(imager_geolocation%startx:,:,:), &
+              'rho_0v', &
+              netcdf_info%vid_rho_0v_data, &
+              surface%rho_0v(imager_geolocation%startx:,:,:), &
               1, 1, n_x, &
               1, 1, imager_geolocation%ny, &
               1, 1, channel_info%nchannels_sw)
 
-      if (include_full_brdf) then
          call nc_write_array( &
-                 netcdf_info%ncid_alb, &
-                 'rho_0v', &
-                 netcdf_info%vid_rho_0v_data, &
-                 surface%rho_0v(imager_geolocation%startx:,:,:), &
-                 1, 1, n_x, &
-                 1, 1, imager_geolocation%ny, &
-                 1, 1, channel_info%nchannels_sw)
+              netcdf_info%ncid_alb, &
+              'rho_0d', &
+              netcdf_info%vid_rho_0d_data, &
+              surface%rho_0d(imager_geolocation%startx:,:,:), &
+              1, 1, n_x, &
+              1, 1, imager_geolocation%ny, &
+              1, 1, channel_info%nchannels_sw)
 
          call nc_write_array( &
-                 netcdf_info%ncid_alb, &
-                 'rho_0d', &
-                 netcdf_info%vid_rho_0d_data, &
-                 surface%rho_0d(imager_geolocation%startx:,:,:), &
-                 1, 1, n_x, &
-                 1, 1, imager_geolocation%ny, &
-                 1, 1, channel_info%nchannels_sw)
+              netcdf_info%ncid_alb, &
+              'rho_dv', &
+              netcdf_info%vid_rho_dv_data, &
+              surface%rho_dv(imager_geolocation%startx:,:,:), &
+              1, 1, n_x, &
+              1, 1, imager_geolocation%ny, &
+              1, 1, channel_info%nchannels_sw)
 
          call nc_write_array( &
-                 netcdf_info%ncid_alb, &
-                 'rho_dv', &
-                 netcdf_info%vid_rho_dv_data, &
-                 surface%rho_dv(imager_geolocation%startx:,:,:), &
-                 1, 1, n_x, &
-                 1, 1, imager_geolocation%ny, &
-                 1, 1, channel_info%nchannels_sw)
-
-         call nc_write_array( &
-                 netcdf_info%ncid_alb, &
-                 'rho_dd', &
-                 netcdf_info%vid_rho_dd_data, &
-                 surface%rho_dd(imager_geolocation%startx:,:,:), &
-                 1, 1, n_x, &
-                 1, 1, imager_geolocation%ny, &
-                 1, 1, channel_info%nchannels_sw)
+              netcdf_info%ncid_alb, &
+              'rho_dd', &
+              netcdf_info%vid_rho_dd_data, &
+              surface%rho_dd(imager_geolocation%startx:,:,:), &
+              1, 1, n_x, &
+              1, 1, imager_geolocation%ny, &
+              1, 1, channel_info%nchannels_sw)
       end if
    end if
 
    if (channel_info%nchannels_lw .ne. 0) then
       call nc_write_array( &
-              netcdf_info%ncid_alb, &
-              'emis_data', &
-              netcdf_info%vid_emis_data, &
-              surface%emissivity(imager_geolocation%startx:,:,:), &
-              1, 1, n_x, &
-              1, 1, imager_geolocation%ny, &
-              1, 1, channel_info%nchannels_lw)
+           netcdf_info%ncid_alb, &
+           'emis_data', &
+           netcdf_info%vid_emis_data, &
+           surface%emissivity(imager_geolocation%startx:,:,:), &
+           1, 1, n_x, &
+           1, 1, imager_geolocation%ny, &
+           1, 1, channel_info%nchannels_lw)
    end if
 
 
    ! clf file (cflag, cldtype, cldmask, cldmask_uncertainty, cccot_pre)
 
    call nc_write_array( &
-           netcdf_info%ncid_clf, &
-           'cflag', &
-           netcdf_info%vid_cflag, &
-           imager_flags%cflag(imager_geolocation%startx:,:,:), &
-           1, 1, n_x, &
-           1, 1, imager_geolocation%ny, &
-           1, 1, channel_info%nviews)
+        netcdf_info%ncid_clf, &
+        'cflag', &
+        netcdf_info%vid_cflag, &
+        imager_flags%cflag(imager_geolocation%startx:,:,:), &
+        1, 1, n_x, &
+        1, 1, imager_geolocation%ny, &
+        1, 1, channel_info%nviews)
 
    if (do_cloud_emis) then
       call nc_write_array( &
-              netcdf_info%ncid_clf, &
-              'cldemis', netcdf_info%vid_cemis, &
-              imager_cloud%cloud_emis(imager_geolocation%startx:,:), &
-              1, 1, n_x, &
-              1, 1, imager_geolocation%ny)
+           netcdf_info%ncid_clf, &
+           'cldemis', netcdf_info%vid_cemis, &
+           imager_cloud%cloud_emis(imager_geolocation%startx:,:), &
+           1, 1, n_x, &
+           1, 1, imager_geolocation%ny)
    end if
 
    call nc_write_array( &
-           netcdf_info%ncid_clf, &
-           'cldtype', &
-           netcdf_info%vid_cldtype, &
-           imager_pavolonis%cldtype(imager_geolocation%startx:,:,:), &
-           1, 1, n_x, &
-           1, 1, imager_geolocation%ny, &
-           1, 1, channel_info%nviews)
+        netcdf_info%ncid_clf, &
+        'cldtype', &
+        netcdf_info%vid_cldtype, &
+        imager_pavolonis%cldtype(imager_geolocation%startx:,:,:), &
+        1, 1, n_x, &
+        1, 1, imager_geolocation%ny, &
+        1, 1, channel_info%nviews)
 
    call nc_write_array( &
-           netcdf_info%ncid_clf, &
-           'cldmask', &
-           netcdf_info%vid_cldmask, &
-           imager_pavolonis%cldmask(imager_geolocation%startx:,:,:), &
-           1, 1, n_x, &
-           1, 1, imager_geolocation%ny, &
-           1, 1, channel_info%nviews)
+        netcdf_info%ncid_clf, &
+        'cldmask', &
+        netcdf_info%vid_cldmask, &
+        imager_pavolonis%cldmask(imager_geolocation%startx:,:,:), &
+        1, 1, n_x, &
+        1, 1, imager_geolocation%ny, &
+        1, 1, channel_info%nviews)
 
    call nc_write_array( &
-           netcdf_info%ncid_clf, &
-           'cldmask_uncertainty', &
-           netcdf_info%vid_cldmask_unc, &
-           imager_pavolonis%cldmask_uncertainty(imager_geolocation%startx:,:,:), &
-           1, 1, n_x, &
-           1, 1, imager_geolocation%ny, &
-           1, 1, channel_info%nviews)
+        netcdf_info%ncid_clf, &
+        'cldmask_uncertainty', &
+        netcdf_info%vid_cldmask_unc, &
+        imager_pavolonis%cldmask_uncertainty(imager_geolocation%startx:,:,:), &
+        1, 1, n_x, &
+        1, 1, imager_geolocation%ny, &
+        1, 1, channel_info%nviews)
 
    call nc_write_array( &
-           netcdf_info%ncid_clf, &
-           'cccot_pre', &
-           netcdf_info%vid_cccot_pre, &
-           imager_pavolonis%cccot_pre(imager_geolocation%startx:,:,:), &
-           1, 1, n_x, &
-           1, 1, imager_geolocation%ny, &
-           1, 1, channel_info%nviews)
-
-    call nc_write_array( &
-           netcdf_info%ncid_clf, &
-           'ann_phase', &
-           netcdf_info%vid_ann_phase, &
-           imager_pavolonis%ann_phase(imager_geolocation%startx:,:,:), &
-           1, 1, n_x, &
-           1, 1, imager_geolocation%ny, &
-           1, 1, channel_info%nviews)
+        netcdf_info%ncid_clf, &
+        'cccot_pre', &
+        netcdf_info%vid_cccot_pre, &
+        imager_pavolonis%cccot_pre(imager_geolocation%startx:,:,:), &
+        1, 1, n_x, &
+        1, 1, imager_geolocation%ny, &
+        1, 1, channel_info%nviews)
 
    call nc_write_array( &
-           netcdf_info%ncid_clf, &
-           'ann_phase_uncertainty', &
-           netcdf_info%vid_ann_phase_unc, &
-           imager_pavolonis%ann_phase_uncertainty(imager_geolocation%startx:,:,:), &
-           1, 1, n_x, &
-           1, 1, imager_geolocation%ny, &
-           1, 1, channel_info%nviews)
+        netcdf_info%ncid_clf, &
+        'ann_phase', &
+        netcdf_info%vid_ann_phase, &
+        imager_pavolonis%ann_phase(imager_geolocation%startx:,:,:), &
+        1, 1, n_x, &
+        1, 1, imager_geolocation%ny, &
+        1, 1, channel_info%nviews)
 
    call nc_write_array( &
-           netcdf_info%ncid_clf, &
-           'cphcot', &
-           netcdf_info%vid_cphcot, &
-           imager_pavolonis%cphcot(imager_geolocation%startx:,:,:), &
-           1, 1, n_x, &
-           1, 1, imager_geolocation%ny, &
-           1, 1, channel_info%nviews)
-
-  ! geo file (solzen, satzen, solaz, relazi)
+        netcdf_info%ncid_clf, &
+        'ann_phase_uncertainty', &
+        netcdf_info%vid_ann_phase_unc, &
+        imager_pavolonis%ann_phase_uncertainty(imager_geolocation%startx:,:,:), &
+        1, 1, n_x, &
+        1, 1, imager_geolocation%ny, &
+        1, 1, channel_info%nviews)
 
    call nc_write_array( &
-           netcdf_info%ncid_geo, &
-           'solzen', &
-           netcdf_info%vid_solzen, &
-           imager_angles%solzen(imager_geolocation%startx:,:,:), &
-           1, 1, n_x, &
-           1, 1, imager_geolocation%ny, &
-           1, 1, channel_info%nviews)
+        netcdf_info%ncid_clf, &
+        'cphcot', &
+        netcdf_info%vid_cphcot, &
+        imager_pavolonis%cphcot(imager_geolocation%startx:,:,:), &
+        1, 1, n_x, &
+        1, 1, imager_geolocation%ny, &
+        1, 1, channel_info%nviews)
+
+   ! geo file (solzen, satzen, solaz, relazi)
 
    call nc_write_array( &
-           netcdf_info%ncid_geo, &
-           'satzen', &
-           netcdf_info%vid_satzen, &
-           imager_angles%satzen(imager_geolocation%startx:,:,:), &
-           1, 1, n_x, &
-           1, 1, imager_geolocation%ny, &
-           1, 1, channel_info%nviews)
+        netcdf_info%ncid_geo, &
+        'solzen', &
+        netcdf_info%vid_solzen, &
+        imager_angles%solzen(imager_geolocation%startx:,:,:), &
+        1, 1, n_x, &
+        1, 1, imager_geolocation%ny, &
+        1, 1, channel_info%nviews)
 
    call nc_write_array( &
-           netcdf_info%ncid_geo, &
-           'solaz', &
-           netcdf_info%vid_solaz, &
-           imager_angles%solazi(imager_geolocation%startx:,:,:), &
-           1, 1, n_x, &
-           1, 1, imager_geolocation%ny, &
-           1, 1, channel_info%nviews)
+        netcdf_info%ncid_geo, &
+        'satzen', &
+        netcdf_info%vid_satzen, &
+        imager_angles%satzen(imager_geolocation%startx:,:,:), &
+        1, 1, n_x, &
+        1, 1, imager_geolocation%ny, &
+        1, 1, channel_info%nviews)
 
    call nc_write_array( &
-           netcdf_info%ncid_geo, &
-           'relazi', &
-           netcdf_info%vid_relazi, &
-           imager_angles%relazi(imager_geolocation%startx:,:,:), &
-           1, 1, n_x, &
-           1, 1, imager_geolocation%ny, &
-           1, 1, channel_info%nviews)
+        netcdf_info%ncid_geo, &
+        'solaz', &
+        netcdf_info%vid_solaz, &
+        imager_angles%solazi(imager_geolocation%startx:,:,:), &
+        1, 1, n_x, &
+        1, 1, imager_geolocation%ny, &
+        1, 1, channel_info%nviews)
+
+   call nc_write_array( &
+        netcdf_info%ncid_geo, &
+        'relazi', &
+        netcdf_info%vid_relazi, &
+        imager_angles%relazi(imager_geolocation%startx:,:,:), &
+        1, 1, n_x, &
+        1, 1, imager_geolocation%ny, &
+        1, 1, channel_info%nviews)
 
 
    ! loc file (lat, lon)
 
    call nc_write_array( &
-           netcdf_info%ncid_loc, &
-           'lat', netcdf_info%vid_lat, &
-           imager_geolocation%latitude(imager_geolocation%startx:,:), &
-           1, 1, n_x, &
-           1, 1, imager_geolocation%ny)
+        netcdf_info%ncid_loc, &
+        'lat', netcdf_info%vid_lat, &
+        imager_geolocation%latitude(imager_geolocation%startx:,:), &
+        1, 1, n_x, &
+        1, 1, imager_geolocation%ny)
 
    call nc_write_array( &
-           netcdf_info%ncid_loc, &
-           'lon', &
-           netcdf_info%vid_lon, &
-           imager_geolocation%longitude(imager_geolocation%startx:,:), &
-           1, 1, n_x, &
-           1, 1, imager_geolocation%ny)
+        netcdf_info%ncid_loc, &
+        'lon', &
+        netcdf_info%vid_lon, &
+        imager_geolocation%longitude(imager_geolocation%startx:,:), &
+        1, 1, n_x, &
+        1, 1, imager_geolocation%ny)
 
 
    ! lsf file (lsflag)
 
    call nc_write_array( &
-           netcdf_info%ncid_lsf, &
-           'lsflag', &
-           netcdf_info%vid_lsflag, &
-           imager_flags%lsflag(imager_geolocation%startx:,:), &
-           1, 1, n_x, &
-           1, 1, imager_geolocation%ny)
+        netcdf_info%ncid_lsf, &
+        'lsflag', &
+        netcdf_info%vid_lsflag, &
+        imager_flags%lsflag(imager_geolocation%startx:,:), &
+        1, 1, n_x, &
+        1, 1, imager_geolocation%ny)
 
    call nc_write_array( &
-           netcdf_info%ncid_lsf, &
-           'lusflag', &
-           netcdf_info%vid_lusflag, &
-           imager_flags%lusflag(imager_geolocation%startx:,:), &
-           1, 1, n_x, &
-           1, 1, imager_geolocation%ny)
+        netcdf_info%ncid_lsf, &
+        'lusflag', &
+        netcdf_info%vid_lusflag, &
+        imager_flags%lusflag(imager_geolocation%startx:,:), &
+        1, 1, n_x, &
+        1, 1, imager_geolocation%ny)
 
    call nc_write_array( &
-           netcdf_info%ncid_lsf, &
-           'dem', &
-           netcdf_info%vid_dem, &
-           imager_geolocation%dem(imager_geolocation%startx:,:), &
-           1, 1, n_x, &
-           1, 1, imager_geolocation%ny)
+        netcdf_info%ncid_lsf, &
+        'dem', &
+        netcdf_info%vid_dem, &
+        imager_geolocation%dem(imager_geolocation%startx:,:), &
+        1, 1, n_x, &
+        1, 1, imager_geolocation%ny)
 
    call nc_write_array( &
-           netcdf_info%ncid_lsf, &
-           'nisemask', &
-           netcdf_info%vid_nisemask, &
-           surface%nise_mask(imager_geolocation%startx:,:), &
-           1, 1, n_x, &
-           1, 1, imager_geolocation%ny)
+        netcdf_info%ncid_lsf, &
+        'nisemask', &
+        netcdf_info%vid_nisemask, &
+        surface%nise_mask(imager_geolocation%startx:,:), &
+        1, 1, n_x, &
+        1, 1, imager_geolocation%ny)
 
    ! msi file (indexes, time, measurements)
 
    call nc_write_array( &
-           netcdf_info%ncid_msi, &
-           'msi_instr_ch_numbers', &
-           netcdf_info%vid_msi_instr_ch_numbers, &
-           channel_info%channel_ids_instr, &
-           1, 1, channel_info%nchannels_total)
+        netcdf_info%ncid_msi, &
+        'msi_instr_ch_numbers', &
+        netcdf_info%vid_msi_instr_ch_numbers, &
+        channel_info%channel_ids_instr, &
+        1, 1, channel_info%nchannels_total)
 
    call nc_write_array( &
-           netcdf_info%ncid_msi, &
-           'msi_abs_ch_wl', &
-           netcdf_info%vid_msi_abs_ch_wl, &
-           channel_info%channel_wl_abs, &
-           1, 1, channel_info%nchannels_total)
+        netcdf_info%ncid_msi, &
+        'msi_abs_ch_wl', &
+        netcdf_info%vid_msi_abs_ch_wl, &
+        channel_info%channel_wl_abs, &
+        1, 1, channel_info%nchannels_total)
 
    call nc_write_array( &
-           netcdf_info%ncid_msi, &
-           'msi_ch_swflag', &
-           netcdf_info%vid_msi_ch_swflag, &
-           channel_info%channel_sw_flag, &
-           1, 1, channel_info%nchannels_total)
+        netcdf_info%ncid_msi, &
+        'msi_ch_swflag', &
+        netcdf_info%vid_msi_ch_swflag, &
+        channel_info%channel_sw_flag, &
+        1, 1, channel_info%nchannels_total)
 
    call nc_write_array( &
-           netcdf_info%ncid_msi, &
-           'msi_ch_lwflag', &
-           netcdf_info%vid_msi_ch_lwflag, &
-           channel_info%channel_lw_flag, &
-           1, 1, channel_info%nchannels_total)
+        netcdf_info%ncid_msi, &
+        'msi_ch_lwflag', &
+        netcdf_info%vid_msi_ch_lwflag, &
+        channel_info%channel_lw_flag, &
+        1, 1, channel_info%nchannels_total)
 
    call nc_write_array( &
-           netcdf_info%ncid_msi, &
-           'msi_ch_view', &
-           netcdf_info%vid_msi_ch_view, &
-           channel_info%channel_view_ids, &
-           1, 1, channel_info%nchannels_total)
+        netcdf_info%ncid_msi, &
+        'msi_ch_view', &
+        netcdf_info%vid_msi_ch_view, &
+        channel_info%channel_view_ids, &
+        1, 1, channel_info%nchannels_total)
 
    call nc_write_array( &
-           netcdf_info%ncid_msi, &
-           'time', &
-           netcdf_info%vid_time, &
-           imager_time%time(imager_geolocation%startx:,:), &
-           1, 1, n_x, &
-           1, 1, imager_geolocation%ny)
+        netcdf_info%ncid_msi, &
+        'time', &
+        netcdf_info%vid_time, &
+        imager_time%time(imager_geolocation%startx:,:), &
+        1, 1, n_x, &
+        1, 1, imager_geolocation%ny)
 
    call nc_write_array( &
-           netcdf_info%ncid_msi, &
-           'msi_data', &
-           netcdf_info%vid_msi_data, &
-           imager_measurements%data(imager_geolocation%startx:,:,:), &
-           1, 1, n_x, &
-           1, 1, imager_geolocation%ny, &
-           1, 1, channel_info%nchannels_total)
+        netcdf_info%ncid_msi, &
+        'msi_data', &
+        netcdf_info%vid_msi_data, &
+        imager_measurements%data(imager_geolocation%startx:,:,:), &
+        1, 1, n_x, &
+        1, 1, imager_geolocation%ny, &
+        1, 1, channel_info%nchannels_total)
 
    call nc_write_array( &
-           netcdf_info%ncid_msi, &
-           'sd_data', &
-           netcdf_info%vid_sd_data, &
-           imager_measurements%uncertainty(imager_geolocation%startx:,:,:), &
-           1, 1, n_x, &
-           1, 1, imager_geolocation%ny, &
-           1, 1, channel_info%nchannels_total)
+        netcdf_info%ncid_msi, &
+        'sd_data', &
+        netcdf_info%vid_sd_data, &
+        imager_measurements%uncertainty(imager_geolocation%startx:,:,:), &
+        1, 1, n_x, &
+        1, 1, imager_geolocation%ny, &
+        1, 1, channel_info%nchannels_total)
 
 
 end subroutine netcdf_output_write_swath

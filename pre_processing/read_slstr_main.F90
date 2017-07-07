@@ -100,7 +100,7 @@ end subroutine read_slstr_dimensions
 ! channel_info        struct  both Members within are populated
 ! verbose             logical in   If true then print verbose information.
 !-------------------------------------------------------------------------------
-subroutine read_slstr(infile,imager_geolocation, imager_measurements, &
+subroutine read_slstr(infile, imager_geolocation, imager_measurements, &
    imager_angles, imager_time, channel_info, verbose)
 
    use iso_c_binding
@@ -204,11 +204,13 @@ subroutine read_slstr(infile,imager_geolocation, imager_measurements, &
       call read_slstr_lldata(indir,oblats,obnx,obny,.true.,'io')
       call read_slstr_lldata(indir,oblons,obnx,obny,.false.,'io')
       ! Get alignment factor between oblique and nadir views
-      call slstr_get_alignment(nx,ny,obnx,obny,imager_geolocation%longitude,oblons,obl_off)
+      call slstr_get_alignment(nx,ny,obnx,obny,imager_geolocation%longitude, &
+           oblons,obl_off)
    end if
 
    ! Get interpolation factors between reduced and TIR grid for each pixel
-   call slstr_get_interp(imager_geolocation%longitude,txlons,txnx,txnx,nx,ny,interp)
+   call slstr_get_interp(imager_geolocation%longitude,txlons,txnx,txnx,nx,ny, &
+        interp)
 
    deallocate(txlats)
    deallocate(txlons)
@@ -228,27 +230,33 @@ subroutine read_slstr(infile,imager_geolocation, imager_measurements, &
    do i=1,n_bands
       if (verbose) write(*,*)'Reading SLSTR data for band',band_ids(i)
       if (band_ids(i) .lt. 7) then
-         call read_slstr_visdata(indir,band_ids(i),imager_measurements%data(:,:,i),&
-            imager_angles,startx,starty,nx,ny,nx,ny,0,1)
+         call read_slstr_visdata(indir,band_ids(i), &
+              imager_measurements%data(:,:,i),imager_angles,startx,starty, &
+              nx,ny,nx,ny,0,1)
       else if (band_ids(i) .le. 9) then
-         call read_slstr_tirdata(indir,band_ids(i),imager_measurements%data(:,:,i),&
-            startx,starty,nx,ny,nx,ny,1,1)
+         call read_slstr_tirdata(indir,band_ids(i), &
+              imager_measurements%data(:,:,i), &
+              startx,starty,nx,ny,nx,ny,1,1)
          if (band_ids(i) .eq. 7) then
             allocate(tmpdata(nx,ny))
-            call read_slstr_tirdata(indir,20,tmpdata,startx,starty,nx,ny,nx,ny,1,1)
+            call read_slstr_tirdata(indir,20,tmpdata, &
+                 startx,starty,nx,ny,nx,ny,1,1)
             where(imager_measurements%data(:,:,i) .eq. sreal_fill_value) &
                imager_measurements%data(:,:,i) = tmpdata(:,:)
             deallocate(tmpdata)
          endif
       else if (band_ids(i) .lt. 16) then
-         call read_slstr_visdata(indir,band_ids(i),imager_measurements%data(:,:,i),&
-            imager_angles,startx,starty,obnx,obny,nx,ny,obl_off-1,2)
+         call read_slstr_visdata(indir,band_ids(i), &
+              imager_measurements%data(:,:,i), &
+              imager_angles,startx,starty,obnx,obny,nx,ny,obl_off-1,2)
       else if (band_ids(i) .le. 18) then
-         call read_slstr_tirdata(indir,band_ids(i),imager_measurements%data(:,:,i),&
-            startx,starty,obnx,obny,nx,ny,obl_off,2)
+         call read_slstr_tirdata(indir,band_ids(i), &
+              imager_measurements%data(:,:,i), &
+              startx,starty,obnx,obny,nx,ny,obl_off,2)
          if (band_ids(i) .eq. 16) then
             allocate(tmpdata(nx,ny))
-            call read_slstr_tirdata(indir,21,tmpdata,startx,starty,obnx,obny,nx,ny,obl_off,2)
+            call read_slstr_tirdata(indir,21,tmpdata, &
+                 startx,starty,obnx,obny,nx,ny,obl_off,2)
             where(imager_measurements%data(:,:,i) .eq. sreal_fill_value) &
                imager_measurements%data(:,:,i) = tmpdata(:,:)
             deallocate(tmpdata)

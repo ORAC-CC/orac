@@ -87,7 +87,8 @@ subroutine read_modis_l1b_radiances_2(fid, band, Cal_type_is_refl, &
    integer(kind=lint)         :: start(3), stride(3), edge(3)
    integer(kind=sint)         :: temp(ixstart:ixstop,iystart:iystop)
 
-   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_modis_l1b_radiances_2()'
+   if (verbose) &
+        write(*,*) '<<<<<<<<<<<<<<< Entering read_modis_l1b_radiances_2()'
 
    if (verbose) write(*,*) 'band: ',             band
    if (verbose) write(*,*) 'Cal_type_is_refl: ', Cal_type_is_refl
@@ -161,7 +162,8 @@ subroutine read_modis_l1b_radiances_2(fid, band, Cal_type_is_refl, &
       if (i_band .eq. number_of_bands) then
          read(band_names(i_comma_old:band_names_length), '(i2)') current_band
       else
-         i_comma=index(band_names(i_comma_old:band_names_length),',') + i_comma_old - 1
+         i_comma = index(band_names(i_comma_old:band_names_length),',') + &
+              i_comma_old - 1
 
          if (i_comma - i_comma_old .eq. 1) then
             read(band_names(i_comma_old:i_comma-1), '(i1)') current_band

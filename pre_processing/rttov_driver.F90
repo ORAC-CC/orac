@@ -153,9 +153,9 @@ implicit none
 
 contains
 
-subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
-     preproc_geoloc,preproc_geo,preproc_prtm,preproc_surf,netcdf_info, &
-     channel_info,year,month,day,use_modis_emis,verbose)
+subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
+     preproc_geoloc, preproc_geo, preproc_prtm, preproc_surf, netcdf_info, &
+     channel_info, year, month, day, use_modis_emis, verbose)
 
    use channel_structures_m
    use netcdf_output_m
@@ -182,7 +182,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
        rttov_radiance2,    &
        rttov_traj
 
-  use mod_rttov_emis_atlas, only : &
+   use mod_rttov_emis_atlas, only : &
         rttov_emis_atlas_data, &
         atlas_type_ir, atlas_type_mw
 
@@ -518,7 +518,8 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
          if (preproc_prtm%snow_depth(idim,jdim) > 0.05) then
             profiles(count)%skin%snow_fraction = 1.
          elseif (preproc_prtm%snow_depth(idim,jdim) > 0.00) then
-            profiles(count)%skin%snow_fraction = preproc_prtm%snow_depth(idim,jdim)/0.05
+            profiles(count)%skin%snow_fraction = &
+                 preproc_prtm%snow_depth(idim,jdim) / 0.05
          else
             profiles(count)%skin%snow_fraction=0.
          end if
@@ -678,8 +679,8 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 
          if (verbose) write(*,*) 'Fetch emissivity atlas'
          imonth=month
-         call rttov_setup_emis_atlas(stat, opts, imonth, atlas_type_ir, emis_atlas, &
-              coefs=coefs, path=emiss_path)
+         call rttov_setup_emis_atlas(stat, opts, imonth, atlas_type_ir, &
+              emis_atlas, coefs=coefs, path=emiss_path)
          if (stat /= errorstatus_success) then
             write(*,*) 'ERROR: rttov_setup_emis_atlas(), errorstatus = ', stat
             stop error_stop_code

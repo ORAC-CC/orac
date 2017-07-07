@@ -264,7 +264,8 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
    !----------------------------------------------------------------------------
    if (nland .gt. 0) then
       if (verbose) write(*,*) &
-         'get_surface_reflectance(): Beginning LAND SURFACE REFLECTANCE calculation'
+         'get_surface_reflectance(): Beginning LAND SURFACE REFLECTANCE ', &
+         'calculation'
 
       ! Allocate and populate the local arrays required for land pixels
       allocate(wsalnd(channel_info%nchannels_sw,nland))
@@ -447,7 +448,8 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
                call fill_grid(tmp_data, sreal_fill_value, fg_mask)
 
                do lndcount = 1, nland
-                  call interp_field(tmp_data, wgtlnd(j,i,lndcount), interp(lndcount))
+                  call interp_field(tmp_data, wgtlnd(j,i,lndcount), &
+                       interp(lndcount))
                end do
             end do
          end if
@@ -526,7 +528,8 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
    !----------------------------------------------------------------------------
    if (nsea .gt. 0) then
       if (verbose) write(*,*) &
-         'get_surface_reflectance(): Beginning SEA SURFACE REFLECTANCE calculation'
+         'get_surface_reflectance(): Beginning SEA SURFACE REFLECTANCE ', &
+         'calculation'
 
       ! Allocate and populate the local arrays required for sea pixels
       allocate(solza(nsea))
@@ -683,7 +686,9 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
             do i = 1, n_bands
                ii = band_to_sw_index(i)
                write(*,*) 'Sea refl: sw_index, wvl, min, max = ', ii, &
-                    channel_info%channel_wl_abs(channel_info%map_ids_sw_to_channel(ii)), &
+                    channel_info%channel_wl_abs( &
+                        channel_info%map_ids_sw_to_channel(ii) &
+                    ), &
                     minval(refsea(ii,:)), maxval(refsea(ii,:))
             end do
          end if

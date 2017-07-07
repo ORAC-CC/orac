@@ -54,33 +54,38 @@ subroutine allocate_surface_structures(surface,imager_geolocation,channel_info, 
    surface%nise_mask=byte_fill_value
 
    if (channel_info%nchannels_sw .ne. 0) then
-      allocate(surface%albedo(imager_geolocation%startx:imager_geolocation%endx, &
-               1:imager_geolocation%ny,channel_info%nchannels_sw))
+      allocate(surface%albedo( &
+           imager_geolocation%startx:imager_geolocation%endx, &
+           1:imager_geolocation%ny,channel_info%nchannels_sw))
       surface%albedo=sreal_fill_value
 
       if (include_full_brdf) then
-         allocate(surface%rho_0v(imager_geolocation%startx:imager_geolocation%endx,&
-                  1:imager_geolocation%ny,channel_info%nchannels_sw))
+         allocate(surface%rho_0v( &
+           imager_geolocation%startx:imager_geolocation%endx,&
+           1:imager_geolocation%ny,channel_info%nchannels_sw))
          surface%rho_0v=sreal_fill_value
 
-         allocate(surface%rho_0d(imager_geolocation%startx:imager_geolocation%endx,&
-                  1:imager_geolocation%ny,channel_info%nchannels_sw))
+         allocate(surface%rho_0d( &
+           imager_geolocation%startx:imager_geolocation%endx,&
+           1:imager_geolocation%ny,channel_info%nchannels_sw))
          surface%rho_0d=sreal_fill_value
 
-         allocate(surface%rho_dv(imager_geolocation%startx:imager_geolocation%endx,&
-                  1:imager_geolocation%ny,channel_info%nchannels_sw))
+         allocate(surface%rho_dv( &
+           imager_geolocation%startx:imager_geolocation%endx,&
+           1:imager_geolocation%ny,channel_info%nchannels_sw))
          surface%rho_dv=sreal_fill_value
 
-         allocate(surface%rho_dd(imager_geolocation%startx:imager_geolocation%endx,&
-                  1:imager_geolocation%ny,channel_info%nchannels_sw))
+         allocate(surface%rho_dd( &
+           imager_geolocation%startx:imager_geolocation%endx,&
+           1:imager_geolocation%ny,channel_info%nchannels_sw))
          surface%rho_dd=sreal_fill_value
       end if
    end if
 
    if (channel_info%nchannels_lw .ne. 0) then
       allocate(surface%emissivity( &
-               imager_geolocation%startx:imager_geolocation%endx, &
-               1:imager_geolocation%ny,channel_info%nchannels_lw))
+           imager_geolocation%startx:imager_geolocation%endx, &
+           1:imager_geolocation%ny,channel_info%nchannels_lw))
       surface%emissivity=sreal_fill_value
    end if
 

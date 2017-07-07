@@ -161,8 +161,9 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
 
       ! create file
       if (nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
-          netcdf_info%ncid_lwrtm) .ne. NF90_NOERR) then
-         write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), filename: ', path
+                      netcdf_info%ncid_lwrtm) .ne. NF90_NOERR) then
+         write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), filename: ', &
+              path
          stop error_stop_code
       end if
 
@@ -170,31 +171,32 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
       if (channel_info%nchannels_lw .ne. 0) then
          ! define dimensions
          if (nf90_def_dim(netcdf_info%ncid_lwrtm, 'nlat_rtm', &
-             nlat, netcdf_info%dimid_y_lw) .ne. NF90_NOERR) then
-            write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
-               & 'name: nlat_rtm'
+                          nlat, netcdf_info%dimid_y_lw) .ne. NF90_NOERR) then
+            write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), '// &
+                 & 'dimension name: nlat_rtm'
             stop error_stop_code
          end if
 
          if (nf90_def_dim(netcdf_info%ncid_lwrtm, 'nlon_rtm', &
-             nlon, netcdf_info%dimid_x_lw) .ne. NF90_NOERR) then
-            write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
-               & 'name: nlon_rtm'
+                          nlon, netcdf_info%dimid_x_lw) .ne. NF90_NOERR) then
+            write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), '// &
+                 & 'dimension name: nlon_rtm'
             stop error_stop_code
          end if
 
-         if (nf90_def_dim(netcdf_info%ncid_lwrtm, 'nlevels_rtm', &
-             kdim, netcdf_info%dimid_levels_lw) .ne. NF90_NOERR) then
-            write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
-               & 'name: nlevels_rtm'
+         if (nf90_def_dim(netcdf_info%ncid_lwrtm, 'nlevels_rtm', kdim, &
+                          netcdf_info%dimid_levels_lw) .ne. NF90_NOERR) then
+            write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), '// &
+                 & 'dimension name: nlevels_rtm'
             stop error_stop_code
          end if
 
          if (nf90_def_dim(netcdf_info%ncid_lwrtm, 'nlw_channels', &
-             channel_info%nchannels_lw, netcdf_info%dimid_lw_channels) &
-            .ne. NF90_NOERR) then
-            write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
-               & 'name: nlw_channels'
+                          channel_info%nchannels_lw, &
+                          netcdf_info%dimid_lw_channels) &
+              .ne. NF90_NOERR) then
+            write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), '// &
+                 & 'dimension name: nlw_channels'
             stop error_stop_code
          end if
 
@@ -203,28 +205,28 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
          dimids_1d(1) = netcdf_info%dimid_lw_channels
 
          call nc_def_var_long_packed_long( &
-                 netcdf_info%ncid_lwrtm, &
-                 dimids_1d, &
-                 'lw_channel_abs_ids', &
-                 netcdf_info%vid_lw_channel_abs_ids, &
-                 verbose, &
-                 fill_value = lint_fill_value)
+              netcdf_info%ncid_lwrtm, &
+              dimids_1d, &
+              'lw_channel_abs_ids', &
+              netcdf_info%vid_lw_channel_abs_ids, &
+              verbose, &
+              fill_value = lint_fill_value)
 
          call nc_def_var_long_packed_long( &
-                 netcdf_info%ncid_lwrtm, &
-                 dimids_1d, &
-                 'lw_channel_instr_ids', &
-                 netcdf_info%vid_lw_channel_instr_ids, &
-                 verbose, &
-                 fill_value = lint_fill_value)
+              netcdf_info%ncid_lwrtm, &
+              dimids_1d, &
+              'lw_channel_instr_ids', &
+              netcdf_info%vid_lw_channel_instr_ids, &
+              verbose, &
+              fill_value = lint_fill_value)
 
          call nc_def_var_float_packed_float( &
-                 netcdf_info%ncid_lwrtm, &
-                 dimids_1d, &
-                 'lw_channel_wvl', &
-                 netcdf_info%vid_lw_channel_wvl, &
-                 verbose, &
-                 fill_value = sreal_fill_value)
+              netcdf_info%ncid_lwrtm, &
+              dimids_1d, &
+              'lw_channel_wvl', &
+              netcdf_info%vid_lw_channel_wvl, &
+              verbose, &
+              fill_value = sreal_fill_value)
 
 
          ! define 3-D variables
@@ -234,14 +236,14 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
 
          ! define emiss_lw
          call nc_def_var_float_packed_float( &
-                 netcdf_info%ncid_lwrtm, &
-                 dimids_3d, &
-                 'emiss_lw', &
-                 netcdf_info%vid_emiss_lw, &
-                 verbose, &
-                 deflate_level = deflate_level, &
-                 shuffle = shuffle_flag, &
-                 fill_value = sreal_fill_value)
+              netcdf_info%ncid_lwrtm, &
+              dimids_3d, &
+              'emiss_lw', &
+              netcdf_info%vid_emiss_lw, &
+              verbose, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
+              fill_value = sreal_fill_value)
 
 
          ! define 4-D variables
@@ -252,58 +254,58 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
 
          ! define tac_lw
          call nc_def_var_float_packed_float( &
-                 netcdf_info%ncid_lwrtm, &
-                 dimids_4d, &
-                 'tac_lw', &
-                 netcdf_info%vid_tac_lw, &
-                 verbose, &
-                 deflate_level = deflate_level, &
-                 shuffle = shuffle_flag, &
-                 fill_value = sreal_fill_value)
+              netcdf_info%ncid_lwrtm, &
+              dimids_4d, &
+              'tac_lw', &
+              netcdf_info%vid_tac_lw, &
+              verbose, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
+              fill_value = sreal_fill_value)
 
          ! define tbc_lw
          call nc_def_var_float_packed_float( &
-                 netcdf_info%ncid_lwrtm, &
-                 dimids_4d, &
-                 'tbc_lw', &
-                 netcdf_info%vid_tbc_lw, &
-                 verbose, &
-                 deflate_level = deflate_level, &
-                 shuffle = shuffle_flag, &
-                 fill_value = sreal_fill_value)
+              netcdf_info%ncid_lwrtm, &
+              dimids_4d, &
+              'tbc_lw', &
+              netcdf_info%vid_tbc_lw, &
+              verbose, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
+              fill_value = sreal_fill_value)
 
          ! define rbc_up_lw
          call nc_def_var_float_packed_float( &
-                 netcdf_info%ncid_lwrtm, &
-                 dimids_4d, &
-                 'rbc_up_lw', &
-                 netcdf_info%vid_rbc_up_lw, &
-                 verbose, &
-                 deflate_level = deflate_level, &
-                 shuffle = shuffle_flag, &
-                 fill_value = sreal_fill_value)
+              netcdf_info%ncid_lwrtm, &
+              dimids_4d, &
+              'rbc_up_lw', &
+              netcdf_info%vid_rbc_up_lw, &
+              verbose, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
+              fill_value = sreal_fill_value)
 
          ! define rac_up_lw
          call nc_def_var_float_packed_float( &
-                 netcdf_info%ncid_lwrtm, &
-                 dimids_4d, &
-                 'rac_up_lw', &
-                 netcdf_info%vid_rac_up_lw, &
-                 verbose, &
-                 deflate_level = deflate_level, &
-                 shuffle = shuffle_flag, &
-                 fill_value = sreal_fill_value)
+              netcdf_info%ncid_lwrtm, &
+              dimids_4d, &
+              'rac_up_lw', &
+              netcdf_info%vid_rac_up_lw, &
+              verbose, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
+              fill_value = sreal_fill_value)
 
          ! define rac_down_lw
          call nc_def_var_float_packed_float( &
-                 netcdf_info%ncid_lwrtm, &
-                 dimids_4d, &
-                 'rac_down_lw', &
-                 netcdf_info%vid_rac_down_lw, &
-                 verbose, &
-                 deflate_level = deflate_level, &
-                 shuffle = shuffle_flag, &
-                 fill_value = sreal_fill_value)
+              netcdf_info%ncid_lwrtm, &
+              dimids_4d, &
+              'rac_down_lw', &
+              netcdf_info%vid_rac_down_lw, &
+              verbose, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
+              fill_value = sreal_fill_value)
       end if
 
 
@@ -314,8 +316,9 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
 
       ! create file
       if (nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
-          netcdf_info%ncid_swrtm) .ne. NF90_NOERR) then
-         write(*,*) 'ERROR: netcdf_create_rtm(2), nf90_create(), filename: ', path
+                      netcdf_info%ncid_swrtm) .ne. NF90_NOERR) then
+         write(*,*) 'ERROR: netcdf_create_rtm(2), nf90_create(), filename: ', &
+              path
          stop error_stop_code
       end if
 
@@ -323,31 +326,32 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
       if (channel_info%nchannels_sw .ne. 0) then
          ! define dimensions
          if (nf90_def_dim(netcdf_info%ncid_swrtm, 'nlat_rtm', &
-             nlat, netcdf_info%dimid_y_sw) .ne. NF90_NOERR) then
-            write(*,*) 'ERROR: netcdf_create_rtm(2), nf90_create(), dimension '// &
-               & 'name: nlat_rtm'
+                          nlat, netcdf_info%dimid_y_sw) .ne. NF90_NOERR) then
+            write(*,*) 'ERROR: netcdf_create_rtm(2), nf90_create(), '// &
+                 & 'dimension name: nlat_rtm'
             stop error_stop_code
          end if
 
          if (nf90_def_dim(netcdf_info%ncid_swrtm, 'nlon_rtm', &
-             nlon, netcdf_info%dimid_x_sw) .ne. NF90_NOERR) then
-            write(*,*) 'ERROR: netcdf_create_rtm(2), nf90_create(), dimension '// &
-               & 'name: nlon_rtm'
+                          nlon, netcdf_info%dimid_x_sw) .ne. NF90_NOERR) then
+            write(*,*) 'ERROR: netcdf_create_rtm(2), nf90_create(), '// &
+                 & 'dimension name: nlon_rtm'
             stop error_stop_code
          end if
 
-         if (nf90_def_dim(netcdf_info%ncid_swrtm, 'nlevels_rtm', &
-             kdim, netcdf_info%dimid_levels_sw) .ne. NF90_NOERR) then
-            write(*,*) 'ERROR: netcdf_create_rtm(2), nf90_create(), dimension '// &
-               & 'name: nlevels_rtm'
+         if (nf90_def_dim(netcdf_info%ncid_swrtm, 'nlevels_rtm', kdim, &
+                          netcdf_info%dimid_levels_sw) .ne. NF90_NOERR) then
+            write(*,*) 'ERROR: netcdf_create_rtm(2), nf90_create(), '// &
+                 & 'dimension name: nlevels_rtm'
             stop error_stop_code
          end if
 
          if (nf90_def_dim(netcdf_info%ncid_swrtm, 'nsw_channels', &
-             channel_info%nchannels_sw, netcdf_info%dimid_sw_channels) &
-            .ne. NF90_NOERR) then
-            write(*,*) 'ERROR: netcdf_create_rtm(2), nf90_create(), dimension '// &
-               & 'name: nsw_channels'
+                          channel_info%nchannels_sw, &
+                          netcdf_info%dimid_sw_channels) &
+              .ne. NF90_NOERR) then
+            write(*,*) 'ERROR: netcdf_create_rtm(2), nf90_create(), '// &
+                 & 'dimension name: nsw_channels'
             stop error_stop_code
          end if
 
@@ -356,28 +360,28 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
          dimids_1d(1) = netcdf_info%dimid_sw_channels
 
          call nc_def_var_long_packed_long( &
-                 netcdf_info%ncid_swrtm, &
-                 dimids_1d, &
-                 'sw_channel_abs_ids', &
-                 netcdf_info%vid_sw_channel_abs_ids, &
-                 verbose, &
-                 fill_value = lint_fill_value)
+              netcdf_info%ncid_swrtm, &
+              dimids_1d, &
+              'sw_channel_abs_ids', &
+              netcdf_info%vid_sw_channel_abs_ids, &
+              verbose, &
+              fill_value = lint_fill_value)
 
          call nc_def_var_long_packed_long( &
-                 netcdf_info%ncid_swrtm, &
-                 dimids_1d, &
-                 'sw_channel_instr_ids', &
-                 netcdf_info%vid_sw_channel_instr_ids, &
-                 verbose, &
-                 fill_value = lint_fill_value)
+              netcdf_info%ncid_swrtm, &
+              dimids_1d, &
+              'sw_channel_instr_ids', &
+              netcdf_info%vid_sw_channel_instr_ids, &
+              verbose, &
+              fill_value = lint_fill_value)
 
          call nc_def_var_float_packed_float( &
-                 netcdf_info%ncid_swrtm, &
-                 dimids_1d, &
-                 'sw_channel_wvl', &
-                 netcdf_info%vid_sw_channel_wvl, &
-                 verbose, &
-                 fill_value = sreal_fill_value)
+              netcdf_info%ncid_swrtm, &
+              dimids_1d, &
+              'sw_channel_wvl', &
+              netcdf_info%vid_sw_channel_wvl, &
+              verbose, &
+              fill_value = sreal_fill_value)
 
 
          ! define 4-D variables
@@ -388,25 +392,25 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
 
          ! define tac_sw
          call nc_def_var_float_packed_float( &
-                 netcdf_info%ncid_swrtm, &
-                 dimids_4d, &
-                 'tac_sw', &
-                 netcdf_info%vid_tac_sw, &
-                 verbose, &
-                 deflate_level = deflate_level, &
-                 shuffle = shuffle_flag, &
-                 fill_value = sreal_fill_value)
+              netcdf_info%ncid_swrtm, &
+              dimids_4d, &
+              'tac_sw', &
+              netcdf_info%vid_tac_sw, &
+              verbose, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
+              fill_value = sreal_fill_value)
 
          ! define tbc_sw
          call nc_def_var_float_packed_float( &
-                 netcdf_info%ncid_swrtm, &
-                 dimids_4d, &
-                 'tbc_sw', &
-                 netcdf_info%vid_tbc_sw, &
-                 verbose, &
-                 deflate_level = deflate_level, &
-                 shuffle = shuffle_flag, &
-                 fill_value = sreal_fill_value)
+              netcdf_info%ncid_swrtm, &
+              dimids_4d, &
+              'tbc_sw', &
+              netcdf_info%vid_tbc_sw, &
+              verbose, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
+              fill_value = sreal_fill_value)
       end if
 
 
@@ -417,31 +421,32 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
 
       ! create file
       if (nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
-          netcdf_info%ncid_prtm) .ne. NF90_NOERR) then
-         write(*,*) 'ERROR: netcdf_create_rtm(3), nf90_create(), filename: ', path
+                      netcdf_info%ncid_prtm) .ne. NF90_NOERR) then
+         write(*,*) 'ERROR: netcdf_create_rtm(3), nf90_create(), filename: ', &
+              path
          stop error_stop_code
       end if
 
 
       ! define dimensions
       if (nf90_def_dim(netcdf_info%ncid_prtm, 'nlat_rtm', &
-          nlat, netcdf_info%dimid_y_pw) .ne. NF90_NOERR) then
+                       nlat, netcdf_info%dimid_y_pw) .ne. NF90_NOERR) then
          write(*,*) 'ERROR: netcdf_create_rtm(3), nf90_create(), dimension '// &
-            & 'name: nlat_rtm'
+              & 'name: nlat_rtm'
          stop error_stop_code
       end if
 
       if (nf90_def_dim(netcdf_info%ncid_prtm, 'nlon_rtm', &
-          nlon, netcdf_info%dimid_x_pw) .ne. NF90_NOERR) then
+                       nlon, netcdf_info%dimid_x_pw) .ne. NF90_NOERR) then
          write(*,*) 'ERROR: netcdf_create_rtm(2), nf90_create(), dimension '// &
-            & 'name: nlon_rtm'
+              & 'name: nlon_rtm'
          stop error_stop_code
       end if
 
       if (nf90_def_dim(netcdf_info%ncid_prtm, 'nlevels_rtm', &
-          kdim, netcdf_info%dimid_levels_pw) .ne. NF90_NOERR) then
+                       kdim, netcdf_info%dimid_levels_pw) .ne. NF90_NOERR) then
          write(*,*) 'ERROR: netcdf_create_rtm(3), nf90_create(), dimension '// &
-            & 'name: nlevels_rtm'
+              & 'name: nlevels_rtm'
          stop error_stop_code
       end if
 
@@ -451,26 +456,26 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
 
       ! define lon_rtm
       call nc_def_var_float_packed_float( &
-              netcdf_info%ncid_prtm, &
-              dimids_1d, &
-              'lon_rtm', &
-              netcdf_info%vid_lon_pw, &
-              verbose, &
-              deflate_level = deflate_level, &
-              shuffle = shuffle_flag, &
-              fill_value = sreal_fill_value)
+           netcdf_info%ncid_prtm, &
+           dimids_1d, &
+           'lon_rtm', &
+           netcdf_info%vid_lon_pw, &
+           verbose, &
+           deflate_level = deflate_level, &
+           shuffle = shuffle_flag, &
+           fill_value = sreal_fill_value)
 
       ! define lat_rtm
       dimids_1d(1) = netcdf_info%dimid_y_pw
       call nc_def_var_float_packed_float( &
-              netcdf_info%ncid_prtm, &
-              dimids_1d, &
-              'lat_rtm', &
-              netcdf_info%vid_lat_pw, &
-              verbose, &
-              deflate_level = deflate_level, &
-              shuffle = shuffle_flag, &
-              fill_value = sreal_fill_value)
+           netcdf_info%ncid_prtm, &
+           dimids_1d, &
+           'lat_rtm', &
+           netcdf_info%vid_lat_pw, &
+           verbose, &
+           deflate_level = deflate_level, &
+           shuffle = shuffle_flag, &
+           fill_value = sreal_fill_value)
 
 
       ! define 3-D variables
@@ -480,58 +485,58 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
 
       ! define pprofile_rtm
       call nc_def_var_float_packed_float( &
-              netcdf_info%ncid_prtm, &
-              dimids_3d, &
-              'pprofile_rtm', &
-              netcdf_info%vid_pprofile_lev_pw, &
-              verbose, &
-              deflate_level = deflate_level, &
-              shuffle = shuffle_flag, &
-              fill_value = sreal_fill_value)
+           netcdf_info%ncid_prtm, &
+           dimids_3d, &
+           'pprofile_rtm', &
+           netcdf_info%vid_pprofile_lev_pw, &
+           verbose, &
+           deflate_level = deflate_level, &
+           shuffle = shuffle_flag, &
+           fill_value = sreal_fill_value)
 
       ! define tprofile_rtm
       call nc_def_var_float_packed_float( &
-              netcdf_info%ncid_prtm, &
-              dimids_3d, &
-              'tprofile_rtm', &
-              netcdf_info%vid_tprofile_lev_pw, &
-              verbose, &
-              deflate_level = deflate_level, &
-              shuffle = shuffle_flag, &
-              fill_value = sreal_fill_value)
+           netcdf_info%ncid_prtm, &
+           dimids_3d, &
+           'tprofile_rtm', &
+           netcdf_info%vid_tprofile_lev_pw, &
+           verbose, &
+           deflate_level = deflate_level, &
+           shuffle = shuffle_flag, &
+           fill_value = sreal_fill_value)
 
       ! define hprofile_rtm
       call nc_def_var_float_packed_float( &
-              netcdf_info%ncid_prtm, &
-              dimids_3d, &
-              'hprofile_rtm', &
-              netcdf_info%vid_hprofile_lev_pw, &
-              verbose, &
-              deflate_level = deflate_level, &
-              shuffle = shuffle_flag, &
-              fill_value = sreal_fill_value)
+           netcdf_info%ncid_prtm, &
+           dimids_3d, &
+           'hprofile_rtm', &
+           netcdf_info%vid_hprofile_lev_pw, &
+           verbose, &
+           deflate_level = deflate_level, &
+           shuffle = shuffle_flag, &
+           fill_value = sreal_fill_value)
 
       ! define qprofile_rtm
       call nc_def_var_float_packed_float( &
-              netcdf_info%ncid_prtm, &
-              dimids_3d, &
-              'qprofile_rtm', &
-              netcdf_info%vid_qprofile_lev_pw, &
-              verbose, &
-              deflate_level = deflate_level, &
-              shuffle = shuffle_flag, &
-              fill_value = sreal_fill_value)
+           netcdf_info%ncid_prtm, &
+           dimids_3d, &
+           'qprofile_rtm', &
+           netcdf_info%vid_qprofile_lev_pw, &
+           verbose, &
+           deflate_level = deflate_level, &
+           shuffle = shuffle_flag, &
+           fill_value = sreal_fill_value)
 
       ! define o3profile_rtm
       call nc_def_var_float_packed_float( &
-              netcdf_info%ncid_prtm, &
-              dimids_3d, &
-              'o3profile_rtm', &
-              netcdf_info%vid_o3profile_lev_pw, &
-              verbose, &
-              deflate_level = deflate_level, &
-              shuffle = shuffle_flag, &
-              fill_value = sreal_fill_value)
+           netcdf_info%ncid_prtm, &
+           dimids_3d, &
+           'o3profile_rtm', &
+           netcdf_info%vid_o3profile_lev_pw, &
+           verbose, &
+           deflate_level = deflate_level, &
+           shuffle = shuffle_flag, &
+           fill_value = sreal_fill_value)
    end if
 
 
@@ -598,8 +603,8 @@ end subroutine netcdf_create_rtm
 !-------------------------------------------------------------------------------
 
 subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, &
-   cminute,platform,sensor,path,type,imager_geolocation,imager_angles, &
-   netcdf_info,channel_info,include_full_brdf,do_cloud_emis,verbose)
+     cminute,platform,sensor,path,type,imager_geolocation,imager_angles, &
+     netcdf_info,channel_info,include_full_brdf,do_cloud_emis,verbose)
 
    use netcdf
 
@@ -646,8 +651,9 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
 
       ! create file
       if (nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
-          netcdf_info%ncid_alb) .ne. NF90_NOERR) then
-         write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), filename: ', path
+                      netcdf_info%ncid_alb) .ne. NF90_NOERR) then
+         write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), filename: ', &
+              path
          stop error_stop_code
       end if
 
@@ -655,34 +661,34 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
       ! define dimensions
 
       if (nf90_def_dim(netcdf_info%ncid_alb, 'nc_alb', &
-          channel_info%nchannels_sw, netcdf_info%dimid_c_alb) &
-         .ne. NF90_NOERR) then
+                       channel_info%nchannels_sw, netcdf_info%dimid_c_alb) &
+           .ne. NF90_NOERR) then
          write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
-            & 'name: nc_alb'
+              & 'name: nc_alb'
          stop error_stop_code
       end if
 
       if (nf90_def_dim(netcdf_info%ncid_alb, 'nc_emis', &
-          channel_info%nchannels_lw, netcdf_info%dimid_c_emis) &
-          .ne. NF90_NOERR) then
+                       channel_info%nchannels_lw, netcdf_info%dimid_c_emis) &
+           .ne. NF90_NOERR) then
          write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
-            & 'name: nc_emis'
+              & 'name: nc_emis'
          stop error_stop_code
       end if
 
       if (nf90_def_dim(netcdf_info%ncid_alb, 'nx_alb', &
-          imager_geolocation%endx-imager_geolocation%startx+1, &
-          netcdf_info%dimid_x_alb) .ne. NF90_NOERR) then
+                       imager_geolocation%endx-imager_geolocation%startx+1, &
+                       netcdf_info%dimid_x_alb) .ne. NF90_NOERR) then
          write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
-            & 'name: nx_alb'
+              & 'name: nx_alb'
          stop error_stop_code
       end if
 
       if (nf90_def_dim(netcdf_info%ncid_alb, 'ny_alb', &
-          imager_geolocation%endy-imager_geolocation%starty+1, &
-          netcdf_info%dimid_y_alb) .ne. NF90_NOERR) then
+                       imager_geolocation%endy-imager_geolocation%starty+1, &
+                       netcdf_info%dimid_y_alb) .ne. NF90_NOERR) then
          write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
-            & 'name: ny_alb'
+              & 'name: ny_alb'
          stop error_stop_code
       end if
 
@@ -691,24 +697,24 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
          dimids_1d(1) = netcdf_info%dimid_c_alb
 
          call nc_def_var_long_packed_long( &
-                 netcdf_info%ncid_alb, &
-                 dimids_1d, &
-                 'alb_abs_ch_numbers', &
-                 netcdf_info%vid_alb_abs_ch_numbers, &
-                 verbose, &
-                 fill_value = lint_fill_value)
+              netcdf_info%ncid_alb, &
+              dimids_1d, &
+              'alb_abs_ch_numbers', &
+              netcdf_info%vid_alb_abs_ch_numbers, &
+              verbose, &
+              fill_value = lint_fill_value)
       end if
 
       if (channel_info%nchannels_lw .ne. 0) then
          dimids_1d(1) = netcdf_info%dimid_c_emis
 
          call nc_def_var_long_packed_long( &
-                 netcdf_info%ncid_alb, &
-                 dimids_1d, &
-                 'emis_abs_ch_numbers', &
-                 netcdf_info%vid_emis_abs_ch_numbers, &
-                 verbose, &
-                 fill_value = lint_fill_value)
+              netcdf_info%ncid_alb, &
+              dimids_1d, &
+              'emis_abs_ch_numbers', &
+              netcdf_info%vid_emis_abs_ch_numbers, &
+              verbose, &
+              fill_value = lint_fill_value)
       end if
 
 
@@ -719,55 +725,55 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
 
          ! define alb
          call nc_def_var_float_packed_float( &
+              netcdf_info%ncid_alb, &
+              dimids_3d, &
+              'alb_data', &
+              netcdf_info%vid_alb_data, &
+              verbose, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
+              fill_value = sreal_fill_value)
+
+         if (include_full_brdf) then
+            call nc_def_var_float_packed_float( &
                  netcdf_info%ncid_alb, &
                  dimids_3d, &
-                 'alb_data', &
-                 netcdf_info%vid_alb_data, &
+                 'rho_0v_data', &
+                 netcdf_info%vid_rho_0v_data, &
                  verbose, &
                  deflate_level = deflate_level, &
                  shuffle = shuffle_flag, &
                  fill_value = sreal_fill_value)
 
-         if (include_full_brdf) then
             call nc_def_var_float_packed_float( &
-                    netcdf_info%ncid_alb, &
-                    dimids_3d, &
-                    'rho_0v_data', &
-                    netcdf_info%vid_rho_0v_data, &
-                    verbose, &
-                    deflate_level = deflate_level, &
-                    shuffle = shuffle_flag, &
-                    fill_value = sreal_fill_value)
+                 netcdf_info%ncid_alb, &
+                 dimids_3d, &
+                 'rho_0d_data', &
+                 netcdf_info%vid_rho_0d_data, &
+                 verbose, &
+                 deflate_level = deflate_level, &
+                 shuffle = shuffle_flag, &
+                 fill_value = sreal_fill_value)
 
             call nc_def_var_float_packed_float( &
-                    netcdf_info%ncid_alb, &
-                    dimids_3d, &
-                    'rho_0d_data', &
-                    netcdf_info%vid_rho_0d_data, &
-                    verbose, &
-                    deflate_level = deflate_level, &
-                    shuffle = shuffle_flag, &
-                    fill_value = sreal_fill_value)
+                 netcdf_info%ncid_alb, &
+                 dimids_3d, &
+                 'rho_dv_data', &
+                 netcdf_info%vid_rho_dv_data, &
+                 verbose, &
+                 deflate_level = deflate_level, &
+                 shuffle = shuffle_flag, &
+                 fill_value = sreal_fill_value)
 
             call nc_def_var_float_packed_float( &
-                    netcdf_info%ncid_alb, &
-                    dimids_3d, &
-                    'rho_dv_data', &
-                    netcdf_info%vid_rho_dv_data, &
-                    verbose, &
-                    deflate_level = deflate_level, &
-                    shuffle = shuffle_flag, &
-                    fill_value = sreal_fill_value)
-
-            call nc_def_var_float_packed_float( &
-                    netcdf_info%ncid_alb, &
-                    dimids_3d, &
-                    'rho_dd_data', &
-                    netcdf_info%vid_rho_dd_data, &
-                    verbose, &
-                    deflate_level = deflate_level, &
-                    shuffle = shuffle_flag, &
-                    fill_value = sreal_fill_value)
+                 netcdf_info%ncid_alb, &
+                 dimids_3d, &
+                 'rho_dd_data', &
+                 netcdf_info%vid_rho_dd_data, &
+                 verbose, &
+                 deflate_level = deflate_level, &
+                 shuffle = shuffle_flag, &
+                 fill_value = sreal_fill_value)
          end if
       end if
 
@@ -778,14 +784,14 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
 
          ! define emis
          call nc_def_var_float_packed_float( &
-                 netcdf_info%ncid_alb, &
-                 dimids_3d, &
-                 'emis_data', &
-                 netcdf_info%vid_emis_data, &
-                 verbose, &
-                 deflate_level = deflate_level, &
-                 shuffle = shuffle_flag, &
-                 fill_value = sreal_fill_value)
+              netcdf_info%ncid_alb, &
+              dimids_3d, &
+              'emis_data', &
+              netcdf_info%vid_emis_data, &
+              verbose, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
+              fill_value = sreal_fill_value)
       end if
 
 
@@ -796,34 +802,35 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
 
       ! create file
       if (nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
-          netcdf_info%ncid_clf) .ne. NF90_NOERR) then
-         write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), filename: ', path
+                      netcdf_info%ncid_clf) .ne. NF90_NOERR) then
+         write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), filename: ', &
+              path
          stop error_stop_code
       end if
 
 
       ! define dimensions
       if (nf90_def_dim(netcdf_info%ncid_clf, 'nx_cf', &
-          imager_geolocation%endx-imager_geolocation%startx+1, &
-          netcdf_info%dimid_x_cf) .ne. NF90_NOERR) then
+                       imager_geolocation%endx-imager_geolocation%startx+1, &
+                       netcdf_info%dimid_x_cf) .ne. NF90_NOERR) then
          write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
-            & 'name: nx_cf'
+                'name: nx_cf'
          stop error_stop_code
       end if
 
       if (nf90_def_dim(netcdf_info%ncid_clf, 'ny_cf', &
-          imager_geolocation%endy-imager_geolocation%starty+1, &
-          netcdf_info%dimid_y_cf) .ne. NF90_NOERR) then
+                       imager_geolocation%endy-imager_geolocation%starty+1, &
+                       netcdf_info%dimid_y_cf) .ne. NF90_NOERR) then
          write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
-            & 'name: ny_cf'
+                'name: ny_cf'
          stop error_stop_code
       end if
 
       if (nf90_def_dim(netcdf_info%ncid_clf, 'nv_cf', &
-          imager_angles%nviews, &
-          netcdf_info%dimid_v_cf) .ne. NF90_NOERR) then
+                       imager_angles%nviews, &
+                       netcdf_info%dimid_v_cf) .ne. NF90_NOERR) then
          write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
-            & 'name: nvcf'
+                'name: nvcf'
          stop error_stop_code
       end if
 
@@ -837,104 +844,104 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
 
       ! define cflag
       call nc_def_var_byte_packed_byte( &
-              netcdf_info%ncid_clf, &
-              dimids_3d, &
-              'cflag', &
-              netcdf_info%vid_cflag, &
-              verbose, &
-              deflate_level = deflate_level, &
-              shuffle = shuffle_flag, &
-              fill_value = byte_fill_value)
+           netcdf_info%ncid_clf, &
+           dimids_3d, &
+           'cflag', &
+           netcdf_info%vid_cflag, &
+           verbose, &
+           deflate_level = deflate_level, &
+           shuffle = shuffle_flag, &
+           fill_value = byte_fill_value)
 
       ! define cldemis variable
       if (do_cloud_emis) then
          call nc_def_var_float_packed_float( &
-                 netcdf_info%ncid_clf, &
-                 dimids_2d, &
-                 'cldemis', &
-                 netcdf_info%vid_cemis, &
-                 verbose, &
-                 deflate_level = deflate_level, &
-                 shuffle = shuffle_flag, &
-                 fill_value = sreal_fill_value)
+              netcdf_info%ncid_clf, &
+              dimids_2d, &
+              'cldemis', &
+              netcdf_info%vid_cemis, &
+              verbose, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
+              fill_value = sreal_fill_value)
       end if
 
       ! define cldtype variable
       call nc_def_var_byte_packed_byte( &
-              netcdf_info%ncid_clf, &
-              dimids_3d, &
-              'cldtype', &
-              netcdf_info%vid_cldtype, &
-              verbose, &
-              deflate_level = deflate_level, &
-              shuffle = shuffle_flag, &
-              fill_value = byte_fill_value)
+           netcdf_info%ncid_clf, &
+           dimids_3d, &
+           'cldtype', &
+           netcdf_info%vid_cldtype, &
+           verbose, &
+           deflate_level = deflate_level, &
+           shuffle = shuffle_flag, &
+           fill_value = byte_fill_value)
 
       ! define cldmask variable
       call nc_def_var_byte_packed_byte( &
-              netcdf_info%ncid_clf, &
-              dimids_3d, &
-              'cldmask', &
-              netcdf_info%vid_cldmask, &
-              verbose, &
-              deflate_level = deflate_level, &
-              shuffle = shuffle_flag, &
-              fill_value = byte_fill_value)
+           netcdf_info%ncid_clf, &
+           dimids_3d, &
+           'cldmask', &
+           netcdf_info%vid_cldmask, &
+           verbose, &
+           deflate_level = deflate_level, &
+           shuffle = shuffle_flag, &
+           fill_value = byte_fill_value)
 
       ! define cldmask_uncertainty variable
       call nc_def_var_float_packed_float( &
-              netcdf_info%ncid_clf, &
-              dimids_3d, &
-              'cldmask_uncertainty', &
-              netcdf_info%vid_cldmask_unc, &
-              verbose, &
-              deflate_level = deflate_level, &
-              shuffle = shuffle_flag, &
-              fill_value = sreal_fill_value)
+           netcdf_info%ncid_clf, &
+           dimids_3d, &
+           'cldmask_uncertainty', &
+           netcdf_info%vid_cldmask_unc, &
+           verbose, &
+           deflate_level = deflate_level, &
+           shuffle = shuffle_flag, &
+           fill_value = sreal_fill_value)
 
       ! define cccot_pre variable
       call nc_def_var_float_packed_float( &
-              netcdf_info%ncid_clf, &
-              dimids_3d, &
-              'cccot_pre', &
-              netcdf_info%vid_cccot_pre, &
-              verbose, &
-              deflate_level = deflate_level, &
-              shuffle = shuffle_flag, &
-              fill_value = sreal_fill_value)
+           netcdf_info%ncid_clf, &
+           dimids_3d, &
+           'cccot_pre', &
+           netcdf_info%vid_cccot_pre, &
+           verbose, &
+           deflate_level = deflate_level, &
+           shuffle = shuffle_flag, &
+           fill_value = sreal_fill_value)
 
       ! define ann cloud_phase variable
       call nc_def_var_byte_packed_byte( &
-              netcdf_info%ncid_clf, &
-              dimids_3d, &
-              'ann_phase', &
-              netcdf_info%vid_ann_phase, &
-              verbose, &
-              deflate_level = deflate_level, &
-              shuffle = shuffle_flag, &
-              fill_value = byte_fill_value)
+           netcdf_info%ncid_clf, &
+           dimids_3d, &
+           'ann_phase', &
+           netcdf_info%vid_ann_phase, &
+           verbose, &
+           deflate_level = deflate_level, &
+           shuffle = shuffle_flag, &
+           fill_value = byte_fill_value)
 
       ! define ann cloud phase_uncertainty variable
       call nc_def_var_float_packed_float( &
-              netcdf_info%ncid_clf, &
-              dimids_3d, &
-              'ann_phase_uncertainty', &
-              netcdf_info%vid_ann_phase_unc, &
-              verbose, &
-              deflate_level = deflate_level, &
-              shuffle = shuffle_flag, &
-              fill_value = sreal_fill_value)
+           netcdf_info%ncid_clf, &
+           dimids_3d, &
+           'ann_phase_uncertainty', &
+           netcdf_info%vid_ann_phase_unc, &
+           verbose, &
+           deflate_level = deflate_level, &
+           shuffle = shuffle_flag, &
+           fill_value = sreal_fill_value)
 
       ! define cphcot variable
       call nc_def_var_float_packed_float( &
-              netcdf_info%ncid_clf, &
-              dimids_3d, &
-              'cphcot', &
-              netcdf_info%vid_cphcot, &
-              verbose, &
-              deflate_level = deflate_level, &
-              shuffle = shuffle_flag, &
-              fill_value = sreal_fill_value)
+           netcdf_info%ncid_clf, &
+           dimids_3d, &
+           'cphcot', &
+           netcdf_info%vid_cphcot, &
+           verbose, &
+           deflate_level = deflate_level, &
+           shuffle = shuffle_flag, &
+           fill_value = sreal_fill_value)
 
 
    else if (type .eq. NETCDF_OUTPUT_FILE_GEO) then
@@ -944,33 +951,34 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
 
       ! create file
       if (nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
-          netcdf_info%ncid_geo) .ne. NF90_NOERR) then
-         write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), filename: ', path
+                      netcdf_info%ncid_geo) .ne. NF90_NOERR) then
+         write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), filename: ', &
+              path
          stop error_stop_code
       end if
 
 
       ! define dimensions
-      if (nf90_def_dim(netcdf_info%ncid_geo, 'nv_geo', &
-          imager_angles%nviews, netcdf_info%dimid_v_geo) .ne. NF90_NOERR) then
+      if (nf90_def_dim(netcdf_info%ncid_geo, 'nv_geo', imager_angles%nviews, &
+                       netcdf_info%dimid_v_geo) .ne. NF90_NOERR) then
          write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
-            & 'name: nv_geo'
+                'name: nv_geo'
          stop error_stop_code
       end if
 
       if (nf90_def_dim(netcdf_info%ncid_geo, 'nx_geo', &
-          imager_geolocation%endx-imager_geolocation%startx+1, &
-          netcdf_info%dimid_x_geo) .ne. NF90_NOERR) then
+                       imager_geolocation%endx-imager_geolocation%startx+1, &
+                       netcdf_info%dimid_x_geo) .ne. NF90_NOERR) then
          write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
-            & 'name: nx_geo'
+                'name: nx_geo'
          stop error_stop_code
       end if
 
       if (nf90_def_dim(netcdf_info%ncid_geo, 'ny_geo', &
-          imager_geolocation%endy-imager_geolocation%starty+1, &
-          netcdf_info%dimid_y_geo) .ne. NF90_NOERR) then
+                       imager_geolocation%endy-imager_geolocation%starty+1, &
+                       netcdf_info%dimid_y_geo) .ne. NF90_NOERR) then
          write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
-            & 'name: ny_geo'
+                'name: ny_geo'
          stop error_stop_code
       end if
 
@@ -981,47 +989,47 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
 
       ! define solzen
       call nc_def_var_float_packed_float( &
-              netcdf_info%ncid_geo, &
-              dimids_3d, &
-              'solzen', &
-              netcdf_info%vid_solzen, &
-              verbose, &
-              deflate_level = deflate_level, &
-              shuffle = shuffle_flag, &
-              fill_value = sreal_fill_value)
+           netcdf_info%ncid_geo, &
+           dimids_3d, &
+           'solzen', &
+           netcdf_info%vid_solzen, &
+           verbose, &
+           deflate_level = deflate_level, &
+           shuffle = shuffle_flag, &
+           fill_value = sreal_fill_value)
 
       ! define satzen
       call nc_def_var_float_packed_float( &
-              netcdf_info%ncid_geo, &
-              dimids_3d, &
-              'satzen', &
-              netcdf_info%vid_satzen, &
-              verbose, &
-              deflate_level = deflate_level, &
-              shuffle = shuffle_flag, &
-              fill_value = sreal_fill_value)
+           netcdf_info%ncid_geo, &
+           dimids_3d, &
+           'satzen', &
+           netcdf_info%vid_satzen, &
+           verbose, &
+           deflate_level = deflate_level, &
+           shuffle = shuffle_flag, &
+           fill_value = sreal_fill_value)
 
       ! define solaz
       call nc_def_var_float_packed_float( &
-              netcdf_info%ncid_geo, &
-              dimids_3d, &
-              'solaz', &
-              netcdf_info%vid_solaz, &
-              verbose, &
-              deflate_level = deflate_level, &
-              shuffle = shuffle_flag, &
-              fill_value = sreal_fill_value)
+           netcdf_info%ncid_geo, &
+           dimids_3d, &
+           'solaz', &
+           netcdf_info%vid_solaz, &
+           verbose, &
+           deflate_level = deflate_level, &
+           shuffle = shuffle_flag, &
+           fill_value = sreal_fill_value)
 
       ! define relazi
       call nc_def_var_float_packed_float( &
-              netcdf_info%ncid_geo, &
-              dimids_3d, &
-              'relazi', &
-              netcdf_info%vid_relazi, &
-              verbose, &
-              deflate_level = deflate_level, &
-              shuffle = shuffle_flag, &
-              fill_value = sreal_fill_value)
+           netcdf_info%ncid_geo, &
+           dimids_3d, &
+           'relazi', &
+           netcdf_info%vid_relazi, &
+           verbose, &
+           deflate_level = deflate_level, &
+           shuffle = shuffle_flag, &
+           fill_value = sreal_fill_value)
 
 
    else if (type .eq. NETCDF_OUTPUT_FILE_LOC) then
@@ -1031,26 +1039,27 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
 
       ! create file
       if (nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
-          netcdf_info%ncid_loc) .ne. NF90_NOERR) then
-         write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), filename: ', path
+                      netcdf_info%ncid_loc) .ne. NF90_NOERR) then
+         write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), filename: ', &
+              path
          stop error_stop_code
       end if
 
 
       ! define dimensions
       if (nf90_def_dim(netcdf_info%ncid_loc, 'nx_loc', &
-          imager_geolocation%endx-imager_geolocation%startx+1, &
-          netcdf_info%dimid_x_loc) .ne. NF90_NOERR) then
+                       imager_geolocation%endx-imager_geolocation%startx+1, &
+                       netcdf_info%dimid_x_loc) .ne. NF90_NOERR) then
          write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
-            & 'name: nx_loc'
+                'name: nx_loc'
          stop error_stop_code
       end if
 
       if (nf90_def_dim(netcdf_info%ncid_loc, 'ny_loc', &
-          imager_geolocation%endy-imager_geolocation%starty+1, &
-          netcdf_info%dimid_y_loc) .ne. NF90_NOERR) then
+                       imager_geolocation%endy-imager_geolocation%starty+1, &
+                       netcdf_info%dimid_y_loc) .ne. NF90_NOERR) then
          write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
-            & 'name: ny_loc'
+                'name: ny_loc'
          stop error_stop_code
       end if
 
@@ -1060,25 +1069,25 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
 
       ! define lat
       call nc_def_var_float_packed_float( &
-              netcdf_info%ncid_loc, &
-              dimids_2d, &
-              'lat', &
-              netcdf_info%vid_lat, &
-              verbose, &
-              deflate_level = deflate_level, &
-              shuffle = shuffle_flag, &
-              fill_value = sreal_fill_value)
+           netcdf_info%ncid_loc, &
+           dimids_2d, &
+           'lat', &
+           netcdf_info%vid_lat, &
+           verbose, &
+           deflate_level = deflate_level, &
+           shuffle = shuffle_flag, &
+           fill_value = sreal_fill_value)
 
       ! define lon
       call nc_def_var_float_packed_float( &
-              netcdf_info%ncid_loc, &
-              dimids_2d, &
-              'lon', &
-              netcdf_info%vid_lon, &
-              verbose, &
-              deflate_level = deflate_level, &
-              shuffle = shuffle_flag, &
-              fill_value = sreal_fill_value)
+           netcdf_info%ncid_loc, &
+           dimids_2d, &
+           'lon', &
+           netcdf_info%vid_lon, &
+           verbose, &
+           deflate_level = deflate_level, &
+           shuffle = shuffle_flag, &
+           fill_value = sreal_fill_value)
 
 
    else if (type .eq. NETCDF_OUTPUT_FILE_LSF) then
@@ -1087,26 +1096,27 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
 
       ! create file
       if (nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
-          netcdf_info%ncid_lsf) .ne. NF90_NOERR) then
-         write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), filename: ', path
+                      netcdf_info%ncid_lsf) .ne. NF90_NOERR) then
+         write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), filename: ', &
+              path
          stop error_stop_code
       end if
 
 
       ! define dimensions
       if (nf90_def_dim(netcdf_info%ncid_lsf, 'nx_lsf', &
-          imager_geolocation%endx-imager_geolocation%startx+1, &
-          netcdf_info%dimid_x_lsf) .ne. NF90_NOERR) then
+                       imager_geolocation%endx-imager_geolocation%startx+1, &
+                       netcdf_info%dimid_x_lsf) .ne. NF90_NOERR) then
          write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
-            & 'name: nx_lsf'
+                'name: nx_lsf'
          stop error_stop_code
       end if
 
       if (nf90_def_dim(netcdf_info%ncid_lsf, 'ny_lsf', &
-          imager_geolocation%endy-imager_geolocation%starty+1, &
-          netcdf_info%dimid_y_lsf) .ne. NF90_NOERR) then
+                       imager_geolocation%endy-imager_geolocation%starty+1, &
+                       netcdf_info%dimid_y_lsf) .ne. NF90_NOERR) then
          write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
-            & 'name: ny_lsf'
+                'name: ny_lsf'
          stop error_stop_code
       end if
 
@@ -1116,45 +1126,45 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
 
       ! define lsflag
       call nc_def_var_byte_packed_byte( &
-              netcdf_info%ncid_lsf, &
-              dimids_2d, &
-              'lsflag', &
-              netcdf_info%vid_lsflag, &
-              verbose, &
-              deflate_level = deflate_level, &
-              shuffle = shuffle_flag, &
-              fill_value = byte_fill_value)
+           netcdf_info%ncid_lsf, &
+           dimids_2d, &
+           'lsflag', &
+           netcdf_info%vid_lsflag, &
+           verbose, &
+           deflate_level = deflate_level, &
+           shuffle = shuffle_flag, &
+           fill_value = byte_fill_value)
 
       ! define lusflag variable
       call nc_def_var_byte_packed_byte( &
-              netcdf_info%ncid_lsf, &
-              dimids_2d, &
-              'lusflag', &
-              netcdf_info%vid_lusflag, &
-              verbose, &
-              deflate_level = deflate_level, &
-              shuffle = shuffle_flag, &
-              fill_value = byte_fill_value)
+           netcdf_info%ncid_lsf, &
+           dimids_2d, &
+           'lusflag', &
+           netcdf_info%vid_lusflag, &
+           verbose, &
+           deflate_level = deflate_level, &
+           shuffle = shuffle_flag, &
+           fill_value = byte_fill_value)
 
       ! define dem variable
       call nc_def_var_long_packed_long( &
-              netcdf_info%ncid_lsf, &
-              dimids_2d, &
-              'dem', &
-              netcdf_info%vid_dem, &
-              verbose, &
-              fill_value = lint_fill_value)
+           netcdf_info%ncid_lsf, &
+           dimids_2d, &
+           'dem', &
+           netcdf_info%vid_dem, &
+           verbose, &
+           fill_value = lint_fill_value)
 
       ! define nise_mask variable
       call nc_def_var_byte_packed_byte( &
-              netcdf_info%ncid_lsf, &
-              dimids_2d, &
-              'nisemask', &
-              netcdf_info%vid_nisemask, &
-              verbose, &
-              deflate_level = deflate_level, &
-              shuffle = shuffle_flag, &
-              fill_value = byte_fill_value)
+           netcdf_info%ncid_lsf, &
+           dimids_2d, &
+           'nisemask', &
+           netcdf_info%vid_nisemask, &
+           verbose, &
+           deflate_level = deflate_level, &
+           shuffle = shuffle_flag, &
+           fill_value = byte_fill_value)
 
 
    else if (type .eq. NETCDF_OUTPUT_FILE_MSI) then
@@ -1164,42 +1174,43 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
 
       ! create file
       if (nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
-          netcdf_info%ncid_msi) .ne. NF90_NOERR) then
-         write(*,*)  'ERROR: netcdf_create_rtm(1), nf90_create(), filename: ', path
+                      netcdf_info%ncid_msi) .ne. NF90_NOERR) then
+         write(*,*)  'ERROR: netcdf_create_rtm(1), nf90_create(), filename: ', &
+              path
          stop error_stop_code
       end if
 
 
       ! define dimensions
-if (.false.) then
-      if (nf90_def_dim(netcdf_info%ncid_msi, 'nv_msi', &
-          imager_angles%nviews, netcdf_info%dimid_v_msi) .ne. NF90_NOERR) then
-         write(*,*)  'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
-            & 'name: nv_msi'
-         stop error_stop_code
+      if (.false.) then
+         if (nf90_def_dim(netcdf_info%ncid_msi, 'nv_msi', imager_angles%nviews, &
+                          netcdf_info%dimid_v_msi) .ne. NF90_NOERR) then
+            write(*,*)  'ERROR: netcdf_create_rtm(1), nf90_create(), '// &
+                   'dimension name: nv_msi'
+            stop error_stop_code
+         end if
       end if
-end if
       if (nf90_def_dim(netcdf_info%ncid_msi, 'nc_msi', &
-          channel_info%nchannels_total, &
-          netcdf_info%dimid_c_msi) .ne. NF90_NOERR) then
-         write(*,*)  'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
-            & 'name: nc_msi'
+                       channel_info%nchannels_total, &
+                       netcdf_info%dimid_c_msi) .ne. NF90_NOERR) then
+         write(*,*)  'ERROR: netcdf_create_rtm(1), nf90_create(), '// &
+                'dimension name: nc_msi'
          stop error_stop_code
       end if
 
       if (nf90_def_dim(netcdf_info%ncid_msi, 'nx_msi', &
-          imager_geolocation%endx-imager_geolocation%startx+1, &
-          netcdf_info%dimid_x_msi) .ne. NF90_NOERR) then
-         write(*,*)  'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
-            & 'name: nx_msi'
+                       imager_geolocation%endx-imager_geolocation%startx+1, &
+                       netcdf_info%dimid_x_msi) .ne. NF90_NOERR) then
+         write(*,*)  'ERROR: netcdf_create_rtm(1), nf90_create(), '// &
+                'dimension name: nx_msi'
          stop error_stop_code
       end if
 
       if (nf90_def_dim(netcdf_info%ncid_msi, 'ny_msi', &
-          imager_geolocation%endy-imager_geolocation%starty+1, &
-          netcdf_info%dimid_y_msi) .ne. NF90_NOERR) then
-         write(*,*)  'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
-            & 'name: ny_msi'
+                       imager_geolocation%endy-imager_geolocation%starty+1, &
+                       netcdf_info%dimid_y_msi) .ne. NF90_NOERR) then
+         write(*,*)  'ERROR: netcdf_create_rtm(1), nf90_create(), '// &
+                'dimension name: ny_msi'
          stop error_stop_code
       end if
 
@@ -1208,44 +1219,44 @@ end if
       dimids_1d(1) = netcdf_info%dimid_c_msi
 
       call nc_def_var_long_packed_long( &
-              netcdf_info%ncid_msi, &
-              dimids_1d, &
-              'msi_instr_ch_numbers', &
-              netcdf_info%vid_msi_instr_ch_numbers, &
-              verbose, &
-              fill_value = lint_fill_value)
+           netcdf_info%ncid_msi, &
+           dimids_1d, &
+           'msi_instr_ch_numbers', &
+           netcdf_info%vid_msi_instr_ch_numbers, &
+           verbose, &
+           fill_value = lint_fill_value)
 
       call nc_def_var_float_packed_float( &
-              netcdf_info%ncid_msi, &
-              dimids_1d, &
-              'msi_abs_ch_wl', &
-              netcdf_info%vid_msi_abs_ch_wl, &
-              verbose, &
-              fill_value = sreal_fill_value)
+           netcdf_info%ncid_msi, &
+           dimids_1d, &
+           'msi_abs_ch_wl', &
+           netcdf_info%vid_msi_abs_ch_wl, &
+           verbose, &
+           fill_value = sreal_fill_value)
 
       call nc_def_var_long_packed_long( &
-              netcdf_info%ncid_msi, &
-              dimids_1d, &
-              'msi_ch_swflag', &
-              netcdf_info%vid_msi_ch_swflag, &
-              verbose, &
-              fill_value = lint_fill_value)
+           netcdf_info%ncid_msi, &
+           dimids_1d, &
+           'msi_ch_swflag', &
+           netcdf_info%vid_msi_ch_swflag, &
+           verbose, &
+           fill_value = lint_fill_value)
 
       call nc_def_var_long_packed_long( &
-              netcdf_info%ncid_msi, &
-              dimids_1d, &
-              'msi_ch_lwflag', &
-              netcdf_info%vid_msi_ch_lwflag, &
-              verbose, &
-              fill_value = lint_fill_value)
+           netcdf_info%ncid_msi, &
+           dimids_1d, &
+           'msi_ch_lwflag', &
+           netcdf_info%vid_msi_ch_lwflag, &
+           verbose, &
+           fill_value = lint_fill_value)
 
       call nc_def_var_long_packed_long( &
-              netcdf_info%ncid_msi, &
-              dimids_1d, &
-              'msi_ch_view', &
-              netcdf_info%vid_msi_ch_view, &
-              verbose, &
-              fill_value = lint_fill_value)
+           netcdf_info%ncid_msi, &
+           dimids_1d, &
+           'msi_ch_view', &
+           netcdf_info%vid_msi_ch_view, &
+           verbose, &
+           fill_value = lint_fill_value)
 
 
       dimids_2d(1)=netcdf_info%dimid_x_msi
@@ -1253,14 +1264,14 @@ end if
 
       ! define time_data
       call nc_def_var_double_packed_double( &
-              netcdf_info%ncid_msi, &
-              dimids_2d, &
-              'time_data', &
-              netcdf_info%vid_time, &
-              verbose, &
-              deflate_level = deflate_level, &
-              shuffle = shuffle_flag, &
-              fill_value = dreal_fill_value)
+           netcdf_info%ncid_msi, &
+           dimids_2d, &
+           'time_data', &
+           netcdf_info%vid_time, &
+           verbose, &
+           deflate_level = deflate_level, &
+           shuffle = shuffle_flag, &
+           fill_value = dreal_fill_value)
 
 
       dimids_3d(1)=netcdf_info%dimid_x_msi
@@ -1269,25 +1280,25 @@ end if
 
       ! define msi_data
       call nc_def_var_float_packed_float( &
-              netcdf_info%ncid_msi, &
-              dimids_3d, &
-              'msi_data', &
-              netcdf_info%vid_msi_data, &
-              verbose, &
-              deflate_level = deflate_level, &
-              shuffle = shuffle_flag, &
-              fill_value = sreal_fill_value)
+           netcdf_info%ncid_msi, &
+           dimids_3d, &
+           'msi_data', &
+           netcdf_info%vid_msi_data, &
+           verbose, &
+           deflate_level = deflate_level, &
+           shuffle = shuffle_flag, &
+           fill_value = sreal_fill_value)
 
       ! define msi_data
       call nc_def_var_float_packed_float( &
-              netcdf_info%ncid_msi, &
-              dimids_3d, &
-              'sd_data', &
-              netcdf_info%vid_sd_data, &
-              verbose, &
-              deflate_level = deflate_level, &
-              shuffle = shuffle_flag, &
-              fill_value = sreal_fill_value)
+           netcdf_info%ncid_msi, &
+           dimids_3d, &
+           'sd_data', &
+           netcdf_info%vid_sd_data, &
+           verbose, &
+           deflate_level = deflate_level, &
+           shuffle = shuffle_flag, &
+           fill_value = sreal_fill_value)
    end if
 
    ! set up attributes common to all output files
@@ -1299,8 +1310,8 @@ end if
    if (type .eq. NETCDF_OUTPUT_FILE_MSI) ncid=netcdf_info%ncid_msi
 
    call netcdf_put_common_attributes(ncid,global_atts,source_atts,ctitle, &
-                                     platform,sensor,path,cyear,cmonth,cday, &
-                                     chour,cminute)
+        platform,sensor,path,cyear,cmonth,cday, &
+        chour,cminute)
 
 
    ! close definition section
@@ -1390,7 +1401,7 @@ subroutine netcdf_create_config(global_atts,source_atts,cyear,cmonth,cday, &
 
    ! create file
    if (nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
-       netcdf_info%ncid_config) .ne. NF90_NOERR) then
+                   netcdf_info%ncid_config) .ne. NF90_NOERR) then
       write(*,*)  'ERROR: netcdf_create_rtm(1), nf90_create(), filename: ', path
       stop error_stop_code
    end if
@@ -1398,65 +1409,68 @@ subroutine netcdf_create_config(global_atts,source_atts,cyear,cmonth,cday, &
 
    ! define dimensions
    if (nf90_def_dim(netcdf_info%ncid_config, 'nc_conf', &
-       channel_info%nchannels_total, netcdf_info%dimid_c_config) &
-      .ne. NF90_NOERR) then
+                    channel_info%nchannels_total, netcdf_info%dimid_c_config) &
+        .ne. NF90_NOERR) then
       write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
-         & 'name: nc_conf'
+             'name: nc_conf'
       stop error_stop_code
    end if
 
    if (nf90_def_dim(netcdf_info%ncid_config, 'nc_alb', &
-       channel_info%nchannels_sw, netcdf_info%dimid_c_config_alb) &
-      .ne. NF90_NOERR) then
+                    channel_info%nchannels_sw, netcdf_info%dimid_c_config_alb) &
+        .ne. NF90_NOERR) then
       write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
-         & 'name: nc_alb'
+             'name: nc_alb'
       stop error_stop_code
    end if
 
    if (nf90_def_dim(netcdf_info%ncid_config, 'nc_emis', &
-       channel_info%nchannels_lw, netcdf_info%dimid_c_config_emis) &
-       .ne. NF90_NOERR) then
+                    channel_info%nchannels_lw, netcdf_info%dimid_c_config_emis) &
+        .ne. NF90_NOERR) then
       write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
-         & 'name: nc_emis'
+             'name: nc_emis'
       stop error_stop_code
    end if
 
    if (nf90_def_dim(netcdf_info%ncid_config, 'nlat_conf', &
-       preproc_dims%max_lat-preproc_dims%min_lat+1, netcdf_info%dimid_y_lw) &
-       .ne. NF90_NOERR) then
+                    preproc_dims%max_lat-preproc_dims%min_lat+1, &
+                    netcdf_info%dimid_y_lw) &
+        .ne. NF90_NOERR) then
       write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
-         & 'name: nlat_conf'
+             'name: nlat_conf'
       stop error_stop_code
    end if
 
    if (nf90_def_dim(netcdf_info%ncid_config, 'nlon_conf', &
-       preproc_dims%max_lon-preproc_dims%min_lon+1, netcdf_info%dimid_x_lw) &
-       .ne. NF90_NOERR) then
+                    preproc_dims%max_lon-preproc_dims%min_lon+1, &
+                    netcdf_info%dimid_x_lw) &
+        .ne. NF90_NOERR) then
       write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
-         & 'name: nlon_conf'
+             'name: nlon_conf'
       stop error_stop_code
    end if
 
    if (nf90_def_dim(netcdf_info%ncid_config, 'nlevels_conf', &
-       preproc_dims%kdim+1, netcdf_info%dimid_levels_lw) .ne. NF90_NOERR) then
+                    preproc_dims%kdim+1, &
+                    netcdf_info%dimid_levels_lw) .ne. NF90_NOERR) then
       write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
-         & 'name: nlevels_conf'
+             'name: nlevels_conf'
       stop error_stop_code
    end if
 
    if (nf90_def_dim(netcdf_info%ncid_config, 'nx_conf', &
-       imager_geolocation%endx-imager_geolocation%startx+1, &
-       netcdf_info%dimid_x_config) .ne. NF90_NOERR) then
+                    imager_geolocation%endx-imager_geolocation%startx+1, &
+                    netcdf_info%dimid_x_config) .ne. NF90_NOERR) then
       write(*,*)  'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
-         & 'name: ny_conf'
+             'name: ny_conf'
       stop error_stop_code
    end if
 
    if (nf90_def_dim(netcdf_info%ncid_config, 'ny_conf', &
-       imager_geolocation%endy-imager_geolocation%starty+1, &
-       netcdf_info%dimid_y_config) .ne. NF90_NOERR) then
+                    imager_geolocation%endy-imager_geolocation%starty+1, &
+                    netcdf_info%dimid_y_config) .ne. NF90_NOERR) then
       write(*,*)  'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
-         & 'name: ny_conf'
+             'name: ny_conf'
       stop error_stop_code
    end if
 
@@ -1466,72 +1480,72 @@ subroutine netcdf_create_config(global_atts,source_atts,cyear,cmonth,cday, &
    dimids_1d(1) = netcdf_info%dimid_c_config
 
    call nc_def_var_long_packed_long( &
-           netcdf_info%ncid_config, &
-           dimids_1d, &
-           'msi_instr_ch_numbers', &
-           netcdf_info%vid_msi_instr_ch_numbers_config, &
-           verbose, &
-           fill_value = lint_fill_value)
+        netcdf_info%ncid_config, &
+        dimids_1d, &
+        'msi_instr_ch_numbers', &
+        netcdf_info%vid_msi_instr_ch_numbers_config, &
+        verbose, &
+        fill_value = lint_fill_value)
 
    call nc_def_var_float_packed_float( &
-           netcdf_info%ncid_config, &
-           dimids_1d, &
-           'msi_abs_ch_wl', &
-           netcdf_info%vid_msi_abs_ch_wl_config, &
-           verbose, &
-           fill_value = sreal_fill_value)
+        netcdf_info%ncid_config, &
+        dimids_1d, &
+        'msi_abs_ch_wl', &
+        netcdf_info%vid_msi_abs_ch_wl_config, &
+        verbose, &
+        fill_value = sreal_fill_value)
 
    call nc_def_var_long_packed_long( &
-           netcdf_info%ncid_config, &
-           dimids_1d, &
-           'msi_ch_swflag', &
-           netcdf_info%vid_msi_ch_swflag_config, &
-           verbose, &
-           fill_value = lint_fill_value)
+        netcdf_info%ncid_config, &
+        dimids_1d, &
+        'msi_ch_swflag', &
+        netcdf_info%vid_msi_ch_swflag_config, &
+        verbose, &
+        fill_value = lint_fill_value)
 
    call nc_def_var_long_packed_long( &
-           netcdf_info%ncid_config, &
-           dimids_1d, &
-           'msi_ch_lwflag', &
-           netcdf_info%vid_msi_ch_lwflag_config, &
-           verbose, &
-           fill_value = lint_fill_value)
+        netcdf_info%ncid_config, &
+        dimids_1d, &
+        'msi_ch_lwflag', &
+        netcdf_info%vid_msi_ch_lwflag_config, &
+        verbose, &
+        fill_value = lint_fill_value)
 
    call nc_def_var_long_packed_long( &
-           netcdf_info%ncid_config, &
-           dimids_1d, &
-           'msi_ch_view', &
-           netcdf_info%vid_msi_ch_view_config, &
-           verbose, &
-           fill_value = lint_fill_value)
+        netcdf_info%ncid_config, &
+        dimids_1d, &
+        'msi_ch_view', &
+        netcdf_info%vid_msi_ch_view_config, &
+        verbose, &
+        fill_value = lint_fill_value)
 
    dimids_1d(1) = netcdf_info%dimid_c_config_alb
 
    call nc_def_var_long_packed_long( &
-           netcdf_info%ncid_config, &
-           dimids_1d, &
-           'alb_abs_ch_numbers', &
-           netcdf_info%vid_alb_abs_ch_numbers_config, &
-           verbose, &
-           fill_value = lint_fill_value)
+        netcdf_info%ncid_config, &
+        dimids_1d, &
+        'alb_abs_ch_numbers', &
+        netcdf_info%vid_alb_abs_ch_numbers_config, &
+        verbose, &
+        fill_value = lint_fill_value)
 
    dimids_1d(1) = netcdf_info%dimid_c_config_emis
 
    call nc_def_var_long_packed_long( &
-           netcdf_info%ncid_config, &
-           dimids_1d, &
-           'emis_abs_ch_numbers', &
-           netcdf_info%vid_emis_abs_ch_numbers_config, &
-           verbose, &
-           fill_value = lint_fill_value)
+        netcdf_info%ncid_config, &
+        dimids_1d, &
+        'emis_abs_ch_numbers', &
+        netcdf_info%vid_emis_abs_ch_numbers_config, &
+        verbose, &
+        fill_value = lint_fill_value)
 
 
    ncid=netcdf_info%ncid_config
 
    ! set up attributes common to all output files
    call netcdf_put_common_attributes(ncid,global_atts,source_atts,ctitle, &
-                                     platform,sensor,path, cyear,cmonth,cday, &
-                                     chour,cminute)
+        platform,sensor,path, cyear,cmonth,cday, &
+        chour,cminute)
 
 
    ! close definition section
@@ -1547,8 +1561,8 @@ end subroutine netcdf_create_config
 
 
 subroutine netcdf_put_common_attributes(ncid,global_atts,source_atts,title, &
-                                        platform,sensor,path,cyear,cmonth,cday, &
-                                        chour,cminute)
+     platform,sensor,path,cyear,cmonth,cday, &
+     chour,cminute)
 
    use netcdf
 
@@ -1589,7 +1603,7 @@ subroutine netcdf_put_common_attributes(ncid,global_atts,source_atts,title, &
    global_atts2%Product_Name = 'Product_Name!!!'
 
    global_atts2%Date_Created = trim(cyear)//trim(cmonth)//trim(cday)// &
-                               trim(chour)//trim(cminute)
+        trim(chour)//trim(cminute)
 
    PLATFORM_UPPER_CASE=platform
    if (platform(1:4) .eq. 'noaa') PLATFORM_UPPER_CASE(1:4)='NOAA'

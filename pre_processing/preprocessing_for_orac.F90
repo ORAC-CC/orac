@@ -535,12 +535,13 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
          call get_command_argument(i, line)
          call parse_line(line, value, label)
          call clean_driver_label(label)
-         call parse_optional(label, value, n_channels, channel_ids, use_hr_ecmwf, &
-            ecmwf_time_int_method, use_ecmwf_snow_and_ice, use_modis_emis_in_rttov, &
-            ecmwf_path(2), ecmwf_path2(2), ecmwf_path3(2), ecmwf_path_hr(1), &
-            ecmwf_path_hr(2), ecmwf_nlevels, use_l1_land_mask, use_occci, occci_path, &
-            use_predef_lsm, ext_lsm_path,use_predef_geo, predef_geo_file,&
-            disable_snow_ice_corr, do_cloud_emis,do_ironly)
+         call parse_optional(label, value, n_channels, channel_ids, &
+            use_hr_ecmwf, ecmwf_time_int_method, use_ecmwf_snow_and_ice, &
+            use_modis_emis_in_rttov, ecmwf_path(2), ecmwf_path2(2), &
+            ecmwf_path3(2), ecmwf_path_hr(1), ecmwf_path_hr(2), ecmwf_nlevels, &
+            use_l1_land_mask, use_occci, occci_path, use_predef_lsm, &
+            ext_lsm_path,use_predef_geo, predef_geo_file, &
+            disable_snow_ice_corr, do_cloud_emis, do_ironly)
       end do
    else
 
@@ -606,12 +607,13 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
 
       do while (parse_driver(11, value, label) == 0)
         call clean_driver_label(label)
-        call parse_optional(label, value, n_channels, channel_ids, use_hr_ecmwf, &
-           ecmwf_time_int_method, use_ecmwf_snow_and_ice, use_modis_emis_in_rttov, &
-           ecmwf_path(2), ecmwf_path2(2), ecmwf_path3(2), ecmwf_path_hr(1), &
-           ecmwf_path_hr(2), ecmwf_nlevels, use_l1_land_mask, use_occci, occci_path, &
-           use_predef_lsm, ext_lsm_path,use_predef_geo, predef_geo_file,&
-           disable_snow_ice_corr, do_cloud_emis,do_ironly)
+        call parse_optional(label, value, n_channels, channel_ids, &
+           use_hr_ecmwf, ecmwf_time_int_method, use_ecmwf_snow_and_ice, &
+           use_modis_emis_in_rttov, ecmwf_path(2), ecmwf_path2(2), &
+           ecmwf_path3(2), ecmwf_path_hr(1), ecmwf_path_hr(2), ecmwf_nlevels, &
+           use_l1_land_mask, use_occci, occci_path, use_predef_lsm, &
+           ext_lsm_path,use_predef_geo, predef_geo_file, disable_snow_ice_corr, &
+           do_cloud_emis, do_ironly)
       end do
 
       close(11)
@@ -654,10 +656,11 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       stop error_stop_code
    end if
 
-   ! Check we're capable of computing cloud emissivity (ecmwf_flag = 5 or =6, for GFS data)
+   ! Check we're capable of computing cloud emissivity
+   ! (ecmwf_flag = 5 or =6, for GFS data)
    if (ecmwf_flag .ne. 5 .and. ecmwf_flag .ne. 6) do_cloud_emis=.false.
 
-   ! If we're using an external land-sea file then place that into USGS filename var
+   ! If we're using an external land-sea file, place that into USGS filename var
    if (use_predef_lsm) USGS_path_file=ext_lsm_path
 
    if (ecmwf_path(2) .eq. '') ecmwf_path(2) = ecmwf_path(1)
@@ -697,10 +700,11 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    source_atts%level1b_file=l1b_path_file
    source_atts%geo_file=geo_path_file
 
-   if (trim(adjustl(sensor)) .eq. 'AATSR' .or. trim(adjustl(sensor)) .eq. 'ATSR2') then
+   if (trim(adjustl(sensor)) .eq. 'AATSR' .or. &
+       trim(adjustl(sensor)) .eq. 'ATSR2') then
       call setup_aatsr(l1b_path_file,geo_path_file,platform,sensor,year,month, &
-           day,doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids, &
-           channel_info,verbose)
+           day,doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute, &
+           channel_ids,channel_info,verbose)
 
       loc_limit=(/ -90.0, -180.0, 90.0, 180.0 /)
 
@@ -867,7 +871,8 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
 
    if (verbose) then
       write(*,*) 'The number of chunks to be processed: ', n_chunks
-      write(*,*) 'The chunks to be processed are (i_chunk, chunk_start, chunk_end):'
+      write(*,*) 'The chunks to be processed are ', &
+           '(i_chunk, chunk_start, chunk_end):'
       do i_chunk = 1, n_chunks
          write(*,*) i_chunk, chunk_starts(i_chunk), chunk_ends(i_chunk)
       end do
@@ -913,7 +918,8 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
            imager_geolocation%longitude.gt.sreal_fill_value
       if (.not. any(mask)) then
          write(*,*) "any mask: ", any(mask)
-         write(*,*) "maxval lat/lon:", maxval(imager_geolocation%latitude), maxval(imager_geolocation%longitude)
+         write(*,*) "maxval lat/lon:", maxval(imager_geolocation%latitude), &
+              maxval(imager_geolocation%longitude)
          status = 1
          return
       endif
@@ -1031,8 +1037,8 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       ! NOTE: variable imager_flags%lsflag is overwritten by USGS data !!!
       if (verbose) write(*,*) 'Reading USGS path: ',trim(USGS_path_file)
       call get_USGS_data(USGS_path_file, imager_flags, imager_geolocation, &
-           usgs, assume_full_paths, use_l1_land_mask, source_atts, use_predef_lsm,&
-           verbose)
+           usgs, assume_full_paths, use_l1_land_mask, source_atts, &
+           use_predef_lsm, verbose)
 
       ! select correct emissivity file and calculate the emissivity over land
       if (verbose) write(*,*) 'Get surface emissivity'
@@ -1056,13 +1062,15 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
          if (verbose) write(*,*) 'Correct for ice and snow'
          if (.not. disable_snow_ice_corr) then
             if (.not. use_ecmwf_snow_and_ice) then
-               call correct_for_ice_snow(nise_ice_snow_path, imager_geolocation, &
-                    surface, cyear, cmonth, cday, channel_info, assume_full_paths, &
-                    include_full_brdf, source_atts, verbose)
+               call correct_for_ice_snow(nise_ice_snow_path, &
+                    imager_geolocation, surface, cyear, cmonth, cday, &
+                    channel_info, assume_full_paths, include_full_brdf, &
+                    source_atts, verbose)
             else
                call correct_for_ice_snow_ecmwf(ecmwf_HR_path_file(1), &
-                    imager_geolocation, imager_flags, preproc_dims, preproc_prtm, &
-                    surface, include_full_brdf, source_atts, verbose)
+                    imager_geolocation, imager_flags, preproc_dims, &
+                    preproc_prtm, surface, include_full_brdf, source_atts, &
+                    verbose)
             end if
          end if
       else
@@ -1102,20 +1110,21 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       ! perform RTTOV calculations
       if (verbose) write(*,*) 'Perform RTTOV calculations'
       if (ecmwf_flag .eq. 5 .or. ecmwf_flag .eq. 6) then
-         call rttov_driver_gfs(rttov_coef_path,rttov_emiss_path,sensor,platform, &
-              preproc_dims,preproc_geoloc,preproc_geo,preproc_prtm,preproc_surf, &
-              preproc_cld,netcdf_info,channel_info,year,month,day,&
-              use_modis_emis_in_rttov, do_cloud_emis,verbose)
+         call rttov_driver_gfs(rttov_coef_path,rttov_emiss_path,sensor, &
+              platform, preproc_dims,preproc_geoloc,preproc_geo,preproc_prtm, &
+              preproc_surf, preproc_cld,netcdf_info,channel_info,year,month, &
+              day,use_modis_emis_in_rttov,do_cloud_emis,verbose)
          ! Call cloud emissivity function
          if (do_cloud_emis) then
-            call get_cloud_emis(channel_info,imager_measurements,imager_geolocation,preproc_dims,&
-                  preproc_geoloc,preproc_cld,imager_cloud,ecmwf,sensor,verbose)
+            call get_cloud_emis(channel_info,imager_measurements, &
+                  imager_geolocation,preproc_dims,preproc_geoloc, &
+                  preproc_cld,imager_cloud,ecmwf,sensor,verbose)
          end if
       else
          call rttov_driver(rttov_coef_path,rttov_emiss_path,sensor,platform, &
-              preproc_dims,preproc_geoloc,preproc_geo,preproc_prtm,preproc_surf, &
-              netcdf_info,channel_info,year,month,day,use_modis_emis_in_rttov, &
-              verbose)
+              preproc_dims,preproc_geoloc,preproc_geo,preproc_prtm, &
+              preproc_surf,netcdf_info,channel_info,year,month,day, &
+              use_modis_emis_in_rttov,verbose)
       end if
 
 #ifdef WRAPPER
@@ -1150,14 +1159,15 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
             write(*,*) 'No output file is corrupt at attempt ', check_output
             exit
          else
-            write(*,*) 'A preprocessing output file is corrupt - rewriting attempt no. ', &
-               check_output
+            write(*,*) 'A preprocessing output file is corrupt - ', &
+                 'rewriting attempt no. ', check_output
             ! recreate output files if previous attempt produced corrupt files
-            call netcdf_output_create(output_path,lwrtm_file,swrtm_file,prtm_file, &
-                 config_file,msi_file,cf_file,lsf_file,geo_file,loc_file,alb_file, &
-                 platform,sensor,global_atts,source_atts,cyear,cmonth,cday,chour, &
-                 cminute,preproc_dims,imager_angles,imager_geolocation,netcdf_info, &
-                 channel_info,include_full_brdf,ecmwf_flag,do_cloud_emis,verbose)
+            call netcdf_output_create(output_path,lwrtm_file,swrtm_file, &
+                 prtm_file,config_file,msi_file,cf_file,lsf_file,geo_file, &
+                 loc_file,alb_file,platform,sensor,global_atts,source_atts, &
+                 cyear,cmonth,cday,chour,cminute,preproc_dims,imager_angles, &
+                 imager_geolocation,netcdf_info,channel_info,include_full_brdf, &
+                 ecmwf_flag,do_cloud_emis,verbose)
 
          end if
 
@@ -1169,7 +1179,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       if (verbose) write(*,*) 'Write netcdf output files'
       call netcdf_output_write_swath(imager_flags,imager_angles, &
            imager_geolocation,imager_measurements,imager_cloud,imager_time, &
-           imager_pavolonis,netcdf_info,channel_info,surface,include_full_brdf,&
+           imager_pavolonis,netcdf_info,channel_info,surface,include_full_brdf, &
            do_cloud_emis)
 
       ! close output netcdf files
@@ -1189,7 +1199,8 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       call deallocate_imager_structures(imager_geolocation, imager_angles, &
            imager_flags, imager_time, imager_measurements, imager_pavolonis,&
            imager_cloud)
-      call deallocate_surface_structures(surface, channel_info, include_full_brdf)
+      call deallocate_surface_structures(surface, channel_info, &
+           include_full_brdf)
 
    end do ! end looping over chunks
 

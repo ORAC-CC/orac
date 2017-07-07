@@ -66,10 +66,10 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine set_ecmwf(cyear,cmonth,cday,chour,ecmwf_path,ecmwf_path2, &
-   ecmwf_path3,ecmwf_path_file,ecmwf_path_file2,ecmwf_path_file3,ecmwf_flag, &
-   imager_geolocation,imager_time,time_interp_method,time_int_fac,assume_full_path, &
-   ecmwf_hr_path,ecmwf_hr_path_file)
+subroutine set_ecmwf(cyear, cmonth, cday, chour, ecmwf_path, ecmwf_path2, &
+   ecmwf_path3, ecmwf_path_file, ecmwf_path_file2, ecmwf_path_file3, &
+   ecmwf_flag, imager_geolocation, imager_time, time_interp_method, &
+   time_int_fac,assume_full_path, ecmwf_hr_path, ecmwf_hr_path_file)
 
    use calender_m
    use imager_structures_m
@@ -112,9 +112,9 @@ subroutine set_ecmwf(cyear,cmonth,cday,chour,ecmwf_path,ecmwf_path2, &
 
    ! Use 3-hourly NOAA GFS data, otherwise use 6-hourly ECMWF data
    if (ecmwf_flag .eq. 5) then
-      time_fac = 3._dreal
+      time_fac = 3._dreal / 24._dreal
    else
-      time_fac = 6._dreal
+      time_fac = 6._dreal / 24._dreal
    end if
 
    ! Rather than deal with whether the next 6 hour file is in the next month,
@@ -123,8 +123,8 @@ subroutine set_ecmwf(cyear,cmonth,cday,chour,ecmwf_path,ecmwf_path2, &
    if (time_interp_method .eq. 1 .or. time_interp_method .eq. 2) then
       jday = find_center_time(imager_geolocation, imager_time)
 
-      jday0 = floor(jday / (time_fac / 24._dreal)           ) * time_fac / 24._dreal
-      jday1 = floor(jday / (time_fac / 24._dreal) + 1._dreal) * time_fac / 24._dreal
+      jday0 = floor(jday / time_fac           ) * time_fac
+      jday1 = floor(jday / time_fac + 1._dreal) * time_fac
 
       time_int_fac = (jday - jday0) / (jday1 - jday0)
    end if
@@ -171,9 +171,9 @@ subroutine set_ecmwf(cyear,cmonth,cday,chour,ecmwf_path,ecmwf_path2, &
 
          i_path1 = 1
 
-         call make_ecmwf_name(cyear,cmonth,cday,cera_hour,ecmwf_flag,ecmwf_path(1), &
-            ecmwf_path2(1),ecmwf_path3(1),ecmwf_path_file(1),ecmwf_path_file2(1), &
-            ecmwf_path_file3(1))
+         call make_ecmwf_name(cyear, cmonth, cday, cera_hour, ecmwf_flag, &
+              ecmwf_path(1), ecmwf_path2(1), ecmwf_path3(1), &
+              ecmwf_path_file(1), ecmwf_path_file2(1), ecmwf_path_file3(1))
       else if (time_interp_method .eq. 1) then
          ! Pick the closest ERA interim file wrt sensor time
          if (jday - jday0 .lt. jday1 - jday) then
@@ -202,9 +202,10 @@ subroutine set_ecmwf(cyear,cmonth,cday,chour,ecmwf_path,ecmwf_path2, &
             i_path1 = 2
          end if
 
-         call make_ecmwf_name(cera_year,cera_month,cera_day,cera_hour,ecmwf_flag, &
-            ecmwf_path(i_path1),ecmwf_path2(i_path1),ecmwf_path3(i_path1), &
-            ecmwf_path_file(1),ecmwf_path_file2(1),ecmwf_path_file3(1))
+         call make_ecmwf_name(cera_year, cera_month, cera_day, cera_hour, &
+              ecmwf_flag, ecmwf_path(i_path1), ecmwf_path2(i_path1), &
+              ecmwf_path3(i_path1), ecmwf_path_file(1), ecmwf_path_file2(1), &
+              ecmwf_path_file3(1))
       else if (time_interp_method .eq. 2) then
          ! Pick the ERA interim files before and after wrt sensor time
 
@@ -234,9 +235,10 @@ subroutine set_ecmwf(cyear,cmonth,cday,chour,ecmwf_path,ecmwf_path2, &
             i_path1 = 2
          end if
 
-         call make_ecmwf_name(cera_year,cera_month,cera_day,cera_hour,ecmwf_flag, &
-              ecmwf_path(i_path1),ecmwf_path2(i_path1),ecmwf_path3(i_path1), &
-              ecmwf_path_file(1),ecmwf_path_file2(1),ecmwf_path_file3(1))
+         call make_ecmwf_name(cera_year, cera_month, cera_day, cera_hour, &
+              ecmwf_flag, ecmwf_path(i_path1), ecmwf_path2(i_path1), &
+              ecmwf_path3(i_path1), ecmwf_path_file(1), ecmwf_path_file2(1), &
+              ecmwf_path_file3(1))
 
          ! now look at the next file
          day_before = day
@@ -260,11 +262,13 @@ subroutine set_ecmwf(cyear,cmonth,cday,chour,ecmwf_path,ecmwf_path2, &
             i_path2 = 2
          end if
 
-         call make_ecmwf_name(cera_year,cera_month,cera_day,cera_hour,ecmwf_flag, &
-              ecmwf_path(i_path2),ecmwf_path2(i_path2),ecmwf_path3(i_path2), &
-              ecmwf_path_file(2),ecmwf_path_file2(2), ecmwf_path_file3(2))
+         call make_ecmwf_name(cera_year, cera_month, cera_day, cera_hour, &
+              ecmwf_flag, ecmwf_path(i_path2), ecmwf_path2(i_path2), &
+              ecmwf_path3(i_path2), ecmwf_path_file(2), ecmwf_path_file2(2), &
+              ecmwf_path_file3(2))
       else
-         write(*,*) 'ERROR: invalid set_ecmwf() time_interp_method: ', time_interp_method
+         write(*,*) 'ERROR: invalid set_ecmwf() time_interp_method: ', &
+              time_interp_method
          stop error_stop_code
       end if
    end if
@@ -272,7 +276,8 @@ subroutine set_ecmwf(cyear,cmonth,cday,chour,ecmwf_path,ecmwf_path2, &
    if (ecmwf_hr_path(1) .eq. '') then
       call build_ecmwf_HR_file_from_LR(ecmwf_path_file(1), ecmwf_hr_path_file(1))
       if (time_interp_method .eq. 2) then
-         call build_ecmwf_HR_file_from_LR(ecmwf_path_file(2), ecmwf_hr_path_file(2))
+         call build_ecmwf_HR_file_from_LR(ecmwf_path_file(2), &
+              ecmwf_hr_path_file(2))
       end if
    else if (assume_full_path) then
       ecmwf_hr_path_file(1) = ecmwf_hr_path(1)
@@ -386,7 +391,7 @@ subroutine make_ecmwf_name(cyear,cmonth,cday,chour,ecmwf_flag,ecmwf_path, &
            trim(adjustl(cday))//'_'//trim(adjustl(chour))//'00_000.grb2'
    case default
       write(*,*) 'ERROR: set_ecmwf(): Unknown ECMWF file format flag. ' // &
-               & 'Please select 0, 1, 2, 3, or 4.'
+                 'Please select 0, 1, 2, 3, or 4.'
       stop error_stop_code
    end select
 

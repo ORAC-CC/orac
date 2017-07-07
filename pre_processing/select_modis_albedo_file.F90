@@ -47,8 +47,8 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine select_modis_albedo_file(cyear,cdoy,modis_surf_path,include_full_brdf, &
-                                    modis_surf_path_file)
+subroutine select_modis_albedo_file(cyear, cdoy, modis_surf_path, &
+                                    include_full_brdf, modis_surf_path_file)
 
    use preproc_structures_m
    use system_utils_m
@@ -114,8 +114,8 @@ subroutine select_modis_albedo_file(cyear,cdoy,modis_surf_path,include_full_brdf
       regex = prefix//'\.A'//trim(adjustl(cyear2))//trim(adjustl(mcd_date_s))// &
            '\.006\..............'//'\.hdf$'
       if (match_file(trim(modis_surf_path), trim(regex), file_name) .ne. 0) then
-         write(*,*) 'ERROR: select_modis_albedo_file(): Unable to locate MODIS ' // &
-            'albedo file: ', trim(modis_surf_path)//'/'//trim(regex)
+         write(*,*) 'ERROR: select_modis_albedo_file(): Unable to locate ' // &
+            'MODIS albedo file: ', trim(modis_surf_path)//'/'//trim(regex)
          stop error_stop_code
       end if
    end if
@@ -131,7 +131,8 @@ subroutine select_modis_albedo_file(cyear,cdoy,modis_surf_path,include_full_brdf
       stop error_stop_code
    else if (trim(modis_surf_file_read).eq.'NO') then
       write(*,*) 'ERROR: select_modis_albedo_file(): MODIS surface albedo ' // &
-                 'file exists but is not readable, filename: ', trim(modis_surf_path_file)
+                 'file exists but is not readable, filename: ', &
+                 trim(modis_surf_path_file)
       stop error_stop_code
    end if
 

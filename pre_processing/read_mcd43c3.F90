@@ -207,7 +207,8 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, read_ws, read_bs, &
       stat = gdrdfld(gid, 'Local_Solar_Noon', start, stride, edge, &
                      mcd%local_solar_noon)
       if (stat .ne. 0) then
-         write(*,*) 'ERROR: read_mcd43c3(), Error reading Local_Solar_Noon: ',stat
+         write(*,*) 'ERROR: read_mcd43c3(), Error reading Local_Solar_Noon: ', &
+              stat
          stop error_stop_code
       end if
 

@@ -63,7 +63,8 @@ subroutine read_avhrr_time_lat_lon_angles(path_to_geo_file,imager_geolocation,&
    !reference point of time
    integer(kind=sint) :: refday=1_sint,refyear=1970_sint,refmonth=1_sint
 
-   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_avhrr_time_lat_lon_angles()'
+   if (verbose) &
+        write(*,*) '<<<<<<<<<<<<<<< Entering read_avhrr_time_lat_lon_angles()'
 
    !allocate temporary data
    allocate(temp(imager_geolocation%startx:imager_geolocation%endx,&
@@ -162,6 +163,7 @@ subroutine read_avhrr_time_lat_lon_angles(path_to_geo_file,imager_geolocation,&
    !close access to hdf5 interface
    call h5close_f(err_code)
 
-   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_avhrr_time_lat_lon_angles()'
+   if (verbose) &
+        write(*,*) '>>>>>>>>>>>>>>> Leaving read_avhrr_time_lat_lon_angles()'
 
 end subroutine read_avhrr_time_lat_lon_angles

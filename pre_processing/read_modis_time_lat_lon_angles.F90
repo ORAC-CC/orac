@@ -65,7 +65,8 @@ subroutine read_modis_time_lat_lon_angles(path_to_geo_file,imager_geolocation,&
    integer(kind=byte), allocatable, dimension(:,:) :: btemp
    integer                                         :: err_code
 
-   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_modis_time_lat_lon_angles()'
+   if (verbose) &
+        write(*,*) '<<<<<<<<<<<<<<< Entering read_modis_time_lat_lon_angles()'
 
    !allocate temporary data
    allocate(temp(imager_geolocation%startx:imager_geolocation%endx,&
@@ -193,6 +194,7 @@ subroutine read_modis_time_lat_lon_angles(path_to_geo_file,imager_geolocation,&
    !end access to geofile
    err_code=sfend(geo_id)
 
-   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_modis_time_lat_lon_angles()'
+   if (verbose) &
+        write(*,*) '>>>>>>>>>>>>>>> Leaving read_modis_time_lat_lon_angles()'
 
 end subroutine read_modis_time_lat_lon_angles

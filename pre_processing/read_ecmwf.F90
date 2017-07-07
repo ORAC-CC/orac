@@ -114,7 +114,8 @@ subroutine read_ecmwf_wind(ecmwf_flag, ecmwf_path_file, ecmwf_HR_path_file, &
    if (verbose) then
       write(*,*) 'U10) Min: ',minval(ecmwf%u10),', Max: ',maxval(ecmwf%u10)
       write(*,*) 'V10) Min: ',minval(ecmwf%v10),', Max: ',maxval(ecmwf%v10)
-      write(*,*) 'SKINT) Min: ',minval(ecmwf%skin_temp),', Max: ',maxval(ecmwf%skin_temp)
+      write(*,*) 'SKINT) Min: ',minval(ecmwf%skin_temp),', Max: ', &
+           maxval(ecmwf%skin_temp)
    end if
 
    ! It is possible for this field to have fill.  It is set to -9e+33 for DWD
@@ -122,7 +123,8 @@ subroutine read_ecmwf_wind(ecmwf_flag, ecmwf_path_file, ecmwf_HR_path_file, &
    where (ecmwf%sea_ice_cover .lt. 0.0 .or. ecmwf%sea_ice_cover .gt. 1.0) &
       ecmwf%sea_ice_cover = sreal_fill_value
    if (use_hr_ecmwf) then
-      where (ecmwf_HR%sea_ice_cover .lt. 0.0 .or. ecmwf_HR%sea_ice_cover .gt. 1.0) &
+      where (ecmwf_HR%sea_ice_cover .lt. 0.0 .or. &
+             ecmwf_HR%sea_ice_cover .gt. 1.0) &
          ecmwf_HR%sea_ice_cover = sreal_fill_value
    end if
 

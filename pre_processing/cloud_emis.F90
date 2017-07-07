@@ -120,8 +120,10 @@ subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation,&
               preproc_geoloc%latitude, NLat, imager_geolocation%longitude(j,i), &
               imager_geolocation%latitude(j,i), interp(1),Wrap)
 
-         call interp_field (preproc_cld%cloud_bt(:,:,good_chan_lw), cldbt(j,i), interp(1))
-         call interp_field (preproc_cld%clear_bt(:,:,good_chan_lw), clrbt(j,i), interp(1))
+         call interp_field (preproc_cld%cloud_bt(:,:,good_chan_lw), &
+                            cldbt(j,i), interp(1))
+         call interp_field (preproc_cld%clear_bt(:,:,good_chan_lw), &
+                            clrbt(j,i), interp(1))
       end do
    end do
    do i=1,imager_geolocation%ny
