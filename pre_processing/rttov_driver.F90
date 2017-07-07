@@ -722,7 +722,7 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
                      where (preproc_surf%emissivity(idim,jdim,:) /= &
                           sreal_fill_value)
                         emissivity%emis_in = &
-                             preproc_surf%emissivity(idim,jdim,:)
+                             preproc_surf%emissivity(idim,jdim,chan_pos)
                      end where
                   end if
 
