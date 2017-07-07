@@ -271,8 +271,6 @@ subroutine alloc_output_data_primary(ind, MaxIter, data)
       nullify(data%cloud_albedo_uncertainty)
       nullify(data%cee)
       nullify(data%cee_uncertainty)
-      nullify(data%ann_phase)
-      nullify(data%ann_phase_uncertainty)
       nullify(data%cphcot)
       nullify(data%cccot_pre)
    end if
