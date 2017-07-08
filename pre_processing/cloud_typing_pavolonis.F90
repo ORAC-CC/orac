@@ -135,6 +135,8 @@
 module cloud_typing_pavolonis_m
    !***********************************************************************
 
+   use common_constants_m
+
    implicit none
 
    private
@@ -142,6 +144,9 @@ module cloud_typing_pavolonis_m
    public :: CLOUD_TYPE !, CLOUD_RETYPE
 
    integer, parameter, private:: n_box=3
+
+   ! load external file containing fill coefficients
+   include 'pavolonis_fill_coefficients.inc'
 
 contains
 !----------------------------------------------------------------------
@@ -988,26 +993,23 @@ end subroutine CLOUD_TYPE
     real(kind=sreal)   :: ref_ch3a
     real(kind=sreal)   :: solzen,ch1v,ch2v
 
-    real(kind=dreal), dimension(7)   :: A1
-    real(kind=dreal), dimension(7)   :: B1
-    real(kind=dreal), dimension(7)   :: C1
-    real(kind=dreal), dimension(7)   :: D1
-    real(kind=dreal), dimension(7)   :: E1
-    real(kind=dreal), dimension(7)   :: A2
-    real(kind=dreal), dimension(7)   :: B2
-    real(kind=dreal), dimension(7)   :: C2
-    real(kind=dreal), dimension(7)   :: D2
-    real(kind=dreal), dimension(7)   :: E2
-    real(kind=dreal), dimension(7,8) :: A3
-    real(kind=dreal), dimension(7,8) :: B3
-    real(kind=dreal), dimension(7,8) :: C3
-    real(kind=dreal), dimension(7,8) :: D3
-    real(kind=dreal), dimension(7,8) :: E3
-    real(kind=dreal), dimension(7,8) :: MIN_BTD1112_DOVERLAP
-    real(kind=dreal), dimension(7)   :: MIN_BTD1112_NOVERLAP
-
-    ! load external file containing fill coefficients
-    include 'pavolonis_fill_coefficients.inc'
+!   real(kind=dreal), parameter, dimension(7)   :: A1
+!   real(kind=dreal), parameter, dimension(7)   :: B1
+!   real(kind=dreal), parameter, dimension(7)   :: C1
+!   real(kind=dreal), parameter, dimension(7)   :: D1
+!   real(kind=dreal), parameter, dimension(7)   :: E1
+!   real(kind=dreal), parameter, dimension(7)   :: A2
+!   real(kind=dreal), parameter, dimension(7)   :: B2
+!   real(kind=dreal), parameter, dimension(7)   :: C2
+!   real(kind=dreal), parameter, dimension(7)   :: D2
+!   real(kind=dreal), parameter, dimension(7)   :: E2
+!   real(kind=dreal), parameter, dimension(7,8) :: A3
+!   real(kind=dreal), parameter, dimension(7,8) :: B3
+!   real(kind=dreal), parameter, dimension(7,8) :: C3
+!   real(kind=dreal), parameter, dimension(7,8) :: D3
+!   real(kind=dreal), parameter, dimension(7,8) :: E3
+!   real(kind=dreal), parameter, dimension(7,8) :: MIN_BTD1112_DOVERLAP
+!   real(kind=dreal), parameter, dimension(7)   :: MIN_BTD1112_NOVERLAP
 
             !-- check if solar zenith angle is > 0
 
