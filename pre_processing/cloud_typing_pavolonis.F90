@@ -704,7 +704,8 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
       !---------------------------------------------------------------------
       !$OMP PARALLEL &
       !$OMP PRIVATE(i) &
-      !$OMP PRIVATE(j) &
+      !$OMP PRIVATE(j)
+#ifdef CRAP
       !$OMP PRIVATE(ch3a_on_avhrr_flag) &
       !$OMP PRIVATE(ch2_on_atsr_flag) &
       !$OMP PRIVATE(ch6_on_atsr_flag) &
@@ -745,7 +746,7 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
       !$OMP PRIVATE(platform_index) &
       !$OMP PRIVATE(desertflag) &
       !$OMP PRIVATE(bt_ch3b)
-
+#endif
       !$OMP DO SCHEDULE(GUIDED)
       !-- loop over all pixels (x)
       !i_loop: do  i = 1, num_pix
@@ -761,9 +762,337 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
          j_loop: do j = 1, imager_geolocation%ny !imager_geolocation%STARTY,
             ! imager_geolocation%ENDY
 
+             call cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, sw1, sw2, sw3, imager_flags, surface, imager_angles, imager_geolocation, imager_measurements, imager_pavolonis, sensor, platform, doy, do_ironly, verbose, skint, snow_ice_mask)
+
+            !end scanline loop
+         end do j_loop
+         !-------------------------------------------------------------------
+
+
+         !pixel loop
+      end do i_loop
+      !$OMP END DO
+      !$OMP END PARALLEL
+      !---------------------------------------------------------------------
+
+
+
+      !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+      !+                                                                   +
+      !+                      END OF TYPING SPECTRAL TESTS                 +
+      !+                                                                   +
+      !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+
+
+      !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+      !+                                                                   +
+      !+    Start spatial filter used on cirrus and overlap pixels.        +
+      !+    A 2n_box x 2n_box pixel filter is employed.                    +
+      !+                                                                   +
+      !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+      !-- loop over pixels
+      !i_loop2: do  i = 1,num_pix
+      i_loop2: do  i = imager_geolocation%STARTX, imager_geolocation%ENDX
+
+
+         !-- loop over scanlines
+         !j_loop2: do j = j1,j2
+         j_loop2: do j = 1, imager_geolocation%NY
+
+            if (imager_pavolonis%CLDTYPE(i,j,cview) .ne. CIRRUS_TYPE .and. &
+                 imager_pavolonis%CLDTYPE(i,j,cview) .ne. OVERLAP_TYPE) cycle
+
+            !-- coszen = cosine of the solar zenith angle
+            !         coszen = cos(imager_angles%SOLZEN(i,j,cview) * d2r )
+            coszen = cos(imager_angles%SATZEN(i,j,cview) * d2r )
+
+            !-- determine box for filtering
+            !start_line = max(j1,j - n_box)
+            !end_line   = min(j2,j + n_box)
+            !start_pix  = max(1,i - n_box)
+            !end_pix    = min(num_pix,i + n_box)
+            start_line = max(1,j - n_box)
+            end_line   = min(imager_geolocation%NY,j + n_box)
+            start_pix  = max(imager_geolocation%STARTX,i - n_box)
+            end_pix    = min(imager_geolocation%ENDX,i + n_box)
+            npix       = ((end_line - start_line)+1)*((end_pix - start_pix)+1)
+
+
+            !-- At least one pixel in the 2n_box x 2n_box array must have a
+            !   Bt_Ch4 < 295 K and the average ems 3.75 um must be < 1.2
+            !   for low quality cirrus;
+            !   otherwise the pixel is reset to water or mixed.
+
+            if ( imager_pavolonis%CLDTYPE(i,j,cview) == CIRRUS_TYPE .and. &
+                 imager_pavolonis%cirrus_quality(i,j,cview) == 0) then
+
+               !-- account for atmospheric effects
+               t4_filter_thresh = 295.0 - 12.0*(1.0-coszen)
+
+               !-- filter pixels in region
+               !   added criterion for missing values in ems_Ch20 - akh 1/07
+               if ( (minval(imager_measurements%DATA(start_pix:end_pix &
+                    ,start_line:end_line,ch5)) > t4_filter_thresh) .or. &
+                    ( (sum(imager_pavolonis%emis_ch3b(start_pix:end_pix &
+                    ,start_line:end_line,cview))/npix < 1.2) .and. &
+                    (minval(imager_pavolonis%emis_ch3b(start_pix:end_pix &
+                    ,start_line:end_line,cview)) > 0.0) ) ) then
+
+                  if ( imager_measurements%DATA(i,j,ch5) <= 273.16 ) then
+                     imager_pavolonis%CLDTYPE(i,j,cview) = SUPERCOOLED_TYPE
+                  else
+                     imager_pavolonis%CLDTYPE(i,j,cview) = WATER_TYPE
+                  end if
+
+               end if
+
+            end if
+
+
+            !-- At least one pixel in the 2n x 2n array must have a
+            !   Bt_Ch4 < 275 K for overlap;
+            !   otherwise the pixel is reset to water or mixed.
+
+            !-- account for atmospheric effects in BT4 threshold for filtering
+
+            if ( imager_pavolonis%CLDTYPE(i,j,cview) == OVERLAP_TYPE .and. &
+                 imager_angles%SOLZEN(i,j,cview) > 90.0 ) then
+
+               t4_filter_thresh = 273.0 - 12.0*(1.0-coszen)
+
+               if (minval(imager_measurements%DATA(start_pix:end_pix, &
+                    start_line:end_line,ch5)) > t4_filter_thresh) then
+
+                  if (imager_measurements%DATA(i,j,ch5) <= 273.16) then
+                     imager_pavolonis%CLDTYPE(i,j,cview) = SUPERCOOLED_TYPE
+                  else
+                     imager_pavolonis%CLDTYPE(i,j,cview) = WATER_TYPE
+                  end if
+
+               end if
+
+            end if
+
+            !-- end of scanline loop
+         end do j_loop2
+
+
+         !-- end of pixel loop
+      end do i_loop2
+
+      ! reset imager data to untransformed values
+      if (do_spectral_response_correction) then
+         imager_measurements%data = imager_data
+      end if
+
+   end do v_loop
+
+   if (do_spectral_response_correction) then
+      deallocate(imager_data)
+   end if
+
+   deallocate(skint)
+   deallocate(snow_depth)
+   deallocate(sea_ice_cover)
+
+   ! =====================================================================
+end subroutine CLOUD_TYPE
+! =====================================================================
+
+
+
+! NOT ADAPTED YET for CC4CL!
+!
+! =====================================================================
+!      Beginning of subroutine CLOUD_RETYPE
+!      This routine modifies the cloud_type array based on spatial
+!      analysis.  Its goal is to reduce the edges of stratus clouds
+!      from being typed as cirrus
+! =====================================================================
+
+!   subroutine CLOUD_RETYPE(jmin,numj,cld_type_array)
+
+!     use COMMON_CONSTANTS
+!     use IMAGER_STRUCTURES
+!     use CONSTANTS_CLOUD_TYPING_PAVOLONIS
+
+!     integer (kind=sint), intent(inout), dimension(:,:) :: cld_type_array
+!     integer, intent(in):: jmin
+!     integer, intent(in):: numj
+!     integer:: ilrc
+!     integer:: jlrc
+!     integer:: i
+!     integer:: j
+
+!     type(imager_geolocation_t) :: imager_geolocation
+
+
+!     !-------------------------------------------------------------------
+!     ! ---- loop over pixels
+!     !i_loop: do i = 1, num_pix
+!     i_loop: do i = imager_geolocation%STARTX, imager_geolocation%ENDX
+
+
+!        !-----------------------------------------------------------------
+!        ! ---- loop over scanlines
+!        !j_loop: do j = jmin, numj + jmin - 1
+!        j_loop: do j = imager_geolocation%STARTY, imager_geolocation%ENDY
+
+
+!           ilrc = i_lrc(i,j)
+!           jlrc = j_lrc(i,j)
+
+
+!           ! check for ice-phase pixels where the local radiative center
+!           ! is a water cloud  - retype these as water
+
+!           if ((cld_type_array(i,j) == CIRRUS_TYPE)  .or. &
+!                (cld_type_array(i,j) == OVERLAP_TYPE)) then
+
+!              !ilrc = i_min_Bt_Ch31_3x3(i,j)
+!              !jlrc = j_min_Bt_Ch31_3x3(i,j)
+!              ilrc = i_lrc(i,j)
+!              jlrc = j_lrc(i,j)
+
+!              ! skip this if no lrc is available
+!              if ( ilrc < 1 .or. jlrc < 1 ) then
+!                 cycle
+!              end if
+
+!              if ((cld_type_array(ilrc,jlrc) == FOG_TYPE) .or. &
+!                   (cld_type_array(ilrc,jlrc) == WATER_TYPE) .or. &
+!                   (cld_type_array(ilrc,jlrc) == SUPERCOOLED_TYPE)) then
+
+!                 cld_type_array(i,j) = cld_type_array(ilrc,jlrc)
+
+!              end if
+
+!           end if
+
+
+
+!           ! check for water clouds on the edge of cirrus
+
+!           if ((cld_type_array(i,j) == FOG_TYPE)  .or. &
+!                (cld_type_array(i,j) == WATER_TYPE)) then
+
+!              ilrc = i_lrc(i,j)
+!              jlrc = j_lrc(i,j)
+
+!              if (ilrc < 1 .or. jlrc < 1) then
+!                 cycle
+!              end if
+
+!              if ((cld_type_array(ilrc,jlrc) == CIRRUS_TYPE) .or. &
+!                   (cld_type_array(ilrc,jlrc) == OVERLAP_TYPE) .or. &
+!                   (cld_type_array(ilrc,jlrc) == OPAQUE_ICE_TYPE)) then
+
+!                 cld_type_array(i,j) = CIRRUS_TYPE
+
+!              end if
+
+!           end if
+
+
+!        end do j_loop
+!        !-----------------------------------------------------------------
+
+
+!     end do i_loop
+!     !-------------------------------------------------------------------
+
+
+! =====================================================================
+!   end subroutine CLOUD_RETYPE
+! =====================================================================
+
+
+  subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, sw1, sw2, sw3, &
+    imager_flags, surface, imager_angles, imager_geolocation, &
+                              imager_measurements, imager_pavolonis, sensor, platform, doy, do_ironly, verbose, skint, snow_ice_mask)
+
+    use constants_cloud_typing_pavolonis_m
+    use imager_structures_m
+    use neural_net_preproc_m
+    use surface_structures_m
+
+    integer,                        intent(in)    :: cview, i, j
+    integer(kind=sint),             intent(in)    :: ch1, ch2, ch3, ch4, ch5, ch6, sw1, sw2, sw3
+    type(surface_t),                intent(in)    :: surface
+    type(imager_flags_t),           intent(in)    :: imager_flags
+    type(imager_angles_t),          intent(in)    :: imager_angles
+    type(imager_geolocation_t),     intent(in)    :: imager_geolocation
+    type(imager_measurements_t),    intent(inout) :: imager_measurements
+    type(imager_pavolonis_t),       intent(inout) :: imager_pavolonis
+    character(len=sensor_length),   intent(in)    :: sensor
+    character(len=platform_length), intent(in)    :: platform
+    integer(kind=sint),             intent(in)    :: doy
+    logical,                        intent(in)    :: do_ironly
+    logical,                        intent(in)    :: verbose
+    real(kind=sreal), dimension(imager_geolocation%startx:imager_geolocation%endx, &
+         1:imager_geolocation%ny) :: skint
+    integer(kind=byte),             intent(in)    :: snow_ice_mask(imager_geolocation%startx:imager_geolocation%endx, &
+         1:imager_geolocation%ny)
+
+    real (kind=sreal):: NIR_PHASE_THRES, NIR_CIRRUS_THRES, NIR_OVER_THRES, &
+         BTD3811_PHASE_THRES, EMS38_PHASE_THRES,            &
+         BTD1112_DOVERLAP_THRES, BTD1112_CIRRUS_THRES,      &
+         BTD1112_NOVERLAP_THRES_L, BTD1112_NOVERLAP_THRES_H,&
+         EMS38_NOVERLAP_THRES_L, EMS38_NOVERLAP_THRES_H
+
+    integer :: index1, index2, wflg, platform_index
+
+    integer(kind=sint) :: ch3a_on_avhrr_flag
+
+    integer(kind=sint) :: ch2_on_atsr_flag,ch6_on_atsr_flag,ch7_on_atsr_flag
+
+    logical :: day,desertflag
+
+    real    :: nir_ref
+
+    real(kind=sreal)   :: glint_angle, coszen
+    real(kind=sreal)   :: BTD_Ch3b_Ch4
+    real(kind=sreal)   :: BTD_Ch4_Ch5
+    real(kind=sreal), dimension(2) :: PlanckInv_out
+    real(kind=sreal)   :: rad_ch3b
+    real(kind=sreal)   :: rad_ch3b_emis
+    real(kind=sreal)   :: solcon_ch3b
+    real(kind=sreal)   :: mu0
+    real(kind=sreal)   :: esd
+    real(kind=sreal)   :: c_sun
+    real(kind=sreal)   :: ref_ch3b
+    real(kind=sreal)   :: bt_ch3b
+    real(kind=sreal)   :: ref_ch1
+    real(kind=sreal)   :: ref_ch3a
+    real(kind=sreal)   :: solzen,ch1v,ch2v
+
+    real(kind=dreal), dimension(7)   :: A1
+    real(kind=dreal), dimension(7)   :: B1
+    real(kind=dreal), dimension(7)   :: C1
+    real(kind=dreal), dimension(7)   :: D1
+    real(kind=dreal), dimension(7)   :: E1
+    real(kind=dreal), dimension(7)   :: A2
+    real(kind=dreal), dimension(7)   :: B2
+    real(kind=dreal), dimension(7)   :: C2
+    real(kind=dreal), dimension(7)   :: D2
+    real(kind=dreal), dimension(7)   :: E2
+    real(kind=dreal), dimension(7,8) :: A3
+    real(kind=dreal), dimension(7,8) :: B3
+    real(kind=dreal), dimension(7,8) :: C3
+    real(kind=dreal), dimension(7,8) :: D3
+    real(kind=dreal), dimension(7,8) :: E3
+    real(kind=dreal), dimension(7,8) :: MIN_BTD1112_DOVERLAP
+    real(kind=dreal), dimension(7)   :: MIN_BTD1112_NOVERLAP
+
+    ! load external file containing fill coefficients
+    include 'pavolonis_fill_coefficients.inc'
+
             !-- check if solar zenith angle is > 0
 
-            if ( imager_angles%SOLZEN(i,j,cview) .lt. 0. ) cycle
+            if ( imager_angles%SOLZEN(i,j,cview) .lt. 0. ) return
 
             !-- check if Ch3a is available or not (fill_value is negative)
 
@@ -953,11 +1282,11 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
                  platform, &
                  verbose )
 
-            ! cycle if clear, as no need to define cloud type
+            ! return if clear, as no need to define cloud type
             if ( imager_pavolonis%CLDMASK(i,j,cview) == CLEAR ) then
                imager_pavolonis%CLDTYPE(i,j,cview) = CLEAR_TYPE
                imager_pavolonis%ANN_PHASE(i,j,cview) = CLEAR_TYPE
-               if (trim(adjustl(sensor)) .ne. 'AATSR' .and. trim(adjustl(sensor)) .ne. 'ATSR2') cycle
+               if (trim(adjustl(sensor)) .ne. 'AATSR' .and. trim(adjustl(sensor)) .ne. 'ATSR2') return
             end if
 
             ! implement extra tests for AATSR
@@ -1003,7 +1332,7 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
 
                if ( imager_pavolonis%CLDMASK(i,j,cview) == CLEAR ) then
                   imager_pavolonis%CLDTYPE(i,j,cview) = CLEAR_TYPE
-                  cycle
+                  return
                end if
             end if
 
@@ -1067,7 +1396,7 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
 
                   end if
 
-                  cycle
+                  return
 
                end if ! end avhrr channel flag
 
@@ -1324,7 +1653,7 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
                   ! In case it is daytime, but ref_ch1 <= 0, skip further Pavolonis tests.
                   ! Algorithm output is simple IR window brightness temperature-based typing
                   ! as applied previously.
-                  cycle
+                  return
 
                   ! ----------------------------------------- !
                   !                                           !
@@ -1693,250 +2022,7 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
 
             end if
 
-            !end scanline loop
-         end do j_loop
-         !-------------------------------------------------------------------
-
-
-         !pixel loop
-      end do i_loop
-      !$OMP END DO
-      !$OMP END PARALLEL
-      !---------------------------------------------------------------------
-
-
-
-      !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-      !+                                                                   +
-      !+                      END OF TYPING SPECTRAL TESTS                 +
-      !+                                                                   +
-      !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-
-
-
-      !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-      !+                                                                   +
-      !+    Start spatial filter used on cirrus and overlap pixels.        +
-      !+    A 2n_box x 2n_box pixel filter is employed.                    +
-      !+                                                                   +
-      !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-      !-- loop over pixels
-      !i_loop2: do  i = 1,num_pix
-      i_loop2: do  i = imager_geolocation%STARTX, imager_geolocation%ENDX
-
-
-         !-- loop over scanlines
-         !j_loop2: do j = j1,j2
-         j_loop2: do j = 1, imager_geolocation%NY
-
-            if (imager_pavolonis%CLDTYPE(i,j,cview) .ne. CIRRUS_TYPE .and. &
-                 imager_pavolonis%CLDTYPE(i,j,cview) .ne. OVERLAP_TYPE) cycle
-
-            !-- coszen = cosine of the solar zenith angle
-            !         coszen = cos(imager_angles%SOLZEN(i,j,cview) * d2r )
-            coszen = cos(imager_angles%SATZEN(i,j,cview) * d2r )
-
-            !-- determine box for filtering
-            !start_line = max(j1,j - n_box)
-            !end_line   = min(j2,j + n_box)
-            !start_pix  = max(1,i - n_box)
-            !end_pix    = min(num_pix,i + n_box)
-            start_line = max(1,j - n_box)
-            end_line   = min(imager_geolocation%NY,j + n_box)
-            start_pix  = max(imager_geolocation%STARTX,i - n_box)
-            end_pix    = min(imager_geolocation%ENDX,i + n_box)
-            npix       = ((end_line - start_line)+1)*((end_pix - start_pix)+1)
-
-
-            !-- At least one pixel in the 2n_box x 2n_box array must have a
-            !   Bt_Ch4 < 295 K and the average ems 3.75 um must be < 1.2
-            !   for low quality cirrus;
-            !   otherwise the pixel is reset to water or mixed.
-
-            if ( imager_pavolonis%CLDTYPE(i,j,cview) == CIRRUS_TYPE .and. &
-                 imager_pavolonis%cirrus_quality(i,j,cview) == 0) then
-
-               !-- account for atmospheric effects
-               t4_filter_thresh = 295.0 - 12.0*(1.0-coszen)
-
-               !-- filter pixels in region
-               !   added criterion for missing values in ems_Ch20 - akh 1/07
-               if ( (minval(imager_measurements%DATA(start_pix:end_pix &
-                    ,start_line:end_line,ch5)) > t4_filter_thresh) .or. &
-                    ( (sum(imager_pavolonis%emis_ch3b(start_pix:end_pix &
-                    ,start_line:end_line,cview))/npix < 1.2) .and. &
-                    (minval(imager_pavolonis%emis_ch3b(start_pix:end_pix &
-                    ,start_line:end_line,cview)) > 0.0) ) ) then
-
-                  if ( imager_measurements%DATA(i,j,ch5) <= 273.16 ) then
-                     imager_pavolonis%CLDTYPE(i,j,cview) = SUPERCOOLED_TYPE
-                  else
-                     imager_pavolonis%CLDTYPE(i,j,cview) = WATER_TYPE
-                  end if
-
-               end if
-
-            end if
-
-
-            !-- At least one pixel in the 2n x 2n array must have a
-            !   Bt_Ch4 < 275 K for overlap;
-            !   otherwise the pixel is reset to water or mixed.
-
-            !-- account for atmospheric effects in BT4 threshold for filtering
-
-            if ( imager_pavolonis%CLDTYPE(i,j,cview) == OVERLAP_TYPE .and. &
-                 imager_angles%SOLZEN(i,j,cview) > 90.0 ) then
-
-               t4_filter_thresh = 273.0 - 12.0*(1.0-coszen)
-
-               if (minval(imager_measurements%DATA(start_pix:end_pix, &
-                    start_line:end_line,ch5)) > t4_filter_thresh) then
-
-                  if (imager_measurements%DATA(i,j,ch5) <= 273.16) then
-                     imager_pavolonis%CLDTYPE(i,j,cview) = SUPERCOOLED_TYPE
-                  else
-                     imager_pavolonis%CLDTYPE(i,j,cview) = WATER_TYPE
-                  end if
-
-               end if
-
-            end if
-
-            !-- end of scanline loop
-         end do j_loop2
-
-
-         !-- end of pixel loop
-      end do i_loop2
-
-      ! reset imager data to untransformed values
-      if (do_spectral_response_correction) then
-         imager_measurements%data = imager_data
-      end if
-
-   end do v_loop
-
-   if (do_spectral_response_correction) then
-      deallocate(imager_data)
-   end if
-
-   deallocate(skint)
-   deallocate(snow_depth)
-   deallocate(sea_ice_cover)
-
-   ! =====================================================================
-end subroutine CLOUD_TYPE
-! =====================================================================
-
-
-
-! NOT ADAPTED YET for CC4CL!
-!
-! =====================================================================
-!      Beginning of subroutine CLOUD_RETYPE
-!      This routine modifies the cloud_type array based on spatial
-!      analysis.  Its goal is to reduce the edges of stratus clouds
-!      from being typed as cirrus
-! =====================================================================
-
-!   subroutine CLOUD_RETYPE(jmin,numj,cld_type_array)
-
-!     use COMMON_CONSTANTS
-!     use IMAGER_STRUCTURES
-!     use CONSTANTS_CLOUD_TYPING_PAVOLONIS
-
-!     integer (kind=sint), intent(inout), dimension(:,:) :: cld_type_array
-!     integer, intent(in):: jmin
-!     integer, intent(in):: numj
-!     integer:: ilrc
-!     integer:: jlrc
-!     integer:: i
-!     integer:: j
-
-!     type(imager_geolocation_t) :: imager_geolocation
-
-
-!     !-------------------------------------------------------------------
-!     ! ---- loop over pixels
-!     !i_loop: do i = 1, num_pix
-!     i_loop: do i = imager_geolocation%STARTX, imager_geolocation%ENDX
-
-
-!        !-----------------------------------------------------------------
-!        ! ---- loop over scanlines
-!        !j_loop: do j = jmin, numj + jmin - 1
-!        j_loop: do j = imager_geolocation%STARTY, imager_geolocation%ENDY
-
-
-!           ilrc = i_lrc(i,j)
-!           jlrc = j_lrc(i,j)
-
-
-!           ! check for ice-phase pixels where the local radiative center
-!           ! is a water cloud  - retype these as water
-
-!           if ((cld_type_array(i,j) == CIRRUS_TYPE)  .or. &
-!                (cld_type_array(i,j) == OVERLAP_TYPE)) then
-
-!              !ilrc = i_min_Bt_Ch31_3x3(i,j)
-!              !jlrc = j_min_Bt_Ch31_3x3(i,j)
-!              ilrc = i_lrc(i,j)
-!              jlrc = j_lrc(i,j)
-
-!              ! skip this if no lrc is available
-!              if ( ilrc < 1 .or. jlrc < 1 ) then
-!                 cycle
-!              end if
-
-!              if ((cld_type_array(ilrc,jlrc) == FOG_TYPE) .or. &
-!                   (cld_type_array(ilrc,jlrc) == WATER_TYPE) .or. &
-!                   (cld_type_array(ilrc,jlrc) == SUPERCOOLED_TYPE)) then
-
-!                 cld_type_array(i,j) = cld_type_array(ilrc,jlrc)
-
-!              end if
-
-!           end if
-
-
-
-!           ! check for water clouds on the edge of cirrus
-
-!           if ((cld_type_array(i,j) == FOG_TYPE)  .or. &
-!                (cld_type_array(i,j) == WATER_TYPE)) then
-
-!              ilrc = i_lrc(i,j)
-!              jlrc = j_lrc(i,j)
-
-!              if (ilrc < 1 .or. jlrc < 1) then
-!                 cycle
-!              end if
-
-!              if ((cld_type_array(ilrc,jlrc) == CIRRUS_TYPE) .or. &
-!                   (cld_type_array(ilrc,jlrc) == OVERLAP_TYPE) .or. &
-!                   (cld_type_array(ilrc,jlrc) == OPAQUE_ICE_TYPE)) then
-
-!                 cld_type_array(i,j) = CIRRUS_TYPE
-
-!              end if
-
-!           end if
-
-
-!        end do j_loop
-!        !-----------------------------------------------------------------
-
-
-!     end do i_loop
-!     !-------------------------------------------------------------------
-
-
-! =====================================================================
-!   end subroutine CLOUD_RETYPE
-! =====================================================================
+  end subroutine cloud_type_pixel
 
 
 function PlanckInv( input_platform, T )
