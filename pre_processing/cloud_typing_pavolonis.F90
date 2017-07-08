@@ -294,40 +294,11 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
    logical,                        intent(inout) :: do_spectral_response_correction
    logical,                        intent(in)    :: verbose
 
-
-   !-- Declare some variables to hold various thresholds.
-
-   real (kind=sreal):: NIR_PHASE_THRES, NIR_CIRRUS_THRES, NIR_OVER_THRES, &
-        BTD3811_PHASE_THRES, EMS38_PHASE_THRES,            &
-        BTD1112_DOVERLAP_THRES, BTD1112_CIRRUS_THRES,      &
-        BTD1112_NOVERLAP_THRES_L, BTD1112_NOVERLAP_THRES_H,&
-        EMS38_NOVERLAP_THRES_L, EMS38_NOVERLAP_THRES_H
-
-   real(kind=dreal), dimension(7)   :: A1
-   real(kind=dreal), dimension(7)   :: B1
-   real(kind=dreal), dimension(7)   :: C1
-   real(kind=dreal), dimension(7)   :: D1
-   real(kind=dreal), dimension(7)   :: E1
-   real(kind=dreal), dimension(7)   :: A2
-   real(kind=dreal), dimension(7)   :: B2
-   real(kind=dreal), dimension(7)   :: C2
-   real(kind=dreal), dimension(7)   :: D2
-   real(kind=dreal), dimension(7)   :: E2
-   real(kind=dreal), dimension(7,8) :: A3
-   real(kind=dreal), dimension(7,8) :: B3
-   real(kind=dreal), dimension(7,8) :: C3
-   real(kind=dreal), dimension(7,8) :: D3
-   real(kind=dreal), dimension(7,8) :: E3
-   real(kind=dreal), dimension(7,8) :: MIN_BTD1112_DOVERLAP
-   real(kind=dreal), dimension(7)   :: MIN_BTD1112_NOVERLAP
-
-
    ! Declare some miscelaneous variables.
 
-   integer :: i, ii, j, index1, index2, wflg, cview, &
+   integer :: i, ii, j, cview, &
         start_line, end_line, start_pix, end_pix, npix, platform_index
-   logical :: day,desertflag
-   real    :: t4_filter_thresh, nir_ref
+   real    :: t4_filter_thresh
    real(kind=sreal), allocatable, dimension(:,:) :: skint,snow_depth,sea_ice_cover
    real(kind=sreal), allocatable, dimension(:,:,:) :: imager_data
    integer(kind=byte), allocatable, dimension(:,:) :: snow_ice_mask
@@ -337,26 +308,8 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
    !
    !---- CC4CL requirements and adaptions for Pavolonis alg.
 
-   integer(kind=sint) :: ch3a_on_avhrr_flag
-
-   integer(kind=sint) :: ch2_on_atsr_flag,ch6_on_atsr_flag,ch7_on_atsr_flag
-
-   real(kind=sreal)   :: glint_angle, coszen
-   real(kind=sreal)   :: BTD_Ch3b_Ch4
-   real(kind=sreal)   :: BTD_Ch4_Ch5
-   real(kind=sreal)   :: rad_ch3b
-   real(kind=sreal)   :: rad_ch3b_emis
-   real(kind=sreal)   :: ref_ch3b
-   real(kind=sreal)   :: bt_ch3b
-   real(kind=sreal)   :: ref_ch1
-   real(kind=sreal)   :: ref_ch3a
-   real(kind=sreal)   :: solcon_ch3b
-   real(kind=sreal)   :: mu0
-   real(kind=sreal)   :: esd
-   real(kind=sreal)   :: c_sun
-   real(kind=sreal), dimension(2) :: PlanckInv_out
+   real(kind=sreal)   :: coszen
    integer(kind=sint) :: ch1, ch2, ch3, ch4, ch5, ch6, sw1, sw2, sw3
-   real(kind=sreal)   :: solzen,ch1v,ch2v
 
    ! -- Parameters used here
    !
@@ -461,9 +414,6 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
    !where (imager_pavolonis%CLDMASK .eq. byte_fill_value)
    !imager_pavolonis%CLDMASK = CLOUDY
    !endwhere
-
-   ! load external file containing fill coefficients
-   include 'pavolonis_fill_coefficients.inc'
 
    if ( (trim(adjustl(sensor)) .eq. 'AATSR' .or. trim(adjustl(sensor)) .eq. 'ATSR2' ) .OR. &
         (trim(adjustl(sensor)) .eq. 'AVHRR') .OR. &
@@ -705,48 +655,7 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
       !$OMP PARALLEL &
       !$OMP PRIVATE(i) &
       !$OMP PRIVATE(j)
-#ifdef CRAP
-      !$OMP PRIVATE(ch3a_on_avhrr_flag) &
-      !$OMP PRIVATE(ch2_on_atsr_flag) &
-      !$OMP PRIVATE(ch6_on_atsr_flag) &
-      !$OMP PRIVATE(ch7_on_atsr_flag) &
-      !$OMP PRIVATE(glint_angle) &
-      !$OMP PRIVATE(coszen) &
-      !$OMP PRIVATE(BTD_Ch4_Ch5) &
-      !$OMP PRIVATE(BTD_Ch3b_Ch4) &
-      !$OMP PRIVATE(day) &
-      !$OMP PRIVATE(PlanckInv_out) &
-      !$OMP PRIVATE(rad_ch3b) &
-      !$OMP PRIVATE(solcon_ch3b) &
-      !$OMP PRIVATE(rad_ch3b_emis) &
-      !$OMP PRIVATE(mu0) &
-      !$OMP PRIVATE(esd) &
-      !$OMP PRIVATE(c_sun) &
-      !$OMP PRIVATE(ref_ch3b) &
-      !$OMP PRIVATE(ref_ch1) &
-      !$OMP PRIVATE(ref_ch3a) &
-      !$OMP PRIVATE(nir_ref) &
-      !$OMP PRIVATE(index1) &
-      !$OMP PRIVATE(index2) &
-      !$OMP PRIVATE(BTD1112_CIRRUS_THRES) &
-      !$OMP PRIVATE(BTD1112_DOVERLAP_THRES) &
-      !$OMP PRIVATE(wflg) &
-      !$OMP PRIVATE(NIR_CIRRUS_THRES) &
-      !$OMP PRIVATE(NIR_PHASE_THRES) &
-      !$OMP PRIVATE(NIR_OVER_THRES) &
-      !$OMP PRIVATE(BTD3811_PHASE_THRES) &
-      !$OMP PRIVATE(EMS38_PHASE_THRES) &
-      !$OMP PRIVATE(BTD1112_NOVERLAP_THRES_H) &
-      !$OMP PRIVATE(BTD1112_NOVERLAP_THRES_L) &
-      !$OMP PRIVATE(EMS38_NOVERLAP_THRES_H) &
-      !$OMP PRIVATE(EMS38_NOVERLAP_THRES_L) &
-      !$OMP PRIVATE(solzen) &
-      !$OMP PRIVATE(ch1v) &
-      !$OMP PRIVATE(ch2v) &
-      !$OMP PRIVATE(platform_index) &
-      !$OMP PRIVATE(desertflag) &
-      !$OMP PRIVATE(bt_ch3b)
-#endif
+
       !$OMP DO SCHEDULE(GUIDED)
       !-- loop over all pixels (x)
       !i_loop: do  i = 1, num_pix
@@ -1014,10 +923,14 @@ end subroutine CLOUD_TYPE
     imager_flags, surface, imager_angles, imager_geolocation, &
                               imager_measurements, imager_pavolonis, sensor, platform, doy, do_ironly, verbose, skint, snow_ice_mask)
 
+   !-- load necessary variable fields and constants
+
     use constants_cloud_typing_pavolonis_m
     use imager_structures_m
     use neural_net_preproc_m
     use surface_structures_m
+
+   !-- parameters to be passed
 
     integer,                        intent(in)    :: cview, i, j
     integer(kind=sint),             intent(in)    :: ch1, ch2, ch3, ch4, ch5, ch6, sw1, sw2, sw3
@@ -1037,13 +950,17 @@ end subroutine CLOUD_TYPE
     integer(kind=byte),             intent(in)    :: snow_ice_mask(imager_geolocation%startx:imager_geolocation%endx, &
          1:imager_geolocation%ny)
 
+   !-- Declare some variables to hold various thresholds.
+
     real (kind=sreal):: NIR_PHASE_THRES, NIR_CIRRUS_THRES, NIR_OVER_THRES, &
          BTD3811_PHASE_THRES, EMS38_PHASE_THRES,            &
          BTD1112_DOVERLAP_THRES, BTD1112_CIRRUS_THRES,      &
          BTD1112_NOVERLAP_THRES_L, BTD1112_NOVERLAP_THRES_H,&
          EMS38_NOVERLAP_THRES_L, EMS38_NOVERLAP_THRES_H
 
-    integer :: index1, index2, wflg, platform_index
+   ! Declare some miscelaneous variables.
+
+    integer :: index1, index2, wflg
 
     integer(kind=sint) :: ch3a_on_avhrr_flag
 
@@ -1053,7 +970,9 @@ end subroutine CLOUD_TYPE
 
     real    :: nir_ref
 
-    real(kind=sreal)   :: glint_angle, coszen
+   !---- CC4CL requirements and adaptions for Pavolonis alg.
+
+    real(kind=sreal)   :: glint_angle
     real(kind=sreal)   :: BTD_Ch3b_Ch4
     real(kind=sreal)   :: BTD_Ch4_Ch5
     real(kind=sreal), dimension(2) :: PlanckInv_out
