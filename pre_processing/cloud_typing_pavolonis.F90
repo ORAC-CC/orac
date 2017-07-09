@@ -17,8 +17,8 @@
 !    emissivity and reflectance were used in old code,  which are now correctly
 !    calculated and applied
 ! 2014/12/03, OS: use default coefficients for AATSR until these will be
-!    calculated and implemented here; skip pixel if input SOLZEN is negative;
-!    pass SATZEN as argument to NN cloud mask
+!    calculated and implemented here; skip pixel if input solzen is negative;
+!    pass satzen as argument to NN cloud mask
 ! 2014/12/03, GM: Added Planck coefficients for AATSR derived from SADChan
 !    Planck coefficients.
 ! 2014/12/03, OS: changed nrows of coefficients and reshape command to include
@@ -45,9 +45,9 @@
 ! 2015/07/03, OS: Added cldmask_uncertainty; added coefficients to calculate
 !    NOAA19 Ch3.7 reflectance + slight update for other platforms
 ! 2015/07/27, AP: Replaced sym structure with parameters.
-! 2015/11/17, OS: Added interpolation of ERA-Interim surface fields
-!    snow_depth and sea_ice_cover; data are used for defining snow/ice
-!    mask (here called NISE_MASK) input to neural net
+! 2015/11/17, OS: Added interpolation of ERA-Interim surface fields snow_depth
+!    and sea_ice_cover; data are used for defining snow/ice mask (here called
+!    NISE_MASK) input to neural net
 ! 2015/11/18, OS: Replaced surface%NISE_MASK with local variable snow_ice_mask
 ! 2015/11/23, OS: Fixed bug that could lead to uninitialised variables when
 !    ch3a was available for solzen > 88.
@@ -70,28 +70,23 @@
 ! 2017/06/20, OS: Added correction for differences in spectral reponse
 !    functions between NOAA19 and all other platforms; for IR only mode, set
 !    Ch3b to fill value during daytime due to solar contamination; added new
-!    ANN phase mask; Added Planck inversion coefficients for several sensors
+!    ANN phase mask; Added Planck inversion coefficients for several sensors.
+! 2017/07/07, GM: Put the masking/typing loop contents in to a subroutine so all
+!    OpenMP private variables as well as new ones in the future are implicitly
+!    private.
+! 2017/07/07, GM: Give parameters in pavolonis_fill_coefficients.inc the
+!    parameter attribute and take them off the cloud_type_pixel() stack by
+!    giving them module scope.
+! 2017/07/08, GM: Much needed tidying.
 !
 ! $Id$
 !
 ! Bugs:
 ! None known.
-!-----------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
-! Subroutines included in module:
-!   CLOUD_TYPE
-!   CLOUD_RETYPE
-!
-! DEPENDENCIES:
-!   COMMON_CONSTANTS
-!   IMAGER_STRUCTURES
-!   SURFACE_STRUCTURES
-!   NEURAL_NET_PREPROC
-!   CONSTANTS_CLOUD_TYPING_PAVOLONIS
-!
-!
-!
 !-----------------------------------------------------------------------
+! **** Upstream header ****
 !-----------------------------------------------------------------------
 !
 ! Clouds from AVHRR Extended (CLAVR-x) 1b PROCESSING SOFTWARE
@@ -124,16 +119,12 @@
 !   March 2012 - Added check for solar contamination flag
 !
 ! Subroutines included in module:
-!   CLOUD_TYPE
-!   CLOUD_RETYPE
+!   cloud_type
+!   cloud_retype
 !
 !-----------------------------------------------------------------------
 
-
-! Begin of module
-!***********************************************************************
 module cloud_typing_pavolonis_m
-   !***********************************************************************
 
    use common_constants_m
 
@@ -145,13 +136,17 @@ module cloud_typing_pavolonis_m
 
    integer, parameter, private:: n_box=3
 
-   ! load external file containing fill coefficients
+   ! Load external file containing fill coefficients
    include 'pavolonis_fill_coefficients.inc'
 
 contains
-!----------------------------------------------------------------------
+
+!-----------------------------------------------------------------------
+! **** Upstream header ****
+!-----------------------------------------------------------------------
+!
 ! SUBROUTINE NAME: CLOUD_TYPE
-!----------------------------------------------------------------------
+!-----------------------------------------------------------------------
 !
 ! This subroutine performs a cloud typing decision on pixel by pixel
 ! basis the resulting cloud mask codes are
@@ -175,7 +170,7 @@ contains
 !
 ! OUTPUTS:
 !
-! CALLING SEQUENCE:  call CLOUD_TYPE( j_min, num_scans_read )
+! CALLING SEQUENCE:  call CLOUD_TYPE(j_min, num_scans_read)
 !                    (called from ORAC - CC4CL)
 !
 ! SIDE EFFECTS: None
@@ -191,7 +186,7 @@ contains
 !
 !   April 14, 2006 - Modified to process on an arbitrary range of
 !                    scans
-!----------------------------------------------------------------------
+!-----------------------------------------------------------------------
 !
 ! LOCAL VARIABLES:
 !
@@ -261,17 +256,12 @@ contains
 !
 ! Not used: A4, B4, C4, D4, E4, n
 !
-!----------------------------------------------------------------------
+!-----------------------------------------------------------------------
 
+subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
+     imager_angles, imager_geolocation, imager_measurements, imager_pavolonis, &
+     ecmwf, platform, doy, do_ironly, do_spectral_response_correction, verbose)
 
-! =====================================================================
-subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
-     imager_angles, imager_geolocation, imager_measurements,       &
-     imager_pavolonis, ecmwf, platform, doy, do_ironly,            &
-     do_spectral_response_correction, verbose)
-   ! =====================================================================
-
-   !-- load necessary variable fields and constants
    use channel_structures_m
    use common_constants_m
    use imager_structures_m
@@ -281,8 +271,7 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
    use interpol_m
    use ecmwf_m, only : ecmwf_t
 
-
-   !-- parameters to be passed
+   ! Input variables
 
    type(channel_info_t),           intent(in)    :: channel_info
    character(len=sensor_length),   intent(in)    :: sensor
@@ -299,136 +288,135 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
    logical,                        intent(inout) :: do_spectral_response_correction
    logical,                        intent(in)    :: verbose
 
-   ! Declare some miscelaneous variables.
+   ! Local variables
 
-   integer :: i, ii, j, cview, &
-        start_line, end_line, start_pix, end_pix, npix, platform_index
-   real    :: t4_filter_thresh
-   real(kind=sreal), allocatable, dimension(:,:) :: skint,snow_depth,sea_ice_cover
-   real(kind=sreal), allocatable, dimension(:,:,:) :: imager_data
-   integer(kind=byte), allocatable, dimension(:,:) :: snow_ice_mask
-   type(interpol_t), allocatable, dimension(:) :: interp
+   integer :: i, ii, j, cview, start_line, end_line, start_pix, end_pix, npix, &
+              platform_index
+   real                                              :: t4_filter_thresh
+   real(kind=sreal),   allocatable, dimension(:,:)   :: skint,snow_depth,sea_ice_cover
+   real(kind=sreal),   allocatable, dimension(:,:,:) :: imager_data
+   integer(kind=byte), allocatable, dimension(:,:)   :: snow_ice_mask
+   type(interpol_t),   allocatable, dimension(:)     :: interp
 
-   ! --------------------------------------------------------------------
-   !
-   !---- CC4CL requirements and adaptions for Pavolonis alg.
+   ! CC4CL requirements
 
    real(kind=sreal)   :: coszen
    integer(kind=sint) :: ch1, ch2, ch3, ch4, ch5, ch6, sw1, sw2, sw3
 
+   !--------------------------------------------------------------------
    ! -- Parameters used here
    !
-   ! cirrus_quality      = quality of cirrus flag
-   ! coszen              = cosine of the solar zenith angle
-   ! ch3a_on_avhrr_flag  = whether or not AVHRR channel 3a is
-   !                       used (NO, YES, INEXISTENT)
-   ! BTD                 = Brightness Temperature Difference
-   ! BTD_Ch3b_Ch4        = BT Ch3b minus BT Ch4
-   ! BTD_Ch4_Ch5         = BT Ch4 minus BT Ch5
-   ! BTD_Ch4_Ch3b        = BT Ch4 minus BT Ch3b
+   ! cirrus_quality     = quality of cirrus flag
+   ! coszen             = cosine of the solar zenith angle
+   ! ch3a_on_avhrr_flag = whether or not AVHRR channel 3a is
+   !                      used (NO, YES, INEXISTENT)
+   ! BTD                = Brightness Temperature Difference
+   ! BTD_Ch3b_Ch4       = BT Ch3b minus BT Ch4
+   ! BTD_Ch4_Ch5        = BT Ch4 minus BT Ch5
+   ! BTD_Ch4_Ch3b       = BT Ch4 minus BT Ch3b
    !
    !
-   ! -- INPUT
-   !                                   wavelength  MODIS=CC4CL=AVHRR=AATSR
-   ! imager_measurements%DATA(i,j,1)   ! 0.659 um  !Ch01=  1  =1
-   ! imager_measurements%DATA(i,j,2)   ! 0.865 um  !Ch02=  2  =2
-   ! imager_measurements%DATA(i,j,3)   ! 1.640 um  !Ch06=  3  =3a
-   ! imager_measurements%DATA(i,j,4)   ! 3.750 um  !Ch20=  4  =3b
-   ! imager_measurements%DATA(i,j,5)   !11.030 um  !Ch31=  5  =4
-   ! imager_measurements%DATA(i,j,6)   !12.020 um  !Ch32=  6  =5
+   ! -- Input
+   !                                   wavelength  MODIS = CC4CL = AVHRR
+   ! imager_measurements%data(i,j,1)    0.659 um  Ch01 =  1  = 1
+   ! imager_measurements%data(i,j,2)    0.865 um  Ch02 =  2  = 2
+   ! imager_measurements%data(i,j,3)    1.640 um  Ch06 =  3  = 3a
+   ! imager_measurements%data(i,j,4)    3.750 um  Ch20 =  4  = 3b
+   ! imager_measurements%data(i,j,5)   11.030 um  Ch31 =  5  = 4
+   ! imager_measurements%data(i,j,6)   12.020 um  Ch32 =  6  = 5
    !
-   ! imager_geolocation%LATITUDE(i,j)
-   ! imager_geolocation%LONGITUDE(i,j)
-   ! imager_geolocation%DEM(i,j)
-   ! imager_geolocation%STARTX
-   ! imager_geolocation%STARTY
-   ! imager_geolocation%ENDX
-   ! imager_geolocation%ENDY
-   ! imager_geolocation%NX
-   ! imager_geolocation%NY
+   ! imager_geolocation%latitude(i,j)
+   ! imager_geolocation%longitude(i,j)
+   ! imager_geolocation%dem(i,j)
+   ! imager_geolocation%startx
+   ! imager_geolocation%starty
+   ! imager_geolocation%endx
+   ! imager_geolocation%endy
+   ! imager_geolocation%nx
+   ! imager_geolocation%ny
    !
-   ! imager_angles%SATZEN(i,j,imager_angles%nviews)
-   ! imager_angles%SOLZEN(i,j,imager_angles%nviews)
+   ! imager_angles%satzen(i,j,imager_angles%nviews)
+   ! imager_angles%solzen(i,j,imager_angles%nviews)
    !
-   ! imager_flags%LUSFLAG(i,j)
-   ! imager_flags%LSFLAG(i,j)
+   ! imager_flags%lusflag(i,j)
+   ! imager_flags%lsflag(i,j)
    !
-   ! surface%EMISSIVITY(i,j,k): currently k = 1 (Ch3b)
-   ! surface%NISE_MASK(i,j)
+   ! surface%emissivity(i,j,k): currently k = 1 (Ch3b)
+   ! surface%nise_mask(i,j)
    !
    !
-   ! --- OUTPUT
+   ! --- Output
    !
-   ! imager_pavolonis%SUNGLINT_MASK ... sunglint mask: YES, NO
-   ! imager_pavolonis%SFCTYPE ... surface type - NISE corrected LUS
-   ! imager_pavolonis%CLDTYPE ... cloud type based on pavolonis
-   ! imager_pavolonis%CLDMASK ... cloud mask based on L1c thresholding
-   ! imager_pavolonis%CLDMASK_UNCERTAINTY ... cloud mask uncertainty
-   ! imager_pavolonis%CCCOT   ... cloud cover COTs
+   ! imager_pavolonis%sfctype             ... surface type - NISE corrected LUS
+   ! imager_pavolonis%cldtype             ... cloud type based on pavolonis
+   ! imager_pavolonis%cldmask             ... cloud mask based on L1C
+   !                                          thresholding
+   ! imager_pavolonis%cldmask_uncertainty ... cloud mask uncertainty
+   ! imager_pavolonis%cccot               ... cloud cover COTs
    !
-   !---------------------------------------------------------------------
-
+   !--------------------------------------------------------------------
 
    allocate(skint(imager_geolocation%startx:imager_geolocation%endx, &
-        1:imager_geolocation%ny))
+                       1:imager_geolocation%ny))
    skint=sreal_fill_value
    allocate(snow_depth(imager_geolocation%startx:imager_geolocation%endx, &
-        1:imager_geolocation%ny))
+                       1:imager_geolocation%ny))
    snow_depth=sreal_fill_value
    allocate(sea_ice_cover(imager_geolocation%startx:imager_geolocation%endx, &
-        1:imager_geolocation%ny))
+                          1:imager_geolocation%ny))
    sea_ice_cover=sreal_fill_value
    allocate(snow_ice_mask(imager_geolocation%startx:imager_geolocation%endx, &
-        1:imager_geolocation%ny))
+                          1:imager_geolocation%ny))
    snow_ice_mask=byte_fill_value
    allocate(interp(1))
 
    do i=1,imager_geolocation%ny
       do j=imager_geolocation%startx,imager_geolocation%endx
-
          call bilinear_coef(ecmwf%lon, ecmwf%xdim, ecmwf%lat, &
               ecmwf%ydim, imager_geolocation%longitude(j,i), &
               imager_geolocation%latitude(j,i), interp(1))
 
-         call interp_field (ecmwf%skin_temp, skint(j,i), interp(1))
-         call interp_field (ecmwf%snow_depth, snow_depth(j,i), interp(1))
-         call interp_field (ecmwf%sea_ice_cover, sea_ice_cover(j,i), interp(1))
+         call interp_field(ecmwf%skin_temp, skint(j,i), interp(1))
+         call interp_field(ecmwf%snow_depth, snow_depth(j,i), interp(1))
+         call interp_field(ecmwf%sea_ice_cover, sea_ice_cover(j,i), interp(1))
 
-         if (((snow_depth(j,i) .GT. 0.01)    .AND. (imager_flags%LSFLAG(j,i)         .EQ. 1_byte)) .OR. &
-              ((snow_depth(j,i) .GT. 0.01)    .AND. (imager_geolocation%latitude(j,i) .lt. -60.00)) .OR. &
-              ((sea_ice_cover(j,i) .GT. 0.15) .AND. (imager_flags%LSFLAG(j,i)         .EQ. 0_byte))) then
+         if ((snow_depth(j,i)    .gt. 0.01 .and. &
+              imager_flags%lsflag(j,i)         .eq. 1_byte) .or. &
+             (snow_depth(j,i)    .gt. 0.01 .and. &
+              imager_geolocation%latitude(j,i) .lt. -60.00) .or. &
+             (sea_ice_cover(j,i) .gt. 0.15 .and. &
+              imager_flags%lsflag(j,i)         .eq. 0_byte)) then
             snow_ice_mask(j,i) = YES
          else
             snow_ice_mask(j,i) = NO
          end if
-
       end do
    end do
 
    deallocate(interp)
 
-   !-- copy land use flag array to Surface TYPE array
-   imager_pavolonis%SFCTYPE = imager_flags%LUSFLAG
+   ! Copy land use flag array to Surface TYPE array
+   imager_pavolonis%sfctype = imager_flags%lusflag
 
-   !-- correction of SFCTYPE with NISE aux. data
+   ! Correction of sfctype with NISE aux. data
    where (snow_ice_mask .eq. YES)
-      imager_pavolonis%SFCTYPE = NISE_FLAG
-   endwhere
+      imager_pavolonis%sfctype = NISE_FLAG
+   end where
 
-   !-- initialize cloud mask as cloudy
-   !where (imager_pavolonis%CLDMASK .eq. byte_fill_value)
-   !imager_pavolonis%CLDMASK = CLOUDY
-   !endwhere
+   ! Initialize cloud mask as cloudy
+!  where (imager_pavolonis%cldmask .eq. byte_fill_value)
+!  imager_pavolonis%cldmask = CLOUDY
+!  end where
 
-   if ( (trim(adjustl(sensor)) .eq. 'AATSR' .or. trim(adjustl(sensor)) .eq. 'ATSR2' ) .OR. &
-        (trim(adjustl(sensor)) .eq. 'AVHRR') .OR. &
-        (trim(adjustl(sensor)) .eq. 'MODIS')) &
-        do_spectral_response_correction = .true.
+   if (trim(adjustl(sensor)) .eq. 'AATSR' .or. &
+       trim(adjustl(sensor)) .eq. 'ATSR2' .or. &
+       trim(adjustl(sensor)) .eq. 'AVHRR' .or. &
+       trim(adjustl(sensor)) .eq. 'MODIS') &
+      do_spectral_response_correction = .true.
 
-   if ( do_spectral_response_correction ) then
-      allocate(imager_data( &
-           imager_geolocation%startx:imager_geolocation%endx, &
-           1:imager_geolocation%ny,1:channel_info%nchannels_total))
+   if (do_spectral_response_correction) then
+      allocate(imager_data(imager_geolocation%startx:imager_geolocation%endx, &
+                           1:imager_geolocation%ny,1:channel_info%nchannels_total))
    end if
 
    v_loop: do cview=1,imager_angles%nviews
@@ -439,7 +427,8 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
       ch4 = 0
       ch5 = 0
       ch6 = 0
-      if (trim(adjustl(sensor)) .eq. 'AATSR' .or. trim(adjustl(sensor)) .eq. 'ATSR2' ) then
+      if (trim(adjustl(sensor)) .eq. 'AATSR' .or. &
+          trim(adjustl(sensor)) .eq. 'ATSR2') then
          do i=1,channel_info%nchannels_total
             ii = channel_info%map_ids_channel_to_sw(i)
             ! If we're not looking at the second view then assume it's the first
@@ -610,27 +599,31 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
          end do
       end if
 
-      if (do_ironly .eqv. .true. ) then
+      if (do_ironly .eqv. .true.) then
          ch1=99
          ch2=99
-      endif
+      end if
 
-      if (.not. (ch1 .ne. 0 .and. ch2 .ne. 0 .and. (ch3 .ne. 0 .or. ch4 .ne. 0) .and. &
-           ch5 .ne. 0 .and. ch6 .ne. 0)) then
+      if (.not. (ch1 .ne. 0 .and. ch2 .ne. 0 .and. (ch3 .ne. 0 .or. ch4 .ne. 0) &
+          .and. ch5 .ne. 0 .and. ch6 .ne. 0)) then
          write(*,*) 'WARNING: Pavolonis cloud typing skipped due to an ' // &
               'insufficient channel selection.'
          cycle v_loop
       end if
 
-      ! correct for differences in spectral responses between
-      ! NOAA19 (= NN training data) and all other satellites with linear regression coefficients
-      ! NB: "false" reflectances = reflectances not corrected by cosine of solar zenith angle
-      ! Pavolonis code converts "false" reflectances to true for ch1, ch3a, and ch3b, NN works with
-      ! "false" reflectances. Thus, modify imager reflectances with linear regression coefficients
-      ! that have been derived from "false" reflectances
-      ! do this prior to cloud typing and NN; after that step, no further conversion has to be applied
-      ! first, save imager data as it was before transformation, as only here transformed data should be used
-      if ( do_spectral_response_correction ) then
+      ! Correct for differences in spectral responses between NOAA19 (= NN
+      ! training data) and all other satellites with linear regression
+      ! coefficients.
+      !
+      ! NB: "false" reflectances = reflectances not corrected by cosine of solar
+      ! zenith angle. Pavolonis code converts "false" reflectances to true for
+      ! ch1, ch3a, and ch3b, NN works with "false" reflectances. Thus, modify
+      ! imager reflectances with linear regression coefficients that have been
+      ! derived from "false" reflectances do this prior to cloud typing and NN;
+      ! after that step, no further conversion has to be applied first, save
+      ! imager data as it was before transformation, as only here transformed
+      ! data should be used.
+      if (do_spectral_response_correction) then
          imager_data = imager_measurements%data
 
          platform_index = get_platform_index(platform)
@@ -638,163 +631,110 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
          do i = 1, channel_info%nchannels_total
             ! do not apply correction for channel3b, which is not yet available
             if (i .eq. ch4) cycle
-            where (imager_angles%SOLZEN(:,:,cview) .lt. 80.)
-               imager_measurements%data(:,:,i) = imager_measurements%data(:,:,i) * n19mimic(i,1,1,platform_index) + n19mimic(i,2,1,platform_index)
-            elsewhere
-               imager_measurements%data(:,:,i) = imager_measurements%data(:,:,i) * n19mimic(i,1,2,platform_index) + n19mimic(i,2,2,platform_index)
-            endwhere
-         enddo
-      endif
+            where (imager_angles%solzen(:,:,cview) .lt. 80.)
+               imager_measurements%data(:,:,i) = imager_measurements%data(:,:,i) * &
+                  n19mimic(i,1,1,platform_index) + n19mimic(i,2,1,platform_index)
+            else where
+               imager_measurements%data(:,:,i) = imager_measurements%data(:,:,i) * &
+                  n19mimic(i,1,2,platform_index) + n19mimic(i,2,2,platform_index)
+            end where
+         end do
+      end if
 
-      !=====================================================================
-      !                                                                    !
-      !                     Begin cloud typing.                            !
-      !                                                                    !
-      !=====================================================================
 
-      ! j1      = always 1 (first scanline)
-      ! j2      = n_along_track (last scanline)
-      ! num_pix = n_across_track (number of pixels per scanline)
+      !-------------------------------------------------------------------------
+      ! Begin cloud typing
+      !-------------------------------------------------------------------------
 
-      !---------------------------------------------------------------------
       !$OMP PARALLEL &
+
       !$OMP PRIVATE(i) &
       !$OMP PRIVATE(j)
 
       !$OMP DO SCHEDULE(GUIDED)
-      !-- loop over all pixels (x)
-      !i_loop: do  i = 1, num_pix
-
-      i_loop: do  i = imager_geolocation%STARTX, imager_geolocation%ENDX
-
-         !-------------------------------------------------------------------
-         !-- loop over scanlines (y)
-         !j_loop: do j = j1, j2 + j1 - 1
-         ! e.g. j1=100, j2=400, i.e. start with 100 and take next 400 lines
-         ! j2 = number of scanlines to be read
-
-         j_loop: do j = 1, imager_geolocation%ny !imager_geolocation%STARTY,
-            ! imager_geolocation%ENDY
-
-             call cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, sw1, sw2, sw3, imager_flags, surface, imager_angles, imager_geolocation, imager_measurements, imager_pavolonis, sensor, platform, doy, do_ironly, verbose, skint, snow_ice_mask)
-
-            !end scanline loop
+      i_loop: do  i = imager_geolocation%startx, imager_geolocation%endx
+         j_loop: do j = 1, imager_geolocation%ny
+             call cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
+                  sw1, sw2, sw3, imager_flags, surface, imager_angles, &
+                  imager_geolocation, imager_measurements, imager_pavolonis, &
+                  sensor, platform, doy, do_ironly, verbose, skint, snow_ice_mask)
          end do j_loop
-         !-------------------------------------------------------------------
-
-
-         !pixel loop
       end do i_loop
+
       !$OMP END DO
       !$OMP END PARALLEL
-      !---------------------------------------------------------------------
 
 
+      !-------------------------------------------------------------------------
+      ! Start spatial filter used on cirrus and overlap pixels. A 2n_box x
+      ! 2n_box pixel filter is employed.
+      !-------------------------------------------------------------------------
 
-      !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-      !+                                                                   +
-      !+                      END OF TYPING SPECTRAL TESTS                 +
-      !+                                                                   +
-      !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+      i_loop2: do  i = imager_geolocation%startx, imager_geolocation%endx
+         j_loop2: do j = 1, imager_geolocation%ny
 
+            if (imager_pavolonis%cldtype(i,j,cview) .ne. CIRRUS_TYPE .and. &
+                imager_pavolonis%cldtype(i,j,cview) .ne. OVERLAP_TYPE) cycle
 
+            ! coszen = cosine of the solar zenith angle
+            coszen = cos(imager_angles%satzen(i,j,cview) * d2r)
 
-
-      !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-      !+                                                                   +
-      !+    Start spatial filter used on cirrus and overlap pixels.        +
-      !+    A 2n_box x 2n_box pixel filter is employed.                    +
-      !+                                                                   +
-      !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-      !-- loop over pixels
-      !i_loop2: do  i = 1,num_pix
-      i_loop2: do  i = imager_geolocation%STARTX, imager_geolocation%ENDX
-
-
-         !-- loop over scanlines
-         !j_loop2: do j = j1,j2
-         j_loop2: do j = 1, imager_geolocation%NY
-
-            if (imager_pavolonis%CLDTYPE(i,j,cview) .ne. CIRRUS_TYPE .and. &
-                 imager_pavolonis%CLDTYPE(i,j,cview) .ne. OVERLAP_TYPE) cycle
-
-            !-- coszen = cosine of the solar zenith angle
-            !         coszen = cos(imager_angles%SOLZEN(i,j,cview) * d2r )
-            coszen = cos(imager_angles%SATZEN(i,j,cview) * d2r )
-
-            !-- determine box for filtering
-            !start_line = max(j1,j - n_box)
-            !end_line   = min(j2,j + n_box)
-            !start_pix  = max(1,i - n_box)
-            !end_pix    = min(num_pix,i + n_box)
+            ! Determine box for filtering
             start_line = max(1,j - n_box)
-            end_line   = min(imager_geolocation%NY,j + n_box)
-            start_pix  = max(imager_geolocation%STARTX,i - n_box)
-            end_pix    = min(imager_geolocation%ENDX,i + n_box)
-            npix       = ((end_line - start_line)+1)*((end_pix - start_pix)+1)
+            end_line   = min(imager_geolocation%ny,j + n_box)
+            start_pix  = max(imager_geolocation%startx,i - n_box)
+            end_pix    = min(imager_geolocation%endx,i + n_box)
+            npix       = ((end_line - start_line) + 1)*((end_pix - start_pix) + 1)
 
 
-            !-- At least one pixel in the 2n_box x 2n_box array must have a
-            !   Bt_Ch4 < 295 K and the average ems 3.75 um must be < 1.2
-            !   for low quality cirrus;
-            !   otherwise the pixel is reset to water or mixed.
+            ! At least one pixel in the 2n_box x 2n_box array must have a
+            ! Bt_Ch4 < 295 K and the average ems 3.75 um must be < 1.2 for low
+            ! quality cirrus; otherwise the pixel is reset to water or mixed.
 
-            if ( imager_pavolonis%CLDTYPE(i,j,cview) == CIRRUS_TYPE .and. &
-                 imager_pavolonis%cirrus_quality(i,j,cview) == 0) then
+            if (imager_pavolonis%cldtype(i,j,cview) == CIRRUS_TYPE .and. &
+                imager_pavolonis%cirrus_quality(i,j,cview) == 0) then
 
-               !-- account for atmospheric effects
+               ! Account for atmospheric effects
                t4_filter_thresh = 295.0 - 12.0*(1.0-coszen)
 
-               !-- filter pixels in region
-               !   added criterion for missing values in ems_Ch20 - akh 1/07
-               if ( (minval(imager_measurements%DATA(start_pix:end_pix &
-                    ,start_line:end_line,ch5)) > t4_filter_thresh) .or. &
-                    ( (sum(imager_pavolonis%emis_ch3b(start_pix:end_pix &
-                    ,start_line:end_line,cview))/npix < 1.2) .and. &
-                    (minval(imager_pavolonis%emis_ch3b(start_pix:end_pix &
-                    ,start_line:end_line,cview)) > 0.0) ) ) then
+               ! Filter pixels in region
+               ! Added criterion for missing values in ems_Ch20 - akh 1/07.
+               if ((minval(imager_measurements%data(start_pix:end_pix, &
+                    start_line:end_line,ch5)) > t4_filter_thresh) .or. &
+                   ((sum(imager_pavolonis%emis_ch3b(start_pix:end_pix, &
+                     start_line:end_line,cview))/npix < 1.2) .and. &
+                   (minval(imager_pavolonis%emis_ch3b(start_pix:end_pix, &
+                    start_line:end_line,cview)) > 0.0))) then
 
-                  if ( imager_measurements%DATA(i,j,ch5) <= 273.16 ) then
-                     imager_pavolonis%CLDTYPE(i,j,cview) = SUPERCOOLED_TYPE
+                  if (imager_measurements%data(i,j,ch5) <= 273.16) then
+                     imager_pavolonis%cldtype(i,j,cview) = SUPERCOOLED_TYPE
                   else
-                     imager_pavolonis%CLDTYPE(i,j,cview) = WATER_TYPE
+                     imager_pavolonis%cldtype(i,j,cview) = WATER_TYPE
                   end if
-
                end if
-
             end if
 
+            ! At least one pixel in the 2n x 2n array must have a Bt_Ch4 < 275 K
+            ! for overlap; otherwise the pixel is reset to water or mixed.
 
-            !-- At least one pixel in the 2n x 2n array must have a
-            !   Bt_Ch4 < 275 K for overlap;
-            !   otherwise the pixel is reset to water or mixed.
+            ! Account for atmospheric effects in BT4 threshold for filtering
 
-            !-- account for atmospheric effects in BT4 threshold for filtering
-
-            if ( imager_pavolonis%CLDTYPE(i,j,cview) == OVERLAP_TYPE .and. &
-                 imager_angles%SOLZEN(i,j,cview) > 90.0 ) then
+            if (imager_pavolonis%cldtype(i,j,cview) == OVERLAP_TYPE .and. &
+                imager_angles%solzen(i,j,cview) > 90.0) then
 
                t4_filter_thresh = 273.0 - 12.0*(1.0-coszen)
 
-               if (minval(imager_measurements%DATA(start_pix:end_pix, &
-                    start_line:end_line,ch5)) > t4_filter_thresh) then
+               if (minval(imager_measurements%data(start_pix:end_pix, &
+                   start_line:end_line,ch5)) > t4_filter_thresh) then
 
-                  if (imager_measurements%DATA(i,j,ch5) <= 273.16) then
-                     imager_pavolonis%CLDTYPE(i,j,cview) = SUPERCOOLED_TYPE
+                  if (imager_measurements%data(i,j,ch5) <= 273.16) then
+                     imager_pavolonis%cldtype(i,j,cview) = SUPERCOOLED_TYPE
                   else
-                     imager_pavolonis%CLDTYPE(i,j,cview) = WATER_TYPE
+                     imager_pavolonis%cldtype(i,j,cview) = WATER_TYPE
                   end if
-
                end if
-
             end if
-
-            !-- end of scanline loop
          end do j_loop2
-
-
-         !-- end of pixel loop
       end do i_loop2
 
       ! reset imager data to untransformed values
@@ -812,10 +752,945 @@ subroutine CLOUD_TYPE(channel_info, sensor, surface, imager_flags, &
    deallocate(snow_depth)
    deallocate(sea_ice_cover)
 
-   ! =====================================================================
-end subroutine CLOUD_TYPE
-! =====================================================================
+end subroutine cloud_type
 
+
+subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
+   sw1, sw2, sw3, imager_flags, surface, imager_angles, imager_geolocation, &
+   imager_measurements, imager_pavolonis, sensor, platform, doy, do_ironly, &
+   verbose, skint, snow_ice_mask)
+
+   use constants_cloud_typing_pavolonis_m
+   use imager_structures_m
+   use neural_net_preproc_m
+   use surface_structures_m
+
+   ! Input variables
+
+   integer,                        intent(in)    :: cview, i, j
+   integer(kind=sint),             intent(in)    :: ch1, ch2, ch3, ch4, ch5, &
+                                                    ch6, sw1, sw2, sw3
+   type(surface_t),                intent(in)    :: surface
+   type(imager_flags_t),           intent(in)    :: imager_flags
+   type(imager_angles_t),          intent(in)    :: imager_angles
+   type(imager_geolocation_t),     intent(in)    :: imager_geolocation
+   type(imager_measurements_t),    intent(in)    :: imager_measurements
+   type(imager_pavolonis_t),       intent(inout) :: imager_pavolonis
+   character(len=sensor_length),   intent(in)    :: sensor
+   character(len=platform_length), intent(in)    :: platform
+   integer(kind=sint),             intent(in)    :: doy
+   logical,                        intent(in)    :: do_ironly
+   logical,                        intent(in)    :: verbose
+   real(kind=sreal),               intent(in)    :: &
+      skint(imager_geolocation%startx:imager_geolocation%endx, &
+            1:imager_geolocation%ny)
+   integer(kind=byte),             intent(in)    :: &
+      snow_ice_mask(imager_geolocation%startx:imager_geolocation%endx, &
+                    1:imager_geolocation%ny)
+
+   ! Local variables
+
+   real (kind=sreal) :: NIR_PHASE_THRES, NIR_CIRRUS_THRES, NIR_OVER_THRES,  &
+                        BTD3811_PHASE_THRES, EMS38_PHASE_THRES,             &
+                        BTD1112_DOVERLAP_THRES, BTD1112_CIRRUS_THRES,       &
+                        BTD1112_NOVERLAP_THRES_L, BTD1112_NOVERLAP_THRES_H, &
+                        EMS38_NOVERLAP_THRES_L, EMS38_NOVERLAP_THRES_H
+   real               :: nir_ref
+   integer            :: index1, index2, wflg
+   integer(kind=sint) :: ch3a_on_avhrr_flag
+   integer(kind=sint) :: ch2_on_atsr_flag, ch6_on_atsr_flag, ch7_on_atsr_flag
+   logical            :: day, desertflag
+
+   ! CC4CL requirements
+
+   real(kind=sreal)               :: glint_angle
+   real(kind=sreal)               :: rad_ch3b, rad_ch3b_emis
+   real(kind=sreal)               :: ref_ch1, ref_ch3a, ref_ch3b
+   real(kind=sreal)               :: bt_ch3b
+   real(kind=sreal)               :: BTD_Ch3b_Ch4, BTD_Ch4_Ch5
+   real(kind=sreal), dimension(2) :: plank_inv_out
+   real(kind=sreal)               :: solcon_ch3b
+   real(kind=sreal)               :: mu0, esd, c_sun
+   real(kind=sreal)               :: solzen, ch1v, ch2v
+
+   ! Check if solar zenith angle is < 0
+   if (imager_angles%solzen(i,j,cview) .lt. 0.) return
+
+
+   ! Check if Ch3a is available or not (fill_value is negative)
+   if (imager_measurements%data(i,j,ch3) .ge. 0 .and. &
+       imager_measurements%data(i,j,ch4) .lt. 0) then
+     ! Ch3a is used if Ch3b is not avail.
+      ch3a_on_avhrr_flag = YES
+   else if (imager_measurements%data(i,j,ch4) .ge. 0) then
+      ! Ch3b is used if avail.
+      ch3a_on_avhrr_flag = NO
+   else
+      ! Neither Ch3a nor Ch3b avail.
+      ch3a_on_avhrr_flag = INEXISTENT
+   end if
+
+   if (trim(adjustl(sensor)) .eq. 'AATSR' .or. &
+       trim(adjustl(sensor)) .eq. 'ATSR2') then
+      ! Changed min value of 3.7 for AATSR
+      if (imager_measurements%data(i,j,ch3) .ge. 0 .and. &
+          imager_measurements%data(i,j,ch4) .lt. 100) then
+         ! Ch3a is used if Ch3b is not avail.
+         ch3a_on_avhrr_flag = YES
+      else if (imager_measurements%data(i,j,ch4) .ge. 100) then
+         ! Ch3b is used if avail.
+         ch3a_on_avhrr_flag = NO
+      else
+         ! Neither Ch3a nor Ch3b avail.
+         ch3a_on_avhrr_flag = INEXISTENT
+      end if
+   end if
+
+
+   ! Check if ATSR 12um channel is missing
+   ch7_on_atsr_flag = YES
+
+   if (imager_measurements%data(i,j,ch5) .ge. 100 .and. &
+       imager_measurements%data(i,j,ch6) .lt. 100.) then
+      ch7_on_atsr_flag = NO
+   end if
+
+   if (do_ironly .neqv. .true.) then
+      ch2_on_atsr_flag = YES
+      if (imager_measurements%data(i,j,ch2) .lt. 0.) then
+         ch2_on_atsr_flag = NO
+      end if
+   else
+      ch2_on_atsr_flag = NO
+   end if
+
+   ! Check if ATSR 11um channel is missing because too warm
+!  ch6_on_atsr_flag = YES
+
+   if (imager_measurements%data(i,j,ch6) .ge. 220 .and. &
+       imager_measurements%data(i,j,ch5) .lt. 100.) then
+      ch6_on_atsr_flag = NO
+   end if
+
+   ! Check if ATSR 11um channel is missing because too cold
+   ch6_on_atsr_flag = YES
+
+   if (imager_measurements%data(i,j,ch6) .lt. 100 .and. &
+       imager_measurements%data(i,j,ch5) .lt. 100.) then
+      ch6_on_atsr_flag = NO
+      ch7_on_atsr_flag = NO
+   end if
+
+
+   ! Check for sunglint and save result:
+
+   ! In PATMOS sunglint calculation:
+   if (imager_angles%solzen(i,j,cview) .ne. sreal_fill_value .and. &
+       imager_angles%satzen(i,j,cview) .ne. sreal_fill_value .and. &
+       imager_angles%RELAZI(i,j,cview) .ne. sreal_fill_value) then
+
+      glint_angle = cos(imager_angles%solzen(i,j,cview) * d2r) * &
+                    cos(imager_angles%satzen(i,j,cview) * d2r) + &
+                    sin(imager_angles%solzen(i,j,cview) * d2r) * &
+                    sin(imager_angles%satzen(i,j,cview) * d2r) * &
+                    cos(imager_angles%RELAZI(i,j,cview) * d2r)
+
+      glint_angle = max(-1.0, min(glint_angle, 1.0))
+      glint_angle = acos(glint_angle) / d2r
+   else
+      glint_angle = sreal_fill_value
+   end if
+
+   ! Calculate BT differences
+
+   ! BT(11) minus BT(12)
+   BTD_Ch4_Ch5 = imager_measurements%data(i,j,ch5) - &
+                 imager_measurements%data(i,j,ch6)
+
+   ! BT(3.75) minus BT(11)
+   BTD_Ch3b_Ch4 = imager_measurements%data(i,j,ch4) - &
+                  imager_measurements%data(i,j,ch5)
+
+   ! Calculate ch3b radiance and emissivity
+   plank_inv_out  = plank_inv(platform, imager_measurements%data(i,j,ch4))
+   rad_ch3b       = plank_inv_out(1)
+   solcon_ch3b    = plank_inv_out(2)
+   plank_inv_out  = plank_inv(platform, imager_measurements%data(i,j,ch5))
+   rad_ch3b_emis  = plank_inv_out(1)
+   mu0            = cos (imager_angles%solzen(i,j,cview) * d2r)
+   esd            = 1.0 - 0.0167 * cos(2.0 * pi * (doy - 3) / 365.0)
+   c_sun          = 1. / esd**2
+   imager_pavolonis%emis_ch3b(i,j,cview) = rad_ch3b / rad_ch3b_emis
+
+   ! Calculate true reflectances for avhrr, modis and aatsr
+   if (do_ironly .neqv. .true.) then
+      ref_ch1 = imager_measurements%data(i,j,ch1) / mu0
+   else
+      ! set ref_ch1 to fillvalue is enough to force pavolonis to use
+      ! Ir only at daytime
+      ref_ch1 = sreal_fill_value
+   end if
+
+   ref_ch3a = imager_measurements%data(i,j,ch3) / mu0
+   ref_ch3b = (rad_ch3b - rad_ch3b_emis) / &
+              (solcon_ch3b * c_sun * mu0 - rad_ch3b_emis)
+
+   ! Make sure reflectances are positive, else fill value
+   if (ref_ch1 .lt. 0.) ref_ch1 = sreal_fill_value
+   if (ref_ch3a .lt. 0.) ref_ch3a = sreal_fill_value
+   ! dont do this. Neg values are realistic and the ANN can deal with it
+!  if (ref_ch3b .lt. 0.) ref_ch3b = sreal_fill_value
+
+   ! nir_ref = channel 3a or channel 3b reflectance
+   nir_ref = sreal_fill_value
+
+   solzen  = imager_angles%solzen(i,j,cview)
+
+   ! If we're not using any VIS channels then fill ch1 and ch2
+   ! Fudge SZA to 120 deg: forces neural net into night mode
+   if (do_ironly .eqv. .true.) then
+      ch1v    =       sreal_fill_value
+      ch2v    =       sreal_fill_value
+      ! During daytime we need to set bt37 to fillvalue as well, the nighttime
+      ! ANN expects 3.7 without solar component.
+      if (solzen .le. 80.) bt_ch3b = sreal_fill_value
+      solzen = 120.
+      ! Otherwise, behave as-before
+   else
+      ch1v    = imager_measurements%data(i,j,ch1)
+      ch2v    = imager_measurements%data(i,j,ch2)
+      bt_ch3b = imager_measurements%data(i,j,ch4)
+   end if
+
+   desertflag = .false.
+   if (imager_pavolonis%sfctype(i,j) == DESERT_FLAG) desertflag = .true.
+
+   ! NEURAL_NET_PREPROC subroutine
+   ! If one of the (future) ANN's expects true reflectances this will be handled
+   ! internally in ann_cloud_mask.
+   call ann_cloud_mask(&
+        ch1v, & ! Not "True" reflectances expected
+        ch2v, & ! Not "True" reflectances expected
+        imager_measurements%data(i,j,ch3), &
+        bt_ch3b, &
+        ref_ch3b*mu0, & ! Not "True" reflectances expected
+        imager_measurements%data(i,j,ch5), &
+        imager_measurements%data(i,j,ch6), &
+        solzen, &
+        imager_angles%satzen(i,j,cview), &
+        snow_ice_mask(i,j), &
+        imager_flags%lsflag(i,j), &
+        desertflag, &
+        surface%albedo(i,j,sw1), &
+        surface%albedo(i,j,sw2), &
+        surface%albedo(i,j,sw3), &
+        imager_pavolonis%cccot_pre(i,j,cview), &
+        imager_pavolonis%cldmask(i,j,cview) , &
+        imager_pavolonis%cldmask_uncertainty(i,j,cview) , &
+        skint(i,j) , &
+        ch3a_on_avhrr_flag, &
+        glint_angle, &
+        sensor, &
+        platform, &
+        verbose)
+
+   ! Return if clear, as no need to define cloud type
+   if (imager_pavolonis%cldmask(i,j,cview) == CLEAR) then
+      imager_pavolonis%cldtype(i,j,cview) = CLEAR_TYPE
+      imager_pavolonis%ANN_PHASE(i,j,cview) = CLEAR_TYPE
+      if (trim(adjustl(sensor)) .ne. 'AATSR' .and. &
+          trim(adjustl(sensor)) .ne. 'ATSR2') return
+   end if
+
+   ! Implement extra tests for AATSR
+
+   if (trim(adjustl(sensor)) .eq. 'AATSR' .or. &
+       trim(adjustl(sensor)) .eq. 'ATSR2') then
+      ! 11um channel can occasionally be missing particuarly for AATSR if it
+      ! gets too warm. Also, when ch6 atsr is fill value, clear type is assigned.
+      if ((ch6_on_atsr_flag == NO) .and. (ch7_on_atsr_flag == YES)) then
+
+         imager_pavolonis%cldmask(i,j,cview) = CLEAR
+         imager_pavolonis%cldtype(i,j,cview) = CLEAR_TYPE
+
+      end if
+
+      ! 12um channel can occasionally be missing particuarly for AATSR.
+      ! Also, when ch7 ATSR is fill value, PROB_OPAQUE_ICE_TYPE is assigned
+      if ((ch7_on_atsr_flag == NO) .and. (ch2_on_atsr_flag == YES)) then
+
+         imager_pavolonis%cldmask(i,j,cview) = CLOUDY
+         imager_pavolonis%cldtype(i,j,cview) = PROB_OPAQUE_ICE_TYPE
+
+      end if
+
+      ! If both IR channels are missing them likely a very cold opaque cloud.
+      ! Enable a CTH retrieval by setting minimum threshold values of IR
+      ! channels.
+      if  ((ch6_on_atsr_flag == NO) .and. (ch7_on_atsr_flag == NO) .and. &
+           (ch2_on_atsr_flag == yes)) then
+
+         imager_pavolonis%cldmask(i,j,cview) = CLOUDY
+!        imager_pavolonis%cldtype(i,j,cview) = OPAQUE_ICE_TYPE
+         imager_pavolonis%cldtype(i,j,cview) = PROB_OPAQUE_ICE_TYPE
+         imager_measurements%data(i,j,ch6)   = 210.0
+         imager_measurements%data(i,j,ch5)   = 209.0
+
+      end if
+
+      if ((ch7_on_atsr_flag == NO)) then
+         ! Check if over very cold atlantic plateau Antarctica in which case
+         ! probably clear if 12um is missing.
+         if ((imager_pavolonis%sfctype(i,j) == NISE_FLAG) .and. &
+             (imager_geolocation%latitude(i,j) < -70.0)) then
+
+            imager_pavolonis%cldmask(i,j,cview) = CLEAR
+            imager_pavolonis%cldtype(i,j,cview) = PROB_CLEAR_TYPE
+
+         end if
+      end if
+
+      if (imager_pavolonis%cldmask(i,j,cview) == CLEAR) then
+
+         imager_pavolonis%cldtype(i,j,cview) = CLEAR_TYPE
+
+         return
+      end if
+   end if
+
+   ! From here all sensors have their decisions made only when cloudy is allowed
+
+   ! Start ANN phase
+
+   ! NEURAL_NET_PREPROC subroutine
+   ! If one of the (future) ANN's expects true reflectances this will be handled
+   ! internally in ann_cloud_phase.
+   call ann_cloud_phase(&
+        ch1v, & ! Not "True" reflectances expected
+        ch2v, & ! Not "True" reflectances expected
+        imager_measurements%data(i,j,ch3), &
+        bt_ch3b, &
+        ref_ch3b*mu0, & ! Not "True" reflectances expected
+        imager_measurements%data(i,j,ch5), &
+        imager_measurements%data(i,j,ch6), &
+        solzen, &
+        imager_angles%satzen(i,j,cview), &
+        snow_ice_mask(i,j), imager_flags%lsflag(i,j), &
+        desertflag , &
+        surface%albedo(i,j,sw1), &
+        surface%albedo(i,j,sw2), &
+        surface%albedo(i,j,sw3), &
+        imager_pavolonis%CPHCOT(i,j,cview), &
+        imager_pavolonis%ANN_PHASE(i,j,cview) , &
+        imager_pavolonis%ANN_PHASE_UNCERTAINTY(i,j,cview) , &
+        ch3a_on_avhrr_flag, &
+        sensor, &
+        platform, &
+        skint(i,j) , &
+        verbose)
+
+   ! neither ch3a nor ch3b available
+   if (trim(adjustl(sensor)) .eq. 'AVHRR') then
+      ! At night, assign probably opaque ice flag as ch3.7 has fill value due to
+      ! low S/N.
+
+      ! Only apply to avhrr data as when fill for aatsr it is actaully warm
+      if (ch3a_on_avhrr_flag == INEXISTENT) then
+!        if ((imager_geolocation%latitude(i,j) < 65.0 .and. &
+!             imager_geolocation%latitude(i,j) > -65.0) .and. &
+!             (day .eqv. .false.)) &
+!           imager_pavolonis%cldtype(i,j) = PROB_OPAQUE_ICE_TYPE
+
+         if ((imager_measurements%data(i,j,ch5) > 0.) .and. &
+              (imager_measurements%data(i,j,ch5) <= 233.16)) then
+            imager_pavolonis%cldtype(i,j,cview) = OPAQUE_ICE_TYPE
+         else if ((imager_measurements%data(i,j,ch5) > 233.16) .and. &
+              (imager_measurements%data(i,j,ch5) <= 253.16)) then
+            imager_pavolonis%cldtype(i,j,cview) = OPAQUE_ICE_TYPE
+         else if ((imager_measurements%data(i,j,ch5) > 253.16) .and. &
+              (imager_measurements%data(i,j,ch5) <= 273.16)) then
+            imager_pavolonis%cldtype(i,j,cview) =SUPERCOOLED_TYPE
+         else
+            imager_pavolonis%cldtype(i,j,cview) = WATER_TYPE
+         end if
+
+         return
+      end if
+   end if
+
+   ! Determine the viewing zenith angle bin
+   index1 = min(7,max(1,int(imager_angles%satzen(i,j,cview)/10.0) + 1))
+
+   ! Determine the solar zenith angle bin
+   index2 = min(8,max(1,int(imager_angles%solzen(i,j,cview)/10.0) + 1))
+
+   ! Set 11um - 12um cirrus thresholds.
+   ! Absorption of radiation by water vapor and ice crystals in
+   ! semitransparent cirrus clouds is greater at 12 than 11 micron.
+
+   BTD1112_CIRRUS_THRES = &
+        A1(index1) + &
+        B1(index1)*imager_measurements%data(i,j,ch5) + &
+        C1(index1)*imager_measurements%data(i,j,ch5)**2 + &
+        D1(index1)*imager_measurements%data(i,j,ch5)**3 + &
+        E1(index1)*imager_measurements%data(i,j,ch5)**4
+
+   BTD1112_CIRRUS_THRES = max(1.0, min(4.0,BTD1112_CIRRUS_THRES))
+
+   ! Initial cirrus quality
+   imager_pavolonis%cirrus_quality(i,j,cview) = 0
+
+   ! Check if daytime or nighttime algorithm is to be used.
+   day = .false.
+   if ((imager_angles%solzen(i,j,cview) < 88.0) .or. (ch3a_on_avhrr_flag .eq. YES)) then
+      day = .true.
+   end if
+
+
+   !----------------------------------------------------------------------------
+   ! If DAYTIME, use daytime algorithm
+   !----------------------------------------------------------------------------
+
+   if ((imager_pavolonis%cldmask(i,j,cview) == CLOUDY) .and. &
+       (day .eqv. .true.)) then
+
+      !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+      ! Set 11um - 12um overlap thresholds
+      !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+!     if ((imager_measurements%data(i,j,ch1) >= 35.0) .and. &
+!         (imager_measurements%data(i,j,ch1) <= 60.0)) then
+      if ((ref_ch1 >= 0.35) .and. (ref_ch1 <= 0.60)) then
+
+         BTD1112_DOVERLAP_THRES = max(&
+              ((A3(index1,index2)+ &
+!               B3(index1,index2)* imager_measurements%data(i,j,ch1)*0.01 + &
+!               C3(index1,index2)*(imager_measurements%data(i,j,ch1)*0.01)**2 + &
+!               D3(index1,index2)*(imager_measurements%data(i,j,ch1)*0.01)**3 + &
+!               E3(index1,index2)*(imager_measurements%data(i,j,ch1)*0.01)**4) - 0.1), &
+                B3(index1,index2)* ref_ch1 + &
+                C3(index1,index2)*(ref_ch1)**2 + &
+                D3(index1,index2)*(ref_ch1)**3 + &
+                E3(index1,index2)*(ref_ch1)**4) - 0.1), &
+                MIN_BTD1112_DOVERLAP(index1,index2) - 0.1)
+
+!     else if (imager_measurements%data(i,j,ch1) > 60.0 .and. &
+!              imager_measurements%data(i,j,ch1) < 90.0) then
+      else if (ref_ch1 > 0.60 .and. ref_ch1 < 0.90) then
+
+         BTD1112_DOVERLAP_THRES = MIN_BTD1112_DOVERLAP(index1,index2) - 0.1
+      else
+
+         BTD1112_DOVERLAP_THRES = 9999.0
+
+      end if
+
+      !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+      ! In the high latitudes, the Ch3b 3.75 um must be less than 20% to prevent
+      ! single layer water clouds from being typed as overlap.
+      !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+      if ((ch3a_on_avhrr_flag == NO) .and. &
+          ((imager_geolocation%latitude(i,j) > 65.0)   .or.  &
+           (imager_geolocation%latitude(i,j) < -65.0)) .and. &
+          (ref_ch3b > 0.20)) then
+
+         BTD1112_DOVERLAP_THRES = 9999.0
+
+      end if
+
+      !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+      ! Perform initial IR window brightness temperature-based typing
+      ! wflg = IR window flag
+      !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+      wflg = 1
+
+      if (imager_measurements%data(i,j,ch5) <= 233.16) then
+
+         imager_pavolonis%cldtype(i,j,cview) = OPAQUE_ICE_TYPE
+         wflg = 0
+
+      else if ((imager_measurements%data(i,j,ch5) > 233.16) .and. &
+               (imager_measurements%data(i,j,ch5) <= 253.16)) then
+
+         imager_pavolonis%cldtype(i,j,cview) = OPAQUE_ICE_TYPE
+
+      else if ((imager_measurements%data(i,j,ch5) > 253.16) .and. &
+               (imager_measurements%data(i,j,ch5) <= 273.16)) then
+
+         imager_pavolonis%cldtype(i,j,cview) = SUPERCOOLED_TYPE
+
+      else
+         ! BT(11) > 273.16 K, the melting point of pure water, the cirrus
+         ! detection test is simply applied. If it is passed, then the pixel is
+         ! classified as nonopaque ice cloud, otherwise, it is a warm liquid
+         ! water cld type. [Pavolonis et al. (2005)]
+         imager_pavolonis%cldtype(i,j,cview) = WATER_TYPE
+
+      end if
+
+
+      !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+      ! Use 1.6 um algorithm, if available
+      !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+      if ((ch3a_on_avhrr_flag == YES) .and. (ref_ch1 > 0.0)) then
+
+         !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+         ! Set some 1.6 um thresholds used in phase identification
+         ! and cirrus detection.
+         !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+         if ((imager_pavolonis%sfctype(i,j) == WATER_FLAG) .or. &
+             (imager_pavolonis%sfctype(i,j) == NISE_FLAG)) then
+
+!           NIR_CIRRUS_THRES = 20.0
+!           NIR_PHASE_THRES  = 17.0
+            NIR_CIRRUS_THRES = 0.20
+            NIR_PHASE_THRES  = 0.17
+
+         else if (imager_pavolonis%sfctype(i,j) == DESERT_FLAG) then
+
+!           NIR_CIRRUS_THRES = 55.0
+!           NIR_PHASE_THRES  = 32.0
+            NIR_CIRRUS_THRES = 0.55
+            NIR_PHASE_THRES  = 0.32
+
+            ! All other surface types
+         else
+
+!           NIR_CIRRUS_THRES = 33.0
+!           NIR_PHASE_THRES  = 32.0
+            NIR_CIRRUS_THRES = 0.33
+            NIR_PHASE_THRES  = 0.32
+
+         end if
+
+         !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+         ! Set the minimum 1.6 um reflectance allowed for cloud overlap over
+         ! SNOW/ICE.
+         !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+         if (imager_pavolonis%sfctype(i,j) == NISE_FLAG) then
+
+!           NIR_OVER_THRES = 17.0
+            NIR_OVER_THRES = 0.17
+
+         else
+
+            NIR_OVER_THRES = 0.0
+
+         end if
+
+         !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+         ! The reflectance used in the typing tests to 1.65 um  when Ch3a is on.
+         !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+         nir_ref = ref_ch3a
+
+      !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+      ! Use 3.75 um channel (used only if 1.6um is not available)
+      !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+      else if ((ch3a_on_avhrr_flag == NO) .and. (ref_ch1 > 0.0)) then
+
+         !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+         ! Set some 3.75 um thresholds used in phase identification and cirrus
+         ! detection.
+         !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+         if ((imager_pavolonis%sfctype(i,j) == WATER_FLAG) .or. &
+             (imager_pavolonis%sfctype(i,j) == NISE_FLAG)) then
+
+!           NIR_CIRRUS_THRES = 12.0
+!           NIR_PHASE_THRES  = 6.0
+            NIR_CIRRUS_THRES = 0.12
+            NIR_PHASE_THRES  = 0.06
+
+         else if (imager_pavolonis%sfctype(i,j) == DESERT_FLAG) then
+
+!           NIR_CIRRUS_THRES = 40.0
+!           NIR_PHASE_THRES  = 6.0
+            NIR_CIRRUS_THRES = 0.40
+            NIR_PHASE_THRES  = 0.06
+
+            ! all other surface types
+         else
+
+!           NIR_CIRRUS_THRES = 12.0
+!           NIR_PHASE_THRES  = 6.0
+            NIR_CIRRUS_THRES = 0.12
+            NIR_PHASE_THRES  = 0.06
+
+         end if
+
+         !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+         ! Set the minimum 3.75 um reflectance allowed for cloud overlap over
+         ! SNOW/ICE.
+         !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+         if (imager_pavolonis%sfctype(i,j) == NISE_FLAG) then
+
+!           NIR_OVER_THRES = 6.0
+            NIR_OVER_THRES = 0.06
+
+         else
+
+            NIR_OVER_THRES = 0.0
+
+         end if
+
+         !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+         ! The reflectance used in the typing tests to 3.75 um when Ch3b is on.
+         !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+         nir_ref = ref_ch3b
+
+      else
+
+         ! In case it is daytime, but ref_ch1 <= 0, skip further Pavolonis
+         ! tests.  Algorithm output is simple IR window brightness temperature-
+         ! based typing as applied previously.
+         return
+
+      end if
+
+      !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+      ! Perform the NIR reflectance bulk cloud phase test
+      !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+      if ((imager_pavolonis%cldtype(i,j,cview) == SUPERCOOLED_TYPE) .and. &
+           (nir_ref <= NIR_PHASE_THRES) .and. &
+           (imager_measurements%data(i,j,ch5) < 263.16)) then
+
+         imager_pavolonis%cldtype(i,j,cview) = OPAQUE_ICE_TYPE
+
+      end if
+
+      if ((imager_pavolonis%cldtype(i,j,cview) == OPAQUE_ICE_TYPE) .and. &
+           (wflg == 1) .and. &
+           (nir_ref > NIR_PHASE_THRES)) then
+
+         imager_pavolonis%cldtype(i,j,cview) = SUPERCOOLED_TYPE
+
+      end if
+
+      !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+      ! Perform the cloud overlap test
+      ! !! not used over DESERT surfaces !!
+      !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+      if ((BTD_Ch4_Ch5 > BTD1112_DOVERLAP_THRES) .and. &
+           (imager_measurements%data(i,j,ch5) < 270.0) .and. &
+           (imager_pavolonis%sfctype(i,j) /= DESERT_FLAG) .and. &
+           (nir_ref > NIR_OVER_THRES) .and. &
+           (imager_measurements%data(i,j,ch5) > 210.0)) then
+
+         imager_pavolonis%cldtype(i,j,cview) = OVERLAP_TYPE
+
+      end if
+
+      !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+      ! Look for cirrus clouds. Note, akh modified so that nir_ref test only
+      ! applied when Solzen < 70.
+      !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+      if ((imager_pavolonis%cldtype(i,j,cview) /= OVERLAP_TYPE) .and. &
+           (BTD_Ch4_Ch5 > (BTD1112_CIRRUS_THRES-0.2)) .and. &
+           (imager_measurements%data(i,j,ch5) < 295.0)) then
+
+         if (imager_angles%solzen(i,j,cview) < 70.0) then
+            if (nir_ref < NIR_CIRRUS_THRES) then
+
+               imager_pavolonis%cldtype(i,j,cview) = CIRRUS_TYPE
+               imager_pavolonis%cirrus_quality(i,j,cview) = 1
+
+            end if
+         else
+            imager_pavolonis%cldtype(i,j,cview) = CIRRUS_TYPE
+
+            imager_pavolonis%cirrus_quality(i,j,cview) = 0
+            ! note, this is a low quality
+
+         end if
+      end if
+
+      !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+      ! Look for fog - not used over DESERT(=12) surfaces.
+      !
+      ! The ref3b/ref1 threshold is used to prevent near terminator and sunglint
+      ! pixels from being classified as fog.
+
+      ! THERE IS CURRENTLY NO FOG DETECTION WHEN CH3A IS ON!
+      !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+      if ((ch3a_on_avhrr_flag == NO) .and. &
+          (ref_ch3b >= 0.25) .and. &
+           (imager_pavolonis%sfctype(i,j) /= DESERT_FLAG) .and. &
+           (imager_measurements%data(i,j,ch5) > 240.0) .and. &
+           ((ref_ch3b / ref_ch1) < 0.6)) then
+
+         imager_pavolonis%cldtype(i,j,cview) = FOG_TYPE
+
+      end if
+
+
+   !----------------------------------------------------------------------------
+   ! If nighttime, use tri-spectral nighttime algorithm.
+   !----------------------------------------------------------------------------
+
+   else if ((imager_pavolonis%cldmask(i,j,cview) == CLOUDY) .and. &
+            (day .eqv. .false.)) then
+
+      !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+      ! Set 3.75um - 11um thresholds used for phase determination.
+      !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+      BTD3811_PHASE_THRES = A2(index1) + &
+           B2(index1)*BTD_Ch4_Ch5    + &
+           C2(index1)*BTD_Ch4_Ch5**2 + &
+           D2(index1)*BTD_Ch4_Ch5**3 + &
+           E2(index1)*BTD_Ch4_Ch5**4
+
+      BTD3811_PHASE_THRES = min(8.0,max(-2.0,BTD3811_PHASE_THRES))
+
+      !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+      ! Set the 3.75 um thresholds used for phase determination.
+      !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+      if (imager_measurements%data(i,j,ch5) <= 245.0) then
+
+         if (imager_pavolonis%sfctype(i,j) == WATER_FLAG) then
+            EMS38_PHASE_THRES = 0.9
+         else
+            EMS38_PHASE_THRES = 0.9
+         end if
+
+      else ! BT11 > 245 (Ch4 BT: 11 micron)
+
+         if (imager_pavolonis%sfctype(i,j) == WATER_FLAG) then
+            EMS38_PHASE_THRES = 1.12
+         else
+            EMS38_PHASE_THRES = 1.12
+         end if
+
+      end if
+
+      !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+      ! Set the split window and EMS3b thresholds used in nighttime cloud
+      ! overlap detection.
+      !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+      if (BTD_Ch3b_Ch4 > 0.0) then
+
+         if (imager_pavolonis%sfctype(i,j) == WATER_FLAG) then
+
+            if ((imager_geolocation%latitude(i,j) > -30.0) .and. &
+                (imager_geolocation%latitude(i,j) < 30.0 )) then
+
+               BTD1112_NOVERLAP_THRES_H = 2.5
+               BTD1112_NOVERLAP_THRES_L = MIN_BTD1112_NOVERLAP(index1)+0.2
+               EMS38_NOVERLAP_THRES_H = 5.0
+               EMS38_NOVERLAP_THRES_L = 1.1
+
+            else
+
+               BTD1112_NOVERLAP_THRES_H = 2.0
+               BTD1112_NOVERLAP_THRES_L = MIN_BTD1112_NOVERLAP(index1)
+               EMS38_NOVERLAP_THRES_H = 2.5
+               EMS38_NOVERLAP_THRES_L = 1.05
+
+            end if
+               ! All other surface types
+         else
+
+            if ((imager_geolocation%latitude(i,j) > -30.0) .and. &
+                (imager_geolocation%latitude(i,j) < 30.0)) then
+
+               BTD1112_NOVERLAP_THRES_H = 2.5
+               BTD1112_NOVERLAP_THRES_L = MIN_BTD1112_NOVERLAP(index1)+0.2
+               EMS38_NOVERLAP_THRES_H = 5.0
+               EMS38_NOVERLAP_THRES_L = 1.1
+
+            else
+
+               BTD1112_NOVERLAP_THRES_H = 2.0
+               BTD1112_NOVERLAP_THRES_L = MIN_BTD1112_NOVERLAP(index1)
+               EMS38_NOVERLAP_THRES_H = 2.0
+               EMS38_NOVERLAP_THRES_L = 1.0
+
+            end if
+
+         end if
+
+         ! These thresholds are not applied if Ch3b minus Ch4
+         ! (BTD_Ch3b_Ch4) <= 0
+      else
+
+         BTD1112_NOVERLAP_THRES_H = -99.0
+         BTD1112_NOVERLAP_THRES_L = 999.0
+         EMS38_NOVERLAP_THRES_H = -99.0
+         EMS38_NOVERLAP_THRES_L = 999.0
+
+      end if
+
+
+      !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+      ! These thresholds are not applied if the surface type is DESERT.
+      !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+      if (imager_pavolonis%sfctype(i,j) == DESERT_FLAG) then
+
+         BTD1112_NOVERLAP_THRES_H = -99.0
+         BTD1112_NOVERLAP_THRES_L = 999.0
+         EMS38_NOVERLAP_THRES_H = -99.0
+         EMS38_NOVERLAP_THRES_L = 999.0
+
+       end if
+
+
+      !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+      ! Perform initial IR window brightness temperature-based typing.
+      !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+      wflg = 1
+
+      if (imager_measurements%data(i,j,ch5) <= 233.16) then
+
+          imager_pavolonis%cldtype(i,j,cview) = OPAQUE_ICE_TYPE
+          wflg = 0
+
+      else if ((imager_measurements%data(i,j,ch5) > 233.16) .and. &
+               (imager_measurements%data(i,j,ch5) <= 253.16)) then
+
+          imager_pavolonis%cldtype(i,j,cview) = OPAQUE_ICE_TYPE
+
+      else if ((imager_measurements%data(i,j,ch5) > 253.16) .and. &
+               (imager_measurements%data(i,j,ch5) <= 273.16)) then
+
+         imager_pavolonis%cldtype(i,j,cview) = SUPERCOOLED_TYPE
+
+      else
+
+         imager_pavolonis%cldtype(i,j,cview) = WATER_TYPE
+
+      end if
+
+      !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+      ! Perform the EMS 3.75 um test for bulk cloud phase determination.
+      !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+      ! solar contamination check disabled
+!     if (SOLAR_CONTAMINATION_MASK(i,j) == NO) then
+
+         if ((imager_pavolonis%cldtype(i,j,cview) == SUPERCOOLED_TYPE) .and. &
+             (imager_pavolonis%emis_ch3b(i,j,cview) >= EMS38_PHASE_THRES) .and. &
+             (imager_measurements%data(i,j,ch5) < 263.16)) then
+
+            imager_pavolonis%cldtype(i,j,cview) = OPAQUE_ICE_TYPE
+
+         end if
+
+
+         if ((imager_pavolonis%cldtype(i,j,cview) == OPAQUE_ICE_TYPE) .and. &
+             (wflg == 1) .and. &
+             (imager_pavolonis%emis_ch3b(i,j,cview) < EMS38_PHASE_THRES)) then
+
+            imager_pavolonis%cldtype(i,j,cview) = SUPERCOOLED_TYPE
+
+         end if
+
+!     end if
+
+      !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+      ! Nighttime cloud overlap test
+      !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+      if ((BTD_Ch4_Ch5 > BTD1112_NOVERLAP_THRES_L) .and. &
+           (BTD_Ch4_Ch5 < BTD1112_NOVERLAP_THRES_H) .and. &
+           (imager_pavolonis%emis_ch3b(i,j,cview) > EMS38_NOVERLAP_THRES_L) .and. &
+           (imager_pavolonis%emis_ch3b(i,j,cview) < EMS38_NOVERLAP_THRES_H) .and. &
+           (imager_measurements%data(i,j,ch5) > 210.0) .and. &
+           (imager_measurements%data(i,j,ch5) < 283.0)) then
+
+         imager_pavolonis%cldtype(i,j,cview) = OVERLAP_TYPE
+
+      end if
+
+      !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+      ! Look for cirrus clouds using the split window test.
+      !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+      if ((imager_pavolonis%cldtype(i,j,cview) /= OVERLAP_TYPE) .and. &
+          (BTD_Ch4_Ch5 > BTD1112_CIRRUS_THRES) .and. &
+          (imager_pavolonis%emis_ch3b(i,j,cview) > 1.3)) then
+
+         imager_pavolonis%cldtype(i,j,cview) = CIRRUS_TYPE
+
+      end if
+
+      if ((imager_pavolonis%emis_ch3b(i,j,cview) > 1.6) .and. &
+          (imager_measurements%data(i,j,ch5) < 300.0)) then
+
+         imager_pavolonis%cirrus_quality(i,j,cview) = 1
+
+      end if
+
+      !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+      ! Look for cirrus clouds using the EMS 3.75 um test.
+      !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+      ! solar contamination check disabled
+!     if (SOLAR_CONTAMINATION_MASK(i,j) == NO) then
+
+         if ((imager_pavolonis%cldtype(i,j,cview) /= OVERLAP_TYPE) .and. &
+              (imager_pavolonis%cldtype(i,j,cview) /= OPAQUE_ICE_TYPE) .and. &
+              (imager_pavolonis%emis_ch3b(i,j,cview) > 1.10) .and. &
+              (imager_measurements%data(i,j,ch5) < 300.0)) then
+
+            imager_pavolonis%cldtype(i,j,cview) = CIRRUS_TYPE
+
+         end if
+
+         if (((imager_pavolonis%emis_ch3b(i,j,cview) > 1.6)       .and. &
+              (imager_measurements%data(i,j,ch5) < 300.0)) .or. &
+              ((imager_pavolonis%emis_ch3b(i,j,cview) > 1.4)       .and. &
+              (imager_measurements%data(i,j,ch5) < 300.0)   .and. &
+              (BTD_Ch4_Ch5 > BTD1112_CIRRUS_THRES))) then
+
+            imager_pavolonis%cirrus_quality(i,j,cview) = 1
+
+         end if
+
+!     end if
+
+      !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+      ! Look for fog - not used over DESERT(=12) surfaces.
+      !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+      if ((imager_angles%solzen(i,j,cview) >= 90.0) .and. &
+           (imager_pavolonis%emis_ch3b(i,j,cview) <= 0.90) .and. &
+           (imager_measurements%data(i,j,ch5) > 240.0) .and. &
+           (imager_pavolonis%sfctype(i,j) /= DESERT_FLAG)) then
+
+         imager_pavolonis%cldtype(i,j,cview) = FOG_TYPE
+
+       end if
+
+   end if
+
+   !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   ! set cccot to a fake high value as otherwise gets set as clear later on.
+   !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+   if  (imager_pavolonis%cldtype(i,j,cview) == PROB_OPAQUE_ICE_TYPE) then
+      imager_pavolonis%cldmask(i,j,cview) = CLOUDY
+      imager_pavolonis%cccot_pre(i,j,cview) = .99
+
+   end if
+
+end subroutine cloud_type_pixel
 
 
 ! NOT ADAPTED YET for CC4CL!
@@ -846,14 +1721,14 @@ end subroutine CLOUD_TYPE
 
 !     !-------------------------------------------------------------------
 !     ! ---- loop over pixels
-!     !i_loop: do i = 1, num_pix
-!     i_loop: do i = imager_geolocation%STARTX, imager_geolocation%ENDX
+!     i_loop: do i = 1, num_pix
+!     i_loop: do i = imager_geolocation%startx, imager_geolocation%endx
 
 
 !        !-----------------------------------------------------------------
 !        ! ---- loop over scanlines
-!        !j_loop: do j = jmin, numj + jmin - 1
-!        j_loop: do j = imager_geolocation%STARTY, imager_geolocation%ENDY
+!        j_loop: do j = jmin, numj + jmin - 1
+!        j_loop: do j = imager_geolocation%starty, imager_geolocation%endy
 
 
 !           ilrc = i_lrc(i,j)
@@ -864,7 +1739,7 @@ end subroutine CLOUD_TYPE
 !           ! is a water cloud  - retype these as water
 
 !           if ((cld_type_array(i,j) == CIRRUS_TYPE)  .or. &
-!                (cld_type_array(i,j) == OVERLAP_TYPE)) then
+!               (cld_type_array(i,j) == OVERLAP_TYPE)) then
 
 !              !ilrc = i_min_Bt_Ch31_3x3(i,j)
 !              !jlrc = j_min_Bt_Ch31_3x3(i,j)
@@ -872,13 +1747,13 @@ end subroutine CLOUD_TYPE
 !              jlrc = j_lrc(i,j)
 
 !              ! skip this if no lrc is available
-!              if ( ilrc < 1 .or. jlrc < 1 ) then
+!              if (ilrc < 1 .or. jlrc < 1) then
 !                 cycle
 !              end if
 
 !              if ((cld_type_array(ilrc,jlrc) == FOG_TYPE) .or. &
-!                   (cld_type_array(ilrc,jlrc) == WATER_TYPE) .or. &
-!                   (cld_type_array(ilrc,jlrc) == SUPERCOOLED_TYPE)) then
+!                  (cld_type_array(ilrc,jlrc) == WATER_TYPE) .or. &
+!                  (cld_type_array(ilrc,jlrc) == SUPERCOOLED_TYPE)) then
 
 !                 cld_type_array(i,j) = cld_type_array(ilrc,jlrc)
 
@@ -891,7 +1766,7 @@ end subroutine CLOUD_TYPE
 !           ! check for water clouds on the edge of cirrus
 
 !           if ((cld_type_array(i,j) == FOG_TYPE)  .or. &
-!                (cld_type_array(i,j) == WATER_TYPE)) then
+!               (cld_type_array(i,j) == WATER_TYPE)) then
 
 !              ilrc = i_lrc(i,j)
 !              jlrc = j_lrc(i,j)
@@ -901,8 +1776,8 @@ end subroutine CLOUD_TYPE
 !              end if
 
 !              if ((cld_type_array(ilrc,jlrc) == CIRRUS_TYPE) .or. &
-!                   (cld_type_array(ilrc,jlrc) == OVERLAP_TYPE) .or. &
-!                   (cld_type_array(ilrc,jlrc) == OPAQUE_ICE_TYPE)) then
+!                  (cld_type_array(ilrc,jlrc) == OVERLAP_TYPE) .or. &
+!                  (cld_type_array(ilrc,jlrc) == OPAQUE_ICE_TYPE)) then
 
 !                 cld_type_array(i,j) = CIRRUS_TYPE
 
@@ -918,1035 +1793,12 @@ end subroutine CLOUD_TYPE
 !     end do i_loop
 !     !-------------------------------------------------------------------
 
-
 ! =====================================================================
 !   end subroutine CLOUD_RETYPE
 ! =====================================================================
 
 
-  subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, sw1, sw2, sw3, &
-    imager_flags, surface, imager_angles, imager_geolocation, &
-                              imager_measurements, imager_pavolonis, sensor, platform, doy, do_ironly, verbose, skint, snow_ice_mask)
-
-   !-- load necessary variable fields and constants
-
-    use constants_cloud_typing_pavolonis_m
-    use imager_structures_m
-    use neural_net_preproc_m
-    use surface_structures_m
-
-   !-- parameters to be passed
-
-    integer,                        intent(in)    :: cview, i, j
-    integer(kind=sint),             intent(in)    :: ch1, ch2, ch3, ch4, ch5, ch6, sw1, sw2, sw3
-    type(surface_t),                intent(in)    :: surface
-    type(imager_flags_t),           intent(in)    :: imager_flags
-    type(imager_angles_t),          intent(in)    :: imager_angles
-    type(imager_geolocation_t),     intent(in)    :: imager_geolocation
-    type(imager_measurements_t),    intent(inout) :: imager_measurements
-    type(imager_pavolonis_t),       intent(inout) :: imager_pavolonis
-    character(len=sensor_length),   intent(in)    :: sensor
-    character(len=platform_length), intent(in)    :: platform
-    integer(kind=sint),             intent(in)    :: doy
-    logical,                        intent(in)    :: do_ironly
-    logical,                        intent(in)    :: verbose
-    real(kind=sreal), dimension(imager_geolocation%startx:imager_geolocation%endx, &
-         1:imager_geolocation%ny) :: skint
-    integer(kind=byte),             intent(in)    :: snow_ice_mask(imager_geolocation%startx:imager_geolocation%endx, &
-         1:imager_geolocation%ny)
-
-   !-- Declare some variables to hold various thresholds.
-
-    real (kind=sreal):: NIR_PHASE_THRES, NIR_CIRRUS_THRES, NIR_OVER_THRES, &
-         BTD3811_PHASE_THRES, EMS38_PHASE_THRES,            &
-         BTD1112_DOVERLAP_THRES, BTD1112_CIRRUS_THRES,      &
-         BTD1112_NOVERLAP_THRES_L, BTD1112_NOVERLAP_THRES_H,&
-         EMS38_NOVERLAP_THRES_L, EMS38_NOVERLAP_THRES_H
-
-   ! Declare some miscelaneous variables.
-
-    integer :: index1, index2, wflg
-
-    integer(kind=sint) :: ch3a_on_avhrr_flag
-
-    integer(kind=sint) :: ch2_on_atsr_flag,ch6_on_atsr_flag,ch7_on_atsr_flag
-
-    logical :: day,desertflag
-
-    real    :: nir_ref
-
-   !---- CC4CL requirements and adaptions for Pavolonis alg.
-
-    real(kind=sreal)   :: glint_angle
-    real(kind=sreal)   :: BTD_Ch3b_Ch4
-    real(kind=sreal)   :: BTD_Ch4_Ch5
-    real(kind=sreal), dimension(2) :: PlanckInv_out
-    real(kind=sreal)   :: rad_ch3b
-    real(kind=sreal)   :: rad_ch3b_emis
-    real(kind=sreal)   :: solcon_ch3b
-    real(kind=sreal)   :: mu0
-    real(kind=sreal)   :: esd
-    real(kind=sreal)   :: c_sun
-    real(kind=sreal)   :: ref_ch3b
-    real(kind=sreal)   :: bt_ch3b
-    real(kind=sreal)   :: ref_ch1
-    real(kind=sreal)   :: ref_ch3a
-    real(kind=sreal)   :: solzen,ch1v,ch2v
-
-!   real(kind=dreal), parameter, dimension(7)   :: A1
-!   real(kind=dreal), parameter, dimension(7)   :: B1
-!   real(kind=dreal), parameter, dimension(7)   :: C1
-!   real(kind=dreal), parameter, dimension(7)   :: D1
-!   real(kind=dreal), parameter, dimension(7)   :: E1
-!   real(kind=dreal), parameter, dimension(7)   :: A2
-!   real(kind=dreal), parameter, dimension(7)   :: B2
-!   real(kind=dreal), parameter, dimension(7)   :: C2
-!   real(kind=dreal), parameter, dimension(7)   :: D2
-!   real(kind=dreal), parameter, dimension(7)   :: E2
-!   real(kind=dreal), parameter, dimension(7,8) :: A3
-!   real(kind=dreal), parameter, dimension(7,8) :: B3
-!   real(kind=dreal), parameter, dimension(7,8) :: C3
-!   real(kind=dreal), parameter, dimension(7,8) :: D3
-!   real(kind=dreal), parameter, dimension(7,8) :: E3
-!   real(kind=dreal), parameter, dimension(7,8) :: MIN_BTD1112_DOVERLAP
-!   real(kind=dreal), parameter, dimension(7)   :: MIN_BTD1112_NOVERLAP
-
-            !-- check if solar zenith angle is > 0
-
-            if ( imager_angles%SOLZEN(i,j,cview) .lt. 0. ) return
-
-            !-- check if Ch3a is available or not (fill_value is negative)
-
-            if ( imager_measurements%DATA(i,j,ch3) .ge. 0 .and. &
-                 imager_measurements%DATA(i,j,ch4) .lt. 0) then
-
-               ! Ch3a is used if Ch3b is not avail.
-               ch3a_on_avhrr_flag = YES
-
-            elseif ( imager_measurements%DATA(i,j,ch4) .ge. 0 ) then
-
-               ! Ch3b is used if avail.
-               ch3a_on_avhrr_flag = NO
-
-            else
-
-               ! neither Ch3a nor Ch3b avail.
-               ch3a_on_avhrr_flag = INEXISTENT
-
-            end if
-
-            if (trim(adjustl(sensor)) .eq. 'AATSR' .or. trim(adjustl(sensor)) .eq. 'ATSR2' ) then
-               ! changed min value of 3.7 for AATSR
-               if ( imager_measurements%DATA(i,j,ch3) .ge. 0 .and. &
-                    imager_measurements%DATA(i,j,ch4) .lt. 100) then
-
-                  ! Ch3a is used if Ch3b is not avail.
-                  ch3a_on_avhrr_flag = YES
-
-               elseif ( imager_measurements%DATA(i,j,ch4) .ge. 100 ) then
-
-                  ! Ch3b is used if avail.
-                  ch3a_on_avhrr_flag = NO
-
-               else
-
-                  ! neither Ch3a nor Ch3b avail.
-                  ch3a_on_avhrr_flag = INEXISTENT
-
-               end if
-            end if
-
-
-            ! check if ATSR 12um channel is missing
-            ch7_on_atsr_flag = YES
-
-            if ( imager_measurements%DATA(i,j,ch5) .ge. 100 .and. &
-                 imager_measurements%DATA(i,j,ch6) .lt. 100. ) then
-               ch7_on_atsr_flag = NO
-            end if
-
-            if (do_ironly .neqv. .true.) then
-               ch2_on_atsr_flag = YES
-               if ( imager_measurements%DATA(i,j,ch2) .lt. 0. ) then
-                  ch2_on_atsr_flag = NO
-               end if
-            else
-               ch2_on_atsr_flag = NO
-            endif
-
-            ! check if ATSR 11um channel is missing because too warm
-            !          ch6_on_atsr_flag = YES
-
-            if ( imager_measurements%DATA(i,j,ch6) .ge. 220 .and. &
-                 imager_measurements%DATA(i,j,ch5) .lt. 100. ) then
-               ch6_on_atsr_flag = NO
-            end if
-
-
-            ! check if ATSR 11um channel is missing because too cold
-            ch6_on_atsr_flag = YES
-
-            if ( imager_measurements%DATA(i,j,ch6) .lt. 100 .and. &
-                 imager_measurements%DATA(i,j,ch5) .lt. 100. ) then
-               ch6_on_atsr_flag = NO
-               ch7_on_atsr_flag = NO
-            end if
-
-            !-- check for sunglint and save result:
-
-            ! In PATMOS sunglint calculation:
-            if ( imager_angles%SOLZEN(i,j,cview) .ne. sreal_fill_value .and. &
-                 imager_angles%SATZEN(i,j,cview) .ne. sreal_fill_value .and. &
-                 imager_angles%RELAZI(i,j,cview) .ne. sreal_fill_value ) then
-
-               glint_angle = &
-                    cos ( imager_angles%SOLZEN(i,j,cview) * d2r ) * &
-                    cos ( imager_angles%SATZEN(i,j,cview) * d2r ) + &
-                    sin ( imager_angles%SOLZEN(i,j,cview) * d2r ) * &
-                    sin ( imager_angles%SATZEN(i,j,cview) * d2r ) * &
-                    cos ( imager_angles%RELAZI(i,j,cview) * d2r )
-
-               glint_angle = max( -1.0, min( glint_angle, 1.0 ) )
-               glint_angle = acos(glint_angle) / d2r
-
-            else
-
-               glint_angle = sreal_fill_value
-
-            end if
-
-            !-- calculate BT differences
-
-            ! BT(11) minus BT(12)
-            BTD_Ch4_Ch5 = imager_measurements%DATA(i,j,ch5) - &
-                 imager_measurements%DATA(i,j,ch6)
-
-            ! BT(3.75) minus BT(11)
-            BTD_Ch3b_Ch4 = imager_measurements%DATA(i,j,ch4) - &
-                 imager_measurements%DATA(i,j,ch5)
-
-            ! calculate ch3b radiance and emissivity
-            PlanckInv_out  = PlanckInv( platform, imager_measurements%DATA(i,j,ch4) )
-            rad_ch3b       = PlanckInv_out(1)
-            solcon_ch3b    = PlanckInv_out(2)
-            PlanckInv_out  = PlanckInv( platform, imager_measurements%DATA(i,j,ch5) )
-            rad_ch3b_emis  = PlanckInv_out(1)
-            mu0 = cos ( imager_angles%SOLZEN(i,j,cview) * d2r )
-            esd = 1.0 - 0.0167 * cos( 2.0 * pi * ( doy - 3 ) / 365.0 )
-            c_sun = 1. / esd**2
-            imager_pavolonis%emis_ch3b(i,j,cview) = rad_ch3b / rad_ch3b_emis
-
-            ! calculate true reflectances for avhrr, modis and aatsr
-            if (do_ironly .neqv. .true.) then
-               ref_ch1 = imager_measurements%DATA(i,j,ch1) / mu0
-            else
-               ! set ref_ch1 to fillvalue is enough to force pavolonis to use
-               ! Ir only at daytime
-               ref_ch1 = sreal_fill_value
-            endif
-            ref_ch3a = imager_measurements%DATA(i,j,ch3) / mu0
-            ref_ch3b = ( rad_ch3b - rad_ch3b_emis ) / ( solcon_ch3b * c_sun * mu0 - rad_ch3b_emis )
-            ! make sure reflectances are positive, else fill value
-            if (ref_ch1 .lt. 0.) ref_ch1 = sreal_fill_value
-            if (ref_ch3a .lt. 0.) ref_ch3a = sreal_fill_value
-            !if (ref_ch3b .lt. 0.) ref_ch3b = sreal_fill_value !dont do this! neg values are realistic and the ANN can deal with it
-
-            !-- nir_ref = channel 3a or channel 3b reflectance
-            nir_ref = sreal_fill_value
-
-            solzen  = imager_angles%SOLZEN(i,j,cview)
-
-            ! If we're not using any VIS channels then fill ch1 and ch2
-            ! Fudge SZA to 120 deg: forces neural net into night mode
-            if (do_ironly .eqv. .true.) then
-               ch1v    =       sreal_fill_value
-               ch2v    =       sreal_fill_value
-               ! during daytime we need to set bt37 to fillvalue as well,
-               ! the nighttime ANN expects 3.7 without solar component
-               if (solzen .le. 80.) bt_ch3b = sreal_fill_value
-               solzen = 120.
-               ! Otherwise, behave as-before
-            else
-               ch1v    = imager_measurements%DATA(i,j,ch1)
-               ch2v    = imager_measurements%DATA(i,j,ch2)
-               bt_ch3b = imager_measurements%DATA(i,j,ch4)
-            endif
-
-            desertflag = .FALSE.
-            if (imager_pavolonis%SFCTYPE(i,j) == DESERT_FLAG) desertflag=.TRUE.
-            !-- NEURAL_NET_PREPROC subroutine
-            ! if one of the (future) ANN's expects true reflectances
-            ! this will be handled internally in ann_cloud_mask
-            call ann_cloud_mask( &
-                 ch1v, & ! Not "True" reflectances expected
-                 ch2v, & ! Not "True" reflectances expected
-                 imager_measurements%DATA(i,j,ch3), &
-                 bt_ch3b, &
-                 ref_ch3b*mu0, & ! Not "True" reflectances expected
-                 imager_measurements%DATA(i,j,ch5), &
-                 imager_measurements%DATA(i,j,ch6), &
-                 solzen, &
-                 imager_angles%SATZEN(i,j,cview), &
-                 snow_ice_mask(i,j), &
-                 imager_flags%LSFLAG(i,j), &
-                 desertflag, &
-                 surface%albedo(i,j,sw1), &
-                 surface%albedo(i,j,sw2), &
-                 surface%albedo(i,j,sw3), &
-                 imager_pavolonis%CCCOT_pre(i,j,cview), &
-                 imager_pavolonis%CLDMASK(i,j,cview) , &
-                 imager_pavolonis%CLDMASK_UNCERTAINTY(i,j,cview) , &
-                 skint(i,j) , &
-                 ch3a_on_avhrr_flag, &
-                 glint_angle, &
-                 sensor, &
-                 platform, &
-                 verbose )
-
-            ! return if clear, as no need to define cloud type
-            if ( imager_pavolonis%CLDMASK(i,j,cview) == CLEAR ) then
-               imager_pavolonis%CLDTYPE(i,j,cview) = CLEAR_TYPE
-               imager_pavolonis%ANN_PHASE(i,j,cview) = CLEAR_TYPE
-               if (trim(adjustl(sensor)) .ne. 'AATSR' .and. trim(adjustl(sensor)) .ne. 'ATSR2') return
-            end if
-
-            ! implement extra tests for AATSR
-
-            !-- First Pavolonis test: clear or cloudy
-
-            if (trim(adjustl(sensor)) .eq. 'AATSR' .or. trim(adjustl(sensor)) .eq. 'ATSR2' ) then
-
-               ! 11um channel can occasionally be missing particuarly for AATSR instrument if it gets too warm
-               ! also when ch6 atsr is fill value,clear type is assigned
-               if ( ( ch6_on_atsr_flag == NO )  .and.  ( ch7_on_atsr_flag == YES ) ) then
-                  imager_pavolonis%CLDTYPE(i,j,cview) = CLEAR_TYPE
-                  imager_pavolonis%CLDMASK(i,j,cview) = CLEAR
-               end if
-
-               ! 12um channel can occasionally be missing particuarly for AATSR instrument
-               ! also when ch7 atsr is fill value, %PROB_OPAQUE_ICE_TYPE is assigned
-
-               if ( (ch7_on_atsr_flag == NO ) .and. (ch2_on_atsr_flag == YES) ) then
-                  imager_pavolonis%CLDTYPE(i,j,cview) = PROB_OPAQUE_ICE_TYPE
-                  imager_pavolonis%CLDMASK(i,j,cview) = CLOUDY
-
-               end if
-
-               ! if both IR channels are missing them likely a very cold opaque
-               ! cloud enable a CTH retrieval by setting minimum threshold values
-               ! of IR channels
-               if  ( ( ch6_on_atsr_flag == NO )  .and. ( ch7_on_atsr_flag == NO ) .and. (ch2_on_atsr_flag == yes)) then
-                  imager_pavolonis%CLDTYPE(i,j,cview) = PROB_OPAQUE_ICE_TYPE
-                  !imager_pavolonis%CLDTYPE(i,j,cview) = OPAQUE_ICE_TYPE
-                  imager_measurements%DATA(i,j,ch6)=210.0
-                  imager_measurements%DATA(i,j,ch5)=209.0
-                  imager_pavolonis%CLDMASK(i,j,cview) = CLOUDY
-               end if
-
-               if ( (ch7_on_atsr_flag == NO )  ) then
-                  ! check if over very cold atlantic plateau Antarctica in which case probably clear if 12um is missing
-                  if ((imager_pavolonis%SFCTYPE(i,j) == NISE_FLAG) .and.   (imager_geolocation%LATITUDE(i,j) < -70.0) ) then
-                     imager_pavolonis%CLDTYPE(i,j,cview) = PROB_CLEAR_TYPE
-                     imager_pavolonis%CLDMASK(i,j,cview) = CLEAR
-                  end if
-               end if
-
-               if ( imager_pavolonis%CLDMASK(i,j,cview) == CLEAR ) then
-                  imager_pavolonis%CLDTYPE(i,j,cview) = CLEAR_TYPE
-                  return
-               end if
-            end if
-
-            ! from here all sensors have their decisions made only cloudy is
-            ! allowed start ANN phase
-            !-- NEURAL_NET_PREPROC subroutine
-            ! if one of the (future) ANN's expects true reflectances
-            ! this will be handled internally in ann_cloud_phase
-            call ann_cloud_phase( &
-                 ch1v, & ! Not "True" reflectances expected
-                 ch2v, & ! Not "True" reflectances expected
-                 imager_measurements%DATA(i,j,ch3), &
-                 bt_ch3b, &
-                 ref_ch3b*mu0, & ! Not "True" reflectances expected
-                 imager_measurements%DATA(i,j,ch5), &
-                 imager_measurements%DATA(i,j,ch6), &
-                 solzen, &
-                 imager_angles%SATZEN(i,j,cview), &
-                 snow_ice_mask(i,j), imager_flags%LSFLAG(i,j), &
-                 desertflag , &
-                 surface%albedo(i,j,sw1), &
-                 surface%albedo(i,j,sw2), &
-                 surface%albedo(i,j,sw3), &
-                 imager_pavolonis%CPHCOT(i,j,cview), &
-                 imager_pavolonis%ANN_PHASE(i,j,cview) , &
-                 imager_pavolonis%ANN_PHASE_UNCERTAINTY(i,j,cview) , &
-                 ch3a_on_avhrr_flag, &
-                 sensor, &
-                 platform, &
-                 skint(i,j) , &
-                 verbose )
-
-            !-- neither ch3a nor ch3b available
-            if (trim(adjustl(sensor)) .eq. 'AVHRR') then
-               !-- at night, assign probably opaque ice flag
-               !-- as ch3.7 has fill value due to low S/N
-               !only apply to avhrr data as when fill for aatsr it is actaully warm
-               if ( ch3a_on_avhrr_flag == INEXISTENT ) then
-                  !                if ( ( imager_geolocation%LATITUDE(i,j) < 65.0 .and. &
-                  !                     imager_geolocation%LATITUDE(i,j) > -65.0 ) .and. &
-                  !                     ( day .eqv. .FALSE. ) ) &
-                  !     imager_pavolonis%CLDTYPE(i,j) = PROB_OPAQUE_ICE_TYPE
-                  if ( ( imager_measurements%DATA(i,j,ch5) > 0. ) .and. &
-                       ( imager_measurements%DATA(i,j,ch5) <= 233.16 ) ) then
-
-                     imager_pavolonis%CLDTYPE(i,j,cview) = OPAQUE_ICE_TYPE
-
-                  else if ( (imager_measurements%DATA(i,j,ch5) > 233.16) .and. &
-                       (imager_measurements%DATA(i,j,ch5) <= 253.16) ) then
-
-                     imager_pavolonis%CLDTYPE(i,j,cview) = OPAQUE_ICE_TYPE
-
-                  else if ( (imager_measurements%DATA(i,j,ch5) > 253.16) .and. &
-                       (imager_measurements%DATA(i,j,ch5) <= 273.16)) then
-
-                     imager_pavolonis%CLDTYPE(i,j,cview) =SUPERCOOLED_TYPE
-
-                  else
-
-                     imager_pavolonis%CLDTYPE(i,j,cview) = WATER_TYPE
-
-                  end if
-
-                  return
-
-               end if ! end avhrr channel flag
-
-            end if ! end avhrr
-
-            !-- Determine the viewing zenith angle bin.
-            index1 = min(7,max(1,int(imager_angles%SATZEN(i,j,cview)/10.0) + 1))
-
-            !-- Determine the solar zenith angle bin.
-            index2 = min(8,max(1,int(imager_angles%SOLZEN(i,j,cview)/10.0) + 1))
-
-            !-- Set 11um - 12um cirrus thresholds.
-            !   Absorption of radiation by water vapor and ice crystals in
-            !   semitransparent cirrus clouds is greater at 12 than 11 micron
-
-            BTD1112_CIRRUS_THRES = &
-                 A1(index1) + &
-                 B1(index1)*imager_measurements%DATA(i,j,ch5) + &
-                 C1(index1)*imager_measurements%DATA(i,j,ch5)**2 + &
-                 D1(index1)*imager_measurements%DATA(i,j,ch5)**3 + &
-                 E1(index1)*imager_measurements%DATA(i,j,ch5)**4
-
-
-            BTD1112_CIRRUS_THRES = max( 1.0, min(4.0,BTD1112_CIRRUS_THRES) )
-
-
-            !-- initial cirrus quality
-
-            imager_pavolonis%cirrus_quality(i,j,cview) = 0
-
-            !-- Check if daytime or nighttime algorithm is to be used.
-            day = .FALSE.
-            if ( ( imager_angles%SOLZEN(i,j,cview) < 88.0 ) .or. ( ch3a_on_avhrr_flag .eq. YES ) ) then
-               day = .TRUE.
-            end if
-
-            !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            !
-            !-- If DAYTIME, use daytime algorithm.
-            !
-            !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-            if ( (imager_pavolonis%CLDMASK(i,j,cview) == CLOUDY) .and. &
-                 (day .eqv. .TRUE.) ) then
-
-               !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-               !-- Set 11um - 12um overlap thresholds.
-               !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-               !if ( (imager_measurements%DATA(i,j,ch1) >= 35.0) .and. &
-               !   (imager_measurements%DATA(i,j,ch1) <= 60.0) ) then
-               if ( (ref_ch1 >= 0.35) .and. (ref_ch1 <= 0.60) ) then
-
-                  BTD1112_DOVERLAP_THRES = max( &
-                       ( ( A3(index1,index2)+ &
-                       !    B3(index1,index2)* imager_measurements%DATA(i,j,ch1)*0.01 + &
-                       !    C3(index1,index2)*(imager_measurements%DATA(i,j,ch1)*0.01)**2 + &
-                       !    D3(index1,index2)*(imager_measurements%DATA(i,j,ch1)*0.01)**3 + &
-                       !    E3(index1,index2)*(imager_measurements%DATA(i,j,ch1)*0.01)**4 ) - 0.1 ), &
-                       B3(index1,index2)* ref_ch1 + &
-                       C3(index1,index2)*(ref_ch1)**2 + &
-                       D3(index1,index2)*(ref_ch1)**3 + &
-                       E3(index1,index2)*(ref_ch1)**4 ) - 0.1 ), &
-                       MIN_BTD1112_DOVERLAP(index1,index2) - 0.1 )
-
-                  !else if ( imager_measurements%DATA(i,j,ch1) > 60.0 .and. &
-                  !          imager_measurements%DATA(i,j,ch1) < 90.0 ) then
-               else if ( ref_ch1 > 0.60 .and. ref_ch1 < 0.90 ) then
-
-                  BTD1112_DOVERLAP_THRES = MIN_BTD1112_DOVERLAP(index1,index2) - 0.1
-
-               else
-
-                  BTD1112_DOVERLAP_THRES = 9999.0
-
-               end if
-
-
-               !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-               !-- In the high latitudes, the Ch3b 3.75 um must be
-               !   less than 20% to prevent single layer water clouds
-               !   from being typed as overlap
-               !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-               if ( ( ch3a_on_avhrr_flag == NO ) .and. &
-                    ( ( imager_geolocation%LATITUDE(i,j) > 65.0 )   .or.  &
-                    ( imager_geolocation%LATITUDE(i,j) < -65.0 ) ) .and. &
-                    ( ref_ch3b > 0.20 ) ) then
-
-                  BTD1112_DOVERLAP_THRES = 9999.0
-
-               end if
-
-
-               !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-               !-- Perform initial IR window brightness temperature-based typing
-               !   wflg = IR window flag
-               !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-               wflg = 1
-
-               if ( imager_measurements%DATA(i,j,ch5) <= 233.16 ) then
-
-                  imager_pavolonis%CLDTYPE(i,j,cview) = OPAQUE_ICE_TYPE
-                  wflg = 0
-
-               else if ( (imager_measurements%DATA(i,j,ch5) > 233.16) .and. &
-                    (imager_measurements%DATA(i,j,ch5) <= 253.16) ) then
-
-                  imager_pavolonis%CLDTYPE(i,j,cview) = OPAQUE_ICE_TYPE
-
-               else if ( (imager_measurements%DATA(i,j,ch5) > 253.16) .and. &
-                    (imager_measurements%DATA(i,j,ch5) <= 273.16)) then
-
-                  imager_pavolonis%CLDTYPE(i,j,cview) =SUPERCOOLED_TYPE
-
-               else
-
-                  ! BT(11) > 273.16 K, the melting point of pure water,
-                  ! the cirrus detection test is simply applied.
-                  ! If it is passed, then the pixel is classified as nonopaque
-                  ! ice cloud, otherwise, it is a warm liquid water cld type.
-                  ! [Pavolonis et al. (2005)]
-
-                  imager_pavolonis%CLDTYPE(i,j,cview) = WATER_TYPE
-
-               end if
-
-
-               !---------------------------------------------!
-               !                                             !
-               !---- Use 1.6 um algorithm, if available ---- !
-               !                                             !
-               !---------------------------------------------!
-
-               if ( (ch3a_on_avhrr_flag == YES) .and. ( ref_ch1 > 0.0) ) then
-
-
-                  !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                  ! Set some 1.6 um thresholds used in phase identification
-                  ! and cirrus detection.
-                  !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-                  if ( (imager_pavolonis%SFCTYPE(i,j) == WATER_FLAG) .or. &
-                       (imager_pavolonis%SFCTYPE(i,j) == NISE_FLAG) ) then
-
-                     !NIR_CIRRUS_THRES = 20.0
-                     !NIR_PHASE_THRES  = 17.0
-                     NIR_CIRRUS_THRES = 0.20
-                     NIR_PHASE_THRES  = 0.17
-
-                  else if (imager_pavolonis%SFCTYPE(i,j) == DESERT_FLAG) then
-
-                     !NIR_CIRRUS_THRES = 55.0
-                     !NIR_PHASE_THRES  = 32.0
-                     NIR_CIRRUS_THRES = 0.55
-                     NIR_PHASE_THRES  = 0.32
-
-                     ! all other surface types
-                  else
-
-                     !NIR_CIRRUS_THRES = 33.0
-                     !NIR_PHASE_THRES  = 32.0
-                     NIR_CIRRUS_THRES = 0.33
-                     NIR_PHASE_THRES  = 0.32
-
-                  end if
-
-
-                  !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                  !-- Set the minimum 1.6 um reflectance allowed for
-                  !   cloud overlap over SNOW/ICE.
-                  !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-                  if (imager_pavolonis%SFCTYPE(i,j) == NISE_FLAG) then
-                     !NIR_OVER_THRES = 17.0
-                     NIR_OVER_THRES = 0.17
-                  else
-                     NIR_OVER_THRES = 0.0
-                  end if
-
-
-                  !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                  !-- The reflectance used in the typing tests to 1.65 um
-                  !   when Ch3a is on
-                  !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-                  nir_ref = ref_ch3a
-
-
-                  !---------------------------------------!
-                  !                                       !
-                  !----      Use 3.75 um channel      ----!
-                  ! (used only if 1.6um is not available) !
-                  !                                       !
-                  !---------------------------------------!
-
-               else if ( (ch3a_on_avhrr_flag == NO) .and. ( ref_ch1 > 0.0) ) then
-
-
-                  !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                  ! Set some 3.75 um thresholds used in phase identification
-                  ! and cirrus detection.
-                  !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-                  if ( (imager_pavolonis%SFCTYPE(i,j) == WATER_FLAG) .or. &
-                       (imager_pavolonis%SFCTYPE(i,j) == NISE_FLAG) ) then
-
-                     !NIR_CIRRUS_THRES = 12.0
-                     !NIR_PHASE_THRES  = 6.0
-                     NIR_CIRRUS_THRES = 0.12
-                     NIR_PHASE_THRES  = 0.06
-
-                  else if (imager_pavolonis%SFCTYPE(i,j) == DESERT_FLAG) then
-
-                     !NIR_CIRRUS_THRES = 40.0
-                     !NIR_PHASE_THRES  = 6.0
-                     NIR_CIRRUS_THRES = 0.40
-                     NIR_PHASE_THRES  = 0.06
-
-                     ! all other surface types
-                  else
-
-                     !NIR_CIRRUS_THRES = 12.0
-                     !NIR_PHASE_THRES  = 6.0
-                     NIR_CIRRUS_THRES = 0.12
-                     NIR_PHASE_THRES  = 0.06
-
-                  end if
-
-
-
-                  !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                  !-- Set the minimum 3.75 um reflectance allowed for
-                  !   cloud overlap over SNOW/ICE.
-                  !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-                  if (imager_pavolonis%SFCTYPE(i,j) == NISE_FLAG) then
-                     !NIR_OVER_THRES = 6.0
-                     NIR_OVER_THRES = 0.06
-                  else
-                     NIR_OVER_THRES = 0.0
-                  end if
-
-
-                  !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                  !-- The reflectance used in the typing tests to 3.75 um
-                  !   when Ch3b is on.
-                  !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-                  nir_ref = ref_ch3b
-
-               else
-
-                  ! In case it is daytime, but ref_ch1 <= 0, skip further Pavolonis tests.
-                  ! Algorithm output is simple IR window brightness temperature-based typing
-                  ! as applied previously.
-                  return
-
-                  ! ----------------------------------------- !
-                  !                                           !
-                  ! end of if loop: CH3a or CH3b availability !
-                  !                                           !
-                  ! ----------------------------------------- !
-               end if
-
-
-               !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-               !-- Perform the NIR reflectance bulk cloud phase test
-               !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-               if ( ( imager_pavolonis%CLDTYPE(i,j,cview) == SUPERCOOLED_TYPE ) .and. &
-                    ( nir_ref <= NIR_PHASE_THRES ) .and. &
-                    ( imager_measurements%DATA(i,j,ch5) < 263.16 ) ) then
-
-                  imager_pavolonis%CLDTYPE(i,j,cview) = OPAQUE_ICE_TYPE
-
-               end if
-
-               if ( ( imager_pavolonis%CLDTYPE(i,j,cview) == OPAQUE_ICE_TYPE ) .and. &
-                    ( wflg == 1 ) .and. &
-                    ( nir_ref > NIR_PHASE_THRES ) ) then
-
-                  imager_pavolonis%CLDTYPE(i,j,cview) = SUPERCOOLED_TYPE
-
-               end if
-
-
-               !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-               !-- Perform the cloud overlap test
-               !   !! not used over DESERT surfaces !!
-               !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-               if ( ( BTD_Ch4_Ch5 > BTD1112_DOVERLAP_THRES ) .and. &
-                    ( imager_measurements%DATA(i,j,ch5) < 270.0) .and. &
-                    ( imager_pavolonis%SFCTYPE(i,j) /= DESERT_FLAG ) .and. &
-                    ( nir_ref > NIR_OVER_THRES ) .and. &
-                    ( imager_measurements%DATA(i,j,ch5) > 210.0 ) ) then
-
-                  imager_pavolonis%CLDTYPE(i,j,cview) = OVERLAP_TYPE
-
-               end if
-
-
-               !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-               !-- Look for cirrus clouds.
-               !   note, akh modified so that nir_ref test
-               !   only applied when Solzen < 70
-               !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-               if ( ( imager_pavolonis%CLDTYPE(i,j,cview) /= OVERLAP_TYPE ) .and. &
-                    ( BTD_Ch4_Ch5 > (BTD1112_CIRRUS_THRES-0.2) ) .and. &
-                    ( imager_measurements%DATA(i,j,ch5) < 295.0 ) ) then
-
-                  if (imager_angles%SOLZEN(i,j,cview) < 70.0) then
-
-                     if ( nir_ref < NIR_CIRRUS_THRES ) then
-                        imager_pavolonis%CLDTYPE(i,j,cview) = CIRRUS_TYPE
-                        imager_pavolonis%cirrus_quality(i,j,cview) = 1
-                     end if
-
-                  else
-
-                     imager_pavolonis%CLDTYPE(i,j,cview) = CIRRUS_TYPE
-                     imager_pavolonis%cirrus_quality(i,j,cview) = 0
-                     ! note, this is a low quality
-
-                  end if !end of solzen if loop
-
-               end if !end of look for cirrus clouds
-
-
-               !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-               !-- Look for fog - not used over DESERT(=12) surfaces.
-               !   The ref3b/ref1 threshold is used to prevent near terminator
-               !   and sunglint pixels from being classified as fog.
-               !   THERE IS CURRENTLY NO FOG DETECTION WHEN CH3A IS ON!
-               !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-               if ( ( ch3a_on_avhrr_flag == NO ) .and. &
-                    ( ref_ch3b >= 0.25) .and. &
-                    ( imager_pavolonis%SFCTYPE(i,j) /= DESERT_FLAG ) .and. &
-                    ( imager_measurements%DATA(i,j,ch5) > 240.0 ) .and. &
-                    ( ( ref_ch3b / ref_ch1 ) < 0.6 ) ) then
-
-                  imager_pavolonis%CLDTYPE(i,j,cview) = FOG_TYPE
-
-               end if
-
-
-               !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-               !
-               !-- If nighttime, use tri-spectral nighttime algorithm.
-               !
-               !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-            else if ( (imager_pavolonis%CLDMASK(i,j,cview) == CLOUDY) .and. &
-                 (day .eqv. .false.) ) then
-
-
-               !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-               !-- Set 3.75um - 11um thresholds used for phase determination.
-               !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-               BTD3811_PHASE_THRES = A2(index1) + &
-                    B2(index1)*BTD_Ch4_Ch5    + &
-                    C2(index1)*BTD_Ch4_Ch5**2 + &
-                    D2(index1)*BTD_Ch4_Ch5**3 + &
-                    E2(index1)*BTD_Ch4_Ch5**4
-
-               BTD3811_PHASE_THRES = min(8.0,max(-2.0,BTD3811_PHASE_THRES))
-
-
-
-               !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-               !-- Set the 3.75 um thresholds used for phase determination.
-               !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-               if (imager_measurements%DATA(i,j,ch5) <= 245.0) then
-
-                  if (imager_pavolonis%SFCTYPE(i,j) == WATER_FLAG) then
-                     EMS38_PHASE_THRES = 0.9
-                  else
-                     EMS38_PHASE_THRES = 0.9
-                  end if
-
-               else ! BT11 > 245 (Ch4 BT: 11 micron)
-
-                  if (imager_pavolonis%SFCTYPE(i,j) == WATER_FLAG) then
-                     EMS38_PHASE_THRES = 1.12
-                  else
-                     EMS38_PHASE_THRES = 1.12
-                  end if
-
-               end if
-
-
-               !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-               !-- Set the split window and EMS3b thresholds used in nighttime
-               !   cloud overlap detection.
-               !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-               if ( BTD_Ch3b_Ch4 > 0.0 ) then
-
-                  if (imager_pavolonis%SFCTYPE(i,j) == WATER_FLAG) then
-
-                     if ( ( imager_geolocation%LATITUDE(i,j) > -30.0 ) .and. &
-                          ( imager_geolocation%LATITUDE(i,j) < 30.0  ) ) then
-
-                        BTD1112_NOVERLAP_THRES_H = 2.5
-                        BTD1112_NOVERLAP_THRES_L = MIN_BTD1112_NOVERLAP(index1)+0.2
-                        EMS38_NOVERLAP_THRES_H = 5.0
-                        EMS38_NOVERLAP_THRES_L = 1.1
-
-                     else
-
-                        BTD1112_NOVERLAP_THRES_H = 2.0
-                        BTD1112_NOVERLAP_THRES_L = MIN_BTD1112_NOVERLAP(index1)
-                        EMS38_NOVERLAP_THRES_H = 2.5
-                        EMS38_NOVERLAP_THRES_L = 1.05
-
-                     end if
-
-                     ! all other surface types
-                  else
-
-                     if ( ( imager_geolocation%LATITUDE(i,j) > -30.0 ) .and. &
-                          ( imager_geolocation%LATITUDE(i,j) < 30.0 ) ) then
-
-                        BTD1112_NOVERLAP_THRES_H = 2.5
-                        BTD1112_NOVERLAP_THRES_L = MIN_BTD1112_NOVERLAP(index1)+0.2
-                        EMS38_NOVERLAP_THRES_H = 5.0
-                        EMS38_NOVERLAP_THRES_L = 1.1
-
-                     else
-
-                        BTD1112_NOVERLAP_THRES_H = 2.0
-                        BTD1112_NOVERLAP_THRES_L = MIN_BTD1112_NOVERLAP(index1)
-                        EMS38_NOVERLAP_THRES_H = 2.0
-                        EMS38_NOVERLAP_THRES_L = 1.0
-
-                     end if
-
-                  end if !end of SFCTYPE if loop
-
-                  ! These thresholds are not applied if
-                  ! Ch3b minus Ch4 (BTD_Ch3b_Ch4) <= 0
-               else
-
-                  BTD1112_NOVERLAP_THRES_H = -99.0
-                  BTD1112_NOVERLAP_THRES_L = 999.0
-                  EMS38_NOVERLAP_THRES_H = -99.0
-                  EMS38_NOVERLAP_THRES_L = 999.0
-
-               end if
-
-
-               !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-               !-- These thresholds are not applied if the surface type
-               !   is DESERT
-               !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-               if ( imager_pavolonis%SFCTYPE(i,j) == DESERT_FLAG ) then
-
-                  BTD1112_NOVERLAP_THRES_H = -99.0
-                  BTD1112_NOVERLAP_THRES_L = 999.0
-                  EMS38_NOVERLAP_THRES_H = -99.0
-                  EMS38_NOVERLAP_THRES_L = 999.0
-
-               end if
-
-
-               !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-               !-- Perform initial IR window brightness temperature-based
-               !   typing
-               !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-               wflg = 1
-
-               if (imager_measurements%DATA(i,j,ch5) <= 233.16) then
-
-                  imager_pavolonis%CLDTYPE(i,j,cview) = OPAQUE_ICE_TYPE
-                  wflg = 0
-
-               else if ( ( imager_measurements%DATA(i,j,ch5) > 233.16 ) .and. &
-                    ( imager_measurements%DATA(i,j,ch5) <= 253.16 ) ) then
-
-                  imager_pavolonis%CLDTYPE(i,j,cview) = OPAQUE_ICE_TYPE
-
-               else if ( ( imager_measurements%DATA(i,j,ch5) > 253.16 ) .and. &
-                    ( imager_measurements%DATA(i,j,ch5) <= 273.16 ) ) then
-
-                  imager_pavolonis%CLDTYPE(i,j,cview) = SUPERCOOLED_TYPE
-
-               else
-
-                  imager_pavolonis%CLDTYPE(i,j,cview) = WATER_TYPE
-
-               end if
-
-
-
-               !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-               !-- Perform the EMS 3.75 um test for bulk cloud phase
-               !   determination
-               !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-               ! solar contamination check disabled
-               !if (SOLAR_CONTAMINATION_MASK(i,j) == NO) then
-
-               if ( ( imager_pavolonis%CLDTYPE(i,j,cview) == SUPERCOOLED_TYPE ) .and. &
-                    ( imager_pavolonis%emis_ch3b(i,j,cview) >= EMS38_PHASE_THRES ) .and. &
-                    ( imager_measurements%DATA(i,j,ch5) < 263.16 ) ) then
-
-                  imager_pavolonis%CLDTYPE(i,j,cview) = OPAQUE_ICE_TYPE
-
-               end if
-
-
-               if ( ( imager_pavolonis%CLDTYPE(i,j,cview) == OPAQUE_ICE_TYPE ) .and. &
-                    ( wflg == 1 ) .and. &
-                    ( imager_pavolonis%emis_ch3b(i,j,cview) < EMS38_PHASE_THRES ) ) then
-
-                  imager_pavolonis%CLDTYPE(i,j,cview) = SUPERCOOLED_TYPE
-
-               end if
-
-               !end if
-
-
-
-               !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-               !-- Nighttime cloud overlap test
-               !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-               if ( ( BTD_Ch4_Ch5 > BTD1112_NOVERLAP_THRES_L ) .and. &
-                    ( BTD_Ch4_Ch5 < BTD1112_NOVERLAP_THRES_H ) .and. &
-                    ( imager_pavolonis%emis_ch3b(i,j,cview) > EMS38_NOVERLAP_THRES_L ) .and. &
-                    ( imager_pavolonis%emis_ch3b(i,j,cview) < EMS38_NOVERLAP_THRES_H ) .and. &
-                    ( imager_measurements%DATA(i,j,ch5) > 210.0 ) .and. &
-                    ( imager_measurements%DATA(i,j,ch5) < 283.0 ) ) then
-
-                  imager_pavolonis%CLDTYPE(i,j,cview) = OVERLAP_TYPE
-
-               end if
-
-
-               !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-               !-- Look for cirrus clouds using the split window test
-               !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-               if ( ( imager_pavolonis%CLDTYPE(i,j,cview) /= OVERLAP_TYPE ) .and. &
-                    ( BTD_Ch4_Ch5 > BTD1112_CIRRUS_THRES ) .and. &
-                    ( imager_pavolonis%emis_ch3b(i,j,cview) > 1.3 ) ) then
-
-                  imager_pavolonis%CLDTYPE(i,j,cview) = CIRRUS_TYPE
-
-               end if
-
-
-               if( ( imager_pavolonis%emis_ch3b(i,j,cview) > 1.6 ) .and. &
-                    ( imager_measurements%DATA(i,j,ch5) < 300.0 ) ) then
-
-                  imager_pavolonis%cirrus_quality(i,j,cview) = 1
-
-               end if
-
-
-               !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-               !-- Look for cirrus clouds using the EMS 3.75 um test
-               !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-               ! solar contamination check disabled
-               !if (SOLAR_CONTAMINATION_MASK(i,j) == NO) then
-
-               if ( ( imager_pavolonis%CLDTYPE(i,j,cview) /= OVERLAP_TYPE ) .and. &
-                    ( imager_pavolonis%CLDTYPE(i,j,cview) /= OPAQUE_ICE_TYPE ) .and. &
-                    ( imager_pavolonis%emis_ch3b(i,j,cview) > 1.10 ) .and. &
-                    ( imager_measurements%DATA(i,j,ch5) < 300.0 ) ) then
-
-                  imager_pavolonis%CLDTYPE(i,j,cview) = CIRRUS_TYPE
-
-               end if
-
-               if ( ( ( imager_pavolonis%emis_ch3b(i,j,cview) > 1.6 )       .and. &
-                    ( imager_measurements%DATA(i,j,ch5) < 300.0 ) ) .or. &
-                    ( ( imager_pavolonis%emis_ch3b(i,j,cview) > 1.4 )       .and. &
-                    ( imager_measurements%DATA(i,j,ch5) < 300.0 )   .and. &
-                    ( BTD_Ch4_Ch5 > BTD1112_CIRRUS_THRES ) ) ) then
-
-                  imager_pavolonis%cirrus_quality(i,j,cview) = 1
-
-               end if
-
-               !end if
-
-
-
-               !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-               !-- Look for fog - not used over DESERT(=12) surfaces.
-               !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-               if ( ( imager_angles%SOLZEN(i,j,cview) >= 90.0 ) .and. &
-                    ( imager_pavolonis%emis_ch3b(i,j,cview) <= 0.90 ) .and. &
-                    ( imager_measurements%DATA(i,j,ch5) > 240.0 ) .and. &
-                    ( imager_pavolonis%SFCTYPE(i,j) /= DESERT_FLAG ) ) then
-
-                  imager_pavolonis%CLDTYPE(i,j,cview) = FOG_TYPE
-
-               end if
-
-
-               !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-               !
-               ! end of day/night if loop
-            end if
-            !
-            !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-            ! set cccot to a fake high value as otherwise gets set as clear later on
-
-            if  (imager_pavolonis%CLDTYPE(i,j,cview) == PROB_OPAQUE_ICE_TYPE ) then
-               imager_pavolonis%CLDMASK(i,j,cview) = CLOUDY
-               imager_pavolonis%cccot_pre(i,j,cview) = .99
-
-            end if
-
-  end subroutine cloud_type_pixel
-
-
-function PlanckInv( input_platform, T )
+function plank_inv(input_platform, T)
 
    use common_constants_m
 
@@ -1957,7 +1809,7 @@ function PlanckInv( input_platform, T )
    real(kind=sreal),intent(in) :: T ! Kelvin
 
    ! return variable
-   real(kind=sreal), dimension(2) :: PlanckInv !out
+   real(kind=sreal), dimension(2) :: plank_inv !out
 
    ! local variables
    integer(kind=byte) :: index ! index of row containing platform-specific coefficients
@@ -2030,7 +1882,7 @@ function PlanckInv( input_platform, T )
    case ("default")
       index = 24
    case default
-      write(*,*) "Error: Platform name does not match local string in function PlanckInv"
+      write(*,*) "Error: Platform name does not match local string in function plank_inv"
       write(*,*) "Input platform name = ", input_platform
       stop
    end select
@@ -2044,7 +1896,7 @@ function PlanckInv( input_platform, T )
    ! v = (B1 / Planck_C1)^(1/3) = B2 / Planck_C2
    ! a = T2
    ! b = T1
-   coefficients = reshape( (/ &
+   coefficients = reshape((/ &
         ! v          a        b        solcon     satname
         2655.741, 0.997915, 1.64511, 4.957, & ! noaa05, tirosn
         2671.543, 0.997563, 1.76241, 5.010, & ! noaa06
@@ -2064,23 +1916,24 @@ function PlanckInv( input_platform, T )
         2687.039, 0.996570, 2.05823, 5.077, & ! metop02, metopa
         2641.650, 0.999206, 0.48685, 4.896, & ! terra
         2641.790, 0.999205, 0.48803, 4.896, & ! aqua
-        ! 2641.775, 0.999341, 0.47705, 4.804, & ! terra
-        ! 2647.409, 0.999336, 0.48184, 4.822, & ! aqua
+!       2641.775, 0.999341, 0.47705, 4.804, & ! terra
+!       2647.409, 0.999336, 0.48184, 4.822, & ! aqua
         2675.166, 0.996344, 1.72695, 5.030, & ! env,ers2 (aatsr)
         2568.832, 0.995400, 3.43800, 4.660, & ! msg1, msg2, msg3, msg4
         2575.767, 0.999000, 0.46500, 4.688, & ! himawari8, himawari9
         2707.560, 0.999085, 0.58063, 5.123, & ! viirs SoumiNpp
         2673.797, 0.994884, 2.19600, 5.064, & ! slstr Sentinel-3
         2670.000, 0.998000, 1.75000, 5.000  & ! default
-        /), (/ 4, 24 /) )
+        /), (/ 4, 24 /))
 
-   PlanckInv(1) = Planck_C1 * coefficients( 1 , index )**3 / &
-        ( exp( Planck_C2 * coefficients( 1 , index ) / &
-        ( coefficients( 2 , index ) * T &
-        + coefficients( 3 , index ) ) ) - 1. )
-   PlanckInv(2) = coefficients( 4 , index )
+   plank_inv(1) = Planck_C1 * coefficients(1 , index)**3 / &
+        (exp(Planck_C2 * coefficients(1 , index) / &
+        (coefficients(2 , index) * T &
+        + coefficients(3 , index))) - 1.)
+   plank_inv(2) = coefficients(4 , index)
 
-end function PlanckInv
+end function plank_inv
+
 
 function get_platform_index(input_platform)
 
