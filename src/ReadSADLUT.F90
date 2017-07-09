@@ -336,7 +336,7 @@ end subroutine read_values_5d
 subroutine Read_LUT_rat(Ctrl, LUT_file, SAD_LUT, i_chan, i_lut, name, values)
 
    use Ctrl_m
-   use ECP_Constants_m
+   use ORAC_Constants_m
 
    implicit none
 
@@ -393,7 +393,7 @@ end subroutine Read_LUT_rat
 subroutine Read_LUT(Ctrl, LUT_file, i_chan, SAD_LUT, i_lut, name, values)
 
    use Ctrl_m
-   use ECP_Constants_m
+   use ORAC_Constants_m
 
    implicit none
 
@@ -453,7 +453,7 @@ subroutine Read_LUT_sat(Ctrl, LUT_file, i_chan, SAD_LUT, i_lut, name, &
                         values, i_lut2, name2, values2)
 
    use Ctrl_m
-   use ECP_Constants_m
+   use ORAC_Constants_m
 
    implicit none
 
@@ -522,7 +522,7 @@ subroutine Read_LUT_sol(Ctrl, LUT_file, i_chan, SAD_LUT, i_lut, name, &
                         values, i_lut2, name2, values2)
 
    use Ctrl_m
-   use ECP_Constants_m
+   use ORAC_Constants_m
 
    implicit none
 
@@ -592,7 +592,7 @@ subroutine Read_LUT_both(Ctrl, LUT_file, i_chan, SAD_LUT, i_lut, name, &
                          values, i_lut2, name2, values2)
 
    use Ctrl_m
-   use ECP_Constants_m
+   use ORAC_Constants_m
 
    implicit none
 

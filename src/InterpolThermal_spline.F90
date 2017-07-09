@@ -77,8 +77,8 @@
 subroutine Interpol_Thermal_spline(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
 
    use Ctrl_m
-   use ECP_Constants_m
    use Int_Routines_m
+   use ORAC_Constants_m
    use planck_m
    use RTM_Pc_m
    use SAD_Chan_m

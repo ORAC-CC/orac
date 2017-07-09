@@ -2,7 +2,7 @@ function SWITCH_NAME_APP(Approach, Default, &
                          Cld, Cld1L, Cld2L, &
                          Aer, AerOx, AerSw, &
 			 AerO1) result(out)
-   use ECP_constants_m
+   use ORAC_constants_m
 
    implicit none
 
@@ -71,7 +71,7 @@ function SWITCH_NAME_CLS(Class, Default, &
                          Cld, CldWat, CldIce, &
                          Aer, AerOx, AerSw, AerBR, &
                          AshEyj) result(out)
-   use ECP_constants_m
+   use ORAC_constants_m
 
    implicit none
 

@@ -137,10 +137,10 @@
 subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
 
    use Ctrl_m
-   use ECP_Constants_m
    use GZero_m
    use Int_LUT_Routines_m
    use Interpol_Routines_m
+   use ORAC_Constants_m
    use planck_m
    use RTM_Pc_m
    use SAD_Chan_m

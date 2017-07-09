@@ -82,7 +82,7 @@
 subroutine Read_SwRTM_nc(Ctrl, RTM)
 
    use Ctrl_m
-   use ECP_Constants_m
+   use ORAC_Constants_m
    use orac_ncdf_m
 
    implicit none

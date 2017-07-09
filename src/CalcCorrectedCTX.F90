@@ -67,10 +67,10 @@ end function get_corrected_bt
 subroutine Calc_Corrected_CTX(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Sy)
 
    use Ctrl_m
-   use ECP_Constants_m
    use GZero_m
    use Int_Routines_m
    use Int_LUT_Routines_m
+   use ORAC_Constants_m
    use RTM_Pc_m
    use SAD_Chan_m
    use SAD_LUT_m

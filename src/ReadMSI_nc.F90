@@ -102,7 +102,7 @@
 subroutine Read_MSI_nc(Ctrl, MSI_Data, SAD_Chan)
 
    use Ctrl_m
-   use ECP_Constants_m
+   use ORAC_Constants_m
    use orac_ncdf_m
    use SAD_Chan_m
 

@@ -2,7 +2,7 @@
 ! Name: DeallocRTMPc.F90
 !
 ! Purpose:
-! Deallocate the RTM_Pc arrays at end of ECP execution.
+! Deallocate the RTM_Pc arrays at end of ORAC execution.
 !
 ! Description and Algorithm details:
 ! 1) Deallocates all arrays in the RTM_Pc structure

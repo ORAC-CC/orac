@@ -40,7 +40,7 @@
 
 subroutine R2T(NChan, SAD_Chan, R, T, d_T_d_R, status)
 
-   use ECP_constants_m
+   use ORAC_Constants_m
    use SAD_Chan_m
 
    implicit none

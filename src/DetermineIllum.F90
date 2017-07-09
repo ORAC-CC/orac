@@ -34,8 +34,8 @@
 subroutine Determine_Illum(Ctrl, MSI_Data)
 
    use Ctrl_m
-   use ECP_Constants_m
    use Int_Routines_m, only : find_in_array
+   use ORAC_Constants_m
 
    implicit none
 

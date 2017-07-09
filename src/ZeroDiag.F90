@@ -16,13 +16,13 @@
 !
 ! N.B. 0 may be an inappropriate value for some quantities (errors, fit etc).
 !
-! See ECP_Constants for definitions of the flag indices DiFlagQC etc.
+! See ORAC_Constants for definitions of the flag indices DiFlagQC etc.
 !
 ! Arguments:
 ! Name   Type    In/Out/Both Description
 ! ------------------------------------------------------------------------------
-! Ctrl   struct  In          ECP control structure. Contains parameter limits
-!                            for quality control.
+! Ctrl   struct  In          Control structure. Contains parameter limits for
+!                            quality control.
 ! Diag   struct  Both        Structure containing diagnostic values to be
 !                            set. Error arrays St and Ss are already set by
 !                            Invert_Marquardt.
@@ -46,7 +46,7 @@
 subroutine Zero_Diag(Ctrl, Diag)
 
    use Ctrl_m
-   use ECP_Constants_m
+   use ORAC_Constants_m
 
    implicit none
 

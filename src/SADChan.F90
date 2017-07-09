@@ -3,7 +3,7 @@
 !
 ! Purpose:
 ! Module containing Static Application Data Channel structure, used to hold
-! Static Application Data for measurement channels in the ECP.
+! Static Application Data for measurement channels in the ORAC.
 !
 ! History:
 ! 2000/08/03, AS: Original version
@@ -27,7 +27,7 @@
 
 module SAD_Chan_m
 
-   use ECP_constants_m
+   use ORAC_Constants_m
 
    implicit none
 

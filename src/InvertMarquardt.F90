@@ -2,7 +2,7 @@
 ! Name: InvertMarquardt.F90
 !
 ! Purpose:
-! Find the "best" fitting state vector for a set of measurements in the ECP.
+! Find the "best" fitting state vector for a set of measurements in the ORAC.
 !
 ! Description and Algorithm details:
 ! Uses a Marquardt descent algorithm to find a state vector that gives a good
@@ -68,7 +68,7 @@
 ! per step and would need to be taken into account in the derivatives of J as
 ! well as J.
 !
-! Errors in calculations terminate processing this pixel, managed by ECP.
+! Errors in calculations terminate processing this pixel, managed by ORAC.
 ! If a non-zero status occurs during an inversion, the Diag%QC flag is set to
 ! indicate non-convergence and uncertainty outputs are set to fill values.
 !
@@ -87,7 +87,7 @@
 ! RTM_Pc   struct  In          Radiative transfer model data interpolated to
 !          of structs          the current cloud pressure Pc for each layer.
 ! Diag     struct  In          Diagnostic structure
-! status   integer Both        ECP status/error flag.
+! status   integer Both        ORAC status/error flag.
 !
 ! History:
 ! 2001/04/05, AS: original version
@@ -191,10 +191,10 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
    use Cholesky_m
    use Ctrl_m
    use Diag_m
-   use ECP_Constants_m
    use FM_Routines_m
    use GZero_m
    use Int_LUT_Routines_m
+   use ORAC_Constants_m
    use RTM_Pc_m
    use SAD_Chan_m
    use SAD_LUT_m

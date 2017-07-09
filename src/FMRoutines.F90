@@ -2,7 +2,7 @@
 ! Name: FMRoutines.F90
 !
 ! Purpose:
-! This module contains a set of interface definitions for ECP subroutines.
+! This module contains a set of interface definitions for ORAC subroutines.
 ! Not all subroutines are included. These interface definitions are required
 ! in order that passed-length arrays can be used as subroutine arguments.
 !
@@ -27,7 +27,7 @@
 
 module FM_Routines_m
 
-   use ECP_Constants_m
+   use ORAC_Constants_m
 
    implicit none
 

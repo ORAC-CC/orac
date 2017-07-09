@@ -12,7 +12,7 @@
 ! Arguments:
 ! Name       Type    In/Out/Both Description
 ! ------------------------------------------------------------------------------
-! Ctrl       struct  In   ECP control structure read from driver file
+! Ctrl       struct  In   Control structure
 ! SPixel     struct  Both Structure for the pixel currently being retrieved.
 !
 ! History:
@@ -38,7 +38,7 @@
 subroutine Calc_CWP(Ctrl, SPixel)
 
    use Ctrl_m
-   use ECP_Constants_m
+   use ORAC_Constants_m
    use SPixel_m
 
    implicit none
@@ -64,7 +64,7 @@ end subroutine Calc_CWP
 subroutine Calc_CWP2(Ctrl, SPixel, Class, ITauX, IReX, CWP, CWP_uncertainty)
 
    use Ctrl_m
-   use ECP_Constants_m
+   use ORAC_Constants_m
    use SPixel_m
 
    implicit none

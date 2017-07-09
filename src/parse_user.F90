@@ -41,13 +41,13 @@ contains
 !
 ! Purpose:
 ! Translates a variable name into its value. Used with parameters defined in
-! ECP_Constants. Only searches for () to index arrays, being Fortran syntax.
+! ORAC_Constants. Only searches for () to index arrays, being Fortran syntax.
 !
 ! Description and Algorithm details:
 ! 1) Check for presence of (.
 !    a) If found, use string before ( as variable name and string between ( and
 !       ) as the index of that array desired.
-!    b) If not, compare string to a list of ECP_Constants parameters.
+!    b) If not, compare string to a list of ORAC_Constants parameters.
 ! 2) If no match is found, return PARSE_ERR_CONV.
 !
 ! Arguments:

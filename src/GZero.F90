@@ -3,7 +3,7 @@
 !
 ! Purpose:
 ! Defines GZero_m module used to hold information about the nearest neighbour
-! grid point array indices when interpolating Look-Up Tables in the ECP.
+! grid point array indices when interpolating Look-Up Tables in the ORAC.
 !
 ! History:
 ! 2000/10/04, AS: original version
@@ -62,7 +62,7 @@ contains
 
 subroutine Allocate_GZero(GZero, Ny)
 
-   use ECP_Constants_m
+   use ORAC_Constants_m
 
    implicit none
 

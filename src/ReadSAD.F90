@@ -12,8 +12,8 @@
 ! Arguments:
 ! Name       Type    In/Out/Both Description
 ! ------------------------------------------------------------------------------
-! Ctrl       struct  In          ECP control structure. Passed to all
-!                                subordinate routines.
+! Ctrl       struct  In          Control structure. Passed to all subordinate
+!                                routines.
 ! SAD_Chan   array of structs    Instrument channel info for each channel.
 !                    Out         Populated by=Read_Chan
 ! SAD_LUT    array of structs    Cloud Radiative Property Look Up Tables for
@@ -49,7 +49,7 @@ contains
 subroutine Read_SAD(Ctrl, SAD_Chan, SAD_LUT)
 
    use Ctrl_m
-   use ECP_Constants_m
+   use ORAC_Constants_m
    use SAD_Chan_m
    use SAD_LUT_m
 

@@ -74,8 +74,8 @@
 subroutine Get_LwSwRTM(Ctrl, SAD_Chan, RTM, SPixel, status)
 
    use Ctrl_m
-   use ECP_Constants_m
    use interpol_m
+   use ORAC_Constants_m
    use planck_m
    use RTM_m
    use SAD_Chan_m

@@ -2,7 +2,7 @@
 ! Name: IntLUTRoutines.F90
 !
 ! Purpose:
-! Module with ECP LUT Interpolation routines
+! Module with ORAC LUT Interpolation routines
 !
 ! History:
 ! 2000/11/10, AS: Original version

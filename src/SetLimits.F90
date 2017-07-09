@@ -17,11 +17,11 @@
 ! Arguments:
 ! Name   Type   In/Out/Both Description
 ! ------------------------------------------------------------------------------
-! Ctrl   struct In          ECP control structure (source of limit values
-!                           in the Ctrl case).
+! Ctrl   struct In          Control structure (source of limit values in the
+!                           Ctrl case).
 ! SPixel struct Both        Super-pixel structure (contains the limits arrays
 !                           to be set, plus phase and current cloud class)
-! status int    Out         ECP program status value.
+! status int    Out         ORAC program status value.
 !
 ! History:
 ! 2001/04/25, AS: Original version
@@ -44,7 +44,7 @@
 subroutine Set_Limits(Ctrl, SPixel, status)
 
    use Ctrl_m
-   use ECP_Constants_m
+   use ORAC_Constants_m
    use SPixel_m
 
    implicit none
@@ -64,8 +64,8 @@ subroutine Set_Limits(Ctrl, SPixel, status)
    status = 0
 
    ! Set the upper and lower limits for the current super-pixel.
-   ! SPixel U/LLim arrays are full length, i.e. big enough to hold the full ECP
-   ! state vector (saves repeated allocation and deallocation).
+   ! SPixel U/LLim arrays are full length, i.e. big enough to hold the full
+   ! ORAC state vector (saves repeated allocation and deallocation).
 
    SPixel%XLLim = Ctrl%Invpar%XLLim
    SPixel%XULim = Ctrl%Invpar%XULim

@@ -537,9 +537,9 @@ subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, i_layer, RTM_Pc, RTM_Pc2, X, GZero, &
    RsX, RsX_0d, RsX_dv, RsX_dd, d_Ref_dRs2)
 
    use Ctrl_m
-   use ECP_Constants_m
    use GZero_m
    use Int_LUT_Routines_m
+   use ORAC_Constants_m
    use RTM_Pc_m
    use SAD_LUT_m
    use SPixel_m

@@ -30,7 +30,7 @@ subroutine Get_Illum(Ctrl, SPixel, MSI_Data, status)
 
    use Ctrl_m
    use Data_m
-   use ECP_Constants_m
+   use ORAC_Constants_m
 
    implicit none
 

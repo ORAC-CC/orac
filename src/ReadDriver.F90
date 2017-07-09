@@ -173,8 +173,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
 
    use constants_cloud_typing_pavolonis_m
    use Ctrl_m
-   use ECP_constants_m
    use global_attributes_m
+   use ORAC_Constants_m
    use parse_user_m
    use read_utils_m
    use source_attributes_m
@@ -943,7 +943,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
 
    !------------- Ctrl STATE VECTOR INDEXING --------------
    ! These arrays specify which variables should be retrieved in each
-   ! illumination condition (by the index of that variable; see ECP_constants_m).
+   ! illumination condition (by the index of that variable; see ORAC_Constants_m).
    X_Dy  = sint_fill_value
    X_Tw  = sint_fill_value
    X_Ni  = sint_fill_value
@@ -1474,7 +1474,7 @@ end subroutine Read_Driver
 ! handle_parse_error (h_p_e)
 subroutine h_p_e(label)
 
-   use ECP_constants_m
+   use ORAC_Constants_m
 
    implicit none
 

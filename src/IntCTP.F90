@@ -65,8 +65,8 @@
 subroutine Int_CTP(SPixel, Ctrl, BT, CTP, status)
 
    use Ctrl_m
-   use ECP_constants_m, only : g_wmo, XMDADBounds
    use Int_Routines_m
+   use ORAC_Constants_m, only : g_wmo, XMDADBounds
    use planck_m
    use SAD_Chan_m
 

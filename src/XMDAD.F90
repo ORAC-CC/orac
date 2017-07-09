@@ -107,7 +107,7 @@
 subroutine X_MDAD(Ctrl, SPixel, index, X, status, Err)
 
    use Ctrl_m
-   use ECP_Constants_m
+   use ORAC_Constants_m
    use planck_m
 
    implicit none

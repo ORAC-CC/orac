@@ -173,7 +173,6 @@ ORAC_OBJ = $(OBJS)/Cholesky.o \
            $(OBJS)/Ctrl.o \
            $(OBJS)/Data.o \
            $(OBJS)/Diag.o \
-           $(OBJS)/ECPConstants.o \
            $(OBJS)/FindLUN.o \
            $(OBJS)/FMRoutines.o \
            $(OBJS)/GZero.o \
@@ -181,6 +180,7 @@ ORAC_OBJ = $(OBJS)/Cholesky.o \
            $(OBJS)/InterpolRoutines.o \
            $(OBJS)/IntLUTRoutines.o \
            $(OBJS)/Inversion.o \
+           $(OBJS)/ORACConstants.o \
            $(OBJS)/parse_user.o \
            $(OBJS)/planck.o \
            $(OBJS)/prepare_output.o \
@@ -213,20 +213,20 @@ $(OBJS)/%.o: %.F90 $(ORAC_COMMON)/liborac_common.a
 # Main target list
 all: orac
 
-# Build parser for driver files from Ctrl, common_constants, and ECPConstants
+# Build parser for driver files from Ctrl, common_constants, and ORACConstants
 STRUCT_NAME     = Ctrl
 STRUCT_TYPE     = Ctrl_t
 PARSER_NAME     = read_ctrl
 PRINTER_NAME    = print_ctrl
 PARSER_SOURCE   = $(ORAC_COMMON)/common_constants.F90 \
                   $(ORAC_COMMON)/constants_cloud_typing_pavolonis.F90 \
-                  $(ORAC_COMMON)/orac_indexing.F90 ECPConstants.F90 Ctrl.F90
-USE_STATEMENTS  = "use Ctrl_m; use ECP_constants_m"
+                  $(ORAC_COMMON)/orac_indexing.F90 ORACConstants.F90 Ctrl.F90
+USE_STATEMENTS  = "use Ctrl_m; use ORAC_constants_m"
 PLACE           = $(OBJS)/$(PARSER_NAME)
 PARSER_INC      = -I$(ORAC_COMMON) -I../src/$(OBJ)
 include $(ORAC_COMMON)/Makefile_struct_parser
 $(OBJS)/ReadDriver.o: $(PLACE).f.o
-$(PLACE).f.o: $(OBJS)/ECPConstants.o $(OBJS)/Ctrl.o
+$(PLACE).f.o: $(OBJS)/ORACConstants.o $(OBJS)/Ctrl.o
 
 # Main program build
 orac: $(ORAC_OBJ_MAIN) liborac.a $(ORAC_COMMON)/liborac_common.a Makefile

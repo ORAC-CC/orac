@@ -140,7 +140,7 @@ subroutine Get_Surface(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
 
    use Ctrl_m
    use Data_m
-   use ECP_Constants_m
+   use ORAC_Constants_m
    use SAD_Chan_m
 
    implicit none
@@ -476,10 +476,10 @@ subroutine Get_Surface_Swansea(Ctrl, SPixel, SAD_LUT, MSI_Data)
 
    use Ctrl_m
    use Data_m
-   use ECP_Constants_m
    use GZero_m
    use FM_Routines_m, only: Set_CRP_Solar
    use Int_LUT_Routines_m, only: MaxCRPParams
+   use ORAC_Constants_m
    use SAD_LUT_m
 
    implicit none

@@ -2,7 +2,7 @@
 ! Name: DeallocCtrl.F90
 !
 ! Purpose:
-! Deallocate the Ctrl at end of ECP execution.
+! Deallocate the Ctrl at end of ORAC execution.
 !
 ! Description and Algorithm details:
 ! Deallocates all arrays in the Ctrl structure

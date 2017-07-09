@@ -30,7 +30,7 @@
 !                            and the grids on which they are stored.
 ! GZero   Struct Out         Holds "0'th point" information relating to the
 !                            grid on which the SAD_LUT CRP arrays are based.
-! status  int    Out         Standard status code set by ECP routines
+! status  int    Out         Standard status code set by ORAC routines
 !
 ! History:
 ! 2001/01/23, AS: original version

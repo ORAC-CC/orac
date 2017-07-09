@@ -1,7 +1,7 @@
 recursive integer function PARSE_STRING_NAME_0D(in, out, ch_ids) result(status)
    use constants_cloud_typing_pavolonis_m
    use Int_Routines_m, only : find_in_array
-   use ECP_Constants_m
+   use ORAC_Constants_m
 
    implicit none
 
@@ -32,7 +32,7 @@ recursive integer function PARSE_STRING_NAME_0D(in, out, ch_ids) result(status)
             label = in(1:op-1)
             call clean_driver_label(label)
 
-            ! Compare string to all ECP_Constants array parameters listed
+            ! Compare string to all ORAC_Constants array parameters listed
             select case (label)
             case('IRS')
                status = PARSE_ARRAY_INDEX_NAME_2D(idx, IRs, out, ch_ids)
@@ -45,7 +45,7 @@ recursive integer function PARSE_STRING_NAME_0D(in, out, ch_ids) result(status)
             end select
          end if
       else
-         ! Compare string to all ECP_Constants parameters listed
+         ! Compare string to all ORAC_Constants parameters listed
          l = len_trim(in)
          label = in(1:l)
          call clean_driver_label(label)

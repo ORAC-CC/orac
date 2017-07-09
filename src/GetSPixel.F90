@@ -11,9 +11,9 @@
 ! Flag pixels containing bad data by setting zeros in the super pixel mask.
 ! Flag reasons by setting bits in the quality control value SPixel%QC
 !    (non-zero QC is not fatal at this stage, either to the super-pixel or to
-!    the ECP)
+!    the ORAC)
 ! For each case below, if the SPixel cannot be used, set QC flag bit
-! SPixNoProc: indicates the error is fatal for the SPixel, but not the ECP.
+! SPixNoProc: indicates the error is fatal for the SPixel, but not the ORAC.
 ! Call Get_Location
 ! Call Get_Cloudflags
 ! If averaging method 'central'
@@ -201,8 +201,8 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, SAD_LUT, MSI_Data, RTM, SPixel, status)
 
    use Ctrl_m
    use Data_m
-   use ECP_Constants_m
    use Int_Routines_m, only : find_in_array
+   use ORAC_Constants_m
    use RTM_m
    use SAD_Chan_m
    use SAD_LUT_m

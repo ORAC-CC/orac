@@ -2,7 +2,7 @@
 ! Name: RTM.F90
 !
 ! Purpose:
-! Module defining radiative transfer model structure (RTM) for the ECP
+! Module defining radiative transfer model structure (RTM) for the ORAC
 !
 ! History:
 ! 2000/12/15, KS: Original version

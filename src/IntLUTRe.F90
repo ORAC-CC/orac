@@ -65,7 +65,7 @@
 !                               channels.
 ! FGrads real array Both        Interpolated gradient values in Tau and Re for
 !                               all channels.
-! status int        Out         Standard status code set by ECP routines
+! status int        Out         Standard status code set by ORAC routines
 !
 ! History:
 ! 2016/05/03, AP: Original version

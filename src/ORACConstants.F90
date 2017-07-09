@@ -1,8 +1,8 @@
 !-------------------------------------------------------------------------------
-! Name: ECPConstants.F90
+! Name: ORACConstants.F90
 !
 ! Purpose:
-! Module defining constants used by the ECP code, e.g. maximum array sizes.
+! Module defining constants used by the ORAC code, e.g. maximum array sizes.
 !
 ! History:
 ! 2000/08/03, AS: Original version.
@@ -90,13 +90,13 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-module ECP_constants_m
+module ORAC_constants_m
 
    use common_constants_m
 
    implicit none
 
-   integer            :: i_ECP                      ! Loop variable
+   integer            :: i_ORAC                      ! Loop variable
 
    ! Maximum string lengths
    integer, parameter :: FilenameLen      = path_length
@@ -238,13 +238,13 @@ module ECP_constants_m
    ! Oxford surface reflectance parameters. Though we're unlikely to retrieve
    ! all the BRDF parameters, space needs to be made in the Jacobian.
    integer, parameter :: IRs(MaxNumSolar, MaxRho_XX) = &
-        reshape([(i_ECP+ITs, i_ECP = 1, MaxNumSolar*MaxRho_XX)], &
+        reshape([(i_ORAC+ITs, i_ORAC = 1, MaxNumSolar*MaxRho_XX)], &
                 [MaxNumSolar, MaxRho_XX])
    ! Swansea surface reflectance parameters. ISS is the wavelength-dependent
    ! s parameter and ISP is the directionally-dependent P parameter.
    integer, parameter :: ISS(MaxNumSolar) = IRs(:, 1)
    integer, parameter :: ISP(MaxNumViews) = &
-        [(i_ECP+IRs(MaxNumSolar, MaxRho_XX), i_ECP = 1, MaxNumViews)]
+        [(i_ORAC+IRs(MaxNumSolar, MaxRho_XX), i_ORAC = 1, MaxNumViews)]
    ! NOTE: MaxNumSolar arrays should be treated as if of length Ctrl%Ind%NSolar
 
    ! Determine max. no. of state vector elements from indices
@@ -438,4 +438,4 @@ module ECP_constants_m
    ! Shuffling to improve compression
    logical, parameter :: shuffle_flag  = .False.
 
-end module ECP_constants_m
+end module ORAC_constants_m

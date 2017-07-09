@@ -71,8 +71,8 @@
 subroutine Interpol_Solar_spline(Ctrl, SPixel, Pc, RTM_Pc, status)
 
    use Ctrl_m
-   use ECP_Constants_m
    use Int_Routines_m
+   use ORAC_Constants_m
    use RTM_Pc_m
    use SPixel_m
 

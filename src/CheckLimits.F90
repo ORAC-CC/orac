@@ -19,7 +19,7 @@
 ! SPixel       struct     Both        Super-pixel structure (contains the
 !                                     current active state variable info,
 !                                     plus current phase)
-! status       integer    Out         ECP program status value.
+! status       integer    Out         ORAC program status value.
 !
 ! History:
 ! 2001/04/26, AS: Original version
@@ -45,7 +45,7 @@
 subroutine Check_Limits(Ctrl, X, SPixel, status)
 
    use Ctrl_m
-   use ECP_Constants_m
+   use ORAC_Constants_m
    use RTM_Pc_m
    use SPixel_m
 

@@ -69,7 +69,7 @@
 !        int array  In
 ! chan_to_spixel_index          Indices of input chs within SPixel arrays
 !        int array  In
-! status int        Out         Standard status code set by ECP routines
+! status int        Out         Standard status code set by ORAC routines
 !
 ! History:
 ! 2000/10/26, AS: Original version

@@ -19,7 +19,7 @@
 ! (Note that not all methods are supported for all variables).
 !
 ! Note that when error values are associated with the a priori the values
-! must be squared for use in the ECP. It is assumed that the values obtained
+! must be squared for use in the ORAC. It is assumed that the values obtained
 ! by each method are the rms errors.
 !
 ! Arguments:
@@ -87,7 +87,7 @@
 subroutine Get_X(Ctrl, SPixel, status)
 
    use Ctrl_m
-   use ECP_Constants_m
+   use ORAC_Constants_m
 
    implicit none
 
@@ -138,7 +138,7 @@ end subroutine Get_X
 subroutine Set_State(i, Ctrl, SPixel, status)
 
    use Ctrl_m
-   use ECP_Constants_m
+   use ORAC_Constants_m
 
    implicit none
 
@@ -202,7 +202,7 @@ end subroutine Set_State
 subroutine Get_State(mode, i, Ctrl, SPixel, flag, X, status, Err)
 
    use Ctrl_m
-   use ECP_Constants_m
+   use ORAC_Constants_m
 
    implicit none
 

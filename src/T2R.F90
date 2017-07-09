@@ -37,7 +37,7 @@
 
 subroutine T2R(NChan, SAD_Chan, T, R, d_R_d_T, status)
 
-   use ECP_constants_m
+   use ORAC_Constants_m
    use SAD_Chan_m
 
    implicit none

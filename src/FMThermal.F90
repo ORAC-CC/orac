@@ -168,9 +168,9 @@ subroutine FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_Chan, RTM_Pc, X, GZero, BT, &
                       d_BT, R, d_R, status)
 
    use CTRL_m
-   use ECP_Constants_m
    use GZero_m
    use Int_LUT_Routines_m
+   use ORAC_Constants_m
    use planck_m
    use RTM_Pc_m
    use SAD_Chan_m

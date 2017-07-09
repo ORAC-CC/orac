@@ -33,7 +33,7 @@
 ! Name: Dealloc_LUT_Grid
 !
 ! Purpose:
-! Deallocate the LUT_Grid arrays at end of ECP execution.
+! Deallocate the LUT_Grid arrays at end of ORAC execution.
 !
 ! Algorithm:
 ! 1) Deallocate all arrays.
@@ -67,7 +67,7 @@ end subroutine Dealloc_LUT_Grid
 ! Name: Dealloc_SAD_LUT
 !
 ! Purpose:
-! Deallocate the SAD_LUT internal arrays at end of ECP execution.
+! Deallocate the SAD_LUT internal arrays at end of ORAC execution.
 !
 ! Algorithm:
 ! 1) Deallocates all arrays in each of the SAD_LUT structures

@@ -1,6 +1,6 @@
 module SPixel_routines_m
 
-   use ECP_Constants_m
+   use ORAC_Constants_m
    use SPixel_m
 
    implicit none

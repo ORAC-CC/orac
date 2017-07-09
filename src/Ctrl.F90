@@ -2,7 +2,7 @@
 ! Name: Ctrl.F90
 !
 ! Purpose:
-! Module defining control structure (Ctrl) for the ECP
+! Module defining control structure (Ctrl) for ORAC
 !
 ! History:
 ! 2000/08/17, AS: Original version
@@ -108,12 +108,12 @@
 
 module Ctrl_m
 
-   use ECP_constants_m
+   use ORAC_Constants_m
    use orac_indexing_m, only: common_indices_t
 
    implicit none
 
-   ! Define a type to hold File names used by the ECP
+   ! Define a type to hold File names
    type FID_t
       character(FilenameLen) :: Data_Dir           ! Directory of input files
       character(FilenameLen) :: Out_Dir            ! Directory for output files
@@ -130,7 +130,7 @@ module Ctrl_m
       character(FilenameLen) :: Geo                ! Geometry (sun-satellite)
       character(FilenameLen) :: Loc                ! Location (latitudes/longs)
       character(FilenameLen) :: Alb                ! Surface albedo, emissivity
-      character(FilenameLen) :: BkP                ! ECP Break-Point file
+      character(FilenameLen) :: BkP                ! Break-Point file
       character(FilenameLen) :: L2_primary         ! Primary output file
       character(FilenameLen) :: L2_secondary       ! Secondary output file
    end type FID_t
@@ -236,7 +236,7 @@ module Ctrl_m
       character(3)           :: LUTClass           ! Name of LUT to use
       character(3)           :: LUTClass2          ! LUTClass for layer 2 (lower)
       integer                :: Approach           ! Controls manner of retrieval
-                                                   ! performed. See ECPConstants.
+                                                   ! performed. See ORACConstants.
 
       ! Terms that aren't controlled by the driver file
       type(Ind_t)            :: Ind
@@ -299,7 +299,7 @@ module Ctrl_m
       logical                :: do_CTX_correction
       real                   :: CTP_correction_limit
 
-      ! State vector selection methods (see Selm variables in ECP_constants_m)
+      ! State vector selection methods (see Selm variables in ORAC_Constants_m)
       integer                :: Ap(MaxStateVar,MaxIllum) ! A Priori options
       integer                :: Fg(MaxStateVar,MaxIllum) ! First-guess options
 

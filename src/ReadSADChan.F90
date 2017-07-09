@@ -3,7 +3,7 @@
 !
 ! Purpose:
 ! Reads Static Application Data files containing channel description for use
-! by the ECP.
+! by the ORAC.
 !
 ! Description and Algorithm details:
 ! Reads a set of Static Application Data files containing channel description
@@ -83,7 +83,7 @@
 subroutine Read_SAD_Chan(Ctrl, SAD_Chan)
 
    use Ctrl_m
-   use ECP_Constants_m
+   use ORAC_Constants_m
    use sad_util_m
 
    implicit none

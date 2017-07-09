@@ -2,7 +2,7 @@
 ! Name: Diag.F90
 !
 ! Purpose:
-! Module defining retrieval diagnostic structure for the ECP. This structure
+! Module defining retrieval diagnostic structure for the ORAC. This structure
 ! holds information relating to a given retrieval done by Invert_Marquardt,
 ! such as the number of iterations taken, quality flag etc.
 !
@@ -26,7 +26,7 @@
 
 module Diag_m
 
-   use ECP_constants_m
+   use ORAC_Constants_m
 
    implicit none
 

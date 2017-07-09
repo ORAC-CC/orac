@@ -15,7 +15,7 @@
 ! saved in SPixel for use in state-dependent setting of first guess/a priori
 ! values.
 !
-! See ECP_Constants for definitions of the flag indices DiFlagQC etc.
+! See ORAC_Constants for definitions of the flag indices DiFlagQC etc.
 !
 ! Some values are simply the existing SPixel values (e.g. the first guess and
 ! a priori state vectors). These are not copied to Diag. The values can be
@@ -24,8 +24,8 @@
 ! Arguments:
 ! Name          Type       In/Out/Both  Description
 ! ------------------------------------------------------------------------------
-! Ctrl          struct     In           ECP control structure. Contains
-!                                       parameter limits for quality control.
+! Ctrl          struct     In           Control structure. Contains parameter
+!                                       limits for quality control.
 ! SPixel        struct     Both         Super-pixel structure. Needed for active
 !                                       channels and state variables, latest
 !                                       state and error covariance.
@@ -73,8 +73,8 @@
 subroutine Set_Diag(Ctrl, SPixel, convergence, J, Jm, Ja, iter, Diag)
 
    use Ctrl_m
-   use ECP_Constants_m
    use Int_Routines_m, only : find_in_array
+   use ORAC_Constants_m
    use SPixel_m
 
    implicit none

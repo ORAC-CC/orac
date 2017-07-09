@@ -2,7 +2,7 @@
 ! Name: DeallocData.F90
 !
 ! Purpose:
-! Deallocate the MSI_Data arrays at end of ECP execution.
+! Deallocate the MSI_Data arrays at end of ORAC execution.
 !
 ! Description and Algorithm details:
 ! Deallocates all arrays in the MSI_Data structure

@@ -75,7 +75,7 @@ subroutine Get_Indexing(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
 
    use Ctrl_m
    use Data_m
-   use ECP_Constants_m
+   use ORAC_Constants_m
    use SAD_Chan_m
 
    implicit none
@@ -375,8 +375,8 @@ subroutine cloud_indexing_logic(Ctrl, SPixel, is_not_used_or_missing, &
                                 X, XJ, XI, status)
 
    use Ctrl_m
-   use ECP_Constants_m
    use Int_Routines_m, only : find_in_array
+   use ORAC_Constants_m
 
    implicit none
 
@@ -542,7 +542,7 @@ subroutine cloud_indexing_logic_night(Ctrl, SPixel, is_not_used_or_missing, &
                                       X, XJ, XI, status)
 
    use Ctrl_m
-   use ECP_Constants_m
+   use ORAC_Constants_m
 
    implicit none
 
@@ -635,7 +635,7 @@ subroutine cloud_indexing_logic_two_layer(Ctrl, SPixel, is_not_used_or_missing, 
                                           X, XJ, XI, status)
 
    use Ctrl_m
-   use ECP_Constants_m
+   use ORAC_Constants_m
 
    implicit none
 
@@ -717,7 +717,7 @@ subroutine aer_indexing_logic(Ctrl, SPixel, is_not_used_or_missing, &
                               X, XJ, XI, status)
 
    use Ctrl_m
-   use ECP_Constants_m
+   use ORAC_Constants_m
 
    implicit none
 
@@ -800,7 +800,7 @@ subroutine swan_indexing_logic(Ctrl, SPixel, is_not_used_or_missing, &
                               X, XJ, XI, status)
 
    use Ctrl_m
-   use ECP_Constants_m
+   use ORAC_Constants_m
 
    implicit none
 
@@ -933,7 +933,7 @@ subroutine aer_indexing_logic_1view(Ctrl, SPixel, is_not_used_or_missing, &
                                     X, XJ, XI, status)
 
    use Ctrl_m
-   use ECP_Constants_m
+   use ORAC_Constants_m
 
    implicit none
 
@@ -1074,7 +1074,7 @@ subroutine Identify_BRDF_Terms(Ctrl, illum, min_view, min_rho, &
                                is_not_used_or_missing, &
                                X, ii_x, XJ, ii_xj, XI, ii_xi, active)
    use Ctrl_m
-   use ECP_Constants_m, only : IRs, MaxRho_XX
+   use ORAC_Constants_m, only : IRs, MaxRho_XX
 
    implicit none
 

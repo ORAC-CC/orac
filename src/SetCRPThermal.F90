@@ -2,7 +2,7 @@
 ! Name: SetCRPThermal.F90
 !
 ! Purpose:
-! Interpolates Cloud Radiative Properties for the ECP thermal channels (and
+! Interpolates Cloud Radiative Properties for the ORAC thermal channels (and
 ! the channels with thermal plus solar contributions).
 !
 ! Description and Algorithm details:
@@ -19,7 +19,7 @@
 ! Arguments:
 ! Name    Type      In/Out/Both Description
 ! ------------------------------------------------------------------------------
-! Ctrl    struct    In          Standard ECP control structure
+! Ctrl    struct    In          Control structure
 ! Ind     struct    In          Sub-struct of SPixel, contains channel
 !                               indices used in selecting Thermal parts of
 !                               the SAD_LUT arrays.
@@ -31,7 +31,7 @@
 !                               based.
 ! CRPOut  real(8)   Out         Array of interpolated values
 ! dCRPOut real(8,2) Out         Array of interpolated gradients in Tau, Re
-! status  int       Out         Standard status code set by ECP routines
+! status  int       Out         Standard status code set by ORAC routines
 !
 ! History:
 ! 2001/01/16, AS: original version
