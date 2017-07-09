@@ -8,12 +8,11 @@
 ! 1) Call NC_OPEN/NF90_CLOSE several times.
 !
 ! Arguments:
-! Name        Type In/Out/Both Description
+! Name Type In/Out/Both Description
 ! ------------------------------------------------------------------------------
-! netcdf_info struct In Summary of output file details
 !
 ! History:
-! 2015/05/05, OS: initial version
+! 2015/05/05, OS: Initial version
 !
 ! $Id$
 !
@@ -21,8 +20,9 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine netcdf_output_check(output_path,lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
-           cf_file,lsf_file,geo_file,loc_file,alb_file,corrupt,verbose)
+subroutine netcdf_output_check(output_path,lwrtm_file,swrtm_file,prtm_file, &
+   config_file,msi_file,cf_file,lsf_file,geo_file,loc_file,alb_file,corrupt, &
+   verbose)
 
    use netcdf
    use orac_ncdf_m
