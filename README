@@ -2,7 +2,9 @@ An introduction to ORAC for a new user
 --------------------------------------
 
 Documentation for ORAC is now managed through a Wiki system, found at:
-  http://proj.badc.rl.ac.uk/orac/wiki
+
+http://proj.badc.rl.ac.uk/orac/wiki
+
 The text below is a copy of the text on 27 Jan 2014, though you are strongly
 encouraged to use the Wiki system as it will be the most up-to-date version.
 
@@ -30,7 +32,7 @@ in a browser by clicking "Browse Source" along the top bar of the
 page. You will be asked for a login, which is managed through the
 BADC.
 - You must have an account with the BADC, which can be obtain at
-http://badc.nerc.ac.uk/reg/user_register_info.html.  
+http://badc.nerc.ac.uk/reg/user_register_info.html.
 - You must be added as a developer. To do so, email Don Grainger
 (r.grainger@…) and ask to be added as an SVN and trac user for
 ORAC. This may take a few days.
@@ -52,7 +54,7 @@ code, which can be used to track changes over any number of revisions.
 To download a copy of the ORAC source code, open a terminal and change
 directory to the folder in which you wish to store the files. Use the
 command:
-   svn checkout http://proj.badc.rl.ac.uk/orac/trunk 
+   svn checkout http://proj.badc.rl.ac.uk/orac/trunk
 This will produce a local working copy of the source code on your
 machine. For a brief description of the other SVN commands you will
 require to update the source, view
@@ -61,15 +63,16 @@ and/or the SVN book (
 http://svnbook.red-bean.com/en/1.7/svn-book.pdf).
 
 Broadly, the folder structure is:
-docs - Documentation, largely similar to that shown in the wiki.  
+docs - Documentation, largely similar to that shown in the wiki.
 idl - Assorted plotting and visualisation codes for ORAC's output written
-in IDL.  
+in IDL.
 pre_processing - The ORAC pre-processor, which converts a set of
 satellite and other data files into NCDF files that ORAC can read. The
 source code is within the folders 'C' and 'modis', with the others
 containing various data files.
 src - The ORAC processor source code.  Having obtained the ORAC source
 code, one must now compile it.
+
 
 --------------------------------------
 The Pre-processor
@@ -79,7 +82,7 @@ The pre-processor code is in the folder
 http://proj.badc.rl.ac.uk/orac/trunk/pre_preprocessing and is
 compiled with a Makefile. This is controlled by two files:
 - The archfile, which sets the Fortran and C compilers to be used and
-the settings for those compilers; 
+the settings for those compilers;
 - The libfile, which lists the paths to all the libraries required by
 the compilers.
 
@@ -94,7 +97,7 @@ ORAC requires several libraries, which you will need to obtain and
 - HDF4 and 5 which use the SZIP, ZLIB, and JPEG libraries. These can be
 found at http://www.hdfgroup.org;
 - HDF-EOS, which can be found at the same site;
-- NetCDF at http://www.unidata.ucar.edu; 
+- NetCDF at http://www.unidata.ucar.edu;
 - The ECMWF GRIB API at
 https://software.ecmwf.int/wiki/display/GRIB/Home;
 - JASPER at http://www.ece.uvic.ca/~frodo/jasper/;
@@ -170,8 +173,9 @@ produced. These have the same root name followed by the suffixes:
 swrtm, the shortwave radiative transfer model output;
 - uv, the scan indices of each pixel.
 
+
 --------------------------------------
-The ORAC processor
+The main processor
 --------------------------------------
 
 The main processor is in the folder
@@ -225,7 +229,7 @@ and ICE, for ice cloud.
 After running, two NetCDF files should be produced. These will start
 with the root filename, followed by the cloud class, then:
 - primary, which contains the retrieved variables, their uncertainty,
-quality control information, and geolocation information; 
+quality control information, and geolocation information;
 - secondary, summarises the measurements and a priori information input
 into the retrieval.
 
@@ -234,3 +238,14 @@ which contain log information output by the code. In the current
 implimentation, these files are blank except in the event of an
 error. This behaviour can be controlled with the routines WriteDiag
 and WriteLog.
+
+
+--------------------------------------
+The post-processor
+--------------------------------------
+
+
+--------------------------------------
+Broadband fluxes
+--------------------------------------
+See broadband_fluxes/README
