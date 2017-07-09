@@ -195,7 +195,7 @@ ORAC_OBJ = $(OBJS)/Cholesky.o \
            $(OBJS)/SPixel.o \
            $(OBJS)/SPixel_routines.o
 
-ORAC_OBJ_MAIN = $(OBJS)/ECP.o
+ORAC_OBJ_MAIN = $(OBJS)/orac.o
 
 
 # Compilation rules

@@ -1,6 +1,6 @@
 !-------------------------------------------------------------------------------
 ! Name:
-! post_process_level2
+! orac_postproc
 !
 ! Purpose:
 ! Read in level2 ORAC output and apply post processing to select cloudmask
@@ -130,10 +130,10 @@
 !-------------------------------------------------------------------------------
 
 #ifndef WRAPPER
-program post_process_level2
+program orac_postproc
 #else
-subroutine post_process_level2(mytask,ntasks, lower_bound, upper_bound, &
-                               path_and_file)
+subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
+                          path_and_file)
 #endif
 
     use chunk_utils_m
@@ -176,7 +176,7 @@ subroutine post_process_level2(mytask,ntasks, lower_bound, upper_bound, &
     logical                      :: use_new_bayesian_selection = .false.
     logical                      :: use_netcdf_compression = .true.
     logical                      :: use_chunks = .false.
-    logical                      :: use_ml = .false. ! switch this to true if want to do multi layer retrieval
+    logical                      :: use_ml = .false.
     logical                      :: use_ml_temp = .false.
     logical                      :: use_ann_phase = .true.
     logical                      :: verbose = .true.
@@ -819,7 +819,7 @@ subroutine post_process_level2(mytask,ntasks, lower_bound, upper_bound, &
     call dealloc_common_indices(indexing%common_indices_t)
 
 #ifdef WRAPPER
-end subroutine post_process_level2
+end subroutine orac_postproc
 #else
-end program post_process_level2
+end program orac_postproc
 #endif

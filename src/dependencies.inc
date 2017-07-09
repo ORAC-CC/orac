@@ -59,7 +59,7 @@ $(OBJS)/SPixel_routines.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/ECPConstants.o 
         $(OBJS)/SPixel.o $(OBJS)/planck.o GetGeometry.F90 GetIndexing.F90 \
         GetLSF.F90 GetLocation.F90 GetLwSwRTM.F90 GetMeasurements.F90 GetRTM.F90 \
         GetSPixel.F90 GetSurface.F90 GetX.F90 IntCTP.F90 XMDAD.F90 XSDAD.F90
-$(OBJS)/ECP.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/Diag.o \
+$(OBJS)/orac.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/Diag.o \
         $(OBJS)/ECPConstants.o $(OBJS)/Inversion.o $(OBJS)/RTM.o \
         $(OBJS)/RTM_Pc.o $(OBJS)/ReadDriver.o $(OBJS)/ReadSAD.o \
         $(OBJS)/SADChan.o $(OBJS)/SADLUT.o $(OBJS)/SPixel.o \

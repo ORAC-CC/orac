@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: preprocessing_for_orac.F90
+! Name: orac_preproc.F90
 !
 ! Purpose:
 ! Read in data from the variety of files that contain all the information
@@ -274,9 +274,9 @@
 !-------------------------------------------------------------------------------
 
 #ifndef WRAPPER
-program preprocessing
+program orac_preproc
 #else
-subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,status)
+subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file,status)
 #endif
 
    use channel_structures_m
@@ -1215,7 +1215,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    if (associated(channel_ids)) deallocate(channel_ids)
 
 #ifdef WRAPPER
-end subroutine preprocessing
+end subroutine orac_preproc
 #else
-end program preprocessing
+end program orac_preproc
 #endif

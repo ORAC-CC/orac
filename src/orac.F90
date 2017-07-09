@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: ECP.F90
+! Name: orac.F90
 !
 ! Purpose:
 ! Main program for the Enhanced Cloud Processor prototype. Calls subordinate
@@ -179,9 +179,9 @@
 !-------------------------------------------------------------------------------
 
 #ifndef WRAPPER
-program ECP
+program orac
 #else
-subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
+subroutine orac(mytask,ntasks,lower_bound,upper_bound,drifile)
 #endif
 
    ! Modules used by this program.
@@ -744,7 +744,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 #endif
 
 #ifdef WRAPPER
-end subroutine ECP
+end subroutine orac
 #else
-end program ECP
+end program orac
 #endif

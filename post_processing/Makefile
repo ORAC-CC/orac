@@ -26,7 +26,7 @@ POSTPROC_OBJ = $(OBJS)/orac_input.o \
                $(OBJS)/postproc_utils.o \
                $(OBJS)/prepare_output_pp.o  \
 
-POSTPROC_OBJ_MAIN = $(OBJS)/post_process_level2.o
+POSTPROC_OBJ_MAIN = $(OBJS)/orac_postproc.o
 
 
 # Compilation rules
@@ -42,11 +42,11 @@ $(OBJS)/%.o: %.f90 $(ORAC_COMMON)/liborac_common.a
 
 
 # Main target list
-all: post_process_level2
+all: orac_postproc
 
 # Main program build
-post_process_level2: $(POSTPROC_OBJ_MAIN) libpostproc.a $(ORAC_COMMON)/liborac_common.a Makefile
-	$(F90) -o post_process_level2 $(LFLAGS) $(POSTPROC_OBJ_MAIN) libpostproc.a $(ORAC_COMMON)/liborac_common.a -I./$(OBJS) $(LIBS)
+orac_postproc: $(POSTPROC_OBJ_MAIN) libpostproc.a $(ORAC_COMMON)/liborac_common.a Makefile
+	$(F90) -o orac_postproc $(LFLAGS) $(POSTPROC_OBJ_MAIN) libpostproc.a $(ORAC_COMMON)/liborac_common.a -I./$(OBJS) $(LIBS)
 
 # Main library build
 libpostproc.a: $(POSTPROC_OBJ) Makefile
@@ -57,7 +57,7 @@ depend:
 	@../tools/make_depend.pl $(POSTPROC_OBJ) $(POSTPROC_OBJ_MAIN) > dependencies.inc
 
 clean tidy:
-	rm -f $(OBJS)/*.o $(OBJS)/*.mod *.a post_process_level2
+	rm -f $(OBJS)/*.o $(OBJS)/*.mod *.a orac_postproc
 
 
 # Object/source dependencies

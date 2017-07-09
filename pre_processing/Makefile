@@ -92,7 +92,7 @@ PREPROC_OBJ_C    = $(OBJS)/read_aatsr_orbit.o
 
 PREPROC_OBJ      = $(PREPROC_OBJ_F90) $(PREPROC_OBJ_C)
 
-PREPROC_OBJ_MAIN = $(OBJS)/preprocessing_for_orac.o
+PREPROC_OBJ_MAIN = $(OBJS)/orac_preproc.o
 
 
 # Compilation rules
@@ -111,11 +111,11 @@ $(OBJS)/%.o: %.c
 
 
 # Main target list
-all: orac_preproc.x
+all: orac_preproc
 
 # Main program build
-orac_preproc.x: $(PREPROC_OBJ_MAIN) libpreproc.a $(ORAC_COMMON)/liborac_common.a Makefile
-	$(F90) -o orac_preproc.x $(LFLAGS) $(PREPROC_OBJ_MAIN) libpreproc.a $(ORAC_COMMON)/liborac_common.a -I./$(OBJS) $(LIBS)
+orac_preproc: $(PREPROC_OBJ_MAIN) libpreproc.a $(ORAC_COMMON)/liborac_common.a Makefile
+	$(F90) -o orac_preproc $(LFLAGS) $(PREPROC_OBJ_MAIN) libpreproc.a $(ORAC_COMMON)/liborac_common.a -I./$(OBJS) $(LIBS)
 
 # Main library build
 libpreproc.a: $(PREPROC_OBJ) Makefile
@@ -126,7 +126,7 @@ depend:
 	@../tools/make_depend.pl $(PREPROC_OBJ_F90) $(PREPROC_OBJ_MAIN) > dependencies.inc
 
 clean tidy:
-	rm -f $(OBJS)/*.o $(OBJS)/*.mod *.a orac_preproc.x
+	rm -f $(OBJS)/*.o $(OBJS)/*.mod *.a orac_preproc
 
 
 # Fortran 90 dependencies
