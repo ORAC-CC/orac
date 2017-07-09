@@ -278,7 +278,6 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    character(len=FilenameLen) :: drifile
    integer :: mytask,ntasks,lower_bound,upper_bound
 #endif
-!  include "sigtrap.F90"
 
 #ifdef USE_TIMING
    ! Initialize timing
