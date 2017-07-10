@@ -32,6 +32,7 @@ FILE* open_part_file(const char* path, const char* suff);
 byte               { return(CHAR); }
 character          { return(STR); }
 contains           { return(CONTAINS); }
+dint               { return(LINT); }
 dreal              { return(DOUBLE); }
 end                { return(END); }
 extends            { return(EXTENDS); }

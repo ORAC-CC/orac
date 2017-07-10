@@ -30,6 +30,7 @@
 ! 2015/07/10, OS: added optional error_status return argument
 ! 2015/07/16, GM: Added support to read packed data to nc_read routines.
 ! 2016/07/11, SP: Added new variable to read functions: startp
+! 2017/07/10, AP: Add int64 fields.
 !
 ! $Id$
 !-------------------------------------------------------------------------------
@@ -46,6 +47,7 @@ module orac_ncdf_m
          read_byte_1d,  read_byte_2d,  read_byte_3d,  read_byte_4d, &
          read_sint_1d,  read_sint_2d,  read_sint_3d,  read_sint_4d, &
          read_lint_1d,  read_lint_2d,  read_lint_3d,  read_lint_4d, &
+         read_dint_1d,  read_dint_2d,  read_dint_3d,  read_dint_4d, &
          read_sreal_1d, read_sreal_2d, read_sreal_3d, read_sreal_4d, &
          read_dreal_1d, read_dreal_2d, read_dreal_3d, read_dreal_4d
    end interface nc_read_array
@@ -55,6 +57,7 @@ module orac_ncdf_m
          write_byte_1d, write_byte_2d, write_byte_3d, write_byte_4d, &
          write_sint_1d, write_sint_2d, write_sint_3d, write_sint_4d, &
          write_lint_1d, write_lint_2d, write_lint_3d, write_lint_4d, &
+         write_dint_1d, write_dint_2d, write_dint_3d, write_dint_4d, &
          write_sreal_1d, write_sreal_2d, write_sreal_3d, write_sreal_4d, &
          write_dreal_1d, write_dreal_2d, write_dreal_3d, write_dreal_4d
    end interface nc_write_array
@@ -255,6 +258,20 @@ end function nc_dim_length
 #undef NC_DEF_VAR_KIND_UNPACKED
 #undef NC_DEF_VAR_NF90_TYPE
 
+#define NC_DEF_VAR_NAME nc_def_var_dlong_packed_dlong
+#define NC_DEF_VAR_TYPE_PACKED integer
+#define NC_DEF_VAR_KIND_PACKED dint
+#define NC_DEF_VAR_TYPE_UNPACKED integer
+#define NC_DEF_VAR_KIND_UNPACKED dint
+#define NC_DEF_VAR_NF90_TYPE NF90_INT64
+#include "nc_def_var_template.inc"
+#undef NC_DEF_VAR_NAME
+#undef NC_DEF_VAR_TYPE_PACKED
+#undef NC_DEF_VAR_KIND_PACKED
+#undef NC_DEF_VAR_TYPE_UNPACKED
+#undef NC_DEF_VAR_KIND_UNPACKED
+#undef NC_DEF_VAR_NF90_TYPE
+
 #define NC_DEF_VAR_NAME nc_def_var_float_packed_float
 #define NC_DEF_VAR_TYPE_PACKED real
 #define NC_DEF_VAR_KIND_PACKED sreal
@@ -381,6 +398,22 @@ end function nc_dim_length
 #undef NC_READ_NAME_3D
 #undef NC_READ_NAME_4D
 
+#define NC_READ_TYPE integer
+#define NC_READ_KIND dint
+#define NC_READ_FILL_VALUE dint_fill_value
+#define NC_READ_NAME_1D read_dint_1d
+#define NC_READ_NAME_2D read_dint_2d
+#define NC_READ_NAME_3D read_dint_3d
+#define NC_READ_NAME_4D read_dint_4d
+#include "nc_read_template.inc"
+#undef NC_READ_TYPE
+#undef NC_READ_KIND
+#undef NC_READ_FILL_VALUE
+#undef NC_READ_NAME_1D
+#undef NC_READ_NAME_2D
+#undef NC_READ_NAME_3D
+#undef NC_READ_NAME_4D
+
 #define NC_READ_TYPE real
 #define NC_READ_KIND sreal
 #define NC_RD_P_TYPE real
@@ -482,6 +515,20 @@ end function nc_dim_length
 #define NC_WRITE_NAME_2D write_lint_2d
 #define NC_WRITE_NAME_3D write_lint_3d
 #define NC_WRITE_NAME_4D write_lint_4d
+#include "nc_write_template.inc"
+#undef NC_WRITE_TYPE
+#undef NC_WRITE_KIND
+#undef NC_WRITE_NAME_1D
+#undef NC_WRITE_NAME_2D
+#undef NC_WRITE_NAME_3D
+#undef NC_WRITE_NAME_4D
+
+#define NC_WRITE_TYPE integer
+#define NC_WRITE_KIND dint
+#define NC_WRITE_NAME_1D write_dint_1d
+#define NC_WRITE_NAME_2D write_dint_2d
+#define NC_WRITE_NAME_3D write_dint_3d
+#define NC_WRITE_NAME_4D write_dint_4d
 #include "nc_write_template.inc"
 #undef NC_WRITE_TYPE
 #undef NC_WRITE_KIND

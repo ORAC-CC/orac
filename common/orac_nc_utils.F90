@@ -25,7 +25,7 @@
 ! History:
 ! 2015/07/16, GM: Original version.
 ! 2016/04/28, AP: Make multiple views mandatory.
-!
+! 2017/07/10, AP: Stop using CLASSIC_MODE such that int64 fields can be saved.
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
@@ -67,8 +67,7 @@ subroutine nc_create(path, ncid, nx, ny, nview, dims_var, type, global_atts, &
    !----------------------------------------------------------------------------
    ! Create new file
    !----------------------------------------------------------------------------
-   ierr = nf90_create(path, IOR(IOR(NF90_NETCDF4, NF90_CLASSIC_MODEL), &
-                      NF90_CLOBBER), ncid)
+   ierr = nf90_create(path, IOR(NF90_NETCDF4, NF90_CLOBBER), ncid)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_create(): filename = ', trim(path)
       stop error_stop_code

@@ -32,6 +32,7 @@ module common_constants_m
    integer, parameter :: byte = 1
    integer, parameter :: sint = 2
    integer, parameter :: lint = 4
+   integer, parameter :: dint = 8
    integer, parameter :: sreal = 4
    integer, parameter :: dreal = 8
 
@@ -58,6 +59,7 @@ module common_constants_m
    integer(kind=byte), parameter :: byte_fill_value  = -127
    integer(kind=sint), parameter :: sint_fill_value  = -32767
    integer(kind=lint), parameter :: lint_fill_value  = -32767
+   integer(kind=dint), parameter :: dint_fill_value  = -32767
    real(kind=sreal),   parameter :: sreal_fill_value = -999.0
    real(kind=dreal),   parameter :: dreal_fill_value = -999.0
 
