@@ -774,7 +774,7 @@ subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
    type(imager_flags_t),           intent(in)    :: imager_flags
    type(imager_angles_t),          intent(in)    :: imager_angles
    type(imager_geolocation_t),     intent(in)    :: imager_geolocation
-   type(imager_measurements_t),    intent(in)    :: imager_measurements
+   type(imager_measurements_t),    intent(inout) :: imager_measurements
    type(imager_pavolonis_t),       intent(inout) :: imager_pavolonis
    character(len=sensor_length),   intent(in)    :: sensor
    character(len=platform_length), intent(in)    :: platform
