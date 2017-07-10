@@ -59,6 +59,7 @@
 ! 2016/07/31, GM: Tidying of the code drop above.
 ! 2017/01/31, SP: Add ecmwf_flag=5, for reading NOAA GFS forecast (EKWork)
 ! 2017/04/11, SP: Added ecmwf_flag=6, for working with GFS analysis files.
+! 2017/07/05, SP: Added ecmwf_flag=7, for working with new format GFS (EKWork)
 !
 ! $Id$
 !
@@ -106,12 +107,12 @@ subroutine set_ecmwf(cyear, cmonth, cday, chour, ecmwf_path, ecmwf_path2, &
 
    ! Check that we're not trying to use full path GFS data
    if ((ecmwf_flag .eq. 5) .and. (assume_full_path .neqv. .true.)) then
-      write(*,*)"When using GFS data assume_full_path *must* be True."
+      write(*,*)"When using GFS data in original format assume_full_path *must* be True."
       stop
    end if
 
    ! Use 3-hourly NOAA GFS data, otherwise use 6-hourly ECMWF data
-   if (ecmwf_flag .eq. 5) then
+   if (ecmwf_flag .eq. 5 .or. ecmwf_flag .eq. 7) then
       time_fac = 3._dreal / 24._dreal
    else
       time_fac = 6._dreal / 24._dreal
@@ -389,6 +390,10 @@ subroutine make_ecmwf_name(cyear,cmonth,cday,chour,ecmwf_flag,ecmwf_path, &
       ecmwf_path_file=trim(adjustl(ecmwf_path))//'/gfs_4_'// &
            trim(adjustl(cyear))//trim(adjustl(cmonth))// &
            trim(adjustl(cday))//'_'//trim(adjustl(chour))//'00_000.grb2'
+   case(7)
+      ecmwf_path_file=trim(adjustl(ecmwf_path))//'/GFS_'// &
+           trim(adjustl(cyear))//trim(adjustl(cmonth))// &
+           trim(adjustl(cday))//trim(adjustl(chour))//'00.grb'
    case default
       write(*,*) 'ERROR: set_ecmwf(): Unknown ECMWF file format flag. ' // &
                  'Please select 0, 1, 2, 3, or 4.'

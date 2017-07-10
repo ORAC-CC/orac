@@ -107,8 +107,11 @@ subroutine read_ecmwf_wind(ecmwf_flag, ecmwf_path_file, ecmwf_HR_path_file, &
    case(6)
       call read_ecmwf_wind_grib(ecmwf_path_file,ecmwf,.false.,ecmwf_flag)
       if (verbose) write(*,*)'ecmwf_dims grib: ',ecmwf%xdim,ecmwf%ydim
+   case(7)
+      call read_ecmwf_wind_grib(ecmwf_path_file,ecmwf,.false.,ecmwf_flag)
+      if (verbose) write(*,*)'ecmwf_dims grib: ',ecmwf%xdim,ecmwf%ydim
    case default
-      write(*,*) "Incorrect ECMWF flag, must be between 0-6."
+      write(*,*) "Incorrect ECMWF flag, must be between 0-7."
       stop
    end select
    if (verbose) then

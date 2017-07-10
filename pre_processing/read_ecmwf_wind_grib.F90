@@ -70,7 +70,7 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf, high_res, ecmwf_flag)
         trim(ecmwf_path))
    if (gid .eq. GRIB_END_OF_FILE) call h_e_e('wind_grib', 'Empty GRIB file.')
 
-   if ((.not. high_res) .and. (ecmwf_flag .ne. 5) .and. (ecmwf_flag .ne. 6)) then
+   if ((.not. high_res) .and. (ecmwf_flag .ne. 5) .and. (ecmwf_flag .ne. 6 .and. ecmwf_flag .ne. 7)) then
       ! ensure it contains the expected fields
       call grib_get(gid,'PVPresent',PVPresent)
       if (stat .ne. 0) call h_e_e('wind_grib', 'Error getting PVPresent.')
@@ -108,7 +108,7 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf, high_res, ecmwf_flag)
    allocate(ecmwf%lat(nj))
 
    if (.not. high_res) then
-      if (ecmwf_flag .ne. 5 .and. ecmwf_flag .ne. 6) then
+      if (ecmwf_flag .ne. 5 .and. ecmwf_flag .ne. 6 .and. ecmwf_flag .ne. 7) then
          allocate(ecmwf%avec(nk+1))
          allocate(ecmwf%bvec(nk+1))
       else
@@ -195,7 +195,7 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf, high_res, ecmwf_flag)
          where (ecmwf%snow_depth .eq. 9999.) ecmwf%snow_depth = sreal_fill_value
       case(130)
          if (trim(ltype) .eq. 'surface') then
-            if (ecmwf_flag .eq. 5 .or. ecmwf_flag .eq. 6) then
+            if (ecmwf_flag .eq. 5 .or. ecmwf_flag .eq. 6 .or. ecmwf_flag .eq. 7) then
                ! skin temp (GFS) - proxied by surface temp
                call grib_get_data(gid,lat,lon,val,stat)
                if (stat .ne. 0) call h_e_e('wind_grib', &
@@ -224,7 +224,7 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf, high_res, ecmwf_flag)
 
    ecmwf%xdim=ni
    ecmwf%ydim=nj
-   if (.not. high_res .and. ecmwf_flag .ne. 5 .and. ecmwf_flag .ne. 6) then
+   if (.not. high_res .and. ecmwf_flag .ne. 5 .and. ecmwf_flag .ne. 6 .and. ecmwf_flag .ne. 7) then
       ecmwf%kdim=nk
       if (nk .ne. nlevels) &
            call h_e_e('wind_grib', 'Inconsistent vertical levels.')
@@ -233,7 +233,7 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf, high_res, ecmwf_flag)
    end if
 
    ! clean-up
-   if (.not. high_res .and. ecmwf_flag .ne. 5 .and. ecmwf_flag .ne. 6) then
+   if (.not. high_res .and. ecmwf_flag .ne. 5 .and. ecmwf_flag .ne. 6 .and. ecmwf_flag .ne. 7) then
       deallocate(pv)
    end if
    deallocate(lat)
