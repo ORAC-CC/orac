@@ -3,10 +3,8 @@
 # 22 Jun 2016, AP: Initial Python 2.7 version
 # 08 Jul 2016, AP: Debugging against more awkward python environments
 # 14 Jul 2016, GT: Debugging on CEMS:
-#                  Added support for a simple directory structure of
-#                  YYYY subdir for NISE data
-#                  Made paths to MCD43C1 and MCD43C2 data separate
-#                  arguments
+#    Added support for a simple directory structure of YYYY subdir for NISE data
+#    Made paths to MCD43C1 and MCD43C2 data separate arguments
 # 20 Jul 2016, AP: Remove shell=True from subprocess calls.
 # 3  Aug 2016, SP: Fixed exception handling in the regression test function.
 # 09 Mar 2017, GT: Improved support for use with batch queuing systems
@@ -241,7 +239,8 @@ def call_exe(args,           # Arguments of scripts
                 dep_arg = None
 
             # Form batch queue command and call batch queuing system
-            cmd = defaults.batch.PrintBatch(values, exe=script_file, depend_arg=dep_arg)
+            cmd = defaults.batch.PrintBatch(values, exe=script_file,
+                                            depend_arg=dep_arg)
 
             colours.cprint(cmd, colouring['header'])
 
@@ -561,6 +560,15 @@ class FileName:
             self.dur  = datetime.timedelta(seconds=6555) # Guessing
             # The following may be problematic with interesting dir names
             self.geo  = filename.replace('_avhrr.h5', '_sunsatangles.h5')
+            plat = int(m.group('platform'))
+            if plat in (6, 8, 10):
+                self.noaa = '1'
+            elif plat in (7, 9, 11, 12, 13, 14):
+                self.noaa = '2'
+            elif plat in (15, 16, 17, 18, 19):
+                self.noaa = '3'
+            else:
+                raise ValueError("Unknown AVHRR platform: "+self.platform)
             return
 
         # Default AVHRR filename format produced by pygac (differs from
@@ -581,6 +589,15 @@ class FileName:
             self.dur  = datetime.timedelta(seconds=6555) # Guessing
             self.geo  = filename.replace('ECC_GAC_avhrr_',
                                          'ECC_GAC_sunsatangles_')
+            plat = int(m.group('platform'))
+            if plat in (6, 8, 10):
+                self.noaa = '1'
+            elif plat in (7, 9, 11, 12, 13, 14):
+                self.noaa = '2'
+            elif plat in (15, 16, 17, 18, 19):
+                self.noaa = '3'
+            else:
+                raise ValueError("Unknown AVHRR platform: "+self.platform)
             return
 
         m = re.search('H-000-MSG(?P<platform>\d{1})__-MSG(\d{1})'
@@ -723,17 +740,25 @@ class ParticleType():
     def __init__(self,
                  inv = (),
                  wvl = (0.55, 0.67, 0.87, 1.6, -0.55, -0.67, -0.87, -1.6),
-                 sad = defaults.aer_sad_dir,
+                 sad = "CCI_A70-A79",
                  ls = True):
         self.inv = inv
         self.wvl = wvl
         self.sad = sad
         self.ls  = ls
 
+    def sad_dir(self, base_sad_dir, inst):
+        if "AVHRR" in inst.sensor:
+            return base_sad_dir + "/" + inst.sensor.lower() + "-" + inst.noaa + \
+                "_" + self.sad
+        else:
+            return base_sad_dir + "/" + inst.sensor.lower() + "_" + self.sad
+
+# Using non-imager LUTs and Baum properties at Greg's recommendation
 settings['WAT'] = ParticleType(wvl=(0.67, 0.87, 1.6, 3.7, 11, 12),
-                           sad=defaults.sad_dir, ls=False)
+                               sad="WAT", ls=False)
 settings['ICE'] = ParticleType(wvl=(0.67, 0.87, 1.6, 3.7, 11, 12),
-                           sad=defaults.sad_dir, ls=False)
+                               sad="ICE_baum", ls=False)
 
 tau = Invpar('ITau', ap=-1.0, sx=1.5)
 settings['A70'] = ParticleType(inv=(tau, Invpar('IRe', ap=0.0856, sx=0.15)))
@@ -746,7 +771,6 @@ settings['A76'] = ParticleType(inv=(tau, Invpar('IRe', ap=0.0856, sx=0.15)))
 settings['A77'] = ParticleType(inv=(tau, Invpar('IRe', ap=-0.0419, sx=0.15)))
 settings['A78'] = ParticleType(inv=(tau, Invpar('IRe', ap=-0.257, sx=0.15)))
 settings['A79'] = ParticleType(inv=(tau, Invpar('IRe', ap=-0.848, sx=0.15)))
-settings['VSA'] = ParticleType(inv=(tau, Invpar('IRe', ap=-0.848, sx=0.15)))
 
 
 #-----------------------------------------------------------------------------
@@ -1018,8 +1042,8 @@ def args_main(parser):
                       help = 'Label of look-up table to use in retrieval.')
     main.add_argument('--sabotage', action='store_true',
                       help = 'Sabotage inputs during processing.')
-    main.add_argument('--sad_dir', type=str, nargs='?', metavar='DIR',
-                      default = defaults.sad_dir,
+    main.add_argument('--base_sad_dir', type=str, nargs='?', metavar='DIR',
+                      default = defaults.base_sad_dir,
                       help = 'Path to SAD and LUT files.')
     all_types = ('CLEAR', 'SWITCHED_TO_WATER', 'FOG', 'WATER', 'SUPERCOOLED',
                  'SWITCHED_TO_ICE', 'OPAQUE_ICE', 'CIRRUS', 'OVERLAP',
@@ -1053,8 +1077,8 @@ def check_args_main(args):
                       OracWarning, stacklevel=2)
     if not os.path.isdir(args.in_dir[0]):
         raise FileMissing('Preprocessed directory', args.in_dir[0])
-    if not os.path.isdir(args.sad_dir):
-        raise FileMissing('sad_dir', args.sad_dir)
+    if not os.path.isdir(args.base_sad_dir):
+        raise FileMissing('base_sad_dir', args.base_sad_dir)
     # No error checking yet written for channel arguments
 
 #-----------------------------------------------------------------------------
@@ -1111,10 +1135,6 @@ def args_cc4cl(parser):
                       default = (11000, 11000, 11000),
                       help = ('Maximal memory (in Mb) used by the pre, main and '
                               'post processors.'))
-    cccl.add_argument('--aer_sad_dir', type=str, nargs='?', metavar='DIR',
-                      default = defaults.aer_sad_dir,
-                      help = ('Path to aerosol SAD and LUT files, ' +
-                              'when different to that for cloud.'))
     cccl.add_argument('--land_dir', type=str, nargs='?',
                       default = defaults.land_dir,
                       help = 'Name of subfolder for land-only aerosol output.')
@@ -1434,7 +1454,7 @@ OCCCI_PATH={occci_file}""".format(
     if args.channel_ids:
         driver += "\nN_CHANNELS={}".format(len(args.channel_ids))
         driver += "\nCHANNEL_IDS={}".format(','.join(str(k)
-                                            for k in args.channel_ids))
+                                                     for k in args.channel_ids))
 
     outroot = '-'.join((args.project, 'L2', 'CLOUD', 'CLD',
                         '_'.join((inst.sensor, args.processor, inst.platform,
@@ -1456,7 +1476,7 @@ Ctrl%FID%Data_Dir          = "{in_dir}"
 Ctrl%FID%Filename          = "{fileroot}"
 Ctrl%FID%Out_Dir           = "{out_dir}"
 Ctrl%FID%SAD_Dir           = "{sad_dir}"
-Ctrl%InstName              = {sensor}
+Ctrl%InstName              = "{sensor}"
 Ctrl%Ind%NAvail            = {nch}
 Ctrl%Ind%Channel_Proc_Flag = {channels}
 Ctrl%LUTClass              = "{phase}"
@@ -1639,7 +1659,7 @@ def cc4cl(orig):
                       'duration' : args.dur[0],
                       'ram'      : args.ram[0]}
 
-        jid_pre = call_exe(args, args.orac_dir+'/pre_processing/orac_preproc.x',
+        jid_pre = call_exe(args, args.orac_dir+'/pre_processing/orac_preproc',
                            pre_driver, pre_values)
         written_dirs.unique_append(args.out_dir)
     else:
@@ -1652,7 +1672,7 @@ def cc4cl(orig):
     args.in_dir = [args.out_dir]
     for phs in args.phases:
         args.phase   = phs
-        args.sad_dir = settings[phs].sad
+        args.sad_dir = settings[phs].sad_dir(args.base_sad_dir, inst)
 
         # Identify which channels to use
         ids_here = [map_wvl_to_inst[inst.sensor][w] for w in settings[phs].wvl]
@@ -1707,7 +1727,7 @@ def cc4cl(orig):
 
         post_driver = build_postproc_driver(args, main_files)
         jid = call_exe(args,
-                       args.orac_dir + '/post_processing/post_process_level2',
+                       args.orac_dir + '/post_processing/orac_postproc',
                        post_driver, post_values)
         written_dirs.unique_append(args.out_dir)
     else:

@@ -47,7 +47,7 @@ try:
 
     # Run postprocessor
     driver = ou.build_postproc_driver(args, pri=pri)
-    jid = ou.call_exe(args, args.orac_dir+'/post_processing/post_process_level2',
+    jid = ou.call_exe(args, args.orac_dir+'/post_processing/orac_postproc',
                       driver, values)
     print 'JOBID ',jid
 except ou.OracError as err:

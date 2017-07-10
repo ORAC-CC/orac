@@ -36,7 +36,7 @@ try:
 
     # Run preprocessor
     (driver, outroot) = ou.build_preproc_driver(args)
-    jid = ou.call_exe(args, args.orac_dir+'/pre_processing/orac_preproc.x',
+    jid = ou.call_exe(args, args.orac_dir+'/pre_processing/orac_preproc',
                       driver, values)
     if args.verbose or args.script_verbose:
         cprint(outroot, ou.colouring['pass'])
