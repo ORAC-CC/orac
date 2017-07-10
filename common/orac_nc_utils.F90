@@ -211,7 +211,7 @@ subroutine nc_put_common_attributes(ncid, global_atts, source_atts)
         trim(global_atts%Conventions))
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), ', trim(nf90_strerror(ierr)), &
-         ', name: Conventions'
+           ', name: Conventions'
       stop error_stop_code
    end if
 
@@ -224,7 +224,7 @@ subroutine nc_put_common_attributes(ncid, global_atts, source_atts)
         trim(global_atts%title))
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: title'
+           ', name: title'
       stop error_stop_code
    end if
 
@@ -232,7 +232,7 @@ subroutine nc_put_common_attributes(ncid, global_atts, source_atts)
         trim(global_atts%institution))
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: institution'
+           ', name: institution'
       stop error_stop_code
    end if
 
@@ -240,7 +240,7 @@ subroutine nc_put_common_attributes(ncid, global_atts, source_atts)
         trim(global_atts%source))
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: source'
+           ', name: source'
       stop error_stop_code
    end if
 
@@ -248,7 +248,7 @@ subroutine nc_put_common_attributes(ncid, global_atts, source_atts)
         trim(global_atts%history))
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: history'
+           ', name: history'
       stop error_stop_code
    end if
 
@@ -256,7 +256,7 @@ subroutine nc_put_common_attributes(ncid, global_atts, source_atts)
         trim(global_atts%references))
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: references'
+           ', name: references'
       stop error_stop_code
    end if
 
@@ -264,7 +264,7 @@ subroutine nc_put_common_attributes(ncid, global_atts, source_atts)
         trim(global_atts%comment))
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: comment'
+           ', name: comment'
       stop error_stop_code
    end if
 
@@ -276,7 +276,7 @@ subroutine nc_put_common_attributes(ncid, global_atts, source_atts)
         trim(global_atts%Project))
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: Project'
+           ', name: Project'
       stop error_stop_code
    end if
 
@@ -284,7 +284,7 @@ subroutine nc_put_common_attributes(ncid, global_atts, source_atts)
         trim(global_atts%File_Name))
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: File_Name'
+           ', name: File_Name'
       stop error_stop_code
    end if
 
@@ -292,7 +292,7 @@ subroutine nc_put_common_attributes(ncid, global_atts, source_atts)
         trim(global_atts%UUID))
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: UUID'
+           ', name: UUID'
       stop error_stop_code
    end if
 
@@ -300,7 +300,7 @@ subroutine nc_put_common_attributes(ncid, global_atts, source_atts)
         trim(global_atts%NetCDF_Version))
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: NetCDF_Version'
+           ', name: NetCDF_Version'
       stop error_stop_code
    end if
 
@@ -308,7 +308,7 @@ subroutine nc_put_common_attributes(ncid, global_atts, source_atts)
         trim(global_atts%Product_Name))
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: Product_Name'
+           ', name: Product_Name'
       stop error_stop_code
    end if
 
@@ -316,7 +316,7 @@ subroutine nc_put_common_attributes(ncid, global_atts, source_atts)
         trim(global_atts%Date_Created))
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: Date_Created'
+           ', name: Date_Created'
       stop error_stop_code
    end if
 
@@ -324,7 +324,7 @@ subroutine nc_put_common_attributes(ncid, global_atts, source_atts)
         trim(global_atts%Production_Time))
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: Production_Time'
+           ', name: Production_Time'
       stop error_stop_code
    end if
 
@@ -332,7 +332,7 @@ subroutine nc_put_common_attributes(ncid, global_atts, source_atts)
         trim(global_atts%L2_Processor))
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: L2_Processor'
+           ', name: L2_Processor'
       stop error_stop_code
    end if
 
@@ -340,7 +340,7 @@ subroutine nc_put_common_attributes(ncid, global_atts, source_atts)
         trim(global_atts%L2_Processor_Version))
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: L2_Processor_Version'
+           ', name: L2_Processor_Version'
       stop error_stop_code
    end if
 
@@ -348,7 +348,7 @@ subroutine nc_put_common_attributes(ncid, global_atts, source_atts)
         trim(global_atts%Platform))
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: Platform'
+           ', name: Platform'
       stop error_stop_code
    end if
 
@@ -356,7 +356,7 @@ subroutine nc_put_common_attributes(ncid, global_atts, source_atts)
         trim(global_atts%Sensor))
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: Sensor'
+           ', name: Sensor'
       stop error_stop_code
    end if
 
@@ -365,7 +365,7 @@ subroutine nc_put_common_attributes(ncid, global_atts, source_atts)
            trim(global_atts%AATSR_Processing_Version))
       if (ierr.ne.NF90_NOERR) then
          write(*,*) 'ERROR: nf90_put_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: AATSR_Processing_Version'
+              ', name: AATSR_Processing_Version'
          stop error_stop_code
       end if
    end if
@@ -374,7 +374,7 @@ subroutine nc_put_common_attributes(ncid, global_atts, source_atts)
         trim(global_atts%Creator_Email))
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: Creator_Email'
+           ', name: Creator_Email'
       stop error_stop_code
    end if
 
@@ -382,7 +382,7 @@ subroutine nc_put_common_attributes(ncid, global_atts, source_atts)
         trim(global_atts%Creator_url))
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: Creator_url'
+           ', name: Creator_url'
       stop error_stop_code
    end if
 
@@ -390,7 +390,7 @@ subroutine nc_put_common_attributes(ncid, global_atts, source_atts)
         trim(global_atts%Keywords))
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: Keywords'
+           ', name: Keywords'
       stop error_stop_code
    end if
 
@@ -398,7 +398,7 @@ subroutine nc_put_common_attributes(ncid, global_atts, source_atts)
         trim(global_atts%Summary))
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: Summary'
+           ', name: Summary'
       stop error_stop_code
    end if
 
@@ -406,7 +406,7 @@ subroutine nc_put_common_attributes(ncid, global_atts, source_atts)
         trim(global_atts%License))
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: License'
+           ', name: License'
       stop error_stop_code
    end if
 
@@ -414,7 +414,7 @@ subroutine nc_put_common_attributes(ncid, global_atts, source_atts)
         trim(global_atts%SVN_Version))
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: SVN_Version'
+           ', name: SVN_Version'
       stop error_stop_code
    end if
 
@@ -422,7 +422,7 @@ subroutine nc_put_common_attributes(ncid, global_atts, source_atts)
         trim(global_atts%ECMWF_Version))
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: ECMWF_Version'
+           ', name: ECMWF_Version'
       stop error_stop_code
    end if
 
@@ -430,7 +430,7 @@ subroutine nc_put_common_attributes(ncid, global_atts, source_atts)
         trim(global_atts%RTTOV_Version))
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: RTTOV_Version'
+           ', name: RTTOV_Version'
       stop error_stop_code
    end if
 
@@ -442,7 +442,7 @@ subroutine nc_put_common_attributes(ncid, global_atts, source_atts)
         trim(source_atts%albedo_file))
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: albedo_file'
+           ', name: albedo_file'
       stop error_stop_code
    end if
 
@@ -450,7 +450,7 @@ subroutine nc_put_common_attributes(ncid, global_atts, source_atts)
         trim(source_atts%brdf_file))
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: brdf_file'
+           ', name: brdf_file'
       stop error_stop_code
    end if
 
@@ -458,7 +458,7 @@ subroutine nc_put_common_attributes(ncid, global_atts, source_atts)
         trim(source_atts%emissivity_file))
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: emissivity_file'
+           ', name: emissivity_file'
       stop error_stop_code
    end if
 
@@ -466,7 +466,7 @@ subroutine nc_put_common_attributes(ncid, global_atts, source_atts)
         trim(source_atts%usgs_file))
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: usgs_file'
+           ', name: usgs_file'
       stop error_stop_code
    end if
 
@@ -474,7 +474,7 @@ subroutine nc_put_common_attributes(ncid, global_atts, source_atts)
         trim(source_atts%snow_file))
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: snow_file'
+           ', name: snow_file'
       stop error_stop_code
    end if
 
@@ -482,7 +482,7 @@ subroutine nc_put_common_attributes(ncid, global_atts, source_atts)
         trim(source_atts%sea_ice_file))
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: sea_ice_file'
+           ', name: sea_ice_file'
       stop error_stop_code
    end if
 
@@ -490,7 +490,7 @@ subroutine nc_put_common_attributes(ncid, global_atts, source_atts)
         trim(source_atts%level1b_file))
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: Level1b_file'
+           ', name: Level1b_file'
       stop error_stop_code
    end if
 
@@ -498,7 +498,7 @@ subroutine nc_put_common_attributes(ncid, global_atts, source_atts)
         trim(source_atts%geo_file))
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: geo_file'
+           ', name: geo_file'
       stop error_stop_code
    end if
 
@@ -562,7 +562,7 @@ subroutine nc_get_common_attributes(ncid, global_atts, source_atts)
         global_atts%title)
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_get_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: title'
+           ', name: title'
       stop error_stop_code
    end if
 
@@ -570,7 +570,7 @@ subroutine nc_get_common_attributes(ncid, global_atts, source_atts)
         global_atts%institution)
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_get_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: institution'
+           ', name: institution'
       stop error_stop_code
    end if
 
@@ -578,7 +578,7 @@ subroutine nc_get_common_attributes(ncid, global_atts, source_atts)
         global_atts%source)
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_get_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: source'
+           ', name: source'
       stop error_stop_code
    end if
 
@@ -586,7 +586,7 @@ subroutine nc_get_common_attributes(ncid, global_atts, source_atts)
         global_atts%history)
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_get_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: history'
+           ', name: history'
       stop error_stop_code
    end if
 
@@ -594,7 +594,7 @@ subroutine nc_get_common_attributes(ncid, global_atts, source_atts)
         global_atts%references)
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_get_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: references'
+           ', name: references'
       stop error_stop_code
    end if
 
@@ -602,7 +602,7 @@ subroutine nc_get_common_attributes(ncid, global_atts, source_atts)
         global_atts%comment)
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_get_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: comment'
+           ', name: comment'
       stop error_stop_code
    end if
 
@@ -614,7 +614,7 @@ subroutine nc_get_common_attributes(ncid, global_atts, source_atts)
         global_atts%Project)
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_get_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: Project'
+           ', name: Project'
       stop error_stop_code
    end if
 
@@ -622,7 +622,7 @@ subroutine nc_get_common_attributes(ncid, global_atts, source_atts)
         global_atts%File_Name)
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_get_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: File_Name'
+           ', name: File_Name'
       stop error_stop_code
    end if
 
@@ -630,7 +630,7 @@ subroutine nc_get_common_attributes(ncid, global_atts, source_atts)
         global_atts%UUID)
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_get_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: UUID'
+           ', name: UUID'
       stop error_stop_code
    end if
 
@@ -638,7 +638,7 @@ subroutine nc_get_common_attributes(ncid, global_atts, source_atts)
         global_atts%NetCDF_Version)
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_get_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: NetCDF_Version'
+           ', name: NetCDF_Version'
       stop error_stop_code
    end if
 
@@ -646,7 +646,7 @@ subroutine nc_get_common_attributes(ncid, global_atts, source_atts)
         global_atts%Product_Name)
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_get_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: Product_Name'
+           ', name: Product_Name'
       stop error_stop_code
    end if
 
@@ -654,7 +654,7 @@ subroutine nc_get_common_attributes(ncid, global_atts, source_atts)
         global_atts%Date_Created)
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_get_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: Date_Created'
+           ', name: Date_Created'
       stop error_stop_code
    end if
 
@@ -662,7 +662,7 @@ subroutine nc_get_common_attributes(ncid, global_atts, source_atts)
         global_atts%Production_Time)
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_get_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: Production_Time'
+           ', name: Production_Time'
       stop error_stop_code
    end if
 
@@ -670,7 +670,7 @@ subroutine nc_get_common_attributes(ncid, global_atts, source_atts)
         global_atts%L2_Processor)
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_get_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: L2_Processor'
+           ', name: L2_Processor'
       stop error_stop_code
    end if
 
@@ -678,7 +678,7 @@ subroutine nc_get_common_attributes(ncid, global_atts, source_atts)
         global_atts%L2_Processor_Version)
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_get_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: L2_Processor_Version'
+           ', name: L2_Processor_Version'
       stop error_stop_code
    end if
 
@@ -686,7 +686,7 @@ subroutine nc_get_common_attributes(ncid, global_atts, source_atts)
         global_atts%Platform)
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_get_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: Platform'
+           ', name: Platform'
       stop error_stop_code
    end if
 
@@ -694,7 +694,7 @@ subroutine nc_get_common_attributes(ncid, global_atts, source_atts)
         global_atts%Sensor)
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_get_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: Sensor'
+           ', name: Sensor'
       stop error_stop_code
    end if
 
@@ -713,7 +713,7 @@ subroutine nc_get_common_attributes(ncid, global_atts, source_atts)
         global_atts%Creator_Email)
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_get_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: Creator_Email'
+           ', name: Creator_Email'
       stop error_stop_code
    end if
 
@@ -721,7 +721,7 @@ subroutine nc_get_common_attributes(ncid, global_atts, source_atts)
         global_atts%Creator_url)
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_get_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: Creator_url'
+           ', name: Creator_url'
       stop error_stop_code
    end if
 
@@ -729,7 +729,7 @@ subroutine nc_get_common_attributes(ncid, global_atts, source_atts)
         global_atts%Keywords)
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_get_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: Keywords'
+           ', name: Keywords'
       stop error_stop_code
    end if
 
@@ -737,7 +737,7 @@ subroutine nc_get_common_attributes(ncid, global_atts, source_atts)
         global_atts%Summary)
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_get_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: Summary'
+           ', name: Summary'
       stop error_stop_code
    end if
 
@@ -745,7 +745,7 @@ subroutine nc_get_common_attributes(ncid, global_atts, source_atts)
         global_atts%License)
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_get_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: License'
+           ', name: License'
       stop error_stop_code
    end if
 
@@ -753,7 +753,7 @@ subroutine nc_get_common_attributes(ncid, global_atts, source_atts)
         global_atts%SVN_Version)
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_get_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: SVN_Version'
+           ', name: SVN_Version'
       stop error_stop_code
    end if
 
@@ -761,7 +761,7 @@ subroutine nc_get_common_attributes(ncid, global_atts, source_atts)
         global_atts%ECMWF_Version)
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_get_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: ECMWF_Version'
+           ', name: ECMWF_Version'
       stop error_stop_code
    end if
 
@@ -769,7 +769,7 @@ subroutine nc_get_common_attributes(ncid, global_atts, source_atts)
         global_atts%RTTOV_Version)
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_get_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: RTTOV_Version'
+           ', name: RTTOV_Version'
       stop error_stop_code
    end if
 
@@ -781,7 +781,7 @@ subroutine nc_get_common_attributes(ncid, global_atts, source_atts)
         source_atts%albedo_file)
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_get_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: albedo_file'
+           ', name: albedo_file'
       stop error_stop_code
    end if
 
@@ -789,7 +789,7 @@ subroutine nc_get_common_attributes(ncid, global_atts, source_atts)
         source_atts%brdf_file)
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_get_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: brdf_file'
+           ', name: brdf_file'
       stop error_stop_code
    end if
 
@@ -797,7 +797,7 @@ subroutine nc_get_common_attributes(ncid, global_atts, source_atts)
         source_atts%emissivity_file)
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_get_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: emissivity_file'
+           ', name: emissivity_file'
       stop error_stop_code
    end if
 
@@ -805,7 +805,7 @@ subroutine nc_get_common_attributes(ncid, global_atts, source_atts)
         source_atts%usgs_file)
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_get_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: usgs_file'
+           ', name: usgs_file'
       stop error_stop_code
    end if
 
@@ -813,7 +813,7 @@ subroutine nc_get_common_attributes(ncid, global_atts, source_atts)
         source_atts%snow_file)
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_get_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: snow_file'
+           ', name: snow_file'
       stop error_stop_code
    end if
 
@@ -821,7 +821,7 @@ subroutine nc_get_common_attributes(ncid, global_atts, source_atts)
         source_atts%sea_ice_file)
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_get_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: sea_ice_file'
+           ', name: sea_ice_file'
       stop error_stop_code
    end if
 
@@ -829,7 +829,7 @@ subroutine nc_get_common_attributes(ncid, global_atts, source_atts)
         source_atts%level1b_file)
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_get_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: Level1b_file'
+           ', name: Level1b_file'
       stop error_stop_code
    end if
 
@@ -837,7 +837,7 @@ subroutine nc_get_common_attributes(ncid, global_atts, source_atts)
         source_atts%geo_file)
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_get_att(), ', trim(nf90_strerror(ierr)), &
-          ', name: geo_file'
+           ', name: geo_file'
       stop error_stop_code
    end if
 

@@ -172,21 +172,21 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
          ! define dimensions
          if (nf90_def_dim(netcdf_info%ncid_lwrtm, 'nlat_rtm', &
                           nlat, netcdf_info%dimid_y_lw) .ne. NF90_NOERR) then
-            write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), '// &
+            write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), ' // &
                  'dimension name: nlat_rtm'
             stop error_stop_code
          end if
 
          if (nf90_def_dim(netcdf_info%ncid_lwrtm, 'nlon_rtm', &
                           nlon, netcdf_info%dimid_x_lw) .ne. NF90_NOERR) then
-            write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), '// &
+            write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), ' // &
                  'dimension name: nlon_rtm'
             stop error_stop_code
          end if
 
          if (nf90_def_dim(netcdf_info%ncid_lwrtm, 'nlevels_rtm', kdim, &
                           netcdf_info%dimid_levels_lw) .ne. NF90_NOERR) then
-            write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), '// &
+            write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), ' // &
                  'dimension name: nlevels_rtm'
             stop error_stop_code
          end if
@@ -195,7 +195,7 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
                           channel_info%nchannels_lw, &
                           netcdf_info%dimid_lw_channels) &
               .ne. NF90_NOERR) then
-            write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), '// &
+            write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), ' // &
                  'dimension name: nlw_channels'
             stop error_stop_code
          end if
@@ -327,21 +327,21 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
          ! define dimensions
          if (nf90_def_dim(netcdf_info%ncid_swrtm, 'nlat_rtm', &
                           nlat, netcdf_info%dimid_y_sw) .ne. NF90_NOERR) then
-            write(*,*) 'ERROR: netcdf_create_rtm(2), nf90_create(), '// &
+            write(*,*) 'ERROR: netcdf_create_rtm(2), nf90_create(), ' // &
                  'dimension name: nlat_rtm'
             stop error_stop_code
          end if
 
          if (nf90_def_dim(netcdf_info%ncid_swrtm, 'nlon_rtm', &
                           nlon, netcdf_info%dimid_x_sw) .ne. NF90_NOERR) then
-            write(*,*) 'ERROR: netcdf_create_rtm(2), nf90_create(), '// &
+            write(*,*) 'ERROR: netcdf_create_rtm(2), nf90_create(), ' // &
                  'dimension name: nlon_rtm'
             stop error_stop_code
          end if
 
          if (nf90_def_dim(netcdf_info%ncid_swrtm, 'nlevels_rtm', kdim, &
                           netcdf_info%dimid_levels_sw) .ne. NF90_NOERR) then
-            write(*,*) 'ERROR: netcdf_create_rtm(2), nf90_create(), '// &
+            write(*,*) 'ERROR: netcdf_create_rtm(2), nf90_create(), ' // &
                  'dimension name: nlevels_rtm'
             stop error_stop_code
          end if
@@ -350,7 +350,7 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
                           channel_info%nchannels_sw, &
                           netcdf_info%dimid_sw_channels) &
               .ne. NF90_NOERR) then
-            write(*,*) 'ERROR: netcdf_create_rtm(2), nf90_create(), '// &
+            write(*,*) 'ERROR: netcdf_create_rtm(2), nf90_create(), ' // &
                  'dimension name: nsw_channels'
             stop error_stop_code
          end if
@@ -431,21 +431,21 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
       ! define dimensions
       if (nf90_def_dim(netcdf_info%ncid_prtm, 'nlat_rtm', &
                        nlat, netcdf_info%dimid_y_pw) .ne. NF90_NOERR) then
-         write(*,*) 'ERROR: netcdf_create_rtm(3), nf90_create(), dimension '// &
+         write(*,*) 'ERROR: netcdf_create_rtm(3), nf90_create(), dimension ' // &
               'name: nlat_rtm'
          stop error_stop_code
       end if
 
       if (nf90_def_dim(netcdf_info%ncid_prtm, 'nlon_rtm', &
                        nlon, netcdf_info%dimid_x_pw) .ne. NF90_NOERR) then
-         write(*,*) 'ERROR: netcdf_create_rtm(2), nf90_create(), dimension '// &
+         write(*,*) 'ERROR: netcdf_create_rtm(2), nf90_create(), dimension ' // &
               'name: nlon_rtm'
          stop error_stop_code
       end if
 
       if (nf90_def_dim(netcdf_info%ncid_prtm, 'nlevels_rtm', &
                        kdim, netcdf_info%dimid_levels_pw) .ne. NF90_NOERR) then
-         write(*,*) 'ERROR: netcdf_create_rtm(3), nf90_create(), dimension '// &
+         write(*,*) 'ERROR: netcdf_create_rtm(3), nf90_create(), dimension ' // &
               'name: nlevels_rtm'
          stop error_stop_code
       end if
@@ -663,7 +663,7 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
       if (nf90_def_dim(netcdf_info%ncid_alb, 'nc_alb', &
                        channel_info%nchannels_sw, netcdf_info%dimid_c_alb) &
            .ne. NF90_NOERR) then
-         write(*,*) 'ERROR: netcdf_create_swath(1), nf90_create(), '// &
+         write(*,*) 'ERROR: netcdf_create_swath(1), nf90_create(), ' // &
               'dimension name: nc_alb'
          stop error_stop_code
       end if
@@ -671,7 +671,7 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
       if (nf90_def_dim(netcdf_info%ncid_alb, 'nc_emis', &
                        channel_info%nchannels_lw, netcdf_info%dimid_c_emis) &
            .ne. NF90_NOERR) then
-         write(*,*) 'ERROR: netcdf_create_swath(1), nf90_create(), '// &
+         write(*,*) 'ERROR: netcdf_create_swath(1), nf90_create(), ' // &
               'dimension name: nc_emis'
          stop error_stop_code
       end if
@@ -679,7 +679,7 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
       if (nf90_def_dim(netcdf_info%ncid_alb, 'nx_alb', &
                        imager_geolocation%endx-imager_geolocation%startx+1, &
                        netcdf_info%dimid_x_alb) .ne. NF90_NOERR) then
-         write(*,*) 'ERROR: netcdf_create_swath(1), nf90_create(), '// &
+         write(*,*) 'ERROR: netcdf_create_swath(1), nf90_create(), ' // &
               'dimension name: nx_alb'
          stop error_stop_code
       end if
@@ -687,7 +687,7 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
       if (nf90_def_dim(netcdf_info%ncid_alb, 'ny_alb', &
                        imager_geolocation%endy-imager_geolocation%starty+1, &
                        netcdf_info%dimid_y_alb) .ne. NF90_NOERR) then
-         write(*,*) 'ERROR: netcdf_create_swath(1), nf90_create(), '// &
+         write(*,*) 'ERROR: netcdf_create_swath(1), nf90_create(), ' // &
               'dimension name: ny_alb'
          stop error_stop_code
       end if
@@ -813,7 +813,7 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
       if (nf90_def_dim(netcdf_info%ncid_clf, 'nx_cf', &
                        imager_geolocation%endx-imager_geolocation%startx+1, &
                        netcdf_info%dimid_x_cf) .ne. NF90_NOERR) then
-         write(*,*) 'ERROR: netcdf_create_swath(2), nf90_create(), '// &
+         write(*,*) 'ERROR: netcdf_create_swath(2), nf90_create(), ' // &
               'dimension name: nx_cf'
          stop error_stop_code
       end if
@@ -821,7 +821,7 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
       if (nf90_def_dim(netcdf_info%ncid_clf, 'ny_cf', &
                        imager_geolocation%endy-imager_geolocation%starty+1, &
                        netcdf_info%dimid_y_cf) .ne. NF90_NOERR) then
-         write(*,*) 'ERROR: netcdf_create_swath(2), nf90_create(), '// &
+         write(*,*) 'ERROR: netcdf_create_swath(2), nf90_create(), ' // &
               'dimension name: ny_cf'
          stop error_stop_code
       end if
@@ -829,7 +829,7 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
       if (nf90_def_dim(netcdf_info%ncid_clf, 'nv_cf', &
                        imager_angles%nviews, &
                        netcdf_info%dimid_v_cf) .ne. NF90_NOERR) then
-         write(*,*) 'ERROR: netcdf_create_swath(2), nf90_create(), '// &
+         write(*,*) 'ERROR: netcdf_create_swath(2), nf90_create(), ' // &
               'dimension name: nvcf'
          stop error_stop_code
       end if
@@ -961,7 +961,7 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
       ! define dimensions
       if (nf90_def_dim(netcdf_info%ncid_geo, 'nv_geo', imager_angles%nviews, &
                        netcdf_info%dimid_v_geo) .ne. NF90_NOERR) then
-         write(*,*) 'ERROR: netcdf_create_swath(3), nf90_create(), '// &
+         write(*,*) 'ERROR: netcdf_create_swath(3), nf90_create(), ' // &
               'dimension name: nv_geo'
          stop error_stop_code
       end if
@@ -969,7 +969,7 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
       if (nf90_def_dim(netcdf_info%ncid_geo, 'nx_geo', &
                        imager_geolocation%endx-imager_geolocation%startx+1, &
                        netcdf_info%dimid_x_geo) .ne. NF90_NOERR) then
-         write(*,*) 'ERROR: netcdf_create_swath(3), nf90_create(), '// &
+         write(*,*) 'ERROR: netcdf_create_swath(3), nf90_create(), ' // &
               'dimension name: nx_geo'
          stop error_stop_code
       end if
@@ -977,7 +977,7 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
       if (nf90_def_dim(netcdf_info%ncid_geo, 'ny_geo', &
                        imager_geolocation%endy-imager_geolocation%starty+1, &
                        netcdf_info%dimid_y_geo) .ne. NF90_NOERR) then
-         write(*,*) 'ERROR: netcdf_create_swath(3), nf90_create(), '// &
+         write(*,*) 'ERROR: netcdf_create_swath(3), nf90_create(), ' // &
               'dimension name: ny_geo'
          stop error_stop_code
       end if
@@ -1050,7 +1050,7 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
       if (nf90_def_dim(netcdf_info%ncid_loc, 'nx_loc', &
                        imager_geolocation%endx-imager_geolocation%startx+1, &
                        netcdf_info%dimid_x_loc) .ne. NF90_NOERR) then
-         write(*,*) 'ERROR: netcdf_create_swath(4), nf90_create(), '// &
+         write(*,*) 'ERROR: netcdf_create_swath(4), nf90_create(), ' // &
               'dimension name: nx_loc'
          stop error_stop_code
       end if
@@ -1058,7 +1058,7 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
       if (nf90_def_dim(netcdf_info%ncid_loc, 'ny_loc', &
                        imager_geolocation%endy-imager_geolocation%starty+1, &
                        netcdf_info%dimid_y_loc) .ne. NF90_NOERR) then
-         write(*,*) 'ERROR: netcdf_create_swath(4), nf90_create(), '// &
+         write(*,*) 'ERROR: netcdf_create_swath(4), nf90_create(), ' // &
               'dimension name: ny_loc'
          stop error_stop_code
       end if
@@ -1107,7 +1107,7 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
       if (nf90_def_dim(netcdf_info%ncid_lsf, 'nx_lsf', &
                        imager_geolocation%endx-imager_geolocation%startx+1, &
                        netcdf_info%dimid_x_lsf) .ne. NF90_NOERR) then
-         write(*,*) 'ERROR: netcdf_create_swath(5), nf90_create(), '// &
+         write(*,*) 'ERROR: netcdf_create_swath(5), nf90_create(), ' // &
               'dimension name: nx_lsf'
          stop error_stop_code
       end if
@@ -1115,7 +1115,7 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
       if (nf90_def_dim(netcdf_info%ncid_lsf, 'ny_lsf', &
                        imager_geolocation%endy-imager_geolocation%starty+1, &
                        netcdf_info%dimid_y_lsf) .ne. NF90_NOERR) then
-         write(*,*) 'ERROR: netcdf_create_swath(5), nf90_create(), '// &
+         write(*,*) 'ERROR: netcdf_create_swath(5), nf90_create(), ' // &
               'dimension name: ny_lsf'
          stop error_stop_code
       end if
@@ -1175,7 +1175,7 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
       ! create file
       if (nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
                       netcdf_info%ncid_msi) .ne. NF90_NOERR) then
-         write(*,*) 'ERROR: netcdf_create_swath(6), nf90_create(), '// &
+         write(*,*) 'ERROR: netcdf_create_swath(6), nf90_create(), ' // &
               'filename: ', path
          stop error_stop_code
       end if
@@ -1185,7 +1185,7 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
       if (.false.) then
          if (nf90_def_dim(netcdf_info%ncid_msi, 'nv_msi', imager_angles%nviews, &
                           netcdf_info%dimid_v_msi) .ne. NF90_NOERR) then
-            write(*,*) 'ERROR: netcdf_create_swath(6), nf90_create(), '// &
+            write(*,*) 'ERROR: netcdf_create_swath(6), nf90_create(), ' // &
                  'dimension name: nv_msi'
             stop error_stop_code
          end if
@@ -1193,7 +1193,7 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
       if (nf90_def_dim(netcdf_info%ncid_msi, 'nc_msi', &
                        channel_info%nchannels_total, &
                        netcdf_info%dimid_c_msi) .ne. NF90_NOERR) then
-         write(*,*) 'ERROR: netcdf_create_swath(6), nf90_create(), '// &
+         write(*,*) 'ERROR: netcdf_create_swath(6), nf90_create(), ' // &
               'dimension name: nc_msi'
          stop error_stop_code
       end if
@@ -1201,7 +1201,7 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
       if (nf90_def_dim(netcdf_info%ncid_msi, 'nx_msi', &
                        imager_geolocation%endx-imager_geolocation%startx+1, &
                        netcdf_info%dimid_x_msi) .ne. NF90_NOERR) then
-         write(*,*) 'ERROR: netcdf_create_swath(6), nf90_create(), '// &
+         write(*,*) 'ERROR: netcdf_create_swath(6), nf90_create(), ' // &
               'dimension name: nx_msi'
          stop error_stop_code
       end if
@@ -1209,7 +1209,7 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
       if (nf90_def_dim(netcdf_info%ncid_msi, 'ny_msi', &
                        imager_geolocation%endy-imager_geolocation%starty+1, &
                        netcdf_info%dimid_y_msi) .ne. NF90_NOERR) then
-         write(*,*) 'ERROR: netcdf_create_swath(6), nf90_create(), '// &
+         write(*,*) 'ERROR: netcdf_create_swath(6), nf90_create(), ' // &
               'dimension name: ny_msi'
          stop error_stop_code
       end if
@@ -1412,7 +1412,7 @@ subroutine netcdf_create_config(global_atts,source_atts,cyear,cmonth,cday, &
    if (nf90_def_dim(netcdf_info%ncid_config, 'nc_conf', &
                     channel_info%nchannels_total, netcdf_info%dimid_c_config) &
         .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: netcdf_create_config(), nf90_create(), dimension '// &
+      write(*,*) 'ERROR: netcdf_create_config(), nf90_create(), dimension ' // &
            'name: nc_conf'
       stop error_stop_code
    end if
@@ -1420,7 +1420,7 @@ subroutine netcdf_create_config(global_atts,source_atts,cyear,cmonth,cday, &
    if (nf90_def_dim(netcdf_info%ncid_config, 'nc_alb', &
                     channel_info%nchannels_sw, netcdf_info%dimid_c_config_alb) &
         .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: netcdf_create_config(), nf90_create(), dimension '// &
+      write(*,*) 'ERROR: netcdf_create_config(), nf90_create(), dimension ' // &
            'name: nc_alb'
       stop error_stop_code
    end if
@@ -1428,7 +1428,7 @@ subroutine netcdf_create_config(global_atts,source_atts,cyear,cmonth,cday, &
    if (nf90_def_dim(netcdf_info%ncid_config, 'nc_emis', &
                     channel_info%nchannels_lw, netcdf_info%dimid_c_config_emis) &
         .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: netcdf_create_config(), nf90_create(), dimension '// &
+      write(*,*) 'ERROR: netcdf_create_config(), nf90_create(), dimension ' // &
            'name: nc_emis'
       stop error_stop_code
    end if
@@ -1437,7 +1437,7 @@ subroutine netcdf_create_config(global_atts,source_atts,cyear,cmonth,cday, &
                     preproc_dims%max_lat-preproc_dims%min_lat+1, &
                     netcdf_info%dimid_y_lw) &
         .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: netcdf_create_config(), nf90_create(), dimension '// &
+      write(*,*) 'ERROR: netcdf_create_config(), nf90_create(), dimension ' // &
            'name: nlat_conf'
       stop error_stop_code
    end if
@@ -1446,7 +1446,7 @@ subroutine netcdf_create_config(global_atts,source_atts,cyear,cmonth,cday, &
                     preproc_dims%max_lon-preproc_dims%min_lon+1, &
                     netcdf_info%dimid_x_lw) &
         .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: netcdf_create_config(), nf90_create(), dimension '// &
+      write(*,*) 'ERROR: netcdf_create_config(), nf90_create(), dimension ' // &
            'name: nlon_conf'
       stop error_stop_code
    end if
@@ -1454,7 +1454,7 @@ subroutine netcdf_create_config(global_atts,source_atts,cyear,cmonth,cday, &
    if (nf90_def_dim(netcdf_info%ncid_config, 'nlevels_conf', &
                     preproc_dims%kdim+1, &
                     netcdf_info%dimid_levels_lw) .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: netcdf_create_config(), nf90_create(), dimension '// &
+      write(*,*) 'ERROR: netcdf_create_config(), nf90_create(), dimension ' // &
            'name: nlevels_conf'
       stop error_stop_code
    end if
@@ -1462,7 +1462,7 @@ subroutine netcdf_create_config(global_atts,source_atts,cyear,cmonth,cday, &
    if (nf90_def_dim(netcdf_info%ncid_config, 'nx_conf', &
                     imager_geolocation%endx-imager_geolocation%startx+1, &
                     netcdf_info%dimid_x_config) .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: netcdf_create_config(), nf90_create(), dimension '// &
+      write(*,*) 'ERROR: netcdf_create_config(), nf90_create(), dimension ' // &
            'name: ny_conf'
       stop error_stop_code
    end if
@@ -1470,7 +1470,7 @@ subroutine netcdf_create_config(global_atts,source_atts,cyear,cmonth,cday, &
    if (nf90_def_dim(netcdf_info%ncid_config, 'ny_conf', &
                     imager_geolocation%endy-imager_geolocation%starty+1, &
                     netcdf_info%dimid_y_config) .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: netcdf_create_config(), nf90_create(), dimension '// &
+      write(*,*) 'ERROR: netcdf_create_config(), nf90_create(), dimension ' // &
            'name: ny_conf'
       stop error_stop_code
    end if

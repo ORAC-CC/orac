@@ -56,7 +56,7 @@ subroutine read_avhrr_land_sea_mask(path_to_geo_file,imager_geolocation, &
    inquire(file=path_to_lsmask_file,exist=check)
    if (.not. check) then
       write(*,*) 'ERROR: read_avhrr_land_sea_mask(): AVHRR physiography ' // &
-                & 'file does not exist, filename: ', trim(path_to_lsmask_file)
+           'file does not exist, filename: ', trim(path_to_lsmask_file)
       stop error_stop_code
    end if
 

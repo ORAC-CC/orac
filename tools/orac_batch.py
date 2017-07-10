@@ -34,11 +34,10 @@
 # HISTORY:
 # 27 Jul 2016, AP: Initial version
 # 09 Mar 2017, GT: Bug fix to formating of job-IDs as dependencies for a new job
-#                  submission using bsub (LSF)
+#    submission using bsub (LSF)
 # 30 Mar 2017, GT: Changed LSF dependency setting from "done" to "ended".
-#                  Sometimes jobs that have sucessfully completed do not satisfy
-#                  the "done" condition for some reason, meaning dependency is
-#                  never resolved.
+#    Sometimes jobs that have sucessfully completed do not satisfy
+#    the "done" condition for some reason, meaning dependency is never resolved.
 
 import re
 

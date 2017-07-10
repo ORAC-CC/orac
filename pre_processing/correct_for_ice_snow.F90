@@ -193,11 +193,11 @@ subroutine correct_for_ice_snow(nise_path,imager_geolocation,surface,cyear, &
         read=nise_file_read)
    if (.not.nise_file_exist) then
       write(*,*) 'ERROR: correct_for_ice_snow(): NISE ice/snow file does ' // &
-               & 'not exist: ', trim(nise_path_file)
+           'not exist: ', trim(nise_path_file)
       stop error_stop_code
    else if (trim(nise_file_read).eq.'NO') then
       write(*,*) 'ERROR: correct_for_ice_snow(): NISE ice/snow file exists ' // &
-               & 'but is not readable: ', trim(nise_path_file)
+           'but is not readable: ', trim(nise_path_file)
       stop error_stop_code
    end if
 

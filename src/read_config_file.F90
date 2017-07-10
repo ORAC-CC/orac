@@ -62,12 +62,14 @@ subroutine read_config_file(Ctrl, channel_ids_instr, channel_sw_flag, &
    call nc_open(ncid, Ctrl%FID%Config)
 
    if (Ctrl%Ind%Navail /= nc_dim_length(ncid, 'nc_conf', Ctrl%verbose)) then
-      write(*,*) 'ERROR: read_config_file(): Driver incompatible with preprocessor files.'
+      write(*,*) 'ERROR: read_config_file(): Driver incompatible with ', &
+           'preprocessor files.'
       stop DriverFileIncompat
    end if
 
    allocate(channel_ids_instr(Ctrl%Ind%Navail))
-   call nc_read_array(ncid, "msi_instr_ch_numbers", channel_ids_instr, Ctrl%verbose)
+   call nc_read_array(ncid, "msi_instr_ch_numbers", channel_ids_instr, &
+                      Ctrl%verbose)
    if (Ctrl%verbose) write(*,*) 'msi channel numbers instr: ',channel_ids_instr
 
    allocate(channel_sw_flag(Ctrl%Ind%Navail))

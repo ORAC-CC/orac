@@ -198,7 +198,7 @@ subroutine setup_aatsr(l1b_path_file,geo_path_file,platform,sensor,year, &
        trim(adjustl(geo_path_file))) then
       write(*,*)
       write(*,*) 'ERROR: setup_aatsr(): Geolocation and L1b files are for ' // &
-                 'different orbits'
+           'different orbits'
       write(*,*) 'l1b_path_file: ', trim(adjustl(geo_path_file))
       write(*,*) 'geo_path_file: ', trim(adjustl(l1b_path_file))
 
@@ -354,7 +354,7 @@ subroutine setup_ahi(l1b_path_file,geo_path_file,platform,year,month,day, &
        trim(adjustl(geo_path_file))) then
       write(*,*)
       write(*,*) 'ERROR: setup_ahi(): Geolocation and L1b files are ' // &
-                 'for different times'
+           'for different times'
       write(*,*) 'l1b_path_file: ', trim(adjustl(geo_path_file))
       write(*,*) 'geo_path_file: ', trim(adjustl(l1b_path_file))
 
@@ -500,8 +500,8 @@ subroutine setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day, &
       if (trim(adjustl(l1b_path_file(1:index1-1))) .ne. &
            trim(adjustl(geo_path_file(1:index2-1)))) then
          write(*,*)
-         write(*,*) 'ERROR: setup_avhrr(): Geolocation and L1b files are for ' // &
-              'different orbits'
+         write(*,*) 'ERROR: setup_avhrr(): Geolocation and L1b files are ' // &
+              'for different orbits'
          write(*,*) 'l1b_path_file: ', trim(adjustl(geo_path_file))
          write(*,*) 'geo_path_file: ', trim(adjustl(l1b_path_file))
 
@@ -550,8 +550,8 @@ subroutine setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day, &
       if (trim(adjustl(l1b_path_file(1:index1-1))) .ne. &
            trim(adjustl(geo_path_file(1:index2-1)))) then
          write(*,*)
-         write(*,*) 'ERROR: setup_avhrr(): Geolocation and L1b files are for ' // &
-                    'different orbits'
+         write(*,*) 'ERROR: setup_avhrr(): Geolocation and L1b files are ' // &
+              'for different orbits'
          write(*,*) 'l1b_path_file: ', trim(adjustl(geo_path_file))
          write(*,*) 'geo_path_file: ', trim(adjustl(l1b_path_file))
 
@@ -790,7 +790,7 @@ subroutine setup_modis(l1b_path_file,geo_path_file,platform,year,month,day, &
        trim(adjustl(geo_path_file(index2+7:index2+23)))) then
       write(*,*)
       write(*,*) 'ERROR: setup_modis(): Geolocation and L1b files are for ' // &
-               & 'different granules'
+           'different granules'
       write(*,*) 'l1b_path_file: ', trim(adjustl(geo_path_file))
       write(*,*) 'geo_path_file: ', trim(adjustl(l1b_path_file))
 
@@ -932,7 +932,7 @@ subroutine setup_seviri(l1b_path_file,geo_path_file,platform,year,month,day, &
        trim(adjustl(geo_path_file))) then
       write(*,*)
       write(*,*) 'ERROR: setup_seviri(): Geolocation and L1b files are for ' // &
-               & 'different times'
+           'different times'
       write(*,*) 'l1b_path_file: ', trim(adjustl(geo_path_file))
       write(*,*) 'geo_path_file: ', trim(adjustl(l1b_path_file))
 
@@ -1137,8 +1137,8 @@ subroutine setup_slstr(l1b_path_file,geo_path_file,platform,year,month,day, &
    end if
    if (trim(l1b_start).ne.trim(geo_start)) then
       print*,"ERROR: Start times for geo and image granules don't match: "
-      write(*,*)trim(l1b_start)
-      write(*,*)trim(geo_start)
+      write(*,*) trim(l1b_start)
+      write(*,*) trim(geo_start)
       stop
    end if
 
@@ -1308,7 +1308,7 @@ subroutine setup_viirs(l1b_path_file,geo_path_file,platform,year,month,day, &
        trim(adjustl(geo_dtstr))) then
       write(*,*)
       write(*,*) 'ERROR: setup_viirs(): Geolocation and L1b files are ' // &
-                 'for different times'
+           'for different times'
       write(*,*) 'l1b_path_file: ', trim(adjustl(geo_path_file))
       write(*,*) 'geo_path_file: ', trim(adjustl(l1b_path_file))
 
@@ -1316,7 +1316,7 @@ subroutine setup_viirs(l1b_path_file,geo_path_file,platform,year,month,day, &
    end if
 
    platform="SuomiNPP"
-   if (verbose) write(*,*)"Satellite is: ",platform
+   if (verbose) write(*,*) "Satellite is: ",platform
 
    ! The code below extracts date/time info from the segment name.
    ! Note that it requires the segment name to be in the generic format

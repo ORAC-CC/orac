@@ -186,15 +186,15 @@ subroutine aatsr_drift_correction(start_date, vc1_file, lut, chan, new_drift, &
    ! Check that the measurement lies within the time-span covered by the
    ! correction table
    if (Tn.lt.lut%julday(1)) then
-      write(*,*) 'aatsr_corrections: WARNING: Acquisition before '// &
-                 'start time of correction LUT. No correction made.',Tn, &
-                 lut%julday(1),lut%julday(lut%n)
+      write(*,*) 'aatsr_corrections: WARNING: Acquisition before ' // &
+           'start time of correction LUT. No correction made.',Tn, &
+           lut%julday(1),lut%julday(lut%n)
       stat = -1
       return
    else if (Tn.gt.lut%julday(lut%n)) then
-      write(*,*) 'aatsr_corrections: WARNING: Acquisition after end '// &
-                 'time of correction LUT. No correction made.',Tn, &
-                 lut%julday(1),lut%julday(lut%n)
+      write(*,*) 'aatsr_corrections: WARNING: Acquisition after end ' // &
+           'time of correction LUT. No correction made.',Tn, &
+           lut%julday(1),lut%julday(lut%n)
       stat = -1
       return
    end if
@@ -296,7 +296,7 @@ subroutine aatsr_read_drift_table(drift_table, lut, stat)
    if (.not. file_exists) then
       stat = -1
       write(*,*) 'ERROR: aatsr_read_drift_table(): Could not find AATSR ' // &
-               & 'drift correction LUT, filename: ', trim(drift_table)
+           'drift correction LUT, filename: ', trim(drift_table)
       return
    end if
 
@@ -311,7 +311,7 @@ subroutine aatsr_read_drift_table(drift_table, lut, stat)
       else
          if (lun .ge. 100) then
             write(*,*) 'ERROR: aatsr_read_drift_table(): No LUN available. ' // &
-                     & 'No correction applied!'
+                 'No correction applied!'
             stat = -2
             return
          end if
@@ -322,7 +322,7 @@ subroutine aatsr_read_drift_table(drift_table, lut, stat)
    open(unit=lun, file=drift_table, iostat=stat)
    if (stat.ne.0) then
       write(*,*) 'ERROR: aatsr_read_drift_table(): Unable to open AATSR ' // &
-               & 'drift correction LUT, filename: ', trim(drift_table)
+           'drift correction LUT, filename: ', trim(drift_table)
       return
    end if
 
@@ -390,8 +390,7 @@ subroutine aatsr_read_drift_table(drift_table, lut, stat)
    close(unit=lun)
    if (stat.ge.0) then
       write(*,*) 'ERROR: aatsr_read_drift_table(): Problem reading AATSR ' // &
-               & 'drift correction LUT, filename: ', trim(drift_table), &
-               & ', line: ', i
+           'drift correction LUT, filename: ', trim(drift_table), ', line: ', i
       stop error_stop_code
    else
       stat = 0 ! let's have a normal output if it works
