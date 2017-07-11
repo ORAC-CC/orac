@@ -237,9 +237,6 @@ subroutine orac(mytask,ntasks,lower_bound,upper_bound,drifile)
                                         ! retrieval
    real               :: AvJ      = 0.0 ! Average cost per successful retrieval
 
-   character(len=512) :: qc_flag_masks
-   character(len=512) :: qc_flag_meanings
-
    ! netcdf related variables:
    integer :: ncid_primary, ncid_secondary, dims_var(3), ch_var(1)
 
@@ -652,11 +649,10 @@ subroutine orac(mytask,ntasks,lower_bound,upper_bound,drifile)
         Ctrl%Ind%Ydim, Ctrl%Ind%NViews, dims_var, 2, global_atts, source_atts)
 
    ! Create NetCDF files and variables
-   call build_qc_flag_masks(Ctrl, qc_flag_masks)
-   call build_qc_flag_meanings(Ctrl, qc_flag_meanings)
+   call build_flag_masks(Ctrl, output_data_1)
    call def_output_primary(ncid_primary, dims_var, output_data_1, &
-        Ctrl%Ind%common_indices_t, qc_flag_masks, qc_flag_meanings, &
-        deflate_level, shuffle_flag, Ctrl%verbose, ch_var)
+        Ctrl%Ind%common_indices_t, deflate_level, shuffle_flag, &
+        Ctrl%verbose, ch_var)
    call def_output_secondary(ncid_secondary, dims_var, output_data_2, &
         Ctrl%Ind%common_indices_t, deflate_level, shuffle_flag, Ctrl%verbose)
 

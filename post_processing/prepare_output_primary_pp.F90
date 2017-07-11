@@ -37,6 +37,7 @@
 ! 2016/02/10, GM: Remove redundant checks for fill_value.
 ! 2016/03/04, AP: Tidy prepare_*_packed_float.
 ! 2017/01/09, CP: ML additions.
+! 2017/07/05, AP: Add channels_used, variables_retrieved.
 !
 ! $Id$
 !
@@ -679,9 +680,11 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
         sreal_fill_value, sreal_fill_value)
 
    !----------------------------------------------------------------------------
-   ! qcflag
+   ! qcflag, channels_used, variables_retrieved
    !----------------------------------------------------------------------------
-   output_data%qcflag(i,j)=input_data%QCFlag(i,j)
+   output_data%qcflag(i,j) = input_data%QCFlag(i,j)
+   output_data%channels_used(i,j) = input_data%channels_used(i,j)
+   output_data%variables_retrieved(i,j) = input_data%variables_retrieved(i,j)
 
    !----------------------------------------------------------------------------
    ! lsflag

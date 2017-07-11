@@ -13,6 +13,7 @@
 ! 2015/11/19, GM: Added support for x_xx_um_legacy_channel_used masks.
 ! 2015/01/07, AP: Make QCFlag long to accomodate longer state vectors. Count
 !    state vector elements rather than assuming there are four.
+! 2017/07/05, AP: Add channels_used, variables_retrieved.
 !
 ! $Id$
 !
@@ -113,7 +114,7 @@ end function string_description_of_state
 
 
 !-------------------------------------------------------------------------------
-! Name: build_qc_flag_masks
+! Name: build_flag_masks
 !
 ! Purpose:
 !
@@ -125,82 +126,99 @@ end function string_description_of_state
 !
 ! History:
 ! 2015/09/05, GM: Original version.
+! 2017/07/05, AP: Merged with build_flag_meanings.
 !
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
-subroutine build_qc_flag_masks(Ctrl, str)
+subroutine build_flag_masks(Ctrl, data)
    use Ctrl_m
+   use orac_output_m, only: output_data_primary_t
 
    implicit none
 
-   type(Ctrl_t),     intent(in)  :: Ctrl
-   character(len=*), intent(out) :: str
+   type(Ctrl_t),                intent(in)  :: Ctrl
+   type(output_data_primary_t), intent(inout) :: data
 
    integer(lint)     :: i, n
-   character(len=10) :: temp_str
+   character(len=14) :: temp_str
    character(len=8)  :: state_label
 
-   str = '1b'
+   data%qc_flag_masks    = '1b'
+   data%qc_flag_meanings = 'cost_too_large'
    n = 0
    do i = 1, Ctrl%Nx(IDay)
-      write(temp_str, '(I10)') 2**i
+      write(temp_str, '(I14)') 2_dint**i
       if (string_description_of_state(Ctrl%X(i,IDay), state_label) == 0) then
-         str = trim(str) // ' ' // trim(adjustl(temp_str)) // 'b'
+         data%qc_flag_masks = trim(data%qc_flag_masks) // ' ' // &
+              trim(adjustl(temp_str)) // 'b'
+         data%qc_flag_meanings = trim(data%qc_flag_meanings) // ' ' // &
+              trim(state_label) // '_out_of_range'
          n = n + 1
       end if
    end do
 
    do i = 1, N_legacy
-      write(temp_str, '(I10)') 2**(i + n)
-      str = trim(str) // ' ' // trim(adjustl(temp_str)) // 'b'
+      write(temp_str, '(I14)') 2_dint**(i + n)
+      data%qc_flag_masks = trim(data%qc_flag_masks) // ' ' // &
+           trim(adjustl(temp_str)) // 'b'
+   end do
+   data%qc_flag_meanings = trim(data%qc_flag_meanings) // &
+        ' ' // '0_63_um_legacy_channel_used' // &
+        ' ' // '0_86_um_legacy_channel_used' // &
+        ' ' // '1_61_um_legacy_channel_used' // &
+        ' ' // '3_74_um_legacy_channel_used' // &
+        ' ' // '10_8_um_legacy_channel_used' // &
+        ' ' // '12_0_um_legacy_channel_used'
+
+   data%ch_flag_masks    = '2b'
+   data%ch_flag_meanings = 'Ch1_used'
+   n = 0
+   do i = 2, Ctrl%Ind%NAll
+      write(temp_str, '(I14)') 2_dint**(i + n)
+      write(state_label, '(I8)') i
+
+      data%ch_flag_masks = trim(data%ch_flag_masks) // ' ' // &
+           trim(adjustl(temp_str)) // 'b'
+      data%ch_flag_meanings = trim(data%ch_flag_meanings) // ' Ch' // &
+           trim(adjustl(state_label)) // '_used'
    end do
 
-end subroutine build_qc_flag_masks
-
-
-!-------------------------------------------------------------------------------
-! Name: build_qc_flag_meanings
-!
-! Purpose:
-!
-! Description and Algorithm details:
-!
-! Arguments:
-! Name   Type    In/Out/Both Description
-! ------------------------------------------------------------------------------
-!
-! History:
-! 2015/09/05, GM: Original version.
-!
-! Bugs:
-! None known.
-!-------------------------------------------------------------------------------
-subroutine build_qc_flag_meanings(Ctrl, str)
-   use Ctrl_m
-
-   implicit none
-
-   type(Ctrl_t),     intent(in)  :: Ctrl
-   character(len=*), intent(out) :: str
-
-   integer(lint)    :: i
-   character(len=8) :: state_label
-
-   str = 'cost_too_large'
-   do i = 1, Ctrl%Nx(IDay)
-      if (string_description_of_state(Ctrl%X(i,IDay), state_label) == 0) &
-           str = trim(str) // ' ' // trim(state_label) // '_out_of_range'
+   ! Bits 0-2 give the approach, bits 3-6 the class, and bits after that flag
+   ! state vector elements in positions 1 to IRs(MaxNumSolar,1)
+   data%vr_flag_masks ='0b 1b 2b 3b 8b 16b 24b 32b 40b 48b'
+   do i = 1, IRs(MaxNumSolar,1)
+      write(temp_str,"(i14)") 2_dint**(i + VarRetrievedBitOffset)
+      data%vr_flag_masks = trim(data%vr_flag_masks) // ' ' // &
+           trim(adjustl(temp_str)) // 'b'
    end do
+   data%vr_flag_meanings = '0: Approach = 1 layer cloud ' // &
+                           '1: Approach = 2 layer cloud ' // &
+                           '2: Approach = Oxford surface aerosol ' // &
+                           '3: Approach = Swansea surface aerosol ' // &
+                           '4: Approach = Single-view aerosol' // &
+                           '5-7: Reserved ' // &
+                           '8:  Class = water cloud ' // &
+                           '16: Class = ice cloud ' // &
+                           '24: Class = Oxford surface aerosol ' // &
+                           '32: Class = Lambertian Swansea aerosol ' // &
+                           '40: Class = BRDF Swansea aerosol ' // &
+                           '48: Class = ash cloud ' // &
+                           '56-120: Reserved ' // &
+                           '128: optical depth retrieved ' // &
+                           '256: effective radius retrieved ' // &
+                           '512: cloud-top pressure retrieved ' // &
+                           '1024: cloud fraction retrieved ' // &
+                           '2048: 2nd optical depth retrieved ' // &
+                           '4096: 2nd effective radius retrieved ' // &
+                           '8192: 2nd cloud-top pressure retrieved ' // &
+                           '16384: 2nd cloud fraction retrieved ' // &
+                           '32768: Swansea gamma retrieved ' // &
+                           '65536: surface temperature retrieved ' // &
+                           '2^(16+i): surface reflectance in ith solar ' // &
+                                     'channel retrieved'
 
-   str = trim(str) // ' ' // '0_63_um_legacy_channel_used'
-   str = trim(str) // ' ' // '0_86_um_legacy_channel_used'
-   str = trim(str) // ' ' // '1_61_um_legacy_channel_used'
-   str = trim(str) // ' ' // '3_74_um_legacy_channel_used'
-   str = trim(str) // ' ' // '10_8_um_legacy_channel_used'
-   str = trim(str) // ' ' // '12_0_um_legacy_channel_used'
-
-end subroutine build_qc_flag_meanings
+end subroutine build_flag_masks
 
 
 end module prepare_output_m

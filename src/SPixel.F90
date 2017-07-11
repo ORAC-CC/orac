@@ -99,6 +99,7 @@
 ! 2016/01/28, GM: Add CTP and CTT corrected and corrected_uncertianty.
 ! 2016/07/27, GM: Add CWP2 and CWP2_uncertainty for the layer 2 of the multi-
 !    layer retrieval.
+! 2017/07/05, AP: Add channels_used, variables_retrieved.
 !
 ! $Id$
 !
@@ -303,6 +304,15 @@ module SPixel_m
       integer, pointer    :: spixel_y_thermal_to_ctrl_y_thermal_index(:)
       integer, pointer    :: spixel_y_mixed_to_spixel_y_solar(:)
       integer, pointer    :: spixel_y_mixed_to_spixel_y_thermal(:)
+
+      integer(dint)       :: channels_used
+                                          ! Binary mask of channels used in
+                                          ! retrieval. Bits 1-36 correspond to
+                                          ! that channel number, using ORAC's
+                                          ! internal numbering (see setup.F90).
+      integer(dint)       :: variables_retrieved
+                                          ! Binary mask of variables that were
+                                          ! retrieved (i.e. members of X).
    end type SPixel_t
 
 

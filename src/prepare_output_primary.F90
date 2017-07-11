@@ -68,6 +68,7 @@
 ! 2016/05/03, AP: Add AOT at a second wavelength.
 ! 2016/07/27, GM: Add output fields for the multilayer retrieval.
 ! 2017/06/21, OS: Added ANN phase variables.
+! 2017/07/05, AP: Add channels_used, variables_retrieved.
 !
 ! $Id$
 !
@@ -780,9 +781,11 @@ end if
         MissingSn, sreal_fill_value)
 
    !----------------------------------------------------------------------------
-   ! qcflag
+   ! qcflag, channels_used, variables_retrieved
    !----------------------------------------------------------------------------
-   output_data%qcflag(i,j)=Diag%QCFlag
+   output_data%qcflag(i,j) = Diag%QCFlag
+   output_data%channels_used(i,j) = SPixel%channels_used
+   output_data%variables_retrieved(i,j) = SPixel%variables_retrieved
 
    !----------------------------------------------------------------------------
    ! lsflag

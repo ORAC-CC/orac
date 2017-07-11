@@ -99,6 +99,7 @@
 ! 2016/08/11, SP: Add logical flag for processing when using only 1 view from a
 !                 multiangular sensor. Prevents post-processor problems.
 ! 2017/01/09, CP: Clarified definitions of ML layer definition.
+! 2017/07/05, AP: Add NAll to track the total number of channels.
 !
 ! $Id$
 !
@@ -138,6 +139,7 @@ module Ctrl_m
    ! Indices: channel indexing and spatial grid definitions
    type, extends(common_indices_t) :: Ind_t
       ! Channel indexing variables
+      integer                :: NAll               ! No. of channels on inst
       integer                :: NAvail             ! No. of instrument channels
                                                    ! available in file
       integer, pointer       :: ICh(:)             ! Index used chs out of those

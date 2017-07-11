@@ -37,7 +37,8 @@
 ! 2016/03/02, AP: Homogenisation of I/O modules.
 ! 2016/04/28, AP: Add multiple views.
 ! 2016/07/08, GM: Add fields for cloud layer 2.
-! 2017/05/17, OS: Added ann phase variables
+! 2017/05/17, OS: Added ann phase variables.
+! 2017/07/05, AP: Add channels_used, variables_retrieved.
 !
 ! $Id$
 !
@@ -357,6 +358,10 @@ subroutine alloc_output_data_primary(ind, MaxIter, data)
 
    allocate(data%qcflag(ind%X0:ind%X1, ind%Y0:ind%Y1))
    data%qcflag = sint_fill_value
+   allocate(data%channels_used(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%channels_used = 0
+   allocate(data%variables_retrieved(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%variables_retrieved = 0
 
    allocate(data%time(ind%X0:ind%X1, ind%Y0:ind%Y1))
    data%time = dreal_fill_value

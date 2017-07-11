@@ -39,6 +39,7 @@
 ! 2016/06/13, SP: Updates for bayesian selection without huge memory usage.
 ! 2017/01/09, CP: ML additions.
 ! 2017/06/22, OS: Added phase variables.
+! 2017/07/05, AP: Add channels_used, variables_retrieved.
 !
 ! $Id$
 !
@@ -285,6 +286,12 @@ subroutine alloc_input_data_primary_common(ind, data)
 
    allocate(data%qcflag(ind%X0:ind%X1, ind%Y0:ind%Y1))
    data%qcflag = sint_fill_value
+
+   allocate(data%channels_used(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%channels_used = 0
+
+   allocate(data%variables_retrieved(ind%X0:ind%X1, ind%Y0:ind%Y1))
+   data%variables_retrieved = 0
 
 end subroutine alloc_input_data_primary_common
 

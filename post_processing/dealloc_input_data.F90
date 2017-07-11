@@ -37,6 +37,7 @@
 ! 2016/03/02, AP: Homogenisation of I/O modules.
 ! 2017/01/09, CP: ML additions.
 ! 2017/06/22, OS: Added phase variables.
+! 2017/07/05, AP: Add channels_used, variables_retrieved.
 !
 ! $Id$
 !
@@ -138,6 +139,9 @@ subroutine dealloc_input_data_primary_common(data)
    if (associated(data%costja))        deallocate(data%costja)
    if (associated(data%costjm))        deallocate(data%costjm)
    if (associated(data%qcflag))        deallocate(data%qcflag)
+   if (associated(data%channels_used)) deallocate(data%channels_used)
+   if (associated(data%variables_retrieved)) &
+                                       deallocate(data%variables_retrieved)
 
 end subroutine dealloc_input_data_primary_common
 

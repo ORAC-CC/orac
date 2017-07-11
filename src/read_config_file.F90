@@ -29,6 +29,7 @@
 ! 2015/07/03, OS: added error status variable to nc_open call
 ! 2015/07/10, OS: undo previous commit
 ! 2015/08/02, AP: Output channel wavelengths to identify multiple views.
+! 2017/07/05, AP: Add channels_used.
 !
 ! $Id$
 !
@@ -37,7 +38,8 @@
 !-------------------------------------------------------------------------------
 
 subroutine read_config_file(Ctrl, channel_ids_instr, channel_sw_flag, &
-     channel_lw_flag, channel_wvl, channel_view, global_atts, source_atts)
+     channel_lw_flag, channel_wvl, channel_view, global_atts, source_atts, &
+     nall)
 
    use Ctrl_m
    use global_attributes_m
@@ -55,6 +57,7 @@ subroutine read_config_file(Ctrl, channel_ids_instr, channel_sw_flag, &
    integer, allocatable, dimension(:), intent(inout) :: channel_view
    type(global_attributes_t),          intent(inout) :: global_atts
    type(source_attributes_t),          intent(inout) :: source_atts
+   integer,                            intent(out)   :: nall
 
    integer :: ncid
 
@@ -85,6 +88,12 @@ subroutine read_config_file(Ctrl, channel_ids_instr, channel_sw_flag, &
 
    allocate(channel_view(Ctrl%Ind%Navail))
    call nc_read_array(ncid, "msi_ch_view", channel_view, Ctrl%verbose)
+
+   if (nf90_get_att(ncid, NF90_GLOBAL, 'all_nchannels_total', &
+        nall) .ne. NF90_NOERR) then
+      write(*,*) 'ERROR: nf90_get_att(), name: all_nchannels_total'
+      stop error_stop_code
+   end if
 
    ! Read global attributes
    call nc_get_common_attributes(ncid, global_atts, source_atts)

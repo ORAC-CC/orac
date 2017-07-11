@@ -1355,6 +1355,7 @@ end subroutine netcdf_create_swath
 ! 2014/09/16, GM: Use the nc_def_var routine from the orac_ncdf module in the
 !    common library.
 ! 2014/12/01, CP: Added in source attributes.
+! 2017/07/05, AP: Added all_nchannels_total.
 !
 !-------------------------------------------------------------------------------
 
@@ -1541,6 +1542,14 @@ subroutine netcdf_create_config(global_atts,source_atts,cyear,cmonth,cday, &
         verbose, &
         fill_value = lint_fill_value)
 
+   ! Put number of instrument channels (for ch_flag) in attribute
+   if (nf90_put_att(netcdf_info%ncid_config, NF90_GLOBAL, &
+                    'all_nchannels_total', channel_info%all_nchannels_total) &
+       .ne. NF90_NOERR) then
+      write(*,*) 'ERROR: netcdf_create_config(1), nf90_put_att(), ', &
+           ', name: all_nchannels_total'
+      stop error_stop_code
+   end if
 
    ncid=netcdf_info%ncid_config
 

@@ -37,6 +37,7 @@
 ! 2017/01/09, CP: ML additions.
 ! 2017/04/28, CP: ML bug fix added ctp2
 ! 2017/06/22, OS: Added phase variables.
+! 2017/07/05, AP: Add channels_used, variables_retrieved.
 !
 ! $Id$
 !
@@ -289,6 +290,11 @@ end if
         startp = [1, sval])
    where(input_data%qcflag .eq. sint_fill_value) input_data%qcflag = -1
 
+   call nc_read_array(ncid, "channels_used", input_data%channels_used, verbose, &
+        startp = [1, sval])
+   call nc_read_array(ncid, "variables_retrieved", &
+        input_data%variables_retrieved, verbose, startp = [1, sval])
+
 end subroutine read_input_primary_common
 
 
@@ -450,6 +456,44 @@ subroutine read_input_primary_once(nfile, fname, input_data, indexing, &
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_get_att(), ', trim(nf90_strerror(ierr)), &
            ', variable: qcflag, name: flag_meanings'
+      stop error_stop_code
+   end if
+
+   ierr = nf90_inq_varid(ncid, "channels_used", varid)
+   if (ierr.ne.NF90_NOERR) then
+      write(*,*) 'ERROR: nf90_inq_varid(), ', trim(nf90_strerror(ierr)), &
+           ', variable: channels_used'
+      stop error_stop_code
+   end if
+   ierr = nf90_get_att(ncid, varid, 'flag_masks', input_data%ch_flag_masks)
+   if (ierr.ne.NF90_NOERR) then
+      write(*,*) 'ERROR: nf90_get_att(), ', trim(nf90_strerror(ierr)), &
+           ', variable: channels_used, name: flag_masks'
+      stop error_stop_code
+   end if
+   ierr = nf90_get_att(ncid, varid, 'flag_meanings', input_data%ch_flag_meanings)
+   if (ierr.ne.NF90_NOERR) then
+      write(*,*) 'ERROR: nf90_get_att(), ', trim(nf90_strerror(ierr)), &
+           ', variable: channels_used, name: flag_meanings'
+      stop error_stop_code
+   end if
+
+   ierr = nf90_inq_varid(ncid, "variables_retrieved", varid)
+   if (ierr.ne.NF90_NOERR) then
+      write(*,*) 'ERROR: nf90_inq_varid(), ', trim(nf90_strerror(ierr)), &
+           ', variable: variables_retrieved'
+      stop error_stop_code
+   end if
+   ierr = nf90_get_att(ncid, varid, 'flag_masks', input_data%vr_flag_masks)
+   if (ierr.ne.NF90_NOERR) then
+      write(*,*) 'ERROR: nf90_get_att(), ', trim(nf90_strerror(ierr)), &
+           ', variable: variables_retrieved, name: flag_masks'
+      stop error_stop_code
+   end if
+   ierr = nf90_get_att(ncid, varid, 'flag_meanings', input_data%vr_flag_meanings)
+   if (ierr.ne.NF90_NOERR) then
+      write(*,*) 'ERROR: nf90_get_att(), ', trim(nf90_strerror(ierr)), &
+           ', variable: variables_retrieved, name: flag_meanings'
       stop error_stop_code
    end if
 

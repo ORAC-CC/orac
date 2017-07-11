@@ -19,6 +19,7 @@
 ! 2016/05/27, SP: Updates to enable RTTOV to work correctly with multi-views.
 ! 2016/07/01, GT: Added map_ids_sw_to_channel and map_ids_lw_to_channel.
 ! 2016/08/04, GM: Added map_ids_channel_to_sw and map_ids_channel_to_lw.
+! 2017/07/05, AP: Add NAll to track the total number of channels.
 !
 ! $Id$
 !
@@ -44,6 +45,8 @@ module channel_structures_m
       ! nchannels_sw    = 10 (first 5 wavelengths have a solar component)
       ! nchannels_lw    = 6  (last 3 wavelengths have a thermal component)
       integer(kind=lint) :: nchannels_total,nchannels_sw,nchannels_lw
+      ! # of channels that exist on the instrument
+      integer(kind=lint) :: all_nchannels_total
       ! Number of different viewing geometries
       integer(kind=lint) :: nviews
 

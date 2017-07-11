@@ -78,7 +78,8 @@
 ! 2016/07/08, GM: Add fields for cloud layer 2.
 ! 2017/01/08, CP: Added multi layer phase type
 ! 2017/05/17, OS: Added ann phase variables, ann phase uncertainty is
-!    a placeholder
+!    a placeholder.
+! 2017/07/05, AP: Add channels_used, variables_retrieved.
 !
 ! $Id$
 !
@@ -87,8 +88,7 @@
 !-------------------------------------------------------------------------------
 
 subroutine def_output_primary(ncid, dim3d_var, output_data, indexing, &
-   qc_flag_masks, qc_flag_meanings, deflate_level, shuffle_flag, verbose, &
-   ch_var, phases)
+   deflate_level, shuffle_flag, verbose, ch_var, phases)
 
    use orac_ncdf_m
 
@@ -98,8 +98,6 @@ subroutine def_output_primary(ncid, dim3d_var, output_data, indexing, &
    integer,                     intent(in)    :: dim3d_var(:)
    type(output_data_primary_t), intent(inout) :: output_data
    type(common_indices_t),      intent(in)    :: indexing
-   character(len=*),            intent(in)    :: qc_flag_masks
-   character(len=*),            intent(in)    :: qc_flag_meanings
    integer,                     intent(in)    :: deflate_level
    logical,                     intent(in)    :: shuffle_flag
    logical,                     intent(in)    :: verbose
@@ -1628,8 +1626,54 @@ end if
            add_offset    = output_data%qcflag_offset, &
            valid_min     = output_data%qcflag_vmin, &
            valid_max     = output_data%qcflag_vmax, &
-           flag_masks    = trim(qc_flag_masks), &
-           flag_meanings = trim(qc_flag_meanings), &
+           flag_masks    = trim(output_data%qc_flag_masks), &
+           flag_meanings = trim(output_data%qc_flag_meanings), &
+           units         = '1', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+
+   !----------------------------------------------------------------------------
+   ! channels_used
+   !----------------------------------------------------------------------------
+   call nc_def_var_dlong_packed_dlong( &
+           ncid, &
+           dims_var, &
+           'channels_used', &
+           output_data%vid_channels_used, &
+           verbose, &
+           long_name     = 'channels used by retrieval', &
+           standard_name = '', &
+!          fill_value    = int(0, kind=dint), &
+!          scale_factor  = output_data%channels_used_scale, &
+!          add_offset    = output_data%channels_used_offset, &
+!          valid_min     = output_data%channels_used_vmin, &
+!          valid_max     = output_data%channels_used_vmax, &
+           flag_masks    = trim(output_data%ch_flag_masks), &
+           flag_meanings = trim(output_data%ch_flag_meanings), &
+           units         = '1', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+   ! Fields commented out for now owning to a bug in the netCDF library
+   ! when dealing with INT64 variables. - 11 Jul 2017
+
+   !----------------------------------------------------------------------------
+   ! variables_retrieved
+   !----------------------------------------------------------------------------
+   call nc_def_var_dlong_packed_dlong( &
+           ncid, &
+           dims_var, &
+           'variables_retrieved', &
+           output_data%vid_variables_retrieved, &
+           verbose, &
+           long_name     = 'variables calculated by retrieval', &
+           standard_name = '', &
+!          fill_value    = int(0, kind=dint), &
+!          scale_factor  = output_data%variables_retrieved_scale, &
+!          add_offset    = output_data%variables_retrieved_offset, &
+!          valid_min     = output_data%variables_retrieved_vmin, &
+!          valid_max     = output_data%variables_retrieved_vmax, &
+           flag_masks    = trim(output_data%vr_flag_masks), &
+           flag_meanings = trim(output_data%vr_flag_meanings), &
            units         = '1', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)

@@ -143,6 +143,8 @@ end if
    primary2%costjm(i,j)                = primary1%costjm(i,j)
 
    primary2%qcflag(i,j)                = primary1%qcflag(i,j)
+   primary2%channels_used(i,j)         = primary1%channels_used(i,j)
+   primary2%variables_retrieved(i,j)   = primary1%variables_retrieved(i,j)
 
    ! secondary file
 

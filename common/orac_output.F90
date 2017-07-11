@@ -41,6 +41,7 @@
 !    greater than 320K for instruments other than ATSR2/AATSR.
 ! 2017/01/09, CP: Changed phase range to include ML cloud type.
 ! 2017/05/17, OS: Added variables for ann phase.
+! 2017/07/05, AP: Add channels_used, variables_retrieved.
 !
 ! $Id$
 !
@@ -133,6 +134,8 @@ module orac_output_m
       integer          :: vid_costja
       integer          :: vid_costjm
       integer          :: vid_qcflag
+      integer          :: vid_channels_used
+      integer          :: vid_variables_retrieved
 
       integer          :: vid_lsflag
       integer          :: vid_lusflag
@@ -373,6 +376,16 @@ module orac_output_m
       integer(lint) :: qcflag_vmin   = 0
       integer(lint) :: qcflag_vmax   = 32767
 
+      integer(dint) :: channels_used_scale  = 1
+      integer(dint) :: channels_used_offset = 0
+      integer(dint) :: channels_used_vmin   = 0
+      integer(dint) :: channels_used_vmax   = 137438953470_dint
+
+      integer(dint) :: variables_retrieved_scale  = 1
+      integer(dint) :: variables_retrieved_offset = 0
+      integer(dint) :: variables_retrieved_vmin   = 0
+      integer(dint) :: variables_retrieved_vmax   = 137438953470_dint
+
       integer(byte) :: lsflag_scale  = 1
       integer(byte) :: lsflag_offset = 0
       integer(byte) :: lsflag_vmin   = 0
@@ -529,6 +542,14 @@ module orac_output_m
       real(sreal),   pointer :: costja(:,:)
       real(sreal),   pointer :: costjm(:,:)
       integer(lint), pointer :: qcflag(:,:)
+      integer(dint), pointer :: channels_used(:,:)
+      integer(dint), pointer :: variables_retrieved(:,:)
+      character(len=attribute_length_long) :: qc_flag_masks
+      character(len=attribute_length_long) :: qc_flag_meanings
+      character(len=attribute_length_long) :: ch_flag_masks
+      character(len=attribute_length_long) :: ch_flag_meanings
+      character(len=attribute_length_long) :: vr_flag_masks
+      character(len=attribute_length_long) :: vr_flag_meanings
 
       integer(byte), pointer :: lsflag(:,:)
       integer(byte), pointer :: lusflag(:,:)

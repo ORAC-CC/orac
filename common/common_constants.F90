@@ -85,6 +85,8 @@ module common_constants_m
    integer, parameter :: SolarBit   = 0
    integer, parameter :: ThermalBit = 1
 
+   integer, parameter :: VarRetrievedBitOffset = 6
+
    integer, parameter :: MaxNumMeas  = 36 ! Max no. of measurement channels
    integer, parameter :: MaxNumViews = 2  ! Max no. of measurement views
 

@@ -80,6 +80,7 @@
 !    channel_info%map_ids_sw_to_channel and %map_ids_lw_to_channel
 ! 2016/07/15, AP: Add uncertainty estimates. Only AATSR currently filled in.
 ! 2016/08/04, GM: Added map_ids_channel_to_sw and map_ids_channel_to_lw.
+! 2017/07/05, AP: Add NAll to track the total number of channels.
 !
 ! $Id$
 !
@@ -243,7 +244,7 @@ subroutine setup_aatsr(l1b_path_file,geo_path_file,platform,sensor,year, &
       all_map_ids_abs_to_snow_and_ice, all_map_ids_view_number, &
       all_channel_fractional_uncertainty, all_channel_minimum_uncertainty, &
       all_channel_numerical_uncertainty, all_channel_lnd_uncertainty, &
-      all_channel_sea_uncertainty)
+      all_channel_sea_uncertainty, all_nchannels_total)
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_aatsr()'
 
@@ -396,7 +397,7 @@ subroutine setup_ahi(l1b_path_file,geo_path_file,platform,year,month,day, &
       all_map_ids_abs_to_snow_and_ice, all_map_ids_view_number, &
       all_channel_fractional_uncertainty, all_channel_minimum_uncertainty, &
       all_channel_numerical_uncertainty, all_channel_lnd_uncertainty, &
-      all_channel_sea_uncertainty)
+      all_channel_sea_uncertainty, all_nchannels_total)
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_ahi()'
 
@@ -611,7 +612,7 @@ subroutine setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day, &
       all_map_ids_abs_to_snow_and_ice, all_map_ids_view_number, &
       all_channel_fractional_uncertainty, all_channel_minimum_uncertainty, &
       all_channel_numerical_uncertainty, all_channel_lnd_uncertainty, &
-      all_channel_sea_uncertainty)
+      all_channel_sea_uncertainty, all_nchannels_total)
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_avhrr()'
 
@@ -834,7 +835,7 @@ subroutine setup_modis(l1b_path_file,geo_path_file,platform,year,month,day, &
       all_map_ids_abs_to_snow_and_ice, all_map_ids_view_number, &
       all_channel_fractional_uncertainty, all_channel_minimum_uncertainty, &
       all_channel_numerical_uncertainty, all_channel_lnd_uncertainty, &
-      all_channel_sea_uncertainty)
+      all_channel_sea_uncertainty, all_nchannels_total)
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_modis()'
 
@@ -993,7 +994,7 @@ subroutine setup_seviri(l1b_path_file,geo_path_file,platform,year,month,day, &
       all_map_ids_abs_to_snow_and_ice, all_map_ids_view_number, &
       all_channel_fractional_uncertainty, all_channel_minimum_uncertainty, &
       all_channel_numerical_uncertainty, all_channel_lnd_uncertainty, &
-      all_channel_sea_uncertainty)
+      all_channel_sea_uncertainty, all_nchannels_total)
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_seviri()'
 
@@ -1191,7 +1192,7 @@ subroutine setup_slstr(l1b_path_file,geo_path_file,platform,year,month,day, &
       all_map_ids_abs_to_snow_and_ice, all_map_ids_view_number, &
       all_channel_fractional_uncertainty, all_channel_minimum_uncertainty, &
       all_channel_numerical_uncertainty, all_channel_lnd_uncertainty, &
-      all_channel_sea_uncertainty)
+      all_channel_sea_uncertainty, all_nchannels_total)
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_slstr()'
 
@@ -1352,7 +1353,7 @@ subroutine setup_viirs(l1b_path_file,geo_path_file,platform,year,month,day, &
       all_map_ids_abs_to_snow_and_ice, all_map_ids_view_number, &
       all_channel_fractional_uncertainty, all_channel_minimum_uncertainty, &
       all_channel_numerical_uncertainty, all_channel_lnd_uncertainty, &
-      all_channel_sea_uncertainty)
+      all_channel_sea_uncertainty, all_nchannels_total)
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_viirs()'
 
@@ -1366,7 +1367,7 @@ subroutine common_setup(channel_info, channel_ids_user, channel_ids_default, &
    all_map_ids_abs_to_snow_and_ice, all_map_ids_view_number, &
    all_channel_fractional_uncertainty, all_channel_minimum_uncertainty, &
    all_channel_numerical_uncertainty, all_channel_lnd_uncertainty, &
-   all_channel_sea_uncertainty)
+   all_channel_sea_uncertainty, all_nchannels_total)
 
    use channel_structures_m
 
@@ -1389,6 +1390,7 @@ subroutine common_setup(channel_info, channel_ids_user, channel_ids_default, &
    real,                 intent(in)    :: all_channel_numerical_uncertainty(:)
    real,                 intent(in)    :: all_channel_lnd_uncertainty(:)
    real,                 intent(in)    :: all_channel_sea_uncertainty(:)
+   integer,              intent(in)    :: all_nchannels_total
 
    integer, dimension(:),allocatable   :: unique_views
 
@@ -1396,6 +1398,8 @@ subroutine common_setup(channel_info, channel_ids_user, channel_ids_default, &
    integer :: i_sw
    integer :: i_lw
 
+
+   channel_info%all_nchannels_total = all_nchannels_total
 
    if (associated(channel_ids_user)) then
       channel_info%nchannels_total = size(channel_ids_user)

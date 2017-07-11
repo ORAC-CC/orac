@@ -33,6 +33,7 @@
 !    retrieved. This is indicated by the rho|ss_terms array (and Nrho|Nss).
 ! 2017/01/09, CP: ML additions.
 ! 2017/06/22, OS: Added phase variables.
+! 2017/07/05, AP: Add channels_used, variables_retrieved.
 !
 ! $Id$
 !
@@ -133,8 +134,14 @@ module orac_input_m
       real(sreal),   pointer :: costja(:,:)
       real(sreal),   pointer :: costjm(:,:)
       integer(lint), pointer :: qcflag(:,:)
-      character(len=512)     :: qc_flag_masks
-      character(len=512)     :: qc_flag_meanings
+      integer(dint), pointer :: channels_used(:,:)
+      integer(dint), pointer :: variables_retrieved(:,:)
+      character(len=attribute_length_long) :: qc_flag_masks
+      character(len=attribute_length_long) :: qc_flag_meanings
+      character(len=attribute_length_long) :: ch_flag_masks
+      character(len=attribute_length_long) :: ch_flag_meanings
+      character(len=attribute_length_long) :: vr_flag_masks
+      character(len=attribute_length_long) :: vr_flag_meanings
 
       integer(byte), pointer :: lsflag(:,:)
       integer(byte), pointer :: lusflag(:,:)

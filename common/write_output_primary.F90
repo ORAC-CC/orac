@@ -44,7 +44,8 @@
 ! 2016/03/04, AP: Homogenisation of I/O modules.
 ! 2016/04/28, AP: Add multiple views.
 ! 2016/07/08, GM: Add fields for cloud layer 2.
-! 2017/05/17, OS: Added ann phase variables
+! 2017/05/17, OS: Added ann phase variables.
+! 2017/07/05, AP: Add channels_used, variables_retrieved.
 !
 ! $Id$
 !
@@ -353,6 +354,14 @@ end if
 
    call nc_write_array(ncid,'qcflag',output_data%vid_qcflag, &
         output_data%qcflag(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
+
+   call nc_write_array(ncid,'channels_used',output_data%vid_channels_used, &
+        output_data%channels_used(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)
+
+   call nc_write_array(ncid,'variables_retrieved', &
+        output_data%vid_variables_retrieved, &
+        output_data%variables_retrieved(ind%X0:,ind%Y0:), &
+        1,1,ind%Xdim,1,1,ind%Ydim)
 
    call nc_write_array(ncid,'lsflag',output_data%vid_lsflag, &
         output_data%lsflag(ind%X0:,ind%Y0:),1,1,ind%Xdim,1,1,ind%Ydim)

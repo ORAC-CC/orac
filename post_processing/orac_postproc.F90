@@ -762,6 +762,14 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
             global_atts, source_atts)
     end if
 
+    ! Copy variable masks
+    output_primary%qc_flag_masks    = input_primary(0)%qc_flag_masks
+    output_primary%qc_flag_meanings = input_primary(0)%qc_flag_meanings
+    output_primary%ch_flag_masks    = input_primary(0)%ch_flag_masks
+    output_primary%ch_flag_meanings = input_primary(0)%ch_flag_meanings
+    output_primary%vr_flag_masks    = input_primary(0)%vr_flag_masks
+    output_primary%vr_flag_meanings = input_primary(0)%vr_flag_meanings
+
     ! Define netcdf variables
     if (use_netcdf_compression) then
        deflate_level2 = deflate_level
@@ -771,8 +779,7 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
        shuffle_flag2  = .false.
     end if
     call def_output_primary(ncid_primary, dims_var, output_primary, &
-         indexing%common_indices_t, input_primary(0)%qc_flag_masks, &
-         input_primary(0)%qc_flag_meanings, deflate_level2, shuffle_flag2, &
+         indexing%common_indices_t, deflate_level2, shuffle_flag2, &
          .false., phases=loop_ind(1:n_in_files)%LUTClass)
     if (do_secondary) then
        call def_output_secondary(ncid_secondary, dims_var, output_secondary, &

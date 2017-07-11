@@ -97,6 +97,7 @@
 ! 2015/07/27, AP: Removed consideration of cloud fraction. Now always returns
 !     values for an overcast pixel (consistent with the preprocessor).
 ! 2016/01/08, AP: Removed old CTP interpolation entirely.
+! 2017/07/05, AP: MDAD_SW, LW replaced with Y_Id_legacy.
 !
 ! $Id$
 !
@@ -107,6 +108,7 @@
 subroutine X_MDAD(Ctrl, SPixel, index, X, status, Err)
 
    use Ctrl_m
+   use Int_Routines_m, only: find_in_array
    use ORAC_Constants_m
    use planck_m
 
@@ -126,20 +128,27 @@ subroutine X_MDAD(Ctrl, SPixel, index, X, status, Err)
                                   1.7, 2.0, 2.4] ! First guess optical depth
    real            :: Ref_o
    integer         :: iFGOP
+   integer         :: Y_Id(SPixel%Ind%Ny)
+   integer         :: i_spixel_06, i_spixel_11, i_spixel_06_solar
 
    status = 0
+
+   ! Find 11 and 12 micron indices
+   Y_Id = Ctrl%Ind%Y_Id(SPixel%spixel_y_to_ctrl_y_index(1:SPixel%Ind%Ny))
+   i_spixel_06 = find_in_array(Y_Id, Ctrl%Ind%Y_Id_legacy(I_legacy_0_6x))
+   i_spixel_11 = find_in_array(Y_Id, Ctrl%Ind%Y_Id_legacy(I_legacy_11_x))
+
+   i_spixel_06_solar = find_in_array(SPixel%Ind%YSolar, i_spixel_06)
 
    ! Parameters supported are Tau, Pc and f.
    select case (index)
 
    case (ITau, ITau2) ! Cloud optical depth, Tau
 
-      if ((SPixel%Illum(1) == IDay) .and. &
-          SPixel%Ind%MDAD_SW > 0) then
+      if (SPixel%Illum(1) == IDay .and. i_spixel_06_solar > 0) then
          ! Calculate overcast reflectance (assuming fully cloudy pixel).
          ! Uses channel nearest 0.67 microns, index Ctrl%Ind%MDAD_SW.
-         Ref_o = SPixel%Ym(SPixel%Ind%MDAD_SW) - &
-                 SPixel%Surface%Rs(SPixel%Ind%MDAD_SW)
+         Ref_o = SPixel%Ym(i_spixel_06) - SPixel%Surface%Rs(i_spixel_06_solar)
 
          ! Convert albedo (range 0 - 1) into index (range 1 to 10)
          ! Use the first SEC_o value, assuming that all values are quite close
@@ -161,12 +170,13 @@ subroutine X_MDAD(Ctrl, SPixel, index, X, status, Err)
 
    case (IPc, IPc2) ! Cloud pressure, Pc
 
-      if (SPixel%Ind%MDAD_LW > 0) then
-         if (SPixel%Ym(SPixel%Ind%MDAD_LW) /= MissingXn) then
+      if (i_spixel_11 > 0) then
+         if (SPixel%Ym(i_spixel_11) /= MissingXn) then
             ! Interpolate for the BT to the rad. profile to get Pc FG/AP
-            call Int_CTP(SPixel, Ctrl, SPixel%Ym(SPixel%Ind%MDAD_LW), X, status)
+            call Int_CTP(SPixel, Ctrl, SPixel%Ym(i_spixel_11), X, status)
             if (present(Err)) Err = MDADErrPc
-         else ! Invalid data available
+         else
+            ! Invalid data available
             status = XMDADMeth
             write(*,*) 'WARNING: X_MDAD(): Invalid thermal data'
          end if

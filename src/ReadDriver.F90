@@ -316,7 +316,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
 
    ! Read channel related info
    call read_config_file(Ctrl, channel_ids_instr, channel_sw_flag, &
-     channel_lw_flag, channel_wvl, channel_view, global_atts, source_atts)
+     channel_lw_flag, channel_wvl, channel_view, global_atts, source_atts, &
+     Ctrl%Ind%NAll)
 
    ! Read dimensions of preprocessing swath files
    call read_input_dimensions_msi(Ctrl%FID%MSI, Ctrl%FID%Geo, &

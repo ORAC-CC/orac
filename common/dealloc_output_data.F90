@@ -30,7 +30,8 @@
 ! 2016/01/28, GM: Add ctp and ctt corrected and corrected_uncertianty.
 ! 2016/03/02, AP: Homogenisation of I/O modules.
 ! 2016/07/08, GM: Add fields for cloud layer 2.
-! 2017/05/17, OS: Added ann phase variables
+! 2017/05/17, OS: Added ann phase variables.
+! 2017/07/05, AP: Add channels_used, variables_retrieved.
 !
 ! $Id$
 !
@@ -164,6 +165,8 @@ subroutine dealloc_output_data_primary(data)
    deallocate(data%costja)
    deallocate(data%costjm)
    deallocate(data%qcflag)
+   deallocate(data%channels_used)
+   deallocate(data%variables_retrieved)
 
    deallocate(data%time)
    deallocate(data%lat)
