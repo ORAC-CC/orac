@@ -181,7 +181,7 @@ subroutine rttov_driver_gfs(coef_path, emiss_path, sensor, platform, &
    integer,                 allocatable :: chan_pos(:)
 
 
-   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering rttov_driver()'
+   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering rttov_driver_gfs()'
 
    if (verbose) write(*,*) 'coef_path: ', trim(coef_path)
    if (verbose) write(*,*) 'emiss_path: ', trim(emiss_path)
@@ -731,7 +731,7 @@ subroutine rttov_driver_gfs(coef_path, emiss_path, sensor, platform, &
    call rttov_alloc_prof(stat, nprof, profiles, nlevels, opts, DEALLOC)
    deallocate(profiles)
 
-   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving rttov_driver()'
+   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving rttov_driver_gfs()'
 
 end subroutine rttov_driver_gfs
 
