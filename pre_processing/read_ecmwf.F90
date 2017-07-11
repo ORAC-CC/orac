@@ -228,6 +228,10 @@ subroutine read_ecmwf(ecmwf_flag, ecmwf_path_file, ecmwf_path_file2, &
       if (verbose) write(*,*) 'Reading gfs path: ',trim(ecmwf_path_file)
       call read_gfs_grib(ecmwf_path_file,preproc_dims,preproc_geoloc, &
            preproc_prtm,verbose)
+   case(7)
+      if (verbose) write(*,*) 'Reading gfs path: ',trim(ecmwf_path_file)
+      call read_gfs_grib(ecmwf_path_file,preproc_dims,preproc_geoloc, &
+           preproc_prtm,verbose)
    end select
 
 

@@ -153,6 +153,7 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
    kdim = preproc_dims%kdim+1
    if (ecmwf_flag .eq. 5) kdim=kdim-1
    if (ecmwf_flag .eq. 6) kdim=kdim-1
+   if (ecmwf_flag .eq. 7) kdim=kdim-1
 
    if (type .eq. NETCDF_OUTPUT_FILE_LWRTM) then
 
