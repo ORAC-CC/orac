@@ -266,6 +266,7 @@
 !                 external file. Supported by AHI, not yet by SEVIRI (EKWork)
 ! 2017/06/21, OS: added spectral response correction flag,
 !     which defaults to false unless sensor=AATSR/AVHRR/MODIS
+! 2017/07/09, SP: Add check for SEVIRI RSS data to ensure correct processing.
 !
 ! $Id$
 !
@@ -759,6 +760,9 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file,s
       ! following call.
       call read_seviri_dimensions(geo_path_file,n_across_track,n_along_track, &
                                   startx,endx,starty,endy,verbose)
+      if (index(l1b_path_file,trim('RSS'))>0) then
+      	endy=endy/3
+      endif
 
    else if (trim(adjustl(sensor)) .eq. 'SLSTR') then
       call setup_slstr(l1b_path_file,geo_path_file,platform,year,month,day, &
