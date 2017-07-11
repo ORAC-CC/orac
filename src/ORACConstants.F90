@@ -83,6 +83,8 @@
 !    distinguish them from the Class constants to support the multilayer
 !    retrieval.
 ! 2017/03/16, GT: Changes for single-view aerosol retrieval mode.
+! 2017/07/05, AP: Move ISS before ISP so that the wavelength-dependent values
+!    are last (to simlify the variables_retrieved flag).
 !
 ! $Id$
 !
@@ -235,20 +237,20 @@ module ORAC_constants_m
    integer, parameter :: ISG              = 9
    integer, parameter :: ITs              = 10      ! Index of Ts, surface temperature
 
+   ! Swansea surface reflectance parameters. ISS is the wavelength-dependent
+   ! s parameter and ISP is the directionally-dependent P parameter.
+   integer, parameter :: ISP(MaxNumViews) = &
+        [(i_ORAC+ITs, i_ORAC = 1, MaxNumViews)]
    ! Oxford surface reflectance parameters. Though we're unlikely to retrieve
    ! all the BRDF parameters, space needs to be made in the Jacobian.
    integer, parameter :: IRs(MaxNumSolar, MaxRho_XX) = &
-        reshape([(i_ORAC+ITs, i_ORAC = 1, MaxNumSolar*MaxRho_XX)], &
+        reshape([(i_ORAC+ISP(MaxNumViews), i_ORAC = 1, MaxNumSolar*MaxRho_XX)], &
                 [MaxNumSolar, MaxRho_XX])
-   ! Swansea surface reflectance parameters. ISS is the wavelength-dependent
-   ! s parameter and ISP is the directionally-dependent P parameter.
    integer, parameter :: ISS(MaxNumSolar) = IRs(:, 1)
-   integer, parameter :: ISP(MaxNumViews) = &
-        [(i_ORAC+IRs(MaxNumSolar, MaxRho_XX), i_ORAC = 1, MaxNumViews)]
    ! NOTE: MaxNumSolar arrays should be treated as if of length Ctrl%Ind%NSolar
 
    ! Determine max. no. of state vector elements from indices
-   integer, parameter :: MaxStateVar      = ISP(MaxNumViews)
+   integer, parameter :: MaxStateVar      = IRs(MaxNumSolar, MaxRho_XX)
 
    ! Illumination conditions (day/twilight/night) for arrays Ctrl%FG and AP
    integer, parameter :: IDay             = 1
@@ -271,8 +273,8 @@ module ORAC_constants_m
    integer, parameter :: ClsCldIce        = 2
    integer, parameter :: ClsAerOx         = 3
    integer, parameter :: ClsAerSw         = 4
-   integer, parameter :: ClsAerBR         = 6
-   integer, parameter :: ClsAshEyj        = 7
+   integer, parameter :: ClsAerBR         = 5
+   integer, parameter :: ClsAshEyj        = 6
 
    ! Retrieval approaches (for Ctrl%Approach)
    integer, parameter :: AppCld1L         = 1 ! Single layer cloud
