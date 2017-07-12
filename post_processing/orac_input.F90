@@ -33,7 +33,7 @@
 !    retrieved. This is indicated by the rho|ss_terms array (and Nrho|Nss).
 ! 2017/01/09, CP: ML additions.
 ! 2017/06/22, OS: Added phase variables.
-! 2017/07/05, AP: Add channels_used, variables_retrieved.
+! 2017/07/05, AP: Add channels_used, variables_retrieved. New QC.
 !
 ! $Id$
 !
@@ -129,7 +129,6 @@ module orac_input_m
       real(sreal),   pointer :: sat_zen(:,:,:)
       real(sreal),   pointer :: rel_azi(:,:,:)
 
-      integer(byte), pointer :: convergence(:,:)
       integer(byte), pointer :: niter(:,:)
       real(sreal),   pointer :: costja(:,:)
       real(sreal),   pointer :: costjm(:,:)
@@ -146,7 +145,6 @@ module orac_input_m
       integer(byte), pointer :: lsflag(:,:)
       integer(byte), pointer :: lusflag(:,:)
       integer(sint), pointer :: dem(:,:)
-      integer(byte), pointer :: nisemask(:,:)
 
       integer(byte), pointer :: illum(:,:)
 

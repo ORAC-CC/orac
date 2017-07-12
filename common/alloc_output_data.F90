@@ -38,7 +38,7 @@
 ! 2016/04/28, AP: Add multiple views.
 ! 2016/07/08, GM: Add fields for cloud layer 2.
 ! 2017/05/17, OS: Added ann phase variables.
-! 2017/07/05, AP: Add channels_used, variables_retrieved.
+! 2017/07/05, AP: Add channels_used, variables_retrieved. New QC.
 !
 ! $Id$
 !
@@ -345,9 +345,6 @@ subroutine alloc_output_data_primary(ind, MaxIter, data)
       nullify(data%ann_phase_uncertainty)
    end if
 
-   allocate(data%convergence(ind%X0:ind%X1, ind%Y0:ind%Y1))
-   data%convergence = byte_fill_value
-
    allocate(data%niter(ind%X0:ind%X1, ind%Y0:ind%Y1))
    data%niter = byte_fill_value
 
@@ -390,8 +387,6 @@ subroutine alloc_output_data_primary(ind, MaxIter, data)
    data%lusflag = byte_fill_value
    allocate(data%dem(ind%X0:ind%X1, ind%Y0:ind%Y1))
    data%dem = sint_fill_value
-   allocate(data%nisemask(ind%X0:ind%X1, ind%Y0:ind%Y1))
-   data%nisemask = byte_fill_value
 
    allocate(data%illum(ind%X0:ind%X1, ind%Y0:ind%Y1))
    data%illum = byte_fill_value

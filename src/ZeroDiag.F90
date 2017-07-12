@@ -55,8 +55,8 @@ subroutine Zero_Diag(Ctrl, Diag)
    type(Ctrl_t), intent(in)    :: Ctrl
    type(Diag_t), intent(inout) :: Diag
 
-   Diag%Converged          = byte_fill_value
-   Diag%QCFlag             = 0
+   Diag%Converged          = .false.
+   Diag%QCFlag             = -1
    Diag%Iterations         = 0
    Diag%Jm                 = MissingSn
    Diag%Ja                 = MissingSn
@@ -64,8 +64,6 @@ subroutine Zero_Diag(Ctrl, Diag)
    Diag%Ss                 = 0
    Diag%Y0                 = MissingXn
    Diag%YmFit              = MissingXn
-!  Diag%YError             = 0
-!  Diag%APFit              = MissingXn
    Diag%AK                 = MissingXn
    Diag%cloud_albedo       = sreal_fill_value
    Diag%cloud_albedo_s     = sreal_fill_value

@@ -62,18 +62,19 @@
 ! 2015/07/29, AP: Remove NPhaseChanges argument.
 ! 2015/07/31, AP: Rejig QCFlag for much longer state vector.
 ! 2015/11/19, GM: Add Legacy channels used to QCFlag (6 bits).
+! 2017/07/12, AP: Completely new QC flags. Moved setting of Jm/Ja/iter to
+!    InvertMarquadt. Removed MaxS constraint on setting last retrieval.
 !
 ! $Id$
 !
 ! Bugs:
-! If there are state vector elements in X_Twi or X_Night that are not in X_Dy,
-! the setting of QCFlag will fail.
+! None known
 !-------------------------------------------------------------------------------
 
-subroutine Set_Diag(Ctrl, SPixel, convergence, J, Jm, Ja, iter, Diag)
+subroutine Set_Diag(Ctrl, SPixel, MSI_Data, Diag)
 
    use Ctrl_m
-   use Int_Routines_m, only : find_in_array
+   use Data_m
    use ORAC_Constants_m
    use SPixel_m
 
@@ -83,61 +84,45 @@ subroutine Set_Diag(Ctrl, SPixel, convergence, J, Jm, Ja, iter, Diag)
 
    type(Ctrl_t),   intent(in)    :: Ctrl
    type(SPixel_t), intent(inout) :: SPixel
-   logical,        intent(in)    :: convergence ! Indicates whether the
-                                                ! inversion converged
-   real,           intent(in)    :: J, Jm, Ja   ! Cost at final state (plus
-                                                ! contributions to cost from
-                                                ! measurements and a priori)
-   integer,        intent(in)    :: iter        ! Inversion iteration counter
-   type(Diag_t),   intent(inout) :: Diag        ! Diagnostic structure
+   type(Data_t),   intent(in)    :: MSI_Data
+   type(Diag_t),   intent(inout) :: Diag
 
    ! Local variables
+   real    :: J, dof
+   integer :: i
 
-   integer :: m
 
+   Diag%QCFlag = 0
+   J = Diag%Jm + Diag%Ja
 
-   if (convergence) then
-      Diag%Converged = 1
+   ! Degrees of freedom for noise
+   dof = real(SPixel%Nx)
+   do i = 1, SPixel%Nx
+      dof = dof - Diag%AK(SPixel%X(i),SPixel%X(i))
+   end do
 
-      if (J > Ctrl%QC%MaxJ) then
-         ! Flag high cost retrievals
-         Diag%QCFlag = ibset(Diag%QCFlag, CostBit)
-      else
-         SPixel%XnSav      = SPixel%Xn
-         SPixel%SnSav      = SPixel%Sn
-         SPixel%Loc%LastX0 = SPixel%Loc%X0
-         SPixel%Loc%LastY0 = SPixel%Loc%Y0
-      end if
-   else
-      Diag%Converged = 0
+   ! Only save retrievals for GetX SelmSAD if converged to low cost
+   if (Diag%Converged .and. J < Ctrl%QC%MaxJ) then
+      SPixel%XnSav      = SPixel%Xn
+      SPixel%SnSav      = SPixel%Sn
+      SPixel%Loc%LastX0 = SPixel%Loc%X0
+      SPixel%Loc%LastY0 = SPixel%Loc%Y0
    end if
 
-   ! Flag retrieved variables with excessive error (bit of flag set is the index
-   ! of that state vector element in Ctrl%X_Dy; it is assumed that X_Tw and
-   ! X_Ni are subsets of X_Dy).
-   do m = 1, SPixel%Nx
-      if (sqrt(SPixel%Sn(SPixel%X(m),SPixel%X(m))) > Ctrl%QC%MaxS(SPixel%X(m))) &
-         Diag%QCFlag = ibset(Diag%QCFlag, &
-                             find_in_array(Ctrl%X(1:Ctrl%Nx(IDay),IDay), &
-                                           SPixel%X(m)))
-   end do
+   ! Set quality control flags
+   if (.not. Diag%Converged)         Diag%QCFlag = ibset(Diag%QCFlag, ConvBit)
+   if (J > Ctrl%QC%MaxJ)             Diag%QCFlag = ibset(Diag%QCFlag, CostBit)
+   if (MSI_Data%nisemask(SPixel%Loc%X0, SPixel%Loc%Y0) == 1) &
+                                     Diag%QCFlag = ibset(Diag%QCFlag, IceBit)
+   if (any(MSI_Data%cldmask(SPixel%Loc%X0, SPixel%Loc%Y0, :) == 1) .neqv. &
+        (Ctrl%Approach == AppCld1L .or. Ctrl%Approach == AppCld2L)) &
+                                     Diag%QCFlag = ibset(Diag%QCFlag, MaskBit)
+   ! Degrees of freedom
+   ! Elevation
+   ! Cirrus contamination
+   ! Case 2 waters
+   ! Shadows
+   ! Glint
 
-   ! Flag legacy channels used *6 bits).
-   do m = 1, N_legacy
-      if (find_in_array(Ctrl%Ind%Y_Id(SPixel%spixel_y_to_ctrl_y_index(1:SPixel%Ind%Ny)), &
-                        Ctrl%Ind%Y_Id_legacy(m)) .gt. 0) then
-         Diag%QCFlag = ibset(Diag%QCFlag, Ctrl%Nx(IDay) + m)
-      end if
-   end do
-
-   Diag%Iterations = iter
-   Diag%Jm = Jm
-   Diag%Ja = Ja
-
-!  do m = 1, SPixel%Ind%Ny
-!     Diag%YError(m) = sqrt(Sy(m,m))
-!  end do
-
-!   Diag%APFit = SPixel%Xb - SPixel%Xn
 
 end subroutine Set_Diag

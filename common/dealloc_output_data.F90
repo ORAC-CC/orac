@@ -31,7 +31,7 @@
 ! 2016/03/02, AP: Homogenisation of I/O modules.
 ! 2016/07/08, GM: Add fields for cloud layer 2.
 ! 2017/05/17, OS: Added ann phase variables.
-! 2017/07/05, AP: Add channels_used, variables_retrieved.
+! 2017/07/05, AP: Add channels_used, variables_retrieved. New QC.
 !
 ! $Id$
 !
@@ -160,7 +160,6 @@ subroutine dealloc_output_data_primary(data)
                                           deallocate(data%ann_phase_uncertainty)
    if (associated(data%cphcot))           deallocate(data%cphcot)
 
-   deallocate(data%convergence)
    deallocate(data%niter)
    deallocate(data%costja)
    deallocate(data%costjm)
@@ -182,7 +181,6 @@ subroutine dealloc_output_data_primary(data)
    deallocate(data%lsflag)
    deallocate(data%lusflag)
    deallocate(data%dem)
-   deallocate(data%nisemask)
 
    deallocate(data%illum)
    deallocate(data%cldtype)

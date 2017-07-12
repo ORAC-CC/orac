@@ -37,7 +37,7 @@
 ! 2016/02/10, GM: Remove redundant checks for fill_value.
 ! 2016/03/04, AP: Tidy prepare_*_packed_float.
 ! 2017/01/09, CP: ML additions.
-! 2017/07/05, AP: Add channels_used, variables_retrieved.
+! 2017/07/05, AP: Add channels_used, variables_retrieved. New QC.
 !
 ! $Id$
 !
@@ -656,9 +656,8 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
    end if
 
    !----------------------------------------------------------------------------
-   ! convergence, niter
+   ! niter
    !----------------------------------------------------------------------------
-   output_data%convergence(i,j)=input_data%convergence(i,j)
    output_data%niter(i,j)=input_data%niter(i,j)
 
    !----------------------------------------------------------------------------
@@ -700,11 +699,6 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
    ! dem
    !----------------------------------------------------------------------------
    output_data%dem(i,j)=input_data%dem(i,j)
-
-   !----------------------------------------------------------------------------
-   ! nisemask
-   !----------------------------------------------------------------------------
-   output_data%nisemask(i,j)=input_data%nisemask(i,j)
 
    !----------------------------------------------------------------------------
    ! illum

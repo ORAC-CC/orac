@@ -37,7 +37,7 @@
 ! 2017/01/09, CP: ML additions.
 ! 2017/04/28, CP: ML bug fix added ctp2
 ! 2017/06/22, OS: Added phase variables.
-! 2017/07/05, AP: Add channels_used, variables_retrieved.
+! 2017/07/05, AP: Add channels_used, variables_retrieved. New QC.
 !
 ! $Id$
 !
@@ -277,8 +277,6 @@ if (use_ml) then
         input_data%cwp2_uncertainty, verbose, startp = [1, sval])
 end if
 
-   call nc_read_array(ncid, "convergence", input_data%convergence, verbose, &
-        startp = [1, sval])
    call nc_read_array(ncid, "niter", input_data%niter, verbose, &
         startp = [1, sval])
    call nc_read_array(ncid, "costja", input_data%costja, verbose, &
@@ -432,8 +430,6 @@ subroutine read_input_primary_once(nfile, fname, input_data, indexing, &
    call nc_read_array(ncid, "lusflag", input_data%lusflag, verbose, &
         startp = [1, sval])
    call nc_read_array(ncid, "dem", input_data%dem, verbose, startp = [1, sval])
-   call nc_read_array(ncid, "nisemask", input_data%nisemask, verbose, &
-        startp = [1, sval])
 
    call nc_read_array(ncid, "illum", input_data%illum, verbose, &
         startp = [1, sval])

@@ -17,6 +17,7 @@
 ! 2015/10/22, GM: Add cloud albedo uncertainty.
 ! 2015/01/07, AP: Make QCFlag long to accomodate longer state vectors.
 ! 2016/01/27, GM: Add cloud emissivity and cloud emissivity uncertainty.
+! 2017/07/12, AP: New QC
 !
 ! $Id$
 !
@@ -31,7 +32,7 @@ module Diag_m
    implicit none
 
    type Diag_t
-      integer(byte) :: Converged    ! Did the retrieval converge?
+      logical       :: Converged    ! Did the retrieval converge?
       integer(lint) :: QCFlag       ! Quality control flag. Bits are set as
                                     ! follows:
                                     ! - bit 0: retrieval solution
@@ -57,13 +58,6 @@ module Diag_m
                                     ! Difference between measurements
                                     ! (SPixel%Ym) and Y at solution X.
                                     ! Size: no. of channels used in SPixel.
-!     real          :: YError(MaxNumMeas)
-                                    ! Measurement errors (square root of Sy
-                                    ! matrix diagonals). Size: no. of channels
-                                    ! used in SPixel.
-!     real          :: APFit(MaxStateVar)
-                                    ! Difference between a priori X and
-                                    ! solution X for active state variables.
       real          :: AK(MaxStateVar,MaxStateVar)
                                     ! Averaging kernel matrix
       real          :: cloud_albedo(MaxNumSolar)

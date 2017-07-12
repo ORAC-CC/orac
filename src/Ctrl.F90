@@ -99,7 +99,7 @@
 ! 2016/08/11, SP: Add logical flag for processing when using only 1 view from a
 !                 multiangular sensor. Prevents post-processor problems.
 ! 2017/01/09, CP: Clarified definitions of ML layer definition.
-! 2017/07/05, AP: Add NAll to track the total number of channels.
+! 2017/07/05, AP: Add NAll to track the total number of channels. New QC.
 !
 ! $Id$
 !
@@ -222,8 +222,6 @@ module Ctrl_m
    type QC_t
       real                   :: MaxJ               ! Maximum acceptable value of
                                                    ! cost function
-      real                   :: MaxS(MaxStateVar)  ! Maximum acceptable error in
-                                                   ! state variable at solution
    end type QC_t
 
    ! Main Ctrl structure.

@@ -380,31 +380,6 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, SAD_LUT, MSI_Data, RTM, SPixel, status)
               ' rel azi ',SPixel%Geom%RelAzi(view)
       end do
       write(bkp_lun,'(a,i4)')' Status: ',status
-      !     write(bkp_lun,'(a,i4)')' QC flag: ',SPixel%QC
-      write(bkp_lun,*)' QC flag: ',SPixel%QC
-
-      write(bkp_lun,*)'Bit tests'
-      if (btest(SPixel%QC, SPixCloudFl)) write(bkp_lun,*)'SPixCloudFl'
-      if (btest(SPixel%QC, SPixLandFl)) write(bkp_lun,*)'SPixLandFl'
-      if (btest(SPixel%QC, SPixSolZen)) write(bkp_lun,*)'SPixSolZen'
-      if (btest(SPixel%QC, SPixSatZen)) write(bkp_lun,*)'SPixSatZen'
-      if (btest(SPixel%QC, SPixRelAzi)) write(bkp_lun,*)'SPixRelAzi'
-      if (btest(SPixel%QC, SPixLat)) write(bkp_lun,*)'SPixLat'
-      if (btest(SPixel%QC, SPixLon)) write(bkp_lun,*)'SPixLon '
-      if (btest(SPixel%QC, SPixRef)) write(bkp_lun,*)'SPixRef '
-      if (btest(SPixel%QC, SPixTemp)) write(bkp_lun,*)'SPixTemp '
-      if (btest(SPixel%QC, SPixAll)) write(bkp_lun,*)'SPixAll '
-      if (btest(SPixel%QC, SPixNoCloud)) write(bkp_lun,*)'SPixNoCloud'
-      if (btest(SPixel%QC, SPixNoAvge)) write(bkp_lun,*)'SPixNoAvge'
-      if (btest(SPixel%QC, SPixIllum)) write(bkp_lun,*)'SPixIllum '
-      if (btest(SPixel%QC, SPixIndexing)) write(bkp_lun,*)'SPixIndexing '
-      if (btest(SPixel%QC, SPixGeom)) write(bkp_lun,*)'SPixGeom '
-      if (btest(SPixel%QC, SPixLoc)) write(bkp_lun,*)'SPixLoc '
-      if (btest(SPixel%QC, SPixRTM)) write(bkp_lun,*)'SPixRTM '
-      if (btest(SPixel%QC, SPixMeas)) write(bkp_lun,*)'SPixMeas '
-      if (btest(SPixel%QC, SPixSurf)) write(bkp_lun,*)'SPixSurf '
-      if (btest(SPixel%QC, SPixFGAP)) write(bkp_lun,*)'SPixFGAP'
-      if (btest(SPixel%QC, SPixNoProc)) write(bkp_lun,*)'SPixNoProc '
 
       do view=1,Ctrl%Ind%NViews
          write(bkp_lun,'(a,i2,2(a,f9.4))')' View ',view,', Sec_o: ', &

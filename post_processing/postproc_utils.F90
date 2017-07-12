@@ -135,8 +135,6 @@ if (indexing%flags%do_cloud_layer_2) then
    primary2%cwp2_uncertainty(i,j)       = primary1%cwp2_uncertainty(i,j)
 end if
 
-   primary2%convergence(i,j)           = primary1%convergence(i,j)
-
    primary2%niter(i,j)                 = primary1%niter(i,j)
 
    primary2%costja(i,j)                = primary1%costja(i,j)
@@ -293,8 +291,6 @@ if (indexing%flags%do_cloud_layer_2) then
    primary2%cwp2(i,j)                  = primary1%cwp2(i,j)
    primary2%cwp2_uncertainty(i,j)      = primary1%cwp2_uncertainty(i,j)
 end if
-
-   primary2%convergence(i,j)           = primary1%convergence(i,j)
 
    primary2%niter(i,j)                 = primary1%niter(i,j)
 

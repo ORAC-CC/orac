@@ -179,6 +179,7 @@
 ! 2016/02/24, OS: Avoid negative CEE uncertainties.
 ! 2016/05/03, AP: Add output of AOD at a second wavelength.
 ! 2016/07/27, GM: Changes related to the multilayer retrieval support.
+! 2017/07/12, AP: New QC.
 !
 ! $Id$
 !
@@ -244,7 +245,6 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
    real    :: J0                  ! Cost at first guess state
    real    :: Ccj_Ny              ! Product of Cost convergence criteria and
                                   ! number of active channels.
-   logical :: convergence         ! Indicates whether convergence has occurred
    integer :: iter                ! Inversion iteration counter
    real    :: KxT_SyI(SPixel%Nx, SPixel%Ind%Ny)
                                   ! Product of the transpose of Kx with SyInv
@@ -275,7 +275,6 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
                                   ! Array temporary for Diag%St
    real, dimension(SPixel%Ind%NSolar)    :: CRP, T_00, T_0d, T_all
    real, dimension(SPixel%Ind%NSolar, 2) :: d_CRP, d_T_00, d_T_0d
-!  real    :: a
    real    :: CRP_thermal(SPixel%Ind%NThermal)
    real    :: d_CRP_thermal(SPixel%Ind%NThermal, 2)
    real    :: temp(SPixel%Ind%NSolar,SPixel%Ind%NSolar)
@@ -417,7 +416,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
    Ccj_Ny = Ctrl%Invpar%Ccj * SPixel%Ind%Ny
 
    ! Initialise loop control variables
-   convergence   = .false.
+   Diag%Converged   = .false.
    iter = 1
 
    ! Calculate matrix operators
@@ -501,7 +500,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
                d2J_dX2   = matmul(KxT_SyI, Kx) + SxInv
             end if
 
-            convergence = .true.
+            Diag%Converged = .true.
             exit
          else
             ! Otherwise, reset Levenberg constant and continue iterating
@@ -523,7 +522,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
                if (Ctrl%Invpar%dont_iter_convtest) iter = iter - 1
             else
                ! Retrieval converged. Exit loop
-               convergence = .true.
+               Diag%Converged = .true.
                exit
              end if
          else
@@ -596,7 +595,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
             close(unit=bkp_lun)
          end if
 #endif
-      if (iter == Ctrl%Invpar%MaxIter .or. convergence) exit
+      if (iter == Ctrl%Invpar%MaxIter .or. Diag%Converged) exit
 
       iter = iter + 1
    end do
@@ -771,7 +770,6 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
    call Deallocate_GZero(GZero)
 
    ! Costs are divided by number of active instrument channels before output.
-   J  = J  / SPixel%Ind%Ny
    Jm = Jm / SPixel%Ind%Ny
    Ja = Ja / SPixel%Ind%Ny
 
@@ -782,19 +780,18 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
 
    ! Void the outputs for failed superpixels
 99 if (stat /= 0) then
-      convergence = .false.
-      Diag%St     = MissingSn
-      Diag%Ss     = MissingSn
-      SPixel%Sn   = MissingSn
-      J           = MissingSn
-      Jm          = MissingSn
-      Ja          = MissingSn
+      Diag%Converged = .false.
+      Diag%St        = MissingSn
+      Diag%Ss        = MissingSn
+      SPixel%Sn      = MissingSn
+      Jm             = MissingSn
+      Ja             = MissingSn
+   else
+      Diag%Iterations = iter
+      Diag%Jm         = Jm
+      Diag%Ja         = Ja
    end if
 
-   ! Set_Diag also checks whether the solution state was good enough to use in
-   ! SDAD first guess and a priori setting, and if so saves Xn and Sn in SPixel
-   ! (XnSav and SnSav).
-   call Set_Diag(Ctrl, SPixel, convergence, J, Jm, Ja, iter, Diag)
 
    ! Write final solution and close breakpoint output file
 #ifdef BKP
@@ -809,7 +806,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
          write(*,*) 'ERROR: Invert_Marquardt(): Error opening breakpoint file'
          stop BkpFileOpenErr
       else
-         if (convergence) then
+         if (Diag%Converged) then
             write(bkp_lun,'(/,2x,a,i2,a)')'Invert_marquardt: convergence after ',&
                   iter, ' iterations'
          else
@@ -822,7 +819,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
             write(bkp_lun,*)'Y:            ', Y
             write(bkp_lun,'(2x,a,11(f9.3,1x))')'Y-Ym:         ', &
                   Diag%YmFit(1:SPixel%Ind%Ny)
-            write(bkp_lun,'(2x,a,3(f9.3,1x))') 'Jm, Ja, J /Ny:', Jm, Ja, J
+            write(bkp_lun,'(2x,a,3(f9.3,1x))') 'Jm, Ja /Ny:', Jm, Ja
             write(bkp_lun,'(2x,a,f9.3)')      'delta J:      ', delta_J
          end if
 

@@ -79,7 +79,7 @@
 ! 2017/01/08, CP: Added multi layer phase type
 ! 2017/05/17, OS: Added ann phase variables, ann phase uncertainty is
 !    a placeholder.
-! 2017/07/05, AP: Add channels_used, variables_retrieved.
+! 2017/07/05, AP: Add channels_used, variables_retrieved. New QC.
 !
 ! $Id$
 !
@@ -1529,28 +1529,6 @@ if (indexing%flags%do_cloud) then
 end if
 
    !----------------------------------------------------------------------------
-   ! convergence
-   !----------------------------------------------------------------------------
-   call nc_def_var_byte_packed_byte( &
-           ncid, &
-           dims_var, &
-           'convergence', &
-           output_data%vid_convergence, &
-           verbose, &
-           long_name     = 'retrieval convergence flag', &
-           standard_name = '', &
-           fill_value    = byte_fill_value, &
-           scale_factor  = output_data%convergence_scale, &
-           add_offset    = output_data%convergence_offset, &
-           valid_min     = output_data%convergence_vmin, &
-           valid_max     = output_data%convergence_vmax, &
-           units         = '1', &
-           flag_values   = '0b 1b', &
-           flag_meanings = 'yes no', &
-           deflate_level = deflate_level, &
-           shuffle       = shuffle_flag)
-
-   !----------------------------------------------------------------------------
    ! niter
    !----------------------------------------------------------------------------
    call nc_def_var_byte_packed_byte( &
@@ -1766,28 +1744,6 @@ end if
            valid_min     = output_data%dem_vmin, &
            valid_max     = output_data%dem_vmax, &
            units         = '1', &
-           deflate_level = deflate_level, &
-           shuffle       = shuffle_flag)
-
-   !----------------------------------------------------------------------------
-   ! nise mask
-   !----------------------------------------------------------------------------
-   call nc_def_var_byte_packed_byte( &
-           ncid, &
-           dims_var, &
-           'nisemask', &
-           output_data%vid_nisemask, &
-           verbose, &
-           long_name     = 'NISE snow/ice mask', &
-           standard_name = '', &
-           fill_value    = byte_fill_value, &
-           scale_factor  = output_data%nisemask_scale, &
-           add_offset    = output_data%nisemask_offset, &
-           valid_min     = output_data%nisemask_vmin, &
-           valid_max     = output_data%nisemask_vmax, &
-           units         = '1', &
-           flag_values   = '0b 1b', &
-           flag_meanings = 'snow_ice_free snow_ice', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 

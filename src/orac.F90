@@ -533,12 +533,14 @@ subroutine orac(mytask,ntasks,lower_bound,upper_bound,drifile)
                                   Diag, status)
 
          if (status == 0) then
+            call Set_Diag(Ctrl, SPixel, MSI_Data, Diag)
+
             ! Calculate the Cloud water path CWP
             call Calc_CWP(Ctrl, SPixel)
 
             ! Set values required for overall statistics 1st bit test on QC
             ! flag determines whether convergence occurred.
-            if (Diag%Converged .eq. 1) then
+            if (Diag%Converged) then
                TotConv_line(j) = TotConv_line(j)+1
                AvIter_line(j)  = AvIter_line(j) + Diag%Iterations
                AvJ_line(j) = AvJ_line(j) + Diag%Jm + Diag%Ja

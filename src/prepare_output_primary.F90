@@ -68,7 +68,7 @@
 ! 2016/05/03, AP: Add AOT at a second wavelength.
 ! 2016/07/27, GM: Add output fields for the multilayer retrieval.
 ! 2017/06/21, OS: Added ANN phase variables.
-! 2017/07/05, AP: Add channels_used, variables_retrieved.
+! 2017/07/05, AP: Add channels_used, variables_retrieved. New QC.
 !
 ! $Id$
 !
@@ -749,15 +749,12 @@ end if
    !----------------------------------------------------------------------------
    ! convergence, niter
    !----------------------------------------------------------------------------
-   if (Diag%Converged .eq. byte_fill_value) then
-      output_data%convergence(i,j) = byte_fill_value
+   if (Diag%QCFlag .eq. -1) then
       output_data%niter(i,j) = byte_fill_value
    else
-      if (Diag%Converged .ne. 0) then
-         output_data%convergence(i,j) = 0_byte
+      if (Diag%Converged) then
          output_data%niter(i,j) = int(Diag%Iterations,kind=byte)
       else
-         output_data%convergence(i,j) = 1_byte
          output_data%niter(i,j) = byte_fill_value
       end if
    end if
@@ -804,12 +801,6 @@ end if
    !----------------------------------------------------------------------------
    output_data%dem(i,j)=int(MSI_Data%dem(SPixel%Loc%X0, SPixel%Loc%Y0), &
                             kind=sint)
-
-   !----------------------------------------------------------------------------
-   ! nisemask
-   !----------------------------------------------------------------------------
-   output_data%nisemask(i,j)=int(MSI_Data%nisemask(SPixel%Loc%X0, &
-                                                   SPixel%Loc%Y0), kind=byte)
 
    !----------------------------------------------------------------------------
    ! illum

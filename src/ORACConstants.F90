@@ -265,7 +265,10 @@ module ORAC_constants_m
    integer, parameter :: SelmPrev         = 4
 
    ! Bits used with Diag%QCFlag
-   integer, parameter :: CostBit          = 0
+   integer, parameter :: ConvBit          = 0
+   integer, parameter :: CostBit          = 1
+   integer, parameter :: IceBit           = 2
+   integer, parameter :: MaskBit          = 3
 
 
    ! Retrieval classes (for Ctrl%Class)

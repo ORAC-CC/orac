@@ -39,7 +39,7 @@
 ! 2016/06/13, SP: Updates for bayesian selection without huge memory usage.
 ! 2017/01/09, CP: ML additions.
 ! 2017/06/22, OS: Added phase variables.
-! 2017/07/05, AP: Add channels_used, variables_retrieved.
+! 2017/07/05, AP: Add channels_used, variables_retrieved. New QC.
 !
 ! $Id$
 !
@@ -270,9 +270,6 @@ subroutine alloc_input_data_primary_common(ind, data)
       nullify(data%cwp2_uncertainty)
    end if
 
-   allocate(data%convergence(ind%X0:ind%X1, ind%Y0:ind%Y1))
-   data%convergence = byte_fill_value
-
    allocate(data%niter(ind%X0:ind%X1, ind%Y0:ind%Y1))
    data%niter = byte_fill_value
    if (.not. associated(data%costja)) then
@@ -333,8 +330,6 @@ subroutine alloc_input_data_primary_all(ind, data)
    data%lusflag = byte_fill_value
    allocate(data%dem(ind%X0:ind%X1, ind%Y0:ind%Y1))
    data%dem = sint_fill_value
-   allocate(data%nisemask(ind%X0:ind%X1, ind%Y0:ind%Y1))
-   data%nisemask = byte_fill_value
 
    allocate(data%illum(ind%X0:ind%X1, ind%Y0:ind%Y1))
    data%illum = byte_fill_value

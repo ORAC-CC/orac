@@ -37,7 +37,7 @@
 ! 2016/03/02, AP: Homogenisation of I/O modules.
 ! 2017/01/09, CP: ML additions.
 ! 2017/06/22, OS: Added phase variables.
-! 2017/07/05, AP: Add channels_used, variables_retrieved.
+! 2017/07/05, AP: Add channels_used, variables_retrieved. New QC.
 !
 ! $Id$
 !
@@ -134,7 +134,6 @@ subroutine dealloc_input_data_primary_common(data)
    if (associated(data%cwp2_uncertainty)) &
                                        deallocate(data%cwp2_uncertainty)
 
-   if (associated(data%convergence))   deallocate(data%convergence)
    if (associated(data%niter))         deallocate(data%niter)
    if (associated(data%costja))        deallocate(data%costja)
    if (associated(data%costjm))        deallocate(data%costjm)
@@ -166,7 +165,6 @@ subroutine dealloc_input_data_primary_all(data)
    deallocate(data%lsflag)
    deallocate(data%lusflag)
    deallocate(data%dem)
-   deallocate(data%nisemask)
 
    deallocate(data%illum)
 

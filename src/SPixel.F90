@@ -221,12 +221,6 @@ module SPixel_m
                                           ! solar channels
       integer, pointer    :: YThermal(:)  ! Array indices for thermal channels
       integer, pointer    :: YMixed(:)    ! Array indices for mixed channels
-      integer             :: MDAD_LW      ! Index of channel at (or nearest to)
-                                          ! 11 um. Used in MDAD method to set
-                                          ! FG (AP) cloud pressure and phase
-      integer             :: MDAD_SW      ! Index of channel at (or nearest to)
-                                          ! 0.67. Used in MDAD method for
-                                          ! setting FG (AP) cloud optical depth
    end type SPixel_Ind_t
 
 

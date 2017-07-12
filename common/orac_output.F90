@@ -41,7 +41,7 @@
 !    greater than 320K for instruments other than ATSR2/AATSR.
 ! 2017/01/09, CP: Changed phase range to include ML cloud type.
 ! 2017/05/17, OS: Added variables for ann phase.
-! 2017/07/05, AP: Add channels_used, variables_retrieved.
+! 2017/07/05, AP: Add channels_used, variables_retrieved. New QC.
 !
 ! $Id$
 !
@@ -129,7 +129,6 @@ module orac_output_m
       integer, pointer :: vid_sat_zen(:)
       integer, pointer :: vid_rel_azi(:)
 
-      integer          :: vid_convergence
       integer          :: vid_niter
       integer          :: vid_costja
       integer          :: vid_costjm
@@ -140,7 +139,6 @@ module orac_output_m
       integer          :: vid_lsflag
       integer          :: vid_lusflag
       integer          :: vid_dem
-      integer          :: vid_nisemask
 
       integer          :: vid_illum
 
@@ -352,11 +350,6 @@ module orac_output_m
       real(sreal)   :: azi_vmin   = -180.0
       real(sreal)   :: azi_vmax   = 180.0
 
-      integer(byte) :: convergence_scale  = 1
-      integer(byte) :: convergence_offset = 0
-      integer(byte) :: convergence_vmin   = 0
-      integer(byte) :: convergence_vmax   = 1
-
       integer(byte) :: niter_scale  = 1
       integer(byte) :: niter_offset = 0
       integer(byte) :: niter_vmin   = 0
@@ -400,11 +393,6 @@ module orac_output_m
       integer(sint) :: dem_offset = 0
       integer(sint) :: dem_vmin   = 0
       integer(sint) :: dem_vmax   = 10000
-
-      integer(byte) :: nisemask_scale  = 1
-      integer(byte) :: nisemask_offset = 0
-      integer(byte) :: nisemask_vmin   = 0
-      integer(byte) :: nisemask_vmax   = 1
 
       integer(byte) :: illum_scale  = 1
       integer(byte) :: illum_offset = 0
@@ -537,7 +525,6 @@ module orac_output_m
       real(sreal),   pointer :: sat_zen(:,:,:)
       real(sreal),   pointer :: rel_azi(:,:,:)
 
-      integer(byte), pointer :: convergence(:,:)
       integer(byte), pointer :: niter(:,:)
       real(sreal),   pointer :: costja(:,:)
       real(sreal),   pointer :: costjm(:,:)
@@ -554,7 +541,6 @@ module orac_output_m
       integer(byte), pointer :: lsflag(:,:)
       integer(byte), pointer :: lusflag(:,:)
       integer(sint), pointer :: dem(:,:)
-      integer(byte), pointer :: nisemask(:,:)
 
       integer(byte), pointer :: illum(:,:)
 

@@ -134,7 +134,8 @@
 !                 multiangular sensor. Prevents post-processor problems.
 ! 2017/01/19, CP: Add in revised uncertainty for ML case.
 ! 2017/03/16, GT: Changes for single-view aerosol retrieval mode.
-! 2017/06/21, OS: deactivated dumpfile and new driver format option for WRAPPER
+! 2017/06/21, OS: Deactivated dumpfile and new driver format option for WRAPPER
+! 2017/07/12, AP: New QC.
 !
 ! $Id$
 !
@@ -151,14 +152,14 @@ module read_driver_m
 
    interface switch_app
       module procedure &
-           switch_app_logic, switch_app_byte,  switch_app_sint, switch_app_lint, &
-           switch_app_sreal, switch_app_dreal, switch_app_char
+           switch_app_logic, switch_app_byte,  switch_app_sint, &
+           switch_app_lint, switch_app_sreal, switch_app_dreal, switch_app_char
    end interface switch_app
 
    interface switch_cls
       module procedure &
-           switch_cls_logic, switch_cls_byte,  switch_cls_sint, switch_cls_lint, &
-           switch_cls_sreal, switch_cls_dreal, switch_cls_char
+           switch_cls_logic, switch_cls_byte,  switch_cls_sint, &
+           switch_cls_lint, switch_cls_sreal, switch_cls_dreal, switch_cls_char
    end interface switch_cls
 
 contains
@@ -578,21 +579,6 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
 
    !----------------------- Ctrl%QC -----------------------
    Ctrl%QC%MaxJ                 = switch_app(a, Default=100.0, Aer=4.0)
-   Ctrl%QC%MaxS(ITau)           = switch_cls(c, Default=0.08)
-   Ctrl%QC%MaxS(IRe)            = switch_cls(c, Default=3.0)
-   Ctrl%QC%MaxS(IPc)            = switch_cls(c, Default=200.0)
-   Ctrl%QC%MaxS(IFr)            = switch_cls(c, Default=0.2)
-   Ctrl%QC%MaxS(ITau2)          = switch_cls(c2,Default=0.08)
-   Ctrl%QC%MaxS(IRe2)           = switch_cls(c2,Default=3.0)
-   Ctrl%QC%MaxS(IPc2)           = switch_cls(c2,Default=200.0)
-   Ctrl%QC%MaxS(IFr2)           = switch_cls(c2,Default=0.2)
-   Ctrl%QC%MaxS(ITs)            = switch_app(a, Default=2.0)
-   Ctrl%QC%MaxS(IRs(:,IRho_0V)) = switch_app(a, Default=0.2,   AerSw=10.0)
-   Ctrl%QC%MaxS(IRs(:,IRho_0D)) = switch_app(a, Default=0.2) ! No idea of a sensible
-   Ctrl%QC%MaxS(IRs(:,IRho_DV)) = switch_app(a, Default=0.2) ! value for these
-   Ctrl%QC%MaxS(IRs(:,IRho_DD)) = switch_app(a, Default=0.2)
-   Ctrl%QC%MaxS(ISP)            = switch_app(a, Default=10.0)
-   Ctrl%QC%MaxS(ISG)            = switch_app(a, Default=10.0)
 
    !------------------- Ctrl START/END POINT --------------
    ! Process entire file
@@ -1789,8 +1775,6 @@ subroutine old_driver_second_read(dri_lun, Ctrl, Nx_Dy, Nx_Tw, Nx_Ni, NXJ_Dy, &
          if (parse_string(line, Ctrl%Invpar%disable_Ss)/= 0) call h_p_e(label)
       case('CTRL%QC%MAXJ')
          if (parse_string(line, Ctrl%QC%MaxJ)          /= 0) call h_p_e(label)
-      case('CTRL%QC%MAXS')
-         if (parse_string(line, Ctrl%QC%MaxS)          /= 0) call h_p_e(label)
       case('CTRL%IND%X0')
          if (parse_string(line, Ctrl%Ind%X0)           /= 0) call h_p_e(label)
       case('CTRL%IND%X1')
