@@ -117,12 +117,15 @@ subroutine Set_Diag(Ctrl, SPixel, MSI_Data, Diag)
    if (any(MSI_Data%cldmask(SPixel%Loc%X0, SPixel%Loc%Y0, :) == 1) .neqv. &
         (Ctrl%Approach == AppCld1L .or. Ctrl%Approach == AppCld2L)) &
                                      Diag%QCFlag = ibset(Diag%QCFlag, MaskBit)
-   ! Degrees of freedom
-   ! Elevation
+   if (dof > Ctrl%QC%MaxDoFN)        Diag%QCFlag = ibset(Diag%QCFlag, DoFNBit)
+   if (MSI_Data%dem(SPixel%Loc%X0, SPixel%Loc%Y0) > Ctrl%QC%MaxElevation) &
+                                     Diag%QCFlag = ibset(Diag%QCFlag, ElevBit)
+   if (any(SPixel%Geom%RelAzi < Ctrl%MinRelAzi) .and. &
+        .not. (Ctrl%Approach == AppCld1L .or. Ctrl%Approach == AppCld2L)) &
+                                     Diag%QCFlag = ibset(Diag%QCFlag, GlintBit)
    ! Cirrus contamination
    ! Case 2 waters
    ! Shadows
-   ! Glint
 
 
 end subroutine Set_Diag

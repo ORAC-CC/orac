@@ -578,7 +578,9 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%Invpar%XULim(ISG)             = switch_app(a, Default=1.0)
 
    !----------------------- Ctrl%QC -----------------------
-   Ctrl%QC%MaxJ                 = switch_app(a, Default=100.0, Aer=4.0)
+   Ctrl%QC%MaxJ         = switch_app(a, Default=100.0, Aer=3.0)
+   Ctrl%QC%MaxDoFN      = switch_app(a, Default=2.0)
+   Ctrl%QC%MaxElevation = switch_app(a, Default=1500.0)
 
    !------------------- Ctrl START/END POINT --------------
    ! Process entire file
@@ -1775,6 +1777,10 @@ subroutine old_driver_second_read(dri_lun, Ctrl, Nx_Dy, Nx_Tw, Nx_Ni, NXJ_Dy, &
          if (parse_string(line, Ctrl%Invpar%disable_Ss)/= 0) call h_p_e(label)
       case('CTRL%QC%MAXJ')
          if (parse_string(line, Ctrl%QC%MaxJ)          /= 0) call h_p_e(label)
+      case('CTRL%QC%MAXDOFN')
+         if (parse_string(line, Ctrl%QC%MaxDoFN)       /= 0) call h_p_e(label)
+      case('CTRL%QC%MAXELEVATION')
+         if (parse_string(line, Ctrl%QC%MaxElevation)  /= 0) call h_p_e(label)
       case('CTRL%IND%X0')
          if (parse_string(line, Ctrl%Ind%X0)           /= 0) call h_p_e(label)
       case('CTRL%IND%X1')

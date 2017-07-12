@@ -7,7 +7,7 @@ $(OBJS)/Data.o: $(OBJS)/Ctrl.o $(OBJS)/IntRoutines.o $(OBJS)/ORACConstants.o \
         ReadALB_nc.F90 ReadCloudFlags_nc.F90 ReadData_nc.F90 ReadGeometry_nc.F90 \
         ReadLSFlags_nc.F90 ReadLocation_nc.F90 ReadMSI_nc.F90 \
         sabotage_inputs.F90
-$(OBJS)/Diag.o: $(OBJS)/Ctrl.o $(OBJS)/IntRoutines.o $(OBJS)/ORACConstants.o \
+$(OBJS)/Diag.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/ORACConstants.o \
         $(OBJS)/SPixel.o SetDiag.F90 ZeroDiag.F90
 $(OBJS)/FMRoutines.o: $(OBJS)/Ctrl.o $(OBJS)/GZero.o $(OBJS)/IntLUTRoutines.o \
         $(OBJS)/InterpolRoutines.o $(OBJS)/ORACConstants.o $(OBJS)/RTM_Pc.o \

@@ -222,6 +222,10 @@ module Ctrl_m
    type QC_t
       real                   :: MaxJ               ! Maximum acceptable value of
                                                    ! cost function
+      real                   :: MaxDoFN            ! Maximum acceptable degrees
+                                                   ! of freedom for noise
+      real                   :: MaxElevation       ! Elevation above which
+                                                   ! retrievals are suspect
    end type QC_t
 
    ! Main Ctrl structure.

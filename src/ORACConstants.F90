@@ -269,6 +269,9 @@ module ORAC_constants_m
    integer, parameter :: CostBit          = 1
    integer, parameter :: IceBit           = 2
    integer, parameter :: MaskBit          = 3
+   integer, parameter :: DoFNBit          = 4
+   integer, parameter :: ElevBit          = 5
+   integer, parameter :: GlintBit         = 6
 
 
    ! Retrieval classes (for Ctrl%Class)
