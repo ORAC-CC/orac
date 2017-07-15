@@ -11,7 +11,7 @@
                              fulwcl,fdlwcl,fuswcl,fdswcl,&
                              emis,rho0d,rhodd,FuSolverMode)
 
-
+#ifdef INCLUDE_FU_LIOU_SUPPORT
    USE FULIOUMULTI
    USE GENERATE_FULIOU_LEVELS ,only : gflq, generate_level_scheme
    USE EXTRAS       ,only : getatmosphere, aer_scale_hgt
@@ -339,4 +339,5 @@ endif
 !fdsw(1,1:nlm+1) = fo(2)%fds(1:nlm+1)
 
    return
+#endif
 end subroutine driver_for_fuliou

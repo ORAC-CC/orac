@@ -12,7 +12,8 @@
 !   3) ALB file (pre-processing)
 !   4) TSI file (http://proj.badc.rl.ac.uk/svn/orac/data/tsi_soho_sorce_1978_2015.nc)
 !   5) Output filename (user specified)
-!   6) Radiation Algorithm (BUGSrad: '1'; FuLiou-2Stream Modified Gamma: '2'; FuLiou-4stream '3' ; FuLiou-2Stream '4')
+!   6) Radiation Algorithm (BUGSrad: '1'; FuLiou-2Stream Modified Gamma: '2';
+!      FuLiou-4stream '3'; FuLiou-2Stream '4')
 !   7) x0, 8) y0, 9) x1, 10) y1 {required but can leave blank to specify full range}
 !
 !  Optional inputs: Use equals sign (=) with appropriate designator can be in any order
@@ -116,10 +117,10 @@ program process_broadband_fluxes
 #else
     character(file_length),intent(in) :: Fprimary,FPRTM,FTSI,FALB,fname,FLXalgorithm
     character(file_length),intent(inout),optional :: Faerosol,Fcollocation
-#endif    
-    
+#endif
+
     character(path_length) :: FMOD04,FMOD06
-    integer :: algorithm_processing_mode !1-BUGSrad, 2-FuLiou2G, 3-FuLiou4S, 4-FuLiou 2S
+    integer :: algorithm_processing_mode ! 1-BUGSrad, 2-FuLiou2G, 3-FuLiou4S, 4-FuLiou 2S
     integer :: ncid, i, j, k, dims_var(2), dim3d_var(3), status
     logical, parameter :: verbose=.true.
     logical :: there
@@ -407,7 +408,7 @@ program process_broadband_fluxes
     !-------------------------------------------------------------------------------
     !Read manditory arguments
 
-#ifndef WRAPPER    
+#ifndef WRAPPER
     nargs = command_argument_count()
     call get_command_argument(1, Fprimary)
     call get_command_argument(2, FPRTM)
@@ -416,22 +417,30 @@ program process_broadband_fluxes
     call get_command_argument(5, fname)
 #else
     index1 = index(trim(adjustl(Fprimary)), " ", back=.true.)
-#endif    
+#endif
     print*,'primary file: ',trim(adjustl(Fprimary))
     print*,'prtm file : ',trim(FPRTM)
     print*,'albedo file: ',trim(FALB)
     print*,'total solar irradiance file: ',trim(FTSI)
     print*,'output file: ',trim(fname)
 
-#ifndef WRAPPER    
+#ifndef WRAPPER
     call get_command_argument(6, FLXalgorithm)
-#endif    
-    read(flxAlgorithm,*) value
-    algorithm_processing_mode=value
-    if(algorithm_processing_mode .eq. 1) print*,'Algorithm: BUGSrad'
-    if(algorithm_processing_mode .eq. 2) print*,'Algorithm: FuLiou 2G'
-    if(algorithm_processing_mode .eq. 3) print*,'Algorithm: FuLiou 4S'
-    if(algorithm_processing_mode .eq. 4) print*,'Algorithm: FuLiou 2S'
+#endif
+    read(flxAlgorithm,*) algorithm_processing_mode
+    if (algorithm_processing_mode .eq. 1) then
+       print*, 'Using algorithm: BUGSrad'
+#ifdef INCLUDE_FU_LIOU_SUPPORT
+    else if (algorithm_processing_mode .eq. 2) then
+       print*, 'Using algorithm: FuLiou 2G'
+    else if (algorithm_processing_mode .eq. 3) then
+       print*,' Using algorithm: FuLiou 4S'
+    else if (algorithm_processing_mode .eq. 4) then
+       print*, 'Using algorithm: FuLiou 2S'
+#endif
+    else
+       write(*,*) 'ERROR: Unsupported algorithm: ', algorithm_processing_mode
+    endif
 
 #ifndef WRAPPER
     !maybe these should be subroutine arguments; if 0, all pixels will be processed
@@ -442,7 +451,7 @@ program process_broadband_fluxes
 #else
     ! process all pixels if in Wrapper mode
     cpxX0 = "0"; cpxY0 = "0"; cpxX1 = "0"; cpxY1 = "0"
-#endif    
+#endif
     !x-y range of selected pixels
     if(len(trim(cpxX0)) .ne. 0 .and. len(trim(cpxX1)) .ne. 0 .and. &
          len(trim(cpxY0)) .ne. 0 .and. len(trim(cpxY1)) .ne. 0) then
@@ -489,16 +498,16 @@ program process_broadband_fluxes
           lut_mode = 1
        endif
     end do
-#endif    
+#endif
     !-------------------------------------------------------------------------------
     !Read time string from file
-#ifndef WRAPPER    
-    index1=index(trim(adjustl(Fprimary)),'_',back=.true.)    
+#ifndef WRAPPER
+    index1=index(trim(adjustl(Fprimary)),'_',back=.true.)
     cyear=trim(adjustl(Fprimary(index1-12:index1-9)))
     cmonth=trim(adjustl(Fprimary(index1-8:index1-6)))
     cday=trim(adjustl(Fprimary(index1-6:index1-4)))
 #else
-    index1=index(trim(adjustl(Fprimary)),'/',back=.true.)    
+    index1=index(trim(adjustl(Fprimary)),'/',back=.true.)
     cyear=trim(adjustl(Fprimary(index1+1:index1+5)))
     cmonth=trim(adjustl(Fprimary(index1+5:index1+6)))
     cday=trim(adjustl(Fprimary(index1+7:index1+8)))

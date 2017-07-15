@@ -47,29 +47,6 @@ ORAC_OBJ = $(OBJS)/kinds.o \
            $(OBJS)/compute_column_o3.o \
            $(OBJS)/preprocess_bugsrad_sfc_albedo.o \
            $(OBJS)/preprocess_bugsrad_sfc_emissivity.o \
-           $(OBJS)/extras.o \
-           $(OBJS)/taucorr.o \
-           $(OBJS)/fuinput.o \
-           $(OBJS)/fuoutput.o \
-           $(OBJS)/fuprint.o \
-           $(OBJS)/entropy_lw.o \
-           $(OBJS)/icedirsfc.o \
-           $(OBJS)/ma_tip.o \
-           $(OBJS)/qsortd.o \
-           $(OBJS)/vla.o \
-           $(OBJS)/uvcor_all.o \
-           $(OBJS)/rad_multi.o \
-           $(OBJS)/seiji_k2d.o \
-           $(OBJS)/seiji_solver.o \
-           $(OBJS)/gflq.o \
-           $(OBJS)/calipso_output.o \
-           $(OBJS)/zjin.o \
-           $(OBJS)/ar_asy.o \
-           $(OBJS)/aqua_wnflt_0404.o \
-           $(OBJS)/misc.o \
-           $(OBJS)/cloud_optics.o \
-           $(OBJS)/seiji_twostreamsolv_sw_v20.o \
-           $(OBJS)/aerosols.o \
            $(OBJS)/preprocess_fuliou_sfc_albedo.o \
            $(OBJS)/read_hdf_sd_dims.o \
            $(OBJS)/read_hdf_sd_data.o \
@@ -116,7 +93,7 @@ libprocess_broadband_fluxes.a: $(ORAC_OBJ) Makefile
 
 # Rebuild dependencies housed in dependencies.inc
 depend:
-	@../../tools/make_depend.pl --subdir bugsrad --subdir fu_liou $(ORAC_OBJ) $(ORAC_OBJ_MAIN) > dependencies.inc
+	@../../tools/make_depend.pl --subdir bugsrad $(ORAC_OBJ) $(ORAC_OBJ_MAIN) > dependencies.inc
 
 clean tidy:
 	rm -f $(OBJS)/*.o $(OBJS)/*.mod *.a process_broadband_fluxes
