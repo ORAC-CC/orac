@@ -140,42 +140,40 @@ subroutine build_flag_masks(Ctrl, data)
    type(Ctrl_t),                intent(in)  :: Ctrl
    type(output_data_primary_t), intent(inout) :: data
 
-   integer(lint)     :: i, n
+   integer(lint)     :: i
    character(len=14) :: temp_str
    character(len=8)  :: state_label
 
    data%qc_flag_masks    = '1b'
-   data%qc_flag_meanings = 'cost_too_large'
-   n = 0
-   do i = 1, Ctrl%Nx(IDay)
+   do i = 1, 6
       write(temp_str, '(I14)') 2_dint**i
-      if (string_description_of_state(Ctrl%X(i,IDay), state_label) == 0) then
-         data%qc_flag_masks = trim(data%qc_flag_masks) // ' ' // &
-              trim(adjustl(temp_str)) // 'b'
-         data%qc_flag_meanings = trim(data%qc_flag_meanings) // ' ' // &
-              trim(state_label) // '_out_of_range'
-         n = n + 1
-      end if
-   end do
-
-   do i = 1, N_legacy
-      write(temp_str, '(I14)') 2_dint**(i + n)
       data%qc_flag_masks = trim(data%qc_flag_masks) // ' ' // &
            trim(adjustl(temp_str)) // 'b'
    end do
-   data%qc_flag_meanings = trim(data%qc_flag_meanings) // &
-        ' ' // '0_63_um_legacy_channel_used' // &
-        ' ' // '0_86_um_legacy_channel_used' // &
-        ' ' // '1_61_um_legacy_channel_used' // &
-        ' ' // '3_74_um_legacy_channel_used' // &
-        ' ' // '10_8_um_legacy_channel_used' // &
-        ' ' // '12_0_um_legacy_channel_used'
+
+   write(temp_str,"(f14.1)") Ctrl%QC%MaxJ
+   data%qc_flag_meanings = '1: Retrieval did not converge ' // &
+                           '2: Total cost > ' // &
+                               trim(adjustl(temp_str)) // ' ' // &
+                           '4: Snow/ice surface ' // &
+                           '8: Particle type inconsistent with cloud mask'
+   write(temp_str,"(f14.1)") Ctrl%QC%MaxDoFN
+   data%qc_flag_meanings = trim(data%qc_flag_meanings) // ' ' // &
+                           '16: Degrees of freedom for noise > ' // &
+                                trim(adjustl(temp_str))
+   write(temp_str,"(f14.1)") Ctrl%QC%MaxElevation * 1e-3
+   data%qc_flag_meanings = trim(data%qc_flag_meanings) // ' ' // &
+                           '32: Surface elevation > ' // ' ' // &
+                                trim(adjustl(temp_str)) // ' km'
+   write(temp_str,"(f14.1)") Ctrl%MinRelAzi
+   data%qc_flag_meanings = trim(data%qc_flag_meanings) // ' ' // &
+                           '64: Sun glint (relative azimuth < ' // &
+                                trim(adjustl(temp_str)) // ' deg)'
 
    data%ch_flag_masks    = '2b'
    data%ch_flag_meanings = 'Ch1_used'
-   n = 0
    do i = 2, Ctrl%Ind%NAll
-      write(temp_str, '(I14)') 2_dint**(i + n)
+      write(temp_str, '(I14)') 2_dint**i
       write(state_label, '(I8)') i
 
       data%ch_flag_masks = trim(data%ch_flag_masks) // ' ' // &
