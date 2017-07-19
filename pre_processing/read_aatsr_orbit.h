@@ -17,9 +17,9 @@
 
    See the descriptions of each function below for details.
 
-   HISTORY:
-   2013/10/08: AP Original version.
-   2014/04/25: GM Add the "is_lut_drift_corrected" flag to the output from
+   History:
+   2013/10/08, AP: Original version.
+   2014/04/25, GM: Add the "is_lut_drift_corrected" flag to the output from
       read_aatsr_orbit().
 
    $Id$
@@ -77,10 +77,6 @@
 ! gc1_file      char   Out Name of the general calibration file applied.
 ! vc1_file      char   Out Name of the visible calibration file applied.
 !
-! Local variables:
-! Name Type Description
-!
-!
 ! History:
 ! 2013/10/08: AP Original version
 ! 2014/04/25: GM Add the "is_lut_drift_corrected" flag to the output from
@@ -89,7 +85,7 @@
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 */
 void read_aatsr_orbit(const char *l1b_file, const bool *verbose,
                       const short *nch, const short *ch,
@@ -130,17 +126,13 @@ void read_aatsr_orbit(const char *l1b_file, const bool *verbose,
 !                    depends on the function called (float or short).
 ! verbose bool   In  True: Print progress information to screen. False: Don't.
 !
-! Local variables:
-! Name Type Description
-!
-!
 ! History:
 ! 2013/10/08: AP Original version
 !
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 */
 void fetch_aatsr_float_values(EPR_SProductId *pid, const char *name,
                               const long nx, const long ny, const long x0,
@@ -166,17 +158,13 @@ void fetch_aatsr_short_values(EPR_SProductId *pid, const char *name,
 ! raz   float Out Relative azimuth angle.
 ! nx|y  int   In  Number of pixels across and along track.
 !
-! Local variables:
-! Name Type Description
-!
-!
 ! History:
 ! 2013/10/08: AP Original version
 !
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 */
 void calculate_rel_azi(float *saz, float *iaz, float *raz, const int nx,
                        const int ny);
@@ -205,47 +193,36 @@ void calculate_rel_azi(float *saz, float *iaz, float *raz, const int nx,
 ! stat       short Out Status of routine. 0 indicates success.
 ! verbose    bool  In  True: Print progress information to screen. False: Don't.
 !
-! Local variables:
-! Name Type Description
-!
-!
 ! History:
-  13/06/2012 Gareth Thomas: First version completed
-  28/08/2012 Gareth Thomas: Changes made for interfacing with Fortran using
-                            "iso_c_binding"
-                            Various bug fixes
-  12/09/2012 Gareth and Caroline: fixed bug in indexing of arrays changed <=
-                            to <
-  13/09/2012 Gareth Thomas: Removed some array allocation test code from
-                            deallocate_l1b
-  12/09/2012 Gareth and Caroline: deallocated lat/lon arrays and changed day allocation
-  13/09/2012 Caroline Poulsen: bug fix longitide being assigned latitude
-  13/09/2012 Gareth Thomas: Added start_date and gc1 and vc1 file names to
-                            output of read_aatsr_beam_ctof90 (needed by
-                            shortwave calibration correction code)
-  14/09/2012 Gareth Thomas: Bug fix: solar and instrument elevation angles are now
-                            converted into zenith angles.
-                            Also added epr_free_raster statements to get_aatsr_dimension
-                            Bug fix read_aatsr_beam: Indexing of lat/lon rasters was
-                            incorrectly including the y-offset value
-  22/11/2012 Caroline Poulsen: calculation of relative azimuth Bug fix:phi=180.0 - phi
-                            and absolutte value of angle
-  12/12/2012 Gareth Thomas: Bug fix in applying lat-lon limits in get_aatsr_dimension
-                            miny is now set correctly if statement checking for the
-                            presence of lat-lon limits now works as it should.
-                            Also, reduced the amount of debugging info coming back from
-                            the EPR API.
-  13/12/2012 Gareth Thomas: Added a check to make sure the L1B structure has been
-                            initialised to the read_aatsr_beam function.
-  14/08/2013 Gareth Thomas: Added okselev array for applying day-night masking in
-                            get_aatsr_dimension()
-!  08/10/2013 Adam Povey:    Adapted routine to the changes to the other C
-!                            routines.
+! 2012/06/13, GT: First version completed.
+! 2012/08/28, GT: Changes made for interfacing with Fortran using
+!    "iso_c_binding". Various bug fixes.
+! 2012/09/12, GT/CP: Fixed bug in indexing of arrays changed <= to <.
+! 2012/09/13, GT: Removed some array allocation test code from deallocate_l1b.
+! 2012/09/12, GT/CP: Deallocated lat/lon arrays and changed day allocation.
+! 2012/09/13, CP: Bug fix: longitide being assigned latitude.
+! 2012/09/13, GT: Added start_date and gc1 and vc1 file names to output of
+!    read_aatsr_beam_ctof90 (needed by shortwave calibration correction code).
+! 2012/09/14, GT: Bug fix: solar and instrument elevation angles are now
+!    converted into zenith angles. Also added epr_free_raster statements to
+!    get_aatsr_dimension. Bug fix read_aatsr_beam: Indexing of lat/lon rasters
+!    was incorrectly including the y-offset value.
+! 2012/11/22, CP: Calculation of relative azimuth. Bug fix: phi=180.0 - phi
+!    and absolute value of angle.
+! 2012/12/12, GT: Bug fix in applying lat-lon limits in get_aatsr_dimension,
+!    miny is now set correctly, if statement checking for the presence of lat-lon
+!    limits now works as it should. Also, reduced the amount of debugging info
+!    coming back from the EPR API.
+! 2012/12/13, GT: Added a check to make sure the L1B structure has been
+!    initialised to the read_aatsr_beam function.
+! 2013/08/14, GT: Added okselev array for applying day-night masking in
+!    get_aatsr_dimension().
+! 2013/10/08, AP: Adapted routine to the changes to the other C routines.
 !
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 */
 void get_aatsr_dimension(const char* infile, const short* daynight,
                          const float* limit, const short* half_orbit,
