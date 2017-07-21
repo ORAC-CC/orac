@@ -301,7 +301,8 @@ subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
    ! CC4CL requirements
 
    real(kind=sreal)   :: coszen
-   integer(kind=sint) :: ch1, ch2, ch3, ch4, ch5, ch6, sw1, sw2, sw3
+   integer            :: ch1, ch2, ch3, ch4, ch5, ch6, sw1, sw2, sw3
+   integer            :: legacy_channels(6)
 
    !--------------------------------------------------------------------
    ! -- Parameters used here
@@ -768,7 +769,7 @@ subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
    ! Input variables
 
    integer,                        intent(in)    :: cview, i, j
-   integer(kind=sint),             intent(in)    :: ch1, ch2, ch3, ch4, ch5, &
+   integer,                        intent(in)    :: ch1, ch2, ch3, ch4, ch5, &
                                                     ch6, sw1, sw2, sw3
    type(surface_t),                intent(in)    :: surface
    type(imager_flags_t),           intent(in)    :: imager_flags

@@ -761,7 +761,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file,s
       call read_seviri_dimensions(geo_path_file,n_across_track,n_along_track, &
                                   startx,endx,starty,endy,verbose)
       if (index(l1b_path_file,trim('RSS'))>0) then
-      	endy=endy/3
+         endy=endy/3
       endif
 
    else if (trim(adjustl(sensor)) .eq. 'SLSTR') then
