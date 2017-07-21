@@ -958,7 +958,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file,s
       ! NOAA GFS has limited (pressure) levels and no HR, so set these.
       if (ecmwf_flag .eq. 5 .or. ecmwf_flag .eq. 6 .or. ecmwf_flag .eq. 7) ecmwf_nlevels=31
       if (ecmwf_flag .eq. 5 .or. ecmwf_flag .eq. 6 .or. ecmwf_flag .eq. 7) use_hr_ecmwf=.false.
-      
+
       ! read surface wind fields and ECMWF dimensions
       if (ecmwf_time_int_method .ne. 2) then
          call read_ecmwf_wind(ecmwf_flag, ecmwf_path_file(1), &
@@ -1042,7 +1042,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file,s
       if (verbose) write(*,*) 'Reading USGS path: ',trim(USGS_path_file)
       call get_USGS_data(USGS_path_file, imager_flags, imager_geolocation, &
            usgs, assume_full_paths, use_l1_land_mask, source_atts, &
-           use_predef_lsm, verbose)
+           use_predef_lsm, startx,endx,starty,endy, verbose)
 
       ! select correct emissivity file and calculate the emissivity over land
       if (verbose) write(*,*) 'Get surface emissivity'

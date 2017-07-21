@@ -27,7 +27,7 @@
 
 subroutine get_USGS_data(path_to_USGS_file, imager_flags, imager_geolocation, &
      usgs, assume_full_paths, use_l1_land_mask, source_atts, use_predef_lsm, &
-     verbose)
+     startx,endx,starty,endy, verbose)
 
    use constants_cloud_typing_pavolonis_m
    use imager_structures_m
@@ -46,6 +46,10 @@ subroutine get_USGS_data(path_to_USGS_file, imager_flags, imager_geolocation, &
    logical,                     intent(in)    :: verbose
    type(usgs_t),                intent(out)   :: usgs
    logical,                     intent(in)    :: use_predef_lsm
+   integer,                     intent(in)    :: startx
+   integer,                     intent(in)    :: endx
+   integer,                     intent(in)    :: starty
+   integer,                     intent(in)    :: endy
 
    logical                          :: USGS_file_exist
    character(len=7)                 :: USGS_file_read
@@ -77,8 +81,8 @@ subroutine get_USGS_data(path_to_USGS_file, imager_flags, imager_geolocation, &
               trim(path_to_USGS_file)
          stop error_stop_code
       end if
-      imager_geolocation%dem = usgs%dem
-      imager_flags%lusflag   = usgs%lus
+      imager_geolocation%dem = usgs%dem(startx:endx,starty:endy)
+      imager_flags%lusflag   = usgs%lus(startx:endx,starty:endy)
    else
       ! Read the data themselves
       if (read_USGS_file(path_to_USGS_file, usgs, verbose) .ne. 0) then
