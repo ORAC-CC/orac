@@ -64,7 +64,8 @@ subroutine NC_DEF_VAR_NAME(ncid,dimids,name,varid,verbose,chunksizes, &
       ierr = nf90_put_att(ncid, varid, 'long_name', long_name)
       if (ierr .ne. NF90_NOERR) then
          write(*,*) 'ERROR: nf90_put_att(), ', trim(nf90_strerror(ierr)), &
-         ', att_name = long_name, value = ', long_name
+              ', name = ', trim(name), &
+              ', att_name = long_name, value = ', long_name
          stop error_stop_code
       end if
    end if
@@ -73,7 +74,8 @@ subroutine NC_DEF_VAR_NAME(ncid,dimids,name,varid,verbose,chunksizes, &
       ierr = nf90_put_att(ncid, varid, 'standard_name', standard_name)
       if (ierr .ne. NF90_NOERR) then
          write(*,*) 'ERROR: nf90_put_att(), ', trim(nf90_strerror(ierr)), &
-         ', att_name = standard_name, value = ', standard_name
+              ', name = ', trim(name), &
+              ', att_name = standard_name, value = ', standard_name
          stop error_stop_code
       end if
    end if
@@ -82,7 +84,8 @@ subroutine NC_DEF_VAR_NAME(ncid,dimids,name,varid,verbose,chunksizes, &
       ierr = nf90_put_att(ncid, varid, 'units', units)
       if (ierr .ne. NF90_NOERR) then
          write(*,*) 'ERROR: nf90_put_att(), ', trim(nf90_strerror(ierr)), &
-         ', att_name = units, value = ', units
+              ', name = ', trim(name), &
+              ', att_name = units, value = ', units
          stop error_stop_code
       end if
    end if
@@ -91,7 +94,8 @@ subroutine NC_DEF_VAR_NAME(ncid,dimids,name,varid,verbose,chunksizes, &
       ierr = nf90_put_att(ncid, varid, 'flag_values', flag_values)
       if (ierr .ne. NF90_NOERR) then
          write(*,*) 'ERROR: nf90_put_att(), ', trim(nf90_strerror(ierr)), &
-         ', att_name = flag_values, value = ', flag_values
+              ', name = ', trim(name), &
+              ', att_name = flag_values, value = ', flag_values
          stop error_stop_code
       end if
    end if
@@ -100,7 +104,8 @@ subroutine NC_DEF_VAR_NAME(ncid,dimids,name,varid,verbose,chunksizes, &
       ierr = nf90_put_att(ncid, varid, 'flag_masks', flag_masks)
       if (ierr .ne. NF90_NOERR) then
          write(*,*) 'ERROR: nf90_put_att(), ', trim(nf90_strerror(ierr)), &
-         ', att_name = flag_masks, value = ', flag_masks
+              ', name = ', trim(name), &
+              ', att_name = flag_masks, value = ', flag_masks
          stop error_stop_code
       end if
    end if
@@ -109,7 +114,8 @@ subroutine NC_DEF_VAR_NAME(ncid,dimids,name,varid,verbose,chunksizes, &
       ierr = nf90_put_att(ncid, varid, 'flag_meanings', flag_meanings)
       if (ierr .ne. NF90_NOERR) then
          write(*,*) 'ERROR: nf90_put_att(), ', trim(nf90_strerror(ierr)), &
-         ', att_name = flag_meanings, value = ', flag_meanings
+              ', name = ', trim(name), &
+              ', att_name = flag_meanings, value = ', flag_meanings
          stop error_stop_code
       end if
    end if
@@ -118,7 +124,8 @@ subroutine NC_DEF_VAR_NAME(ncid,dimids,name,varid,verbose,chunksizes, &
       ierr = nf90_put_att(ncid, varid, '_FillValue', fill_value)
       if (ierr .ne. NF90_NOERR) then
          write(*,*) 'ERROR: nf90_put_att(), ', trim(nf90_strerror(ierr)), &
-         ', att_name = _FillValue, value = ', fill_value
+              ', name = ', trim(name), &
+              ', att_name = _FillValue, value = ', fill_value
          stop error_stop_code
       end if
    end if
@@ -127,7 +134,8 @@ subroutine NC_DEF_VAR_NAME(ncid,dimids,name,varid,verbose,chunksizes, &
       ierr = nf90_put_att(ncid, varid, 'scale_factor', scale_factor)
       if (ierr .ne. NF90_NOERR) then
          write(*,*) 'ERROR: nf90_put_att(), ', trim(nf90_strerror(ierr)), &
-         ', att_name = scale_factor, value = ', scale_factor
+              ', name = ', trim(name), &
+              ', att_name = scale_factor, value = ', scale_factor
          stop error_stop_code
       end if
    end if
@@ -136,7 +144,8 @@ subroutine NC_DEF_VAR_NAME(ncid,dimids,name,varid,verbose,chunksizes, &
       ierr = nf90_put_att(ncid, varid, 'add_offset', add_offset)
       if (ierr .ne. NF90_NOERR) then
          write(*,*) 'ERROR: nf90_put_att(), ', trim(nf90_strerror(ierr)), &
-         ', att_name = add_offset, value = ', add_offset
+              ', name = ', trim(name), &
+              ', att_name = add_offset, value = ', add_offset
          stop error_stop_code
       end if
    end if
@@ -145,7 +154,8 @@ subroutine NC_DEF_VAR_NAME(ncid,dimids,name,varid,verbose,chunksizes, &
       ierr = nf90_put_att(ncid, varid, 'valid_min', valid_min)
       if (ierr .ne. NF90_NOERR) then
          write(*,*) 'ERROR: nf90_put_att(), ', trim(nf90_strerror(ierr)), &
-         ', att_name = valid_min, value = ', valid_min
+              ', name = ', trim(name), &
+              ', att_name = valid_min, value = ', valid_min
          stop error_stop_code
       end if
    end if
@@ -154,7 +164,8 @@ subroutine NC_DEF_VAR_NAME(ncid,dimids,name,varid,verbose,chunksizes, &
       ierr = nf90_put_att(ncid, varid, 'valid_max', valid_max)
       if (ierr .ne. NF90_NOERR) then
          write(*,*) 'ERROR: nf90_put_att(), ', trim(nf90_strerror(ierr)), &
-         ', att_name = valid_max, value = ', valid_max
+              ', name = ', trim(name), &
+              ', att_name = valid_max, value = ', valid_max
          stop error_stop_code
       end if
    end if
