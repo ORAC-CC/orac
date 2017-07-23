@@ -84,6 +84,15 @@ subroutine read_viirs_dimensions(geo_file, n_across_track, n_along_track, &
    ! Open the  dataset.
    CALL h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO-TC_All/Latitude", &
         dset_id, error)
+   if (error .ne. 0) then
+      CALL h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO_All/Latitude", &
+           dset_id, error)
+   endif
+   if (error .ne. 0) then
+   	print*,"Problem determining VIIRS dimensions"
+   	stop
+   endif
+
 
    ! Get dataset's dataspace handle.
    CALL h5dget_space_f(dset_id, dataspace, error)
@@ -282,38 +291,73 @@ subroutine read_viirs(infile,geofile,imager_geolocation, imager_measurements, &
    ! This bit reads all the data.
    ! First it loads geo/angle info from GMTCO file.
    call h5open_f(error)
-   call h5fopen_f (geofile, H5F_ACC_RDONLY_F, file_id, error)
-   call h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO-TC_All/Latitude", &
-                  dset_id, error)
-   call h5dread_f(dset_id, H5T_NATIVE_REAL, data0, pxcount, error)
-   imager_geolocation%latitude(:,:) = data0
-   call h5dclose_f(dset_id, error)
-   call h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO-TC_All/Longitude", &
-                  dset_id, error)
-   call h5dread_f(dset_id, H5T_NATIVE_REAL, data0, pxcount, error)
-   imager_geolocation%longitude(:,:) = data0
-   call h5dclose_f(dset_id, error)
-   call h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO-TC_All/SolarZenithAngle", &
-                  dset_id, error)
-   call h5dread_f(dset_id, H5T_NATIVE_REAL, data0, pxcount, error)
-   imager_angles%solzen(:,:,1) = data0
-   call h5dclose_f(dset_id, error)
-   call h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO-TC_All/SolarAzimuthAngle", &
-                  dset_id, error)
-   call h5dread_f(dset_id, H5T_NATIVE_REAL, data0, pxcount, error)
-   imager_angles%solazi(:,:,1) = data0
-   call h5dclose_f(dset_id, error)
-   call h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO-TC_All/" // &
-                  "SatelliteZenithAngle", dset_id, error)
-   call h5dread_f(dset_id, H5T_NATIVE_REAL, data0, pxcount, error)
-   imager_angles%satzen(:,:,1) = data0
-   call h5dclose_f(dset_id, error)
-   call h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO-TC_All/" // &
-                  "SatelliteAzimuthAngle", dset_id, error)
-   call h5dread_f(dset_id, H5T_NATIVE_REAL, data0, pxcount, error)
-   imager_angles%relazi(:,:,1) = data0
-   call h5dclose_f(dset_id, error)
-   call h5fclose_f(file_id, error)
+   if (index(geofile,'GMTCO') .gt. 0) then
+		call h5fopen_f (geofile, H5F_ACC_RDONLY_F, file_id, error)
+		call h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO-TC_All/Latitude", &
+		               dset_id, error)
+		call h5dread_f(dset_id, H5T_NATIVE_REAL, data0, pxcount, error)
+		imager_geolocation%latitude(:,:) = data0
+		call h5dclose_f(dset_id, error)
+		call h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO-TC_All/Longitude", &
+		               dset_id, error)
+		call h5dread_f(dset_id, H5T_NATIVE_REAL, data0, pxcount, error)
+		imager_geolocation%longitude(:,:) = data0
+		call h5dclose_f(dset_id, error)
+		call h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO-TC_All/SolarZenithAngle", &
+		               dset_id, error)
+		call h5dread_f(dset_id, H5T_NATIVE_REAL, data0, pxcount, error)
+		imager_angles%solzen(:,:,1) = data0
+		call h5dclose_f(dset_id, error)
+		call h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO-TC_All/SolarAzimuthAngle", &
+		               dset_id, error)
+		call h5dread_f(dset_id, H5T_NATIVE_REAL, data0, pxcount, error)
+		imager_angles%solazi(:,:,1) = data0
+		call h5dclose_f(dset_id, error)
+		call h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO-TC_All/" // &
+		               "SatelliteZenithAngle", dset_id, error)
+		call h5dread_f(dset_id, H5T_NATIVE_REAL, data0, pxcount, error)
+		imager_angles%satzen(:,:,1) = data0
+		call h5dclose_f(dset_id, error)
+		call h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO-TC_All/" // &
+		               "SatelliteAzimuthAngle", dset_id, error)
+		call h5dread_f(dset_id, H5T_NATIVE_REAL, data0, pxcount, error)
+		imager_angles%relazi(:,:,1) = data0
+		call h5dclose_f(dset_id, error)
+		call h5fclose_f(file_id, error)
+	else
+		call h5fopen_f (geofile, H5F_ACC_RDONLY_F, file_id, error)
+		call h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO_All/Latitude", &
+		               dset_id, error)
+		call h5dread_f(dset_id, H5T_NATIVE_REAL, data0, pxcount, error)
+		imager_geolocation%latitude(:,:) = data0
+		call h5dclose_f(dset_id, error)
+		call h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO_All/Longitude", &
+		               dset_id, error)
+		call h5dread_f(dset_id, H5T_NATIVE_REAL, data0, pxcount, error)
+		imager_geolocation%longitude(:,:) = data0
+		call h5dclose_f(dset_id, error)
+		call h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO_All/SolarZenithAngle", &
+		               dset_id, error)
+		call h5dread_f(dset_id, H5T_NATIVE_REAL, data0, pxcount, error)
+		imager_angles%solzen(:,:,1) = data0
+		call h5dclose_f(dset_id, error)
+		call h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO_All/SolarAzimuthAngle", &
+		               dset_id, error)
+		call h5dread_f(dset_id, H5T_NATIVE_REAL, data0, pxcount, error)
+		imager_angles%solazi(:,:,1) = data0
+		call h5dclose_f(dset_id, error)
+		call h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO_All/" // &
+		               "SatelliteZenithAngle", dset_id, error)
+		call h5dread_f(dset_id, H5T_NATIVE_REAL, data0, pxcount, error)
+		imager_angles%satzen(:,:,1) = data0
+		call h5dclose_f(dset_id, error)
+		call h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO_All/" // &
+		               "SatelliteAzimuthAngle", dset_id, error)
+		call h5dread_f(dset_id, H5T_NATIVE_REAL, data0, pxcount, error)
+		imager_angles%relazi(:,:,1) = data0
+		call h5dclose_f(dset_id, error)
+		call h5fclose_f(file_id, error)
+	endif
 
    ! Move on to image data, in this case from individual SVM files (per-band)
 
