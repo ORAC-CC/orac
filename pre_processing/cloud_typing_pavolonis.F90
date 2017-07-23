@@ -612,6 +612,13 @@ subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
          cycle v_loop
       end if
 
+      legacy_channels(1) = ch1
+      legacy_channels(2) = ch2
+      legacy_channels(3) = ch3
+      legacy_channels(4) = ch4
+      legacy_channels(5) = ch5
+      legacy_channels(6) = ch6
+
       ! Correct for differences in spectral responses between NOAA19 (= NN
       ! training data) and all other satellites with linear regression
       ! coefficients.
@@ -629,15 +636,20 @@ subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
 
          platform_index = get_platform_index(platform)
          n19mimic(1:3,2,:,:) = n19mimic(1:3,2,:,:) / 100.
-         do i = 1, channel_info%nchannels_total
+         do i = 1, 6
             ! do not apply correction for channel3b, which is not yet available
-            if (i .eq. ch4) cycle
+            if (i .eq. 4) cycle
+
             where (imager_angles%solzen(:,:,cview) .lt. 80.)
-               imager_measurements%data(:,:,i) = imager_measurements%data(:,:,i) * &
-                  n19mimic(i,1,1,platform_index) + n19mimic(i,2,1,platform_index)
+               imager_measurements%data(:,:,legacy_channels(i)) = &
+                    imager_measurements%data(:,:,legacy_channels(i)) * &
+                    n19mimic(i,1,1,platform_index) + &
+                    n19mimic(i,2,1,platform_index)
             else where
-               imager_measurements%data(:,:,i) = imager_measurements%data(:,:,i) * &
-                  n19mimic(i,1,2,platform_index) + n19mimic(i,2,2,platform_index)
+               imager_measurements%data(:,:,legacy_channels(i)) = &
+                    imager_measurements%data(:,:,legacy_channels(i)) * &
+                    n19mimic(i,1,2,platform_index) + &
+                    n19mimic(i,2,2,platform_index)
             end where
          end do
       end if
