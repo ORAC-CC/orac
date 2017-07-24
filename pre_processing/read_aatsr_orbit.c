@@ -36,16 +36,21 @@ void read_aatsr_orbit(const char *l1b_file, const bool *verbose,
                       bool *is_lut_drift_corrected)
 {
      float *iaz;
-     const char *ax_label[2][4], *ch_label[2][7], *fg_label[2][2], *dy_label[2];
-     int view_present[2] = { 0, 0 };
-     uint i, j;
      iaz = calloc(*nx * *ny, sizeof(float));
      if (iaz == NULL) {
           printf("ERROR: read_aatsr_orbit(): Insufficient memory available.\n");
           exit(1);
      }
 
+     const char *geo_dataset, *geo_pts_name, *geo_label[2];
+     const char *ax_dataset[2], *ax_pts_name, *ax_label[4];
+     const char *ch_label[2][7], *fg_label[2][2], *dy_label[2];
+     int view_present[2] = { 0, 0 };
+     long i, j;
+     double x_out[*nx], y_out[*ny];
+
      // Gather output array pointers into arrays for ease of use
+     float *geo_array[2]   =   {*lat, *lon};
      float *ax_array[2][5] = { {*nsza,*niza,*nsaz,iaz,*nraz},
                                {*fsza,*fiza,*fsaz,iaz,*fraz} };
      float *ch_array[2][7] = { {*nch1,*nch2,*nch3,*nch4,*nch5,*nch6,*nch7},
@@ -63,14 +68,18 @@ void read_aatsr_orbit(const char *l1b_file, const bool *verbose,
      const EPR_STime *time;
 
      // Set the names for the fields that will be read
-     ax_label[0][0] = "sun_elev_nadir";
-     ax_label[0][1] = "view_elev_nadir";
-     ax_label[0][2] = "sun_azimuth_nadir";
-     ax_label[0][3] = "view_azimuth_nadir";
-     ax_label[1][0] = "sun_elev_fward";
-     ax_label[1][1] = "view_elev_fward";
-     ax_label[1][2] = "sun_azimuth_fward";
-     ax_label[1][3] = "view_azimuth_fward";
+     geo_dataset  = "GEOLOCATION_ADS";
+     geo_pts_name = "LAT_LONG_TIE_POINTS";
+     geo_label[0] = "tie_pt_lat";
+     geo_label[1] = "tie_pt_long";
+
+     ax_dataset[0] = "NADIR_VIEW_SOLAR_ANGLES_ADS";
+     ax_dataset[1] = "FWARD_VIEW_SOLAR_ANGLES_ADS";
+     ax_pts_name   = "VIEW_ANGLE_TIE_POINTS";
+     ax_label[0] = "tie_pt_sol_elev";
+     ax_label[1] = "tie_pt_sat_elev_nad";
+     ax_label[2] = "tie_pt_sol_az";
+     ax_label[3] = "tie_pt_sat_azi";
 
      ch_label[0][0] = "reflec_nadir_0550";
      ch_label[0][1] = "reflec_nadir_0670";
@@ -117,11 +126,31 @@ void read_aatsr_orbit(const char *l1b_file, const bool *verbose,
           exit(1);
      }
 
+     /* Form output grids in units of km from the img_scan_y variable. The
+        offset of 256 along x is taken from description of m_actrk_pix_num at
+        http://envisat.esa.int/handbooks/aatsr/CNTR6-6-5.html
+        The x/y coordinates define the start of a pixel, so to get the
+        coordinates of cell centres, add 0.5. */
+     for (i=0; i<*nx; i++) x_out[i] = (double)(*startx + i) - 255.5;
+     // Use position from the time field (it's independent of view)
+     did = epr_get_dataset_id(pid, dy_label[0]);
+     rec = epr_create_record(did);
+     for (i=0; i<*ny; i++) {
+          rec = epr_read_record(did, i + *starty, rec);
+          fid = epr_get_field(rec, "img_scan_y");
+          y_out[i] = epr_get_field_elem_as_double(fid, 0) * 1e-3;
+     }
+     // Shift the y coordinate to cell centres
+     y_out[*ny-1] += 0.5 * (y_out[*ny-1] - y_out[*ny-2]);
+     for (i=0; i<*ny-1; i++)
+          y_out[i] += 0.5 * (y_out[i+1] - y_out[i]);
+     epr_free_record(rec);
+
      // Read geolocation (view independent)
-     fetch_aatsr_float_values(pid, "latitude", *nx, *ny, *startx, *starty,
-                              *lat, *verbose);
-     fetch_aatsr_float_values(pid, "longitude", *nx, *ny, *startx, *starty,
-                              *lon, *verbose);
+     for (i=0; i<2; i++) {
+          extrap_aatsr_angle(pid, geo_dataset, geo_pts_name, geo_label[i],
+                             *nx, *ny, x_out, y_out, geo_array[i], *verbose);
+     }
 
      /* Read in the information needed for calibration corrections to be applied
         from the Main Product Header */
@@ -169,9 +198,10 @@ void read_aatsr_orbit(const char *l1b_file, const bool *verbose,
 
                // Read angular information
                for (i=0; i<4; i++) {
-                    fetch_aatsr_float_values(pid, ax_label[j][i],
-                                             *nx, *ny, *startx, *starty,
-                                             ax_array[j][i], *verbose);
+                    extrap_aatsr_angle(pid, ax_dataset[j],
+                                       ax_pts_name, ax_label[i],
+                                       *nx, *ny, x_out, y_out,
+                                       ax_array[j][i], *verbose);
                }
                calculate_rel_azi(ax_array[j][2], ax_array[j][3], ax_array[j][4],
                                  *nx, *ny);
@@ -208,7 +238,8 @@ void fetch_aatsr_float_values(EPR_SProductId *pid, const char *name,
 {
      EPR_SBandId *bid;
      EPR_SRaster *raster = NULL;
-     uint stepx=1, stepy=1, i, ii, j;
+     uint stepx=1, stepy=1;
+     long i, ii, j;
      int stat;
 
      // Get a band ID for the requested band
@@ -249,7 +280,8 @@ void fetch_aatsr_short_values(EPR_SProductId *pid, const char *name,
 {
      EPR_SBandId *bid;
      EPR_SRaster *raster = NULL;
-     uint stepx=1, stepy=1, i, ii, j;
+     uint stepx=1, stepy=1;
+     long i, ii, j;
      int stat;
 
      // Get a band ID for the requested band
@@ -287,7 +319,7 @@ void fetch_aatsr_short_values(EPR_SProductId *pid, const char *name,
 void calculate_rel_azi(float *saz, float *iaz, float *raz, const int nx,
                        const int ny)
 {
-     uint i, j, k;
+     long i, j, k;
      float phi=0.0;
 
      for (j=0; j<ny; j++) {
@@ -490,4 +522,226 @@ void get_aatsr_dimension(const char* infile, const short* daynight,
      *statp = stat;
      if (*verbose) printf("Have completed get_aatsr_dimension\n");
      return;
+}
+
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+void extrap_aatsr_angle(EPR_SProductId *pid, const char *dataset_name,
+                        const char *tie_name, const char *field_name,
+                        const long nx, const long ny,
+                        double *x_out, double *y_out,
+                        float *out, const bool verbose)
+{
+     EPR_SDatasetId *did;
+     EPR_SRecord *sph, *record;
+     const EPR_SField *field;
+
+     long n_records, n_tie_pts;
+     double *tie_pts, *scan_y;
+     double **data, **sin_data, **cos_data;
+
+     long i, j;
+
+     const char *unit;
+     double scale;
+     const double rad2deg  = 180. / M_PI;
+
+
+     // Get a band ID for the requested band
+     did = epr_get_dataset_id(pid, dataset_name);
+     if (did == NULL) {
+          printf("ERROR: extrap_aatsr_angle: Dataset '%s' not found.\n",
+                 dataset_name);
+          exit(1);
+     }
+
+     // Allocate array to read tie point locations
+     sph   = epr_get_sph(pid);
+     field = epr_get_field(sph, tie_name);
+     n_tie_pts = epr_get_field_num_elems(field);
+     tie_pts   = calloc(n_tie_pts, sizeof(double));
+     if (tie_pts == NULL) {
+          printf("ERROR: extrap_aatsr_angle: Cannot allocate tie points.\n");
+          exit(1);
+     }
+     // Read tie points from the Secondary Product Header
+     epr_copy_field_elems_as_doubles(field, tie_pts, n_tie_pts);
+
+     // Allocate and read angular data
+     n_records = epr_get_num_records(did);
+     record    = epr_create_record(did);
+     data      = calloc(n_records, sizeof(double *));
+     scan_y    = calloc(n_records, sizeof(double));
+     if ((data == NULL) || (scan_y == NULL)) {
+          printf("ERROR: extrap_aatsr_angle: Cannot allocate y arrays.\n");
+          exit(1);
+     }
+     for (i=0; i<n_records; i++) {
+          data[i] = calloc(n_tie_pts, sizeof(double));
+          if (data[i] == NULL) {
+               printf("ERROR: extrap_aatsr_angle: Cannot allocate x array.\n");
+               exit(1);
+          }
+     }
+
+     // Determine scaling factor from units field
+     epr_read_record(did, 0, record);
+     field = epr_get_field(record, field_name);
+     unit = epr_get_field_unit(field);
+     if (strcmp(unit, "mdeg") == 0) {
+          scale = M_PI / 180e3;
+     } else if (strcmp(unit, "(1e-6) degrees") == 0) {
+          scale = M_PI / 180e6;
+     } else {
+          scale = 1.;
+     }
+
+     // Iterate the records
+     for (j=0; j<n_records; j++) {
+          epr_read_record(did, j, record);
+
+          // Get row number in units of km
+          field = epr_get_field(record, "img_scan_y");
+          scan_y[j] = epr_get_field_elem_as_double(field, 0) * 1e-3;
+
+          // Get requested data
+          field = epr_get_field(record, field_name);
+          epr_copy_field_elems_as_doubles(field, data[j], n_tie_pts);
+
+          // Convert angle from the input units to radians
+          for (i=0; i<n_tie_pts; i++) {
+               if (data[j][i] == -999999) {
+                    data[j][i] = NAN;
+               } else {
+                    data[j][i] *= scale;
+               }
+          }
+     }
+     epr_free_record(record);
+
+     /* Extrapolate data onto the inst grid. Take the sin and cos to retain
+        the sign of the angle, by taking arctan when we copy. */
+     sin_data = extrapolate2d(n_tie_pts, n_records, tie_pts, scan_y, data,
+                              nx, ny, x_out, y_out, sin);
+     cos_data = extrapolate2d(n_tie_pts, n_records, tie_pts, scan_y, data,
+                              nx, ny, x_out, y_out, cos);
+
+     // Copy into write array.
+     for (j=0; j<ny; j++) {
+          for (i=0; i<nx; i++)
+               out[i + j*nx] = (float)(atan2(sin_data[j][i], cos_data[j][i]) *
+                                       rad2deg);
+     }
+
+     // Tidying
+     free(tie_pts);
+     free(scan_y);
+     for (i=0; i<n_records; i++) free(data[i]);
+     for (i=0; i<ny; i++) {
+          free(sin_data[i]);
+          free(cos_data[i]);
+     }
+     free(data);
+     free(sin_data);
+     free(cos_data);
+     if (verbose) printf("Extrapolated %s\n", field_name);
+     return;
+}
+
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+double** extrapolate2d(const long nx_in, const long ny_in,
+                       double *x_in, double *y_in, double **z,
+                       const long nx_out, const long ny_out,
+                       double *x_out, double *y_out,
+                       double (*func)(double))
+{
+     long i, j;
+     long u[nx_out], v[ny_out];
+     double dx[nx_out], dy[ny_out], tx, ty;
+     double *f[ny_in];
+     for (i=0; i<ny_in; i++) {
+          f[i] = calloc(nx_in, sizeof(double));
+          if (f[i] == NULL) {
+               printf("ERROR: extrapolate2d: Cannot allocate f array.\n");
+               exit(1);
+          }
+     }
+
+     double **out = calloc(ny_out, sizeof(double *));
+     if (out == NULL) {
+          printf("ERROR: extrapolate2d: Cannot allocate y array.\n");
+          exit(1);
+     }
+     for (i=0; i<ny_out; i++) {
+          out[i] = calloc(nx_out, sizeof(double));
+          if (out[i] == NULL) {
+               printf("ERROR: extrapolate2d: Cannot allocate x array.\n");
+               exit(1);
+          }
+     }
+
+     // Prepare for interpolation
+     interpol_fraction(nx_in, x_in, nx_out, x_out, u, dx);
+     interpol_fraction(ny_in, y_in, ny_out, y_out, v, dy);
+
+     // Transform input data with given function
+     for (j=0; j<ny_in; j++) {
+          for (i=0; i<nx_in; i++)
+               f[j][i] = func(z[j][i]);
+     }
+
+     // Perform bilinear interpolation
+     for (j=0; j<ny_out; j++) {
+          ty = 1. - dy[j];
+          for (i=0; i<nx_out; i++) {
+               tx = 1. - dx[i];
+               out[j][i] =
+                    f[v[j]][u[i]]     * tx    * ty    +
+                    f[v[j]][u[i]+1]   * dx[i] * ty    +
+                    f[v[j]+1][u[i]]   * tx    * dy[j] +
+                    f[v[j]+1][u[i]+1] * dx[i] * dy[j];
+          }
+     }
+
+     for (i=0; i<ny_in; i++) free(f[i]);
+     return out;
+}
+
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+void interpol_fraction(const long n_in,  double *in,
+                       const long n_out, double *out,
+                       long *bounds, double *delta)
+{
+     /*  */
+
+     long i, j;
+     long previous_bound;
+
+     i = 0;
+     // Points below the bottom of the grid
+     while ((out[i] < in[0]) && (i < n_out)) {
+          bounds[i] = 0;
+          delta[i]  = (out[i] - in[0]) / (in[1] - in[0]);
+          i++;
+     }
+
+     // Points off the top of the grid
+     j = n_out - 1;
+     while ((out[j] > in[n_in - 1]) && (i >= 0)) {
+          bounds[j] = n_in - 2;
+          delta[j]  = (out[j] - in[n_in - 2]) / (in[n_in - 1] - in[n_in - 2]);
+          j--;
+     }
+
+     // Points within the grid
+     previous_bound = 0;
+     for (; i<=j; i++) {
+          bounds[i] = previous_bound;
+          while (out[i] > in[bounds[i] + 1]) bounds[i]++;
+          delta[i] = (out[i] - in[bounds[i]]) /
+                     (in[bounds[i] + 1] - in[bounds[i]]);
+          previous_bound = bounds[i];
+     }
 }

@@ -10,6 +10,10 @@
   - get_aatsr_dimension      Function that inspects the orbit to determine the
                              length and width of the data, subsetted to
                              consider only day or night (as required).
+  - extrap_aatsr_angle       Reads angular data at tie points and then
+                             extrapolates to the full grid.
+  - extrapolate2d            Performs bilinear interpolation.
+  - interpol_fraction        Prepares for that bilinear interpolation.
 
    Note this code requires the ESA "EPR_API" (available from Brockmann Consult
    http://www.brockmann-consult.de/cms/web/beam/software). It has been tested
@@ -21,12 +25,15 @@
    2013/10/08, AP: Original version.
    2014/04/25, GM: Add the "is_lut_drift_corrected" flag to the output from
       read_aatsr_orbit().
+   2017/07/19, AP: The band data for relative azimuth is poorly interpolated.
+      Add routines to read the tie points and interpolate it ourselves.
 
    $Id$
 */
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <math.h>
 #include "epr_api.h"
 
 #ifndef aatsr_orbit_h
@@ -82,8 +89,6 @@
 ! 2014/04/25: GM Add the "is_lut_drift_corrected" flag to the output from
 !    read_aatsr_orbit().
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 */
@@ -129,8 +134,6 @@ void read_aatsr_orbit(const char *l1b_file, const bool *verbose,
 ! History:
 ! 2013/10/08: AP Original version
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 */
@@ -160,8 +163,6 @@ void fetch_aatsr_short_values(EPR_SProductId *pid, const char *name,
 !
 ! History:
 ! 2013/10/08: AP Original version
-!
-! $Id$
 !
 ! Bugs:
 ! None known.
@@ -219,8 +220,6 @@ void calculate_rel_azi(float *saz, float *iaz, float *raz, const int nx,
 !    get_aatsr_dimension().
 ! 2013/10/08, AP: Adapted routine to the changes to the other C routines.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 */
@@ -228,4 +227,112 @@ void get_aatsr_dimension(const char* infile, const short* daynight,
                          const float* limit, const short* half_orbit,
                          long* nxp, long* nyp, long* minyp, short* stat,
                          const bool *verbose);
+
+/*Name: extrap_aatsr_angle
+!
+! Purpose:
+! Reads angular data at the tie points (rather than the full-swath band data)
+! and extrapoloates that to the full grid. To deal with the -180/180
+! discontinuity, the sin and cos of the angles are both interpolated and then
+! translated back to a single angle with arctan2.
+!
+! Description and Algorithm details:
+! 1) Open dataset.
+! 2) Read tie point locations.
+! 3) Read the angular data at the tie points, converting to radians.
+! 4) Extrapolate the sin and cos of that data onto the instrument grid.
+! 5) Take arctan2 of those fields and output to the Fortran array.
+!
+! Arguments:
+! Name         Type   In/Out/Both Description
+! ------------------------------------------------------------------------------
+! pid          EPR_SProductId In ID from EPR_OPEN_PRODUCT.
+! dataset_name char   In  Name of the datset to open.
+! tie_name     char   In  Name of the tie point array to use.
+! field_name   char   In  Name of the field to be read.
+! nx|y         long   In  Number of pixels to read across and along track.
+! x0|y0        long   In  Index of first pixel to read across and along track.
+! out          float  Out Pointer to array into which to store data.
+! verbose      bool   In  If true, Print progress information to screen.
+!
+! History:
+! 2017/07/19: AP Original version
+!
+! Bugs:
+! None known.
+*/
+void extrap_aatsr_angle(EPR_SProductId *pid, const char *dataset_name,
+                        const char *tie_name, const char *field_name,
+                        const long nx, const long ny,
+                        double *x_out, double *y_out,
+                        float *out, const bool verbose);
+
+/*Name: extrapolate2d
+!
+! Purpose:
+! Perform bilinear interpolation on an array, acting on that array with some
+! function first.
+!
+! Description and Algorithm details:
+! 1) Call interpol_fraction() to determine the interpolation increments.
+! 2) Act on every value of z with func.
+! 3) Perform a bilinear interpolation.
+!
+! Arguments:
+! Name         Type    In/Out/Both Description
+! ------------------------------------------------------------------------------
+! nx_in|ny_in   long    In  Length of the x|y axis of the tie point data.
+! x_in|y_in     double  In  Axes of the tie point data.
+! z             double  In  Data to interpolate.
+! nx_out|ny_out long    In  Length of the x|y axes of the instrument grid.
+! x_out|y_out   long    In  Axes of the instrument grid.
+! func          pointer In  Function to apply to input data.
+!
+! History:
+! 2017/07/19: AP Original version
+!
+! Bugs:
+! None known.
+*/
+double** extrapolate2d(const long nx_in, const long ny_in,
+                       double *x_in, double *y_in, double **z,
+                       const long nx_out, const long ny_out,
+                       double *x_out, double *y_out,
+                       double (*func)(double));
+
+/*Name: interpol_fraction
+!
+! Purpose:
+! For every point of OUT, this finds the pair of values in IN that bound it
+! (or the edges of IN if the point is outside of that grid) and calculates
+! delta = (out - in_below) / (in_above - in_below) for use in linear
+! interpolation. IN and OUT are assumed to increase monotonically. As the grids
+! are read from the ATSR file, I'm not going to assume that they're regular.
+!
+! Description and Algorithm details:
+! 1) Extrapolate to points below the grid.
+! 2) Extrapolate to points above the grid.
+! 3) Interpolate for points within the grid, using the bound found for the
+!    previous pixel to save time.
+!
+! Arguments:
+! Name         Type    In/Out/Both Description
+! ------------------------------------------------------------------------------
+! n_in|n_out   long    In  Length of the x|y axis of the tie point data.
+! in|out       double  In  Axes of the tie point data.
+! bounds       long    Out Array storing the index of the input grid point
+!                          beneath each output point.
+! delta        double  Out Array storing the relative position of each output
+!                          point within the input grid.
+!
+! History:
+! 2017/07/19: AP Original version
+!
+! Bugs:
+! None known.
+*/
+void interpol_fraction(const long n_in,  double *in,
+                       const long n_out, double *out,
+                       long *bounds, double *delta);
+
 #endif
