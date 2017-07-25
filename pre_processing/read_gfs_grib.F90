@@ -166,6 +166,10 @@ subroutine read_gfs_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
       if (INTF2(in_data,nbytes,out_data,out_bytes) .ne. 0) &
            call h_e_e('grib', 'INTF2 failed.')
       out_words = out_bytes/lint
+
+!      print*,shape(out_data)
+!      print*,out_words,out_bytes,lint
+!      stop
       ! load grib data into grib_api
       call grib_new_from_message(gid,out_data(1:out_bytes),stat)
       if (stat .ne. 0) call h_e_e('grib', 'Error getting GRIB_ID.')
@@ -332,7 +336,7 @@ subroutine sort_gfs_levels(preproc_prtm,verbose)
    integer          :: sh(3),lb(3),ub(3),i_0,i_1,j_0,j_1,nl
    integer          :: i,j,l,stoplev
 
-   real             :: surfp,interp
+   real(dreal)      :: surfp,interp
    real,allocatable :: p(:),t(:),q(:),o(:),pl(:)
    logical          :: stopper
 
@@ -412,6 +416,7 @@ subroutine sort_gfs_levels(preproc_prtm,verbose)
             preproc_prtm%pressure(i,j,:)=p
             preproc_prtm%temperature(i,j,:)=t
             preproc_prtm%spec_hum(i,j,:)=q
+            print*,i,j,t(31)
             preproc_prtm%ozone(i,j,:)=o
             preproc_prtm%phi_lev(i,j,:)=pl
          end if

@@ -112,7 +112,7 @@ subroutine set_ecmwf(cyear, cmonth, cday, chour, ecmwf_path, ecmwf_path2, &
    end if
 
    ! Use 3-hourly NOAA GFS data, otherwise use 6-hourly ECMWF data
-   if (ecmwf_flag .eq. 5 .or. ecmwf_flag .eq. 7) then
+   if (ecmwf_flag .eq. 5 .or. ecmwf_flag .eq. 7 .or. ecmwf_flag .eq. 8) then
       time_fac = 3._dreal / 24._dreal
    else
       time_fac = 6._dreal / 24._dreal
@@ -394,6 +394,10 @@ subroutine make_ecmwf_name(cyear,cmonth,cday,chour,ecmwf_flag,ecmwf_path, &
       ecmwf_path_file=trim(adjustl(ecmwf_path))//'/GFS_'// &
            trim(adjustl(cyear))//trim(adjustl(cmonth))// &
            trim(adjustl(cday))//trim(adjustl(chour))//'00.grb'
+   case(8)
+      ecmwf_path_file=trim(adjustl(ecmwf_path))//'/GFS_'// &
+           trim(adjustl(cyear))//trim(adjustl(cmonth))// &
+           trim(adjustl(cday))//trim(adjustl(chour))//'00.grb.nc'
    case default
       write(*,*) 'ERROR: set_ecmwf(): Unknown ECMWF file format flag. ' // &
                  'Please select 0, 1, 2, 3, or 4.'

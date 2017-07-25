@@ -108,7 +108,7 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf, high_res, ecmwf_flag)
    allocate(ecmwf%lat(nj))
 
    if (.not. high_res) then
-      if (ecmwf_flag .ne. 5 .and. ecmwf_flag .ne. 6 .and. ecmwf_flag .ne. 7) then
+      if (ecmwf_flag .lt. 5 .or. ecmwf_flag .gt. 8) then
          allocate(ecmwf%avec(nk+1))
          allocate(ecmwf%bvec(nk+1))
       else
@@ -224,7 +224,7 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf, high_res, ecmwf_flag)
 
    ecmwf%xdim=ni
    ecmwf%ydim=nj
-   if (.not. high_res .and. ecmwf_flag .ne. 5 .and. ecmwf_flag .ne. 6 .and. ecmwf_flag .ne. 7) then
+   if (.not. high_res .and. (ecmwf_flag .lt. 5 .or. ecmwf_flag .gt. 8)) then
       ecmwf%kdim=nk
       if (nk .ne. nlevels) &
            call h_e_e('wind_grib', 'Inconsistent vertical levels.')
@@ -233,7 +233,7 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf, high_res, ecmwf_flag)
    end if
 
    ! clean-up
-   if (.not. high_res .and. ecmwf_flag .ne. 5 .and. ecmwf_flag .ne. 6 .and. ecmwf_flag .ne. 7) then
+   if (.not. high_res .and. (ecmwf_flag .lt. 5 .or. ecmwf_flag .gt. 8)) then
       deallocate(pv)
    end if
    deallocate(lat)

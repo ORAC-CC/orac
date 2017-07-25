@@ -76,7 +76,7 @@ subroutine read_ecmwf_wind(ecmwf_flag, ecmwf_path_file, ecmwf_HR_path_file, &
          call read_ecmwf_wind_grib(ecmwf_HR_path_file,ecmwf_HR,.true.,ecmwf_flag)
       end if
    case(1)
-      call read_ecmwf_wind_nc(ecmwf,ecmwf_path_file,ecmwf_path_file2, &
+      call read_ecmwf_wind_nc(ecmwf,ecmwf_path_file,ecmwf_flag,ecmwf_path_file2, &
            ecmwf_path_file3)
       if (verbose) write(*,*)'ecmwf_dims ncdf: ',ecmwf%xdim,ecmwf%ydim
       if (use_hr_ecmwf) then
@@ -90,16 +90,16 @@ subroutine read_ecmwf_wind(ecmwf_flag, ecmwf_path_file, ecmwf_HR_path_file, &
          call read_ecmwf_wind_grib(ecmwf_HR_path_file,ecmwf_HR,.true.,ecmwf_flag)
       end if
    case(3)
-      call read_ecmwf_wind_nc(ecmwf,ecmwf_path_file)
+      call read_ecmwf_wind_nc(ecmwf,ecmwf_path_file,ecmwf_flag)
       if (verbose) write(*,*)'ecmwf_dims ncdf: ',ecmwf%xdim,ecmwf%ydim,ecmwf%kdim
       if (use_hr_ecmwf) then
-         call read_ecmwf_wind_nc(ecmwf_HR,ecmwf_HR_path_file)
+         call read_ecmwf_wind_nc(ecmwf_HR,ecmwf_HR_path_file,ecmwf_flag)
       end if
    case(4)
-      call read_ecmwf_wind_nc(ecmwf,ecmwf_path_file)
+      call read_ecmwf_wind_nc(ecmwf,ecmwf_path_file,ecmwf_flag)
       if (verbose) write(*,*)'ecmwf_dims ncdf: ',ecmwf%xdim,ecmwf%ydim
       if (use_hr_ecmwf) then
-         call read_ecmwf_wind_nc(ecmwf_HR,ecmwf_HR_path_file)
+         call read_ecmwf_wind_nc(ecmwf_HR,ecmwf_HR_path_file,ecmwf_flag)
       end if
    case(5)
       call read_ecmwf_wind_grib(ecmwf_path_file,ecmwf,.false.,ecmwf_flag)
@@ -110,8 +110,11 @@ subroutine read_ecmwf_wind(ecmwf_flag, ecmwf_path_file, ecmwf_HR_path_file, &
    case(7)
       call read_ecmwf_wind_grib(ecmwf_path_file,ecmwf,.false.,ecmwf_flag)
       if (verbose) write(*,*)'ecmwf_dims grib: ',ecmwf%xdim,ecmwf%ydim
+   case(8)
+      call read_ecmwf_wind_nc(ecmwf,ecmwf_path_file,ecmwf_flag)
+      if (verbose) write(*,*)'ecmwf_dims grib: ',ecmwf%xdim,ecmwf%ydim
    case default
-      write(*,*) "Incorrect ECMWF flag, must be between 0-7."
+      write(*,*) "Incorrect ECMWF flag, must be between 0-8."
       stop
    end select
    if (verbose) then
@@ -232,6 +235,10 @@ subroutine read_ecmwf(ecmwf_flag, ecmwf_path_file, ecmwf_path_file2, &
       if (verbose) write(*,*) 'Reading gfs path: ',trim(ecmwf_path_file)
       call read_gfs_grib(ecmwf_path_file,preproc_dims,preproc_geoloc, &
            preproc_prtm,verbose)
+   case(8)
+      if (verbose) write(*,*) 'Reading gfs path: ',trim(ecmwf_path_file)
+      call read_gfs_nc(ecmwf_path_file,ecmwf,preproc_dims,preproc_geoloc, &
+           preproc_prtm,verbose,ecmwf_flag)
    end select
 
 

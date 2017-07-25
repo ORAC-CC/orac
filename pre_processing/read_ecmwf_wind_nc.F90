@@ -38,7 +38,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine read_ecmwf_wind_nc(ecmwf, ecmwf_path, ecmwf2path, ecmwf3path)
+subroutine read_ecmwf_wind_nc(ecmwf, ecmwf_path, ecmwf_flag, ecmwf2path, ecmwf3path)
 
    use preproc_constants_m
 
@@ -46,11 +46,17 @@ subroutine read_ecmwf_wind_nc(ecmwf, ecmwf_path, ecmwf2path, ecmwf3path)
 
    type(ecmwf_t),    intent(inout)        :: ecmwf
    character(len=*), intent(in)           :: ecmwf_path
+   integer,          intent(in)           :: ecmwf_flag
    character(len=*), intent(in), optional :: ecmwf2path
    character(len=*), intent(in), optional :: ecmwf3path
 
    call ecmwf_wind_init(ecmwf)
-   call ecmwf_abvec_init(ecmwf)
+   if (ecmwf_flag .lt. 5 .or. ecmwf_flag .gt. 8) then
+   	call ecmwf_abvec_init(ecmwf)
+   else
+      allocate(ecmwf%avec(ecmwf%kdim))
+      allocate(ecmwf%bvec(ecmwf%kdim))
+   end if
 
    ! loop over given files (order not necessarily known)
    call read_ecmwf_wind_nc_file(ecmwf_path,ecmwf)

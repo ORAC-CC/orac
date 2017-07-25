@@ -59,6 +59,7 @@ contains
 #include "read_ecmwf_wind_badc.F90"
 #include "read_ecmwf_nc.F90"
 #include "read_ecmwf_grib.F90"
+#include "read_gfs_nc.F90"
 #include "read_gfs_grib.F90"
 #include "rearrange_ecmwf.F90"
 
