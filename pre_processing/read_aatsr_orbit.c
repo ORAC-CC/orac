@@ -149,7 +149,8 @@ void read_aatsr_orbit(const char *l1b_file, const bool *verbose,
      // Read geolocation (view independent)
      for (i=0; i<2; i++) {
           extrap_aatsr_angle(pid, geo_dataset, geo_pts_name, geo_label[i],
-                             *nx, *ny, x_out, y_out, geo_array[i], *verbose);
+                             *nx, *ny, x_out, y_out, geo_array[i], *verbose,
+                             false);
      }
 
      /* Read in the information needed for calibration corrections to be applied
@@ -201,7 +202,7 @@ void read_aatsr_orbit(const char *l1b_file, const bool *verbose,
                     extrap_aatsr_angle(pid, ax_dataset[j],
                                        ax_pts_name, ax_label[i],
                                        *nx, *ny, x_out, y_out,
-                                       ax_array[j][i], *verbose);
+                                       ax_array[j][i], *verbose, i == 3);
                }
                calculate_rel_azi(ax_array[j][2], ax_array[j][3], ax_array[j][4],
                                  *nx, *ny);
@@ -530,15 +531,16 @@ void extrap_aatsr_angle(EPR_SProductId *pid, const char *dataset_name,
                         const char *tie_name, const char *field_name,
                         const long nx, const long ny,
                         double *x_out, double *y_out,
-                        float *out, const bool verbose)
+                        float *out, const bool verbose,
+                        const bool ignore_centre_tie_pnt)
 {
      EPR_SDatasetId *did;
      EPR_SRecord *sph, *record;
      const EPR_SField *field;
 
-     long n_records, n_tie_pts;
+     long n_records, n_tie_pts, half_tie, x0;
      double *tie_pts, *scan_y;
-     double **data, **sin_data, **cos_data;
+     double **data, *sin_data[ny], *cos_data[ny];
 
      long i, j;
 
@@ -619,12 +621,59 @@ void extrap_aatsr_angle(EPR_SProductId *pid, const char *dataset_name,
      }
      epr_free_record(record);
 
+     // Allocate temporary arrays
+     for (i=0; i<ny; i++) {
+          sin_data[i] = calloc(nx, sizeof(double));
+          cos_data[i] = calloc(nx, sizeof(double));
+          if (sin_data[i] == NULL || cos_data[i] == NULL) {
+               printf("ERROR: extrap_aatsr_angle: ");
+               printf("Cannot allocate sin/cos arrays.\n");
+               exit(1);
+          }
+     }
+
      /* Extrapolate data onto the inst grid. Take the sin and cos to retain
         the sign of the angle, by taking arctan when we copy. */
-     sin_data = extrapolate2d(n_tie_pts, n_records, tie_pts, scan_y, data,
-                              nx, ny, x_out, y_out, sin);
-     cos_data = extrapolate2d(n_tie_pts, n_records, tie_pts, scan_y, data,
-                              nx, ny, x_out, y_out, cos);
+     if (ignore_centre_tie_pnt) {
+          /* In some cases, the central tie point is invalid and we need to
+             extrapolate the two sides of the orbit separately. */
+          if (n_tie_pts % 2 == 0) {
+               printf("ERROR: extrapolate2d: ignore_centre_tie_pnt requested ");
+               printf("for an even length array.\n");
+               exit(1);
+          }
+
+          // Find halfway points
+          half_tie = n_tie_pts / 2;
+          x0 = 0;
+          while (x_out[x0] < 0.) x0++;
+
+          if (x0 > 0) {
+               extrapolate2d(0, half_tie, tie_pts, 0, n_records, scan_y,
+                             0, x0, x_out, 0, ny, y_out,
+                             data, sin, sin_data);
+               extrapolate2d(0, half_tie, tie_pts, 0, n_records, scan_y,
+                             0, x0, x_out, 0, ny, y_out,
+                             data, cos, cos_data);
+          }
+
+          if (x0 != nx) {
+               extrapolate2d(half_tie+1, half_tie, tie_pts, 0, n_records, scan_y,
+                             x0, nx-x0, x_out, 0, ny, y_out,
+                             data, sin, sin_data);
+               extrapolate2d(half_tie+1, half_tie, tie_pts, 0, n_records, scan_y,
+                             x0, nx-x0, x_out, 0, ny, y_out,
+                             data, cos, cos_data);
+          }
+     } else {
+          // Interpolate the entire field
+          extrapolate2d(0, n_tie_pts, tie_pts, 0, n_records, scan_y,
+                        0, nx, x_out,  0, ny, y_out,
+                        data, sin, sin_data);
+          extrapolate2d(0, n_tie_pts, tie_pts, 0, n_records, scan_y,
+                        0, nx, x_out,  0, ny, y_out,
+                        data, cos, cos_data);
+     }
 
      // Copy into write array.
      for (j=0; j<ny; j++) {
@@ -642,19 +691,17 @@ void extrap_aatsr_angle(EPR_SProductId *pid, const char *dataset_name,
           free(cos_data[i]);
      }
      free(data);
-     free(sin_data);
-     free(cos_data);
      if (verbose) printf("Extrapolated %s\n", field_name);
      return;
 }
 
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
-double** extrapolate2d(const long nx_in, const long ny_in,
-                       double *x_in, double *y_in, double **z,
-                       const long nx_out, const long ny_out,
-                       double *x_out, double *y_out,
-                       double (*func)(double))
+void extrapolate2d(const long x0_in, const long nx_in, double *x_in,
+                   const long y0_in, const long ny_in, double *y_in,
+                   const long x0_out, const long nx_out, double *x_out,
+                   const long y0_out, const long ny_out, double *y_out,
+                   double **z, double (*func)(double), double **out)
 {
      long i, j;
      long u[nx_out], v[ny_out];
@@ -668,27 +715,14 @@ double** extrapolate2d(const long nx_in, const long ny_in,
           }
      }
 
-     double **out = calloc(ny_out, sizeof(double *));
-     if (out == NULL) {
-          printf("ERROR: extrapolate2d: Cannot allocate y array.\n");
-          exit(1);
-     }
-     for (i=0; i<ny_out; i++) {
-          out[i] = calloc(nx_out, sizeof(double));
-          if (out[i] == NULL) {
-               printf("ERROR: extrapolate2d: Cannot allocate x array.\n");
-               exit(1);
-          }
-     }
-
      // Prepare for interpolation
-     interpol_fraction(nx_in, x_in, nx_out, x_out, u, dx);
-     interpol_fraction(ny_in, y_in, ny_out, y_out, v, dy);
+     interpol_fraction(x0_in, nx_in, x_in, x0_out, nx_out, x_out, u, dx);
+     interpol_fraction(y0_in, ny_in, y_in, y0_out, ny_out, y_out, v, dy);
 
      // Transform input data with given function
      for (j=0; j<ny_in; j++) {
           for (i=0; i<nx_in; i++)
-               f[j][i] = func(z[j][i]);
+               f[j][i] = func(z[y0_in + j][x0_in + i]);
      }
 
      // Perform bilinear interpolation
@@ -696,7 +730,7 @@ double** extrapolate2d(const long nx_in, const long ny_in,
           ty = 1. - dy[j];
           for (i=0; i<nx_out; i++) {
                tx = 1. - dx[i];
-               out[j][i] =
+               out[y0_out + j][x0_out + i] =
                     f[v[j]][u[i]]     * tx    * ty    +
                     f[v[j]][u[i]+1]   * dx[i] * ty    +
                     f[v[j]+1][u[i]]   * tx    * dy[j] +
@@ -705,33 +739,31 @@ double** extrapolate2d(const long nx_in, const long ny_in,
      }
 
      for (i=0; i<ny_in; i++) free(f[i]);
-     return out;
 }
 
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
-void interpol_fraction(const long n_in,  double *in,
-                       const long n_out, double *out,
+void interpol_fraction(const long in0, const long n_in,  double *in,
+                       const long out0, const long n_out, double *out,
                        long *bounds, double *delta)
 {
-     /*  */
-
      long i, j;
      long previous_bound;
+     const long in1 = in0 + n_in - 1;
 
      i = 0;
      // Points below the bottom of the grid
-     while ((out[i] < in[0]) && (i < n_out)) {
+     while ((out[out0 + i] < in[in0]) && (i < n_out)) {
           bounds[i] = 0;
-          delta[i]  = (out[i] - in[0]) / (in[1] - in[0]);
+          delta[i]  = (out[out0 + i] - in[in0]) / (in[in0 + 1] - in[in0]);
           i++;
      }
 
      // Points off the top of the grid
      j = n_out - 1;
-     while ((out[j] > in[n_in - 1]) && (i >= 0)) {
+     while ((out[out0 + j] > in[in1]) && (j >= i)) {
           bounds[j] = n_in - 2;
-          delta[j]  = (out[j] - in[n_in - 2]) / (in[n_in - 1] - in[n_in - 2]);
+          delta[j]  = (out[out0 + j] - in[in1 - 1]) / (in[in1] - in[in1 - 1]);
           j--;
      }
 
@@ -739,9 +771,9 @@ void interpol_fraction(const long n_in,  double *in,
      previous_bound = 0;
      for (; i<=j; i++) {
           bounds[i] = previous_bound;
-          while (out[i] > in[bounds[i] + 1]) bounds[i]++;
-          delta[i] = (out[i] - in[bounds[i]]) /
-                     (in[bounds[i] + 1] - in[bounds[i]]);
+          while (out[out0 + i] > in[in0 + bounds[i] + 1]) bounds[i]++;
+          delta[i] = (out[out0 + i] - in[in0 + bounds[i]]) /
+                     (in[in0 + bounds[i] + 1] - in[in0 + bounds[i]]);
           previous_bound = bounds[i];
      }
 }

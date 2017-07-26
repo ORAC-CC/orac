@@ -27,6 +27,8 @@
       read_aatsr_orbit().
    2017/07/19, AP: The band data for relative azimuth is poorly interpolated.
       Add routines to read the tie points and interpolate it ourselves.
+   2017/07/25, AP: Add force_zero_azimuth to fix incorrect tie point values in
+      the nadir satellite azimuth.
 
    $Id$
 */
@@ -85,8 +87,8 @@
 ! vc1_file      char   Out Name of the visible calibration file applied.
 !
 ! History:
-! 2013/10/08: AP Original version
-! 2014/04/25: GM Add the "is_lut_drift_corrected" flag to the output from
+! 2013/10/08, AP: Original version
+! 2014/04/25, GM: Add the "is_lut_drift_corrected" flag to the output from
 !    read_aatsr_orbit().
 !
 ! Bugs:
@@ -132,7 +134,7 @@ void read_aatsr_orbit(const char *l1b_file, const bool *verbose,
 ! verbose bool   In  True: Print progress information to screen. False: Don't.
 !
 ! History:
-! 2013/10/08: AP Original version
+! 2013/10/08, AP: Original version
 !
 ! Bugs:
 ! None known.
@@ -162,7 +164,7 @@ void fetch_aatsr_short_values(EPR_SProductId *pid, const char *name,
 ! nx|y  int   In  Number of pixels across and along track.
 !
 ! History:
-! 2013/10/08: AP Original version
+! 2013/10/08, AP: Original version
 !
 ! Bugs:
 ! None known.
@@ -253,10 +255,14 @@ void get_aatsr_dimension(const char* infile, const short* daynight,
 ! nx|y         long   In  Number of pixels to read across and along track.
 ! x0|y0        long   In  Index of first pixel to read across and along track.
 ! out          float  Out Pointer to array into which to store data.
-! verbose      bool   In  If true, Print progress information to screen.
+! verbose      bool   In  If true, print progress information to screen.
+! ignore_centre_tie_pnt bool In When true, separately extrapolates the pixels
+!                         left and right of the sub-satellite point.
 !
 ! History:
-! 2017/07/19: AP Original version
+! 2017/07/19, AP: Original version
+! 2017/07/25, AP: Add force_zero_azimuth to fix incorrect tie point values in
+!    the nadir satellite azimuth.
 !
 ! Bugs:
 ! None known.
@@ -265,7 +271,8 @@ void extrap_aatsr_angle(EPR_SProductId *pid, const char *dataset_name,
                         const char *tie_name, const char *field_name,
                         const long nx, const long ny,
                         double *x_out, double *y_out,
-                        float *out, const bool verbose);
+                        float *out, const bool verbose,
+                        const bool ignore_centre_tie_pnt);
 
 /*Name: extrapolate2d
 !
@@ -281,24 +288,29 @@ void extrap_aatsr_angle(EPR_SProductId *pid, const char *dataset_name,
 ! Arguments:
 ! Name         Type    In/Out/Both Description
 ! ------------------------------------------------------------------------------
-! nx_in|ny_in   long    In  Length of the x|y axis of the tie point data.
-! x_in|y_in     double  In  Axes of the tie point data.
+! x0_in|y0_in   long    In  Index of first element of x|y input array to use.
+! nx_in|ny_in   long    In  Length of the x|y axis of the input data.
+! x_in|y_in     double  In  Axes of the inputt data.
+! x0_out|y0_out long    In  Index of first element of x|y output array to use.
+! nx_out|ny_out long    In  Length of the x|y axes of the output data.
+! x_out|y_out   long    In  Axes of the output data.
 ! z             double  In  Data to interpolate.
-! nx_out|ny_out long    In  Length of the x|y axes of the instrument grid.
-! x_out|y_out   long    In  Axes of the instrument grid.
 ! func          pointer In  Function to apply to input data.
+! out           pointer Out Pointer to output data.
 !
 ! History:
-! 2017/07/19: AP Original version
+! 2017/07/19, AP: Original version
+! 2017/07/25, AP: Add force_zero_azimuth to fix incorrect tie point values in
+!    the nadir satellite azimuth.
 !
 ! Bugs:
 ! None known.
 */
-double** extrapolate2d(const long nx_in, const long ny_in,
-                       double *x_in, double *y_in, double **z,
-                       const long nx_out, const long ny_out,
-                       double *x_out, double *y_out,
-                       double (*func)(double));
+void extrapolate2d(const long x0_in, const long nx_in, double *x_in,
+                   const long y0_in, const long ny_in, double *y_in,
+                   const long x0_out, const long nx_out, double *x_out,
+                   const long y0_out, const long ny_out, double *y_out,
+                   double **z, double (*func)(double), double **out);
 
 /*Name: interpol_fraction
 !
@@ -318,6 +330,7 @@ double** extrapolate2d(const long nx_in, const long ny_in,
 ! Arguments:
 ! Name         Type    In/Out/Both Description
 ! ------------------------------------------------------------------------------
+! in0|out0     long    In  Index of the first element of the x|y array to use.
 ! n_in|n_out   long    In  Length of the x|y axis of the tie point data.
 ! in|out       double  In  Axes of the tie point data.
 ! bounds       long    Out Array storing the index of the input grid point
@@ -326,13 +339,15 @@ double** extrapolate2d(const long nx_in, const long ny_in,
 !                          point within the input grid.
 !
 ! History:
-! 2017/07/19: AP Original version
+! 2017/07/19, AP: Original version
+! 2017/07/25, AP: Add force_zero_azimuth to fix incorrect tie point values in
+!    the nadir satellite azimuth.
 !
 ! Bugs:
 ! None known.
 */
-void interpol_fraction(const long n_in,  double *in,
-                       const long n_out, double *out,
+void interpol_fraction(const long in0, const long n_in,  double *in,
+                       const long out0, const long n_out, double *out,
                        long *bounds, double *delta);
 
 #endif
