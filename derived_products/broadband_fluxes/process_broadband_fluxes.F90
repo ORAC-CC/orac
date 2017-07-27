@@ -90,6 +90,9 @@
 !                 Note, need to update tsi_soho_sorce_1978_2015.nc.
 ! 2017/06/23, OS: added WRAPPER subroutine definition and settings
 ! 2017/06/30, OS: net nTSI to + 500, so that values of 2016 are read
+! 2017/07/27, MC: removed unit conversion on Q and O3 profiles to be compatible with the
+!                 output from the PRTM file represented in kg/kg. 
+!                 Also updated the gravitational constant to the appropriate value of 9.80665.
 !
 ! $Id$
 !
@@ -710,12 +713,8 @@ program process_broadband_fluxes
     end if
 
     !Set PRTM units
-    H  = (H/9.81)/1000. !to put to km
-    Q  = Q*(Rdryair/Rwetair)*(1e-6) !ppmv --> kg/kg
-    O3 = O3*(Rdryair/Rozone)*(1e-6) !ppmv --> kg/kg
+    H  = (H/9.80665)/1000. !to put to km
 
-    !call collocate_prtm_profile(LON(pxX0,pxY0),LAT(pxX0,pxY0),&
-    !          xdim_prtm,ydim_prtm,tlon_prtm,tlat_prtm,tlonid,tlatid)
     !print*,tlonid,tlatid
     !print*,xdim_prtm,ydim_prtm,levdim_prtm
     !print*,'PRESSURE: ',P(:,tlonid,tlatid)
