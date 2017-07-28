@@ -5,7 +5,7 @@
 
 !-----------------------------------------------------------------------
       subroutine driver_for_bugsrad(nlm,tsi,theta,asfcswrdr,asfcnirdr,asfcswrdf,asfcnirdf,tsfc,&
-                             phaseflag,cref,ccot,hctop,hcbase,&
+                             phaseflag,nlayers,cref,ccot,hctop,hcbase,&
                              hctopID,hcbaseID,&
                              pxZ,pxP,pxT,pxQ,pxO3,&
                              toalwup,toaswdn,toaswup,&
@@ -52,23 +52,28 @@
        !model setup & cloud locations
        integer, intent(in) :: &
          nlm         ,& !Number of vertical layers.      (-).
-         hctopID(1)  ,& !vertical level index for Hctop  (-).
-         hcbaseID(1)    !vertical level index for Hcbase (-).
+         nlayers      !Number of cloud layers
+
+       integer, intent(in) :: &
+         hctopID(nlayers)  ,& !vertical level index for Hctop  (-).
+         hcbaseID(nlayers)    !vertical level index for Hcbase (-).
 
        !column quantities
        real, intent(in) :: &
          tsi       ,&   !totoal solar irradiance              (W/m2).
          theta     ,&   !cosine of solar zenith angle            (-).
-         phaseflag ,&   !cloud phase=0 clear, = 1water, =2ice    (-).
-         cref      ,&   !satellite cloud effective radius       (um).
-         ccot      ,&   !satellite cloud optical depth           (-).
-         hctop     ,&   !satellite cloud top height             (km).
-         hcbase    ,&   !satelliet cloud base height            (km).
          asfcswrdr   ,&   !DIRECT visible surface albedo                  (-).
          asfcnirdr   ,&   !DIRECT near infrared surface albedo            (-).
          asfcswrdf   ,&   !DIFFUSE visible surface albedo                  (-).
          asfcnirdf   ,&   !DIFFUSE near infrared surface albedo            (-).
          tsfc           !surface temperature
+
+       real, intent(in) :: &
+         phaseflag(nlayers) ,&   !cloud phase=0 clear, = 1water, =2ice    (-).
+         cref(nlayers)      ,&   !satellite cloud effective radius       (um).
+         ccot(nlayers)      ,&   !satellite cloud optical depth           (-).
+         hctop(nlayers)     ,&   !satellite cloud top height             (km).
+         hcbase(nlayers)         !satelliet cloud base height            (km).
 
       !meteorological profiles
        real, dimension(nlm+1) :: &
@@ -199,34 +204,62 @@
    qril(1,:) = 0.0 !snow mixing ratio
    acld(1,:) = 0.0 !layer cloud fraction
 
-   !assign cloud to vertical layer
-   acld(1,hctopID(1):hcbaseID(1)) = 1.0
 
-   !compute cloud water mixing ratio
-   if(phaseflag .eq. 1) then
-    LWP=((5./9.)*cref*ccot) * (5./6.)
-    CWC=LWP/((hctop-hcbase)*1000.)
-    !mixing ratio = CWC / density of air (density = p/RT)
-    qcwl(1,hctopID(1):hcbaseID(1))=(CWC/(pl(1,hctopID(1):hcbaseID(1)) &
-                       *100./(287.*tl(1,hctopID(1):hcbaseID(1)))))/1000.
-   end if
-   if(phaseflag .eq. 2) then
-    LWP=((5./9.)*cref*ccot) * (5./6.)
-    CWC=LWP/((hctop-hcbase)*1000.)
-    qcil(1,hctopID(1):hcbaseID(1))=(CWC/( pl(1,hctopID(1):hcbaseID(1)) &
-                       *100./(287.*tl(1,hctopID(1):hcbaseID(1)))))/1000.
-   end if
+   do i=1,nlayers
+    !assign cloud to vertical layer
+    acld(1,hctopID(i):hcbaseID(i)) = 1.0
+
+    !compute cloud water mixing ratio
+    if(phaseflag(i) .eq. 1) then
+     LWP=((5./9.)*cref(i)*ccot(i)) * (5./6.)
+     CWC=LWP/((hctop(i)-hcbase(i))*1000.)
+     !mixing ratio = CWC / density of air (density = p/RT)
+     qcwl(1,hctopID(i):hcbaseID(i))=(CWC/(pl(1,hctopID(i):hcbaseID(i)) &
+                       *100./(287.*tl(1,hctopID(i):hcbaseID(i)))))/1000.
+    end if
+    if(phaseflag(i) .eq. 2) then
+    LWP=((5./9.)*cref(i)*ccot(i)) * (5./6.)
+    CWC=LWP/((hctop(i)-hcbase(i))*1000.)
+    qcil(1,hctopID(i):hcbaseID(i))=(CWC/( pl(1,hctopID(i):hcbaseID(i)) &
+                       *100./(287.*tl(1,hctopID(i):hcbaseID(i)))))/1000.
+    end if
+   enddo
 
    !read solar factor
    slr(:) = solar_factor
 
    !print*,CWC
    !print*,phaseflag
-   !print*,hctopID(1),hcbaseID(1),hctop,hcbase
-   !print*,qcwl
-   !print*,''
-   !print*,qcil
-   !print*,''
+!   print*,hctopID(1),hcbaseID(1),hctop,hcbase
+!   print*,qcwl
+!   print*,''
+!   print*,qcil
+!   print*,''
+
+!PRINT*,'nlen = ',nlen
+!PRINT*,'len = ',len
+!PRINT*,'nlm = ',nlm
+!PRINT*,'pl2 = ',pl2
+!PRINT*,'pl = ',pl
+!PRINT*,'dpl = ',dpl
+!PRINT*,'tl = ',tl
+!PRINT*,'ql = ',ql
+!PRINT*,'qcwl = ',qcwl
+!PRINT*,'qcil = ',qcil
+!PRINT*,'qril = ',qril
+!PRINT*,'o3l = ',o3l
+!PRINT*,'ts = ',ts
+!PRINT*,'amu0 = ',amu0
+!PRINT*,'slr = ',slr
+!PRINT*,'alvdf = ',alvdf
+!PRINT*,'alndf = ',alndf
+!PRINT*,'alvdr = ',alvdr
+!PRINT*,'alndr = ',alndr
+!PRINT*,'sol_const = ',sol_const
+!PRINT*,'gravity = ',gravity
+!PRINT*,'cp_dry_air = ',cp_dry_air
+!PRINT*,'asl = ',asl
+!PRINT*,'atl = ',atl
 
 !---- CALL THE RADIATIVE TRANSFER CODE:
       call bugs_rad(nlen,len,nlm,pl2,pl,dpl,tl,ql,qcwl,qcil,qril, &
@@ -238,20 +271,20 @@
 
 !---- OUTPUT RESULTS:
 ! print fluxes in W/m2, heating rates in K/day.
-      !print *, " Fluxes   Plev       SW_DN       SW_UP       LW_DN       LW_UP"
-      !print *, "            Pa       W/m^2       W/m^2       W/m^2       W/m^2"
-      !do l=1,nlm+1
-      !  print '(I4,5(F12.3))',l,pl2(1,l),fdsw(1,l),fusw(1,l), &
-      !                                   fdlw(1,l),fulw(1,l)
-      !end do
-
-      !print *, "CLR Fluxes   Plev       SW_DN       SW_UP       LW_DN       LW_UP"
-      !print *, "            Pa       W/m^2       W/m^2       W/m^2       W/m^2"
-      !do l=1,nlm+1
-      !  print '(I4,5(F12.3))',l,pl2(1,l),fdswcl(1,l),fuswcl(1,l), &
-      !                                   fdlwcl(1,l),fulwcl(1,l)
-      !end do
-
+!      print *, " Fluxes   Plev       SW_DN       SW_UP       LW_DN       LW_UP"
+!      print *, "            Pa       W/m^2       W/m^2       W/m^2       W/m^2"
+!      do l=1,nlm+1
+!        print '(I4,5(F12.3))',l,pl2(1,l),fdsw(1,l),fusw(1,l), &
+!                                         fdlw(1,l),fulw(1,l)
+!      end do
+!
+!      print *, "CLR Fluxes   Plev       SW_DN       SW_UP       LW_DN       LW_UP"
+!      print *, "            Pa       W/m^2       W/m^2       W/m^2       W/m^2"
+!      do l=1,nlm+1
+!        print '(I4,5(F12.3))',l,pl2(1,l),fdswcl(1,l),fuswcl(1,l), &
+!                                         fdlwcl(1,l),fulwcl(1,l)
+!      end do
+!
 !      print *, 'Heating Rates   Play              SW            LW'
 !      print *, '                  Pa           K/day         K/day'
 !      do l=1,nlm

@@ -1,5 +1,5 @@
    subroutine driver_for_fuliou(nlm,tsi,theta,asfcswrdr,asfcnirdr,asfcswrdf,asfcnirdf,tsfc,&
-                             phaseflag,cref,ccot,hctop,hcbase,&
+                             phaseflag,nlayers,cref,ccot,hctop,hcbase,&
                              hctopID,hcbaseID,&
                              pxZ,pxP,pxT,pxQ,pxO3,&
                              toalwup,toaswdn,toaswup,&
@@ -24,20 +24,26 @@
        !model setup & cloud locations
        integer, intent(in) :: &
          nlm         ,& !Number of vertical layers.      (-).
-         hctopID(1)  ,& !vertical level index for Hctop  (-).
-         hcbaseID(1)    !vertical level index for Hcbase (-).
+         nlayers      !Number of cloud layers
+
+       integer, intent(in) :: &
+         hctopID(nlayers)  ,& !vertical level index for Hctop  (-).
+         hcbaseID(nlayers)    !vertical level index for Hcbase (-).
 
        integer, intent(in) :: FuSolverMode
+
+
+       real, intent(in) :: &
+         phaseflag(nlayers) ,&   !cloud phase=0 clear, = 1water, =2ice    (-).
+         cref(nlayers)      ,&   !satellite cloud effective radius       (um).
+         ccot(nlayers)      ,&   !satellite cloud optical depth           (-).
+         hctop(nlayers)     ,&   !satellite cloud top height             (km).
+         hcbase(nlayers)         !satelliet cloud base height            (km).
 
        !column quantities
        real, intent(in) :: &
          tsi       ,&   !totoal solar irradiance              (W/m2).
          theta     ,&   !cosine of solar zenith angle            (-).
-         phaseflag ,&   !cloud phase=0 clear, = 1water, =2ice    (-).
-         cref      ,&   !satellite cloud effective radius       (um).
-         ccot      ,&   !satellite cloud optical depth           (-).
-         hctop     ,&   !satellite cloud top height             (km).
-         hcbase    ,&   !satelliet cloud base height            (km).
          asfcswrdr   ,&   !DIRECT visible surface albedo                  (-).
          asfcnirdr   ,&   !DIRECT near infrared surface albedo            (-).
          asfcswrdf   ,&   !DIFFUSE visible surface albedo                  (-).
@@ -91,7 +97,7 @@
        !real, dimension(13) :: bands_bugsrad_lw
 
    TYPE (SKYP_TYPE) ut,tu
-   integer k
+   integer i,k
    real psfc
 
  call set_default_options_fu ! Sets some of the more obsure inputs to reasonable values.
@@ -214,38 +220,125 @@ fi%ss      = tsi ! Solar Constant wm-2
 fi%u0      = theta ! Cosine Solar Zenith Angle
 fi%ur      =  0.8 ! Cosine View Zenith Angle (for IR Radiance)
 
+
+
+
+
+
+
+!not being used - original
+if(4 .gt. 5) then
+!-------Cnd 2
+fi%fc(1)%dpi%ldpi = .false.
+fi%fc(1)%cldfrac   = 1.00000    ! Cloud Fraction (0-1) 
+fi%fc(1)%novl      =   nlayers 
+
+FI%VD%cldpres(1, 1,1) = pxP(hctopID(1))
+FI%VD%cldpres(2, 1,1) = pxP(hcbaseID(1))
+FI%VD%cldpres(1, 1,2) = pxP(hctopID(2))
+FI%VD%cldpres(2, 1,2) = pxP(hcbaseID(2))
+
+fi%fc(1)%rphase(1)    =  phaseflag(1)    ! Cloud Phase 1=Water 2=Ice
+fi%fc(1)%de(1) = cref(1)*2.0
+fi%fc(1)%re(1) = cref(1)
+
+fi%fc(1)%tau_vis(1)       = ccot(1)	    ! Cloud Visible Optical Depth ( Minnis)
+fi%fc(1)%sc(1)%mn_lin_tau =  fi%fc(1)%tau_vis(1) *1.15
+
+
+!-----
+fi%fc(1)%rphase(2)    =  phaseflag(2)    ! Cloud Phase 1=Water 2=Ice
+fi%fc(1)%de(2) = cref(2)*2.0
+fi%fc(1)%re(2) = cref(2)
+
+fi%fc(1)%tau_vis(2)       = ccot(2)	    ! Cloud Visible Optical Depth ( Minnis)
+fi%fc(1)%sc(2)%mn_lin_tau =  fi%fc(1)%tau_vis(2) 
+
+
+
+fi%fc(1)%dpi%ldpi = .false.
+fi%fc(1)%novl      =   nlayers 
+fi%fc(1)%cldfrac   = 1.00000    ! Cloud Fraction (0-1) 
+ do i=i,nlayers
+
+FI%VD%cldpres(1, 1,i) = pxP(hctopID(i))
+FI%VD%cldpres(2, 1,i) = pxP(hcbaseID(i))
+
+fi%fc(1)%rphase(i)    =  phaseflag(i)    ! Cloud Phase 1=Water 2=Ice
+fi%fc(1)%de(i) = cref(i)*2.0
+fi%fc(1)%re(i) = cref(i)
+
+fi%fc(1)%tau_vis(i)       = ccot(i)	    ! Cloud Visible Optical Depth ( Minnis)
+fi%fc(1)%sc(i)%mn_lin_tau =  fi%fc(1)%tau_vis(i) *1.15
+ enddo
+endif
+
+
+
+
+
+
 ! Clouds
 fi%fc(1)%dpi%ldpi = .false.  !Setting this avoids direct insertion of level-by-level IWC/LWC.
-fi%fc(1)%cldfrac   = 1.00000 ! Cloud Fraction (0-1)
-fi%fc(1)%novl      =   1     ! Number of cloud layers in vertical
+fi%fc(1)%novl     =   nlayers     ! Number of cloud layers in vertical
+fi%fc(1)%cldfrac  = 1.00000 ! Cloud Fraction (0-1)
 
 ! Cloud top and bottom pressure
-FI%VD%cldpres(1,1,1) = pxP(hctopID(1)) !top pressure (hPa)
-FI%VD%cldpres(2,1,1) = pxP(hcbaseID(1)) !bottom pressure (hPa)
-fi%fc(1)%rphase(1)    =  phaseflag    ! Cloud Phase 1=Water 2=Ice
-fi%fc(1)%de(1) = cref*2.
-fi%fc(1)%re(1) = cref
-!WATER CLOUDS CANNOT HAVE CER > 30. um
-IF(phaseflag .eq. 1 .and. cref .ge. 30.) then
- fi%fc(1)%de(1) = 29.9
- fi%fc(1)%re(1) = 29.9
-ENDIF
-fi%fc(1)%asp(1) = exp(0*0.1)      ! Fu 20006 Ice AspectRatio !!!!! NEW FOR 20010130
-fi%fc(1)%tau_vis(1)       = ccot  ! Cloud Visible Optical Depth ( Minnis)
-fi%fc(1)%sc(1)%mn_lin_tau =  fi%fc(1)%tau_vis(1)
+ do i=1,nlayers
+  FI%VD%cldpres(1,1,i) = pxP(hctopID(i))  !top pressure (hPa)
+  FI%VD%cldpres(2,1,i) = pxP(hcbaseID(i)) !bottom pressure (hPa)
+  fi%fc(1)%rphase(i)    =  phaseflag(i)   ! Cloud Phase 1=Water 2=Ice
+  fi%fc(1)%de(i) = cref(i)*2.
+  fi%fc(1)%re(i) = cref(i)
+  !WATER CLOUDS CANNOT HAVE CER > 30. um
+  IF(phaseflag(i) .eq. 1 .and. cref(i) .ge. 30.) then
+   fi%fc(1)%de(i) = 29.9
+   fi%fc(1)%re(i) = 29.9
+  ENDIF
+  fi%fc(1)%asp(i) = exp(0*0.1)      ! Fu 20006 Ice AspectRatio !!!!! NEW FOR 20010130
+  fi%fc(1)%tau_vis(i)       = ccot(i)  ! Cloud Visible Optical Depth ( Minnis)
+  fi%fc(1)%sc(i)%mn_lin_tau =  fi%fc(1)%tau_vis(i)
 
-! No Cloud - need to run despite clear-sky pixel
-if(phaseflag .eq. 0) then
- fi%fc(1)%cldfrac   = 1.0
- FI%VD%cldpres(1,1,1) = 100.
- FI%VD%cldpres(2,1,1) = 150.
- fi%fc(1)%rphase(1) =  1
- fi%fc(1)%de(1) = 30.
- fi%fc(1)%re(1) = 15.
- fi%fc(1)%asp(1) = exp(0*0.1)
- fi%fc(1)%tau_vis(1) = 0.00005
- fi%fc(1)%sc(1)%mn_lin_tau = fi%fc(1)%tau_vis(1)
-endif
+  ! No Cloud - need to run despite clear-sky pixel
+  if(phaseflag(1) .eq. 0) then
+   FI%VD%cldpres(1,1,i) = 100.
+   FI%VD%cldpres(2,1,i) = 150.
+   fi%fc(1)%rphase(i) =  1
+   fi%fc(1)%de(i) = 30.
+   fi%fc(1)%re(i) = 15.
+   fi%fc(1)%asp(i) = exp(0*0.1)
+   fi%fc(1)%tau_vis(i) = 0.00005
+   fi%fc(1)%sc(i)%mn_lin_tau = fi%fc(1)%tau_vis(1)
+  endif
+ enddo
+
+
+!FI%VD%cldpres(1,1,1) = pxP(hctopID(1))  !top pressure (hPa)
+!FI%VD%cldpres(2,1,1) = pxP(hcbaseID(1)) !bottom pressure (hPa)
+!fi%fc(1)%rphase(1)    =  phaseflag(1)   ! Cloud Phase 1=Water 2=Ice
+!fi%fc(1)%de(1) = cref(1)*2.
+!fi%fc(1)%re(1) = cref(1)
+!!WATER CLOUDS CANNOT HAVE CER > 30. um
+!IF(phaseflag(1) .eq. 1 .and. cref(1) .ge. 30.) then
+! fi%fc(1)%de(1) = 29.9
+! fi%fc(1)%re(1) = 29.9
+!ENDIF
+!fi%fc(1)%asp(1) = exp(0*0.1)      ! Fu 20006 Ice AspectRatio !!!!! NEW FOR 20010130
+!fi%fc(1)%tau_vis(1)       = ccot(1)  ! Cloud Visible Optical Depth ( Minnis)
+!fi%fc(1)%sc(1)%mn_lin_tau =  fi%fc(1)%tau_vis(1)
+
+!! No Cloud - need to run despite clear-sky pixel
+!if(phaseflag(1) .eq. 0) then
+! fi%fc(1)%cldfrac   = 1.0
+! FI%VD%cldpres(1,1,1) = 100.
+! FI%VD%cldpres(2,1,1) = 150.
+! fi%fc(1)%rphase(1) =  1
+! fi%fc(1)%de(1) = 30.
+! fi%fc(1)%re(1) = 15.
+! fi%fc(1)%asp(1) = exp(0*0.1)
+! fi%fc(1)%tau_vis(1) = 0.00005
+! fi%fc(1)%sc(1)%mn_lin_tau = fi%fc(1)%tau_vis(1)
+!endif
 !print*,'cloud phase ',fi%fc(1)%rphase(1)
 !print*,'cloud top pressure ',FI%VD%cldpres(1,1,1)
 !print*,'cloud base pressure ',FI%VD%cldpres(2,1,1)
@@ -277,14 +370,14 @@ fi%ee(1:12)  = emis(1:12) ! Spectral Surface Emissivity LW
 !print*,'Surface emissivity ',fi%ee
 
 !Aerosols ------------------------------------------------------------
-IF(phaseflag .eq. 0) THEN
+IF(phaseflag(1) .eq. 0) THEN
  fi%nac              = 1           ! One aerosol contituent is used
  fi%itps(1)          = 2           ! Continental see types (1-18) (SULFATE DROPLETS)
  fi%n_atau           = 1           ! 1 wavelength input for aerosols
  fi%a_wli(1)         = 0.55        ! AOT wavelength(microns) of a_taus
- fi%a_taus(1,1)      = ccot        ! AOT for constituent 1
+ fi%a_taus(1,1)      = ccot(1)        ! AOT for constituent 1
 ENDIF
-IF(phaseflag .ne. 0) THEN
+IF(phaseflag(1) .ne. 0) THEN
  fi%nac              = 1           ! One aerosol contituent is used
  fi%itps(1)          = 2           ! Continental see types (1-18) (SULFATE DROPLETS)
  fi%n_atau           = 1           ! 1 wavelength input for aerosols

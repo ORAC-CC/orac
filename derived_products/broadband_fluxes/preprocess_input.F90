@@ -96,12 +96,15 @@
     real dw_dzG,dw_dz
 
 !-----------------------------------------------------------------------------
-
+   !print*,'pre-processor'
+   !print*,cMASK,aREF,AOD,cPHASE,cCTT,cCTP,cREF,cTAU,cCTH,InfThnCld
  
    !Cloud Phase
-   !Unknown
-   IF(cPHASE .eq. 0 .and. cMASK .eq. 1 .and. cCTT .gt. 273.) phaseFlag=1 !WATER
-   IF(cPHASE .eq. 0 .and. cMASK .eq. 1 .and. cCTT .le. 273.) phaseFlag=2 !ICE
+   !multi-layer
+!   IF(cPHASE .eq. 0 .or. cPHASE .eq. 3 .and. cMASK .eq. 1 .and. cCTT .gt. 273.) phaseFlag=1 !WATER
+!   IF(cPHASE .eq. 0 .or. cPHASE .eq. 3 .and. cMASK .eq. 1 .and. cCTT .le. 273.) phaseFlag=2 !ICE
+   IF(cPHASE .eq. 3 .and. cCTT .gt. 273.) phaseFlag=1 !WATER
+   IF(cPHASE .eq. 3 .and. cCTT .gt. 0. .and. cCTT .le. 273.) phaseFlag=2 !ICE
 
    !WATER - DEFINITE
    IF(cPHASE .eq. 1) phaseFlag=1 !WATER
@@ -110,16 +113,25 @@
    IF(cPHASE .eq. 2) phaseFlag=2 !ICE
 
    !CLEAR - DEFINITE
-   IF(cMASK .eq. 0) phaseFlag=0 !CLEAR
+!   IF(cMASK .eq. 0) phaseFlag=0 !CLEAR
+   IF(cPHASE .eq. 0) phaseFlag=0 !CLEAR
+
+    !print*,'phaseFlag = ',phaseFlag
 
    regime = 0
    !Determine pixel regime
-   if(cMASK .eq. 1.0 .and. AOD .le. 0. .and. phaseFlag .eq. 1) regime = 1 !overcast LIQUID cloud
-   if(cMASK .eq. 1.0 .and. AOD .le. 0. .and. phaseFlag .eq. 2) regime = 2 !overcast ICE cloud
-   if(cMASK .eq. 0.0 .and. AOD .gt. 0. .and. phaseFlag .eq. 0) regime = 3 !clear with AOD
-   if(cMASK .eq. 0.0 .and. AOD .le. 0. .and. phaseFlag .eq. 0) regime = 4 !clear no AOD
-   if(cMASK .eq. 1.0 .and. AOD .gt. 0. .and. phaseFlag .eq. 1) regime = 5 !joint aerosol-LIQUID-cloud
-   if(cMASK .eq. 1.0 .and. AOD .gt. 0. .and. phaseFlag .eq. 2) regime = 6 !joint aerosol-ICE-cloud
+!   if(cMASK .eq. 1.0 .and. AOD .le. 0. .and. phaseFlag .eq. 1) regime = 1 !overcast LIQUID cloud
+!   if(cMASK .eq. 1.0 .and. AOD .le. 0. .and. phaseFlag .eq. 2) regime = 2 !overcast ICE cloud
+!   if(cMASK .eq. 0.0 .and. AOD .gt. 0. .and. phaseFlag .eq. 0) regime = 3 !clear with AOD
+!   if(cMASK .eq. 0.0 .and. AOD .le. 0. .and. phaseFlag .eq. 0) regime = 4 !clear no AOD
+!   if(cMASK .eq. 1.0 .and. AOD .gt. 0. .and. phaseFlag .eq. 1) regime = 5 !joint aerosol-LIQUID-cloud
+!   if(cMASK .eq. 1.0 .and. AOD .gt. 0. .and. phaseFlag .eq. 2) regime = 6 !joint aerosol-ICE-cloud
+   if(AOD .le. 0. .and. phaseFlag .eq. 1) regime = 1 !overcast LIQUID cloud
+   if(AOD .le. 0. .and. phaseFlag .eq. 2) regime = 2 !overcast ICE cloud
+   if(AOD .gt. 0. .and. phaseFlag .eq. 0) regime = 3 !clear with AOD
+   if(AOD .le. 0. .and. phaseFlag .eq. 0) regime = 4 !clear no AOD
+   if(AOD .gt. 0. .and. phaseFlag .eq. 1) regime = 5 !joint aerosol-LIQUID-cloud
+   if(AOD .gt. 0. .and. phaseFlag .eq. 2) regime = 6 !joint aerosol-ICE-cloud
     if(regime .eq. 0) then
       !print*,'PROBLEM in pre-processor: pixel regime undefined!'
       !STOP

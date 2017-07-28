@@ -93,6 +93,8 @@
 ! 2017/07/27, MC: removed unit conversion on Q and O3 profiles to be compatible with the
 !                 output from the PRTM file represented in kg/kg. 
 !                 Also updated the gravitational constant to the appropriate value of 9.80665.
+! 2017/07/28, MC: Modified code to accept multi-layer cloud primary output files. 
+!                 Note, you must specify 'multi_layer=1' to run in multi-layer mode.
 !
 ! $Id$
 !
@@ -176,18 +178,24 @@ program process_broadband_fluxes
     real(kind=sreal), allocatable :: mCTP(:,:)
 
     !PRIMARY FILE
-    real, allocatable :: COT(:,:)  ! Cloud Optical Depth (xp,yp)
-    real, allocatable :: REF(:,:)  ! Cloud Effective Radius (xp,yp)
     real, allocatable :: LAT(:,:)  ! Latitude Satellite (xp,yp)
     real, allocatable :: LON(:,:)  ! Longitude Satellite (xp,yp)
-    real, allocatable :: CC_TOT(:,:)  ! Cloud Mask (xp,yp)
-    real, allocatable :: CTH(:,:)  ! Cloud Top Height (xp,yp)
     real, allocatable :: SOLZ(:,:)  ! Solar zenith angle (xp,yp)
     real, allocatable :: PHASE(:,:)  ! Cloud phase (xp,yp)
-    real, allocatable :: CTT(:,:)  ! Cloud top temperature (xp,yp)
-    real, allocatable :: CTP(:,:)  ! Cloud top pressure (xp,yp)
     real(kind=dreal), allocatable :: TIME(:,:)  ! Time of pixel in Julian Days (xp,yp)
     real, allocatable :: STEMP(:,:)  ! Surface temperature from primary files (xp,yp)
+    real, allocatable :: COT(:,:)  ! Cloud Optical Depth (xp,yp)
+    real, allocatable :: REF(:,:)  ! Cloud Effective Radius (xp,yp)
+    real, allocatable :: CC_TOT(:,:)  ! Cloud Mask (xp,yp)
+    real, allocatable :: CTH(:,:)  ! Cloud Top Height (xp,yp)
+    real, allocatable :: CTT(:,:)  ! Cloud top temperature (xp,yp)
+    real, allocatable :: CTP(:,:)  ! Cloud top pressure (xp,yp)
+    real, allocatable :: COT2(:,:)  ! Cloud Optical Depth (xp,yp)
+    real, allocatable :: REF2(:,:)  ! Cloud Effective Radius (xp,yp)
+    real, allocatable :: CC_TOT2(:,:)  ! Cloud Mask (xp,yp)
+    real, allocatable :: CTH2(:,:)  ! Cloud Top Height (xp,yp)
+    real, allocatable :: CTT2(:,:)  ! Cloud top temperature (xp,yp)
+    real, allocatable :: CTP2(:,:)  ! Cloud top pressure (xp,yp)
 
     !Total Solar Irriadiance File
     real, allocatable :: TSI_tsi_true_earth(:) !TOTAL SOLAR IRRADIANCE AT EARTH-SUN DISTANCE
@@ -225,20 +233,32 @@ program process_broadband_fluxes
     real :: pxTheta !cosine of solar zenith angle
     real :: pxPhase !cloud phase
     real :: pxMask  !cloud mask
-    real :: pxCTT   !cloud top temperature
-    real :: pxCTP   !cloud top PRESSURE
+
+    integer tmp_pxHctopID(1),tmp_pxHcbaseID(1)
+    real :: tmp_pxCTT    !cloud top temperature (for up to 2-layers)
+    real :: tmp_pxCTP    !cloud top PRESSURE
+    real :: tmp_pxREF    !cloud effective radius
+    real :: tmp_pxCOT    !cloud optical depth
+    real :: tmp_pxCTH    !cloud top height
+    real :: tmp_pxHctop  !input cloud top height
+    real :: tmp_pxHcbase !input cloud base height
+    real :: tmp_pxPhaseFlag !cloud phase type
+
+    real :: pxCTT(2)    !cloud top temperature (for up to 2-layers)
+    real :: pxCTP(2)    !cloud top PRESSURE
+    real :: pxREF(2)    !cloud effective radius
+    real :: pxCOT(2)    !cloud optical depth
+    real :: pxCTH(2)    !cloud top height
+    real :: pxHctop(2)  !input cloud top height
+    real :: pxHcbase(2) !input cloud base height
+    real :: pxPhaseFlag(2) !cloud phase type
+
+    integer pxHctopID(2),pxHcbaseID(2)
     real :: pxaREF  !aerosol effective radius
     real :: pxAOD  !aerosol optical depth
-    real :: pxREF   !cloud effective radius
-    real :: pxCOT   !cloud optical depth
-    real :: pxCTH   !cloud top height
-    real :: pxHctop !input cloud top height
-    real :: pxHcbase!input cloud base height
     real :: pxLayerType !aerosol type
-    real :: pxPhaseFlag !cloud phase type
     real :: pxts   !land/sea surface temperature
     real pxregime
-    integer pxHctopID(1),pxHcbaseID(1)
     real :: pxLTS
     real :: pxFTH
     real :: pxcolO3
@@ -355,7 +375,8 @@ program process_broadband_fluxes
     integer retrflag_vid
 
     ! More options
-    integer InfThnCld, corrected_cth !infinitely thin cloud assumption & use corrected cloud top heights
+    integer InfThnCld, corrected_cth, multi_layer !infinitely thin cloud assumption & use corrected cloud top heights
+    integer ml_flag
 
     integer, parameter :: deflate_lv = 9
     logical, parameter :: shuffle_flag = .false.
@@ -406,6 +427,7 @@ program process_broadband_fluxes
     integer :: lut_mode !=0 no processing, =1 use LUT
     integer(kind=lint) :: nASFC,nRE,nTAU,nSOLZ
     real, allocatable :: LUT_SFC_ALB(:),LUT_REF(:),LUT_COT(:),LUT_SOLZ(:)
+    real :: tmpVal(1)
 
 
     !-------------------------------------------------------------------------------
@@ -473,6 +495,7 @@ program process_broadband_fluxes
     ! Read optional arguments
     InfThnCld = 0
     corrected_cth = 0
+    multi_layer = 0
     aerosol_processing_mode = 0
     lut_mode = 0
 #ifndef WRAPPER
@@ -496,6 +519,7 @@ program process_broadband_fluxes
        if(tmpname1 .eq. 'modis_cloud=') FMOD06=trim(tmpname2)
        if(tmpname1 .eq. 'infinitely_thin_cloud=') InfThnCld=1
        if(tmpname1 .eq. 'corrected_cth=') corrected_cth=1
+       if(tmpname1 .eq. 'multi_layer=') multi_layer=1
        if(tmpname1 .eq. 'LUT_mode=') then
           FtoaSW=trim(tmpname2)
           lut_mode = 1
@@ -639,6 +663,21 @@ program process_broadband_fluxes
        call nc_read_array(ncid, "ctt_corrected", CTT, verbose)
        call nc_read_array(ncid, "ctp_corrected", CTP, verbose)
        call nc_read_array(ncid, "cth_corrected", CTH, verbose)
+    endif
+
+    if(multi_layer .eq. 1) then
+      allocate(COT2(xN,yN))
+      allocate(REF2(xN,yN))
+      allocate(CC_TOT2(xN,yN))
+      allocate(CTH2(xN,yN))
+      allocate(CTT2(xN,yN))
+      allocate(CTP2(xN,yN))
+     call nc_read_array(ncid, "cot2", COT2, verbose)
+     call nc_read_array(ncid, "cer2", REF2, verbose)
+     call nc_read_array(ncid, "cc_total2", CC_TOT2, verbose)
+     call nc_read_array(ncid, "ctt2", CTT2, verbose)
+     call nc_read_array(ncid, "ctp2", CTP2, verbose)
+     call nc_read_array(ncid, "cth2", CTH2, verbose)
     endif
 
     ! Close file
@@ -1131,94 +1170,149 @@ program process_broadband_fluxes
              !print*,'Aerosol Optical Depth: ',AOD550(i,j)
              !print*,'Aerosol Effective Radius: ',AREF(i,j)
 
-
+             !cloud base & top height calculation
+             pxREF(:)       = -999.
+             pxCOT(:)       = -999.
+             pxHctop(:)     = -999.
+             pxHcbase(:)    = -999.
+             pxPhaseFlag(:) = -999.
+             pxHctopID(:)   = -999.
+             pxHcbaseID(:)  = -999.
+        
+             ml_flag = 1
              !cloud base & top height calculation
              call preprocess_input(cc_tot(i,j),AREF(i,j),AOD550(i,j),phase(i,j),&
-                  CTT(i,j),CTP(i,j),REF(i,j),COT(i,j),CTH(i,j),InfThnCld,&
-                  NLS,pxZ,pxREF,pxCOT,pxHctop,pxHcbase,&
-                  pxPhaseFlag,pxLayerType,&
-                  pxregime,pxHctopID,pxHcbaseID)
+                         CTT(i,j),CTP(i,j),REF(i,j),COT(i,j),CTH(i,j),InfThnCld,&
+                         NLS,pxZ,tmp_pxREF,tmp_pxCOT,tmp_pxHctop,tmp_pxHcbase,&
+                         tmp_pxPhaseFlag,pxLayerType,&
+                         pxregime,tmp_pxHctopID,tmp_pxHcbaseID)
 
-             !debugging (print statements)
-             !print*,'phase: ',pxPhaseFlag
-             !print*,'re :',pxREF
-             !print*,'tau :',pxCOT
-             !print*,'Hctop = ',pxHctop,' HctopID: ',pxHctopID
-             !print*,'Hcbase = ',pxHcbase,' HcbaseID: ',pxHcbaseID
-             !print*,'Regime: ',pxregime
-             !print*,'TOTAL SOLAR IRRADIANCE: ',pxTSI
-             !print*,'Hctop (hPa) = ',pxP(pxHctopID)
-             !print*,'Hcbase (hPa) = ',pxP(pxHcbaseID)
+             pxREF(1)       = tmp_pxREF
+             pxCOT(1)       = tmp_pxCOT
+             pxHctop(1)     = tmp_pxHctop
+             pxHcbase(1)    = tmp_pxHcbase
+             pxPhaseFlag(1) = tmp_pxPhaseFlag
+             pxHctopID(1)   = tmp_pxHctopID(1)
+             pxHcbaseID(1)  = tmp_pxHcbaseID(1)
 
-             !Run Full Radiation Code (not LUT mode)
-             if(lut_mode .eq. 0) then
+!print*,tmp_pxREF,tmp_pxCOT,tmp_pxHctop,tmp_pxHcbase,tmp_pxPhaseFlag,tmp_pxHctopID(1)
+         if(multi_layer .EQ. 1 .and. cot2(i,j) .gt. 0) then
+          !PRINT*,'cc_tot2: ',cc_tot2(i,j)
+          !PRINT*,'CTT2: ',CTT2(i,j)
+          !PRINT*,'CTP2: ',CTP2(i,j)
+          !PRINT*,'REF2: ',REF2(i,j)
+          !PRINT*,'COT2: ',COT2(i,j)
+          !PRINT*,'CTH2: ',CTH2(i,j)
+          !*ML code has -999. for CTP but CTH exists
+          if(CTP2(i,j) .LT. 0. .AND. CTH2(i,j) .GT. 0.) then
+           print*,CTP2(i,j),CTH2(i,j)
+           print*,(pxP(MINLOC(ABS(CTH2(i,j)-pxZ)))+pxP(MINLOC(ABS(CTH2(i,j)-pxZ))+1))/2.
+           !poor man's interpolation method but gets close...
+           tmpVal = (pxP( MINLOC(ABS(CTH2(i,j)-pxZ)) )+pxP( MINLOC(ABS(CTH2(i,j)-pxZ))+1))/2.
+           CTP2(i,j) = tmpVal(1)
+          endif
 
-                !-------------------------------------------------------
-                !Call BUGSrad Algorithm
-                !-------------------------------------------------------
-                if(algorithm_processing_mode .eq. 1) then
-                   !print*,'starting... BUGSrad'
-                   !print*,NL,pxTSI,pxtheta,pxAsfcSWRdr,pxAsfcNIRdr,pxAsfcSWRdf,pxAsfcNIRdf,pxts
-                   !print*,nc_alb,rho_0d(i,j,:),rho_dd(i,j,:)
-                   call driver_for_bugsrad(NL,pxTSI,pxtheta,pxAsfcSWRdr,pxAsfcNIRdr,pxAsfcSWRdf,pxAsfcNIRdf,pxts,&
-                        pxPhaseFlag,pxREF,pxCOT,pxHctop,pxHcbase,&
-                        pxHctopID,pxHcbaseID,&
-                        pxZ,pxP,pxT,pxQ,pxO3,&
-                        pxtoalwup,pxtoaswdn,pxtoaswup,&
-                        pxboalwup,pxboalwdn,pxboaswdn,pxboaswup,&
-                        pxtoalwupclr,pxtoaswupclr,&
-                        pxboalwupclr,pxboalwdnclr,pxboaswupclr,pxboaswdnclr,&
-                        bpar,bpardif,tpar,&
-                        ulwfx,dlwfx,uswfx,dswfx,&
-                        ulwfxclr,dlwfxclr,uswfxclr,dswfxclr,&
-                        emis_bugsrad,rho_0d_bugsrad,rho_dd_bugsrad)
+          ml_flag = 2
+               call preprocess_input(cc_tot2(i,j),AREF(i,j),AOD550(i,j),phase(i,j),&
+                          CTT2(i,j),CTP2(i,j),REF2(i,j),COT2(i,j),CTH2(i,j),InfThnCld,&
+                          NLS,pxZ,tmp_pxREF,tmp_pxCOT,tmp_pxHctop,tmp_pxHcbase,&
+                          tmp_pxPhaseFlag,pxLayerType,&
+                          pxregime,tmp_pxHctopID,tmp_pxHcbaseID)           
 
-                   !print*,'BUGSrad'
-                   !print*,pxtoalwup,pxtoaswdn,pxtoaswup
-                   !print*,pxtoalwupclr,pxtoaswdn,pxtoaswupclr
-                   !print*,pxboalwup,pxboalwdn,pxboaswdn,pxboaswup
-                   !print*,pxboalwupclr,pxboalwdnclr,pxboaswdnclr,pxboaswupclr
-                   !print*,tpar,bpar,bpardif
+          pxREF(2)       = tmp_pxREF
+          pxCOT(2)       = tmp_pxCOT
+          pxHctop(2)     = tmp_pxHctop
+          pxHcbase(2)    = tmp_pxHcbase
+          pxPhaseFlag(2) = tmp_pxPhaseFlag
+          pxHctopID(2)   = tmp_pxHctopID(1)
+          pxHcbaseID(2)  = tmp_pxHcbaseID(1)
+          pxregime = 7
+        endif
+        if(phase(i,j) .eq. 0) ml_flag=0
 
-                endif !BUGSrad Algorithm
+         !debugging (print statements)
+         !print*,'phase: ',pxPhaseFlag
+         !print*,'re :',pxREF
+         !print*,'tau :',pxCOT
+         !print*,'Hctop = ',pxHctop,' HctopID: ',pxHctopID
+         !print*,'Hcbase = ',pxHcbase,' HcbaseID: ',pxHcbaseID
+         !print*,'Regime: ',pxregime
+         !print*,'TOTAL SOLAR IRRADIANCE: ',pxTSI
+         !print*,'Hctop (hPa) = ',pxP(pxHctopID)
+         !print*,'Hcbase (hPa) = ',pxP(pxHcbaseID)
+         !print*,pxZ
+         !print*,pxP
+         !print*,pxT
+         !print*,pxQ
+         !print*,pxO3
+        !Run Full Radiation Code (not LUT mode)
+        if(lut_mode .eq. 0) then
 
-                !-------------------------------------------------------
-                !Call FuLiou Algorithm
-                !-------------------------------------------------------
-                if(algorithm_processing_mode .eq. 2 .or. &
-                     algorithm_processing_mode .eq. 3 .or. &
-                     algorithm_processing_mode .eq. 4) then
-                   !print*,'starting... Fu-Liou'
-                   !print*,NL,pxTSI,pxtheta,pxAsfcSWRdr,pxAsfcNIRdr,pxAsfcSWRdf,pxAsfcNIRdf,pxts
-                   !print*,nc_alb
-                   !print*,rho_0d(i,j,:)
-                   !print*,rho_dd(i,j,:)
-                   !print*,''
-                   call driver_for_fuliou(NL,pxTSI,pxtheta,pxAsfcSWRdr,pxAsfcNIRdr,&
-                        pxAsfcSWRdf,pxAsfcNIRdf,pxts,&
-                        pxPhaseFlag,pxREF,pxCOT,pxHctop,pxHcbase,&
-                        pxHctopID,pxHcbaseID,&
-                        pxZ,pxP,pxT,pxQ,pxO3,&
-                        pxtoalwup,pxtoaswdn,pxtoaswup,&
-                        pxboalwup,pxboalwdn,pxboaswdn,pxboaswup,&
-                        pxtoalwupclr,pxtoaswupclr,&
-                        pxboalwupclr,pxboalwdnclr,pxboaswupclr,pxboaswdnclr,&
-                        bpar,bpardif,tpar,&
-                        ulwfx,dlwfx,uswfx,dswfx,&
-                        ulwfxclr,dlwfxclr,uswfxclr,dswfxclr,&
-                        emis_fuliou,rho_0d_fuliou,rho_dd_fuliou,&
-                        algorithm_processing_mode)
+        !-------------------------------------------------------
+        !Call BUGSrad Algorithm
+        !-------------------------------------------------------
+        if(algorithm_processing_mode .eq. 1) then
+         !print*,'starting... BUGSrad'
+         !print*,NL,pxTSI,pxtheta,pxAsfcSWRdr,pxAsfcNIRdr,pxAsfcSWRdf,pxAsfcNIRdf,pxts
+         !print*,nc_alb,rho_0d(i,j,:),rho_dd(i,j,:)
+         call driver_for_bugsrad(NL,pxTSI,pxtheta,pxAsfcSWRdr,pxAsfcNIRdr,pxAsfcSWRdf,pxAsfcNIRdf,pxts,&
+                          pxPhaseFlag,ml_flag,pxREF,pxCOT,pxHctop,pxHcbase,&
+                          pxHctopID,pxHcbaseID,&
+                          pxZ,pxP,pxT,pxQ,pxO3,&
+                          pxtoalwup,pxtoaswdn,pxtoaswup,&
+                          pxboalwup,pxboalwdn,pxboaswdn,pxboaswup,&
+                          pxtoalwupclr,pxtoaswupclr,&
+                          pxboalwupclr,pxboalwdnclr,pxboaswupclr,pxboaswdnclr,&
+                          bpar,bpardif,tpar,&
+                          ulwfx,dlwfx,uswfx,dswfx,&
+                          ulwfxclr,dlwfxclr,uswfxclr,dswfxclr,&
+                          emis_bugsrad,rho_0d_bugsrad,rho_dd_bugsrad)
 
-                   !print*,'Fu Liou'
-                   !print*,i,j,'1',pxtoaswup
-                   !print*,pxtoalwupclr,pxtoaswdn,pxtoaswupclr
-                   !print*,pxboalwup,pxboalwdn,pxboaswdn,pxboaswup
-                   !print*,pxboalwupclr,pxboalwdnclr,pxboaswdnclr,pxboaswupclr
-                   !print*,tpar,bpar,bpardif
+           !print*,'BUGSrad'
+           !print*,pxtoalwup,pxtoaswdn,pxtoaswup
+           !print*,pxtoalwupclr,pxtoaswupclr
+           !print*,pxboalwup,pxboalwdn,pxboaswdn,pxboaswup
+           !print*,pxboalwupclr,pxboalwdnclr,pxboaswdnclr,pxboaswupclr
+           !print*,tpar,bpar,bpardif
+         endif !BUGSrad Algorithm
 
-                endif !FuLiou Algorithm
+        !-------------------------------------------------------
+        !Call FuLiou Algorithm
+        !-------------------------------------------------------
+        if(algorithm_processing_mode .eq. 2 .or. &
+           algorithm_processing_mode .eq. 3 .or. &
+           algorithm_processing_mode .eq. 4) then
+           !print*,'starting... Fu-Liou'
+           !print*,NL,pxTSI,pxtheta,pxAsfcSWRdr,pxAsfcNIRdr,pxAsfcSWRdf,pxAsfcNIRdf,pxts
+           !print*,nc_alb
+           !print*,rho_0d(i,j,:)
+           !print*,rho_dd(i,j,:)
+           !print*,''
+         call driver_for_fuliou(NL,pxTSI,pxtheta,pxAsfcSWRdr,pxAsfcNIRdr,&
+                          pxAsfcSWRdf,pxAsfcNIRdf,pxts,&
+                          pxPhaseFlag,ml_flag,pxREF,pxCOT,pxHctop,pxHcbase,&
+                          pxHctopID,pxHcbaseID,&
+                          pxZ,pxP,pxT,pxQ,pxO3,&
+                          pxtoalwup,pxtoaswdn,pxtoaswup,&
+                          pxboalwup,pxboalwdn,pxboaswdn,pxboaswup,&
+                          pxtoalwupclr,pxtoaswupclr,&
+                          pxboalwupclr,pxboalwdnclr,pxboaswupclr,pxboaswdnclr,&
+                          bpar,bpardif,tpar,&
+                          ulwfx,dlwfx,uswfx,dswfx,&
+                          ulwfxclr,dlwfxclr,uswfxclr,dswfxclr,&
+                          emis_fuliou,rho_0d_fuliou,rho_dd_fuliou,&
+                          algorithm_processing_mode)
 
-             endif !lut_mode = 0
+           !print*,'Fu Liou'
+           !print*,pxtoalwup,pxtoaswdn,pxtoaswup
+           !print*,pxtoalwupclr,pxtoaswupclr
+           !print*,pxboalwup,pxboalwdn,pxboaswdn,pxboaswup
+           !print*,pxboalwupclr,pxboalwdnclr,pxboaswdnclr,pxboaswupclr
+           !print*,tpar,bpar,bpardif
+
+         endif !FuLiou Algorithm
+
+         endif !lut_mode = 0
 
              !-------------------------------------------------------
              !LUT MODE
