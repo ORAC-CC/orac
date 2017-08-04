@@ -416,7 +416,6 @@ subroutine sort_gfs_levels(preproc_prtm,verbose)
             preproc_prtm%pressure(i,j,:)=p
             preproc_prtm%temperature(i,j,:)=t
             preproc_prtm%spec_hum(i,j,:)=q
-            print*,i,j,t(31)
             preproc_prtm%ozone(i,j,:)=o
             preproc_prtm%phi_lev(i,j,:)=pl
          end if
