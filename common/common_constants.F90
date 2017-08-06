@@ -74,6 +74,9 @@ module common_constants_m
    real(kind=sreal), parameter :: pi = 3.14159265
    real(kind=sreal), parameter :: d2r = pi/180.0
 
+   ! Physical constants
+   real, parameter :: g_wmo = 9.80665 ! Gravitional acceleration
+
    ! Indices of surface reflectance terms
    integer, parameter :: IRho_0V   = 1 ! Index of rho_0v data in array
    integer, parameter :: IRho_0D   = 2 !  "    "  rho_0d  "   "   "

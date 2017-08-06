@@ -293,7 +293,7 @@ subroutine read_gfs_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
 
    ! GFS has no skin temperature variable
    preproc_prtm%skin_temp = preproc_prtm%temperature(:,:,tlev-1)
-   preproc_prtm%phi_lev   = preproc_prtm%phi_lev*9.80665
+   preproc_prtm%phi_lev   = preproc_prtm%phi_lev*g_wmo
 
    ! convert from pressure to log pressure
    preproc_prtm%lnsp = log(preproc_prtm%lnsp)

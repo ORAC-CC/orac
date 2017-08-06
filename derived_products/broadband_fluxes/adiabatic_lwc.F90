@@ -33,12 +33,14 @@
 !-------------------------------------------------------------------------------
    subroutine adiabatic_lwc(T,P,dw_dz)
 
+   use common_constants_m
+
    implicit none
 
    real, intent(in) :: t,p
    real, intent(out) :: dw_dz
    real, parameter :: &
-    g=9.8    , &  !gravitational constant [m/s2]
+    g=g_wmo  , &  !gravitational acceleration [m/s2]
     cp=1005. , &  !specific heat of air [J/kgK]
     Lv=2.5e6 , &  !latent heat of vaporization [J/kg]
     Rd=287.  , &  !dry air gas constant   [J/kgK]

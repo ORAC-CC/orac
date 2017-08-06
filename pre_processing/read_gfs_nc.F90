@@ -225,7 +225,7 @@ subroutine read_gfs_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
    ! GFS pressures are in Pa rather than hPa
    preproc_prtm%trop_p = preproc_prtm%trop_p * pa2hpa
 
-   preproc_prtm%phi_lev   = preproc_prtm%phi_lev*9.80665
+   preproc_prtm%phi_lev   = preproc_prtm%phi_lev*g_wmo
 
    ! GFS provides humidity as relative humidity (%), we need specific humidity
    ! (kg/kg). This will convert from one to the other.

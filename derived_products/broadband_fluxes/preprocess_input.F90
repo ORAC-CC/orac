@@ -51,6 +51,8 @@
                                  phaseFlag,LayerType,&
                                  regime,TopID,BaseID)
 
+   use common_constants_m
+
    implicit none
 
    !input arguments
@@ -174,7 +176,7 @@
       !Re-compute cloud thickness based on middle of cloud layer temperature & pressure
       !from first guess cloud thickness assume 5.5 K/km psuedo adiabatic lapse rate
        cmt = cCTT + 5.5 * (HcthickG/2.)
-       cmp = cCTP / EXP(-(HcthickG)/(2.* (287.*cmt/9.8/1000.) ))
+       cmp = cCTP / EXP(-(HcthickG)/(2.* (287.*cmt/g_wmo/1000.) ))
       !corrected adiabatic rate of cwc increase with height based on 
       !middle of cloud layer
       call adiabatic_lwc(cmt,cmp,dw_dz)

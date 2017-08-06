@@ -163,8 +163,6 @@ module ORAC_constants_m
    real, parameter    :: qextwat          = 2.0     ! Extinction efficiency for water
    real, parameter    :: qextice          = 2.1     ! Extinction efficiency for ice
 
-   real, parameter    :: g_wmo            = 9.80665 ! Gravity
-
    ! Error values
    real, parameter    :: MDADErrTau       = 1.0e+08 ! Error on a priori Tau if set by MDAD method.
    real, parameter    :: MDADErrPc        = 1.0e+08 ! Error on a priori Pc if set by MDAD method.
