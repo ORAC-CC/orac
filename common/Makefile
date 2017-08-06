@@ -1,7 +1,7 @@
-# Make file for orac preprocessing
+# Makefile for ORAC common
 #
 # History:
-# 2014/08/22, Greg McGarragh: Original version
+# 2014/08/22, GM: Original version
 #
 # Notes:
 #

@@ -1,31 +1,31 @@
-# Make file for orac preprocessing
+# Makefile for ORAC preprocessing
 #
 # History:
-# 2011/12/09, Matthias Jerg: Created initial makefile to start code development
-#    for the orac preprocessing, used orac makefile as template.
+# 2011/12/09, MJ: Created initial makefile to start code development for the
+#    orac preprocessing, used orac makefile as template.
 # 2012/01/23, MJ: Includes grib_api,netcdf,hdf4,hdf5 recently.
-# 2012/05/01, Gareth Thomas: Added surface reflectance routines and hdf-eos lib
-# 2012/05/31, Gareth Thomas: Added surface emissivity routines.
+# 2012/05/01, GT: Added surface reflectance routines and hdf-eos lib
+# 2012/05/31, GT: Added surface emissivity routines.
 # 2012/08/24, MJ: Creates adds "includes" for better configurability
-# 2013/08/01, Adam Povey: Save .o and .mod files to a seperate folder.
-# 2013/12/03, Greg McGarragh: A couple of small fixes.
-# 2013/12/03, Greg McGarragh: Renewed object list and dependencies and some
-#    small clean ups.
-# 2013/12/04, Greg McGarragh: Added 'make depend' to automatically find all
-#    Fortran file dependencies.
-# 2014/07/01, Adam Povey: Updated after I changed ECMWF routines.
-# 2014/08/10, Greg McGarragh: Changes related to new BRDF support.
-# 2014/08/22, Greg McGarragh: Use the library file instead of the object list
-#    for the executable and make the executable dependent on the library file.
-#    Now 'make' will build both the executable and library in one command.
-# 2014/10/23, Oliver Sus: Changes related to USGS, Pavolonis, and NN cloud mask.
-# 2015/02/19, Greg McGarragh: Added the read_seviri module.
-# 2015/02/24, Greg McGarragh: Added the utils_for_main module.
+# 2013/08/01, AP: Save .o and .mod files to a seperate folder.
+# 2013/12/03, GM: A couple of small fixes.
+# 2013/12/03, GM: Renewed object list and dependencies and some small clean ups.
+# 2013/12/04, GM: Added 'make depend' to automatically find all Fortran file
+#    dependencies.
+# 2014/07/01, AP: Updated after I changed ECMWF routines.
+# 2014/08/10, GM: Changes related to new BRDF support.
+# 2014/08/22, GM: Use the library file instead of the object list for the
+#    executable and make the executable dependent on the library file. Now
+#    'make' will build both the executable and library in one command.
+# 2014/10/23, OS: Changes related to USGS, Pavolonis, and NN cloud mask.
+# 2015/02/19, GM: Added the read_seviri module.
+# 2015/02/24, GM: Added the utils_for_main module.
 # 2016/04/08, SP: Added the read_himawari module.
 # 2016/05/16, SP: Added the read_viirs module.
 # 2016/06/14, SP: Added the read_slstr module.
 # 2017/02/07, SP: Added support for NOAA GFS atmosphere data (EKWork)
-# 2017/03/29, SP: Add ability to calculate tropospheric cloud emissivity (EKWork)
+# 2017/03/29, SP: Add ability to calculate tropospheric cloud emissivity
+#    (EKWork)
 #
 # Notes:
 # It appears that -lopenjpeg needs to be included in the LIBS list since on some

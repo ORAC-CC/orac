@@ -1,4 +1,4 @@
-# Make file for ORAC
+# Makefile for ORAC
 #
 # History:
 #   2nd Aug 2000, Andy Smith: original version

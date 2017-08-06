@@ -1,4 +1,4 @@
-# Make file for ORAC derived products
+# Makefile for ORAC derived products / broadband fluxes
 #
 
 # Set files from which compiler, flags, and libraries are set. archfile also
@@ -59,9 +59,6 @@ ORAC_OBJ_MAIN = $(OBJS)/process_broadband_fluxes.o
 
 
 # Compilation rules
-$(OBJS)/%.o: %.f $(ORAC_COMMON)/liborac_common.a
-	$(F90) -o $@ -c $(FFLAGS) $(INC) -I$(ORAC_COMMON)/obj $(AUXFLAGS) $<
-
 $(OBJS)/%.o: %.f90 $(ORAC_COMMON)/liborac_common.a
 	$(F90) -o $@ -c $(FFLAGS) $(INC) -I$(ORAC_COMMON)/obj $(AUXFLAGS) $<
 
@@ -72,12 +69,6 @@ $(OBJS)/%.o: bugsrad/%.f $(ORAC_COMMON)/liborac_common.a
 	$(F77) -o $@ -c $(F77FLAGS) $(INC) -I$(ORAC_COMMON)/obj $(AUXFLAGS) $<
 
 $(OBJS)/%.o: bugsrad/%.f90 $(ORAC_COMMON)/liborac_common.a
-	$(F90) -o $@ -c $(FFLAGS) $(INC) -I$(ORAC_COMMON)/obj $(AUXFLAGS) $<
-
-$(OBJS)/%.o: fu_liou/%.f $(ORAC_COMMON)/liborac_common.a
-	$(F77) -o $@ -c $(F77FLAGS) $(INC) -I$(ORAC_COMMON)/obj $(AUXFLAGS) $<
-
-$(OBJS)/%.o: fu_liou/%.f90 $(ORAC_COMMON)/liborac_common.a
 	$(F90) -o $@ -c $(FFLAGS) $(INC) -I$(ORAC_COMMON)/obj $(AUXFLAGS) $<
 
 

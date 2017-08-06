@@ -1,4 +1,4 @@
-# Make file for postprocessing
+# Makefile for ORAC post processing
 #
 # Pre 2012/08/24, CP and MJ: Provide initial version
 # 2012/08/24, MJ: creates adds "includes" for better configurability
@@ -30,10 +30,10 @@ POSTPROC_OBJ_MAIN = $(OBJS)/orac_postproc.o
 
 
 # Compilation rules
-$(OBJS)/%.o: %.F90 $(ORAC_COMMON)/liborac_common.a
+$(OBJS)/%.o: %.f90 $(ORAC_COMMON)/liborac_common.a
 	$(F90) -o $@ -c $(FFLAGS) $(INC)  -I$(ORAC_COMMON)/obj $(AUXFLAGS) $<
 
-$(OBJS)/%.o: %.f90 $(ORAC_COMMON)/liborac_common.a
+$(OBJS)/%.o: %.F90 $(ORAC_COMMON)/liborac_common.a
 	$(F90) -o $@ -c $(FFLAGS) $(INC)  -I$(ORAC_COMMON)/obj $(AUXFLAGS) $<
 
 # Rule to prevent make from identifying Fortran .mod files as Modula2 source
