@@ -166,6 +166,9 @@ subroutine read_gfs_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
       case('AL','al','LSM')
          three_d=.false.
          array2d => preproc_prtm%land_sea_mask
+      case('p_trop','P_trop','P_Trop','P_TROP')
+         three_d=.false.
+         array2d => preproc_prtm%trop_p
       case default
          cycle
       end select
