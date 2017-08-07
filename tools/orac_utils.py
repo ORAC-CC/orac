@@ -524,6 +524,24 @@ class FileName:
             self.geo = filename
             return
 
+        # Work out what sensor this file comes from
+        m = re.search('AT2_TOA_1P([A-Za-z]{4})'
+                      '(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2})_'
+                      '(?P<hour>\d{2})(?P<min>\d{2})(?P<sec>\d{2})_'
+                      '(?P<duration>\d{7})(?P<phase>\d)(?P<cycle>\d{4})_'
+                      '(?P<rel_orbit>\d{5})_(?P<abs_orbit>\d{5})_'
+                      '(?P<count>\d{4})\.E2', filename)
+        if m:
+            self.sensor   = 'ATSR2'
+            self.platform = 'ERS2'  # For preprocessor
+            self.inst     = 'ATSR2' # For main processor
+            self.time = datetime.datetime(
+                int(m.group('year')), int(m.group('month')), int(m.group('day')),
+                int(m.group('hour')), int(m.group('min')), int(m.group('sec')), 0)
+            self.dur = datetime.timedelta(seconds=int(m.group('duration')))
+            self.geo = filename
+            return
+
         m = re.search('M(?P<platform>[OY])D021KM\.'
                       'A(?P<year>\d{4})(?P<doy>\d{3})\.'
                       '(?P<hour>\d{2})(?P<min>\d{2})\.(?P<collection>\d{3})\.'
@@ -1258,8 +1276,8 @@ def build_preproc_driver(args):
         hr_ecmwf=['','']
 
     occci = args.occci_dir + inst.time.strftime(
-            '/ESACCI-OC-L3S-IOP-MERGED-1M_MONTHLY_4km_GEO_PML_OC4v6_QAA-'
-            '%Y%m-fv2.0.nc')
+            '/ESACCI-OC-L3S-IOP-MERGED-1M_MONTHLY_4km_GEO_PML_OCx_QAA-'
+            '%Y%m-fv3.0.nc')
 
     #------------------------------------------------------------------------
 
