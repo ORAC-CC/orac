@@ -5,14 +5,14 @@ subroutine read_hdf_sd_dims(filename,SDS_name,nX,nY)
 
    include "hdf.f90"
    include "dffunc.f90"
- 
+
    ! Input
    character(len=*)  , intent(in) :: filename
    character(len=*),   intent(in)  :: SDS_name
 
    ! Output
    integer(kind=lint), intent(out)  :: nX,nY
-   
+
    ! Local
    integer :: fid
    integer            :: err_code
@@ -28,7 +28,7 @@ subroutine read_hdf_sd_dims(filename,SDS_name,nX,nY)
 
    err_code=sfginfo(var_id,dummy_name,dummy_rank,dimsizes,dummy_type, &
         dummy_numattrs)
-   
+
    !read from netCDF file
    nX=int(dimsizes(1))
    nY=int(dimsizes(2))

@@ -5,7 +5,7 @@ subroutine get_modis_aerosol(fileIN,Nx,Ny,AREF,AOD550)
 
    include "hdf.f90"
    include "dffunc.f90"
- 
+
    ! Input Files
    character(len=*), intent(in) :: fileIN !MODIS AEROSOL File
    integer(kind=lint), intent(in) :: Nx,Ny !Satellite 1-km dimensions
@@ -16,7 +16,7 @@ subroutine get_modis_aerosol(fileIN,Nx,Ny,AREF,AOD550)
    integer(kind=lint) :: ix, jy
    integer(kind=lint) :: tmp_ix, tmp_jy
    real(kind=sreal) :: xFac,yFac
- 
+
    ! Read Variables
    real(kind=sreal), allocatable :: pre_AREF(:,:)   !MOD04 Aerosol Effective Radius - orig
    real(kind=sreal), allocatable :: pre_AOD550(:,:) !MOD04 Aerosol Optical Depth - orig

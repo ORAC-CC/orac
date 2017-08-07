@@ -5,7 +5,7 @@ subroutine get_modis_cloud(fileIN,Nx,Ny,CTT,CTP,CTH,phase,REF,COT,cc_tot)
 
    include "hdf.f90"
    include "dffunc.f90"
- 
+
    ! Input Variables
    character(len=*), intent(in) :: fileIN !MODIS Cloud File
    integer(kind=lint), intent(in) :: Nx,Ny !Satellite 1-km dimensions
@@ -25,7 +25,7 @@ subroutine get_modis_cloud(fileIN,Nx,Ny,CTT,CTP,CTH,phase,REF,COT,cc_tot)
    integer(kind=lint) :: ix, jy
    integer(kind=lint) :: tmp_ix, tmp_jy
    real(kind=sreal) :: xFac,yFac
- 
+
    real(kind=sreal), allocatable :: pre_phase(:,:)  !MOD06 Cloud Phase
    real(kind=sreal), allocatable :: pre_REF(:,:)    !MOD06 Cloud Effective Radius
    real(kind=sreal), allocatable :: pre_REF_PCL(:,:)!MOD06 Cloud Effective Radius
@@ -90,11 +90,11 @@ subroutine get_modis_cloud(fileIN,Nx,Ny,CTT,CTP,CTH,phase,REF,COT,cc_tot)
 
    ! Cloud Phase Consistency with CCI
      ! MODIS
-     ! 0 -- cloud mask undetermined 
-     ! 1 -- clear sky 
-     ! 2 -- liquid water cloud 
-     ! 3 -- ice cloud 
-     ! 4 -- undetermined phase cloud (but retrieval is attempted as liquid water) 
+     ! 0 -- cloud mask undetermined
+     ! 1 -- clear sky
+     ! 2 -- liquid water cloud
+     ! 3 -- ice cloud
+     ! 4 -- undetermined phase cloud (but retrieval is attempted as liquid water)
      !
      ! CCI
      ! 0 -- clear
@@ -104,11 +104,11 @@ subroutine get_modis_cloud(fileIN,Nx,Ny,CTT,CTP,CTH,phase,REF,COT,cc_tot)
      ! 0 -- clear sky=1
      ! 1 -- cloud mask water = 2 or cloud mask undetermined categories 0 & 4
      ! 2 -- cloud mask = 3
-     !note,the undetermined MODIS cloud phase means that the cloud optical 
-     !properties retrieval algorithm could not make a determination of the 
-     !cloud phase (liquid water or ice). This may have been caused by 
+     !note,the undetermined MODIS cloud phase means that the cloud optical
+     !properties retrieval algorithm could not make a determination of the
+     !cloud phase (liquid water or ice). This may have been caused by
      !viewing anomalies in the retrieval (sunglint), contamination by aerosol,
-     ! or a multi-layer cloud with mixed-phases. These undetermined retrievals 
+     ! or a multi-layer cloud with mixed-phases. These undetermined retrievals
      !use water look up tables, therefore we are assigning this category to liquid cloud retrieval.
    phase(:,:) = sreal_fill_value
    do jy=1,nY

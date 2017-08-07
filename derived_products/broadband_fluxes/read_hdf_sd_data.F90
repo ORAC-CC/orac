@@ -6,11 +6,11 @@ subroutine read_hdf_sd_data(filename,SDS_name,elm3d,nX,nY,temp_out)
 
    include "hdf.f90"
    include "dffunc.f90"
- 
+
    character(len=*), intent(in) :: filename
    integer, intent(in) :: elm3d !index of 3d array to output
    integer(kind=lint), intent(in)  :: nX,nY
-   
+
 
    integer :: fid
    character(len=*),   intent(in)  :: SDS_name

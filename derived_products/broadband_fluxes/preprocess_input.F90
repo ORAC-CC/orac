@@ -3,7 +3,7 @@
 !
 ! Purpose:
 ! Prepares pixel-scale retrievals of aerosol & cloud properties for ingestion
-! to BUGSrad. Three steps: 1) categorizes phase and type  
+! to BUGSrad. Three steps: 1) categorizes phase and type
 ! 2) calculates cloud base height from adiabatic profile, & 3) ensures accurate
 ! placement of layer to BUGSrad vertical bin. Step 3 is particularly important
 ! as the layer must span a complete vertical bin to impose changes on the fluxes.
@@ -33,9 +33,9 @@
 ! 2015/10/14, MC: Initial development
 ! 2015/21/14, MC: Added aerosol input data to code
 ! 2016/01/13, MC: Added additional categories for cloud phase to regime pixel
-! 2016/01/13, MC: Modified adiabatic model to depend on temperature and pressure for 
+! 2016/01/13, MC: Modified adiabatic model to depend on temperature and pressure for
 !                 cloud base height calculation.
-! 2016/01/30, MC: Added separate computation of cloud water path depending on the 
+! 2016/01/30, MC: Added separate computation of cloud water path depending on the
 !                 cloud phase; methods taken from Stephens et al. (1978) and Liou, (1992)
 !                 - for the estimation of cloud base height.
 !
@@ -100,7 +100,7 @@
 !-----------------------------------------------------------------------------
    !print*,'pre-processor'
    !print*,cMASK,aREF,AOD,cPHASE,cCTT,cCTP,cREF,cTAU,cCTH,InfThnCld
- 
+
    !Cloud Phase
    !multi-layer
 !   IF(cPHASE .eq. 0 .or. cPHASE .eq. 3 .and. cMASK .eq. 1 .and. cCTT .gt. 273.) phaseFlag=1 !WATER
@@ -152,8 +152,8 @@
       TAUDAT=cTAU !keep value same
       Hctop=cCTH  !keep value same
 
-      !Cloud base height using dynamic adiabatic model that 
-      !depends on cloud top temperature and pressure    
+      !Cloud base height using dynamic adiabatic model that
+      !depends on cloud top temperature and pressure
       !call adiabatic_lwc(283.,525.,dw_dz) !example
       call adiabatic_lwc(cCTT,cCTP,dw_dzG)
       if(dw_dzG .lt. 0.025) dw_dzG=0.025  !this value gets too small causing problem
@@ -163,7 +163,7 @@
        !Stephens et al. (1978)
        cwp = (2./3.)*cTAU*cREF   ![g/m2] cREF--> um
       endif
-      
+
       !ice water path
       if(phaseFlag .eq. 2) then
        !Liou, 1992 Table 6.4
@@ -177,11 +177,11 @@
       !from first guess cloud thickness assume 5.5 K/km psuedo adiabatic lapse rate
        cmt = cCTT + 5.5 * (HcthickG/2.)
        cmp = cCTP / EXP(-(HcthickG)/(2.* (287.*cmt/g_wmo/1000.) ))
-      !corrected adiabatic rate of cwc increase with height based on 
+      !corrected adiabatic rate of cwc increase with height based on
       !middle of cloud layer
       call adiabatic_lwc(cmt,cmp,dw_dz)
       if(dw_dz .lt. 0.025) dw_dz=0.025  !this value gets too small causing problem
-      
+
       !corrected cloud thickness
       Hcthick = ( sqrt( (2.*cwp)/(Fad*(dw_dz/1000.)) ) ) / 1000. ![km]
 
@@ -208,7 +208,7 @@
       ! stop
       !endif
 
-      
+
     endif
 
     !inValid Cloud Retrieval
@@ -219,7 +219,7 @@
       Hctop=1.5
       Hcbase = 0.5
     endif
-   endif   
+   endif
 
 !REGIME 3
    !CLOUD-FREE with AEROSOL
@@ -290,6 +290,6 @@
    Hcbase = zz(BaseID(1))
    !print*,'Hctop = ',Hctop,' TopID: ',TopID
    !print*,'Hcbase = ',Hcbase,' BaseID: ',BaseID
-   
+
    return
 end subroutine preprocess_input

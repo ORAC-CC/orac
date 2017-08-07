@@ -230,8 +230,8 @@ fi%ur      =  0.8 ! Cosine View Zenith Angle (for IR Radiance)
 if(4 .gt. 5) then
 !-------Cnd 2
 fi%fc(1)%dpi%ldpi = .false.
-fi%fc(1)%cldfrac   = 1.00000    ! Cloud Fraction (0-1) 
-fi%fc(1)%novl      =   nlayers 
+fi%fc(1)%cldfrac   = 1.00000    ! Cloud Fraction (0-1)
+fi%fc(1)%novl      =   nlayers
 
 FI%VD%cldpres(1, 1,1) = pxP(hctopID(1))
 FI%VD%cldpres(2, 1,1) = pxP(hcbaseID(1))
@@ -252,13 +252,13 @@ fi%fc(1)%de(2) = cref(2)*2.0
 fi%fc(1)%re(2) = cref(2)
 
 fi%fc(1)%tau_vis(2)       = ccot(2)	    ! Cloud Visible Optical Depth ( Minnis)
-fi%fc(1)%sc(2)%mn_lin_tau =  fi%fc(1)%tau_vis(2) 
+fi%fc(1)%sc(2)%mn_lin_tau =  fi%fc(1)%tau_vis(2)
 
 
 
 fi%fc(1)%dpi%ldpi = .false.
-fi%fc(1)%novl      =   nlayers 
-fi%fc(1)%cldfrac   = 1.00000    ! Cloud Fraction (0-1) 
+fi%fc(1)%novl      =   nlayers
+fi%fc(1)%cldfrac   = 1.00000    ! Cloud Fraction (0-1)
  do i=i,nlayers
 
 FI%VD%cldpres(1, 1,i) = pxP(hctopID(i))

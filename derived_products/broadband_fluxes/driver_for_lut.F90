@@ -3,7 +3,7 @@
 !
 ! Purpose:
 ! Driver program to process the ORAC inputs and convert them to fluxes using generated
-! LUTs. The LUT processor is currently located on CEMS in: 
+! LUTs. The LUT processor is currently located on CEMS in:
 ! /home/users/mchristensen/orac/trunk/derived_products/lut
 !
 ! History:
@@ -53,13 +53,13 @@
       tpar   ,&    !toa par total
       bpardif,&    !boa par diffuse
       bpar       !boa par total
-   
+
 
    !LOCAL
    integer(kind=lint) :: SfcAlbID(1),SolzID(1),RefID(1),CotID(1)
    real, parameter :: b1=0.47, b2=0.28, b3=0.24, b4=-0.158
    real :: pxTOA_AlbedoLUT,pxBOA_TransmissionLUT,pxBOA_AlbedoLUT
-   
+
    pxASFC = b1*alb_data(1) + b2*alb_data(2) + &
             b3*alb_data(3) + b4*alb_data(4)
 
@@ -70,7 +70,7 @@
     !print*,SOLZ,lut_solz(SolzID),SolzID(1)
     !print*,REF,lut_ref(RefID),RefID(1)
     !print*,COT,lut_cot(CotID),CotID(1)
-    !print*,pxASFC,lut_sfc_alb(SfcAlbID),SfcAlbID(1)   
+    !print*,pxASFC,lut_sfc_alb(SfcAlbID),SfcAlbID(1)
 
     pxtoaswdn = pxTSI * cos(SOLZ(1)*Pi/180.)
 
@@ -80,13 +80,13 @@
           pxBOA_TransmissionLUT = 0.
           pxBOA_AlbedoLUT = 0.
 
-          if(pxregime .ne. 4) then 
+          if(pxregime .ne. 4) then
            pxTOA_AlbedoLUT=LUT_toa_sw_albedo(SfcAlbID(1),SolzID(1),RefID(1),CotID(1))
            pxBOA_TransmissionLUT=LUT_boa_sw_transmission(SfcAlbID(1),SolzID(1),RefID(1),CotID(1))
            pxBOA_AlbedoLUT=LUT_boa_sw_albedo(SfcAlbID(1),SolzID(1),RefID(1),CotID(1))
           endif
-          if(pxregime .eq. 4) then 
-           pxTOA_AlbedoLUT=LUT_toa_sw_albedo(SfcAlbID(1),SolzID(1),1,1) 
+          if(pxregime .eq. 4) then
+           pxTOA_AlbedoLUT=LUT_toa_sw_albedo(SfcAlbID(1),SolzID(1),1,1)
            pxBOA_TransmissionLUT=LUT_boa_sw_transmission(SfcAlbID(1),SolzID(1),1,1)
            pxBOA_AlbedoLUT=LUT_boa_sw_albedo(SfcAlbID(1),SolzID(1),1,1)
           endif

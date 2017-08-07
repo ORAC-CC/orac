@@ -91,9 +91,9 @@
 ! 2017/06/23, OS: added WRAPPER subroutine definition and settings
 ! 2017/06/30, OS: net nTSI to + 500, so that values of 2016 are read
 ! 2017/07/27, MC: removed unit conversion on Q and O3 profiles to be compatible with the
-!                 output from the PRTM file represented in kg/kg. 
+!                 output from the PRTM file represented in kg/kg.
 !                 Also updated the gravitational acceleration to the appropriate value of 9.80665.
-! 2017/07/28, MC: Modified code to accept multi-layer cloud primary output files. 
+! 2017/07/28, MC: Modified code to accept multi-layer cloud primary output files.
 !                 Note, you must specify 'multi_layer=1' to run in multi-layer mode.
 !
 ! $Id$
@@ -1178,7 +1178,7 @@ program process_broadband_fluxes
              pxPhaseFlag(:) = -999.
              pxHctopID(:)   = -999.
              pxHcbaseID(:)  = -999.
-        
+
              ml_flag = 1
              !cloud base & top height calculation
              call preprocess_input(cc_tot(i,j),AREF(i,j),AOD550(i,j),phase(i,j),&
@@ -1217,7 +1217,7 @@ program process_broadband_fluxes
                           CTT2(i,j),CTP2(i,j),REF2(i,j),COT2(i,j),CTH2(i,j),InfThnCld,&
                           NLS,pxZ,tmp_pxREF,tmp_pxCOT,tmp_pxHctop,tmp_pxHcbase,&
                           tmp_pxPhaseFlag,pxLayerType,&
-                          pxregime,tmp_pxHctopID,tmp_pxHcbaseID)           
+                          pxregime,tmp_pxHctopID,tmp_pxHcbaseID)
 
           pxREF(2)       = tmp_pxREF
           pxCOT(2)       = tmp_pxCOT
