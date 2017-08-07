@@ -73,7 +73,6 @@ LIBS = -L$(EMOSLIB) -lemosR64 \
 INC = -I./ \
       -I$(EOSINCLUDE) \
       -I$(EPR_APIINCLUDE) \
-      -I$(FULIOUINCLUDE) \
       -I$(GRIBINCLUDE) \
       -I$(HDFINCLUDE) \
       -I$(HDF5INCLUDE) \

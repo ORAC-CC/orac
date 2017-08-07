@@ -8,13 +8,13 @@ F90 = ifort
 F90 = ifort
 
 # Define C compiler
-CC = gcc
+CC = icc
 
 # Define C++ compiler
-CXX = g++
+CXX = icpc
 
 # Set Fortran 77 compiler flags
-FF77LAGS = -O3 -cpp -g
+F77FLAGS = -O3 -cpp -g
 
 # Set Fortran 90 compiler flags
 FFLAGS   = -O3 -cpp -g
@@ -27,3 +27,10 @@ LFLAGS = -openmp
 CFLAGS = -O3 -g
 
 AUXFLAGS = -module $(OBJS)
+
+# Set Bison/Flex parser flags
+FLEXFLAGS =
+BISONFLAGS =
+# Uncomment if debugging the parser
+#FLEXFLAGS += -d
+#BISONFLAGS += -t

@@ -644,8 +644,10 @@ def read_orac_libraries(filename):
 
     libraries = {}
     try:
-        if os.environ['LIBBASE']:
-            libraries['LIBBASE'] = os.environ['LIBBASE']
+        if os.environ['ORAC_LIBBASE']:
+            libraries['ORAC_LIBBASE'] = os.environ['ORAC_LIBBASE']
+        if os.environ['ORAC_LIBBASE_FORTRAN']:
+            libraries['ORAC_LIBBASE_FORTRAN'] = os.environ['ORAC_LIBBASE_FORTRAN']
     except KeyError:
         pass
 
@@ -656,7 +658,7 @@ def read_orac_libraries(filename):
             # Only process variable definitions
             if '=' in line and '\\' not in line:
                 line = line.replace("\n", '')
-                parts = line.split('=',2)
+                parts = [l.strip() for l in line.split('=',2)]
 
                 # Replace any variables in this line with those we already know
                 fixed = re.sub(r"\$\(.*?\)", parse_with_lib(libraries), parts[1])
