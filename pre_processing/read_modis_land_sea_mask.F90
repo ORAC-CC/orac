@@ -38,7 +38,6 @@ subroutine read_modis_land_sea_mask(fid,SDS_name,ixstart,ixstop,iystart,iystop,b
    implicit none
 
    include "hdf.f90"
-   include "dffunc.f90"
 
    integer,            intent(in)  :: fid
    character(len=*),   intent(in)  :: SDS_name
@@ -50,6 +49,9 @@ subroutine read_modis_land_sea_mask(fid,SDS_name,ixstart,ixstop,iystart,iystop,b
    integer            :: start(2), stride(2), edge(2)
 
    integer(kind=byte) :: fv
+
+   integer(kind=4), external :: sfselect, sfn2index, sffattr, sfrattr, sfrdata
+   integer(kind=4), external :: sfendacc
 
    start(1) = ixstart-1
    start(2) = iystart-1

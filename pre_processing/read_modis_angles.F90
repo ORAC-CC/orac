@@ -41,7 +41,6 @@ subroutine read_modis_angles(fid,SDS_name,ixstart,ixstop,iystart,iystop,rtemp)
    implicit none
 
    include "hdf.f90"
-   include "dffunc.f90"
 
    integer,            intent(in)  :: fid
    character(len=*),   intent(in)  :: SDS_name
@@ -56,6 +55,8 @@ subroutine read_modis_angles(fid,SDS_name,ixstart,ixstop,iystart,iystop,rtemp)
    real(kind=dreal)   :: sf
 
    integer(kind=sint) :: stemp(ixstart:ixstop,iystart:iystop),vr(2),fv
+
+   integer(kind=4), external :: sfselect, sfn2index, sffattr, sfrattr, sfrdata, sfendacc
 
    start(1) = ixstart-1
    start(2) = iystart-1

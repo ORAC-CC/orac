@@ -315,9 +315,6 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file,s
 
    implicit none
 
-   include "hdf.f90"
-   include "dffunc.f90"
-
    character(len=path_length)       :: driver_path_file
    character(len=path_length)       :: l1b_path_file
    character(len=path_length)       :: geo_path_file

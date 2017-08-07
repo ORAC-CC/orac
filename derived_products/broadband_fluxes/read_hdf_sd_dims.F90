@@ -4,7 +4,6 @@ subroutine read_hdf_sd_dims(filename,SDS_name,nX,nY)
    implicit none
 
    include "hdf.f90"
-   include "dffunc.f90"
 
    ! Input
    character(len=*)  , intent(in) :: filename
@@ -20,6 +19,9 @@ subroutine read_hdf_sd_dims(filename,SDS_name,nX,nY)
    integer(kind=lint)         :: dummy_type,dummy_numattrs,dummy_rank
    integer, dimension(2) :: dimsizes
    character(len=MAX_NC_NAME) :: dummy_name
+
+   integer(kind=4), external  :: sfstart, sfselect, sfginfo, sfn2index
+   integer(kind=4), external  :: sfendacc, sfend
 
    !get file id
    fid=sfstart(filename,DFACC_READ)

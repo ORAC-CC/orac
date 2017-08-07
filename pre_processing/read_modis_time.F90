@@ -34,7 +34,6 @@ subroutine read_modis_time(fid,SDS_name,startyy,stopyy,temp)
    implicit none
 
    include "hdf.f90"
-   include "dffunc.f90"
 
    integer,            intent(in)  :: fid
    character(len=*),   intent(in)  :: SDS_name
@@ -45,6 +44,8 @@ subroutine read_modis_time(fid,SDS_name,startyy,stopyy,temp)
 
    integer :: file_id, var_id !, attr_id
    integer :: start(1), stride(1), edge(1)
+
+   integer(kind=4), external  :: sfselect, sfn2index, sfrdata, sfendacc
 
    start(1) = startyy-1
    stride = 1

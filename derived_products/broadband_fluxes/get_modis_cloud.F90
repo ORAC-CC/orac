@@ -4,7 +4,6 @@ subroutine get_modis_cloud(fileIN,Nx,Ny,CTT,CTP,CTH,phase,REF,COT,cc_tot)
    implicit none
 
    include "hdf.f90"
-   include "dffunc.f90"
 
    ! Input Variables
    character(len=*), intent(in) :: fileIN !MODIS Cloud File

@@ -35,7 +35,6 @@ subroutine read_modis_dimensions(path_to_geo_file,n_across_track,n_along_track)
    implicit none
 
    include "hdf.f90"
-   include "dffunc.f90"
 
    character(len=path_length), intent(in)  :: path_to_geo_file
    integer(kind=lint),         intent(out) :: n_across_track, n_along_track
@@ -45,6 +44,9 @@ subroutine read_modis_dimensions(path_to_geo_file,n_across_track,n_along_track)
    integer(kind=lint)         :: err_code, dims(2)
    integer(kind=lint)         :: geo_id
    character(len=MAX_NC_NAME) :: dummy_name
+
+   integer(kind=4), external  :: sfstart, sfselect, sfn2index, sfginfo
+   integer(kind=4), external  :: sfendacc, sfend
 
    !this only serves to get us the dimensions of the granule
    geo_id=sfstart(path_to_geo_file,DFACC_READ)

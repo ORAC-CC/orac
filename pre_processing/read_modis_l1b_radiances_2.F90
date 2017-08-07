@@ -60,7 +60,6 @@ subroutine read_modis_l1b_radiances_2(fid, band, Cal_type_is_refl, &
    implicit none
 
    include "hdf.f90"
-   include "dffunc.f90"
 
    integer(kind=lint), intent(in)    :: fid
    integer,            intent(in)    :: band
@@ -86,6 +85,9 @@ subroutine read_modis_l1b_radiances_2(fid, band, Cal_type_is_refl, &
    real(kind=sreal)           :: scale_factors(20), offsets(20)
    integer(kind=lint)         :: start(3), stride(3), edge(3)
    integer(kind=sint)         :: temp(ixstart:ixstop,iystart:iystop)
+
+   integer(kind=4), external  :: sfselect, sfginfo, sfn2index, sffattr, sfrattr
+   integer(kind=4), external  :: sfrdata, sfendacc
 
    if (verbose) &
         write(*,*) '<<<<<<<<<<<<<<< Entering read_modis_l1b_radiances_2()'

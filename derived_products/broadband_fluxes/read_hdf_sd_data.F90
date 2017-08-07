@@ -5,7 +5,6 @@ subroutine read_hdf_sd_data(filename,SDS_name,elm3d,nX,nY,temp_out)
    implicit none
 
    include "hdf.f90"
-   include "dffunc.f90"
 
    character(len=*), intent(in) :: filename
    integer, intent(in) :: elm3d !index of 3d array to output
@@ -49,6 +48,9 @@ subroutine read_hdf_sd_data(filename,SDS_name,elm3d,nX,nY,temp_out)
    real(kind=sreal)   :: fv_flt
    integer(kind=sint) :: fv_int
    integer(kind=1)    :: fv_byt
+
+   integer(kind=4), external  :: sfstart, sfselect, sfginfo, sfn2index, sffattr
+   integer(kind=4), external  :: sfrattr, sfrdata, sfendacc, sfend
 
 
    !read whole granule

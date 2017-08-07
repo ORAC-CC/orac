@@ -39,7 +39,6 @@ subroutine read_modis_lat_lon(fid,SDS_name,startx,stopx,starty,stopy,temp)
    implicit none
 
    include "hdf.f90"
-   include "dffunc.f90"
 
    integer,            intent(in)  :: fid
    character(len=*),   intent(in)  :: SDS_name
@@ -51,6 +50,9 @@ subroutine read_modis_lat_lon(fid,SDS_name,startx,stopx,starty,stopy,temp)
    integer            :: var_id,attr_id
    integer            :: start(2),stride(2),edge(2)
    real(kind=sreal)   :: fv,vr(2)
+
+   integer(kind=4), external :: sfselect, sfn2index, sffattr, sfrattr, sfrdata
+   integer(kind=4), external :: sfendacc
 
    start(1) = startx-1
    start(2) = starty-1

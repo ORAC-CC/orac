@@ -43,7 +43,6 @@ subroutine read_modis_l1b_radiances(sensor,platform,path_to_l1b_file, &
    implicit none
 
    include "hdf.f90"
-   include "dffunc.f90"
 
    integer(kind=lint) :: l1b_id, ix, jy,ich, err_code
 
@@ -58,6 +57,8 @@ subroutine read_modis_l1b_radiances(sensor,platform,path_to_l1b_file, &
    logical                                       :: lrefl
 
    real(kind=sreal), allocatable, dimension(:,:) :: temp
+
+   integer(kind=4), external  :: sfstart, sfend
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_modis_l1b_radiances()'
 

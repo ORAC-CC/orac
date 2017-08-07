@@ -50,7 +50,6 @@ subroutine read_modis_time_lat_lon_angles(path_to_geo_file,imager_geolocation,&
    implicit none
 
    include "hdf.f90"
-   include "dffunc.f90"
 
    character(len=path_length),  intent(in)  :: path_to_geo_file
    type(imager_geolocation_t),  intent(inout) :: imager_geolocation
@@ -64,6 +63,8 @@ subroutine read_modis_time_lat_lon_angles(path_to_geo_file,imager_geolocation,&
    real(kind=sreal),   allocatable, dimension(:,:) :: temp,temp2
    integer(kind=byte), allocatable, dimension(:,:) :: btemp
    integer                                         :: err_code
+
+   integer(kind=4), external  :: sfstart, sfend
 
    if (verbose) &
         write(*,*) '<<<<<<<<<<<<<<< Entering read_modis_time_lat_lon_angles()'

@@ -49,7 +49,6 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, read_ws, read_bs, &
    implicit none
 
    include "hdf.f90"
-   include "dffunc.f90"
 
    ! Input variables
    character(len=path_length), intent(in) :: path_to_file

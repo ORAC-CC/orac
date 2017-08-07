@@ -37,7 +37,6 @@ subroutine get_modis_time(geo_id,imager_geolocation,imager_time,n_along_track)
    implicit none
 
    include "hdf.f90"
-   include "dffunc.f90"
 
    integer(kind=lint),         intent(in)    :: geo_id
    type(imager_geolocation_t), intent(inout) :: imager_geolocation
@@ -57,6 +56,8 @@ subroutine get_modis_time(geo_id,imager_geolocation,imager_time,n_along_track)
 
    !reference point of time
    integer(kind=sint) :: refday=1_sint,refyear=1993_sint,refmonth=1_sint
+
+   integer(kind=4), external  :: sfselect, sfn2index, sfginfo, sfendacc
 
    ! determine size of grid on which time is stored
    var_id=sfselect(geo_id,sfn2index(geo_id,"EV start time"))

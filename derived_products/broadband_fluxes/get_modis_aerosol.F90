@@ -4,7 +4,6 @@ subroutine get_modis_aerosol(fileIN,Nx,Ny,AREF,AOD550)
    implicit none
 
    include "hdf.f90"
-   include "dffunc.f90"
 
    ! Input Files
    character(len=*), intent(in) :: fileIN !MODIS AEROSOL File
