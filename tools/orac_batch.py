@@ -72,10 +72,14 @@ class BatchSystem:
             return self.depend_arg.format(self.depend_delim.join(item))
 
     def PrintBatch(self, values, exe=None, depend_arg=None):
+        return ' '.join(self.ListBatch(values, exe=exe, depend_arg=depend_arg))
+
+    def ListBatch(self, values, exe=None, depend_arg=None):
         """Returns the queuing shell command. 'exe' is the thing to run."""
         arguments = [self.command]
-        arguments.extend([ self.args[key](values[key])
-                           for key in values.keys() if values[key] ])
+        for key in values.keys():
+            if values[key] is not None:
+                arguments.extend(self.args[key](values[key]).split("%%"))
         if type(depend_arg) in [list, tuple]:
             arguments.extend(depend_arg)
         elif depend_arg:
@@ -84,14 +88,14 @@ class BatchSystem:
             arguments.extend(exe)
         elif exe:
             arguments.append(exe)
-        return ' '.join(arguments)
+        return arguments
 
     def ParseOut(self, text, key=None):
         """Parse output of queuing function. Returns all regex groups unless
         'key' is specified, where it just returns that."""
         m = self.regex.match(text)
         if m == None:
-            raise SyntaxError('Unexpected output from queue system ' + text)
+            raise SyntaxError('Unexpected output from queue system: ' + text)
         if key:
             return m.group(key)
         else:
@@ -105,30 +109,32 @@ class BatchSystem:
 qsub = BatchSystem('qsub',
                    'Your job (?P<ID>\d+) \("(?P<job_name>[\w\.-]+)"\) '
                    'has been submitted',
-                   '-hold_jid {}', ',',
-                   {'duration' : '-l h_rt={}:00'.format,
-                    'email'    : '-M {}'.format,
-                    'err_file' : '-e {}'.format,
-                    'job_name' : '-N {}'.format,
-                    'log_file' : '-o {}'.format,
-                    'priority' : '-p {}'.format,
-                    'procs'    : '-n num_proc={}'.format,
-                    'queue'    : '-q {}'.format,
-                    'ram'      : '-l h_vmem={}M'.format,
-                    'shell'    : '-S {}'.format})
+                   '-hold_jid%%{}', ',',
+                   {'duration' : '-l%%h_rt={}:00'.format,
+                    'email'    : '-M%%{}'.format,
+                    'err_file' : '-e%%{}'.format,
+                    'job_name' : '-N%%{}'.format,
+                    'log_file' : '-o%%{}'.format,
+                    'priority' : '-p%%{}'.format,
+                    'procs'    : '-n%%num_proc={}'.format,
+                    'queue'    : '-q%%{}'.format,
+                    'ram'      : '-l%%h_vmem={}M'.format,
+                    'shell'    : '-S%%{}'.format})
 
 # BSUB, used by the JASMIN cluster at RAL
 bsub = BatchSystem('bsub',
-                   'Job <(?P<ID>\d+)> is submitted to (?P<desc>\w*)( ?)queue <(?P<queue>.+)>.',
-#                   '-w done({})', ')&&done(',
-                   '-w ended({})', ')&&ended(',
-                   {'duration' : '-W {}'.format,
-                    'email'    : '-u {}'.format,
-                    'err_file' : '-e {}'.format,
-                    'job_name' : '-J {}'.format,
-                    'log_file' : '-o {}'.format,
-                    'order'    : '-R "order[{}]"'.format,
-                    'procs'    : '-n {}'.format,
-                    'priority' : '-p {}'.format,
-                    'queue'    : '-q {}'.format,
-                    'ram'      : '-R "rusage[mem={}]"'.format})
+                   'Job <(?P<ID>\d+)> is submitted to (?P<desc>\w*)queue '
+                   '<(?P<queue>[\w\.-]+)>.',
+                   '-w%%ended({})', ') && ended(',
+                   {'duration' : '-W%%{}'.format,
+                    'email'    : '-u%%{}'.format,
+                    'err_file' : '-e%%{}'.format,
+                    'err_clob' : '-eo%%{}'.format,
+                    'job_name' : '-J%%{}'.format,
+                    'log_file' : '-o%%{}'.format,
+                    'log_clob' : '-oo%%{}'.format,
+                    'order'    : '-R%%order[{}]'.format,
+                    'procs'    : '-n%%{}'.format,
+                    'priority' : '-p%%{}'.format,
+                    'queue'    : '-q%%{}'.format,
+                    'ram'      : '-R%%rusage[mem={0}]%%-M%%{0}000'.format})
