@@ -126,17 +126,15 @@ subroutine ann_cloud_mask(channel1, channel2, channel3a, channel3b, &
       glint_mask = NO
    end if
 
+   ch1_uc = 0.
+
    if ( channel1 .eq. sreal_fill_value ) then
       ch1 = channel1
    else
       ch1 = channel1 * 100.
       if ((lsflag .eq. 0_byte .or. desert) .and. (niseflag .eq. NO) .and. (albedo1 .ge. 0.) .and. (correct_glint) ) then
-         do_ref3b_alb_corr = .TRUE.
          ch1_uc = ch1
-         if (ch1_uc .eq. 0 ) do_ref3b_alb_corr = .FALSE. ! avoid dividing by zero
          ch1 = max(ch1 - min(albedo1,1.) * 100. * 0.4, 0.)
-      else
-         do_ref3b_alb_corr = .FALSE.
       endif
    end if
 
@@ -152,6 +150,7 @@ subroutine ann_cloud_mask(channel1, channel2, channel3a, channel3b, &
    end if
 
    ch3b = channel3b
+   do_ref3b_alb_corr = .FALSE.
 
    if ( ch3a_on_avhrr_flag .ne. NO ) then
       if ( channel3a .eq. sreal_fill_value ) then
@@ -162,12 +161,11 @@ subroutine ann_cloud_mask(channel1, channel2, channel3a, channel3b, &
          ! We can also use the Albedo correction of the 1.6um channel
          if ((lsflag .eq. 0_byte .or. desert) .and. (niseflag .eq. NO) .and. (albedo3a .gt. 0.) .and. (correct_glint) ) ref3a = max(ref3a - min(albedo3a,1.) * 100. * 0.55, 0.)
       end if
-      do_ref3b_alb_corr = .FALSE.
    else
       if ( channel3b_ref .eq. sreal_fill_value ) then
          ref3b = channel3b_ref
-         do_ref3b_alb_corr = .FALSE.
       else
+         if (ch1_uc .ne. 0.) do_ref3b_alb_corr = .TRUE.
          ref3b = channel3b_ref*100.
       end if
    end if
@@ -716,18 +714,16 @@ subroutine ann_cloud_phase(channel1, channel2, channel3a, channel3b, &
    if ( niseflag .eq. 1 .and. lsflag .eq. 0 ) surface_flag = 3 ! sea ice
    if ( niseflag .eq. 1 .and. lsflag .eq. 1 ) surface_flag = 4 ! snow
 
+   ch1_uc = 0.
+
    if ( channel1 .eq. sreal_fill_value ) then
       ch1 = channel1
    else
       ch1 = channel1 * 100.
       ! correct channel reflectance over sea (sunglint) with albedo
       if ((lsflag .eq. 0_byte) .and. (niseflag .eq. NO) .and. (albedo1 .ge. 0.) .and. (correct_glint) ) then
-         do_ref3b_alb_corr = .TRUE.
          ch1_uc = ch1
-         if (ch1_uc .eq. 0 ) do_ref3b_alb_corr = .FALSE. ! avoid dividing by zero
          ch1 = max(ch1 - albedo1 * 100. / 2., 0.)
-      else
-         do_ref3b_alb_corr = .FALSE.
       endif
    end if
 
@@ -744,6 +740,7 @@ subroutine ann_cloud_phase(channel1, channel2, channel3a, channel3b, &
    end if
 
    ch3b = channel3b
+   do_ref3b_alb_corr = .FALSE.
 
    if ( ch3a_on_avhrr_flag .ne. NO ) then
       if ( channel3a .eq. sreal_fill_value ) then
@@ -755,12 +752,11 @@ subroutine ann_cloud_phase(channel1, channel2, channel3a, channel3b, &
          ! We can also use the Albedo correction of the 1.6um channel
          if ((lsflag .eq. 0_byte) .and. (niseflag .eq. NO) .and. (albedo3a .gt. 0.) .and. (correct_glint) ) ref3a = max(ref3a - min(albedo3a,1.) * 100. * 0.55, 0.)
       end if
-      do_ref3b_alb_corr = .FALSE.
    else
       if ( channel3b_ref .eq. sreal_fill_value ) then
          ref3b = channel3b_ref
-         do_ref3b_alb_corr = .FALSE.
       else
+         if (ch1_uc .ne. 0.) do_ref3b_alb_corr = .TRUE.
          ref3b = channel3b_ref*100.
       end if
    end if
