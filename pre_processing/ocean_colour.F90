@@ -299,7 +299,6 @@ function read_oceancolour_cci(path_to_file, occci, wavelengths, verbose) &
    end if
 
    deallocate(cache)
-   call deallocate_occci(occci)
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_oceancolour_cci()'
 
@@ -582,6 +581,7 @@ subroutine get_ocean_colour(cyear, cmonth, occci_path, lat, lon, &
    deallocate(tmp_data)
    deallocate(tmp_data2)
    deallocate(fg_mask)
+   call deallocate_occci(occci)
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving get_ocean_colour()'
 
