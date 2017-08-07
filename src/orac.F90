@@ -245,8 +245,9 @@ subroutine orac(mytask,ntasks,lower_bound,upper_bound,drifile)
    type(output_data_secondary_t) :: output_data_2
 
    ! OpenMP related variables
+#ifdef _OPENMP
    integer :: n_threads, thread_num
-
+#endif
    integer :: bitmask
 
    ! Some more variables for OpenMP implementation

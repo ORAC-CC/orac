@@ -119,7 +119,7 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
    character(len=path_length),     intent(in)  :: ecmwf_path(2), &
                                                   ecmwf_path2(2), &
                                                   ecmwf_path3(2)
-   character(len=path_length),     intent(out) :: ecmwf_hr_path(2)
+   character(len=path_length),     intent(in)  :: ecmwf_hr_path(2)
    character(len=path_length),     intent(out) :: ecmwf_path_file(2), &
                                                   ecmwf_hr_path_file(2), &
                                                   ecmwf_path_file2(2), &

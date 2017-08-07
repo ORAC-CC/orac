@@ -41,7 +41,7 @@ subroutine read_hdf_sd_data(filename,SDS_name,elm3d,nX,nY,temp_out)
    integer(kind=sreal)    :: fv
    real(kind=dreal)   :: scale,offset
    integer(kind=lint)         :: dummy_type,dummy_numattrs,dummy_rank
-   integer, dimension(2) :: dimsizes
+   integer, dimension(3) :: dimsizes
    character(len=MAX_NC_NAME) :: dummy_name
    integer(kind=lint)         :: ix, jy
 

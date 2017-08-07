@@ -65,7 +65,6 @@ subroutine read_gfs_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
    character(len=20)                      :: name
    logical                                :: three_d
    real(sreal)   :: dummy2d(ecmwf%xdim,ecmwf%ydim,1,1)
-   real(sreal)   :: dummy3d(ecmwf%xdim,ecmwf%ydim,ecmwf%kdim,1)
    real(sreal)   :: dummy3d_2(ecmwf%xdim,ecmwf%ydim,ecmwf%kdim)
 
    integer(lint),dimension(31)              :: gfs_levlist
