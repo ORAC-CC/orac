@@ -67,6 +67,12 @@ module orac_indexing_m
       integer          :: Nss            ! No. of Swansea s terms retrieved
       logical, pointer :: ss_terms(:)    ! Flags retrieval of Swansea s term
 
+      ! Auxiliary outputs
+      integer          :: Nalb           ! No. of albedo terms output
+      logical, pointer :: alb_terms(:)   ! Flags if albedo term is output
+      integer          :: Ncee           ! No. of cee terms output
+      logical, pointer :: cee_terms(:)   ! Flags if cee term is output
+
       ! Instrument swath
       integer          :: Xdim           ! Across track dimension
       integer          :: X0             ! First pixel across track
@@ -173,6 +179,20 @@ subroutine make_bitmask_from_terms(ind, bitmask)
       end do
    end if
 
+   if (associated(ind%alb_terms)) then
+      do i=1,ind%NSolar
+         ii = ind%YSolar(i)
+         if (ind%alb_terms(i)) bitmask(ii) = ibset(bitmask(ii), MaxRho_XX+1)
+      end do
+   end if
+
+   if (associated(ind%cee_terms)) then
+      do i=1,ind%NThermal
+         ii = ind%YThermal(i)
+         if (ind%cee_terms(i)) bitmask(ii) = ibset(bitmask(ii), MaxRho_XX+2)
+      end do
+   end if
+
 end subroutine make_bitmask_from_terms
 
 
@@ -193,10 +213,20 @@ subroutine set_terms_from_bitmask(bitmask, ind)
       do j=1,MaxRho_XX
          ind%rho_terms(i,j) = btest(bitmask(ii), j)
       end do
+
+      ind%alb_terms(i) = btest(bitmask(ii), MaxRho_XX+1)
+   end do
+
+   do i=1,ind%NThermal
+      ii = ind%YThermal(i)
+
+      ind%cee_terms(i) = btest(bitmask(ii), MaxRho_XX+2)
    end do
 
    ind%Nss  = count(ind%ss_terms)
    ind%Nrho = count(ind%rho_terms)
+   ind%Nalb = count(ind%alb_terms)
+   ind%Ncee = count(ind%cee_terms)
 
 end subroutine set_terms_from_bitmask
 
@@ -269,6 +299,8 @@ subroutine nullify_common_indices(ind)
    nullify(ind%Ch_Is)
    nullify(ind%rho_terms)
    nullify(ind%ss_terms)
+   nullify(ind%alb_terms)
+   nullify(ind%cee_terms)
 
 end subroutine nullify_common_indices
 
@@ -286,6 +318,8 @@ subroutine dealloc_common_indices(ind)
    deallocate(ind%Ch_Is)
    if (associated(ind%rho_terms)) deallocate(ind%rho_terms)
    if (associated(ind%ss_terms)) deallocate(ind%ss_terms)
+   if (associated(ind%alb_terms)) deallocate(ind%alb_terms)
+   if (associated(ind%cee_terms)) deallocate(ind%cee_terms)
 
 end subroutine dealloc_common_indices
 

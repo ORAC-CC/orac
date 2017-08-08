@@ -162,14 +162,14 @@ subroutine alloc_output_data_primary(ind, MaxIter, data)
    end if
 
    if (ind%flags%do_cloud) then
-      allocate(data%vid_cloud_albedo(ind%NSolar))
+      allocate(data%vid_cloud_albedo(ind%Nalb))
       data%vid_cloud_albedo = 0
-      allocate(data%vid_cloud_albedo_uncertainty(ind%NSolar))
+      allocate(data%vid_cloud_albedo_uncertainty(ind%Nalb))
       data%vid_cloud_albedo_uncertainty = 0
 
-      allocate(data%vid_cee(ind%NThermal))
+      allocate(data%vid_cee(ind%Ncee))
       data%vid_cee = 0
-      allocate(data%vid_cee_uncertainty(ind%NThermal))
+      allocate(data%vid_cee_uncertainty(ind%Ncee))
       data%vid_cee_uncertainty = 0
 
       allocate(data%cot(ind%X0:ind%X1, ind%Y0:ind%Y1))

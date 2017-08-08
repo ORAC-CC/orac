@@ -56,6 +56,8 @@ module orac_input_m
       integer, pointer :: view_loop_to_main_index(:)
       integer, pointer :: rho_loop_to_rho_main_index(:)
       integer, pointer :: ss_loop_to_ss_main_index(:)
+      integer, pointer :: alb_loop_to_alb_main_index(:)
+      integer, pointer :: cee_loop_to_cee_main_index(:)
       logical          :: read_optional_channel_field(MaxNumMeas) = .false.
       logical          :: read_optional_view_field(MaxNumViews)   = .false.
 !     logical, pointer :: best_infile(:,:)
@@ -275,6 +277,8 @@ subroutine determine_channel_indexing(fname, indexing, verbose)
    ! Allocate and form rho_terms array
    allocate(indexing%rho_terms(indexing%NSolar, MaxRho_XX))
    allocate(indexing%ss_terms(indexing%NSolar))
+   allocate(indexing%alb_terms(indexing%NSolar))
+   allocate(indexing%cee_terms(indexing%NThermal))
    call set_terms_from_bitmask(rho_flags, indexing%common_indices_t)
 
 end subroutine determine_channel_indexing
@@ -513,6 +517,86 @@ subroutine cross_reference_indexing(n, loop_ind, main_ind)
       end do
    end if
 
+   ! As above, but for alb_terms
+   if (main_ind%flags%do_cloud) then
+      allocate(main_ind%alb_terms(main_ind%NSolar))
+      main_ind%alb_terms = .false.
+      do i_file = 1, n
+         if (loop_ind(i_file)%flags%do_cloud) then
+            do j_ch = 1, loop_ind(i_file)%NSolar
+               i_ch = loop_ind(i_file)%ysolar_loop_to_main_index(j_ch)
+               main_ind%alb_terms(i_ch) = main_ind%alb_terms(i_ch) .or. &
+                    loop_ind(i_file)%alb_terms(j_ch)
+            end do
+         end if
+      end do
+      main_ind%Nalb = count(main_ind%alb_terms)
+
+      do i_file = 1, n
+         if (loop_ind(i_file)%flags%do_cloud) then
+            allocate(loop_ind(i_file)%alb_loop_to_alb_main_index( &
+                 loop_ind(i_file)%Nalb))
+
+            i0 = 0
+            i1 = 0
+            do i_ch = 1, main_ind%NSolar
+               ch_search_alb: do j_ch = 1, loop_ind(i_file)%NSolar
+                  if (loop_ind(i_file)%Y_Id(loop_ind(i_file)%YSolar(j_ch)) == &
+                       main_ind%Y_Id(main_ind%YSolar(i_ch))) exit ch_search_alb
+               end do ch_search_alb
+
+               if (main_ind%alb_terms(i_ch)) i0 = i0 + 1
+
+               if (j_ch <= loop_ind(i_file)%NSolar) then
+                  if (loop_ind(i_file)%alb_terms(j_ch)) then
+                     i1 = i1 + 1
+                     loop_ind(i_file)%alb_loop_to_alb_main_index(i1) = i0
+                  end if
+               end if
+            end do
+         end if
+      end do
+
+      ! And then the cee_terms
+      allocate(main_ind%cee_terms(main_ind%NThermal))
+      main_ind%cee_terms = .false.
+      do i_file = 1, n
+         if (loop_ind(i_file)%flags%do_cloud) then
+            do j_ch = 1, loop_ind(i_file)%NThermal
+               i_ch = loop_ind(i_file)%ythermal_loop_to_main_index(j_ch)
+               main_ind%cee_terms(i_ch) = main_ind%cee_terms(i_ch) .or. &
+                    loop_ind(i_file)%cee_terms(j_ch)
+            end do
+         end if
+      end do
+      main_ind%Ncee = count(main_ind%cee_terms)
+
+      do i_file = 1, n
+         if (loop_ind(i_file)%flags%do_cloud) then
+            allocate(loop_ind(i_file)%cee_loop_to_cee_main_index( &
+                 loop_ind(i_file)%Ncee))
+
+            i0 = 0
+            i1 = 0
+            do i_ch = 1, main_ind%NThermal
+               ch_search_cee: do j_ch = 1, loop_ind(i_file)%NThermal
+                  if (loop_ind(i_file)%Y_Id(loop_ind(i_file)%YThermal(j_ch)) == &
+                       main_ind%Y_Id(main_ind%YThermal(i_ch))) exit ch_search_cee
+               end do ch_search_cee
+
+               if (main_ind%cee_terms(i_ch)) i0 = i0 + 1
+
+               if (j_ch <= loop_ind(i_file)%NThermal) then
+                  if (loop_ind(i_file)%cee_terms(j_ch)) then
+                     i1 = i1 + 1
+                     loop_ind(i_file)%cee_loop_to_cee_main_index(i1) = i0
+                  end if
+               end if
+            end do
+         end if
+      end do
+   end if
+
 end subroutine cross_reference_indexing
 
 
@@ -530,6 +614,8 @@ subroutine nullify_indexing(indexing)
    nullify(indexing%view_loop_to_main_index)
    nullify(indexing%rho_loop_to_rho_main_index)
    nullify(indexing%ss_loop_to_ss_main_index)
+   nullify(indexing%alb_loop_to_alb_main_index)
+   nullify(indexing%cee_loop_to_cee_main_index)
 !  nullify(indexing%best_infile)
 
 end subroutine nullify_indexing
@@ -555,6 +641,10 @@ subroutine dealloc_input_indices(indexing)
       deallocate(indexing%rho_loop_to_rho_main_index)
    if (associated(indexing%ss_loop_to_ss_main_index)) &
       deallocate(indexing%ss_loop_to_ss_main_index)
+   if (associated(indexing%alb_loop_to_alb_main_index)) &
+      deallocate(indexing%alb_loop_to_alb_main_index)
+   if (associated(indexing%cee_loop_to_cee_main_index)) &
+      deallocate(indexing%cee_loop_to_cee_main_index)
 !  if (associated(indexing%best_infile)) &
 !     deallocate(indexing%best_inffile)
 

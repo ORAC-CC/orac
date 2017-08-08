@@ -1395,115 +1395,131 @@ if (indexing%flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! cloud_albedo_in_channel_no_*
    !----------------------------------------------------------------------------
+   i_rho = 0
    do i=1,indexing%NSolar
+      if (indexing%alb_terms(i)) then
+         i_rho = i_rho + 1
 
-      write(input_num,"(i4)") indexing%Y_Id(indexing%YSolar(i))
+         write(input_num,"(i4)") indexing%Y_Id(indexing%YSolar(i))
 
-      input_dummy='cloud_albedo in channel no '//trim(adjustl(input_num))
-      input_dummy2='cloud_albedo_in_channel_no_'//trim(adjustl(input_num))
+         input_dummy='cloud_albedo in channel no '//trim(adjustl(input_num))
+         input_dummy2='cloud_albedo_in_channel_no_'//trim(adjustl(input_num))
 
-      call nc_def_var_short_packed_float( &
-           ncid, &
-           dims_var, &
-           trim(adjustl(input_dummy2)), &
-           output_data%vid_cloud_albedo(i), &
-           verbose, &
-           long_name     = trim(adjustl(input_dummy)), &
-           standard_name = 'cloud_albedo', &
-           fill_value    = sint_fill_value, &
-           scale_factor  = output_data%cloud_albedo_scale, &
-           add_offset    = output_data%cloud_albedo_offset, &
-           valid_min     = output_data%cloud_albedo_vmin, &
-           valid_max     = output_data%cloud_albedo_vmax, &
-           units         = '1', &
-           deflate_level = deflate_level, &
-           shuffle       = shuffle_flag)
+         call nc_def_var_short_packed_float( &
+              ncid, &
+              dims_var, &
+              trim(adjustl(input_dummy2)), &
+              output_data%vid_cloud_albedo(i_rho), &
+              verbose, &
+              long_name     = trim(adjustl(input_dummy)), &
+              standard_name = 'cloud_albedo', &
+              fill_value    = sint_fill_value, &
+              scale_factor  = output_data%cloud_albedo_scale, &
+              add_offset    = output_data%cloud_albedo_offset, &
+              valid_min     = output_data%cloud_albedo_vmin, &
+              valid_max     = output_data%cloud_albedo_vmax, &
+              units         = '1', &
+              deflate_level = deflate_level, &
+              shuffle       = shuffle_flag)
+      end if
    end do
 
    !----------------------------------------------------------------------------
    ! cloud_albedo_uncertainty_in_channel_no_*
    !----------------------------------------------------------------------------
+   i_rho = 0
    do i=1,indexing%NSolar
+      if (indexing%alb_terms(i)) then
+         i_rho = i_rho + 1
 
-      write(input_num,"(i4)") indexing%Y_Id(indexing%YSolar(i))
+         write(input_num,"(i4)") indexing%Y_Id(indexing%YSolar(i))
 
-      input_dummy='cloud_albedo_uncertainty in channel no '// &
-           trim(adjustl(input_num))
-      input_dummy2='cloud_albedo_uncertainty_in_channel_no_'// &
-           trim(adjustl(input_num))
+         input_dummy='cloud_albedo_uncertainty in channel no '// &
+              trim(adjustl(input_num))
+         input_dummy2='cloud_albedo_uncertainty_in_channel_no_'// &
+              trim(adjustl(input_num))
 
-      call nc_def_var_short_packed_float( &
-           ncid, &
-           dims_var, &
-           trim(adjustl(input_dummy2)), &
-           output_data%vid_cloud_albedo_uncertainty(i), &
-           verbose, &
-           long_name     = trim(adjustl(input_dummy)), &
-           standard_name = '', &
-           fill_value    = sint_fill_value, &
-           scale_factor  = output_data%cloud_albedo_uncertainty_scale, &
-           add_offset    = output_data%cloud_albedo_uncertainty_offset, &
-           valid_min     = output_data%cloud_albedo_uncertainty_vmin, &
-           valid_max     = output_data%cloud_albedo_uncertainty_vmax, &
-           units         = '1', &
-           deflate_level = deflate_level, &
-           shuffle       = shuffle_flag)
+         call nc_def_var_short_packed_float( &
+              ncid, &
+              dims_var, &
+              trim(adjustl(input_dummy2)), &
+              output_data%vid_cloud_albedo_uncertainty(i_rho), &
+              verbose, &
+              long_name     = trim(adjustl(input_dummy)), &
+              standard_name = '', &
+              fill_value    = sint_fill_value, &
+              scale_factor  = output_data%cloud_albedo_uncertainty_scale, &
+              add_offset    = output_data%cloud_albedo_uncertainty_offset, &
+              valid_min     = output_data%cloud_albedo_uncertainty_vmin, &
+              valid_max     = output_data%cloud_albedo_uncertainty_vmax, &
+              units         = '1', &
+              deflate_level = deflate_level, &
+              shuffle       = shuffle_flag)
+      end if
    end do
 
    !----------------------------------------------------------------------------
    ! cee_in_channel_no_*
    !----------------------------------------------------------------------------
+   i_rho = 0
    do i=1,indexing%NThermal
+      if (indexing%cee_terms(i)) then
+         i_rho = i_rho + 1
 
-      write(input_num,"(i4)") indexing%Y_Id(indexing%YThermal(i))
+         write(input_num,"(i4)") indexing%Y_Id(indexing%YThermal(i))
 
-      input_dummy='cee in channel no '//trim(adjustl(input_num))
-      input_dummy2='cee_in_channel_no_'//trim(adjustl(input_num))
+         input_dummy='cee in channel no '//trim(adjustl(input_num))
+         input_dummy2='cee_in_channel_no_'//trim(adjustl(input_num))
 
-      call nc_def_var_short_packed_float( &
-           ncid, &
-           dims_var, &
-           trim(adjustl(input_dummy2)), &
-           output_data%vid_cee(i), &
-           verbose, &
-           long_name     = trim(adjustl(input_dummy)), &
-           standard_name = 'cee', &
-           fill_value    = sint_fill_value, &
-           scale_factor  = output_data%cee_scale, &
-           add_offset    = output_data%cee_offset, &
-           valid_min     = output_data%cee_vmin, &
-           valid_max     = output_data%cee_vmax, &
-           units         = '1', &
-           deflate_level = deflate_level, &
-           shuffle       = shuffle_flag)
+         call nc_def_var_short_packed_float( &
+              ncid, &
+              dims_var, &
+              trim(adjustl(input_dummy2)), &
+              output_data%vid_cee(i_rho), &
+              verbose, &
+              long_name     = trim(adjustl(input_dummy)), &
+              standard_name = 'cee', &
+              fill_value    = sint_fill_value, &
+              scale_factor  = output_data%cee_scale, &
+              add_offset    = output_data%cee_offset, &
+              valid_min     = output_data%cee_vmin, &
+              valid_max     = output_data%cee_vmax, &
+              units         = '1', &
+              deflate_level = deflate_level, &
+              shuffle       = shuffle_flag)
+      end if
    end do
 
    !----------------------------------------------------------------------------
    ! cee_uncertainty_in_channel_no_*
    !----------------------------------------------------------------------------
+   i_rho = 0
    do i=1,indexing%NThermal
+      if (indexing%cee_terms(i)) then
+         i_rho = i_rho + 1
 
-      write(input_num,"(i4)")indexing% Y_Id(indexing%YThermal(i))
+         write(input_num,"(i4)")indexing% Y_Id(indexing%YThermal(i))
 
-      input_dummy='cee_uncertainty in channel no '//trim(adjustl(input_num))
-      input_dummy2='cee_uncertainty_in_channel_no_'//trim(adjustl(input_num))
+         input_dummy='cee_uncertainty in channel no '//trim(adjustl(input_num))
+         input_dummy2='cee_uncertainty_in_channel_no_'//trim(adjustl(input_num))
 
-      call nc_def_var_short_packed_float( &
-           ncid, &
-           dims_var, &
-           trim(adjustl(input_dummy2)), &
-           output_data%vid_cee_uncertainty(i), &
-           verbose, &
-           long_name     = trim(adjustl(input_dummy)), &
-           standard_name = '', &
-           fill_value    = sint_fill_value, &
-           scale_factor  = output_data%cee_uncertainty_scale, &
-           add_offset    = output_data%cee_uncertainty_offset, &
-           valid_min     = output_data%cee_uncertainty_vmin, &
-           valid_max     = output_data%cee_uncertainty_vmax, &
-           units         = '1', &
-           deflate_level = deflate_level, &
-           shuffle       = shuffle_flag)
+         call nc_def_var_short_packed_float( &
+              ncid, &
+              dims_var, &
+              trim(adjustl(input_dummy2)), &
+              output_data%vid_cee_uncertainty(i_rho), &
+              verbose, &
+              long_name     = trim(adjustl(input_dummy)), &
+              standard_name = '', &
+              fill_value    = sint_fill_value, &
+              scale_factor  = output_data%cee_uncertainty_scale, &
+              add_offset    = output_data%cee_uncertainty_offset, &
+              valid_min     = output_data%cee_uncertainty_vmin, &
+              valid_max     = output_data%cee_uncertainty_vmax, &
+              units         = '1', &
+              deflate_level = deflate_level, &
+              shuffle       = shuffle_flag)
+      end if
    end do
 
    !----------------------------------------------------------------------------

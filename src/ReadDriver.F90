@@ -1245,6 +1245,18 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       end do
    end if
 
+   if (Ctrl%Approach == AppCld1L .or. Ctrl%Approach == AppCld2L) then
+      ! Output albedo in all solar channels
+      Ctrl%Ind%Nalb = Ctrl%Ind%NSolar
+      if (Ctrl%Ind%NSolar > 0) allocate(Ctrl%Ind%alb_terms(Ctrl%Ind%NSolar))
+      Ctrl%Ind%alb_terms = .true.
+
+      ! Output cee in all thermal channels
+      Ctrl%Ind%Ncee = Ctrl%Ind%NThermal
+      if (Ctrl%Ind%NThermal > 0) allocate(Ctrl%Ind%cee_terms(Ctrl%Ind%NThermal))
+      Ctrl%Ind%cee_terms = .true.
+   end if
+
    if (Ctrl%verbose) then
       write(*,*) 'Driver file: ',       trim(drifile)
       write(*,*) 'Input directory: ',   trim(Ctrl%FID%Data_Dir)

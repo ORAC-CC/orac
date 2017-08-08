@@ -385,6 +385,40 @@ subroutine setup_indexes(Ctrl, SAD_Chan, SPixel, is_not_used_or_missing)
       end do
    end if
 
+   ! Cross-reference the alb_terms flags
+   if (associated(Ctrl%Ind%alb_terms)) then
+      ii0 = 0
+      ii1 = 0
+      SPixel%spixel_y_solar_to_alb_terms = -1
+      do i = 1, Ctrl%Ind%NSolar
+         ii = Ctrl%Ind%YSolar(i)
+         if (.not. is_not_used_or_missing(ii)) ii0 = ii0 + 1
+
+         if (Ctrl%Ind%alb_terms(i)) then
+            ii1 = ii1 + 1
+            if (.not. is_not_used_or_missing(ii)) &
+                 SPixel%spixel_y_solar_to_alb_terms(ii0) = ii1
+         end if
+      end do
+   end if
+
+   ! Cross-reference the cee_terms flags
+   if (associated(Ctrl%Ind%cee_terms)) then
+      ii0 = 0
+      ii1 = 0
+      SPixel%spixel_y_thermal_to_cee_terms = -1
+      do i = 1, Ctrl%Ind%NThermal
+         ii = Ctrl%Ind%YThermal(i)
+         if (.not. is_not_used_or_missing(ii)) ii0 = ii0 + 1
+
+         if (Ctrl%Ind%cee_terms(i)) then
+            ii1 = ii1 + 1
+            if (.not. is_not_used_or_missing(ii)) &
+                 SPixel%spixel_y_thermal_to_cee_terms(ii0) = ii1
+         end if
+      end do
+   end if
+
 
 end subroutine setup_indexes
 

@@ -239,34 +239,25 @@ if (ind%flags%do_cloud) then
         output_data%cwp_uncertainty(ind%X0:,ind%Y0:), &
         1,1,ind%Xdim,1,1,ind%Ydim)
 
-   do i=1,ind%NSolar
-      write(input_num,"(i4)") ind%Y_Id(ind%YSolar(i))
-
-      input_dummy='cloud_albedo_in_channel_no_'//trim(adjustl(input_num))
-      call nc_write_array(ncid,trim(adjustl(input_dummy)), &
+   do i=1,ind%Nalb
+      call nc_write_array(ncid,'cloud_albedo', &
            output_data%vid_cloud_albedo(i), &
            output_data%cloud_albedo(ind%X0:,ind%Y0:,i), &
            1,1,ind%Xdim,1,1,ind%Ydim)
 
-      input_dummy='cloud_albedo_in_channel_uncertainty_no_'// &
-           trim(adjustl(input_num))
-      call nc_write_array(ncid,trim(adjustl(input_dummy)), &
+      call nc_write_array(ncid,'cloud_albedo_uncertainty', &
            output_data%vid_cloud_albedo_uncertainty(i), &
            output_data%cloud_albedo_uncertainty(ind%X0:,ind%Y0:,i), &
            1,1,ind%Xdim,1,1,ind%Ydim)
    end do
 
-   do i=1,ind%NThermal
-      write(input_num,"(i4)") ind%Y_Id(ind%YThermal(i))
-
-      input_dummy='cee_in_channel_no_'//trim(adjustl(input_num))
-      call nc_write_array(ncid,trim(adjustl(input_dummy)), &
+   do i=1,ind%Ncee
+      call nc_write_array(ncid,'cee', &
            output_data%vid_cee(i), &
            output_data%cee(ind%X0:,ind%Y0:,i), &
            1,1,ind%Xdim,1,1,ind%Ydim)
 
-      input_dummy='cee_in_channel_uncertainty_no_'//trim(adjustl(input_num))
-      call nc_write_array(ncid,trim(adjustl(input_dummy)), &
+      call nc_write_array(ncid,'cee_uncertainty', &
            output_data%vid_cee_uncertainty(i), &
            output_data%cee_uncertainty(ind%X0:,ind%Y0:,i), &
            1,1,ind%Xdim,1,1,ind%Ydim)

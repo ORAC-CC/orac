@@ -109,14 +109,14 @@ if (indexing%flags%do_cloud) then
    primary2%cwp(i,j)                   = primary1%cwp(i,j)
    primary2%cwp_uncertainty(i,j)       = primary1%cwp_uncertainty(i,j)
 
-   primary2%cloud_albedo(i,j,indexing%ysolar_loop_to_main_index)       &
+   primary2%cloud_albedo(i,j,indexing%alb_loop_to_alb_main_index)       &
                                        = primary1%cloud_albedo(i,j,:)
-   primary2%cloud_albedo_uncertainty(i,j,indexing%ysolar_loop_to_main_index) &
+   primary2%cloud_albedo_uncertainty(i,j,indexing%alb_loop_to_alb_main_index) &
                                        = primary1%cloud_albedo_uncertainty(i,j,:)
 
-   primary2%cee(i,j,indexing%ythermal_loop_to_main_index) &
+   primary2%cee(i,j,indexing%cee_loop_to_cee_main_index) &
                                        = primary1%cee(i,j,:)
-   primary2%cee_uncertainty(i,j,indexing%ythermal_loop_to_main_index) &
+   primary2%cee_uncertainty(i,j,indexing%cee_loop_to_cee_main_index) &
                                        = primary1%cee_uncertainty(i,j,:)
 end if
 

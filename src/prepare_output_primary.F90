@@ -537,46 +537,50 @@ if (Ctrl%Ind%flags%do_cloud) then
    ! cloud_albedo, cloud_albedo_uncertainty
    !----------------------------------------------------------------------------
    do k=1,SPixel%Ind%NSolar
-      kk = SPixel%spixel_y_solar_to_ctrl_y_solar_index(k)
+      kk = SPixel%spixel_y_solar_to_alb_terms(k)
 
-      call prepare_short_packed_float( &
-           Diag%cloud_albedo(k), output_data%cloud_albedo(i,j,kk), &
-           output_data%cloud_albedo_scale, output_data%cloud_albedo_offset, &
-           output_data%cloud_albedo_vmin, output_data%cloud_albedo_vmax, &
-           sreal_fill_value, output_data%cloud_albedo_vmax)
+      if (kk >= 0) then
+         call prepare_short_packed_float( &
+              Diag%cloud_albedo(k), output_data%cloud_albedo(i,j,kk), &
+              output_data%cloud_albedo_scale, output_data%cloud_albedo_offset, &
+              output_data%cloud_albedo_vmin, output_data%cloud_albedo_vmax, &
+              sreal_fill_value, output_data%cloud_albedo_vmax)
 
-      temp_real = sqrt(Diag%cloud_albedo_s(k))
-      call prepare_short_packed_float( &
-           temp_real, output_data%cloud_albedo_uncertainty(i,j,kk), &
-           output_data%cloud_albedo_uncertainty_scale, &
-           output_data%cloud_albedo_uncertainty_offset, &
-           output_data%cloud_albedo_uncertainty_vmin, &
-           output_data%cloud_albedo_uncertainty_vmax, &
-           sreal_fill_value, output_data%cloud_albedo_uncertainty_vmax, &
-           control=Diag%cloud_albedo_s(k))
+         temp_real = sqrt(Diag%cloud_albedo_s(k))
+         call prepare_short_packed_float( &
+              temp_real, output_data%cloud_albedo_uncertainty(i,j,kk), &
+              output_data%cloud_albedo_uncertainty_scale, &
+              output_data%cloud_albedo_uncertainty_offset, &
+              output_data%cloud_albedo_uncertainty_vmin, &
+              output_data%cloud_albedo_uncertainty_vmax, &
+              sreal_fill_value, output_data%cloud_albedo_uncertainty_vmax, &
+              control=Diag%cloud_albedo_s(k))
+      end if
    end do
 
    !----------------------------------------------------------------------------
    ! cee, cee_uncertainty
    !----------------------------------------------------------------------------
    do k=1,SPixel%Ind%NThermal
-      kk = SPixel%spixel_y_thermal_to_ctrl_y_thermal_index(k)
+      kk = SPixel%spixel_y_thermal_to_cee_terms(k)
 
-      call prepare_short_packed_float( &
-           Diag%cloud_emissivity(k), output_data%cee(i,j,kk), &
-           output_data%cee_scale, output_data%cee_offset, &
-           output_data%cee_vmin, output_data%cee_vmax, &
-           sreal_fill_value, output_data%cee_vmax)
+      if (kk >= 0) then
+         call prepare_short_packed_float( &
+              Diag%cloud_emissivity(k), output_data%cee(i,j,kk), &
+              output_data%cee_scale, output_data%cee_offset, &
+              output_data%cee_vmin, output_data%cee_vmax, &
+              sreal_fill_value, output_data%cee_vmax)
 
-      temp_real = sqrt(Diag%cloud_emissivity_s(k))
-      call prepare_short_packed_float( &
-           temp_real, output_data%cee_uncertainty(i,j,kk), &
-           output_data%cee_uncertainty_scale, &
-           output_data%cee_uncertainty_offset, &
-           output_data%cee_uncertainty_vmin, &
-           output_data%cee_uncertainty_vmax, &
-           sreal_fill_value, output_data%cee_uncertainty_vmax, &
-           control=Diag%cloud_emissivity_s(k))
+         temp_real = sqrt(Diag%cloud_emissivity_s(k))
+         call prepare_short_packed_float( &
+              temp_real, output_data%cee_uncertainty(i,j,kk), &
+              output_data%cee_uncertainty_scale, &
+              output_data%cee_uncertainty_offset, &
+              output_data%cee_uncertainty_vmin, &
+              output_data%cee_uncertainty_vmax, &
+              sreal_fill_value, output_data%cee_uncertainty_vmax, &
+              control=Diag%cloud_emissivity_s(k))
+      end if
    end do
 
    !----------------------------------------------------------------------------

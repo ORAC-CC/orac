@@ -126,5 +126,7 @@ subroutine Dealloc_SPixel(Ctrl, SPixel)
    deallocate(SPixel%spixel_y_mixed_to_spixel_y_thermal)
    deallocate(SPixel%spixel_y_solar_to_rho_terms)
    deallocate(SPixel%spixel_y_solar_to_ss_terms)
+   deallocate(SPixel%spixel_y_solar_to_alb_terms)
+   deallocate(SPixel%spixel_y_thermal_to_cee_terms)
 
 end subroutine Dealloc_SPixel

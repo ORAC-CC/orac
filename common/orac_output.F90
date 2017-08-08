@@ -450,7 +450,7 @@ module orac_output_m
       integer(byte) :: rho_flags_scale  = 1
       integer(byte) :: rho_flags_offset = 0
       integer(byte) :: rho_flags_vmin   = 0
-      integer(byte) :: rho_flags_vmax   = 31
+      integer(byte) :: rho_flags_vmax   = 127
 
       ! Arrays to store output fields
       integer(sint), pointer :: aot550(:,:)
