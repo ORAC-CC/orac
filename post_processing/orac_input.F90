@@ -211,8 +211,9 @@ subroutine determine_channel_indexing(fname, indexing, verbose)
    type(input_indices_t), intent(inout) :: indexing
    logical,               intent(in)    :: verbose
 
-   integer :: ncid, i_ch, i0, i1, ierr
-   integer :: do_flags, rho_flags(indexing%Ny)
+   integer       :: ncid, i_ch, i0, i1, ierr
+   integer       :: do_flags
+   integer(byte) :: rho_flags(indexing%Ny)
 
    call nc_open(ncid, fname)
 

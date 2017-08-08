@@ -185,5 +185,7 @@ subroutine Alloc_SPixel(Ctrl, RTM, SPixel)
    allocate(SPixel%spixel_y_thermal_to_ctrl_y_thermal_index(Ctrl%Ind%Ny))
    allocate(SPixel%spixel_y_mixed_to_spixel_y_solar(Ctrl%Ind%Ny))
    allocate(SPixel%spixel_y_mixed_to_spixel_y_thermal(Ctrl%Ind%Ny))
+   allocate(SPixel%spixel_y_solar_to_rho_terms(Ctrl%Ind%Ny,MaxRho_XX))
+   allocate(SPixel%spixel_y_solar_to_ss_terms(Ctrl%Ind%Ny))
 
 end subroutine Alloc_SPixel

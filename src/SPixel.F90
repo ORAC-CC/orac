@@ -298,6 +298,8 @@ module SPixel_m
       integer, pointer    :: spixel_y_thermal_to_ctrl_y_thermal_index(:)
       integer, pointer    :: spixel_y_mixed_to_spixel_y_solar(:)
       integer, pointer    :: spixel_y_mixed_to_spixel_y_thermal(:)
+      integer, pointer    :: spixel_y_solar_to_rho_terms(:,:)
+      integer, pointer    :: spixel_y_solar_to_ss_terms(:)
 
       integer(dint)       :: channels_used
                                           ! Binary mask of channels used in

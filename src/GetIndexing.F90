@@ -250,7 +250,7 @@ subroutine setup_indexes(Ctrl, SAD_Chan, SPixel, is_not_used_or_missing)
    type(SPixel_t),   intent(inout) :: SPixel
    logical,          intent(in)    :: is_not_used_or_missing(:)
 
-   integer :: i
+   integer :: i, j
    integer :: ii, i0, i1, i2, ii0, ii1
 
    SPixel%spixel_y_to_ctrl_y_index                 = 0
@@ -347,6 +347,44 @@ subroutine setup_indexes(Ctrl, SAD_Chan, SPixel, is_not_used_or_missing)
       ! Flag use of channel (Bit 0 not used)
       SPixel%channels_used = ibset(SPixel%channels_used, Ctrl%Ind%Y_Id(i))
    end do
+
+
+   ! Cross-reference the ss_terms flags
+   if (associated(Ctrl%Ind%ss_terms)) then
+      ii0 = 0
+      ii1 = 0
+      SPixel%spixel_y_solar_to_ss_terms = -1
+      do i = 1, Ctrl%Ind%NSolar
+         ii = Ctrl%Ind%YSolar(i)
+         if (.not. is_not_used_or_missing(ii)) ii0 = ii0 + 1
+
+         if (Ctrl%Ind%ss_terms(i)) then
+            ii1 = ii1 + 1
+            if (.not. is_not_used_or_missing(ii)) &
+                 SPixel%spixel_y_solar_to_ss_terms(ii0) = ii1
+         end if
+      end do
+   end if
+
+   ! Cross-reference the rho_terms flags
+   if (associated(Ctrl%Ind%rho_terms)) then
+      ii0 = 0
+      ii1 = 0
+      SPixel%spixel_y_solar_to_rho_terms = -1
+      do i = 1, Ctrl%Ind%NSolar
+         ii = Ctrl%Ind%YSolar(i)
+         if (.not. is_not_used_or_missing(ii)) ii0 = ii0 + 1
+
+         do j = 1, MaxRho_XX
+            if (Ctrl%Ind%rho_terms(i,j)) then
+               ii1 = ii1 + 1
+               if (.not. is_not_used_or_missing(ii)) &
+                    SPixel%spixel_y_solar_to_rho_terms(ii0,j) = ii1
+            end if
+         end do
+      end do
+   end if
+
 
 end subroutine setup_indexes
 

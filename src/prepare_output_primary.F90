@@ -210,14 +210,13 @@ if (Ctrl%Ind%flags%do_rho) then
    !----------------------------------------------------------------------------
    ! rho, rho_uncertainty
    !----------------------------------------------------------------------------
-   i_rho = 0
    do k=1,SPixel%Ind%NSolar
       kk = SPixel%spixel_y_solar_to_ctrl_y_solar_index(k)
 
       do l=1,MaxRho_XX
-         if (Ctrl%Ind%rho_terms(kk,l)) then
-            i_rho = i_rho + 1
+         i_rho = SPixel%spixel_y_solar_to_rho_terms(k,l)
 
+         if (i_rho >= 0) then
             call prepare_short_packed_float( &
                  SPixel%Xn(IRs(kk,l)), output_data%rho(i,j,i_rho), &
                  output_data%rho_scale, output_data%rho_offset, &
@@ -239,13 +238,11 @@ if (Ctrl%Ind%flags%do_rho) then
 end if
 
 if (Ctrl%Ind%flags%do_swansea) then
-   i_rho = 0
    do k=1,SPixel%Ind%NSolar
       kk = SPixel%spixel_y_solar_to_ctrl_y_solar_index(k)
+      i_rho = SPixel%spixel_y_solar_to_ss_terms(k)
 
-      if (Ctrl%Ind%ss_terms(kk)) then
-         i_rho = i_rho + 1
-
+      if (i_rho >= 0) then
    !----------------------------------------------------------------------------
    ! swansea_s, swansea_s_uncertainty
    !----------------------------------------------------------------------------
