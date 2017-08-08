@@ -146,55 +146,59 @@ subroutine set_common_file_flags_from_bitmask(bitmask, flags)
 end subroutine set_common_file_flags_from_bitmask
 
 
-subroutine make_bitmask_from_rho_terms(ind, bitmask)
+subroutine make_bitmask_from_terms(ind, bitmask)
 
    implicit none
 
    type(common_indices_t), intent(in)  :: ind
    integer(byte),          intent(out) :: bitmask(:) ! byte as an output variable
 
-   integer :: i, j
+   integer :: i, j, ii
 
    bitmask = 0
 
    if (associated(ind%ss_terms)) then
       do i=1,ind%NSolar
-         if (ind%ss_terms(i)) bitmask(i) = ibset(bitmask(i), 0)
+         ii = ind%YSolar(i)
+         if (ind%ss_terms(i)) bitmask(ii) = ibset(bitmask(ii), 0)
       end do
    end if
 
    if (associated(ind%rho_terms)) then
       do i=1,ind%NSolar
+         ii = ind%YSolar(i)
          do j=1,MaxRho_XX
-            if (ind%rho_terms(i,j)) bitmask(i) = ibset(bitmask(i), j)
+            if (ind%rho_terms(i,j)) bitmask(ii) = ibset(bitmask(ii), j)
          end do
       end do
    end if
 
-end subroutine make_bitmask_from_rho_terms
+end subroutine make_bitmask_from_terms
 
 
-subroutine set_rho_terms_from_bitmask(bitmask, ind)
+subroutine set_terms_from_bitmask(bitmask, ind)
 
    implicit none
 
-   integer,                intent(in)  :: bitmask(:)
+   integer(byte),          intent(in)  :: bitmask(:)
    type(common_indices_t), intent(out) :: ind
 
-   integer :: i, j
+   integer :: i, j, ii
 
    do i=1,ind%NSolar
-      ind%ss_terms(i) = btest(bitmask(i), 0)
+      ii = ind%YSolar(i)
+
+      ind%ss_terms(i) = btest(bitmask(ii), 0)
 
       do j=1,MaxRho_XX
-         ind%rho_terms(i,j) = btest(bitmask(i), j)
+         ind%rho_terms(i,j) = btest(bitmask(ii), j)
       end do
    end do
 
    ind%Nss  = count(ind%ss_terms)
    ind%Nrho = count(ind%rho_terms)
 
-end subroutine set_rho_terms_from_bitmask
+end subroutine set_terms_from_bitmask
 
 
 subroutine create_rho_field_name(rho_index, mode, input_num, &

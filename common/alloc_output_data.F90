@@ -428,12 +428,8 @@ subroutine alloc_output_data_primary(ind, MaxIter, data)
       data%view_id = byte_fill_value
       allocate(data%ch_is(ind%Ny))
       data%ch_is = byte_fill_value
-      if (ind%flags%do_rho .or. ind%flags%do_swansea) then
-         allocate(data%rho_flags(ind%Ny))
-         data%rho_flags = byte_fill_value
-      else
-         nullify(data%rho_flags)
-      end if
+      allocate(data%rho_flags(ind%Ny))
+      data%rho_flags = byte_fill_value
    else
       nullify(data%y_id)
       nullify(data%view_id)

@@ -407,8 +407,7 @@ end if
            output_data%view_id, 1,1,ind%NViews)
       call nc_write_array(ncid,'ch_is',output_data%vid_ch_is, &
            output_data%ch_is, 1,1,ind%Ny)
-      if (ind%flags%do_rho .or. ind%flags%do_swansea) &
-           call nc_write_array(ncid,'rho_flags',output_data%vid_rho_flags, &
+      call nc_write_array(ncid,'rho_flags',output_data%vid_rho_flags, &
            output_data%rho_flags, 1,1,ind%Ny)
    end if
 

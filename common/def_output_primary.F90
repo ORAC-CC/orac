@@ -2019,11 +2019,10 @@ if (indexing%flags%do_indexing .and. present(ch_var)) then
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 
-   if (indexing%flags%do_rho .or. indexing%flags%do_swansea) then
    !----------------------------------------------------------------------------
    ! rho_flags
    !----------------------------------------------------------------------------
-      call nc_def_var_byte_packed_byte( &
+   call nc_def_var_byte_packed_byte( &
            ncid, &
            ch_var, &
            'rho_flags', &
@@ -2038,7 +2037,6 @@ if (indexing%flags%do_indexing .and. present(ch_var)) then
            valid_max     = output_data%rho_flags_vmax, &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
-   end if
 end if
 
 if (indexing%flags%do_indexing) then

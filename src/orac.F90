@@ -618,8 +618,7 @@ subroutine orac(mytask,ntasks,lower_bound,upper_bound,drifile)
       output_data_1%y_id  = Ctrl%Ind%Y_Id
       output_data_1%ch_is = Ctrl%Ind%Ch_Is
 
-      if (Ctrl%Ind%flags%do_rho .or. Ctrl%Ind%flags%do_swansea) &
-           call make_bitmask_from_rho_terms( &
+      call make_bitmask_from_terms( &
            Ctrl%Ind%common_indices_t, output_data_1%rho_flags)
 
       call make_bitmask_from_common_file_flags(Ctrl%Ind%flags, bitmask)

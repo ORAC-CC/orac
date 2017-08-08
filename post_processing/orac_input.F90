@@ -240,8 +240,7 @@ subroutine determine_channel_indexing(fname, indexing, verbose)
    call nc_read_array(ncid, "y_id",    indexing%Y_Id,    verbose)
    call nc_read_array(ncid, "view_id", indexing%View_Id, verbose)
    call nc_read_array(ncid, "ch_is",   indexing%Ch_Is,   verbose)
-   if (indexing%flags%do_rho .or. indexing%flags%do_swansea) &
-        call nc_read_array(ncid, "rho_flags", rho_flags, verbose)
+   call nc_read_array(ncid, "rho_flags", rho_flags, verbose)
 
    if (nf90_close(ncid) .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_close()'
@@ -274,11 +273,9 @@ subroutine determine_channel_indexing(fname, indexing, verbose)
    end do
 
    ! Allocate and form rho_terms array
-   if (indexing%flags%do_rho .or. indexing%flags%do_swansea) then
-      allocate(indexing%rho_terms(indexing%NSolar, MaxRho_XX))
-      allocate(indexing%ss_terms(indexing%NSolar))
-      call set_rho_terms_from_bitmask(rho_flags, indexing%common_indices_t)
-   end if
+   allocate(indexing%rho_terms(indexing%NSolar, MaxRho_XX))
+   allocate(indexing%ss_terms(indexing%NSolar))
+   call set_terms_from_bitmask(rho_flags, indexing%common_indices_t)
 
 end subroutine determine_channel_indexing
 
