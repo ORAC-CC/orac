@@ -749,6 +749,7 @@ subroutine ann_cloud_phase(channel1, channel2, channel3a, channel3b, &
       else
          ! We use a 1.6um trained ANN now
          ref3a = channel3a * 100.
+         ref3b = channel3b_ref
          ! We can also use the Albedo correction of the 1.6um channel
          if ((lsflag .eq. 0_byte) .and. (niseflag .eq. NO) .and. (albedo3a .gt. 0.) .and. (correct_glint) ) ref3a = max(ref3a - min(albedo3a,1.) * 100. * 0.55, 0.)
       end if
