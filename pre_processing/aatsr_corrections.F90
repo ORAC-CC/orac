@@ -179,7 +179,7 @@ subroutine aatsr_drift_correction(start_date, vc1_file, lut, chan, new_drift, &
    read(sdate(1:2), '(I2)') day
    read(sdate(13:14), '(I2)') hour
    read(sdate(16:17), '(I2)') minute
-   read(sdate(19:), '(F9.6)') second
+   read(sdate(19:27), '(F9.6)') second
    call GREG2JD(year, month, day, Tn)
    Tn = Tn + (hour + (minute + second/60._dreal)/60._dreal)/24._dreal
 

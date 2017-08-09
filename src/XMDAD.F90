@@ -138,7 +138,8 @@ subroutine X_MDAD(Ctrl, SPixel, index, X, status, Err)
    i_spixel_06 = find_in_array(Y_Id, Ctrl%Ind%Y_Id_legacy(I_legacy_0_6x))
    i_spixel_11 = find_in_array(Y_Id, Ctrl%Ind%Y_Id_legacy(I_legacy_11_x))
 
-   i_spixel_06_solar = find_in_array(SPixel%Ind%YSolar, i_spixel_06)
+   i_spixel_06_solar = find_in_array(SPixel%Ind%YSolar(1:SPixel%Ind%NSolar), &
+                                     i_spixel_06)
 
    ! Parameters supported are Tau, Pc and f.
    select case (index)
