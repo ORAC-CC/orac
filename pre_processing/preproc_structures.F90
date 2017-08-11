@@ -22,8 +22,8 @@
 ! 2014/09/10, AP: Removed unnecessary LWRTM and SWRTM structures.
 ! 2015/11/26, GM: Added linearly_combine_prtms() to facilitate linear
 !    interpolation between preproc_prtm_t structures.
-! 2017/03/29, SP: Add new variable for tropopause cloud emissivity (EKWork)
-! 2017/03/29, SP: Add ability to calculate tropospheric cloud emissivity (EKWork)
+! 2017/03/29, SP: Add new variable for tropopause cloud emissivity (ExtWork)
+! 2017/03/29, SP: Add ability to calculate tropospheric cloud emissivity (ExtWork)
 !
 ! $Id$
 !

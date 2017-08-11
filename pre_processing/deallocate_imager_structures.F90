@@ -27,7 +27,7 @@
 ! 2014/12/01, OS: added imager_pavolonis%emis_ch3b
 ! 2015/01/30, AP: Remove uscan and vscan as unnecessary.
 ! 2015/07/03, OS: Added cldmask_uncertainty
-! 2017/03/29, SP: Add new variable for tropopause cloud emissivity (EKWork)
+! 2017/03/29, SP: Add new variable for tropopause cloud emissivity (ExtWork)
 ! 2017/06/21, OS: deallocated ann phase variables
 !
 ! $Id$

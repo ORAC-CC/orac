@@ -8,7 +8,7 @@
 !   Alternative to Brightness Temperatures. Part I: Theory, JAMC(49)
 !
 ! History:
-! 2017/03/29, SP: First version (EKWork)
+! 2017/03/29, SP: First version (ExtWork)
 !
 ! $Id$
 !

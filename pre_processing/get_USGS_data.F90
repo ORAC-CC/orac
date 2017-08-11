@@ -17,7 +17,7 @@
 ! 2014/12/31, GM: Parallelized the main loop with OpenMP.
 ! 2016/05/31, GT: Added use_l1_land_mask argument, which provides the option of
 !    not replacing the existing imager_flags%lsflag with DEM values
-! 2017/02/11, SP: Allow reading LSM, LUM, DEM from external file (EKWork)
+! 2017/02/11, SP: Allow reading LSM, LUM, DEM from external file (ExtWork)
 !
 ! $Id$
 !

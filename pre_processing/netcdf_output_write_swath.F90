@@ -45,8 +45,8 @@
 ! 2015/07/02, OS: added writing of cldmask_uncertainty
 ! 2016/03/31, GM: Changes to support processing only SW or only LW channels.
 ! 2016/04/28, AP: Make multiple views mandatory.
-! 2017/02/25, SP: Update to RTTOV v12.1 (EKWork)
-! 2017/03/29, SP: Add ability to calculate tropospheric cloud emissivity (EKWork)
+! 2017/02/25, SP: Update to RTTOV v12.1 (ExtWork)
+! 2017/03/29, SP: Add ability to calculate tropospheric cloud emissivity (ExtWork)
 ! 2017/06/21, OS: added ann phase variables
 !
 ! $Id$

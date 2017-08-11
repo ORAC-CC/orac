@@ -45,10 +45,10 @@
 !
 ! History:
 ! 2017/02/05, SP: Initial version
-! 2017/02/25, SP: Update to RTTOV v12.1 (EKWork)
-! 2017/03/24, SP: Tidying, improved method for finding snow fraction (EKWork)
+! 2017/02/25, SP: Update to RTTOV v12.1 (ExtWork)
+! 2017/03/24, SP: Tidying, improved method for finding snow fraction (ExtWork)
 ! 2017/03/29, SP: Switch to parallel RTTOV for performance improvement
-! 2017/03/30, SP: Add ability to calculate tropospheric cloud emissivity (EKWork)
+! 2017/03/30, SP: Add ability to calculate tropospheric cloud emissivity (ExtWork)
 ! 2017/04/12, SP: Allow switch to parallel RTTOV only if OPENMP is enabled.
 !
 ! $Id$

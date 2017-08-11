@@ -255,15 +255,15 @@
 ! 2016/05/31, GT: Added use_l1_land_mask optional argument to prevent USGS DEM
 !    from overwriting the land/sea mask provided by L1 data (assuming the L1
 !    data provides one!).
-! 2017/02/06, SP: Added support for NOAA GFS atmosphere data (EKWork)
-! 2017/02/10, SP: Allow reading LSM, LUM, DEM from external file (EKWork)
+! 2017/02/06, SP: Added support for NOAA GFS atmosphere data (ExtWork)
+! 2017/02/10, SP: Allow reading LSM, LUM, DEM from external file (ExtWork)
 ! 2017/02/24, SP: Allow option to disable snow/ice correction
-! 2017/03/29, SP: Add new variable for tropopause cloud emissivity (EKWork)
-! 2017/03/29, SP: Add ability to calculate tropospheric cloud emissivity (EKWork)
-! 2017/04/08, SP: New flag to disable VIS processing, saves proc time (EKWork)
+! 2017/03/29, SP: Add new variable for tropopause cloud emissivity (ExtWork)
+! 2017/03/29, SP: Add ability to calculate tropospheric cloud emissivity (ExtWork)
+! 2017/04/08, SP: New flag to disable VIS processing, saves proc time (ExtWork)
 ! 2017/04/11, SP: Added ecmwf_flag=6, for working with GFS analysis files.
 ! 2017/04/26, SP: Support for loading geoinfo (lat/lon/vza/vaa) from an
-!                 external file. Supported by AHI, not yet by SEVIRI (EKWork)
+!                 external file. Supported by AHI, not yet by SEVIRI (ExtWork)
 ! 2017/06/21, OS: added spectral response correction flag,
 !     which defaults to false unless sensor=AATSR/AVHRR/MODIS
 ! 2017/07/09, SP: Add check for SEVIRI RSS data to ensure correct processing.

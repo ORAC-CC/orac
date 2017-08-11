@@ -66,7 +66,7 @@
 ! 2016/07/05, SP: Added support for the SLSTR instrument
 ! 2016/08/04, GM: Add sw1 and sw2 indices for surface%albedo which is indexed
 !    only for SW.
-! 2017/04/08, SP: New flag to disable VIS processing, saves proc time (EKWork)
+! 2017/04/08, SP: New flag to disable VIS processing, saves proc time (ExtWork)
 ! 2017/06/20, OS: Added correction for differences in spectral reponse
 !    functions between NOAA19 and all other platforms; for IR only mode, set
 !    Ch3b to fill value during daytime due to solar contamination; added new

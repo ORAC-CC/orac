@@ -35,7 +35,7 @@
 ! 2016/02/23, SP: Initial version.
 ! 2016/08/04, SP: Set NaN values in angle arrays (deep space pixels) to fill.
 ! 2017/04/25, SP: Support for verbose mode. A multitude of speed-ups and fixes
-!                 such as passing lat/lon file info to himawari util. (EKWork)
+!                 such as passing lat/lon file info to himawari util. (ExtWork)
 !
 ! $Id$
 !

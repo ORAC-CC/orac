@@ -26,7 +26,7 @@
 ! 2016/04/03, SP: Add option to process ECMWF forecast in single NetCDF4 file
 !    Three new arrays added, these store the hybrid level (60,91,137)
 !    conversions.
-! 2017/02/07, SP: Added support for NOAA GFS atmosphere data (EKWork)
+! 2017/02/07, SP: Added support for NOAA GFS atmosphere data (ExtWork)
 ! 2017/06/21, OS: inout declaration bug fix for cray-fortran compiler
 !
 ! $Id$

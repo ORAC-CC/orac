@@ -55,8 +55,8 @@
 ! 2014/09/28, GM: Removed use_chunking argument.
 ! 2014/01/12, CP: added source attributes
 ! 2014/12/16, GM: Put back netcdf_create_config() moved out in the above change.
-! 2017/02/07, SP: Added support for NOAA GFS atmosphere data (EKWork)
-! 2017/03/29, SP: Add ability to calculate tropospheric cloud emissivity (EKWork)
+! 2017/02/07, SP: Added support for NOAA GFS atmosphere data (ExtWork)
+! 2017/03/29, SP: Add ability to calculate tropospheric cloud emissivity (ExtWork)
 !
 ! $Id$
 !

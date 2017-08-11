@@ -57,9 +57,9 @@
 !    of the HR ERA data (copied from changes made, but committed to R3970
 !    version of code by CP).
 ! 2016/07/31, GM: Tidying of the code drop above.
-! 2017/01/31, SP: Add ecmwf_flag=5, for reading NOAA GFS forecast (EKWork)
+! 2017/01/31, SP: Add ecmwf_flag=5, for reading NOAA GFS forecast (ExtWork)
 ! 2017/04/11, SP: Added ecmwf_flag=6, for working with GFS analysis files.
-! 2017/07/05, SP: Added ecmwf_flag=7, for working with new format GFS (EKWork)
+! 2017/07/05, SP: Added ecmwf_flag=7, for working with new format GFS (ExtWork)
 !
 ! $Id$
 !

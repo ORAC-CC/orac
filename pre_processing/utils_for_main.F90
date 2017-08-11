@@ -19,12 +19,12 @@
 !    overwriting the land/sea mask provided by L1 data (assuming the L1 data
 !    provides one!)
 ! 2016/07/11, SP: Removed chunking routines to separate library in chunk_utils.
-! 2017/02/10, SP: Allow reading LSM, LUM, DEM from external file (EKWork)
+! 2017/02/10, SP: Allow reading LSM, LUM, DEM from external file (ExtWork)
 ! 2017/02/24, SP: Allow option to disable snow/ice correction
-! 2017/03/29, SP: Add ability to calculate tropospheric cloud emissivity (EKWork)
-! 2017/04/08, SP: New flag to disable VIS processing, saves proc time (EKWork)
+! 2017/03/29, SP: Add ability to calculate tropospheric cloud emissivity (ExtWork)
+! 2017/04/08, SP: New flag to disable VIS processing, saves proc time (ExtWork)
 ! 2017/04/26, SP: Support for loading geoinfo (lat/lon/vza/vaa) from an
-!                 external file. Supported by AHI, not yet by SEVIRI (EKWork)
+!                 external file. Supported by AHI, not yet by SEVIRI (ExtWork)
 ! 2017/08/09, SP: Add option to disable the cloud masking (ExtWork)
 !
 ! $Id$

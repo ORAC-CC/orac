@@ -25,7 +25,7 @@
 !    Note: This should work with either the OPER or FCST streams from ECMWF.
 ! 2016/04/26, AP: There are no high res files compatible with ecmwf_flag=1.
 !    Merge _dwd routines with _nc.
-! 2017/02/04, SP: Add ecmwf_flag=5, for reading NOAA GFS forecast (EKWork)
+! 2017/02/04, SP: Add ecmwf_flag=5, for reading NOAA GFS forecast (ExtWork)
 ! 2017/04/11, SP: Added ecmwf_flag=6, for working with GFS analysis files.
 ! 2017/06/21, OS: inout declaration bug fix for cray-fortran compiler
 !

@@ -14,7 +14,7 @@
 ! History:
 ! 2014/09/23, OS: writes code to read data from USGS file.
 ! 2015/07/03, OS: added error status variable to nc_open call
-! 2017/02/10, SP: Allow reading LSM, LUM, DEM from external file (EKWork)
+! 2017/02/10, SP: Allow reading LSM, LUM, DEM from external file (ExtWork)
 !
 ! $Id$
 !

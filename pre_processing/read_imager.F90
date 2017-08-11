@@ -44,7 +44,7 @@
 ! 2016/06/28, SP: Added SLSTR-Sentinel3 support.
 ! 2016/07/24, AP: Put back call to read_avhrr_land_sea_mask for use_l1_land_mask
 ! 2017/04/26, SP: Support for loading geoinfo (lat/lon/vza/vaa) from an
-!                 external file. Supported by AHI, not yet by SEVIRI (EKWork)
+!                 external file. Supported by AHI, not yet by SEVIRI (ExtWork)
 !
 ! $Id$
 !

@@ -45,11 +45,11 @@
 ! verbose        logic  in   T: Print min/max of each field; F: Don't.
 !
 ! History:
-! 2017/02/04, SP: Initial version (EKWork)
-! 2017/02/25, SP: Update to RTTOV v12.1 (EKWork)
+! 2017/02/04, SP: Initial version (ExtWork)
+! 2017/02/25, SP: Update to RTTOV v12.1 (ExtWork)
 ! 2017/03/27, SP: New technique for computing profile levels. Improves retrievals
-!                 over high altitude land regions (Tibet, f.ex) (EKWork)
-! 2017/03/30, SP: Add ability to calculate tropospheric cloud emissivity (EKWork)
+!                 over high altitude land regions (Tibet, f.ex) (ExtWork)
+! 2017/03/30, SP: Add ability to calculate tropospheric cloud emissivity (ExtWork)
 ! 2017/06/21, OS: line continuation symbol set to &
 !
 ! $Id$

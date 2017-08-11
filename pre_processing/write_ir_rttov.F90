@@ -25,7 +25,7 @@
 ! 2014/09/11, AP: First version.
 ! 2014/09/28, GM: Updated to conform with a new arrangement of dimensions.
 ! 2016/04/09, SP: Write one channel at a time, to facilitate multiple views.
-! 2017/02/25, SP: Update to RTTOV v12.1 (EKWork)
+! 2017/02/25, SP: Update to RTTOV v12.1 (ExtWork)
 !
 ! $Id$
 !

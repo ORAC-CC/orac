@@ -30,7 +30,7 @@
 ! 2016/04/26, AP: For high res files, abvec now set with init routine.
 ! 2016/05/26, GT: Moved ecmwf%kdim=nk statement inside if (.not. high_res) block,
 !    as nk is undefined in the high_res case
-! 2017/02/07, SP: Added support for NOAA GFS atmosphere data (EKWork)
+! 2017/02/07, SP: Added support for NOAA GFS atmosphere data (ExtWork)
 ! 2017/04/11, SP: Added ecmwf_flag=6, for working with GFS analysis files.
 !
 ! $Id$

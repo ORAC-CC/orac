@@ -92,7 +92,7 @@
 ! 2015/07/03, OS: added cldmask_uncertainty
 ! 2015/07/23, GM: Added specific humidity and ozone PRTM fields.
 ! 2016/03/31, GM: Changes to support processing only SW or only LW channels.
-! 2017/02/07, SP: Added support for NOAA GFS atmosphere data (EKWork)
+! 2017/02/07, SP: Added support for NOAA GFS atmosphere data (ExtWork)
 ! 2017/04/11, SP: Added ecmwf_flag=6, for working with GFS analysis files.
 ! 2017/06/21, OS: Added ANN phase variables
 !
@@ -600,7 +600,7 @@ end subroutine netcdf_create_rtm
 !    any more as the variables are written by the preprocessor and read by the
 !    main processor in the order in which they are stored.
 ! 2016/04/28, AP: Make multiple views mandatory.
-! 2017/03/29, SP: Add ability to calculate tropospheric cloud emissivity (EKWork)
+! 2017/03/29, SP: Add ability to calculate tropospheric cloud emissivity (ExtWork)
 !
 !-------------------------------------------------------------------------------
 

@@ -16,7 +16,7 @@
 !    processor.
 ! 2014/08/30, GM: Added pi and d2r.
 ! 2015/12/15, AP: Move IRho terms from ECP_constants.
-! 2017/02/25, SP: Update to RTTOV v12.1 (EKWork)
+! 2017/02/25, SP: Update to RTTOV v12.1 (ExtWork)
 !
 ! $Id$
 !

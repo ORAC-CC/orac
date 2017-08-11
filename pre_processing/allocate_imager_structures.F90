@@ -33,7 +33,7 @@
 ! 2015/01/30, AP: Remove uscan and vscan as unnecessary.
 ! 2015/07/02, OS: added allocation of cldmask_uncertainty
 ! 2016/04/09, SP: Added multiple views
-! 2017/03/29, SP: Add new variable for tropopause cloud emissivity (EKWork)
+! 2017/03/29, SP: Add new variable for tropopause cloud emissivity (ExtWork)
 ! 2017/06/21, OS: allocated ann phase variables; imager_angles are now inout
 !
 ! $Id$
