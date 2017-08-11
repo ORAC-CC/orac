@@ -134,8 +134,8 @@
 ! 2016/05/27, SP: Updates to enable RTTOV to work correctly with multi-views
 ! 2016/07/05, SP: Added SLSTR/Sentinel-3 processing capability.
 ! 2017/02/10, GT: Added a check for the existence of valid ozone profile data.
-! 2017/02/25, SP: Update to RTTOV v12.1 (EKWork)
-! 2017/03/24, SP: Tidying, improved method for finding snow fraction (EKWork)
+! 2017/02/25, SP: Update to RTTOV v12.1 (ExtWork)
+! 2017/03/24, SP: Tidying, improved method for finding snow fraction (ExtWork)
 ! 2017/03/29, SP: Switch to parallel RTTOV for performance improvement
 ! 2017/04/12, SP: Allow switch to parallel RTTOV only if OPENMP is enabled.
 ! 2017/06/21, OS: string name adaptations for METOPA/B

@@ -23,9 +23,9 @@
 # 2016/04/08, SP: Added the read_himawari module.
 # 2016/05/16, SP: Added the read_viirs module.
 # 2016/06/14, SP: Added the read_slstr module.
-# 2017/02/07, SP: Added support for NOAA GFS atmosphere data (EKWork)
+# 2017/02/07, SP: Added support for NOAA GFS atmosphere data (ExtWork)
 # 2017/03/29, SP: Add ability to calculate tropospheric cloud emissivity
-#    (EKWork)
+#    (ExtWork)
 #
 # Notes:
 # It appears that -lopenjpeg needs to be included in the LIBS list since on some

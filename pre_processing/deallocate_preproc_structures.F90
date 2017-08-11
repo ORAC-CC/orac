@@ -34,7 +34,7 @@
 ! 2014/09/10, AP: Removed unnecessary LWRTM and SWRTM structures.
 ! 2015/11/26, GM: Refactored to include allocate_preproc_prtm() for use
 !    elsewhere.
-! 2017/03/29, SP: Add new variable for tropopause cloud emissivity (EKWork)
+! 2017/03/29, SP: Add new variable for tropopause cloud emissivity (ExtWork)
 !
 ! $Id$
 !
