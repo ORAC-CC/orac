@@ -61,7 +61,7 @@ subroutine Read_Data_nc(Ctrl, MSI_Data, SAD_Chan)
    ! Call appropriate satellite data reading routines
    ! (Sections to be added as reading routines become available
 
-   if (Ctrl%RS%RsSelm == SelmAux) then
+   if (Ctrl%RS%RsSelm == SelmAux .and. Ctrl%Ind%NSolar > 0) then
       if (Ctrl%verbose) write(*,*) 'Reading Albedo data'
       call Read_ALB_nc(Ctrl, MSI_Data)
    end if

@@ -1248,13 +1248,17 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    if (Ctrl%Approach == AppCld1L .or. Ctrl%Approach == AppCld2L) then
       ! Output albedo in all solar channels
       Ctrl%Ind%Nalb = Ctrl%Ind%NSolar
-      if (Ctrl%Ind%NSolar > 0) allocate(Ctrl%Ind%alb_terms(Ctrl%Ind%NSolar))
-      Ctrl%Ind%alb_terms = .true.
+      if (Ctrl%Ind%NSolar > 0) then
+         allocate(Ctrl%Ind%alb_terms(Ctrl%Ind%NSolar))
+         Ctrl%Ind%alb_terms = .true.
+      end if
 
       ! Output cee in all thermal channels
       Ctrl%Ind%Ncee = Ctrl%Ind%NThermal
-      if (Ctrl%Ind%NThermal > 0) allocate(Ctrl%Ind%cee_terms(Ctrl%Ind%NThermal))
-      Ctrl%Ind%cee_terms = .true.
+      if (Ctrl%Ind%NThermal > 0) then
+         allocate(Ctrl%Ind%cee_terms(Ctrl%Ind%NThermal))
+         Ctrl%Ind%cee_terms = .true.
+      end if
    end if
 
    if (Ctrl%verbose) then

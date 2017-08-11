@@ -82,7 +82,7 @@ end subroutine read_input_dimensions_msi
 
 
 subroutine read_input_dimensions_rtm(fname_prtm,fname_lwrtm,fname_swrtm, &
-     xdim,ydim,levdim,channeldim_lw,channeldim_sw,verbose)
+     xdim,ydim,levdim,channeldim_lw,channeldim_sw,n_solar,verbose)
 
    use ORAC_Constants_m
    use orac_ncdf_m
@@ -94,6 +94,7 @@ subroutine read_input_dimensions_rtm(fname_prtm,fname_lwrtm,fname_swrtm, &
    character(len=*),   intent(in)  :: fname_swrtm
    integer(kind=lint), intent(out) :: xdim,ydim,levdim, &
                                       channeldim_lw,channeldim_sw
+   integer(kind=lint), intent(in)  :: n_solar
    logical,            intent(in)  :: verbose
 
    integer                         :: ncid
@@ -129,8 +130,11 @@ subroutine read_input_dimensions_rtm(fname_prtm,fname_lwrtm,fname_swrtm, &
 
    ! Open SWRTM file
    call nc_open(ncid,fname_swrtm)
-
-   channeldim_sw = nc_dim_length(ncid, 'nsw_channels', verbose)
+	if (n_solar > 0) then
+	   channeldim_sw = nc_dim_length(ncid, 'nsw_channels', verbose)
+	else
+		channeldim_sw = 0
+   endif
 
    ! Close SWRTM file
    if (nf90_close(ncid) .ne. NF90_NOERR) then

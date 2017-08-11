@@ -354,7 +354,7 @@ subroutine orac(mytask,ntasks,lower_bound,upper_bound,drifile)
    if (Ctrl%RTMIntSelm /= RTMIntMethNone) then
       call read_input_dimensions_rtm(Ctrl%FID%PRTM, Ctrl%FID%LWRTM, &
            Ctrl%FID%SWRTM, RTM%Grid%NLon, RTM%Grid%NLat, RTM%NP, &
-           RTM%LW%NLWF, RTM%SW%NSWF, Ctrl%verbose)
+           RTM%LW%NLWF, RTM%SW%NSWF, Ctrl%Ind%NSolar, Ctrl%verbose)
 
       call Read_PRTM_nc(Ctrl, RTM)
       if (Ctrl%Ind%NThermal > 0) &
