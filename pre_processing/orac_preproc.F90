@@ -1079,12 +1079,14 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file,s
             end if
          end if
       else
+      	if (channel_info%nchannels_sw .gt. 0) then
          surface%albedo(:,:,:) = sreal_fill_value
-         if (include_full_brdf) then
-            surface%rho_0v(:,:,:) = sreal_fill_value
-            surface%rho_0d(:,:,:) = sreal_fill_value
-            surface%rho_dv(:,:,:) = sreal_fill_value
-            surface%rho_dd(:,:,:) = sreal_fill_value
+		      if (include_full_brdf) then
+		         surface%rho_0v(:,:,:) = sreal_fill_value
+		         surface%rho_0d(:,:,:) = sreal_fill_value
+		         surface%rho_dv(:,:,:) = sreal_fill_value
+		         surface%rho_dd(:,:,:) = sreal_fill_value
+		      end if
          end if
       end if
 
