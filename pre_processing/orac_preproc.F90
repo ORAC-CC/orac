@@ -267,6 +267,7 @@
 ! 2017/06/21, OS: added spectral response correction flag,
 !     which defaults to false unless sensor=AATSR/AVHRR/MODIS
 ! 2017/07/09, SP: Add check for SEVIRI RSS data to ensure correct processing.
+! 2017/08/09, SP: Add option to disable the cloud masking (ExtWork)
 !
 ! $Id$
 !
@@ -360,6 +361,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file,s
    logical                          :: use_ecmwf_snow_and_ice
    logical                          :: disable_snow_ice_corr
    logical                          :: do_cloud_emis
+   logical                          :: do_cloud_type
    logical                          :: do_ironly
    logical                          :: do_spectral_response_correction
    logical                          :: use_modis_emis_in_rttov
@@ -464,6 +466,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file,s
    use_modis_emis_in_rttov = .false.
    use_l1_land_mask        = .false.
    disable_snow_ice_corr   = .false.
+   do_cloud_type           = .true.
    ecmwf_path(2)           = ' '
    ecmwf_path_hr(1)        = ' '
    ecmwf_path_hr(2)        = ' '
@@ -539,7 +542,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file,s
             ecmwf_path3(2), ecmwf_path_hr(1), ecmwf_path_hr(2), ecmwf_nlevels, &
             use_l1_land_mask, use_occci, occci_path, use_predef_lsm, &
             ext_lsm_path,use_predef_geo, predef_geo_file, &
-            disable_snow_ice_corr, do_cloud_emis, do_ironly)
+            disable_snow_ice_corr, do_cloud_emis, do_ironly, do_cloud_type)
       end do
    else
 
@@ -611,7 +614,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file,s
            ecmwf_path3(2), ecmwf_path_hr(1), ecmwf_path_hr(2), ecmwf_nlevels, &
            use_l1_land_mask, use_occci, occci_path, use_predef_lsm, &
            ext_lsm_path,use_predef_geo, predef_geo_file, disable_snow_ice_corr, &
-           do_cloud_emis, do_ironly)
+           do_cloud_emis, do_ironly, do_cloud_type)
       end do
 
       close(11)
@@ -1087,17 +1090,30 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file,s
 
       if (verbose) write(*,*) 'Calculate Pavolonis cloud phase with high '// &
            'resolution ERA surface data'
-      if (.not. use_hr_ecmwf) then
-         call cloud_type(channel_info, sensor, surface, imager_flags, &
-              imager_angles, imager_geolocation, imager_measurements, &
-              imager_pavolonis, ecmwf, platform, doy, do_ironly,      &
-              do_spectral_response_correction, verbose)
-      else
-         call cloud_type(channel_info, sensor, surface, imager_flags, &
-              imager_angles, imager_geolocation, imager_measurements, &
-              imager_pavolonis, ecmwf_HR, platform, doy, do_ironly,   &
-              do_spectral_response_correction, verbose)
-      end if
+      if (do_cloud_type) then
+		   if (.not. use_hr_ecmwf) then
+		      call cloud_type(channel_info, sensor, surface, imager_flags, &
+		           imager_angles, imager_geolocation, imager_measurements, &
+		           imager_pavolonis, ecmwf, platform, doy, do_ironly,      &
+		           do_spectral_response_correction, verbose)
+		   else
+		      call cloud_type(channel_info, sensor, surface, imager_flags, &
+		           imager_angles, imager_geolocation, imager_measurements, &
+		           imager_pavolonis, ecmwf_HR, platform, doy, do_ironly,   &
+		           do_spectral_response_correction, verbose)
+		   end if
+		else
+			imager_pavolonis%sfctype(:,:) = sint_fill_value
+			imager_pavolonis%cldtype(:,:,:) = byte_fill_value
+			imager_pavolonis%cldmask(:,:,:) = byte_fill_value
+			imager_pavolonis%cccot_pre(:,:,:) = sreal_fill_value
+			imager_pavolonis%cldmask_uncertainty(:,:,:) = sreal_fill_value
+			imager_pavolonis%ann_phase(:,:,:) = byte_fill_value
+			imager_pavolonis%cphcot(:,:,:) = sreal_fill_value
+			imager_pavolonis%ann_phase_uncertainty(:,:,:) = sreal_fill_value
+			imager_pavolonis%cirrus_quality(:,:,:) = byte_fill_value
+			imager_pavolonis%emis_ch3b(:,:,:) = sreal_fill_value
+		end if
 
       ! create output netcdf files.
       if (verbose) write(*,*) 'Create output netcdf files'
