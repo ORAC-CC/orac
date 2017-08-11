@@ -88,7 +88,7 @@
        BaseID(1)       !index of cloud base height in Hprofile
 
    !local variables
-    real Hcthick,HcthickG,rhocld,cwp,cmt,cmp
+    real Hcthick,HcthickG,cwp,cmt,cmp
 
    !Constants
     real, parameter :: a=-0.00665599, b=3.686, Fad = 0.79 !for adiabatic assumption

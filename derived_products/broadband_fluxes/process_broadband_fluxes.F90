@@ -97,9 +97,6 @@
 !                 Note, you must specify 'multi_layer=1' to run in multi-layer mode.
 !
 ! $Id$
-!
-! Bugs:
-! None known.
 !-------------------------------------------------------------------------------
 
 #ifndef WRAPPER
@@ -171,11 +168,8 @@ program process_broadband_fluxes
     real, allocatable :: emis_data(:,:,:)  ! Emissivity
     real, allocatable :: alb_abs_ch_numbers(:) !channels used in albedo product
     real, allocatable :: emis_abs_ch_numbers(:) !channels used in emissivity product
-    integer :: ch1ID,ch2ID,ch3ID,ch4ID
     integer(kind=lint) :: nc_alb
     integer(kind=lint) :: nc_emis
-
-    real(kind=sreal), allocatable :: mCTP(:,:)
 
     !PRIMARY FILE
     real, allocatable :: LAT(:,:)  ! Latitude Satellite (xp,yp)
@@ -217,7 +211,6 @@ program process_broadband_fluxes
     integer(kind=lint) :: nc_aer
     integer aID_vid
 
-
     !Local Pixel-Scale Variables
     integer :: pxYear  !Year
     integer :: pxMonth !Month
@@ -225,37 +218,26 @@ program process_broadband_fluxes
     real :: pxJday  !JULIAN DAY FROM 1 - 365
     real :: pxTSI   !Total incoming solar irradiance (true-earth)
     real :: pxPAR_WEIGHT   !Total incoming solar irradiance (true-earth)
-    real :: pxAsfc  !Surface albedo
     real :: pxAsfcSWRdr !DIRECT visible surface albedo
     real :: pxAsfcNIRdr !DIRECT near-infrared surface albedo
     real :: pxAsfcSWRdf !DIFFUSE visible surface albedo
     real :: pxAsfcNIRdf !DIFFUSE near-infrared surface albedo
     real :: pxTheta !cosine of solar zenith angle
-    real :: pxPhase !cloud phase
-    real :: pxMask  !cloud mask
 
     integer tmp_pxHctopID(1),tmp_pxHcbaseID(1)
-    real :: tmp_pxCTT    !cloud top temperature (for up to 2-layers)
-    real :: tmp_pxCTP    !cloud top PRESSURE
     real :: tmp_pxREF    !cloud effective radius
     real :: tmp_pxCOT    !cloud optical depth
-    real :: tmp_pxCTH    !cloud top height
     real :: tmp_pxHctop  !input cloud top height
     real :: tmp_pxHcbase !input cloud base height
     real :: tmp_pxPhaseFlag !cloud phase type
 
-    real :: pxCTT(2)    !cloud top temperature (for up to 2-layers)
-    real :: pxCTP(2)    !cloud top PRESSURE
     real :: pxREF(2)    !cloud effective radius
     real :: pxCOT(2)    !cloud optical depth
-    real :: pxCTH(2)    !cloud top height
     real :: pxHctop(2)  !input cloud top height
     real :: pxHcbase(2) !input cloud base height
     real :: pxPhaseFlag(2) !cloud phase type
 
     integer pxHctopID(2),pxHcbaseID(2)
-    real :: pxaREF  !aerosol effective radius
-    real :: pxAOD  !aerosol optical depth
     real :: pxLayerType !aerosol type
     real :: pxts   !land/sea surface temperature
     real pxregime
@@ -284,10 +266,7 @@ program process_broadband_fluxes
          pxboalwupclr,pxboalwdnclr,pxboaswdnclr,pxboaswupclr,& !clear-sky BOA fluxes
          tpar   ,&    !toa par total
          bpardif,&    !boa par diffuse
-         bpar   ,&    !boa par total
-         bpardir      !boa par direct
-
-
+         bpar         !boa par total
 
     !NETCDF Output geolocation data
     real(kind=dreal), allocatable :: time_data(:,:)
@@ -318,9 +297,6 @@ program process_broadband_fluxes
     !NETCDF Output CLEAR-SKY TOA & BOA radiation flux data
     real, allocatable :: toa_lwup_clr(:,:) !TOA outgoing LW flux clear-sky condition
     integer toa_lwup_clr_vid
-
-    real, allocatable :: toa_lwdn_clr(:,:) !TOA incoming LW flux clear-sky condition
-    integer toa_lwdn_clr_vid
 
     real, allocatable :: toa_swup_clr(:,:) !TOA outgoing SW flux clear-sky condition
     integer toa_swup_clr_vid
@@ -381,18 +357,11 @@ program process_broadband_fluxes
     integer, parameter :: deflate_lv = 9
     logical, parameter :: shuffle_flag = .false.
 
-    !To compress data
-    real(kind=sreal) :: temp_real_var
-    integer(kind=sint) :: vmin = 0
-    integer(kind=sint) :: vmax = 32000
-    real(kind=sreal) :: var_scale = 10.0
-    real(kind=sreal) :: var_scale_geo = 100.0
-    real(kind=sreal) :: var_offset = 0.0
 
     !NetCDF output dimensions
     integer :: &
-         ixstart,ixstop,xstep  ,& ! First and last super-pixel X locations
-         iystart,iystop,ystep  ,& ! First and last super-pixel Y locations
+         ixstart,ixstop  ,& ! First and last super-pixel X locations
+         iystart,iystop  ,& ! First and last super-pixel Y locations
          n_x, n_y, n_v
 
     !debugging
@@ -404,8 +373,6 @@ program process_broadband_fluxes
     integer value
     integer aerosol_processing_mode !=0 no processing, =1 collocate aerosol cci file, =2 collocate & save file
 
-    !ECMWF-PRTM for comparing my interpolation scheme to ORAC scheme
-    integer :: tlatid,tlonid
 
     !For reading time from input string
     integer :: index1,index2
@@ -417,7 +384,7 @@ program process_broadband_fluxes
     real :: cpuStart,cpuFinish
 
     integer :: nargs !number of command line arguments
-    character(path_length) :: argname, tmpname, tmpname1, tmpname2
+    character(path_length) :: argname, tmpname1, tmpname2
 
     !Broadband Albedo LUT
     real, allocatable :: LUT_toa_sw_albedo(:,:,:,:),&
@@ -686,19 +653,7 @@ program process_broadband_fluxes
             'LWRTM file: ', Fprimary
        stop error_stop_code
     end if
-    !   PRINT*,'ACROSS_TRACK PIXELS = ',xN
-    !   PRINT*,'ALONG_TRACK PIXELS = ',yN
-    !   PRINT*,'LATITUDE ',LAT(pxX,pxY)
-    !   PRINT*,'LONGITUDE ',LON(pxX,pxY)
-    !   PRINT*,'CLOUD OPTICAL THICKNESS ',COT(pxX,pxY)
-    !   PRINT*,'CLOUD EFFECTIVE RADIUS ',REF(pxX,pxY)
-    !   PRINT*,'CLOUD MASK ',CC_TOT(pxX,pxY)
-    !   PRINT*,'PHASE ',PHASE(pxX,pxY)
-    !   PRINT*,'CTT = ',CTT(pxX,pxY)
-    !   PRINT*,'CTH = ',CTH(pxX,pxY)
-    !   PRINT*,'SOLZ = ',SOLZ(pxX,pxY)
     !-------------------------------------------------------------------------------
-
 
     ! Open PRTM file
     call nc_open(ncid,FPRTM)
@@ -753,18 +708,6 @@ program process_broadband_fluxes
 
     !Set PRTM units
     H  = (H/g_wmo)/1000. !to put to km
-
-    !print*,tlonid,tlatid
-    !print*,xdim_prtm,ydim_prtm,levdim_prtm
-    !print*,'PRESSURE: ',P(:,tlonid,tlatid)
-    !print*,'TEMPERATURE: ',T(:,tlonid,tlatid)
-    !print*,'HEIGHT: ',H(:,tlonid,tlatid)
-    !print*,'HUMIDITY: ',Q(:,tlonid,tlatid)
-    !print*,'Ozone: ',O3(:,tlonid,tlatid)
-    !print*,'longitude: ',tlon_prtm(tlonid)
-    !print*,'latitude: ',tlat_prtm(tlatid)
-    !print*,'satellite longitude: ',LON(pxX0,pxY0)
-    !print*,'satellite latitude: ',LAT(pxX0,pxY0)
     !-------------------------------------------------------------------------------
 
     ! Open ALB file
@@ -856,7 +799,6 @@ program process_broadband_fluxes
     allocate(boa_swup(xN,yN))
     allocate(boa_swdn(xN,yN))
     allocate(toa_lwup_clr(xN,yN))
-    allocate(toa_lwdn_clr(xN,yN))
     allocate(toa_swup_clr(xN,yN))
     allocate(boa_lwup_clr(xN,yN))
     allocate(boa_lwdn_clr(xN,yN))
@@ -887,7 +829,6 @@ program process_broadband_fluxes
     boa_swup(:,:)  = sreal_fill_value
     boa_swdn(:,:)  = sreal_fill_value
     toa_lwup_clr(:,:) = sreal_fill_value
-    toa_lwdn_clr(:,:) = sreal_fill_value
     toa_swup_clr(:,:) = sreal_fill_value
     boa_lwup_clr(:,:) = sreal_fill_value
     boa_lwdn_clr(:,:) = sreal_fill_value
@@ -1117,7 +1058,6 @@ program process_broadband_fluxes
 
              ! solar zenith angle
              pxTheta = COS( SOLZ(i,j) * Pi/180.)
-             !print*,i,j,solz(i,j),pxTheta
 
              ! solar zenith angle condition (remove nighttime & twilight)
              !       if( SOLZ(i,j) .lt. 80.) then
@@ -1126,18 +1066,6 @@ program process_broadband_fluxes
              call interpolate_meteorology(lon_prtm,lat_prtm,levdim_prtm,&
                   xdim_prtm,ydim_prtm,P,T,H,Q,O3,&
                   LON(i,j),LAT(i,j),inP,inT_,inH,inQ,inO3)
-
-             !use to debug current interpolation scheme
-             !call collocate_prtm_profile(LON(i,j),LAT(i,j),&
-             !          xdim_prtm,ydim_prtm,tlon_prtm,tlat_prtm,tlonid,tlatid)
-             !print*,tlonid,tlatid
-             !set value
-             ! inH(:)= H(:,tlonid,tlatid)
-             ! inT_(:)= T(:,tlonid,tlatid)
-             ! inP(:)= P(:,tlonid,tlatid)
-             ! inQ(:)= Q(:,tlonid,tlatid)
-             ! inO3(:) = O3(:,tlonid,tlatid)
-             !call midlatsum1(pxZ,pxP,pxT,pxQ,pxO3,NLS) !standard profile if wanted
 
              !collocate PRTM vertical resolution to BUGSrad profile resolution (31 levels)
              pxZ = inH(mask_vres)
@@ -1155,20 +1083,6 @@ program process_broadband_fluxes
              else
                 pxts = STEMP(i,j)
              endif
-
-             !debugging (print statements)
-             !print*,'latitude: ',LAT(i,j)
-             !print*,'longitude: ',LON(i,j)
-             !print*,'solar zenith: ',SOLZ(i,j)
-             !print*,'cc_tot:  ',cc_tot(i,j)
-             !print*,'Sat Phase: ',PHASE(i,j)
-             !print*,'Sat retr. CTH = ',CTH(i,j)
-             !print*,'Sat retr. CTT = ',CTT(i,j)
-             !print*,'SAT retr. REF = ',REF(i,j)
-             !print*,'SAT retr. COT = ',COT(i,j)
-             !print*,'SAT retr. cc_tot = ',cc_tot(i,j)
-             !print*,'Aerosol Optical Depth: ',AOD550(i,j)
-             !print*,'Aerosol Effective Radius: ',AREF(i,j)
 
              !cloud base & top height calculation
              pxREF(:)       = -999.
@@ -1195,15 +1109,8 @@ program process_broadband_fluxes
              pxHctopID(1)   = tmp_pxHctopID(1)
              pxHcbaseID(1)  = tmp_pxHcbaseID(1)
 
-!print*,tmp_pxREF,tmp_pxCOT,tmp_pxHctop,tmp_pxHcbase,tmp_pxPhaseFlag,tmp_pxHctopID(1)
          if(multi_layer .EQ. 1 .and. cot2(i,j) .gt. 0) then
-          !PRINT*,'cc_tot2: ',cc_tot2(i,j)
-          !PRINT*,'CTT2: ',CTT2(i,j)
-          !PRINT*,'CTP2: ',CTP2(i,j)
-          !PRINT*,'REF2: ',REF2(i,j)
-          !PRINT*,'COT2: ',COT2(i,j)
-          !PRINT*,'CTH2: ',CTH2(i,j)
-          !*ML code has -999. for CTP but CTH exists
+          !*ML code has -999. for CTP but CTH exists see correction below
           if(CTP2(i,j) .LT. 0. .AND. CTH2(i,j) .GT. 0.) then
            print*,CTP2(i,j),CTH2(i,j)
            print*,(pxP(MINLOC(ABS(CTH2(i,j)-pxZ)))+pxP(MINLOC(ABS(CTH2(i,j)-pxZ))+1))/2.
@@ -1227,35 +1134,18 @@ program process_broadband_fluxes
           pxHctopID(2)   = tmp_pxHctopID(1)
           pxHcbaseID(2)  = tmp_pxHcbaseID(1)
           pxregime = 7
-        endif
-        if(phase(i,j) .eq. 0) ml_flag=0
+         endif
+         if(phase(i,j) .eq. 0) ml_flag=0
 
-         !debugging (print statements)
-         !print*,'phase: ',pxPhaseFlag
-         !print*,'re :',pxREF
-         !print*,'tau :',pxCOT
-         !print*,'Hctop = ',pxHctop,' HctopID: ',pxHctopID
-         !print*,'Hcbase = ',pxHcbase,' HcbaseID: ',pxHcbaseID
-         !print*,'Regime: ',pxregime
-         !print*,'TOTAL SOLAR IRRADIANCE: ',pxTSI
-         !print*,'Hctop (hPa) = ',pxP(pxHctopID)
-         !print*,'Hcbase (hPa) = ',pxP(pxHcbaseID)
-         !print*,pxZ
-         !print*,pxP
-         !print*,pxT
-         !print*,pxQ
-         !print*,pxO3
-        !Run Full Radiation Code (not LUT mode)
-        if(lut_mode .eq. 0) then
+         !Run Full Radiation Code (not LUT mode)
+         if(lut_mode .eq. 0) then
 
-        !-------------------------------------------------------
-        !Call BUGSrad Algorithm
-        !-------------------------------------------------------
-        if(algorithm_processing_mode .eq. 1) then
-         !print*,'starting... BUGSrad'
-         !print*,NL,pxTSI,pxtheta,pxAsfcSWRdr,pxAsfcNIRdr,pxAsfcSWRdf,pxAsfcNIRdf,pxts
-         !print*,nc_alb,rho_0d(i,j,:),rho_dd(i,j,:)
-         call driver_for_bugsrad(NL,pxTSI,pxtheta,pxAsfcSWRdr,pxAsfcNIRdr,pxAsfcSWRdf,pxAsfcNIRdf,pxts,&
+         !-------------------------------------------------------
+         !Call BUGSrad Algorithm
+         !-------------------------------------------------------
+         if(algorithm_processing_mode .eq. 1) then
+          call driver_for_bugsrad(NL,pxTSI,pxtheta,pxAsfcSWRdr,&
+                          pxAsfcNIRdr,pxAsfcSWRdf,pxAsfcNIRdf,pxts,&
                           pxPhaseFlag,ml_flag,pxREF,pxCOT,pxHctop,pxHcbase,&
                           pxHctopID,pxHcbaseID,&
                           pxZ,pxP,pxT,pxQ,pxO3,&
@@ -1267,28 +1157,15 @@ program process_broadband_fluxes
                           ulwfx,dlwfx,uswfx,dswfx,&
                           ulwfxclr,dlwfxclr,uswfxclr,dswfxclr,&
                           emis_bugsrad,rho_0d_bugsrad,rho_dd_bugsrad)
-
-           !print*,'BUGSrad'
-           !print*,pxtoalwup,pxtoaswdn,pxtoaswup
-           !print*,pxtoalwupclr,pxtoaswupclr
-           !print*,pxboalwup,pxboalwdn,pxboaswdn,pxboaswup
-           !print*,pxboalwupclr,pxboalwdnclr,pxboaswdnclr,pxboaswupclr
-           !print*,tpar,bpar,bpardif
          endif !BUGSrad Algorithm
 
-        !-------------------------------------------------------
-        !Call FuLiou Algorithm
-        !-------------------------------------------------------
-        if(algorithm_processing_mode .eq. 2 .or. &
+         !-------------------------------------------------------
+         !Call FuLiou Algorithm
+         !-------------------------------------------------------
+         if(algorithm_processing_mode .eq. 2 .or. &
            algorithm_processing_mode .eq. 3 .or. &
            algorithm_processing_mode .eq. 4) then
-           !print*,'starting... Fu-Liou'
-           !print*,NL,pxTSI,pxtheta,pxAsfcSWRdr,pxAsfcNIRdr,pxAsfcSWRdf,pxAsfcNIRdf,pxts
-           !print*,nc_alb
-           !print*,rho_0d(i,j,:)
-           !print*,rho_dd(i,j,:)
-           !print*,''
-         call driver_for_fuliou(NL,pxTSI,pxtheta,pxAsfcSWRdr,pxAsfcNIRdr,&
+           call driver_for_fuliou(NL,pxTSI,pxtheta,pxAsfcSWRdr,pxAsfcNIRdr,&
                           pxAsfcSWRdf,pxAsfcNIRdf,pxts,&
                           pxPhaseFlag,ml_flag,pxREF,pxCOT,pxHctop,pxHcbase,&
                           pxHctopID,pxHcbaseID,&
@@ -1302,22 +1179,14 @@ program process_broadband_fluxes
                           ulwfxclr,dlwfxclr,uswfxclr,dswfxclr,&
                           emis_fuliou,rho_0d_fuliou,rho_dd_fuliou,&
                           algorithm_processing_mode)
+          endif !FuLiou Algorithm
 
-           !print*,'Fu Liou'
-           !print*,pxtoalwup,pxtoaswdn,pxtoaswup
-           !print*,pxtoalwupclr,pxtoaswupclr
-           !print*,pxboalwup,pxboalwdn,pxboaswdn,pxboaswup
-           !print*,pxboalwupclr,pxboalwdnclr,pxboaswdnclr,pxboaswupclr
-           !print*,tpar,bpar,bpardif
+          endif !lut_mode = 0
 
-         endif !FuLiou Algorithm
-
-         endif !lut_mode = 0
-
-             !-------------------------------------------------------
-             !LUT MODE
-             !-------------------------------------------------------
-             if(lut_mode .eq. 1) then
+          !-------------------------------------------------------
+          !LUT MODE
+          !-------------------------------------------------------
+          if(lut_mode .eq. 1) then
 
                 call driver_for_lut(pxTSI,pxregime,&
                      nASFC,LUT_SFC_ALB,&
@@ -1331,32 +1200,31 @@ program process_broadband_fluxes
                      pxtoalwupclr,pxtoaswupclr,&
                      pxboalwupclr,pxboalwdnclr,pxboaswupclr,pxboaswdnclr,&
                      bpar,bpardif,tpar)
-             endif
+           endif
 
+           !-------------------------------------------------------
+           !Quality Check Retrieved Data & Fill Output Arrays
+           !-------------------------------------------------------
+           !catch NaN
+           nanFlag=0
+           if(is_nan(pxtoalwup)) nanFlag=1
+           if(is_nan(pxtoaswup)) nanFlag=1
+           if(is_nan(pxtoalwupclr)) nanFlag=1
+           if(is_nan(pxtoaswupclr)) nanFlag=1
 
-             !-------------------------------------------------------
-             !Quality Check Retrieved Data & Fill Output Arrays
-             !-------------------------------------------------------
-             !catch NaN
-             nanFlag=0
-             if(is_nan(pxtoalwup)) nanFlag=1
-             if(is_nan(pxtoaswup)) nanFlag=1
-             if(is_nan(pxtoalwupclr)) nanFlag=1
-             if(is_nan(pxtoaswupclr)) nanFlag=1
+           !catch unphysical values
+           if(pxtoalwup .lt. 0. .or. pxtoalwup .gt. 1000.) nanFlag=1
+           if(pxtoaswup .lt. 0. .or. pxtoaswup .gt. 1600.) nanFlag=1
 
-             !catch unphysical values
-             if(pxtoalwup .lt. 0. .or. pxtoalwup .gt. 1000.) nanFlag=1
-             if(pxtoaswup .lt. 0. .or. pxtoaswup .gt. 1600.) nanFlag=1
+           !regime type
+           retrflag(i,j) = pxregime
 
-             !regime type
-             retrflag(i,j) = pxregime
-
-             !valid data only
-             if(nanFlag == 0) then
-                !netCDF output arrays
-                !Observed
-                time_data(i,j) = TIME(i,j)
-                lat_data(i,j)  = LAT(i,j)
+           !valid data only
+           if(nanFlag == 0) then
+             !netCDF output arrays
+             !Observed
+             time_data(i,j) = TIME(i,j)
+             lat_data(i,j)  = LAT(i,j)
                 lon_data(i,j)  = LON(i,j)
 
                 toa_lwup(i,j) = pxtoalwup
@@ -1380,19 +1248,18 @@ program process_broadband_fluxes
                 boa_par_tot(i,j) = bpar * pxPAR_WEIGHT
                 boa_par_dif(i,j) = bpardif * pxPAR_WEIGHT
 
-             end if !valid data
+            end if !valid data
 
-             ! meteorology data to output in netCDF file
-             boa_tsfc(i,j) = pxT(NLS)
-             boa_psfc(i,j) = pxP(NLS)
-             boa_qsfc(i,j) = pxQ(NLS)
-             call compute_lts(NL,pxP,pxT,pxLTS)
-             call compute_fth(NL,pxP,pxT,pxQ,pxFTH)
-             call compute_column_o3(NL,pxZ,pxO3,pxcolO3)
-
-             lts(i,j) = pxLTS
-             fth(i,j) = pxFTH
-             colO3(i,j) = pxcolO3
+            ! meteorology data to output in netCDF file
+            boa_tsfc(i,j) = pxT(NLS)
+            boa_psfc(i,j) = pxP(NLS)
+            boa_qsfc(i,j) = pxQ(NLS)
+            call compute_lts(NL,pxP,pxT,pxLTS)
+            call compute_fth(NL,pxP,pxT,pxQ,pxFTH)
+            call compute_column_o3(NL,pxZ,pxO3,pxcolO3)
+            lts(i,j) = pxLTS
+            fth(i,j) = pxFTH
+            colO3(i,j) = pxcolO3
 
           end if   !valid geolocation data
        end do !j-loop
@@ -1453,8 +1320,6 @@ program process_broadband_fluxes
          deflate_level = deflate_lv, &
          shuffle       = shuffle_flag)
 
-
-
     !-------------------------------------------------------------------------
     ! latitude
     !-------------------------------------------------------------------------
@@ -1474,7 +1339,6 @@ program process_broadband_fluxes
          units         = 'degrees', &
          deflate_level = deflate_lv, &
          shuffle       = shuffle_flag)
-
 
     !-------------------------------------------------------------------------
     ! longitude
@@ -1578,8 +1442,6 @@ program process_broadband_fluxes
          deflate_level = deflate_lv, &
          shuffle       = shuffle_flag)
 
-
-
     !-------------------------------------------------------------------------
     ! surface_downwelling_shortwave_flux_in_air
     !-------------------------------------------------------------------------
@@ -1640,7 +1502,6 @@ program process_broadband_fluxes
          deflate_level = deflate_lv, &
          shuffle       = shuffle_flag)
 
-
     !-------------------------------------------------------------------------
     ! surface_downwelling_longwave_flux_in_air
     !-------------------------------------------------------------------------
@@ -1660,8 +1521,6 @@ program process_broadband_fluxes
          units         = 'W m-2', &
          deflate_level = deflate_lv, &
          shuffle       = shuffle_flag)
-
-
 
     !-------------------------------------------------------------------------
     ! toa_outgoing_shortwave_flux_assuming_clear_sky
@@ -1702,7 +1561,6 @@ program process_broadband_fluxes
          units         = 'W m-2', &
          deflate_level = deflate_lv, &
          shuffle       = shuffle_flag)
-
 
     !-------------------------------------------------------------------------
     ! boa_downwelling_shortwave_flux_in_air_assuming_clear_sky
@@ -1764,7 +1622,6 @@ program process_broadband_fluxes
          deflate_level = deflate_lv, &
          shuffle       = shuffle_flag)
 
-
     !-------------------------------------------------------------------------
     ! boa_downwelling_longwave_flux_in_air_assuming_clear_sky
     !-------------------------------------------------------------------------
@@ -1785,8 +1642,6 @@ program process_broadband_fluxes
          deflate_level = deflate_lv, &
          shuffle       = shuffle_flag)
 
-
-
     !-------------------------------------------------------------------------
     ! surface_diffuse_downwelling_photosynthetic_radiative_flux_in_air
     !-------------------------------------------------------------------------
@@ -1806,7 +1661,6 @@ program process_broadband_fluxes
          units         = 'W m-2', &
          deflate_level = deflate_lv, &
          shuffle       = shuffle_flag)
-
 
     !-------------------------------------------------------------------------
     ! surface_downwelling_photosynthetic_radiative_flux_in_air

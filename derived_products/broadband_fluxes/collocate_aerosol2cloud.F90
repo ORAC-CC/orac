@@ -56,10 +56,6 @@ subroutine collocate_aerosol2cloud(anum,aLon,aLat,xdim,ydim,cLon,cLat,aID)
    real, dimension(xdim,ydim) :: aDist
 
    !Local
-   real, dimension(anum) :: aU
-   real, dimension(anum) :: aV
-   real, dimension(xdim,ydim) :: cU
-   real, dimension(xdim,ydim) :: cV
    integer :: i,j,k,iY,iX,tct
    integer, dimension(2000) :: tID
    real :: lonmin,lonmax,latmin,latmax

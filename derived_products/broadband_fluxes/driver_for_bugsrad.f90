@@ -133,7 +133,6 @@
         qrwl,&       !Rain mixing ratio                           (kg/kg).
         qril,&       !Snow mixing ratio                           (kg/kg).
         o3l,&        !Ozone mixing ratio                          (kg/kg).
-        zl,&         !height
         acld         !Radiative cloud fraction                        (-).
 
       real (kind=dbl_kind), dimension(nlen,nlm+1) :: &

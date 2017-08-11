@@ -19,11 +19,8 @@ subroutine get_modis_cloud(fileIN,Nx,Ny,CTT,CTP,CTH,phase,REF,COT,cc_tot)
    real(kind=sreal), intent(inout) :: cc_tot(1:Nx,1:Ny) !MOD06 Cloud Mask
 
    ! Local
-   integer :: fid
    integer(kind=lint) :: tmpNx, tmpNy
    integer(kind=lint) :: ix, jy
-   integer(kind=lint) :: tmp_ix, tmp_jy
-   real(kind=sreal) :: xFac,yFac
 
    real(kind=sreal), allocatable :: pre_phase(:,:)  !MOD06 Cloud Phase
    real(kind=sreal), allocatable :: pre_REF(:,:)    !MOD06 Cloud Effective Radius

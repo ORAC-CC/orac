@@ -10,7 +10,6 @@ subroutine get_modis_aerosol(fileIN,Nx,Ny,AREF,AOD550)
    integer(kind=lint), intent(in) :: Nx,Ny !Satellite 1-km dimensions
 
    ! Local
-   integer :: fid
    integer(kind=lint) :: tmpNx, tmpNy
    integer(kind=lint) :: ix, jy
    integer(kind=lint) :: tmp_ix, tmp_jy
