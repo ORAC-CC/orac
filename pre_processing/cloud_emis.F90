@@ -35,7 +35,7 @@ subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation,&
    implicit none
 
    type(channel_info_t),         intent(in)    :: channel_info
-   type(imager_measurements_t),  intent(in)   :: imager_measurements
+   type(imager_measurements_t),  intent(in)    :: imager_measurements
    type(imager_geolocation_t),   intent(in)    :: imager_geolocation
    type(preproc_dims_t),         intent(in)    :: preproc_dims
    type(preproc_geoloc_t),       intent(in)    :: preproc_geoloc
@@ -113,6 +113,11 @@ subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation,&
       end if
    end do
 
+   !$OMP PARALLEL &
+   !$OMP PRIVATE(i) &
+   !$OMP PRIVATE(j) &
+   !$OMP PRIVATE(interp)
+   !$OMP DO SCHEDULE(GUIDED)
    do i=1,imager_geolocation%ny
       do j=imager_geolocation%startx,imager_geolocation%endx
 
@@ -126,6 +131,19 @@ subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation,&
                             clrbt(j,i), interp(1))
       end do
    end do
+   !$OMP END DO
+   !$OMP END PARALLEL
+
+   !$OMP PARALLEL &
+   !$OMP PRIVATE(i) &
+   !$OMP PRIVATE(j) &
+   !$OMP PRIVATE(t1) &
+   !$OMP PRIVATE(t2) &
+   !$OMP PRIVATE(rad_cld) &
+   !$OMP PRIVATE(rad_clr) &
+   !$OMP PRIVATE(rad_obs) &
+   !$OMP PRIVATE(emis)
+   !$OMP DO SCHEDULE(GUIDED)
    do i=1,imager_geolocation%ny
       do j=imager_geolocation%startx,imager_geolocation%endx
          t1      = exp(c2/(lam*cldbt(j,i)))
@@ -139,10 +157,23 @@ subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation,&
          rad_obs = c1/(t2*(lam**5))
 
          emis    = (rad_obs-rad_clr)/(rad_cld-rad_clr)
+
+         ! Emisivities below zero are not really feasible (although possible
+         ! in case of atmosphere profile being unrepresentative. Set these
+         ! values equal to zero.
          if (emis .lt. 0) emis=0.
+
+         ! Emisivities above one aren't really feasible either. They do exist
+         ! for deep convection, though, in the form of overshooting tops.
+         ! Useful to know where these are, so keep them but cap at emis=2.
+         ! This removes unphysical values. For example, emis>1000 possible for
+         ! pixels on the edge of the Himawari disk.
+         if (emis .gt. 2) emis=2.
          imager_cloud%cloud_emis(j,i) = emis
         end do
    end do
+   !$OMP END DO
+   !$OMP END PARALLEL
 
    deallocate(cldbt)
    deallocate(clrbt)
