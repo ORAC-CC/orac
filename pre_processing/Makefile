@@ -62,12 +62,12 @@ PREPROC_OBJ_F90 = $(OBJS)/aatsr_corrections.o \
                   $(OBJS)/netcdf_output.o \
                   $(OBJS)/neural_net_constants.o \
                   $(OBJS)/neural_net_preproc.o \
-                  $(OBJS)/nr.o \
                   $(OBJS)/nsidc_nise.o \
                   $(OBJS)/ocean_colour.o \
                   $(OBJS)/preparation.o \
                   $(OBJS)/preproc_constants.o \
                   $(OBJS)/preproc_structures.o \
+                  $(OBJS)/gauss_leg_quad.o \
                   $(OBJS)/read_aatsr.o \
                   $(OBJS)/read_avhrr.o \
                   $(OBJS)/read_cimss_emissivity.o \

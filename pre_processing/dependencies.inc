@@ -15,16 +15,16 @@ $(OBJS)/correct_for_ice_snow.o: $(OBJS)/channel_structures.o \
         $(OBJS)/imager_structures.o $(OBJS)/nsidc_nise.o \
         $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o \
         $(OBJS)/surface_structures.o
-$(OBJS)/cox_munk.o: $(OBJS)/cox_munk_constants.o $(OBJS)/nr.o \
+$(OBJS)/cox_munk.o: $(OBJS)/cox_munk_constants.o $(OBJS)/gauss_leg_quad.o \
         $(OBJS)/ocean_colour.o $(OBJS)/preproc_constants.o
 $(OBJS)/cox_munk_constants.o: $(OBJS)/preproc_constants.o
 $(OBJS)/define_preprop_grid.o: $(OBJS)/imager_structures.o \
         $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o
 $(OBJS)/ecmwf.o: $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o \
         compute_geopot_coordinate.F90 deallocate_ecmwf_structures.F90 \
-        read_ecmwf.F90 read_ecmwf_grib.F90 read_gfs_nc.F90 read_ecmwf_nc.F90 \
+        read_ecmwf.F90 read_ecmwf_grib.F90 read_ecmwf_nc.F90 \
         read_ecmwf_wind_badc.F90 read_ecmwf_wind_grib.F90 read_ecmwf_wind_nc.F90 \
-        read_gfs_grib.F90 rearrange_ecmwf.F90
+        read_gfs_grib.F90 read_gfs_nc.F90 rearrange_ecmwf.F90
 $(OBJS)/fill_grid.o: $(OBJS)/preproc_constants.o
 $(OBJS)/get_USGS_data.o: $(OBJS)/imager_structures.o $(OBJS)/read_USGS_file.o
 $(OBJS)/imager_structures.o: $(OBJS)/channel_structures.o \
@@ -48,6 +48,7 @@ $(OBJS)/preparation.o: $(OBJS)/calender.o $(OBJS)/imager_structures.o \
 $(OBJS)/preproc_structures.o: $(OBJS)/channel_structures.o \
         $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o \
         allocate_preproc_structures.F90 deallocate_preproc_structures.F90
+$(OBJS)/gauss_leg_quad.o: $(OBJS)/preproc_constants.o
 $(OBJS)/read_aatsr.o: $(OBJS)/aatsr_corrections.o $(OBJS)/channel_structures.o \
         $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o \
         read_aatsr_dimensions.F90 read_aatsr_l1b.F90
@@ -81,7 +82,8 @@ $(OBJS)/read_viirs.o: $(OBJS)/calender.o $(OBJS)/channel_structures.o \
         $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o
 $(OBJS)/read_USGS_file.o: $(OBJS)/preproc_constants.o
 $(OBJS)/remove_rayleigh.o: $(OBJS)/preproc_constants.o
-$(OBJS)/ross_thick_li_sparse_r.o: $(OBJS)/nr.o $(OBJS)/preproc_constants.o
+$(OBJS)/ross_thick_li_sparse_r.o: $(OBJS)/gauss_leg_quad.o \
+        $(OBJS)/preproc_constants.o
 $(OBJS)/rttov_driver.o: $(OBJS)/channel_structures.o $(OBJS)/netcdf_output.o \
         $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o \
         $(OBJS)/remove_rayleigh.o write_ir_rttov.F90 write_solar_rttov.F90

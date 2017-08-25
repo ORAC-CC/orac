@@ -112,6 +112,8 @@
 !    - Calculation of underlight has been simplified, as we are now reading
 !      total absorption and backscatter directly from the OCCCI data, rather
 !      than chlorophyll concentration and cdom absorption
+! 2017/08/09, GM: Switch from the NR routine gauleg() to the GPL compatible
+!    gauss_leg_quadx() for computing Gauss-Legendre quadrature.
 !
 ! $Id$
 !
@@ -1824,8 +1826,8 @@ end function zeisse_ba3
 subroutine cox_munk_rho_0v_0d_dv_and_dd(bands, solza, satza, solaz, relaz, &
    ocean_colour, u10, v10, fill_value, rho_0v, rho_0d, rho_dv, rho_dd, verbose)
 
-   use nr_m
    use preproc_constants_m
+   use gauss_leg_quad_m
 
    implicit none
 
@@ -1896,8 +1898,8 @@ subroutine cox_munk_rho_0v_0d_dv_and_dd(bands, solza, satza, solaz, relaz, &
 
    allocate(qx_cos_sin_qw_theta(n_quad_theta))
 
-   call gauleg(0., pi / 2., qx_theta, qw_theta, n_quad_theta)
-   call gauleg(0., 2. * pi, qx_phi,   qw_phi,   n_quad_phi)
+   call gauss_leg_quadx(n_quad_theta, 0., pi / 2., qx_theta, qw_theta)
+   call gauss_leg_quadx(n_quad_phi,   0., 2. * pi, qx_phi,   qw_phi)
 
    do i = 1, n_quad_theta
       qx_cos_sin_qw_theta(i) = cos(qx_theta(i)) * sin(qx_theta(i)) * qw_theta(i)
