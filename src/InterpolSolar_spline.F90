@@ -152,10 +152,10 @@ subroutine Interpol_Solar_spline(Ctrl, SPixel, Pc, RTM_Pc, status)
 
       ! Gradients of transmittance w.r.t. pressure (around Pc)
       do j = 1, SPixel%Ind%NSolar
-         RTM_Pc%SW%dTac_dPc(j) = (delta_Tac(j) / delta_p) - (k0 * d2Tac_dP2(j,i)) + &
-                                 (k1 * d2Tac_dP2(j,i+1))
-         RTM_Pc%SW%dTbc_dPc(j) = (delta_Tbc(j) / delta_p) - (k0 * d2Tbc_dP2(j,i)) + &
-                                 (k1 * d2Tbc_dP2(j,i+1))
+         RTM_Pc%SW%dTac_dPc(Solar(j)) = (delta_Tac(j) / delta_p) - &
+              (k0 * d2Tac_dP2(j,i)) + (k1 * d2Tac_dP2(j,i+1))
+         RTM_Pc%SW%dTbc_dPc(Solar(j)) = (delta_Tbc(j) / delta_p) - &
+              (k0 * d2Tbc_dP2(j,i)) + (k1 * d2Tbc_dP2(j,i+1))
       end do
 
       ! Interpolated transmittances
@@ -168,11 +168,11 @@ subroutine Interpol_Solar_spline(Ctrl, SPixel, Pc, RTM_Pc, status)
       k1 = (((p1*p1*p1)-p1) * (delta_p*delta_p))/6.0
 
       do j = 1, SPixel%Ind%NSolar
-         RTM_Pc%SW%Tac(j) = (dP * SPixel%RTM%SW%Tac(Solar(j),i)) + &
+         RTM_Pc%SW%Tac(Solar(j)) = (dP * SPixel%RTM%SW%Tac(Solar(j),i)) + &
              (p1 * SPixel%RTM%SW%Tac(Solar(j),i+1)) + &
              (k0 * d2Tac_dP2(j,i)) + (k1 * d2Tac_dP2(j,i+1))
 
-         RTM_Pc%SW%Tbc(j) = (dP * SPixel%RTM%SW%Tbc(Solar(j),i)) + &
+         RTM_Pc%SW%Tbc(Solar(j)) = (dP * SPixel%RTM%SW%Tbc(Solar(j),i)) + &
              (p1 * SPixel%RTM%SW%Tbc(Solar(j),i+1)) + &
              (k0 * d2Tbc_dP2(j,i)) + (k1 * d2Tbc_dP2(j,i+1))
       end do
