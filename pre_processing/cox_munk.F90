@@ -1114,6 +1114,11 @@ subroutine cox_munk3_calc_shared_geo_wind(solza, satza, solaz, relaz, u10, v10, 
    wd = acos(v10/ws)            ! Wind angle in radians from north
    if (u10 .lt. 0.0) wd = -wd   ! Azimuth angle on -180 - 180 degree interval
 
+   if (ws .le. 0.) then
+      ws = 0.
+      wd = 0.
+   endif
+
 
    !----------------------------------------------------------------------------
    ! Calculate white-cap fraction (and ensure it is no greater than 1)
