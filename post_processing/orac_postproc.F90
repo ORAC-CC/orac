@@ -244,16 +244,16 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
     end if
 
     ! Read from driver file
-    read(11,*) use_ml
-    use_ml_temp=use_ml	
-    write(*,*) ' use_ml ',use_ml
     open(11,file=trim(adjustl(path_and_file)), status='old', form='formatted')
+
+    read(11,*) use_ml
+    use_ml_temp=use_ml
 
     read(11,'(A)') in_files_primary(IWat)
     read(11,'(A)') in_files_primary(IIce)
 
     if (use_ml) then
-    
+
        read(11,'(A)') in_files_primary(IMul)
     end if
 
@@ -344,6 +344,7 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
        write(*,*) 'secondary output = ', trim(out_file_secondary)
        write(*,*) 'switch_phases = ', switch_phases
        write(*,*) 'use_chunks = ', use_chunks
+       write(*,*) 'use_ml = ',use_ml
     end if
 
     ! Determine which channels/views exist across all input files
