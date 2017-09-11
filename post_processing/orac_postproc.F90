@@ -178,7 +178,7 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
     logical                      :: use_netcdf_compression = .true.
     logical                      :: use_chunks = .false.
     logical                      :: use_ml !set to true for ML
-    logical                      :: use_ml_temp !set to true for ML
+    logical                      :: use_ml_temp  = .false. !set to true for ML
     logical                      :: use_ann_phase = .true.
     logical                      :: verbose = .true.
 
