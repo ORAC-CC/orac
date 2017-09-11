@@ -122,6 +122,7 @@
 !    false; NOTE: there is no overlap type when using ann phase, in which case
 !    no multilayer phase flag will be set!
 ! 2017/09/05, CP: added ML post procesing as a driver file option not also changed for SL
+! 2017/09/11, CP: bug fix ML
 ! $Id$
 !
 ! Bugs:
@@ -244,10 +245,15 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
     end if
 
     ! Read from driver file
+
+    read(11,*) use_ml
+
+    write(*,*) ' use_ml ',use_ml
+
     open(11,file=trim(adjustl(path_and_file)), status='old', form='formatted')
 
     read(11,*) use_ml
-    use_ml_temp=use_ml
+    !use_ml_temp=use_ml
 
     read(11,'(A)') in_files_primary(IWat)
     read(11,'(A)') in_files_primary(IIce)
