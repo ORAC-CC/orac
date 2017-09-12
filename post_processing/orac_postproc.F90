@@ -246,10 +246,6 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
 
     ! Read from driver file
 
-    read(11,*) use_ml
-
-    write(*,*) ' use_ml ',use_ml
-
     open(11,file=trim(adjustl(path_and_file)), status='old', form='formatted')
 
     read(11,*) use_ml
