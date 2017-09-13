@@ -48,7 +48,7 @@ subroutine read_modis_dimensions(path_to_geo_file,n_across_track,n_along_track)
    integer(kind=4), external  :: sfstart, sfselect, sfn2index, sfginfo
    integer(kind=4), external  :: sfendacc, sfend
 
-   !this only serves to get us the dimensions of the granule
+   ! this only serves to get us the dimensions of the granule
    geo_id=sfstart(path_to_geo_file,DFACC_READ)
    dummy_var_id=sfselect(geo_id,sfn2index(geo_id,"Latitude"))
    err_code=sfginfo(dummy_var_id,dummy_name,dummy_rank,dims,dummy_type, &

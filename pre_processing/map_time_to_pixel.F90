@@ -57,14 +57,14 @@ subroutine map_time_to_pixel(along_track_ratio,ixstart,ixstop,iread_start, &
    implicit none
 
    integer(kind=lint), intent(in)  :: along_track_ratio
-   integer(kind=lint), intent(in)  :: ixstart,ixstop
-   integer(kind=lint), intent(in)  :: iread_start,iread_stop
-   integer(kind=lint), intent(in)  :: iread_startt,iread_stopt
+   integer(kind=lint), intent(in)  :: ixstart, ixstop
+   integer(kind=lint), intent(in)  :: iread_start, iread_stop
+   integer(kind=lint), intent(in)  :: iread_startt, iread_stopt
    real(kind=dreal),   intent(out) :: ttemp(ixstart:ixstop,iread_start:iread_stop)
    real(kind=dreal),   intent(in)  :: ttemp10(iread_startt:iread_stopt)
    real(kind=dreal),   intent(in)  :: refjulianday
 
-   real(kind=dreal), parameter   :: tframe=333.333D-6
+   real(kind=dreal),   parameter :: tframe=333.333D-6
 
    integer(kind=lint), parameter :: f30=-14_lint
 
@@ -85,9 +85,9 @@ subroutine map_time_to_pixel(along_track_ratio,ixstart,ixstop,iread_start, &
       end do
    end do
 
-   !divide TAI seconds since 1/1/1993 by 86400 (every day has in the TAI system
-   !precisely this amount of seconds) and add to Julian date of 1/1/1993
-   !this gives the Julian date of the observation for each pixel.
+   ! divide TAI seconds since 1/1/1993 by 86400 (every day has in the TAI system
+   ! precisely this amount of seconds) and add to Julian date of 1/1/1993
+   ! this gives the Julian date of the observation for each pixel.
    ttemp=refjulianday+ttemp/real(86400,kind=dreal)
 
 end subroutine map_time_to_pixel

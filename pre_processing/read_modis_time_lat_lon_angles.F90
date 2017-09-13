@@ -51,67 +51,60 @@ subroutine read_modis_time_lat_lon_angles(path_to_geo_file,imager_geolocation,&
 
    include "hdf.f90"
 
-   character(len=path_length),  intent(in)  :: path_to_geo_file
+   character(len=path_length),  intent(in)    :: path_to_geo_file
    type(imager_geolocation_t),  intent(inout) :: imager_geolocation
    type(imager_angles_t),       intent(inout) :: imager_angles
-   type(imager_flags_t),        intent(in)  :: imager_flags
-   type(imager_time_t),         intent(in)  :: imager_time
-   integer(kind=lint),          intent(in)  :: n_along_track
-   logical,                     intent(in)  :: verbose
+   type(imager_flags_t),        intent(in)    :: imager_flags
+   type(imager_time_t),         intent(inout) :: imager_time
+   integer(kind=lint),          intent(in)    :: n_along_track
+   logical,                     intent(in)    :: verbose
 
-   integer(kind=lint)                              :: geo_id,ix,jy
-   real(kind=sreal),   allocatable, dimension(:,:) :: temp,temp2
-   integer(kind=byte), allocatable, dimension(:,:) :: btemp
-   integer                                         :: err_code
+   integer(kind=lint)              :: geo_id, ix, jy
+   real(kind=sreal),   allocatable :: temp(:,:)
+   integer(kind=byte), allocatable :: btemp(:,:)
+   integer                         :: err_code
 
-   integer(kind=4), external  :: sfstart, sfend
+   integer(kind=4), external       :: sfstart, sfend
 
    if (verbose) &
         write(*,*) '<<<<<<<<<<<<<<< Entering read_modis_time_lat_lon_angles()'
 
-   !allocate temporary data
+   ! allocate temporary data
    allocate(temp(imager_geolocation%startx:imager_geolocation%endx,&
         imager_geolocation%starty:imager_geolocation%endy))
 
-   !get file id
+   ! get file id
    geo_id=sfstart(path_to_geo_file,DFACC_READ)
 
-   !read time
+   ! read time
    call get_modis_time(geo_id,imager_geolocation,imager_time,n_along_track)
 
-   !read latitude
+   ! read latitude
    call read_modis_lat_lon(geo_id,"Latitude",imager_geolocation%startx, &
         imager_geolocation%endx,imager_geolocation%starty, &
-        imager_geolocation%endy,temp)
-   imager_geolocation%latitude=temp
+        imager_geolocation%endy,imager_geolocation%latitude)
 
-   !read longitude
+   ! read longitude
    call read_modis_lat_lon(geo_id,"Longitude",imager_geolocation%startx, &
         imager_geolocation%endx,imager_geolocation%starty, &
-        imager_geolocation%endy,temp)
-   imager_geolocation%longitude=temp
+        imager_geolocation%endy,imager_geolocation%longitude)
 
-   !read solzen
+   ! read solzen
    call read_modis_angles(geo_id,"SolarZenith",imager_geolocation%startx, &
         imager_geolocation%endx,imager_geolocation%starty, &
-        imager_geolocation%endy,temp)
-   imager_angles%solzen(:,:,1)=temp
+        imager_geolocation%endy,imager_angles%solzen(:,:,1))
 
-   !read senszen
+   ! read senszen
    call read_modis_angles(geo_id,"SensorZenith",imager_geolocation%startx, &
         imager_geolocation%endx,imager_geolocation%starty, &
-        imager_geolocation%endy,temp)
-   imager_angles%satzen(:,:,1)=temp
+        imager_geolocation%endy,imager_angles%satzen(:,:,1))
 
-   !read solazi
-   allocate(temp2(imager_geolocation%startx:imager_geolocation%endx, &
-        imager_geolocation%starty:imager_geolocation%endy))
+   ! read solazi
    call read_modis_angles(geo_id,"SolarAzimuth",imager_geolocation%startx, &
         imager_geolocation%endx,imager_geolocation%starty, &
-        imager_geolocation%endy,temp2)
-   imager_angles%solazi(:,:,1)=temp2
+        imager_geolocation%endy,imager_angles%solazi(:,:,1))
 
-   !read sensazi
+   ! read sensazi
    call read_modis_angles(geo_id,"SensorAzimuth",imager_geolocation%startx, &
         imager_geolocation%endx,imager_geolocation%starty, &
         imager_geolocation%endy,temp)
@@ -119,13 +112,14 @@ subroutine read_modis_time_lat_lon_angles(path_to_geo_file,imager_geolocation,&
    ! make rel azi
    ! Note: Relative azimuth is defined so that if the satellite is looking
    ! towards the sun (i.e. forward scattering), relative azimuth is zero.
-!   temp2=180.0-temp2
+!   imager_angles%solazi(:,:,1)=180.0-imager_angles%solazi(:,:,1)
 !   imager_angles%relazi(:,:,1) = 180.0 - &
-!        acos(cos((temp-temp2)*d2r))/d2r
+!        acos(cos((temp - imager_angles%solazi(:,:,1)) * d2r)) / d2r
 
-   where ( temp2 .ne. sreal_fill_value .AND. temp .ne. sreal_fill_value )
+   where (imager_angles%solazi(:,:,1) .ne. sreal_fill_value .and. &
+          temp .ne. sreal_fill_value)
 
-       imager_angles%relazi(:,:,1) = abs( temp2 - temp )
+       imager_angles%relazi(:,:,1) = abs(imager_angles%solazi(:,:,1) - temp)
 
        where ( imager_angles%relazi(:,:,1) .gt. 180. )
           imager_angles%relazi(:,:,1) = imager_angles%relazi(:,:,1) - 180.
@@ -133,44 +127,46 @@ subroutine read_modis_time_lat_lon_angles(path_to_geo_file,imager_geolocation,&
           imager_angles%relazi(:,:,1) = 180. - imager_angles%relazi(:,:,1)
        end where
 
-!      where ( temp2 .lt. 0 )
-!         temp2 = temp2 + 180
+!      where (imager_angles%solazi(:,:,1) .lt. 0)
+!         imager_angles%solazi(:,:,1) = imager_angles%solazi(:,:,1) + 180
 !      else where
-!         temp2 = temp2 - 180
+!         imager_angles%solazi(:,:,1) = imager_angles%solazi(:,:,1) - 180
 !      end where
 !
-!      imager_angles%relazi(:,:,1) = abs( temp - temp2 )
-!      where ( imager_angles%relazi(:,:,1) .gt. 180 ) imager_angles%relazi(:,:,1) = 360. - imager_angles%relazi(:,:,1)
-!      imager_angles%relazi(:,:,1) = abs( imager_angles%relazi(:,:,1) )
+!      imager_angles%relazi(:,:,1) = abs(temp - imager_angles%solazi(:,:,1))
+!      where (imager_angles%relazi(:,:,1) .gt. 180)
+!         imager_angles%relazi(:,:,1) = 360. - imager_angles%relazi(:,:,1)
+!      end where
+!      imager_angles%relazi(:,:,1) = abs(imager_angles%relazi(:,:,1))
 
    end where
 
-
-   !free temp arrays
-   deallocate(temp2)
+   ! free temp arrays
    deallocate(temp)
 
-   !read modis ls flag
+   ! read modis ls flag
    allocate(btemp(imager_geolocation%startx:imager_geolocation%endx, &
         imager_geolocation%starty:imager_geolocation%endy))
+
    call read_modis_land_sea_mask(geo_id,"Land/SeaMask",imager_geolocation%startx, &
         imager_geolocation%endx,imager_geolocation%starty, &
         imager_geolocation%endy,btemp)
 
-!!$ make orac ls flag by mapping the MODIS L/S definitions to the ones for ORAC
-!!$ (approximate). MODIS DEFINITIONS - DN values:
-!!$                0:      Shallow Ocean (Ocean <5k from coast OR <50m deep).
-!!$                1:      Land (not anything else).
-!!$                2:      Ocean Coastlines and Lake Shorelines.
-!!$                3:      Shallow Inland Water (Inland Water < 5km from shore
-!!$                                OR < 50m deep).
-!!$                4:      Ephemeral (intermittent) Water.
-!!$                5:      Deep Inland Water (Inland water > 5km from shoreline
-!!$                                AND > 50m deep).
-!!$                6:      Moderate or Continental Ocean (Ocean > 5km from coast
-!!$                                AND > 50m deep AND < 500m deep).
-!!$                7:      Deep Ocean (Ocean > 500m deep).
+   ! make orac ls flag by mapping the MODIS L/S definitions to the ones for ORAC
+   ! (approximate). MODIS DEFINITIONS - DN values:
+   !                0:      Shallow Ocean (Ocean <5k from coast OR <50m deep).
+   !                1:      Land (not anything else).
+   !                2:      Ocean Coastlines and Lake Shorelines.
+   !                3:      Shallow Inland Water (Inland Water < 5km from shore
+   !                                OR < 50m deep).
+   !                4:      Ephemeral (intermittent) Water.
+   !                5:      Deep Inland Water (Inland water > 5km from shoreline
+   !                                AND > 50m deep).
+   !                6:      Moderate or Continental Ocean (Ocean > 5km from coast
+   !                                AND > 50m deep AND < 500m deep).
+   !                7:      Deep Ocean (Ocean > 500m deep).
    ! which of these is most efficient is compiler-dependant
+
 !   where(btemp.eq.0 .or. btemp.eq.5 .or. btemp.eq.6 .or. btemp.eq.7)
 !      btemp = 0
 !   else where
@@ -189,10 +185,10 @@ subroutine read_modis_time_lat_lon_angles(path_to_geo_file,imager_geolocation,&
 
    imager_flags%lsflag=btemp
 
-   !free temp byte array
+   ! free temp byte array
    deallocate(btemp)
 
-   !end access to geofile
+   ! end access to geofile
    err_code=sfend(geo_id)
 
    if (verbose) &

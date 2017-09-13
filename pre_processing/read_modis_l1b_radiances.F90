@@ -49,16 +49,15 @@ subroutine read_modis_l1b_radiances(sensor,platform,path_to_l1b_file, &
    character(len=sensor_length),   intent(in)     :: sensor
    character(len=platform_length), intent(in)     :: platform
    character(len=path_length),     intent(in)     :: path_to_l1b_file
-   type(imager_geolocation_t),     intent(inout)  :: imager_geolocation
+   type(imager_geolocation_t),     intent(in)     :: imager_geolocation
    type(imager_measurements_t),    intent(inout)  :: imager_measurements
    type(channel_info_t),           intent(in)     :: channel_info
    logical,                        intent(in)     :: verbose
 
-   logical                                       :: lrefl
+   logical                       :: lrefl
+   real(kind=sreal), allocatable :: temp(:,:)
 
-   real(kind=sreal), allocatable, dimension(:,:) :: temp
-
-   integer(kind=4), external  :: sfstart, sfend
+   integer(kind=4), external     :: sfstart, sfend
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_modis_l1b_radiances()'
 
@@ -106,7 +105,7 @@ subroutine read_modis_l1b_radiances(sensor,platform,path_to_l1b_file, &
 
    deallocate(temp)
 
-   !end access to l1b file
+   ! end access to l1b file
    err_code=sfend(l1b_id)
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_modis_l1b_radiances()'

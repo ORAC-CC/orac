@@ -42,13 +42,13 @@ subroutine read_modis_lat_lon(fid,SDS_name,startx,stopx,starty,stopy,temp)
 
    integer,            intent(in)  :: fid
    character(len=*),   intent(in)  :: SDS_name
-   integer(kind=lint), intent(in)  :: startx,stopx,starty,stopy
+   integer(kind=lint), intent(in)  :: startx, stopx, starty, stopy
    real(kind=sreal),   intent(out) :: temp(startx:stopx,starty:stopy)
 
 !  integer(kind=lint) :: ix,jy
    integer            :: err_code
    integer            :: var_id,attr_id
-   integer            :: start(2),stride(2),edge(2)
+   integer            :: start(2), stride(2), edge(2)
    real(kind=sreal)   :: fv,vr(2)
 
    integer(kind=4), external :: sfselect, sfn2index, sffattr, sfrattr, sfrdata

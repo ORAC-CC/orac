@@ -61,13 +61,13 @@ subroutine read_modis_l1b_radiances_2(fid, band, Cal_type_is_refl, &
 
    include "hdf.f90"
 
-   integer(kind=lint), intent(in)    :: fid
-   integer,            intent(in)    :: band
-   logical,            intent(in)    :: Cal_type_is_refl
-   integer(kind=lint), intent(in)    :: ixstart, ixstop, iystart, iystop
-   real(kind=sreal),   intent(inout) :: level1b_buffer(ixstart:ixstop, &
-        iystart:iystop)
-   logical,            intent(in)    :: verbose
+   integer(kind=lint), intent(in)  :: fid
+   integer,            intent(in)  :: band
+   logical,            intent(in)  :: Cal_type_is_refl
+   integer(kind=lint), intent(in)  :: ixstart, ixstop, iystart, iystop
+   real(kind=sreal),   intent(out) :: level1b_buffer(ixstart:ixstop, &
+                                                     iystart:iystop)
+   logical,            intent(in)  :: verbose
 
    integer(kind=lint)         :: ix, jy
    character(len=MAX_NC_NAME) :: SDS_name, SDS_name_2
@@ -80,7 +80,7 @@ subroutine read_modis_l1b_radiances_2(fid, band, Cal_type_is_refl, &
    character(len=MAX_NC_NAME) :: band_names
    logical                    :: flag
    integer                    :: i_band,i_comma,i_comma_old
-   integer                    :: band_names_length,current_band
+   integer                    :: band_names_length, current_band
    integer(kind=sint)         :: fv, vr(2)
    real(kind=sreal)           :: scale_factors(20), offsets(20)
    integer(kind=lint)         :: start(3), stride(3), edge(3)
