@@ -1,6 +1,6 @@
 
 
-! CVS:  $Id: driver_read.F,v 1.10 2003/11/11 21:55:13 norm Exp $
+! CVS:  $Id$
 ! CVS:  $Name:  $
 
 

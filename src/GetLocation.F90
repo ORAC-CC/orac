@@ -19,7 +19,7 @@
 ! History:
 ! 2015/08/04, GM: Original version.
 !
-! $Id: GetLocation.F90 3539 2015-07-30 16:32:59Z acpovey $
+! $Id$
 !
 ! Bugs:
 ! None known.

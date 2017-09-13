@@ -1,3 +1,17 @@
+!-------------------------------------------------------------------------------
+! Name: SPixel_routines.F90
+!
+! Purpose:
+!
+! History:
+! 2016/10/21, AP: Original version.
+!
+! $Id$
+!
+! Bugs:
+! None known.
+!---------------------------------------------------------------------
+
 module SPixel_routines_m
 
    use ORAC_Constants_m
@@ -23,7 +37,7 @@ contains
 ! Name Type In/Out/Both Description
 !
 ! History:
-! 2014/10/10, GM: Original version
+! 2016/10/21, AP: Original version.
 !
 ! Bugs:
 ! None known.

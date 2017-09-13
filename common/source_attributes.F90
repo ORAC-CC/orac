@@ -14,7 +14,7 @@
 ! 2014/12/01, CP: Created a source attribute module using source attributes as
 !    a template
 !
-! $Id: source_attributes.F90 2355 2014-09-09 23:16:38Z gmcgarragh $
+! $Id$
 !
 ! Bugs:
 ! None known.

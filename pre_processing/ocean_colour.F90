@@ -12,7 +12,7 @@
 ! 2016/11/03, GT: Bug fix - if processing data outside coverage of
 !                 OceanColour_cci, the code now correctly looks for climatology
 !                 data with year='XXXX'
-! $Id:
+! $Id$
 !
 ! Bugs:
 ! None known.

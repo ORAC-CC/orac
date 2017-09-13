@@ -56,7 +56,7 @@
 ! 2017/01/17, GM: Changes related to simplification of the indexing of the LUT
 !    grid and the GZero parameters.
 !
-! $Id: IntLUTTauSatRe.F90 2160 2014-05-22 16:53:08Z gmcgarragh $
+! $Id$
 !
 ! Bugs:
 ! None known.
