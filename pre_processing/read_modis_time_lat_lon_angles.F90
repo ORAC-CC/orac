@@ -15,7 +15,7 @@
 ! path_to_geo_file   string in   Full path to geolocation data
 ! imager_geolocation struct both Summary of pixel positions
 ! imager_angles      struct both Summary of sun/satellite viewing angles
-! imager_flags       struct both Summary of land/sea/ice flags
+! imager_flags       struct in   Summary of land/sea/ice flags
 ! imager_time        struct both Summary of pixel observation time
 ! n_along_track      lint   in   Number of pixels in the direction of travel
 ! verbose            logic  in   T: print status information; F: don't
@@ -59,10 +59,10 @@ subroutine read_modis_time_lat_lon_angles(path_to_geo_file,imager_geolocation,&
    integer(kind=lint),          intent(in)    :: n_along_track
    logical,                     intent(in)    :: verbose
 
-   integer(kind=lint)              :: geo_id, ix, jy
+!  integer(kind=lint)              :: ix, jy
    real(kind=sreal),   allocatable :: temp(:,:)
    integer(kind=byte), allocatable :: btemp(:,:)
-   integer                         :: err_code
+   integer                         :: geo_id, err_code
 
    integer(kind=4), external       :: sfstart, sfend
 
@@ -74,7 +74,7 @@ subroutine read_modis_time_lat_lon_angles(path_to_geo_file,imager_geolocation,&
         imager_geolocation%starty:imager_geolocation%endy))
 
    ! get file id
-   geo_id=sfstart(path_to_geo_file,DFACC_READ)
+   geo_id = sfstart(path_to_geo_file,DFACC_READ)
 
    ! read time
    call get_modis_time(geo_id,imager_geolocation,imager_time,n_along_track)
@@ -112,9 +112,9 @@ subroutine read_modis_time_lat_lon_angles(path_to_geo_file,imager_geolocation,&
    ! make rel azi
    ! Note: Relative azimuth is defined so that if the satellite is looking
    ! towards the sun (i.e. forward scattering), relative azimuth is zero.
-!   imager_angles%solazi(:,:,1)=180.0-imager_angles%solazi(:,:,1)
-!   imager_angles%relazi(:,:,1) = 180.0 - &
-!        acos(cos((temp - imager_angles%solazi(:,:,1)) * d2r)) / d2r
+!  imager_angles%solazi(:,:,1) = 180.0-imager_angles%solazi(:,:,1)
+!  imager_angles%relazi(:,:,1) = 180.0 - &
+!       acos(cos((temp - imager_angles%solazi(:,:,1)) * d2r)) / d2r
 
    where (imager_angles%solazi(:,:,1) .ne. sreal_fill_value .and. &
           temp .ne. sreal_fill_value)
@@ -167,29 +167,19 @@ subroutine read_modis_time_lat_lon_angles(path_to_geo_file,imager_geolocation,&
    !                7:      Deep Ocean (Ocean > 500m deep).
    ! which of these is most efficient is compiler-dependant
 
-!   where(btemp.eq.0 .or. btemp.eq.5 .or. btemp.eq.6 .or. btemp.eq.7)
-!      btemp = 0
-!   else where
-!      btemp = 1
-!   end where
-   do ix=imager_geolocation%startx,imager_geolocation%endx
-      do jy=imager_geolocation%starty,imager_geolocation%endy
-         if (btemp(ix,jy).eq.0 .or. &
-              (btemp(ix,jy).ge.5 .and. btemp(ix,jy).le.7)) then
-            btemp(ix,jy) = 0
-         else
-            btemp(ix,jy) = 1
-         end if
-      end do
-   end do
+   where(btemp.eq.0 .or. btemp.eq.5 .or. btemp.eq.6 .or. btemp.eq.7)
+      btemp = 0
+   else where
+      btemp = 1
+   end where
 
-   imager_flags%lsflag=btemp
+   imager_flags%lsflag = btemp
 
    ! free temp byte array
    deallocate(btemp)
 
    ! end access to geofile
-   err_code=sfend(geo_id)
+   err_code = sfend(geo_id)
 
    if (verbose) &
         write(*,*) '>>>>>>>>>>>>>>> Leaving read_modis_time_lat_lon_angles()'

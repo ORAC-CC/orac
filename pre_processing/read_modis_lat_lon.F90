@@ -18,7 +18,7 @@
 ! stopx    lint   in   Last pixel to read across track
 ! starty   lint   in   First pixel to read along track
 ! stopy    lint   in   Last pixel to read along track
-! temp     real   both Initialised array into which data is stored
+! temp     real   out  Initialised array into which data is stored
 !
 ! History:
 ! 2011/12/13, MJ: produces draft code which reads latitude and longitude modis
@@ -47,9 +47,9 @@ subroutine read_modis_lat_lon(fid,SDS_name,startx,stopx,starty,stopy,temp)
 
 !  integer(kind=lint) :: ix,jy
    integer            :: err_code
-   integer            :: var_id,attr_id
+   integer            :: var_id, attr_id
    integer            :: start(2), stride(2), edge(2)
-   real(kind=sreal)   :: fv,vr(2)
+   real(kind=sreal)   :: fv, vr(2)
 
    integer(kind=4), external :: sfselect, sfn2index, sffattr, sfrattr, sfrdata
    integer(kind=4), external :: sfendacc
@@ -63,24 +63,17 @@ subroutine read_modis_lat_lon(fid,SDS_name,startx,stopx,starty,stopy,temp)
    var_id = sfselect(fid, sfn2index(fid, SDS_name))
 
    ! read data into array
-   temp=sreal_fill_value
    err_code = sfrdata(var_id, start, stride, edge, temp)
 
-   attr_id=sffattr(var_id, "_FillValue")
-   err_code=sfrattr(var_id, attr_id, fv)
+   attr_id = sffattr(var_id, "_FillValue")
+   err_code = sfrattr(var_id, attr_id, fv)
 
-   attr_id=sffattr(var_id, "valid_range")
-   err_code=sfrattr(var_id, attr_id, vr)
+   attr_id = sffattr(var_id, "valid_range")
+   err_code = sfrattr(var_id, attr_id, vr)
 
    ! overwrite fill values with the ORAC value
-   ! which of these is most efficient is compiler-dependant
    where (temp.lt.vr(1) .or. temp.gt.vr(2)) temp = sreal_fill_value
-!   do ix=startx,stopx
-!      do jy=starty,stopy
-!         if (temp(ix,jy) .lt. vr(1) .or. temp(ix,jy) .gt. vr(2)) temp(ix,jy)=fv
-!      end do
-!   end do
 
-   err_code=sfendacc(var_id)
+   err_code = sfendacc(var_id)
 
 end subroutine read_modis_lat_lon

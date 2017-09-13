@@ -17,7 +17,7 @@
 ! sensor              string in   Name of instrument
 ! platform            string in   Name of satellite
 ! path_to_l1b_file    string in   Full path to level 1B data
-! imager_geolocation  struct both Summary of pixel positions
+! imager_geolocation  struct in   Summary of pixel positions
 ! imager_measurements struct both Satellite observations
 ! channel_info        struct in   Summary of channel information
 ! verbose             logic  in   F: minimise information printed to screen;
@@ -69,7 +69,7 @@ subroutine read_modis_l1b_radiances(sensor,platform,path_to_l1b_file, &
                  imager_geolocation%starty:imager_geolocation%endy))
 
    ! get file id
-   l1b_id=sfstart(path_to_l1b_file,DFACC_READ)
+   l1b_id = sfstart(path_to_l1b_file,DFACC_READ)
 
    do ich=1,channel_info%nchannels_total
       if (verbose) write(*,*) 'Read MODIS band: ', &
@@ -91,22 +91,22 @@ subroutine read_modis_l1b_radiances(sensor,platform,path_to_l1b_file, &
          do ix=imager_geolocation%startx,imager_geolocation%endx
             do jy=imager_geolocation%starty,imager_geolocation%endy
 
-               temp(ix,jy)=modis_bright(platform,temp(ix,jy), &
+               temp(ix,jy) = modis_bright(platform,temp(ix,jy), &
                     channel_info%channel_ids_instr(ich),1)
 
             end do
          end do
       end if
 
-      imager_measurements%data(:,:,ich)=temp(:,:)
+      imager_measurements%data(:,:,ich) = temp(:,:)
       where(imager_measurements%data(:,:,ich) .lt. 0) &
-         imager_measurements%data(:,:,ich)=sreal_fill_value
+         imager_measurements%data(:,:,ich) = sreal_fill_value
    end do
 
    deallocate(temp)
 
    ! end access to l1b file
-   err_code=sfend(l1b_id)
+   err_code = sfend(l1b_id)
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_modis_l1b_radiances()'
 

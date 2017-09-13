@@ -22,7 +22,7 @@
 ! ixstop           lint   in   Last pixel to read across track
 ! iystart          lint   in   First pixel to read along track
 ! iystop           lint   in   Last pixel to read along track
-! level1b_buffer   sreal  both Initialised array into which data will be stored
+! level1b_buffer   sreal  out  Initialised array into which data will be stored
 ! verbose          logic  in   F: minimise information printed to screen;
 !                              T: don't
 !
@@ -72,18 +72,18 @@ subroutine read_modis_l1b_radiances_2(fid, band, Cal_type_is_refl, &
    integer(kind=lint)         :: ix, jy
    character(len=MAX_NC_NAME) :: SDS_name, SDS_name_2
    character(len=128)         :: Dim_band_index
-   integer(kind=lint)         :: file_id, attr_id, var_id, err_code
+   integer                    :: err_code
+   integer                    :: file_id, var_id, attr_id
    character(len=MAX_NC_NAME) :: tmpname
-   integer                    :: rank, type, num_attrs
-   integer, dimension(3)      :: dimsizes
+   integer                    :: rank, dimsizes(3), type, num_attrs
    integer                    :: number_of_bands
    character(len=MAX_NC_NAME) :: band_names
    logical                    :: flag
-   integer                    :: i_band,i_comma,i_comma_old
+   integer                    :: i_band,i_comma, i_comma_old
    integer                    :: band_names_length, current_band
    integer(kind=sint)         :: fv, vr(2)
    real(kind=sreal)           :: scale_factors(20), offsets(20)
-   integer(kind=lint)         :: start(3), stride(3), edge(3)
+   integer                    :: start(3), stride(3), edge(3)
    integer(kind=sint)         :: temp(ixstart:ixstop,iystart:iystop)
 
    integer(kind=4), external  :: sfselect, sfginfo, sfn2index, sffattr, sfrattr
@@ -142,23 +142,23 @@ subroutine read_modis_l1b_radiances_2(fid, band, Cal_type_is_refl, &
       write(*,*) 'Number of MODIS bands: ', number_of_bands
    end if
 
-   band_names=''
-   attr_id=sffattr(var_id, "band_names")
-   err_code=sfrattr(var_id, attr_id, band_names)
-   band_names=trim(adjustl(band_names))
+   band_names = ''
+   attr_id = sffattr(var_id, "band_names")
+   err_code = sfrattr(var_id, attr_id, band_names)
+   band_names = trim(adjustl(band_names))
 
    ! remove NULL characters
-   i_comma=index(band_names, achar(0))
+   i_comma = index(band_names, achar(0))
    do while (i_comma .gt. 0)
       band_names(i_comma:i_comma) = ' '
-      i_comma=index(band_names, achar(0))
+      i_comma = index(band_names, achar(0))
    end do
 
    if (verbose) write(*,*) 'Bands found: ', trim(band_names)
 
    flag = .true.
-   i_comma_old=1
-   band_names_length=len_trim(band_names)
+   i_comma_old = 1
+   band_names_length = len_trim(band_names)
 
    do i_band=1,number_of_bands
       if (i_band .eq. number_of_bands) then
@@ -173,10 +173,10 @@ subroutine read_modis_l1b_radiances_2(fid, band, Cal_type_is_refl, &
             read(band_names(i_comma_old:i_comma-1), '(i2)') current_band
          else if (i_comma - i_comma_old .eq. 4) then
             read(band_names(i_comma_old:i_comma-1), '(i2)') current_band
-            i_comma_old=i_comma+2
+            i_comma_old = i_comma+2
          end if
 
-         i_comma_old=i_comma+1
+         i_comma_old = i_comma+1
       end if
 
       if (current_band .eq. band) then
@@ -203,11 +203,11 @@ subroutine read_modis_l1b_radiances_2(fid, band, Cal_type_is_refl, &
    edge(2) = iystop-iystart+1
    edge(3) = 1
 
-   attr_id=sffattr(var_id, "_FillValue")
-   err_code=sfrattr(var_id, attr_id, fv)
+   attr_id = sffattr(var_id, "_FillValue")
+   err_code = sfrattr(var_id, attr_id, fv)
 
-   attr_id=sffattr(var_id, "valid_range")
-   err_code=sfrattr(var_id, attr_id, vr)
+   attr_id = sffattr(var_id, "valid_range")
+   err_code = sfrattr(var_id, attr_id, vr)
 
    if (Cal_type_is_refl) then
       attr_id = sffattr(var_id, "reflectance_scales")

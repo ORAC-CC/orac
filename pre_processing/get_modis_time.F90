@@ -13,7 +13,7 @@
 ! Name               Type   In/Out/Both Description
 ! ------------------------------------------------------------------------------
 ! geo_id             lint   in   A file ID returned by SFSTART
-! imager_geolocation struct both Summary of pixel positions
+! imager_geolocation struct in   Summary of pixel positions
 ! imager_time        struct both Summary of pixel observation time
 ! n_along_track      lint   in   Number of pixels in the direction of travel
 !
@@ -43,14 +43,13 @@ subroutine get_modis_time(geo_id,imager_geolocation,imager_time,n_along_track)
    type(imager_time_t),        intent(inout) :: imager_time
    integer(kind=lint),         intent(in)    :: n_along_track
 
-   integer(kind=lint)            :: var_id
-   integer(kind=lint)            :: err_code
-   integer(kind=lint)            :: dummy_type, dummy_numattrs, dummy_rank
-   integer(kind=lint)            :: n_along_track_10, along_track_ratio
+   integer                       :: var_id, err_code
+   integer                       :: dummy_rank, dummy_type, dummy_numattrs
    character(len=MAX_NC_NAME)    :: dummy_name
+   integer(kind=lint)            :: n_along_track_10, along_track_ratio
    real(kind=dreal), allocatable :: ev_start_time(:)
    real(kind=dreal)              :: refjulianday
-   integer(kind=lint)            :: startyy,stopyy
+   integer(kind=lint)            :: startyy, stopyy
 
    !reference point of time
    integer(kind=sint), parameter :: refday=1_sint,refyear=1993_sint, &
@@ -59,13 +58,12 @@ subroutine get_modis_time(geo_id,imager_geolocation,imager_time,n_along_track)
    integer(kind=4), external     :: sfselect, sfn2index, sfginfo, sfendacc
 
    ! determine size of grid on which time is stored
-   var_id=sfselect(geo_id,sfn2index(geo_id,"EV start time"))
-   err_code=sfginfo(var_id,dummy_name,dummy_rank,n_along_track_10,dummy_type, &
+   var_id = sfselect(geo_id,sfn2index(geo_id,"EV start time"))
+   err_code = sfginfo(var_id,dummy_name,dummy_rank,n_along_track_10,dummy_type, &
         dummy_numattrs)
-   err_code=sfendacc(var_id)
+   err_code = sfendacc(var_id)
 
-   along_track_ratio=n_along_track/n_along_track_10
-
+   along_track_ratio = n_along_track/n_along_track_10
 
    ! find the 10-line block in which the start and stop pixel lies
    ! 1 => lines 1-10, 2 => lines 11-20, ...

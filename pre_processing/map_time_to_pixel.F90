@@ -33,7 +33,7 @@
 ! iread_stop        lint  in   Last pixel to read along track
 ! iread_startt      lint  in   First pixel read along reduced resolution track
 ! iread_stopt       lint  in   Last pixel to read along reduced resolution track
-! ttemp             dreal both Array into which pixel times will be written
+! ttemp             dreal out  Array into which pixel times will be written
 ! ttemp10           dreal in   Reduced resolution field of observation times
 ! refjulianday      dreal in   Julian day number for beginning of satellite time
 !
@@ -81,13 +81,13 @@ subroutine map_time_to_pixel(along_track_ratio,ixstart,ixstop,iread_start, &
       !     focal plane, for which the lat/lon are given. The channels we use
       !     are offset from that giving an error in this <5ms = 100m.
       do ix=ixstart,ixstop
-         ttemp(ix,jy)=ttemp10(jyt)+tframe*real((ix-f30),kind=dreal)
+         ttemp(ix,jy) = ttemp10(jyt)+tframe*real((ix-f30),kind=dreal)
       end do
    end do
 
    ! divide TAI seconds since 1/1/1993 by 86400 (every day has in the TAI system
    ! precisely this amount of seconds) and add to Julian date of 1/1/1993
    ! this gives the Julian date of the observation for each pixel.
-   ttemp=refjulianday+ttemp/real(86400,kind=dreal)
+   ttemp = refjulianday+ttemp/real(86400,kind=dreal)
 
 end subroutine map_time_to_pixel
