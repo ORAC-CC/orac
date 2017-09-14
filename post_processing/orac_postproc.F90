@@ -116,13 +116,17 @@
 !    the amount of memory used. Works in same way as preproc option.
 ! 2017/01/09, CP: Added ML cloud variables and changed phase to handle ML so it
 !    can be recognised in L3.
-! 2017/01/09, CP: bug fix to ml code which was upsetting aerosol retrieval
-! 2017/06/22, OS: introduced ann phase, which is now the default for phase
+! 2017/01/09, CP: Bug fix to ml code which was upsetting aerosol retrieval
+! 2017/06/22, OS: Introduced ann phase, which is now the default for phase
 !    selection; to choose Pavolonis for phase selection, set use_ann_phase to
 !    false; NOTE: there is no overlap type when using ann phase, in which case
 !    no multilayer phase flag will be set!
-! 2017/09/05, CP: added ML post procesing as a driver file option not also changed for SL
-! 2017/09/11, CP: bug fix ML
+! 2017/09/05, CP: Added logical flag at the top of the driver file to turn on
+!    ML post processing.
+! 2017/09/14, GM: Add use_ann_phase option to the driver file.
+! 2017/09/14, GM: Force the use of the Pavolonis based phase if multilayer
+!    processing.
+!
 ! $Id$
 !
 ! Bugs:
@@ -177,8 +181,8 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
     logical                      :: use_new_bayesian_selection = .false.
     logical                      :: use_netcdf_compression = .true.
     logical                      :: use_chunks = .false.
-    logical                      :: use_ml !set to true for ML
-    logical                      :: use_ml_temp  = .false. !set to true for ML
+    logical                      :: use_ml
+    logical                      :: use_ml_temp = .false.
     logical                      :: use_ann_phase = .true.
     logical                      :: verbose = .true.
 
@@ -249,13 +253,11 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
     open(11,file=trim(adjustl(path_and_file)), status='old', form='formatted')
 
     read(11,*) use_ml
-    !use_ml_temp=use_ml
 
     read(11,'(A)') in_files_primary(IWat)
     read(11,'(A)') in_files_primary(IIce)
 
     if (use_ml) then
-
        read(11,'(A)') in_files_primary(IMul)
     end if
 
@@ -275,7 +277,6 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
     ! if multi layer cloud then
     if (use_ml) then
        n_in_files = 3
-
     end if
 
     if (out_file_secondary /= '') do_secondary = .true.
@@ -293,17 +294,20 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
        case('OUTPUT_OPTICAL_PROPS_AT_NIGHT')
           if (parse_string(value, output_optical_props_at_night) /= 0) &
                call handle_parse_error(label)
+       case('USE_ANN_PHASE')
+          if (parse_string(value, use_ann_phase) /= 0) &
+               call handle_parse_error(label)
        case('USE_BAYESIAN_SELECTION')
           if (parse_string(value, use_bayesian_selection) /= 0) &
                call handle_parse_error(label)
        case('USE_NEW_BAYESIAN_SELECTION')
           if (parse_string(value, use_new_bayesian_selection) /= 0) &
                call handle_parse_error(label)
-       case('USE_NETCDF_COMPRESSION')
-          if (parse_string(value, use_netcdf_compression) /= 0) &
-               call handle_parse_error(label)
        case('USE_CHUNKING')
           if (parse_string(value, use_chunks) /= 0) &
+               call handle_parse_error(label)
+       case('USE_NETCDF_COMPRESSION')
+          if (parse_string(value, use_netcdf_compression) /= 0) &
                call handle_parse_error(label)
        case('VERBOSE')
           if (parse_string(value, verbose) /= 0) &
@@ -323,6 +327,11 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
        end select
     end do
     close(11)
+
+    ! If processing ML for ANN phase selection off as it does not have a ML flag
+    if (use_ml) then
+       use_ann_phase = .false.
+    end if
 
     ! If using new bayesian selection then ensure both bayesian flags are true
     if (use_new_bayesian_selection) then
@@ -346,7 +355,7 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
        write(*,*) 'secondary output = ', trim(out_file_secondary)
        write(*,*) 'switch_phases = ', switch_phases
        write(*,*) 'use_chunks = ', use_chunks
-       write(*,*) 'use_ml = ',use_ml
+       write(*,*) 'use_ml = ', use_ml
     end if
 
     ! Determine which channels/views exist across all input files
@@ -357,7 +366,7 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
     call nullify_indexing(indexing)
     call cross_reference_indexing(n_in_files, loop_ind, indexing)
 
-    n_chunks=1
+    n_chunks = 1
 
     ! Settings not inherited from input files
     indexing%flags%do_indexing        = .false.
@@ -387,7 +396,7 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
        segment_starts(1) = 1
        segment_ends(1)   = indexing%Ydim
 
-       !      chunksize = 4096
+!      chunksize = 4096
        chunksize = 1024
 
        n_chunks = calc_n_chunks(n_segments, segment_starts, segment_ends, &
@@ -441,14 +450,12 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
           call alloc_input_data_primary_all(indexing, input_primary(0))
           call read_input_primary_once(n_in_files, in_files_primary, &
                input_primary(0), indexing, loop_ind, global_atts, source_atts, &
-               chunk_starts( i_chunk),use_ml,verbose)
-
+               chunk_starts(i_chunk), use_ml, verbose)
        else
-
           call alloc_input_data_primary_all(indexing, input_primary(0))
           call read_input_primary_once(n_in_files, in_files_primary, &
                input_primary(0), indexing, loop_ind, global_atts, source_atts, &
-               chunk_starts( i_chunk),use_ml,verbose)
+               chunk_starts(i_chunk), use_ml, verbose)
        end if
 
        if (do_secondary) then
@@ -459,16 +466,15 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
        end if
 
        ! Read fields that vary from file to file
-       if (use_new_bayesian_selection .neqv. .true.) then
+       if (.not. use_new_bayesian_selection) then
           do i = 1, n_in_files
 
-             if (use_ml) then
-                if (i .eq. 3) then
-                   use_ml_temp = .true.
-                endif
+             if (use_ml .and. i .eq. 3) then
+                use_ml_temp = .true.
              else
                 use_ml_temp = .false.
              end if
+
              if (verbose) write(*,*) '********************************'
              if (verbose) write(*,*) 'read: ', trim(in_files_primary(i))
              call alloc_input_data_primary_class(loop_ind(i), input_primary(i))
@@ -498,15 +504,15 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
 
           ! Load only the cost values from input files
           do i = 1, n_in_files
-             if (i .eq. 3) then
-                use_ml_temp=.true.
+             if (use_ml .and. i .eq. 3) then
+                use_ml_temp = .true.
              else
-                use_ml_temp=.false.
+                use_ml_temp = .false.
              end if
 
              call alloc_input_data_only_cost(loop_ind(i), input_primary(i))
              call read_input_primary_class(in_files_primary(i), &
-                  input_primary(i), loop_ind(i), .True.,chunk_starts( i_chunk), &
+                  input_primary(i), loop_ind(i), .True., chunk_starts( i_chunk), &
                   use_ml_temp, verbose)
           end do
 
@@ -535,6 +541,7 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
                 end if
              end do
           end do
+
           do k = 1, n_in_files
              if (verbose) write(*,*) '********************************'
              if (verbose) write(*,*) 'read: ', trim(in_files_primary(k))
@@ -543,18 +550,18 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
                 use_ml_temp=.true.
                 call read_input_primary_class(in_files_primary(k), &
                      input_primary(3), loop_ind(k), .False., &
-                     chunk_starts( i_chunk), use_ml_temp, verbose)
+                     chunk_starts(i_chunk), use_ml_temp, verbose)
              else
                 use_ml_temp=.false.
                 call read_input_primary_class(in_files_primary(k), &
                      input_primary(1), loop_ind(k), .False., &
-                     chunk_starts( i_chunk), use_ml_temp, verbose)
+                     chunk_starts(i_chunk), use_ml_temp, verbose)
              end if
 
              if (do_secondary) then
                 if (verbose) write(*,*) 'read: ', trim(in_files_secondary(k))
                 call read_input_secondary_class(in_files_secondary(k), &
-                     input_secondary(1), loop_ind(k),chunk_starts( i_chunk), &
+                     input_secondary(1), loop_ind(k), chunk_starts(i_chunk), &
                      verbose)
              end if
 
@@ -633,7 +640,7 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
                    case(OVERLAP_TYPE)
                       if (use_ml .and. &
                            ! only set if ML cost is less than SL cost
-                           (input_primary(imul)%costjm(i,j) <= &
+                           (input_primary(IMul)%costjm(i,j) <= &
                             input_primary(IIce)%costjm(i,j))) then
                          phase_flag = 3_byte
                       else
@@ -642,7 +649,7 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
                    case default
                       phase_flag = 2_byte
                    end select
-                endif
+                end if
 
                 ! Only consider reclassifying if both phases were processed
                 if (switch_phases) then
@@ -663,7 +670,7 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
                       phase_flag = 1_byte
                       input_primary(0)%cldtype(i,j,1) = SWITCHED_TO_WATER_TYPE
                    end if
-                endif
+                end if
 
                 ! Once phase is selected fill in the values 1st for wat then for
                 ! ice.
