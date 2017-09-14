@@ -182,7 +182,7 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
     logical                      :: use_netcdf_compression = .true.
     logical                      :: use_chunks = .false.
     logical                      :: use_ml
-    logical                      :: use_ml_temp = .false.
+    logical                      :: use_ml_temp
     logical                      :: use_ann_phase = .true.
     logical                      :: verbose = .true.
 
@@ -547,7 +547,12 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
              if (verbose) write(*,*) 'read: ', trim(in_files_primary(k))
 
              if (use_ml) then
-                use_ml_temp=.true.
+                if (k .eq. 3) then
+                   use_ml_temp = .true.
+                else
+                   use_ml_temp = .false.
+                end if
+
                 call read_input_primary_class(in_files_primary(k), &
                      input_primary(3), loop_ind(k), .False., &
                      chunk_starts(i_chunk), use_ml_temp, verbose)
@@ -571,7 +576,7 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
                       if (use_ml) then
                          call copy_class_specific_inputs(i, j, loop_ind(k), &
                               input_primary(0), input_primary(3), &
-                              input_secondary(0), input_secondary(3), &
+                              input_secondary(0), input_secondary(1), &
                               do_secondary)
                       else
                          call copy_class_specific_inputs(i, j, loop_ind(k), &

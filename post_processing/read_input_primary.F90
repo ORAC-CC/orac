@@ -76,7 +76,7 @@ subroutine read_input_primary_common(ncid, input_data, indexing, sval, use_ml, &
    type(input_indices_t),      intent(in)    :: indexing
    integer,                    intent(in)    :: sval
    logical,                    intent(in)    :: verbose
-   logical,                    intent(inout)    :: use_ml
+   logical,                    intent(in)    :: use_ml
 
    integer            :: i, j, i_rho
    character(len=32)  :: input_num
@@ -415,7 +415,7 @@ subroutine read_input_primary_once(nfile, fname, input_data, indexing, &
    if (.not. use_ml) then
       call nc_open(ncid, fname(1))
    else
-      call nc_open(ncid, trim(fname(3)))
+      call nc_open(ncid, fname(3))
    end if
 
    call nc_get_common_attributes(ncid, global_atts, source_atts)
@@ -527,7 +527,7 @@ subroutine read_input_primary_class(fname, input_data, indexing, costonly, &
    logical,                    intent(in)    :: costonly
    integer,                    intent(in)    :: sval
    logical,                    intent(in)    :: verbose
-   logical,                    intent(inout)    :: use_ml
+   logical,                    intent(in)    :: use_ml
 
    integer :: ncid
 
