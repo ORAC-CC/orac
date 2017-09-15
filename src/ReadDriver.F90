@@ -136,6 +136,8 @@
 ! 2017/03/16, GT: Changes for single-view aerosol retrieval mode.
 ! 2017/06/21, OS: Deactivated dumpfile and new driver format option for WRAPPER
 ! 2017/07/12, AP: New QC.
+! 2017/09/14, GM: In ML cases postfix both the upper and lower layer LUT class
+!    names separated by an underscore.
 !
 ! $Id$
 !
@@ -309,12 +311,6 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%FID%Loc    = trim(root_filename)//'.loc.nc'
    Ctrl%FID%Alb    = trim(root_filename)//'.alb.nc'
 
-   ! Output filenames
-   outname=trim(Ctrl%FID%Out_Dir)//'/'//trim(Ctrl%FID%Filename)//trim(Ctrl%LUTClass)
-   Ctrl%FID%L2_primary   = trim(outname)//'.primary.nc'
-   Ctrl%FID%L2_secondary = trim(outname)//'.secondary.nc'
-   Ctrl%FID%BkP          = trim(outname)//'.bkp'
-
    ! Read channel related info
    call read_config_file(Ctrl, channel_ids_instr, channel_sw_flag, &
      channel_lw_flag, channel_wvl, channel_view, global_atts, source_atts, &
@@ -438,6 +434,16 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
          stop error_stop_code
       end if
    end if
+
+   ! Output filenames
+   outname=trim(Ctrl%FID%Out_Dir)//'/'//trim(Ctrl%FID%Filename)//trim(Ctrl%LUTClass)
+   if (Ctrl%Approach == AppCld2L) then
+      outname=trim(outname)//'_'//trim(Ctrl%LUTClass2)
+   end if
+   Ctrl%FID%L2_primary   = trim(outname)//'.primary.nc'
+   Ctrl%FID%L2_secondary = trim(outname)//'.secondary.nc'
+   Ctrl%FID%BkP          = trim(outname)//'.bkp'
+
 
    ! Use a short name for Ctrl%Approach
    a = Ctrl%Approach
@@ -1658,6 +1664,8 @@ subroutine old_driver_first_read(dri_lun, Ctrl)
          if (parse_user_text(line, Ctrl%Class)               /= 0) call h_p_e(label)
       case('CTRL%CLASS2')
          if (parse_user_text(line, Ctrl%Class2)              /= 0) call h_p_e(label)
+      case('CTRL%LUTCLASS2')
+         if (parse_string(line, Ctrl%LUTClass2)              /= 0) call h_p_e(label)
       case('CTRL%DO_NEW_NIGHT_RETRIEVAL')
          if (parse_string(line, Ctrl%do_new_night_retrieval) /= 0) call h_p_e(label)
       case('CTRL%DO_CTX_CORRECTION')
@@ -1736,8 +1744,6 @@ subroutine old_driver_second_read(dri_lun, Ctrl, Nx_Dy, Nx_Tw, Nx_Ni, NXJ_Dy, &
          if (parse_string(line, Ctrl%FID%L2_primary)   /= 0) call h_p_e(label)
       case('CTRL%FID%L2_SECONDARY')
          if (parse_string(line, Ctrl%FID%L2_secondary) /= 0) call h_p_e(label)
-      case('CTRL%LUTCLASS2')
-         if (parse_string(line, Ctrl%LUTClass2)        /= 0) call h_p_e(label)
       case('CTRL%RUN_ID')
          if (parse_string(line, Ctrl%Run_ID)           /= 0) call h_p_e(label)
       case('CTRL%RS%RSSELM','Ctrl%RS%FLAG')
@@ -1890,6 +1896,7 @@ subroutine old_driver_second_read(dri_lun, Ctrl, Nx_Dy, Nx_Tw, Nx_Ni, NXJ_Dy, &
       case('CTRL%APPROACH', &
            'CTRL%CLASS', &
            'CTRL%CLASS2', &
+           'CTRL%LUTCLASS2', &
            'CTRL%DO_NEW_NIGHT_RETRIEVAL', &
            'CTRL%DO_CTX_CORRECTION', &
            'CTRL%VERBOSE')
