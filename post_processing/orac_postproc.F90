@@ -177,14 +177,14 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
     real                         :: cost_thresh = 0.
     real                         :: norm_prob_thresh = .75
     logical                      :: output_optical_props_at_night = .false.
+    logical                      :: use_ann_phase = .true.
     logical                      :: use_bayesian_selection = .false.
     logical                      :: use_new_bayesian_selection = .false.
-    logical                      :: use_netcdf_compression = .true.
     logical                      :: use_chunks = .false.
-    logical                      :: use_ml
-    logical                      :: use_ml_temp
-    logical                      :: use_ann_phase = .true.
+    logical                      :: use_netcdf_compression = .true.
     logical                      :: verbose = .true.
+
+    logical                      :: use_ml
 
     integer                      :: n_in_files
 
@@ -440,23 +440,18 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
        ! This is needed for minimisation of memory overhead, only costs are
        ! loaded in the first instance. Later other data is loaded but only for
        ! the best class
-       !     allocate(indexing%best_infile(indexing%X0:indexing%X1, indexing%Y0:indexing%Y1))
+       !     allocate(indexing%best_infile(indexing%X0:indexing%X1, &
+       !                                   indexing%Y0:indexing%Y1))
        !     do i = 1, n_in_files
        !        nullify(indexing%best_infile)
        !     end do
 
-       ! Read once-only inputs (does not include all retrieved variables on standard ones)
-       if (use_ml) then
-          call alloc_input_data_primary_all(indexing, input_primary(0))
-          call read_input_primary_once(n_in_files, in_files_primary, &
-               input_primary(0), indexing, loop_ind, global_atts, source_atts, &
-               chunk_starts(i_chunk), use_ml, verbose)
-       else
-          call alloc_input_data_primary_all(indexing, input_primary(0))
-          call read_input_primary_once(n_in_files, in_files_primary, &
-               input_primary(0), indexing, loop_ind, global_atts, source_atts, &
-               chunk_starts(i_chunk), use_ml, verbose)
-       end if
+       ! Read once-only inputs (does not include all retrieved variables on
+       ! standard ones)
+       call alloc_input_data_primary_all(indexing, input_primary(0))
+       call read_input_primary_once(n_in_files, in_files_primary, &
+            input_primary(0), indexing, loop_ind, global_atts, source_atts, &
+            chunk_starts(i_chunk), use_ml, verbose)
 
        if (do_secondary) then
           call alloc_input_data_secondary_all(indexing, input_secondary(0))
@@ -468,19 +463,12 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
        ! Read fields that vary from file to file
        if (.not. use_new_bayesian_selection) then
           do i = 1, n_in_files
-
-             if (use_ml .and. i .eq. 3) then
-                use_ml_temp = .true.
-             else
-                use_ml_temp = .false.
-             end if
-
              if (verbose) write(*,*) '********************************'
              if (verbose) write(*,*) 'read: ', trim(in_files_primary(i))
              call alloc_input_data_primary_class(loop_ind(i), input_primary(i))
              call read_input_primary_class(in_files_primary(i), &
                   input_primary(i), loop_ind(i), .False., &
-                  chunk_starts( i_chunk), use_ml_temp, verbose)
+                  chunk_starts( i_chunk), verbose)
              if (do_secondary) then
                 if (verbose) write(*,*) 'read: ', trim(in_files_secondary(i))
                 call alloc_input_data_secondary_class(loop_ind(i), &
@@ -492,11 +480,7 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
           end do
        else ! Use traditional selection method
           ! Allocate a primary array to store temporary input data
-          if (use_ml) then
-             call alloc_input_data_primary_all(indexing, input_primary(3))
-          else
-             call alloc_input_data_primary_all(indexing, input_primary(1))
-          end if
+          call alloc_input_data_primary_all(indexing, input_primary(1))
 
           if (do_secondary) then
              call alloc_input_data_secondary_all(indexing, input_secondary(1))
@@ -504,16 +488,10 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
 
           ! Load only the cost values from input files
           do i = 1, n_in_files
-             if (use_ml .and. i .eq. 3) then
-                use_ml_temp = .true.
-             else
-                use_ml_temp = .false.
-             end if
-
              call alloc_input_data_only_cost(loop_ind(i), input_primary(i))
              call read_input_primary_class(in_files_primary(i), &
                   input_primary(i), loop_ind(i), .True., chunk_starts( i_chunk), &
-                  use_ml_temp, verbose)
+                  verbose)
           end do
 
           ! Find the input file with the lowest cost for each pixel
@@ -546,22 +524,9 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
              if (verbose) write(*,*) '********************************'
              if (verbose) write(*,*) 'read: ', trim(in_files_primary(k))
 
-             if (use_ml) then
-                if (k .eq. 3) then
-                   use_ml_temp = .true.
-                else
-                   use_ml_temp = .false.
-                end if
-
-                call read_input_primary_class(in_files_primary(k), &
-                     input_primary(3), loop_ind(k), .False., &
-                     chunk_starts(i_chunk), use_ml_temp, verbose)
-             else
-                use_ml_temp=.false.
-                call read_input_primary_class(in_files_primary(k), &
-                     input_primary(1), loop_ind(k), .False., &
-                     chunk_starts(i_chunk), use_ml_temp, verbose)
-             end if
+             call read_input_primary_class(in_files_primary(k), &
+                  input_primary(1), loop_ind(k), .False., &
+                  chunk_starts(i_chunk), verbose)
 
              if (do_secondary) then
                 if (verbose) write(*,*) 'read: ', trim(in_files_secondary(k))
@@ -573,17 +538,10 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
              do j=indexing%Y0,indexing%Y1
                 do i=indexing%X0,indexing%X1
                    if (input_primary(0)%phase(i,j) .eq. k) then
-                      if (use_ml) then
-                         call copy_class_specific_inputs(i, j, loop_ind(k), &
-                              input_primary(0), input_primary(3), &
-                              input_secondary(0), input_secondary(1), &
-                              do_secondary)
-                      else
-                         call copy_class_specific_inputs(i, j, loop_ind(k), &
-                              input_primary(0), input_primary(1), &
-                              input_secondary(0), input_secondary(1), &
-                              do_secondary)
-                      end if
+                      call copy_class_specific_inputs(i, j, loop_ind(k), &
+                           input_primary(0), input_primary(1), &
+                           input_secondary(0), input_secondary(1), &
+                           do_secondary)
                       input_primary(0)%phase(i,j) = k
                    end if
                 end do

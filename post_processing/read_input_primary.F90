@@ -64,8 +64,7 @@ subroutine read_input_primary_cost_only(ncid, input_data, sval, verbose)
 end subroutine read_input_primary_cost_only
 
 
-subroutine read_input_primary_common(ncid, input_data, indexing, sval, use_ml, &
-        verbose)
+subroutine read_input_primary_common(ncid, input_data, indexing, sval, verbose)
 
    use orac_ncdf_m
 
@@ -76,7 +75,6 @@ subroutine read_input_primary_common(ncid, input_data, indexing, sval, use_ml, &
    type(input_indices_t),      intent(in)    :: indexing
    integer,                    intent(in)    :: sval
    logical,                    intent(in)    :: verbose
-   logical,                    intent(in)    :: use_ml
 
    integer            :: i, j, i_rho
    character(len=32)  :: input_num
@@ -245,7 +243,7 @@ if (indexing%flags%do_cloud) then
    end do
 end if
 
-if (use_ml) then
+if (indexing%flags%do_cloud_layer_2) then
    call nc_read_packed_array(ncid, "cot2", input_data%cot2, verbose, &
         startp = [1, sval])
    call nc_read_packed_array(ncid, "cot2_uncertainty", &
@@ -515,7 +513,7 @@ end subroutine read_input_primary_once
 
 
 subroutine read_input_primary_class(fname, input_data, indexing, costonly, &
-     sval, use_ml, verbose)
+     sval, verbose)
 
    use orac_ncdf_m
 
@@ -527,15 +525,13 @@ subroutine read_input_primary_class(fname, input_data, indexing, costonly, &
    logical,                    intent(in)    :: costonly
    integer,                    intent(in)    :: sval
    logical,                    intent(in)    :: verbose
-   logical,                    intent(in)    :: use_ml
 
    integer :: ncid
 
    if (verbose) write(*,*) 'Opening primary input file: ', trim(fname)
    call nc_open(ncid,fname)
    if (.not. costonly) then
-      call read_input_primary_common(ncid, input_data, indexing, sval, use_ml, &
-        verbose)
+      call read_input_primary_common(ncid, input_data, indexing, sval, verbose)
    else
       call read_input_primary_cost_only(ncid, input_data, sval, verbose)
    end if
