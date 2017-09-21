@@ -283,7 +283,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    end if
    rewind dri_lun
 
-   new_driver_format = line(1:18) == '# ORAC New Driver File'
+   new_driver_format = line(1:22) == '# ORAC New Driver File'
 #ifdef WRAPPER
    new_driver_format = .false.
 #endif
