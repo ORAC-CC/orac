@@ -477,6 +477,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file,s
    do_spectral_response_correction       = .false.
    use_occci               = .false.
    occci_path              = ' '
+   predef_geo_file			= ' '
 
    ! if more than one argument passed, all inputs on command line
    if (nargs .gt. 1) then

@@ -571,7 +571,7 @@ subroutine read_slstr_demdata(indir,data_arr,nx,ny)
    ierr=nf90_inq_varid(fid, trim(var), did)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: read_slstr_geodata(): Error opening dataset ', &
-           trim(var),' in ',trim(geofile)
+           trim(var),' in ',trim(geofile),ierr
       stop error_stop_code
    end if
 
@@ -746,7 +746,7 @@ subroutine get_slstr_obgridsize(indir,nx,ny)
 
    ierr=nf90_open(path=trim(adjustl(geofile)),mode=NF90_NOWRITE,ncid=fid)
    if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: get_slstr_txgridsize(): Error opening file ',trim(geofile)
+      print*,'ERROR: get_slstr_obgridsize(): Error opening file ',trim(geofile)
       stop error_stop_code
    end if
 
@@ -754,7 +754,7 @@ subroutine get_slstr_obgridsize(indir,nx,ny)
    nx=nc_dim_length(fid,'columns',.false.)
    ierr=nf90_close(fid)
    if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: get_slstr_txgridsize(): Error closing file ',trim(geofile)
+      print*,'ERROR: get_slstr_obgridsize(): Error closing file ',trim(geofile)
       stop error_stop_code
    end if
 end subroutine get_slstr_obgridsize
