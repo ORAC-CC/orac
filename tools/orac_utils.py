@@ -1491,7 +1491,7 @@ def build_main_driver(args):
     inst = FileName(args.target)
 
     # Form mandatory driver file lines
-    driver = """# ORAC Driver File
+    driver = """# ORAC New Driver File
 Ctrl%FID%Data_Dir          = "{in_dir}"
 Ctrl%FID%Filename          = "{fileroot}"
 Ctrl%FID%Out_Dir           = "{out_dir}"
