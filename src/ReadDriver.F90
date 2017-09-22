@@ -391,7 +391,6 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    end do
    Ctrl%Ind%NWvl = ii
 
-   print*,"A",Ctrl%Class,Ctrl%Approach,Ctrl%LUTClass
    if (Ctrl%Approach == -1) then
       ! Approach not set, so deduce from LUTClass
       if (Ctrl%LUTClass(1:3) == 'WAT') then
@@ -431,7 +430,6 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       else if (Ctrl%Approach == AppAerO1) then
          Ctrl%Class = ClsAerOx
       else
-      	print*,"B",Ctrl%Class,Ctrl%Approach,Ctrl%LUTClass
          write(*,*) 'ERROR: Read_Driver(): Invalid Ctrl%Approach:', Ctrl%Approach
          stop error_stop_code
       end if
