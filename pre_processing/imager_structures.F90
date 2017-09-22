@@ -88,11 +88,11 @@ module imager_structures_m
       integer(kind=sint), dimension(:,:),   pointer :: sfctype
       integer(kind=byte), dimension(:,:,:), pointer :: cldtype
       integer(kind=byte), dimension(:,:,:), pointer :: cldmask
-      real(kind=sreal),   dimension(:,:,:), pointer :: cccot_pre
       real(kind=sreal),   dimension(:,:,:), pointer :: cldmask_uncertainty
+      real(kind=sreal),   dimension(:,:,:), pointer :: cccot_pre
       integer(kind=byte), dimension(:,:,:), pointer :: ann_phase
-      real(kind=sreal),   dimension(:,:,:), pointer :: cphcot
       real(kind=sreal),   dimension(:,:,:), pointer :: ann_phase_uncertainty
+      real(kind=sreal),   dimension(:,:,:), pointer :: cphcot
       integer(kind=byte), dimension(:,:,:), pointer :: cirrus_quality
       real(kind=sreal),   dimension(:,:,:), pointer :: emis_ch3b
 

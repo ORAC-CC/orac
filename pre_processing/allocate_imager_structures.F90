@@ -61,6 +61,16 @@ subroutine allocate_imager_structures(imager_geolocation,imager_angles, &
    type(imager_cloud_t),        intent(out)   :: imager_cloud
    type(channel_info_t),        intent(in)    :: channel_info
 
+   allocate(imager_measurements%data( &
+        imager_geolocation%startx:imager_geolocation%endx, &
+        1:imager_geolocation%ny,1:channel_info%nchannels_total))
+   imager_measurements%data=sreal_fill_value
+
+   allocate(imager_measurements%uncertainty( &
+        imager_geolocation%startx:imager_geolocation%endx, &
+        1:imager_geolocation%ny,1:channel_info%nchannels_total))
+   imager_measurements%uncertainty=sreal_fill_value
+
    allocate(imager_geolocation%latitude( &
         imager_geolocation%startx:imager_geolocation%endx, &
         1:imager_geolocation%ny))
@@ -116,25 +126,15 @@ subroutine allocate_imager_structures(imager_geolocation,imager_angles, &
         1:imager_geolocation%ny))
    imager_time%time=dreal_fill_value
 
-   allocate(imager_measurements%data( &
+   allocate(imager_pavolonis%sfctype( &
         imager_geolocation%startx:imager_geolocation%endx, &
-        1:imager_geolocation%ny,1:channel_info%nchannels_total))
-   imager_measurements%data=sreal_fill_value
-
-   allocate(imager_measurements%uncertainty( &
-        imager_geolocation%startx:imager_geolocation%endx, &
-        1:imager_geolocation%ny,1:channel_info%nchannels_total))
-   imager_measurements%uncertainty=sreal_fill_value
+        1:imager_geolocation%ny))
+   imager_pavolonis%sfctype=sint_fill_value
 
    allocate(imager_pavolonis%cldtype( &
         imager_geolocation%startx:imager_geolocation%endx, &
         1:imager_geolocation%ny,imager_angles%nviews))
    imager_pavolonis%cldtype=byte_fill_value
-
-   allocate(imager_pavolonis%sfctype( &
-        imager_geolocation%startx:imager_geolocation%endx, &
-        1:imager_geolocation%ny))
-   imager_pavolonis%sfctype=sint_fill_value
 
    allocate(imager_pavolonis%cldmask( &
         imager_geolocation%startx:imager_geolocation%endx, &
