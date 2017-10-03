@@ -1,21 +1,24 @@
 !-------------------------------------------------------------------------------
-! Name: Locate.F90
+! Name: locate.F90
 !
 ! Purpose:
-! Finds the location of the pair of values in the set xx that bound x
+! Find the location of a value in an ascending or descending sorted array.
 !
 ! Description and Algorithm details:
-! From Numerical Recipes in Fortran 90 [Press, Flannery].
+! Bisection.
 !
 ! Arguments:
-! Name   Type       In/Out/Both Description
+! Name Type       In/Out/Both Description
 ! ------------------------------------------------------------------------------
-! xx     real array In          Sorted array to search
-! x      real       In          Value to search for
-! locate int        Out         Index of array element that bounds x
+! a    real array In          Sorted array to search
+! x    real       In          Value to search for
+!
+! Return value:
+! Index i such that a(i) <= x < a(i+1) or zero or size(a) if x falls to the left
+! of a(1) or to the right of a(size(a)), respectively.
 !
 ! History:
-! 2009/04/22, CA: Original version
+! 2017/10/02, GM: Original version
 !
 ! $Id$
 !
@@ -23,31 +26,49 @@
 ! None known.
 !---------------------------------------------------------------------
 
-function locate(xx,x)
+function locate(a,x) result(low)
+
    implicit none
-   real, dimension(:), intent(in) :: xx
-   real,               intent(in) :: x
-   integer :: locate
-   integer :: n,jl,jm,ju
-   logical :: ascnd
-   n=size(xx)
-   ascnd = (xx(n) >= xx(1))
-   jl=0
-   ju=n+1
-   do
-      if (ju-jl <= 1) exit
-      jm=(ju+jl)/2
-      if (ascnd .eqv. (x >= xx(jm))) then
-         jl=jm
+
+   real, intent(in) :: a(:)
+   real, intent(in) :: x
+
+   logical :: ascending
+   integer :: n, low, mid, up, offset
+
+   n = size(a)
+
+   ascending = a(1) .le. a(n)
+
+   if (ascending) then
+      if (x .lt. a(1)) then
+         low = 0
+         return
+      else if (x .gt. a(n)) then
+         low = n
+         return
+      end if
+   else
+      if (x .gt. a(1)) then
+         low = 0
+         return
+      else if (x .lt. a(n)) then
+         low = n
+         return
+      end if
+   end if
+
+   low = 1
+   up  = n
+
+   do while (low + 1 .lt. up)
+      mid = (low + up) / 2;
+
+      if (ascending .eqv. (a(mid) .le. x)) then
+         low = mid
       else
-         ju=jm
+         up  = mid
       end if
    end do
-   if (x == xx(1)) then
-      locate=1
-   else if (x == xx(n)) then
-      locate=n-1
-   else
-      locate=jl
-   end if
-end function Locate
+
+end function locate
