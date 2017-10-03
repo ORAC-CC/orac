@@ -2,11 +2,27 @@
 ! Name: calender.F90
 !
 ! Purpose:
+! Calender/time routines.
+!
+! Description and Algorithm details:
+! The original routines were provided as public domain by:
+!    David G. Simpson
+!    NASA Goddard Space Flight Center
+!    Greenbelt, Maryland  20771
+! and are available at
+!   http://caps.gsfc.nasa.gov/simpson/software
+!
+! The code within has been modified for use in ORAC including conversion from
+! stand-alone programs to subroutines.
+!
+! The original source of the algorithms is:
+! "Astronomical Algorithms" (2nd ed.) by Jean Meeus (Willmann-Bell, Richmond,
+! Virginia, USA, 2009).
 !
 ! History:
-! 2012/06/15, MJ: collects routines and adapts them for ORAC use from
+! 2012/06/15, MJ: Collect routines and adapt them for ORAC use from
 !    http://caps.gsfc.nasa.gov/simpson/software
-! 2015/11/20: Refreshed with upstream and put into subroutines.
+! 2015/11/20, GM: Refreshed with upstream and put into subroutines.
 !
 ! $Id$
 !
