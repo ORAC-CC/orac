@@ -224,11 +224,12 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    call Nullify_Ctrl(Ctrl)
 
 
-   ! Initialise some important variables
+   ! Initialise some important variables before first driver file read
    Ctrl%verbose                = .true.
    Ctrl%Approach               = -1
    Ctrl%Class                  = -1
    Ctrl%Class2                 = -1
+   Ctrl%use_ann_phase          = .true.
    Ctrl%do_new_night_retrieval = .true.
    Ctrl%do_CTX_correction      = .true.
 
@@ -616,7 +617,18 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
 
    ! Set cloud types to process depending on requested LUT
    Ctrl%Types_to_process = byte_fill_value
-   if (Ctrl%Approach == AppCld1L .and. Ctrl%Class == ClsCldWat) then
+   if (Ctrl%use_ann_phase .and. Ctrl%Approach == AppCld1L .and. &
+       Ctrl%Class == ClsCldWat) then
+      Ctrl%NTypes_to_process   = 1
+      Ctrl%Types_to_process(1) = LIQUID
+
+   else if (Ctrl%use_ann_phase .and. Ctrl%Approach == AppCld1L .and. &
+            Ctrl%Class == ClsCldIce) then
+      Ctrl%NTypes_to_process   = 1
+      Ctrl%Types_to_process(1) = ICE
+
+   else if (.not. Ctrl%use_ann_phase .and. Ctrl%Approach == AppCld1L .and. &
+            Ctrl%Class == ClsCldWat) then
       Ctrl%NTypes_to_process   = 3
       Ctrl%Types_to_process(1) = FOG_TYPE
       Ctrl%Types_to_process(2) = WATER_TYPE
@@ -626,7 +638,9 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
          Ctrl%Types_to_process(4) = CLEAR_TYPE
          Ctrl%Types_to_process(5) = PROB_CLEAR_TYPE
       end if
-   else if (Ctrl%Approach == AppCld1L .and. Ctrl%Class == ClsCldIce) then
+
+   else if (.not. Ctrl%use_ann_phase .and. Ctrl%Approach == AppCld1L .and. &
+            Ctrl%Class == ClsCldIce) then
       Ctrl%NTypes_to_process   = 4
       Ctrl%Types_to_process(1) = OPAQUE_ICE_TYPE
       Ctrl%Types_to_process(2) = CIRRUS_TYPE
@@ -637,9 +651,16 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
          Ctrl%Types_to_process(5) = CLEAR_TYPE
          Ctrl%Types_to_process(6) = PROB_CLEAR_TYPE
       end if
-   else if (Ctrl%Approach == AppCld2L) then
+
+   else if (Ctrl%use_ann_phase .and. Ctrl%Approach == AppCld2L) then
+         write(*,*) 'ERROR: Read_Driver(): Ctrl%use_ann_phase=true with '// &
+                    'Ctrl%Approach=AppCld2L currently not supported'
+         stop error_stop_code
+
+   else if (.not. Ctrl%use_ann_phase .and. Ctrl%Approach == AppCld2L) then
       Ctrl%NTypes_to_process   = 1
       Ctrl%Types_to_process(1) = OVERLAP_TYPE
+
    else
       ! Accept everything
       Ctrl%NTypes_to_process   = MaxTypes
@@ -1679,6 +1700,8 @@ subroutine old_driver_first_read(dri_lun, Ctrl)
          if (parse_user_text(line, Ctrl%Class2)              /= 0) call h_p_e(label)
       case('CTRL%LUTCLASS2')
          if (parse_string(line, Ctrl%LUTClass2)              /= 0) call h_p_e(label)
+      case('CTRL%USE_ANN_PHASE')
+         if (parse_string(line, Ctrl%use_ann_phase)    /= 0) call h_p_e(label)
       case('CTRL%DO_NEW_NIGHT_RETRIEVAL')
          if (parse_string(line, Ctrl%do_new_night_retrieval) /= 0) call h_p_e(label)
       case('CTRL%DO_CTX_CORRECTION')

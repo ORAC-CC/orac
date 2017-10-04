@@ -115,7 +115,11 @@ subroutine Read_CloudFlags_nc(Ctrl, MSI_Data)
    call nc_read_array(ncid, "cphcot", MSI_Data%cphcot, Ctrl%verbose)
 
    ! Merge various particle type flags (once aerosol is in)
-   MSI_Data%Type = MSI_Data%cldtype(:,:,1) ! Nadir
+   if (Ctrl%use_ann_phase) then
+      MSI_Data%Type = MSI_Data%ann_phase(:,:,1) ! Nadir
+   else
+      MSI_Data%Type = MSI_Data%cldtype(:,:,1) ! Nadir
+   end if
 
    if (Ctrl%process_cloudy_only) then
       ! Invalidate clear-sky pixels to 0 to avoid their processing

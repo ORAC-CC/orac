@@ -153,7 +153,6 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
     use postproc_utils_m
     use prepare_output_pp_m
     use source_attributes_m
-    use constants_cloud_typing_pavolonis_m
 
     implicit none
 
