@@ -1298,8 +1298,9 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
 
 
    !----------------------------------------------------------------------------
-   ! Now do some checks
+   ! Now do some input checks
    !----------------------------------------------------------------------------
+
    ! Check that the first-guess methods for all variables are legal in ORAC
    ! and supported. Not all legal values are supported for all variables.
    ! N.B. not all supported methods can be used in all conditions and this is
@@ -1421,6 +1422,18 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
            'reflectance model with full BRDF equations supported via '// &
            'Ctrl%Class = ClsAerBR'
       stop GetSurfaceMeth
+   end if
+
+   ! The upper layer is not allowed to be below the lower layer.
+   if (Ctrl%XB(IPc) .gt. Ctrl%XB(IPc2)) then
+      write(*,*) 'ERROR: Read_Driver(): Ctrl%XB(IPc) cannot be greater than '// &
+                 'Ctrl%XB(IPc2): ', Ctrl%XB(IPc), ' > ', Ctrl%XB(IPc2)
+      stop error_stop_code
+   end if
+   if (Ctrl%X0(IPc) .gt. Ctrl%X0(IPc2)) then
+      write(*,*) 'ERROR: Read_Driver(): Ctrl%X0(IPc) cannot be greater than '// &
+                 'Ctrl%X0(IPc2): ', Ctrl%X0(IPc), ' > ', Ctrl%X0(IPc2)
+      stop error_stop_code
    end if
 
 
