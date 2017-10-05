@@ -1451,15 +1451,17 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    end if
 
    ! The upper layer is not allowed to be below the lower layer.
-   if (Ctrl%XB(IPc) .gt. Ctrl%XB(IPc2)) then
-      write(*,*) 'ERROR: Read_Driver(): Ctrl%XB(IPc) cannot be greater than '// &
-                 'Ctrl%XB(IPc2): ', Ctrl%XB(IPc), ' > ', Ctrl%XB(IPc2)
-      stop error_stop_code
-   end if
-   if (Ctrl%X0(IPc) .gt. Ctrl%X0(IPc2)) then
-      write(*,*) 'ERROR: Read_Driver(): Ctrl%X0(IPc) cannot be greater than '// &
-                 'Ctrl%X0(IPc2): ', Ctrl%X0(IPc), ' > ', Ctrl%X0(IPc2)
-      stop error_stop_code
+   if (Ctrl%Approach == AppCld2L) then
+      if (Ctrl%XB(IPc) .gt. Ctrl%XB(IPc2)) then
+         write(*,*) 'ERROR: Read_Driver(): Ctrl%XB(IPc) cannot be greater than '// &
+                    'Ctrl%XB(IPc2): ', Ctrl%XB(IPc), ' > ', Ctrl%XB(IPc2)
+         stop error_stop_code
+      end if
+      if (Ctrl%X0(IPc) .gt. Ctrl%X0(IPc2)) then
+         write(*,*) 'ERROR: Read_Driver(): Ctrl%X0(IPc) cannot be greater than '// &
+                    'Ctrl%X0(IPc2): ', Ctrl%X0(IPc), ' > ', Ctrl%X0(IPc2)
+         stop error_stop_code
+      end if
    end if
 
 
