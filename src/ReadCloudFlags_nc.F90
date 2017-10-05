@@ -65,6 +65,7 @@
 ! 2016/05/31, GT: Added Ctrl%process_aerosol_only code
 ! 2016/07/15, GT: Ctrl%process_aerosol_only now checks cloud mask in all views.
 ! 2017/06/21, OS: Added ANN phase variables.
+! 2017/10/04, GM: Add the option to use ANN phase to select pixels to process.
 !
 ! $Id$
 !

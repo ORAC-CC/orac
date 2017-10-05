@@ -138,6 +138,7 @@
 ! 2017/07/12, AP: New QC.
 ! 2017/09/14, GM: In ML cases postfix both the upper and lower layer LUT class
 !    names separated by an underscore.
+! 2017/10/04, GM: Add the option to use ANN phase to select pixels to process.
 !
 ! $Id$
 !
@@ -1701,7 +1702,7 @@ subroutine old_driver_first_read(dri_lun, Ctrl)
       case('CTRL%LUTCLASS2')
          if (parse_string(line, Ctrl%LUTClass2)              /= 0) call h_p_e(label)
       case('CTRL%USE_ANN_PHASE')
-         if (parse_string(line, Ctrl%use_ann_phase)    /= 0) call h_p_e(label)
+         if (parse_string(line, Ctrl%use_ann_phase)          /= 0) call h_p_e(label)
       case('CTRL%DO_NEW_NIGHT_RETRIEVAL')
          if (parse_string(line, Ctrl%do_new_night_retrieval) /= 0) call h_p_e(label)
       case('CTRL%DO_CTX_CORRECTION')
@@ -1933,6 +1934,7 @@ subroutine old_driver_second_read(dri_lun, Ctrl, Nx_Dy, Nx_Tw, Nx_Ni, NXJ_Dy, &
            'CTRL%CLASS', &
            'CTRL%CLASS2', &
            'CTRL%LUTCLASS2', &
+           'CTRL%USE_ANN_PHASE', &
            'CTRL%DO_NEW_NIGHT_RETRIEVAL', &
            'CTRL%DO_CTX_CORRECTION', &
            'CTRL%VERBOSE')
