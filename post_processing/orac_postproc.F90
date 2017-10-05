@@ -123,9 +123,7 @@
 !    no multilayer phase flag will be set!
 ! 2017/09/05, CP: Added logical flag at the top of the driver file to turn on
 !    ML post processing.
-! 2017/09/14, GM: Add use_ann_phase option to the driver file.
-! 2017/09/14, GM: Force the use of the Pavolonis based phase if multilayer
-!    processing.
+! 2017/10/05, GM: Get the value of use_ann_phase from the input files.
 !
 ! $Id$
 !
@@ -176,7 +174,7 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
     real                         :: cost_thresh = 0.
     real                         :: norm_prob_thresh = .75
     logical                      :: output_optical_props_at_night = .false.
-    logical                      :: use_ann_phase = .true.
+    logical                      :: use_ann_phase
     logical                      :: use_bayesian_selection = .false.
     logical                      :: use_new_bayesian_selection = .false.
     logical                      :: use_chunks = .false.
@@ -186,6 +184,9 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
     logical                      :: use_ml
 
     integer                      :: n_in_files
+
+    integer                      :: ncid, ierr
+    integer                      :: ann_phase_used, ann_phase_used2
 
     character(len=path_length)   :: path_and_file
 
@@ -293,9 +294,6 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
        case('OUTPUT_OPTICAL_PROPS_AT_NIGHT')
           if (parse_string(value, output_optical_props_at_night) /= 0) &
                call handle_parse_error(label)
-       case('USE_ANN_PHASE')
-          if (parse_string(value, use_ann_phase) /= 0) &
-               call handle_parse_error(label)
        case('USE_BAYESIAN_SELECTION')
           if (parse_string(value, use_bayesian_selection) /= 0) &
                call handle_parse_error(label)
@@ -327,11 +325,6 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
     end do
     close(11)
 
-    ! If processing ML for ANN phase selection off as it does not have a ML flag
-    if (use_ml) then
-       use_ann_phase = .false.
-    end if
-
     ! If using new bayesian selection then ensure both bayesian flags are true
     if (use_new_bayesian_selection) then
        use_bayesian_selection = .true.
@@ -355,6 +348,18 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
        write(*,*) 'switch_phases = ', switch_phases
        write(*,*) 'use_chunks = ', use_chunks
        write(*,*) 'use_ml = ', use_ml
+    end if
+
+    ! Find which non-Bayesian selection to use
+    if (.not. use_bayesian_selection) then
+       call get_use_ann_phase(in_files_primary, n_in_files, use_ann_phase, &
+                              verbose)
+
+       ! ANN phase does not have an ML flag
+       if (use_ml .and. use_ann_phase) then
+          write(*,*) 'ERROR: ANN phase selection does not have ML support'
+          stop error_stop_code
+       end if
     end if
 
     ! Determine which channels/views exist across all input files

@@ -639,7 +639,7 @@ subroutine orac(mytask,ntasks,lower_bound,upper_bound,drifile)
       call nc_create(Ctrl%FID%L2_primary, ncid_primary, Ctrl%Ind%Xdim, &
            Ctrl%Ind%Ydim, Ctrl%Ind%NViews, dims_var, 1, global_atts,  &
            source_atts, Ctrl%Ind%Ny, ch_var, Ctrl%Nx(IDay), &
-           Ctrl%LUTClass, bitmask)
+           Ctrl%LUTClass, Ctrl%use_ann_phase, bitmask)
    else
       call nc_create(Ctrl%FID%L2_primary, ncid_primary, Ctrl%Ind%Xdim, &
            Ctrl%Ind%Ydim, Ctrl%Ind%NViews, dims_var, 1, global_atts, source_atts)

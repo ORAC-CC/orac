@@ -2,8 +2,8 @@
 ! Name: orac_nc_utils.F90
 !
 ! Purpose:
-! File with ORAC specific NetCDF i/o convience routines not appropriate for the
-! more general nc_* files.
+! File with ORAC specific NetCDF i/o convenience routines not appropriate for
+! the more general nc_* files.
 !
 ! $Id$
 !-------------------------------------------------------------------------------
@@ -26,12 +26,14 @@
 ! 2015/07/16, GM: Original version.
 ! 2016/04/28, AP: Make multiple views mandatory.
 ! 2017/07/10, AP: Stop using CLASSIC_MODE such that int64 fields can be saved.
+! 2017/10/05, GM: Add ann_phase_used attribute.
+
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
 
 subroutine nc_create(path, ncid, nx, ny, nview, dims_var, type, global_atts, &
-     source_atts, nch, ch_var, nstate, LUT_class, do_flags)
+     source_atts, nch, ch_var, nstate, LUT_class, ann_phase_used, do_flags)
 
    use netcdf
 
@@ -58,10 +60,12 @@ subroutine nc_create(path, ncid, nx, ny, nview, dims_var, type, global_atts, &
    integer,          optional,intent(out)   :: ch_var(1)
    integer,          optional,intent(in)    :: nstate
    character(len=*), optional,intent(in)    :: LUT_class
+   logical,          optional,intent(in)    :: ann_phase_used
    integer,          optional,intent(in)    :: do_flags
 
    ! Local
    integer :: ierr
+   integer :: temp
 
 
    !----------------------------------------------------------------------------
@@ -119,6 +123,21 @@ subroutine nc_create(path, ncid, nx, ny, nview, dims_var, type, global_atts, &
       if (ierr.ne.NF90_NOERR) then
          write(*,*) 'ERROR: nf90_put_att(), ', trim(nf90_strerror(ierr)), &
               ', name: LUT_class'
+         stop error_stop_code
+      end if
+   end if
+
+   ! Optionally list the ANN_phase_used flag for this file
+   if (present(ann_phase_used)) then
+      if (ann_phase_used) then
+         temp = 1
+      else
+         temp = 0
+      end if
+      ierr = nf90_put_att(ncid, NF90_GLOBAL, 'ANN_phase_used', temp)
+      if (ierr.ne.NF90_NOERR) then
+         write(*,*) 'ERROR: nf90_put_att(), ', trim(nf90_strerror(ierr)), &
+              ', name: ANN_phase_use'
          stop error_stop_code
       end if
    end if

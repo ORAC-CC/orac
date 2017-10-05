@@ -12,6 +12,7 @@
 ! 2016/07/19, AP: Reduce rho and swansea_s to only contain terms that were
 !    retrieved. This is indicated by the rho|ss_terms array (and Nrho|Nss).
 ! 2017/01/09, CP: ML additions.
+! 2017/10/05, GM: Add subroutine get_use_ann_phase().
 !
 ! $Id$
 !
@@ -24,6 +25,55 @@ module postproc_utils_m
    implicit none
 
 contains
+
+subroutine get_use_ann_phase(in_files, n_in_files, use_ann_phase, verbose)
+
+   use orac_ncdf_m
+
+   implicit none
+
+   character(len=*), intent(in)  :: in_files(:)
+   integer,          intent(in)  :: n_in_files
+   logical,          intent(out) :: use_ann_phase
+   logical,          intent(in)  :: verbose
+
+   integer :: i
+   integer :: ncid, ierr
+   integer :: ann_phase_used, ann_phase_used2
+
+   do i = 1, n_in_files
+      call nc_open(ncid, in_files(i))
+
+      ierr = nf90_get_att(ncid, NF90_GLOBAL, 'ANN_phase_used', ann_phase_used2)
+      if (ierr /= NF90_NOERR) then
+         write(*,*) 'ERROR: read_input_dimensions(), ', trim(nf90_strerror(ierr)), &
+              ', name: ANN_phase_used'
+         stop error_stop_code
+      end if
+
+      if (i == 1) then
+          ann_phase_used  = ann_phase_used2
+      end if
+      if (ann_phase_used /= ann_phase_used2) then
+         write(*,*) 'ERROR: ANN_phase_used global attribute must be '// &
+                    'the same for all input files'
+         stop error_stop_code
+      end if
+
+      if (nf90_close(ncid) .ne. NF90_NOERR) then
+         write(*,*) 'ERROR: nf90_close()'
+         stop error_stop_code
+      end if
+   end do
+
+   if (ann_phase_used == 1) then
+      use_ann_phase = .true.
+   else
+      use_ann_phase = .false.
+   end if
+
+end subroutine get_use_ann_phase
+
 
 subroutine copy_class_specific_inputs(i, j, indexing, primary2, primary1, &
                                       secondary2, secondary1, do_secondary)
