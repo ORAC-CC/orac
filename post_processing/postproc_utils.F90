@@ -46,8 +46,7 @@ subroutine get_use_ann_phase(in_files, n_in_files, use_ann_phase, verbose)
 
       ierr = nf90_get_att(ncid, NF90_GLOBAL, 'ANN_phase_used', ann_phase_used2)
       if (ierr /= NF90_NOERR) then
-         write(*,*) 'ERROR: read_input_dimensions(), ', trim(nf90_strerror(ierr)), &
-              ', name: ANN_phase_used'
+         write(*,*) 'ERROR: get_use_ann_phase(), ', trim(nf90_strerror(ierr))
          stop error_stop_code
       end if
 

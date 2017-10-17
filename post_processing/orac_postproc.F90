@@ -185,9 +185,6 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
 
     integer                      :: n_in_files
 
-    integer                      :: ncid, ierr
-    integer                      :: ann_phase_used, ann_phase_used2
-
     character(len=path_length)   :: path_and_file
 
     character(len=path_length)   :: in_files_primary(MaxInFiles), &
