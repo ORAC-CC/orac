@@ -1,4 +1,10 @@
 !-----------------------------------------------------------------------
+! This code is part of the International MODIS/AIRS Processing Package
+! (IMAPP) licensed under the GNU General Public License (GPL), Version
+! 3, and available at http://cimss.ssec.wisc.edu/imapp/.
+!-----------------------------------------------------------------------
+
+!-----------------------------------------------------------------------
 ! !F77-INC
 !
 ! !DESCRIPTION:

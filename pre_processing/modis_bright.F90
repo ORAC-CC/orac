@@ -1,5 +1,11 @@
+!-----------------------------------------------------------------------
+! This code is part of the International MODIS/AIRS Processing Package
+! (IMAPP) licensed under the GNU General Public License (GPL), Version
+! 3, and available at http://cimss.ssec.wisc.edu/imapp/.
+!
 ! History (relative to upstream):
 ! 08/12/2016, CP: For ifort compilation add end function statements.
+!-----------------------------------------------------------------------
 
 
       REAL FUNCTION MODIS_BRIGHT(platform_name, RAD, BAND, UNITS)
