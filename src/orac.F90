@@ -262,10 +262,6 @@ subroutine orac(mytask,ntasks,lower_bound,upper_bound,drifile)
    real(kind=dreal)   :: r0,r1,r2,r3,rtc
    real(kind=dreal)   :: cpu_secs,real_secs
 #endif
-#ifdef BKP
-   integer            :: ios
-   integer            :: bkp_lun ! Unit number for breakpoint file
-#endif
 #ifdef USE_ADAPTIVE_PROCESSING
    logical            :: lhres
    real(kind=sreal)   :: range_lat(2),range_lon(2)
@@ -326,22 +322,6 @@ subroutine orac(mytask,ntasks,lower_bound,upper_bound,drifile)
    Ctrl%Ind%flags%do_ann_phase_uncertainty = .true.
    Ctrl%Ind%flags%do_phase               = .false.
    Ctrl%Ind%flags%do_covariance          = .false.
-
-#ifdef BKP
-   ! Clear the breakpoint file (if breakpoints required)
-   if (Ctrl%Bkpl > 0) then
-      call find_lun(bkp_lun)
-      open(unit=bkp_lun, file=Ctrl%FID%Bkp, status='replace', iostat=ios)
-      if (ios /= 0) then
-         write(*,*) 'ERROR: Read_SAD_LUT(): Error opening breakpoint file'
-         stop BkpFileOpenErr
-      end if
-      write(bkp_lun, *)' ORAC breakpoint output'
-      write(bkp_lun, *)' Run ID: ', Ctrl%Run_ID
-      write(bkp_lun, *)
-      close(unit=bkp_lun)
-   end if
-#endif
 
    ! Set the size of the SAD_Chan and Cloud Class arrays based on the Ctrl
    ! parameters and read the SAD values.

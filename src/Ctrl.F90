@@ -132,7 +132,6 @@ module Ctrl_m
       character(FilenameLen) :: Geo                ! Geometry (sun-satellite)
       character(FilenameLen) :: Loc                ! Location (latitudes/longs)
       character(FilenameLen) :: Alb                ! Surface albedo, emissivity
-      character(FilenameLen) :: BkP                ! Break-Point file
       character(FilenameLen) :: L2_primary         ! Primary output file
       character(FilenameLen) :: L2_secondary       ! Secondary output file
    end type FID_t
@@ -272,7 +271,6 @@ module Ctrl_m
                                                    ! See RTMIntMeth variables.
       integer                :: CloudType          ! Defines the homog/coreg
                                                    ! noise estimates used
-      integer                :: Bkpl               ! Break-point level
       real                   :: Max_SDAD           ! Max # of pixels since
                                                    ! sucessful retrieval
                                                    ! acceptable for using SDAD.

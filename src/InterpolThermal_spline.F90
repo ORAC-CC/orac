@@ -126,10 +126,6 @@ subroutine Interpol_Thermal_spline(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
    real    :: R(SPixel%Ind%NThermal)
    real    :: dB_dT(SPixel%Ind%NThermal) ! Gradient of Planck function wrt Temp.
    integer :: Thermal(SPixel%Ind%NThermal) ! Indices of thermal channel for RTM_Pc%LW arrays
-#ifdef BKP
-   integer :: bkp_lun ! Unit number for breakpoint file
-   integer :: ios     ! I/O status for breakpoint file
-#endif
 
    ! Set initial value of error status equal to zero (i.e. no error)
    status = 0
@@ -287,36 +283,5 @@ subroutine Interpol_Thermal_spline(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
       H = RTM_Pc%Hc
       RTM_Pc%dHc_dPc = dH_dPc
    end if
-
-   ! Open breakpoint file if required, and write our reflectances and gradients.
-
-#ifdef BKP
-   if (Ctrl%Bkpl >= BkpL_Interpol_Thermal) then
-      call Find_Lun(bkp_lun)
-      open(unit=bkp_lun,      &
-           file=Ctrl%FID%Bkp, &
-           status='old',      &
-           position='append', &
-           iostat=ios)
-      if (ios /= 0) then
-         write(*,*) 'ERROR: Interpol_Thermal_spline(): Error opening breakpoint file'
-         stop BkpFileOpenErr
-      else
-         write(bkp_lun,'(/,a,/)')'Interpol_Thermal_spline:'
-      end if
-
-      do i=1,SPixel%Ind%NThermal
-         write(bkp_lun,'(a,i2,5(a,f9.4))') 'Channel index: ', i, &
-            ' Tac: ', RTM_Pc%LW%Tac(Thermal(i)), &
-            ' Tbc: ', RTM_Pc%LW%Tbc(Thermal(i)), &
-            ' Rac up: ', RTM_Pc%LW%Rac_up(Thermal(i)), &
-            ' Rac dwn: ', RTM_Pc%LW%Rac_dwn(Thermal(i)),&
-            ' Rbc up: ', RTM_Pc%LW%Rbc_up(Thermal(i))
-      end do
-
-      write(bkp_lun, '(a,/)') 'Interpol_Thermal_spline: end'
-      close(unit=bkp_lun)
-   end if
-#endif
 
 end subroutine Interpol_Thermal_spline

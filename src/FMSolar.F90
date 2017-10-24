@@ -618,10 +618,8 @@ subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, i_layer, RTM_Pc, RTM_Pc2, X, GZero, &
    ! Used to determine d_Ref(:,IRs); gives ratio between element and the term
    ! that is retrieved.
    real                               :: rho_l(SPixel%Ind%NSolar, MaxRho_XX)
-#ifdef BKP
-   integer :: bkp_lun ! Unit number for breakpoint file
-   integer :: ios     ! I/O status for breakpoint file
-#endif
+
+
    status = 0.
 
    CRP    = 0.
@@ -1371,54 +1369,5 @@ end if
               SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i)))
       end do
    end if
-
-   ! Open breakpoint file if required, and write out reflectances and gradients.
-#ifdef BKP
-   if (Ctrl%Bkpl >= BkpL_FM_Solar) then
-      call Find_Lun(bkp_lun)
-      open(unit=bkp_lun,      &
-           file=Ctrl%FID%Bkp, &
-           status='old',      &
-           position='append', &
-           iostat=ios)
-      if (ios /= 0) then
-         write(*,*) 'ERROR: FM_Solar(): Error opening breakpoint file'
-         stop BkpFileOpenErr
-      else
-         write(bkp_lun,*)'FM_Solar:'
-      end if
-
-      do i=1, SPixel%Ind%NSolar
-         write(bkp_lun,'(a,i2,a,f9.4)') 'Channel index: ', i, &
-              ' Ref:         ', Ref(i)
-         write(bkp_lun,'(a,i2,a,f9.4)') 'Channel index: ', i, &
-              ' Ref_over:    ', Ref_over(i)
-         write(bkp_lun,'(a,i2,a,f9.4)') 'Channel index: ', i, &
-              ' T:           ', T(i)
-         write(bkp_lun,'(a,i2,a,f9.4)') 'Channel index: ', i, &
-              ' T_all:       ', T_all(i)
-         write(bkp_lun,'(a,i2,a,f9.4)') 'Channel index: ', i, &
-              ' S:           ', S(i)
-         write(bkp_lun,'(a,i2,a,f9.4)') 'Channel index: ', i, &
-              ' CRP(:,IRbd): ',CRP(i,IRbd)
-         write(bkp_lun,'(a,i2,a,f9.4)') 'Channel index: ', i, &
-              ' CRP(:,ITd):  ',CRP(i,ITd)
-         write(bkp_lun,'(a,i2,a,f9.4)') 'Channel index: ', i, &
-              ' CRP(:,ITB):  ',CRP(i,ITb)
-         write(bkp_lun,'(a,i2,a,f9.4)') 'Channel index: ', i, &
-              ' CRP(:,ITFBd):',CRP(i,ITfbd)
-         write(bkp_lun,'(a,i2,a,f9.4)') 'Channel index: ', i, &
-              ' CRP(:,IRfd): ',CRP(i,IRfd)
-      end do
-
-      do i=1, SPixel%Ind%NSolar
-         write(bkp_lun,'(a,i2,a,6f9.4)') 'Channel index: ', i, &
-              ' dRef: ', (d_Ref(i,j),j=1,MaxStateVar)
-      end do
-
-      write(bkp_lun, '(a,/)') 'FM_Solar: end'
-      close(unit=bkp_lun)
-   end if
-#endif
 
 end subroutine FM_Solar

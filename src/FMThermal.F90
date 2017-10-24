@@ -218,11 +218,7 @@ subroutine FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_Chan, RTM_Pc, X, GZero, BT, &
    real    :: Tmc_l(SPixel%Ind%NThermal)
    real    :: Rmc_up_l(SPixel%Ind%NThermal)
    real    :: Rmc_dwn_l(SPixel%Ind%NThermal)
-#ifdef BKP
-   integer :: j       ! For breakpoint output loops
-   integer :: bkp_lun ! Unit number for breakpoint file
-   integer :: ios     ! I/O status for breakpoint file
-#endif
+
    status = 0
    d_R    = 0
 
@@ -426,63 +422,5 @@ end if
    do i = 1, MaxStateVar
       d_BT(:,i) = dT_dR * d_R(:,i)
    end do
-
-   ! Open breakpoint file if required, and write our reflectances and gradients.
-#ifdef BKP
-   if (Ctrl%Bkpl >= BkpL_FM_Thermal) then
-      call Find_Lun(bkp_lun)
-      open(unit=bkp_lun,      &
-           file=Ctrl%FID%Bkp, &
-           status='old',      &
-           position='append', &
-           iostat=ios)
-      if (ios /= 0) then
-         write(*,*) 'ERROR: FM_Thermal(): Error opening breakpoint file'
-         stop BkpFileOpenErr
-      else
-         write(bkp_lun,'(/,a)')'FM_Thermal:'
-      end if
-      write(bkp_lun,'(/)')
-
-      write(bkp_lun,'(a,f9.4)') 'delta_Ts: ',delta_Ts
-      write(bkp_lun,'(a)') 'SPixel Lw RTM contributions to R_Clear:'
-      do i=1,SPixel%Ind%NThermal
-         write(bkp_lun,'(a,i2,3(a,f9.4))') 'Channel index: ', i, &
-              ' R_Clear: ', SPixel%RTM%LW%R_Clear(Thermal(i)), &
-              ' dB_dTs : ', SPixel%RTM%LW%dB_dTs(Thermal(i)), &
-              ' Ems: ', SPixel%RTM%LW%Ems(Thermal(i))
-      end do
-
-      do i=1,SPixel%Ind%NThermal
-         write(bkp_lun,'(a,i2,3(a,f9.4))') 'Channel index: ', i, &
-              ' CRP Td: ', CRP(i,IT_dv), '  CRP Em: ', CRP(i,IEm), &
-              '  CRP Rd: ', CRP(i,IR_dv)
-      end do
-
-      do i=1,SPixel%Ind%NThermal
-         write(bkp_lun,'(a,i2,3(a,f9.4))') 'Channel index: ', i, &
-              ' R_Clear: ', R_Clear(i), '  Rbc_up: ', &
-              RTM_Pc(1)%LW%Rbc_up(Thermal(i)), '  R_Over: ',R_Over(i)
-      end do
-      write(bkp_lun,'(/)')
-
-      do i=1,SPixel%Ind%NThermal
-         write(bkp_lun,'(a,i2,a,2f9.4)') 'Channel index: ', i, &
-              ' BT, R: ', BT(i), R(i)
-      end do
-      write(bkp_lun,'(/)')
-
-      do i=1,SPixel%Ind%NThermal
-         write(bkp_lun,'(a,i2,a,5f10.3)') 'Channel index: ', i, &
-              ' dBT: ', (d_BT(i,j),j=1,MaxStateVar)
-         write(bkp_lun,'(a,5f10.3)') &
-              '                   dR: ',  (d_R(i,j),j=1,MaxStateVar)
-      end do
-      write(bkp_lun,'(/)')
-
-      write(bkp_lun, '(a,/)') 'FM_Thermal: end'
-      close(unit=bkp_lun)
-   end if
-#endif
 
 end subroutine FM_Thermal

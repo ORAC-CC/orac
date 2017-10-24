@@ -187,24 +187,4 @@ subroutine Set_GZero(Tau, Re, Ctrl, SPixel, SAD_LUT, GZero, status)
       GZero%SaSo1(i) = 1.0 - GZero%dSaZSoZ(i)
    end do
 
-#ifdef BKP
-   do i=1,SPixel%Ind%Ny
-      write(*,*) 'channel = ',i, ', i_table_type = ', j
-      write(*,*)'SetGZero: CurT, TGrid(1), delT:', Tau, SAD_LUT%Grid%Tau(1,GZero%iT0(i),1), &
-         SAD_LUT%Grid%Tau(1,GZero%iT1(i),1)
-      write(*,*)'SetGZero: CurR, RGrid(1), delR:', Re, SAD_LUT%Grid%Re(1,GZero%iR0(i),1), &
-      SAD_LUT%Grid%Re(1,GZero%iR1(i),1)
-      write(*,*)'SetGZero: CurSa(1), SaGrid(1), delSa:', SPixel%Geom%SatZen(SPixel%ViewIdx(1)), &
-         SAD_LUT%Grid%Satzen(1,GZero%iSaZ0(i),1),SAD_LUT%Grid%Satzen(1,GZero%iSaZ1(i),1)
-      write(*,*)'SetGZero: CurSo(1), SoGrid(1), delSo:', SPixel%Geom%SolZen(SPixel%ViewIdx(1)), &
-         SAD_LUT%Grid%Solzen(1,GZero%iSoZ0(i),1),SAD_LUT%Grid%Solzen(1,GZero%iSoZ1(i),1)
-      write(*,*)'SetGZero: CurRa(1), RaGrid(1), delRa:', SPixel%Geom%RelAzi(SPixel%ViewIdx(1)), &
-         SAD_LUT%Grid%Relazi(1,GZero%iRA0(i),1), SAD_LUT%Grid%Relazi(1,GZero%iRA1(i),1)
-      write(*,'(a, 5i3.1)')' indices of T0, R0, Saz0(1), SoZ0(1), Ra0(1)', &
-         GZero%iT0(i), GZero%iR0(i), GZero%iSaZ0(i), GZero%iSoZ0(i), GZero%iRA0(i)
-      write(*,'(a, 5i3.1)')' indices of T1, R1, Saz1(1), SoZ1(1), Ra1(1): ', &
-         GZero%iT1(i), GZero%iR1(i), GZero%iSaZ1(i), GZero%iSoZ1(i), GZero%iRA1(i)
-   end do
-#endif
-
 end subroutine Set_GZero

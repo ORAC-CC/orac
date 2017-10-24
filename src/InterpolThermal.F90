@@ -112,11 +112,6 @@ subroutine Interpol_Thermal(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
    real    :: R(SPixel%Ind%NThermal)             ! Radiances
    real    :: dB_dT(SPixel%Ind%NThermal)         ! Gradient of Planck function
                                                  ! w.r.t surface T
-#ifdef BKP
-   integer :: bkp_lun ! Unit number for breakpoint file
-   integer :: ios     ! I/O status for breakpoint file
-#endif
-
    ! Set initial value of error status equal to zero (i.e. no error)
    status = 0
 
@@ -224,35 +219,5 @@ subroutine Interpol_Thermal(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
       delta_H = delta_Pc * RTM_Pc%dHc_dPc
       RTM_Pc%Hc = SPixel%RTM%H(i) + delta_H
    end if
-
-   ! Open breakpoint file if required, and write our reflectances and gradients.
-#ifdef BKP
-   if (Ctrl%Bkpl >= BkpL_Interpol_Thermal) then
-      call Find_Lun(bkp_lun)
-      open(unit=bkp_lun,      &
-           file=Ctrl%FID%Bkp, &
-           status='old',      &
-           position='append', &
-           iostat=ios)
-      if (ios /= 0) then
-         write(*,*) 'ERROR: Interpol_Thermal(): Error opening breakpoint file'
-         stop BkpFileOpenErr
-      else
-         write(bkp_lun,'(/,a,/)')'Interpol_Thermal:'
-      end if
-
-      do i=1,SPixel%Ind%NThermal
-         write(bkp_lun,'(a,i2,5(a,f9.4))') 'Channel index: ', Thermal(i), &
-            ' Tac: ', RTM_Pc%LW%Tac(Thermal(i)), &
-            ' Tbc: ', RTM_Pc%LW%Tbc(Thermal(i), &
-            ' Rac up: ', RTM_Pc%LW%Rac_up(Thermal(i)), &
-            ' Rac dwn: ', RTM_Pc%LW%Rac_dwn(Thermal(i)),&
-            ' Rbc up: ', RTM_Pc%LW%Rbc_up(Thermal(i))
-      end do
-
-      write(bkp_lun, '(a,/)') 'Interpol_Thermal: end'
-      close(unit=bkp_lun)
-   end if
-#endif
 
 end subroutine Interpol_Thermal

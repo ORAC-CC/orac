@@ -100,10 +100,6 @@ subroutine Interpol_Solar_spline(Ctrl, SPixel, Pc, RTM_Pc, status)
    real    :: delta_Tbc(SPixel%Ind%NSolar)
    real    :: d2Tac_dP2(SPixel%Ind%NSolar,SPixel%RTM%Np)
    real    :: d2Tbc_dP2(SPixel%Ind%NSolar,SPixel%RTM%Np)
-#ifdef BKP
-   integer :: bkp_lun ! Unit number for breakpoint file
-   integer :: ios     ! I/O status for breakpoint file
-#endif
 
    ! Set initial value of error status equal to zero (i.e. no error)
    status = 0
@@ -177,34 +173,5 @@ subroutine Interpol_Solar_spline(Ctrl, SPixel, Pc, RTM_Pc, status)
              (k0 * d2Tbc_dP2(j,i)) + (k1 * d2Tbc_dP2(j,i+1))
       end do
    end if
-
-   ! Open breakpoint file if required, and write our transmittances etc.
-
-#ifdef BKP
-   if (Ctrl%Bkpl >= BkpL_Interpol_Solar) then
-      call Find_Lun(bkp_lun)
-      open(unit=bkp_lun,      &
-           file=Ctrl%FID%Bkp, &
-           status='old',      &
-           position='append', &
-           iostat=ios)
-      if (ios /= 0) then
-         write(*,*) 'ERROR: Interpol_Solar_spline(): Error opening breakpoint file'
-         stop BkpFileOpenErr
-      else
-         write(bkp_lun,*)'Interpol_Solar_spline:'
-      end if
-
-      write(bkp_lun,'(a)') 'Chan ind  Tac       Tbc       dTac_dPc  dTbc_dPc'
-      do i=1, SPixel%Ind%NSolar
-         write(bkp_lun,'(5x,i2,4(1x,f9.4))') i, &
-            RTM_Pc%SW%Tac(Solar(i)), RTM_Pc%SW%Tbc(Solar(i)), &
-            RTM_Pc%SW%dTac_dPc(Solar(i)), RTM_Pc%SW%dTbc_dPc(Solar(i))
-      end do
-
-      write(bkp_lun, '(a,/)') 'Interpol_Solar_spline: end'
-      close(unit=bkp_lun)
-   end if
-#endif
 
 end subroutine Interpol_Solar_spline

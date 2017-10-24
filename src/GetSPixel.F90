@@ -223,11 +223,6 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, SAD_LUT, MSI_Data, RTM, SPixel, status)
 
    integer :: i
    integer :: ictrl, ispix, itherm, isolar
-#ifdef BKP
-   integer :: bkp_lun   ! Unit number for breakpoint file
-   integer :: ios       ! I/O status for breakpoint file
-   integer :: StartChan ! First valid channel for pixel, used in breakpoints.
-#endif
 
    status = 0
 
@@ -352,86 +347,5 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, SAD_LUT, MSI_Data, RTM, SPixel, status)
      write(*,*) 'WARNING: Get_SPixel() error status', status
 #endif
    end if
-
-
-   ! Open breakpoint file if required, and write out reflectances and gradients.
-   ! Definitely not functional.
-#ifdef BKP
-   if (Ctrl%Bkpl >= BkpL_Get_SPixel) then
-      call Find_Lun(bkp_lun)
-      open(unit=bkp_lun,      &
-           file=Ctrl%FID%Bkp, &
-           status='old',      &
-           position='append', &
-           iostat=ios)
-      if (ios /= 0) then
-         write(*,*) 'ERROR: Get_SPixel(): Error opening breakpoint file'
-         stop BkpFileOpenErr
-      else
-         write(bkp_lun,'(/,a)')'Get_SPixel:'
-      end if
-
-      write(bkp_lun,'(a,2(i4,1x))')' Location: ',SPixel%Loc%X0,SPixel%Loc%Y0
-      write(bkp_lun,'(a,2(f7.1,1x))')' Lat, lon: ',SPixel%Loc%Lat,SPixel%Loc%Lon
-      write(bkp_lun,'(a,L1)')' Land flag ',SPixel%Surface%Land
-      do view=1,Ctrl%Ind%NViews
-         write(bkp_lun,'(a,i3,3(a,f7.1))')' View ', view,' sat zen ', &
-              Pixel%Geom%SatZen(view), '  sol zen ',SPixel%Geom%SolZen(view), &
-              ' rel azi ',SPixel%Geom%RelAzi(view)
-      end do
-      write(bkp_lun,'(a,i4)')' Status: ',status
-
-      do view=1,Ctrl%Ind%NViews
-         write(bkp_lun,'(a,i2,2(a,f9.4))')' View ',view,', Sec_o: ', &
-              SPixel%Geom%SEC_o(view), ' Sec_v: ',SPixel%Geom%SEC_v(view)
-      end do
-      do i=1, SPixel%Ind%NSolar
-         write(bkp_lun,'(2a,2(a,f9.4))') 'Channel: ', SAD_Chan(i)%Desc, &
-              ' Tsf_o: ', SPixel%RTM%Tsf_o(i), &
-              ' Tsf_v: ', SPixel%RTM%Tsf_v(i)
-      end do
-
-      if (SPixel%Ind%Ny-SPixel%Ind%NThermal > 0 .and. SPixel%Ind%NSolar /= 0) then
-         write(bkp_lun,'(/a)') 'Purely solar channels Tsf and Rs'
-         do i=1, (SPixel%Ind%Ny-SPixel%Ind%NThermal)
-            write(bkp_lun,'(2a,2(a,f9.6))') 'Channel: ', SAD_Chan(i)%Desc, &
-                 ' Tsf:   ', SPixel%RTM%SW%Tsf(i), ' Rs:    ', SPixel%Surface%Rs(i)
-         end do
-      end if
-
-      if (SPixel%Ind%NThermal > 0 .and. SPixel%Ind%NSolar /= 0) then
-         write(bkp_lun,'(/a)') 'Mixed Solar/Thermal channels Tsf and Rs'
-         do i=SPixel%Ind%ThermalFirst, SPixel%Ind%SolarLast
-            write(bkp_lun,'(2a,2(a,f9.6))') 'Channel: ', &
-                 SAD_Chan(i)%Desc, ' Tsf:   ', &
-                 SPixel%RTM%LW%Tsf(i-(SPixel%Ind%Ny-SPixel%Ind%NThermal)), &
-                 ' Rs:    ', SPixel%Surface%Rs(i)
-         end do
-      end if
-
-      write(bkp_lun,'(/)')
-      if (SPixel%Ind%NSolar /= 0) then
-         do i=SPixel%Ind%SolarFirst, SPixel%Ind%SolarLast
-            write(bkp_lun,'(2a,2(a,f9.4))') 'Channel: ', SAD_Chan(i)%Desc, &
-                 ' Ref_clear: ', SPixel%RTM%Ref_clear(i), &
-                 ' dRef_clear_dRs: ', SPixel%RTM%dRef_clear_dRs(i)
-         end do
-      end if
-
-      write(bkp_lun,'(/)')
-      write(bkp_lun,'(a)') 'Ym, view for all channels '
-      if (SPixel%Ind%NSolar == 0) then
-         StartChan = SPixel%Ind%ThermalFirst
-      else
-         StartChan = SPixel%Ind%SolarFirst
-      end if
-      do i=1,SPixel%Ind%Ny
-!        write(bkp_lun,'(3a,f9.4,a,i)') 'Channel: ', SAD_Chan(i+StartChan-1)%Desc, &
-!           ' : ', SPixel%Ym(i), ' view ', SPixel%ViewIdx(i)
-      end do
-      write(bkp_lun, '(a,/)') 'Get_SPixel: end'
-      close(unit=bkp_lun)
-   end if
-#endif
 
 end subroutine Get_SPixel

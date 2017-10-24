@@ -288,22 +288,6 @@ module ORAC_constants_m
    integer, parameter :: AppAerO1         = 5 ! Single-view aerosol (like GlobAEROSOL)
 
 
-   ! Breakpoint levels for individual subroutines.  The parameter name is
-   ! BkpL_<subroutine name>. Some routines may require multiple breakpoint
-   ! levels. Use "_1", "_2" etc.
-   integer, parameter :: BkpL_FM                = 2
-   integer, parameter :: BkpL_FM_Solar          = 2
-   integer, parameter :: BkpL_FM_Thermal        = 2
-   integer, parameter :: BkpL_Get_SPixel        = 2
-   integer, parameter :: BkpL_Interpol_Solar    = 2
-   integer, parameter :: BkpL_Interpol_Thermal  = 2
-   integer, parameter :: BkpL_InvertMarquardt_1 = 1
-   integer, parameter :: BkpL_InvertMarquardt_2 = 2
-   integer, parameter :: BkpL_InvertMarquardt_3 = 3
-   integer, parameter :: BkpL_InvertMarquardt_4 = 4
-   integer, parameter :: BkpL_Read_LUT_1        = 1
-   integer, parameter :: BkpL_Read_LUT_2        = 2
-
    ! Error conditions: starting from 1000, a range of 10 error conditions is
    ! allowed for each function. So error values 1000 - 10009 relate to the read
    ! driver file function, 1010 - 1019 to the next function, etc.
@@ -393,7 +377,6 @@ module ORAC_constants_m
    integer, parameter :: SPixelLocLat               = 1154
    integer, parameter :: SPixelLocLon               = 1155
    integer, parameter :: SPixelSurfErr              = 1156
-   integer, parameter :: BkpFileOpenErr             = 1160
    integer, parameter :: GetRTMLwMaxLat             = 1170
    integer, parameter :: GetRTMLwMinLat             = 1171
    integer, parameter :: GetRTMLwMaxLon             = 1172

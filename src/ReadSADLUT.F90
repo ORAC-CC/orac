@@ -727,28 +727,6 @@ subroutine Read_SAD_LUT(Ctrl, SAD_Chan, SAD_LUT, i_layer)
    integer                :: i        ! Array counters
    character(FilenameLen) :: LUT_file ! Name of LUT file
    character(4)           :: chan_num ! Channel number converted to a string
-#ifdef BKP
-   integer                :: bkp_lun  ! Unit number for breakpoint file
-   integer                :: ios      ! I/O status returned by file open etc
-#endif
-
-   ! Open breakpoint file if required.
-#ifdef BKP
-   if (Ctrl%Bkpl > 0) then
-      call Find_Lun(bkp_lun)
-      open(unit=bkp_lun,      &
-           file=Ctrl%FID%Bkp, &
-           status='old',      &
-           position='append', &
-           iostat=ios)
-      if (ios /= 0) then
-         write(*,*) 'ERROR: Read_SAD_LUT(): Error opening breakpoint file'
-         stop BkpFileOpenErr
-      else
-         write(bkp_lun,*) 'Read_LUT:'
-      end if
-   end if
-#endif
 
    ! For each cloud class, construct the LUT filename from the instrument name,
    ! cloud class ID, variable name and channel number. Then call the appropriate
@@ -826,44 +804,6 @@ subroutine Read_SAD_LUT(Ctrl, SAD_Chan, SAD_LUT, i_layer)
            SAD_LUT%BextRat)
    end if
 
-#ifdef BKP
-   if (Ctrl%Bkpl >= BkpL_Read_LUT_1) then
-      ! Write out SAD_LUT Name and Wavelength
-      write(bkp_lun, *)'Name in cloud class struct: ', Ctrl%LUTClass
-   end if
-
-   if (Ctrl%Bkpl >= BkpL_Read_LUT_2) then
-      ! Write out SAD_LUT Grid substructs.
-      write(bkp_lun,*)'Wavelengths: ',(SAD_LUT%Wavelength(i),i=1,Ctrl%Ind%Ny)
-
-      write(bkp_lun,*)'Max, min, delta Tau:',SAD_LUT%Grid%MaxTau, &
-           SAD_LUT%Grid%MinTau, SAD_LUT%Grid%dTau
-      write(bkp_lun,'(a, 9(f6.3, 1x),/)') ' Tau: ', &
-           (SAD_LUT%Grid%Tau(k), k=1,SAD_LUT%Grid%nTau)
-
-      write(bkp_lun,*)'Max, min, delta Re:',SAD_LUT%Grid%MaxRe, &
-           SAD_LUT%Grid%MinRe, SAD_LUT%Grid%dRe
-      write(bkp_lun,'(a, 12(f7.1, 1x),/)') ' Re: ', &
-           (SAD_LUT%Grid%Re(k), k=1,SAD_LUT%Grid%nRe)
-
-      write(bkp_lun,*)'Max, min, delta SatZen:', &
-           SAD_LUT%Grid%MaxSatZen, &
-           SAD_LUT%Grid%MinSatZen, SAD_LUT%Grid%dSatZen
-      write(bkp_lun,'(a, 10(f6.1, 1x),/)') ' SatZen: ', &
-           (SAD_LUT%Grid%SatZen(k), k=1,SAD_LUT%Grid%nSatZen)
-
-      write(bkp_lun,*)'Max, min, delta SolZen:',SAD_LUT%Grid%MaxSolZen, &
-           SAD_LUT%Grid%MinSolZen, SAD_LUT%Grid%dSolZen
-      write(bkp_lun,'(a, 10(f6.1, 1x),/)') ' SolZen: ', &
-           (SAD_LUT%Grid%SolZen(k), k=1,SAD_LUT%Grid%nSolZen)
-
-      write(bkp_lun,*)'Max, min, delta RelAzi:',SAD_LUT%Grid%MaxRelAzi, &
-           SAD_LUT%Grid%MinRelAzi, SAD_LUT%Grid%dRelAzi
-      write(bkp_lun,'(a, 11(f6.1, 1x),/)') ' RelAzi: ', &
-           (SAD_LUT%Grid%RelAzi(k), k=1,SAD_LUT%Grid%nRelAzi)
-   end if
-#endif
-
    ! Convert from percentage to fractional values
    SAD_LUT%Rd  = SAD_LUT%Rd  / 100.
    SAD_LUT%Td  = SAD_LUT%Td  / 100.
@@ -881,12 +821,5 @@ subroutine Read_SAD_LUT(Ctrl, SAD_Chan, SAD_LUT, i_layer)
    if (Ctrl%Ind%NThermal > 0) then
       SAD_LUT%Em = SAD_LUT%Em / 100.
    end if
-
-#ifdef BKP
-   if (Ctrl%Bkpl > 0) then
-      write(bkp_lun, *) 'Read_LUT: end'
-      close(unit=bkp_lun)
-   end if
-#endif
 
 end subroutine Read_SAD_LUT

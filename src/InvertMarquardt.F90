@@ -281,10 +281,6 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
    real    :: temp_thermal(SPixel%Ind%NThermal,SPixel%Ind%NThermal)
    real    :: BextRat(1), d_BextRat(1)
    type(GZero_t) :: GZero
-#ifdef BKP
-   integer :: bkp_lun             ! Unit number for breakpoint file
-   integer :: ios                 ! I/O status for breakpoint file
-#endif
 
    ! Initialise
    stat      = 0
@@ -358,53 +354,6 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
 
    ! ************* END EVALUATING FORWARD MODEL *************
 
-
-   ! Initial breakpoint output (Open breakpoint file if required). Note the
-   ! breakpoint file must be closed before any call to a routine that will try
-   ! to write to it.
-#ifdef BKP
-   if (Ctrl%Bkpl >= BkpL_InvertMarquardt_1) then
-      call Find_Lun(bkp_lun)
-      open(unit=bkp_lun,      &
-           file=Ctrl%FID%Bkp, &
-           status='old',      &
-           position='append', &
-           iostat=ios)
-      if (ios /= 0) then
-         write(*,*) 'ERROR: Invert_Marquardt(): Error opening breakpoint file'
-         stop BkpFileOpenErr
-      else
-         write(bkp_lun,'(/,a)')'Invert_Marquardt:'
-         if (Ctrl%Bkpl >= BkpL_InvertMarquardt_2) then
-            write(bkp_lun,'(2x,a,2(f9.3,1x))') 'lat/lon: ',SPixel%Loc%Lat, &
-                                                           SPixel%Loc%Lon
-            write(bkp_lun,'(2x,a,11(f9.3,1x))') 'Measurements: ',SPixel%Ym
-         end if
-         if (Ctrl%Bkpl >= BkpL_InvertMarquardt_1) then
-            write(bkp_lun,'(2x,a)')'First guess: ' ,SPixel%Y0
-            write(bkp_lun,'(2x,a,5(f9.3,1x))')  'X0:           ',SPixel%X0
-            write(bkp_lun,'(2x,a,5(f9.3,1x))')  'Xb:           ',SPixel%Xb
-            write(bkp_lun,*)
-
-            if (Ctrl%Bkpl >= BkpL_InvertMarquardt_4) then
-               ! SPixel%Sx output takes account of the active state variables.
-               ! Sx array is full size. SPixel%X(m) selects a row, SPixel%X
-               ! selects the active parts of the row. Remove scaling for output.
-               write(bkp_lun,'(2x,a)')'Sx:'
-               do m=1,SPixel%Nx
-                  write(bkp_lun,'(2x,5(e9.2,1x))') &
-                        SPixel%Sx(SPixel%X(m),SPixel%X) / &
-                        (Ctrl%Invpar%XScale(SPixel%X) * &
-                        Ctrl%Invpar%XScale(SPixel%X))
-               end do
-               write(bkp_lun,*)
-            end if
-         end if
-
-         close(bkp_lun)
-      end if
-   end if
-#endif
 
    ! ************* START MAIN ITERATION LOOP *************
 
@@ -540,61 +489,6 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
          if (alpha .lt. huge_value) alpha = alpha * Ctrl%Invpar%MqStep
       end if
 
-      ! Main iteration loop breakpoint outputs. The file is opened and closed
-      ! each time since (a) FM might also write to it and (b) the loop may
-      ! exit early if convergence is reached, leaving the file state uncertain.
-#ifdef BKP
-         if (Ctrl%Bkpl >= BkpL_InvertMarquardt_1) then
-            call Find_Lun(bkp_lun)
-            open(unit=bkp_lun,      &
-                 file=Ctrl%FID%Bkp, &
-                 status='old',      &
-                 position='append', &
-                 iostat=ios)
-            if (ios /= 0) then
-               write(*,*) 'ERROR: Invert_Marquardt(): Error opening breakpoint file'
-               stop BkpFileOpenErr
-            else
-               write(bkp_lun,'(/,a,i2)')'Invert_Marquardt Iteration ',iter
-               write(bkp_lun,'(2x,a,5(f9.3,1x))')     'State:        ',Xplus_dX
-
-               if (Ctrl%Bkpl >= BkpL_InvertMarquardt_2) then
-                  write(bkp_lun,'(2x,a,11(f9.3,1x))') 'Y:            ',Y
-                  write(bkp_lun,'(2x,a,e11.3)')      'alpha:          ', alpha
-                  write(bkp_lun,'(2x,a,5(f9.3,1x))')  'delta_X:      ', delta_X
-                  write(bkp_lun,'(2x,a,3(f9.3,1x))')  'Jm, Ja, J:    ',&
-                        Jm/SPixel%Ind%Ny, Ja/SPixel%Ind%Ny, J/SPixel%Ind%Ny
-                  write(bkp_lun,'(2x,a,f9.3,11x,f9.3)') 'delta J, J0:  ', &
-                        delta_J/SPixel%Ind%Ny, J0/SPixel%Ind%Ny
-
-                  if (Ctrl%Bkpl >= BkpL_InvertMarquardt_3) then
-                     write(bkp_lun,'(2x,a,5(e11.3,1x))')  'Xdiff:        ',&
-                           Xdiff  / Ctrl%Invpar%XScale(SPixel%X)
-                     write(bkp_lun,'(2x,a,11(e11.3,1x))') 'Ydiff:        ',Ydiff
-                     write(bkp_lun,'(/,2x,a)')'Sy:'
-                     do m=1,SPixel%Ind%Ny
-                        write(bkp_lun,'(2x,11(e11.3,1x))') Sy(m,:)
-                     end do
-
-                     write(bkp_lun,'(/,2x,a)') &
-                          'Kx (columns are channels, rows active state variables)'
-                     do m=1,SPixel%Nx
-                        write(bkp_lun,'(2x,11(e11.4,1x))') KX(:,m)
-                     end do
-                     write(bkp_lun,'(/,2x,a)') 'dJ_dX:        '
-                     write(bkp_lun,'(2x,5(e11.4,1x))')dJ_dX
-                     write(bkp_lun,'(/,2x,a)')'d2J_dX2:'
-                     do m=1,SPixel%Nx
-                        write(bkp_lun,'(2x,5(e11.4,1x))') d2J_dX2(m,:)
-                     end do
-                     write(bkp_lun,*)
-                  end if
-               end if
-            end if
-
-            close(unit=bkp_lun)
-         end if
-#endif
       if (iter == Ctrl%Invpar%MaxIter .or. Diag%Converged) exit
 
       iter = iter + 1
@@ -791,44 +685,6 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
       Diag%Jm         = Jm
       Diag%Ja         = Ja
    end if
-
-
-   ! Write final solution and close breakpoint output file
-#ifdef BKP
-   if (Ctrl%Bkpl >= BkpL_InvertMarquardt_1) then
-      call Find_Lun(bkp_lun)
-      open(unit=bkp_lun,      &
-           file=Ctrl%FID%Bkp, &
-           status='old',      &
-           position='append', &
-           iostat=ios)
-      if (ios /= 0) then
-         write(*,*) 'ERROR: Invert_Marquardt(): Error opening breakpoint file'
-         stop BkpFileOpenErr
-      else
-         if (Diag%Converged) then
-            write(bkp_lun,'(/,2x,a,i2,a)')'Invert_marquardt: convergence after ',&
-                  iter, ' iterations'
-         else
-            write(bkp_lun,'(2x,a,i2,a)')&
-                  'Invert_marquardt: no convergence after ',iter,' iterations'
-         end if
-         write(bkp_lun,'(2x,a,5(f9.3,1x))') 'State:        ',SPixel%Xn
-
-         if (Ctrl%Bkpl >= BkpL_InvertMarquardt_2) then
-            write(bkp_lun,*)'Y:            ', Y
-            write(bkp_lun,'(2x,a,11(f9.3,1x))')'Y-Ym:         ', &
-                  Diag%YmFit(1:SPixel%Ind%Ny)
-            write(bkp_lun,'(2x,a,3(f9.3,1x))') 'Jm, Ja /Ny:', Jm, Ja
-            write(bkp_lun,'(2x,a,f9.3)')      'delta J:      ', delta_J
-         end if
-
-         write(bkp_lun, '(/,a,/)') 'Invert_Marquardt: end'
-
-         close(unit=bkp_lun)
-      end if
-   end if
-#endif
 
 end subroutine Invert_Marquardt
 

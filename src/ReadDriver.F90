@@ -448,7 +448,6 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    end if
    Ctrl%FID%L2_primary   = trim(outname)//'.primary.nc'
    Ctrl%FID%L2_secondary = trim(outname)//'.secondary.nc'
-   Ctrl%FID%BkP          = trim(outname)//'.bkp'
 
 
    ! Use a short name for Ctrl%Approach
@@ -612,7 +611,6 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%LUTIntSelm      = switch_app(a, Default=LUTIntMethLinear)
    Ctrl%RTMIntSelm      = switch_app(a, Default=RTMIntMethLinear, Aer=RTMIntMethNone)
    Ctrl%CloudType       = switch_app(a, Default=1,                Aer=2)
-   Ctrl%Bkpl                 = 3
    Ctrl%Max_SDAD             = 10.0
    Ctrl%sabotage_inputs      = .false.
    Ctrl%process_cloudy_only  = .true.
@@ -1319,7 +1317,6 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       write(*,*) 'Ctrl%LUTClass: ',         trim(Ctrl%LUTClass)
       write(*,*) 'Ctrl%FID%L2_primary: ',   trim(Ctrl%FID%L2_primary)
       write(*,*) 'Ctrl%FID%L2_secondary: ', trim(Ctrl%FID%L2_secondary)
-      write(*,*) 'Ctrl%FID%BkP: ',          trim(Ctrl%FID%BkP)
    end if
 
 
@@ -1781,8 +1778,6 @@ subroutine old_driver_second_read(dri_lun, Ctrl, Nx_Dy, Nx_Tw, Nx_Ni, NXJ_Dy, &
          if (parse_string(line, Ctrl%FID%Loc)          /= 0) call h_p_e(label)
       case('CTRL%FID%ALB')
          if (parse_string(line, Ctrl%FID%Alb)          /= 0) call h_p_e(label)
-      case('CTRL%FID%BKP')
-         if (parse_string(line, Ctrl%FID%BkP)          /= 0) call h_p_e(label)
       case('CTRL%FID%L2_PRIMARY')
          if (parse_string(line, Ctrl%FID%L2_primary)   /= 0) call h_p_e(label)
       case('CTRL%FID%L2_SECONDARY')
@@ -1870,8 +1865,6 @@ subroutine old_driver_second_read(dri_lun, Ctrl, Nx_Dy, Nx_Tw, Nx_Ni, NXJ_Dy, &
          if (parse_user_text(line, Ctrl%RTMIntSelm)    /= 0) call h_p_e(label)
       case('CTRL%CLOUDTYPE')
          if (parse_user_text(line, Ctrl%CloudType)     /= 0) call h_p_e(label)
-      case('CTRL%BKPL')
-         if (parse_user_text(line, Ctrl%Bkpl)          /= 0) call h_p_e(label)
       case('CTRL%MAX_SDAD')
          if (parse_string(line, Ctrl%Max_SDAD)         /= 0) call h_p_e(label)
       case('CTRL%SABOTAGE_INPUTS')

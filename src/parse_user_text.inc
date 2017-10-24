@@ -156,31 +156,6 @@ recursive integer function PARSE_STRING_NAME_0D(in, out, ch_ids) result(status)
             out = ITwi
          case('INIGHT')
             out = INight
-         ! Breakpoint file output level selection
-         case('BKPL_FM')
-            out = Bkpl_FM
-         case('BKPL_FM_SOLAR')
-            out = Bkpl_FM_Solar
-         case('BKPL_FM_THERMAL')
-            out = Bkpl_FM_Thermal
-         case('BKPL_GET_SPIXEL')
-            out = Bkpl_Get_SPixel
-         case('BKPL_INTERPOL_SOLAR')
-            out = Bkpl_Interpol_Solar
-         case('BKPL_INTERPOL_THERMAL')
-            out = Bkpl_Interpol_Thermal
-         case('BKPL_INVERTMARQUARDT_1')
-            out = Bkpl_InvertMarquardt_1
-         case('BKPL_INVERTMARQUARDT_2')
-            out = Bkpl_InvertMarquardt_2
-         case('BKPL_INVERTMARQUARDT_3')
-            out = Bkpl_InvertMarquardt_3
-         case('BKPL_INVERTMARQUARDT_4')
-            out = Bkpl_InvertMarquardt_4
-         case('BKPL_READ_LUT_1')
-            out = Bkpl_Read_LUT_1
-         case('BKPL_READ_LUT_2')
-            out = Bkpl_Read_LUT_2
          ! Pavolonis cloud typing outputs
          case('CLEAR_TYPE','CLEAR')
             out = CLEAR_TYPE
