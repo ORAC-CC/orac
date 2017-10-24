@@ -6,12 +6,7 @@
 ! in D. This function makes approximately n^3 / 2 multiplications.
 !
 ! Description and Algorithm details:
-! This function encapsulates a series of routines which derive and operate on
-! the Cholesky decomposition L of A. First calculates the Cholesky
-! decomposition L, then its inverse L^-1, then calculates the full inverse
-! S^-1 = (L^-1)^T.L^-1 for the upper triangle only, as the inverse will also
-! be symmetric, then copies across the symmetric values from the upper to the
-! lower triangle.
+! LINPACK/SLATEC or LAPACK.
 !
 ! Arguments:
 ! Name   Type        In/Out/Both Description
@@ -27,6 +22,7 @@
 ! 2001/05/17, TN: Add Decompose_Cholesky to subroutine as decomposition is only
 !    used once.
 ! 2001/06/05, TN: Return if decomposition fails.
+! 2017/10/24, GN: Change to use LINPACK/SLATEC or LAPACK.
 !
 ! $Id$
 !
@@ -38,24 +34,30 @@ subroutine Invert_Cholesky(A, D, n, Status)
 
    implicit none
 
-   real, dimension(:,:), intent(in)  :: A
-   real, dimension(:,:), intent(out) :: D
-   integer,              intent(in)  :: n
-   integer,              intent(out) :: Status
+   real, dimension(:,:), intent(in)    :: A
+   real, dimension(:,:), intent(inout) :: D
+   integer,              intent(in)    :: n
+   integer,              intent(out)   :: Status
 
    integer :: i
+   real    :: det(2)
 
    Status = 0
 
    D = A
-
-   call Decompose_Cholesky(D, n, Status)
+#ifdef LINPACK_OR_SLATEC
+   call spofa(D, n, n, Status)
    if (Status /= 0) return
-   call Invert_Cholesky_DC(D, n)
-   call Square_Cholesky_DC(D, n)
 
+   call spodi(D, n, n, det, 01)
    do i = 2, n
       D(i,1:i-1) = D(1:i-1,i)
    end do
+#else
+   call spotrf("u", n, D, n, Status)
+   if (Status /= 0) return
 
+   call spotri("u", n, D, n, Status)
+   if (Status /= 0) return
+#endif
 end subroutine Invert_Cholesky

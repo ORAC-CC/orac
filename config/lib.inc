@@ -68,7 +68,7 @@ LIBS = -L$(EMOSLIB) -lemosR64 \
                      -lrttov12_parallel -lrttov12_main -lrttov12_other \
        -L$(HDF5LIB) -lhdf5 -lhdf5_fortran -lhdf5_hl -lhdf5hl_fortran \
        -L$(SZLIB) -lsz \
-       -ljpeg -lm -lz -lstdc++
+       -ljpeg -lm -lz -lstdc++ -lblas -llapack
 
 INC = -I./ \
       -I$(EOSINCLUDE) \

@@ -1,6 +1,4 @@
-$(OBJS)/Cholesky.o: $(OBJS)/ORACConstants.o DecomposeCholesky.F90 \
-        InvertCholesky.F90 InvertCholeskyDC.F90 SolveCholesky.F90 \
-        SolveCholeskyDC.F90 SquareCholeskyDC.F90
+$(OBJS)/Cholesky.o: InvertCholesky.F90 SolveCholesky.F90
 $(OBJS)/Ctrl.o: $(OBJS)/ORACConstants.o DeallocCtrl.F90
 $(OBJS)/Data.o: $(OBJS)/Ctrl.o $(OBJS)/IntRoutines.o $(OBJS)/ORACConstants.o \
         $(OBJS)/SADChan.o DeallocData.F90 DetermineIllum.F90 NullifyData.F90 \

@@ -7,9 +7,7 @@
 ! approximately n^3 / 6 (+ n^2) multiplications.
 !
 ! Description and Algorithm details:
-! This function encapsulates two routines which derive and operate on the
-! Cholesky decomposition L of A. First calculates the Cholesky decomposition
-! L, then multiplies out the solution, x.
+! Calls LINPACK/SLATEC or LAPACK.
 !
 ! Arguments:
 ! Name   Type        In/Out/Both Description
@@ -24,6 +22,7 @@
 ! History:
 ! 2001/05/18, TN: Original version.
 ! 2001/06/05, TN: Return if decomposition fails
+! 2017/10/24, GN: Change to use LINPACK/SLATEC or LAPACK.
 !
 ! $Id$
 !
@@ -42,13 +41,24 @@ subroutine Solve_Cholesky(A, b, x, n, Status)
    integer,              intent(out)   :: Status
 
    real, dimension(n,n) :: D
+   real, dimension(n)   :: work
 
    Status = 0
 
    D = A
-
-   call Decompose_Cholesky(D, n, Status)
+#ifdef LINPACK_OR_SLATEC
+   call spofa(D, n, n, Status)
    if (Status /= 0) return
-   call Solve_Cholesky_DC(D, b, x, n)
 
+   x = b
+   call spofs(D, n, n, x, 2, Status, work);
+   if (Status .lt. 0) return
+#else
+   call spotrf("u", n, D, n, Status)
+   if (Status /= 0) return
+
+   x = b
+   call spotrs("u", n, 1, D, n, x, n, Status);
+   if (Status /= 0) return
+#endif
 end subroutine Solve_Cholesky
