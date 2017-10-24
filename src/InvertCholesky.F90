@@ -14,7 +14,7 @@
 ! A      float array In          Positive definite matrix to be inverted
 ! D      float array Out         Inverse of positive definite matrix
 ! n      integer     In          Dimensions of A, D, p; loop limit
-! Status integer     Out         Status flag: 0 = Success, 1 = Not positive
+! status integer     Out         status flag: 0 = Success, 1 = Not positive
 !                                definite
 !
 ! History:
@@ -30,34 +30,31 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine Invert_Cholesky(A, D, n, Status)
+subroutine Invert_Cholesky(A, D, n, status)
 
    implicit none
 
    real, dimension(:,:), intent(in)    :: A
    real, dimension(:,:), intent(inout) :: D
    integer,              intent(in)    :: n
-   integer,              intent(out)   :: Status
+   integer,              intent(out)   :: status
 
-   integer :: i
-   real    :: det(2)
-
-   Status = 0
+   status = 0
 
    D = A
 #ifdef LINPACK_OR_SLATEC
-   call spofa(D, n, n, Status)
-   if (Status /= 0) return
+   call spofa(D, n, n, status)
+   if (status /= 0) return
 
    call spodi(D, n, n, det, 01)
    do i = 2, n
       D(i,1:i-1) = D(1:i-1,i)
    end do
 #else
-   call spotrf("u", n, D, n, Status)
-   if (Status /= 0) return
+   call spotrf("u", n, D, n, status)
+   if (status /= 0) return
 
-   call spotri("u", n, D, n, Status)
-   if (Status /= 0) return
+   call spotri("u", n, D, n, status)
+   if (status /= 0) return
 #endif
 end subroutine Invert_Cholesky

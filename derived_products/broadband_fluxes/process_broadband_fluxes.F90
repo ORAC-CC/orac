@@ -117,13 +117,14 @@ program process_broadband_fluxes
 #ifndef WRAPPER
     character(path_length) :: Fprimary,FPRTM,FTSI,FALB,fname,FLXalgorithm,Faerosol,Fcollocation
 #else
+    integer :: status
     character(file_length),intent(in) :: Fprimary,FPRTM,FTSI,FALB,fname,FLXalgorithm
     character(file_length),intent(inout),optional :: Faerosol,Fcollocation
 #endif
 
     character(path_length) :: FMOD04,FMOD06
     integer :: algorithm_processing_mode ! 1-BUGSrad, 2-FuLiou2G, 3-FuLiou4S, 4-FuLiou 2S
-    integer :: ncid, i, j, k, dims_var(2), dim3d_var(3), status
+    integer :: ncid, i, j, k, dims_var(2), dim3d_var(3)
     logical, parameter :: verbose=.true.
     logical :: there
     type(global_attributes_t) :: global_atts

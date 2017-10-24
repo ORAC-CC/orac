@@ -34,7 +34,7 @@ function locate(a,x) result(low)
    real, intent(in) :: x
 
    logical :: ascending
-   integer :: n, low, mid, up, offset
+   integer :: n, low, mid, up
 
    n = size(a)
 

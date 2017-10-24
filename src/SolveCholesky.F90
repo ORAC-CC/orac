@@ -41,7 +41,6 @@ subroutine Solve_Cholesky(A, b, x, n, Status)
    integer,              intent(out)   :: Status
 
    real, dimension(n,n) :: D
-   real, dimension(n)   :: work
 
    Status = 0
 
