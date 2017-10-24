@@ -24,7 +24,7 @@
 !
 ! Bugs:
 ! None known.
-!---------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
 function locate(a,x) result(low)
 
@@ -62,7 +62,7 @@ function locate(a,x) result(low)
    up  = n
 
    do while (low + 1 .lt. up)
-      mid = (low + up) / 2;
+      mid = (low + up) / 2
 
       if (ascending .eqv. (a(mid) .le. x)) then
          low = mid
