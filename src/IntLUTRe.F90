@@ -72,6 +72,8 @@
 ! 2016/08/23, AP: Add cubic spline interpolation.
 ! 2017/01/17, GM: Changes related to simplification of the indexing of the LUT
 !    grid and the GZero parameters.
+! 2017/10/24, GM: Switch to official NR cubic spline code and make optional
+!    through conditional compilation.
 !
 ! $Id$
 !
@@ -120,9 +122,15 @@ subroutine Int_LUT_Re(F, NChans, Grid, GZero, Ctrl, FInt, FGrads, status)
          FGrads(i) = (F(i,GZero%iR0(i)) - F(i,GZero%iR1(i))) / &
                       (Grid%Re(GZero%iR1(i)) - Grid%Re(GZero%iR0(i)))
       else if (Ctrl%LUTIntSelm .eq. LUTIntMethBicubic) then
+#ifdef INCLUDE_NR
          ! Following the syntax of InterpolarSolar_spline.F90
-         call spline(Grid%Re(1:Grid%nRe), &
-                     F(i,1:Grid%nRe), d2F_dr2(1:Grid%nRe))
+         call spline(Grid%Re(1:Grid%nRe), F(i,1:Grid%nRe), &
+                     Grid%nRe,1.e30,1.e30,d2F_dr2(1:Grid%nRe))
+#else
+         write(*, *) 'ERROR: Interpol_Solar_spline(): Numerical Recipes is ' // &
+            'not available for cubic spline interpolation'
+         stop error_stop_code
+#endif
          delta_F = F(i,GZero%iR1(i)) - F(i,GZero%iR0(i))
          delta_r = Grid%Re(GZero%iR1(i)) - Grid%Re(GZero%iR0(i))
 

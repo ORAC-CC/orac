@@ -67,6 +67,8 @@
 ! 2015/01/07, AP: Use SPixel index arrays rather than ThF,ThL.
 ! 2015/01/21, AP: Finishing the previous commit.
 ! 2015/05/07, CP: Removed the stop IntTransErr.
+! 2017/10/24, GM: Switch to official NR cubic spline code and make optional
+!    through conditional compilation.
 !
 ! $Id$
 !
@@ -150,21 +152,31 @@ subroutine Interpol_Thermal_spline(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
       ! Note: Implicit looping over instrument channels from here onwards
 
       do j = 1,SPixel%Ind%NThermal
-         call spline(SPixel%RTM%P, &
-            SPixel%RTM%LW%Tac(Thermal(j),:),d2Tac_dP2(j,:))
-         call spline(SPixel%RTM%P, &
-            SPixel%RTM%LW%Tbc(Thermal(j),:),d2Tbc_dP2(j,:))
-         call spline(SPixel%RTM%P, &
-            SPixel%RTM%LW%Rac_up(Thermal(j),:),d2Rac_up_dP2(j,:))
-         call spline(SPixel%RTM%P, &
-            SPixel%RTM%LW%Rac_dwn(Thermal(j),:),d2Rac_dwn_dP2(j,:))
-         call spline(SPixel%RTM%P, &
-            SPixel%RTM%LW%Rbc_up(Thermal(j),:),d2Rbc_up_dP2(j,:))
+#ifdef INCLUDE_NR
+         call spline(SPixel%RTM%P,SPixel%RTM%LW%Tac(Thermal(j),:), &
+                     SPixel%RTM%Np,1.e30,1.e30,d2Tac_dP2(j,:))
+         call spline(SPixel%RTM%P,SPixel%RTM%LW%Tbc(Thermal(j),:), &
+                     SPixel%RTM%Np,1.e30,1.e30,d2Tbc_dP2(j,:))
+         call spline(SPixel%RTM%P,SPixel%RTM%LW%Rac_up(Thermal(j),:), &
+                     SPixel%RTM%Np,1.e30,1.e30,d2Rac_up_dP2(j,:))
+         call spline(SPixel%RTM%P,SPixel%RTM%LW%Rac_dwn(Thermal(j),:), &
+                     SPixel%RTM%Np,1.e30,1.e30,d2Rac_dwn_dP2(j,:))
+         call spline(SPixel%RTM%P,SPixel%RTM%LW%Rbc_up(Thermal(j),:), &
+                     SPixel%RTM%Np,1.e30,1.e30,d2Rbc_up_dP2(j,:))
+#else
+      write(*, *) 'ERROR: Interpol_Solar_spline(): Numerical Recipes is ' // &
+         'not available for cubic spline interpolation'
+      stop error_stop_code
+#endif
       end do
-
-      call spline(SPixel%RTM%P,SPixel%RTM%T,d2T_dP2)
-      call spline(SPixel%RTM%P,SPixel%RTM%H,d2H_dP2)
-
+#ifdef INCLUDE_NR
+      call spline(SPixel%RTM%P,SPixel%RTM%T,SPixel%RTM%Np,1.e30,1.e30,d2T_dP2)
+      call spline(SPixel%RTM%P,SPixel%RTM%H,SPixel%RTM%Np,1.e30,1.e30,d2H_dP2)
+#else
+      write(*, *) 'ERROR: Interpol_Solar_spline(): Numerical Recipes is ' // &
+         'not available for cubic spline interpolation'
+      stop error_stop_code
+#endif
       ! Change in pressure between RTM levels i and i+1
       ! (delta_p is negative for decreasing pressure with increasing i)
 

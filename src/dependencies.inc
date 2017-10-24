@@ -13,8 +13,8 @@ $(OBJS)/FMRoutines.o: $(OBJS)/Ctrl.o $(OBJS)/GZero.o $(OBJS)/IntLUTRoutines.o \
         FM.F90 FMSolar.F90 FMThermal.F90 SetCRPSolar.F90 SetCRPThermal.F90
 $(OBJS)/GZero.o: $(OBJS)/Ctrl.o $(OBJS)/IntRoutines.o $(OBJS)/ORACConstants.o \
         $(OBJS)/SADLUT.o $(OBJS)/SPixel.o SetGZero.F90
-$(OBJS)/IntRoutines.o: $(OBJS)/ORACConstants.o Bcucof.F90 Bcuint.F90 Linint.F90 \
-        Locate.F90 Spline.F90 Tridag.F90 find_in_array.inc
+$(OBJS)/IntRoutines.o: $(OBJS)/ORACConstants.o Linint.F90 Locate.F90 \
+        find_in_array.inc
 $(OBJS)/InterpolRoutines.o: $(OBJS)/Ctrl.o $(OBJS)/IntRoutines.o \
         $(OBJS)/ORACConstants.o $(OBJS)/RTM_Pc.o $(OBJS)/SADChan.o \
         $(OBJS)/SPixel.o $(OBJS)/planck.o InterpolSolar.F90 \

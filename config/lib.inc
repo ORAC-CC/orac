@@ -41,6 +41,10 @@ NCDFINCLUDE = $(LIBBASE)/netcdf/include
 NCDF_FORTRAN_LIB = $(LIBBASE_FORTRAN)/netcdf-fortran/lib
 NCDF_FORTRAN_INCLUDE = $(LIBBASE_FORTRAN)/netcdf-fortran/include
 
+# Numerical Recipes in Fortran 77
+NRLIB = $(LIBBASE_FORTRAN)/nr_f
+NRINCLUDE = $(LIBBASE_FORTRAN)/nr_f
+
 # RTTOV
 RTTOVLIB = $(LIBBASE_FORTRAN)/rttov/lib
 RTTOVINCLUDE = $(LIBBASE_FORTRAN)/rttov/include
@@ -83,8 +87,16 @@ INC = -I./ \
 
 CINC = -I./ -I$(EPR_APIINCLUDE)
 
+
+# Configuration options
+
 # Uncomment if you want to enable OpenMP for RTTOV computations.
 INC  += -DINCLUDE_RTTOV_OPENMP
+
+# Uncomment if Numerical Recipes is available for cubic spline profile
+# interpolation and bilinear LUT interpolation.
+#LIBS += -L$(NRLIB) -lnr
+#INC  += -I$(NRINCLUDE) -DINCLUDE_NR
 
 # Uncomment if Fu_Liou support is desired for broadband fluxes.
 #LIBS += -L$(FULIOULIB) -lEd3Fu_201212

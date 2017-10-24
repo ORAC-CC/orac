@@ -26,6 +26,8 @@
 !    subroutines into Int_LUT_Common()
 ! 2016/07/27, GM: Add ITauCRP and IReCRP indices since with the multilayer
 !    retrieval ITau and IRe for a particular layer may not be 1 and 2.
+! 2017/10/24, GM: Switch to official NR bilinear interpolation code and make
+!    optional through conditional compilation.
 !
 ! $Id$
 !
@@ -129,6 +131,7 @@ subroutine Int_LUT_Common(Ctrl, NChans, Grid, GZero, G, FInt, FGrads, &
    integer,                           intent(out) :: status
 
    integer            :: i, ii2
+   real               :: a, b
    real, dimension(4) :: Y          ! A vector to contain the values of F at
                                     ! (iT0,iR0), (iT0,iR1), (iT1,iR1) and
                                     ! (iT1,iR0) respectively (i.e. anticlockwise
@@ -197,11 +200,24 @@ subroutine Int_LUT_Common(Ctrl, NChans, Grid, GZero, G, FInt, FGrads, &
                    G(i,iXm1,iXp1) + G(i,iXm1,iX0)) / &
                   ((Grid%Tau(GZero%iT1 (ii2)) - Grid%Tau(GZero%iTm1(ii2))) * &
                    (Grid%Re (GZero%iRp1(ii2)) - Grid%Re (GZero%iR0 (ii2))))
+#ifdef INCLUDE_NR
+         ! A hack to deal with the fact that upstream NR wants the point and not
+         ! the gradient at that point.
+
+         a = GZero%dT(ii2) * (Grid%Tau(GZero%iT1(ii2)) - Grid%Tau(GZero%iT0(ii2))) + &
+             Grid%Tau(GZero%iT0(ii2))
+         b = GZero%dR(ii2) * (Grid%Re (GZero%iR1(ii2)) - Grid%Re (GZero%iR0(ii2))) + &
+             Grid%Re (GZero%iR0(ii2))
 
          call bcuint(Y, dYdTau, dYdRe, ddY, &
                      Grid%Tau(GZero%iT0(ii2)), Grid%Tau(GZero%iT1(ii2)), &
                      Grid%Re(GZero%iR0(ii2)), Grid%Re(GZero%iR1(ii2)), &
-                     GZero%dT(ii2), GZero%dR(ii2), a1, a2, a3)
+                     a, b, a1, a2, a3)
+#else
+      write(*, *) 'ERROR: Int_LUT_Common(): Numerical Recipes is ' // &
+         'not available for bilinear interpolation'
+      stop error_stop_code
+#endif
       else
          write(*,*) 'ERROR: Int_LUT_Common(): Invalid value for Ctrl%LUTIntSelm: ', &
                     Ctrl%LUTIntSelm

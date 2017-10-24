@@ -61,6 +61,8 @@
 ! 2014/08/05, GM: Cleaned up the code.
 ! 2014/08/05, GM: Put Interpol_* common code into subroutine find_Pc().
 ! 2015/01/21, AP: Updated channel indexing to array-based form.
+! 2017/10/24, GM: Switch to official NR cubic spline code and make optional
+!    through conditional compilation.
 !
 ! $Id$
 !
@@ -125,10 +127,16 @@ subroutine Interpol_Solar_spline(Ctrl, SPixel, Pc, RTM_Pc, status)
       ! Note: Implicit looping over instrument channels from here onwards
 
       do j = 1, SPixel%Ind%NSolar
-         call spline(SPixel%RTM%P, &
-              SPixel%RTM%SW%Tac(Solar(j),:),d2Tac_dP2(j,:))
-         call spline(SPixel%RTM%P, &
-              SPixel%RTM%SW%Tbc(Solar(j),:),d2Tbc_dP2(j,:))
+#ifdef INCLUDE_NR
+         call spline(SPixel%RTM%P,SPixel%RTM%SW%Tac(Solar(j),:), &
+                     SPixel%RTM%Np,1.e30,1.e30,d2Tac_dP2(j,:))
+         call spline(SPixel%RTM%P,SPixel%RTM%SW%Tbc(Solar(j),:), &
+                     SPixel%RTM%Np,1.e30,1.e30,d2Tbc_dP2(j,:))
+#else
+         write(*, *) 'ERROR: Interpol_Solar_spline(): Numerical Recipes is ' // &
+            'not available for cubic spline interpolation'
+         stop error_stop_code
+#endif
       end do
 
       ! Change in pressure between RTM levels i and i+1
