@@ -2,7 +2,7 @@
 ! Name: compute_column_o3.F90
 !
 ! Purpose:
-! Compute column ozone (colO3) from input profile of geopoential height and
+! Compute column ozone (colO3) from input profile of geopotential height and
 ! ozone. The computation is a simple summation of integrated ozone over each
 ! layer in the atmosphere.
 !
@@ -14,37 +14,36 @@
 ! column ozone (DU)
 !
 ! History:
-! 2016/02/18, MC: Implementation
+! 2016/02/18, MC: Initial implementation
 !
 ! $Id$
 !
 ! Bugs:
-! none.
-!
+! None known.
 !-------------------------------------------------------------------------------
+
 subroutine compute_column_o3(nlm,H,O3,colO3)
 
    implicit none
 
+   ! Input arguments
    integer, intent(in) :: nlm
-
-   !meteorological profiles
    real, intent(in), dimension(nlm+1) :: &
-    H   ,& !height profile at SAT. pixel               (hPa).
-    O3     !temperature profile at SAT. pixel        (kg/kg).
+      H, & ! height profile at SAT. pixel      (hPa).
+      O3   ! temperature profile at SAT. pixel (kg/kg).
 
-   !OUTPUT
+   ! Output arguments
    real, intent(out) :: colO3
 
-   !local
+   ! Local variables
    integer :: i
 
    colO3 = 0.
-   !integrate over each level
+   ! Integrate over each level
    do i=1,nlm-1
-      !print*,H(i),H(i)-H(i+1)
-    colO3 = colO3+((O3(i)+O3(i+1))/2.) * (H(i)-H(i+1))*1000000.
-    !print*,((O3(i)+O3(i+1))/2.) * (H(i)-H(i+1)),colO3
+!     print*,H(i),H(i)-H(i+1)
+      colO3 = colO3+((O3(i)+O3(i+1))/2.) * (H(i)-H(i+1))*1000000.
+!     print*,((O3(i)+O3(i+1))/2.) * (H(i)-H(i+1)),colO3
    end do
-   return
+
 end subroutine compute_column_o3

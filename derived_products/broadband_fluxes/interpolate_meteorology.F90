@@ -9,7 +9,7 @@
 ! Name Type In/Out/Both Description
 !
 ! History:
-! 2015/10/14, MC: Initial implementation.
+! 2015/10/14, MC: Initial implementation
 ! 2015/11/21, GM: Wrap was being passed to bilinear_coef_reg_reg() without being
 !    set to anything.  Added the proper setting.
 !
@@ -19,30 +19,29 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-   subroutine interpolate_meteorology(lon,lat,nlev,xdim,ydim,&
-                                      P,T,H,Q,O3,&
-                                      ilon,ilat,iP,iT,iH,iQ,iO3)
+subroutine interpolate_meteorology(lon,lat,nlev,xdim,ydim, &
+                                   P,T,H,Q,O3, &
+                                   ilon,ilat,iP,iT,iH,iQ,iO3)
 
    use interpol_m
 
    implicit none
 
-   !Input arguments
+   ! Input arguments
    integer, intent(in) :: nlev,xdim,ydim
-   real, dimension(xdim,ydim) :: lon,lat !prtm longitud and latitude arrays
-   real, dimension(nlev,xdim,ydim) :: P,T,H,Q,O3 ! prtm 3D variables
-   real ilon,ilat !satellite longitude and latitude
+   real, intent(in), dimension(xdim,ydim) :: lon,lat         ! PRTM longitude and latitude arrays
+   real, intent(in), dimension(nlev,xdim,ydim) :: P,T,H,Q,O3 ! PRTM 3D variables
+   real, intent(in) :: ilon,ilat                             ! satellite longitude and latitude
 
-   !Output arguments - interpolated values
-   real, intent(out), dimension(nlev) :: iP,iT,iH,iQ,iO3 !interpolated profiles
+   ! Output arguments
+   real, intent(out), dimension(nlev) :: iP,iT,iH,iQ,iO3 ! interpolated profiles
 
-   !Local variables
+   ! Local variables
    type(interpol_t) :: interp
    logical :: Wrap
-   integer  NLat, NLon !#of lat/lon indices
-   real(8) :: Lat0, LatN, Lon0, LonN, delta_Lat, inv_delta_Lat, delta_Lon, inv_delta_Lon !inputs to bilinear
-   real(8) :: MinLon, MaxLon
-
+   integer :: NLat,NLon ! # of lat/lon indices
+   real(8) :: Lat0,LatN,Lon0,LonN,delta_Lat,inv_delta_Lat,delta_Lon,inv_delta_Lon ! inputs to bilinear
+   real(8) :: MinLon,MaxLon
 
    NLat = ydim
    NLon = xdim
@@ -57,7 +56,7 @@
    delta_Lon = (LonN - Lon0) / (NLon-1)
    inv_delta_Lon = 1. / delta_Lon
 
-   ! Max and Min lon values
+   ! Max and min lon values
    MinLon = min(Lon0-0.5*delta_Lon, LonN+0.5*delta_Lon)
    MaxLon = max(Lon0-0.5*delta_Lon, LonN+0.5*delta_Lon)
 
@@ -76,5 +75,4 @@
    call interp_field2(Q, iQ, interp)
    call interp_field2(O3, iO3, interp)
 
-   return
 end subroutine interpolate_meteorology
