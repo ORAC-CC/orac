@@ -1,16 +1,10 @@
-!-------------------------------------------------------------------------------
-! Name: orac.F90
+!*******************************************************************************
 !
-! Purpose:
-! Main program for the Enhanced Cloud Processor prototype. Calls subordinate
-! functions to read in data and process.
+! Copyright (C) 2000-2017, RAL Space, Science and Technology Facilities Council
+! Copyright (C) 2000-2017, University of Oxford
+! Copyright (C) 2011-2017, Deutscher Wetterdienst
 !
-! License/Copyright
-! Copyright 2011, RAL Space, Science and Technology Facilities Council and
-! University of Oxford.
-!
-! This file and the associated documentation and source code files are part of
-! ORAC.
+! This file is part of the Optimal Retrieval of Aerosol and Cloud (ORAC).
 !
 ! ORAC is free software: you can redistribute it and/or modify it under the
 ! terms of the GNU General Public License as published by the Free Software
@@ -18,12 +12,21 @@
 ! version.
 !
 ! ORAC is distributed in the hope that it will be useful, but WITHOUT ANY
-! WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-! FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
-! details.
+! WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+! A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 !
 ! You should have received a copy of the GNU General Public License along with
-! ORAC. If not, see http://www.gnu.org/licenses/
+! ORAC. If not, see <http://www.gnu.org/licenses/>.
+!
+!*******************************************************************************
+
+
+!-------------------------------------------------------------------------------
+! Name: orac.F90
+!
+! Purpose:
+! Main program for the Enhanced Cloud Processor prototype. Calls subordinate
+! functions to read in data and process.
 !
 ! Description and Algorithm details:
 !  Data Preparation Section: reads in driver file and all SAD files but not
