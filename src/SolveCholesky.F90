@@ -7,7 +7,7 @@
 ! approximately n^3 / 6 (+ n^2) multiplications.
 !
 ! Description and Algorithm details:
-! Calls LINPACK/SLATEC or LAPACK.
+! Calls SLATEC or LAPACK.
 !
 ! Arguments:
 ! Name   Type        In/Out/Both Description
@@ -30,7 +30,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine Solve_Cholesky(A, b, x, n, Status)
+subroutine Solve_Cholesky(A, b, x, n, status)
 
    implicit none
 
@@ -38,26 +38,28 @@ subroutine Solve_Cholesky(A, b, x, n, Status)
    real, dimension(:,:), intent(in)    :: A
    real, dimension(:),   intent(in)    :: b
    real, dimension(:),   intent(inout) :: x
-   integer,              intent(out)   :: Status
+   integer,              intent(out)   :: status
 
    real, dimension(n,n) :: D
-
-   Status = 0
+#ifdef USE_SLATEC
+   real :: work(n)
+#endif
+   status = 0
 
    D = A
-#ifdef LINPACK_OR_SLATEC
-   call spofa(D, n, n, Status)
-   if (Status /= 0) return
+#ifdef USE_SLATEC
+   call spofa(D, n, n, status)
+   if (status /= 0) return
 
    x = b
-   call spofs(D, n, n, x, 2, Status, work);
-   if (Status .lt. 0) return
+   call spofs(D, n, n, x, 2, status, work);
+   if (status .lt. 0) return
 #else
-   call spotrf("u", n, D, n, Status)
-   if (Status /= 0) return
+   call spotrf("u", n, D, n, status)
+   if (status /= 0) return
 
    x = b
-   call spotrs("u", n, 1, D, n, x, n, Status);
-   if (Status /= 0) return
+   call spotrs("u", n, 1, D, n, x, n, status);
+   if (status /= 0) return
 #endif
 end subroutine Solve_Cholesky
