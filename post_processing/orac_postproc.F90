@@ -373,13 +373,13 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
     ! Find which non-Bayesian selection to use
     if (.not. use_bayesian_selection) then
        call get_use_ann_phase(in_files_primary, n_in_files, use_ann_phase, &
-                              verbose)
+                              use_ml, verbose)
 
        ! ANN phase does not have an ML flag
-       if (use_ml .and. use_ann_phase) then
-          write(*,*) 'ERROR: ANN phase selection does not have ML support'
-          stop error_stop_code
-       end if
+!      if (use_ml .and. use_ann_phase) then
+!         write(*,*) 'ERROR: ANN phase selection does not have ML support'
+!         stop error_stop_code
+!      end if
     end if
 
     ! Determine which channels/views exist across all input files
@@ -605,14 +605,19 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
                 ! Apply Pavolonis phase information to select retrieval phase
                 ! variables select water type overwrite ice
                 if (use_ann_phase) then
-                   select case (input_primary(0)%ann_phase(i,j,1))
-                   case(LIQUID)
-                      phase_flag = 1_byte
-                   case(ICE)
-                      phase_flag = 2_byte
-                   case default
-                      phase_flag = 2_byte
-                   end select
+                   if (use_ml .and. &
+                       input_primary(0)%cldtype(i,j,1) == OVERLAP_TYPE) then
+                      phase_flag = 3_byte
+                   else
+                      select case (input_primary(0)%ann_phase(i,j,1))
+                      case(LIQUID)
+                         phase_flag = 1_byte
+                      case(ICE)
+                         phase_flag = 2_byte
+                      case default
+                         phase_flag = 2_byte
+                      end select
+                   end if
                 else
                    select case (input_primary(0)%cldtype(i,j,1))
                    case(FOG_TYPE, &

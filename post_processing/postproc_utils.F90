@@ -26,7 +26,7 @@ module postproc_utils_m
 
 contains
 
-subroutine get_use_ann_phase(in_files, n_in_files, use_ann_phase, verbose)
+subroutine get_use_ann_phase(in_files, n_in_files, use_ann_phase, ml_flag, verbose)
 
    use orac_ncdf_m
 
@@ -35,6 +35,7 @@ subroutine get_use_ann_phase(in_files, n_in_files, use_ann_phase, verbose)
    character(len=*), intent(in)  :: in_files(:)
    integer,          intent(in)  :: n_in_files
    logical,          intent(out) :: use_ann_phase
+   logical,          intent(in)  :: ml_flag
    logical,          intent(in)  :: verbose
 
    integer :: i
@@ -52,10 +53,10 @@ subroutine get_use_ann_phase(in_files, n_in_files, use_ann_phase, verbose)
 
       if (i == 1) then
           ann_phase_used  = ann_phase_used2
-      end if
-      if (ann_phase_used /= ann_phase_used2) then
-         write(*,*) 'ERROR: ANN_phase_used global attribute must be '// &
-                    'the same for all input files'
+      else if (.not. (ml_flag .and. i == 3) .and. &
+               ann_phase_used /= ann_phase_used2) then
+         write(*,*) 'ERROR: ANN_phase_used global attribute must be the '// &
+                    'same for all input files'
          stop error_stop_code
       end if
 
