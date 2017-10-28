@@ -615,7 +615,7 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
                       case(ICE)
                          phase_flag = 2_byte
                       case default
-                         phase_flag = 2_byte
+                         phase_flag = 0_byte
                       end select
                    end if
                 else
@@ -639,7 +639,7 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
                          phase_flag = 2_byte
                       end if
                    case default
-                      phase_flag = 2_byte
+                      phase_flag = 0_byte
                    end select
                 end if
 
