@@ -1,0 +1,1 @@
+A makefile for the standard Numerical Recipes Fortran 77 distribution since it does not seem to come with one.  It is set up for gfortran but can easily be set up for other compilers by setting the F77 and F77FLAGS variables in the Makefile.
