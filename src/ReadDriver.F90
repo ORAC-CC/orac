@@ -441,11 +441,15 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       end if
    end if
 
-   ! Output filenames
-   outname=trim(Ctrl%FID%Out_Dir)//'/'//trim(Ctrl%FID%Filename)//trim(Ctrl%LUTClass)
+   Ctrl%LUTClassLayers = trim(Ctrl%LUTClass)
    if (Ctrl%Approach == AppCld2L) then
-      outname=trim(outname)//'_'//trim(Ctrl%LUTClass2)
+      Ctrl%LUTClassLayers=trim(Ctrl%LUTClassLayers)//'_'//trim(Ctrl%LUTClass2)
    end if
+
+
+   ! Output filenames
+   outname=trim(Ctrl%FID%Out_Dir)//'/'//trim(Ctrl%FID%Filename)// &
+           trim(Ctrl%LUTClassLayers)
    Ctrl%FID%L2_primary   = trim(outname)//'.primary.nc'
    Ctrl%FID%L2_secondary = trim(outname)//'.secondary.nc'
 

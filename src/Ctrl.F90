@@ -239,6 +239,7 @@ module Ctrl_m
       integer                :: Class2             ! Class for layer 2 (lower)
       character(3)           :: LUTClass           ! Name of LUT to use
       character(3)           :: LUTClass2          ! LUTClass for layer 2 (lower)
+      character(7)           :: LUTClassLayers     ! LUTClasses combined with '_'
       integer                :: Approach           ! Controls manner of retrieval
                                                    ! performed. See ORACConstants.
 

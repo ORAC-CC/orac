@@ -102,7 +102,7 @@ subroutine def_output_primary(ncid, dim3d_var, output_data, indexing, &
    logical,                     intent(in)    :: shuffle_flag
    logical,                     intent(in)    :: verbose
    integer,          optional,  intent(in)    :: ch_var(:)
-   character(len=3), optional,  intent(in)    :: phases(:)
+   character(len=*), optional,  intent(in)    :: phases(:)
 
    character(len=32)  :: input_num
    character(len=512) :: input_dummy
