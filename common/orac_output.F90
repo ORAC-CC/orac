@@ -425,7 +425,7 @@ module orac_output_m
       integer(byte) :: phase_scale  = 1
       integer(byte) :: phase_offset = 0
       integer(byte) :: phase_vmin   = 0
-      integer(byte) :: phase_vmax   = 3
+      integer(byte) :: phase_vmax   = 20
 
       integer(byte) :: phase_pavolonis_scale  = 1
       integer(byte) :: phase_pavolonis_offset = 0
