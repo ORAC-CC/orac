@@ -38,8 +38,9 @@ subroutine Invert_Cholesky(A, D, n, status)
    real, dimension(:,:), intent(inout) :: D
    integer,              intent(in)    :: n
    integer,              intent(out)   :: status
-#ifdef USE_SLATEC
+
    integer :: i
+#ifdef USE_SLATEC
    real    :: det(2)
 #endif
    status = 0
@@ -50,9 +51,6 @@ subroutine Invert_Cholesky(A, D, n, status)
    if (status /= 0) return
 
    call spodi(D, n, n, det, 01)
-   do i = 2, n
-      D(i,1:i-1) = D(1:i-1,i)
-   end do
 #else
    call spotrf("u", n, D, n, status)
    if (status /= 0) return
@@ -60,4 +58,7 @@ subroutine Invert_Cholesky(A, D, n, status)
    call spotri("u", n, D, n, status)
    if (status /= 0) return
 #endif
+   do i = 2, n
+      D(i,1:i-1) = D(1:i-1,i)
+   end do
 end subroutine Invert_Cholesky
