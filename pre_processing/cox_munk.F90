@@ -532,7 +532,7 @@ subroutine cox_munk(bands, solza, satza, solaz, totbsc, totabs, relaz, u10, v10,
    ! Add all the reflectance terms to produce the full surface reflectance
    !----------------------------------------------------------------------------
    do i=1,npts
-      rho(:,i) = rhowc(:,i) + (1+wcfrac(i))*(rhogl(:,i) + rhoul(:,i))
+      rho(:,i) = rhowc(:,i) + (1-wcfrac(i))*(rhogl(:,i) + rhoul(:,i))
    end do
 
 
@@ -1342,7 +1342,7 @@ subroutine cox_munk3(i_band, shared_geo_wind, ocean_colour, rho)
    !----------------------------------------------------------------------------
    ! Add all the reflectance terms to produce the full surface reflectance
    !----------------------------------------------------------------------------
-   rho = rhowc + (1+shared_geo_wind%wcfrac)*(rhogl + rhoul)
+   rho = rhowc + (1-shared_geo_wind%wcfrac)*(rhogl + rhoul)
 
 end subroutine cox_munk3
 
@@ -1723,7 +1723,7 @@ subroutine cox_munk4(i_band, shared_wind, shared_band_geo, solza, satza, &
    !----------------------------------------------------------------------------
    ! Add all the reflectance terms to produce the full surface reflectance
    !----------------------------------------------------------------------------
-   rho = shared_wind%rhowc + (1+shared_wind%wcfrac)*(rhogl + rhoul)
+   rho = shared_wind%rhowc + (1-shared_wind%wcfrac)*(rhogl + rhoul)
 
 end subroutine cox_munk4
 
