@@ -461,11 +461,12 @@ subroutine read_slstr_visdata(indir,inband,outarr,imager_angles,sx,sy, &
 
    ! Apply scale, offset and then fill for bad data
    where(data2 .eq. filval) data3=sreal_fill_value
-   outarr(offset:nx+offset-1,:)=data3
+
+   outarr(offset+1:nx+offset,:)=data3
 
    ! Convert from radiances to reflectances
    where(outarr .ne.sreal_fill_value) outarr = &
-        (pi*outarr*cos(d2r*imager_angles%solzen(:,:,view)))/irradiances(1)
+        pi*(outarr)/irradiances(1)
 
    ! Fill where sza is bad
    where(imager_angles%solzen(:,:,1) .eq. sreal_fill_value) &
@@ -720,7 +721,7 @@ subroutine slstr_get_alignment(nx,ny,obnx,obny,tirlons,oblons,aligment)
    bdiff=9e15
 
    do x=1,nx-obnx
-      summer   =   sum(abs(tirlons(x:x+obnx,:)-oblons))
+      summer   =   sum(abs(tirlons(x:x+obnx-1,:)-oblons))
       if (summer .lt. bdiff) then
          bdiff = summer
          aligment = x

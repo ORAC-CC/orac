@@ -209,7 +209,7 @@ subroutine read_slstr(infile, imager_geolocation, imager_measurements, &
    end if
 
    ! Get interpolation factors between reduced and TIR grid for each pixel
-   call slstr_get_interp(imager_geolocation%longitude,txlons,txnx,txnx,nx,ny, &
+   call slstr_get_interp(imager_geolocation%longitude,txlons,txnx,txny,nx,ny, &
         interp)
 
    deallocate(txlats)
