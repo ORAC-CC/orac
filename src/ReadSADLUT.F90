@@ -367,7 +367,8 @@ subroutine Read_LUT_rat(Ctrl, LUT_file, SAD_LUT, i_chan, i_lut, name, values)
    ! Read in the i_lut array (temporarily 2D)
    call read_values_2d(LUT_file, name, lun, i_chan, i_lut, SAD_LUT%Grid%nTau, &
                        SAD_LUT%Grid%nRe, tmp_values)
-   values(i_chan,:) = tmp_values(1,1,1:SAD_LUT%Grid%nRe)
+
+   values(i_chan,1:SAD_LUT%Grid%nRe) = tmp_values(1,1,1:SAD_LUT%Grid%nRe)
 
    close(unit = lun)
 
