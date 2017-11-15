@@ -28,6 +28,7 @@
 ! 2017/05/12, SP: Added 'correction' to bypass problems with S7 channel.
 !                 Now bad data (T>305K) is replaced by values from F1 channel.
 !                 This is not elegant due to F1 issues, but better than no data.
+! 2017/11/15, SP: Add feature to give access to sensor azimuth angle
 !
 ! $Id$
 !
@@ -908,7 +909,7 @@ subroutine slstr_interp_angs(in_angs,out_angs,txnx,txny,nx,ny,interp,view)
          if (intval(2) .lt. 0 .or. intval(2) .gt. 180 ) intval = sreal_fill_value
 
          out_angs%solazi(x,y,view) = intval(3)
-         out_angs%relazi(x,y,view) = intval(1)
+         out_angs%satazi(x,y,view) = intval(1)
          out_angs%solzen(x,y,view) = intval(4)
          out_angs%satzen(x,y,view) = intval(2)
 
@@ -997,27 +998,40 @@ subroutine read_slstr_satsol(indir,imager_angles,interp,txnx,txny,nx,ny, &
    call slstr_interp_angs(angles,imager_angles,txnx,txny,nx,ny,interp,view)
 
    ! Rescale zens + azis into correct format
-   where(imager_angles%solazi(startx:,:,view) .ne. sreal_fill_value .and. &
-         imager_angles%relazi(startx:,:,view) .ne. sreal_fill_value)
-      imager_angles%relazi(:,:,view) = abs(imager_angles%solazi(startx:,:,view)-&
-                                           imager_angles%relazi(startx:,:,view))
+   where(imager_angles%solazi(:,:,view) .ne. sreal_fill_value .and. &
+         imager_angles%satazi(:,:,view) .ne. sreal_fill_value)
+      !This line converts sol+sat azi to relazi
+      imager_angles%relazi(:,:,view) = abs(imager_angles%solazi(:,:,view)-&
+                                           imager_angles%satazi(:,:,view))
       imager_angles%relazi(:,:,view) = (180. - imager_angles%relazi(:,:,view))
       imager_angles%solazi(:,:,view) = (180. - imager_angles%solazi(:,:,view))
    end where
+
    where (imager_angles%solazi(:,:,view) .gt. 180.)
       imager_angles%solazi(:,:,view) = 180. - imager_angles%solazi(:,:,view)
    end where
    where (imager_angles%relazi(:,:,view) .gt. 180.)
       imager_angles%relazi(:,:,view) = 180. - imager_angles%relazi(:,:,view)
    end where
+
    where (imager_angles%solazi(:,:,view) .lt. 0. .and. &
-          imager_angles%solazi(startx:,:,view) .ne. sreal_fill_value)
+          imager_angles%solazi(:,:,view) .ne. sreal_fill_value)
       imager_angles%solazi(:,:,view) = 0. - imager_angles%solazi(:,:,view)
    end where
    where (imager_angles%relazi(:,:,view) .lt. 0. .and. &
-          imager_angles%relazi(startx:,:,view) .ne. sreal_fill_value )
+          imager_angles%relazi(:,:,view) .ne. sreal_fill_value )
       imager_angles%relazi(:,:,view) = 0. - imager_angles%relazi(:,:,view)
    end where
+
+
+   where (imager_angles%satazi(:,:,view) .gt. 180.)
+      imager_angles%satazi(:,:,view) = 180. - imager_angles%satazi(:,:,view)
+   end where
+   where (imager_angles%satazi(:,:,view) .lt. 0. .and. &
+          imager_angles%satazi(:,:,view) .ne. sreal_fill_value )
+      imager_angles%satazi(:,:,view) = 0. - imager_angles%satazi(:,:,view)
+   end where
+
 end subroutine read_slstr_satsol
 
 ! Get one of the geometry variables, then resample to the correct grid

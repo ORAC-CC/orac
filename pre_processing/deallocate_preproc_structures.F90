@@ -35,6 +35,7 @@
 ! 2015/11/26, GM: Refactored to include allocate_preproc_prtm() for use
 !    elsewhere.
 ! 2017/03/29, SP: Add new variable for tropopause cloud emissivity (ExtWork)
+! 2017/11/15, SP: Add feature to give access to sensor azimuth angle
 !
 ! $Id$
 !
@@ -98,6 +99,7 @@ subroutine deallocate_preproc_structures(preproc_dims,preproc_geoloc, &
    deallocate(preproc_geo%solza)
    deallocate(preproc_geo%solazi)
    deallocate(preproc_geo%satza)
+   deallocate(preproc_geo%satazi)
    deallocate(preproc_geo%relazi)
 
    ! preproc_prtm

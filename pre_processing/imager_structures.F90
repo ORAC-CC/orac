@@ -24,6 +24,7 @@
 ! 2016/04/09, SP: Added multiple views
 ! 2017/03/29, SP: Add new variable for tropopause cloud emissivity (ExtWork)
 ! 2017/06/21, OS: added ann phase variables
+! 2017/11/15, SP: Add feature to give access to sensor azimuth angle
 !
 ! $Id$
 !
@@ -65,6 +66,7 @@ module imager_structures_m
       real(kind=sreal), dimension(:,:,:), pointer :: solzen
       real(kind=sreal), dimension(:,:,:), pointer :: satzen
       real(kind=sreal), dimension(:,:,:), pointer :: solazi
+      real(kind=sreal), dimension(:,:,:), pointer :: satazi
       real(kind=sreal), dimension(:,:,:), pointer :: relazi
 
    end type imager_angles_t

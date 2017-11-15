@@ -24,6 +24,7 @@
 !    interpolation between preproc_prtm_t structures.
 ! 2017/03/29, SP: Add new variable for tropopause cloud emissivity (ExtWork)
 ! 2017/03/29, SP: Add ability to calculate tropospheric cloud emissivity (ExtWork)
+! 2017/11/15, SP: Add feature to give access to sensor azimuth angle
 !
 ! $Id$
 !
@@ -58,7 +59,7 @@ module preproc_structures_m
 
    ! geometry
    type preproc_geo_t
-      real(kind=sreal), dimension(:,:,:), pointer :: solza,solazi,satza,relazi
+      real(kind=sreal), dimension(:,:,:), pointer :: solza,solazi,satza,satazi,relazi
    end type preproc_geo_t
 
 

@@ -32,6 +32,7 @@
 ! 2014/05/07, AP: Move contents of make_preproc_grid here. Update structures.
 ! 2015/21/01, OS: bug fix in setting lon_i/lat_i min/max limits
 ! 2015/01/30, AP: Remove uscan and vscan as unnecessary.
+! 2017/11/15, SP: Add feature to give access to sensor azimuth angle
 !
 ! $Id$
 !
@@ -117,6 +118,8 @@ subroutine build_preproc_fields(preproc_dims, preproc_geoloc, preproc_geo, &
 
                preproc_geo%solza(lon_i,lat_j,k)= &
                     preproc_geo%solza(lon_i,lat_j,k)+imager_angles%solzen(i,j,k)
+               preproc_geo%satazi(lon_i,lat_j,k)= &
+                    preproc_geo%satazi(lon_i,lat_j,k)+imager_angles%satazi(i,j,k)
                preproc_geo%relazi(lon_i,lat_j,k)= &
                     preproc_geo%relazi(lon_i,lat_j,k)+imager_angles%relazi(i,j,k)
                preproc_geo%solazi(lon_i,lat_j,k)=&
@@ -147,6 +150,8 @@ subroutine build_preproc_fields(preproc_dims, preproc_geoloc, preproc_geo, &
                ! if this is a good preprocessing pixel, calculate the average
                preproc_geo%solza(i,j,k)=preproc_geo%solza(i,j,k)/ &
                     preproc_dims%counter_sw(i,j,k)
+               preproc_geo%satazi(i,j,k)=preproc_geo%satazi(i,j,k)/ &
+                    preproc_dims%counter_sw(i,j,k)
                preproc_geo%relazi(i,j,k)=preproc_geo%relazi(i,j,k)/ &
                     preproc_dims%counter_sw(i,j,k)
                preproc_geo%solazi(i,j,k)=preproc_geo%solazi(i,j,k)/ &
@@ -154,6 +159,7 @@ subroutine build_preproc_fields(preproc_dims, preproc_geoloc, preproc_geo, &
             else
                ! if not set fill value
                preproc_geo%solza(i,j,k)=sreal_fill_value
+               preproc_geo%satazi(i,j,k)=sreal_fill_value
                preproc_geo%relazi(i,j,k)=sreal_fill_value
                preproc_geo%solazi(i,j,k)=sreal_fill_value
             end if

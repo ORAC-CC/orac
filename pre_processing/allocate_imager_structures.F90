@@ -35,6 +35,7 @@
 ! 2016/04/09, SP: Added multiple views
 ! 2017/03/29, SP: Add new variable for tropopause cloud emissivity (ExtWork)
 ! 2017/06/21, OS: allocated ann phase variables; imager_angles are now inout
+! 2017/11/15, SP: Add feature to give access to sensor azimuth angle
 !
 ! $Id$
 !
@@ -100,6 +101,11 @@ subroutine allocate_imager_structures(imager_geolocation,imager_angles, &
         imager_geolocation%startx:imager_geolocation%endx, &
         1:imager_geolocation%ny,imager_angles%nviews))
    imager_angles%solazi=sreal_fill_value
+
+   allocate(imager_angles%satazi( &
+        imager_geolocation%startx:imager_geolocation%endx, &
+        1:imager_geolocation%ny,imager_angles%nviews))
+   imager_angles%satazi=sreal_fill_value
 
    allocate(imager_angles%relazi( &
         imager_geolocation%startx:imager_geolocation%endx, &

@@ -29,6 +29,7 @@
 ! 2015/07/03, OS: Added cldmask_uncertainty
 ! 2017/03/29, SP: Add new variable for tropopause cloud emissivity (ExtWork)
 ! 2017/06/21, OS: deallocated ann phase variables
+! 2017/11/15, SP: Add feature to give access to sensor azimuth angle
 !
 ! $Id$
 !
@@ -56,6 +57,7 @@ subroutine deallocate_imager_structures(imager_geolocation,imager_angles, &
    deallocate(imager_geolocation%dem)
    deallocate(imager_angles%solzen)
    deallocate(imager_angles%satzen)
+   deallocate(imager_angles%satazi)
    deallocate(imager_angles%relazi)
    deallocate(imager_angles%solazi)
    deallocate(imager_flags%lusflag)

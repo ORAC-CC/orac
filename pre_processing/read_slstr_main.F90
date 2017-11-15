@@ -18,6 +18,7 @@
 ! 2017/05/12, SP: Added 'correction' to bypass problems with S7 channel.
 !                 Now bad data (T>305K) is replaced by values from F1 channel.
 !                 This is not elegant due to F1 issues, but better than no data.
+! 2017/11/15, SP: Add feature to give access to sensor azimuth angle
 !
 ! $Id$
 !
@@ -220,7 +221,7 @@ subroutine read_slstr(infile, imager_geolocation, imager_measurements, &
    ! Read satellite and solar angles for the nadir viewing geometry
    call read_slstr_satsol(indir,imager_angles,interp,txnx,txny,nx,ny,startx,1)
    if (imager_angles%nviews .eq. 2) then
-      ! Read satellite and solar angles for the nadir viewing geometry
+      ! Read satellite and solar angles for the oblique viewing geometry
       call read_slstr_satsol(indir,imager_angles,interp,txnx,txny,nx,ny,startx,2)
    end if
 

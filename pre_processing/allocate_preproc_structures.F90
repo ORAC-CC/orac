@@ -51,6 +51,7 @@
 ! 2015/11/26, GM: Refactored to include allocate_preproc_prtm() for use
 !    elsewhere.
 ! 2017/03/29, SP: Add ability to calculate tropospheric cloud emissivity (ExtWork)
+! 2017/11/15, SP: Add feature to give access to sensor azimuth angle
 !
 ! $Id$
 !
@@ -172,6 +173,8 @@ subroutine allocate_preproc_structures(imager_angles,preproc_dims, &
    preproc_geo%solazi=0.0
    allocate(preproc_geo%satza(sx:ex,sy:ey,imager_angles%nviews))
    preproc_geo%satza=0.0
+   allocate(preproc_geo%satazi(sx:ex,sy:ey,imager_angles%nviews))
+   preproc_geo%satazi=0.0
    allocate(preproc_geo%relazi(sx:ex,sy:ey,imager_angles%nviews))
    preproc_geo%relazi=0.0
 
