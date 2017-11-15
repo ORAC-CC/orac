@@ -50,6 +50,7 @@
 ! 2017/03/29, SP: Switch to parallel RTTOV for performance improvement
 ! 2017/03/30, SP: Add ability to calculate tropospheric cloud emissivity (ExtWork)
 ! 2017/04/12, SP: Allow switch to parallel RTTOV only if OPENMP is enabled.
+! 2017/11/15, SP: Add feature to give access to sensor azimuth angle
 !
 ! $Id$
 !
@@ -471,6 +472,9 @@ subroutine rttov_driver_gfs(coef_path, emiss_path, sensor, platform, &
          do idim=preproc_dims%min_lon,preproc_dims%max_lon
             count = count + 1
             profiles(count)%zenangle = preproc_geo%satza(idim,jdim,cview)
+            profiles(count)%azangle = preproc_geo%satazi(idim,jdim,cview)
+            profiles(count)%sunzenangle = preproc_geo%solza(idim,jdim,cview)
+            profiles(count)%sunazangle = preproc_geo%solazi(idim,jdim,cview)
          end do
       end do
 
