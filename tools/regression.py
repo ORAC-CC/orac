@@ -130,7 +130,7 @@ try:
                 f.write("#!/bin/bash --noprofile\n")
                 f.write("export PATH={}\n".format(os.environ['PATH']))
                 f.write("export ORAC_LIB={}\n".format(os.environ['ORAC_LIB']))
-                f.write("python <<EOF\n")
+                f.write(defaults.python_path + " <<EOF\n")
                 f.write("import os\n")
                 f.write("import glob\n")
                 f.write("import warnings\n")

@@ -56,12 +56,13 @@ class BatchSystem:
                    args, but has a more complicated structure.
     depend_delim - String require to space consequetive dependencies."""
 
-    def __init__(self, command, regex, depend_arg, depend_delim, args):
+    def __init__(self, command, regex, depend_arg, depend_delim, openmp, args):
         self.command = command
-        self.args = args
-        self.regex = re.compile(regex)
-        self.depend_arg = depend_arg
+        self.args         = args
+        self.regex        = re.compile(regex)
+        self.depend_arg   = depend_arg
         self.depend_delim = depend_delim
+        self.openmp       = openmp
         self.args.update({'depend' : self.ParseDepend})
 
     def ParseDepend(self, item):
@@ -101,6 +102,9 @@ class BatchSystem:
         else:
             return m.groupdict()
 
+    def add_openmp_to_script(self, file_obj):
+        file_obj.write(self.openmp)
+
 #-----------------------------------------------------------------------------
 #----- BATCH PROCESSING SYSTEM DEFINITIONS -----------------------------------
 #-----------------------------------------------------------------------------
@@ -110,6 +114,7 @@ qsub = BatchSystem('qsub',
                    'Your job (?P<ID>\d+) \("(?P<job_name>[\w\.-]+)"\) '
                    'has been submitted',
                    '-hold_jid%%{}', ',',
+                   '',
                    {'duration' : '-l%%h_rt={}:00'.format,
                     'email'    : '-M%%{}'.format,
                     'err_file' : '-e%%{}'.format,
@@ -126,6 +131,7 @@ bsub = BatchSystem('bsub',
                    'Job <(?P<ID>\d+)> is submitted to (?P<desc>\w*)queue '
                    '<(?P<queue>[\w\.-]+)>.',
                    '-w%%ended({})', ') && ended(',
+                   '',
                    {'duration' : '-W%%{}'.format,
                     'email'    : '-u%%{}'.format,
                     'err_file' : '-e%%{}'.format,
@@ -138,3 +144,24 @@ bsub = BatchSystem('bsub',
                     'priority' : '-p%%{}'.format,
                     'queue'    : '-q%%{}'.format,
                     'ram'      : '-R%%rusage[mem={0}]%%-M%%{0}000'.format})
+
+# SLURM, the new Oxford queuing system
+slurm = BatchSystem('sbatch',
+                    'Submitted batch job (?P<ID>\d+)',
+                    '--dependency=afterok:{}', ':', """
+if [ -n "$SLURM_CPUS_PER_TASK" ]; then
+    omp_threads=$SLURM_CPUS_PER_TASK
+else
+    omp_threads=1
+fi
+export OMP_NUM_THREADS=$omp_threads
+""",
+                   {'duration' : '--time={}:00'.format,
+                    'email'    : '--mail-user={}'.format,
+                    'err_file' : '--error={}'.format,
+                    'job_name' : '--job-name={}'.format,
+                    'log_file' : '--output={}'.format,
+                    'priority' : '--nice={}'.format,
+                    'procs'    : '--cpus-per-task={}'.format,
+                    'queue'    : '--partition={}'.format,
+                    'ram'      : '--mem={}M'.format})

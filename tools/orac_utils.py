@@ -180,6 +180,8 @@ def call_exe(args,           # Arguments of scripts
         # Define a directory for EMOS to put it's gridding
         try:
             os.environ["PPDIR"] = args.emos_dir
+            os.environ["OPENBLAS_NUM_THREADS"] = 1
+            os.environ["OMP_NUM_THREADS"] = args.procs
         except AttributeError:
             pass
 
@@ -208,10 +210,12 @@ def call_exe(args,           # Arguments of scripts
         # Define processing environment
         libs = read_orac_libraries(args.orac_lib)
         g.write("export LD_LIBRARY_PATH=" + build_orac_library_path(libs) + "\n")
+        g.write("export OPENBLAS_NUM_THREADS=1\n")
         try:
             g.write("export PPDIR=" + args.emos_dir + "\n")
         except AttributeError:
             pass
+        defaults.batch.add_openmp_to_script(g)
 
         # Call executable and give the script permission to execute
         g.write(exe + ' ' + driver_file + "\n")
@@ -224,6 +228,13 @@ def call_exe(args,           # Arguments of scripts
         try:
             # Add default arguments to values
             values.update(defaults.batch_values)
+
+            # Command line arguments that might override defaults
+            if args.queue != '':
+                values['queue'] = args.queue
+            if args.priority is not None:
+                values['priority'] = args.priority
+            values['procs'] = args.procs
 
             # Check to see if the depend_arg batch value has been
             # supplied, and extract it from the other batch arguments
@@ -366,7 +377,7 @@ def compare_orac_out(f0, f1):
                     warnings.warn(Acceptable(f1, key), stacklevel=2)
                 else:
                     warnings.warn(RoundingError(f1, key), stacklevel=2)
-    except Exception,e:
+    except Exception as e:
         warnings.warn('Problem performing regression tests. '+str(e),
                       OracWarning, stacklevel=2)
 
@@ -458,9 +469,7 @@ def get_svn_revision():
         m = re.search('Revision: (\d+?)\n', tmp)
         return int(m.group(1))
     except:
-        warnings.warn('Unable to determine revision number.', OracWarning,
-                      stacklevel=2)
-        return 0
+        raise ValueError('Unable to determine revision number. Set it using -r')
 
 #-----------------------------------------------------------------------------
 
@@ -822,7 +831,13 @@ def args_common(parser, regression=False):
 
     key = parser.add_argument_group('Common keyword arguments')
     key.add_argument('--batch', action='store_true',
-                      help = 'Use batch processing for this call.')
+                     help = 'Use batch processing for this call.')
+    key.add_argument('--queue', type=str, default='',
+                     help = 'Name of queue to use for batch processing.')
+    key.add_argument('--priority', type=int, default=None,
+                     help = 'Priority to pass to batch scheduler.')
+    key.add_argument('--procs', type=int, default=1,
+                     help = 'Number of processors to use. Default 1.')
     key.add_argument('-J', '--just_driver', action='store_true',
                      help = 'Only print the driver file.')
     key.add_argument('-k', '--keep_driver', action='store_true',
@@ -1567,7 +1582,8 @@ def build_postproc_driver(args, pri=None):
     files = zip(pri, [re.sub('primary', 'secondary', t) for t in pri])
 
     # Form driver file
-    driver = """{wat_pri}
+    driver = """{multilayer}
+{wat_pri}
 {ice_pri}
 {wat_sec}
 {ice_sec}
@@ -1581,22 +1597,23 @@ VERBOSE={verbose}
 USE_CHUNKING={chunking}
 USE_NETCDF_COMPRESSION={compress}
 USE_BAYESIAN_SELECTION={bayesian}""".format(
-        bayesian = args.phases != ['WAT', 'ICE'],
-        chunking = args.chunking,
-        compress = args.compress,
-        cost_tsh = args.cost_thresh,
-        ice_pri  = files[1][0],
-        ice_sec  = files[1][1],
-        opt_nght = not args.no_night_opt,
-        out_pri  = args.out_dir + '/' + '.'.join(filter(None, (
+        bayesian   = args.phases != ['WAT', 'ICE'],
+        chunking   = args.chunking,
+        compress   = args.compress,
+        cost_tsh   = args.cost_thresh,
+        ice_pri    = files[1][0],
+        ice_sec    = files[1][1],
+        multilayer = args.approach == 'AppCld2L',
+        opt_nght   = not args.no_night_opt,
+        out_pri    = args.out_dir + '/' + '.'.join(filter(None, (
             args.target, args.suffix, 'primary', 'nc'))),
-        out_sec  = args.out_dir + '/' + '.'.join(filter(None, (
+        out_sec    = args.out_dir + '/' + '.'.join(filter(None, (
             args.target, args.suffix, 'secondary', 'nc'))),
-        prob_tsh = args.prob_thresh,
-        switch   = args.switch_phase,
-        verbose  = args.verbose,
-        wat_pri  = files[0][0],
-        wat_sec  = files[0][1])
+        prob_tsh   = args.prob_thresh,
+        switch     = args.switch_phase,
+        verbose    = args.verbose,
+        wat_pri    = files[0][0],
+        wat_sec    = files[0][1])
     # Add additional files
     for f in files[2:]:
         driver += '\n'
