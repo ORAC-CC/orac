@@ -191,7 +191,7 @@ module orac_output_m
       real(sreal)   :: rho_offset             = 0.0
       integer(sint) :: rho_vmin               = 0
       integer(sint) :: rho_vmax               = 32000
-      real(sreal)   :: rho_uncertainty_scale  = 0.00001
+      real(sreal)   :: rho_uncertainty_scale  = 0.0001
       real(sreal)   :: rho_uncertainty_offset = 0.0
       integer(sint) :: rho_uncertainty_vmin   = 0
       integer(sint) :: rho_uncertainty_vmax   = 32000
@@ -425,7 +425,7 @@ module orac_output_m
       integer(byte) :: phase_scale  = 1
       integer(byte) :: phase_offset = 0
       integer(byte) :: phase_vmin   = 0
-      integer(byte) :: phase_vmax   = 20
+      integer(byte) :: phase_vmax   = 127
 
       integer(byte) :: phase_pavolonis_scale  = 1
       integer(byte) :: phase_pavolonis_offset = 0
