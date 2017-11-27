@@ -1,0 +1,60 @@
+
+# /
+/ 
+
+# /common/
+/common/obj
+/common/gmon.out
+/common/h2o_ref.dat
+/common/liborac_common.a
+/common/generate_parser
+/common/generate_parser.tab.c
+/common/generate_parser.tab.h
+/common/generate_parser.c
+/common/struct_parser.tab.cc
+/common/struct_parser.tab.hh
+/common/position.hh
+/common/location.hh
+/common/stack.hh
+
+# /config/
+/config/*.ox
+
+# /derived_products/broadband_fluxes/
+/derived_products/broadband_fluxes/obj
+/derived_products/broadband_fluxes/libprocess_broadband_fluxes.a
+/derived_products/broadband_fluxes/process_broadband_fluxes
+/derived_products/broadband_fluxes/gmon.out
+/derived_products/broadband_fluxes/h2o_ref.dat
+/derived_products/broadband_fluxes/fu_liou
+
+# /post_processing/
+/post_processing/obj
+/post_processing/libpostproc.a
+/post_processing/orac_postproc
+/post_processing/gmon.out
+/post_processing/h2o_ref.dat
+
+# /pre_processing/
+/pre_processing/obj
+/pre_processing/libpreproc.a
+/pre_processing/orac_preproc
+/pre_processing/gmon.out
+/pre_processing/h2o_ref.dat
+
+# /src/
+/src/obj
+/src/orac
+/src/liborac.a
+/src/gmon.out
+/src/h2o_ref.dat
+/src/read_ctrl.cc
+/src/read_ctrl.F90
+/src/read_ctrl.lex
+
+# /tools/
+/tools/compare_orac_out.sav
+/tools/run_orac.sh
+/tools/local_defaults.py
+/tools/__pycache__
+/tools/*.pyc
