@@ -138,7 +138,7 @@ subroutine Read_LwRTM_nc(Ctrl, RTM)
       instname = 'AVHRR-METOPA'
    elseif (platform(1:6) == 'metopb') then
       instname = 'AVHRR-METOPB'
-   endif
+   end if
 
    if (trim(adjustl(instname)) /= trim(adjustl(Ctrl%InstName))) then
       write(*,*) 'ERROR: Read_LwRTM_nc(): Instrument in LWRTM header inconsistent: ', &

@@ -1265,7 +1265,7 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
                        pxtoalwupclr,pxtoaswupclr,&
                        pxboalwupclr,pxboalwdnclr,pxboaswupclr,pxboaswdnclr,&
                        bpar,bpardif,tpar)
-            endif
+            end if
 
             !-------------------------------------------------------------------
             ! Quality check retrieved data & fill output arrays

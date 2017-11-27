@@ -1117,7 +1117,7 @@ subroutine cox_munk3_calc_shared_geo_wind(solza, satza, solaz, relaz, u10, v10, 
    if (ws .le. 0.) then
       ws = 0.
       wd = 0.
-   endif
+   end if
 
 
    !----------------------------------------------------------------------------

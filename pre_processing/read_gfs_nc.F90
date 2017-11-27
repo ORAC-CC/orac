@@ -72,10 +72,9 @@ subroutine read_gfs_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
    gfs_levlist = (/1,2,3,5,7,10,20,30,50,70,100,150,200,250,300,350, &
                    400,450,500,550,600,650,700,750,800,850,900,925,950,975,1000/)
 
-
-	do i=1,31
-		preproc_prtm%pressure(:,:,i)=gfs_levlist(i)
-	end do
+   do i=1,31
+      preproc_prtm%pressure(:,:,i)=gfs_levlist(i)
+   end do
 
    n=ecmwf%xdim*ecmwf%ydim
 

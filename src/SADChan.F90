@@ -250,7 +250,7 @@ function create_sad_filename2(Ctrl, chan_num, SAD_Dir, LUTClass, crp_name) &
       else
          write(*,*) 'ERROR: SADChan(): METOP platform name not one of METOPA or METOPB'
          stop error_stop_code
-      endif
+      end if
    end if
 
    if (present(chan_num)) then

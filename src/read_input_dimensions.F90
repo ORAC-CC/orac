@@ -130,11 +130,11 @@ subroutine read_input_dimensions_rtm(fname_prtm,fname_lwrtm,fname_swrtm, &
 
    ! Open SWRTM file
    call nc_open(ncid,fname_swrtm)
-	if (n_solar > 0) then
-	   channeldim_sw = nc_dim_length(ncid, 'nsw_channels', verbose)
-	else
-		channeldim_sw = 0
-   endif
+   if (n_solar > 0) then
+      channeldim_sw = nc_dim_length(ncid, 'nsw_channels', verbose)
+   else
+      channeldim_sw = 0
+   end if
 
    ! Close SWRTM file
    if (nf90_close(ncid) .ne. NF90_NOERR) then

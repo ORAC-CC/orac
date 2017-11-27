@@ -180,7 +180,7 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
       end do
    end select
 
-   ! Add in the Homog and Coreg noise IF the appropriate Ctrl flags are set
+   ! Add in the Homog and Coreg noise if the appropriate Ctrl flags are set
    ! (For mixed solar/thermal channels, the value in daytime is a sum of the
    ! thermal and solar contributions).
 

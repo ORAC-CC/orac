@@ -434,9 +434,9 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       else
          write(*,*) 'ERROR: Read_Driver(): Invalid Ctrl%Approach:', Ctrl%Approach
          if (.not. new_driver_format) then
-         	write(*,*) ' Check driver file header. Is it a new format file?'
-         	write(*,*) ' Driver file should start with: # ORAC New Driver File'
-         endif
+            write(*,*) ' Check driver file header. Is it a new format file?'
+            write(*,*) ' Driver file should start with: # ORAC New Driver File'
+         end if
          stop error_stop_code
       end if
    end if

@@ -183,7 +183,7 @@ subroutine read_seviri_l1_5(l1_5_file, imager_geolocation, imager_measurements, 
       hrit_proc = .false.
    else
       hrit_proc = .true.
-   endif
+   end if
 
    ! Setup some arguments to seviri_read_and_preproc_f90()
 
@@ -213,50 +213,49 @@ subroutine read_seviri_l1_5(l1_5_file, imager_geolocation, imager_measurements, 
 
    if (.not. hrit_proc .or. (nx .eq. 3712 .and. ny .eq. 3712)) then
 
-		! The SEVIRI reader has the option to assume that memory for the output
-		! image arrays has already been allocated. In this case we point these output
-		! array pointers to the already allocated imager arrays to avoid copying.
-		preproc%time => imager_time%time(startx:,:)
-		preproc%lat  => imager_geolocation%latitude(startx:,:)
-		preproc%lon  => imager_geolocation%longitude(startx:,:)
-		preproc%sza  => imager_angles%solzen(startx:,:,1)
-		preproc%saa  => imager_angles%solazi(startx:,:,1)
-		preproc%vza  => imager_angles%satzen(startx:,:,1)
-		preproc%vaa  => imager_angles%relazi(startx:,:,1)
-		preproc%data => imager_measurements%data(startx:,:,:)
+      ! The SEVIRI reader has the option to assume that memory for the output
+      ! image arrays has already been allocated. In this case we point these output
+      ! array pointers to the already allocated imager arrays to avoid copying.
+      preproc%time => imager_time%time(startx:,:)
+      preproc%lat  => imager_geolocation%latitude(startx:,:)
+      preproc%lon  => imager_geolocation%longitude(startx:,:)
+      preproc%sza  => imager_angles%solzen(startx:,:,1)
+      preproc%saa  => imager_angles%solazi(startx:,:,1)
+      preproc%vza  => imager_angles%satzen(startx:,:,1)
+      preproc%vaa  => imager_angles%relazi(startx:,:,1)
+      preproc%data => imager_measurements%data(startx:,:,:)
 
-		! The main reader call which populates preproc (type seviri_preproc_t_f90)
-		if (verbose) write(*,*) 'Calling seviri_read_and_preproc_f90() from ' // &
-		                        'the seviri_native_util module, LC'
-		if (seviri_read_and_preproc_f90(trim(l1_5_file)//C_NULL_CHAR, preproc, &
-		    n_bands, band_ids, band_units, SEVIRI_BOUNDS_LINE_COLUMN, line0, line1, &
-		    column0, column1, 0.d0, 0.d0, 0.d0, 0.d0, .true.) .ne. 0) then
-		   write(*,*) 'ERROR: in read_seviri_l1_5(), calling ' // &
-		              'seviri_read_and_preproc_f90(), filename = ', trim(l1_5_file)
-		   stop error_stop_code
-		end if
+      ! The main reader call which populates preproc (type seviri_preproc_t_f90)
+      if (verbose) write(*,*) 'Calling seviri_read_and_preproc_f90() from ' // &
+                              'the seviri_native_util module, LC'
+      if (seviri_read_and_preproc_f90(trim(l1_5_file)//C_NULL_CHAR, preproc, &
+          n_bands, band_ids, band_units, SEVIRI_BOUNDS_LINE_COLUMN, line0, line1, &
+          column0, column1, 0.d0, 0.d0, 0.d0, 0.d0, .true.) .ne. 0) then
+         write(*,*) 'ERROR: in read_seviri_l1_5(), calling ' // &
+                    'seviri_read_and_preproc_f90(), filename = ', trim(l1_5_file)
+         stop error_stop_code
+      end if
    else
-		! The main reader call which populates preproc (type seviri_preproc_t_f90)
-		if (verbose) write(*,*) 'Calling seviri_read_and_preproc_f90() from ' // &
-		                        'the seviri_native_util module, FD'
-		if (seviri_read_and_preproc_f90(trim(l1_5_file)//C_NULL_CHAR, preproc, &
-		    n_bands, band_ids, band_units, SEVIRI_BOUNDS_FULL_DISK, 1, 3712, &
-		    1, 3712, 0.d0, 0.d0, 0.d0, 0.d0, .false.) .ne. 0) then
-		   write(*,*) 'ERROR: in read_seviri_l1_5(), calling ' // &
-		              'seviri_read_and_preproc_f90(), filename = ', trim(l1_5_file)
-		   stop error_stop_code
-		end if
+      ! The main reader call which populates preproc (type seviri_preproc_t_f90)
+      if (verbose) write(*,*) 'Calling seviri_read_and_preproc_f90() from ' // &
+                              'the seviri_native_util module, FD'
+      if (seviri_read_and_preproc_f90(trim(l1_5_file)//C_NULL_CHAR, preproc, &
+          n_bands, band_ids, band_units, SEVIRI_BOUNDS_FULL_DISK, 1, 3712, &
+          1, 3712, 0.d0, 0.d0, 0.d0, 0.d0, .false.) .ne. 0) then
+         write(*,*) 'ERROR: in read_seviri_l1_5(), calling ' // &
+                    'seviri_read_and_preproc_f90(), filename = ', trim(l1_5_file)
+         stop error_stop_code
+      end if
 
-		imager_time%time(startx:,:)             = preproc%time(column0:column1,line0:line1)
-		imager_geolocation%latitude(startx:,:)  = preproc%lat(column0:column1,line0:line1)
-		imager_geolocation%longitude(startx:,:) = preproc%lon(column0:column1,line0:line1)
-		imager_angles%solzen(startx:,:,1)       = preproc%sza(column0:column1,line0:line1)
-		imager_angles%solazi(startx:,:,1)       = preproc%saa(column0:column1,line0:line1)
-		imager_angles%satzen(startx:,:,1)       = preproc%vza(column0:column1,line0:line1)
-		imager_angles%relazi(startx:,:,1)       = preproc%vaa(column0:column1,line0:line1)
-		imager_measurements%data(startx:,:,:)   = preproc%data(column0:column1,line0:line1,:)
-
-	endif
+      imager_time%time(startx:,:)             = preproc%time(column0:column1,line0:line1)
+      imager_geolocation%latitude(startx:,:)  = preproc%lat(column0:column1,line0:line1)
+      imager_geolocation%longitude(startx:,:) = preproc%lon(column0:column1,line0:line1)
+      imager_angles%solzen(startx:,:,1)       = preproc%sza(column0:column1,line0:line1)
+      imager_angles%solazi(startx:,:,1)       = preproc%saa(column0:column1,line0:line1)
+      imager_angles%satzen(startx:,:,1)       = preproc%vza(column0:column1,line0:line1)
+      imager_angles%relazi(startx:,:,1)       = preproc%vaa(column0:column1,line0:line1)
+      imager_measurements%data(startx:,:,:)   = preproc%data(column0:column1,line0:line1,:)
+   end if
 
    deallocate(band_ids)
    deallocate(band_units)

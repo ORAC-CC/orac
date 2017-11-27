@@ -245,7 +245,7 @@ subroutine read_slstr(infile, imager_geolocation, imager_measurements, &
             where(imager_measurements%data(:,:,i) .eq. sreal_fill_value) &
                imager_measurements%data(:,:,i) = tmpdata(:,:)
             deallocate(tmpdata)
-         endif
+         end if
       else if (band_ids(i) .lt. 16) then
          call read_slstr_visdata(indir,band_ids(i), &
               imager_measurements%data(:,:,i), &
@@ -261,7 +261,7 @@ subroutine read_slstr(infile, imager_geolocation, imager_measurements, &
             where(imager_measurements%data(:,:,i) .eq. sreal_fill_value) &
                imager_measurements%data(:,:,i) = tmpdata(:,:)
             deallocate(tmpdata)
-         endif
+         end if
       else
          write(*,*)'Invalid band_id! Must be in range 1->18',band_ids(i)
          stop
