@@ -54,9 +54,9 @@ RTTOVMODULE = $(LIBBASE_FORTRAN)/rttov/mod
 HIMAWARI_HSD_READER_LIB = $(LIBBASE_FORTRAN)/Himawari_HSD_Reader
 HIMAWARI_HSD_READER_INCLUDE = $(LIBBASE_FORTRAN)/Himawari_HSD_Reader
 
-# seviri_native_util
-SEVIRI_NATIVE_UTIL_LIB = $(LIBBASE_FORTRAN)/seviri_native_util
-SEVIRI_NATIVE_UTIL_INCLUDE = $(LIBBASE_FORTRAN)/seviri_native_util
+# seviri_util
+SEVIRI_UTIL_LIB = $(LIBBASE_FORTRAN)/seviri_util
+SEVIRI_UTIL_INCLUDE = $(LIBBASE_FORTRAN)/seviri_util
 
 SZLIB = $(LIBBASE)/szip/lib
 
@@ -95,17 +95,17 @@ INC  += -DINCLUDE_RTTOV_OPENMP
 
 # Uncomment if Numerical Recipes is available for cubic spline profile
 # interpolation and bilinear LUT interpolation.
-#LIBS += -L$(NRLIB) -lnr
-#INC  += -I$(NRINCLUDE) -DINCLUDE_NR
+LIBS += -L$(NRLIB) -lnr
+INC  += -I$(NRINCLUDE) -DINCLUDE_NR
 
 # Uncomment if Fu_Liou support is desired for broadband fluxes.
-#LIBS += -L$(FULIOULIB) -lEd3Fu_201212
-#INC  += -I$(FULIOUINCLUDE) -DINCLUDE_FU_LIOU_SUPPORT
+LIBS += -L$(FULIOULIB) -lEd3Fu_201212
+INC  += -I$(FULIOUINCLUDE) -DINCLUDE_FU_LIOU_SUPPORT
 
 # Uncomment if Himawari support is desired.
-#LIBS += -L$(HIMAWARI_HSD_READER_LIB) -lhimawari_util
-#INC  += -I$(HIMAWARI_HSD_READER_INCLUDE) -DINCLUDE_HIMAWARI_SUPPORT
+LIBS += -L$(HIMAWARI_HSD_READER_LIB) -lhimawari_util
+INC  += -I$(HIMAWARI_HSD_READER_INCLUDE) -DINCLUDE_HIMAWARI_SUPPORT
 
 # Uncomment if SEVIRI support is desired.
-#LIBS += -L$(SEVIRI_NATIVE_UTIL_LIB) -lseviri_native_util
-#INC  += -I$(SEVIRI_NATIVE_UTIL_INCLUDE) -DINCLUDE_SEVIRI_SUPPORT
+LIBS += -L$(SEVIRI_UTIL_LIB) -lseviri_util
+INC  += -I$(SEVIRI_UTIL_INCLUDE) -DINCLUDE_SEVIRI_SUPPORT

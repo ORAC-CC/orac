@@ -7,7 +7,7 @@
 ! History:
 ! 2015/02/15, GM: First version.
 ! 2015/07/30, GM: Fixed relative azimuth angle.
-! 2015/08/17, GM: Adapt to the newest version of seviri_native_util.
+! 2015/08/17, GM: Adapt to the newest version of seviri_util.
 ! 2015/08/19, GM: Modifications to support the SEVIRI HRIT format.
 ! 2016/12/08, GT: Fixed solar azimuth angle.
 ! 2017/07/18, SP: Added a poor-mans method of subsetting HRIT data
@@ -53,7 +53,7 @@ subroutine read_seviri_dimensions(l1_5_file, n_across_track, n_along_track, &
    use iso_c_binding
    use preproc_constants_m
 #ifdef INCLUDE_SEVIRI_SUPPORT
-   use seviri_native_util
+   use seviri_util
 #endif
    implicit none
 
@@ -73,7 +73,7 @@ subroutine read_seviri_dimensions(l1_5_file, n_across_track, n_along_track, &
 
    ! Get the starting offset and dimensions of the actual image in the file.
    if (verbose) write(*,*) 'Calling seviri_native_get_dimens_f90() from ' // &
-                           'the seviri_native_util module'
+                           'the seviri_util module'
    if (seviri_get_dimens_f90(trim(l1_5_file)//C_NULL_CHAR, i_line, i_column, &
        n_lines, n_columns, 1, 0, 0, 0, 0, 0.d0, 0.d0, 0.d0, 0.d0) .ne. 0) then
       write(*,*) 'ERROR: in read_seviri_dimensions(), calling ' // &
@@ -151,7 +151,7 @@ subroutine read_seviri_l1_5(l1_5_file, imager_geolocation, imager_measurements, 
    use imager_structures_m
    use preproc_constants_m
 #ifdef INCLUDE_SEVIRI_SUPPORT
-   use seviri_native_util
+   use seviri_util
 #endif
    implicit none
 
@@ -227,7 +227,7 @@ subroutine read_seviri_l1_5(l1_5_file, imager_geolocation, imager_measurements, 
 
       ! The main reader call which populates preproc (type seviri_preproc_t_f90)
       if (verbose) write(*,*) 'Calling seviri_read_and_preproc_f90() from ' // &
-                              'the seviri_native_util module, LC'
+                              'the seviri_util module, LC'
       if (seviri_read_and_preproc_f90(trim(l1_5_file)//C_NULL_CHAR, preproc, &
           n_bands, band_ids, band_units, SEVIRI_BOUNDS_LINE_COLUMN, line0, line1, &
           column0, column1, 0.d0, 0.d0, 0.d0, 0.d0, .true.) .ne. 0) then
@@ -238,7 +238,7 @@ subroutine read_seviri_l1_5(l1_5_file, imager_geolocation, imager_measurements, 
    else
       ! The main reader call which populates preproc (type seviri_preproc_t_f90)
       if (verbose) write(*,*) 'Calling seviri_read_and_preproc_f90() from ' // &
-                              'the seviri_native_util module, FD'
+                              'the seviri_util module, FD'
       if (seviri_read_and_preproc_f90(trim(l1_5_file)//C_NULL_CHAR, preproc, &
           n_bands, band_ids, band_units, SEVIRI_BOUNDS_FULL_DISK, 1, 3712, &
           1, 3712, 0.d0, 0.d0, 0.d0, 0.d0, .false.) .ne. 0) then
