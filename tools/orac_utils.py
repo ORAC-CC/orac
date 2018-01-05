@@ -16,9 +16,10 @@
 #  3 Aug 2017, GT: Added support for the USE_PREDEF_LSM and USE_PREDEF_GEO
 #    preprocessor options
 # 14 Sep 2017, GT: Added support for the PRODUCT_NAME preprocessor option
-#  4 Jan 2018, GT: Added a test, in build_postproc_driver, for thee
+#  4 Jan 2018, GT: Added a test, in build_postproc_driver, for the
 #    existence of the "approach" argument to the post-processor, before
-#    trying to use its value to set multilayer argument  
+#    trying to use its value to set multilayer argument.
+#  5 Jan 2018, GT: Added support for SLSTR.
 
 
 import argparse
@@ -669,6 +670,33 @@ class FileName:
             self.geo      = filename
             return
 
+        m = re.search('S3(?P<platform>[ABCD])_SL_1_RBT____'
+                      '(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2})'
+                      'T(?P<hour>\d{2})(?P<min>\d{2})(?P<sec>\d{2})'
+                      '_(?P<y2>\d{4})(?P<m2>\d{2})(?P<d2>\d{2})'
+                      'T(?P<h2>\d{2})(?P<n2>\d{2})(?P<s2>\d{2})'
+                      '_(\d{8})T(\d{6})_(\d{4})_(\d{3})_(\d{3})_(\d{4})'
+                      '_([0-9,A-Z]{3})_([A-Z])_([A-Z]{2})_(\d{3}).SEN3', 
+                      filename)
+        if m:
+            self.sensor   = 'SLSTR'
+            plat = m.group('platform')
+            self.platform = 'Sentinel3'+plat.lower()
+            self.inst     = 'SLSTR-'+m.group('platform')
+            self.time     = datetime.datetime(
+                int(m.group('year')), int(m.group('month')), 
+                int(m.group('day')),
+                int(m.group('hour')), int(m.group('min')), 
+                int(m.group('sec')), 0)
+            self.dur      = datetime.datetime(
+                int(m.group('y2')),int(m.group('m2')),int(m.group('d2')),
+                int(m.group('h2')),int(m.group('n2')),int(m.group('s2')),
+                0) - self.time
+            self.l1b      = 'S8_BT_in.nc'
+            self.geo      = 'geodetic_tx.nc'
+            return
+        
+
         m = re.search(project + "-"+ product +"-"+
                       '(?P<sensor>\w+)_ORAC_(?P<platform>\w+)_'
                       '(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2})'
@@ -735,6 +763,12 @@ def str2bool(value):
 map_wvl_to_inst = {
     'AATSR': dict_from_list((0.55, 0.67, 0.87, 1.6, 3.7, 11, 12,
                              -0.55, -0.67, -0.87, -1.6, -3.7, -11, -12)),
+    'ATSR2': dict_from_list((0.55, 0.67, 0.87, 1.6, 3.7, 11, 12,
+                             -0.55, -0.67, -0.87, -1.6, -3.7, -11, -12)),
+    'SLSTR': dict_from_list((0.56, 0.66, 0.87, 1.38, 1.6, 2.3, 
+                             3.7, 11, 12,
+                             -0.56, -0.66, -0.87, -1.38, -1.6, -2.3,
+                             -3.7, -11, -12)),
     'AVHRR': dict_from_list((0.67, 0.87, 1.6, 3.7, 11, 12)),
     'HIMAWARI': dict_from_list((0.47, 0.51, 0.67, 0.87, 1.6, 2.3, 3.7, 6.2,
                                 6.9, 7.3, 8.6, 9.6, 10, 11, 12, 13.3)),
@@ -1265,7 +1299,7 @@ def build_preproc_driver(args):
     """Prepare a driver file for the preprocessor."""
 
     inst = FileName(args.target, project=args.project, product=args.product)
-    file = glob_dirs(args.in_dir, args.target, 'L1B file')
+    file = glob_dirs(args.in_dir, inst.l1b, 'L1B file')
     geo  = glob_dirs(args.in_dir, inst.geo, 'geolocation file')
 
     # Select NISE file
