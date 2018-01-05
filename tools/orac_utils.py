@@ -8,6 +8,18 @@
 # 20 Jul 2016, AP: Remove shell=True from subprocess calls.
 # 3  Aug 2016, SP: Fixed exception handling in the regression test function.
 # 09 Mar 2017, GT: Improved support for use with batch queuing systems
+# 26 Jul 2017, GT: Reinstated the sad_dir argument to the main processor
+#    script. This acts as before, but if not set the script expects to
+#    find Adam's new base_sad_dir argument (rather than using a default).
+#    Also added --lib_path argument, which allows user to manually define the
+#    path to the orac libraries, overriding automatic determination
+#  3 Aug 2017, GT: Added support for the USE_PREDEF_LSM and USE_PREDEF_GEO
+#    preprocessor options
+# 14 Sep 2017, GT: Added support for the PRODUCT_NAME preprocessor option
+#  4 Jan 2018, GT: Added a test, in build_postproc_driver, for thee
+#    existence of the "approach" argument to the post-processor, before
+#    trying to use its value to set multilayer argument  
+
 
 import argparse
 import colours
@@ -174,8 +186,12 @@ def call_exe(args,           # Arguments of scripts
 
     if not args.batch:
         # Form processing environment
-        libs = read_orac_libraries(args.orac_lib)
-        os.environ["LD_LIBRARY_PATH"] = build_orac_library_path(libs)
+        if args.lib_path != 'NULL':
+            libs = read_orac_libraries(args.orac_lib)
+            libstr = build_orac_library_path(libs)
+        else:
+            libstr = args.orac_lib
+        os.environ["LD_LIBRARY_PATH"] = libstr
 
         # Define a directory for EMOS to put it's gridding
         try:
@@ -208,7 +224,11 @@ def call_exe(args,           # Arguments of scripts
         g.write(defaults.batch_script)
 
         # Define processing environment
-        libs = read_orac_libraries(args.orac_lib)
+        if args.lib_path != 'NULL':
+            libs = read_orac_libraries(args.orac_lib)
+            libstr = build_orac_library_path(libs)
+        else:
+            libstr = args.lib_path
         g.write("export LD_LIBRARY_PATH=" + build_orac_library_path(libs) + "\n")
         g.write("export OPENBLAS_NUM_THREADS=1\n")
         try:
@@ -509,11 +529,18 @@ class FileName:
     sensor   - Capitalised name of the instrument
     platform - Name of the satellite platform, formatted for the preprocessor
     inst     - Combined sensor/platform, formatted for the main processor
+    product  - Product description string (default '-L2-CLOUD-CLD-')
     time     - datetime object giving the start time of the orbit/granule
     dur      - timedelta object giving the expected duration of the file"""
 
-    def __init__(self, filename):
+    def __init__(self, filename, project='', product='-L2-CLOUD-CLD-'):
         self.l1b = filename
+
+        if project == '':
+            project = defaults.project
+
+        self.project = project
+        self.product = product
 
         # Work out what sensor this file comes from
         m = re.search('ATS_TOA_1P([A-Za-z]{4})'
@@ -642,7 +669,7 @@ class FileName:
             self.geo      = filename
             return
 
-        m = re.search(defaults.project + '-L2-CLOUD-CLD-'
+        m = re.search(project + "-"+ product +"-"+
                       '(?P<sensor>\w+)_ORAC_(?P<platform>\w+)_'
                       '(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2})'
                       '(?P<hour>\d{2})(?P<min>\d{2})_'
@@ -828,6 +855,9 @@ def args_common(parser, regression=False):
     out.add_argument('--orac_lib', type=str, nargs='?', metavar='FILE',
                      default = defaults.orac_lib,
                      help = 'Name and path of ORAC library specification.')
+    out.add_argument('--lib_path', type=str, nargs='?', metavar='DIR',
+                     default = 'NULL',
+                     help = 'LD_LIBRARY_PATH to use. Overrides automatic setting.')
 
     key = parser.add_argument_group('Common keyword arguments')
     key.add_argument('--batch', action='store_true',
@@ -848,6 +878,13 @@ def args_common(parser, regression=False):
                      help = 'Assume a lambertian surface rather than BRDF.')
     key.add_argument('--timing', action='store_true',
                      help = 'Print duration of executable calls.')
+
+    key.add_argument('--project', type=str, nargs='?', metavar='STRING',
+                     default = defaults.project,
+                     help = 'Name of the project overseeing this data.')
+    key.add_argument('--product', type=str, nargs='?', metavar='STRING',
+                     default = '-L2-CLOUD-CLD-',
+                     help = 'Description string for product type - used in filename.')
 
     out = key.add_mutually_exclusive_group()
     out.add_argument('-v', '--script_verbose', action='store_true',
@@ -902,6 +939,10 @@ def args_preproc(parser):
                      help = 'Use MODIS surface emissivity rather than RTTOV.')
     key.add_argument('--use_oc', action='store_true',
                      help = 'Use the Ocean Colour CCI backscatter product.')
+    key.add_argument('--use_predef_lsm', action='store_true',
+                     help = 'Use a predefined land/sea mask (geostationary only)')
+    key.add_argument('--use_predef_geo', action='store_true',
+                     help = 'Use a predefined geolocation file (geostationary only)')
 
     att = parser.add_argument_group('Global attribute values')
     att.add_argument('--cfconvention', type=str, nargs='?', metavar='STRING',
@@ -928,9 +969,6 @@ def args_preproc(parser):
     att.add_argument('--processor', type=str, nargs='?', metavar='STRING',
                      default = 'ORAC',
                      help = 'Name of the L2 processor.')
-    att.add_argument('--project', type=str, nargs='?', metavar='STRING',
-                     default = defaults.project,
-                     help = 'Name of the project overseeing this data.')
     att.add_argument('--references', type=str, nargs='?', metavar='STRING',
                      default = 'doi:10.5194/amt-5-1889-2012',
                      help = 'Appropriate citations for product.')
@@ -1009,6 +1047,12 @@ def args_preproc(parser):
     other.add_argument('--usgs_file', type=str, nargs='?', metavar='FILE',
                        default = defaults.usgs_file,
                        help = 'Name and path of USGS DEM.')
+    other.add_argument('--ext_lsm_path', type=str, nargs='?', metavar='FILE',
+                       default = None,
+                       help = 'Path to external land/sea mask file (geostationary only)')
+    other.add_argument('--ext_geo_path', type=str, nargs='?', metavar='FILE',
+                       default = None,
+                       help = 'Path to external geolocation file (geostationary only)')
 
 def check_args_preproc(args):
     """Ensure preprocessor parser arguments are valid."""
@@ -1056,6 +1100,13 @@ def check_args_preproc(args):
     if not os.path.isfile(args.usgs_file):
         raise FileMissing('USGS file', args.usgs_file)
 
+    if args.use_predef_lsm:
+        if not os.path.isfile(args.ext_lsm_path):
+            raise FileMissing('External land/sea mask file', args.ext_lsm_path)
+    if args.use_predef_geo:
+        if not os.path.isfile(args.ext_geo_path):
+            raise FileMissing('External geolocation file', args.ext_geo_path)
+
 #-----------------------------------------------------------------------------
 
 def args_main(parser):
@@ -1077,6 +1128,9 @@ def args_main(parser):
                       help = 'Label of look-up table to use in retrieval.')
     main.add_argument('--sabotage', action='store_true',
                       help = 'Sabotage inputs during processing.')
+    main.add_argument('--sad_dir', type=str, nargs='?', metavar='DIR',
+                      default = '', 
+                      help = 'Path to SAD and LUT files.')
     main.add_argument('--base_sad_dir', type=str, nargs='?', metavar='DIR',
                       default = defaults.base_sad_dir,
                       help = 'Path to SAD and LUT files.')
@@ -1112,8 +1166,12 @@ def check_args_main(args):
                       OracWarning, stacklevel=2)
     if not os.path.isdir(args.in_dir[0]):
         raise FileMissing('Preprocessed directory', args.in_dir[0])
-    if not os.path.isdir(args.base_sad_dir):
-        raise FileMissing('base_sad_dir', args.base_sad_dir)
+    if args.sad_dir == '':
+        if not os.path.isdir(args.base_sad_dir):
+            raise FileMissing('base_sad_dir', args.base_sad_dir)
+    else:
+        if not os.path.isdir(args.sad_dir):
+            raise FileMissing('sad_dir', args.sad_dir)
     # No error checking yet written for channel arguments
 
 #-----------------------------------------------------------------------------
@@ -1206,7 +1264,7 @@ def check_args_cc4cl(args):
 def build_preproc_driver(args):
     """Prepare a driver file for the preprocessor."""
 
-    inst = FileName(args.target)
+    inst = FileName(args.target, project=args.project, product=args.product)
     file = glob_dirs(args.in_dir, args.target, 'L1B file')
     geo  = glob_dirs(args.in_dir, inst.geo, 'geolocation file')
 
@@ -1491,6 +1549,17 @@ OCCCI_PATH={occci_file}""".format(
         driver += "\nCHANNEL_IDS={}".format(','.join(str(k)
                                                      for k in args.channel_ids))
 
+    if args.use_predef_lsm:
+        driver += "\nUSE_PREDEF_LSM=True"
+        driver += "\nEXT_LSM_PATH="+args.ext_lsm_path
+
+    if args.use_predef_geo:
+        driver += "\nUSE_PREDEF_GEO=True"
+        driver += "\nEXT_GEO_PATH="+args.ext_geo_path
+
+    if args.product:
+        driver += "\nPRODUCT_NAME="+args.product
+
     outroot = '-'.join((args.project, 'L2', 'CLOUD', 'CLD',
                         '_'.join((inst.sensor, args.processor, inst.platform,
                                   inst.time.strftime('%Y%m%d%H%M'),
@@ -1503,7 +1572,7 @@ def build_main_driver(args):
     """Prepare a driver file for the main processor."""
 
     # Deal with different treatment of platform between pre and main processors
-    inst = FileName(args.target)
+    inst = FileName(args.target, project=args.project, product=args.product)
 
     # Form mandatory driver file lines
     driver = """# ORAC New Driver File
@@ -1581,6 +1650,12 @@ def build_postproc_driver(args, pri=None):
     # Assume secondary files are in the same folder as the primary
     files = zip(pri, [re.sub('primary', 'secondary', t) for t in pri])
 
+    # Check if we've been passed an approach variable
+    if hasattr(args, 'approach'):
+        mlayer = args.approach == 'AppCld2L',
+    else:
+        mlayer = False
+
     # Form driver file
     driver = """{multilayer}
 {wat_pri}
@@ -1603,7 +1678,7 @@ USE_BAYESIAN_SELECTION={bayesian}""".format(
         cost_tsh   = args.cost_thresh,
         ice_pri    = files[1][0],
         ice_sec    = files[1][1],
-        multilayer = args.approach == 'AppCld2L',
+        multilayer = mlayer,
         opt_nght   = not args.no_night_opt,
         out_pri    = args.out_dir + '/' + '.'.join(filter(None, (
             args.target, args.suffix, 'primary', 'nc'))),
@@ -1709,7 +1784,8 @@ def cc4cl(orig):
     args.in_dir = [args.out_dir]
     for phs in args.phases:
         args.phase   = phs
-        args.sad_dir = settings[phs].sad_dir(args.base_sad_dir, inst)
+        if args.sad_dir == '':
+            args.sad_dir = settings[phs].sad_dir(args.base_sad_dir, inst)
 
         # Identify which channels to use
         ids_here = [map_wvl_to_inst[inst.sensor][w] for w in settings[phs].wvl]

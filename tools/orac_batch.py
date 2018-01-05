@@ -38,6 +38,7 @@
 # 30 Mar 2017, GT: Changed LSF dependency setting from "done" to "ended".
 #    Sometimes jobs that have sucessfully completed do not satisfy
 #    the "done" condition for some reason, meaning dependency is never resolved.
+# 04 Jan 2017, GT: Fixed LSF command formating (%% didn't work properly on CEMS)
 
 import re
 
@@ -130,20 +131,20 @@ qsub = BatchSystem('qsub',
 bsub = BatchSystem('bsub',
                    'Job <(?P<ID>\d+)> is submitted to (?P<desc>\w*)queue '
                    '<(?P<queue>[\w\.-]+)>.',
-                   '-w%%ended({})', ') && ended(',
+                   '-w ended({})', ')&&ended(',
                    '',
-                   {'duration' : '-W%%{}'.format,
-                    'email'    : '-u%%{}'.format,
-                    'err_file' : '-e%%{}'.format,
-                    'err_clob' : '-eo%%{}'.format,
-                    'job_name' : '-J%%{}'.format,
-                    'log_file' : '-o%%{}'.format,
-                    'log_clob' : '-oo%%{}'.format,
-                    'order'    : '-R%%order[{}]'.format,
-                    'procs'    : '-n%%{}'.format,
-                    'priority' : '-p%%{}'.format,
-                    'queue'    : '-q%%{}'.format,
-                    'ram'      : '-R%%rusage[mem={0}]%%-M%%{0}000'.format})
+                   {'duration' : '-W {}'.format,
+                    'email'    : '-u {}'.format,
+                    'err_file' : '-e {}'.format,
+                    'err_clob' : '-eo {}'.format,
+                    'job_name' : '-J {}'.format,
+                    'log_file' : '-o {}'.format,
+                    'log_clob' : '-oo {}'.format,
+                    'order'    : '-R order[{}]'.format,
+                    'procs'    : '-n {}'.format,
+                    'priority' : '-p {}'.format,
+                    'queue'    : '-q {}'.format,
+                    'ram'      : '-R "rusage[mem={0}] -M {0}000'.format})
 
 # SLURM, the new Oxford queuing system
 slurm = BatchSystem('sbatch',
