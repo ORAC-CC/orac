@@ -26,8 +26,9 @@
 ! 2017/04/26, SP: Support for loading geoinfo (lat/lon/vza/vaa) from an
 !                 external file. Supported by AHI, not yet by SEVIRI (ExtWork)
 ! 2017/08/09, SP: Add option to disable the cloud masking (ExtWork)
+! 2017/09/14, GT: Added product_name optional argument
 !
-! $Id$
+! $Id: utils_for_main.F90 4794 2017-08-11 09:01:12Z srproud $
 !
 ! Bugs:
 ! None known.
@@ -65,7 +66,7 @@ subroutine parse_optional(label, value, n_channels, channel_ids, &
                           ecmwf_path_hr_2, ecmwf_nlevels, use_l1_land_mask, &
                           use_occci, occci_path,use_predef_lsm,ext_lsm_path, &
                           use_predef_geo, ext_geo_path, disable_snow_and_ice_corr,&
-                          do_cloud_emis, do_ironly, do_cloud_type)
+                          do_cloud_emis, do_ironly, do_cloud_type, product_name)
 
    use parsing_m
    use preproc_constants_m
@@ -74,6 +75,7 @@ subroutine parse_optional(label, value, n_channels, channel_ids, &
 
    character(len=*), intent(in)    :: label
    character(len=*), intent(in)    :: value
+   character(len=*), intent(inout) :: product_name
    integer,          intent(inout) :: n_channels
    integer, pointer, intent(inout) :: channel_ids(:)
    logical,          intent(inout) :: use_hr_ecmwf
@@ -172,6 +174,9 @@ subroutine parse_optional(label, value, n_channels, channel_ids, &
            call handle_parse_error(label)
    case('DO_CLDTYPE')
       if (parse_string(value, do_cloud_type) /= 0) &
+           call handle_parse_error(label)
+   case('PRODUCT_NAME')
+      if (parse_string(value, product_name) /=0) &
            call handle_parse_error(label)
    case default
       write(*,*) 'ERROR: Unknown option: ', trim(label)

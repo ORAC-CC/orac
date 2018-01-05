@@ -81,8 +81,9 @@
 ! 2016/07/15, AP: Add uncertainty estimates. Only AATSR currently filled in.
 ! 2016/08/04, GM: Added map_ids_channel_to_sw and map_ids_channel_to_lw.
 ! 2017/07/05, AP: Add NAll to track the total number of channels.
+! 2107/12/12, GT: Changed Sentinel-3 platform name to Sentinel3a
 !
-! $Id$
+! $Id: setup.F90 4755 2017-07-11 17:04:17Z acpovey $
 !
 ! Bugs:
 ! None known.
@@ -1143,7 +1144,8 @@ subroutine setup_slstr(l1b_path_file,geo_path_file,platform,year,month,day, &
       stop
    end if
 
-   platform="Sentinel-3"
+   !platform="Sentinel-3"
+   platform="Sentinel3a"
    if (verbose) write(*,*)"Satellite is: ",platform
 
    ! The code below extracts date/time info from the l1b start time.

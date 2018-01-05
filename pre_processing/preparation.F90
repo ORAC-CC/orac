@@ -81,8 +81,10 @@
 !    version of code by CP).
 ! 2016/07/31, GM: Tidying of the code drop above.
 ! 2017/04/11, SP: Added ecmwf_flag=6, for working with GFS analysis files.
+! 2017/09/14, GT: Added product_name argument, which replaces the
+!    '-L2-CLOUD-CLD-' string in the output filenames
 !
-! $Id$
+! $Id: preparation.F90 4783 2017-08-07 15:00:43Z acpovey $
 !
 ! Bugs:
 ! None known.
@@ -97,11 +99,12 @@ contains
 #include "set_ecmwf.F90"
 
 subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
-     cf_file,lsf_file,geo_file,loc_file,alb_file,sensor,platform,cyear,cmonth, &
-     cday,chour,cminute,ecmwf_path,ecmwf_hr_path,ecmwf_path2,ecmwf_path3, &
-     ecmwf_path_file,ecmwf_hr_path_file,ecmwf_path_file2,ecmwf_path_file3, &
-     global_atts,ecmwf_flag,ecmwf_time_int_method,imager_geolocation,&
-     imager_time,i_chunk,time_int_fac,assume_full_path,verbose)
+     cf_file,lsf_file,geo_file,loc_file,alb_file,sensor,platform,product_name, &
+     cyear,cmonth,cday,chour,cminute,ecmwf_path,ecmwf_hr_path,ecmwf_path2, &
+     ecmwf_path3,ecmwf_path_file,ecmwf_hr_path_file,ecmwf_path_file2, &
+     ecmwf_path_file3, global_atts,ecmwf_flag,ecmwf_time_int_method, &
+     imager_geolocation, imager_time,i_chunk,time_int_fac,assume_full_path, &
+     verbose)
 
    use imager_structures_m
    use global_attributes_m
@@ -115,6 +118,7 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
                                                   geo_file,loc_file,alb_file
    character(len=sensor_length),   intent(in)  :: sensor
    character(len=platform_length), intent(in)  :: platform
+   character(len=cmd_arg_length),  intent(in)  :: product_name
    character(len=date_length),     intent(in)  :: cyear,cmonth,cday,chour,cminute
    character(len=path_length),     intent(in)  :: ecmwf_path(2), &
                                                   ecmwf_path2(2), &
@@ -204,8 +208,8 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
    ! ESACCI-L2-CLOUD-CLD-${sensor}_${product_string}_${platform}_*${YYYY}${MM}${DD}${HH}${II}_${version2}.*.nc
 
    ! put basic filename together
-   file_base=trim(adjustl(global_atts%project))// &
-             '-L2-CLOUD-CLD-'// &
+   file_base=trim(adjustl(global_atts%project))//'-'// &
+             trim(adjustl(product_name))//'-'// &
              trim(adjustl(sensor))//'_'// &
              trim(adjustl(global_atts%l2_processor))//'_'// &
              trim(adjustl(platform))//'_'// &

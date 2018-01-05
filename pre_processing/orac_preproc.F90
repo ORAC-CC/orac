@@ -278,6 +278,12 @@
 ! 2016/05/31, GT: Added use_l1_land_mask optional argument to prevent USGS DEM
 !    from overwriting the land/sea mask provided by L1 data (assuming the L1
 !    data provides one!).
+! 2016/08/11, GT: Added a (fairly nasty) hack which removes flagged cloud
+!                 over the Sahara region if: (i) the total
+!                 cldmask_uncertainty in both views is greater then 70,
+!                 (ii) the Pavolonis cloud type is water in either view.
+!                 This is an attempt to put mis-flagged dust back into
+!                 the aerosol product.
 ! 2017/02/06, SP: Added support for NOAA GFS atmosphere data (ExtWork)
 ! 2017/02/10, SP: Allow reading LSM, LUM, DEM from external file (ExtWork)
 ! 2017/02/24, SP: Allow option to disable snow/ice correction
@@ -292,8 +298,12 @@
 !     which defaults to false unless sensor=AATSR/AVHRR/MODIS
 ! 2017/07/09, SP: Add check for SEVIRI RSS data to ensure correct processing.
 ! 2017/08/09, SP: Add option to disable the cloud masking (ExtWork)
+! 2017/09/14, GT: Added product_name optional argument/driver file line
+!     (allows user to replace "L2-CLOUD-CLD" in ouput filenames)
+! 2018/01/04, GT: Reimplemented product_name functionality, which had
+!                 somehow gone missing in the move to github.
 !
-! $Id$
+! $Id: orac_preproc.F90 4857 2017-11-27 15:30:02Z gmcgarragh $
 !
 ! Bugs:
 ! See http://proj.badc.rl.ac.uk/orac/report/1
@@ -397,7 +407,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
    logical                          :: check
    integer                          :: nargs
 
-   integer                          :: i
+   integer                          :: i,j
    character(path_length)           :: line, label, value
 
    integer                          :: n_channels
@@ -426,6 +436,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
 
    character(len=sensor_length)     :: sensor
    character(len=platform_length)   :: platform
+   character(len=file_length)       :: product_name
 
    integer(kind=sint)               :: doy,year,month,day,hour,minute
 
@@ -466,6 +477,12 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
    integer                          :: ecmwf_time_int_method
    real                             :: ecmwf_time_int_fac
    integer                          :: ecmwf_nlevels
+
+! Temporary variables for the aerosol_cci dust mask hack
+   real(kind=sreal), allocatable    :: tot_cldmask_uncertainty(:,:)
+   real(kind=sreal), allocatable    :: smth_cldmask_uncertainty(:,:)
+   logical, allocatable             :: kernel(:,:)
+   integer                          :: mini, minj, maxi, maxj
 
 !  integer, dimension(8)            :: values
 
@@ -511,7 +528,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
    ! if more than one argument passed, all inputs on command line
    if (nargs .gt. 1) then
       if (nargs .lt. 47) then
-         write(*,*) 'ERROR: not enough command line arguments'
+         write(*,*) 'ERROR: not enough command line arguments: ',nargs
          stop error_stop_code
       end if
 
@@ -572,7 +589,8 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
             ecmwf_path3(2), ecmwf_path_hr(1), ecmwf_path_hr(2), ecmwf_nlevels, &
             use_l1_land_mask, use_occci, occci_path, use_predef_lsm, &
             ext_lsm_path, use_predef_geo, predef_geo_file, &
-            disable_snow_ice_corr, do_cloud_emis, do_ironly, do_cloud_type)
+            disable_snow_ice_corr, do_cloud_emis, do_ironly, do_cloud_type, &
+            product_name)
       end do
    else
 
@@ -644,7 +662,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
            ecmwf_path3(2), ecmwf_path_hr(1), ecmwf_path_hr(2), ecmwf_nlevels, &
            use_l1_land_mask, use_occci, occci_path, use_predef_lsm, &
            ext_lsm_path,use_predef_geo, predef_geo_file, disable_snow_ice_corr, &
-           do_cloud_emis, do_ironly, do_cloud_type)
+           do_cloud_emis, do_ironly, do_cloud_type, product_name)
       end do
 
       close(11)
@@ -686,6 +704,10 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
       write(*,*) 'ERROR: options n_channels and channel_ids must be used together'
       stop error_stop_code
    end if
+
+   ! If a product name hasn't been defined, use the default one: Cloud_cci
+   if (len_trim(adjustl(product_name)).eq.0) &
+        product_name = 'ESACCI-L2-CLOUD-CLD'
 
    ! Check we're capable of computing cloud emissivity
    ! (ecmwf_flag =5 or =6 or =7 or =8, for GFS data)
@@ -965,12 +987,12 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
       ! ancillary input...
       if (verbose) write(*,*) 'Carry out any preparatory steps'
       call preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
-           cf_file,lsf_file,geo_file,loc_file,alb_file,sensor,platform,cyear, &
-           cmonth,cday,chour,cminute,ecmwf_path,ecmwf_path_hr,ecmwf_path2, &
-           ecmwf_path3, ecmwf_path_file,ecmwf_HR_path_file,ecmwf_path_file2, &
-           ecmwf_path_file3,global_atts,ecmwf_flag,ecmwf_time_int_method, &
-           imager_geolocation,imager_time,i_chunk,ecmwf_time_int_fac, &
-           assume_full_paths, verbose)
+           cf_file,lsf_file,geo_file,loc_file,alb_file,sensor,platform, &
+           product_name,cyear,cmonth,cday,chour,cminute,ecmwf_path, &
+           ecmwf_path_hr,ecmwf_path2,ecmwf_path3, ecmwf_path_file, &
+           ecmwf_HR_path_file,ecmwf_path_file2,ecmwf_path_file3,global_atts, &
+           ecmwf_flag,ecmwf_time_int_method,imager_geolocation,imager_time, &
+           i_chunk,ecmwf_time_int_fac,assume_full_paths, verbose)
 
       ! read ECMWF fields and grid information
       if (verbose) then
@@ -1133,6 +1155,88 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
                  imager_pavolonis, ecmwf_HR, platform, doy, do_ironly, &
                  do_spectral_response_correction, verbose)
          end if
+      end if
+
+      ! A temporary hack for Aerosol_cci:
+      ! Due to the cloud masking being very effective at detecting dust,
+      ! we'll try and re-introduce it
+      if (1 .eq. 1 .and. &
+           minval(imager_geolocation%latitude)  .lt.  40.0 .and. &
+           maxval(imager_geolocation%latitude)  .gt.   0.0 .and. &
+           minval(imager_geolocation%longitude) .lt.  75.0 .and. & 
+           maxval(imager_geolocation%longitude) .gt. -40.0) then
+         write(*,*) 'Aerosol_cci dust correction hack is underway'
+         allocate(tot_cldmask_uncertainty( &
+              imager_geolocation%startx:imager_geolocation%endx, &
+              1:imager_geolocation%ny) )
+!         allocate(smth_cldmask_uncertainty( &
+!              imager_geolocation%startx:imager_geolocation%endx, &
+!              1:imager_geolocation%ny) )
+!         allocate(kernel( &
+!              imager_geolocation%startx:imager_geolocation%endx, &
+!              1:imager_geolocation%ny) )
+         ! product a smoothed version of the cldmask uncertainty
+         write(*,*) minval(imager_pavolonis%cldmask_uncertainty(:,:,1)), &
+              maxval(imager_pavolonis%cldmask_uncertainty(:,:,1))
+         write(*,*) minval(imager_pavolonis%cldmask_uncertainty(:,:,2)), &
+              maxval(imager_pavolonis%cldmask_uncertainty(:,:,2))
+         
+         tot_cldmask_uncertainty(:,:) = &
+              imager_pavolonis%cldmask_uncertainty(:,:,1) + &
+              imager_pavolonis%cldmask_uncertainty(:,:,2)
+        
+         write(*,*) 'Total cldmask uncertainty: min-max',minval(tot_cldmask_uncertainty),maxval(tot_cldmask_uncertainty)
+!         do j=1,imager_geolocation%ny
+!            do i=1,imager_geolocation%nx
+!               kernel(:,:) = 0
+!               if (i .lt. 11) then
+!                  mini = 1
+!               else
+!                  mini = i-10
+!               end if
+!               if (j .lt. 11) then
+!                  minj = 1
+!               else
+!                  minj = j-10
+!               end if
+!               if (i .gt. imager_geolocation%nx-10) then
+!                  maxi = imager_geolocation%nx
+!               else
+!                  maxi = i+10
+!               end if
+!               if (j .gt. imager_geolocation%ny-10) then
+!                  maxj = imager_geolocation%ny
+!               else
+!                  maxj = j+10
+!               end if
+!               kernel(mini:maxi,minj:maxj) = 1
+!               smth_cldmask_uncertainty(i,j) = sum(tot_cldmask_uncertainty, mask=kernel)/count(kernel)
+!            end do
+!         end do
+!         write(*,*)'Smoothed cldmask uncertainty: min-max',minval(smth_cldmask_uncertainty),maxval(smth_cldmask_uncertainty)
+         ! Now use this smoothed mask, and the pavolonis cloud type
+         ! to "de-mask" possibly dust-filled pixels
+         ! Note that we leave the cldtype  alone, so we can still tell
+         ! that the pixels were originally flagged as cloud
+         write(*,*) 'Total clouds before correction: ', &
+              count(imager_pavolonis%cldmask(:,:,1) .gt. 0), &
+              count(imager_pavolonis%cldmask(:,:,2) .gt. 0)
+         where(tot_cldmask_uncertainty .gt. 70          .and. &
+               (imager_pavolonis%cldtype(:,:,1) .eq. 3  .or. &
+                imager_pavolonis%cldtype(:,:,2) .eq. 3) .and. &
+               imager_geolocation%latitude .gt.    0.0  .and. &
+               imager_geolocation%latitude .lt.   40.0  .and. &
+               imager_geolocation%longitude .gt. -40.0  .and. &
+               imager_geolocation%longitude .lt.  75.0)
+            imager_pavolonis%cldmask(:,:,1) = 0
+            imager_pavolonis%cldmask(:,:,2) = 0
+         end where
+         write(*,*) 'Total clouds after correction: ', &
+              count(imager_pavolonis%cldmask(:,:,1) .gt. 0), &
+              count(imager_pavolonis%cldmask(:,:,1) .gt. 0)
+         deallocate(tot_cldmask_uncertainty)
+!         deallocate(smth_cldmask_uncertainty)
+!         deallocate(kernel)
       end if
 
       ! create output netcdf files.

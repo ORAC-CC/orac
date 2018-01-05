@@ -42,11 +42,14 @@
 ! 2016/04/08, SP: Added Himawari support.
 ! 2016/05/16, SP: Added Suomi-NPP support.
 ! 2016/06/28, SP: Added SLSTR-Sentinel3 support.
-! 2016/07/24, AP: Put back call to read_avhrr_land_sea_mask for use_l1_land_mask
+! 2016/07/24, AP: Put back call to read_avhrr_land_sea_mask for
+!                 use_l1_land_mask
 ! 2017/04/26, SP: Support for loading geoinfo (lat/lon/vza/vaa) from an
 !                 external file. Supported by AHI, not yet by SEVIRI (ExtWork)
+! 2017/08/10, GT: Added a check on the existence of a geo_file before
+!                 printing path
 !
-! $Id$
+! $Id: read_imager.F90 4794 2017-08-11 09:01:12Z srproud $
 !
 ! Bugs:
 ! None known.
@@ -102,7 +105,10 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
    if (verbose) write(*,*) 'platform: ',         trim(platform)
    if (verbose) write(*,*) 'path_to_l1b_file: ', trim(path_to_l1b_file)
    if (verbose) write(*,*) 'path_to_geo_file: ', trim(path_to_geo_file)
-   if (verbose) write(*,*) 'geo_file_path:    ', trim(geo_file_path)
+   ! Not all instruments provide a geo file, and if a string is nothing by
+   ! blank characters, then trim doesn't work
+   if ((verbose) .and. (len_trim(geo_file_path) .ne. path_length)) &
+        write(*,*) 'geo_file_path:    ', trim(geo_file_path)
 
    !branches for the sensors
    if (trim(adjustl(sensor)) .eq. 'AATSR' .or. &

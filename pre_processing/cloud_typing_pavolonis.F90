@@ -78,8 +78,9 @@
 !    parameter attribute and take them off the cloud_type_pixel() stack by
 !    giving them module scope.
 ! 2017/07/08, GM: Much needed tidying.
+! 2017/12/20, GT: Changed Sentinel-3 platform name to Sentinel3a or Sentinel3b
 !
-! $Id$
+! $Id: cloud_typing_pavolonis.F90 4794 2017-08-11 09:01:12Z srproud $
 !
 ! Bugs:
 ! None known.
@@ -1890,7 +1891,9 @@ function plank_inv(input_platform, T)
       index = 21
    case ("SuomiNPP")
       index = 22
-   case ("Sentinel-3")
+   case ("Sentinel3a")
+      index = 23
+   case ("Sentinel3b")
       index = 23
    case ("default")
       index = 24

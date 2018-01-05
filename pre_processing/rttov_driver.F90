@@ -140,8 +140,9 @@
 ! 2017/04/12, SP: Allow switch to parallel RTTOV only if OPENMP is enabled.
 ! 2017/06/21, OS: string name adaptations for METOPA/B
 ! 2017/11/15, SP: Add feature to give access to sensor azimuth angle
+! 2107/12/12, GT: Changed Sentinel-3 platform name to Sentinel3a
 !
-! $Id$
+! $Id: rttov_driver.F90 4857 2017-11-27 15:30:02Z gmcgarragh $
 !
 ! Bugs:
 ! - BRDF not yet implemented here, so RTTOV internal calculation used.
@@ -339,7 +340,7 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
          stop error_stop_code
       end if
    case('SLSTR')
-      if (trim(platform) == 'Sentinel-3') then
+      if (trim(platform) == 'Sentinel3a') then
          coef_file = 'rtcoef_sentinel3_1_slstr.dat'
       else
          write(*,*) 'ERROR: rttov_driver(): Invalid SLSTR platform: ', &
