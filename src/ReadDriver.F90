@@ -139,8 +139,10 @@
 ! 2017/09/14, GM: In ML cases postfix both the upper and lower layer LUT class
 !    names separated by an underscore.
 ! 2017/10/04, GM: Add the option to use ANN phase to select pixels to process.
+! 2017/12/13, GT: Changed SLSTR instrument name string to SLSTR-Sentinel3a
+!                 (in preparation for Sentinel-3b)
 !
-! $Id$
+! $Id: ReadDriver.F90 4857 2017-11-27 15:30:02Z gmcgarragh $
 !
 ! Bugs:
 ! None known.
@@ -784,7 +786,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       Ctrl%r_e_chans = (/ 8, 10, 11, 12 /)
       allocate(Ctrl%ir_chans(4))
       Ctrl%ir_chans  = (/ 12, 15, 16, 14 /)
-   else if (Ctrl%InstName(1:16) == 'SLSTR-Sentinel-3') then
+   else if (Ctrl%InstName(1:15) == 'SLSTR-Sentinel3') then
       Ctrl%Ind%Y_Id_legacy(I_legacy_0_6x) = 2
       Ctrl%Ind%Y_Id_legacy(I_legacy_0_8x) = 3
       Ctrl%Ind%Y_Id_legacy(I_legacy_1_6x) = 5
