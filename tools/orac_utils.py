@@ -20,6 +20,8 @@
 #    existence of the "approach" argument to the post-processor, before
 #    trying to use its value to set multilayer argument.
 #  5 Jan 2018, GT: Added support for SLSTR.
+#                  Removed explicit capitalisation of platform name in ORAC
+#                  output filenames.
 
 
 import argparse
@@ -709,7 +711,7 @@ class FileName:
                 # SAD file names don't include platform for ATSR instruments
                 self.inst = m.group('sensor')
             else:
-                self.inst = m.group('sensor') + '-' + m.group('platform').upper()
+                self.inst = m.group('sensor') + '-' + m.group('platform')
             self.time = datetime.datetime(
                 int(m.group('year')), int(m.group('month')), int(m.group('day')),
                 int(m.group('hour')), int(m.group('min')), 0, 0)
