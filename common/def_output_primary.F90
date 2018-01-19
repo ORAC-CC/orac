@@ -80,6 +80,8 @@
 ! 2017/05/17, OS: Added ann phase variables, ann phase uncertainty is
 !    a placeholder.
 ! 2017/07/05, AP: Add channels_used, variables_retrieved. New QC.
+! 2018/01/19, GT: Removed QCFlag scale_factor and add_offset values, as these 
+!    should only be used for packed floating point data.
 !
 ! $Id$
 !
@@ -1616,8 +1618,8 @@ end if
            long_name     = 'quality control flag', &
            standard_name = '', &
            fill_value    = int(-1,kind=lint), &
-           scale_factor  = output_data%qcflag_scale, &
-           add_offset    = output_data%qcflag_offset, &
+!           scale_factor  = output_data%qcflag_scale, &
+!           add_offset    = output_data%qcflag_offset, &
            valid_min     = output_data%qcflag_vmin, &
            valid_max     = output_data%qcflag_vmax, &
            flag_masks    = trim(output_data%qc_flag_masks), &

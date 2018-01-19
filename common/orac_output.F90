@@ -364,8 +364,8 @@ module orac_output_m
       real(sreal)   :: costjm_vmin   = 0.0
       real(sreal)   :: costjm_vmax   = 100000.0
 
-      integer(lint) :: qcflag_scale  = 1
-      integer(lint) :: qcflag_offset = 0
+!      integer(lint) :: qcflag_scale  = 1
+!      integer(lint) :: qcflag_offset = 0
       integer(lint) :: qcflag_vmin   = 0
       integer(lint) :: qcflag_vmax   = 32767
 

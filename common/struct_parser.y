@@ -8,18 +8,22 @@
     07 Apr 2016, ACP: Initial version
     19 Apr 2016, ACP: Converted into C++ as structures were ungainly.
     09 Jun 2016, ACP: Final version
+    19 Jan 2018, GET: Improved labelling of different define statement
+                      syntax for different versions of Bison
  */
 %language "C++"
 %defines
 %locations
 
  // Arguments for the parser function
+ // Use the following definition if using bison 3.X
 %define parser_class_name {CLASS_NAME}
+ // Use this instead if using bison 2.X
+ //%define parser_class_name "CLASS_NAME"
+
 %parse-param {PARENT_STRUCT_TYPE &strct}
 %lex-param   {PARENT_STRUCT_TYPE &strct}
 
- // Use this instead if using bison 2.X
- //%define parser_class_name "CLASS_NAME"
 
 %{
 #include "struct_parser.hh"
