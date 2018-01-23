@@ -91,6 +91,7 @@
 ! 2015/04/10, GM: Fixed the use of snow/ice albedo for the BRDF parameters.
 ! 2016/02/18, OS: ECMWF snow/ice mask now corrected by USGS land/sea mask
 ! 2016/02/23, OS: previous commit on ECMWF snow/ice mask was incomplete
+! 2017/12/07, MST: reduced the sea ice albedo based on comparisons to CERES surface fluxes
 !
 ! $Id$
 !
@@ -160,8 +161,9 @@ subroutine correct_for_ice_snow(nise_path,imager_geolocation,surface,cyear, &
    ! lambda         0.67   0.87   1.6     3.7
    snow_albedo = (/ 0.958, 0.868, 0.0364, 0.0 /)
 !  ice_albedo  = (/ 0.497, 0.289, 0.070,  0.0 /)
-   ice_albedo  = (/ 0.958, 0.868, 0.0364, 0.0 /)
-
+!   ice_albedo  = (/ 0.958, 0.868, 0.0364, 0.0 /)
+   ice_albedo  = snow_albedo*0.85
+   
    read (cyear,*) iyear
    read (cmonth,*) imonth
 
@@ -501,9 +503,13 @@ subroutine correct_for_ice_snow_ecmwf(ecmwf_HR_path,imager_geolocation, &
    real(kind=sreal), dimension(4) :: snow_albedo, ice_albedo, tmp_albedo
    real(kind=sreal)               :: snow_threshold, ice_threshold
 
+   !MST
+   real(kind=sreal)               :: snow_alb_fraction
+   
    snow_albedo = (/ 0.958, 0.868, 0.0364, 0.0 /)
-   ice_albedo = (/ 0.958, 0.868, 0.0364, 0.0 /)
-
+   !ice_albedo = (/ 0.958, 0.868, 0.0364, 0.0 /)
+   ice_albedo  = snow_albedo*0.85
+   
    snow_threshold=0.01 ! I belive this is 1cm
    ice_threshold=0.15 ! I believe this is 15%
 
@@ -566,8 +572,11 @@ subroutine correct_for_ice_snow_ecmwf(ecmwf_HR_path,imager_geolocation, &
          else if ((preproc_prtm%sea_ice_cover(lon_i,lat_j) .lt. ice_threshold) .and. &
              (surface%nise_mask(i,j) .eq. YES)) then
              flag = .true.
-             surface%albedo(i,j,:) = snow_albedo
-
+             !MST surface%albedo(i,j,:) = snow_albedo
+             snow_alb_fraction = min(1.,max(0.,(preproc_prtm%snow_depth(lon_i,lat_j)-0.01)/0.18))
+             surface%albedo(i,j,:) = snow_albedo*snow_alb_fraction + &
+                                     tmp_albedo*(1.-snow_alb_fraction)
+             
          end if
 
          if (include_full_brdf .and. flag) then
