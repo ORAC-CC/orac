@@ -81,7 +81,11 @@
 ! 2016/07/15, AP: Add uncertainty estimates. Only AATSR currently filled in.
 ! 2016/08/04, GM: Added map_ids_channel_to_sw and map_ids_channel_to_lw.
 ! 2017/07/05, AP: Add NAll to track the total number of channels.
-! 2107/12/12, GT: Changed Sentinel-3 platform name to Sentinel3a
+! 2017/12/12, GT: Changed Sentinel-3 platform name to Sentinel3a
+! 2018/02/01, GT: Added source_attributes argument to setup_slstr, and populated
+!    l1b_version and level1b_orbit_number attributes from the L1b file.
+!    Extending this change to the other supported instruments is worth
+!    considering...
 !
 ! $Id: setup.F90 4755 2017-07-11 17:04:17Z acpovey $
 !
@@ -1002,14 +1006,15 @@ subroutine setup_seviri(l1b_path_file,geo_path_file,platform,year,month,day, &
 end subroutine setup_seviri
 
 
-subroutine setup_slstr(l1b_path_file,geo_path_file,platform,year,month,day, &
-   doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids_user, &
-   channel_info,verbose)
+subroutine setup_slstr(l1b_path_file,geo_path_file,source_attributes,platform, &
+     year,month,day, doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute, &
+     channel_ids_user,channel_info,verbose)
 
    use calender_m
    use channel_structures_m
    use preproc_constants_m
    use preproc_structures_m
+   use source_attributes_m
 
    use netcdf
 
@@ -1017,6 +1022,7 @@ subroutine setup_slstr(l1b_path_file,geo_path_file,platform,year,month,day, &
 
    character(len=path_length),     intent(in)    :: l1b_path_file
    character(len=path_length),     intent(in)    :: geo_path_file
+   type(source_attributes_t),      intent(inout) :: source_attributes
    character(len=platform_length), intent(out)   :: platform
    integer(kind=sint),             intent(out)   :: year,month,day,doy
    integer(kind=sint),             intent(out)   :: hour,minute
@@ -1032,7 +1038,8 @@ subroutine setup_slstr(l1b_path_file,geo_path_file,platform,year,month,day, &
    ! Variables for dealing with netcdf files (required for timestamping)
    integer fid,ierr
    character(len=path_length) :: geo_start, l1b_start
-
+   character(len=attribute_length) :: l1b_source, l1b_institute, l1b_orbit_no_s
+   integer(kind=8) :: l1b_orbit_no
 
    ! Static instrument channel definitions. (These should not be changed.)
    integer, parameter :: all_nchannels_total = 18
@@ -1116,6 +1123,27 @@ subroutine setup_slstr(l1b_path_file,geo_path_file,platform,year,month,day, &
       print*,'ERROR: setup_slstr(): Error getting start_time from file ',trim(l1b_path_file)
       stop
    end if
+   ! Extract level1 processing centre, processor version and absolute
+   ! orbit number from l1b file
+   ierr = nf90_get_att(fid, nf90_global, "institution", l1b_institute)
+   if (ierr.ne.NF90_NOERR) then
+      print*,'ERROR: setup_slstr(): Error getting institution from file ', &
+           trim(l1b_path_file)
+      stop
+   end if
+   ierr = nf90_get_att(fid, nf90_global, "source", l1b_source)
+   if (ierr.ne.NF90_NOERR) then
+      print*,'ERROR: setup_slstr(): Error getting source from file ', &
+           trim(l1b_path_file)
+      stop
+   end if
+   ierr = nf90_get_att(fid, nf90_global, "absolute_orbit_number", l1b_orbit_no)
+   if (ierr.ne.NF90_NOERR) then
+      print*,'ERROR: setup_slstr(): Error getting absolute_orbit_number from file ', &
+           trim(l1b_path_file)
+      stop
+   end if
+   
    ierr = nf90_close(fid)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: setup_slstr(): Error closing file ',trim(l1b_path_file)
@@ -1129,7 +1157,8 @@ subroutine setup_slstr(l1b_path_file,geo_path_file,platform,year,month,day, &
    end if
    ierr = nf90_get_att(fid, nf90_global, "start_time", geo_start)
    if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: setup_slstr(): Error getting start_time from file ',trim(geo_path_file)
+      print*,'ERROR: setup_slstr(): Error getting start_time from file ', &
+           trim(geo_path_file)
       stop
    end if
    ierr = nf90_close(fid)
@@ -1146,7 +1175,20 @@ subroutine setup_slstr(l1b_path_file,geo_path_file,platform,year,month,day, &
 
    !platform="Sentinel-3"
    platform="Sentinel3a"
-   if (verbose) write(*,*)"Satellite is: ",platform
+
+   ! Populate the source_attributes structure with source and orbit
+   ! number information
+   source_attributes%level1b_version = trim(l1b_source)// &
+        ', processing centre: '//trim(l1b_institute)
+   ! The orbit number is stored as a 5-digit string. 100,000 orbits corresponds
+   ! to approximately 18.25 years for LEO.
+   write(l1b_orbit_no_s,"I5.5") l1b_orbit_no
+   source_attributes%level1b_orbit_number = trim(adjustl(l1b_orbit_no_s))
+   if (verbose) then 
+      write(*,*)"Satellite is: ",platform
+      write(*,*)"Source attribute is: ", trim(source_attributes%level1b_version)
+      write(*,*)"Orbit number is: ", trim(source_attributes%level1b_orbit_number)
+   end if
 
    ! The code below extracts date/time info from the l1b start time.
 

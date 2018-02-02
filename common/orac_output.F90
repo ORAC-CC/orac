@@ -42,6 +42,8 @@
 ! 2017/01/09, CP: Changed phase range to include ML cloud type.
 ! 2017/05/17, OS: Added variables for ann phase.
 ! 2017/07/05, AP: Add channels_used, variables_retrieved. New QC.
+! 2018/01/19, GT: Removed QCFlag scale and offset values, as these should only
+!    be used for packed floating point data (not straight integers like QCFlag).
 !
 ! $Id$
 !

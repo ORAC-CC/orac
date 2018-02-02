@@ -301,7 +301,9 @@
 ! 2017/09/14, GT: Added product_name optional argument/driver file line
 !     (allows user to replace "L2-CLOUD-CLD" in ouput filenames)
 ! 2018/01/04, GT: Reimplemented product_name functionality, which had
-!                 somehow gone missing in the move to github.
+!     somehow gone missing in the move to github.
+! 2018/02/01, GT: source_atts structure is now passed to setup_slstr, which
+!     populates the l1b_version and l1b_orbit_number attributes.
 !
 ! $Id: orac_preproc.F90 4857 2017-11-27 15:30:02Z gmcgarragh $
 !
@@ -752,6 +754,9 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
 
    source_atts%level1b_file=l1b_path_file
    source_atts%geo_file=geo_path_file
+   ! Set a default value for the the orbit number field, as not instruments
+   ! make use of this attribute
+   source_atts%level1b_orbit_number = 'null'
 
    if (trim(adjustl(sensor)) .eq. 'AATSR' .or. &
        trim(adjustl(sensor)) .eq. 'ATSR2') then
@@ -817,9 +822,9 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
       end if
 
    else if (trim(adjustl(sensor)) .eq. 'SLSTR') then
-      call setup_slstr(l1b_path_file,geo_path_file,platform,year,month,day, &
-           doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids, &
-           channel_info,verbose)
+      call setup_slstr(l1b_path_file,geo_path_file,source_atts,platform, &
+           year,month,day,doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute, &
+           channel_ids,channel_info,verbose)
 
       ! Get dimensions of the SLSTR image.
       ! At present the full scene will always be processed
@@ -988,10 +993,11 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
       if (verbose) write(*,*) 'Carry out any preparatory steps'
       call preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
            cf_file,lsf_file,geo_file,loc_file,alb_file,sensor,platform, &
-           product_name,cyear,cmonth,cday,chour,cminute,ecmwf_path, &
-           ecmwf_path_hr,ecmwf_path2,ecmwf_path3, ecmwf_path_file, &
-           ecmwf_HR_path_file,ecmwf_path_file2,ecmwf_path_file3,global_atts, &
-           ecmwf_flag,ecmwf_time_int_method,imager_geolocation,imager_time, &
+           product_name,cyear,cmonth,cday,chour,cminute, &
+           source_atts%level1b_orbit_number,ecmwf_path,ecmwf_path_hr, &
+           ecmwf_path2,ecmwf_path3,ecmwf_path_file,ecmwf_HR_path_file, &
+           ecmwf_path_file2,ecmwf_path_file3,global_atts,ecmwf_flag, &
+           ecmwf_time_int_method,imager_geolocation,imager_time, &
            i_chunk,ecmwf_time_int_fac,assume_full_paths, verbose)
 
       ! read ECMWF fields and grid information

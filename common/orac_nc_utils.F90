@@ -201,7 +201,10 @@ end subroutine nc_create
 ! 2014/08/31, GM: Moved to the orac common tree.
 ! 2014/09/01, GM: Generalize for use in both the main and preprocessors.
 ! 2014/12/01, CP: updated to include source attributes
-
+! 2018/02/01, GT: Included the level1b orbit number in available source
+!     attributes. Note that the attribute is only added if orbit number is set
+!     (at time of writing this is only the case for SLSTR)
+!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
@@ -456,12 +459,14 @@ subroutine nc_put_common_attributes(ncid, global_atts, source_atts)
    !----------------------------------------------------------------------------
    ! Source attributes
    !----------------------------------------------------------------------------
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Albedo_File', &
-        trim(source_atts%albedo_file))
-   if (ierr.ne.NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_put_att(), ', trim(nf90_strerror(ierr)), &
-           ', name: albedo_file'
-      stop error_stop_code
+   if (trim(source_atts%level1b_orbit_number) .ne. 'null') then
+      ierr = nf90_put_att(ncid, NF90_GLOBAL, 'absolute_orbit_number', &
+           trim(source_atts%level1b_orbit_number))
+      if (ierr.ne.NF90_NOERR) then
+         write(*,*) 'ERROR: nf90_put_att(), ', trim(nf90_strerror(ierr)), &
+              ', name: absolute_orbit_number'
+         stop error_stop_code
+      end if
    end if
 
    ierr = nf90_put_att(ncid, NF90_GLOBAL, 'BRDF_File', &
@@ -539,6 +544,9 @@ end subroutine nc_put_common_attributes
 !
 ! History:
 ! 2014/12/16, GM: Original version
+! 2018/02/01, GT: Included the level1b orbit number in available source
+!     attributes. Note that the existence of this attribute is not required, as
+!     (at time of writing) only SLSTR preprocessing populates the orbit number.
 
 ! Bugs:
 ! None known.
@@ -557,8 +565,7 @@ subroutine nc_get_common_attributes(ncid, global_atts, source_atts)
    type(global_attributes_t), intent(inout) :: global_atts
    type(source_attributes_t), intent(inout) :: source_atts
 
-   integer :: ierr
-
+   integer :: ierr, xtype, len
 
    !----------------------------------------------------------------------------
    ! Global attribute 'Conventions' as defined by CF-1.4, section 2.6.1.
@@ -795,6 +802,20 @@ subroutine nc_get_common_attributes(ncid, global_atts, source_atts)
    !----------------------------------------------------------------------------
    ! Source attributes
    !----------------------------------------------------------------------------
+   ! Check for the existence of the orbit number in the input file, and read if
+   ! present. Note that, obviously, an error state from the check is non-fatal.
+   ierr = nf90_inquire_attribute(ncid, NF90_GLOBAL, 'absolute_orbit_number', &
+        xtype, len)
+   if (ierr .ne. NF90_NOERR) then
+      ierr = nf90_get_att(ncid, NF90_GLOBAL, 'absolute_orbit_number', &
+           source_atts%level1b_orbit_number)
+      if (ierr.ne.NF90_NOERR) then
+         write(*,*) 'ERROR: nf90_get_att(), ', trim(nf90_strerror(ierr)), &
+              ', name: absolute_orbit_number'
+         stop error_stop_code
+      end if
+   end if
+
    ierr = nf90_get_att(ncid, NF90_GLOBAL, 'Albedo_File', &
         source_atts%albedo_file)
    if (ierr.ne.NF90_NOERR) then

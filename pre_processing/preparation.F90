@@ -83,6 +83,9 @@
 ! 2017/04/11, SP: Added ecmwf_flag=6, for working with GFS analysis files.
 ! 2017/09/14, GT: Added product_name argument, which replaces the
 !    '-L2-CLOUD-CLD-' string in the output filenames
+! 2018/02/01, GT: If a orbit number has been included in the source_attributes,
+!    it is now included in the output file names (between date/time and product
+!    version fields)
 !
 ! $Id: preparation.F90 4783 2017-08-07 15:00:43Z acpovey $
 !
@@ -100,11 +103,11 @@ contains
 
 subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
      cf_file,lsf_file,geo_file,loc_file,alb_file,sensor,platform,product_name, &
-     cyear,cmonth,cday,chour,cminute,ecmwf_path,ecmwf_hr_path,ecmwf_path2, &
-     ecmwf_path3,ecmwf_path_file,ecmwf_hr_path_file,ecmwf_path_file2, &
-     ecmwf_path_file3, global_atts,ecmwf_flag,ecmwf_time_int_method, &
-     imager_geolocation, imager_time,i_chunk,time_int_fac,assume_full_path, &
-     verbose)
+     cyear,cmonth,cday,chour,cminute,orbit_number,ecmwf_path,ecmwf_hr_path, &
+     ecmwf_path2,ecmwf_path3,ecmwf_path_file,ecmwf_hr_path_file, &
+     ecmwf_path_file2,ecmwf_path_file3, global_atts,ecmwf_flag, &
+     ecmwf_time_int_method, imager_geolocation, imager_time,i_chunk, &
+     time_int_fac,assume_full_path,verbose)
 
    use imager_structures_m
    use global_attributes_m
@@ -120,6 +123,7 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
    character(len=platform_length), intent(in)  :: platform
    character(len=cmd_arg_length),  intent(in)  :: product_name
    character(len=date_length),     intent(in)  :: cyear,cmonth,cday,chour,cminute
+   character(len=attribute_length),intent(in)  :: orbit_number
    character(len=path_length),     intent(in)  :: ecmwf_path(2), &
                                                   ecmwf_path2(2), &
                                                   ecmwf_path3(2)
@@ -152,6 +156,7 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
    if (verbose) write(*,*) 'cday: ',                  trim(cday)
    if (verbose) write(*,*) 'chour: ',                 trim(chour)
    if (verbose) write(*,*) 'cminute: ',               trim(cminute)
+   if (verbose) write(*,*) 'orbit_number: ',          trim(orbit_number)
    if (verbose) write(*,*) 'ecmwf_path(1): ',         trim(ecmwf_path(1))
    if (verbose) write(*,*) 'ecmwf_hr_path(1): ',      trim(ecmwf_hr_path(1))
    if (verbose) write(*,*) 'ecmwf_path2(1): ',        trim(ecmwf_path2(1))
@@ -214,8 +219,13 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
              trim(adjustl(global_atts%l2_processor))//'_'// &
              trim(adjustl(platform))//'_'// &
              trim(adjustl(cyear))//trim(adjustl(cmonth))//trim(adjustl(cday))// &
-             trim(adjustl(chour))//trim(adjustl(cminute))//'_'// &
-             trim(adjustl(global_atts%file_version))
+             trim(adjustl(chour))//trim(adjustl(cminute))//'_'
+   ! If we have a orbit number attribute, include it in the output file name
+   ! As of Feb-18, this only applies to SLSTR.
+   if (trim(orbit_number) .ne. 'null') then
+      file_base = trim(adjustl(file_base))//trim(orbit_number)//'_'
+   end if
+   file_base = trim(adjustl(file_base))//trim(adjustl(global_atts%file_version))
 
    if (verbose) write(*,*) 'output file_base: ', trim(file_base)
 

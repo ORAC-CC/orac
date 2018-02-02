@@ -1606,19 +1606,25 @@ subroutine netcdf_put_common_attributes(ncid,global_atts,source_atts,title, &
    source_atts2 = source_atts
 
    global_atts2%title  = trim(title)
-   global_atts2%source = 'source!!!'
+   global_atts2%source = trim(source_atts%level1b_version)
 
    position=index(trim(path),'/',back=.true.)
    length=len_trim(path)
    global_atts2%File_Name    = trim(path(position+1:length))
 
-   global_atts2%Product_Name = 'Product_Name!!!'
+   ! product_name should be the base filename of the product
+   position=index(trim(global_atts2%File_Name),'.',back=.false.)
+   global_atts2%Product_Name = trim(global_atts2%File_Name(1:position-1))
 
    global_atts2%Date_Created = trim(cyear)//trim(cmonth)//trim(cday)// &
         trim(chour)//trim(cminute)
 
    PLATFORM_UPPER_CASE=platform
    if (platform(1:4) .eq. 'noaa') PLATFORM_UPPER_CASE(1:4)='NOAA'
+   if (platform(1:9) .eq. 'Sentinel3') then
+      PLATFORM_UPPER_CASE(1:10)='Sentinel-3'
+      PLATFORM_UPPER_CASE(11:12)=platform(10:11)
+   end if
    global_atts2%Platform = trim(PLATFORM_UPPER_CASE)
    global_atts2%Sensor   = trim(sensor)
 
