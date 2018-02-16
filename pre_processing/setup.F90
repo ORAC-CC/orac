@@ -1143,7 +1143,7 @@ subroutine setup_slstr(l1b_path_file,geo_path_file,source_attributes,platform, &
            trim(l1b_path_file)
       stop
    end if
-   
+
    ierr = nf90_close(fid)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: setup_slstr(): Error closing file ',trim(l1b_path_file)
@@ -1182,9 +1182,9 @@ subroutine setup_slstr(l1b_path_file,geo_path_file,source_attributes,platform, &
         ', processing centre: '//trim(l1b_institute)
    ! The orbit number is stored as a 5-digit string. 100,000 orbits corresponds
    ! to approximately 18.25 years for LEO.
-   write(l1b_orbit_no_s,"I5.5") l1b_orbit_no
+   write(l1b_orbit_no_s,'(I5.5)') l1b_orbit_no
    source_attributes%level1b_orbit_number = trim(adjustl(l1b_orbit_no_s))
-   if (verbose) then 
+   if (verbose) then
       write(*,*)"Satellite is: ",platform
       write(*,*)"Source attribute is: ", trim(source_attributes%level1b_version)
       write(*,*)"Orbit number is: ", trim(source_attributes%level1b_orbit_number)
