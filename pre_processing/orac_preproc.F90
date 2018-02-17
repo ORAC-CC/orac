@@ -278,12 +278,10 @@
 ! 2016/05/31, GT: Added use_l1_land_mask optional argument to prevent USGS DEM
 !    from overwriting the land/sea mask provided by L1 data (assuming the L1
 !    data provides one!).
-! 2016/08/11, GT: Added a (fairly nasty) hack which removes flagged cloud
-!                 over the Sahara region if: (i) the total
-!                 cldmask_uncertainty in both views is greater then 70,
-!                 (ii) the Pavolonis cloud type is water in either view.
-!                 This is an attempt to put mis-flagged dust back into
-!                 the aerosol product.
+! 2016/08/11, GT: Added a (fairly nasty) hack which removes flagged cloud over
+!    the Sahara region if: (i) the total cldmask_uncertainty in both views is
+!    greater then 70, (ii) the Pavolonis cloud type is water in either view.
+!    This is an attempt to put mis-flagged dust back into the aerosol product.
 ! 2017/02/06, SP: Added support for NOAA GFS atmosphere data (ExtWork)
 ! 2017/02/10, SP: Allow reading LSM, LUM, DEM from external file (ExtWork)
 ! 2017/02/24, SP: Allow option to disable snow/ice correction
@@ -292,16 +290,16 @@
 !    (ExtWork)
 ! 2017/04/08, SP: New flag to disable VIS processing, saves proc time (ExtWork)
 ! 2017/04/11, SP: Added ecmwf_flag=6, for working with GFS analysis files.
-! 2017/04/26, SP: Support for loading geoinfo (lat/lon/vza/vaa) from an
-!                 external file. Supported by AHI, not yet by SEVIRI (ExtWork)
-! 2017/06/21, OS: added spectral response correction flag,
-!     which defaults to false unless sensor=AATSR/AVHRR/MODIS
+! 2017/04/26, SP: Support for loading geoinfo (lat/lon/vza/vaa) from an external
+!    file. Supported by AHI, not yet by SEVIRI (ExtWork)
+! 2017/06/21, OS: added spectral response correction flag, which defaults to
+!    false unless sensor=AATSR/AVHRR/MODIS
 ! 2017/07/09, SP: Add check for SEVIRI RSS data to ensure correct processing.
 ! 2017/08/09, SP: Add option to disable the cloud masking (ExtWork)
-! 2017/09/14, GT: Added product_name optional argument/driver file line
-!     (allows user to replace "L2-CLOUD-CLD" in ouput filenames)
-! 2018/01/04, GT: Reimplemented product_name functionality, which had
-!     somehow gone missing in the move to github.
+! 2017/09/14, GT: Added product_name optional argument/driver file line (allows
+!    user to replace "L2-CLOUD-CLD" in ouput filenames)
+! 2018/01/04, GT: Reimplemented product_name functionality, which had somehow
+!    gone missing in the move to github.
 ! 2018/02/01, GT: source_atts structure is now passed to setup_slstr, which
 !     populates the l1b_version and l1b_orbit_number attributes.
 !
@@ -525,6 +523,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
    do_cloud_emis                   = .false.
    do_ironly                       = .false.
    do_cloud_type                   = .true.
+   product_name                    = 'L2-CLOUD-CLD'
    do_spectral_response_correction = .false.
 
    ! if more than one argument passed, all inputs on command line

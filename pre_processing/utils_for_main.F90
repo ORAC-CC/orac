@@ -64,7 +64,7 @@ subroutine parse_optional(label, value, n_channels, channel_ids, &
                           use_ecmwf_snow_and_ice, use_modis_emis_in_rttov, &
                           ecmwf_path, ecmwf_path2, ecmwf_path3, ecmwf_path_hr, &
                           ecmwf_path_hr_2, ecmwf_nlevels, use_l1_land_mask, &
-                          use_occci, occci_path,use_predef_lsm,ext_lsm_path, &
+                          use_occci, occci_path, use_predef_lsm, ext_lsm_path, &
                           use_predef_geo, ext_geo_path, disable_snow_and_ice_corr,&
                           do_cloud_emis, do_ironly, do_cloud_type, product_name)
 
@@ -75,7 +75,6 @@ subroutine parse_optional(label, value, n_channels, channel_ids, &
 
    character(len=*), intent(in)    :: label
    character(len=*), intent(in)    :: value
-   character(len=*), intent(inout) :: product_name
    integer,          intent(inout) :: n_channels
    integer, pointer, intent(inout) :: channel_ids(:)
    logical,          intent(inout) :: use_hr_ecmwf
@@ -99,6 +98,7 @@ subroutine parse_optional(label, value, n_channels, channel_ids, &
    logical,          intent(inout) :: do_cloud_emis
    logical,          intent(inout) :: do_ironly
    logical,          intent(inout) :: do_cloud_type
+   character(len=*), intent(inout) :: product_name
 
    select case (label)
    case('N_CHANNELS')
