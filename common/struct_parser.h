@@ -40,6 +40,11 @@
 #endif
 #define XCAT3(x, y, z) CAT3(x, y, z)
 
+#ifdef FCAT
+#undef FCAT
+#endif
+#define FCAT //
+
  /* A token somewhat too awkward to read from the Fortran source */
 #define MAXSTATEVAR_TOKEN ITS_TOKEN + MAXNUMSOLAR_TOKEN*MAXRHO_XX_TOKEN + \
                           MAXNUMVIEWS_TOKEN

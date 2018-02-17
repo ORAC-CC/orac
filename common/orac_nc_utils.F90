@@ -469,6 +469,14 @@ subroutine nc_put_common_attributes(ncid, global_atts, source_atts)
       end if
    end if
 
+   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Albedo_File', &
+        trim(source_atts%albedo_file))
+   if (ierr.ne.NF90_NOERR) then
+      write(*,*) 'ERROR: nf90_put_att(), ', trim(nf90_strerror(ierr)), &
+           ', name: albedo_file'
+      stop error_stop_code
+   end if
+
    ierr = nf90_put_att(ncid, NF90_GLOBAL, 'BRDF_File', &
         trim(source_atts%brdf_file))
    if (ierr.ne.NF90_NOERR) then

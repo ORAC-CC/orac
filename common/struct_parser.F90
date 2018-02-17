@@ -50,7 +50,7 @@ subroutine WRAPPER_NAME_F(filename, STRUCT_NAME)
 #include XCAT3(INC_PATH, f_cpy, inc)
 
    ! Call C wrapper function
-   c_filename = trim(filename)//C_NULL_CHAR
+   c_filename = trim(filename) FCAT C_NULL_CHAR
    call WRAPPER_NAME_FC( &
 #include XCAT3(INC_PATH, f_arg2, inc)
       stat, c_filename)
