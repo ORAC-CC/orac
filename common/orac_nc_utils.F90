@@ -806,7 +806,7 @@ subroutine nc_get_common_attributes(ncid, global_atts, source_atts)
    ! present. Note that, obviously, an error state from the check is non-fatal.
    ierr = nf90_inquire_attribute(ncid, NF90_GLOBAL, 'absolute_orbit_number', &
         xtype, len)
-   if (ierr .ne. NF90_NOERR) then
+   if (ierr .eq. NF90_NOERR) then
       ierr = nf90_get_att(ncid, NF90_GLOBAL, 'absolute_orbit_number', &
            source_atts%level1b_orbit_number)
       if (ierr.ne.NF90_NOERR) then
