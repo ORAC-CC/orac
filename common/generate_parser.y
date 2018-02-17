@@ -501,11 +501,12 @@ void print_alloc_in_f(FILE* f[], char* parent_struct, char* name, int alloc) {
 // Print string print code into Fortran interface
 void print_print_str_in_f(FILE* f[], char* parent_struct, char* name) {
 
-    fprintf(f[F_PRI], "   if (length .gt. 0) ptr => buf(count+1:)\n");
+    fprintf(f[F_PRI], "if (length .gt. 0) ptr => buf(count+1:)\n");
 
-    fprintf(f[F_PRI], "   count = count + print_string(ptr, max(0, length - count), &\n");
-    fprintf(f[F_PRI], "      XSTR(%s_VARIABLE) FCAT \'%%\' FCAT XSTR(%s) FCAT C_NULL_CHAR, trim(%s_VARIABLE%%%s)"
-             " FCAT C_NULL_CHAR)\n", parent_struct, name, parent_struct, name);
+    fprintf(f[F_PRI], "count = count + print_string(ptr, max(0, length - "
+            "count), XSTR(%s_VARIABLE) FCAT \'%%\' FCAT XSTR(%s) FCAT "
+            "C_NULL_CHAR, trim(%s_VARIABLE%%%s) FCAT C_NULL_CHAR)\n",
+            parent_struct, name, parent_struct, name);
 }
 
 // Print variable print code into Fortran interface
@@ -520,8 +521,8 @@ void print_print_var_in_f(FILE* f[], char* parent_struct, char* name,
 
     is_scaler = alloc == 0 && len[0] == '\0';
 
-    n = snprintf(tmp_name, STR_LEN, "XSTR(%s_VARIABLE) FCAT \'%%\' FCAT &\nXSTR(%s) FCAT C_NULL_CHAR",
-                 parent_struct, name);
+    n = snprintf(tmp_name, STR_LEN, "XSTR(%s_VARIABLE) FCAT \'%%\' FCAT "
+                 "XSTR(%s) FCAT C_NULL_CHAR", parent_struct, name);
     if (n >= STR_LEN) {
         fprintf(stderr, "INTERNAL ERROR: Buffer overflow.  Increase STR_LEN.\n");
         exit(1);
@@ -533,24 +534,23 @@ void print_print_var_in_f(FILE* f[], char* parent_struct, char* name,
         exit(1);
     }
 
-    n = snprintf(tmp_dim, STR_LEN, "size(shape(%s_VARIABLE%%%s)), shape(%s_VARIABLE%%%s)",
-                 parent_struct, name, parent_struct, name);
+    n = snprintf(tmp_dim, STR_LEN, "size(shape(%s_VARIABLE%%%s)), "
+                 "shape(%s_VARIABLE%%%s)", parent_struct, name, parent_struct,
+                 name);
     if (n >= STR_LEN) {
         fprintf(stderr, "INTERNAL ERROR: Buffer overflow.  Increase STR_LEN.\n");
         exit(1);
     }
 
-    fprintf(f[F_PRI], "   if (length .gt. 0) ptr => buf(count+1:)\n");
+    fprintf(f[F_PRI], "if (length .gt. 0) ptr => buf(count+1:)\n");
 
     if (is_scaler)
-        fprintf(f[F_PRI], "   count = count + print_%s_scalar(ptr, max(0, length - count), %s, %s)\n",
-                type_c, tmp_name, tmp_var);
+        fprintf(f[F_PRI], "count = count + print_%s_scalar(ptr, max(0, "
+                "length - count), %s, %s)\n", type_c, tmp_name, tmp_var);
     else {
-        if (! alloc)
-            fprintf(f[F_PRI], "   ");
-        else
-            fprintf(f[F_PRI], "   if (associated(%s)) ", tmp_var);
-        fprintf(f[F_PRI], "count = count + print_%s_array(ptr, max(0, length - count), %s, %s, %s)\n",
-                type_c, tmp_name, tmp_var, tmp_dim);
+        if (alloc)
+            fprintf(f[F_PRI], "if (associated(%s)) ", tmp_var);
+        fprintf(f[F_PRI], "count = count + print_%s_array(ptr, max(0, length - "
+                "count), %s, %s, %s)\n", type_c, tmp_name, tmp_var, tmp_dim);
     }
 }
