@@ -827,6 +827,11 @@ subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
    real(kind=sreal)               :: mu0, esd, c_sun
    real(kind=sreal)               :: solzen, ch1v, ch2v
 
+   ! --3x3 box stdd of BT 11µm
+   integer(kind=sint) :: s_i, e_i, s_j, e_j
+   real(kind=sreal)   :: NNN, MN_BT11, SD_BT11
+   !-------------------------------
+
    ! Check if solar zenith angle is < 0
    if (imager_angles%solzen(i,j,cview) .lt. 0.) return
 
@@ -925,6 +930,15 @@ subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
    BTD_Ch3b_Ch4 = imager_measurements%data(i,j,ch4) - &
                   imager_measurements%data(i,j,ch5)
 
+   ! Calculate spatial stddev of BT(11)
+   s_i = max(i-1,1)
+   e_i = min(i+1,imager_geolocation%ENDX)
+   s_j = max(j-1,1)
+   e_j = min(j+1,imager_geolocation%ENDY)
+   NNN = ( e_i - s_i +1) * ( e_j- s_j +1)
+   MN_BT11 = SUM(imager_measurements%DATA(s_i:e_i,s_j:e_j,ch5)  ) / NNN
+   SD_BT11 = SQRT (SUM((imager_measurements%DATA(s_i:e_i,s_j:e_j,ch5) - MN_BT11)**2) / (NNN - 1))
+
    ! Calculate ch3b radiance and emissivity
    plank_inv_out  = plank_inv(platform, imager_measurements%data(i,j,ch4))
    rad_ch3b       = plank_inv_out(1)
@@ -976,6 +990,24 @@ subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
       bt_ch3b = imager_measurements%data(i,j,ch4)
    end if
 
+   !-- Determine the viewing zenith angle bin.
+   index1 = min(7,max(1,int(imager_angles%SATZEN(i,j,cview)/10.0) + 1))
+   !-- Determine the solar zenith angle bin.
+   index2 = min(8,max(1,int(imager_angles%SOLZEN(i,j,cview)/10.0) + 1))
+   
+   !-- Set 11um - 12um cirrus thresholds.
+   !   Absorption of radiation by water vapor and ice crystals in
+   !   semitransparent cirrus clouds is greater at 12 than 11 micron
+
+   BTD1112_CIRRUS_THRES = &
+       A1(index1) + &
+       B1(index1)*imager_measurements%DATA(i,j,ch5) + &
+       C1(index1)*imager_measurements%DATA(i,j,ch5)**2 + &
+       D1(index1)*imager_measurements%DATA(i,j,ch5)**3 + &
+       E1(index1)*imager_measurements%DATA(i,j,ch5)**4
+     
+   BTD1112_CIRRUS_THRES = max( 1.0,min(4.0,BTD1112_CIRRUS_THRES) )
+
    desertflag = .false.
    if (imager_pavolonis%sfctype(i,j) == DESERT_FLAG) desertflag = .true.
 
@@ -1009,11 +1041,23 @@ subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
         verbose)
 
    ! Return if clear, as no need to define cloud type
-   if (imager_pavolonis%cldmask(i,j,cview) == CLEAR) then
-      imager_pavolonis%cldtype(i,j,cview) = CLEAR_TYPE
-      imager_pavolonis%ANN_PHASE(i,j,cview) = CLEAR_TYPE
-      if (trim(adjustl(sensor)) .ne. 'AATSR' .and. &
-          trim(adjustl(sensor)) .ne. 'ATSR2') return
+   if ( imager_pavolonis%cldmask(i,j,cview) == CLEAR) then
+        if ( ( BTD_Ch4_Ch5 > (BTD1112_CIRRUS_THRES-0.2)  ) .and. &
+           ( imager_measurements%DATA(i,j,ch5) < 295.0 ) .and. &
+           ( snow_ice_mask(i,j) .eq. NO ) ) then
+           imager_pavolonis%CLDMASK(i,j,cview) = CLOUDY
+           imager_pavolonis%CLDMASK_UNCERTAINTY(i,j,cview) = 99 !100. - imager_pavolonis%CLDMASK_UNCERTAINTY(i,j,cview)
+!          imager_pavolonis%CLDTYPE(i,j,cview) = CIRRUS_TYPE
+!          imager_pavolonis%cirrus_quality(i,j,cview) = 1
+!          imager_pavolonis%ANN_PHASE(i,j,cview) = ICE
+!          imager_pavolonis%ANN_PHASE_UNCERTAINTY(i,j,cview) = 99
+!          cycle
+        else
+           imager_pavolonis%cldtype(i,j,cview) = CLEAR_TYPE
+           imager_pavolonis%ANN_PHASE(i,j,cview) = CLEAR_TYPE
+           if (trim(adjustl(sensor)) .ne. 'AATSR' .and. &
+               trim(adjustl(sensor)) .ne. 'ATSR2') return
+        end if
    end if
 
    ! Implement extra tests for AATSR
@@ -1070,6 +1114,18 @@ subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
 
          return
       end if
+   end if
+
+   ! introduce 2nd glint test / also possible dust using spatial
+   ! variabilty in channel5 
+   if ( ( BTD_Ch4_Ch5 .ge. 0. ) .and. ( BTD_Ch4_Ch5 .le. 3. ) .and. &
+        ( ch2v/max(ch1v,0.01) .ge. 0.6 ) .and. (ch2v/max(ch1v,0.01) .le. 1. ) .and. &
+        ( imager_measurements%DATA(i,j,ch5) .gt. 290.0 ) .and. &
+        ( SD_BT11 .lt. 0.25 ) ) then
+           imager_pavolonis%CLDMASK(i,j,cview) = CLEAR
+           imager_pavolonis%CLDMASK_UNCERTAINTY(i,j,cview) = 99 !100. - imager_pavolonis%CLDMASK_UNCERTAINTY(i,j,cview)
+           imager_pavolonis%CLDTYPE(i,j,cview) = CLEAR_TYPE
+           return
    end if
 
    ! From here all sensors have their decisions made only when cloudy is allowed
@@ -1131,25 +1187,6 @@ subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
          return
       end if
    end if
-
-   ! Determine the viewing zenith angle bin
-   index1 = min(7,max(1,int(imager_angles%satzen(i,j,cview)/10.0) + 1))
-
-   ! Determine the solar zenith angle bin
-   index2 = min(8,max(1,int(imager_angles%solzen(i,j,cview)/10.0) + 1))
-
-   ! Set 11um - 12um cirrus thresholds.
-   ! Absorption of radiation by water vapor and ice crystals in
-   ! semitransparent cirrus clouds is greater at 12 than 11 micron.
-
-   BTD1112_CIRRUS_THRES = &
-        A1(index1) + &
-        B1(index1)*imager_measurements%data(i,j,ch5) + &
-        C1(index1)*imager_measurements%data(i,j,ch5)**2 + &
-        D1(index1)*imager_measurements%data(i,j,ch5)**3 + &
-        E1(index1)*imager_measurements%data(i,j,ch5)**4
-
-   BTD1112_CIRRUS_THRES = max(1.0, min(4.0,BTD1112_CIRRUS_THRES))
 
    ! Initial cirrus quality
    imager_pavolonis%cirrus_quality(i,j,cview) = 0

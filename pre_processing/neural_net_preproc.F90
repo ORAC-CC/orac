@@ -184,22 +184,23 @@ subroutine ann_cloud_mask(channel1, channel2, channel3a, channel3b, &
    ! call neural net unless solzen is negative
    call_neural_net = .TRUE.
 
-   if ( ( solzen .ge. 0. ) .and. (solzen  .le. 80) ) then
+   if ( ( solzen .ge. 0. ) .and. (solzen  .le. 84) ) then
       illum_nn = 1                                            ! use ANN with Ref3.7
       if  ( ch3a_on_avhrr_flag .eq. INEXISTENT ) illum_nn = 4 ! use ANN w/o any NIR info
       if  ( ch3a_on_avhrr_flag .eq. YES ) illum_nn = 7        ! use ANN with Ref1.6
+  elseif ( (solzen  .gt. 84) .and. (solzen .le. 90) ) then
+      illum_nn = 2                                    ! use ANN with BT3.7
+      if  ( ch3a_on_avhrr_flag .ne. NO ) illum_nn = 5 ! use ANN w/o BT3.7
       if  ( correct_early_morning_noaas ) then
-         !Test Use Night ANN w/o BT3.7 at daytime
+         !Use Night ANN w/o BT3.7 at daytime
          !The early morning Noaa sats have very strong glint dependencies
          !at high viewing angles which is not captured by any ANN training.
          if ( (trim(adjustl(platform)) .eq. 'noaa6') .or. (trim(adjustl(platform)) .eq. 'noaa8') .or. &
               (trim(adjustl(platform)) .eq. 'noaa10') .or. (trim(adjustl(platform)) .eq. 'noaa12') .or. (trim(adjustl(platform)) .eq. 'noaa15') ) illum_nn = 6
       endif
-   elseif ( (solzen  .gt. 80) .and. (solzen .le. 90) ) then
-      illum_nn = 2                                    ! use ANN with BT3.7
-      if  ( ch3a_on_avhrr_flag .ne. NO ) illum_nn = 5 ! use ANN w/o BT3.7
    elseif (solzen  .gt. 90)  then
       illum_nn = 3                                    ! use ANN with BT3.7
+      if  ( channel1 .gt. 0.02 ) illum_nn = 6         ! dont use 3.7µm if sensor detects sunlight (check on ch1 w/o albedo correction!)
       if  ( ch3a_on_avhrr_flag .ne. NO ) illum_nn = 6 ! use ANN w/o BT3.7
    else
       illum_nn = 0
@@ -767,15 +768,17 @@ subroutine ann_cloud_phase(channel1, channel2, channel3a, channel3b, &
    ch4 = channel4
    ch5 = channel5
    btd_ch4_ch5  = ch4 - ch5
+   btd_ch4_ch5  = max(0.4, btd_ch4_ch5) ! it seems that often opaque ice clouds
+                                        ! are set to liquid by the ANN if the BTD_ch4_ch5 is negative
    btd_ch4_ch3b = ch4 - ch3b
 
    ! call neural net unless solzen is negative
    call_neural_net = .TRUE.
 
-   if ( ( solzen .ge. 0. ) .and. (solzen  .le. 80) ) then
+   if ( ( solzen .ge. 0. ) .and. (solzen  .le. 84) ) then
       illum_nn = 1                                            ! use ANN with Ref3.7
       if  ( ch3a_on_avhrr_flag .eq. YES ) illum_nn = 7        ! use ANN with Ref1.6
-   elseif ( (solzen  .gt. 80) .and. (solzen .le. 90) ) then
+   elseif ( (solzen  .gt. 84) .and. (solzen .le. 90) ) then
       illum_nn = 2
    elseif (solzen  .gt. 90)  then
       illum_nn = 3
@@ -1038,7 +1041,7 @@ subroutine ann_cloud_phase(channel1, channel2, channel3a, channel3b, &
       if (noob .eq. 1_lint) then
          ! give penalty; increase uncertainty because at least 1 ANN input parameter
          ! was not within trained range
-         !          phase_uncertainty = phase_uncertainty * 1.1
+         phase_uncertainty = phase_uncertainty * 1.1
          if (ch1 .lt. 0 .and. ch2 .lt. 0 .and. ch3b .lt. 0 .and. &
              ch4 .lt. 0 .and. ch5 .lt. 0) then
             phase_flag = byte_fill_value
