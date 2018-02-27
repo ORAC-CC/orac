@@ -37,6 +37,7 @@
 ! History:
 ! 2015/11/15, MC: Initial development.  Changed input/output quantities to
 !   accept satellite data changed name of the driver to driver_for_bugsrad.F90.
+! 2018/02/27 MST: Using pyYEAR (now passed from parent routine) to calculate time dependent CO2 concentration
 !
 ! $Id$
 !
@@ -56,7 +57,7 @@ subroutine driver_for_bugsrad(nlm,tsi,theta, &
                               boapar,boapardif,toapar, &
                               fulw,fdlw,fusw,fdsw, &
                               fulwcl,fdlwcl,fuswcl,fdswcl, &
-                              emis,rho0d,rhodd)
+                              emis,rho0d,rhodd,pxYEAR)
 
    use kinds, only: int_kind, dbl_kind
    use bugsrad_physconst, only: gravity, cp_dry_air, sol_const
@@ -74,6 +75,9 @@ subroutine driver_for_bugsrad(nlm,tsi,theta, &
       hctopID(nlayers) ,& ! vertical level index for Hctop  (-).
       hcbaseID(nlayers)   ! vertical level index for Hcbase (-).
 
+   integer, intent(in) :: &
+      pxYEAR
+   
    ! Column quantities
    real, intent(in) :: &
       tsi      ,&  ! total solar irradiance               (W/m2).
@@ -210,7 +214,9 @@ subroutine driver_for_bugsrad(nlm,tsi,theta, &
    alndf(1)=asfcnirdf
 
    ! Read trace gas quantities
-   umco2(1)=380.
+   !umco2(1)=380.
+   !introducting time dependent co2 with 380 representing the year 2006
+   umco2(1)=380.0+(pxYEAR-2006.)*1.7
    umch4(1)=1.80
    umn2o(1)=0.26
 

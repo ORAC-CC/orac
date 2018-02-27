@@ -130,6 +130,7 @@
 !    gravitational acceleration to the appropriate value of 9.80665.
 ! 2017/07/28, MC: Modified code to accept multi-layer cloud primary output
 !    files. Note, you must specify 'multi_layer=1' to run in multi-layer mode.
+! 2018/01/23, MST: Passing pxYEAR to driver_for_bugsrad to enable time dependent co2 concentration calculation
 !
 ! $Id$
 !
@@ -568,7 +569,7 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
    ! Read TSI file
    !----------------------------------------------------------------------------
    call nc_open(ncid,FTSI)
-
+   
    ! Allocate arrays
    allocate(TSI_tsi_true_earth(nTSI))
    allocate(TSI_tsi_1au(nTSI))
@@ -610,7 +611,7 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
    if (lut_mode .eq. 1) then
       ! Open LUT file
       call nc_open(ncid,FToaSW)
-
+      
       ! Get LUT dimensions
       nASFC = nc_dim_length(ncid, 'n_sfc_albedo', verbose)
       nSOLZ = nc_dim_length(ncid, 'n_solar_zenith', verbose)
@@ -649,7 +650,7 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
 
    ! Open primary file
    call nc_open(ncid,Fprimary)
-
+   
    ! Get satellite dimensions
    xN = nc_dim_length(ncid, 'across_track', verbose)
    yN = nc_dim_length(ncid, 'along_track', verbose)
@@ -715,7 +716,7 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
 
    ! Open PRTM file
    call nc_open(ncid,FPRTM)
-
+   
    ! Get PRTM dimensions
    xdim_prtm = nc_dim_length(ncid, 'nlon_rtm', verbose)
    ydim_prtm = nc_dim_length(ncid, 'nlat_rtm', verbose)
@@ -771,7 +772,7 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
 
    ! Open ALB file
    call nc_open(ncid,FALB)
-
+   
    ! Get # Channels
    nc_alb = nc_dim_length(ncid, 'nc_alb', verbose)
    nc_emis = nc_dim_length(ncid, 'nc_emis', verbose)
@@ -1223,7 +1224,7 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
                           bpar,bpardif,tpar,&
                           ulwfx,dlwfx,uswfx,dswfx,&
                           ulwfxclr,dlwfxclr,uswfxclr,dswfxclr,&
-                          emis_bugsrad,rho_0d_bugsrad,rho_dd_bugsrad)
+                          emis_bugsrad,rho_0d_bugsrad,rho_dd_bugsrad,pxYEAR)
                end if ! BUGSrad algorithm
 
                !----------------------------------------------------------------
@@ -1337,7 +1338,7 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
    ! Make output NetCDF file
    !----------------------------------------------------------------------------
    call nc_open(ncid,Fprimary)
-
+   
    ! Get common attributes from primary file
    call nc_get_common_attributes(ncid, global_atts, source_atts)
 
@@ -1871,6 +1872,8 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
    !----------------------------------------------------------------------------
    ! Column_Ozone
    !----------------------------------------------------------------------------
+   write(*,*) ncid, dims_var, 'colO3', colO3_vid, verbose, deflate_lv, shuffle_flag
+   
    call nc_def_var_float_packed_float( &
         ncid, &
         dims_var, &
