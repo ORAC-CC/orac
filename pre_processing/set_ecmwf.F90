@@ -60,6 +60,11 @@
 ! 2017/01/31, SP: Add ecmwf_flag=5, for reading NOAA GFS forecast (ExtWork)
 ! 2017/04/11, SP: Added ecmwf_flag=6, for working with GFS analysis files.
 ! 2017/07/05, SP: Added ecmwf_flag=7, for working with new format GFS (ExtWork)
+! 2018/02/27, MST: Modified calculation of center_time, now set to start_time.
+!    Using the actually center time of the orbit gave wrong weights when the ERA files
+!    are selected based on the orbit start time and the center time of the orbit appears
+!    to be later than the time of the second ERA file. In these conditions nearly all
+!    weight was given to ERA file 1 which is much further away than file 2.
 !
 ! $Id$
 !
@@ -336,7 +341,7 @@ real(dreal) function find_center_time(imager_geolocation, imager_time) &
       end do
    end do
 
-99 center_time = (start_time + end_time) / 2.
+99 center_time = start_time !MST (start_time + end_time) / 2.
 
 end function find_center_time
 
