@@ -706,10 +706,6 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
       stop error_stop_code
    end if
 
-   ! If a product name hasn't been defined, use the default one: Cloud_cci
-   if (len_trim(adjustl(product_name)).eq.0) &
-        product_name = 'ESACCI-L2-CLOUD-CLD'
-
    ! Check we're capable of computing cloud emissivity
    ! (ecmwf_flag =5 or =6 or =7 or =8, for GFS data)
    if (ecmwf_flag .lt. 5 .or. ecmwf_flag .gt. 8) do_cloud_emis=.false.
