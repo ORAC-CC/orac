@@ -303,7 +303,7 @@
 ! 2018/02/01, GT: source_atts structure is now passed to setup_slstr, which
 !     populates the l1b_version and l1b_orbit_number attributes.
 !
-! $Id: orac_preproc.F90 4857 2017-11-27 15:30:02Z gmcgarragh $
+! $Id$
 !
 ! Bugs:
 ! See http://proj.badc.rl.ac.uk/orac/report/1
@@ -1168,7 +1168,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
       if (1 .eq. 1 .and. &
            minval(imager_geolocation%latitude)  .lt.  40.0 .and. &
            maxval(imager_geolocation%latitude)  .gt.   0.0 .and. &
-           minval(imager_geolocation%longitude) .lt.  75.0 .and. & 
+           minval(imager_geolocation%longitude) .lt.  75.0 .and. &
            maxval(imager_geolocation%longitude) .gt. -40.0) then
          write(*,*) 'Aerosol_cci dust correction hack is underway'
          allocate(tot_cldmask_uncertainty( &
@@ -1185,11 +1185,11 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
               maxval(imager_pavolonis%cldmask_uncertainty(:,:,1))
          write(*,*) minval(imager_pavolonis%cldmask_uncertainty(:,:,2)), &
               maxval(imager_pavolonis%cldmask_uncertainty(:,:,2))
-         
+
          tot_cldmask_uncertainty(:,:) = &
               imager_pavolonis%cldmask_uncertainty(:,:,1) + &
               imager_pavolonis%cldmask_uncertainty(:,:,2)
-        
+
          write(*,*) 'Total cldmask uncertainty: min-max',minval(tot_cldmask_uncertainty),maxval(tot_cldmask_uncertainty)
 !         do j=1,imager_geolocation%ny
 !            do i=1,imager_geolocation%nx

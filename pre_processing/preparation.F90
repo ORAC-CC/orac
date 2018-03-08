@@ -87,7 +87,7 @@
 !    it is now included in the output file names (between date/time and product
 !    version fields)
 !
-! $Id: preparation.F90 4783 2017-08-07 15:00:43Z acpovey $
+! $Id$
 !
 ! Bugs:
 ! None known.

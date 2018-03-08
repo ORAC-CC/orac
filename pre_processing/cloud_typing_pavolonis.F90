@@ -80,7 +80,7 @@
 ! 2017/07/08, GM: Much needed tidying.
 ! 2017/12/20, GT: Changed Sentinel-3 platform name to Sentinel3a or Sentinel3b
 !
-! $Id: cloud_typing_pavolonis.F90 4794 2017-08-11 09:01:12Z srproud $
+! $Id$
 !
 ! Bugs:
 ! None known.

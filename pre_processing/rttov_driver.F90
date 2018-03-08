@@ -142,7 +142,7 @@
 ! 2017/11/15, SP: Add feature to give access to sensor azimuth angle
 ! 2107/12/12, GT: Changed Sentinel-3 platform name to Sentinel3a
 !
-! $Id: rttov_driver.F90 4857 2017-11-27 15:30:02Z gmcgarragh $
+! $Id$
 !
 ! Bugs:
 ! - BRDF not yet implemented here, so RTTOV internal calculation used.

@@ -28,7 +28,7 @@
 ! 2017/08/09, SP: Add option to disable the cloud masking (ExtWork)
 ! 2017/09/14, GT: Added product_name optional argument
 !
-! $Id: utils_for_main.F90 4794 2017-08-11 09:01:12Z srproud $
+! $Id$
 !
 ! Bugs:
 ! None known.

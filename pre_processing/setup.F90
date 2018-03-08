@@ -87,7 +87,7 @@
 !    Extending this change to the other supported instruments is worth
 !    considering...
 !
-! $Id: setup.F90 4755 2017-07-11 17:04:17Z acpovey $
+! $Id$
 !
 ! Bugs:
 ! None known.

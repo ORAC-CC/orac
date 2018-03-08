@@ -21,7 +21,7 @@
 ! 2015/08/10, AP: Additional surface uncs.
 ! 2017/06/21, OS: Added ANN phase variables.
 !
-! $Id: NullifyData.F90 2356 2014-09-10 20:42:15Z gmcgarragh $
+! $Id$
 !
 ! Bugs:
 ! None known.

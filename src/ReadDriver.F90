@@ -142,7 +142,7 @@
 ! 2017/12/13, GT: Changed SLSTR instrument name string to SLSTR-Sentinel3a
 !                 (in preparation for Sentinel-3b)
 !
-! $Id: ReadDriver.F90 4857 2017-11-27 15:30:02Z gmcgarragh $
+! $Id$
 !
 ! Bugs:
 ! None known.

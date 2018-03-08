@@ -7,7 +7,7 @@
 ! History:
 ! 2015/01/19, GM: Original version.
 !
-! $Id: sad_util.F90 2856 2015-01-12 18:50:33Z acpovey $
+! $Id$
 !
 ! Bugs:
 ! None known.

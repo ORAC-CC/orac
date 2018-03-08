@@ -49,7 +49,7 @@
 ! 2017/08/10, GT: Added a check on the existence of a geo_file before
 !                 printing path
 !
-! $Id: read_imager.F90 4794 2017-08-11 09:01:12Z srproud $
+! $Id$
 !
 ! Bugs:
 ! None known.
