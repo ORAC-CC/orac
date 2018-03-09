@@ -1007,7 +1007,7 @@ end subroutine setup_seviri
 
 
 subroutine setup_slstr(l1b_path_file,geo_path_file,source_attributes,platform, &
-     year,month,day, doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute, &
+     year,month,day,doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute, &
      channel_ids_user,channel_info,verbose)
 
    use calender_m
@@ -1173,7 +1173,6 @@ subroutine setup_slstr(l1b_path_file,geo_path_file,source_attributes,platform, &
       stop
    end if
 
-   !platform="Sentinel-3"
    platform="Sentinel3a"
 
    ! Populate the source_attributes structure with source and orbit

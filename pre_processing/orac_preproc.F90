@@ -747,10 +747,10 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
       stop error_stop_code
    end if
 
-   source_atts%level1b_file=l1b_path_file
-   source_atts%geo_file=geo_path_file
-   ! Set a default value for the the orbit number field, as not instruments
-   ! make use of this attribute
+   source_atts%level1b_file = l1b_path_file
+   source_atts%geo_file = geo_path_file
+   ! Set default values for fields that some instruments setups do not set yet
+   source_atts%level1b_version = 'null'
    source_atts%level1b_orbit_number = 'null'
 
    if (trim(adjustl(sensor)) .eq. 'AATSR' .or. &

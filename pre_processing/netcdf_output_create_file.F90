@@ -1606,6 +1606,7 @@ subroutine netcdf_put_common_attributes(ncid,global_atts,source_atts,title, &
    source_atts2 = source_atts
 
    global_atts2%title  = trim(title)
+
    global_atts2%source = trim(source_atts%level1b_version)
 
    position=index(trim(path),'/',back=.true.)
