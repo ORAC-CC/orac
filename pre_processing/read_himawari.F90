@@ -161,7 +161,8 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
    integer(c_int)              :: column0, column1
 
 #ifdef INCLUDE_HIMAWARI_SUPPORT
-   type(himawari_t_data) :: preproc
+   type(himawari_t_data)		 ::	preproc
+   type(himawari_t_extent)		 ::	ahi_extent
 #endif
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_himawari_bin()'
 
@@ -182,18 +183,26 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
    starty = imager_geolocation%starty
    ny     = imager_geolocation%ny
 
+
    line0   = starty - 1
    line1   = starty - 1 + ny - 1
    column0 = startx - 1
    column1 = startx - 1 + nx - 1
+
+   ahi_extent%x_min = line0 + 1
+   ahi_extent%x_max = line1 + 1
+   ahi_extent%y_min = column0 + 1
+   ahi_extent%y_max = column1 + 1
+   ahi_extent%x_size = imager_geolocation%nx
+   ahi_extent%y_size = imager_geolocation%ny
 
    if (verbose) write(*,*) 'Calling AHI_Main_Read() from ' // &
                            'the himawari_read module'
 
    ! Load all the data
    if (AHI_Main_Read(trim(infile)//C_NULL_CHAR, &
-                     trim(geo_file_path)//C_NULL_CHAR, preproc, n_bands,&
-                     band_ids, 0, 1, use_predef_geo, verbose) .ne. 0) then
+                     trim(geo_file_path)//C_NULL_CHAR, preproc, ahi_extent, n_bands,&
+                     band_ids, 0, 1, use_predef_geo, .false., .false.,verbose) .ne. 0) then
       write(*,*) 'ERROR: in read_himawari_read(), calling ' // &
                  'AHI_Main_Read(), filename = ', trim(infile)
       stop error_stop_code
