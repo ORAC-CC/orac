@@ -116,7 +116,7 @@ subroutine Read_SwRTM_nc(Ctrl, RTM)
    if (nf90_get_att(ncid, NF90_GLOBAL, "Sensor", sensor) /= NF90_NOERR .or.&
        nf90_get_att(ncid, NF90_GLOBAL, "Platform", platform) /= NF90_NOERR) then
       write(*,*) 'ERROR: Read_SwRTM_nc(): Could not read global attributes: ', &
-                 Ctrl%FID%LWRTM
+                 Ctrl%FID%SWRTM
       stop error_stop_code
    end if
    if (sensor =='AATSR' .or. sensor =='ATSR2' ) then
@@ -132,7 +132,7 @@ subroutine Read_SwRTM_nc(Ctrl, RTM)
    end if
 
    if (trim(adjustl(instname)) /= trim(adjustl(Ctrl%InstName))) then
-      write(*,*) 'ERROR: Read_SwRTM_nc(): Instrument in LWRTM header inconsistent: ', &
+      write(*,*) 'ERROR: Read_SwRTM_nc(): Instrument in SWRTM header inconsistent: ', &
                  trim(adjustl(instname)), ' /= ', trim(adjustl(Ctrl%InstName))
       stop error_stop_code
    end if
@@ -176,7 +176,7 @@ subroutine Read_SwRTM_nc(Ctrl, RTM)
 
    if (chan_found /= Ctrl%Ind%NSolar) then
       write(*,*) 'ERROR: Read_SwRTM_nc(): Required instrument channels not ' // &
-                 'found in: ', Ctrl%FID%LWRTM
+                 'found in: ', Ctrl%FID%SWRTM
       stop error_stop_code
    end if
 
@@ -194,7 +194,7 @@ subroutine Read_SwRTM_nc(Ctrl, RTM)
    ! Close SwRTM input file
    if (nf90_close(ncid) /= NF90_NOERR) then
       write(*,*) 'ERROR: Read_SwRTM_nc(): Error closing SWRTM file: ', &
-                 Ctrl%FID%LWRTM
+                 Ctrl%FID%SWRTM
       stop error_stop_code
    end if
 
