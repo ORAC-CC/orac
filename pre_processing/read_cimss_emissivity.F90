@@ -136,7 +136,7 @@ function read_cimss_emissivity(path_to_file, emis, wavelengths, verbose, flag, &
 
    ! Now extract dimensions - should be three!
    if (nDim .gt. 3) then
-      write(*,*) 'ERROR: read_cimss_emissitivty(): File has more than ' // &
+      write(*,*) 'ERROR: read_cimss_emissivity(): File has more than ' // &
            'three dimensions, filename: ', trim(path_to_file), ' nDim: ', nDim
       stop error_stop_code
    end if
