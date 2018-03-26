@@ -66,7 +66,8 @@ subroutine parse_optional(label, value, n_channels, channel_ids, &
                           ecmwf_path_hr_2, ecmwf_nlevels, use_l1_land_mask, &
                           use_occci, occci_path, use_predef_lsm, ext_lsm_path, &
                           use_predef_geo, ext_geo_path, disable_snow_and_ice_corr,&
-                          do_cloud_emis, do_ironly, do_cloud_type, product_name)
+                          do_cloud_emis, do_ironly, do_cloud_type, product_name,&
+                          camel_emis)
 
    use parsing_m
    use preproc_constants_m
@@ -99,6 +100,7 @@ subroutine parse_optional(label, value, n_channels, channel_ids, &
    logical,          intent(inout) :: do_ironly
    logical,          intent(inout) :: do_cloud_type
    character(len=*), intent(inout) :: product_name
+   logical,          intent(inout) :: camel_emis
 
    select case (label)
    case('N_CHANNELS')
@@ -177,6 +179,9 @@ subroutine parse_optional(label, value, n_channels, channel_ids, &
            call handle_parse_error(label)
    case('PRODUCT_NAME')
       if (parse_string(value, product_name) /=0) &
+           call handle_parse_error(label)
+   case('USE_CAMEL_EMIS')
+      if (parse_string(value, camel_emis) /=0) &
            call handle_parse_error(label)
    case default
       write(*,*) 'ERROR: Unknown option: ', trim(label)

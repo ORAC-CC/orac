@@ -59,6 +59,7 @@ $(OBJS)/read_avhrr.o: $(OBJS)/calender.o $(OBJS)/channel_structures.o \
         read_avhrr_l1b_radiances_2.F90 read_avhrr_land_sea_mask.F90 \
         read_avhrr_land_sea_mask_2.F90 read_avhrr_lat_lon.F90 \
         read_avhrr_time.F90 read_avhrr_time_lat_lon_angles.F90
+$(OBJS)/read_camel_emissivity.o: $(OBJS)/preproc_constants.o
 $(OBJS)/read_cimss_emissivity.o: $(OBJS)/preproc_constants.o
 $(OBJS)/read_himawari.o: $(OBJS)/channel_structures.o \
         $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o
@@ -94,9 +95,9 @@ $(OBJS)/setup.o: $(OBJS)/calender.o $(OBJS)/channel_structures.o \
         $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o
 $(OBJS)/surface_emissivity.o: $(OBJS)/channel_structures.o \
         $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o \
-        $(OBJS)/preproc_structures.o $(OBJS)/read_cimss_emissivity.o \
-        $(OBJS)/surface_structures.o get_surface_emissivity.F90 \
-        select_modis_emiss_file.F90
+        $(OBJS)/read_camel_emissivity.o $(OBJS)/preproc_structures.o \
+        $(OBJS)/read_cimss_emissivity.o $(OBJS)/surface_structures.o \
+        get_surface_emissivity.F90 select_modis_emiss_file.F90
 $(OBJS)/surface_reflectance.o: $(OBJS)/channel_structures.o $(OBJS)/cox_munk.o \
         $(OBJS)/cox_munk_constants.o $(OBJS)/ecmwf.o $(OBJS)/fill_grid.o \
         $(OBJS)/imager_structures.o $(OBJS)/mcd43c.o $(OBJS)/ocean_colour.o \

@@ -70,6 +70,7 @@ PREPROC_OBJ_F90 = $(OBJS)/aatsr_corrections.o \
                   $(OBJS)/gauss_leg_quad.o \
                   $(OBJS)/read_aatsr.o \
                   $(OBJS)/read_avhrr.o \
+                  $(OBJS)/read_camel_emissivity.o \
                   $(OBJS)/read_cimss_emissivity.o \
                   $(OBJS)/read_himawari.o \
                   $(OBJS)/read_imager.o \

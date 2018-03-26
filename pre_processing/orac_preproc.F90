@@ -403,6 +403,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
    logical                          :: do_ironly
    logical                          :: do_cloud_type
    logical                          :: do_spectral_response_correction
+   logical                          :: use_camel_emis
 
    logical                          :: check
    integer                          :: nargs
@@ -525,6 +526,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
    do_cloud_type                   = .true.
    product_name                    = 'L2-CLOUD-CLD'
    do_spectral_response_correction = .false.
+   use_camel_emis                  = .false.
 
    ! if more than one argument passed, all inputs on command line
    if (nargs .gt. 1) then
@@ -591,7 +593,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
             use_l1_land_mask, use_occci, occci_path, use_predef_lsm, &
             ext_lsm_path, use_predef_geo, predef_geo_file, &
             disable_snow_ice_corr, do_cloud_emis, do_ironly, do_cloud_type, &
-            product_name)
+            product_name, use_camel_emis)
       end do
    else
 
@@ -663,7 +665,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
            ecmwf_path3(2), ecmwf_path_hr(1), ecmwf_path_hr(2), ecmwf_nlevels, &
            use_l1_land_mask, use_occci, occci_path, use_predef_lsm, &
            ext_lsm_path,use_predef_geo, predef_geo_file, disable_snow_ice_corr, &
-           do_cloud_emis, do_ironly, do_cloud_type, product_name)
+           do_cloud_emis, do_ironly, do_cloud_type, product_name, use_camel_emis)
       end do
 
       close(11)
@@ -1099,9 +1101,15 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
 
       ! select correct emissivity file and calculate the emissivity over land
       if (verbose) write(*,*) 'Get surface emissivity'
-      call get_surface_emissivity(cyear, cdoy, cimss_emiss_path, imager_flags, &
-           imager_geolocation, channel_info, preproc_dims, &
-           assume_full_paths, verbose, surface, preproc_surf, source_atts)
+      if (use_camel_emis .neqv. .true.) then
+		   call get_surface_emissivity(cyear, cdoy, cimss_emiss_path, imager_flags, &
+		        imager_geolocation, channel_info, preproc_dims, &
+		        assume_full_paths, verbose, surface, preproc_surf, source_atts)
+		else
+		   call get_camel_emissivity(cyear, cmonth, cimss_emiss_path, imager_flags, &
+		        imager_geolocation, channel_info, preproc_dims, &
+		        assume_full_paths, verbose, surface, preproc_surf, source_atts)
+		endif
 
       if (do_ironly .neqv. .true.) then
          ! select correct reflectance files and calculate surface reflectance
