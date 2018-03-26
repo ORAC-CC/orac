@@ -96,11 +96,15 @@ subroutine read_himawari_dimensions(l1_5_file, n_across_track, n_along_track, &
    n_along_track  = 5500
    n_across_track = 5500
 
-   startx = 1
-   starty = 1
+   if (startx .le. 0 .or. endx .le. 0 .or. starty .le. 0 .or. endy .le. 0) then
+      ! If start and end *are not* being used then set them to the start and end
+      ! of the actual image in the file.
+   	startx = 1
+   	starty = 1
 
-   endx=n_across_track
-   endy=n_along_track
+   	endx=n_across_track
+   	endy=n_along_track
+   endif
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> read_himawari_dimensions()'
 
@@ -211,8 +215,6 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
    ! Copy arrays between the reader and ORAC. This could (should!) be done more efficiently.
    imager_time%time(:,:)             = preproc%time
    imager_geolocation%latitude(:,:)  = preproc%lat
-
-
    imager_geolocation%longitude(:,:) = preproc%lon
    imager_angles%solzen(:,:,1)       = preproc%sza
    imager_angles%solazi(:,:,1)       = preproc%saa
