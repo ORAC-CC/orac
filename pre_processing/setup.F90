@@ -255,6 +255,157 @@ subroutine setup_aatsr(l1b_path_file,geo_path_file,platform,sensor,year, &
 
 end subroutine setup_aatsr
 
+subroutine setup_abi(l1b_path_file,geo_path_file,platform,year,month,day, &
+   doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids_user, &
+   channel_info,verbose)
+
+   use calender_m
+   use channel_structures_m
+   use preproc_constants_m
+   use preproc_structures_m
+
+   implicit none
+
+   character(len=path_length),     intent(in)    :: l1b_path_file
+   character(len=path_length),     intent(in)    :: geo_path_file
+   character(len=platform_length), intent(out)   :: platform
+   integer(kind=sint),             intent(out)   :: year,month,day,doy
+   integer(kind=sint),             intent(out)   :: hour,minute
+   character(len=date_length),     intent(out)   :: cyear,cmonth,cday
+   character(len=date_length),     intent(out)   :: cdoy,chour,cminute
+   integer, pointer,               intent(in)    :: channel_ids_user(:)
+   type(channel_info_t),           intent(inout) :: channel_info
+   logical,                        intent(in)    :: verbose
+
+   integer :: index1,index2
+
+
+   ! Static instrument channel definitions. (These should not be changed.)
+   integer, parameter :: all_nchannels_total = 16
+
+       ! 1,       2,       3,       4,       5,       6,       7,       8
+   real,    parameter :: all_channel_wl_abs(all_nchannels_total) = &
+      (/ 0.470, 0.640, 0.860, 1.380, 1.610,  2.260,  3.900,  6.150, &
+         7.000,  7.400,  8.500,  9.700,  10.300, 11.200, 12.300, 13.300 /)
+
+   integer, parameter :: all_channel_sw_flag(all_nchannels_total) = &
+      (/ 1,       1,       1,       1,       1,       1,       1,       0, &
+         0,       0,       0,       0,       0,       0,       0,       0/)
+
+   integer, parameter :: all_channel_lw_flag(all_nchannels_total) = &
+      (/ 0,       0,       0,       0,       0,       0,       1,       1, &
+         1,       1,       1,       1,       1,       1,       1       ,1/)
+
+   integer, parameter :: all_channel_ids_rttov_coef_sw(all_nchannels_total) = &
+      (/ 1,       2,       3,       4,       5,       6,       7,       0, &
+         0,       0,       0,       0,       0,       0,       0,       0 /)
+
+   integer, parameter :: all_channel_ids_rttov_coef_lw(all_nchannels_total) = &
+      (/ 0,       0,       0,       0,       0,       0,       1,       2, &
+         3,       4,       5,       6,       7,       8,       9,       10 /)
+
+   integer, parameter :: all_map_ids_abs_to_ref_band_land(all_nchannels_total) = &
+      (/ 3,       1,       2,       0,       6,       7,       0,       0, &
+         0,       0,       0,       0,       0,       0,       0,       0 /)
+
+   integer, parameter :: all_map_ids_abs_to_ref_band_sea(all_nchannels_total) = &
+      (/ 1,       3,       4,       6,       7,       8,       9,       0, &
+         0,       0,       0,       0,       0,       0,       0,       0 /)
+
+   integer, parameter :: all_map_ids_abs_to_snow_and_ice(all_nchannels_total) = &
+      (/ 1,       1,       2,       3,       3,       3,       4,       0, &
+         0,       0,       0,       0,       0,       0,       0,       0 /)
+   integer, parameter :: all_map_ids_view_number(all_nchannels_total) = &
+      (/ 1,       1,       1,       1,       1,       1,       1,       1, &
+         1,       1,       1,       1,       1,       1,       1,       1 /)
+
+   real,    parameter :: all_channel_fractional_uncertainty(all_nchannels_total) = &
+      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0., &
+         0.,      0.,      0.,      0.,      0.,      0.,      0.,      0. /)
+
+   real,    parameter :: all_channel_minimum_uncertainty(all_nchannels_total) = &
+      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0., &
+         0.,      0.,      0.,      0.,      0.,      0.,      0.,      0. /)
+
+   real,    parameter :: all_channel_numerical_uncertainty(all_nchannels_total) = &
+      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0., &
+         0.,      0.,      0.,      0.,      0.,      0.,      0.,      0. /)
+
+   real,    parameter :: all_channel_lnd_uncertainty(all_nchannels_total) = &
+      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0., &
+         0.,      0.,      0.,      0.,      0.,      0.,      0.,      0. /)
+
+   real,    parameter :: all_channel_sea_uncertainty(all_nchannels_total) = &
+      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0., &
+         0.,      0.,      0.,      0.,      0.,      0.,      0.,      0. /)
+
+   ! Only this below needs to be set to change the desired default channels. All
+   ! other channel related arrays/indexes are set automatically given the static
+   ! instrument channel definition above.
+   integer, parameter :: channel_ids_default(6) = (/ 2, 3, 5, 7, 14, 15 /)
+
+
+   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering setup_himawari()'
+
+   if (verbose) write(*,*) 'l1b_path_file: ', trim(l1b_path_file)
+   if (verbose) write(*,*) 'geo_path_file: ', trim(geo_path_file)
+
+   ! check if l1b and geo file are of the same granule
+   index1=index(trim(adjustl(l1b_path_file)),'/',back=.true.)
+   index2=index(trim(adjustl(geo_path_file)),'/',back=.true.)
+
+   ! check if l1b and geo files identical
+   if (trim(adjustl(l1b_path_file)) .ne. &
+       trim(adjustl(geo_path_file))) then
+      write(*,*)
+      write(*,*) 'ERROR: setup_abi(): Geolocation and L1b files are ' // &
+           'for different times'
+      write(*,*) 'l1b_path_file: ', trim(adjustl(geo_path_file))
+      write(*,*) 'geo_path_file: ', trim(adjustl(l1b_path_file))
+
+      stop error_stop_code
+   end if
+
+   platform="GOES-16"
+   if (verbose) write(*,*)"Satellite is: ",platform
+
+   ! The code below extracts date/time info from the segment name.
+   ! Note that it requires the segment name to be in the generic format
+   ! that's specified by the JMA. Weird filenames will break things.
+
+   index2=index(trim(adjustl(l1b_path_file)),'ABI-L1b-')
+
+   ! get year, doy, hour and minute as strings
+   index2=index2+24
+   cyear=trim(adjustl(l1b_path_file(index2:index2+3)))
+   cdoy=trim(adjustl(l1b_path_file(index2+4:index2+6)))
+   chour=trim(adjustl(l1b_path_file(index2+7:index2+8)))
+   cminute=trim(adjustl(l1b_path_file(index2+9:index2+10)))
+
+   read(cyear(1:len_trim(cyear)), '(I4)') year
+   read(cdoy(1:len_trim(cdoy)), '(I3)') doy
+   read(chour(1:len_trim(chour)), '(I2)') hour
+   read(cminute(1:len_trim(cminute)), '(I2)') minute
+
+   call DOY2GREG(doy, year, month, day)
+
+   write(cmonth, '(i2.2)') month
+   write(cday, '(i2.2)') day
+
+   ! now set up the channels
+   call common_setup(channel_info, channel_ids_user, channel_ids_default, &
+      all_channel_wl_abs, all_channel_sw_flag, all_channel_lw_flag, &
+      all_channel_ids_rttov_coef_sw, all_channel_ids_rttov_coef_lw, &
+      all_map_ids_abs_to_ref_band_land, all_map_ids_abs_to_ref_band_sea, &
+      all_map_ids_abs_to_snow_and_ice, all_map_ids_view_number, &
+      all_channel_fractional_uncertainty, all_channel_minimum_uncertainty, &
+      all_channel_numerical_uncertainty, all_channel_lnd_uncertainty, &
+      all_channel_sea_uncertainty, all_nchannels_total)
+
+   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_abi()'
+
+end subroutine setup_abi
+
 
 subroutine setup_ahi(l1b_path_file,geo_path_file,platform,year,month,day, &
    doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids_user, &
@@ -366,8 +517,14 @@ subroutine setup_ahi(l1b_path_file,geo_path_file,platform,year,month,day, &
 
       stop error_stop_code
    end if
-
-   platform="Himawari-8"
+	if (index(l1b_path_file,"HS_H08") .gt. 0) then
+	   platform="Himawari-8"
+	elseif (index(l1b_path_file,"HS_H09") .gt. 0) then
+	   platform="Himawari-9"
+	else
+		write(*,*) "Unidentified Himawari variant: ",trim(l1b_path_file)
+		stop
+	endif
    if (verbose) write(*,*)"Satellite is: ",platform
 
    ! The code below extracts date/time info from the segment name.
