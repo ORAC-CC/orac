@@ -188,21 +188,21 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
    ny     = imager_geolocation%ny
 
 
-   line0   = starty - 1
-   line1   = starty - 1 + ny - 1
-   column0 = startx - 1
-   column1 = startx - 1 + nx - 1
+   line0   = startx - 1
+   line1   = startx - 1 + ny - 1
+   column0 = starty - 1
+   column1 = starty - 1 + nx - 1
 
-   ahi_extent%x_min = line0 + 1
-   ahi_extent%x_max = line1 + 1
-   ahi_extent%y_min = column0 + 1
-   ahi_extent%y_max = column1 + 1
-   ahi_extent%x_size = imager_geolocation%nx
-   ahi_extent%y_size = imager_geolocation%ny
+   ahi_extent%y_min = line0 + 1
+   ahi_extent%y_max = line1 + 1
+   ahi_extent%y_size = line1-line0 +1
+
+   ahi_extent%x_min = column0 + 1
+   ahi_extent%x_max = column1 + 1
+   ahi_extent%x_size = column1-column0 +1
 
    if (verbose) write(*,*) 'Calling AHI_Main_Read() from ' // &
                            'the himawari_read module'
-
    ! Load all the data
    if (AHI_Main_Read(trim(infile)//C_NULL_CHAR, &
                      trim(geo_file_path)//C_NULL_CHAR, preproc, ahi_extent, n_bands,&
