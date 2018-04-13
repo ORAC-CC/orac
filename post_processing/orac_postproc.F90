@@ -147,6 +147,7 @@
 ! 2017/09/05, CP: Added logical flag at the top of the driver file to turn on
 !    ML post processing.
 ! 2017/10/05, GM: Get the value of use_ann_phase from the input files.
+! 2018/02/27, MST: Setting phase_flag to 2 (some value other than 0) in clear-sky conditions to make those conditions being included in post-processing
 !
 ! $Id$
 !
@@ -615,7 +616,7 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
                       case(ICE)
                          phase_flag = 2_byte
                       case default
-                         phase_flag = 0_byte
+                         phase_flag = 2_byte !MST to include clear-sky retrievals in postprocessing files     0_byte
                       end select
                    end if
                 else
@@ -639,7 +640,7 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
                          phase_flag = 2_byte
                       end if
                    case default
-                      phase_flag = 0_byte
+                      phase_flag = 2_byte !MST to include clear-sky retrievals in postprocessing files    0_byte
                    end select
                 end if
 
