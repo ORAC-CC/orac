@@ -137,7 +137,7 @@ function read_predef_file(path_to_file, usgs, verbose) result (stat)
    ! We are now finished with the main data file
    stat = nf90_close(fid)
 
-   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_USGS_file()'
+   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_predef_file()'
 
 end function read_predef_file
 
