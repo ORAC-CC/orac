@@ -34,7 +34,7 @@
 !   2) PRTM file (pre-processing)
 !   3) ALB file (pre-processing)
 !   4) TSI file
-!      (http://proj.badc.rl.ac.uk/svn/orac/data/tsi_soho_sorce_1978_2015.nc)
+!      (https://github.com/mattchri/broadband_fluxes/blob/master/tsi_soho_sorce_1978_2017.nc)
 !   5) Output filename (user specified)
 !   6) Radiation Algorithm (BUGSrad: '1'; FuLiou-2Stream Modified Gamma: '2';
 !      FuLiou-4stream '3'; FuLiou-2Stream '4')
@@ -131,6 +131,11 @@
 ! 2017/07/28, MC: Modified code to accept multi-layer cloud primary output
 !    files. Note, you must specify 'multi_layer=1' to run in multi-layer mode.
 ! 2018/01/23, MST: Passing pxYEAR to driver_for_bugsrad to enable time dependent co2 concentration calculation
+! 2018/04/23, MC: Added aerosol support from pixel scale retrieval from ORAC
+!    combined post primary file. Fixed bug related to multi-layer code not
+!    allowing single-layer aerosol retreival in clear sky pixels. Updated
+!    spectral total solar irradiance input file. Included option to calculate
+!    TSI from earth-sun distance relationship and constant TSI at 1 AU if not provided by LUT.
 !
 ! $Id$
 !
@@ -239,7 +244,8 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
    real, allocatable :: TSI_year(:)           ! TSI index year
    real, allocatable :: TSI_jday(:)           ! TSI index Julian day
    real, allocatable :: TSI_par_weight(:)     ! TSI weight for PAR based on SORCE data
-   integer(kind=lint) :: nTSI = 13925
+   integer(kind=lint) :: nTSI = 14256
+   real(kind=dreal) :: TSI_time, TSI_sfac
 
    ! Aerosol CCI file (optional)
    real, allocatable :: aerLon(:)   ! Longitude
@@ -247,6 +253,8 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
    real, allocatable :: aerAOD(:)   ! Aerosol optical depth
    real, allocatable :: aerREF(:)   ! Aerosol effective radius
    real, allocatable :: aerQflag(:) ! q-flag
+   real, allocatable :: aerAOD1(:,:)   ! Aerosol optical depth
+   real, allocatable :: aerREF1(:,:)   ! Aerosol effective radius
    real, allocatable :: AOD550(:,:) ! Aerosol optical depth at 1 km resolution
    real, allocatable :: AREF(:,:)   ! Aerosol Effective Radius 1 km resolution
    integer, allocatable :: aID(:,:) ! Aerosol index for i,jth locations in cloud file
@@ -384,6 +392,9 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
    real, allocatable :: colO3(:,:) ! Column Ozone
    integer :: colO3_vid
 
+   real, allocatable :: cbh(:,:) ! cloud base height
+   integer :: cbh_vid
+
    ! NetCDF output (lat/lon/time)
    integer :: LAT_vid
    integer :: LON_vid
@@ -519,12 +530,16 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
 
       if (tmpname1 .eq. 'cci_aerosol=') then
          Faerosol=trim(tmpname2)
-         aerosol_processing_mode = 1
+         aerosol_processing_mode = 2
       end if
       if (tmpname1 .eq. 'cci_collocation=') then
          Fcollocation=trim(tmpname2)
-         aerosol_processing_mode = 2
+         aerosol_processing_mode = 3
       end if
+      if (tmpname1 .eq. 'cci_aerpix=') then
+         Faerosol=trim(tmpname2)
+         aerosol_processing_mode = 1
+      endif
       if (tmpname1 .eq. 'modis_aerosol=') FMOD04=trim(tmpname2)
       if (tmpname1 .eq. 'modis_cloud=') FMOD06=trim(tmpname2)
       if (tmpname1 .eq. 'infinitely_thin_cloud=') InfThnCld=1
@@ -598,6 +613,19 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
       if (TSI_year(i) .eq. pxYear .and. TSI_jday(i) .eq. pxJday) &
          pxPAR_WEIGHT=TSI_par_weight(i)
    end do
+
+   ! Get TSI if outside of LUT range
+   if (pxTSI .eq. 0.) then
+      TSI_time = (2.d0 * pxJday * Pi) / 365.d0
+      !Earth-sun distance relationship
+      TSI_sfac = 1.000110d0 + 0.03341d0*cos(TSI_time) + &
+         & .001280d0*sin(TSI_time) + 0.000719d0*cos(2*TSI_time) + &
+         & .000077d0*sin(2*TSI_time)
+      !Constant value for TSI at 1 AU
+      pxTSI = 1361. * TSI_sfac
+      pxPAR_WEIGHT = 1.0
+   end if
+
    print*,'TSI data on date: '
    print*,'YEAR: ',pxYear
    print*,'Calendar Day: ',pxJday
@@ -809,7 +837,7 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
    !----------------------------------------------------------------------------
 
    ! Open Aerosol CCI file (optional)
-   if (aerosol_processing_mode .ge. 1) then
+   if (aerosol_processing_mode .ge. 2) then
       call nc_open(ncid,trim(Faerosol))
 
       ! Get dimension
@@ -835,6 +863,24 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
          stop error_stop_code
       end if
    end if
+
+   ! Open Aerosol Primary File (optional)
+   if (aerosol_processing_mode .eq. 1) then
+      print*,trim(Faerosol)
+      call nc_open(ncid,trim(Faerosol))
+
+      allocate(aerAOD1(xN,yN))
+      allocate(aerREF1(xN,yN))
+      call nc_read_array(ncid, "aot550", aerAOD1, verbose)
+      call nc_read_array(ncid, "aer", aerREF1, verbose)
+  
+      ! Close file
+      if (nf90_close(ncid) .ne. NF90_NOERR) then
+         write(*,*) 'ERROR: ',trim(Faerosol)
+         stop error_stop_code
+      end if
+   end if
+
 
 
    !----------------------------------------------------------------------------
@@ -877,6 +923,7 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
    allocate(colO3(xN,yN))
    allocate(AOD550(xN,yN))
    allocate(AREF(xN,yN))
+   allocate(cbh(xN,yN))
 
    ! Fill OUTPUT with missing
    time_data(:,:) = dreal_fill_value
@@ -933,7 +980,7 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
 
    ! OPTION - PROCESS aerosol
    print*,'aerosol_processing_mode: ',aerosol_processing_mode
-   if (aerosol_processing_mode .ge. 1) then
+   if (aerosol_processing_mode .ge. 2) then
       allocate(aID(xN,yN))
       ! determine if netcdf file already exists
       inquire( file=trim(Fcollocation), exist=there )
@@ -943,7 +990,7 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
          !----------------------------------------------------------------------
          ! Make collocation netcdf file
          !----------------------------------------------------------------------
-         if (aerosol_processing_mode .eq. 2) then
+         if (aerosol_processing_mode .eq. 3) then
             call nc_open(ncid,Fprimary)
 
             ! Get common attributes from primary file
@@ -1003,7 +1050,7 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
 
             print*,'CREATED: '
             print*,trim(Fcollocation)
-         end if;aerosol_processing_mode = 2
+         end if;aerosol_processing_mode = 3
       end if ! file not there
 
       ! Netcdf collocation file exists get aID
@@ -1036,6 +1083,16 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
          do j=1,yN
             AOD550(i,j) = -999.
             AREF(i,j) = -999.
+         end do
+      end do
+   end if
+
+   if (aerosol_processing_mode .eq. 1) then
+      ! Fill arrays
+      do i=1,xN
+         do j=1,yN
+            AOD550(i,j) = aerAOD1(i,j)
+            AREF(i,j) = aerREF1(i,j)
          end do
       end do
    end if
@@ -1203,7 +1260,7 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
                pxregime = 7
             end if
 
-            if (phase(i,j) .eq. 0) ml_flag=0
+            if (pxregime .eq. 4) ml_flag=0
 
             ! Run full radiation code (not LUT mode)
             if (lut_mode .eq. 0) then
@@ -1313,6 +1370,9 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
                toa_par_tot(i,j) = tpar * pxPAR_WEIGHT
                boa_par_tot(i,j) = bpar * pxPAR_WEIGHT
                boa_par_dif(i,j) = bpardif * pxPAR_WEIGHT
+
+               ! Derived properties
+               cbh(i,j) = pxHcbase(1)
             end if ! valid data
 
             ! meteorology data to output in netCDF file
@@ -1891,6 +1951,27 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
         deflate_level = deflate_lv, &
         shuffle       = shuffle_flag)
 
+   !----------------------------------------------------------------------------
+   ! Cloud_Base_Height
+   !----------------------------------------------------------------------------
+   call nc_def_var_float_packed_float( &
+        ncid, &
+        dims_var, &
+        'cbh', &
+        cbh_vid, &
+        verbose, &
+        long_name     = 'derived adiabatic cloud base height', &
+        standard_name = 'cloud_base_height', &
+        fill_value    = sreal_fill_value, &
+        scale_factor  = real(1), &
+        add_offset    = real(0), &
+        valid_min     = real(0, sreal), &
+        valid_max     = real(1500, sreal), &
+        units         = 'km', &
+        deflate_level = deflate_lv, &
+        shuffle       = shuffle_flag)
+
+
    ! Need to exit define mode to write data
    if (nf90_enddef(ncid) .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_enddef()'
@@ -1975,6 +2056,9 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
 
    call nc_write_array(ncid,'colO3',colO3_vid,&
         colO3(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+
+   call nc_write_array(ncid,'cbh',cbh_vid,&
+        cbh(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
    ! Close netcdf file
    if (nf90_close(ncid) .ne. NF90_NOERR) then
