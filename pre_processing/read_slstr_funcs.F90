@@ -358,10 +358,6 @@ subroutine read_slstr_visdata(indir,inband,outarr,imager_angles,sx,sy, &
    ! Find the filename required for this channel
    call get_slstr_imnames(indir,inband,filename,filename_qa,bandname,irradname)
 
-   print*,inband
-   print*,trim(filename)
-   print*,trim(bandname)
-
    allocate(data1(nx*2,ny*2))
    allocate(data2(nx,ny))
    allocate(data3(nx,ny))
