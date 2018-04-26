@@ -390,7 +390,6 @@ subroutine get_goes_viewing_geom(imager_geolocation, imager_angles, sma, smi, hp
 
 	imager_angles%satzen(:,:,1) = acos(u3 / sqrt(u1*u1 + u2*u2 + u3*u3)) * 180. / pi
 	imager_angles%satazi(:,:,1) = atan2(-u2, u1) * 180. / pi
-	imager_angles%relazi(:,:,1) = atan2(-u2, u1) * 180. / pi
 
 	where (imager_angles%satazi .lt. 0)
 		imager_angles%satazi	=	imager_angles%satazi+360.0
@@ -408,6 +407,11 @@ subroutine get_goes_viewing_geom(imager_geolocation, imager_angles, sma, smi, hp
 	where (imager_angles%satzen .gt. 180)
 		imager_angles%satzen	=	sreal_fill_value
 	end where
+
+   where (imager_angles%satazi .lt. 0. .and. &
+          imager_angles%satazi .ne. sreal_fill_value )
+      imager_angles%satazi = 0. - imager_angles%satazi
+   end where
 
    ! Deallocate temporary variables
    deallocate(cos_lat)
@@ -462,12 +466,12 @@ subroutine get_goes_solgeom(imager_time,imager_angles,imager_geolocation,verbose
 	! This section computes the solar geometry for each pixel in the image
 #ifdef _OPENMP
 	if (verbose) write(*,*)"Computing solar geometry using OpenMP"
-!$omp parallel DO PRIVATE(x,y,sza,saa,dfr,idy,tmphr,ihr,minu,mon,iye)
+!$omp parallel DO PRIVATE(y,x,iye,mon,dfr,idy,tmphr,ihr,minu,sza,saa)
 #endif
 		do y=line0,line1
 			do x=column0,column1
 				! Here we compute the time for each pixel, GOES scans S-N so each line has a different time
-				call JD2GREG(imager_time%time(x,y),iye,mon,dfr)
+				call JD2GREG(imager_time%time(2700,2700),iye,mon,dfr)
 				idy	=	int(dfr)
 				tmphr	=	(dfr-idy)*24.
 				ihr	=	int(tmphr)
@@ -497,6 +501,14 @@ subroutine get_goes_solgeom(imager_time,imager_angles,imager_geolocation,verbose
       where (imager_angles%relazi(:,:,1) .gt. 180.)
          imager_angles%relazi(:,:,1) = 360. - imager_angles%relazi(:,:,1)
       end where
+   end where
+
+   where (imager_geolocation%latitude .eq. sreal_fill_value)
+   	imager_angles%relazi(:,:,1) = sreal_fill_value
+   	imager_angles%satazi(:,:,1) = sreal_fill_value
+   	imager_angles%satzen(:,:,1) = sreal_fill_value
+   	imager_angles%solazi(:,:,1) = sreal_fill_value
+   	imager_angles%solzen(:,:,1) = sreal_fill_value
    end where
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving get_goes_solgeom()'

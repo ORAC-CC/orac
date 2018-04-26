@@ -253,10 +253,24 @@ subroutine read_goes_bin(infiles, imager_geolocation, imager_measurements, &
 	endif
 
 	call get_goes_time(infiles(goodf), imager_time, imager_geolocation%ny, verbose)
-
 	call get_goes_solgeom(imager_time,imager_angles,imager_geolocation,verbose)
-
 	call get_goes_data(infiles,imager_angles,imager_measurements,imager_geolocation,channel_info,verbose)
+
+	! Compute relative azimuth from solar and viewing azimuths
+   where (imager_angles%solazi .gt. 180.)
+      imager_angles%solazi = 360. - imager_angles%solazi
+   end where
+   where (imager_angles%satazi .gt. 180.)
+      imager_angles%satazi = 360. - imager_angles%satazi
+   end where
+   imager_angles%relazi = abs(imager_angles%solazi-imager_angles%satazi)
+   where (imager_angles%relazi .gt. 180.)
+      imager_angles%relazi = 180. - imager_angles%relazi
+   end where
+   where (imager_angles%relazi .lt. 0. .and. &
+          imager_angles%relazi .ne. sreal_fill_value )
+      imager_angles%relazi = 0. - imager_angles%relazi
+   end where
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_goes_bin()'
 

@@ -473,6 +473,27 @@ subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
                end select
             end if
          end do
+      else if (trim(adjustl(sensor)) .eq. 'ABI') then
+         do i=1,channel_info%nchannels_total
+            ii = channel_info%map_ids_channel_to_sw(i)
+            select case (channel_info%channel_ids_instr(i))
+            case(2)
+               ch1=i
+               sw1=ii
+            case(3)
+               ch2=i
+               sw2=ii
+            case(5)
+               ch3=i
+               sw3=ii
+            case(7)
+               ch4=i
+            case(14)
+               ch5=i
+            case(15)
+               ch6=i
+            end select
+         end do
       else if (trim(adjustl(sensor)) .eq. 'AHI') then
          do i=1,channel_info%nchannels_total
             ii = channel_info%map_ids_channel_to_sw(i)
@@ -994,7 +1015,7 @@ subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
    index1 = min(7,max(1,int(imager_angles%SATZEN(i,j,cview)/10.0) + 1))
    !-- Determine the solar zenith angle bin.
    index2 = min(8,max(1,int(imager_angles%SOLZEN(i,j,cview)/10.0) + 1))
-   
+
    !-- Set 11um - 12um cirrus thresholds.
    !   Absorption of radiation by water vapor and ice crystals in
    !   semitransparent cirrus clouds is greater at 12 than 11 micron
@@ -1005,7 +1026,7 @@ subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
        C1(index1)*imager_measurements%DATA(i,j,ch5)**2 + &
        D1(index1)*imager_measurements%DATA(i,j,ch5)**3 + &
        E1(index1)*imager_measurements%DATA(i,j,ch5)**4
-     
+
    BTD1112_CIRRUS_THRES = max( 1.0,min(4.0,BTD1112_CIRRUS_THRES) )
 
    desertflag = .false.
@@ -1117,7 +1138,7 @@ subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
    end if
 
    ! introduce 2nd glint test / also possible dust using spatial
-   ! variabilty in channel5 
+   ! variabilty in channel5
    if ( ( BTD_Ch4_Ch5 .ge. 0. ) .and. ( BTD_Ch4_Ch5 .le. 3. ) .and. &
         ( ch2v/max(ch1v,0.01) .ge. 0.6 ) .and. (ch2v/max(ch1v,0.01) .le. 1. ) .and. &
         ( imager_measurements%DATA(i,j,ch5) .gt. 290.0 ) .and. &
@@ -1866,7 +1887,7 @@ function plank_inv(input_platform, T)
    integer(kind=byte) :: index ! index of row containing platform-specific coefficients
    real(kind=sreal),parameter :: Planck_C1 = 1.19104E-5 ! 2hc^2 in mW m-2 sr-1 (cm-1)-4
    real(kind=sreal),parameter :: Planck_C2 = 1.43877 ! hc/k  in K (cm-1)-1
-   real(kind=sreal), dimension(4,24) :: coefficients ! coefficients containing variables
+   real(kind=sreal), dimension(4,25) :: coefficients ! coefficients containing variables
 
    ! select appropriate row of coefficient values
    select case (input_platform)
@@ -1926,14 +1947,18 @@ function plank_inv(input_platform, T)
       index = 21
    case ("Himawari-9")
       index = 21
-   case ("SuomiNPP")
+   case ("GOES-16")
       index = 22
+   case ("GOES-17")
+      index = 22
+   case ("SuomiNPP")
+      index = 23
    case ("Sentinel3a")
-      index = 23
-   case ("Sentinel3b")
-      index = 23
-   case ("default")
       index = 24
+   case ("Sentinel3b")
+      index = 24
+   case ("default")
+      index = 25
    case default
       write(*,*) "Error: Platform name does not match local string in function plank_inv"
       write(*,*) "Input platform name = ", input_platform
@@ -1969,15 +1994,14 @@ function plank_inv(input_platform, T)
         2687.039, 0.996570, 2.05823, 5.077, & ! metop02, metopa
         2641.650, 0.999206, 0.48685, 4.896, & ! terra
         2641.790, 0.999205, 0.48803, 4.896, & ! aqua
-!       2641.775, 0.999341, 0.47705, 4.804, & ! terra
-!       2647.409, 0.999336, 0.48184, 4.822, & ! aqua
         2675.166, 0.996344, 1.72695, 5.030, & ! env,ers2 (aatsr)
         2568.832, 0.995400, 3.43800, 4.660, & ! msg1, msg2, msg3, msg4
-        2575.767, 0.999000, 0.46500, 4.688, & ! himawari8, himawari9
+        2575.767, 0.999339, 0.46466, 4.688, & ! himawari8, himawari9
+        2570.373, 0.999376, 0.43862, 4.672, & ! goes16, goes17
         2707.560, 0.999085, 0.58063, 5.123, & ! viirs SoumiNpp
         2673.797, 0.994884, 2.19600, 5.064, & ! slstr Sentinel-3
         2670.000, 0.998000, 1.75000, 5.000  & ! default
-        /), (/ 4, 24 /))
+        /), (/ 4, 25 /))
 
    plank_inv(1) = Planck_C1 * coefficients(1 , index)**3 / &
         (exp(Planck_C2 * coefficients(1 , index) / &

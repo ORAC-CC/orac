@@ -302,6 +302,7 @@
 !    gone missing in the move to github.
 ! 2018/02/01, GT: source_atts structure is now passed to setup_slstr, which
 !     populates the l1b_version and l1b_orbit_number attributes.
+! 2018/04/26, SP: Adjustment to the aerosol hack to prevent segfaults.
 !
 ! $Id$
 !

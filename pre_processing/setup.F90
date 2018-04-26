@@ -305,7 +305,7 @@ subroutine setup_abi(l1b_path_file,geo_path_file,platform,year,month,day, &
          3,       4,       5,       6,       7,       8,       9,       10 /)
 
    integer, parameter :: all_map_ids_abs_to_ref_band_land(all_nchannels_total) = &
-      (/ 3,       1,       2,       0,       6,       7,       0,       0, &
+      (/ 3,       1,       2,       5,       6,       7,       0,       0, &
          0,       0,       0,       0,       0,       0,       0,       0 /)
 
    integer, parameter :: all_map_ids_abs_to_ref_band_sea(all_nchannels_total) = &
@@ -345,7 +345,7 @@ subroutine setup_abi(l1b_path_file,geo_path_file,platform,year,month,day, &
    integer, parameter :: channel_ids_default(6) = (/ 2, 3, 5, 7, 14, 15 /)
 
 
-   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering setup_himawari()'
+   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering setup_goes()'
 
    if (verbose) write(*,*) 'l1b_path_file: ', trim(l1b_path_file)
    if (verbose) write(*,*) 'geo_path_file: ', trim(geo_path_file)
@@ -406,7 +406,7 @@ subroutine setup_abi(l1b_path_file,geo_path_file,platform,year,month,day, &
       all_channel_numerical_uncertainty, all_channel_lnd_uncertainty, &
       all_channel_sea_uncertainty, all_nchannels_total)
 
-   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_abi()'
+   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_goes()'
 
 end subroutine setup_abi
 
