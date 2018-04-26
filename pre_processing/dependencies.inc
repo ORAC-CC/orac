@@ -61,12 +61,15 @@ $(OBJS)/read_avhrr.o: $(OBJS)/calender.o $(OBJS)/channel_structures.o \
         read_avhrr_time.F90 read_avhrr_time_lat_lon_angles.F90
 $(OBJS)/read_camel_emissivity.o: $(OBJS)/preproc_constants.o
 $(OBJS)/read_cimss_emissivity.o: $(OBJS)/preproc_constants.o
+$(OBJS)/read_goes.o: $(OBJS)/calender.o $(OBJS)/channel_structures.o \
+        $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o \
+        read_goes_funcs.F90 read_goes_main.F90
 $(OBJS)/read_himawari.o: $(OBJS)/channel_structures.o \
         $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o
 $(OBJS)/read_imager.o: $(OBJS)/channel_structures.o $(OBJS)/imager_structures.o \
         $(OBJS)/preproc_constants.o $(OBJS)/read_aatsr.o $(OBJS)/read_avhrr.o \
-        $(OBJS)/read_himawari.o $(OBJS)/read_modis.o $(OBJS)/read_seviri.o \
-        $(OBJS)/read_slstr.o $(OBJS)/read_viirs.o
+        $(OBJS)/read_goes.o $(OBJS)/read_himawari.o $(OBJS)/read_modis.o \
+        $(OBJS)/read_seviri.o $(OBJS)/read_slstr.o $(OBJS)/read_viirs.o
 $(OBJS)/read_modis.o: $(OBJS)/bright_m.o $(OBJS)/calender.o \
         $(OBJS)/channel_structures.o $(OBJS)/imager_structures.o \
         $(OBJS)/preproc_constants.o get_modis_time.F90 map_time_to_pixel.F90 \

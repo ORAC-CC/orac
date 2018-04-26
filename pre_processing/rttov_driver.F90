@@ -283,6 +283,16 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
       coef_file = 'rtcoef_ers_2_atsr.dat'
    case('AATSR')
       coef_file = 'rtcoef_envisat_1_atsr.dat'
+   case('ABI')
+      if (trim(platform) == 'GOES-16') then
+         coef_file = 'rtcoef_goes_16_abi.dat'
+      elseif (trim(platform) == 'GOES-17') then
+         coef_file = 'rtcoef_goes_17_abi.dat'
+      else
+         write(*,*) 'ERROR: rttov_driver(): Invalid GOES platform: ', &
+                    trim(platform)
+         stop error_stop_code
+      end if
    case('AHI')
       if (trim(platform) == 'Himawari-8') then
          coef_file = 'rtcoef_himawari_8_ahi.dat'

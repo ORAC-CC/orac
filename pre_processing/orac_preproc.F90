@@ -333,6 +333,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
    use preproc_structures_m
    use read_aatsr_m
    use read_avhrr_m
+   use read_goes_m
    use read_himawari_m
    use read_imager_m
    use read_modis_m
@@ -770,6 +771,15 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
       call read_aatsr_dimensions(l1b_path_file, n_across_track, &
            n_along_track, along_track_offset, day_night, loc_limit, &
            n_along_track2, along_track_offset2, verbose)
+   else if (trim(adjustl(sensor)) .eq. 'ABI') then
+      call setup_abi(l1b_path_file,geo_path_file,platform,year,month,day, &
+           doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids, &
+           channel_info,verbose)
+
+      ! Get dimensions of the ABI image.
+      call read_goes_dimensions(geo_path_file,n_across_track,n_along_track, &
+                                    startx,endx,starty,endy,verbose)
+
 
    else if (trim(adjustl(sensor)) .eq. 'AHI') then
       call setup_ahi(l1b_path_file,geo_path_file,platform,year,month,day, &

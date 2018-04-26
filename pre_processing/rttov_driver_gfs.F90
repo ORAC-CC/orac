@@ -196,6 +196,16 @@ subroutine rttov_driver_gfs(coef_path, emiss_path, sensor, platform, &
       coef_file = 'rtcoef_ers_2_atsr.dat'
    case('AATSR')
       coef_file = 'rtcoef_envisat_1_atsr.dat'
+   case('ABI')
+      if (trim(platform) == 'GOES-16') then
+         coef_file = 'rtcoef_goes_16_abi.dat'
+      elseif (trim(platform) == 'GOES-17') then
+         coef_file = 'rtcoef_goes_17_abi.dat'
+      else
+         write(*,*) 'ERROR: rttov_driver(): Invalid GOES platform: ', &
+                    trim(platform)
+         stop error_stop_code
+      end if
    case('AHI')
       if (trim(platform) == 'Himawari-8') then
          coef_file = 'rtcoef_himawari_8_ahi.dat'
@@ -213,8 +223,16 @@ subroutine rttov_driver_gfs(coef_path, emiss_path, sensor, platform, &
           else
             coef_file = 'rtcoef_noaa_'//platform(5:5)//'_avhrr.dat'
           end if
-      else if (index(platform,'metop') >= 1) then
-         coef_file = 'rtcoef_metop_'//platform(6:7)//'_avhrr.dat'
+       else if (index(platform,'metop') >= 1) then
+          if (platform(6:6) == "a") then
+             coef_file = 'rtcoef_metop_2_avhrr.dat'
+          elseif (platform(6:6) == "b") then
+             coef_file = 'rtcoef_metop_1_avhrr.dat'
+          else
+             write(*,*) 'ERROR: rttov_driver(): Invalid Metop platform: ', &
+                  trim(platform)
+             stop error_stop_code
+          end if
       else
          write(*,*) 'ERROR: rttov_driver(): Invalid AVHRR platform: ', &
                     trim(platform)

@@ -24,8 +24,8 @@
 # 2016/05/16, SP: Added the read_viirs module.
 # 2016/06/14, SP: Added the read_slstr module.
 # 2017/02/07, SP: Added support for NOAA GFS atmosphere data (ExtWork)
-# 2017/03/29, SP: Add ability to calculate tropospheric cloud emissivity
-#    (ExtWork)
+# 2017/03/29, SP: Add ability to calculate tropospheric cloud emissivity (ExtWork)
+# 2018/02/12, SP: Added the read_goes module.
 #
 # Notes:
 # It appears that -lopenjpeg needs to be included in the LIBS list since on some
@@ -72,6 +72,7 @@ PREPROC_OBJ_F90 = $(OBJS)/aatsr_corrections.o \
                   $(OBJS)/read_avhrr.o \
                   $(OBJS)/read_camel_emissivity.o \
                   $(OBJS)/read_cimss_emissivity.o \
+                  $(OBJS)/read_goes.o \
                   $(OBJS)/read_himawari.o \
                   $(OBJS)/read_imager.o \
                   $(OBJS)/read_modis.o \
@@ -89,7 +90,7 @@ PREPROC_OBJ_F90 = $(OBJS)/aatsr_corrections.o \
                   $(OBJS)/surface_structures.o \
                   $(OBJS)/utils_for_main.o
 
-PREPROC_OBJ_C    = $(OBJS)/read_aatsr_orbit.o
+PREPROC_OBJ_C    = $(OBJS)/read_aatsr_orbit.o $(OBJS)/solpos.o
 
 PREPROC_OBJ      = $(PREPROC_OBJ_F90) $(PREPROC_OBJ_C)
 
@@ -135,3 +136,4 @@ include dependencies.inc
 
 # C dependecies
 $(OBJS)/read_aatsr_orbit.o: read_aatsr_orbit.h
+$(OBJS)/solpos.o: solpos00.h

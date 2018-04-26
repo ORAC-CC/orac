@@ -366,12 +366,16 @@ subroutine setup_abi(l1b_path_file,geo_path_file,platform,year,month,day, &
       stop error_stop_code
    end if
 
-   platform="GOES-16"
-   if (verbose) write(*,*)"Satellite is: ",platform
+   if (index(l1b_path_file,"G16") .gt. 0) then
+   	platform="GOES-16"
+   elseif(index(l1b_path_file,"G17") .gt. 0) then
+   	platform="GOES-17"
+   else
+   	write(*,*) "Unsupported GOES platform, ",l1b_path_file
+   	stop
+   endif
 
-   ! The code below extracts date/time info from the segment name.
-   ! Note that it requires the segment name to be in the generic format
-   ! that's specified by the JMA. Weird filenames will break things.
+   if (verbose) write(*,*)"Satellite is: ",platform
 
    index2=index(trim(adjustl(l1b_path_file)),'ABI-L1b-')
 

@@ -71,6 +71,7 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
    use preproc_constants_m
    use read_aatsr_m
    use read_avhrr_m
+   use read_goes_m
    use read_himawari_m
    use read_modis_m
    use read_seviri_m
@@ -95,6 +96,8 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
    logical,                        intent(in)    :: use_l1_land_mask
    logical,                        intent(in)    :: use_predef_geo
    logical,                        intent(in)    :: verbose
+
+   character(len=file_length), allocatable       :: abi_filenames(:)
 
    integer :: i, j, k
    real    :: meas_unc, fm_unc
@@ -122,6 +125,24 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
       call read_aatsr_l1b(path_to_l1b_file,path_to_aatsr_drift_table, &
            imager_geolocation,imager_measurements,imager_angles, &
            imager_flags,imager_time,channel_info,sensor,verbose)
+
+   else if (trim(adjustl(sensor)) .eq. 'ABI') then
+
+      ! Assemble the filenames required for ABI data
+      allocate(abi_filenames(channel_info%nchannels_total))
+      call get_goes_path(path_to_l1b_file,platform,abi_filenames,&
+           channel_info%nchannels_total,channel_info%channel_ids_instr)
+
+      ! Read the L1B data, according to the dimensions and offsets specified in
+      ! imager_geolocation
+      call read_goes_bin(abi_filenames, imager_geolocation,&
+           imager_measurements,imager_angles, imager_time,&
+           channel_info,use_predef_geo,geo_file_path,verbose)
+
+      !in absence of proper mask set everything to "1" for cloud mask
+      imager_flags%cflag = 1
+
+      deallocate(abi_filenames)
 
    else if (trim(adjustl(sensor)) .eq. 'AHI') then
       ! Read the L1B data, according to the dimensions and offsets specified in
