@@ -17,6 +17,7 @@
 ! 2015/07/23, GM: Added specific humidity and ozone vids.
 ! 2017/03/29, SP: Add ability to calculate tropospheric cloud emissivity (ExtWork)
 ! 2017/06/20, OS: Added ann phase variable IDs
+! 2018/04/26, SP: Add code to save satellite azimuth (commented out, but useful)
 !
 ! $Id$
 !
@@ -91,7 +92,7 @@ module netcdf_output_m
                  vid_emis_abs_ch_numbers_config, vid_msi_ch_view_config
 
       ! geo file
-      integer :: vid_solzen, vid_satzen, vid_solaz, vid_relazi
+      integer :: vid_solzen, vid_satzen, vid_sataz, vid_solaz, vid_relazi
 
       ! loc file
       integer :: vid_lat, vid_lon

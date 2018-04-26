@@ -95,6 +95,7 @@
 ! 2017/02/07, SP: Added support for NOAA GFS atmosphere data (ExtWork)
 ! 2017/04/11, SP: Added ecmwf_flag=6, for working with GFS analysis files.
 ! 2017/06/21, OS: Added ANN phase variables
+! 2018/04/26, SP: Add code to save satellite azimuth (commented out, but useful)
 !
 ! $Id$
 !
@@ -1021,6 +1022,17 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
            deflate_level = deflate_level, &
            shuffle = shuffle_flag, &
            fill_value = sreal_fill_value)
+
+!      ! define sataz
+!      call nc_def_var_float_packed_float( &
+!           netcdf_info%ncid_geo, &
+!           dimids_3d, &
+!           'sataz', &
+!           netcdf_info%vid_sataz, &
+!           verbose, &
+!           deflate_level = deflate_level, &
+!           shuffle = shuffle_flag, &
+!           fill_value = sreal_fill_value)
 
       ! define relazi
       call nc_def_var_float_packed_float( &
