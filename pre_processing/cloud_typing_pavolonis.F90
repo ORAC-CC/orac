@@ -952,11 +952,12 @@ subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
                   imager_measurements%data(i,j,ch5)
 
    ! Calculate spatial stddev of BT(11)
-   s_i = max(i-1,1)
-   e_i = min(i+1,imager_geolocation%ENDX)
+   s_i = max(i-1,imager_geolocation%startx)
+   e_i = min(i+1,imager_geolocation%endx)
    s_j = max(j-1,1)
-   e_j = min(j+1,imager_geolocation%ENDY)
+   e_j = min(j+1,imager_geolocation%ny)
    NNN = ( e_i - s_i +1) * ( e_j- s_j +1)
+
    MN_BT11 = SUM(imager_measurements%DATA(s_i:e_i,s_j:e_j,ch5)  ) / NNN
    SD_BT11 = SQRT (SUM((imager_measurements%DATA(s_i:e_i,s_j:e_j,ch5) - MN_BT11)**2) / (NNN - 1))
 
