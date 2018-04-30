@@ -222,7 +222,7 @@ subroutine read_seviri_l1_5(l1_5_file, imager_geolocation, imager_measurements, 
       preproc%sza  => imager_angles%solzen(startx:,:,1)
       preproc%saa  => imager_angles%solazi(startx:,:,1)
       preproc%vza  => imager_angles%satzen(startx:,:,1)
-      preproc%vaa  => imager_angles%relazi(startx:,:,1)
+      preproc%vaa  => imager_angles%satazi(startx:,:,1)
       preproc%data => imager_measurements%data(startx:,:,:)
 
       ! The main reader call which populates preproc (type seviri_preproc_t_f90)
@@ -253,7 +253,7 @@ subroutine read_seviri_l1_5(l1_5_file, imager_geolocation, imager_measurements, 
       imager_angles%solzen(startx:,:,1)       = preproc%sza(column0:column1,line0:line1)
       imager_angles%solazi(startx:,:,1)       = preproc%saa(column0:column1,line0:line1)
       imager_angles%satzen(startx:,:,1)       = preproc%vza(column0:column1,line0:line1)
-      imager_angles%relazi(startx:,:,1)       = preproc%vaa(column0:column1,line0:line1)
+      imager_angles%satazi(startx:,:,1)       = preproc%vaa(column0:column1,line0:line1)
       imager_measurements%data(startx:,:,:)   = preproc%data(column0:column1,line0:line1,:)
    end if
 
@@ -261,12 +261,16 @@ subroutine read_seviri_l1_5(l1_5_file, imager_geolocation, imager_measurements, 
    deallocate(band_units)
 
    where(imager_angles%solazi(startx:,:,1) .ne. sreal_fill_value .and. &
-         imager_angles%relazi(startx:,:,1) .ne. sreal_fill_value)
+         imager_angles%satazi(startx:,:,1) .ne. sreal_fill_value)
       imager_angles%solazi(:,:,1) = imager_angles%solazi(startx:,:,1) - 180.
       where(imager_angles%solazi(:,:,1) .lt. 0.)
          imager_angles%solazi(:,:,1) = imager_angles%solazi(:,:,1) + 360.
       end where
-      imager_angles%relazi(:,:,1) = abs(imager_angles%relazi(startx:,:,1) - &
+!      imager_angles%satazi(:,:,1) = imager_angles%satazi(startx:,:,1) - 180.
+!      where(imager_angles%satazi(:,:,1) .lt. 0.)
+!         imager_angles%satazi(:,:,1) = imager_angles%satazi(:,:,1) + 360.
+!      end where
+      imager_angles%relazi(:,:,1) = abs(imager_angles%satazi(startx:,:,1) - &
                                         imager_angles%solazi(startx:,:,1))
 
       where (imager_angles%relazi(:,:,1) .gt. 180.)

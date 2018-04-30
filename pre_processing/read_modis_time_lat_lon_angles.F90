@@ -109,6 +109,8 @@ subroutine read_modis_time_lat_lon_angles(path_to_geo_file,imager_geolocation,&
         imager_geolocation%endx,imager_geolocation%starty, &
         imager_geolocation%endy,temp)
 
+   imager_angles%satazi(:,:,1) = temp
+
    ! make rel azi
    ! Note: Relative azimuth is defined so that if the satellite is looking
    ! towards the sun (i.e. forward scattering), relative azimuth is zero.

@@ -134,6 +134,7 @@ subroutine read_avhrr_time_lat_lon_angles(path_to_geo_file,imager_geolocation,&
    where ( temp2 .ne. sreal_fill_value .AND. temp .ne. sreal_fill_value )
 
       imager_angles%relazi(:,:,1) = abs( temp2 - temp )
+      imager_angles%satazi(:,:,1) = temp
 
       where ( imager_angles%relazi(:,:,1) .gt. 180. )
          imager_angles%relazi(:,:,1) = imager_angles%relazi(:,:,1) - 180.

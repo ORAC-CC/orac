@@ -219,7 +219,7 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
    imager_angles%solzen(:,:,1)       = preproc%sza
    imager_angles%solazi(:,:,1)       = preproc%saa
    imager_angles%satzen(:,:,1)       = preproc%vza
-   imager_angles%relazi(:,:,1)       = preproc%vaa
+   imager_angles%satazi(:,:,1)       = preproc%vaa
    imager_measurements%data(:,:,:)   = preproc%indata
 
    deallocate(band_ids)
@@ -241,18 +241,18 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
       imager_angles%solzen(startx:,:,1) = sreal_fill_value
    where(imager_angles%satzen(startx:,:,1)       .lt. -900) &
       imager_angles%satzen(startx:,:,1) = sreal_fill_value
-   where(imager_angles%relazi(startx:,:,1)       .lt. -900) &
-      imager_angles%relazi(startx:,:,1) = sreal_fill_value
+   where(imager_angles%satazi(startx:,:,1)       .lt. -900) &
+      imager_angles%satazi(startx:,:,1) = sreal_fill_value
 
    where(is_nan(imager_angles%solzen)) imager_angles%solzen = sreal_fill_value
    where(is_nan(imager_angles%solazi)) imager_angles%solazi = sreal_fill_value
    where(is_nan(imager_angles%satzen)) imager_angles%satzen = sreal_fill_value
-   where(is_nan(imager_angles%relazi)) imager_angles%relazi = sreal_fill_value
+   where(is_nan(imager_angles%satazi)) imager_angles%satazi = sreal_fill_value
 
    ! Rescale zens + azis into correct format
    where(imager_angles%solazi(startx:,:,1) .ne. sreal_fill_value .and. &
-         imager_angles%relazi(startx:,:,1) .ne. sreal_fill_value)
-      imager_angles%relazi(:,:,1) = abs(imager_angles%relazi(startx:,:,1) - &
+         imager_angles%satazi(startx:,:,1) .ne. sreal_fill_value)
+      imager_angles%relazi(:,:,1) = abs(imager_angles%satazi(startx:,:,1) - &
                                         imager_angles%solazi(startx:,:,1))
 
       where (imager_angles%relazi(:,:,1) .gt. 180.)

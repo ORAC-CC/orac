@@ -320,7 +320,7 @@ subroutine read_viirs(infile,geofile,imager_geolocation, imager_measurements, &
       call h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO-TC_All/" // &
                      "SatelliteAzimuthAngle", dset_id, error)
       call h5dread_f(dset_id, H5T_NATIVE_REAL, data0, pxcount, error)
-      imager_angles%relazi(:,:,1) = data0
+      imager_angles%satazi(:,:,1) = data0
       call h5dclose_f(dset_id, error)
       call h5fclose_f(file_id, error)
    else
@@ -442,13 +442,13 @@ subroutine read_viirs(infile,geofile,imager_geolocation, imager_measurements, &
       imager_angles%solzen(startx:,:,1)=sreal_fill_value
    where(imager_angles%satzen(startx:,:,1)       .gt. 900) &
       imager_angles%satzen(startx:,:,1)=sreal_fill_value
-   where(imager_angles%relazi(startx:,:,1)       .gt. 900) &
-      imager_angles%relazi(startx:,:,1)=sreal_fill_value
+   where(imager_angles%satazi(startx:,:,1)       .gt. 900) &
+      imager_angles%satazi(startx:,:,1)=sreal_fill_value
 
    ! Rescale zens + azis into correct format
    where(imager_angles%solazi(startx:,:,1) .ne. sreal_fill_value .and. &
-         imager_angles%relazi(startx:,:,1) .ne. sreal_fill_value)
-      imager_angles%relazi(:,:,1) = abs(imager_angles%relazi(startx:,:,1) - &
+         imager_angles%satazi(startx:,:,1) .ne. sreal_fill_value)
+      imager_angles%relazi(:,:,1) = abs(imager_angles%satazi(startx:,:,1) - &
                                         imager_angles%solazi(startx:,:,1))
 
       where (imager_angles%relazi(:,:,1) .gt. 180.)
