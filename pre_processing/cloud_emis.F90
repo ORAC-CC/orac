@@ -191,28 +191,6 @@ subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation,&
       end if
    end do
 
-   print*,""
-   print*,""
-   print*,""
-   print*,""
-   print*,""
-   print*,""
-   print*,""
-   print*,""
-   print*,""
-   print*,""
-   print*,""
-   print*,good_chan_all
-   print*,""
-   print*,""
-   print*,""
-   print*,""
-   print*,""
-   print*,""
-   print*,""
-   print*,""
-   print*,""
-
    !$OMP PARALLEL &
    !$OMP PRIVATE(i) &
    !$OMP PRIVATE(j) &
