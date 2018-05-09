@@ -57,6 +57,7 @@
 ! 2014/12/16, GM: Put back netcdf_create_config() moved out in the above change.
 ! 2017/02/07, SP: Added support for NOAA GFS atmosphere data (ExtWork)
 ! 2017/03/29, SP: Add ability to calculate tropospheric cloud emissivity (ExtWork)
+! 2018/04/29, SP: Add cloud emissivity support for ECMWF profiles (ExtWork)
 !
 ! $Id$
 !

@@ -18,6 +18,7 @@
 ! 2017/03/29, SP: Add ability to calculate tropospheric cloud emissivity (ExtWork)
 ! 2017/06/20, OS: Added ann phase variable IDs
 ! 2018/04/26, SP: Add code to save satellite azimuth (commented out, but useful)
+! 2018/04/29, SP: Add cloud emissivity support for ECMWF profiles (ExtWork)
 !
 ! $Id$
 !

@@ -96,6 +96,7 @@
 ! 2017/04/11, SP: Added ecmwf_flag=6, for working with GFS analysis files.
 ! 2017/06/21, OS: Added ANN phase variables
 ! 2018/04/26, SP: Add code to save satellite azimuth (commented out, but useful)
+! 2018/04/29, SP: Add cloud emissivity support for ECMWF profiles (ExtWork)
 !
 ! $Id$
 !
