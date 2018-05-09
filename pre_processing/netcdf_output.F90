@@ -116,6 +116,7 @@ module netcdf_output_m
 
       ! prtm file:
       integer :: vid_lon_pw, vid_lat_pw
+      integer :: vid_tropop_pw
       integer :: vid_satzen_pw, vid_solzen_pw
       integer :: vid_pprofile_lev_pw, vid_tprofile_lev_pw, vid_hprofile_lev_pw, &
                  vid_qprofile_lev_pw, vid_o3profile_lev_pw

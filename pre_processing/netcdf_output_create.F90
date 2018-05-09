@@ -119,14 +119,14 @@ subroutine netcdf_output_create(output_path,lwrtm_file,swrtm_file,prtm_file, &
         cminute,platform,sensor, &
         trim(adjustl(output_path))//'/'//trim(adjustl(prtm_file)), &
         NETCDF_OUTPUT_FILE_PRTM, preproc_dims, netcdf_info,channel_info, &
-        ecmwf_flag,verbose)
+        ecmwf_flag,do_cloud_emis,verbose)
 
    ! create lwrtm file
    call netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
         cminute,platform,sensor, &
         trim(adjustl(output_path))//'/'//trim(adjustl(lwrtm_file)), &
         NETCDF_OUTPUT_FILE_LWRTM,preproc_dims, netcdf_info,channel_info, &
-        ecmwf_flag,verbose)
+        ecmwf_flag,do_cloud_emis,verbose)
 
    ! create swrtm file
    call netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
@@ -134,7 +134,7 @@ subroutine netcdf_output_create(output_path,lwrtm_file,swrtm_file,prtm_file, &
         platform,sensor, &
         trim(adjustl(output_path))//'/'//trim(adjustl(swrtm_file)), &
         NETCDF_OUTPUT_FILE_SWRTM, preproc_dims, netcdf_info,channel_info, &
-        ecmwf_flag,verbose)
+        ecmwf_flag,do_cloud_emis,verbose)
 
 
    ! Create swath based files

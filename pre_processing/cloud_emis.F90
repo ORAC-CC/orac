@@ -9,6 +9,7 @@
 !
 ! History:
 ! 2017/03/29, SP: First version (ExtWork)
+! 2018/04/29, SP: Add cloud emissivity support for ECMWF profiles (ExtWork)
 !
 ! $Id$
 !
@@ -21,6 +22,81 @@ module cloud_emis_m
    implicit none
 
 contains
+
+subroutine get_trop_tp(preproc_prtm,preproc_dims)
+
+   use preproc_constants_m
+   use preproc_structures_m
+   use omp_lib
+
+   type(preproc_prtm_t),           intent(inout)    :: preproc_prtm
+   type(preproc_dims_t),           intent(in)    :: preproc_dims
+
+   real,    parameter :: min_tropopause = 30.0  ! Heighest p allowed for trop
+   real,    parameter :: max_tropopause = 500.0 ! Lowest p allowed for trop
+   integer, parameter :: depth          = 2     ! # layers added to inversions
+
+   integer                            :: nx,ny,nz ! Number of vertical levels, pixels
+   integer                            :: x,y      ! Looping variables over preproc
+   integer                            :: k, l     ! Indexing variables
+   integer, dimension(1)              :: k_tmax   ! Index of max temperature
+   integer, dimension(1)              :: k_tmin   ! Index of min temperature
+   integer                            :: k_int    ! Index of interpolated temp
+   integer                            :: step     ! Direction of search
+   real, dimension(preproc_dims%kdim-1) :: t        ! Temperature profile
+   real, dimension(preproc_dims%kdim-1) :: p        ! Pressure profile
+   real, dimension(preproc_dims%kdim-1) :: h        ! Height profile
+   real                               :: gradient ! For extrapolation
+
+
+   nx = preproc_dims%xdim
+   ny = preproc_dims%ydim
+   nz = preproc_dims%kdim-1
+
+   k = 1
+   do x=preproc_dims%min_lon,preproc_dims%max_lon
+   	do y=preproc_dims%min_lat,preproc_dims%max_lat
+  			t  = preproc_prtm%temperature(x,y,1:nz)
+   		p  = preproc_prtm%pressure(x,y,1:nz)
+   		h  = (0.001 / g_wmo) * preproc_prtm%phi_lev(x,y,1:nz)
+			do while (t(k+1) > t(k) .and. k < nz-1)
+				k = k+1
+			end do
+			do while (p(k) > max_tropopause .and. k < nz-1)
+				if (t(k+1) > t(k)) then
+				   l = k+2
+				   do while (t(l) < t(l+1) .and. l < nz-1)
+				      l = l+1
+				   end do
+				   l = l - depth ! Add levels
+				   gradient = (t(k-2) - t(k-1)) / (p(k-2) - p(k-1))
+				   t(l:k) = t(k-1) + gradient * (p(l:k) - p(k-1))
+				   k = l+1
+				else
+				   k = k+1
+				end if
+			end do
+
+			do while (p(k) > min_tropopause .and. k < nz-1)
+				if ((t(k) - t(k+1)) / (h(k+1) - h(k)) < 2.) then
+				   l = k+1
+				   do while (h(l) - h(k) < 2. .and. l < nz-1)
+				      l = l+1
+				   end do
+				   if ((t(k) - t(l)) / (h(l) - h(k)) < 2.) exit
+				end if
+				k = k+1
+   		end do
+   		if (k .lt. nz) then
+	   		preproc_prtm%trop_p(x,y) = p(k)
+	   	else
+	   		preproc_prtm%trop_p(x,y) = sreal_fill_value
+	   	endif
+		end do
+	end do
+	return
+
+end subroutine get_trop_tp
 
 subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation,&
      preproc_dims,preproc_geoloc,preproc_cld,imager_cloud,ecmwf,sensor,verbose)
@@ -92,6 +168,8 @@ subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation,&
    if (trim(adjustl(sensor)) .eq. 'AATSR' .or. &
        trim(adjustl(sensor)) .eq. 'ATSR2') then
       chan_n = 6
+   else if (trim(adjustl(sensor)) .eq. 'ABI') then
+      chan_n = 13
    else if (trim(adjustl(sensor)) .eq. 'AHI') then
       chan_n = 13
    else if (trim(adjustl(sensor)) .eq. 'AVHRR') then
@@ -112,6 +190,28 @@ subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation,&
          good_chan_lw = channel_info%map_ids_channel_to_lw(i)
       end if
    end do
+
+   print*,""
+   print*,""
+   print*,""
+   print*,""
+   print*,""
+   print*,""
+   print*,""
+   print*,""
+   print*,""
+   print*,""
+   print*,""
+   print*,good_chan_all
+   print*,""
+   print*,""
+   print*,""
+   print*,""
+   print*,""
+   print*,""
+   print*,""
+   print*,""
+   print*,""
 
    !$OMP PARALLEL &
    !$OMP PRIVATE(i) &
@@ -146,6 +246,7 @@ subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation,&
    !$OMP DO SCHEDULE(GUIDED)
    do i=1,imager_geolocation%ny
       do j=imager_geolocation%startx,imager_geolocation%endx
+
          t1      = exp(c2/(lam*cldbt(j,i)))
          t2      = (t1-1)
          rad_cld = c1/(t2*(lam**5))
@@ -157,7 +258,6 @@ subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation,&
          rad_obs = c1/(t2*(lam**5))
 
          emis    = (rad_obs-rad_clr)/(rad_cld-rad_clr)
-
          ! Emisivities below zero are not really feasible (although possible
          ! in case of atmosphere profile being unrepresentative. Set these
          ! values equal to zero.

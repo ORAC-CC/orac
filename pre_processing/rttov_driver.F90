@@ -140,7 +140,8 @@
 ! 2017/04/12, SP: Allow switch to parallel RTTOV only if OPENMP is enabled.
 ! 2017/06/21, OS: string name adaptations for METOPA/B
 ! 2017/11/15, SP: Add feature to give access to sensor azimuth angle
-! 2107/12/12, GT: Changed Sentinel-3 platform name to Sentinel3a
+! 2017/12/12, GT: Changed Sentinel-3 platform name to Sentinel3a
+! 2018/04/29, SP: Add cloud emissivity support for ECMWF profiles (ExtWork)
 !
 ! $Id$
 !
@@ -156,8 +157,8 @@ implicit none
 contains
 
 subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
-     preproc_geoloc, preproc_geo, preproc_prtm, preproc_surf, netcdf_info, &
-     channel_info, year, month, day, use_modis_emis, verbose)
+     preproc_geoloc, preproc_geo, preproc_prtm, preproc_surf, preproc_cld, netcdf_info, &
+     channel_info, year, month, day, use_modis_emis, do_cloud_emis, verbose)
 
    use channel_structures_m
    use netcdf_output_m
@@ -218,10 +219,12 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
    type(preproc_geo_t),            intent(in)    :: preproc_geo
    type(preproc_prtm_t),           intent(inout) :: preproc_prtm
    type(preproc_surf_t),           intent(in)    :: preproc_surf
+   type(preproc_cld_t),            intent(inout) :: preproc_cld
    type(netcdf_output_info_t),     intent(inout) :: netcdf_info
    type(channel_info_t),           intent(in)    :: channel_info
    integer(kind=sint),             intent(in)    :: year, month, day
    logical,                        intent(in)    :: use_modis_emis
+   logical,                        intent(in)    :: do_cloud_emis
    logical,                        intent(in)    :: verbose
 
    ! RTTOV in/outputs
@@ -548,6 +551,12 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
               netcdf_info%vid_lat_pw, &
               (/profiles(count)%latitude/), &
               1, j_, 1)
+
+!         call nc_write_array(netcdf_info%ncid_prtm, 'tropopause_pres_rtm', &
+!              netcdf_info%vid_tropop_pw, &
+!              preproc_prtm%trop_p(idim,jdim), &
+!              1, i_, 1, 1, j_, 1)
+
          call nc_write_array(netcdf_info%ncid_prtm, 'pprofile_rtm', &
               netcdf_info%vid_pprofile_lev_pw, &
               reshape(profiles(count)%p, (/nlevels,1,1/)), &
@@ -791,6 +800,39 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
                end if
             end do
          end do
+
+         ! Loop again for cloud radiance
+         if (do_cloud_emis) then
+            count = 0
+            if (i_coef .eq. 1) then
+#ifdef INCLUDE_RTTOV_OPENMP
+            if (verbose) write(*,*) 'Run RTTOV_Parallel for cloud'
+#else
+            if (verbose) write(*,*) 'Run RTTOV for cloud'
+#endif
+               do jdim=preproc_dims%min_lat,preproc_dims%max_lat
+                  do idim=preproc_dims%min_lon,preproc_dims%max_lon
+                     count = count + 1
+                     profiles(count)%cfraction = 1.
+                     profiles(count)%ctp = preproc_prtm%trop_p(idim,jdim)
+                     ! Call RTTOV for this profile
+#ifdef INCLUDE_RTTOV_OPENMP
+                     call rttov_parallel_direct(stat, chanprof, opts, &
+                          profiles(count:count), coefs, transmission, radiance, &
+                          radiance2, calcemis, emissivity, traj=traj)
+#else
+                     call rttov_direct(stat, chanprof, opts, &
+                          profiles(count:count), coefs, transmission, radiance, &
+                          radiance2, calcemis, emissivity, traj=traj)
+#endif
+
+                     ! Save into the appropriate arrays
+                     preproc_cld%cloud_bt(idim,jdim,:) = radiance%bt
+                     preproc_cld%clear_bt(idim,jdim,:) = radiance%bt_clear
+                  end do
+               end do
+            end if
+         end if
 
 
          if (verbose) write(*,*) 'Deallocate structures'

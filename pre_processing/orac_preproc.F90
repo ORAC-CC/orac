@@ -303,6 +303,7 @@
 ! 2018/02/01, GT: source_atts structure is now passed to setup_slstr, which
 !     populates the l1b_version and l1b_orbit_number attributes.
 ! 2018/04/26, SP: Adjustment to the aerosol hack to prevent segfaults.
+! 2018/04/29, SP: Add cloud emissivity support for ECMWF profiles (ExtWork)
 !
 ! $Id$
 !
@@ -326,6 +327,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
    use global_attributes_m
    use hdf5
    use imager_structures_m
+   use orac_ncdf_m
    use netcdf, only: nf90_inq_libvers
    use netcdf_output_m
    use parsing_m
@@ -712,7 +714,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
 
    ! Check we're capable of computing cloud emissivity
    ! (ecmwf_flag =5 or =6 or =7 or =8, for GFS data)
-   if (ecmwf_flag .lt. 5 .or. ecmwf_flag .gt. 8) do_cloud_emis=.false.
+!   if (ecmwf_flag .lt. 5 .or. ecmwf_flag .gt. 8) do_cloud_emis=.false.
 
    ! If we're using an external land-sea file, place that into USGS filename var
    if (use_predef_lsm) usgs_path_file=ext_lsm_path
@@ -1289,10 +1291,17 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
                   preproc_cld,imager_cloud,ecmwf,sensor,verbose)
          end if
       else
+         if (do_cloud_emis) call get_trop_tp(preproc_prtm,preproc_dims)
          call rttov_driver(rttov_coef_path,rttov_emiss_path,sensor,platform, &
               preproc_dims,preproc_geoloc,preproc_geo,preproc_prtm, &
-              preproc_surf,netcdf_info,channel_info,year,month,day, &
-              use_modis_emis_in_rttov,verbose)
+              preproc_surf,preproc_cld,netcdf_info,channel_info,year,month,day, &
+              use_modis_emis_in_rttov,do_cloud_emis,verbose)
+         ! Call cloud emissivity function
+         if (do_cloud_emis) then
+            call get_cloud_emis(channel_info,imager_measurements, &
+                  imager_geolocation,preproc_dims,preproc_geoloc, &
+                  preproc_cld,imager_cloud,ecmwf,sensor,verbose)
+         end if
       end if
 
 #ifdef WRAPPER
@@ -1349,6 +1358,15 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
            imager_geolocation,imager_measurements,imager_cloud,imager_time, &
            imager_pavolonis,netcdf_info,channel_info,surface,include_full_brdf, &
            do_cloud_emis)
+      if (do_cloud_emis) then
+			call nc_write_array(&
+					netcdf_info%ncid_prtm, &
+					'tropopause_pres_rtm', &
+					netcdf_info%vid_tropop_pw, &
+					preproc_prtm%trop_p, &
+					1,1, preproc_dims%xdim,&
+					1,1, preproc_dims%ydim)
+      end if
 
       ! close output netcdf files
       if (verbose) write(*,*)'Close netcdf output files'
