@@ -67,8 +67,6 @@
 ! 2017/06/21, OS: Added ANN phase variables.
 ! 2017/10/04, GM: Add the option to use ANN phase to select pixels to process.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

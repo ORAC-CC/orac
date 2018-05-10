@@ -37,8 +37,6 @@
 ! 2017/04/25, SP: Support for verbose mode. A multitude of speed-ups and fixes
 !                 such as passing lat/lon file info to himawari util. (ExtWork)
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

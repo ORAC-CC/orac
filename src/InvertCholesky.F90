@@ -24,8 +24,6 @@
 ! 2001/06/05, TN: Return if decomposition fails.
 ! 2017/10/24, GN: Change to use SLATEC or LAPACK.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

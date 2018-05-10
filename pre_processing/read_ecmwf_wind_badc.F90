@@ -31,8 +31,6 @@
 !    Note: This should work with either the OPER or FCST streams from ECMWF.
 ! 2016/04/26, AP: Moved refences to ecmwf_flag and high_res up a level.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

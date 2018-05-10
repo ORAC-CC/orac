@@ -6,7 +6,6 @@
  * History:
  * 2015/10/05, GM: Original version.
  *
- * $Id$
  ******************************************************************************/
 
 #include <dirent.h>
@@ -27,8 +26,6 @@
  *
  * History:
  * 2015/10/05, GM: Original version.
- *
- * $Id$
  *
  * Bugs:
  * None known.

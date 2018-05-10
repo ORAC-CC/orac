@@ -20,8 +20,6 @@
 !                 This is not elegant due to F1 issues, but better than no data.
 ! 2017/11/15, SP: Add feature to give access to sensor azimuth angle
 !
-! $Id$
-!
 ! Bugs:
 ! None known (in ORAC)
 !-------------------------------------------------------------------------------

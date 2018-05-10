@@ -32,8 +32,6 @@
 !    Note: This should work with either the OPER or FCST streams from ECMWF.
 ! 2016/04/26, AP: Make paths 2 and 3 optional so this wrapper is more general.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

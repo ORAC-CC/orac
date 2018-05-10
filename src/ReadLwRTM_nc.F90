@@ -86,8 +86,6 @@
 ! 2015/09/07, AP: Allow verbose to be controlled from the driver file.
 ! 2017/06/21, OS: string name fix for METOP
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

@@ -28,8 +28,6 @@
 ! 2017/08/09, SP: Add option to disable the cloud masking (ExtWork)
 ! 2017/09/14, GT: Added product_name optional argument
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

@@ -90,8 +90,6 @@
 ! 2015/08/31, AP: Check if ViewIdx have valid values.
 ! 2015/09/07, AP: Allow verbose to be controlled from the driver file.
 !
-! $Id$
-!
 ! Bugs:
 ! The DOY calculation does not account for leap years. This produces fractional
 ! errors in f0 < 6e-4, which is of a similar order to the equation's accuracy.

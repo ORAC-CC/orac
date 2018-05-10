@@ -98,8 +98,6 @@
 ! 2018/04/26, SP: Add code to save satellite azimuth (commented out, but useful)
 ! 2018/04/29, SP: Add cloud emissivity support for ECMWF profiles (ExtWork)
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

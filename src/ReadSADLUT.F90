@@ -15,8 +15,6 @@
 !    grids consistent in dimension size, spacing and vertex values.
 ! 2017/03/16, GT: Changes for single-view aerosol retrieval mode.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

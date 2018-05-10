@@ -102,8 +102,6 @@
 ! 2017/07/05, AP: Add NAll to track the total number of channels. New QC.
 ! 2017/10/04, GM: Add use_ann_phase.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

@@ -21,8 +21,6 @@
 ! 2015/08/10, AP: Additional surface uncs.
 ! 2017/06/21, OS: Added ANN phase variables.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

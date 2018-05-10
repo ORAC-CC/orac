@@ -27,8 +27,6 @@
 ! 2014/06/11, AP: extend range of interpolation
 ! 2014/08/01, AP: Restricted it again.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

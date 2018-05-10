@@ -16,8 +16,6 @@
 ! History:
 ! xxxx/xx/xx, MC: Initial implementation
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

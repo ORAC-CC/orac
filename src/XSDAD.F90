@@ -30,8 +30,6 @@
 !    all variables.
 ! 2016/01/04, AP: Use MissingXn and MissingSn to flag invalid retrievals.
 !
-! $Id$
-!
 ! Bugs:
 ! If desired value was not retrieved in the last "good" retrieval, this will
 !    set a nonsensical value.

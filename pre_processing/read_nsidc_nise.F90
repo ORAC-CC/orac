@@ -25,8 +25,6 @@
 ! 2012/04/26, GT: Original
 ! 2013/02/25, GT: Added explicit type casts where copying data into data%extent.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

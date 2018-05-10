@@ -37,8 +37,6 @@
 ! 2017/06/21, OS: allocated ann phase variables; imager_angles are now inout
 ! 2017/11/15, SP: Add feature to give access to sensor azimuth angle
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

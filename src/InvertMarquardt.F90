@@ -181,8 +181,6 @@
 ! 2016/07/27, GM: Changes related to the multilayer retrieval support.
 ! 2017/07/12, AP: New QC.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

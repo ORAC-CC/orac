@@ -29,8 +29,6 @@
       Add routines to read the tie points and interpolate it ourselves.
    2017/07/25, AP: Add force_zero_azimuth to fix incorrect tie point values in
       the nadir satellite azimuth.
-
-   $Id$
 */
 #include <stdlib.h>
 #include <string.h>

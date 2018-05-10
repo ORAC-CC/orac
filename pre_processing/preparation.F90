@@ -87,8 +87,6 @@
 !    it is now included in the output file names (between date/time and product
 !    version fields)
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

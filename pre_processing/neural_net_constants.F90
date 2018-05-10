@@ -21,8 +21,6 @@
 ! 2017/06/29, SS: added new coefficients for 1.6um ANN
 ! 2017/06/29, OS: removed duplicate ANNs
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

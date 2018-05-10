@@ -78,8 +78,6 @@
 ! 2016/01/02, AP: Ctrl%RS%diagonal_SRs produces a diagonal covariance matrix.
 ! 2016/10/21, AP: Add AppAerSw to SelmAux.
 !
-! $Id$
-!
 ! Bugs:
 ! Does not facilitate correlation between surface reflectance terms.
 !-------------------------------------------------------------------------------

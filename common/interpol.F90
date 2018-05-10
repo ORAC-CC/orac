@@ -23,8 +23,6 @@
 ! 2014/08/05, AP: New bilinear interpolation routines.
 ! 2014/09/28, GM: Added interp_field2.
 !
-! $Id$
-!
 ! Bugs:
 ! With arrays, interp_field only checks if the first value is missing.
 !-------------------------------------------------------------------------------

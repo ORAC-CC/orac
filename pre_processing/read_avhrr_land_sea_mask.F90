@@ -21,8 +21,6 @@
 ! 2012/05/15, MJ: writes code to read land/sea information for AVHRR.
 ! 2013/09/12, AP: tidying, added check that file exists before opening
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

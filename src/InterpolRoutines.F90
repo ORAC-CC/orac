@@ -9,8 +9,6 @@
 ! 2014/08/05, GM: Original version.
 ! 2014/08/05, GM: Added subroutine find_Pc().
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !---------------------------------------------------------------------

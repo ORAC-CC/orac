@@ -14,8 +14,6 @@
 ! 2015/10/07, OS: Renamed to *_pp.F90, as we have to avoid duplicate subroutine
 !    names for wrapper.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

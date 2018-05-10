@@ -55,8 +55,6 @@
 ! 2015/01/07, AP: Use SPixel index arrays rather than ThF,ThL.
 ! 2015/05/07, CP: Removed the stop IntTransErr.
 !
-! $Id$
-!
 ! Bugs:
 ! call find_Pc(Ctrl, SPixel%RTM%Np, SPixel%RTM%P, Pc, i, status) occasionally
 ! returns status 0 particually with ice retreivals

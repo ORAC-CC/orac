@@ -35,8 +35,6 @@
 ! 2014/08/05, AP: Moved channel dimension to end of array for efficiency.
 !    Lat/lon grid now defined with start & division rather than array.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

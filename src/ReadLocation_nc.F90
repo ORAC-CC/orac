@@ -42,8 +42,6 @@
 ! 2015/07/10, OS: undo previous commit
 ! 2015/09/07, AP: Allow verbose to be controlled from the driver file.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

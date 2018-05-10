@@ -29,8 +29,6 @@
 ! 2014/02/04, MJ: Fixes bug in above fix.
 ! 2014/10/24, OS: Some minor changes to deal with float under/overflow issues.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

@@ -13,8 +13,6 @@
 ! 2016/12/08, GM: Added constants for 1.375 um and formally recomputed constants
 !    using an external program to find a few small errors.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

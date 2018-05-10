@@ -19,8 +19,6 @@
 ! 2014/11/04, OS: added deallocation of snow_depth and sea_ice_cover
 ! 2015/12/17, OS: Added low_res flag.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

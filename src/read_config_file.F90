@@ -31,8 +31,6 @@
 ! 2015/08/02, AP: Output channel wavelengths to identify multiple views.
 ! 2017/07/05, AP: Add channels_used.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

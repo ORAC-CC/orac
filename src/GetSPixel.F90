@@ -191,8 +191,6 @@
 ! 2015/12/17, GM: Get rid of the secant of the solar zenith angle division of
 !    surface reflectance.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

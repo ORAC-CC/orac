@@ -27,8 +27,6 @@
 !    cover it
 ! 2015/04/22, OS: bug fix in calculating relative azimuth angle
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

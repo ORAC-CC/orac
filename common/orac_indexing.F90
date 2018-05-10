@@ -13,8 +13,6 @@
 !    retrieved. This is indicated by the rho|ss_terms array (and Nrho|Nss).
 ! 2017/05/17, OS: Added ann phase variables
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

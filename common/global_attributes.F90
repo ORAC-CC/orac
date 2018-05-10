@@ -18,8 +18,6 @@
 !    global attribute field.
 ! 2014/12/01, CP: Added new global attributes
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

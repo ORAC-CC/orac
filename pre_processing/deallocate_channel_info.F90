@@ -21,8 +21,6 @@
 ! 2016/07/01, GT: Added map_ids_sw_to_channel and map_ids_lw_to_channel.
 ! 2016/08/04, GM: Added map_ids_channel_to_sw and map_ids_channel_to_lw.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

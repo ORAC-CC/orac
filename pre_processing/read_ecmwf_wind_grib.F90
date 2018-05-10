@@ -33,8 +33,6 @@
 ! 2017/02/07, SP: Added support for NOAA GFS atmosphere data (ExtWork)
 ! 2017/04/11, SP: Added ecmwf_flag=6, for working with GFS analysis files.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

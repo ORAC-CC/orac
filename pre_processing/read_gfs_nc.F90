@@ -26,8 +26,6 @@
 ! History:
 ! 2017/07/20, SP: Initial version, cloned from read_ecmwf_nc.F90
 !
-! $Id$
-!
 ! Bugs:
 ! - you need to be careful with parameter naming as the variable names are not
 !   consistent across files for example the variable name could be lnsp or LNSP

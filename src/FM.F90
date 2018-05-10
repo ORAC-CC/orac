@@ -128,8 +128,6 @@
 ! 2016/07/27, GM: Changes for the multilayer retrieval.
 ! 2017/03/16, GT: Changes for single-view aerosol retrieval mode.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

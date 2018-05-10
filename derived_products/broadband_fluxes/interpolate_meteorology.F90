@@ -13,8 +13,6 @@
 ! 2015/11/21, GM: Wrap was being passed to bilinear_coef_reg_reg() without being
 !    set to anything.  Added the proper setting.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

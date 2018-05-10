@@ -148,8 +148,6 @@
 !    ML post processing.
 ! 2017/10/05, GM: Get the value of use_ann_phase from the input files.
 !
-! $Id$
-!
 ! Bugs:
 ! - Use of input_primary%cldtype is hardwired to view element 1.
 ! - no phase switch applied on temperature of multi layer cloud

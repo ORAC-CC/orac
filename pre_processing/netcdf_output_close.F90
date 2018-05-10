@@ -20,8 +20,6 @@
 ! 2015/02/04, GM: Terminate on error like all the other NetCDF calls.
 ! 2015/07/03, OS: Corrected error message for clf.nc file
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

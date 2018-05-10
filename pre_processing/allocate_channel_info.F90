@@ -24,8 +24,6 @@
 ! 2017/06/21, OS: bug fix: with cray-fortran compiler, channel_info needs to be
 !    declared as inout if input values are to be used within SR
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

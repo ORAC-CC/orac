@@ -23,8 +23,6 @@
 !    LUT type and changes related to similar indexing simplifications of the LUT
 !    grid.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

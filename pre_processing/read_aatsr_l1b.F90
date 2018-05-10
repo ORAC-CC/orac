@@ -72,8 +72,6 @@
 ! 2016/04/07, SP: Changed channel indexing for 2nd view, now channels in view 2
 !                 start with channel 8. This simplifies things (no multiple Ch1s)
 !
-! $Id$
-!
 ! Bugs:
 !   Currently ATSR-2 needs to be hardwired to true drift correction as the
 !   drift flag does not work.

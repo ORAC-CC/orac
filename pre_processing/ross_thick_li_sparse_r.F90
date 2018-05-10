@@ -31,8 +31,6 @@
 ! 2017/08/09, GM: Switch from the NR routine gauleg() to the GPL compatible
 !    gauss_leg_quadx() for computing Gauss-Legendre quadrature.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

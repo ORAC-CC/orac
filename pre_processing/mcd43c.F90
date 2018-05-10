@@ -20,8 +20,6 @@
 ! 2014/08/11, AP: Lat/lon grid now defined with start and division rather than
 !    array.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

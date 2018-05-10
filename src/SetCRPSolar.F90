@@ -79,8 +79,6 @@
 !    Ctrl%get_T_dv_from_T_0d=.true.
 ! 2016/07/27, GM: Add LUT interpolations for the multilayer retrieval.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

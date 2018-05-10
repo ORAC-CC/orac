@@ -21,8 +21,6 @@
 ! 2016/08/04, GM: Added map_ids_channel_to_sw and map_ids_channel_to_lw.
 ! 2017/07/05, AP: Add NAll to track the total number of channels.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

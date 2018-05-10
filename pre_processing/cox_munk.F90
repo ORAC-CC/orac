@@ -115,8 +115,6 @@
 ! 2017/08/09, GM: Switch from the NR routine gauleg() to the GPL compatible
 !    gauss_leg_quadx() for computing Gauss-Legendre quadrature.
 !
-! $Id$
-!
 ! Bugs:
 ! As they aren't actually used by the code any more, the cox_munk() and
 ! cox_munk2() subroutines aren't fully up-to-date. Something on the to-do list.

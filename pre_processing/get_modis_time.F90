@@ -22,8 +22,6 @@
 ! 2012/06/13, MJ: reworks code.
 ! 2013/09/11, AP: tidying, added n_along_track, removed tfv
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

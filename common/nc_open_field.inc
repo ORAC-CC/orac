@@ -15,8 +15,6 @@
 !   verbose and error printing formats. Split into open field/read field.
 ! 2015/07/16, GM: Modifications to properly read packed data and check ranges.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

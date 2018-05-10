@@ -45,8 +45,6 @@
 ! 2014/10/23, OS: Removes superfluous commata in write statements causing
 !    CRAY-ftn compiler to exit
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

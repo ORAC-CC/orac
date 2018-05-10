@@ -31,8 +31,6 @@
 ! 2015/07/16, GM: Added support to read packed data to nc_read routines.
 ! 2016/07/11, SP: Added new variable to read functions: startp
 ! 2017/07/10, AP: Add int64 fields.
-!
-! $Id$
 !-------------------------------------------------------------------------------
 
 module orac_ncdf_m

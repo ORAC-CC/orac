@@ -17,8 +17,6 @@
 ! 2016/02/12, GM: Apply a lower CTP correction limit that also affects CTP and
 !    CTH.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

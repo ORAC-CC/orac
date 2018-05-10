@@ -73,8 +73,6 @@
 ! 2015/08/10, CP: added in ATSR-2 capability
 ! 2017/06/21, OS: string name adaptations for METOPA/B
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

@@ -61,8 +61,6 @@
 !    assuming them from the channel ordering.
 ! 2015/09/07, AP: Allow verbose to be controlled from the driver file.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

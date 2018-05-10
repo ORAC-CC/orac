@@ -10,8 +10,6 @@
 ! 2014/12/17, AP: Original version.
 ! 2015/07/22, AP: Moved 0D functions into parse_string2.inc.
 ! 2015/09/14, GM: Add handle_parse_error() from trunk/pre_processing/.
-!
-! $Id$
 !-------------------------------------------------------------------------------
 
 module parsing_m

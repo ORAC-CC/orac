@@ -70,8 +70,6 @@
 !    transmittance when it should have been using the surface (bottom level) to
 !    TOA transmittance.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

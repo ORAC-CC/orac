@@ -71,8 +71,6 @@
 ! 2015/10/19, GM: Turn back on reading of unused emissivity fields which are now
 !    optionally required.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

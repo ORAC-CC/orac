@@ -26,8 +26,6 @@
 ! 2015/01/30, AP: Replace YSeg0 with Y0 as superpixeling removed.
 ! 2015/12/30, AP: Add surfaces_to_skip.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

@@ -32,8 +32,6 @@
 ! 2016/01/20, GM: Move fields in LW_t and SW_t that are common to both up one
 !    level into RTM_t.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

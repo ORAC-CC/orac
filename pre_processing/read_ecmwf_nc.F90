@@ -68,8 +68,6 @@
 ! 2016/04/04, SP: Added option to process ECMWF forecast/analysis data that's
 !    stored in a single NetCDF file.
 !
-! $Id$
-!
 ! Bugs:
 ! - you need to be careful with parameter naming as the variable names are not
 !   consistent across files for example the variable name could be lnsp or LNSP

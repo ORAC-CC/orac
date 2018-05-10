@@ -137,8 +137,6 @@
 !    spectral total solar irradiance input file. Included option to calculate
 !    TSI from earth-sun distance relationship and constant TSI at 1 AU if not provided by LUT.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

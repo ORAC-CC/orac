@@ -29,8 +29,6 @@
 !    propagation of COT and CER uncertainty through the CWP computation.
 ! 2016/07/27, GM: Changes for the multilayer retrieval.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

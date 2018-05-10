@@ -56,8 +56,6 @@
 !    the only thing that uses them. Locating within temperature profile now
 !    dependant on the cloud phase (WAT bottom up, everything else top down).
 !
-! $Id$
-!
 ! Bugs:
 ! Doesn't return an estimate of the uncertainty.
 !-------------------------------------------------------------------------------

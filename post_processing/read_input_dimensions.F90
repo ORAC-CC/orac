@@ -22,8 +22,6 @@
 ! 2016/03/03, AP: Homogenisation of I/O modules.
 ! 2017/01/02, AP: filename read more robust
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

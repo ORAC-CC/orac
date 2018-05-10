@@ -27,8 +27,6 @@
 ! 2016/04/09, SP: Write one channel at a time, to facilitate multiple views.
 ! 2017/02/25, SP: Update to RTTOV v12.1 (ExtWork)
 !
-! $Id$
-!
 ! Bugs:
 ! - Shouldn't upwelling radiance be assigned to the level above it's layer?
 !-------------------------------------------------------------------------------

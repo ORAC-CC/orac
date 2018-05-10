@@ -19,8 +19,6 @@
 ! 2014/12/16, GM: Added LUT name mapping: IR_0v = IRbd, etc.
 ! 2015/01/09, CP: Added LUT name mapping: IR_0d = IRfbd.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

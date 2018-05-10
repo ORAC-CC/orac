@@ -18,8 +18,6 @@
 ! 2015/12/15, AP: Move IRho terms from ECP_constants.
 ! 2017/02/25, SP: Update to RTTOV v12.1 (ExtWork)
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

@@ -61,8 +61,6 @@
 !    subroutine from EMOSLIB when interpolating from or to a GRIB field, which
 !    is no-longer supported (or it appears functional) from v4.1.1 of the EMOSLIB
 !
-! $Id$
-!
 ! Bugs:
 ! - If you're having problems with INTF, set the environment variable JDCNDBG=1
 ! for additional debugging output.

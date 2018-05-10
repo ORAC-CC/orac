@@ -20,8 +20,6 @@
 !    outside of read_ecmwf_nc.
 ! 2014/05/08, AP: Updated to new ecmwf structure.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

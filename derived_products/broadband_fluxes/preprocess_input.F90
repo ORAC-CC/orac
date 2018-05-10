@@ -39,8 +39,6 @@
 !    the cloud phase; methods taken from Stephens et al. (1978) and Liou, (1992)
 !    - for the estimation of cloud base height.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

@@ -29,8 +29,6 @@
 ! 2017/02/07, SP: Added support for NOAA GFS atmosphere data (ExtWork)
 ! 2017/06/21, OS: inout declaration bug fix for cray-fortran compiler
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

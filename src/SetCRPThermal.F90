@@ -54,8 +54,6 @@
 ! 2015/01/13, AP: Switch to array-based channel indexing rather than using
 !    offsets.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

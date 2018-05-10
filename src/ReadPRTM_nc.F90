@@ -20,8 +20,6 @@
 ! 2014/04/27, AP: Original version forked from ReadLwRTM_nc.F90.
 ! 2015/09/07, AP: Allow verbose to be controlled from the driver file.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

@@ -9,8 +9,6 @@
 ! 2015/01/19, GM: Put polint.F90 into this module.
 ! 2015/07/22, AP: Made find_in_array a module procedure.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !---------------------------------------------------------------------

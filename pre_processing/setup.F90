@@ -87,8 +87,6 @@
 !    Extending this change to the other supported instruments is worth
 !    considering...
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

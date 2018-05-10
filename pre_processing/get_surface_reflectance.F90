@@ -113,8 +113,6 @@
 ! 2016/07/07, SP: Corrected to run if only land or only sea pixels are present.
 ! 2016/07/12, GT: Added OceanColour_cci data support.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

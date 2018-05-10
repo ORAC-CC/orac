@@ -175,8 +175,6 @@
 ! 2017/03/16, GT: Changes for single-view aerosol retrieval mode.
 ! 2017/06/21, OS: Added ann phase logical flags, which default to true
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

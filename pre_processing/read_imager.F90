@@ -49,8 +49,6 @@
 ! 2017/08/10, GT: Added a check on the existence of a geo_file before
 !                 printing path
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

@@ -28,8 +28,6 @@
 ! 2016/01/20, GM: Added read_input_dimensions_rtm(). Removed _lwrtm() and
 !    swrtm() versions.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

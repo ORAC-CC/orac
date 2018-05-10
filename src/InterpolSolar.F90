@@ -51,8 +51,6 @@
 ! 2014/08/05, GM: Put Interpol_* common code into subroutine find_Pc().
 ! 2015/01/21, AP: Updated channel indexing to array-based form.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

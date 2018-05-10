@@ -35,8 +35,6 @@
 ! 2016/04/30, SP: Fixed bug in multi-view processing
 ! 2017/02/25, SP: Update to RTTOV v12.1 (ExtWork)
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

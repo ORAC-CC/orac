@@ -34,8 +34,6 @@
 ! 2015/01/30, AP: Remove uscan and vscan as unnecessary.
 ! 2017/11/15, SP: Add feature to give access to sensor azimuth angle
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

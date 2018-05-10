@@ -23,8 +23,6 @@
 ! 2015/09/07, AP: Allow verbose to be controlled from the driver file.
 ! 2015/01/01, GM: Base illumination settings on Ctrl%MaxSolZen and Ctrl%Sunset.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

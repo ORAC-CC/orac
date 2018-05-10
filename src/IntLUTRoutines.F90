@@ -29,8 +29,6 @@
 ! 2017/10/24, GM: Switch to official NR bilinear interpolation code and make
 !    optional through conditional compilation.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !---------------------------------------------------------------------
