@@ -269,6 +269,7 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
 
       ! Allocate and populate the local arrays required for land pixels
       allocate(wsalnd(channel_info%nchannels_sw,nland))
+      wsalnd(:,:) = sreal_fill_value
       allocate(interp(nland))
       if (include_full_brdf) then
          allocate(solza(nland))

@@ -62,10 +62,10 @@ subroutine get_trop_tp(preproc_prtm,preproc_dims)
 			do while (t(k+1) > t(k) .and. k < nz-1)
 				k = k+1
 			end do
-			do while (p(k) > max_tropopause .and. k < nz-1)
+			do while (p(k) > max_tropopause .and. k < nz-2)
 				if (t(k+1) > t(k)) then
 				   l = k+2
-				   do while (t(l) < t(l+1) .and. l < nz-1)
+				   do while (t(l) < t(l+1) .and. l < nz-2)
 				      l = l+1
 				   end do
 				   l = l - depth ! Add levels
@@ -169,9 +169,9 @@ subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation,&
        trim(adjustl(sensor)) .eq. 'ATSR2') then
       chan_n = 6
    else if (trim(adjustl(sensor)) .eq. 'ABI') then
-      chan_n = 13
+      chan_n = 14
    else if (trim(adjustl(sensor)) .eq. 'AHI') then
-      chan_n = 13
+      chan_n = 14
    else if (trim(adjustl(sensor)) .eq. 'AVHRR') then
       chan_n = 5
    else if (trim(adjustl(sensor)) .eq. 'MODIS') then
@@ -190,6 +190,11 @@ subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation,&
          good_chan_lw = channel_info%map_ids_channel_to_lw(i)
       end if
    end do
+
+   if (good_chan_all .lt. 0 .or. good_chan_lw .lt. 0) then
+   	write(*,*)"ERROR: The longwave channel required for cloud emissivity (",chan_n,") is not available!"
+   	stop
+   endif
 
    !$OMP PARALLEL &
    !$OMP PRIVATE(i) &

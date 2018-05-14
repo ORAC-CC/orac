@@ -285,8 +285,8 @@ subroutine setup_abi(l1b_path_file,geo_path_file,platform,year,month,day, &
 
        ! 1,       2,       3,       4,       5,       6,       7,       8
    real,    parameter :: all_channel_wl_abs(all_nchannels_total) = &
-      (/ 0.470, 0.640, 0.860, 1.380, 1.610,  2.260,  3.900,  6.150, &
-         7.000,  7.400,  8.500,  9.700,  10.300, 11.200, 12.300, 13.300 /)
+      (/ 0.470,   0.640,   0.860,   1.380,   1.610,   2.260,   3.900,   6.150, &
+         7.000,   7.400,   8.500,   9.700,   10.300,  11.200,  12.300,  13.300 /)
 
    integer, parameter :: all_channel_sw_flag(all_nchannels_total) = &
       (/ 1,       1,       1,       1,       1,       1,       1,       0, &
@@ -315,6 +315,7 @@ subroutine setup_abi(l1b_path_file,geo_path_file,platform,year,month,day, &
    integer, parameter :: all_map_ids_abs_to_snow_and_ice(all_nchannels_total) = &
       (/ 1,       1,       2,       3,       3,       3,       4,       0, &
          0,       0,       0,       0,       0,       0,       0,       0 /)
+
    integer, parameter :: all_map_ids_view_number(all_nchannels_total) = &
       (/ 1,       1,       1,       1,       1,       1,       1,       1, &
          1,       1,       1,       1,       1,       1,       1,       1 /)

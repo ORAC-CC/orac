@@ -452,6 +452,7 @@ subroutine get_goes_solgeom(imager_time,imager_angles,imager_geolocation,verbose
 
 	real(kind=sreal)	::	sza,saa
 	integer				:: x,y,line0,line1,column0,column1,ctime
+	integer				::	mid_c,mid_l
 	integer(kind=sint):: iye,mon,idy,ihr,minu
 	real(kind=dreal)	::	dfr,tmphr,tmphr2
 
@@ -462,16 +463,18 @@ subroutine get_goes_solgeom(imager_time,imager_angles,imager_geolocation,verbose
    column0	=	imager_geolocation%starty
    column1	=	imager_geolocation%endy
 
+   mid_l		=	line0 + (line1 - line0) / 2
+   mid_c		=	(column1 - column0) / 2
 
 	! This section computes the solar geometry for each pixel in the image
 #ifdef _OPENMP
 	if (verbose) write(*,*)"Computing solar geometry using OpenMP"
 !$omp parallel DO PRIVATE(y,x,iye,mon,dfr,idy,tmphr,ihr,minu,sza,saa)
 #endif
-		do y=line0,line1
-			do x=column0,column1
+		do y=1,imager_geolocation%ny
+			do x=imager_geolocation%startx,imager_geolocation%endx
 				! Here we compute the time for each pixel, GOES scans S-N so each line has a different time
-				call JD2GREG(imager_time%time(2700,2700),iye,mon,dfr)
+				call JD2GREG(imager_time%time(mid_l,mid_c),iye,mon,dfr)
 				idy	=	int(dfr)
 				tmphr	=	(dfr-idy)*24.
 				ihr	=	int(tmphr)
@@ -495,20 +498,6 @@ subroutine get_goes_solgeom(imager_time,imager_angles,imager_geolocation,verbose
       where(imager_angles%solazi(:,:,1) .lt. 0.)
          imager_angles%solazi(:,:,1) = imager_angles%solazi(:,:,1) + 360.
       end where
-      imager_angles%relazi(:,:,1) = abs(imager_angles%relazi(:,:,1) - &
-                                        imager_angles%solazi(:,:,1))
-
-      where (imager_angles%relazi(:,:,1) .gt. 180.)
-         imager_angles%relazi(:,:,1) = 360. - imager_angles%relazi(:,:,1)
-      end where
-   end where
-
-   where (imager_geolocation%latitude .eq. sreal_fill_value)
-   	imager_angles%relazi(:,:,1) = sreal_fill_value
-   	imager_angles%satazi(:,:,1) = sreal_fill_value
-   	imager_angles%satzen(:,:,1) = sreal_fill_value
-   	imager_angles%solazi(:,:,1) = sreal_fill_value
-   	imager_angles%solzen(:,:,1) = sreal_fill_value
    end where
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving get_goes_solgeom()'
@@ -612,6 +601,7 @@ subroutine load_goes_band(infile, imager_geolocation, rad, kappa,bc1,bc2,fk1,fk2
 
    integer		::	ierr,fid,did
    integer		::	x0,x1,y0,y1,nx,ny
+!   integer		::	n_cols,n_lines
 
    real			::	sclval,offval
 
@@ -622,13 +612,13 @@ subroutine load_goes_band(infile, imager_geolocation, rad, kappa,bc1,bc2,fk1,fk2
    fk1		=	sreal_fill_value
    fk2		=	sreal_fill_value
 
-   x0			=	imager_geolocation%startx
-   x1			=	imager_geolocation%endx
-   y0			=	imager_geolocation%starty
-   y1			=	imager_geolocation%endy
+   x0			=	(imager_geolocation%startx)*scl-scl+1
+   x1			=	(imager_geolocation%endx)*scl
+   y0			=	(imager_geolocation%starty)*scl-scl+1
+   y1			=	(imager_geolocation%endy)*scl
 
-   nx			=	x1-x0
-   ny			=	y1-y0
+   nx			=	x1-x0+1
+   ny			=	y1-y0+1
 
 	! Open the netCDf4 file for access
    ierr=nf90_open(path=trim(adjustl(infile)),mode=NF90_NOWRITE,ncid=fid)
@@ -643,7 +633,7 @@ subroutine load_goes_band(infile, imager_geolocation, rad, kappa,bc1,bc2,fk1,fk2
       print*,'ERROR: load_goes_band(): Error opening dataset Rad in ',trim(infile)
       stop error_stop_code
    end if
-   ierr=nf90_get_var(fid, did, rad)!,start=(/ x0,y0 /), count=(/ nx,ny /))
+   ierr=nf90_get_var(fid, did, rad,start=(/ x0,y0 /), count=(/ nx,ny /))
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: load_goes_band(): Error reading dataset Rad in ',trim(infile)
       print*,trim(nf90_strerror(ierr))
@@ -779,6 +769,13 @@ subroutine get_goes_time(infile, imager_time, ny, verbose)
 	ierr = nf90_get_att(fid, NF90_GLOBAL, "time_coverage_end", end_coverage)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: get_goes_geoloc(): Error reading time_coverage_end attribute',trim(infile)
+      stop error_stop_code
+   end if
+
+	! Close the netCDF file, we have all we need
+   ierr=nf90_close(fid)
+   if (ierr.ne.NF90_NOERR) then
+      print*,'ERROR: get_goes_geoloc(): Error closing file ',trim(infile)
       stop error_stop_code
    end if
 

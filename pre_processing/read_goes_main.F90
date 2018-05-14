@@ -48,39 +48,79 @@ subroutine read_goes_dimensions(l1_5_file, n_across_track, n_along_track, &
    logical,                intent(in)    :: verbose
 
    integer :: fid,ierr,index2,band
+   integer :: n_lines, n_cols
    character(2) :: cband
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< read_goes_dimensions()'
 
-	index2=index(trim(adjustl(l1_5_file)),'-Rad')
-	cband=l1_5_file(index2+9:index2+11)
+	index2	=	index(trim(adjustl(l1_5_file)),'-Rad')
+	cband		=	l1_5_file(index2+9:index2+11)
    read(cband(1:len_trim(cband)), '(I2)') band
 
-   startx=0
-   starty=0
-   ierr=nf90_open(path=trim(adjustl(l1_5_file)),mode=NF90_NOWRITE,ncid=fid)
+   ierr		=	nf90_open(path=trim(adjustl(l1_5_file)),mode=NF90_NOWRITE,ncid=fid)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: read_goes_dimensions(): Error opening file ',trim(l1_5_file)
       stop error_stop_code
    end if
-   endy=nc_dim_length(fid,'y',.false.)
-   endx=nc_dim_length(fid,'x',.false.)
-   ierr=nf90_close(fid)
+
+   ! Read actual size of the netCDF4 file
+   n_cols	=	nc_dim_length(fid,'x',.false.)
+   n_lines	=	nc_dim_length(fid,'y',.false.)
+
+   ! Make sure we account for the fact that some bands are hi-res
+   if (band .eq. 1 .or. band .eq. 3 .or. band .eq. 5) then
+   	n_cols	=	n_cols/2
+   	n_lines	=	n_lines/2
+   else if (band .eq. 2) then
+   	n_cols	=	n_cols/4
+   	n_lines	=	n_lines/4
+   end if
+
+   ! Close the netCDF4 file
+   ierr		=	nf90_close(fid)
+
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: read_goes_dimensions(): Error closing file ',trim(l1_5_file)
       stop error_stop_code
    end if
 
-   if (band .eq. 1 .or. band .eq. 3 .or. band .eq. 5) then
-   	endx=endx/2
-   	endy=endy/2
-   else if (band .eq. 2) then
-   	endx=endx/4
-   	endy=endy/4
+   if (startx .le. 0 .or. endx .le. 0 .or. starty .le. 0 .or. endy .le. 0) then
+      ! If start and end *are not* being used then set them to the start and end
+      ! of the actual image in the file.
+      starty = 1
+      endy   = n_lines
+      startx = 1
+      endx   = n_cols
+   else
+      ! If start and end *are* being used then check that they fall within the
+      ! actual image in the file relative to the full disk image.
+      if (starty - 1 .lt.  0) then
+         write(*,*) 'ERROR: read_goes_dimensions(): user defined starty (', starty, ') ' //&
+         			'does not fall within the actual GOES-R image starting at: ', 1
+         stop error_stop_code
+      end if
+      if (endy - 1 .gt. n_lines - 1) then
+         write(*,*) 'ERROR: read_goes_dimensions(): user defined endy (', endy, ') does not ' // &
+                    'fall within the actual GOES-R image ending at: ', n_lines
+         stop error_stop_code
+      end if
+      if (startx - 1 .lt.  0) then
+         write(*,*) 'ERROR: read_goes_dimensions(): user defined startx (', startx, ') does not ' // &
+                    'fall within the actual GOES-R image starting at: ', 1
+         stop error_stop_code
+      end if
+      if (endx - 1 .gt. n_cols - 1) then
+         write(*,*) 'ERROR: read_goes_dimensions(): user defined endx (', endx, ') does not ' // &
+                    'fall within the actual GOES-R image ending at: ', n_cols
+         stop error_stop_code
+      end if
    end if
 
-   n_across_track = endx - startx
-   n_along_track  = endy - starty
+   n_across_track = n_cols
+   n_along_track  = n_lines
+
+   print*,n_across_track,endx,startx
+   print*,n_along_track,endy,starty
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> read_goes_dimensions()'
 
@@ -137,18 +177,19 @@ subroutine get_goes_data(infiles,imager_angles,imager_measurements,imager_geoloc
 
    do i=1,n_bands
    	if (band_ids(i) .lt. 7) then
+   		tmpout(:,:)	=	sreal_fill_value
    		if (verbose) write(*,*) "Loading GOES visible band ",band_ids(i)
    		if (band_ids(i) .eq. 1 .or. band_ids(i) .eq. 3 .or. band_ids(i) .eq. 5)	then
    			allocate(tmprad(imager_geolocation%nx*2,imager_geolocation%ny*2))
-			call load_goes_band(infiles(i),imager_geolocation,tmprad,irrad,bc1,bc2,fk1,fk2,2,verbose)
-   		call goes_resample_vis_to_tir(tmprad,tmpout,imager_geolocation%nx,imager_geolocation%ny,sreal_fill_value,2,verbose)
+				call load_goes_band(infiles(i),imager_geolocation,tmprad,irrad,bc1,bc2,fk1,fk2,2,verbose)
+   			call goes_resample_vis_to_tir(tmprad,tmpout,imager_geolocation%nx,imager_geolocation%ny,sreal_fill_value,2,verbose)
    		elseif (band_ids(i) .eq. 2) then
    			allocate(tmprad(imager_geolocation%nx*4,imager_geolocation%ny*4))
-			call load_goes_band(infiles(i),imager_geolocation,tmprad,irrad,bc1,bc2,fk1,fk2,4,verbose)
-   		call goes_resample_vis_to_tir(tmprad,tmpout,imager_geolocation%nx,imager_geolocation%ny,sreal_fill_value,4,verbose)
+				call load_goes_band(infiles(i),imager_geolocation,tmprad,irrad,bc1,bc2,fk1,fk2,4,verbose)
+   			call goes_resample_vis_to_tir(tmprad,tmpout,imager_geolocation%nx,imager_geolocation%ny,sreal_fill_value,4,verbose)
    		else
    			allocate(tmprad(imager_geolocation%nx,imager_geolocation%ny))
-			call load_goes_band(infiles(i),imager_geolocation,tmprad,irrad,bc1,bc2,fk1,fk2,1,verbose)
+				call load_goes_band(infiles(i),imager_geolocation,tmpout,irrad,bc1,bc2,fk1,fk2,1,verbose)
    		endif
 
    		tmpout	=	tmpout * irrad
@@ -164,7 +205,7 @@ subroutine get_goes_data(infiles,imager_angles,imager_measurements,imager_geoloc
 
 			call load_goes_band(infiles(i),imager_geolocation,tmprad,irrad,bc1,bc2,fk1,fk2,1,verbose)
 
-			tmprad	=	(fk2/(log((fk1/tmprad)+1)-bc1) / bc2)
+			tmprad	=	(fk2/(log((fk1/tmprad)+1))-bc1) / bc2
 
 			where(tmprad .lt. 130) tmprad = sreal_fill_value
 			where(tmprad .gt. 500) tmprad = sreal_fill_value
@@ -173,6 +214,9 @@ subroutine get_goes_data(infiles,imager_angles,imager_measurements,imager_geoloc
 
    		deallocate(tmprad)
    	endif
+   	where (imager_geolocation%latitude .eq. sreal_fill_value)
+   		imager_measurements%data(:,:,i) = sreal_fill_value
+   	end where
    end do
 
  	deallocate(tmpout)
@@ -267,9 +311,19 @@ subroutine read_goes_bin(infiles, imager_geolocation, imager_measurements, &
    where (imager_angles%relazi .gt. 180.)
       imager_angles%relazi = 180. - imager_angles%relazi
    end where
+   imager_angles%relazi = 180. - imager_angles%relazi
    where (imager_angles%relazi .lt. 0. .and. &
           imager_angles%relazi .ne. sreal_fill_value )
       imager_angles%relazi = 0. - imager_angles%relazi
+   end where
+
+
+   where (imager_geolocation%latitude .eq. sreal_fill_value)
+   	imager_angles%relazi(:,:,1) = sreal_fill_value
+   	imager_angles%satazi(:,:,1) = sreal_fill_value
+   	imager_angles%satzen(:,:,1) = sreal_fill_value
+   	imager_angles%solazi(:,:,1) = sreal_fill_value
+   	imager_angles%solzen(:,:,1) = sreal_fill_value
    end where
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_goes_bin()'

@@ -54,7 +54,7 @@ subroutine allocate_imager_structures(imager_geolocation,imager_angles, &
    implicit none
 
    type(imager_geolocation_t),  intent(inout) :: imager_geolocation
-   type(imager_angles_t),       intent(inout)   :: imager_angles
+   type(imager_angles_t),       intent(inout) :: imager_angles
    type(imager_flags_t),        intent(out)   :: imager_flags
    type(imager_time_t),         intent(out)   :: imager_time
    type(imager_measurements_t), intent(out)   :: imager_measurements
