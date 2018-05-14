@@ -275,7 +275,7 @@ subroutine setup_abi(l1b_path_file,geo_path_file,platform,year,month,day, &
    type(channel_info_t),           intent(inout) :: channel_info
    logical,                        intent(in)    :: verbose
 
-   integer :: index1,index2
+   integer :: index1,index2,index3
 
 
    ! Static instrument channel definitions. (These should not be changed.)
@@ -366,8 +366,10 @@ subroutine setup_abi(l1b_path_file,geo_path_file,platform,year,month,day, &
    end if
 
    if (index(l1b_path_file,"G16") .gt. 0) then
+   	index3 = index(l1b_path_file,"G16") + 5
    	platform="GOES-16"
    elseif(index(l1b_path_file,"G17") .gt. 0) then
+   	index3 = index(l1b_path_file,"G17") + 5
    	platform="GOES-17"
    else
    	write(*,*) "Unsupported GOES platform, ",l1b_path_file
@@ -379,11 +381,10 @@ subroutine setup_abi(l1b_path_file,geo_path_file,platform,year,month,day, &
    index2=index(trim(adjustl(l1b_path_file)),'ABI-L1b-')
 
    ! get year, doy, hour and minute as strings
-   index2=index2+24
-   cyear=trim(adjustl(l1b_path_file(index2:index2+3)))
-   cdoy=trim(adjustl(l1b_path_file(index2+4:index2+6)))
-   chour=trim(adjustl(l1b_path_file(index2+7:index2+8)))
-   cminute=trim(adjustl(l1b_path_file(index2+9:index2+10)))
+   cyear=trim(adjustl(l1b_path_file(index3:index3+3)))
+   cdoy=trim(adjustl(l1b_path_file(index3+4:index3+6)))
+   chour=trim(adjustl(l1b_path_file(index3+7:index3+8)))
+   cminute=trim(adjustl(l1b_path_file(index3+9:index3+10)))
 
    read(cyear(1:len_trim(cyear)), '(I4)') year
    read(cdoy(1:len_trim(cdoy)), '(I3)') doy
