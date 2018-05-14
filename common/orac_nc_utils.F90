@@ -224,6 +224,8 @@ subroutine nc_put_common_attributes(ncid, global_atts, source_atts)
 
    integer :: ierr
 
+   ierr	=	0
+
 
    !----------------------------------------------------------------------------
    ! Global attribute 'Conventions' as defined by CF-1.4, section 2.6.1.
