@@ -32,8 +32,6 @@
 ! 2014/07/23, AP: don't apply 0.01 scale factor to missing values.
 ! 2015/01/15, AP: Permit arbitrary ordering of the channels.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

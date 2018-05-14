@@ -35,8 +35,6 @@
 ! 2017/06/21, OS: bug fix: with cray-fortran compiler, variables need to be
 !    declared as inout if input values are to be used within SR
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

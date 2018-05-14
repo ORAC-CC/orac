@@ -39,8 +39,6 @@
 !   accept satellite data changed name of the driver to driver_for_bugsrad.F90.
 ! 2018/02/27 MST: Using pyYEAR (now passed from parent routine) to calculate time dependent CO2 concentration
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

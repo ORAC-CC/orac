@@ -22,8 +22,6 @@
 ! 2012/01/24, MJ: writes initial code for AVHRR.
 ! 2013/09/11, AP: tidying, removed path_to_l1b_file
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

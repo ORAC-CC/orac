@@ -53,8 +53,6 @@
 ! 2017/03/29, SP: Add ability to calculate tropospheric cloud emissivity (ExtWork)
 ! 2017/11/15, SP: Add feature to give access to sensor azimuth angle
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

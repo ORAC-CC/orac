@@ -31,8 +31,6 @@
 ! 2017/01/20, CP: made netdcf file name read more robust
 ! 2017/01/09, CP: ML additions.
 !
-! $Id$
-!
 ! Bugs:
 ! Not a bug but this code assumes 5 channels of instrument data.
 !-------------------------------------------------------------------------------

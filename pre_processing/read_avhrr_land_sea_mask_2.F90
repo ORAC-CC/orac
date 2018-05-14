@@ -26,8 +26,6 @@
 ! 2012/05/15, MJ: adds code to read AVHRR HDF5 land sea mask file.
 ! 2013/09/11, AP: tidying
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

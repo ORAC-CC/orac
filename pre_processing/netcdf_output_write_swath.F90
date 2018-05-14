@@ -50,8 +50,6 @@
 ! 2017/06/21, OS: added ann phase variables
 ! 2018/04/26, SP: Add code to save satellite azimuth (commented out, but useful)
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

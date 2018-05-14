@@ -24,8 +24,6 @@
 ! 2017/06/29, SS: Added cloud phase uncertainty thresholds, altered cloud phase
 !    thresholds
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

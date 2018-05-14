@@ -127,8 +127,6 @@
 ! 2016/01/16, CP: Added in default values for suface if missing in climatology.
 ! 2016/02/02, GM: Make use of Ctrl%allow_a_default_surface.
 !
-! $Id$
-!
 ! Bugs:
 ! SelmCtrl only sets IRho_DD.
 ! SRs2 is only set for IRho_DD as it isn't clear where uncertainty estimates for

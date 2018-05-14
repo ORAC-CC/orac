@@ -5,7 +5,6 @@
 ! File with ORAC specific NetCDF i/o convenience routines not appropriate for
 ! the more general nc_* files.
 !
-! $Id$
 !-------------------------------------------------------------------------------
 
 

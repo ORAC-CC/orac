@@ -45,8 +45,6 @@
 ! 2018/01/19, GT: Removed QCFlag scale and offset values, as these should only
 !    be used for packed floating point data (not straight integers like QCFlag).
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

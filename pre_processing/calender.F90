@@ -24,8 +24,6 @@
 !    http://caps.gsfc.nasa.gov/simpson/software
 ! 2015/11/20, GM: Refreshed with upstream and put into subroutines.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

@@ -28,8 +28,6 @@
 !    consistent with read_modis_lat_lon.F90, use sreal_fill_value rather than
 !    file's own value
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

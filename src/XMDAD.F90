@@ -99,8 +99,6 @@
 ! 2016/01/08, AP: Removed old CTP interpolation entirely.
 ! 2017/07/05, AP: MDAD_SW, LW replaced with Y_Id_legacy.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

@@ -34,8 +34,6 @@
 ! 2016/07/27, GM: Read SAD stuff for layer 2 when the multilayer retrieval is
 !    active.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

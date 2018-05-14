@@ -19,8 +19,6 @@
 !    not replacing the existing imager_flags%lsflag with DEM values
 ! 2017/02/11, SP: Allow reading LSM, LUM, DEM from external file (ExtWork)
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

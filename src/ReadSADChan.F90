@@ -74,8 +74,6 @@
 ! 2015/09/07, AP: Allow verbose to be controlled from the driver file.
 ! 2016/07/28, GM: Remove hidden setting of Ctrl%Ind%NMixed.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

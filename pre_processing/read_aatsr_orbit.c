@@ -11,8 +11,6 @@
       and 512.
    2016/10/26, GT: Fixed a bug whereby measurement time was always being read
       from first row of orbit regardless of starty value.
-
-   $Id$
 **/
 
 #include "read_aatsr_orbit.h"

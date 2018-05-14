@@ -16,8 +16,6 @@
 ! 2015/07/03, OS: added error status variable to nc_open call
 ! 2017/02/10, SP: Allow reading LSM, LUM, DEM from external file (ExtWork)
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

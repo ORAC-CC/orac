@@ -92,8 +92,6 @@
 ! 2016/02/18, OS: ECMWF snow/ice mask now corrected by USGS land/sea mask
 ! 2016/02/23, OS: previous commit on ECMWF snow/ice mask was incomplete
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

@@ -36,8 +36,6 @@
 ! 2015/08/21, AP: Variables to include in Jacobian (but not retrieve) now listed
 !    in SPixel%XJ.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

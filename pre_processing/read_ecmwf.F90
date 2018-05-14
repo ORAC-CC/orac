@@ -29,8 +29,6 @@
 ! 2017/04/11, SP: Added ecmwf_flag=6, for working with GFS analysis files.
 ! 2017/06/21, OS: inout declaration bug fix for cray-fortran compiler
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
@@ -162,8 +160,6 @@ end subroutine read_ecmwf_wind
 !    the satellite acquisition.
 ! 2016/04/04, SP: Added option 4, which processes ECMWF forecast/analysis data
 !    that's stored in a single NetCDF file.
-!
-! $Id$
 !
 ! Bugs:
 ! None known.

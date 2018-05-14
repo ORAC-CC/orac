@@ -42,8 +42,6 @@
 ! 2015/09/15, CP: Put a stop in if reads too narrow swath this is a bug fix to
 !    prevent zero files being created
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

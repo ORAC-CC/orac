@@ -65,8 +65,6 @@
 !    angle is greater than the maximum allowed by RTTOV.
 ! 2016/01/08, AP: Removed old CTP interpolation entirely.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

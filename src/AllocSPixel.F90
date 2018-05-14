@@ -66,8 +66,6 @@
 ! 2015/06/02, AP: Add aerosol fields.
 ! 2015/08/19, AP: Make reading of RTM terms optional.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

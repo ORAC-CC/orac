@@ -19,8 +19,6 @@
 ! 2016/01/27, GM: Add cloud emissivity and cloud emissivity uncertainty.
 ! 2017/07/12, AP: New QC
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

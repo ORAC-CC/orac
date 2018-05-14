@@ -25,8 +25,6 @@
 ! 2013/09/06, AP: tidying, fixed bug where uninitialised array temp was used,
 !    added where statement (if desired)
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

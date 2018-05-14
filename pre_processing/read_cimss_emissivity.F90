@@ -48,8 +48,6 @@
 ! 2015/07/03, OS: added error status variable to nc_open call
 ! 10/07/2015, OS: undo previous commit
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

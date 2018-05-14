@@ -27,8 +27,6 @@
 ! 2011/12/21, MJ: produces draft code which opens and reads MODIS L1b hdf files
 ! 2013/09/06, AP: tidying
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

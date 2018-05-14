@@ -66,8 +66,6 @@
 ! 2017/03/16, GT: Changes for single-view aerosol retrieval mode.
 ! 2017/07/05, AP: Add channels_used, variables_retrieved.
 !
-! $Id$
-!
 ! Bugs:
 ! Assumes a single view for now.
 !-------------------------------------------------------------------------------

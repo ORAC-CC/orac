@@ -35,8 +35,6 @@
 ! 2011/09/22, CP: Remove get GetLwRTM and GetSwRTM and replace with GetLwSwRTM
 ! 2014/07/30, GM: Cleaned up the code.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !------------------------------------------------------------------------------

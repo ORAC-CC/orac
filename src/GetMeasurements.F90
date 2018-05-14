@@ -92,8 +92,6 @@
 ! 2015/08/19, AP: Sy may now be drawn from the MSI data files (SelmMeas), the
 !    SAD files (SelmAux), or taken to be constant (SelmCtrl).
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

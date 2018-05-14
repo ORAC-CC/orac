@@ -17,8 +17,6 @@
 !   variable.
 ! 2015/07/16, GM: Modifications to properly read packed data and check ranges.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

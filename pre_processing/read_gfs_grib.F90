@@ -52,8 +52,6 @@
 ! 2017/03/30, SP: Add ability to calculate tropospheric cloud emissivity (ExtWork)
 ! 2017/06/21, OS: line continuation symbol set to &
 !
-! $Id$
-!
 ! Bugs:
 ! - If you're having problems with INTF, set the environment variable JDCNDBG=1
 ! for additional debugging output.

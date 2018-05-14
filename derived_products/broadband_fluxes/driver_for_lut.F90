@@ -9,8 +9,6 @@
 ! History:
 ! 2015/01/12, MC: Initial implementation
 !
-! $Id$
-!
 ! Bugs:
 ! LUT all-sky albedo values of 1.0 and 0. are not processed.
 !-------------------------------------------------------------------------------

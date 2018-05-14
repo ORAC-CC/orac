@@ -31,8 +31,6 @@
 !    attribute within file for identification
 ! 2014/07/23, AP: more efficient array writing
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

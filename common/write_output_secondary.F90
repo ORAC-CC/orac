@@ -33,8 +33,6 @@
 ! 2016/01/06, AP: Wrap do_* flags into output_flags structure.
 ! 2016/03/04, AP: Homogenisation of I/O modules.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

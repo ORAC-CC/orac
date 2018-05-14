@@ -36,8 +36,6 @@
 ! 2017/02/08, GM: Added Pc and Pc2 to close or completely crossing check and
 !    fix.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

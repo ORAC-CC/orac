@@ -83,8 +83,6 @@
 ! 2018/01/19, GT: Removed QCFlag scale_factor and add_offset values, as these 
 !    should only be used for packed floating point data.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

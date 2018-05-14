@@ -305,8 +305,6 @@
 ! 2018/04/26, SP: Adjustment to the aerosol hack to prevent segfaults.
 ! 2018/04/29, SP: Add cloud emissivity support for ECMWF profiles (ExtWork)
 !
-! $Id$
-!
 ! Bugs:
 ! See http://proj.badc.rl.ac.uk/orac/report/1
 !-------------------------------------------------------------------------------

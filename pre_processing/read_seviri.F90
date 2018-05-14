@@ -12,8 +12,6 @@
 ! 2016/12/08, GT: Fixed solar azimuth angle.
 ! 2017/07/18, SP: Added a poor-mans method of subsetting HRIT data
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

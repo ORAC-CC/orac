@@ -143,8 +143,6 @@
 ! 2017/12/12, GT: Changed Sentinel-3 platform name to Sentinel3a
 ! 2018/04/29, SP: Add cloud emissivity support for ECMWF profiles (ExtWork)
 !
-! $Id$
-!
 ! Bugs:
 ! - BRDF not yet implemented here, so RTTOV internal calculation used.
 ! - Possible issue with conversion from layers to levels.

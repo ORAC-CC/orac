@@ -6,8 +6,6 @@
 ! History:
 ! 2016/07/11, SP: Initial, replaces preprocessor specific chunking routines
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

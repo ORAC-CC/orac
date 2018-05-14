@@ -10,8 +10,6 @@
 ! 2014/08/01, GM: Comment out zeroing of SPixel%Mask.
 ! 2014/11/04, AP: Remove undefined variables.
 !
-! $Id$
-!
 ! Bugs:
 ! None known
 !-------------------------------------------------------------------------------

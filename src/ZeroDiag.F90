@@ -37,8 +37,6 @@
 ! 2015/10/22, GM: Add cloud albedo uncertainty.
 ! 2016/01/27, GM: Add cloud emissivity and cloud emissivity uncertainty.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

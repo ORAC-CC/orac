@@ -32,8 +32,6 @@
 ! 2015/04/28, AP: Added fields for surface uncertainty and correlation.
 ! 2017/06/21, OS: added ann phase variables
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

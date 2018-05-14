@@ -61,8 +61,6 @@
 ! 2016/03/04, AP: Homogenisation of I/O modules.
 ! 2016/07/08, GM: Add fields for cloud layer 2.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

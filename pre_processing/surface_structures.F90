@@ -12,8 +12,6 @@
 ! 2014/11/19, GM: C #includes should use double quotes.
 ! 2014/12/02, GM: Remove unused surface%albedo_chan and surface%emissivity_chan.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

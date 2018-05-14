@@ -17,8 +17,6 @@
 ! History:
 ! 2018/03/22, SRP: Initial version, based on existing select_modis_emiss_file.F90
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

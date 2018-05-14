@@ -28,8 +28,6 @@
 !    international dateline.
 ! 2016/04/05, GM: Real should not be used for indexing.
 !
-! $Id$
-!
 ! Bugs:
 ! Potential problem with method 1: have not accounted for longitude reversal
 ! around the international dateline - need to add this.

@@ -23,8 +23,6 @@
 ! 2015/07/26, GM: Changed type specific deflate levels and shuffling flags to
 !    just one.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

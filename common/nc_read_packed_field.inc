@@ -16,8 +16,6 @@
 ! 2014/09/03, GM: Fixed bug: fv should not be used as a loop local auxillary
 !   variable.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

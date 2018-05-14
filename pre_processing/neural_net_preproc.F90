@@ -51,8 +51,6 @@
 !    to use only IR data at daytime
 ! 2017/06/28, SS: added new 1.6um ANN
 
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

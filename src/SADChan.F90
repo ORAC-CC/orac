@@ -19,8 +19,6 @@
 ! 2015/08/21, AP: Move make_sad_filename() here from ReadSADLUT.
 ! 2017/06/21, OS: string name fix for METOP
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

@@ -26,8 +26,6 @@
 ! 2014/11/04, OS: Added skin temperature.
 ! 2015/11/17, OS: Added rearrangement of high resolution ERA-Interim data.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

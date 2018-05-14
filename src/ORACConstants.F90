@@ -86,8 +86,6 @@
 ! 2017/07/05, AP: Move ISS before ISP so that the wavelength-dependent values
 !    are last (to simlify the variables_retrieved flag).
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

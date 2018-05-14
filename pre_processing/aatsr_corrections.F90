@@ -42,8 +42,6 @@
 !    results in an 8 byte integer so that 26_dreal/60_dreal will be zero.  It
 !    should be 26._dreal to get the intended result.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
@@ -423,8 +421,6 @@ end subroutine aatsr_read_drift_table
 ! History:
 ! 2014/06/16, GM: Original implementation.
 ! 2014/07/25, GM: Fixed out of bounds indexing bug.
-!
-! $Id$
 !
 ! Bugs:
 ! None known.

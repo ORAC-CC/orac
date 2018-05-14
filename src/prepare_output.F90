@@ -15,8 +15,6 @@
 !    state vector elements rather than assuming there are four.
 ! 2017/07/05, AP: Add channels_used, variables_retrieved.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

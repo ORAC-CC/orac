@@ -61,8 +61,6 @@
 ! 2017/04/11, SP: Added ecmwf_flag=6, for working with GFS analysis files.
 ! 2017/07/05, SP: Added ecmwf_flag=7, for working with new format GFS (ExtWork)
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

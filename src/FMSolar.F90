@@ -138,8 +138,6 @@
 ! 2016/09/24. AP: Add ClsAerBR, a BRDF form of the Swansea surface. It maps the
 !    three terms of the Swansea equation to the BRDF terms.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

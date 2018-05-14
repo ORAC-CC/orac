@@ -29,8 +29,6 @@
 ! History:
 ! 2012/05/31, SRP: Initial version, based on existing read_cimss_emissivity.F90
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

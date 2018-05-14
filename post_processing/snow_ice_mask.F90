@@ -48,8 +48,6 @@
 !   2015/09/16, CP: Added dem threshold cuut over Antarctica to account for
 !      missing 12um.
 !
-! $Id$
-!
 ! Bugs:
 !    Currently only applicable to 3.7um retrievals could be easily adapted to
 !    1.6 retrievals.

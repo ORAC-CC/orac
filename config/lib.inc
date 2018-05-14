@@ -103,8 +103,8 @@ LIBS += -L$(FULIOULIB) -lEd3Fu_201212
 INC  += -I$(FULIOUINCLUDE) -DINCLUDE_FU_LIOU_SUPPORT
 
 # Uncomment if Himawari support is desired.
-LIBS += -L$(HIMAWARI_HSD_READER_LIB) -lhimawari_util
-INC  += -I$(HIMAWARI_HSD_READER_INCLUDE) -DINCLUDE_HIMAWARI_SUPPORT
+#LIBS += -L$(HIMAWARI_HSD_READER_LIB) -lhimawari_util
+#INC  += -I$(HIMAWARI_HSD_READER_INCLUDE) -DINCLUDE_HIMAWARI_SUPPORT
 
 # Uncomment if SEVIRI support is desired.
 LIBS += -L$(SEVIRI_UTIL_LIB) -lseviri_util

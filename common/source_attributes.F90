@@ -15,8 +15,6 @@
 !    a template
 ! 2018/02/01, GT: Added L1B version and orbit number strings to attributes.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

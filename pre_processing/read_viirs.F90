@@ -17,8 +17,6 @@
 ! 2016/05/23, SP: Some tidying and better commenting
 ! 2016/08/01, SP: Changed zenith angle bounds
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

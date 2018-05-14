@@ -52,8 +52,6 @@
 ! 2017/04/12, SP: Allow switch to parallel RTTOV only if OPENMP is enabled.
 ! 2017/11/15, SP: Add feature to give access to sensor azimuth angle
 !
-! $Id$
-!
 ! Bugs:
 ! - BRDF not yet implemented here, so RTTOV internal calculation used.
 ! - Possible issue with conversion from layers to levels.

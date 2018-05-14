@@ -21,8 +21,6 @@
 !    type and channel.
 ! 2017/03/16, GT: Increased maximum size of effective radius LUT dimension.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

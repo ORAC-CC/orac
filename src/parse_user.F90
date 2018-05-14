@@ -9,9 +9,6 @@
 ! 2015/07/22, AP: Original version.
 ! 2015/08/18, AP: Added optional argument specifying the ID# for each channel
 !    such that CHXX style indexing can be used.
-
-!
-! $Id$
 !-------------------------------------------------------------------------------
 
 module parse_user_m

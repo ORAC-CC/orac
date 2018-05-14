@@ -39,8 +39,6 @@
 ! 2017/01/09, CP: ML additions.
 ! 2017/07/05, AP: Add channels_used, variables_retrieved. New QC.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

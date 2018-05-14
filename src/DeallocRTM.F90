@@ -29,8 +29,6 @@
 ! 2014/05/27, GM: Some more cleanup.
 ! 2015/01/30, AP: Eliminate redundant fields.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

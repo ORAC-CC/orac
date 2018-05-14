@@ -35,8 +35,6 @@
 !    argument no longer required.
 ! 2014/05/21, GM: Cleaned up the code.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

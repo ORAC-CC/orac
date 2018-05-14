@@ -22,8 +22,6 @@
 ! 2011/12/12, MJ: produces draft code which opens and reads MODIS geo hdf files
 ! 2013/09/11, AP: tidying, removed path_to_l1b_file
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

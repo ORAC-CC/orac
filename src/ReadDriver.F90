@@ -145,8 +145,6 @@
 !     in particular for Greenland and Antartica. Have set it to 200.0K.
 !     Comparisons of lw fluxes to CERES confirm that this was necessary.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !

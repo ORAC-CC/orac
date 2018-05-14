@@ -11,8 +11,6 @@
 ! 2017/03/29, SP: First version (ExtWork)
 ! 2018/04/29, SP: Add cloud emissivity support for ECMWF profiles (ExtWork)
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

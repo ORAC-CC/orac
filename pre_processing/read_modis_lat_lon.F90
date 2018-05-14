@@ -26,8 +26,6 @@
 ! 2013/09/06, AP: tidying, added code for WHERE statement (if desired), use
 !    sreal_fill_value rather than file's value
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

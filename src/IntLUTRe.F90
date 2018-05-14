@@ -75,8 +75,6 @@
 ! 2017/10/24, GM: Switch to official NR cubic spline code and make optional
 !    through conditional compilation.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

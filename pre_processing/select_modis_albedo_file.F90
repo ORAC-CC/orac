@@ -41,8 +41,6 @@
 !    module.  No more need to hard-wire processing dates.
 ! 2016/09/15, SP: Allow use of collection 6 MODIS data. Default is collection 5.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

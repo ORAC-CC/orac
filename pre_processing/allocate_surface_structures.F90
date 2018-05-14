@@ -27,8 +27,6 @@
 ! 2014/12/02, GM: Remove unused surface%albedo_chan and surface%emissivity_chan.
 ! 2016/03/31, GM: Changes to support processing only SW or only LW channels.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

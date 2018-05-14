@@ -65,8 +65,6 @@
 ! 2017/07/12, AP: Completely new QC flags. Moved setting of Jm/Ja/iter to
 !    InvertMarquadt. Removed MaxS constraint on setting last retrieval.
 !
-! $Id$
-!
 ! Bugs:
 ! None known
 !-------------------------------------------------------------------------------

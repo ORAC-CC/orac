@@ -25,8 +25,6 @@
 ! 2015/08/04, GM: Check for solar zenith angle < SolZenMin.
 ! 2015/09/07, AP: Allow verbose to be controlled from the driver file.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
