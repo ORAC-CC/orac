@@ -20,46 +20,47 @@
 
 
 ! This function computes the solar geometry for a given GOES scene
-subroutine ABI_Solpos(year,month,day,hour,minute,lat,lon,sza,saa)
+subroutine ABI_Solpos(year, month, day, hour, minute, lat, lon, sza, saa)
 
    use preproc_constants_m
+   implicit none
 
-	integer,	intent(in), value	:: year
-	integer,	intent(in), value	:: month
-	integer,	intent(in), value	:: day
-	integer,	intent(in), value	:: hour
-	integer,	intent(in), value	:: minute
-	real(kind=sreal),	intent(in), value	:: lat
-	real(kind=sreal),	intent(in), value	:: lon
-	real(kind=sreal),	intent(out)	:: sza
-	real(kind=sreal),	intent(out)	:: saa
+   integer, intent(in), value          :: year
+   integer, intent(in), value          :: month
+   integer, intent(in), value          :: day
+   integer, intent(in), value          :: hour
+   integer, intent(in), value          :: minute
+   real(kind=sreal), intent(in), value :: lat
+   real(kind=sreal), intent(in), value :: lon
+   real(kind=sreal), intent(out)       :: sza
+   real(kind=sreal), intent(out)       :: saa
 
-	integer	::	retval
+   integer :: retval
 
-	saa 		=	0.
-	sza 		=	0.
-	retval	=	0
+   saa    = 0.
+   sza    = 0.
+   retval = 0
 
-    retval = get_sza_saa(year,month,day,hour,minute,lat,lon,sza,saa)
-    if (retval .ne. 0) then
-        write(*, *) 'ERROR: get_sza_saa()'
-        stop
-    end if
-	if (saa .gt. 360.0) then
-			saa	=	sreal_fill_value
-	endif
-	if (saa .lt. 0.0) then
-		saa	=	sreal_fill_value
-	endif
-	sza	=	abs(sza)
-	if (sza .gt. 180.0) then
-		sza	=	sreal_fill_value
-	endif
-	if (sza .lt. -180.0) then
-		sza	=	sreal_fill_value
-	endif
+   retval = get_sza_saa(year, month, day, hour, minute, lat, lon, sza, saa)
+   if (retval .ne. 0) then
+      write(*,*) 'ERROR: get_sza_saa()'
+      stop
+   end if
+   if (saa .gt. 360.0) then
+      saa = sreal_fill_value
+   endif
+   if (saa .lt. 0.0) then
+      saa = sreal_fill_value
+   endif
+   sza = abs(sza)
+   if (sza .gt. 180.0) then
+      sza = sreal_fill_value
+   endif
+   if (sza .lt. -180.0) then
+      sza = sreal_fill_value
+   endif
 
-	return
+   return
 
 end subroutine ABI_Solpos
 
@@ -67,76 +68,78 @@ end subroutine ABI_Solpos
 ! needs to be read. GOES data is stored as one file per band, so the l1_5_file
 ! variable stores only one out of (up to) 16 channel filenames.
 ! The output array abi_filenames contains each filename for reading.
-subroutine get_goes_path(l1_5_file,platform,abi_filenames,n_chans,channel_ids)
+subroutine get_goes_path(l1_5_file, platform, abi_filenames, n_chans, channel_ids)
 
    use preproc_constants_m
-	use system_utils_m
-   character(path_length), intent(in)     :: l1_5_file
-   character(platform_length), intent(in) :: platform
-   character(file_length), intent(out)    :: abi_filenames(:)
-   integer,                intent(in)     :: n_chans
-   integer, pointer,       intent(in)     :: channel_ids(:)
+   use system_utils_m
+   implicit none
 
-	character(file_length)                 :: tmp_file
-   character(len=path_length)             :: regex
+   character(path_length),     intent(in)  :: l1_5_file
+   character(platform_length), intent(in)  :: platform
+   character(file_length),     intent(out) :: abi_filenames(:)
+   integer,                    intent(in)  :: n_chans
+   integer, pointer,           intent(in)  :: channel_ids(:)
 
-	integer i,index1,index2,index3,success
-	character(2)  :: band
-	character(3)  :: shplat
-	character(16) :: dtstr
+   character(file_length)                  :: tmp_file
+   character(len=path_length)              :: regex
 
-	! Determine which GOES platform we're using. Currently -16 or -17 are acceptable
-	if (platform .eq. "GOES-16") then
-		shplat="G16"
-	elseif (platform .eq. "GOES-17") then
-		shplat="G17"
-	else
-		write(*,*),"Unsupported GOES platform: ",platform
-		stop
-	endif
+   integer       :: i, index1, index2, index3, success
+   character(2)  :: band
+   character(3)  :: shplat
+   character(16) :: dtstr
 
-	! Some useful positions in the file
-	! Location of the datestring
-	index1 = index(trim(adjustl(l1_5_file)),'_s')
-	! Starting location of the actual filename
-	index3 = index(trim(adjustl(l1_5_file)),'OR_')
+   ! Determine which GOES platform we're using. Currently -16 or -17 are acceptable
+   if (platform .eq. "GOES-16") then
+      shplat = "G16"
+   elseif (platform .eq. "GOES-17") then
+      shplat = "G17"
+   else
+      write(*,*), "Unsupported GOES platform: ", platform
+      stop
+   endif
 
-	! Extract the datestring (including '_s' prefix)
-	dtstr	 = l1_5_file(index1:index1+16)
+   ! Some useful positions in the file
+   ! Location of the datestring
+   index1 = index(trim(adjustl(l1_5_file)), '_s')
+   ! Starting location of the actual filename
+   index3 = index(trim(adjustl(l1_5_file)), 'OR_')
 
-	! Loop over all bands to read
-	do i=1,n_chans
-		write(band, '(i2.2)') channel_ids(i)
+   ! Extract the datestring (including '_s' prefix)
+   dtstr  = l1_5_file(index1:index1+16)
 
-		! Find channel filenames. This isn't as simple as dropping 'C01' etc into the existing filename
-		! As each file contains a timestamp of creation, which differs between channels. Similar to VIIRS.
-		regex	=	"OR_ABI-L1b-RadF-M3C"//band//"_"//shplat//dtstr//"................................\.nc"
-		success = match_file(l1_5_file(1:index3-1), regex, tmp_file)
-		if (success .eq. 0) then
-			abi_filenames(i)=l1_5_file(1:index3-1)//trim(tmp_file)
-		else
-			regex	=	"OR_ABI-L1b-RadC-M3C"//band//"_"//shplat//dtstr//"................................\.nc"
-			success = match_file(l1_5_file(1:index3-1), regex, tmp_file)
-			if (success .eq. 0) then
-				abi_filenames(i)=l1_5_file(1:index3-1)//trim(tmp_file)
-			else
-				regex	=	"OR_ABI-L1b-RadM.-M3C"//band//"_"//shplat//dtstr//"................................\.nc"
-				success = match_file(l1_5_file(1:index3-1), regex, tmp_file)
-				if (success .eq. 0) then
-					abi_filenames(i)=l1_5_file(1:index3-1)//trim(tmp_file)
-				else
-					write(*,*) "Cannot find the GOES file for band ",band
-					write(*,*) "Regex:",trim(regex)
-					stop
-				endif
-			endif
-		endif
-	end do
+   ! Loop over all bands to read
+   do i = 1, n_chans
+      write(band, '(i2.2)') channel_ids(i)
+
+      ! Find channel filenames. This isn't as simple as dropping 'C01' etc into the existing filename
+      ! As each file contains a timestamp of creation, which differs between channels. Similar to VIIRS.
+      regex = "OR_ABI-L1b-RadF-M3C"//band//"_"//shplat//dtstr//"................................\.nc"
+      success = match_file(l1_5_file(1:index3-1), regex, tmp_file)
+      if (success .eq. 0) then
+         abi_filenames(i) = l1_5_file(1:index3-1)//trim(tmp_file)
+      else
+         regex = "OR_ABI-L1b-RadC-M3C"//band//"_"//shplat//dtstr//"................................\.nc"
+         success = match_file(l1_5_file(1:index3-1), regex, tmp_file)
+         if (success .eq. 0) then
+            abi_filenames(i) = l1_5_file(1:index3-1)//trim(tmp_file)
+         else
+            regex = "OR_ABI-L1b-RadM.-M3C"//band//"_"//shplat//dtstr//"................................\.nc"
+            success = match_file(l1_5_file(1:index3-1), regex, tmp_file)
+            if (success .eq. 0) then
+               abi_filenames(i) = l1_5_file(1:index3-1)//trim(tmp_file)
+            else
+               write(*,*) "Cannot find the GOES file for band ", band
+               write(*,*) "Regex:", trim(regex)
+               stop
+            endif
+         endif
+      endif
+   end do
 
 end subroutine get_goes_path
 
 
-subroutine get_goes_geoloc(infile,imager_geolocation, imager_angles, verbose)
+subroutine get_goes_geoloc(infile, imager_geolocation, imager_angles, verbose)
 
    use channel_structures_m
    use iso_c_binding
@@ -151,15 +154,15 @@ subroutine get_goes_geoloc(infile,imager_geolocation, imager_angles, verbose)
    type(imager_angles_t),       intent(inout) :: imager_angles
    logical,                     intent(in)    :: verbose
 
-   integer :: fid,ierr
-   integer :: xid,yid,gimpid
-   integer :: i,j
+   integer :: fid, ierr
+   integer :: xid, yid, gimpid
+   integer :: i, j
 
-   real    :: xpos,ypos,sma,smi,invf,e,hproj,h,l0
-   real    :: a,b,c,rs,sx,sy,sz,tlat,tlon,tx,ty
-   real	  :: xscl,yscl,x0,y0,e2
+   real    :: xpos, ypos, sma, smi, invf, e, hproj, h, l0
+   real    :: a, b, c, rs, sx, sy, sz, tlat, tlon, tx, ty
+   real    :: xscl, yscl, x0, y0, e2
 
-   real,dimension(:),allocatable :: x,y
+   real, dimension(:), allocatable :: x, y
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering get_goes_geoloc()'
 
@@ -171,99 +174,99 @@ subroutine get_goes_geoloc(infile,imager_geolocation, imager_angles, verbose)
    if (verbose) write(*,*) "Computing latitude and longitude for each pixel"
 
    ! Open the netCDF4 file for reading
-	ierr=nf90_open(path=trim(adjustl(infile)),mode=NF90_NOWRITE,ncid=fid)
+   ierr = nf90_open(path = trim(adjustl(infile)), mode = NF90_NOWRITE, ncid = fid)
    if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: get_goes_geoloc(): Error opening file ',trim(infile)
+      print*, 'ERROR: get_goes_geoloc(): Error opening file ', trim(infile)
       stop error_stop_code
    end if
 
    ! Read the various attributes required for building the geolocation model
    ierr = nf90_inq_varid(fid, "x", xid)
    if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: get_goes_geoloc(): Error reading x variable id',trim(infile)
+      print*, 'ERROR: get_goes_geoloc(): Error reading x variable id', trim(infile)
       stop error_stop_code
    end if
    ierr = nf90_inq_varid(fid, "y", yid)
    if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: get_goes_geoloc(): Error reading y variable id',trim(infile)
+      print*, 'ERROR: get_goes_geoloc(): Error reading y variable id', trim(infile)
       stop error_stop_code
    end if
    ierr = nf90_inq_varid(fid, "goes_imager_projection", gimpid)
    if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: get_goes_geoloc(): Error reading goes_imager_projection variable id',trim(infile)
+      print*, 'ERROR: get_goes_geoloc(): Error reading goes_imager_projection variable id', trim(infile)
       stop error_stop_code
    end if
 
    ! Read the relevant attributes, see GOES PUG, Volume 4: GRB section 7.1.2.8.1 for details of what
    ! these are.
-	ierr = nf90_get_att(fid, xid, "scale_factor", xscl)
+   ierr = nf90_get_att(fid, xid, "scale_factor", xscl)
    if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: get_goes_geoloc(): Error reading semi_major_axis attribute',trim(infile)
+      print*, 'ERROR: get_goes_geoloc(): Error reading semi_major_axis attribute', trim(infile)
       stop error_stop_code
    end if
-	ierr = nf90_get_att(fid, xid, "add_offset", x0)
+   ierr = nf90_get_att(fid, xid, "add_offset", x0)
    if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: get_goes_geoloc(): Error reading semi_major_axis attribute',trim(infile)
-      stop error_stop_code
-   end if
-
-	ierr = nf90_get_att(fid, yid, "scale_factor", yscl)
-   if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: get_goes_geoloc(): Error reading semi_major_axis attribute',trim(infile)
-      stop error_stop_code
-   end if
-	ierr = nf90_get_att(fid, yid, "add_offset", y0)
-   if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: get_goes_geoloc(): Error reading semi_major_axis attribute',trim(infile)
+      print*, 'ERROR: get_goes_geoloc(): Error reading semi_major_axis attribute', trim(infile)
       stop error_stop_code
    end if
 
-	ierr = nf90_get_att(fid, gimpid, "semi_major_axis", sma)
+   ierr = nf90_get_att(fid, yid, "scale_factor", yscl)
    if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: get_goes_geoloc(): Error reading semi_major_axis attribute',trim(infile)
+      print*, 'ERROR: get_goes_geoloc(): Error reading semi_major_axis attribute', trim(infile)
       stop error_stop_code
    end if
-	ierr = nf90_get_att(fid, gimpid, "semi_minor_axis", smi)
+   ierr = nf90_get_att(fid, yid, "add_offset", y0)
    if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: get_goes_geoloc(): Error reading semi_minor_axis attribute',trim(infile)
-      stop error_stop_code
-   end if
-	ierr = nf90_get_att(fid, gimpid, "inverse_flattening", invf)
-   if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: get_goes_geoloc(): Error reading inverse_flattening attribute',trim(infile)
-      stop error_stop_code
-   end if
-	ierr = nf90_get_att(fid, gimpid, "perspective_point_height", hproj)
-   if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: get_goes_geoloc(): Error reading perspective_point_height attribute',trim(infile)
-      stop error_stop_code
-   end if
-	ierr = nf90_get_att(fid, gimpid, "longitude_of_projection_origin", l0)
-   if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: get_goes_geoloc(): Error reading longitude_of_projection_origin attribute',trim(infile)
+      print*, 'ERROR: get_goes_geoloc(): Error reading semi_major_axis attribute', trim(infile)
       stop error_stop_code
    end if
 
-   ierr = nf90_get_var(fid, xid, x,start=(/ imager_geolocation%startx /),count=(/ imager_geolocation%nx /))
+   ierr = nf90_get_att(fid, gimpid, "semi_major_axis", sma)
    if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: get_goes_geoloc(): Error reading X variable',trim(infile)
+      print*, 'ERROR: get_goes_geoloc(): Error reading semi_major_axis attribute', trim(infile)
+      stop error_stop_code
+   end if
+   ierr = nf90_get_att(fid, gimpid, "semi_minor_axis", smi)
+   if (ierr.ne.NF90_NOERR) then
+      print*, 'ERROR: get_goes_geoloc(): Error reading semi_minor_axis attribute', trim(infile)
+      stop error_stop_code
+   end if
+   ierr = nf90_get_att(fid, gimpid, "inverse_flattening", invf)
+   if (ierr.ne.NF90_NOERR) then
+      print*, 'ERROR: get_goes_geoloc(): Error reading inverse_flattening attribute', trim(infile)
+      stop error_stop_code
+   end if
+   ierr = nf90_get_att(fid, gimpid, "perspective_point_height", hproj)
+   if (ierr.ne.NF90_NOERR) then
+      print*, 'ERROR: get_goes_geoloc(): Error reading perspective_point_height attribute', trim(infile)
+      stop error_stop_code
+   end if
+   ierr = nf90_get_att(fid, gimpid, "longitude_of_projection_origin", l0)
+   if (ierr.ne.NF90_NOERR) then
+      print*, 'ERROR: get_goes_geoloc(): Error reading longitude_of_projection_origin attribute', trim(infile)
       stop error_stop_code
    end if
 
-   ierr = nf90_get_var(fid, yid, y,start=(/ imager_geolocation%starty /),count=(/ imager_geolocation%ny /))
+   ierr = nf90_get_var(fid, xid, x, start = (/ imager_geolocation%startx /), count = (/ imager_geolocation%nx /))
    if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: get_goes_geoloc(): Error reading Y variable',trim(infile)
+      print*, 'ERROR: get_goes_geoloc(): Error reading X variable', trim(infile)
       stop error_stop_code
    end if
 
-	! Close the netCDF file, we have all we need
-   ierr=nf90_close(fid)
+   ierr = nf90_get_var(fid, yid, y, start = (/ imager_geolocation%starty /), count = (/ imager_geolocation%ny /))
    if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: get_goes_geoloc(): Error closing file ',trim(infile)
+      print*, 'ERROR: get_goes_geoloc(): Error reading Y variable', trim(infile)
       stop error_stop_code
    end if
 
-	! We need the height above geoid centre, so sat altitude + earth radius
+   ! Close the netCDF file, we have all we need
+   ierr = nf90_close(fid)
+   if (ierr.ne.NF90_NOERR) then
+      print*, 'ERROR: get_goes_geoloc(): Error closing file ', trim(infile)
+      stop error_stop_code
+   end if
+
+   ! We need the height above geoid centre, so sat altitude + earth radius
    h = sma + hproj
 
    ! The 'c' parameter (P52 of PUG) can be pre-computed
@@ -276,42 +279,42 @@ subroutine get_goes_geoloc(infile,imager_geolocation, imager_angles, verbose)
    x = x*xscl + x0
    y = y*yscl + y0
 
-!!$OMP PARALLEL PRIVATE(i,j,a,b,rs,sx,sy,sz,tlat,tlon,tx,ty)
+!!$OMP PARALLEL PRIVATE(i, j, a, b, rs, sx, sy, sz, tlat, tlon, tx, ty)
 !!$OMP DO SCHEDULE(GUIDED)
-   do i=imager_geolocation%startx,imager_geolocation%endx
-      do j=imager_geolocation%starty,imager_geolocation%endy
+   do i = imager_geolocation%startx, imager_geolocation%endx
+      do j = imager_geolocation%starty, imager_geolocation%endy
          ! These are not needed really, but help make code readable
-      	tx	=	x(i)
-      	ty	=	y(j)
-      	! These are ugly, all from PUG page 52
-			a = ( sin(tx) * sin(tx)) + (cos(tx) * cos(tx) * ((cos(ty) * cos(ty)) + (((sma*sma) / (smi*smi)) * sin(ty) * sin(ty))))
+         tx = x(i)
+         ty = y(j)
+         ! These are ugly, all from PUG page 52
+         a = ( sin(tx) * sin(tx)) + (cos(tx) * cos(tx) * ((cos(ty) * cos(ty)) + (((sma*sma) / (smi*smi)) * sin(ty) * sin(ty))))
 
-			b = -2 * h * cos(tx) * cos(ty)
+         b = -2 * h * cos(tx) * cos(ty)
 
-			rs = (-b - sqrt(b*b - 4*a*c)) / (2*a)
+         rs = (-b - sqrt(b*b - 4*a*c)) / (2*a)
 
-			sx = rs * cos(tx) * cos(ty)
-			sy = -rs * sin(tx)
-			sz = rs * cos(tx) * sin(ty)
+         sx = rs * cos(tx) * cos(ty)
+         sy = -rs * sin(tx)
+         sz = rs * cos(tx) * sin(ty)
 
-			tlat = atan( ((sma*sma) / (smi * smi)) * sz / (sqrt((h-sx)*(h-sx) + sy*sy)))
-			tlon = l0 - atan( sy / (h-sx) )
+         tlat = atan( ((sma*sma) / (smi * smi)) * sz / (sqrt((h-sx)*(h-sx) + sy*sy)))
+         tlon = l0 - atan( sy / (h-sx) )
 
-			tlat = tlat * 180. / pi
-			tlon = tlon * 180. / pi
+         tlat = tlat * 180. / pi
+         tlon = tlon * 180. / pi
 
-			if (tlat .lt. -90 .or. tlat .gt. 90) tlat = sreal_fill_value
-			if (tlon .lt. -180 .or. tlon .gt. 180) tlon = sreal_fill_value
+         if (tlat .lt. -90 .or. tlat .gt. 90) tlat = sreal_fill_value
+         if (tlon .lt. -180 .or. tlon .gt. 180) tlon = sreal_fill_value
 
-			imager_geolocation%latitude(i,j-imager_geolocation%starty+1) = tlat
-			imager_geolocation%longitude(i,j-imager_geolocation%starty+1) = tlon
+         imager_geolocation%latitude(i, j-imager_geolocation%starty+1) = tlat
+         imager_geolocation%longitude(i, j-imager_geolocation%starty+1) = tlon
       enddo
    enddo
 !!$OMP END DO
 !!$OMP END PARALLEL
 
-	! Now we compute the viewing geometry
-	call get_goes_viewing_geom(imager_geolocation, imager_angles, sma, smi, hproj, l0, verbose)
+   ! Now we compute the viewing geometry
+   call get_goes_viewing_geom(imager_geolocation, imager_angles, sma, smi, hproj, l0, verbose)
 
    ! Deallocate temporary variables
    deallocate(x)
@@ -331,182 +334,141 @@ subroutine get_goes_viewing_geom(imager_geolocation, imager_angles, sma, smi, hp
 
    type(imager_geolocation_t),  intent(inout) :: imager_geolocation
    type(imager_angles_t),       intent(inout) :: imager_angles
-   real,                    	  intent(in)  	 :: sma
-   real,                    	  intent(in)  	 :: smi
-   real,                    	  intent(in)  	 :: hproj
-   real,                    	  intent(inout) :: l0
+   real,                        intent(in)    :: sma
+   real,                        intent(in)    :: smi
+   real,                        intent(in)    :: hproj
+   real,                        intent(inout) :: l0
    logical,                     intent(in)    :: verbose
 
-   integer :: fid,ierr
-   integer :: xid,yid,gimpid
-   integer :: i,j
+   integer :: fid, ierr
+   integer :: xid, yid, gimpid
+   integer :: i, j
 
-   real    :: a,b,c,rs,sx,sy,sz,tlat,tlon,tx,ty
-   real	  :: xscl,yscl,x0,y0,e2
+   real    :: a, b, c, rs, sx, sy, sz, tlat, tlon, tx, ty
+   real    :: xscl, yscl, x0, y0, e2
 
-	real,dimension(:,:),allocatable	::	N
-	real,dimension(:,:),allocatable	::	xp,yp,zp
-	real,dimension(:,:),allocatable	::	cos_lat,sin_lat,cos_lon,sin_lon
-	real,dimension(:,:),allocatable	::	qv1,qv2,qv3
-	real,dimension(:,:),allocatable	::	u1,u2,u3
+   real, dimension(imager_geolocation%startx:imager_geolocation%endx, 1:imager_geolocation%ny) :: N, xp, yp, zp, cos_lat, sin_lat, cos_lon, sin_lon, qv1, qv2, qv3, u1, u2, u3
+
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering get_goes_viewing_geom()'
 
-   allocate(N(imager_geolocation%startx:imager_geolocation%endx,1:imager_geolocation%ny))
-   allocate(xp(imager_geolocation%startx:imager_geolocation%endx,1:imager_geolocation%ny))
-   allocate(yp(imager_geolocation%startx:imager_geolocation%endx,1:imager_geolocation%ny))
-   allocate(zp(imager_geolocation%startx:imager_geolocation%endx,1:imager_geolocation%ny))
-
-	allocate(qv1(imager_geolocation%startx:imager_geolocation%endx,1:imager_geolocation%ny))
-	allocate(qv2(imager_geolocation%startx:imager_geolocation%endx,1:imager_geolocation%ny))
-	allocate(qv3(imager_geolocation%startx:imager_geolocation%endx,1:imager_geolocation%ny))
-
-	allocate(u1(imager_geolocation%startx:imager_geolocation%endx,1:imager_geolocation%ny))
-	allocate(u2(imager_geolocation%startx:imager_geolocation%endx,1:imager_geolocation%ny))
-	allocate(u3(imager_geolocation%startx:imager_geolocation%endx,1:imager_geolocation%ny))
-
-   allocate(cos_lat(imager_geolocation%startx:imager_geolocation%endx,1:imager_geolocation%ny))
-   allocate(cos_lon(imager_geolocation%startx:imager_geolocation%endx,1:imager_geolocation%ny))
-   allocate(sin_lat(imager_geolocation%startx:imager_geolocation%endx,1:imager_geolocation%ny))
-   allocate(sin_lon(imager_geolocation%startx:imager_geolocation%endx,1:imager_geolocation%ny))
-
-	a = sma
-	b = smi
+   a = sma
+   b = smi
 
    cos_lat = cos(imager_geolocation%latitude * pi / 180.)
    sin_lat = sin(imager_geolocation%latitude * pi / 180.)
    cos_lon = cos(imager_geolocation%longitude * pi / 180. - l0)
    sin_lon = sin(imager_geolocation%longitude * pi / 180. - l0)
 
-	e2	=	1. - (b * b) / (a * a)
+   e2 = 1. - (b * b) / (a * a)
 
-	N	=	a / sqrt(1. - e2 * sin_lat * sin_lat)
+   N = a / sqrt(1. - e2 * sin_lat * sin_lat)
 
-   xp	=	N * cos_lat * cos_lon
-   yp	=	N * cos_lat * sin_lon
-   zp	=	((1-e2) * N) * sin_lat
+   xp = N * cos_lat * cos_lon
+   yp = N * cos_lat * sin_lon
+   zp = ((1-e2) * N) * sin_lat
 
-   qv1	=	(sma + hproj) * cos(0.)
-   qv2	=	(sma + hproj) * sin(0.)
-   qv3	=	0
+   qv1 = (sma + hproj) * cos(0.)
+   qv2 = (sma + hproj) * sin(0.)
+   qv3 = 0
 
-	qv1 = qv1 - xp
-	qv2 = qv2 - yp
-	qv3 = qv3 - zp
+   qv1 = qv1 - xp
+   qv2 = qv2 - yp
+   qv3 = qv3 - zp
 
-	!s,e,z
+   !s, e, z
    u1 = (-sin_lat * cos_lon * qv1) + (-sin_lat * sin_lon * qv2) + (cos_lat * qv3)
    u2 = (-sin_lon *           qv1) + ( cos_lon           * qv2)
    u3 = ( cos_lat * cos_lon * qv1) + (-cos_lat * sin_lon * qv2) + (sin_lat * qv3)
 
-	imager_angles%satzen(:,:,1) = acos(u3 / sqrt(u1*u1 + u2*u2 + u3*u3)) * 180. / pi
-	imager_angles%satazi(:,:,1) = atan2(-u2, u1) * 180. / pi
+   imager_angles%satzen(:, :, 1) = acos(u3 / sqrt(u1*u1 + u2*u2 + u3*u3)) * 180. / pi
+   imager_angles%satazi(:, :, 1) = atan2(-u2, u1) * 180. / pi
 
-	where (imager_angles%satazi .lt. 0)
-		imager_angles%satazi	=	imager_angles%satazi+360.0
-	end where
-
-	where (imager_angles%satazi .gt. 360)
-		imager_angles%satazi	=	sreal_fill_value
-	end where
-	where (imager_angles%satazi .lt. 0)
-		imager_angles%satazi	=	sreal_fill_value
-	end where
-	where (imager_angles%satazi .lt. 0)
-		imager_angles%satzen	=	sreal_fill_value
-	end where
-	where (imager_angles%satzen .gt. 180)
-		imager_angles%satzen	=	sreal_fill_value
-	end where
-
-   where (imager_angles%satazi .lt. 0. .and. &
-          imager_angles%satazi .ne. sreal_fill_value )
-      imager_angles%satazi = 0. - imager_angles%satazi
+   where (imager_angles%satazi .lt. 0)
+      imager_angles%satazi = imager_angles%satazi+360.0
    end where
 
-   ! Deallocate temporary variables
-   deallocate(cos_lat)
-   deallocate(cos_lon)
-   deallocate(sin_lat)
-   deallocate(sin_lon)
+   where (imager_angles%satazi .gt. 360)
+      imager_angles%satazi = sreal_fill_value
+   end where
+   where (imager_angles%satazi .lt. 0)
+      imager_angles%satazi = sreal_fill_value
+   end where
+   where (imager_angles%satazi .lt. 0)
+      imager_angles%satzen = sreal_fill_value
+   end where
+   where (imager_angles%satzen .gt. 180)
+      imager_angles%satzen = sreal_fill_value
+   end where
 
-	deallocate(N)
-
-	deallocate(xp)
-	deallocate(yp)
-	deallocate(zp)
-
-	deallocate(qv1)
-	deallocate(qv2)
-	deallocate(qv3)
-
-	deallocate(u1)
-	deallocate(u2)
-	deallocate(u3)
+   where (imager_angles%satazi .lt. 0. .and. &
+        imager_angles%satazi .ne. sreal_fill_value )
+      imager_angles%satazi = 0. - imager_angles%satazi
+   end where
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving get_goes_viewing_geom()'
 
 end subroutine get_goes_viewing_geom
 
 ! This computes the solar geometry for each pixel
-subroutine get_goes_solgeom(imager_time,imager_angles,imager_geolocation,verbose)
+subroutine get_goes_solgeom(imager_time, imager_angles, imager_geolocation, verbose)
 
    use imager_structures_m
    use preproc_constants_m
    use calender_m
    implicit none
 
-   type(imager_geolocation_t),  intent(in) 	:: imager_geolocation
-   type(imager_angles_t),       intent(inout):: imager_angles
-   type(imager_time_t),         intent(in) 	:: imager_time
-   logical,                     intent(in)   :: verbose
+   type(imager_geolocation_t),  intent(in)    :: imager_geolocation
+   type(imager_angles_t),       intent(inout) :: imager_angles
+   type(imager_time_t),         intent(in)    :: imager_time
+   logical,                     intent(in)    :: verbose
 
-	real(kind=sreal)	::	sza,saa
-	integer				:: x,y,line0,line1,column0,column1,ctime
-	integer				::	mid_c,mid_l
-	integer(kind=sint):: iye,mon,idy,ihr,minu
-	real(kind=dreal)	::	dfr,tmphr,tmphr2
+   real(kind=sreal)   :: sza, saa
+   integer            :: x, y, line0, line1, column0, column1, ctime
+   integer            :: mid_c, mid_l
+   integer(kind=sint) :: iye, mon, idy, ihr, minu
+   real(kind=dreal)   :: dfr, tmphr, tmphr2
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering get_goes_solgeom()'
 
-	line0		=	imager_geolocation%startx
-	line1		=	imager_geolocation%endx
-   column0	=	imager_geolocation%starty
-   column1	=	imager_geolocation%endy
+   line0  = imager_geolocation%startx
+   line1  = imager_geolocation%endx
+   column0 = imager_geolocation%starty
+   column1 = imager_geolocation%endy
 
-   mid_l		=	line0 + (line1 - line0) / 2
-   mid_c		=	(column1 - column0) / 2
+   mid_l  = line0 + (line1 - line0) / 2
+   mid_c  = (column1 - column0) / 2
 
-	! This section computes the solar geometry for each pixel in the image
+   ! This section computes the solar geometry for each pixel in the image
 #ifdef _OPENMP
-	if (verbose) write(*,*)"Computing solar geometry using OpenMP"
-!$omp parallel DO PRIVATE(y,x,iye,mon,dfr,idy,tmphr,ihr,minu,sza,saa)
+   if (verbose) write(*,*)"Computing solar geometry using OpenMP"
+   !$omp parallel DO PRIVATE(y, x, iye, mon, dfr, idy, tmphr, ihr, minu, sza, saa)
 #endif
-		do y=1,imager_geolocation%ny
-			do x=imager_geolocation%startx,imager_geolocation%endx
-				! Here we compute the time for each pixel, GOES scans S-N so each line has a different time
-				call JD2GREG(imager_time%time(mid_l,mid_c),iye,mon,dfr)
-				idy	=	int(dfr)
-				tmphr	=	(dfr-idy)*24.
-				ihr	=	int(tmphr)
-				tmphr	=	(tmphr-ihr)*60.
-				minu	=	int(tmphr)
+   do y = 1, imager_geolocation%ny
+      do x = imager_geolocation%startx, imager_geolocation%endx
+         ! Here we compute the time for each pixel, GOES scans S-N so each line has a different time
+         call JD2GREG(imager_time%time(mid_l, mid_c), iye, mon, dfr)
+         idy = int(dfr)
+         tmphr = (dfr-idy)*24.
+         ihr = int(tmphr)
+         tmphr = (tmphr-ihr)*60.
+         minu = int(tmphr)
 
-				! We can now use this time to retrieve the actual solar geometry
-				call ABI_Solpos(long(iye),long(mon),long(idy),long(ihr),long(minu),\
-							imager_geolocation%latitude(x,y),imager_geolocation%longitude(x,y),sza,saa)
-				imager_angles%solzen(x,y,1)=sza
-				imager_angles%solazi(x,y,1)=saa
-			enddo
-		enddo
+         ! We can now use this time to retrieve the actual solar geometry
+         call ABI_Solpos(int(iye), int(mon), int(idy), int(ihr), int(minu), \
+         imager_geolocation%latitude(x, y), imager_geolocation%longitude(x, y), sza, saa)
+         imager_angles%solzen(x, y, 1) = sza
+         imager_angles%solazi(x, y, 1) = saa
+      enddo
+   enddo
 #ifdef _OPENMP
-!$omp end parallel do
+   !$omp end parallel do
 #endif
 
-   where(imager_angles%solazi(:,:,1) .ne. sreal_fill_value .and. &
-         imager_angles%relazi(:,:,1) .ne. sreal_fill_value)
-      imager_angles%solazi(:,:,1) = imager_angles%solazi(:,:,1) - 180.
-      where(imager_angles%solazi(:,:,1) .lt. 0.)
-         imager_angles%solazi(:,:,1) = imager_angles%solazi(:,:,1) + 360.
+   where(imager_angles%solazi(:, :, 1) .ne. sreal_fill_value .and. &
+        imager_angles%relazi(:, :, 1) .ne. sreal_fill_value)
+      imager_angles%solazi(:, :, 1) = imager_angles%solazi(:, :, 1) - 180.
+      where(imager_angles%solazi(:, :, 1) .lt. 0.)
+         imager_angles%solazi(:, :, 1) = imager_angles%solazi(:, :, 1) + 360.
       end where
    end where
 
@@ -521,70 +483,71 @@ end subroutine get_goes_solgeom
 ! This is not efficient, but works!
 !
 ! To resample we simply average a NxN region of VIS into a 1x1 pixel of TIR.
-subroutine goes_resample_vis_to_tir(inarr,outarr,nx,ny,fill,scl,verbose)
+subroutine goes_resample_vis_to_tir(inarr, outarr, nx, ny, fill, scl, verbose)
 
-	use omp_lib
+   use omp_lib
    use preproc_constants_m
+   implicit none
 
    integer,          intent(in)  :: nx
    integer,          intent(in)  :: ny
    real,             intent(in)  :: fill
-   real(kind=sreal), intent(in)  :: inarr(nx*scl,ny*scl)
-   real(kind=sreal), intent(out) :: outarr(nx,ny)
    integer,          intent(in)  :: scl
+   real(kind=sreal), intent(in)  :: inarr(nx*scl, ny*scl)
+   real(kind=sreal), intent(out) :: outarr(nx, ny)
    logical,          intent(in)  :: verbose
 
-   real		:: tmpval
-	integer	::	n_threads
-	integer	::	x,y
-	integer	::	outx,outy
+   real    :: tmpval
+   integer :: n_threads
+   integer :: x, y
+   integer :: outx, outy
 
-	integer	::	i,j
-	integer	::	inposvar
-	integer	::	outposvar
-	real 		::	val
-	integer 	::	inpix
+   integer :: i, j
+   integer :: inposvar
+   integer :: outposvar
+   real    :: val
+   integer :: inpix
 
-	outarr(:,:)=0
+   outarr(:, :) = 0
 
 #ifdef _OPENMP
-	if (verbose) then
-		n_threads	=	omp_get_max_threads()
-		write(*,*) 'Resampling VIS grid to IR grid using',n_threads,'threads'
-	endif
-!$omp parallel DO PRIVATE(x,y,outx,outy,val,inpix)
+   if (verbose) then
+      n_threads = omp_get_max_threads()
+      write(*,*) 'Resampling VIS grid to IR grid using', n_threads, 'threads'
+   endif
+   !$omp parallel DO PRIVATE(x, y, outx, outy, val, inpix)
 #else
-	if (verbose)write(*,*) 'Resampling VIS grid to IR grid without threading'
+   if (verbose) write(*,*) 'Resampling VIS grid to IR grid without threading'
 #endif
-	do x=1,(nx*scl)-scl
-		outx	=	int(x/scl)+1
-		do y=1,(ny*scl)-scl
-			outy	=	int(y/scl)+1
-			val	=	0
-			inpix=	0
-			do i=1,scl
-				do j=1,scl
-					if (inarr(x+i,y+j) .gt. sreal_fill_value) then
-						val	=	val + inarr(x+i,y+j)
-						inpix=	inpix + 1
-					endif
-				enddo
-			enddo
-			val	=	val/inpix
-			if (outx .le. 0 .or. outx .ge. nx .or. &
-			    outy .le. 0 .or. outy .ge. ny) then
-			    	continue
-			endif
+   do x = 1, (nx*scl)-scl
+      outx = int(x/scl)+1
+      do y = 1, (ny*scl)-scl
+         outy = int(y/scl)+1
+         val = 0
+         inpix= 0
+         do i = 1, scl
+            do j = 1, scl
+               if (inarr(x+i, y+j) .gt. sreal_fill_value) then
+                  val = val + inarr(x+i, y+j)
+                  inpix= inpix + 1
+               endif
+            enddo
+         enddo
+         val = val/inpix
+         if (outx .le. 0 .or. outx .ge. nx .or. &
+              outy .le. 0 .or. outy .ge. ny) then
+            continue
+         endif
 
-			if (outarr(outx,outy).le. 0) then
-				outarr(outx,outy)=val
-			endif
-		enddo
+         if (outarr(outx, outy).le. 0) then
+            outarr(outx, outy) = val
+         endif
+      enddo
 
-	enddo
+   enddo
 
 #ifdef _OPENMP
-!$omp end parallel do
+   !$omp end parallel do
 #endif
 
 end subroutine goes_resample_vis_to_tir
@@ -592,142 +555,143 @@ end subroutine goes_resample_vis_to_tir
 
 
 ! This reads data for one band from its individual netcdf file
-subroutine load_goes_band(infile, imager_geolocation, rad, kappa,bc1,bc2,fk1,fk2,scl,verbose)
+subroutine load_goes_band(infile, imager_geolocation, rad, kappa, bc1, bc2, fk1, fk2, scl, verbose)
 
    use netcdf
    use imager_structures_m
    use preproc_constants_m
+   implicit none
 
-   character(file_length),	intent(in)			:: infile
-   type(imager_geolocation_t),  intent(in) 	:: imager_geolocation
-   real,							intent(out)			::	rad(:,:)
-   real,							intent(out)			::	kappa
-   real,							intent(out)			::	bc1
-   real,							intent(out)			::	bc2
-   real,							intent(out)			::	fk1
-   real,							intent(out)			::	fk2
-   integer,						intent(in)			::	scl
-   logical,						intent(in)  		:: verbose
+   character(file_length),     intent(in) :: infile
+   type(imager_geolocation_t), intent(in) :: imager_geolocation
+   real,       intent(out) :: rad(:, :)
+   real,       intent(out) :: kappa
+   real,       intent(out) :: bc1
+   real,       intent(out) :: bc2
+   real,       intent(out) :: fk1
+   real,       intent(out) :: fk2
+   integer,    intent(in)  :: scl
+   logical,    intent(in)  :: verbose
 
-   integer		::	ierr,fid,did
-   integer		::	x0,x1,y0,y1,nx,ny
-!   integer		::	n_cols,n_lines
+   integer  :: ierr, fid, did
+   integer  :: x0, x1, y0, y1, nx, ny
+!  integer  :: n_cols, n_lines
 
-   real			::	sclval,offval
+   real     :: sclval, offval
 
-   rad(:,:)	=	sreal_fill_value
-   kappa		=	sreal_fill_value
-   bc1		=	sreal_fill_value
-   bc2		=	sreal_fill_value
-   fk1		=	sreal_fill_value
-   fk2		=	sreal_fill_value
+   rad(:, :) = sreal_fill_value
+   kappa  = sreal_fill_value
+   bc1  = sreal_fill_value
+   bc2  = sreal_fill_value
+   fk1  = sreal_fill_value
+   fk2  = sreal_fill_value
 
-   x0			=	(imager_geolocation%startx)*scl-scl+1
-   x1			=	(imager_geolocation%endx)*scl
-   y0			=	(imager_geolocation%starty)*scl-scl+1
-   y1			=	(imager_geolocation%endy)*scl
+   x0   = (imager_geolocation%startx)*scl-scl+1
+   x1   = (imager_geolocation%endx)*scl
+   y0   = (imager_geolocation%starty)*scl-scl+1
+   y1   = (imager_geolocation%endy)*scl
 
-   nx			=	x1-x0+1
-   ny			=	y1-y0+1
+   nx   = x1-x0+1
+   ny   = y1-y0+1
 
-	! Open the netCDf4 file for access
-   ierr=nf90_open(path=trim(adjustl(infile)),mode=NF90_NOWRITE,ncid=fid)
+   ! Open the netCDf4 file for access
+   ierr = nf90_open(path = trim(adjustl(infile)), mode = NF90_NOWRITE, ncid = fid)
    if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: load_goes_band(): Error opening file ',trim(infile)
+      print*, 'ERROR: load_goes_band(): Error opening file ', trim(infile)
       stop error_stop_code
    end if
 
    ! Check that the dataset exists
-   ierr=nf90_inq_varid(fid, 'Rad', did)
+   ierr = nf90_inq_varid(fid, 'Rad', did)
    if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: load_goes_band(): Error opening dataset Rad in ',trim(infile)
+      print*, 'ERROR: load_goes_band(): Error opening dataset Rad in ', trim(infile)
       stop error_stop_code
    end if
-   ierr=nf90_get_var(fid, did, rad,start=(/ x0,y0 /), count=(/ nx,ny /))
+   ierr = nf90_get_var(fid, did, rad, start = (/ x0, y0 /), count = (/ nx, ny /))
    if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: load_goes_band(): Error reading dataset Rad in ',trim(infile)
-      print*,trim(nf90_strerror(ierr))
+      print*, 'ERROR: load_goes_band(): Error reading dataset Rad in ', trim(infile)
+      print*, trim(nf90_strerror(ierr))
       stop error_stop_code
    end if
-   ierr=nf90_get_att(fid, did, 'scale_factor', sclval)
+   ierr = nf90_get_att(fid, did, 'scale_factor', sclval)
    if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: read_slstr_visdata(): Error getting scale_factor from file ',trim(infile)
+      print*, 'ERROR: read_slstr_visdata(): Error getting scale_factor from file ', trim(infile)
       stop error_stop_code
    end if
-   ierr=nf90_get_att(fid, did,'add_offset', offval)
+   ierr = nf90_get_att(fid, did, 'add_offset', offval)
    if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: read_slstr_visdata(): Error getting add_offset from file ',trim(infile)
-      stop error_stop_code
-   end if
-
-   ierr=nf90_inq_varid(fid, 'kappa0', did)
-   if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: load_goes_band(): Error opening dataset kappa0 in ',trim(infile)
-      stop error_stop_code
-   end if
-   ierr=nf90_get_var(fid, did, kappa)
-   if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: load_goes_band(): Error reading dataset kappa0 in ',trim(infile)
-      print*,trim(nf90_strerror(ierr))
+      print*, 'ERROR: read_slstr_visdata(): Error getting add_offset from file ', trim(infile)
       stop error_stop_code
    end if
 
-   ierr=nf90_inq_varid(fid, 'planck_bc1', did)
+   ierr = nf90_inq_varid(fid, 'kappa0', did)
    if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: load_goes_band(): Error opening dataset planck_bc1 in ',trim(infile)
+      print*, 'ERROR: load_goes_band(): Error opening dataset kappa0 in ', trim(infile)
       stop error_stop_code
    end if
-   ierr=nf90_get_var(fid, did, bc1)
+   ierr = nf90_get_var(fid, did, kappa)
    if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: load_goes_band(): Error reading dataset planck_bc1 in ',trim(infile)
-      print*,trim(nf90_strerror(ierr))
-      stop error_stop_code
-   end if
-
-   ierr=nf90_inq_varid(fid, 'planck_bc2', did)
-   if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: load_goes_band(): Error opening dataset planck_bc2 in ',trim(infile)
-      stop error_stop_code
-   end if
-   ierr=nf90_get_var(fid, did, bc2)
-   if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: load_goes_band(): Error reading dataset planck_bc2 in ',trim(infile)
-      print*,trim(nf90_strerror(ierr))
+      print*, 'ERROR: load_goes_band(): Error reading dataset kappa0 in ', trim(infile)
+      print*, trim(nf90_strerror(ierr))
       stop error_stop_code
    end if
 
-   ierr=nf90_inq_varid(fid, 'planck_fk1', did)
+   ierr = nf90_inq_varid(fid, 'planck_bc1', did)
    if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: load_goes_band(): Error opening dataset planck_fk1 in ',trim(infile)
+      print*, 'ERROR: load_goes_band(): Error opening dataset planck_bc1 in ', trim(infile)
       stop error_stop_code
    end if
-   ierr=nf90_get_var(fid, did, fk1)
+   ierr = nf90_get_var(fid, did, bc1)
    if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: load_goes_band(): Error reading dataset planck_fk1 in ',trim(infile)
-      print*,trim(nf90_strerror(ierr))
-      stop error_stop_code
-   end if
-
-   ierr=nf90_inq_varid(fid, 'planck_fk2', did)
-   if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: load_goes_band(): Error opening dataset planck_fk2 in ',trim(infile)
-      stop error_stop_code
-   end if
-   ierr=nf90_get_var(fid, did, fk2)
-   if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: load_goes_band(): Error reading dataset planck_fk2 in ',trim(infile)
-      print*,trim(nf90_strerror(ierr))
+      print*, 'ERROR: load_goes_band(): Error reading dataset planck_bc1 in ', trim(infile)
+      print*, trim(nf90_strerror(ierr))
       stop error_stop_code
    end if
 
-   ierr=nf90_close(fid)
+   ierr = nf90_inq_varid(fid, 'planck_bc2', did)
    if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: load_goes_band(): Error closing file ', &
+      print*, 'ERROR: load_goes_band(): Error opening dataset planck_bc2 in ', trim(infile)
+      stop error_stop_code
+   end if
+   ierr = nf90_get_var(fid, did, bc2)
+   if (ierr.ne.NF90_NOERR) then
+      print*, 'ERROR: load_goes_band(): Error reading dataset planck_bc2 in ', trim(infile)
+      print*, trim(nf90_strerror(ierr))
+      stop error_stop_code
+   end if
+
+   ierr = nf90_inq_varid(fid, 'planck_fk1', did)
+   if (ierr.ne.NF90_NOERR) then
+      print*, 'ERROR: load_goes_band(): Error opening dataset planck_fk1 in ', trim(infile)
+      stop error_stop_code
+   end if
+   ierr = nf90_get_var(fid, did, fk1)
+   if (ierr.ne.NF90_NOERR) then
+      print*, 'ERROR: load_goes_band(): Error reading dataset planck_fk1 in ', trim(infile)
+      print*, trim(nf90_strerror(ierr))
+      stop error_stop_code
+   end if
+
+   ierr = nf90_inq_varid(fid, 'planck_fk2', did)
+   if (ierr.ne.NF90_NOERR) then
+      print*, 'ERROR: load_goes_band(): Error opening dataset planck_fk2 in ', trim(infile)
+      stop error_stop_code
+   end if
+   ierr = nf90_get_var(fid, did, fk2)
+   if (ierr.ne.NF90_NOERR) then
+      print*, 'ERROR: load_goes_band(): Error reading dataset planck_fk2 in ', trim(infile)
+      print*, trim(nf90_strerror(ierr))
+      stop error_stop_code
+   end if
+
+   ierr = nf90_close(fid)
+   if (ierr.ne.NF90_NOERR) then
+      print*, 'ERROR: load_goes_band(): Error closing file ', &
            trim(infile)
       stop error_stop_code
    end if
 
-   rad	=	rad*sclval + offval
+   rad = rad*sclval + offval
 
 end subroutine load_goes_band
 
@@ -741,69 +705,69 @@ subroutine get_goes_time(infile, imager_time, ny, verbose)
    use system_utils_m
    implicit none
 
-   character(file_length), 	  intent(in)    :: infile
-   type(imager_time_t),         intent(inout) :: imager_time
-   integer,							  intent(in)    :: ny
-   logical,                     intent(in)    :: verbose
+   character(file_length), intent(in)    :: infile
+   type(imager_time_t),    intent(inout) :: imager_time
+   integer,                intent(in)    :: ny
+   logical,                intent(in)    :: verbose
 
-   integer            :: fid,tbid,ierr,j
-   character(21)      :: start_coverage
-   character(21)      :: end_coverage
+   integer                    :: fid, tbid, ierr, j
+   character(21)              :: start_coverage
+   character(21)              :: end_coverage
 
-   integer(kind=sint)         :: year1,month1,day1
-   integer(kind=sint)         :: year2,month2,day2
-   integer(kind=sint)         :: hour1,minute1,second1
-   integer(kind=sint)         :: hour2,minute2,second2
-   reaL(kind=dreal)           :: dfrac1,dfrac2,jd1,jd2,slo
+   integer(kind=sint)         :: year1, month1, day1
+   integer(kind=sint)         :: year2, month2, day2
+   integer(kind=sint)         :: hour1, minute1, second1
+   integer(kind=sint)         :: hour2, minute2, second2
+   reaL(kind=dreal)           :: dfrac1, dfrac2, jd1, jd2, slo
 
    ! Variables for computing start and end times
-   character(len=date_length) :: cyear1,cmonth1,cday1
-   character(len=date_length) :: cyear2,cmonth2,cday2
-   character(len=date_length) :: chour1,cminute1,csec1
-   character(len=date_length) :: chour2,cminute2,csec2
+   character(len=date_length) :: cyear1, cmonth1, cday1
+   character(len=date_length) :: cyear2, cmonth2, cday2
+   character(len=date_length) :: chour1, cminute1, csec1
+   character(len=date_length) :: chour2, cminute2, csec2
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering get_goes_time()'
 
    ! Read the time boundaries from the input file
-	ierr=nf90_open(path=trim(adjustl(infile)),mode=NF90_NOWRITE,ncid=fid)
+   ierr = nf90_open(path = trim(adjustl(infile)), mode = NF90_NOWRITE, ncid = fid)
    if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: get_goes_time(): Error opening file ',trim(infile)
+      print*, 'ERROR: get_goes_time(): Error opening file ', trim(infile)
       stop error_stop_code
    end if
 
-	ierr = nf90_get_att(fid, NF90_GLOBAL, "time_coverage_start", start_coverage)
+   ierr = nf90_get_att(fid, NF90_GLOBAL, "time_coverage_start", start_coverage)
    if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: get_goes_geoloc(): Error reading time_coverage_start attribute',trim(infile)
+      print*, 'ERROR: get_goes_geoloc(): Error reading time_coverage_start attribute', trim(infile)
       stop error_stop_code
    end if
-	ierr = nf90_get_att(fid, NF90_GLOBAL, "time_coverage_end", end_coverage)
+   ierr = nf90_get_att(fid, NF90_GLOBAL, "time_coverage_end", end_coverage)
    if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: get_goes_geoloc(): Error reading time_coverage_end attribute',trim(infile)
+      print*, 'ERROR: get_goes_geoloc(): Error reading time_coverage_end attribute', trim(infile)
       stop error_stop_code
    end if
 
-	! Close the netCDF file, we have all we need
-   ierr=nf90_close(fid)
+   ! Close the netCDF file, we have all we need
+   ierr = nf90_close(fid)
    if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: get_goes_geoloc(): Error closing file ',trim(infile)
+      print*, 'ERROR: get_goes_geoloc(): Error closing file ', trim(infile)
       stop error_stop_code
    end if
 
    ! Starting time
-   cyear1   =trim(adjustl(start_coverage(1:4)))
-   cmonth1  =trim(adjustl(start_coverage(6:7)))
-   cday1    =trim(adjustl(start_coverage(9:10)))
-   chour1   =trim(adjustl(start_coverage(12:13)))
-   cminute1 =trim(adjustl(start_coverage(15:16)))
-   csec1    =trim(adjustl(start_coverage(18:19)))
+   cyear1   = trim(adjustl(start_coverage(1:4)))
+   cmonth1  = trim(adjustl(start_coverage(6:7)))
+   cday1    = trim(adjustl(start_coverage(9:10)))
+   chour1   = trim(adjustl(start_coverage(12:13)))
+   cminute1 = trim(adjustl(start_coverage(15:16)))
+   csec1    = trim(adjustl(start_coverage(18:19)))
 
    ! Ending time
-   cyear2   =trim(adjustl(end_coverage(1:4)))
-   cmonth2  =trim(adjustl(end_coverage(6:7)))
-   cday2    =trim(adjustl(end_coverage(9:10)))
-   chour2   =trim(adjustl(end_coverage(12:13)))
-   cminute2 =trim(adjustl(end_coverage(15:16)))
-   csec2    =trim(adjustl(end_coverage(18:19)))
+   cyear2   = trim(adjustl(end_coverage(1:4)))
+   cmonth2  = trim(adjustl(end_coverage(6:7)))
+   cday2    = trim(adjustl(end_coverage(9:10)))
+   chour2   = trim(adjustl(end_coverage(12:13)))
+   cminute2 = trim(adjustl(end_coverage(15:16)))
+   csec2    = trim(adjustl(end_coverage(18:19)))
 
    ! Get year, doy, hour and minute as integers
    read(cyear1(1:len_trim(cyear1)), '(I4)') year1
@@ -820,14 +784,14 @@ subroutine get_goes_time(infile, imager_time, ny, verbose)
    read(cminute2(1:len_trim(cminute2)), '(I2)') minute2
    read(csec2(1:len_trim(csec2)), '(I2)') second2
 
-   call GREG2JD(year1,month1,day1,jd1)
-   call GREG2JD(year2,month2,day2,jd2)
+   call GREG2JD(year1, month1, day1, jd1)
+   call GREG2JD(year2, month2, day2, jd2)
 
    ! Add on a fraction to account for the start / end times
    dfrac1 = (float(hour1)/24.0) + (float(minute1)/(24.0*60.0)) + &
-            (float(second1)/(24.0*60.0*60.0))
+        (float(second1)/(24.0*60.0*60.0))
    dfrac2 = (float(hour2)/24.0) + (float(minute2)/(24.0*60.0)) + &
-            (float(second2)/(24.0*60.0*60.0))
+        (float(second2)/(24.0*60.0*60.0))
    jd1    = jd1 + dfrac1
    jd2    = jd2 + dfrac2
 
@@ -835,11 +799,10 @@ subroutine get_goes_time(infile, imager_time, ny, verbose)
    slo = (jd2-jd1)/ny
 
    ! Put correct julian date into each location in the time array
-   do j=1,ny
-      imager_time%time(:,j) = jd1+(slo*float(j))
+   do j = 1, ny
+      imager_time%time(:, j) = jd1+(slo*float(j))
    end do
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving get_goes_time()'
 
 end subroutine get_goes_time
-
