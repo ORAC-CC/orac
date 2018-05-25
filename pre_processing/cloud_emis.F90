@@ -10,6 +10,7 @@
 ! History:
 ! 2017/03/29, SP: First version (ExtWork)
 ! 2018/04/29, SP: Add cloud emissivity support for ECMWF profiles (ExtWork)
+! 2018/05/24, SP: Updates to better calculate tropopause pressure (from IntCTP.F90)
 !
 ! Bugs:
 ! None known.
@@ -30,8 +31,8 @@ subroutine get_trop_tp(preproc_prtm,preproc_dims)
    type(preproc_prtm_t),           intent(inout)    :: preproc_prtm
    type(preproc_dims_t),           intent(in)    :: preproc_dims
 
-   real,    parameter :: min_tropopause = 30.0  ! Heighest p allowed for trop
-   real,    parameter :: max_tropopause = 500.0 ! Lowest p allowed for trop
+   real,    parameter :: min_tropopause = 40.0  ! Heighest p allowed for trop
+   real,    parameter :: max_tropopause = 450.0 ! Lowest p allowed for trop
    integer, parameter :: depth          = 2     ! # layers added to inversions
 
    integer                            :: nx,ny,nz ! Number of vertical levels, pixels
@@ -41,55 +42,59 @@ subroutine get_trop_tp(preproc_prtm,preproc_dims)
    integer, dimension(1)              :: k_tmin   ! Index of min temperature
    integer                            :: k_int    ! Index of interpolated temp
    integer                            :: step     ! Direction of search
-   real, dimension(preproc_dims%kdim-1) :: t        ! Temperature profile
-   real, dimension(preproc_dims%kdim-1) :: p        ! Pressure profile
-   real, dimension(preproc_dims%kdim-1) :: h        ! Height profile
+   real, dimension(preproc_dims%kdim) :: t        ! Temperature profile
+   real, dimension(preproc_dims%kdim) :: p        ! Pressure profile
+   real, dimension(preproc_dims%kdim) :: h        ! Height profile
    real                               :: gradient ! For extrapolation
 
 
    nx = preproc_dims%xdim
    ny = preproc_dims%ydim
-   nz = preproc_dims%kdim-1
+   nz = preproc_dims%kdim
 
-   k = 1
+
    do x=preproc_dims%min_lon,preproc_dims%max_lon
    	do y=preproc_dims%min_lat,preproc_dims%max_lat
-  			t  = preproc_prtm%temperature(x,y,1:nz)
-   		p  = preproc_prtm%pressure(x,y,1:nz)
-   		h  = (0.001 / g_wmo) * preproc_prtm%phi_lev(x,y,1:nz)
-			do while (t(k+1) > t(k) .and. k < nz-1)
-				k = k+1
-			end do
-			do while (p(k) > max_tropopause .and. k < nz-2)
-				if (t(k+1) > t(k)) then
-				   l = k+2
-				   do while (t(l) < t(l+1) .and. l < nz-2)
-				      l = l+1
-				   end do
-				   l = l - depth ! Add levels
-				   gradient = (t(k-2) - t(k-1)) / (p(k-2) - p(k-1))
-				   t(l:k) = t(k-1) + gradient * (p(l:k) - p(k-1))
-				   k = l+1
-				else
-				   k = k+1
-				end if
-			end do
 
-			do while (p(k) > min_tropopause .and. k < nz-1)
-				if ((t(k) - t(k+1)) / (h(k+1) - h(k)) < 2.) then
-				   l = k+1
-				   do while (h(l) - h(k) < 2. .and. l < nz-1)
-				      l = l+1
-				   end do
-				   if ((t(k) - t(l)) / (h(l) - h(k)) < 2.) exit
+   		k = nz
+  			t  = preproc_prtm%temperature(x,y,:)
+   		p  = preproc_prtm%pressure(x,y,:)/100.
+   		h  = (0.001 / g_wmo) * preproc_prtm%phi_lev(x,y,1:preproc_dims%kdim)
+
+			do while (p(k) > max_tropopause .and. k > 1)
+				k = k-1
+			end do
+			step=nz
+			if (x .eq. 262 .and. y .eq. 161) then
+				do while (step>1)
+					step=step-1
+				enddo
+			endif
+
+			! Locate the tropopause
+			do while (p(k) > min_tropopause .and. k > 1)
+				! The tropopause is defined as the lowest level with a lapse rate
+				! less than 2 K km^-1
+				if ((t(k) - t(k-1)) / (h(k-1) - h(k)) < 2.) then
+					! Find the first level at least 2 km above the identified level
+					l = k-1
+					do while (h(l) - h(k) < 2. .and. l > 1)
+						l = l-1
+					end do
+
+					! We also require that the lapse rate remain this low in the 2km above
+					! the tropopause
+					if ((t(k) - t(l)) / (h(l) - h(k)) < 2.) exit
 				end if
-				k = k+1
-   		end do
-   		if (k .lt. nz) then
-	   		preproc_prtm%trop_p(x,y) = p(k)
-	   	else
-	   		preproc_prtm%trop_p(x,y) = sreal_fill_value
-	   	endif
+
+				! Continue to the next level up
+				k = k-1
+			end do
+			if (k .lt. nz) then
+				preproc_prtm%trop_p(x,y) = p(k)
+			else
+				preproc_prtm%trop_p(x,y) = sreal_fill_value
+			endif
 		end do
 	end do
 	return

@@ -40,6 +40,8 @@
 ! 2015/10/06, GM: Make use of subroutine match_file() in the common/system_utils
 !    module.  No more need to hard-wire processing dates.
 ! 2016/09/15, SP: Allow use of collection 6 MODIS data. Default is collection 5.
+! 2018/05/24, SP: MODIS Collection 6 data is daily, so check for a daily file
+!                 first. Then fall back to 8-day C6, then 8-day C5.
 !
 ! Bugs:
 ! None known.
@@ -89,34 +91,41 @@ subroutine select_modis_albedo_file(cyear, cdoy, modis_surf_path, &
       cyear2 = cyear
    end if
 
-   ! Find the closest data
-   allocate(date_diffs(nv))
-   read(cdoy, *) doy
-   date_diffs = abs(dates-doy)
+	if (include_full_brdf) then
+	   prefix = 'MCD43C1'
+	else
+	   prefix = 'MCD43C3'
+	end if
 
-   pos = minloc(date_diffs)
-
-   write(mcd_date_s, '(I0.3)') dates(pos(1))
-
-   if (include_full_brdf) then
-      prefix = 'MCD43C1'
-   else
-      prefix = 'MCD43C3'
-   end if
-
-   ! Search for the file with an unknown processing date
-   regex = prefix//'\.A'//trim(adjustl(cyear2))//trim(adjustl(mcd_date_s))// &
-           '\.005\..............'//'\.hdf$'
+   regex = prefix//'\.A'//trim(adjustl(cyear2))//trim(adjustl(cdoy))// &
+           '\.006\..............'//'\.hdf$'
 
    if (match_file(trim(modis_surf_path), trim(regex), file_name) .ne. 0) then
-      regex = prefix//'\.A'//trim(adjustl(cyear2))//trim(adjustl(mcd_date_s))// &
-           '\.006\..............'//'\.hdf$'
-      if (match_file(trim(modis_surf_path), trim(regex), file_name) .ne. 0) then
-         write(*,*) 'ERROR: select_modis_albedo_file(): Unable to locate ' // &
-            'MODIS albedo file: ', trim(modis_surf_path)//'/'//trim(regex)
-         stop error_stop_code
-      end if
-   end if
+
+		! Find the closest data
+		allocate(date_diffs(nv))
+		read(cdoy, *) doy
+		date_diffs = abs(dates-doy)
+
+		pos = minloc(date_diffs)
+
+		write(mcd_date_s, '(I0.3)') dates(pos(1))
+
+		! Search for the file with an unknown processing date
+		regex = prefix//'\.A'//trim(adjustl(cyear2))//trim(adjustl(mcd_date_s))// &
+		        '\.006\..............'//'\.hdf$'
+
+		if (match_file(trim(modis_surf_path), trim(regex), file_name) .ne. 0) then
+		   regex = prefix//'\.A'//trim(adjustl(cyear2))//trim(adjustl(mcd_date_s))// &
+		        '\.005\..............'//'\.hdf$'
+		   if (match_file(trim(modis_surf_path), trim(regex), file_name) .ne. 0) then
+		      write(*,*) 'ERROR: select_modis_albedo_file(): Unable to locate ' // &
+		         'MODIS albedo file: ', trim(modis_surf_path)//'/'//trim(regex)
+		      stop error_stop_code
+		   end if
+		end if
+      deallocate(date_diffs)
+	end if
 
    modis_surf_path_file = trim(modis_surf_path)//'/'//trim(file_name)
 
@@ -135,6 +144,4 @@ subroutine select_modis_albedo_file(cyear, cdoy, modis_surf_path, &
    end if
 
    deallocate(dates)
-   deallocate(date_diffs)
-
 end subroutine select_modis_albedo_file
