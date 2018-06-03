@@ -351,7 +351,7 @@ subroutine read_viirs(infile,geofile,imager_geolocation, imager_measurements, &
       call h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO_All/" // &
                      "SatelliteAzimuthAngle", dset_id, error)
       call h5dread_f(dset_id, H5T_NATIVE_REAL, data0, pxcount, error)
-      imager_angles%relazi(:,:,1) = data0
+      imager_angles%satazi(:,:,1) = data0
       call h5dclose_f(dset_id, error)
       call h5fclose_f(file_id, error)
    end if
@@ -446,12 +446,14 @@ subroutine read_viirs(infile,geofile,imager_geolocation, imager_measurements, &
    ! Rescale zens + azis into correct format
    where(imager_angles%solazi(startx:,:,1) .ne. sreal_fill_value .and. &
          imager_angles%satazi(startx:,:,1) .ne. sreal_fill_value)
-      imager_angles%relazi(:,:,1) = abs(imager_angles%satazi(startx:,:,1) - &
-                                        imager_angles%solazi(startx:,:,1))
+      imager_angles%relazi(:,:,1) = abs(imager_angles%solazi(startx:,:,1) - &
+                                        imager_angles%satazi(startx:,:,1))
 
-      where (imager_angles%relazi(:,:,1) .gt. 180.)
-         imager_angles%relazi(:,:,1) = 360. - imager_angles%relazi(:,:,1)
-      end where
+       where ( imager_angles%relazi(:,:,1) .gt. 180. )
+          imager_angles%relazi(:,:,1) = imager_angles%relazi(:,:,1) - 180.
+       else where
+          imager_angles%relazi(:,:,1) = 180. - imager_angles%relazi(:,:,1)
+       end where
    end where
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_viirs()'
