@@ -10,7 +10,11 @@
 ! 2015/08/17, GM: Adapt to the newest version of seviri_util.
 ! 2015/08/19, GM: Modifications to support the SEVIRI HRIT format.
 ! 2016/12/08, GT: Fixed solar azimuth angle.
-! 2017/07/18, SP: Added a poor-mans method of subsetting HRIT data
+! 2017/07/18, SP: Added a (basic) method of subsetting HRIT data
+! 2018/06/03, SP: GSICS calibration is now supported for SEVIRI. The default
+!                 setting is ON, meaning that GSICS coefficients will be used
+!                 instead of IMPF (as previous). The new driver file option
+!                 USE_GSICS enables this to be disabled.
 !
 ! Bugs:
 ! None known.
@@ -142,7 +146,7 @@ end subroutine read_seviri_dimensions
 ! verbose             logical in   If true then print verbose information.
 !-------------------------------------------------------------------------------
 subroutine read_seviri_l1_5(l1_5_file, imager_geolocation, imager_measurements, &
-   imager_angles, imager_time, channel_info, verbose)
+   imager_angles, imager_time, channel_info, do_gsics, verbose)
 
    use iso_c_binding
    use channel_structures_m
@@ -159,6 +163,7 @@ subroutine read_seviri_l1_5(l1_5_file, imager_geolocation, imager_measurements, 
    type(imager_angles_t),       intent(inout) :: imager_angles
    type(imager_time_t),         intent(inout) :: imager_time
    type(channel_info_t),        intent(in)    :: channel_info
+   logical,                     intent(in)    :: do_gsics
    logical,                     intent(in)    :: verbose
 
    integer                     :: i
@@ -223,12 +228,20 @@ subroutine read_seviri_l1_5(l1_5_file, imager_geolocation, imager_measurements, 
       preproc%vaa  => imager_angles%satazi(startx:,:,1)
       preproc%data => imager_measurements%data(startx:,:,:)
 
+      if (verbose) then
+         if (do_gsics) then
+            write(*,*) 'Applying GSICS calibration coefficients'
+         else
+            write(*,*) 'Applying IMPF calibration coefficients'
+         endif
+      endif
+
       ! The main reader call which populates preproc (type seviri_preproc_t_f90)
       if (verbose) write(*,*) 'Calling seviri_read_and_preproc_f90() from ' // &
                               'the seviri_util module, LC'
       if (seviri_read_and_preproc_f90(trim(l1_5_file)//C_NULL_CHAR, preproc, &
           n_bands, band_ids, band_units, SEVIRI_BOUNDS_LINE_COLUMN, line0, line1, &
-          column0, column1, 0.d0, 0.d0, 0.d0, 0.d0, .true.) .ne. 0) then
+          column0, column1, 0.d0, 0.d0, 0.d0, 0.d0, do_gsics, .true.) .ne. 0) then
          write(*,*) 'ERROR: in read_seviri_l1_5(), calling ' // &
                     'seviri_read_and_preproc_f90(), filename = ', trim(l1_5_file)
          stop error_stop_code
@@ -239,7 +252,7 @@ subroutine read_seviri_l1_5(l1_5_file, imager_geolocation, imager_measurements, 
                               'the seviri_util module, FD'
       if (seviri_read_and_preproc_f90(trim(l1_5_file)//C_NULL_CHAR, preproc, &
           n_bands, band_ids, band_units, SEVIRI_BOUNDS_FULL_DISK, 1, 3712, &
-          1, 3712, 0.d0, 0.d0, 0.d0, 0.d0, .false.) .ne. 0) then
+          1, 3712, 0.d0, 0.d0, 0.d0, 0.d0, do_gsics, .false.) .ne. 0) then
          write(*,*) 'ERROR: in read_seviri_l1_5(), calling ' // &
                     'seviri_read_and_preproc_f90(), filename = ', trim(l1_5_file)
          stop error_stop_code
@@ -257,6 +270,10 @@ subroutine read_seviri_l1_5(l1_5_file, imager_geolocation, imager_measurements, 
 
    deallocate(band_ids)
    deallocate(band_units)
+
+! 	imager_measurements%data(startx:,:,1) = imager_measurements%data(startx:,:,1) *cos(imager_angles%solzen(startx:,:,1)*pi/180)
+!  	imager_measurements%data(startx:,:,2) = imager_measurements%data(startx:,:,2) *cos(imager_angles%solzen(startx:,:,1)*pi/180)
+!  	imager_measurements%data(startx:,:,3) = imager_measurements%data(startx:,:,3) *cos(imager_angles%solzen(startx:,:,1)*pi/180)
 
    where(imager_angles%solazi(startx:,:,1) .ne. sreal_fill_value .and. &
          imager_angles%satazi(startx:,:,1) .ne. sreal_fill_value)

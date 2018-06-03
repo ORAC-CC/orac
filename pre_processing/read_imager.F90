@@ -25,6 +25,7 @@
 ! channel_info              struct in   Summary of channel information
 ! n_along_track             lint   in   Number of pixels available in the
 !                                       direction of travel
+! do_gsics                  logic  in   T: apply GSICS correction; F: don't
 ! verbose                   logic  in   T: print status information; F: don't
 !
 ! History:
@@ -48,6 +49,10 @@
 !                 external file. Supported by AHI, not yet by SEVIRI (ExtWork)
 ! 2017/08/10, GT: Added a check on the existence of a geo_file before
 !                 printing path
+! 2018/06/03, SP: GSICS calibration is now supported for SEVIRI. The default
+!                 setting is ON, meaning that GSICS coefficients will be used
+!                 instead of IMPF (as previous). The new driver file option
+!                 USE_GSICS enables this to be disabled.
 !
 ! Bugs:
 ! None known.
@@ -62,7 +67,7 @@ contains
 subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
      path_to_aatsr_drift_table, geo_file_path,imager_geolocation,&
      imager_angles,imager_flags, imager_time,imager_measurements,&
-     channel_info,n_along_track, use_l1_land_mask,use_predef_geo,verbose)
+     channel_info,n_along_track, use_l1_land_mask,use_predef_geo,do_gsics,verbose)
 
    use channel_structures_m
    use imager_structures_m
@@ -93,6 +98,7 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
    integer(kind=lint),             intent(in)    :: n_along_track
    logical,                        intent(in)    :: use_l1_land_mask
    logical,                        intent(in)    :: use_predef_geo
+   logical,                        intent(in)    :: do_gsics
    logical,                        intent(in)    :: verbose
 
    character(len=file_length), allocatable       :: abi_filenames(:)
@@ -184,7 +190,7 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
       ! imager_geolocation
       call read_seviri_l1_5(path_to_l1b_file, &
            imager_geolocation,imager_measurements,imager_angles, &
-           imager_time,channel_info,verbose)
+           imager_time,channel_info,do_gsics,verbose)
 
       ! In absence of proper mask set everything to "1" for cloud mask
       imager_flags%cflag = 1

@@ -27,6 +27,10 @@
 !                 external file. Supported by AHI, not yet by SEVIRI (ExtWork)
 ! 2017/08/09, SP: Add option to disable the cloud masking (ExtWork)
 ! 2017/09/14, GT: Added product_name optional argument
+! 2018/06/03, SP: GSICS calibration is now supported for SEVIRI. The default
+!                 setting is ON, meaning that GSICS coefficients will be used
+!                 instead of IMPF (as previous). The new driver file option
+!                 USE_GSICS enables this to be disabled.
 !
 ! Bugs:
 ! None known.
@@ -65,7 +69,7 @@ subroutine parse_optional(label, value, n_channels, channel_ids, &
                           use_occci, occci_path, use_predef_lsm, ext_lsm_path, &
                           use_predef_geo, ext_geo_path, disable_snow_and_ice_corr,&
                           do_cloud_emis, do_ironly, do_cloud_type, product_name,&
-                          camel_emis)
+                          camel_emis, do_gsics)
 
    use parsing_m
    use preproc_constants_m
@@ -99,6 +103,7 @@ subroutine parse_optional(label, value, n_channels, channel_ids, &
    logical,          intent(inout) :: do_cloud_type
    character(len=*), intent(inout) :: product_name
    logical,          intent(inout) :: camel_emis
+   logical,          intent(inout) :: do_gsics
 
    select case (label)
    case('N_CHANNELS')
@@ -180,6 +185,9 @@ subroutine parse_optional(label, value, n_channels, channel_ids, &
            call handle_parse_error(label)
    case('USE_CAMEL_EMIS')
       if (parse_string(value, camel_emis) /=0) &
+           call handle_parse_error(label)
+   case('USE_GSICS')
+      if (parse_string(value, do_gsics) /=0) &
            call handle_parse_error(label)
    case default
       write(*,*) 'ERROR: Unknown option: ', trim(label)

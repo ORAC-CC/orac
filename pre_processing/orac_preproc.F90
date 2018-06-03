@@ -304,6 +304,10 @@
 !     populates the l1b_version and l1b_orbit_number attributes.
 ! 2018/04/26, SP: Adjustment to the aerosol hack to prevent segfaults.
 ! 2018/04/29, SP: Add cloud emissivity support for ECMWF profiles (ExtWork)
+! 2018/06/03, SP: GSICS calibration is now supported for SEVIRI. The default
+!                 setting is ON, meaning that GSICS coefficients will be used
+!                 instead of IMPF (as previous). The new driver file option
+!                 USE_GSICS enables this to be disabled.
 !
 ! Bugs:
 ! See http://proj.badc.rl.ac.uk/orac/report/1
@@ -406,6 +410,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
    logical                          :: do_cloud_type
    logical                          :: do_spectral_response_correction
    logical                          :: use_camel_emis
+   logical                          :: do_gsics
 
    logical                          :: check
    integer                          :: nargs
@@ -529,6 +534,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
    product_name                    = 'L2-CLOUD-CLD'
    do_spectral_response_correction = .false.
    use_camel_emis                  = .false.
+   do_gsics                        = .true.
 
    ! if more than one argument passed, all inputs on command line
    if (nargs .gt. 1) then
@@ -595,7 +601,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
             use_l1_land_mask, use_occci, occci_path, use_predef_lsm, &
             ext_lsm_path, use_predef_geo, predef_geo_file, &
             disable_snow_ice_corr, do_cloud_emis, do_ironly, do_cloud_type, &
-            product_name, use_camel_emis)
+            product_name, use_camel_emis, do_gsics)
       end do
    else
 
@@ -667,7 +673,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
            ecmwf_path3(2), ecmwf_path_hr(1), ecmwf_path_hr(2), ecmwf_nlevels, &
            use_l1_land_mask, use_occci, occci_path, use_predef_lsm, &
            ext_lsm_path,use_predef_geo, predef_geo_file, disable_snow_ice_corr, &
-           do_cloud_emis, do_ironly, do_cloud_type, product_name, use_camel_emis)
+           do_cloud_emis, do_ironly, do_cloud_type, product_name, use_camel_emis, do_gsics)
       end do
 
       close(11)
@@ -980,7 +986,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
            aatsr_calib_path_file,predef_geo_file,imager_geolocation, &
            imager_angles,imager_flags, imager_time,imager_measurements, &
            channel_info,n_along_track, use_l1_land_mask,use_predef_geo, &
-           verbose)
+           do_gsics, verbose)
 
 #ifdef WRAPPER
       ! do not process this orbit if no valid lat/lon data available
