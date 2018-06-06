@@ -1,0 +1,128 @@
+# Definitions of default values/paths for your local system
+
+from os import environ
+
+# ===== PATHS =====
+
+# Location of source code trunk from ORAC repository
+orac_dir  = '/home/username/orac/orac'
+# Location of data directory from ORAC repository
+data_dir    = '/local/storage/orac/data'
+# Path to library file used to compile ORAC
+orac_lib    = environ['ORAC_LIB']
+
+# Directory of look-up tables
+sad_dirs = ['/local/storage/orac_luts', ]
+
+# Use ECMWF data from the BADC/CEMS archive
+ecmwf_flag  = 2
+
+# If any of these directories contain subdirectories named by date, please use
+# the syntax of datatime.strftime() to denote the folder structure.
+auxiliaries = {
+    # Directory containing RTTOV emissivity atlas
+    'atlas_dir'   : '/usr/lib/rtcoef_rttov12/emis_data',
+    # Directory of RTTOV instrument coefficient files
+    'coef_dir'    : '/usr/lib/rtcoef_rttov12',
+    # Directory of MODIS emisivity retrievals
+    'emis_dir'    : '/local/storage/modis_emis',
+    # Directories of MODIS surface BRDF retrievals
+    'mcd43c1_dir' : '/local/storage/modis/mcd43cX/%Y',
+    'mcd43c3_dir' : '/local/storage/modis/mcd43cX/%Y',
+    # To use ECMWF data from the BADC/CEMS archive (ecmwf_flag == 2), specifiy
+    # where each of the three types of file are stored
+    'ggam_dir'    : '/local/storage/ecmwf/era_interim/%Y/%m/%d',
+    'ggas_dir'    : '/local/storage/ecmwf/era_interim/%Y/%m/%d',
+    'spam_dir'    : '/local/storage/ecmwf/era_interim/%Y/%m/%d',
+    # To use a single ECMWF file (ecmwf_flag == 0), specify their location
+    #'ecmwf_dir'   : '/local/home/povey/eodg/povey/data/ecmwf',
+    # Directory of high-resolution ECMWF files
+    'hr_dir'      : '/local/storage/ecmwf/era_hr',
+    # Directory to store the EMOS interpolation file (CF_T0255_R0036000, which
+    # will be generated if not already present)
+    'emos_dir'    : '/usr/lib/emos_files',
+    # Directory of NSIDC ice/snow extent maps
+    'nise_dir'    : '/local/storage/n5eil01u.ecs.nsidc.org/SAN/OTHR',
+    # Directory of Ocean Colour CCI retrievals
+    'occci_dir'   : '/usr/lib/orac/data/occci',
+    # File containing AATSR calibration coefficients
+    'calib_file'  : '/usr/lib/AATSR_VIS_DRIFT_V03-00.DAT',
+    # File containing the USGS land-use map
+    'usgs_file'   : '/usr/lib/Aux_file_CM_SAF_AVHRR_GAC_ori_0.05deg.nc',
+    # Pre-defined geometry for geostationary imager
+    'prelsm_file' : '/usr/lib/orac/data/GEO_FILES/MSG_000E_LSM.nc',
+    'pregeo_file' : '/usr/lib/orac/data/GEO_FILES/MSG_000E_ANGLES.nc',
+}
+
+
+# ===== FILE HEADER INFORMATION =====
+
+global_attributes = {
+    "cfconvention" : "CF-1.4",
+    "comments"     : "n/a",
+    "email"        : 'user.name@orac.ac.uk',
+    "history"      : "n/a",
+    "institute"    : "Uni",
+    "keywords"     : "aerosol; cloud; optimal estimation",
+    "license"      : "https://github.com/ORAC-CC/orac/blob/master/COPYING",
+    "processor"    : "ORAC",
+    "product_name" : "L2-CLOUD-CLD",
+    "project"      : "ESACCI",
+    "references"   : "doi:10.5194/amt-5-1889-2012",
+    "summary"      : "n/a",
+    "url"          : "http://github.com/ORAC-CC/orac",
+}
+
+
+# ===== FOLDER NAME PREFERENCES =====
+
+dir_names = {
+    "pre_dir"  : "pre",
+    "main_dir" : "main",
+    "land_dir" : "land",
+    "sea_dir"  : "sea",
+    "log_dir"  : "log",
+}
+
+extra_lines = {
+    "land_extra" : "",
+    "sea_extra"  : "",
+    "cld_extra"  : "",
+}
+
+
+# ===== REGRESSION TEST SETTINGS =====
+
+# Fields to ignore during regression testing
+atts_to_ignore = ('L2_Processor_Version', 'Production_Time', 'File_Name')
+vars_to_accept = ('costjm', 'costja', 'niter')
+
+# Tollerances in regression testing
+rtol = 1e-7 # Maximum permissable relative difference
+atol = 1e-7 # Maximum permissable absolute difference
+
+# Filters to apply regression test warnings
+# (see https://docs.python.org/2/library/warnings.html#the-warnings-filter)
+warn_filt = {
+    'FieldMissing'    : 'once',
+    'InconsistentDim' : 'error',
+    'RoundingError'   : 'once',
+    'Acceptable'      : 'once',
+}
+
+
+# ===== BATCH PROCESSING SETTINGS =====
+
+# The Oxford Yau cluster uses QSUB
+from pyorac.batch import bsub as batch
+
+# Arguments that should be included in every call
+batch_values = {
+    'email'    : global_attributes["email"],
+    'priority' : 10000,
+    'queue'    : 'priority-eodg',
+}
+
+# Initialisation of script file
+batch_script = """#!/bin/bash --noprofile
+"""
