@@ -1642,7 +1642,7 @@ subroutine netcdf_put_common_attributes(ncid,global_atts,source_atts,title, &
    global_atts2%File_Name    = trim(path(position+1:length))
 
    ! product_name should be the base filename of the product
-   position=index(trim(global_atts2%File_Name),'.',back=.false.)
+   position=index(trim(global_atts2%File_Name),'_',back=.true.)
    global_atts2%Product_Name = trim(global_atts2%File_Name(1:position-1))
 
    global_atts2%Date_Created = trim(cyear)//trim(cmonth)//trim(cday)// &
