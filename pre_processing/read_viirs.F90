@@ -449,11 +449,11 @@ subroutine read_viirs(infile,geofile,imager_geolocation, imager_measurements, &
       imager_angles%relazi(:,:,1) = abs(imager_angles%solazi(startx:,:,1) - &
                                         imager_angles%satazi(startx:,:,1))
 
-       where ( imager_angles%relazi(:,:,1) .gt. 180. )
-          imager_angles%relazi(:,:,1) = imager_angles%relazi(:,:,1) - 180.
-       else where
-          imager_angles%relazi(:,:,1) = 180. - imager_angles%relazi(:,:,1)
-       end where
+      where (imager_angles%relazi(:,:,1) .gt. 180.)
+         imager_angles%relazi(:,:,1) = imager_angles%relazi(:,:,1) - 180.
+      else where
+         imager_angles%relazi(:,:,1) = 180. - imager_angles%relazi(:,:,1)
+      end where
    end where
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_viirs()'
