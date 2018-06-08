@@ -39,6 +39,7 @@
 ! 2016/07/08, GM: Add fields for cloud layer 2.
 ! 2017/05/17, OS: Added ann phase variables.
 ! 2017/07/05, AP: Add channels_used, variables_retrieved. New QC.
+! 2018/06/08, SP: Add satellite azimuth angle to output.
 !
 ! Bugs:
 ! None known.
@@ -372,12 +373,16 @@ subroutine alloc_output_data_primary(ind, MaxIter, data)
    data%vid_sat_zen = 0
    allocate(data%vid_rel_azi(ind%NViews))
    data%vid_rel_azi = 0
+   allocate(data%vid_sat_azi(ind%NViews))
+   data%vid_sat_azi = 0
    allocate(data%sol_zen(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NViews))
    data%sol_zen = sreal_fill_value
    allocate(data%sat_zen(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NViews))
    data%sat_zen = sreal_fill_value
    allocate(data%rel_azi(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NViews))
    data%rel_azi = sreal_fill_value
+   allocate(data%sat_azi(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%NViews))
+   data%sat_azi = sreal_fill_value
 
    allocate(data%lsflag(ind%X0:ind%X1, ind%Y0:ind%Y1))
    data%lsflag = byte_fill_value

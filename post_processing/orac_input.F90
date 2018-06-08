@@ -34,6 +34,7 @@
 ! 2017/01/09, CP: ML additions.
 ! 2017/06/22, OS: Added phase variables.
 ! 2017/07/05, AP: Add channels_used, variables_retrieved. New QC.
+! 2018/06/08, SP: Add satellite azimuth angle to output.
 !
 ! Bugs:
 ! None known.
@@ -128,6 +129,7 @@ module orac_input_m
       real(sreal),   pointer :: sol_zen(:,:,:)
       real(sreal),   pointer :: sat_zen(:,:,:)
       real(sreal),   pointer :: rel_azi(:,:,:)
+      real(sreal),   pointer :: sat_azi(:,:,:)
 
       integer(byte), pointer :: niter(:,:)
       real(sreal),   pointer :: costja(:,:)

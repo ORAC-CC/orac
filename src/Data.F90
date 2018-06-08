@@ -34,6 +34,7 @@
 ! 2015/07/27, AP: Replace CloudFlag with Type.
 ! 2016/04/28, AP: Add multiple views.
 ! 2017/06/21, OS: Added ANN phase variables.
+! 2018/06/08, SP: Add satellite azimuth angle to output.
 !
 ! Bugs:
 ! None known.
@@ -56,6 +57,7 @@ module Data_m
       real, pointer :: Sol(:,:,:)
       real, pointer :: Sat(:,:,:)
       real, pointer :: Azi(:,:,:)
+      real, pointer :: Saz(:,:,:)
    end type Geometry_t
 
    type Location_t

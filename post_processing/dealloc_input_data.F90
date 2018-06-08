@@ -38,6 +38,7 @@
 ! 2017/01/09, CP: ML additions.
 ! 2017/06/22, OS: Added phase variables.
 ! 2017/07/05, AP: Add channels_used, variables_retrieved. New QC.
+! 2018/06/08, SP: Add satellite azimuth angle to output.
 !
 ! Bugs:
 ! None known.
@@ -159,6 +160,7 @@ subroutine dealloc_input_data_primary_all(data)
    deallocate(data%sol_zen)
    deallocate(data%sat_zen)
    deallocate(data%rel_azi)
+   deallocate(data%sat_azi)
 
    deallocate(data%lsflag)
    deallocate(data%lusflag)

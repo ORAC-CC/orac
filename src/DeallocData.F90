@@ -31,6 +31,7 @@
 ! 2015/01/30, AP: Remove uscan and vscan as unnecessary.
 ! 2015/04/28, AP: Added fields for surface uncertainty and correlation.
 ! 2017/06/21, OS: added ann phase variables
+! 2018/06/08, SP: Add satellite azimuth angle to output.
 !
 ! Bugs:
 ! None known.
@@ -69,6 +70,7 @@ subroutine Dealloc_Data(Ctrl, MSI_Data)
    if (associated(MSI_Data%Geometry%Sol)) deallocate(MSI_Data%Geometry%Sol)
    if (associated(MSI_Data%Geometry%Sat)) deallocate(MSI_Data%Geometry%Sat)
    if (associated(MSI_Data%Geometry%Azi)) deallocate(MSI_Data%Geometry%Azi)
+   if (associated(MSI_Data%Geometry%Saz)) deallocate(MSI_Data%Geometry%Saz)
 
    if (associated(MSI_Data%Location%Lat)) deallocate(MSI_Data%Location%Lat)
    if (associated(MSI_Data%Location%Lon)) deallocate(MSI_Data%Location%Lon)

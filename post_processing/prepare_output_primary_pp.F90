@@ -38,6 +38,7 @@
 ! 2016/03/04, AP: Tidy prepare_*_packed_float.
 ! 2017/01/09, CP: ML additions.
 ! 2017/07/05, AP: Add channels_used, variables_retrieved. New QC.
+! 2018/06/08, SP: Add satellite azimuth angle to output.
 !
 ! Bugs:
 ! None known.
@@ -99,6 +100,11 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
            sreal_fill_value, sreal_fill_value)
       call prepare_float_packed_float( &
            input_data%rel_azi(i,j,k), output_data%rel_azi(i,j,k), &
+           output_data%azi_scale, output_data%azi_offset, &
+           output_data%azi_vmin, output_data%azi_vmax, &
+           sreal_fill_value, sreal_fill_value)
+      call prepare_float_packed_float( &
+           input_data%sat_azi(i,j,k), output_data%sat_azi(i,j,k), &
            output_data%azi_scale, output_data%azi_offset, &
            output_data%azi_vmin, output_data%azi_vmax, &
            sreal_fill_value, sreal_fill_value)

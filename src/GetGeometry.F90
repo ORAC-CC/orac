@@ -71,6 +71,7 @@
 ! 2015/08/21, AP: Add sunglint test from aerosol (currently off as set to 0).
 ! 2016/08/11, SP: Add logical flag for processing when using only 1 view from a
 !                 multiangular sensor. Prevents post-processor problems.
+! 2018/06/08, SP: Add satellite azimuth angle to output.
 !
 ! Bugs:
 ! None known.
@@ -96,6 +97,7 @@ subroutine Get_Geometry(Ctrl, SPixel, MSI_Data, status)
    SPixel%Geom%SolZen = MSI_Data%Geometry%Sol(SPixel%Loc%X0, SPixel%Loc%Y0, :)
    SPixel%Geom%SatZen = MSI_Data%Geometry%Sat(SPixel%Loc%X0, SPixel%Loc%Y0, :)
    SPixel%Geom%RelAzi = MSI_Data%Geometry%Azi(SPixel%Loc%X0, SPixel%Loc%Y0, :)
+   SPixel%Geom%SatAzi = MSI_Data%Geometry%Saz(SPixel%Loc%X0, SPixel%Loc%Y0, :)
 
    ! Set status non-zero if one of the angles is outside the allowed range
    ! specified in Ctrl.

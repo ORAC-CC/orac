@@ -44,6 +44,7 @@
 ! 2017/07/05, AP: Add channels_used, variables_retrieved. New QC.
 ! 2018/01/19, GT: Removed QCFlag scale and offset values, as these should only
 !    be used for packed floating point data (not straight integers like QCFlag).
+! 2018/06/08, SP: Add satellite azimuth angle to output.
 !
 ! Bugs:
 ! None known.
@@ -128,6 +129,7 @@ module orac_output_m
       integer, pointer :: vid_sol_zen(:)
       integer, pointer :: vid_sat_zen(:)
       integer, pointer :: vid_rel_azi(:)
+      integer, pointer :: vid_sat_azi(:)
 
       integer          :: vid_niter
       integer          :: vid_costja
@@ -524,6 +526,7 @@ module orac_output_m
       real(sreal),   pointer :: sol_zen(:,:,:)
       real(sreal),   pointer :: sat_zen(:,:,:)
       real(sreal),   pointer :: rel_azi(:,:,:)
+      real(sreal),   pointer :: sat_azi(:,:,:)
 
       integer(byte), pointer :: niter(:,:)
       real(sreal),   pointer :: costja(:,:)

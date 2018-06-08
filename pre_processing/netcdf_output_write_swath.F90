@@ -372,14 +372,14 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
         1, 1, imager_geolocation%ny, &
         1, 1, channel_info%nviews)
 
-!   call nc_write_array( &
-!        netcdf_info%ncid_geo, &
-!        'sataz', &
-!        netcdf_info%vid_sataz, &
-!        imager_angles%satazi(imager_geolocation%startx:,:,:), &
-!        1, 1, n_x, &
-!        1, 1, imager_geolocation%ny, &
-!        1, 1, channel_info%nviews)
+   call nc_write_array( &
+        netcdf_info%ncid_geo, &
+        'sataz', &
+        netcdf_info%vid_sataz, &
+        imager_angles%satazi(imager_geolocation%startx:,:,:), &
+        1, 1, n_x, &
+        1, 1, imager_geolocation%ny, &
+        1, 1, channel_info%nviews)
 
    call nc_write_array( &
         netcdf_info%ncid_geo, &

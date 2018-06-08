@@ -38,6 +38,7 @@
 ! 2017/04/28, CP: ML bug fix added ctp2
 ! 2017/06/22, OS: Added phase variables.
 ! 2017/07/05, AP: Add channels_used, variables_retrieved. New QC.
+! 2018/06/08, SP: Add satellite azimuth angle to output.
 !
 ! Bugs:
 ! None known.
@@ -326,6 +327,10 @@ subroutine read_input_primary_optional(ncid, input_data, indexing, read_flags, &
          input_dummy ="rel_azimuth_view_no"//trim(adjustl(input_num))
          call nc_read_array(ncid, trim(adjustl(input_dummy)), &
               input_data%rel_azi(:,:,ii), verbose, startp = [1, sval])
+
+         input_dummy ="sat_azimuth_view_no"//trim(adjustl(input_num))
+         call nc_read_array(ncid, trim(adjustl(input_dummy)), &
+              input_data%sat_azi(:,:,ii), verbose, startp = [1, sval])
       end if
    end do
 
