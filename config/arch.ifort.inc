@@ -2,7 +2,7 @@
 OBJS = obj
 
 # Define Fortran 77 compiler
-F90 = ifort
+F77 = ifort
 
 # Define Fortran 90 compiler
 F90 = ifort
@@ -19,9 +19,9 @@ F77FLAGS = -O3 -cpp -g
 # Set Fortran 90 compiler flags
 FFLAGS   = -O3 -cpp -g
 # Uncomment if OpenMP support is desired
-FFLAGS  += -openmp
+FFLAGS  += -qopenmp
 
-LFLAGS = -openmp
+LFLAGS = -lifcore -qopenmp
 
 # Set C compiler  flags
 CFLAGS = -O3 -g
