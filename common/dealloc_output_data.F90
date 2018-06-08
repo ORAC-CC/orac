@@ -32,6 +32,7 @@
 ! 2016/07/08, GM: Add fields for cloud layer 2.
 ! 2017/05/17, OS: Added ann phase variables.
 ! 2017/07/05, AP: Add channels_used, variables_retrieved. New QC.
+! 2018/06/08, SP: Add satellite azimuth angle to output.
 !
 ! Bugs:
 ! None known.
@@ -172,6 +173,7 @@ subroutine dealloc_output_data_primary(data)
    deallocate(data%vid_sol_zen)
    deallocate(data%vid_sat_zen)
    deallocate(data%vid_rel_azi)
+   deallocate(data%vid_sat_azi)
    deallocate(data%sol_zen)
    deallocate(data%sat_zen)
    deallocate(data%rel_azi)

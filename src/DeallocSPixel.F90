@@ -35,6 +35,7 @@
 ! 2015/01/30, AP: Remove redundant fields.
 ! 2015/06/02, AP: Add aerosol fields.
 ! 2015/08/19, AP: Make reading of RTM terms optional.
+! 2018/06/08, SP: Add satellite azimuth angle to output.
 !
 ! Bugs:
 ! None known.
@@ -85,6 +86,7 @@ subroutine Dealloc_SPixel(Ctrl, SPixel)
    deallocate(SPixel%Geom%SolZen)
    deallocate(SPixel%Geom%SatZen)
    deallocate(SPixel%Geom%RelAzi)
+   deallocate(SPixel%Geom%SatAzi)
    deallocate(SPixel%Geom%SEC_o)
    deallocate(SPixel%Geom%SEC_v)
 

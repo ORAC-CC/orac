@@ -80,8 +80,9 @@
 ! 2017/05/17, OS: Added ann phase variables, ann phase uncertainty is
 !    a placeholder.
 ! 2017/07/05, AP: Add channels_used, variables_retrieved. New QC.
-! 2018/01/19, GT: Removed QCFlag scale_factor and add_offset values, as these 
+! 2018/01/19, GT: Removed QCFlag scale_factor and add_offset values, as these
 !    should only be used for packed floating point data.
+! 2018/06/08, SP: Add satellite azimuth angle to output.
 !
 ! Bugs:
 ! None known.
@@ -256,6 +257,31 @@ subroutine def_output_primary(ncid, dim3d_var, output_data, indexing, &
               verbose, &
               long_name     = trim(adjustl(input_dummy2)), &
               standard_name = 'relative_platform_azimuth_angle', &
+              fill_value    = sreal_fill_value, &
+              scale_factor  = output_data%azi_scale, &
+              add_offset    = output_data%azi_offset, &
+              valid_min     = output_data%azi_vmin, &
+              valid_max     = output_data%azi_vmax, &
+              units         = 'degrees', &
+              deflate_level = deflate_level, &
+              shuffle       = shuffle_flag)
+
+
+      !-------------------------------------------------------------------------
+      ! sat_azimuth_view_no*
+      !-------------------------------------------------------------------------
+      input_dummy='sat_azimuth_view_no'//trim(adjustl(input_num))
+      input_dummy2='satellite azimuth angle for view no '// &
+           trim(adjustl(input_num))
+
+      call nc_def_var_float_packed_float( &
+              ncid, &
+              dims_var, &
+              trim(adjustl(input_dummy)), &
+              output_data%vid_sat_azi(i_view), &
+              verbose, &
+              long_name     = trim(adjustl(input_dummy2)), &
+              standard_name = 'satellite_platform_azimuth_angle', &
               fill_value    = sreal_fill_value, &
               scale_factor  = output_data%azi_scale, &
               add_offset    = output_data%azi_offset, &

@@ -69,6 +69,7 @@
 ! 2016/07/27, GM: Add output fields for the multilayer retrieval.
 ! 2017/06/21, OS: Added ANN phase variables.
 ! 2017/07/05, AP: Add channels_used, variables_retrieved. New QC.
+! 2018/06/08, SP: Add satellite azimuth angle to output.
 !
 ! Bugs:
 ! None known.
@@ -139,6 +140,12 @@ subroutine prepare_output_primary(Ctrl, i, j, MSI_Data, SPixel, RTM_Pc, Diag, &
       call prepare_float_packed_float( &
            MSI_Data%Geometry%Azi(SPixel%Loc%X0, SPixel%Loc%Y0,k), &
            output_data%rel_azi(i,j,k), &
+           output_data%azi_scale, output_data%azi_offset, &
+           output_data%azi_vmin, output_data%azi_vmax, &
+           sreal_fill_value, sreal_fill_value)
+      call prepare_float_packed_float( &
+           MSI_Data%Geometry%Saz(SPixel%Loc%X0, SPixel%Loc%Y0,k), &
+           output_data%sat_azi(i,j,k), &
            output_data%azi_scale, output_data%azi_offset, &
            output_data%azi_vmin, output_data%azi_vmax, &
            sreal_fill_value, sreal_fill_value)

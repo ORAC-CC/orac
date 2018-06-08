@@ -44,6 +44,7 @@
 ! 2015/07/03, OS: Added error status variable to nc_open call
 ! 2015/07/10, OS: undo previous commit
 ! 2015/09/07, AP: Allow verbose to be controlled from the driver file.
+! 2018/06/08, SP: Add satellite azimuth angle to output.
 !
 ! Bugs:
 ! None known.
@@ -71,10 +72,12 @@ subroutine Read_Geometry_nc(Ctrl, MSI_Data)
    allocate(MSI_Data%Geometry%Sol(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, Ctrl%Ind%NViews))
    allocate(MSI_Data%Geometry%Sat(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, Ctrl%Ind%NViews))
    allocate(MSI_Data%Geometry%Azi(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, Ctrl%Ind%NViews))
+   allocate(MSI_Data%Geometry%Saz(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, Ctrl%Ind%NViews))
 
    call nc_read_array(ncid, "solzen", MSI_Data%Geometry%Sol, Ctrl%verbose)
    call nc_read_array(ncid, "satzen", MSI_Data%Geometry%Sat, Ctrl%verbose)
    call nc_read_array(ncid, "relazi", MSI_Data%Geometry%Azi, Ctrl%verbose)
+   call nc_read_array(ncid, "sataz", MSI_Data%Geometry%Saz, Ctrl%verbose)
 
    ! Close geometry file
    if (nf90_close(ncid) /= NF90_NOERR) then

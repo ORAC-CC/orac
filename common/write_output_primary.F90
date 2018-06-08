@@ -46,6 +46,7 @@
 ! 2016/07/08, GM: Add fields for cloud layer 2.
 ! 2017/05/17, OS: Added ann phase variables.
 ! 2017/07/05, AP: Add channels_used, variables_retrieved. New QC.
+! 2018/06/08, SP: Add satellite azimuth angle to output.
 !
 ! Bugs:
 ! None known.
@@ -90,6 +91,10 @@ subroutine write_output_primary(ncid, ind, output_data)
       input_dummy='rel_azimuth_view_no'//trim(adjustl(input_num))
       call nc_write_array(ncid,trim(adjustl(input_dummy)), &
            output_data%vid_rel_azi(i),output_data%rel_azi(ind%X0:,:,i), &
+           1,1,ind%Xdim,1,1,ind%Ydim)
+      input_dummy='sat_azimuth_view_no'//trim(adjustl(input_num))
+      call nc_write_array(ncid,trim(adjustl(input_dummy)), &
+           output_data%vid_sat_azi(i),output_data%sat_azi(ind%X0:,:,i), &
            1,1,ind%Xdim,1,1,ind%Ydim)
 
    end do

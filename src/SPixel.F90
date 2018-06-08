@@ -100,6 +100,7 @@
 ! 2016/07/27, GM: Add CWP2 and CWP2_uncertainty for the layer 2 of the multi-
 !    layer retrieval.
 ! 2017/07/05, AP: Add channels_used, variables_retrieved.
+! 2018/06/08, SP: Add satellite azimuth angle to output.
 !
 ! Bugs:
 ! None known.
@@ -176,6 +177,7 @@ module SPixel_m
       real, pointer       :: SolZen(:)    ! Solar zenith angle
       real, pointer       :: SatZen(:)    ! Satellite zenith angle
       real, pointer       :: RelAzi(:)    ! Relative azimuth
+      real, pointer       :: SatAzi(:)    ! Relative azimuth
       real, pointer       :: SEC_o(:)     ! Air mass factor at solar zenith angle
       real, pointer       :: SEC_v(:)     ! Air mass factor at viewing angle
    end type SPixel_Geom_t
