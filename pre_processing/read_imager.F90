@@ -192,6 +192,9 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
            imager_geolocation,imager_measurements,imager_angles, &
            imager_time,channel_info,do_gsics,verbose)
 
+      ! Temporary function for use until seviri_util predef geo is fixed. INEFFICIENT.
+      if (use_predef_geo) call SEV_Retrieve_Predef_Geo(imager_geolocation,imager_angles,geo_file_path,verbose)
+
       ! In absence of proper mask set everything to "1" for cloud mask
       imager_flags%cflag = 1
 
