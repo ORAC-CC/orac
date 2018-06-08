@@ -305,10 +305,12 @@ subroutine read_goes_bin(infiles, imager_geolocation, imager_measurements, &
    where (imager_angles%solazi .gt. 180.)
       imager_angles%solazi = 360. - imager_angles%solazi
    end where
-   where (imager_angles%satazi .gt. 180.)
-      imager_angles%satazi = 360. - imager_angles%satazi
+   imager_angles%relazi = imager_angles%satazi
+   where (imager_angles%relazi .gt. 180.)
+      imager_angles%relazi = 360. - imager_angles%relazi
    end where
-   imager_angles%relazi = abs(imager_angles%solazi-imager_angles%satazi)
+
+   imager_angles%relazi = abs(imager_angles%solazi-imager_angles%relazi)
    where (imager_angles%relazi .gt. 180.)
       imager_angles%relazi = 180. - imager_angles%relazi
    end where
@@ -317,6 +319,8 @@ subroutine read_goes_bin(infiles, imager_geolocation, imager_measurements, &
           imager_angles%relazi .ne. sreal_fill_value )
       imager_angles%relazi = 0. - imager_angles%relazi
    end where
+
+   imager_angles%satazi = imager_angles%satazi - 180.
 
 
    where (imager_geolocation%latitude .eq. sreal_fill_value)
