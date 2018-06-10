@@ -986,7 +986,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
            aatsr_calib_path_file,predef_geo_file,imager_geolocation, &
            imager_angles,imager_flags, imager_time,imager_measurements, &
            channel_info,n_along_track, use_l1_land_mask,use_predef_geo, &
-           do_gsics, verbose)
+           do_gsics, global_atts, verbose)
 
 #ifdef WRAPPER
       ! do not process this orbit if no valid lat/lon data available

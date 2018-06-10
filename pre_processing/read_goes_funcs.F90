@@ -13,6 +13,7 @@
 ! History:
 ! 2018/02/10, SP: First version.
 ! 2018/04/04, SP: Geolocation updates.
+! 2018/06/08, SP: New global attribute to store satellite position information
 !
 ! Bugs:
 ! None known.
@@ -139,9 +140,10 @@ subroutine get_goes_path(l1_5_file, platform, abi_filenames, n_chans, channel_id
 end subroutine get_goes_path
 
 
-subroutine get_goes_geoloc(infile, imager_geolocation, imager_angles, verbose)
+subroutine get_goes_geoloc(infile, imager_geolocation, imager_angles, global_atts, verbose)
 
    use channel_structures_m
+   use global_attributes_m
    use iso_c_binding
    use imager_structures_m
    use netcdf
@@ -152,15 +154,18 @@ subroutine get_goes_geoloc(infile, imager_geolocation, imager_angles, verbose)
    character(len=file_length),  intent(in)    :: infile
    type(imager_geolocation_t),  intent(inout) :: imager_geolocation
    type(imager_angles_t),       intent(inout) :: imager_angles
+   type(global_attributes_t),   intent(inout) :: global_atts
    logical,                     intent(in)    :: verbose
 
    integer :: fid, ierr
    integer :: xid, yid, gimpid
    integer :: i, j
 
-   real    :: xpos, ypos, sma, smi, invf, e, hproj, h, l0
+   real    :: xpos, ypos, sma, smi, invf, e, hproj, h, lon0, lat0
    real    :: a, b, c, rs, sx, sy, sz, tlat, tlon, tx, ty
    real    :: xscl, yscl, x0, y0, e2
+
+   character(len=10) :: satlat,satlon,sathei,eqrrad,polrad
 
    real, dimension(:), allocatable :: x, y
 
@@ -201,23 +206,23 @@ subroutine get_goes_geoloc(infile, imager_geolocation, imager_angles, verbose)
    ! these are.
    ierr = nf90_get_att(fid, xid, "scale_factor", xscl)
    if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: get_goes_geoloc(): Error reading semi_major_axis attribute', trim(infile)
+      print*, 'ERROR: get_goes_geoloc(): Error reading x variable scale factor attribute', trim(infile)
       stop error_stop_code
    end if
    ierr = nf90_get_att(fid, xid, "add_offset", x0)
    if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: get_goes_geoloc(): Error reading semi_major_axis attribute', trim(infile)
+      print*, 'ERROR: get_goes_geoloc(): Error reading x variable add offset attribute', trim(infile)
       stop error_stop_code
    end if
 
    ierr = nf90_get_att(fid, yid, "scale_factor", yscl)
    if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: get_goes_geoloc(): Error reading semi_major_axis attribute', trim(infile)
+      print*, 'ERROR: get_goes_geoloc(): Error reading y variable scale factorattribute', trim(infile)
       stop error_stop_code
    end if
    ierr = nf90_get_att(fid, yid, "add_offset", y0)
    if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: get_goes_geoloc(): Error reading semi_major_axis attribute', trim(infile)
+      print*, 'ERROR: get_goes_geoloc(): Error reading y variable add offset attribute', trim(infile)
       stop error_stop_code
    end if
 
@@ -241,9 +246,14 @@ subroutine get_goes_geoloc(infile, imager_geolocation, imager_angles, verbose)
       print*, 'ERROR: get_goes_geoloc(): Error reading perspective_point_height attribute', trim(infile)
       stop error_stop_code
    end if
-   ierr = nf90_get_att(fid, gimpid, "longitude_of_projection_origin", l0)
+   ierr = nf90_get_att(fid, gimpid, "longitude_of_projection_origin", lon0)
    if (ierr.ne.NF90_NOERR) then
       print*, 'ERROR: get_goes_geoloc(): Error reading longitude_of_projection_origin attribute', trim(infile)
+      stop error_stop_code
+   end if
+   ierr = nf90_get_att(fid, gimpid, "latitude_of_projection_origin", lat0)
+   if (ierr.ne.NF90_NOERR) then
+      print*, 'ERROR: get_goes_geoloc(): Error reading latitude_of_projection_origin attribute', trim(infile)
       stop error_stop_code
    end if
 
@@ -273,11 +283,20 @@ subroutine get_goes_geoloc(infile, imager_geolocation, imager_angles, verbose)
    c = h*h - sma*sma
 
    ! Convert lon_0 into radians
-   l0 = l0 * pi / 180.
+   lon0 = lon0 * pi / 180.
+   lat0 = lat0 * pi / 180.
 
    ! Apply scale and offset to x and y
    x = x*xscl + x0
    y = y*yscl + y0
+
+   ! Generate the satellite position string for global_atts
+   write(satlat,'(f10.7)')lat0
+   write(satlon,'(f10.7)')lon0
+   write(sathei,'(f10.0)')h
+   write(eqrrad,'(f10.0)')sma
+   write(polrad,'(f10.0)')sma * (1.-(1./invf))
+   global_atts%Satpos_Metadata=satlat//","//satlon//","//sathei//','//eqrrad//","//polrad
 
 !!$OMP PARALLEL PRIVATE(i, j, a, b, rs, sx, sy, sz, tlat, tlon, tx, ty)
 !!$OMP DO SCHEDULE(GUIDED)
@@ -298,7 +317,7 @@ subroutine get_goes_geoloc(infile, imager_geolocation, imager_angles, verbose)
          sz = rs * cos(tx) * sin(ty)
 
          tlat = atan( ((sma*sma) / (smi * smi)) * sz / (sqrt((h-sx)*(h-sx) + sy*sy)))
-         tlon = l0 - atan( sy / (h-sx) )
+         tlon = lon0 - atan( sy / (h-sx) )
 
          tlat = tlat * 180. / pi
          tlon = tlon * 180. / pi
@@ -314,7 +333,7 @@ subroutine get_goes_geoloc(infile, imager_geolocation, imager_angles, verbose)
 !!$OMP END PARALLEL
 
    ! Now we compute the viewing geometry
-   call get_goes_viewing_geom(imager_geolocation, imager_angles, sma, smi, hproj, l0, verbose)
+   call get_goes_viewing_geom(imager_geolocation, imager_angles, sma, smi, hproj, lon0, verbose)
 
    ! Deallocate temporary variables
    deallocate(x)

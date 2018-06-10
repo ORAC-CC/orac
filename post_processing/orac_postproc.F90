@@ -147,6 +147,7 @@
 ! 2017/09/05, CP: Added logical flag at the top of the driver file to turn on
 !    ML post processing.
 ! 2017/10/05, GM: Get the value of use_ann_phase from the input files.
+! 2018/06/08, SP: Add ability to parallax correct the data.
 !
 ! Bugs:
 ! - Use of input_primary%cldtype is hardwired to view element 1.
@@ -172,6 +173,7 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
     use postproc_utils_m
     use prepare_output_pp_m
     use source_attributes_m
+    use correct_parallax_m
 
     implicit none
 
@@ -200,6 +202,7 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
     logical                      :: use_new_bayesian_selection = .false.
     logical                      :: use_chunks = .false.
     logical                      :: use_netcdf_compression = .true.
+    logical                      :: corr_plx = .false.
     logical                      :: verbose = .true.
 
     logical                      :: use_ml
@@ -324,6 +327,9 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
        case('USE_NETCDF_COMPRESSION')
           if (parse_string(value, use_netcdf_compression) /= 0) &
                call handle_parse_error(label)
+       case('CORRECT_PARALLAX')
+          if (parse_string(value, corr_plx) /= 0) &
+               call handle_parse_error(label)
        case('VERBOSE')
           if (parse_string(value, verbose) /= 0) &
                call handle_parse_error(label)
@@ -342,6 +348,11 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
        end select
     end do
     close(11)
+
+    if (use_chunks .and. corr_plx) then
+       write(*,*)'ERROR: Cannot parallax correct if chunking is enabled. STOP.'
+       stop
+    endif
 
     ! If using new bayesian selection then ensure both bayesian flags are true
     if (use_new_bayesian_selection) then
@@ -731,8 +742,11 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
                call dealloc_input_data_secondary_class(input_secondary(i))
        end do
 
-       ! Put results in final output arrays with final datatypes
 
+       ! If parallax correction is enabled then correct parallax
+       if (corr_plx) call correct_parallax(input_primary(0),indexing,global_atts, verbose)
+
+       ! Put results in final output arrays with final datatypes
        do j=indexing%Y0,indexing%Y1
           do i=indexing%X0,indexing%X1
              call prepare_output_primary_pp(i, j, indexing%common_indices_t, &

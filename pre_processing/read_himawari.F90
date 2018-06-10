@@ -127,14 +127,16 @@ end subroutine read_himawari_dimensions
 ! imager_angles       struct  both Members within are populated
 ! imager_time         struct  both Members within are populated
 ! channel_info        struct  both Members within are populated
+! global_atts         struct  both Members within are populated
 ! verbose             logical in   If true then print verbose information.
 !-------------------------------------------------------------------------------
 subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
    imager_angles, imager_time, channel_info, use_predef_geo,geo_file_path, &
-   verbose)
+   global_atts, verbose)
 
    use iso_c_binding
    use channel_structures_m
+   use global_attributes_m
    use imager_structures_m
    use preproc_constants_m
    use system_utils_m
@@ -151,6 +153,7 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
    type(imager_time_t),         intent(inout) :: imager_time
    type(channel_info_t),        intent(in)    :: channel_info
    logical,                     intent(in)    :: use_predef_geo
+   type(global_attributes_t),   intent(inout) :: global_atts
    logical,                     intent(in)    :: verbose
 
    integer                     :: i

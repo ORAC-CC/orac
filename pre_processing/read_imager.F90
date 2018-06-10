@@ -26,6 +26,7 @@
 ! n_along_track             lint   in   Number of pixels available in the
 !                                       direction of travel
 ! do_gsics                  logic  in   T: apply GSICS correction; F: don't
+! global_atts               struct both Attribute information, needed for satpos
 ! verbose                   logic  in   T: print status information; F: don't
 !
 ! History:
@@ -53,6 +54,7 @@
 !                 setting is ON, meaning that GSICS coefficients will be used
 !                 instead of IMPF (as previous). The new driver file option
 !                 USE_GSICS enables this to be disabled.
+! 2018/06/08, SP: New global attribute to store satellite position information
 !
 ! Bugs:
 ! None known.
@@ -67,9 +69,11 @@ contains
 subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
      path_to_aatsr_drift_table, geo_file_path,imager_geolocation,&
      imager_angles,imager_flags, imager_time,imager_measurements,&
-     channel_info,n_along_track, use_l1_land_mask,use_predef_geo,do_gsics,verbose)
+     channel_info,n_along_track, use_l1_land_mask,use_predef_geo,do_gsics, &
+     global_atts, verbose)
 
    use channel_structures_m
+   use global_attributes_m
    use imager_structures_m
    use preproc_constants_m
    use read_aatsr_m
@@ -99,6 +103,7 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
    logical,                        intent(in)    :: use_l1_land_mask
    logical,                        intent(in)    :: use_predef_geo
    logical,                        intent(in)    :: do_gsics
+   type(global_attributes_t),      intent(inout) :: global_atts
    logical,                        intent(in)    :: verbose
 
    character(len=file_length), allocatable       :: abi_filenames(:)
@@ -116,6 +121,10 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
    ! blank characters, then trim doesn't work
    if ((verbose) .and. (len_trim(geo_file_path) .ne. path_length)) &
         write(*,*) 'geo_file_path:    ', trim(geo_file_path)
+
+   ! Set satellite position metadata to blank by default
+   ! Currently this is only used by geosats for parallax correction (postproc)
+   global_atts%Satpos_Metadata = ""
 
    !branches for the sensors
    if (trim(adjustl(sensor)) .eq. 'AATSR' .or. &
@@ -140,8 +149,8 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
       ! Read the L1B data, according to the dimensions and offsets specified in
       ! imager_geolocation
       call read_goes_bin(abi_filenames, imager_geolocation,&
-           imager_measurements,imager_angles, imager_time,&
-           channel_info,use_predef_geo,geo_file_path,verbose)
+           imager_measurements,imager_angles, imager_time,channel_info,&
+           use_predef_geo,geo_file_path, global_atts, verbose)
 
       !in absence of proper mask set everything to "1" for cloud mask
       imager_flags%cflag = 1
@@ -152,8 +161,8 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
       ! Read the L1B data, according to the dimensions and offsets specified in
       ! imager_geolocation
       call read_himawari_bin(path_to_l1b_file, imager_geolocation,&
-           imager_measurements,imager_angles, imager_time,&
-           channel_info,use_predef_geo,geo_file_path,verbose)
+           imager_measurements,imager_angles, imager_time,channel_info,&
+           use_predef_geo,geo_file_path, global_atts, verbose)
 
       !in absence of proper mask set everything to "1" for cloud mask
       imager_flags%cflag = 1
@@ -190,7 +199,7 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
       ! imager_geolocation
       call read_seviri_l1_5(path_to_l1b_file, &
            imager_geolocation,imager_measurements,imager_angles, &
-           imager_time,channel_info,do_gsics,verbose)
+           imager_time,channel_info,do_gsics, global_atts, verbose)
 
       ! Temporary function for use until seviri_util predef geo is fixed. INEFFICIENT.
       if (use_predef_geo) call SEV_Retrieve_Predef_Geo(imager_geolocation,imager_angles,geo_file_path,verbose)

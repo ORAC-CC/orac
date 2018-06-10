@@ -17,6 +17,7 @@
 ! 2014/08/31, GM: Modify global_attributes_s field names to relate to their
 !    global attribute field.
 ! 2014/12/01, CP: Added new global attributes
+! 2018/06/08, SP: New global attribute to store satellite position information
 !
 ! Bugs:
 ! None known.
@@ -62,6 +63,7 @@ module global_attributes_m
       character(len=attribute_length)      :: SVN_Version
       character(len=attribute_length_long) :: ECMWF_Version
       character(len=attribute_length)      :: RTTOV_Version
+      character(len=attribute_length_long) :: Satpos_Metadata
 
       character(len=attribute_length)      :: file_version
    end type global_attributes_t

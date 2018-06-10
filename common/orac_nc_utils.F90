@@ -26,6 +26,7 @@
 ! 2016/04/28, AP: Make multiple views mandatory.
 ! 2017/07/10, AP: Stop using CLASSIC_MODE such that int64 fields can be saved.
 ! 2017/10/05, GM: Add ann_phase_used attribute.
+! 2018/06/08, SP: New global attribute to store satellite position information
 
 ! Bugs:
 ! None known.
@@ -456,6 +457,13 @@ subroutine nc_put_common_attributes(ncid, global_atts, source_atts)
       stop error_stop_code
    end if
 
+   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Satpos_Metadata', &
+        trim(global_atts%Satpos_Metadata))
+   if (ierr.ne.NF90_NOERR) then
+      write(*,*) 'ERROR: nf90_put_att(), ', trim(nf90_strerror(ierr)), &
+           ', name: Product_Name'
+      stop error_stop_code
+   end if
 
    !----------------------------------------------------------------------------
    ! Source attributes
@@ -807,6 +815,13 @@ subroutine nc_get_common_attributes(ncid, global_atts, source_atts)
       stop error_stop_code
    end if
 
+   ierr = nf90_get_att(ncid, NF90_GLOBAL, 'Satpos_Metadata', &
+        global_atts%Satpos_Metadata)
+   if (ierr.ne.NF90_NOERR) then
+      write(*,*) 'ERROR: nf90_get_att(), ', trim(nf90_strerror(ierr)), &
+           ', name: Satpos_Metadata'
+      stop error_stop_code
+   end if
 
    !----------------------------------------------------------------------------
    ! Source attributes

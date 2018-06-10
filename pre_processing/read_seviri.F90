@@ -186,13 +186,15 @@ end subroutine SEV_NCDF_check
 ! imager_angles       struct  both Members within are populated
 ! imager_time         struct  both Members within are populated
 ! channel_info        struct  both Members within are populated
+! global_atts         struct  both Members within are populated
 ! verbose             logical in   If true then print verbose information.
 !-------------------------------------------------------------------------------
 subroutine read_seviri_l1_5(l1_5_file, imager_geolocation, imager_measurements, &
-   imager_angles, imager_time, channel_info, do_gsics, verbose)
+   imager_angles, imager_time, channel_info, do_gsics, global_atts, verbose)
 
    use iso_c_binding
    use channel_structures_m
+   use global_attributes_m
    use imager_structures_m
    use preproc_constants_m
 #ifdef INCLUDE_SEVIRI_SUPPORT
@@ -207,6 +209,7 @@ subroutine read_seviri_l1_5(l1_5_file, imager_geolocation, imager_measurements, 
    type(imager_time_t),         intent(inout) :: imager_time
    type(channel_info_t),        intent(in)    :: channel_info
    logical,                     intent(in)    :: do_gsics
+   type(global_attributes_t),   intent(inout) :: global_atts
    logical,                     intent(in)    :: verbose
 
    integer                     :: i

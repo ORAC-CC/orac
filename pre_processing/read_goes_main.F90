@@ -6,6 +6,7 @@
 ! functions that control data read-in, low level is in read_goes_funcs.f90
 ! History:
 ! 2018/02/10, SP: First version.
+! 2018/06/08, SP: New global attribute to store satellite position information
 !
 ! Bugs:
 ! None known.
@@ -243,13 +244,16 @@ end subroutine get_goes_data
 ! imager_angles       struct  both Members within are populated
 ! imager_time         struct  both Members within are populated
 ! channel_info        struct  both Members within are populated
+! global_atts         struct  both Members within are populated
 ! verbose             logical in   If true then print verbose information.
 !-------------------------------------------------------------------------------
 subroutine read_goes_bin(infiles, imager_geolocation, imager_measurements, &
-   imager_angles, imager_time, channel_info, use_predef_geo,geo_file_path, verbose)
+   imager_angles, imager_time, channel_info, use_predef_geo,geo_file_path, &
+   global_atts, verbose)
 
    use iso_c_binding
    use channel_structures_m
+   use global_attributes_m
    use imager_structures_m
    use preproc_constants_m
    use system_utils_m
@@ -263,6 +267,7 @@ subroutine read_goes_bin(infiles, imager_geolocation, imager_measurements, &
    type(channel_info_t),        intent(in)    :: channel_info
    logical,                     intent(in)    :: use_predef_geo
    character(len=file_length),  intent(in)    :: geo_file_path
+   type(global_attributes_t),   intent(inout) :: global_atts
    logical,                     intent(in)    :: verbose
 
    integer                     	:: i,goodf
@@ -291,7 +296,7 @@ subroutine read_goes_bin(infiles, imager_geolocation, imager_measurements, &
 
 	! Determine geolocation information (lat/lon/vza/vaa)
 	if (use_predef_geo .neqv. .true.) then
-		call get_goes_geoloc(infiles(goodf),imager_geolocation, imager_angles, verbose)
+		call get_goes_geoloc(infiles(goodf),imager_geolocation, imager_angles, global_atts, verbose)
 	else
 		! This is a placeholder for now.
 		if (verbose) write(*,*) "Reading geolocation from file."

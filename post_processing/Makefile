@@ -25,6 +25,7 @@ POSTPROC_OBJ = $(OBJS)/orac_input.o \
                $(OBJS)/postproc_constants.o \
                $(OBJS)/postproc_utils.o \
                $(OBJS)/prepare_output_pp.o  \
+               $(OBJS)/correct_parallax.o  \
 
 POSTPROC_OBJ_MAIN = $(OBJS)/orac_postproc.o
 
