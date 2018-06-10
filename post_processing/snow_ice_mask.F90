@@ -58,10 +58,10 @@
 
 subroutine snow_ice_mask(input_primary,input_secondary,snow_ice_flag,cinst,i,j)
 
-   use common_constants
-   use orac_input
+   use common_constants_m
+   use orac_input_m
    use netcdf
-   use postproc_constants
+   use postproc_constants_m
 
    implicit none
 

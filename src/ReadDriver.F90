@@ -1736,6 +1736,12 @@ subroutine old_driver_first_read(dri_lun, Ctrl)
          if (parse_string(line, Ctrl%do_CTX_correction)      /= 0) call h_p_e(label)
       case('CTRL%VERBOSE')
          if (parse_string(line, Ctrl%verbose)                /= 0) call h_p_e(label)
+      case('CTRL%PROCESS_CLOUDY_ONLY')
+         if (parse_string(line, Ctrl%process_cloudy_only) &
+                                                             /= 0) call h_p_e(label)
+      case('CTRL%PROCESS_AEROSOL_ONLY')
+         if (parse_string(line, Ctrl%process_aerosol_only) &
+                                                             /= 0) call h_p_e(label)
       case default
          cycle
       end select
@@ -1893,12 +1899,6 @@ subroutine old_driver_second_read(dri_lun, Ctrl, Nx_Dy, Nx_Tw, Nx_Ni, NXJ_Dy, &
          if (parse_string(line, Ctrl%Max_SDAD)         /= 0) call h_p_e(label)
       case('CTRL%SABOTAGE_INPUTS')
          if (parse_string(line, Ctrl%sabotage_inputs)  /= 0) call h_p_e(label)
-      case('CTRL%PROCESS_CLOUDY_ONLY')
-         if (parse_string(line, Ctrl%process_cloudy_only) &
-                                                       /= 0) call h_p_e(label)
-      case('CTRL%PROCESS_AEROSOL_ONLY')
-         if (parse_string(line, Ctrl%process_aerosol_only) &
-                                                       /= 0) call h_p_e(label)
       case('CTRL%NTYPES_TO_PROCESS')
          if (parse_string(line, Ctrl%NTypes_to_process)/= 0) call h_p_e(label)
       case('CTRL%TYPES_TO_PROCESS')
@@ -1956,11 +1956,14 @@ subroutine old_driver_second_read(dri_lun, Ctrl, Nx_Dy, Nx_Tw, Nx_Ni, NXJ_Dy, &
       case('CTRL%APPROACH', &
            'CTRL%CLASS', &
            'CTRL%CLASS2', &
+           'CTRL%LUTCLASS', &
            'CTRL%LUTCLASS2', &
            'CTRL%USE_ANN_PHASE', &
            'CTRL%DO_NEW_NIGHT_RETRIEVAL', &
            'CTRL%DO_CTX_CORRECTION', &
-           'CTRL%VERBOSE')
+           'CTRL%VERBOSE', &
+           'CTRL%PROCESS_CLOUDY_ONLY', &
+           'CTRL%PROCESS_AEROSOL_ONLY')
          cycle ! These arguments have already been parsed in the first pass
                ! through the driver file.
       case default

@@ -1,35 +1,40 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python
 # Run pre, main, and post processors for ORAC
 # 27 Jun 2016, AP: Initial version
 # 08 Jul 2016, AP: Debugging against more awkward python environments
+# 25 Apr 2018. AP: Tidy code more sensibly into a module
 
-from colours import cprint
-
-import argparse
-import orac_utils as ou
+from argparse import ArgumentParser
+from pyorac.arguments import *
+from pyorac.colour_print import colour_print
+from pyorac.definitions import COLOURING, OracError, OracWarning
+from pyorac.run import process_all
+from pyorac.util import warning_format
 
 import warnings
-warnings.filterwarnings('always', category=ou.OracWarning)
+warnings.formatwarning = warning_format
+warnings.filterwarnings('always', category=OracWarning)
+
 
 # Define parser
-parser = argparse.ArgumentParser(
-    description='Run the full ORAC suite on a given Level 1B file.')
-parser.add_argument('-A', '--all_phases', action='store_true',
-                    help = 'Sets phases to run all possible tests.')
-ou.args_common(parser)
-ou.args_preproc(parser)
-ou.args_main(parser)
-ou.args_postproc(parser)
-ou.args_cc4cl(parser)
-args = parser.parse_args()
-
-if args.all_phases:
-    args.phases = ou.settings.keys()
+pars = ArgumentParser(
+    description='Run the full ORAC suite on a given Level 1B file.'
+)
+pars.add_argument('target', type=str, help = 'Level 1B file to be processed')
+args_common(pars)
+args_cc4cl(pars)
+args_preproc(pars)
+args_main(pars)
+args_postproc(pars)
+args = pars.parse_args()
 
 try:
-    ou.check_args_cc4cl(args)
-    (_,_,_) = ou.cc4cl(args)
-except ou.OracError as err:
-    cprint('ERROR) ' + err.message, ou.colouring['error'])
+    jid, _ = process_all(args)
+
+    if args.script_verbose and args.batch:
+        print("Job queued with ID {}".format(jid))
+
+except OracError as err:
+    colour_print('ERROR) ' + str(err), COLOURING['error'])
 except KeyboardInterrupt:
-    cprint('Execution halted by user.', ou.colouring['error'])
+    colour_print('Execution halted by user.', COLOURING['error'])

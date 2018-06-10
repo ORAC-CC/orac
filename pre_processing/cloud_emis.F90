@@ -54,54 +54,54 @@ subroutine get_trop_tp(preproc_prtm,preproc_dims)
 
 
    do x=preproc_dims%min_lon,preproc_dims%max_lon
-   	do y=preproc_dims%min_lat,preproc_dims%max_lat
+      do y=preproc_dims%min_lat,preproc_dims%max_lat
 
-   		k = nz
-  			t  = preproc_prtm%temperature(x,y,:)
-   		p  = preproc_prtm%pressure(x,y,:)/100.
-   		h  = (0.001 / g_wmo) * preproc_prtm%phi_lev(x,y,1:preproc_dims%kdim)
+         k = nz
+         t  = preproc_prtm%temperature(x,y,:)
+         p  = preproc_prtm%pressure(x,y,:)/100.
+         h  = (0.001 / g_wmo) * preproc_prtm%phi_lev(x,y,1:preproc_dims%kdim)
 
-			do while (p(k) > max_tropopause .and. k > 1)
-				k = k-1
-			end do
-			step=nz
-			if (x .eq. 262 .and. y .eq. 161) then
-				do while (step>1)
-					step=step-1
-				enddo
-			endif
+         do while (p(k) > max_tropopause .and. k > 1)
+            k = k-1
+         end do
+         step = nz
+         if (x .eq. 262 .and. y .eq. 161) then
+            do while (step > 1)
+               step = step - 1
+            end do
+         end if
 
-			! Locate the tropopause
-			do while (p(k) > min_tropopause .and. k > 1)
-				! The tropopause is defined as the lowest level with a lapse rate
-				! less than 2 K km^-1
-				if ((t(k) - t(k-1)) / (h(k-1) - h(k)) < 2.) then
-					! Find the first level at least 2 km above the identified level
-					l = k-1
-					do while (h(l) - h(k) < 2. .and. l > 1)
-						l = l-1
-					end do
+         ! Locate the tropopause
+         do while (p(k) > min_tropopause .and. k > 1)
+            ! The tropopause is defined as the lowest level with a lapse rate
+            ! less than 2 K km^-1
+            if ((t(k) - t(k-1)) / (h(k-1) - h(k)) < 2.) then
+               ! Find the first level at least 2 km above the identified level
+               l = k-1
+               do while (h(l) - h(k) < 2. .and. l > 1)
+                  l = l-1
+               end do
 
-					! We also require that the lapse rate remain this low in the 2km above
-					! the tropopause
-					if ((t(k) - t(l)) / (h(l) - h(k)) < 2.) exit
-				end if
+               ! We also require that the lapse rate remain this low in the 2km
+               ! above the tropopause
+               if ((t(k) - t(l)) / (h(l) - h(k)) < 2.) exit
+            end if
 
-				! Continue to the next level up
-				k = k-1
-			end do
-			if (k .lt. nz) then
-				preproc_prtm%trop_p(x,y) = p(k)
-			else
-				preproc_prtm%trop_p(x,y) = sreal_fill_value
-			endif
-		end do
-	end do
-	return
+            ! Continue to the next level up
+            k = k-1
+         end do
+         if (k .lt. nz) then
+            preproc_prtm%trop_p(x,y) = p(k)
+         else
+            preproc_prtm%trop_p(x,y) = sreal_fill_value
+         endif
+      end do
+   end do
+   return
 
 end subroutine get_trop_tp
 
-subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation,&
+subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation, &
      preproc_dims,preproc_geoloc,preproc_cld,imager_cloud,ecmwf,sensor,verbose)
 
    use channel_structures_m

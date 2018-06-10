@@ -9,7 +9,7 @@ LIBBASE = $(ORAC_LIBBASE)
 LIBBASE_FORTRAN = $(ORAC_LIBBASE_FORTRAN)
 
 # EMOS
-EMOSLIB = $(LIBBASE_FORTRAN)/emos
+EMOSLIB = $(LIBBASE_FORTRAN)/emos/lib
 
 # HDF-EOS
 EOSLIB = $(LIBBASE_FORTRAN)/hdfeos/lib
@@ -24,8 +24,8 @@ FULIOULIB = $(LIBBASE_FORTRAN)/fuliou/lib
 FULIOUINCLUDE = $(LIBBASE_FORTRAN)/fuliou/lib/mod
 
 # GRIB API
-GRIBLIB = $(LIBBASE_FORTRAN)/grib_api/lib
-GRIBINCLUDE = $(LIBBASE_FORTRAN)/grib_api/include
+GRIBLIB = $(LIBBASE_FORTRAN)/eccodes/lib
+GRIBINCLUDE = $(LIBBASE_FORTRAN)/eccodes/include
 
 # HDF4 has to be compiled without the HDF4 versions of NetCDF APIs.
 HDFLIB = $(LIBBASE_FORTRAN)/hdf/lib
@@ -61,10 +61,10 @@ SEVIRI_UTIL_INCLUDE = $(LIBBASE_FORTRAN)/seviri_util
 SZLIB = $(LIBBASE)/szip/lib
 
 # Set up libraries and includes
-LIBS = -L$(EMOSLIB) -lemosR64 \
+LIBS = -L$(EMOSLIB) -lemosR64 -lemos \
        -L$(EOSLIB) -lhdfeos -lGctp \
        -L$(EPR_APILIB) -lepr_api \
-       -L$(GRIBLIB) -lgrib_api_f77 -lgrib_api_f90 -lgrib_api \
+       -L$(GRIBLIB) -leccodes_f90 -leccodes \
        -L$(HDFLIB) -lmfhdf -ldf \
        -L$(NCDFLIB) -lnetcdf \
        -L$(NCDF_FORTRAN_LIB) -lnetcdff \
@@ -91,21 +91,21 @@ CINC = -I./ -I$(EPR_APIINCLUDE)
 # Configuration options
 
 # Uncomment if you want to enable OpenMP for RTTOV computations.
-INC  += -DINCLUDE_RTTOV_OPENMP
+#INC  += -DINCLUDE_RTTOV_OPENMP
 
 # Uncomment if Numerical Recipes is available for cubic spline profile
 # interpolation and bilinear LUT interpolation.
-LIBS += -L$(NRLIB) -lnr
-INC  += -I$(NRINCLUDE) -DINCLUDE_NR
+#LIBS += -L$(NRLIB) -lnr
+#INC  += -I$(NRINCLUDE) -DINCLUDE_NR
 
 # Uncomment if Fu_Liou support is desired for broadband fluxes.
-LIBS += -L$(FULIOULIB) -lEd3Fu_201212
-INC  += -I$(FULIOUINCLUDE) -DINCLUDE_FU_LIOU_SUPPORT
+#LIBS += -L$(FULIOULIB) -lEd3Fu_201212
+#INC  += -I$(FULIOUINCLUDE) -DINCLUDE_FU_LIOU_SUPPORT
 
 # Uncomment if Himawari support is desired.
 #LIBS += -L$(HIMAWARI_HSD_READER_LIB) -lhimawari_util
 #INC  += -I$(HIMAWARI_HSD_READER_INCLUDE) -DINCLUDE_HIMAWARI_SUPPORT
 
 # Uncomment if SEVIRI support is desired.
-LIBS += -L$(SEVIRI_UTIL_LIB) -lseviri_util
-INC  += -I$(SEVIRI_UTIL_INCLUDE) -DINCLUDE_SEVIRI_SUPPORT
+#LIBS += -L$(SEVIRI_UTIL_LIB) -lseviri_util
+#INC  += -I$(SEVIRI_UTIL_INCLUDE) -DINCLUDE_SEVIRI_SUPPORT

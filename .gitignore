@@ -53,8 +53,8 @@
 /src/read_ctrl.lex
 
 # /tools/
-/tools/compare_orac_out.sav
-/tools/run_orac.sh
-/tools/local_defaults.py
+/tools/pyorac/local_defaults.py
 /tools/__pycache__
 /tools/*.pyc
+/tools/pyorac/__pycache__
+/tools/pyorac/*.pyc

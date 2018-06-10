@@ -132,7 +132,7 @@ subroutine Read_CloudFlags_nc(Ctrl, MSI_Data)
       do i=1,Ctrl%Ind%NViews
          where (MSI_Data%cldmask(:,:,i) .ne. 0)
             MSI_Data%Type = byte_fill_value
-         endwhere
+         end where
       end do
    end if
 
