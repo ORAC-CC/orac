@@ -555,7 +555,7 @@ subroutine goes_resample_vis_to_tir(inarr, outarr, nx, ny, fill, scl, verbose)
          val = val/inpix
          if (outx .le. 0 .or. outx .ge. nx .or. &
               outy .le. 0 .or. outy .ge. ny) then
-            continue
+            cycle
          endif
 
          if (outarr(outx, outy).le. 0) then
