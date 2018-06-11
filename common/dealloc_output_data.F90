@@ -177,6 +177,7 @@ subroutine dealloc_output_data_primary(data)
    deallocate(data%sol_zen)
    deallocate(data%sat_zen)
    deallocate(data%rel_azi)
+   deallocate(data%sat_azi)
 
    deallocate(data%lsflag)
    deallocate(data%lusflag)
