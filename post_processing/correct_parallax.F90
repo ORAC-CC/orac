@@ -111,7 +111,7 @@ real(kind=sreal) function get_ave_real(inarr)
       get_ave_real   =   sreal_fill_value
    endif
 
-end
+end function get_ave_real
 
 subroutine correct_parallax(primary,indexing, global_atts, verbose)
 
