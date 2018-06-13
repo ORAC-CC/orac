@@ -260,14 +260,12 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
          imager_angles%relazi(:,:,1) = 360. - imager_angles%relazi(:,:,1)
       end where
    end where
+   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_himawari_bin()'
 #else
    write(*,*) 'ERROR: the ORAC pre-processor has not been compiled with ' // &
               'HIMAWARI support. Recompile with -DINCLUDE_HIMAWARI_SUPPORT.'
    stop error_stop_code
 #endif
-
-   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_himawari_bin()'
-
 end subroutine read_himawari_bin
 
 end module read_himawari_m

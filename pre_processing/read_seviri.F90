@@ -119,12 +119,12 @@ subroutine read_seviri_dimensions(l1_5_file, n_across_track, n_along_track, &
          stop error_stop_code
       end if
    end if
+   if (verbose) write(*,*) '>>>>>>>>>>>>>>> read_seviri_dimensions()'
 #else
    write(*,*) 'ERROR: the ORAC pre-processor has not been compiled with ' // &
               'SEVIRI support. Recompile with -DINCLUDE_SEVIRI_SUPPORT.'
    stop error_stop_code
 #endif
-   if (verbose) write(*,*) '>>>>>>>>>>>>>>> read_seviri_dimensions()'
 
 end subroutine read_seviri_dimensions
 
@@ -330,12 +330,12 @@ subroutine read_seviri_l1_5(l1_5_file, imager_geolocation, imager_measurements, 
          imager_angles%relazi(:,:,1) = 360. - imager_angles%relazi(:,:,1)
       end where
    end where
+   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_seviri_l1_5()'
 #else
    write(*,*) 'ERROR: the ORAC pre-processor has not been compiled with ' // &
               'SEVIRI support. Recompile with -DINCLUDE_SEVIRI_SUPPORT.'
    stop error_stop_code
 #endif
-   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_seviri_l1_5()'
 
 end subroutine read_seviri_l1_5
 
