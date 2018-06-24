@@ -207,7 +207,7 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
    ! Load all the data
    if (AHI_Main_Read(trim(infile)//C_NULL_CHAR, &
                      trim(geo_file_path)//C_NULL_CHAR, preproc, ahi_extent, n_bands,&
-                     band_ids, 0, 1, use_predef_geo, .false., .false.,verbose) .ne. 0) then
+                     band_ids, 0, 1, use_predef_geo, .false., .false.,global_atts%Satpos_Metadata, verbose) .ne. 0) then
       write(*,*) 'ERROR: in read_himawari_read(), calling ' // &
                  'AHI_Main_Read(), filename = ', trim(infile)
       stop error_stop_code
