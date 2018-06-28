@@ -32,6 +32,7 @@
 */
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 #include <stdbool.h>
 #include <math.h>
 #include "epr_api.h"
