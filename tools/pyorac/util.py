@@ -179,7 +179,7 @@ def read_orac_libraries(filename):
         # Loop over each line
         for line in f:
             # Only process variable definitions
-            if '=' in line and '\\' not in line:
+            if '=' in line and '\\' not in line and not line.startswith("#"):
                 line = line.replace("\n", '')
                 parts = [l.strip() for l in line.split('=', 2)]
 
