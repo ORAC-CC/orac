@@ -35,7 +35,12 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <math.h>
+
+#ifdef INCLUDE_ATSR_SUPPORT
 #include "epr_api.h"
+#else
+typedef void EPR_SProductId;
+#endif
 
 #ifndef aatsr_orbit_h
 #define aatsr_orbit_h
@@ -109,6 +114,7 @@ void read_aatsr_orbit(const char *l1b_file, const bool *verbose,
                       char start_date[30], char gc1_file[62], char vc1_file[62],
                       bool *is_lut_drift_corrected);
 
+#ifdef INCLUDE_ATSR_SUPPORT
 /*Name: fetch_aatsr_float_values AND fetch_aatsr_short_values
 !
 ! Purpose:
@@ -170,6 +176,7 @@ void fetch_aatsr_short_values(EPR_SProductId *pid, const char *name,
 */
 void calculate_rel_azi(float *saz, float *iaz, float *raz, const int nx,
                        const int ny);
+#endif
 
 
 /*Name: get_aatsr_dimension
@@ -229,6 +236,7 @@ void get_aatsr_dimension(const char* infile, const short* daynight,
                          long* nxp, long* nyp, long* minyp, short* stat,
                          const bool *verbose);
 
+#ifdef INCLUDE_ATSR_SUPPORT
 /*Name: extrap_aatsr_angle
 !
 ! Purpose:
@@ -349,4 +357,5 @@ void interpol_fraction(const long in0, const long n_in,  double *in,
                        const long out0, const long n_out, double *out,
                        long *bounds, double *delta);
 
+#endif
 #endif

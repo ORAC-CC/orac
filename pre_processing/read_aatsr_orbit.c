@@ -33,6 +33,7 @@ void read_aatsr_orbit(const char *l1b_file, const bool *verbose,
                       char start_date[30], char gc1_file[62], char vc1_file[62],
                       bool *is_lut_drift_corrected)
 {
+#ifdef INCLUDE_ATSR_SUPPORT
      float *iaz;
      iaz = calloc(*nx * *ny, sizeof(float));
      if (iaz == NULL) {
@@ -227,8 +228,14 @@ void read_aatsr_orbit(const char *l1b_file, const bool *verbose,
      epr_close_api();
      free(iaz);
      return;
+#else
+     printf("ERROR: the ORAC pre-processor has not been compiled with ");
+     printf("ATSR support. Recompile with -DINCLUDE_ATSR_SUPPORT.\n");
+     return;
+#endif
 }
 
+#ifdef INCLUDE_ATSR_SUPPORT
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 void fetch_aatsr_float_values(EPR_SProductId *pid, const char *name,
@@ -335,6 +342,7 @@ void calculate_rel_azi(float *saz, float *iaz, float *raz, const int nx,
      }
      return;
 }
+#endif
 
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
@@ -343,6 +351,7 @@ void get_aatsr_dimension(const char* infile, const short* daynight,
                          long* nxp, long* nyp, long* minyp, short* statp,
                          const bool *verbose)
 {
+#ifdef INCLUDE_ATSR_SUPPORT
      long i, j;
      long nx, ny, miny=0;
      long new_ny, maxy, miny2, maxy2;
@@ -521,10 +530,16 @@ void get_aatsr_dimension(const char* infile, const short* daynight,
      *statp = stat;
      if (*verbose) printf("Have completed get_aatsr_dimension\n");
      return;
+#else
+     printf("ERROR: the ORAC pre-processor has not been compiled with ");
+     printf("ATSR support. Recompile with -DINCLUDE_ATSR_SUPPORT.\n");
+     return;
+#endif
 }
 
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
+#ifdef INCLUDE_ATSR_SUPPORT
 void extrap_aatsr_angle(EPR_SProductId *pid, const char *dataset_name,
                         const char *tie_name, const char *field_name,
                         const long nx, const long ny,
@@ -775,3 +790,4 @@ void interpol_fraction(const long in0, const long n_in,  double *in,
           previous_bound = bounds[i];
      }
 }
+#endif

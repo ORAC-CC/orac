@@ -63,7 +63,6 @@ SZLIB = $(LIBBASE)/szip/lib
 # Set up libraries and includes
 LIBS = -L$(EMOSLIB) -lemosR64 -lemos -lfftw3 \
        -L$(EOSLIB) -lhdfeos -lGctp \
-       -L$(EPR_APILIB) -lepr_api \
        -L$(GRIBLIB) -leccodes_f90 -leccodes \
        -L$(HDFLIB) -lmfhdf -ldf \
        -L$(NCDF_FORTRAN_LIB) -lnetcdff \
@@ -76,7 +75,6 @@ LIBS = -L$(EMOSLIB) -lemosR64 -lemos -lfftw3 \
 
 INC = -I./ \
       -I$(EOSINCLUDE) \
-      -I$(EPR_APIINCLUDE) \
       -I$(GRIBINCLUDE) \
       -I$(HDFINCLUDE) \
       -I$(HDF5INCLUDE) \
@@ -85,13 +83,18 @@ INC = -I./ \
       -I$(RTTOVINCLUDE) \
       -I$(RTTOVMODULE)
 
-CINC = -I./ -I$(EPR_APIINCLUDE)
+CINC = -I./
 
 
 # Configuration options
 
 # Uncomment if you want to enable OpenMP for RTTOV computations.
 #INC  += -DINCLUDE_RTTOV_OPENMP
+
+# Uncommonet if ATSR support is desired.
+#LIBS += -L$(EPR_APILIB) -lepr_api
+#INC  += -I$(EPR_APIINCLUDE)
+#CINC += -I$(EPR_APIINCLUDE)
 
 # Uncomment if Numerical Recipes is available for cubic spline profile
 # interpolation and bilinear LUT interpolation.
