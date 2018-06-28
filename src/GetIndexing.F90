@@ -117,7 +117,7 @@ subroutine Get_Indexing(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
    do i_view = 1, Ctrl%Ind%NViews
       SPixel%illum(i_view) = MSI_Data%illum(SPixel%Loc%X0, SPixel%Loc%Y0, i_view)
 
-      if ((i_view > 1) .and. (Ctrl%all_channels_same_view .neqv. .true.)) then
+      if ((i_view > 1) .and. (.not. Ctrl%all_channels_same_view)) then
          if (SPixel%illum(i_view - 1) /= SPixel%illum(i_view)) then
             status = SPixelIndexing
             return

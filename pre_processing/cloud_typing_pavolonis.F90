@@ -620,7 +620,7 @@ subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
          end do
       end if
 
-      if (do_ironly .eqv. .true.) then
+      if (do_ironly) then
          ch1=99
          ch2=99
       end if
@@ -893,7 +893,7 @@ subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
       ch7_on_atsr_flag = NO
    end if
 
-   if (do_ironly .neqv. .true.) then
+   if (.not. do_ironly) then
       ch2_on_atsr_flag = YES
       if (imager_measurements%data(i,j,ch2) .lt. 0.) then
          ch2_on_atsr_flag = NO
@@ -971,7 +971,7 @@ subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
    imager_pavolonis%emis_ch3b(i,j,cview) = rad_ch3b / rad_ch3b_emis
 
    ! Calculate true reflectances for avhrr, modis and aatsr
-   if (do_ironly .neqv. .true.) then
+   if (.not. do_ironly) then
       ref_ch1 = imager_measurements%data(i,j,ch1) / mu0
    else
       ! set ref_ch1 to fillvalue is enough to force pavolonis to use
@@ -996,7 +996,7 @@ subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
 
    ! If we're not using any VIS channels then fill ch1 and ch2
    ! Fudge SZA to 120 deg: forces neural net into night mode
-   if (do_ironly .eqv. .true.) then
+   if (do_ironly) then
       ch1v    =       sreal_fill_value
       ch2v    =       sreal_fill_value
       ! During daytime we need to set bt37 to fillvalue as well, the nighttime
@@ -1188,7 +1188,7 @@ subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
       if (ch3a_on_avhrr_flag == INEXISTENT) then
 !        if ((imager_geolocation%latitude(i,j) < 65.0 .and. &
 !             imager_geolocation%latitude(i,j) > -65.0) .and. &
-!             (day .eqv. .false.)) &
+!             (.not. day)) &
 !           imager_pavolonis%cldtype(i,j) = PROB_OPAQUE_ICE_TYPE
 
          if ((imager_measurements%data(i,j,ch5) > 0.) .and. &
@@ -1222,8 +1222,7 @@ subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
    ! If DAYTIME, use daytime algorithm
    !----------------------------------------------------------------------------
 
-   if ((imager_pavolonis%cldmask(i,j,cview) == CLOUDY) .and. &
-       (day .eqv. .true.)) then
+   if ((imager_pavolonis%cldmask(i,j,cview) == CLOUDY) .and. day) then
 
       !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
       ! Set 11um - 12um overlap thresholds
@@ -1512,7 +1511,7 @@ subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
    !----------------------------------------------------------------------------
 
    else if ((imager_pavolonis%cldmask(i,j,cview) == CLOUDY) .and. &
-            (day .eqv. .false.)) then
+            (.not. day)) then
 
       !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
       ! Set 3.75um - 11um thresholds used for phase determination.

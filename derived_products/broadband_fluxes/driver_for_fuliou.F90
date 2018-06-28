@@ -424,7 +424,7 @@ subroutine driver_for_fuliou(nlm,tsi,theta, &
    ! Assign values to specific output variables
    if (ftoa(2)%olr .gt. 0. .and. ftoa(2)%olr .lt. 1000. .and. &
        ftoa(2)%swup .gt. 0. .and. ftoa(2)%swup .lt. 1600. .and. &
-       fo(2)%exist .eqv. .true.) then
+       fo(2)%exist) then
       toalwup    = ftoa(2)%olr
       toaswdn    = ftoa(2)%swdn
       toaswup    = ftoa(2)%swup

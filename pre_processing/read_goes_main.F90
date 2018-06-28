@@ -295,7 +295,7 @@ subroutine read_goes_bin(infiles, imager_geolocation, imager_measurements, &
    endif
 
 	! Determine geolocation information (lat/lon/vza/vaa)
-	if (use_predef_geo .neqv. .true.) then
+	if (.not. use_predef_geo) then
 		call get_goes_geoloc(infiles(goodf),imager_geolocation, imager_angles, global_atts, verbose)
 	else
 		! This is a placeholder for now.

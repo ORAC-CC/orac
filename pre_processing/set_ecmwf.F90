@@ -104,7 +104,7 @@ subroutine set_ecmwf(cyear, cmonth, cday, chour, ecmwf_path, ecmwf_path2, &
    real(dreal)   :: time_fac
 
    ! Check that we're not trying to use full path GFS data
-   if ((ecmwf_flag .eq. 5) .and. (assume_full_path .neqv. .true.)) then
+   if ((ecmwf_flag .eq. 5) .and. (.not. assume_full_path)) then
       write(*,*)"When using GFS data in original format assume_full_path *must* be True."
       stop
    end if

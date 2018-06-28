@@ -101,7 +101,7 @@ subroutine Get_Geometry(Ctrl, SPixel, MSI_Data, status)
 
    ! Set status non-zero if one of the angles is outside the allowed range
    ! specified in Ctrl.
-   if ((any(SPixel%Geom%SolZen < SolZenMin)) .and. (Ctrl%all_channels_same_view .neqv. .true.)) then
+   if ((any(SPixel%Geom%SolZen < SolZenMin)) .and. (.not. Ctrl%all_channels_same_view)) then
 #ifdef DEBUG
       write(*, *) 'Get_Geometry: 1Solar zenith angle exceeds maximum at: ', &
                   SPixel%Loc%X0, SPixel%Loc%Y0
@@ -116,7 +116,7 @@ subroutine Get_Geometry(Ctrl, SPixel, MSI_Data, status)
       status = SPixelGeomSat
    end if
    if ((any(SPixel%Geom%SatZen < SatZenMin .or. &
-      SPixel%Geom%SatZen > Ctrl%MaxSatZen)) .and. (Ctrl%all_channels_same_view .neqv. .true.)) then
+      SPixel%Geom%SatZen > Ctrl%MaxSatZen)) .and. (.not. Ctrl%all_channels_same_view)) then
 #ifdef DEBUG
       write(*, *) 'Get_Geometry: 1Satellite zenith angle out of range at: ', &
                   SPixel%Loc%X0, SPixel%Loc%Y0
@@ -131,7 +131,7 @@ subroutine Get_Geometry(Ctrl, SPixel, MSI_Data, status)
       status = SPixelGeomSat
    end if
    if ((any(SPixel%Geom%RelAzi < RelAziMin .or. &
-           SPixel%Geom%RelAzi > RelAziMax)) .and. (Ctrl%all_channels_same_view .neqv. .true.)) then
+           SPixel%Geom%RelAzi > RelAziMax)) .and. (.not. Ctrl%all_channels_same_view)) then
 #ifdef DEBUG
       write(*, *) 'Get_Geometry: 1Relative azimuth angle out of range at: ', &
                   SPixel%Loc%X0, SPixel%Loc%Y0
@@ -148,7 +148,7 @@ subroutine Get_Geometry(Ctrl, SPixel, MSI_Data, status)
    end if
 
    ! Aerosol sunglint test
-   if ((any(SPixel%Geom%RelAzi < Ctrl%MinRelAzi)) .and. (Ctrl%all_channels_same_view .neqv. .true.)) then
+   if ((any(SPixel%Geom%RelAzi < Ctrl%MinRelAzi)) .and. (.not. Ctrl%all_channels_same_view)) then
 #ifdef DEBUG
       write(*, *) 'Get_Geometry: Relative azimuth indicates sunglint at: ', &
                   SPixel%Loc%X0, SPixel%Loc%Y0

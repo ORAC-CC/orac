@@ -374,7 +374,7 @@ subroutine sort_gfs_levels(preproc_prtm,verbose)
          ! Loop over all levels to find last level above surface
          do l=2,nl
             if (p(l) .gt. surfp) then
-               if (stopper .neqv. .true.) then
+               if (.not. stopper) then
                   stopper=.true.
                   ! Compute interp factor to ensure last lev = surface
                   interp=(surfp-p(l-1))/(p(l)-p(l-1))
@@ -385,7 +385,7 @@ subroutine sort_gfs_levels(preproc_prtm,verbose)
 
          ! If final level of GFS data is above surface then do this
          ! Skips otherwise (e.g: Sea or high pressure low elevation regions)
-         if (stopper .eqv. .true.) then
+         if (stopper) then
 
             ! Set data for final level equal to interpolated surface data
             p(nl) = p(stoplev) + interp * (p(stoplev+1)-p(stoplev))

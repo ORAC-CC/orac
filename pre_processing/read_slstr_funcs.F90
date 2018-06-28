@@ -634,7 +634,7 @@ subroutine read_slstr_lldata(indir,data_arr,nx,ny,proclat,procgrid)
    sclval = 1.
    offval = 0.
 
-   if (proclat .eqv. .true.) then
+   if (proclat) then
       var = 'latitude_'//procgrid
    else
       var = 'longitude_'//procgrid

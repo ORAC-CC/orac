@@ -1119,7 +1119,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
 
       ! select correct emissivity file and calculate the emissivity over land
       if (verbose) write(*,*) 'Get surface emissivity'
-      if (use_camel_emis .neqv. .true.) then
+      if (.not. use_camel_emis) then
          call get_surface_emissivity(cyear, cdoy, cimss_emiss_path, imager_flags, &
               imager_geolocation, channel_info, preproc_dims, &
               assume_full_paths, verbose, surface, preproc_surf, source_atts)
@@ -1129,7 +1129,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
               assume_full_paths, verbose, surface, preproc_surf, source_atts)
       endif
 
-      if (do_ironly .neqv. .true.) then
+      if (do_ironly) then
          ! select correct reflectance files and calculate surface reflectance
          ! over land and ocean
          if (verbose) write(*,*) 'Get surface reflectance'
