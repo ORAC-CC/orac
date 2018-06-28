@@ -308,10 +308,14 @@ def check_args_preproc(args):
             warnings.warn('All elements of --limit should be non-zero.',
                           OracWarning, stacklevel=2)
 
+    if args.l1_land_mask and not args.no_predef:
+        raise ValueError("Do not set --l1_land_mask while using predefined "
+                         "geostationary geolocation.")
+
     if not isdir(args.atlas_dir):
         raise FileMissing('RTTOV Atlas directory', args.atlas_dir)
-    if not isfile(args.calib_file):
-        raise FileMissing('AATSR calibration file', args.calib_file)
+    #if not isfile(args.calib_file):
+    #    raise FileMissing('AATSR calibration file', args.calib_file)
     if not isdir(args.coef_dir):
         raise FileMissing('RTTOV coefficients directory', args.coef_dir)
     if not isdir(args.emis_dir):
@@ -334,8 +338,8 @@ def check_args_preproc(args):
     #    raise FileMissing('NISE directory', args.nise_dir)
     #if not isdir(args.spam_dir):
     #    raise FileMissing('ECMWF SPAM directory', args.spam_dir)
-    if not isfile(args.usgs_file):
-        raise FileMissing('USGS file', args.usgs_file)
+    #if not isfile(args.usgs_file):
+    #    raise FileMissing('USGS file', args.usgs_file)
 
 
 def check_args_main(args):
