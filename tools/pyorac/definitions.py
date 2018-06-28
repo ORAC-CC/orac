@@ -228,7 +228,7 @@ class FileName:
             self.predef   = False
             return
 
-        # Attempt SEVIRI L1B filename
+        # Attempt SEVIRI L1B filename in NAT format
         m = re.search(
             'MSG(?P<platform>\d{1})-SEVI-MSG(\d+)-(\d+)-NA-(?P<year>\d{4})'
             '(?P<month>\d{2})(?P<day>\d{2})(?P<hour>\d{2})(?P<min>\d{2})'
@@ -236,7 +236,28 @@ class FileName:
         )
         if m:
             self.sensor   = 'SEVIRI'
-            self.platform = 'MSG'+str(int(m.group('platform'))+7)
+            self.platform = 'MSG'+m.group('platform')
+            self.inst     = 'SEVIRI'+m.group('platform')
+            self.time     = datetime.datetime(
+                int(m.group('year')), int(m.group('month')), int(m.group('day')),
+                int(m.group('hour')), int(m.group('min')), float(m.group('sec')),
+                0
+            )
+            self.dur      = datetime.timedelta(seconds=900) # Guessing
+            self.geo      = filename
+            self.oractype = None
+            self.predef   = True
+            return
+
+        # Attempt SEVIRI L1B filename for segment HRT format
+        m = re.search(
+            'H-000-MSG(?P<platform>\d{1})_+-MSG(\d+)_+-_+-EPI_+-(?P<year>\d{4})'
+            '(?P<month>\d{2})(?P<day>\d{2})(?P<hour>\d{2})(?P<min>\d{2})'
+            '-_+', filename
+        )
+        if m:
+            self.sensor   = 'SEVIRI'
+            self.platform = 'MSG'+m.group('platform')
             self.inst     = 'SEVIRI'+m.group('platform')
             self.time     = datetime.datetime(
                 int(m.group('year')), int(m.group('month')), int(m.group('day')),
@@ -343,7 +364,8 @@ MAP_WVL_TO_INST = {
         11., 12., 13.3, 13.6, 13.9, 14.2
     )),
     'SEVIRI': _dict_from_list((
-        0.67, 0.81, 1.64, 3.92, 6.25, 7.35,  8.7, 9.7, 11., 12., 13.3
+        0.67, 0.87, 1.6, 3.7, 6.25, 7.35,  8.7, 9.7, 11., 12., 13.3
+#        0.67, 0.81, 1.64, 3.92, 6.25, 7.35,  8.7, 9.7, 11., 12., 13.3
     )),
     'VIIRS': _dict_from_list((
         0.41, 0.44, 0.49, 0.55, 0.67, 0.75, 0.87, 1.2, 1.4, 1.6,
