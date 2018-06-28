@@ -61,13 +61,13 @@ SEVIRI_UTIL_INCLUDE = $(LIBBASE_FORTRAN)/seviri_util
 SZLIB = $(LIBBASE)/szip/lib
 
 # Set up libraries and includes
-LIBS = -L$(EMOSLIB) -lemosR64 -lemos \
+LIBS = -L$(EMOSLIB) -lemosR64 -lemos -lfftw3 \
        -L$(EOSLIB) -lhdfeos -lGctp \
        -L$(EPR_APILIB) -lepr_api \
        -L$(GRIBLIB) -leccodes_f90 -leccodes \
        -L$(HDFLIB) -lmfhdf -ldf \
-       -L$(NCDFLIB) -lnetcdf \
        -L$(NCDF_FORTRAN_LIB) -lnetcdff \
+       -L$(NCDFLIB) -lnetcdf \
        -L$(RTTOVLIB) -lrttov12_coef_io -lrttov12_emis_atlas -lrttov12_hdf \
                      -lrttov12_parallel -lrttov12_main -lrttov12_other \
        -L$(HDF5LIB) -lhdf5 -lhdf5_fortran -lhdf5_hl -lhdf5hl_fortran \
