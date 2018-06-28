@@ -59,7 +59,7 @@ subroutine get_USGS_data(path_to_USGS_file, imager_flags, imager_geolocation, &
    ! Check that the defined file exists and is readable
    inquire(file=trim(path_to_USGS_file), exist=USGS_file_exist, &
         read=USGS_file_read)
-   if (.not.USGS_file_exist) then
+   if (.not. USGS_file_exist) then
       write(*,*) 'ERROR: read_USGS_file(): USGS file does ' // &
            'not exist: ', trim(path_to_USGS_file)
       stop error_stop_code
