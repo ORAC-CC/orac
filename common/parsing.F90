@@ -295,7 +295,9 @@ integer function parse_string_0d_strg(in, out) result(status)
    end if
 
    l = len_trim(out)
-   if (any(excess == out(l:l))) then
+   if (l == 0) then
+      b = a
+   else if (any(excess == out(l:l))) then
       b = l-1
    else
       b = l
