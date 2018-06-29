@@ -1129,7 +1129,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
               assume_full_paths, verbose, surface, preproc_surf, source_atts)
       endif
 
-      if (do_ironly) then
+      if (.not. do_ironly) then
          ! select correct reflectance files and calculate surface reflectance
          ! over land and ocean
          if (verbose) write(*,*) 'Get surface reflectance'
