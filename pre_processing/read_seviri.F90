@@ -129,7 +129,8 @@ subroutine read_seviri_dimensions(l1_5_file, n_across_track, n_along_track, &
 end subroutine read_seviri_dimensions
 
 ! Temporary function for use until seviri_util predef geo is fixed. INEFFICIENT.
-subroutine SEV_Retrieve_Predef_Geo(imager_geolocation,imager_angles,geofile,verbose)
+subroutine SEV_Retrieve_Predef_Geo(imager_geolocation, imager_angles, &
+     geofile, verbose)
    use netcdf
    use imager_structures_m
    implicit none
@@ -140,7 +141,7 @@ subroutine SEV_Retrieve_Predef_Geo(imager_geolocation,imager_angles,geofile,verb
    logical,                    intent(in)    :: verbose
 
    integer                :: ncid, varid
-   integer, dimension(2)  :: start,countval
+   integer, dimension(2)  :: start, countval
    start(1) = imager_geolocation%startx
    start(2) = imager_geolocation%starty
 
@@ -165,7 +166,7 @@ end subroutine SEV_Retrieve_Predef_Geo
 
 subroutine SEV_NCDF_check(status)
    use netcdf
-   integer, intent ( in) :: status
+   integer, intent (in) :: status
 
    if (status /= nf90_noerr) then
       write(*,*) trim(nf90_strerror(status))

@@ -287,7 +287,7 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
    case('ABI')
       if (trim(platform) == 'GOES-16') then
          coef_file = 'rtcoef_goes_16_abi.dat'
-      elseif (trim(platform) == 'GOES-17') then
+      else if (trim(platform) == 'GOES-17') then
          coef_file = 'rtcoef_goes_17_abi.dat'
       else
          write(*,*) 'ERROR: rttov_driver(): Invalid GOES platform: ', &
@@ -297,7 +297,7 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
    case('AHI')
       if (trim(platform) == 'Himawari-8') then
          coef_file = 'rtcoef_himawari_8_ahi.dat'
-      elseif (trim(platform) == 'Himawari-9') then
+      else if (trim(platform) == 'Himawari-9') then
          coef_file = 'rtcoef_himawari_9_ahi.dat'
       else
          write(*,*) 'ERROR: rttov_driver(): Invalid HIMAWARI platform: ', &
@@ -314,7 +314,7 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
        else if (index(platform,'metop') >= 1) then
           if (platform(6:6) == "a") then
              coef_file = 'rtcoef_metop_2_avhrr.dat'
-          elseif (platform(6:6) == "b") then
+          else if (platform(6:6) == "b") then
              coef_file = 'rtcoef_metop_1_avhrr.dat'
           else
              write(*,*) 'ERROR: rttov_driver(): Invalid Metop platform: ', &
@@ -530,7 +530,7 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
          ! Use poor man's approach to snow fraction
          if (preproc_prtm%snow_depth(idim,jdim) > 0.05) then
             profiles(count)%skin%snow_fraction = 1.
-         elseif (preproc_prtm%snow_depth(idim,jdim) > 0.00) then
+         else if (preproc_prtm%snow_depth(idim,jdim) > 0.00) then
             profiles(count)%skin%snow_fraction = &
                  preproc_prtm%snow_depth(idim,jdim) / 0.05
          else
