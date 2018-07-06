@@ -1106,25 +1106,32 @@ subroutine setup_seviri(l1b_path_file,geo_path_file,platform,year,month,day, &
       stop error_stop_code
    end if
 
-   ! Check if file is HRIT or NAT.
-   index1=index(trim(adjustl(l1b_path_file)),'.nat')
+   index1=index(trim(adjustl(l1b_path_file)),'.h5')
 
-   ! which MSG are we processing?
-   !
-   ! MSG2-SEVI-MSG15-0100-NA-20100507144241.667000000Z-995378.nat
-   ! H-000-MSG1__-MSG1________-_________-EPI______-200603031200-__
-   !
    if (index1 .ne. 0) then
-      index2=index(trim(adjustl(l1b_path_file)),'-')
-      platform=l1b_path_file(index2-4:index2-1)
+      index2=index(trim(adjustl(l1b_path_file)),'_')
+      call determine_seviri_platform_from_metoffice(l1b_path_file, platform)
    else
-      index2=index(trim(adjustl(l1b_path_file)),'__-')
-      platform=l1b_path_file(index2+3:index2+6)
+      ! Check if file is HRIT or NAT.
+      index1=index(trim(adjustl(l1b_path_file)),'.nat')
+
+      ! which MSG are we processing?
+      !
+      ! MSG2-SEVI-MSG15-0100-NA-20100507144241.667000000Z-995378.nat
+      ! H-000-MSG1__-MSG1________-_________-EPI______-200603031200-__
+      !
+      if (index1 .ne. 0) then
+         index2=index(trim(adjustl(l1b_path_file)),'-')
+         platform=l1b_path_file(index2-4:index2-1)
+      else
+         index2=index(trim(adjustl(l1b_path_file)),'__-')
+         platform=l1b_path_file(index2+3:index2+6)
+      end if
+      index2 = index2 + index(trim(adjustl(l1b_path_file(index2 + 1:))),'-')
+      index2 = index2 + index(trim(adjustl(l1b_path_file(index2 + 1:))),'-')
+      index2 = index2 + index(trim(adjustl(l1b_path_file(index2 + 1:))),'-')
+      index2 = index2 + index(trim(adjustl(l1b_path_file(index2 + 1:))),'-')
    end if
-   index2 = index2 + index(trim(adjustl(l1b_path_file(index2 + 1:))),'-')
-   index2 = index2 + index(trim(adjustl(l1b_path_file(index2 + 1:))),'-')
-   index2 = index2 + index(trim(adjustl(l1b_path_file(index2 + 1:))),'-')
-   index2 = index2 + index(trim(adjustl(l1b_path_file(index2 + 1:))),'-')
 
    ! get year, doy, hour and minute as strings
    cyear=trim(adjustl(l1b_path_file(index2+1:index2+4)))
@@ -1736,5 +1743,59 @@ subroutine common_setup(channel_info, channel_ids_user, channel_ids_default, &
    end do
 
 end subroutine common_setup
+
+subroutine determine_seviri_platform_from_metoffice(l1_file, platform)
+   ! See http://support.hdfgroup.org/ftp/HDF5/current/src/unpacked/fortran/examples/compound.f90
+   use common_constants_m, only: error_stop_code
+   use hdf5
+   implicit none
+
+   character(len=*),   intent(in)  :: l1_file
+   character(len=*),   intent(out) :: platform
+
+   integer(4)                      :: platform_number
+   integer                         :: error
+   integer(kind=HID_T)             :: file_id, group_id, dset_id
+   integer(kind=HID_T)             :: type1_id, type2_id
+   integer(kind=HSIZE_T)           :: count(1), type_size
+
+   integer(kind=SIZE_T), parameter :: type_init = 4, offset = 0
+
+   call h5open_f(error)
+   call h5fopen_f(l1_file, H5F_ACC_RDONLY_F, file_id, error)
+   call h5gopen_f(file_id, "MSG/Prologue", group_id, error)
+   call h5dopen_f(group_id, "GeneralInfo", dset_id, error)
+
+   call h5tcopy_f(H5T_NATIVE_INTEGER, type2_id, error)
+   call h5tset_size_f(type2_id, type_init, error)
+   call h5tget_size_f(type2_id, type_size, error)
+   call h5tcreate_f(H5T_COMPOUND_F, type_size, type1_id, error)
+   call h5tinsert_f(type1_id, "SatId", offset, type2_id, error)
+
+   call h5dread_f(dset_id, type1_id, platform_number, count, error)
+
+   call h5tclose_f(type2_id, error)
+   call h5tclose_f(type1_id, error)
+   call h5dclose_f(dset_id, error)
+   call h5gclose_f(group_id, error)
+   call h5fclose_f(file_id, error)
+   call h5close_f(error)
+
+   ! https://github.com/pytroll/mpop/blob/master/mpop/satin/msg_seviri_hdf.py#L30
+   select case (platform_number)
+   case(321)
+      platform = "MSG1"
+   case(322)
+      platform = "MSG2"
+   case(323)
+      platform = "MSG3"
+   case(324)
+      platform = "MSG4"
+   case default
+      write(*,*) "ERROR: Unrecognised platform number ", platform_number
+      stop error_stop_code
+   end select
+
+end subroutine determine_seviri_platform_from_metoffice
 
 end module setup_m

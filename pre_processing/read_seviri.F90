@@ -24,6 +24,10 @@ module read_seviri_m
 
    implicit none
 
+   integer, parameter :: SEVIRI_TYPE_METOFF = 1
+   integer, parameter :: SEVIRI_TYPE_HRIT   = 2
+   integer, parameter :: SEVIRI_TYPE_NAT    = 3
+
    private
 
    public :: read_seviri_dimensions, &
@@ -31,6 +35,21 @@ module read_seviri_m
              SEV_Retrieve_Predef_Geo
 
 contains
+
+integer function determine_seviri_file_type(l1_file)
+   implicit none
+
+   character(len=*), intent(in) :: l1_file
+
+   if (index(trim(l1_file), '.h5') > 0) then
+      determine_seviri_file_type = SEVIRI_TYPE_METOFF
+   else if (index(trim(l1_file), 'H-000-MSG') > 0) then
+      determine_seviri_file_type = SEVIRI_TYPE_HRIT
+   else
+      determine_seviri_file_type = SEVIRI_TYPE_NAT
+   end if
+
+end function determine_seviri_file_type
 
 !-------------------------------------------------------------------------------
 ! Name: read_seviri_dimensions
@@ -53,7 +72,6 @@ contains
 subroutine read_seviri_dimensions(l1_5_file, n_across_track, n_along_track, &
                                   startx, endx, starty, endy, verbose)
 
-   use iso_c_binding
    use preproc_constants_m
 #ifdef INCLUDE_SEVIRI_SUPPORT
    use seviri_util
@@ -69,19 +87,32 @@ subroutine read_seviri_dimensions(l1_5_file, n_across_track, n_along_track, &
    integer :: n_lines, n_columns
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< read_seviri_dimensions()'
-#ifdef INCLUDE_SEVIRI_SUPPORT
    ! These are constant for the full disk image.
    n_along_track  = 3712
    n_across_track = 3712
 
-   ! Get the starting offset and dimensions of the actual image in the file.
-   if (verbose) write(*,*) 'Calling seviri_native_get_dimens_f90() from ' // &
-                           'the seviri_util module'
-   if (seviri_get_dimens_f90(trim(l1_5_file)//C_NULL_CHAR, i_line, i_column, &
-       n_lines, n_columns, 1, 0, 0, 0, 0, 0.d0, 0.d0, 0.d0, 0.d0) .ne. 0) then
-      write(*,*) 'ERROR: in read_seviri_dimensions(), calling ' // &
-                 'seviri_get_dimens_nat_f90(), filename = ', trim(l1_5_file)
+   if (determine_seviri_file_type(l1_5_file) == SEVIRI_TYPE_METOFF) then
+      ! Met Office HDF files don't have a useful header so hard code the limits
+      i_line    = 0
+      i_column  = 0
+      n_lines   = 3712
+      n_columns = 3712
+   else
+#ifdef INCLUDE_SEVIRI_SUPPORT
+      ! Get the starting offset and dimensions of the actual image in the file.
+      if (verbose) write(*,*) 'Calling seviri_native_get_dimens_f90() from ' // &
+                              'the seviri_util module'
+      if (seviri_get_dimens_f90(l1_5_file, i_line, i_column, n_lines, &
+           n_columns, 1, 0, 0, 0, 0, 0.d0, 0.d0, 0.d0, 0.d0) .ne. 0) then
+         write(*,*) 'ERROR: in read_seviri_dimensions(), calling ' // &
+              'seviri_get_dimens_nat_f90(), filename = ', trim(l1_5_file)
+         stop error_stop_code
+      end if
+#else
+      write(*,*) 'ERROR: the ORAC pre-processor has not been compiled with ' // &
+                 'SEVIRI support. Recompile with -DINCLUDE_SEVIRI_SUPPORT.'
       stop error_stop_code
+#endif
    end if
 
    if (startx .le. 0 .or. endx .le. 0 .or. starty .le. 0 .or. endy .le. 0) then
@@ -120,11 +151,6 @@ subroutine read_seviri_dimensions(l1_5_file, n_across_track, n_along_track, &
       end if
    end if
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> read_seviri_dimensions()'
-#else
-   write(*,*) 'ERROR: the ORAC pre-processor has not been compiled with ' // &
-              'SEVIRI support. Recompile with -DINCLUDE_SEVIRI_SUPPORT.'
-   stop error_stop_code
-#endif
 
 end subroutine read_seviri_dimensions
 
@@ -196,8 +222,155 @@ end subroutine SEV_NCDF_check
 subroutine read_seviri_l1_5(l1_5_file, imager_geolocation, imager_measurements, &
    imager_angles, imager_time, channel_info, do_gsics, global_atts, verbose)
 
+   use channel_structures_m
+   use global_attributes_m
+   use imager_structures_m
+
+   implicit none
+
+   character(len=path_length),  intent(in)    :: l1_5_file
+   type(imager_geolocation_t),  intent(inout) :: imager_geolocation
+   type(imager_measurements_t), intent(inout) :: imager_measurements
+   type(imager_angles_t),       intent(inout) :: imager_angles
+   type(imager_time_t),         intent(inout) :: imager_time
+   type(channel_info_t),        intent(in)    :: channel_info
+   logical,                     intent(in)    :: do_gsics
+   type(global_attributes_t),   intent(inout) :: global_atts
+   logical,                     intent(in)    :: verbose
+
+   integer :: startx
+
+   if (determine_seviri_file_type(l1_5_file) == SEVIRI_TYPE_METOFF) then
+      call read_seviri_l1_5_metoff(l1_5_file, imager_geolocation, &
+           imager_measurements, imager_angles, imager_time, channel_info, &
+           global_atts, verbose)
+   else
+      call read_seviri_l1_5_nat_or_hrit(l1_5_file, imager_geolocation, &
+           imager_measurements, imager_angles, imager_time, channel_info, &
+           do_gsics, global_atts, verbose)
+   end if
+
+   startx = imager_geolocation%startx
+
+   where(imager_angles%solazi(startx:,:,1) .ne. sreal_fill_value .and. &
+         imager_angles%satazi(startx:,:,1) .ne. sreal_fill_value)
+      imager_angles%solazi(:,:,1) = imager_angles%solazi(startx:,:,1) - 180.
+      where(imager_angles%solazi(:,:,1) .lt. 0.)
+         imager_angles%solazi(:,:,1) = imager_angles%solazi(:,:,1) + 360.
+      end where
+      imager_angles%relazi(:,:,1) = abs(imager_angles%satazi(startx:,:,1) - &
+                                        imager_angles%solazi(startx:,:,1))
+
+      where (imager_angles%relazi(:,:,1) .gt. 180.)
+         imager_angles%relazi(:,:,1) = 360. - imager_angles%relazi(:,:,1)
+      end where
+   end where
+
+end subroutine read_seviri_l1_5
+
+subroutine read_seviri_l1_5_metoff(l1_5_file, imager_geolocation, &
+   imager_measurements, imager_angles, imager_time, channel_info, &
+   global_atts, verbose)
+
+   use channel_structures_m
+   use common_constants_m, only: error_stop_code
+   use global_attributes_m
+   use hdf5
+   use imager_structures_m
+   use preproc_constants_m
+
+   implicit none
+
+   character(len=path_length),  intent(in)    :: l1_5_file
+   type(imager_geolocation_t),  intent(inout) :: imager_geolocation
+   type(imager_measurements_t), intent(inout) :: imager_measurements
+   type(imager_angles_t),       intent(inout) :: imager_angles
+   type(imager_time_t),         intent(inout) :: imager_time
+   type(channel_info_t),        intent(in)    :: channel_info
+   type(global_attributes_t),   intent(inout) :: global_atts
+   logical,                     intent(in)    :: verbose
+
+   integer             :: i
+   integer             :: startx, nx, starty, ny
+   integer             :: err_code
+   character(len=8)    :: channel_name
+   character(len=4)    :: variable_name
+   integer(kind=HID_T) :: file_id
+   real, pointer       :: temp2(:,:), temp3(:,:,:)
+
+   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_seviri_l1_5_metoff()'
+
+   startx = imager_geolocation%startx
+   nx     = imager_geolocation%nx
+   starty = imager_geolocation%starty
+   ny     = imager_geolocation%ny
+
+   ! The Met Office output calibrated radiances as an HDF5 file
+   call h5open_f(err_code)
+   if (err_code /= 0) then
+      write(*,*) 'ERROR: read_seviri(): Cannot start HDF5'
+      stop error_stop_code
+   end if
+   call h5fopen_f(l1_5_file, H5F_ACC_RDONLY_F, file_id, err_code)
+   if (err_code /= 0) then
+      write(*,*) 'ERROR: read_seviri(): Cannot open file ', trim(l1_5_file)
+      stop error_stop_code
+   end if
+
+   allocate(temp3(2, startx:imager_geolocation%endx, &
+        starty:imager_geolocation%endy))
+   call read_seviri_hdf_field3(file_id, "Static/MSG/Ancillary", "LatLon", &
+        temp3, [1, startx, starty], [1, nx, ny])
+   imager_geolocation%latitude = temp3(1,:,:)
+   imager_geolocation%longitude = temp3(2,:,:)
+   deallocate(temp3)
+
+   temp2 => imager_angles%satazi(startx:,:,1)
+   call read_seviri_hdf_field2(file_id, "MSG/Ancillary", "SatAzimuthAngle", &
+        temp2, [startx, starty], [nx, ny])
+   temp2 => imager_angles%satzen(startx:,:,1)
+   call read_seviri_hdf_field2(file_id, "MSG/Ancillary", "SatZenithAngle", &
+        temp2, [startx, starty], [nx, ny])
+   temp2 => imager_angles%solazi(startx:,:,1)
+   call read_seviri_hdf_field2(file_id, "MSG/Ancillary", "SolAziAngle", &
+        temp2, [startx, starty], [nx, ny])
+   temp2 => imager_angles%solzen(startx:,:,1)
+   call read_seviri_hdf_field2(file_id, "MSG/Ancillary", "SolZenAngle", &
+        temp2, [startx, starty], [nx, ny])
+
+   do i = 1, channel_info%nchannels_total
+      ! Name of data field is different for visible and thermal channels
+      write(channel_name, '("MSG/Ch", i0.2)') channel_info%channel_ids_instr(i)
+      if (channel_info%channel_lw_flag(i) == 1) then
+         variable_name = "BT"
+      else
+         variable_name = "Refl"
+      end if
+
+      temp2 => imager_measurements%data(:,:,i)
+      call read_seviri_hdf_field2(file_id, channel_name, variable_name, &
+           temp2, [startx, starty], [nx, ny])
+
+      ! Correct fill value
+      where (temp2 == -1073741800.0)
+         temp2 = sreal_fill_value
+      end where
+   end do
+
+   call h5fclose_f(file_id, err_code)
+   call h5close_f(err_code)
+
+   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_seviri_l1_5_metoff()'
+
+end subroutine read_seviri_l1_5_metoff
+
+subroutine read_seviri_l1_5_nat_or_hrit(l1_5_file, imager_geolocation, &
+   imager_measurements, imager_angles, imager_time, channel_info, do_gsics, &
+   global_atts, verbose)
+
    use iso_c_binding
    use channel_structures_m
+   use common_constants_m, only: error_stop_code
    use global_attributes_m
    use imager_structures_m
    use preproc_constants_m
@@ -228,7 +401,7 @@ subroutine read_seviri_l1_5(l1_5_file, imager_geolocation, imager_measurements, 
 #ifdef INCLUDE_SEVIRI_SUPPORT
    type(seviri_preproc_t_f90)  :: preproc
 #endif
-   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_seviri_l1_5()'
+   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_seviri_l1_5_nat_or_hrit()'
 #ifdef INCLUDE_SEVIRI_SUPPORT
 
    ! Test if HRIT
@@ -321,26 +494,130 @@ subroutine read_seviri_l1_5(l1_5_file, imager_geolocation, imager_measurements, 
    deallocate(band_ids)
    deallocate(band_units)
 
-   where(imager_angles%solazi(startx:,:,1) .ne. sreal_fill_value .and. &
-         imager_angles%satazi(startx:,:,1) .ne. sreal_fill_value)
-      imager_angles%solazi(:,:,1) = imager_angles%solazi(startx:,:,1) - 180.
-      where(imager_angles%solazi(:,:,1) .lt. 0.)
-         imager_angles%solazi(:,:,1) = imager_angles%solazi(:,:,1) + 360.
-      end where
-      imager_angles%relazi(:,:,1) = abs(imager_angles%satazi(startx:,:,1) - &
-                                        imager_angles%solazi(startx:,:,1))
-
-      where (imager_angles%relazi(:,:,1) .gt. 180.)
-         imager_angles%relazi(:,:,1) = 360. - imager_angles%relazi(:,:,1)
-      end where
-   end where
-   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_seviri_l1_5()'
+   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_seviri_l1_5_nat_or_hrit()'
 #else
    write(*,*) 'ERROR: the ORAC pre-processor has not been compiled with ' // &
               'SEVIRI support. Recompile with -DINCLUDE_SEVIRI_SUPPORT.'
    stop error_stop_code
 #endif
 
-end subroutine read_seviri_l1_5
+
+end subroutine read_seviri_l1_5_nat_or_hrit
+
+subroutine read_seviri_hdf_field2(file_id, group, variable, temp, starts, nums)
+
+   use common_constants_m, only: error_stop_code
+   use hdf5
+
+   implicit none
+
+   integer,   parameter                    :: ndims = 2
+   integer(kind=HID_T),         intent(in) :: file_id
+   character(len=*),            intent(in) :: group
+   character(len=*),            intent(in) :: variable
+   real,      pointer,          intent(in) :: temp(:,:)
+   integer,   dimension(ndims), intent(in) :: starts
+   integer,   dimension(ndims), intent(in) :: nums
+
+   integer                                 :: err_code, i
+   integer(kind=HID_T)                     :: group_id, dset_id, space_id, mem_id
+   integer(kind=HSIZE_T), dimension(ndims) :: start, edge
+
+   ! Only open the requested data
+   do i = 1, ndims
+      start(i) = int(starts(i) - 1, kind=HSIZE_T)
+      edge(i) = int(nums(i), kind=HSIZE_T)
+   end do
+
+   ! Read array
+   call h5gopen_f(file_id, group, group_id, err_code)
+   if (err_code /= 0) then
+      write(*,*) 'ERROR: read_seviri(): Cannot open group ', trim(group)
+      stop error_stop_code
+   end if
+   call h5dopen_f(group_id, variable, dset_id, err_code)
+   if (err_code /= 0) then
+      write(*,*) 'ERROR: read_seviri(): Cannot open field ', trim(variable)
+      stop error_stop_code
+   end if
+   call h5dget_space_f(dset_id, space_id, err_code)
+   call h5sselect_hyperslab_f(space_id, H5S_SELECT_SET_F, start, edge, &
+        err_code)
+   call h5screate_simple_f(ndims, edge, mem_id, err_code)
+   if (err_code /= 0) then
+      write(*,*) 'ERROR: read_seviri(): Cannot create memory space'
+      stop error_stop_code
+   end if
+   call h5dread_f(dset_id, H5T_NATIVE_REAL, temp, edge, err_code, mem_id, &
+        space_id)
+   if (err_code /= 0) then
+      write(*,*) 'ERROR: read_seviri(): Cannot read ', trim(group), '/', &
+           trim(variable)
+      stop error_stop_code
+   end if
+   call h5sclose_f(mem_id, err_code)
+   call h5sclose_f(space_id, err_code)
+   call h5dclose_f(dset_id, err_code)
+   call h5gclose_f(group_id, err_code)
+
+end subroutine read_seviri_hdf_field2
+
+subroutine read_seviri_hdf_field3(file_id, group, variable, temp, starts, nums)
+
+   use common_constants_m, only: error_stop_code
+   use hdf5
+
+   implicit none
+
+   integer,   parameter                    :: ndims = 3
+   integer(kind=HID_T),         intent(in) :: file_id
+   character(len=*),            intent(in) :: group
+   character(len=*),            intent(in) :: variable
+   real,      pointer,          intent(in) :: temp(:,:,:)
+   integer,   dimension(ndims), intent(in) :: starts
+   integer,   dimension(ndims), intent(in) :: nums
+
+   integer                                 :: err_code, i
+   integer(kind=HID_T)                     :: group_id, dset_id, space_id, mem_id
+   integer(kind=HSIZE_T), dimension(ndims) :: start, edge
+
+   ! Only open the requested data
+   do i = 1, ndims
+      start(i) = int(starts(i) - 1, kind=HSIZE_T)
+      edge(i) = int(nums(i), kind=HSIZE_T)
+   end do
+
+   ! Read array
+   call h5gopen_f(file_id, group, group_id, err_code)
+   if (err_code /= 0) then
+      write(*,*) 'ERROR: read_seviri(): Cannot open group ', trim(group)
+      stop error_stop_code
+   end if
+   call h5dopen_f(group_id, variable, dset_id, err_code)
+   if (err_code /= 0) then
+      write(*,*) 'ERROR: read_seviri(): Cannot open field ', trim(variable)
+      stop error_stop_code
+   end if
+   call h5dget_space_f(dset_id, space_id, err_code)
+   call h5sselect_hyperslab_f(space_id, H5S_SELECT_SET_F, start, edge, &
+        err_code)
+   call h5screate_simple_f(ndims, edge, mem_id, err_code)
+   if (err_code /= 0) then
+      write(*,*) 'ERROR: read_seviri(): Cannot create memory space'
+      stop error_stop_code
+   end if
+   call h5dread_f(dset_id, H5T_NATIVE_REAL, temp, edge, err_code, mem_id, &
+        space_id)
+   if (err_code /= 0) then
+      write(*,*) 'ERROR: read_seviri(): Cannot read ', trim(group), '/', &
+           trim(variable)
+      stop error_stop_code
+   end if
+   call h5sclose_f(mem_id, err_code)
+   call h5sclose_f(space_id, err_code)
+   call h5dclose_f(dset_id, err_code)
+   call h5gclose_f(group_id, err_code)
+
+end subroutine read_seviri_hdf_field3
 
 end module read_seviri_m

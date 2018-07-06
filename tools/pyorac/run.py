@@ -22,7 +22,7 @@ def process_pre(args, log_path, dependency=None):
     driver = build_preproc_driver(args)
 
     # This must be called after building the driver as revision is unknown
-    inst = FileName(args.target)
+    inst = FileName(args.in_dir, args.target)
     job_name = inst.job_name(args.revision, 'pre')
     root_name = inst.root_name(args.revision, args.processor, args.project,
                                args.product_name)
@@ -57,7 +57,7 @@ def process_main(args, log_path, phs, tag='', dependency=None):
     from pyorac.drivers import build_main_driver
 
     check_args_main(args)
-    inst = FileName(args.target)
+    inst = FileName(args.in_dir, args.target)
     job_name = inst.job_name(tag=phs + tag)
     root_name = inst.root_name()
 
@@ -91,7 +91,7 @@ def process_post(args, log_path, files=None, dependency=None):
     from pyorac.drivers import build_postproc_driver
 
     check_args_postproc(args)
-    inst = FileName(args.target)
+    inst = FileName(args.in_dir, args.target)
     job_name = inst.job_name(args.revision, 'post')
     root_name = inst.root_name(args.revision)
 
@@ -147,7 +147,7 @@ def process_all(orig_args):
     check_args_common(args)
     log_path = check_args_cc4cl(args)
 
-    inst = FileName(args.target)
+    inst = FileName(args.in_dir, args.target)
     map_wvl = MAP_WVL_TO_INST[inst.sensor]
 
     # Sort out what channels are required
@@ -249,7 +249,7 @@ def run_regression(target, in_dir):
 
     regex = re.compile("_R(\d+)")
 
-    inst = FileName(target)
+    inst = FileName(in_dir, target)
     this_revision = int(inst.revision)
     for this_file in iglob(os.path.join(in_dir, "**", inst.root_name() + "*nc")):
         # Find previous file version

@@ -283,6 +283,7 @@ def check_args_common(args):
 
 def check_args_preproc(args):
     """Ensure preprocessor parser arguments are valid."""
+    from pyorac.definitions import FileName
     from pyorac.local_defaults import auxiliaries, global_attributes
 
     # Add global attributes
@@ -308,7 +309,8 @@ def check_args_preproc(args):
             warnings.warn('All elements of --limit should be non-zero.',
                           OracWarning, stacklevel=2)
 
-    if args.l1_land_mask and not args.no_predef:
+    inst = FileName(args.in_dir, args.target)
+    if inst.predef and args.l1_land_mask and not args.no_predef:
         raise ValueError("Do not set --l1_land_mask while using predefined "
                          "geostationary geolocation.")
 
