@@ -93,8 +93,8 @@ CINC = -I./
 
 # Uncommonet if ATSR support is desired.
 #LIBS += -L$(EPR_APILIB) -lepr_api
-#INC  += -I$(EPR_APIINCLUDE)
-#CINC += -I$(EPR_APIINCLUDE)
+#INC  += -I$(EPR_APIINCLUDE) -DINCLUDE_ATSR_SUPPORT
+#CINC += -I$(EPR_APIINCLUDE) -DINCLUDE_ATSR_SUPPORT
 
 # Uncomment if Numerical Recipes is available for cubic spline profile
 # interpolation and bilinear LUT interpolation.
