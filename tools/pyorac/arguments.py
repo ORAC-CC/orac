@@ -113,7 +113,7 @@ def args_preproc(parser):
                      help = 'Revision (version) number for file.')
 
     ecmwf = parser.add_argument_group('ECMWF settings')
-    ecmwf.add_argument('--ecmwf_flag', type=int, choices = range(5),
+    ecmwf.add_argument('--ecmwf_flag', type=int, choices = range(9),
                        default = defaults.ecmwf_flag,
                        help = 'Type of ECMWF data to read in.')
     ecmwf.add_argument('--single_ecmwf', action='store_const',
