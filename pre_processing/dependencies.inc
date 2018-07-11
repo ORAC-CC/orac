@@ -98,9 +98,10 @@ $(OBJS)/setup.o: $(OBJS)/calender.o $(OBJS)/channel_structures.o \
         $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o
 $(OBJS)/surface_emissivity.o: $(OBJS)/channel_structures.o \
         $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o \
-        $(OBJS)/read_camel_emissivity.o $(OBJS)/preproc_structures.o \
+        $(OBJS)/preproc_structures.o $(OBJS)/read_camel_emissivity.o \
         $(OBJS)/read_cimss_emissivity.o $(OBJS)/surface_structures.o \
-        get_surface_emissivity.F90 select_modis_emiss_file.F90
+        get_surface_emissivity.F90 select_camel_emiss_file.F90 \
+        select_modis_emiss_file.F90
 $(OBJS)/surface_reflectance.o: $(OBJS)/channel_structures.o $(OBJS)/cox_munk.o \
         $(OBJS)/cox_munk_constants.o $(OBJS)/ecmwf.o $(OBJS)/fill_grid.o \
         $(OBJS)/imager_structures.o $(OBJS)/mcd43c.o $(OBJS)/ocean_colour.o \
@@ -117,9 +118,9 @@ $(OBJS)/orac_preproc.o: $(OBJS)/channel_structures.o $(OBJS)/cloud_emis.o \
         $(OBJS)/ecmwf.o $(OBJS)/imager_structures.o $(OBJS)/netcdf_output.o \
         $(OBJS)/preparation.o $(OBJS)/preproc_constants.o \
         $(OBJS)/preproc_structures.o $(OBJS)/read_USGS_file.o \
-        $(OBJS)/read_aatsr.o $(OBJS)/read_avhrr.o $(OBJS)/read_himawari.o \
-        $(OBJS)/read_imager.o $(OBJS)/read_modis.o $(OBJS)/read_seviri.o \
-        $(OBJS)/read_slstr.o $(OBJS)/read_viirs.o $(OBJS)/rttov_driver.o \
-        $(OBJS)/rttov_driver_gfs.o $(OBJS)/setup.o $(OBJS)/surface_emissivity.o \
-        $(OBJS)/surface_reflectance.o $(OBJS)/surface_structures.o \
-        $(OBJS)/utils_for_main.o
+        $(OBJS)/read_aatsr.o $(OBJS)/read_avhrr.o $(OBJS)/read_goes.o \
+        $(OBJS)/read_himawari.o $(OBJS)/read_imager.o $(OBJS)/read_modis.o \
+        $(OBJS)/read_seviri.o $(OBJS)/read_slstr.o $(OBJS)/read_viirs.o \
+        $(OBJS)/rttov_driver.o $(OBJS)/rttov_driver_gfs.o $(OBJS)/setup.o \
+        $(OBJS)/surface_emissivity.o $(OBJS)/surface_reflectance.o \
+        $(OBJS)/surface_structures.o $(OBJS)/utils_for_main.o
