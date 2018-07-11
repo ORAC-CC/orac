@@ -511,13 +511,13 @@ subroutine read_seviri_hdf_field2(file_id, group, variable, temp, starts, nums)
 
    implicit none
 
-   integer,   parameter                    :: ndims = 2
-   integer(kind=HID_T),         intent(in) :: file_id
-   character(len=*),            intent(in) :: group
-   character(len=*),            intent(in) :: variable
-   real,      pointer,          intent(in) :: temp(:,:)
-   integer,   dimension(ndims), intent(in) :: starts
-   integer,   dimension(ndims), intent(in) :: nums
+   integer,   parameter                       :: ndims = 2
+   integer(kind=HID_T),         intent(in)    :: file_id
+   character(len=*),            intent(in)    :: group
+   character(len=*),            intent(in)    :: variable
+   real,      pointer,          intent(inout) :: temp(:,:)
+   integer,   dimension(ndims), intent(in)    :: starts
+   integer,   dimension(ndims), intent(in)    :: nums
 
    integer                                 :: err_code, i
    integer(kind=HID_T)                     :: group_id, dset_id, space_id, mem_id
@@ -569,13 +569,13 @@ subroutine read_seviri_hdf_field3(file_id, group, variable, temp, starts, nums)
 
    implicit none
 
-   integer,   parameter                    :: ndims = 3
-   integer(kind=HID_T),         intent(in) :: file_id
-   character(len=*),            intent(in) :: group
-   character(len=*),            intent(in) :: variable
-   real,      pointer,          intent(in) :: temp(:,:,:)
-   integer,   dimension(ndims), intent(in) :: starts
-   integer,   dimension(ndims), intent(in) :: nums
+   integer,   parameter                       :: ndims = 3
+   integer(kind=HID_T),         intent(in)    :: file_id
+   character(len=*),            intent(in)    :: group
+   character(len=*),            intent(in)    :: variable
+   real,      pointer,          intent(inout) :: temp(:,:,:)
+   integer,   dimension(ndims), intent(in)    :: starts
+   integer,   dimension(ndims), intent(in)    :: nums
 
    integer                                 :: err_code, i
    integer(kind=HID_T)                     :: group_id, dset_id, space_id, mem_id
