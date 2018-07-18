@@ -107,8 +107,9 @@ class FileName:
     noaa (str): The number of this AVHRR sensor (1, 2, or 3).
     """
 
-    def __init__(self, filename):
+    def __init__(self, in_dir, filename):
         import datetime
+        import os
         import re
 
         self.l1b = filename
@@ -269,6 +270,28 @@ class FileName:
             self.predef   = True
             return
 
+        # Attempt SEVIRI L1B filename for Met Office format
+        m = re.search(
+            'MSG_(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2})(?P<hour>\d{2})'
+            '(?P<min>\d{2}).*h5', filename
+        )
+        if m:
+            self.sensor   = 'SEVIRI'
+            for fdr in in_dir:
+                tmp = os.path.join(fdr, filename)
+                if os.path.isfile(tmp):
+                    self.platform = _determine_platform_from_metoffice(tmp)
+            self.inst     = 'SEVIRI3'
+            self.time     = datetime.datetime(
+                int(m.group('year')), int(m.group('month')), int(m.group('day')),
+                int(m.group('hour')), int(m.group('min')), 0, 0
+            )
+            self.dur      = datetime.timedelta(seconds=900) # Guessing
+            self.geo      = filename
+            self.oractype = None
+            self.predef   = True
+            return
+
         # Processed ORAC output
         m = re.search(
             '(?P<project>\w+)-(?P<product>.+)-(?P<sensor>\w+)_(?P<processor>\w+)'
@@ -338,6 +361,17 @@ class FileName:
         else:
             raise ValueError("Unknown AVHRR platform: "+self.platform)
 
+
+def _determine_platform_from_metoffice(filename):
+    from h5py import File
+
+    with File(filename) as data:
+        platform = data["MSG/Prologue/GeneralInfo"][0][0]
+
+    if 321 > platform > 324:
+        raise ValueError("Unrecognised platform number {}".format(platform))
+
+    return "MSG{}".format(platform - 320)
 
 #-----------------------------------------------------------------------------
 #----- INSTRUMENT/CLASS DEFINITIONS ------------------------------------------

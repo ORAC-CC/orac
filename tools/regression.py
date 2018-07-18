@@ -82,7 +82,7 @@ try:
                 path = [os.path.join(defaults.orac_dir, "tools"), ]
                 path.extend(filter(None, sys.path))
 
-                inst = FileName(out_file)
+                inst = FileName(args.in_dir, out_file)
                 job_name = inst.job_name(tag='regression')
 
                 (fd, script_file) = mkstemp(

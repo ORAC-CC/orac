@@ -18,7 +18,7 @@
 /common/stack.hh
 
 # /config/
-/config/*.ox
+/config/*debug*
 
 # /derived_products/broadband_fluxes/
 /derived_products/broadband_fluxes/obj

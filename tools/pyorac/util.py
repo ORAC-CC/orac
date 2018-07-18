@@ -5,9 +5,13 @@ import os
 def build_orac_library_path(libs=None):
     """Build required LD_LIBRARY_PATH variable"""
     from os import environ
+    from pyorac.local_defaults import orac_lib
 
     if libs is None:
-        libs = read_orac_libraries(environ["ORAC_LIB"])
+        try:
+            libs = read_orac_libraries(environ["ORAC_LIB"])
+        except KeyError:
+            libs = read_orac_libraries(orac_lib)
 
     if "GRIBLIB" in libs:
         glib = "GRIBLIB"

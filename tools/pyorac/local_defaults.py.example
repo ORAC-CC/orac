@@ -1,7 +1,5 @@
 # Definitions of default values/paths for your local system
 
-from os import environ
-
 # ===== PATHS =====
 
 # Location of source code trunk from ORAC repository
@@ -9,7 +7,7 @@ orac_dir  = '/home/username/orac/orac'
 # Location of data directory from ORAC repository
 data_dir    = '/local/storage/orac/data'
 # Path to library file used to compile ORAC
-orac_lib    = environ['ORAC_LIB']
+orac_lib    = '/home/username/orac/orac/config/lib.inc'
 
 # Directory of look-up tables
 sad_dirs = ['/local/storage/orac_luts', ]

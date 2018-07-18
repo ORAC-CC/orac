@@ -35,7 +35,7 @@ check_args_common(args)
 log_path = check_args_cc4cl(args)
 
 try:
-    inst = FileName(args.target)
+    inst = FileName(args.in_dir, args.target)
 
     if inst.oractype in ('primary', 'secondary'):
         jid, _ = process_post(args, log_path)

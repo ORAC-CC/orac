@@ -1376,13 +1376,13 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
            imager_pavolonis,netcdf_info,channel_info,surface,include_full_brdf, &
            do_cloud_emis)
       if (do_cloud_emis) then
-			call nc_write_array(&
-					netcdf_info%ncid_prtm, &
-					'tropopause_pres_rtm', &
-					netcdf_info%vid_tropop_pw, &
-					preproc_prtm%trop_p, &
-					1,1, preproc_dims%xdim,&
-					1,1, preproc_dims%ydim)
+         call nc_write_array(&
+              netcdf_info%ncid_prtm, &
+              'tropopause_pres_rtm', &
+              netcdf_info%vid_tropop_pw, &
+              preproc_prtm%trop_p, &
+              1,1, preproc_dims%xdim,&
+              1,1, preproc_dims%ydim)
       end if
 
       ! close output netcdf files

@@ -91,41 +91,41 @@ subroutine select_modis_albedo_file(cyear, cdoy, modis_surf_path, &
       cyear2 = cyear
    end if
 
-	if (include_full_brdf) then
-	   prefix = 'MCD43C1'
-	else
-	   prefix = 'MCD43C3'
-	end if
+   if (include_full_brdf) then
+      prefix = 'MCD43C1'
+   else
+      prefix = 'MCD43C3'
+   end if
 
    regex = prefix//'\.A'//trim(adjustl(cyear2))//trim(adjustl(cdoy))// &
            '\.006\..............'//'\.hdf$'
 
    if (match_file(trim(modis_surf_path), trim(regex), file_name) .ne. 0) then
 
-		! Find the closest data
-		allocate(date_diffs(nv))
-		read(cdoy, *) doy
-		date_diffs = abs(dates-doy)
+      ! Find the closest data
+      allocate(date_diffs(nv))
+      read(cdoy, *) doy
+      date_diffs = abs(dates-doy)
 
-		pos = minloc(date_diffs)
+      pos = minloc(date_diffs)
 
-		write(mcd_date_s, '(I0.3)') dates(pos(1))
+      write(mcd_date_s, '(I0.3)') dates(pos(1))
 
-		! Search for the file with an unknown processing date
-		regex = prefix//'\.A'//trim(adjustl(cyear2))//trim(adjustl(mcd_date_s))// &
-		        '\.006\..............'//'\.hdf$'
+      ! Search for the file with an unknown processing date
+      regex = prefix//'\.A'//trim(adjustl(cyear2))//trim(adjustl(mcd_date_s))// &
+           '\.006\..............'//'\.hdf$'
 
-		if (match_file(trim(modis_surf_path), trim(regex), file_name) .ne. 0) then
-		   regex = prefix//'\.A'//trim(adjustl(cyear2))//trim(adjustl(mcd_date_s))// &
-		        '\.005\..............'//'\.hdf$'
-		   if (match_file(trim(modis_surf_path), trim(regex), file_name) .ne. 0) then
-		      write(*,*) 'ERROR: select_modis_albedo_file(): Unable to locate ' // &
-		         'MODIS albedo file: ', trim(modis_surf_path)//'/'//trim(regex)
-		      stop error_stop_code
-		   end if
-		end if
+      if (match_file(trim(modis_surf_path), trim(regex), file_name) .ne. 0) then
+         regex = prefix//'\.A'//trim(adjustl(cyear2))//trim(adjustl(mcd_date_s))// &
+              '\.005\..............'//'\.hdf$'
+         if (match_file(trim(modis_surf_path), trim(regex), file_name) .ne. 0) then
+            write(*,*) 'ERROR: select_modis_albedo_file(): Unable to locate ' // &
+                 'MODIS albedo file: ', trim(modis_surf_path)//'/'//trim(regex)
+            stop error_stop_code
+         end if
+      end if
       deallocate(date_diffs)
-	end if
+   end if
 
    modis_surf_path_file = trim(modis_surf_path)//'/'//trim(file_name)
 

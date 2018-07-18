@@ -15,7 +15,7 @@ def build_preproc_driver(args):
     from subprocess import check_output, STDOUT
     from uuid import uuid4
 
-    inst = FileName(args.target)
+    inst = FileName(args.in_dir, args.target)
     file = _glob_dirs(args.in_dir, args.target, 'L1B file')
     geo  = _glob_dirs(args.in_dir, inst.geo, 'geolocation file')
 
@@ -323,7 +323,7 @@ def build_main_driver(args):
     from pyorac.definitions import FileName, SETTINGS
 
     # Deal with different treatment of platform between pre and main processors
-    inst = FileName(args.target)
+    inst = FileName(args.in_dir, args.target)
 
     # Form mandatory driver file lines
     driver = """# ORAC New Driver File
