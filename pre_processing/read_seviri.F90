@@ -491,6 +491,10 @@ subroutine read_seviri_l1_5_nat_or_hrit(l1_5_file, imager_geolocation, &
       imager_measurements%data(startx:,:,:)   = preproc%data(column0:column1,line0:line1,:)
    end if
 
+	! Remove underscores added by seviri_util (easy way of converting c-string to f-string).
+   i = index(global_atts%Satpos_Metadata,'_')
+   global_atts%Satpos_Metadata=global_atts%Satpos_Metadata(1:i-1)
+
    deallocate(band_ids)
    deallocate(band_units)
 
