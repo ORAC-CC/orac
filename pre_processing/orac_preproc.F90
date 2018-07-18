@@ -536,6 +536,9 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
    use_camel_emis                  = .false.
    do_gsics                        = .true.
 
+   ! Initialise satellite position string
+   global_atts%Satpos_Metadata = 'null'
+
    ! if more than one argument passed, all inputs on command line
    if (nargs .gt. 1) then
       if (nargs .lt. 47) then
@@ -758,11 +761,18 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
       stop error_stop_code
    end if
 
-   source_atts%level1b_file = l1b_path_file
-   source_atts%geo_file = geo_path_file
+   source_atts%level1b_file         = l1b_path_file
+   source_atts%geo_file             = geo_path_file
    ! Set default values for fields that some instruments setups do not set yet
-   source_atts%level1b_version = 'null'
+   source_atts%level1b_version      = 'null'
    source_atts%level1b_orbit_number = 'null'
+   ! Set default values for other attributes, just in case
+   source_atts%albedo_file          = 'null'
+   source_atts%brdf_file            = 'null'
+   source_atts%emissivity_file      = 'null'
+   source_atts%usgs_file            = 'null'
+   source_atts%snow_file            = 'null'
+   source_atts%sea_ice_file         = 'null'
 
    if (trim(adjustl(sensor)) .eq. 'AATSR' .or. &
        trim(adjustl(sensor)) .eq. 'ATSR2') then

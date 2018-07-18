@@ -63,7 +63,7 @@ module global_attributes_m
       character(len=attribute_length)      :: SVN_Version
       character(len=attribute_length_long) :: ECMWF_Version
       character(len=attribute_length)      :: RTTOV_Version
-      character(len=attribute_length_long) :: Satpos_Metadata
+      character(len=attribute_length)      :: Satpos_Metadata
 
       character(len=attribute_length)      :: file_version
    end type global_attributes_t

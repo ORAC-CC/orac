@@ -262,6 +262,13 @@ subroutine read_seviri_l1_5(l1_5_file, imager_geolocation, imager_measurements, 
    line1   = starty - 1 + ny - 1
    column0 = startx - 1
    column1 = startx - 1 + nx - 1
+   if (verbose) then
+      if (do_gsics) then
+         write(*,*) 'Applying GSICS calibration coefficients'
+      else
+         write(*,*) 'Applying IMPF calibration coefficients'
+      endif
+   endif
 
    if (.not. hrit_proc .or. (nx .eq. 3712 .and. ny .eq. 3712)) then
 
@@ -277,20 +284,12 @@ subroutine read_seviri_l1_5(l1_5_file, imager_geolocation, imager_measurements, 
       preproc%vaa  => imager_angles%satazi(startx:,:,1)
       preproc%data => imager_measurements%data(startx:,:,:)
 
-      if (verbose) then
-         if (do_gsics) then
-            write(*,*) 'Applying GSICS calibration coefficients'
-         else
-            write(*,*) 'Applying IMPF calibration coefficients'
-         endif
-      endif
-
       ! The main reader call which populates preproc (type seviri_preproc_t_f90)
       if (verbose) write(*,*) 'Calling seviri_read_and_preproc_f90() from ' // &
                               'the seviri_util module, LC'
       if (seviri_read_and_preproc_f90(trim(l1_5_file)//C_NULL_CHAR, preproc, &
           n_bands, band_ids, band_units, SEVIRI_BOUNDS_LINE_COLUMN, line0, line1, &
-          column0, column1, 0.d0, 0.d0, 0.d0, 0.d0, do_gsics, .true.) .ne. 0) then
+          column0, column1, 0.d0, 0.d0, 0.d0, 0.d0, do_gsics, global_atts%Satpos_Metadata, .true.) .ne. 0) then
          write(*,*) 'ERROR: in read_seviri_l1_5(), calling ' // &
                     'seviri_read_and_preproc_f90(), filename = ', trim(l1_5_file)
          stop error_stop_code
@@ -301,7 +300,7 @@ subroutine read_seviri_l1_5(l1_5_file, imager_geolocation, imager_measurements, 
                               'the seviri_util module, FD'
       if (seviri_read_and_preproc_f90(trim(l1_5_file)//C_NULL_CHAR, preproc, &
           n_bands, band_ids, band_units, SEVIRI_BOUNDS_FULL_DISK, 1, 3712, &
-          1, 3712, 0.d0, 0.d0, 0.d0, 0.d0, do_gsics, .false.) .ne. 0) then
+          1, 3712, 0.d0, 0.d0, 0.d0, 0.d0, do_gsics, global_atts%Satpos_Metadata, .false.) .ne. 0) then
          write(*,*) 'ERROR: in read_seviri_l1_5(), calling ' // &
                     'seviri_read_and_preproc_f90(), filename = ', trim(l1_5_file)
          stop error_stop_code
@@ -333,6 +332,7 @@ subroutine read_seviri_l1_5(l1_5_file, imager_geolocation, imager_measurements, 
          imager_angles%relazi(:,:,1) = 360. - imager_angles%relazi(:,:,1)
       end where
    end where
+
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_seviri_l1_5()'
 #else
    write(*,*) 'ERROR: the ORAC pre-processor has not been compiled with ' // &
