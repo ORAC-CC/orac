@@ -11,6 +11,7 @@
 ! 2017/03/29, SP: First version (ExtWork)
 ! 2018/04/29, SP: Add cloud emissivity support for ECMWF profiles (ExtWork)
 ! 2018/05/24, SP: Updates to better calculate tropopause pressure (from IntCTP.F90)
+! 2018/07/18, DE: Add tropoopause temperature
 !
 ! Bugs:
 ! None known.
@@ -92,8 +93,10 @@ subroutine get_trop_tp(preproc_prtm,preproc_dims)
          end do
          if (k .lt. nz) then
             preproc_prtm%trop_p(x,y) = p(k)
+            preproc_prtm%trop_t(x,y) = t(k)
          else
             preproc_prtm%trop_p(x,y) = sreal_fill_value
+            preproc_prtm%trop_t(x,y) = sreal_fill_value
          endif
       end do
    end do

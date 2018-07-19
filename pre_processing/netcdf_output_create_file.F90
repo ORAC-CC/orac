@@ -97,6 +97,7 @@
 ! 2017/06/21, OS: Added ANN phase variables
 ! 2018/04/26, SP: Add code to save satellite azimuth
 ! 2018/04/29, SP: Add cloud emissivity support for ECMWF profiles (ExtWork)
+! 2018/07/18, DE: Add tropoopause temperature
 !
 ! Bugs:
 ! None known.
@@ -491,6 +492,22 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
 		        dimids_2d, &
 		        'tropopause_pres_rtm', &
 		        netcdf_info%vid_tropop_pw, &
+		        verbose, &
+		        deflate_level = deflate_level, &
+		        shuffle = shuffle_flag, &
+		        fill_value = sreal_fill_value)
+      end if
+
+      ! define trop_t_rtm
+      if (do_cloud_emis) then
+		   ! define 2-D variables
+      	dimids_2d(1)=netcdf_info%dimid_x_pw
+      	dimids_2d(2)=netcdf_info%dimid_y_pw
+		   call nc_def_var_float_packed_float( &
+		        netcdf_info%ncid_prtm, &
+		        dimids_2d, &
+		        'tropopause_temp_rtm', &
+		        netcdf_info%vid_tropop_te, &
 		        verbose, &
 		        deflate_level = deflate_level, &
 		        shuffle = shuffle_flag, &

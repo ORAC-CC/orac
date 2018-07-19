@@ -25,6 +25,7 @@
 ! 2017/03/29, SP: Add new variable for tropopause cloud emissivity (ExtWork)
 ! 2017/03/29, SP: Add ability to calculate tropospheric cloud emissivity (ExtWork)
 ! 2017/11/15, SP: Add feature to give access to sensor azimuth angle
+! 2018/07/18, DE: Add tropoopause temperature
 !
 ! Bugs:
 ! None known.
@@ -76,7 +77,7 @@ module preproc_structures_m
       real(kind=sreal), dimension(:,:), pointer   :: totcolwv
 
       ! New fields for tropopause
-      real(kind=sreal), dimension(:,:), pointer   :: trop_p
+      real(kind=sreal), dimension(:,:), pointer   :: trop_p,trop_t
    end type preproc_prtm_t
 
 

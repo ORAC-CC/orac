@@ -36,6 +36,7 @@
 !    elsewhere.
 ! 2017/03/29, SP: Add new variable for tropopause cloud emissivity (ExtWork)
 ! 2017/11/15, SP: Add feature to give access to sensor azimuth angle
+! 2018/07/18, DE: Add tropoopause temperature
 !
 ! Bugs:
 ! None known.
@@ -67,6 +68,7 @@ subroutine deallocate_preproc_prtm(preproc_prtm)
    deallocate(preproc_prtm%totcolwv)
 
    deallocate(preproc_prtm%trop_p)
+   deallocate(preproc_prtm%trop_t)
 
 end subroutine deallocate_preproc_prtm
 

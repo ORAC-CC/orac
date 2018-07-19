@@ -52,6 +52,7 @@
 !    elsewhere.
 ! 2017/03/29, SP: Add ability to calculate tropospheric cloud emissivity (ExtWork)
 ! 2017/11/15, SP: Add feature to give access to sensor azimuth angle
+! 2018/07/18, DE: Add tropoopause temperature
 !
 ! Bugs:
 ! None known.
@@ -120,6 +121,9 @@ subroutine allocate_preproc_prtm(preproc_dims, preproc_prtm)
 
    allocate(preproc_prtm%trop_p(sx:ex,sy:ey))
    preproc_prtm%trop_p=sreal_fill_value
+
+   allocate(preproc_prtm%trop_t(sx:ex,sy:ey))
+   preproc_prtm%trop_t=sreal_fill_value
 
 end subroutine allocate_preproc_prtm
 

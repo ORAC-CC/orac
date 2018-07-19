@@ -19,6 +19,7 @@
 ! 2017/06/20, OS: Added ann phase variable IDs
 ! 2018/04/26, SP: Add code to save satellite azimuth (commented out, but useful)
 ! 2018/04/29, SP: Add cloud emissivity support for ECMWF profiles (ExtWork)
+! 2018/07/18, DE: Add tropoopause temperature
 !
 ! Bugs:
 ! None known.
@@ -115,7 +116,7 @@ module netcdf_output_m
 
       ! prtm file:
       integer :: vid_lon_pw, vid_lat_pw
-      integer :: vid_tropop_pw
+      integer :: vid_tropop_pw, vid_tropop_te
       integer :: vid_satzen_pw, vid_solzen_pw
       integer :: vid_pprofile_lev_pw, vid_tprofile_lev_pw, vid_hprofile_lev_pw, &
                  vid_qprofile_lev_pw, vid_o3profile_lev_pw
