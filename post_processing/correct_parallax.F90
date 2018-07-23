@@ -156,6 +156,8 @@ subroutine correct_parallax(primary,indexing, global_atts, verbose)
    integer(kind=sint)             :: tmp_sint
    integer(kind=sint)             :: x0,x1,y0,y1
 
+   integer(kind=sint)         	 :: pixdelt = 12
+
    ! Figure out the satellite altitude *above the surface*
    call get_attr(global_atts, sat_h, eqr_rad, pol_rad, sat_lat, sat_lon)
    rad_rat = (eqr_rad / pol_rad) * (eqr_rad / pol_rad)
@@ -269,13 +271,13 @@ subroutine correct_parallax(primary,indexing, global_atts, verbose)
          if (new_lat .lt. -90. .or. new_lat .gt. 90.) new_lat = 1e7
          if (new_lon .lt. -180. .or. new_lon .gt. 180.) new_lon = 1e7
 
-         x0=i-5
+         x0=i-pixdelt
          if (x0 .lt. indexing%X0) x0 = indexing%X0
-         x1=i+5
+         x1=i+pixdelt
          if (x1 .ge. indexing%X1) x1 = indexing%X1
-         y0=j-5
+         y0=j-pixdelt
          if (y0 .lt. indexing%Y0) y0 = indexing%Y0
-         y1=j+5
+         y1=j+pixdelt
          if (y1 .ge. indexing%Y1) y1 = indexing%Y1
 
          allocate(dist(x0:x1,y0:y1))
