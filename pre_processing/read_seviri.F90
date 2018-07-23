@@ -481,14 +481,14 @@ subroutine read_seviri_l1_5_nat_or_hrit(l1_5_file, imager_geolocation, &
          stop error_stop_code
       end if
 
-      imager_time%time(startx:,:)             = preproc%time(column0:column1,line0:line1)
-      imager_geolocation%latitude(startx:,:)  = preproc%lat(column0:column1,line0:line1)
-      imager_geolocation%longitude(startx:,:) = preproc%lon(column0:column1,line0:line1)
-      imager_angles%solzen(startx:,:,1)       = preproc%sza(column0:column1,line0:line1)
-      imager_angles%solazi(startx:,:,1)       = preproc%saa(column0:column1,line0:line1)
-      imager_angles%satzen(startx:,:,1)       = preproc%vza(column0:column1,line0:line1)
-      imager_angles%satazi(startx:,:,1)       = preproc%vaa(column0:column1,line0:line1)
-      imager_measurements%data(startx:,:,:)   = preproc%data(column0:column1,line0:line1,:)
+      imager_time%time(startx:,:)             = preproc%time(column0+1:column1+1,line0+1:line1+1)
+      imager_geolocation%latitude(startx:,:)  = preproc%lat(column0+1:column1+1,line0+1:line1+1)
+      imager_geolocation%longitude(startx:,:) = preproc%lon(column0+1:column1+1,line0+1:line1+1)
+      imager_angles%solzen(startx:,:,1)       = preproc%sza(column0+1:column1+1,line0+1:line1+1)
+      imager_angles%solazi(startx:,:,1)       = preproc%saa(column0+1:column1+1,line0+1:line1+1)
+      imager_angles%satzen(startx:,:,1)       = preproc%vza(column0+1:column1+1,line0+1:line1+1)
+      imager_angles%satazi(startx:,:,1)       = preproc%vaa(column0+1:column1+1,line0+1:line1+1)
+      imager_measurements%data(startx:,:,:)   = preproc%data(column0+1:column1+1,line0+1:line1+1,:)
    end if
 
 	! Remove underscores added by seviri_util (easy way of converting c-string to f-string).
