@@ -480,7 +480,7 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
 
          ! Check to see if the ECMWF data read in includes ozone
          ! profiles: forecast data does not
-         if (maxval(profiles(count)%o3(:preproc_dims%kdim)) == 0.0) then
+         if (maxval(preproc_prtm%ozone(idim,jdim,:)) == 0.0) then
             opts % rt_ir % ozone_data = .false. ! No valid ozone profiles!
          else
             opts % rt_ir % ozone_data = .true.
