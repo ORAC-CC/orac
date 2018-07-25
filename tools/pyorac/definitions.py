@@ -238,7 +238,7 @@ class FileName:
         if m:
             self.sensor   = 'SEVIRI'
             self.platform = 'MSG'+m.group('platform')
-            self.inst     = 'SEVIRI'+m.group('platform')
+            self.inst     = 'SEVIRI-'+self.platform
             self.time     = datetime.datetime(
                 int(m.group('year')), int(m.group('month')), int(m.group('day')),
                 int(m.group('hour')), int(m.group('min')), float(m.group('sec')),
@@ -259,7 +259,7 @@ class FileName:
         if m:
             self.sensor   = 'SEVIRI'
             self.platform = 'MSG'+m.group('platform')
-            self.inst     = 'SEVIRI'+m.group('platform')
+            self.inst     = 'SEVIRI-'+self.platform
             self.time     = datetime.datetime(
                 int(m.group('year')), int(m.group('month')), int(m.group('day')),
                 int(m.group('hour')), int(m.group('min')), 0, 0
@@ -281,7 +281,7 @@ class FileName:
                 tmp = os.path.join(fdr, filename)
                 if os.path.isfile(tmp):
                     self.platform = _determine_platform_from_metoffice(tmp)
-            self.inst     = 'SEVIRI3'
+            self.inst     = 'SEVIRI-'+self.platform
             self.time     = datetime.datetime(
                 int(m.group('year')), int(m.group('month')), int(m.group('day')),
                 int(m.group('hour')), int(m.group('min')), 0, 0
@@ -377,37 +377,6 @@ def _determine_platform_from_metoffice(filename):
 #----- INSTRUMENT/CLASS DEFINITIONS ------------------------------------------
 #-----------------------------------------------------------------------------
 
-# Map wavelengths available on each instrument to their channel numbers
-def _dict_from_list(l):
-    return dict(zip(l, range(1,len(l)+1)))
-
-MAP_WVL_TO_INST = {
-    'AATSR': _dict_from_list((
-        0.55, 0.67, 0.87, 1.6, 3.7, 11., 12., -0.55, -0.67, -0.87,
-        -1.6, -3.7, -11., -12.
-    )),
-    'AVHRR': _dict_from_list((0.67, 0.87, 1.6, 3.7, 11., 12.)),
-    'HIMAWARI': _dict_from_list((
-        0.47, 0.51, 0.67, 0.87, 1.6, 2.3, 3.7, 6.2, 6.9, 7.3,
-        8.6, 9.6, 10., 11., 12., 13.3
-    )),
-    'MODIS': _dict_from_list((
-        0.67, 0.87, 0.47, 0.55, 1.2, 1.6, 2.1, 0.41, 0.44, 0.49,
-        0.53, 0.551, 0.667, 0.678, 0.75, 0.869, 0.91, 0.936, 0.94, 3.7,
-        3.96, 3.959, 4.05, 4.466, 4.516, 1.375, 6.715, 7.325, 8.55, 9.73,
-        11., 12., 13.3, 13.6, 13.9, 14.2
-    )),
-    'SEVIRI': _dict_from_list((
-        0.67, 0.87, 1.6, 3.7, 6.25, 7.35,  8.7, 9.7, 11., 12., 13.3
-#        0.67, 0.81, 1.64, 3.92, 6.25, 7.35,  8.7, 9.7, 11., 12., 13.3
-    )),
-    'VIIRS': _dict_from_list((
-        0.41, 0.44, 0.49, 0.55, 0.67, 0.75, 0.87, 1.2, 1.4, 1.6,
-        2.3, 3.7, 4.1, 8.6, 1.1, 12.
-    ))
-}
-
-
 class Invpar():
     """Container for settings to pass to an ORAC retrieval
     Member variables:
@@ -452,14 +421,10 @@ class ParticleType():
     def __init__(self,
                  name,
                  inv = (),
-                 wvl = (0.55, 0.67, 0.87, 1.6, -0.55, -0.67, -0.87, -1.6),
-                 sad = "CCI_A70-A79",
-                 ls = True):
+                 sad = "CCI_A70-A79"):
         self.name = name
         self.inv = inv
-        self.wvl = wvl
         self.sad = sad
-        self.ls = ls
 
     def sad_dir(self, sad_dirs, inst):
         from glob import glob
@@ -486,10 +451,8 @@ class ParticleType():
 
 # Using non-imager LUTs and Baum properties at Greg's recommendation
 SETTINGS = {}
-SETTINGS['WAT'] = ParticleType("WAT", wvl=(0.67, 0.87, 1.6, 3.7, 11, 12),
-                               sad="WAT", ls=False)
-SETTINGS['ICE'] = ParticleType("ICE", wvl=(0.67, 0.87, 1.6, 3.7, 11, 12),
-                               sad="ICE_baum", ls=False)
+SETTINGS['WAT'] = ParticleType("WAT", sad="WAT")
+SETTINGS['ICE'] = ParticleType("ICE", sad="ICE_baum")
 
 tau = Invpar('ITau', ap=-1.0, sx=1.5)
 SETTINGS['A70'] = ParticleType("A70", inv=(tau,Invpar('IRe',ap=0.0856,sx=0.15)))

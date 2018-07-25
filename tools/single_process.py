@@ -45,7 +45,7 @@ try:
 
     elif inst.oractype in ('alb', 'clf', 'config', 'geo', 'loc', 'lsf',
                            'lwrtm', 'msi', 'prtm', 'swrtm'):
-        jid, _ = process_main(args, log_path, args.phase)
+        jid, _ = process_main(args, log_path)
 
     else:
         raise OracError("Could not determine processing type. Please pass "

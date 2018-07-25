@@ -8,7 +8,6 @@
 # 17 Apr 2017, ACP: Move management of compressed files into here.
 
 import numpy as np
-from cartopy.crs import PlateCarree
 from pyorac.mappable import Mappable
 
 # These are used to suppress numpy FutureWarnings

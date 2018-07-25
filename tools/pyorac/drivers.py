@@ -10,14 +10,13 @@ from pyorac.definitions import OracError, OracWarning, FileMissing
 def build_preproc_driver(args):
     """Prepare a driver file for the preprocessor."""
     from pyorac.definitions import FileName, BadValue
-    from pyorac.util import get_repository_revision, read_orac_libraries
+    from pyorac.util import read_orac_libraries
     from re import search
     from subprocess import check_output, STDOUT
     from uuid import uuid4
 
-    inst = FileName(args.in_dir, args.target)
     file = _glob_dirs(args.in_dir, args.target, 'L1B file')
-    geo  = _glob_dirs(args.in_dir, inst.geo, 'geolocation file')
+    geo  = _glob_dirs(args.in_dir, args.File.geo, 'geolocation file')
 
     # Select NISE file
     if args.use_ecmwf_snow or args.no_snow_corr:
@@ -27,25 +26,25 @@ def build_preproc_driver(args):
                      'NISE.002/%Y.%m.%d/NISE_SSMIF13_%Y%m%d.HDFEOS',
                      '%Y/NISE_SSMIF13_%Y%m%d.HDFEOS',
                      '%Y/NISE_SSMIF17_%Y%m%d.HDFEOS'):
-            nise = inst.time.strftime(os.path.join(args.nise_dir, form))
+            nise = args.File.time.strftime(os.path.join(args.nise_dir, form))
             if os.path.isfile(nise):
                 break
         else:
             raise FileMissing('NISE', nise)
 
     # Select previous surface reflectance and emissivity files
-    alb = _date_back_search(args.mcd43c3_dir, inst.time,
+    alb = _date_back_search(args.mcd43c3_dir, args.File.time,
                             'MCD43C3.A%Y%j.005.*.hdf')
     brdf = None if args.lambertian else _date_back_search(
-        args.mcd43c1_dir, inst.time, 'MCD43C1.A%Y%j.005.*.hdf'
+        args.mcd43c1_dir, args.File.time, 'MCD43C1.A%Y%j.005.*.hdf'
     )
     emis = None if args.use_modis_emis else _date_back_search(
-        args.emis_dir, inst.time,
+        args.emis_dir, args.File.time,
         'global_emis_inf10_monthFilled_MYD11C3.A%Y%j.041.nc'
     )
 
     # Select ECMWF files
-    bounds = _bound_time(inst.time + inst.dur//2)
+    bounds = _bound_time(args.File.time + args.File.dur//2)
     if args.ecmwf_flag == 0:
         ggam = _form_bound_filenames(bounds, args.ggam_dir,
                                      'ERA_Interim_an_%Y%m%d_%H+00.nc')
@@ -61,10 +60,10 @@ def build_preproc_driver(args):
         raise NotImplementedError('Filename syntax for --ecmwf_flag 3 unknown')
     elif args.ecmwf_flag == 4:
         try:
-            bounds = _bound_time(inst.time + inst.dur//2, timedelta(hours=3))
+            bounds = _bound_time(args.File.time + args.File.dur//2, timedelta(hours=3))
             ggam = _form_bound_filenames(bounds, args.ggam_dir, 'C3D*%m%d%H*.nc')
         except FileMissing:
-            bounds = _bound_time(inst.time + inst.dur//2, timedelta(hours=6))
+            bounds = _bound_time(args.File.time + args.File.dur//2, timedelta(hours=6))
             ggam = _form_bound_filenames(bounds, args.ggam_dir,
                                          'ECMWF_OPER_%Y%m%d_%H+00.nc')
         ggas = ggam
@@ -76,7 +75,7 @@ def build_preproc_driver(args):
         #hr_ecmwf = _form_bound_filenames(bounds, args.hr_dir,
         #                                 'ERA_Interim_an_%Y%m%d_%H+00_HR.grb')
         # These files don't zero-pad the hour for some reason
-        bounds = _bound_time(inst.time + inst.dur//2, timedelta(hours=6))
+        bounds = _bound_time(args.File.time + args.File.dur//2, timedelta(hours=6))
         hr_ecmwf = [time.strftime(os.path.join(
             args.hr_dir, 'ERA_Interim_an_%Y%m%d_') +
             '{:d}+00_HR.grb'.format(time.hour*100))
@@ -92,7 +91,7 @@ def build_preproc_driver(args):
     else:
         hr_ecmwf=['', '']
 
-    occci = inst.time.strftime(os.path.join(
+    occci = args.File.time.strftime(os.path.join(
         args.occci_dir, 'ESACCI-OC-L3S-IOP-MERGED-1M_MONTHLY'
         '_4km_GEO_PML_OCx_QAA-%Y%m-fv3.0.nc')
     )
@@ -286,7 +285,7 @@ USE_CAMEL_EMIS={camel}""".format(
         project           = args.project,
         references        = args.references,
         rttov_version     = rttov_version,
-        sensor            = inst.sensor,
+        sensor            = args.File.sensor,
         spam              = spam,
         summary           = args.summary,
         git_version       = git_version,
@@ -296,16 +295,16 @@ USE_CAMEL_EMIS={camel}""".format(
         verbose           = args.verbose,
     )
 
-    if args.channel_ids:
-        driver += "\nN_CHANNELS={}".format(len(args.channel_ids))
+    if args.available_channels is not None:
+        driver += "\nN_CHANNELS={}".format(len(args.available_channels))
         driver += "\nCHANNEL_IDS={}".format(
-            ','.join(str(k) for k in args.channel_ids)
+            ','.join(str(k) for k in args.available_channels)
         )
     for sec, key, val in args.additional:
         if sec == "pre":
             driver += "\n{}={}".format(key, val)
 
-    if inst.predef and not args.no_predef:
+    if args.File.predef and not args.no_predef:
         driver += """
 USE_PREDEF_LSM=True
 EXT_LSM_PATH={lsm}
@@ -322,33 +321,31 @@ def build_main_driver(args):
     """Prepare a driver file for the main processor."""
     from pyorac.definitions import FileName, SETTINGS
 
-    # Deal with different treatment of platform between pre and main processors
-    inst = FileName(args.in_dir, args.target)
-
     # Form mandatory driver file lines
     driver = """# ORAC New Driver File
-Ctrl%FID%Data_Dir          = "{in_dir}"
-Ctrl%FID%Filename          = "{fileroot}"
-Ctrl%FID%Out_Dir           = "{out_dir}"
-Ctrl%FID%SAD_Dir           = "{sad_dir}"
-Ctrl%InstName              = "{sensor}"
-Ctrl%Ind%NAvail            = {nch}
-Ctrl%Ind%Channel_Proc_Flag = {channels}
-Ctrl%LUTClass              = "{phase}"
-Ctrl%Process_Cloudy_Only   = {cloudy}
-Ctrl%Process_Aerosol_Only  = {aerosoly}
-Ctrl%Verbose               = {verbose}
-Ctrl%RS%Use_Full_BRDF      = {use_brdf}""".format(
+Ctrl%FID%Data_Dir           = "{in_dir}"
+Ctrl%FID%Filename           = "{fileroot}"
+Ctrl%FID%Out_Dir            = "{out_dir}"
+Ctrl%FID%SAD_Dir            = "{sad_dir}"
+Ctrl%InstName               = "{sensor}"
+Ctrl%Ind%NAvail             = {nch}
+Ctrl%Ind%Channel_Proc_Flag  = {channels}
+Ctrl%LUTClass               = "{phase}"
+Ctrl%Process_Cloudy_Only    = {cloudy}
+Ctrl%Process_Aerosol_Only   = {aerosoly}
+Ctrl%Verbose                = {verbose}
+Ctrl%RS%Use_Full_BRDF       = {use_brdf}""".format(
         aerosoly = args.aerosol_only,
-        channels = ','.join('{:d}'.format(k) for k in args.use_channel),
+        channels = ','.join('1' if k in args.use_channels else '0'
+                            for k in args.available_channels),
         cloudy   = args.cloud_only,
-        fileroot = inst.root_name(),
+        fileroot = args.File.root_name(),
         in_dir   = args.in_dir[0],
-        nch      = len(args.use_channel),
+        nch      = len(args.available_channels),
         out_dir  = args.out_dir,
         phase    = args.phase,
-        sad_dir  = SETTINGS[args.phase].sad_dir(args.sad_dirs, inst),
-        sensor   = inst.inst,
+        sad_dir  = SETTINGS[args.phase].sad_dir(args.sad_dirs, args.File),
+        sensor   = args.File.inst,
         use_brdf = not (args.lambertian or args.approach == 'AppAerSw'),
         verbose  = args.verbose,
     )
@@ -356,27 +353,27 @@ Ctrl%RS%Use_Full_BRDF      = {use_brdf}""".format(
     # Optional driver file lines
     if args.multilayer is not None:
         driver += """
-Ctrl%LUTClass2 = "{}"
-Ctrl%FID%SAD_Dir2  = "{}"
-Ctrl%Class2    = {}""".format(
+Ctrl%LUTClass2              = "{}"
+Ctrl%FID%SAD_Dir2           = "{}"
+Ctrl%Class2                 = {}""".format(
         args.multilayer[0],
-        SETTINGS[args.multilayer[0]].sad_dir(args.sad_dirs, inst),
+        SETTINGS[args.multilayer[0]].sad_dir(args.sad_dirs, args.File),
         args.multilayer[1],
     )
     if args.types:
-        driver += "\nCtrl%NTypes_To_Process     = {:d}".format(len(args.types))
+        driver += "\nCtrl%NTypes_To_Process      = {:d}".format(len(args.types))
         driver += ("\nCtrl%Types_To_Process(1:{:d}) = ".format(len(args.types)) +
                    ','.join(k+'_TYPE' for k in args.types))
     if args.sabotage:
-        driver += "\nCtrl%Sabotage_Inputs       = true"
+        driver += "\nCtrl%Sabotage_Inputs        = true"
     if args.approach:
-        driver += "\nCtrl%Approach              = " + args.approach
+        driver += "\nCtrl%Approach               = " + args.approach
     if args.ret_class:
-        driver += "\nCtrl%Class                 = " + args.ret_class
-    if not args.sea:
-        driver += "\nCtrl%Surfaces_To_Skip      = ISea"
-    elif not args.land:
-        driver += "\nCtrl%Surfaces_To_Skip      = ILand"
+        driver += "\nCtrl%Class                  = " + args.ret_class
+    if args.no_sea:
+        driver += "\nCtrl%Surfaces_To_Skip       = ISea"
+    elif args.no_land:
+        driver += "\nCtrl%Surfaces_To_Skip       = ILand"
     for var in SETTINGS[args.phase].inv:
         driver += var.driver()
     if args.extra_lines_file:

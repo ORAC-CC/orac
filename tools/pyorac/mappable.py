@@ -4,7 +4,6 @@
 # 12 Apr 2017, ACP: Move to object that holds data
 
 import numpy as np
-from cartopy.crs import PlateCarree
 
 class Mappable(object):
     """A wrapper for data fields that share a lat.lon coordinate system. map()
@@ -32,6 +31,8 @@ class Mappable(object):
         slices (:obj:`slice`): Slice for all arrays (except data).
     """
     def __init__(self, lat, lon, **kwargs):
+        from cartopy.crs import PlateCarree
+
         # Evaluate arguments
         central_longitude = kwargs.pop('central_longitude', 0.)
         nvector           = kwargs.pop("nvector", False)

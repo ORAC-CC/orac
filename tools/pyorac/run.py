@@ -3,7 +3,6 @@ import os
 
 from collections import OrderedDict
 from pyorac.arguments import *
-from pyorac.definitions import FileName
 from pyorac.util import call_exe
 
 
@@ -22,10 +21,9 @@ def process_pre(args, log_path, dependency=None):
     driver = build_preproc_driver(args)
 
     # This must be called after building the driver as revision is unknown
-    inst = FileName(args.in_dir, args.target)
-    job_name = inst.job_name(args.revision, 'pre')
-    root_name = inst.root_name(args.revision, args.processor, args.project,
-                               args.product_name)
+    job_name = args.File.job_name(args.revision, 'pre')
+    root_name = args.File.root_name(args.revision, args.processor, args.project,
+                                    args.product_name)
 
     if not os.path.isdir(args.out_dir):
         os.makedirs(args.out_dir, 0o774)
@@ -52,19 +50,22 @@ def process_pre(args, log_path, dependency=None):
     return jid, out_file
 
 
-def process_main(args, log_path, phs, tag='', dependency=None):
+def process_main(args, log_path, tag='', dependency=None):
     """Call sequence for main processor"""
     from pyorac.drivers import build_main_driver
 
     check_args_main(args)
-    inst = FileName(args.in_dir, args.target)
-    job_name = inst.job_name(tag=phs + tag)
-    root_name = inst.root_name()
+    if args.multilayer is not None:
+        phase = args.phase + "_" + args.multilayer[0]
+    else:
+        phase = args.phase
+    job_name = args.File.job_name(tag=phase + tag)
+    root_name = args.File.root_name()
 
     if not os.path.isdir(args.out_dir):
         os.makedirs(args.out_dir, 0o774)
 
-    out_file = os.path.join(args.out_dir, root_name + phs + '.primary.nc')
+    out_file = os.path.join(args.out_dir, root_name + phase + '.primary.nc')
     if args.clobber >= CLOBBER['main'] or not os.path.isfile(out_file):
         # Settings for batch processing
         values = {'job_name' : job_name,
@@ -91,9 +92,8 @@ def process_post(args, log_path, files=None, dependency=None):
     from pyorac.drivers import build_postproc_driver
 
     check_args_postproc(args)
-    inst = FileName(args.in_dir, args.target)
-    job_name = inst.job_name(args.revision, 'post')
-    root_name = inst.root_name(args.revision)
+    job_name = args.File.job_name(args.revision, 'post')
+    root_name = args.File.root_name(args.revision)
 
     if not os.path.isdir(args.out_dir):
         os.makedirs(args.out_dir, 0o774)
@@ -101,7 +101,7 @@ def process_post(args, log_path, files=None, dependency=None):
     if files is None:
         # Find all primary files of requested phases in given input folders.
         files = []
-        for phs in args.phases:
+        for phs in set(args.phases):
             for d in args.in_dir:
                 files.extend(glob(os.path.join(
                     d, root_name + phs + '.primary.nc'
@@ -139,28 +139,27 @@ def process_post(args, log_path, files=None, dependency=None):
 
 def process_all(orig_args):
     """Run the ORAC pre, main, and post processors on a file."""
+    from argparse import ArgumentParser
     from copy import copy
-    from pyorac.definitions import MAP_WVL_TO_INST, SETTINGS
+    from pyorac.arguments import args_main
+    from pyorac.definitions import SETTINGS
+    from pyorac.local_defaults import log_dir, pre_dir
+
+    # Generate main-processor-only parser
+    pars = ArgumentParser()
+    args_main(pars)
+    pars.add_argument("--sub_dir", default="")
 
     # Copy input arguments as we'll need to fiddle with them
+    check_args_common(orig_args)
+    check_args_cc4cl(orig_args)
+    log_path = os.path.join(orig_args.out_dir, log_dir)
     args = copy(orig_args)
-    check_args_common(args)
-    log_path = check_args_cc4cl(args)
-
-    inst = FileName(args.in_dir, args.target)
-    map_wvl = MAP_WVL_TO_INST[inst.sensor]
-
-    # Sort out what channels are required
-    if args.channel_ids is None:
-        args.channel_ids = sorted(set(
-            map_wvl[w] for phs in args.phases for w in SETTINGS[phs].wvl
-        ))
 
     written_dirs = set() # The folders we actually wrote to
 
     # Work out output filename
-    out_dir = args.out_dir
-    args.out_dir = os.path.join(out_dir, args.pre_dir)
+    args.out_dir = os.path.join(orig_args.out_dir, pre_dir)
 
     jid_pre, _ = process_pre(args, log_path)
     if jid_pre is not None:
@@ -168,67 +167,29 @@ def process_all(orig_args):
 
 
     # Run main processor -------------------------------------------------------
-    root_name = inst.root_name(args.revision, args.processor, args.project,
-                               args.product_name)
+    root_name = args.File.root_name(args.revision, args.processor, args.project,
+                                    args.product_name)
     args.target = root_name + ".config.nc"
     out_files   = [] # All files that would be made (facilitates --dry_run)
     jid_main    = [] # ID no. for each queued job
     args.in_dir = [args.out_dir]
-    for phs in args.phases:
-        args.phase   = phs
+    phs_args = copy(args)
+    for sett in args.settings:
+        parsed_settings_arguments = pars.parse_args(sett.split(" "))
+        phs_args.__dict__.update(parsed_settings_arguments.__dict__)
+        phs_args.out_dir = os.path.join(orig_args.out_dir, phs_args.sub_dir)
 
-        # Identify which channels to use
-        ids_here = [map_wvl[w] for w in SETTINGS[phs].wvl]
-        args.use_channel = [ch in ids_here for ch in args.channel_ids]
-
-        # Process land and sea separately for aerosol
-        if SETTINGS[phs].ls:
-            if orig_args.land:
-                args.out_dir = os.path.join(out_dir, args.land_dir)
-                args.approach = 'AppAerSw'
-                args.land = True
-                args.sea  = False
-                args.extra_lines_file = args.land_extra
-
-                jid, out = process_main(args, log_path, phs, tag='L',
-                                        dependency=jid_pre)
-                out_files.append(out)
-                if jid is not None:
-                    jid_main.append(jid)
-                    written_dirs.add(args.out_dir)
-
-            if orig_args.sea:
-                args.out_dir  = os.path.join(out_dir, args.sea_dir)
-                args.approach = 'AppAerOx'
-                args.land = False
-                args.sea  = True
-                args.extra_lines_file = args.sea_extra
-
-                jid, out = process_main(args, log_path, phs, tag='S',
-                                        dependency=jid_pre)
-                out_files.append(out)
-                if jid is not None:
-                    jid_main.append(jid)
-                    written_dirs.add(args.out_dir)
-
-        else:
-            args.out_dir  = os.path.join(out_dir, args.main_dir)
-            args.approach = orig_args.approach
-            args.land = orig_args.land
-            args.sea  = orig_args.sea
-            args.extra_lines_file = args.cld_extra
-
-            jid, out = process_main(args, log_path, phs, dependency=jid_pre)
-            out_files.append(out)
-            if jid is not None:
-                jid_main.append(jid)
-                written_dirs.add(args.out_dir)
+        jid, out = process_main(phs_args, log_path, dependency=jid_pre)
+        out_files.append(out)
+        if jid is not None:
+            jid_main.append(jid)
+            written_dirs.add(args.out_dir)
 
 
     # Run postprocessor
-    args.target = root_name + args.phases[0] + ".primary.nc"
+    args.target = root_name + phs_args.phase + ".primary.nc"
     args.in_dir = written_dirs
-    args.out_dir = out_dir
+    args.out_dir = orig_args.out_dir
     jid, out_file = process_post(args, log_path, out_files, dependency=jid_main)
     if jid is not None:
         written_dirs.add(args.out_dir)
@@ -237,7 +198,7 @@ def process_all(orig_args):
     return jid, out_file
 
 
-def run_regression(target, in_dir):
+def run_regression(File, in_dir):
     """Run the regression test on a set of ORAC files."""
     import re
 
@@ -249,9 +210,10 @@ def run_regression(target, in_dir):
 
     regex = re.compile("_R(\d+)")
 
-    inst = FileName(in_dir, target)
-    this_revision = int(inst.revision)
-    for this_file in iglob(os.path.join(in_dir, "**", inst.root_name() + "*nc")):
+    this_revision = int(File.revision)
+    for this_file in iglob(os.path.join(
+            in_dir, "**", File.root_name() + "*nc"
+    )):
         # Find previous file version
         old_revision = 0
         old_file = None

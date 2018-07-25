@@ -11,7 +11,8 @@ def args_common(parser):
 
     # Add boolean parsing function to register (type='bool', not type=bool)
     # http://stackoverflow.com/questions/15008758/parsing-boolean-values-with-argparse
-    parser.register('type', 'bool', _str2bool)
+    if 'bool' not in parser._registries['type']:
+        parser.register('type', 'bool', _str2bool)
 
     out = parser.add_argument_group('Common arguments paths')
     out.add_argument('-i','--in_dir', type=str, action="append", metavar='DIR',
@@ -26,6 +27,9 @@ def args_common(parser):
                      help = 'Name and path of ORAC library specification.')
 
     key = parser.add_argument_group('Common keyword arguments')
+    key.add_argument('-c', '--available_channels', type=int, nargs='+',
+                     metavar='#', default = None,
+                     help = 'Channels to be evaluated.')
     key.add_argument('--batch', action='store_true',
                      help = 'Use batch processing for this call.')
     key.add_argument('-b', '--batch_settings', type=str, nargs=2, default=[],
@@ -43,7 +47,7 @@ def args_common(parser):
                      help = 'Assume a lambertian surface rather than BRDF.')
     key.add_argument('--timing', action='store_true',
                      help = 'Print duration of executable calls.')
-    key.add_argument('-D', '--additional', nargs=3, action='append', default=[],
+    key.add_argument('-A', '--additional', nargs=3, action='append', default=[],
                      metavar=('SECTION', 'KEY', 'VALUE'),
                      help = 'Adds an optional line to any driver file. Passed '
                      'as SECTION KEY VALUE sets, where SECTION is pre, main, or '
@@ -60,9 +64,6 @@ def args_preproc(parser):
     """Define arguments for preprocessor script."""
 
     key = parser.add_argument_group('Preprocessor keywords')
-    key.add_argument('-c', '--channel_ids', type=int, nargs='+', metavar='#',
-                     default = None,
-                     help = 'Channels to be considered by the preprocessor.')
     key.add_argument('--day_flag', type=int, nargs='?', choices=[0,1,2,3],
                      default = 3,
                      help = '1=Process day only, 2=Night only, '
@@ -135,9 +136,13 @@ def args_preproc(parser):
 def args_main(parser):
     """Define arguments for main processor script."""
     from pyorac.definitions import ALL_TYPES
+    from pyorac.util import _str2bool
+
+    if 'bool' not in parser._registries['type']:
+        parser.register('type', 'bool', _str2bool)
 
     main = parser.add_argument_group('Main processor arguments')
-    main.add_argument('-a', '--approach', type=str, nargs='?',
+    main.add_argument('--approach', type=str, nargs='?',
                       choices = ('AppCld1L', 'AppCld2L', 'AppAerOx',
                                  'AppAerSw', 'AppAerO1'),
                       help = 'Retrieval approach to be used.')
@@ -159,18 +164,18 @@ def args_main(parser):
     main.add_argument('--types', type=str, nargs='+',
                       choices = ALL_TYPES, default = ALL_TYPES,
                       help = 'Pavolonis cloud types to process.')
-    main.add_argument('--use_channel', type='bool', nargs='+', metavar='T/F',
-                      default = [True, True, True, True, True, True],
+    main.add_argument('-u', '--use_channels', type=int, nargs='+', metavar='#',
+                      default = None,
                       help = 'Channels to be evaluated by main processor.')
     main.add_argument('--multilayer', type=str, nargs=2,
                       metavar = ('PHS', 'CLS'),
                       help = 'The phase and class to used for second layer.')
 
     ls = main.add_mutually_exclusive_group()
-    ls.add_argument('--land', action='store_false',
-                    help = 'Process only land pixels.')
-    ls.add_argument('--sea', action='store_false',
-                    help = 'Process only sea pixels.')
+    ls.add_argument('--no_land', action='store_true',
+                    help = 'Ignore land pixels.')
+    ls.add_argument('--no_sea', action='store_true',
+                    help = 'Ignore sea pixels.')
 
     ca = main.add_mutually_exclusive_group()
     ca.add_argument('--cloud_only', action='store_true',
@@ -194,6 +199,8 @@ def args_postproc(parser):
                       help = 'Do not output optical properties at night.')
     post.add_argument('--suffix', type=str,
                       help = 'Suffix to include in output filename.')
+    post.add_argument('--phases', type=str, nargs='+', default = [],
+                      help = 'Phases to combine.')
     post.add_argument('--prob_thresh', type=float, nargs='?',
                       default = 0.0, metavar='VALUE',
                       help = 'Minimum fractional probability to accept a pixel. '
@@ -218,11 +225,6 @@ def args_cc4cl(parser):
                       default = (11000, 11000, 11000),
                       help = ('Maximal memory (in Mb) used by the pre, main and '
                               'post processors. Default 11000.'))
-    cccl.add_argument('--dir_names', type=str, nargs=2, action='append',
-                      metavar=('KEY', 'VALUE'),
-                      default=[], help = 'Names for the output directories. '
-                      'Passed as KEY VALUE pairs, where KEY is one of ' +
-                      ', '.join(defaults.dir_names.keys()))
     cccl.add_argument('-e', '--extra_lines', nargs=2, action='append',
                       metavar=('SECTION', 'VALUE'),
                       default=[], help = 'Path to a file giving extra lines for '
@@ -230,13 +232,19 @@ def args_cc4cl(parser):
                       'KEY is lnd, sea, or cld to specify the particle type.')
 
     phs = cccl.add_mutually_exclusive_group()
-    phs.add_argument('-p', '--phases', type=str, nargs='+',
-                     default = ['WAT', 'ICE'],
-                     help = 'Phases to be processed. Default WAT + ICE. See '
-                     '--phase for choices (two-layer retrievals are pairs of '
-                     'phases joined by an underscore).')
-    phs.add_argument('-A', '--all_phases', action='store_true',
-                     help = 'Sets --phases to run all aerosol and cloud types.')
+    phs.add_argument('-s', '--settings', type=str, action='append',
+                     default = None, help = 'Parameters for each phase to be '
+                     'processed. Each element is a string listing all the '
+                     'arguments to be applied for that phase. This is processed '
+                     'using the same parser so all arguments listed for the '
+                     'main processor are available.')
+    phs.add_argument('-S', '--preset_settings', type=str, default = None,
+                     choices = defaults.retrieval_settings.keys(),
+                     help = 'Use a predefined setting for --phases, defined '
+                     'in the local_defaults.')
+    phs.add_argument('--settings_file', type=str, default = None,
+                     help = 'A file specifying the phases to run, one on '
+                     'each line.')
 
 
 def args_regress(parser):
@@ -248,10 +256,13 @@ def args_regress(parser):
                      help = "Produce benchmark output files i.e. "
                      "don't increment the revision number.")
     reg.add_argument('-L', '--long', action='store_true',
-                     help = 'Process full orbits rather than short segments.')
+                     help = 'Process all full orbit tests.')
     reg.add_argument('-t', '--tests', type=str, nargs='+', metavar='TEST',
                      choices = list(REGRESSION_TESTS.keys()), default = [],
                      help = 'List of tests to run.')
+    reg.add_argument('-T', '--test_type', choices = ('C', 'A', 'J'),
+                     default = 'C', help = 'Type of test to run. C=Cloud '
+                     '(default), A=Aerosol, J=Joint.')
 
 #-----------------------------------------------------------------------------
 
@@ -259,16 +270,23 @@ def check_args_common(args):
     """Ensure common parser arguments are valid."""
     from os import makedirs
     from os.path import dirname, basename
+    from pyorac.definitions import FileName
+    from pyorac.local_defaults import channels
 
     # If not explicitly given, assume input folder is in target definition
     if args.in_dir is None:
-        args.in_dir = [ dirname(args.target) ]
+        args.in_dir = [dirname(args.target), ]
         args.target = basename(args.target)
     else:
         if "/" in args.target:
             raise BadValue("file target", "contains a /")
     if args.out_dir is None:
         args.out_dir = args.in_dir[0]
+
+    args.File = FileName(args.in_dir, args.target)
+
+    if args.available_channels is None:
+        args.available_channels = channels[args.File.sensor]
 
     for d in args.in_dir:
         if not isdir(d):
@@ -285,6 +303,7 @@ def check_args_preproc(args):
     """Ensure preprocessor parser arguments are valid."""
     from pyorac.definitions import FileName
     from pyorac.local_defaults import auxiliaries, global_attributes
+    from pyorac.util import get_repository_revision
 
     # Add global attributes
     global_attributes.update({key : val for key, val in args.global_att})
@@ -309,8 +328,22 @@ def check_args_preproc(args):
             warnings.warn('All elements of --limit should be non-zero.',
                           OracWarning, stacklevel=2)
 
-    inst = FileName(args.in_dir, args.target)
-    if inst.predef and args.l1_land_mask and not args.no_predef:
+    # Update FileName class
+    if args.revision is None:
+        try:
+            args.revision = args.File.revision
+        except AttributeError:
+            args.revision = get_repository_revision()
+    if "revision" not in args.File.__dict__:
+        args.File.revision = args.revision
+    if "processor" not in args.File.__dict__:
+        args.File.processor = args.processor
+    if "project" not in args.File.__dict__:
+        args.File.project = args.project
+    if "product_name" not in args.File.__dict__:
+        args.File.product_name = args.product_name
+
+    if args.File.predef and args.l1_land_mask and not args.no_predef:
         raise ValueError("Do not set --l1_land_mask while using predefined "
                          "geostationary geolocation.")
 
@@ -355,6 +388,8 @@ def check_args_main(args):
     for d in args.sad_dirs:
         if not isdir(d):
             raise FileMissing('sad_dirs', d)
+    if args.use_channels is None:
+        args.use_channels = args.available_channels
     if args.multilayer is not None:
         args.approach = "AppCld2L"
     # No error checking yet written for channel arguments
@@ -372,29 +407,35 @@ def check_args_cc4cl(args):
     """Ensure ORAC suite wrapper parser arguments are valid."""
     from os import makedirs
     from os.path import isdir, join
-    from pyorac.local_defaults import dir_names, extra_lines
-
-    # Add names for output directories
-    dir_names.update({key : val for key, val in args.dir_names})
-    args.__dict__.update(dir_names)
+    from pyorac.local_defaults import log_dir, extra_lines, retrieval_settings
 
     # Add extra lines files
     extra_lines.update({key + '_extra' : val for key, val in args.extra_lines})
     args.__dict__.update(extra_lines)
 
-    log_path = join(args.out_dir, args.log_dir)
+    log_path = join(args.out_dir, log_dir)
     if args.batch and not isdir(log_path):
         makedirs(log_path, 0o774)
 
-    if args.all_phases:
-        args.phases = list(SETTINGS.keys())
+    if args.preset_settings is not None:
+        try:
+            args.settings = retrieval_settings[args.preset_settings]
+        except KeyError:
+            raise BadValue("preset settings", "not defined in local_defaults")
 
-    return log_path
+    elif args.settings_file is not None:
+        try:
+            with open(args.settings_file) as settings_file:
+                args.settings = settings_files.readlines()
+        except IOError:
+            raise FileMissing('Description of settings', args.settings_files)
+
+    elif args.settings is None:
+        args.settings = retrieval_settings[args.File.sensor]
 
 
 def check_args_regress(args):
     """Ensure regression test arguments are valid."""
-    from pyorac.regression_tests import AEROSOL_TESTS
 
     # Default tests
     if len(args.tests) == 0:
@@ -403,7 +444,3 @@ def check_args_regress(args):
         else:
             args.tests = ['DAYMYDS', 'NITMYDS', 'DAYAATSRS', 'NITAATSRS',
                           'DAYAVHRRS', 'NITAVHRRS']
-
-    # Remove tests that can't run aerosol retrievals
-    if args.all_phases:
-        args.tests = filter(lambda t: t in AEROSOL_TESTS, args.tests)

@@ -9,9 +9,11 @@ import pyorac.local_defaults as defaults
 import sys
 
 from argparse import ArgumentParser
+from copy import deepcopy
 from pyorac.arguments import *
 from pyorac.colour_print import colour_print
 from pyorac.definitions import *
+from pyorac.local_defaults import log_dir
 from pyorac.regression_tests import *
 from pyorac.run import process_all, run_regression
 from pyorac.util import get_repository_revision, warning_format
@@ -34,49 +36,52 @@ args_cc4cl(pars)
 args_preproc(pars)
 args_main(pars)
 args_postproc(pars)
-args = pars.parse_args()
+orig_args = pars.parse_args()
 
-check_args_regress(args)
+check_args_regress(orig_args)
 
-if args.in_dir == None:
-    args.in_dir = [ defaults.data_dir + '/testinput' ]
-if args.out_dir:
-    base_out_dir = args.out_dir
+if orig_args.in_dir == None:
+    orig_args.in_dir = [ defaults.data_dir + '/testinput' ]
+if orig_args.out_dir:
+    base_out_dir = orig_args.out_dir
 else:
     base_out_dir = defaults.data_dir +'/testoutput'
 
 # Increment version number (as this is usually run on uncommited code)
-if not args.revision:
+if not orig_args.revision:
     cwd = os.getcwd()
-    os.chdir(args.orac_dir)
-    args.revision = get_repository_revision()
+    os.chdir(orig_args.orac_dir)
+    orig_args.revision = get_repository_revision()
     os.chdir(cwd)
 
-    if not args.benchmark:
-        args.revision += 1
+    if not orig_args.benchmark:
+        orig_args.revision += 1
 
 
 try:
-    for test in args.tests:
+    for test in orig_args.tests:
         colour_print(test, COLOURING['header'])
+        args = deepcopy(orig_args)
 
         # Set filename to be processed and output folder
         args.out_dir = os.path.join(base_out_dir, test)
         try:
-            if any([phs[0] == "A" for phs in args.phases]):
-                args.target, args.limit = AEROSOL_TESTS[test]
-            else:
-                args.target, args.limit  = REGRESSION_TESTS[test]
+            args.target, args.limit, args.preset_settings  = REGRESSION_TESTS[test]
         except KeyError:
             raise OracError("Invalid regression test for given phases.")
 
-        log_path = check_args_cc4cl(args)
+        args.preset_settings += "_" + args.test_type
+
         jid, out_file = process_all(args)
+        log_path = os.path.join(args.out_dir, log_dir)
 
         # Check for regressions
         if not args.benchmark:
             if not args.batch:
-                run_regression(out_file, args.out_dir)
+                try:
+                    run_regression(args.File, args.out_dir)
+                except Regression as err:
+                    colour_print('REGRESSION) ' + str(err), COLOURING['error'])
 
             else:
                 path = [os.path.join(defaults.orac_dir, "tools"), ]
@@ -118,8 +123,6 @@ try:
 
 except OracError as err:
     colour_print('ERROR) ' + str(err), COLOURING['error'])
-except Regression as err:
-    print(str(err))
 except KeyboardInterrupt:
     colour_print('Execution halted by user.', COLOURING['error'])
 except CalledProcessError as err:
