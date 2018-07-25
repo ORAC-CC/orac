@@ -663,9 +663,21 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       end if
 
    else if (Ctrl%use_ann_phase .and. Ctrl%Approach == AppCld2L) then
-         write(*,*) 'ERROR: Read_Driver(): Ctrl%use_ann_phase=true with '// &
-                    'Ctrl%Approach=AppCld2L currently not supported'
-         stop error_stop_code
+         if (Ctrl%verbose) write(*,*) 'WARNING: Read_Driver(): '// &
+              'Ctrl%use_ann_phase=true with Ctrl%Approach=AppCld2L '// &
+              'processes all pixels.'
+         Ctrl%NTypes_to_process    = 11
+         Ctrl%Types_to_process(1)  = CLEAR_TYPE
+         Ctrl%Types_to_process(2)  = SWITCHED_TO_WATER_TYPE
+         Ctrl%Types_to_process(3)  = FOG_TYPE
+         Ctrl%Types_to_process(4)  = WATER_TYPE
+         Ctrl%Types_to_process(5)  = SUPERCOOLED_TYPE
+         Ctrl%Types_to_process(6)  = SWITCHED_TO_ICE_TYPE
+         Ctrl%Types_to_process(7)  = OPAQUE_ICE_TYPE
+         Ctrl%Types_to_process(8)  = CIRRUS_TYPE
+         Ctrl%Types_to_process(9)  = OVERLAP_TYPE
+         Ctrl%Types_to_process(10) = PROB_OPAQUE_ICE_TYPE
+         Ctrl%Types_to_process(11) = PROB_CLEAR_TYPE
 
    else if (.not. Ctrl%use_ann_phase .and. Ctrl%Approach == AppCld2L) then
       Ctrl%NTypes_to_process   = 1
