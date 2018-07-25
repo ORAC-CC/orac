@@ -95,7 +95,7 @@ subroutine get_goes_path(l1_5_file, platform, abi_filenames, n_chans, channel_id
    elseif (platform .eq. "GOES-17") then
       shplat = "G17"
    else
-      write(*,*), "Unsupported GOES platform: ", platform
+      write(*,*) "Unsupported GOES platform: ", platform
       stop
    endif
 
