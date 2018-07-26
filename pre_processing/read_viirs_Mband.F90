@@ -231,6 +231,13 @@ subroutine read_viirs_mband(infile,geofile,imager_geolocation, imager_measuremen
    ! Technically we could use data in the geofile (GMTCO) instead, but it gives
    ! same result whilst taking a lot of extra I/O
    index2=index(trim(adjustl(geofile)),'npp_d',.true.)
+   if (index2 .le. 0) then
+   	index2=index(trim(adjustl(geofile)),'j01_d',.true.)
+  		if (index2 .le. 0) then
+  			write(*,*)"Unsupported VIIRS platform."
+  			stop
+  		endif
+  	endif
    ! get year, doy, hour and minute as strings
    index2=index2+5
    cyear=trim(adjustl(geofile(index2:index2+4)))
