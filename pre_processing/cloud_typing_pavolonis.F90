@@ -1971,6 +1971,8 @@ function plank_inv(input_platform, T)
       index = 22
    case ("SuomiNPP")
       index = 23
+   case ("NOAA20")
+      index = 23
    case ("Sentinel3a")
       index = 24
    case ("Sentinel3b")
@@ -2016,7 +2018,7 @@ function plank_inv(input_platform, T)
         2568.832, 0.995400, 3.43800, 4.660, & ! msg1, msg2, msg3, msg4
         2575.767, 0.999339, 0.46466, 4.688, & ! himawari8, himawari9
         2570.373, 0.999376, 0.43862, 4.672, & ! goes16, goes17
-        2707.560, 0.999085, 0.58063, 5.123, & ! viirs SoumiNpp
+        2707.560, 0.999085, 0.58063, 5.123, & ! viirs SoumiNpp/NOAA20
         2673.797, 0.994884, 2.19600, 5.064, & ! slstr Sentinel-3
         2670.000, 0.998000, 1.75000, 5.000  & ! default
         /), (/ 4, 25 /))
