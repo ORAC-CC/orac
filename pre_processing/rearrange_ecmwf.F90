@@ -25,6 +25,7 @@
 ! 2014/05/07, AP: Restructuring for smaller ECMWF structure.
 ! 2014/11/04, OS: Added skin temperature.
 ! 2015/11/17, OS: Added rearrangement of high resolution ERA-Interim data.
+! 2018/07/26, AP: Switch to dynamic allocation to reduce stack requirements.
 !
 ! Bugs:
 ! None known.
@@ -38,12 +39,10 @@ subroutine rearrange_ecmwf(ecmwf,highRes)
    logical,       intent(in)    :: highRes
 
    integer                      :: date, ind, i
-   real(kind=sreal)             :: utemp(ecmwf%xdim,ecmwf%ydim)
-   real(kind=sreal)             :: vtemp(ecmwf%xdim,ecmwf%ydim)
-   real(kind=sreal)             :: skinttemp(ecmwf%xdim,ecmwf%ydim)
-   real(kind=sreal)             :: snow_depthtemp(ecmwf%xdim,ecmwf%ydim)
-   real(kind=sreal)             :: sea_ice_covertemp(ecmwf%xdim,ecmwf%ydim)
-   real(kind=sreal)             :: lontemp(ecmwf%xdim), lattemp(ecmwf%ydim)
+   real(kind=sreal), allocatable, dimension(:,:) :: u, v
+   real(kind=sreal), allocatable, dimension(:,:) :: skint, snow_depth
+   real(kind=sreal), allocatable, dimension(:,:) :: sea_ice_cover
+   real(kind=sreal), allocatable, dimension(:)   :: lon
 
    ! find dateline
    date=1
@@ -52,40 +51,55 @@ subroutine rearrange_ecmwf(ecmwf,highRes)
    end do
    ind = ecmwf%xdim + 1 - date
 
-   ! swap left and right halfs into a temp array
+   ! Swap the left and right halfs into a temp array
    if (.not. highRes) then
-      ! wind fields not contained in high resolution data
-      utemp(1:ind,:) = ecmwf%u10(date:,:)
-      vtemp(1:ind,:) = ecmwf%v10(date:,:)
-   end if
-   skinttemp(1:ind,:)         = ecmwf%skin_temp(date:,:)
-   snow_depthtemp(1:ind,:)    = ecmwf%snow_depth(date:,:)
-   sea_ice_covertemp(1:ind,:) = ecmwf%sea_ice_cover(date:,:)
-   lontemp(1:ind) = ecmwf%lon(date:) - 360.
-   if (.not. highRes) then
-      ! wind fields not contained in high resolution data
-      utemp(date:,:) = ecmwf%u10(1:ind,:)
-      vtemp(date:,:) = ecmwf%v10(1:ind,:)
-   end if
-   skinttemp(date:,:)         = ecmwf%skin_temp(1:ind,:)
-   snow_depthtemp(date:,:)    = ecmwf%snow_depth(1:ind,:)
-   sea_ice_covertemp(date:,:) = ecmwf%sea_ice_cover(1:ind,:)
-   lontemp(date:)             = ecmwf%lon(1:ind)
+      ! Wind fields are not contained in high resolution data
+      allocate(u(ecmwf%xdim,ecmwf%ydim))
+      u(1:ind,:)  = ecmwf%u10(date:,:)
+      u(ind+1:,:) = ecmwf%u10(1:date-1,:)
 
-   ecmwf%lon = lontemp
+      allocate(v(ecmwf%xdim,ecmwf%ydim))
+      v(1:ind,:)  = ecmwf%v10(date:,:)
+      v(ind+1:,:) = ecmwf%v10(1:date-1,:)
+   end if
+
+   allocate(skint(ecmwf%xdim,ecmwf%ydim))
+   skint(1:ind,:)  = ecmwf%skin_temp(date:,:)
+   skint(ind+1:,:) = ecmwf%skin_temp(1:date-1,:)
+
+   allocate(snow_depth(ecmwf%xdim,ecmwf%ydim))
+   snow_depth(1:ind,:) = ecmwf%snow_depth(date:,:)
+   snow_depth(ind+1:,:)= ecmwf%snow_depth(1:date-1,:)
+
+   allocate(sea_ice_cover(ecmwf%xdim,ecmwf%ydim))
+   sea_ice_cover(1:ind,:)  = ecmwf%sea_ice_cover(date:,:)
+   sea_ice_cover(ind+1:,:) = ecmwf%sea_ice_cover(1:date-1,:)
+
+   allocate(lon(ecmwf%xdim))
+   lon(1:ind)  = ecmwf%lon(date:) - 360.
+   lon(ind+1:) = ecmwf%lon(1:date-1)
+
+   ecmwf%lon = lon
 
    ! flip in the y direction from the temp to the original
-   lattemp=ecmwf%lat
-   ! wind fields not contained in high resolution data
    do i=1,ecmwf%ydim
       if (.not. highRes) then
-         ecmwf%u10(:,ecmwf%ydim+1-i) = utemp(:,i)
-         ecmwf%v10(:,ecmwf%ydim+1-i) = vtemp(:,i)
+         ecmwf%u10(:,ecmwf%ydim+1-i) = u(:,i)
+         ecmwf%v10(:,ecmwf%ydim+1-i) = v(:,i)
       end if
-      ecmwf%skin_temp(:,ecmwf%ydim+1-i)     = skinttemp(:,i)
-      ecmwf%snow_depth(:,ecmwf%ydim+1-i)    = snow_depthtemp(:,i)
-      ecmwf%sea_ice_cover(:,ecmwf%ydim+1-i) = sea_ice_covertemp(:,i)
-      ecmwf%lat(ecmwf%ydim+1-i)             = lattemp(i)
+      ecmwf%skin_temp(:,ecmwf%ydim+1-i)     = skint(:,i)
+      ecmwf%snow_depth(:,ecmwf%ydim+1-i)    = snow_depth(:,i)
+      ecmwf%sea_ice_cover(:,ecmwf%ydim+1-i) = sea_ice_cover(:,i)
+      ecmwf%lat(ecmwf%ydim+1-i)             = ecmwf%lat(i)
    end do
+
+   if (.not. highRes) then
+      deallocate(u)
+      deallocate(v)
+   end if
+   deallocate(skint)
+   deallocate(snow_depth)
+   deallocate(sea_ice_cover)
+   deallocate(lon)
 
 end subroutine rearrange_ecmwf
