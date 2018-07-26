@@ -142,10 +142,14 @@ def call_exe(args, exe, driver, values=dict()):
 
 def get_repository_revision():
     """Call git to determine repository revision number"""
+    from pyorac.local_defaults import orac_dir
     from subprocess import check_output
 
     fdr = os.getcwd()
-    os.chdir(os.environ["ORACDIR"])
+    try:
+        os.chdir(os.environ["ORACDIR"])
+    except KeyError:
+        os.chdir(orac_dir)
     try:
         tmp = check_output(["git", "rev-list", "--count", "HEAD"],
                            universal_newlines=True)
