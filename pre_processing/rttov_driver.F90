@@ -358,9 +358,21 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
                     trim(platform)
          stop error_stop_code
       end if
-   case('VIIRS')
+   case('VIIRSI')
       if (trim(platform) == 'SuomiNPP') then
          coef_file = 'rtcoef_jpss_0_viirs.dat'
+      elseif (trim(platform) == 'NOAA20') then
+         coef_file = 'rtcoef_noaa_20_viirs.dat'
+      else
+         write(*,*) 'ERROR: rttov_driver(): Invalid VIIRS platform: ', &
+                    trim(platform)
+         stop error_stop_code
+      end if
+   case('VIIRSM')
+      if (trim(platform) == 'SuomiNPP') then
+         coef_file = 'rtcoef_jpss_0_viirs.dat'
+      elseif (trim(platform) == 'NOAA20') then
+         coef_file = 'rtcoef_noaa_20_viirs.dat'
       else
          write(*,*) 'ERROR: rttov_driver(): Invalid VIIRS platform: ', &
                     trim(platform)

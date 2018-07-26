@@ -78,7 +78,8 @@ PREPROC_OBJ_F90 = $(OBJS)/aatsr_corrections.o \
                   $(OBJS)/read_modis.o \
                   $(OBJS)/read_seviri.o \
                   $(OBJS)/read_slstr.o \
-                  $(OBJS)/read_viirs.o \
+                  $(OBJS)/read_viirs_Iband.o \
+                  $(OBJS)/read_viirs_Mband.o \
                   $(OBJS)/read_USGS_file.o \
                   $(OBJS)/remove_rayleigh.o \
                   $(OBJS)/ross_thick_li_sparse_r.o \

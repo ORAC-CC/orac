@@ -344,7 +344,8 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
    use read_modis_m
    use read_seviri_m
    use read_slstr_m
-   use read_viirs_m
+   use read_viirs_iband_m
+   use read_viirs_mband_m
    use rttov_driver_m
    use rttov_driver_gfs_m
    use setup_m
@@ -856,14 +857,24 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
       call read_slstr_dimensions(l1b_path_file,n_across_track,n_along_track, &
                                  startx,endx,starty,endy,verbose)
 
-   else if (trim(adjustl(sensor)) .eq. 'VIIRS') then
-      call setup_viirs(l1b_path_file,geo_path_file,platform,year,month,day, &
+   else if (trim(adjustl(sensor)) .eq. 'VIIRSI') then
+      call setup_viirs_iband(l1b_path_file,geo_path_file,platform,year,month,day, &
            doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids, &
            channel_info,verbose)
 
       ! Get dimensions of the VIIRS image.
       ! At present the full scene will always be processed
-      call read_viirs_dimensions(geo_path_file,n_across_track,n_along_track, &
+      call read_viirs_iband_dimensions(geo_path_file,n_across_track,n_along_track, &
+                                 startx,endx,starty,endy,verbose)
+
+   else if (trim(adjustl(sensor)) .eq. 'VIIRSM') then
+      call setup_viirs_mband(l1b_path_file,geo_path_file,platform,year,month,day, &
+           doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids, &
+           channel_info,verbose)
+
+      ! Get dimensions of the VIIRS image.
+      ! At present the full scene will always be processed
+      call read_viirs_mband_dimensions(geo_path_file,n_across_track,n_along_track, &
                                  startx,endx,starty,endy,verbose)
 
    else

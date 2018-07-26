@@ -597,7 +597,27 @@ subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
                ch6=i
             end select
          end do
-      else if (trim(adjustl(sensor)) .eq. 'VIIRS') then
+      else if (trim(adjustl(sensor)) .eq. 'VIIRSI') then
+         do i=1,channel_info%nchannels_total
+            ii = channel_info%map_ids_channel_to_sw(i)
+            select case (channel_info%channel_ids_instr(i))
+            case(1)
+               ch1=i
+               sw1=ii
+            case(2)
+               ch2=i
+               sw2=ii
+            case(3)
+               ch3=i
+               sw3=ii
+            case(4)
+               ch4=i
+            case(5)
+               ch5=i
+               ch6=i
+            end select
+         end do
+      else if (trim(adjustl(sensor)) .eq. 'VIIRSM') then
          do i=1,channel_info%nchannels_total
             ii = channel_info%map_ids_channel_to_sw(i)
             select case (channel_info%channel_ids_instr(i))

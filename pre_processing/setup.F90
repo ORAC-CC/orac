@@ -1410,7 +1410,7 @@ subroutine setup_slstr(l1b_path_file,geo_path_file,source_attributes,platform, &
 end subroutine setup_slstr
 
 
-subroutine setup_viirs(l1b_path_file,geo_path_file,platform,year,month,day, &
+subroutine setup_viirs_mband(l1b_path_file,geo_path_file,platform,year,month,day, &
    doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids_user, &
    channel_info,verbose)
 
@@ -1503,14 +1503,27 @@ subroutine setup_viirs(l1b_path_file,geo_path_file,platform,year,month,day, &
    integer, parameter :: channel_ids_default(6) = (/ 5, 7, 10, 12, 15, 16 /)
 
 
-   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering setup_viirs()'
+   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering setup_viirs_mband()'
 
    if (verbose) write(*,*) 'l1b_path_file: ', trim(l1b_path_file)
    if (verbose) write(*,*) 'geo_path_file: ', trim(geo_path_file)
 
+	! Assume Suomi-NPP by default
+   platform="SuomiNPP"
    ! check if l1b and geo file are of the same granule
    index1=index(trim(adjustl(l1b_path_file)),'npp_d',.true.)
    index2=index(trim(adjustl(geo_path_file)),'npp_d',.true.)
+
+   if (index1 .le. 0) then
+   	index1=index(trim(adjustl(l1b_path_file)),'j01_d',.true.)
+   	index2=index(trim(adjustl(geo_path_file)),'j01_d',.true.)
+		if (index1 .le. 0) then
+			write(*,*)'ERROR: setup_viirs_iband(): Unsupported platform'
+			stop error_stop_code
+		endif
+   	platform="NOAA20"
+   endif
+
 
    l1b_dtstr=trim(adjustl(l1b_path_file(index2+5:index2+5+25)))
    geo_dtstr=trim(adjustl(geo_path_file(index2+5:index2+5+25)))
@@ -1519,7 +1532,7 @@ subroutine setup_viirs(l1b_path_file,geo_path_file,platform,year,month,day, &
    if (trim(adjustl(l1b_dtstr)) .ne. &
        trim(adjustl(geo_dtstr))) then
       write(*,*)
-      write(*,*) 'ERROR: setup_viirs(): Geolocation and L1b files are ' // &
+      write(*,*) 'ERROR: setup_viirs_mband(): Geolocation and L1b files are ' // &
            'for different times'
       write(*,*) 'l1b_path_file: ', trim(adjustl(geo_path_file))
       write(*,*) 'geo_path_file: ', trim(adjustl(l1b_path_file))
@@ -1527,7 +1540,6 @@ subroutine setup_viirs(l1b_path_file,geo_path_file,platform,year,month,day, &
       stop error_stop_code
    end if
 
-   platform="SuomiNPP"
    if (verbose) write(*,*) "Satellite is: ",platform
 
    ! The code below extracts date/time info from the segment name.
@@ -1566,9 +1578,177 @@ subroutine setup_viirs(l1b_path_file,geo_path_file,platform,year,month,day, &
       all_channel_numerical_uncertainty, all_channel_lnd_uncertainty, &
       all_channel_sea_uncertainty, all_nchannels_total)
 
-   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_viirs()'
+   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_viirs_mband()'
 
-end subroutine setup_viirs
+end subroutine setup_viirs_mband
+
+
+
+subroutine setup_viirs_iband(l1b_path_file,geo_path_file,platform,year,month,day, &
+   doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids_user, &
+   channel_info,verbose)
+
+   use calender_m
+   use channel_structures_m
+   use preproc_constants_m
+   use preproc_structures_m
+
+   implicit none
+
+   character(len=path_length),     intent(in)    :: l1b_path_file
+   character(len=path_length),     intent(in)    :: geo_path_file
+   character(len=platform_length), intent(out)   :: platform
+   integer(kind=sint),             intent(out)   :: year,month,day,doy
+   integer(kind=sint),             intent(out)   :: hour,minute
+   character(len=date_length),     intent(out)   :: cyear,cmonth,cday
+   character(len=date_length),     intent(out)   :: cdoy,chour,cminute
+   integer, pointer,               intent(in)    :: channel_ids_user(:)
+   type(channel_info_t),           intent(inout) :: channel_info
+   logical,                        intent(in)    :: verbose
+
+   character(len=path_length) :: geo_dtstr, l1b_dtstr
+
+   integer                    :: index1, index2
+
+
+   ! Static instrument channel definitions. (These should not be changed.)
+   integer, parameter :: all_nchannels_total = 5
+
+       ! 1,       2,       3,       4,       5,       6,       7,       8
+   real,    parameter :: all_channel_wl_abs(all_nchannels_total) = &
+      (/ 0.640,   0.865,   1.610,   3.740,   11.45 /)
+
+   integer, parameter :: all_channel_sw_flag(all_nchannels_total) = &
+      (/ 1,       1,       1,       1,       0 /)
+
+   integer, parameter :: all_channel_lw_flag(all_nchannels_total) = &
+      (/ 0,       0,       0,       1,       1 /)
+
+   integer, parameter :: all_channel_ids_rttov_coef_sw(all_nchannels_total) = &
+      (/ 1,       2,       13,      16,      21 /)
+
+   integer, parameter :: all_channel_ids_rttov_coef_lw(all_nchannels_total) = &
+      (/ 0,       0,       0,       1,       6 /)
+
+   integer, parameter :: all_map_ids_abs_to_ref_band_land(all_nchannels_total) = &
+      (/ 1,       2,       6,       0,       0 /)
+
+   integer, parameter :: all_map_ids_abs_to_ref_band_sea(all_nchannels_total) = &
+      (/ 3,       4,       7,       9,       0 /)
+
+   integer, parameter :: all_map_ids_abs_to_snow_and_ice(all_nchannels_total) = &
+      (/ 1,       2,       3,       4,       0 /)
+
+   integer, parameter :: all_map_ids_view_number(all_nchannels_total) = &
+      (/ 1,       1,       1,       1,       1 /)
+
+   real,    parameter :: all_channel_fractional_uncertainty(all_nchannels_total) = &
+      (/ 0.,      0.,      0.,      0.,      0./)
+
+   real,    parameter :: all_channel_minimum_uncertainty(all_nchannels_total) = &
+      (/ 0.,      0.,      0.,      0.,      0./)
+
+   real,    parameter :: all_channel_numerical_uncertainty(all_nchannels_total) = &
+      (/ 0.,      0.,      0.,      0.,      0./)
+
+   real,    parameter :: all_channel_lnd_uncertainty(all_nchannels_total) = &
+      (/ 0.,      0.,      0.,      0.,      0./)
+
+   real,    parameter :: all_channel_sea_uncertainty(all_nchannels_total) = &
+      (/ 0.,      0.,      0.,      0.,      0./)
+
+   ! Only this below needs to be set to change the desired default channels. All
+   ! other channel related arrays/indexes are set automatically given the static
+   ! instrument channel definition above.
+   integer, parameter :: channel_ids_default(6) = (/ 1, 2, 3, 4, 5, 5 /)
+
+
+   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering setup_viirs_iband()'
+
+   if (verbose) write(*,*) 'l1b_path_file: ', trim(l1b_path_file)
+   if (verbose) write(*,*) 'geo_path_file: ', trim(geo_path_file)
+
+	! Assume Suomi-NPP by default
+   platform="SuomiNPP"
+   ! check if l1b and geo file are of the same granule
+   index1=index(trim(adjustl(l1b_path_file)),'npp_d',.true.)
+   index2=index(trim(adjustl(geo_path_file)),'npp_d',.true.)
+
+   if (index1 .le. 0) then
+   	index1=index(trim(adjustl(l1b_path_file)),'j01_d',.true.)
+   	index2=index(trim(adjustl(geo_path_file)),'j01_d',.true.)
+		if (index1 .le. 0) then
+			write(*,*)'ERROR: setup_viirs_iband(): Unsupported platform'
+			stop error_stop_code
+		endif
+   	platform="NOAA20"
+   endif
+
+
+   l1b_dtstr=trim(adjustl(l1b_path_file(index2+5:index2+5+25)))
+   geo_dtstr=trim(adjustl(geo_path_file(index2+5:index2+5+25)))
+
+   ! check if l1b and geo files identical
+   if (trim(adjustl(l1b_dtstr)) .ne. &
+       trim(adjustl(geo_dtstr))) then
+      write(*,*)
+      write(*,*) 'ERROR: setup_viirs_iband(): Geolocation and L1b files are ' // &
+           'for different times'
+      write(*,*) 'l1b_path_file: ', trim(adjustl(geo_path_file))
+      write(*,*) 'geo_path_file: ', trim(adjustl(l1b_path_file))
+
+      stop error_stop_code
+   end if
+
+   if (verbose) write(*,*) "Satellite is: ",platform
+
+   ! The code below extracts date/time info from the segment name.
+   ! Note that it requires the segment name to be in the generic format
+   ! that's specified by the NOAA. Weird filenames will break things.
+
+   index2=index(trim(adjustl(l1b_path_file)),'npp_d')
+
+   if (index2 .le. 0) then
+   	index2=index(trim(adjustl(l1b_path_file)),'j01_d',.true.)
+		if (index2 .le. 0) then
+			write(*,*)'ERROR: setup_viirs_iband(): Unsupported platform'
+			stop error_stop_code
+		endif
+	endif
+
+   ! get year, doy, hour and minute as strings
+   index2=index2+5
+   cyear=trim(adjustl(l1b_path_file(index2:index2+4)))
+   cmonth=trim(adjustl(l1b_path_file(index2+4:index2+5)))
+   cday=trim(adjustl(l1b_path_file(index2+6:index2+7)))
+   chour=trim(adjustl(l1b_path_file(index2+10:index2+11)))
+   cminute=trim(adjustl(l1b_path_file(index2+12:index2+13)))
+
+   ! get year, doy, hour and minute as integers
+   read(cyear(1:len_trim(cyear)), '(I4)') year
+   read(cmonth(1:len_trim(cmonth)), '(I2)') month
+   read(cday(1:len_trim(cday)), '(I2)') day
+   read(chour(1:len_trim(chour)), '(I2)') hour
+   read(cminute(1:len_trim(cminute)), '(I2)') minute
+   call GREG2DOY(year, month, day, doy)
+   write(cdoy, '(i3.3)') doy
+
+   ! VIIRS only has a single viewing geometry
+   channel_info%nviews = 1
+
+   ! now set up the channels
+   call common_setup(channel_info, channel_ids_user, channel_ids_default, &
+      all_channel_wl_abs, all_channel_sw_flag, all_channel_lw_flag, &
+      all_channel_ids_rttov_coef_sw, all_channel_ids_rttov_coef_lw, &
+      all_map_ids_abs_to_ref_band_land, all_map_ids_abs_to_ref_band_sea, &
+      all_map_ids_abs_to_snow_and_ice, all_map_ids_view_number, &
+      all_channel_fractional_uncertainty, all_channel_minimum_uncertainty, &
+      all_channel_numerical_uncertainty, all_channel_lnd_uncertainty, &
+      all_channel_sea_uncertainty, all_nchannels_total)
+
+   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_viirs_iband()'
+
+end subroutine setup_viirs_iband
 
 
 subroutine common_setup(channel_info, channel_ids_user, channel_ids_default, &

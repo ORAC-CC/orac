@@ -21,19 +21,19 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-module read_viirs_m
+module read_viirs_iband_m
 
    implicit none
 
    private
 
-   public :: read_viirs_dimensions, &
-             read_viirs
+   public :: read_viirs_iband_dimensions, &
+             read_viirs_iband
 
 contains
 
 !-------------------------------------------------------------------------------
-! Name: read_viirs_dimensions
+! Name: read_viirs_iband_dimensions
 !
 ! Purpose:
 !
@@ -53,7 +53,7 @@ contains
 ! Note: startx,endx,starty,endy currently ignored.
 ! It will always process the full scene. This will be fixed.
 !-------------------------------------------------------------------------------
-subroutine read_viirs_dimensions(geo_file, n_across_track, n_along_track, &
+subroutine read_viirs_iband_dimensions(geo_file, n_across_track, n_along_track, &
                                  startx, endx, starty, endy, verbose)
 
    use iso_c_binding
@@ -74,20 +74,20 @@ subroutine read_viirs_dimensions(geo_file, n_across_track, n_along_track, &
    integer                        :: error
    integer(HSIZE_T), DIMENSION(2) :: dimsr, maxdimsr
 
-   if (verbose) write(*,*) '<<<<<<<<<<<<<<< read_viirs_dimensions()'
+   if (verbose) write(*,*) '<<<<<<<<<<<<<<< read_viirs_iband_dimensions()'
 
    ! Open the file.
    call h5fopen_f (geo_file, H5F_ACC_RDONLY_F, file_id, error)
 
    ! Open the  dataset.
-   call h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO-TC_All/Latitude", &
+   call h5dopen_f(file_id, "//All_Data/VIIRS-IMG-GEO-TC_All/Latitude", &
         dset_id, error)
    if (error .ne. 0) then
-      call h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO_All/Latitude", &
+      call h5dopen_f(file_id, "//All_Data/VIIRS-IMG-GEO_All/Latitude", &
            dset_id, error)
    end if
    if (error .ne. 0) then
-      print*,"Problem determining VIIRS dimensions"
+      print*,"Problem determining VIIRS I-band dimensions"
       stop
    end if
 
@@ -109,13 +109,13 @@ subroutine read_viirs_dimensions(geo_file, n_across_track, n_along_track, &
    call h5dclose_f(dset_id, error)
    call h5fclose_f(file_id, error)
 
-   if (verbose) write(*,*) '>>>>>>>>>>>>>>> read_viirs_dimensions()'
+   if (verbose) write(*,*) '>>>>>>>>>>>>>>> read_viirs_iband_dimensions()'
 
-end subroutine read_viirs_dimensions
+end subroutine read_viirs_iband_dimensions
 
 
 !-------------------------------------------------------------------------------
-! Name: read_viirs_bin
+! Name: read_viirs_iband
 !
 ! Purpose:
 ! To read the requested VIIRS data from HDF5-format files.
@@ -134,7 +134,7 @@ end subroutine read_viirs_dimensions
 ! channel_info        struct  both Members within are populated
 ! verbose             logical in   If true then print verbose information.
 !-------------------------------------------------------------------------------
-subroutine read_viirs(infile,geofile,imager_geolocation, imager_measurements, &
+subroutine read_viirs_iband(infile,geofile,imager_geolocation, imager_measurements, &
    imager_angles, imager_time, channel_info, verbose)
 
    use iso_c_binding
@@ -288,34 +288,34 @@ subroutine read_viirs(infile,geofile,imager_geolocation, imager_measurements, &
    ! This bit reads all the data.
    ! First it loads geo/angle info from GMTCO file.
    call h5open_f(error)
-   if (index(geofile,'GMTCO') .gt. 0) then
+   if (index(geofile,'GITCO') .gt. 0) then
       call h5fopen_f (geofile, H5F_ACC_RDONLY_F, file_id, error)
-      call h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO-TC_All/Latitude", &
+      call h5dopen_f(file_id, "//All_Data/VIIRS-IMG-GEO-TC_All/Latitude", &
                      dset_id, error)
       call h5dread_f(dset_id, H5T_NATIVE_REAL, data0, pxcount, error)
       imager_geolocation%latitude(:,:) = data0
       call h5dclose_f(dset_id, error)
-      call h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO-TC_All/Longitude", &
+      call h5dopen_f(file_id, "//All_Data/VIIRS-IMG-GEO-TC_All/Longitude", &
                      dset_id, error)
       call h5dread_f(dset_id, H5T_NATIVE_REAL, data0, pxcount, error)
       imager_geolocation%longitude(:,:) = data0
       call h5dclose_f(dset_id, error)
-      call h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO-TC_All/SolarZenithAngle", &
+      call h5dopen_f(file_id, "//All_Data/VIIRS-IMG-GEO-TC_All/SolarZenithAngle", &
                      dset_id, error)
       call h5dread_f(dset_id, H5T_NATIVE_REAL, data0, pxcount, error)
       imager_angles%solzen(:,:,1) = data0
       call h5dclose_f(dset_id, error)
-      call h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO-TC_All/SolarAzimuthAngle", &
+      call h5dopen_f(file_id, "//All_Data/VIIRS-IMG-GEO-TC_All/SolarAzimuthAngle", &
                      dset_id, error)
       call h5dread_f(dset_id, H5T_NATIVE_REAL, data0, pxcount, error)
       imager_angles%solazi(:,:,1) = data0
       call h5dclose_f(dset_id, error)
-      call h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO-TC_All/" // &
+      call h5dopen_f(file_id, "//All_Data/VIIRS-IMG-GEO-TC_All/" // &
                      "SatelliteZenithAngle", dset_id, error)
       call h5dread_f(dset_id, H5T_NATIVE_REAL, data0, pxcount, error)
       imager_angles%satzen(:,:,1) = data0
       call h5dclose_f(dset_id, error)
-      call h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO-TC_All/" // &
+      call h5dopen_f(file_id, "//All_Data/VIIRS-IMG-GEO-TC_All/" // &
                      "SatelliteAzimuthAngle", dset_id, error)
       call h5dread_f(dset_id, H5T_NATIVE_REAL, data0, pxcount, error)
       imager_angles%satazi(:,:,1) = data0
@@ -323,32 +323,32 @@ subroutine read_viirs(infile,geofile,imager_geolocation, imager_measurements, &
       call h5fclose_f(file_id, error)
    else
       call h5fopen_f (geofile, H5F_ACC_RDONLY_F, file_id, error)
-      call h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO_All/Latitude", &
+      call h5dopen_f(file_id, "//All_Data/VIIRS-IMG-GEO_All/Latitude", &
                      dset_id, error)
       call h5dread_f(dset_id, H5T_NATIVE_REAL, data0, pxcount, error)
       imager_geolocation%latitude(:,:) = data0
       call h5dclose_f(dset_id, error)
-      call h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO_All/Longitude", &
+      call h5dopen_f(file_id, "//All_Data/VIIRS-IMG-GEO_All/Longitude", &
                      dset_id, error)
       call h5dread_f(dset_id, H5T_NATIVE_REAL, data0, pxcount, error)
       imager_geolocation%longitude(:,:) = data0
       call h5dclose_f(dset_id, error)
-      call h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO_All/SolarZenithAngle", &
+      call h5dopen_f(file_id, "//All_Data/VIIRS-IMG-GEO_All/SolarZenithAngle", &
                      dset_id, error)
       call h5dread_f(dset_id, H5T_NATIVE_REAL, data0, pxcount, error)
       imager_angles%solzen(:,:,1) = data0
       call h5dclose_f(dset_id, error)
-      call h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO_All/SolarAzimuthAngle", &
+      call h5dopen_f(file_id, "//All_Data/VIIRS-IMG-GEO_All/SolarAzimuthAngle", &
                      dset_id, error)
       call h5dread_f(dset_id, H5T_NATIVE_REAL, data0, pxcount, error)
       imager_angles%solazi(:,:,1) = data0
       call h5dclose_f(dset_id, error)
-      call h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO_All/" // &
+      call h5dopen_f(file_id, "//All_Data/VIIRS-IMG-GEO_All/" // &
                      "SatelliteZenithAngle", dset_id, error)
       call h5dread_f(dset_id, H5T_NATIVE_REAL, data0, pxcount, error)
       imager_angles%satzen(:,:,1) = data0
       call h5dclose_f(dset_id, error)
-      call h5dopen_f(file_id, "//All_Data/VIIRS-MOD-GEO_All/" // &
+      call h5dopen_f(file_id, "//All_Data/VIIRS-IMG-GEO_All/" // &
                      "SatelliteAzimuthAngle", dset_id, error)
       call h5dread_f(dset_id, H5T_NATIVE_REAL, data0, pxcount, error)
       imager_angles%satazi(:,:,1) = data0
@@ -356,9 +356,9 @@ subroutine read_viirs(infile,geofile,imager_geolocation, imager_measurements, &
       call h5fclose_f(file_id, error)
    end if
 
-   ! Move on to image data, in this case from individual SVM files (per-band)
+   ! Move on to image data, in this case from individual SVI files (per-band)
 
-   index2=index(trim(adjustl(infile)),'SVM',.true.)
+   index2=index(trim(adjustl(infile)),'SVI',.true.)
    do i=1,n_bands
       banddir = infile(1:index2-2)
       write (band, "(I2.2)") band_ids(i)
@@ -367,7 +367,7 @@ subroutine read_viirs(infile,geofile,imager_geolocation, imager_measurements, &
 
       ! Check if we find the appropriate band
       if (match_file(trim(banddir), trim(regex), bandfile) .ne. 0) then
-         write(*,*) 'ERROR: read_viirs(): Unable to locate VIIRS SVM ' // &
+         write(*,*) 'ERROR: read_viirs_iband(): Unable to locate VIIRS SVI ' // &
                     'file: ', trim(banddir)//'/'//trim(regex)
          stop error_stop_code
       end if
@@ -375,46 +375,32 @@ subroutine read_viirs(infile,geofile,imager_geolocation, imager_measurements, &
       ! Setup and read the relevant refl/bt/factors
       bandfile = trim(banddir)//'/'//trim(bandfile)
       write (band, "(I2)") band_ids(i)
-      band = "M"//trim(adjustl(band))
+      band = "I"//trim(adjustl(band))
       call h5fopen_f(bandfile, H5F_ACC_RDONLY_F, file_id, error)
-      if (band_ids(i) .lt. 12) then
+      if (band_ids(i) .lt. 4) then
          varname = "//All_Data/VIIRS-"//trim(adjustl(band))// &
               "-SDR_All/Reflectance"
          facname = "//All_Data/VIIRS-"//trim(adjustl(band))// &
               "-SDR_All/ReflectanceFactors"
-      else if (band_ids(i) .ge. 12) then
+      else if (band_ids(i) .ge. 4) then
          varname = "//All_Data/VIIRS-"//trim(adjustl(band))// &
               "-SDR_All/BrightnessTemperature"
          facname = "//All_Data/VIIRS-"//trim(adjustl(band))// &
               "-SDR_All/BrightnessTemperatureFactors"
       end if
 
-      ! Standard case, data is integer
-      if (band_ids(i) .ne. 13) then
-         call h5dopen_f(file_id, trim(adjustl(varname)), dset_id, error)
-         call h5dread_f(dset_id, H5T_NATIVE_INTEGER, data1, pxcount, error)
-         call h5dclose_f(dset_id, error)
-         call h5dopen_f(file_id, trim(adjustl(facname)), dset_id, error)
-         call h5dread_f(dset_id, H5T_NATIVE_REAL, factors, pxcount_fac, error)
-         call h5dclose_f(dset_id, error)
-         call h5fclose_f(file_id, error)
+      call h5dopen_f(file_id, trim(adjustl(varname)), dset_id, error)
+      call h5dread_f(dset_id, H5T_NATIVE_INTEGER, data1, pxcount, error)
+      call h5dclose_f(dset_id, error)
+      call h5dopen_f(file_id, trim(adjustl(facname)), dset_id, error)
+      call h5dread_f(dset_id, H5T_NATIVE_REAL, factors, pxcount_fac, error)
+      call h5dclose_f(dset_id, error)
+      call h5fclose_f(file_id, error)
 
-         ! Scale and account for missing values
-         imager_measurements%data(:,:,i) = factors(2) + (data1*factors(1))
-         where(data1 .gt. 65500) &
-              imager_measurements%data(:,:,i) = sreal_fill_value
-
-      ! Band 13, data is float
-      else
-         call h5dopen_f(file_id, trim(adjustl(varname)), dset_id, error)
-         call h5dread_f(dset_id, H5T_NATIVE_REAL, data0, pxcount, error)
-         call h5dclose_f(dset_id, error)
-         call h5fclose_f(file_id, error)
-
-         ! Account for missing values, data doesn't need scaling
-         imager_measurements%data(:,:,i) = data0
-         where(data0 .lt. -999) imager_measurements%data(:,:,i)=sreal_fill_value
-      end if
+      ! Scale and account for missing values
+      imager_measurements%data(:,:,i) = factors(2) + (data1*factors(1))
+      where(data1 .gt. 65500) &
+           imager_measurements%data(:,:,i) = sreal_fill_value
 
       if (verbose) &
          write(*,*)i,band_ids(i),maxval(imager_measurements%data(:,:,i)), &
@@ -458,6 +444,6 @@ subroutine read_viirs(infile,geofile,imager_geolocation, imager_measurements, &
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_viirs()'
 
-end subroutine read_viirs
+end subroutine read_viirs_iband
 
-end module read_viirs_m
+end module read_viirs_iband_m

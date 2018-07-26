@@ -83,7 +83,8 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
    use read_modis_m
    use read_seviri_m
    use read_slstr_m
-   use read_viirs_m
+   use read_viirs_iband_m
+   use read_viirs_mband_m
 
    implicit none
 
@@ -217,10 +218,20 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
       ! In absence of proper mask set everything to "1" for cloud mask
       imager_flags%cflag = 1
 
-   else if (trim(adjustl(sensor)) .eq. 'VIIRS') then
+   else if (trim(adjustl(sensor)) .eq. 'VIIRSI') then
       ! Read the L1B data, according to the dimensions and offsets specified in
       ! imager_geolocation
-      call read_viirs(path_to_l1b_file, path_to_geo_file, &
+      call read_viirs_iband(path_to_l1b_file, path_to_geo_file, &
+           imager_geolocation,imager_measurements,imager_angles, &
+           imager_time,channel_info,verbose)
+
+      ! In absence of proper mask set everything to "1" for cloud mask
+      imager_flags%cflag = 1
+
+   else if (trim(adjustl(sensor)) .eq. 'VIIRSM') then
+      ! Read the L1B data, according to the dimensions and offsets specified in
+      ! imager_geolocation
+      call read_viirs_mband(path_to_l1b_file, path_to_geo_file, &
            imager_geolocation,imager_measurements,imager_angles, &
            imager_time,channel_info,verbose)
 
