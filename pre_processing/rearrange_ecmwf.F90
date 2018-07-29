@@ -42,7 +42,7 @@ subroutine rearrange_ecmwf(ecmwf,highRes)
    real(kind=sreal), allocatable, dimension(:,:) :: u, v
    real(kind=sreal), allocatable, dimension(:,:) :: skint, snow_depth
    real(kind=sreal), allocatable, dimension(:,:) :: sea_ice_cover
-   real(kind=sreal), allocatable, dimension(:)   :: lon
+   real(kind=sreal), allocatable, dimension(:)   :: lon,lat
 
    ! find dateline
    date=1
@@ -76,6 +76,7 @@ subroutine rearrange_ecmwf(ecmwf,highRes)
    sea_ice_cover(ind+1:,:) = ecmwf%sea_ice_cover(1:date-1,:)
 
    allocate(lon(ecmwf%xdim))
+   allocate(lat(ecmwf%ydim))
    lon(1:ind)  = ecmwf%lon(date:) - 360.
    lon(ind+1:) = ecmwf%lon(1:date-1)
 
@@ -90,8 +91,11 @@ subroutine rearrange_ecmwf(ecmwf,highRes)
       ecmwf%skin_temp(:,ecmwf%ydim+1-i)     = skint(:,i)
       ecmwf%snow_depth(:,ecmwf%ydim+1-i)    = snow_depth(:,i)
       ecmwf%sea_ice_cover(:,ecmwf%ydim+1-i) = sea_ice_cover(:,i)
-      ecmwf%lat(ecmwf%ydim+1-i)             = ecmwf%lat(i)
+      lat(ecmwf%ydim+1-i)                   = ecmwf%lat(i)
    end do
+
+   ecmwf%lon = lon
+   ecmwf%lat = lat
 
    if (.not. highRes) then
       deallocate(u)
@@ -101,5 +105,6 @@ subroutine rearrange_ecmwf(ecmwf,highRes)
    deallocate(snow_depth)
    deallocate(sea_ice_cover)
    deallocate(lon)
+   deallocate(lat)
 
 end subroutine rearrange_ecmwf
