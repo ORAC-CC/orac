@@ -425,9 +425,13 @@ subroutine read_viirs_iband(infile,geofile,imager_geolocation, imager_measuremen
    imager_angles%satzen(startx:,:,1) = abs(imager_angles%satzen(startx:,:,1))
 
    ! Check units to remove anything that's out-of-range.
-   where(imager_geolocation%latitude(startx:,:)  .gt. 900) &
+   where(imager_geolocation%latitude(startx:,:)  .gt. 100) &
       imager_geolocation%latitude(startx:,:)=sreal_fill_value
-   where(imager_geolocation%longitude(startx:,:) .gt. 900) &
+   where(imager_geolocation%latitude(startx:,:)  .lt. -100) &
+      imager_geolocation%latitude(startx:,:)=sreal_fill_value
+   where(imager_geolocation%longitude(startx:,:) .gt. 200) &
+      imager_geolocation%longitude(startx:,:)=sreal_fill_value
+   where(imager_geolocation%longitude(startx:,:) .lt. -200) &
       imager_geolocation%longitude(startx:,:)=sreal_fill_value
    where(imager_angles%solazi(startx:,:,1)       .gt. 900) &
       imager_angles%solazi(startx:,:,1)=sreal_fill_value
