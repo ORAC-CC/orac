@@ -122,10 +122,6 @@ subroutine read_seviri_dimensions(l1_5_file, n_across_track, n_along_track, &
       endy   = i_line + n_lines
       startx = i_column + 1
       endx   = i_column + n_columns
-
-      if (index(l1_5_file,trim('RSS'))>0) then
-         endy=endy/3
-      end if
    else
       ! If start and end *are* being used then check that they fall within the
       ! actual image in the file relative to the full disk image.

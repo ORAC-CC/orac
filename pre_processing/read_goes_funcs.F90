@@ -324,6 +324,8 @@ subroutine get_goes_geoloc(infile, imager_geolocation, imager_angles, global_att
 
          if (tlat .lt. -90 .or. tlat .gt. 90) tlat = sreal_fill_value
          if (tlon .lt. -180 .or. tlon .gt. 180) tlon = sreal_fill_value
+         if (is_nan(tlat)) tlat = sreal_fill_value
+         if (is_nan(tlon)) tlon = sreal_fill_value
 
          imager_geolocation%latitude(i, j-imager_geolocation%starty+1) = tlat
          imager_geolocation%longitude(i, j-imager_geolocation%starty+1) = tlon
