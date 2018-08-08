@@ -10,6 +10,7 @@ from argparse import ArgumentParser
 from pyorac.arguments import *
 from pyorac.colour_print import colour_print
 from pyorac.definitions import COLOURING, FileName, OracError, OracWarning
+from pyorac.local_defaults import log_dir
 from pyorac.run import *
 from pyorac.util import warning_format
 
@@ -32,7 +33,8 @@ args = pars.parse_args()
 
 
 check_args_common(args)
-log_path = check_args_cc4cl(args)
+check_args_cc4cl(args)
+log_path = os.path.join(args.out_dir, log_dir)
 
 try:
     inst = FileName(args.in_dir, args.target)

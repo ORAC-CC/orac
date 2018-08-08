@@ -150,8 +150,6 @@ def args_main(parser):
                       choices = ('ClsCldWat', 'ClsCldIce', 'ClsAerOx',
                                  'ClsAerSw', 'ClsAshEyj'),
                       help = 'Retrieval class to be used (for layer 1).')
-    main.add_argument('--extra_lines_file', type=str, nargs='?', metavar='PATH',
-                      help = 'Name of file containing additional driver lines.')
     main.add_argument('--phase', type=str, default = 'WAT',
                       choices = list(SETTINGS.keys()),
                       help = 'Label of look-up table to use in retrieval. '
@@ -426,9 +424,9 @@ def check_args_cc4cl(args):
     elif args.settings_file is not None:
         try:
             with open(args.settings_file) as settings_file:
-                args.settings = settings_files.readlines()
+                args.settings = settings_file.read().splitlines()
         except IOError:
-            raise FileMissing('Description of settings', args.settings_files)
+            raise FileMissing('Description of settings', args.settings_file)
 
     elif args.settings is None:
         args.settings = retrieval_settings[args.File.sensor]

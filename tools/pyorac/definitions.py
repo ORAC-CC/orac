@@ -241,8 +241,8 @@ class FileName:
             self.inst     = 'SEVIRI-'+self.platform
             self.time     = datetime.datetime(
                 int(m.group('year')), int(m.group('month')), int(m.group('day')),
-                int(m.group('hour')), int(m.group('min')), float(m.group('sec')),
-                0
+                int(m.group('hour')), int(m.group('min')),
+                round(float(m.group('sec'))), 0
             )
             self.dur      = datetime.timedelta(seconds=900) # Guessing
             self.geo      = filename

@@ -78,6 +78,8 @@ try:
         # Check for regressions
         if not args.benchmark:
             if not args.batch:
+                check_args_common(args)
+                check_args_preproc(args)
                 try:
                     run_regression(args.File, args.out_dir)
                 except Regression as err:

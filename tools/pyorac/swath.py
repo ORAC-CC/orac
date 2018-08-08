@@ -524,12 +524,19 @@ class Swath(Mappable):
         # Remove "b" from end of value terms
         nums = [int(i[:-1]) for i in vals if i]
 
-        try:
-            keys = (var.flag_meanings + " ").split(": ")
-        except AttributeError as err:
-            err.args = name+" does not have flag definitions.",
-            raise
-        names = [k[:k.rfind(" ")] for k in keys[1:]]
+        if ":" in var.flag_meanings:
+            try:
+                keys = (var.flag_meanings + " ").split(": ")
+            except AttributeError as err:
+                err.args = name+" does not have flag definitions.",
+                raise
+            names = [k[:k.rfind(" ")] for k in keys[1:]]
+        else:
+            try:
+                names = var.flag_meanings.split(" ")
+            except AttributeError as err:
+                err.args = name+" does not have flag definitions.",
+                raise
 
         return dict(zip(nums, names))
 

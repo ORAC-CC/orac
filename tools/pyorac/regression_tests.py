@@ -88,8 +88,8 @@ def compare_orac_out(f0, f1):
                                      d1.dimensions[key].size),
                      stacklevel=2)
 
-        # Check attributes
-        compare_nc_atts(d0, d1, f1, key)
+            # Check attributes
+            compare_nc_atts(d0, d1, f1, key)
 
         # Check if any variables added/removed
         vars = set(d0.variables.keys()).symmetric_difference(

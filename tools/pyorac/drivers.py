@@ -34,9 +34,9 @@ def build_preproc_driver(args):
 
     # Select previous surface reflectance and emissivity files
     alb = _date_back_search(args.mcd43c3_dir, args.File.time,
-                            'MCD43C3.A%Y%j.005.*.hdf')
+                            'MCD43C3.A%Y%j.*.hdf')
     brdf = None if args.lambertian else _date_back_search(
-        args.mcd43c1_dir, args.File.time, 'MCD43C1.A%Y%j.005.*.hdf'
+        args.mcd43c1_dir, args.File.time, 'MCD43C1.A%Y%j.*.hdf'
     )
     emis = None if args.use_modis_emis else _date_back_search(
         args.emis_dir, args.File.time,
@@ -300,6 +300,13 @@ USE_CAMEL_EMIS={camel}""".format(
         driver += "\nCHANNEL_IDS={}".format(
             ','.join(str(k) for k in args.available_channels)
         )
+    for part, f in args.extra_lines:
+        if part == "pre" and f != "":
+            try:
+                with open(f, "r") as e:
+                    driver += "\n" + e.read()
+            except IOError:
+                raise FileMissing('extra_lines_file', f)
     for sec, key, val in args.additional:
         if sec == "pre":
             driver += "\n{}={}".format(key, val)
@@ -376,14 +383,13 @@ Ctrl%Class2                 = {}""".format(
         driver += "\nCtrl%Surfaces_To_Skip       = ILand"
     for var in SETTINGS[args.phase].inv:
         driver += var.driver()
-    if args.extra_lines_file:
-        try:
-            e = open(args.extra_lines, "r")
-            driver += "\n"
-            driver += e.read()
-            e.close()
-        except IOError:
-            raise FileMissing('extra_lines', args.extra_lines)
+    for part, f in args.extra_lines:
+        if part == "main" and f != "":
+            try:
+                with open(f, "r") as e:
+                    driver += "\n" + e.read()
+            except IOError:
+                raise FileMissing('extra_lines_file', f)
     for sec, key, val in args.additional:
         if sec == "main":
             driver += "\n{} = {}".format(key, val)
@@ -436,6 +442,13 @@ USE_BAYESIAN_SELECTION={bayesian}""".format(
         driver += f
         driver += '\n'
         driver += f.replace('primary', 'secondary')
+    for part, f in args.extra_lines:
+        if part == "post" and f != "":
+            try:
+                with open(f, "r") as e:
+                    driver += "\n" + e.read()
+            except IOError:
+                raise FileMissing('extra_lines_file', f)
     for sec, key, val in args.additional:
         if sec == "post":
             driver += "\n{} = {}".format(key, val)

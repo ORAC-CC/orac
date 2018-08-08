@@ -114,7 +114,7 @@ def process_post(args, log_path, files=None, dependency=None):
         args.out_dir, '.'.join(filter(
             None, (root_name, args.suffix, 'primary', 'nc')
     )))
-    if args.clobber >= CLOBBER['post'] or os.path.isfile(out_file):
+    if args.clobber >= CLOBBER['post'] or not os.path.isfile(out_file):
         # Settings for batch processing
         values = {'job_name' : job_name,
                   'log_file' : os.path.join(log_path, job_name + '.log'),
@@ -140,21 +140,23 @@ def process_post(args, log_path, files=None, dependency=None):
 def process_all(orig_args):
     """Run the ORAC pre, main, and post processors on a file."""
     from argparse import ArgumentParser
-    from copy import copy
-    from pyorac.arguments import args_main
+    from copy import deepcopy
+    from pyorac.arguments import args_common, args_main
     from pyorac.definitions import SETTINGS
     from pyorac.local_defaults import log_dir, pre_dir
 
     # Generate main-processor-only parser
     pars = ArgumentParser()
+    args_common(pars)
     args_main(pars)
     pars.add_argument("--sub_dir", default="")
+    compare = pars.parse_args("")
 
     # Copy input arguments as we'll need to fiddle with them
     check_args_common(orig_args)
     check_args_cc4cl(orig_args)
     log_path = os.path.join(orig_args.out_dir, log_dir)
-    args = copy(orig_args)
+    args = deepcopy(orig_args)
 
     written_dirs = set() # The folders we actually wrote to
 
@@ -173,9 +175,12 @@ def process_all(orig_args):
     out_files   = [] # All files that would be made (facilitates --dry_run)
     jid_main    = [] # ID no. for each queued job
     args.in_dir = [args.out_dir]
-    phs_args = copy(args)
     for sett in args.settings:
+        phs_args = deepcopy(args)
         parsed_settings_arguments = pars.parse_args(sett.split(" "))
+        for key, val in compare.__dict__.items():
+            if val == parsed_settings_arguments.__dict__[key]:
+                parsed_settings_arguments.__dict__.pop(key)
         phs_args.__dict__.update(parsed_settings_arguments.__dict__)
         phs_args.out_dir = os.path.join(orig_args.out_dir, phs_args.sub_dir)
 
@@ -217,7 +222,7 @@ def run_regression(File, in_dir):
         # Find previous file version
         old_revision = 0
         old_file = None
-        for f in iglob(regex.sub("_R*", this_file)):
+        for f in iglob(regex.sub("_R[0-9][0-9][0-9][0-9]", this_file)):
             rev = int(regex.search(f).group(1))
             if old_revision < rev < this_revision:
                 old_revision = copy(rev)
