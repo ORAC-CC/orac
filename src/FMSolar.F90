@@ -187,7 +187,7 @@ end subroutine rs_derivative_wrt_crp_parameter
 
 
 subroutine derivative_wrt_crp_parameter(i_p_crp, Rs, CRP, d_CRP, f, Tac_0v, &
-   Tbc2, T_all, S, S_dnom, d_Rs, d_Ref)
+   Tbc2, T_all, S_dnom, d_Rs, d_Ref)
 
    implicit none
 
@@ -199,7 +199,6 @@ subroutine derivative_wrt_crp_parameter(i_p_crp, Rs, CRP, d_CRP, f, Tac_0v, &
    real,    intent(in)  :: Tac_0v(:)
    real,    intent(in)  :: Tbc2(:)
    real,    intent(in)  :: T_all(:)
-   real,    intent(in)  :: S(:)
    real,    intent(in)  :: S_dnom(:)
    real,    intent(in)  :: d_Rs(:)
    real,    intent(out) :: d_Ref(:)
@@ -209,7 +208,8 @@ subroutine derivative_wrt_crp_parameter(i_p_crp, Rs, CRP, d_CRP, f, Tac_0v, &
       Tbc2 / S_dnom * Rs * ( &
          T_all * d_CRP(:,IT_dv,i_p_crp) + &
          CRP(:,IT_dv) * (d_CRP(:,IT_00,i_p_crp) + d_CRP(:,IT_0d,i_p_crp))) + &
-      S / S_dnom * (d_Rs(:) / Rs + Rs * Tbc2 * d_CRP(:,IR_dd,i_p_crp)))
+      T_all * CRP(:,IT_dv) * Tbc2 / (S_dnom * S_dnom) * &
+         (d_Rs(:) + Rs * Rs * Tbc2 * d_CRP(:,IR_dd,i_p_crp)))
 
 end subroutine derivative_wrt_crp_parameter
 
@@ -824,11 +824,11 @@ if (.not. Ctrl%RS%use_full_brdf) then
 
    ! Derivative w.r.t. cloud optical depth, Tau
    call derivative_wrt_crp_parameter(ITauCRP, Rs, CRP, d_CRP, X(IFrX), Tac_0v, &
-        Tbc_dd, T_all, b, a, d_Rs(:,ITauX), d_Ref(:,ITauX))
+        Tbc_dd, T_all, a, d_Rs(:,ITauX), d_Ref(:,ITauX))
 
    ! Derivative w.r.t. effective radius, r_e
    call derivative_wrt_crp_parameter(IReCRP,  Rs, CRP, d_CRP, X(IFrX), Tac_0v, &
-        Tbc_dd, T_all, b, a, d_Rs(:,IReX),  d_Ref(:,IReX))
+        Tbc_dd, T_all, a, d_Rs(:,IReX),  d_Ref(:,IReX))
 
    ! Derivative w.r.t. cloud-top pressure, P_c
    if (Ctrl%RTMIntSelm /= RTMIntMethNone) then
