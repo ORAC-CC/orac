@@ -270,14 +270,7 @@ subroutine read_goes_bin(infiles, imager_geolocation, imager_measurements, &
    type(global_attributes_t),   intent(inout) :: global_atts
    logical,                     intent(in)    :: verbose
 
-   integer                     	:: i,goodf
-   integer(c_int)              	:: n_bands
-   integer(c_int), allocatable 	:: band_ids(:)
-   integer(c_int), allocatable 	:: band_units(:)
-   integer                     	:: startx, nx
-   integer                     	:: starty, ny
-   integer(c_int)              	:: line0, line1
-   integer(c_int)              	:: column0, column1
+   integer :: i, goodf
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_goes_bin()'
 

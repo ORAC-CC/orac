@@ -416,7 +416,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
    logical                          :: check
    integer                          :: nargs
 
-   integer                          :: i,j
+   integer                          :: i
    character(path_length)           :: line, label, value
 
    integer                          :: n_channels
@@ -489,9 +489,6 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
 
 ! Temporary variables for the aerosol_cci dust mask hack
    real(kind=sreal), allocatable    :: tot_cldmask_uncertainty(:,:)
-   real(kind=sreal), allocatable    :: smth_cldmask_uncertainty(:,:)
-   logical, allocatable             :: kernel(:,:)
-   integer                          :: mini, minj, maxi, maxj
 
 !  integer, dimension(8)            :: values
 
@@ -1221,12 +1218,6 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
                allocate(tot_cldmask_uncertainty( &
                     imager_geolocation%startx:imager_geolocation%endx, &
                     1:imager_geolocation%ny) )
-!              allocate(smth_cldmask_uncertainty( &
-!                   imager_geolocation%startx:imager_geolocation%endx, &
-!                   1:imager_geolocation%ny) )
-!              allocate(kernel( &
-!                   imager_geolocation%startx:imager_geolocation%endx, &
-!                   1:imager_geolocation%ny) )
                ! product a smoothed version of the cldmask uncertainty
                if (verbose) then
                   write(*,*) minval(imager_pavolonis%cldmask_uncertainty(:,:,1)), &
@@ -1240,34 +1231,6 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
                     imager_pavolonis%cldmask_uncertainty(:,:,2)
 
                if (verbose) write(*,*) 'Total cldmask uncertainty: min-max',minval(tot_cldmask_uncertainty),maxval(tot_cldmask_uncertainty)
-!              do j=1,imager_geolocation%ny
-!                 do i=1,imager_geolocation%nx
-!                    kernel(:,:) = 0
-!                    if (i .lt. 11) then
-!                       mini = 1
-!                    else
-!                       mini = i-10
-!                    end if
-!                    if (j .lt. 11) then
-!                       minj = 1
-!                    else
-!                       minj = j-10
-!                    end if
-!                    if (i .gt. imager_geolocation%nx-10) then
-!                       maxi = imager_geolocation%nx
-!                    else
-!                       maxi = i+10
-!                    end if
-!                    if (j .gt. imager_geolocation%ny-10) then
-!                       maxj = imager_geolocation%ny
-!                    else
-!                       maxj = j+10
-!                    end if
-!                    kernel(mini:maxi,minj:maxj) = 1
-!                    smth_cldmask_uncertainty(i,j) = sum(tot_cldmask_uncertainty, mask=kernel)/count(kernel)
-!                 end do
-!              end do
-!              write(*,*)'Smoothed cldmask uncertainty: min-max',minval(smth_cldmask_uncertainty),maxval(smth_cldmask_uncertainty)
                ! Now use this smoothed mask, and the pavolonis cloud type
                ! to "de-mask" possibly dust-filled pixels
                ! Note that we leave the cldtype  alone, so we can still tell
@@ -1289,8 +1252,6 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
                     count(imager_pavolonis%cldmask(:,:,1) .gt. 0), &
                     count(imager_pavolonis%cldmask(:,:,1) .gt. 0)
                deallocate(tot_cldmask_uncertainty)
-!              deallocate(smth_cldmask_uncertainty)
-!              deallocate(kernel)
             end if
          end if
       end if

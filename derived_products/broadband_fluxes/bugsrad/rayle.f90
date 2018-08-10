@@ -66,8 +66,7 @@ subroutine rayle (&
 
 ! LOCAL VARIABLES:
       integer (kind=int_kind):: &
-     i  & !Horizontal index.
-    ,l    !Vertical index.
+     l    !Vertical index.
       real (kind=dbl_kind) :: &
      fact                       !multiplier derived from scattering cross-section
                                 !for scaling from pressure to optical depth

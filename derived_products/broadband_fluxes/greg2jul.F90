@@ -12,13 +12,13 @@
 
 subroutine greg2jul(year,month,day,jday)
 
-   real jday,jday1,jday2,fracday,rday
+   real jday,jday1,jday2!,fracday,rday
 
-   integer year,month,day,yearday
-   integer numargs,iargc,ireturn,getarg
+   integer year,month,day!,yearday
+!  integer numargs,iargc,ireturn,getarg
 
-   character time*8,date*11
-   character string*80
+!  character time*8,date*11
+!  character string*80
 
 !  numargs = iargc()
 !

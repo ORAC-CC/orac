@@ -84,7 +84,7 @@ subroutine get_goes_path(l1_5_file, platform, abi_filenames, n_chans, channel_id
    character(file_length)                  :: tmp_file
    character(len=path_length)              :: regex
 
-   integer       :: i, index1, index2, index3, success
+   integer       :: i, index1, index3, success
    character(2)  :: band
    character(3)  :: shplat
    character(16) :: dtstr
@@ -161,9 +161,9 @@ subroutine get_goes_geoloc(infile, imager_geolocation, imager_angles, global_att
    integer :: xid, yid, gimpid
    integer :: i, j
 
-   real    :: xpos, ypos, sma, smi, invf, e, hproj, h, lon0, lat0
+   real    :: sma, smi, invf, e, hproj, h, lon0, lat0
    real    :: a, b, c, rs, sx, sy, sz, tlat, tlon, tx, ty
-   real    :: xscl, yscl, x0, y0, e2
+   real    :: xscl, yscl, x0, y0
 
    character(len=10) :: satlat,satlon,sathei,eqrrad,polrad
 
@@ -361,12 +361,7 @@ subroutine get_goes_viewing_geom(imager_geolocation, imager_angles, sma, smi, hp
    real,                        intent(inout) :: l0
    logical,                     intent(in)    :: verbose
 
-   integer :: fid, ierr
-   integer :: xid, yid, gimpid
-   integer :: i, j
-
-   real    :: a, b, c, rs, sx, sy, sz, tlat, tlon, tx, ty
-   real    :: xscl, yscl, x0, y0, e2
+   real :: a, b, e2
 
    real, dimension(imager_geolocation%startx:imager_geolocation%endx, 1:imager_geolocation%ny) :: N, xp, yp, zp, cos_lat, sin_lat, cos_lon, sin_lon, qv1, qv2, qv3, u1, u2, u3
 
@@ -444,10 +439,10 @@ subroutine get_goes_solgeom(imager_time, imager_angles, imager_geolocation, verb
    logical,                     intent(in)    :: verbose
 
    real(kind=sreal)   :: sza, saa
-   integer            :: x, y, line0, line1, column0, column1, ctime
+   integer            :: x, y, line0, line1, column0, column1
    integer            :: mid_c, mid_l
    integer(kind=sint) :: iye, mon, idy, ihr, minu
-   real(kind=dreal)   :: dfr, tmphr, tmphr2
+   real(kind=dreal)   :: dfr, tmphr
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering get_goes_solgeom()'
 
@@ -518,14 +513,13 @@ subroutine goes_resample_vis_to_tir(inarr, outarr, nx, ny, fill, scl, verbose)
    real(kind=sreal), intent(out) :: outarr(nx, ny)
    logical,          intent(in)  :: verbose
 
-   real    :: tmpval
+#ifdef _OPENMP
    integer :: n_threads
+#endif
    integer :: x, y
    integer :: outx, outy
 
    integer :: i, j
-   integer :: inposvar
-   integer :: outposvar
    real    :: val
    integer :: inpix
 
@@ -731,7 +725,7 @@ subroutine get_goes_time(infile, imager_time, ny, verbose)
    integer,                intent(in)    :: ny
    logical,                intent(in)    :: verbose
 
-   integer                    :: fid, tbid, ierr, j
+   integer                    :: fid, ierr, j
    character(21)              :: start_coverage
    character(21)              :: end_coverage
 

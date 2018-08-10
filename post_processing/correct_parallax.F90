@@ -144,16 +144,14 @@ subroutine correct_parallax(primary,indexing, global_atts, verbose)
    real(kind=sreal),allocatable   :: ncost(:,:)
    integer(kind=byte),allocatable :: ncldmask(:,:),ncldtype(:,:),nphase(:,:)
 
-   real(kind=sreal)               :: sat_h, eqr_rad, pol_rad, sat_lat, sat_lon, m_sat_lat
-   real(kind=sreal)                :: obs_lat, obs_lat1, obs_lon
+   real(kind=sreal)               :: sat_h, eqr_rad, pol_rad, sat_lat, sat_lon
+   real(kind=sreal)               :: obs_lat, obs_lat1, obs_lon
    real(kind=sreal)               :: sat_lat_m, sat_x, sat_y, sat_z
    real(kind=sreal)               :: r, omod_x, omod_y, omod_z, ob_mod
    real(kind=sreal)               :: mod_x, mod_y, mod_z, ax_mod
    real(kind=sreal)               :: cosbeta, aa, bb, cc, x
    real(kind=sreal)               :: axis_x, axis_y, axis_z, bpos(2)
    real(kind=sreal)               :: new_lat, new_lon, rad_rat
-   real(kind=sreal)               :: tmp_real
-   integer(kind=sint)             :: tmp_sint
    integer(kind=sint)             :: x0,x1,y0,y1
 
    integer(kind=sint)         	 :: pixdelt = 12

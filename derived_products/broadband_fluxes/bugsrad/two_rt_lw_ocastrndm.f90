@@ -107,8 +107,7 @@ subroutine two_rt_lw_gsolap                &
 
    real (kind=dbl_kind), dimension(nlm):: &
      td,        & !
-     vu,        & !
-     exptau
+     vu
 
    real (kind=dbl_kind), dimension(nlm+1):: &
      re,        & !
@@ -119,9 +118,9 @@ subroutine two_rt_lw_gsolap                &
      fu_rndm       !Broken sky (randomly overlapped cloudy sky) spectral upward flux
 
 
-   real (kind=dbl_kind) :: &
-     cld_ran,   &  !The random overlap fraction of cloud
-     cmin          !Minimum cloud fraction in a column
+   !real (kind=dbl_kind) :: &
+   !  cld_ran,   &  !The random overlap fraction of cloud
+   !  cmin          !Minimum cloud fraction in a column
 
    ibms = ib - mbs
 !Begin loop over all columns

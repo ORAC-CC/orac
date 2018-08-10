@@ -291,7 +291,7 @@ subroutine get_camel_emissivity(cyear, cmonth, camel_emis_path, imager_flags, &
    integer                                            :: n_chans
    integer,             allocatable, dimension(:)     :: ch_total_index
    integer,             allocatable, dimension(:)     :: ch_lw_index
-   real(kind=sreal),    allocatable, dimension(:,:,:) :: transemis, summat
+   real(kind=sreal),    allocatable, dimension(:,:,:) :: summat
    real(kind=sreal),    allocatable, dimension(:,:)   :: counter
    integer                                            :: i,j,k,lat,lon
    integer                                            :: nland

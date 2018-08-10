@@ -30,7 +30,7 @@ module bugs_cloud_correlate
 
       ! Local variables
       integer(kind=int_kind) :: &
-         i_lay_a, i_lay_b, i_domain, ncloud, kcld, j   ! Indices
+         i_lay_a, i_domain, ncloud, kcld, j   ! Indices
       integer(kind=int_kind), dimension(:), allocatable :: &
          i_cld                                      ! Indices of cloudy layers
       real(kind=dbl_kind) :: &
@@ -142,13 +142,13 @@ module bugs_cloud_correlate
        real(kind=dbl_kind) :: min_frac, max_frac
        real(kind=dbl_kind) :: prod, c_tot_max, cf_stacked, &
                               c_tot_calcd,tol,delta
-       real(kind=dbl_kind), dimension(nlm) :: cf_tmp
+       !real(kind=dbl_kind), dimension(nlm) :: cf_tmp
        integer(kind=int_kind) :: frac_set
 
        !Use these below to reproduce original gs_olap results
-        real(kind=dbl_kind) :: cf_stacked_thresh,  &
-                               cf_stacked_min
-        integer(kind=int_kind) :: cf_stacked_min_set
+       !real(kind=dbl_kind) :: cf_stacked_thresh,  &
+       !                       cf_stacked_min
+       !integer(kind=int_kind) :: cf_stacked_min_set
 
       !Set tol
       tol = 1.0e-5

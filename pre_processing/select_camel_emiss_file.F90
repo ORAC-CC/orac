@@ -32,8 +32,6 @@ subroutine select_camel_emiss_file(cyear,cmonth,camel_emis_path, &
    character(len=path_length), intent(in)  :: camel_emis_path
    character(len=path_length), intent(out) :: camel_emis_path_file
 
-   integer                            :: pos
-   character(len=3)                   :: emis_date_s
    logical                            :: camel_emis_file_exist
    character(len=7)                   :: camel_emis_file_read
 
