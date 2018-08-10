@@ -102,10 +102,10 @@ if (indexing%flags%do_swansea) then
    do i=1,indexing%NViews
       write(input_num, "(i4)") i
 
-      input_dummy='swansea_p_ap_in_channel_no_'//trim(adjustl(input_num))
+      input_dummy='swansea_p_ap_in_view_no_'//trim(adjustl(input_num))
       call nc_read_packed_array(ncid, trim(adjustl(input_dummy)), &
            input_data%swansea_p_ap(:,:,i), verbose, startp = [1, sval])
-      input_dummy='swansea_p_fg_in_channel_no_'//trim(adjustl(input_num))
+      input_dummy='swansea_p_fg_in_view_no_'//trim(adjustl(input_num))
       call nc_read_packed_array(ncid, trim(adjustl(input_dummy)), &
            input_data%swansea_p_fg(:,:,i), verbose, startp = [1, sval])
    end do

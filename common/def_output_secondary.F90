@@ -339,7 +339,7 @@ if (indexing%flags%do_swansea) then
    !----------------------------------------------------------------------------
       input_dummy2='p parameter a priori in channel no '//&
            trim(adjustl(input_num))
-      input_dummy='swansea_p_ap_in_channel_no_'//trim(adjustl(input_num))
+      input_dummy='swansea_p_ap_in_view_no_'//trim(adjustl(input_num))
 
       call nc_def_var_short_packed_float( &
            ncid, &
@@ -362,7 +362,7 @@ if (indexing%flags%do_swansea) then
    !----------------------------------------------------------------------------
       input_dummy2='p parameter first guess in channel no '//&
            trim(adjustl(input_num))
-      input_dummy='swansea_p_fg_in_channel_no_'//trim(adjustl(input_num))
+      input_dummy='swansea_p_fg_in_view_no_'//trim(adjustl(input_num))
 
       call nc_def_var_short_packed_float( &
            ncid, &
