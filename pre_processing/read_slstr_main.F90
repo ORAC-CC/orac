@@ -181,8 +181,8 @@ subroutine read_slstr(infile, imager_geolocation, imager_measurements, &
 
    ! Then allocate arrays for oblique data
    if (imager_angles%nviews .eq. 2) then
-		! Find size of oblique view grid.
-		call get_slstr_obgridsize(indir,obnx,obny)
+      ! Find size of oblique view grid.
+      call get_slstr_obgridsize(indir,obnx,obny)
       allocate(oblats(obnx,obny))
       allocate(oblons(obnx,obny))
    end if

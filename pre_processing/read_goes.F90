@@ -12,29 +12,29 @@
 !-------------------------------------------------------------------------------
 
 module read_goes_m
-	use iso_c_binding
+   use iso_c_binding
 
    implicit none
-	interface
+   interface
 
-		integer(c_int) function get_sza_saa(year,month,day,hour,minute,lat,lon,sza,saa) bind(C, name = 'get_sza_saa')
+      integer(c_int) function get_sza_saa(year,month,day,hour,minute,lat,lon,sza,saa) bind(C, name = 'get_sza_saa')
 
-			use iso_c_binding
+         use iso_c_binding
 
-			implicit none
+         implicit none
 
-			integer(c_int),	intent(in), value	:: year
-			integer(c_int),	intent(in), value	:: month
-			integer(c_int),	intent(in), value	:: day
-			integer(c_int),	intent(in), value	:: hour
-			integer(c_int),	intent(in), value	:: minute
-			real(c_float),	intent(in), value	:: lat
-			real(c_float),	intent(in), value	:: lon
-			real(c_float),	intent(out)		:: sza
-			real(c_float),	intent(out)		:: saa
+         integer(c_int), intent(in), value       :: year
+         integer(c_int), intent(in), value       :: month
+         integer(c_int), intent(in), value       :: day
+         integer(c_int), intent(in), value       :: hour
+         integer(c_int), intent(in), value       :: minute
+         real(c_float),  intent(in), value       :: lat
+         real(c_float),  intent(in), value       :: lon
+         real(c_float),  intent(out)             :: sza
+         real(c_float),  intent(out)             :: saa
 
-		end function get_sza_saa
-	end interface
+      end function get_sza_saa
+   end interface
 
 contains
 

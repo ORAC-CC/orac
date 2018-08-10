@@ -133,7 +133,7 @@ subroutine ann_cloud_mask(channel1, channel2, channel3a, channel3b, &
       if ((lsflag .eq. 0_byte .or. desert) .and. (niseflag .eq. NO) .and. (albedo1 .ge. 0.) .and. (correct_glint) ) then
          ch1_uc = ch1
          ch1 = max(ch1 - min(albedo1,1.) * 100. * 0.4, 0.)
-      endif
+      end if
    end if
 
    if ( channel2 .eq. sreal_fill_value ) then
@@ -195,7 +195,7 @@ subroutine ann_cloud_mask(channel1, channel2, channel3a, channel3b, &
          !at high viewing angles which is not captured by any ANN training.
          if ( (trim(adjustl(platform)) .eq. 'noaa6') .or. (trim(adjustl(platform)) .eq. 'noaa8') .or. &
               (trim(adjustl(platform)) .eq. 'noaa10') .or. (trim(adjustl(platform)) .eq. 'noaa12') .or. (trim(adjustl(platform)) .eq. 'noaa15') ) illum_nn = 6
-      endif
+      end if
    elseif (solzen  .gt. 90)  then
       illum_nn = 3                                    ! use ANN with BT3.7
       if  ( channel1 .gt. 0.02 ) illum_nn = 6         ! dont use 3.7µm if sensor detects sunlight (check on ch1 w/o albedo correction!)
@@ -215,7 +215,7 @@ subroutine ann_cloud_mask(channel1, channel2, channel3a, channel3b, &
          ch1   = ch1/mu0
          ch2   = ch2/mu0
          ref3b = ref3b/mu0
-      endif
+      end if
 
       nneurons = nneurons_ex27  !set number of neurons
       ninput   = ninput_ex27    !set number of input parameter for the neural network
@@ -366,7 +366,7 @@ subroutine ann_cloud_mask(channel1, channel2, channel3a, channel3b, &
       if ( calc_true_refl ) then
          ch1   = ch1/mu0
          ch2   = ch2/mu0
-      endif
+      end if
 
       nneurons = nneurons_ex28  !set number of neurons
       ninput   = ninput_ex28    !set number of input parameter for the neural network
@@ -514,7 +514,7 @@ subroutine ann_cloud_mask(channel1, channel2, channel3a, channel3b, &
          ch1   = ch1/mu0
          ch2   = ch2/mu0
          ref3a = ref3a/mu0
-      endif
+      end if
 
       nneurons = nneurons_ex29  !set number of neurons
       ninput   = ninput_ex29    !set number of input parameter for the neural network
@@ -723,7 +723,7 @@ subroutine ann_cloud_phase(channel1, channel2, channel3a, channel3b, &
       if ((lsflag .eq. 0_byte) .and. (niseflag .eq. NO) .and. (albedo1 .ge. 0.) .and. (correct_glint) ) then
          ch1_uc = ch1
          ch1 = max(ch1 - albedo1 * 100. / 2., 0.)
-      endif
+      end if
    end if
 
    if ( channel2 .eq. sreal_fill_value ) then
@@ -795,7 +795,7 @@ subroutine ann_cloud_phase(channel1, channel2, channel3a, channel3b, &
          ch1   = ch1/mu0
          ch2   = ch2/mu0
          ref3b = ref3b/mu0
-      endif
+      end if
 
       nneurons = nneurons_ex101  !set number of neurons
       ninput   = ninput_ex101    !set number of input parameter for the neural network
@@ -938,7 +938,7 @@ subroutine ann_cloud_phase(channel1, channel2, channel3a, channel3b, &
          ch1   = ch1/mu0
          ch2   = ch2/mu0
          ref3a = ref3a/mu0
-      endif
+      end if
 
       nneurons = nneurons_ex104  !set number of neurons
       ninput   = ninput_ex104    !set number of input parameter for the neural network

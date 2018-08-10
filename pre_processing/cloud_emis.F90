@@ -39,14 +39,10 @@ subroutine get_trop_tp(preproc_prtm,preproc_dims)
    integer                            :: nx,ny,nz ! Number of vertical levels, pixels
    integer                            :: x,y      ! Looping variables over preproc
    integer                            :: k, l     ! Indexing variables
-   integer, dimension(1)              :: k_tmax   ! Index of max temperature
-   integer, dimension(1)              :: k_tmin   ! Index of min temperature
-   integer                            :: k_int    ! Index of interpolated temp
    integer                            :: step     ! Direction of search
    real, dimension(preproc_dims%kdim) :: t        ! Temperature profile
    real, dimension(preproc_dims%kdim) :: p        ! Pressure profile
    real, dimension(preproc_dims%kdim) :: h        ! Height profile
-   real                               :: gradient ! For extrapolation
 
 
    nx = preproc_dims%xdim
@@ -97,7 +93,7 @@ subroutine get_trop_tp(preproc_prtm,preproc_dims)
          else
             preproc_prtm%trop_p(x,y) = sreal_fill_value
             preproc_prtm%trop_t(x,y) = sreal_fill_value
-         endif
+         end if
       end do
    end do
    return
@@ -198,9 +194,9 @@ subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation, &
    end do
 
    if (good_chan_all .lt. 0 .or. good_chan_lw .lt. 0) then
-   	write(*,*)"ERROR: The longwave channel required for cloud emissivity (",chan_n,") is not available!"
-   	stop
-   endif
+       write(*,*)"ERROR: The longwave channel required for cloud emissivity (",chan_n,") is not available!"
+       stop
+   end if
 
    !$OMP PARALLEL &
    !$OMP PRIVATE(i) &

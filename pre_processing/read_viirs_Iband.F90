@@ -232,12 +232,12 @@ subroutine read_viirs_iband(infile,geofile,imager_geolocation, imager_measuremen
    ! same result whilst taking a lot of extra I/O
    index2=index(trim(adjustl(geofile)),'npp_d',.true.)
    if (index2 .le. 0) then
-   	index2=index(trim(adjustl(geofile)),'j01_d',.true.)
-  		if (index2 .le. 0) then
-  			write(*,*)"Unsupported VIIRS platform."
-  			stop
-  		endif
-  	endif
+      index2=index(trim(adjustl(geofile)),'j01_d',.true.)
+      if (index2 .le. 0) then
+         write(*,*)"Unsupported VIIRS platform."
+         stop
+      end if
+   end if
 
 
    ! get year, doy, hour and minute as strings

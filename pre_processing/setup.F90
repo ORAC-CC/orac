@@ -366,15 +366,15 @@ subroutine setup_abi(l1b_path_file,geo_path_file,platform,year,month,day, &
    end if
 
    if (index(l1b_path_file,"G16") .gt. 0) then
-   	index3 = index(l1b_path_file,"G16") + 5
-   	platform="GOES-16"
-   elseif(index(l1b_path_file,"G17") .gt. 0) then
-   	index3 = index(l1b_path_file,"G17") + 5
-   	platform="GOES-17"
+      index3 = index(l1b_path_file,"G16") + 5
+      platform="GOES-16"
+   else if(index(l1b_path_file,"G17") .gt. 0) then
+      index3 = index(l1b_path_file,"G17") + 5
+      platform="GOES-17"
    else
-   	write(*,*) "Unsupported GOES platform, ",l1b_path_file
-   	stop
-   endif
+      write(*,*) "Unsupported GOES platform, ",l1b_path_file
+      stop
+   end if
 
    if (verbose) write(*,*)"Satellite is: ",platform
 
@@ -521,14 +521,14 @@ subroutine setup_ahi(l1b_path_file,geo_path_file,platform,year,month,day, &
 
       stop error_stop_code
    end if
-	if (index(l1b_path_file,"HS_H08") .gt. 0) then
-	   platform="Himawari-8"
-	elseif (index(l1b_path_file,"HS_H09") .gt. 0) then
-	   platform="Himawari-9"
-	else
-		write(*,*) "Unidentified Himawari variant: ",trim(l1b_path_file)
-		stop
-	endif
+   if (index(l1b_path_file,"HS_H08") .gt. 0) then
+      platform="Himawari-8"
+   else if (index(l1b_path_file,"HS_H09") .gt. 0) then
+      platform="Himawari-9"
+   else
+      write(*,*) "Unidentified Himawari variant: ",trim(l1b_path_file)
+      stop
+   end if
    if (verbose) write(*,*)"Satellite is: ",platform
 
    ! The code below extracts date/time info from the segment name.
@@ -1515,14 +1515,14 @@ subroutine setup_viirs_mband(l1b_path_file,geo_path_file,platform,year,month,day
    index2=index(trim(adjustl(geo_path_file)),'npp_d',.true.)
 
    if (index1 .le. 0) then
-   	index1=index(trim(adjustl(l1b_path_file)),'j01_d',.true.)
-   	index2=index(trim(adjustl(geo_path_file)),'j01_d',.true.)
-		if (index1 .le. 0) then
-			write(*,*)'ERROR: setup_viirs_iband(): Unsupported platform'
-			stop error_stop_code
-		endif
-   	platform="NOAA20"
-   endif
+      index1=index(trim(adjustl(l1b_path_file)),'j01_d',.true.)
+      index2=index(trim(adjustl(geo_path_file)),'j01_d',.true.)
+      if (index1 .le. 0) then
+         write(*,*)'ERROR: setup_viirs_iband(): Unsupported platform'
+         stop error_stop_code
+      end if
+      platform="NOAA20"
+   end if
 
 
    l1b_dtstr=trim(adjustl(l1b_path_file(index2+5:index2+5+25)))
@@ -1675,14 +1675,14 @@ subroutine setup_viirs_iband(l1b_path_file,geo_path_file,platform,year,month,day
    index2=index(trim(adjustl(geo_path_file)),'npp_d',.true.)
 
    if (index1 .le. 0) then
-   	index1=index(trim(adjustl(l1b_path_file)),'j01_d',.true.)
-   	index2=index(trim(adjustl(geo_path_file)),'j01_d',.true.)
-		if (index1 .le. 0) then
-			write(*,*)'ERROR: setup_viirs_iband(): Unsupported platform'
-			stop error_stop_code
-		endif
-   	platform="NOAA20"
-   endif
+      index1=index(trim(adjustl(l1b_path_file)),'j01_d',.true.)
+      index2=index(trim(adjustl(geo_path_file)),'j01_d',.true.)
+      if (index1 .le. 0) then
+         write(*,*)'ERROR: setup_viirs_iband(): Unsupported platform'
+         stop error_stop_code
+      end if
+      platform="NOAA20"
+   end if
 
 
    l1b_dtstr=trim(adjustl(l1b_path_file(index2+5:index2+5+25)))
@@ -1709,12 +1709,12 @@ subroutine setup_viirs_iband(l1b_path_file,geo_path_file,platform,year,month,day
    index2=index(trim(adjustl(l1b_path_file)),'npp_d')
 
    if (index2 .le. 0) then
-   	index2=index(trim(adjustl(l1b_path_file)),'j01_d',.true.)
-		if (index2 .le. 0) then
-			write(*,*)'ERROR: setup_viirs_iband(): Unsupported platform'
-			stop error_stop_code
-		endif
-	endif
+      index2=index(trim(adjustl(l1b_path_file)),'j01_d',.true.)
+      if (index2 .le. 0) then
+         write(*,*)'ERROR: setup_viirs_iband(): Unsupported platform'
+         stop error_stop_code
+      end if
+   end if
 
    ! get year, doy, hour and minute as strings
    index2=index2+5

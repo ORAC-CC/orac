@@ -77,7 +77,7 @@ subroutine get_attr(global_atts, sath, eqrrad, polrad, sobs_lat, sobs_lon)
          if (i .eq. 5) read(tmpstr(1:pos-1), '(f10.0)')polrad
          tmpstr=tmpstr(pos+1:lenner)
       end do
-   endif
+   end if
 
    sath   = sath / 1000.
    eqrrad= eqrrad / 1000.
@@ -101,15 +101,15 @@ real(kind=sreal) function get_ave_real(inarr)
          if (inarr(i,j) .gt. 0) then
             counter   =   counter + 1
             outval   =   outval + inarr(i,j)
-         endif
-      enddo
-   enddo
+         end if
+      end do
+   end do
 
    if (counter .gt. 2) then
       get_ave_real   =   outval / counter
    else
       get_ave_real   =   sreal_fill_value
-   endif
+   end if
 
 end function get_ave_real
 
@@ -154,7 +154,7 @@ subroutine correct_parallax(primary,indexing, global_atts, verbose)
    real(kind=sreal)               :: new_lat, new_lon, rad_rat
    integer(kind=sint)             :: x0,x1,y0,y1
 
-   integer(kind=sint)         	 :: pixdelt = 12
+   integer(kind=sint)             :: pixdelt = 12
 
    ! Figure out the satellite altitude *above the surface*
    call get_attr(global_atts, sat_h, eqr_rad, pol_rad, sat_lat, sat_lon)
@@ -163,7 +163,7 @@ subroutine correct_parallax(primary,indexing, global_atts, verbose)
    if (sat_h .le. 0) then
        if (verbose) write(*,*)"Parallax correction is unavailable. Skipping."
        return
-   endif
+   end if
 
    if (verbose) write(*,*)"Parallax correction underway"
 
@@ -291,12 +291,12 @@ subroutine correct_parallax(primary,indexing, global_atts, verbose)
          else
             outx(i,j)   =   bpos(1) + x0
             outy(i,j)   =   bpos(2) + y0
-         endif
+         end if
 
          deallocate(dist)
 
-      enddo
-   enddo
+      end do
+   end do
 	!$OMP END DO
 	!$OMP END PARALLEL
 
@@ -327,8 +327,8 @@ subroutine correct_parallax(primary,indexing, global_atts, verbose)
          nphase(ni,nj)    = primary%phase(i,j)
          ncldmask(ni,nj)= primary%cldmask(i,j,1)
          ncldtype(ni,nj)= primary%cldtype(i,j,1)
-      enddo
-   enddo
+      end do
+   end do
    !$OMP END DO
    !$OMP END PARALLEL
 
@@ -368,9 +368,9 @@ subroutine correct_parallax(primary,indexing, global_atts, verbose)
             primary%ctt_uncertainty(i,j)   =   get_ave_real(ncttu(i-1:i+1,j-1:j+1))
             primary%ctp(i,j)               =   get_ave_real(nctp(i-1:i+1,j-1:j+1))
             primary%ctp_uncertainty(i,j)   =   get_ave_real(nctpu(i-1:i+1,j-1:j+1))
-         endif
-      enddo
-   enddo
+         end if
+      end do
+   end do
    !$OMP END DO
    !$OMP END PARALLEL
 

@@ -48,38 +48,38 @@ subroutine read_goes_dimensions(l1_5_file, n_across_track, n_along_track, &
    integer(lint),          intent(inout) :: startx, endx, starty, endy
    logical,                intent(in)    :: verbose
 
-   integer :: fid,ierr,index2,band
-   integer :: n_lines, n_cols
+   integer      :: fid, ierr, index2, band
+   integer      :: n_lines, n_cols
    character(2) :: cband
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< read_goes_dimensions()'
 
-	index2	=	index(trim(adjustl(l1_5_file)),'_G1')
-	cband		=	l1_5_file(index2-2:index2)
+   index2 = index(trim(adjustl(l1_5_file)),'_G1')
+   cband  = l1_5_file(index2-2:index2)
 
    read(cband(1:len_trim(cband)), '(I2)') band
 
-   ierr		=	nf90_open(path=trim(adjustl(l1_5_file)),mode=NF90_NOWRITE,ncid=fid)
+   ierr = nf90_open(path=trim(adjustl(l1_5_file)),mode=NF90_NOWRITE,ncid=fid)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: read_goes_dimensions(): Error opening file ',trim(l1_5_file)
       stop error_stop_code
    end if
 
    ! Read actual size of the netCDF4 file
-   n_cols	=	nc_dim_length(fid,'x',.false.)
-   n_lines	=	nc_dim_length(fid,'y',.false.)
+   n_cols  = nc_dim_length(fid,'x',.false.)
+   n_lines = nc_dim_length(fid,'y',.false.)
 
    ! Make sure we account for the fact that some bands are hi-res
    if (band .eq. 1 .or. band .eq. 3 .or. band .eq. 5) then
-   	n_cols	=	n_cols/2
-   	n_lines	=	n_lines/2
+        n_cols  = n_cols/2
+        n_lines = n_lines/2
    else if (band .eq. 2) then
-   	n_cols	=	n_cols/4
-   	n_lines	=	n_lines/4
+        n_cols  = n_cols/4
+        n_lines = n_lines/4
    end if
 
    ! Close the netCDF4 file
-   ierr		=	nf90_close(fid)
+   ierr = nf90_close(fid)
 
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: read_goes_dimensions(): Error closing file ',trim(l1_5_file)
@@ -98,22 +98,22 @@ subroutine read_goes_dimensions(l1_5_file, n_across_track, n_along_track, &
       ! actual image in the file relative to the full disk image.
       if (starty - 1 .lt.  0) then
          write(*,*) 'ERROR: read_goes_dimensions(): user defined starty (', starty, ') ' //&
-         			'does not fall within the actual GOES-R image starting at: ', 1
+              'does not fall within the actual GOES-R image starting at: ', 1
          stop error_stop_code
       end if
       if (endy - 1 .gt. n_lines - 1) then
          write(*,*) 'ERROR: read_goes_dimensions(): user defined endy (', endy, ') does not ' // &
-                    'fall within the actual GOES-R image ending at: ', n_lines
+              'fall within the actual GOES-R image ending at: ', n_lines
          stop error_stop_code
       end if
       if (startx - 1 .lt.  0) then
          write(*,*) 'ERROR: read_goes_dimensions(): user defined startx (', startx, ') does not ' // &
-                    'fall within the actual GOES-R image starting at: ', 1
+              'fall within the actual GOES-R image starting at: ', 1
          stop error_stop_code
       end if
       if (endx - 1 .gt. n_cols - 1) then
          write(*,*) 'ERROR: read_goes_dimensions(): user defined endx (', endx, ') does not ' // &
-                    'fall within the actual GOES-R image ending at: ', n_cols
+              'fall within the actual GOES-R image ending at: ', n_cols
          stop error_stop_code
       end if
    end if
@@ -121,8 +121,8 @@ subroutine read_goes_dimensions(l1_5_file, n_across_track, n_along_track, &
    n_across_track = n_cols
    n_along_track  = n_lines
 
-   print*,n_across_track,endx,startx
-   print*,n_along_track,endy,starty
+   if (verbose) print*,n_across_track,endx,startx
+   if (verbose) print*,n_along_track,endy,starty
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> read_goes_dimensions()'
 
@@ -145,7 +145,8 @@ end subroutine read_goes_dimensions
 ! verbose             logical in   If true then print verbose information.
 !-------------------------------------------------------------------------------
 
-subroutine get_goes_data(infiles,imager_angles,imager_measurements,imager_geolocation,channel_info,verbose)
+subroutine get_goes_data(infiles,imager_angles,imager_measurements, &
+     imager_geolocation,channel_info,verbose)
 
    use channel_structures_m
    use imager_structures_m
@@ -162,12 +163,12 @@ subroutine get_goes_data(infiles,imager_angles,imager_measurements,imager_geoloc
    logical,                     intent(in)    :: verbose
 
    integer, allocatable  :: band_ids(:)
-   real, allocatable 	 :: tmprad(:,:)
-   real, allocatable 	 :: tmpout(:,:)
+   real,    allocatable  :: tmprad(:,:)
+   real,    allocatable  :: tmpout(:,:)
 
-   integer 	::	n_bands,i
-   real		::	irrad
-   real		::	bc1,bc2,fk1,fk2
+   integer :: n_bands, i
+   real    :: irrad
+   real    :: bc1, bc2, fk1, fk2
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< get_goes_data()'
 
@@ -178,50 +179,50 @@ subroutine get_goes_data(infiles,imager_angles,imager_measurements,imager_geoloc
    allocate(tmpout(imager_geolocation%nx,imager_geolocation%ny))
 
    do i=1,n_bands
-   	if (band_ids(i) .lt. 7) then
-   		tmpout(:,:)	=	sreal_fill_value
-   		if (verbose) write(*,*) "Loading GOES visible band ",band_ids(i)
-   		if (band_ids(i) .eq. 1 .or. band_ids(i) .eq. 3 .or. band_ids(i) .eq. 5)	then
-   			allocate(tmprad(imager_geolocation%nx*2,imager_geolocation%ny*2))
-				call load_goes_band(infiles(i),imager_geolocation,tmprad,irrad,bc1,bc2,fk1,fk2,2,verbose)
-   			call goes_resample_vis_to_tir(tmprad,tmpout,imager_geolocation%nx,imager_geolocation%ny,sreal_fill_value,2,verbose)
-   		elseif (band_ids(i) .eq. 2) then
-   			allocate(tmprad(imager_geolocation%nx*4,imager_geolocation%ny*4))
-				call load_goes_band(infiles(i),imager_geolocation,tmprad,irrad,bc1,bc2,fk1,fk2,4,verbose)
-   			call goes_resample_vis_to_tir(tmprad,tmpout,imager_geolocation%nx,imager_geolocation%ny,sreal_fill_value,4,verbose)
-   		else
-   			allocate(tmprad(imager_geolocation%nx,imager_geolocation%ny))
-				call load_goes_band(infiles(i),imager_geolocation,tmpout,irrad,bc1,bc2,fk1,fk2,1,verbose)
-   		endif
+      if (band_ids(i) .lt. 7) then
+         tmpout(:,:)     =       sreal_fill_value
+         if (verbose) write(*,*) "Loading GOES visible band ",band_ids(i)
+         if (band_ids(i) .eq. 1 .or. band_ids(i) .eq. 3 .or. band_ids(i) .eq. 5) then
+            allocate(tmprad(imager_geolocation%nx*2,imager_geolocation%ny*2))
+            call load_goes_band(infiles(i),imager_geolocation,tmprad,irrad,bc1,bc2,fk1,fk2,2,verbose)
+            call goes_resample_vis_to_tir(tmprad,tmpout,imager_geolocation%nx,imager_geolocation%ny,sreal_fill_value,2,verbose)
+         elseif (band_ids(i) .eq. 2) then
+            allocate(tmprad(imager_geolocation%nx*4,imager_geolocation%ny*4))
+            call load_goes_band(infiles(i),imager_geolocation,tmprad,irrad,bc1,bc2,fk1,fk2,4,verbose)
+            call goes_resample_vis_to_tir(tmprad,tmpout,imager_geolocation%nx,imager_geolocation%ny,sreal_fill_value,4,verbose)
+         else
+            allocate(tmprad(imager_geolocation%nx,imager_geolocation%ny))
+            call load_goes_band(infiles(i),imager_geolocation,tmpout,irrad,bc1,bc2,fk1,fk2,1,verbose)
+         end if
 
-   		tmpout	=	tmpout * irrad
+         tmpout = tmpout * irrad
 
-   		where(imager_angles%solzen(:,:,1) .eq. sreal_fill_value) &
-       		tmpout=sreal_fill_value
-			imager_measurements%data(:,:,i) = tmpout
+         where(imager_angles%solzen(:,:,1) .eq. sreal_fill_value) &
+              tmpout=sreal_fill_value
+         imager_measurements%data(:,:,i) = tmpout
 
-   		deallocate(tmprad)
-   	else
-   		if (verbose) write(*,*) "Loading GOES thermal band ",band_ids(i)
-   		allocate(tmprad(imager_geolocation%nx,imager_geolocation%ny))
+         deallocate(tmprad)
+      else
+         if (verbose) write(*,*) "Loading GOES thermal band ",band_ids(i)
+         allocate(tmprad(imager_geolocation%nx,imager_geolocation%ny))
 
-			call load_goes_band(infiles(i),imager_geolocation,tmprad,irrad,bc1,bc2,fk1,fk2,1,verbose)
+         call load_goes_band(infiles(i),imager_geolocation,tmprad,irrad,bc1,bc2,fk1,fk2,1,verbose)
 
-			tmprad	=	(fk2/(log((fk1/tmprad)+1))-bc1) / bc2
+         tmprad = (fk2/(log((fk1/tmprad)+1))-bc1) / bc2
 
-			where(tmprad .lt. 130) tmprad = sreal_fill_value
-			where(tmprad .gt. 500) tmprad = sreal_fill_value
+         where(tmprad .lt. 130) tmprad = sreal_fill_value
+         where(tmprad .gt. 500) tmprad = sreal_fill_value
 
-			imager_measurements%data(:,:,i) = tmprad
+         imager_measurements%data(:,:,i) = tmprad
 
-   		deallocate(tmprad)
-   	endif
-   	where (imager_geolocation%latitude .eq. sreal_fill_value)
-   		imager_measurements%data(:,:,i) = sreal_fill_value
-   	end where
+         deallocate(tmprad)
+      end if
+      where (imager_geolocation%latitude .eq. sreal_fill_value)
+         imager_measurements%data(:,:,i) = sreal_fill_value
+      end where
    end do
 
- 	deallocate(tmpout)
+   deallocate(tmpout)
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> get_goes_data()'
 
@@ -274,32 +275,32 @@ subroutine read_goes_bin(infiles, imager_geolocation, imager_measurements, &
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_goes_bin()'
 
-	goodf = -1
+   goodf = -1
 
    do i=1, channel_info%nchannels_total
-		if(channel_info%channel_ids_instr(i) .eq. 4 .or. channel_info%channel_ids_instr(i) .gt. 6) then
-			goodf=i
-			exit
-		endif
-   enddo
+      if(channel_info%channel_ids_instr(i) .eq. 4 .or. channel_info%channel_ids_instr(i) .gt. 6) then
+         goodf=i
+         exit
+      end if
+   end do
    if (goodf .le. 0) then
-   	write(*,*)"ERROR: No Infrared channels have been selected:",channel_info%channel_ids_instr(i)
-   	stop
-   endif
+      write(*,*)"ERROR: No Infrared channels have been selected:",channel_info%channel_ids_instr(i)
+      stop
+   end if
 
-	! Determine geolocation information (lat/lon/vza/vaa)
-	if (.not. use_predef_geo) then
-		call get_goes_geoloc(infiles(goodf),imager_geolocation, imager_angles, global_atts, verbose)
-	else
-		! This is a placeholder for now.
-		if (verbose) write(*,*) "Reading geolocation from file."
-	endif
+   ! Determine geolocation information (lat/lon/vza/vaa)
+   if (.not. use_predef_geo) then
+      call get_goes_geoloc(infiles(goodf),imager_geolocation, imager_angles, global_atts, verbose)
+   else
+      ! This is a placeholder for now.
+      if (verbose) write(*,*) "Reading geolocation from file."
+   end if
 
-	call get_goes_time(infiles(goodf), imager_time, imager_geolocation%ny, verbose)
-	call get_goes_solgeom(imager_time,imager_angles,imager_geolocation,verbose)
-	call get_goes_data(infiles,imager_angles,imager_measurements,imager_geolocation,channel_info,verbose)
+   call get_goes_time(infiles(goodf), imager_time, imager_geolocation%ny, verbose)
+   call get_goes_solgeom(imager_time,imager_angles,imager_geolocation,verbose)
+   call get_goes_data(infiles,imager_angles,imager_measurements,imager_geolocation,channel_info,verbose)
 
-	! Compute relative azimuth from solar and viewing azimuths
+   ! Compute relative azimuth from solar and viewing azimuths
    where (imager_angles%solazi .gt. 180.)
       imager_angles%solazi = 360. - imager_angles%solazi
    end where
@@ -322,11 +323,11 @@ subroutine read_goes_bin(infiles, imager_geolocation, imager_measurements, &
 
 
    where (imager_geolocation%latitude .eq. sreal_fill_value)
-   	imager_angles%relazi(:,:,1) = sreal_fill_value
-   	imager_angles%satazi(:,:,1) = sreal_fill_value
-   	imager_angles%satzen(:,:,1) = sreal_fill_value
-   	imager_angles%solazi(:,:,1) = sreal_fill_value
-   	imager_angles%solzen(:,:,1) = sreal_fill_value
+      imager_angles%relazi(:,:,1) = sreal_fill_value
+      imager_angles%satazi(:,:,1) = sreal_fill_value
+      imager_angles%satzen(:,:,1) = sreal_fill_value
+      imager_angles%solazi(:,:,1) = sreal_fill_value
+      imager_angles%solzen(:,:,1) = sreal_fill_value
    end where
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_goes_bin()'

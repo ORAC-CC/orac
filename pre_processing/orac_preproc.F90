@@ -1145,7 +1145,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
          call get_camel_emissivity(cyear, cmonth, cimss_emiss_path, imager_flags, &
               imager_geolocation, channel_info, preproc_dims, &
               assume_full_paths, verbose, surface, preproc_surf, source_atts)
-      endif
+      end if
 
       if (.not. do_ironly) then
          ! select correct reflectance files and calculate surface reflectance
@@ -1355,15 +1355,14 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
               preproc_prtm%trop_p, &
               1,1, preproc_dims%xdim,&
               1,1, preproc_dims%ydim)
-      end if
-      if (do_cloud_emis) then
-			call nc_write_array(&
-					netcdf_info%ncid_prtm, &
-					'tropopause_temp_rtm', &
-					netcdf_info%vid_tropop_te, &
-					preproc_prtm%trop_t, &
-					1,1, preproc_dims%xdim,&
-					1,1, preproc_dims%ydim)
+
+         call nc_write_array(&
+              netcdf_info%ncid_prtm, &
+              'tropopause_temp_rtm', &
+              netcdf_info%vid_tropop_te, &
+              preproc_prtm%trop_t, &
+              1,1, preproc_dims%xdim,&
+              1,1, preproc_dims%ydim)
       end if
 
       ! close output netcdf files

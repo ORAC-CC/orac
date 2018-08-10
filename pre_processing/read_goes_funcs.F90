@@ -49,17 +49,17 @@ subroutine ABI_Solpos(year, month, day, hour, minute, lat, lon, sza, saa)
    end if
    if (saa .gt. 360.0) then
       saa = sreal_fill_value
-   endif
+   end if
    if (saa .lt. 0.0) then
       saa = sreal_fill_value
-   endif
+   end if
    sza = abs(sza)
    if (sza .gt. 180.0) then
       sza = sreal_fill_value
-   endif
+   end if
    if (sza .lt. -180.0) then
       sza = sreal_fill_value
-   endif
+   end if
 
    return
 
@@ -97,7 +97,7 @@ subroutine get_goes_path(l1_5_file, platform, abi_filenames, n_chans, channel_id
    else
       write(*,*) "Unsupported GOES platform: ", platform
       stop
-   endif
+   end if
 
    ! Some useful positions in the file
    ! Location of the datestring
@@ -132,9 +132,9 @@ subroutine get_goes_path(l1_5_file, platform, abi_filenames, n_chans, channel_id
                write(*,*) "Cannot find the GOES file for band ", band
                write(*,*) "Regex:", trim(regex)
                stop
-            endif
-         endif
-      endif
+            end if
+         end if
+      end if
    end do
 
 end subroutine get_goes_path
@@ -329,8 +329,8 @@ subroutine get_goes_geoloc(infile, imager_geolocation, imager_angles, global_att
 
          imager_geolocation%latitude(i, j-imager_geolocation%starty+1) = tlat
          imager_geolocation%longitude(i, j-imager_geolocation%starty+1) = tlon
-      enddo
-   enddo
+      end do
+   end do
 !!$OMP END DO
 !!$OMP END PARALLEL
 
@@ -474,8 +474,8 @@ subroutine get_goes_solgeom(imager_time, imager_angles, imager_geolocation, verb
          imager_geolocation%latitude(x, y), imager_geolocation%longitude(x, y), sza, saa)
          imager_angles%solzen(x, y, 1) = sza
          imager_angles%solazi(x, y, 1) = saa
-      enddo
-   enddo
+      end do
+   end do
 #ifdef _OPENMP
    !$omp end parallel do
 #endif
@@ -529,7 +529,7 @@ subroutine goes_resample_vis_to_tir(inarr, outarr, nx, ny, fill, scl, verbose)
    if (verbose) then
       n_threads = omp_get_max_threads()
       write(*,*) 'Resampling VIS grid to IR grid using', n_threads, 'threads'
-   endif
+   end if
    !$omp parallel DO PRIVATE(x, y, outx, outy, val, inpix)
 #else
    if (verbose) write(*,*) 'Resampling VIS grid to IR grid without threading'
@@ -545,21 +545,21 @@ subroutine goes_resample_vis_to_tir(inarr, outarr, nx, ny, fill, scl, verbose)
                if (inarr(x+i, y+j) .gt. sreal_fill_value) then
                   val = val + inarr(x+i, y+j)
                   inpix= inpix + 1
-               endif
-            enddo
-         enddo
+               end if
+            end do
+         end do
          val = val/inpix
          if (outx .le. 0 .or. outx .ge. nx .or. &
               outy .le. 0 .or. outy .ge. ny) then
             cycle
-         endif
+         end if
 
          if (outarr(outx, outy).le. 0) then
             outarr(outx, outy) = val
-         endif
-      enddo
+         end if
+      end do
 
-   enddo
+   end do
 
 #ifdef _OPENMP
    !$omp end parallel do

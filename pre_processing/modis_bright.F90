@@ -190,7 +190,7 @@
         index = band - 19
       else
         index = band - 20
-      endif
+      end if
 
 ! ... Get the coefficients for Terra or Aqua
       if (platform_name(1:5) .eq. 'Terra' .or. &
@@ -209,7 +209,7 @@
 !       call message('modis_bright.f', &
 !    &    'Platform name not recognized ' // &
 !    &    '[OPERATOR ACTION: Contact SDST]', 0, 2)
-      endif
+      end if
 
 ! ... Compute brightness temperature
       if (units .eq. 1) then
@@ -224,6 +224,6 @@
 ! ...   milliWatts per square meter per steradian per wavenumber
         modis_bright = (brite_m(cwn, rad) - tci) / tcs
 
-      endif
+      end if
 
       END FUNCTION MODIS_BRIGHT

@@ -1,7 +1,7 @@
 function SWITCH_NAME_APP(Approach, Default, &
                          Cld, Cld1L, Cld2L, &
                          Aer, AerOx, AerSw, &
-			 AerO1) result(out)
+                         AerO1) result(out)
    use ORAC_constants_m
 
    implicit none
@@ -52,13 +52,13 @@ function SWITCH_NAME_APP(Approach, Default, &
       end if
    case(AppAerO1)
       if (present(AerO1)) then
-      	 out = AerO1
-      else if (present(Aer)) then
-      	 out = Aer
-      else
-	 out = Default
-      end if
-   case default
+         out = AerO1
+     else if (present(Aer)) then
+        out = Aer
+     else
+        out = Default
+     end if
+  case default
       write(*,*) 'ERROR: switch_app(): Unsupported retrieval approach, ', &
            Approach
       stop error_stop_code

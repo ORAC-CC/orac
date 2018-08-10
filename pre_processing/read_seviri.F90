@@ -456,8 +456,8 @@ subroutine read_seviri_l1_5_nat_or_hrit(l1_5_file, imager_geolocation, &
             write(*,*) 'Applying GSICS calibration coefficients'
          else
             write(*,*) 'Applying IMPF calibration coefficients'
-         endif
-      endif
+         end if
+      end if
 
 		! The main reader call which populates preproc (type seviri_preproc_t_f90)
       if (verbose) write(*,*) 'Calling seviri_read_and_preproc_f90() from ' // &

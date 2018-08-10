@@ -97,12 +97,12 @@ subroutine read_himawari_dimensions(l1_5_file, n_across_track, n_along_track, &
    if (startx .le. 0 .or. endx .le. 0 .or. starty .le. 0 .or. endy .le. 0) then
       ! If start and end *are not* being used then set them to the start and end
       ! of the actual image in the file.
-   	startx = 1
-   	starty = 1
+      startx = 1
+      starty = 1
 
-   	endx=n_across_track
-   	endy=n_along_track
-   endif
+      endx=n_across_track
+      endy=n_along_track
+   end if
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> read_himawari_dimensions()'
 
@@ -166,8 +166,8 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
    integer(c_int)              :: column0, column1
 
 #ifdef INCLUDE_HIMAWARI_SUPPORT
-   type(himawari_t_data)		 ::	preproc
-   type(himawari_t_extent)		 ::	ahi_extent
+   type(himawari_t_data)       ::     preproc
+   type(himawari_t_extent)     ::     ahi_extent
 #endif
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_himawari_bin()'
 

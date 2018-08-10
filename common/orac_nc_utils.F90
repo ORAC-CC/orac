@@ -224,7 +224,7 @@ subroutine nc_put_common_attributes(ncid, global_atts, source_atts)
 
    integer :: ierr
 
-   ierr	=	0
+   ierr = 0
 
 
    !----------------------------------------------------------------------------

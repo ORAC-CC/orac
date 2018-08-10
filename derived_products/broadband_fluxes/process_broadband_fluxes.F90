@@ -537,7 +537,7 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
       if (tmpname1 .eq. 'cci_aerpix=') then
          Faerosol=trim(tmpname2)
          aerosol_processing_mode = 1
-      endif
+      end if
       if (tmpname1 .eq. 'modis_aerosol=') FMOD04=trim(tmpname2)
       if (tmpname1 .eq. 'modis_cloud=') FMOD06=trim(tmpname2)
       if (tmpname1 .eq. 'infinitely_thin_cloud=') InfThnCld=1

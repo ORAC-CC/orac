@@ -352,7 +352,7 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
     if (use_chunks .and. corr_plx) then
        write(*,*)'ERROR: Cannot parallax correct if chunking is enabled. STOP.'
        stop
-    endif
+    end if
 
     ! If using new bayesian selection then ensure both bayesian flags are true
     if (use_new_bayesian_selection) then
