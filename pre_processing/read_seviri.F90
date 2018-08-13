@@ -85,13 +85,16 @@ subroutine read_seviri_dimensions(l1_5_file, n_across_track, n_along_track, &
 
    integer :: i_line, i_column
    integer :: n_lines, n_columns
+   integer :: ftype
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< read_seviri_dimensions()'
    ! These are constant for the full disk image.
    n_along_track  = 3712
    n_across_track = 3712
 
-   if (determine_seviri_file_type(l1_5_file) == SEVIRI_TYPE_METOFF) then
+   ftype = determine_seviri_file_type(l1_5_file)
+
+   if (ftype == SEVIRI_TYPE_METOFF) then
       ! Met Office HDF files don't have a useful header so hard code the limits
       i_line    = 0
       i_column  = 0
@@ -150,6 +153,10 @@ subroutine read_seviri_dimensions(l1_5_file, n_across_track, n_along_track, &
          stop error_stop_code
       end if
    end if
+   if (index(l1_5_file,trim('RSS'))>0 .and. ftype==SEVIRI_TYPE_HRIT) then
+      endy=endy/3
+   end if
+
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> read_seviri_dimensions()'
 
 end subroutine read_seviri_dimensions
