@@ -1150,7 +1150,16 @@ subroutine setup_seviri(l1b_path_file,geo_path_file,platform,year,month,day, &
    if (index1 .ne. 0) then
       ! Time in native filename is end of scan, which takes 12 mins. So subtract
       ! 12 to get the actual start time of the image.
-      minute = minute - 12
+      ! We cannot tell if the file is RSS or FDS. RSS files are 5 mins, not 15.
+      ! This checks the default FDS times (corresponding to 00, 15, 30, 45 mins)
+      ! If a match is found, assume it's FDS and subtract 12 mins
+      ! If no match, assume it's RSS and subtract 4 mins
+      if (minute .eq. 12 .or. minute .eq. 27 .or. &
+          minute .eq. 42 .or. minute .eq. 57) then
+          minute = minute - 12
+      else
+          minute = minute - 4
+      endif
    end if
 
    call GREG2DOY(year, month, day, doy)
