@@ -19,7 +19,7 @@
 ! 2017/06/20, OS: Added ann phase variable IDs
 ! 2018/04/26, SP: Add code to save satellite azimuth (commented out, but useful)
 ! 2018/04/29, SP: Add cloud emissivity support for ECMWF profiles (ExtWork)
-! 2018/07/18, DE: Add tropoopause temperature
+! 2018/07/18, DE: Add tropopause temperature
 !
 ! Bugs:
 ! None known.
@@ -81,8 +81,9 @@ module netcdf_output_m
       integer :: vid_rho_dv_data, vid_rho_dd_data
 
       ! clf file
-      integer :: vid_cflag, vid_cemis, vid_cldtype, vid_cldmask, vid_cccot_pre, &
+      integer :: vid_cflag, vid_cemis_lw, vid_cemis_wv, vid_cldtype, vid_cldmask, vid_cccot_pre, &
                  vid_cldmask_unc
+      integer :: vid_tropop_pr, vid_tropop_te
       integer :: vid_ann_phase, vid_cphcot, vid_ann_phase_unc
 
       ! config file:
@@ -116,7 +117,6 @@ module netcdf_output_m
 
       ! prtm file:
       integer :: vid_lon_pw, vid_lat_pw
-      integer :: vid_tropop_pw, vid_tropop_te
       integer :: vid_satzen_pw, vid_solzen_pw
       integer :: vid_pprofile_lev_pw, vid_tprofile_lev_pw, vid_hprofile_lev_pw, &
                  vid_qprofile_lev_pw, vid_o3profile_lev_pw

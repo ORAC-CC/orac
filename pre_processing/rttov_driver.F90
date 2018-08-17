@@ -562,11 +562,6 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
               (/profiles(count)%latitude/), &
               1, j_, 1)
 
-!         call nc_write_array(netcdf_info%ncid_prtm, 'tropopause_pres_rtm', &
-!              netcdf_info%vid_tropop_pw, &
-!              preproc_prtm%trop_p(idim,jdim), &
-!              1, i_, 1, 1, j_, 1)
-
          call nc_write_array(netcdf_info%ncid_prtm, 'pprofile_rtm', &
               netcdf_info%vid_pprofile_lev_pw, &
               reshape(profiles(count)%p, (/nlevels,1,1/)), &

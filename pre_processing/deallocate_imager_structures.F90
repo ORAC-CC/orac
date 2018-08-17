@@ -75,5 +75,7 @@ subroutine deallocate_imager_structures(imager_geolocation,imager_angles, &
    deallocate(imager_pavolonis%cirrus_quality)
    deallocate(imager_pavolonis%emis_ch3b)
    deallocate(imager_cloud%cloud_emis)
+   deallocate(imager_cloud%trop_p)
+   deallocate(imager_cloud%trop_t)
 
 end subroutine deallocate_imager_structures

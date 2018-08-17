@@ -1274,7 +1274,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
          if (do_cloud_emis) then
             call get_cloud_emis(channel_info,imager_measurements, &
                   imager_geolocation,preproc_dims,preproc_geoloc, &
-                  preproc_cld,imager_cloud,ecmwf,sensor,verbose)
+                  preproc_cld,preproc_prtm,imager_cloud,ecmwf,sensor,verbose)
          end if
       else
          if (do_cloud_emis) call get_trop_tp(preproc_prtm,preproc_dims)
@@ -1286,7 +1286,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
          if (do_cloud_emis) then
             call get_cloud_emis(channel_info,imager_measurements, &
                   imager_geolocation,preproc_dims,preproc_geoloc, &
-                  preproc_cld,imager_cloud,ecmwf,sensor,verbose)
+                  preproc_cld,preproc_prtm,imager_cloud,ecmwf,sensor,verbose)
          end if
       end if
 
@@ -1344,23 +1344,6 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
            imager_geolocation,imager_measurements,imager_cloud,imager_time, &
            imager_pavolonis,netcdf_info,channel_info,surface,include_full_brdf, &
            do_cloud_emis)
-      if (do_cloud_emis) then
-         call nc_write_array(&
-              netcdf_info%ncid_prtm, &
-              'tropopause_pres_rtm', &
-              netcdf_info%vid_tropop_pw, &
-              preproc_prtm%trop_p, &
-              1,1, preproc_dims%xdim,&
-              1,1, preproc_dims%ydim)
-
-         call nc_write_array(&
-              netcdf_info%ncid_prtm, &
-              'tropopause_temp_rtm', &
-              netcdf_info%vid_tropop_te, &
-              preproc_prtm%trop_t, &
-              1,1, preproc_dims%xdim,&
-              1,1, preproc_dims%ydim)
-      end if
 
       ! close output netcdf files
       if (verbose) write(*,*)'Close netcdf output files'

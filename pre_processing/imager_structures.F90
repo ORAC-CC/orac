@@ -107,7 +107,9 @@ module imager_structures_m
 
    type imager_cloud_t
 
-      real(kind=sreal), dimension(:,:),   pointer :: cloud_emis
+      real(kind=sreal), dimension(:,:,:),   pointer :: cloud_emis
+      real(kind=sreal), dimension(:,:),     pointer :: trop_t
+      real(kind=sreal), dimension(:,:),     pointer :: trop_p
 
    end type imager_cloud_t
 

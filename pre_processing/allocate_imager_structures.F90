@@ -182,7 +182,17 @@ subroutine allocate_imager_structures(imager_geolocation,imager_angles, &
 
    allocate(imager_cloud%cloud_emis( &
         imager_geolocation%startx:imager_geolocation%endx, &
-        1:imager_geolocation%ny))
+        1:imager_geolocation%ny,2))
    imager_cloud%cloud_emis=sreal_fill_value
+
+   allocate(imager_cloud%trop_t( &
+        imager_geolocation%startx:imager_geolocation%endx, &
+        1:imager_geolocation%ny))
+   imager_cloud%trop_t=sreal_fill_value
+
+   allocate(imager_cloud%trop_p( &
+        imager_geolocation%startx:imager_geolocation%endx, &
+        1:imager_geolocation%ny))
+   imager_cloud%trop_p=sreal_fill_value
 
 end subroutine allocate_imager_structures

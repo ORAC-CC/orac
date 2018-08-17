@@ -105,7 +105,7 @@
 
 subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
      cminute,platform,sensor,path,type,preproc_dims,netcdf_info,channel_info, &
-     ecmwf_flag,do_cloud_emis,verbose)
+     ecmwf_flag,verbose)
 
    use netcdf
 
@@ -135,7 +135,6 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
    type(netcdf_output_info_t),     intent(inout) :: netcdf_info
    type(channel_info_t),           intent(in)    :: channel_info
    integer,                        intent(in)    :: ecmwf_flag
-   logical,                        intent(in)    :: do_cloud_emis
    logical,                        intent(in)    :: verbose
 
    ! Local
@@ -481,36 +480,6 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
            deflate_level = deflate_level, &
            shuffle = shuffle_flag, &
            fill_value = sreal_fill_value)
-
-      ! define trop_p_rtm
-      if (do_cloud_emis) then
-         ! define 2-D variables
-         dimids_2d(1)=netcdf_info%dimid_x_pw
-         dimids_2d(2)=netcdf_info%dimid_y_pw
-         call nc_def_var_float_packed_float( &
-              netcdf_info%ncid_prtm, &
-              dimids_2d, &
-              'tropopause_pres_rtm', &
-              netcdf_info%vid_tropop_pw, &
-              verbose, &
-              deflate_level = deflate_level, &
-              shuffle = shuffle_flag, &
-              fill_value = sreal_fill_value)
-
-         ! define trop_t_rtm
-         ! define 2-D variables
-         dimids_2d(1)=netcdf_info%dimid_x_pw
-         dimids_2d(2)=netcdf_info%dimid_y_pw
-         call nc_def_var_float_packed_float( &
-              netcdf_info%ncid_prtm, &
-              dimids_2d, &
-              'tropopause_temp_rtm', &
-              netcdf_info%vid_tropop_te, &
-              verbose, &
-              deflate_level = deflate_level, &
-              shuffle = shuffle_flag, &
-              fill_value = sreal_fill_value)
-      end if
 
       ! define 3-D variables
       dimids_3d(1)=netcdf_info%dimid_levels_pw
@@ -892,8 +861,35 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
          call nc_def_var_float_packed_float( &
               netcdf_info%ncid_clf, &
               dimids_2d, &
-              'cldemis', &
-              netcdf_info%vid_cemis, &
+              'cldemis_lw', &
+              netcdf_info%vid_cemis_lw, &
+              verbose, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
+              fill_value = sreal_fill_value)
+         call nc_def_var_float_packed_float( &
+              netcdf_info%ncid_clf, &
+              dimids_2d, &
+              'cldemis_wv', &
+              netcdf_info%vid_cemis_wv, &
+              verbose, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
+              fill_value = sreal_fill_value)
+         call nc_def_var_float_packed_float( &
+              netcdf_info%ncid_clf, &
+              dimids_2d, &
+              'tropopause_pres', &
+              netcdf_info%vid_tropop_pr, &
+              verbose, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
+              fill_value = sreal_fill_value)
+         call nc_def_var_float_packed_float( &
+              netcdf_info%ncid_clf, &
+              dimids_2d, &
+              'tropopause_temp', &
+              netcdf_info%vid_tropop_te, &
               verbose, &
               deflate_level = deflate_level, &
               shuffle = shuffle_flag, &

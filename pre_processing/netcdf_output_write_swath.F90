@@ -283,8 +283,27 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
    if (do_cloud_emis) then
       call nc_write_array( &
            netcdf_info%ncid_clf, &
-           'cldemis', netcdf_info%vid_cemis, &
-           imager_cloud%cloud_emis(imager_geolocation%startx:,:), &
+           'cldemis_lw', netcdf_info%vid_cemis_lw, &
+           imager_cloud%cloud_emis(imager_geolocation%startx:,:,1), &
+           1, 1, n_x, &
+           1, 1, imager_geolocation%ny)
+      call nc_write_array( &
+           netcdf_info%ncid_clf, &
+           'cldemis_wv', netcdf_info%vid_cemis_wv, &
+           imager_cloud%cloud_emis(imager_geolocation%startx:,:,2), &
+           1, 1, n_x, &
+           1, 1, imager_geolocation%ny)
+
+      call nc_write_array( &
+           netcdf_info%ncid_clf, &
+           'trop_t', netcdf_info%vid_tropop_te, &
+           imager_cloud%trop_t(imager_geolocation%startx:,:), &
+           1, 1, n_x, &
+           1, 1, imager_geolocation%ny)
+      call nc_write_array( &
+           netcdf_info%ncid_clf, &
+           'trop_p', netcdf_info%vid_tropop_pr, &
+           imager_cloud%trop_p(imager_geolocation%startx:,:), &
            1, 1, n_x, &
            1, 1, imager_geolocation%ny)
    end if
