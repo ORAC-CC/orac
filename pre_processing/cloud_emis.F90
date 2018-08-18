@@ -185,12 +185,12 @@ subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation, &
    Wrap = MinLon <= -180. .and. MaxLon >=  180.
 
    if (trim(adjustl(sensor)) .eq. 'AATSR' .or. &
-       trim(adjustl(sensor)) .eq. 'ATSR2') then
+        trim(adjustl(sensor)) .eq. 'ATSR2') then
       chan_n = 6
       if (do_wv) then
-      	if (verbose)write(*,*)"WARNING: Cannot process WV cloud emis for (A)ATSR."
-      	do_wv=.false.
-      endif
+         if (verbose)write(*,*)"WARNING: Cannot process WV cloud emis for (A)ATSR."
+         do_wv=.false.
+      end if
    else if (trim(adjustl(sensor)) .eq. 'ABI') then
       chan_n = 14
       chanwv_n = 8
@@ -200,9 +200,9 @@ subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation, &
    else if (trim(adjustl(sensor)) .eq. 'AVHRR') then
       chan_n = 5
       if (do_wv) then
-      	if (verbose)write(*,*)"WARNING: Cannot process WV cloud emis for AVHRR."
-      	do_wv=.false.
-      endif
+         if (verbose)write(*,*)"WARNING: Cannot process WV cloud emis for AVHRR."
+         do_wv=.false.
+      end if
    else if (trim(adjustl(sensor)) .eq. 'MODIS') then
       chan_n = 31
       chanwv_n = 27
@@ -212,15 +212,15 @@ subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation, &
    else if (trim(adjustl(sensor)) .eq. 'SLSTR') then
       chan_n = 8
       if (do_wv) then
-      	if (verbose)write(*,*)"WARNING: Cannot process WV cloud emis for SLSTR."
-      	do_wv=.false.
-      endif
+         if (verbose)write(*,*)"WARNING: Cannot process WV cloud emis for SLSTR."
+         do_wv=.false.
+      end if
    else if (trim(adjustl(sensor)) .eq. 'VIIRS') then
       chan_n = 15
       if (do_wv) then
-      	if (verbose)write(*,*)"WARNING: Cannot process WV cloud emis for VIIRS."
-      	do_wv=.false.
-      endif
+         if (verbose)write(*,*)"WARNING: Cannot process WV cloud emis for VIIRS."
+         do_wv=.false.
+      end if
    end if
 
    do i=1,channel_info%nchannels_total
@@ -235,15 +235,15 @@ subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation, &
    end do
 
    if (good_chan_all .lt. 0 .or. good_chan_lw .lt. 0) then
-       write(*,*)"ERROR: The longwave channel required for cloud emissivity (",chan_n,") is not available!"
-       stop
+      write(*,*)"ERROR: The longwave channel required for cloud emissivity (",chan_n,") is not available!"
+      stop
    end if
-	if (do_wv) then
-		if (good_chanwv_all .lt. 0 .or. good_chanwv_lw .lt. 0) then
-		    write(*,*)"ERROR: The longwave channel required for cloud emissivity (",chan_n,") is not available!"
-		    stop
-		end if
-	end if
+   if (do_wv) then
+      if (good_chanwv_all .lt. 0 .or. good_chanwv_lw .lt. 0) then
+         write(*,*)"ERROR: The longwave channel required for cloud emissivity (",chan_n,") is not available!"
+         stop
+      end if
+   end if
 
    !$OMP PARALLEL &
    !$OMP PRIVATE(i) &
@@ -257,25 +257,25 @@ subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation, &
               preproc_geoloc%latitude, NLat, imager_geolocation%longitude(j,i), &
               imager_geolocation%latitude(j,i), interp(1),Wrap)
 
-			! Longwave channel (10.8 micron)
+         ! Longwave channel (10.8 micron)
          call interp_field (preproc_cld%cloud_bt(:,:,good_chan_lw), &
-                            cldbt(j,i), interp(1))
+              cldbt(j,i), interp(1))
          call interp_field (preproc_cld%clear_bt(:,:,good_chan_lw), &
-                            clrbt(j,i), interp(1))
+              clrbt(j,i), interp(1))
 
-			! Interpolate tropopause info onto satellite grid
+         ! Interpolate tropopause info onto satellite grid
          call interp_field (preproc_prtm%trop_t(:,:), &
-                            imager_cloud%trop_t(j,i), interp(1))
+              imager_cloud%trop_t(j,i), interp(1))
          call interp_field (preproc_prtm%trop_p(:,:), &
-                            imager_cloud%trop_p(j,i), interp(1))
+              imager_cloud%trop_p(j,i), interp(1))
 
-			! WV channel (~7 micron)
+         ! WV channel (~7 micron)
          if (do_wv) then
-		      call interp_field (preproc_cld%cloud_bt(:,:,good_chanwv_lw), &
-		                         cldbtwv(j,i), interp(1))
-		      call interp_field (preproc_cld%clear_bt(:,:,good_chanwv_lw), &
-		                         clrbtwv(j,i), interp(1))
-		   endif
+            call interp_field (preproc_cld%cloud_bt(:,:,good_chanwv_lw), &
+                 cldbtwv(j,i), interp(1))
+            call interp_field (preproc_cld%clear_bt(:,:,good_chanwv_lw), &
+                 clrbtwv(j,i), interp(1))
+         end if
       end do
    end do
    !$OMP END DO
@@ -319,31 +319,31 @@ subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation, &
          imager_cloud%cloud_emis(j,i,1) = emis
 
 
-			if (do_wv) then
-		      t1      = exp(c2/(lam2*cldbtwv(j,i)))
-		      t2      = (t1-1)
-		      rad_cld = c1/(t2*(lam2**5))
-		      t1      = exp(c2/(lam2*clrbtwv(j,i)))
-		      t2      = (t1-1)
-		      rad_clr = c1/(t2*(lam2**5))
-		      t1      = exp(c2/(lam2*imager_measurements%data(j,i,good_chanwv_all)))
-		      t2      = (t1-1)
-		      rad_obs = c1/(t2*(lam2**5))
+         if (do_wv) then
+            t1      = exp(c2/(lam2*cldbtwv(j,i)))
+            t2      = (t1-1)
+            rad_cld = c1/(t2*(lam2**5))
+            t1      = exp(c2/(lam2*clrbtwv(j,i)))
+            t2      = (t1-1)
+            rad_clr = c1/(t2*(lam2**5))
+            t1      = exp(c2/(lam2*imager_measurements%data(j,i,good_chanwv_all)))
+            t2      = (t1-1)
+            rad_obs = c1/(t2*(lam2**5))
 
-		      emis    = (rad_obs-rad_clr)/(rad_cld-rad_clr)
-		      ! Emisivities below zero are not really feasible (although possible
-		      ! in case of atmosphere profile being unrepresentative. Set these
-		      ! values equal to zero.
-		      if (emis .lt. 0) emis=0.
+            emis    = (rad_obs-rad_clr)/(rad_cld-rad_clr)
+            ! Emisivities below zero are not really feasible (although possible
+            ! in case of atmosphere profile being unrepresentative. Set these
+            ! values equal to zero.
+            if (emis .lt. 0) emis=0.
 
-		      ! Emisivities above one aren't really feasible either. They do exist
-		      ! for deep convection, though, in the form of overshooting tops.
-		      ! Useful to know where these are, so keep them but cap at emis=2.
-		      ! This removes unphysical values. For example, emis>1000 possible for
-		      ! pixels on the edge of the Himawari disk.
-		      if (emis .gt. 2) emis=2.
-		      imager_cloud%cloud_emis(j,i,2) = emis
-		   endif
+            ! Emisivities above one aren't really feasible either. They do exist
+            ! for deep convection, though, in the form of overshooting tops.
+            ! Useful to know where these are, so keep them but cap at emis=2.
+            ! This removes unphysical values. For example, emis>1000 possible for
+            ! pixels on the edge of the Himawari disk.
+            if (emis .gt. 2) emis=2.
+            imager_cloud%cloud_emis(j,i,2) = emis
+         end if
       end do
    end do
    !$OMP END DO
