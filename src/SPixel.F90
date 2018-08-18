@@ -209,6 +209,8 @@ module SPixel_m
                                           ! at its reference wavelength
       integer, pointer    :: XIndex(:,:)  ! Index of state vector from which
                                           ! values of Rs should be drawn
+      real, pointer       :: Sw_s(:), Sw_s_var(:)
+      real, pointer       :: Sw_p(:), Sw_p_var(:)
    end type Surface_t
 
 

@@ -92,14 +92,23 @@ subroutine Dealloc_SPixel(Ctrl, SPixel)
 
    ! Get_Surface arrays
 
-   deallocate(SPixel%Surface%Rs)
-   deallocate(SPixel%Surface%SRs)
-   if (Ctrl%RS%use_full_brdf) then
-      deallocate(SPixel%Surface%Rs2)
-      deallocate(SPixel%Surface%SRs2)
+   if (Ctrl%Approach == AppAerSw) then
+      deallocate(SPixel%Surface%Sw_s)
+      deallocate(SPixel%Surface%Sw_s_var)
+      if (Ctrl%RS%read_full_brdf) then
+         deallocate(SPixel%Surface%Sw_p)
+         deallocate(SPixel%Surface%Sw_p_var)
+      end if
+   else
+      deallocate(SPixel%Surface%Rs)
+      deallocate(SPixel%Surface%SRs)
+      if (Ctrl%RS%use_full_brdf) then
+         deallocate(SPixel%Surface%Rs2)
+         deallocate(SPixel%Surface%SRs2)
+      end if
+      deallocate(SPixel%Surface%Ratios)
    end if
    deallocate(SPixel%Surface%XIndex)
-   deallocate(SPixel%Surface%Ratios)
 
    !  Solar constant
 

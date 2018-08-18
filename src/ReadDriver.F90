@@ -1382,10 +1382,14 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
             end if
 
          case (SelmAux)
-            if (i /= ITs .and. .not. any(i == IRs)) then
+            if (i /= ITs .and. .not. any(i == ISP) .and. .not. any(i == IRs)) then
                write(*,*) 'ERROR: Read_Driver(): AUX method ONLY supported ' // &
-                    'for setting first guess Ts and Rs'
+                    'for setting first guess Ts, SP and Rs'
                stop FGMethErr
+            end if
+            if (any(i == ISP) .and. .not. Ctrl%RS%read_full_brdf) then
+               write(*,*) 'ERROR: Read_Driver(): Setting SP by the AUX ' // &
+                    'method requires Ctrl%RS%read_full_brdf = .true.'
             end if
 
          case default
@@ -1412,10 +1416,14 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
             end if
 
          case (SelmAux)
-            if (i /= ITs .and. .not. any(i == IRs)) then
+            if (i /= ITs .and. .not. any(i == ISP) .and. .not. any(i == IRs)) then
                write(*,*) 'ERROR: Read_Driver(): AUX method ONLY supported ' // &
                     'for setting a priori Ts, Rs, and S'
                stop APMethErr
+            end if
+            if (any(i == ISP) .and. .not. Ctrl%RS%read_full_brdf) then
+               write(*,*) 'ERROR: Read_Driver(): Setting SP by the AUX ' // &
+                    'method requires Ctrl%RS%read_full_brdf = .true.'
             end if
 
          case default

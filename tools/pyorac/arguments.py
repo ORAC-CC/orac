@@ -148,7 +148,7 @@ def args_main(parser):
                       help = 'Retrieval approach to be used.')
     main.add_argument('--ret_class', type = str, nargs='?',
                       choices = ('ClsCldWat', 'ClsCldIce', 'ClsAerOx',
-                                 'ClsAerSw', 'ClsAshEyj'),
+                                 'ClsAerSw', 'ClsAerBR', 'ClsAshEyj'),
                       help = 'Retrieval class to be used (for layer 1).')
     main.add_argument('--phase', type=str, default = 'WAT',
                       choices = list(SETTINGS.keys()),

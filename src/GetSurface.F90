@@ -490,27 +490,36 @@ subroutine Get_Surface_Swansea(Ctrl, SPixel, SAD_LUT, MSI_Data)
    type(Data_t),    intent(in)    :: MSI_Data
 
    ! Define local variables
-   integer :: i_solar, i_ctrl, j_solar, j_ctrl, i_surf, i_csol
+   integer :: i_solar, i_ctrl, j_solar, j_ctrl, i_surf, i_csol, i_view
    integer :: nch, i_s(SPixel%Ind%NSolar)
    logical :: checked(SPixel%Ind%NSolar)
 
    type(GZero_t) :: GZero
    integer       :: status
-   real          :: Sw_s, Sw_s_var, rs_unc, denom, tmp
+   real          :: Sw_g, Sw_s, Sw_s_var
+   real          :: rho_0v, rho_dd, rs_unc, denom, tmp
    real          :: CRP(SPixel%Ind%NSolar, MaxCRProps)
    real          :: d_CRP(SPixel%Ind%NSolar, MaxCRProps, MaxCRPParams)
 
    checked = .false.
 
    ! Reallocate surface reflectances to appropriate length
-   deallocate(SPixel%Surface%Rs)
-   allocate(SPixel%Surface%Rs(SPixel%Ind%NSolar))
-   deallocate(SPixel%Surface%SRs)
-   allocate(SPixel%Surface%SRs(SPixel%Ind%NSolar, SPixel%Ind%NSolar))
+   deallocate(SPixel%Surface%Sw_s)
+   allocate(SPixel%Surface%Sw_s(SPixel%Ind%NSolar))
+   deallocate(SPixel%Surface%Sw_s_var)
+   allocate(SPixel%Surface%Sw_s_var(SPixel%Ind%NSolar))
+   SPixel%Surface%Sw_s = 0.
+   SPixel%Surface%Sw_s_var = 0.
+   if (Ctrl%RS%read_full_brdf) then
+      deallocate(SPixel%Surface%Sw_p)
+      allocate(SPixel%Surface%Sw_p(Ctrl%Ind%NViews))
+      deallocate(SPixel%Surface%Sw_p_var)
+      allocate(SPixel%Surface%Sw_p_var(Ctrl%Ind%NViews))
+      SPixel%Surface%Sw_p = 0
+      SPixel%Surface%Sw_p_var = 0
+   end if
    deallocate(SPixel%Surface%XIndex)
    allocate(SPixel%Surface%XIndex(SPixel%Ind%NSolar, MaxSwan_X))
-   SPixel%Surface%Rs = 0.
-   SPixel%Surface%SRs = 0.
    SPixel%Surface%XIndex = 0
 
    if (Ctrl%RS%RsSelm == SelmMeas) then
@@ -534,12 +543,14 @@ subroutine Get_Surface_Swansea(Ctrl, SPixel, SAD_LUT, MSI_Data)
    ! Copy over indices for view-dependant P parameter
    SPixel%Surface%XIndex(:, ISwan_P) = ISP(SPixel%ViewIdx)
 
+   ! ----- Estimate s parameter -----
    do i_solar = 1, SPixel%Ind%NSolar
       ! Skip wavelengths we've already dealt with
       if (checked(i_solar)) cycle
 
       i_ctrl = SPixel%spixel_y_solar_to_ctrl_y_index(i_solar)
       i_csol = SPixel%spixel_y_solar_to_ctrl_y_solar_index(i_solar)
+      i_view = SPixel%ViewIdx(SPixel%Ind%YSolar(i_solar))
 
       ! Make a list of channels that share this wavelength
       nch = 1
@@ -560,39 +571,33 @@ subroutine Get_Surface_Swansea(Ctrl, SPixel, SAD_LUT, MSI_Data)
       SPixel%Surface%XIndex(i_s(1:nch), ISwan_S) = ISS(i_csol)
 
 
-      ! ----- Estimate s parameter -----
       select case (Ctrl%RS%RsSelm)
       case(SelmCtrl)
          ! Use constant values for s and its uncertainty
-         SPixel%Surface%Rs(i_solar) = Ctrl%RS%b(i_csol, i_surf)
+         Sw_s = Ctrl%RS%b(i_csol, i_surf)
 
          ! Consistent with the routine above, Sb is a fractional uncertainty
          tmp = Ctrl%RS%b(i_csol, i_surf) * Ctrl%RS%Sb(i_csol, i_surf)
-         SPixel%Surface%SRs(i_solar,i_solar) = tmp * tmp
+         Sw_s_var = tmp * tmp
 
       case(SelmMeas)
          ! Invert nadir radiance for S parameter
          call Effective_Rho_Calc(SPixel%Ym(i_s(1)), SPixel%Sy(i_s(1),i_s(1)), &
               CRP(i_s(1),:), d_CRP(i_s(1),:,:), Ctrl%RS%SS_Xb(ISP(1)), &
               Ctrl%RS%SS_Xb(ISG), Ctrl%RS%SS_Sx(ITau), Ctrl%RS%SS_Sx(IRe), &
-              Ctrl%RS%SS_Sx(ISP(1)), Ctrl%RS%SS_Sx(ISG), &
+              Ctrl%RS%SS_Sx(ISP(i_view)), Ctrl%RS%SS_Sx(ISG), &
               Sw_s, Sw_s_var)
-
-         SPixel%Surface%Rs(i_solar) = Sw_s
 
          select case (Ctrl%RS%SRsSelm)
          case(SelmCtrl)
             ! Use constant uncertainty
-            SPixel%Surface%SRs(i_solar,i_solar) = Ctrl%Sx(ISS(i_csol))
+            Sw_s_var = Ctrl%Sx(ISS(i_csol))
             if (Ctrl%RS%add_fractional) then
                tmp = Sw_s * Ctrl%RS%Sb(i_csol, i_surf)
-               SPixel%Surface%SRs(i_solar,i_solar) = &
-                 SPixel%Surface%SRs(i_solar,i_solar) + tmp * tmp
+               Sw_s_var = Sw_s_var + tmp * tmp
             end if
-         case(SelmMeas)
-            ! Use uncertainty propagated from a priori
-            SPixel%Surface%SRs(i_solar,i_solar) = Sw_s_var
-         ! There's nowhere from which you could possibly draw SelmAux
+         !case(SelmMeas) ! Use the uncertainty propagated from a priori
+         !case(SelmAux) ! There's nowhere from which this would come
          end select
 
       case(SelmAux)
@@ -602,40 +607,87 @@ subroutine Get_Surface_Swansea(Ctrl, SPixel, SAD_LUT, MSI_Data)
          ! pixel (0D, DD, and 2 0V) with 4 unknowns, but the eventual result
          ! isn't bounded to [0,1] and so doesn't help much. The easiest approach
          ! is to use rho_0v = p * s and assume p, but that is very sensitive to
-         ! the p assumed and easily gives s > 1. The approach used below is a
-         ! rearrangement of rho_DD = g * s / (1 - (1-g) * s), which is selected
-         ! as rho_DD exists regardless of CtrL%use_full_brdf.
+         ! the p assumed and easily gives s > 1. When the BRDF terms are
+         ! available, we can use rho_DD = g * s / (1 - (1-g) * s) to find s
+         ! and rho_0v to find p. (There is an expression using rho_0D for g,
+         ! but it tends to be inconsistent across the channels.)
 
-         denom = Ctrl%RS%SS_Sx(ISG) + (1.0 - Ctrl%RS%SS_Sx(ISG)) * &
-               MSI_Data%ALB(SPixel%Loc%X0, SPixel%Loc%Y0, i_csol)
-         SPixel%Surface%Rs(i_solar) = &
-              MSI_Data%ALB(SPixel%Loc%X0, SPixel%Loc%Y0, i_csol) / denom
+         if (Ctrl%RS%read_full_brdf) then
+            rho_dd = MSI_Data%rho_dd(SPixel%Loc%X0, SPixel%Loc%Y0, i_csol)
+         else
+            rho_dd = MSI_Data%ALB(SPixel%Loc%X0, SPixel%Loc%Y0, i_csol)
+         end if
+
+         Sw_g = Ctrl%RS%SS_Xb(ISG)
+         denom = Sw_g + (1.0 - Sw_g) * rho_dd
+         Sw_s = rho_dd / denom
 
          if (Ctrl%RS%SRsSelm == SelmCtrl) then
             ! Use constant uncertainty
-            tmp = Sw_s * Ctrl%RS%Sb(i_csol, i_surf)
-            SPixel%Surface%SRs(i_solar,i_solar) = Ctrl%Sx(ISS(i_csol))
-            if (Ctrl%RS%add_fractional) SPixel%Surface%SRs(i_solar,i_solar) = &
-                 SPixel%Surface%SRs(i_solar,i_solar) + tmp * tmp
+            Sw_s_var = Ctrl%Sx(ISS(i_csol))
+
+            if (Ctrl%RS%add_fractional) then
+               tmp = Sw_s * Ctrl%RS%Sb(i_csol, i_surf)
+               Sw_s_var = Sw_s_var + tmp * tmp
+            end if
          else
-            ! Use uncertainty propagated through the equation for Rs above
+            ! Use uncertainty propagated through the equations above
             if (Ctrl%RS%SRsSelm == SelmMeas) then
                ! Uncertainty is a constant fraction of the reflectance
-               rs_unc = MSI_Data%ALB(SPixel%Loc%X0, SPixel%Loc%Y0, i_csol) * &
-                    Ctrl%Rs%Sb(i_csol, i_surf)
+               rs_unc = rho_dd * Ctrl%Rs%Sb(i_csol, i_surf)
             else ! (Ctrl%RS%SRsSelm == SelmAux)
                rs_unc = MSI_Data%rho_dd_unc(SPixel%Loc%X0, SPixel%Loc%Y0, i_csol)
                ! ACP: Perhaps snow/veg/bare terms needed here?
             end if
 
-            tmp = (1.0 - MSI_Data%ALB(SPixel%Loc%X0, SPixel%Loc%Y0, i_csol)) * &
-                 Ctrl%RS%SS_Sx(ISG)
-            SPixel%Surface%SRs(i_solar,i_solar) = &
-                 (Ctrl%RS%SS_Xb(ISG) * Ctrl%RS%SS_Xb(ISG) * rs_unc * rs_unc + &
-                  tmp * tmp) / (denom * denom * denom * denom)
+            tmp = rho_dd * (1. - rho_dd) * Ctrl%Sx(ISG)
+            Sw_s_var = (Sw_g * Sw_g * rs_unc * rs_unc + tmp * tmp) / &
+                 (denom * denom * denom * denom)
          end if
       end select
+
+      SPixel%Surface%Sw_s(i_s(1:nch)) = Sw_s
+      SPixel%Surface%Sw_s_var(i_s(1:nch)) = Sw_s_var
    end do
+
+   ! ----- Estimate p parameter -----
+   if (Ctrl%RS%read_full_brdf .and. Ctrl%RS%RSSelm == SelmAux) then
+      checked = .false.
+      do i_solar = 1, SPixel%Ind%NSolar
+         ! Skip wavelengths we've already dealt with
+         if (checked(i_solar)) cycle
+
+         i_csol = SPixel%spixel_y_solar_to_ctrl_y_solar_index(i_solar)
+         i_view = SPixel%ViewIdx(SPixel%Ind%YSolar(i_solar))
+
+         ! Find channels that share this view
+         do j_solar = i_solar+1, SPixel%Ind%NSolar
+            if (i_view == SPixel%ViewIdx(SPixel%Ind%YSolar(j_solar))) then
+               checked(j_solar) = .true.
+            end if
+         end do
+
+         rho_0v = MSI_Data%rho_0v(SPixel%Loc%X0, SPixel%Loc%Y0, i_csol)
+         SPixel%Surface%Sw_p(i_view) = rho_0v / SPixel%Surface%Sw_s(i_solar)
+
+         if (Ctrl%RS%SRsSelm == SelmCtrl) then
+            SPixel%Surface%Sw_p_var(i_view) = Ctrl%Sx(ISP(i_view))
+         else
+            if (Ctrl%RS%SRsSelm == SelmMeas) then
+               rs_unc = rho_0v * Ctrl%Rs%Sb(i_csol, i_surf)
+            else
+               ! MSI_Data%rho_0v_unc doesn't exist, so we approximate
+               rs_unc = MSI_Data%rho_dd_unc(SPixel%Loc%X0, SPixel%Loc%Y0, i_csol)
+            end if
+
+            tmp = SPixel%Surface%Sw_s(i_solar) * SPixel%Surface%Sw_s(i_solar)
+            SPixel%Surface%Sw_p_var(i_view) = &
+                 (tmp * rs_unc * rs_unc + &
+                 rho_0v * rho_0v * SPixel%Surface%Sw_s_var(i_solar) * &
+                 SPixel%Surface%Sw_s_var(i_solar)) / (tmp * tmp)
+         end if
+      end do
+   end if
 
 end subroutine Get_Surface_Swansea
 

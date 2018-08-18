@@ -134,13 +134,22 @@ subroutine Alloc_SPixel(Ctrl, RTM, SPixel)
 
    ! Get_Surface arrays (Reallocated in GetSurface)
 
-   allocate(SPixel%Surface%Rs        (Ctrl%Ind%NSolar))
-   allocate(SPixel%Surface%SRs       (Ctrl%Ind%NSolar, Ctrl%Ind%NSolar))
-   if (Ctrl%RS%use_full_brdf) then
-      allocate(SPixel%Surface%Rs2    (Ctrl%Ind%NSolar, MaxRho_XX))
-      allocate(SPixel%Surface%SRs2   (Ctrl%Ind%NSolar, Ctrl%Ind%NSolar, MaxRho_XX))
+   if (Ctrl%Approach == AppAerSw) then
+      allocate(SPixel%Surface%Sw_s   (Ctrl%Ind%NSolar))
+      allocate(SPixel%Surface%Sw_s_var(Ctrl%Ind%NSolar))
+      if (Ctrl%RS%read_full_brdf) then
+         allocate(SPixel%Surface%Sw_p(Ctrl%Ind%NViews))
+         allocate(SPixel%Surface%Sw_p_var(Ctrl%Ind%NViews))
+      end if
+   else
+      allocate(SPixel%Surface%Rs     (Ctrl%Ind%NSolar))
+      allocate(SPixel%Surface%SRs    (Ctrl%Ind%NSolar, Ctrl%Ind%NSolar))
+      if (Ctrl%RS%use_full_brdf) then
+         allocate(SPixel%Surface%Rs2 (Ctrl%Ind%NSolar, MaxRho_XX))
+         allocate(SPixel%Surface%SRs2(Ctrl%Ind%NSolar, Ctrl%Ind%NSolar, MaxRho_XX))
+      end if
+      allocate(SPixel%Surface%Ratios (Ctrl%Ind%NSolar, MaxRho_XX))
    end if
-   allocate(SPixel%Surface%Ratios    (Ctrl%Ind%NSolar, MaxRho_XX))
    allocate(SPixel%Surface%XIndex    (Ctrl%Ind%NSolar, MaxRho_XX))
 
    !  Solar constant (Reallocated in GetSPixel)

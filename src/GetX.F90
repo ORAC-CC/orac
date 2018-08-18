@@ -250,15 +250,22 @@ subroutine Get_State(mode, i, Ctrl, SPixel, flag, X, status, Err)
                Err(i,i) = AUXErrTsSea * AUXErrTsSea * Scale2
             end if
          end if
+
+      else if (any(i == ISP)) then
+         do is = 1, Ctrl%Ind%NViews
+            X = SPixel%Surface%Sw_p(is)
+            if (present(Err)) Err(ISP(is), ISP(is)) = SPixel%Surface%Sw_p_var(is)
+         end do
+
       else ! Surface reflectance (BRDF only)
          search: do is = 1, SPixel%Ind%NSolar
             ic = SPixel%spixel_y_solar_to_ctrl_y_solar_index(is)
 
             if (Ctrl%Approach == AppAerSw) then
                if (i == ISs(ic)) then
-                  X = SPixel%Surface%Rs(is)
+                  X = SPixel%Surface%Sw_s(is)
                   if (present(Err)) &
-                       Err(ISs(is), ISs(is)) = SPixel%Surface%SRs(is,is)
+                       Err(ISs(is), ISs(is)) = SPixel%Surface%Sw_s_var(is)
                   exit search
                end if
             else if (Ctrl%RS%use_full_brdf) then
