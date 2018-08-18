@@ -478,6 +478,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%RS%RsSelm         = switch_app(a, Default=SelmAux)
    Ctrl%RS%SRsSelm        = switch_app(a, Default=SelmMeas, Aer=SelmCtrl)
    Ctrl%RS%use_full_brdf  = switch_cls(c, Default=.true.,   AerSw=.false.)
+   Ctrl%RS%read_full_brdf = switch_cls(c, Default=.true.,   AerSw=.false.)
    Ctrl%RS%Cb             = switch_app(a, Default=0.2,      AerOx=0.4, &
                                        AerSw=0.4, AerO1=0.98)
    Ctrl%RS%add_fractional = switch_app(a, Default=.false.,  AerOx=.true.)
@@ -1224,6 +1225,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    ! ---------------------------------------------------------------------------
    ! Things that have to be after the optional lines
    ! ---------------------------------------------------------------------------
+
+   if (Ctrl%RS%use_full_brdf) Ctrl%RS%read_full_brdf = .true.
 
    if (Ctrl%RS%use_full_brdf .and. Ctrl%i_equation_form == 0) then
       write(*,*) 'ERROR: Read_Driver(): Ctrl%RS%use_full_brdf = true cannot ' // &

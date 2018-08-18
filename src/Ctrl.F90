@@ -169,6 +169,7 @@ module Ctrl_m
       integer                :: SRsSelm            ! Surface reflectance
                                                    ! uncertainty selection method
       logical                :: use_full_brdf
+      logical                :: read_full_brdf
       logical                :: allow_a_default_surface
       real, pointer          :: B(:,:)             ! Prescribed surface reflect
                                                    ! (chs, sea/land)

@@ -49,7 +49,7 @@ subroutine Dealloc_Data(Ctrl, MSI_Data)
 
    if (associated(MSI_Data%ALB))          deallocate(MSI_Data%ALB)
 
-   if (Ctrl%RS%use_full_brdf) then
+   if (Ctrl%RS%read_full_brdf) then
       if (associated(MSI_Data%rho_0v))    deallocate(MSI_Data%rho_0v)
       if (associated(MSI_Data%rho_0d))    deallocate(MSI_Data%rho_0d)
       if (associated(MSI_Data%rho_dv))    deallocate(MSI_Data%rho_dv)

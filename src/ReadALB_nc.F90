@@ -113,7 +113,7 @@ subroutine Read_ALB_nc(Ctrl, MSI_Data)
    if (Ctrl%verbose) write(*,*) 'Max/Min Alb: ', maxval(MSI_Data%ALB), &
       minval(MSI_Data%ALB)
 
-   if (Ctrl%RS%use_full_brdf) then
+   if (Ctrl%RS%read_full_brdf) then
       ! Allocate Data%rho_xx structures
       allocate(MSI_Data%rho_0v(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, Ctrl%Ind%NSolar))
       allocate(MSI_Data%rho_0d(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, Ctrl%Ind%NSolar))

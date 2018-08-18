@@ -37,7 +37,7 @@ subroutine Nullify_Data(Ctrl, MSI_Data)
 
    nullify(MSI_Data%ALB)
 
-   if (Ctrl%RS%use_full_brdf) then
+   if (Ctrl%RS%read_full_brdf) then
       nullify(MSI_Data%rho_0v)
       nullify(MSI_Data%rho_0d)
       nullify(MSI_Data%rho_dv)
