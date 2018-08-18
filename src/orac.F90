@@ -534,6 +534,7 @@ subroutine orac(mytask,ntasks,lower_bound,upper_bound,drifile)
             ! Retrieval suffered fatal error
             TotMissed_line(j) = TotMissed_line(j) + 1
 
+            SPixel%variables_retrieved       = status
             SPixel%X0                        = MissingXn
             SPixel%Xb                        = MissingXn
             SPixel%Xn                        = MissingXn
