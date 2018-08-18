@@ -120,7 +120,7 @@
 subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
      modis_brdf_path, occci_path, imager_flags, imager_geolocation, &
      imager_angles, channel_info, ecmwf, assume_full_path, include_full_brdf, &
-     use_occci, verbose, surface, source_atts)
+     use_occci, use_swansea_climatology, swan_g, verbose, surface, source_atts)
 
    use channel_structures_m
    use cox_munk_m
@@ -155,6 +155,8 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
    logical,                    intent(in)    :: assume_full_path
    logical,                    intent(in)    :: include_full_brdf
    logical,                    intent(in)    :: use_occci
+   logical,                    intent(in)    :: use_swansea_climatology
+   real,                       intent(in)    :: swan_g
    logical,                    intent(in)    :: verbose
    type(surface_t),            intent(inout) :: surface
    type(source_attributes_t),  intent(inout) :: source_atts
@@ -174,22 +176,28 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
    real,               allocatable   :: solaz(:), relaz(:)
    type(interpol_t),   allocatable   :: interp(:)
 
+   ! Band definitions
+   integer, parameter :: n_modbands = 7
+   integer, target    :: modbands(n_modbands) = [1, 2, 3, 4, 5, 6, 7]
+   integer, parameter :: n_swanbands = 4
+   integer, target    :: swanbands(n_swanbands) = [4, 1, 2, 6]
+   integer, parameter :: n_coxbands = 9
+   integer, parameter :: coxbands(n_coxbands) = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+
    ! Land surface reflectance
    character(len=path_length)        :: modis_surf_path_file
    character(len=path_length)        :: modis_brdf_path_file
    type(mcd43c1_t)                   :: mcdc1
    type(mcd43c3_t)                   :: mcdc3
-   integer,            parameter     :: n_modbands = 7
-   integer                           :: modbands(n_modbands)
-   integer,            parameter     :: n_coxbands = 9
-   integer                           :: coxbands(n_coxbands)
+   integer                           :: n_inbands
+   integer,            pointer       :: in_bands(:)
    integer                           :: n_bands
    real,               allocatable   :: tmp_data(:,:)
    integer(kind=byte), allocatable   :: fg_mask(:,:)
    real,               allocatable   :: wsalnd(:,:)
    real,               allocatable   :: wgtlnd(:,:,:)
    real,               allocatable   :: rholnd(:,:,:), tmprho(:,:,:)
-   real                              :: tmp_val
+   real                              :: tmp_val, tmp_p(2)
    integer                           :: stat
 
    ! Sea surface reflectance
@@ -211,6 +219,7 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
    if (verbose) write(*,*) 'assume_full_path: ',  assume_full_path
    if (verbose) write(*,*) 'include_full_brdf: ', include_full_brdf
    if (verbose) write(*,*) 'use_occci: ',         use_occci
+   if (verbose) write(*,*) 'use_swansea_clim: ',  use_swansea_climatology, swan_g
 
 
    ! Mask out pixels set to fill_value and out of BRDF angular range
@@ -270,10 +279,12 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
       wsalnd(:,:) = sreal_fill_value
       allocate(interp(nland))
       if (include_full_brdf) then
-         allocate(solza(nland))
-         allocate(satza(nland))
-         allocate(solaz(nland))
-         allocate(relaz(nland))
+         if (.not. use_swansea_climatology) then
+            allocate(solza(nland))
+            allocate(satza(nland))
+            allocate(solaz(nland))
+            allocate(relaz(nland))
+         end if
          allocate(rholnd(channel_info%nchannels_sw,nland,4))
       end if
 
@@ -282,14 +293,20 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
       ! the 0.65, 0.87(ish) and 1.6 micron bands
 
       ! Bands that are available.
-      modbands = (/ 1, 2, 3, 4, 5, 6, 7 /)
+      if (use_swansea_climatology) then
+         n_inbands = n_swanbands
+         in_bands => swanbands
+      else
+         n_inbands = n_modbands
+         in_bands => modbands
+      end if
 
       ! Count number of bands required (a 1-to-many mapping for multiple views)
       ii = 0
-      do i = 1, n_modbands
+      do i = 1, n_inbands
          do j = 1, channel_info%nchannels_sw
             if (channel_info%map_ids_abs_to_ref_band_land(j) .eq. &
-                modbands(i)) then
+                in_bands(i)) then
                ii = ii + 1
                exit
             end if
@@ -307,12 +324,12 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
 
       ! Identify bands required
       ii = 1
-      do i = 1, n_modbands
+      do i = 1, n_inbands
          do j = 1, channel_info%nchannels_sw
             if (channel_info%map_ids_abs_to_ref_band_land(j) .eq. &
-                modbands(i)) then
+                in_bands(i)) then
                ! Indices of bands to be read
-               bands(ii) = modbands(i)
+               bands(ii) = in_bands(i)
                ii = ii + 1
                exit
             end if
@@ -322,27 +339,26 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
       ! Check all pure SW channels have a band
       do i = 1, channel_info%nchannels_sw
          ii = channel_info%map_ids_sw_to_channel(i)
-         if (channel_info%channel_sw_flag(ii) .ne. 0) then
-            if (channel_info%channel_lw_flag(ii) .ne. 0) cycle
 
-            if (channel_info%map_ids_abs_to_ref_band_land(i) .lt. 0) cycle
+         if (channel_info%channel_sw_flag(ii) == 0) cycle
+         if (channel_info%channel_lw_flag(ii) /= 0) cycle
+         if (channel_info%map_ids_abs_to_ref_band_land(i) < 0) cycle
 
-            flag = .true.
-            do j = 1, n_bands
-               if (channel_info%map_ids_abs_to_ref_band_land(i) .eq. &
-                   bands(j)) then
-                  flag = .false.
-                  exit
-               end if
-            end do
-
-            ! Flag channels without a MODIS band unless they are mixed
-            if (flag) then
-               write(*,*) 'ERROR: get_surface_reflectance(), instrument ' // &
-                    'channel ', channel_info%channel_ids_instr(ii), ' does ' // &
-                    'not have a corresponding land reflectance product channel'
-               stop error_stop_code
+         flag = .true.
+         do j = 1, n_bands
+            if (channel_info%map_ids_abs_to_ref_band_land(i) .eq. &
+                 bands(j)) then
+               flag = .false.
+               exit
             end if
+         end do
+
+         ! Flag channels without a MODIS band unless they are mixed
+         if (flag) then
+            write(*,*) 'ERROR: get_surface_reflectance(), instrument ' // &
+                 'channel ', channel_info%channel_ids_instr(ii), ' does ' // &
+                 'not have a corresponding land reflectance product channel'
+            stop error_stop_code
          end if
       end do
 
@@ -357,6 +373,11 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
          modis_surf_path_file = modis_surf_path
          modis_brdf_path_file = modis_brdf_path
       else
+         if (use_swansea_climatology) then
+            write(*,*) 'ERROR: get_surface_reflectance(): ' // &
+                 'USE_SWANSEA_CLIMATOLOGY requires ASSUME_FULL_PATH.'
+            stop error_stop_code
+         end if
          call select_modis_albedo_file(cyear,cdoy,modis_surf_path, &
               .false.,modis_surf_path_file)
          if (include_full_brdf) then
@@ -377,17 +398,22 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
       source_atts%brdf_file   = trim(modis_brdf_path_file)
 
       ! Read the data itself
-      call read_mcd43c3(modis_surf_path_file, mcdc3, n_bands, bands, &
-          .true., .false., .false., verbose, stat)
+      if (use_swansea_climatology) then
+         call read_swansea_climatology(modis_surf_path_file, n_bands, bands, &
+              mcdc3)
+      else
+         call read_mcd43c3(modis_surf_path_file, mcdc3, n_bands, bands, &
+              .true., .false., .false., verbose, stat)
 
-      if (include_full_brdf) then
-         call read_mcd43c1(modis_brdf_path_file, mcdc1, n_bands, bands, &
-              .true., .false., verbose, stat)
+         if (include_full_brdf) then
+            call read_mcd43c1(modis_brdf_path_file, mcdc1, n_bands, bands, &
+                 .true., .false., verbose, stat)
+         end if
       end if
 
       ! Fill missing data in the MODIS surface reflectance using a nearest
-      ! neighbour technique. Note we cannot allocate tmp_data until we've created
-      ! the mcd structure
+      ! neighbour technique. Note we cannot allocate tmp_data until we've
+      ! created the mcd structure
       allocate(tmp_data(mcdc3%nlon,mcdc3%nlat))
       tmp_data = 0.
 
@@ -432,15 +458,51 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
                jj = channel_info%map_ids_abs_to_ref_band_land(j)
                if (jj .lt. 0) then
                   wsalnd(j,lndcount) = 0.
-               else
-                  if (jj .eq. bands(i)) then
-                     wsalnd(j,lndcount) = tmp_val
-                  end if
+               else if (jj .eq. bands(i)) then
+                  wsalnd(j,lndcount) = tmp_val
                end if
             end do
          end do
 
-         if (include_full_brdf) then
+         if (use_swansea_climatology) then
+            if (include_full_brdf) then
+               ! mcd4%WSA was used for the Swansea S parameter and BSA the P
+               call fill_grid(mcdc3%BSA(:,:,1), sreal_fill_value, fg_mask)
+               call fill_grid(mcdc3%BSA(:,:,2), sreal_fill_value, fg_mask)
+
+               do lndcount = 1, nland
+                  call interp_field(mcdc3%BSA, tmp_p, interp(lndcount))
+
+                  do j = 1, channel_info%nchannels_sw
+                     jj = channel_info%map_ids_abs_to_ref_band_land(j)
+                     kk = channel_info%map_ids_sw_to_channel(j)
+                     i_view = channel_info%channel_view_ids(kk)
+
+                     if (jj == bands(i)) then
+                        ! rho_0V = s * p
+                        rholnd(j,lndcount,1) = wsalnd(j,lndcount) * tmp_p(i_view)
+                        ! rho_DD = g * s / (1 - (1-g) * s)
+                        rholnd(j,lndcount,4) = swan_g * wsalnd(j,lndcount) / &
+                             (1.0 - (1.0 - swan_g) * wsalnd(j,lndcount))
+                        ! rho_0D = g * (1-g) *s^2 / (1 - (1-g) * s)
+                        rholnd(j,lndcount,2) = (1.0 - swan_g) * &
+                             wsalnd(j,lndcount) * rholnd(j,lndcount,4)
+                        ! rho_DV is neglected in the Swansea model
+                        rholnd(j,lndcount,3) = sreal_fill_value
+                        ! albedo = rho_DD
+                        wsalnd(j,lndcount) = rholnd(j,lndcount,4)
+                     end if
+                  end do
+               end do
+            else
+               do j = 1, channel_info%nchannels_sw
+                  jj = channel_info%map_ids_abs_to_ref_band_land(j)
+                  if (jj == bands(i)) wsalnd(j,:) = swan_g * wsalnd(j,:) / &
+                       (1.0 - (1.0 - swan_g) * wsalnd(j,:))
+               end do
+            end if
+
+         else if (include_full_brdf) then
             do j = 1, 3
                tmp_data = mcdc1%brdf_albedo_params(:,:,j,i)
 
@@ -461,7 +523,7 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
          end do
       end if
 
-      if (include_full_brdf) then
+      if (include_full_brdf .and. .not. use_swansea_climatology) then
          do i_view = 1, imager_angles%nviews
             lndcount = 1
             do i = 1, imager_geolocation%ny
@@ -510,7 +572,7 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
       deallocate(fg_mask)
       deallocate(interp)
       call deallocate_mcd43c3(mcdc3)
-      if (include_full_brdf) then
+      if (include_full_brdf .and. .not. use_swansea_climatology) then
          deallocate(solza)
          deallocate(satza)
          deallocate(solaz)
@@ -596,9 +658,6 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
             ocean_colour(i,1)%totbsc = totalbsc(ii)
          end do
       end if
-
-      ! Bands that are available.
-      coxbands = (/ 1, 2, 3, 4, 5, 6, 7, 8, 9 /)
 
       ! Process views separately
       do i_view = 1, imager_angles%nviews

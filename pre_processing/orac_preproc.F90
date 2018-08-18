@@ -412,6 +412,8 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
    logical                          :: do_spectral_response_correction
    logical                          :: use_camel_emis
    logical                          :: do_gsics
+   logical                          :: use_swansea_climatology
+   real                             :: swansea_gamma
 
    logical                          :: check
    integer                          :: nargs
@@ -533,6 +535,8 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
    do_spectral_response_correction = .false.
    use_camel_emis                  = .false.
    do_gsics                        = .true.
+   use_swansea_climatology         = .false.
+   swansea_gamma                   = 0.3
 
    ! Initialise satellite position string
    global_atts%Satpos_Metadata = 'null'
@@ -602,7 +606,8 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
             use_l1_land_mask, use_occci, occci_path, use_predef_lsm, &
             ext_lsm_path, use_predef_geo, predef_geo_file, &
             disable_snow_ice_corr, do_cloud_emis, do_ironly, do_cloud_type, &
-            product_name, use_camel_emis, do_gsics)
+            product_name, use_camel_emis, do_gsics, use_swansea_climatology, &
+            swansea_gamma)
       end do
    else
 
@@ -675,7 +680,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
            use_l1_land_mask, use_occci, occci_path, use_predef_lsm, &
            ext_lsm_path,use_predef_geo, predef_geo_file, disable_snow_ice_corr, &
            do_cloud_emis, do_ironly, do_cloud_type, product_name, &
-           use_camel_emis, do_gsics)
+           use_camel_emis, do_gsics, use_swansea_climatology, swansea_gamma)
       end do
 
       close(11)
@@ -1151,7 +1156,8 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
          call get_surface_reflectance(cyear, cdoy, cmonth, &
               modis_albedo_path, modis_brdf_path, occci_path, imager_flags, &
               imager_geolocation, imager_angles, channel_info, ecmwf, &
-              assume_full_paths, include_full_brdf, use_occci, verbose, &
+              assume_full_paths, include_full_brdf, use_occci, &
+              use_swansea_climatology, swansea_gamma, verbose, &
               surface, source_atts)
 
          ! Use the Near-real-time Ice and Snow Extent (NISE) data from the National

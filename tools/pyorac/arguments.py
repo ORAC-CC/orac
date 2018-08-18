@@ -101,6 +101,8 @@ def args_preproc(parser):
                      help = 'Skip the Pavolonis cloud typing.')
     key.add_argument('--camel_emis', action='store_true',
                      help = 'Use the CAMEL emissivity library instead of RTTOV.')
+    key.add_argument('--swansea', action='store_true',
+                     help = 'Use the Swansea climatology instead of MODIS BRDF.')
 
     att = parser.add_argument_group('Global attribute values')
     att.add_argument('-g', '--global_att', type=str, nargs=2, action='append',

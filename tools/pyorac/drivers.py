@@ -33,11 +33,16 @@ def build_preproc_driver(args):
             raise FileMissing('NISE', nise)
 
     # Select previous surface reflectance and emissivity files
-    alb = _date_back_search(args.mcd43c3_dir, args.File.time,
-                            'MCD43C3.A%Y%j.*.hdf')
-    brdf = None if args.lambertian else _date_back_search(
-        args.mcd43c1_dir, args.File.time, 'MCD43C1.A%Y%j.*.hdf'
-    )
+    if args.swansea:
+        alb = _date_back_search(args.swansea_dir, args.File.time,
+                                'SW_SFC_PRMS_%m.nc')
+        brdf = None
+    else:
+        alb = _date_back_search(args.mcd43c3_dir, args.File.time,
+                                'MCD43C3.A%Y%j.*.hdf')
+        brdf = None if args.lambertian else _date_back_search(
+            args.mcd43c1_dir, args.File.time, 'MCD43C1.A%Y%j.*.hdf'
+        )
     emis = None if args.use_modis_emis else _date_back_search(
         args.emis_dir, args.File.time,
         'global_emis_inf10_monthFilled_MYD11C3.A%Y%j.041.nc'
@@ -235,7 +240,8 @@ DISABLE_SNOW_ICE_CORR={no_snow}
 DO_CLOUD_EMIS={cld_emis}
 DO_IRONLY={ir_only}
 DO_CLDTYPE={cldtype}
-USE_CAMEL_EMIS={camel}""".format(
+USE_CAMEL_EMIS={camel}
+USE_SWANSEA_CLIMATOLOGY={swansea}""".format(
         alb               = alb,
         assume_full_paths = True, # Above file searching returns paths nor dirs
         atlas             = args.atlas_dir,
@@ -288,6 +294,7 @@ USE_CAMEL_EMIS={camel}""".format(
         sensor            = args.File.sensor,
         spam              = spam,
         summary           = args.summary,
+        swansea           = args.swansea,
         git_version       = git_version,
         uuid              = uid,
         use_ecmwf_hr      = not args.skip_ecmwf_hr,

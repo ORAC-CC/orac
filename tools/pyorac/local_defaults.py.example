@@ -1,6 +1,7 @@
 # Definitions of default values/paths for your local system
 
 # ===== PATHS =====
+stack_size = 250000
 
 # Location of source code trunk from ORAC repository
 orac_dir  = '/home/username/orac/orac'
@@ -50,6 +51,8 @@ auxiliaries = {
     # Pre-defined geometry for geostationary imager
     'prelsm_file' : '/usr/lib/orac/data/GEO_FILES/MSG_000E_LSM.nc',
     'pregeo_file' : '/usr/lib/orac/data/GEO_FILES/MSG_000E_ANGLES.nc',
+    # Climatology of Swansea s and p parameters
+    'swansea_dir' : '/usr/lib/swansea_cb',
 }
 
 

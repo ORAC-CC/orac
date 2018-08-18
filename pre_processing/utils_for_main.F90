@@ -69,7 +69,8 @@ subroutine parse_optional(label, value, n_channels, channel_ids, &
                           use_occci, occci_path, use_predef_lsm, ext_lsm_path, &
                           use_predef_geo, ext_geo_path, disable_snow_and_ice_corr,&
                           do_cloud_emis, do_ironly, do_cloud_type, product_name,&
-                          camel_emis, do_gsics)
+                          camel_emis, do_gsics, use_swansea_climatology, &
+                          swansea_gamma)
 
    use parsing_m
    use preproc_constants_m
@@ -104,6 +105,8 @@ subroutine parse_optional(label, value, n_channels, channel_ids, &
    character(len=*), intent(inout) :: product_name
    logical,          intent(inout) :: camel_emis
    logical,          intent(inout) :: do_gsics
+   logical,          intent(inout) :: use_swansea_climatology
+   real,             intent(inout) :: swansea_gamma
 
    select case (label)
    case('N_CHANNELS')
@@ -181,13 +184,19 @@ subroutine parse_optional(label, value, n_channels, channel_ids, &
       if (parse_string(value, do_cloud_type) /= 0) &
            call handle_parse_error(label)
    case('PRODUCT_NAME')
-      if (parse_string(value, product_name) /=0) &
+      if (parse_string(value, product_name) /= 0) &
            call handle_parse_error(label)
    case('USE_CAMEL_EMIS')
-      if (parse_string(value, camel_emis) /=0) &
+      if (parse_string(value, camel_emis) /= 0) &
            call handle_parse_error(label)
    case('USE_GSICS')
-      if (parse_string(value, do_gsics) /=0) &
+      if (parse_string(value, do_gsics) /= 0) &
+           call handle_parse_error(label)
+   case('USE_SWANSEA_CLIMATOLOGY')
+      if (parse_string(value, use_swansea_climatology) /= 0) &
+           call handle_parse_error(label)
+   case('SWANSEA_GAMMA')
+      if (parse_string(value, swansea_gamma) /= 0) &
            call handle_parse_error(label)
    case default
       write(*,*) 'ERROR: Unknown option: ', trim(label)
