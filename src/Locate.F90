@@ -35,6 +35,10 @@ function locate(a,x) result(low)
    integer :: n, low, mid, up
 
    n = size(a)
+   if (n .eq. 0) then
+      low = 0
+      return
+   end if
 
    ascending = a(1) .le. a(n)
 
