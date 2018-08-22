@@ -20,9 +20,6 @@
 !    ss: Segment number (00 -> 10)
 !
 ! Example: HS_H08_20150801_0300_B01_FLDK_R10_S0910.DAT
-! In the future other satellites will be launched. Then H08 will become H09,
-! etc. This isn't currently supported. Not a big issue, though, as calibration
-! info is contained in the files. Nothing external is needed in terms of calib.
 !
 ! Reading Himawari data requires the external HSD_Reader library.
 ! It can be downloaded from:
