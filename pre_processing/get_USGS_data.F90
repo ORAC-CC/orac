@@ -25,7 +25,7 @@
 
 subroutine get_USGS_data(path_to_USGS_file, imager_flags, imager_geolocation, &
      usgs, assume_full_paths, use_l1_land_mask, source_atts, use_predef_lsm, &
-     startx,endx,starty,endy, verbose)
+     sensor,verbose)
 
    use constants_cloud_typing_pavolonis_m
    use imager_structures_m
@@ -44,16 +44,12 @@ subroutine get_USGS_data(path_to_USGS_file, imager_flags, imager_geolocation, &
    logical,                     intent(in)    :: verbose
    type(usgs_t),                intent(out)   :: usgs
    logical,                     intent(in)    :: use_predef_lsm
-   integer,                     intent(in)    :: startx
-   integer,                     intent(in)    :: endx
-   integer,                     intent(in)    :: starty
-   integer,                     intent(in)    :: endy
+   character(len=sensor_length),intent(in)    :: sensor
 
    logical                          :: USGS_file_exist
    character(len=7)                 :: USGS_file_read
    integer(kind=4)                  :: i,j
    integer(kind=sint), dimension(2) :: nearest_xy
-
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering get_USGS_data()'
 
    ! Check that the defined file exists and is readable
@@ -73,14 +69,30 @@ subroutine get_USGS_data(path_to_USGS_file, imager_flags, imager_geolocation, &
 
    ! Check if we're using the default USGS file or something else
    if (use_predef_lsm) then
-      ! Read the data themselves
-      if (read_predef_file(path_to_USGS_file, usgs, verbose) .ne. 0) then
-         write(*,*) 'ERROR: read_USGS_file(), problem reading USGS file: ', &
-              trim(path_to_USGS_file)
-         stop error_stop_code
-      end if
-      imager_geolocation%dem = usgs%dem(startx:endx,starty:endy)
-      imager_flags%lusflag   = usgs%lus(startx:endx,starty:endy)
+      ! Read the data themselves, sensor dependent as SEV has a different scan geometry
+      if (index(sensor, "SEVIRI") .gt. 0) then
+		   if (read_predef_file_sev(path_to_USGS_file, usgs, verbose) .ne. 0) then
+		      write(*,*) 'ERROR: read_USGS_file(), problem reading USGS file: ', &
+		           trim(path_to_USGS_file)
+		      stop error_stop_code
+		   end if
+		   imager_geolocation%dem = usgs%dem(imager_geolocation%startx:imager_geolocation%endx,&
+		   											 imager_geolocation%starty:imager_geolocation%endy)
+		   imager_flags%lusflag   = usgs%lus(imager_geolocation%startx:imager_geolocation%endx,&
+		   											 imager_geolocation%starty:imager_geolocation%endy)
+      elseif (index(sensor, "AHI") .gt. 0) then
+		   if (read_predef_file_ahi(path_to_USGS_file, usgs, imager_geolocation,verbose) .ne. 0) then
+		      write(*,*) 'ERROR: read_predef_file(), problem reading predefined grid file: ', &
+		           trim(path_to_USGS_file)
+		      stop error_stop_code
+		   end if
+		   imager_geolocation%dem = usgs%dem(:,:)
+		   imager_flags%lusflag   = usgs%lus(:,:)
+		else
+			write(*,*)"ERROR: get_USGS_data(), predefined grid only supported for SEVIRI and AHI!"
+			stop
+		endif
+
    else
       ! Read the data themselves
       if (read_USGS_file(path_to_USGS_file, usgs, verbose) .ne. 0) then

@@ -91,7 +91,86 @@ function read_USGS_file(path_to_USGS_file, usgs, verbose) result (stat)
 
 end function read_USGS_file
 
-function read_predef_file(path_to_file, usgs, verbose) result (stat)
+! This function reads the AHI predefined DEM, LS and LUM
+function read_predef_file_ahi(path_to_file, usgs, imager_geolocation, verbose) result (stat)
+
+   use orac_ncdf_m
+   use imager_structures_m
+
+   implicit none
+
+   ! Input variables
+   character(len=path_length), intent(in) :: path_to_file
+   type(imager_geolocation_t), intent(in) :: imager_geolocation
+   logical,                    intent(in) :: verbose
+
+   ! Output variables
+   type(USGS_t), intent(out) :: usgs
+   integer(kind=sint)        :: stat
+
+   ! Local variables
+   integer :: fid, vid
+   integer :: nDim, nVar, nAtt, uDimID, ForNM
+	integer,dimension(2)		::	start,countval
+	integer :: startx,starty,nx,ny,line0,line1,column0,column1
+	integer :: x_min,y_min,x_max,y_max,x_size,y_size
+
+   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_predef_file()'
+
+   call nc_open(fid, path_to_file)
+   ! Extract information about the file
+   stat = nf90_inquire(fid, nDim, nVar, nAtt, uDimID, ForNM)
+
+   startx = imager_geolocation%startx
+   nx     = imager_geolocation%nx
+   starty = imager_geolocation%starty
+   ny     = imager_geolocation%ny
+
+
+   line0   = startx - 1
+   line1   = startx - 1 + ny - 1
+   column0 = starty - 1
+   column1 = starty - 1 + nx - 1
+
+   y_min = line0 + 1
+   y_max = line1 + 1
+   y_size = line1-line0 +1
+
+   x_min = column0 + 1
+   x_max = column1 + 1
+   x_size = column1-column0 +1
+
+
+	start(1)	=	x_min
+	start(2)	=	y_min
+
+	countval(1)	=	x_max - x_min + 1
+	countval(2)	=	y_max - y_min + 1
+
+	print*,start
+	print*,countval
+
+   ! Read data for each variable
+   allocate(usgs%dem(countval(1), countval(2)))
+   allocate(usgs%lus(countval(1), countval(2)))
+   allocate(usgs%lsm(countval(1), countval(2)))
+
+	stat =  nf90_inq_varid(fid, "Elevation_Mask", vid)
+	stat =  nf90_get_var(fid, vid, usgs%dem, start = start, count = countval)
+	stat =  nf90_inq_varid(fid, "Land_Use_Mask", vid)
+	stat =  nf90_get_var(fid, vid, usgs%lus, start = start, count = countval)
+	stat =  nf90_inq_varid(fid, "Land_Sea_Mask", vid)
+	stat =  nf90_get_var(fid, vid, usgs%lsm, start = start, count = countval)
+
+   ! We are now finished with the main data file
+   stat = nf90_close(fid)
+
+   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_predef_file()'
+
+end function read_predef_file_ahi
+
+! This function reads the SEVIRI predefined DEM, LS and LUM
+function read_predef_file_sev(path_to_file, usgs, verbose) result (stat)
 
    use orac_ncdf_m
 
@@ -137,7 +216,7 @@ function read_predef_file(path_to_file, usgs, verbose) result (stat)
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_predef_file()'
 
-end function read_predef_file
+end function read_predef_file_sev
 
 !-----------------------------------------------------------------------------
 function nearest_USGS(imager_lat, imager_lon, usgs) &

@@ -1132,10 +1132,11 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
 
       ! read USGS physiography file, including land use and DEM data
       ! NOTE: variable imager_flags%lsflag is overwritten by USGS data !!!
+
       if (verbose) write(*,*) 'Reading USGS path: ',trim(usgs_path_file)
       call get_USGS_data(usgs_path_file, imager_flags, imager_geolocation, &
            usgs, assume_full_paths, use_l1_land_mask, source_atts, &
-           use_predef_lsm, startx,endx,starty,endy, verbose)
+           use_predef_lsm, sensor, verbose)
 
       ! select correct emissivity file and calculate the emissivity over land
       if (verbose) write(*,*) 'Get surface emissivity'
