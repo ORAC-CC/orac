@@ -186,11 +186,17 @@ class Mappable(object):
             colour[colour < 0.] = np.ma.masked
             colour[colour > 1.] = np.ma.masked
         else:
-            colour[colour < 0.] = 0.
-            colour[colour > 1.] = 1.
+            try:
+                colour[(colour < 0.).filled(False)] = 0.
+                colour[(colour > 1.).filled(False)] = 1.
+            except KeyError:
+                colour[colour < 0.] = 0.
+                colour[colour > 1.] = 1.
 
         # Collapsing the color dimension deals with all of their masks
         masked, sl_orig = self._plot_init(ax, colour.sum(axis=0), kwargs)
+        if masked.mask.all():
+            raise ValueError("No data to plot.")
         # Apply mask as the alpha dimension
         colour[3,...] = np.where(masked.mask, 0, 1)
         kwargs["color"] = colour.reshape((4, masked.size)).T
