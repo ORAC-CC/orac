@@ -418,6 +418,13 @@ module ORAC_constants_m
    integer, parameter :: SecondaryFileWriteErr      = 1405
    integer, parameter :: PrimaryFileCloseErr        = 1406
    integer, parameter :: SecondaryFileCloseErr      = 1407
+   integer, parameter :: InvMarquardtSxErr          = 2000
+   integer, parameter :: InvMarquardtFMX0Err        = 2001
+   integer, parameter :: InvMarquardtSyX0Err        = 2002
+   integer, parameter :: InvMarquardtDJErr          = 2003
+   integer, parameter :: InvMarquardtFMErr          = 2004
+   integer, parameter :: InvMarquardtSyErr          = 2005
+   integer, parameter :: InvMarquardtD2JErr         = 2006
 
    ! NetCDF deflate level
    integer, parameter :: deflate_level = 0

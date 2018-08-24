@@ -307,6 +307,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
 #ifdef DEBUG
       write(*, *) 'ERROR: Invert_Marquardt(): Error in Invert_Cholesky'
 #endif
+      stat = InvMarquardtSxErr
       go to 99 ! Terminate processing this pixel
    end if
 
@@ -319,7 +320,10 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
    ! Evaluate forward model for the first guess and initialise the various
    ! arrays. X should be unscaled when passed into FM.
    call FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, SPixel%X0, Y, dY_dX, stat)
-   if (stat /= 0) go to 99 ! Terminate processing this pixel
+   if (stat /= 0) then
+      stat = InvMarquardtFMX0Err
+      go to 99 ! Terminate processing this pixel
+   end if
 
    ! Store measurement first guess
    Diag%Y0(1:SPixel%Ind%Ny) = Y
@@ -332,7 +336,10 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
 
    ! Calculate SyInv and SxInv
    call Invert_Cholesky(Sy, SyInv, SPixel%Ind%Ny, stat)
-   if (stat /= 0) go to 99 ! Terminate processing this pixel
+   if (stat /= 0) then
+      stat = InvMarquardtSyX0Err
+      go to 99 ! Terminate processing this pixel
+   end if
 
    ! Xdiff, the difference between the current state vector X and
    ! the a priori state vector SPixel%Xb for the active state variables.
@@ -389,6 +396,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
 #ifdef DEBUG
          write(*, *) 'ERROR: Invert_Marquardt(): Error in Solve_Cholesky'
 #endif
+         stat = InvMarquardtDJErr
          go to 99 ! Terminate processing this pixel
       end if
       ! De-scale delta_X so that the X passed to FM can be kept un-scaled
@@ -407,7 +415,10 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
 
       ! ************ START EVALUATE FORWARD MODEL ************
       call FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Xplus_dX, Y, dY_dX, stat)
-      if (stat /= 0) go to 99 ! Terminate processing this pixel
+      if (stat /= 0) then
+         stat = InvMarquardtFMErr
+         go to 99 ! Terminate processing this pixel
+      end if
 
       ! Set new Kx, Kj, Sy and SyInv
       call Set_Kx(Ctrl, SPixel, dY_dX, Kx, Kj)
@@ -417,6 +428,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
 #ifdef DEBUG
          write(*, *) 'ERROR: Invert_Marquardt(): Error in Invert_Cholesky'
 #endif
+         stat = InvMarquardtSyErr
          go to 99 ! Terminate processing this pixel
       end if
 
@@ -504,6 +516,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
 #ifdef DEBUG
       write(*, *) 'ERROR: Invert_Marquardt(): Error in Invert_Cholesky'
 #endif
+      stat = InvMarquardtD2JErr
       go to 99 ! Terminate processing this pixel
    end if
 
