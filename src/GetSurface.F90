@@ -576,9 +576,13 @@ subroutine Get_Surface_Swansea(Ctrl, SPixel, SAD_LUT, MSI_Data)
          ! Use constant values for s and its uncertainty
          Sw_s = Ctrl%RS%b(i_csol, i_surf)
 
-         ! Consistent with the routine above, Sb is a fractional uncertainty
-         tmp = Ctrl%RS%b(i_csol, i_surf) * Ctrl%RS%Sb(i_csol, i_surf)
-         Sw_s_var = tmp * tmp
+         Sw_s_var = Ctrl%Sx(ISS(i_csol))
+
+         if (Ctrl%RS%add_fractional) then
+            ! Consistent with the routine above, Sb is a fractional uncertainty
+            tmp = Ctrl%RS%b(i_csol, i_surf) * Ctrl%RS%Sb(i_csol, i_surf)
+            Sw_s_var = Sw_s_var + tmp * tmp
+         end if
 
       case(SelmMeas)
          ! Invert nadir radiance for S parameter
