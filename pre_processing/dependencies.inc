@@ -87,7 +87,8 @@ $(OBJS)/read_viirs_Iband.o: $(OBJS)/calender.o $(OBJS)/channel_structures.o \
         $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o
 $(OBJS)/read_viirs_Mband.o: $(OBJS)/calender.o $(OBJS)/channel_structures.o \
         $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o
-$(OBJS)/read_USGS_file.o: $(OBJS)/preproc_constants.o
+$(OBJS)/read_USGS_file.o: $(OBJS)/imager_structures.o \
+        $(OBJS)/preproc_constants.o
 $(OBJS)/remove_rayleigh.o: $(OBJS)/preproc_constants.o
 $(OBJS)/ross_thick_li_sparse_r.o: $(OBJS)/gauss_leg_quad.o \
         $(OBJS)/preproc_constants.o

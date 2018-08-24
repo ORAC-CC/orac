@@ -111,9 +111,9 @@ function read_predef_file_ahi(path_to_file, usgs, imager_geolocation, verbose) r
    ! Local variables
    integer :: fid, vid
    integer :: nDim, nVar, nAtt, uDimID, ForNM
-	integer,dimension(2)		::	start,countval
-	integer :: startx,starty,nx,ny,line0,line1,column0,column1
-	integer :: x_min,y_min,x_max,y_max,x_size,y_size
+   integer,dimension(2)            ::      start,countval
+   integer :: startx,starty,nx,ny,line0,line1,column0,column1
+   integer :: x_min,y_min,x_max,y_max,x_size,y_size
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_predef_file()'
 
@@ -141,26 +141,23 @@ function read_predef_file_ahi(path_to_file, usgs, imager_geolocation, verbose) r
    x_size = column1-column0 +1
 
 
-	start(1)	=	x_min
-	start(2)	=	y_min
+   start(1)        =       x_min
+   start(2)        =       y_min
 
-	countval(1)	=	x_max - x_min + 1
-	countval(2)	=	y_max - y_min + 1
-
-	print*,start
-	print*,countval
+   countval(1)     =       x_max - x_min + 1
+   countval(2)     =       y_max - y_min + 1
 
    ! Read data for each variable
    allocate(usgs%dem(countval(1), countval(2)))
    allocate(usgs%lus(countval(1), countval(2)))
    allocate(usgs%lsm(countval(1), countval(2)))
 
-	stat =  nf90_inq_varid(fid, "Elevation_Mask", vid)
-	stat =  nf90_get_var(fid, vid, usgs%dem, start = start, count = countval)
-	stat =  nf90_inq_varid(fid, "Land_Use_Mask", vid)
-	stat =  nf90_get_var(fid, vid, usgs%lus, start = start, count = countval)
-	stat =  nf90_inq_varid(fid, "Land_Sea_Mask", vid)
-	stat =  nf90_get_var(fid, vid, usgs%lsm, start = start, count = countval)
+   stat =  nf90_inq_varid(fid, "Elevation_Mask", vid)
+   stat =  nf90_get_var(fid, vid, usgs%dem, start = start, count = countval)
+   stat =  nf90_inq_varid(fid, "Land_Use_Mask", vid)
+   stat =  nf90_get_var(fid, vid, usgs%lus, start = start, count = countval)
+   stat =  nf90_inq_varid(fid, "Land_Sea_Mask", vid)
+   stat =  nf90_get_var(fid, vid, usgs%lsm, start = start, count = countval)
 
    ! We are now finished with the main data file
    stat = nf90_close(fid)
