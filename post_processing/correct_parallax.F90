@@ -297,8 +297,8 @@ subroutine correct_parallax(primary,indexing, global_atts, verbose)
 
       end do
    end do
-	!$OMP END DO
-	!$OMP END PARALLEL
+   !$OMP END DO
+   !$OMP END PARALLEL
 
    !$OMP PARALLEL &
    !$OMP PRIVATE(i,j) &
