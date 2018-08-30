@@ -236,6 +236,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%use_ann_phase          = .true.
    Ctrl%do_new_night_retrieval = .true.
    Ctrl%do_CTX_correction      = .true.
+   Ctrl%process_cloudy_only    = .true.
+   Ctrl%process_aerosol_only   = .false.
 
 
    !----------------------------------------------------------------------------
@@ -620,16 +622,14 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%Sunset    = 90. ! Used to identify twilight conditions
 
    !----------------------- Ctrl SWITCHES -----------------
-   Ctrl%i_equation_form = switch_cls(c, Default=3, AerOx=1, AerSw=0, AerBR=1)
-   Ctrl%LUTIntSelm      = switch_app(a, Default=LUTIntMethLinear)
-   Ctrl%RTMIntSelm      = switch_app(a, Default=RTMIntMethLinear, Aer=RTMIntMethNone)
-   Ctrl%CloudType       = switch_app(a, Default=1,                Aer=2)
-   Ctrl%Max_SDAD             = 10.0
-   Ctrl%sabotage_inputs      = .false.
-   Ctrl%process_cloudy_only  = .true.
-   Ctrl%process_aerosol_only = .false.
-   Ctrl%surfaces_to_skip     = 0_byte
-   Ctrl%second_aot_ch        = 3 ! Assuming AATSR
+   Ctrl%i_equation_form  = switch_cls(c, Default=3, AerOx=1, AerSw=0, AerBR=1)
+   Ctrl%LUTIntSelm       = switch_app(a, Default=LUTIntMethLinear)
+   Ctrl%RTMIntSelm       = switch_app(a, Default=RTMIntMethLinear, Aer=RTMIntMethNone)
+   Ctrl%CloudType        = switch_app(a, Default=1,                Aer=2)
+   Ctrl%Max_SDAD         = 10.0
+   Ctrl%sabotage_inputs  = .false.
+   Ctrl%surfaces_to_skip = 0_byte
+   Ctrl%second_aot_ch    = 3 ! Assuming AATSR
 
    ! Set cloud types to process depending on requested LUT
    Ctrl%Types_to_process = byte_fill_value

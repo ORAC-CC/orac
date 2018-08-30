@@ -57,12 +57,12 @@ module imager_structures_m
 
    end type imager_geolocation_t
 
-	! IMPORTANT NOTE
-	! The code expects relative azimuth = 0 when sun and sensor are on
-	! OPPOSITE sides of the pixel. It expects relative azimuth = 180
-	! when sun and sensor are on the SAME side of the pixel.
-	! THIS IS NOT THE STANDARD DEFINITION, BEWARE WHEN ADDING NEW SENSORS
-	! /IMPORTANT NOTE
+   ! IMPORTANT NOTE
+   ! The code expects relative azimuth = 0 when sun and sensor are on OPPOSITE
+   ! sides of the pixel. It expects relative azimuth = 180 when sun and sensor
+   ! are on the SAME side of the pixel.
+   ! THIS IS NOT THE STANDARD DEFINITION, BEWARE WHEN ADDING NEW SENSORS
+   ! /IMPORTANT NOTE
 
    type imager_angles_t
 

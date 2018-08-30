@@ -1,8 +1,8 @@
 !*******************************************************************************
 !
-! Copyright (C) 2000-2017, RAL Space, Science and Technology Facilities Council
-! Copyright (C) 2000-2017, University of Oxford
-! Copyright (C) 2011-2017, Deutscher Wetterdienst
+! Copyright (C) 2000-2018, RAL Space, Science and Technology Facilities Council
+! Copyright (C) 2000-2018, University of Oxford
+! Copyright (C) 2011-2018, Deutscher Wetterdienst
 !
 ! This file is part of the Optimal Retrieval of Aerosol and Cloud (ORAC).
 !

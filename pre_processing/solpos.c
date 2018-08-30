@@ -140,37 +140,36 @@ struct trigdata /* used to pass calculated values locally */
 
 int get_sza_saa(int year,int month,int day,int hour,int minute,float lat,float lon,float *sza,float *saa)
 {
+    struct posdata pd, *pdat;
+    int result;
 
-	struct posdata pd, *pdat;
-	int result;
-	pdat = &pd;
-	S_init (pdat);
-	pdat->temp      =	30.0;
-	pdat->press     =	1024.0;
-	pdat->tilt      =	20;
-	pdat->aspect    =	135.0;
-	pdat->timezone  =	0.0;
-	pdat->function  =	(~S_DOY);
+    pdat            = &pd;
+    S_init (pdat);
+    pdat->temp      = 30.0;
+    pdat->press     = 1024.0;
+    pdat->tilt      = 20;
+    pdat->aspect    = 135.0;
+    pdat->timezone  = 0.0;
+    pdat->function  = (~S_DOY);
 
-	pdat->day		=	day;
-	pdat->year	=	year;
-	pdat->month	=	month;
-	pdat->hour	=	hour;
-	pdat->minute	=	minute;
-	pdat->second	=	0;
-	dom2doy(pdat);
+    pdat->day       = day;
+    pdat->year      = year;
+    pdat->month     = month;
+    pdat->hour      = hour;
+    pdat->minute    = minute;
+    pdat->second    = 0;
+    dom2doy(pdat);
 
-	pdat->latitude	=	lat;
-	pdat->longitude=	lon;
+    pdat->latitude  = lat;
+    pdat->longitude = lon;
 
+    result = S_solpos (pdat);
+    if (pdat->azim < 0) pdat->azim+=360;
 
-	result = S_solpos (pdat);
-	if (pdat->azim < 0) pdat->azim+=360;
+    *sza = (float)pdat->zenetr;
+    *saa = (float)pdat->azim;
 
-	*sza			=	(float)pdat->zenetr;
-	*saa			=	(float)pdat->azim;
-
-	return 0;
+    return 0;
 }
 
 

@@ -1517,7 +1517,7 @@ subroutine setup_viirs_mband(l1b_path_file,geo_path_file,platform,year,month,day
    if (verbose) write(*,*) 'l1b_path_file: ', trim(l1b_path_file)
    if (verbose) write(*,*) 'geo_path_file: ', trim(geo_path_file)
 
-	! Assume Suomi-NPP by default
+   ! Assume Suomi-NPP by default
    platform="SuomiNPP"
    ! check if l1b and geo file are of the same granule
    index1=index(trim(adjustl(l1b_path_file)),'npp_d',.true.)
@@ -1677,7 +1677,7 @@ subroutine setup_viirs_iband(l1b_path_file,geo_path_file,platform,year,month,day
    if (verbose) write(*,*) 'l1b_path_file: ', trim(l1b_path_file)
    if (verbose) write(*,*) 'geo_path_file: ', trim(geo_path_file)
 
-	! Assume Suomi-NPP by default
+   ! Assume Suomi-NPP by default
    platform="SuomiNPP"
    ! check if l1b and geo file are of the same granule
    index1=index(trim(adjustl(l1b_path_file)),'npp_d',.true.)
