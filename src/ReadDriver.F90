@@ -404,6 +404,9 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       else if (Ctrl%LUTClass(1:3) == 'ICE') then
          Ctrl%Approach = AppCld1L
          Ctrl%Class    = ClsCldIce
+      else if (Ctrl%LUTClass(1:3) == 'ASO') then
+         Ctrl%Approach = AppCld1L
+         Ctrl%Class    = ClsAshEyj
       else if (Ctrl%LUTClass(1:3) == 'EYJ') then
          Ctrl%Approach = AppCld1L
          Ctrl%Class    = ClsAshEyj
@@ -423,6 +426,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
          Ctrl%Class = ClsCldWat
       else if (Ctrl%Approach == AppCld1L .and. Ctrl%LUTClass(1:3) == 'ICE') then
          Ctrl%Class = ClsCldIce
+      else if (Ctrl%Approach == AppCld1L .and. Ctrl%LUTClass(1:3) == 'ASO') then
+         Ctrl%Class = ClsAshEyj
       else if (Ctrl%Approach == AppCld1L .and. Ctrl%LUTClass(1:3) == 'EYJ') then
          Ctrl%Class = ClsAshEyj
       else if (Ctrl%Approach == AppCld2L) then
