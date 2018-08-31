@@ -286,16 +286,17 @@ subroutine Get_Surface(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
          case(SelmCtrl)
             ! Uncertainty is a constant drawn from the driver file
             uncertainty(i) = Ctrl%Sx(IRs(ii,IRho_DD))
-            if (Ctrl%RS%use_full_brdf) &
-                 uncertainty2(i,:) = Ctrl%Sx(IRs(ii,:))
+            if (Ctrl%RS%use_full_brdf) then
+               uncertainty2(i,:) = Ctrl%Sx(IRs(ii,:))
+
+               ! A "temporary test" from the aerosol code
+               if (Ctrl%RS%add_fractional) additional(i,IRho_DD) = &
+                    frac_uncertainty(ii,i_surf) * frac_uncertainty(ii,i_surf) * &
+                    SPixel%Surface%Rs2(i,IRho_DD) * SPixel%Surface%Rs2(i,IRho_DD)
+            end if
 
             ! Constant correlation between channels
             correl = Ctrl%RS%Cb
-
-            ! A "temporary test" from the aerosol code
-            if (Ctrl%RS%add_fractional) additional(i,IRho_DD) = &
-                 frac_uncertainty(ii,i_surf) * frac_uncertainty(ii,i_surf) * &
-                 SPixel%Surface%Rs2(i,IRho_DD) * SPixel%Surface%Rs2(i,IRho_DD)
          case(SelmMeas)
             ! Uncertainty is a constant fraction of the reflectance
             uncertainty(i) = SPixel%Surface%Rs(i) * frac_uncertainty(ii,i_surf)
