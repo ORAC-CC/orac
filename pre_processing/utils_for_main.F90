@@ -31,6 +31,7 @@
 !                 setting is ON, meaning that GSICS coefficients will be used
 !                 instead of IMPF (as previous). The new driver file option
 !                 USE_GSICS enables this to be disabled.
+! 2018/08/30, SP: Allow variable CO2 in RTTOV, linear scaling from 2006 value
 !
 ! Bugs:
 ! None known.
@@ -69,7 +70,7 @@ subroutine parse_optional(label, value, n_channels, channel_ids, &
                           use_occci, occci_path, use_predef_lsm, ext_lsm_path, &
                           use_predef_geo, ext_geo_path, disable_snow_and_ice_corr,&
                           do_cloud_emis, do_ironly, do_cloud_type, product_name,&
-                          camel_emis, do_gsics, use_swansea_climatology, &
+                          camel_emis, do_gsics, do_co2, use_swansea_climatology, &
                           swansea_gamma)
 
    use parsing_m
@@ -105,6 +106,7 @@ subroutine parse_optional(label, value, n_channels, channel_ids, &
    character(len=*), intent(inout) :: product_name
    logical,          intent(inout) :: camel_emis
    logical,          intent(inout) :: do_gsics
+   logical,          intent(inout) :: do_co2
    logical,          intent(inout) :: use_swansea_climatology
    real,             intent(inout) :: swansea_gamma
 
@@ -191,6 +193,9 @@ subroutine parse_optional(label, value, n_channels, channel_ids, &
            call handle_parse_error(label)
    case('USE_GSICS')
       if (parse_string(value, do_gsics) /= 0) &
+           call handle_parse_error(label)
+   case('USE_CO2')
+      if (parse_string(value, do_co2) /= 0) &
            call handle_parse_error(label)
    case('USE_SWANSEA_CLIMATOLOGY')
       if (parse_string(value, use_swansea_climatology) /= 0) &

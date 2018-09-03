@@ -142,6 +142,7 @@
 ! 2017/11/15, SP: Add feature to give access to sensor azimuth angle
 ! 2017/12/12, GT: Changed Sentinel-3 platform name to Sentinel3a
 ! 2018/04/29, SP: Add cloud emissivity support for ECMWF profiles (ExtWork)
+! 2018/08/30, SP: Allow variable CO2 in RTTOV, linear scaling from 2006 value
 !
 ! Bugs:
 ! - BRDF not yet implemented here, so RTTOV internal calculation used.
@@ -156,7 +157,7 @@ contains
 
 subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
      preproc_geoloc, preproc_geo, preproc_prtm, preproc_surf, preproc_cld, netcdf_info, &
-     channel_info, year, month, day, use_modis_emis, do_cloud_emis, verbose)
+     channel_info, year, month, day, use_modis_emis, do_cloud_emis, do_co2, verbose)
 
    use channel_structures_m
    use netcdf_output_m
@@ -223,6 +224,7 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
    integer(kind=sint),             intent(in)    :: year, month, day
    logical,                        intent(in)    :: use_modis_emis
    logical,                        intent(in)    :: do_cloud_emis
+   logical,                        intent(in)    :: do_co2
    logical,                        intent(in)    :: verbose
 
    ! RTTOV in/outputs
@@ -268,6 +270,10 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
    ! View variables
    integer(kind=sint)                   :: cview
    integer,                 allocatable :: chan_pos(:)
+
+   ! CO2 calculation variables
+   real(kind=sreal)                     :: co2_val
+   real(kind=sreal)                     :: yrfrac
 
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering rttov_driver()'
@@ -485,6 +491,13 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
 
    profiles%id = 'standard'
 
+   ! Compute the appropriate CO2 value for this scene
+   ! This is taken from Martin's addition to the driver_for_bugsrad.f90 file
+   ! Note: CO2 profile is assumed constant
+   yrfrac  = year + (month / 12.0) + ((day/30.)/12.0)
+   co2_val = 380.0+(yrfrac-2006.)*1.7
+   co2_val = co2_val * 1e-6 * 44.0095 / 28.9644
+
    ! Copy preprocessing grid data into RTTOV profile structure
    ! Create a lowest layer from the surface properties
    count = 0
@@ -509,6 +522,9 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
          profiles(count)%t(:nlayers) = preproc_prtm%temperature(idim,jdim,:)
          profiles(count)%q(:nlayers) = preproc_prtm%spec_hum(idim,jdim,:)
          profiles(count)%o3(:nlayers) = preproc_prtm%ozone(idim,jdim,:)
+
+         ! Add CO2 in kg/kg for each level
+         profiles(count)%co2(:) = co2_val
 
          ! Surface information
          profiles(count)%s2m%p = exp(preproc_prtm%lnsp(idim,jdim)) * pa2hpa

@@ -412,6 +412,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
    logical                          :: do_spectral_response_correction
    logical                          :: use_camel_emis
    logical                          :: do_gsics
+   logical                          :: do_co2
    logical                          :: use_swansea_climatology
    real                             :: swansea_gamma
 
@@ -535,6 +536,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
    do_spectral_response_correction = .false.
    use_camel_emis                  = .false.
    do_gsics                        = .true.
+   do_co2								  = .true.
    use_swansea_climatology         = .false.
    swansea_gamma                   = 0.3
 
@@ -606,7 +608,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
             use_l1_land_mask, use_occci, occci_path, use_predef_lsm, &
             ext_lsm_path, use_predef_geo, predef_geo_file, &
             disable_snow_ice_corr, do_cloud_emis, do_ironly, do_cloud_type, &
-            product_name, use_camel_emis, do_gsics, use_swansea_climatology, &
+            product_name, use_camel_emis, do_gsics, do_co2, use_swansea_climatology, &
             swansea_gamma)
       end do
    else
@@ -680,7 +682,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
            use_l1_land_mask, use_occci, occci_path, use_predef_lsm, &
            ext_lsm_path,use_predef_geo, predef_geo_file, disable_snow_ice_corr, &
            do_cloud_emis, do_ironly, do_cloud_type, product_name, &
-           use_camel_emis, do_gsics, use_swansea_climatology, swansea_gamma)
+           use_camel_emis, do_gsics, do_co2, use_swansea_climatology, swansea_gamma)
       end do
 
       close(11)
@@ -1276,7 +1278,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
          call rttov_driver_gfs(rttov_coef_path,rttov_emiss_path,sensor, &
               platform, preproc_dims,preproc_geoloc,preproc_geo,preproc_prtm, &
               preproc_surf, preproc_cld,netcdf_info,channel_info,year,month, &
-              day,use_modis_emis_in_rttov,do_cloud_emis,verbose)
+              day,use_modis_emis_in_rttov,do_cloud_emis,do_co2,verbose)
          ! Call cloud emissivity function
          if (do_cloud_emis) then
             call get_cloud_emis(channel_info,imager_measurements, &
@@ -1288,7 +1290,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
          call rttov_driver(rttov_coef_path,rttov_emiss_path,sensor,platform, &
               preproc_dims,preproc_geoloc,preproc_geo,preproc_prtm, &
               preproc_surf,preproc_cld,netcdf_info,channel_info,year,month,day, &
-              use_modis_emis_in_rttov,do_cloud_emis,verbose)
+              use_modis_emis_in_rttov,do_cloud_emis,do_co2,verbose)
          ! Call cloud emissivity function
          if (do_cloud_emis) then
             call get_cloud_emis(channel_info,imager_measurements, &

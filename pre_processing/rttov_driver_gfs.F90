@@ -51,6 +51,7 @@
 ! 2017/03/30, SP: Add ability to calculate tropospheric cloud emissivity (ExtWork)
 ! 2017/04/12, SP: Allow switch to parallel RTTOV only if OPENMP is enabled.
 ! 2017/11/15, SP: Add feature to give access to sensor azimuth angle
+! 2018/08/30, SP: Allow variable CO2 in RTTOV, linear scaling from 2006 value
 !
 ! Bugs:
 ! - BRDF not yet implemented here, so RTTOV internal calculation used.
@@ -66,7 +67,7 @@ contains
 subroutine rttov_driver_gfs(coef_path, emiss_path, sensor, platform, &
      preproc_dims, preproc_geoloc, preproc_geo, preproc_prtm, preproc_surf, &
      preproc_cld, netcdf_info, channel_info, year, month, day, use_modis_emis, &
-     do_cloud_emis, verbose)
+     do_cloud_emis, do_co2, verbose)
 
    use channel_structures_m
    use netcdf_output_m
@@ -133,6 +134,7 @@ subroutine rttov_driver_gfs(coef_path, emiss_path, sensor, platform, &
    integer(kind=sint),             intent(in)    :: year, month, day
    logical,                        intent(in)    :: use_modis_emis
    logical,                        intent(in)    :: do_cloud_emis
+   logical,                        intent(in)    :: do_co2
    logical,                        intent(in)    :: verbose
 
    ! RTTOV in/outputs
@@ -178,6 +180,10 @@ subroutine rttov_driver_gfs(coef_path, emiss_path, sensor, platform, &
    ! View variables
    integer(kind=sint)                   :: cview
    integer,                 allocatable :: chan_pos(:)
+
+   ! CO2 calculation variables
+   real(kind=sreal)                     :: co2_val
+   real(kind=sreal)                     :: yrfrac
 
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering rttov_driver_gfs()'
@@ -312,6 +318,7 @@ subroutine rttov_driver_gfs(coef_path, emiss_path, sensor, platform, &
    opts % rt_all % addrefrac = .true.  ! Include refraction in path calc
    opts % rt_ir % addsolar   = .false. ! Do not include reflected solar
    opts % rt_ir % ozone_data = .true.  ! Include ozone profile
+   opts % rt_ir % co2_data   = .true.  ! Include CO2 profile
    opts % config % verbose   = .false. ! Display only fatal error messages
 
    if (verbose) write(*,*) 'Write static information to the output files'
@@ -395,6 +402,14 @@ subroutine rttov_driver_gfs(coef_path, emiss_path, sensor, platform, &
 
    profiles%id = 'standard'
 
+   ! Compute the appropriate CO2 value for this scene
+   ! This is taken from Martin's addition to the driver_for_bugsrad.f90 file
+   ! Note: CO2 profile is assumed constant
+   yrfrac  = year + (month / 12.0) + ((day/30.)/12.0)
+   co2_val = 380.0+(yrfrac-2006.)*1.7
+   co2_val = co2_val * 1e-6 * 44.0095 / 28.9644
+
+
    ! Copy preprocessing grid data into RTTOV profile structure
    ! Create a lowest layer from the surface properties
    count = 0
@@ -410,6 +425,9 @@ subroutine rttov_driver_gfs(coef_path, emiss_path, sensor, platform, &
          profiles(count)%t(:) = preproc_prtm%temperature(idim,jdim,:)
          profiles(count)%q(:) = preproc_prtm%spec_hum(idim,jdim,:)
          profiles(count)%o3(:) = preproc_prtm%ozone(idim,jdim,:)
+
+         ! Add CO2 in kg/kg for each level
+         profiles(count)%co2(:) = co2_val
 
          ! Surface information
          profiles(count)%s2m%p = exp(preproc_prtm%lnsp(idim,jdim))*pa2hpa
