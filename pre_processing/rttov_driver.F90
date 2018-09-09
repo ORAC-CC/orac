@@ -408,6 +408,11 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
    opts % rt_all % addrefrac = .true.  ! Include refraction in path calc
    opts % rt_ir % addsolar   = .false. ! Do not include reflected solar
    opts % rt_ir % ozone_data = .true.  ! Include ozone profile
+   if (do_co2) then
+		opts % rt_ir % co2_data   = .true.  ! Include CO2 profile
+	else
+		opts % rt_ir % co2_data   = .true.  ! Include CO2 profile
+	endif
    opts % config % verbose   = .false. ! Display only fatal error messages
 
    if (verbose) write(*,*) 'Write static information to the output files'
@@ -524,7 +529,7 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
          profiles(count)%o3(:nlayers) = preproc_prtm%ozone(idim,jdim,:)
 
          ! Add CO2 in kg/kg for each level
-         profiles(count)%co2(:) = co2_val
+			if (do_co2) profiles(count)%co2(:) = co2_val
 
          ! Surface information
          profiles(count)%s2m%p = exp(preproc_prtm%lnsp(idim,jdim)) * pa2hpa
