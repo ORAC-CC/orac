@@ -1159,7 +1159,7 @@ subroutine setup_seviri(l1b_path_file,geo_path_file,platform,year,month,day, &
           minute = minute - 12
       else
           minute = minute - 4
-      endif
+      end if
    end if
 
    call GREG2DOY(year, month, day, doy)
@@ -1349,19 +1349,19 @@ subroutine setup_slstr(l1b_path_file,geo_path_file,source_attributes,platform, &
       write(*,*) trim(geo_start)
       stop
    end if
-	index2	=	1
-   index2	=	index(l1b_path_file,"S3A")
+   index2 = 1
+   index2 = index(l1b_path_file,"S3A")
    if (index2 .gt. 1) then
-   	platform="Sentinel3a"
+      platform = "Sentinel3a"
    else
-   	index2	=	index(l1b_path_file,"S3B")
-		if (index2 .gt. 1) then
-			platform="Sentinel3b"
-		else
-			write(*,*)"ERROR: Platform must be S3A or S3B"
-			stop
-		endif
-	endif
+      index2 = index(l1b_path_file,"S3B")
+      if (index2 .gt. 1) then
+         platform = "Sentinel3b"
+      else
+         write(*,*)"ERROR: Platform must be S3A or S3B"
+         stop
+      end if
+   end if
 
    ! Populate the source_attributes structure with source and orbit
    ! number information

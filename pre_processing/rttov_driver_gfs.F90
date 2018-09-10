@@ -203,7 +203,7 @@ subroutine rttov_driver_gfs(coef_path, emiss_path, sensor, platform, &
    case('ABI')
       if (trim(platform) == 'GOES-16') then
          coef_file = 'rtcoef_goes_16_abi.dat'
-      elseif (trim(platform) == 'GOES-17') then
+      else if (trim(platform) == 'GOES-17') then
          coef_file = 'rtcoef_goes_17_abi.dat'
       else
          write(*,*) 'ERROR: rttov_driver(): Invalid GOES platform: ', &
@@ -213,7 +213,7 @@ subroutine rttov_driver_gfs(coef_path, emiss_path, sensor, platform, &
    case('AHI')
       if (trim(platform) == 'Himawari-8') then
          coef_file = 'rtcoef_himawari_8_ahi.dat'
-      elseif (trim(platform) == 'Himawari-9') then
+      else if (trim(platform) == 'Himawari-9') then
          coef_file = 'rtcoef_himawari_9_ahi.dat'
       else
          write(*,*) 'ERROR: rttov_driver(): Invalid HIMAWARI platform: ', &
@@ -230,7 +230,7 @@ subroutine rttov_driver_gfs(coef_path, emiss_path, sensor, platform, &
        else if (index(platform,'metop') >= 1) then
           if (platform(6:6) == "a") then
              coef_file = 'rtcoef_metop_2_avhrr.dat'
-          elseif (platform(6:6) == "b") then
+          else if (platform(6:6) == "b") then
              coef_file = 'rtcoef_metop_1_avhrr.dat'
           else
              write(*,*) 'ERROR: rttov_driver(): Invalid Metop platform: ', &
@@ -269,7 +269,7 @@ subroutine rttov_driver_gfs(coef_path, emiss_path, sensor, platform, &
    case('SLSTR')
       if (trim(platform) == 'Sentinel3a') then
          coef_file = 'rtcoef_sentinel3_1_slstr.dat'
-      elseif (trim(platform) == 'Sentinel3b') then
+      else if (trim(platform) == 'Sentinel3b') then
          coef_file = 'rtcoef_sentinel3_2_slstr.dat'
       else
          write(*,*) 'ERROR: rttov_driver(): Invalid SLSTR platform: ', &
@@ -279,7 +279,7 @@ subroutine rttov_driver_gfs(coef_path, emiss_path, sensor, platform, &
    case('VIIRSI')
       if (trim(platform) == 'SuomiNPP') then
          coef_file = 'rtcoef_jpss_0_viirs.dat'
-      elseif (trim(platform) == 'NOAA20') then
+      else if (trim(platform) == 'NOAA20') then
          coef_file = 'rtcoef_noaa_20_viirs.dat'
       else
          write(*,*) 'ERROR: rttov_driver(): Invalid VIIRS platform: ', &
@@ -289,7 +289,7 @@ subroutine rttov_driver_gfs(coef_path, emiss_path, sensor, platform, &
    case('VIIRSM')
       if (trim(platform) == 'SuomiNPP') then
          coef_file = 'rtcoef_jpss_0_viirs.dat'
-      elseif (trim(platform) == 'NOAA20') then
+      else if (trim(platform) == 'NOAA20') then
          coef_file = 'rtcoef_noaa_20_viirs.dat'
       else
          write(*,*) 'ERROR: rttov_driver(): Invalid VIIRS platform: ', &
@@ -319,10 +319,10 @@ subroutine rttov_driver_gfs(coef_path, emiss_path, sensor, platform, &
    opts % rt_ir % addsolar   = .false. ! Do not include reflected solar
    opts % rt_ir % ozone_data = .true.  ! Include ozone profile
    if (do_co2) then
-		opts % rt_ir % co2_data   = .true.  ! Include CO2 profile
-	else
-		opts % rt_ir % co2_data   = .true.  ! Include CO2 profile
-	endif
+      opts % rt_ir % co2_data   = .true.  ! Include CO2 profile
+   else
+      opts % rt_ir % co2_data   = .true.  ! Include CO2 profile
+   end if
    opts % config % verbose   = .false. ! Display only fatal error messages
 
    if (verbose) write(*,*) 'Write static information to the output files'
@@ -431,7 +431,7 @@ subroutine rttov_driver_gfs(coef_path, emiss_path, sensor, platform, &
          profiles(count)%o3(:) = preproc_prtm%ozone(idim,jdim,:)
 
          ! Add CO2 in kg/kg for each level
-			if (do_co2) profiles(count)%co2(:) = co2_val
+         if (do_co2) profiles(count)%co2(:) = co2_val
 
          ! Surface information
          profiles(count)%s2m%p = exp(preproc_prtm%lnsp(idim,jdim))*pa2hpa
@@ -464,7 +464,7 @@ subroutine rttov_driver_gfs(coef_path, emiss_path, sensor, platform, &
          ! Use poor man's approach to snow fraction
          if (preproc_prtm%snow_depth(idim,jdim) > 0.05) then
             profiles(count)%skin%snow_fraction = 1.
-         elseif (preproc_prtm%snow_depth(idim,jdim) > 0.00) then
+         else if (preproc_prtm%snow_depth(idim,jdim) > 0.00) then
             profiles(count)%skin%snow_fraction = &
                  preproc_prtm%snow_depth(idim,jdim) / 0.05
          else

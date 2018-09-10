@@ -359,7 +359,7 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
    case('SLSTR')
       if (trim(platform) == 'Sentinel3a') then
          coef_file = 'rtcoef_sentinel3_1_slstr.dat'
-      elseif (trim(platform) == 'Sentinel3b') then
+      else if (trim(platform) == 'Sentinel3b') then
          coef_file = 'rtcoef_sentinel3_2_slstr.dat'
       else
          write(*,*) 'ERROR: rttov_driver(): Invalid SLSTR platform: ', &
@@ -369,7 +369,7 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
    case('VIIRSI')
       if (trim(platform) == 'SuomiNPP') then
          coef_file = 'rtcoef_jpss_0_viirs.dat'
-      elseif (trim(platform) == 'NOAA20') then
+      else if (trim(platform) == 'NOAA20') then
          coef_file = 'rtcoef_noaa_20_viirs.dat'
       else
          write(*,*) 'ERROR: rttov_driver(): Invalid VIIRS platform: ', &
@@ -379,7 +379,7 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
    case('VIIRSM')
       if (trim(platform) == 'SuomiNPP') then
          coef_file = 'rtcoef_jpss_0_viirs.dat'
-      elseif (trim(platform) == 'NOAA20') then
+      else if (trim(platform) == 'NOAA20') then
          coef_file = 'rtcoef_noaa_20_viirs.dat'
       else
          write(*,*) 'ERROR: rttov_driver(): Invalid VIIRS platform: ', &
@@ -409,10 +409,10 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
    opts % rt_ir % addsolar   = .false. ! Do not include reflected solar
    opts % rt_ir % ozone_data = .true.  ! Include ozone profile
    if (do_co2) then
-		opts % rt_ir % co2_data   = .true.  ! Include CO2 profile
-	else
-		opts % rt_ir % co2_data   = .true.  ! Include CO2 profile
-	endif
+      opts % rt_ir % co2_data   = .true.  ! Include CO2 profile
+   else
+      opts % rt_ir % co2_data   = .true.  ! Include CO2 profile
+   end if
    opts % config % verbose   = .false. ! Display only fatal error messages
 
    if (verbose) write(*,*) 'Write static information to the output files'
@@ -529,7 +529,7 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
          profiles(count)%o3(:nlayers) = preproc_prtm%ozone(idim,jdim,:)
 
          ! Add CO2 in kg/kg for each level
-			if (do_co2) profiles(count)%co2(:) = co2_val
+         if (do_co2) profiles(count)%co2(:) = co2_val
 
          ! Surface information
          profiles(count)%s2m%p = exp(preproc_prtm%lnsp(idim,jdim)) * pa2hpa

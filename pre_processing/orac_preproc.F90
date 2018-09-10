@@ -536,7 +536,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
    do_spectral_response_correction = .false.
    use_camel_emis                  = .false.
    do_gsics                        = .true.
-   do_co2								  = .true.
+   do_co2                          = .true.
    use_swansea_climatology         = .false.
    swansea_gamma                   = 0.3
 
