@@ -10,7 +10,7 @@ from pyorac.definitions import OracError, OracWarning, FileMissing
 def build_preproc_driver(args):
     """Prepare a driver file for the preprocessor."""
     from pyorac.definitions import FileName, BadValue
-    from pyorac.util import read_orac_libraries
+    from pyorac.util import build_orac_library_path, read_orac_libraries
     from re import search
     from subprocess import check_output, STDOUT
     from uuid import uuid4
@@ -112,6 +112,7 @@ def build_preproc_driver(args):
     libs = read_orac_libraries(args.orac_lib)
     os.environ["PATH"] = os.path.join(libs["NCDFLIB"][:-4], 'bin:') + \
                          os.environ["PATH"]
+    os.environ["LD_LIBRARY_PATH"] = build_orac_library_path()
 
     # Determine current time
     production_time = datetime.now().strftime("%Y%m%d%H%M%S")
