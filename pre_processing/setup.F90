@@ -1109,7 +1109,8 @@ subroutine setup_seviri(l1b_path_file,geo_path_file,platform,year,month,day, &
    index1=index(trim(adjustl(l1b_path_file)),'.h5')
 
    if (index1 .ne. 0) then
-      index2=index(trim(adjustl(l1b_path_file)),'_')
+      index2 = index(trim(adjustl(l1b_path_file)), "/", back=.true.)
+      index2 = index2 + index(trim(adjustl(l1b_path_file(index2 + 1:))), '_')
       call determine_seviri_platform_from_metoffice(l1b_path_file, platform)
    else
       ! Check if file is HRIT or NAT.
@@ -1127,10 +1128,10 @@ subroutine setup_seviri(l1b_path_file,geo_path_file,platform,year,month,day, &
          index2=index(trim(adjustl(l1b_path_file)),'__-')
          platform=l1b_path_file(index2+3:index2+6)
       end if
-      index2 = index2 + index(trim(adjustl(l1b_path_file(index2 + 1:))),'-')
-      index2 = index2 + index(trim(adjustl(l1b_path_file(index2 + 1:))),'-')
-      index2 = index2 + index(trim(adjustl(l1b_path_file(index2 + 1:))),'-')
-      index2 = index2 + index(trim(adjustl(l1b_path_file(index2 + 1:))),'-')
+      index2 = index2 + index(trim(adjustl(l1b_path_file(index2 + 1:))), '-')
+      index2 = index2 + index(trim(adjustl(l1b_path_file(index2 + 1:))), '-')
+      index2 = index2 + index(trim(adjustl(l1b_path_file(index2 + 1:))), '-')
+      index2 = index2 + index(trim(adjustl(l1b_path_file(index2 + 1:))), '-')
    end if
 
    ! get year, doy, hour and minute as strings
