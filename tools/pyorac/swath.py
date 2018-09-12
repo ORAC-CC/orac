@@ -463,8 +463,11 @@ class Swath(Mappable):
         self._cldflag[opening_test(self.ang, kernel, 500/255)] += CLDFLAG["openang"]
 
         # Ice/snow filter
-        snow = (self.rs[0,...] - self.rs[3,...]) >= 0.07
-        self._cldflag[snow] += CLDFLAG["snow"]
+        try:
+            snow = (self.rs[0,...] - self.rs[3,...]) >= 0.07
+            self._cldflag[snow] += CLDFLAG["snow"]
+        except IndexError:
+            pass
 
     @property
     def qcflag(self):
