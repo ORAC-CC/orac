@@ -661,7 +661,8 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
    end if
 
    ! Evaluate AOD at 870 nm
-   if (Ctrl%Approach == AppAerOx .or. Ctrl%Approach == AppAerSw) then
+   if (Ctrl%Approach == AppAerOx .or. Ctrl%Approach == AppAerSw .or. &
+       Ctrl%Approach == AppAerO1) then
       call Int_LUT_Re(SAD_LUT(1)%BextRat, 1, SAD_LUT(1)%Grid, GZero, Ctrl, &
            BextRat, d_BextRat, stat)
       if (stat /= 0) go to 99

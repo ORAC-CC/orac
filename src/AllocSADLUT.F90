@@ -128,7 +128,7 @@ subroutine Alloc_SAD_LUT(Ctrl, SAD_LUT)
    end if
 
    if (Ctrl%Approach == AppAerOx .or. Ctrl%Approach == AppAerSw .or. &
-   Ctrl%Approach == AppAerO1 ) then
+       Ctrl%Approach == AppAerO1) then
       allocate(SAD_LUT%BextRat(Ctrl%Ind%Ny, SAD_LUT%Grid%NMaxRe))
    end if
 
