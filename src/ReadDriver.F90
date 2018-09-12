@@ -489,7 +489,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%RS%Cb             = switch_app(a, Default=0.2,      AerOx=0.4, &
                                        AerSw=0.4, AerO1=0.98)
    Ctrl%RS%add_fractional = switch_app(a, Default=.false.,  AerOx=.true.)
-   Ctrl%RS%diagonal_SRs   = switch_app(a, Default=.false.,  AerOx=.true.)
+   Ctrl%RS%diagonal_SRs   = switch_app(a, Default=.false.,  AerOx=.true., &
+                                       AerO1=.false.)
 
    ! Select assumed surface reflectance based on wavelength
    Ctrl%RS%allow_a_default_surface = .true.
