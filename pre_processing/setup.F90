@@ -344,7 +344,7 @@ subroutine setup_abi(l1b_path_file,geo_path_file,platform,year,month,day, &
    integer, parameter :: channel_ids_default(6) = (/ 2, 3, 5, 7, 14, 15 /)
 
 
-   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering setup_goes()'
+   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering setup_abi()'
 
    if (verbose) write(*,*) 'l1b_path_file: ', trim(l1b_path_file)
    if (verbose) write(*,*) 'geo_path_file: ', trim(geo_path_file)
@@ -406,7 +406,7 @@ subroutine setup_abi(l1b_path_file,geo_path_file,platform,year,month,day, &
       all_channel_numerical_uncertainty, all_channel_lnd_uncertainty, &
       all_channel_sea_uncertainty, all_nchannels_total)
 
-   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_goes()'
+   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_abi()'
 
 end subroutine setup_abi
 
