@@ -85,6 +85,7 @@
 ! 2017/03/16, GT: Changes for single-view aerosol retrieval mode.
 ! 2017/07/05, AP: Move ISS before ISP so that the wavelength-dependent values
 !    are last (to simlify the variables_retrieved flag).
+! 2018/09/20, SP: Removed MaxPLevels.
 !
 ! Bugs:
 ! None known.
@@ -107,7 +108,6 @@ module ORAC_constants_m
    integer, parameter :: MaxNumSolar      = 24      ! Max no. of solar channels
    integer, parameter :: MaxNumThermal    = 16      ! Max no. of thermal channels
    integer, parameter :: MaxCloudType     = 5       ! Max no. of cloud types to be
-   integer, parameter :: MaxPLevels       = 50      ! Max no. of pressure levels (in SPixel RTM arrays)
    integer, parameter :: MaxCRProps       = 14      ! Max no. of properties in SAD_LUT arrays
    integer, parameter :: MaxTypes         = 11      ! Number of possible cloud/aerosol types
 
