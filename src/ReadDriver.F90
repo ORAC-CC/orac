@@ -1233,6 +1233,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    ! ---------------------------------------------------------------------------
 
    if (Ctrl%RS%use_full_brdf) Ctrl%RS%read_full_brdf = .true.
+   if (.not. Ctrl%RS%use_full_brdf .and. Ctrl%Approach == AppCld1L) Ctrl%RS%read_full_brdf = .false.
 
    if (Ctrl%RS%use_full_brdf .and. Ctrl%i_equation_form == 0) then
       write(*,*) 'ERROR: Read_Driver(): Ctrl%RS%use_full_brdf = true cannot ' // &
