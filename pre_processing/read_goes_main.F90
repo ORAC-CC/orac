@@ -301,25 +301,18 @@ subroutine read_goes_bin(infiles, imager_geolocation, imager_measurements, &
    call get_goes_data(infiles,imager_angles,imager_measurements,imager_geolocation,channel_info,verbose)
 
    ! Compute relative azimuth from solar and viewing azimuths
+   imager_angles%relazi = abs(imager_angles%satazi-imager_angles%solazi)
+   where (imager_angles%relazi(:,:,1) .gt. 180.)
+		imager_angles%relazi(:,:,1) = 360. - imager_angles%relazi(:,:,1)
+	end where
+	imager_angles%relazi(:,:,1) = 180. - imager_angles%relazi(:,:,1)
+
    where (imager_angles%solazi .gt. 180.)
       imager_angles%solazi = 360. - imager_angles%solazi
    end where
-   imager_angles%relazi = imager_angles%satazi
-   where (imager_angles%relazi .gt. 180.)
-      imager_angles%relazi = 360. - imager_angles%relazi
+   where (imager_angles%satazi .gt. 180.)
+      imager_angles%satazi = 360. - imager_angles%satazi
    end where
-
-   imager_angles%relazi = abs(imager_angles%solazi-imager_angles%relazi)
-   where (imager_angles%relazi .gt. 180.)
-      imager_angles%relazi = 180. - imager_angles%relazi
-   end where
-   imager_angles%relazi = 180. - imager_angles%relazi
-   where (imager_angles%relazi .lt. 0. .and. &
-          imager_angles%relazi .ne. sreal_fill_value )
-      imager_angles%relazi = 0. - imager_angles%relazi
-   end where
-
-   imager_angles%satazi = imager_angles%satazi - 180.
 
 
    where (imager_geolocation%latitude .eq. sreal_fill_value)

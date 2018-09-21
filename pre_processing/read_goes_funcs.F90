@@ -398,27 +398,25 @@ subroutine get_goes_viewing_geom(imager_geolocation, imager_angles, sma, smi, hp
 
    imager_angles%satzen(:, :, 1) = acos(u3 / sqrt(u1*u1 + u2*u2 + u3*u3)) * 180. / pi
    imager_angles%satazi(:, :, 1) = atan2(-u2, u1) * 180. / pi
+	imager_angles%satazi(:, :, 1) = imager_angles%satazi(:, :, 1) + 180.
+   where (imager_angles%satazi .le. 180 .and. imager_angles%satazi  .ge. 0)
+      imager_angles%satazi = abs(180. - imager_angles%satazi)
+   end where
 
-   where (imager_angles%satazi .lt. 0)
-      imager_angles%satazi = imager_angles%satazi+360.0
+   where (imager_angles%satazi .le. 360 .and. imager_angles%satazi  .ge. 180)
+      imager_angles%satazi = (360. - imager_angles%satazi) + 180.
    end where
 
    where (imager_angles%satazi .gt. 360)
-      imager_angles%satazi = sreal_fill_value
-   end where
-   where (imager_angles%satazi .lt. 0)
-      imager_angles%satazi = sreal_fill_value
-   end where
-   where (imager_angles%satazi .lt. 0)
-      imager_angles%satzen = sreal_fill_value
-   end where
-   where (imager_angles%satzen .gt. 180)
-      imager_angles%satzen = sreal_fill_value
+      imager_angles%satazi = 360 - imager_angles%satazi
    end where
 
-   where (imager_angles%satazi .lt. 0. .and. &
-        imager_angles%satazi .ne. sreal_fill_value )
-      imager_angles%satazi = 0. - imager_angles%satazi
+   where (imager_angles%satazi .lt. 0)
+      imager_angles%satazi = abs(imager_angles%satazi)
+   end where
+
+   where (imager_angles%satzen .gt. 180)
+      imager_angles%satzen = sreal_fill_value
    end where
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving get_goes_viewing_geom()'
