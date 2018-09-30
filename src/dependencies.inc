@@ -29,8 +29,6 @@ $(OBJS)/Inversion.o: $(OBJS)/Cholesky.o $(OBJS)/Ctrl.o $(OBJS)/Diag.o \
         $(OBJS)/SADChan.o $(OBJS)/SADLUT.o $(OBJS)/SPixel.o $(OBJS)/planck.o \
         CalcCWP.F90 CalcCorrectedCTX.F90 CheckLimits.F90 InvertMarquardt.F90 \
         SetKx.F90 SetLimits.F90 SetSy.F90
-$(OBJS)/parse_user.o: $(OBJS)/IntRoutines.o $(OBJS)/ORACConstants.o \
-        parse_user_text.inc
 $(OBJS)/planck.o: $(OBJS)/ORACConstants.o $(OBJS)/SADChan.o R2T.F90 T2R.F90
 $(OBJS)/prepare_output.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/Diag.o \
         $(OBJS)/ORACConstants.o $(OBJS)/RTM_Pc.o $(OBJS)/SPixel.o \
@@ -38,7 +36,7 @@ $(OBJS)/prepare_output.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/Diag.o \
 $(OBJS)/read_utils.o: $(OBJS)/Ctrl.o $(OBJS)/ORACConstants.o \
         read_config_file.F90 read_input_dimensions.F90
 $(OBJS)/ReadDriver.o: $(OBJS)/Ctrl.o $(OBJS)/ORACConstants.o \
-        $(OBJS)/parse_user.o $(OBJS)/read_utils.o switch.inc
+        $(OBJS)/read_utils.o switch.inc
 $(OBJS)/ReadSAD.o: $(OBJS)/Ctrl.o $(OBJS)/ORACConstants.o $(OBJS)/SADChan.o \
         $(OBJS)/SADLUT.o
 $(OBJS)/RTM.o: $(OBJS)/Ctrl.o $(OBJS)/ORACConstants.o DeallocRTM.F90 \

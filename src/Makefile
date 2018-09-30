@@ -181,7 +181,6 @@ ORAC_OBJ = $(OBJS)/Cholesky.o \
            $(OBJS)/IntLUTRoutines.o \
            $(OBJS)/Inversion.o \
            $(OBJS)/ORACConstants.o \
-           $(OBJS)/parse_user.o \
            $(OBJS)/planck.o \
            $(OBJS)/prepare_output.o \
            $(OBJS)/read_utils.o \

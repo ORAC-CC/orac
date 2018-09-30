@@ -183,12 +183,9 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    use Ctrl_m
    use global_attributes_m
    use ORAC_Constants_m
-   use parse_user_m
    use read_utils_m
    use source_attributes_m
-#ifndef WRAPPER
    use read_ctrl_m
-#endif
 
    implicit none
 
@@ -296,6 +293,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    !----------------------------------------------------------------------------
    close(dri_lun)
    call read_ctrl(drifile, Ctrl)
+
    ! Set filenames
    root_filename   = trim(Ctrl%FID%Data_Dir)//'/'//trim(Ctrl%FID%Filename)
    Ctrl%FID%Config = trim(root_filename)//'.config.nc'
@@ -1190,6 +1188,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
 
    call read_ctrl(drifile, Ctrl)
 
+
    ! ---------------------------------------------------------------------------
    ! Things that have to be after the optional lines
    ! ---------------------------------------------------------------------------
@@ -1491,7 +1490,6 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    !----------------------------------------------------------------------------
    ! Dump Ctrl as a driver file.
    !----------------------------------------------------------------------------
-#ifndef WRAPPER
    if (dumpfile /= '') then
       ! For first run set length argument to 0 for a dry run to get the size
       ! required for the buffer.
@@ -1531,25 +1529,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
 
       stop
    end if
-#endif
 
 end subroutine Read_Driver
-
-
-! handle_parse_error (h_p_e)
-subroutine h_p_e(label)
-
-   use ORAC_Constants_m
-
-   implicit none
-
-   character(len=*), intent(in) :: label
-
-   write(*,*) 'ERROR: Read_Driver(): Error parsing value for: ',trim(label)
-
-   stop error_stop_code
-
-end subroutine h_p_e
 
 
 !-------------------------------------------------------------------------------
