@@ -144,6 +144,7 @@
 ! 2017/12/14, MST: the lower limit of tskin was set to 250.K which was too high
 !     in particular for Greenland and Antartica. Have set it to 200.0K.
 !     Comparisons of lw fluxes to CERES confirm that this was necessary.
+! 2018/09/30, SRP: Delete old driver read routines.
 !
 ! Bugs:
 ! None known.
@@ -219,7 +220,6 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    integer                            :: a     ! Short name for Ctrl%Approach
    integer                            :: c, c2 ! Short name for Ctrl%Class
    real                               :: wvl_threshold
-   logical                            :: new_driver_format
    integer                            :: size
    character, allocatable             :: buffer(:)
    character(FilenameLen)             :: dumpfile
@@ -290,21 +290,12 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    end if
    rewind dri_lun
 
-   new_driver_format = line(1:22) == '# ORAC New Driver File'
-#ifdef WRAPPER
-   new_driver_format = .false.
-#endif
 
    !----------------------------------------------------------------------------
    ! Read the driver file
    !----------------------------------------------------------------------------
-   if (new_driver_format) then
-      close(dri_lun)
-      call read_ctrl(drifile, Ctrl)
-   else
-      call old_driver_first_read(dri_lun, Ctrl)
-   end if
-
+   close(dri_lun)
+   call read_ctrl(drifile, Ctrl)
    ! Set filenames
    root_filename   = trim(Ctrl%FID%Data_Dir)//'/'//trim(Ctrl%FID%Filename)
    Ctrl%FID%Config = trim(root_filename)//'.config.nc'
@@ -443,10 +434,6 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
          Ctrl%Class = ClsAerOx
       else
          write(*,*) 'ERROR: Read_Driver(): Invalid Ctrl%Approach:', Ctrl%Approach
-         if (.not. new_driver_format) then
-            write(*,*) ' Check driver file header. Is it a new format file?'
-            write(*,*) ' Driver file should start with: # ORAC New Driver File'
-         end if
          stop error_stop_code
       end if
    end if
@@ -1186,47 +1173,22 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    !----------------------------------------------------------------------------
    ! Consider optional lines of driver file
    !----------------------------------------------------------------------------
+   ! Copy individual illumination arrays into main block
+   Ctrl%Nx(IDay)     = Nx_Dy
+   Ctrl%Nx(ITwi)     = Nx_Tw
+   Ctrl%Nx(INight)   = Nx_Ni
+   Ctrl%X(:,IDay)    = X_Dy
+   Ctrl%X(:,ITwi)    = X_Tw
+   Ctrl%X(:,INight)  = X_Ni
 
-   if (new_driver_format) then
-      ! Copy individual illumination arrays into main block
-      Ctrl%Nx(IDay)     = Nx_Dy
-      Ctrl%Nx(ITwi)     = Nx_Tw
-      Ctrl%Nx(INight)   = Nx_Ni
-      Ctrl%X(:,IDay)    = X_Dy
-      Ctrl%X(:,ITwi)    = X_Tw
-      Ctrl%X(:,INight)  = X_Ni
+   Ctrl%NXJ(IDay)    = NXJ_Dy
+   Ctrl%NXJ(ITwi)    = NXJ_Tw
+   Ctrl%NXJ(INight)  = NXJ_Ni
+   Ctrl%XJ(:,IDay)   = XJ_Dy
+   Ctrl%XJ(:,ITwi)   = XJ_Tw
+   Ctrl%XJ(:,INight) = XJ_Ni
 
-      Ctrl%NXJ(IDay)    = NXJ_Dy
-      Ctrl%NXJ(ITwi)    = NXJ_Tw
-      Ctrl%NXJ(INight)  = NXJ_Ni
-      Ctrl%XJ(:,IDay)   = XJ_Dy
-      Ctrl%XJ(:,ITwi)   = XJ_Tw
-      Ctrl%XJ(:,INight) = XJ_Ni
-
-      call read_ctrl(drifile, Ctrl)
-   else
-      call old_driver_second_read(dri_lun, Ctrl, Nx_Dy, Nx_Tw, Nx_Ni, NXJ_Dy, &
-           NXJ_Tw, NXJ_Ni, X_Dy, X_Tw, X_Ni, XJ_Dy, XJ_Tw, XJ_Ni)
-      if (drifile /= '-') then
-         close(unit=dri_lun)
-      end if
-
-      ! Copy individual illumination arrays into main block
-      Ctrl%Nx(IDay)     = Nx_Dy
-      Ctrl%Nx(ITwi)     = Nx_Tw
-      Ctrl%Nx(INight)   = Nx_Ni
-      Ctrl%X(:,IDay)    = X_Dy
-      Ctrl%X(:,ITwi)    = X_Tw
-      Ctrl%X(:,INight)  = X_Ni
-
-      Ctrl%NXJ(IDay)    = NXJ_Dy
-      Ctrl%NXJ(ITwi)    = NXJ_Tw
-      Ctrl%NXJ(INight)  = NXJ_Ni
-      Ctrl%XJ(:,IDay)   = XJ_Dy
-      Ctrl%XJ(:,ITwi)   = XJ_Tw
-      Ctrl%XJ(:,INight) = XJ_Ni
-   end if
-
+   call read_ctrl(drifile, Ctrl)
 
    ! ---------------------------------------------------------------------------
    ! Things that have to be after the optional lines
@@ -1692,318 +1654,5 @@ end subroutine h_p_e
 #undef SWITCH_NAME_APP
 #undef SWITCH_NAME_CLS
 #undef SWITCH_FILL
-
-subroutine old_driver_first_read(dri_lun, Ctrl)
-
-   use Ctrl_m
-   use parse_user_m
-
-   implicit none
-
-   integer,      intent(in)    :: dri_lun
-   type(Ctrl_t), intent(inout) :: Ctrl
-
-   character(FilenameLen) :: line, label
-   integer                :: i
-
-   ! Read folder paths
-   if (parse_driver(dri_lun, line) /= 0 .or. &
-       parse_string(line, Ctrl%FID%Data_Dir) /= 0) call h_p_e('Ctrl%FID%Data_Dir')
-
-   if (parse_driver(dri_lun, line) /= 0 .or. &
-       parse_string(line, Ctrl%FID%Filename) /= 0) call h_p_e('Ctrl%FID%Filename')
-
-   if (parse_driver(dri_lun, line) /= 0 .or. &
-       parse_string(line, Ctrl%FID%Out_Dir) /= 0) call h_p_e('Ctrl%FID%Out_Dir')
-
-   if (parse_driver(dri_lun, line) /= 0 .or. &
-       parse_string(line, Ctrl%FID%SAD_Dir) /= 0) call h_p_e('Ctrl%FID%SAD_Dir')
-   Ctrl%FID%SAD_Dir2 = Ctrl%FID%SAD_Dir
-
-   ! Read name of instrument
-   if (parse_driver(dri_lun, line) /= 0 .or. &
-       parse_string(line, Ctrl%InstName) /= 0) call h_p_e('Ctrl%InstName')
-
-   ! Number of channels in preprocessing file
-   if (parse_driver(dri_lun, line) /= 0 .or. &
-       parse_string(line, Ctrl%Ind%NAvail) /= 0) &
-      call h_p_e('number of channels expected in preproc files')
-
-   ! Read processing flag from driver
-   allocate(Ctrl%Ind%channel_proc_flag(Ctrl%Ind%NAvail))
-   if (parse_driver(dri_lun, line) /= 0 .or. &
-       parse_string(line, Ctrl%Ind%channel_proc_flag) /= 0) call h_p_e('channel flags')
-   if (sum(Ctrl%Ind%channel_proc_flag) < 1 .or. &
-       sum(Ctrl%Ind%channel_proc_flag) > Ctrl%Ind%NAvail .or. &
-       any(Ctrl%Ind%channel_proc_flag /= 0 .and. Ctrl%Ind%channel_proc_flag /= 1)) then
-      write(*,*) 'ERROR: Read_Driver(): channel flag from driver wrong: ', &
-                 Ctrl%Ind%channel_proc_flag
-      stop DriverFileIncompat
-   end if
-
-   ! Read in cloud class (aka phase of no aerosols processed)
-   if (parse_driver(dri_lun, line) /= 0 .or. &
-       parse_string(line, Ctrl%LUTClass) /= 0) &
-      call h_p_e('Ctrl%LUTClass')
-   Ctrl%LUTClass2 = Ctrl%LUTClass
-
-   do while (parse_driver(dri_lun, line, label) == 0)
-      call clean_driver_label(label)
-      select case (label)
-      case('CTRL%APPROACH')
-         if (parse_user_text(line, Ctrl%Approach)            /= 0) call h_p_e(label)
-      case('CTRL%CLASS')
-         if (parse_user_text(line, Ctrl%Class)               /= 0) call h_p_e(label)
-      case('CTRL%CLASS2')
-         if (parse_user_text(line, Ctrl%Class2)              /= 0) call h_p_e(label)
-      case('CTRL%LUTCLASS2')
-         if (parse_string(line, Ctrl%LUTClass2)              /= 0) call h_p_e(label)
-      case('CTRL%USE_ANN_PHASE')
-         if (parse_string(line, Ctrl%use_ann_phase)          /= 0) call h_p_e(label)
-      case('CTRL%DO_NEW_NIGHT_RETRIEVAL')
-         if (parse_string(line, Ctrl%do_new_night_retrieval) /= 0) call h_p_e(label)
-      case('CTRL%DO_CTX_CORRECTION')
-         if (parse_string(line, Ctrl%do_CTX_correction)      /= 0) call h_p_e(label)
-      case('CTRL%VERBOSE')
-         if (parse_string(line, Ctrl%verbose)                /= 0) call h_p_e(label)
-      case('CTRL%PROCESS_CLOUDY_ONLY')
-         if (parse_string(line, Ctrl%process_cloudy_only) &
-                                                             /= 0) call h_p_e(label)
-      case('CTRL%PROCESS_AEROSOL_ONLY')
-         if (parse_string(line, Ctrl%process_aerosol_only) &
-                                                             /= 0) call h_p_e(label)
-      case default
-         cycle
-      end select
-   end do
-
-   ! Done with first pass through driver file.  Move file position to the end of
-   ! the mandatory arguments which is the beginning of the optional arguments.
-   rewind dri_lun
-   do i = 1, 8
-      read(dri_lun, *)
-   end do
-
-end subroutine old_driver_first_read
-
-subroutine old_driver_second_read(dri_lun, Ctrl, Nx_Dy, Nx_Tw, Nx_Ni, NXJ_Dy, &
-   NXJ_Tw, NXJ_Ni, X_Dy, X_Tw, X_Ni, XJ_Dy, XJ_Tw, XJ_Ni)
-
-   use Ctrl_m
-   use parse_user_m
-
-   implicit none
-
-   integer,      intent(in)                            :: dri_lun
-   type(Ctrl_t), intent(inout)                         :: Ctrl
-   integer,      intent(inout)                         :: Nx_Dy, Nx_Tw, Nx_Ni
-   integer,      intent(inout)                         :: NXJ_Dy, NXJ_Tw, NXJ_Ni
-   integer,      intent(inout), dimension(MaxStateVar) :: X_Dy, X_Tw, X_Ni
-   integer,      intent(inout), dimension(MaxStateVar) :: XJ_Dy, XJ_Tw, XJ_Ni
-
-   character(FilenameLen) :: line, label
-   integer, allocatable   :: solar_ids(:)
-
-   ! Array temporary needed for human-readable solar channel indexing
-   allocate(solar_ids(Ctrl%Ind%NSolar))
-   solar_ids = Ctrl%Ind%Y_ID(Ctrl%Ind%YSolar)
-
-   ! Process optional lines of driver file
-   do while (parse_driver(dri_lun, line, label) == 0)
-      call clean_driver_label(label)
-      select case (label)
-      case('CTRL%FID%DATA_DIR','CTRL%DATA_DIR')
-         if (parse_string(line, Ctrl%FID%Data_Dir)     /= 0) call h_p_e(label)
-      case('CTRL%FID%OUT_DIR','CTRL%OUT_DIR')
-         if (parse_string(line, Ctrl%FID%Out_Dir)      /= 0) call h_p_e(label)
-      case('CTRL%FID%SAD_DIR','CTRL%SAD_DIR')
-         if (parse_string(line, Ctrl%FID%SAD_Dir)      /= 0) call h_p_e(label)
-      case('CTRL%FID%SAD_DIR2','CTRL%SAD_DIR2')
-         if (parse_string(line, Ctrl%FID%SAD_Dir2)     /= 0) call h_p_e(label)
-      case('CTRL%FID%MSI')
-         if (parse_string(line, Ctrl%FID%MSI)          /= 0) call h_p_e(label)
-      case('CTRL%FID%LWRTM')
-         if (parse_string(line, Ctrl%FID%LWRTM)        /= 0) call h_p_e(label)
-      case('CTRL%FID%SWRTM')
-         if (parse_string(line, Ctrl%FID%SWRTM)        /= 0) call h_p_e(label)
-      case('CTRL%FID%PRTM')
-         if (parse_string(line, Ctrl%FID%PRTM)         /= 0) call h_p_e(label)
-      case('CTRL%FID%LS')
-         if (parse_string(line, Ctrl%FID%LS)           /= 0) call h_p_e(label)
-      case('CTRL%FID%CF')
-         if (parse_string(line, Ctrl%FID%CF)           /= 0) call h_p_e(label)
-      case('CTRL%FID%GEO')
-         if (parse_string(line, Ctrl%FID%Geo)          /= 0) call h_p_e(label)
-      case('CTRL%FID%LOC')
-         if (parse_string(line, Ctrl%FID%Loc)          /= 0) call h_p_e(label)
-      case('CTRL%FID%ALB')
-         if (parse_string(line, Ctrl%FID%Alb)          /= 0) call h_p_e(label)
-      case('CTRL%FID%L2_PRIMARY')
-         if (parse_string(line, Ctrl%FID%L2_primary)   /= 0) call h_p_e(label)
-      case('CTRL%FID%L2_SECONDARY')
-         if (parse_string(line, Ctrl%FID%L2_secondary) /= 0) call h_p_e(label)
-      case('CTRL%RUN_ID')
-         if (parse_string(line, Ctrl%Run_ID)           /= 0) call h_p_e(label)
-      case('CTRL%RS%RSSELM','Ctrl%RS%FLAG')
-         if (parse_user_text(line, Ctrl%RS%RsSelm)     /= 0) call h_p_e(label)
-      case('CTRL%RS%SRSSELM')
-         if (parse_user_text(line, Ctrl%RS%SRsSelm)    /= 0) call h_p_e(label)
-      case('CTRL%RS%USE_FULL_BRDF')
-         if (parse_string(line, Ctrl%RS%use_full_brdf) /= 0) call h_p_e(label)
-      case('CTRL%RS%ALLOW_A_DEFAULT_SURFACE')
-         if (parse_string(line, Ctrl%RS%allow_a_default_surface) &
-                                                       /= 0) call h_p_e(label)
-      case('CTRL%RS%B')
-         if (parse_string(line, Ctrl%RS%B)             /= 0) call h_p_e(label)
-      case('CTRL%RS%SB')
-         if (parse_string(line, Ctrl%RS%Sb)            /= 0) call h_p_e(label)
-      case('CTRL%RS%CB')
-         if (parse_string(line, Ctrl%RS%Cb)            /= 0) call h_p_e(label)
-      case('CTRL%RS%ADD_FRACTIONAL')
-         if (parse_string(line, Ctrl%RS%add_fractional)/= 0) call h_p_e(label)
-      case('CTRL%RS%DIAGONAL_SRS')
-         if (parse_string(line, Ctrl%RS%diagonal_SRs)  /= 0) call h_p_e(label)
-      case('CTRL%RS%SOLAR_FACTOR')
-         if (parse_string(line, Ctrl%RS%solar_factor)  /= 0) call h_p_e(label)
-      case('CTRL%EQMPN%SYSELM')
-         if (parse_user_text(line, Ctrl%EqMPN%SySelm)  /= 0) call h_p_e(label)
-      case('CTRL%EQMPN%HOMOG')
-         if (parse_string(line, Ctrl%EqMPN%Homog)      /= 0) call h_p_e(label)
-      case('CTRL%EQMPN%COREG')
-         if (parse_string(line, Ctrl%EqMPN%Coreg)      /= 0) call h_p_e(label)
-      case('CTRL%INVPAR%CONVTEST')
-         if (parse_string(line, Ctrl%Invpar%ConvTest)  /= 0) call h_p_e(label)
-      case('CTRL%INVPAR%MQSTART')
-         if (parse_string(line, Ctrl%Invpar%MqStart)   /= 0) call h_p_e(label)
-      case('CTRL%INVPAR%MQSTEP')
-         if (parse_string(line, Ctrl%Invpar%MqStep)    /= 0) call h_p_e(label)
-      case('CTRL%INVPAR%MAXITER')
-         if (parse_string(line, Ctrl%Invpar%MaxIter)   /= 0) call h_p_e(label)
-      case('CTRL%INVPAR%CCJ')
-         if (parse_string(line, Ctrl%Invpar%Ccj)       /= 0) call h_p_e(label)
-      case('CTRL%INVPAR%XSCALE')
-         if (parse_string(line, Ctrl%Invpar%XScale)    /= 0) call h_p_e(label)
-      case('CTRL%INVPAR%XLLIM')
-         if (parse_string(line, Ctrl%Invpar%XLLim)     /= 0) call h_p_e(label)
-      case('CTRL%INVPAR%XULIM')
-         if (parse_string(line, Ctrl%Invpar%XULim)     /= 0) call h_p_e(label)
-      case('CTRL%INVPAR%ALWAYS_TAKE_GN')
-         if (parse_string(line, Ctrl%Invpar%always_take_GN) &
-                                                       /= 0) call h_p_e(label)
-      case('CTRL%INVPAR%DONT_ITER_CONVTEST')
-         if (parse_string(line, Ctrl%Invpar%dont_iter_convtest) &
-                                                       /= 0) call h_p_e(label)
-      case('CTRL%INVPAR%DISABLE_SS')
-         if (parse_string(line, Ctrl%Invpar%disable_Ss)/= 0) call h_p_e(label)
-      case('CTRL%QC%MAXJ')
-         if (parse_string(line, Ctrl%QC%MaxJ)          /= 0) call h_p_e(label)
-      case('CTRL%QC%MAXDOFN')
-         if (parse_string(line, Ctrl%QC%MaxDoFN)       /= 0) call h_p_e(label)
-      case('CTRL%QC%MAXELEVATION')
-         if (parse_string(line, Ctrl%QC%MaxElevation)  /= 0) call h_p_e(label)
-      case('CTRL%IND%X0')
-         if (parse_string(line, Ctrl%Ind%X0)           /= 0) call h_p_e(label)
-      case('CTRL%IND%X1')
-         if (parse_string(line, Ctrl%Ind%X1)           /= 0) call h_p_e(label)
-      case('CTRL%IND%Y0')
-         if (parse_string(line, Ctrl%Ind%Y0)           /= 0) call h_p_e(label)
-      case('CTRL%IND%Y1')
-         if (parse_string(line, Ctrl%Ind%Y1)           /= 0) call h_p_e(label)
-      case('CTRL%MAXSOLZEN')
-         if (parse_string(line, Ctrl%MaxSolZen)        /= 0) call h_p_e(label)
-      case('CTRL%MAXSATZEN')
-         if (parse_string(line, Ctrl%MaxSatZen)        /= 0) call h_p_e(label)
-      case('CTRL%MINRELAZI')
-         if (parse_string(line, Ctrl%MinRelAzi)        /= 0) call h_p_e(label)
-      case('CTRL%SUNSET')
-         if (parse_string(line, Ctrl%Sunset)           /= 0) call h_p_e(label)
-      case('CTRL%I_EQUATION_FORM')
-         if (parse_string(line, Ctrl%i_equation_form)  /= 0) call h_p_e(label)
-      case('CTRL%LUTINTSELM','Ctrl%LUTINTFLAG')
-         if (parse_user_text(line, Ctrl%LUTIntSelm)    /= 0) call h_p_e(label)
-      case('CTRL%RTMINTSELM','Ctrl%RTMINTFLAG')
-         if (parse_user_text(line, Ctrl%RTMIntSelm)    /= 0) call h_p_e(label)
-      case('CTRL%CLOUDTYPE')
-         if (parse_user_text(line, Ctrl%CloudType)     /= 0) call h_p_e(label)
-      case('CTRL%MAX_SDAD')
-         if (parse_string(line, Ctrl%Max_SDAD)         /= 0) call h_p_e(label)
-      case('CTRL%SABOTAGE_INPUTS')
-         if (parse_string(line, Ctrl%sabotage_inputs)  /= 0) call h_p_e(label)
-      case('CTRL%NTYPES_TO_PROCESS')
-         if (parse_string(line, Ctrl%NTypes_to_process)/= 0) call h_p_e(label)
-      case('CTRL%TYPES_TO_PROCESS')
-         if (parse_string(line, Ctrl%Types_to_process, Ctrl%NTypes_to_process) &
-                                                       /= 0) call h_p_e(label)
-      case('CTRL%SURFACES_TO_SKIP')
-         if (parse_user_text(line, Ctrl%surfaces_to_skip) &
-                                                       /= 0) call h_p_e(label)
-      case('CTRL%SECOND_AOT_CH')
-         if (parse_user_text(line, Ctrl%second_aot_ch) /= 0) call h_p_e(label)
-      case('CTRL%RECHANS')
-         if (parse_user_text(line, Ctrl%ReChans)       /= 0) call h_p_e(label)
-      case('CTRL%AP')
-         if (parse_user_text(line, Ctrl%AP)            /= 0) call h_p_e(label)
-      case('CTRL%FG')
-         if (parse_user_text(line, Ctrl%FG)            /= 0) call h_p_e(label)
-      case('CTRL%XB')
-         if (parse_string(line, Ctrl%XB)               /= 0) call h_p_e(label)
-      case('CTRL%X0')
-         if (parse_string(line, Ctrl%X0)               /= 0) call h_p_e(label)
-      case('CTRL%SX')
-         if (parse_string(line, Ctrl%Sx)               /= 0) call h_p_e(label)
-      case('CTRL%SY')
-         if (parse_string(line, Ctrl%Sy)               /= 0) call h_p_e(label)
-      case('NX_DY')
-         if (parse_string(line, NX_DY)                 /= 0) call h_p_e(label)
-      case('X_DY')
-         if (parse_user_text(line, X_DY, NX_DY, solar_ids) &
-                                                       /= 0) call h_p_e(label)
-      case('NX_TW')
-         if (parse_string(line, NX_TW)                 /= 0) call h_p_e(label)
-      case('X_TW')
-         if (parse_user_text(line, X_TW, NX_TW, solar_ids) &
-                                                       /= 0) call h_p_e(label)
-      case('NX_NI')
-         if (parse_string(line, NX_NI)                 /= 0) call h_p_e(label)
-      case('X_NI')
-         if (parse_user_text(line, X_NI, NX_NI, solar_ids) &
-                                                       /= 0) call h_p_e(label)
-      case('NXJ_DY')
-         if (parse_string(line, NXJ_DY)                /= 0) call h_p_e(label)
-      case('XJ_DY')
-         if (parse_user_text(line, XJ_DY, NXJ_DY, solar_ids) &
-                                                       /= 0) call h_p_e(label)
-      case('NXJ_TW')
-         if (parse_string(line, NXJ_TW)                /= 0) call h_p_e(label)
-      case('XJ_TW')
-         if (parse_user_text(line, XJ_TW, NXJ_TW, solar_ids) &
-                                                       /= 0) call h_p_e(label)
-      case('NXJ_NI')
-         if (parse_string(line, NXJ_NI)                /= 0) call h_p_e(label)
-      case('XJ_NI')
-         if (parse_user_text(line, XJ_NI, NXJ_NI, solar_ids) &
-                                                       /= 0) call h_p_e(label)
-      case('CTRL%APPROACH', &
-           'CTRL%CLASS', &
-           'CTRL%CLASS2', &
-           'CTRL%LUTCLASS', &
-           'CTRL%LUTCLASS2', &
-           'CTRL%USE_ANN_PHASE', &
-           'CTRL%DO_NEW_NIGHT_RETRIEVAL', &
-           'CTRL%DO_CTX_CORRECTION', &
-           'CTRL%VERBOSE', &
-           'CTRL%PROCESS_CLOUDY_ONLY', &
-           'CTRL%PROCESS_AEROSOL_ONLY')
-         cycle ! These arguments have already been parsed in the first pass
-               ! through the driver file.
-      case default
-         write(*,*) 'ERROR: Read_Driver(): Unknown option: ',trim(label)
-         stop error_stop_code
-      end select
-   end do
-
-   deallocate(solar_ids)
-
-end subroutine old_driver_second_read
 
 end module read_driver_m
