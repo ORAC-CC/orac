@@ -1175,7 +1175,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
                     source_atts, verbose)
             else
                call correct_for_ice_snow_ecmwf(ecmwf_HR_path_file(1), &
-                    imager_geolocation, imager_flags, preproc_dims, &
+                    imager_geolocation, channel_info, imager_flags, preproc_dims, &
                     preproc_prtm, surface, include_full_brdf, source_atts, &
                     verbose)
             end if
