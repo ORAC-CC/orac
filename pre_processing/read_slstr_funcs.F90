@@ -276,8 +276,6 @@ subroutine read_slstr_tirdata(indir,inband,outarr,sx,sy,nx,ny,inx,iny, &
       stop error_stop_code
    end if
 
-   print*,nx,ny,inband,trim(bandname)
-
    ! Get the actual data
    ierr=nf90_get_var(fid, did, data1)
    if (ierr.ne.NF90_NOERR) then
