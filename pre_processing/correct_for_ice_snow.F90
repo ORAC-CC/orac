@@ -91,6 +91,7 @@
 ! 2015/04/10, GM: Fixed the use of snow/ice albedo for the BRDF parameters.
 ! 2016/02/18, OS: ECMWF snow/ice mask now corrected by USGS land/sea mask
 ! 2016/02/23, OS: previous commit on ECMWF snow/ice mask was incomplete
+! 2018/10/01, SP: Introduce a more comprehensive snow albedo dataset
 !
 ! Bugs:
 ! None known.
@@ -101,6 +102,119 @@ module correct_for_ice_snow_m
 implicit none
 
 contains
+
+! This subroutine will calculate a snow albedo for a given wavelength via
+! interpolation between the closest two suitable wavelengths in the database.
+! Values are taken from the ASTER spectral library and are a combination of three
+! snow types: Fine, Medium and Course. Here we simply average all three.
+! If the requested wavelength is outside the range supported by this function then
+! a warning is displayed and a reflectance value of 0.0 is supplied.
+! Acceptable wavelength range: 350 nm -> 14,000 nm.
+real function get_snow_albedo(wvl)
+
+   implicit none
+
+   real, intent(in)	:: wvl
+
+	integer			:: prevp,nextp,i
+	real				::	slo,wvldif1,wvldif2
+	real,parameter	::	start_wvl 	=	0.35
+	real,parameter	::	end_wvl		=	13.9
+	real,parameter	::	snow_wvl(40)=	(/0.35,0.40,0.45,0.50,0.60,0.65,0.70,0.75,\
+												0.80,0.90,1.00,1.10,1.20,1.30,1.40,1.50,1.60,\
+												1.70,1.80,1.90,2.00,2.10,2.20,2.30,2.40,2.50,\
+												2.60,2.70,2.80,2.90,3.00,3.10,3.20,3.30,3.70,\
+												3.80,10.91,11.92,12.90,13.90/)
+
+	real,parameter	::	snow_alb(40)=	(/0.97,0.98,0.99,0.98,0.98,0.96,0.95,0.93,0.90,\
+												0.84,0.72,0.73,0.54,0.47,0.42,0.04,0.07,0.14,\
+												0.20,0.07,0.01,0.03,0.11,0.08,0.04,0.03,0.03,\
+												0.01,0.00,0.01,0.02,0.04,0.03,0.02,0.02,0.01,\
+												0.01,0.02,0.03,0.03/)
+
+	if (wvl .lt. 	start_wvl) then
+		write(*,*)"WARNING: Cannot interpolate snow albedo, wavelength of ",wvl,\
+					 "is below minimum acceptable wavelength of ",start_wvl
+		get_snow_albedo = 0.0
+		return
+	endif
+	if (wvl .gt. 	end_wvl) then
+		write(*,*)"WARNING: Cannot interpolate snow albedo, wavelength of ",wvl,\
+					 "is above maximum acceptable wavelength of ",end_wvl
+		get_snow_albedo = 0.0
+		return
+	endif
+	prevp	=	1
+	nextp	=	2
+	do i=1,39
+		if (snow_wvl(i) .le. wvl .and. snow_wvl(i+1) .ge. wvl) then
+			prevp	=	i
+			nextp	=	i+1
+		endif
+	end do
+
+	wvldif1	=	wvl - snow_wvl(prevp)
+	wvldif2	=	snow_wvl(nextp) - snow_wvl(prevp)
+
+	slo		=	(snow_alb(nextp)-snow_alb(prevp))/wvldif2
+
+	get_snow_albedo	=	wvldif1 * slo + snow_alb(prevp)
+
+end function get_snow_albedo
+
+! This subroutine is the same as above, but for ice albedo.
+! Acceptable wavelength range: 350 nm -> 14,000 nm.
+real function get_ice_albedo(wvl)
+
+   implicit none
+
+   real, intent(in)	:: wvl
+
+	integer			:: prevp,nextp,i
+	real				::	slo,wvldif1,wvldif2
+	real,parameter	::	start_wvl 	=	0.35
+	real,parameter	::	end_wvl		=	13.9
+	real,parameter	::	snow_wvl(40)=	(/0.35,0.40,0.45,0.50,0.60,0.65,0.70,0.75,\
+												0.80,0.90,1.00,1.10,1.20,1.30,1.40,1.50,1.60,\
+												1.70,1.80,1.90,2.00,2.10,2.20,2.30,2.40,2.50,\
+												2.60,2.70,2.80,2.90,3.00,3.10,3.20,3.30,3.70,\
+												3.80,10.91,11.92,12.90,13.90/)
+
+	real,parameter	::	snow_alb(40)=	(/0.97,0.98,0.99,0.98,0.98,0.96,0.95,0.93,0.90,\
+												0.84,0.72,0.73,0.54,0.47,0.42,0.04,0.07,0.14,\
+												0.20,0.07,0.01,0.03,0.11,0.08,0.04,0.03,0.03,\
+												0.01,0.00,0.01,0.02,0.04,0.03,0.02,0.02,0.01,\
+												0.01,0.02,0.03,0.03/)
+
+	if (wvl .lt. 	start_wvl) then
+		write(*,*)"WARNING: Cannot interpolate ice albedo, wavelength of ",wvl,\
+					 "is below minimum acceptable wavelength of ",start_wvl
+		get_ice_albedo = 0.0
+		return
+	endif
+	if (wvl .gt. 	end_wvl) then
+		write(*,*)"WARNING: Cannot interpolate ice albedo, wavelength of ",wvl,\
+					 "is above maximum acceptable wavelength of ",end_wvl
+		get_ice_albedo = 0.0
+		return
+	endif
+	prevp	=	1
+	nextp	=	2
+	do i=1,39
+		if (snow_wvl(i) .le. wvl .and. snow_wvl(i+1) .ge. wvl) then
+			prevp	=	i
+			nextp	=	i+1
+		endif
+	end do
+
+	wvldif1	=	wvl - snow_wvl(prevp)
+	wvldif2	=	snow_wvl(nextp) - snow_wvl(prevp)
+
+	slo		=	(snow_alb(nextp)-snow_alb(prevp))/wvldif2
+
+	get_ice_albedo	=	wvldif1 * slo + snow_alb(prevp)
+
+end function get_ice_albedo
 
 subroutine correct_for_ice_snow(nise_path,imager_geolocation,surface,cyear, &
       cmonth,cday,channel_info,assume_full_path,include_full_brdf,source_atts, &
@@ -517,7 +631,8 @@ subroutine correct_for_ice_snow_ecmwf(ecmwf_HR_path,imager_geolocation, &
 
    do i=1,channel_info%nchannels_total
    	if (channel_info%map_ids_abs_to_snow_and_ice(i) .le. 0) cycle
-		tmp_snow(i) = snow_albedo(channel_info%map_ids_abs_to_snow_and_ice(i))
+		tmp_snow(i) = get_snow_albedo(channel_info%channel_wl_abs(i))
+		if (verbose)write(*,*)"Calculated snow albedo for",channel_info%channel_wl_abs(i),"micron is",tmp_snow(i)
 		tmp_ice(i)  = ice_albedo(channel_info%map_ids_abs_to_snow_and_ice(i))
    enddo
 
