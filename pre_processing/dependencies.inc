@@ -61,14 +61,14 @@ $(OBJS)/read_avhrr.o: $(OBJS)/calender.o $(OBJS)/channel_structures.o \
         read_avhrr_time.F90 read_avhrr_time_lat_lon_angles.F90
 $(OBJS)/read_camel_emissivity.o: $(OBJS)/preproc_constants.o
 $(OBJS)/read_cimss_emissivity.o: $(OBJS)/preproc_constants.o
-$(OBJS)/read_goes.o: $(OBJS)/calender.o $(OBJS)/channel_structures.o \
+$(OBJS)/read_abi.o: $(OBJS)/calender.o $(OBJS)/channel_structures.o \
         $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o \
-        read_goes_funcs.F90 read_goes_main.F90
+        read_abi_funcs.F90 read_abi_main.F90
 $(OBJS)/read_himawari.o: $(OBJS)/channel_structures.o \
         $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o
 $(OBJS)/read_imager.o: $(OBJS)/channel_structures.o $(OBJS)/imager_structures.o \
         $(OBJS)/preproc_constants.o $(OBJS)/read_aatsr.o $(OBJS)/read_avhrr.o \
-        $(OBJS)/read_goes.o $(OBJS)/read_himawari.o $(OBJS)/read_modis.o \
+        $(OBJS)/read_abi.o $(OBJS)/read_himawari.o $(OBJS)/read_modis.o \
         $(OBJS)/read_seviri.o $(OBJS)/read_slstr.o $(OBJS)/read_viirs_Iband.o \
         $(OBJS)/read_viirs_Mband.o
 $(OBJS)/read_modis.o: $(OBJS)/bright_m.o $(OBJS)/calender.o \
@@ -122,7 +122,7 @@ $(OBJS)/orac_preproc.o: $(OBJS)/channel_structures.o $(OBJS)/cloud_emis.o \
         $(OBJS)/ecmwf.o $(OBJS)/imager_structures.o $(OBJS)/netcdf_output.o \
         $(OBJS)/preparation.o $(OBJS)/preproc_constants.o \
         $(OBJS)/preproc_structures.o $(OBJS)/read_USGS_file.o \
-        $(OBJS)/read_aatsr.o $(OBJS)/read_avhrr.o $(OBJS)/read_goes.o \
+        $(OBJS)/read_aatsr.o $(OBJS)/read_avhrr.o $(OBJS)/read_abi.o \
         $(OBJS)/read_himawari.o $(OBJS)/read_imager.o $(OBJS)/read_modis.o \
         $(OBJS)/read_seviri.o $(OBJS)/read_slstr.o $(OBJS)/read_viirs_Iband.o \
         $(OBJS)/read_viirs_Mband.o $(OBJS)/rttov_driver.o \

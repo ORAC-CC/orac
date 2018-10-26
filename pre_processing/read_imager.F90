@@ -77,8 +77,8 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
    use imager_structures_m
    use preproc_constants_m
    use read_aatsr_m
+   use read_abi_m
    use read_avhrr_m
-   use read_goes_m
    use read_himawari_m
    use read_modis_m
    use read_seviri_m
@@ -144,12 +144,12 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
 
       ! Assemble the filenames required for ABI data
       allocate(abi_filenames(channel_info%nchannels_total))
-      call get_goes_path(path_to_l1b_file,platform,abi_filenames,&
+      call get_abi_path(path_to_l1b_file,platform,abi_filenames,&
            channel_info%nchannels_total,channel_info%channel_ids_instr)
 
       ! Read the L1B data, according to the dimensions and offsets specified in
       ! imager_geolocation
-      call read_goes_bin(abi_filenames, imager_geolocation,&
+      call read_abi_bin(abi_filenames, imager_geolocation,&
            imager_measurements,imager_angles, imager_time,channel_info,&
            use_predef_geo,geo_file_path, global_atts, verbose)
 
