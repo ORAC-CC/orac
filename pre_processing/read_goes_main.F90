@@ -121,9 +121,6 @@ subroutine read_goes_dimensions(l1_5_file, n_across_track, n_along_track, &
    n_across_track = n_cols
    n_along_track  = n_lines
 
-   if (verbose) print*,n_across_track,endx,startx
-   if (verbose) print*,n_along_track,endy,starty
-
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> read_goes_dimensions()'
 
 end subroutine read_goes_dimensions
@@ -305,7 +302,7 @@ subroutine read_goes_bin(infiles, imager_geolocation, imager_measurements, &
    where (imager_angles%relazi(:,:,1) .gt. 180.)
 		imager_angles%relazi(:,:,1) = 360. - imager_angles%relazi(:,:,1)
 	end where
-	imager_angles%relazi(:,:,1) = 180. - imager_angles%relazi(:,:,1)
+!	imager_angles%relazi(:,:,1) = 180. - imager_angles%relazi(:,:,1)
 
    where (imager_angles%solazi .gt. 180.)
       imager_angles%solazi = 360. - imager_angles%solazi
