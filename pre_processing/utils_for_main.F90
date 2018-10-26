@@ -62,146 +62,111 @@ subroutine parse_required(lun, value, name)
 end subroutine parse_required
 
 
-subroutine parse_optional(label, value, n_channels, channel_ids, &
-                          use_hr_ecmwf, ecmwf_time_int_method, &
-                          use_ecmwf_snow_and_ice, use_modis_emis_in_rttov, &
-                          ecmwf_path, ecmwf_path2, ecmwf_path3, ecmwf_path_hr, &
-                          ecmwf_path_hr_2, ecmwf_nlevels, use_l1_land_mask, &
-                          use_occci, occci_path, use_predef_lsm, ext_lsm_path, &
-                          use_predef_geo, ext_geo_path, disable_snow_and_ice_corr,&
-                          do_cloud_emis, do_ironly, do_cloud_type, product_name,&
-                          camel_emis, do_gsics, do_co2, use_swansea_climatology, &
-                          swansea_gamma)
+subroutine parse_optional(label, value, preproc_opts)
 
    use parsing_m
    use preproc_constants_m
+   use preproc_structures_m
 
    implicit none
 
-   character(len=*), intent(in)    :: label
-   character(len=*), intent(in)    :: value
-   integer,          intent(inout) :: n_channels
-   integer, pointer, intent(inout) :: channel_ids(:)
-   logical,          intent(inout) :: use_hr_ecmwf
-   integer,          intent(inout) :: ecmwf_time_int_method
-   logical,          intent(inout) :: use_ecmwf_snow_and_ice
-   logical,          intent(inout) :: use_modis_emis_in_rttov
-   character(len=*), intent(inout) :: ecmwf_path
-   character(len=*), intent(inout) :: ecmwf_path2
-   character(len=*), intent(inout) :: ecmwf_path3
-   character(len=*), intent(inout) :: ecmwf_path_hr
-   character(len=*), intent(inout) :: ecmwf_path_hr_2
-   integer,          intent(inout) :: ecmwf_nlevels
-   logical,          intent(inout) :: use_l1_land_mask
-   logical,          intent(inout) :: use_occci
-   character(len=*), intent(inout) :: occci_path
-   logical,          intent(inout) :: use_predef_lsm
-   character(len=*), intent(inout) :: ext_lsm_path
-   logical,          intent(inout) :: use_predef_geo
-   character(len=*), intent(inout) :: ext_geo_path
-   logical,          intent(inout) :: disable_snow_and_ice_corr
-   logical,          intent(inout) :: do_cloud_emis
-   logical,          intent(inout) :: do_ironly
-   logical,          intent(inout) :: do_cloud_type
-   character(len=*), intent(inout) :: product_name
-   logical,          intent(inout) :: camel_emis
-   logical,          intent(inout) :: do_gsics
-   logical,          intent(inout) :: do_co2
-   logical,          intent(inout) :: use_swansea_climatology
-   real,             intent(inout) :: swansea_gamma
+   character(len=*), intent(in)    		:: label
+   character(len=*), intent(in)    		:: value
+   type(preproc_opts_t), intent(inout)	:: preproc_opts
+
 
    select case (label)
    case('N_CHANNELS')
-      if (parse_string(value, n_channels) /= 0) &
+      if (parse_string(value, preproc_opts%n_channels) /= 0) &
          call handle_parse_error(label)
-      allocate(channel_ids(n_channels))
+      allocate(preproc_opts%channel_ids(preproc_opts%n_channels))
    case('CHANNEL_IDS')
-      if (n_channels == 0) then
+      if (preproc_opts%n_channels == 0) then
          write(*,*) 'ERROR: must set option n_channels before option channels'
          stop error_stop_code
       end if
-      if (parse_string(value, channel_ids) /= 0) &
+      if (parse_string(value, preproc_opts%channel_ids) /= 0) &
          call handle_parse_error(label)
    case('USE_HR_ECMWF')
-      if (parse_string(value, use_hr_ecmwf) /= 0) &
+      if (parse_string(value, preproc_opts%use_hr_ecmwf) /= 0) &
          call handle_parse_error(label)
    case('ECMWF_TIME_INT_METHOD')
-      if (parse_string(value, ecmwf_time_int_method) /= 0) &
+      if (parse_string(value, preproc_opts%ecmwf_time_int_method) /= 0) &
          call handle_parse_error(label)
    case('USE_ECMWF_SNOW_AND_ICE')
-      if (parse_string(value, use_ecmwf_snow_and_ice) /= 0) &
+      if (parse_string(value, preproc_opts%use_ecmwf_snow_and_ice) /= 0) &
          call handle_parse_error(label)
    case('USE_MODIS_EMIS_IN_RTTOV')
-      if (parse_string(value, use_modis_emis_in_rttov) /= 0) &
+      if (parse_string(value, preproc_opts%use_modis_emis_in_rttov) /= 0) &
          call handle_parse_error(label)
    case('ECMWF_PATH_2')
-      if (parse_string(value, ecmwf_path) /= 0) &
+      if (parse_string(value, preproc_opts%ecmwf_path(1)) /= 0) &
          call handle_parse_error(label)
    case('ECMWF_PATH2_2')
-      if (parse_string(value, ecmwf_path2) /= 0) &
+      if (parse_string(value, preproc_opts%ecmwf_path2(1)) /= 0) &
          call handle_parse_error(label)
    case('ECMWF_PATH3_2')
-      if (parse_string(value, ecmwf_path3) /= 0) &
+      if (parse_string(value, preproc_opts%ecmwf_path3(1)) /= 0) &
          call handle_parse_error(label)
    case('ECMWF_PATH_HR')
-      if (parse_string(value, ecmwf_path_hr) /= 0) &
+      if (parse_string(value, preproc_opts%ecmwf_path_hr(1)) /= 0) &
          call handle_parse_error(label)
    case('ECMWF_PATH_HR_2')
-      if (parse_string(value, ecmwf_path_hr_2) /= 0) &
+      if (parse_string(value, preproc_opts%ecmwf_path_hr_2(1)) /= 0) &
          call handle_parse_error(label)
    case('ECMWF_NLEVELS')
-      if (parse_string(value, ecmwf_nlevels) /= 0) &
+      if (parse_string(value, preproc_opts%ecmwf_nlevels) /= 0) &
          call handle_parse_error(label)
    case('USE_L1_LAND_MASK')
-      if (parse_string(value, use_l1_land_mask) /= 0) &
+      if (parse_string(value, preproc_opts%use_l1_land_mask) /= 0) &
          call handle_parse_error(label)
    case('USE_OCCCI')
-      if (parse_string(value, use_occci) /= 0) &
+      if (parse_string(value, preproc_opts%use_occci) /= 0) &
            call handle_parse_error(label)
    case('OCCCI_PATH')
-      if (parse_string(value, occci_path) /= 0) &
+      if (parse_string(value, preproc_opts%occci_path) /= 0) &
            call handle_parse_error(label)
    case('USE_PREDEF_LSM')
-      if (parse_string(value, use_predef_lsm) /= 0) &
+      if (parse_string(value, preproc_opts%use_predef_lsm) /= 0) &
            call handle_parse_error(label)
    case('EXT_LSM_PATH')
-      if (parse_string(value, ext_lsm_path) /= 0) &
+      if (parse_string(value, preproc_opts%ext_lsm_path) /= 0) &
            call handle_parse_error(label)
    case('USE_PREDEF_GEO')
-      if (parse_string(value, use_predef_geo) /= 0) &
+      if (parse_string(value, preproc_opts%use_predef_geo) /= 0) &
            call handle_parse_error(label)
    case('EXT_GEO_PATH')
-      if (parse_string(value, ext_geo_path) /= 0) &
+      if (parse_string(value, preproc_opts%ext_geo_path) /= 0) &
            call handle_parse_error(label)
    case('DISABLE_SNOW_ICE_CORR')
-      if (parse_string(value, disable_snow_and_ice_corr) /= 0) &
+      if (parse_string(value, preproc_opts%disable_snow_ice_corr) /= 0) &
            call handle_parse_error(label)
    case('DO_CLOUD_EMIS')
-      if (parse_string(value, do_cloud_emis) /= 0) &
+      if (parse_string(value, preproc_opts%do_cloud_emis) /= 0) &
            call handle_parse_error(label)
    case('DO_IRONLY')
-      if (parse_string(value, do_ironly) /= 0) &
+      if (parse_string(value, preproc_opts%do_ironly) /= 0) &
            call handle_parse_error(label)
    case('DO_CLDTYPE')
-      if (parse_string(value, do_cloud_type) /= 0) &
+      if (parse_string(value, preproc_opts%do_cloud_type) /= 0) &
            call handle_parse_error(label)
    case('PRODUCT_NAME')
-      if (parse_string(value, product_name) /= 0) &
+      if (parse_string(value, preproc_opts%product_name) /= 0) &
            call handle_parse_error(label)
    case('USE_CAMEL_EMIS')
-      if (parse_string(value, camel_emis) /= 0) &
+      if (parse_string(value, preproc_opts%use_camel_emis) /= 0) &
            call handle_parse_error(label)
    case('USE_GSICS')
-      if (parse_string(value, do_gsics) /= 0) &
+      if (parse_string(value, preproc_opts%do_gsics) /= 0) &
            call handle_parse_error(label)
    case('USE_CO2')
-      if (parse_string(value, do_co2) /= 0) &
+      if (parse_string(value, preproc_opts%do_co2) /= 0) &
            call handle_parse_error(label)
    case('USE_SWANSEA_CLIMATOLOGY')
-      if (parse_string(value, use_swansea_climatology) /= 0) &
+      if (parse_string(value, preproc_opts%use_swansea_climatology) /= 0) &
            call handle_parse_error(label)
    case('SWANSEA_GAMMA')
-      if (parse_string(value, swansea_gamma) /= 0) &
+      if (parse_string(value, preproc_opts%swansea_gamma) /= 0) &
            call handle_parse_error(label)
    case default
       write(*,*) 'ERROR: Unknown option: ', trim(label)

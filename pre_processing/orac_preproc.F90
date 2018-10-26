@@ -362,9 +362,6 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
    character(len=path_length)       :: l1b_path_file
    character(len=path_length)       :: geo_path_file
    character(len=path_length)       :: usgs_path_file
-   character(len=path_length)       :: ecmwf_path(2),ecmwf_path_file(2)
-   character(len=path_length)       :: ecmwf_path_hr(2)
-   character(len=path_length)       :: ecmwf_HR_path_file(2)
    character(len=path_length)       :: rttov_coef_path
    character(len=path_length)       :: rttov_emiss_path
    character(len=path_length)       :: nise_ice_snow_path
@@ -376,18 +373,12 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
    character(len=cmd_arg_length)    :: cstartx,cendx,cstarty,cendy
    character(len=path_length)       :: aatsr_calib_path_file
    character(len=cmd_arg_length)    :: cecmwf_flag
-   character(len=path_length)       :: ecmwf_path2(2),ecmwf_path_file2(2)
-   character(len=path_length)       :: ecmwf_path3(2),ecmwf_path_file3(2)
    character(len=cmd_arg_length)    :: cchunkproc
    character(len=cmd_arg_length)    :: cday_night
    character(len=cmd_arg_length)    :: cverbose
    character(len=cmd_arg_length)    :: cassume_full_paths
    character(len=cmd_arg_length)    :: cinclude_full_brdf
    character(len=cmd_arg_length)    :: cdummy_arg
-
-   character(len=path_length)       :: occci_path
-   character(len=path_length)       :: ext_lsm_path
-   character(len=path_length)       :: predef_geo_file
 
    type(global_attributes_t)        :: global_atts
    type(source_attributes_t)        :: source_atts
@@ -398,23 +389,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
    logical                          :: assume_full_paths
    logical                          :: include_full_brdf
 
-   logical                          :: use_hr_ecmwf
-   logical                          :: use_ecmwf_snow_and_ice
-   logical                          :: use_modis_emis_in_rttov
-   logical                          :: use_l1_land_mask
-   logical                          :: use_occci
-   logical                          :: use_predef_lsm
-   logical                          :: use_predef_geo
-   logical                          :: disable_snow_ice_corr
-   logical                          :: do_cloud_emis
-   logical                          :: do_ironly
-   logical                          :: do_cloud_type
    logical                          :: do_spectral_response_correction
-   logical                          :: use_camel_emis
-   logical                          :: do_gsics
-   logical                          :: do_co2
-   logical                          :: use_swansea_climatology
-   real                             :: swansea_gamma
 
    logical                          :: check
    integer                          :: nargs
@@ -422,8 +397,6 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
    integer                          :: i
    character(path_length)           :: line, label, value
 
-   integer                          :: n_channels
-   integer, pointer                 :: channel_ids(:)
 
    integer(kind=lint)               :: startx,endx,starty,endy
    integer(kind=lint)               :: n_across_track,n_along_track
@@ -448,7 +421,6 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
 
    character(len=sensor_length)     :: sensor
    character(len=platform_length)   :: platform
-   character(len=file_length)       :: product_name
 
    integer(kind=sint)               :: doy,year,month,day,hour,minute
 
@@ -479,6 +451,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
    type(preproc_dims_t)             :: preproc_dims
    type(preproc_geo_t)              :: preproc_geo
    type(preproc_geoloc_t)           :: preproc_geoloc
+   type(preproc_opts_t)             :: preproc_opts
    type(preproc_prtm_t)             :: preproc_prtm,preproc_prtm1,preproc_prtm2
    type(preproc_surf_t)             :: preproc_surf
    type(preproc_cld_t)              :: preproc_cld
@@ -486,9 +459,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
    type(netcdf_output_info_t)       :: netcdf_info
 
    integer                          :: index_space
-   integer                          :: ecmwf_time_int_method
    real                             :: ecmwf_time_int_fac
-   integer                          :: ecmwf_nlevels
 
 ! Temporary variables for the aerosol_cci dust mask hack
    real(kind=sreal), allocatable    :: tot_cldmask_uncertainty(:,:)
@@ -509,36 +480,36 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
 #endif
 
    ! Set defaults for optional arguments/fields
-   n_channels                      = 0
-   nullify(channel_ids)
-   use_hr_ecmwf                    = .true.
-   ecmwf_time_int_method           = 2
-   use_ecmwf_snow_and_ice          = .true.
-   use_modis_emis_in_rttov         = .false.
-   ecmwf_path(2)                   = ' '
-   ecmwf_path2(2)                  = ' '
-   ecmwf_path3(2)                  = ' '
-   ecmwf_path_hr(1)                = ' '
-   ecmwf_path_hr(2)                = ' '
-   ecmwf_nlevels                   = 0
-   use_l1_land_mask                = .false.
-   use_occci                       = .false.
-   occci_path                      = ' '
-   use_predef_lsm                  = .false.
-   ext_lsm_path                    = ' '
-   use_predef_geo                  = .false.
-   predef_geo_file                 = ' '
-   disable_snow_ice_corr           = .false.
-   do_cloud_emis                   = .false.
-   do_ironly                       = .false.
-   do_cloud_type                   = .true.
-   product_name                    = 'L2-CLOUD-CLD'
-   do_spectral_response_correction = .false.
-   use_camel_emis                  = .false.
-   do_gsics                        = .true.
-   do_co2                          = .true.
-   use_swansea_climatology         = .false.
-   swansea_gamma                   = 0.3
+   nullify(preproc_opts%channel_ids)
+   preproc_opts%n_channels               	= 0
+   preproc_opts%use_hr_ecmwf             	= .true.
+   preproc_opts%ecmwf_time_int_method		= 2
+   preproc_opts%use_ecmwf_snow_and_ice		= .true.
+   preproc_opts%use_modis_emis_in_rttov	= .false.
+   preproc_opts%ecmwf_path(2)             = ' '
+   preproc_opts%ecmwf_path2(2)            = ' '
+   preproc_opts%ecmwf_path3(2)            = ' '
+   preproc_opts%ecmwf_path_hr(1)          = ' '
+   preproc_opts%ecmwf_path_hr(2)          = ' '
+   preproc_opts%ecmwf_nlevels             = 0
+   preproc_opts%use_l1_land_mask          = .false.
+   preproc_opts%use_occci                 = .false.
+   preproc_opts%occci_path                = ' '
+   preproc_opts%use_predef_lsm            = .false.
+   preproc_opts%ext_lsm_path              = ' '
+   preproc_opts%use_predef_geo            = .false.
+   preproc_opts%ext_geo_path		         = ' '
+   preproc_opts%disable_snow_ice_corr		= .false.
+   preproc_opts%do_cloud_emis             = .false.
+   preproc_opts%do_ironly                 = .false.
+   preproc_opts%do_cloud_type             = .true.
+   preproc_opts%product_name       			= 'L2-CLOUD-CLD'
+   do_spectral_response_correction 			= .false.
+   preproc_opts%use_camel_emis     			= .false.
+   preproc_opts%do_gsics           			= .true.
+   preproc_opts%do_co2             			= .true.
+   preproc_opts%use_swansea_climatology 	= .false.
+   preproc_opts%swansea_gamma          	= 0.3
 
    ! Initialise satellite position string
    global_atts%Satpos_Metadata = 'null'
@@ -554,7 +525,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
       call get_command_argument(2,l1b_path_file)
       call get_command_argument(3,geo_path_file)
       call get_command_argument(4,usgs_path_file)
-      call get_command_argument(5,ecmwf_path(1))
+      call get_command_argument(5,preproc_opts%ecmwf_path(1))
       call get_command_argument(6,rttov_coef_path)
       call get_command_argument(7,rttov_emiss_path)
       call get_command_argument(8,nise_ice_snow_path)
@@ -586,8 +557,8 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
       call get_command_argument(34,global_atts%Production_Time)
       call get_command_argument(35,aatsr_calib_path_file)
       call get_command_argument(36,cecmwf_flag)
-      call get_command_argument(37,ecmwf_path2(1))
-      call get_command_argument(38,ecmwf_path3(1))
+      call get_command_argument(37,preproc_opts%ecmwf_path2(1))
+      call get_command_argument(38,preproc_opts%ecmwf_path3(1))
       call get_command_argument(39,cchunkproc)
       call get_command_argument(40,cday_night)
       call get_command_argument(41,cverbose)
@@ -601,15 +572,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
          call get_command_argument(i, line)
          call parse_line(line, value, label)
          call clean_driver_label(label)
-         call parse_optional(label, value, n_channels, channel_ids, &
-            use_hr_ecmwf, ecmwf_time_int_method, use_ecmwf_snow_and_ice, &
-            use_modis_emis_in_rttov, ecmwf_path(2), ecmwf_path2(2), &
-            ecmwf_path3(2), ecmwf_path_hr(1), ecmwf_path_hr(2), ecmwf_nlevels, &
-            use_l1_land_mask, use_occci, occci_path, use_predef_lsm, &
-            ext_lsm_path, use_predef_geo, predef_geo_file, &
-            disable_snow_ice_corr, do_cloud_emis, do_ironly, do_cloud_type, &
-            product_name, use_camel_emis, do_gsics, do_co2, use_swansea_climatology, &
-            swansea_gamma)
+         call parse_optional(label, value, preproc_opts)
       end do
    else
 
@@ -629,7 +592,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
       call parse_required(11, l1b_path_file,               'l1b_path_file')
       call parse_required(11, geo_path_file,               'geo_path_file')
       call parse_required(11, usgs_path_file,              'usgs_path_file')
-      call parse_required(11, ecmwf_path(1),               'ecmwf_path')
+      call parse_required(11, preproc_opts%ecmwf_path(1),  'ecmwf_path')
       call parse_required(11, rttov_coef_path,             'rttov_coef_path')
       call parse_required(11, rttov_emiss_path,            'rttov_emiss_path')
       call parse_required(11, nise_ice_snow_path,          'nise_ice_snow_path')
@@ -661,8 +624,8 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
       call parse_required(11, global_atts%Production_Time, 'Production_Time')
       call parse_required(11, aatsr_calib_path_file,       'aatsr_calib_path_file')
       call parse_required(11, cecmwf_flag,                 'cecmwf_flag')
-      call parse_required(11, ecmwf_path2(1),              'ecmwf_path2')
-      call parse_required(11, ecmwf_path3(1),              'ecmwf_path3')
+      call parse_required(11, preproc_opts%ecmwf_path2(1), 'ecmwf_path2')
+      call parse_required(11, preproc_opts%ecmwf_path3(1), 'ecmwf_path3')
       call parse_required(11, cchunkproc,                  'cchunkproc')
       call parse_required(11, cday_night,                  'cday_night')
       call parse_required(11, cverbose,                    'cverbose')
@@ -675,14 +638,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
 
       do while (parse_driver(11, value, label) == 0)
         call clean_driver_label(label)
-        call parse_optional(label, value, n_channels, channel_ids, &
-           use_hr_ecmwf, ecmwf_time_int_method, use_ecmwf_snow_and_ice, &
-           use_modis_emis_in_rttov, ecmwf_path(2), ecmwf_path2(2), &
-           ecmwf_path3(2), ecmwf_path_hr(1), ecmwf_path_hr(2), ecmwf_nlevels, &
-           use_l1_land_mask, use_occci, occci_path, use_predef_lsm, &
-           ext_lsm_path,use_predef_geo, predef_geo_file, disable_snow_ice_corr, &
-           do_cloud_emis, do_ironly, do_cloud_type, product_name, &
-           use_camel_emis, do_gsics, do_co2, use_swansea_climatology, swansea_gamma)
+        call parse_optional(label, value, preproc_opts)
       end do
 
       close(11)
@@ -720,7 +676,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
       call handle_parse_error('include_full_brdf')
 
    ! Check argument/fields
-   if (n_channels .ne. 0 .and. .not. associated(channel_ids)) then
+   if (preproc_opts%n_channels .ne. 0 .and. .not. associated(preproc_opts%channel_ids)) then
       write(*,*) 'ERROR: options n_channels and channel_ids must be used together'
       stop error_stop_code
    end if
@@ -730,11 +686,11 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
 !   if (ecmwf_flag .lt. 5 .or. ecmwf_flag .gt. 8) do_cloud_emis=.false.
 
    ! If we're using an external land-sea file, place that into USGS filename var
-   if (use_predef_lsm) usgs_path_file=ext_lsm_path
+   if (preproc_opts%use_predef_lsm) usgs_path_file=preproc_opts%ext_lsm_path
 
-   if (ecmwf_path(2) .eq. '') ecmwf_path(2) = ecmwf_path(1)
-   if (ecmwf_path2(2) .eq. '') ecmwf_path2(2) = ecmwf_path2(1)
-   if (ecmwf_path3(2) .eq. '') ecmwf_path3(2) = ecmwf_path3(1)
+   if (preproc_opts%ecmwf_path(2) .eq. '')  preproc_opts%ecmwf_path(2) =  preproc_opts%ecmwf_path(1)
+   if (preproc_opts%ecmwf_path2(2) .eq. '') preproc_opts%ecmwf_path2(2) = preproc_opts%ecmwf_path2(1)
+   if (preproc_opts%ecmwf_path3(2) .eq. '') preproc_opts%ecmwf_path3(2) = preproc_opts%ecmwf_path3(1)
 
    ! get the NetCDF version
    global_atts%netcdf_version=nf90_inq_libvers()
@@ -783,7 +739,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
        trim(adjustl(sensor)) .eq. 'ATSR2') then
       call setup_aatsr(l1b_path_file,geo_path_file,platform,sensor,year,month, &
            day,doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute, &
-           channel_ids,channel_info,verbose)
+           preproc_opts%channel_ids,channel_info,verbose)
 
       loc_limit=(/ -90.0, -180.0, 90.0, 180.0 /)
 
@@ -796,7 +752,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
            n_along_track2, along_track_offset2, verbose)
    else if (trim(adjustl(sensor)) .eq. 'ABI') then
       call setup_abi(l1b_path_file,geo_path_file,platform,year,month,day, &
-           doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids, &
+           doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,preproc_opts%channel_ids, &
            channel_info,verbose)
 
       ! Get dimensions of the ABI image.
@@ -806,7 +762,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
 
    else if (trim(adjustl(sensor)) .eq. 'AHI') then
       call setup_ahi(l1b_path_file,geo_path_file,platform,year,month,day, &
-           doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids, &
+           doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,preproc_opts%channel_ids, &
            channel_info,verbose)
 
       ! Get dimensions of the AHI image.
@@ -816,7 +772,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
 
    else if (trim(adjustl(sensor)) .eq. 'AVHRR') then
       call setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day, &
-           doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids, &
+           doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,preproc_opts%channel_ids, &
            channel_info,verbose)
 
       ! get dimensions of the avhrr orbit
@@ -824,7 +780,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
 
    else if (trim(adjustl(sensor)) .eq. 'MODIS') then
       call setup_modis(l1b_path_file,geo_path_file,platform,year,month,day, &
-           doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids, &
+           doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,preproc_opts%channel_ids, &
            channel_info,verbose)
 
       ! get dimensions of the modis granule
@@ -832,7 +788,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
 
    else if (trim(adjustl(sensor)) .eq. 'SEVIRI') then
       call setup_seviri(l1b_path_file,geo_path_file,platform,year,month,day, &
-           doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids, &
+           doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,preproc_opts%channel_ids, &
            channel_info,verbose)
 
       ! get dimensions of the seviri image.
@@ -851,7 +807,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
    else if (trim(adjustl(sensor)) .eq. 'SLSTR') then
       call setup_slstr(l1b_path_file,geo_path_file,source_atts,platform, &
            year,month,day,doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute, &
-           channel_ids,channel_info,verbose)
+           preproc_opts%channel_ids,channel_info,verbose)
 
       ! Get dimensions of the SLSTR image.
       ! At present the full scene will always be processed
@@ -860,7 +816,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
 
    else if (trim(adjustl(sensor)) .eq. 'VIIRSI') then
       call setup_viirs_iband(l1b_path_file,geo_path_file,platform,year,month,day, &
-           doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids, &
+           doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,preproc_opts%channel_ids, &
            channel_info,verbose)
 
       ! Get dimensions of the VIIRS image.
@@ -870,7 +826,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
 
    else if (trim(adjustl(sensor)) .eq. 'VIIRSM') then
       call setup_viirs_mband(l1b_path_file,geo_path_file,platform,year,month,day, &
-           doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids, &
+           doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,preproc_opts%channel_ids, &
            channel_info,verbose)
 
       ! Get dimensions of the VIIRS image.
@@ -1006,10 +962,10 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
       ! read imager data:
       if (verbose) write(*,*) 'Read imager data'
       call read_imager(sensor,platform,l1b_path_file,geo_path_file, &
-           aatsr_calib_path_file,predef_geo_file,imager_geolocation, &
+           aatsr_calib_path_file,preproc_opts%ext_geo_path,imager_geolocation, &
            imager_angles,imager_flags, imager_time,imager_measurements, &
-           channel_info,n_along_track, use_l1_land_mask,use_predef_geo, &
-           do_gsics, global_atts, verbose)
+           channel_info,n_along_track, preproc_opts%use_l1_land_mask,preproc_opts%use_predef_geo, &
+           preproc_opts%do_gsics, global_atts, verbose)
 
 #ifdef WRAPPER
       ! do not process this orbit if no valid lat/lon data available
@@ -1030,57 +986,57 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
       if (verbose) write(*,*) 'Carry out any preparatory steps'
       call preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
            cf_file,lsf_file,geo_file,loc_file,alb_file,sensor,platform, &
-           product_name,cyear,cmonth,cday,chour,cminute, &
-           source_atts%level1b_orbit_number,ecmwf_path,ecmwf_path_hr, &
-           ecmwf_path2,ecmwf_path3,ecmwf_path_file,ecmwf_HR_path_file, &
-           ecmwf_path_file2,ecmwf_path_file3,global_atts,ecmwf_flag, &
-           ecmwf_time_int_method,imager_geolocation,imager_time, &
+           preproc_opts%product_name,cyear,cmonth,cday,chour,cminute, &
+           source_atts%level1b_orbit_number,preproc_opts%ecmwf_path,preproc_opts%ecmwf_path_hr, &
+           preproc_opts%ecmwf_path2,preproc_opts%ecmwf_path3,preproc_opts%ecmwf_path_file,preproc_opts%ecmwf_HR_path_file, &
+           preproc_opts%ecmwf_path_file2,preproc_opts%ecmwf_path_file3,global_atts,ecmwf_flag, &
+           preproc_opts%ecmwf_time_int_method,imager_geolocation,imager_time, &
            i_chunk,ecmwf_time_int_fac,assume_full_paths, verbose)
 
       ! read ECMWF fields and grid information
       if (verbose) then
          write(*,*) 'Start reading ecmwf era interim grib file'
          write(*,*) 'ecmwf_flag: ', ecmwf_flag
-         write(*,*) 'ecmwf_path_file: ',trim(ecmwf_path_file(1))
-         write(*,*) 'ecmwf_HR_path_file: ',trim(ecmwf_HR_path_file(1))
+         write(*,*) 'ecmwf_path_file: ',trim(preproc_opts%ecmwf_path_file(1))
+         write(*,*) 'ecmwf_HR_path_file: ',trim(preproc_opts%ecmwf_HR_path_file(1))
          if (ecmwf_flag.gt.0.and.ecmwf_flag.lt.4) then
-            write(*,*) 'ecmwf_path_file2: ',trim(ecmwf_path_file2(1))
-            write(*,*) 'ecmwf_path_file3: ',trim(ecmwf_path_file3(1))
+            write(*,*) 'ecmwf_path_file2: ',trim(preproc_opts%ecmwf_path_file2(1))
+            write(*,*) 'ecmwf_path_file3: ',trim(preproc_opts%ecmwf_path_file3(1))
          end if
       end if
 
       ! NOAA GFS has limited (pressure) levels and no HR, so set these.
-      if (ecmwf_flag .ge. 5 .and. ecmwf_flag .le. 8) ecmwf_nlevels=31
-      if (ecmwf_flag .ge. 5 .and. ecmwf_flag .le. 8) use_hr_ecmwf=.false.
+      if (ecmwf_flag .ge. 5 .and. ecmwf_flag .le. 8) preproc_opts%ecmwf_nlevels=31
+      if (ecmwf_flag .ge. 5 .and. ecmwf_flag .le. 8) preproc_opts%use_hr_ecmwf=.false.
 
       ! read surface wind fields and ECMWF dimensions
-      if (ecmwf_time_int_method .ne. 2) then
-         call read_ecmwf_wind(ecmwf_flag, ecmwf_path_file(1), &
-              ecmwf_HR_path_file(1), ecmwf_path_file2(1), ecmwf_path_file3(1), &
-              ecmwf, ecmwf_HR, use_hr_ecmwf, ecmwf_nlevels, verbose)
+      if (preproc_opts%ecmwf_time_int_method .ne. 2) then
+         call read_ecmwf_wind(ecmwf_flag, preproc_opts%ecmwf_path_file(1), &
+              preproc_opts%ecmwf_HR_path_file(1), preproc_opts%ecmwf_path_file2(1), preproc_opts%ecmwf_path_file3(1), &
+              ecmwf, ecmwf_HR, preproc_opts%use_hr_ecmwf, preproc_opts%ecmwf_nlevels, verbose)
       else
-         call read_ecmwf_wind(ecmwf_flag, ecmwf_path_file(1), &
-              ecmwf_HR_path_file(1), ecmwf_path_file2(1), ecmwf_path_file3(1), &
-              ecmwf1, ecmwf_HR1, use_hr_ecmwf, ecmwf_nlevels, verbose)
-         call read_ecmwf_wind(ecmwf_flag, ecmwf_path_file(2), &
-              ecmwf_HR_path_file(2), ecmwf_path_file2(2), ecmwf_path_file3(2), &
-              ecmwf2, ecmwf_HR2, use_hr_ecmwf, ecmwf_nlevels, verbose)
+         call read_ecmwf_wind(ecmwf_flag, preproc_opts%ecmwf_path_file(1), &
+              preproc_opts%ecmwf_HR_path_file(1), preproc_opts%ecmwf_path_file2(1), preproc_opts%ecmwf_path_file3(1), &
+              ecmwf1, ecmwf_HR1, preproc_opts%use_hr_ecmwf, preproc_opts%ecmwf_nlevels, verbose)
+         call read_ecmwf_wind(ecmwf_flag, preproc_opts%ecmwf_path_file(2), &
+              preproc_opts%ecmwf_HR_path_file(2), preproc_opts%ecmwf_path_file2(2), preproc_opts%ecmwf_path_file3(2), &
+              ecmwf2, ecmwf_HR2, preproc_opts%use_hr_ecmwf, preproc_opts%ecmwf_nlevels, verbose)
 
          call dup_ecmwf_allocation(ecmwf1, ecmwf, low_res)
-         if (use_hr_ecmwf) then
+         if (preproc_opts%use_hr_ecmwf) then
             call dup_ecmwf_allocation(ecmwf_HR1, ecmwf_HR, high_res)
          end if
 
          call linearly_combine_ecmwfs(1.-ecmwf_time_int_fac, &
               ecmwf_time_int_fac, ecmwf1, ecmwf2, ecmwf, low_res)
-         if (use_hr_ecmwf) then
+         if (preproc_opts%use_hr_ecmwf) then
             call linearly_combine_ecmwfs(1.-ecmwf_time_int_fac, &
                  ecmwf_time_int_fac, ecmwf_HR1, ecmwf_HR2, ecmwf_HR, high_res)
          end if
 
          call deallocate_ecmwf_structures(ecmwf1, low_res)
          call deallocate_ecmwf_structures(ecmwf2, low_res)
-         if (use_hr_ecmwf) then
+         if (preproc_opts%use_hr_ecmwf) then
             call deallocate_ecmwf_structures(ecmwf_HR1, high_res)
             call deallocate_ecmwf_structures(ecmwf_HR2, high_res)
          end if
@@ -1104,19 +1060,19 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
 
       ! read ecmwf era interim file
       if (verbose) write(*,*) 'Read and interpolate ecmwf era interim'
-      if (ecmwf_time_int_method .ne. 2) then
-         call read_ecmwf(ecmwf_flag, ecmwf_path_file(1), ecmwf_path_file2(1), &
-              ecmwf_path_file3(1), ecmwf, preproc_dims, preproc_geoloc, &
+      if (preproc_opts%ecmwf_time_int_method .ne. 2) then
+         call read_ecmwf(ecmwf_flag, preproc_opts%ecmwf_path_file(1), preproc_opts%ecmwf_path_file2(1), &
+              preproc_opts%ecmwf_path_file3(1), ecmwf, preproc_dims, preproc_geoloc, &
               preproc_prtm, verbose)
       else
          call allocate_preproc_prtm(preproc_dims, preproc_prtm1)
-         call read_ecmwf(ecmwf_flag, ecmwf_path_file(1), ecmwf_path_file2(1), &
-              ecmwf_path_file3(1), ecmwf, preproc_dims, preproc_geoloc, &
+         call read_ecmwf(ecmwf_flag, preproc_opts%ecmwf_path_file(1), preproc_opts%ecmwf_path_file2(1), &
+              preproc_opts%ecmwf_path_file3(1), ecmwf, preproc_dims, preproc_geoloc, &
               preproc_prtm1, verbose)
 
          call allocate_preproc_prtm(preproc_dims, preproc_prtm2)
-         call read_ecmwf(ecmwf_flag, ecmwf_path_file(2), ecmwf_path_file2(2), &
-              ecmwf_path_file3(2), ecmwf, preproc_dims, preproc_geoloc, &
+         call read_ecmwf(ecmwf_flag, preproc_opts%ecmwf_path_file(2), preproc_opts%ecmwf_path_file2(2), &
+              preproc_opts%ecmwf_path_file3(2), ecmwf, preproc_dims, preproc_geoloc, &
               preproc_prtm2, verbose)
 
          call linearly_combine_prtms(1.-ecmwf_time_int_fac, ecmwf_time_int_fac, &
@@ -1137,12 +1093,12 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
 
       if (verbose) write(*,*) 'Reading USGS path: ',trim(usgs_path_file)
       call get_USGS_data(usgs_path_file, imager_flags, imager_geolocation, &
-           usgs, assume_full_paths, use_l1_land_mask, source_atts, &
-           use_predef_lsm, sensor, verbose)
+           usgs, assume_full_paths, preproc_opts%use_l1_land_mask, source_atts, &
+           preproc_opts%use_predef_lsm, sensor, verbose)
 
       ! select correct emissivity file and calculate the emissivity over land
       if (verbose) write(*,*) 'Get surface emissivity'
-      if (.not. use_camel_emis) then
+      if (.not. preproc_opts%use_camel_emis) then
          call get_surface_emissivity(cyear, cdoy, cimss_emiss_path, imager_flags, &
               imager_geolocation, channel_info, preproc_dims, &
               assume_full_paths, verbose, surface, preproc_surf, source_atts)
@@ -1152,29 +1108,29 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
               assume_full_paths, verbose, surface, preproc_surf, source_atts)
       end if
 
-      if (.not. do_ironly) then
+      if (.not. preproc_opts%do_ironly) then
          ! select correct reflectance files and calculate surface reflectance
          ! over land and ocean
          if (verbose) write(*,*) 'Get surface reflectance'
          call get_surface_reflectance(cyear, cdoy, cmonth, &
-              modis_albedo_path, modis_brdf_path, occci_path, imager_flags, &
+              modis_albedo_path, modis_brdf_path, preproc_opts%occci_path, imager_flags, &
               imager_geolocation, imager_angles, channel_info, ecmwf, &
-              assume_full_paths, include_full_brdf, use_occci, &
-              use_swansea_climatology, swansea_gamma, verbose, &
+              assume_full_paths, include_full_brdf, preproc_opts%use_occci, &
+              preproc_opts%use_swansea_climatology, preproc_opts%swansea_gamma, verbose, &
               surface, source_atts)
 
          ! Use the Near-real-time Ice and Snow Extent (NISE) data from the National
          ! Snow and Ice Data Center to detect ice and snow pixels, and correct the
          ! surface albedo.
          if (verbose) write(*,*) 'Correct for ice and snow'
-         if (.not. disable_snow_ice_corr) then
-            if (.not. use_ecmwf_snow_and_ice) then
+         if (.not. preproc_opts%disable_snow_ice_corr) then
+            if (.not. preproc_opts%use_ecmwf_snow_and_ice) then
                call correct_for_ice_snow(nise_ice_snow_path, &
                     imager_geolocation, surface, cyear, cmonth, cday, &
                     channel_info, assume_full_paths, include_full_brdf, &
                     source_atts, verbose)
             else
-               call correct_for_ice_snow_ecmwf(ecmwf_HR_path_file(1), &
+               call correct_for_ice_snow_ecmwf(preproc_opts%ecmwf_HR_path_file(1), &
                     imager_geolocation, channel_info, imager_flags, preproc_dims, &
                     preproc_prtm, surface, include_full_brdf, source_atts, &
                     verbose)
@@ -1194,16 +1150,16 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
 
       if (verbose) write(*,*) 'Calculate Pavolonis cloud phase with high '// &
            'resolution ERA surface data'
-      if (do_cloud_type) then
-         if (.not. use_hr_ecmwf) then
+      if (preproc_opts%do_cloud_type) then
+         if (.not. preproc_opts%use_hr_ecmwf) then
             call cloud_type(channel_info, sensor, surface, imager_flags, &
                  imager_angles, imager_geolocation, imager_measurements, &
-                 imager_pavolonis, ecmwf, platform, doy, do_ironly, &
+                 imager_pavolonis, ecmwf, platform, doy, preproc_opts%do_ironly, &
                  do_spectral_response_correction, verbose)
          else
             call cloud_type(channel_info, sensor, surface, imager_flags, &
                  imager_angles, imager_geolocation, imager_measurements, &
-                 imager_pavolonis, ecmwf_HR, platform, doy, do_ironly, &
+                 imager_pavolonis, ecmwf_HR, platform, doy, preproc_opts%do_ironly, &
                  do_spectral_response_correction, verbose)
          end if
       end if
@@ -1270,7 +1226,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
            config_file,msi_file,cf_file,lsf_file,geo_file,loc_file,alb_file, &
            platform,sensor,global_atts,source_atts,cyear,cmonth,cday,chour, &
            cminute,preproc_dims,imager_angles,imager_geolocation,netcdf_info, &
-           channel_info,include_full_brdf,ecmwf_flag,do_cloud_emis,verbose)
+           channel_info,include_full_brdf,ecmwf_flag,preproc_opts%do_cloud_emis,verbose)
 
       ! perform RTTOV calculations
       if (verbose) write(*,*) 'Perform RTTOV calculations'
@@ -1278,21 +1234,21 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
          call rttov_driver_gfs(rttov_coef_path,rttov_emiss_path,sensor, &
               platform, preproc_dims,preproc_geoloc,preproc_geo,preproc_prtm, &
               preproc_surf, preproc_cld,netcdf_info,channel_info,year,month, &
-              day,use_modis_emis_in_rttov,do_cloud_emis,do_co2,verbose)
+              day,preproc_opts%use_modis_emis_in_rttov,preproc_opts%do_cloud_emis,preproc_opts%do_co2,verbose)
          ! Call cloud emissivity function
-         if (do_cloud_emis) then
+         if (preproc_opts%do_cloud_emis) then
             call get_cloud_emis(channel_info,imager_measurements, &
                   imager_geolocation,preproc_dims,preproc_geoloc, &
                   preproc_cld,preproc_prtm,imager_cloud,ecmwf,sensor,verbose)
          end if
       else
-         if (do_cloud_emis) call get_trop_tp(preproc_prtm,preproc_dims)
+         if (preproc_opts%do_cloud_emis) call get_trop_tp(preproc_prtm,preproc_dims)
          call rttov_driver(rttov_coef_path,rttov_emiss_path,sensor,platform, &
               preproc_dims,preproc_geoloc,preproc_geo,preproc_prtm, &
               preproc_surf,preproc_cld,netcdf_info,channel_info,year,month,day, &
-              use_modis_emis_in_rttov,do_cloud_emis,do_co2,verbose)
+              preproc_opts%use_modis_emis_in_rttov,preproc_opts%do_cloud_emis,preproc_opts%do_co2,verbose)
          ! Call cloud emissivity function
-         if (do_cloud_emis) then
+         if (preproc_opts%do_cloud_emis) then
             call get_cloud_emis(channel_info,imager_measurements, &
                   imager_geolocation,preproc_dims,preproc_geoloc, &
                   preproc_cld,preproc_prtm,imager_cloud,ecmwf,sensor,verbose)
@@ -1314,7 +1270,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
          call netcdf_output_write_swath(imager_flags,imager_angles, &
               imager_geolocation,imager_measurements,imager_cloud,imager_time, &
               imager_pavolonis,netcdf_info,channel_info,surface, &
-              include_full_brdf,do_cloud_emis)
+              include_full_brdf,preproc_opts%do_cloud_emis)
 
          ! close output netcdf files
          if (verbose) write(*,*)'Close netcdf output files'
@@ -1339,7 +1295,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
                  loc_file,alb_file,platform,sensor,global_atts,source_atts, &
                  cyear,cmonth,cday,chour,cminute,preproc_dims,imager_angles, &
                  imager_geolocation,netcdf_info,channel_info,include_full_brdf, &
-                 ecmwf_flag,do_cloud_emis,verbose)
+                 ecmwf_flag,preproc_opts%do_cloud_emis,verbose)
 
          end if
 
@@ -1352,7 +1308,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
       call netcdf_output_write_swath(imager_flags,imager_angles, &
            imager_geolocation,imager_measurements,imager_cloud,imager_time, &
            imager_pavolonis,netcdf_info,channel_info,surface,include_full_brdf, &
-           do_cloud_emis)
+           preproc_opts%do_cloud_emis)
 
       ! close output netcdf files
       if (verbose) write(*,*)'Close netcdf output files'
@@ -1363,7 +1319,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
       ! deallocate the array parts of the structures
       if (verbose) write(*,*) 'Deallocate chunk specific structures'
       call deallocate_ecmwf_structures(ecmwf, low_res)
-      if (use_hr_ecmwf) then
+      if (preproc_opts%use_hr_ecmwf) then
          call deallocate_ecmwf_structures(ecmwf_HR, high_res)
       end if
       call deallocate_preproc_structures(preproc_dims, preproc_geoloc, &
@@ -1384,7 +1340,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
    call deallocate_channel_info(channel_info)
 
    ! deallocate optional arguments
-   if (associated(channel_ids)) deallocate(channel_ids)
+   if (associated(preproc_opts%channel_ids)) deallocate(preproc_opts%channel_ids)
 
 #ifdef WRAPPER
 end subroutine orac_preproc

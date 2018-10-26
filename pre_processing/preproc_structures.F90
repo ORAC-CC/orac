@@ -26,6 +26,7 @@
 ! 2017/03/29, SP: Add ability to calculate tropospheric cloud emissivity (ExtWork)
 ! 2017/11/15, SP: Add feature to give access to sensor azimuth angle
 ! 2018/07/18, DE: Add tropoopause temperature
+! 2018/09/30, SP: New structure to store driver option variables, tidier than multi-var
 !
 ! Bugs:
 ! None known.
@@ -61,6 +62,45 @@ module preproc_structures_m
       real(kind=sreal), dimension(:,:,:), pointer :: solza,solazi,satza,satazi,relazi
    end type preproc_geo_t
 
+
+   ! optional processing variables, typically defined through the driver file
+   type preproc_opts_t
+		logical         				:: do_co2
+		logical         				:: do_gsics
+		logical         				:: disable_snow_ice_corr
+		logical         				:: do_cloud_emis
+		logical         				:: do_cloud_type
+		logical         				:: do_ironly
+		integer         				:: ecmwf_nlevels
+		integer         				:: ecmwf_time_int_method
+		integer,pointer 				:: channel_ids(:)
+		integer(kind=lint)			:: n_channels
+		real            				:: swansea_gamma
+		logical         				:: use_camel_emis
+		logical         				:: use_ecmwf_snow_and_ice
+		logical         				:: use_hr_ecmwf
+		logical         				:: use_l1_land_mask
+		logical         				:: use_modis_emis_in_rttov
+		logical         				:: use_occci
+		logical         				:: use_predef_geo
+		logical         				:: use_predef_lsm
+		logical         				:: use_swansea_climatology
+
+		character(len=path_length) :: ecmwf_path(2)
+		character(len=path_length) :: ecmwf_path2(2)
+		character(len=path_length) :: ecmwf_path3(2)
+		character(len=path_length) :: ecmwf_path_hr(2)
+		character(len=path_length) :: ecmwf_path_hr_2(2)
+		character(len=path_length) :: ecmwf_HR_path_file(2)
+		character(len=path_length) :: ecmwf_path_file(2)
+		character(len=path_length) :: ecmwf_path_file2(2)
+		character(len=path_length) :: ecmwf_path_file3(2)
+		character(len=path_length) :: ext_lsm_path
+		character(len=path_length) :: ext_geo_path
+		character(len=path_length) :: occci_path
+		character(len=path_length) :: product_name
+
+   end type preproc_opts_t
 
    ! ecmwf profiles and surface fields (prtm data)
    type preproc_prtm_t

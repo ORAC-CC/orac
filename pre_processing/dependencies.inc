@@ -116,7 +116,7 @@ $(OBJS)/surface_structures.o: $(OBJS)/channel_structures.o \
         $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o \
         $(OBJS)/preproc_structures.o allocate_surface_structures.F90 \
         deallocate_surface_structures.F90
-$(OBJS)/utils_for_main.o: $(OBJS)/preproc_constants.o
+$(OBJS)/utils_for_main.o: $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o
 $(OBJS)/orac_preproc.o: $(OBJS)/channel_structures.o $(OBJS)/cloud_emis.o \
         $(OBJS)/cloud_typing_pavolonis.o $(OBJS)/correct_for_ice_snow.o \
         $(OBJS)/ecmwf.o $(OBJS)/imager_structures.o $(OBJS)/netcdf_output.o \
