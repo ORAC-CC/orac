@@ -2,7 +2,7 @@
 ! Name: read_abi_funcs.F90
 !
 ! Purpose:
-! Contains functions for processing GOES images
+! Contains functions for processing data from GOES-16 onwards
 ! Here we have functions to:
 !    1) Find the filenames for each GOES channel
 !    2) Compute the lat/lon for each pixel in the image

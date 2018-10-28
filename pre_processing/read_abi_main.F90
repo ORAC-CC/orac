@@ -2,8 +2,8 @@
 ! Name: read_abi_main.F90
 !
 ! Purpose:
-! Contains functions for reading GOES data. These are typically the high level
-! functions that control data read-in, low level is in read_abi_funcs.f90
+! Contains functions for reading data from GOES-16 onwards. These are typically
+! high level functions to control data read-in, low level in read_abi_funcs.f90
 ! History:
 ! 2018/02/10, SP: First version.
 ! 2018/06/08, SP: New global attribute to store satellite position information
@@ -99,22 +99,22 @@ subroutine read_abi_dimensions(l1_5_file, n_across_track, n_along_track, &
       ! actual image in the file relative to the full disk image.
       if (starty - 1 .lt.  0) then
          write(*,*) 'ERROR: read_abi_dimensions(): user defined starty (', starty, ') ' //&
-              'does not fall within the actual GOES-R image starting at: ', 1
+              'does not fall within the actual GOES image starting at: ', 1
          stop error_stop_code
       end if
       if (endy - 1 .gt. n_lines - 1) then
          write(*,*) 'ERROR: read_abi_dimensions(): user defined endy (', endy, ') does not ' // &
-              'fall within the actual GOES-R image ending at: ', n_lines
+              'fall within the actual GOES image ending at: ', n_lines
          stop error_stop_code
       end if
       if (startx - 1 .lt.  0) then
          write(*,*) 'ERROR: read_abi_dimensions(): user defined startx (', startx, ') does not ' // &
-              'fall within the actual GOES-R image starting at: ', 1
+              'fall within the actual GOES image starting at: ', 1
          stop error_stop_code
       end if
       if (endx - 1 .gt. n_cols - 1) then
          write(*,*) 'ERROR: read_abi_dimensions(): user defined endx (', endx, ') does not ' // &
-              'fall within the actual GOES-R image ending at: ', n_cols
+              'fall within the actual GOES image ending at: ', n_cols
          stop error_stop_code
       end if
    end if
