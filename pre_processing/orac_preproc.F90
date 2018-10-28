@@ -337,8 +337,8 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
    use preproc_constants_m
    use preproc_structures_m
    use read_aatsr_m
+   use read_abi_m
    use read_avhrr_m
-   use read_goes_m
    use read_himawari_m
    use read_imager_m
    use read_modis_m
@@ -756,7 +756,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
            channel_info,verbose)
 
       ! Get dimensions of the ABI image.
-      call read_goes_dimensions(geo_path_file,n_across_track,n_along_track, &
+      call read_abi_dimensions(geo_path_file,n_across_track,n_along_track, &
                                     startx,endx,starty,endy,verbose)
 
 
