@@ -24,8 +24,8 @@
 ! Arguments:
 ! Name           Type    In/Out/Both Description
 ! l1_5_file      string  in   Full path to one netCDF GOES channel (any band)
-! n_across_track lint    out  Number columns in the himawari disk image (constant)
-! n_along_track  lint    out  Number lines   in the himawari disk image (constant)
+! n_across_track lint    out  Number columns in the GOES disk image (constant)
+! n_along_track  lint    out  Number lines   in the GOES disk image (constant)
 ! startx         lint    both First column desired by the caller
 ! endx           lint    both First line desired by the caller
 ! starty         lint    both Last column desired by the caller

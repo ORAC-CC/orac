@@ -30,6 +30,7 @@
 ! 2017/03/29, SP: Add new variable for tropopause cloud emissivity (ExtWork)
 ! 2017/06/21, OS: deallocated ann phase variables
 ! 2017/11/15, SP: Add feature to give access to sensor azimuth angle
+! 2018/11/05, SP: Add CAPE
 !
 ! Bugs:
 ! None known.
@@ -74,8 +75,11 @@ subroutine deallocate_imager_structures(imager_geolocation,imager_angles, &
    deallocate(imager_pavolonis%cphcot)
    deallocate(imager_pavolonis%cirrus_quality)
    deallocate(imager_pavolonis%emis_ch3b)
+#ifdef INCLUDE_SATWX
    deallocate(imager_cloud%cloud_emis)
    deallocate(imager_cloud%trop_p)
    deallocate(imager_cloud%trop_t)
+   deallocate(imager_cloud%cape)
+#endif
 
 end subroutine deallocate_imager_structures

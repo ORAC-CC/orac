@@ -49,6 +49,7 @@
 ! 2017/03/29, SP: Add ability to calculate tropospheric cloud emissivity (ExtWork)
 ! 2017/06/21, OS: added ann phase variables
 ! 2018/04/26, SP: Add code to save satellite azimuth (commented out, but useful)
+! 2018/11/05, SP: Add CAPE
 !
 ! Bugs:
 ! None known.
@@ -280,6 +281,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
         1, 1, imager_geolocation%ny, &
         1, 1, channel_info%nviews)
 
+#ifdef INCLUDE_SATWX
    if (do_cloud_emis) then
       call nc_write_array( &
            netcdf_info%ncid_clf, &
@@ -293,7 +295,6 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
            imager_cloud%cloud_emis(imager_geolocation%startx:,:,2), &
            1, 1, n_x, &
            1, 1, imager_geolocation%ny)
-
       call nc_write_array( &
            netcdf_info%ncid_clf, &
            'trop_t', netcdf_info%vid_tropop_te, &
@@ -306,7 +307,14 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
            imager_cloud%trop_p(imager_geolocation%startx:,:), &
            1, 1, n_x, &
            1, 1, imager_geolocation%ny)
+      call nc_write_array( &
+           netcdf_info%ncid_clf, &
+           'cape', netcdf_info%vid_cape, &
+           imager_cloud%cape(imager_geolocation%startx:,:), &
+           1, 1, n_x, &
+           1, 1, imager_geolocation%ny)
    end if
+#endif
 
    call nc_write_array( &
         netcdf_info%ncid_clf, &

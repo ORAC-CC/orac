@@ -119,11 +119,17 @@ subroutine allocate_preproc_prtm(preproc_dims, preproc_prtm)
    allocate(preproc_prtm%totcolwv(sx:ex,sy:ey))
    preproc_prtm%totcolwv=sreal_fill_value
 
+#ifdef INCLUDE_SATWX
    allocate(preproc_prtm%trop_p(sx:ex,sy:ey))
    preproc_prtm%trop_p=sreal_fill_value
 
    allocate(preproc_prtm%trop_t(sx:ex,sy:ey))
    preproc_prtm%trop_t=sreal_fill_value
+
+
+   allocate(preproc_prtm%cape(sx:ex,sy:ey))
+   preproc_prtm%cape=sreal_fill_value
+#endif
 
 end subroutine allocate_preproc_prtm
 

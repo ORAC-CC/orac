@@ -308,6 +308,7 @@
 !                 setting is ON, meaning that GSICS coefficients will be used
 !                 instead of IMPF (as previous). The new driver file option
 !                 USE_GSICS enables this to be disabled.
+! 2018/10/08, SP: Add support for the GOES-Imager series of sensors (G12-15)
 !
 ! Bugs:
 ! See http://proj.badc.rl.ac.uk/orac/report/1
@@ -322,7 +323,6 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
 
    use channel_structures_m
    use chunk_utils_m
-   use cloud_emis_m
    use cloud_typing_pavolonis_m, only: cloud_type
    use correct_for_ice_snow_m
    use ecmwf_m
@@ -339,6 +339,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
    use read_aatsr_m
    use read_abi_m
    use read_avhrr_m
+   use read_goes_imager_m
    use read_himawari_m
    use read_imager_m
    use read_modis_m
@@ -355,6 +356,10 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
    use surface_structures_m
    use USGS_physiography_m
    use utils_for_main_m
+
+#ifdef INCLUDE_SATWX
+   use cloud_emis_m
+#endif
 
    implicit none
 
@@ -681,6 +686,13 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
       stop error_stop_code
    end if
 
+   ! Check if SatWx is available
+#ifdef INCLUDE_SATWX
+	preproc_opts%do_cloud_emis = preproc_opts%do_cloud_emis
+#else
+	preproc_opts%do_cloud_emis = .false.
+#endif
+
    ! Check we're capable of computing cloud emissivity
    ! (ecmwf_flag =5 or =6 or =7 or =8, for GFS data)
 !   if (ecmwf_flag .lt. 5 .or. ecmwf_flag .gt. 8) do_cloud_emis=.false.
@@ -758,8 +770,6 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
       ! Get dimensions of the ABI image.
       call read_abi_dimensions(geo_path_file,n_across_track,n_along_track, &
                                     startx,endx,starty,endy,verbose)
-
-
    else if (trim(adjustl(sensor)) .eq. 'AHI') then
       call setup_ahi(l1b_path_file,geo_path_file,platform,year,month,day, &
            doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,preproc_opts%channel_ids, &
@@ -777,6 +787,14 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
 
       ! get dimensions of the avhrr orbit
       call read_avhrr_dimensions(geo_path_file,n_across_track,n_along_track)
+   else if (trim(adjustl(sensor)) .eq. 'GIMG') then
+      call setup_goes_imager(l1b_path_file,geo_path_file,platform,year,month,day, &
+           doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,preproc_opts%channel_ids, &
+           channel_info,verbose)
+
+      ! Get dimensions of the GOES-Imager image.
+      call read_goes_imager_dimensions(geo_path_file,n_across_track,n_along_track, &
+                                    startx,endx,starty,endy,verbose)
 
    else if (trim(adjustl(sensor)) .eq. 'MODIS') then
       call setup_modis(l1b_path_file,geo_path_file,platform,year,month,day, &
@@ -1236,23 +1254,29 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
               preproc_surf, preproc_cld,netcdf_info,channel_info,year,month, &
               day,preproc_opts%use_modis_emis_in_rttov,preproc_opts%do_cloud_emis,preproc_opts%do_co2,verbose)
          ! Call cloud emissivity function
+#ifdef INCLUDE_SATWX
          if (preproc_opts%do_cloud_emis) then
             call get_cloud_emis(channel_info,imager_measurements, &
                   imager_geolocation,preproc_dims,preproc_geoloc, &
                   preproc_cld,preproc_prtm,imager_cloud,ecmwf,sensor,verbose)
          end if
+#endif
       else
+#ifdef INCLUDE_SATWX
          if (preproc_opts%do_cloud_emis) call get_trop_tp(preproc_prtm,preproc_dims)
+#endif
          call rttov_driver(rttov_coef_path,rttov_emiss_path,sensor,platform, &
               preproc_dims,preproc_geoloc,preproc_geo,preproc_prtm, &
               preproc_surf,preproc_cld,netcdf_info,channel_info,year,month,day, &
               preproc_opts%use_modis_emis_in_rttov,preproc_opts%do_cloud_emis,preproc_opts%do_co2,verbose)
          ! Call cloud emissivity function
+#ifdef INCLUDE_SATWX
          if (preproc_opts%do_cloud_emis) then
             call get_cloud_emis(channel_info,imager_measurements, &
                   imager_geolocation,preproc_dims,preproc_geoloc, &
                   preproc_cld,preproc_prtm,imager_cloud,ecmwf,sensor,verbose)
          end if
+#endif
       end if
 
 #ifdef WRAPPER

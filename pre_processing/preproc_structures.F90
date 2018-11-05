@@ -27,6 +27,7 @@
 ! 2017/11/15, SP: Add feature to give access to sensor azimuth angle
 ! 2018/07/18, DE: Add tropoopause temperature
 ! 2018/09/30, SP: New structure to store driver option variables, tidier than multi-var
+! 2018/11/05, SP: Add CAPE
 !
 ! Bugs:
 ! None known.
@@ -116,6 +117,9 @@ module preproc_structures_m
       real(kind=sreal), dimension(:,:), pointer   :: sst,sea_ice_cover
       real(kind=sreal), dimension(:,:), pointer   :: totcolwv
 
+      ! New field for Convective Available Potential Energy
+      real(kind=sreal), dimension(:,:), pointer   :: cape
+
       ! New fields for tropopause
       real(kind=sreal), dimension(:,:), pointer   :: trop_p,trop_t
    end type preproc_prtm_t
@@ -167,7 +171,10 @@ subroutine linearly_combine_prtms(a, b, prtm1, prtm2, prtm)
    prtm%sst           = a * prtm1%sst           + b * prtm2%sst
    prtm%sea_ice_cover = a * prtm1%sea_ice_cover + b * prtm2%sea_ice_cover
    prtm%totcolwv      = a * prtm1%totcolwv      + b * prtm2%totcolwv
+#ifdef INCLUDE_SATWX
+   prtm%cape          = a * prtm1%cape          + b * prtm2%cape
    prtm%trop_p        = a * prtm1%trop_p        + b * prtm2%trop_p
+#endif
 
 end subroutine linearly_combine_prtms
 

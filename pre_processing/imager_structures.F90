@@ -25,6 +25,7 @@
 ! 2017/03/29, SP: Add new variable for tropopause cloud emissivity (ExtWork)
 ! 2017/06/21, OS: added ann phase variables
 ! 2017/11/15, SP: Add feature to give access to sensor azimuth angle
+! 2018/11/05, SP: Add CAPE
 !
 ! Bugs:
 ! None known.
@@ -110,6 +111,7 @@ module imager_structures_m
       real(kind=sreal), dimension(:,:,:),   pointer :: cloud_emis
       real(kind=sreal), dimension(:,:),     pointer :: trop_t
       real(kind=sreal), dimension(:,:),     pointer :: trop_p
+      real(kind=sreal), dimension(:,:),     pointer :: cape
 
    end type imager_cloud_t
 

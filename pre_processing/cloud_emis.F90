@@ -11,7 +11,8 @@
 ! 2017/03/29, SP: First version (ExtWork)
 ! 2018/04/29, SP: Add cloud emissivity support for ECMWF profiles (ExtWork)
 ! 2018/05/24, SP: Updates to better calculate tropopause pressure (from IntCTP.F90)
-! 2018/07/18, DE: Add tropoopause temperature
+! 2018/07/18, DE: Add tropopause temperature
+! 2018/11/05, SP: Add CAPE
 !
 ! Bugs:
 ! None known.
@@ -113,9 +114,6 @@ subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation, &
 
 #ifdef INCLUDE_SATWX
 	use emis_funcs
-#else
-	write(*,*)"ERROR: Cannot compute cloud emissivity unless SatWx is available."
-	write(*,*)"ERROR: Cloud emissivity will be set to the fill value!"
 #endif
 
    implicit none
@@ -308,8 +306,6 @@ subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation, &
    deallocate(interp)
    deallocate(indata)
 
-#else
-	imager_cloud%cloud_emis(:,:,:) = sreal_fill_value
 #endif
 
 end subroutine get_cloud_emis

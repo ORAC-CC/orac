@@ -36,6 +36,7 @@
 ! 2017/03/29, SP: Add new variable for tropopause cloud emissivity (ExtWork)
 ! 2017/06/21, OS: allocated ann phase variables; imager_angles are now inout
 ! 2017/11/15, SP: Add feature to give access to sensor azimuth angle
+! 2018/11/05, SP: Add CAPE
 !
 ! Bugs:
 ! None known.
@@ -180,6 +181,7 @@ subroutine allocate_imager_structures(imager_geolocation,imager_angles, &
         1:imager_geolocation%ny,imager_angles%nviews))
    imager_pavolonis%emis_ch3b=sreal_fill_value
 
+#ifdef INCLUDE_SATWX
    allocate(imager_cloud%cloud_emis( &
         imager_geolocation%startx:imager_geolocation%endx, &
         1:imager_geolocation%ny,2))
@@ -194,5 +196,11 @@ subroutine allocate_imager_structures(imager_geolocation,imager_angles, &
         imager_geolocation%startx:imager_geolocation%endx, &
         1:imager_geolocation%ny))
    imager_cloud%trop_p=sreal_fill_value
+
+   allocate(imager_cloud%cape( &
+        imager_geolocation%startx:imager_geolocation%endx, &
+        1:imager_geolocation%ny))
+   imager_cloud%cape=sreal_fill_value
+#endif
 
 end subroutine allocate_imager_structures

@@ -98,6 +98,7 @@
 ! 2018/04/26, SP: Add code to save satellite azimuth
 ! 2018/04/29, SP: Add cloud emissivity support for ECMWF profiles (ExtWork)
 ! 2018/07/18, DE: Add tropoopause temperature
+! 2018/11/05, SP: Add CAPE
 !
 ! Bugs:
 ! None known.
@@ -602,6 +603,8 @@ end subroutine netcdf_create_rtm
 !    main processor in the order in which they are stored.
 ! 2016/04/28, AP: Make multiple views mandatory.
 ! 2017/03/29, SP: Add ability to calculate tropospheric cloud emissivity (ExtWork)
+! 2018/11/05, SP: Add CAPE
+
 !
 !-------------------------------------------------------------------------------
 
@@ -857,6 +860,7 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
            fill_value = byte_fill_value)
 
       ! define cldemis variable
+#ifdef INCLUDE_SATWX
       if (do_cloud_emis) then
          call nc_def_var_float_packed_float( &
               netcdf_info%ncid_clf, &
@@ -894,7 +898,17 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
               deflate_level = deflate_level, &
               shuffle = shuffle_flag, &
               fill_value = sreal_fill_value)
+         call nc_def_var_float_packed_float( &
+              netcdf_info%ncid_clf, &
+              dimids_2d, &
+              'cape', &
+              netcdf_info%vid_cape, &
+              verbose, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
+              fill_value = sreal_fill_value)
       end if
+#endif
 
       ! define cldtype variable
       call nc_def_var_byte_packed_byte( &

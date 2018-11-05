@@ -20,6 +20,7 @@
 ! 2018/04/26, SP: Add code to save satellite azimuth (commented out, but useful)
 ! 2018/04/29, SP: Add cloud emissivity support for ECMWF profiles (ExtWork)
 ! 2018/07/18, DE: Add tropopause temperature
+! 2018/11/05, SP: Add CAPE
 !
 ! Bugs:
 ! None known.
@@ -83,7 +84,7 @@ module netcdf_output_m
       ! clf file
       integer :: vid_cflag, vid_cemis_lw, vid_cemis_wv, vid_cldtype, vid_cldmask, vid_cccot_pre, &
                  vid_cldmask_unc
-      integer :: vid_tropop_pr, vid_tropop_te
+      integer :: vid_tropop_pr, vid_tropop_te, vid_cape
       integer :: vid_ann_phase, vid_cphcot, vid_ann_phase_unc
 
       ! config file:

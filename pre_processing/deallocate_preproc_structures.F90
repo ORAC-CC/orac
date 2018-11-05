@@ -36,7 +36,8 @@
 !    elsewhere.
 ! 2017/03/29, SP: Add new variable for tropopause cloud emissivity (ExtWork)
 ! 2017/11/15, SP: Add feature to give access to sensor azimuth angle
-! 2018/07/18, DE: Add tropoopause temperature
+! 2018/07/18, DE: Add tropopause temperature
+! 2018/11/05, SP: Add CAPE
 !
 ! Bugs:
 ! None known.
@@ -67,8 +68,11 @@ subroutine deallocate_preproc_prtm(preproc_prtm)
    deallocate(preproc_prtm%sea_ice_cover)
    deallocate(preproc_prtm%totcolwv)
 
+#ifdef INCLUDE_SATWX
    deallocate(preproc_prtm%trop_p)
    deallocate(preproc_prtm%trop_t)
+   deallocate(preproc_prtm%cape)
+#endif
 
 end subroutine deallocate_preproc_prtm
 

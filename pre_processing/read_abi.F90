@@ -2,7 +2,7 @@
 ! Name: read_abi.F90
 !
 ! Purpose:
-! Module for GOES-R series read routines.
+! Module for GOES-16 series read routines.
 !
 ! History:
 ! 2018/02/10, SP: First version.
