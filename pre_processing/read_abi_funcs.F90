@@ -469,7 +469,7 @@ subroutine get_abi_solgeom(imager_time, imager_angles, imager_geolocation, verbo
          minu = int(tmphr)
 
          ! We can now use this time to retrieve the actual solar geometry
-         call ABI_Solpos(int(iye), int(mon), int(idy), int(ihr), int(minu), \
+         call ABI_Solpos(int(iye), int(mon), int(idy), int(ihr), int(minu), &
          imager_geolocation%latitude(x, y), imager_geolocation%longitude(x, y), sza, saa)
          imager_angles%solzen(x, y, 1) = sza
          imager_angles%solazi(x, y, 1) = saa

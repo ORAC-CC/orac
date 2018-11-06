@@ -120,26 +120,26 @@ real function get_snow_albedo(wvl)
 	real				::	slo,wvldif1,wvldif2
 	real,parameter	::	start_wvl 	=	0.35
 	real,parameter	::	end_wvl		=	13.9
-	real,parameter	::	snow_wvl(40)=	(/0.35,0.40,0.45,0.50,0.60,0.65,0.70,0.75,\
-												0.80,0.90,1.00,1.10,1.20,1.30,1.40,1.50,1.60,\
-												1.70,1.80,1.90,2.00,2.10,2.20,2.30,2.40,2.50,\
-												2.60,2.70,2.80,2.90,3.00,3.10,3.20,3.30,3.70,\
+	real,parameter	::	snow_wvl(40)=	(/0.35,0.40,0.45,0.50,0.60,0.65,0.70,0.75,&
+												0.80,0.90,1.00,1.10,1.20,1.30,1.40,1.50,1.60,&
+												1.70,1.80,1.90,2.00,2.10,2.20,2.30,2.40,2.50,&
+												2.60,2.70,2.80,2.90,3.00,3.10,3.20,3.30,3.70,&
 												3.80,10.91,11.92,12.90,13.90/)
 
-	real,parameter	::	snow_alb(40)=	(/0.97,0.98,0.99,0.98,0.98,0.96,0.95,0.93,0.90,\
-												0.84,0.72,0.73,0.54,0.47,0.42,0.04,0.07,0.14,\
-												0.20,0.07,0.01,0.03,0.11,0.08,0.04,0.03,0.03,\
-												0.01,0.00,0.01,0.02,0.04,0.03,0.02,0.02,0.01,\
+	real,parameter	::	snow_alb(40)=	(/0.97,0.98,0.99,0.98,0.98,0.96,0.95,0.93,0.90,&
+												0.84,0.72,0.73,0.54,0.47,0.42,0.04,0.07,0.14,&
+												0.20,0.07,0.01,0.03,0.11,0.08,0.04,0.03,0.03,&
+												0.01,0.00,0.01,0.02,0.04,0.03,0.02,0.02,0.01,&
 												0.01,0.02,0.03,0.03/)
 
 	if (wvl .lt. 	start_wvl) then
-		write(*,*)"WARNING: Cannot interpolate snow albedo, wavelength of ",wvl,\
+		write(*,*)"WARNING: Cannot interpolate snow albedo, wavelength of ",wvl,&
 					 "is below minimum acceptable wavelength of ",start_wvl
 		get_snow_albedo = 0.0
 		return
 	endif
 	if (wvl .gt. 	end_wvl) then
-		write(*,*)"WARNING: Cannot interpolate snow albedo, wavelength of ",wvl,\
+		write(*,*)"WARNING: Cannot interpolate snow albedo, wavelength of ",wvl,&
 					 "is above maximum acceptable wavelength of ",end_wvl
 		get_snow_albedo = 0.0
 		return
@@ -174,26 +174,26 @@ real function get_ice_albedo(wvl)
 	real				::	slo,wvldif1,wvldif2
 	real,parameter	::	start_wvl 	=	0.35
 	real,parameter	::	end_wvl		=	13.9
-	real,parameter	::	snow_wvl(40)=	(/0.35,0.40,0.45,0.50,0.60,0.65,0.70,0.75,\
-												0.80,0.90,1.00,1.10,1.20,1.30,1.40,1.50,1.60,\
-												1.70,1.80,1.90,2.00,2.10,2.20,2.30,2.40,2.50,\
-												2.60,2.70,2.80,2.90,3.00,3.10,3.20,3.30,3.70,\
+	real,parameter	::	snow_wvl(40)=	(/0.35,0.40,0.45,0.50,0.60,0.65,0.70,0.75,&
+												0.80,0.90,1.00,1.10,1.20,1.30,1.40,1.50,1.60,&
+												1.70,1.80,1.90,2.00,2.10,2.20,2.30,2.40,2.50,&
+												2.60,2.70,2.80,2.90,3.00,3.10,3.20,3.30,3.70,&
 												3.80,10.91,11.92,12.90,13.90/)
 
-	real,parameter	::	snow_alb(40)=	(/0.97,0.98,0.99,0.98,0.98,0.96,0.95,0.93,0.90,\
-												0.84,0.72,0.73,0.54,0.47,0.42,0.04,0.07,0.14,\
-												0.20,0.07,0.01,0.03,0.11,0.08,0.04,0.03,0.03,\
-												0.01,0.00,0.01,0.02,0.04,0.03,0.02,0.02,0.01,\
+	real,parameter	::	snow_alb(40)=	(/0.97,0.98,0.99,0.98,0.98,0.96,0.95,0.93,0.90,&
+												0.84,0.72,0.73,0.54,0.47,0.42,0.04,0.07,0.14,&
+												0.20,0.07,0.01,0.03,0.11,0.08,0.04,0.03,0.03,&
+												0.01,0.00,0.01,0.02,0.04,0.03,0.02,0.02,0.01,&
 												0.01,0.02,0.03,0.03/)
 
 	if (wvl .lt. 	start_wvl) then
-		write(*,*)"WARNING: Cannot interpolate ice albedo, wavelength of ",wvl,\
+		write(*,*)"WARNING: Cannot interpolate ice albedo, wavelength of ",wvl,&
 					 "is below minimum acceptable wavelength of ",start_wvl
 		get_ice_albedo = 0.0
 		return
 	endif
 	if (wvl .gt. 	end_wvl) then
-		write(*,*)"WARNING: Cannot interpolate ice albedo, wavelength of ",wvl,\
+		write(*,*)"WARNING: Cannot interpolate ice albedo, wavelength of ",wvl,&
 					 "is above maximum acceptable wavelength of ",end_wvl
 		get_ice_albedo = 0.0
 		return
