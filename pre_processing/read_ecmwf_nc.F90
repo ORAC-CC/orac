@@ -67,6 +67,8 @@
 ! 2015/07/10, OS: undo previous commit
 ! 2016/04/04, SP: Added option to process ECMWF forecast/analysis data that's
 !    stored in a single NetCDF file.
+! 2018/11/05, SP: Add CAPE
+
 !
 ! Bugs:
 ! - you need to be careful with parameter naming as the variable names are not
@@ -227,6 +229,11 @@ subroutine read_ecmwf_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
       case('AL','al','LSM')
          three_d=.false.
          array2d => preproc_prtm%land_sea_mask
+#ifdef INCLUDE_SATWX
+      case('cape','CAPE')
+         three_d=.false.
+         array2d => preproc_prtm%cape
+#endif
       case default
          cycle
       end select
