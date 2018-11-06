@@ -339,7 +339,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
    use read_aatsr_m
    use read_abi_m
    use read_avhrr_m
-   use read_goes_imager_m
+   !use read_goes_imager_m
    use read_himawari_m
    use read_imager_m
    use read_modis_m
@@ -787,14 +787,14 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
 
       ! get dimensions of the avhrr orbit
       call read_avhrr_dimensions(geo_path_file,n_across_track,n_along_track)
-   else if (trim(adjustl(sensor)) .eq. 'GIMG') then
-      call setup_goes_imager(l1b_path_file,geo_path_file,platform,year,month,day, &
-           doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,preproc_opts%channel_ids, &
-           channel_info,verbose)
+!   else if (trim(adjustl(sensor)) .eq. 'GIMG') then
+!      call setup_goes_imager(l1b_path_file,geo_path_file,platform,year,month,day, &
+!           doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,preproc_opts%channel_ids, &
+!           channel_info,verbose)
 
-      ! Get dimensions of the GOES-Imager image.
-      call read_goes_imager_dimensions(geo_path_file,n_across_track,n_along_track, &
-                                    startx,endx,starty,endy,verbose)
+!      ! Get dimensions of the GOES-Imager image.
+!      call read_goes_imager_dimensions(geo_path_file,n_across_track,n_along_track, &
+!                                    startx,endx,starty,endy,verbose)
 
    else if (trim(adjustl(sensor)) .eq. 'MODIS') then
       call setup_modis(l1b_path_file,geo_path_file,platform,year,month,day, &
@@ -1186,8 +1186,8 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
          ! A temporary hack for Aerosol_cci:
          ! Due to the cloud masking being very effective at detecting dust,
          ! we'll try and re-introduce it
-         if (trim(adjustl(sensor)) .eq. 'AATSR' .or. \
-            trim(adjustl(sensor)) .eq. 'ATSR2' .or. \
+         if (trim(adjustl(sensor)) .eq. 'AATSR' .or. &
+            trim(adjustl(sensor)) .eq. 'ATSR2' .or. &
             trim(adjustl(sensor)) .eq. 'SLSTR') then
             if (1 .eq. 1 .and. &
                  minval(imager_geolocation%latitude)  .lt.  40.0 .and. &
