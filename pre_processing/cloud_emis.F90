@@ -281,6 +281,8 @@ subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation, &
               imager_cloud%trop_t(j,i), interp(1))
          call interp_field (preproc_prtm%trop_p(:,:), &
               imager_cloud%trop_p(j,i), interp(1))
+         call interp_field (preproc_prtm%cape(:,:), &
+              imager_cloud%cape(j,i), interp(1))
 
          ! WV channel (~7 micron)
          if (do_wv) then
