@@ -103,14 +103,8 @@ subroutine set_ecmwf(cyear, cmonth, cday, chour, ecmwf_path, ecmwf_path2, &
 
    real(dreal)   :: time_fac
 
-   ! Check that we're not trying to use full path GFS data
-   if ((ecmwf_flag .eq. 5) .and. (.not. assume_full_path)) then
-      write(*,*)"When using GFS data in original format assume_full_path *must* be True."
-      stop
-   end if
-
    ! Use 3-hourly NOAA GFS data, otherwise use 6-hourly ECMWF data
-   if (ecmwf_flag .eq. 5 .or. ecmwf_flag .eq. 7 .or. ecmwf_flag .eq. 8) then
+   if (ecmwf_flag .eq. 6 .or. ecmwf_flag .eq. 7 .or. ecmwf_flag .eq. 8) then
       time_fac = 3._dreal / 24._dreal
    else
       time_fac = 6._dreal / 24._dreal
@@ -146,10 +140,6 @@ subroutine set_ecmwf(cyear, cmonth, cday, chour, ecmwf_path, ecmwf_path2, &
          ecmwf_path_file  = ecmwf_path
          ecmwf_path_file2 = ecmwf_path2
          ecmwf_path_file3 = ecmwf_path3
-      end if
-      if (ecmwf_flag .eq. 5) then
-         ecmwf_path_file(1)  = ecmwf_path(1)
-         ecmwf_path_file(2)  = ecmwf_path2(1)
       end if
    else
       if (time_interp_method .eq. 0) then
@@ -387,7 +377,7 @@ subroutine make_ecmwf_name(cyear,cmonth,cday,chour,ecmwf_flag,ecmwf_path, &
    case(5)
       ecmwf_path_file=trim(adjustl(ecmwf_path))//'/ECMWF_ERA_'// &
            trim(adjustl(cyear))//trim(adjustl(cmonth))// &
-           trim(adjustl(cday))//'_'//trim(adjustl(chour))//'+00.nc'
+           trim(adjustl(cday))//'_'//trim(adjustl(chour))//'+00_0.5.nc'
    case(6)
       ecmwf_path_file=trim(adjustl(ecmwf_path))//'/gfs_4_'// &
            trim(adjustl(cyear))//trim(adjustl(cmonth))// &
