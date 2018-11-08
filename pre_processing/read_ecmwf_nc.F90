@@ -240,14 +240,14 @@ subroutine read_ecmwf_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
       if (nf90_inquire_variable(fid,ivar,name) .ne. 0) &
            call h_e_e('nc', 'NF VAR INQUIRE failed.')
       if (three_d) then
-         if (ecmwf_flag.ne.4) then
+         if (ecmwf_flag.ne.4 .and. ecmwf_flag .ne. 5) then
             call nc_read_array(fid,name,dummy3d,verbose)
          else
             call nc_read_array(fid,name,dummy3d_2,verbose)
          end if
          do k=1,ecmwf%kdim
             old_len=n
-            if (ecmwf_flag.ne.4) then
+            if (ecmwf_flag.ne.4 .and. ecmwf_flag .ne. 5) then
                old_data(1:n)=reshape(real(dummy3d(:,:,k,1),kind=8),[n])
             else
                old_data(1:n)=reshape(real(dummy3d_2(:,:,k),kind=8),[n])

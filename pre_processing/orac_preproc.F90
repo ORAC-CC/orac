@@ -693,10 +693,6 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
 	preproc_opts%do_cloud_emis = .false.
 #endif
 
-   ! Check we're capable of computing cloud emissivity
-   ! (ecmwf_flag =5 or =6 or =7 or =8, for GFS data)
-!   if (ecmwf_flag .lt. 5 .or. ecmwf_flag .gt. 8) do_cloud_emis=.false.
-
    ! If we're using an external land-sea file, place that into USGS filename var
    if (preproc_opts%use_predef_lsm) usgs_path_file=preproc_opts%ext_lsm_path
 
@@ -1024,8 +1020,8 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
       end if
 
       ! NOAA GFS has limited (pressure) levels and no HR, so set these.
-      if (ecmwf_flag .ge. 5 .and. ecmwf_flag .le. 8) preproc_opts%ecmwf_nlevels=31
-      if (ecmwf_flag .ge. 5 .and. ecmwf_flag .le. 8) preproc_opts%use_hr_ecmwf=.false.
+      if (ecmwf_flag .gt. 5 .and. ecmwf_flag .le. 8) preproc_opts%ecmwf_nlevels=31
+      if (ecmwf_flag .gt. 5 .and. ecmwf_flag .le. 8) preproc_opts%use_hr_ecmwf=.false.
 
       ! read surface wind fields and ECMWF dimensions
       if (preproc_opts%ecmwf_time_int_method .ne. 2) then
@@ -1103,7 +1099,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
       if (verbose) write(*,*) 'Compute geopotential vertical coords'
       ! compute geopotential vertical coordinate from pressure coordinate
       ! First check that we're not processing a GFS file
-      if (ecmwf_flag .lt. 5 .or. ecmwf_flag .gt. 8) call &
+      if (ecmwf_flag .le. 5 .or. ecmwf_flag .gt. 8) call &
          compute_geopot_coordinate(preproc_prtm, preproc_dims, ecmwf)
 
       ! read USGS physiography file, including land use and DEM data
@@ -1248,7 +1244,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
 
       ! perform RTTOV calculations
       if (verbose) write(*,*) 'Perform RTTOV calculations'
-      if (ecmwf_flag .ge. 5 .and. ecmwf_flag .le. 8) then
+      if (ecmwf_flag .gt. 5 .and. ecmwf_flag .le. 8) then
          call rttov_driver_gfs(rttov_coef_path,rttov_emiss_path,sensor, &
               platform, preproc_dims,preproc_geoloc,preproc_geo,preproc_prtm, &
               preproc_surf, preproc_cld,netcdf_info,channel_info,year,month, &

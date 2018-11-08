@@ -384,6 +384,10 @@ subroutine make_ecmwf_name(cyear,cmonth,cday,chour,ecmwf_flag,ecmwf_path, &
       ecmwf_path_file=trim(adjustl(ecmwf_path))//'/ECMWF_OPER_'// &
            trim(adjustl(cyear))//trim(adjustl(cmonth))// &
            trim(adjustl(cday))//'_'//trim(adjustl(chour))//'+00.nc'
+   case(5)
+      ecmwf_path_file=trim(adjustl(ecmwf_path))//'/ECMWF_ERA_'// &
+           trim(adjustl(cyear))//trim(adjustl(cmonth))// &
+           trim(adjustl(cday))//'_'//trim(adjustl(chour))//'+00.nc'
    case(6)
       ecmwf_path_file=trim(adjustl(ecmwf_path))//'/gfs_4_'// &
            trim(adjustl(cyear))//trim(adjustl(cmonth))// &

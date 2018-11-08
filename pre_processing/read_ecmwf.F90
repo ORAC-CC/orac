@@ -28,6 +28,7 @@
 ! 2017/02/04, SP: Add ecmwf_flag=5, for reading NOAA GFS forecast (ExtWork)
 ! 2017/04/11, SP: Added ecmwf_flag=6, for working with GFS analysis files.
 ! 2017/06/21, OS: inout declaration bug fix for cray-fortran compiler
+! 2018/11/05, SP: Switch ecmwf_flag=5 from GFS (dead code) to ECMWF ERA5
 !
 ! Bugs:
 ! None known.
@@ -100,8 +101,11 @@ subroutine read_ecmwf_wind(ecmwf_flag, ecmwf_path_file, ecmwf_HR_path_file, &
          call read_ecmwf_wind_nc(ecmwf_HR,ecmwf_HR_path_file,ecmwf_flag)
       end if
    case(5)
-      call read_ecmwf_wind_grib(ecmwf_path_file,ecmwf,.false.,ecmwf_flag)
-      if (verbose) write(*,*)'ecmwf_dims grib: ',ecmwf%xdim,ecmwf%ydim
+      call read_ecmwf_wind_nc(ecmwf,ecmwf_path_file,ecmwf_flag)
+      if (verbose) write(*,*)'ecmwf_dims ncdf: ',ecmwf%xdim,ecmwf%ydim
+      if (use_hr_ecmwf) then
+         call read_ecmwf_wind_nc(ecmwf_HR,ecmwf_HR_path_file,ecmwf_flag)
+      end if
    case(6)
       call read_ecmwf_wind_grib(ecmwf_path_file,ecmwf,.false.,ecmwf_flag)
       if (verbose) write(*,*)'ecmwf_dims grib: ',ecmwf%xdim,ecmwf%ydim
@@ -216,13 +220,13 @@ subroutine read_ecmwf(ecmwf_flag, ecmwf_path_file, ecmwf_path_file2, &
       call read_ecmwf_nc(ecmwf_path_file,ecmwf,preproc_dims,preproc_geoloc, &
            preproc_prtm,verbose,ecmwf_flag)
    case(4)
-      if (verbose) write(*,*) 'Reading ecmwf path: ',trim(ecmwf_path_file)
+      if (verbose) write(*,*) 'Reading OPER path: ',trim(ecmwf_path_file)
       call read_ecmwf_nc(ecmwf_path_file,ecmwf,preproc_dims,preproc_geoloc, &
            preproc_prtm,verbose,ecmwf_flag)
    case(5)
-      if (verbose) write(*,*) 'Reading gfs path: ',trim(ecmwf_path_file)
-      call read_gfs_grib(ecmwf_path_file,preproc_dims,preproc_geoloc, &
-           preproc_prtm,verbose)
+      if (verbose) write(*,*) 'Reading ERA5 path: ',trim(ecmwf_path_file)
+      call read_ecmwf_nc(ecmwf_path_file,ecmwf,preproc_dims,preproc_geoloc, &
+           preproc_prtm,verbose,ecmwf_flag)
    case(6)
       if (verbose) write(*,*) 'Reading gfs path: ',trim(ecmwf_path_file)
       call read_gfs_grib(ecmwf_path_file,preproc_dims,preproc_geoloc, &
