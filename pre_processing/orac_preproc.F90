@@ -1266,13 +1266,16 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
               preproc_surf,preproc_cld,netcdf_info,channel_info,year,month,day, &
               preproc_opts%use_modis_emis_in_rttov,preproc_opts%do_cloud_emis,preproc_opts%do_co2,verbose)
          ! Call cloud emissivity function
-#ifdef INCLUDE_SATWX
          if (preproc_opts%do_cloud_emis) then
+#ifdef INCLUDE_SATWX
             call get_cloud_emis(channel_info,imager_measurements, &
                   imager_geolocation,preproc_dims,preproc_geoloc, &
                   preproc_cld,preproc_prtm,imager_cloud,ecmwf,sensor,verbose)
-         end if
+            call do_cb_detect(channel_info,imager_measurements,imager_geolocation,imager_cloud,imager_pavolonis, sensor, verbose)
+#else
+				write(*,*)"ERROR: Cannot compute cloud emissivity and CB locations without SatWx."
 #endif
+         end if
       end if
 
 #ifdef WRAPPER
