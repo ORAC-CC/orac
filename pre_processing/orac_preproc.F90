@@ -1161,7 +1161,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
             end if
          end if
       end if
-
+#ifndef INCLUDE_SATWX
       if (verbose) write(*,*) 'Calculate Pavolonis cloud phase with high '// &
            'resolution ERA surface data'
       if (preproc_opts%do_cloud_type) then
@@ -1177,6 +1177,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
                  do_spectral_response_correction, verbose)
          end if
       end if
+#endif
 
       if (imager_angles%nviews .gt. 1) then
          ! A temporary hack for Aerosol_cci:

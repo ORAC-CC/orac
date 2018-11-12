@@ -367,6 +367,12 @@ subroutine do_cb_detect(channel_info,imager_measurements,imager_geolocation,imag
 
 	call calc_convection(channel_wl_abs, n_chans, sat_data, imager_cloud%cape, imager_pavolonis%cldtype, extent, verbose)
 
+	imager_pavolonis%cldmask(:,:,:) = 0
+
+	where(imager_pavolonis%cldtype .eq. 1)
+		imager_pavolonis%cldmask(:,:,:) = 1
+	end where
+
 	where (imager_geolocation%latitude .eq. sreal_fill_value)
 		imager_pavolonis%cldtype(:,:,1) = byte_fill_value
 	end where
