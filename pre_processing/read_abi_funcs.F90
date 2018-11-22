@@ -22,16 +22,17 @@
 
 
 ! This function computes the solar geometry for a given GOES scene
-subroutine ABI_Solpos(year, month, day, hour, minute, lat, lon, sza, saa)
+subroutine ABI_Solpos(year, doy, hour, minute, lat, lon, sza, saa)
+!$acc routine seq
 
    use preproc_constants_m
+   use solar_position_m
    implicit none
 
-   integer, intent(in), value          :: year
-   integer, intent(in), value          :: month
-   integer, intent(in), value          :: day
-   integer, intent(in), value          :: hour
-   integer, intent(in), value          :: minute
+   real(kind=sreal), intent(in), value :: year
+   real(kind=sreal), intent(in), value :: doy
+   real(kind=sreal), intent(in), value :: hour
+   real(kind=sreal), intent(in), value :: minute
    real(kind=sreal), intent(in), value :: lat
    real(kind=sreal), intent(in), value :: lon
    real(kind=sreal), intent(out)       :: sza
@@ -42,8 +43,8 @@ subroutine ABI_Solpos(year, month, day, hour, minute, lat, lon, sza, saa)
    saa    = 0.
    sza    = 0.
    retval = 0
-
-   retval = get_sza_saa(year, month, day, hour, minute, lat, lon, sza, saa)
+	call sun_pos_calc(year, doy, hour+minute/60.,lat, lon,sza, saa)
+!   retval = get_sza_saa(year, month, day, hour, minute, lat, lon, sza, saa)
    if (retval .ne. 0) then
       write(*,*) 'ERROR: get_sza_saa()'
       stop
@@ -299,8 +300,8 @@ subroutine get_abi_geoloc(infile, imager_geolocation, imager_angles, global_atts
    write(polrad,'(f10.0)')sma * (1.-(1./invf))
    global_atts%Satpos_Metadata=satlat//","//satlon//","//sathei//','//eqrrad//","//polrad
 
-!!$OMP PARALLEL PRIVATE(i, j, a, b, rs, sx, sy, sz, tlat, tlon, tx, ty)
-!!$OMP DO SCHEDULE(GUIDED)
+!$OMP PARALLEL PRIVATE(i, j, a, b, rs, sx, sy, sz, tlat, tlon, tx, ty)
+!$OMP DO SCHEDULE(GUIDED)
    do i = imager_geolocation%startx, imager_geolocation%endx
       do j = imager_geolocation%starty, imager_geolocation%endy
          ! These are not needed really, but help make code readable
@@ -332,8 +333,8 @@ subroutine get_abi_geoloc(infile, imager_geolocation, imager_angles, global_atts
          imager_geolocation%longitude(i, j-imager_geolocation%starty+1) = tlon
       end do
    end do
-!!$OMP END DO
-!!$OMP END PARALLEL
+!$OMP END DO
+!$OMP END PARALLEL
 
    ! Now we compute the viewing geometry
    call get_abi_viewing_geom(imager_geolocation, imager_angles, sma, smi, hproj, lon0, verbose)
@@ -429,6 +430,7 @@ subroutine get_abi_solgeom(imager_time, imager_angles, imager_geolocation, verbo
 
    use imager_structures_m
    use preproc_constants_m
+   use solar_position_m
    use calender_m
    implicit none
 
@@ -437,11 +439,13 @@ subroutine get_abi_solgeom(imager_time, imager_angles, imager_geolocation, verbo
    type(imager_time_t),         intent(in)    :: imager_time
    logical,                     intent(in)    :: verbose
 
-   real(kind=sreal)   :: sza, saa
+   real(kind=sreal)   :: sza, saa,doy
    integer            :: x, y, line0, line1, column0, column1
    integer            :: mid_c, mid_l
    integer(kind=sint) :: iye, mon, idy, ihr, minu
    real(kind=dreal)   :: dfr, tmphr
+
+   real(kind=sreal),dimension(:,:),allocatable :: tlat,tlon,tsza,tsaa
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering get_abi_solgeom()'
 
@@ -453,31 +457,51 @@ subroutine get_abi_solgeom(imager_time, imager_angles, imager_geolocation, verbo
    mid_l  = line0 + (line1 - line0) / 2
    mid_c  = (column1 - column0) / 2
 
+   allocate(tlat(imager_geolocation%startx:imager_geolocation%endx,1:imager_geolocation%ny))
+   allocate(tlon(imager_geolocation%startx:imager_geolocation%endx,1:imager_geolocation%ny))
+   allocate(tsza(imager_geolocation%startx:imager_geolocation%endx,1:imager_geolocation%ny))
+   allocate(tsaa(imager_geolocation%startx:imager_geolocation%endx,1:imager_geolocation%ny))
+
+   ! Here we compute the time for each pixel, GOES scans S-N so each line has a different time
+   call JD2GREG(imager_time%time(mid_l, mid_c), iye, mon, dfr)
+   idy = int(dfr)
+   tmphr = (dfr-idy)*24.
+   ihr = int(tmphr)
+   tmphr = (tmphr-ihr)*60.
+   minu = int(tmphr)
+
+   call get_day_of_year(float(idy), float(mon), float(iye), doy)
+
    ! This section computes the solar geometry for each pixel in the image
 #ifdef _OPENMP
    if (verbose) write(*,*)"Computing solar geometry using OpenMP"
    !$omp parallel DO PRIVATE(y, x, iye, mon, dfr, idy, tmphr, ihr, minu, sza, saa)
 #endif
+#ifdef __ACC
+   if (verbose) write(*,*)"Computing solar geometry using PGI_ACC"
+!$acc data copyin(tlat) copyin(tlon) copyout(tsza) copyout(tsaa)
+!$acc parallel
+!$acc loop collapse(2) independent private(y, x, iye, mon, dfr, idy, tmphr, ihr, minu, sza, saa)
+#endif
    do y = 1, imager_geolocation%ny
       do x = imager_geolocation%startx, imager_geolocation%endx
-         ! Here we compute the time for each pixel, GOES scans S-N so each line has a different time
-         call JD2GREG(imager_time%time(mid_l, mid_c), iye, mon, dfr)
-         idy = int(dfr)
-         tmphr = (dfr-idy)*24.
-         ihr = int(tmphr)
-         tmphr = (tmphr-ihr)*60.
-         minu = int(tmphr)
 
          ! We can now use this time to retrieve the actual solar geometry
-         call ABI_Solpos(int(iye), int(mon), int(idy), int(ihr), int(minu), &
-         imager_geolocation%latitude(x, y), imager_geolocation%longitude(x, y), sza, saa)
-         imager_angles%solzen(x, y, 1) = sza
-         imager_angles%solazi(x, y, 1) = saa
+         call ABI_Solpos(float(iye), doy, float(ihr), float(minu), tlat(x,y), tlon(x,y), sza, saa)
+         tsza(x,y) = sza
+         tsaa(x,y) = saa
       end do
    end do
 #ifdef _OPENMP
    !$omp end parallel do
 #endif
+#ifdef __ACC
+!$acc end parallel
+!$acc end data
+#endif
+
+	imager_angles%solzen(:, :, 1) = tsza
+	imager_angles%solazi(:, :, 1) = tsaa
 
    where(imager_angles%solazi(:, :, 1) .ne. sreal_fill_value .and. &
         imager_angles%relazi(:, :, 1) .ne. sreal_fill_value)
@@ -486,6 +510,11 @@ subroutine get_abi_solgeom(imager_time, imager_angles, imager_geolocation, verbo
          imager_angles%solazi(:, :, 1) = imager_angles%solazi(:, :, 1) + 360.
       end where
    end where
+
+   deallocate(tlat)
+   deallocate(tlon)
+   deallocate(tsza)
+   deallocate(tsaa)
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving get_abi_solgeom()'
 
@@ -504,12 +533,12 @@ subroutine goes_resample_vis_to_tir(inarr, outarr, nx, ny, fill, scl, verbose)
    use preproc_constants_m
    implicit none
 
+   real(kind=sreal), intent(in)  :: inarr(nx*scl, ny*scl)
+   real(kind=sreal), intent(out) :: outarr(nx, ny)
    integer,          intent(in)  :: nx
    integer,          intent(in)  :: ny
    real,             intent(in)  :: fill
    integer,          intent(in)  :: scl
-   real(kind=sreal), intent(in)  :: inarr(nx*scl, ny*scl)
-   real(kind=sreal), intent(out) :: outarr(nx, ny)
    logical,          intent(in)  :: verbose
 
 #ifdef _OPENMP
@@ -524,21 +553,19 @@ subroutine goes_resample_vis_to_tir(inarr, outarr, nx, ny, fill, scl, verbose)
 
    outarr(:, :) = 0
 
-#ifdef _OPENMP
-   if (verbose) then
-      n_threads = omp_get_max_threads()
-      write(*,*) 'Resampling VIS grid to IR grid using', n_threads, 'threads'
-   end if
-   !$omp parallel DO PRIVATE(x, y, outx, outy, val, inpix)
-#else
-   if (verbose) write(*,*) 'Resampling VIS grid to IR grid without threading'
+#ifdef __ACC
+      write(*,*) 'Resampling VIS grid to IR grid using PGI_ACC'
+!$acc data copyin(inarr(1:nx*scl,1:ny*scl))  copyout(outarr(1:nx,1:ny))
+!$acc parallel
+!$acc loop collapse(2) independent private(x, y, outx, outy, val, inpix,i,j)
 #endif
    do x = 1, (nx*scl)-scl
-      outx = int(x/scl)+1
       do y = 1, (ny*scl)-scl
+      	outx = int(x/scl)+1
          outy = int(y/scl)+1
          val = 0
          inpix= 0
+			!$acc loop collapse(2)
          do i = 1, scl
             do j = 1, scl
                if (inarr(x+i, y+j) .gt. sreal_fill_value) then
@@ -560,8 +587,9 @@ subroutine goes_resample_vis_to_tir(inarr, outarr, nx, ny, fill, scl, verbose)
 
    end do
 
-#ifdef _OPENMP
-   !$omp end parallel do
+#ifdef __ACC
+!$acc end parallel
+!$acc end data
 #endif
 
 end subroutine goes_resample_vis_to_tir

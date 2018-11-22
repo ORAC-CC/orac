@@ -86,12 +86,13 @@ PREPROC_OBJ_F90 = $(OBJS)/aatsr_corrections.o \
                   $(OBJS)/rttov_driver.o \
                   $(OBJS)/rttov_driver_gfs.o \
                   $(OBJS)/setup.o \
+                  $(OBJS)/solar_position.o \
                   $(OBJS)/surface_emissivity.o \
                   $(OBJS)/surface_reflectance.o \
                   $(OBJS)/surface_structures.o \
                   $(OBJS)/utils_for_main.o
 
-PREPROC_OBJ_C    = $(OBJS)/read_aatsr_orbit.o $(OBJS)/solpos.o
+PREPROC_OBJ_C    = $(OBJS)/read_aatsr_orbit.o
 
 PREPROC_OBJ      = $(PREPROC_OBJ_F90) $(PREPROC_OBJ_C)
 
@@ -137,4 +138,3 @@ include dependencies.inc
 
 # C dependecies
 $(OBJS)/read_aatsr_orbit.o: read_aatsr_orbit.h
-$(OBJS)/solpos.o: solpos00.h

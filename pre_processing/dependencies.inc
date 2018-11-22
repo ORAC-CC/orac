@@ -63,7 +63,7 @@ $(OBJS)/read_camel_emissivity.o: $(OBJS)/preproc_constants.o
 $(OBJS)/read_cimss_emissivity.o: $(OBJS)/preproc_constants.o
 $(OBJS)/read_abi.o: $(OBJS)/calender.o $(OBJS)/channel_structures.o \
         $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o \
-        read_abi_funcs.F90 read_abi_main.F90
+        $(OBJS)/solar_position.o read_abi_funcs.F90 read_abi_main.F90
 $(OBJS)/read_himawari.o: $(OBJS)/channel_structures.o \
         $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o
 $(OBJS)/read_imager.o: $(OBJS)/channel_structures.o $(OBJS)/imager_structures.o \
@@ -100,6 +100,7 @@ $(OBJS)/rttov_driver_gfs.o: $(OBJS)/channel_structures.o $(OBJS)/netcdf_output.o
         $(OBJS)/remove_rayleigh.o write_ir_rttov.F90 write_solar_rttov.F90
 $(OBJS)/setup.o: $(OBJS)/calender.o $(OBJS)/channel_structures.o \
         $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o
+$(OBJS)/solar_position.o: solar_position.F90
 $(OBJS)/surface_emissivity.o: $(OBJS)/channel_structures.o \
         $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o \
         $(OBJS)/preproc_structures.o $(OBJS)/read_camel_emissivity.o \
@@ -126,6 +127,6 @@ $(OBJS)/orac_preproc.o: $(OBJS)/channel_structures.o $(OBJS)/cloud_emis.o \
         $(OBJS)/read_himawari.o $(OBJS)/read_imager.o $(OBJS)/read_modis.o \
         $(OBJS)/read_seviri.o $(OBJS)/read_slstr.o $(OBJS)/read_viirs_Iband.o \
         $(OBJS)/read_viirs_Mband.o $(OBJS)/rttov_driver.o \
-        $(OBJS)/rttov_driver_gfs.o $(OBJS)/setup.o $(OBJS)/surface_emissivity.o \
-        $(OBJS)/surface_reflectance.o $(OBJS)/surface_structures.o \
-        $(OBJS)/utils_for_main.o
+        $(OBJS)/rttov_driver_gfs.o $(OBJS)/setup.o $(OBJS)/solar_position.o \
+        $(OBJS)/surface_emissivity.o $(OBJS)/surface_reflectance.o \
+        $(OBJS)/surface_structures.o $(OBJS)/utils_for_main.o

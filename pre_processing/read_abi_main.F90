@@ -195,8 +195,7 @@ subroutine get_abi_data(infiles,imager_angles,imager_measurements, &
 
          tmpout = tmpout * irrad
 
-         where(imager_angles%solzen(:,:,1) .eq. sreal_fill_value) &
-              tmpout=sreal_fill_value
+         where(imager_geolocation%latitude .eq. sreal_fill_value) tmpout=sreal_fill_value
          imager_measurements%data(:,:,i) = tmpout
 
          deallocate(tmprad)
@@ -218,7 +217,7 @@ subroutine get_abi_data(infiles,imager_angles,imager_measurements, &
       where (imager_geolocation%latitude .eq. sreal_fill_value)
          imager_measurements%data(:,:,i) = sreal_fill_value
       end where
-   end do
+   end do         
 
    deallocate(tmpout)
 
