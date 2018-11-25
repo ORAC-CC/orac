@@ -686,10 +686,8 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
       stop error_stop_code
    end if
 
-   ! Check if SatWx is available
-#ifdef INCLUDE_SATWX
-	preproc_opts%do_cloud_emis = preproc_opts%do_cloud_emis
-#else
+   ! Check if SatWx is available, if not then don't do cloud emissivity stuff
+#ifndef INCLUDE_SATWX
 	preproc_opts%do_cloud_emis = .false.
 #endif
 
