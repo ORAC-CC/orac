@@ -49,7 +49,7 @@ subroutine get_USGS_data(path_to_USGS_file, imager_flags, imager_geolocation, &
    logical                          :: USGS_file_exist
    character(len=7)                 :: USGS_file_read
    integer(kind=4)                  :: i,j
-   integer(kind=sint), dimension(2) :: nearest_xy
+   integer(kind=sint), dimension(2) :: nearest_xy,maxcoord
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering get_USGS_data()'
 
    ! Check that the defined file exists and is readable
@@ -101,6 +101,8 @@ subroutine get_USGS_data(path_to_USGS_file, imager_flags, imager_geolocation, &
          stop error_stop_code
       end if
 
+      maxcoord	=	shape(usgs%dem)
+
       ! Do collocation of imager pixels with USGS data
       !$OMP PARALLEL PRIVATE(i, j, nearest_xy)
       !$OMP DO SCHEDULE(GUIDED)
@@ -115,6 +117,9 @@ subroutine get_USGS_data(path_to_USGS_file, imager_flags, imager_geolocation, &
             ! data, applying a search window radius of +-0.25 degree lat/lon
             nearest_xy = nearest_USGS(imager_geolocation%latitude(i,j), &
                  imager_geolocation%longitude(i,j), usgs)
+
+            if (nearest_xy(2) .gt. maxcoord(1)) nearest_xy(2) = nearest_xy(2) - maxcoord(1)
+            if (nearest_xy(1) .gt. maxcoord(2)) nearest_xy(1) = nearest_xy(1) - maxcoord(2)
 
             ! Assign nearest usgs pixel data to imager pixel
             imager_geolocation%dem(i,j) = usgs%dem(nearest_xy(2), nearest_xy(1))
