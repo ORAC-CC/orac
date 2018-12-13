@@ -371,6 +371,9 @@ subroutine read_slstr_visdata(indir,inband,outarr,imager_angles,sx,sy, &
    endy=nc_dim_length(fid,'rows',.false.)
    endx=nc_dim_length(fid,'columns',.false.)
 
+   if (endx .gt. nx*2) endx=nx*2
+   if (endy .gt. ny*2) endy=ny*2
+
    ! Check that the dataset exists
    ierr=nf90_inq_varid(fid, trim(bandname), did)
    if (ierr.ne.NF90_NOERR) then
