@@ -253,7 +253,7 @@ subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation, &
    end if
    if (do_wv) then
       if (good_chanwv_all .lt. 0 .or. good_chanwv_lw .lt. 0) then
-         write(*,*)"ERROR: The longwave channel required for cloud emissivity (",chan_n,") is not available!"
+         write(*,*)"ERROR: The water vapour channel required for cloud emissivity (",chanwv_n,") is not available!"
          stop
       end if
    end if
