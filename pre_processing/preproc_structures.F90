@@ -91,7 +91,6 @@ module preproc_structures_m
 		character(len=path_length) :: ecmwf_path2(2)
 		character(len=path_length) :: ecmwf_path3(2)
 		character(len=path_length) :: ecmwf_path_hr(2)
-		character(len=path_length) :: ecmwf_path_hr_2(2)
 		character(len=path_length) :: ecmwf_HR_path_file(2)
 		character(len=path_length) :: ecmwf_path_file(2)
 		character(len=path_length) :: ecmwf_path_file2(2)
