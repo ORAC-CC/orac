@@ -137,6 +137,62 @@ def process_post(args, log_path, files=None, dependency=None, tag='post'):
     return jid, out_file
 
 
+def call_reformat(args, log_path, exe, out_file, dependency=None):
+    """Reformat outputs using the script provided."""
+    import pyorac.local_defaults as defaults
+
+    from pyorac.colour_print import colour_print
+    from pyorac.definitions import OracError, COLOURING
+    from subprocess import check_output, CalledProcessError
+
+    # Optionally print command and driver file contents to StdOut
+    if args.verbose or args.script_verbose or args.dry_run:
+        colour_print('{} {} 1 <<<'.format(exe, out_file), COLOURING['header'])
+
+    if args.dry_run:
+        return
+
+    job_name = args.File.job_name(args.revision, 'format')
+
+    if not args.batch:
+        try:
+            check_call([exe, out_file, "1"])
+        except CalledProcessError as err:
+            raise OracError('{:s} failed with error code {:d}. {}'.format(
+                ' '.join(err.cmd), err.returncode, err.output
+            ))
+
+    else:
+        try:
+            # Collect batch settings from defaults, command line, and script
+            batch_params = defaults.batch_values.copy()
+            batch_params['job_name'] = job_name
+            batch_params['log_file'] = os.path.join(log_path, job_name + '.log')
+            batch_params['err_file'] = os.path.join(log_path, job_name + '.err')
+            batch_params['duration'] = '01:00'
+            batch_params['ram'] = 5000
+            batch_params['procs'] = 1
+            if dependency is not None:
+                batch_params['depend'] = dependency
+            batch_params.update({key : val for key, val in args.batch_settings})
+
+            # Form batch queue command and call batch queuing system
+            cmd = defaults.batch.ListBatch(batch_params,
+                                           exe=[exe, out_file, "1"])
+
+            if args.verbose or args.script_verbose:
+                colour_print(' '.join(cmd), COLOURING['header'])
+            out = check_output(cmd, universal_newlines=True)
+
+            # Parse job ID # and return it to the caller
+            jid = defaults.batch.ParseOut(out, 'ID')
+            return jid
+        except CalledProcessError as err:
+            raise OracError('Failed to queue job ' + exe)
+        except SyntaxError as err:
+            raise OracError(str(err))
+
+
 def process_all(orig_args):
     """Run the ORAC pre, main, and post processors on a file."""
     from argparse import ArgumentParser
@@ -200,6 +256,10 @@ def process_all(orig_args):
                                  tag="post{}".format(args.label))
     if jid is not None:
         written_dirs.add(args.out_dir)
+
+    # Run CCI formatting
+    if args.reformat != "":
+        call_reformat(args, log_path, args.reformat, out_file, dependency=jid)
 
     # Output root filename and output folders for regression tests
     return jid, out_file
