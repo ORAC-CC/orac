@@ -230,6 +230,8 @@ def args_cc4cl(parser):
                       default=[], help = 'Path to a file giving extra lines for '
                       'main processing. Passed as SECTION VALUE pairs, where '
                       'KEY is lnd, sea, or cld to specify the particle type.')
+    cccl.add_argument('--label', type=str, help="Description for job name.",
+                      default="")
 
     phs = cccl.add_mutually_exclusive_group()
     phs.add_argument('-s', '--settings', type=str, action='append',

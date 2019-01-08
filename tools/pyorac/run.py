@@ -13,7 +13,7 @@ CLOBBER = OrderedDict([
 ])
 
 
-def process_pre(args, log_path, dependency=None):
+def process_pre(args, log_path, dependency=None, tag='pre'):
     """Call sequence for pre processor"""
     from pyorac.drivers import build_preproc_driver
 
@@ -21,7 +21,7 @@ def process_pre(args, log_path, dependency=None):
     driver = build_preproc_driver(args)
 
     # This must be called after building the driver as revision is unknown
-    job_name = args.File.job_name(args.revision, 'pre')
+    job_name = args.File.job_name(args.revision, tag)
     root_name = args.File.root_name(args.revision, args.processor, args.project,
                                     args.product_name)
 
@@ -86,13 +86,13 @@ def process_main(args, log_path, tag='', dependency=None):
     return jid, out_file
 
 
-def process_post(args, log_path, files=None, dependency=None):
+def process_post(args, log_path, files=None, dependency=None, tag='post'):
     """Call sequence for post processor"""
     from glob import glob
     from pyorac.drivers import build_postproc_driver
 
     check_args_postproc(args)
-    job_name = args.File.job_name(args.revision, 'post')
+    job_name = args.File.job_name(args.revision, tag)
     root_name = args.File.root_name(args.revision)
 
     if not os.path.isdir(args.out_dir):
@@ -163,7 +163,7 @@ def process_all(orig_args):
     # Work out output filename
     args.out_dir = os.path.join(orig_args.out_dir, pre_dir)
 
-    jid_pre, _ = process_pre(args, log_path)
+    jid_pre, _ = process_pre(args, log_path, tag="pre{}".format(args.label))
     if jid_pre is not None:
         written_dirs.add(args.out_dir)
 
@@ -184,7 +184,8 @@ def process_all(orig_args):
         phs_args.__dict__.update(parsed_settings_arguments.__dict__)
         phs_args.out_dir = os.path.join(orig_args.out_dir, phs_args.sub_dir)
 
-        jid, out = process_main(phs_args, log_path, dependency=jid_pre)
+        jid, out = process_main(phs_args, log_path, dependency=jid_pre,
+                                tag=args.label)
         out_files.append(out)
         if jid is not None:
             jid_main.append(jid)
@@ -195,7 +196,8 @@ def process_all(orig_args):
     args.target = root_name + phs_args.phase + ".primary.nc"
     args.in_dir = written_dirs
     args.out_dir = orig_args.out_dir
-    jid, out_file = process_post(args, log_path, out_files, dependency=jid_main)
+    jid, out_file = process_post(args, log_path, out_files, dependency=jid_main,
+                                 tag="post{}".format(args.label))
     if jid is not None:
         written_dirs.add(args.out_dir)
 
