@@ -36,7 +36,7 @@
 ! It will always process the full disk. This will be fixed.
 !-------------------------------------------------------------------------------
 subroutine read_abi_dimensions(l1_5_file, n_across_track, n_along_track, &
-                                    startx, endx, starty, endy,verbose)
+     startx, endx, starty, endy, verbose)
 
    use preproc_constants_m
    use netcdf
@@ -62,7 +62,7 @@ subroutine read_abi_dimensions(l1_5_file, n_across_track, n_along_track, &
 
    ierr = nf90_open(path=trim(adjustl(l1_5_file)),mode=NF90_NOWRITE,ncid=fid)
    if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: read_abi_dimensions(): Error opening file ',trim(l1_5_file)
+      print*, 'ERROR: read_abi_dimensions(): Error opening file ',trim(l1_5_file)
       stop error_stop_code
    end if
 
@@ -72,11 +72,11 @@ subroutine read_abi_dimensions(l1_5_file, n_across_track, n_along_track, &
 
    ! Make sure we account for the fact that some bands are hi-res
    if (band .eq. 1 .or. band .eq. 3 .or. band .eq. 5) then
-        n_cols  = n_cols/2
-        n_lines = n_lines/2
+      n_cols  = n_cols/2
+      n_lines = n_lines/2
    else if (band .eq. 2) then
-        n_cols  = n_cols/4
-        n_lines = n_lines/4
+      n_cols  = n_cols/4
+      n_lines = n_lines/4
    end if
 
    ! Close the netCDF4 file
@@ -143,8 +143,8 @@ end subroutine read_abi_dimensions
 ! verbose             logical in   If true then print verbose information.
 !-------------------------------------------------------------------------------
 
-subroutine get_abi_data(infiles,imager_angles,imager_measurements, &
-     imager_geolocation,channel_info,verbose)
+subroutine get_abi_data(infiles, imager_angles, imager_measurements, &
+     imager_geolocation, channel_info, verbose)
 
    use channel_structures_m
    use imager_structures_m
@@ -217,7 +217,7 @@ subroutine get_abi_data(infiles,imager_angles,imager_measurements, &
       where (imager_geolocation%latitude .eq. sreal_fill_value)
          imager_measurements%data(:,:,i) = sreal_fill_value
       end where
-   end do         
+   end do
 
    deallocate(tmpout)
 
@@ -300,9 +300,9 @@ subroutine read_abi_bin(infiles, imager_geolocation, imager_measurements, &
    ! Compute relative azimuth from solar and viewing azimuths
    imager_angles%relazi = abs(imager_angles%satazi-imager_angles%solazi)
    where (imager_angles%relazi(:,:,1) .gt. 180.)
-		imager_angles%relazi(:,:,1) = 360. - imager_angles%relazi(:,:,1)
-	end where
-!	imager_angles%relazi(:,:,1) = 180. - imager_angles%relazi(:,:,1)
+      imager_angles%relazi(:,:,1) = 360. - imager_angles%relazi(:,:,1)
+   end where
+!  imager_angles%relazi(:,:,1) = 180. - imager_angles%relazi(:,:,1)
 
    where (imager_angles%solazi .gt. 180.)
       imager_angles%solazi = 360. - imager_angles%solazi

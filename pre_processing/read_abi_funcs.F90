@@ -43,7 +43,7 @@ subroutine ABI_Solpos(year, doy, hour, minute, lat, lon, sza, saa)
    saa    = 0.
    sza    = 0.
    retval = 0
-	call sun_pos_calc(year, doy, hour+minute/60.,lat, lon,sza, saa)
+   call sun_pos_calc(year, doy, hour+minute/60., lat, lon, sza, saa)
 !   retval = get_sza_saa(year, month, day, hour, minute, lat, lon, sza, saa)
    if (retval .ne. 0) then
       write(*,*) 'ERROR: get_sza_saa()'
@@ -142,7 +142,8 @@ subroutine get_abi_path(l1_5_file, platform, abi_filenames, n_chans, channel_ids
 end subroutine get_abi_path
 
 
-subroutine get_abi_geoloc(infile, imager_geolocation, imager_angles, global_atts, verbose)
+subroutine get_abi_geoloc(infile, imager_geolocation, imager_angles, &
+     global_atts, verbose)
 
    use channel_structures_m
    use global_attributes_m
@@ -293,22 +294,24 @@ subroutine get_abi_geoloc(infile, imager_geolocation, imager_angles, global_atts
    y = y*yscl + y0
 
    ! Generate the satellite position string for global_atts
-   write(satlat,'(f10.7)')lat0
-   write(satlon,'(f10.7)')lon0
-   write(sathei,'(f10.0)')h
-   write(eqrrad,'(f10.0)')sma
-   write(polrad,'(f10.0)')sma * (1.-(1./invf))
-   global_atts%Satpos_Metadata=satlat//","//satlon//","//sathei//','//eqrrad//","//polrad
+   write(satlat,'(f10.7)') lat0
+   write(satlon,'(f10.7)') lon0
+   write(sathei,'(f10.0)') h
+   write(eqrrad,'(f10.0)') sma
+   write(polrad,'(f10.0)') sma * (1.-(1./invf))
+   global_atts%Satpos_Metadata = satlat//","//satlon//","//sathei//','// &
+        eqrrad//","//polrad
 
-!$OMP PARALLEL PRIVATE(i, j, a, b, rs, sx, sy, sz, tlat, tlon, tx, ty)
-!$OMP DO SCHEDULE(GUIDED)
+   !$OMP PARALLEL PRIVATE(i, j, a, b, rs, sx, sy, sz, tlat, tlon, tx, ty)
+   !$OMP DO SCHEDULE(GUIDED)
    do i = imager_geolocation%startx, imager_geolocation%endx
       do j = imager_geolocation%starty, imager_geolocation%endy
          ! These are not needed really, but help make code readable
          tx = x(i)
          ty = y(j)
          ! These are ugly, all from PUG page 52
-         a = ( sin(tx) * sin(tx)) + (cos(tx) * cos(tx) * ((cos(ty) * cos(ty)) + (((sma*sma) / (smi*smi)) * sin(ty) * sin(ty))))
+         a = ( sin(tx) * sin(tx)) + (cos(tx) * cos(tx) * ((cos(ty) * cos(ty)) + &
+              (((sma*sma) / (smi*smi)) * sin(ty) * sin(ty))))
 
          b = -2 * h * cos(tx) * cos(ty)
 
@@ -318,7 +321,8 @@ subroutine get_abi_geoloc(infile, imager_geolocation, imager_angles, global_atts
          sy = -rs * sin(tx)
          sz = rs * cos(tx) * sin(ty)
 
-         tlat = atan( ((sma*sma) / (smi * smi)) * sz / (sqrt((h-sx)*(h-sx) + sy*sy)))
+         tlat = atan( ((sma*sma) / (smi * smi)) * sz / (sqrt((h-sx)*(h-sx) + &
+              sy*sy)))
          tlon = lon0 - atan( sy / (h-sx) )
 
          tlat = tlat * 180. / pi
@@ -333,11 +337,12 @@ subroutine get_abi_geoloc(infile, imager_geolocation, imager_angles, global_atts
          imager_geolocation%longitude(i, j-imager_geolocation%starty+1) = tlon
       end do
    end do
-!$OMP END DO
-!$OMP END PARALLEL
+   !$OMP END DO
+   !$OMP END PARALLEL
 
    ! Now we compute the viewing geometry
-   call get_abi_viewing_geom(imager_geolocation, imager_angles, sma, smi, hproj, lon0, verbose)
+   call get_abi_viewing_geom(imager_geolocation, imager_angles, sma, smi, &
+        hproj, lon0, verbose)
 
    ! Deallocate temporary variables
    deallocate(x)
@@ -347,7 +352,8 @@ subroutine get_abi_geoloc(infile, imager_geolocation, imager_angles, global_atts
 
 end subroutine get_abi_geoloc
 
-subroutine get_abi_viewing_geom(imager_geolocation, imager_angles, sma, smi, hproj, l0, verbose)
+subroutine get_abi_viewing_geom(imager_geolocation, imager_angles, sma, smi, &
+     hproj, l0, verbose)
 
    use channel_structures_m
    use imager_structures_m
@@ -400,7 +406,7 @@ subroutine get_abi_viewing_geom(imager_geolocation, imager_angles, sma, smi, hpr
 
    imager_angles%satzen(:, :, 1) = acos(u3 / sqrt(u1*u1 + u2*u2 + u3*u3)) * 180. / pi
    imager_angles%satazi(:, :, 1) = atan2(-u2, u1) * 180. / pi
-	imager_angles%satazi(:, :, 1) = imager_angles%satazi(:, :, 1) + 180.
+   imager_angles%satazi(:, :, 1) = imager_angles%satazi(:, :, 1) + 180.
    where (imager_angles%satazi .le. 180 .and. imager_angles%satazi  .ge. 0)
       imager_angles%satazi = abs(180. - imager_angles%satazi)
    end where
@@ -445,7 +451,7 @@ subroutine get_abi_solgeom(imager_time, imager_angles, imager_geolocation, verbo
    integer(kind=sint) :: iye, mon, idy, ihr, minu
    real(kind=dreal)   :: dfr, tmphr
 
-   real(kind=sreal),dimension(:,:),allocatable :: tlat,tlon,tsza,tsaa
+   real(kind=sreal), dimension(:,:), allocatable :: tlat, tlon, tsza, tsaa
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering get_abi_solgeom()'
 
@@ -475,7 +481,7 @@ subroutine get_abi_solgeom(imager_time, imager_angles, imager_geolocation, verbo
    ! This section computes the solar geometry for each pixel in the image
 #ifdef _OPENMP
    if (verbose) write(*,*)"Computing solar geometry using OpenMP"
-   !$omp parallel DO PRIVATE(y, x, iye, mon, dfr, idy, tmphr, ihr, minu, sza, saa)
+   !$OMP PARALLEL DO PRIVATE(y, x, iye, mon, dfr, idy, tmphr, ihr, minu, sza, saa)
 #endif
 #ifdef __ACC
    if (verbose) write(*,*)"Computing solar geometry using PGI_ACC"
@@ -493,15 +499,15 @@ subroutine get_abi_solgeom(imager_time, imager_angles, imager_geolocation, verbo
       end do
    end do
 #ifdef _OPENMP
-   !$omp end parallel do
+   !$OMP END PARALLEL DO
 #endif
 #ifdef __ACC
 !$acc end parallel
 !$acc end data
 #endif
 
-	imager_angles%solzen(:, :, 1) = tsza
-	imager_angles%solazi(:, :, 1) = tsaa
+   imager_angles%solzen(:, :, 1) = tsza
+   imager_angles%solazi(:, :, 1) = tsaa
 
    where(imager_angles%solazi(:, :, 1) .ne. sreal_fill_value .and. &
         imager_angles%relazi(:, :, 1) .ne. sreal_fill_value)
@@ -554,14 +560,14 @@ subroutine goes_resample_vis_to_tir(inarr, outarr, nx, ny, fill, scl, verbose)
    outarr(:, :) = 0
 
 #ifdef __ACC
-      write(*,*) 'Resampling VIS grid to IR grid using PGI_ACC'
+   write(*,*) 'Resampling VIS grid to IR grid using PGI_ACC'
 !$acc data copyin(inarr(1:nx*scl,1:ny*scl))  copyout(outarr(1:nx,1:ny))
 !$acc parallel
 !$acc loop collapse(2) independent private(x, y, outx, outy, val, inpix,i,j)
 #endif
    do x = 1, (nx*scl)-scl
       do y = 1, (ny*scl)-scl
-      	outx = int(x/scl)+1
+         outx = int(x/scl)+1
          outy = int(y/scl)+1
          val = 0
          inpix= 0

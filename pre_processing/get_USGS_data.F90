@@ -101,7 +101,7 @@ subroutine get_USGS_data(path_to_USGS_file, imager_flags, imager_geolocation, &
          stop error_stop_code
       end if
 
-      maxcoord	=	shape(usgs%dem)
+      maxcoord = shape(usgs%dem)
 
       ! Do collocation of imager pixels with USGS data
       !$OMP PARALLEL PRIVATE(i, j, nearest_xy)
