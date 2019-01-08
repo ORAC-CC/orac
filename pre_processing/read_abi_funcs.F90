@@ -533,13 +533,13 @@ subroutine goes_resample_vis_to_tir(inarr, outarr, nx, ny, fill, scl, verbose)
    use preproc_constants_m
    implicit none
 
-   real(kind=sreal), intent(in)  :: inarr(nx*scl, ny*scl)
-   real(kind=sreal), intent(out) :: outarr(nx, ny)
    integer,          intent(in)  :: nx
    integer,          intent(in)  :: ny
    real,             intent(in)  :: fill
    integer,          intent(in)  :: scl
    logical,          intent(in)  :: verbose
+   real(kind=sreal), intent(in)  :: inarr(nx*scl, ny*scl)
+   real(kind=sreal), intent(out) :: outarr(nx, ny)
 
 #ifdef _OPENMP
    integer :: n_threads
