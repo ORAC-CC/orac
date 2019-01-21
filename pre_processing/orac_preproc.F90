@@ -486,11 +486,11 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
 
    ! Set defaults for optional arguments/fields
    nullify(preproc_opts%channel_ids)
-   preproc_opts%n_channels               	= 0
-   preproc_opts%use_hr_ecmwf             	= .true.
-   preproc_opts%ecmwf_time_int_method		= 2
-   preproc_opts%use_ecmwf_snow_and_ice		= .true.
-   preproc_opts%use_modis_emis_in_rttov	= .false.
+   preproc_opts%n_channels                = 0
+   preproc_opts%use_hr_ecmwf              = .true.
+   preproc_opts%ecmwf_time_int_method     = 2
+   preproc_opts%use_ecmwf_snow_and_ice    = .true.
+   preproc_opts%use_modis_emis_in_rttov   = .false.
    preproc_opts%ecmwf_path(2)             = ' '
    preproc_opts%ecmwf_path2(2)            = ' '
    preproc_opts%ecmwf_path3(2)            = ' '
@@ -503,18 +503,18 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
    preproc_opts%use_predef_lsm            = .false.
    preproc_opts%ext_lsm_path              = ' '
    preproc_opts%use_predef_geo            = .false.
-   preproc_opts%ext_geo_path		         = ' '
-   preproc_opts%disable_snow_ice_corr		= .false.
+   preproc_opts%ext_geo_path              = ' '
+   preproc_opts%disable_snow_ice_corr     = .false.
    preproc_opts%do_cloud_emis             = .false.
    preproc_opts%do_ironly                 = .false.
    preproc_opts%do_cloud_type             = .true.
-   preproc_opts%product_name       			= 'L2-CLOUD-CLD'
-   do_spectral_response_correction 			= .false.
-   preproc_opts%use_camel_emis     			= .false.
-   preproc_opts%do_gsics           			= .true.
-   preproc_opts%do_co2             			= .true.
-   preproc_opts%use_swansea_climatology 	= .false.
-   preproc_opts%swansea_gamma          	= 0.3
+   preproc_opts%product_name              = 'L2-CLOUD-CLD'
+   do_spectral_response_correction        = .false.
+   preproc_opts%use_camel_emis            = .false.
+   preproc_opts%do_gsics                  = .true.
+   preproc_opts%do_co2                    = .true.
+   preproc_opts%use_swansea_climatology   = .false.
+   preproc_opts%swansea_gamma             = 0.3
 
    ! Initialise satellite position string
    global_atts%Satpos_Metadata = 'null'
@@ -688,7 +688,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
 
    ! Check if SatWx is available, if not then don't do cloud emissivity stuff
 #ifndef INCLUDE_SATWX
-	preproc_opts%do_cloud_emis = .false.
+   preproc_opts%do_cloud_emis = .false.
 #endif
 
    ! If we're using an external land-sea file, place that into USGS filename var
@@ -1160,22 +1160,22 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
          end if
       end if
       if (.not. preproc_opts%do_cloud_emis) then
-		   if (verbose) write(*,*) 'Calculate Pavolonis cloud phase with high '// &
-		        'resolution ERA surface data'
-		   if (preproc_opts%do_cloud_type) then
-		      if (.not. preproc_opts%use_hr_ecmwf) then
-		         call cloud_type(channel_info, sensor, surface, imager_flags, &
-		              imager_angles, imager_geolocation, imager_measurements, &
-		              imager_pavolonis, ecmwf, platform, doy, preproc_opts%do_ironly, &
-		              do_spectral_response_correction, verbose)
-		      else
-		         call cloud_type(channel_info, sensor, surface, imager_flags, &
-		              imager_angles, imager_geolocation, imager_measurements, &
-		              imager_pavolonis, ecmwf_HR, platform, doy, preproc_opts%do_ironly, &
-		              do_spectral_response_correction, verbose)
-		      end if
-		   end if
-		endif
+         if (verbose) write(*,*) 'Calculate Pavolonis cloud phase with high '// &
+              'resolution ERA surface data'
+         if (preproc_opts%do_cloud_type) then
+            if (.not. preproc_opts%use_hr_ecmwf) then
+               call cloud_type(channel_info, sensor, surface, imager_flags, &
+                    imager_angles, imager_geolocation, imager_measurements, &
+                    imager_pavolonis, ecmwf, platform, doy, preproc_opts%do_ironly, &
+                    do_spectral_response_correction, verbose)
+            else
+               call cloud_type(channel_info, sensor, surface, imager_flags, &
+                    imager_angles, imager_geolocation, imager_measurements, &
+                    imager_pavolonis, ecmwf_HR, platform, doy, preproc_opts%do_ironly, &
+                    do_spectral_response_correction, verbose)
+            end if
+         end if
+      end if
 
       if (imager_angles%nviews .gt. 1) then
          ! A temporary hack for Aerosol_cci:
@@ -1272,7 +1272,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
                   preproc_cld,preproc_prtm,imager_cloud,ecmwf,sensor,verbose)
             call do_cb_detect(channel_info,imager_measurements,imager_geolocation,imager_cloud,imager_pavolonis, sensor, verbose)
 #else
-				write(*,*)"ERROR: Cannot compute cloud emissivity and CB locations without SatWx."
+            write(*,*) "ERROR: Cannot compute cloud emissivity and CB locations without SatWx."
 #endif
          end if
       end if

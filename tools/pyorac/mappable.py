@@ -153,8 +153,8 @@ class Mappable(object):
     def map(self, ax, data, **kwargs):
         masked, sl_orig = self._plot_init(ax, data, kwargs)
         # Increment slices for corners
-        sl = [slice(s.start, s.stop+1) if s.start is not None else slice(None)
-              for s in sl_orig]
+        sl = tuple(slice(s.start, s.stop+1)
+                   if s.start is not None else slice(None) for s in sl_orig)
         im = ax.pcolormesh(self.crnrlon[sl], self.crnrlat[sl], masked, **kwargs)
         return im
 
@@ -202,8 +202,8 @@ class Mappable(object):
         kwargs["color"] = colour.reshape((4, masked.size)).T
 
         # Increment slices for corners
-        sl = [slice(s.start, s.stop+1) if s.start is not None else slice(None)
-              for s in sl_orig]
+        sl = tuple(slice(s.start, s.stop+1)
+                   if s.start is not None else slice(None) for s in sl_orig)
         im = ax.pcolormesh(self.crnrlon[sl], self.crnrlat[sl], masked, **kwargs)
         return im
 

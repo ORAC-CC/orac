@@ -30,15 +30,15 @@ subroutine get_trop_tp(preproc_prtm,preproc_dims)
    use preproc_structures_m
    use omp_lib
 
-   type(preproc_prtm_t),           intent(inout)    :: preproc_prtm
-   type(preproc_dims_t),           intent(in)    :: preproc_dims
+   type(preproc_prtm_t), intent(inout) :: preproc_prtm
+   type(preproc_dims_t), intent(in)    :: preproc_dims
 
    real,    parameter :: min_tropopause = 40.0  ! Heighest p allowed for trop
    real,    parameter :: max_tropopause = 450.0 ! Lowest p allowed for trop
    integer, parameter :: depth          = 2     ! # layers added to inversions
 
    integer                            :: nx,ny,nz ! Number of vertical levels, pixels
-   integer                            :: x,y      ! Looping variables over preproc
+   integer                            :: x, y     ! Looping variables over preproc
    integer                            :: k, l     ! Indexing variables
    integer                            :: step     ! Direction of search
    real, dimension(preproc_dims%kdim) :: t        ! Temperature profile
@@ -113,7 +113,7 @@ subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation, &
    use preproc_structures_m
 
 #ifdef INCLUDE_SATWX
-	use satwx_emis_funcs
+   use satwx_emis_funcs
 #endif
 
    implicit none
@@ -130,11 +130,13 @@ subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation, &
    character(len=sensor_length), intent(in)    :: sensor
    logical,                      intent(in)    :: verbose
 
+#ifdef INCLUDE_SATWX
    real(kind=sreal), allocatable, dimension(:,:,:) :: indata
    real(kind=sreal), allocatable, dimension(:,:) :: cldbt,clrbt
    real(kind=sreal), allocatable, dimension(:,:) :: cldbtwv6,clrbtwv6
    real(kind=sreal), allocatable, dimension(:,:) :: cldbtwv7,clrbtwv7
    type(interpol_t), allocatable, dimension(:)   :: interp
+
    integer :: i, j
    integer :: chan_n, good_chan_lw, good_chan_all
    integer :: chanwv6_n, good_chanwv6_lw, good_chanwv6_all
@@ -142,6 +144,7 @@ subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation, &
    integer :: extent(4)
 
    ! Interpolation variables
+<<<<<<< HEAD
    real           :: Lat0,Lon0,LatN,LonN, MinLon, MaxLon
    real           :: delta_lat,delta_lon
    real           :: rad_clr,rad_cld,rad_obs,t1,t2,emis
@@ -154,6 +157,18 @@ subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation, &
    logical        :: Wrap, do_wv
 
 #ifdef INCLUDE_SATWX
+=======
+   real            :: Lat0, Lon0, LatN, LonN, MinLon, MaxLon
+   real            :: delta_lat, delta_lon
+   real            :: rad_clr, rad_cld, rad_obs, t1, t2, emis
+   real, parameter :: c1 = 1.191042e8
+   real, parameter :: c2 = 1.4387752e4
+   real, parameter :: lam1 = 10.8
+   real, parameter :: lam2 = 6.2
+   real, parameter :: lam3 = 7.1
+   integer         :: NLat, NLon
+   logical         :: Wrap, do_wv
+>>>>>>> 2f03e4ea9def2c2352361fce24308f32e8bbef81
 
    good_chan_lw = -1
    good_chan_all = -1
@@ -235,7 +250,8 @@ subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation, &
    end do
 
    if (good_chan_all .lt. 0 .or. good_chan_lw .lt. 0) then
-      write(*,*)"ERROR: The longwave channel required for cloud emissivity (",chan_n,") is not available!"
+      write(*,*) "ERROR: The longwave channel required for cloud emissivity (", &
+           chan_n, ") is not available!"
       stop
    end if
    if (do_wv) then
@@ -300,6 +316,7 @@ subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation, &
    indata(:,:,2) = imager_measurements%data(:,:,good_chanwv6_all)
    indata(:,:,3) = imager_measurements%data(:,:,good_chanwv7_all)
 
+<<<<<<< HEAD
    call calc_cloud_emis(cldbt,clrbt,cldbtwv6,clrbtwv6,cldbtwv7,clrbtwv7,indata,imager_cloud%cloud_emis,extent,verbose)
 
 	where (imager_geolocation%latitude .eq. sreal_fill_value)
@@ -318,6 +335,27 @@ subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation, &
 		imager_cloud%trop_p(:,:) = sreal_fill_value
 		imager_cloud%cape(:,:) = sreal_fill_value
 	end where
+=======
+   call calc_cloud_emis(cldbt, clrbt, cldbtwv6, clrbtwv6, cldbtwv7, &
+        clrbtwv7, indata, imager_cloud%cloud_emis, extent, verbose)
+
+   where (imager_geolocation%latitude .eq. sreal_fill_value)
+      imager_cloud%cloud_emis(:,:,1) = sreal_fill_value
+      imager_cloud%cloud_emis(:,:,2) = sreal_fill_value
+      imager_cloud%cloud_emis(:,:,3) = sreal_fill_value
+      imager_cloud%trop_t(:,:) = sreal_fill_value
+      imager_cloud%trop_p(:,:) = sreal_fill_value
+      imager_cloud%cape(:,:) = sreal_fill_value
+   end where
+   where (imager_geolocation%longitude .eq. sreal_fill_value)
+      imager_cloud%cloud_emis(:,:,1) = sreal_fill_value
+      imager_cloud%cloud_emis(:,:,2) = sreal_fill_value
+      imager_cloud%cloud_emis(:,:,3) = sreal_fill_value
+      imager_cloud%trop_t(:,:) = sreal_fill_value
+      imager_cloud%trop_p(:,:) = sreal_fill_value
+      imager_cloud%cape(:,:) = sreal_fill_value
+   end where
+>>>>>>> 2f03e4ea9def2c2352361fce24308f32e8bbef81
 
    deallocate(cldbt)
    deallocate(clrbt)
@@ -333,7 +371,8 @@ subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation, &
 end subroutine get_cloud_emis
 
 
-subroutine do_cb_detect(channel_info,imager_measurements,imager_geolocation,imager_cloud, imager_pavolonis, sensor, verbose)
+subroutine do_cb_detect(channel_info, imager_measurements, imager_geolocation, &
+     imager_cloud, imager_pavolonis, sensor, verbose)
 
    use channel_structures_m
    use ecmwf_m, only : ecmwf_t
@@ -343,7 +382,7 @@ subroutine do_cb_detect(channel_info,imager_measurements,imager_geolocation,imag
    use preproc_structures_m
 
 #ifdef INCLUDE_SATWX
-	use satwx_conv_funcs
+   use satwx_conv_funcs
 #endif
 
    implicit none
@@ -351,16 +390,16 @@ subroutine do_cb_detect(channel_info,imager_measurements,imager_geolocation,imag
    type(channel_info_t),         intent(in)    :: channel_info
    type(imager_measurements_t),  intent(in)    :: imager_measurements
    type(imager_geolocation_t),   intent(in)    :: imager_geolocation
-   type(imager_cloud_t),   intent(in)    		  :: imager_cloud
+   type(imager_cloud_t),         intent(in)    :: imager_cloud
    type(imager_pavolonis_t),     intent(inout) :: imager_pavolonis
    character(len=sensor_length), intent(in)    :: sensor
    logical,                      intent(in)    :: verbose
 
 #ifdef INCLUDE_SATWX
-   integer 					:: extent(4),n_chans
+   integer 					:: extent(4), n_chans
 
-   real(kind=sreal), pointer, dimension(:,:,:) 		::	sat_data
-   real(kind=sreal), pointer, dimension(:)			::	channel_wl_abs
+   real(kind=sreal), pointer, dimension(:,:,:)  :: sat_data
+   real(kind=sreal), pointer, dimension(:)      :: channel_wl_abs
 
    extent(1) = imager_geolocation%startx
    extent(2) = imager_geolocation%endx
@@ -373,6 +412,7 @@ subroutine do_cb_detect(channel_info,imager_measurements,imager_geolocation,imag
    sat_data => imager_measurements%data
    channel_wl_abs => channel_info%channel_wl_abs
 
+<<<<<<< HEAD
    imager_cloud%cape(:,:) = 999.
 
 	call calc_convection(channel_wl_abs, n_chans, sat_data, imager_cloud%cape, imager_pavolonis%cldtype, extent, verbose)
@@ -380,11 +420,18 @@ subroutine do_cb_detect(channel_info,imager_measurements,imager_geolocation,imag
 	imager_pavolonis%cldmask(:,:,:) = 0
 !	imager_pavolonis%cccot_pre(:,:,1) = imager_measurements%data(:,:,2) - imager_measurements%data(:,:,4)
 !	imager_pavolonis%cldmask_uncertainty(:,:,1) = imager_measurements%data(:,:,2) - imager_measurements%data(:,:,6)
+=======
+   call calc_convection(channel_wl_abs, n_chans, sat_data, imager_cloud%cape, &
+        imager_pavolonis%cldtype, extent, verbose)
 
-	where(imager_pavolonis%cldtype .eq. 1)
-		imager_pavolonis%cldmask(:,:,:) = 1
-	end where
+   imager_pavolonis%cldmask(:,:,:) = 0
+>>>>>>> 2f03e4ea9def2c2352361fce24308f32e8bbef81
 
+   where(imager_pavolonis%cldtype .eq. 1)
+      imager_pavolonis%cldmask(:,:,:) = 1
+   end where
+
+<<<<<<< HEAD
 	where (imager_geolocation%latitude .eq. sreal_fill_value)
 		imager_pavolonis%cldtype(:,:,1) = byte_fill_value
 		imager_pavolonis%cccot_pre(:,:,1) = sreal_fill_value
@@ -396,10 +443,18 @@ subroutine do_cb_detect(channel_info,imager_measurements,imager_geolocation,imag
 		imager_pavolonis%cldmask_uncertainty(:,:,1) = sreal_fill_value
 	end where
 !   imager_pavolonis%ann_phase_uncertainty(:,:,1) =imager_cloud%cloud_emis(:,:,1) - imager_cloud%cloud_emis(:,:,2)
+=======
+   where (imager_geolocation%latitude .eq. sreal_fill_value)
+      imager_pavolonis%cldtype(:,:,1) = byte_fill_value
+   end where
+   where (imager_geolocation%longitude .eq. sreal_fill_value)
+      imager_pavolonis%cldtype(:,:,1) = byte_fill_value
+   end where
+>>>>>>> 2f03e4ea9def2c2352361fce24308f32e8bbef81
 
 #else
-	write(*,*) "ERROR: Cannot detect convection without linking to SatWx"
-	stop
+   write(*,*) "ERROR: Cannot detect convection without linking to SatWx"
+   stop
 #endif
 
 end subroutine do_cb_detect

@@ -70,9 +70,9 @@ subroutine parse_optional(label, value, preproc_opts)
 
    implicit none
 
-   character(len=*), intent(in)    		:: label
-   character(len=*), intent(in)    		:: value
-   type(preproc_opts_t), intent(inout)	:: preproc_opts
+   character(len=*),     intent(in)     :: label
+   character(len=*),     intent(in)     :: value
+   type(preproc_opts_t), intent(inout)  :: preproc_opts
 
 
    select case (label)
@@ -100,19 +100,19 @@ subroutine parse_optional(label, value, preproc_opts)
       if (parse_string(value, preproc_opts%use_modis_emis_in_rttov) /= 0) &
          call handle_parse_error(label)
    case('ECMWF_PATH_2')
-      if (parse_string(value, preproc_opts%ecmwf_path(1)) /= 0) &
+      if (parse_string(value, preproc_opts%ecmwf_path(2)) /= 0) &
          call handle_parse_error(label)
    case('ECMWF_PATH2_2')
-      if (parse_string(value, preproc_opts%ecmwf_path2(1)) /= 0) &
+      if (parse_string(value, preproc_opts%ecmwf_path2(2)) /= 0) &
          call handle_parse_error(label)
    case('ECMWF_PATH3_2')
-      if (parse_string(value, preproc_opts%ecmwf_path3(1)) /= 0) &
+      if (parse_string(value, preproc_opts%ecmwf_path3(2)) /= 0) &
          call handle_parse_error(label)
    case('ECMWF_PATH_HR')
       if (parse_string(value, preproc_opts%ecmwf_path_hr(1)) /= 0) &
          call handle_parse_error(label)
    case('ECMWF_PATH_HR_2')
-      if (parse_string(value, preproc_opts%ecmwf_path_hr_2(1)) /= 0) &
+      if (parse_string(value, preproc_opts%ecmwf_path_hr(2)) /= 0) &
          call handle_parse_error(label)
    case('ECMWF_NLEVELS')
       if (parse_string(value, preproc_opts%ecmwf_nlevels) /= 0) &

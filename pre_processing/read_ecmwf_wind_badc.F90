@@ -67,7 +67,8 @@ subroutine read_ecmwf_wind_badc(ecmwf_path, ecmwf2path, ecmwf3path, ecmwf)
    ! loop over GRIB files for vertical coordinate
    do i=1,2
       call grib_open_file(fid,paths(i),'r',stat)
-      if (stat .ne. 0) call h_e_e('wind_badc', 'Error opening GRIB field.')
+      if (stat .ne. 0) call h_e_e('wind_badc', 'Error opening GRIB file. ' // &
+           trim(paths(i)))
       call grib_new_from_file(fid,gid,stat)
       if (stat .ne. 0) call h_e_e('wind_badc', 'Error getting GRIB_ID.')
       if (gid .eq. GRIB_END_OF_FILE) call h_e_e('wind_badc', 'Empty GRIB file.')

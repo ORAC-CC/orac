@@ -13,7 +13,7 @@ CLOBBER = OrderedDict([
 ])
 
 
-def process_pre(args, log_path, dependency=None):
+def process_pre(args, log_path, dependency=None, tag='pre'):
     """Call sequence for pre processor"""
     from pyorac.drivers import build_preproc_driver
 
@@ -21,7 +21,7 @@ def process_pre(args, log_path, dependency=None):
     driver = build_preproc_driver(args)
 
     # This must be called after building the driver as revision is unknown
-    job_name = args.File.job_name(args.revision, 'pre')
+    job_name = args.File.job_name(args.revision, tag)
     root_name = args.File.root_name(args.revision, args.processor, args.project,
                                     args.product_name)
 
@@ -86,13 +86,13 @@ def process_main(args, log_path, tag='', dependency=None):
     return jid, out_file
 
 
-def process_post(args, log_path, files=None, dependency=None):
+def process_post(args, log_path, files=None, dependency=None, tag='post'):
     """Call sequence for post processor"""
     from glob import glob
     from pyorac.drivers import build_postproc_driver
 
     check_args_postproc(args)
-    job_name = args.File.job_name(args.revision, 'post')
+    job_name = args.File.job_name(args.revision, tag)
     root_name = args.File.root_name(args.revision)
 
     if not os.path.isdir(args.out_dir):
@@ -137,6 +137,62 @@ def process_post(args, log_path, files=None, dependency=None):
     return jid, out_file
 
 
+def call_reformat(args, log_path, exe, out_file, dependency=None):
+    """Reformat outputs using the script provided."""
+    import pyorac.local_defaults as defaults
+
+    from pyorac.colour_print import colour_print
+    from pyorac.definitions import OracError, COLOURING
+    from subprocess import check_output, CalledProcessError
+
+    # Optionally print command and driver file contents to StdOut
+    if args.verbose or args.script_verbose or args.dry_run:
+        colour_print('{} {} 1 <<<'.format(exe, out_file), COLOURING['header'])
+
+    if args.dry_run:
+        return
+
+    job_name = args.File.job_name(args.revision, 'format')
+
+    if not args.batch:
+        try:
+            check_call([exe, out_file, "1"])
+        except CalledProcessError as err:
+            raise OracError('{:s} failed with error code {:d}. {}'.format(
+                ' '.join(err.cmd), err.returncode, err.output
+            ))
+
+    else:
+        try:
+            # Collect batch settings from defaults, command line, and script
+            batch_params = defaults.batch_values.copy()
+            batch_params['job_name'] = job_name
+            batch_params['log_file'] = os.path.join(log_path, job_name + '.log')
+            batch_params['err_file'] = os.path.join(log_path, job_name + '.err')
+            batch_params['duration'] = '01:00'
+            batch_params['ram'] = 5000
+            batch_params['procs'] = 1
+            if dependency is not None:
+                batch_params['depend'] = dependency
+            batch_params.update({key : val for key, val in args.batch_settings})
+
+            # Form batch queue command and call batch queuing system
+            cmd = defaults.batch.ListBatch(batch_params,
+                                           exe=[exe, out_file, "1"])
+
+            if args.verbose or args.script_verbose:
+                colour_print(' '.join(cmd), COLOURING['header'])
+            out = check_output(cmd, universal_newlines=True)
+
+            # Parse job ID # and return it to the caller
+            jid = defaults.batch.ParseOut(out, 'ID')
+            return jid
+        except CalledProcessError as err:
+            raise OracError('Failed to queue job ' + exe)
+        except SyntaxError as err:
+            raise OracError(str(err))
+
+
 def process_all(orig_args):
     """Run the ORAC pre, main, and post processors on a file."""
     from argparse import ArgumentParser
@@ -163,7 +219,7 @@ def process_all(orig_args):
     # Work out output filename
     args.out_dir = os.path.join(orig_args.out_dir, pre_dir)
 
-    jid_pre, _ = process_pre(args, log_path)
+    jid_pre, _ = process_pre(args, log_path, tag="pre{}".format(args.label))
     if jid_pre is not None:
         written_dirs.add(args.out_dir)
 
@@ -184,7 +240,8 @@ def process_all(orig_args):
         phs_args.__dict__.update(parsed_settings_arguments.__dict__)
         phs_args.out_dir = os.path.join(orig_args.out_dir, phs_args.sub_dir)
 
-        jid, out = process_main(phs_args, log_path, dependency=jid_pre)
+        jid, out = process_main(phs_args, log_path, dependency=jid_pre,
+                                tag=args.label)
         out_files.append(out)
         if jid is not None:
             jid_main.append(jid)
@@ -195,9 +252,14 @@ def process_all(orig_args):
     args.target = root_name + phs_args.phase + ".primary.nc"
     args.in_dir = written_dirs
     args.out_dir = orig_args.out_dir
-    jid, out_file = process_post(args, log_path, out_files, dependency=jid_main)
+    jid, out_file = process_post(args, log_path, out_files, dependency=jid_main,
+                                 tag="post{}".format(args.label))
     if jid is not None:
         written_dirs.add(args.out_dir)
+
+    # Run CCI formatting
+    if args.reformat != "":
+        call_reformat(args, log_path, args.reformat, out_file, dependency=jid)
 
     # Output root filename and output folders for regression tests
     return jid, out_file

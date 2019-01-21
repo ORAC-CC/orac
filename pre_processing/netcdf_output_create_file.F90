@@ -142,7 +142,7 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
    character(len=file_length) :: ctitle
    integer                    :: ncid
    integer                    :: dimids_1d(1)
-   integer                    :: dimids_2d(2)
+!  integer                    :: dimids_2d(2)
    integer                    :: dimids_3d(3)
    integer                    :: dimids_4d(4)
    integer(lint)              :: nlon, nlat,kdim

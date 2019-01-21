@@ -469,7 +469,7 @@ subroutine get_ocean_colour(cyear, cmonth, occci_path, lat, lon, &
             write(*,*) 'ERROR: get_ocean_colour(): Unable to locate ', 'OceanColour_cci data: ',&
                        trim(occci_path_full)//'/'//trim(occci_file_regex)
             stop error_stop_code
-         endif
+         end if
       end if
       occci_path_file = trim(occci_path_full)//'/'//trim(occci_file)
    end if

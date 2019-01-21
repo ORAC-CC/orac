@@ -62,7 +62,8 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf, high_res, ecmwf_flag)
 
    ! open file
    call grib_open_file(fid,trim(ecmwf_path),'r',stat)
-   if (stat .ne. 0) call h_e_e('wind_grib', 'Error opening GRIB field.')
+   if (stat .ne. 0) call h_e_e('wind_grib', 'Error opening GRIB file. '// &
+        trim(ecmwf_path))
    call grib_new_from_file(fid,gid,stat)
    if (stat .ne. 0) call h_e_e('wind_grib', 'Error getting GRIB_ID. '// &
         trim(ecmwf_path))
