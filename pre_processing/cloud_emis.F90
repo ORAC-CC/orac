@@ -132,11 +132,13 @@ subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation, &
 
    real(kind=sreal), allocatable, dimension(:,:,:) :: indata
    real(kind=sreal), allocatable, dimension(:,:) :: cldbt,clrbt
-   real(kind=sreal), allocatable, dimension(:,:) :: cldbtwv,clrbtwv
+   real(kind=sreal), allocatable, dimension(:,:) :: cldbtwv6,clrbtwv6
+   real(kind=sreal), allocatable, dimension(:,:) :: cldbtwv7,clrbtwv7
    type(interpol_t), allocatable, dimension(:)   :: interp
    integer :: i, j
    integer :: chan_n, good_chan_lw, good_chan_all
-   integer :: chanwv_n, good_chanwv_lw, good_chanwv_all
+   integer :: chanwv6_n, good_chanwv6_lw, good_chanwv6_all
+   integer :: chanwv7_n, good_chanwv7_lw, good_chanwv7_all
    integer :: extent(4)
 
    ! Interpolation variables
@@ -147,6 +149,7 @@ subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation, &
    real,parameter :: c2  = 1.4387752e4
    real,parameter :: lam1 = 10.8
    real,parameter :: lam2 = 6.2
+   real,parameter :: lam3 = 7.1
    integer        :: NLat,NLon
    logical        :: Wrap, do_wv
 
@@ -154,8 +157,10 @@ subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation, &
 
    good_chan_lw = -1
    good_chan_all = -1
-   good_chanwv_lw = -1
-   good_chanwv_all = -1
+   good_chanwv6_lw = -1
+   good_chanwv6_all = -1
+   good_chanwv7_lw = -1
+   good_chanwv7_all = -1
 
    do_wv = .true.
 
@@ -166,15 +171,19 @@ subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation, &
 
    allocate(cldbt(extent(1):extent(2),extent(3):extent(4)))
    allocate(clrbt(extent(1):extent(2),extent(3):extent(4)))
-   allocate(cldbtwv(extent(1):extent(2),extent(3):extent(4)))
-   allocate(clrbtwv(extent(1):extent(2),extent(3):extent(4)))
+   allocate(cldbtwv6(extent(1):extent(2),extent(3):extent(4)))
+   allocate(clrbtwv6(extent(1):extent(2),extent(3):extent(4)))
+   allocate(cldbtwv7(extent(1):extent(2),extent(3):extent(4)))
+   allocate(clrbtwv7(extent(1):extent(2),extent(3):extent(4)))
 
-   allocate(indata(extent(1):extent(2),extent(3):extent(4),2))
+   allocate(indata(extent(1):extent(2),extent(3):extent(4),3))
 
    cldbt=sreal_fill_value
    clrbt=sreal_fill_value
-   cldbtwv=sreal_fill_value
-   clrbtwv=sreal_fill_value
+   cldbtwv6=sreal_fill_value
+   clrbtwv6=sreal_fill_value
+   cldbtwv7=sreal_fill_value
+   clrbtwv7=sreal_fill_value
 
    allocate(interp(1))
 
@@ -196,44 +205,18 @@ subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation, &
 
    ! Does the grid wrap around the international date-line?
    Wrap = MinLon <= -180. .and. MaxLon >=  180.
-
-   if (trim(adjustl(sensor)) .eq. 'AATSR' .or. &
-        trim(adjustl(sensor)) .eq. 'ATSR2') then
-      chan_n = 6
-      if (do_wv) then
-         if (verbose)write(*,*)"WARNING: Cannot process WV cloud emis for (A)ATSR."
-         do_wv=.false.
-      end if
-   else if (trim(adjustl(sensor)) .eq. 'ABI') then
+   if (trim(adjustl(sensor)) .eq. 'ABI') then
       chan_n = 14
-      chanwv_n = 8
+      chanwv6_n = 8
+      chanwv7_n = 9
    else if (trim(adjustl(sensor)) .eq. 'AHI') then
       chan_n = 14
-      chanwv_n = 8
-   else if (trim(adjustl(sensor)) .eq. 'AVHRR') then
-      chan_n = 5
-      if (do_wv) then
-         if (verbose)write(*,*)"WARNING: Cannot process WV cloud emis for AVHRR."
-         do_wv=.false.
-      end if
-   else if (trim(adjustl(sensor)) .eq. 'MODIS') then
-      chan_n = 31
-      chanwv_n = 27
+      chanwv6_n = 8
+      chanwv7_n = 9
    else if (trim(adjustl(sensor)) .eq. 'SEVIRI') then
       chan_n = 9
-      chanwv_n = 5
-   else if (trim(adjustl(sensor)) .eq. 'SLSTR') then
-      chan_n = 8
-      if (do_wv) then
-         if (verbose)write(*,*)"WARNING: Cannot process WV cloud emis for SLSTR."
-         do_wv=.false.
-      end if
-   else if (trim(adjustl(sensor)) .eq. 'VIIRS') then
-      chan_n = 15
-      if (do_wv) then
-         if (verbose)write(*,*)"WARNING: Cannot process WV cloud emis for VIIRS."
-         do_wv=.false.
-      end if
+      chanwv6_n = 5
+      chanwv7_n = 6
    end if
 
    do i=1,channel_info%nchannels_total
@@ -241,9 +224,13 @@ subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation, &
          good_chan_all = i
          good_chan_lw = channel_info%map_ids_channel_to_lw(i)
       end if
-      if (channel_info%channel_ids_instr(i) .eq. chanwv_n) then
-         good_chanwv_all = i
-         good_chanwv_lw = channel_info%map_ids_channel_to_lw(i)
+      if (channel_info%channel_ids_instr(i) .eq. chanwv6_n) then
+         good_chanwv6_all = i
+         good_chanwv6_lw = channel_info%map_ids_channel_to_lw(i)
+      end if
+      if (channel_info%channel_ids_instr(i) .eq. chanwv7_n) then
+         good_chanwv7_all = i
+         good_chanwv7_lw = channel_info%map_ids_channel_to_lw(i)
       end if
    end do
 
@@ -252,8 +239,12 @@ subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation, &
       stop
    end if
    if (do_wv) then
-      if (good_chanwv_all .lt. 0 .or. good_chanwv_lw .lt. 0) then
-         write(*,*)"ERROR: The water vapour channel required for cloud emissivity (",chanwv_n,") is not available!"
+      if (good_chanwv6_all .lt. 0 .or. good_chanwv6_lw .lt. 0) then
+         write(*,*)"ERROR: The water vapour channel required for cloud emissivity (",chanwv6_n,") is not available!"
+         stop
+      end if
+      if (good_chanwv7_all .lt. 0 .or. good_chanwv7_lw .lt. 0) then
+         write(*,*)"ERROR: The water vapour channel required for cloud emissivity (",chanwv7_n,") is not available!"
          stop
       end if
    end if
@@ -276,6 +267,22 @@ subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation, &
          call interp_field (preproc_cld%clear_bt(:,:,good_chan_lw), &
               clrbt(j,i), interp(1))
 
+         ! WV channel (~6.3 micron)
+         if (do_wv) then
+            call interp_field (preproc_cld%cloud_bt(:,:,good_chanwv6_lw), &
+                 cldbtwv6(j,i), interp(1))
+            call interp_field (preproc_cld%clear_bt(:,:,good_chanwv6_lw), &
+                 clrbtwv6(j,i), interp(1))
+         end if
+
+         ! WV channel (~7.1 micron)
+         if (do_wv) then
+            call interp_field (preproc_cld%cloud_bt(:,:,good_chanwv7_lw), &
+                 cldbtwv7(j,i), interp(1))
+            call interp_field (preproc_cld%clear_bt(:,:,good_chanwv7_lw), &
+                 clrbtwv7(j,i), interp(1))
+         end if
+
          ! Interpolate tropopause info onto satellite grid
          call interp_field (preproc_prtm%trop_t(:,:), &
               imager_cloud%trop_t(j,i), interp(1))
@@ -284,30 +291,29 @@ subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation, &
          call interp_field (preproc_prtm%cape(:,:), &
               imager_cloud%cape(j,i), interp(1))
 
-         ! WV channel (~7 micron)
-         if (do_wv) then
-            call interp_field (preproc_cld%cloud_bt(:,:,good_chanwv_lw), &
-                 cldbtwv(j,i), interp(1))
-            call interp_field (preproc_cld%clear_bt(:,:,good_chanwv_lw), &
-                 clrbtwv(j,i), interp(1))
-         end if
       end do
    end do
    !$OMP END DO
    !$OMP END PARALLEL
 
    indata(:,:,1) = imager_measurements%data(:,:,good_chan_all)
-   indata(:,:,2) = imager_measurements%data(:,:,good_chanwv_all)
+   indata(:,:,2) = imager_measurements%data(:,:,good_chanwv6_all)
+   indata(:,:,3) = imager_measurements%data(:,:,good_chanwv7_all)
 
-   call calc_cloud_emis(cldbt,clrbt,cldbtwv,clrbtwv,indata,imager_cloud%cloud_emis,extent,verbose)
-
+   call calc_cloud_emis(cldbt,clrbt,cldbtwv6,clrbtwv6,cldbtwv7,clrbtwv7,indata,imager_cloud%cloud_emis,extent,verbose)
 
 	where (imager_geolocation%latitude .eq. sreal_fill_value)
+		imager_cloud%cloud_emis(:,:,1) = sreal_fill_value
+		imager_cloud%cloud_emis(:,:,2) = sreal_fill_value
+		imager_cloud%cloud_emis(:,:,3) = sreal_fill_value
 		imager_cloud%trop_t(:,:) = sreal_fill_value
 		imager_cloud%trop_p(:,:) = sreal_fill_value
 		imager_cloud%cape(:,:) = sreal_fill_value
 	end where
 	where (imager_geolocation%longitude .eq. sreal_fill_value)
+		imager_cloud%cloud_emis(:,:,1) = sreal_fill_value
+		imager_cloud%cloud_emis(:,:,2) = sreal_fill_value
+		imager_cloud%cloud_emis(:,:,3) = sreal_fill_value
 		imager_cloud%trop_t(:,:) = sreal_fill_value
 		imager_cloud%trop_p(:,:) = sreal_fill_value
 		imager_cloud%cape(:,:) = sreal_fill_value
@@ -315,8 +321,10 @@ subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation, &
 
    deallocate(cldbt)
    deallocate(clrbt)
-   deallocate(cldbtwv)
-   deallocate(clrbtwv)
+   deallocate(cldbtwv6)
+   deallocate(clrbtwv6)
+   deallocate(cldbtwv7)
+   deallocate(clrbtwv7)
    deallocate(interp)
    deallocate(indata)
 
@@ -365,9 +373,13 @@ subroutine do_cb_detect(channel_info,imager_measurements,imager_geolocation,imag
    sat_data => imager_measurements%data
    channel_wl_abs => channel_info%channel_wl_abs
 
+   imager_cloud%cape(:,:) = 999.
+
 	call calc_convection(channel_wl_abs, n_chans, sat_data, imager_cloud%cape, imager_pavolonis%cldtype, extent, verbose)
 
 	imager_pavolonis%cldmask(:,:,:) = 0
+!	imager_pavolonis%cccot_pre(:,:,1) = imager_measurements%data(:,:,2) - imager_measurements%data(:,:,4)
+!	imager_pavolonis%cldmask_uncertainty(:,:,1) = imager_measurements%data(:,:,2) - imager_measurements%data(:,:,6)
 
 	where(imager_pavolonis%cldtype .eq. 1)
 		imager_pavolonis%cldmask(:,:,:) = 1
@@ -375,10 +387,15 @@ subroutine do_cb_detect(channel_info,imager_measurements,imager_geolocation,imag
 
 	where (imager_geolocation%latitude .eq. sreal_fill_value)
 		imager_pavolonis%cldtype(:,:,1) = byte_fill_value
+		imager_pavolonis%cccot_pre(:,:,1) = sreal_fill_value
+		imager_pavolonis%cldmask_uncertainty(:,:,1) = sreal_fill_value
 	end where
 	where (imager_geolocation%longitude .eq. sreal_fill_value)
 		imager_pavolonis%cldtype(:,:,1) = byte_fill_value
+		imager_pavolonis%cccot_pre(:,:,1) = sreal_fill_value
+		imager_pavolonis%cldmask_uncertainty(:,:,1) = sreal_fill_value
 	end where
+!   imager_pavolonis%ann_phase_uncertainty(:,:,1) =imager_cloud%cloud_emis(:,:,1) - imager_cloud%cloud_emis(:,:,2)
 
 #else
 	write(*,*) "ERROR: Cannot detect convection without linking to SatWx"
