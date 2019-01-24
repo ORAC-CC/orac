@@ -621,6 +621,9 @@ subroutine load_abi_band(infile, imager_geolocation, rad, kappa, bc1, bc2, fk1, 
    integer,    intent(in)  :: scl
    logical,    intent(in)  :: verbose
 
+   byte, allocatable			:: dqf(:,:)
+
+
    integer  :: ierr, fid, did
    integer  :: x0, x1, y0, y1, nx, ny
 !  integer  :: n_cols, n_lines
@@ -642,6 +645,8 @@ subroutine load_abi_band(infile, imager_geolocation, rad, kappa, bc1, bc2, fk1, 
    nx   = x1-x0+1
    ny   = y1-y0+1
 
+   allocate(dqf(nx,ny))
+
    ! Open the netCDf4 file for access
    ierr = nf90_open(path = trim(adjustl(infile)), mode = NF90_NOWRITE, ncid = fid)
    if (ierr.ne.NF90_NOERR) then
@@ -658,6 +663,17 @@ subroutine load_abi_band(infile, imager_geolocation, rad, kappa, bc1, bc2, fk1, 
    ierr = nf90_get_var(fid, did, rad, start = (/ x0, y0 /), count = (/ nx, ny /))
    if (ierr.ne.NF90_NOERR) then
       print*, 'ERROR: load_abi_band(): Error reading dataset Rad in ', trim(infile)
+      print*, trim(nf90_strerror(ierr))
+      stop error_stop_code
+   end if
+   ierr = nf90_inq_varid(fid, 'DQF', did)
+   if (ierr.ne.NF90_NOERR) then
+      print*, 'ERROR: load_abi_band(): Error opening dataset DQF in ', trim(infile)
+      stop error_stop_code
+   end if
+   ierr = nf90_get_var(fid, did, dqf, start = (/ x0, y0 /), count = (/ nx, ny /))
+   if (ierr.ne.NF90_NOERR) then
+      print*, 'ERROR: load_abi_band(): Error reading dataset DQF in ', trim(infile)
       print*, trim(nf90_strerror(ierr))
       stop error_stop_code
    end if
@@ -738,6 +754,12 @@ subroutine load_abi_band(infile, imager_geolocation, rad, kappa, bc1, bc2, fk1, 
            trim(infile)
       stop error_stop_code
    end if
+
+   where(dqf .lt. 0 .or. dqf .gt. 1)
+   	rad	=	sreal_fill_value
+   end where
+
+   deallocate(dqf)
 
    rad = rad*sclval + offval
 
