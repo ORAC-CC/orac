@@ -1007,7 +1007,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
 
       ! read ECMWF fields and grid information
       if (verbose) then
-         write(*,*) 'Start reading ecmwf era interim grib file'
+         write(*,*) 'Start reading meteorological data file'
          write(*,*) 'ecmwf_flag: ', ecmwf_flag
          write(*,*) 'ecmwf_path_file: ',trim(preproc_opts%ecmwf_path_file(1))
          write(*,*) 'ecmwf_HR_path_file: ',trim(preproc_opts%ecmwf_HR_path_file(1))
