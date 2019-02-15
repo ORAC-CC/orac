@@ -643,6 +643,7 @@ subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
       if (do_ironly) then
          ch1=99
          ch2=99
+         ch3=99
       end if
 
       if (.not. (ch1 .ne. 0 .and. ch2 .ne. 0 .and. (ch3 .ne. 0 .or. ch4 .ne. 0) &
@@ -864,29 +865,39 @@ subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
    real(kind=sreal), dimension(2) :: plank_inv_out
    real(kind=sreal)               :: solcon_ch3b
    real(kind=sreal)               :: mu0, esd, c_sun
-   real(kind=sreal)               :: solzen, ch1v, ch2v
+   real(kind=sreal)               :: solzen, ch1v, ch2v,ch3v,alb1,alb2,alb3
 
    ! --3x3 box stdd of BT 11µm
-   integer(kind=sint) :: s_i, e_i, s_j, e_j
+   integer(kind=lint) :: s_i, e_i, s_j, e_j
    real(kind=sreal)   :: NNN, MN_BT11, SD_BT11
    !-------------------------------
 
    ! Check if solar zenith angle is < 0
    if (imager_angles%solzen(i,j,cview) .lt. 0.) return
 
-
+	if (.not. do_ironly) then
    ! Check if Ch3a is available or not (fill_value is negative)
-   if (imager_measurements%data(i,j,ch3) .ge. 0 .and. &
-       imager_measurements%data(i,j,ch4) .lt. 0) then
-     ! Ch3a is used if Ch3b is not avail.
-      ch3a_on_avhrr_flag = YES
-   else if (imager_measurements%data(i,j,ch4) .ge. 0) then
-      ! Ch3b is used if avail.
-      ch3a_on_avhrr_flag = NO
-   else
-      ! Neither Ch3a nor Ch3b avail.
-      ch3a_on_avhrr_flag = INEXISTENT
-   end if
+		if (imager_measurements%data(i,j,ch3) .ge. 0 .and. &
+		    imager_measurements%data(i,j,ch4) .lt. 0) then
+		  ! Ch3a is used if Ch3b is not avail.
+		   ch3a_on_avhrr_flag = YES
+		else if (imager_measurements%data(i,j,ch4) .ge. 0) then
+		   ! Ch3b is used if avail.
+		   ch3a_on_avhrr_flag = NO
+		else
+		   ! Neither Ch3a nor Ch3b avail.
+		   ch3a_on_avhrr_flag = INEXISTENT
+		end if
+	else
+		if (imager_measurements%data(i,j,ch4) .ge. 0) then
+		   ! Ch3b is used if avail.
+		   ch3a_on_avhrr_flag = NO
+		else
+		   ! Neither Ch3a nor Ch3b avail.
+		   ch3a_on_avhrr_flag = INEXISTENT
+		end if
+
+	endif
 
    if (trim(adjustl(sensor)) .eq. 'AATSR' .or. &
        trim(adjustl(sensor)) .eq. 'ATSR2') then
@@ -999,7 +1010,11 @@ subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
       ref_ch1 = sreal_fill_value
    end if
 
-   ref_ch3a = imager_measurements%data(i,j,ch3) / mu0
+   if (ch3a_on_avhrr_flag .eq. YES) then
+   	ref_ch3a = imager_measurements%data(i,j,ch3) / mu0
+   else
+   	ref_ch3a = sreal_fill_value
+   endif
    ref_ch3b = (rad_ch3b - rad_ch3b_emis) / &
               (solcon_ch3b * c_sun * mu0 - rad_ch3b_emis)
 
@@ -1014,26 +1029,36 @@ subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
 
    solzen  = imager_angles%solzen(i,j,cview)
 
-   ! If we're not using any VIS channels then fill ch1 and ch2
-   ! Fudge SZA to 120 deg: forces neural net into night mode
-   if (do_ironly) then
-      ch1v    =       sreal_fill_value
-      ch2v    =       sreal_fill_value
-      ! During daytime we need to set bt37 to fillvalue as well, the nighttime
-      ! ANN expects 3.7 without solar component.
-      if (solzen .le. 80.) bt_ch3b = sreal_fill_value
-      solzen = 120.
-      ! Otherwise, behave as-before
-   else
-      ch1v    = imager_measurements%data(i,j,ch1)
-      ch2v    = imager_measurements%data(i,j,ch2)
-      bt_ch3b = imager_measurements%data(i,j,ch4)
-   end if
-
    !-- Determine the viewing zenith angle bin.
    index1 = min(7,max(1,int(imager_angles%SATZEN(i,j,cview)/10.0) + 1))
    !-- Determine the solar zenith angle bin.
    index2 = min(8,max(1,int(imager_angles%SOLZEN(i,j,cview)/10.0) + 1))
+
+
+   ! If we're not using any VIS channels then fill ch1 and ch2
+   ! Fudge SZA to 120 deg: forces neural net into night mode
+   if (do_ironly) then
+      ch1v  =	sreal_fill_value
+      ch2v  =	sreal_fill_value
+      ch3v  =	sreal_fill_value
+      alb1	=	sreal_fill_value
+      alb2	=	sreal_fill_value
+      alb3	=	sreal_fill_value
+      ! During daytime we need to set bt37 to fillvalue as well, the nighttime
+      ! ANN expects 3.7 without solar component.
+      if (solzen .le. 80.) bt_ch3b = sreal_fill_value
+      solzen = 120.
+      index2 = 8
+      ! Otherwise, behave as-before
+   else
+      ch1v    = imager_measurements%data(i,j,ch1)
+      ch2v    = imager_measurements%data(i,j,ch2)
+   	ch3v	=	imager_measurements%data(i,j,ch3)
+      bt_ch3b = imager_measurements%data(i,j,ch4)
+      alb1	=	surface%albedo(i,j,sw1)
+      alb2	=	surface%albedo(i,j,sw2)
+      alb3	=	surface%albedo(i,j,sw3)
+   end if
 
    !-- Set 11um - 12um cirrus thresholds.
    !   Absorption of radiation by water vapor and ice crystals in
@@ -1057,7 +1082,7 @@ subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
    call ann_cloud_mask(&
         ch1v, & ! Not "True" reflectances expected
         ch2v, & ! Not "True" reflectances expected
-        imager_measurements%data(i,j,ch3), &
+        ch3v, &
         bt_ch3b, &
         ref_ch3b*mu0, & ! Not "True" reflectances expected
         imager_measurements%data(i,j,ch5), &
@@ -1067,9 +1092,9 @@ subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
         snow_ice_mask(i,j), &
         imager_flags%lsflag(i,j), &
         desertflag, &
-        surface%albedo(i,j,sw1), &
-        surface%albedo(i,j,sw2), &
-        surface%albedo(i,j,sw3), &
+        alb1, &
+        alb2, &
+        alb3, &
         imager_pavolonis%cccot_pre(i,j,cview), &
         imager_pavolonis%cldmask(i,j,cview) , &
         imager_pavolonis%cldmask_uncertainty(i,j,cview) , &
@@ -1178,7 +1203,7 @@ subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
    call ann_cloud_phase(&
         ch1v, & ! Not "True" reflectances expected
         ch2v, & ! Not "True" reflectances expected
-        imager_measurements%data(i,j,ch3), &
+        ch3v, &
         bt_ch3b, &
         ref_ch3b*mu0, & ! Not "True" reflectances expected
         imager_measurements%data(i,j,ch5), &
@@ -1187,9 +1212,9 @@ subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
         imager_angles%satzen(i,j,cview), &
         snow_ice_mask(i,j), imager_flags%lsflag(i,j), &
         desertflag , &
-        surface%albedo(i,j,sw1), &
-        surface%albedo(i,j,sw2), &
-        surface%albedo(i,j,sw3), &
+        alb1, &
+        alb2, &
+        alb3, &
         imager_pavolonis%CPHCOT(i,j,cview), &
         imager_pavolonis%ANN_PHASE(i,j,cview) , &
         imager_pavolonis%ANN_PHASE_UNCERTAINTY(i,j,cview) , &

@@ -60,6 +60,7 @@
 ! 2017/01/31, SP: Add ecmwf_flag=5, for reading NOAA GFS forecast (ExtWork)
 ! 2017/04/11, SP: Added ecmwf_flag=6, for working with GFS analysis files.
 ! 2017/07/05, SP: Added ecmwf_flag=7, for working with new format GFS (ExtWork)
+! 2019/29/01, MC: Bug fix: input ECMWF file name structure was incorrect for BADC
 !
 ! Bugs:
 ! None known.
@@ -351,23 +352,35 @@ subroutine make_ecmwf_name(cyear,cmonth,cday,chour,ecmwf_flag,ecmwf_path, &
            trim(adjustl(cyear))//trim(adjustl(cmonth))// &
            trim(adjustl(cday))//'_'//trim(adjustl(chour))//'+00.grb'
    case(1)
-      ecmwf_path_file=trim(adjustl(ecmwf_path))//'/ggas'// &
+      ecmwf_path_file=trim(adjustl(ecmwf_path))//'/gg/as/'// &
+           trim(adjustl(cyear))//'/'//trim(adjustl(cmonth))//'/'// &
+           trim(adjustl(cday))//'/'//'ggas'// &
            trim(adjustl(cyear))//trim(adjustl(cmonth))// &
            trim(adjustl(cday))//trim(adjustl(chour))//'00.nc'
-      ecmwf_path_file2=trim(adjustl(ecmwf_path2))//'/ggam'// &
-           trim(adjustl(cyear))//trim(adjustl(cmonth))// &
-           trim(adjustl(cday))//trim(adjustl(chour))//'00.nc'
-      ecmwf_path_file3=trim(adjustl(ecmwf_path3))//'/gpam'// &
-           trim(adjustl(cyear))//trim(adjustl(cmonth))// &
-           trim(adjustl(cday))//trim(adjustl(chour))//'00.nc'
-   case(2)
-      ecmwf_path_file=trim(adjustl(ecmwf_path2))//'/ggas'// &
-           trim(adjustl(cyear))//trim(adjustl(cmonth))// &
-           trim(adjustl(cday))//trim(adjustl(chour))//'00.nc'
-      ecmwf_path_file2=trim(adjustl(ecmwf_path))//'/ggam'// &
+      ecmwf_path_file2=trim(adjustl(ecmwf_path2))//'/gg/am/'// &
+           trim(adjustl(cyear))//'/'//trim(adjustl(cmonth))//'/'// &
+           trim(adjustl(cday))//'/'//'ggam'// &
            trim(adjustl(cyear))//trim(adjustl(cmonth))// &
            trim(adjustl(cday))//trim(adjustl(chour))//'00.grb'
-      ecmwf_path_file3=trim(adjustl(ecmwf_path3))//'/spam'// &
+      ecmwf_path_file3=trim(adjustl(ecmwf_path3))//'/sp/am/'// &
+           trim(adjustl(cyear))//'/'//trim(adjustl(cmonth))//'/'// &
+           trim(adjustl(cday))//'/'//'spam'// &
+           trim(adjustl(cyear))//trim(adjustl(cmonth))// &
+           trim(adjustl(cday))//trim(adjustl(chour))//'00.grb'
+   case(2)
+      ecmwf_path_file=trim(adjustl(ecmwf_path2))//'/gg/as/'// &
+           trim(adjustl(cyear))//'/'//trim(adjustl(cmonth))//'/'// &
+           trim(adjustl(cday))//'/'//'ggas'// &
+           trim(adjustl(cyear))//trim(adjustl(cmonth))// &
+           trim(adjustl(cday))//trim(adjustl(chour))//'00.nc'
+      ecmwf_path_file2=trim(adjustl(ecmwf_path))//'/gg/am/'// &
+           trim(adjustl(cyear))//'/'//trim(adjustl(cmonth))//'/'// &
+           trim(adjustl(cday))//'/'//'ggam'// &
+           trim(adjustl(cyear))//trim(adjustl(cmonth))// &
+           trim(adjustl(cday))//trim(adjustl(chour))//'00.grb'
+      ecmwf_path_file3=trim(adjustl(ecmwf_path3))//'/sp/am/'// &
+           trim(adjustl(cyear))//'/'//trim(adjustl(cmonth))//'/'// &
+           trim(adjustl(cday))//'/'//'spam'// &
            trim(adjustl(cyear))//trim(adjustl(cmonth))// &
            trim(adjustl(cday))//trim(adjustl(chour))//'00.grb'
    case(4)
