@@ -116,8 +116,11 @@ def build_preproc_driver(args):
 
     # Add NetCDF library to path so following calls works
     libs = read_orac_libraries(args.orac_lib)
-    os.environ["PATH"] = os.path.join(libs["NCDFLIB"][:-4], 'bin:') + \
-                         os.environ["PATH"]
+    try:
+        os.environ["PATH"] = os.path.join(libs["NCDFLIB"][:-4], 'bin:') + \
+                             os.environ["PATH"]
+    except KeyError:
+        pass
     os.environ["LD_LIBRARY_PATH"] = build_orac_library_path()
 
     # Determine current time
@@ -152,7 +155,11 @@ def build_preproc_driver(args):
                       stacklevel=2)
 
     # Strip RTTOV version from library definition
-    rttov_lib = glob(os.path.join(libs['RTTOVLIB'], 'librttov?*_main.a'))
+    try:
+        rttov_lib = glob(os.path.join(libs['RTTOVLIB'], 'librttov?*_main.a'))
+    except KeyError:
+        rttov_lib = glob(os.path.join(libs['CONDA_PREFIX'] + '/lib',
+                                      'librttov?*_main.a'))
     m2 = search(r'librttov([\d\.]+)_main.a', rttov_lib[0])
     if m2:
         rttov_version = m2.group(1)

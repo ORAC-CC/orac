@@ -14,16 +14,19 @@ def build_orac_library_path(libs=None):
         except KeyError:
             libs = read_orac_libraries(orac_lib)
 
-    if "GRIBLIB" in libs:
-        glib = "GRIBLIB"
-    elif "ECCODESLIB" in libs:
-        glib = "ECCODESLIB"
+    if "CONDA_PREFIX" in libs:
+        ld_path = libs["CONDA_PREFIX"] + "/lib"
     else:
-        raise OracError('Neither GRIB_API or ECCODES libraries found')
-    ld_path = ':'.join([libs[key] for key in (
-        "SZLIB", "EPR_APILIB", glib, "HDF5LIB", "HDFLIB",
-        "NCDF_FORTRAN_LIB", "NCDFLIB"
-    )])
+        if "GRIBLIB" in libs:
+            glib = "GRIBLIB"
+        elif "ECCODESLIB" in libs:
+            glib = "ECCODESLIB"
+        else:
+            raise OracError('Neither GRIB_API or ECCODES libraries found')
+        ld_path = ':'.join([libs[key] for key in (
+            "SZLIB", "EPR_APILIB", glib, "HDF5LIB", "HDFLIB",
+            "NCDF_FORTRAN_LIB", "NCDFLIB"
+        )])
 
     if "LD_LIBRARY_PATH" in os.environ.keys():
         ld_path += ':' + os.environ["LD_LIBRARY_PATH"]
@@ -180,6 +183,8 @@ def read_orac_libraries(filename):
             libraries['ORAC_LIBBASE'] = os.environ['ORAC_LIBBASE']
         if os.environ['ORAC_LIBBASE_FORTRAN']:
             libraries['ORAC_LIBBASE_FORTRAN'] = os.environ['ORAC_LIBBASE_FORTRAN']
+        if os.environ['CONDA_PREFIX']:
+            libraries['CONDA_PREFIX'] = os.environ['CONDA_PREFIX']
     except KeyError:
         pass
 
