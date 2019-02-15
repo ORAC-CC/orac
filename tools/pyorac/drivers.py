@@ -15,7 +15,7 @@ def build_preproc_driver(args):
     from subprocess import check_output, STDOUT
     from uuid import uuid4
 
-    file = _glob_dirs(args.in_dir, args.target, 'L1B file')
+    file = _glob_dirs(args.in_dir, args.File.l1b, 'L1B file')
     geo  = _glob_dirs(args.in_dir, args.File.geo, 'geolocation file')
 
     # Select NISE file

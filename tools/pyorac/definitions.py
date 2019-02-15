@@ -292,6 +292,30 @@ class FileName:
             self.predef   = True
             return
 
+        # For SLSTR, we passed a directory name
+        m = re.search(
+            'S3(?P<platform>[AB])_SL_1_RBT____(?P<year>\d{4})(?P<month>\d{2})'
+            '(?P<day>\d{2})T(?P<hour>\d{2})(?P<min>\d{2})(?P<sec>\d{2})_'
+            '\d{8}T\d{6}_\d{8}T\d{6}_(?P<duration>\d{4})_(?P<cycle>\d{3})_'
+            '(?P<orbit>\d{3})_(?P<frame>\d{4})_(?P<centre>[A-Za-z0-9]{3})_'
+            '(?P<class>[OFDR])_(?P<timeliness>[NS][RT])_(?P<version>\d{3}).'
+            'SEN3', filename
+        )
+        if m:
+            self.l1b = os.path.join(filename, "geodetic_in.nc")
+            self.sensor = 'SLSTR'
+            self.platform = 'Sentinel3'+m.group('platform').lower()
+            self.inst = 'Sentinel-3'
+            self.time = datetime.datetime(
+                int(m.group('year')), int(m.group('month')), int(m.group('day')),
+                int(m.group('hour')), int(m.group('min')), int(m.group('sec')), 0
+            )
+            self.dur = datetime.timedelta(seconds=int(m.group('duration')))
+            self.geo = os.path.join(filename, "geodetic_in.nc")
+            self.oractype = None
+            self.predef = False
+            return
+
         # Processed ORAC output
         m = re.search(
             '(?P<project>\w+)-(?P<product>.+)-(?P<sensor>\w+)_(?P<processor>\w+)'
