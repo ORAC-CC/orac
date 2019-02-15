@@ -169,7 +169,7 @@ subroutine read_slstr(infile, imager_geolocation, imager_measurements, &
    j=index(infile,'/',.true.)
    indir=infile(1:j)
 
-   if (verbose) write(*,*)'Reading geoinformation data for SLSTR grids'
+   if (verbose) write(*,*) 'Reading geoinformation data for SLSTR grids'
 
    ! Find size of tx grid. Should be 130,1200 but occasionally isn't
    call get_slstr_txgridsize(indir,txnx,txny)
@@ -214,7 +214,7 @@ subroutine read_slstr(infile, imager_geolocation, imager_measurements, &
    deallocate(txlats)
    deallocate(txlons)
 
-   if (verbose) write(*,*)'Reading geometry data for SLSTR geo grid'
+   if (verbose) write(*,*) 'Reading geometry data for SLSTR geo grid'
 
    ! Read satellite and solar angles for the nadir viewing geometry
    call read_slstr_satsol(indir,imager_angles,interp,txnx,txny,nx,ny,startx,1)
@@ -227,7 +227,7 @@ subroutine read_slstr(infile, imager_geolocation, imager_measurements, &
 
    ! This bit reads all the data.
    do i=1,n_bands
-      if (verbose) write(*,*)'Reading SLSTR data for band',band_ids(i)
+      if (verbose) write(*,*) 'Reading SLSTR data for band', band_ids(i)
       if (band_ids(i) .lt. 7) then
          call read_slstr_visdata(indir,band_ids(i), &
               imager_measurements%data(:,:,i),imager_angles,startx,starty, &
@@ -261,7 +261,7 @@ subroutine read_slstr(infile, imager_geolocation, imager_measurements, &
             deallocate(tmpdata)
          end if
       else
-         write(*,*)'Invalid band_id! Must be in range 1->18',band_ids(i)
+         write(*,*) 'Invalid band_id! Must be in range 1->18', band_ids(i)
          stop
       end if
    end do

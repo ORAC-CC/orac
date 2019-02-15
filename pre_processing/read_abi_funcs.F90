@@ -103,9 +103,9 @@ subroutine get_abi_path(l1_5_file, platform, abi_filenames, n_chans, channel_ids
 
    ! Some useful positions in the file
    ! Location of the datestring
-   index1 = index(trim(adjustl(l1_5_file)), '_s',back=.true.)
+   index1 = index(trim(adjustl(l1_5_file)), '_s', back=.true.)
    ! Starting location of the actual filename
-   index3 = index(trim(adjustl(l1_5_file)), 'OR_',back=.true.)
+   index3 = index(trim(adjustl(l1_5_file)), 'OR_', back=.true.)
 
    ! Extract the datestring (including '_s' prefix)
    dtstr  = l1_5_file(index1:index1+16)
@@ -571,7 +571,7 @@ subroutine goes_resample_vis_to_tir(inarr, outarr, nx, ny, fill, scl, verbose)
          outy = int(y/scl)+1
          val = 0
          inpix= 0
-			!$acc loop collapse(2)
+         !$acc loop collapse(2)
          do i = 1, scl
             do j = 1, scl
                if (inarr(x+i, y+j) .gt. sreal_fill_value) then
@@ -621,7 +621,7 @@ subroutine load_abi_band(infile, imager_geolocation, rad, kappa, bc1, bc2, fk1, 
    integer,    intent(in)  :: scl
    logical,    intent(in)  :: verbose
 
-   byte, allocatable			:: dqf(:,:)
+   byte, allocatable       :: dqf(:,:)
 
 
    integer  :: ierr, fid, did
@@ -750,13 +750,12 @@ subroutine load_abi_band(infile, imager_geolocation, rad, kappa, bc1, bc2, fk1, 
 
    ierr = nf90_close(fid)
    if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: load_abi_band(): Error closing file ', &
-           trim(infile)
+      print*, 'ERROR: load_abi_band(): Error closing file ', trim(infile)
       stop error_stop_code
    end if
 
    where(dqf .lt. 0 .or. dqf .gt. 1)
-   	rad	=	sreal_fill_value
+      rad = sreal_fill_value
    end where
 
    deallocate(dqf)

@@ -865,7 +865,7 @@ subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
    real(kind=sreal), dimension(2) :: plank_inv_out
    real(kind=sreal)               :: solcon_ch3b
    real(kind=sreal)               :: mu0, esd, c_sun
-   real(kind=sreal)               :: solzen, ch1v, ch2v,ch3v,alb1,alb2,alb3
+   real(kind=sreal)               :: solzen, ch1v, ch2v, ch3v, alb1, alb2, alb3
 
    ! --3x3 box stdd of BT 11µm
    integer(kind=lint) :: s_i, e_i, s_j, e_j
@@ -875,29 +875,29 @@ subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
    ! Check if solar zenith angle is < 0
    if (imager_angles%solzen(i,j,cview) .lt. 0.) return
 
-	if (.not. do_ironly) then
-   ! Check if Ch3a is available or not (fill_value is negative)
-		if (imager_measurements%data(i,j,ch3) .ge. 0 .and. &
-		    imager_measurements%data(i,j,ch4) .lt. 0) then
-		  ! Ch3a is used if Ch3b is not avail.
-		   ch3a_on_avhrr_flag = YES
-		else if (imager_measurements%data(i,j,ch4) .ge. 0) then
-		   ! Ch3b is used if avail.
-		   ch3a_on_avhrr_flag = NO
-		else
-		   ! Neither Ch3a nor Ch3b avail.
-		   ch3a_on_avhrr_flag = INEXISTENT
-		end if
-	else
-		if (imager_measurements%data(i,j,ch4) .ge. 0) then
-		   ! Ch3b is used if avail.
-		   ch3a_on_avhrr_flag = NO
-		else
-		   ! Neither Ch3a nor Ch3b avail.
-		   ch3a_on_avhrr_flag = INEXISTENT
-		end if
+   if (.not. do_ironly) then
+      ! Check if Ch3a is available or not (fill_value is negative)
+      if (imager_measurements%data(i,j,ch3) .ge. 0 .and. &
+           imager_measurements%data(i,j,ch4) .lt. 0) then
+         ! Ch3a is used if Ch3b is not avail.
+         ch3a_on_avhrr_flag = YES
+      else if (imager_measurements%data(i,j,ch4) .ge. 0) then
+         ! Ch3b is used if avail.
+         ch3a_on_avhrr_flag = NO
+      else
+         ! Neither Ch3a nor Ch3b avail.
+         ch3a_on_avhrr_flag = INEXISTENT
+      end if
+   else
+      if (imager_measurements%data(i,j,ch4) .ge. 0) then
+         ! Ch3b is used if avail.
+         ch3a_on_avhrr_flag = NO
+      else
+         ! Neither Ch3a nor Ch3b avail.
+         ch3a_on_avhrr_flag = INEXISTENT
+      end if
 
-	endif
+   end if
 
    if (trim(adjustl(sensor)) .eq. 'AATSR' .or. &
        trim(adjustl(sensor)) .eq. 'ATSR2') then
@@ -1011,9 +1011,9 @@ subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
    end if
 
    if (ch3a_on_avhrr_flag .eq. YES) then
-   	ref_ch3a = imager_measurements%data(i,j,ch3) / mu0
+      ref_ch3a = imager_measurements%data(i,j,ch3) / mu0
    else
-   	ref_ch3a = sreal_fill_value
+      ref_ch3a = sreal_fill_value
    endif
    ref_ch3b = (rad_ch3b - rad_ch3b_emis) / &
               (solcon_ch3b * c_sun * mu0 - rad_ch3b_emis)
@@ -1038,12 +1038,12 @@ subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
    ! If we're not using any VIS channels then fill ch1 and ch2
    ! Fudge SZA to 120 deg: forces neural net into night mode
    if (do_ironly) then
-      ch1v  =	sreal_fill_value
-      ch2v  =	sreal_fill_value
-      ch3v  =	sreal_fill_value
-      alb1	=	sreal_fill_value
-      alb2	=	sreal_fill_value
-      alb3	=	sreal_fill_value
+      ch1v = sreal_fill_value
+      ch2v = sreal_fill_value
+      ch3v = sreal_fill_value
+      alb1 = sreal_fill_value
+      alb2 = sreal_fill_value
+      alb3 = sreal_fill_value
       ! During daytime we need to set bt37 to fillvalue as well, the nighttime
       ! ANN expects 3.7 without solar component.
       if (solzen .le. 80.) bt_ch3b = sreal_fill_value
@@ -1053,11 +1053,11 @@ subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
    else
       ch1v    = imager_measurements%data(i,j,ch1)
       ch2v    = imager_measurements%data(i,j,ch2)
-   	ch3v	=	imager_measurements%data(i,j,ch3)
+      ch3v    = imager_measurements%data(i,j,ch3)
       bt_ch3b = imager_measurements%data(i,j,ch4)
-      alb1	=	surface%albedo(i,j,sw1)
-      alb2	=	surface%albedo(i,j,sw2)
-      alb3	=	surface%albedo(i,j,sw3)
+      alb1    = surface%albedo(i,j,sw1)
+      alb2    = surface%albedo(i,j,sw2)
+      alb3    = surface%albedo(i,j,sw3)
    end if
 
    !-- Set 11um - 12um cirrus thresholds.
