@@ -4,7 +4,7 @@ module solar_position_m
 
    private
 
-   public :: sun_pos_calc, \
+   public :: sun_pos_calc, &
              get_day_of_year
 
 
