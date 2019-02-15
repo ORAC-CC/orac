@@ -64,13 +64,19 @@ def build_preproc_driver(args):
     elif args.ecmwf_flag == 3:
         raise NotImplementedError('Filename syntax for --ecmwf_flag 3 unknown')
     elif args.ecmwf_flag == 4:
-        try:
-            bounds = _bound_time(args.File.time + args.File.dur//2, timedelta(hours=3))
-            ggam = _form_bound_filenames(bounds, args.ggam_dir, 'C3D*%m%d%H*.nc')
-        except FileMissing:
-            bounds = _bound_time(args.File.time + args.File.dur//2, timedelta(hours=6))
-            ggam = _form_bound_filenames(bounds, args.ggam_dir,
-                                         'ECMWF_OPER_%Y%m%d_%H+00.nc')
+        for form, hr in (('C3D*%m%d%H*.nc', 3),
+                         ('ECMWF_OPER_%Y%m%d_%H+00.nc', 6),
+                         ('ECMWF_ERA_%Y%m%d_%H+00_0.5.nc', 6)):
+            try:
+                bounds = _bound_time(args.File.time + args.File.dur//2,
+                                     timedelta(hours=hr))
+                ggam = _form_bound_filenames(bounds, args.ggam_dir, form)
+                break
+            except FileMissing as e:
+                err = e
+        else:
+            raise err
+
         ggas = ggam
         spam = ggam
     else:
