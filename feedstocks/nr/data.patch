@@ -1,0 +1,27 @@
+Subject: Fix syntax errors in DATA definition for octal numbers.
+diff -Ewbur  numerical_recipes/psdes.for nr_f/psdes.for
+--- numerical_recipes/psdes.for	2002-05-10 10:54:01.000000000 +0100
++++ nr/psdes.for	2017-11-15 11:13:06.404208690 +0000
+@@ -3,8 +3,8 @@
+       PARAMETER (NITER=4)
+       INTEGER i,ia,ib,iswap,itmph,itmpl,c1(4),c2(4)
+       SAVE c1,c2
+-      DATA c1 /16#BAA96887,16#1E17D32C,16#03BCDC3C,16#0F33D1B2/, c2 
+-     */16#4B0F3B58,16#E874F0C3,16#6955C5A6, 16#55A7CA46/
++      DATA c1 /X'BAA96887',X'1E17D32C',X'03BCDC3C',X'0F33D1B2'/, c2
++     */X'4B0F3B58',X'E874F0C3',X'6955C5A6',X'55A7CA46'/
+       do 11 i=1,NITER
+         iswap=irword
+         ia=ieor(irword,c1(i))
+diff -Ewbur  numerical_recipes/ran4.for nr_f/ran4.for
+--- numerical_recipes/ran4.for	2002-05-10 10:54:05.000000000 +0100
++++ nr/ran4.for	2017-11-15 11:13:30.595763688 +0000
+@@ -6,7 +6,7 @@
+       REAL ftemp
+       EQUIVALENCE (itemp,ftemp)
+       SAVE idums,jflone,jflmsk
+-      DATA idums /0/, jflone /16#3F800000/, jflmsk /16#007FFFFF/
++      DATA idums /0/, jflone /X'3F800000'/, jflmsk /X'007FFFFF'/
+       if(idum.lt.0)then
+         idums=-idum
+         idum=1

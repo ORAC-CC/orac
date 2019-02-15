@@ -1,0 +1,170 @@
+Subject: Rename the init function to prevent a clash with HDF5.
+diff -rupN libemos-4.5.5-Source/gribex/handleLocalDefinitions.c libemos/gribex/handleLocalDefinitions.c
+--- libemos-4.5.5-Source/gribex/handleLocalDefinitions.c	2018-02-16 13:29:59.000000000 +0000
++++ libemos/gribex/handleLocalDefinitions.c	2019-01-28 10:35:53.032755729 +0000
+@@ -37,7 +37,7 @@ action* previous;
+   return;
+ }
+ 
+-void init(
++void initemos(
+   action* first,
+   action* a,
+   char* description,
+@@ -51,27 +51,27 @@ void init(
+   memset(a,0,sizeof(*a));
+   a->description = strdup(description);
+   if( (a->description) == NULL ) {
+-    perror("init: strdup failed");
++    perror("initemos: strdup failed");
+     exit(1);
+   }
+   a->octet = strdup(octet);
+   if( (a->octet) == NULL ) {
+-    perror("init: strdup failed");
++    perror("initemos: strdup failed");
+     exit(1);
+   }
+   a->code = strdup(code);
+   if( (a->code) == NULL ) {
+-    perror("init: strdup failed");
++    perror("initemos: strdup failed");
+     exit(1);
+   }
+   a->ksec1 = strdup(ksec1);
+   if( (a->ksec1) == NULL ) {
+-    perror("init: strdup failed");
++    perror("initemos: strdup failed");
+     exit(1);
+   }
+   a->count = strdup(count);
+   if( (a->count) == NULL ) {
+-    perror("init: strdup failed");
++    perror("initemos: strdup failed");
+     exit(1);
+   }
+   return;
+@@ -1115,7 +1115,7 @@ void initENDLIST(
+ /*
+ // Finds the start action described in a 'count' field
+ */
+-  init(first,a,description,octet,code,ksec1,count);
++  initemos(first,a,description,octet,code,ksec1,count);
+ 
+   while(first) {
+     if( EQUAL(first->description,count) ) {
+@@ -1140,7 +1140,7 @@ void initENDIF(
+ /*
+ // Finds the start action described in a 'ksec1' field
+ */
+-  init(first,a,description,octet,code,ksec1,count);
++  initemos(first,a,description,octet,code,ksec1,count);
+ 
+   while(first) {
+     if( EQUAL(first->description,ksec1) ) {
+@@ -1253,41 +1253,41 @@ grib_octet_t* packedLengthValue = (b->pa
+ /*==========================================================*/
+ 
+ static op_code codes[] = {
+-  { "IF_EQ",   init,        pack_if,     unpack_if,     test_eq },
+-  { "IF_NEQ",  init,        pack_if,     unpack_if,     test_ne},
+-  { "IF_GT",   init,        pack_if,     unpack_if,     test_gt},
++  { "IF_EQ",   initemos,    pack_if,     unpack_if,     test_eq },
++  { "IF_NEQ",  initemos,    pack_if,     unpack_if,     test_ne},
++  { "IF_GT",   initemos,    pack_if,     unpack_if,     test_gt},
+   { "ENDIF",   initENDIF,   packENDIF,   unpackENDIF, },
+-  { "F1",      init,        packF1,      unpackF1, },
+-  { "SP_TO",   init,        packSP_TO,   unpackSP_TO, },
+-  { "PAD",     init,        packPAD,     unpackPAD, },
+-  { "PADTO",   init,        packPADTO,   unpackPADTO, },
+-  { "PADMULT", init,        packPADMULT, unpackPADMULT, },
+-  { "PADFROM", init,        packPADFROM, unpackPADFROM, },
+-  { "BYTES",   init,        packBYTES,   unpackBYTES, },
+-  { "D3",      init,        packD3,      unpackD3, },
+-  { "S1",      init,        packS1,      unpackS1, },
+-  { "S2",      init,        packS2,      unpackS2, },
+-  { "S3",      init,        packS3,      unpackS3, },
+-  { "S4",      init,        packS4,      unpackS4, },
+-  { "L3",      init,        packL3,      unpackL3, },
+-  { "I1",      init,        packI1,      unpackI1, },
+-  { "I2",      init,        packI2,      unpackI2, },
+-  { "I3",      init,        packI3,      unpackI3, },
+-  { "I4",      init,        packI4,      unpackI4, },
+-  { "A4",      init,        packA4,      unpackA4, },
+-  { "A8",      init,        packA8,      unpackA8, },
+-  { "A1",      init,        packA1,      unpackA1, },
+-  { "LOCAL",   init,        packLOCAL,   unpackLOCAL, },
+-  { "LP_I1",   init,        packLP_I1,   unpackLP_I1, },
+-  { "LP_I2",   init,        packLP_I2,   unpackLP_I2, },
+-  { "LP_I3",   init,        packLP_I3,   unpackLP_I3, },
+-  { "LP_I4",   init,        packLP_I4,   unpackLP_I4, },
+-  { "LP_I4M1", init,        packLP_I4M1, unpackLP_I4M1, },
+-  { "LP_S1",   init,        packLP_S1,   unpackLP_S1, },
+-  { "LP_S2",   init,        packLP_S2,   unpackLP_S2, },
+-  { "LP_S3",   init,        packLP_S3,   unpackLP_S3, },
+-  { "LP_S4",   init,        packLP_S4,   unpackLP_S4, },
+-  { "LIST",    init,        packLIST,    unpackLIST, },
++  { "F1",      initemos,    packF1,      unpackF1, },
++  { "SP_TO",   initemos,    packSP_TO,   unpackSP_TO, },
++  { "PAD",     initemos,    packPAD,     unpackPAD, },
++  { "PADTO",   initemos,    packPADTO,   unpackPADTO, },
++  { "PADMULT", initemos,    packPADMULT, unpackPADMULT, },
++  { "PADFROM", initemos,    packPADFROM, unpackPADFROM, },
++  { "BYTES",   initemos,    packBYTES,   unpackBYTES, },
++  { "D3",      initemos,    packD3,      unpackD3, },
++  { "S1",      initemos,    packS1,      unpackS1, },
++  { "S2",      initemos,    packS2,      unpackS2, },
++  { "S3",      initemos,    packS3,      unpackS3, },
++  { "S4",      initemos,    packS4,      unpackS4, },
++  { "L3",      initemos,    packL3,      unpackL3, },
++  { "I1",      initemos,    packI1,      unpackI1, },
++  { "I2",      initemos,    packI2,      unpackI2, },
++  { "I3",      initemos,    packI3,      unpackI3, },
++  { "I4",      initemos,    packI4,      unpackI4, },
++  { "A4",      initemos,    packA4,      unpackA4, },
++  { "A8",      initemos,    packA8,      unpackA8, },
++  { "A1",      initemos,    packA1,      unpackA1, },
++  { "LOCAL",   initemos,    packLOCAL,   unpackLOCAL, },
++  { "LP_I1",   initemos,    packLP_I1,   unpackLP_I1, },
++  { "LP_I2",   initemos,    packLP_I2,   unpackLP_I2, },
++  { "LP_I3",   initemos,    packLP_I3,   unpackLP_I3, },
++  { "LP_I4",   initemos,    packLP_I4,   unpackLP_I4, },
++  { "LP_I4M1", initemos,    packLP_I4M1, unpackLP_I4M1, },
++  { "LP_S1",   initemos,    packLP_S1,   unpackLP_S1, },
++  { "LP_S2",   initemos,    packLP_S2,   unpackLP_S2, },
++  { "LP_S3",   initemos,    packLP_S3,   unpackLP_S3, },
++  { "LP_S4",   initemos,    packLP_S4,   unpackLP_S4, },
++  { "LIST",    initemos,    packLIST,    unpackLIST, },
+   { "ENDLIST", initENDLIST, packENDLIST, unpackENDLIST, },
+ };
+ 
+@@ -1384,7 +1384,7 @@ char* next = NULL;
+             exit(1);
+           }
+ 
+-          codes[i].init(first,a,description,octet,code,ksec1,count);
++          codes[i].initemos(first,a,description,octet,code,ksec1,count);
+           a->pack   = codes[i].pack;
+           a->unpack = codes[i].unpack;
+           a->test   = codes[i].test;
+@@ -1574,7 +1574,7 @@ char* next = NULL;
+           }
+           if( NEQUAL(octet,"n/a") ) strcpy(octet,"-");
+           if( NEQUAL(ksec1,"n/a") ) strcpy(ksec1,"-");
+-          codes[i].init(actionSoFar,a,description,octet,code,ksec1,count);
++          codes[i].initemos(actionSoFar,a,description,octet,code,ksec1,count);
+           a->pack   = codes[i].pack;
+           a->unpack = codes[i].unpack;
+           a->test   = codes[i].test;
+diff -rupN libemos-4.5.5-Source/gribex/handleLocalDefinitions.h libemos/gribex/handleLocalDefinitions.h
+--- libemos-4.5.5-Source/gribex/handleLocalDefinitions.h	2018-02-16 13:29:59.000000000 +0000
++++ libemos/gribex/handleLocalDefinitions.h	2019-01-28 10:36:23.112198683 +0000
+@@ -84,7 +84,7 @@ typedef void (*init_proc)(action*,action
+ 
+ typedef struct op_code {
+         grib_string_t *description;
+-        init_proc   init;
++        init_proc   initemos;
+         pack_proc   pack;
+         unpack_proc unpack;
+         test_proc   test;

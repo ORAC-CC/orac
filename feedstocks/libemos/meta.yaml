@@ -1,0 +1,55 @@
+{% set version = "4.5.5" %}
+
+package:
+  name: libemos
+  version: {{ version }}
+
+source:
+  url: https://confluence.ecmwf.int/download/attachments/3473472/libemos-{{ version }}-Source.tar.gz
+  sha256: 88e3ca91268df5ae2db1909460445ed43e95de035d62b02cab26ce159851a4c1
+  patches:
+    - init.patch
+    - cmake.patch
+
+build:
+  number: 0
+  skip: True  # [win]
+  detect_binary_files_with_prefix: True
+  run_exports:
+    - eccodes
+    - fftw
+  run_exports:
+    - {{ pin_subpackage('libemos', max_pin='x.x.x') }}
+
+requirements:
+  build:
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
+    - {{ compiler('fortran') }}
+  host:
+    - eccodes
+    - fftw
+    - libnetcdf
+    - netcdf-fortran
+    - hdf4
+    - hdf5
+  run:
+    - eccodes
+    - fftw
+
+test:
+  commands:
+    - test -f ${PREFIX}/lib/libemos.a [not win]
+    - test -f ${PREFIX}/lib/libemosR64.a [not win]
+    - libemos_version
+
+about:
+  doc_url: https://software.ecmwf.int/wiki/display/EMOS/Using+EMOSLIB
+  home: https://software.ecmwf.int/wiki/display/EMOS/Releases
+  license: 'Apache License, Version 2.0'
+  license_file: LICENSE
+  summary: 'Interpolation library'
+
+extra:
+  recipe_maintainers:
+    - orac_cc

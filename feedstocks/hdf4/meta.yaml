@@ -1,0 +1,64 @@
+{% set version = "4.2.13" %}
+
+package:
+  name: hdf4
+  version: {{ version }}
+
+source:
+  url: http://www.hdfgroup.org/ftp/HDF/HDF_Current/src/hdf-{{ version }}.tar.bz2
+  sha256: 55d3a42313bda0aba7b0463687caf819a970e0ba206f5ed2c23724f80d2ae0f3
+  patches:
+    - max_files.patch
+    - configure.patch
+
+build:
+  number: 0
+  skip: True  # [win]
+  run_exports:
+    - {{ pin_subpackage('hdf4', max_pin='x.x.x') }}
+
+requirements:
+  build:
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
+    - {{ compiler('fortran') }}
+    - bison       # [not win]
+    - flex        # [not win]
+    - libtool     # [not win]
+    - automake    # [not win]
+    - autoconf    # [not win]
+  host:
+    - zlib
+    - jpeg
+    - szip
+  run:
+    - zlib
+    - jpeg
+    - szip
+
+test:
+  requires:
+    - {{ compiler('c') }}
+    - {{ compiler('fortran') }}
+  commands:
+    - hdiff -V  # [not win]
+    - h4_ncgen -V  # [not win]
+    - h4_ncdump -V  # [not win]
+    - h4cc --version # [not win]
+    - h4fc --version # [not win]
+    - test -f ${PREFIX}/lib/libdf.a  # [not win]
+    - test -f ${PREFIX}/lib/libmfhdf.a  # [not win]
+
+about:
+  home: http://www.hdfgroup.org/HDF4/
+  license: BSD-3-Clause
+  license_family: BSD
+  license_file: COPYING
+  summary: 'Library and multi-object file format for storing and managing data between machines'
+
+extra:
+  recipe-maintainers:
+    - groutr
+    - msarahan
+    - ocefpaf
+    - orac_cc

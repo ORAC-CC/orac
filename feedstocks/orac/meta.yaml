@@ -1,0 +1,81 @@
+{% set version = "4.10" %}
+
+package:
+  name: orac
+  version: {{ version }}
+
+source:
+  - git_url: https://github.com/ORAC-CC/orac
+    patches:
+      - make.patch
+  - path: local_defaults.py
+    folder: tools/pyorac/local_defaults.py
+
+build:
+  # This might work if we ever set a release for ORAC
+  #number: {{ GIT_DESCRIBE_NUMBER }}
+  number: 0
+  skip: True # [win]
+  run_exports:
+    - {{ pin_subpackage('orac', max_pin='x.x.x') }}
+
+requirements:
+  build:
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
+    - {{ compiler('fortran') }}
+    - bison
+    - flex
+    - python
+  host:
+    - python
+    - nr
+    - epr_api
+    - fu_liou
+    - hdfeos2
+    - hdf5
+    - netcdf-fortran
+    - eccodes
+    - seviri_util
+    - hsd_reader
+    - libemos
+    - rttov
+  run:
+    - python
+    - netcdf4
+    - h5py
+    - cf_units
+    - scipy
+    - opencv
+    - cartopy
+    - matplotlib
+    - nr
+    - epr_api
+    - fu_liou
+    - hdfeos2
+    - hdf5
+    - netcdf-fortran
+    - eccodes
+    - seviri_util
+    - hsd_reader
+    - libemos
+    - rttov
+
+test:
+  commands:
+    - test -f ${PREFIX}/lib/liborac_common.a
+    - test -f ${PREFIX}/lib/libpreproc.a
+    - test -f ${PREFIX}/lib/liborac.a
+    - test -f ${PREFIX}/lib/libpostproc.a
+    - test -f ${PREFIX}/bin/orac_preproc
+    - test -f ${PREFIX}/bin/orac
+    - test -f ${PREFIX}/bin/orac_postproc
+
+about:
+  home: https://github.com/ORAC-CC/orac/wiki
+  license: COPYING
+  summary: 'Retrieval of aerosol and cloud properties from satellite imagery'
+
+extra:
+  recipe-maintainers:
+    - orac_cc

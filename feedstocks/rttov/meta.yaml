@@ -1,0 +1,67 @@
+{% set version = "12.2" %}
+
+package:
+  name: rttov
+  version: {{ version }}
+
+source:
+  # Can't use this as the contents change with each download
+  #url: https://www.nwpsaf.eu/site/user/acpovey/?profiletab=downloadtab&fn=download&fname=RTTOV%20v12
+  url: http://groups.physics.ox.ac.uk/eodg/povey/orac_libraries/rttov122.tar.gz
+  sha256: 9f77f7cfc416e9b9d99712671995aa1fc67aba26168bad22789e0361eff48b3c
+  patches:
+    - local.patch
+    - arch.patch
+
+build:
+  number: 0
+  skip: True  # [win]
+  script_env:
+    - RTTOV_FILES
+  run_exports:
+    - {{ pin_subpackage('rttov', max_pin='x.x.x') }}
+
+requirements:
+  build:
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
+    - {{ compiler('fortran') }}
+    - perl
+    - python >=3.6
+    - numpy x.x
+  host:
+    - hdf5
+    - netcdf-fortran
+    - lapack
+    - python >=3.6
+    - numpy x.x
+    - scipy
+    - matplotlib
+    - h5py
+    - wxpython
+  run:
+    - hdf5
+    - netcdf-fortran
+    - lapack
+    - python >=3.6
+    - numpy x.x
+    - scipy
+    - matplotlib
+    - h5py
+    - wxpython
+
+test:
+  commands:
+    - test -f ${PREFIX}/lib/librttov12_brdf_atlas.a # [not win]
+    - test -f ${PREFIX}/lib/librttov12_coef_io.a # [not win]
+    - test -f ${PREFIX}/lib/librttov12_emis_atlas.a # [not win]
+    - test -f ${PREFIX}/lib/librttov12_main.a # [not win]
+
+about:
+  home: https://www.nwpsaf.eu/site/software/rttov/
+  license: Free for individual use on application
+  summary: 'A very fast radiative transfer model for spectrometers and interferometers'
+
+extra:
+  recipe-maintainers:
+    - orac_cc

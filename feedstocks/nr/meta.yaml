@@ -1,0 +1,30 @@
+package:
+  name: nr
+  version: 1
+
+source:
+  - url: https://groups.physics.ox.ac.uk/eodg/povey/orac_libraries/nr.tar.gz
+    sha256: b5d2658c55ea39c8af7c1686c4a5470301e1d824bd899aa4b9ebf6fc2bd3cb61
+    patches: data.patch
+  - path: ../../patches/nr/Makefile
+    patches: Makefile.patch
+
+build:
+  number: 0
+
+requirements:
+  build:
+    - {{ compiler('fortran') }}
+
+test:
+  commands:
+    - test -f ${PREFIX}/lib/libnr.a
+
+about:
+  home: https://confluence.ecmwf.int/display/EMOS/Emoslib
+  license: Single-User, non-commercial use
+  summary: 'Example numerical algorithms'
+
+extra:
+  recipe_maintainers:
+    - orac_cc

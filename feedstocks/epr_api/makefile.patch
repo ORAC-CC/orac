@@ -1,0 +1,13 @@
+Subject: Anaconda compilers are defined through environment variables.
+diff -upN epr-api_git/makefile epr_api/makefile
+--- epr-api_git/makefile	2017-09-22 11:54:53.418131229 +0100
++++ epr_api/makefile	2019-02-04 14:02:32.635636955 +0000
+@@ -16,7 +16,7 @@ OUTDIR = ./build/$(CONFIG)
+ 
+ # for linux
+ COMPILE = $(CC) $(CFLAGS) -fPIC -ansi -c -I$(SRCDIR) -I$(THISDIR) $(OPTIONS)
+-LINK    = ld -shared
++LINK    = $(LD) -shared
+ TARGET  = $(OUTDIR)/libepr_api.so
+ 
+ # for Mac OS X

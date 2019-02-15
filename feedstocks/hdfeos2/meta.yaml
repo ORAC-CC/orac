@@ -1,0 +1,58 @@
+{% set version = "2.20" %}
+
+package:
+  name: hdfeos2
+  version: {{ version }}
+
+source:
+  - url: https://observer.gsfc.nasa.gov/ftp/edhs/hdfeos/latest_release/HDF-EOS{{ version }}v1.00.tar.Z
+    sha256: cb0f900d2732ab01e51284d6c9e90d0e852d61bba9bce3b43af0430ab5414903
+    patches:
+      - SWapi.patch
+      - samples.patch
+      - configure.patch
+  - url: https://observer.gsfc.nasa.gov/ftp/edhs/hdfeos/latest_release/HDF-EOS{{ version }}v1.00_TestDriver.tar.Z
+    sha256: 21bdbcd977c11b5a1779a82aebc0338b4adbc94107329e2c917a274924c20c5a
+
+build:
+  number: 0
+  skip: True  # [win]
+  run_exports:
+    - {{ pin_subpackage('hdfeos2', max_pin='x.xx') }}
+
+requirements:
+  build:
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
+    - {{ compiler('fortran') }}
+    - libtool     # [not win]
+    - automake    # [not win]
+    - autoconf    # [not win]
+  host:
+    - hdf4
+    - zlib
+    - szip
+    - jpeg
+  run:
+    - hdf4
+    - zlib
+    - szip
+    - jpeg
+
+test:
+  commands:
+    - test -f ${PREFIX}/lib/libGctp.a  # [not win]
+    - test -f ${PREFIX}/lib/libhdfeos.a  # [not win]
+    - conda inspect linkages -p $PREFIX $PKG_NAME  # [not win]
+    - conda inspect objects -p $PREFIX $PKG_NAME  # [osx]
+
+about:
+  home: http://hdfeos.org/index.php
+  license: Public Domain
+  summary: 'Earth Observing System HDF'
+
+extra:
+  recipe-maintainers:
+    - ocefpaf
+    - jhamman
+    - orac_cc

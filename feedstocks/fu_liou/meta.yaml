@@ -1,0 +1,34 @@
+{% set version = "4.0.0" %}
+
+package:
+  name: fu_liou
+  version: {{ version }}
+
+source:
+  url: https://www-cave.larc.nasa.gov/LFLcode/Ed4_LaRC_FuLiou201501.tar.gz
+  sha256: b297efd0150407a4be764b4cb17f45bf8ec9a5b3d992912bd4bd3c213b2dd45b
+  patches:
+    - block.patch
+
+build:
+  number: 0
+  skip: True  # [win]
+  run_exports:
+    - {{ pin_subpackage('fu_liou', max_pin='x.x.x') }}
+
+requirements:
+  build:
+    - {{ compiler('fortran') }}
+
+test:
+  commands:
+    - test -f ${PREFIX}/lib/libEd3Fu_201212.a
+
+about:
+  home: https://www-cave.larc.nasa.gov/cgi-bin/lflcode/accesslfl.cgi
+  license: NASA Open Source Agreement
+  summary: "Computers broadband shortwave and longwave profiles of flux"
+
+extra:
+  recipe-maintainers:
+    - orac_cc

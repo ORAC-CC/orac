@@ -1,0 +1,43 @@
+{% set version = "1.0" %}
+
+package:
+  name: hsd_reader
+  version: {{ version }}
+
+source:
+  - url: https://groups.physics.ox.ac.uk/eodg/povey/orac_libraries/Himawari_HSD_Reader.{{ version }}.tar.gz
+  - path: make.inc
+
+build:
+  number: 0
+  skip: True  # [win]
+  run_exports:
+    - {{ pin_subpackage('hsd_reader', max_pin='x.x') }}
+
+requirements:
+  build:
+    - {{ compiler('c') }}
+    - {{ compiler('fortran') }}
+  host:
+    - hdf5
+    - libnetcdf
+    - netcdf-fortran
+  run:
+    - hdf5
+    - libnetcdf
+    - netcdf-fortran
+
+test:
+  commands:
+    - test -f ${PREFIX}/lib/libhimawari_util.a
+    - test -f ${PREFIX}/lib/solar_util.a
+    - AHI -h
+
+about:
+  home: https://github.com/simonrp84
+  license: Individual
+  summary: "A reader for data from Japan's Himawari satellite"
+
+extra:
+  recipe-maintainers:
+    - orac_cc

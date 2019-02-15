@@ -1,0 +1,57 @@
+Subject: Modules can't be called within a BLOCK DATA construct.
+diff -upN Ed4_LaRC_FuLiou/lib/src/aerosols_200511.f LaRC_FuLiou/lib/src/aerosols_200511.f
+--- Ed4_LaRC_FuLiou/lib/src/aerosols_200511.f	2014-02-13 16:14:03.000000000 +0000
++++ LaRC_FuLiou/lib/src/aerosols_200511.f	2019-02-05 17:54:32.271487146 +0000
+@@ -1407,8 +1407,8 @@ c  a_asy:  Asymmetry parameter.One data
+ c          aerosol.
+ c
+ c  ********************************************************************
+-      USE FUINPUT
+       implicit none
++      integer, parameter :: mby = 10, naer = 29, nrh = 8
+ c##      include 'rad_0698.h'
+       integer i,j
+       real a_ssay(mby,nrh,naer),a_exty(mby,nrh,naer)
+@@ -2251,7 +2251,7 @@ c  *************************************
+       end
+ !=============================================================================
+       block data aerosol1		 
+-      USE FUINPUT , only :nrh,mbx,naer
++      integer, parameter :: mbx = 21, naer = 29, nrh = 8
+       integer i,j
+ !      parameter (nrh=8,mbx=21,naer=29)	 
+       real, dimension(mbx,nrh,naer)::a_ssax,a_extx,a_asyx diff -rupN Ed4_LaRC_FuLiou/lib/src/cloud_optics.f LaRC_FuLiou/lib/src/cloud_optics.f
+--- Ed4_LaRC_FuLiou/lib/src/cloud_optics.f	2010-10-13 14:51:26.000000000 +0100
++++ LaRC_FuLiou/lib/src/cloud_optics.f	2019-02-05 17:49:06.937670489 +0000
+@@ -90,9 +90,9 @@ c  *************************************
+ c  ri is the coefficient in Eq.(4.8) of Fu (1991) to compute the 
+ c  optical depth due to Rayleigh scattering in the solar bands.
+ c  *************************************************************
+-      USE FUINPUT
+       implicit none
+ 
++      integer, parameter :: mbsx = 9
+       real ri,riy 
+ 
+       common /ray1/ ri(mbsx),riy(10)
+@@ -731,8 +731,9 @@ c As, Ns, Sc II, Cu, and Cb) in differen
+ c radius and fl is the liquid water content (LWC).  See Tables 4.2-4.4 
+ c of Fu (1991).
+ c *********************************************************************
+-      USE FUINPUT, only : mbx,mbsx,mbirx,ncx
+       implicit none
++      integer, parameter :: mbx = 21, mbsx = 9
++      integer, parameter :: mbirx = 12, ncx = 8
+       real re,fl,bz,wz,gz
+ 
+       common /wat1/ re(ncx),fl(ncx),bz(ncx,mbx),wz(ncx,mbx),gz(ncx,mbx)
+@@ -882,8 +883,8 @@ c solar bands.  The units of generalized
+ c content are um and g/m**3, respectively, in these equations.
+ c *********************************************************************
+ 
+-      USE FUINPUT, only : mbx,mbsx,mbirx
+        implicit none
++       integer, parameter :: mbx = 21, mbsx = 9, mbirx = 12
+        real ap,bps,bpir,cp,dps
+ 	common /ic1new/ ap(3,mbx), bps(4,mbsx), bpir(4, mbirx),
+      1                  cp(4,mbx), dps(4,mbsx)

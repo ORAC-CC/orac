@@ -1,0 +1,10 @@
+Subject: Anaconda compilers are specified by environment variables.
+diff -rupN nr/Makefile new/Makefile
+--- nr/Makefile	2018-07-25 16:27:23.979202955 +0100
++++ new/Makefile	2019-01-28 11:14:41.782053656 +0000
+@@ -1,4 +1,4 @@
+-F77 = gfortran
++F77 = ${GFORTRAN}
+ 
+ F77FLAGS = -O3 -Dfloat=double -std=legacy -Wno-conversion -fno-range-check \
+            -Wno-unused-dummy-argument -Wno-unused-function

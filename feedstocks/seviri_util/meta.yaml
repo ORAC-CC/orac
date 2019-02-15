@@ -1,0 +1,43 @@
+{% set version = "1.0" %}
+
+package:
+  name: seviri_util
+  version: {{ version }}
+
+source:
+  - git_url: https://github.com/gmcgarragh/seviri_util
+  - path: make.inc
+
+build:
+  number: 0
+  skip: True # [win]
+  run_exports:
+    - {{ pin_subpackage('seviri_util', max_pin='x.x.x') }}
+
+requirements:
+  build:
+    - {{ compiler('c') }}
+    - {{ compiler('fortran') }}
+  host:
+    - hdf5
+    - libnetcdf
+    - libtiff
+  run:
+    - hdf5
+    - libnetcdf
+    - libtiff
+
+test:
+  commands:
+    - test -f ${PREFIX}/lib/libseviri_util.a # [not win]
+
+about:
+  home: http://github.com/gmcgarragh/seviri_util
+  license: GNU
+  license_family: GPL
+  license_file: COPYING
+  summary: 'Utility to read, write and pre-process SEVIRI data.'
+
+extra:
+  recipe-maintainers:
+    - orac_cc

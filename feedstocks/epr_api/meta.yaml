@@ -1,0 +1,36 @@
+{% set version = "2.3" %}
+
+package:
+  name: epr_api
+  version: {{ version }}
+
+source:
+  git_url: https://github.com/bcdev/epr-api
+  patches:
+    - atsr2.patch
+    - makefile.patch
+
+build:
+  number: 0
+  skip: True  # [win]
+  run_exports:
+    - {{ pin_subpackage('epr_api', max_pin='x.x.x') }}
+
+requirements:
+  build:
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
+    - cmake
+
+test:
+  commands:
+    - test -f ${PREFIX}/lib/libepr_api.a
+
+about:
+  home: http://github.com/bcdev/epr-api
+  license: GNU General Public License
+  summary: 'Library supporting products of the ESA ENVISAT satellite'
+
+extra:
+  recipe-maintainers:
+    - orac_cc

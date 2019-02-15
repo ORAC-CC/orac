@@ -1,0 +1,59 @@
+{% set version = "4.6.2" %}
+
+package:
+  name: libnetcdf
+  version: {{ version }}
+
+source:
+  git_url: https://github.com/Unidata/netcdf-c
+  git_rev: {{ "v" + version }}
+  patches:
+    - 0002-run_get_hdf4_files.sh-Use-curl-if-wget-fails-macOS-d.patch
+    - 0003-Add-find_package-Threads-REQUIRED-to-CMakeLists.txt.patch
+    - 0004-Prefer-getenv-TOPSRCDIR-over-STRINGIFY-TOPSRCDIR.patch
+
+build:
+  number: 0
+  skip: True  # [win and vc<14]
+  run_exports:
+    - {{ pin_subpackage('libnetcdf', max_pin='x.x.x') }}
+
+requirements:
+  build:
+    - {{ compiler('c') }}
+    - libtool     # [not win]
+    - automake    # [not win]
+    - autoconf    # [not win]
+  host:
+    - bzip2
+    - zlib
+    - hdf4
+    - hdf5
+    - jpeg
+  run:
+    - bzip2
+    - zlib
+    - hdf4
+    - hdf5
+    - jpeg
+
+test:
+  commands:
+    - test -f ${PREFIX}/lib/libnetcdf.a  # [not win]
+    - test -f ${PREFIX}/lib/libnetcdf${SHLIB_EXT}  # [not win]
+    - nc-config --all  # [not win]
+
+about:
+  home: http://www.unidata.ucar.edu/software/netcdf/
+  license: MIT
+  license_file: COPYRIGHT
+  summary: 'Libraries and data formats that support array-oriented scientific data'
+
+extra:
+  recipe-maintainers:
+    - groutr
+    - kmuehlbauer
+    - ocefpaf
+    - mingwandroid
+    - msarahan
+    - beckermr
