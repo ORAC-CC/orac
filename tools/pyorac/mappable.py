@@ -84,6 +84,8 @@ class Mappable(object):
 
     @central_longitude.setter
     def central_longitude(self, central_longitude):
+        from cartopy.crs import PlateCarree
+
         # Inform user of stupidity
         if len(self.lat.shape) == 1:
             raise TypeError("central_longitude is not compatible with "

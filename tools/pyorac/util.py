@@ -5,6 +5,7 @@ import os
 def build_orac_library_path(libs=None):
     """Build required LD_LIBRARY_PATH variable"""
     from os import environ
+    from pyorac.definitions import OracError
     from pyorac.local_defaults import orac_lib
 
     if libs is None:
