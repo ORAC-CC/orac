@@ -1,18 +1,4 @@
 Subject: Adapt config files to the anaconda environment.
-diff --git a/common/Makefile_struct_parser b/common/Makefile_struct_parser
---- a/common/Makefile_struct_parser
-+++ b/common/Makefile_struct_parser
-@@ -61,8 +61,8 @@ $(PLACE).c.o:
- # use of more modern operators. (The cpp used by gfortran is too old to deal
- # with some of the statements in struct_parser.F90.)
- $(PLACE).f.o:
--ifeq ($(F90),gfortran)
--	cpp -std=c89 $(FLAGS) $(PARSER_INC) $(ORAC_COMMON)/struct_parser.F90 > \
-+ifneq (,$(findstring gfortran,$(F90)))
-+	$(CPP) -std=c89 $(FLAGS) $(PARSER_INC) $(ORAC_COMMON)/struct_parser.F90 > \
-            $(PARSER_NAME).F90
-	$(F90) -o $@ -c -nocpp $(FLAGS) $(FFLAGS) $(INC) -I$(ORAC_COMMON)/obj $(AUXFLAGS) $(PARSER_NAME).F90
- else
 diff --git a/config/arch.gfortran.inc b/config/arch.gfortran.inc
 --- a/config/arch.gfortran.inc
 +++ b/config/arch.gfortran.inc
