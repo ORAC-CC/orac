@@ -56,6 +56,11 @@ mv pre_processing/orac_preproc ${PREFIX}/bin
 mv src/orac ${PREFIX}/bin
 mv post_processing/orac_postproc ${PREFIX}/bin
 
+# Add configuration files, as the Python scripts use them to load libraries
+mkdir -p ${PREFIX}/share/orac
+cp config/arch.gfortran.inc ${PREFIX}/share/orac
+cp config/lib.inc ${PREFIX}/share/orac
+
 # Install the python scripts; user will need to override local_defaults.py
 cd tools
 ${PYTHON} setup.py install

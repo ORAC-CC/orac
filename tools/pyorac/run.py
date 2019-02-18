@@ -39,10 +39,10 @@ def process_pre(args, log_path, dependency=None, tag='pre'):
         if dependency is not None:
             values['depend'] = dependency
 
-        jid = call_exe(
-            args, os.path.join(args.orac_dir, 'pre_processing', 'orac_preproc'),
-            driver, values
-        )
+        exe = os.path.join(args.orac_dir, 'pre_processing', 'orac_preproc')
+        if not os.path.isfile(exe):
+            exe = os.path.join(args.orac_dir, 'orac_preproc')
+        jid = call_exe(args, exe, driver, values)
 
     else:
         jid = None
@@ -77,9 +77,10 @@ def process_main(args, log_path, tag='', dependency=None):
             values['depend'] = dependency
 
         driver = build_main_driver(args)
-        jid = call_exe(
-            args, os.path.join(args.orac_dir, 'src', 'orac'), driver, values
-        )
+        exe = os.path.join(args.orac_dir, 'src', 'orac')
+        if not os.path.isfile(exe):
+            exe = os.path.join(args.orac_dir, 'orac')
+        jid = call_exe(args, exe, driver, values)
     else:
         jid = None
 
@@ -126,11 +127,11 @@ def process_post(args, log_path, files=None, dependency=None, tag='post'):
 
         args.target = out_file
         driver = build_postproc_driver(args, files)
-        jid = call_exe(
-            args,
-            os.path.join(args.orac_dir, 'post_processing', 'orac_postproc'),
-            driver, values
-        )
+        exe = os.path.join(args.orac_dir, 'post_processing', 'orac_postproc')
+        if not os.path.isfile(exe):
+            exe = os.path.join(args.orac_dir, 'orac_postproc')
+        jid = call_exe(args, exe, driver, values)
+
     else:
         jid = None
 

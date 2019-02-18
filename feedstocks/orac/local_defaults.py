@@ -5,11 +5,11 @@ from os import environ
 # ===== PATHS =====
 
 # Location of source code trunk from ORAC repository
-orac_dir = environ['ORACDIR']
+orac_dir = environ['CONDA_PREFIX'] + '/bin'
 # Location of data directory from ORAC repository
 data_dir = '/group_workspaces/jasmin2/aerosol_cci/orac_testbed/data'
 # Path to library file used to compile ORAC
-orac_lib = orac_dir + '/config/lib.inc'
+orac_lib = environ['CONDA_PREFIX'] + '/share/orac/lib.inc'
 
 # Directory of look-up tables
 sad_dirs = [

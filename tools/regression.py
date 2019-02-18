@@ -86,7 +86,10 @@ try:
                     colour_print('REGRESSION) ' + str(err), COLOURING['error'])
 
             else:
-                path = [os.path.join(defaults.orac_dir, "tools"), ]
+                if os.path.isdir(os.path.join(defaults.orac_dir, "tools")):
+                    path = [os.path.join(defaults.orac_dir, "tools"), ]
+                else:
+                    path = [defaults.orac_dir, ]
                 path.extend(filter(None, sys.path))
 
                 inst = FileName(args.in_dir, out_file)
