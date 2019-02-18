@@ -14,23 +14,17 @@ def build_orac_library_path(libs=None):
         except KeyError:
             libs = read_orac_libraries(orac_lib)
 
-    if "CONDA_PREFIX" in libs:
-        ld_path = libs["CONDA_PREFIX"] + "/lib"
-    else:
-        if "GRIBLIB" in libs:
-            glib = "GRIBLIB"
-        elif "ECCODESLIB" in libs:
-            glib = "ECCODESLIB"
-        else:
-            raise OracError('Neither GRIB_API or ECCODES libraries found')
-        ld_path = ':'.join([libs[key] for key in (
-            "SZLIB", "EPR_APILIB", glib, "HDF5LIB", "HDFLIB",
-            "NCDF_FORTRAN_LIB", "NCDFLIB"
-        )])
+    ld = [libs[key] for key in (
+        "SZLIB", "EPR_APILIB", "GRIBLIB", "ECCODESLIB", "HDF5LIB", "HDFLIB",
+        "NCDF_FORTRAN_LIB", "NCDFLIB"
+    ) if key in libs]
 
-    if "LD_LIBRARY_PATH" in os.environ.keys():
-        ld_path += ':' + os.environ["LD_LIBRARY_PATH"]
-    return ld_path
+    try:
+        ld.extend(os.environ["LD_LIBRARY_PATH"].split(':'))
+    except KeyError:
+        pass
+
+    return ':'.join(filter(None, ld))
 
 
 def call_exe(args, exe, driver, values=dict()):
@@ -178,29 +172,38 @@ def read_orac_libraries(filename):
         return replace_var
 
     libraries = {}
-    try:
-        if os.environ['ORAC_LIBBASE']:
-            libraries['ORAC_LIBBASE'] = os.environ['ORAC_LIBBASE']
-        if os.environ['ORAC_LIBBASE_FORTRAN']:
-            libraries['ORAC_LIBBASE_FORTRAN'] = os.environ['ORAC_LIBBASE_FORTRAN']
-        if os.environ['CONDA_PREFIX']:
-            libraries['CONDA_PREFIX'] = os.environ['CONDA_PREFIX']
-    except KeyError:
-        pass
+    for key in ('ORAC_LIBBASE', 'ORAC_LIBBASE_FORTRAN', 'CONDA_PREFIX'):
+        try:
+            libraries[key] = os.environ[key]
+        except KeyError:
+            pass
 
     # Open ORAC library file
     with open(filename, 'r') as f:
         # Loop over each line
         for line in f:
+            line = line.replace("\n", '')
+
             # Only process variable definitions
-            if '=' in line and '\\' not in line and not line.startswith("#"):
-                line = line.replace("\n", '')
+            if '\\' in line or line.startswith("#"):
+                continue
+            elif '+=' in line:
+                parts = [l.strip() for l in line.split('+=', 2)]
+            elif '=' in line:
                 parts = [l.strip() for l in line.split('=', 2)]
+            else:
+                continue
 
-                # Replace any variables in this line with those we already know
-                fixed = sub(r"\$\(.*?\)", parse_with_lib(libraries), parts[1])
+            if parts[0] in ('INC', 'CINC', 'LIBS'):
+                continue
 
-                # Add this line to the dictionary
+            # Replace any variables in this line with those we already know
+            fixed = sub(r"\$\(.*?\)", parse_with_lib(libraries), parts[1])
+
+            # Add this line to the dictionary
+            if '+=' in line:
+                libraries[parts[0]] += fixed
+            else:
                 libraries[parts[0]] = fixed
 
     return libraries
