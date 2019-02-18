@@ -26,13 +26,13 @@ requirements:
     - cmake
     - perl  # [not win]
     - m2-perl  # [win]
-    - jasper  # [not win]
+    - jasper <=1.900.1 # [not win]
     - libpng  # [not win]
     - libnetcdf
     - libaec  # [not win]
     - hdf5
   run:
-    - jasper  # [not win]
+    - jasper <=1.900.1 # [not win]
     - libpng  # [not win]
     - libnetcdf
     - libaec  # [not win]
