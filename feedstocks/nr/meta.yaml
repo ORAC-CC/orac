@@ -3,7 +3,7 @@ package:
   version: 1
 
 source:
-  - url: https://groups.physics.ox.ac.uk/eodg/povey/orac_libraries/nr.tar.gz
+  - url: https://groups.physics.ox.ac.uk/eodg/orac/orac_libraries/nr.tar.gz
     sha256: b5d2658c55ea39c8af7c1686c4a5470301e1d824bd899aa4b9ebf6fc2bd3cb61
     patches: data.patch
   - path: ../../patches/nr/Makefile

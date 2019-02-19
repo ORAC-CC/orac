@@ -5,7 +5,7 @@ package:
   version: {{ version }}
 
 source:
-  - url: https://groups.physics.ox.ac.uk/eodg/povey/orac_libraries/Himawari_HSD_Reader.{{ version }}.tar.gz
+  - url: https://groups.physics.ox.ac.uk/eodg/orac/orac_libraries/Himawari_HSD_Reader.{{ version }}.tar.gz
   - path: make.inc
 
 build:
