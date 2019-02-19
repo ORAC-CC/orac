@@ -352,21 +352,21 @@ subroutine make_ecmwf_name(cyear,cmonth,cday,chour,ecmwf_flag,ecmwf_path, &
            trim(adjustl(cyear))//trim(adjustl(cmonth))// &
            trim(adjustl(cday))//'_'//trim(adjustl(chour))//'+00.grb'
    case(1)
-      ecmwf_path_file=trim(adjustl(ecmwf_path))//'/gg/as/'// &
+      ecmwf_path_file=trim(adjustl(ecmwf_path))//'/ggas/'// &
            trim(adjustl(cyear))//'/'//trim(adjustl(cmonth))//'/'// &
            trim(adjustl(cday))//'/'//'ggas'// &
            trim(adjustl(cyear))//trim(adjustl(cmonth))// &
            trim(adjustl(cday))//trim(adjustl(chour))//'00.nc'
-      ecmwf_path_file2=trim(adjustl(ecmwf_path2))//'/gg/am/'// &
+      ecmwf_path_file2=trim(adjustl(ecmwf_path2))//'/ggam/'// &
            trim(adjustl(cyear))//'/'//trim(adjustl(cmonth))//'/'// &
            trim(adjustl(cday))//'/'//'ggam'// &
            trim(adjustl(cyear))//trim(adjustl(cmonth))// &
-           trim(adjustl(cday))//trim(adjustl(chour))//'00.grb'
-      ecmwf_path_file3=trim(adjustl(ecmwf_path3))//'/sp/am/'// &
+           trim(adjustl(cday))//trim(adjustl(chour))//'00.nc'
+      ecmwf_path_file3=trim(adjustl(ecmwf_path3))//'/spam/'// &
            trim(adjustl(cyear))//'/'//trim(adjustl(cmonth))//'/'// &
            trim(adjustl(cday))//'/'//'spam'// &
            trim(adjustl(cyear))//trim(adjustl(cmonth))// &
-           trim(adjustl(cday))//trim(adjustl(chour))//'00.grb'
+           trim(adjustl(cday))//trim(adjustl(chour))//'00.nc'
    case(2)
       ecmwf_path_file=trim(adjustl(ecmwf_path2))//'/gg/as/'// &
            trim(adjustl(cyear))//'/'//trim(adjustl(cmonth))//'/'// &
