@@ -1071,7 +1071,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
            imager_geolocation,imager_angles)
 
       ! read ecmwf era interim file
-      if (verbose) write(*,*) 'Read and interpolate ecmwf era interim'
+      if (verbose) write(*,*) 'Read and interpolate NWP / Reanalysis data.'
       if (preproc_opts%ecmwf_time_int_method .ne. 2) then
          call read_ecmwf(ecmwf_flag, preproc_opts%ecmwf_path_file(1), preproc_opts%ecmwf_path_file2(1), &
               preproc_opts%ecmwf_path_file3(1), ecmwf, preproc_dims, preproc_geoloc, &
