@@ -13,6 +13,9 @@ CC = gcc
 # Define C++ compiler
 CXX = g++
 
+# Define C preprocessor
+CPP = cpp
+
 # Set Fortran 77 compiler flags
 F77FLAGS  = -O3 -cpp -ffree-line-length-0 -g
 # Uncomment if extra warnings are required.  Take out -Werror if that annoys you.
