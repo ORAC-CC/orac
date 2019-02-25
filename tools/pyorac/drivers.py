@@ -160,9 +160,13 @@ def build_preproc_driver(args):
     except KeyError:
         rttov_lib = glob(os.path.join(libs['CONDA_PREFIX'] + '/lib',
                                       'librttov?*_main.a'))
-    m2 = search(r'librttov([\d\.]+)_main.a', rttov_lib[0])
-    if m2:
-        rttov_version = m2.group(1)
+    for rttov_file in rttov_lib:
+        try:
+            m2 = search(r'librttov([\d\.]+)_main.a', rttov_file)
+            rttov_version = m2.group(1)
+            break
+        except:
+            pass
     else:
         rttov_version = 'n/a'
         warnings.warn('Naming of RTTOV library directory may have changed.',
