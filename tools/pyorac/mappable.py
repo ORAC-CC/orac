@@ -401,7 +401,7 @@ class SinGrid(object):
     """
 
     def __init__(
-        self, n_equator=4008, resolution=None, radius=6378.137
+        self, n_equator=4008, resolution=None, radius=6378.137, offset=(0., 0.)
     ):
         """Define the sinusoidal grid.
 
@@ -433,6 +433,8 @@ class SinGrid(object):
         self.cumulative = insert(
             cumsum(self.max_u - self.min_u + 1), 0, 0
         )
+        self.u0 = offset[0]
+        self.v0 = offset[1]
 
 
     def to_sin(self, lat, lon, floating=False):
@@ -460,8 +462,8 @@ class SinGrid(object):
             elif lam < -pi:
                 lam += 2.*pi
 
-        u = self.half_n * (lam / pi * cos(phi) + 1.)
-        v = self.half_n * (phi / pi + 0.5)
+        u = self.half_n * (lam / pi * cos(phi) + 1.) + self.u0
+        v = self.half_n * (phi / pi + 0.5) + self.v0
 
         if floating:
             return u, v
@@ -477,8 +479,8 @@ class SinGrid(object):
         """Convert sinusoidal coordiantes into lat/lon, in degrees."""
         from numpy import pi, degrees, cos
 
-        phi = (v / self.half_n - 0.5) * pi
-        lam = (u / self.half_n - 1.) * pi / cos(phi)
+        phi = ((v - self.v0) / self.half_n - 0.5) * pi
+        lam = ((u - self.u0) / self.half_n - 1.) * pi / cos(phi)
 
         return degrees(phi), degrees(lam)
 
