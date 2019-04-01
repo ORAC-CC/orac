@@ -660,12 +660,23 @@ subroutine load_abi_band(infile, imager_geolocation, rad, kappa, bc1, bc2, fk1, 
       print*, 'ERROR: load_abi_band(): Error opening dataset Rad in ', trim(infile)
       stop error_stop_code
    end if
+   ierr = nf90_get_att(fid, did, 'scale_factor', sclval)
+   if (ierr.ne.NF90_NOERR) then
+      print*, 'ERROR: load_abi_band(): Error getting scale_factor from file ', trim(infile)
+      stop error_stop_code
+   end if
+   ierr = nf90_get_att(fid, did, 'add_offset', offval)
+   if (ierr.ne.NF90_NOERR) then
+      print*, 'ERROR: load_abi_band(): Error getting add_offset from file ', trim(infile)
+      stop error_stop_code
+   end if
    ierr = nf90_get_var(fid, did, rad, start = (/ x0, y0 /), count = (/ nx, ny /))
    if (ierr.ne.NF90_NOERR) then
       print*, 'ERROR: load_abi_band(): Error reading dataset Rad in ', trim(infile)
       print*, trim(nf90_strerror(ierr))
       stop error_stop_code
    end if
+   
    ierr = nf90_inq_varid(fid, 'DQF', did)
    if (ierr.ne.NF90_NOERR) then
       print*, 'ERROR: load_abi_band(): Error opening dataset DQF in ', trim(infile)
@@ -675,16 +686,6 @@ subroutine load_abi_band(infile, imager_geolocation, rad, kappa, bc1, bc2, fk1, 
    if (ierr.ne.NF90_NOERR) then
       print*, 'ERROR: load_abi_band(): Error reading dataset DQF in ', trim(infile)
       print*, trim(nf90_strerror(ierr))
-      stop error_stop_code
-   end if
-   ierr = nf90_get_att(fid, did, 'scale_factor', sclval)
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: read_slstr_visdata(): Error getting scale_factor from file ', trim(infile)
-      stop error_stop_code
-   end if
-   ierr = nf90_get_att(fid, did, 'add_offset', offval)
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: read_slstr_visdata(): Error getting add_offset from file ', trim(infile)
       stop error_stop_code
    end if
 
