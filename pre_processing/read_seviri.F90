@@ -245,6 +245,8 @@ subroutine read_seviri_l1_5(l1_5_file, imager_geolocation, imager_measurements, 
    type(global_attributes_t),   intent(inout) :: global_atts
    logical,                     intent(in)    :: verbose
 
+   real,allocatable :: tmparr(:,:,:)
+
    integer :: startx
 
    if (determine_seviri_file_type(l1_5_file) == SEVIRI_TYPE_METOFF) then
@@ -257,7 +259,12 @@ subroutine read_seviri_l1_5(l1_5_file, imager_geolocation, imager_measurements, 
            do_gsics, global_atts, verbose)
    end if
 
+   allocate(tmparr(1:imager_geolocation%nx,1:imager_geolocation%ny,1))
+
    startx = imager_geolocation%startx
+
+   tmparr = imager_angles%satazi(imager_geolocation%endx:imager_geolocation%startx:-1,:,:)
+   imager_angles%satazi = tmparr
 
    where(imager_angles%solazi(startx:,:,1) .ne. sreal_fill_value .and. &
          imager_angles%satazi(startx:,:,1) .ne. sreal_fill_value)
@@ -265,6 +272,7 @@ subroutine read_seviri_l1_5(l1_5_file, imager_geolocation, imager_measurements, 
       where(imager_angles%solazi(:,:,1) .lt. 0.)
          imager_angles%solazi(:,:,1) = imager_angles%solazi(:,:,1) + 360.
       end where
+
       imager_angles%relazi(:,:,1) = abs(imager_angles%satazi(startx:,:,1) - &
                                         imager_angles%solazi(startx:,:,1))
 
@@ -272,6 +280,8 @@ subroutine read_seviri_l1_5(l1_5_file, imager_geolocation, imager_measurements, 
          imager_angles%relazi(:,:,1) = 360. - imager_angles%relazi(:,:,1)
       end where
    end where
+
+   deallocate(tmparr)
 
 end subroutine read_seviri_l1_5
 
