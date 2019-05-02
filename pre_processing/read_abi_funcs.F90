@@ -29,33 +29,27 @@ subroutine ABI_Solpos(year, doy, hour, minute, lat, lon, sza, saa)
    use solar_position_m
    implicit none
 
-   real(kind=sreal), intent(in), value :: year
-   real(kind=sreal), intent(in), value :: doy
-   real(kind=sreal), intent(in), value :: hour
-   real(kind=sreal), intent(in), value :: minute
-   real(kind=sreal), intent(in), value :: lat
-   real(kind=sreal), intent(in), value :: lon
-   real(kind=sreal), intent(out)       :: sza
-   real(kind=sreal), intent(out)       :: saa
-
-   integer :: retval
+   real(kind=sreal), intent(in) :: year
+   real(kind=sreal), intent(in) :: doy
+   real(kind=sreal), intent(in) :: hour
+   real(kind=sreal), intent(in) :: minute
+   real(kind=sreal), intent(in) :: lat
+   real(kind=sreal), intent(in) :: lon
+   real(kind=sreal), intent(out):: sza
+   real(kind=sreal), intent(out):: saa
 
    saa    = 0.
    sza    = 0.
-   retval = 0
    call sun_pos_calc(year, doy, hour+minute/60., lat, lon, sza, saa)
-!   retval = get_sza_saa(year, month, day, hour, minute, lat, lon, sza, saa)
-   if (retval .ne. 0) then
-      write(*,*) 'ERROR: get_sza_saa()'
-      stop
-   end if
+!   print*,year,doy,hour,minute,hour+minute/60.,lat,lon,sza,saa
+
    if (saa .gt. 360.0) then
       saa = sreal_fill_value
    end if
    if (saa .lt. 0.0) then
       saa = sreal_fill_value
    end if
-   sza = abs(sza)
+!   sza = abs(sza)
    if (sza .gt. 180.0) then
       sza = sreal_fill_value
    end if
@@ -450,6 +444,7 @@ subroutine get_abi_solgeom(imager_time, imager_angles, imager_geolocation, verbo
    integer            :: mid_c, mid_l
    integer(kind=sint) :: iye, mon, idy, ihr, minu
    real(kind=dreal)   :: dfr, tmphr
+   real(kind=sreal)   :: rye, rhr, rminu
 
    real(kind=sreal), dimension(:,:), allocatable :: tlat, tlon, tsza, tsaa
 
@@ -480,6 +475,10 @@ subroutine get_abi_solgeom(imager_time, imager_angles, imager_geolocation, verbo
    minu = int(tmphr)
 
    call get_day_of_year(float(idy), float(mon), float(iye), doy)
+   
+   rye = float(iye)
+   rhr = float(ihr)
+   rminu = float(minu)
 
    ! This section computes the solar geometry for each pixel in the image
 #ifdef _OPENMP
@@ -496,9 +495,14 @@ subroutine get_abi_solgeom(imager_time, imager_angles, imager_geolocation, verbo
       do x = imager_geolocation%startx, imager_geolocation%endx
 
          ! We can now use this time to retrieve the actual solar geometry
-         call ABI_Solpos(float(iye), doy, float(ihr), float(minu), tlat(x,y), tlon(x,y), sza, saa)
-         tsza(x,y) = sza
-         tsaa(x,y) = saa
+         if (tlat(x,y) .gt. -90. .and. tlon(x,y) .gt. -180.) then
+             call ABI_Solpos(rye, doy, rhr, rminu, tlat(x,y), tlon(x,y), sza, saa)
+             tsza(x,y) = sza
+             tsaa(x,y) = saa
+         else
+            tsza(x,y) = sreal_fill_value
+            tsaa(x,y) = sreal_fill_value
+         endif
       end do
    end do
 #ifdef _OPENMP
