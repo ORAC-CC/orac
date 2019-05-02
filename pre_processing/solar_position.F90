@@ -122,7 +122,7 @@ subroutine sun_pos_calc(year, day, hour, lat, lon, el, az)
       az = pi - az
    end if
 
-   el = el/rad
+   el = 90 - el/rad
    az = az/rad
 
 end subroutine
