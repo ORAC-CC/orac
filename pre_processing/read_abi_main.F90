@@ -295,6 +295,7 @@ subroutine read_abi_bin(infiles, imager_geolocation, imager_measurements, &
 
    call get_abi_time(infiles(goodf), imager_time, imager_geolocation%ny, verbose)
    call get_abi_solgeom(imager_time,imager_angles,imager_geolocation,verbose)
+
    call get_abi_data(infiles,imager_angles,imager_measurements,imager_geolocation,channel_info,verbose)
 
    ! Compute relative azimuth from solar and viewing azimuths
@@ -303,14 +304,6 @@ subroutine read_abi_bin(infiles, imager_geolocation, imager_measurements, &
       imager_angles%relazi(:,:,1) = 360. - imager_angles%relazi(:,:,1)
    end where
 !  imager_angles%relazi(:,:,1) = 180. - imager_angles%relazi(:,:,1)
-
-   where (imager_angles%solazi .gt. 180.)
-      imager_angles%solazi = 360. - imager_angles%solazi
-   end where
-   where (imager_angles%satazi .gt. 180.)
-      imager_angles%satazi = 360. - imager_angles%satazi
-   end where
-
 
    where (imager_geolocation%latitude .eq. sreal_fill_value)
       imager_angles%relazi(:,:,1) = sreal_fill_value

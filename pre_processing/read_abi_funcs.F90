@@ -468,6 +468,9 @@ subroutine get_abi_solgeom(imager_time, imager_angles, imager_geolocation, verbo
    allocate(tsza(imager_geolocation%startx:imager_geolocation%endx,1:imager_geolocation%ny))
    allocate(tsaa(imager_geolocation%startx:imager_geolocation%endx,1:imager_geolocation%ny))
 
+   tlat = imager_geolocation%latitude(:,:)
+   tlon = imager_geolocation%longitude(:,:)
+
    ! Here we compute the time for each pixel, GOES scans S-N so each line has a different time
    call JD2GREG(imager_time%time(mid_l, mid_c), iye, mon, dfr)
    idy = int(dfr)
@@ -558,9 +561,12 @@ subroutine goes_resample_vis_to_tir(inarr, outarr, nx, ny, fill, scl, verbose)
    integer :: inpix
 
    outarr(:, :) = 0
-
+#ifdef _OPENMP
+   if (verbose) write(*,*)"Resampling VIS grid to IR grid using OpenMP"
+   !$OMP PARALLEL DO PRIVATE(y, x, outx, outy, val, inpix)
+#endif
 #ifdef __ACC
-   write(*,*) 'Resampling VIS grid to IR grid using PGI_ACC'
+   if (verbose) write(*,*) 'Resampling VIS grid to IR grid using PGI_ACC'
 !$acc data copyin(inarr(1:nx*scl,1:ny*scl))  copyout(outarr(1:nx,1:ny))
 !$acc parallel
 !$acc loop collapse(2) independent private(x, y, outx, outy, val, inpix,i,j)
@@ -593,6 +599,9 @@ subroutine goes_resample_vis_to_tir(inarr, outarr, nx, ny, fill, scl, verbose)
 
    end do
 
+#ifdef _OPENMP
+   !$OMP END PARALLEL DO
+#endif
 #ifdef __ACC
 !$acc end parallel
 !$acc end data
@@ -807,19 +816,19 @@ subroutine get_abi_time(infile, imager_time, ny, verbose)
 
    ierr = nf90_get_att(fid, NF90_GLOBAL, "time_coverage_start", start_coverage)
    if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: get_abi_geoloc(): Error reading time_coverage_start attribute', trim(infile)
+      print*, 'ERROR: get_abi_time(): Error reading time_coverage_start attribute', trim(infile)
       stop error_stop_code
    end if
    ierr = nf90_get_att(fid, NF90_GLOBAL, "time_coverage_end", end_coverage)
    if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: get_abi_geoloc(): Error reading time_coverage_end attribute', trim(infile)
+      print*, 'ERROR: get_abi_time(): Error reading time_coverage_end attribute', trim(infile)
       stop error_stop_code
    end if
 
    ! Close the netCDF file, we have all we need
    ierr = nf90_close(fid)
    if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: get_abi_geoloc(): Error closing file ', trim(infile)
+      print*, 'ERROR: get_abi_time(): Error closing file ', trim(infile)
       stop error_stop_code
    end if
 
