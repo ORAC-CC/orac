@@ -532,7 +532,7 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
                      solza(lndcount) = imager_angles%solzen(j,i,i_view)
                      satza(lndcount) = imager_angles%satzen(j,i,i_view)
                      solaz(lndcount) = imager_angles%solazi(j,i,i_view)
-                     relaz(lndcount) = abs(180. - imager_angles%relazi(j,i,i_view))
+                     relaz(lndcount) = imager_angles%relazi(j,i,i_view)
 
                      lndcount = lndcount+1
                   end if
@@ -717,7 +717,7 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
                   solza(seacount) = imager_angles%solzen(j,i,i_view)
                   satza(seacount) = imager_angles%satzen(j,i,i_view)
                   solaz(seacount) = imager_angles%solazi(j,i,i_view)
-                  relaz(seacount) = abs(180. - imager_angles%relazi(j,i,i_view))
+                  relaz(seacount) = imager_angles%relazi(j,i,i_view)
                   seacount = seacount+1
                end if
             end do

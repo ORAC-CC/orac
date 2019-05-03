@@ -140,6 +140,9 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
 #ifdef INCLUDE_HIMAWARI_SUPPORT
    use himawari_readwrite
 #endif
+#ifdef __PGI 
+   use ieee_arithmetic 
+#endif
    implicit none
 
    character(len=path_length),  intent(in)    :: infile
@@ -161,6 +164,8 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
    integer                     :: starty, ny
    integer(c_int)              :: line0, line1
    integer(c_int)              :: column0, column1
+   
+   real,allocatable :: tmparr(:,:,:)
 
 #ifdef INCLUDE_HIMAWARI_SUPPORT
    type(himawari_t_data)       ::     preproc
@@ -184,7 +189,6 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
    nx     = imager_geolocation%nx
    starty = imager_geolocation%starty
    ny     = imager_geolocation%ny
-
 
    line0   = startx - 1
    line1   = startx - 1 + ny - 1
@@ -241,11 +245,26 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
       imager_angles%satzen(startx:,:,1) = sreal_fill_value
    where(imager_angles%satazi(startx:,:,1)       .lt. -900) &
       imager_angles%satazi(startx:,:,1) = sreal_fill_value
-
+      
+   allocate(tmparr(1:imager_geolocation%nx,1:imager_geolocation%ny,1))
+   tmparr = imager_angles%satazi(imager_geolocation%endx:imager_geolocation%startx:-1,:,:)
+   imager_angles%satazi = tmparr
+      
+#ifdef __PGI
+   where(ieee_is_nan(imager_angles%solzen)) imager_angles%solzen = sreal_fill_value
+   where(ieee_is_nan(imager_angles%solazi)) imager_angles%solazi = sreal_fill_value
+   where(ieee_is_nan(imager_angles%satzen)) imager_angles%satzen = sreal_fill_value
+   where(ieee_is_nan(imager_angles%satazi)) imager_angles%satazi = sreal_fill_value
+   where(ieee_is_nan(imager_geolocation%latitude)) imager_geolocation%latitude = sreal_fill_value
+   where(ieee_is_nan(imager_geolocation%longitude)) imager_geolocation%longitude = sreal_fill_value
+#else
    where(is_nan(imager_angles%solzen)) imager_angles%solzen = sreal_fill_value
    where(is_nan(imager_angles%solazi)) imager_angles%solazi = sreal_fill_value
    where(is_nan(imager_angles%satzen)) imager_angles%satzen = sreal_fill_value
    where(is_nan(imager_angles%satazi)) imager_angles%satazi = sreal_fill_value
+   where(is_nan(imager_geolocation%latitude)) imager_geolocation%latitude = sreal_fill_value
+   where(is_nan(imager_geolocation%longitude)) imager_geolocation%longitude = sreal_fill_value
+#endif
 
    ! Rescale zens + azis into correct format
    where(imager_angles%solazi(startx:,:,1) .ne. sreal_fill_value .and. &
@@ -257,6 +276,9 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
          imager_angles%relazi(:,:,1) = 360. - imager_angles%relazi(:,:,1)
       end where
    end where
+   
+   deallocate(tmparr)
+   
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_himawari_bin()'
 #else
    write(*,*) 'ERROR: the ORAC pre-processor has not been compiled with ' // &
