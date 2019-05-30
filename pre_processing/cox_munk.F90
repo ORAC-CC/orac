@@ -1080,7 +1080,6 @@ subroutine cox_munk3_calc_shared_geo_wind(solza, satza, solaz, relaz, u10, v10, 
    real(kind=sreal) :: zeta, eta
    real(kind=sreal) :: cosomega
 
-
    !----------------------------------------------------------------------------
    ! Precalculate trigonometric functions
    !----------------------------------------------------------------------------
@@ -1098,9 +1097,9 @@ subroutine cox_munk3_calc_shared_geo_wind(solza, satza, solaz, relaz, u10, v10, 
 #else
    shared%sin_satza = sqrt(1. - shared%cos_satza * shared%cos_satza)
 #endif
-   shared%cos_relaz = cos((180. - relaz) * d2r)
+   shared%cos_relaz = cos(relaz * d2r)
 #ifdef COMPATIBILITY_MODE
-   shared%sin_relaz = sin((180. - relaz) * d2r)
+   shared%sin_relaz = sin(relaz * d2r)
 #else
    shared%sin_relaz = sqrt(1. - shared%cos_relaz * shared%cos_relaz)
 #endif
@@ -1243,7 +1242,6 @@ subroutine cox_munk3(i_band, shared_geo_wind, ocean_colour, rho)
    ! Sun-glint/Cox and Munk variables
    real(kind=sreal)            :: R_sf
    real(kind=sreal)            :: rhogl
-
 
    !----------------------------------------------------------------------------
    ! Calculate white-cap fraction (and ensure it is no greater than 1)
