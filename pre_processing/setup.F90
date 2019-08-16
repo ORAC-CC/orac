@@ -86,6 +86,7 @@
 !    l1b_version and level1b_orbit_number attributes from the L1b file.
 !    Extending this change to the other supported instruments is worth
 !    considering...
+! 2019/8/14, SP: Add Fengyun-4A support.
 !
 ! Bugs:
 ! None known.
@@ -409,6 +410,145 @@ subroutine setup_abi(l1b_path_file,geo_path_file,platform,year,month,day, &
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_abi()'
 
 end subroutine setup_abi
+
+subroutine setup_agri(l1b_path_file,geo_path_file,platform,year,month,day, &
+                      doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute, &
+                      channel_ids_user, channel_info,verbose)
+
+    use calender_m
+    use channel_structures_m
+    use preproc_constants_m
+    use preproc_structures_m
+
+    implicit none
+
+    character(len=path_length),     intent(in)    :: l1b_path_file
+    character(len=path_length),     intent(in)    :: geo_path_file
+    character(len=platform_length), intent(out)   :: platform
+    integer(kind=sint),             intent(out)   :: year,month,day,doy
+    integer(kind=sint),             intent(out)   :: hour,minute
+    character(len=date_length),     intent(out)   :: cyear,cmonth,cday
+    character(len=date_length),     intent(out)   :: cdoy, chour,cminute
+    integer, pointer,               intent(in)    :: channel_ids_user(:)
+    type(channel_info_t),           intent(inout) :: channel_info
+    logical,                        intent(in)    :: verbose
+
+    integer :: index1,index2,index3
+
+
+    ! Static instrument channel definitions. (These should not be changed.)
+    integer, parameter :: all_nchannels_total = 13
+
+       ! 1,       2,       3,       4,       5,       6,       7,       8
+    real,    parameter :: all_channel_wl_abs(all_nchannels_total) = &
+      (/ 0.469,   0.631,   0.819,   1.375,   1.607,   2.226,   3.715, &
+         6.231,  7.118,   8.588,   10.824,  12.071,  13.545 /)
+
+    integer, parameter :: all_channel_sw_flag(all_nchannels_total) = &
+      (/ 1,       1,       1,       1,       1,       1,       1,   &
+         0,       0,       0,       0,       0,       0     /)
+
+    integer, parameter :: all_channel_lw_flag(all_nchannels_total) = &
+      (/ 0,       0,       0,       0,       0,       0,       1,   &
+         1,       1,       1,       1,       1,       1     /)
+
+    integer, parameter :: all_channel_ids_rttov_coef_sw(all_nchannels_total) = &
+      (/ 1,       2,       3,       4,       5,       6,       7,   &
+         0,       0,       0,       0,       0,       0     /)
+
+    integer, parameter :: all_channel_ids_rttov_coef_lw(all_nchannels_total) = &
+      (/ 0,       0,       0,       0,       0,       0,       1,   &
+         2,       3,       4,       5,       6,       7      /)
+
+    integer, parameter :: all_map_ids_abs_to_ref_band_land(all_nchannels_total) = &
+      (/ 3,       1,       2,       5,       6,       7,       0,   &
+         0,       0,       0,       0,       0,       0      /)
+
+    integer, parameter :: all_map_ids_abs_to_ref_band_sea(all_nchannels_total) = &
+      (/ 1,       3,       4,       6,       7,       8,       9,   &
+         0,       0,       0,       0,       0,       0      /)
+
+    integer, parameter :: all_map_ids_abs_to_snow_and_ice(all_nchannels_total) = &
+      (/ 1,       1,       2,       3,       3,       3,       4,   &
+         0,       0,       0,       0,       0,       0      /)
+
+    integer, parameter :: all_map_ids_view_number(all_nchannels_total) = &
+      (/ 1,       1,       1,       1,       1,       1,       1,   &
+         1,       1,       1,       1,       1,       1      /)
+
+    real,    parameter :: all_channel_fractional_uncertainty(all_nchannels_total) = &
+      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0., &
+         0.,      0.,      0.,      0.,      0.,      0.     /)
+
+    real,    parameter :: all_channel_minimum_uncertainty(all_nchannels_total) = &
+      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0., &
+         0.,      0.,      0.,      0.,      0.,      0.     /)
+
+    real,    parameter :: all_channel_numerical_uncertainty(all_nchannels_total) = &
+      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0., &
+         0.,      0.,      0.,      0.,      0.,      0.     /)
+
+    real,    parameter :: all_channel_lnd_uncertainty(all_nchannels_total) = &
+      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0., &
+         0.,      0.,      0.,      0.,      0.,      0.     /)
+
+    real,    parameter :: all_channel_sea_uncertainty(all_nchannels_total) = &
+      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0., &
+         0.,      0.,      0.,      0.,      0.,      0.     /)
+
+    ! Only this below needs to be set to change the desired default channels. All
+    ! other channel related arrays/indexes are set automatically given the static
+    ! instrument channel definition above.
+    integer, parameter :: channel_ids_default(6) = (/ 2, 3, 5, 7, 11, 12 /)
+
+
+    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering setup_agri()'
+
+    if (verbose) write(*,*) 'l1b_path_file: ', trim(l1b_path_file)
+    if (verbose) write(*,*) 'geo_path_file: ', trim(geo_path_file)
+
+    if (index(l1b_path_file,"FY4A") .gt. 0) then
+      index3=index(trim(adjustl(l1b_path_file)),'AGRI_FY4A_') + 10
+      platform="FY-4A"
+    else if(index(l1b_path_file,"FY4B") .gt. 0) then
+      index3=index(trim(adjustl(l1b_path_file)),'AGRI_FY4A_') + 10
+      platform="FY-4B"
+    else
+      write(*,*) "Unsupported Fengyun platform, ",l1b_path_file
+      stop
+    end if
+
+    if (verbose) write(*,*)"Satellite is: ",platform
+
+    ! get year, doy, hour and minute as strings
+    cyear=trim(adjustl(l1b_path_file(index3:index3+3)))
+    cmonth=trim(adjustl(l1b_path_file(index3+4:index3+5)))
+    cday=trim(adjustl(l1b_path_file(index3+6:index3+7)))
+    chour=trim(adjustl(l1b_path_file(index3+8:index3+9)))
+    cminute=trim(adjustl(l1b_path_file(index3+10:index3+11)))
+
+    read(cyear(1:len_trim(cyear)), '(I4)') year
+    read(cmonth(1:len_trim(cmonth)), '(I2)') month
+    read(cday(1:len_trim(cday)), '(I2)') day
+    read(chour(1:len_trim(chour)), '(I2)') hour
+    read(cminute(1:len_trim(cminute)), '(I2)') minute
+
+    call GREG2DOY(year, month, day, doy)
+    write(cdoy, '(i3.3)') doy
+
+    ! now set up the channels
+    call common_setup(channel_info, channel_ids_user, channel_ids_default, &
+      all_channel_wl_abs, all_channel_sw_flag, all_channel_lw_flag, &
+      all_channel_ids_rttov_coef_sw, all_channel_ids_rttov_coef_lw, &
+      all_map_ids_abs_to_ref_band_land, all_map_ids_abs_to_ref_band_sea, &
+      all_map_ids_abs_to_snow_and_ice, all_map_ids_view_number, &
+      all_channel_fractional_uncertainty, all_channel_minimum_uncertainty, &
+      all_channel_numerical_uncertainty, all_channel_lnd_uncertainty, &
+      all_channel_sea_uncertainty, all_nchannels_total)
+
+    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_agri()'
+
+end subroutine setup_agri
 
 
 subroutine setup_ahi(l1b_path_file,geo_path_file,platform,year,month,day, &

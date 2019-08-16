@@ -79,6 +79,7 @@
 !    giving them module scope.
 ! 2017/07/08, GM: Much needed tidying.
 ! 2017/12/20, GT: Changed Sentinel-3 platform name to Sentinel3a or Sentinel3b
+! 2019/8/14, SP: Add Fengyun-4A support.
 !
 ! Bugs:
 ! None known.
@@ -489,6 +490,27 @@ subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
             case(14)
                ch5=i
             case(15)
+               ch6=i
+            end select
+         end do
+      else if (trim(adjustl(sensor)) .eq. 'AGRI') then
+         do i=1,channel_info%nchannels_total
+            ii = channel_info%map_ids_channel_to_sw(i)
+            select case (channel_info%channel_ids_instr(i))
+            case(2)
+               ch1=i
+               sw1=ii
+            case(3)
+               ch2=i
+               sw2=ii
+            case(5)
+               ch3=i
+               sw3=ii
+            case(7)
+               ch4=i
+            case(11)
+               ch5=i
+            case(12)
                ch6=i
             end select
          end do
@@ -2002,8 +2024,12 @@ function plank_inv(input_platform, T)
       index = 24
    case ("Sentinel3b")
       index = 24
-   case ("default")
+   case ("FY-4A")
       index = 25
+   case ("FY-4B")
+      index = 25
+   case ("default")
+      index = 26
    case default
       write(*,*) "Error: Platform name does not match local string in function plank_inv"
       write(*,*) "Input platform name = ", input_platform
@@ -2045,6 +2071,7 @@ function plank_inv(input_platform, T)
         2570.373, 0.999376, 0.43862, 4.672, & ! goes16, goes17
         2707.560, 0.999085, 0.58063, 5.123, & ! viirs SoumiNpp/NOAA20
         2673.797, 0.994884, 2.19600, 5.064, & ! slstr Sentinel-3
+        2692.112, 0.996369, 2.64763, 5.093, & ! agri fengyun-4
         2670.000, 0.998000, 1.75000, 5.000  & ! default
         /), (/ 4, 25 /))
 

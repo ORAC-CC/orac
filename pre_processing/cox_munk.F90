@@ -1070,6 +1070,9 @@ subroutine cox_munk3_calc_shared_geo_wind(solza, satza, solaz, relaz, u10, v10, 
 
    ! Wind speed and direction
    real(kind=sreal) :: ws, wd
+   
+   ! Corrected relaz
+   real(kind=sreal) :: crelaz
 
    ! Sun-glint/Cox and Munk variables
    real(kind=sreal) :: dangle
@@ -1079,6 +1082,9 @@ subroutine cox_munk3_calc_shared_geo_wind(solza, satza, solaz, relaz, u10, v10, 
    real(kind=sreal) :: sigx, sigy
    real(kind=sreal) :: zeta, eta
    real(kind=sreal) :: cosomega
+   
+   
+   crelaz = 180. - relaz
 
    !----------------------------------------------------------------------------
    ! Precalculate trigonometric functions
@@ -1097,9 +1103,9 @@ subroutine cox_munk3_calc_shared_geo_wind(solza, satza, solaz, relaz, u10, v10, 
 #else
    shared%sin_satza = sqrt(1. - shared%cos_satza * shared%cos_satza)
 #endif
-   shared%cos_relaz = cos(relaz * d2r)
+   shared%cos_relaz = cos(crelaz * d2r)
 #ifdef COMPATIBILITY_MODE
-   shared%sin_relaz = sin(relaz * d2r)
+   shared%sin_relaz = sin(crelaz * d2r)
 #else
    shared%sin_relaz = sqrt(1. - shared%cos_relaz * shared%cos_relaz)
 #endif
@@ -1940,7 +1946,7 @@ subroutine cox_munk_rho_0v_0d_dv_and_dd(bands, solza, satza, solaz, relaz, &
    if (verbose) write(*,*) 'cox_munk_rho_0v_0d_dv_and_dd(): computing rho_0d'
    !----------------------------------------------------------------------------
 ! The full computation
-if (.false.) then
+if (.true.) then
    rho_0d = 0.
 !$OMP PARALLEL PRIVATE(i, j, k, l, i_oc, aa, a2, satza2, relaz2, shared_geo_wind)
    allocate(aa(n_bands))
@@ -2050,7 +2056,7 @@ end if
    if (verbose) write(*,*) 'cox_munk_rho_0v_0d_dv_and_dd(): computing rho_dv'
    !----------------------------------------------------------------------------
 ! The full computation
-if (.false.) then
+if (.true.) then
    rho_dv = 0.
 !$OMP PARALLEL PRIVATE(i, j, k, l, i_oc, aa, a2, solza2, relaz2, shared_geo_wind)
    allocate(aa(n_bands))

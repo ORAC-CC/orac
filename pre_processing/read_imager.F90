@@ -55,6 +55,7 @@
 !                 instead of IMPF (as previous). The new driver file option
 !                 USE_GSICS enables this to be disabled.
 ! 2018/06/08, SP: New global attribute to store satellite position information
+! 2019/8/14, SP: Add Fengyun-4A support.
 !
 ! Bugs:
 ! None known.
@@ -78,6 +79,7 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
    use preproc_constants_m
    use read_aatsr_m
    use read_abi_m
+   use read_agri_m
    use read_avhrr_m
    use read_himawari_m
    use read_modis_m
@@ -157,6 +159,15 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
       imager_flags%cflag = 1
 
       deallocate(abi_filenames)
+
+   else if (trim(adjustl(sensor)) .eq. 'AGRI') then
+      ! Read the L1B data, according to the dimensions and offsets specified in
+      ! imager_geolocation
+      call read_agri_data(path_to_l1b_file, imager_geolocation,&
+           imager_measurements, imager_angles, imager_time, channel_info, &
+           global_atts, verbose)
+      !in absence of proper mask set everything to "1" for cloud mask
+      imager_flags%cflag = 1
 
    else if (trim(adjustl(sensor)) .eq. 'AHI') then
       ! Read the L1B data, according to the dimensions and offsets specified in

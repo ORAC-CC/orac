@@ -309,6 +309,7 @@
 !                 instead of IMPF (as previous). The new driver file option
 !                 USE_GSICS enables this to be disabled.
 ! 2018/10/08, SP: Add support for the GOES-Imager series of sensors (G12-15)
+! 2019/8/14, SP: Add Fengyun-4A support.
 !
 ! Bugs:
 ! See http://proj.badc.rl.ac.uk/orac/report/1
@@ -338,6 +339,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
    use preproc_structures_m
    use read_aatsr_m
    use read_abi_m
+   use read_agri_m
    use read_avhrr_m
    !use read_goes_imager_m
    use read_himawari_m
@@ -759,10 +761,18 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
    else if (trim(adjustl(sensor)) .eq. 'ABI') then
       call setup_abi(l1b_path_file,geo_path_file,platform,year,month,day, &
            doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,preproc_opts%channel_ids, &
-           channel_info,verbose)
+           channel_info,verbose) 
 
       ! Get dimensions of the ABI image.
       call read_abi_dimensions(geo_path_file,n_across_track,n_along_track, &
+                                    startx,endx,starty,endy,verbose)
+   else if (trim(adjustl(sensor)) .eq. 'AGRI') then
+      call setup_agri(l1b_path_file,geo_path_file,platform,year,month,day, &
+           doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,preproc_opts%channel_ids, &
+           channel_info,verbose) 
+      ! Get dimensions of the AGRI image.
+      ! At present only full-disk images are supported
+      call read_agri_dimensions(geo_path_file,n_across_track,n_along_track, &
                                     startx,endx,starty,endy,verbose)
    else if (trim(adjustl(sensor)) .eq. 'AHI') then
       call setup_ahi(l1b_path_file,geo_path_file,platform,year,month,day, &
@@ -772,7 +782,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
       ! Get dimensions of the AHI image.
       ! At present only full-disk images are supported
       call read_himawari_dimensions(geo_path_file,n_across_track,n_along_track, &
-                                    startx,endx,starty,endy,verbose)
+                                    startx,endx,starty,endy,verbose)       
 
    else if (trim(adjustl(sensor)) .eq. 'AVHRR') then
       call setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day, &

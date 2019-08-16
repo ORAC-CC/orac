@@ -13,6 +13,7 @@
 ! 2018/05/24, SP: Updates to better calculate tropopause pressure (from IntCTP.F90)
 ! 2018/07/18, DE: Add tropopause temperature
 ! 2018/11/05, SP: Add CAPE
+! 2019/8/14, SP: Add Fengyun-4A support.
 !
 ! Bugs:
 ! None known.
@@ -207,6 +208,10 @@ subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation, &
    Wrap = MinLon <= -180. .and. MaxLon >=  180.
    if (trim(adjustl(sensor)) .eq. 'ABI') then
       chan_n = 14
+      chanwv6_n = 8
+      chanwv7_n = 9
+   if (trim(adjustl(sensor)) .eq. 'AGRI') then
+      chan_n = 11
       chanwv6_n = 8
       chanwv7_n = 9
    else if (trim(adjustl(sensor)) .eq. 'AHI') then

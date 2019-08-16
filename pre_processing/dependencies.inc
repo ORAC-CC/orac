@@ -54,7 +54,9 @@ $(OBJS)/read_aatsr.o: $(OBJS)/aatsr_corrections.o $(OBJS)/channel_structures.o \
         read_aatsr_dimensions.F90 read_aatsr_l1b.F90
 $(OBJS)/read_abi.o: $(OBJS)/calender.o $(OBJS)/channel_structures.o \
         $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o \
-        $(OBJS)/solar_position.o read_abi_funcs.F90 read_abi_main.F90
+        $(OBJS)/solar_position.o read_abi_funcs.F90 read_abi_main.F90    
+$(OBJS)/read_agri.o: $(OBJS)/calender.o $(OBJS)/channel_structures.o \
+        $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o
 $(OBJS)/read_avhrr.o: $(OBJS)/calender.o $(OBJS)/channel_structures.o \
         $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o \
         create_time_for_pixel.F90 read_avhrr_angles.F90 \
@@ -68,9 +70,9 @@ $(OBJS)/read_himawari.o: $(OBJS)/channel_structures.o \
         $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o
 $(OBJS)/read_imager.o: $(OBJS)/channel_structures.o $(OBJS)/imager_structures.o \
         $(OBJS)/preproc_constants.o $(OBJS)/read_aatsr.o $(OBJS)/read_abi.o \
-        $(OBJS)/read_avhrr.o $(OBJS)/read_himawari.o $(OBJS)/read_modis.o \
-        $(OBJS)/read_seviri.o $(OBJS)/read_slstr.o $(OBJS)/read_viirs_Iband.o \
-        $(OBJS)/read_viirs_Mband.o
+        $(OBJS)/read_agri.o $(OBJS)/read_avhrr.o $(OBJS)/read_himawari.o \
+        $(OBJS)/read_modis.o $(OBJS)/read_seviri.o $(OBJS)/read_slstr.o \
+        $(OBJS)/read_viirs_Iband.o $(OBJS)/read_viirs_Mband.o
 $(OBJS)/read_modis.o: $(OBJS)/bright_m.o $(OBJS)/calender.o \
         $(OBJS)/channel_structures.o $(OBJS)/imager_structures.o \
         $(OBJS)/preproc_constants.o get_modis_time.F90 map_time_to_pixel.F90 \
