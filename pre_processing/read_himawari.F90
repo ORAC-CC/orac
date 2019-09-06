@@ -246,9 +246,19 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
    where(imager_angles%satazi(startx:,:,1)       .lt. -900) &
       imager_angles%satazi(startx:,:,1) = sreal_fill_value
       
-   allocate(tmparr(1:imager_geolocation%nx,1:imager_geolocation%ny,1))
-   tmparr = imager_angles%satazi(imager_geolocation%endx:imager_geolocation%startx:-1,:,:)
-   imager_angles%satazi = tmparr
+    ! Flip the VAA L/R and U/D
+    allocate(tmparr(1:imager_geolocation%nx,1:imager_geolocation%ny,1))
+    tmparr = imager_angles%satazi(imager_geolocation%endx:imager_geolocation%startx:-1,&
+                                 imager_geolocation%endy:imager_geolocation%starty:-1,:)
+    imager_angles%satazi = tmparr
+    
+    ! rotate the solar azimuth by 180 degrees  
+    tmparr(:,:,1) = imager_angles%solazi(:,:,1)
+    where (imager_angles%solazi(:,:,1) .gt. 180) &
+        tmparr(:,:,1) = tmparr(:,:,1) - 180.
+    where (imager_angles%solazi(:,:,1) .le. 180 .and. imager_angles%solazi(:,:,1) .ge. 0) &
+        tmparr(:,:,1) = tmparr(:,:,1) + 180.
+    imager_angles%solazi = tmparr
       
 #ifdef __PGI
    where(ieee_is_nan(imager_angles%solzen)) imager_angles%solzen = sreal_fill_value
@@ -266,6 +276,16 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
    where(is_nan(imager_geolocation%longitude)) imager_geolocation%longitude = sreal_fill_value
 #endif
 
+    where(imager_angles%solazi(:,:,1)       .gt. 900) &
+        imager_angles%solazi(:,:,1) = sreal_fill_value
+    where(imager_angles%solzen(:,:,1)       .gt. 900) &
+        imager_angles%solzen(:,:,1) = sreal_fill_value
+    where(imager_angles%satzen(:,:,1)       .gt. 900) &
+        imager_angles%satzen(:,:,1) = sreal_fill_value
+    where(imager_angles%satazi(:,:,1)       .gt. 900) &
+        imager_angles%satazi(:,:,1) = sreal_fill_value
+
+
    ! Rescale zens + azis into correct format
    where(imager_angles%solazi(startx:,:,1) .ne. sreal_fill_value .and. &
          imager_angles%satazi(startx:,:,1) .ne. sreal_fill_value)
@@ -275,6 +295,7 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
       where (imager_angles%relazi(:,:,1) .gt. 180.)
          imager_angles%relazi(:,:,1) = 360. - imager_angles%relazi(:,:,1)
       end where
+      imager_angles%relazi(:,:,1) = abs(imager_angles%relazi(:,:,1) - 180.)
    end where
    
    deallocate(tmparr)
