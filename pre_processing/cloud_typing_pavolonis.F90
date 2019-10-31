@@ -1036,7 +1036,7 @@ subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
       ref_ch3a = imager_measurements%data(i,j,ch3) / mu0
    else
       ref_ch3a = sreal_fill_value
-   endif
+   end if
    ref_ch3b = (rad_ch3b - rad_ch3b_emis) / &
               (solcon_ch3b * c_sun * mu0 - rad_ch3b_emis)
 

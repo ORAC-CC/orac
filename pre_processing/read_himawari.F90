@@ -17,7 +17,7 @@
 !    mm: minute
 !    xx: Band number (01 -> 16
 !    rr: Resolution (05 for band 3, 10 for other VIS bands, 20 for IR)
-!    ss: Segment number (00 -> 10)
+!    ss: Segment number (00 -> 10) 
 !
 ! Example: HS_H08_20150801_0300_B01_FLDK_R10_S0910.DAT
 !
@@ -140,8 +140,8 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
 #ifdef INCLUDE_HIMAWARI_SUPPORT
    use himawari_readwrite
 #endif
-#ifdef __PGI 
-   use ieee_arithmetic 
+#ifdef __PGI
+   use ieee_arithmetic
 #endif
    implicit none
 
@@ -164,12 +164,12 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
    integer                     :: starty, ny
    integer(c_int)              :: line0, line1
    integer(c_int)              :: column0, column1
-   
-   real,allocatable :: tmparr(:,:,:)
+
+   real, allocatable           :: tmparr(:,:,:)
 
 #ifdef INCLUDE_HIMAWARI_SUPPORT
-   type(himawari_t_data)       ::     preproc
-   type(himawari_t_extent)     ::     ahi_extent
+   type(himawari_t_data)       :: preproc
+   type(himawari_t_extent)     :: ahi_extent
 #endif
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_himawari_bin()'
 
@@ -245,44 +245,53 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
       imager_angles%satzen(startx:,:,1) = sreal_fill_value
    where(imager_angles%satazi(startx:,:,1)       .lt. -900) &
       imager_angles%satazi(startx:,:,1) = sreal_fill_value
-      
+
     ! Flip the VAA L/R and U/D
     allocate(tmparr(1:imager_geolocation%nx,1:imager_geolocation%ny,1))
-    tmparr = imager_angles%satazi(imager_geolocation%endx:imager_geolocation%startx:-1,&
-                                 imager_geolocation%endy:imager_geolocation%starty:-1,:)
+    tmparr = imager_angles%satazi( &
+         imager_geolocation%endx:imager_geolocation%startx:-1, &
+         imager_geolocation%endy:imager_geolocation%starty:-1,:)
     imager_angles%satazi = tmparr
-    
-    ! rotate the solar azimuth by 180 degrees  
+
+    ! rotate the solar azimuth by 180 degrees
     tmparr(:,:,1) = imager_angles%solazi(:,:,1)
     where (imager_angles%solazi(:,:,1) .gt. 180) &
         tmparr(:,:,1) = tmparr(:,:,1) - 180.
-    where (imager_angles%solazi(:,:,1) .le. 180 .and. imager_angles%solazi(:,:,1) .ge. 0) &
-        tmparr(:,:,1) = tmparr(:,:,1) + 180.
+    where (imager_angles%solazi(:,:,1) .le. 180 .and. &
+        imager_angles%solazi(:,:,1) .ge. 0) tmparr(:,:,1) = tmparr(:,:,1) + 180.
     imager_angles%solazi = tmparr
-      
+
 #ifdef __PGI
-   where(ieee_is_nan(imager_angles%solzen)) imager_angles%solzen = sreal_fill_value
-   where(ieee_is_nan(imager_angles%solazi)) imager_angles%solazi = sreal_fill_value
-   where(ieee_is_nan(imager_angles%satzen)) imager_angles%satzen = sreal_fill_value
-   where(ieee_is_nan(imager_angles%satazi)) imager_angles%satazi = sreal_fill_value
-   where(ieee_is_nan(imager_geolocation%latitude)) imager_geolocation%latitude = sreal_fill_value
-   where(ieee_is_nan(imager_geolocation%longitude)) imager_geolocation%longitude = sreal_fill_value
+   where(ieee_is_nan(imager_angles%solzen)) &
+        imager_angles%solzen = sreal_fill_value
+   where(ieee_is_nan(imager_angles%solazi)) &
+        imager_angles%solazi = sreal_fill_value
+   where(ieee_is_nan(imager_angles%satzen)) &
+        imager_angles%satzen = sreal_fill_value
+   where(ieee_is_nan(imager_angles%satazi)) &
+        imager_angles%satazi = sreal_fill_value
+   where(ieee_is_nan(imager_geolocation%latitude)) &
+        imager_geolocation%latitude = sreal_fill_value
+   where(ieee_is_nan(imager_geolocation%longitude)) &
+        imager_geolocation%longitude = sreal_fill_value
 #else
    where(is_nan(imager_angles%solzen)) imager_angles%solzen = sreal_fill_value
    where(is_nan(imager_angles%solazi)) imager_angles%solazi = sreal_fill_value
    where(is_nan(imager_angles%satzen)) imager_angles%satzen = sreal_fill_value
    where(is_nan(imager_angles%satazi)) imager_angles%satazi = sreal_fill_value
-   where(is_nan(imager_geolocation%latitude)) imager_geolocation%latitude = sreal_fill_value
-   where(is_nan(imager_geolocation%longitude)) imager_geolocation%longitude = sreal_fill_value
+   where(is_nan(imager_geolocation%latitude)) &
+        imager_geolocation%latitude = sreal_fill_value
+   where(is_nan(imager_geolocation%longitude)) &
+        imager_geolocation%longitude = sreal_fill_value
 #endif
 
-    where(imager_angles%solazi(:,:,1)       .gt. 900) &
+    where(imager_angles%solazi(:,:,1) .gt. 900) &
         imager_angles%solazi(:,:,1) = sreal_fill_value
-    where(imager_angles%solzen(:,:,1)       .gt. 900) &
+    where(imager_angles%solzen(:,:,1) .gt. 900) &
         imager_angles%solzen(:,:,1) = sreal_fill_value
-    where(imager_angles%satzen(:,:,1)       .gt. 900) &
+    where(imager_angles%satzen(:,:,1) .gt. 900) &
         imager_angles%satzen(:,:,1) = sreal_fill_value
-    where(imager_angles%satazi(:,:,1)       .gt. 900) &
+    where(imager_angles%satazi(:,:,1) .gt. 900) &
         imager_angles%satazi(:,:,1) = sreal_fill_value
 
 
@@ -297,9 +306,9 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
       end where
       imager_angles%relazi(:,:,1) = abs(imager_angles%relazi(:,:,1) - 180.)
    end where
-   
+
    deallocate(tmparr)
-   
+
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_himawari_bin()'
 #else
    write(*,*) 'ERROR: the ORAC pre-processor has not been compiled with ' // &

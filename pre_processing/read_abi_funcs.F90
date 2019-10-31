@@ -29,19 +29,18 @@ subroutine ABI_Solpos(year, doy, hour, minute, lat, lon, sza, saa)
    use solar_position_m
    implicit none
 
-   real(kind=sreal), intent(in) :: year
-   real(kind=sreal), intent(in) :: doy
-   real(kind=sreal), intent(in) :: hour
-   real(kind=sreal), intent(in) :: minute
-   real(kind=sreal), intent(in) :: lat
-   real(kind=sreal), intent(in) :: lon
-   real(kind=sreal), intent(out):: sza
-   real(kind=sreal), intent(out):: saa
+   real(kind=sreal), intent(in)  :: year
+   real(kind=sreal), intent(in)  :: doy
+   real(kind=sreal), intent(in)  :: hour
+   real(kind=sreal), intent(in)  :: minute
+   real(kind=sreal), intent(in)  :: lat
+   real(kind=sreal), intent(in)  :: lon
+   real(kind=sreal), intent(out) :: sza
+   real(kind=sreal), intent(out) :: saa
 
    saa    = 0.
    sza    = 0.
    call sun_pos_calc(year, doy, hour+minute/60., lat, lon, sza, saa)
-!   print*,year,doy,hour,minute,hour+minute/60.,lat,lon,sza,saa
 
    if (saa .gt. 360.0) then
       saa = sreal_fill_value
@@ -475,18 +474,18 @@ subroutine get_abi_solgeom(imager_time, imager_angles, imager_geolocation, verbo
    minu = int(tmphr)
 
    call get_day_of_year(float(idy), float(mon), float(iye), doy)
-   
+
    rye = float(iye)
    rhr = float(ihr)
    rminu = float(minu)
 
    ! This section computes the solar geometry for each pixel in the image
 #ifdef _OPENMP
-   if (verbose) write(*,*)"Computing solar geometry using OpenMP"
+   if (verbose) write(*,*) "Computing solar geometry using OpenMP"
    !$OMP PARALLEL DO PRIVATE(y, x, iye, mon, dfr, idy, tmphr, ihr, minu, sza, saa)
 #endif
 #ifdef __ACC
-   if (verbose) write(*,*)"Computing solar geometry using PGI_ACC"
+   if (verbose) write(*,*) "Computing solar geometry using PGI_ACC"
 !$acc data copyin(tlat) copyin(tlon) copyout(tsza) copyout(tsaa)
 !$acc parallel
 !$acc loop collapse(2) independent private(y, x, iye, mon, dfr, idy, tmphr, ihr, minu, sza, saa)
@@ -502,7 +501,7 @@ subroutine get_abi_solgeom(imager_time, imager_angles, imager_geolocation, verbo
          else
             tsza(x,y) = sreal_fill_value
             tsaa(x,y) = sreal_fill_value
-         endif
+         end if
       end do
    end do
 #ifdef _OPENMP
@@ -566,11 +565,11 @@ subroutine goes_resample_vis_to_tir(inarr, outarr, nx, ny, fill, scl, verbose)
 
    outarr(:, :) = 0
 #ifdef _OPENMP
-   if (verbose) write(*,*)"Resampling VIS grid to IR grid using OpenMP"
+   if (verbose) write(*,*) "Resampling VIS grid to IR grid using OpenMP"
    !$OMP PARALLEL DO PRIVATE(y, x, outx, outy, val, inpix)
 #endif
 #ifdef __ACC
-   if (verbose) write(*,*) 'Resampling VIS grid to IR grid using PGI_ACC'
+   if (verbose) write(*,*) "Resampling VIS grid to IR grid using PGI_ACC"
 !$acc data copyin(inarr(1:nx*scl,1:ny*scl))  copyout(outarr(1:nx,1:ny))
 !$acc parallel
 !$acc loop collapse(2) independent private(x, y, outx, outy, val, inpix,i,j)
@@ -689,7 +688,7 @@ subroutine load_abi_band(infile, imager_geolocation, rad, kappa, bc1, bc2, fk1, 
       print*, trim(nf90_strerror(ierr))
       stop error_stop_code
    end if
-   
+
    ierr = nf90_inq_varid(fid, 'DQF', did)
    if (ierr.ne.NF90_NOERR) then
       print*, 'ERROR: load_abi_band(): Error opening dataset DQF in ', trim(infile)

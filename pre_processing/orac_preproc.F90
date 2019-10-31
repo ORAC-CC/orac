@@ -761,7 +761,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
    else if (trim(adjustl(sensor)) .eq. 'ABI') then
       call setup_abi(l1b_path_file,geo_path_file,platform,year,month,day, &
            doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,preproc_opts%channel_ids, &
-           channel_info,verbose) 
+           channel_info,verbose)
 
       ! Get dimensions of the ABI image.
       call read_abi_dimensions(geo_path_file,n_across_track,n_along_track, &
@@ -769,7 +769,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
    else if (trim(adjustl(sensor)) .eq. 'AGRI') then
       call setup_agri(l1b_path_file,geo_path_file,platform,year,month,day, &
            doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,preproc_opts%channel_ids, &
-           channel_info,verbose) 
+           channel_info,verbose)
       ! Get dimensions of the AGRI image.
       ! At present only full-disk images are supported
       call read_agri_dimensions(geo_path_file,n_across_track,n_along_track, &
@@ -782,7 +782,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
       ! Get dimensions of the AHI image.
       ! At present only full-disk images are supported
       call read_himawari_dimensions(geo_path_file,n_across_track,n_along_track, &
-                                    startx,endx,starty,endy,verbose)       
+                                    startx,endx,starty,endy,verbose)
 
    else if (trim(adjustl(sensor)) .eq. 'AVHRR') then
       call setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day, &

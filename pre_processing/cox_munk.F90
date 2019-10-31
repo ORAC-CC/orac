@@ -1070,7 +1070,7 @@ subroutine cox_munk3_calc_shared_geo_wind(solza, satza, solaz, relaz, u10, v10, 
 
    ! Wind speed and direction
    real(kind=sreal) :: ws, wd
-   
+
    ! Corrected relaz
    real(kind=sreal) :: crelaz
 
@@ -1082,8 +1082,8 @@ subroutine cox_munk3_calc_shared_geo_wind(solza, satza, solaz, relaz, u10, v10, 
    real(kind=sreal) :: sigx, sigy
    real(kind=sreal) :: zeta, eta
    real(kind=sreal) :: cosomega
-   
-   
+
+
    crelaz = 180. - relaz
 
    !----------------------------------------------------------------------------

@@ -145,7 +145,7 @@
 ! 2018/08/30, SP: Allow variable CO2 in RTTOV, linear scaling from 2006 value
 ! 2019/08/14, SP: Add Fengyun4A support.
 ! 2019/08/15, SP: Add check for good pixels, meaning we don't run RTTOV on
-!                 those we don't care about. This gives a big speedup to 
+!                 those we don't care about. This gives a big speedup to
 !                 processing instruments that cross the dateline.
 !
 ! Bugs:
@@ -638,12 +638,12 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
       count = 0
       do jdim=preproc_dims%min_lat,preproc_dims%max_lat
          do idim=preproc_dims%min_lon,preproc_dims%max_lon
-         
-                count = count + 1
-                profiles(count)%zenangle = preproc_geo%satza(idim,jdim,cview)
-                profiles(count)%azangle = preproc_geo%satazi(idim,jdim,cview)
-                profiles(count)%sunzenangle = preproc_geo%solza(idim,jdim,cview)
-                profiles(count)%sunazangle = preproc_geo%solazi(idim,jdim,cview)
+
+            count = count + 1
+            profiles(count)%zenangle = preproc_geo%satza(idim,jdim,cview)
+            profiles(count)%azangle = preproc_geo%satazi(idim,jdim,cview)
+            profiles(count)%sunzenangle = preproc_geo%solza(idim,jdim,cview)
+            profiles(count)%sunazangle = preproc_geo%solazi(idim,jdim,cview)
          end do
       end do
 
@@ -763,7 +763,7 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
 #endif
          do jdim=preproc_dims%min_lat,preproc_dims%max_lat
             do idim=preproc_dims%min_lon,preproc_dims%max_lon
-            
+
                count = count + 1
 
                ! Process points that contain information and satisfy the zenith
@@ -797,52 +797,52 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
                   calcemis = emissivity%emis_in <= dither
 
                   if (preproc_dims%counter_lw(idim,jdim,cview) .gt. 0) then
-                      ! Call RTTOV for this profile
+                     ! Call RTTOV for this profile
 #ifdef INCLUDE_RTTOV_OPENMP
-                      call rttov_parallel_direct(stat, chanprof, opts, &
-                           profiles(count:count), coefs, transmission, radiance, &
-                           radiance2, calcemis, emissivity, traj=traj)
+                     call rttov_parallel_direct(stat, chanprof, opts, &
+                          profiles(count:count), coefs, transmission, radiance, &
+                          radiance2, calcemis, emissivity, traj=traj)
 #else
-                      call rttov_direct(stat, chanprof, opts, &
-                           profiles(count:count), coefs, transmission, radiance, &
-                           radiance2, calcemis, emissivity, traj=traj)
+                     call rttov_direct(stat, chanprof, opts, &
+                          profiles(count:count), coefs, transmission, radiance, &
+                          radiance2, calcemis, emissivity, traj=traj)
 #endif
 
-                      if (stat /= errorstatus_success) then
-                         write(*,*) 'ERROR: rttov_direct(), errorstatus = ', stat
-                         stop error_stop_code
-                      end if
+                     if (stat /= errorstatus_success) then
+                        write(*,*) 'ERROR: rttov_direct(), errorstatus = ', stat
+                        stop error_stop_code
+                     end if
 
-                       ! Remove the Rayleigh component from the RTTOV tranmittances.
-                       if (i_coef == 2) then
-                          call remove_rayleigh(nchan, nlevels, dummy_sreal_1dveca, &
-                               profiles(count)%zenangle, profiles(count)%p, &
-                               transmission%tau_levels, transmission%tau_total)
-                       end if
+                     ! Remove the Rayleigh component from the RTTOV tranmittances.
+                     if (i_coef == 2) then
+                        call remove_rayleigh(nchan, nlevels, dummy_sreal_1dveca, &
+                             profiles(count)%zenangle, profiles(count)%p, &
+                             transmission%tau_levels, transmission%tau_total)
+                     end if
 
-                   endif
-                      write_rttov = .true.
-                   else
-                      write_rttov = .false.
-                   end if
-                   ! Reformat and write output to NCDF files
-                   if (i_coef == 1) then
-                      do i_=1,nchan
-                         call write_ir_rttov(netcdf_info, &
-                              idim-preproc_dims%min_lon+1, &
-                              jdim-preproc_dims%min_lat+1, &
-                              profiles(count)%nlevels, emissivity, transmission, &
-                              radiance, radiance2, write_rttov, chan_pos(i_), i_)
-                      end do
-                   else
-                      do i_=1,nchan
-                         call write_solar_rttov(netcdf_info, coefs, &
-                              idim-preproc_dims%min_lon+1, &
-                              jdim-preproc_dims%min_lat+1, &
-                              profiles(count)%nlevels, profiles(count)%zenangle, &
-                              transmission, write_rttov, chan_pos(i_), i_)
-                      end do
-                   end if
+                  end if
+                  write_rttov = .true.
+               else
+                  write_rttov = .false.
+               end if
+               ! Reformat and write output to NCDF files
+               if (i_coef == 1) then
+                  do i_=1,nchan
+                     call write_ir_rttov(netcdf_info, &
+                          idim-preproc_dims%min_lon+1, &
+                          jdim-preproc_dims%min_lat+1, &
+                          profiles(count)%nlevels, emissivity, transmission, &
+                          radiance, radiance2, write_rttov, chan_pos(i_), i_)
+                  end do
+               else
+                  do i_=1,nchan
+                     call write_solar_rttov(netcdf_info, coefs, &
+                          idim-preproc_dims%min_lon+1, &
+                          jdim-preproc_dims%min_lat+1, &
+                          profiles(count)%nlevels, profiles(count)%zenangle, &
+                          transmission, write_rttov, chan_pos(i_), i_)
+                  end do
+               end if
             end do
          end do
 
@@ -875,7 +875,7 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
                      ! Save into the appropriate arrays
                      preproc_cld%cloud_bt(idim,jdim,:) = radiance%bt
                      preproc_cld%clear_bt(idim,jdim,:) = radiance%bt_clear
-                   endif
+                   end if
                   end do
                end do
             end if

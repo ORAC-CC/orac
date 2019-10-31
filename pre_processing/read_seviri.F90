@@ -245,7 +245,7 @@ subroutine read_seviri_l1_5(l1_5_file, imager_geolocation, imager_measurements, 
    type(global_attributes_t),   intent(inout) :: global_atts
    logical,                     intent(in)    :: verbose
 
-   real,allocatable :: tmparr(:,:,:)
+   real, allocatable :: tmparr(:,:,:)
 
    integer :: startx
 
@@ -280,7 +280,7 @@ subroutine read_seviri_l1_5(l1_5_file, imager_geolocation, imager_measurements, 
          imager_angles%relazi(:,:,1) = 360. - imager_angles%relazi(:,:,1)
       end where
    end where
-   
+
    imager_angles%relazi(:,:,1) = abs(180. - imager_angles%relazi(:,:,1))
 
    deallocate(tmparr)
