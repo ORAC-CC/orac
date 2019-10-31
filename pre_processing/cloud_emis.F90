@@ -210,7 +210,7 @@ subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation, &
       chan_n = 14
       chanwv6_n = 8
       chanwv7_n = 9
-   if (trim(adjustl(sensor)) .eq. 'AGRI') then
+   else if (trim(adjustl(sensor)) .eq. 'AGRI') then
       chan_n = 11
       chanwv6_n = 8
       chanwv7_n = 9

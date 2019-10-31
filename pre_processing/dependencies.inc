@@ -54,7 +54,7 @@ $(OBJS)/read_aatsr.o: $(OBJS)/aatsr_corrections.o $(OBJS)/channel_structures.o \
         read_aatsr_dimensions.F90 read_aatsr_l1b.F90
 $(OBJS)/read_abi.o: $(OBJS)/calender.o $(OBJS)/channel_structures.o \
         $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o \
-        $(OBJS)/solar_position.o read_abi_funcs.F90 read_abi_main.F90    
+        $(OBJS)/solar_position.o read_abi_funcs.F90 read_abi_main.F90
 $(OBJS)/read_agri.o: $(OBJS)/calender.o $(OBJS)/channel_structures.o \
         $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o
 $(OBJS)/read_avhrr.o: $(OBJS)/calender.o $(OBJS)/channel_structures.o \
@@ -125,10 +125,10 @@ $(OBJS)/orac_preproc.o: $(OBJS)/channel_structures.o $(OBJS)/cloud_emis.o \
         $(OBJS)/ecmwf.o $(OBJS)/imager_structures.o $(OBJS)/netcdf_output.o \
         $(OBJS)/preparation.o $(OBJS)/preproc_constants.o \
         $(OBJS)/preproc_structures.o $(OBJS)/read_USGS_file.o \
-        $(OBJS)/read_aatsr.o $(OBJS)/read_abi.o $(OBJS)/read_avhrr.o \
-        $(OBJS)/read_himawari.o $(OBJS)/read_imager.o $(OBJS)/read_modis.o \
-        $(OBJS)/read_seviri.o $(OBJS)/read_slstr.o $(OBJS)/read_viirs_Iband.o \
-        $(OBJS)/read_viirs_Mband.o $(OBJS)/rttov_driver.o \
-        $(OBJS)/rttov_driver_gfs.o $(OBJS)/setup.o $(OBJS)/surface_emissivity.o \
-        $(OBJS)/surface_reflectance.o $(OBJS)/surface_structures.o \
-        $(OBJS)/utils_for_main.o
+        $(OBJS)/read_aatsr.o $(OBJS)/read_abi.o $(OBJS)/read_agri.o \
+        $(OBJS)/read_avhrr.o $(OBJS)/read_himawari.o $(OBJS)/read_imager.o \
+        $(OBJS)/read_modis.o $(OBJS)/read_seviri.o $(OBJS)/read_slstr.o \
+        $(OBJS)/read_viirs_Iband.o $(OBJS)/read_viirs_Mband.o \
+        $(OBJS)/rttov_driver.o $(OBJS)/rttov_driver_gfs.o $(OBJS)/setup.o \
+        $(OBJS)/surface_emissivity.o $(OBJS)/surface_reflectance.o \
+        $(OBJS)/surface_structures.o $(OBJS)/utils_for_main.o
