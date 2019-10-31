@@ -32,6 +32,8 @@ def args_common(parser):
                      help = 'Channels to be evaluated.')
     key.add_argument('--batch', action='store_true',
                      help = 'Use batch processing for this call.')
+    key.add_argument('--batch_script', default=defaults.batch_script,
+                     help = 'Execution script to use in batch processing.')
     key.add_argument('-b', '--batch_settings', type=str, nargs=2, default=[],
                      metavar=('KEY', 'VALUE'),
                      action='append', help = 'Settings to pass to the batch '

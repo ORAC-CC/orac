@@ -78,7 +78,7 @@ def call_exe(args, exe, driver, values=dict()):
         (gd, script_file) = mkstemp('.sh', os.path.basename(exe) + '.',
                                     args.out_dir, True)
         g = os.fdopen(gd, "w")
-        g.write(defaults.batch_script)
+        g.write(args.batch_script)
 
         # Define processing environment
         libs = read_orac_library_file(args.orac_lib)
