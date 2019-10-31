@@ -174,7 +174,10 @@ void read_aatsr_orbit(const char *l1b_file, const bool *verbose,
      }
      strcpy(gc1_file, gc1->filename);
      // 4) vdt (VISCAL_DRIFT_TABLE)
-     vdt = epr_get_dsd_at(pid, 36);
+     if (epr_get_num_dsds(pid) >= 37)
+          vdt = epr_get_dsd_at(pid, 36);
+     else
+          vdt = NULL;
      if (! vdt)
           *is_lut_drift_corrected = false;
      else
