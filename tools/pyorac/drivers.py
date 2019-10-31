@@ -158,22 +158,15 @@ def build_preproc_driver(args):
         warnings.warn('Header of ECMWF file may have changed.', OracWarning,
                       stacklevel=2)
 
-    # Strip RTTOV version from library definition
+    # RTTOV version number from small executable
     try:
-        rttov_lib = glob(os.path.join(libs['RTTOVLIB'], 'librttov?*_main.a'))
-    except KeyError:
-        rttov_lib = glob(os.path.join(libs['CONDA_PREFIX'] + '/lib',
-                                      'librttov?*_main.a'))
-    for rttov_file in rttov_lib:
-        try:
-            m2 = search(r'librttov([\d\.]+)_main.a', rttov_file)
-            rttov_version = m2.group(1)
-            break
-        except:
-            pass
-    else:
+        rttov_version = check_output(
+            os.path.join(args.orac_dir, "common", "rttov_version"),
+            universal_newlines=True
+        ).strip()
+    except CalledProcessError:
         rttov_version = 'n/a'
-        warnings.warn('Naming of RTTOV library directory may have changed.',
+        warnings.warn('RTTOV library version number unavailable.',
                       OracWarning, stacklevel=2)
 
     # Fetch GIT version

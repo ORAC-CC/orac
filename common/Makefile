@@ -48,13 +48,17 @@ $(OBJS)/%.o: %.c
 
 
 # Main target list
-all: liborac_common.a parser
+all: liborac_common.a parser rttov_version
 
 parser: generate_parser struct_parser.tab.cc
 
 # Main library build
 liborac_common.a: $(COMMON_OBJ) Makefile
 	ar -rs liborac_common.a $(OBJS)/*.o
+
+# Small program to report the full version number of RTTOV used
+rttov_version: $(OBJS)/rttov_version.o
+	$(F90) -o rttov_version $(INC) $(LFLAGS) $<
 
 # Rebuild dependencies housed in dependencies.inc
 depend:

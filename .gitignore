@@ -16,6 +16,7 @@
 /common/position.hh
 /common/location.hh
 /common/stack.hh
+/common/rttov_version
 
 # /config/
 /config/*debug*
