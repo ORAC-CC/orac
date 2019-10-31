@@ -9,3 +9,6 @@ import pyorac.regression_tests
 import pyorac.run
 import pyorac.swath
 import pyorac.util
+
+__author__ = "Adam Povey"
+__version__ = "3.01"

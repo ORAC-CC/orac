@@ -2,29 +2,14 @@
 import os
 
 
-def build_orac_library_path(libs=None):
-    """Build required LD_LIBRARY_PATH variable"""
-    from os import environ
-    from pyorac.definitions import OracError
-    from pyorac.local_defaults import orac_lib
+def build_orac_library_path(lib_dict=None, lib_list=None):
+    """Build required LD_LIBRARY_PATH variable."""
 
-    if libs is None:
-        try:
-            libs = read_orac_libraries(environ["ORAC_LIB"])
-        except KeyError:
-            libs = read_orac_libraries(orac_lib)
+    if lib_list is None:
+        lib_list = extract_orac_libraries(lib_dict)
 
-    ld = [libs[key] for key in (
-        "SZLIB", "EPR_APILIB", "GRIBLIB", "ECCODESLIB", "HDF5LIB", "HDFLIB",
-        "NCDF_FORTRAN_LIB", "NCDFLIB"
-    ) if key in libs]
-
-    try:
-        ld.extend(os.environ["LD_LIBRARY_PATH"].split(':'))
-    except KeyError:
-        pass
-
-    return ':'.join(filter(None, ld))
+    libs = os.environ["LD_LIBRARY_PATH"].split(':') + lib_list
+    return ':'.join(filter(None, libs))
 
 
 def call_exe(args, exe, driver, values=dict()):
@@ -96,7 +81,7 @@ def call_exe(args, exe, driver, values=dict()):
         g.write(defaults.batch_script)
 
         # Define processing environment
-        libs = read_orac_libraries(args.orac_lib)
+        libs = read_orac_library_file(args.orac_lib)
         g.write("export LD_LIBRARY_PATH=" +
                 build_orac_library_path(libs) + "\n")
         g.write("export OPENBLAS_NUM_THREADS=1\n")
@@ -138,6 +123,20 @@ def call_exe(args, exe, driver, values=dict()):
             raise OracError(str(err))
 
 
+def extract_orac_libraries(lib_dict=None):
+    """Return list of libraries ORAC should link to."""
+    from pyorac.local_defaults import orac_lib
+    from re import findall
+
+    if lib_dict is None:
+        try:
+            lib_dict = read_orac_library_file(os.environ["ORAC_LIB"])
+        except KeyError:
+            lib_dict = read_orac_library_file(orac_lib)
+
+    return [m[0] for m in findall(r"-L(.+?)(\s|$)", lib_dict["LIBS"])]
+
+
 def get_repository_revision():
     """Call git to determine repository revision number"""
     from pyorac.local_defaults import orac_dir
@@ -158,55 +157,56 @@ def get_repository_revision():
         os.chdir(fdr)
 
 
-def read_orac_libraries(filename):
+def read_orac_library_file(filename):
     """Read the ORAC library definitions into a Python dictionary"""
-    from re import sub
+    import re
 
-    def parse_with_lib(lib):
-        """Function called by re.sub to replace variables with their values
-        http://stackoverflow.com/questions/7868554/python-re-subs-replace-
-        function-doesnt-accept-extra-arguments-how-to-avoid"""
-        def replace_var(matchobj):
-            if len(matchobj.group(0)) > 3:
-                return lib[matchobj.group(0)[2:-1]]
-        return replace_var
+    def fill_in_variables(text, libraries):
+        """Replaces all $() with value from a dictionary or environment."""
+        def parse_with_dict(dictionary):
+            """Function called by re.sub to replace variables with their values
+            http://stackoverflow.com/questions/7868554/python-re-subs-replace-
+            function-doesnt-accept-extra-arguments-how-to-avoid"""
+            def replace_var(matchobj):
+                from os import environ
+                try:
+                    name = matchobj.group(1)
+                    try:
+                        return dictionary[name]
+                    except KeyError:
+                        return environ[name]
+                except (IndexError, KeyError):
+                    return ""
+            return replace_var
 
-    libraries = {}
-    for key in ('ORAC_LIBBASE', 'ORAC_LIBBASE_FORTRAN', 'CONDA_PREFIX'):
-        try:
-            libraries[key] = os.environ[key]
-        except KeyError:
-            pass
+        return re.sub(r"\$\((.+?)\)", parse_with_dict(libraries), text)
 
-    # Open ORAC library file
+    # Read the file
+    contents = {}
+    continuation = False
     with open(filename, 'r') as f:
-        # Loop over each line
-        for line in f:
-            line = line.replace("\n", '')
-
-            # Only process variable definitions
-            if '\\' in line or line.startswith("#"):
+        for raw_line in f:
+            if raw_line.startswith("#") or len(raw_line) < 2:
+                # Skip comment and empty lines
                 continue
-            elif '+=' in line:
-                parts = [l.strip() for l in line.split('+=', 2)]
-            elif '=' in line:
-                parts = [l.strip() for l in line.split('=', 2)]
+
+            line = fill_in_variables(raw_line, contents)
+            if continuation:
+                # Add this to the previous variable
+                contents[variable] += " " + line.strip("\\\n\t ")
             else:
-                continue
+                key, value = line.split("=", 2)
+                variable = key.strip("+\t ")
+                if key[-1] == "+":
+                    # Append to a previously defined variable
+                    contents[variable] += " " + value.strip("\\\n\t ")
+                else:
+                    # Define new variable
+                    contents[variable] = value.strip("\\\n\t ")
 
-            if parts[0] in ('INC', 'CINC', 'LIBS'):
-                continue
+            continuation = line.endswith("\\\n")
 
-            # Replace any variables in this line with those we already know
-            fixed = sub(r"\$\(.*?\)", parse_with_lib(libraries), parts[1])
-
-            # Add this line to the dictionary
-            if '+=' in line:
-                libraries[parts[0]] += fixed
-            else:
-                libraries[parts[0]] = fixed
-
-    return libraries
+    return contents
 
 
 def _str2bool(value):

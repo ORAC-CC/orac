@@ -10,9 +10,10 @@ from pyorac.definitions import OracError, OracWarning, FileMissing
 def build_preproc_driver(args):
     """Prepare a driver file for the preprocessor."""
     from pyorac.definitions import FileName, BadValue
-    from pyorac.util import build_orac_library_path, read_orac_libraries
+    from pyorac.util import (build_orac_library_path, extract_orac_libraries,
+                             read_orac_library_file)
     from re import search
-    from subprocess import check_output, STDOUT
+    from subprocess import CalledProcessError, check_output, STDOUT
     from uuid import uuid4
 
     file = _glob_dirs(args.in_dir, args.File.l1b, 'L1B file')
@@ -114,35 +115,38 @@ def build_preproc_driver(args):
     else:
         uid = 'n/a'
 
-    # Add NetCDF library to path so following calls works
-    libs = read_orac_libraries(args.orac_lib)
-    try:
-        os.environ["PATH"] = os.path.join(libs["NCDFLIB"][:-4], 'bin:') + \
-                             os.environ["PATH"]
-    except KeyError:
-        pass
-    os.environ["LD_LIBRARY_PATH"] = build_orac_library_path()
+    libs = read_orac_library_file(args.orac_lib)
+    lib_list = extract_orac_libraries(libs)
+    os.environ["LD_LIBRARY_PATH"] = build_orac_library_path(lib_list=lib_list)
 
     # Determine current time
     production_time = datetime.now().strftime("%Y%m%d%H%M%S")
 
     # Determine NCDF version from command line
-    try:
-        tmp0 = check_output("ncdump", stderr=STDOUT, universal_newlines=True)
-    except OSError:
-        raise OracError('NetCDF lib improperly built as ncdump not present.')
-    m0 = search(r'netcdf library version (.+?) of', tmp0)
-    if m0:
-        ncdf_version = m0.group(1)
+    for fdr in lib_list:
+        ncdf_exe = os.path.join(fdr, "..", "bin", "ncdump")
+        try:
+            tmp0 = check_output(ncdf_exe, stderr=STDOUT, universal_newlines=True)
+        except FileNotFoundError:
+            continue
+        except CalledProcessError:
+            raise OracError('ncdump does non-functional.')
+
+        m0 = search(r'netcdf library version (.+?) of', tmp0)
+        if m0:
+            ncdf_version = m0.group(1)
+        else:
+            ncdf_version = 'n/a'
+            warnings.warn('Output formatting of ncdump may have changed.',
+                          OracWarning, stacklevel=2)
+        break
     else:
-        ncdf_version = 'n/a'
-        warnings.warn('Output formatting of ncdump may have changed.',
-                      OracWarning, stacklevel=2)
+        raise OracError('NetCDF lib improperly built as ncdump not present.')
 
     # Fetch ECMWF version from header of NCDF file
     try:
-        ecmwf_check_file = ggam[0] if ggam[0][-2:] == 'nc' else ggas[0]
-        tmp1 = check_output(["ncdump", "-h", ecmwf_check_file],
+        ecmwf_check_file = ggam[0] if ggam[0].endswith('nc') else ggas[0]
+        tmp1 = check_output([ncdf_exe, "-h", ecmwf_check_file],
                             universal_newlines=True)
     except OSError:
         raise FileMissing('ECMWF ggas file', ggas[0])
