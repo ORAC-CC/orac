@@ -115,6 +115,8 @@ try:
                 values['log_file'] = os.path.join(log_path, job_name + '.log')
                 values['err_file'] = os.path.join(log_path, job_name + '.log')
                 values['depend']   = jid
+                values['duration'] = '00:05'
+                values['ram']      = '1000'
 
                 cmd = defaults.batch.ListBatch(values, exe=script_file)
                 if args.verbose or args.script_verbose:
