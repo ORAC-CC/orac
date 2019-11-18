@@ -366,11 +366,11 @@ subroutine setup_abi(l1b_path_file,geo_path_file,platform,year,month,day, &
       stop error_stop_code
    end if
 
-   if (index(l1b_path_file,"G16") .gt. 0) then
-      index3 = index(l1b_path_file,"G16") + 5
+   if (index(l1b_path_file,"G16_s") .gt. 0) then
+      index3 = index(l1b_path_file,"G16_s") + 5
       platform="GOES-16"
-   else if(index(l1b_path_file,"G17") .gt. 0) then
-      index3 = index(l1b_path_file,"G17") + 5
+   else if(index(l1b_path_file,"G17_s") .gt. 0) then
+      index3 = index(l1b_path_file,"G17_s") + 5
       platform="GOES-17"
    else
       write(*,*) "Unsupported GOES platform, ",l1b_path_file
@@ -386,7 +386,6 @@ subroutine setup_abi(l1b_path_file,geo_path_file,platform,year,month,day, &
    cdoy=trim(adjustl(l1b_path_file(index3+4:index3+6)))
    chour=trim(adjustl(l1b_path_file(index3+7:index3+8)))
    cminute=trim(adjustl(l1b_path_file(index3+9:index3+10)))
-
    read(cyear(1:len_trim(cyear)), '(I4)') year
    read(cdoy(1:len_trim(cdoy)), '(I3)') doy
    read(chour(1:len_trim(chour)), '(I2)') hour
