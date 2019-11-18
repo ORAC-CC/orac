@@ -184,7 +184,7 @@ subroutine allocate_imager_structures(imager_geolocation,imager_angles, &
 #ifdef INCLUDE_SATWX
    allocate(imager_cloud%cloud_emis( &
         imager_geolocation%startx:imager_geolocation%endx, &
-        1:imager_geolocation%ny,2))
+        1:imager_geolocation%ny,3))
    imager_cloud%cloud_emis=sreal_fill_value
 
    allocate(imager_cloud%trop_t( &
