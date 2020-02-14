@@ -207,6 +207,9 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
    real,               allocatable   :: rhosea(:,:,:)
    type(cox_munk_shared_geo_wind_t)  :: cox_munk_shared_geo_wind
    type(ocean_colour_t), allocatable :: ocean_colour(:,:)
+#ifdef __INTEL_COMPILER
+   type(ocean_colour_t), allocatable :: ocean_colour2(:,:)
+#endif
 
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering get_surface_reflectance()'
@@ -753,10 +756,26 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
 
          if (include_full_brdf) then
             allocate(tmprho(n_bands,nsea,4))
+#ifdef __INTEL_COMPILER
+            if (use_occci) then
+               allocate(ocean_colour2(n_bands,nsea))
+            else
+               allocate(ocean_colour2(n_bands,1))
+            end if
+            do i = 1, n_bands
+               ocean_colour2(i,:) = ocean_colour(band_to_sw_index(i),:)
+            end do
+            call cox_munk_rho_0v_0d_dv_and_dd(bands, solza(:), satza(:), &
+                 solaz(:), relaz(:), ocean_colour2(:,:), &
+                 u10sea, v10sea, sreal_fill_value, tmprho(:,:,1), &
+                 tmprho(:,:,2), tmprho(:,:,3), tmprho(:,:,4), verbose)
+            deallocate(ocean_colour2)
+#else
             call cox_munk_rho_0v_0d_dv_and_dd(bands, solza(:), satza(:), &
                  solaz(:), relaz(:), ocean_colour(band_to_sw_index,:), &
                  u10sea, v10sea, sreal_fill_value, tmprho(:,:,1), &
                  tmprho(:,:,2), tmprho(:,:,3), tmprho(:,:,4), verbose)
+#endif
 
             do i = 1, n_bands
                ii = band_to_sw_index(i)
