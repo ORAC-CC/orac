@@ -109,17 +109,17 @@ subroutine get_abi_path(l1_5_file, platform, abi_filenames, n_chans, channel_ids
 
       ! Find channel filenames. This isn't as simple as dropping 'C01' etc into the existing filename
       ! As each file contains a timestamp of creation, which differs between channels. Similar to VIIRS.
-      regex = "OR_ABI-L1b-RadF-M3C"//band//"_"//shplat//dtstr//"................................\.nc"
+      regex = "OR_ABI-L1b-RadF-M.C"//band//"_"//shplat//dtstr//"................................\.nc"
       success = match_file(l1_5_file(1:index3-1), regex, tmp_file)
       if (success .eq. 0) then
          abi_filenames(i) = l1_5_file(1:index3-1)//trim(tmp_file)
       else
-         regex = "OR_ABI-L1b-RadC-M3C"//band//"_"//shplat//dtstr//"................................\.nc"
+         regex = "OR_ABI-L1b-RadC-M.C"//band//"_"//shplat//dtstr//"................................\.nc"
          success = match_file(l1_5_file(1:index3-1), regex, tmp_file)
          if (success .eq. 0) then
             abi_filenames(i) = l1_5_file(1:index3-1)//trim(tmp_file)
          else
-            regex = "OR_ABI-L1b-RadM.-M3C"//band//"_"//shplat//dtstr//"................................\.nc"
+            regex = "OR_ABI-L1b-RadM.-M.C"//band//"_"//shplat//dtstr//"................................\.nc"
             success = match_file(l1_5_file(1:index3-1), regex, tmp_file)
             if (success .eq. 0) then
                abi_filenames(i) = l1_5_file(1:index3-1)//trim(tmp_file)
