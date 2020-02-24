@@ -19,6 +19,9 @@
 !                 Now bad data (T>305K) is replaced by values from F1 channel.
 !                 This is not elegant due to F1 issues, but better than no data.
 ! 2017/11/15, SP: Add feature to give access to sensor azimuth angle
+! 2020/02/24, SP: Remove the S7/F1 correction, as new processing baseline makes
+!                 this harder to implement, but also makes it less necessary.
+!                 The S7 band now saturates at 312K rather than 305K.
 !
 ! Bugs:
 ! None known (in ORAC)
@@ -139,9 +142,6 @@ subroutine read_slstr(infile, imager_geolocation, imager_measurements, &
    real(kind=sreal),allocatable :: oblons(:,:)
    real(kind=sreal),allocatable :: interp(:,:,:)
 
-   ! Needed for correction of S7/F1 band
-   real(kind=sreal),allocatable :: tmpdata(:,:)
-
    integer                      :: txnx,txny
    integer                      :: obnx,obny,obl_off
 
@@ -236,14 +236,6 @@ subroutine read_slstr(infile, imager_geolocation, imager_measurements, &
          call read_slstr_tirdata(indir,band_ids(i), &
               imager_measurements%data(:,:,i), &
               startx,starty,nx,ny,nx,ny,1,1)
-         if (band_ids(i) .eq. 7) then
-            allocate(tmpdata(nx,ny))
-            call read_slstr_tirdata(indir,20,tmpdata, &
-                 startx,starty,nx,ny,nx,ny,1,1)
-            where(imager_measurements%data(:,:,i) .eq. sreal_fill_value) &
-               imager_measurements%data(:,:,i) = tmpdata(:,:)
-            deallocate(tmpdata)
-         end if
       else if (band_ids(i) .lt. 16) then
          call read_slstr_visdata(indir,band_ids(i), &
               imager_measurements%data(:,:,i), &
@@ -252,14 +244,6 @@ subroutine read_slstr(infile, imager_geolocation, imager_measurements, &
          call read_slstr_tirdata(indir,band_ids(i), &
               imager_measurements%data(:,:,i), &
               startx,starty,obnx,obny,nx,ny,obl_off,2)
-         if (band_ids(i) .eq. 16) then
-            allocate(tmpdata(nx,ny))
-            call read_slstr_tirdata(indir,21,tmpdata, &
-                 startx,starty,obnx,obny,nx,ny,obl_off,2)
-            where(imager_measurements%data(:,:,i) .eq. sreal_fill_value) &
-               imager_measurements%data(:,:,i) = tmpdata(:,:)
-            deallocate(tmpdata)
-         end if
       else
          write(*,*) 'Invalid band_id! Must be in range 1->18', band_ids(i)
          stop

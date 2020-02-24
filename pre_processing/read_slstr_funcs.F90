@@ -29,6 +29,9 @@
 !                 Now bad data (T>305K) is replaced by values from F1 channel.
 !                 This is not elegant due to F1 issues, but better than no data.
 ! 2017/11/15, SP: Add feature to give access to sensor azimuth angle
+! 2020/02/24, SP: Remove the S7/F1 correction, as new processing baseline makes
+!                 this harder to implement, but also makes it less necessary.
+!                 The S7 band now saturates at 312K rather than 305K.
 !
 ! Bugs:
 ! SLSTR colocation is poor. Aerosol retrieval unusable. Cloud retrieval suspect.
@@ -164,12 +167,6 @@ subroutine get_slstr_imnames(indir,inband,fname,fname_qa,bname,irradname)
    if (inband .le. 9) then
       vid='n'
       mod_inb=inband
-   elseif (inband .eq. 20) then
-      vid='n'
-      mod_inb=10
-   elseif (inband .eq. 21) then
-      vid='o'
-      mod_inb=10
    else
       vid='o'
       mod_inb=inband-9
@@ -185,11 +182,6 @@ subroutine get_slstr_imnames(indir,inband,fname,fname_qa,bname,irradname)
       fname       = trim(indir)//'S'//trim(band)//'_BT_i'//trim(vid)//'.nc'
       fname_qa    = trim(indir)//'S'//trim(band)//'_quality_i'//trim(vid)//'.nc'
       bname       = 'S'//trim(band)//'_BT_i'//trim(vid)
-      irradname   = 'NONE'
-   else if (mod_inb .eq. 10) then
-      fname       = trim(indir)//'F1_BT_i'//trim(vid)//'.nc'
-      fname_qa    = trim(indir)//'F1_quality_i'//trim(vid)//'.nc'
-      bname       = 'F1_BT_i'//trim(vid)
       irradname   = 'NONE'
    else
       print*, 'Incorrect band:', inband, &
