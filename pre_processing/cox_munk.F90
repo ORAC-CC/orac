@@ -1083,7 +1083,11 @@ subroutine cox_munk3_calc_shared_geo_wind(solza, satza, solaz, relaz, u10, v10, 
    real(kind=sreal) :: zeta, eta
    real(kind=sreal) :: cosomega
 
-
+   ! !!!!! IMPORTANT NOTE !!!!!
+   ! Cox-Munk assumes that:
+   ! When sun and satellite are on opposite sides of pixel RAA = 0
+   ! When sun and satellite are on same side of pixel RAA = 180
+   ! This is the opposite notation to the rest of ORAC! So we adjust here
    crelaz = 180. - relaz
 
    !----------------------------------------------------------------------------
