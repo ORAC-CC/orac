@@ -82,7 +82,7 @@ module netcdf_output_m
       integer :: vid_rho_dv_data, vid_rho_dd_data
 
       ! clf file
-      integer :: vid_cflag, vid_cemis_lw, vid_cemis_wv, vid_cldtype, vid_cldmask, vid_cccot_pre, &
+      integer :: vid_cflag, vid_cemis_lw, vid_cemis_wv1, vid_cemis_wv2, vid_cldtype, vid_cldmask, vid_cccot_pre, &
                  vid_cldmask_unc
       integer :: vid_tropop_pr, vid_tropop_te, vid_cape
       integer :: vid_ann_phase, vid_cphcot, vid_ann_phase_unc

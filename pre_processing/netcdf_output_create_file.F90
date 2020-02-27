@@ -873,8 +873,17 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
          call nc_def_var_float_packed_float( &
               netcdf_info%ncid_clf, &
               dimids_2d, &
-              'cldemis_wv', &
-              netcdf_info%vid_cemis_wv, &
+              'cldemis_wv_1', &
+              netcdf_info%vid_cemis_wv1, &
+              verbose, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
+              fill_value = sreal_fill_value)
+         call nc_def_var_float_packed_float( &
+              netcdf_info%ncid_clf, &
+              dimids_2d, &
+              'cldemis_wv_2', &
+              netcdf_info%vid_cemis_wv2, &
               verbose, &
               deflate_level = deflate_level, &
               shuffle = shuffle_flag, &
