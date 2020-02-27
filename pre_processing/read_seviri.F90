@@ -281,8 +281,6 @@ subroutine read_seviri_l1_5(l1_5_file, imager_geolocation, imager_measurements, 
       end where
    end where
 
-   imager_angles%relazi(:,:,1) = abs(180. - imager_angles%relazi(:,:,1))
-
    deallocate(tmparr)
 
 end subroutine read_seviri_l1_5
