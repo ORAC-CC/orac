@@ -248,6 +248,20 @@ subroutine read_slstr(infile, imager_geolocation, imager_measurements, &
          write(*,*) 'Invalid band_id! Must be in range 1->18', band_ids(i)
          stop
       end if
+      ! Apply some correction factors
+      if (band_ids(i) .eq. 1) then
+        imager_measurements%data(:,:,i) = imager_measurements%data(:,:,i) * 0.95
+      else if (band_ids(i) .eq. 5) then
+        imager_measurements%data(:,:,i) = imager_measurements%data(:,:,i) * 1.1
+      else if (band_ids(i) .eq. 6) then
+        imager_measurements%data(:,:,i) = imager_measurements%data(:,:,i) * 1.1
+      else if (band_ids(i) .eq. 10) then
+        imager_measurements%data(:,:,i) = imager_measurements%data(:,:,i) * 0.92
+      else if (band_ids(i) .eq. 11) then
+        imager_measurements%data(:,:,i) = imager_measurements%data(:,:,i) * 0.93
+      else if (band_ids(i) .eq. 12) then
+        imager_measurements%data(:,:,i) = imager_measurements%data(:,:,i) * 0.93
+      endif
    end do
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_slstr()'
 
