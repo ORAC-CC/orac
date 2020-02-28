@@ -512,3 +512,6 @@ SETTINGS['A76'] = ParticleType("A76", inv=(tau,Invpar('IRe',ap=0.0856,sx=0.15)))
 SETTINGS['A77'] = ParticleType("A77", inv=(tau,Invpar('IRe',ap=-0.0419,sx=0.15)))
 SETTINGS['A78'] = ParticleType("A78", inv=(tau,Invpar('IRe',ap=-0.257,sx=0.15)))
 SETTINGS['A79'] = ParticleType("A79", inv=(tau,Invpar('IRe',ap=-0.848,sx=0.15)))
+SETTINGS['EYJ'] = ParticleType("EYJ", inv=(
+    Invpar('ITau', ap=0.18, sx=1.5), Invpar('IRe', ap=0.7, sx=0.15)
+))
