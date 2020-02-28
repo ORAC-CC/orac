@@ -456,7 +456,9 @@ def check_args_regress(args):
     # Default tests
     if len(args.tests) == 0:
         if args.long:
-            args.tests = ['DAYMYD', 'NITMYD', 'AATSR', 'AVHRR']
+            args.tests = ['DAYMYD', 'NITMYD', 'DAYMOD', 'NITMOD',
+                          'DAYSLSTRA', 'NITSLSTRA', 'DAYSLSTRB', 'NITSLSTRB',
+                          'AATSR', 'AVHRR']
         else:
-            args.tests = ['DAYMYDS', 'NITMYDS', 'DAYAATSRS', 'NITAATSRS',
-                          'DAYAVHRRS', 'NITAVHRRS']
+            args.tests = ['DAYMYDS', 'NITMYDS', 'DAYMODS', 'NITMODS',
+                          'DAYAATSRS', 'NITAATSRS', 'DAYAVHRRS', 'NITAVHRRS']
