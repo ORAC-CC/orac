@@ -200,6 +200,7 @@ cld_channels = {
     "AVHRR" : "--use_channels 1 2 3 4 5 6",
     "MODIS" : "--use_channels 1 2 6 20 31 32",
     "SEVIRI" : "--use_channels 1 2 3 4 9 10",
+    "SLSTR" : "--use_channels 2 3 5 7 8 9",
 }
 for sensor, channels in cld_channels.items():
     retrieval_settings[sensor + "_C"] = [
@@ -217,6 +218,7 @@ aer_dual_retrievals = {
 aer_dual_channels = {
     "AATSR" : "--use_channels 1 2 3 4 8 9 10 11",
     "ATSR2" : "--use_channels 1 2 3 4 8 9 10 11",
+    "SLSTR" : "--use_channels 1 2 3 5 10 11 12 14",
 }
 for sensor, channels in aer_dual_channels.items():
     retrieval_settings[sensor + "_A"] = [
@@ -272,6 +274,7 @@ channels = {
     "AVHRR" : (1, 2, 3, 4, 5, 6),
     "MODIS" : (1, 2, 6, 20, 31, 32),
     "SEVIRI" : (1, 2, 3, 4, 9, 10),
+    "SLSTR" : (1, 2, 3, 5, 7, 8, 9, 10, 11, 12, 14),
 }
 
 

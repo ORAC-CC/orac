@@ -112,6 +112,9 @@ class FileName:
         import os
         import re
 
+        from netCDF4 import Dataset
+        from dateutil import parser
+
         self.l1b = filename
 
         # Attempt AATSR L1B filename
@@ -305,15 +308,30 @@ class FileName:
             self.l1b = os.path.join(filename, "geodetic_in.nc")
             self.sensor = 'SLSTR'
             self.platform = 'Sentinel3'+m.group('platform').lower()
-            self.inst = 'Sentinel-3'
-            self.time = datetime.datetime(
-                int(m.group('year')), int(m.group('month')), int(m.group('day')),
-                int(m.group('hour')), int(m.group('min')), int(m.group('sec')), 0
-            )
+            self.inst = 'SLSTR-Sentinel-3'+m.group('platform').lower()
             self.dur = datetime.timedelta(seconds=int(m.group('duration')))
             self.geo = os.path.join(filename, "geodetic_in.nc")
             self.oractype = None
             self.predef = False
+
+            for fdr in in_dir:
+                try:
+                    with Dataset(os.path.join(fdr, self.l1b)) as slstr_file:
+                        # Round time to nearest minute
+                        time = parser.parse(slstr_file.start_time).replace(tzinfo=None)
+                        sec = (time - time.min).seconds
+                        rounding = (sec + 30) // 60 * 60
+                        self.time = time + datetime.timedelta(
+                            0, rounding-sec, -time.microsecond
+                        )
+
+                        self.orbit_num = "{:05d}".format(
+                            slstr_file.absolute_orbit_number
+                        )
+                        break
+                except FileNotFoundError:
+                    pass
+
             return
 
         # Processed ORAC output
@@ -367,11 +385,16 @@ class FileName:
         if product_name is None:
             product_name = self.product_name
 
-        desc = '_'.join((
+        parts = [
             self.sensor, processor, self.platform,
             self.time.strftime('%Y%m%d%H%M'), "R{}".format(revision)
-        ))
-        return '-'.join((project, product_name, desc))
+        ]
+        try:
+            parts.insert(4, self.orbit_num)
+        except AttributeError:
+            pass
+
+        return '-'.join((project, product_name, "_".join(parts)))
 
     @property
     def noaa(self):
