@@ -339,12 +339,7 @@ def check_args_preproc(args):
 
     # Update FileName class
     if args.revision is None:
-        try:
-            args.revision = args.File.revision
-        except AttributeError:
-            args.revision = get_repository_revision()
-    if "revision" not in args.File.__dict__:
-        args.File.revision = args.revision
+        args.revision = args.File.revision
     if "processor" not in args.File.__dict__:
         args.File.processor = args.processor
     if "project" not in args.File.__dict__:

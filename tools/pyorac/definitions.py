@@ -358,12 +358,22 @@ class FileName:
             self.predef = False
             self.oractype = m.group('filetype')
             self.processor = m.group('processor')
-            self.revision = m.group('revision')
+            self._revision = int(m.group('revision'))
             self.project = m.group('project')
             self.product_name = m.group('product')
             return
 
         raise OracError('Unexpected filename format - ' + filename)
+
+    @property
+    def revision(self):
+        """Revision number"""
+        from pyorac.util import get_repository_revision
+
+        try:
+            return self._revision
+        except AttributeError:
+            return get_repository_revision()
 
     def job_name(self, revision=None, tag='run'):
         """Returns a formatted description of this orbit."""
