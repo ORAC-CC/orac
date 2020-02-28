@@ -9,29 +9,42 @@ from pyorac.definitions import OracError, OracWarning, FileMissing
 
 def build_preproc_driver(args):
     """Prepare a driver file for the preprocessor."""
-    from pyorac.definitions import FileName, BadValue
-    from pyorac.util import (build_orac_library_path, extract_orac_libraries,
-                             read_orac_library_file)
+    from itertools import product
     from re import search
     from subprocess import CalledProcessError, check_output, STDOUT
     from uuid import uuid4
+    from pyorac.definitions import FileName, BadValue
+    from pyorac.util import (build_orac_library_path, extract_orac_libraries,
+                             read_orac_library_file)
 
-    file = _glob_dirs(args.in_dir, args.File.l1b, 'L1B file')
-    geo  = _glob_dirs(args.in_dir, args.File.geo, 'geolocation file')
+    l1b = _glob_dirs(args.in_dir, args.File.l1b, 'L1B file')
+    geo = _glob_dirs(args.in_dir, args.File.geo, 'geolocation file')
 
     # Select NISE file
     if args.use_ecmwf_snow or args.no_snow_corr:
         nise = ''
     else:
-        for form in ('NISE.004/%Y.%m.%d/NISE_SSMISF17_%Y%m%d.HDFEOS',
-                     'NISE.002/%Y.%m.%d/NISE_SSMIF13_%Y%m%d.HDFEOS',
-                     '%Y/NISE_SSMIF13_%Y%m%d.HDFEOS',
-                     '%Y/NISE_SSMIF17_%Y%m%d.HDFEOS'):
-            nise = args.File.time.strftime(os.path.join(args.nise_dir, form))
+        # There are usually too many files in this directory to glob quickly.
+        # Instead, guess where it is. If your search is failing here, but the
+        # appropriate file is present, you need to add a format to one of
+        # these loops that finds your file.
+        nise_locations = (
+            'NISE.005/%Y.%m.%d', 'NISE.004/%Y.%m.%d',
+            'NISE.002/%Y.%m.%d', 'NISE.001/%Y.%m.%d',
+            '%Y', '%Y.%m.%d', '%Y_%m_d', '%Y-%m-%d',
+        )
+        nise_formats = (
+            'NISE_SSMISF18_%Y%m%d.HDFEOS', 'NISE_SSMISF17_%Y%m%d.HDFEOS',
+            'NISE_SSMIF13_%Y%m%d.HDFEOS',
+        )
+        for nise_location, nise_format in product(nise_locations, nise_formats):
+            nise = args.File.time.strftime(os.path.join(
+                args.nise_dir, nise_location, nise_format
+            ))
             if os.path.isfile(nise):
                 break
         else:
-            raise FileMissing('NISE', nise)
+            raise FileMissing('NISE', args.nise_dir)
 
     # Select previous surface reflectance and emissivity files
     if args.swansea:
@@ -307,7 +320,7 @@ USE_SWANSEA_CLIMATOLOGY={swansea}""".format(
         ir_only           = args.ir_only,
         keywords          = args.keywords,
         l1_land_mask      = args.l1_land_mask,
-        l1b               = file,
+        l1b               = l1b,
         l2_processor      = args.processor,
         license           = args.license,
         limit             = args.limit,
