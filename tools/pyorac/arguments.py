@@ -83,8 +83,6 @@ def args_preproc(parser):
                      help = 'First/last pixel in across/along-track directions.')
     key.add_argument('--l1_land_mask', action='store_true',
                      help = 'Use the imager landmask rather than the USGS.')
-    key.add_argument('--use_modis_emis', action='store_true',
-                     help = 'Use MODIS surface emissivity rather than RTTOV.')
     key.add_argument('--use_oc', action='store_true',
                      help = 'Use the Ocean Colour CCI backscatter product.')
     key.add_argument('-x', '--aux', type=str, nargs=2, action='append',
@@ -101,10 +99,13 @@ def args_preproc(parser):
                      help = 'Only load infrared channels.')
     key.add_argument('--skip_cloud_type', action='store_true',
                      help = 'Skip the Pavolonis cloud typing.')
-    key.add_argument('--camel_emis', action='store_true',
-                     help = 'Use the CAMEL emissivity library instead of RTTOV.')
     key.add_argument('--swansea', action='store_true',
                      help = 'Use the Swansea climatology instead of MODIS BRDF.')
+    emis = key.add_mutually_exclusive_group()
+    emis.add_argument('--use_modis_emis', action='store_true',
+                      help = 'Use MODIS surface emissivity rather than RTTOV.')
+    emis.add_argument('--use_camel_emis', action='store_true',
+                      help = 'Use CAMEL emissivity library rather than RTTOV.')
 
     att = parser.add_argument_group('Global attribute values')
     att.add_argument('-g', '--global_att', type=str, nargs=2, action='append',

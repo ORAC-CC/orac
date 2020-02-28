@@ -36,18 +36,26 @@ def build_preproc_driver(args):
     # Select previous surface reflectance and emissivity files
     if args.swansea:
         alb = _date_back_search(args.swansea_dir, args.File.time,
-                                'SW_SFC_PRMS_%m.nc')
+                                'SW_SFC_PRMS_%m.nc', 'months')
         brdf = None
     else:
         alb = _date_back_search(args.mcd43c3_dir, args.File.time,
-                                'MCD43C3.A%Y%j.*.hdf')
+                                'MCD43C3.A%Y%j.*.hdf', 'days')
         brdf = None if args.lambertian else _date_back_search(
-            args.mcd43c1_dir, args.File.time, 'MCD43C1.A%Y%j.*.hdf'
+            args.mcd43c1_dir, args.File.time, 'MCD43C1.A%Y%j.*.hdf', 'days'
         )
-    emis = None if args.use_modis_emis else _date_back_search(
-        args.emis_dir, args.File.time,
-        'global_emis_inf10_monthFilled_MYD11C3.A%Y%j.041.nc'
-    )
+    if args.use_modis_emis:
+        emis = None
+    elif args.use_camel_emis:
+        emis = _date_back_search(
+            args.camel_dir, args.File.time,
+            'CAM5K30EM_emis_%Y%m_V???.nc', 'months'
+        )
+    else:
+        emis = _date_back_search(
+            args.emis_dir, args.File.time,
+            'global_emis_inf10_monthFilled_MYD11C3.A%Y%j.*nc', 'days'
+        )
 
     # Select ECMWF files
     bounds = _bound_time(args.File.time + args.File.dur//2)
@@ -262,7 +270,7 @@ USE_SWANSEA_CLIMATOLOGY={swansea}""".format(
         atlas             = args.atlas_dir,
         atsr_calib        = args.calib_file,
         brdf              = brdf,
-        camel             = args.camel_emis,
+        camel             = args.use_camel_emis,
         chunk_flag        = False, # File chunking no longer required
         cldtype           = not args.skip_cloud_type,
         cld_emis          = args.cloud_emis,
@@ -504,35 +512,38 @@ def _bound_time(dt=None, dateDelta=timedelta(hours=6)):
     return (start, start + dateDelta)
 
 
-def _date_back_search(fdr, date, pattern):
+def _date_back_search(fdr, date, pattern, interval):
     """Search a folder for the file with timestamp closest before a given date.
 
     Args:
     :str fdr: Folder to be searched.
     :datetime date: Initial date to consider.
     :str pattern: strftime format string used to parse filename.
+    :str interval: Keyword of relativedelta indicating interval to step back.
     """
     from copy import copy
+    from dateutil.relativedelta import relativedelta
+
+    # Step forward one day, month, or year
+    delta = relativedelta(**{interval: 1})
 
     dt = copy(date)
-    pttrn = copy(pattern)
-    try_climat = True
-    while True:
-        files = glob(dt.strftime(os.path.join(fdr, pttrn)))
+    while dt > datetime(1995, 1, 1):
+        # Look for a file with the appropriate date
+        files = glob(dt.strftime(os.path.join(fdr, pattern)))
 
         if len(files) >= 1:
             return files[-1]
-        elif try_climat:
-            if glob(dt.strftime(os.path.join(fdr, '*%Y*'))):
-                dt -= timedelta(days=1)
-            else:
-                pttrn = pttrn.replace('%Y','XXXX')
-                try_climat = False
         else:
-            if glob(os.path.join(fdr, '*XXXX*')):
-                dt -= timedelta(days=1)
-            else:
-                raise FileMissing(fdr, pattern)
+            dt -= delta
+
+    # If we fail, try to find a climatological file
+    files = glob(dt.strftime(os.path.join(fdr, pattern.replace('%Y','XXXX'))))
+    if len(files) >= 1:
+        return files[-1]
+    else:
+        raise FileMissing(fdr, pattern)
+
 
 def _form_bound_filenames(bounds, fdr, form):
     """Form 2-element lists of filenames from bounding timestamps.

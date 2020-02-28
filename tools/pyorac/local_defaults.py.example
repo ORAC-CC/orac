@@ -44,6 +44,9 @@ auxiliaries = {
     # https://lpdaac.usgs.gov/dataset_discovery/modis/modis_products_table/myd11c3_v006
     'emis_dir'    : '/local/storage/modis_emis',
 
+    # Directory of CAMEL emisivity retrievals, which are preferred
+    'camel_dir'   : '/local/storage/camel_emis',
+
     # Directories of MODIS surface BRDF retrievals
     # https://lpdaac.usgs.gov/dataset_discovery/modis/modis_products_table/mcd43c1_v006
     # https://lpdaac.usgs.gov/dataset_discovery/modis/modis_products_table/mcd43c3_v006
