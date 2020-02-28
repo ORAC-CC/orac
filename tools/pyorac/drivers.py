@@ -72,13 +72,13 @@ def build_preproc_driver(args):
         spam = _form_bound_filenames(bounds, args.spam_dir, 'spam%Y%m%d%H%M.grb')
     elif args.ecmwf_flag == 3:
         raise NotImplementedError('Filename syntax for --ecmwf_flag 3 unknown')
-    elif args.ecmwf_flag == 4:
+    elif 4 <= args.ecmwf_flag <= 5:
         for form, hr in (('C3D*%m%d%H*.nc', 3),
                          ('ECMWF_OPER_%Y%m%d_%H+00.nc', 6),
+                         ('ECMWF_ERA5_%Y%m%d_%H_0.5.nc', 6),
                          ('ECMWF_ERA_%Y%m%d_%H+00_0.5.nc', 6)):
             try:
-                bounds = _bound_time(args.File.time + args.File.dur//2,
-                                     timedelta(hours=hr))
+                bounds = _bound_time(args.File.time + args.File.dur//2, hr)
                 ggam = _form_bound_filenames(bounds, args.ggam_dir, form)
                 break
             except FileMissing as e:
@@ -95,7 +95,7 @@ def build_preproc_driver(args):
         #hr_ecmwf = _form_bound_filenames(bounds, args.hr_dir,
         #                                 'ERA_Interim_an_%Y%m%d_%H+00_HR.grb')
         # These files don't zero-pad the hour for some reason
-        bounds = _bound_time(args.File.time + args.File.dur//2, timedelta(hours=6))
+        bounds = _bound_time(args.File.time + args.File.dur//2, 6)
         hr_ecmwf = [time.strftime(os.path.join(
             args.hr_dir, 'ERA_Interim_an_%Y%m%d_') +
             '{:d}+00_HR.grb'.format(time.hour*100))
@@ -107,7 +107,7 @@ def build_preproc_driver(args):
                         for time in bounds]
         for f in hr_ecmwf:
             if not os.path.isfile(f):
-                raise FileMissing('HR ECMWF file', f)
+                raise FileMissing('HR ECMWF', f)
     else:
         hr_ecmwf=['', '']
 
@@ -495,7 +495,7 @@ USE_BAYESIAN_SELECTION={bayesian}""".format(
 
 #-----------------------------------------------------------------------------
 
-def _bound_time(dt=None, dateDelta=timedelta(hours=6)):
+def _bound_time(dt=None, delta_hours=6):
     """Return timestamps divisible by some duration that bound a given time
 
     http://stackoverflow.com/questions/3463930/how-to-round-the-minute-of-a-datetime-object-python/10854034
@@ -505,6 +505,7 @@ def _bound_time(dt=None, dateDelta=timedelta(hours=6)):
     :timedelta dateDelta: Rounding interval. Default 6 hours.
     """
 
+    dateDelta = timedelta(hours=delta_hours)
     roundTo = dateDelta.total_seconds()
     if dt is None : dt = datetime.now()
 
