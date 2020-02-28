@@ -155,8 +155,7 @@ def args_main(parser):
                       choices = ('ClsCldWat', 'ClsCldIce', 'ClsAerOx',
                                  'ClsAerSw', 'ClsAerBR', 'ClsAshEyj'),
                       help = 'Retrieval class to be used (for layer 1).')
-    main.add_argument('--phase', type=str, default = 'WAT',
-                      choices = list(SETTINGS.keys()),
+    main.add_argument('--phase', type=str, choices = list(SETTINGS.keys()),
                       help = 'Label of look-up table to use in retrieval. '
                       'Default WAT.')
     main.add_argument('--sabotage', action='store_true',
@@ -238,6 +237,8 @@ def args_cc4cl(parser):
                       default="")
     cccl.add_argument('--reformat', type=str, default="", metavar='PATH',
                       help = 'Script used to reformat ORAC output.')
+    cccl.add_argument('--sub_dir', type=str, default="",
+                      help = 'Folder in which to store intermediate output.')
 
     phs = cccl.add_mutually_exclusive_group()
     phs.add_argument('-s', '--settings', type=str, action='append',
@@ -426,12 +427,14 @@ def check_args_cc4cl(args):
         makedirs(log_path, 0o774)
 
     if args.preset_settings is not None:
+        # A procedure named in local_defaults
         try:
             args.settings = retrieval_settings[args.preset_settings]
         except KeyError:
             raise BadValue("preset settings", "not defined in local_defaults")
 
     elif args.settings_file is not None:
+        # A procedure outlined in a file
         try:
             with open(args.settings_file) as settings_file:
                 args.settings = settings_file.read().splitlines()
@@ -439,7 +442,12 @@ def check_args_cc4cl(args):
             raise FileMissing('Description of settings', args.settings_file)
 
     elif args.settings is None:
-        args.settings = retrieval_settings[args.File.sensor]
+        if args.phase is None:
+            # Default procedure for this sensor from local_defaults
+            args.settings = retrieval_settings[args.File.sensor]
+        else:
+            # Process a single type
+            args.settings = (" ", )
 
 
 def check_args_regress(args):
