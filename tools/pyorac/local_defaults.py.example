@@ -80,7 +80,7 @@ auxiliaries = {
     'nise_dir'    : '/local/storage/n5eil01u.ecs.nsidc.org/SAN/OTHR',
 
     # Directory of Ocean Colour CCI retrievals
-    # ftp://ftp.rsg.pml.ac.uk/occci-v3.1/geographic/netcdf/monthly/chlor_a/
+    # ftp://ftp.rsg.pml.ac.uk/occci-v4.2/geographic/netcdf/monthly/chlor_a/
     'occci_dir'   : '/usr/lib/orac/data/occci',
 
     # File containing AATSR calibration coefficients
