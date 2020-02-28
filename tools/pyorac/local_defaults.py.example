@@ -183,8 +183,8 @@ cld_retrievals = {
                 "--sub_dir cld",
     "ice_cld" : "--phase ICE --ret_class ClsCldIce --approach AppCld1L "
                 "--sub_dir cld",
-    "wat_ice" : "--phase WAT --ret_class ClsCldWat --approach AppCld2L "
-                "--multilayer ICE ClsCldIce --sub_dir cld",
+    "wat_ice" : "--phase ICE --ret_class ClsCldIce --approach AppCld2L "
+                "--multilayer WAT ClsCldWat --sub_dir cld",
 #    "ice_ice" : "--phase ICE --ret_class ClsCldIce --approach AppCld2L "
 #                "--multilayer ICE ClsCldIce --sub_dir cld"
 }

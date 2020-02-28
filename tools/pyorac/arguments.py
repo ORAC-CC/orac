@@ -171,7 +171,8 @@ def args_main(parser):
                       help = 'Channels to be evaluated by main processor.')
     main.add_argument('--multilayer', type=str, nargs=2,
                       metavar = ('PHS', 'CLS'),
-                      help = 'The phase and class to used for second layer.')
+                      help = 'Do a two-layer retrieval, where these two args '
+                      'specify the phase and class used for near-surface layer.')
 
     ls = main.add_mutually_exclusive_group()
     ls.add_argument('--no_land', action='store_true',
