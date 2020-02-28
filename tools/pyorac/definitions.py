@@ -37,8 +37,8 @@ class FileMissing(OracError):
 
 class BadValue(OracError):
     def __init__(self, variable, value):
-        OracError.__init__(self, 'Invalid value for {:s}: {:s}'.format(variable,
-                                                                       value))
+        OracError.__init__(self, 'Invalid value for {}: {}'.format(variable,
+                                                                   value))
         self.variable = variable
         self.value = value
 
