@@ -178,6 +178,7 @@ subroutine get_abi_data(infiles, imager_angles, imager_measurements, &
 
    do i=1,n_bands
       if (band_ids(i) .lt. 7) then
+         ! Visible channels
          tmpout(:,:)     =       sreal_fill_value
          if (verbose) write(*,*) "Loading GOES visible band ",band_ids(i)
          if (band_ids(i) .eq. 1 .or. band_ids(i) .eq. 3 .or. band_ids(i) .eq. 5) then
@@ -194,12 +195,13 @@ subroutine get_abi_data(infiles, imager_angles, imager_measurements, &
          end if
 
          tmpout = tmpout * irrad
-
          where(imager_geolocation%latitude .eq. sreal_fill_value) tmpout=sreal_fill_value
+         where(tmpout .lt. -0.1) tmpout = sreal_fill_value
          imager_measurements%data(:,:,i) = tmpout
 
          deallocate(tmprad)
       else
+         ! Thermal channels
          if (verbose) write(*,*) "Loading GOES thermal band ",band_ids(i)
          allocate(tmprad(imager_geolocation%nx,imager_geolocation%ny))
 
@@ -299,11 +301,11 @@ subroutine read_abi_bin(infiles, imager_geolocation, imager_measurements, &
    call get_abi_data(infiles,imager_angles,imager_measurements,imager_geolocation,channel_info,verbose)
 
    ! Compute relative azimuth from solar and viewing azimuths
-   imager_angles%relazi = abs(imager_angles%satazi-imager_angles%solazi)
+   imager_angles%relazi = abs(imager_angles%solazi-imager_angles%satazi)
    where (imager_angles%relazi(:,:,1) .gt. 180.)
       imager_angles%relazi(:,:,1) = 360. - imager_angles%relazi(:,:,1)
    end where
-!  imager_angles%relazi(:,:,1) = 180. - imager_angles%relazi(:,:,1)
+  !imager_angles%relazi(:,:,1) = 180. - imager_angles%relazi(:,:,1)
 
    where (imager_geolocation%latitude .eq. sreal_fill_value)
       imager_angles%relazi(:,:,1) = sreal_fill_value

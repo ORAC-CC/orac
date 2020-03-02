@@ -400,6 +400,7 @@ subroutine get_abi_viewing_geom(imager_geolocation, imager_angles, sma, smi, &
    imager_angles%satzen(:, :, 1) = acos(u3 / sqrt(u1*u1 + u2*u2 + u3*u3)) * 180. / pi
    imager_angles%satazi(:, :, 1) = atan2(-u2, u1) * 180. / pi
    imager_angles%satazi(:, :, 1) = imager_angles%satazi(:, :, 1) + 180.
+
    where (imager_angles%satazi .le. 180 .and. imager_angles%satazi  .ge. 0)
       imager_angles%satazi = abs(180. - imager_angles%satazi)
    end where
@@ -416,9 +417,9 @@ subroutine get_abi_viewing_geom(imager_geolocation, imager_angles, sma, smi, &
       imager_angles%satazi = abs(imager_angles%satazi)
    end where
 
-   where (imager_angles%satzen .gt. 180)
-      imager_angles%satzen = sreal_fill_value
-   end where
+!   where (imager_angles%satzen .gt. 180)
+!      imager_angles%satzen = sreal_fill_value
+!   end where
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving get_abi_viewing_geom()'
 
@@ -517,10 +518,10 @@ subroutine get_abi_solgeom(imager_time, imager_angles, imager_geolocation, verbo
 
    where(imager_angles%solazi(:, :, 1) .ne. sreal_fill_value .and. &
         imager_angles%relazi(:, :, 1) .ne. sreal_fill_value)
-      imager_angles%solazi(:, :, 1) = imager_angles%solazi(:, :, 1) - 180.
-      where(imager_angles%solazi(:, :, 1) .lt. 0.)
-         imager_angles%solazi(:, :, 1) = imager_angles%solazi(:, :, 1) + 360.
-      end where
+!      imager_angles%solazi(:, :, 1) = imager_angles%solazi(:, :, 1) - 180.
+!      where(imager_angles%solazi(:, :, 1) .lt. 0.)
+!         imager_angles%solazi(:, :, 1) = imager_angles%solazi(:, :, 1) + 360.
+!      end where
    end where
 
    deallocate(tlat)
@@ -773,7 +774,7 @@ subroutine load_abi_band(infile, imager_geolocation, rad, kappa, bc1, bc2, fk1, 
 
    deallocate(dqf)
 
-   rad = rad*sclval + offval
+   rad = rad * sclval + offval
 
 end subroutine load_abi_band
 
