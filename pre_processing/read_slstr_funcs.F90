@@ -172,7 +172,7 @@ subroutine get_slstr_imnames(indir,inband,fname,fname_qa,bname,irradname)
       mod_inb=inband-9
    end if
 
-   write (band, '(I1.1)') mod_inb
+   write (band, '(I1)') mod_inb
    if (mod_inb .le. 6) then
       fname       = trim(indir)//'S'//trim(band)//'_radiance_a'//trim(vid)//'.nc'
       fname_qa    = trim(indir)//'S'//trim(band)//'_quality_a'//trim(vid)//'.nc'
@@ -670,6 +670,10 @@ subroutine read_slstr_lldata(indir,data_arr,nx,ny,proclat,procgrid)
               'file ', trim(geofile)
          stop error_stop_code
       end if
+   else
+      filval = -999.
+      sclval = 1.
+      offval = 1.
    end if
 
    ierr=nf90_get_var(fid, did, data)

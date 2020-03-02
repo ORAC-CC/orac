@@ -426,7 +426,6 @@ class SinGrid(object):
 
         # Set up the 1D coordinate system
         v = arange(self.half_n)
-        v[v < self.half_n // 2] += 1
         cos_phi = cos(pi * (v / self.half_n - 0.5))
         self.min_u = floor(self.half_n * (1. - cos_phi)).astype("int32")
         self.max_u = ceil(self.half_n * (1. + cos_phi)).astype("int32")

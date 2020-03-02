@@ -9,45 +9,66 @@ from pyorac.definitions import OracError, OracWarning, FileMissing
 
 def build_preproc_driver(args):
     """Prepare a driver file for the preprocessor."""
-    from pyorac.definitions import FileName, BadValue
-    from pyorac.util import (build_orac_library_path, extract_orac_libraries,
-                             read_orac_library_file)
+    from itertools import product
     from re import search
     from subprocess import CalledProcessError, check_output, STDOUT
     from uuid import uuid4
+    from pyorac.definitions import FileName, BadValue
+    from pyorac.util import (build_orac_library_path, extract_orac_libraries,
+                             read_orac_library_file)
 
-    file = _glob_dirs(args.in_dir, args.File.l1b, 'L1B file')
-    geo  = _glob_dirs(args.in_dir, args.File.geo, 'geolocation file')
+    l1b = _glob_dirs(args.in_dir, args.File.l1b, 'L1B file')
+    geo = _glob_dirs(args.in_dir, args.File.geo, 'geolocation file')
 
     # Select NISE file
     if args.use_ecmwf_snow or args.no_snow_corr:
         nise = ''
     else:
-        for form in ('NISE.004/%Y.%m.%d/NISE_SSMISF17_%Y%m%d.HDFEOS',
-                     'NISE.002/%Y.%m.%d/NISE_SSMIF13_%Y%m%d.HDFEOS',
-                     '%Y/NISE_SSMIF13_%Y%m%d.HDFEOS',
-                     '%Y/NISE_SSMIF17_%Y%m%d.HDFEOS'):
-            nise = args.File.time.strftime(os.path.join(args.nise_dir, form))
+        # There are usually too many files in this directory to glob quickly.
+        # Instead, guess where it is. If your search is failing here, but the
+        # appropriate file is present, you need to add a format to one of
+        # these loops that finds your file.
+        nise_locations = (
+            'NISE.005/%Y.%m.%d', 'NISE.004/%Y.%m.%d',
+            'NISE.002/%Y.%m.%d', 'NISE.001/%Y.%m.%d',
+            '%Y', '%Y.%m.%d', '%Y_%m_d', '%Y-%m-%d',
+        )
+        nise_formats = (
+            'NISE_SSMISF18_%Y%m%d.HDFEOS', 'NISE_SSMISF17_%Y%m%d.HDFEOS',
+            'NISE_SSMIF13_%Y%m%d.HDFEOS',
+        )
+        for nise_location, nise_format in product(nise_locations, nise_formats):
+            nise = args.File.time.strftime(os.path.join(
+                args.nise_dir, nise_location, nise_format
+            ))
             if os.path.isfile(nise):
                 break
         else:
-            raise FileMissing('NISE', nise)
+            raise FileMissing('NISE', args.nise_dir)
 
     # Select previous surface reflectance and emissivity files
     if args.swansea:
         alb = _date_back_search(args.swansea_dir, args.File.time,
-                                'SW_SFC_PRMS_%m.nc')
+                                'SW_SFC_PRMS_%m.nc', 'months')
         brdf = None
     else:
         alb = _date_back_search(args.mcd43c3_dir, args.File.time,
-                                'MCD43C3.A%Y%j.*.hdf')
+                                'MCD43C3.A%Y%j.*.hdf', 'days')
         brdf = None if args.lambertian else _date_back_search(
-            args.mcd43c1_dir, args.File.time, 'MCD43C1.A%Y%j.*.hdf'
+            args.mcd43c1_dir, args.File.time, 'MCD43C1.A%Y%j.*.hdf', 'days'
         )
-    emis = None if args.use_modis_emis else _date_back_search(
-        args.emis_dir, args.File.time,
-        'global_emis_inf10_monthFilled_MYD11C3.A%Y%j.041.nc'
-    )
+    if args.use_modis_emis:
+        emis = None
+    elif args.use_camel_emis:
+        emis = _date_back_search(
+            args.camel_dir, args.File.time,
+            'CAM5K30EM_emis_%Y%m_V???.nc', 'months'
+        )
+    else:
+        emis = _date_back_search(
+            args.emis_dir, args.File.time,
+            'global_emis_inf10_monthFilled_MYD11C3.A%Y%j.*nc', 'days'
+        )
 
     # Select ECMWF files
     bounds = _bound_time(args.File.time + args.File.dur//2)
@@ -64,13 +85,13 @@ def build_preproc_driver(args):
         spam = _form_bound_filenames(bounds, args.spam_dir, 'spam%Y%m%d%H%M.grb')
     elif args.ecmwf_flag == 3:
         raise NotImplementedError('Filename syntax for --ecmwf_flag 3 unknown')
-    elif args.ecmwf_flag == 4:
+    elif 4 <= args.ecmwf_flag <= 5:
         for form, hr in (('C3D*%m%d%H*.nc', 3),
                          ('ECMWF_OPER_%Y%m%d_%H+00.nc', 6),
+                         ('ECMWF_ERA5_%Y%m%d_%H_0.5.nc', 6),
                          ('ECMWF_ERA_%Y%m%d_%H+00_0.5.nc', 6)):
             try:
-                bounds = _bound_time(args.File.time + args.File.dur//2,
-                                     timedelta(hours=hr))
+                bounds = _bound_time(args.File.time + args.File.dur//2, hr)
                 ggam = _form_bound_filenames(bounds, args.ggam_dir, form)
                 break
             except FileMissing as e:
@@ -87,7 +108,7 @@ def build_preproc_driver(args):
         #hr_ecmwf = _form_bound_filenames(bounds, args.hr_dir,
         #                                 'ERA_Interim_an_%Y%m%d_%H+00_HR.grb')
         # These files don't zero-pad the hour for some reason
-        bounds = _bound_time(args.File.time + args.File.dur//2, timedelta(hours=6))
+        bounds = _bound_time(args.File.time + args.File.dur//2, 6)
         hr_ecmwf = [time.strftime(os.path.join(
             args.hr_dir, 'ERA_Interim_an_%Y%m%d_') +
             '{:d}+00_HR.grb'.format(time.hour*100))
@@ -99,14 +120,22 @@ def build_preproc_driver(args):
                         for time in bounds]
         for f in hr_ecmwf:
             if not os.path.isfile(f):
-                raise FileMissing('HR ECMWF file', f)
+                raise FileMissing('HR ECMWF', f)
     else:
         hr_ecmwf=['', '']
 
-    occci = args.File.time.strftime(os.path.join(
-        args.occci_dir, 'ESACCI-OC-L3S-IOP-MERGED-1M_MONTHLY'
-        '_4km_GEO_PML_OCx_QAA-%Y%m-fv3.0.nc')
-    )
+    if args.use_oc:
+        for oc_version in (4.2, 4.1, 4.0, 3.1, 3.0, 2.0, 1.0):
+            occci = args.File.time.strftime(os.path.join(
+                args.occci_dir, 'ESACCI-OC-L3S-IOP-MERGED-1M_MONTHLY'
+                '_4km_GEO_PML_OCx_QAA-%Y%m-fv{:.1f}.nc'.format(oc_version)
+            ))
+            if os.path.isfile(occci):
+                break
+            else:
+                raise FileMissing('Ocean Colour CCI', occci)
+    else:
+        occci = ''
 
     #------------------------------------------------------------------------
 
@@ -262,7 +291,7 @@ USE_SWANSEA_CLIMATOLOGY={swansea}""".format(
         atlas             = args.atlas_dir,
         atsr_calib        = args.calib_file,
         brdf              = brdf,
-        camel             = args.camel_emis,
+        camel             = args.use_camel_emis,
         chunk_flag        = False, # File chunking no longer required
         cldtype           = not args.skip_cloud_type,
         cld_emis          = args.cloud_emis,
@@ -291,7 +320,7 @@ USE_SWANSEA_CLIMATOLOGY={swansea}""".format(
         ir_only           = args.ir_only,
         keywords          = args.keywords,
         l1_land_mask      = args.l1_land_mask,
-        l1b               = file,
+        l1b               = l1b,
         l2_processor      = args.processor,
         license           = args.license,
         limit             = args.limit,
@@ -479,7 +508,7 @@ USE_BAYESIAN_SELECTION={bayesian}""".format(
 
 #-----------------------------------------------------------------------------
 
-def _bound_time(dt=None, dateDelta=timedelta(hours=6)):
+def _bound_time(dt=None, delta_hours=6):
     """Return timestamps divisible by some duration that bound a given time
 
     http://stackoverflow.com/questions/3463930/how-to-round-the-minute-of-a-datetime-object-python/10854034
@@ -489,6 +518,7 @@ def _bound_time(dt=None, dateDelta=timedelta(hours=6)):
     :timedelta dateDelta: Rounding interval. Default 6 hours.
     """
 
+    dateDelta = timedelta(hours=delta_hours)
     roundTo = dateDelta.total_seconds()
     if dt is None : dt = datetime.now()
 
@@ -504,35 +534,38 @@ def _bound_time(dt=None, dateDelta=timedelta(hours=6)):
     return (start, start + dateDelta)
 
 
-def _date_back_search(fdr, date, pattern):
+def _date_back_search(fdr, date, pattern, interval):
     """Search a folder for the file with timestamp closest before a given date.
 
     Args:
     :str fdr: Folder to be searched.
     :datetime date: Initial date to consider.
     :str pattern: strftime format string used to parse filename.
+    :str interval: Keyword of relativedelta indicating interval to step back.
     """
     from copy import copy
+    from dateutil.relativedelta import relativedelta
+
+    # Step forward one day, month, or year
+    delta = relativedelta(**{interval: 1})
 
     dt = copy(date)
-    pttrn = copy(pattern)
-    try_climat = True
-    while True:
-        files = glob(dt.strftime(os.path.join(fdr, pttrn)))
+    while dt > datetime(1995, 1, 1):
+        # Look for a file with the appropriate date
+        files = glob(dt.strftime(os.path.join(fdr, pattern)))
 
         if len(files) >= 1:
             return files[-1]
-        elif try_climat:
-            if glob(dt.strftime(os.path.join(fdr, '*%Y*'))):
-                dt -= timedelta(days=1)
-            else:
-                pttrn = pttrn.replace('%Y','XXXX')
-                try_climat = False
         else:
-            if glob(os.path.join(fdr, '*XXXX*')):
-                dt -= timedelta(days=1)
-            else:
-                raise FileMissing(fdr, pattern)
+            dt -= delta
+
+    # If we fail, try to find a climatological file
+    files = glob(dt.strftime(os.path.join(fdr, pattern.replace('%Y','XXXX'))))
+    if len(files) >= 1:
+        return files[-1]
+    else:
+        raise FileMissing(fdr, pattern)
+
 
 def _form_bound_filenames(bounds, fdr, form):
     """Form 2-element lists of filenames from bounding timestamps.

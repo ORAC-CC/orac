@@ -37,8 +37,8 @@ class FileMissing(OracError):
 
 class BadValue(OracError):
     def __init__(self, variable, value):
-        OracError.__init__(self, 'Invalid value for {:s}: {:s}'.format(variable,
-                                                                       value))
+        OracError.__init__(self, 'Invalid value for {}: {}'.format(variable,
+                                                                   value))
         self.variable = variable
         self.value = value
 
@@ -111,6 +111,9 @@ class FileName:
         import datetime
         import os
         import re
+
+        from netCDF4 import Dataset
+        from dateutil import parser
 
         self.l1b = filename
 
@@ -305,15 +308,30 @@ class FileName:
             self.l1b = os.path.join(filename, "geodetic_in.nc")
             self.sensor = 'SLSTR'
             self.platform = 'Sentinel3'+m.group('platform').lower()
-            self.inst = 'Sentinel-3'
-            self.time = datetime.datetime(
-                int(m.group('year')), int(m.group('month')), int(m.group('day')),
-                int(m.group('hour')), int(m.group('min')), int(m.group('sec')), 0
-            )
+            self.inst = 'SLSTR-Sentinel-3'+m.group('platform').lower()
             self.dur = datetime.timedelta(seconds=int(m.group('duration')))
             self.geo = os.path.join(filename, "geodetic_in.nc")
             self.oractype = None
             self.predef = False
+
+            for fdr in in_dir:
+                try:
+                    with Dataset(os.path.join(fdr, self.l1b)) as slstr_file:
+                        # Round time to nearest minute
+                        time = parser.parse(slstr_file.start_time).replace(tzinfo=None)
+                        sec = (time - time.min).seconds
+                        rounding = (sec + 30) // 60 * 60
+                        self.time = time + datetime.timedelta(
+                            0, rounding-sec, -time.microsecond
+                        )
+
+                        self.orbit_num = "{:05d}".format(
+                            slstr_file.absolute_orbit_number
+                        )
+                        break
+                except FileNotFoundError:
+                    pass
+
             return
 
         # Processed ORAC output
@@ -340,12 +358,22 @@ class FileName:
             self.predef = False
             self.oractype = m.group('filetype')
             self.processor = m.group('processor')
-            self.revision = m.group('revision')
+            self._revision = int(m.group('revision'))
             self.project = m.group('project')
             self.product_name = m.group('product')
             return
 
         raise OracError('Unexpected filename format - ' + filename)
+
+    @property
+    def revision(self):
+        """Revision number"""
+        from pyorac.util import get_repository_revision
+
+        try:
+            return self._revision
+        except AttributeError:
+            return get_repository_revision()
 
     def job_name(self, revision=None, tag='run'):
         """Returns a formatted description of this orbit."""
@@ -367,11 +395,16 @@ class FileName:
         if product_name is None:
             product_name = self.product_name
 
-        desc = '_'.join((
+        parts = [
             self.sensor, processor, self.platform,
             self.time.strftime('%Y%m%d%H%M'), "R{}".format(revision)
-        ))
-        return '-'.join((project, product_name, desc))
+        ]
+        try:
+            parts.insert(4, self.orbit_num)
+        except AttributeError:
+            pass
+
+        return '-'.join((project, product_name, "_".join(parts)))
 
     @property
     def noaa(self):
@@ -489,3 +522,6 @@ SETTINGS['A76'] = ParticleType("A76", inv=(tau,Invpar('IRe',ap=0.0856,sx=0.15)))
 SETTINGS['A77'] = ParticleType("A77", inv=(tau,Invpar('IRe',ap=-0.0419,sx=0.15)))
 SETTINGS['A78'] = ParticleType("A78", inv=(tau,Invpar('IRe',ap=-0.257,sx=0.15)))
 SETTINGS['A79'] = ParticleType("A79", inv=(tau,Invpar('IRe',ap=-0.848,sx=0.15)))
+SETTINGS['EYJ'] = ParticleType("EYJ", inv=(
+    Invpar('ITau', ap=0.18, sx=1.5), Invpar('IRe', ap=0.7, sx=0.15)
+))

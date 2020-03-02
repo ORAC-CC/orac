@@ -206,6 +206,7 @@ def process_all(orig_args):
     pars = ArgumentParser()
     args_common(pars)
     args_main(pars)
+    # We need one argument from args_cc4cl()
     pars.add_argument("--sub_dir", default="")
     compare = pars.parse_args("")
 
@@ -234,7 +235,7 @@ def process_all(orig_args):
     args.in_dir = [args.out_dir]
     for sett in args.settings:
         phs_args = deepcopy(args)
-        parsed_settings_arguments = pars.parse_args(sett.split(" "))
+        parsed_settings_arguments = pars.parse_args(sett.split())
         for key, val in compare.__dict__.items():
             if val == parsed_settings_arguments.__dict__[key]:
                 parsed_settings_arguments.__dict__.pop(key)
@@ -249,14 +250,19 @@ def process_all(orig_args):
             written_dirs.add(args.out_dir)
 
 
-    # Run postprocessor
-    args.target = root_name + phs_args.phase + ".primary.nc"
-    args.in_dir = written_dirs
-    args.out_dir = orig_args.out_dir
-    jid, out_file = process_post(args, log_path, out_files, dependency=jid_main,
-                                 tag="post{}".format(args.label))
-    if jid is not None:
-        written_dirs.add(args.out_dir)
+    # Run postprocessor, if necessary
+    if len(args.settings) > 1:
+        args.target = root_name + phs_args.phase + ".primary.nc"
+        args.in_dir = written_dirs
+        args.out_dir = orig_args.out_dir
+        jid, out_file = process_post(
+            args, log_path, out_files, dependency=jid_main,
+            tag="post{}".format(args.label)
+        )
+        if jid is not None:
+            written_dirs.add(args.out_dir)
+    else:
+        out_file = out_files[0]
 
     # Run CCI formatting
     if args.reformat != "":

@@ -83,8 +83,6 @@ def args_preproc(parser):
                      help = 'First/last pixel in across/along-track directions.')
     key.add_argument('--l1_land_mask', action='store_true',
                      help = 'Use the imager landmask rather than the USGS.')
-    key.add_argument('--use_modis_emis', action='store_true',
-                     help = 'Use MODIS surface emissivity rather than RTTOV.')
     key.add_argument('--use_oc', action='store_true',
                      help = 'Use the Ocean Colour CCI backscatter product.')
     key.add_argument('-x', '--aux', type=str, nargs=2, action='append',
@@ -101,10 +99,13 @@ def args_preproc(parser):
                      help = 'Only load infrared channels.')
     key.add_argument('--skip_cloud_type', action='store_true',
                      help = 'Skip the Pavolonis cloud typing.')
-    key.add_argument('--camel_emis', action='store_true',
-                     help = 'Use the CAMEL emissivity library instead of RTTOV.')
     key.add_argument('--swansea', action='store_true',
                      help = 'Use the Swansea climatology instead of MODIS BRDF.')
+    emis = key.add_mutually_exclusive_group()
+    emis.add_argument('--use_modis_emis', action='store_true',
+                      help = 'Use MODIS surface emissivity rather than RTTOV.')
+    emis.add_argument('--use_camel_emis', action='store_true',
+                      help = 'Use CAMEL emissivity library rather than RTTOV.')
 
     att = parser.add_argument_group('Global attribute values')
     att.add_argument('-g', '--global_att', type=str, nargs=2, action='append',
@@ -154,8 +155,7 @@ def args_main(parser):
                       choices = ('ClsCldWat', 'ClsCldIce', 'ClsAerOx',
                                  'ClsAerSw', 'ClsAerBR', 'ClsAshEyj'),
                       help = 'Retrieval class to be used (for layer 1).')
-    main.add_argument('--phase', type=str, default = 'WAT',
-                      choices = list(SETTINGS.keys()),
+    main.add_argument('--phase', type=str, choices = list(SETTINGS.keys()),
                       help = 'Label of look-up table to use in retrieval. '
                       'Default WAT.')
     main.add_argument('--sabotage', action='store_true',
@@ -171,7 +171,8 @@ def args_main(parser):
                       help = 'Channels to be evaluated by main processor.')
     main.add_argument('--multilayer', type=str, nargs=2,
                       metavar = ('PHS', 'CLS'),
-                      help = 'The phase and class to used for second layer.')
+                      help = 'Do a two-layer retrieval, where these two args '
+                      'specify the phase and class used for near-surface layer.')
 
     ls = main.add_mutually_exclusive_group()
     ls.add_argument('--no_land', action='store_true',
@@ -236,6 +237,8 @@ def args_cc4cl(parser):
                       default="")
     cccl.add_argument('--reformat', type=str, default="", metavar='PATH',
                       help = 'Script used to reformat ORAC output.')
+    cccl.add_argument('--sub_dir', type=str, default="",
+                      help = 'Folder in which to store intermediate output.')
 
     phs = cccl.add_mutually_exclusive_group()
     phs.add_argument('-s', '--settings', type=str, action='append',
@@ -336,12 +339,7 @@ def check_args_preproc(args):
 
     # Update FileName class
     if args.revision is None:
-        try:
-            args.revision = args.File.revision
-        except AttributeError:
-            args.revision = get_repository_revision()
-    if "revision" not in args.File.__dict__:
-        args.File.revision = args.revision
+        args.revision = args.File.revision
     if "processor" not in args.File.__dict__:
         args.File.processor = args.processor
     if "project" not in args.File.__dict__:
@@ -424,12 +422,14 @@ def check_args_cc4cl(args):
         makedirs(log_path, 0o774)
 
     if args.preset_settings is not None:
+        # A procedure named in local_defaults
         try:
             args.settings = retrieval_settings[args.preset_settings]
         except KeyError:
             raise BadValue("preset settings", "not defined in local_defaults")
 
     elif args.settings_file is not None:
+        # A procedure outlined in a file
         try:
             with open(args.settings_file) as settings_file:
                 args.settings = settings_file.read().splitlines()
@@ -437,7 +437,12 @@ def check_args_cc4cl(args):
             raise FileMissing('Description of settings', args.settings_file)
 
     elif args.settings is None:
-        args.settings = retrieval_settings[args.File.sensor]
+        if args.phase is None:
+            # Default procedure for this sensor from local_defaults
+            args.settings = retrieval_settings[args.File.sensor]
+        else:
+            # Process a single type
+            args.settings = (" ", )
 
 
 def check_args_regress(args):
@@ -446,7 +451,9 @@ def check_args_regress(args):
     # Default tests
     if len(args.tests) == 0:
         if args.long:
-            args.tests = ['DAYMYD', 'NITMYD', 'AATSR', 'AVHRR']
+            args.tests = ['DAYMYD', 'NITMYD', 'DAYMOD', 'NITMOD',
+                          'DAYSLSTRA', 'NITSLSTRA', 'DAYSLSTRB', 'NITSLSTRB',
+                          'AATSR', 'AVHRR']
         else:
-            args.tests = ['DAYMYDS', 'NITMYDS', 'DAYAATSRS', 'NITAATSRS',
-                          'DAYAVHRRS', 'NITAVHRRS']
+            args.tests = ['DAYMYDS', 'NITMYDS', 'DAYMODS', 'NITMODS',
+                          'DAYAATSRS', 'NITAATSRS', 'DAYAVHRRS', 'NITAVHRRS']

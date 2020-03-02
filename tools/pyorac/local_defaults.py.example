@@ -27,7 +27,7 @@ sad_dirs = ['/local/storage/orac_luts', ]
 6. A single GFS4 forecast file.
 7. A single GFS reanalysis GRIB file.
 8. A single GFS reanalysis NCDF file."""
-ecmwf_flag  = 2
+ecmwf_flag  = 5
 
 # If any of these directories contain subdirectories named by date, please use
 # the syntax of datatime.strftime() to denote the folder structure.
@@ -44,6 +44,9 @@ auxiliaries = {
     # https://lpdaac.usgs.gov/dataset_discovery/modis/modis_products_table/myd11c3_v006
     'emis_dir'    : '/local/storage/modis_emis',
 
+    # Directory of CAMEL emisivity retrievals, which are preferred
+    'camel_dir'   : '/local/storage/camel_emis',
+
     # Directories of MODIS surface BRDF retrievals
     # https://lpdaac.usgs.gov/dataset_discovery/modis/modis_products_table/mcd43c1_v006
     # https://lpdaac.usgs.gov/dataset_discovery/modis/modis_products_table/mcd43c3_v006
@@ -58,6 +61,9 @@ auxiliaries = {
 
     # To use a single ECMWF file (ecmwf_flag == 0), specify their location
     #'ecmwf_dir'   : '/local/storage/ecmwf/era_interim/%Y/%m/%d',
+
+    # To use ERA5 (ecmwf_flag == 5), specify
+    #'ecmwf_dir'   : '/local/storage/era5/%Y/%m/%d',
 
     # Directory of high-resolution ECMWF files. During Cloud CCI, 0.72deg
     # reanalyses were used and found to produce unrealistic results at coasts
@@ -77,7 +83,7 @@ auxiliaries = {
     'nise_dir'    : '/local/storage/n5eil01u.ecs.nsidc.org/SAN/OTHR',
 
     # Directory of Ocean Colour CCI retrievals
-    # ftp://ftp.rsg.pml.ac.uk/occci-v3.1/geographic/netcdf/monthly/chlor_a/
+    # ftp://ftp.rsg.pml.ac.uk/occci-v4.2/geographic/netcdf/monthly/chlor_a/
     'occci_dir'   : '/usr/lib/orac/data/occci',
 
     # File containing AATSR calibration coefficients
@@ -183,8 +189,8 @@ cld_retrievals = {
                 "--sub_dir cld",
     "ice_cld" : "--phase ICE --ret_class ClsCldIce --approach AppCld1L "
                 "--sub_dir cld",
-    "wat_ice" : "--phase WAT --ret_class ClsCldWat --approach AppCld2L "
-                "--multilayer ICE ClsCldIce --sub_dir cld",
+    "wat_ice" : "--phase ICE --ret_class ClsCldIce --approach AppCld2L "
+                "--multilayer WAT ClsCldWat --sub_dir cld",
 #    "ice_ice" : "--phase ICE --ret_class ClsCldIce --approach AppCld2L "
 #                "--multilayer ICE ClsCldIce --sub_dir cld"
 }
@@ -194,6 +200,7 @@ cld_channels = {
     "AVHRR" : "--use_channels 1 2 3 4 5 6",
     "MODIS" : "--use_channels 1 2 6 20 31 32",
     "SEVIRI" : "--use_channels 1 2 3 4 9 10",
+    "SLSTR" : "--use_channels 2 3 5 7 8 9",
 }
 for sensor, channels in cld_channels.items():
     retrieval_settings[sensor + "_C"] = [
@@ -211,6 +218,7 @@ aer_dual_retrievals = {
 aer_dual_channels = {
     "AATSR" : "--use_channels 1 2 3 4 8 9 10 11",
     "ATSR2" : "--use_channels 1 2 3 4 8 9 10 11",
+    "SLSTR" : "--use_channels 1 2 3 5 10 11 12 14",
 }
 for sensor, channels in aer_dual_channels.items():
     retrieval_settings[sensor + "_A"] = [
@@ -266,6 +274,7 @@ channels = {
     "AVHRR" : (1, 2, 3, 4, 5, 6),
     "MODIS" : (1, 2, 6, 20, 31, 32),
     "SEVIRI" : (1, 2, 3, 4, 9, 10),
+    "SLSTR" : (1, 2, 3, 5, 7, 8, 9, 10, 11, 12, 14),
 }
 
 
