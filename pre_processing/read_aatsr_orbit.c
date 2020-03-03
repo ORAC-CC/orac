@@ -140,9 +140,9 @@ void read_aatsr_orbit(const char *l1b_file, const bool *verbose,
           y_out[i] = epr_get_field_elem_as_double(fid, 0) * 1e-3;
      }
      // Shift the y coordinate to cell centres
-     y_out[*ny-1] += 0.5 * (y_out[*ny-1] - y_out[*ny-2]);
      for (i=0; i<*ny-1; i++)
           y_out[i] += 0.5 * (y_out[i+1] - y_out[i]);
+     y_out[*ny-1] += 0.5 * (y_out[*ny-1] - y_out[*ny-2]);
      epr_free_record(rec);
 
      // Read geolocation (view independent)
