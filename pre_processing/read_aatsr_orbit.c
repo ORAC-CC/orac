@@ -199,6 +199,25 @@ void read_aatsr_orbit(const char *l1b_file, const bool *verbose,
                }
                epr_free_record(rec);
 
+               /* Section 2.6.1.1.5.1.2.2 (Algorithm Definition) of the AATSR
+                  Handbook (http://envisat.esa.int/handbooks/aatsr/toc.html)
+                  states that the line of sight of the instrument is determined
+                  from the pixel number (there being 2000 pixels in each scan).
+                  The elevation and azimuth of the view relative to the
+                  satellite's motion are calculated from that using a series
+                  of matrix transformations.
+                  Those are input into the library function pp_target() to
+                  determine the geometry at the surface. That routine is defined
+                  in Section 7.1 of document PO-IS-DMS-GS-0559 (PPF_POINTING
+                  SOFTWARE USER MANUAL). It's Table 15 indicates that the angles
+                  are given in the Topocentric Coordinate System.
+                  Document PO-IS-ESA-GS-0561 (ENVISAT-1 MISSION CFI SOFTWARE
+                  MISSION CONVENTIONS DOCUMENT) defines the topocentric
+                  coordinate system in Figure 9 as azimuth measured from the
+                  y-axis towards x and elevation above the x-y plane. Section
+                  5.1.7 states that the x- and y-axes point east and north,
+                  respectively. */
+
                // Read angular information
                for (i=0; i<4; i++) {
                     extrap_aatsr_angle(pid, ax_dataset[j],
@@ -355,9 +374,9 @@ void calculate_rel_azi(float *saz, float *iaz, float *raz, const int nx,
                if (phi < 0.0) phi = -phi;
 
                if (phi > 180.0)
-                    raz[k] = phi - 180.0;
+                    raz[k] = 360.0 - phi;
                else
-                    raz[k] = 180.0 - phi;
+                    raz[k] = phi;
           }
      }
      return;
