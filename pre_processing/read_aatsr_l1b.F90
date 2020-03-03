@@ -304,9 +304,6 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
       is_lut_drift_corrected = .true.
    end if
 
-   ! convert elevation angles read into zenith angles
-   imager_angles%solzen = 90.0 - imager_angles%solzen
-   imager_angles%satzen = 90.0 - imager_angles%satzen
    if (.not. is_lut_drift_corrected) then
       if (verbose) write(*,*) 'calling read drift file ', stat
       call aatsr_read_drift_table(drift_file, lut, status)

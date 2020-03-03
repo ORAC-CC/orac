@@ -206,6 +206,8 @@ void read_aatsr_orbit(const char *l1b_file, const bool *verbose,
                                        *nx, *ny, x_out, y_out,
                                        ax_array[j][i], *verbose, i == 3);
                }
+               calculate_zenith(ax_array[j][0], *nx, *ny);
+               calculate_zenith(ax_array[j][1], *nx, *ny);
                calculate_rel_azi(ax_array[j][2], ax_array[j][3], ax_array[j][4],
                                  *nx, *ny);
 
@@ -325,6 +327,21 @@ void fetch_aatsr_short_values(EPR_SProductId *pid, const char *name,
 
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
+void calculate_zenith(float *za, const int nx, const int ny)
+{
+     long i, j, k;
+     float phi=0.0;
+
+     for (j=0; j<ny; j++) {
+          for (i=0; i<nx; i++) {
+               k = i + j*nx;
+               phi = 90.0 - za[k];
+               za[k] = phi;
+          }
+     }
+     return;
+}
+
 void calculate_rel_azi(float *saz, float *iaz, float *raz, const int nx,
                        const int ny)
 {

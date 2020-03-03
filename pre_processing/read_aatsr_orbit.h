@@ -151,6 +151,30 @@ void fetch_aatsr_short_values(EPR_SProductId *pid, const char *name,
                               const long nx, const long ny, const long x0,
                               const long y0, short *out, const bool verbose);
 
+/*Name: calculate_zenith
+!
+! Purpose:
+! Convert elevation angles into zenith angles.
+!
+! Description and Algorithm details:
+! 1) Subtract the angles.
+!
+! Arguments:
+! Name  Type  In/Out/Both Description
+! ------------------------------------------------------------------------------
+! saz   float In  Solar zenith angle.
+! iaz   float In  Satellite zenith angle.
+! raz   float Out Relative azimuth angle.
+! nx|y  int   In  Number of pixels across and along track.
+!
+! History:
+! 2020/03/03, AP: Original version
+!
+! Bugs:
+! None known.
+*/
+void calculate_zenith(float *za, const int nx, const int ny);
+
 /*Name: calculate_rel_azi
 !
 ! Purpose:
