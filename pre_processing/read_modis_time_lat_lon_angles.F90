@@ -87,6 +87,17 @@ subroutine read_modis_time_lat_lon_angles(path_to_geo_file,imager_geolocation,&
         imager_geolocation%endx,imager_geolocation%starty, &
         imager_geolocation%endy,imager_geolocation%longitude)
 
+   ! From the MODIS Level 1A Earth Location: Algorithm Theoretical Basis
+   ! Document Version 3.0 (https://modis.gsfc.nasa.gov/data/atbd/
+   ! atbd_mod28_v3.pdf), page 3-37,
+   !   5: cos(sensor_zenith) = normal_to_geodetic_surface . view_direction
+   !   6: tan(sensor_azimuth) = view_direction . east / view_direction . north
+   ! Hence, this zenith is measured out from the vertical and this azimuth is
+   ! clockwise from north, relative to the geodetic position. (The geodetic
+   ! position is the intersection of the satellite view with the 1km Platte
+   ! Carree EOS DEM.) In (7), it then states the solar angles are worked out
+   ! using the same formulae.
+
    ! read solzen
    call read_modis_angles(geo_id,"SolarZenith",imager_geolocation%startx, &
         imager_geolocation%endx,imager_geolocation%starty, &
@@ -111,33 +122,15 @@ subroutine read_modis_time_lat_lon_angles(path_to_geo_file,imager_geolocation,&
 
    ! make rel azi
    ! Note: Relative azimuth is defined so that if the satellite is looking
-   ! towards the sun (i.e. forward scattering), relative azimuth is zero.
-!  imager_angles%solazi(:,:,1) = 180.0-imager_angles%solazi(:,:,1)
-!  imager_angles%relazi(:,:,1) = 180.0 - &
-!       acos(cos((temp - imager_angles%solazi(:,:,1)) * d2r)) / d2r
-
+   ! towards the sun (i.e. forward scattering), relative azimuth is 180 deg.
    where (imager_angles%solazi(:,:,1) .ne. sreal_fill_value .and. &
           temp .ne. sreal_fill_value)
 
        imager_angles%relazi(:,:,1) = abs(imager_angles%solazi(:,:,1) - temp)
 
-       where ( imager_angles%relazi(:,:,1) .gt. 180. )
-          imager_angles%relazi(:,:,1) = imager_angles%relazi(:,:,1) - 180.
-       else where
-          imager_angles%relazi(:,:,1) = 180. - imager_angles%relazi(:,:,1)
+       where (imager_angles%relazi(:,:,1) .gt. 180.)
+          imager_angles%relazi(:,:,1) = 360. - imager_angles%relazi(:,:,1)
        end where
-
-!      where (imager_angles%solazi(:,:,1) .lt. 0)
-!         imager_angles%solazi(:,:,1) = imager_angles%solazi(:,:,1) + 180
-!      else where
-!         imager_angles%solazi(:,:,1) = imager_angles%solazi(:,:,1) - 180
-!      end where
-!
-!      imager_angles%relazi(:,:,1) = abs(temp - imager_angles%solazi(:,:,1))
-!      where (imager_angles%relazi(:,:,1) .gt. 180)
-!         imager_angles%relazi(:,:,1) = 360. - imager_angles%relazi(:,:,1)
-!      end where
-!      imager_angles%relazi(:,:,1) = abs(imager_angles%relazi(:,:,1))
 
    end where
 
