@@ -122,6 +122,12 @@ class FileName:
         from netCDF4 import Dataset
         from dateutil import parser
 
+        if isinstance(in_dirs, tuple):
+            self.folders = list(in_dirs)
+        elif not isinstance(in_dirs, list):
+            self.folders = [in_dirs]
+        else:
+            self.folders = in_dirs
         self.l1b = filename
 
         # Attempt AATSR L1B filename
@@ -372,7 +378,7 @@ class FileName:
             self.predef = False
             self.oractype = mat.group('filetype')
             self.processor = mat.group('processor')
-            self._revision = int(mat.group('revision'))
+            self.revision = mat.group('revision')
             self.project = mat.group('project')
             self.product_name = mat.group('product')
             return
@@ -389,6 +395,11 @@ class FileName:
         except AttributeError:
             return get_repository_revision()
 
+    @revision.setter
+    def revision(self, value):
+        """Set revision number."""
+        self._revision = int(value)
+
     def job_name(self, revision=None, tag='run'):
         """Returns a formatted description of this orbit."""
         if revision is None:
@@ -402,12 +413,17 @@ class FileName:
         """Returns the ORAC filename for this file."""
         if revision is None:
             revision = self.revision
-        if processor is None:
-            processor = self.processor
-        if project is None:
-            project = self.project
-        if product_name is None:
-            product_name = self.product_name
+        try:
+            if processor is None:
+                processor = self.processor
+            if project is None:
+                project = self.project
+            if product_name is None:
+                product_name = self.product_name
+        except AttributeError as err:
+            terms = err.args[0].split("'")
+            raise ValueError("A default root name can only be determined "
+                             "for ORAC filenames. Please specify "+terms[-2])
 
         parts = [
             self.sensor, processor, self.platform,

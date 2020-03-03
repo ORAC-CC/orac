@@ -62,7 +62,7 @@ def process_main(args, log_path, tag='', dependency=None):
     else:
         phase = args.phase
     job_name = args.File.job_name(tag=phase + tag)
-    root_name = args.File.root_name()
+    root_name = args.File.root_name(args.revision)
 
     if not os.path.isdir(args.out_dir):
         os.makedirs(args.out_dir, 0o774)
@@ -275,7 +275,7 @@ def process_all(orig_args):
     return jid, out_file
 
 
-def run_regression(File, in_dir):
+def run_regression(in_file):
     """Run the regression test on a set of ORAC files."""
     import re
 
@@ -287,21 +287,22 @@ def run_regression(File, in_dir):
 
     regex = re.compile(r"_R(\d+)")
 
-    this_revision = int(File.revision)
-    for this_file in iglob(os.path.join(
-            in_dir, "**", File.root_name() + "*nc"
-    )):
-        # Find previous file version
-        old_revision = 0
-        old_file = None
-        for filename in iglob(regex.sub("_R[0-9][0-9][0-9][0-9]", this_file)):
-            rev = int(regex.search(filename).group(1))
-            if old_revision < rev < this_revision:
-                old_revision = copy(rev)
-                old_file = copy(filename)
+    this_revision = int(in_file.revision)
+    for fdr in in_file.folders:
+        for this_file in iglob(os.path.join(
+                fdr, "**", in_file.root_name() + "*nc"
+        ), recursive=True):
+            # Find previous file version
+            old_revision = 0
+            old_file = None
+            for filename in iglob(regex.sub("_R[0-9][0-9][0-9][0-9]", this_file)):
+                rev = int(regex.search(filename).group(1))
+                if old_revision < rev < this_revision:
+                    old_revision = copy(rev)
+                    old_file = copy(filename)
 
-        if old_file is None:
-            warn("Could not locate previous file: " + this_file, OracWarning)
-            continue
+            if old_file is None:
+                warn("Could not locate previous file: " + this_file, OracWarning)
+                continue
 
-        compare_orac_out(this_file, old_file)
+            compare_orac_out(this_file, old_file)

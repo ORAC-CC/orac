@@ -53,11 +53,8 @@ else:
     base_out_dir = defaults.data_dir +'/testoutput'
 
 # Increment version number (as this is usually run on uncommited code)
-if not orig_args.revision:
-    cwd = os.getcwd()
-    os.chdir(orig_args.orac_dir)
+if orig_args.revision is None:
     orig_args.revision = get_repository_revision()
-    os.chdir(cwd)
 
     if not orig_args.benchmark:
         orig_args.revision += 1
@@ -82,11 +79,12 @@ try:
 
         # Check for regressions
         if not args.benchmark:
+            inst = FileName(args.out_dir, out_file)
             if not args.batch:
                 check_args_common(args)
                 check_args_preproc(args)
                 try:
-                    run_regression(args.File, args.out_dir)
+                    run_regression(inst)
                 except Regression as err:
                     colour_print('REGRESSION) ' + str(err), COLOURING['error'])
 
@@ -97,7 +95,6 @@ try:
                     path = [defaults.orac_dir, ]
                 path.extend(filter(None, sys.path))
 
-                inst = FileName(args.in_dir, out_file)
                 job_name = inst.job_name(tag='regression')
 
                 (fd, script_file) = mkstemp(
@@ -107,8 +104,9 @@ try:
                 f.write("#!/bin/bash --noprofile\n")
                 f.write("export PYTHONPATH={}\n".format(":".join(path)))
                 f.write('{} -c "from pyorac.run import run_regression; '
-                        'run_regression(' "'{}', '{}'" ')"\n'.format(
-                            sys.executable, out_file, args.out_dir
+                        'from pyorac.definitions import FileName; '
+                        'run_regression(FileName(' "'{}', '{}'" '))"\n'.format(
+                            sys.executable, args.out_dir, out_file
                         ))
                 f.write("rm {}\n".format(script_file))
                 f.close()

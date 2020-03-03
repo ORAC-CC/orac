@@ -333,8 +333,8 @@ def check_args_preproc(args):
                           OracWarning, stacklevel=2)
 
     # Update FileName class
-    if args.revision is None:
-        args.revision = args.File.revision
+    if args.revision is not None:
+        args.File.revision = args.revision
     if "processor" not in args.File.__dict__:
         args.File.processor = args.processor
     if "project" not in args.File.__dict__:

@@ -15,7 +15,7 @@ def build_preproc_driver(args):
     from uuid import uuid4
     from pyorac.definitions import BadValue
     from pyorac.util import (build_orac_library_path, extract_orac_libraries,
-                             get_repository_revision, read_orac_library_file)
+                             read_orac_library_file)
 
     l1b = _glob_dirs(args.in_dir, args.File.l1b, 'L1B file')
     geo = _glob_dirs(args.in_dir, args.File.geo, 'geolocation file')
@@ -214,11 +214,7 @@ def build_preproc_driver(args):
     finally:
         os.chdir(cwd)
 
-    # Fetch repository commit number
-    if not args.revision:
-        args.revision = get_repository_revision()
-
-    file_version = 'R{}'.format(args.revision)
+    file_version = 'R{}'.format(args.File.revision)
 
     #------------------------------------------------------------------------
 
