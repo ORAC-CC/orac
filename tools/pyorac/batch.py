@@ -1,4 +1,4 @@
-"""Class for interfacing with batch processing systems.
+r"""Class for interfacing with batch processing systems.
 
 DESCRIPTION:
 Various batch processing systems exist, depending on your local server setup.
@@ -10,26 +10,29 @@ accepts using dictionaries. For example,
                        'ram'      : '-l h_vmem={}M'.format})
 - The first argument is simply the name of the command to call to queue a task.
 - The second argument defines a regular expression to understand the
-  output of the scheduler  and each group should have a name in that
+  output of the scheduler and each group should have a name in that
   expression. Here, a QSUB call outputs an ID number and the name of the job.
-- The fourth argument is a dictionary specifying the command syntax. Each key
+- The third argument is the syntax used to convey dependencies.
+- The fourth argument is the delimeter between multiple dependencies.
+- The fifth argument is bash script that must be run to use OpenMP.
+- The sixth argument is a dictionary specifying the command syntax. Each key
   should describe the purpose of the statement and the contents are a string
   format function with a single bracket. Here, if we want this job to wait for
   job 1234 to complete, QSUB should be given the argument '-hold-jid 1234'.
 
-A command is generated with the PrintBatch function. It must be given a
+A command is generated with the print_batch() function. It must be given a
 dictionary. The dictionary's keys should match elements defined when the class
 was created and the contents are the value that argument should take. To
 produce the wait example above:
-   >>> qsub.PrintBatch({'depend' : 1234, 'ram' : 2})
+   >>> qsub.print_batch({'depend' : 1234, 'ram' : 2})
    'qsub -l h_vmem=2M -hold-jid 1234'
 The optional argument 'exe' adds the command you want to queue, which can be a
 single string or a subprocess.call()-style tuple/list.
 
-ParseOut is used to extract information from the output of the command, usually
-to determine the job ID. Given the output of the call, it returns a dictionary
-of contents. The optional 'key' argument specifies a single term from that
-dictionary to return (usually 'ID').
+parse_out() is used to extract information from the output of the command,
+usually to determine the job ID. Given the output of the call, it returns a
+dictionary of contents. The optional 'key' argument specifies a single term
+from that dictionary to return (usually 'ID').
 """
 
 import re
@@ -45,33 +48,35 @@ class BatchSystem:
     args         - A dictionary of string format functions, each taking one
                    argument, to produce an argument of the queuing function.
     regex        -  # Regex to parse command output.
-    depend_arg   - Command for the job dependencies. This would be an element of
-                   args, but has a more complicated structure.
-    depend_delim - String require to space consequetive dependencies."""
+    depend_arg   - Command for the job dependencies. This would be an element
+                   of args, but has a more complicated structure.
+    depend_delim - String require to space consequetive dependencies.
+    openmp       - Bash added to scripts in order to use OpenMP."""
 
     def __init__(self, command, regex, depend_arg, depend_delim, openmp, args):
         self.command = command
-        self.args         = args
-        self.regex        = re.compile(regex)
-        self.depend_arg   = depend_arg
+        self.args = args
+        self.regex = re.compile(regex)
+        self.depend_arg = depend_arg
         self.depend_delim = depend_delim
-        self.openmp       = openmp
-        self.args.update({'depend' : self.ParseDepend})
+        self.openmp = openmp
+        self.args.update({'depend': self.parse_depend})
 
-    def ParseDepend(self, item):
+    def parse_depend(self, item):
         """Deal with slightly more complex syntax for declaring dependencies"""
-        if isinstance(item, str) or isinstance(item, int):
+        if isinstance(item, (str, int)):
             return self.depend_arg.format(item)
-        elif item:
+        if item:
             return self.depend_arg.format(self.depend_delim.join(item))
-        else:
-            return None
 
-    def PrintBatch(self, values, exe=None):
-        return ' '.join(self.ListBatch(values, exe=exe))
+        return None
 
-    def ListBatch(self, values, exe=None):
+    def print_batch(self, values, exe=None):
         """Returns the queuing shell command. 'exe' is the thing to run."""
+        return ' '.join(self.list_batch(values, exe=exe))
+
+    def list_batch(self, values, exe=None):
+        """Lists the queuing shell command. 'exe' is the thing to run."""
         arguments = [self.command]
         for key, val in values.items():
             try:
@@ -81,25 +86,26 @@ class BatchSystem:
             if test:
                 arguments.extend(self.args[key](val).split("%%"))
 
-        if isinstance(exe, list) or isinstance(exe, tuple):
+        if isinstance(exe, (list, tuple)):
             arguments.extend(exe)
         elif exe is not None:
             arguments.append(exe)
 
         return arguments
 
-    def ParseOut(self, text, key=None):
+    def parse_out(self, text, key=None):
         """Parse output of queuing function. Returns all regex groups unless
         'key' is specified, where it just returns that."""
-        m = self.regex.match(text)
-        if m == None:
+        mat = self.regex.match(text)
+        if mat is None:
             raise SyntaxError('Unexpected output from queue system: ' + text)
         if key:
-            return m.group(key)
-        else:
-            return m.groupdict()
+            return mat.group(key)
+
+        return mat.groupdict()
 
     def add_openmp_to_script(self, file_obj):
+        """Include OpenMP control within this script."""
         file_obj.write(self.openmp)
 
 #-----------------------------------------------------------------------------
@@ -109,7 +115,7 @@ class BatchSystem:
 # QSUB, used by the Oxford Yau cluster
 qsub = BatchSystem(
     'qsub',
-    'Your job (?P<ID>\d+) \("(?P<job_name>[\w\.-]+)"\) has been submitted',
+    r'Your job (?P<ID>\d+) \("(?P<job_name>[\w\.-]+)"\) has been submitted',
     '-hold_jid%%{}', ',', '',
     {'duration' : '-l%%h_rt={}:00'.format,
      'email'    : '-M%%{}'.format,
@@ -120,13 +126,14 @@ qsub = BatchSystem(
      'procs'    : '-n%%num_proc={}'.format,
      'queue'    : '-q%%{}'.format,
      'ram'      : '-l%%h_vmem={}M'.format,
-})
+    }
+)
 
 # BSUB, used by the JASMIN cluster at RAL
 bsub = BatchSystem(
     'bsub',
-    'Job <(?P<ID>\d+)> is submitted to (?P<desc>[\w\s]*)queue '
-    '<(?P<queue>[\w\.-]+)>.', '-w%%ended({})', ')&&ended(', '',
+    r'Job <(?P<ID>\d+)> is submitted to (?P<desc>[\w\s]*)queue '
+    r'<(?P<queue>[\w\.-]+)>.', '-w%%ended({})', ')&&ended(', '',
     {'duration' : '-W%%{}'.format,
      'email'    : '-u%%{}'.format,
      'err_file' : '-e%%{}'.format,
@@ -139,12 +146,13 @@ bsub = BatchSystem(
      'priority' : '-p%%{}'.format,
      'queue'    : '-q%%{}'.format,
      'ram'      : '-R%%rusage[mem={0}]%%-M%%{0}000'.format,
-})
+    }
+)
 
 # SLURM, the new Oxford queuing system
 slurm = BatchSystem(
     'sbatch',
-    'Submitted batch job (?P<ID>\d+)', '--dependency=afterok:{}', ':', """
+    r'Submitted batch job (?P<ID>\d+)', '--dependency=afterok:{}', ':', """
 if [ -n "$SLURM_CPUS_PER_TASK" ]; then
     omp_threads=$SLURM_CPUS_PER_TASK
 else
@@ -162,4 +170,5 @@ export OMP_NUM_THREADS=$omp_threads
      'queue'    : '--partition={}'.format,
      'ram'      : '--mem={}M'.format,
      'exclude'  : '--exclude={}'.format,
-})
+    }
+)

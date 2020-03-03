@@ -2,7 +2,9 @@
 import os
 
 from collections import OrderedDict
-from pyorac.arguments import *
+from pyorac.arguments import (check_args_common, check_args_preproc,
+                              check_args_main, check_args_postproc,
+                              check_args_cc4cl)
 from pyorac.util import call_exe
 
 
@@ -91,6 +93,7 @@ def process_post(args, log_path, files=None, dependency=None, tag='post'):
     """Call sequence for post processor"""
     from glob import glob
     from pyorac.drivers import build_postproc_driver
+    from pyorac.definitions import FileMissing
 
     check_args_postproc(args)
     job_name = args.File.job_name(args.revision, tag)
@@ -103,9 +106,9 @@ def process_post(args, log_path, files=None, dependency=None, tag='post'):
         # Find all primary files of requested phases in given input folders.
         files = []
         for phs in set(args.phases):
-            for d in args.in_dir:
+            for fdr in args.in_dir:
                 files.extend(glob(os.path.join(
-                    d, root_name + phs + '.primary.nc'
+                    fdr, root_name + phs + '.primary.nc'
                 )))
 
     if len(files) < 2:
@@ -114,7 +117,8 @@ def process_post(args, log_path, files=None, dependency=None, tag='post'):
     out_file = os.path.join(
         args.out_dir, '.'.join(filter(
             None, (root_name, args.suffix, 'primary', 'nc')
-    )))
+        ))
+    )
     if args.clobber >= CLOBBER['post'] or not os.path.isfile(out_file):
         # Settings for batch processing
         values = {'job_name' : job_name,
@@ -144,14 +148,14 @@ def call_reformat(args, log_path, exe, out_file, dependency=None):
 
     from pyorac.colour_print import colour_print
     from pyorac.definitions import OracError, COLOURING
-    from subprocess import check_output, CalledProcessError
+    from subprocess import check_call, check_output, CalledProcessError
 
     # Optionally print command and driver file contents to StdOut
     if args.verbose or args.script_verbose or args.dry_run:
         colour_print('{} {} 1 <<<'.format(exe, out_file), COLOURING['header'])
 
     if args.dry_run:
-        return
+        return -1
 
     job_name = args.File.job_name(args.revision, 'format')
 
@@ -178,15 +182,15 @@ def call_reformat(args, log_path, exe, out_file, dependency=None):
             batch_params.update({key : val for key, val in args.batch_settings})
 
             # Form batch queue command and call batch queuing system
-            cmd = defaults.batch.ListBatch(batch_params,
-                                           exe=[exe, out_file, "1"])
+            cmd = defaults.batch.list_batch(batch_params,
+                                            exe=[exe, out_file, "1"])
 
             if args.verbose or args.script_verbose:
                 colour_print(' '.join(cmd), COLOURING['header'])
             out = check_output(cmd, universal_newlines=True)
 
             # Parse job ID # and return it to the caller
-            jid = defaults.batch.ParseOut(out, 'ID')
+            jid = defaults.batch.parse_out(out, 'ID')
             return jid
         except CalledProcessError as err:
             raise OracError('Failed to queue job ' + exe)
@@ -199,7 +203,6 @@ def process_all(orig_args):
     from argparse import ArgumentParser
     from copy import deepcopy
     from pyorac.arguments import args_common, args_main
-    from pyorac.definitions import SETTINGS
     from pyorac.local_defaults import log_dir, pre_dir
 
     # Generate main-processor-only parser
@@ -230,8 +233,8 @@ def process_all(orig_args):
     root_name = args.File.root_name(args.revision, args.processor, args.project,
                                     args.product_name)
     args.target = root_name + ".config.nc"
-    out_files   = [] # All files that would be made (facilitates --dry_run)
-    jid_main    = [] # ID no. for each queued job
+    out_files = [] # All files that would be made (facilitates --dry_run)
+    jid_main = [] # ID no. for each queued job
     args.in_dir = [args.out_dir]
     for sett in args.settings:
         phs_args = deepcopy(args)
@@ -250,7 +253,7 @@ def process_all(orig_args):
             written_dirs.add(args.out_dir)
 
 
-    # Run postprocessor, if necessary
+    # Run postprocessor if necessary
     if len(args.settings) > 1:
         args.target = root_name + phs_args.phase + ".primary.nc"
         args.in_dir = written_dirs
@@ -282,7 +285,7 @@ def run_regression(File, in_dir):
     from pyorac.regression_tests import compare_orac_out
     from warnings import warn
 
-    regex = re.compile("_R(\d+)")
+    regex = re.compile(r"_R(\d+)")
 
     this_revision = int(File.revision)
     for this_file in iglob(os.path.join(
@@ -291,11 +294,11 @@ def run_regression(File, in_dir):
         # Find previous file version
         old_revision = 0
         old_file = None
-        for f in iglob(regex.sub("_R[0-9][0-9][0-9][0-9]", this_file)):
-            rev = int(regex.search(f).group(1))
+        for filename in iglob(regex.sub("_R[0-9][0-9][0-9][0-9]", this_file)):
+            rev = int(regex.search(filename).group(1))
             if old_revision < rev < this_revision:
                 old_revision = copy(rev)
-                old_file = copy(f)
+                old_file = copy(filename)
 
         if old_file is None:
             warn("Could not locate previous file: " + this_file, OracWarning)

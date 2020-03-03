@@ -1,7 +1,8 @@
-# mappable) Routines to plot global data, mainly satellite swaths, on a map.
+"""mappable) Routines to plot global data, mainly satellite swaths, on a map.
 #
 # 18 Jan 2017, ACP: Initial version
 # 12 Apr 2017, ACP: Move to object that holds data
+"""
 
 import numpy as np
 
@@ -35,10 +36,10 @@ class Mappable(object):
 
         # Evaluate arguments
         central_longitude = kwargs.pop('central_longitude', 0.)
-        nvector           = kwargs.pop("nvector", False)
+        nvector = kwargs.pop("nvector", False)
 
-        self.lat   = lat
-        self.lon   = lon
+        self.lat = lat
+        self.lon = lon
         for key, val in kwargs.items():
             self.__dict__[key] = val
 
@@ -46,20 +47,20 @@ class Mappable(object):
             self.crnrlon, self.crnrlat = grid_cell_corners(lat, lon)
             self.transform = PlateCarree(central_longitude=0.)
             self._cent_lon = None
-            self.nvector   = False
+            self.nvector = False
         elif nvector:
             assert lat.shape == lon.shape
             self.crnrlat, self.crnrlon = nvector_cell_corners(lat, lon)
             self.transform = PlateCarree(central_longitude=0.)
             self._cent_lon = None
-            self.nvector   = True
+            self.nvector = True
         else:
             assert lat.shape == lon.shape
             self.crnrlat, self.crnrlon = linear_cell_corners(lat, lon,
                                                              central_longitude)
             self.transform = PlateCarree(central_longitude=central_longitude)
             self._cent_lon = central_longitude
-            self.nvector   = False
+            self.nvector = False
 
     @property
     def shape(self):
@@ -69,13 +70,14 @@ class Mappable(object):
     @property
     def size(self):
         """Number of data points"""
-        n = 1
-        for d in self.shape:
-            n *= d
-        return n
+        num = 1
+        for dim in self.shape:
+            num *= dim
+        return num
 
     @property
     def central_longitude(self):
+        """Centre of map projection."""
         try:
             return self._cent_lon
         except AttributeError:
@@ -120,8 +122,8 @@ class Mappable(object):
         kwargs.setdefault('rasterized', True)
 
         # Mask points outside of the defined extent to save time
-        sl           = kwargs.pop("slices", (slice(None), slice(None)))
-        minimise     = kwargs.pop('minimise', True)
+        sl = kwargs.pop("slices", (slice(None), slice(None)))
+        minimise = kwargs.pop('minimise', True)
         if minimise:
             # Mask any data outside of the defined extent
             extent = ax.get_extent()
@@ -131,15 +133,16 @@ class Mappable(object):
                         self.lon[sl] < extent[0], np.logical_or(
                             self.lon[sl] > extent[1], np.logical_or(
                                 self.lat[sl] < extent[2],
-                                    self.lat[sl] > extent[3]))))
+                                self.lat[sl] > extent[3]
+                            ))))
             except IndexError:
                 # 1D arrays
                 filt = np.logical_or(self.lon[sl[0]] < extent[0],
                                      self.lon[sl[0]] > extent[1])
-                data_mask[:,filt] = True
+                data_mask[:, filt] = True
                 filt = np.logical_or(self.lat[sl[1]] < extent[2],
                                      self.lat[sl[1]] > extent[3])
-                data_mask[filt,:] = True
+                data_mask[filt, :] = True
 
         try:
             initial_mask = kwargs.pop('mask')
@@ -153,6 +156,7 @@ class Mappable(object):
         return np.ma.masked_where(mask, data), sl
 
     def map(self, ax, data, **kwargs):
+        """Plot field on map projection using pcolormesh()."""
         masked, sl_orig = self._plot_init(ax, data, kwargs)
         # Increment slices for corners
         sl = tuple(slice(s.start, s.stop+1)
@@ -161,6 +165,7 @@ class Mappable(object):
         return im
 
     def scatter(self, ax, data, **kwargs):
+        """Plot field on map projection using scatter()."""
         masked, sl = self._plot_init(ax, data, kwargs)
         kwargs['c'] = masked
 
@@ -170,12 +175,11 @@ class Mappable(object):
         return im
 
     def false(self, ax, data, **kwargs):
-        from matplotlib.colors import Normalize
-
-        order         = kwargs.pop('order', (0,1,2))
+        """Plot field on map projection as false-colour pcolormesh()."""
+        order = kwargs.pop('order', (0, 1, 2))
         hide_outliers = kwargs.pop('hide_outliers', False)
-        vmin          = kwargs.pop('vmin', 0.)
-        vmax          = kwargs.pop('vmax', 1.)
+        vmin = kwargs.pop('vmin', 0.)
+        vmax = kwargs.pop('vmax', 1.)
 
         assert len(order) == 3
 
@@ -200,7 +204,7 @@ class Mappable(object):
         if masked.mask.all():
             raise ValueError("No data to plot.")
         # Apply mask as the alpha dimension
-        colour[3,...] = np.where(masked.mask, 0, 1)
+        colour[3, ...] = np.where(masked.mask, 0, 1)
         kwargs["color"] = colour.reshape((4, masked.size)).T
 
         # Increment slices for corners
@@ -218,10 +222,11 @@ def grid_cell_corners(lat, lon):
     cell corners.
     """
     def make_crnr(arr):
+        """Perform operation."""
         crnr = np.empty(len(arr)+1)
         crnr[:-2] = 1.5*arr[:-1] - 0.5*arr[1:]
-        crnr[-2]  = 0.5*arr[-2]  + 0.5*arr[-1]
-        crnr[-1]  =-0.5*arr[-2]  + 1.5*arr[-1]
+        crnr[-2] = 0.5 *arr[-2]  + 0.5*arr[-1]
+        crnr[-1] = -0.5*arr[-2]  + 1.5*arr[-1]
         return crnr
     return np.meshgrid(make_crnr(lon), make_crnr(lat))
 
@@ -252,32 +257,33 @@ def linear_cell_corners(lat, lon, central_longitude=0.):
     from BF and y is from ER. Point u is then extrapolated from the
     intersection of lines ab and wy.
     """
-    # Extend lat/lon grid one pixel in all directions
+
     def extend_grid(g):
+        """Extend lat/lon grid one pixel in all directions."""
         out = np.empty((g.shape[0]+2, g.shape[1]+2))
 
-        out[1:-1,1:-1] = g
-        out[1:-1,0]  = 2.*g[:,0]  - g[:,1]
-        out[1:-1,-1] = 2.*g[:,-1] - g[:,-2]
-        out[0,1:-1]  = 2.*g[0,:]  - g[1,:]
-        out[-1,1:-1] = 2.*g[-1,:] - g[-2,:]
-        out[0,0]   = 4.*g[0,0]   - 2.*(g[0,1] + g[1,0])     + g[1,1]
-        out[-1,0]  = 4.*g[-1,0]  - 2.*(g[-1,1] + g[-2,0])   + g[-2,1]
-        out[0,-1]  = 4.*g[0,-1]  - 2.*(g[0,-2] + g[1,-1])   + g[1,-2]
-        out[-1,-1] = 4.*g[-1,-1] - 2.*(g[-1,-2] + g[-2,-1]) + g[-2,-2]
+        out[1:-1, 1:-1] = g
+        out[1:-1, 0] = 2. *g[:, 0]  - g[:, 1]
+        out[1:-1, -1] = 2.*g[:, -1] - g[:, -2]
+        out[0, 1:-1] = 2. *g[0, :]  - g[1, :]
+        out[-1, 1:-1] = 2.*g[-1, :] - g[-2, :]
+        out[0, 0] = 4. * g[0, 0]   - 2.*(g[0, 1]   + g[1, 0])   + g[1, 1]
+        out[-1, 0] = 4. *g[-1, 0]  - 2.*(g[-1, 1]  + g[-2, 0])  + g[-2, 1]
+        out[0, -1] = 4. *g[0, -1]  - 2.*(g[0, -2]  + g[1, -1])  + g[1, -2]
+        out[-1, -1] = 4.*g[-1, -1] - 2.*(g[-1, -2] + g[-2, -1]) + g[-2, -2]
 
         return out
 
-    # Find corners from grid cell centres
     def grid_corners(g):
+        """Find corners from grid cell centres."""
         ex = extend_grid(g)
-        crnr = (ex[0:-1,0:-1] + ex[0:-1,1:] + ex[1:,0:-1] +
-               ex[1:,1:]) / 4.
+        crnr = (ex[0:-1, 0:-1] + ex[0:-1, 1:] + ex[1:, 0:-1] +
+                ex[1:, 1:]) / 4.
         return crnr
 
     lon_transform = lon.copy()
     lon_transform -= central_longitude
-    lon_transform[lon_transform >  180.] -= 360.
+    lon_transform[lon_transform > 180.] -= 360.
     lon_transform[lon_transform < -180.] += 360.
 
     return grid_corners(lat), grid_corners(lon_transform)
@@ -316,12 +322,12 @@ def nvector_cell_corners(lat, lon):
 
     # Build a larger array and convert all coords to nvectors
     points = np.empty((lon.shape[0]+2, lon.shape[1]+2), dtype=nv.Nvector)
-    for point, ln, lt in np.nditer([points[1:-1,1:-1], lon, lat],
+    for point, ln, lt in np.nditer([points[1:-1, 1:-1], lon, lat],
                                    flags=['refs_ok'], op_flags=op_flags):
         point[...] = wgs84.GeoPoint(lt, ln, degrees=True).to_nvector()
 
-    # Extrapolate points to edges of grid
     def extrap_edge(edge_line, near_line, far_line):
+        """Extrapolate points to edges of grid."""
         for edge, near, far in np.nditer([edge_line, near_line, far_line],
                                          flags=['refs_ok'],
                                          op_flags=op_flags):
@@ -329,24 +335,24 @@ def nvector_cell_corners(lat, lon):
             edge[()] = path.interpolate(2.)
 
     extrap_edge(points[1:-1, 0], points[1:-1, 1], points[1:-1, 2])
-    extrap_edge(points[1:-1,-1], points[1:-1,-2], points[1:-1,-3])
-    extrap_edge(points[ 0,1:-1], points[ 1,1:-1], points[ 2,1:-1])
-    extrap_edge(points[-1,1:-1], points[-2,1:-1], points[-3,1:-1])
+    extrap_edge(points[1:-1, -1], points[1:-1, -2], points[1:-1, -3])
+    extrap_edge(points[0, 1:-1], points[1, 1:-1], points[2, 1:-1])
+    extrap_edge(points[-1, 1:-1], points[-2, 1:-1], points[-3, 1:-1])
 
-    # And the corners...
     def extrap_corner(horz_near, horz_far, vert_near, vert_far):
+        """Extrapolate grid corners to the edges of the grid."""
         horz_path = nv.GeoPath(horz_far, horz_near)
         vert_path = nv.GeoPath(vert_far, vert_near)
         return horz_path.intersection(vert_path).to_nvector()
 
-    points[ 0, 0] = extrap_corner(points[ 1, 0], points[ 2, 0],
-                                  points[ 0, 1], points[ 0, 2])
+    points[0, 0] = extrap_corner(points[1, 0], points[2, 0],
+                                 points[0, 1], points[0, 2])
     points[-1, 0] = extrap_corner(points[-2, 0], points[-3, 0],
                                   points[-1, 1], points[-1, 2])
-    points[ 0,-1] = extrap_corner(points[ 1,-1], points[ 2,-1],
-                                  points[ 0,-2], points[ 0,-3])
-    points[-1,-1] = extrap_corner(points[-2,-1], points[-3,-1],
-                                  points[-1,-2], points[-1,-3])
+    points[0, -1] = extrap_corner(points[1, -1], points[2, -1],
+                                  points[0, -2], points[0, -3])
+    points[-1, -1] = extrap_corner(points[-2, -1], points[-3, -1],
+                                   points[-1, -2], points[-1, -3])
 
     # Form output arrays
     shape = (lon.shape[0]+1, lon.shape[1]+1)
@@ -357,16 +363,16 @@ def nvector_cell_corners(lat, lon):
     nvecs = wgs84.Nvector([[np.ones(4)], [np.zeros(4)], [np.zeros(4)]])
 
     # Corners are the midpoint of each 2x2 box of points
-    for (i,j), _ in np.ndenumerate(crnrlon):
+    for (i, j), _ in np.ndenumerate(crnrlon):
         # Copy 2x2 box of points into container (it's a list of arrays)
         for k in range(3):
             nvecs.normal[k] = [pnt.normal[k]
-                               for pnt in points[i:i+2,j:j+2].flat]
+                               for pnt in points[i:i+2, j:j+2].flat]
 
         # Use nvector to find average of each square
-        mn = nvecs.mean_horizontal_position().to_geo_point()
-        crnrlon[i,j] = mn.longitude_deg
-        crnrlat[i,j] = mn.latitude_deg
+        mean = nvecs.mean_horizontal_position().to_geo_point()
+        crnrlon[i, j] = mean.longitude_deg
+        crnrlat[i, j] = mean.latitude_deg
 
     return crnrlat, crnrlon
 
@@ -374,7 +380,7 @@ def nvector_cell_corners(lat, lon):
 # --- SINUSOIDAL GRID---------- ----------------------------------------------
 # Derived from def_sinusoidal.pro
 class SinGrid(object):
-    """Mapping to an from a sinusoidal grid.
+    r"""Mapping to and from a sinusoidal grid.
 
     The equations of the mapping are,
     $\begin{align}
@@ -484,12 +490,12 @@ class SinGrid(object):
         return degrees(phi), degrees(lam)
 
 
-    def to_1d(self, us, vs):
+    def to_1d(self, u_s, v_s):
         """Convert integer u,v pairs into scalar coordinates."""
         def _to_1d(u, v):
             try:
                 result = self.cumulative[v] + u - self.min_u[v]
-            except IndexError as err:
+            except IndexError:
                 raise ValueError("v out of range ({})".format(v))
 
             if u < self.min_u[v] or u > self.max_u[v]:
@@ -499,12 +505,12 @@ class SinGrid(object):
 
         try:
             # If something iterable, return same type of iterable
-            return type(us)([
-                _to_1d(u, v) for u, v in zip(us, vs)
+            return type(u_s)([
+                _to_1d(u, v) for u, v in zip(u_s, v_s)
             ])
         except TypeError:
             # Scalars
-            return _to_1d(us, vs)
+            return _to_1d(u_s, v_s)
 
 
     def to_2d(self, coords):

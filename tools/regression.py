@@ -5,24 +5,29 @@
 # 08 Jul 2016, AP: Debugging against more awkward python environments
 
 import os
-import pyorac.local_defaults as defaults
 import sys
-
+import warnings
 from argparse import ArgumentParser
 from copy import deepcopy
-from pyorac.arguments import *
-from pyorac.colour_print import colour_print
-from pyorac.definitions import *
-from pyorac.local_defaults import log_dir
-from pyorac.regression_tests import *
-from pyorac.run import process_all, run_regression
-from pyorac.util import get_repository_revision, warning_format
 from subprocess import check_output, CalledProcessError
 from tempfile import mkstemp
 
+import pyorac.local_defaults as defaults
+from pyorac.arguments import (args_common, args_regress, args_cc4cl,
+                              args_preproc, args_main, args_postproc,
+                              check_args_regress, check_args_common,
+                              check_args_preproc)
+from pyorac.colour_print import colour_print
+from pyorac.definitions import (Acceptable, BadValue, COLOURING, FieldMissing,
+                                FileMissing, FileName, InconsistentDim,
+                                OracError, Regression, RoundingError)
+from pyorac.local_defaults import log_dir
+from pyorac.regression_tests import REGRESSION_TESTS
+from pyorac.run import process_all, run_regression
+from pyorac.util import get_repository_revision, warning_format
+
 
 # Calibrate how regression warnings are displayed
-import warnings
 warnings.formatwarning = warning_format
 for key, item in defaults.warn_filt.items():
     warnings.simplefilter(item, locals()[key])
@@ -40,8 +45,8 @@ orig_args = pars.parse_args()
 
 check_args_regress(orig_args)
 
-if orig_args.in_dir == None:
-    orig_args.in_dir = [ defaults.data_dir + '/testinput' ]
+if orig_args.in_dir is None:
+    orig_args.in_dir = [defaults.data_dir + '/testinput']
 if orig_args.out_dir:
     base_out_dir = orig_args.out_dir
 else:
@@ -66,7 +71,7 @@ try:
         # Set filename to be processed and output folder
         args.out_dir = os.path.join(base_out_dir, test)
         try:
-            args.target, args.limit, args.preset_settings  = REGRESSION_TESTS[test]
+            args.target, args.limit, args.preset_settings = REGRESSION_TESTS[test]
         except KeyError:
             raise OracError("Invalid regression test for given phases.")
 
@@ -114,18 +119,18 @@ try:
                 values['job_name'] = job_name
                 values['log_file'] = os.path.join(log_path, job_name + '.log')
                 values['err_file'] = os.path.join(log_path, job_name + '.log')
-                values['depend']   = jid
+                values['depend'] = jid
                 values['duration'] = '00:05'
-                values['ram']      = '1000'
+                values['ram'] = '1000'
 
-                cmd = defaults.batch.ListBatch(values, exe=script_file)
+                cmd = defaults.batch.list_batch(values, exe=script_file)
                 if args.verbose or args.script_verbose:
                     colour_print(' '.join(cmd), COLOURING['header'])
                 out = check_output(cmd, universal_newlines=True)
 
                 if args.verbose or args.script_verbose:
                     print("Job queued with ID {}".format(
-                        defaults.batch.ParseOut(out, 'ID')
+                        defaults.batch.parse_out(out, 'ID')
                     ))
 
 except OracError as err:

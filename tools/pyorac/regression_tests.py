@@ -1,8 +1,9 @@
 """Routines implementing the regression tests for the ORAC repository."""
-import pyorac.local_defaults as defaults
-
-from pyorac.definitions import *
 from warnings import warn
+
+import pyorac.local_defaults as defaults
+from pyorac.definitions import (Acceptable, FieldMissing, InconsistentDim,
+                                OracWarning, Regression, RoundingError)
 
 
 # Define the regression tests
@@ -52,119 +53,122 @@ REGRESSION_TESTS = {
 }
 
 
-def compare_nc_atts(d0, d1, f, var):
+def compare_nc_atts(dat0, dat1, filename, var):
     """Report if the attributes of a NCDF file or variable have changed."""
 
     # Check if any attributes added/removed
-    atts = set(d0.ncattrs()).symmetric_difference(d1.ncattrs())
-    if len(atts) > 0:
-        warn(FieldMissing(f, ', '.join(atts)), stacklevel=3)
+    atts = set(dat0.ncattrs()).symmetric_difference(dat1.ncattrs())
+    if atts:
+        warn(FieldMissing(filename, ', '.join(atts)), stacklevel=3)
 
     # Check if any attributes changed
-    for key in d0.ncattrs():
+    for key in dat0.ncattrs():
         if key in atts:
             continue
 
-        if (d0.__dict__[key] != d1.__dict__[key] and
-            key not in defaults.atts_to_ignore):
-            warn(Regression(f, var + ', ' + key, 'warning',
-                            'Changed attribute ({} vs {})'.format(
-                                d0.__dict__[key], d1.__dict__[key]
-                            )), stacklevel=3
-            )
+        if (dat0.__dict__[key] != dat1.__dict__[key] and
+                key not in defaults.atts_to_ignore):
+            warn(Regression(
+                filename, var + ', ' + key, 'warning',
+                'Changed attribute ({} vs {})'.format(
+                    dat0.__dict__[key], dat1.__dict__[key]
+                )
+            ), stacklevel=3)
 
 
-def compare_orac_out(f0, f1):
+def compare_orac_out(file0, file1):
     """Compare two NCDF files"""
     import numpy as np
     try:
         from netCDF4 import Dataset
 
-    except ImportError as err:
+    except ImportError:
         warn('Skipping regression tests as netCDF4 unavailable',
              OracWarning, stacklevel=2)
         return
 
     try:
         # Open files
-        d0 = Dataset(f0, 'r')
-        d1 = Dataset(f1, 'r')
+        dat0 = Dataset(file0, 'r')
+        dat1 = Dataset(file1, 'r')
 
         # Check if any dimensions added/removed
-        dims = set(d0.dimensions.keys()).symmetric_difference(
-            d1.dimensions.keys()
+        dims = set(dat0.dimensions.keys()).symmetric_difference(
+            dat1.dimensions.keys()
         )
-        if len(dims) > 0:
+        if dims:
             # Not bothering to identify which file contains the errant field
-            warn(FieldMissing(f1, ', '.join(dims)), stacklevel=2)
+            warn(FieldMissing(file1, ', '.join(dims)), stacklevel=2)
 
         # Check if any dimensions changed
-        for key in d0.dimensions.keys():
+        for key in dat0.dimensions.keys():
             if key in dims:
                 continue
 
-            if d0.dimensions[key].size != d1.dimensions[key].size:
-                warn(InconsistentDim(f1, key, d0.dimensions[key].size,
-                                     d1.dimensions[key].size),
+            if dat0.dimensions[key].size != dat1.dimensions[key].size:
+                warn(InconsistentDim(file1, key, dat0.dimensions[key].size,
+                                     dat1.dimensions[key].size),
                      stacklevel=2)
 
             # Check attributes
-            compare_nc_atts(d0, d1, f1, key)
+            compare_nc_atts(dat0, dat1, file1, key)
 
         # Check if any variables added/removed
-        vars = set(d0.variables.keys()).symmetric_difference(
-            d1.variables.keys()
+        variables = set(dat0.variables.keys()).symmetric_difference(
+            dat1.variables.keys()
         )
-        if len(vars) > 0:
-            warn(FieldMissing(f1, ', '.join(vars)), stacklevel=2)
+        if variables:
+            warn(FieldMissing(file1, ', '.join(vars)), stacklevel=2)
 
         # Check if any variables changed
-        for key in d0.variables.keys():
-            if key in vars:
+        for key in dat0.variables.keys():
+            if key in variables:
                 continue
 
-            a0 = d0.variables[key]
-            a1 = d1.variables[key]
+            att0 = dat0.variables[key]
+            att1 = dat1.variables[key]
 
             # Turn off masking, so completely NaN fields can be equal
-            a0.set_auto_mask(False)
-            a1.set_auto_mask(False)
+            att0.set_auto_mask(False)
+            att1.set_auto_mask(False)
 
-            compare_nc_atts(a0, a1, f1, key)
+            compare_nc_atts(att0, att1, file1, key)
 
-            if a0.size != a1.size:
-                warn(InconsistentDim(f1, key, a0.size, a1.size), stacklevel=2)
+            if att0.size != att1.size:
+                warn(InconsistentDim(file1, key, att0.size, att1.size), stacklevel=2)
                 continue
 
             # Check if there has been any change
-            if not np.allclose(a0, a1, equal_nan=True, rtol=0, atol=0):
+            if not np.allclose(att0, att1, equal_nan=True, rtol=0, atol=0):
                 test = False
 
                 # For floats, check if variation is acceptable
-                if a0.dtype.kind == 'f':
-                    test = np.allclose(a0, a1, equal_nan = True,
-                                       rtol = defaults.rtol,
-                                       atol = defaults.atol)
+                if att0.dtype.kind == 'f':
+                    test = np.allclose(
+                        att0, att1, equal_nan=True, rtol=defaults.rtol,
+                        atol=defaults.atol
+                    )
                 else:
                     try:
-                        if isinstance(a0.scale_factor, np.floating):
+                        if isinstance(att0.scale_factor, np.floating):
                             # Packed floats consider the scale factor
-                            test = np.allclose(a0, a1, equal_nan = True,
-                                               rtol = defaults.rtol,
-                                               atol = max(a0.scale_factor,
-                                                          defaults.atol))
+                            test = np.allclose(
+                                att0, att1, equal_nan=True, rtol=defaults.rtol,
+                                atol=max(att0.scale_factor, defaults.atol)
+                            )
                     except AttributeError:
                         # If there is no scale factor, treat as an integer
                         pass
 
                 if test or key in defaults.vars_to_accept:
-                    warn(Acceptable(f1, key), stacklevel=2)
+                    warn(Acceptable(file1, key), stacklevel=2)
                 else:
-                    warn(RoundingError(f1, key), stacklevel=2)
+                    warn(RoundingError(file1, key), stacklevel=2)
     except IOError:
         pass
 
     finally:
-        if ('d0' in locals() or 'd0' in globals()): d0.close()
-        if ('d1' in locals() or 'd1' in globals()): d1.close()
-
+        if ('dat0' in locals() or 'dat0' in globals()):
+            dat0.close()
+        if ('dat1' in locals() or 'dat1' in globals()):
+            dat1.close()

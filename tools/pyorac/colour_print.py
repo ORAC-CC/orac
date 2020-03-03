@@ -56,9 +56,9 @@ TERMINAL_FORMAT = {
     'back white'         : '107',
 }
 # Font and background colour for 256 colour terminals
-for i in range(0,257):
-   TERMINAL_FORMAT['%d'.format(i)]      = '38;5;%d'.format(i)
-   TERMINAL_FORMAT['back %d'.format(i)] = '48;5;%d'.format(i)
+for i in range(0, 257):
+    TERMINAL_FORMAT['{:d}'.format(i)] = '38;5;{:d}'.format(i)
+    TERMINAL_FORMAT['back {:d}'.format(i)] = '48;5;{:d}'.format(i)
 
 
 def colour_format(text_in, start=None, reset=True):
@@ -73,21 +73,21 @@ def colour_format(text_in, start=None, reset=True):
     from sys import stdout
 
     def cprint_sub(match):
-       """Called by re.sub to replace a format code with an ASCII code."""
-       # Extract list of requested formats
-       formats = match.group(1).split(',')
-       # Form a list of the corresponding codes for those formats
-       codes = [TERMINAL_FORMAT[form.strip()] for form in formats]
-       # Merge those into a string
-       return '\033[' +';'.join(codes)  + 'm'
+        """Called by re.sub() to replace a format code with an ASCII code."""
+        # Extract list of requested formats
+        formats = match.group(1).split(',')
+        # Form a list of the corresponding codes for those formats
+        codes = [TERMINAL_FORMAT[form.strip()] for form in formats]
+        # Merge those into a string
+        return '\033[' +';'.join(codes)  + 'm'
 
     # Ignore colour on virtual terminals
     if not stdout.isatty():
-       return text_in
+        return text_in
 
     # Lazy way of formatting entire line
     if start:
-        text = '\C{' + start + '}' + text_in
+        text = r'\C{' + start + '}' + text_in
     else:
         text = text_in
 

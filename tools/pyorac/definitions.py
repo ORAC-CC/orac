@@ -29,6 +29,7 @@ class OracError(Exception):
     pass
 
 class FileMissing(OracError):
+    """Error when a required file could not be found."""
     def __init__(self, desc, filename):
         OracError.__init__(self, 'Could not locate {:s}: {:s}'.format(desc,
                                                                       filename))
@@ -36,6 +37,7 @@ class FileMissing(OracError):
         self.filename = filename
 
 class BadValue(OracError):
+    """Error when an out-of-range value is provided."""
     def __init__(self, variable, value):
         OracError.__init__(self, 'Invalid value for {}: {}'.format(variable,
                                                                    value))
@@ -43,16 +45,18 @@ class BadValue(OracError):
         self.value = value
 
 class OracWarning(UserWarning):
+    """Copy of UserWarning class to regression warnings from system."""
     pass
 
 class Regression(OracWarning):
+    """A field has changed during a regression test."""
     def __init__(self, filename, variable, col, desc):
         import re
         import sys
 
         regex = re.search(r'_R(\d+)(.*)\.(.+)\.nc$', filename)
         if sys.stdout.isatty():
-            text = '{:s}) {:s}: \C{{{:s}}}{:s}'.format(
+            text = r'{:s}) {:s}: \C{{{:s}}}{:s}'.format(
                 regex.group(3), variable, COLOURING[col], desc)
         else:
             text = '{:s}) {:s}: {:s}'.format(
@@ -60,22 +64,25 @@ class Regression(OracWarning):
         OracWarning.__init__(self, text, 'text')
 
 class InconsistentDim(Regression):
+    """The dimensions of a field have changed."""
     def __init__(self, filename, variable, dim0, dim1):
-        Regression.__init__(self, filename, variable, 'error',
-                            'Inconsistent dimensions ({:d} vs {:d})'.format(
-                                 dim0, dim1))
+        Regression.__init__(self, filename, variable, 'error', 'Inconsistent '
+                            'dimensions ({:d} vs {:d})'.format(dim0, dim1))
 
 class FieldMissing(Regression):
+    """A field is missing from one of the files evaluated."""
     def __init__(self, filename, variable):
         Regression.__init__(self, filename, variable, 'warning',
                             'Field not present in one file')
 
 class RoundingError(Regression):
+    """A value has changed in a field."""
     def __init__(self, filename, variable):
         Regression.__init__(self, filename, variable, 'error',
                             'Unequal elements')
 
 class Acceptable(Regression):
+    """A value has changed by a small increment in a field."""
     def __init__(self, filename, variable):
         Regression.__init__(self, filename, variable, 'pass',
                             'Acceptable variation')
@@ -107,7 +114,7 @@ class FileName:
     noaa (str): The number of this AVHRR sensor (1, 2, or 3).
     """
 
-    def __init__(self, in_dir, filename):
+    def __init__(self, in_dirs, filename):
         import datetime
         import os
         import re
@@ -118,198 +125,204 @@ class FileName:
         self.l1b = filename
 
         # Attempt AATSR L1B filename
-        m = re.search(
-            'ATS_TOA_1P([A-Za-z]{4})(?P<year>\d{4})(?P<month>\d{2})'
-            '(?P<day>\d{2})_(?P<hour>\d{2})(?P<min>\d{2})(?P<sec>\d{2})_'
-            '(?P<duration>\d{7})(?P<phase>\d)(?P<cycle>\d{4})_'
-            '(?P<rel_orbit>\d{5})_(?P<abs_orbit>\d{5})_(?P<count>\d{4})\.N1',
+        mat = re.search(
+            r'ATS_TOA_1P([A-Za-z]{4})(?P<year>\d{4})(?P<month>\d{2})'
+            r'(?P<day>\d{2})_(?P<hour>\d{2})(?P<min>\d{2})(?P<sec>\d{2})_'
+            r'(?P<duration>\d{7})(?P<phase>\d)(?P<cycle>\d{4})_'
+            r'(?P<rel_orbit>\d{5})_(?P<abs_orbit>\d{5})_(?P<count>\d{4})\.N1',
             filename
         )
-        if m:
-            self.sensor   = 'AATSR'
+        if mat:
+            self.sensor = 'AATSR'
             self.platform = 'Envisat' # For preprocessor
-            self.inst     = 'AATSR'   # For main processor
+            self.inst = 'AATSR'   # For main processor
             self.time = datetime.datetime(
-                int(m.group('year')), int(m.group('month')), int(m.group('day')),
-                int(m.group('hour')), int(m.group('min')), int(m.group('sec')), 0
+                int(mat.group('year')), int(mat.group('month')),
+                int(mat.group('day')), int(mat.group('hour')),
+                int(mat.group('min')), int(mat.group('sec')), 0
             )
-            self.dur = datetime.timedelta(seconds=int(m.group('duration')))
+            self.dur = datetime.timedelta(seconds=int(mat.group('duration')))
             self.geo = filename
             self.oractype = None
-            self.predef   = False
+            self.predef = False
             return
 
         # Attempt ATSR2 L1B filename
-        m = re.search(
-            'AT2_TOA_1P([A-Za-z]{4})(?P<year>\d{4})(?P<month>\d{2})'
-            '(?P<day>\d{2})_(?P<hour>\d{2})(?P<min>\d{2})(?P<sec>\d{2})_'
-            '(?P<duration>\d{7})(?P<phase>\d)(?P<cycle>\d{4})_'
-            '(?P<rel_orbit>\d{5})_(?P<abs_orbit>\d{5})_(?P<count>\d{4})\.E2',
+        mat = re.search(
+            r'AT2_TOA_1P([A-Za-z]{4})(?P<year>\d{4})(?P<month>\d{2})'
+            r'(?P<day>\d{2})_(?P<hour>\d{2})(?P<min>\d{2})(?P<sec>\d{2})_'
+            r'(?P<duration>\d{7})(?P<phase>\d)(?P<cycle>\d{4})_'
+            r'(?P<rel_orbit>\d{5})_(?P<abs_orbit>\d{5})_(?P<count>\d{4})\.E2',
             filename
         )
-        if m:
-            self.sensor   = 'ATSR2'
+        if mat:
+            self.sensor = 'ATSR2'
             self.platform = 'ERS2'  # For preprocessor
-            self.inst     = 'ATSR2' # For main processor
+            self.inst = 'ATSR2' # For main processor
             self.time = datetime.datetime(
-                int(m.group('year')), int(m.group('month')), int(m.group('day')),
-                int(m.group('hour')), int(m.group('min')), int(m.group('sec')), 0
+                int(mat.group('year')), int(mat.group('month')),
+                int(mat.group('day')), int(mat.group('hour')),
+                int(mat.group('min')), int(mat.group('sec')), 0
             )
-            self.dur = datetime.timedelta(seconds=int(m.group('duration')))
+            self.dur = datetime.timedelta(seconds=int(mat.group('duration')))
             self.geo = filename
             self.oractype = None
-            self.predef   = False
+            self.predef = False
             return
 
         # Attempt MODIS L1B filename
-        m = re.search(
-            'M(?P<platform>[OY])D021KM\.A(?P<year>\d{4})(?P<doy>\d{3})\.'
-            '(?P<hour>\d{2})(?P<min>\d{2})\.(?P<collection>\d{3})\.'
-            '(?P<proc_time>\d{13}).*hdf', filename
+        mat = re.search(
+            r'M(?P<platform>[OY])D021KM\.A(?P<year>\d{4})(?P<doy>\d{3})\.'
+            r'(?P<hour>\d{2})(?P<min>\d{2})\.(?P<collection>\d{3})\.'
+            r'(?P<proc_time>\d{13}).*hdf', filename
         )
-        if m:
+        if mat:
             self.sensor = 'MODIS'
-            if m.group('platform') == 'O':
+            if mat.group('platform') == 'O':
                 self.platform = 'TERRA'       # For preprocessor
-                self.inst     = 'MODIS-TERRA' # For main processor
+                self.inst = 'MODIS-TERRA' # For main processor
             else: # == 'Y'
                 self.platform = 'AQUA'
-                self.inst     = 'MODIS-AQUA'
+                self.inst = 'MODIS-AQUA'
             self.time = (datetime.datetime(
-                int(m.group('year')), 1, 1, int(m.group('hour')),
-                int(m.group('min')), 0, 0
-            ) + datetime.timedelta(days=int(m.group('doy')) - 1))
-            self.dur  = datetime.timedelta(minutes=5) # Approximately
-            self.geo  = ('M' + m.group('platform') + 'D03.A' + m.group('year') +
-                         m.group('doy') + '.' + m.group('hour') +
-                         m.group('min') + '.' + m.group('collection') + '.*hdf')
+                int(mat.group('year')), 1, 1, int(mat.group('hour')),
+                int(mat.group('min')), 0, 0
+            ) + datetime.timedelta(days=int(mat.group('doy')) - 1))
+            self.dur = datetime.timedelta(minutes=5) # Approximately
+            self.geo = ('M' + mat.group('platform') + 'D03.A' + mat.group('year') +
+                        mat.group('doy') + '.' + mat.group('hour') +
+                        mat.group('min') + '.' + mat.group('collection') + '.*hdf')
             self.oractype = None
-            self.predef   = False
+            self.predef = False
             return
 
         # Attempt reformatted AVHRR L1B filename
-        m = re.search(
-            'noaa(?P<platform>\d{1,2})_(?P<year>\d{4})(?P<month>\d{2})'
-            '(?P<day>\d{2})_(?P<hour>\d{2})(?P<min>\d{2})_(\d{5})_satproj_'
-            '(\d{5})_(\d{5})_avhrr.h5', filename
+        mat = re.search(
+            r'noaa(?P<platform>\d{1,2})_(?P<year>\d{4})(?P<month>\d{2})'
+            r'(?P<day>\d{2})_(?P<hour>\d{2})(?P<min>\d{2})_(\d{5})_satproj_'
+            r'(\d{5})_(\d{5})_avhrr.h5', filename
         )
-        if m:
-            self.sensor   = 'AVHRR'
-            self.platform = 'noaa' + m.group('platform')
-            self.inst     = 'AVHRR-NOAA' + m.group('platform')
+        if mat:
+            self.sensor = 'AVHRR'
+            self.platform = 'noaa' + mat.group('platform')
+            self.inst = 'AVHRR-NOAA' + mat.group('platform')
             self.time = datetime.datetime(
-                int(m.group('year')), int(m.group('month')), int(m.group('day')),
-                int(m.group('hour')), int(m.group('min')), 0, 0
+                int(mat.group('year')), int(mat.group('month')),
+                int(mat.group('day')), int(mat.group('hour')),
+                int(mat.group('min')), 0, 0
             )
-            self.dur  = datetime.timedelta(seconds=6555) # Guessing
+            self.dur = datetime.timedelta(seconds=6555) # Approximately
             # The following may be problematic with interesting dir names
-            self.geo  = filename.replace('_avhrr.h5', '_sunsatangles.h5')
+            self.geo = filename.replace('_avhrr.h5', '_sunsatangles.h5')
             self.oractype = None
-            self.predef   = False
+            self.predef = False
             return
 
         # Default AVHRR filename format produced by pygac (differs from
         # DWD produced L1b data)
-        m = re.search(
-            'ECC_GAC_avhrr_noaa(?P<platform>\d{1,2})_(\d{5})_(?P<year>\d{4})'
-            '(?P<month>\d{2})(?P<day>\d{2})T(?P<hour>\d{2})(?P<min>\d{2})'
-            '(\d{3})Z_(\d{8})T(\d{7})Z.h5', filename
+        mat = re.search(
+            r'ECC_GAC_avhrr_noaa(?P<platform>\d{1,2})_(\d{5})_(?P<year>\d{4})'
+            r'(?P<month>\d{2})(?P<day>\d{2})T(?P<hour>\d{2})(?P<min>\d{2})'
+            r'(\d{3})Z_(\d{8})T(\d{7})Z.h5', filename
         )
-        if m:
-            self.sensor   = 'AVHRR'
-            self.platform = 'noaa' + m.group('platform')
-            self.inst     = 'AVHRR-NOAA' + m.group('platform')
+        if mat:
+            self.sensor = 'AVHRR'
+            self.platform = 'noaa' + mat.group('platform')
+            self.inst = 'AVHRR-NOAA' + mat.group('platform')
             # The time specification could be fixed, as the pygac file
             # names include start and end times, to 0.1 seconds
             self.time = datetime.datetime(
-                int(m.group('year')), int(m.group('month')), int(m.group('day')),
-                int(m.group('hour')), int(m.group('min')), 0, 0
+                int(mat.group('year')), int(mat.group('month')),
+                int(mat.group('day')), int(mat.group('hour')),
+                int(mat.group('min')), 0, 0
             )
-            self.dur  = datetime.timedelta(seconds=6555) # Guessing
-            self.geo  = filename.replace('ECC_GAC_avhrr_',
-                                         'ECC_GAC_sunsatangles_')
+            self.dur = datetime.timedelta(seconds=6555) # Approximately
+            self.geo = filename.replace('ECC_GAC_avhrr_',
+                                        'ECC_GAC_sunsatangles_')
             self.oractype = None
-            self.predef   = False
+            self.predef = False
             return
 
         # Attempt SEVIRI L1B filename in NAT format
-        m = re.search(
-            'MSG(?P<platform>\d{1})-SEVI-MSG(\d+)-(\d+)-NA-(?P<year>\d{4})'
-            '(?P<month>\d{2})(?P<day>\d{2})(?P<hour>\d{2})(?P<min>\d{2})'
-            '(?P<sec>[\d\.]+)Z-(.*).nat', filename
+        mat = re.search(
+            r'MSG(?P<platform>\d{1})-SEVI-MSG(\d+)-(\d+)-NA-(?P<year>\d{4})'
+            r'(?P<month>\d{2})(?P<day>\d{2})(?P<hour>\d{2})(?P<min>\d{2})'
+            r'(?P<sec>[\d\.]+)Z-(.*).nat', filename
         )
-        if m:
-            self.sensor   = 'SEVIRI'
-            self.platform = 'MSG'+m.group('platform')
-            self.inst     = 'SEVIRI-'+self.platform
-            self.time     = datetime.datetime(
-                int(m.group('year')), int(m.group('month')), int(m.group('day')),
-                int(m.group('hour')), int(m.group('min')),
-                round(float(m.group('sec'))), 0
+        if mat:
+            self.sensor = 'SEVIRI'
+            self.platform = 'MSG'+mat.group('platform')
+            self.inst = 'SEVIRI-'+self.platform
+            self.time = datetime.datetime(
+                int(mat.group('year')), int(mat.group('month')),
+                int(mat.group('day')), int(mat.group('hour')),
+                int(mat.group('min')), round(float(mat.group('sec'))), 0
             )
-            self.dur      = datetime.timedelta(seconds=900) # Guessing
-            self.geo      = filename
+            self.dur = datetime.timedelta(seconds=900) # Approximately
+            self.geo = filename
             self.oractype = None
-            self.predef   = True
+            self.predef = True
             return
 
         # Attempt SEVIRI L1B filename for segment HRT format
-        m = re.search(
-            'H-000-MSG(?P<platform>\d{1})_+-MSG(\d+)_+-_+-EPI_+-(?P<year>\d{4})'
-            '(?P<month>\d{2})(?P<day>\d{2})(?P<hour>\d{2})(?P<min>\d{2})'
-            '-_+', filename
+        mat = re.search(
+            r'H-000-MSG(?P<platform>\d{1})_+-MSG(\d+)_+-_+-EPI_+-(?P<year>\d{4})'
+            r'(?P<month>\d{2})(?P<day>\d{2})(?P<hour>\d{2})(?P<min>\d{2})'
+            r'-_+', filename
         )
-        if m:
-            self.sensor   = 'SEVIRI'
-            self.platform = 'MSG'+m.group('platform')
-            self.inst     = 'SEVIRI-'+self.platform
-            self.time     = datetime.datetime(
-                int(m.group('year')), int(m.group('month')), int(m.group('day')),
-                int(m.group('hour')), int(m.group('min')), 0, 0
+        if mat:
+            self.sensor = 'SEVIRI'
+            self.platform = 'MSG'+mat.group('platform')
+            self.inst = 'SEVIRI-'+self.platform
+            self.time = datetime.datetime(
+                int(mat.group('year')), int(mat.group('month')),
+                int(mat.group('day')), int(mat.group('hour')),
+                int(mat.group('min')), 0, 0
             )
-            self.dur      = datetime.timedelta(seconds=900) # Guessing
-            self.geo      = filename
+            self.dur = datetime.timedelta(seconds=900) # Approximately
+            self.geo = filename
             self.oractype = None
-            self.predef   = True
+            self.predef = True
             return
 
         # Attempt SEVIRI L1B filename for Met Office format
-        m = re.search(
-            'MSG_(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2})(?P<hour>\d{2})'
-            '(?P<min>\d{2}).*h5', filename
+        mat = re.search(
+            r'MSG_(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2})(?P<hour>\d{2})'
+            r'(?P<min>\d{2}).*h5', filename
         )
-        if m:
-            self.sensor   = 'SEVIRI'
+        if mat:
+            self.sensor = 'SEVIRI'
             for fdr in in_dir:
                 tmp = os.path.join(fdr, filename)
                 if os.path.isfile(tmp):
                     self.platform = _determine_platform_from_metoffice(tmp)
-            self.inst     = 'SEVIRI-'+self.platform
-            self.time     = datetime.datetime(
-                int(m.group('year')), int(m.group('month')), int(m.group('day')),
-                int(m.group('hour')), int(m.group('min')), 0, 0
+            self.inst = 'SEVIRI-'+self.platform
+            self.time = datetime.datetime(
+                int(mat.group('year')), int(mat.group('month')),
+                int(mat.group('day')), int(mat.group('hour')),
+                int(mat.group('min')), 0, 0
             )
-            self.dur      = datetime.timedelta(seconds=900) # Guessing
-            self.geo      = filename
+            self.dur = datetime.timedelta(seconds=900) # Approximately
+            self.geo = filename
             self.oractype = None
-            self.predef   = True
+            self.predef = True
             return
 
         # For SLSTR, we passed a directory name
-        m = re.search(
-            'S3(?P<platform>[AB])_SL_1_RBT____(?P<year>\d{4})(?P<month>\d{2})'
-            '(?P<day>\d{2})T(?P<hour>\d{2})(?P<min>\d{2})(?P<sec>\d{2})_'
-            '\d{8}T\d{6}_\d{8}T\d{6}_(?P<duration>\d{4})_(?P<cycle>\d{3})_'
-            '(?P<orbit>\d{3})_(?P<frame>\d{4})_(?P<centre>[A-Za-z0-9]{3})_'
-            '(?P<class>[OFDR])_(?P<timeliness>[NS][RT])_(?P<version>\d{3}).'
-            'SEN3', filename
+        mat = re.search(
+            r'S3(?P<platform>[AB])_SL_1_RBT____(?P<year>\d{4})(?P<month>\d{2})'
+            r'(?P<day>\d{2})T(?P<hour>\d{2})(?P<min>\d{2})(?P<sec>\d{2})_'
+            r'\d{8}T\d{6}_\d{8}T\d{6}_(?P<duration>\d{4})_(?P<cycle>\d{3})_'
+            r'(?P<orbit>\d{3})_(?P<frame>\d{4})_(?P<centre>[A-Za-z0-9]{3})_'
+            r'(?P<class>[OFDR])_(?P<timeliness>[NS][RT])_(?P<version>\d{3}).'
+            r'SEN3', filename
         )
-        if m:
+        if mat:
             self.l1b = os.path.join(filename, "geodetic_in.nc")
             self.sensor = 'SLSTR'
-            self.platform = 'Sentinel3'+m.group('platform').lower()
-            self.inst = 'SLSTR-Sentinel-3'+m.group('platform').lower()
-            self.dur = datetime.timedelta(seconds=int(m.group('duration')))
+            self.platform = 'Sentinel3'+mat.group('platform').lower()
+            self.inst = 'SLSTR-Sentinel-3'+mat.group('platform').lower()
+            self.dur = datetime.timedelta(seconds=int(mat.group('duration')))
             self.geo = os.path.join(filename, "geodetic_in.nc")
             self.oractype = None
             self.predef = False
@@ -335,32 +348,33 @@ class FileName:
             return
 
         # Processed ORAC output
-        m = re.search(
-            '(?P<project>\w+)-(?P<product>.+)-(?P<sensor>\w+)_(?P<processor>\w+)'
-            '_(?P<platform>\w+)_(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2})'
-            '(?P<hour>\d{2})(?P<min>\d{2})_R(?P<revision>\d+)(?P<phase>\w*)\.'
-            '(?P<filetype>\w+)\.nc', filename
+        mat = re.search(
+            r'(?P<project>\w+)-(?P<product>.+)-(?P<sensor>\w+)_'
+            r'(?P<processor>\w+)_(?P<platform>\w+)_(?P<year>\d{4})'
+            r'(?P<month>\d{2})(?P<day>\d{2})(?P<hour>\d{2})(?P<min>\d{2})_R'
+            r'(?P<revision>\d+)(?P<phase>\w*)\.(?P<filetype>\w+)\.nc', filename
         )
-        if m:
-            self.sensor   = m.group('sensor')
-            self.platform = m.group('platform')
-            if 'ATSR' in m.group('sensor'):
+        if mat:
+            self.sensor = mat.group('sensor')
+            self.platform = mat.group('platform')
+            if 'ATSR' in mat.group('sensor'):
                 # SAD file names don't include platform for ATSR instruments
-                self.inst = m.group('sensor')
+                self.inst = mat.group('sensor')
             else:
-                self.inst = m.group('sensor') + '-' + m.group('platform').upper()
+                self.inst = mat.group('sensor') + '-' + mat.group('platform').upper()
             self.time = datetime.datetime(
-                int(m.group('year')), int(m.group('month')), int(m.group('day')),
-                int(m.group('hour')), int(m.group('min')), 0, 0
+                int(mat.group('year')), int(mat.group('month')),
+                int(mat.group('day')), int(mat.group('hour')),
+                int(mat.group('min')), 0, 0
             )
             self.dur = None
             self.geo = None
             self.predef = False
-            self.oractype = m.group('filetype')
-            self.processor = m.group('processor')
-            self._revision = int(m.group('revision'))
-            self.project = m.group('project')
-            self.product_name = m.group('product')
+            self.oractype = mat.group('filetype')
+            self.processor = mat.group('processor')
+            self._revision = int(mat.group('revision'))
+            self.project = mat.group('project')
+            self.product_name = mat.group('product')
             return
 
         raise OracError('Unexpected filename format - ' + filename)
@@ -408,6 +422,7 @@ class FileName:
 
     @property
     def noaa(self):
+        """Returns platform number for NOAA AVHRR sensors."""
         plat = int(self.platform[4:])
         if plat in (6, 8, 10):
             return '1'
@@ -475,15 +490,13 @@ class ParticleType():
     ls  - If true, process land and sea separately
     """
 
-    def __init__(self,
-                 name,
-                 inv = (),
-                 sad = "CCI_A70-A79"):
+    def __init__(self, name, inv=(), sad="CCI_A70-A79"):
         self.name = name
         self.inv = inv
         self.sad = sad
 
     def sad_dir(self, sad_dirs, inst):
+        """Return the path to the SAD files."""
         from glob import glob
         from os.path import join
 
@@ -497,11 +510,11 @@ class ParticleType():
             file_name = "_".join((inst.sensor+"*", self.name, "RBD", "Ch*.sad"))
 
             # SAD files stored in subdirectories
-            if len(glob(join(fdr_name, file_name))) > 0:
+            if glob(join(fdr_name, file_name)):
                 return fdr_name
 
             # All files in one directory
-            if len(glob(join(fdr, file_name))) > 0:
+            if glob(join(fdr, file_name)):
                 return fdr
 
         raise FileMissing("Sad Files", str(sad_dirs))
@@ -512,16 +525,16 @@ SETTINGS['WAT'] = ParticleType("WAT", sad="WAT")
 SETTINGS['ICE'] = ParticleType("ICE", sad="ICE_baum")
 
 tau = Invpar('ITau', ap=-1.0, sx=1.5)
-SETTINGS['A70'] = ParticleType("A70", inv=(tau,Invpar('IRe',ap=0.0856,sx=0.15)))
-SETTINGS['A71'] = ParticleType("A71", inv=(tau,Invpar('IRe',ap=-0.257,sx=0.15)))
-SETTINGS['A72'] = ParticleType("A72", inv=(tau,Invpar('IRe',ap=-0.257,sx=0.15)))
-SETTINGS['A73'] = ParticleType("A73", inv=(tau,Invpar('IRe',ap=-0.257,sx=0.15)))
-SETTINGS['A74'] = ParticleType("A74", inv=(tau,Invpar('IRe',ap=-0.257,sx=0.15)))
-SETTINGS['A75'] = ParticleType("A75", inv=(tau,Invpar('IRe',ap=-0.0419,sx=0.15)))
-SETTINGS['A76'] = ParticleType("A76", inv=(tau,Invpar('IRe',ap=0.0856,sx=0.15)))
-SETTINGS['A77'] = ParticleType("A77", inv=(tau,Invpar('IRe',ap=-0.0419,sx=0.15)))
-SETTINGS['A78'] = ParticleType("A78", inv=(tau,Invpar('IRe',ap=-0.257,sx=0.15)))
-SETTINGS['A79'] = ParticleType("A79", inv=(tau,Invpar('IRe',ap=-0.848,sx=0.15)))
+SETTINGS['A70'] = ParticleType("A70", inv=(tau, Invpar('IRe', ap=0.0856, sx=0.15)))
+SETTINGS['A71'] = ParticleType("A71", inv=(tau, Invpar('IRe', ap=-0.257, sx=0.15)))
+SETTINGS['A72'] = ParticleType("A72", inv=(tau, Invpar('IRe', ap=-0.257, sx=0.15)))
+SETTINGS['A73'] = ParticleType("A73", inv=(tau, Invpar('IRe', ap=-0.257, sx=0.15)))
+SETTINGS['A74'] = ParticleType("A74", inv=(tau, Invpar('IRe', ap=-0.257, sx=0.15)))
+SETTINGS['A75'] = ParticleType("A75", inv=(tau, Invpar('IRe', ap=-0.0419, sx=0.15)))
+SETTINGS['A76'] = ParticleType("A76", inv=(tau, Invpar('IRe', ap=0.0856, sx=0.15)))
+SETTINGS['A77'] = ParticleType("A77", inv=(tau, Invpar('IRe', ap=-0.0419, sx=0.15)))
+SETTINGS['A78'] = ParticleType("A78", inv=(tau, Invpar('IRe', ap=-0.257, sx=0.15)))
+SETTINGS['A79'] = ParticleType("A79", inv=(tau, Invpar('IRe', ap=-0.848, sx=0.15)))
 SETTINGS['EYJ'] = ParticleType("EYJ", inv=(
     Invpar('ITau', ap=0.18, sx=1.5), Invpar('IRe', ap=0.7, sx=0.15)
 ))

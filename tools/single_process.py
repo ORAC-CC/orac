@@ -6,15 +6,19 @@
 # 09 Mar 2017, GT: Improved support for use with batch queuing systems
 # 25 Apr 2018. AP: Tidy code more sensibly into a module
 
+import os.path
+import warnings
 from argparse import ArgumentParser
-from pyorac.arguments import *
+
+from pyorac.arguments import (args_common, args_cc4cl, args_preproc,
+                              args_main, args_postproc, check_args_common,
+                              check_args_cc4cl)
 from pyorac.colour_print import colour_print
 from pyorac.definitions import COLOURING, FileName, OracError, OracWarning
 from pyorac.local_defaults import log_dir
-from pyorac.run import *
+from pyorac.run import process_post, process_pre, process_main
 from pyorac.util import warning_format
 
-import warnings
 warnings.formatwarning = warning_format
 warnings.filterwarnings('always', category=OracWarning)
 
@@ -23,7 +27,7 @@ warnings.filterwarnings('always', category=OracWarning)
 pars = ArgumentParser(description='Run one part of ORAC on a given file. Note '
                       'that this *DOES NOT* consider default settings for each '
                       'aerosol phase.')
-pars.add_argument('target', type=str, help = 'File to be processed.')
+pars.add_argument('target', type=str, help='File to be processed.')
 args_common(pars)
 args_cc4cl(pars)
 args_preproc(pars)

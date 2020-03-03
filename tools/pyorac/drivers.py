@@ -13,9 +13,9 @@ def build_preproc_driver(args):
     from re import search
     from subprocess import CalledProcessError, check_output, STDOUT
     from uuid import uuid4
-    from pyorac.definitions import FileName, BadValue
+    from pyorac.definitions import BadValue
     from pyorac.util import (build_orac_library_path, extract_orac_libraries,
-                             read_orac_library_file)
+                             get_repository_revision, read_orac_library_file)
 
     l1b = _glob_dirs(args.in_dir, args.File.l1b, 'L1B file')
     geo = _glob_dirs(args.in_dir, args.File.geo, 'geolocation file')
@@ -86,16 +86,16 @@ def build_preproc_driver(args):
     elif args.ecmwf_flag == 3:
         raise NotImplementedError('Filename syntax for --ecmwf_flag 3 unknown')
     elif 4 <= args.ecmwf_flag <= 5:
-        for form, hr in (('C3D*%m%d%H*.nc', 3),
-                         ('ECMWF_OPER_%Y%m%d_%H+00.nc', 6),
-                         ('ECMWF_ERA5_%Y%m%d_%H_0.5.nc', 6),
-                         ('ECMWF_ERA_%Y%m%d_%H+00_0.5.nc', 6)):
+        for form, ec_hour in (('C3D*%m%d%H*.nc', 3),
+                              ('ECMWF_OPER_%Y%m%d_%H+00.nc', 6),
+                              ('ECMWF_ERA5_%Y%m%d_%H_0.5.nc', 6),
+                              ('ECMWF_ERA_%Y%m%d_%H+00_0.5.nc', 6)):
             try:
-                bounds = _bound_time(args.File.time + args.File.dur//2, hr)
+                bounds = _bound_time(args.File.time + args.File.dur//2, ec_hour)
                 ggam = _form_bound_filenames(bounds, args.ggam_dir, form)
                 break
-            except FileMissing as e:
-                err = e
+            except FileMissing as tmp_err:
+                err = tmp_err
         else:
             raise err
 
@@ -109,20 +109,23 @@ def build_preproc_driver(args):
         #                                 'ERA_Interim_an_%Y%m%d_%H+00_HR.grb')
         # These files don't zero-pad the hour for some reason
         bounds = _bound_time(args.File.time + args.File.dur//2, 6)
-        hr_ecmwf = [time.strftime(os.path.join(
-            args.hr_dir, 'ERA_Interim_an_%Y%m%d_') +
-            '{:d}+00_HR.grb'.format(time.hour*100))
-                    for time in bounds]
+        hr_ecmwf = [
+            time.strftime(
+                os.path.join(args.hr_dir, 'ERA_Interim_an_%Y%m%d_') +
+                '{:d}+00_HR.grb'.format(time.hour*100)
+            ) for time in bounds
+        ]
         if not os.path.isfile(hr_ecmwf[0]):
-            hr_ecmwf = [time.strftime(os.path.join(
-                args.hr_dir, 'ERA_Interim_an_%Y%m%d_') +
-                '{:d}+00_HR.grb'.format(time.hour*100))
-                        for time in bounds]
-        for f in hr_ecmwf:
-            if not os.path.isfile(f):
-                raise FileMissing('HR ECMWF', f)
+            hr_ecmwf = [
+                time.strftime(
+                    os.path.join(args.hr_dir, 'ERA_Interim_an_%Y%m%d_') +
+                    '{:d}+00_HR.grb'.format(time.hour*100)
+                ) for time in bounds]
+        for filename in hr_ecmwf:
+            if not os.path.isfile(filename):
+                raise FileMissing('HR ECMWF', filename)
     else:
-        hr_ecmwf=['', '']
+        hr_ecmwf = ['', '']
 
     if args.use_oc:
         for oc_version in (4.2, 4.1, 4.0, 3.1, 3.0, 2.0, 1.0):
@@ -161,9 +164,9 @@ def build_preproc_driver(args):
         except CalledProcessError:
             raise OracError('ncdump does non-functional.')
 
-        m0 = search(r'netcdf library version (.+?) of', tmp0)
-        if m0:
-            ncdf_version = m0.group(1)
+        mat0 = search(r'netcdf library version (.+?) of', tmp0)
+        if mat0:
+            ncdf_version = mat0.group(1)
         else:
             ncdf_version = 'n/a'
             warnings.warn('Output formatting of ncdump may have changed.',
@@ -179,9 +182,9 @@ def build_preproc_driver(args):
                             universal_newlines=True)
     except OSError:
         raise FileMissing('ECMWF ggas file', ggas[0])
-    m1 = search(r':history = "(.+?)" ;', tmp1)
-    if m1:
-        ecmwf_version = m1.group(1)
+    mat1 = search(r':history = "(.+?)" ;', tmp1)
+    if mat1:
+        ecmwf_version = mat1.group(1)
     else:
         ecmwf_version = 'n/a'
         warnings.warn('Header of ECMWF file may have changed.', OracWarning,
@@ -203,9 +206,9 @@ def build_preproc_driver(args):
     try:
         os.chdir(os.path.join(args.orac_dir, 'pre_processing'))
         tmp3 = check_output(["git", "--version"], universal_newlines=True)
-        m3 = search('git version (.+?)\n', tmp3)
-        git_version = m3.group(1)
-    except:
+        mat3 = search('git version (.+?)\n', tmp3)
+        git_version = mat3.group(1)
+    except (FileNotFoundError, CalledProcessError, AttributeError):
         git_version = 'n/a'
         warnings.warn('Unable to call git.', OracWarning, stacklevel=2)
     finally:
@@ -286,78 +289,78 @@ DO_IRONLY={ir_only}
 DO_CLDTYPE={cldtype}
 USE_CAMEL_EMIS={camel}
 USE_SWANSEA_CLIMATOLOGY={swansea}""".format(
-        alb               = alb,
-        assume_full_paths = True, # Above file searching returns paths nor dirs
-        atlas             = args.atlas_dir,
-        atsr_calib        = args.calib_file,
-        brdf              = brdf,
-        camel             = args.use_camel_emis,
-        chunk_flag        = False, # File chunking no longer required
-        cldtype           = not args.skip_cloud_type,
-        cld_emis          = args.cloud_emis,
-        coef              = args.coef_dir,
-        comment           = args.comments,
-        conventions       = args.cfconvention,
-        creator_email     = args.email,
-        creator_url       = args.url,
-        day_flag          = args.day_flag, # 0=1=Day, 2=Night
-        dellat            = args.dellat,
-        dellon            = args.dellon,
-        ecmwf_flag        = args.ecmwf_flag,
-        ecmwf_hr          = hr_ecmwf,
-        ecmwf_int_method  = args.single_ecmwf,
-        ecmwf_nise        = args.use_ecmwf_snow,
-        ecmwf_nlevels     = args.ecmwf_nlevels,
-        ecmwf_version     = ecmwf_version,
-        emis              = emis,
-        file_version      = file_version,
-        geo               = geo,
-        ggam              = ggam,
-        ggas              = ggas,
-        history           = args.history,
-        include_full_brdf = not args.lambertian,
-        institution       = args.institute,
-        ir_only           = args.ir_only,
-        keywords          = args.keywords,
-        l1_land_mask      = args.l1_land_mask,
-        l1b               = l1b,
-        l2_processor      = args.processor,
-        license           = args.license,
-        limit             = args.limit,
-        modis_emis        = args.use_modis_emis,
-        ncdf_version      = ncdf_version,
-        nise              = nise,
-        no_snow           = args.no_snow_corr,
-        occci_file        = occci,
-        out_dir           = args.out_dir,
-        usgs              = args.usgs_file,
-        production_time   = production_time,
-        project           = args.project,
-        references        = args.references,
-        rttov_version     = rttov_version,
-        sensor            = args.File.sensor,
-        spam              = spam,
-        summary           = args.summary,
-        swansea           = args.swansea,
-        git_version       = git_version,
-        uuid              = uid,
-        use_ecmwf_hr      = not args.skip_ecmwf_hr,
-        use_occci         = args.use_oc,
-        verbose           = args.verbose,
-    )
+    alb=alb,
+    assume_full_paths=True, # Above file searching returns paths nor dirs
+    atlas=args.atlas_dir,
+    atsr_calib=args.calib_file,
+    brdf=brdf,
+    camel=args.use_camel_emis,
+    chunk_flag=False, # File chunking no longer required
+    cldtype=not args.skip_cloud_type,
+    cld_emis=args.cloud_emis,
+    coef=args.coef_dir,
+    comment=args.comments,
+    conventions=args.cfconvention,
+    creator_email=args.email,
+    creator_url=args.url,
+    day_flag=args.day_flag, # 0=1=Day, 2=Night
+    dellat=args.dellat,
+    dellon=args.dellon,
+    ecmwf_flag=args.ecmwf_flag,
+    ecmwf_hr=hr_ecmwf,
+    ecmwf_int_method=args.single_ecmwf,
+    ecmwf_nise=args.use_ecmwf_snow,
+    ecmwf_nlevels=args.ecmwf_nlevels,
+    ecmwf_version=ecmwf_version,
+    emis=emis,
+    file_version=file_version,
+    geo=geo,
+    ggam=ggam,
+    ggas=ggas,
+    history=args.history,
+    include_full_brdf=not args.lambertian,
+    institution=args.institute,
+    ir_only=args.ir_only,
+    keywords=args.keywords,
+    l1_land_mask=args.l1_land_mask,
+    l1b=l1b,
+    l2_processor=args.processor,
+    license=args.license,
+    limit=args.limit,
+    modis_emis=args.use_modis_emis,
+    ncdf_version=ncdf_version,
+    nise=nise,
+    no_snow=args.no_snow_corr,
+    occci_file=occci,
+    out_dir=args.out_dir,
+    usgs=args.usgs_file,
+    production_time=production_time,
+    project=args.project,
+    references=args.references,
+    rttov_version=rttov_version,
+    sensor=args.File.sensor,
+    spam=spam,
+    summary=args.summary,
+    swansea=args.swansea,
+    git_version=git_version,
+    uuid=uid,
+    use_ecmwf_hr=not args.skip_ecmwf_hr,
+    use_occci=args.use_oc,
+    verbose=args.verbose,
+)
 
     if args.available_channels is not None:
         driver += "\nN_CHANNELS={}".format(len(args.available_channels))
         driver += "\nCHANNEL_IDS={}".format(
             ','.join(str(k) for k in args.available_channels)
         )
-    for part, f in args.extra_lines:
-        if part == "pre" and f != "":
+    for part, filename in args.extra_lines:
+        if part == "pre" and filename != "":
             try:
-                with open(f, "r") as e:
-                    driver += "\n" + e.read()
+                with open(filename, "r") as extra:
+                    driver += "\n" + extra.read()
             except IOError:
-                raise FileMissing('extra_lines_file', f)
+                raise FileMissing('extra_lines_file', filename)
     for sec, key, val in args.additional:
         if sec == "pre":
             driver += "\n{}={}".format(key, val)
@@ -367,7 +370,7 @@ USE_SWANSEA_CLIMATOLOGY={swansea}""".format(
 USE_PREDEF_LSM=True
 EXT_LSM_PATH={lsm}
 USE_PREDEF_GEO=True
-EXT_GEO_PATH={geo}""".format(lsm = args.prelsm_file, geo = args.pregeo_file)
+EXT_GEO_PATH={geo}""".format(lsm=args.prelsm_file, geo=args.pregeo_file)
 
     if args.product_name is not None:
         driver += "\nPRODUCT_NAME={}".format(args.product_name)
@@ -377,7 +380,7 @@ EXT_GEO_PATH={geo}""".format(lsm = args.prelsm_file, geo = args.pregeo_file)
 
 def build_main_driver(args):
     """Prepare a driver file for the main processor."""
-    from pyorac.definitions import FileName, SETTINGS
+    from pyorac.definitions import SETTINGS
 
     # Form mandatory driver file lines
     driver = """# ORAC New Driver File
@@ -393,20 +396,20 @@ Ctrl%Process_Cloudy_Only    = {cloudy}
 Ctrl%Process_Aerosol_Only   = {aerosoly}
 Ctrl%Verbose                = {verbose}
 Ctrl%RS%Use_Full_BRDF       = {use_brdf}""".format(
-        aerosoly = args.aerosol_only,
-        channels = ','.join('1' if k in args.use_channels else '0'
-                            for k in args.available_channels),
-        cloudy   = args.cloud_only,
-        fileroot = args.File.root_name(),
-        in_dir   = args.in_dir[0],
-        nch      = len(args.available_channels),
-        out_dir  = args.out_dir,
-        phase    = args.phase,
-        sad_dir  = SETTINGS[args.phase].sad_dir(args.sad_dirs, args.File),
-        sensor   = args.File.inst,
-        use_brdf = not (args.lambertian or args.approach == 'AppAerSw'),
-        verbose  = args.verbose,
-    )
+    aerosoly=args.aerosol_only,
+    channels=','.join('1' if k in args.use_channels else '0'
+                      for k in args.available_channels),
+    cloudy=args.cloud_only,
+    fileroot=args.File.root_name(),
+    in_dir=args.in_dir[0],
+    nch=len(args.available_channels),
+    out_dir=args.out_dir,
+    phase=args.phase,
+    sad_dir=SETTINGS[args.phase].sad_dir(args.sad_dirs, args.File),
+    sensor=args.File.inst,
+    use_brdf=not (args.lambertian or args.approach == 'AppAerSw'),
+    verbose=args.verbose,
+)
 
     # Optional driver file lines
     if args.multilayer is not None:
@@ -414,10 +417,10 @@ Ctrl%RS%Use_Full_BRDF       = {use_brdf}""".format(
 Ctrl%LUTClass2              = "{}"
 Ctrl%FID%SAD_Dir2           = "{}"
 Ctrl%Class2                 = {}""".format(
-        args.multilayer[0],
-        SETTINGS[args.multilayer[0]].sad_dir(args.sad_dirs, args.File),
-        args.multilayer[1],
-    )
+    args.multilayer[0],
+    SETTINGS[args.multilayer[0]].sad_dir(args.sad_dirs, args.File),
+    args.multilayer[1],
+)
     if args.types:
         driver += "\nCtrl%NTypes_To_Process      = {:d}".format(len(args.types))
         driver += ("\nCtrl%Types_To_Process(1:{:d}) = ".format(len(args.types)) +
@@ -434,13 +437,13 @@ Ctrl%Class2                 = {}""".format(
         driver += "\nCtrl%Surfaces_To_Skip       = ILand"
     for var in SETTINGS[args.phase].inv:
         driver += var.driver()
-    for part, f in args.extra_lines:
-        if part == "main" and f != "":
+    for part, filename in args.extra_lines:
+        if part == "main" and filename != "":
             try:
-                with open(f, "r") as e:
-                    driver += "\n" + e.read()
+                with open(filename, "r") as extra:
+                    driver += "\n" + extra.read()
             except IOError:
-                raise FileMissing('extra_lines_file', f)
+                raise FileMissing('extra_lines_file', filename)
     for sec, key, val in args.additional:
         if sec == "main":
             driver += "\n{} = {}".format(key, val)
@@ -470,36 +473,36 @@ VERBOSE={verbose}
 USE_CHUNKING={chunking}
 USE_NETCDF_COMPRESSION={compress}
 USE_BAYESIAN_SELECTION={bayesian}""".format(
-        bayesian   = args.phases != ['WAT', 'ICE'],
-        chunking   = args.chunking,
-        compress   = args.compress,
-        cost_tsh   = args.cost_thresh,
-        ice_pri    = files[1],
-        ice_sec    = files[1].replace('primary', 'secondary'),
-        multilayer = args.approach == 'AppCld2L',
-        opt_nght   = not args.no_night_opt,
-        out_pri    = args.target,
-        out_sec    = args.target.replace('primary', 'secondary'),
-        prob_tsh   = args.prob_thresh,
-        switch     = args.switch_phase,
-        verbose    = args.verbose,
-        wat_pri    = files[0],
-        wat_sec    = files[0].replace('primary', 'secondary'),
-    )
+    bayesian=args.phases != ['WAT', 'ICE'],
+    chunking=args.chunking,
+    compress=args.compress,
+    cost_tsh=args.cost_thresh,
+    ice_pri=files[1],
+    ice_sec=files[1].replace('primary', 'secondary'),
+    multilayer=args.approach == 'AppCld2L',
+    opt_nght=not args.no_night_opt,
+    out_pri=args.target,
+    out_sec=args.target.replace('primary', 'secondary'),
+    prob_tsh=args.prob_thresh,
+    switch=args.switch_phase,
+    verbose=args.verbose,
+    wat_pri=files[0],
+    wat_sec=files[0].replace('primary', 'secondary'),
+)
 
     # Add additional files
-    for f in files[2:]:
+    for filename in files[2:]:
         driver += '\n'
-        driver += f
+        driver += filename
         driver += '\n'
-        driver += f.replace('primary', 'secondary')
-    for part, f in args.extra_lines:
-        if part == "post" and f != "":
+        driver += filename.replace('primary', 'secondary')
+    for part, filename in args.extra_lines:
+        if part == "post" and filename != "":
             try:
-                with open(f, "r") as e:
-                    driver += "\n" + e.read()
+                with open(filename, "r") as extra:
+                    driver += "\n" + extra.read()
             except IOError:
-                raise FileMissing('extra_lines_file', f)
+                raise FileMissing('extra_lines_file', filename)
     for sec, key, val in args.additional:
         if sec == "post":
             driver += "\n{} = {}".format(key, val)
@@ -508,33 +511,34 @@ USE_BAYESIAN_SELECTION={bayesian}""".format(
 
 #-----------------------------------------------------------------------------
 
-def _bound_time(dt=None, delta_hours=6):
+def _bound_time(date=None, delta_hours=6):
     """Return timestamps divisible by some duration that bound a given time
 
     http://stackoverflow.com/questions/3463930/how-to-round-the-minute-of-a-datetime-object-python/10854034
 
     Args:
     :datetime dt: Initial time.
-    :timedelta dateDelta: Rounding interval. Default 6 hours.
+    :timedelta date_delta: Rounding interval. Default 6 hours.
     """
 
-    dateDelta = timedelta(hours=delta_hours)
-    roundTo = dateDelta.total_seconds()
-    if dt is None : dt = datetime.now()
+    date_delta = timedelta(hours=delta_hours)
+    round_to = date_delta.total_seconds()
+    if date is None:
+        date = datetime.now()
 
     # Remove annoying microseconds
-    time = dt + timedelta(0,0,-dt.microsecond)
+    time = date + timedelta(0, 0, -date.microsecond)
 
     # Floor time to requested delta
-    seconds = (dt - dt.min).seconds
-    rounding = seconds // roundTo * roundTo
-    start = time + timedelta(0,rounding-seconds)
+    seconds = (date - date.min).seconds
+    rounding = seconds // round_to * round_to
+    start = time + timedelta(0, rounding-seconds)
 
     # Output floor and ceil of time
-    return (start, start + dateDelta)
+    return (start, start + date_delta)
 
 
-def _date_back_search(fdr, date, pattern, interval):
+def _date_back_search(fdr, date_in, pattern, interval):
     """Search a folder for the file with timestamp closest before a given date.
 
     Args:
@@ -549,18 +553,18 @@ def _date_back_search(fdr, date, pattern, interval):
     # Step forward one day, month, or year
     delta = relativedelta(**{interval: 1})
 
-    dt = copy(date)
-    while dt > datetime(1995, 1, 1):
+    date = copy(date_in)
+    while date > datetime(1995, 1, 1):
         # Look for a file with the appropriate date
-        files = glob(dt.strftime(os.path.join(fdr, pattern)))
+        files = glob(date.strftime(os.path.join(fdr, pattern)))
 
         if len(files) >= 1:
             return files[-1]
         else:
-            dt -= delta
+            date -= delta
 
     # If we fail, try to find a climatological file
-    files = glob(dt.strftime(os.path.join(fdr, pattern.replace('%Y','XXXX'))))
+    files = glob(date.strftime(os.path.join(fdr, pattern.replace('%Y','XXXX'))))
     if len(files) >= 1:
         return files[-1]
     else:
@@ -577,12 +581,12 @@ def _form_bound_filenames(bounds, fdr, form):
 
     out = [time.strftime(os.path.join(fdr, form)) for time in bounds]
 
-    for i in range(len(out)):
-        f2 = glob(out[i])
-        if len(f2) == 0:
-            raise FileMissing('ECMWF file', out[i])
-        else:
-            out[i] = f2[len(f2)-1]
+    for i, path in enumerate(out):
+        filename = glob(path)
+        try:
+            out[i] = filename[-1]
+        except IndexError:
+            raise FileMissing('ECMWF file', path)
     return out
 
 
@@ -592,10 +596,10 @@ def _glob_dirs(dirs, path, desc):
 
     files = [f for d in dirs for f in glob(os.path.join(d, path))]
 
-    if len(files) == 0:
-        # No file found, so throw error
-        raise FileMissing(desc, path)
-    else:
+    if files:
         # Return the most recent file found
         files.sort(key=lambda x: stat(x).st_mtime, reverse=True)
         return files[0]
+
+    # No file found, so throw error
+    raise FileMissing(desc, path)

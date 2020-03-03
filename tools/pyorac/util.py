@@ -12,7 +12,7 @@ def build_orac_library_path(lib_dict=None, lib_list=None):
     return ':'.join(filter(None, libs))
 
 
-def call_exe(args, exe, driver, values=dict()):
+def call_exe(args, exe, driver, values=None):
     """Call an ORAC executable, managing the necessary driver file.
 
     Args:
@@ -34,14 +34,14 @@ def call_exe(args, exe, driver, values=dict()):
         colour_print(driver, COLOURING['text'])
 
     if args.dry_run:
-        return
+        return -1
 
     # Write driver file
-    (fd, driver_file) = mkstemp('.driver', os.path.basename(exe) + '.',
-                                args.out_dir, True)
-    f = os.fdopen(fd, "w")
-    f.write(driver)
-    f.close()
+    (fdes, driver_file) = mkstemp('.driver', os.path.basename(exe) + '.',
+                                  args.out_dir, True)
+    fhandle = os.fdopen(fdes, "w")
+    fhandle.write(driver)
+    fhandle.close()
 
     if not args.batch:
         # Form processing environment
@@ -57,10 +57,10 @@ def call_exe(args, exe, driver, values=dict()):
 
         # Call program
         try:
-            st = time()
+            start_time = time()
             check_call([exe, driver_file])
             if args.timing:
-                colour_print(exe + ' took {:f}s'.format(time() - st),
+                colour_print(exe + ' took {:f}s'.format(time() - start_time),
                              COLOURING['timing'])
             return True
         except CalledProcessError as err:
@@ -75,47 +75,48 @@ def call_exe(args, exe, driver, values=dict()):
 
     else:
         # Write temporary script to call executable
-        (gd, script_file) = mkstemp('.sh', os.path.basename(exe) + '.',
-                                    args.out_dir, True)
-        g = os.fdopen(gd, "w")
-        g.write(args.batch_script + "\n")
+        (gdes, script_file) = mkstemp('.sh', os.path.basename(exe) + '.',
+                                      args.out_dir, True)
+        ghandle = os.fdopen(gdes, "w")
+        ghandle.write(args.batch_script + "\n")
 
         # Define processing environment
         libs = read_orac_library_file(args.orac_lib)
-        g.write("export LD_LIBRARY_PATH=" +
-                build_orac_library_path(libs) + "\n")
-        g.write("export OPENBLAS_NUM_THREADS=1\n")
+        ghandle.write("export LD_LIBRARY_PATH=" +
+                      build_orac_library_path(libs) + "\n")
+        ghandle.write("export OPENBLAS_NUM_THREADS=1\n")
         try:
-            g.write("export PPDIR=" + args.emos_dir + "\n")
+            ghandle.write("export PPDIR=" + args.emos_dir + "\n")
         except AttributeError:
             pass
-        defaults.batch.add_openmp_to_script(g)
+        defaults.batch.add_openmp_to_script(ghandle)
 
         # Call executable and give the script permission to execute
-        g.write(exe + ' ' + driver_file + "\n")
+        ghandle.write(exe + ' ' + driver_file + "\n")
         if not args.keep_driver:
-            g.write("rm -f " + driver_file + "\n")
-        g.write("rm -f " + script_file + "\n")
-        g.close()
+            ghandle.write("rm -f " + driver_file + "\n")
+        ghandle.write("rm -f " + script_file + "\n")
+        ghandle.close()
         os.chmod(script_file, 0o700)
 
         try:
             # Collect batch settings from defaults, command line, and script
             batch_params = defaults.batch_values.copy()
-            batch_params.update(values)
+            if values:
+                batch_params.update(values)
             batch_params.update({key : val for key, val in args.batch_settings})
 
             batch_params['procs'] = args.procs
 
             # Form batch queue command and call batch queuing system
-            cmd = defaults.batch.ListBatch(batch_params, exe=script_file)
+            cmd = defaults.batch.list_batch(batch_params, exe=script_file)
 
             if args.verbose or args.script_verbose:
                 colour_print(' '.join(cmd), COLOURING['header'])
             out = check_output(cmd, universal_newlines=True)
 
             # Parse job ID # and return it to the caller
-            jid = defaults.batch.ParseOut(out, 'ID')
+            jid = defaults.batch.parse_out(out, 'ID')
             return jid
         except CalledProcessError as err:
             raise OracError('Failed to queue job ' + exe)
@@ -168,6 +169,7 @@ def read_orac_library_file(filename):
             http://stackoverflow.com/questions/7868554/python-re-subs-replace-
             function-doesnt-accept-extra-arguments-how-to-avoid"""
             def replace_var(matchobj):
+                """Fetch name from dictionary."""
                 from os import environ
                 try:
                     name = matchobj.group(1)
@@ -184,17 +186,14 @@ def read_orac_library_file(filename):
     # Read the file
     contents = {}
     continuation = False
-    with open(filename, 'r') as f:
-        for raw_line in f:
+    with open(filename, 'r') as fhandle:
+        for raw_line in fhandle:
             if raw_line.startswith("#") or len(raw_line) < 2:
                 # Skip comment and empty lines
                 continue
 
             line = fill_in_variables(raw_line, contents)
-            if continuation:
-                # Add this to the previous variable
-                contents[variable] += " " + line.strip("\\\n\t ")
-            else:
+            if not continuation:
                 key, value = line.split("=", 2)
                 variable = key.strip("+\t ")
                 if key[-1] == "+":
@@ -203,13 +202,16 @@ def read_orac_library_file(filename):
                 else:
                     # Define new variable
                     contents[variable] = value.strip("\\\n\t ")
+            else:
+                # Add this to the previous variable
+                contents[variable] += " " + line.strip("\\\n\t ")
 
             continuation = line.endswith("\\\n")
 
     return contents
 
 
-def _str2bool(value):
+def str2bool(value):
     """Parse a string into a boolean value"""
     return value.lower() in ("yes", "y", "true", "t", "1")
 
@@ -221,13 +223,13 @@ def warning_format(message, category, filename, lineno, line=None):
 
     if issubclass(category, Regression):
         return colour_format(message.args[0] + "\n")
-    elif issubclass(category, OracWarning):
+    if issubclass(category, OracWarning):
         mess = "{:s})".format(category.__name__)
-        for a in message.args:
-            mess += " {:s}".format(a)
+        for arg in message.args:
+            mess += " {:s}".format(arg)
         return colour_format(mess + "\n", COLOURING['warning'])
-    else:
-        return colour_format(
-            "{:d}: {:s}: {:s}\n".format(lineno, category.__name__, str(message)),
-            COLOURING['warning']
-        )
+
+    return colour_format(
+        "{:d}: {:s}: {:s}\n".format(lineno, category.__name__, str(message)),
+        COLOURING['warning']
+    )

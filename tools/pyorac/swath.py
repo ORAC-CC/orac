@@ -1,4 +1,4 @@
-# swath.py) Various routines for reading and using ORAC output data
+"""swath.py) Various routines for reading and using ORAC output data
 # 10 Feb 2017, ACP: First version
 # 17 Feb 2017, ACP: Adjusted Position.closest() to estimate the coords first.
 # 24 Feb 2017, ACP: Completely different Position.closest(). It's still rubbish,
@@ -6,36 +6,44 @@
 # 24 Mar 2017, ACP: Deal with netCDF returning both ndarray and MaskedArray.
 # 06 Apr 2017, ACP: Moved Position() into its own file.
 # 17 Apr 2017, ACP: Move management of compressed files into here.
+"""
 
+import warnings
 import numpy as np
+
 from pyorac.mappable import Mappable
 
-# These are used to suppress numpy FutureWarnings
-import warnings
 
 # Values used for features in the aerosol cloud flag
-CLDFLAG = {"cld"      : 1,
-           "adjacent" : 2,
-           "stdev"    : 4,
-           "openaot"  : 8,
-           "openaer"  : 16,
-           "openang"  : 32,
-           "snow"     : 64,
+CLDFLAG = {
+    "cld": 1,
+    "adjacent": 2,
+    "stdev": 4,
+    "openaot": 8,
+    "openaer": 16,
+    "openang": 32,
+    "snow": 64,
 }
-QCFLAG =  {"iter"     : 1,
-           "cost"     : 2,
-           "cld_iter" : 1,
-           "cld_cost" : 2,
-           "aer_iter" : 4,
-           "aer_cost" : 8,
+QCFLAG = {
+    "iter": 1,
+    "cost": 2,
+    "cld_iter": 1,
+    "cld_cost": 2,
+    "aer_iter": 4,
+    "aer_cost": 8,
 }
 
 ORAC_TO_CCI_NAMING = {
-    "aot550" : "AOD550",       "aot550_uncertainty"  : "AOD550_uncertainty",
-    "aer"    : "REFF",         "aer_uncertainty"     : "REFF_uncertainty",
-    "aot870" : "AOD870",       "aot870_uncertainty"  : "AOD870_uncertainty",
-    "lat"    : "latitude",     "lon"                 : "longitude",
-    "qcflag" : "quality_flag", "niter"               : "iterations",
+    "aot550": "AOD550",
+    "aot550_uncertainty": "AOD550_uncertainty",
+    "aer": "REFF",
+    "aer_uncertainty": "REFF_uncertainty",
+    "aot870": "AOD870",
+    "aot870_uncertainty": "AOD870_uncertainty",
+    "lat": "latitude",
+    "lon": "longitude",
+    "qcflag": "quality_flag",
+    "niter": "iterations",
 }
 
 
@@ -90,7 +98,7 @@ class Flux(Mappable):
             self._bug = Dataset(filename)
         except OSError as err:
             # Produce more comprehensible error message
-            err.args = "Requested file unavailable: {}\n".format(filename),
+            err.args = ("Requested file unavailable: {}\n".format(filename), )
             raise
 
         # Put an upper limit on all fields
@@ -106,6 +114,7 @@ class Flux(Mappable):
                          central_longitude=central_longitude)
 
     def close(self):
+        """Clean up."""
         try:
             self._bug.close()
         except AttributeError:
@@ -119,8 +128,8 @@ class Flux(Mappable):
 
     def variables(self):
         """List variables available in all input files."""
-        v = set(self._bug.variables.keys())
-        return sorted(v)
+        var = set(self._bug.variables.keys())
+        return sorted(var)
 
     def variable(self, name):
         """Return arbitrary data field, ensuring it's a MaskedArray.
@@ -155,10 +164,10 @@ class Flux(Mappable):
                 rat[valid] /= down[valid]
                 rat[~valid] = np.ma.masked
                 return rat
-            else:
-                return self.variable(name)
+
+            return self.variable(name)
         except (KeyError, IndexError) as err:
-            err.args = name + " not present in input file.\n",
+            err.args = (name + " not present in input file.\n", )
             raise
 
 
@@ -201,27 +210,24 @@ class Swath(Mappable):
             no reading. Many class methods will not function until _init1() is
             called as the lat-lon coords are not defined.
         """
-        self._init0(filename)
-        if not quick_open:
-            self._init1(central_longitude)
-
-    def _init0(self, filename):
-        """Open ORAC file(s)"""
-        self.primary     = filename
-        self.secondary   = filename.replace('primary', 'secondary')
-        self.nc_files    = {}
-        self.tmp_files   = {}
+        self.primary = filename
+        self.secondary = filename.replace('primary', 'secondary')
+        self.nc_files = {}
+        self.tmp_files = {}
 
         try:
             self.try_open_file(self.primary, "pri")
         except OSError as err:
-            err.args = "Requested file unavailable: {}".format(filename),
+            err.args = ("Requested file unavailable: {}".format(filename), )
             raise
         try:
             self.try_open_file(self.secondary, "sec")
         except OSError:
             # Secondary file may not always exist
             pass
+
+        if not quick_open:
+            self._init1(central_longitude)
 
     def _init1(self, central_longitude):
         """Open retrieval metrics"""
@@ -246,7 +252,7 @@ class Swath(Mappable):
                 tmp.close()
                 raise
             ncdf = Dataset(tmp.name)
-            self.nc_files[label]  = ncdf
+            self.nc_files[label] = ncdf
             self.tmp_files[label] = tmp
         else:
             ncdf = Dataset(filename)
@@ -254,7 +260,6 @@ class Swath(Mappable):
 
     def try_open_file(self, filename, label):
         """If a file doesn't open, check it hasn't been compressed."""
-        from os.path import isfile
 
         # If requested file doesn't exist, assume it's been compressed
         try:
@@ -265,7 +270,7 @@ class Swath(Mappable):
         try:
             self._open_file(filename, label+".gz")
         except OSError as err:
-            err.args = "ORAC file unavailable: {}\n".format(filename),
+            err.args = ("ORAC file unavailable: {}\n".format(filename), )
             raise
 
 
@@ -280,6 +285,7 @@ class Swath(Mappable):
         return self._cldmask
 
     def set_cldmask(self):
+        """Select appropriate cloud mask."""
         try:
             cldmask_tmp = self["cldmask"]
         except (KeyError, IndexError):
@@ -305,6 +311,7 @@ class Swath(Mappable):
         return self._ang
 
     def set_ang(self):
+        """Build Angstrom exponent from AOT550 and AOT870."""
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             fac = np.log(87. / 55.)
@@ -318,6 +325,7 @@ class Swath(Mappable):
         return self._ang_unc
 
     def set_ang_unc(self):
+        """Calculcate uncertainty in the Angstrom exponent."""
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             fac = np.log(87. / 55.)
@@ -352,10 +360,10 @@ class Swath(Mappable):
             # Find available surface reflectance channels
             chs = set()
             for k in self.variables():
-                m = search("surface_reflectance(\d+)", k)
-                if m:
-                    chs.add(int(m.group(1)))
-            if len(chs) == 0:
+                mat = search(r"surface_reflectance(\d+)", k)
+                if mat:
+                    chs.add(int(mat.group(1)))
+            if not chs:
                 raise TypeError("Surface reflectance not available in this file")
 
             self.ch = sorted(chs)
@@ -420,7 +428,7 @@ class Swath(Mappable):
             warnings.simplefilter("ignore")
 
             # Cloud adjacency filter
-            kernel = np.ones((size,size))
+            kernel = np.ones((size, size))
             cld_count = convolve2d(self.cldmask, kernel,
                                    mode='same', boundary='symm')
             self._cldflag[cld_count > cld_limit] += CLDFLAG["adjacent"]
@@ -436,19 +444,20 @@ class Swath(Mappable):
                 # When netCDF decides to return a normal array
                 aot_tmp = self["aot550"]
                 aot_cnt = np.ones(self.shape)
-            n    = convolve2d(aot_cnt, kernel,
-                              mode='same', boundary='symm')
-            e_x  = convolve2d(aot_tmp, kernel,
-                              mode='same', boundary='symm') / n
+            num = convolve2d(aot_cnt, kernel,
+                             mode='same', boundary='symm')
+            e_x = convolve2d(aot_tmp, kernel,
+                             mode='same', boundary='symm') / num
             e_x2 = convolve2d(aot_tmp * aot_tmp, kernel,
-                              mode='same', boundary='symm') / n
+                              mode='same', boundary='symm') / num
             stdev = np.ma.masked_invalid(np.sqrt(e_x2 - e_x*e_x))
             self._cldflag[stdev > 0.1] += CLDFLAG["stdev"]
 
-        # Salt-and-pepper noise filters (Top Hat is the difference
-        # between the input and the opening of the image. The opening
-        # is erode followed by dilate.)
         def opening_test(data, kernel, limit):
+            """Salt-and-pepper noise filters.
+
+            Top Hat is the difference between the input and the opening of the
+            image. The opening is erode followed by dilate."""
             from cv2 import morphologyEx, MORPH_TOPHAT
 
             #tmp = np.floor(255 * data)
@@ -457,14 +466,14 @@ class Swath(Mappable):
             test = opening >= limit
             return test
 
-        kernel = np.ones((5,5))
+        kernel = np.ones((5, 5))
         self._cldflag[opening_test(self["aot550"], kernel, 80/255)] += CLDFLAG["openaot"]
         self._cldflag[opening_test(self["aer"], kernel, 300/255)] += CLDFLAG["openaer"]
         self._cldflag[opening_test(self.ang, kernel, 500/255)] += CLDFLAG["openang"]
 
         # Ice/snow filter
         try:
-            snow = (self.rs[0,...] - self.rs[3,...]) >= 0.07
+            snow = (self.rs[0, ...] - self.rs[3, ...]) >= 0.07
             self._cldflag[snow] += CLDFLAG["snow"]
         except IndexError:
             pass
@@ -477,8 +486,9 @@ class Swath(Mappable):
         return self._qcflag
 
     def set_qcflag(self, iter_limit=25, cost_limit=3.):
+        """Build quality control flag from input fields."""
         self._qcflag = np.zeros(self.shape)
-        self._qcflag[self["niter"] >= iter_limit]  += QCFLAG["iter"]
+        self._qcflag[self["niter"] >= iter_limit] += QCFLAG["iter"]
         self._qcflag[self["costjm"] >= cost_limit] += QCFLAG["cost"]
 
     # -------------------------------------------------------------------
@@ -505,10 +515,10 @@ class Swath(Mappable):
 
     def variables(self):
         """List variables available in all input files."""
-        v = set()
+        names = set()
         for handle in self.nc_files.values():
-            v.update(handle.variables.keys())
-        return sorted(v)
+            names.update(handle.variables.keys())
+        return sorted(names)
 
     def flag_map(self, name):
         """Return a dict mapping a flag's values to their meanings."""
@@ -521,7 +531,7 @@ class Swath(Mappable):
                 # Aerosol CCI files use a different name for some reason
                 vals = var.flag_masks.split(" ")
             except AttributeError as err:
-                err.args = name+" does not have flag definitions.",
+                err.args = (name+" does not have flag definitions.", )
                 raise
 
         # Remove "b" from end of value terms
@@ -531,14 +541,14 @@ class Swath(Mappable):
             try:
                 keys = (var.flag_meanings + " ").split(": ")
             except AttributeError as err:
-                err.args = name+" does not have flag definitions.",
+                err.args = (name+" does not have flag definitions.", )
                 raise
             names = [k[:k.rfind(" ")] for k in keys[1:]]
         else:
             try:
                 names = var.flag_meanings.split(" ")
             except AttributeError as err:
-                err.args = name+" does not have flag definitions.",
+                err.args = (name+" does not have flag definitions.", )
                 raise
 
         return dict(zip(nums, names))
@@ -568,8 +578,8 @@ class Swath(Mappable):
         data = self.get_variable(name)[...]
         if isinstance(data, np.ma.MaskedArray):
             return data
-        else:
-            return np.ma.masked_invalid(data)
+
+        return np.ma.masked_invalid(data)
 
 
     # -------------------------------------------------------------------
@@ -580,7 +590,7 @@ class Swath(Mappable):
 
         The allowing argument can be used to exempt a list of members of the
         orac.CLDFLAG bitmask."""
-        flags = sum((v for k,v in CLDFLAG.items() if k not in allowing))
+        flags = sum((v for k, v in CLDFLAG.items() if k not in allowing))
         cld_mask = np.bitwise_and(self.cldflag, flags) > 0
         qc_mask = self.qcflag != 0
         return np.logical_or(cld_mask, qc_mask)
@@ -603,36 +613,34 @@ class MergedSwath(Swath):
     # Initialisation
     # -------------------------------------------------------------------
     def __init__(self, *files, central_longitude=0.):
-        from netCDF4 import Dataset
-        from os.path import isfile, join
 
-        self.nc_files  = {}
+        self.nc_files = {}
         self.tmp_files = {}
 
         self.collocation = False
-        for f in files:
-            if len(f) == 2:
-                self.try_open_file(f[1], f[0])
+        for this_file in files:
+            if len(this_file) == 2:
+                self.try_open_file(this_file[1], this_file[0])
 
-            elif "collocation" in f:
+            elif "collocation" in this_file:
                 self.collocation = True
 
                 # Low-res aerosol. Use collocation file to map onto 1km
                 # Indices to map between 10 and 1km grids
-                self.try_open_file(f, "col")
+                self.try_open_file(this_file, "col")
                 self.indices = self.nc_files["col"]["aerosol_10km_index"][...]
 
-            elif "bugsrad" in f:
-                self.try_open_file(f, "flx")
+            elif "bugsrad" in this_file:
+                self.try_open_file(this_file, "flx")
 
-            elif "AEROSOL-AER" in f:
-                self.try_open_file(f, "aer")
+            elif "AEROSOL-AER" in this_file:
+                self.try_open_file(this_file, "aer")
 
-            elif "CLOUD-CLD" in f:
-                self.try_open_file(f, "cld")
+            elif "CLOUD-CLD" in this_file:
+                self.try_open_file(this_file, "cld")
 
             else:
-                raise ValueError("File type not recognised: " + f)
+                raise ValueError("File type not recognised: " + this_file)
 
         # Get coordinates
         self._init1(central_longitude)
@@ -658,7 +666,7 @@ class MergedSwath(Swath):
         # As there are multiple files, allow slice to select one.
         if isinstance(slices, tuple):
             name = slices[0]
-            keys = slices[1],
+            keys = (slices[1], )
         else:
             name = slices
             keys = self.nc_files.keys()
@@ -676,16 +684,16 @@ class MergedSwath(Swath):
                 try:
                     if retsource:
                         return self.nc_files[key][name2], key
-                    else:
-                        return self.nc_files[key][name2]
+
+                    return self.nc_files[key][name2]
                 except (KeyError, IndexError):
                     pass
             else:
                 try:
                     if retsource:
                         return self.nc_files[key][name], key
-                    else:
-                        return self.nc_files[key][name]
+
+                    return self.nc_files[key][name]
                 except (KeyError, IndexError):
                     pass
 
@@ -722,13 +730,13 @@ class MergedSwath(Swath):
 
     def set_qcflag(self, iter_limit=25, cld_cost_limit=10., aer_cost_limit=3.):
         self._qcflag = np.zeros(self.shape, dtype=int)
-        self._qcflag[self["niter", "cld"] >= iter_limit]  += \
+        self._qcflag[self["niter", "cld"] >= iter_limit] += \
             QCFLAG["cld_iter"]
         self._qcflag[self["costjm", "cld"] >= cld_cost_limit] += \
             QCFLAG["cld_cost"]
 
         if not self.collocation:
-            self._qcflag[self["niter", "aer"] >= iter_limit]  += \
+            self._qcflag[self["niter", "aer"] >= iter_limit] += \
                 QCFLAG["aer_iter"]
             self._qcflag[self["costjm", "aer"] >= aer_cost_limit] += \
                 QCFLAG["aer_cost"]
@@ -752,6 +760,6 @@ class MergedSwath(Swath):
                 tmp[indices < 0] = np.ma.masked
             except IndexError:
                 tmp = np.ma.masked
-            data[i,:] = tmp
+            data[i, :] = tmp
 
         return data
