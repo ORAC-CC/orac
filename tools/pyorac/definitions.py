@@ -291,7 +291,7 @@ class FileName:
         )
         if mat:
             self.sensor = 'SEVIRI'
-            for fdr in in_dir:
+            for fdr in in_dirs:
                 tmp = os.path.join(fdr, filename)
                 if os.path.isfile(tmp):
                     self.platform = _determine_platform_from_metoffice(tmp)
@@ -323,7 +323,7 @@ class FileName:
             self.dur = datetime.timedelta(seconds=int(mat.group('duration')))
             self.geo = os.path.join(filename, "geodetic_in.nc")
 
-            for fdr in in_dir:
+            for fdr in in_dirs:
                 try:
                     with Dataset(os.path.join(fdr, self.l1b)) as slstr_file:
                         # Round time to nearest minute
