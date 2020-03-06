@@ -130,6 +130,11 @@ class FileName:
             self.folders = in_dirs
         self.l1b = filename
 
+        # Things that need to be here
+        self.oractype = None
+        self.predef = False
+        self.orbit_num = None
+
         # Attempt AATSR L1B filename
         mat = re.search(
             r'ATS_TOA_1P([A-Za-z]{4})(?P<year>\d{4})(?P<month>\d{2})'
@@ -149,8 +154,6 @@ class FileName:
             )
             self.dur = datetime.timedelta(seconds=int(mat.group('duration')))
             self.geo = filename
-            self.oractype = None
-            self.predef = False
             return
 
         # Attempt ATSR2 L1B filename
@@ -172,8 +175,6 @@ class FileName:
             )
             self.dur = datetime.timedelta(seconds=int(mat.group('duration')))
             self.geo = filename
-            self.oractype = None
-            self.predef = False
             return
 
         # Attempt MODIS L1B filename
@@ -198,8 +199,6 @@ class FileName:
             self.geo = ('M' + mat.group('platform') + 'D03.A' + mat.group('year') +
                         mat.group('doy') + '.' + mat.group('hour') +
                         mat.group('min') + '.' + mat.group('collection') + '.*hdf')
-            self.oractype = None
-            self.predef = False
             return
 
         # Attempt reformatted AVHRR L1B filename
@@ -220,8 +219,6 @@ class FileName:
             self.dur = datetime.timedelta(seconds=6555) # Approximately
             # The following may be problematic with interesting dir names
             self.geo = filename.replace('_avhrr.h5', '_sunsatangles.h5')
-            self.oractype = None
-            self.predef = False
             return
 
         # Default AVHRR filename format produced by pygac (differs from
@@ -245,8 +242,6 @@ class FileName:
             self.dur = datetime.timedelta(seconds=6555) # Approximately
             self.geo = filename.replace('ECC_GAC_avhrr_',
                                         'ECC_GAC_sunsatangles_')
-            self.oractype = None
-            self.predef = False
             return
 
         # Attempt SEVIRI L1B filename in NAT format
@@ -266,7 +261,6 @@ class FileName:
             )
             self.dur = datetime.timedelta(seconds=900) # Approximately
             self.geo = filename
-            self.oractype = None
             self.predef = True
             return
 
@@ -287,7 +281,6 @@ class FileName:
             )
             self.dur = datetime.timedelta(seconds=900) # Approximately
             self.geo = filename
-            self.oractype = None
             self.predef = True
             return
 
@@ -310,7 +303,6 @@ class FileName:
             )
             self.dur = datetime.timedelta(seconds=900) # Approximately
             self.geo = filename
-            self.oractype = None
             self.predef = True
             return
 
@@ -330,8 +322,6 @@ class FileName:
             self.inst = 'SLSTR-Sentinel-3'+mat.group('platform').lower()
             self.dur = datetime.timedelta(seconds=int(mat.group('duration')))
             self.geo = os.path.join(filename, "geodetic_in.nc")
-            self.oractype = None
-            self.predef = False
 
             for fdr in in_dir:
                 try:
@@ -357,7 +347,8 @@ class FileName:
         mat = re.search(
             r'(?P<project>\w+)-(?P<product>.+)-(?P<sensor>\w+)_'
             r'(?P<processor>\w+)_(?P<platform>\w+)_(?P<year>\d{4})'
-            r'(?P<month>\d{2})(?P<day>\d{2})(?P<hour>\d{2})(?P<min>\d{2})_R'
+            r'(?P<month>\d{2})(?P<day>\d{2})(?P<hour>\d{2})(?P<min>\d{2})'
+            r'(?:_(?P<orbit_num>\d{5}))?_R'
             r'(?P<revision>\d+)(?P<phase>\w*)\.(?P<filetype>\w+)\.nc', filename
         )
         if mat:
@@ -375,12 +366,12 @@ class FileName:
             )
             self.dur = None
             self.geo = None
-            self.predef = False
             self.oractype = mat.group('filetype')
             self.processor = mat.group('processor')
             self.revision = mat.group('revision')
             self.project = mat.group('project')
             self.product_name = mat.group('product')
+            self.orbit_num = mat.group('orbit_num')
             return
 
         raise OracError('Unexpected filename format - ' + filename)
@@ -429,10 +420,8 @@ class FileName:
             self.sensor, processor, self.platform,
             self.time.strftime('%Y%m%d%H%M'), "R{}".format(revision)
         ]
-        try:
+        if self.orbit_num:
             parts.insert(4, self.orbit_num)
-        except AttributeError:
-            pass
 
         return '-'.join((project, product_name, "_".join(parts)))
 
