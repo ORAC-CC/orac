@@ -176,19 +176,25 @@ def build_preproc_driver(args):
         raise OracError('NetCDF lib improperly built as ncdump not present.')
 
     # Fetch ECMWF version from header of NCDF file
-    try:
-        ecmwf_check_file = ggam[0] if ggam[0].endswith('nc') else ggas[0]
-        tmp1 = check_output([ncdf_exe, "-h", ecmwf_check_file],
-                            universal_newlines=True)
-    except OSError:
-        raise FileMissing('ECMWF ggas file', ggas[0])
-    mat1 = search(r':history = "(.+?)" ;', tmp1)
-    if mat1:
-        ecmwf_version = mat1.group(1)
+    if 0 <= args.ecmwf_flag <= 3:
+        try:
+            ecmwf_check_file = ggam[0] if ggam[0].endswith('nc') else ggas[0]
+            tmp1 = check_output([ncdf_exe, "-h", ecmwf_check_file],
+                                universal_newlines=True)
+        except OSError:
+            raise FileMissing('ECMWF ggas file', ggas[0])
+        mat1 = search(r':history = "(.+?)" ;', tmp1)
+        if mat1:
+            ecmwf_version = mat1.group(1)
+        else:
+            ecmwf_version = 'n/a'
+            warnings.warn('Header of ECMWF file may have changed.', OracWarning,
+                          stacklevel=2)
+    elif 4 <= args.ecmwf_flag <= 5:
+        ecmwf_version = 'ERA5'
     else:
+        # TODO: Fetch version information from GFS files
         ecmwf_version = 'n/a'
-        warnings.warn('Header of ECMWF file may have changed.', OracWarning,
-                      stacklevel=2)
 
     # RTTOV version number from small executable
     try:
