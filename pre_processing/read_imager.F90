@@ -223,8 +223,8 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
       ! Read the L1B data, according to the dimensions and offsets specified in
       ! imager_geolocation
       call read_slstr(path_to_l1b_file, &
-           imager_geolocation,imager_measurements,imager_angles, &
-           imager_time,channel_info,verbose)
+           imager_geolocation, imager_measurements, imager_angles, &
+           imager_time, imager_flags, channel_info, verbose)
 
       ! In absence of proper mask set everything to "1" for cloud mask
       imager_flags%cflag = 1

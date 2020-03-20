@@ -1040,3 +1040,62 @@ subroutine slstr_get_one_geom(nx,ny,fid,var,odata,geofile)
 
 
 end subroutine slstr_get_one_geom
+
+! Reads an arbitrary variable from a specified SLSTR file
+subroutine read_slstr_int_field(indir, file, procgrid, variable, &
+     startx, starty, data_arr)
+
+   use orac_ncdf_m
+   use preproc_constants_m
+
+   implicit none
+
+   character(len=*),           intent(in)  :: indir
+   character(len=*),           intent(in)  :: file
+   character(len=*),           intent(in)  :: procgrid
+   character(len=*),           intent(in)  :: variable
+   integer,                    intent(in)  :: startx
+   integer,                    intent(in)  :: starty
+   integer(kind=sint),         intent(out) :: data_arr(:,:)
+
+   character(len=path_length) :: geofile, var
+   integer                    :: fid
+
+   geofile = trim(indir) // trim(file) // '_' // trim(procgrid) // '.nc'
+   var = trim(variable) // '_' // trim(procgrid)
+
+   call nc_open(fid, geofile)
+   call nc_read_array(fid, var, data_arr, .false., startp=[startx, starty])
+   if (nf90_close(fid).ne.NF90_NOERR) print*, "ERROR: read_slstr_int_field(): Unable to close."
+
+end subroutine read_slstr_int_field
+
+
+! Reads an arbitrary variable from a specified SLSTR file
+subroutine read_slstr_field(indir, file, procgrid, variable, &
+     startx, starty, data_arr)
+
+   use orac_ncdf_m
+   use preproc_constants_m
+
+   implicit none
+
+   character(len=*),           intent(in)  :: indir
+   character(len=*),           intent(in)  :: file
+   character(len=*),           intent(in)  :: procgrid
+   character(len=*),           intent(in)  :: variable
+   integer,                    intent(in)  :: startx
+   integer,                    intent(in)  :: starty
+   real(kind=sreal),           intent(out) :: data_arr(:,:)
+
+   character(len=path_length) :: geofile, var
+   integer                    :: fid
+
+   geofile = trim(indir) // trim(file) // '_' // trim(procgrid) // '.nc'
+   var = trim(variable) // '_' // trim(procgrid)
+
+   call nc_open(fid, geofile)
+   call nc_read_array(fid, var, data_arr, .false., startp=[startx, starty])
+   if (nf90_close(fid).ne.NF90_NOERR) print*, "ERROR: read_slstr_int_field(): Unable to close."
+
+end subroutine read_slstr_field

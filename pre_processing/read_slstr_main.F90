@@ -22,6 +22,7 @@
 ! 2020/02/24, SP: Remove the S7/F1 correction, as new processing baseline makes
 !                 this harder to implement, but also makes it less necessary.
 !                 The S7 band now saturates at 312K rather than 305K.
+! 2020/03/17, AP: Read land/sea mask from the flags_XX:confidence_XX field.
 !
 ! Bugs:
 ! None known (in ORAC)
@@ -103,7 +104,7 @@ end subroutine read_slstr_dimensions
 ! verbose             logical in   If true then print verbose information.
 !-------------------------------------------------------------------------------
 subroutine read_slstr(infile, imager_geolocation, imager_measurements, &
-   imager_angles, imager_time, channel_info, verbose)
+   imager_angles, imager_time, imager_flags, channel_info, verbose)
 
    use iso_c_binding
    use hdf5
@@ -122,6 +123,7 @@ subroutine read_slstr(infile, imager_geolocation, imager_measurements, &
    type(imager_measurements_t), intent(inout) :: imager_measurements
    type(imager_angles_t),       intent(inout) :: imager_angles
    type(imager_time_t),         intent(inout) :: imager_time
+   type(imager_flags_t),        intent(inout) :: imager_flags
    type(channel_info_t),        intent(in)    :: channel_info
    logical,                     intent(in)    :: verbose
 
@@ -142,6 +144,7 @@ subroutine read_slstr(infile, imager_geolocation, imager_measurements, &
    real(kind=sreal),allocatable :: oblons(:,:)
    real(kind=sreal),allocatable :: interp(:,:,:)
 
+   integer(kind=sint)           :: surface_flag(imager_geolocation%nx,imager_geolocation%ny)
    integer                      :: txnx,txny
    integer                      :: obnx,obny,obl_off
 
@@ -224,6 +227,25 @@ subroutine read_slstr(infile, imager_geolocation, imager_measurements, &
    end if
 
    deallocate(interp)
+
+   ! Read land/sea mask. This is a bitmask where,
+   !   1:   coastline        256:   cosmetic
+   !   2:   ocean            512:   duplicate
+   !   4:   tidal            1024:  day
+   !   8:   land             2048:  twilight
+   !   16:  inland_water     4096:  sun_glint
+   !   32:  unfilled         8192:  snow
+   !   64:  spare            16348: summary_cloud
+   !   128: spare            32768: summary_pointing
+   ! To be consistent with read_modis_time-lat_lon_angles(), we accept
+   ! only classes 2 and 16 as sea.
+   call read_slstr_int_field(indir, 'flags', 'in', 'confidence', startx, starty, &
+        surface_flag)
+   where (btest(surface_flag, 1) .or. btest(surface_flag, 4))
+      imager_flags%lsflag = 0
+   else where
+      imager_flags%lsflag = 1
+   end where
 
    ! This bit reads all the data.
    do i=1,n_bands
