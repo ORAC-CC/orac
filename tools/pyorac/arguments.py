@@ -446,7 +446,8 @@ def check_args_regress(args):
         if args.long:
             args.tests = ['DAYMYD', 'NITMYD', 'DAYMOD', 'NITMOD',
                           'DAYSLSTRA', 'NITSLSTRA', 'DAYSLSTRB', 'NITSLSTRB',
-                          'AATSR', 'AVHRR']
+                          'AATSR', 'AVHRR', 'SEVIRI']
         else:
             args.tests = ['DAYMYDS', 'NITMYDS', 'DAYMODS', 'NITMODS',
-                          'DAYAATSRS', 'NITAATSRS', 'DAYAVHRRS', 'NITAVHRRS']
+                          'DAYAATSRS', 'NITAATSRS', 'DAYAVHRRS', 'NITAVHRRS',
+                          'DAYSEVIRIS', 'NITSEVIRIS']
