@@ -47,7 +47,7 @@
 ! endy           lint    both Last line desired by the caller
 ! verbose        logical in   If true then print verbose information.
 !
-! Note: startx,endx,starty,endy currently ignored.
+! Note: startx, endx, starty, endy currently ignored.
 ! It will always process the full scene. This will be fixed.
 !-------------------------------------------------------------------------------
 subroutine read_slstr_dimensions(img_file, n_across_track, n_along_track, &
@@ -127,26 +127,26 @@ subroutine read_slstr(infile, imager_geolocation, imager_measurements, &
    type(channel_info_t),        intent(in)    :: channel_info
    logical,                     intent(in)    :: verbose
 
-   integer                      :: i,j
-   integer(c_int)               :: n_bands
-   integer(c_int), allocatable  :: band_ids(:)
-   integer(c_int), allocatable  :: band_units(:)
-   integer                      :: startx, nx
-   integer                      :: starty, ny
-   integer(c_int)               :: line0, line1
-   integer(c_int)               :: column0, column1
+   integer                       :: i, j
+   integer(c_int)                :: n_bands
+   integer(c_int), allocatable   :: band_ids(:)
+   integer(c_int), allocatable   :: band_units(:)
+   integer                       :: startx, nx
+   integer                       :: starty, ny
+   integer(c_int)                :: line0, line1
+   integer(c_int)                :: column0, column1
 
-   character(len=path_length)   :: indir
+   character(len=path_length)    :: indir
 
-   real(kind=sreal),allocatable :: txlats(:,:)
-   real(kind=sreal),allocatable :: txlons(:,:)
-   real(kind=sreal),allocatable :: oblats(:,:)
-   real(kind=sreal),allocatable :: oblons(:,:)
-   real(kind=sreal),allocatable :: interp(:,:,:)
+   real(kind=sreal), allocatable :: txlats(:,:)
+   real(kind=sreal), allocatable :: txlons(:,:)
+   real(kind=sreal), allocatable :: oblats(:,:)
+   real(kind=sreal), allocatable :: oblons(:,:)
+   real(kind=sreal), allocatable :: interp(:,:,:)
 
-   integer(kind=sint)           :: surface_flag(imager_geolocation%nx,imager_geolocation%ny)
-   integer                      :: txnx,txny
-   integer                      :: obnx,obny,obl_off
+   integer(kind=sint)            :: surface_flag(imager_geolocation%nx,imager_geolocation%ny)
+   integer                       :: txnx, txny
+   integer                       :: obnx, obny, obl_off
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< read_slstr()'
 
@@ -167,10 +167,10 @@ subroutine read_slstr(infile, imager_geolocation, imager_measurements, &
    column1 = startx - 1 + nx - 1
 
    ! Sort out the start and end times, place into the time array
-   call get_slstr_startend(imager_time,infile,ny)
+   call get_slstr_startend(imager_time, infile, ny)
 
-   j=index(infile,'/',.true.)
-   indir=infile(1:j)
+   j = index(infile, '/', .true.)
+   indir = infile(1:j)
 
    if (verbose) write(*,*) 'Reading geoinformation data for SLSTR grids'
 
@@ -180,7 +180,6 @@ subroutine read_slstr(infile, imager_geolocation, imager_measurements, &
    ! Then allocate arrays for tx data
    allocate(txlats(txnx,txny))
    allocate(txlons(txnx,txny))
-
 
    ! Then allocate arrays for oblique data
    if (imager_angles%nviews .eq. 2) then
@@ -248,24 +247,24 @@ subroutine read_slstr(infile, imager_geolocation, imager_measurements, &
    end where
 
    ! This bit reads all the data.
-   do i=1,n_bands
+   do i=1, n_bands
       if (verbose) write(*,*) 'Reading SLSTR data for band', band_ids(i)
       if (band_ids(i) .lt. 7) then
-         call read_slstr_visdata(indir,band_ids(i), &
-              imager_measurements%data(:,:,i),imager_angles,startx,starty, &
-              nx,ny,nx,ny,0,1)
+         call read_slstr_visdata(indir, band_ids(i), &
+              imager_measurements%data(:,:,i), imager_angles, startx, starty, &
+              nx, ny, nx, ny, 0, 1)
       else if (band_ids(i) .le. 9) then
-         call read_slstr_tirdata(indir,band_ids(i), &
+         call read_slstr_tirdata(indir, band_ids(i), &
               imager_measurements%data(:,:,i), &
-              startx,starty,nx,ny,nx,ny,1,1)
+              startx, starty, nx, ny, nx, ny, 1, 1)
       else if (band_ids(i) .lt. 16) then
-         call read_slstr_visdata(indir,band_ids(i), &
+         call read_slstr_visdata(indir, band_ids(i), &
               imager_measurements%data(:,:,i), &
-              imager_angles,startx,starty,obnx,obny,nx,ny,obl_off-1,2)
+              imager_angles, startx, starty, obnx, obny, nx, ny, obl_off-1, 2)
       else if (band_ids(i) .le. 18) then
-         call read_slstr_tirdata(indir,band_ids(i), &
+         call read_slstr_tirdata(indir, band_ids(i), &
               imager_measurements%data(:,:,i), &
-              startx,starty,obnx,obny,nx,ny,obl_off,2)
+              startx, starty, obnx, obny, nx, ny, obl_off, 2)
       else
          write(*,*) 'Invalid band_id! Must be in range 1->18', band_ids(i)
          stop
@@ -283,7 +282,7 @@ subroutine read_slstr(infile, imager_geolocation, imager_measurements, &
         imager_measurements%data(:,:,i) = imager_measurements%data(:,:,i) * 0.93
       else if (band_ids(i) .eq. 12) then
         imager_measurements%data(:,:,i) = imager_measurements%data(:,:,i) * 0.93
-      endif
+      end if
    end do
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_slstr()'
 

@@ -142,7 +142,6 @@ end subroutine read_abi_dimensions
 ! channel_info        struct  in   Members within are populated
 ! verbose             logical in   If true then print verbose information.
 !-------------------------------------------------------------------------------
-
 subroutine get_abi_data(infiles, imager_angles, imager_measurements, &
      imager_geolocation, channel_info, verbose)
 
@@ -176,22 +175,21 @@ subroutine get_abi_data(infiles, imager_angles, imager_measurements, &
 
    allocate(tmpout(imager_geolocation%nx,imager_geolocation%ny))
 
-   do i=1,n_bands
+   do i=1, n_bands
       if (band_ids(i) .lt. 7) then
-         ! Visible channels
          tmpout(:,:)     =       sreal_fill_value
-         if (verbose) write(*,*) "Loading GOES visible band ",band_ids(i)
+         if (verbose) write(*,*) "Loading GOES visible band ", band_ids(i)
          if (band_ids(i) .eq. 1 .or. band_ids(i) .eq. 3 .or. band_ids(i) .eq. 5) then
             allocate(tmprad(imager_geolocation%nx*2,imager_geolocation%ny*2))
-            call load_abi_band(infiles(i),imager_geolocation,tmprad,irrad,bc1,bc2,fk1,fk2,2,verbose)
-            call goes_resample_vis_to_tir(tmprad,tmpout,imager_geolocation%nx,imager_geolocation%ny,sreal_fill_value,2,verbose)
+            call load_abi_band(infiles(i), imager_geolocation, tmprad, irrad, bc1, bc2, fk1, fk2, 2, verbose)
+            call goes_resample_vis_to_tir(tmprad, tmpout, imager_geolocation%nx, imager_geolocation%ny, sreal_fill_value, 2, verbose)
          elseif (band_ids(i) .eq. 2) then
             allocate(tmprad(imager_geolocation%nx*4,imager_geolocation%ny*4))
-            call load_abi_band(infiles(i),imager_geolocation,tmprad,irrad,bc1,bc2,fk1,fk2,4,verbose)
-            call goes_resample_vis_to_tir(tmprad,tmpout,imager_geolocation%nx,imager_geolocation%ny,sreal_fill_value,4,verbose)
+            call load_abi_band(infiles(i), imager_geolocation, tmprad, irrad, bc1, bc2, fk1, fk2, 4, verbose)
+            call goes_resample_vis_to_tir(tmprad, tmpout, imager_geolocation%nx, imager_geolocation%ny, sreal_fill_value, 4, verbose)
          else
             allocate(tmprad(imager_geolocation%nx,imager_geolocation%ny))
-            call load_abi_band(infiles(i),imager_geolocation,tmpout,irrad,bc1,bc2,fk1,fk2,1,verbose)
+            call load_abi_band(infiles(i), imager_geolocation, tmpout, irrad, bc1, bc2, fk1, fk2, 1, verbose)
          end if
 
          tmpout = tmpout * irrad
@@ -201,11 +199,10 @@ subroutine get_abi_data(infiles, imager_angles, imager_measurements, &
 
          deallocate(tmprad)
       else
-         ! Thermal channels
-         if (verbose) write(*,*) "Loading GOES thermal band ",band_ids(i)
+         if (verbose) write(*,*) "Loading GOES thermal band ", band_ids(i)
          allocate(tmprad(imager_geolocation%nx,imager_geolocation%ny))
 
-         call load_abi_band(infiles(i),imager_geolocation,tmprad,irrad,bc1,bc2,fk1,fk2,1,verbose)
+         call load_abi_band(infiles(i), imager_geolocation, tmprad, irrad, bc1, bc2, fk1, fk2, 1, verbose)
 
          tmprad = (fk2/(log((fk1/tmprad)+1))-bc1) / bc2
 
@@ -248,7 +245,7 @@ end subroutine get_abi_data
 ! verbose             logical in   If true then print verbose information.
 !-------------------------------------------------------------------------------
 subroutine read_abi_bin(infiles, imager_geolocation, imager_measurements, &
-   imager_angles, imager_time, channel_info, use_predef_geo,geo_file_path, &
+   imager_angles, imager_time, channel_info, use_predef_geo, geo_file_path, &
    global_atts, verbose)
 
    use iso_c_binding
@@ -257,6 +254,7 @@ subroutine read_abi_bin(infiles, imager_geolocation, imager_measurements, &
    use imager_structures_m
    use preproc_constants_m
    use system_utils_m
+
    implicit none
 
    character(len=file_length),  intent(in)    :: infiles(:)
@@ -283,25 +281,25 @@ subroutine read_abi_bin(infiles, imager_geolocation, imager_measurements, &
       end if
    end do
    if (goodf .le. 0) then
-      write(*,*)"ERROR: No Infrared channels have been selected:",channel_info%channel_ids_instr(i)
+      write(*,*) "ERROR: No Infrared channels have been selected:", channel_info%channel_ids_instr(i)
       stop
    end if
 
    ! Determine geolocation information (lat/lon/vza/vaa)
    if (.not. use_predef_geo) then
-      call get_abi_geoloc(infiles(goodf),imager_geolocation, imager_angles, global_atts, verbose)
+      call get_abi_geoloc(infiles(goodf), imager_geolocation, imager_angles, global_atts, verbose)
    else
       ! This is a placeholder for now.
       if (verbose) write(*,*) "Reading geolocation from file."
    end if
 
    call get_abi_time(infiles(goodf), imager_time, imager_geolocation%ny, verbose)
-   call get_abi_solgeom(imager_time,imager_angles,imager_geolocation,verbose)
+   call get_abi_solgeom(imager_time, imager_angles, imager_geolocation, verbose)
 
-   call get_abi_data(infiles,imager_angles,imager_measurements,imager_geolocation,channel_info,verbose)
+   call get_abi_data(infiles, imager_angles, imager_measurements, imager_geolocation, channel_info, verbose)
 
    ! Compute relative azimuth from solar and viewing azimuths
-   imager_angles%relazi = abs(imager_angles%solazi-imager_angles%satazi)
+   imager_angles%relazi = abs(imager_angles%solazi - imager_angles%satazi)
    where (imager_angles%relazi(:,:,1) .gt. 180.)
       imager_angles%relazi(:,:,1) = 360. - imager_angles%relazi(:,:,1)
    end where

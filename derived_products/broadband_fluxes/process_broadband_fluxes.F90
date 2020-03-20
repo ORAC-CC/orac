@@ -864,14 +864,14 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
 
    ! Open Aerosol Primary File (optional)
    if (aerosol_processing_mode .eq. 1) then
-      print*,trim(Faerosol)
+      print*, trim(Faerosol)
       call nc_open(ncid,trim(Faerosol))
 
       allocate(aerAOD1(xN,yN))
       allocate(aerREF1(xN,yN))
       call nc_read_array(ncid, "aot550", aerAOD1, verbose)
       call nc_read_array(ncid, "aer", aerREF1, verbose)
-  
+
       ! Close file
       if (nf90_close(ncid) .ne. NF90_NOERR) then
          write(*,*) 'ERROR: ',trim(Faerosol)
@@ -1053,7 +1053,7 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
 
       ! Netcdf collocation file exists get aID
       if (there) then
-         print*,'Extracting data from:'
+         print*, 'Extracting data from:'
          write(*,*) trim(Fcollocation)
          ! Open Collocation file
          call nc_open(ncid,trim(Fcollocation))
@@ -1931,7 +1931,7 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
    ! Column_Ozone
    !----------------------------------------------------------------------------
    write(*,*) ncid, dims_var, 'colO3', colO3_vid, verbose, deflate_lv, shuffle_flag
-   
+
    call nc_def_var_float_packed_float( &
         ncid, &
         dims_var, &

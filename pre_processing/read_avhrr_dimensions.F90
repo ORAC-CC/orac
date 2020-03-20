@@ -71,7 +71,7 @@ subroutine read_avhrr_dimensions(path_to_geo_file,n_across_track,n_along_track)
    n_along_track=int(dims(2),kind=lint)
 
    !close dataset
-   call  h5dclose_f(dset_id, err_code)
+   call h5dclose_f(dset_id, err_code)
 
    !close data group
    call h5gclose_f(gr_id, err_code)

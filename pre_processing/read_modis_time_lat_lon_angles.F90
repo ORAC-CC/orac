@@ -160,7 +160,7 @@ subroutine read_modis_time_lat_lon_angles(path_to_geo_file,imager_geolocation,&
    !                7:      Deep Ocean (Ocean > 500m deep).
    ! which of these is most efficient is compiler-dependant
 
-   where(btemp.eq.0 .or. btemp.eq.5 .or. btemp.eq.6 .or. btemp.eq.7)
+   where (btemp.eq.0 .or. btemp.eq.5 .or. btemp.eq.6 .or. btemp.eq.7)
       btemp = 0
    else where
       btemp = 1

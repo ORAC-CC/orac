@@ -24,8 +24,8 @@
    ! locate variable in file
    ierr = nf90_inq_varid(ncid, name, vid)
    if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: nc_read_file(): Could not locate variable ',trim(name)
-      print*,trim(nf90_strerror(ierr))
+      print*, 'ERROR: nc_read_file(): Could not locate variable ', trim(name)
+      print*, trim(nf90_strerror(ierr))
       stop error_stop_code
    end if
 

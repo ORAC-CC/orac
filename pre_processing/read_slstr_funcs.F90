@@ -40,7 +40,7 @@
 ! This function retrieves the start and end times for an SLSTR scene, then
 ! computes the per-pixel sensing time before saving the results in the
 ! imager_time%time array.
-subroutine get_slstr_startend(imager_time,fname,ny)
+subroutine get_slstr_startend(imager_time, fname, ny)
 
    use netcdf
    use calender_m
@@ -51,19 +51,19 @@ subroutine get_slstr_startend(imager_time,fname,ny)
    integer,                    intent(in)    :: ny
 
 
-   integer(kind=sint)         :: year1,month1,day1
-   integer(kind=sint)         :: year2,month2,day2
-   integer(kind=sint)         :: hour1,minute1,second1
-   integer(kind=sint)         :: hour2,minute2,second2
-   reaL(kind=dreal)           :: dfrac1,dfrac2,jd1,jd2,slo
+   integer(kind=sint)         :: year1, month1, day1
+   integer(kind=sint)         :: year2, month2, day2
+   integer(kind=sint)         :: hour1, minute1, second1
+   integer(kind=sint)         :: hour2, minute2, second2
+   real(kind=dreal)           :: dfrac1, dfrac2, jd1, jd2, slo
 
    ! Variables for computing start and end times
-   character(len=date_length) :: cyear1,cmonth1,cday1
-   character(len=date_length) :: cyear2,cmonth2,cday2
-   character(len=date_length) :: chour1,cminute1,csec1
-   character(len=date_length) :: chour2,cminute2,csec2
+   character(len=date_length) :: cyear1, cmonth1, cday1
+   character(len=date_length) :: cyear2, cmonth2, cday2
+   character(len=date_length) :: chour1, cminute1, csec1
+   character(len=date_length) :: chour2, cminute2, csec2
 
-   integer                    :: fid,ierr,index2,j
+   integer                    :: fid, ierr, index2, j
    character(len=path_length) :: l1b_start, l1b_end
 
    ! Convert start and end times to julian
@@ -79,9 +79,9 @@ subroutine get_slstr_startend(imager_time,fname,ny)
            trim(fname), ierr
       stop error_stop_code
    end if
-   ierr=nf90_get_att(fid, nf90_global, 'stop_time', l1b_end)
+   ierr = nf90_get_att(fid, NF90_GLOBAL, 'stop_time', l1b_end)
    if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: get_slstr_startend(): Error getting end_time from file ', &
+      print*, 'ERROR: get_slstr_startend(): Error getting end_time from file ', &
            trim(fname), ierr
       stop error_stop_code
    end if
@@ -136,19 +136,18 @@ subroutine get_slstr_startend(imager_time,fname,ny)
    jd2    = jd2 + dfrac2
 
    ! Compute linear regression slope
-   slo = (jd2-jd1)/ny
+   slo = (jd2 - jd1) / ny
 
    ! Put correct julian date into each location in the time array
-   do j=1,ny
-      imager_time%time(:,j) = jd1+(slo*float(j))
+   do j = 1, ny
+      imager_time%time(:,j) = jd1 + (slo * float(j))
    end do
 
 end subroutine get_slstr_startend
 
 
 ! Computes the name of the input file based upon the band name.
-! This is currently hard-coded for nadir files, need to add oblique.
-subroutine get_slstr_imnames(indir,inband,fname,fname_qa,bname,irradname)
+subroutine get_slstr_imnames(indir, inband, fname, fname_qa, bname, irradname)
 
    use preproc_constants_m
 
@@ -162,14 +161,14 @@ subroutine get_slstr_imnames(indir,inband,fname,fname_qa,bname,irradname)
    character(len=3) :: band
    character(len=3) :: vid
 
-   integer          ::   mod_inb
+   integer          :: mod_inb
 
    if (inband .le. 9) then
-      vid='n'
-      mod_inb=inband
+      vid = 'n'
+      mod_inb = inband
    else
-      vid='o'
-      mod_inb=inband-9
+      vid = 'o'
+      mod_inb = inband-9
    end if
 
    write (band, '(I1)') mod_inb
@@ -192,8 +191,8 @@ subroutine get_slstr_imnames(indir,inband,fname,fname_qa,bname,irradname)
 end subroutine get_slstr_imnames
 
 ! Read the nadir-view thermal grid data. Need to update with oblique view
-subroutine read_slstr_tirdata(indir,inband,outarr,sx,sy,nx,ny,inx,iny, &
-                              offset,view)
+subroutine read_slstr_tirdata(indir, inband, outarr, sx, sy, nx, ny, inx, iny, &
+                              offset, view)
 
    use netcdf
    use orac_ncdf_m
@@ -227,7 +226,7 @@ subroutine read_slstr_tirdata(indir,inband,outarr,sx,sy,nx,ny,inx,iny, &
    integer :: endx,endy
 
    ! Find the filename required for this channel
-   call get_slstr_imnames(indir,inband,filename,filename_qa,bandname,irradname)
+   call get_slstr_imnames(indir, inband, filename, filename_qa, bandname, irradname)
 
    ! Open the netcdf file
    ierr=nf90_open(path=trim(adjustl(filename)),mode=NF90_NOWRITE,ncid=fid)
@@ -298,8 +297,8 @@ end subroutine read_slstr_tirdata
 
 ! Read the nadir-view visible grid data from SLSTR. Need to update with oblique view
 ! This assumes that VIS data is twice resolution of TIR (should be correct, 0.5km)
-subroutine read_slstr_visdata(indir,inband,outarr,imager_angles,sx,sy, &
-                              nx,ny,inx,iny,offset,view)
+subroutine read_slstr_visdata(indir, inband, outarr, imager_angles, sx, sy, &
+                              nx, ny, inx, iny, offset, view)
 
    use netcdf
    use imager_structures_m
@@ -344,13 +343,13 @@ subroutine read_slstr_visdata(indir,inband,outarr,imager_angles,sx,sy, &
    end if
 
    ! Find the filename required for this channel
-   call get_slstr_imnames(indir,inband,filename,filename_qa,bandname,irradname)
+   call get_slstr_imnames(indir, inband, filename, filename_qa, bandname, irradname)
 
    allocate(data1(nx*2,ny*2))
    allocate(data2(nx,ny))
    allocate(data3(nx,ny))
 
-   data1(:,:)=sreal_fill_value
+   data1(:,:) = sreal_fill_value
 
    ! Open the netcdf file
    ierr=nf90_open(path=trim(adjustl(filename)),mode=NF90_NOWRITE,ncid=fid)
@@ -453,23 +452,23 @@ subroutine read_slstr_visdata(indir,inband,outarr,imager_angles,sx,sy, &
    outarr(offset+1:nx+offset,:)=data3
 
    ! Convert from radiances to reflectances
-   where(outarr .ne.sreal_fill_value) outarr = &
-        pi*(outarr)/irradiances(1)
+   where(outarr .ne.sreal_fill_value) &
+        outarr = pi / irradiances(1) * outarr
 
    ! Fill where sza is bad
    where(imager_angles%solzen(:,:,1) .eq. sreal_fill_value) &
-        outarr=sreal_fill_value
+        outarr = sreal_fill_value
    deallocate(data1)
    deallocate(data2)
    deallocate(data3)
 !   if (inband .eq. 5 .or. inband .eq. 6) then
-!      outarr(1:nx-1,1:ny-1)=outarr(2:nx,2:ny)
+!      outarr(1:nx-1,1:ny-1) = outarr(2:nx,2:ny)
 !   end if
 !   if (inband .eq. 10 .or. inband .eq. 11 .or. inband .eq. 12 .or. inband .eq. 13) then
-!      outarr(1:nx-1,1:ny-1)=outarr(2:nx,2:ny)
+!      outarr(1:nx-1,1:ny-1) = outarr(2:nx,2:ny)
 !   end if
 !   if (inband .eq. 14 .or. inband .eq. 15) then
-!      outarr(1:nx-1,:)=outarr(2:nx,:)
+!      outarr(1:nx-1,:) = outarr(2:nx,:)
 !   end if
 
 end subroutine read_slstr_visdata
@@ -479,7 +478,7 @@ end subroutine read_slstr_visdata
 ! that of the TIR images (0.5km vs 1km). This is not efficient, but works!
 !
 ! To resample we simply average a 2x2 region of VIS into a 1x1 pixel of TIR.
-subroutine slstr_resample_vis_to_tir(inarr,outarr,nx,ny,fill)
+subroutine slstr_resample_vis_to_tir(inarr, outarr, nx, ny, fill)
 
    use preproc_constants_m
 
@@ -491,39 +490,40 @@ subroutine slstr_resample_vis_to_tir(inarr,outarr,nx,ny,fill)
 
    real    :: tmpval
 
-   integer :: x,y
-   integer :: newx,newy,counter
-   newx=1
-   do x=1,nx*2-1,2
-      newy=1
+   integer :: x, y
+   integer :: newx, newy, counter
 
-      do y=1,ny*2-1,2
-         counter=0
-         tmpval=0
+   newx = 1
+   do x = 1, nx*2-1, 2
+      newy = 1
+
+      do y = 1, ny*2-1, 2
+         counter = 0
+         tmpval = 0
          if (inarr(x,y).ne.fill) then
-            tmpval=tmpval+inarr(x,y)
-            counter=counter+1
+            tmpval = tmpval+inarr(x,y)
+            counter = counter+1
          end if
          if (inarr(x+1,y).ne.fill) then
-            tmpval=tmpval+inarr(x+1,y)
-            counter=counter+1
+            tmpval = tmpval+inarr(x+1,y)
+            counter = counter+1
          end if
          if (inarr(x,y+1).ne.fill) then
-            tmpval=tmpval+inarr(x,y+1)
-            counter=counter+1
+            tmpval = tmpval+inarr(x,y+1)
+            counter = counter+1
          end if
          if (inarr(x+1,y+1).ne.fill) then
-            tmpval=tmpval+inarr(x+1,y+1)
-            counter=counter+1
+            tmpval = tmpval+inarr(x+1,y+1)
+            counter = counter+1
          end if
          if (counter .gt. 0) then
             outarr(newx,newy) = tmpval/counter
          else
-            outarr(newx,newy)=fill
+            outarr(newx,newy) = fill
          end if
-         newy=newy+1
+         newy = newy+1
       end do
-      newx=newx+1
+      newx = newx+1
    end do
 
 end subroutine slstr_resample_vis_to_tir
@@ -695,7 +695,7 @@ subroutine read_slstr_lldata(indir,data_arr,nx,ny,proclat,procgrid)
    deallocate(data)
 end subroutine read_slstr_lldata
 
-subroutine slstr_get_alignment(nx,ny,obnx,obny,tirlons,oblons,aligment)
+subroutine slstr_get_alignment(nx, ny, obnx, obny, tirlons, oblons, alignment)
 
    use preproc_constants_m
 
@@ -703,20 +703,20 @@ subroutine slstr_get_alignment(nx,ny,obnx,obny,tirlons,oblons,aligment)
    integer,          intent(in)  :: ny
    integer,          intent(in)  :: obnx
    integer,          intent(in)  :: obny
-   integer,          intent(out) :: aligment
+   integer,          intent(out) :: alignment
    real(kind=sreal), intent(in)  :: tirlons(nx,ny)
    real(kind=sreal), intent(in)  :: oblons(obnx,obny)
 
    integer :: x
-   real    :: bdiff,summer
+   real    :: bdiff, summer
 
-   bdiff=9e15
+   bdiff = 9e15
 
-   do x=1,nx-obnx
-      summer   =   sum(abs(tirlons(x:x+obnx-1,:)-oblons))
+   do x = 1, nx-obnx
+      summer = sum(abs(tirlons(x:x+obnx-1,:) - oblons))
       if (summer .lt. bdiff) then
          bdiff = summer
-         aligment = x
+         alignment = x
       end if
    end do
 
@@ -782,7 +782,7 @@ subroutine get_slstr_txgridsize(indir,nx,ny)
 end subroutine get_slstr_txgridsize
 
 ! Routine to get slope/prev/next pixel for resampling tx->in grids.
-subroutine slstr_get_interp(in_lons,tx_lons,nxt,nyt,nxi,nyi,interp)
+subroutine slstr_get_interp(in_lons, tx_lons, nxt, nyt, nxi, nyi, interp)
 
    use imager_structures_m
    use preproc_constants_m
@@ -795,26 +795,26 @@ subroutine slstr_get_interp(in_lons,tx_lons,nxt,nyt,nxi,nyi,interp)
    real(kind=sreal),           intent(in)  :: tx_lons(nxt,nyt)
    real(kind=sreal),           intent(out) :: interp(nxi,nyi,3)
 
-   integer          :: x,y
-   real(kind=sreal) :: dists1(nxt),dists2(nxt)
-   real(kind=sreal) :: firlo,seclo
+   integer          :: x, y
+   real(kind=sreal) :: dists1(nxt), dists2(nxt)
+   real(kind=sreal) :: firlo, seclo
 
 !$OMP PARALLEL PRIVATE(x, y, dists1, dists2, firlo, seclo)
 !$OMP DO SCHEDULE(GUIDED)
-   do y=1,nyi
-      do x=1,nxi
-         dists1 = in_lons(x,y)-tx_lons(:,y)
-         dists2 = in_lons(x,y)-tx_lons(:,y)
+   do y = 1, nyi
+      do x = 1, nxi
+         dists1 = in_lons(x,y) - tx_lons(:,y)
+         dists2 = in_lons(x,y) - tx_lons(:,y)
 
-         where(dists1 .lt. 0)dists1=999
-         where(dists2 .gt. 0)dists2=-999
-         interp(x,y,1) = minloc(dists1,dim=1)
-         interp(x,y,2) = maxloc(dists2,dim=1)
+         where(dists1 .lt. 0) dists1 = 999
+         where(dists2 .gt. 0) dists2 = -999
+         interp(x,y,1) = minloc(dists1, dim=1)
+         interp(x,y,2) = maxloc(dists2, dim=1)
 
          firlo = tx_lons(minloc(dists1,dim=1),y)
          seclo = tx_lons(maxloc(dists2,dim=1),y)
 
-         interp(x,y,3) = (in_lons(x,y)-firlo)/(seclo-firlo)
+         interp(x,y,3) = (in_lons(x,y) - firlo) / (seclo - firlo)
       end do
    end do
 !$OMP END DO
@@ -824,7 +824,7 @@ end subroutine slstr_get_interp
 
 
 ! Routine to resample the azmiuth/zenith data from the tx grid to the tir grid.
-subroutine slstr_interp_angs(in_angs,out_angs,txnx,txny,nx,ny,interp,view)
+subroutine slstr_interp_angs(in_angs, out_angs, txnx, txny, nx, ny, interp, view)
 
    use imager_structures_m
    use preproc_constants_m
@@ -838,20 +838,20 @@ subroutine slstr_interp_angs(in_angs,out_angs,txnx,txny,nx,ny,interp,view)
    real(kind=sreal),      intent(in)    :: interp(nx,ny,3)
    type(imager_angles_t), intent(inout) :: out_angs
 
-   integer          :: x,y,z,prev,next
-   real(kind=sreal) :: slo,intval(4)
+   integer          :: x, y, z, prev, next
+   real(kind=sreal) :: slo, intval(4)
 
    ! Loop over all pixels
 !$OMP PARALLEL PRIVATE(x, y, intval, prev, next, slo)
 !$OMP DO SCHEDULE(GUIDED)
-   do x=1,nx
-      do y=1,ny
+   do x = 1, nx
+      do y = 1, ny
          prev= interp(x,y,1)
          next= interp(x,y,2)
          slo = interp(x,y,3)
 
          ! Compute the interpolated angles on the TIR grid
-         do z=1,4
+         do z = 1, 4
             if (prev .ne. next) then
                if (in_angs(prev,y,z) .eq. sreal_fill_value) then
                   if (in_angs(next,y,z) .eq. sreal_fill_value) then
@@ -881,7 +881,7 @@ subroutine slstr_interp_angs(in_angs,out_angs,txnx,txny,nx,ny,interp,view)
                              in_angs(next,y,z)-in_angs(prev,y,z))
                      end if
                      if (z .eq. 1 .or. z .eq. 3) then
-                        if (intval(z) .lt. 0.) intval(z)=intval(z)+360.
+                        if (intval(z) .lt. 0.) intval(z) = intval(z)+360.
                      end if
                   end if
                end if
@@ -916,8 +916,8 @@ end subroutine slstr_interp_angs
 ! sense these are on a completely different grid to either the TIR or VIS data.
 ! We therefore also have to convert from this 'tie-point' grid onto something
 ! that's actually sensible and useful.
-subroutine read_slstr_satsol(indir,imager_angles,interp,txnx,txny,nx,ny, &
-     startx,view)
+subroutine read_slstr_satsol(indir, imager_angles, interp, txnx, txny, nx, ny, &
+     startx, view)
 
    use netcdf
    use imager_structures_m
@@ -934,17 +934,17 @@ subroutine read_slstr_satsol(indir,imager_angles,interp,txnx,txny,nx,ny, &
    real(kind=sreal),           intent(in)    :: interp(nx,ny,3)
    type(imager_angles_t),      intent(inout) :: imager_angles
 
-   character(len=path_length) :: geofile,vid
-   integer                    :: fid,ierr
+   character(len=path_length) :: geofile, vid
+   integer                    :: fid, ierr
 
    ! This stores the angles on the tx (reduced) grid.
-   ! In order (1->4): vaa,vza,saa,sza
+   ! In order (1->4): vaa, vza, saa, sza
    real(kind=sreal) :: angles(txnx,txny,4)
 
    if (view .eq. 2) then
-      vid='to'
+      vid = 'to'
    else
-      vid='tn'
+      vid = 'tn'
    end if
 
    ! Input file, on the geometry grid (tn)
@@ -975,18 +975,18 @@ subroutine read_slstr_satsol(indir,imager_angles,interp,txnx,txny,nx,ny, &
 
    ! Check bounds
    where(angles(:,:,4) .lt. -180) &
-      angles(:,:,4)=sreal_fill_value
+      angles(:,:,4) = sreal_fill_value
    where(angles(:,:,2) .lt. -180) &
-      angles(:,:,2)=sreal_fill_value
+      angles(:,:,2) = sreal_fill_value
    where(angles(:,:,4) .gt. 180) &
-      angles(:,:,4)=sreal_fill_value
+      angles(:,:,4) = sreal_fill_value
    where(angles(:,:,2) .gt. 180) &
-      angles(:,:,2)=sreal_fill_value
-
-   where(is_nan(angles)) angles=sreal_fill_value
+      angles(:,:,2) = sreal_fill_value
+   where(is_nan(angles)) &
+        angles = sreal_fill_value
 
    ! Do the interpolation to full grid
-   call slstr_interp_angs(angles,imager_angles,txnx,txny,nx,ny,interp,view)
+   call slstr_interp_angs(angles, imager_angles, txnx, txny, nx, ny, interp, view)
 
    ! Rescale zens + azis into correct format
    where(imager_angles%solazi(:,:,view) .ne. sreal_fill_value .and. &

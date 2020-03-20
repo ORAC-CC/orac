@@ -116,10 +116,10 @@ subroutine nc_open(ncid, fname, error_status)
    integer, intent(out),optional :: error_status
    integer                       :: ierr
 
-   ierr=nf90_open(path=trim(adjustl(fname)),mode=NF90_NOWRITE,ncid=ncid)
+   ierr = nf90_open(path=trim(adjustl(fname)), mode=NF90_NOWRITE, ncid=ncid)
    if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: nc_open(): Error opening file ',trim(fname)
-      print*,trim(nf90_strerror(ierr))
+      print*, 'ERROR: nc_open(): Error opening file ', trim(fname)
+      print*, trim(nf90_strerror(ierr))
       if (present(error_status)) then
          error_status = error_stop_code
       else
@@ -342,7 +342,7 @@ end function nc_dim_length
 ! 2014/09/03, GM: Added vl to handle valid_<limit> temporary auxiliary values.
 ! 2015/07/09, GM: Used poor man's C-preprocessor based templates.
 ! 2015/07/16, GM: Added support to read packed data.
-! 2016/07/11, SP: Addednew variable: startp
+! 2016/07/11, SP: Added new variable: startp
 !
 ! Bugs:
 ! None known.

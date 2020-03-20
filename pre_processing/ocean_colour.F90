@@ -194,7 +194,7 @@ function read_oceancolour_cci(path_to_file, occci, wavelengths, verbose) &
    stat = nf90_inquire_dimension(fid, latid, len=nlat)
    if (verbose) write(*,*) 'Dimensions are (time, lon, lat): ',ntime,nlon,nlat
    if (ntime .gt. 1) then
-      write(*,*) 'Error: read_oceancolour_cci: Time dimension is not 1. ' // &
+      write(*,*) 'Error: read_oceancolour_cci(): Time dimension is not 1. ' // &
            'Not expecting multi-temporal data. Filename: ', &
            trim(path_to_file), ' dimtime: ', ntime
       stop error_stop_code

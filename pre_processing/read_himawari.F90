@@ -17,7 +17,7 @@
 !    mm: minute
 !    xx: Band number (01 -> 16
 !    rr: Resolution (05 for band 3, 10 for other VIS bands, 20 for IR)
-!    ss: Segment number (00 -> 10) 
+!    ss: Segment number (00 -> 10)
 !
 ! Example: HS_H08_20150801_0300_B01_FLDK_R10_S0910.DAT
 !

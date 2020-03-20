@@ -27,6 +27,7 @@ subroutine ABI_Solpos(year, doy, hour, minute, lat, lon, sza, saa)
 
    use preproc_constants_m
    use solar_position_m
+
    implicit none
 
    real(kind=sreal), intent(in)  :: year
@@ -68,6 +69,7 @@ subroutine get_abi_path(l1_5_file, platform, abi_filenames, n_chans, channel_ids
 
    use preproc_constants_m
    use system_utils_m
+
    implicit none
 
    character(path_length),     intent(in)  :: l1_5_file
@@ -145,6 +147,7 @@ subroutine get_abi_geoloc(infile, imager_geolocation, imager_angles, &
    use netcdf
    use preproc_constants_m
    use system_utils_m
+
    implicit none
 
    character(len=file_length),  intent(in)    :: infile
@@ -161,7 +164,7 @@ subroutine get_abi_geoloc(infile, imager_geolocation, imager_angles, &
    real    :: a, b, c, rs, sx, sy, sz, tlat, tlon, tx, ty
    real    :: xscl, yscl, x0, y0
 
-   character(len=10) :: satlat,satlon,sathei,eqrrad,polrad
+   character(len=10) :: satlat, satlon, sathei, eqrrad, polrad
 
    real, dimension(:), allocatable :: x, y
 
@@ -352,6 +355,7 @@ subroutine get_abi_viewing_geom(imager_geolocation, imager_angles, sma, smi, &
    use imager_structures_m
    use preproc_constants_m
    use system_utils_m
+
    implicit none
 
    type(imager_geolocation_t),  intent(inout) :: imager_geolocation
@@ -432,6 +436,7 @@ subroutine get_abi_solgeom(imager_time, imager_angles, imager_geolocation, verbo
    use preproc_constants_m
    use solar_position_m
    use calender_m
+
    implicit none
 
    type(imager_geolocation_t),  intent(in)    :: imager_geolocation
@@ -544,6 +549,7 @@ subroutine goes_resample_vis_to_tir(inarr, outarr, nx, ny, fill, scl, verbose)
 
    use omp_lib
    use preproc_constants_m
+
    implicit none
 
    integer,          intent(in)  :: nx
@@ -621,6 +627,7 @@ subroutine load_abi_band(infile, imager_geolocation, rad, kappa, bc1, bc2, fk1, 
    use netcdf
    use imager_structures_m
    use preproc_constants_m
+
    implicit none
 
    character(file_length),     intent(in) :: infile
@@ -786,6 +793,7 @@ subroutine get_abi_time(infile, imager_time, ny, verbose)
    use netcdf
    use preproc_constants_m
    use system_utils_m
+
    implicit none
 
    character(file_length), intent(in)    :: infile

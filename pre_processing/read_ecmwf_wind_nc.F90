@@ -57,9 +57,9 @@ subroutine read_ecmwf_wind_nc(ecmwf, ecmwf_path, ecmwf_flag, ecmwf2path, ecmwf3p
    end if
 
    ! loop over given files (order not necessarily known)
-   call read_ecmwf_wind_nc_file(ecmwf_path,ecmwf)
-   if (present(ecmwf2path)) call read_ecmwf_wind_nc_file(ecmwf2path,ecmwf)
-   if (present(ecmwf3path)) call read_ecmwf_wind_nc_file(ecmwf3path,ecmwf)
+   call read_ecmwf_wind_nc_file(ecmwf_path, ecmwf)
+   if (present(ecmwf2path)) call read_ecmwf_wind_nc_file(ecmwf2path, ecmwf)
+   if (present(ecmwf3path)) call read_ecmwf_wind_nc_file(ecmwf3path, ecmwf)
 
 end subroutine read_ecmwf_wind_nc
 
@@ -106,7 +106,7 @@ subroutine read_ecmwf_wind_nc_file(ecmwf_path, ecmwf)
    type(ecmwf_t),    intent(inout) :: ecmwf
 
    real, allocatable               :: val(:,:,:,:)
-   integer                         :: fid,i,ndim,nvar,size
+   integer                         :: fid, i, ndim, nvar, size
    character(len=var_length)       :: name
    logical                         :: verbose = .false.
 
@@ -114,32 +114,32 @@ subroutine read_ecmwf_wind_nc_file(ecmwf_path, ecmwf)
    call nc_open(fid,ecmwf_path)
 
    ! check field dimensions for consistency
-   if (nf90_inquire(fid,ndim,nvar) .ne. 0) &
+   if (nf90_inquire(fid, ndim, nvar) .ne. 0) &
         call h_e_e('wind_nc_file', 'Bad inquire.')
-   do i=1,ndim
-      if (nf90_inquire_dimension(fid,i,name,size) .ne. 0) &
+   do i = 1, ndim
+      if (nf90_inquire_dimension(fid, i, name, size) .ne. 0) &
            call h_e_e('wind_nc_file', 'Bad dimension.')
       select case (name)
-      case('lon','longitude')
+      case('lon', 'longitude')
          if (ecmwf%xdim .eq. 0) then
-            ecmwf%xdim=size
+            ecmwf%xdim = size
          else
             if (ecmwf%xdim .ne. size) &
                  call h_e_e('wind_nc_file', 'Inconsistent lon.')
          end if
-      case('lat','latitude')
+      case('lat', 'latitude')
          if (ecmwf%ydim .eq. 0) then
-            ecmwf%ydim=size
+            ecmwf%ydim = size
          else
             if (ecmwf%ydim .ne. size) &
                  call h_e_e('wind_nc_file', 'Inconsistent lat.')
          end if
-      case ('nhym','hybrid','hybrid_1')
+      case ('nhym', 'hybrid', 'hybrid_1')
          ! the vertical coordinate is incorrectly named in gpam so skip it
          if (name .eq. 'hybrid' .and. size .eq. 1) cycle
 
          if (ecmwf%kdim .eq. 0) then
-            ecmwf%kdim=size
+            ecmwf%kdim = size
          else
             if (ecmwf%kdim .ne. size) &
                  call h_e_e('wind_nc_file', 'Inconsistent vertical.')
@@ -148,58 +148,58 @@ subroutine read_ecmwf_wind_nc_file(ecmwf_path, ecmwf)
    end do
 
    ! read wind fields and geolocation from files
-   do i=1,nvar
-      if (nf90_inquire_variable(fid,i,name) .ne. 0) &
+   do i = 1, nvar
+      if (nf90_inquire_variable(fid, i, name) .ne. 0) &
            call h_e_e('wind_nc_file', 'Bad variable.')
       select case (name)
-      case('longitude','lon')
+      case('longitude', 'lon')
          if (.not.associated(ecmwf%lon)) then
             allocate(ecmwf%lon(ecmwf%xdim))
-            call nc_read_array(fid,name,ecmwf%lon,verbose)
+            call nc_read_array(fid, name, ecmwf%lon, verbose)
          end if
-      case('latitude','lat')
+      case('latitude', 'lat')
          if (.not.associated(ecmwf%lat)) then
             allocate(ecmwf%lat(ecmwf%ydim))
-            call nc_read_array(fid,name,ecmwf%lat,verbose)
+            call nc_read_array(fid, name, ecmwf%lat, verbose)
          end if
-      case('U10','U10M')
+      case('U10', 'U10M')
          if (.not.associated(ecmwf%u10)) then
             allocate(ecmwf%u10(ecmwf%xdim,ecmwf%ydim))
             allocate(val(ecmwf%xdim,ecmwf%ydim,1,1))
-            call nc_read_array(fid,name,val,verbose)
-            ecmwf%u10=val(:,:,1,1)
+            call nc_read_array(fid, name, val, verbose)
+            ecmwf%u10 = val(:,:,1,1)
             deallocate(val)
          end if
-      case('V10','V10M')
+      case('V10', 'V10M')
          if (.not.associated(ecmwf%v10)) then
             allocate(ecmwf%v10(ecmwf%xdim,ecmwf%ydim))
             allocate(val(ecmwf%xdim,ecmwf%ydim,1,1))
-            call nc_read_array(fid,name,val,verbose)
-            ecmwf%v10=val(:,:,1,1)
+            call nc_read_array(fid, name, val, verbose)
+            ecmwf%v10 = val(:,:,1,1)
             deallocate(val)
          end if
       case('SKT')
          if (.not.associated(ecmwf%skin_temp)) then
             allocate(ecmwf%skin_temp(ecmwf%xdim,ecmwf%ydim))
             allocate(val(ecmwf%xdim,ecmwf%ydim,1,1))
-            call nc_read_array(fid,name,val,verbose)
-            ecmwf%skin_temp=val(:,:,1,1)
+            call nc_read_array(fid, name, val, verbose)
+            ecmwf%skin_temp = val(:,:,1,1)
             deallocate(val)
          end if
-      case('SD','sd')
+      case('SD', 'sd')
          if (.not.associated(ecmwf%snow_depth)) then
             allocate(ecmwf%snow_depth(ecmwf%xdim,ecmwf%ydim))
             allocate(val(ecmwf%xdim,ecmwf%ydim,1,1))
-            call nc_read_array(fid,name,val,verbose)
-            ecmwf%snow_depth=val(:,:,1,1)
+            call nc_read_array(fid, name, val, verbose)
+            ecmwf%snow_depth = val(:,:,1,1)
             deallocate(val)
          end if
-      case('CI','ci')
+      case('CI', 'ci')
          if (.not.associated(ecmwf%sea_ice_cover)) then
             allocate(ecmwf%sea_ice_cover(ecmwf%xdim,ecmwf%ydim))
             allocate(val(ecmwf%xdim,ecmwf%ydim,1,1))
-            call nc_read_array(fid,name,val,verbose)
-            ecmwf%sea_ice_cover=val(:,:,1,1)
+            call nc_read_array(fid, name, val, verbose)
+            ecmwf%sea_ice_cover = val(:,:,1,1)
             deallocate(val)
          end if
       end select

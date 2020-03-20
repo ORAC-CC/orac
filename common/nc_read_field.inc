@@ -26,8 +26,8 @@
    ! read data
    ierr = nf90_get_var(ncid, vid, arr, start, counter, stride)
    if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: nc_read_file(): Could not read variable ',trim(name)
-      print*,trim(nf90_strerror(ierr))
+      print*, 'ERROR: nc_read_file(): Could not read variable ', trim(name)
+      print*, trim(nf90_strerror(ierr))
       stop error_stop_code
    end if
 
@@ -47,10 +47,10 @@
    if (verbose) then
       if (nf90_get_att(ncid,vid,'units',unit).eq.NF90_NOERR) then
            call c_to_f_str(unit)
-           print*,'Field units: ',trim(unit)
+           print*, 'Field units: ', trim(unit)
       end if
       if (vr_flag) then
-           print*,'Field valid min: ',sf*vmin + of
-           print*,'Field valid max: ',sf*vmax + of
+           print*, 'Field valid min: ', sf*vmin + of
+           print*, 'Field valid max: ', sf*vmax + of
       end if
    end if

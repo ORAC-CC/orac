@@ -489,7 +489,7 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
        if (do_secondary) then
           call alloc_input_data_secondary_all(indexing, input_secondary(0))
           call read_input_secondary_once(n_in_files, in_files_secondary, &
-               input_secondary(0), indexing, loop_ind, chunk_starts( i_chunk), &
+               input_secondary(0), indexing, loop_ind, chunk_starts(i_chunk), &
                verbose)
        end if
 
@@ -501,13 +501,13 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
              call alloc_input_data_primary_class(loop_ind(i), input_primary(i))
              call read_input_primary_class(in_files_primary(i), &
                   input_primary(i), loop_ind(i), .False., &
-                  chunk_starts( i_chunk), verbose)
+                  chunk_starts(i_chunk), verbose)
              if (do_secondary) then
                 if (verbose) write(*,*) 'read: ', trim(in_files_secondary(i))
                 call alloc_input_data_secondary_class(loop_ind(i), &
                      input_secondary(i))
                 call read_input_secondary_class(in_files_secondary(i), &
-                     input_secondary(i), loop_ind(i), chunk_starts( i_chunk), &
+                     input_secondary(i), loop_ind(i), chunk_starts(i_chunk), &
                      verbose)
              end if
           end do
@@ -523,7 +523,7 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
           do i = 1, n_in_files
              call alloc_input_data_only_cost(loop_ind(i), input_primary(i))
              call read_input_primary_class(in_files_primary(i), &
-                  input_primary(i), loop_ind(i), .True., chunk_starts( i_chunk), &
+                  input_primary(i), loop_ind(i), .True., chunk_starts(i_chunk), &
                   verbose)
           end do
 
