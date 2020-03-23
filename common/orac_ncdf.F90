@@ -42,12 +42,12 @@ module orac_ncdf_m
 
    interface nc_read_array
       module procedure &
-         read_byte_1d,  read_byte_2d,  read_byte_3d,  read_byte_4d, &
-         read_sint_1d,  read_sint_2d,  read_sint_3d,  read_sint_4d, &
-         read_lint_1d,  read_lint_2d,  read_lint_3d,  read_lint_4d, &
-         read_dint_1d,  read_dint_2d,  read_dint_3d,  read_dint_4d, &
-         read_sreal_1d, read_sreal_2d, read_sreal_3d, read_sreal_4d, &
-         read_dreal_1d, read_dreal_2d, read_dreal_3d, read_dreal_4d
+         read_byte_0d,  read_byte_1d,  read_byte_2d,  read_byte_3d,  read_byte_4d, &
+         read_sint_0d,  read_sint_1d,  read_sint_2d,  read_sint_3d,  read_sint_4d, &
+         read_lint_0d,  read_lint_1d,  read_lint_2d,  read_lint_3d,  read_lint_4d, &
+         read_dint_0d,  read_dint_1d,  read_dint_2d,  read_dint_3d,  read_dint_4d, &
+         read_sreal_0d, read_sreal_1d, read_sreal_2d, read_sreal_3d, read_sreal_4d, &
+         read_dreal_0d, read_dreal_1d, read_dreal_2d, read_dreal_3d, read_dreal_4d
    end interface nc_read_array
 
    interface nc_write_array
@@ -351,6 +351,7 @@ end function nc_dim_length
 #define NC_READ_TYPE integer
 #define NC_READ_KIND byte
 #define NC_READ_FILL_VALUE byte_fill_value
+#define NC_READ_NAME_0D read_byte_0d
 #define NC_READ_NAME_1D read_byte_1d
 #define NC_READ_NAME_2D read_byte_2d
 #define NC_READ_NAME_3D read_byte_3d
@@ -359,6 +360,7 @@ end function nc_dim_length
 #undef NC_READ_TYPE
 #undef NC_READ_KIND
 #undef NC_READ_FILL_VALUE
+#undef NC_READ_NAME_0D
 #undef NC_READ_NAME_1D
 #undef NC_READ_NAME_2D
 #undef NC_READ_NAME_3D
@@ -367,6 +369,7 @@ end function nc_dim_length
 #define NC_READ_TYPE integer
 #define NC_READ_KIND sint
 #define NC_READ_FILL_VALUE sint_fill_value
+#define NC_READ_NAME_0D read_sint_0d
 #define NC_READ_NAME_1D read_sint_1d
 #define NC_READ_NAME_2D read_sint_2d
 #define NC_READ_NAME_3D read_sint_3d
@@ -375,6 +378,7 @@ end function nc_dim_length
 #undef NC_READ_TYPE
 #undef NC_READ_KIND
 #undef NC_READ_FILL_VALUE
+#undef NC_READ_NAME_0D
 #undef NC_READ_NAME_1D
 #undef NC_READ_NAME_2D
 #undef NC_READ_NAME_3D
@@ -383,6 +387,7 @@ end function nc_dim_length
 #define NC_READ_TYPE integer
 #define NC_READ_KIND lint
 #define NC_READ_FILL_VALUE lint_fill_value
+#define NC_READ_NAME_0D read_lint_0d
 #define NC_READ_NAME_1D read_lint_1d
 #define NC_READ_NAME_2D read_lint_2d
 #define NC_READ_NAME_3D read_lint_3d
@@ -391,6 +396,7 @@ end function nc_dim_length
 #undef NC_READ_TYPE
 #undef NC_READ_KIND
 #undef NC_READ_FILL_VALUE
+#undef NC_READ_NAME_0D
 #undef NC_READ_NAME_1D
 #undef NC_READ_NAME_2D
 #undef NC_READ_NAME_3D
@@ -399,6 +405,7 @@ end function nc_dim_length
 #define NC_READ_TYPE integer
 #define NC_READ_KIND dint
 #define NC_READ_FILL_VALUE dint_fill_value
+#define NC_READ_NAME_0D read_dint_0d
 #define NC_READ_NAME_1D read_dint_1d
 #define NC_READ_NAME_2D read_dint_2d
 #define NC_READ_NAME_3D read_dint_3d
@@ -407,6 +414,7 @@ end function nc_dim_length
 #undef NC_READ_TYPE
 #undef NC_READ_KIND
 #undef NC_READ_FILL_VALUE
+#undef NC_READ_NAME_0D
 #undef NC_READ_NAME_1D
 #undef NC_READ_NAME_2D
 #undef NC_READ_NAME_3D
@@ -417,6 +425,7 @@ end function nc_dim_length
 #define NC_RD_P_TYPE real
 #define NC_RD_P_KIND sreal
 #define NC_READ_FILL_VALUE sreal_fill_value
+#define NC_READ_NAME_0D read_sreal_0d
 #define NC_READ_NAME_1D read_sreal_1d
 #define NC_READ_NAME_2D read_sreal_2d
 #define NC_READ_NAME_3D read_sreal_3d
@@ -431,6 +440,7 @@ end function nc_dim_length
 #undef NC_RD_P_TYPE
 #undef NC_RD_P_KIND
 #undef NC_READ_FILL_VALUE
+#undef NC_READ_NAME_0D
 #undef NC_READ_NAME_1D
 #undef NC_READ_NAME_2D
 #undef NC_READ_NAME_3D
@@ -443,6 +453,7 @@ end function nc_dim_length
 #define NC_READ_TYPE real
 #define NC_READ_KIND dreal
 #define NC_READ_FILL_VALUE dreal_fill_value
+#define NC_READ_NAME_0D read_dreal_0d
 #define NC_READ_NAME_1D read_dreal_1d
 #define NC_READ_NAME_2D read_dreal_2d
 #define NC_READ_NAME_3D read_dreal_3d
@@ -451,6 +462,7 @@ end function nc_dim_length
 #undef NC_READ_TYPE
 #undef NC_READ_KIND
 #undef NC_READ_FILL_VALUE
+#undef NC_READ_NAME_0D
 #undef NC_READ_NAME_1D
 #undef NC_READ_NAME_2D
 #undef NC_READ_NAME_3D

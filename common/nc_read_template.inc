@@ -1,3 +1,57 @@
+subroutine NC_READ_NAME_0D(ncid, name, val, verbose)
+   implicit none
+
+   integer,                                 intent(in)    :: ncid
+   character(len=*),                        intent(in)    :: name
+   NC_READ_TYPE(kind=NC_READ_KIND),         intent(inout) :: val
+   logical,                                 intent(in)    :: verbose
+
+   integer                                  :: ierr, vid
+   logical                                  :: fv_flag, vr_flag
+   character(len=unitlength)                :: unit
+   NC_READ_TYPE(kind=NC_READ_KIND)          :: fv, sf, of, vmin, vmax
+   NC_READ_TYPE(kind=NC_READ_KIND)          :: fill=NC_READ_FILL_VALUE
+
+   include 'nc_open_field.inc'
+
+   if (verbose) print*,'Reading variable: ',trim(name)
+
+   ! read data
+   ierr = nf90_get_var(ncid, vid, val)
+   if (ierr.ne.NF90_NOERR) then
+      print*,'ERROR: nc_read_file(): Could not read variable ',trim(name)
+      print*,trim(nf90_strerror(ierr))
+      stop error_stop_code
+   end if
+
+   ! replace file's fill value and out of range values with our own and apply
+   ! scale factor/offset
+   if (fv_flag) then
+      if (val.eq.fv) val = fill
+   end if
+   if (vr_flag) then
+      if (val.ne.fill .and. val.lt.vmin) val = fill
+      if (val.ne.fill .and. val.gt.vmax) val = fill
+   end if
+   if (sf .ne. 1.0 .or. of .ne. 0.0) then
+     val = sf*val + of
+   end if
+
+   ! additional information for print out
+   if (verbose) then
+      if (nf90_get_att(ncid,vid,'units',unit).eq.NF90_NOERR) then
+           call c_to_f_str(unit)
+           print*,'Field units: ',trim(unit)
+      end if
+      if (vr_flag) then
+           print*,'Field valid min: ',sf*vmin + of
+           print*,'Field valid max: ',sf*vmax + of
+      end if
+   end if
+
+end subroutine NC_READ_NAME_0D
+
+
 subroutine NC_READ_NAME_1D(ncid, name, val, verbose, dim, ind, start)
    implicit none
 
