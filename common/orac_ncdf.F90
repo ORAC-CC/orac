@@ -29,7 +29,7 @@
 ! 2015/03/20, CP: Changed to creator url and website
 ! 2015/07/10, OS: added optional error_status return argument
 ! 2015/07/16, GM: Added support to read packed data to nc_read routines.
-! 2016/07/11, SP: Added new variable to read functions: startp
+! 2016/07/11, SP: Added new variable to read functions: start
 ! 2017/07/10, AP: Add int64 fields.
 !-------------------------------------------------------------------------------
 
@@ -332,7 +332,7 @@ end function nc_dim_length
 !                     the field to be read that will only be partially read.
 ! ind     integer In  Optional. If set, specifies the indices of the dimension
 !                     specified above to be read.
-! startp  integer In  Optional. If set, specifies the position in the netcdf
+! start   integer In  Optional. If set, specifies the position in the netcdf
 !                     file to start reading data
 !
 ! History:

@@ -24,7 +24,7 @@
    if (verbose) print*,'Reading variable: ',trim(name)
 
    ! read data
-   ierr = nf90_get_var(ncid, vid, arr, start, counter, stride)
+   ierr = nf90_get_var(ncid, vid, arr, start_pos, counter, stride)
    if (ierr.ne.NF90_NOERR) then
       print*, 'ERROR: nc_read_file(): Could not read variable ', trim(name)
       print*, trim(nf90_strerror(ierr))

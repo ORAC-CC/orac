@@ -1065,7 +1065,7 @@ subroutine read_slstr_int_field(indir, file, procgrid, variable, &
    var = trim(variable) // '_' // trim(procgrid)
 
    call nc_open(fid, geofile)
-   call nc_read_array(fid, var, data_arr, .false., startp=[startx, starty])
+   call nc_read_array(fid, var, data_arr, .false., start=[startx, starty])
    if (nf90_close(fid).ne.NF90_NOERR) print*, "ERROR: read_slstr_int_field(): Unable to close."
 
 end subroutine read_slstr_int_field
@@ -1095,7 +1095,7 @@ subroutine read_slstr_field(indir, file, procgrid, variable, &
    var = trim(variable) // '_' // trim(procgrid)
 
    call nc_open(fid, geofile)
-   call nc_read_array(fid, var, data_arr, .false., startp=[startx, starty])
+   call nc_read_array(fid, var, data_arr, .false., start=[startx, starty])
    if (nf90_close(fid).ne.NF90_NOERR) print*, "ERROR: read_slstr_int_field(): Unable to close."
 
 end subroutine read_slstr_field
