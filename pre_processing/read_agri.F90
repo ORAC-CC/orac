@@ -247,83 +247,12 @@ subroutine agri_retr_anc(ncid, imager_angles, imager_geolocation)
 
    integer :: j
 
-   ! Get latitude
-   ierr=nf90_inq_varid(ncid, 'latitude', did)
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: agri_retr_anc(): Error opening dataset latitude'
-      stop error_stop_code
-   end if
-   ierr = nf90_get_var(ncid, did, imager_geolocation%latitude)
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: agri_retr_anc(): Error reading dataset latitude', ierr
-      print*, trim(nf90_strerror(ierr))
-      stop error_stop_code
-   end if
-
-   ! Get longitude
-   ierr=nf90_inq_varid(ncid, 'longitude', did)
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: agri_retr_anc(): Error opening dataset longitude'
-      stop error_stop_code
-   end if
-   ierr = nf90_get_var(ncid, did, imager_geolocation%longitude)
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: agri_retr_anc(): Error reading dataset longitude', ierr
-      print*, trim(nf90_strerror(ierr))
-      stop error_stop_code
-   end if
-
-   ! Get SZA
-   ierr=nf90_inq_varid(ncid, 'SZA', did)
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: agri_retr_anc(): Error opening dataset SZA'
-      stop error_stop_code
-   end if
-   ierr = nf90_get_var(ncid, did, imager_angles%solzen(:,:,1))
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: agri_retr_anc(): Error reading dataset SZA', ierr
-      print*, trim(nf90_strerror(ierr))
-      stop error_stop_code
-   end if
-
-   ! Get SAA
-   ierr=nf90_inq_varid(ncid, 'SAA', did)
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: agri_retr_anc(): Error opening dataset SAA'
-      stop error_stop_code
-   end if
-   ierr = nf90_get_var(ncid, did, imager_angles%solazi(:,:,1))
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: agri_retr_anc(): Error reading dataset SAA', ierr
-      print*, trim(nf90_strerror(ierr))
-      stop error_stop_code
-   end if
-
-   ! Get VZA
-   ierr=nf90_inq_varid(ncid, 'VZA', did)
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: agri_retr_anc(): Error opening dataset VZA'
-      stop error_stop_code
-   end if
-   ierr = nf90_get_var(ncid, did, imager_angles%satzen(:,:,1))
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: agri_retr_anc(): Error reading dataset VZA', ierr
-      print*, trim(nf90_strerror(ierr))
-      stop error_stop_code
-   end if
-
-   ! Get VAA
-   ierr=nf90_inq_varid(ncid, 'VAA', did)
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: agri_retr_anc(): Error opening dataset VAA'
-      stop error_stop_code
-   end if
-   ierr = nf90_get_var(ncid, did, imager_angles%satazi(:,:,1))
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: agri_retr_anc(): Error reading dataset VAA', ierr
-      print*, trim(nf90_strerror(ierr))
-      stop error_stop_code
-   end if
+   call nc_read_array(ncid, 'latitude', imager_geolocation%latitude, .false.)
+   call nc_read_array(ncid, 'longitude', imager_geolocation%longitude, .false.)
+   call nc_read_array(ncid, 'SZA', imager_angles%solzen(:,:,1), .false.)
+   call nc_read_array(ncid, 'SAA', imager_angles%solazi(:,:,1), .false.)
+   call nc_read_array(ncid, 'VZA', imager_angles%satzen(:,:,1), .false.)
+   call nc_read_array(ncid, 'VAA', imager_angles%satazi(:,:,1), .false.)
 
    imager_angles%solzen(:,:,1) = abs(imager_angles%solzen(:,:,1))
    imager_angles%satzen(:,:,1) = abs(imager_angles%satzen(:,:,1))
@@ -407,18 +336,7 @@ subroutine agri_retr_band(ncid, band, iband, solband, imager_measurements)
    ! netCDF stuff
    integer :: ierr, did
 
-   ! Get band
-   ierr=nf90_inq_varid(ncid, band, did)
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: agri_retr_band(): Error opening dataset', band
-      stop error_stop_code
-   end if
-   ierr = nf90_get_var(ncid, did, imager_measurements%data(:,:,iband))
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: agri_retr_band(): Error reading dataset', band, ierr
-      print*, trim(nf90_strerror(ierr))
-      stop error_stop_code
-   end if
+   call nc_read_array(ncid, band, imager_measurements%data(:,:,iband), .false.)
 
    ! If it's a solar band then we have to divide by 100 as Satpy refl is in range 0->100
    if (solband .eq. 1) then

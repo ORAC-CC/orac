@@ -148,12 +148,9 @@ subroutine read_predef_file_ahi(path_to_file, usgs, imager_geolocation, verbose)
    allocate(usgs%lus(countval(1), countval(2)))
    allocate(usgs%lsm(countval(1), countval(2)))
 
-   stat =  nf90_inq_varid(fid, "Elevation_Mask", vid)
-   stat =  nf90_get_var(fid, vid, usgs%dem, start = start, count = countval)
-   stat =  nf90_inq_varid(fid, "Land_Use_Mask", vid)
-   stat =  nf90_get_var(fid, vid, usgs%lus, start = start, count = countval)
-   stat =  nf90_inq_varid(fid, "Land_Sea_Mask", vid)
-   stat =  nf90_get_var(fid, vid, usgs%lsm, start = start, count = countval)
+   call nc_read_array(fid, "Elevation_Mask", usgs%dem, .false., start=start)
+   call nc_read_array(fid, "Land_Use_Mask", usgs%lus, .false., start=start)
+   call nc_read_array(fid, "Land_Sea_Mask", usgs%lsm, .false., start=start)
 
    ! We are now finished with the main data file
    call nc_close(fid, 'read_predef_file_ahi()')

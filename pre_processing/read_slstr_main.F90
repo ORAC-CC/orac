@@ -177,7 +177,7 @@ subroutine read_slstr(infile, imager_geolocation, imager_measurements, &
    if (verbose) write(*,*) 'Reading geoinformation data for SLSTR grids'
 
    ! Find size of tx grid. Should be 130,1200 but occasionally isn't
-   call get_slstr_txgridsize(indir,txnx,txny)
+   call get_slstr_gridsize(indir, 'tx', txnx, txny)
 
    ! Then allocate arrays for tx data
    allocate(txlats(txnx,txny))
@@ -186,7 +186,7 @@ subroutine read_slstr(infile, imager_geolocation, imager_measurements, &
    ! Then allocate arrays for oblique data
    if (imager_angles%nviews .eq. 2) then
       ! Find size of oblique view grid.
-      call get_slstr_obgridsize(indir,obnx,obny)
+      call get_slstr_gridsize(indir, 'io', obnx, obny)
       allocate(oblats(obnx,obny))
       allocate(oblons(obnx,obny))
    end if
@@ -194,25 +194,32 @@ subroutine read_slstr(infile, imager_geolocation, imager_measurements, &
    allocate(interp(nx,ny,3))
 
    ! Read primary dem, lat and lon
-   call read_slstr_demdata(indir,imager_geolocation%dem,nx,ny)
-   call read_slstr_lldata(indir,imager_geolocation%latitude,nx,ny,.true.,'in')
-   call read_slstr_lldata(indir,imager_geolocation%longitude,nx,ny,.false.,'in')
+   call read_slstr_int_field(indir, 'geodetic', 'in', 'elevation', startx, starty, &
+        imager_geolocation%dem)
+   call read_slstr_field(indir, 'geodetic', 'in', 'latitude', startx, starty, &
+        imager_geolocation%latitude)
+   call read_slstr_field(indir, 'geodetic', 'in', 'longitude', startx, starty, &
+        imager_geolocation%longitude)
 
    ! Read reduced grid lat/lon
-   call read_slstr_lldata(indir,txlats,txnx,txny,.true.,'tx')
-   call read_slstr_lldata(indir,txlons,txnx,txny,.false.,'tx')
+   call read_slstr_field(indir, 'geodetic', 'tx', 'latitude', startx, starty, &
+        txlats)
+   call read_slstr_field(indir, 'geodetic', 'tx', 'longitude', startx, starty, &
+        txlons)
 
    ! Read oblique view lat/lon
    if (imager_angles%nviews .eq. 2) then
-      call read_slstr_lldata(indir,oblats,obnx,obny,.true.,'io')
-      call read_slstr_lldata(indir,oblons,obnx,obny,.false.,'io')
+      call read_slstr_field(indir, 'geodetic', 'io', 'latitude', startx, starty, &
+           oblats)
+      call read_slstr_field(indir, 'geodetic', 'io', 'longitude', startx, starty, &
+           oblons)
       ! Get alignment factor between oblique and nadir views
-      call slstr_get_alignment(nx,ny,obnx,obny,imager_geolocation%longitude, &
-           oblons,obl_off)
+      call slstr_get_alignment(nx, ny, obnx, obny, imager_geolocation%longitude, &
+           oblons, obl_off)
    end if
 
    ! Get interpolation factors between reduced and TIR grid for each pixel
-   call slstr_get_interp(imager_geolocation%longitude,txlons,txnx,txny,nx,ny, &
+   call slstr_get_interp(imager_geolocation%longitude, txlons, txnx, txny, nx, ny, &
         interp)
 
    deallocate(txlats)
@@ -221,10 +228,10 @@ subroutine read_slstr(infile, imager_geolocation, imager_measurements, &
    if (verbose) write(*,*) 'Reading geometry data for SLSTR geo grid'
 
    ! Read satellite and solar angles for the nadir viewing geometry
-   call read_slstr_satsol(indir,imager_angles,interp,txnx,txny,nx,ny,startx,1)
+   call read_slstr_satsol(indir, imager_angles, interp, txnx, txny, nx, ny, startx, 1)
    if (imager_angles%nviews .eq. 2) then
       ! Read satellite and solar angles for the oblique viewing geometry
-      call read_slstr_satsol(indir,imager_angles,interp,txnx,txny,nx,ny,startx,2)
+      call read_slstr_satsol(indir, imager_angles, interp, txnx, txny, nx, ny, startx, 2)
    end if
 
    deallocate(interp)

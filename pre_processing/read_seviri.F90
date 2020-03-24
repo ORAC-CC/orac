@@ -164,7 +164,8 @@ end subroutine read_seviri_dimensions
 ! Temporary function for use until seviri_util predef geo is fixed. INEFFICIENT.
 subroutine SEV_Retrieve_Predef_Geo(imager_geolocation, imager_angles, &
      geofile, verbose)
-   use netcdf
+
+   use orac_ncdf_m
    use imager_structures_m
    implicit none
 
@@ -173,39 +174,19 @@ subroutine SEV_Retrieve_Predef_Geo(imager_geolocation, imager_angles, &
    character(len=*),           intent(in)    :: geofile
    logical,                    intent(in)    :: verbose
 
-   integer                :: ncid, varid
-   integer, dimension(2)  :: start, countval
+   integer :: ncid, start(2)
+
    start(1) = imager_geolocation%startx
    start(2) = imager_geolocation%starty
 
-   countval(1) = imager_geolocation%nx
-   countval(2) = imager_geolocation%ny
-
-   call SEV_NCDF_check( nf90_open(geofile, NF90_NOWRITE, ncid) )
-   call SEV_NCDF_check( nf90_inq_varid(ncid, "Lat", varid) )
-   call SEV_NCDF_check( nf90_get_var(ncid, varid, imager_geolocation%latitude, &
-        start = start, count = countval) )
-   call SEV_NCDF_check( nf90_inq_varid(ncid, "Lon", varid) )
-   call SEV_NCDF_check( nf90_get_var(ncid, varid, imager_geolocation%longitude, &
-        start = start, count = countval) )
-   call SEV_NCDF_check( nf90_inq_varid(ncid, "VZA", varid) )
-   call SEV_NCDF_check( nf90_get_var(ncid, varid, imager_angles%satzen(:,:,1), &
-        start = start, count = countval) )
-   call SEV_NCDF_check( nf90_inq_varid(ncid, "VAA", varid) )
-   call SEV_NCDF_check( nf90_get_var(ncid, varid, imager_angles%satazi(:,:,1), &
-        start = start, count = countval) )
+   call nc_open(ncid, geofile, 'SEV_Retrieve_Predef_Geo()')
+   call nc_read_array(ncid, "Lat", imager_geolocation%latitude, verbose, start=start)
+   call nc_read_array(ncid, "Lon", imager_geolocation%longitude, verbose, start=start)
+   call nc_read_array(ncid, "VZA", imager_angles%satzen(:,:,1), verbose, start=start)
+   call nc_read_array(ncid, "VAA", imager_angles%satazi(:,:,1), verbose, start=start)
+   call nc_close(ncid, 'SEV_Retrieve_Predef_Geo()')
 
 end subroutine SEV_Retrieve_Predef_Geo
-
-subroutine SEV_NCDF_check(status)
-   use netcdf
-   integer, intent (in) :: status
-
-   if (status /= nf90_noerr) then
-      write(*,*) trim(nf90_strerror(status))
-      stop "Stopped"
-   end if
-end subroutine SEV_NCDF_check
 
 
 !-------------------------------------------------------------------------------

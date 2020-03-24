@@ -180,17 +180,10 @@ subroutine get_abi_geoloc(infile, imager_geolocation, imager_angles, &
    ! Open the netCDF4 file for reading
    call nc_open(fid, infile, 'get_abi_geoloc()')
 
+   call nc_read_array(fid, "x", x, verbose, start=[imager_geolocation%startx])
+   call nc_read_array(fid, "y", y, verbose, start=[imager_geolocation%starty])
+
    ! Read the various attributes required for building the geolocation model
-   ierr = nf90_inq_varid(fid, "x", xid)
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: get_abi_geoloc(): Error reading x variable id', trim(infile)
-      stop error_stop_code
-   end if
-   ierr = nf90_inq_varid(fid, "y", yid)
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: get_abi_geoloc(): Error reading y variable id', trim(infile)
-      stop error_stop_code
-   end if
    ierr = nf90_inq_varid(fid, "goes_imager_projection", gimpid)
    if (ierr.ne.NF90_NOERR) then
       print*, 'ERROR: get_abi_geoloc(): Error reading goes_imager_projection variable id', trim(infile)
@@ -199,28 +192,6 @@ subroutine get_abi_geoloc(infile, imager_geolocation, imager_angles, &
 
    ! Read the relevant attributes, see GOES PUG, Volume 4: GRB section 7.1.2.8.1 for details of what
    ! these are.
-   ierr = nf90_get_att(fid, xid, "scale_factor", xscl)
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: get_abi_geoloc(): Error reading x variable scale factor attribute', trim(infile)
-      stop error_stop_code
-   end if
-   ierr = nf90_get_att(fid, xid, "add_offset", x0)
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: get_abi_geoloc(): Error reading x variable add offset attribute', trim(infile)
-      stop error_stop_code
-   end if
-
-   ierr = nf90_get_att(fid, yid, "scale_factor", yscl)
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: get_abi_geoloc(): Error reading y variable scale factorattribute', trim(infile)
-      stop error_stop_code
-   end if
-   ierr = nf90_get_att(fid, yid, "add_offset", y0)
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: get_abi_geoloc(): Error reading y variable add offset attribute', trim(infile)
-      stop error_stop_code
-   end if
-
    ierr = nf90_get_att(fid, gimpid, "semi_major_axis", sma)
    if (ierr.ne.NF90_NOERR) then
       print*, 'ERROR: get_abi_geoloc(): Error reading semi_major_axis attribute', trim(infile)
@@ -252,18 +223,6 @@ subroutine get_abi_geoloc(infile, imager_geolocation, imager_angles, &
       stop error_stop_code
    end if
 
-   ierr = nf90_get_var(fid, xid, x, start = (/ imager_geolocation%startx /), count = (/ imager_geolocation%nx /))
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: get_abi_geoloc(): Error reading X variable', trim(infile)
-      stop error_stop_code
-   end if
-
-   ierr = nf90_get_var(fid, yid, y, start = (/ imager_geolocation%starty /), count = (/ imager_geolocation%ny /))
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: get_abi_geoloc(): Error reading Y variable', trim(infile)
-      stop error_stop_code
-   end if
-
    ! Close the netCDF file, we have all we need
    call nc_close(fid, 'get_abi_geoloc()')
 
@@ -276,10 +235,6 @@ subroutine get_abi_geoloc(infile, imager_geolocation, imager_angles, &
    ! Convert lon_0 into radians
    lon0 = lon0 * pi / 180.
    lat0 = lat0 * pi / 180.
-
-   ! Apply scale and offset to x and y
-   x = x*xscl + x0
-   y = y*yscl + y0
 
    ! Generate the satellite position string for global_atts
    write(satlat,'(f10.7)') lat0
@@ -662,100 +617,13 @@ subroutine load_abi_band(infile, imager_geolocation, rad, kappa, bc1, bc2, fk1, 
    ! Open the netCDf4 file for access
    call nc_open(fid, infile, 'load_abi_band()')
 
-   ! Check that the dataset exists
-   ierr = nf90_inq_varid(fid, 'Rad', did)
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: load_abi_band(): Error opening dataset Rad in ', trim(infile)
-      stop error_stop_code
-   end if
-   ierr = nf90_get_att(fid, did, 'scale_factor', sclval)
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: load_abi_band(): Error getting scale_factor from file ', trim(infile)
-      stop error_stop_code
-   end if
-   ierr = nf90_get_att(fid, did, 'add_offset', offval)
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: load_abi_band(): Error getting add_offset from file ', trim(infile)
-      stop error_stop_code
-   end if
-   ierr = nf90_get_var(fid, did, rad, start = (/ x0, y0 /), count = (/ nx, ny /))
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: load_abi_band(): Error reading dataset Rad in ', trim(infile)
-      print*, trim(nf90_strerror(ierr))
-      stop error_stop_code
-   end if
-
-   ierr = nf90_inq_varid(fid, 'DQF', did)
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: load_abi_band(): Error opening dataset DQF in ', trim(infile)
-      stop error_stop_code
-   end if
-   ierr = nf90_get_var(fid, did, dqf, start = (/ x0, y0 /), count = (/ nx, ny /))
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: load_abi_band(): Error reading dataset DQF in ', trim(infile)
-      print*, trim(nf90_strerror(ierr))
-      stop error_stop_code
-   end if
-
-   ierr = nf90_inq_varid(fid, 'kappa0', did)
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: load_abi_band(): Error opening dataset kappa0 in ', trim(infile)
-      stop error_stop_code
-   end if
-   ierr = nf90_get_var(fid, did, kappa)
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: load_abi_band(): Error reading dataset kappa0 in ', trim(infile)
-      print*, trim(nf90_strerror(ierr))
-      stop error_stop_code
-   end if
-
-   ierr = nf90_inq_varid(fid, 'planck_bc1', did)
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: load_abi_band(): Error opening dataset planck_bc1 in ', trim(infile)
-      stop error_stop_code
-   end if
-   ierr = nf90_get_var(fid, did, bc1)
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: load_abi_band(): Error reading dataset planck_bc1 in ', trim(infile)
-      print*, trim(nf90_strerror(ierr))
-      stop error_stop_code
-   end if
-
-   ierr = nf90_inq_varid(fid, 'planck_bc2', did)
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: load_abi_band(): Error opening dataset planck_bc2 in ', trim(infile)
-      stop error_stop_code
-   end if
-   ierr = nf90_get_var(fid, did, bc2)
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: load_abi_band(): Error reading dataset planck_bc2 in ', trim(infile)
-      print*, trim(nf90_strerror(ierr))
-      stop error_stop_code
-   end if
-
-   ierr = nf90_inq_varid(fid, 'planck_fk1', did)
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: load_abi_band(): Error opening dataset planck_fk1 in ', trim(infile)
-      stop error_stop_code
-   end if
-   ierr = nf90_get_var(fid, did, fk1)
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: load_abi_band(): Error reading dataset planck_fk1 in ', trim(infile)
-      print*, trim(nf90_strerror(ierr))
-      stop error_stop_code
-   end if
-
-   ierr = nf90_inq_varid(fid, 'planck_fk2', did)
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: load_abi_band(): Error opening dataset planck_fk2 in ', trim(infile)
-      stop error_stop_code
-   end if
-   ierr = nf90_get_var(fid, did, fk2)
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: load_abi_band(): Error reading dataset planck_fk2 in ', trim(infile)
-      print*, trim(nf90_strerror(ierr))
-      stop error_stop_code
-   end if
+   call nc_read_array(fid, 'Rad', rad, verbose, start=[x0, y0])
+   call nc_read_array(fid, 'DQF', dqf, verbose, start=[x0, y0])
+   call nc_read_array(fid, 'kappa0', kappa, verbose)
+   call nc_read_array(fid, 'planck_bc1', bc1, verbose)
+   call nc_read_array(fid, 'planck_bc2', bc2, verbose)
+   call nc_read_array(fid, 'planck_fk1', fk1, verbose)
+   call nc_read_array(fid, 'planck_fk2', fk2, verbose)
 
    call nc_close(fid, 'load_abi_band()')
 
@@ -764,8 +632,6 @@ subroutine load_abi_band(infile, imager_geolocation, rad, kappa, bc1, bc2, fk1, 
    end where
 
    deallocate(dqf)
-
-   rad = rad * sclval + offval
 
 end subroutine load_abi_band
 
