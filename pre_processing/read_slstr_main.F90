@@ -74,8 +74,8 @@ subroutine read_slstr_dimensions(img_file, n_across_track, n_along_track, &
    startx=1
    starty=1
 
-   endy=nc_dim_length(fid,'rows',verbose)
-   endx=nc_dim_length(fid,'columns',verbose)
+   endy = nc_dim_length(fid, 'rows', 'read_slstr_dimensions()', verbose)
+   endx = nc_dim_length(fid, 'columns', 'read_slstr_dimensions()', verbose)
 
    n_across_track = endx
    n_along_track = endy

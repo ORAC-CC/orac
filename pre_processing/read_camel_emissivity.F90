@@ -114,14 +114,10 @@ function read_camel_emissivity(path_to_file, emis, wavelengths, verbose, flag, &
       stop error_stop_code
    end if
 
-   stat = nf90_inq_dimid(fid, 'latitude', xid)
-   stat = nf90_inq_dimid(fid, 'longitude', yid)
-   stat = nf90_inq_dimid(fid, 'spectra', zid)
-
    ! Extract the array dimensions
-   stat = nf90_inquire_dimension(fid, xid, len=xdim)
-   stat = nf90_inquire_dimension(fid, yid, len=ydim)
-   stat = nf90_inquire_dimension(fid, zid, len=zdim)
+   xdim = nc_dim_length(fid, 'latitude', 'read_camel_emissivity()', verbose)
+   ydim = nc_dim_length(fid, 'longitude', 'read_camel_emissivity()', verbose)
+   zdim = nc_dim_length(fid, 'spectra', 'read_camel_emissivity()', verbose)
 
    ! Begin to populate the emis structure
    emis%nlat   = xdim

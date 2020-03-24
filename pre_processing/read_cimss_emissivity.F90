@@ -143,14 +143,9 @@ function read_cimss_emissivity(path_to_file, emis, wavelengths, verbose, flag, &
    ! xdim = latitude (strange!)
    ! ydim = longitude
    ! zdim = wavelength = number of band variables
-   stat = nf90_inq_dimid(fid, 'xdim', xid)
-   stat = nf90_inq_dimid(fid, 'ydim', yid)
-   stat = nf90_inq_dimid(fid, 'zdim', zid)
-
-   ! Extract the array dimensions
-   stat = nf90_inquire_dimension(fid, xid, len=xdim)
-   stat = nf90_inquire_dimension(fid, yid, len=ydim)
-   stat = nf90_inquire_dimension(fid, zid, len=zdim)
+   xdim = nc_dim_length(fid, 'xdim', 'read_cimss_emissivity()', verbose)
+   ydim = nc_dim_length(fid, 'ydim', 'read_cimss_emissivity()', verbose)
+   zdim = nc_dim_length(fid, 'zdim', 'read_cimss_emissivity()', verbose)
 
    ! Begin to populate the emis structure
    emis%nlat   = xdim

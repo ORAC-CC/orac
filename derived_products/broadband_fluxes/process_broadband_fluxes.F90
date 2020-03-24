@@ -635,10 +635,10 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
       call nc_open(ncid, FToaSW, 'process_broadband_fluxes()')
 
       ! Get LUT dimensions
-      nASFC = nc_dim_length(ncid, 'n_sfc_albedo', verbose)
-      nSOLZ = nc_dim_length(ncid, 'n_solar_zenith', verbose)
-      nRe   = nc_dim_length(ncid, 'n_effective_radius', verbose)
-      nTau  = nc_dim_length(ncid, 'n_optical_depth', verbose)
+      nASFC = nc_dim_length(ncid, 'n_sfc_albedo', 'process_broadband_fluxes()', verbose)
+      nSOLZ = nc_dim_length(ncid, 'n_solar_zenith', 'process_broadband_fluxes()', verbose)
+      nRe   = nc_dim_length(ncid, 'n_effective_radius', 'process_broadband_fluxes()', verbose)
+      nTau  = nc_dim_length(ncid, 'n_optical_depth', 'process_broadband_fluxes()', verbose)
 
       allocate(LUT_SFC_ALB(nASFC))
       call nc_read_array(ncid, "surface_albedo", LUT_SFC_ALB, verbose)
@@ -674,8 +674,8 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
    call nc_open(ncid, Fprimary, 'process_broadband_fluxes()')
 
    ! Get satellite dimensions
-   xN = nc_dim_length(ncid, 'across_track', verbose)
-   yN = nc_dim_length(ncid, 'along_track', verbose)
+   xN = nc_dim_length(ncid, 'across_track', 'process_broadband_fluxes()', verbose)
+   yN = nc_dim_length(ncid, 'along_track', 'process_broadband_fluxes()', verbose)
 
    ! Allocate arrays
    allocate(LAT(xN,yN))
@@ -736,9 +736,9 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
    call nc_open(ncid, FPRTM, 'process_broadband_fluxes()')
 
    ! Get PRTM dimensions
-   xdim_prtm = nc_dim_length(ncid, 'nlon_rtm', verbose)
-   ydim_prtm = nc_dim_length(ncid, 'nlat_rtm', verbose)
-   levdim_prtm = nc_dim_length(ncid, 'nlevels_rtm', verbose)
+   xdim_prtm = nc_dim_length(ncid, 'nlon_rtm', 'process_broadband_fluxes()', verbose)
+   ydim_prtm = nc_dim_length(ncid, 'nlat_rtm', 'process_broadband_fluxes()', verbose)
+   levdim_prtm = nc_dim_length(ncid, 'nlevels_rtm', 'process_broadband_fluxes()', verbose)
 
    ! Allocate arrays
    allocate(P(levdim_prtm, xdim_prtm, ydim_prtm))
@@ -788,8 +788,8 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
    call nc_open(ncid, FALB, 'process_broadband_fluxes()')
 
    ! Get # Channels
-   nc_alb = nc_dim_length(ncid, 'nc_alb', verbose)
-   nc_emis = nc_dim_length(ncid, 'nc_emis', verbose)
+   nc_alb = nc_dim_length(ncid, 'nc_alb', 'process_broadband_fluxes()', verbose)
+   nc_emis = nc_dim_length(ncid, 'nc_emis', 'process_broadband_fluxes()', verbose)
 
    ! Allocate arrays
    allocate(rho_dd(xN, yN, nc_alb))
@@ -827,7 +827,7 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
       call nc_open(ncid, Faerosol, 'process_broadband_fluxes()')
 
       ! Get dimension
-      nc_aer = nc_dim_length(ncid, 'pixel_number', verbose)
+      nc_aer = nc_dim_length(ncid, 'pixel_number', 'process_broadband_fluxes()', verbose)
 
       ! Allocate arrays
       allocate(aerLon(nc_aer))

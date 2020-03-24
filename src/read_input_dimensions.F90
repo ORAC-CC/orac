@@ -51,9 +51,9 @@ subroutine read_input_dimensions_msi(fname_msi, fname_geo, xdim, ydim, vdim, &
    ! Open msi file
    call nc_open(ncid, fname_msi, 'read_input_dimensions_msi()')
 
-   xdim = nc_dim_length(ncid, 'nx_msi', verbose)
-   ydim = nc_dim_length(ncid, 'ny_msi', verbose)
-   !cdim = nc_dim_length(ncid, 'nc_msi', verbose)
+   xdim = nc_dim_length(ncid, 'nx_msi', 'read_input_dimensions_msi()', verbose)
+   ydim = nc_dim_length(ncid, 'ny_msi', 'read_input_dimensions_msi()', verbose)
+   !cdim = nc_dim_length(ncid, 'nc_msi', 'read_input_dimensions_msi()', verbose)
 
    ! Close msi file
    call nc_close(ncid, 'read_input_dimensions_msi(MSI)')
@@ -61,9 +61,9 @@ subroutine read_input_dimensions_msi(fname_msi, fname_geo, xdim, ydim, vdim, &
    ! Open geo file
    call nc_open(ncid, fname_geo, 'read_input_dimensions_msi()')
 
-   !xdim = nc_dim_length(ncid, 'nx_geo', verbose)
-   !ydim = nc_dim_length(ncid, 'ny_geo', verbose)
-   vdim = nc_dim_length(ncid, 'nv_geo', verbose)
+   !xdim = nc_dim_length(ncid, 'nx_geo', 'read_input_dimensions_msi()', verbose)
+   !ydim = nc_dim_length(ncid, 'ny_geo', 'read_input_dimensions_msi()', verbose)
+   vdim = nc_dim_length(ncid, 'nv_geo', 'read_input_dimensions_msi()', verbose)
 
    ! Close geo file
    call nc_close(ncid, 'read_input_dimensions_msi(GEO)')
@@ -93,9 +93,9 @@ subroutine read_input_dimensions_rtm(fname_prtm,fname_lwrtm,fname_swrtm, &
    ! Open PRTM file
    call nc_open(ncid, fname_prtm, 'read_input_dimensions_rtm()')
 
-   xdim = nc_dim_length(ncid, 'nlon_rtm', verbose)
-   ydim = nc_dim_length(ncid, 'nlat_rtm', verbose)
-   levdim = nc_dim_length(ncid, 'nlevels_rtm', verbose)
+   xdim = nc_dim_length(ncid, 'nlon_rtm', 'read_input_dimensions_rtm()', verbose)
+   ydim = nc_dim_length(ncid, 'nlat_rtm', 'read_input_dimensions_rtm()', verbose)
+   levdim = nc_dim_length(ncid, 'nlevels_rtm', 'read_input_dimensions_rtm()', verbose)
 
    ! Close PRTM file
    call nc_close(ncid, 'read_input_dimensions_rtm(PRTM)')
@@ -104,7 +104,7 @@ subroutine read_input_dimensions_rtm(fname_prtm,fname_lwrtm,fname_swrtm, &
    ! Open LWRTM file
    call nc_open(ncid, fname_lwrtm, 'read_input_dimensions_rtm()')
 
-   channeldim_lw = nc_dim_length(ncid, 'nlw_channels', verbose)
+   channeldim_lw = nc_dim_length(ncid, 'nlw_channels', 'read_input_dimensions_rtm()', verbose)
 
    ! Close LWRTM file
    call nc_close(ncid, 'read_input_dimensions_rtm(LWRTM)')
@@ -113,7 +113,7 @@ subroutine read_input_dimensions_rtm(fname_prtm,fname_lwrtm,fname_swrtm, &
    ! Open SWRTM file
    call nc_open(ncid, fname_swrtm, 'read_input_dimensions_rtm()')
    if (n_solar > 0) then
-      channeldim_sw = nc_dim_length(ncid, 'nsw_channels', verbose)
+      channeldim_sw = nc_dim_length(ncid, 'nsw_channels', 'read_input_dimensions_rtm()', verbose)
    else
       channeldim_sw = 0
    end if

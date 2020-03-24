@@ -71,8 +71,8 @@ subroutine read_agri_dimensions(fname, n_across_track, n_along_track, &
    startx = 1
    starty = 1
 
-   endy = nc_dim_length(fid,'lat',verbose)
-   endx = nc_dim_length(fid,'lon',verbose)
+   endy = nc_dim_length(fid, 'lat', 'read_agri_dimensions()', verbose)
+   endx = nc_dim_length(fid, 'lon', 'read_agri_dimensions()', verbose)
 
    n_across_track = endx
    n_along_track = endy

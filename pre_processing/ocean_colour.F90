@@ -184,13 +184,9 @@ function read_oceancolour_cci(path_to_file, occci, wavelengths, verbose) &
    ! Available wavelengths: 412, 443, 490, 510, 555, 670 nm.
    if (verbose) write(*,*) 'Extracting dimension IDs'
    ! Extract the array dimensions
-   stat = nf90_inq_dimid(fid, 'time', timeid)
-   stat = nf90_inq_dimid(fid, 'lon',  lonid)
-   stat = nf90_inq_dimid(fid, 'lat',  latid)
-   ! Check that the time dimension is 1, and extract the lat/lon dimensions
-   stat = nf90_inquire_dimension(fid, timeid, len=ntime)
-   stat = nf90_inquire_dimension(fid, lonid, len=nlon)
-   stat = nf90_inquire_dimension(fid, latid, len=nlat)
+   ntime = nc_dim_length(fid, 'time', 'read_oceancolour_cci()', .false.)
+   nlon = nc_dim_length(fid, 'lon', 'read_oceancolour_cci()', .false.)
+   nlat = nc_dim_length(fid, 'lat', 'read_oceancolour_cci()', .false.)
    if (verbose) write(*,*) 'Dimensions are (time, lon, lat): ',ntime,nlon,nlat
    if (ntime .gt. 1) then
       write(*,*) 'Error: read_oceancolour_cci(): Time dimension is not 1. ' // &

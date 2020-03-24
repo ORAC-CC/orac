@@ -179,9 +179,10 @@ end subroutine nc_close
 ! Arguments:
 ! Name  Type    In/Out/Both Description
 ! ------------------------------------------------------------------------------
-! ncid  integer Out File ID number returned by nf90_open
-! name  string  In  Name of dimension to read
-! len   integer Out Length of desired dimenison
+! ncid           integer Out File ID number returned by nf90_open
+! name           string  In  Name of dimension to read
+! source_routine string  In  Name of the routine that called this
+! len            integer Out Length of desired dimenison
 !
 ! History:
 ! 2014/08/06, AP: Original version
@@ -189,11 +190,12 @@ end subroutine nc_close
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
-function nc_dim_length(ncid, name, verbose) result(len)
+function nc_dim_length(ncid, name, source_routine, verbose) result(len)
    implicit none
 
    integer,          intent(in) :: ncid
    character(len=*), intent(in) :: name
+   character(len=*), intent(in) :: source_routine
    logical,          intent(in) :: verbose
 
    integer :: did, ierr, len
@@ -201,15 +203,17 @@ function nc_dim_length(ncid, name, verbose) result(len)
 
    ierr = nf90_inq_dimid(ncid, name, did)
    if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: nc_dim_length(): Could not locate dimension ',trim(name)
-      print*,trim(nf90_strerror(ierr))
+      print*, 'ERROR: nc_dim_length(): ', source_routine, &
+           ': Could not locate dimension ', trim(name)
+      print*, trim(nf90_strerror(ierr))
       stop error_stop_code
    end if
 
    ierr = nf90_inquire_dimension(ncid, did, dname, len)
    if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: nc_dim_length():: Could not read dimension ',trim(name)
-      print*,trim(nf90_strerror(ierr))
+      print*, 'ERROR: nc_dim_length(): ', source_routine, &
+           ': Could not read dimension ', trim(name)
+      print*, trim(nf90_strerror(ierr))
       stop error_stop_code
    end if
 

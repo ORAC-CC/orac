@@ -89,7 +89,7 @@ subroutine Read_ALB_nc(Ctrl, MSI_Data)
    call nc_open(ncid, Ctrl%FID%Alb, 'Read_ALB_nc()')
 
    ! Read instrument channel indices from file
-   NAlb = nc_dim_length(ncid, 'nc_alb', Ctrl%verbose)
+   NAlb = nc_dim_length(ncid, 'nc_alb', 'Read_ALB_nc()', Ctrl%verbose)
    allocate(alb_instr_ch_numbers(NAlb))
    call nc_read_array(ncid, "alb_abs_ch_numbers", alb_instr_ch_numbers, Ctrl%verbose)
 
@@ -150,7 +150,7 @@ subroutine Read_ALB_nc(Ctrl, MSI_Data)
       ! make a correlation matrix for ORAC.
 
       ! Read in the correlation data to a temporary array
-      NCor = nc_dim_length(ncid, 'nc_corr', Ctrl%verbose)
+      NCor = nc_dim_length(ncid, 'nc_corr', 'Read_ALB_nc()', Ctrl%verbose)
       allocate(cor_ch_numbers(2, NCor))
       call nc_read_array(ncid, "cor_abs_ch_numbers", cor_ch_numbers, Ctrl%verbose)
       allocate(cor_temp(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, NCor))

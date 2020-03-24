@@ -226,8 +226,8 @@ subroutine read_slstr_tirdata(indir, inband, outarr, sx, sy, nx, ny, inx, iny, &
    call nc_open(fid, filename, 'read_slstr_tirdata()')
 
    ! Check dimensions so we load the right amount of NetCDF file
-   endy=nc_dim_length(fid,'rows',.false.)
-   endx=nc_dim_length(fid,'columns',.false.)
+   endy = nc_dim_length(fid, 'rows', 'read_slstr_tirdata()', .false.)
+   endx = nc_dim_length(fid, 'columns', 'read_slstr_tirdata()', .false.)
 
    ! Check that the dataset exists
    ierr=nf90_inq_varid(fid, trim(bandname), did)
@@ -341,8 +341,8 @@ subroutine read_slstr_visdata(indir, inband, outarr, imager_angles, sx, sy, &
    call nc_open(fid, filename, 'read_slstr_visdata()')
 
    ! Check dimensions so we load the right amount of NetCDF file
-   endy=nc_dim_length(fid,'rows',.false.)
-   endx=nc_dim_length(fid,'columns',.false.)
+   endy = nc_dim_length(fid, 'rows', 'read_slstr_visdata()', .false.)
+   endx = nc_dim_length(fid, 'columns', 'read_slstr_visdata()', .false.)
 
    if (endx .gt. nx*2) endx=nx*2
    if (endy .gt. ny*2) endy=ny*2
@@ -389,7 +389,7 @@ subroutine read_slstr_visdata(indir, inband, outarr, imager_angles, sx, sy, &
    ! Open the netcdf file
    call nc_open(fid, filename_qa, 'read_slstr_visdata()')
    ! Get number of detectors, should be 4
-   ndet=nc_dim_length(fid,'detectors',.false.)
+   ndet = nc_dim_length(fid, 'detectors', 'read_slstr_visdata()', .false.)
    allocate(irradiances(ndet))
 
    ierr=nf90_inq_varid(fid, trim(irradname), did)
@@ -710,8 +710,8 @@ subroutine get_slstr_obgridsize(indir,nx,ny)
       stop error_stop_code
    end if
 
-   ny=nc_dim_length(fid,'rows',.false.)
-   nx=nc_dim_length(fid,'columns',.false.)
+   ny = nc_dim_length(fid, 'rows', 'get_slstr_obgridsize()', .false.)
+   nx = nc_dim_length(fid, 'columns', 'get_slstr_obgridsize()', .false.)
    ierr=nf90_close(fid)
    if (ierr.ne.NF90_NOERR) then
       print*, 'ERROR: get_slstr_obgridsize(): Error closing file ', trim(geofile)
@@ -734,9 +734,8 @@ subroutine get_slstr_txgridsize(indir,nx,ny)
    geofile = trim(indir)//'geodetic_tx.nc'
 
    call nc_open(fid, geofile, 'get_slstr_gridsize()')
-
-   ny=nc_dim_length(fid,'rows',.false.)
-   nx=nc_dim_length(fid,'columns',.false.)
+   ny = nc_dim_length(fid, 'rows', 'get_slstr_gridsize()', .false.)
+   nx = nc_dim_length(fid, 'columns', 'get_slstr_gridsize()', .false.)
    call nc_close(fid, 'get_slstr_gridsize()')
 
 end subroutine get_slstr_txgridsize

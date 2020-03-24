@@ -64,13 +64,9 @@ function read_USGS_file(path_to_USGS_file, usgs, verbose) result (stat)
    ! Extract information about the file
    stat = nf90_inquire(fid, nDim, nVar, nAtt, uDimID, ForNM)
 
-   ! dimension IDs
-   stat = nf90_inq_dimid(fid, 'lon', usgs_lon_id)
-   stat = nf90_inq_dimid(fid, 'lat', usgs_lat_id)
-
    ! Extract the array dimensions
-   stat = nf90_inquire_dimension(fid, usgs_lon_id, len=usgs%nlon)
-   stat = nf90_inquire_dimension(fid, usgs_lat_id, len=usgs%nlat)
+   usgs%nlon = nc_dim_length(fid, 'lon', 'read_USGS_file()', verbose)
+   usgs%nlat = nc_dim_length(fid, 'lat', 'read_USGS_file()', verbose)
 
    ! Read data for each variable
    allocate(usgs%lon(usgs%nlon))
@@ -191,13 +187,9 @@ function read_predef_file_sev(path_to_file, usgs, verbose) result (stat)
    ! Extract information about the file
    stat = nf90_inquire(fid, nDim, nVar, nAtt, uDimID, ForNM)
 
-   ! dimension IDs
-   stat = nf90_inq_dimid(fid, 'x', usgs_lon_id)
-   stat = nf90_inq_dimid(fid, 'y', usgs_lat_id)
-
    ! Extract the array dimensions
-   stat = nf90_inquire_dimension(fid, usgs_lon_id, len=usgs%nlon)
-   stat = nf90_inquire_dimension(fid, usgs_lat_id, len=usgs%nlat)
+   usgs%nlon = nc_dim_length(fid, 'x', 'read_USGS_file()', verbose)
+   usgs%nlat = nc_dim_length(fid, 'y', 'read_USGS_file()', verbose)
 
    ! Read data for each variable
    allocate(usgs%dem(usgs%nlon, usgs%nlat))

@@ -43,10 +43,10 @@ subroutine read_input_dimensions(fname, indexing, verbose)
    call nc_open(ncid, fname, 'read_input_dimensions()')
    call nullify_indexing(indexing)
 
-   indexing%Xdim   = nc_dim_length(ncid, 'across_track', verbose)
-   indexing%Ydim   = nc_dim_length(ncid, 'along_track',  verbose)
-   indexing%Ny     = nc_dim_length(ncid, 'channels',     verbose)
-   indexing%NViews = nc_dim_length(ncid, 'views',        verbose)
+   indexing%Xdim   = nc_dim_length(ncid, 'across_track', 'read_input_dimensions()', verbose)
+   indexing%Ydim   = nc_dim_length(ncid, 'along_track', 'read_input_dimensions()',  verbose)
+   indexing%Ny     = nc_dim_length(ncid, 'channels', 'read_input_dimensions()',     verbose)
+   indexing%NViews = nc_dim_length(ncid, 'views', 'read_input_dimensions()',        verbose)
 
    ! Read attributes that should eventually be dimensions
    ierr = nf90_get_att(ncid, NF90_GLOBAL, 'NState', indexing%Nx)
