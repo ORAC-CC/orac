@@ -40,7 +40,7 @@ module USGS_physiography_m
 
 contains
 
-function read_USGS_file(path_to_USGS_file, usgs, verbose) result (stat)
+subroutine read_USGS_file(path_to_USGS_file, usgs, verbose)
 
    use orac_ncdf_m
 
@@ -85,10 +85,10 @@ function read_USGS_file(path_to_USGS_file, usgs, verbose) result (stat)
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_USGS_file()'
 
-end function read_USGS_file
+end subroutine read_USGS_file
 
 ! This function reads the AHI predefined DEM, LS and LUM
-function read_predef_file_ahi(path_to_file, usgs, imager_geolocation, verbose) result (stat)
+subroutine read_predef_file_ahi(path_to_file, usgs, imager_geolocation, verbose)
 
    use orac_ncdf_m
    use imager_structures_m
@@ -160,10 +160,19 @@ function read_predef_file_ahi(path_to_file, usgs, imager_geolocation, verbose) r
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_predef_file()'
 
-end function read_predef_file_ahi
+   ! In future, it may be necessary to position an AHI field within the
+   ! larger swath. To do that,
+   ! line0 = imager_geolocation%startx - 1
+   ! line1 = line0 + imager_geolocation%ny - 1
+   ! column0 = imager_geolocation%starty - 1
+   ! column1 = column0 + imager_geolocation%nx - 1
+   ! y_min = line0 + 1
+   ! y_max = line1 + 1
+
+end subroutine read_predef_file_ahi
 
 ! This function reads the SEVIRI predefined DEM, LS and LUM
-function read_predef_file_sev(path_to_file, usgs, verbose) result (stat)
+subroutine read_predef_file_sev(path_to_file, usgs, verbose)
 
    use orac_ncdf_m
 
@@ -205,7 +214,7 @@ function read_predef_file_sev(path_to_file, usgs, verbose) result (stat)
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_predef_file()'
 
-end function read_predef_file_sev
+end subroutine read_predef_file_sev
 
 !-----------------------------------------------------------------------------
 function nearest_USGS(imager_lat, imager_lon, usgs) &
