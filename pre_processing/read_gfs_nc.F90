@@ -103,8 +103,8 @@ subroutine read_gfs_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
    nj = ceiling((area(1)+90.)/grid(2)) - floor((area(3)+90.)/grid(2)) + 1
 
    ! open file
-   call nc_open(fid, ecmwf_path)
-   if (nf90_inquire(fid, ndim, nvar, natt) .ne. 0) &
+   call nc_open(fid, ecmwf_path, 'read_gfs_nc()')
+   if (nf90_inquire(fid, nVariables=nvar) .ne. 0) &
         call h_e_e('nc', 'NF INQ failed.')
 
    allocate(old_data(BUFFER))

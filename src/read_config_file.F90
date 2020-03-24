@@ -60,7 +60,7 @@ subroutine read_config_file(Ctrl, channel_ids_instr, channel_sw_flag, &
    integer :: ncid
 
    ! Open config file for reading
-   call nc_open(ncid, Ctrl%FID%Config)
+   call nc_open(ncid, Ctrl%FID%Config, 'read_config_file()')
 
    if (Ctrl%Ind%Navail /= nc_dim_length(ncid, 'nc_conf', Ctrl%verbose)) then
       write(*,*) 'ERROR: read_config_file(): Driver incompatible with ', &

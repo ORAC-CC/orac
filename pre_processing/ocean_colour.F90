@@ -178,8 +178,7 @@ function read_oceancolour_cci(path_to_file, occci, wavelengths, verbose) &
    allocate(occci%iwavelength(2,nwl))! Holds index nos. wrt to OCCCI band actually read
 
    ! Open NetCDF file and extract information about it
-   call nc_open(fid, path_to_file)
-   stat = nf90_inquire(fid, nDim, nVar, nAtt, uDimID, ForNM)
+   call nc_open(fid, path_to_file, 'read_oceancolour_cci()')
 
    ! Variables needed: atot (total absorption), bbp (particulate backscatter)
    ! Available wavelengths: 412, 443, 490, 510, 555, 670 nm.

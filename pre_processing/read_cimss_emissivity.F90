@@ -127,7 +127,7 @@ function read_cimss_emissivity(path_to_file, emis, wavelengths, verbose, flag, &
    n_wavelengths = size(wavelengths)
 
    ! Open NetCDF file
-   call nc_open(fid, path_to_file)
+   call nc_open(fid, path_to_file, 'read_cimss_emissivity()')
 
    ! Extract information about the file
    stat = nf90_inquire(fid, nDim, nVar, nAtt, uDimID, ForNM)

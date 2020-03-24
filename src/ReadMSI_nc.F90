@@ -123,7 +123,7 @@ subroutine Read_MSI_nc(Ctrl, MSI_Data, SAD_Chan)
 
    ! Open MSI file
    if (Ctrl%verbose) write(*,*) 'Imagery file: ', trim(Ctrl%FID%MSI)
-   call nc_open(ncid, Ctrl%FID%MSI)
+   call nc_open(ncid, Ctrl%FID%MSI, 'Read_MSI_nc()')
 
    ! Read product date and time from netcdf global attributes
    if (nf90_get_att(ncid, NF90_GLOBAL, "Date_Created", prod_date) == &

@@ -102,7 +102,7 @@ function read_camel_emissivity(path_to_file, emis, wavelengths, verbose, flag, &
    camel_wvl = (/ 3.6,4.3,5.0,5.8,7.6,8.3,8.6,9.1,10.6,10.8,11.3,12.1,14.3 /)
 
    ! Open NetCDF file
-   call nc_open(fid, path_to_file)
+   call nc_open(fid, path_to_file, 'read_camel_emissivity()')
 
    ! Extract information about the file
    stat = nf90_inquire(fid, nDim, nVar, nAtt, uDimID, ForNM)

@@ -86,7 +86,7 @@ subroutine Read_ALB_nc(Ctrl, MSI_Data)
 
    ! Open ALB file
    if (Ctrl%verbose) write(*,*) 'Albedo file: ', trim(Ctrl%FID%Alb)
-   call nc_open(ncid, Ctrl%FID%Alb)
+   call nc_open(ncid, Ctrl%FID%Alb, 'Read_ALB_nc()')
 
    ! Read instrument channel indices from file
    NAlb = nc_dim_length(ncid, 'nc_alb', Ctrl%verbose)

@@ -42,9 +42,11 @@
 ! imager_time%time array.
 subroutine get_slstr_startend(imager_time, fname, ny)
 
-   use netcdf
+   use orac_ncdf_m
    use calender_m
    use imager_structures_m
+
+   implicit none
 
    type(imager_time_t),        intent(inout) :: imager_time
    character(len=path_length), intent(in)    :: fname
@@ -68,14 +70,10 @@ subroutine get_slstr_startend(imager_time, fname, ny)
 
    ! Convert start and end times to julian
 
-   ierr=nf90_open(path=trim(adjustl(fname)),mode=NF90_NOWRITE,ncid=fid)
+   call nc_open(fid, fname, 'get_slstr_startend()')
+   ierr = nf90_get_att(fid, NF90_GLOBAL, 'start_time', l1b_start)
    if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: get_slstr_startend(): Error opening file ', trim(fname)
-      stop error_stop_code
-   end if
-   ierr=nf90_get_att(fid, nf90_global, 'start_time', l1b_start)
-   if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: get_slstr_startend(): Error getting start_time from file ',&
+      print*, 'ERROR: get_slstr_startend(): Error getting start_time from file ', &
            trim(fname), ierr
       stop error_stop_code
    end if
@@ -229,11 +227,7 @@ subroutine read_slstr_tirdata(indir, inband, outarr, sx, sy, nx, ny, inx, iny, &
    call get_slstr_imnames(indir, inband, filename, filename_qa, bandname, irradname)
 
    ! Open the netcdf file
-   ierr=nf90_open(path=trim(adjustl(filename)),mode=NF90_NOWRITE,ncid=fid)
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: read_slstr_tirdata(): Error opening file ', trim(filename)
-      stop error_stop_code
-   end if
+   call nc_open(fid, filename, 'read_slstr_tirdata()')
 
    ! Check dimensions so we load the right amount of NetCDF file
    endy=nc_dim_length(fid,'rows',.false.)
@@ -352,11 +346,7 @@ subroutine read_slstr_visdata(indir, inband, outarr, imager_angles, sx, sy, &
    data1(:,:) = sreal_fill_value
 
    ! Open the netcdf file
-   ierr=nf90_open(path=trim(adjustl(filename)),mode=NF90_NOWRITE,ncid=fid)
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: read_slstr_visdata(): Error opening file ', trim(filename)
-      stop error_stop_code
-   end if
+   call nc_open(fid, filename, 'read_slstr_visdata()')
 
    ! Check dimensions so we load the right amount of NetCDF file
    endy=nc_dim_length(fid,'rows',.false.)
@@ -411,11 +401,7 @@ subroutine read_slstr_visdata(indir, inband, outarr, imager_angles, sx, sy, &
 
    ! Now we deal with the solar irradiance dataset
    ! Open the netcdf file
-   ierr=nf90_open(path=trim(adjustl(filename_qa)),mode=NF90_NOWRITE,ncid=fid)
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: read_slstr_visdata(): Error opening file ', trim(filename_qa)
-      stop error_stop_code
-   end if
+   call nc_open(fid, filename_qa, 'read_slstr_visdata()')
    ! Get number of detectors, should be 4
    ndet=nc_dim_length(fid,'detectors',.false.)
    allocate(irradiances(ndet))
@@ -766,11 +752,7 @@ subroutine get_slstr_txgridsize(indir,nx,ny)
 
    geofile = trim(indir)//'geodetic_tx.nc'
 
-   ierr=nf90_open(path=trim(adjustl(geofile)),mode=NF90_NOWRITE,ncid=fid)
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: get_slstr_txgridsize(): Error opening file ', trim(geofile)
-      stop error_stop_code
-   end if
+   call nc_open(fid, geofile, 'get_slstr_gridsize()')
 
    ny=nc_dim_length(fid,'rows',.false.)
    nx=nc_dim_length(fid,'columns',.false.)
@@ -919,10 +901,12 @@ end subroutine slstr_interp_angs
 subroutine read_slstr_satsol(indir, imager_angles, interp, txnx, txny, nx, ny, &
      startx, view)
 
-   use netcdf
+   use orac_ncdf_m
    use imager_structures_m
    use preproc_constants_m
    use system_utils_m
+
+   implicit none
 
    integer,                    intent(in)    :: view
    integer,                    intent(in)    :: nx
@@ -951,11 +935,7 @@ subroutine read_slstr_satsol(indir, imager_angles, interp, txnx, txny, nx, ny, &
    geofile = trim(indir)//'geometry_'//trim(vid)//'.nc'
 
    ! First we do the DEM
-   ierr=nf90_open(path=trim(adjustl(geofile)),mode=NF90_NOWRITE,ncid=fid)
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: read_slstr_geodata(): Error opening file ', trim(geofile)
-      stop error_stop_code
-   end if
+   call nc_open(fid, geofile, 'read_slstr_geodata()')
 
    ! Retrieve each variable on the tx grid
    call slstr_get_one_geom(txnx,txny,fid,'sat_azimuth_'//trim(vid)//'', &
@@ -1064,7 +1044,7 @@ subroutine read_slstr_int_field(indir, file, procgrid, variable, &
    geofile = trim(indir) // trim(file) // '_' // trim(procgrid) // '.nc'
    var = trim(variable) // '_' // trim(procgrid)
 
-   call nc_open(fid, geofile)
+   call nc_open(fid, geofile, 'read_slstr_field()')
    call nc_read_array(fid, var, data_arr, .false., start=[startx, starty])
    if (nf90_close(fid).ne.NF90_NOERR) print*, "ERROR: read_slstr_int_field(): Unable to close."
 
@@ -1094,7 +1074,7 @@ subroutine read_slstr_field(indir, file, procgrid, variable, &
    geofile = trim(indir) // trim(file) // '_' // trim(procgrid) // '.nc'
    var = trim(variable) // '_' // trim(procgrid)
 
-   call nc_open(fid, geofile)
+   call nc_open(fid, geofile, 'read_slstr_field()')
    call nc_read_array(fid, var, data_arr, .false., start=[startx, starty])
    if (nf90_close(fid).ne.NF90_NOERR) print*, "ERROR: read_slstr_int_field(): Unable to close."
 

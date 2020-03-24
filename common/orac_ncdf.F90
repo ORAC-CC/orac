@@ -96,8 +96,9 @@ end subroutine c_to_f_str
 ! Arguments:
 ! Name  Type    In/Out/Both Description
 ! ------------------------------------------------------------------------------
-! ncid  integer Out File ID number returned by nf90_open
-! fname string  In  Name of the file to be opened
+! ncid           integer Out File ID number returned by nf90_open
+! fname          string  In  Name of the file to be opened
+! source_routine string  In  Name of the routine that called this
 !
 ! History:
 ! 2014/02/10, AP: Original version, replacing nc_open.F90.
@@ -108,23 +109,20 @@ end subroutine c_to_f_str
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
-subroutine nc_open(ncid, fname, error_status)
+subroutine nc_open(ncid, fname, source_routine)
    implicit none
 
    integer,          intent(out) :: ncid
    character(len=*), intent(in)  :: fname
-   integer, intent(out),optional :: error_status
+   character(len=*), intent(in)  :: source_routine
    integer                       :: ierr
 
    ierr = nf90_open(path=trim(adjustl(fname)), mode=NF90_NOWRITE, ncid=ncid)
    if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: nc_open(): Error opening file ', trim(fname)
+      print*, 'ERROR: nc_open(): ', source_routine, &
+           ': Error opening file ', trim(fname)
       print*, trim(nf90_strerror(ierr))
-      if (present(error_status)) then
-         error_status = error_stop_code
-      else
-         stop error_stop_code
-      end if
+      stop error_stop_code
    end if
 
 end subroutine nc_open

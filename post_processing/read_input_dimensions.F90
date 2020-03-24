@@ -40,7 +40,7 @@ subroutine read_input_dimensions(fname, indexing, verbose)
 
    ! Open file
 
-   call nc_open(ncid,fname)
+   call nc_open(ncid, fname, 'read_input_dimensions()')
    call nullify_indexing(indexing)
 
    indexing%Xdim   = nc_dim_length(ncid, 'across_track', verbose)

@@ -232,7 +232,7 @@ subroutine read_input_secondary_once(nfile, fname, input_data, indexing, &
    read_flags = indexing%flags
 
    ! Read universally common fields from first input file
-   call nc_open(ncid, fname(1))
+   call nc_open(ncid, fname(1), 'read_input_secondary_once()')
 
    call read_input_secondary_optional(ncid, input_data, loop_ind(1), &
         read_flags, sval, verbose)
@@ -243,7 +243,7 @@ subroutine read_input_secondary_once(nfile, fname, input_data, indexing, &
    end if
 
    do i=2,nfile
-      call nc_open(ncid,fname(i))
+      call nc_open(ncid, fname(i), 'read_input_secondary_once()')
       call read_input_secondary_optional(ncid, input_data, loop_ind(i), &
            read_flags, sval, verbose)
       if (nf90_close(ncid) .ne. NF90_NOERR) then
@@ -270,7 +270,7 @@ subroutine read_input_secondary_class(fname, input_data, indexing, sval, verbose
    integer :: ncid
 
    if (verbose) write(*,*) 'Opening secondary input file: ', trim(fname)
-   call nc_open(ncid,fname)
+   call nc_open(ncid, fname, 'read_input_secondary_class()')
 
    call read_input_secondary_common(ncid, input_data, indexing, sval, verbose)
 

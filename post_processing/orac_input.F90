@@ -217,7 +217,7 @@ subroutine determine_channel_indexing(fname, indexing, verbose)
    integer       :: do_flags
    integer(byte) :: rho_flags(indexing%Ny)
 
-   call nc_open(ncid, fname)
+   call nc_open(ncid, fname, 'determine_channel_indexing()')
 
    ! Read attributes
    ierr = nf90_get_att(ncid, NF90_GLOBAL, 'LUT_class', indexing%LUTClass)

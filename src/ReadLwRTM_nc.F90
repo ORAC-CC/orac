@@ -117,7 +117,7 @@ subroutine Read_LwRTM_nc(Ctrl, RTM)
 
 
    ! Open LwRTM data file
-   call nc_open(ncid, Ctrl%FID%LWRTM)
+   call nc_open(ncid, Ctrl%FID%LWRTM, 'Read_LwRTM_nc()')
 
    ! Ensure instrument info matches the sensor being processed
    if (nf90_get_att(ncid, NF90_GLOBAL, "Sensor", sensor) /= NF90_NOERR .or.&

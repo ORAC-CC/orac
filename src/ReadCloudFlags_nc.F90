@@ -89,7 +89,7 @@ subroutine Read_CloudFlags_nc(Ctrl, MSI_Data)
 
    ! Open cloud flag file
    if (Ctrl%verbose) write(*,*) 'Cloud flag file: ', trim(Ctrl%FID%Cf)
-   call nc_open(ncid, Ctrl%FID%CF)
+   call nc_open(ncid, Ctrl%FID%CF, 'Read_CloudFlags_nc()')
 
    allocate(MSI_Data%Type(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))
    allocate(MSI_Data%cldtype(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, Ctrl%Ind%NViews))

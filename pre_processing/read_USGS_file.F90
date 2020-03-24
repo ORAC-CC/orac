@@ -60,7 +60,7 @@ function read_USGS_file(path_to_USGS_file, usgs, verbose) result (stat)
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_USGS_file()'
 
-   call nc_open(fid, path_to_USGS_file)
+   call nc_open(fid, path_to_USGS_file, 'read_USGS_file()')
    ! Extract information about the file
    stat = nf90_inquire(fid, nDim, nVar, nAtt, uDimID, ForNM)
 
@@ -117,7 +117,7 @@ function read_predef_file_ahi(path_to_file, usgs, imager_geolocation, verbose) r
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_predef_file()'
 
-   call nc_open(fid, path_to_file)
+   call nc_open(fid, path_to_file, 'read_predef_file_ahi()')
    ! Extract information about the file
    stat = nf90_inquire(fid, nDim, nVar, nAtt, uDimID, ForNM)
 
@@ -187,7 +187,7 @@ function read_predef_file_sev(path_to_file, usgs, verbose) result (stat)
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_predef_file()'
 
-   call nc_open(fid, path_to_file)
+   call nc_open(fid, path_to_file, 'read_predef_file_sev()')
    ! Extract information about the file
    stat = nf90_inquire(fid, nDim, nVar, nAtt, uDimID, ForNM)
 

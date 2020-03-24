@@ -144,7 +144,7 @@ subroutine get_abi_geoloc(infile, imager_geolocation, imager_angles, &
    use global_attributes_m
    use iso_c_binding
    use imager_structures_m
-   use netcdf
+   use orac_ncdf_m
    use preproc_constants_m
    use system_utils_m
 
@@ -178,11 +178,7 @@ subroutine get_abi_geoloc(infile, imager_geolocation, imager_angles, &
    if (verbose) write(*,*) "Computing latitude and longitude for each pixel"
 
    ! Open the netCDF4 file for reading
-   ierr = nf90_open(path = trim(adjustl(infile)), mode = NF90_NOWRITE, ncid = fid)
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: get_abi_geoloc(): Error opening file ', trim(infile)
-      stop error_stop_code
-   end if
+   call nc_open(fid, infile, 'get_abi_geoloc()')
 
    ! Read the various attributes required for building the geolocation model
    ierr = nf90_inq_varid(fid, "x", xid)
@@ -624,7 +620,7 @@ end subroutine goes_resample_vis_to_tir
 ! This reads data for one band from its individual netcdf file
 subroutine load_abi_band(infile, imager_geolocation, rad, kappa, bc1, bc2, fk1, fk2, scl, verbose)
 
-   use netcdf
+   use orac_ncdf_m
    use imager_structures_m
    use preproc_constants_m
 
@@ -668,11 +664,7 @@ subroutine load_abi_band(infile, imager_geolocation, rad, kappa, bc1, bc2, fk1, 
    allocate(dqf(nx,ny))
 
    ! Open the netCDf4 file for access
-   ierr = nf90_open(path = trim(adjustl(infile)), mode = NF90_NOWRITE, ncid = fid)
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: load_abi_band(): Error opening file ', trim(infile)
-      stop error_stop_code
-   end if
+   call nc_open(fid, infile, 'load_abi_band()')
 
    ! Check that the dataset exists
    ierr = nf90_inq_varid(fid, 'Rad', did)
@@ -790,7 +782,7 @@ subroutine get_abi_time(infile, imager_time, ny, verbose)
 
    use imager_structures_m
    use calender_m
-   use netcdf
+   use orac_ncdf_m
    use preproc_constants_m
    use system_utils_m
 
@@ -820,11 +812,7 @@ subroutine get_abi_time(infile, imager_time, ny, verbose)
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering get_abi_time()'
 
    ! Read the time boundaries from the input file
-   ierr = nf90_open(path = trim(adjustl(infile)), mode = NF90_NOWRITE, ncid = fid)
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: get_abi_time(): Error opening file ', trim(infile)
-      stop error_stop_code
-   end if
+   call nc_open(fid, infile, 'get_abi_time()')
 
    ierr = nf90_get_att(fid, NF90_GLOBAL, "time_coverage_start", start_coverage)
    if (ierr.ne.NF90_NOERR) then

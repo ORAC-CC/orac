@@ -39,7 +39,7 @@ subroutine read_abi_dimensions(l1_5_file, n_across_track, n_along_track, &
      startx, endx, starty, endy, verbose)
 
    use preproc_constants_m
-   use netcdf
+   use orac_ncdf_m
    use orac_ncdf_m
 
    implicit none
@@ -60,11 +60,7 @@ subroutine read_abi_dimensions(l1_5_file, n_across_track, n_along_track, &
 
    read(cband(1:len_trim(cband)), '(I2)') band
 
-   ierr = nf90_open(path=trim(adjustl(l1_5_file)),mode=NF90_NOWRITE,ncid=fid)
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: read_abi_dimensions(): Error opening file ',trim(l1_5_file)
-      stop error_stop_code
-   end if
+   call nc_open(fid, l1_5_file, 'read_abi_dimensions()')
 
    ! Read actual size of the netCDF4 file
    n_cols  = nc_dim_length(fid,'x',.false.)
@@ -149,7 +145,7 @@ subroutine get_abi_data(infiles, imager_angles, imager_measurements, &
    use imager_structures_m
    use preproc_constants_m
    use system_utils_m
-   use netcdf
+
    implicit none
 
    character(len=file_length),  intent(in)    :: infiles(:)

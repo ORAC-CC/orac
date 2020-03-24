@@ -66,7 +66,7 @@ subroutine read_agri_dimensions(fname, n_across_track, n_along_track, &
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< read_agri_dimensions()'
 
    ! Open the file.
-   call nc_open(fid, fname, ierr)
+   call nc_open(fid, fname, 'read_agri_dimensions()')
 
    startx = 1
    starty = 1
@@ -503,7 +503,7 @@ subroutine read_agri_data(infile, imager_geolocation, imager_measurements, &
    band_ids = channel_info%channel_ids_instr
    allocate(band_units(n_bands))
 
-   call nc_open(ncid, infile, ierr)
+   call nc_open(ncid, infile, 'read_agri_data()')
 
    startx = imager_geolocation%startx
    nx = imager_geolocation%nx

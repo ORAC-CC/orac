@@ -69,7 +69,7 @@ subroutine read_slstr_dimensions(img_file, n_across_track, n_along_track, &
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< read_slstr_dimensions()'
 
    ! Open the file.
-   call nc_open(fid, img_file, ierr)
+   call nc_open(fid, img_file, 'read_slstr_dimensions()')
 
    startx=1
    starty=1

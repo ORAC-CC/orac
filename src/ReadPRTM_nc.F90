@@ -49,7 +49,7 @@ subroutine Read_PRTM_nc(Ctrl, RTM)
 
 
    ! Open PRTM file
-   call nc_open(ncid, Ctrl%FID%PRTM)
+   call nc_open(ncid, Ctrl%FID%PRTM, 'Read_PRTM_nc()')
 
    ! Allocate arrays
    allocate(RTM%lat(RTM%Grid%NLon, RTM%Grid%NLat))

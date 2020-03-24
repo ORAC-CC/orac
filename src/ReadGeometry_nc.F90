@@ -67,7 +67,7 @@ subroutine Read_Geometry_nc(Ctrl, MSI_Data)
 
    ! Open geometry file
    if (Ctrl%verbose) write(*,*) 'Geometry file: ', trim(Ctrl%FID%Geo)
-   call nc_open(ncid, Ctrl%FID%Geo)
+   call nc_open(ncid, Ctrl%FID%Geo, 'Read_Geometry_nc()')
 
    allocate(MSI_Data%Geometry%Sol(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, Ctrl%Ind%NViews))
    allocate(MSI_Data%Geometry%Sat(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, Ctrl%Ind%NViews))

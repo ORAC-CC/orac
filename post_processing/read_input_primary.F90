@@ -414,9 +414,9 @@ subroutine read_input_primary_once(nfile, fname, input_data, indexing, &
 
    ! Read universally common fields from first input file
    if (.not. use_ml) then
-      call nc_open(ncid, fname(1))
+      call nc_open(ncid, fname(1), 'read_input_primary_once()')
    else
-      call nc_open(ncid, fname(3))
+      call nc_open(ncid, fname(3), 'read_input_primary_once()')
    end if
 
    call nc_get_common_attributes(ncid, global_atts, source_atts)
@@ -503,7 +503,7 @@ subroutine read_input_primary_once(nfile, fname, input_data, indexing, &
    end if
 
    do i=2,nfile
-      call nc_open(ncid,fname(i))
+      call nc_open(ncid, fname(i), 'read_input_primary_once()')
       call read_input_primary_optional(ncid, input_data, loop_ind(i), &
            read_flags, sval, verbose)
       if (nf90_close(ncid) .ne. NF90_NOERR) then
@@ -532,7 +532,7 @@ subroutine read_input_primary_class(fname, input_data, indexing, costonly, &
    integer :: ncid
 
    if (verbose) write(*,*) 'Opening primary input file: ', trim(fname)
-   call nc_open(ncid,fname)
+   call nc_open(ncid, fname, 'read_input_primary_class()')
    if (.not. costonly) then
       call read_input_primary_common(ncid, input_data, indexing, sval, verbose)
    else

@@ -1331,9 +1331,8 @@ subroutine setup_slstr(l1b_path_file,geo_path_file,source_attributes,platform, &
    use channel_structures_m
    use preproc_constants_m
    use preproc_structures_m
+   use orac_ncdf_m
    use source_attributes_m
-
-   use netcdf
 
    implicit none
 
@@ -1430,11 +1429,7 @@ subroutine setup_slstr(l1b_path_file,geo_path_file,source_attributes,platform, &
 
    ! check if l1b and geo file are of the same granule
 
-   ierr=nf90_open(path=trim(adjustl(l1b_path_file)),mode=NF90_NOWRITE,ncid=fid)
-   if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: setup_slstr(): Error opening file ',trim(l1b_path_file)
-      stop
-   end if
+   call nc_open(fid, l1b_path_file, 'setup_slstr()')
    ierr = nf90_get_att(fid, nf90_global, "start_time", l1b_start)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: setup_slstr(): Error getting start_time from file ',trim(l1b_path_file)
@@ -1467,11 +1462,7 @@ subroutine setup_slstr(l1b_path_file,geo_path_file,source_attributes,platform, &
       stop
    end if
 
-   ierr=nf90_open(path=trim(adjustl(geo_path_file)),mode=NF90_NOWRITE,ncid=fid)
-   if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: setup_slstr(): Error opening file ',trim(geo_path_file)
-      stop
-   end if
+   call nc_open(fid, geo_path_file, 'setup_slstr()')
    ierr = nf90_get_att(fid, nf90_global, "start_time", geo_start)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: setup_slstr(): Error getting start_time from file ', &

@@ -81,7 +81,7 @@ subroutine Read_LSFlags_nc(Ctrl, MSI_Data)
 
    ! Open LSF file
    if (Ctrl%verbose) write(*,*) 'Land/sea flag file: ', trim(Ctrl%FID%LS)
-   call nc_open(ncid, Ctrl%FID%LS)
+   call nc_open(ncid, Ctrl%FID%LS, 'Read_LSFlags_nc()')
 
    allocate(MSI_Data%LSFlags(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))
    allocate(MSI_Data%lusflags(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))

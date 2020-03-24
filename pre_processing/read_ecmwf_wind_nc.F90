@@ -111,7 +111,7 @@ subroutine read_ecmwf_wind_nc_file(ecmwf_path, ecmwf)
    logical                         :: verbose = .false.
 
    ! open file
-   call nc_open(fid,ecmwf_path)
+   call nc_open(fid, ecmwf_path, 'read_ecmwf_wind_nc_file()')
 
    ! check field dimensions for consistency
    if (nf90_inquire(fid, ndim, nvar) .ne. 0) &

@@ -581,8 +581,8 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
    !----------------------------------------------------------------------------
    ! Read TSI file
    !----------------------------------------------------------------------------
-   call nc_open(ncid,FTSI)
-   
+   call nc_open(ncid, FTSI, 'process_broadband_fluxes()')
+
    ! Allocate arrays
    allocate(TSI_tsi_true_earth(nTSI))
    allocate(TSI_tsi_1au(nTSI))
@@ -636,8 +636,8 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
    !----------------------------------------------------------------------------
    if (lut_mode .eq. 1) then
       ! Open LUT file
-      call nc_open(ncid,FToaSW)
-      
+      call nc_open(ncid, FToaSW, 'process_broadband_fluxes()')
+
       ! Get LUT dimensions
       nASFC = nc_dim_length(ncid, 'n_sfc_albedo', verbose)
       nSOLZ = nc_dim_length(ncid, 'n_solar_zenith', verbose)
@@ -675,8 +675,8 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
    !----------------------------------------------------------------------------
 
    ! Open primary file
-   call nc_open(ncid,Fprimary)
-   
+   call nc_open(ncid, Fprimary, 'process_broadband_fluxes()')
+
    ! Get satellite dimensions
    xN = nc_dim_length(ncid, 'across_track', verbose)
    yN = nc_dim_length(ncid, 'along_track', verbose)
@@ -741,8 +741,8 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
    !----------------------------------------------------------------------------
 
    ! Open PRTM file
-   call nc_open(ncid,FPRTM)
-   
+   call nc_open(ncid, FPRTM, 'process_broadband_fluxes()')
+
    ! Get PRTM dimensions
    xdim_prtm = nc_dim_length(ncid, 'nlon_rtm', verbose)
    ydim_prtm = nc_dim_length(ncid, 'nlat_rtm', verbose)
@@ -797,8 +797,8 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
    !----------------------------------------------------------------------------
 
    ! Open ALB file
-   call nc_open(ncid,FALB)
-   
+   call nc_open(ncid, FALB, 'process_broadband_fluxes()')
+
    ! Get # Channels
    nc_alb = nc_dim_length(ncid, 'nc_alb', verbose)
    nc_emis = nc_dim_length(ncid, 'nc_emis', verbose)
@@ -836,7 +836,7 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
 
    ! Open Aerosol CCI file (optional)
    if (aerosol_processing_mode .ge. 2) then
-      call nc_open(ncid,trim(Faerosol))
+      call nc_open(ncid, Faerosol, 'process_broadband_fluxes()')
 
       ! Get dimension
       nc_aer = nc_dim_length(ncid, 'pixel_number', verbose)
@@ -865,7 +865,7 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
    ! Open Aerosol Primary File (optional)
    if (aerosol_processing_mode .eq. 1) then
       print*, trim(Faerosol)
-      call nc_open(ncid,trim(Faerosol))
+      call nc_open(ncid, Faerosol, 'process_broadband_fluxes()')
 
       allocate(aerAOD1(xN,yN))
       allocate(aerREF1(xN,yN))
@@ -989,7 +989,7 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
          ! Make collocation netcdf file
          !----------------------------------------------------------------------
          if (aerosol_processing_mode .eq. 3) then
-            call nc_open(ncid,Fprimary)
+            call nc_open(ncid, Fprimary, 'process_broadband_fluxes()')
 
             ! Get common attributes from primary file
             call nc_get_common_attributes(ncid, global_atts, source_atts)
@@ -1056,7 +1056,7 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
          print*, 'Extracting data from:'
          write(*,*) trim(Fcollocation)
          ! Open Collocation file
-         call nc_open(ncid,trim(Fcollocation))
+         call nc_open(ncid, Fcollocation, 'process_broadband_fluxes()')
 
          ! Read collocation data
          call nc_read_array(ncid, "aID", aID, verbose)
@@ -1395,8 +1395,8 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
    !----------------------------------------------------------------------------
    ! Make output NetCDF file
    !----------------------------------------------------------------------------
-   call nc_open(ncid,Fprimary)
-   
+   call nc_open(ncid, Fprimary, 'process_broadband_fluxes()')
+
    ! Get common attributes from primary file
    call nc_get_common_attributes(ncid, global_atts, source_atts)
 
