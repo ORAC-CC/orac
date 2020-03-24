@@ -31,6 +31,7 @@
 ! 2015/07/16, GM: Added support to read packed data to nc_read routines.
 ! 2016/07/11, SP: Added new variable to read functions: start
 ! 2017/07/10, AP: Add int64 fields.
+! 2020/02/02, AP: Added nc_close().
 !-------------------------------------------------------------------------------
 
 module orac_ncdf_m
@@ -126,6 +127,44 @@ subroutine nc_open(ncid, fname, source_routine)
    end if
 
 end subroutine nc_open
+
+!-------------------------------------------------------------------------------
+! Name: nc_close
+!
+! Purpose:
+! Wrapper for nf90_close with error handling.
+!
+! Description and Algorithm details:
+! 1) Call nf90_close. If error, print message.
+!
+! Arguments:
+! Name  Type    In/Out/Both Description
+! ------------------------------------------------------------------------------
+! ncid           integer Out File ID number returned by nf90_open
+! source_routine string  In  Name of the routine that called this
+!
+! History:
+! 2020/02/03, AP: Original version.
+!
+! Bugs:
+! None known.
+!-------------------------------------------------------------------------------
+subroutine nc_close(ncid, source_routine)
+   implicit none
+
+   integer,          intent(in) :: ncid
+   character(len=*), intent(in) :: source_routine
+   integer                      :: ierr
+
+   ierr = nf90_close(ncid)
+   if (ierr .ne. NF90_NOERR) then
+      print*, 'ERROR: nc_close(): ', source_routine, &
+           ': Error closing file'
+      print*, trim(nf90_strerror(ierr))
+      stop error_stop_code
+   end if
+
+end subroutine nc_close
 
 !-------------------------------------------------------------------------------
 ! Name: nc_dim_length

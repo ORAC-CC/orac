@@ -190,9 +190,6 @@ subroutine Read_ALB_nc(Ctrl, MSI_Data)
    deallocate(subs)
 
    ! Close alb input file
-   if (nf90_close(ncid) /= NF90_NOERR) then
-      write(*,*) 'ERROR: read_alb_nc(): Error closing file.'
-      stop error_stop_code
-   end if
+   call nc_close(ncid, 'read_alb_nc()')
 
 end subroutine Read_ALB_nc

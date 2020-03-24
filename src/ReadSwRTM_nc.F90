@@ -190,11 +190,7 @@ subroutine Read_SwRTM_nc(Ctrl, RTM)
    end if
 
    ! Close SwRTM input file
-   if (nf90_close(ncid) /= NF90_NOERR) then
-      write(*,*) 'ERROR: Read_SwRTM_nc(): Error closing SWRTM file: ', &
-                 Ctrl%FID%SWRTM
-      stop error_stop_code
-   end if
+   call nc_close(ncid, 'Read_SwRTM_nc()')
 
    if (allocated(index)) deallocate(index)
 !  if (allocated(WvNumber)) deallocate(WvNumber)

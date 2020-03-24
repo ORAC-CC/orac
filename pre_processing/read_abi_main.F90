@@ -76,12 +76,7 @@ subroutine read_abi_dimensions(l1_5_file, n_across_track, n_along_track, &
    end if
 
    ! Close the netCDF4 file
-   ierr = nf90_close(fid)
-
-   if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: read_abi_dimensions(): Error closing file ',trim(l1_5_file)
-      stop error_stop_code
-   end if
+   call nc_close(fid, 'read_abi_dimensions()')
 
    if (startx .le. 0 .or. endx .le. 0 .or. starty .le. 0 .or. endy .le. 0) then
       ! If start and end *are not* being used then set them to the start and end

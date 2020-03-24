@@ -288,12 +288,7 @@ function read_oceancolour_cci(path_to_file, occci, wavelengths, verbose) &
    end do
 
    ! Close the data file
-   if (nf90_close(fid) /= NF90_NOERR) then
-      write(*,*) 'ERROR: read_oceancolour_cci(): Error closing file.'
-      stop error_stop_code
-   else
-      if (verbose) write(*,*) 'Data file closed'
-   end if
+   call nc_close(fid, 'read_oceancolour_cci()')
 
    deallocate(cache)
 

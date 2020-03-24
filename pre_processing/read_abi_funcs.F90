@@ -265,11 +265,7 @@ subroutine get_abi_geoloc(infile, imager_geolocation, imager_angles, &
    end if
 
    ! Close the netCDF file, we have all we need
-   ierr = nf90_close(fid)
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: get_abi_geoloc(): Error closing file ', trim(infile)
-      stop error_stop_code
-   end if
+   call nc_close(fid, 'get_abi_geoloc()')
 
    ! We need the height above geoid centre, so sat altitude + earth radius
    h = sma + hproj
@@ -761,11 +757,7 @@ subroutine load_abi_band(infile, imager_geolocation, rad, kappa, bc1, bc2, fk1, 
       stop error_stop_code
    end if
 
-   ierr = nf90_close(fid)
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: load_abi_band(): Error closing file ', trim(infile)
-      stop error_stop_code
-   end if
+   call nc_close(fid, 'load_abi_band()')
 
    where(dqf .lt. 0 .or. dqf .gt. 1)
       rad = sreal_fill_value
@@ -826,11 +818,7 @@ subroutine get_abi_time(infile, imager_time, ny, verbose)
    end if
 
    ! Close the netCDF file, we have all we need
-   ierr = nf90_close(fid)
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: get_abi_time(): Error closing file ', trim(infile)
-      stop error_stop_code
-   end if
+   call nc_close(fid, 'get_abi_time()')
 
    ! Starting time
    cyear1   = trim(adjustl(start_coverage(1:4)))

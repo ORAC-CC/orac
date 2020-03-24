@@ -237,19 +237,13 @@ subroutine read_input_secondary_once(nfile, fname, input_data, indexing, &
    call read_input_secondary_optional(ncid, input_data, loop_ind(1), &
         read_flags, sval, verbose)
 
-   if (nf90_close(ncid) .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_close()'
-      stop error_stop_code
-   end if
+   call nc_close(ncid, 'read_input_secondary_once()')
 
    do i=2,nfile
       call nc_open(ncid, fname(i), 'read_input_secondary_once()')
       call read_input_secondary_optional(ncid, input_data, loop_ind(i), &
            read_flags, sval, verbose)
-      if (nf90_close(ncid) .ne. NF90_NOERR) then
-         write(*,*) 'ERROR: nf90_close()'
-         stop error_stop_code
-      end if
+      call nc_close(ncid, 'read_input_secondary_once()')
    end do
 
 end subroutine read_input_secondary_once
@@ -275,9 +269,6 @@ subroutine read_input_secondary_class(fname, input_data, indexing, sval, verbose
    call read_input_secondary_common(ncid, input_data, indexing, sval, verbose)
 
    if (verbose) write(*,*) 'Closing secondary input file.'
-   if (nf90_close(ncid) .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_close()'
-      stop error_stop_code
-   end if
+   call nc_close(ncid, 'read_input_secondary_class()')
 
 end subroutine read_input_secondary_class

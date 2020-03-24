@@ -26,61 +26,22 @@
 
 subroutine netcdf_output_close(netcdf_info)
 
-   use netcdf
+   use orac_ncdf_m, only: nc_close
    use preproc_constants_m
 
    implicit none
 
    type(netcdf_output_info_t), intent(in) :: netcdf_info
 
-   if (nf90_close(netcdf_info%ncid_alb) .ne. NF90_NOERR) then
-      write (*,*) 'ERROR: netcdf_create_config(): nf90_close(): ".alb.nc"'
-      stop error_stop_code
-   end if
-
-   if (nf90_close(netcdf_info%ncid_clf) .ne. NF90_NOERR) then
-      write (*,*) 'ERROR: netcdf_create_config(): nf90_close(): ".clf.nc"'
-      stop error_stop_code
-   end if
-
-   if (nf90_close(netcdf_info%ncid_config) .ne. NF90_NOERR) then
-      write (*,*) 'ERROR: netcdf_create_config(): nf90_close(): ".config.nc"'
-      stop error_stop_code
-   end if
-
-   if (nf90_close(netcdf_info%ncid_geo) .ne. NF90_NOERR) then
-      write (*,*) 'ERROR: netcdf_create_config(): nf90_close(): ".geo.nc"'
-      stop error_stop_code
-   end if
-
-   if (nf90_close(netcdf_info%ncid_loc) .ne. NF90_NOERR) then
-      write (*,*) 'ERROR: netcdf_create_config(): nf90_close(): ".loc.nc"'
-      stop error_stop_code
-   end if
-
-   if (nf90_close(netcdf_info%ncid_lsf) .ne. NF90_NOERR) then
-      write (*,*) 'ERROR: netcdf_create_config(): nf90_close(): ".lsf.nc"'
-      stop error_stop_code
-   end if
-
-   if (nf90_close(netcdf_info%ncid_lwrtm) .ne. NF90_NOERR) then
-      write (*,*) 'ERROR: netcdf_create_config(): nf90_close(): ".lwrtm.nc"'
-      stop error_stop_code
-   end if
-
-   if (nf90_close(netcdf_info%ncid_msi) .ne. NF90_NOERR) then
-      write (*,*) 'ERROR: netcdf_create_config(): nf90_close(): ".msi.nc"'
-      stop error_stop_code
-   end if
-
-   if (nf90_close(netcdf_info%ncid_prtm) .ne. NF90_NOERR) then
-      write (*,*) 'ERROR: netcdf_create_config(): nf90_close(): ".prtm.nc"'
-      stop error_stop_code
-   end if
-
-   if (nf90_close(netcdf_info%ncid_swrtm) .ne. NF90_NOERR) then
-      write (*,*) 'ERROR: netcdf_create_config(): nf90_close(): ".swrtm.nc"'
-      stop error_stop_code
-   end if
+   call nc_close(netcdf_info%ncid_alb, 'netcdf_create_config(): ".alb.nc"')
+   call nc_close(netcdf_info%ncid_clf, 'netcdf_create_config(): ".clf.nc"')
+   call nc_close(netcdf_info%ncid_config, 'netcdf_create_config(): ".config.nc"')
+   call nc_close(netcdf_info%ncid_geo, 'netcdf_create_config(): ".geo.nc"')
+   call nc_close(netcdf_info%ncid_loc, 'netcdf_create_config(): ".loc.nc"')
+   call nc_close(netcdf_info%ncid_lsf, 'netcdf_create_config(): ".lsf.nc"')
+   call nc_close(netcdf_info%ncid_lwrtm, 'netcdf_create_config(): ".lwrtm.nc"')
+   call nc_close(netcdf_info%ncid_msi, 'netcdf_create_config(): ".msi.nc"')
+   call nc_close(netcdf_info%ncid_prtm, 'netcdf_create_config(): ".prtm.nc"')
+   call nc_close(netcdf_info%ncid_swrtm, 'netcdf_create_config(): ".swrtm.nc"')
 
 end subroutine netcdf_output_close

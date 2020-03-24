@@ -77,6 +77,8 @@ subroutine read_agri_dimensions(fname, n_across_track, n_along_track, &
    n_across_track = endx
    n_along_track = endy
 
+   call nc_close(fid, 'read_agri_dimensions()')
+
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> read_agri_dimensions()'
 
 end subroutine read_agri_dimensions
@@ -521,6 +523,8 @@ subroutine read_agri_data(infile, imager_geolocation, imager_measurements, &
       cur_band = 'C'//cur_band
       call agri_retr_band(ncid, cur_band, i, channel_info%channel_sw_flag(i), imager_measurements)
    end do
+
+   call nc_close(ncid, 'read_agri_data()')
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_agri_data()'
 

@@ -80,9 +80,6 @@ subroutine Read_Geometry_nc(Ctrl, MSI_Data)
    call nc_read_array(ncid, "sataz", MSI_Data%Geometry%Saz, Ctrl%verbose)
 
    ! Close geometry file
-   if (nf90_close(ncid) /= NF90_NOERR) then
-      write(*,*) 'ERROR: read_geometry_nc(): Error closing file.'
-      stop error_stop_code
-   end if
+   call nc_close(ncid, 'read_geometry_nc()')
 
 end subroutine Read_Geometry_nc

@@ -138,7 +138,7 @@ subroutine read_swansea_climatology(swansea_surf_path, nbands, bands, &
    allocate(data%percent_snow(1,1))
    allocate(data%bandids(1))
 
-   if (nf90_close(fid) /= NF90_NOERR) call h_s_e('File could not close.')
+   call nc_close(fid, 'read_swansea_climatology()')
 
 end subroutine read_swansea_climatology
 

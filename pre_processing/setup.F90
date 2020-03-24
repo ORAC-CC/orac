@@ -1456,11 +1456,7 @@ subroutine setup_slstr(l1b_path_file,geo_path_file,source_attributes,platform, &
       stop
    end if
 
-   ierr = nf90_close(fid)
-   if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: setup_slstr(): Error closing file ',trim(l1b_path_file)
-      stop
-   end if
+   call nc_close(fid, 'setup_slstr(l1b_path_file)')
 
    call nc_open(fid, geo_path_file, 'setup_slstr()')
    ierr = nf90_get_att(fid, nf90_global, "start_time", geo_start)
@@ -1469,11 +1465,7 @@ subroutine setup_slstr(l1b_path_file,geo_path_file,source_attributes,platform, &
            trim(geo_path_file)
       stop
    end if
-   ierr = nf90_close(fid)
-   if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: setup_slstr(): Error closing file ',trim(geo_path_file)
-      stop
-   end if
+   call nc_close(fid, 'setup_slstr(geo_path_file)')
    if (trim(l1b_start).ne.trim(geo_start)) then
       print*,"ERROR: Start times for geo and image granules don't match: "
       write(*,*) trim(l1b_start)

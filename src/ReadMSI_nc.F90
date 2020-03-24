@@ -175,10 +175,7 @@ subroutine Read_MSI_nc(Ctrl, MSI_Data, SAD_Chan)
    end if
 
    ! Close MSI input file
-   if (nf90_close(ncid) /= NF90_NOERR) then
-      write(*,*) 'ERROR: Read_MSI_nc(): Error closing file.'
-      stop error_stop_code
-   end if
+   call nc_close(ncid, 'Read_MSI_nc()')
 
    ! Set values that are out of range to MissingXn
    do i = 1,Ctrl%Ind%Ny

@@ -137,9 +137,6 @@ subroutine Read_CloudFlags_nc(Ctrl, MSI_Data)
    end if
 
    ! Close cloud flag file
-   if (nf90_close(ncid) /= NF90_NOERR) then
-      write(*,*) 'ERROR: read_cloudflags_nc(): Error closing file.'
-      stop error_stop_code
-   end if
+   call nc_close(ncid, 'read_cloudflags_nc()')
 
 end subroutine Read_CloudFlags_nc

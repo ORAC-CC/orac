@@ -233,7 +233,7 @@ end if
    deallocate(cache)
 
    ! We are now finished with the main data file
-   stat = nf90_close(fid)
+   call nc_close(fid, 'read_cimss_emissivity()')
 
    ! Commented out read/generation of lat/lon arrays. As the grid is regular,
    ! simply output its starting point and the inverse of the spacing

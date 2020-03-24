@@ -598,11 +598,7 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
    call nc_read_array(ncid, "par_weight", TSI_par_weight, verbose)
 
    ! Close file
-   if (nf90_close(ncid) .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: read_input_dimensions_lwrtm(): Error closing ' // &
-                 'LWRTM file: ', Fprimary
-      stop error_stop_code
-   end if
+   call nc_close(ncid, 'process_broadband_fluxes(FTSI)')
 
    ! Get TSI that coincides with input date
    do i=1,nTSI
@@ -666,7 +662,7 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
       call nc_read_array(ncid, "boa_sw_albedo", LUT_boa_sw_albedo, verbose)
 
       ! Close file
-      if (nf90_close(ncid) .ne. NF90_NOERR) stop error_stop_code
+      call nc_close(ncid, 'process_broadband_fluxes(FToaSW)')
    end if
 
 
@@ -732,11 +728,7 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
    end if
 
    ! Close file
-   if (nf90_close(ncid) .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: read_input_dimensions_lwrtm(): Error closing ' // &
-                 'LWRTM file: ', Fprimary
-      stop error_stop_code
-   end if
+   call nc_close(ncid, 'process_broadband_fluxes(FPrimary)')
 
    !----------------------------------------------------------------------------
 
@@ -785,11 +777,7 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
    deallocate(dummy1d)
 
    ! Close file
-   if (nf90_close(ncid) .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: read_input_dimensions_lwrtm(): Error closing ' // &
-                 'LWRTM file: ', FPRTM
-      stop error_stop_code
-   end if
+   call nc_close(ncid, 'process_broadband_fluxes(FPRTM)')
 
    ! Set PRTM units
    H = (H/g_wmo)/1000. ! to put to km
@@ -820,7 +808,7 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
    call nc_read_array(ncid, "emis_abs_ch_numbers", emis_abs_ch_numbers, verbose)
 
    ! Close file
-   if (nf90_close(ncid) .ne. NF90_NOERR) stop
+   call nc_close(ncid, 'process_broadband_fluxes(FALB)')
    ! Replace ALB_DATA WITH mean of rho_0d and rho_dd
    do i=1,xN
       do j=1,yN
@@ -856,10 +844,7 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
       call nc_read_array(ncid, "quality_flag", aerQflag, verbose)
 
       ! Close file
-      if (nf90_close(ncid) .ne. NF90_NOERR) then
-         write(*,*) 'ERROR: ',trim(Faerosol)
-         stop error_stop_code
-      end if
+      call nc_close(ncid, 'process_broadband_fluxes(Faerosol)')
    end if
 
    ! Open Aerosol Primary File (optional)
@@ -873,10 +858,7 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
       call nc_read_array(ncid, "aer", aerREF1, verbose)
 
       ! Close file
-      if (nf90_close(ncid) .ne. NF90_NOERR) then
-         write(*,*) 'ERROR: ',trim(Faerosol)
-         stop error_stop_code
-      end if
+      call nc_close(ncid, 'process_broadband_fluxes(Faerosol)')
    end if
 
 
@@ -994,10 +976,7 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
             ! Get common attributes from primary file
             call nc_get_common_attributes(ncid, global_atts, source_atts)
 
-            if (nf90_close(ncid) .ne. NF90_NOERR) then
-               write(*,*) 'ERROR: nf90_close()'
-               stop error_stop_code
-            end if
+            call nc_close(ncid, 'process_broadband_fluxes(Fprimary)')
             ! Dimensions
             ixstart = 1
             ixstop = xN
@@ -1041,10 +1020,7 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
                  aID(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
             ! Close netcdf file
-            if (nf90_close(ncid) .ne. NF90_NOERR) then
-               write(*,*) 'ERROR: nf90_close()'
-               stop error_stop_code
-            end if
+            call nc_close(ncid, 'process_broadband_fluxes()')
 
             print*,'CREATED: '
             print*,trim(Fcollocation)
@@ -1062,7 +1038,7 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
          call nc_read_array(ncid, "aID", aID, verbose)
 
          ! Close file
-         if (nf90_close(ncid) .ne. NF90_NOERR) stop
+         call nc_close(ncid, 'process_broadband_fluxes()')
       end if !file there
 
       ! Fill arrays (aerosol index aID must exist by this point)
@@ -1400,10 +1376,7 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
    ! Get common attributes from primary file
    call nc_get_common_attributes(ncid, global_atts, source_atts)
 
-   if (nf90_close(ncid) .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_close()'
-      stop error_stop_code
-   end if
+   call nc_close(ncid, 'process_broadband_fluxes()')
 
    ! Dimensions
    ixstart = pxX0
@@ -2059,10 +2032,7 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
         cbh(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
    ! Close netcdf file
-   if (nf90_close(ncid) .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_close()'
-      stop error_stop_code
-   end if
+   call nc_close(ncid, 'process_broadband_fluxes()')
 
    print*,'CREATED:'
    print*,TRIM(fname)

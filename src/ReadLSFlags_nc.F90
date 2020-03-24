@@ -94,9 +94,6 @@ subroutine Read_LSFlags_nc(Ctrl, MSI_Data)
    call nc_read_array(ncid, "nisemask", MSI_Data%nisemask, Ctrl%verbose)
 
    ! Close LSF file
-   if (nf90_close(ncid) /= NF90_NOERR) then
-      write(*,*) 'ERROR: read_lsflags_nc(): Error closing file.'
-      stop error_stop_code
-   end if
+   call nc_close(ncid, 'read_lsflags_nc()')
 
 end subroutine Read_LSFlags_nc

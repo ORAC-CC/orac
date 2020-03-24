@@ -57,9 +57,6 @@ subroutine read_input_dimensions(fname, indexing, verbose)
    end if
 
    ! Close msi file
-   if (nf90_close(ncid) .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: read_input_dimensions(): Error closing file: ', fname
-      stop error_stop_code
-   end if
+   call nc_close(ncid, 'read_input_dimensions()')
 
 end subroutine read_input_dimensions

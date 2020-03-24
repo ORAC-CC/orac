@@ -244,10 +244,7 @@ subroutine determine_channel_indexing(fname, indexing, verbose)
    call nc_read_array(ncid, "ch_is",   indexing%Ch_Is,   verbose)
    call nc_read_array(ncid, "rho_flags", rho_flags, verbose)
 
-   if (nf90_close(ncid) .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_close()'
-      stop error_stop_code
-   end if
+   call nc_close(ncid, 'determine_channel_indexing()')
 
    ! Allocate and form indexing arrays
    i0 = 0

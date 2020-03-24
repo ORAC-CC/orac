@@ -83,11 +83,7 @@ subroutine get_slstr_startend(imager_time, fname, ny)
            trim(fname), ierr
       stop error_stop_code
    end if
-   ierr=nf90_close(fid)
-   if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: read_slstr(): Error closing file ', trim(fname)
-      stop error_stop_code
-   end if
+   call nc_close(fid, 'read_slstr_startend()')
 
    index2=1
 
@@ -269,11 +265,7 @@ subroutine read_slstr_tirdata(indir, inband, outarr, sx, sy, nx, ny, inx, iny, &
       print*,ierr
       stop error_stop_code
    end if
-   ierr=nf90_close(fid)
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: read_slstr_tirdata(): Error closing file ', trim(filename)
-      stop error_stop_code
-   end if
+   call nc_close(fid, 'read_slstr_tirdata()')
 
    ! Apply scale, offset and then fill for bad data
    data2 = data1*sclval + offval
@@ -391,13 +383,7 @@ subroutine read_slstr_visdata(indir, inband, outarr, imager_angles, sx, sy, &
       print*, trim(nf90_strerror(ierr))
       stop error_stop_code
    end if
-
-   ! Close this file
-   ierr=nf90_close(fid)
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: read_slstr_visdata(): Error closing file ', trim(filename)
-      stop error_stop_code
-   end if
+   call nc_close(fid, 'read_slstr_visdata()')
 
    ! Now we deal with the solar irradiance dataset
    ! Open the netcdf file
@@ -420,12 +406,7 @@ subroutine read_slstr_visdata(indir, inband, outarr, imager_angles, sx, sy, &
       stop error_stop_code
    end if
 
-   ierr=nf90_close(fid)
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: read_slstr_visdata(): Error closing file ', &
-           trim(filename_qa)
-      stop error_stop_code
-   end if
+   call nc_close(fid, 'read_slstr_visdata()')
 
    ! Resample the data to the TIR grid size.
    call slstr_resample_vis_to_tir(data1,data2,nx,ny,filval)
@@ -756,11 +737,8 @@ subroutine get_slstr_txgridsize(indir,nx,ny)
 
    ny=nc_dim_length(fid,'rows',.false.)
    nx=nc_dim_length(fid,'columns',.false.)
-   ierr=nf90_close(fid)
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: get_slstr_txgridsize(): Error closing file ', trim(geofile)
-      stop error_stop_code
-   end if
+   call nc_close(fid, 'get_slstr_gridsize()')
+
 end subroutine get_slstr_txgridsize
 
 ! Routine to get slope/prev/next pixel for resampling tx->in grids.
@@ -947,11 +925,7 @@ subroutine read_slstr_satsol(indir, imager_angles, interp, txnx, txny, nx, ny, &
    call slstr_get_one_geom(txnx,txny,fid,'solar_zenith_'//trim(vid)//'', &
                            angles(:,:,4),geofile)
 
-   ierr=nf90_close(fid)
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: read_slstr_geodata(): Error closing file ', trim(geofile)
-      stop error_stop_code
-   end if
+   call nc_close(fid, 'read_slstr_geodata()')
 
    ! Check bounds
    where(angles(:,:,4) .lt. -180) &
@@ -1046,7 +1020,7 @@ subroutine read_slstr_int_field(indir, file, procgrid, variable, &
 
    call nc_open(fid, geofile, 'read_slstr_field()')
    call nc_read_array(fid, var, data_arr, .false., start=[startx, starty])
-   if (nf90_close(fid).ne.NF90_NOERR) print*, "ERROR: read_slstr_int_field(): Unable to close."
+   call nc_close(fid, 'read_slstr_field()')
 
 end subroutine read_slstr_int_field
 
@@ -1076,6 +1050,6 @@ subroutine read_slstr_field(indir, file, procgrid, variable, &
 
    call nc_open(fid, geofile, 'read_slstr_field()')
    call nc_read_array(fid, var, data_arr, .false., start=[startx, starty])
-   if (nf90_close(fid).ne.NF90_NOERR) print*, "ERROR: read_slstr_int_field(): Unable to close."
+   call nc_close(fid, 'read_slstr_field()')
 
 end subroutine read_slstr_field

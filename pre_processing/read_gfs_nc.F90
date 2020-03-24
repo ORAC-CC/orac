@@ -237,7 +237,6 @@ subroutine read_gfs_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
    ! Refactor all the GFS levels so that below-surface contributions are removed.
    call sort_gfs_levels(preproc_prtm, verbose)
 
-   if (nf90_close(fid) .ne. NF90_NOERR) &
-        call h_e_e('nc', 'Failure to close file.')
+   call nc_close(fid, 'read_gfs_nc()')
 
 end subroutine read_gfs_nc

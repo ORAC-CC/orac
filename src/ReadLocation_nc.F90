@@ -71,9 +71,6 @@ subroutine Read_Location_nc(Ctrl, MSI_Data)
    call nc_read_array(ncid, "lon", MSI_Data%Location%Lon, Ctrl%verbose)
 
    ! Close location file
-   if (nf90_close(ncid) /= NF90_NOERR) then
-      write(*,*) 'ERROR: read_location_nc(): Error closing file.'
-      stop error_stop_code
-   end if
+   call nc_close(ncid, 'read_location_nc()')
 
 end subroutine Read_Location_nc

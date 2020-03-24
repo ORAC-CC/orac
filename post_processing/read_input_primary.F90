@@ -497,19 +497,13 @@ subroutine read_input_primary_once(nfile, fname, input_data, indexing, &
    call read_input_primary_optional(ncid, input_data, loop_ind(1), &
         read_flags, sval, verbose)
 
-   if (nf90_close(ncid) .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_close()'
-      stop error_stop_code
-   end if
+   call nc_close(ncid, 'read_input_primary_once()')
 
    do i=2,nfile
       call nc_open(ncid, fname(i), 'read_input_primary_once()')
       call read_input_primary_optional(ncid, input_data, loop_ind(i), &
            read_flags, sval, verbose)
-      if (nf90_close(ncid) .ne. NF90_NOERR) then
-         write(*,*) 'ERROR: nf90_close()'
-         stop error_stop_code
-      end if
+      call nc_close(ncid, 'read_input_primary_once()')
    end do
 
 end subroutine read_input_primary_once
@@ -540,9 +534,6 @@ subroutine read_input_primary_class(fname, input_data, indexing, costonly, &
    end if
 
    if (verbose) write(*,*) 'Closing primary input file.'
-   if (nf90_close(ncid) .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_close()'
-      stop error_stop_code
-   end if
+   call nc_close(ncid, 'read_input_primary_class()')
 
 end subroutine read_input_primary_class

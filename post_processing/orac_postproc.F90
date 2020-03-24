@@ -824,16 +824,9 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
     end if
 
     ! Close output file
-    if (nf90_close(ncid_primary) /= NF90_NOERR) then
-       write(*,*) 'ERROR: nf90_close()'
-       stop error_stop_code
-    end if
-
+    call nc_close(ncid_primary, 'orac_postproc()')
     if (do_secondary) then
-       if (nf90_close(ncid_secondary) /= NF90_NOERR) then
-          write(*,*) 'ERROR: nf90_close()'
-          stop error_stop_code
-       end if
+       call nc_close(ncid_secondary, 'orac_postproc()')
     end if
 
     ! Deallocate output structure

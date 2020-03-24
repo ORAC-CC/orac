@@ -56,11 +56,7 @@ subroutine read_input_dimensions_msi(fname_msi, fname_geo, xdim, ydim, vdim, &
    !cdim = nc_dim_length(ncid, 'nc_msi', verbose)
 
    ! Close msi file
-   if (nf90_close(ncid) .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: read_input_dimensions_msi(): Error closing MSI ' // &
-                 'file: ', fname_msi
-      stop error_stop_code
-   end if
+   call nc_close(ncid, 'read_input_dimensions_msi(MSI)')
 
    ! Open geo file
    call nc_open(ncid, fname_geo, 'read_input_dimensions_msi()')
@@ -70,11 +66,7 @@ subroutine read_input_dimensions_msi(fname_msi, fname_geo, xdim, ydim, vdim, &
    vdim = nc_dim_length(ncid, 'nv_geo', verbose)
 
    ! Close geo file
-   if (nf90_close(ncid) .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: read_input_dimensions_msi(): Error closing GEO ' // &
-                 'file: ', fname_geo
-      stop error_stop_code
-   end if
+   call nc_close(ncid, 'read_input_dimensions_msi(GEO)')
 
 end subroutine read_input_dimensions_msi
 
@@ -106,11 +98,7 @@ subroutine read_input_dimensions_rtm(fname_prtm,fname_lwrtm,fname_swrtm, &
    levdim = nc_dim_length(ncid, 'nlevels_rtm', verbose)
 
    ! Close PRTM file
-   if (nf90_close(ncid) .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: read_input_dimensions_rtm(): Error closing ' // &
-                 'PRTM file: ', fname_prtm
-      stop error_stop_code
-   end if
+   call nc_close(ncid, 'read_input_dimensions_rtm(PRTM)')
 
 
    ! Open LWRTM file
@@ -119,11 +107,7 @@ subroutine read_input_dimensions_rtm(fname_prtm,fname_lwrtm,fname_swrtm, &
    channeldim_lw = nc_dim_length(ncid, 'nlw_channels', verbose)
 
    ! Close LWRTM file
-   if (nf90_close(ncid) .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: read_input_dimensions_rtm(): Error closing ' // &
-                 'LWRTM file: ', fname_lwrtm
-      stop error_stop_code
-   end if
+   call nc_close(ncid, 'read_input_dimensions_rtm(LWRTM)')
 
 
    ! Open SWRTM file
@@ -135,10 +119,6 @@ subroutine read_input_dimensions_rtm(fname_prtm,fname_lwrtm,fname_swrtm, &
    end if
 
    ! Close SWRTM file
-   if (nf90_close(ncid) .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: read_input_dimensions_rtm(): Error closing ' // &
-                 'SWRTM file: ', fname_swrtm
-      stop error_stop_code
-   end if
+    call nc_close(ncid, 'read_input_dimensions_rtm(SWRTM)')
 
 end subroutine read_input_dimensions_rtm

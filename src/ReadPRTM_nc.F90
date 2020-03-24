@@ -79,11 +79,7 @@ subroutine Read_PRTM_nc(Ctrl, RTM)
    call nc_read_array(ncid, "hprofile_rtm", RTM%H, Ctrl%verbose)
 
    ! Close PRTM input file
-   if (nf90_close(ncid) /= NF90_NOERR) then
-      write(*,*) 'ERROR: Read_LwRTM_nc(): Error closing PRTM file: ', &
-                 Ctrl%FID%PRTM
-      stop error_stop_code
-   end if
+   call nc_close(ncid, 'Read_PwRTM_nc()')
 
    ! Calculate grid parameters
 

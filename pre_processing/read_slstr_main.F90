@@ -80,6 +80,8 @@ subroutine read_slstr_dimensions(img_file, n_across_track, n_along_track, &
    n_across_track = endx
    n_along_track = endy
 
+   call nc_close(fid, 'read_slstr_dimensions()')
+
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> read_slstr_dimensions()'
 
 end subroutine read_slstr_dimensions

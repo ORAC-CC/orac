@@ -85,7 +85,7 @@ function read_USGS_file(path_to_USGS_file, usgs, verbose) result (stat)
    call nc_read_array(fid, 'lsm', usgs%lsm, verbose)
 
    ! We are now finished with the main data file
-   stat = nf90_close(fid)
+   call nc_close(fid, 'read_USGS_file()')
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_USGS_file()'
 
@@ -160,7 +160,7 @@ function read_predef_file_ahi(path_to_file, usgs, imager_geolocation, verbose) r
    stat =  nf90_get_var(fid, vid, usgs%lsm, start = start, count = countval)
 
    ! We are now finished with the main data file
-   stat = nf90_close(fid)
+   call nc_close(fid, 'read_predef_file_ahi()')
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_predef_file()'
 
@@ -209,7 +209,7 @@ function read_predef_file_sev(path_to_file, usgs, verbose) result (stat)
    call nc_read_array(fid, 'Land_Sea_Mask', usgs%lsm, verbose)
 
    ! We are now finished with the main data file
-   stat = nf90_close(fid)
+   call nc_close(fid, 'read_predef_file_sev()')
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_predef_file()'
 

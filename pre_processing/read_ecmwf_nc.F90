@@ -315,7 +315,6 @@ subroutine read_ecmwf_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
    deallocate(old_data)
    deallocate(new_data)
 
-   if (nf90_close(fid) .ne. NF90_NOERR) &
-        call h_e_e('nc', 'Failure to close file.')
+   call nc_close(fid, 'read_ecmwf_nc()')
 
 end subroutine read_ecmwf_nc

@@ -58,10 +58,7 @@ subroutine get_use_ann_phase(in_files, n_in_files, use_ann_phase, ml_flag, verbo
          stop error_stop_code
       end if
 
-      if (nf90_close(ncid) .ne. NF90_NOERR) then
-         write(*,*) 'ERROR: nf90_close()'
-         stop error_stop_code
-      end if
+      call nc_close(ncid, 'get_use_ann_phase()')
    end do
 
    if (ann_phase_used == 1) then

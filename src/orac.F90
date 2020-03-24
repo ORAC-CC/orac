@@ -701,15 +701,8 @@ subroutine orac(mytask,ntasks,lower_bound,upper_bound,drifile)
    call Dealloc_Ctrl(Ctrl)
 
    ! Close netcdf output files
-   if (nf90_close(ncid_primary) .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: Error closing primary output file'
-      stop PrimaryFileCloseErr
-   end if
-
-   if (nf90_close(ncid_secondary) .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: Error closing secondary output file'
-      stop SecondaryFileCloseErr
-   end if
+   call nc_close(ncid_primary, 'orac(primary)')
+   call nc_close(ncid_secondary, 'orac(secondary)')
 
    if (Ctrl%verbose) write(*,*) 'ORAC is ending successfully'
 

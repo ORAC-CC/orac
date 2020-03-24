@@ -214,10 +214,6 @@ subroutine Read_LwRTM_nc(Ctrl, RTM)
    if (allocated(index))    deallocate(index)
 
    ! Close LwRTM input file
-   if (nf90_close(ncid) /= NF90_NOERR) then
-      write(*,*) 'ERROR: Read_LwRTM_nc(): Error closing LWRTM file: ', &
-                 Ctrl%FID%LWRTM
-      stop error_stop_code
-   end if
+   call nc_close(ncid, 'Read_LwRTM_nc()')
 
 end subroutine Read_LwRTM_nc
