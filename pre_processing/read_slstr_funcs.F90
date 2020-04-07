@@ -59,14 +59,12 @@ subroutine get_slstr_startend(imager_time, fname, ny)
    integer(kind=sint)         :: hour2, minute2, second2
    real(kind=dreal)           :: dfrac1, dfrac2, jd1, jd2, slo
 
-   ! Variables for computing start and end times
-   character(len=date_length) :: cyear1, cmonth1, cday1
-   character(len=date_length) :: cyear2, cmonth2, cday2
-   character(len=date_length) :: chour1, cminute1, csec1
-   character(len=date_length) :: chour2, cminute2, csec2
-
-   integer                    :: fid, ierr, index2, j
+   integer                    :: fid, ierr, j
    character(len=path_length) :: l1b_start, l1b_end
+
+   ! This ignores the 6dp on seconds and Z suffix
+   character(len=var_length), parameter :: date_format = &
+        '(I4, T1, I2, T1, I2, T1, I2, T1, I2, T1, I2)'
 
    ! Convert start and end times to julian
 
@@ -85,41 +83,11 @@ subroutine get_slstr_startend(imager_time, fname, ny)
    end if
    call nc_close(fid, 'read_slstr_startend()')
 
-   index2=1
+   read(l1b_start, date_format) year1, month1, day1, hour1, minute1, second1
+   read(l1b_end, date_format) year2, month2, day2, hour2, minute2, second2
 
-   ! Starting time
-   cyear1=trim(adjustl(l1b_start(index2:index2+4)))
-   cmonth1=trim(adjustl(l1b_start(index2+5:index2+6)))
-   cday1=trim(adjustl(l1b_start(index2+8:index2+9)))
-   chour1=trim(adjustl(l1b_start(index2+11:index2+12)))
-   cminute1=trim(adjustl(l1b_start(index2+14:index2+15)))
-   csec1=trim(adjustl(l1b_start(index2+17:index2+18)))
-
-   ! Ending time
-   cyear2=trim(adjustl(l1b_end(index2:index2+4)))
-   cmonth2=trim(adjustl(l1b_end(index2+5:index2+6)))
-   cday2=trim(adjustl(l1b_end(index2+8:index2+9)))
-   chour2=trim(adjustl(l1b_end(index2+11:index2+12)))
-   cminute2=trim(adjustl(l1b_end(index2+14:index2+15)))
-   csec2=trim(adjustl(l1b_end(index2+17:index2+18)))
-
-   ! Get year, doy, hour and minute as integers
-   read(cyear1(1:len_trim(cyear1)), '(I4)') year1
-   read(cmonth1(1:len_trim(cmonth1)), '(I2)') month1
-   read(cday1(1:len_trim(cday1)), '(I2)') day1
-   read(chour1(1:len_trim(chour1)), '(I2)') hour1
-   read(cminute1(1:len_trim(cminute1)), '(I2)') minute1
-   read(csec1(1:len_trim(csec1)), '(I2)') second1
-
-   read(cyear1(1:len_trim(cyear2)), '(I4)') year2
-   read(cmonth1(1:len_trim(cmonth2)), '(I2)') month2
-   read(cday1(1:len_trim(cday2)), '(I2)') day2
-   read(chour2(1:len_trim(chour2)), '(I2)') hour2
-   read(cminute2(1:len_trim(cminute2)), '(I2)') minute2
-   read(csec2(1:len_trim(csec2)), '(I2)') second2
-
-   call GREG2JD(year1,month1,day1,jd1)
-   call GREG2JD(year2,month2,day2,jd2)
+   call GREG2JD(year1, month1, day1, jd1)
+   call GREG2JD(year2, month2, day2, jd2)
 
    ! Add on a fraction to account for the start / end times
    dfrac1 = (float(hour1)/24.0) + (float(minute1)/(24.0*60.0)) + &

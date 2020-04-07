@@ -84,54 +84,6 @@ subroutine read_agri_dimensions(fname, n_across_track, n_along_track, &
 end subroutine read_agri_dimensions
 
 
-subroutine parse_time(intime, year, mon, day, hour, minu)
-!-----------------------------------------------------------------------------
-! Name: parse_time
-!
-! Purpose:
-! To parse the start and end times from AGRI
-!
-! Description and Algorithm details:
-!
-! Arguments:
-! Name                Type    In/Out/Both Description
-! intime              string  in   A 12 character timestamp
-! year                int     out  The year extracted from timestamp
-! mon                 int     out  The month extracted from timestamp
-! day                 int     out  The day extracted from timestamp
-! hour                int     out  The hour extracted from timestamp
-! minu                int     out  The minute extracted from timestamp
-!-----------------------------------------------------------------------------
-
-   use preproc_constants_m
-
-   implicit none
-
-   character(len=12), intent(in) :: intime
-   integer(kind=sint), intent(out):: year
-   integer(kind=sint), intent(out):: mon
-   integer(kind=sint), intent(out):: day
-   integer(kind=sint), intent(out):: hour
-   integer(kind=sint), intent(out):: minu
-
-   character(len=4) :: cyear
-   character(len=2) :: cmon, cday, chour, cminu
-
-   cyear = trim(adjustl(intime(1:4)))
-   cmon = trim(adjustl(intime(5:6)))
-   cday = trim(adjustl(intime(7:8)))
-   chour = trim(adjustl(intime(9:10)))
-   cminu = trim(adjustl(intime(11:12)))
-
-   read(cyear(1:len_trim(cyear)), '(I4)') year
-   read(cmon(1:len_trim(cmon)), '(I2)') mon
-   read(cday(1:len_trim(cday)), '(I2)') day
-   read(chour(1:len_trim(chour)), '(I2)') hour
-   read(cminu(1:len_trim(cminu)), '(I2)') minu
-
-end subroutine parse_time
-
-
 subroutine compute_time(ncid, imager_time, ny)
 !-----------------------------------------------------------------------------
 ! Name: compute_time
@@ -172,6 +124,9 @@ subroutine compute_time(ncid, imager_time, ny)
 
    integer :: j
 
+   character(len=var_length), parameter :: date_format = &
+        '(I4, I2, I2, I2, I2)'
+
    ierr = nf90_get_att(ncid, NF90_GLOBAL, 'start_time', start_time)
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: read_agri_data(), ', trim(nf90_strerror(ierr)), &
@@ -185,8 +140,8 @@ subroutine compute_time(ncid, imager_time, ny)
       stop -1
    end if
 
-   call parse_time(start_time, st_yr, st_mn, st_dy, st_hr, st_mi)
-   call parse_time(end_time, en_yr, en_mn, en_dy, en_hr, en_mi)
+   read(start_time, date_format) st_yr, st_mn, st_dy, st_hr, st_mi
+   read(end_time, date_format) en_yr, en_mn, en_dy, en_hr, en_mi
    call GREG2JD(st_yr, st_mn, st_dy, jd1)
    call GREG2JD(en_yr, en_mn, en_dy, jd2)
 
@@ -437,8 +392,7 @@ subroutine read_agri_data(infile, imager_geolocation, imager_measurements, &
    call agri_retr_anc(ncid, imager_angles, imager_geolocation)
 
    do i = 1, n_bands
-      write(cur_band,'(i2.2)') band_ids(i)
-      cur_band = 'C'//cur_band
+      write(cur_band, '("C",i2)') band_ids(i)
       call agri_retr_band(ncid, cur_band, i, channel_info%channel_sw_flag(i), imager_measurements)
    end do
 

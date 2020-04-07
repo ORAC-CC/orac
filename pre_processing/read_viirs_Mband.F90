@@ -192,6 +192,10 @@ subroutine read_viirs_mband(infile,geofile,imager_geolocation, imager_measuremen
    character(len=3)                 :: band
    character(len=path_length)       :: regex
 
+   ! This ignores the last digit on seconds
+   character(len=var_length), parameter :: date_format = &
+        '(T5, I4, I2, I2, T2, I2, I2, I2, T3, I2, I2, I2)'
+
    ! Figure out the channels to process
    n_bands = channel_info%nchannels_total
    allocate(band_ids(n_bands))
@@ -239,32 +243,8 @@ subroutine read_viirs_mband(infile,geofile,imager_geolocation, imager_measuremen
       end if
    end if
    ! get year, doy, hour and minute as strings
-   index2=index2+5
-   cyear=trim(adjustl(geofile(index2:index2+4)))
-   cmonth=trim(adjustl(geofile(index2+4:index2+5)))
-   cday=trim(adjustl(geofile(index2+6:index2+7)))
-   ! Start time
-   index2=index(trim(adjustl(geofile)),'_t',.true.)
-   chour1=trim(adjustl(geofile(index2+2:index2+3)))
-   cminute1=trim(adjustl(geofile(index2+4:index2+5)))
-   csec1=trim(adjustl(geofile(index2+6:index2+7)))
-   ! End time
-   index2=index(trim(adjustl(geofile)),'_e',.true.)
-   chour2=trim(adjustl(geofile(index2+2:index2+3)))
-   cminute2=trim(adjustl(geofile(index2+4:index2+5)))
-   csec2=trim(adjustl(geofile(index2+6:index2+7)))
-
-   ! get year, doy, hour and minute as integers
-   read(cyear(1:len_trim(cyear)), '(I4)') year
-   read(cmonth(1:len_trim(cmonth)), '(I2)') month
-   read(cday(1:len_trim(cday)), '(I2)') day
-   read(chour1(1:len_trim(chour1)), '(I2)') hour1
-   read(cminute1(1:len_trim(cminute1)), '(I2)') minute1
-   read(csec1(1:len_trim(csec1)), '(I2)') second1
-
-   read(chour2(1:len_trim(chour2)), '(I2)') hour2
-   read(cminute2(1:len_trim(cminute2)), '(I2)') minute2
-   read(csec2(1:len_trim(csec2)), '(I2)') second2
+   read(geofile(index2:), date_format) year, month, day, hour1, minute1, &
+        second1, hour2, minute2, second2
 
    ! Convert start and end times to julian
 

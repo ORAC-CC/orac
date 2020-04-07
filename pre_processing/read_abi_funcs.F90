@@ -659,13 +659,10 @@ subroutine get_abi_time(infile, imager_time, ny, verbose)
    integer(kind=sint)         :: year2, month2, day2
    integer(kind=sint)         :: hour1, minute1, second1
    integer(kind=sint)         :: hour2, minute2, second2
-   reaL(kind=dreal)           :: dfrac1, dfrac2, jd1, jd2, slo
+   real(kind=dreal)           :: dfrac1, dfrac2, jd1, jd2, slo
 
-   ! Variables for computing start and end times
-   character(len=date_length) :: cyear1, cmonth1, cday1
-   character(len=date_length) :: cyear2, cmonth2, cday2
-   character(len=date_length) :: chour1, cminute1, csec1
-   character(len=date_length) :: chour2, cminute2, csec2
+   character(len=var_length), parameter :: date_format = &
+        '(I4, T1, I2, T1, I2, T1, I2, T1, I2, T1, I2)'
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering get_abi_time()'
 
@@ -686,36 +683,9 @@ subroutine get_abi_time(infile, imager_time, ny, verbose)
    ! Close the netCDF file, we have all we need
    call nc_close(fid, 'get_abi_time()')
 
-   ! Starting time
-   cyear1   = trim(adjustl(start_coverage(1:4)))
-   cmonth1  = trim(adjustl(start_coverage(6:7)))
-   cday1    = trim(adjustl(start_coverage(9:10)))
-   chour1   = trim(adjustl(start_coverage(12:13)))
-   cminute1 = trim(adjustl(start_coverage(15:16)))
-   csec1    = trim(adjustl(start_coverage(18:19)))
-
-   ! Ending time
-   cyear2   = trim(adjustl(end_coverage(1:4)))
-   cmonth2  = trim(adjustl(end_coverage(6:7)))
-   cday2    = trim(adjustl(end_coverage(9:10)))
-   chour2   = trim(adjustl(end_coverage(12:13)))
-   cminute2 = trim(adjustl(end_coverage(15:16)))
-   csec2    = trim(adjustl(end_coverage(18:19)))
-
    ! Get year, doy, hour and minute as integers
-   read(cyear1(1:len_trim(cyear1)), '(I4)') year1
-   read(cmonth1(1:len_trim(cmonth1)), '(I2)') month1
-   read(cday1(1:len_trim(cday1)), '(I2)') day1
-   read(chour1(1:len_trim(chour1)), '(I2)') hour1
-   read(cminute1(1:len_trim(cminute1)), '(I2)') minute1
-   read(csec1(1:len_trim(csec1)), '(I2)') second1
-
-   read(cyear1(1:len_trim(cyear2)), '(I4)') year2
-   read(cmonth1(1:len_trim(cmonth2)), '(I2)') month2
-   read(cday1(1:len_trim(cday2)), '(I2)') day2
-   read(chour2(1:len_trim(chour2)), '(I2)') hour2
-   read(cminute2(1:len_trim(cminute2)), '(I2)') minute2
-   read(csec2(1:len_trim(csec2)), '(I2)') second2
+   read(start_coverage, date_format) year1, month1, day1, hour1, minute1, second1
+   read(end_coverage, date_format) year2, month2, day2, hour2, minute2, second2
 
    call GREG2JD(year1, month1, day1, jd1)
    call GREG2JD(year2, month2, day2, jd2)
