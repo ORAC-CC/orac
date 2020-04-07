@@ -164,7 +164,6 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
     use chunk_utils_m
     use constants_cloud_typing_pavolonis_m
     use global_attributes_m
-    use netcdf
     use orac_input_m
     use orac_ncdf_m
     use orac_output_m

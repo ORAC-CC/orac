@@ -83,7 +83,7 @@ subroutine read_swansea_climatology(swansea_surf_path, nbands, bands, &
    call nc_open(fid, swansea_surf_path, 'read_swansea_climatology()')
 
    ! Read length of dimensions
-   if (nf90_inquire(fid, ndim, ntmp) /= NF90_NOERR) call h_s_e('Bad inquire.')
+   if (nf90_inquire(fid, ndim) /= NF90_NOERR) call h_s_e('Bad inquire.')
    do i = 1, ndim
       if (nf90_inquire_dimension(fid, i, name, ntmp) /= NF90_NOERR) &
            call h_s_e('Bad dimension.')

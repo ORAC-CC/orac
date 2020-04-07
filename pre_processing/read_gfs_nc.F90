@@ -58,7 +58,7 @@ subroutine read_gfs_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
 
    real(sreal),       pointer             :: array2d(:,:), array3d(:,:,:)
    integer(4)                             :: n, ni, nj, i, j, k, ivar
-   integer(4)                             :: fid, ndim, nvar, natt
+   integer(4)                             :: fid, nvar
    integer(4)                             :: old_len, new_len
    character(len=20)                      :: name
    logical                                :: three_d

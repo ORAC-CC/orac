@@ -49,7 +49,7 @@ subroutine read_abi_dimensions(l1_5_file, n_across_track, n_along_track, &
    integer(lint),          intent(inout) :: startx, endx, starty, endy
    logical,                intent(in)    :: verbose
 
-   integer      :: fid, ierr, index2, band
+   integer      :: fid, index2, band
    integer      :: n_lines, n_cols
    character(2) :: cband
 

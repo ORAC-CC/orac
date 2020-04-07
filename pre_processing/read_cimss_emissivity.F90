@@ -104,10 +104,9 @@ function read_cimss_emissivity(path_to_file, emis, wavelengths, verbose, flag, &
    integer, parameter :: nBands = 10
    character(len=6)   :: bandList(nBands)
    integer            :: n_wavelengths
-   integer            :: fid, xid, yid, zid
+   integer            :: fid
    integer            :: xdim, ydim, zdim
-   integer            :: nDim, nVar, nAtt
-   integer            :: uDimID, ForNM
+   integer            :: nDim
 
    type cache_element_t
       real, pointer, dimension(:,:) :: a
@@ -130,7 +129,7 @@ function read_cimss_emissivity(path_to_file, emis, wavelengths, verbose, flag, &
    call nc_open(fid, path_to_file, 'read_cimss_emissivity()')
 
    ! Extract information about the file
-   stat = nf90_inquire(fid, nDim, nVar, nAtt, uDimID, ForNM)
+   stat = nf90_inquire(fid, nDim)
 
    ! Now extract dimensions - should be three!
    if (nDim .gt. 3) then

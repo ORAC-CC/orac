@@ -157,12 +157,11 @@ subroutine get_abi_geoloc(infile, imager_geolocation, imager_angles, &
    logical,                     intent(in)    :: verbose
 
    integer :: fid, ierr
-   integer :: xid, yid, gimpid
+   integer :: gimpid
    integer :: i, j
 
    real    :: sma, smi, invf, e, hproj, h, lon0, lat0
    real    :: a, b, c, rs, sx, sy, sz, tlat, tlon, tx, ty
-   real    :: xscl, yscl, x0, y0
 
    character(len=10) :: satlat, satlon, sathei, eqrrad, polrad
 
@@ -591,11 +590,8 @@ subroutine load_abi_band(infile, imager_geolocation, rad, kappa, bc1, bc2, fk1, 
    byte, allocatable       :: dqf(:,:)
 
 
-   integer  :: ierr, fid, did
+   integer  :: fid
    integer  :: x0, x1, y0, y1, nx, ny
-!  integer  :: n_cols, n_lines
-
-   real     :: sclval, offval
 
    rad(:, :) = sreal_fill_value
    kappa  = sreal_fill_value

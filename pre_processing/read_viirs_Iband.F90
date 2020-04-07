@@ -170,11 +170,6 @@ subroutine read_viirs_iband(infile,geofile,imager_geolocation, imager_measuremen
    integer(kind=sint)               :: hour2,minute2,second2
    double precision                 :: dfrac1,dfrac2,jd1,jd2,slo
 
-   ! Variables for computing start and end times
-   character(len=date_length)       :: cyear,cmonth,cday
-   character(len=date_length)       :: chour1,cminute1,csec1
-   character(len=date_length)       :: chour2,cminute2,csec2
-
    ! Used for reading the HDF5 files correctly (prevents stack smashing)
    integer(HSIZE_T), dimension(1:2) :: pxcount
    integer(HSIZE_T), dimension(1)   :: pxcount_fac

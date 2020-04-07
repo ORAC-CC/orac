@@ -131,6 +131,8 @@ subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation, &
    character(len=sensor_length), intent(in)    :: sensor
    logical,                      intent(in)    :: verbose
 
+#ifdef INCLUDE_SATWX
+
    real(kind=sreal), allocatable, dimension(:,:,:) :: indata
    real(kind=sreal), allocatable, dimension(:,:) :: cldbt, clrbt
    real(kind=sreal), allocatable, dimension(:,:) :: cldbtwv6, clrbtwv6
@@ -153,8 +155,6 @@ subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation, &
    real,parameter :: lam3 = 7.1
    integer        :: NLat, NLon
    logical        :: Wrap, do_wv
-
-#ifdef INCLUDE_SATWX
 
    good_chan_lw = -1
    good_chan_all = -1

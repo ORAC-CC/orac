@@ -52,17 +52,13 @@ subroutine read_USGS_file(path_to_USGS_file, usgs, verbose)
 
    ! Output variables
    type(USGS_t), intent(out) :: usgs
-   integer(kind=sint)        :: stat
 
    ! Local variables
-   integer :: fid, usgs_lat_id, usgs_lon_id
-   integer :: nDim, nVar, nAtt, uDimID, ForNM
+   integer :: fid
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_USGS_file()'
 
    call nc_open(fid, path_to_USGS_file, 'read_USGS_file()')
-   ! Extract information about the file
-   stat = nf90_inquire(fid, nDim, nVar, nAtt, uDimID, ForNM)
 
    ! Extract the array dimensions
    usgs%nlon = nc_dim_length(fid, 'lon', 'read_USGS_file()', verbose)
@@ -102,51 +98,21 @@ subroutine read_predef_file_ahi(path_to_file, usgs, imager_geolocation, verbose)
 
    ! Output variables
    type(USGS_t), intent(out) :: usgs
-   integer(kind=sint)        :: stat
 
    ! Local variables
-   integer :: fid, vid
-   integer :: nDim, nVar, nAtt, uDimID, ForNM
-   integer,dimension(2)            ::      start,countval
-   integer :: startx,starty,nx,ny,line0,line1,column0,column1
-   integer :: x_min,y_min,x_max,y_max,x_size,y_size
+   integer :: fid, start(2)
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_predef_file()'
 
    call nc_open(fid, path_to_file, 'read_predef_file_ahi()')
-   ! Extract information about the file
-   stat = nf90_inquire(fid, nDim, nVar, nAtt, uDimID, ForNM)
 
-   startx = imager_geolocation%startx
-   nx     = imager_geolocation%nx
-   starty = imager_geolocation%starty
-   ny     = imager_geolocation%ny
-
-
-   line0   = startx - 1
-   line1   = startx - 1 + ny - 1
-   column0 = starty - 1
-   column1 = starty - 1 + nx - 1
-
-   y_min = line0 + 1
-   y_max = line1 + 1
-   y_size = line1-line0 +1
-
-   x_min = column0 + 1
-   x_max = column1 + 1
-   x_size = column1-column0 +1
-
-
-   start(1)        =       x_min
-   start(2)        =       y_min
-
-   countval(1)     =       x_max - x_min + 1
-   countval(2)     =       y_max - y_min + 1
+   start(1)    = imager_geolocation%starty
+   start(2)    = imager_geolocation%startx
 
    ! Read data for each variable
-   allocate(usgs%dem(countval(1), countval(2)))
-   allocate(usgs%lus(countval(1), countval(2)))
-   allocate(usgs%lsm(countval(1), countval(2)))
+   allocate(usgs%dem(imager_geolocation%nx, imager_geolocation%ny))
+   allocate(usgs%lus(imager_geolocation%nx, imager_geolocation%ny))
+   allocate(usgs%lsm(imager_geolocation%nx, imager_geolocation%ny))
 
    call nc_read_array(fid, "Elevation_Mask", usgs%dem, .false., start=start)
    call nc_read_array(fid, "Land_Use_Mask", usgs%lus, .false., start=start)
@@ -181,17 +147,13 @@ subroutine read_predef_file_sev(path_to_file, usgs, verbose)
 
    ! Output variables
    type(USGS_t), intent(out) :: usgs
-   integer(kind=sint)        :: stat
 
    ! Local variables
-   integer :: fid, usgs_lat_id, usgs_lon_id
-   integer :: nDim, nVar, nAtt, uDimID, ForNM
+   integer :: fid
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_predef_file()'
 
    call nc_open(fid, path_to_file, 'read_predef_file_sev()')
-   ! Extract information about the file
-   stat = nf90_inquire(fid, nDim, nVar, nAtt, uDimID, ForNM)
 
    ! Extract the array dimensions
    usgs%nlon = nc_dim_length(fid, 'x', 'read_USGS_file()', verbose)

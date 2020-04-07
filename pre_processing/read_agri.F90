@@ -61,7 +61,7 @@ subroutine read_agri_dimensions(fname, n_across_track, n_along_track, &
    integer(lint),          intent(inout) :: startx, endx, starty, endy
    logical,                intent(in)    :: verbose
 
-   integer :: fid, ierr
+   integer :: fid
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< read_agri_dimensions()'
 
@@ -104,7 +104,7 @@ subroutine compute_time(ncid, imager_time, ny)
    use imager_structures_m
    use orac_ncdf_m
    use calender_m
-   use netcdf
+   use netcdf, only: nf90_get_att, NF90_GLOBAL, NF90_NOERR, nf90_strerror
 
    implicit none
 
@@ -182,25 +182,12 @@ subroutine agri_retr_anc(ncid, imager_angles, imager_geolocation)
    use imager_structures_m
    use orac_ncdf_m
    use calender_m
-   use netcdf
 
    implicit none
 
    integer,                    intent(in)  :: ncid
    type(imager_angles_t),      intent(out) :: imager_angles
    type(imager_geolocation_t), intent(out) :: imager_geolocation
-
-   ! Time stuff
-   character(len=12)  :: start_time
-   character(len=12)  :: end_time
-   integer(kind=sint) :: st_yr, st_mn, st_dy, st_hr, st_mi
-   integer(kind=sint) :: en_yr, en_mn, en_dy, en_hr, en_mi
-   real(kind=dreal)   :: jd1, jd2, dfrac1, dfrac2, slo
-
-   ! netCDF stuff
-   integer :: ierr, did
-
-   integer :: j
 
    call nc_read_array(ncid, 'latitude', imager_geolocation%latitude, .false.)
    call nc_read_array(ncid, 'longitude', imager_geolocation%longitude, .false.)
@@ -278,7 +265,6 @@ subroutine agri_retr_band(ncid, band, iband, solband, imager_measurements)
    use imager_structures_m
    use orac_ncdf_m
    use calender_m
-   use netcdf
 
    implicit none
 
@@ -287,9 +273,6 @@ subroutine agri_retr_band(ncid, band, iband, solband, imager_measurements)
    integer,                     intent(in)  :: iband
    integer,                     intent(in)  :: solband
    type(imager_measurements_t), intent(out) :: imager_measurements
-
-   ! netCDF stuff
-   integer :: ierr, did
 
    call nc_read_array(ncid, band, imager_measurements%data(:,:,iband), .false.)
 
@@ -338,7 +321,6 @@ subroutine read_agri_data(infile, imager_geolocation, imager_measurements, &
 
    use iso_c_binding
    use orac_ncdf_m
-   use netcdf
    use calender_m
    use channel_structures_m
    use global_attributes_m
@@ -364,7 +346,7 @@ subroutine read_agri_data(infile, imager_geolocation, imager_measurements, &
    integer                     :: starty, ny
 
    ! netCDF stuff
-   integer                     :: ierr, ncid
+   integer                     :: ncid
 
    ! Various
    integer                     :: i

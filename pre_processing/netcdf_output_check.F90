@@ -22,8 +22,7 @@ subroutine netcdf_output_check(output_path,lwrtm_file,swrtm_file,prtm_file, &
    config_file,msi_file,cf_file,lsf_file,geo_file,loc_file,alb_file,corrupt, &
    verbose)
 
-   use netcdf
-   use orac_ncdf_m
+   use netcdf, only: nf90_close, nf90_open, NF90_NOERR, NF90_NOWRITE
    use preproc_constants_m
 
    implicit none

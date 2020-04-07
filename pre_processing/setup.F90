@@ -432,7 +432,7 @@ subroutine setup_agri(l1b_path_file,geo_path_file,platform,year,month,day, &
     type(channel_info_t),           intent(inout) :: channel_info
     logical,                        intent(in)    :: verbose
 
-    integer :: index1,index2,index3
+    integer :: index3
 
 
     ! Static instrument channel definitions. (These should not be changed.)

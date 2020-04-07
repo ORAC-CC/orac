@@ -62,7 +62,6 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
 
    use channel_structures_m
    use imager_structures_m
-   use netcdf
    use orac_ncdf_m
    use preproc_constants_m
    use surface_structures_m

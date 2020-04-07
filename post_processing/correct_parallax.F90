@@ -123,7 +123,6 @@ subroutine correct_parallax(primary, indexing, global_atts, verbose)
    use postproc_constants_m
    use global_attributes_m
    use orac_input_m
-   use netcdf
    use omp_lib
 
    implicit none

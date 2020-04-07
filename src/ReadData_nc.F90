@@ -38,8 +38,6 @@
 
 subroutine Read_Data_nc(Ctrl, MSI_Data, SAD_Chan)
 
-   use netcdf
-
    use Ctrl_m
    use SAD_Chan_m
 

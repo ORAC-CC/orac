@@ -156,6 +156,7 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
    type(global_attributes_t),   intent(inout) :: global_atts
    logical,                     intent(in)    :: verbose
 
+#ifdef INCLUDE_HIMAWARI_SUPPORT
    integer                     :: i
    integer(c_int)              :: n_bands
    integer(c_int), allocatable :: band_ids(:)
@@ -167,7 +168,6 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
 
    real, allocatable           :: tmparr(:,:,:)
 
-#ifdef INCLUDE_HIMAWARI_SUPPORT
    type(himawari_t_data)       :: preproc
    type(himawari_t_extent)     :: ahi_extent
 #endif

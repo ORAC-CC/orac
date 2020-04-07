@@ -149,7 +149,6 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
 #endif
    use common_constants_m
    use global_attributes_m
-   use netcdf
    use orac_ncdf_m
    use source_attributes_m
    use system_utils_m

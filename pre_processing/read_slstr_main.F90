@@ -64,7 +64,7 @@ subroutine read_slstr_dimensions(img_file, n_across_track, n_along_track, &
    integer(lint),          intent(inout) :: startx, endx, starty, endy
    logical,                intent(in)    :: verbose
 
-   integer :: fid,ierr
+   integer :: fid
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< read_slstr_dimensions()'
 
@@ -109,14 +109,11 @@ subroutine read_slstr(infile, imager_geolocation, imager_measurements, &
    imager_angles, imager_time, imager_flags, channel_info, verbose)
 
    use iso_c_binding
-   use hdf5
-   use netcdf
    use calender_m
    use channel_structures_m
    use imager_structures_m
    use preproc_constants_m
    use system_utils_m
-
 
    implicit none
 
@@ -135,8 +132,6 @@ subroutine read_slstr(infile, imager_geolocation, imager_measurements, &
    integer(c_int), allocatable   :: band_units(:)
    integer                       :: startx, nx
    integer                       :: starty, ny
-   integer(c_int)                :: line0, line1
-   integer(c_int)                :: column0, column1
 
    character(len=path_length)    :: indir
 
@@ -162,11 +157,6 @@ subroutine read_slstr(infile, imager_geolocation, imager_measurements, &
    nx     = imager_geolocation%nx
    starty = imager_geolocation%starty
    ny     = imager_geolocation%ny
-
-   line0   = starty - 1
-   line1   = starty - 1 + ny - 1
-   column0 = startx - 1
-   column1 = startx - 1 + nx - 1
 
    ! Sort out the start and end times, place into the time array
    call get_slstr_startend(imager_time, infile, ny)

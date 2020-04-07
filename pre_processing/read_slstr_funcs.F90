@@ -113,6 +113,8 @@ subroutine get_slstr_imnames(indir, inband, fname, fname_qa, bname, irradname)
 
    use preproc_constants_m
 
+   implicit none
+
    character(len=path_length),  intent(in)  :: indir
    integer,                     intent(in)  :: inband
    character(len=path_length),  intent(out) :: fname
@@ -156,9 +158,10 @@ end subroutine get_slstr_imnames
 subroutine read_slstr_tirdata(indir, inband, outarr, sx, sy, nx, ny, inx, iny, &
                               offset, view)
 
-   use netcdf
    use orac_ncdf_m
    use preproc_constants_m
+
+   implicit none
 
    character(len=path_length), intent(in)  :: indir
    integer,                    intent(in)  :: inband
@@ -194,10 +197,11 @@ end subroutine read_slstr_tirdata
 subroutine read_slstr_visdata(indir, inband, outarr, imager_angles, sx, sy, &
                               nx, ny, inx, iny, offset, view)
 
-   use netcdf
    use imager_structures_m
    use orac_ncdf_m
    use preproc_constants_m
+
+   implicit none
 
    character(len=path_length),  intent(in)  :: indir
    integer,                     intent(in)  :: inband
@@ -273,6 +277,8 @@ end subroutine read_slstr_visdata
 subroutine slstr_resample_vis_to_tir(inarr, outarr, nx, ny, fill)
 
    use preproc_constants_m
+
+   implicit none
 
    integer,          intent(in)  :: nx
    integer,          intent(in)  :: ny
@@ -383,6 +389,8 @@ subroutine slstr_get_interp(in_lons, tx_lons, nxt, nyt, nxi, nyi, interp)
    use imager_structures_m
    use preproc_constants_m
 
+   implicit none
+
    integer,                    intent(in)  :: nxt
    integer,                    intent(in)  :: nyt
    integer,                    intent(in)  :: nxi
@@ -424,6 +432,8 @@ subroutine slstr_interp_angs(in_angs, out_angs, txnx, txny, nx, ny, interp, view
 
    use imager_structures_m
    use preproc_constants_m
+
+   implicit none
 
    integer,               intent(in)    :: txnx
    integer,               intent(in)    :: txny
@@ -533,7 +543,7 @@ subroutine read_slstr_satsol(indir, imager_angles, interp, txnx, txny, nx, ny, &
    type(imager_angles_t),      intent(inout) :: imager_angles
 
    character(len=path_length) :: geofile, vid
-   integer                    :: fid, ierr
+   integer                    :: fid
 
    ! This stores the angles on the tx (reduced) grid.
    ! In order (1->4): vaa, vza, saa, sza
