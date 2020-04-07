@@ -439,8 +439,8 @@ subroutine slstr_get_interp(in_lons, tx_lons, nxt, nyt, nxi, nyi, interp)
          interp(x,y,1) = minloc(dists1, dim=1)
          interp(x,y,2) = maxloc(dists2, dim=1)
 
-         firlo = tx_lons(minloc(dists1,dim=1),y)
-         seclo = tx_lons(maxloc(dists2,dim=1),y)
+         firlo = tx_lons(int(interp(x,y,1)),y)
+         seclo = tx_lons(int(interp(x,y,2)),y)
 
          interp(x,y,3) = (in_lons(x,y) - firlo) / (seclo - firlo)
       end do
