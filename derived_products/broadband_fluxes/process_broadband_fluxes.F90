@@ -458,8 +458,6 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
    call get_command_argument(3, FALB)
    call get_command_argument(4, FTSI)
    call get_command_argument(5, fname)
-#else
-   index1 = index(trim(adjustl(Fprimary)), " ", back=.true.)
 #endif
    print*,'primary file: ',trim(adjustl(Fprimary))
    print*,'prtm file : ',trim(FPRTM)
@@ -523,27 +521,27 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
       call get_command_argument(i, argname)
       index1=index(trim(adjustl(argname)),'=',back=.true.)
       index2=len_trim(argname)
-      tmpname1=trim(adjustl(argname(1:index1)))
+      tmpname1=trim(adjustl(argname(1:index1-1)))
       tmpname2=trim(adjustl(argname(index1+1:index2)))
 
-      if (tmpname1 .eq. 'cci_aerosol=') then
+      if (tmpname1 .eq. 'cci_aerosol') then
          Faerosol=trim(tmpname2)
          aerosol_processing_mode = 2
       end if
-      if (tmpname1 .eq. 'cci_collocation=') then
+      if (tmpname1 .eq. 'cci_collocation') then
          Fcollocation=trim(tmpname2)
          aerosol_processing_mode = 3
       end if
-      if (tmpname1 .eq. 'cci_aerpix=') then
+      if (tmpname1 .eq. 'cci_aerpix') then
          Faerosol=trim(tmpname2)
          aerosol_processing_mode = 1
       end if
-      if (tmpname1 .eq. 'modis_aerosol=') FMOD04=trim(tmpname2)
-      if (tmpname1 .eq. 'modis_cloud=') FMOD06=trim(tmpname2)
-      if (tmpname1 .eq. 'infinitely_thin_cloud=') InfThnCld=1
-      if (tmpname1 .eq. 'corrected_cth=') corrected_cth=1
-      if (tmpname1 .eq. 'multi_layer=') multi_layer=1
-      if (tmpname1 .eq. 'LUT_mode=') then
+      if (tmpname1 .eq. 'modis_aerosol') FMOD04=trim(tmpname2)
+      if (tmpname1 .eq. 'modis_cloud') FMOD06=trim(tmpname2)
+      if (tmpname1 .eq. 'infinitely_thin_cloud') InfThnCld=1
+      if (tmpname1 .eq. 'corrected_cth') corrected_cth=1
+      if (tmpname1 .eq. 'multi_layer') multi_layer=1
+      if (tmpname1 .eq. 'LUT_mode') then
          FtoaSW=trim(tmpname2)
          lut_mode = 1
       end if
@@ -556,11 +554,11 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
 #ifndef WRAPPER
    index1=index(trim(adjustl(Fprimary)),'_',back=.true.)
    cyear=trim(adjustl(Fprimary(index1-12:index1-9)))
-   cmonth=trim(adjustl(Fprimary(index1-8:index1-6)))
+   cmonth=trim(adjustl(Fprimary(index1-8:index1-7)))
    cday=trim(adjustl(Fprimary(index1-6:index1-4)))
 #else
    index1=index(trim(adjustl(Fprimary)),'/',back=.true.)
-   cyear=trim(adjustl(Fprimary(index1+1:index1+5)))
+   cyear=trim(adjustl(Fprimary(index1+1:index1+4)))
    cmonth=trim(adjustl(Fprimary(index1+5:index1+6)))
    cday=trim(adjustl(Fprimary(index1+7:index1+8)))
 #endif
