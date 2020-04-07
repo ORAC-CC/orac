@@ -98,7 +98,7 @@ subroutine set_ecmwf(cyear, cmonth, cday, chour, ecmwf_path, ecmwf_path2, &
    integer(sint) :: year2, month2, day2, hour2
    integer       :: day_before
    real(dreal)   :: jday, jday0, jday1, jday2
-   real(dreal)   :: day_real,day_real2
+   real(dreal)   :: day_real, day_real2
    character     :: cera_year*4, cera_month*2, cera_day*2, cera_hour*2
    character     :: cera_year2*4, cera_month2*2, cera_day2*2, cera_hour2*2
 
@@ -330,14 +330,14 @@ real(dreal) function find_center_time(imager_geolocation, imager_time) &
 end function find_center_time
 
 
-subroutine make_ecmwf_name(cyear,cmonth,cday,chour,ecmwf_flag,ecmwf_path, &
-   ecmwf_path2,ecmwf_path3,ecmwf_path_file,ecmwf_path_file2,ecmwf_path_file3)
+subroutine make_ecmwf_name(cyear, cmonth, cday, chour, ecmwf_flag, ecmwf_path, &
+   ecmwf_path2, ecmwf_path3, ecmwf_path_file, ecmwf_path_file2, ecmwf_path_file3)
 
    use preproc_constants_m
 
    implicit none
 
-   character(len=*), intent(in)  :: cyear,cmonth,cday,chour
+   character(len=*), intent(in)  :: cyear, cmonth, cday, chour
    character(len=*), intent(in)  :: ecmwf_path
    character(len=*), intent(in)  :: ecmwf_path2
    character(len=*), intent(in)  :: ecmwf_path3
@@ -421,7 +421,7 @@ subroutine build_ecmwf_HR_file_from_LR(ecmwf_path_file, ecmwf_hr_path_file)
    character(len=*), intent(in)  :: ecmwf_path_file
    character(len=*), intent(out) :: ecmwf_hr_path_file
 
-   character(len=path_length) :: base,suffix
+   character(len=path_length) :: base, suffix
    integer :: cut_off, ecmwf_path_file_length
 
    cut_off = index(ecmwf_path_file, '.', back=.true.)

@@ -144,8 +144,8 @@
 #ifndef WRAPPER
 program process_broadband_fluxes
 #else
-subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
-        FLXalgorithm,status,Faerosol,Fcollocation)
+subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
+        FLXalgorithm, status, Faerosol, Fcollocation)
 #endif
    use common_constants_m
    use global_attributes_m
@@ -156,15 +156,15 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
    implicit none
 
 #ifndef WRAPPER
-   character(path_length) :: Fprimary,FPRTM,FTSI,FALB,fname,FLXalgorithm, &
-                             Faerosol,Fcollocation
+   character(path_length) :: Fprimary, FPRTM, FTSI, FALB, fname, FLXalgorithm, &
+                             Faerosol, Fcollocation
 #else
    integer :: status
-   character(file_length), intent(in) :: Fprimary,FPRTM,FTSI,FALB,fname, &
+   character(file_length), intent(in) :: Fprimary, FPRTM, FTSI, FALB, fname, &
                                          FLXalgorithm
-   character(file_length), intent(inout), optional :: Faerosol,Fcollocation
+   character(file_length), intent(inout), optional :: Faerosol, Fcollocation
 #endif
-   character(path_length) :: FMOD04,FMOD06
+   character(path_length) :: FMOD04, FMOD06
    integer :: algorithm_processing_mode ! 1-BUGSrad, 2-FuLiou2G, 3-FuLiou4S, 4-FuLiou 2S
    integer :: ncid, i, j, k, dims_var(2), dim3d_var(3)
    logical, parameter :: verbose=.true.
@@ -201,8 +201,8 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
    real, allocatable :: tlon_prtm(:)  ! Longitude values
    real, allocatable :: tlat_prtm(:)  ! Latitude values
    real, allocatable :: dummy1d(:)
-   integer(kind=lint) :: xdim_prtm,ydim_prtm,levdim_prtm ! PRTM dimensions
-   integer(kind=lint) :: xN,yN ! Satellite 1-km dimensions
+   integer(kind=lint) :: xdim_prtm, ydim_prtm, levdim_prtm ! PRTM dimensions
+   integer(kind=lint) :: xN, yN ! Satellite 1-km dimensions
    integer, dimension(NLS) :: mask_vres ! To match PRTM vertical resolution to BUGSrad
 
    ! Albedo file
@@ -271,7 +271,7 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
    real :: pxAsfcNIRdf  ! DIFFUSE near-infrared surface albedo
    real :: pxTheta      ! Cosine of solar zenith angle
 
-   integer :: tmp_pxHctopID(1),tmp_pxHcbaseID(1)
+   integer :: tmp_pxHctopID(1), tmp_pxHcbaseID(1)
    real :: tmp_pxREF       ! cloud effective radius
    real :: tmp_pxCOT       ! cloud optical depth
    real :: tmp_pxHctop     ! input cloud top height
@@ -284,15 +284,15 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
    real :: pxHcbase(2)    ! input cloud base height
    real :: pxPhaseFlag(2) ! cloud phase type
 
-   integer :: pxHctopID(2),pxHcbaseID(2)
+   integer :: pxHctopID(2), pxHcbaseID(2)
    real :: pxLayerType ! aerosol type
    real :: pxts        ! land/sea surface temperature
    real :: pxregime
    real :: pxLTS
    real :: pxFTH
    real :: pxcolO3
-   real :: rho_0d_bugsrad(6),rho_dd_bugsrad(6),emis_bugsrad(12)
-   real :: rho_0d_fuliou(18),rho_dd_fuliou(18),emis_fuliou(12)
+   real :: rho_0d_bugsrad(6), rho_dd_bugsrad(6), emis_bugsrad(12)
+   real :: rho_0d_fuliou(18), rho_dd_fuliou(18), emis_fuliou(12)
 
    ! Radiation flux profiles
    real (kind=8), dimension(1,NL) :: &
@@ -307,10 +307,10 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
 
    ! Flux & PAR variables
    real :: &
-      pxtoalwup,pxtoaswdn,pxtoaswup ,&          ! All-sky TOA fluxes
-      pxtoalwupclr,pxtoaswupclr,&               ! Clear-Sky TOA fluxes
-      pxboalwup,pxboalwdn,pxboaswdn,pxboaswup,& ! All-sky BOA fluxes
-      pxboalwupclr,pxboalwdnclr,pxboaswdnclr,pxboaswupclr,& ! clear-sky BOA fluxes
+      pxtoalwup, pxtoaswdn, pxtoaswup ,&          ! All-sky TOA fluxes
+      pxtoalwupclr, pxtoaswupclr,&               ! Clear-Sky TOA fluxes
+      pxboalwup, pxboalwdn, pxboaswdn, pxboaswup,& ! All-sky BOA fluxes
+      pxboalwupclr, pxboalwdnclr, pxboaswdnclr, pxboaswupclr,& ! clear-sky BOA fluxes
       tpar   ,& ! TOA PAR total
       bpardif,& ! BOA PAR diffuse
       bpar      ! BOA PAR total
@@ -410,31 +410,31 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
    logical, parameter :: shuffle_flag = .false.
 
    ! NetCDF output dimensions
-   integer :: ixstart,ixstop,& ! First and last super-pixel X locations
-              iystart,iystop,& ! First and last super-pixel Y locations
+   integer :: ixstart, ixstop,& ! First and last super-pixel X locations
+              iystart, iystop,& ! First and last super-pixel Y locations
                n_x, n_y, n_v
 
    ! Debugging
    integer :: nanFlag
 
    ! Pixel selection option
-   character(path_length) :: cpxX0,cpxY0,cpxX1,cpxY1
-   integer :: pxX0,pxY0,pxX1,pxY1
+   character(path_length) :: cpxX0, cpxY0, cpxX1, cpxY1
+   integer :: pxX0, pxY0, pxX1, pxY1
    integer :: value
    !=0 no processing, =1 collocate aerosol cci file, =2 collocate & save file
    integer :: aerosol_processing_mode
 
    ! For reading time from input string
-   integer :: index1,index2
+   integer :: index1, index2
    character(len=4) :: cyear
    character(len=2) :: cmonth
    character(len=2) :: cday
 
    ! For CPU processing time
-   real :: cpuStart,cpuFinish
+   real :: cpuStart, cpuFinish
 
    integer :: nargs ! Number of command line arguments
-   character(path_length) :: argname,tmpname1,tmpname2
+   character(path_length) :: argname, tmpname1, tmpname2
 
    ! Broadband albedo LUT
    real, allocatable :: LUT_toa_sw_albedo(:,:,:,:),&
@@ -442,8 +442,8 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
                         LUT_boa_sw_albedo(:,:,:,:)
    character(path_length) :: FtoaSW
    integer :: lut_mode ! =0 no processing, =1 use LUT
-   integer(kind=lint) :: nASFC,nRE,nTAU,nSOLZ
-   real, allocatable :: LUT_SFC_ALB(:),LUT_REF(:),LUT_COT(:),LUT_SOLZ(:)
+   integer(kind=lint) :: nASFC, nRE, nTAU, nSOLZ
+   real, allocatable :: LUT_SFC_ALB(:), LUT_REF(:), LUT_COT(:), LUT_SOLZ(:)
    real :: tmpVal(1)
 
 
@@ -458,11 +458,11 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
    call get_command_argument(4, FTSI)
    call get_command_argument(5, fname)
 #endif
-   print*,'primary file: ',trim(adjustl(Fprimary))
-   print*,'prtm file : ',trim(FPRTM)
-   print*,'albedo file: ',trim(FALB)
-   print*,'total solar irradiance file: ',trim(FTSI)
-   print*,'output file: ',trim(fname)
+   print*, 'primary file: ', trim(adjustl(Fprimary))
+   print*, 'prtm file : ', trim(FPRTM)
+   print*, 'albedo file: ', trim(FALB)
+   print*, 'total solar irradiance file: ', trim(FTSI)
+   print*, 'output file: ', trim(fname)
 
 #ifndef WRAPPER
    call get_command_argument(6, FLXalgorithm)
@@ -474,7 +474,7 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
    else if (algorithm_processing_mode .eq. 2) then
       print*, 'Using algorithm: FuLiou 2G'
    else if (algorithm_processing_mode .eq. 3) then
-      print*,'Using algorithm: FuLiou 4S'
+      print*, 'Using algorithm: FuLiou 4S'
    else if (algorithm_processing_mode .eq. 4) then
       print*, 'Using algorithm: FuLiou 2S'
 #endif
@@ -496,16 +496,16 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
    ! x-y range of selected pixels
    if (len_trim(cpxX0) .ne. 0 .and. len_trim(cpxX1) .ne. 0 .and. &
        len_trim(cpxY0) .ne. 0 .and. len_trim(cpxY1) .ne. 0) then
-      print*,'PROCESS MULTIPLE SATELLITE PIXELS'
+      print*, 'PROCESS MULTIPLE SATELLITE PIXELS'
       read(cpxX0,*) value
-      pxX0=value*1
+      pxX0 = value*1
       read(cpxX1,*) value
-      pxX1=value*1
+      pxX1 = value*1
       read(cpxY0,*) value
-      pxY0=value*1
+      pxY0 = value*1
       read(cpxY1,*) value
-      pxY1=value*1
-      print*,pxX0,pxX1,pxY0,pxY1
+      pxY1 = value*1
+      print*, pxX0, pxX1, pxY0, pxY1
    end if
 
    ! Read optional arguments
@@ -518,30 +518,30 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
    ! Set Faerosol, Fcollocation, FMOD04, FMOD06, InfThnCld, corrected_cth, FtoaSW
    do i = 11, nargs
       call get_command_argument(i, argname)
-      index1=index(argname,'=',back=.true.)
-      index2=len_trim(argname)
-      tmpname1=trim(adjustl(argname(1:index1-1)))
-      tmpname2=trim(adjustl(argname(index1+1:index2)))
+      index1 = index(argname,'=', back=.true.)
+      index2 = len_trim(argname)
+      tmpname1 = trim(adjustl(argname(1:index1-1)))
+      tmpname2 = trim(adjustl(argname(index1+1:index2)))
 
       if (tmpname1 .eq. 'cci_aerosol') then
-         Faerosol=trim(tmpname2)
+         Faerosol = trim(tmpname2)
          aerosol_processing_mode = 2
       end if
       if (tmpname1 .eq. 'cci_collocation') then
-         Fcollocation=trim(tmpname2)
+         Fcollocation = trim(tmpname2)
          aerosol_processing_mode = 3
       end if
       if (tmpname1 .eq. 'cci_aerpix') then
-         Faerosol=trim(tmpname2)
+         Faerosol = trim(tmpname2)
          aerosol_processing_mode = 1
       end if
-      if (tmpname1 .eq. 'modis_aerosol') FMOD04=trim(tmpname2)
-      if (tmpname1 .eq. 'modis_cloud') FMOD06=trim(tmpname2)
-      if (tmpname1 .eq. 'infinitely_thin_cloud') InfThnCld=1
-      if (tmpname1 .eq. 'corrected_cth') corrected_cth=1
-      if (tmpname1 .eq. 'multi_layer') multi_layer=1
+      if (tmpname1 .eq. 'modis_aerosol') FMOD04 = trim(tmpname2)
+      if (tmpname1 .eq. 'modis_cloud') FMOD06 = trim(tmpname2)
+      if (tmpname1 .eq. 'infinitely_thin_cloud') InfThnCld = 1
+      if (tmpname1 .eq. 'corrected_cth') corrected_cth = 1
+      if (tmpname1 .eq. 'multi_layer') multi_layer = 1
       if (tmpname1 .eq. 'LUT_mode') then
-         FtoaSW=trim(tmpname2)
+         FtoaSW = trim(tmpname2)
          lut_mode = 1
       end if
    end do
@@ -551,19 +551,19 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
    ! Read time string from file
    !----------------------------------------------------------------------------
 #ifndef WRAPPER
-   index1=index(Fprimary,'_',back=.true.)
-   cyear=trim(adjustl(Fprimary(index1-12:index1-9)))
-   cmonth=trim(adjustl(Fprimary(index1-8:index1-7)))
-   cday=trim(adjustl(Fprimary(index1-6:index1-4)))
+   index1 = index(Fprimary,'_', back=.true.)
+   cyear = trim(adjustl(Fprimary(index1-12:index1-9)))
+   cmonth = trim(adjustl(Fprimary(index1-8:index1-7)))
+   cday = trim(adjustl(Fprimary(index1-6:index1-4)))
 #else
-   index1=index(Fprimary,'/',back=.true.)
-   cyear=trim(adjustl(Fprimary(index1+1:index1+4)))
-   cmonth=trim(adjustl(Fprimary(index1+5:index1+6)))
-   cday=trim(adjustl(Fprimary(index1+7:index1+8)))
+   index1 = index(Fprimary,'/', back=.true.)
+   cyear = trim(adjustl(Fprimary(index1+1:index1+4)))
+   cmonth = trim(adjustl(Fprimary(index1+5:index1+6)))
+   cday = trim(adjustl(Fprimary(index1+7:index1+8)))
 #endif
-   print*,cyear
-   print*,cmonth
-   print*,cday
+   print*, cyear
+   print*, cmonth
+   print*, cday
    read(cyear,'(I4)') value
    pxYear = value
    read(cmonth,'(I2)') value
@@ -571,8 +571,8 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
    read(cday,'(I2)') value
    pxDay = value
    ! Get calendar day
-   call greg2jul(pxYear,pxMonth,pxDay,pxJday)
-   print*,pxYear,pxMonth,pxDay,pxJday
+   call greg2jul(pxYear, pxMonth, pxDay, pxJday)
+   print*, pxYear, pxMonth, pxDay, pxJday
 
 
    !----------------------------------------------------------------------------
@@ -598,11 +598,11 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
    call nc_close(ncid, 'process_broadband_fluxes(FTSI)')
 
    ! Get TSI that coincides with input date
-   do i=1,nTSI
+   do i = 1, nTSI
       if (TSI_year(i) .eq. pxYear .and. TSI_jday(i) .eq. pxJday) &
-         pxTSI=TSI_tsi_true_earth(i)
+         pxTSI = TSI_tsi_true_earth(i)
       if (TSI_year(i) .eq. pxYear .and. TSI_jday(i) .eq. pxJday) &
-         pxPAR_WEIGHT=TSI_par_weight(i)
+         pxPAR_WEIGHT = TSI_par_weight(i)
    end do
 
    ! Get TSI if outside of LUT range
@@ -617,11 +617,11 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
       pxPAR_WEIGHT = 1.0
    end if
 
-   print*,'TSI data on date: '
-   print*,'YEAR: ',pxYear
-   print*,'Calendar Day: ',pxJday
-   print*,'TSI = ',pxTSI
-   print*,'PAR WEIGHTS = ',pxPAR_WEIGHT
+   print*, 'TSI data on date: '
+   print*, 'YEAR: ', pxYear
+   print*, 'Calendar Day: ', pxJday
+   print*, 'TSI = ', pxTSI
+   print*, 'PAR WEIGHTS = ', pxPAR_WEIGHT
 
 
    !----------------------------------------------------------------------------
@@ -760,7 +760,7 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
    ! Fill longitude array
    allocate(dummy1d(xdim_prtm))
    call nc_read_array(ncid, "lon_rtm", dummy1d, verbose)
-   do i=1,xdim_prtm
+   do i = 1, xdim_prtm
       lon_prtm(i,:) = dummy1d(i)
    end do
    deallocate(dummy1d)
@@ -768,7 +768,7 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
    ! Fill latitude array
    allocate(dummy1d(ydim_prtm))
    call nc_read_array(ncid, "lat_rtm", dummy1d, verbose)
-   do i=1,ydim_prtm
+   do i = 1, ydim_prtm
       lat_prtm(i,:) = dummy1d(i)
    end do
    deallocate(dummy1d)
@@ -807,9 +807,9 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
    ! Close file
    call nc_close(ncid, 'process_broadband_fluxes(FALB)')
    ! Replace ALB_DATA WITH mean of rho_0d and rho_dd
-   do i=1,xN
-      do j=1,yN
-         do k=1,nc_alb
+   do i = 1, xN
+      do j = 1, yN
+         do k = 1, nc_alb
             if (alb_data(i,j,k) .gt. 0.) then
                 alb_data(i,j,k)=(rho_0d(i,j,k)+rho_dd(i,j,k))/2.
             end if
@@ -928,13 +928,13 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
    boa_qsfc(:,:) = sreal_fill_value
 
    ! Re-grid PRTM vertical profile to match bugsrad resolution (NLS)
-   do i=1,NLS
+   do i = 1, NLS
       mask_vres(i)=floor(i*(levdim_prtm/(NLS*1.)))
    end do
    ! Top and bottom of BUGSrad profile need to be at the same level as PRTM
    mask_vres(1)=1
    mask_vres(NLS)=levdim_prtm
-   print*,mask_vres
+   print*, mask_vres
 
 
    !----------------------------------------------------------------------------
@@ -943,26 +943,26 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
    ! OPTION - PROCESS all pixels in granule if range not specified
    if (len_trim(cpxX0) .eq. 0 .and. len_trim(cpxX1) .eq. 0 .and. &
        len_trim(cpxY0) .eq. 0 .and. len_trim(cpxY1) .eq. 0) then
-      print*,'PROCESS ALL SATELLITE PIXELS'
-      pxX0=1
-      pxX1=xN
-      pxY0=1
-      pxY1=yN
+      print*, 'PROCESS ALL SATELLITE PIXELS'
+      pxX0 = 1
+      pxX1 = xN
+      pxY0 = 1
+      pxY1 = yN
    end if
    ! Override if 0's are given
-   if (pxX0 .eq. 0) pxX0=1
-   if (pxX1 .eq. 0) pxX1=xN
-   if (pxY0 .eq. 0) pxY0=1
-   if (pxY1 .eq. 0) pxY1=yN
+   if (pxX0 .eq. 0) pxX0 = 1
+   if (pxX1 .eq. 0) pxX1 = xN
+   if (pxY0 .eq. 0) pxY0 = 1
+   if (pxY1 .eq. 0) pxY1 = yN
 
    ! OPTION - PROCESS aerosol
-   print*,'aerosol_processing_mode: ',aerosol_processing_mode
+   print*, 'aerosol_processing_mode: ', aerosol_processing_mode
    if (aerosol_processing_mode .ge. 2) then
       allocate(aID(xN,yN))
       ! determine if netcdf file already exists
-      inquire( file=trim(Fcollocation), exist=there )
+      inquire(file=trim(Fcollocation), exist=there)
       if (.not. there) then
-         call collocate_aerosol2cloud(nc_aer,aerLon,aerLat,xN,yN,LON,LAT,aID)
+         call collocate_aerosol2cloud(nc_aer, aerLon, aerLat, xN, yN, LON, LAT, aID)
 
          !----------------------------------------------------------------------
          ! Make collocation netcdf file
@@ -1013,14 +1013,14 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
             end if
 
             ! Write the array to the netcdf file
-            call nc_write_array(ncid,'aID',aID_vid,&
-                 aID(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+            call nc_write_array(ncid,'aID', aID_vid,&
+                 aID(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
             ! Close netcdf file
             call nc_close(ncid, 'process_broadband_fluxes()')
 
-            print*,'CREATED: '
-            print*,trim(Fcollocation)
+            print*, 'CREATED: '
+            print*, trim(Fcollocation)
          end if;aerosol_processing_mode = 3
       end if ! file not there
 
@@ -1039,8 +1039,8 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
       end if !file there
 
       ! Fill arrays (aerosol index aID must exist by this point)
-      do i=1,xN
-         do j=1,yN
+      do i = 1, xN
+         do j = 1, yN
             AOD550(i,j) = aerAOD(aID(i,j))
             AREF(i,j) = aerREF(aID(i,j))
          end do
@@ -1050,8 +1050,8 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
 
    if (aerosol_processing_mode .eq. 0) then
       ! Fill arrays
-      do i=1,xN
-         do j=1,yN
+      do i = 1, xN
+         do j = 1, yN
             AOD550(i,j) = -999.
             AREF(i,j) = -999.
          end do
@@ -1060,34 +1060,34 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
 
    if (aerosol_processing_mode .eq. 1) then
       ! Fill arrays
-      do i=1,xN
-         do j=1,yN
+      do i = 1, xN
+         do j = 1, yN
             AOD550(i,j) = aerAOD1(i,j)
             AREF(i,j) = aerREF1(i,j)
          end do
       end do
    end if
 
-   if (algorithm_processing_mode .eq. 1) print*,'Algorithm: BUGSrad'
-   if (algorithm_processing_mode .eq. 2) print*,'Algorithm: FuLiou 2G'
-   if (algorithm_processing_mode .eq. 3) print*,'Algorithm: FuLiou 4S'
-   if (algorithm_processing_mode .eq. 4) print*,'Algorithm: FuLiou 2S'
+   if (algorithm_processing_mode .eq. 1) print*, 'Algorithm: BUGSrad'
+   if (algorithm_processing_mode .eq. 2) print*, 'Algorithm: FuLiou 2G'
+   if (algorithm_processing_mode .eq. 3) print*, 'Algorithm: FuLiou 4S'
+   if (algorithm_processing_mode .eq. 4) print*, 'Algorithm: FuLiou 2S'
 
    ! Read MODIS HDF data
    if (len_trim(FMOD04) .gt. 0 .and. &
        len_trim(FMOD04) .ne. path_length) then
-      print*,'Using MODIS aerosol input --> replacing ORAC'
-      call get_modis_aerosol(trim(FMOD04),xN,yN,AREF,AOD550)
+      print*, 'Using MODIS aerosol input --> replacing ORAC'
+      call get_modis_aerosol(trim(FMOD04), xN, yN, AREF, AOD550)
    end if
 
    if (len_trim(FMOD06) .gt. 0 .and. &
        len_trim(FMOD06) .ne. path_length) then
-      print*,'Using MODIS cloud input --> replacing ORAC'
-      call get_modis_cloud(trim(FMOD06),xN,yN,CTT,CTP,CTH,phase,REF,COT,cc_tot)
+      print*, 'Using MODIS cloud input --> replacing ORAC'
+      call get_modis_cloud(trim(FMOD06), xN, yN, CTT, CTP, CTH, phase, REF, COT, cc_tot)
    end if
 
-   if (lut_mode .eq. 0) print*,'Process using radiation model'
-   if (lut_mode .eq. 1) print*,'Process using LUT'
+   if (lut_mode .eq. 0) print*, 'Process using radiation model'
+   if (lut_mode .eq. 1) print*, 'Process using LUT'
 
    !----------------------------------------------------------------------------
    ! End optional inputs section
@@ -1099,21 +1099,21 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
    !----------------------------------------------------------------------------
    call cpu_time(cpuStart)
 
-   print*,'Processing Pixel Range:'
-   print*,'x-start = ',pxX0
-   print*,'y-start = ',pxY0
-   print*,'x-end = ',pxX1
-   print*,'y-end = ',pxY1
-   print*,'Across Track # = ',xN
-   print*,'Along Track #  = ',yN
+   print*, 'Processing Pixel Range:'
+   print*, 'x-start = ', pxX0
+   print*, 'y-start = ', pxY0
+   print*, 'x-end = ', pxX1
+   print*, 'y-end = ', pxY1
+   print*, 'Across Track # = ', xN
+   print*, 'Along Track #  = ', yN
 
    ! loop over cross-track dimension
-   do i=pxX0,pxX1
+   do i = pxX0, pxX1
       call cpu_time(cpuFinish)
-      print*,'complete: ',i*100./(xN*1.),'%   i=',i, cpuFinish-cpuStart,' seconds elapsed'
+      print*, 'complete: ', i*100./(xN*1.),'%   i=', i, cpuFinish-cpuStart,' seconds elapsed'
 
       ! loop over along-track dimension
-      do j=pxY0,pxY1
+      do j = pxY0, pxY1
 
          ! Valid lat/lon required to run (needed for SEVIRI)
          if (LAT(i,j) .ne. -999.0 .and. LON(i,j) .ne. -999.0) then
@@ -1124,9 +1124,9 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
             !-------------------------------------------------------------------
             ! BugsRAD surface properties
             if (algorithm_processing_mode .eq. 1) then
-               call preprocess_bugsrad_sfc_albedo(nc_alb,rho_0d(i,j,:), &
-                    rho_dd(i,j,:),rho_0d_bugsrad,rho_dd_bugsrad)
-               call preprocess_bugsrad_sfc_emissivity(nc_emis,emis_data(i,j,:), &
+               call preprocess_bugsrad_sfc_albedo(nc_alb, rho_0d(i,j,:), &
+                    rho_dd(i,j,:), rho_0d_bugsrad, rho_dd_bugsrad)
+               call preprocess_bugsrad_sfc_emissivity(nc_emis, emis_data(i,j,:), &
                     emis_bugsrad)
             end if
 
@@ -1134,9 +1134,9 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
             if (algorithm_processing_mode .eq. 2 .or. &
                 algorithm_processing_mode .eq. 3 .or. &
                 algorithm_processing_mode .eq. 4) then
-               call preprocess_fuliou_sfc_albedo(nc_alb,rho_0d(i,j,:), &
-                    rho_dd(i,j,:),rho_0d_fuliou,rho_dd_fuliou)
-               call preprocess_bugsrad_sfc_emissivity(nc_emis,emis_data(i,j,:), &
+               call preprocess_fuliou_sfc_albedo(nc_alb, rho_0d(i,j,:), &
+                    rho_dd(i,j,:), rho_0d_fuliou, rho_dd_fuliou)
+               call preprocess_bugsrad_sfc_emissivity(nc_emis, emis_data(i,j,:), &
                     emis_fuliou)
             end if
 
@@ -1154,9 +1154,9 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
 !           if ( SOLZ(i,j) .lt. 80.) then
 
             ! Meteorology
-            call interpolate_meteorology(lon_prtm,lat_prtm,levdim_prtm,&
-                 xdim_prtm,ydim_prtm,P,T,H,Q,O3,&
-                 LON(i,j),LAT(i,j),inP,inT_,inH,inQ,inO3)
+            call interpolate_meteorology(lon_prtm, lat_prtm, levdim_prtm,&
+                 xdim_prtm, ydim_prtm, P, T, H, Q, O3,&
+                 LON(i,j), LAT(i,j), inP, inT_, inH, inQ, inO3)
 
             ! Collocate PRTM vertical resolution to BUGSrad profile resolution
             ! (31 levels)
@@ -1188,11 +1188,11 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
 
             ml_flag = 1
             ! cloud base & top height calculation
-            call preprocess_input(cc_tot(i,j),AREF(i,j),AOD550(i,j),phase(i,j),&
-                    CTT(i,j),CTP(i,j),REF(i,j),COT(i,j),CTH(i,j),InfThnCld,&
-                    NLS,pxZ,tmp_pxREF,tmp_pxCOT,tmp_pxHctop,tmp_pxHcbase,&
-                    tmp_pxPhaseFlag,pxLayerType,&
-                    pxregime,tmp_pxHctopID,tmp_pxHcbaseID)
+            call preprocess_input(cc_tot(i,j), AREF(i,j), AOD550(i,j), phase(i,j),&
+                    CTT(i,j), CTP(i,j), REF(i,j), COT(i,j), CTH(i,j), InfThnCld,&
+                    NLS, pxZ, tmp_pxREF, tmp_pxCOT, tmp_pxHctop, tmp_pxHcbase,&
+                    tmp_pxPhaseFlag, pxLayerType,&
+                    pxregime, tmp_pxHctopID, tmp_pxHcbaseID)
 
             pxREF(1)       = tmp_pxREF
             pxCOT(1)       = tmp_pxCOT
@@ -1205,7 +1205,7 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
             if (multi_layer .EQ. 1 .and. cot2(i,j) .gt. 0) then
                ! ML code has -999. for CTP but CTH exists see correction below
                if (CTP2(i,j) .LT. 0. .AND. CTH2(i,j) .GT. 0.) then
-                  print*,CTP2(i,j),CTH2(i,j)
+                  print*, CTP2(i,j), CTH2(i,j)
                   print*,(pxP(MINLOC(ABS(CTH2(i,j)-pxZ)))+ &
                           pxP(MINLOC(ABS(CTH2(i,j)-pxZ))+1))/2.
                   ! poor man's interpolation method but gets close...
@@ -1215,11 +1215,11 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
                end if
 
                ml_flag = 2
-               call preprocess_input(cc_tot2(i,j),AREF(i,j),AOD550(i,j),phase(i,j),&
-                       CTT2(i,j),CTP2(i,j),REF2(i,j),COT2(i,j),CTH2(i,j),InfThnCld,&
-                       NLS,pxZ,tmp_pxREF,tmp_pxCOT,tmp_pxHctop,tmp_pxHcbase,&
-                       tmp_pxPhaseFlag,pxLayerType,&
-                       pxregime,tmp_pxHctopID,tmp_pxHcbaseID)
+               call preprocess_input(cc_tot2(i,j), AREF(i,j), AOD550(i,j), phase(i,j),&
+                       CTT2(i,j), CTP2(i,j), REF2(i,j), COT2(i,j), CTH2(i,j), InfThnCld,&
+                       NLS, pxZ, tmp_pxREF, tmp_pxCOT, tmp_pxHctop, tmp_pxHcbase,&
+                       tmp_pxPhaseFlag, pxLayerType,&
+                       pxregime, tmp_pxHctopID, tmp_pxHcbaseID)
 
                pxREF(2)       = tmp_pxREF
                pxCOT(2)       = tmp_pxCOT
@@ -1231,7 +1231,7 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
                pxregime = 7
             end if
 
-            if (pxregime .eq. 4) ml_flag=0
+            if (pxregime .eq. 4) ml_flag = 0
 
             ! Run full radiation code (not LUT mode)
             if (lut_mode .eq. 0) then
@@ -1240,19 +1240,19 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
                ! Call BUGSrad algorithm
                !----------------------------------------------------------------
                if (algorithm_processing_mode .eq. 1) then
-                  call driver_for_bugsrad(NL,pxTSI,pxtheta,pxAsfcSWRdr,&
-                          pxAsfcNIRdr,pxAsfcSWRdf,pxAsfcNIRdf,pxts,&
-                          pxPhaseFlag,ml_flag,pxREF,pxCOT,pxHctop,pxHcbase,&
-                          pxHctopID,pxHcbaseID,&
-                          pxZ,pxP,pxT,pxQ,pxO3,&
-                          pxtoalwup,pxtoaswdn,pxtoaswup,&
-                          pxboalwup,pxboalwdn,pxboaswdn,pxboaswup,&
-                          pxtoalwupclr,pxtoaswupclr,&
-                          pxboalwupclr,pxboalwdnclr,pxboaswupclr,pxboaswdnclr,&
-                          bpar,bpardif,tpar,&
-                          ulwfx,dlwfx,uswfx,dswfx,&
-                          ulwfxclr,dlwfxclr,uswfxclr,dswfxclr,&
-                          emis_bugsrad,rho_0d_bugsrad,rho_dd_bugsrad,pxYEAR)
+                  call driver_for_bugsrad(NL, pxTSI, pxtheta, pxAsfcSWRdr,&
+                          pxAsfcNIRdr, pxAsfcSWRdf, pxAsfcNIRdf, pxts,&
+                          pxPhaseFlag, ml_flag, pxREF, pxCOT, pxHctop, pxHcbase,&
+                          pxHctopID, pxHcbaseID,&
+                          pxZ, pxP, pxT, pxQ, pxO3,&
+                          pxtoalwup, pxtoaswdn, pxtoaswup,&
+                          pxboalwup, pxboalwdn, pxboaswdn, pxboaswup,&
+                          pxtoalwupclr, pxtoaswupclr,&
+                          pxboalwupclr, pxboalwdnclr, pxboaswupclr, pxboaswdnclr,&
+                          bpar, bpardif, tpar,&
+                          ulwfx, dlwfx, uswfx, dswfx,&
+                          ulwfxclr, dlwfxclr, uswfxclr, dswfxclr,&
+                          emis_bugsrad, rho_0d_bugsrad, rho_dd_bugsrad, pxYEAR)
                end if ! BUGSrad algorithm
 
                !----------------------------------------------------------------
@@ -1261,19 +1261,19 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
                if (algorithm_processing_mode .eq. 2 .or. &
                    algorithm_processing_mode .eq. 3 .or. &
                    algorithm_processing_mode .eq. 4) then
-                  call driver_for_fuliou(NL,pxTSI,pxtheta,pxAsfcSWRdr,pxAsfcNIRdr,&
-                          pxAsfcSWRdf,pxAsfcNIRdf,pxts,&
-                          pxPhaseFlag,ml_flag,pxREF,pxCOT,pxHctop,pxHcbase,&
-                          pxHctopID,pxHcbaseID,&
-                          pxZ,pxP,pxT,pxQ,pxO3,&
-                          pxtoalwup,pxtoaswdn,pxtoaswup,&
-                          pxboalwup,pxboalwdn,pxboaswdn,pxboaswup,&
-                          pxtoalwupclr,pxtoaswupclr,&
-                          pxboalwupclr,pxboalwdnclr,pxboaswupclr,pxboaswdnclr,&
-                          bpar,bpardif,tpar,&
-                          ulwfx,dlwfx,uswfx,dswfx,&
-                          ulwfxclr,dlwfxclr,uswfxclr,dswfxclr,&
-                          emis_fuliou,rho_0d_fuliou,rho_dd_fuliou,&
+                  call driver_for_fuliou(NL, pxTSI, pxtheta, pxAsfcSWRdr, pxAsfcNIRdr,&
+                          pxAsfcSWRdf, pxAsfcNIRdf, pxts,&
+                          pxPhaseFlag, ml_flag, pxREF, pxCOT, pxHctop, pxHcbase,&
+                          pxHctopID, pxHcbaseID,&
+                          pxZ, pxP, pxT, pxQ, pxO3,&
+                          pxtoalwup, pxtoaswdn, pxtoaswup,&
+                          pxboalwup, pxboalwdn, pxboaswdn, pxboaswup,&
+                          pxtoalwupclr, pxtoaswupclr,&
+                          pxboalwupclr, pxboalwdnclr, pxboaswupclr, pxboaswdnclr,&
+                          bpar, bpardif, tpar,&
+                          ulwfx, dlwfx, uswfx, dswfx,&
+                          ulwfxclr, dlwfxclr, uswfxclr, dswfxclr,&
+                          emis_fuliou, rho_0d_fuliou, rho_dd_fuliou,&
                           algorithm_processing_mode)
                end if ! FuLiou algorithm
             end if ! lut_mode = 0
@@ -1282,33 +1282,33 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
             ! LUT mode
             !-------------------------------------------------------------------
             if (lut_mode .eq. 1) then
-               call driver_for_lut(pxTSI,pxregime,&
-                       nASFC,LUT_SFC_ALB,&
-                       nRE,lut_ref,nTAU,lut_cot,nSOLZ,lut_solz,&
+               call driver_for_lut(pxTSI, pxregime,&
+                       nASFC, LUT_SFC_ALB,&
+                       nRE, lut_ref, nTAU, lut_cot, nSOLZ, lut_solz,&
                        LUT_toa_sw_albedo(:,:,:,:),&
                        LUT_boa_sw_transmission(:,:,:,:),&
                        LUT_boa_sw_albedo(:,:,:,:),&
-                       alb_data(I,J,1:),REF(I,J),COT(I,J),SOLZ(I,J),&
-                       pxtoalwup,pxtoaswdn,pxtoaswup,&
-                       pxboalwup,pxboalwdn,pxboaswdn,pxboaswup,&
-                       pxtoalwupclr,pxtoaswupclr,&
-                       pxboalwupclr,pxboalwdnclr,pxboaswupclr,pxboaswdnclr,&
-                       bpar,bpardif,tpar)
+                       alb_data(I,J,1:), REF(I,J), COT(I,J), SOLZ(I,J),&
+                       pxtoalwup, pxtoaswdn, pxtoaswup,&
+                       pxboalwup, pxboalwdn, pxboaswdn, pxboaswup,&
+                       pxtoalwupclr, pxtoaswupclr,&
+                       pxboalwupclr, pxboalwdnclr, pxboaswupclr, pxboaswdnclr,&
+                       bpar, bpardif, tpar)
             end if
 
             !-------------------------------------------------------------------
             ! Quality check retrieved data & fill output arrays
             !-------------------------------------------------------------------
             ! Catch NaN
-            nanFlag=0
-            if (is_nan(pxtoalwup)) nanFlag=1
-            if (is_nan(pxtoaswup)) nanFlag=1
-            if (is_nan(pxtoalwupclr)) nanFlag=1
-            if (is_nan(pxtoaswupclr)) nanFlag=1
+            nanFlag = 0
+            if (is_nan(pxtoalwup)) nanFlag = 1
+            if (is_nan(pxtoaswup)) nanFlag = 1
+            if (is_nan(pxtoalwupclr)) nanFlag = 1
+            if (is_nan(pxtoaswupclr)) nanFlag = 1
 
             ! Catch unphysical values
-            if (pxtoalwup .lt. 0. .or. pxtoalwup .gt. 1000.) nanFlag=1
-            if (pxtoaswup .lt. 0. .or. pxtoaswup .gt. 1600.) nanFlag=1
+            if (pxtoalwup .lt. 0. .or. pxtoalwup .gt. 1000.) nanFlag = 1
+            if (pxtoaswup .lt. 0. .or. pxtoaswup .gt. 1600.) nanFlag = 1
 
             ! Regime type
             retrflag(i,j) = pxregime
@@ -1350,9 +1350,9 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
             boa_tsfc(i,j) = pxT(NLS)
             boa_psfc(i,j) = pxP(NLS)
             boa_qsfc(i,j) = pxQ(NLS)
-            call compute_lts(NL,pxP,pxT,pxLTS)
-            call compute_fth(NL,pxP,pxT,pxQ,pxFTH)
-            call compute_column_o3(NL,pxZ,pxO3,pxcolO3)
+            call compute_lts(NL, pxP, pxT, pxLTS)
+            call compute_fth(NL, pxP, pxT, pxQ, pxFTH)
+            call compute_column_o3(NL, pxZ, pxO3, pxcolO3)
             lts(i,j) = pxLTS
             fth(i,j) = pxFTH
             colO3(i,j) = pxcolO3
@@ -1362,7 +1362,7 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
    end do ! i-loop
 
    call cpu_time(cpuFinish)
-   print*,cpuFinish-cpuStart,' seconds elapsed'
+   print*, cpuFinish-cpuStart,' seconds elapsed'
 
 
    !----------------------------------------------------------------------------
@@ -1947,92 +1947,92 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
    end if
 
    ! write the array to the netcdf file
-   call nc_write_array(ncid,'time',TIME_vid,&
-        time_data(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'time', TIME_vid,&
+        time_data(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
-   call nc_write_array(ncid,'lat',LAT_vid,&
-        lat_data(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'lat', LAT_vid,&
+        lat_data(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
-   call nc_write_array(ncid,'lon',LON_vid,&
-        lon_data(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'lon', LON_vid,&
+        lon_data(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
-   call nc_write_array(ncid,'retrflag',retrflag_vid,&
-        retrflag(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'retrflag', retrflag_vid,&
+        retrflag(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
-   call nc_write_array(ncid,'toa_swdn',toa_swdn_vid,&
-        toa_swdn(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'toa_swdn', toa_swdn_vid,&
+        toa_swdn(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
-   call nc_write_array(ncid,'toa_swup',toa_swup_vid,&
-        toa_swup(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'toa_swup', toa_swup_vid,&
+        toa_swup(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
-   call nc_write_array(ncid,'toa_lwup',toa_lwup_vid,&
-        toa_lwup(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'toa_lwup', toa_lwup_vid,&
+        toa_lwup(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
-   call nc_write_array(ncid,'boa_swdn',boa_swdn_vid,&
-        boa_swdn(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'boa_swdn', boa_swdn_vid,&
+        boa_swdn(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
-   call nc_write_array(ncid,'boa_swup',boa_swup_vid,&
-        boa_swup(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'boa_swup', boa_swup_vid,&
+        boa_swup(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
-   call nc_write_array(ncid,'boa_lwup',boa_lwup_vid,&
-        boa_lwup(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'boa_lwup', boa_lwup_vid,&
+        boa_lwup(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
-   call nc_write_array(ncid,'boa_lwdn',boa_lwdn_vid,&
-        boa_lwdn(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'boa_lwdn', boa_lwdn_vid,&
+        boa_lwdn(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
-   call nc_write_array(ncid,'toa_swup_clr',toa_swup_clr_vid,&
-        toa_swup_clr(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'toa_swup_clr', toa_swup_clr_vid,&
+        toa_swup_clr(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
-   call nc_write_array(ncid,'toa_lwup_clr',toa_lwup_clr_vid,&
-        toa_lwup_clr(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'toa_lwup_clr', toa_lwup_clr_vid,&
+        toa_lwup_clr(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
-   call nc_write_array(ncid,'boa_swdn_clr',boa_swdn_clr_vid,&
-        boa_swdn_clr(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'boa_swdn_clr', boa_swdn_clr_vid,&
+        boa_swdn_clr(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
-   call nc_write_array(ncid,'boa_swup_clr',boa_swup_clr_vid,&
-        boa_swup_clr(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'boa_swup_clr', boa_swup_clr_vid,&
+        boa_swup_clr(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
-   call nc_write_array(ncid,'boa_lwup_clr',boa_lwup_clr_vid,&
-        boa_lwup_clr(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'boa_lwup_clr', boa_lwup_clr_vid,&
+        boa_lwup_clr(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
-   call nc_write_array(ncid,'boa_lwdn_clr',boa_lwdn_clr_vid,&
-        boa_lwdn_clr(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'boa_lwdn_clr', boa_lwdn_clr_vid,&
+        boa_lwdn_clr(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
-   call nc_write_array(ncid,'boa_par_dif',boa_par_dif_vid,&
-        boa_par_dif(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'boa_par_dif', boa_par_dif_vid,&
+        boa_par_dif(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
-   call nc_write_array(ncid,'boa_par_tot',boa_par_tot_vid,&
-        boa_par_tot(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'boa_par_tot', boa_par_tot_vid,&
+        boa_par_tot(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
-   call nc_write_array(ncid,'toa_par_tot',toa_par_tot_vid,&
-        toa_par_tot(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'toa_par_tot', toa_par_tot_vid,&
+        toa_par_tot(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
-   call nc_write_array(ncid,'boa_tsfc',boa_tsfc_vid,&
-        boa_tsfc(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'boa_tsfc', boa_tsfc_vid,&
+        boa_tsfc(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
-   call nc_write_array(ncid,'boa_psfc',boa_psfc_vid,&
-        boa_psfc(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'boa_psfc', boa_psfc_vid,&
+        boa_psfc(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
-   call nc_write_array(ncid,'boa_qsfc',boa_qsfc_vid,&
-        boa_qsfc(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'boa_qsfc', boa_qsfc_vid,&
+        boa_qsfc(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
-   call nc_write_array(ncid,'lts',lts_vid,&
-        lts(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'lts', lts_vid,&
+        lts(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
-   call nc_write_array(ncid,'fth',fth_vid,&
-        fth(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'fth', fth_vid,&
+        fth(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
-   call nc_write_array(ncid,'colO3',colO3_vid,&
-        colO3(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'colO3', colO3_vid,&
+        colO3(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
-   call nc_write_array(ncid,'cbh',cbh_vid,&
-        cbh(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'cbh', cbh_vid,&
+        cbh(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
    ! Close netcdf file
    call nc_close(ncid, 'process_broadband_fluxes()')
 
-   print*,'CREATED:'
-   print*,TRIM(fname)
+   print*, 'CREATED:'
+   print*, TRIM(fname)
 
 #ifdef WRAPPER
 end subroutine process_broadband_fluxes

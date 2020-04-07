@@ -156,7 +156,7 @@ subroutine compute_time(ncid, imager_time, ny)
 
    ! Put correct julian date into each location in the time array
    do j=1,ny
-      imager_time%time(:,j) = jd1+(slo*float(j))
+      imager_time%time(:,j) = jd1 + (slo*float(j))
    end do
 
 end subroutine compute_time

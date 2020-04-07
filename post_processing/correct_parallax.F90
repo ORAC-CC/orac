@@ -54,7 +54,7 @@ subroutine get_attr(global_atts, sath, eqrrad, polrad, sobs_lat, sobs_lon)
 
    character(len=attribute_length)      :: platform
    character(len=attribute_length_long) :: tmpstr
-   integer                              :: i, pos,lenner
+   integer                              :: i, pos, lenner
 
    platform = global_atts%platform
 
@@ -95,7 +95,7 @@ real(kind=sreal) function get_ave_real(inarr)
 
    real(kind=sreal), intent(in) :: inarr(3,3)
    real(kind=sreal)             :: outval
-   integer(kind=sint)           :: counter,i,j
+   integer(kind=sint)           :: counter, i, j
 
    counter = 0
    outval  = 0
@@ -132,29 +132,29 @@ subroutine correct_parallax(primary, indexing, global_atts, verbose)
    type(global_attributes_t),  intent(in)    :: global_atts
    logical,                    intent(in)    :: verbose
 
-   integer                        :: i,j,ni,nj
-   real(kind=sreal),allocatable   :: dist(:,:)
-   real(kind=sreal),allocatable   :: orig_cth(:,:)
-   integer(kind=sint),allocatable :: outx(:,:), outy(:,:)
+   integer                        :: i, j, ni, nj
+   real(kind=sreal), allocatable   :: dist(:,:)
+   real(kind=sreal), allocatable   :: orig_cth(:,:)
+   integer(kind=sint), allocatable :: outx(:,:), outy(:,:)
 
 
-   real(kind=sreal),allocatable   :: ncth(:,:), ncthu(:,:)
-   real(kind=sreal),allocatable   :: ncer(:,:), nceru(:,:)
-   real(kind=sreal),allocatable   :: ncot(:,:), ncotu(:,:)
-   real(kind=sreal),allocatable   :: nctt(:,:), ncttu(:,:)
-   real(kind=sreal),allocatable   :: nctp(:,:), nctpu(:,:)
-   real(kind=sreal),allocatable   :: ncost(:,:)
-   integer(kind=byte),allocatable :: ncldmask(:,:),ncldtype(:,:),nphase(:,:)
+   real(kind=sreal), allocatable   :: ncth(:,:), ncthu(:,:)
+   real(kind=sreal), allocatable   :: ncer(:,:), nceru(:,:)
+   real(kind=sreal), allocatable   :: ncot(:,:), ncotu(:,:)
+   real(kind=sreal), allocatable   :: nctt(:,:), ncttu(:,:)
+   real(kind=sreal), allocatable   :: nctp(:,:), nctpu(:,:)
+   real(kind=sreal), allocatable   :: ncost(:,:)
+   integer(kind=byte), allocatable :: ncldmask(:,:), ncldtype(:,:), nphase(:,:)
 
-   real(kind=sreal)               :: sat_h, eqr_rad, pol_rad, sat_lat, sat_lon
-   real(kind=sreal)               :: obs_lat, obs_lat1, obs_lon
-   real(kind=sreal)               :: sat_lat_m, sat_x, sat_y, sat_z
-   real(kind=sreal)               :: r, omod_x, omod_y, omod_z, ob_mod
-   real(kind=sreal)               :: mod_x, mod_y, mod_z, ax_mod
-   real(kind=sreal)               :: cosbeta, aa, bb, cc, x
-   real(kind=sreal)               :: axis_x, axis_y, axis_z, bpos(2)
-   real(kind=sreal)               :: new_lat, new_lon, rad_rat
-   integer(kind=sint)             :: x0,x1,y0,y1
+   real(kind=sreal)                :: sat_h, eqr_rad, pol_rad, sat_lat, sat_lon
+   real(kind=sreal)                :: obs_lat, obs_lat1, obs_lon
+   real(kind=sreal)                :: sat_lat_m, sat_x, sat_y, sat_z
+   real(kind=sreal)                :: r, omod_x, omod_y, omod_z, ob_mod
+   real(kind=sreal)                :: mod_x, mod_y, mod_z, ax_mod
+   real(kind=sreal)                :: cosbeta, aa, bb, cc, x
+   real(kind=sreal)                :: axis_x, axis_y, axis_z, bpos(2)
+   real(kind=sreal)                :: new_lat, new_lon, rad_rat
+   integer(kind=sint)              :: x0, x1, y0, y1
 
    integer(kind=sint)             :: pixdelt = 12
 

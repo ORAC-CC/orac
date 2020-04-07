@@ -25,7 +25,7 @@ module cloud_emis_m
 
 contains
 
-subroutine get_trop_tp(preproc_prtm,preproc_dims)
+subroutine get_trop_tp(preproc_prtm, preproc_dims)
 
    use preproc_constants_m
    use preproc_structures_m
@@ -102,8 +102,8 @@ subroutine get_trop_tp(preproc_prtm,preproc_dims)
 
 end subroutine get_trop_tp
 
-subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation, &
-     preproc_dims,preproc_geoloc,preproc_cld,preproc_prtm,imager_cloud,ecmwf,&
+subroutine get_cloud_emis(channel_info, imager_measurements, imager_geolocation, &
+     preproc_dims, preproc_geoloc, preproc_cld, preproc_prtm, imager_cloud, ecmwf,&
      sensor, verbose)
 
    use channel_structures_m
@@ -145,16 +145,16 @@ subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation, &
    integer :: extent(4)
 
    ! Interpolation variables
-   real           :: Lat0, Lon0, LatN, LonN, MinLon, MaxLon
-   real           :: delta_lat, delta_lon
-   real           :: rad_clr, rad_cld, rad_obs, t1, t2, emis
-   real,parameter :: c1  = 1.191042e8
-   real,parameter :: c2  = 1.4387752e4
-   real,parameter :: lam1 = 10.8
-   real,parameter :: lam2 = 6.2
-   real,parameter :: lam3 = 7.1
-   integer        :: NLat, NLon
-   logical        :: Wrap, do_wv
+   real            :: Lat0, Lon0, LatN, LonN, MinLon, MaxLon
+   real            :: delta_lat, delta_lon
+   real            :: rad_clr, rad_cld, rad_obs, t1, t2, emis
+   real, parameter :: c1  = 1.191042e8
+   real, parameter :: c2  = 1.4387752e4
+   real, parameter :: lam1 = 10.8
+   real, parameter :: lam2 = 6.2
+   real, parameter :: lam3 = 7.1
+   integer         :: NLat, NLon
+   logical         :: Wrap, do_wv
 
    good_chan_lw = -1
    good_chan_all = -1
@@ -338,7 +338,8 @@ subroutine get_cloud_emis(channel_info,imager_measurements,imager_geolocation, &
 end subroutine get_cloud_emis
 
 
-subroutine do_cb_detect(channel_info,imager_measurements,imager_geolocation,imager_cloud, imager_pavolonis, sensor, verbose)
+subroutine do_cb_detect(channel_info, imager_measurements, imager_geolocation, &
+     imager_cloud, imager_pavolonis, sensor, verbose)
 
    use channel_structures_m
    use ecmwf_m, only : ecmwf_t
@@ -380,7 +381,8 @@ subroutine do_cb_detect(channel_info,imager_measurements,imager_geolocation,imag
 
    imager_cloud%cape(:,:) = 999.
 
-   call calc_convection(channel_wl_abs, n_chans, sat_data, imager_cloud%cape, imager_pavolonis%cldtype, extent, verbose)
+   call calc_convection(channel_wl_abs, n_chans, sat_data, imager_cloud%cape, &
+        imager_pavolonis%cldtype, extent, verbose)
 
    imager_pavolonis%cldmask(:,:,:) = 0
 !  imager_pavolonis%cccot_pre(:,:,1) = imager_measurements%data(:,:,2) - imager_measurements%data(:,:,4)

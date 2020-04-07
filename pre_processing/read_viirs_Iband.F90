@@ -97,11 +97,11 @@ subroutine read_viirs_iband_dimensions(geo_file, n_across_track, n_along_track, 
    ! Get dataspace's dimensinons.
    call h5sget_simple_extent_dims_f(dataspace, dimsr, maxdimsr, error)
 
-   startx=1
-   starty=1
+   startx = 1
+   starty = 1
 
-   endx=dimsr(1)
-   endy=dimsr(2)
+   endx = dimsr(1)
+   endy = dimsr(2)
 
    n_across_track = endx
    n_along_track = endy
@@ -134,7 +134,7 @@ end subroutine read_viirs_iband_dimensions
 ! channel_info        struct  both Members within are populated
 ! verbose             logical in   If true then print verbose information.
 !-------------------------------------------------------------------------------
-subroutine read_viirs_iband(infile,geofile,imager_geolocation, imager_measurements, &
+subroutine read_viirs_iband(infile, geofile, imager_geolocation, imager_measurements, &
    imager_angles, imager_time, channel_info, verbose)
 
    use iso_c_binding
@@ -156,7 +156,7 @@ subroutine read_viirs_iband(infile,geofile,imager_geolocation, imager_measuremen
    type(channel_info_t),        intent(in)    :: channel_info
    logical,                     intent(in)    :: verbose
 
-   integer                          :: i,j
+   integer                          :: i, j
    integer(c_int)                   :: n_bands
    integer(c_int), allocatable      :: band_ids(:)
    integer(c_int), allocatable      :: band_units(:)
@@ -165,10 +165,10 @@ subroutine read_viirs_iband(infile,geofile,imager_geolocation, imager_measuremen
    integer(c_int)                   :: line0, line1
    integer(c_int)                   :: column0, column1
    integer                          :: index2
-   integer(kind=sint)               :: year,month,day
-   integer(kind=sint)               :: hour1,minute1,second1
-   integer(kind=sint)               :: hour2,minute2,second2
-   double precision                 :: dfrac1,dfrac2,jd1,jd2,slo
+   integer(kind=sint)               :: year, month, day
+   integer(kind=sint)               :: hour1, minute1, second1
+   integer(kind=sint)               :: hour2, minute2, second2
+   double precision                 :: dfrac1, dfrac2, jd1, jd2, slo
 
    ! Used for reading the HDF5 files correctly (prevents stack smashing)
    integer(HSIZE_T), dimension(1:2) :: pxcount
@@ -233,11 +233,10 @@ subroutine read_viirs_iband(infile,geofile,imager_geolocation, imager_measuremen
    if (index2 .le. 0) then
       index2 = index(geofile, 'j01_d', .true.)
       if (index2 .le. 0) then
-         write(*,*)"Unsupported VIIRS platform."
+         write(*,*) "Unsupported VIIRS platform."
          stop
       end if
    end if
-
 
    ! get year, doy, hour and minute as strings
    read(geofile(index2:), date_format) year, month, day, hour1, minute1, &
@@ -250,8 +249,8 @@ subroutine read_viirs_iband(infile,geofile,imager_geolocation, imager_measuremen
 
    ! NOTE: Should investigate how this is dealt with in the l1b files...
 
-   call GREG2JD(year,month,day,jd1)
-   call GREG2JD(year,month,day,jd2)
+   call GREG2JD(year, month, day, jd1)
+   call GREG2JD(year, month, day, jd2)
 
    ! Add on a fraction to account for the start / end times
    dfrac1 = (float(hour1)/24.0) + (float(minute1)/(24.0*60.0)) + &
@@ -262,17 +261,17 @@ subroutine read_viirs_iband(infile,geofile,imager_geolocation, imager_measuremen
    jd2 = jd2 + dfrac2
 
    ! Compute linear regression slope
-   slo = (jd2-jd1)/ny
+   slo = (jd2 - jd1)/ny
 
    ! Put correct julian date into each location in the time array
-   do j=1,ny
-      imager_time%time(:,j) = jd1+(slo*float(j))
+   do j = 1, ny
+      imager_time%time(:,j) = jd1 + (slo*float(j))
    end do
 
    ! This bit reads all the data.
    ! First it loads geo/angle info from GMTCO file.
    call h5open_f(error)
-   if (index(geofile,'GITCO') .gt. 0) then
+   if (index(geofile, 'GITCO') .gt. 0) then
       call h5fopen_f (geofile, H5F_ACC_RDONLY_F, file_id, error)
       call h5dopen_f(file_id, "//All_Data/VIIRS-IMG-GEO-TC_All/Latitude", &
                      dset_id, error)
@@ -346,8 +345,8 @@ subroutine read_viirs_iband(infile,geofile,imager_geolocation, imager_measuremen
    do i = 1, n_bands
       banddir = infile(1:index2-2)
       write (band, "(I2.2)") band_ids(i)
-      regex   = trim(infile(index2:index2+2))//trim(adjustl(band))// &
-                trim(infile(index2+5:index2+35))//"*"
+      regex = trim(infile(index2:index2+2))//trim(adjustl(band))// &
+              trim(infile(index2+5:index2+35))//"*"
 
       ! Check if we find the appropriate band
       if (match_file(trim(banddir), trim(regex), bandfile) .ne. 0) then
@@ -387,8 +386,8 @@ subroutine read_viirs_iband(infile,geofile,imager_geolocation, imager_measuremen
            imager_measurements%data(:,:,i) = sreal_fill_value
 
       if (verbose) &
-         write(*,*)i,band_ids(i),maxval(imager_measurements%data(:,:,i)), &
-                                 minval(imager_measurements%data(:,:,i))
+         write(*,*) i, band_ids(i), maxval(imager_measurements%data(:,:,i)), &
+                                    minval(imager_measurements%data(:,:,i))
    end do
 
    deallocate(band_ids)
@@ -401,21 +400,21 @@ subroutine read_viirs_iband(infile,geofile,imager_geolocation, imager_measuremen
 
    ! Check units to remove anything that's out-of-range.
    where(imager_geolocation%latitude(startx:,:)  .gt. 100) &
-      imager_geolocation%latitude(startx:,:)=sreal_fill_value
+      imager_geolocation%latitude(startx:,:) = sreal_fill_value
    where(imager_geolocation%latitude(startx:,:)  .lt. -100) &
-      imager_geolocation%latitude(startx:,:)=sreal_fill_value
+      imager_geolocation%latitude(startx:,:) = sreal_fill_value
    where(imager_geolocation%longitude(startx:,:) .gt. 200) &
-      imager_geolocation%longitude(startx:,:)=sreal_fill_value
+      imager_geolocation%longitude(startx:,:) = sreal_fill_value
    where(imager_geolocation%longitude(startx:,:) .lt. -200) &
-      imager_geolocation%longitude(startx:,:)=sreal_fill_value
+      imager_geolocation%longitude(startx:,:) = sreal_fill_value
    where(imager_angles%solazi(startx:,:,1)       .gt. 900) &
-      imager_angles%solazi(startx:,:,1)=sreal_fill_value
+      imager_angles%solazi(startx:,:,1) = sreal_fill_value
    where(imager_angles%solzen(startx:,:,1)       .gt. 900) &
-      imager_angles%solzen(startx:,:,1)=sreal_fill_value
+      imager_angles%solzen(startx:,:,1) = sreal_fill_value
    where(imager_angles%satzen(startx:,:,1)       .gt. 900) &
-      imager_angles%satzen(startx:,:,1)=sreal_fill_value
+      imager_angles%satzen(startx:,:,1) = sreal_fill_value
    where(imager_angles%satazi(startx:,:,1)       .gt. 900) &
-      imager_angles%satazi(startx:,:,1)=sreal_fill_value
+      imager_angles%satazi(startx:,:,1) = sreal_fill_value
 
    ! Rescale zens + azis into correct format
    where(imager_angles%solazi(startx:,:,1) .ne. sreal_fill_value .and. &

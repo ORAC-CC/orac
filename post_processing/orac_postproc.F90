@@ -157,7 +157,7 @@
 #ifndef WRAPPER
 program orac_postproc
 #else
-subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
+subroutine orac_postproc(mytask, ntasks, lower_bound, upper_bound, &
                           path_and_file)
 #endif
 
@@ -259,9 +259,9 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
 
     ! If no argument was given then read standard file
     if (nargs == 0 ) then
-       call get_environment_variable("ORAC_TEXTIN",path_and_file)
+       call get_environment_variable("ORAC_TEXTIN", path_and_file)
     else if (nargs == 1) then
-       call get_command_argument(1,path_and_file)
+       call get_command_argument(1, path_and_file)
     else if (nargs == -1) then
        index_space = index(path_and_file, " ")
        path_and_file = path_and_file(1:(index_space-1))
@@ -459,7 +459,7 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
             output_secondary)
     end if
 
-    do i_chunk=1,n_chunks ! Chunking
+    do i_chunk=1, n_chunks ! Chunking
        if (use_chunks .and. verbose) &
             write(*,*) 'Processing chunk: ', i_chunk, 'between', &
                 chunk_starts(i_chunk), 'and', chunk_ends(i_chunk)
@@ -527,8 +527,8 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
           end do
 
           ! Find the input file with the lowest cost for each pixel
-          do j=indexing%Y0,indexing%Y1
-             do i=indexing%X0,indexing%X1
+          do j=indexing%Y0, indexing%Y1
+             do i=indexing%X0, indexing%X1
                 sum_prob = 0.
                 a_min_cost   = huge(a_min_cost)
                 i_min_costjm = 0
@@ -567,8 +567,8 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
                      verbose)
              end if
 
-             do j=indexing%Y0,indexing%Y1
-                do i=indexing%X0,indexing%X1
+             do j=indexing%Y0, indexing%Y1
+                do i=indexing%X0, indexing%X1
                    if (input_primary(0)%phase(i,j) .eq. k) then
                       call copy_class_specific_inputs(i, j, loop_ind(k), &
                            input_primary(0), input_primary(1), &
@@ -587,9 +587,9 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
           write(*,*) indexing%Y0, indexing%Y1
        end if
 
-       do j=indexing%Y0,indexing%Y1
+       do j=indexing%Y0, indexing%Y1
 
-          do i=indexing%X0,indexing%X1
+          do i=indexing%X0, indexing%X1
 
              ! Cloud CCI selection
              if (.not. use_bayesian_selection) then
@@ -689,7 +689,7 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
                    ! Multilayer cloud
                    call copy_class_specific_inputs(i, j, loop_ind(IMul), &
                         input_primary(0), input_primary(IMul),&
-                        input_secondary(0), input_secondary(IMul),do_secondary)
+                        input_secondary(0), input_secondary(IMul), do_secondary)
                    input_primary(0)%phase(i,j) = IPhaseMul
                 end if
 
@@ -743,11 +743,11 @@ subroutine orac_postproc(mytask,ntasks, lower_bound, upper_bound, &
 
 
        ! If parallax correction is enabled then correct parallax
-       if (corr_plx) call correct_parallax(input_primary(0),indexing,global_atts, verbose)
+       if (corr_plx) call correct_parallax(input_primary(0), indexing, global_atts, verbose)
 
        ! Put results in final output arrays with final datatypes
-       do j=indexing%Y0,indexing%Y1
-          do i=indexing%X0,indexing%X1
+       do j=indexing%Y0, indexing%Y1
+          do i=indexing%X0, indexing%X1
              call prepare_output_primary_pp(i, j, indexing%common_indices_t, &
                   input_primary(0), output_primary, &
                   output_optical_props_at_night)
