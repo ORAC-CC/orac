@@ -244,7 +244,7 @@ end if
 !  allocate(emis%lat(xdim))
 !  allocate(emis%lon(ydim))
 !  if (present(loc)) then
-!     if (len(trim(loc)) .gt. 1) then
+!     if (len_trim(loc) .gt. 1) then
 !        gen_loc = 0
 !        call nc_read_array(fid,'lat',emis%lat,verbose)
 !        call nc_read_array(fid,'lon',emis%lon,verbose)

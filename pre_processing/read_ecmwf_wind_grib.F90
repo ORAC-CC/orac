@@ -56,7 +56,7 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf, high_res, ecmwf_flag)
    integer                         :: param,level,nlevels
    character(100)                  :: ltype,lname
 
-   if (len(trim(ecmwf_path)) .gt. 1024) call h_e_e('wind_grib', &
+   if (len_trim(ecmwf_path) .gt. 1024) call h_e_e('wind_grib', &
          'Filename argument string ecmwf_path is too long.  It must be ' // &
          'limited to a length of 1024 due to a bug in grib_api.')
 

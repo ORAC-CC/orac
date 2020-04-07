@@ -816,7 +816,7 @@ subroutine setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day, &
 
       str1 = l1b_path_file
       do k=1, 4
-         l=len(trim(str1))
+         l=len_trim(str1)
          j=index(str1,'_', back=.true.)
 
          str2=str1
@@ -866,7 +866,7 @@ subroutine setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day, &
 
       str1 = l1b_path_file
       do k=1, 7
-         l=len(trim(str1))
+         l=len_trim(str1)
          j=index(str1,'_', back=.true.)
 
          str2=str1
@@ -887,7 +887,7 @@ subroutine setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day, &
       end do
 
       ! one last time for platform
-      l=len(trim(str1))
+      l=len_trim(str1)
       j=index(str1,'/', back=.true.)
       str2=str1
       str1=str1(1:j-1)

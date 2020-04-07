@@ -70,7 +70,7 @@ subroutine get_attr(global_atts, sath, eqrrad, polrad, sobs_lat, sobs_lon)
        platform(1:8) == 'Himawari') then
       tmpstr = global_atts%Satpos_Metadata
       do i = 1, 5
-         lenner = len(trim(tmpstr))
+         lenner = len_trim(tmpstr)
          pos    = index(tmpstr,",")
          if (pos .eq. 0) pos = lenner
          if (i .eq. 1) read(tmpstr(1:pos-1), '(f10.7)')sobs_lat

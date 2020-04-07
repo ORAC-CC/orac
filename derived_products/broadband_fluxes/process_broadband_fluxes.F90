@@ -497,8 +497,8 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
    cpxX0 = "0"; cpxY0 = "0"; cpxX1 = "0"; cpxY1 = "0"
 #endif
    ! x-y range of selected pixels
-   if (len(trim(cpxX0)) .ne. 0 .and. len(trim(cpxX1)) .ne. 0 .and. &
-       len(trim(cpxY0)) .ne. 0 .and. len(trim(cpxY1)) .ne. 0) then
+   if (len_trim(cpxX0) .ne. 0 .and. len_trim(cpxX1) .ne. 0 .and. &
+       len_trim(cpxY0) .ne. 0 .and. len_trim(cpxY1) .ne. 0) then
       print*,'PROCESS MULTIPLE SATELLITE PIXELS'
       read(cpxX0,*) value
       pxX0=value*1
@@ -522,7 +522,7 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
    do i = 11, nargs
       call get_command_argument(i, argname)
       index1=index(trim(adjustl(argname)),'=',back=.true.)
-      index2=len(trim(argname))
+      index2=len_trim(argname)
       tmpname1=trim(adjustl(argname(1:index1)))
       tmpname2=trim(adjustl(argname(index1+1:index2)))
 
@@ -944,8 +944,8 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
    ! Optional inputs
    !----------------------------------------------------------------------------
    ! OPTION - PROCESS all pixels in granule if range not specified
-   if (len(trim(cpxX0)) .eq. 0 .and. len(trim(cpxX1)) .eq. 0 .and. &
-       len(trim(cpxY0)) .eq. 0 .and. len(trim(cpxY1)) .eq. 0) then
+   if (len_trim(cpxX0) .eq. 0 .and. len_trim(cpxX1) .eq. 0 .and. &
+       len_trim(cpxY0) .eq. 0 .and. len_trim(cpxY1) .eq. 0) then
       print*,'PROCESS ALL SATELLITE PIXELS'
       pxX0=1
       pxX1=xN
@@ -1077,14 +1077,14 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
    if (algorithm_processing_mode .eq. 4) print*,'Algorithm: FuLiou 2S'
 
    ! Read MODIS HDF data
-   if (len(trim(FMOD04)) .gt. 0 .and. &
-       len(trim(FMOD04)) .ne. path_length) then
+   if (len_trim(FMOD04) .gt. 0 .and. &
+       len_trim(FMOD04) .ne. path_length) then
       print*,'Using MODIS aerosol input --> replacing ORAC'
       call get_modis_aerosol(trim(FMOD04),xN,yN,AREF,AOD550)
    end if
 
-   if (len(trim(FMOD06)) .gt. 0 .and. &
-       len(trim(FMOD06)) .ne. path_length) then
+   if (len_trim(FMOD06) .gt. 0 .and. &
+       len_trim(FMOD06) .ne. path_length) then
       print*,'Using MODIS cloud input --> replacing ORAC'
       call get_modis_cloud(trim(FMOD06),xN,yN,CTT,CTP,CTH,phase,REF,COT,cc_tot)
    end if

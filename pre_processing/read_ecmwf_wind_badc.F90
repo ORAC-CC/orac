@@ -52,7 +52,7 @@ subroutine read_ecmwf_wind_badc(ecmwf_path, ecmwf2path, ecmwf3path, ecmwf)
    real, allocatable               :: pv(:)
    character(len=1024)             :: paths(2)
 
-   if (len(trim(ecmwf2path)) .gt. 1024 .or. len(trim(ecmwf3path)) .gt. 1024) &
+   if (len_trim(ecmwf2path) .gt. 1024 .or. len_trim(ecmwf3path) .gt. 1024) &
       call h_e_e('wind_badc', 'Filename argument strings ecmwf2path and ' // &
            'ecmwf3path are too long.  They must be limited to a length of ' // &
            '1024 due to a bug in grib_api.')
