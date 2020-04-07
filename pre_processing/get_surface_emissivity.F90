@@ -153,9 +153,9 @@ subroutine get_surface_emissivity(cyear, cdoy, cimss_emis_path, imager_flags, &
       end if
    end do
 
-#ifndef __INTEL_COMPILER
    if (verbose) write(*,*) 'n channels for land emissivity: ', &
                            channel_info%nchannels_lw
+#ifndef __INTEL_COMPILER
    if (verbose) write(*,*) 'instrument bands for land emissivity: ', &
                            channel_info%channel_ids_instr(ch_total_index)
    if (verbose) write(*,*) 'instument wavelengths for land emissivity: ', &
@@ -338,10 +338,12 @@ subroutine get_camel_emissivity(cyear, cmonth, camel_emis_path, imager_flags, &
 
    if (verbose) write(*,*) 'n channels for land emissivity: ', &
                            channel_info%nchannels_lw
+#ifndef __INTEL_COMPILER
    if (verbose) write(*,*) 'instrument bands for land emissivity: ', &
                            channel_info%channel_ids_instr(ch_total_index)
    if (verbose) write(*,*) 'instument wavelengths for land emissivity: ', &
                            channel_info%channel_wl_abs(ch_total_index)
+#endif
 
    ! Select correct modis file
    if (assume_full_path) then
