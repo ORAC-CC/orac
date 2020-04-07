@@ -424,7 +424,7 @@ subroutine build_ecmwf_HR_file_from_LR(ecmwf_path_file, ecmwf_hr_path_file)
    character(len=path_length) :: base,suffix
    integer :: cut_off, ecmwf_path_file_length
 
-   cut_off = index(trim(adjustl(ecmwf_path_file)),'.',back=.true.)
+   cut_off = index(ecmwf_path_file, '.', back=.true.)
    ecmwf_path_file_length = len_trim(ecmwf_path_file)
    base = trim(adjustl(ecmwf_path_file(1:(cut_off-1))))
    suffix = trim(adjustl(ecmwf_path_file((cut_off+1):ecmwf_path_file_length)))
@@ -452,7 +452,7 @@ subroutine build_ecmwf_HR_file_from_LR2(ecmwf_path, ecmwf_path_file, &
 
    temp_file = ecmwf_path_file
    ecmwf_file_length = len_trim(ecmwf_path)
-   cut_off = index(trim(adjustl(temp_file)), '.', back=.true.)
+   cut_off = index(temp_file, '.', back=.true.)
 
    yyyy = trim(adjustl(temp_file(ecmwf_file_length+6:(cut_off-9))))
    mm   = trim(adjustl(temp_file(ecmwf_file_length+10:(cut_off-7))))

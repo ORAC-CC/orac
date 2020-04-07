@@ -213,11 +213,11 @@ subroutine setup_aatsr(l1b_path_file,geo_path_file,platform,sensor,year, &
    ! which aatsr are we processing?
 
    if (trim(adjustl(sensor)) .eq. 'AATSR') then
-      index1=index(trim(adjustl(l1b_path_file)),'.N1',back=.true.)
+      index1=index(l1b_path_file,'.N1',back=.true.)
       platform='Envisat'
    else
       platform='ERS2'
-      index1=index(trim(adjustl(l1b_path_file)),'.E2',back=.true.)
+      index1=index(l1b_path_file,'.E2',back=.true.)
    end if
 
    ! Get year, month, day, hour and minute as strings
@@ -351,8 +351,8 @@ subroutine setup_abi(l1b_path_file,geo_path_file,platform,year,month,day, &
    if (verbose) write(*,*) 'geo_path_file: ', trim(geo_path_file)
 
    ! check if l1b and geo file are of the same granule
-   index1=index(trim(adjustl(l1b_path_file)),'/',back=.true.)
-   index2=index(trim(adjustl(geo_path_file)),'/',back=.true.)
+   index1=index(l1b_path_file,'/',back=.true.)
+   index2=index(geo_path_file,'/',back=.true.)
 
    ! check if l1b and geo files identical
    if (trim(adjustl(l1b_path_file)) .ne. &
@@ -379,7 +379,7 @@ subroutine setup_abi(l1b_path_file,geo_path_file,platform,year,month,day, &
 
    if (verbose) write(*,*)"Satellite is: ",platform
 
-   index2=index(trim(adjustl(l1b_path_file)),'ABI-L1b-')
+   index2=index(l1b_path_file,'ABI-L1b-')
 
    ! get year, doy, hour and minute as strings
    cyear=trim(adjustl(l1b_path_file(index3:index3+3)))
@@ -507,10 +507,10 @@ subroutine setup_agri(l1b_path_file,geo_path_file,platform,year,month,day, &
     if (verbose) write(*,*) 'geo_path_file: ', trim(geo_path_file)
 
     if (index(l1b_path_file,"FY4A") .gt. 0) then
-      index3=index(trim(adjustl(l1b_path_file)),'AGRI_FY4A_') + 10
+      index3=index(l1b_path_file,'AGRI_FY4A_') + 10
       platform="FY-4A"
     else if(index(l1b_path_file,"FY4B") .gt. 0) then
-      index3=index(trim(adjustl(l1b_path_file)),'AGRI_FY4A_') + 10
+      index3=index(l1b_path_file,'AGRI_FY4A_') + 10
       platform="FY-4B"
     else
       write(*,*) "Unsupported Fengyun platform, ",l1b_path_file
@@ -646,8 +646,8 @@ subroutine setup_ahi(l1b_path_file,geo_path_file,platform,year,month,day, &
    if (verbose) write(*,*) 'geo_path_file: ', trim(geo_path_file)
 
    ! check if l1b and geo file are of the same granule
-   index1=index(trim(adjustl(l1b_path_file)),'/',back=.true.)
-   index2=index(trim(adjustl(geo_path_file)),'/',back=.true.)
+   index1=index(l1b_path_file,'/',back=.true.)
+   index2=index(geo_path_file,'/',back=.true.)
 
    ! check if l1b and geo files identical
    if (trim(adjustl(l1b_path_file)) .ne. &
@@ -674,7 +674,7 @@ subroutine setup_ahi(l1b_path_file,geo_path_file,platform,year,month,day, &
    ! Note that it requires the segment name to be in the generic format
    ! that's specified by the JMA. Weird filenames will break things.
 
-   index2=index(trim(adjustl(l1b_path_file)),'HS_H')
+   index2=index(l1b_path_file,'HS_H')
 
    ! get year, doy, hour and minute as strings
    index2=index2+7
@@ -793,15 +793,15 @@ subroutine setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day, &
    if (verbose) write(*,*) 'geo_path_file: ', trim(geo_path_file)
 
    ! check if old/new avhrr filename
-   i = index(trim(adjustl(l1b_path_file)),'/', back=.true.)
+   i = index(l1b_path_file,'/', back=.true.)
 
    if (trim(adjustl(l1b_path_file(i+1:i+8))) .eq.'ECC_GAC_') then
 
       if (verbose) write(*,*) ' *** new avhrr input file'
 
       ! check if l1b and geo file are for the same orbit
-      index1=index(trim(adjustl(l1b_path_file)),'ECC_GAC_avhrr',back=.true.)
-      index2=index(trim(adjustl(geo_path_file)),'ECC_GAC_sunsatangles',back=.true.)
+      index1=index(l1b_path_file,'ECC_GAC_avhrr',back=.true.)
+      index2=index(geo_path_file,'ECC_GAC_sunsatangles',back=.true.)
 
       if (trim(adjustl(l1b_path_file(1:index1-1))) .ne. &
            trim(adjustl(geo_path_file(1:index2-1)))) then
@@ -850,8 +850,8 @@ subroutine setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day, &
       if (verbose) write(*,*) ' *** old avhrr input file'
 
       ! check if l1b and angles file are for the same orbit
-      index1=index(trim(adjustl(l1b_path_file)),'_avhrr',back=.true.)
-      index2=index(trim(adjustl(geo_path_file)),'_sunsatangles',back=.true.)
+      index1=index(l1b_path_file,'_avhrr',back=.true.)
+      index2=index(geo_path_file,'_sunsatangles',back=.true.)
 
       if (trim(adjustl(l1b_path_file(1:index1-1))) .ne. &
            trim(adjustl(geo_path_file(1:index2-1)))) then
@@ -1089,8 +1089,8 @@ subroutine setup_modis(l1b_path_file,geo_path_file,platform,year,month,day, &
    if (verbose) write(*,*) 'geo_path_file: ', trim(geo_path_file)
 
    ! check if l1b and geo file are of the same granule
-   index1=index(trim(adjustl(l1b_path_file)),'/',back=.true.)
-   index2=index(trim(adjustl(geo_path_file)),'/',back=.true.)
+   index1=index(l1b_path_file,'/',back=.true.)
+   index2=index(geo_path_file,'/',back=.true.)
 
    if (trim(adjustl(l1b_path_file(index1+10:index1+26))) .ne. &
        trim(adjustl(geo_path_file(index2+7:index2+23)))) then
@@ -1104,7 +1104,7 @@ subroutine setup_modis(l1b_path_file,geo_path_file,platform,year,month,day, &
    end if
 
    ! which modis are we processing?
-   index1=index(trim(adjustl(l1b_path_file)),'1KM.')
+   index1=index(l1b_path_file,'1KM.')
    if (trim(adjustl(l1b_path_file(index1-5:index1-3))) .eq. 'MYD') &
         platform='AQUA'
    if (trim(adjustl(l1b_path_file(index1-5:index1-3))) .eq. 'MOD') &
@@ -1230,8 +1230,8 @@ subroutine setup_seviri(l1b_path_file,geo_path_file,platform,year,month,day, &
    if (verbose) write(*,*) 'geo_path_file: ', trim(geo_path_file)
 
    ! check if l1b and geo file are of the same granule
-   index1=index(trim(adjustl(l1b_path_file)),'/',back=.true.)
-   index2=index(trim(adjustl(geo_path_file)),'/',back=.true.)
+   index1=index(l1b_path_file,'/',back=.true.)
+   index2=index(geo_path_file,'/',back=.true.)
 
    ! check if l1b and geo files identical
    if (trim(adjustl(l1b_path_file)) .ne. &
@@ -1245,15 +1245,15 @@ subroutine setup_seviri(l1b_path_file,geo_path_file,platform,year,month,day, &
       stop error_stop_code
    end if
 
-   index1=index(trim(adjustl(l1b_path_file)),'.h5')
+   index1=index(l1b_path_file,'.h5')
 
    if (index1 .ne. 0) then
-      index2 = index(trim(adjustl(l1b_path_file)), "/", back=.true.)
-      index2 = index2 + index(trim(adjustl(l1b_path_file(index2 + 1:))), '_')
+      index2 = index(l1b_path_file, "/", back=.true.)
+      index2 = index2 + index(l1b_path_file(index2 + 1:), '_')
       call determine_seviri_platform_from_metoffice(l1b_path_file, platform)
    else
       ! Check if file is HRIT or NAT.
-      index1=index(trim(adjustl(l1b_path_file)),'.nat')
+      index1=index(l1b_path_file,'.nat')
 
       ! which MSG are we processing?
       !
@@ -1261,16 +1261,16 @@ subroutine setup_seviri(l1b_path_file,geo_path_file,platform,year,month,day, &
       ! H-000-MSG1__-MSG1________-_________-EPI______-200603031200-__
       !
       if (index1 .ne. 0) then
-         index2=index(trim(adjustl(l1b_path_file)),'-')
+         index2=index(l1b_path_file,'-')
          platform=l1b_path_file(index2-4:index2-1)
       else
-         index2=index(trim(adjustl(l1b_path_file)),'__-')
+         index2=index(l1b_path_file,'__-')
          platform=l1b_path_file(index2+3:index2+6)
       end if
-      index2 = index2 + index(trim(adjustl(l1b_path_file(index2 + 1:))), '-')
-      index2 = index2 + index(trim(adjustl(l1b_path_file(index2 + 1:))), '-')
-      index2 = index2 + index(trim(adjustl(l1b_path_file(index2 + 1:))), '-')
-      index2 = index2 + index(trim(adjustl(l1b_path_file(index2 + 1:))), '-')
+      index2 = index2 + index(l1b_path_file(index2 + 1:), '-')
+      index2 = index2 + index(l1b_path_file(index2 + 1:), '-')
+      index2 = index2 + index(l1b_path_file(index2 + 1:), '-')
+      index2 = index2 + index(l1b_path_file(index2 + 1:), '-')
    end if
 
    ! get year, doy, hour and minute as strings
@@ -1654,12 +1654,12 @@ subroutine setup_viirs_mband(l1b_path_file,geo_path_file,platform,year,month,day
    ! Assume Suomi-NPP by default
    platform="SuomiNPP"
    ! check if l1b and geo file are of the same granule
-   index1=index(trim(adjustl(l1b_path_file)),'npp_d',.true.)
-   index2=index(trim(adjustl(geo_path_file)),'npp_d',.true.)
+   index1=index(l1b_path_file,'npp_d',.true.)
+   index2=index(geo_path_file,'npp_d',.true.)
 
    if (index1 .le. 0) then
-      index1=index(trim(adjustl(l1b_path_file)),'j01_d',.true.)
-      index2=index(trim(adjustl(geo_path_file)),'j01_d',.true.)
+      index1=index(l1b_path_file,'j01_d',.true.)
+      index2=index(geo_path_file,'j01_d',.true.)
       if (index1 .le. 0) then
          write(*,*)'ERROR: setup_viirs_iband(): Unsupported platform'
          stop error_stop_code
@@ -1689,7 +1689,7 @@ subroutine setup_viirs_mband(l1b_path_file,geo_path_file,platform,year,month,day
    ! Note that it requires the segment name to be in the generic format
    ! that's specified by the NOAA. Weird filenames will break things.
 
-   index2=index(trim(adjustl(l1b_path_file)),'npp_d')
+   index2=index(l1b_path_file,'npp_d')
 
    ! get year, doy, hour and minute as strings
    index2=index2+5
@@ -1814,12 +1814,12 @@ subroutine setup_viirs_iband(l1b_path_file,geo_path_file,platform,year,month,day
    ! Assume Suomi-NPP by default
    platform="SuomiNPP"
    ! check if l1b and geo file are of the same granule
-   index1=index(trim(adjustl(l1b_path_file)),'npp_d',.true.)
-   index2=index(trim(adjustl(geo_path_file)),'npp_d',.true.)
+   index1=index(l1b_path_file,'npp_d',.true.)
+   index2=index(geo_path_file,'npp_d',.true.)
 
    if (index1 .le. 0) then
-      index1=index(trim(adjustl(l1b_path_file)),'j01_d',.true.)
-      index2=index(trim(adjustl(geo_path_file)),'j01_d',.true.)
+      index1=index(l1b_path_file,'j01_d',.true.)
+      index2=index(geo_path_file,'j01_d',.true.)
       if (index1 .le. 0) then
          write(*,*)'ERROR: setup_viirs_iband(): Unsupported platform'
          stop error_stop_code
@@ -1849,10 +1849,10 @@ subroutine setup_viirs_iband(l1b_path_file,geo_path_file,platform,year,month,day
    ! Note that it requires the segment name to be in the generic format
    ! that's specified by the NOAA. Weird filenames will break things.
 
-   index2=index(trim(adjustl(l1b_path_file)),'npp_d')
+   index2=index(l1b_path_file,'npp_d')
 
    if (index2 .le. 0) then
-      index2=index(trim(adjustl(l1b_path_file)),'j01_d',.true.)
+      index2=index(l1b_path_file,'j01_d',.true.)
       if (index2 .le. 0) then
          write(*,*)'ERROR: setup_viirs_iband(): Unsupported platform'
          stop error_stop_code

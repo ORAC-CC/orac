@@ -55,8 +55,8 @@ subroutine read_abi_dimensions(l1_5_file, n_across_track, n_along_track, &
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< read_abi_dimensions()'
 
-   index2 = index(trim(adjustl(l1_5_file)),'_G1')
-   cband  = l1_5_file(index2-2:index2)
+   index2 = index(l1_5_file, '_G1')
+   cband  = l1_5_file(index2-2:index2-1)
 
    read(cband(1:len_trim(cband)), '(I2)') band
 

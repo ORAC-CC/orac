@@ -98,9 +98,9 @@ subroutine get_abi_path(l1_5_file, platform, abi_filenames, n_chans, channel_ids
 
    ! Some useful positions in the file
    ! Location of the datestring
-   index1 = index(trim(adjustl(l1_5_file)), '_s', back=.true.)
+   index1 = index(l1_5_file, '_s', back=.true.)
    ! Starting location of the actual filename
-   index3 = index(trim(adjustl(l1_5_file)), 'OR_', back=.true.)
+   index3 = index(l1_5_file, 'OR_', back=.true.)
 
    ! Extract the datestring (including '_s' prefix)
    dtstr  = l1_5_file(index1:index1+16)

@@ -519,7 +519,7 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
    ! Set Faerosol, Fcollocation, FMOD04, FMOD06, InfThnCld, corrected_cth, FtoaSW
    do i = 11, nargs
       call get_command_argument(i, argname)
-      index1=index(trim(adjustl(argname)),'=',back=.true.)
+      index1=index(argname,'=',back=.true.)
       index2=len_trim(argname)
       tmpname1=trim(adjustl(argname(1:index1-1)))
       tmpname2=trim(adjustl(argname(index1+1:index2)))
@@ -552,12 +552,12 @@ subroutine process_broadband_fluxes(Fprimary,FPRTM,FALB,FTSI,fname,&
    ! Read time string from file
    !----------------------------------------------------------------------------
 #ifndef WRAPPER
-   index1=index(trim(adjustl(Fprimary)),'_',back=.true.)
+   index1=index(Fprimary,'_',back=.true.)
    cyear=trim(adjustl(Fprimary(index1-12:index1-9)))
    cmonth=trim(adjustl(Fprimary(index1-8:index1-7)))
    cday=trim(adjustl(Fprimary(index1-6:index1-4)))
 #else
-   index1=index(trim(adjustl(Fprimary)),'/',back=.true.)
+   index1=index(Fprimary,'/',back=.true.)
    cyear=trim(adjustl(Fprimary(index1+1:index1+4)))
    cmonth=trim(adjustl(Fprimary(index1+5:index1+6)))
    cday=trim(adjustl(Fprimary(index1+7:index1+8)))

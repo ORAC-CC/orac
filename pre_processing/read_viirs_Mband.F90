@@ -230,9 +230,9 @@ subroutine read_viirs_mband(infile,geofile,imager_geolocation, imager_measuremen
 
    ! Technically we could use data in the geofile (GMTCO) instead, but it gives
    ! same result whilst taking a lot of extra I/O
-   index2=index(trim(adjustl(geofile)),'npp_d',.true.)
+   index2 = index(geofile, 'npp_d', .true.)
    if (index2 .le. 0) then
-      index2=index(trim(adjustl(geofile)),'j01_d',.true.)
+      index2 = index(geofile, 'j01_d', .true.)
       if (index2 .le. 0) then
          write(*,*)"Unsupported VIIRS platform."
          stop
@@ -365,8 +365,8 @@ subroutine read_viirs_mband(infile,geofile,imager_geolocation, imager_measuremen
 
    ! Move on to image data, in this case from individual SVM files (per-band)
 
-   index2=index(trim(adjustl(infile)),'SVM',.true.)
-   do i=1,n_bands
+   index2 = index(infile, 'SVM', .true.)
+   do i = 1, n_bands
       banddir = infile(1:index2-2)
       write (band, "(I2.2)") band_ids(i)
       regex   = trim(infile(index2:index2+2))//trim(adjustl(band))// &
