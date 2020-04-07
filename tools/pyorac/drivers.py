@@ -474,7 +474,7 @@ OUTPUT_OPTICAL_PROPS_AT_NIGHT={opt_nght}
 VERBOSE={verbose}
 USE_CHUNKING={chunking}
 USE_NETCDF_COMPRESSION={compress}
-USE_BAYESIAN_SELECTION={bayesian}""".format(
+USE_NEW_BAYESIAN_SELECTION={bayesian}""".format(
     bayesian=args.phases != ['WAT', 'ICE'],
     chunking=args.chunking,
     compress=args.compress,
