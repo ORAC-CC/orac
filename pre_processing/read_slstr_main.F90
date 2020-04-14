@@ -23,6 +23,9 @@
 !                 this harder to implement, but also makes it less necessary.
 !                 The S7 band now saturates at 312K rather than 305K.
 ! 2020/03/17, AP: Read land/sea mask from the flags_XX:confidence_XX field.
+! 2020/04/13, AP: Have read_slstr_dimensions() use get_slstr_gridsize() so it
+!                 explictly checks the geodetic_in file, rather than whatever
+!                 file the user happened to pass as l1b_file.
 !
 ! Bugs:
 ! None known (in ORAC)
@@ -56,17 +59,16 @@ subroutine read_slstr_dimensions(img_file, n_across_track, n_along_track, verbos
    integer(lint),          intent(out)   :: n_across_track, n_along_track
    logical,                intent(in)    :: verbose
 
-   integer :: fid
+   integer :: i
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< read_slstr_dimensions()'
 
-   ! Open the file.
-   call nc_open(fid, img_file, 'read_slstr_dimensions()')
-
-   n_across_track = nc_dim_length(fid, 'columns', 'read_slstr_dimensions()', verbose)
-   n_along_track = nc_dim_length(fid, 'rows', 'read_slstr_dimensions()', verbose)
-
-   call nc_close(fid, 'read_slstr_dimensions()')
+   ! To ensure consistency across different processings, the SLSTR scene is
+   ! defined by the in grid. All other grids (e.g. processing the oblique view
+   ! only) are referenced to here, such that the x/y coords don't need to be
+   ! changed when processing different grids.
+   i = index(img_file, '/', .true.)
+   call get_slstr_gridsize(img_file(1:i), 'in', n_across_track, n_along_track)
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> read_slstr_dimensions()'
 
