@@ -26,17 +26,10 @@
 ! l1_5_file      string  in   Full path to one netCDF GOES channel (any band)
 ! n_across_track lint    out  Number columns in the GOES disk image (constant)
 ! n_along_track  lint    out  Number lines   in the GOES disk image (constant)
-! startx         lint    both First column desired by the caller
-! endx           lint    both First line desired by the caller
-! starty         lint    both Last column desired by the caller
-! endy           lint    both Last line desired by the caller
 ! verbose        logical in   If true then print verbose information.
 !
-! Note: startx,endx,starty,endy currently ignored.
-! It will always process the full disk. This will be fixed.
 !-------------------------------------------------------------------------------
-subroutine read_abi_dimensions(l1_5_file, n_across_track, n_along_track, &
-     startx, endx, starty, endy, verbose)
+subroutine read_abi_dimensions(l1_5_file, n_across_track, n_along_track, verbose)
 
    use preproc_constants_m
    use orac_ncdf_m
@@ -46,7 +39,6 @@ subroutine read_abi_dimensions(l1_5_file, n_across_track, n_along_track, &
 
    character(path_length), intent(in)    :: l1_5_file
    integer(lint),          intent(out)   :: n_across_track, n_along_track
-   integer(lint),          intent(inout) :: startx, endx, starty, endy
    logical,                intent(in)    :: verbose
 
    integer      :: fid, index2, band
@@ -77,38 +69,6 @@ subroutine read_abi_dimensions(l1_5_file, n_across_track, n_along_track, &
 
    ! Close the netCDF4 file
    call nc_close(fid, 'read_abi_dimensions()')
-
-   if (startx .le. 0 .or. endx .le. 0 .or. starty .le. 0 .or. endy .le. 0) then
-      ! If start and end *are not* being used then set them to the start and end
-      ! of the actual image in the file.
-      starty = 1
-      endy   = n_lines
-      startx = 1
-      endx   = n_cols
-   else
-      ! If start and end *are* being used then check that they fall within the
-      ! actual image in the file relative to the full disk image.
-      if (starty - 1 .lt.  0) then
-         write(*,*) 'ERROR: read_abi_dimensions(): user defined starty (', starty, ') ' //&
-              'does not fall within the actual GOES image starting at: ', 1
-         stop error_stop_code
-      end if
-      if (endy - 1 .gt. n_lines - 1) then
-         write(*,*) 'ERROR: read_abi_dimensions(): user defined endy (', endy, ') does not ' // &
-              'fall within the actual GOES image ending at: ', n_lines
-         stop error_stop_code
-      end if
-      if (startx - 1 .lt.  0) then
-         write(*,*) 'ERROR: read_abi_dimensions(): user defined startx (', startx, ') does not ' // &
-              'fall within the actual GOES image starting at: ', 1
-         stop error_stop_code
-      end if
-      if (endx - 1 .gt. n_cols - 1) then
-         write(*,*) 'ERROR: read_abi_dimensions(): user defined endx (', endx, ') does not ' // &
-              'fall within the actual GOES image ending at: ', n_cols
-         stop error_stop_code
-      end if
-   end if
 
    n_across_track = n_cols
    n_along_track  = n_lines

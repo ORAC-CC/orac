@@ -67,11 +67,9 @@ contains
 ! endy           lint    both Last line desired by the caller
 ! verbose        logical in   If true then print verbose information.
 !
-! Note: startx,endx,starty,endy currently ignored.
-! It will always process the full disk. This will be fixed.
 !-------------------------------------------------------------------------------
 subroutine read_himawari_dimensions(l1_5_file, n_across_track, n_along_track, &
-                                    startx, endx, starty, endy,verbose)
+                                    verbose)
 
    use iso_c_binding
    use preproc_constants_m
@@ -80,7 +78,6 @@ subroutine read_himawari_dimensions(l1_5_file, n_across_track, n_along_track, &
 
    character(path_length), intent(in)    :: l1_5_file
    integer(lint),          intent(out)   :: n_across_track, n_along_track
-   integer(lint),          intent(inout) :: startx, endx, starty, endy
    logical,                intent(in)    :: verbose
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< read_himawari_dimensions()'
@@ -90,16 +87,6 @@ subroutine read_himawari_dimensions(l1_5_file, n_across_track, n_along_track, &
    ! are scaled from 0.5 or 1km to this 2km resolution.
    n_along_track  = 5500
    n_across_track = 5500
-
-   if (startx .le. 0 .or. endx .le. 0 .or. starty .le. 0 .or. endy .le. 0) then
-      ! If start and end *are not* being used then set them to the start and end
-      ! of the actual image in the file.
-      startx = 1
-      starty = 1
-
-      endx=n_across_track
-      endy=n_along_track
-   end if
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> read_himawari_dimensions()'
 

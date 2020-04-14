@@ -44,17 +44,13 @@ contains
 ! geo_file       string  in   Full path to one VIIRS GMTCO file
 ! n_across_track lint    out  Number columns in the viirs image (usually constant)
 ! n_along_track  lint    out  Number lines   in the viirs image (usually constant)
-! startx         lint    both First column desired by the caller
-! endx           lint    both First line desired by the caller
-! starty         lint    both Last column desired by the caller
-! endy           lint    both Last line desired by the caller
 ! verbose        logical in   If true then print verbose information.
 !
 ! Note: startx,endx,starty,endy currently ignored.
 ! It will always process the full scene. This will be fixed.
 !-------------------------------------------------------------------------------
 subroutine read_viirs_mband_dimensions(geo_file, n_across_track, n_along_track, &
-                                 startx, endx, starty, endy, verbose)
+                                       verbose)
 
    use iso_c_binding
    use hdf5
@@ -64,7 +60,6 @@ subroutine read_viirs_mband_dimensions(geo_file, n_across_track, n_along_track, 
 
    character(path_length), intent(in)    :: geo_file
    integer(lint),          intent(out)   :: n_across_track, n_along_track
-   integer(lint),          intent(inout) :: startx, endx, starty, endy
    logical,                intent(in)    :: verbose
 
    integer(HID_T) :: file_id   ! File identifier
@@ -97,14 +92,8 @@ subroutine read_viirs_mband_dimensions(geo_file, n_across_track, n_along_track, 
    ! Get dataspace's dimensinons.
    call h5sget_simple_extent_dims_f(dataspace, dimsr, maxdimsr, error)
 
-   startx = 1
-   starty = 1
-
-   endx = dimsr(1)
-   endy = dimsr(2)
-
-   n_across_track = endx
-   n_along_track = endy
+   n_across_track = dimsr(1)
+   n_along_track = dimsr(2)
 
    call h5dclose_f(dset_id, error)
    call h5fclose_f(file_id, error)

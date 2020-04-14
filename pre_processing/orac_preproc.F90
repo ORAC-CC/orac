@@ -764,16 +764,18 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
            channel_info,verbose)
 
       ! Get dimensions of the ABI image.
-      call read_abi_dimensions(geo_path_file,n_across_track,n_along_track, &
-                                    startx,endx,starty,endy,verbose)
+      call read_abi_dimensions(geo_path_file, n_across_track, n_along_track, &
+           verbose)
+
    else if (trim(adjustl(sensor)) .eq. 'AGRI') then
       call setup_agri(l1b_path_file,geo_path_file,platform,year,month,day, &
            doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,preproc_opts%channel_ids, &
            channel_info,verbose)
       ! Get dimensions of the AGRI image.
       ! At present only full-disk images are supported
-      call read_agri_dimensions(geo_path_file,n_across_track,n_along_track, &
-                                    startx,endx,starty,endy,verbose)
+      call read_agri_dimensions(geo_path_file, n_across_track, n_along_track, &
+           verbose)
+
    else if (trim(adjustl(sensor)) .eq. 'AHI') then
       call setup_ahi(l1b_path_file,geo_path_file,platform,year,month,day, &
            doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,preproc_opts%channel_ids, &
@@ -781,8 +783,8 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
 
       ! Get dimensions of the AHI image.
       ! At present only full-disk images are supported
-      call read_himawari_dimensions(geo_path_file,n_across_track,n_along_track, &
-                                    startx,endx,starty,endy,verbose)
+      call read_himawari_dimensions(geo_path_file, n_across_track, n_along_track, &
+           verbose)
 
    else if (trim(adjustl(sensor)) .eq. 'AVHRR') then
       call setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day, &
@@ -833,8 +835,8 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
 
       ! Get dimensions of the SLSTR image.
       ! At present the full scene will always be processed
-      call read_slstr_dimensions(l1b_path_file,n_across_track,n_along_track, &
-                                 startx,endx,starty,endy,verbose)
+      call read_slstr_dimensions(l1b_path_file, n_across_track, n_along_track, &
+           verbose)
 
    else if (trim(adjustl(sensor)) .eq. 'VIIRSI') then
       call setup_viirs_iband(l1b_path_file,geo_path_file,platform,year,month,day, &
@@ -843,8 +845,8 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
 
       ! Get dimensions of the VIIRS image.
       ! At present the full scene will always be processed
-      call read_viirs_iband_dimensions(geo_path_file,n_across_track,n_along_track, &
-                                 startx,endx,starty,endy,verbose)
+      call read_viirs_iband_dimensions(geo_path_file, n_across_track, n_along_track, &
+           verbose)
 
    else if (trim(adjustl(sensor)) .eq. 'VIIRSM') then
       call setup_viirs_mband(l1b_path_file,geo_path_file,platform,year,month,day, &
@@ -853,8 +855,8 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
 
       ! Get dimensions of the VIIRS image.
       ! At present the full scene will always be processed
-      call read_viirs_mband_dimensions(geo_path_file,n_across_track,n_along_track, &
-                                 startx,endx,starty,endy,verbose)
+      call read_viirs_mband_dimensions(geo_path_file, n_across_track, n_along_track, &
+           verbose)
 
    else
       write(*,*) 'ERROR: Invalid sensor: ', trim(adjustl(sensor))
@@ -883,9 +885,28 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
    if (verbose) write(*,*) 'Determine processing chunks and their dimensions'
 
    if (startx.ge.1 .and. endx.ge.1 .and. starty.ge.1 .and. endy.ge.1) then
-      if (startx.gt.n_across_track .or. endx.gt.n_across_track) then
-         write(*,*) 'ERROR: invalid across track dimensions'
-         write(*,*) '       Should be < ',n_across_track
+      if ( trim(adjustl(sensor)) .eq. 'ABI'    .or. &
+           trim(adjustl(sensor)) .eq. 'AGRI'   .or. &
+           trim(adjustl(sensor)) .eq. 'AHI'    .or. &
+           trim(adjustl(sensor)) .eq. 'SLSTR'  .or. &
+           trim(adjustl(sensor)) .eq. 'VIIRSI' .or. &
+           trim(adjustl(sensor)) .eq. 'VIIRSM') then
+         write(*,*) 'ERROR: subsetting not supported for ', trim(sensor)
+         stop error_stop_code
+      end if
+      if (startx.gt.n_across_track) then
+         write(*,*) 'ERROR: invalid startx (across track dimensions)'
+         write(*,*) '       Should be < ', n_across_track
+         stop error_stop_code
+      end if
+      if (startx.gt.endx) then
+         write(*,*) 'ERROR: invalid startx (across track dimensions)'
+         write(*,*) '       Should be < endx', endx
+         stop error_stop_code
+      end if
+      if (endx.gt.n_across_track) then
+         write(*,*) 'ERROR: invalid endx (across track dimensions)'
+         write(*,*) '       Should be < ', n_across_track
          stop error_stop_code
       end if
       if ((trim(adjustl(sensor)) .eq. 'AATSR' .or. &
@@ -894,10 +915,19 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
       else
          along_pos = along_track_offset + n_along_track
       end if
-      if (starty.gt.along_pos .or. endy.gt.along_pos) then
-         write(*,*) 'ERROR: invalid along track dimensions'
-         write(*,*) 'starty, endy = ', starty, endy
-         write(*,*) '       Should be < ',along_pos
+      if (starty.gt.along_pos) then
+         write(*,*) 'ERROR: invalid starty (along track dimensions)'
+         write(*,*) '       Should be < ', along_pos
+         stop error_stop_code
+      end if
+       if (starty.gt.endy) then
+         write(*,*) 'ERROR: invalid starty (along track dimensions)'
+         write(*,*) '       Should be < endy ', endy
+         stop error_stop_code
+      end if
+     if (endy.gt.along_pos) then
+         write(*,*) 'ERROR: invalid endy (along track dimensions)'
+         write(*,*) '       Should be < ', along_pos
          stop error_stop_code
       end if
 

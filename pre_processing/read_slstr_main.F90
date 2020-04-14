@@ -41,17 +41,10 @@
 ! geo_file       string  in   Full path to one slstr image file
 ! n_across_track lint    out  Number columns in the slstr image (usually constant)
 ! n_along_track  lint    out  Number lines   in the slstr image (usually constant)
-! startx         lint    both First column desired by the caller
-! endx           lint    both First line desired by the caller
-! starty         lint    both Last column desired by the caller
-! endy           lint    both Last line desired by the caller
 ! verbose        logical in   If true then print verbose information.
 !
-! Note: startx, endx, starty, endy currently ignored.
-! It will always process the full scene. This will be fixed.
 !-------------------------------------------------------------------------------
-subroutine read_slstr_dimensions(img_file, n_across_track, n_along_track, &
-                                 startx, endx, starty, endy, verbose)
+subroutine read_slstr_dimensions(img_file, n_across_track, n_along_track, verbose)
 
    use iso_c_binding
    use orac_ncdf_m
@@ -61,7 +54,6 @@ subroutine read_slstr_dimensions(img_file, n_across_track, n_along_track, &
 
    character(path_length), intent(in)    :: img_file
    integer(lint),          intent(out)   :: n_across_track, n_along_track
-   integer(lint),          intent(inout) :: startx, endx, starty, endy
    logical,                intent(in)    :: verbose
 
    integer :: fid
@@ -71,14 +63,8 @@ subroutine read_slstr_dimensions(img_file, n_across_track, n_along_track, &
    ! Open the file.
    call nc_open(fid, img_file, 'read_slstr_dimensions()')
 
-   startx=1
-   starty=1
-
-   endy = nc_dim_length(fid, 'rows', 'read_slstr_dimensions()', verbose)
-   endx = nc_dim_length(fid, 'columns', 'read_slstr_dimensions()', verbose)
-
-   n_across_track = endx
-   n_along_track = endy
+   n_across_track = nc_dim_length(fid, 'columns', 'read_slstr_dimensions()', verbose)
+   n_along_track = nc_dim_length(fid, 'rows', 'read_slstr_dimensions()', verbose)
 
    call nc_close(fid, 'read_slstr_dimensions()')
 
