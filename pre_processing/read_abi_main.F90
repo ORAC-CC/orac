@@ -37,13 +37,13 @@ subroutine read_abi_dimensions(l1_5_file, n_across_track, n_along_track, verbose
 
    implicit none
 
-   character(path_length), intent(in)    :: l1_5_file
-   integer(lint),          intent(out)   :: n_across_track, n_along_track
+   character(len=*),   intent(in)    :: l1_5_file
+   integer(kind=lint), intent(out)   :: n_across_track, n_along_track
    logical,                intent(in)    :: verbose
 
    integer      :: fid, index2, band
    integer      :: n_lines, n_cols
-   character(2) :: cband
+   character(len=2) :: cband
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< read_abi_dimensions()'
 
@@ -103,7 +103,7 @@ subroutine get_abi_data(infiles, imager_angles, imager_measurements, &
 
    implicit none
 
-   character(len=file_length),  intent(in)    :: infiles(:)
+   character(len=*),            intent(in)    :: infiles(:)
    type(imager_angles_t),       intent(inout) :: imager_angles
    type(imager_measurements_t), intent(inout) :: imager_measurements
    type(imager_geolocation_t),  intent(inout) :: imager_geolocation
@@ -208,14 +208,14 @@ subroutine read_abi_bin(infiles, imager_geolocation, imager_measurements, &
 
    implicit none
 
-   character(len=file_length),  intent(in)    :: infiles(:)
+   character(len=*),            intent(in)    :: infiles(:)
    type(imager_geolocation_t),  intent(inout) :: imager_geolocation
    type(imager_measurements_t), intent(inout) :: imager_measurements
    type(imager_angles_t),       intent(inout) :: imager_angles
    type(imager_time_t),         intent(inout) :: imager_time
    type(channel_info_t),        intent(in)    :: channel_info
    logical,                     intent(in)    :: use_predef_geo
-   character(len=file_length),  intent(in)    :: geo_file_path
+   character(len=*),            intent(in)    :: geo_file_path
    type(global_attributes_t),   intent(inout) :: global_atts
    logical,                     intent(in)    :: verbose
 

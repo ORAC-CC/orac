@@ -34,7 +34,7 @@ subroutine read_avhrr_land_sea_mask(path_to_geo_file,imager_geolocation, &
 
    implicit none
 
-   character(len=path_length), intent(in)    :: path_to_geo_file
+   character(len=*),           intent(in)    :: path_to_geo_file
    type(imager_geolocation_t), intent(inout) :: imager_geolocation
    type(imager_flags_t),       intent(inout) :: imager_flags
 

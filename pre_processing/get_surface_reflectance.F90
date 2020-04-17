@@ -141,12 +141,12 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
    implicit none
 
    ! Input variables
-   character(len=date_length), intent(in)    :: cyear
-   character(len=date_length), intent(in)    :: cdoy
-   character(len=2),           intent(in)    :: cmonth
-   character(len=path_length), intent(in)    :: modis_surf_path
-   character(len=path_length), intent(in)    :: modis_brdf_path
-   character(len=path_length), intent(in)    :: occci_path
+   character(len=*),           intent(in)    :: cyear
+   character(len=*),           intent(in)    :: cdoy
+   character(len=*),           intent(in)    :: cmonth
+   character(len=*),           intent(in)    :: modis_surf_path
+   character(len=*),           intent(in)    :: modis_brdf_path
+   character(len=*),           intent(in)    :: occci_path
    type(imager_flags_t),       intent(in)    :: imager_flags
    type(imager_geolocation_t), intent(in)    :: imager_geolocation
    type(imager_angles_t),      intent(in)    :: imager_angles

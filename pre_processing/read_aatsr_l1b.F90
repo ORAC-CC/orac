@@ -103,15 +103,15 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
 
          implicit none
 
-         character(c_char), dimension(path_length) :: l1b_file
-         character(c_char), dimension(30)   :: start_date
-         character(c_char), dimension(62)   :: gc1_file, vc1_file
-         integer(c_short)                   :: nch, stat
-         integer(c_short), dimension(nch)   :: ch, view
-         integer(c_long)                    :: nx, ny, startx, starty
-         integer(c_short), dimension(nx,ny) :: nflg, nqul, fflg, fqul
-         real(c_double), dimension(ny)      :: nday, fday
-         logical(c_bool)                    :: verb, is_lut_drift_corrected
+         character(kind=c_char), dimension(path_length) :: l1b_file
+         character(kind=c_char), dimension(30)   :: start_date
+         character(kind=c_char), dimension(62)   :: gc1_file, vc1_file
+         integer(kind=c_short)                   :: nch, stat
+         integer(kind=c_short), dimension(nch)   :: ch, view
+         integer(kind=c_long)                    :: nx, ny, startx, starty
+         integer(kind=c_short), dimension(nx,ny) :: nflg, nqul, fflg, fqul
+         real(kind=c_double), dimension(ny)      :: nday, fday
+         logical(kind=c_bool)                    :: verb, is_lut_drift_corrected
          type(c_ptr) :: lat, lon
          type(c_ptr) :: nsza, niza, nsaz, nraz
          type(c_ptr) :: nch1, nch2, nch3, nch4, nch5, nch6, nch7
@@ -121,33 +121,33 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
    end interface
 
    ! Fortran variables
-   character(len=path_length),     intent(in)    :: l1b_file, drift_file
+   character(len=*),            intent(in)    :: l1b_file, drift_file
    type(imager_geolocation_t),     intent(inout) :: imager_geolocation
    type(imager_measurements_t),    intent(inout) :: imager_measurements
    type(imager_angles_t),          intent(inout) :: imager_angles
    type(imager_flags_t),           intent(inout) :: imager_flags
    type(imager_time_t),            intent(inout) :: imager_time
    type(channel_info_t),           intent(in)    :: channel_info
-   character(len=sensor_length),   intent(in)    :: sensor
+   character(len=*),            intent(in)    :: sensor
    logical,                        intent(in)    :: verbose
 
-   integer                   :: i,ii,j,jj,status
-   integer(byte)             :: view_selection
-   real(sreal), dimension(4) :: A
-   type(aatsr_drift_lut_t)   :: lut
-   real(dreal)               :: new_drift, old_drift, drift_var
+   integer                        :: i,ii,j,jj,status
+   integer(kind=byte)             :: view_selection
+   real(kind=sreal), dimension(4) :: A
+   type(aatsr_drift_lut_t)        :: lut
+   real(kind=dreal)               :: new_drift, old_drift, drift_var
 
    ! C variables
-   logical(c_bool)                        :: verb, is_lut_drift_corrected
-   integer(c_short)                       :: nch, stat, temp
-   integer(c_long)                        :: nx, ny, startx, starty
-   character(kind=c_char,len=path_length) :: l1b_file_c
-   character(kind=c_char,len=30)          :: start_date
-   character(kind=c_char,len=62)          :: gc1_file, vc1_file
-   real(c_double), allocatable, dimension(:)     :: nday, fday
-   integer(c_short), allocatable, dimension(:)   :: ch, view
-   integer(c_short), allocatable, dimension(:,:) :: nflg, fflg
-   integer(c_short), allocatable, dimension(:,:) :: nqul, fqul
+   logical(kind=c_bool)                    :: verb, is_lut_drift_corrected
+   integer(kind=c_short)                   :: nch, stat, temp
+   integer(kind=c_long)                    :: nx, ny, startx, starty
+   character(kind=c_char, len=path_length) :: l1b_file_c
+   character(kind=c_char, len=30)          :: start_date
+   character(kind=c_char, len=62)          :: gc1_file, vc1_file
+   real(kind=c_double), allocatable, dimension(:)     :: nday, fday
+   integer(kind=c_short), allocatable, dimension(:)   :: ch, view
+   integer(kind=c_short), allocatable, dimension(:,:) :: nflg, fflg
+   integer(kind=c_short), allocatable, dimension(:,:) :: nqul, fqul
    type(c_ptr) :: lat, lon
    type(c_ptr) :: nsza, niza, nsaz, nraz
    type(c_ptr) :: nch1, nch2, nch3, nch4, nch5, nch6, nch7

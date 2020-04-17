@@ -62,7 +62,7 @@ module aatsr_corrections_m
    end type aatsr_drift_lut_t
 
    ! Month strings used in the LUT files
-   character(3), dimension(12), parameter  :: monthname &
+   character(len=3), dimension(12), parameter :: monthname &
       = (/ 'JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', &
            'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC' /)
 
@@ -135,8 +135,8 @@ subroutine aatsr_drift_correction(start_date, vc1_file, lut, chan, new_drift, &
 
    implicit none
 
-   character(len=30),       intent(in)  :: start_date
-   character(len=62),       intent(in)  :: vc1_file
+   character(len=*),        intent(in)  :: start_date
+   character(len=*),        intent(in)  :: vc1_file
    type(aatsr_drift_lut_t), intent(in)  :: lut
    integer,                 intent(in)  :: chan
    real(dreal),             intent(out) :: new_drift
@@ -281,7 +281,7 @@ subroutine aatsr_read_drift_table(drift_table, lut, stat)
 
    implicit none
 
-   character(len=path_length), intent(in)    :: drift_table
+   character(len=*),        intent(in)    :: drift_table
    integer,                    intent(out)   :: stat
    type(aatsr_drift_lut_t),    intent(inout) :: lut
 

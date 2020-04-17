@@ -46,9 +46,9 @@ subroutine read_avhrr_l1b_radiances(sensor,platform,path_to_l1b_file, &
 
    implicit none
 
-   character(len=sensor_length),   intent(in)    :: sensor
-   character(len=platform_length), intent(in)    :: platform
-   character(len=path_length),     intent(in)    :: path_to_l1b_file
+   character(len=*),            intent(in)    :: sensor
+   character(len=*),            intent(in)    :: platform
+   character(len=*),            intent(in)    :: path_to_l1b_file
    type(imager_geolocation_t),     intent(inout) :: imager_geolocation
    type(imager_measurements_t),    intent(inout) :: imager_measurements
    type(channel_info_t),           intent(in)    :: channel_info

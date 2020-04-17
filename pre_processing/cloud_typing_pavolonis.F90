@@ -274,7 +274,7 @@ subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
    ! Input variables
 
    type(channel_info_t),           intent(in)    :: channel_info
-   character(len=sensor_length),   intent(in)    :: sensor
+   character(len=*),            intent(in)    :: sensor
    type(surface_t),                intent(in)    :: surface
    type(imager_flags_t),           intent(in)    :: imager_flags
    type(imager_angles_t),          intent(in)    :: imager_angles
@@ -282,7 +282,7 @@ subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
    type(imager_measurements_t),    intent(inout) :: imager_measurements
    type(imager_pavolonis_t),       intent(inout) :: imager_pavolonis
    type(ecmwf_t),                  intent(in)    :: ecmwf
-   character(len=platform_length), intent(in)    :: platform
+   character(len=*),            intent(in)    :: platform
    integer(kind=sint),             intent(in)    :: doy
    logical,                        intent(in)    :: do_ironly
    logical,                        intent(inout) :: do_spectral_response_correction
@@ -852,8 +852,8 @@ subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
    type(imager_geolocation_t),     intent(in)    :: imager_geolocation
    type(imager_measurements_t),    intent(inout) :: imager_measurements
    type(imager_pavolonis_t),       intent(inout) :: imager_pavolonis
-   character(len=sensor_length),   intent(in)    :: sensor
-   character(len=platform_length), intent(in)    :: platform
+   character(len=*),             intent(in)    :: sensor
+   character(len=*),             intent(in)    :: platform
    integer(kind=sint),             intent(in)    :: doy
    logical,                        intent(in)    :: do_ironly
    logical,                        intent(in)    :: verbose
@@ -1942,7 +1942,7 @@ function plank_inv(input_platform, T)
    implicit none
 
    ! input variable
-   character(len=platform_length), intent(in)   :: input_platform
+   character(len=*), intent(in) :: input_platform
    real(kind=sreal),intent(in) :: T ! Kelvin
 
    ! return variable
@@ -2092,7 +2092,7 @@ function get_platform_index(input_platform)
    implicit none
 
    ! input variables
-   character(len=platform_length), intent(in)    :: input_platform
+   character(len=*), intent(in) :: input_platform
 
    ! output variable
    integer :: get_platform_index

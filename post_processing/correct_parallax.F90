@@ -93,7 +93,7 @@ end subroutine get_attr
 
 real(kind=sreal) function get_ave_real(inarr)
 
-   real(kind=sreal), intent(in) :: inarr(3,3)
+   real(kind=sreal), intent(in) :: inarr(:,:) ! (3,3)
    real(kind=sreal)             :: outval
    integer(kind=sint)           :: counter, i, j
 

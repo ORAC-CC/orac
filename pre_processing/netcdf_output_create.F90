@@ -78,16 +78,16 @@ subroutine netcdf_output_create(output_path,lwrtm_file,swrtm_file,prtm_file, &
 
    implicit none
 
-   character(len=path_length),     intent(in)    :: output_path
-   character(len=file_length),     intent(in)    :: lwrtm_file,swrtm_file, &
+   character(len=*),           intent(in)    :: output_path
+   character(len=*),           intent(in)    :: lwrtm_file,swrtm_file, &
                                                     prtm_file,config_file, &
                                                     msi_file,cf_file,lsf_file, &
                                                     geo_file,loc_file,alb_file
-   character(len=platform_length), intent(in)    :: platform
-   character(len=sensor_length),   intent(in)    :: sensor
+   character(len=*),           intent(in)    :: platform
+   character(len=*),           intent(in)    :: sensor
    type(global_attributes_t),      intent(in)    :: global_atts
    type(source_attributes_t),      intent(in)    :: source_atts
-   character(len=date_length),     intent(in)    :: cyear,chour,cminute,cmonth, &
+   character(len=*),           intent(in)    :: cyear,chour,cminute,cmonth, &
                                                     cday
    type(preproc_dims_t),           intent(in)    :: preproc_dims
 

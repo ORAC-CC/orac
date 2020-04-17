@@ -49,7 +49,7 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, read_ws, read_bs, &
    include "hdf.f90"
 
    ! Input variables
-   character(len=path_length), intent(in) :: path_to_file
+   character(len=*), intent(in) :: path_to_file
    integer,                    intent(in) :: nbands
    integer,                    intent(in) :: bands(:)
    logical,                    intent(in) :: read_ws

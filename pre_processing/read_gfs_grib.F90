@@ -66,7 +66,7 @@ subroutine read_gfs_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
 
    implicit none
 
-   character(len=path_length), intent(in)    :: ecmwf_file
+   character(len=*),       intent(in)    :: ecmwf_file
    type(preproc_dims_t),       intent(in)    :: preproc_dims
    type(preproc_geoloc_t),     intent(in)    :: preproc_geoloc
    type(preproc_prtm_t),       intent(inout) :: preproc_prtm
@@ -80,7 +80,7 @@ subroutine read_gfs_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
    integer(lint)                            :: iblank(4)
    real(dreal)                              :: grid(2),area(4)
    character(len=20)                        :: charv(1)
-   character(100)                           :: ltype,lname
+   character(len=100)                       :: ltype,lname
 
    integer(lint)                            :: gid,level,param
    integer                                  :: tlev,qlev,olev,glev

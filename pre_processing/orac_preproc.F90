@@ -402,7 +402,7 @@ subroutine orac_preproc(mytask,ntasks,lower_bound,upper_bound,driver_path_file, 
    integer                          :: nargs
 
    integer                          :: i
-   character(path_length)           :: line, label, value
+   character(len=path_length)       :: line, label, value
 
 
    integer(kind=lint)               :: startx,endx,starty,endy

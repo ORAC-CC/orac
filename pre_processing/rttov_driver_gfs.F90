@@ -123,10 +123,10 @@ subroutine rttov_driver_gfs(coef_path, emiss_path, sensor, platform, &
 #include "rttov_dealloc_coefs.interface"
 
    ! Arguments
-   character(len=path_length),     intent(in)    :: coef_path
-   character(len=path_length),     intent(in)    :: emiss_path
-   character(len=sensor_length),   intent(in)    :: sensor
-   character(len=platform_length), intent(in)    :: platform
+   character(len=*),           intent(in)    :: coef_path
+   character(len=*),           intent(in)    :: emiss_path
+   character(len=*),           intent(in)    :: sensor
+   character(len=*),           intent(in)    :: platform
    type(preproc_dims_t),           intent(in)    :: preproc_dims
    type(preproc_geoloc_t),         intent(in)    :: preproc_geoloc
    type(preproc_geo_t),            intent(in)    :: preproc_geo

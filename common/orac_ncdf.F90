@@ -75,7 +75,7 @@ subroutine c_to_f_str(str)
 
    implicit none
 
-   character(*), intent(inout) :: str
+   character(len=*), intent(inout) :: str
    integer :: i
 
    do i=1,len(str)

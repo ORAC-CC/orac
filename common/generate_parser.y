@@ -120,7 +120,7 @@ variable:       STR dims DELIM NAME {
                     print_str_in_x_rul(f, current_type, $4);
                     print_var_in_c_wrapper(f, current_type, $4, "char");
                     print_var_in_f(f, current_type, $4,
-                                   "character(c_char)","*");
+                                   "character(kind=c_char)","*");
                     print_print_str_in_f(f, current_type, $4);
 
                 }

@@ -48,7 +48,7 @@ subroutine read_avhrr_l1b_radiances_2(fid,group,dataset,attrgroup, &
    integer(kind=HID_T), intent(in)  :: fid
    character(len=*),    intent(in)  :: dataset, group, attrgroup
    integer(kind=lint),  intent(in)  :: startx,stopx,starty,stopy
-   character(len=dim),  intent(out) :: channel_number
+   character(len=*),    intent(out) :: channel_number
    real(kind=sreal),    intent(out) :: rtemp(startx:stopx,starty:stopy)
    logical,             intent(in)  :: verbose
 

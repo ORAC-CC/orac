@@ -49,8 +49,8 @@ subroutine read_agri_dimensions(fname, n_across_track, n_along_track, verbose)
 
    implicit none
 
-   character(path_length), intent(in)    :: fname
-   integer(lint),          intent(out)   :: n_across_track, n_along_track
+   character(len=*),   intent(in)    :: fname
+   integer(kind=lint), intent(out)   :: n_across_track, n_along_track
    logical,                intent(in)    :: verbose
 
    integer :: fid
@@ -255,7 +255,7 @@ subroutine agri_retr_band(ncid, band, iband, solband, imager_measurements)
    implicit none
 
    integer,                     intent(in)  :: ncid
-   character(len=3),            intent(in)  :: band
+   character(len=*),            intent(in)  :: band
    integer,                     intent(in)  :: iband
    integer,                     intent(in)  :: solband
    type(imager_measurements_t), intent(out) :: imager_measurements
@@ -316,7 +316,7 @@ subroutine read_agri_data(infile, imager_geolocation, imager_measurements, &
 
    implicit none
 
-   character(len=path_length),  intent(in)    :: infile
+   character(len=*),            intent(in)    :: infile
    type(imager_geolocation_t),  intent(inout) :: imager_geolocation
    type(imager_measurements_t), intent(inout) :: imager_measurements
    type(imager_angles_t),       intent(inout) :: imager_angles

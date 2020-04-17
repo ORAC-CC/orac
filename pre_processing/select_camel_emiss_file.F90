@@ -27,10 +27,10 @@ subroutine select_camel_emiss_file(cyear,cmonth,camel_emis_path, &
 
    implicit none
 
-   character(len=date_length), intent(in)  :: cyear
-   character(len=date_length), intent(in)  :: cmonth
-   character(len=path_length), intent(in)  :: camel_emis_path
-   character(len=path_length), intent(out) :: camel_emis_path_file
+   character(len=*), intent(in)  :: cyear
+   character(len=*), intent(in)  :: cmonth
+   character(len=*), intent(in)  :: camel_emis_path
+   character(len=*), intent(out) :: camel_emis_path_file
 
    logical                            :: camel_emis_file_exist
    character(len=7)                   :: camel_emis_file_read

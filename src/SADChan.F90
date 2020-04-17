@@ -113,7 +113,7 @@ function Find_Channel(wvn, Ny, SAD_Chan, index, min, max, mask) result(channel)
    integer, optional, intent(in) :: index(:)
    real,    optional, intent(in) :: min
    real,    optional, intent(in) :: max
-   logical, optional, intent(in) :: mask(Ny)
+   logical, optional, intent(in) :: mask(:)
    integer                       :: channel
 
    integer :: i,  ii

@@ -40,7 +40,7 @@ subroutine read_gfs_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
 
    implicit none
 
-   character(len=path_length), intent(in)    :: ecmwf_path
+   character(len=*),       intent(in)    :: ecmwf_path
    type(ecmwf_t),              intent(in)    :: ecmwf
    type(preproc_dims_t),       intent(in)    :: preproc_dims
    type(preproc_geoloc_t),     intent(in)    :: preproc_geoloc

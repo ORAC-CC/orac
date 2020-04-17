@@ -340,8 +340,8 @@ subroutine clean_driver_label(in)
 
    Integer :: ic, i
 
-   character(26), parameter :: cap = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-   character(26), parameter :: low = 'abcdefghijklmnopqrstuvwxyz'
+   character(len=26), parameter :: cap = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+   character(len=26), parameter :: low = 'abcdefghijklmnopqrstuvwxyz'
 
    ! Capitalize each letter if it is lowercase
    do i = 1, len_trim(in)

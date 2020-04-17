@@ -195,17 +195,17 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    type(global_attributes_t), intent(inout) :: global_atts
    type(source_attributes_t), intent(inout) :: source_atts
 #ifdef WRAPPER
-   character(*),              intent(inout) :: drifile
+   character(len=*),          intent(inout) :: drifile
 #else
-   character(FilenameLen)                   :: drifile
+   character(len=FilenameLen)               :: drifile
 #endif
 
    ! Local variables
    integer                            :: i,ii,i0,i1,i2,j
    integer                            :: ios
    integer                            :: dri_lun, dump_lun
-   character(FilenameLen)             :: root_filename
-   character(FilenameLen)             :: outname, line
+   character(len=FilenameLen)         :: root_filename
+   character(len=FilenameLen)         :: outname, line
    logical                            :: file_exists
    integer, allocatable, dimension(:) :: channel_ids_instr
    integer, allocatable, dimension(:) :: channel_sw_flag, channel_lw_flag
@@ -220,7 +220,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    real                               :: wvl_threshold
    integer                            :: size
    character, allocatable             :: buffer(:)
-   character(FilenameLen)             :: dumpfile
+   character(len=FilenameLen)         :: dumpfile
 
 
    call Nullify_Ctrl(Ctrl)

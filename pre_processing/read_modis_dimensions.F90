@@ -34,7 +34,7 @@ subroutine read_modis_dimensions(path_to_geo_file,n_across_track,n_along_track)
 
    include "hdf.f90"
 
-   character(len=path_length), intent(in)  :: path_to_geo_file
+   character(len=*),   intent(in)  :: path_to_geo_file
    integer(kind=lint),         intent(out) :: n_across_track, n_along_track
 
    integer                    :: geo_id, dims(2), err_code

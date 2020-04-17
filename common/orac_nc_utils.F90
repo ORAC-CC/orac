@@ -51,13 +51,13 @@ subroutine nc_create(path, ncid, nx, ny, nview, dims_var, type, global_atts, &
 
    ! Output
    integer,                   intent(out)   :: ncid
-   integer,                   intent(out)   :: dims_var(3)
+   integer,                   intent(out)   :: dims_var(:) ! (3)
 
    type(global_attributes_t), intent(inout) :: global_atts
    type(source_attributes_t), intent(inout) :: source_atts
 
    integer,          optional,intent(in)    :: nch
-   integer,          optional,intent(out)   :: ch_var(1)
+   integer,          optional,intent(out)   :: ch_var(:) ! (1)
    integer,          optional,intent(in)    :: nstate
    character(len=*), optional,intent(in)    :: LUT_class
    logical,          optional,intent(in)    :: ann_phase_used

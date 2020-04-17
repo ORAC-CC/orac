@@ -55,8 +55,8 @@ subroutine read_slstr_dimensions(img_file, n_across_track, n_along_track, verbos
 
    implicit none
 
-   character(path_length), intent(in)    :: img_file
-   integer(lint),          intent(out)   :: n_across_track, n_along_track
+   character(len=*),   intent(in)    :: img_file
+   integer(kind=lint), intent(out)   :: n_across_track, n_along_track
    logical,                intent(in)    :: verbose
 
    integer :: i
@@ -105,7 +105,7 @@ subroutine read_slstr(infile, imager_geolocation, imager_measurements, &
 
    implicit none
 
-   character(len=path_length),  intent(in)    :: infile
+   character(len=*),            intent(in)    :: infile
    type(imager_geolocation_t),  intent(inout) :: imager_geolocation
    type(imager_measurements_t), intent(inout) :: imager_measurements
    type(imager_angles_t),       intent(inout) :: imager_angles

@@ -133,7 +133,7 @@ function read_oceancolour_cci(path_to_file, occci, wavelengths, verbose) &
    implicit none
 
    ! Input variables
-   character(len=path_length), intent(in)               :: path_to_file
+   character(len=*),  intent(in)               :: path_to_file
    real,                       intent(in)               :: wavelengths(:)
    logical,                    intent(in)               :: verbose
 
@@ -354,9 +354,9 @@ subroutine get_ocean_colour(cyear, cmonth, occci_path, lat, lon, &
    implicit none
 
    ! Input arguments
-   character(len=4), intent(in)           :: cyear
-   character(len=2), intent(in)           :: cmonth
-   character(len=path_length), intent(in) :: occci_path
+   character(len=*),                  intent(in)  :: cyear
+   character(len=*),                  intent(in)  :: cmonth
+   character(len=*),                  intent(in)  :: occci_path
    real(kind=sreal), intent(in)           :: lat(:)
    real(kind=sreal), intent(in)           :: lon(:)
    type(channel_info_t), intent(in)       :: channel_info

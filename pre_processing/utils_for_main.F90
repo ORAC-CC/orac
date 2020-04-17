@@ -54,7 +54,7 @@ subroutine parse_required(lun, value, name)
    character(len=*), intent(out) :: value
    character(len=*), intent(in)  :: name
 
-   character(path_length) :: line
+   character(len=path_length)    :: line
 
    if (parse_driver(lun, line) /= 0 .or. parse_string(line, value) /= 0) &
       call handle_parse_error(name)

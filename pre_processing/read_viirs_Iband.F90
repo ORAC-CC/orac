@@ -56,8 +56,8 @@ subroutine read_viirs_iband_dimensions(geo_file, n_across_track, n_along_track, 
 
    implicit none
 
-   character(path_length), intent(in)    :: geo_file
-   integer(lint),          intent(out)   :: n_across_track, n_along_track
+   character(len=*),   intent(in)    :: geo_file
+   integer(kind=lint), intent(out)   :: n_across_track, n_along_track
    logical,                intent(in)    :: verbose
 
    integer(HID_T) :: file_id   ! File identifier
@@ -134,8 +134,8 @@ subroutine read_viirs_iband(infile, geofile, imager_geolocation, imager_measurem
 
    implicit none
 
-   character(len=path_length),  intent(in)    :: infile
-   character(len=path_length),  intent(in)    :: geofile
+   character(len=*),            intent(in)    :: infile
+   character(len=*),            intent(in)    :: geofile
    type(imager_geolocation_t),  intent(inout) :: imager_geolocation
    type(imager_measurements_t), intent(inout) :: imager_measurements
    type(imager_angles_t),       intent(inout) :: imager_angles

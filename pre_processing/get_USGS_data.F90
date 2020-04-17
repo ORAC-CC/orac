@@ -35,7 +35,7 @@ subroutine get_USGS_data(path_to_USGS_file, imager_flags, imager_geolocation, &
 
    implicit none
 
-   character(len=path_length),  intent(in)    :: path_to_USGS_file
+   character(len=*),           intent(in)    :: path_to_USGS_file
    type(imager_flags_t),        intent(inout) :: imager_flags
    type(imager_geolocation_t),  intent(inout) :: imager_geolocation
    logical,                     intent(in)    :: assume_full_paths
@@ -44,7 +44,7 @@ subroutine get_USGS_data(path_to_USGS_file, imager_flags, imager_geolocation, &
    logical,                     intent(in)    :: verbose
    type(usgs_t),                intent(out)   :: usgs
    logical,                     intent(in)    :: use_predef_lsm
-   character(len=sensor_length),intent(in)    :: sensor
+   character(len=*),           intent(in)    :: sensor
 
    logical                          :: USGS_file_exist
    character(len=7)                 :: USGS_file_read

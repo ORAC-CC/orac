@@ -69,7 +69,7 @@ function read_camel_emissivity(path_to_file, emis, wavelengths, verbose, flag, &
    implicit none
 
    ! Input variables
-   character(len=path_length), intent(in)               :: path_to_file
+   character(len=*), intent(in)               :: path_to_file
    real,                       intent(in), dimension(:) :: wavelengths
    logical,                    intent(in)               :: verbose
    integer,                    intent(in), optional     :: flag

@@ -128,7 +128,7 @@ subroutine get_cloud_emis(channel_info, imager_measurements, imager_geolocation,
    type(preproc_prtm_t),         intent(in)    :: preproc_prtm
    type(imager_cloud_t),         intent(out)   :: imager_cloud
    type(ecmwf_t),                intent(in)    :: ecmwf
-   character(len=sensor_length), intent(in)    :: sensor
+   character(len=*),            intent(in)    :: sensor
    logical,                      intent(in)    :: verbose
 
 #ifdef INCLUDE_SATWX
@@ -359,7 +359,7 @@ subroutine do_cb_detect(channel_info, imager_measurements, imager_geolocation, &
    type(imager_geolocation_t),   intent(in)    :: imager_geolocation
    type(imager_cloud_t),         intent(in)    :: imager_cloud
    type(imager_pavolonis_t),     intent(inout) :: imager_pavolonis
-   character(len=sensor_length), intent(in)    :: sensor
+   character(len=*),            intent(in)    :: sensor
    logical,                      intent(in)    :: verbose
 
 #ifdef INCLUDE_SATWX

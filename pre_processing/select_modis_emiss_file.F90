@@ -44,10 +44,10 @@ subroutine select_modis_emiss_file(cyear,cdoy,cimss_emis_path, &
 
    implicit none
 
-   character(len=date_length), intent(in)  :: cyear
-   character(len=date_length), intent(in)  :: cdoy
-   character(len=path_length), intent(in)  :: cimss_emis_path
-   character(len=path_length), intent(out) :: cimss_emis_path_file
+   character(len=*), intent(in)  :: cyear
+   character(len=*), intent(in)  :: cdoy
+   character(len=*), intent(in)  :: cimss_emis_path
+   character(len=*), intent(out) :: cimss_emis_path_file
 
    integer(kind=sint)                 :: year
    integer(kind=sint)                 :: doy

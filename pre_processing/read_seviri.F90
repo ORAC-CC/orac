@@ -78,9 +78,9 @@ subroutine read_seviri_dimensions(l1_5_file, n_across_track, n_along_track, &
 #endif
    implicit none
 
-   character(path_length), intent(in)    :: l1_5_file
-   integer(lint),          intent(out)   :: n_across_track, n_along_track
-   integer(lint),          intent(inout) :: startx, endx, starty, endy
+   character(len=*),   intent(in)    :: l1_5_file
+   integer(kind=lint), intent(out)   :: n_across_track, n_along_track
+   integer(kind=lint), intent(inout) :: startx, endx, starty, endy
    logical,                intent(in)    :: verbose
 
    integer :: i_line, i_column
@@ -216,7 +216,7 @@ subroutine read_seviri_l1_5(l1_5_file, imager_geolocation, imager_measurements, 
 
    implicit none
 
-   character(len=path_length),  intent(in)    :: l1_5_file
+   character(len=*),            intent(in)    :: l1_5_file
    type(imager_geolocation_t),  intent(inout) :: imager_geolocation
    type(imager_measurements_t), intent(inout) :: imager_measurements
    type(imager_angles_t),       intent(inout) :: imager_angles
@@ -279,7 +279,7 @@ subroutine read_seviri_l1_5_metoff(l1_5_file, imager_geolocation, &
 
    implicit none
 
-   character(len=path_length),  intent(in)    :: l1_5_file
+   character(len=*),            intent(in)    :: l1_5_file
    type(imager_geolocation_t),  intent(inout) :: imager_geolocation
    type(imager_measurements_t), intent(inout) :: imager_measurements
    type(imager_angles_t),       intent(inout) :: imager_angles
@@ -377,7 +377,7 @@ subroutine read_seviri_l1_5_nat_or_hrit(l1_5_file, imager_geolocation, &
 #endif
    implicit none
 
-   character(len=path_length),  intent(in)    :: l1_5_file
+   character(len=*),            intent(in)    :: l1_5_file
    type(imager_geolocation_t),  intent(inout) :: imager_geolocation
    type(imager_measurements_t), intent(inout) :: imager_measurements
    type(imager_angles_t),       intent(inout) :: imager_angles

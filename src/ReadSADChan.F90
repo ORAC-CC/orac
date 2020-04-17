@@ -93,12 +93,12 @@ subroutine Read_SAD_Chan(Ctrl, SAD_Chan)
 
    ! Local variables
 
-   character(FilenameLen) :: chan_file        ! Name of channel description file
-   character(4)           :: chan_num         ! Channel number converted to a string
+   character(len=FilenameLen) :: chan_file        ! Name of channel description file
+   character(len=4)           :: chan_num         ! Channel number converted to a string
    integer                :: c_lun            ! Unit number for channel desc file
    integer                :: i, j             ! Loop counters
    integer                :: ios              ! I/O status from file open/read
-   character(FilenameLen) :: filename         ! File name as read from chan desc file
+   character(len=FilenameLen) :: filename         ! File name as read from chan desc file
    integer                :: NSolar, NThermal ! Local values used to check
                                               ! whether selected channels match
                                               ! totals indicated in driver file.

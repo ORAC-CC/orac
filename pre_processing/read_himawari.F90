@@ -76,8 +76,8 @@ subroutine read_himawari_dimensions(l1_5_file, n_across_track, n_along_track, &
 
    implicit none
 
-   character(path_length), intent(in)    :: l1_5_file
-   integer(lint),          intent(out)   :: n_across_track, n_along_track
+   character(len=*),   intent(in)    :: l1_5_file
+   integer(kind=lint), intent(out)   :: n_across_track, n_along_track
    logical,                intent(in)    :: verbose
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< read_himawari_dimensions()'
@@ -132,8 +132,8 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
 #endif
    implicit none
 
-   character(len=path_length),  intent(in)    :: infile
-   character(len=path_length),  intent(in)    :: geo_file_path
+   character(len=*),            intent(in)    :: infile
+   character(len=*),            intent(in)    :: geo_file_path
    type(imager_geolocation_t),  intent(inout) :: imager_geolocation
    type(imager_measurements_t), intent(inout) :: imager_measurements
    type(imager_angles_t),       intent(inout) :: imager_angles

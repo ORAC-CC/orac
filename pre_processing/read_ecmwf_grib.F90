@@ -75,7 +75,7 @@ subroutine read_ecmwf_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
 
    implicit none
 
-   character(len=path_length), intent(in)    :: ecmwf_file
+   character(len=*),       intent(in)    :: ecmwf_file
    type(preproc_dims_t),       intent(in)    :: preproc_dims
    type(preproc_geoloc_t),     intent(in)    :: preproc_geoloc
    type(preproc_prtm_t),       intent(inout) :: preproc_prtm

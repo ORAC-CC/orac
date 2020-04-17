@@ -123,13 +123,13 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
    ! Input
    type(global_attributes_t),      intent(in)    :: global_atts
    type(source_attributes_t),      intent(in)    :: source_atts
-   character(len=date_length),     intent(in)    :: cyear
-   character(len=date_length),     intent(in)    :: cmonth
-   character(len=date_length),     intent(in)    :: cday
-   character(len=date_length),     intent(in)    :: chour
-   character(len=date_length),     intent(in)    :: cminute
-   character(len=platform_length), intent(in)    :: platform
-   character(len=sensor_length),   intent(in)    :: sensor
+   character(len=*),           intent(in)    :: cyear
+   character(len=*),           intent(in)    :: cmonth
+   character(len=*),           intent(in)    :: cday
+   character(len=*),           intent(in)    :: chour
+   character(len=*),           intent(in)    :: cminute
+   character(len=*),           intent(in)    :: platform
+   character(len=*),           intent(in)    :: sensor
    character(len=*),               intent(in)    :: path
    integer,                        intent(in)    :: type
    type(preproc_dims_t),           intent(in)    :: preproc_dims
@@ -625,13 +625,13 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
    ! Input
    type(global_attributes_t),      intent(in)    :: global_atts
    type(source_attributes_t),      intent(in)    :: source_atts
-   character(len=date_length),     intent(in)    :: cyear
-   character(len=date_length),     intent(in)    :: cmonth
-   character(len=date_length),     intent(in)    :: cday
-   character(len=date_length),     intent(in)    :: chour
-   character(len=date_length),     intent(in)    :: cminute
-   character(len=platform_length), intent(in)    :: platform
-   character(len=sensor_length),   intent(in)    :: sensor
+   character(len=*),           intent(in)    :: cyear
+   character(len=*),           intent(in)    :: cmonth
+   character(len=*),           intent(in)    :: cday
+   character(len=*),           intent(in)    :: chour
+   character(len=*),           intent(in)    :: cminute
+   character(len=*),           intent(in)    :: platform
+   character(len=*),           intent(in)    :: sensor
    character(len=*),               intent(in)    :: path
    integer,                        intent(in)    :: type
    type(imager_geolocation_t),     intent(in)    :: imager_geolocation
@@ -1440,13 +1440,13 @@ subroutine netcdf_create_config(global_atts,source_atts,cyear,cmonth,cday, &
    ! Input
    type(global_attributes_t),      intent(in)    :: global_atts
    type(source_attributes_t),      intent(in)    :: source_atts
-   character(len=date_length),     intent(in)    :: cyear
-   character(len=date_length),     intent(in)    :: cmonth
-   character(len=date_length),     intent(in)    :: cday
-   character(len=date_length),     intent(in)    :: chour
-   character(len=date_length),     intent(in)    :: cminute
-   character(len=platform_length), intent(in)    :: platform
-   character(len=sensor_length),   intent(in)    :: sensor
+   character(len=*),           intent(in)    :: cyear
+   character(len=*),           intent(in)    :: cmonth
+   character(len=*),           intent(in)    :: cday
+   character(len=*),           intent(in)    :: chour
+   character(len=*),           intent(in)    :: cminute
+   character(len=*),           intent(in)    :: platform
+   character(len=*),           intent(in)    :: sensor
    character(len=*),               intent(in)    :: path
    type(preproc_dims_t),           intent(in)    :: preproc_dims
    type(imager_geolocation_t),     intent(in)    :: imager_geolocation
@@ -1648,15 +1648,15 @@ subroutine netcdf_put_common_attributes(ncid,global_atts,source_atts,title, &
    integer,                        intent(in) :: ncid
    type(global_attributes_t),      intent(in) :: global_atts
    type(source_attributes_t),      intent(in) :: source_atts
-   character(len=file_length),     intent(in) :: title
-   character(len=platform_length), intent(in) :: platform
-   character(len=sensor_length),   intent(in) :: sensor
+   character(len=*),          intent(in) :: title
+   character(len=*),          intent(in) :: platform
+   character(len=*),          intent(in) :: sensor
    character(len=*),               intent(in) :: path
-   character(len=date_length),     intent(in) :: cyear
-   character(len=date_length),     intent(in) :: cmonth
-   character(len=date_length),     intent(in) :: cday
-   character(len=date_length),     intent(in) :: chour
-   character(len=date_length),     intent(in) :: cminute
+   character(len=*),          intent(in) :: cyear
+   character(len=*),          intent(in) :: cmonth
+   character(len=*),          intent(in) :: cday
+   character(len=*),          intent(in) :: chour
+   character(len=*),          intent(in) :: cminute
 
    character(len=platform_length) :: PLATFORM_UPPER_CASE
    integer                        :: position,length

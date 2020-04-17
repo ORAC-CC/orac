@@ -53,10 +53,10 @@ function match_file(dir_name, file_pattern, file_name) result(status)
 
          implicit none
 
-         character(c_char), dimension(*) :: dir_name
-         character(c_char), dimension(*) :: file_pattern
-         character(c_char), dimension(*) :: file_name
-         integer(c_int), value           :: n
+         character(kind=c_char), dimension(*) :: dir_name
+         character(kind=c_char), dimension(*) :: file_pattern
+         character(kind=c_char), dimension(*) :: file_name
+         integer(kind=c_int), value           :: n
       end function system_utils_match_file
    end interface
 
@@ -95,7 +95,7 @@ subroutine c_to_fortran_str(str)
 
    implicit none
 
-   character(*), intent(inout) :: str
+   character(len=*), intent(inout) :: str
    integer :: i
 
    do i=1,len(str)

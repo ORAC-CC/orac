@@ -27,8 +27,8 @@ subroutine netcdf_output_check(output_path,lwrtm_file,swrtm_file,prtm_file, &
 
    implicit none
 
-   character(len=path_length), intent(in)    :: output_path
-   character(len=file_length), intent(in)    :: lwrtm_file,swrtm_file, &
+   character(len=*), intent(in)    :: output_path
+   character(len=*), intent(in)    :: lwrtm_file,swrtm_file, &
                                                 prtm_file,config_file, &
                                                 msi_file,cf_file,lsf_file, &
                                                 geo_file,loc_file,alb_file

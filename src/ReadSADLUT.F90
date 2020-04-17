@@ -42,10 +42,10 @@ subroutine grid_dimension_read(filename, n_name, d_name, v_name, lun, nMax, &
    implicit none
 
    ! Argument declarations
-   character(*), intent(in)    :: filename
-   character(*), intent(in)    :: n_name
-   character(*), intent(in)    :: d_name
-   character(*), intent(in)    :: v_name
+   character(len=*), intent(in)    :: filename
+   character(len=*), intent(in)    :: n_name
+   character(len=*), intent(in)    :: d_name
+   character(len=*), intent(in)    :: v_name
    integer,      intent(in)    :: lun
    integer,      intent(in)    :: nMax
    integer,      intent(out)   :: n
@@ -135,7 +135,7 @@ subroutine read_grid_dimensions(filename, lun, SAD_LUT, has_sol_zen, &
    implicit none
 
    ! Argument declarations
-   character(*),    intent(in)    :: filename
+   character(len=*), intent(in)    :: filename
    integer,         intent(in)    :: lun
    type(SAD_LUT_t), intent(inout) :: SAD_LUT
    logical,         intent(in)    :: has_sol_zen
@@ -204,8 +204,8 @@ subroutine read_values_2d(filename, v_name, lun, i_chan, i_lut, &
    implicit none
 
    ! Argument declarations
-   character(*), intent(in)    :: filename
-   character(*), intent(in)    :: v_name
+   character(len=*), intent(in)    :: filename
+   character(len=*), intent(in)    :: v_name
    integer,      intent(in)    :: lun
    integer,      intent(in)    :: i_chan
    integer,      intent(in)    :: i_lut
@@ -236,8 +236,8 @@ subroutine read_values_3d(filename, v_name, lun, i_chan, i_lut, &
 
    implicit none
 
-   character(*), intent(in)    :: filename
-   character(*), intent(in)    :: v_name
+   character(len=*), intent(in)    :: filename
+   character(len=*), intent(in)    :: v_name
    integer,      intent(in)    :: lun
    integer,      intent(in)    :: i_chan
    integer,      intent(in)    :: i_lut
@@ -285,8 +285,8 @@ subroutine read_values_5d(filename, v_name, lun, i_chan, i_lut, &
    implicit none
 
    ! Argument declarations
-   character(*), intent(in)    :: filename
-   character(*), intent(in)    :: v_name
+   character(len=*), intent(in)    :: filename
+   character(len=*), intent(in)    :: v_name
    integer,      intent(in)    :: lun
    integer,      intent(in)    :: i_chan
    integer,      intent(in)    :: i_lut
@@ -340,11 +340,11 @@ subroutine Read_LUT_rat(Ctrl, LUT_file, SAD_LUT, i_chan, i_lut, name, values)
 
    ! Argument declarations
    type(Ctrl_t),    intent(in)    :: Ctrl
-   character(*),    intent(in)    :: LUT_file
+   character(len=*), intent(in)    :: LUT_file
    type(SAD_LUT_t), intent(inout) :: SAD_LUT
    integer,         intent(in)    :: i_chan
    integer,         intent(in)    :: i_lut
-   character(*),    intent(in)    :: name
+   character(len=*), intent(in)    :: name
    real,            intent(inout) :: values(:,:)
 
    ! Local variables
@@ -398,11 +398,11 @@ subroutine Read_LUT(Ctrl, LUT_file, i_chan, SAD_LUT, i_lut, name, values)
 
    ! Argument declarations
    type(Ctrl_t),    intent(in)    :: Ctrl
-   character(*),    intent(in)    :: LUT_file
+   character(len=*), intent(in)    :: LUT_file
    integer,         intent(in)    :: i_chan
    type(SAD_LUT_t), intent(inout) :: SAD_LUT
    integer,         intent(in)    :: i_lut
-   character(*),    intent(in)    :: name
+   character(len=*), intent(in)    :: name
    real,            intent(inout) :: values(:,:,:)
 
    ! Local variables
@@ -458,14 +458,14 @@ subroutine Read_LUT_sat(Ctrl, LUT_file, i_chan, SAD_LUT, i_lut, name, &
 
    ! Argument declarations
    type(Ctrl_t),    intent(in)              :: Ctrl
-   character(*),    intent(in)              :: LUT_file
+   character(len=*), intent(in)              :: LUT_file
    integer,         intent(in)              :: i_chan
    type(SAD_LUT_t), intent(inout)           :: SAD_LUT
    integer,         intent(in)              :: i_lut
-   character(*),    intent(in)              :: name
+   character(len=*), intent(in)              :: name
    real,            intent(inout)           :: values(:,:,:,:)
    integer,         intent(in),    optional :: i_lut2
-   character(*),    intent(in),    optional :: name2
+   character(len=*), intent(in),    optional :: name2
    real,            intent(inout), optional :: values2(:,:,:)
 
    ! Local variables
@@ -527,14 +527,14 @@ subroutine Read_LUT_sol(Ctrl, LUT_file, i_chan, SAD_LUT, i_lut, name, &
 
    ! Argument declarations
    type(Ctrl_t),    intent(in)              :: Ctrl
-   character(*),    intent(in)              :: LUT_file
+   character(len=*), intent(in)              :: LUT_file
    integer,         intent(in)              :: i_chan
    type(SAD_LUT_t), intent(inout)           :: SAD_LUT
    integer,         intent(in)              :: i_lut
-   character(*),    intent(in)              :: name
+   character(len=*), intent(in)              :: name
    real,            intent(inout)           :: values(:,:,:,:)
    integer,         intent(in),    optional :: i_lut2
-   character(*),    intent(in),    optional :: name2
+   character(len=*), intent(in),    optional :: name2
    real,            intent(inout), optional :: values2(:,:,:)
 
    ! Local variables
@@ -597,14 +597,14 @@ subroutine Read_LUT_both(Ctrl, LUT_file, i_chan, SAD_LUT, i_lut, name, &
 
    ! Argument declarations
    type(Ctrl_t),    intent(in)              :: Ctrl
-   character(*),    intent(in)              :: LUT_file
+   character(len=*), intent(in)              :: LUT_file
    integer,         intent(in)              :: i_chan
    type(SAD_LUT_t), intent(inout)           :: SAD_LUT
    integer,         intent(in)              :: i_lut
-   character(*),    intent(in)              :: name
+   character(len=*), intent(in)              :: name
    real,            intent(inout)           :: values(:,:,:,:,:,:)
    integer,         intent(in),    optional :: i_lut2
-   character(*),    intent(in),    optional :: name2
+   character(len=*), intent(in),    optional :: name2
    real,            intent(inout), optional :: values2(:,:,:,:)
 
    ! Local variables
@@ -724,8 +724,8 @@ subroutine Read_SAD_LUT(Ctrl, SAD_Chan, SAD_LUT, i_layer)
    ! Local variables
 
    integer                :: i        ! Array counters
-   character(FilenameLen) :: LUT_file ! Name of LUT file
-   character(4)           :: chan_num ! Channel number converted to a string
+   character(len=FilenameLen) :: LUT_file ! Name of LUT file
+   character(len=4)           :: chan_num ! Channel number converted to a string
 
    ! For each cloud class, construct the LUT filename from the instrument name,
    ! cloud class ID, variable name and channel number. Then call the appropriate

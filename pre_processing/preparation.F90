@@ -113,23 +113,23 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
 
    implicit none
 
-   character(len=file_length),     intent(out) :: lwrtm_file,swrtm_file, &
+   character(len=*),           intent(out) :: lwrtm_file,swrtm_file, &
                                                   prtm_file,config_file, &
                                                   msi_file,cf_file,lsf_file, &
                                                   geo_file,loc_file,alb_file
-   character(len=sensor_length),   intent(in)  :: sensor
-   character(len=platform_length), intent(in)  :: platform
-   character(len=cmd_arg_length),  intent(in)  :: product_name
-   character(len=date_length),     intent(in)  :: cyear,cmonth,cday,chour,cminute
-   character(len=attribute_length),intent(in)  :: orbit_number
-   character(len=path_length),     intent(in)  :: ecmwf_path(2), &
-                                                  ecmwf_path2(2), &
-                                                  ecmwf_path3(2)
-   character(len=path_length),     intent(in)  :: ecmwf_hr_path(2)
-   character(len=path_length),     intent(out) :: ecmwf_path_file(2), &
-                                                  ecmwf_hr_path_file(2), &
-                                                  ecmwf_path_file2(2), &
-                                                  ecmwf_path_file3(2)
+   character(len=*),           intent(in)  :: sensor
+   character(len=*),           intent(in)  :: platform
+   character(len=*),           intent(in)  :: product_name
+   character(len=*),           intent(in)  :: cyear,cmonth,cday,chour,cminute
+   character(len=*),           intent(in)  :: orbit_number
+   character(len=*),           intent(in)  :: ecmwf_path(:), &
+                                              ecmwf_path2(:), &
+                                              ecmwf_path3(:)
+   character(len=*),           intent(in)  :: ecmwf_hr_path(:)
+   character(len=*),           intent(out) :: ecmwf_path_file(:), &
+                                              ecmwf_hr_path_file(:), &
+                                              ecmwf_path_file2(:), &
+                                              ecmwf_path_file3(:)
    type(global_attributes_t),      intent(in)  :: global_atts
    integer,                        intent(in)  :: ecmwf_flag
    integer,                        intent(in)  :: ecmwf_time_int_method

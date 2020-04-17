@@ -43,10 +43,10 @@ subroutine read_ecmwf_wind(ecmwf_flag, ecmwf_path_file, ecmwf_HR_path_file, &
    implicit none
 
    integer,                    intent(in)  :: ecmwf_flag
-   character(len=path_length), intent(in)  :: ecmwf_path_file
-   character(len=path_length), intent(in)  :: ecmwf_HR_path_file
-   character(len=path_length), intent(in)  :: ecmwf_path_file2
-   character(len=path_length), intent(in)  :: ecmwf_path_file3
+   character(len=*), intent(in)  :: ecmwf_path_file
+   character(len=*), intent(in)  :: ecmwf_HR_path_file
+   character(len=*), intent(in)  :: ecmwf_path_file2
+   character(len=*), intent(in)  :: ecmwf_path_file3
    type(ecmwf_t),              intent(inout) :: ecmwf
    type(ecmwf_t),              intent(inout) :: ecmwf_HR
    logical,                    intent(in)  :: use_hr_ecmwf
@@ -177,9 +177,9 @@ subroutine read_ecmwf(ecmwf_flag, ecmwf_path_file, ecmwf_path_file2, &
    implicit none
 
    integer,                    intent(in)    :: ecmwf_flag
-   character(len=path_length), intent(in)    :: ecmwf_path_file
-   character(len=path_length), intent(in)    :: ecmwf_path_file2
-   character(len=path_length), intent(in)    :: ecmwf_path_file3
+   character(len=*),       intent(in)    :: ecmwf_path_file
+   character(len=*),       intent(in)    :: ecmwf_path_file2
+   character(len=*),       intent(in)    :: ecmwf_path_file3
    type(ecmwf_t),              intent(in)    :: ecmwf
    type(preproc_dims_t),       intent(in)    :: preproc_dims
    type(preproc_geoloc_t),     intent(in)    :: preproc_geoloc

@@ -47,7 +47,7 @@ subroutine read_USGS_file(path_to_USGS_file, usgs, verbose)
    implicit none
 
    ! Input variables
-   character(len=path_length), intent(in) :: path_to_USGS_file
+   character(len=*), intent(in) :: path_to_USGS_file
    logical,                    intent(in) :: verbose
 
    ! Output variables
@@ -92,7 +92,7 @@ subroutine read_predef_file_ahi(path_to_file, usgs, imager_geolocation, verbose)
    implicit none
 
    ! Input variables
-   character(len=path_length), intent(in) :: path_to_file
+   character(len=*),           intent(in) :: path_to_file
    type(imager_geolocation_t), intent(in) :: imager_geolocation
    logical,                    intent(in) :: verbose
 
@@ -142,7 +142,7 @@ subroutine read_predef_file_sev(path_to_file, usgs, verbose)
    implicit none
 
    ! Input variables
-   character(len=path_length), intent(in) :: path_to_file
+   character(len=*), intent(in) :: path_to_file
    logical,                    intent(in) :: verbose
 
    ! Output variables

@@ -72,19 +72,19 @@ subroutine get_abi_path(l1_5_file, platform, abi_filenames, n_chans, channel_ids
 
    implicit none
 
-   character(path_length),     intent(in)  :: l1_5_file
-   character(platform_length), intent(in)  :: platform
-   character(file_length),     intent(out) :: abi_filenames(:)
+   character(len=*), intent(in)  :: l1_5_file
+   character(len=*), intent(in)  :: platform
+   character(len=*), intent(out) :: abi_filenames(:)
    integer,                    intent(in)  :: n_chans
    integer, pointer,           intent(in)  :: channel_ids(:)
 
-   character(file_length)                  :: tmp_file
+   character(len=file_length)              :: tmp_file
    character(len=path_length)              :: regex
 
    integer       :: i, index1, index3, success
-   character(2)  :: band
-   character(3)  :: shplat
-   character(16) :: dtstr
+   character(len=2)  :: band
+   character(len=3)  :: shplat
+   character(len=16) :: dtstr
 
    ! Determine which GOES platform we're using. Currently -16 or -17 are acceptable
    if (platform .eq. "GOES-16") then
@@ -150,7 +150,7 @@ subroutine get_abi_geoloc(infile, imager_geolocation, imager_angles, &
 
    implicit none
 
-   character(len=file_length),  intent(in)    :: infile
+   character(len=*),           intent(in)    :: infile
    type(imager_geolocation_t),  intent(inout) :: imager_geolocation
    type(imager_angles_t),       intent(inout) :: imager_angles
    type(global_attributes_t),   intent(inout) :: global_atts
@@ -503,8 +503,8 @@ subroutine goes_resample_vis_to_tir(inarr, outarr, nx, ny, fill, scl, verbose)
    real,             intent(in)  :: fill
    integer,          intent(in)  :: scl
    logical,          intent(in)  :: verbose
-   real(kind=sreal), intent(in)  :: inarr(nx*scl, ny*scl)
-   real(kind=sreal), intent(out) :: outarr(nx, ny)
+   real(kind=sreal), intent(in)  :: inarr(:,:)
+   real(kind=sreal), intent(out) :: outarr(:,:)
 
 #ifdef _OPENMP
    integer :: n_threads
@@ -576,7 +576,7 @@ subroutine load_abi_band(infile, imager_geolocation, rad, kappa, bc1, bc2, fk1, 
 
    implicit none
 
-   character(file_length),     intent(in) :: infile
+   character(len=*),           intent(in) :: infile
    type(imager_geolocation_t), intent(in) :: imager_geolocation
    real,       intent(out) :: rad(:, :)
    real,       intent(out) :: kappa
@@ -642,14 +642,14 @@ subroutine get_abi_time(infile, imager_time, ny, verbose)
 
    implicit none
 
-   character(file_length), intent(in)    :: infile
+   character(len=*),    intent(in)    :: infile
    type(imager_time_t),    intent(inout) :: imager_time
    integer,                intent(in)    :: ny
    logical,                intent(in)    :: verbose
 
    integer                    :: fid, ierr, j
-   character(21)              :: start_coverage
-   character(21)              :: end_coverage
+   character(len=21)          :: start_coverage
+   character(len=21)          :: end_coverage
 
    integer(kind=sint)         :: year1, month1, day1
    integer(kind=sint)         :: year2, month2, day2

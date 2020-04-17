@@ -90,12 +90,12 @@ subroutine read_imager(sensor, platform, path_to_l1b_file, path_to_geo_file, &
 
    implicit none
 
-   character(len=sensor_length),   intent(in)    :: sensor
-   character(len=platform_length), intent(in)    :: platform
-   character(len=path_length),     intent(in)    :: path_to_l1b_file
-   character(len=path_length),     intent(in)    :: path_to_geo_file
-   character(len=path_length),     intent(in)    :: path_to_aatsr_drift_table
-   character(len=path_length),     intent(in)    :: geo_file_path
+   character(len=*),           intent(in)    :: sensor
+   character(len=*),           intent(in)    :: platform
+   character(len=*),           intent(in)    :: path_to_l1b_file
+   character(len=*),           intent(in)    :: path_to_geo_file
+   character(len=*),           intent(in)    :: path_to_aatsr_drift_table
+   character(len=*),           intent(in)    :: geo_file_path
    type(imager_geolocation_t),     intent(inout) :: imager_geolocation
    type(imager_angles_t),          intent(inout) :: imager_angles
    type(imager_flags_t),           intent(inout) :: imager_flags

@@ -33,7 +33,7 @@ subroutine read_avhrr_dimensions(path_to_geo_file,n_across_track,n_along_track)
 
    implicit none
 
-   character(len=path_length), intent(in)  :: path_to_geo_file
+   character(len=*),   intent(in)  :: path_to_geo_file
    integer(kind=lint),         intent(out) :: n_across_track, n_along_track
 
    integer(kind=HID_T)   :: gr_id,dset_id,dspace_id

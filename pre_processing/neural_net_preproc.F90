@@ -88,8 +88,8 @@ subroutine ann_cloud_mask(channel1, channel2, channel3a, channel3b, &
    integer(kind=byte) :: illum_nn ! 0 = undefined, 1 = day, 2 = twilight, 3 = night
 
    ! INPUT from cloud_type subroutine (module cloud_typing_pavolonis.F90)
-   character(len=sensor_length),   intent(in)    :: sensor_name
-   character(len=platform_length), intent(in)    :: platform
+   character(len=*),   intent(in)  :: sensor_name
+   character(len=*),   intent(in)  :: platform
    integer(kind=byte), intent(in) :: lsflag, niseflag
    integer(kind=sint), intent(in) :: ch3a_on_avhrr_flag
    real(kind=sreal),   intent(in) :: solzen, skint, satzen, glint_angle
@@ -685,8 +685,8 @@ subroutine ann_cloud_phase(channel1, channel2, channel3a, channel3b, &
    integer(kind=byte) :: illum_nn ! 0 = undefined, 1 = day, 2 = twilight, 3 = night
 
    ! INPUT from cloud_type subroutine (module cloud_typing_pavolonis.F90)
-   character(len=sensor_length),   intent(in)    :: sensor_name
-   character(len=platform_length), intent(in)    :: platform
+   character(len=*),   intent(in)  :: sensor_name
+   character(len=*),   intent(in)  :: platform
    integer(kind=byte), intent(in) :: lsflag, niseflag
    integer(kind=sint), intent(in) :: ch3a_on_avhrr_flag
    real(kind=sreal),   intent(in) :: solzen, satzen, albedo1, albedo2, albedo3a, skint

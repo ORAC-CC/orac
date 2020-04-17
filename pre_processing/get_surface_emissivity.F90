@@ -91,9 +91,9 @@ subroutine get_surface_emissivity(cyear, cdoy, cimss_emis_path, imager_flags, &
    implicit none
 
    ! Input/output variables
-   character(len=date_length), intent(in)    :: cyear
-   character(len=date_length), intent(in)    :: cdoy
-   character(len=path_length), intent(in)    :: cimss_emis_path
+   character(len=*),           intent(in)    :: cyear
+   character(len=*),           intent(in)    :: cdoy
+   character(len=*),           intent(in)    :: cimss_emis_path
    type(imager_flags_t),       intent(in)    :: imager_flags
    type(imager_geolocation_t), intent(in)    :: imager_geolocation
    type(channel_info_t),       intent(in)    :: channel_info
@@ -274,9 +274,9 @@ subroutine get_camel_emissivity(cyear, cmonth, camel_emis_path, imager_flags, &
    implicit none
 
    ! Input/output variables
-   character(len=date_length), intent(in)    :: cyear
-   character(len=date_length), intent(in)    :: cmonth
-   character(len=path_length), intent(in)    :: camel_emis_path
+   character(len=*),           intent(in)    :: cyear
+   character(len=*),           intent(in)    :: cmonth
+   character(len=*),           intent(in)    :: camel_emis_path
    type(imager_flags_t),       intent(in)    :: imager_flags
    type(imager_geolocation_t), intent(in)    :: imager_geolocation
    type(channel_info_t),       intent(in)    :: channel_info

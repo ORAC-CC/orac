@@ -235,10 +235,10 @@ subroutine correct_for_ice_snow(nise_path, imager_geolocation, surface, cyear, &
    implicit none
 
    ! Arguments
-   character(len=path_length), intent(in)    :: nise_path
+   character(len=*),           intent(in)    :: nise_path
    type(imager_geolocation_t), intent(in)    :: imager_geolocation
    type(surface_t),            intent(inout) :: surface
-   character(len=date_length), intent(in)    :: cyear,cmonth,cday
+   character(len=*),           intent(in)    :: cyear,cmonth,cday
    type(channel_info_t),       intent(in)    :: channel_info
    logical,                    intent(in)    :: assume_full_path
    logical,                    intent(in)    :: include_full_brdf
@@ -600,7 +600,7 @@ subroutine correct_for_ice_snow_ecmwf(ecmwf_HR_path,imager_geolocation, &
    implicit none
 
    ! Arguments
-   character(len=path_length), intent(in)    :: ecmwf_HR_path
+   character(len=*),           intent(in)    :: ecmwf_HR_path
    type(imager_geolocation_t), intent(in)    :: imager_geolocation
    type(channel_info_t),       intent(in)    :: channel_info
    type(imager_flags_t),       intent(in)    :: imager_flags

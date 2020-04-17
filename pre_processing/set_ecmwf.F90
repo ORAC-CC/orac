@@ -78,20 +78,20 @@ subroutine set_ecmwf(cyear, cmonth, cday, chour, ecmwf_path, ecmwf_path2, &
    implicit none
 
    character(len=*),           intent(in)  :: cyear,cmonth,cday,chour
-   character(len=*),           intent(in)  :: ecmwf_path(2)
-   character(len=*),           intent(in)  :: ecmwf_path2(2)
-   character(len=*),           intent(in)  :: ecmwf_path3(2)
-   character(len=*),           intent(out) :: ecmwf_path_file(2)
-   character(len=*),           intent(out) :: ecmwf_path_file2(2)
-   character(len=*),           intent(out) :: ecmwf_path_file3(2)
+   character(len=*),           intent(in)  :: ecmwf_path(:)
+   character(len=*),           intent(in)  :: ecmwf_path2(:)
+   character(len=*),           intent(in)  :: ecmwf_path3(:)
+   character(len=*),           intent(out) :: ecmwf_path_file(:)
+   character(len=*),           intent(out) :: ecmwf_path_file2(:)
+   character(len=*),           intent(out) :: ecmwf_path_file3(:)
    integer,                    intent(in)  :: ecmwf_flag
    type(imager_geolocation_t), intent(in)  :: imager_geolocation
    type(imager_time_t),        intent(in)  :: imager_time
    integer,                    intent(in)  :: time_interp_method
    real,                       intent(out) :: time_int_fac
    logical,                    intent(in)  :: assume_full_path
-   character(len=*),           intent(in)  :: ecmwf_hr_path(2)
-   character(len=*),           intent(out) :: ecmwf_hr_path_file(2)
+   character(len=*),           intent(in)  :: ecmwf_hr_path(:)
+   character(len=*),           intent(out) :: ecmwf_hr_path_file(:)
 
    integer       :: i_path1, i_path2
    integer(sint) :: year, month, day, hour

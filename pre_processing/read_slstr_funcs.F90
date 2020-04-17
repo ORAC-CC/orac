@@ -49,7 +49,7 @@ subroutine get_slstr_startend(imager_time, fname, ny)
    implicit none
 
    type(imager_time_t),        intent(inout) :: imager_time
-   character(len=path_length), intent(in)    :: fname
+   character(len=*),    intent(in)    :: fname
    integer,                    intent(in)    :: ny
 
 
@@ -115,12 +115,12 @@ subroutine get_slstr_imnames(indir, inband, fname, fname_qa, bname, irradname)
 
    implicit none
 
-   character(len=path_length),  intent(in)  :: indir
+   character(len=*), intent(in)  :: indir
    integer,                     intent(in)  :: inband
-   character(len=path_length),  intent(out) :: fname
-   character(len=path_length),  intent(out) :: fname_qa
-   character(len=path_length),  intent(out) :: bname
-   character(len=path_length),  intent(out) :: irradname
+   character(len=*), intent(out) :: fname
+   character(len=*), intent(out) :: fname_qa
+   character(len=*), intent(out) :: bname
+   character(len=*), intent(out) :: irradname
 
    character(len=3) :: band
    character(len=3) :: vid
@@ -163,7 +163,7 @@ subroutine read_slstr_tirdata(indir, inband, outarr, sx, sy, nx, ny, inx, iny, &
 
    implicit none
 
-   character(len=path_length), intent(in)  :: indir
+   character(len=*), intent(in)  :: indir
    integer,                    intent(in)  :: inband
    integer,                    intent(in)  :: sx
    integer,                    intent(in)  :: sy
@@ -173,7 +173,7 @@ subroutine read_slstr_tirdata(indir, inband, outarr, sx, sy, nx, ny, inx, iny, &
    integer,                    intent(in)  :: iny
    integer,                    intent(in)  :: offset
    integer,                    intent(in)  :: view
-   real(kind=sreal),           intent(out) :: outarr(inx,iny)
+   real(kind=sreal),           intent(out) :: outarr(:,:)
 
    character(len=path_length) :: filename
    character(len=path_length) :: filename_qa
@@ -203,7 +203,7 @@ subroutine read_slstr_visdata(indir, inband, outarr, imager_angles, sx, sy, &
 
    implicit none
 
-   character(len=path_length),  intent(in)  :: indir
+   character(len=*),      intent(in)  :: indir
    integer,                     intent(in)  :: inband
    integer,                     intent(in)  :: sx
    integer,                     intent(in)  :: sy
@@ -213,7 +213,7 @@ subroutine read_slstr_visdata(indir, inband, outarr, imager_angles, sx, sy, &
    integer,                     intent(in)  :: iny
    integer,                     intent(in)  :: offset
    integer,                     intent(in)  :: view
-   real(kind=sreal),            intent(out) :: outarr(inx,iny)
+   real(kind=sreal),            intent(out) :: outarr(:,:)
    type(imager_angles_t),       intent(in)  :: imager_angles
 
    real, allocatable              :: data1(:,:)
@@ -283,8 +283,8 @@ subroutine slstr_resample_vis_to_tir(inarr, outarr, nx, ny, fill)
    integer,          intent(in)  :: nx
    integer,          intent(in)  :: ny
    real,             intent(in)  :: fill
-   real(kind=sreal), intent(in)  :: inarr(nx*2,ny*2)
-   real(kind=sreal), intent(out) :: outarr(nx,ny)
+   real(kind=sreal), intent(in)  :: inarr(:,:) ! (nx*2,ny*2)
+   real(kind=sreal), intent(out) :: outarr(:,:) ! (nx,ny)
 
    real    :: tmpval
 
@@ -337,8 +337,8 @@ subroutine slstr_get_alignment(nx, ny, obnx, obny, tirlons, oblons, alignment)
    integer,          intent(in)  :: obnx
    integer,          intent(in)  :: obny
    integer,          intent(out) :: alignment
-   real(kind=sreal), intent(in)  :: tirlons(nx,ny)
-   real(kind=sreal), intent(in)  :: oblons(obnx,obny)
+   real(kind=sreal), intent(in)  :: tirlons(:,:) ! (nx,ny)
+   real(kind=sreal), intent(in)  :: oblons(:,:) ! (obnx,obny)
 
    integer :: x
    real    :: bdiff, summer
@@ -366,8 +366,8 @@ subroutine get_slstr_gridsize(indir, grid, nx, ny)
 
    implicit none
 
-   character(len=path_length), intent(in)  :: indir
-   character(len=2),           intent(in)  :: grid
+   character(len=*), intent(in)  :: indir
+   character(len=*), intent(in)  :: grid
    integer,                    intent(out) :: nx
    integer,                    intent(out) :: ny
 
@@ -395,9 +395,9 @@ subroutine slstr_get_interp(in_lons, tx_lons, nxt, nyt, nxi, nyi, interp)
    integer,                    intent(in)  :: nyt
    integer,                    intent(in)  :: nxi
    integer,                    intent(in)  :: nyi
-   real(kind=sreal),           intent(in)  :: in_lons(nxi,nyi)
-   real(kind=sreal),           intent(in)  :: tx_lons(nxt,nyt)
-   real(kind=sreal),           intent(out) :: interp(nxi,nyi,3)
+   real(kind=sreal),           intent(in)  :: in_lons(:,:) ! (nxi,nyi)
+   real(kind=sreal),           intent(in)  :: tx_lons(:,:) ! (nxt,nyt)
+   real(kind=sreal),           intent(out) :: interp(:,:,:) ! (nxi,nyi,3)
 
    integer          :: x, y
    real(kind=sreal) :: dists1(nxt), dists2(nxt)
@@ -440,8 +440,8 @@ subroutine slstr_interp_angs(in_angs, out_angs, txnx, txny, nx, ny, interp, view
    integer,               intent(in)    :: nx
    integer,               intent(in)    :: ny
    integer,               intent(in)    :: view
-   real(kind=sreal),      intent(in)    :: in_angs(txnx,txny,4)
-   real(kind=sreal),      intent(in)    :: interp(nx,ny,3)
+   real(kind=sreal),      intent(in)    :: in_angs(:,:,:) ! (txnx,txny,4)
+   real(kind=sreal),      intent(in)    :: interp(:,:,:) ! (nx,ny,3)
    type(imager_angles_t), intent(inout) :: out_angs
 
    integer          :: x, y, z, prev, next
@@ -538,8 +538,8 @@ subroutine read_slstr_satsol(indir, imager_angles, interp, txnx, txny, nx, ny, &
    integer,                    intent(in)    :: txnx
    integer,                    intent(in)    :: txny
    integer,                    intent(in)    :: startx
-   character(len=path_length), intent(in)    :: indir
-   real(kind=sreal),           intent(in)    :: interp(nx,ny,3)
+   character(len=*),      intent(in)    :: indir
+   real(kind=sreal),      intent(in)    :: interp(:,:,:) ! (nx,ny,3)
    type(imager_angles_t),      intent(inout) :: imager_angles
 
    character(len=path_length) :: geofile, vid

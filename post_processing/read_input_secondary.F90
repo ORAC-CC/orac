@@ -218,7 +218,7 @@ subroutine read_input_secondary_once(nfile, fname, input_data, indexing, &
    implicit none
 
    integer,                      intent(in)    :: nfile
-   character(len=path_length),   intent(in)    :: fname(:)
+   character(len=*),             intent(in)    :: fname(:)
    type(input_data_secondary_t), intent(inout) :: input_data
    type(input_indices_t),        intent(in)    :: indexing
    type(input_indices_t),        intent(in)    :: loop_ind(:)
@@ -255,7 +255,7 @@ subroutine read_input_secondary_class(fname, input_data, indexing, sval, verbose
 
    implicit none
 
-   character(len=path_length),   intent(in)    :: fname
+   character(len=*),             intent(in)    :: fname
    type(input_data_secondary_t), intent(inout) :: input_data
    type(input_indices_t),        intent(in)    :: indexing
    integer,                      intent(in)    :: sval

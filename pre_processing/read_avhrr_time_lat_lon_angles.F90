@@ -41,7 +41,7 @@ subroutine read_avhrr_time_lat_lon_angles(path_to_geo_file,imager_geolocation,&
 
    implicit none
 
-   character(len=path_length),  intent(in)    :: path_to_geo_file
+   character(len=*),            intent(in)    :: path_to_geo_file
    type(imager_geolocation_t),  intent(inout) :: imager_geolocation
    type(imager_angles_t),       intent(inout) :: imager_angles
    type(imager_time_t),         intent(inout) :: imager_time

@@ -27,8 +27,8 @@ function calc_n_chunks(n_segments, segment_starts, segment_ends, &
    implicit none
 
    integer, intent(in) :: n_segments
-   integer, intent(in) :: segment_starts(n_segments)
-   integer, intent(in) :: segment_ends(n_segments)
+   integer, intent(in) :: segment_starts(*)
+   integer, intent(in) :: segment_ends(*)
    integer, intent(in) :: chunk_size
    integer             :: n_chunks
 
@@ -50,8 +50,8 @@ subroutine chunkify(n_segments, segment_starts, segment_ends, &
    implicit none
 
    integer, intent(in)  :: n_segments
-   integer, intent(in)  :: segment_starts(n_segments)
-   integer, intent(in)  :: segment_ends(n_segments)
+   integer, intent(in)  :: segment_starts(*)
+   integer, intent(in)  :: segment_ends(*)
    integer, intent(in)  :: chunk_size
    integer, intent(out) :: n_chunks
    integer, intent(out) :: chunk_starts(*)

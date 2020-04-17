@@ -62,15 +62,15 @@ subroutine read_aatsr_dimensions(path_to_l1b_file,n_across_track, &
 
          implicit none
 
-         character(c_char), dimension(*) :: l1b_file
-         integer(c_short)                :: daynight, half_orbit, stat
-         real(c_float), dimension(4)     :: limit
-         integer(c_long)                 :: nx, ny, miny
-         logical(c_bool)                 :: verb
+         character(kind=c_char), dimension(*) :: l1b_file
+         integer(kind=c_short)                :: daynight, half_orbit, stat
+         real(kind=c_float), dimension(4)     :: limit
+         integer(kind=c_long)                 :: nx, ny, miny
+         logical(kind=c_bool)                 :: verb
       end subroutine get_aatsr_dimension
    end interface
 
-   character(len=path_length),     intent(in)  :: path_to_l1b_file
+   character(len=*),               intent(in)  :: path_to_l1b_file
    integer(kind=lint),             intent(out) :: n_across_track, n_along_track
    integer(kind=lint),             intent(out) :: along_track_offset
    integer(kind=sint),             intent(in)  :: day_night
