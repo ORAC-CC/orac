@@ -217,19 +217,19 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
    character(len=*),           intent(in)    :: emiss_path
    character(len=*),           intent(in)    :: sensor
    character(len=*),           intent(in)    :: platform
-   type(preproc_dims_t),           intent(in)    :: preproc_dims
-   type(preproc_geoloc_t),         intent(in)    :: preproc_geoloc
-   type(preproc_geo_t),            intent(in)    :: preproc_geo
-   type(preproc_prtm_t),           intent(inout) :: preproc_prtm
-   type(preproc_surf_t),           intent(in)    :: preproc_surf
-   type(preproc_cld_t),            intent(inout) :: preproc_cld
-   type(netcdf_output_info_t),     intent(inout) :: netcdf_info
-   type(channel_info_t),           intent(in)    :: channel_info
-   integer(kind=sint),             intent(in)    :: year, month, day
-   logical,                        intent(in)    :: use_modis_emis
-   logical,                        intent(in)    :: do_cloud_emis
-   logical,                        intent(in)    :: do_co2
-   logical,                        intent(in)    :: verbose
+   type(preproc_dims_t),       intent(in)    :: preproc_dims
+   type(preproc_geoloc_t),     intent(in)    :: preproc_geoloc
+   type(preproc_geo_t),        intent(in)    :: preproc_geo
+   type(preproc_prtm_t),       intent(inout) :: preproc_prtm
+   type(preproc_surf_t),       intent(in)    :: preproc_surf
+   type(preproc_cld_t),        intent(inout) :: preproc_cld
+   type(netcdf_output_info_t), intent(inout) :: netcdf_info
+   type(channel_info_t),       intent(in)    :: channel_info
+   integer(kind=sint),         intent(in)    :: year, month, day
+   logical,                    intent(in)    :: use_modis_emis
+   logical,                    intent(in)    :: do_cloud_emis
+   logical,                    intent(in)    :: do_co2
+   logical,                    intent(in)    :: verbose
 
    ! RTTOV in/outputs
    type(rttov_options)                  :: opts
@@ -325,13 +325,13 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
          stop error_stop_code
       end if
    case('AVHRR')
-      if (index(platform,'noaa') >= 1) then
+      if (index(platform, 'noaa') >= 1) then
          if(platform(5:5) == '1') then
             coef_file = 'rtcoef_noaa_'//platform(5:6)//'_avhrr.dat'
           else
             coef_file = 'rtcoef_noaa_'//platform(5:5)//'_avhrr.dat'
           end if
-       else if (index(platform,'metop') >= 1) then
+       else if (index(platform, 'metop') >= 1) then
           if (platform(6:6) == "a") then
              coef_file = 'rtcoef_metop_2_avhrr.dat'
           else if (platform(6:6) == "b") then
@@ -436,8 +436,8 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
       allocate(dummy_lint_1dveca(channel_info%nchannels_lw))
       allocate(dummy_lint_1dvecb(channel_info%nchannels_lw))
       allocate(dummy_sreal_1dveca(channel_info%nchannels_lw))
-      count=0
-      do i=1,channel_info%nchannels_total
+      count = 0
+      do i = 1, channel_info%nchannels_total
          if (channel_info%channel_lw_flag(i) == 1) then
             count = count + 1
             dummy_lint_1dveca(count)  = i
@@ -467,8 +467,8 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
       allocate(dummy_lint_1dveca(channel_info%nchannels_sw))
       allocate(dummy_lint_1dvecb(channel_info%nchannels_sw))
       allocate(dummy_sreal_1dveca(channel_info%nchannels_sw))
-      count=0
-      do i=1,channel_info%nchannels_total
+      count = 0
+      do i = 1, channel_info%nchannels_total
          if (channel_info%channel_sw_flag(i) == 1) then
             count = count + 1
             dummy_lint_1dveca(count)  = i
@@ -520,8 +520,8 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
    ! Copy preprocessing grid data into RTTOV profile structure
    ! Create a lowest layer from the surface properties
    count = 0
-   do jdim=preproc_dims%min_lat,preproc_dims%max_lat
-      do idim=preproc_dims%min_lon,preproc_dims%max_lon
+   do jdim = preproc_dims%min_lat, preproc_dims%max_lat
+      do idim = preproc_dims%min_lon, preproc_dims%max_lon
          count = count + 1
 
          ! Check to see if the ECMWF data read in includes ozone
@@ -583,7 +583,7 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
             profiles(count)%skin%snow_fraction = &
                  preproc_prtm%snow_depth(idim,jdim) / 0.05
          else
-            profiles(count)%skin%snow_fraction=0.
+            profiles(count)%skin%snow_fraction = 0.
          end if
 
          ! Write profiles structure to PRTM file (array operations needed to
@@ -601,23 +601,23 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
 
          call nc_write_array(netcdf_info%ncid_prtm, 'pprofile_rtm', &
               netcdf_info%vid_pprofile_lev_pw, &
-              reshape(profiles(count)%p, (/nlevels,1,1/)), &
+              reshape(profiles(count)%p, (/nlevels, 1, 1/)), &
               1, 1, nlevels, 1, i_, 1, 1, j_, 1)
          call nc_write_array(netcdf_info%ncid_prtm, 'tprofile_rtm', &
               netcdf_info%vid_tprofile_lev_pw, &
-              reshape(profiles(count)%t, (/nlevels,1,1/)), &
+              reshape(profiles(count)%t, (/nlevels, 1, 1/)), &
               1, 1, nlevels, 1, i_, 1, 1, j_, 1)
          call nc_write_array(netcdf_info%ncid_prtm, 'hprofile_rtm', &
               netcdf_info%vid_hprofile_lev_pw, &
               reshape(preproc_prtm%phi_lev(idim, jdim,:), &
-              (/nlevels,1,1/)), 1, 1, nlevels, 1, i_, 1, 1, j_, 1)
+              (/nlevels, 1, 1/)), 1, 1, nlevels, 1, i_, 1, 1, j_, 1)
          call nc_write_array(netcdf_info%ncid_prtm, 'qprofile_rtm', &
               netcdf_info%vid_qprofile_lev_pw, &
-              reshape(profiles(count)%q, (/nlevels,1,1/)), &
+              reshape(profiles(count)%q, (/nlevels, 1, 1/)), &
               1, 1, nlevels, 1, i_, 1, 1, j_, 1)
          call nc_write_array(netcdf_info%ncid_prtm, 'o3profile_rtm', &
               netcdf_info%vid_o3profile_lev_pw, &
-              reshape(profiles(count)%o3, (/nlevels,1,1/)), &
+              reshape(profiles(count)%o3, (/nlevels, 1, 1/)), &
               1, 1, nlevels, 1, i_, 1, 1, j_, 1)
       end do
    end do
@@ -632,12 +632,12 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
    if (verbose) write(*,*) 'Do RTTOV calculations'
 
    ! Loop over view geometries
-   do cview=1,channel_info%nviews
+   do cview = 1, channel_info%nviews
       if (verbose) write(*,*) ' - Calculating for viewing geometry number', cview
 
       count = 0
-      do jdim=preproc_dims%min_lat,preproc_dims%max_lat
-         do idim=preproc_dims%min_lon,preproc_dims%max_lon
+      do jdim = preproc_dims%min_lat, preproc_dims%max_lat
+         do idim = preproc_dims%min_lon, preproc_dims%max_lon
 
             count = count + 1
             profiles(count)%zenangle = preproc_geo%satza(idim,jdim,cview)
@@ -647,14 +647,14 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
          end do
       end do
 
-      do i_coef=1,2
+      do i_coef = 1, 2
          ! Set factors that differ between long and shortwave
          if (i_coef == 1) then
             ! Longwave
             nchan = 0
 
             ! Loop to determine how many LW channels exist with a given view
-            do i_=1,channel_info%nchannels_lw
+            do i_ = 1, channel_info%nchannels_lw
                if (channel_info%lw_view_ids(i_) == cview) nchan = nchan + 1
             end do
 
@@ -664,7 +664,7 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
             allocate(chan_pos(nchan))
 
             j_ = 1
-            do i_=1,channel_info%nchannels_lw
+            do i_ = 1, channel_info%nchannels_lw
                if (channel_info%lw_view_ids(i_) == cview) then
                   chan_pos(j_) = i_
                   input_chan(j_) = channel_info%channel_ids_rttov_coef_lw(i_)
@@ -680,7 +680,7 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
             nchan = 0
 
             ! Loop to determine how many SW channels exist with a given view
-            do i_=1,channel_info%nchannels_sw
+            do i_ = 1, channel_info%nchannels_sw
                if (channel_info%sw_view_ids(i_) == cview) nchan = nchan + 1
             end do
 
@@ -690,7 +690,7 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
             allocate(chan_pos(nchan))
 
             j_ = 1
-            do i_=1,channel_info%nchannels_sw
+            do i_ = 1, channel_info%nchannels_sw
                if (channel_info%sw_view_ids(i_) == cview) then
                   chan_pos(j_) = i_
                   input_chan(j_) = channel_info%channel_ids_rttov_coef_sw(i_)
@@ -720,7 +720,7 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
          allocate(calcemis(nchan))
 
          chanprof%prof = 1
-         do j=1,nchan
+         do j = 1, nchan
             chanprof(j)%chan = j
          end do
 
@@ -745,7 +745,7 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
          end if
 
          if (verbose) write(*,*) 'Fetch emissivity atlas'
-         imonth=month
+         imonth = month
          call rttov_setup_emis_atlas(stat, opts, imonth, atlas_type_ir, &
               emis_atlas, coefs=coefs, path=emiss_path)
          if (stat /= errorstatus_success) then
@@ -761,8 +761,8 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
 #else
          if (verbose) write(*,*) 'Run RTTOV'
 #endif
-         do jdim=preproc_dims%min_lat,preproc_dims%max_lat
-            do idim=preproc_dims%min_lon,preproc_dims%max_lon
+         do jdim = preproc_dims%min_lat, preproc_dims%max_lat
+            do idim = preproc_dims%min_lon, preproc_dims%max_lon
 
                count = count + 1
 
@@ -777,7 +777,7 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
 
                   ! Fetch emissivity from atlas
                   call rttov_get_emis(stat, opts, chanprof, &
-                       profiles(count:count), coefs, emis_atlas,emis_data)
+                       profiles(count:count), coefs, emis_atlas, emis_data)
                   if (stat /= errorstatus_success) then
                      write(*,*) 'ERROR: rttov_get_emis(), errorstatus = ', &
                           stat
@@ -827,7 +827,7 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
                end if
                ! Reformat and write output to NCDF files
                if (i_coef == 1) then
-                  do i_=1,nchan
+                  do i_ = 1, nchan
                      call write_ir_rttov(netcdf_info, &
                           idim-preproc_dims%min_lon+1, &
                           jdim-preproc_dims%min_lat+1, &
@@ -835,7 +835,7 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
                           radiance, radiance2, write_rttov, chan_pos(i_), i_)
                   end do
                else
-                  do i_=1,nchan
+                  do i_ = 1, nchan
                      call write_solar_rttov(netcdf_info, coefs, &
                           idim-preproc_dims%min_lon+1, &
                           jdim-preproc_dims%min_lat+1, &
@@ -855,8 +855,8 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
 #else
             if (verbose) write(*,*) 'Run RTTOV for cloud'
 #endif
-               do jdim=preproc_dims%min_lat,preproc_dims%max_lat
-                  do idim=preproc_dims%min_lon,preproc_dims%max_lon
+               do jdim = preproc_dims%min_lat, preproc_dims%max_lat
+                  do idim = preproc_dims%min_lon, preproc_dims%max_lon
                      count = count + 1
                      profiles(count)%cfraction = 1.
                      profiles(count)%ctp = preproc_prtm%trop_p(idim,jdim)

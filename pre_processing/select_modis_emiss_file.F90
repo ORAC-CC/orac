@@ -37,7 +37,7 @@
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
-subroutine select_modis_emiss_file(cyear,cdoy,cimss_emis_path, &
+subroutine select_modis_emiss_file(cyear, cdoy, cimss_emis_path, &
      cimss_emis_path_file)
 
    use preproc_structures_m
@@ -53,94 +53,94 @@ subroutine select_modis_emiss_file(cyear,cdoy,cimss_emis_path, &
    integer(kind=sint)                 :: doy
    integer                            :: pos
    logical                            :: isleapyear
-   integer(kind=sint), dimension(12)  :: dates,newdates
-   character(len=3),    dimension(12) :: dates_s
+   integer(kind=sint), dimension(12)  :: dates, newdates
+   character(len=3),   dimension(12)  :: dates_s
    character(len=3)                   :: emis_date_s
    logical                            :: cimss_emis_file_exist
    character(len=7)                   :: cimss_emis_file_read
 
    read(cyear, *) year
 
-   isleapyear=.false.
+   isleapyear = .false.
 
-   if ((mod(year,  4_sint) .eq. 0 .and. mod(year,100_sint) .ne. 0) .or. &
-        mod(year,400_sint) .eq. 0) isleapyear=.true.
+   if ((mod(year,  4_sint) .eq. 0 .and. mod(year, 100_sint) .ne. 0) .or. &
+        mod(year, 400_sint) .eq. 0) isleapyear = .true.
 
    if (isleapyear) then
-      dates(1)=1
-      dates(2)=32
-      dates(3)=61
-      dates(4)=92
-      dates(5)=122
-      dates(6)=153
-      dates(7)=183
-      dates(8)=214
-      dates(9)=245
-      dates(10)=275
-      dates(11)=306
-      dates(12)=336
+      dates(1) = 1
+      dates(2) = 32
+      dates(3) = 61
+      dates(4) = 92
+      dates(5) = 122
+      dates(6) = 153
+      dates(7) = 183
+      dates(8) = 214
+      dates(9) = 245
+      dates(10) = 275
+      dates(11) = 306
+      dates(12) = 336
 
-      dates_s(1)='001'
-      dates_s(2)='032'
-      dates_s(3)='061'
-      dates_s(4)='092'
-      dates_s(5)='122'
-      dates_s(6)='153'
-      dates_s(7)='183'
-      dates_s(8)='214'
-      dates_s(9)='245'
-      dates_s(10)='275'
-      dates_s(11)='306'
-      dates_s(12)='336'
+      dates_s(1) = '001'
+      dates_s(2) = '032'
+      dates_s(3) = '061'
+      dates_s(4) = '092'
+      dates_s(5) = '122'
+      dates_s(6) = '153'
+      dates_s(7) = '183'
+      dates_s(8) = '214'
+      dates_s(9) = '245'
+      dates_s(10) = '275'
+      dates_s(11) = '306'
+      dates_s(12) = '336'
    else
-      dates(1)=1
-      dates(2)=32
-      dates(3)=60
-      dates(4)=91
-      dates(5)=121
-      dates(6)=152
-      dates(7)=182
-      dates(8)=213
-      dates(9)=244
-      dates(10)=274
-      dates(11)=305
-      dates(12)=335
+      dates(1) = 1
+      dates(2) = 32
+      dates(3) = 60
+      dates(4) = 91
+      dates(5) = 121
+      dates(6) = 152
+      dates(7) = 182
+      dates(8) = 213
+      dates(9) = 244
+      dates(10) = 274
+      dates(11) = 305
+      dates(12) = 335
 
-      dates_s(1)='001'
-      dates_s(2)='032'
-      dates_s(3)='060'
-      dates_s(4)='091'
-      dates_s(5)='121'
-      dates_s(6)='152'
-      dates_s(7)='182'
-      dates_s(8)='213'
-      dates_s(9)='244'
-      dates_s(10)='274'
-      dates_s(11)='305'
-      dates_s(12)='335'
+      dates_s(1) = '001'
+      dates_s(2) = '032'
+      dates_s(3) = '060'
+      dates_s(4) = '091'
+      dates_s(5) = '121'
+      dates_s(6) = '152'
+      dates_s(7) = '182'
+      dates_s(8) = '213'
+      dates_s(9) = '244'
+      dates_s(10) = '274'
+      dates_s(11) = '305'
+      dates_s(12) = '335'
    end if
 
    read(cdoy, *) doy
-   newdates=dates-doy
+   newdates = dates-doy
 
-   pos=count(newdates .le. 0)
+   pos = count(newdates .le. 0)
 
-   emis_date_s=dates_s(pos)
+   emis_date_s = dates_s(pos)
 
    ! files earlier than 2007 do not have the version number in the name
    if ( year .le. 2006 .and. year .gt. 2002) then
-      cimss_emis_path_file=trim(adjustl(cimss_emis_path))// &
+      cimss_emis_path_file = trim(adjustl(cimss_emis_path))// &
          '/global_emis_inf10_monthFilled_MYD11C3.A'// &
          trim(adjustl(cyear))// &
          trim(adjustl(emis_date_s))//'.nc'
    else
    if ( year .le. 2002) then
       ! use the climatological file
-      cimss_emis_path_file=trim(adjustl(cimss_emis_path))// &
+      cimss_emis_path_file = trim(adjustl(cimss_emis_path))// &
          '/global_emis_inf10_monthFilled_MYD11C3.AXXXX'// &
          trim(adjustl(emis_date_s))//'.041'//'.nc'
    else
-      cimss_emis_path_file=trim(adjustl(cimss_emis_path))// &
+      cimss_emis_path_file = trim(adjustl(cimss_emis_path))// &
          '/global_emis_inf10_monthFilled_MYD11C3.A'// &
          trim(adjustl(cyear))// &
          trim(adjustl(emis_date_s))//'.041'//'.nc'

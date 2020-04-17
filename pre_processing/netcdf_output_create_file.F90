@@ -104,9 +104,9 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
-     cminute,platform,sensor,path,type,preproc_dims,netcdf_info,channel_info, &
-     ecmwf_flag,verbose)
+subroutine netcdf_create_rtm(global_atts, source_atts, cyear, cmonth, cday, chour, &
+     cminute, platform, sensor, path, type, preproc_dims, netcdf_info, channel_info, &
+     ecmwf_flag, verbose)
 
    use netcdf
 
@@ -121,8 +121,8 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
    implicit none
 
    ! Input
-   type(global_attributes_t),      intent(in)    :: global_atts
-   type(source_attributes_t),      intent(in)    :: source_atts
+   type(global_attributes_t),  intent(in)    :: global_atts
+   type(source_attributes_t),  intent(in)    :: source_atts
    character(len=*),           intent(in)    :: cyear
    character(len=*),           intent(in)    :: cmonth
    character(len=*),           intent(in)    :: cday
@@ -130,13 +130,13 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
    character(len=*),           intent(in)    :: cminute
    character(len=*),           intent(in)    :: platform
    character(len=*),           intent(in)    :: sensor
-   character(len=*),               intent(in)    :: path
-   integer,                        intent(in)    :: type
-   type(preproc_dims_t),           intent(in)    :: preproc_dims
-   type(netcdf_output_info_t),     intent(inout) :: netcdf_info
-   type(channel_info_t),           intent(in)    :: channel_info
-   integer,                        intent(in)    :: ecmwf_flag
-   logical,                        intent(in)    :: verbose
+   character(len=*),           intent(in)    :: path
+   integer,                    intent(in)    :: type
+   type(preproc_dims_t),       intent(in)    :: preproc_dims
+   type(netcdf_output_info_t), intent(inout) :: netcdf_info
+   type(channel_info_t),       intent(in)    :: channel_info
+   integer,                    intent(in)    :: ecmwf_flag
+   logical,                    intent(in)    :: verbose
 
    ! Local
    character(len=file_length) :: ctitle
@@ -145,7 +145,7 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
 !  integer                    :: dimids_2d(2)
    integer                    :: dimids_3d(3)
    integer                    :: dimids_4d(4)
-   integer(lint)              :: nlon, nlat,kdim
+   integer(lint)              :: nlon, nlat, kdim
 
 
    nlon = preproc_dims%max_lon-preproc_dims%min_lon+1
@@ -154,17 +154,17 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
 
    ! Set number of vertical levels/layers here, as GFS is different to ECMWF
    kdim = preproc_dims%kdim+1
-   if (ecmwf_flag .eq. 6) kdim=kdim-1
-   if (ecmwf_flag .eq. 7) kdim=kdim-1
-   if (ecmwf_flag .eq. 8) kdim=kdim-1
+   if (ecmwf_flag .eq. 6) kdim = kdim-1
+   if (ecmwf_flag .eq. 7) kdim = kdim-1
+   if (ecmwf_flag .eq. 8) kdim = kdim-1
 
    if (type .eq. NETCDF_OUTPUT_FILE_LWRTM) then
 
-      ctitle='ORAC Preprocessing lwrtm output file'
+      ctitle = 'ORAC Preprocessing lwrtm output file'
 
 
       ! create file
-      if (nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
+      if (nf90_create(path, IOR(NF90_HDF5, NF90_CLASSIC_MODEL), &
                       netcdf_info%ncid_lwrtm) .ne. NF90_NOERR) then
          write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), filename: ', &
               path
@@ -234,9 +234,9 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
 
 
          ! define 3-D variables
-         dimids_3d(1)=netcdf_info%dimid_lw_channels
-         dimids_3d(2)=netcdf_info%dimid_x_lw
-         dimids_3d(3)=netcdf_info%dimid_y_lw
+         dimids_3d(1) = netcdf_info%dimid_lw_channels
+         dimids_3d(2) = netcdf_info%dimid_x_lw
+         dimids_3d(3) = netcdf_info%dimid_y_lw
 
          ! define emiss_lw
          call nc_def_var_float_packed_float( &
@@ -251,10 +251,10 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
 
 
          ! define 4-D variables
-         dimids_4d(1)=netcdf_info%dimid_lw_channels
-         dimids_4d(2)=netcdf_info%dimid_levels_lw
-         dimids_4d(3)=netcdf_info%dimid_x_lw
-         dimids_4d(4)=netcdf_info%dimid_y_lw
+         dimids_4d(1) = netcdf_info%dimid_lw_channels
+         dimids_4d(2) = netcdf_info%dimid_levels_lw
+         dimids_4d(3) = netcdf_info%dimid_x_lw
+         dimids_4d(4) = netcdf_info%dimid_y_lw
 
          ! define tac_lw
          call nc_def_var_float_packed_float( &
@@ -315,11 +315,11 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
 
    else if (type .eq. NETCDF_OUTPUT_FILE_SWRTM) then
 
-      ctitle='ORAC Preprocessing swrtm output file'
+      ctitle = 'ORAC Preprocessing swrtm output file'
 
 
       ! create file
-      if (nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
+      if (nf90_create(path, IOR(NF90_HDF5, NF90_CLASSIC_MODEL), &
                       netcdf_info%ncid_swrtm) .ne. NF90_NOERR) then
          write(*,*) 'ERROR: netcdf_create_rtm(2), nf90_create(), filename: ', &
               path
@@ -389,10 +389,10 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
 
 
          ! define 4-D variables
-         dimids_4d(1)=netcdf_info%dimid_sw_channels
-         dimids_4d(2)=netcdf_info%dimid_levels_sw
-         dimids_4d(3)=netcdf_info%dimid_x_sw
-         dimids_4d(4)=netcdf_info%dimid_y_sw
+         dimids_4d(1) = netcdf_info%dimid_sw_channels
+         dimids_4d(2) = netcdf_info%dimid_levels_sw
+         dimids_4d(3) = netcdf_info%dimid_x_sw
+         dimids_4d(4) = netcdf_info%dimid_y_sw
 
          ! define tac_sw
          call nc_def_var_float_packed_float( &
@@ -420,11 +420,11 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
 
    else if (type .eq. NETCDF_OUTPUT_FILE_PRTM) then
 
-      ctitle='ORAC Preprocessing prtm output file'
+      ctitle = 'ORAC Preprocessing prtm output file'
 
 
       ! create file
-      if (nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
+      if (nf90_create(path, IOR(NF90_HDF5, NF90_CLASSIC_MODEL), &
                       netcdf_info%ncid_prtm) .ne. NF90_NOERR) then
          write(*,*) 'ERROR: netcdf_create_rtm(3), nf90_create(), filename: ', &
               path
@@ -482,9 +482,9 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
            fill_value = sreal_fill_value)
 
       ! define 3-D variables
-      dimids_3d(1)=netcdf_info%dimid_levels_pw
-      dimids_3d(2)=netcdf_info%dimid_x_pw
-      dimids_3d(3)=netcdf_info%dimid_y_pw
+      dimids_3d(1) = netcdf_info%dimid_levels_pw
+      dimids_3d(2) = netcdf_info%dimid_x_pw
+      dimids_3d(3) = netcdf_info%dimid_y_pw
 
       ! define pprofile_rtm
       call nc_def_var_float_packed_float( &
@@ -544,13 +544,13 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
 
 
    ! set up attributes common to all output files
-   if (type .eq. NETCDF_OUTPUT_FILE_PRTM)  ncid=netcdf_info%ncid_prtm
-   if (type .eq. NETCDF_OUTPUT_FILE_LWRTM) ncid=netcdf_info%ncid_lwrtm
-   if (type .eq. NETCDF_OUTPUT_FILE_SWRTM) ncid=netcdf_info%ncid_swrtm
+   if (type .eq. NETCDF_OUTPUT_FILE_PRTM)  ncid = netcdf_info%ncid_prtm
+   if (type .eq. NETCDF_OUTPUT_FILE_LWRTM) ncid = netcdf_info%ncid_lwrtm
+   if (type .eq. NETCDF_OUTPUT_FILE_SWRTM) ncid = netcdf_info%ncid_swrtm
 
-   call netcdf_put_common_attributes(ncid,global_atts,source_atts,ctitle, &
-                                     platform,sensor,path,cyear,cmonth,cday, &
-                                     chour,cminute)
+   call netcdf_put_common_attributes(ncid, global_atts, source_atts, ctitle, &
+                                     platform, sensor, path, cyear, cmonth, cday, &
+                                     chour, cminute)
 
 
    ! close definition section
@@ -607,9 +607,9 @@ end subroutine netcdf_create_rtm
 !
 !-------------------------------------------------------------------------------
 
-subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, &
-     cminute,platform,sensor,path,type,imager_geolocation,imager_angles, &
-     netcdf_info,channel_info,include_full_brdf,do_cloud_emis,verbose)
+subroutine netcdf_create_swath(global_atts, source_atts, cyear, cmonth, cday, chour, &
+     cminute, platform, sensor, path, type, imager_geolocation, imager_angles, &
+     netcdf_info, channel_info, include_full_brdf, do_cloud_emis, verbose)
 
    use netcdf
 
@@ -623,8 +623,8 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
    implicit none
 
    ! Input
-   type(global_attributes_t),      intent(in)    :: global_atts
-   type(source_attributes_t),      intent(in)    :: source_atts
+   type(global_attributes_t),  intent(in)    :: global_atts
+   type(source_attributes_t),  intent(in)    :: source_atts
    character(len=*),           intent(in)    :: cyear
    character(len=*),           intent(in)    :: cmonth
    character(len=*),           intent(in)    :: cday
@@ -632,15 +632,15 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
    character(len=*),           intent(in)    :: cminute
    character(len=*),           intent(in)    :: platform
    character(len=*),           intent(in)    :: sensor
-   character(len=*),               intent(in)    :: path
-   integer,                        intent(in)    :: type
-   type(imager_geolocation_t),     intent(in)    :: imager_geolocation
-   type(imager_angles_t),          intent(in)    :: imager_angles
-   type(netcdf_output_info_t),     intent(inout) :: netcdf_info
-   type(channel_info_t),           intent(in)    :: channel_info
-   logical,                        intent(in)    :: include_full_brdf
-   logical,                        intent(in)    :: do_cloud_emis
-   logical,                        intent(in)    :: verbose
+   character(len=*),           intent(in)    :: path
+   integer,                    intent(in)    :: type
+   type(imager_geolocation_t), intent(in)    :: imager_geolocation
+   type(imager_angles_t),      intent(in)    :: imager_angles
+   type(netcdf_output_info_t), intent(inout) :: netcdf_info
+   type(channel_info_t),       intent(in)    :: channel_info
+   logical,                    intent(in)    :: include_full_brdf
+   logical,                    intent(in)    :: do_cloud_emis
+   logical,                    intent(in)    :: verbose
 
    ! Local
    character(len=file_length) :: ctitle
@@ -651,11 +651,11 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
 
    if (type .eq. NETCDF_OUTPUT_FILE_ABL) then
 
-      ctitle='ORAC Preprocessing alb output file'
+      ctitle = 'ORAC Preprocessing alb output file'
 
 
       ! create file
-      if (nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
+      if (nf90_create(path, IOR(NF90_HDF5, NF90_CLASSIC_MODEL), &
                       netcdf_info%ncid_alb) .ne. NF90_NOERR) then
          write(*,*) 'ERROR: netcdf_create_swath(1), nf90_create(), filename: ', &
               path
@@ -724,9 +724,9 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
 
 
       if (channel_info%nchannels_sw .ne. 0) then
-         dimids_3d(1)=netcdf_info%dimid_x_alb
-         dimids_3d(2)=netcdf_info%dimid_y_alb
-         dimids_3d(3)=netcdf_info%dimid_c_alb
+         dimids_3d(1) = netcdf_info%dimid_x_alb
+         dimids_3d(2) = netcdf_info%dimid_y_alb
+         dimids_3d(3) = netcdf_info%dimid_c_alb
 
          ! define alb
          call nc_def_var_float_packed_float( &
@@ -783,9 +783,9 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
       end if
 
       if (channel_info%nchannels_lw .ne. 0) then
-         dimids_3d(1)=netcdf_info%dimid_x_alb
-         dimids_3d(2)=netcdf_info%dimid_y_alb
-         dimids_3d(3)=netcdf_info%dimid_c_emis
+         dimids_3d(1) = netcdf_info%dimid_x_alb
+         dimids_3d(2) = netcdf_info%dimid_y_alb
+         dimids_3d(3) = netcdf_info%dimid_c_emis
 
          ! define emis
          call nc_def_var_float_packed_float( &
@@ -802,11 +802,11 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
 
    else if (type .eq. NETCDF_OUTPUT_FILE_CLF) then
 
-      ctitle='ORAC Preprocessing cf output file'
+      ctitle = 'ORAC Preprocessing cf output file'
 
 
       ! create file
-      if (nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
+      if (nf90_create(path, IOR(NF90_HDF5, NF90_CLASSIC_MODEL), &
                       netcdf_info%ncid_clf) .ne. NF90_NOERR) then
          write(*,*) 'ERROR: netcdf_create_swath(2), nf90_create(), filename: ', &
               path
@@ -840,12 +840,12 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
       end if
 
 
-      dimids_2d(1)=netcdf_info%dimid_x_cf
-      dimids_2d(2)=netcdf_info%dimid_y_cf
+      dimids_2d(1) = netcdf_info%dimid_x_cf
+      dimids_2d(2) = netcdf_info%dimid_y_cf
 
-      dimids_3d(1)=netcdf_info%dimid_x_cf
-      dimids_3d(2)=netcdf_info%dimid_y_cf
-      dimids_3d(3)=netcdf_info%dimid_v_cf
+      dimids_3d(1) = netcdf_info%dimid_x_cf
+      dimids_3d(2) = netcdf_info%dimid_y_cf
+      dimids_3d(3) = netcdf_info%dimid_v_cf
 
       ! define cflag
       call nc_def_var_byte_packed_byte( &
@@ -998,11 +998,11 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
 
    else if (type .eq. NETCDF_OUTPUT_FILE_GEO) then
 
-      ctitle='ORAC Preprocessing geo output file'
+      ctitle = 'ORAC Preprocessing geo output file'
 
 
       ! create file
-      if (nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
+      if (nf90_create(path, IOR(NF90_HDF5, NF90_CLASSIC_MODEL), &
                       netcdf_info%ncid_geo) .ne. NF90_NOERR) then
          write(*,*) 'ERROR: netcdf_create_swath(1), nf90_create(), filename: ', &
               path
@@ -1035,9 +1035,9 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
       end if
 
 
-      dimids_3d(1)=netcdf_info%dimid_x_geo
-      dimids_3d(2)=netcdf_info%dimid_y_geo
-      dimids_3d(3)=netcdf_info%dimid_v_geo
+      dimids_3d(1) = netcdf_info%dimid_x_geo
+      dimids_3d(2) = netcdf_info%dimid_y_geo
+      dimids_3d(3) = netcdf_info%dimid_v_geo
 
       ! define solzen
       call nc_def_var_float_packed_float( &
@@ -1097,11 +1097,11 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
 
    else if (type .eq. NETCDF_OUTPUT_FILE_LOC) then
 
-      ctitle='ORAC Preprocessing loc output file'
+      ctitle = 'ORAC Preprocessing loc output file'
 
 
       ! create file
-      if (nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
+      if (nf90_create(path, IOR(NF90_HDF5, NF90_CLASSIC_MODEL), &
                       netcdf_info%ncid_loc) .ne. NF90_NOERR) then
          write(*,*) 'ERROR: netcdf_create_swath(4), nf90_create(), filename: ', &
               path
@@ -1127,8 +1127,8 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
       end if
 
 
-      dimids_2d(1)=netcdf_info%dimid_x_loc
-      dimids_2d(2)=netcdf_info%dimid_y_loc
+      dimids_2d(1) = netcdf_info%dimid_x_loc
+      dimids_2d(2) = netcdf_info%dimid_y_loc
 
       ! define lat
       call nc_def_var_float_packed_float( &
@@ -1154,11 +1154,11 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
 
 
    else if (type .eq. NETCDF_OUTPUT_FILE_LSF) then
-      ctitle='ORAC Preprocessing lsf output file'
+      ctitle = 'ORAC Preprocessing lsf output file'
 
 
       ! create file
-      if (nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
+      if (nf90_create(path, IOR(NF90_HDF5, NF90_CLASSIC_MODEL), &
                       netcdf_info%ncid_lsf) .ne. NF90_NOERR) then
          write(*,*) 'ERROR: netcdf_create_swath(5), nf90_create(), filename: ', &
               path
@@ -1184,8 +1184,8 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
       end if
 
 
-      dimids_2d(1)=netcdf_info%dimid_x_lsf
-      dimids_2d(2)=netcdf_info%dimid_y_lsf
+      dimids_2d(1) = netcdf_info%dimid_x_lsf
+      dimids_2d(2) = netcdf_info%dimid_y_lsf
 
       ! define lsflag
       call nc_def_var_byte_packed_byte( &
@@ -1232,11 +1232,11 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
 
    else if (type .eq. NETCDF_OUTPUT_FILE_MSI) then
 
-      ctitle='ORAC Preprocessing msi output file'
+      ctitle = 'ORAC Preprocessing msi output file'
 
 
       ! create file
-      if (nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
+      if (nf90_create(path, IOR(NF90_HDF5, NF90_CLASSIC_MODEL), &
                       netcdf_info%ncid_msi) .ne. NF90_NOERR) then
          write(*,*) 'ERROR: netcdf_create_swath(6), nf90_create(), ' // &
               'filename: ', path
@@ -1322,8 +1322,8 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
            fill_value = lint_fill_value)
 
 
-      dimids_2d(1)=netcdf_info%dimid_x_msi
-      dimids_2d(2)=netcdf_info%dimid_y_msi
+      dimids_2d(1) = netcdf_info%dimid_x_msi
+      dimids_2d(2) = netcdf_info%dimid_y_msi
 
       ! define time_data
       call nc_def_var_double_packed_double( &
@@ -1337,9 +1337,9 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
            fill_value = dreal_fill_value)
 
 
-      dimids_3d(1)=netcdf_info%dimid_x_msi
-      dimids_3d(2)=netcdf_info%dimid_y_msi
-      dimids_3d(3)=netcdf_info%dimid_c_msi
+      dimids_3d(1) = netcdf_info%dimid_x_msi
+      dimids_3d(2) = netcdf_info%dimid_y_msi
+      dimids_3d(3) = netcdf_info%dimid_c_msi
 
       ! define msi_data
       call nc_def_var_float_packed_float( &
@@ -1365,16 +1365,16 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
    end if
 
    ! set up attributes common to all output files
-   if (type .eq. NETCDF_OUTPUT_FILE_ABL) ncid=netcdf_info%ncid_alb
-   if (type .eq. NETCDF_OUTPUT_FILE_CLF) ncid=netcdf_info%ncid_clf
-   if (type .eq. NETCDF_OUTPUT_FILE_GEO) ncid=netcdf_info%ncid_geo
-   if (type .eq. NETCDF_OUTPUT_FILE_LOC) ncid=netcdf_info%ncid_loc
-   if (type .eq. NETCDF_OUTPUT_FILE_LSF) ncid=netcdf_info%ncid_lsf
-   if (type .eq. NETCDF_OUTPUT_FILE_MSI) ncid=netcdf_info%ncid_msi
+   if (type .eq. NETCDF_OUTPUT_FILE_ABL) ncid = netcdf_info%ncid_alb
+   if (type .eq. NETCDF_OUTPUT_FILE_CLF) ncid = netcdf_info%ncid_clf
+   if (type .eq. NETCDF_OUTPUT_FILE_GEO) ncid = netcdf_info%ncid_geo
+   if (type .eq. NETCDF_OUTPUT_FILE_LOC) ncid = netcdf_info%ncid_loc
+   if (type .eq. NETCDF_OUTPUT_FILE_LSF) ncid = netcdf_info%ncid_lsf
+   if (type .eq. NETCDF_OUTPUT_FILE_MSI) ncid = netcdf_info%ncid_msi
 
-   call netcdf_put_common_attributes(ncid,global_atts,source_atts,ctitle, &
-        platform,sensor,path,cyear,cmonth,cday, &
-        chour,cminute)
+   call netcdf_put_common_attributes(ncid, global_atts, source_atts, ctitle, &
+        platform, sensor, path, cyear, cmonth, cday, &
+        chour, cminute)
 
 
    ! close definition section
@@ -1421,9 +1421,9 @@ end subroutine netcdf_create_swath
 !
 !-------------------------------------------------------------------------------
 
-subroutine netcdf_create_config(global_atts,source_atts,cyear,cmonth,cday, &
-     chour,cminute,platform,sensor,path,preproc_dims,imager_geolocation, &
-     netcdf_info,channel_info,verbose)
+subroutine netcdf_create_config(global_atts, source_atts, cyear, cmonth, cday, &
+     chour, cminute, platform, sensor, path, preproc_dims, imager_geolocation, &
+     netcdf_info, channel_info, verbose)
 
    use netcdf
 
@@ -1438,8 +1438,8 @@ subroutine netcdf_create_config(global_atts,source_atts,cyear,cmonth,cday, &
    implicit none
 
    ! Input
-   type(global_attributes_t),      intent(in)    :: global_atts
-   type(source_attributes_t),      intent(in)    :: source_atts
+   type(global_attributes_t),  intent(in)    :: global_atts
+   type(source_attributes_t),  intent(in)    :: source_atts
    character(len=*),           intent(in)    :: cyear
    character(len=*),           intent(in)    :: cmonth
    character(len=*),           intent(in)    :: cday
@@ -1447,12 +1447,12 @@ subroutine netcdf_create_config(global_atts,source_atts,cyear,cmonth,cday, &
    character(len=*),           intent(in)    :: cminute
    character(len=*),           intent(in)    :: platform
    character(len=*),           intent(in)    :: sensor
-   character(len=*),               intent(in)    :: path
-   type(preproc_dims_t),           intent(in)    :: preproc_dims
-   type(imager_geolocation_t),     intent(in)    :: imager_geolocation
-   type(netcdf_output_info_t),     intent(inout) :: netcdf_info
-   type(channel_info_t),           intent(in)    :: channel_info
-   logical,                        intent(in)    :: verbose
+   character(len=*),           intent(in)    :: path
+   type(preproc_dims_t),       intent(in)    :: preproc_dims
+   type(imager_geolocation_t), intent(in)    :: imager_geolocation
+   type(netcdf_output_info_t), intent(inout) :: netcdf_info
+   type(channel_info_t),       intent(in)    :: channel_info
+   logical,                    intent(in)    :: verbose
 
    ! Local
    character(len=file_length) :: ctitle
@@ -1460,11 +1460,11 @@ subroutine netcdf_create_config(global_atts,source_atts,cyear,cmonth,cday, &
    integer                    :: dimids_1d(1)
 
 
-   ctitle='ORAC Preprocessing config file'
+   ctitle = 'ORAC Preprocessing config file'
 
 
    ! create file
-   if (nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
+   if (nf90_create(path, IOR(NF90_HDF5, NF90_CLASSIC_MODEL), &
                    netcdf_info%ncid_config) .ne. NF90_NOERR) then
       write(*,*) 'ERROR: netcdf_create_config(), nf90_create(), filename: ', &
            path
@@ -1613,12 +1613,12 @@ subroutine netcdf_create_config(global_atts,source_atts,cyear,cmonth,cday, &
       stop error_stop_code
    end if
 
-   ncid=netcdf_info%ncid_config
+   ncid = netcdf_info%ncid_config
 
    ! set up attributes common to all output files
-   call netcdf_put_common_attributes(ncid,global_atts,source_atts,ctitle, &
-        platform,sensor,path, cyear,cmonth,cday, &
-        chour,cminute)
+   call netcdf_put_common_attributes(ncid, global_atts, source_atts, ctitle, &
+        platform, sensor, path, cyear, cmonth, cday, &
+        chour, cminute)
 
 
    ! close definition section
@@ -1633,9 +1633,9 @@ subroutine netcdf_create_config(global_atts,source_atts,cyear,cmonth,cday, &
 end subroutine netcdf_create_config
 
 
-subroutine netcdf_put_common_attributes(ncid,global_atts,source_atts,title, &
-     platform,sensor,path,cyear,cmonth,cday, &
-     chour,cminute)
+subroutine netcdf_put_common_attributes(ncid, global_atts, source_atts, title, &
+     platform, sensor, path, cyear, cmonth, cday, &
+     chour, cminute)
 
    use netcdf
 
@@ -1645,13 +1645,13 @@ subroutine netcdf_put_common_attributes(ncid,global_atts,source_atts,title, &
 
    implicit none
 
-   integer,                        intent(in) :: ncid
-   type(global_attributes_t),      intent(in) :: global_atts
-   type(source_attributes_t),      intent(in) :: source_atts
+   integer,                   intent(in) :: ncid
+   type(global_attributes_t), intent(in) :: global_atts
+   type(source_attributes_t), intent(in) :: source_atts
    character(len=*),          intent(in) :: title
    character(len=*),          intent(in) :: platform
    character(len=*),          intent(in) :: sensor
-   character(len=*),               intent(in) :: path
+   character(len=*),          intent(in) :: path
    character(len=*),          intent(in) :: cyear
    character(len=*),          intent(in) :: cmonth
    character(len=*),          intent(in) :: cday
@@ -1659,7 +1659,7 @@ subroutine netcdf_put_common_attributes(ncid,global_atts,source_atts,title, &
    character(len=*),          intent(in) :: cminute
 
    character(len=platform_length) :: PLATFORM_UPPER_CASE
-   integer                        :: position,length
+   integer                        :: position, length
    type(global_attributes_t)      :: global_atts2
    type(source_attributes_t)      :: source_atts2
 
@@ -1670,22 +1670,22 @@ subroutine netcdf_put_common_attributes(ncid,global_atts,source_atts,title, &
 
    global_atts2%source = trim(source_atts%level1b_version)
 
-   position=index(trim(path),'/',back=.true.)
-   length=len_trim(path)
+   position = index(trim(path), '/', back=.true.)
+   length = len_trim(path)
    global_atts2%File_Name    = trim(path(position+1:length))
 
    ! product_name should be the base filename of the product
-   position=index(trim(global_atts2%File_Name),'_',back=.true.)
+   position = index(trim(global_atts2%File_Name), '_', back=.true.)
    global_atts2%Product_Name = trim(global_atts2%File_Name(1:position-1))
 
    global_atts2%Date_Created = trim(cyear)//trim(cmonth)//trim(cday)// &
         trim(chour)//trim(cminute)
 
-   PLATFORM_UPPER_CASE=platform
-   if (platform(1:4) .eq. 'noaa') PLATFORM_UPPER_CASE(1:4)='NOAA'
+   PLATFORM_UPPER_CASE = platform
+   if (platform(1:4) .eq. 'noaa') PLATFORM_UPPER_CASE(1:4) = 'NOAA'
    if (platform(1:9) .eq. 'Sentinel3') then
-      PLATFORM_UPPER_CASE(1:10)='Sentinel-3'
-      PLATFORM_UPPER_CASE(11:12)=platform(10:11)
+      PLATFORM_UPPER_CASE(1:10) = 'Sentinel-3'
+      PLATFORM_UPPER_CASE(11:12) = platform(10:11)
    end if
    global_atts2%Platform = trim(PLATFORM_UPPER_CASE)
    global_atts2%Sensor   = trim(sensor)
@@ -1697,7 +1697,7 @@ subroutine netcdf_put_common_attributes(ncid,global_atts,source_atts,title, &
 
    global_atts2%SVN_Version = 'xxx'
 
-   call nc_put_common_attributes(ncid, global_atts2,source_atts2)
+   call nc_put_common_attributes(ncid, global_atts2, source_atts2)
 
 
 end subroutine netcdf_put_common_attributes

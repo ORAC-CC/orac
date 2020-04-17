@@ -110,10 +110,10 @@ subroutine Read_LwRTM_nc(Ctrl, RTM)
    ! become real(8). The parameter arrays read in via buf, and the lat/lons
    ! etc are explicitly written as real(4) in order to reduce the file size.
 
-   integer                :: ncid, chan_found, i, j
+   integer                    :: ncid, chan_found, i, j
    character(len=InstNameLen) :: platform, sensor, instname
-   integer, allocatable   :: index(:), ChanID(:)
-!  real(4), allocatable   :: WvNumber(:)
+   integer, allocatable       :: index(:), ChanID(:)
+!  real(4), allocatable       :: WvNumber(:)
 
 
    ! Open LwRTM data file
@@ -127,9 +127,9 @@ subroutine Read_LwRTM_nc(Ctrl, RTM)
       stop error_stop_code
    end if
    if (sensor =='AATSR' .or. sensor =='ATSR2' ) then
-      instname=trim(adjustl(sensor))
+      instname = trim(adjustl(sensor))
    else
-      instname=trim(adjustl(sensor))//'-'//trim(adjustl(platform))
+      instname = trim(adjustl(sensor))//'-'//trim(adjustl(platform))
    end if
    ! for metop, sensor name needs to be capitalized
    if (platform(1:6) == 'metopa') then
@@ -166,9 +166,9 @@ subroutine Read_LwRTM_nc(Ctrl, RTM)
    index = 0
 
    ! This is the loop over the requested channels
-   do i = 1,Ctrl%Ind%Ny
+   do i = 1, Ctrl%Ind%Ny
       ! Loop over channels in RTM
-      do j = 1,RTM%LW%NLWF
+      do j = 1, RTM%LW%NLWF
          ! Signal that the required channel has been found by incrementing
          ! chan_found and break out of the inner loop to start search for
          ! next instrument channel

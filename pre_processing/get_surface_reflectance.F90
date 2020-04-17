@@ -164,7 +164,7 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
    ! Local variables
 
    ! General
-   integer                           :: i,j,k,ii,jj,kk,i_oc,i_view
+   integer                           :: i, j,k, ii, jj, kk, i_oc, i_view
    logical                           :: flag
    integer                           :: nsea, nland
    integer                           :: seacount
@@ -231,7 +231,7 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
 
    mask = .false.
 
-   do k = 1,imager_angles%nviews
+   do k = 1, imager_angles%nviews
       mask = mask .or. &
              imager_geolocation%latitude  .ne. sreal_fill_value .and. &
              imager_geolocation%longitude .ne. sreal_fill_value .and. &
@@ -381,11 +381,11 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
                  'USE_SWANSEA_CLIMATOLOGY requires ASSUME_FULL_PATH.'
             stop error_stop_code
          end if
-         call select_modis_albedo_file(cyear,cdoy,modis_surf_path, &
-              .false.,modis_surf_path_file)
+         call select_modis_albedo_file(cyear, cdoy, modis_surf_path, &
+              .false., modis_surf_path_file)
          if (include_full_brdf) then
-            call select_modis_albedo_file(cyear,cdoy,modis_brdf_path, &
-                 .true.,modis_brdf_path_file)
+            call select_modis_albedo_file(cyear, cdoy, modis_brdf_path, &
+                 .true., modis_brdf_path_file)
          end if
       end if
       call c_to_fortran_str(modis_surf_path_file)

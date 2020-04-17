@@ -70,9 +70,9 @@ subroutine parse_optional(label, value, preproc_opts)
 
    implicit none
 
-   character(len=*),     intent(in)     :: label
-   character(len=*),     intent(in)     :: value
-   type(preproc_opts_t), intent(inout)  :: preproc_opts
+   character(len=*),     intent(in)    :: label
+   character(len=*),     intent(in)    :: value
+   type(preproc_opts_t), intent(inout) :: preproc_opts
 
 
    select case (label)

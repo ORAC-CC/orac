@@ -69,7 +69,7 @@
 subroutine set_ecmwf(cyear, cmonth, cday, chour, ecmwf_path, ecmwf_path2, &
    ecmwf_path3, ecmwf_path_file, ecmwf_path_file2, ecmwf_path_file3, &
    ecmwf_flag, imager_geolocation, imager_time, time_interp_method, &
-   time_int_fac,assume_full_path, ecmwf_hr_path, ecmwf_hr_path_file)
+   time_int_fac, assume_full_path, ecmwf_hr_path, ecmwf_hr_path_file)
 
    use calender_m
    use imager_structures_m
@@ -77,7 +77,7 @@ subroutine set_ecmwf(cyear, cmonth, cday, chour, ecmwf_path, ecmwf_path2, &
 
    implicit none
 
-   character(len=*),           intent(in)  :: cyear,cmonth,cday,chour
+   character(len=*),           intent(in)  :: cyear, cmonth, cday, chour
    character(len=*),           intent(in)  :: ecmwf_path(:)
    character(len=*),           intent(in)  :: ecmwf_path2(:)
    character(len=*),           intent(in)  :: ecmwf_path3(:)
@@ -125,15 +125,15 @@ subroutine set_ecmwf(cyear, cmonth, cday, chour, ecmwf_path, ecmwf_path2, &
 
    if (assume_full_path) then
       ! for ecmwf_flag=2, ensure NCDF file is listed in ecmwf_pathout
-      if (index(ecmwf_path(1),'.nc') .gt. 0) then
+      if (index(ecmwf_path(1), '.nc') .gt. 0) then
          ecmwf_path_file  = ecmwf_path
          ecmwf_path_file2 = ecmwf_path2
          ecmwf_path_file3 = ecmwf_path3
-      else if (index(ecmwf_path2(1),'.nc') .gt. 0) then
+      else if (index(ecmwf_path2(1), '.nc') .gt. 0) then
          ecmwf_path_file  = ecmwf_path2
          ecmwf_path_file2 = ecmwf_path
          ecmwf_path_file3 = ecmwf_path3
-      else if (index(ecmwf_path3(1),'.nc') .gt. 0) then
+      else if (index(ecmwf_path3(1), '.nc') .gt. 0) then
          ecmwf_path_file  = ecmwf_path3
          ecmwf_path_file2 = ecmwf_path
          ecmwf_path_file3 = ecmwf_path2
@@ -148,15 +148,15 @@ subroutine set_ecmwf(cyear, cmonth, cday, chour, ecmwf_path, ecmwf_path2, &
          read(chour, *) hour
          select case (hour)
          case(0:5)
-            cera_hour='00'
+            cera_hour = '00'
          case(6:11)
-            cera_hour='06'
+            cera_hour = '06'
          case(12:17)
-            cera_hour='12'
+            cera_hour = '12'
          case(18:23)
-            cera_hour='18'
+            cera_hour = '18'
          case default
-            cera_hour='00'
+            cera_hour = '00'
          end select
 
          i_path1 = 1
@@ -348,59 +348,59 @@ subroutine make_ecmwf_name(cyear, cmonth, cday, chour, ecmwf_flag, ecmwf_path, &
 
    select case (ecmwf_flag)
    case(0)
-      ecmwf_path_file=trim(adjustl(ecmwf_path))//'/ERA_Interim_an_'// &
+      ecmwf_path_file = trim(adjustl(ecmwf_path))//'/ERA_Interim_an_'// &
            trim(adjustl(cyear))//trim(adjustl(cmonth))// &
            trim(adjustl(cday))//'_'//trim(adjustl(chour))//'+00.grb'
    case(1)
-      ecmwf_path_file=trim(adjustl(ecmwf_path))//'/ggas/'// &
+      ecmwf_path_file = trim(adjustl(ecmwf_path))//'/ggas/'// &
            trim(adjustl(cyear))//'/'//trim(adjustl(cmonth))//'/'// &
            trim(adjustl(cday))//'/'//'ggas'// &
            trim(adjustl(cyear))//trim(adjustl(cmonth))// &
            trim(adjustl(cday))//trim(adjustl(chour))//'00.nc'
-      ecmwf_path_file2=trim(adjustl(ecmwf_path2))//'/ggam/'// &
+      ecmwf_path_file2 = trim(adjustl(ecmwf_path2))//'/ggam/'// &
            trim(adjustl(cyear))//'/'//trim(adjustl(cmonth))//'/'// &
            trim(adjustl(cday))//'/'//'ggam'// &
            trim(adjustl(cyear))//trim(adjustl(cmonth))// &
            trim(adjustl(cday))//trim(adjustl(chour))//'00.nc'
-      ecmwf_path_file3=trim(adjustl(ecmwf_path3))//'/spam/'// &
+      ecmwf_path_file3 = trim(adjustl(ecmwf_path3))//'/spam/'// &
            trim(adjustl(cyear))//'/'//trim(adjustl(cmonth))//'/'// &
            trim(adjustl(cday))//'/'//'spam'// &
            trim(adjustl(cyear))//trim(adjustl(cmonth))// &
            trim(adjustl(cday))//trim(adjustl(chour))//'00.nc'
    case(2)
-      ecmwf_path_file=trim(adjustl(ecmwf_path2))//'/gg/as/'// &
+      ecmwf_path_file = trim(adjustl(ecmwf_path2))//'/gg/as/'// &
            trim(adjustl(cyear))//'/'//trim(adjustl(cmonth))//'/'// &
            trim(adjustl(cday))//'/'//'ggas'// &
            trim(adjustl(cyear))//trim(adjustl(cmonth))// &
            trim(adjustl(cday))//trim(adjustl(chour))//'00.nc'
-      ecmwf_path_file2=trim(adjustl(ecmwf_path))//'/gg/am/'// &
+      ecmwf_path_file2 = trim(adjustl(ecmwf_path))//'/gg/am/'// &
            trim(adjustl(cyear))//'/'//trim(adjustl(cmonth))//'/'// &
            trim(adjustl(cday))//'/'//'ggam'// &
            trim(adjustl(cyear))//trim(adjustl(cmonth))// &
            trim(adjustl(cday))//trim(adjustl(chour))//'00.grb'
-      ecmwf_path_file3=trim(adjustl(ecmwf_path3))//'/sp/am/'// &
+      ecmwf_path_file3 = trim(adjustl(ecmwf_path3))//'/sp/am/'// &
            trim(adjustl(cyear))//'/'//trim(adjustl(cmonth))//'/'// &
            trim(adjustl(cday))//'/'//'spam'// &
            trim(adjustl(cyear))//trim(adjustl(cmonth))// &
            trim(adjustl(cday))//trim(adjustl(chour))//'00.grb'
    case(4)
-      ecmwf_path_file=trim(adjustl(ecmwf_path))//'/ECMWF_OPER_'// &
+      ecmwf_path_file = trim(adjustl(ecmwf_path))//'/ECMWF_OPER_'// &
            trim(adjustl(cyear))//trim(adjustl(cmonth))// &
            trim(adjustl(cday))//'_'//trim(adjustl(chour))//'+00.nc'
    case(5)
-      ecmwf_path_file=trim(adjustl(ecmwf_path))//'/ECMWF_ERA5_'// &
+      ecmwf_path_file = trim(adjustl(ecmwf_path))//'/ECMWF_ERA5_'// &
            trim(adjustl(cyear))//trim(adjustl(cmonth))// &
            trim(adjustl(cday))//'_'//trim(adjustl(chour))//'_0.5.nc'
    case(6)
-      ecmwf_path_file=trim(adjustl(ecmwf_path))//'/gfs_4_'// &
+      ecmwf_path_file = trim(adjustl(ecmwf_path))//'/gfs_4_'// &
            trim(adjustl(cyear))//trim(adjustl(cmonth))// &
            trim(adjustl(cday))//'_'//trim(adjustl(chour))//'00_000.grb2'
    case(7)
-      ecmwf_path_file=trim(adjustl(ecmwf_path))//'/GFS_'// &
+      ecmwf_path_file = trim(adjustl(ecmwf_path))//'/GFS_'// &
            trim(adjustl(cyear))//trim(adjustl(cmonth))// &
            trim(adjustl(cday))//trim(adjustl(chour))//'00.grb'
    case(8)
-      ecmwf_path_file=trim(adjustl(ecmwf_path))//'/GFS_'// &
+      ecmwf_path_file = trim(adjustl(ecmwf_path))//'/GFS_'// &
            trim(adjustl(cyear))//trim(adjustl(cmonth))// &
            trim(adjustl(cday))//trim(adjustl(chour))//'00.grb.nc'
    case default
@@ -461,19 +461,19 @@ subroutine build_ecmwf_HR_file_from_LR2(ecmwf_path, ecmwf_path_file, &
 
    select case (hh)
    case('00')
-      ecmwf_hour_hr='0'
+      ecmwf_hour_hr = '0'
    case('06')
-      ecmwf_hour_hr='600'
+      ecmwf_hour_hr = '600'
    case('12')
-      ecmwf_hour_hr='1200'
+      ecmwf_hour_hr = '1200'
    case('18')
-      ecmwf_hour_hr='1800'
+      ecmwf_hour_hr = '1800'
    end select
 
    hr_ext ='/'//trim(adjustl(yyyy))//'/'//trim(adjustl(mm))//'/'// &
            trim(adjustl(dd))//'/ERA_Interim_an_'//trim(adjustl(yyyy))// &
            trim(adjustl(mm))//trim(adjustl(dd))//'_'// &
            trim(adjustl(ecmwf_hour_hr))//'+00_HR.grb'
-   ecmwf_hr_path_file=trim(adjustl(ecmwf_hr_path))//trim(adjustl(hr_ext))
+   ecmwf_hr_path_file = trim(adjustl(ecmwf_hr_path))//trim(adjustl(hr_ext))
 
 end subroutine build_ecmwf_HR_file_from_LR2

@@ -68,8 +68,8 @@ implicit none
 contains
 
 subroutine read_imager(sensor, platform, path_to_l1b_file, path_to_geo_file, &
-     path_to_aatsr_drift_table, geo_file_path, imager_geolocation,&
-     imager_angles, imager_flags, imager_time, imager_measurements,&
+     path_to_aatsr_drift_table, geo_file_path, imager_geolocation, &
+     imager_angles, imager_flags, imager_time, imager_measurements, &
      channel_info, n_along_track, use_l1_land_mask, use_predef_geo, do_gsics, &
      global_atts, verbose)
 
@@ -90,26 +90,26 @@ subroutine read_imager(sensor, platform, path_to_l1b_file, path_to_geo_file, &
 
    implicit none
 
-   character(len=*),           intent(in)    :: sensor
-   character(len=*),           intent(in)    :: platform
-   character(len=*),           intent(in)    :: path_to_l1b_file
-   character(len=*),           intent(in)    :: path_to_geo_file
-   character(len=*),           intent(in)    :: path_to_aatsr_drift_table
-   character(len=*),           intent(in)    :: geo_file_path
-   type(imager_geolocation_t),     intent(inout) :: imager_geolocation
-   type(imager_angles_t),          intent(inout) :: imager_angles
-   type(imager_flags_t),           intent(inout) :: imager_flags
-   type(imager_time_t),            intent(inout) :: imager_time
-   type(imager_measurements_t),    intent(inout) :: imager_measurements
-   type(channel_info_t),           intent(in)    :: channel_info
-   integer(kind=lint),             intent(in)    :: n_along_track
-   logical,                        intent(in)    :: use_l1_land_mask
-   logical,                        intent(in)    :: use_predef_geo
-   logical,                        intent(in)    :: do_gsics
-   type(global_attributes_t),      intent(inout) :: global_atts
-   logical,                        intent(in)    :: verbose
+   character(len=*),            intent(in)    :: sensor
+   character(len=*),            intent(in)    :: platform
+   character(len=*),            intent(in)    :: path_to_l1b_file
+   character(len=*),            intent(in)    :: path_to_geo_file
+   character(len=*),            intent(in)    :: path_to_aatsr_drift_table
+   character(len=*),            intent(in)    :: geo_file_path
+   type(imager_geolocation_t),  intent(inout) :: imager_geolocation
+   type(imager_angles_t),       intent(inout) :: imager_angles
+   type(imager_flags_t),        intent(inout) :: imager_flags
+   type(imager_time_t),         intent(inout) :: imager_time
+   type(imager_measurements_t), intent(inout) :: imager_measurements
+   type(channel_info_t),        intent(in)    :: channel_info
+   integer(kind=lint),          intent(in)    :: n_along_track
+   logical,                     intent(in)    :: use_l1_land_mask
+   logical,                     intent(in)    :: use_predef_geo
+   logical,                     intent(in)    :: do_gsics
+   type(global_attributes_t),   intent(inout) :: global_atts
+   logical,                     intent(in)    :: verbose
 
-   character(len=file_length), allocatable       :: abi_filenames(:)
+   character(len=file_length), allocatable    :: abi_filenames(:)
 
    integer :: i, j, k
    real    :: meas_unc, fm_unc
@@ -146,13 +146,13 @@ subroutine read_imager(sensor, platform, path_to_l1b_file, path_to_geo_file, &
 
       ! Assemble the filenames required for ABI data
       allocate(abi_filenames(channel_info%nchannels_total))
-      call get_abi_path(path_to_l1b_file, platform, abi_filenames,&
+      call get_abi_path(path_to_l1b_file, platform, abi_filenames, &
            channel_info%nchannels_total, channel_info%channel_ids_instr)
 
       ! Read the L1B data, according to the dimensions and offsets specified in
       ! imager_geolocation
-      call read_abi_bin(abi_filenames, imager_geolocation,&
-           imager_measurements, imager_angles, imager_time, channel_info,&
+      call read_abi_bin(abi_filenames, imager_geolocation, &
+           imager_measurements, imager_angles, imager_time, channel_info, &
            use_predef_geo, geo_file_path, global_atts, verbose)
 
       !in absence of proper mask set everything to "1" for cloud mask
@@ -163,7 +163,7 @@ subroutine read_imager(sensor, platform, path_to_l1b_file, path_to_geo_file, &
    else if (trim(adjustl(sensor)) .eq. 'AGRI') then
       ! Read the L1B data, according to the dimensions and offsets specified in
       ! imager_geolocation
-      call read_agri_data(path_to_l1b_file, imager_geolocation,&
+      call read_agri_data(path_to_l1b_file, imager_geolocation, &
            imager_measurements, imager_angles, imager_time, channel_info, &
            global_atts, verbose)
       !in absence of proper mask set everything to "1" for cloud mask
@@ -172,8 +172,8 @@ subroutine read_imager(sensor, platform, path_to_l1b_file, path_to_geo_file, &
    else if (trim(adjustl(sensor)) .eq. 'AHI') then
       ! Read the L1B data, according to the dimensions and offsets specified in
       ! imager_geolocation
-      call read_himawari_bin(path_to_l1b_file, imager_geolocation,&
-           imager_measurements, imager_angles, imager_time, channel_info,&
+      call read_himawari_bin(path_to_l1b_file, imager_geolocation, &
+           imager_measurements, imager_angles, imager_time, channel_info, &
            use_predef_geo, geo_file_path, global_atts, verbose)
 
       !in absence of proper mask set everything to "1" for cloud mask

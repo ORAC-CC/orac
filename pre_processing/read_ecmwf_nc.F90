@@ -84,13 +84,13 @@ subroutine read_ecmwf_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
 
    implicit none
 
-   character(len=*),       intent(in)    :: ecmwf_path
-   type(ecmwf_t),              intent(in)    :: ecmwf
-   type(preproc_dims_t),       intent(in)    :: preproc_dims
-   type(preproc_geoloc_t),     intent(in)    :: preproc_geoloc
-   type(preproc_prtm_t),       intent(inout) :: preproc_prtm
-   logical,                    intent(in)    :: verbose
-   integer,                    intent(in)    :: ecmwf_flag
+   character(len=*),        intent(in)    :: ecmwf_path
+   type(ecmwf_t),           intent(in)    :: ecmwf
+   type(preproc_dims_t),    intent(in)    :: preproc_dims
+   type(preproc_geoloc_t),  intent(in)    :: preproc_geoloc
+   type(preproc_prtm_t),    intent(inout) :: preproc_prtm
+   logical,                 intent(in)    :: verbose
+   integer,                 intent(in)    :: ecmwf_flag
 
    integer(lint),     external            :: INTIN, INTOUT, INTF
    integer(lint),     parameter           :: BUFFER = 2000000

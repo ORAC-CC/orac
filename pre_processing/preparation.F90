@@ -99,13 +99,13 @@ contains
 
 #include "set_ecmwf.F90"
 
-subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
-     cf_file,lsf_file,geo_file,loc_file,alb_file,sensor,platform,product_name, &
-     cyear,cmonth,cday,chour,cminute,orbit_number,ecmwf_path,ecmwf_hr_path, &
-     ecmwf_path2,ecmwf_path3,ecmwf_path_file,ecmwf_hr_path_file, &
-     ecmwf_path_file2,ecmwf_path_file3, global_atts,ecmwf_flag, &
-     ecmwf_time_int_method, imager_geolocation, imager_time,i_chunk, &
-     time_int_fac,assume_full_path,verbose)
+subroutine preparation(lwrtm_file, swrtm_file, prtm_file, config_file, msi_file, &
+     cf_file, lsf_file, geo_file, loc_file, alb_file, sensor, platform, product_name, &
+     cyear, cmonth, cday, chour, cminute, orbit_number, ecmwf_path, ecmwf_hr_path, &
+     ecmwf_path2, ecmwf_path3, ecmwf_path_file, ecmwf_hr_path_file, &
+     ecmwf_path_file2, ecmwf_path_file3, global_atts, ecmwf_flag, &
+     ecmwf_time_int_method, imager_geolocation, imager_time, i_chunk, &
+     time_int_fac, assume_full_path, verbose)
 
    use imager_structures_m
    use global_attributes_m
@@ -113,14 +113,14 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
 
    implicit none
 
-   character(len=*),           intent(out) :: lwrtm_file,swrtm_file, &
-                                                  prtm_file,config_file, &
-                                                  msi_file,cf_file,lsf_file, &
-                                                  geo_file,loc_file,alb_file
+   character(len=*),           intent(out) :: lwrtm_file, swrtm_file, &
+                                              prtm_file, config_file, &
+                                              msi_file, cf_file, lsf_file, &
+                                              geo_file, loc_file, alb_file
    character(len=*),           intent(in)  :: sensor
    character(len=*),           intent(in)  :: platform
    character(len=*),           intent(in)  :: product_name
-   character(len=*),           intent(in)  :: cyear,cmonth,cday,chour,cminute
+   character(len=*),           intent(in)  :: cyear, cmonth, cday, chour, cminute
    character(len=*),           intent(in)  :: orbit_number
    character(len=*),           intent(in)  :: ecmwf_path(:), &
                                               ecmwf_path2(:), &
@@ -130,15 +130,15 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
                                               ecmwf_hr_path_file(:), &
                                               ecmwf_path_file2(:), &
                                               ecmwf_path_file3(:)
-   type(global_attributes_t),      intent(in)  :: global_atts
-   integer,                        intent(in)  :: ecmwf_flag
-   integer,                        intent(in)  :: ecmwf_time_int_method
-   type(imager_geolocation_t),     intent(in)  :: imager_geolocation
-   type(imager_time_t),            intent(in)  :: imager_time
-   integer,                        intent(in)  :: i_chunk
-   real,                           intent(out) :: time_int_fac
-   logical,                        intent(in)  :: assume_full_path
-   logical,                        intent(in)  :: verbose
+   type(global_attributes_t),  intent(in)  :: global_atts
+   integer,                    intent(in)  :: ecmwf_flag
+   integer,                    intent(in)  :: ecmwf_time_int_method
+   type(imager_geolocation_t), intent(in)  :: imager_geolocation
+   type(imager_time_t),        intent(in)  :: imager_time
+   integer,                    intent(in)  :: i_chunk
+   real,                       intent(out) :: time_int_fac
+   logical,                    intent(in)  :: assume_full_path
+   logical,                    intent(in)  :: verbose
 
    character(len=file_length) :: range_name
    character(len=file_length) :: file_base
@@ -169,41 +169,41 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
    if (verbose) write(*,*) 'assume_full_path: ',      assume_full_path
 
    ! determine ecmwf path/filename
-   call set_ecmwf(cyear,cmonth,cday,chour, &
-                  ecmwf_path,     ecmwf_path2,     ecmwf_path3, &
-                  ecmwf_path_file,ecmwf_path_file2,ecmwf_path_file3, &
-                  ecmwf_flag,imager_geolocation,imager_time, &
-                  ecmwf_time_int_method,time_int_fac,assume_full_path, &
+   call set_ecmwf(cyear, cmonth, cday, chour, &
+                  ecmwf_path, ecmwf_path2, ecmwf_path3, &
+                  ecmwf_path_file, ecmwf_path_file2, ecmwf_path_file3, &
+                  ecmwf_flag, imager_geolocation, imager_time, &
+                  ecmwf_time_int_method, time_int_fac, assume_full_path, &
                   ecmwf_hr_path, ecmwf_hr_path_file)
 
    if (verbose) then
-      write(*,*)'ecmwf_path_file:  ',trim(ecmwf_path_file(1))
-      write(*,*)'ecmwf_path_file_2:  ',trim(ecmwf_path_file(2))
-      write(*,*)'ecmwf_hr_path_file:  ',trim(ecmwf_hr_path_file(1))
-      write(*,*)'ecmwf_hr_path_file2:  ',trim(ecmwf_hr_path_file(2))
+      write(*,*) 'ecmwf_path_file:  ', trim(ecmwf_path_file(1))
+      write(*,*) 'ecmwf_path_file_2:  ', trim(ecmwf_path_file(2))
+      write(*,*) 'ecmwf_hr_path_file:  ', trim(ecmwf_hr_path_file(1))
+      write(*,*) 'ecmwf_hr_path_file2:  ', trim(ecmwf_hr_path_file(2))
       if (ecmwf_flag .gt. 0.and.ecmwf_flag.lt.4) then
-         write(*,*)'ecmwf_path_file2: ',trim(ecmwf_path_file2(1))
-         write(*,*)'ecmwf_path_file3: ',trim(ecmwf_path_file3(1))
-         write(*,*)'ecmwf_path_file2_2: ',trim(ecmwf_path_file2(2))
-         write(*,*)'ecmwf_path_file3_2: ',trim(ecmwf_path_file3(2))
+         write(*,*) 'ecmwf_path_file2: ', trim(ecmwf_path_file2(1))
+         write(*,*) 'ecmwf_path_file3: ', trim(ecmwf_path_file3(1))
+         write(*,*) 'ecmwf_path_file2_2: ', trim(ecmwf_path_file2(2))
+         write(*,*) 'ecmwf_path_file3_2: ', trim(ecmwf_path_file3(2))
       end if
    end if
 
    ! deal with ATSR chunking in filename
    if (sensor .eq. 'AATSR' .or. sensor .eq. 'ATSR2') then
-      startr=imager_geolocation%latitude(imager_geolocation%startx,1)
-      endr=imager_geolocation%latitude(imager_geolocation%endx, &
-           imager_geolocation%ny)
+      startr = imager_geolocation%latitude(imager_geolocation%startx, 1)
+      endr = imager_geolocation%latitude(imager_geolocation%endx, &
+             imager_geolocation%ny)
 
       ! convert latitudes into strings
-      write(chunkc,'( g12.3 )') i_chunk
-      write(startc,'( g12.3 )') startr
-      write(endc,  '( g12.3 )') endr
+      write(chunkc, '( g12.3 )') i_chunk
+      write(startc, '( g12.3 )') startr
+      write(endc,   '( g12.3 )') endr
 
-      range_name=trim(adjustl(chunkc))//'-'// &
-                 trim(adjustl(startc))//'-'//trim(adjustl(endc))//'_'
+      range_name = trim(adjustl(chunkc))//'-'// &
+                   trim(adjustl(startc))//'-'//trim(adjustl(endc))//'_'
    else
-      range_name=''
+      range_name = ''
    end if
 
    if (verbose) write(*,*) 'chunk range_name: ', trim(range_name)
@@ -211,13 +211,13 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
    ! ESACCI-L2-CLOUD-CLD-${sensor}_${product_string}_${platform}_*${YYYY}${MM}${DD}${HH}${II}_${version2}.*.nc
 
    ! put basic filename together
-   file_base=trim(adjustl(global_atts%project))//'-'// &
-             trim(adjustl(product_name))//'-'// &
-             trim(adjustl(sensor))//'_'// &
-             trim(adjustl(global_atts%l2_processor))//'_'// &
-             trim(adjustl(platform))//'_'// &
-             trim(adjustl(cyear))//trim(adjustl(cmonth))//trim(adjustl(cday))// &
-             trim(adjustl(chour))//trim(adjustl(cminute))//'_'
+   file_base = trim(adjustl(global_atts%project))//'-'// &
+               trim(adjustl(product_name))//'-'// &
+               trim(adjustl(sensor))//'_'// &
+               trim(adjustl(global_atts%l2_processor))//'_'// &
+               trim(adjustl(platform))//'_'// &
+               trim(adjustl(cyear))//trim(adjustl(cmonth))//trim(adjustl(cday))// &
+               trim(adjustl(chour))//trim(adjustl(cminute))//'_'
    ! If we have a orbit number attribute, include it in the output file name
    ! As of Feb-18, this only applies to SLSTR.
    if (trim(orbit_number) .ne. 'null') then
@@ -228,16 +228,16 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
    if (verbose) write(*,*) 'output file_base: ', trim(file_base)
 
    ! get preproc filenames
-   lwrtm_file=trim(adjustl(file_base))//'.lwrtm.nc'
-   swrtm_file=trim(adjustl(file_base))//'.swrtm.nc'
-   prtm_file=trim(adjustl(file_base))//'.prtm.nc'
-   config_file=trim(adjustl(file_base))//'.config.nc'
-   msi_file=trim(adjustl(file_base))//'.msi.nc'
-   cf_file=trim(adjustl(file_base))//'.clf.nc'
-   lsf_file=trim(adjustl(file_base))//'.lsf.nc'
-   geo_file=trim(adjustl(file_base))//'.geo.nc'
-   loc_file=trim(adjustl(file_base))//'.loc.nc'
-   alb_file=trim(adjustl(file_base))//'.alb.nc'
+   lwrtm_file = trim(adjustl(file_base))//'.lwrtm.nc'
+   swrtm_file = trim(adjustl(file_base))//'.swrtm.nc'
+   prtm_file = trim(adjustl(file_base))//'.prtm.nc'
+   config_file = trim(adjustl(file_base))//'.config.nc'
+   msi_file = trim(adjustl(file_base))//'.msi.nc'
+   cf_file = trim(adjustl(file_base))//'.clf.nc'
+   lsf_file = trim(adjustl(file_base))//'.lsf.nc'
+   geo_file = trim(adjustl(file_base))//'.geo.nc'
+   loc_file = trim(adjustl(file_base))//'.loc.nc'
+   alb_file = trim(adjustl(file_base))//'.alb.nc'
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving preparation()'
 

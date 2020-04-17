@@ -57,7 +57,7 @@ subroutine read_slstr_dimensions(img_file, n_across_track, n_along_track, verbos
 
    character(len=*),   intent(in)    :: img_file
    integer(kind=lint), intent(out)   :: n_across_track, n_along_track
-   logical,                intent(in)    :: verbose
+   logical,            intent(in)    :: verbose
 
    integer :: i
 
@@ -76,7 +76,7 @@ end subroutine read_slstr_dimensions
 
 
 !-------------------------------------------------------------------------------
-! Name: read_slstr_bin
+! Name: read_slstr
 !
 ! Purpose:
 ! To read the requested VIIRS data from HDF5-format files.

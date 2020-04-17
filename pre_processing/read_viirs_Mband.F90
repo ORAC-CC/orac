@@ -60,16 +60,16 @@ subroutine read_viirs_mband_dimensions(geo_file, n_across_track, n_along_track, 
 
    character(len=*),   intent(in)    :: geo_file
    integer(kind=lint), intent(out)   :: n_across_track, n_along_track
-   logical,                intent(in)    :: verbose
+   logical,            intent(in)    :: verbose
 
    integer(HID_T) :: file_id   ! File identifier
    integer(HID_T) :: dset_id   ! Dataset identifier
    integer(HID_T) :: dataspace ! Dataspace identifier
 
    integer                        :: error
-   integer(HSIZE_T), DIMENSION(2) :: dimsr, maxdimsr
+   integer(HSIZE_T), dimension(2) :: dimsr, maxdimsr
 
-   if (verbose) write(*,*) '<<<<<<<<<<<<<<< read_viirs_dimensions()'
+   if (verbose) write(*,*) '<<<<<<<<<<<<<<< read_viirs_mdband_dimensions()'
 
    ! Open the file.
    call h5fopen_f (geo_file, H5F_ACC_RDONLY_F, file_id, error)
@@ -82,7 +82,7 @@ subroutine read_viirs_mband_dimensions(geo_file, n_across_track, n_along_track, 
            dset_id, error)
    end if
    if (error .ne. 0) then
-      print*,"Problem determining VIIRS dimensions"
+      print*, "Problem determining VIIRS dimensions"
       stop
    end if
 
@@ -98,7 +98,7 @@ subroutine read_viirs_mband_dimensions(geo_file, n_across_track, n_along_track, 
    call h5dclose_f(dset_id, error)
    call h5fclose_f(file_id, error)
 
-   if (verbose) write(*,*) '>>>>>>>>>>>>>>> read_viirs_dimensions()'
+   if (verbose) write(*,*) '>>>>>>>>>>>>>>> read_viirs_mband_dimensions()'
 
 end subroutine read_viirs_mband_dimensions
 
@@ -136,8 +136,8 @@ subroutine read_viirs_mband(infile, geofile, imager_geolocation, imager_measurem
 
    implicit none
 
-   character(len=*),  intent(in)    :: infile
-   character(len=*),  intent(in)    :: geofile
+   character(len=*),            intent(in)    :: infile
+   character(len=*),            intent(in)    :: geofile
    type(imager_geolocation_t),  intent(inout) :: imager_geolocation
    type(imager_measurements_t), intent(inout) :: imager_measurements
    type(imager_angles_t),       intent(inout) :: imager_angles
@@ -167,7 +167,7 @@ subroutine read_viirs_mband(infile, geofile, imager_geolocation, imager_measurem
    integer(HID_T)                   :: file_id
    integer(HID_T)                   :: dset_id
    integer                          :: error
-   real, allocatable                :: data0(:,:)
+   real,    allocatable             :: data0(:,:)
    integer, allocatable             :: data1(:,:)
    real                             :: factors(8)
    character(len=path_length)       :: bandfile
@@ -385,7 +385,7 @@ subroutine read_viirs_mband(infile, geofile, imager_geolocation, imager_measurem
 
          ! Account for missing values, data doesn't need scaling
          imager_measurements%data(:,:,i) = data0
-         where(data0 .lt. -999) imager_measurements%data(:,:,i)=sreal_fill_value
+         where(data0 .lt. -999) imager_measurements%data(:,:,i) = sreal_fill_value
       end if
 
       if (verbose) &

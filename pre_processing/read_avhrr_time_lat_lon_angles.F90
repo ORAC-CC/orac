@@ -31,8 +31,8 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine read_avhrr_time_lat_lon_angles(path_to_geo_file,imager_geolocation,&
-     imager_angles,imager_time,n_along_track,verbose)
+subroutine read_avhrr_time_lat_lon_angles(path_to_geo_file, imager_geolocation, &
+     imager_angles, imager_time, n_along_track, verbose)
 
    use calender_m
    use hdf5
@@ -50,82 +50,82 @@ subroutine read_avhrr_time_lat_lon_angles(path_to_geo_file,imager_geolocation,&
 
    integer(kind=HID_T)                           :: geo_id
 
-   real(kind=sreal), allocatable, dimension(:,:) :: temp,temp2
+   real(kind=sreal), allocatable, dimension(:,:) :: temp, temp2
 
-   integer(kind=lint)                            :: startepochs,endepochs
+   integer(kind=lint)                            :: startepochs, endepochs
 
    real(kind=dreal)                              :: refjulianday=0.00_dreal
 
    integer                                       :: err_code
 
    !reference point of time
-   integer(kind=sint) :: refday=1_sint,refyear=1970_sint,refmonth=1_sint
+   integer(kind=sint) :: refday = 1_sint, refyear = 1970_sint, refmonth = 1_sint
 
    if (verbose) &
         write(*,*) '<<<<<<<<<<<<<<< Entering read_avhrr_time_lat_lon_angles()'
 
    !allocate temporary data
-   allocate(temp(imager_geolocation%startx:imager_geolocation%endx,&
+   allocate(temp(imager_geolocation%startx:imager_geolocation%endx, &
         imager_geolocation%starty:imager_geolocation%endy))
 
    !initialize the f90 interface for hdf5
    call h5open_f(err_code)
 
    !open the geo file
-   call h5fopen_f(path_to_geo_file,h5f_acc_rdonly_f,geo_id,err_code)
+   call h5fopen_f(path_to_geo_file, h5f_acc_rdonly_f, geo_id, err_code)
 
    !this converts the reference point of time (epoch) to the julian date
-   call GREG2JD(refyear,refmonth,refday,refjulianday)
+   call GREG2JD(refyear, refmonth, refday, refjulianday)
 
    !read start and endtime of orbit
-   call read_avhrr_time(geo_id,"how",startepochs,endepochs)
+   call read_avhrr_time(geo_id, "how", startepochs, endepochs)
 
    call create_time_for_pixel(imager_geolocation%startx, &
-        imager_geolocation%endx,imager_geolocation%starty, &
-        imager_geolocation%endy,n_along_track,startepochs,endepochs, &
-        imager_time,refjulianday)
+        imager_geolocation%endx, imager_geolocation%starty, &
+        imager_geolocation%endy, n_along_track, startepochs, endepochs, &
+        imager_time, refjulianday)
 
    !read latitude
-   call read_avhrr_lat_lon(geo_id,"where/lat","data","where/lat/what", &
-        imager_geolocation%startx,imager_geolocation%endx, &
-        imager_geolocation%starty,imager_geolocation%endy,temp)
-   imager_geolocation%latitude=temp
+   call read_avhrr_lat_lon(geo_id, "where/lat", "data", "where/lat/what", &
+        imager_geolocation%startx, imager_geolocation%endx, &
+        imager_geolocation%starty, imager_geolocation%endy, temp)
+   imager_geolocation%latitude = temp
 
    !read longitude
-   call read_avhrr_lat_lon(geo_id,"where/lon","data","where/lon/what", &
-        imager_geolocation%startx,imager_geolocation%endx, &
-        imager_geolocation%starty,imager_geolocation%endy,temp)
-   imager_geolocation%longitude=temp
+   call read_avhrr_lat_lon(geo_id, "where/lon", "data", "where/lon/what", &
+        imager_geolocation%startx, imager_geolocation%endx, &
+        imager_geolocation%starty, imager_geolocation%endy, temp)
+   imager_geolocation%longitude = temp
 
    !read solzen
-   call read_avhrr_angles(geo_id,"image1","data","image1/what", &
-        imager_geolocation%startx,imager_geolocation%endx, &
-        imager_geolocation%starty,imager_geolocation%endy,temp)
-   imager_angles%solzen(:,:,1)=temp
+   call read_avhrr_angles(geo_id, "image1", "data", "image1/what", &
+        imager_geolocation%startx, imager_geolocation%endx, &
+        imager_geolocation%starty, imager_geolocation%endy, temp)
+   imager_angles%solzen(:,:,1) = temp
 
    !read senszen
-   call read_avhrr_angles(geo_id,"image2","data","image2/what", &
-        imager_geolocation%startx,imager_geolocation%endx, &
-        imager_geolocation%starty,imager_geolocation%endy,temp)
-   imager_angles%satzen(:,:,1)=temp
+   call read_avhrr_angles(geo_id, "image2", "data", "image2/what", &
+        imager_geolocation%startx, imager_geolocation%endx, &
+        imager_geolocation%starty, imager_geolocation%endy, temp)
+   imager_angles%satzen(:,:,1) = temp
 
    !read solazi
-   allocate(temp2(imager_geolocation%startx:imager_geolocation%endx,&
+   allocate(temp2(imager_geolocation%startx:imager_geolocation%endx, &
         imager_geolocation%starty:imager_geolocation%endy))
-   call read_avhrr_angles(geo_id,"image4","data","image4/what", &
-        imager_geolocation%startx,imager_geolocation%endx, &
-        imager_geolocation%starty,imager_geolocation%endy,temp2)
-   imager_angles%solazi(:,:,1)=temp2
+   call read_avhrr_angles(geo_id, "image4", "data", "image4/what", &
+        imager_geolocation%startx, imager_geolocation%endx, &
+        imager_geolocation%starty, imager_geolocation%endy, temp2)
+   imager_angles%solazi(:,:,1) = temp2
 
    !read sensazi
-   call read_avhrr_angles(geo_id,"image5","data","image5/what", &
-        imager_geolocation%startx,imager_geolocation%endx, &
-        imager_geolocation%starty,imager_geolocation%endy,temp)
+   call read_avhrr_angles(geo_id, "image5", "data", "image5/what", &
+        imager_geolocation%startx, imager_geolocation%endx, &
+        imager_geolocation%starty, imager_geolocation%endy, temp)
 
    ! make rel azi
    ! Note: Relative azimuth is defined so that if the satellite is looking
    ! towards the sun (i.e. forward scattering), relative azimuth is zero.
-!   temp2=180.0-temp2
+!   temp2 = 180.0-temp2
 !   imager_angles%relazi(:,:,1) = 180.0 - &
 !        acos(cos((temp-temp2)*d2r))/d2r
 

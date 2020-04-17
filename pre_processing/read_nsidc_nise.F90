@@ -41,22 +41,22 @@ function extract_nise_grid(fid, name, gridlist, data, verbose) result(stat)
    logical,           intent(in)    :: verbose
 
    ! Return value
-   integer(kind=4)              :: stat
+   integer(kind=4)                :: stat
    ! Local variables
-   integer                      :: comma
-   integer(kind=4)              :: gid
-   integer(kind=4)              :: xdim, ydim
-   real(kind=8),dimension(2)    :: upleft, lowright
-   integer(kind=4)              :: proj, zone, sphere
-   real(kind=8),dimension(13)   :: param
-   integer(kind=4),dimension(2) :: start, stride, edge
-   integer(kind=1),allocatable,dimension(:,:) :: tmp_data
+   integer                        :: comma
+   integer(kind=4)                :: gid
+   integer(kind=4)                :: xdim, ydim
+   real(kind=8),    dimension(2)  :: upleft, lowright
+   integer(kind=4)                :: proj, zone, sphere
+   real(kind=8),    dimension(13) :: param
+   integer(kind=4), dimension(2)  :: start, stride, edge
+   integer(kind=1), allocatable, dimension(:,:) :: tmp_data
    ! External functions (the hdf-eos library)
-   integer*4, external          :: gdattach
-   integer*4, external          :: gdgridinfo
-   integer*4, external          :: gdprojinfo
-   integer*4, external          :: gdrdfld
-   integer*4, external          :: gddetach
+   integer*4, external            :: gdattach
+   integer*4, external            :: gdgridinfo
+   integer*4, external            :: gdprojinfo
+   integer*4, external            :: gdrdfld
+   integer*4, external            :: gddetach
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering extract_nise_grid()'
 
@@ -69,19 +69,19 @@ function extract_nise_grid(fid, name, gridlist, data, verbose) result(stat)
    !   function gdprojinfo(gid, proj, zone, sphere, param) result(stat)
    !     integer*4               :: stat
    !     integer*4               :: gid, proj, zone, sphere
-   !     real*8,pointer,dimension(:) :: param
+   !     real*8, pointer, dimension(:) :: param
    !   end function gdprojinfo
    !end interface
 
    ! Locate the comma in the gridlist, so that we can split the string
-   comma = scan(gridlist,",")
+   comma = scan(gridlist, ",")
 
    ! Attach to and read the requested grid
    if (index(gridlist, trim(name)) .lt. comma) then
-      if (verbose) write(*,*) 'Attaching to grid ',trim(gridlist(1:comma-1))
+      if (verbose) write(*,*) 'Attaching to grid ', trim(gridlist(1:comma-1))
       gid = gdattach(fid, trim(gridlist(1:comma-1)))
    else
-      if (verbose) write(*,*) 'Attaching to grid ',trim(gridlist(1:comma-1))
+      if (verbose) write(*,*) 'Attaching to grid ', trim(gridlist(1:comma-1))
       gid = gdattach(fid, trim(gridlist(comma+1:)))
    end if
 
@@ -102,10 +102,10 @@ function extract_nise_grid(fid, name, gridlist, data, verbose) result(stat)
    ! directions
    data%res = (lowright(1) - upleft(1)) / (1000.0 * real(xdim))
 
-   if (verbose) write(*,*) 'Grid size is       ',xdim,' x ',ydim
-   if (verbose) write(*,*) 'Grid centre is     ',data%grid_centre
-   if (verbose) write(*,*) 'Grid resolution is ',data%res
-   if (verbose) write(*,*) 'Earth radius is    ',data%REarth
+   if (verbose) write(*,*) 'Grid size is       ', xdim, ' x ', ydim
+   if (verbose) write(*,*) 'Grid centre is     ', data%grid_centre
+   if (verbose) write(*,*) 'Grid resolution is ', data%res
+   if (verbose) write(*,*) 'Earth radius is    ', data%REarth
 
    ! Now read the data itself
    start(:)  = 0
@@ -124,9 +124,9 @@ function extract_nise_grid(fid, name, gridlist, data, verbose) result(stat)
    ! the spurious negatives
    stat = gdrdfld(gid, 'Extent', start, stride, edge, tmp_data)
    where(tmp_data .lt. 0)
-      data%extent = 256 + int(tmp_data,kind=2)
+      data%extent = 256 + int(tmp_data, kind=2)
    else where
-      data%extent = int(tmp_data,kind=2)
+      data%extent = int(tmp_data, kind=2)
    end where
    stat = gdrdfld(gid, 'Age', start, stride, edge, tmp_data)
    where(tmp_data .lt. 0)
@@ -176,13 +176,13 @@ function read_nsidc_nise(path_to_file, nise, north, south, verbose) &
 
    ! Input variables
    character(len=*), intent(in)  :: path_to_file
-   integer(kind=1),            intent(in)  :: north
-   integer(kind=1),            intent(in)  :: south
-   logical,                    intent(in)  :: verbose
+   integer(kind=1),  intent(in)  :: north
+   integer(kind=1),  intent(in)  :: south
+   logical,          intent(in)  :: verbose
 
    ! Output variables
-   type(nise_t),               intent(out) :: nise
-   integer(kind=4)                         :: stat ! Function return
+   type(nise_t),     intent(out) :: nise
+   integer(kind=4)               :: stat ! Function return
 
    ! Local variables
    integer(kind=4)           :: fid
@@ -207,7 +207,7 @@ function read_nsidc_nise(path_to_file, nise, north, south, verbose) &
    stat = gdinqgrid(path_to_file, gridlist, gridlistlen)
 
    if (stat .ne. 2) then
-      write(*,*) 'ERROR: read_nsidc_nise(): Invalid with number of grids: ',stat
+      write(*,*) 'ERROR: read_nsidc_nise(): Invalid with number of grids: ', stat
       stop error_stop_code
    end if
    if (verbose) then

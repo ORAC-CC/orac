@@ -132,18 +132,18 @@ subroutine correct_parallax(primary, indexing, global_atts, verbose)
    type(global_attributes_t),  intent(in)    :: global_atts
    logical,                    intent(in)    :: verbose
 
-   integer                        :: i, j, ni, nj
-   real(kind=sreal), allocatable   :: dist(:,:)
-   real(kind=sreal), allocatable   :: orig_cth(:,:)
+   integer                         :: i, j, ni, nj
+   real(kind=sreal),   allocatable :: dist(:,:)
+   real(kind=sreal),   allocatable :: orig_cth(:,:)
    integer(kind=sint), allocatable :: outx(:,:), outy(:,:)
 
 
-   real(kind=sreal), allocatable   :: ncth(:,:), ncthu(:,:)
-   real(kind=sreal), allocatable   :: ncer(:,:), nceru(:,:)
-   real(kind=sreal), allocatable   :: ncot(:,:), ncotu(:,:)
-   real(kind=sreal), allocatable   :: nctt(:,:), ncttu(:,:)
-   real(kind=sreal), allocatable   :: nctp(:,:), nctpu(:,:)
-   real(kind=sreal), allocatable   :: ncost(:,:)
+   real(kind=sreal),   allocatable :: ncth(:,:), ncthu(:,:)
+   real(kind=sreal),   allocatable :: ncer(:,:), nceru(:,:)
+   real(kind=sreal),   allocatable :: ncot(:,:), ncotu(:,:)
+   real(kind=sreal),   allocatable :: nctt(:,:), ncttu(:,:)
+   real(kind=sreal),   allocatable :: nctp(:,:), nctpu(:,:)
+   real(kind=sreal),   allocatable :: ncost(:,:)
    integer(kind=byte), allocatable :: ncldmask(:,:), ncldtype(:,:), nphase(:,:)
 
    real(kind=sreal)                :: sat_h, eqr_rad, pol_rad, sat_lat, sat_lon

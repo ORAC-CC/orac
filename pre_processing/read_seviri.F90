@@ -81,7 +81,7 @@ subroutine read_seviri_dimensions(l1_5_file, n_across_track, n_along_track, &
    character(len=*),   intent(in)    :: l1_5_file
    integer(kind=lint), intent(out)   :: n_across_track, n_along_track
    integer(kind=lint), intent(inout) :: startx, endx, starty, endy
-   logical,                intent(in)    :: verbose
+   logical,            intent(in)    :: verbose
 
    integer :: i_line, i_column
    integer :: n_lines, n_columns
@@ -153,8 +153,8 @@ subroutine read_seviri_dimensions(l1_5_file, n_across_track, n_along_track, &
          stop error_stop_code
       end if
    end if
-   if (index(l1_5_file,trim('RSS'))>0 .and. ftype==SEVIRI_TYPE_HRIT) then
-      endy=endy/3
+   if (index(l1_5_file, trim('RSS'))>0 .and. ftype==SEVIRI_TYPE_HRIT) then
+      endy = endy/3
    end if
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> read_seviri_dimensions()'
@@ -403,7 +403,7 @@ subroutine read_seviri_l1_5_nat_or_hrit(l1_5_file, imager_geolocation, &
 #ifdef INCLUDE_SEVIRI_SUPPORT
 
    ! Test if HRIT
-   if (index(trim(l1_5_file),'H-000-MSG') .le. 0) then
+   if (index(trim(l1_5_file), 'H-000-MSG') .le. 0) then
       hrit_proc = .false.
    else
       hrit_proc = .true.
@@ -491,8 +491,8 @@ subroutine read_seviri_l1_5_nat_or_hrit(l1_5_file, imager_geolocation, &
 
    ! Remove underscores added by seviri_util (easy way of converting c-string to
    ! f-string).
-   i = index(global_atts%Satpos_Metadata,'_')
-   global_atts%Satpos_Metadata=global_atts%Satpos_Metadata(1:i-1)
+   i = index(global_atts%Satpos_Metadata, '_')
+   global_atts%Satpos_Metadata = global_atts%Satpos_Metadata(1:i-1)
 
    deallocate(band_ids)
    deallocate(band_units)

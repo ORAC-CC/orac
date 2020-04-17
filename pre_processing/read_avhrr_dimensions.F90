@@ -26,7 +26,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine read_avhrr_dimensions(path_to_geo_file,n_across_track,n_along_track)
+subroutine read_avhrr_dimensions(path_to_geo_file, n_across_track, n_along_track)
 
    use hdf5
    use preproc_constants_m
@@ -34,15 +34,15 @@ subroutine read_avhrr_dimensions(path_to_geo_file,n_across_track,n_along_track)
    implicit none
 
    character(len=*),   intent(in)  :: path_to_geo_file
-   integer(kind=lint),         intent(out) :: n_across_track, n_along_track
+   integer(kind=lint), intent(out) :: n_across_track, n_along_track
 
-   integer(kind=HID_T)   :: gr_id,dset_id,dspace_id
+   integer(kind=HID_T)   :: gr_id, dset_id, dspace_id
 
    integer(kind=lint)    :: rank
 
    integer(kind=lint)    :: err_code
 
-   integer(kind=HSIZE_T) :: dims(2),maxdims(2)
+   integer(kind=HSIZE_T) :: dims(2), maxdims(2)
 
    integer(kind=HID_T)   :: geo_id
 
@@ -50,25 +50,25 @@ subroutine read_avhrr_dimensions(path_to_geo_file,n_across_track,n_along_track)
    call h5open_f(err_code)
 
    !open the geo file
-   call h5fopen_f(path_to_geo_file,h5f_acc_rdonly_f,geo_id,err_code)
+   call h5fopen_f(path_to_geo_file, h5f_acc_rdonly_f, geo_id, err_code)
 
    !open the data group
-   call h5gopen_f(geo_id,'where/lon',gr_id,err_code)
+   call h5gopen_f(geo_id, 'where/lon', gr_id, err_code)
 
    !open the dataset
-   call h5dopen_f(gr_id,'data',dset_id,err_code)
+   call h5dopen_f(gr_id, 'data', dset_id, err_code)
 
    !get dataspace id
-   call h5dget_space_f(dset_id,dspace_id,err_code)
+   call h5dget_space_f(dset_id, dspace_id, err_code)
 
    !get rank
-   call h5sget_simple_extent_ndims_f(dspace_id,rank,err_code)
+   call h5sget_simple_extent_ndims_f(dspace_id, rank, err_code)
 
    !get dimensions
-   call h5sget_simple_extent_dims_f(dspace_id,dims,maxdims,err_code)
+   call h5sget_simple_extent_dims_f(dspace_id, dims, maxdims, err_code)
 
-   n_across_track=int(dims(1),kind=lint)
-   n_along_track=int(dims(2),kind=lint)
+   n_across_track=int(dims(1), kind=lint)
+   n_along_track=int(dims(2), kind=lint)
 
    !close dataset
    call h5dclose_f(dset_id, err_code)

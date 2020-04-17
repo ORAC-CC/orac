@@ -75,13 +75,13 @@ subroutine get_abi_path(l1_5_file, platform, abi_filenames, n_chans, channel_ids
    character(len=*), intent(in)  :: l1_5_file
    character(len=*), intent(in)  :: platform
    character(len=*), intent(out) :: abi_filenames(:)
-   integer,                    intent(in)  :: n_chans
-   integer, pointer,           intent(in)  :: channel_ids(:)
+   integer,          intent(in)  :: n_chans
+   integer, pointer, intent(in)  :: channel_ids(:)
 
-   character(len=file_length)              :: tmp_file
-   character(len=path_length)              :: regex
+   character(len=file_length)    :: tmp_file
+   character(len=path_length)    :: regex
 
-   integer       :: i, index1, index3, success
+   integer           :: i, index1, index3, success
    character(len=2)  :: band
    character(len=3)  :: shplat
    character(len=16) :: dtstr
@@ -151,10 +151,10 @@ subroutine get_abi_geoloc(infile, imager_geolocation, imager_angles, &
    implicit none
 
    character(len=*),           intent(in)    :: infile
-   type(imager_geolocation_t),  intent(inout) :: imager_geolocation
-   type(imager_angles_t),       intent(inout) :: imager_angles
-   type(global_attributes_t),   intent(inout) :: global_atts
-   logical,                     intent(in)    :: verbose
+   type(imager_geolocation_t), intent(inout) :: imager_geolocation
+   type(imager_angles_t),      intent(inout) :: imager_angles
+   type(global_attributes_t),  intent(inout) :: global_atts
+   logical,                    intent(in)    :: verbose
 
    integer :: fid, ierr
    integer :: gimpid
@@ -236,11 +236,11 @@ subroutine get_abi_geoloc(infile, imager_geolocation, imager_angles, &
    lat0 = lat0 * pi / 180.
 
    ! Generate the satellite position string for global_atts
-   write(satlat,'(f10.7)') lat0
-   write(satlon,'(f10.7)') lon0
-   write(sathei,'(f10.0)') h
-   write(eqrrad,'(f10.0)') sma
-   write(polrad,'(f10.0)') sma * (1.-(1./invf))
+   write(satlat, '(f10.7)') lat0
+   write(satlon, '(f10.7)') lon0
+   write(sathei, '(f10.0)') h
+   write(eqrrad, '(f10.0)') sma
+   write(polrad, '(f10.0)') sma * (1.-(1./invf))
    global_atts%Satpos_Metadata = satlat//","//satlon//","//sathei//','// &
         eqrrad//","//polrad
 
@@ -304,13 +304,13 @@ subroutine get_abi_viewing_geom(imager_geolocation, imager_angles, sma, smi, &
 
    implicit none
 
-   type(imager_geolocation_t),  intent(inout) :: imager_geolocation
-   type(imager_angles_t),       intent(inout) :: imager_angles
-   real,                        intent(in)    :: sma
-   real,                        intent(in)    :: smi
-   real,                        intent(in)    :: hproj
-   real,                        intent(inout) :: l0
-   logical,                     intent(in)    :: verbose
+   type(imager_geolocation_t), intent(inout) :: imager_geolocation
+   type(imager_angles_t),      intent(inout) :: imager_angles
+   real,                       intent(in)    :: sma
+   real,                       intent(in)    :: smi
+   real,                       intent(in)    :: hproj
+   real,                       intent(inout) :: l0
+   logical,                    intent(in)    :: verbose
 
    real :: a, b, e2
 
@@ -385,12 +385,12 @@ subroutine get_abi_solgeom(imager_time, imager_angles, imager_geolocation, verbo
 
    implicit none
 
-   type(imager_geolocation_t),  intent(in)    :: imager_geolocation
-   type(imager_angles_t),       intent(inout) :: imager_angles
-   type(imager_time_t),         intent(in)    :: imager_time
-   logical,                     intent(in)    :: verbose
+   type(imager_geolocation_t), intent(in)    :: imager_geolocation
+   type(imager_angles_t),      intent(inout) :: imager_angles
+   type(imager_time_t),        intent(in)    :: imager_time
+   logical,                    intent(in)    :: verbose
 
-   real(kind=sreal)   :: sza, saa,doy
+   real(kind=sreal)   :: sza, saa, doy
    integer            :: x, y, line0, line1, column0, column1
    integer            :: mid_c, mid_l
    integer(kind=sint) :: iye, mon, idy, ihr, minu
@@ -643,9 +643,9 @@ subroutine get_abi_time(infile, imager_time, ny, verbose)
    implicit none
 
    character(len=*),    intent(in)    :: infile
-   type(imager_time_t),    intent(inout) :: imager_time
-   integer,                intent(in)    :: ny
-   logical,                intent(in)    :: verbose
+   type(imager_time_t), intent(inout) :: imager_time
+   integer,             intent(in)    :: ny
+   logical,             intent(in)    :: verbose
 
    integer                    :: fid, ierr, j
    character(len=21)          :: start_coverage

@@ -25,7 +25,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine read_avhrr_land_sea_mask(path_to_geo_file,imager_geolocation, &
+subroutine read_avhrr_land_sea_mask(path_to_geo_file, imager_geolocation, &
      imager_flags)
 
    use hdf5
@@ -41,17 +41,17 @@ subroutine read_avhrr_land_sea_mask(path_to_geo_file,imager_geolocation, &
    character(len=path_length)                      :: path_to_lsmask_file
 
    integer(kind=HID_T)                             :: geo_id
-   integer(kind=lint)                              :: ix,jy,iunderscore
+   integer(kind=lint)                              :: ix, jy, iunderscore
 
    integer(kind=lint), allocatable, dimension(:,:) :: btemp
 
    integer                                         :: err_code
    logical                                         :: check
 
-   iunderscore=scan(trim(adjustl(path_to_geo_file)),'_',back=.true.)
-   path_to_lsmask_file=trim(adjustl(path_to_geo_file))
-   path_to_lsmask_file=path_to_lsmask_file(1:iunderscore)//'physiography.h5'
-   inquire(file=path_to_lsmask_file,exist=check)
+   iunderscore = scan(trim(adjustl(path_to_geo_file)), '_', back=.true.)
+   path_to_lsmask_file = trim(adjustl(path_to_geo_file))
+   path_to_lsmask_file = path_to_lsmask_file(1:iunderscore)//'physiography.h5'
+   inquire(file=path_to_lsmask_file, exist=check)
    if (.not. check) then
       write(*,*) 'ERROR: read_avhrr_land_sea_mask(): AVHRR physiography ' // &
            'file does not exist, filename: ', trim(path_to_lsmask_file)
@@ -66,12 +66,12 @@ subroutine read_avhrr_land_sea_mask(path_to_geo_file,imager_geolocation, &
    call h5open_f(err_code)
 
    !open the geo file
-   call h5fopen_f(path_to_lsmask_file,h5f_acc_rdonly_f,geo_id,err_code)
+   call h5fopen_f(path_to_lsmask_file, h5f_acc_rdonly_f, geo_id, err_code)
 
    !read lsmask
-   call read_avhrr_land_sea_mask_2(geo_id,"/","1kmLanduse", &
-        imager_geolocation%startx,imager_geolocation%endx, &
-        imager_geolocation%starty,imager_geolocation%endy,btemp)
+   call read_avhrr_land_sea_mask_2(geo_id, "/", "1kmLanduse", &
+        imager_geolocation%startx, imager_geolocation%endx, &
+        imager_geolocation%starty, imager_geolocation%endy, btemp)
 
 
 !!$ make orac ls flag by mapping the MODIS L/S definitions to the ones for ORAC
@@ -83,8 +83,8 @@ subroutine read_avhrr_land_sea_mask(path_to_geo_file,imager_geolocation, &
 !   else where
 !      btemp = 1
 !   end where
-   do ix=imager_geolocation%startx,imager_geolocation%endx
-      do jy=imager_geolocation%starty,imager_geolocation%endy
+   do ix = imager_geolocation%startx, imager_geolocation%endx
+      do jy = imager_geolocation%starty, imager_geolocation%endy
          if (btemp(ix,jy) .eq. 16) then
             btemp(ix,jy) = 0
          else
@@ -93,7 +93,7 @@ subroutine read_avhrr_land_sea_mask(path_to_geo_file,imager_geolocation, &
       end do
    end do
 
-   imager_flags%lsflag=int(btemp,kind=byte)
+   imager_flags%lsflag = int(btemp, kind=byte)
 
    !free temp arrays
    deallocate(btemp)

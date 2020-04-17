@@ -129,7 +129,7 @@ module aatsr_corrections_m
 contains
 
 subroutine aatsr_drift_correction(start_date, vc1_file, lut, chan, new_drift, &
-                                  old_drift, drift_var)
+     old_drift, drift_var)
 
    use calender_m
 
@@ -185,14 +185,14 @@ subroutine aatsr_drift_correction(start_date, vc1_file, lut, chan, new_drift, &
    ! correction table
    if (Tn.lt.lut%julday(1)) then
       write(*,*) 'aatsr_corrections: WARNING: Acquisition before ' // &
-           'start time of correction LUT. No correction made.',Tn, &
-           lut%julday(1),lut%julday(lut%n)
+           'start time of correction LUT. No correction made.', Tn, &
+           lut%julday(1), lut%julday(lut%n)
       stat = -1
       return
    else if (Tn.gt.lut%julday(lut%n)) then
       write(*,*) 'aatsr_corrections: WARNING: Acquisition after end ' // &
-           'time of correction LUT. No correction made.',Tn, &
-           lut%julday(1),lut%julday(lut%n)
+           'time of correction LUT. No correction made.', Tn, &
+           lut%julday(1), lut%julday(lut%n)
       stat = -1
       return
    end if
@@ -282,8 +282,8 @@ subroutine aatsr_read_drift_table(drift_table, lut, stat)
    implicit none
 
    character(len=*),        intent(in)    :: drift_table
-   integer,                    intent(out)   :: stat
-   type(aatsr_drift_lut_t),    intent(inout) :: lut
+   integer,                 intent(out)   :: stat
+   type(aatsr_drift_lut_t), intent(inout) :: lut
 
    integer            :: i, lun
    character(len=256) :: line
@@ -358,8 +358,8 @@ subroutine aatsr_read_drift_table(drift_table, lut, stat)
       read(line(24:25), '(i2)') lut%minute(i)
       read(line(27:28), '(i2)') lut%second(i)
       call GREG2JD(lut%year(i), lut%month(i), lut%day(i), lut%julday(i))
-      lut%julday(i) = lut%julday(i) + (real(lut%hour(i),dreal) + &
-           (real(lut%minute(i),dreal) + (real(lut%second(i),dreal) &
+      lut%julday(i) = lut%julday(i) + (real(lut%hour(i), dreal) + &
+           (real(lut%minute(i), dreal) + (real(lut%second(i), dreal) &
            / 60._dreal))/60._dreal)/24._dreal
 
       ! There are two different formats of drift file: one includes

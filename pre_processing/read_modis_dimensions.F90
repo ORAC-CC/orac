@@ -26,7 +26,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine read_modis_dimensions(path_to_geo_file,n_across_track,n_along_track)
+subroutine read_modis_dimensions(path_to_geo_file, n_across_track, n_along_track)
 
    use preproc_constants_m
 
@@ -35,7 +35,7 @@ subroutine read_modis_dimensions(path_to_geo_file,n_across_track,n_along_track)
    include "hdf.f90"
 
    character(len=*),   intent(in)  :: path_to_geo_file
-   integer(kind=lint),         intent(out) :: n_across_track, n_along_track
+   integer(kind=lint), intent(out) :: n_across_track, n_along_track
 
    integer                    :: geo_id, dims(2), err_code
    integer                    :: dummy_var_id, dummy_rank, dummy_type, &
@@ -46,9 +46,9 @@ subroutine read_modis_dimensions(path_to_geo_file,n_across_track,n_along_track)
    integer(kind=4), external  :: sfendacc, sfend
 
    ! this only serves to get us the dimensions of the granule
-   geo_id = sfstart(path_to_geo_file,DFACC_READ)
-   dummy_var_id = sfselect(geo_id,sfn2index(geo_id,"Latitude"))
-   err_code = sfginfo(dummy_var_id,dummy_name,dummy_rank,dims,dummy_type, &
+   geo_id = sfstart(path_to_geo_file, DFACC_READ)
+   dummy_var_id = sfselect(geo_id, sfn2index(geo_id, "Latitude"))
+   err_code = sfginfo(dummy_var_id, dummy_name, dummy_rank, dims, dummy_type, &
         dummy_numattrs)
 
    n_across_track = dims(1)

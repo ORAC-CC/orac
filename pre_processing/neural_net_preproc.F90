@@ -79,23 +79,23 @@ subroutine ann_cloud_mask(channel1, channel2, channel3a, channel3b, &
    integer(kind=sint) :: nneurons !# of employed neurons
    integer(kind=sint) :: ninput   !# of input dimensions of ann
 
-   real(kind=sreal),allocatable, dimension(:,:) :: inv,minmax_train,scales
-   real(kind=sreal),allocatable, dimension(:)   :: input,outv
+   real(kind=sreal), allocatable, dimension(:,:) :: inv, minmax_train, scales
+   real(kind=sreal), allocatable, dimension(:)   :: input, outv
 
-   real(kind=sreal) :: output
-   real(kind=sreal) :: oscales(3)
-   real(kind=sreal) :: temperature,cutoff,bias_i,bias_h
+   real(kind=sreal)   :: output
+   real(kind=sreal)   :: oscales(3)
+   real(kind=sreal)   :: temperature, cutoff, bias_i, bias_h
    integer(kind=byte) :: illum_nn ! 0 = undefined, 1 = day, 2 = twilight, 3 = night
 
    ! INPUT from cloud_type subroutine (module cloud_typing_pavolonis.F90)
    character(len=*),   intent(in)  :: sensor_name
    character(len=*),   intent(in)  :: platform
-   integer(kind=byte), intent(in) :: lsflag, niseflag
-   integer(kind=sint), intent(in) :: ch3a_on_avhrr_flag
-   real(kind=sreal),   intent(in) :: solzen, skint, satzen, glint_angle
-   real(kind=sreal),   intent(in) :: albedo1, albedo2, albedo3a ! cox-munk computed BRDF (bidirectional reflectance) albedo used for sunglint correction
-   real(kind=sreal),   intent(in) :: channel1, channel2, channel3a, channel3b, channel3b_ref, channel4, channel5
-   logical,            intent(in) :: verbose,desertflag
+   integer(kind=byte), intent(in)  :: lsflag, niseflag
+   integer(kind=sint), intent(in)  :: ch3a_on_avhrr_flag
+   real(kind=sreal),   intent(in)  :: solzen, skint, satzen, glint_angle
+   real(kind=sreal),   intent(in)  :: albedo1, albedo2, albedo3a ! cox-munk computed BRDF (bidirectional reflectance) albedo used for sunglint correction
+   real(kind=sreal),   intent(in)  :: channel1, channel2, channel3a, channel3b, channel3b_ref, channel4, channel5
+   logical,            intent(in)  :: verbose, desertflag
 
    ! OUTPUT to cloud_type subroutine (module cloud_typing_pavolonis.F90)
    integer(kind=byte), intent(out) :: cldflag
@@ -106,7 +106,7 @@ subroutine ann_cloud_mask(channel1, channel2, channel3a, channel3b, &
    real(kind=sreal)   :: ch1, ch2, ch3b, ref3a, ref3b, ch4, ch5 , threshold_used, ch1_uc
    real(kind=sreal)   :: btd_ch4_ch5, btd_ch4_ch3b, norm_diff_cc_th, mu0
    integer(kind=sint) :: glint_mask
-   logical            :: call_neural_net, do_ref3b_alb_corr,calc_true_refl,desert
+   logical            :: call_neural_net, do_ref3b_alb_corr, calc_true_refl, desert
 
    calc_true_refl = .FALSE. ! this is .false. at the moment, change to .true. if
                             ! future ANN's are trained with true reflectances
@@ -132,7 +132,7 @@ subroutine ann_cloud_mask(channel1, channel2, channel3a, channel3b, &
       ch1 = channel1 * 100.
       if ((lsflag .eq. 0_byte .or. desert) .and. (niseflag .eq. NO) .and. (albedo1 .ge. 0.) .and. (correct_glint) ) then
          ch1_uc = ch1
-         ch1 = max(ch1 - min(albedo1,1.) * 100. * 0.4, 0.)
+         ch1 = max(ch1 - min(albedo1, 1.) * 100. * 0.4, 0.)
       end if
    end if
 
@@ -144,7 +144,7 @@ subroutine ann_cloud_mask(channel1, channel2, channel3a, channel3b, &
       end if
    else
       ch2 = channel2 * 100.
-      if ((lsflag .eq. 0_byte .or. desert) .and. (niseflag .eq. NO) .and. (albedo2 .gt. 0.) .and. (correct_glint) ) ch2 = max(ch2 - min(albedo2,1.) * 100. * 0.4, 0.)
+      if ((lsflag .eq. 0_byte .or. desert) .and. (niseflag .eq. NO) .and. (albedo2 .gt. 0.) .and. (correct_glint) ) ch2 = max(ch2 - min(albedo2, 1.) * 100. * 0.4, 0.)
    end if
 
    ch3b = channel3b
@@ -157,7 +157,7 @@ subroutine ann_cloud_mask(channel1, channel2, channel3a, channel3b, &
          ! We use a 1.6um trained ANN now
          ref3a = channel3a * 100.
          ! We can also use the Albedo correction of the 1.6um channel
-         if ((lsflag .eq. 0_byte .or. desert) .and. (niseflag .eq. NO) .and. (albedo3a .gt. 0.) .and. (correct_glint) ) ref3a = max(ref3a - min(albedo3a,1.) * 100. * 0.55, 0.)
+         if ((lsflag .eq. 0_byte .or. desert) .and. (niseflag .eq. NO) .and. (albedo3a .gt. 0.) .and. (correct_glint) ) ref3a = max(ref3a - min(albedo3a, 1.) * 100. * 0.55, 0.)
       end if
    else
       if ( channel3b_ref .eq. sreal_fill_value ) then
@@ -222,23 +222,23 @@ subroutine ann_cloud_mask(channel1, channel2, channel3a, channel3b, &
 
       !ranges variables within training was performed
       allocate(minmax_train(ninput,2))
-      minmax_train=minmax_train_ex27
+      minmax_train = minmax_train_ex27
 
       !"weights" for input
       allocate(inv(ninput+1,nneurons))
-      inv=inv_ex27
+      inv = inv_ex27
 
       !"weights" for output
       allocate(outv(nneurons+1))
-      outv=outv_ex27
+      outv = outv_ex27
 
       allocate(scales(ninput,2))
-      scales=scales_ex27           !parameters to scale input?
-      oscales=oscales_ex27         !parameters to scale output?
-      temperature=temperature_ex27 !"temperature" for sigmoid function
-      cutoff=cutoff_ex27
-      bias_i=bias_i_ex27
-      bias_h=bias_h_ex27
+      scales = scales_ex27           !parameters to scale input?
+      oscales = oscales_ex27         !parameters to scale output?
+      temperature = temperature_ex27 !"temperature" for sigmoid function
+      cutoff = cutoff_ex27
+      bias_i = bias_i_ex27
+      bias_h = bias_h_ex27
 
       ! input
       allocate(input(ninput+1))
@@ -271,23 +271,23 @@ subroutine ann_cloud_mask(channel1, channel2, channel3a, channel3b, &
 
       !ranges variables within training was performed
       allocate(minmax_train(ninput,2))
-      minmax_train=minmax_train_ex30
+      minmax_train = minmax_train_ex30
 
       !"weights" for input
       allocate(inv(ninput+1,nneurons))
-      inv=inv_ex30
+      inv = inv_ex30
 
       !"weights" for output
       allocate(outv(nneurons+1))
-      outv=outv_ex30
+      outv = outv_ex30
 
       allocate(scales(ninput,2))
-      scales=scales_ex30               !parameters to scale input?
-      oscales=oscales_ex30             !parameters to scale output?
-      temperature=temperature_ex30     !"temperature" for sigmoid function
-      cutoff=cutoff_ex30
-      bias_i=bias_i_ex30
-      bias_h=bias_h_ex30
+      scales = scales_ex30               !parameters to scale input?
+      oscales = oscales_ex30             !parameters to scale output?
+      temperature = temperature_ex30     !"temperature" for sigmoid function
+      cutoff = cutoff_ex30
+      bias_i = bias_i_ex30
+      bias_h = bias_h_ex30
 
       !input
       allocate(input(ninput+1))
@@ -320,23 +320,23 @@ subroutine ann_cloud_mask(channel1, channel2, channel3a, channel3b, &
 
       !ranges variables within training was performed
       allocate(minmax_train(ninput,2))
-      minmax_train=minmax_train_ex32
+      minmax_train = minmax_train_ex32
 
       !"weights" for input
       allocate(inv(ninput+1,nneurons))
-      inv=inv_ex32
+      inv = inv_ex32
 
       !"weights" for output
       allocate(outv(nneurons+1))
-      outv=outv_ex32
+      outv = outv_ex32
 
       allocate(scales(ninput,2))
-      scales=scales_ex32               !parameters to scale input?
-      oscales=oscales_ex32             !parameters to scale output?
-      temperature=temperature_ex32     !"temperature" for sigmoid function
-      cutoff=cutoff_ex32
-      bias_i=bias_i_ex32
-      bias_h=bias_h_ex32
+      scales = scales_ex32               !parameters to scale input?
+      oscales = oscales_ex32             !parameters to scale output?
+      temperature = temperature_ex32     !"temperature" for sigmoid function
+      cutoff = cutoff_ex32
+      bias_i = bias_i_ex32
+      bias_h = bias_h_ex32
 
       !input
       allocate(input(ninput+1))
@@ -373,23 +373,23 @@ subroutine ann_cloud_mask(channel1, channel2, channel3a, channel3b, &
 
       !ranges variables within training was performed
       allocate(minmax_train(ninput,2))
-      minmax_train=minmax_train_ex28
+      minmax_train = minmax_train_ex28
 
       !"weights" for input
       allocate(inv(ninput+1,nneurons))
-      inv=inv_ex28
+      inv = inv_ex28
 
       !"weights" for output
       allocate(outv(nneurons+1))
-      outv=outv_ex28
+      outv = outv_ex28
 
       allocate(scales(ninput,2))
-      scales=scales_ex28           !parameters to scale input?
-      oscales=oscales_ex28         !parameters to scale output?
-      temperature=temperature_ex28 !"temperature" for sigmoid function
-      cutoff=cutoff_ex28
-      bias_i=bias_i_ex28
-      bias_h=bias_h_ex28
+      scales = scales_ex28           !parameters to scale input?
+      oscales = oscales_ex28         !parameters to scale output?
+      temperature = temperature_ex28 !"temperature" for sigmoid function
+      cutoff = cutoff_ex28
+      bias_i = bias_i_ex28
+      bias_h = bias_h_ex28
 
       ! input
       allocate(input(ninput+1))
@@ -421,23 +421,23 @@ subroutine ann_cloud_mask(channel1, channel2, channel3a, channel3b, &
 
       !ranges variables within training was performed
       allocate(minmax_train(ninput,2))
-      minmax_train=minmax_train_ex31
+      minmax_train = minmax_train_ex31
 
       !"weights" for input
       allocate(inv(ninput+1,nneurons))
-      inv=inv_ex31
+      inv = inv_ex31
 
       !"weights" for output
       allocate(outv(nneurons+1))
-      outv=outv_ex31
+      outv = outv_ex31
 
       allocate(scales(ninput,2))
-      scales=scales_ex31               !parameters to scale input?
-      oscales=oscales_ex31             !parameters to scale output?
-      temperature=temperature_ex31     !"temperature" for sigmoid function
-      cutoff=cutoff_ex31
-      bias_i=bias_i_ex31
-      bias_h=bias_h_ex31
+      scales = scales_ex31               !parameters to scale input?
+      oscales = oscales_ex31             !parameters to scale output?
+      temperature = temperature_ex31     !"temperature" for sigmoid function
+      cutoff = cutoff_ex31
+      bias_i = bias_i_ex31
+      bias_h = bias_h_ex31
 
       !input
       allocate(input(ninput+1))
@@ -469,23 +469,23 @@ subroutine ann_cloud_mask(channel1, channel2, channel3a, channel3b, &
 
       !ranges variables within training was performed
       allocate(minmax_train(ninput,2))
-      minmax_train=minmax_train_ex33
+      minmax_train = minmax_train_ex33
 
       !"weights" for input
       allocate(inv(ninput+1,nneurons))
-      inv=inv_ex33
+      inv = inv_ex33
 
       !"weights" for output
       allocate(outv(nneurons+1))
-      outv=outv_ex33
+      outv = outv_ex33
 
       allocate(scales(ninput,2))
-      scales=scales_ex33               !parameters to scale input?
-      oscales=oscales_ex33             !parameters to scale output?
-      temperature=temperature_ex33     !"temperature" for sigmoid function
-      cutoff=cutoff_ex33
-      bias_i=bias_i_ex33
-      bias_h=bias_h_ex33
+      scales = scales_ex33               !parameters to scale input?
+      oscales = oscales_ex33             !parameters to scale output?
+      temperature = temperature_ex33     !"temperature" for sigmoid function
+      cutoff = cutoff_ex33
+      bias_i = bias_i_ex33
+      bias_h = bias_h_ex33
 
       !input
       allocate(input(ninput+1))
@@ -521,23 +521,23 @@ subroutine ann_cloud_mask(channel1, channel2, channel3a, channel3b, &
 
       !ranges variables within training was performed
       allocate(minmax_train(ninput,2))
-      minmax_train=minmax_train_ex29
+      minmax_train = minmax_train_ex29
 
       !"weights" for input
       allocate(inv(ninput+1,nneurons))
-      inv=inv_ex29
+      inv = inv_ex29
 
       !"weights" for output
       allocate(outv(nneurons+1))
-      outv=outv_ex29
+      outv = outv_ex29
 
       allocate(scales(ninput,2))
-      scales=scales_ex29           !parameters to scale input?
-      oscales=oscales_ex29         !parameters to scale output?
-      temperature=temperature_ex29 !"temperature" for sigmoid function
-      cutoff=cutoff_ex29
-      bias_i=bias_i_ex29
-      bias_h=bias_h_ex29
+      scales = scales_ex29           !parameters to scale input?
+      oscales = oscales_ex29         !parameters to scale output?
+      temperature = temperature_ex29 !"temperature" for sigmoid function
+      cutoff = cutoff_ex29
+      bias_i = bias_i_ex29
+      bias_h = bias_h_ex29
 
       ! input
       allocate(input(ninput+1))
@@ -571,28 +571,28 @@ subroutine ann_cloud_mask(channel1, channel2, channel3a, channel3b, &
    end if
 
    !this should never happen and is only the case if lsflag is neither 0 nor 1
-   if ( threshold_used .eq. sreal_fill_value ) call_neural_net=.false.
+   if ( threshold_used .eq. sreal_fill_value ) call_neural_net = .false.
 
    ! --- subroutine which carries out neural network computation
 
    if ( call_neural_net ) then
 
-      call neural_net(nneurons,ninput,minmax_train,inv,outv, &
-           input,scales,oscales,cutoff,bias_i,bias_h,     &
-           temperature,output,noob)
+      call neural_net(nneurons, ninput, minmax_train, inv, outv, &
+           input, scales, oscales, cutoff, bias_i, bias_h, &
+           temperature, output, noob)
 
       ! --- correct for viewing angle effect - test phase for AVHRR
       if (correct_view) output = output - ( 1. / 12. * ( 1. / cos( satzen * d2r) - 1. ) )
 
       if (correct_sst) then
          ! Testing ice-free sea skin temperature correction
-         if  (( lsflag .eq. 0_byte ) .AND. (niseflag .eq. NO) .and. (mod(illum_nn,3) .eq. 1) ) then
+         if  (( lsflag .eq. 0_byte ) .AND. (niseflag .eq. NO) .and. (mod(illum_nn, 3) .eq. 1) ) then
             output = output - ((300.- skint)/30.)*0.30 ! daytime
          end if
-         if  (( lsflag .eq. 0_byte ) .AND. (niseflag .eq. NO) .and. (mod(illum_nn,3) .eq. 2) ) then
+         if  (( lsflag .eq. 0_byte ) .AND. (niseflag .eq. NO) .and. (mod(illum_nn, 3) .eq. 2) ) then
             output = output - ((300.- skint)/30.)*0.35 ! twilight
          end if
-         if  (( lsflag .eq. 0_byte ) .AND. (niseflag .eq. NO) .and. (mod(illum_nn,3) .eq. 0) ) then
+         if  (( lsflag .eq. 0_byte ) .AND. (niseflag .eq. NO) .and. (mod(illum_nn, 3) .eq. 0) ) then
             output = output - ((300.- skint)/30.)*0.30 ! night
          end if
       end if
@@ -676,22 +676,22 @@ subroutine ann_cloud_phase(channel1, channel2, channel3a, channel3b, &
    integer(kind=sint) :: nneurons !# of employed neurons
    integer(kind=sint) :: ninput   !# of input dimensions of ann
 
-   real(kind=sreal),allocatable, dimension(:,:) :: inv,minmax_train,scales
-   real(kind=sreal),allocatable, dimension(:)   :: input,outv
+   real(kind=sreal), allocatable, dimension(:,:) :: inv, minmax_train, scales
+   real(kind=sreal), allocatable, dimension(:)   :: input, outv
 
-   real(kind=sreal) :: output
-   real(kind=sreal) :: oscales(3)
-   real(kind=sreal) :: temperature,cutoff,bias_i,bias_h
+   real(kind=sreal)   :: output
+   real(kind=sreal)   :: oscales(3)
+   real(kind=sreal)   :: temperature, cutoff, bias_i, bias_h
    integer(kind=byte) :: illum_nn ! 0 = undefined, 1 = day, 2 = twilight, 3 = night
 
    ! INPUT from cloud_type subroutine (module cloud_typing_pavolonis.F90)
    character(len=*),   intent(in)  :: sensor_name
    character(len=*),   intent(in)  :: platform
-   integer(kind=byte), intent(in) :: lsflag, niseflag
-   integer(kind=sint), intent(in) :: ch3a_on_avhrr_flag
-   real(kind=sreal),   intent(in) :: solzen, satzen, albedo1, albedo2, albedo3a, skint
-   real(kind=sreal),   intent(in) :: channel1, channel2, channel3a, channel3b, channel3b_ref, channel4, channel5
-   logical,            intent(in) :: verbose, desertflag
+   integer(kind=byte), intent(in)  :: lsflag, niseflag
+   integer(kind=sint), intent(in)  :: ch3a_on_avhrr_flag
+   real(kind=sreal),   intent(in)  :: solzen, satzen, albedo1, albedo2, albedo3a, skint
+   real(kind=sreal),   intent(in)  :: channel1, channel2, channel3a, channel3b, channel3b_ref, channel4, channel5
+   logical,            intent(in)  :: verbose, desertflag
 
    ! OUTPUT to cloud_type subroutine (module cloud_typing_pavolonis.F90)
    integer(kind=byte), intent(out) :: phase_flag
@@ -699,7 +699,7 @@ subroutine ann_cloud_phase(channel1, channel2, channel3a, channel3b, &
 
    ! LOCAL variables
    real(kind=sreal)   :: ch1, ch2, ref3a, ch3b, ref3b, ch4, ch5 , threshold_used, ch1_uc
-   real(kind=sreal)   :: btd_ch4_ch5, btd_ch4_ch3b,mu0,norm_diff_cc_th
+   real(kind=sreal)   :: btd_ch4_ch5, btd_ch4_ch3b, mu0, norm_diff_cc_th
    logical            :: call_neural_net, do_ref3b_alb_corr, calc_true_refl
    integer(kind=byte) :: surface_flag
 
@@ -750,7 +750,7 @@ subroutine ann_cloud_phase(channel1, channel2, channel3a, channel3b, &
          ref3a = channel3a * 100.
          ref3b = channel3b_ref
          ! We can also use the Albedo correction of the 1.6um channel
-         if ((lsflag .eq. 0_byte) .and. (niseflag .eq. NO) .and. (albedo3a .gt. 0.) .and. (correct_glint) ) ref3a = max(ref3a - min(albedo3a,1.) * 100. * 0.55, 0.)
+         if ((lsflag .eq. 0_byte) .and. (niseflag .eq. NO) .and. (albedo3a .gt. 0.) .and. (correct_glint) ) ref3a = max(ref3a - min(albedo3a, 1.) * 100. * 0.55, 0.)
       end if
    else
       if ( channel3b_ref .eq. sreal_fill_value ) then
@@ -802,23 +802,23 @@ subroutine ann_cloud_phase(channel1, channel2, channel3a, channel3b, &
 
       !ranges variables within training was performed
       allocate(minmax_train(ninput,2))
-      minmax_train=minmax_train_ex101
+      minmax_train = minmax_train_ex101
 
       !"weights" for input
       allocate(inv(ninput+1,nneurons))
-      inv=inv_ex101
+      inv = inv_ex101
 
       !"weights" for output
       allocate(outv(nneurons+1))
-      outv=outv_ex101
+      outv = outv_ex101
 
       allocate(scales(ninput,2))
-      scales=scales_ex101           !parameters to scale input?
-      oscales=oscales_ex101         !parameters to scale output?
-      temperature=temperature_ex101 !"temperature" for sigmoid function
-      cutoff=cutoff_ex101
-      bias_i=bias_i_ex101
-      bias_h=bias_h_ex101
+      scales = scales_ex101           !parameters to scale input?
+      oscales = oscales_ex101         !parameters to scale output?
+      temperature = temperature_ex101 !"temperature" for sigmoid function
+      cutoff = cutoff_ex101
+      bias_i = bias_i_ex101
+      bias_h = bias_h_ex101
 
       ! input
       allocate(input(ninput+1))
@@ -849,23 +849,23 @@ subroutine ann_cloud_phase(channel1, channel2, channel3a, channel3b, &
 
       !ranges variables within training was performed
       allocate(minmax_train(ninput,2))
-      minmax_train=minmax_train_ex103
+      minmax_train = minmax_train_ex103
 
       !"weights" for input
       allocate(inv(ninput+1,nneurons))
-      inv=inv_ex103
+      inv = inv_ex103
 
       !"weights" for output
       allocate(outv(nneurons+1))
-      outv=outv_ex103
+      outv = outv_ex103
 
       allocate(scales(ninput,2))
-      scales=scales_ex103               !parameters to scale input?
-      oscales=oscales_ex103             !parameters to scale output?
-      temperature=temperature_ex103     !"temperature" for sigmoid function
-      cutoff=cutoff_ex103
-      bias_i=bias_i_ex103
-      bias_h=bias_h_ex103
+      scales = scales_ex103               !parameters to scale input?
+      oscales = oscales_ex103             !parameters to scale output?
+      temperature = temperature_ex103     !"temperature" for sigmoid function
+      cutoff = cutoff_ex103
+      bias_i = bias_i_ex103
+      bias_h = bias_h_ex103
 
       !input
       allocate(input(ninput+1))
@@ -895,23 +895,23 @@ subroutine ann_cloud_phase(channel1, channel2, channel3a, channel3b, &
 
       !ranges variables within training was performed
       allocate(minmax_train(ninput,2))
-      minmax_train=minmax_train_ex102
+      minmax_train = minmax_train_ex102
 
       !"weights" for input
       allocate(inv(ninput+1,nneurons))
-      inv=inv_ex102
+      inv = inv_ex102
 
       !"weights" for output
       allocate(outv(nneurons+1))
-      outv=outv_ex102
+      outv = outv_ex102
 
       allocate(scales(ninput,2))
-      scales=scales_ex102               !parameters to scale input?
-      oscales=oscales_ex102             !parameters to scale output?
-      temperature=temperature_ex102     !"temperature" for sigmoid function
-      cutoff=cutoff_ex102
-      bias_i=bias_i_ex102
-      bias_h=bias_h_ex102
+      scales = scales_ex102               !parameters to scale input?
+      oscales = oscales_ex102             !parameters to scale output?
+      temperature = temperature_ex102     !"temperature" for sigmoid function
+      cutoff = cutoff_ex102
+      bias_i = bias_i_ex102
+      bias_h = bias_h_ex102
 
       !input
       allocate(input(ninput+1))
@@ -945,23 +945,23 @@ subroutine ann_cloud_phase(channel1, channel2, channel3a, channel3b, &
 
       !ranges variables within training was performed
       allocate(minmax_train(ninput,2))
-      minmax_train=minmax_train_ex104
+      minmax_train = minmax_train_ex104
 
       !"weights" for input
       allocate(inv(ninput+1,nneurons))
-      inv=inv_ex104
+      inv = inv_ex104
 
       !"weights" for output
       allocate(outv(nneurons+1))
-      outv=outv_ex104
+      outv = outv_ex104
 
       allocate(scales(ninput,2))
-      scales=scales_ex104           !parameters to scale input?
-      oscales=oscales_ex104         !parameters to scale output?
-      temperature=temperature_ex104 !"temperature" for sigmoid function
-      cutoff=cutoff_ex104
-      bias_i=bias_i_ex104
-      bias_h=bias_h_ex104
+      scales = scales_ex104           !parameters to scale input?
+      oscales = oscales_ex104         !parameters to scale output?
+      temperature = temperature_ex104 !"temperature" for sigmoid function
+      cutoff = cutoff_ex104
+      bias_i = bias_i_ex104
+      bias_h = bias_h_ex104
 
       ! input
       allocate(input(ninput+1))
@@ -993,15 +993,15 @@ subroutine ann_cloud_phase(channel1, channel2, channel3a, channel3b, &
    end if
 
    !this should never happen and is only the case if lsflag is neither 0 nor 1
-   if ( threshold_used .eq. sreal_fill_value ) call_neural_net=.false.
+   if ( threshold_used .eq. sreal_fill_value ) call_neural_net = .false.
 
    ! --- subroutine which carries out neural network computation
 
    if ( call_neural_net ) then
 
-      call neural_net(nneurons,ninput,minmax_train,inv,outv, &
-           input,scales,oscales,cutoff,bias_i,bias_h,     &
-           temperature,output,noob)
+      call neural_net(nneurons, ninput, minmax_train, inv, outv, &
+           input, scales, oscales, cutoff, bias_i, bias_h, &
+           temperature, output, noob)
 
       ! --- correct for viewing angle effect - test phase for AVHRR
       if (correct_view) output = output - ( 1. / 12. * ( 1. / cos( satzen * d2r) - 1. ) )
@@ -1060,9 +1060,9 @@ end subroutine ann_cloud_phase
 
 
 !------------------------------------------------------------------------
-subroutine neural_net(nneurons,ninput,minmax_train,inv,outv, &
-     input,scales,oscales,cutoff,bias_i,bias_h,&
-     temperature,output,noob)
+subroutine neural_net(nneurons, ninput, minmax_train, inv, outv, &
+     input, scales, oscales, cutoff, bias_i, bias_h, &
+     temperature, output, noob)
    !------------------------------------------------------------------------
 
    use constants_cloud_typing_pavolonis_m
@@ -1072,35 +1072,35 @@ subroutine neural_net(nneurons,ninput,minmax_train,inv,outv, &
    implicit none
 
    integer(kind=sint) :: noob
-   integer(kind=sint) :: iinput,ineuron
+   integer(kind=sint) :: iinput, ineuron
    integer(kind=sint) :: nneurons
    integer(kind=sint) :: ninput
 
-   real(kind=sreal) :: minmax_train(ninput,2),scales(ninput,2),oscales(3)
-   real(kind=sreal) :: inv(ninput+1,nneurons),outv(nneurons+1)
-   real(kind=sreal),dimension(:),intent(inout) :: input
+   real(kind=sreal) :: minmax_train(ninput,2), scales(ninput,2), oscales(3)
+   real(kind=sreal) :: inv(ninput+1,nneurons), outv(nneurons+1)
+   real(kind=sreal), dimension(:), intent(inout) :: input
    real(kind=sreal) :: sigmoide
-   real(kind=sreal) :: intermed(nneurons+1),vector_res1(nneurons),scalar_res2
-   real(kind=sreal) ::temperature,bias_i,bias_h,cutoff
+   real(kind=sreal) :: intermed(nneurons+1), vector_res1(nneurons), scalar_res2
+   real(kind=sreal) :: temperature, bias_i, bias_h, cutoff
 
    logical :: lbounds
 
-   real(kind=sreal),intent(out) :: output
+   real(kind=sreal), intent(out) :: output
 
    !check if pixel has values within training min/max and flag it
    !Just flag it make decision later stapel (09/2014)
-   lbounds=.true.
+   lbounds = .true.
 
-   lbounds=all( (input(1:ninput) .ge. minmax_train(1:ninput,1)) .and. &
+   lbounds = all( (input(1:ninput) .ge. minmax_train(1:ninput,1)) .and. &
         ( input(1:ninput) .le. minmax_train(1:ninput,2) ) )
 
    if(lbounds) then
-      noob=0_lint
+      noob = 0_lint
    else
-      noob=1_lint
+      noob = 1_lint
       if (correct_bounds) then
-         do iinput=1,ninput
-            input(iinput) = min(max(input(iinput),minmax_train(iinput,1)),minmax_train(iinput,2))
+         do iinput = 1, ninput
+            input(iinput) = min(max(input(iinput), minmax_train(iinput,1)), minmax_train(iinput,2))
          end do
       end if
    end if
@@ -1109,40 +1109,40 @@ subroutine neural_net(nneurons,ninput,minmax_train,inv,outv, &
 
    !now do let ANN calculate no matter if input is
    !within bounds or not stapel (09/2014)
-   do iinput=1,ninput
-      input(iinput)=scales(iinput,1)+scales(iinput,2)*(input(iinput) - &
+   do iinput = 1, ninput
+      input(iinput) = scales(iinput,1)+scales(iinput,2)*(input(iinput) - &
            minmax_train(iinput,1))
    end do
 
    !apply constant to additional input element
-   input(ninput+1)=bias_i
+   input(ninput+1) = bias_i
 
    !perform vector*matrix multiplication of input vector with
    !matrix of weights (ninput+1).(ninput+1,nneurons)=(nneurons)
-   vector_res1=matmul(input,inv)
+   vector_res1 = matmul(input, inv)
 
    !apply sigmoidal function to each element of resulting vector vector_res1
-   do ineuron=1,nneurons
-      call sigmoide_function(temperature/float(ninput),cutoff, &
-           vector_res1(ineuron),sigmoide)
-      intermed(ineuron)=sigmoide
+   do ineuron = 1, nneurons
+      call sigmoide_function(temperature/float(ninput), cutoff, &
+           vector_res1(ineuron), sigmoide)
+      intermed(ineuron) = sigmoide
    end do
 
    !extend intermediate result by one element
-   intermed(nneurons+1)=bias_h
+   intermed(nneurons+1) = bias_h
 
    !perform scalar product of intermediate result with output vector
    ! weights: (nneurons+1)*(nneurons+1)
 
    !resulting in a scalar
-   scalar_res2=dot_product(intermed,outv)
+   scalar_res2 = dot_product(intermed, outv)
 
    !apply sigmoidal function to scalar result
-   call sigmoide_function(temperature/float(nneurons),cutoff,scalar_res2,sigmoide)
-   output=sigmoide
+   call sigmoide_function(temperature/float(nneurons), cutoff, scalar_res2, sigmoide)
+   output = sigmoide
 
    !rescale output
-   output=(output-oscales(1))/oscales(2)-oscales(3)
+   output = (output-oscales(1))/oscales(2)-oscales(3)
 
    !-------------------------------------------------------------------------
 end subroutine neural_net
@@ -1152,7 +1152,7 @@ end subroutine neural_net
 
 
 !-------------------------------------------------------------------------
-subroutine sigmoide_function(temperature,cutoff,input,sigmoide)
+subroutine sigmoide_function(temperature, cutoff, input, sigmoide)
    !-------------------------------------------------------------------------
 
    !this functions evaluates the sigmoidal function
@@ -1162,17 +1162,17 @@ subroutine sigmoide_function(temperature,cutoff,input,sigmoide)
 
    implicit none
 
-   real(kind=sreal) :: temperature,cutoff,input
-   real(kind=sreal) :: sigmoidein,sigmoidem,sigmoide
+   real(kind=sreal) :: temperature, cutoff, input
+   real(kind=sreal) :: sigmoidein, sigmoidem, sigmoide
 
-   sigmoidein=temperature*input
+   sigmoidein = temperature*input
 
    !ifs for cutoff
-   if(sigmoidein .gt. cutoff) sigmoidein=cutoff
-   if(sigmoidein .lt. -1.0*cutoff) sigmoidein=-1.0*cutoff
+   if(sigmoidein .gt. cutoff) sigmoidein = cutoff
+   if(sigmoidein .lt. -1.0*cutoff) sigmoidein = -1.0*cutoff
 
-   sigmoidem=-1.0*sigmoidein
-   sigmoide=1.0/(1.0+exp(sigmoidem))
+   sigmoidem = -1.0*sigmoidein
+   sigmoide = 1.0/(1.0+exp(sigmoidem))
 
    !-------------------------------------------------------------------------
 end subroutine sigmoide_function
@@ -1180,6 +1180,6 @@ end subroutine sigmoide_function
 
 
 
-  !=========================================================================
+!=========================================================================
 end module neural_net_preproc_m
 !=========================================================================

@@ -201,7 +201,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
 #endif
 
    ! Local variables
-   integer                            :: i,ii,i0,i1,i2,j
+   integer                            :: i, ii, i0, i1, i2, j
    integer                            :: ios
    integer                            :: dri_lun, dump_lun
    character(len=FilenameLen)         :: root_filename
@@ -439,13 +439,13 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
 
    Ctrl%LUTClassLayers = trim(Ctrl%LUTClass)
    if (Ctrl%Approach == AppCld2L) then
-      Ctrl%LUTClassLayers=trim(Ctrl%LUTClassLayers)//'_'//trim(Ctrl%LUTClass2)
+      Ctrl%LUTClassLayers = trim(Ctrl%LUTClassLayers)//'_'//trim(Ctrl%LUTClass2)
    end if
 
 
    ! Output filenames
-   outname=trim(Ctrl%FID%Out_Dir)//'/'//trim(Ctrl%FID%Filename)// &
-           trim(Ctrl%LUTClassLayers)
+   outname = trim(Ctrl%FID%Out_Dir)//'/'//trim(Ctrl%FID%Filename)// &
+            trim(Ctrl%LUTClassLayers)
    Ctrl%FID%L2_primary   = trim(outname)//'.primary.nc'
    Ctrl%FID%L2_secondary = trim(outname)//'.secondary.nc'
 
@@ -1414,7 +1414,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
 
          case default
             write(*,*) 'ERROR: Read_Driver(): Invalid method for a priori ' // &
-                 'state variable ',i
+                 'state variable ', i
             stop APMethErr
          end select
       end do
@@ -1534,8 +1534,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       end if
 
       ! Write the driver file
-      write(dump_lun,'(*(A))') '# ORAC Driver File'
-      write(dump_lun,'(*(A))') buffer(1:size-1)
+      write(dump_lun, '(*(A))') '# ORAC Driver File'
+      write(dump_lun, '(*(A))') buffer(1:size-1)
 
       if (dumpfile /= '-') then
          close(dump_lun)

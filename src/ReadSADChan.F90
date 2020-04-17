@@ -95,25 +95,25 @@ subroutine Read_SAD_Chan(Ctrl, SAD_Chan)
 
    character(len=FilenameLen) :: chan_file        ! Name of channel description file
    character(len=4)           :: chan_num         ! Channel number converted to a string
-   integer                :: c_lun            ! Unit number for channel desc file
-   integer                :: i, j             ! Loop counters
-   integer                :: ios              ! I/O status from file open/read
+   integer                    :: c_lun            ! Unit number for channel desc file
+   integer                    :: i, j             ! Loop counters
+   integer                    :: ios              ! I/O status from file open/read
    character(len=FilenameLen) :: filename         ! File name as read from chan desc file
-   integer                :: NSolar, NThermal ! Local values used to check
-                                              ! whether selected channels match
-                                              ! totals indicated in driver file.
+   integer                    :: NSolar, NThermal ! Local values used to check
+                                                  ! whether selected channels match
+                                                  ! totals indicated in driver file.
    logical :: file_exists
 
    NThermal = 0
    NSolar   = 0
 
    if (Ctrl%verbose) &
-        write(*,*) 'Number of channels used, Ctrl%Ind%Ny: ',Ctrl%Ind%Ny
+        write(*,*) 'Number of channels used, Ctrl%Ind%Ny: ', Ctrl%Ind%Ny
 
    call Find_LUN(c_lun)
 
    ! Loop over channels
-   do i=1, Ctrl%Ind%Ny
+   do i = 1, Ctrl%Ind%Ny
       ! Generate channel file name from Ctrl struct info. This sets the channel
       ! to be used in instrument notation for reading from SAD.
 
@@ -122,7 +122,7 @@ subroutine Read_SAD_Chan(Ctrl, SAD_Chan)
            write(*,*) 'SAD Channel number: ', trim(adjustl(chan_num))
 
       chan_file = create_sad_filename(Ctrl, chan_num)
-      if (Ctrl%verbose) write(*,*) 'chan_file read in: ',trim(adjustl(chan_file))
+      if (Ctrl%verbose) write(*,*) 'chan_file read in: ', trim(adjustl(chan_file))
 
       ! Check if file exists
       inquire(file=chan_file, exist=file_exists)
@@ -166,11 +166,11 @@ subroutine Read_SAD_Chan(Ctrl, SAD_Chan)
          read(c_lun, *, err=999, iostat=ios) SAD_Chan(i)%Thermal%T1
          read(c_lun, *, err=999, iostat=ios) SAD_Chan(i)%Thermal%T2
          read(c_lun, *, err=999, iostat=ios) &
-            (SAD_Chan(i)%Thermal%NeHomog(j), j=1,MaxCloudType)
+            (SAD_Chan(i)%Thermal%NeHomog(j), j = 1, MaxCloudType)
          read(c_lun, *, err=999, iostat=ios) &
-            (SAD_Chan(i)%Thermal%NeCoreg(j), j=1,MaxCloudType)
+            (SAD_Chan(i)%Thermal%NeCoreg(j), j = 1, MaxCloudType)
 
-         do j=1,MaxCloudType
+         do j = 1, MaxCloudType
             SAD_Chan(i)%Thermal%NeHomog(j) = &
                SAD_Chan(i)%Thermal%NeHomog(j) * SAD_Chan(i)%Thermal%NeHomog(j)
             SAD_Chan(i)%Thermal%NeCoreg(j) = &
@@ -183,7 +183,7 @@ subroutine Read_SAD_Chan(Ctrl, SAD_Chan)
       end if
 
       read(c_lun, *, err=999, iostat=ios) SAD_Chan(i)%Solar%Flag
-      if (Ctrl%verbose) write(*,*) 'Specs (s-flag): ',SAD_Chan(i)%Solar%Flag
+      if (Ctrl%verbose) write(*,*) 'Specs (s-flag): ', SAD_Chan(i)%Solar%Flag
 
       if (SAD_Chan(i)%Solar%Flag > 0) then
          NSolar = NSolar + 1
@@ -191,11 +191,11 @@ subroutine Read_SAD_Chan(Ctrl, SAD_Chan)
          read(c_lun, *, err=999, iostat=ios) SAD_Chan(i)%Solar%F0, &
             SAD_Chan(i)%Solar%F1
          read(c_lun, *, err=999, iostat=ios) &
-            (SAD_Chan(i)%Solar%NeHomog(j), j=1,MaxCloudType)
+            (SAD_Chan(i)%Solar%NeHomog(j), j = 1, MaxCloudType)
          read(c_lun, *, err=999, iostat=ios) &
-            (SAD_Chan(i)%Solar%NeCoreg(j), j=1,MaxCloudType)
+            (SAD_Chan(i)%Solar%NeCoreg(j), j = 1, MaxCloudType)
 
-         do j=1,MaxCloudType
+         do j = 1, MaxCloudType
             SAD_Chan(i)%Solar%NeHomog(j) = 1e-4 * &
                SAD_Chan(i)%Solar%NeHomog(j) * SAD_Chan(i)%Solar%NeHomog(j)
 
@@ -223,14 +223,14 @@ subroutine Read_SAD_Chan(Ctrl, SAD_Chan)
 
    ! Check the NSolar and NThermal totals vs. the driver file values
    if (Ctrl%verbose) &
-        write(*,*) 'NSolar,Ctrl%Ind%NSolar: ',NSolar,Ctrl%Ind%NSolar
+        write(*,*) 'NSolar,Ctrl%Ind%NSolar: ', NSolar, Ctrl%Ind%NSolar
    if (NSolar /= Ctrl%Ind%NSolar) then
       write(*,*) 'ERROR: Read_SAD_Chan(): Error in NSolar value in driver file'
       stop DriverFileDataErr
    end if
 
    if (Ctrl%verbose) &
-        write(*,*) 'NThermal,Ctrl%Ind%NThermal: ',NThermal,Ctrl%Ind%NThermal
+        write(*,*) 'NThermal,Ctrl%Ind%NThermal: ', NThermal, Ctrl%Ind%NThermal
    if (NThermal /= Ctrl%Ind%NThermal) then
       write(*,*) 'ERROR: Read_SAD_Chan(): Error in NThermal value in driver file'
       stop DriverFileDataErr

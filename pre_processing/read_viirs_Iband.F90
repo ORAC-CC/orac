@@ -58,7 +58,7 @@ subroutine read_viirs_iband_dimensions(geo_file, n_across_track, n_along_track, 
 
    character(len=*),   intent(in)    :: geo_file
    integer(kind=lint), intent(out)   :: n_across_track, n_along_track
-   logical,                intent(in)    :: verbose
+   logical,            intent(in)    :: verbose
 
    integer(HID_T) :: file_id   ! File identifier
    integer(HID_T) :: dset_id   ! Dataset identifier
@@ -80,7 +80,7 @@ subroutine read_viirs_iband_dimensions(geo_file, n_across_track, n_along_track, 
            dset_id, error)
    end if
    if (error .ne. 0) then
-      print*,"Problem determining VIIRS I-band dimensions"
+      print*, "Problem determining VIIRS I-band dimensions"
       stop
    end if
 
@@ -170,7 +170,7 @@ subroutine read_viirs_iband(infile, geofile, imager_geolocation, imager_measurem
    real                             :: factors(8)
    character(len=path_length)       :: bandfile
    character(len=path_length)       :: banddir
-   character(len=path_length)       :: varname,facname
+   character(len=path_length)       :: varname, facname
    character(len=3)                 :: band
    character(len=path_length)       :: regex
 

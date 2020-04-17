@@ -121,18 +121,18 @@ real function get_snow_albedo(wvl)
    real, parameter  :: start_wvl = 0.35
    real, parameter  :: end_wvl = 13.9
    real, parameter  :: snow_wvl(40) = (/ &
-        0.35,0.40,0.45,0.50,0.60,0.65,0.70,0.75, &
-        0.80,0.90,1.00,1.10,1.20,1.30,1.40,1.50,1.60, &
-        1.70,1.80,1.90,2.00,2.10,2.20,2.30,2.40,2.50, &
-        2.60,2.70,2.80,2.90,3.00,3.10,3.20,3.30,3.70, &
-        3.80,10.91,11.92,12.90,13.90/)
+        0.35,  0.40,  0.45,  0.50,  0.60, 0.65, 0.70, 0.75, &
+        0.80,  0.90,  1.00,  1.10,  1.20, 1.30, 1.40, 1.50, 1.60, &
+        1.70,  1.80,  1.90,  2.00,  2.10, 2.20, 2.30, 2.40, 2.50, &
+        2.60,  2.70,  2.80,  2.90,  3.00, 3.10, 3.20, 3.30, 3.70, &
+        3.80, 10.91, 11.92, 12.90, 13.90/)
 
    real, parameter  :: snow_alb(40) = (/ &
-        0.97,0.98,0.99,0.98,0.98,0.96,0.95,0.93,0.90, &
-        0.84,0.72,0.73,0.54,0.47,0.42,0.04,0.07,0.14, &
-        0.20,0.07,0.01,0.03,0.11,0.08,0.04,0.03,0.03, &
-        0.01,0.00,0.01,0.02,0.04,0.03,0.02,0.02,0.01, &
-        0.01,0.02,0.03,0.03/)
+        0.97, 0.98, 0.99, 0.98, 0.98, 0.96, 0.95, 0.93, 0.90, &
+        0.84, 0.72, 0.73, 0.54, 0.47, 0.42, 0.04, 0.07, 0.14, &
+        0.20, 0.07, 0.01, 0.03, 0.11, 0.08, 0.04, 0.03, 0.03, &
+        0.01, 0.00, 0.01, 0.02, 0.04, 0.03, 0.02, 0.02, 0.01, &
+        0.01, 0.02, 0.03, 0.03/)
 
    if (wvl .lt. start_wvl) then
       write(*,*) "WARNING: Cannot interpolate snow albedo, wavelength of ", wvl, &
@@ -148,7 +148,7 @@ real function get_snow_albedo(wvl)
    end if
    prevp = 1
    nextp = 2
-   do i=1,39
+   do i = 1, 39
       if (snow_wvl(i) .le. wvl .and. snow_wvl(i+1) .ge. wvl) then
          prevp = i
          nextp = i+1
@@ -177,18 +177,18 @@ real function get_ice_albedo(wvl)
    real, parameter  :: start_wvl = 0.35
    real, parameter  :: end_wvl = 13.9
    real, parameter  :: snow_wvl(40) = (/ &
-        0.35,0.40,0.45,0.50,0.60,0.65,0.70,0.75, &
-        0.80,0.90,1.00,1.10,1.20,1.30,1.40,1.50,1.60, &
-        1.70,1.80,1.90,2.00,2.10,2.20,2.30,2.40,2.50, &
-        2.60,2.70,2.80,2.90,3.00,3.10,3.20,3.30,3.70, &
-        3.80,10.91,11.92,12.90,13.90/)
+        0.35,  0.40,  0.45,  0.50,  0.60, 0.65, 0.70, 0.75, &
+        0.80,  0.90,  1.00,  1.10,  1.20, 1.30, 1.40, 1.50, 1.60, &
+        1.70,  1.80,  1.90,  2.00,  2.10, 2.20, 2.30, 2.40, 2.50, &
+        2.60,  2.70,  2.80,  2.90,  3.00, 3.10, 3.20, 3.30, 3.70, &
+        3.80, 10.91, 11.92, 12.90, 13.90/)
 
    real, parameter  :: snow_alb(40) = (/ &
-        0.97,0.98,0.99,0.98,0.98,0.96,0.95,0.93,0.90, &
-        0.84,0.72,0.73,0.54,0.47,0.42,0.04,0.07,0.14, &
-        0.20,0.07,0.01,0.03,0.11,0.08,0.04,0.03,0.03, &
-        0.01,0.00,0.01,0.02,0.04,0.03,0.02,0.02,0.01, &
-        0.01,0.02,0.03,0.03/)
+        0.97, 0.98, 0.99, 0.98, 0.98, 0.96, 0.95, 0.93, 0.90, &
+        0.84, 0.72, 0.73, 0.54, 0.47, 0.42, 0.04, 0.07, 0.14, &
+        0.20, 0.07, 0.01, 0.03, 0.11, 0.08, 0.04, 0.03, 0.03, &
+        0.01, 0.00, 0.01, 0.02, 0.04, 0.03, 0.02, 0.02, 0.01, &
+        0.01, 0.02, 0.03, 0.03/)
 
    if (wvl .lt. start_wvl) then
       write(*,*) "WARNING: Cannot interpolate ice albedo, wavelength of ", wvl, &
@@ -204,7 +204,7 @@ real function get_ice_albedo(wvl)
    end if
    prevp = 1
    nextp = 2
-   do i=1,39
+   do i = 1, 39
       if (snow_wvl(i) .le. wvl .and. snow_wvl(i+1) .ge. wvl) then
          prevp = i
          nextp = i+1
@@ -238,7 +238,7 @@ subroutine correct_for_ice_snow(nise_path, imager_geolocation, surface, cyear, &
    character(len=*),           intent(in)    :: nise_path
    type(imager_geolocation_t), intent(in)    :: imager_geolocation
    type(surface_t),            intent(inout) :: surface
-   character(len=*),           intent(in)    :: cyear,cmonth,cday
+   character(len=*),           intent(in)    :: cyear, cmonth, cday
    type(channel_info_t),       intent(in)    :: channel_info
    logical,                    intent(in)    :: assume_full_path
    logical,                    intent(in)    :: include_full_brdf
@@ -247,8 +247,8 @@ subroutine correct_for_ice_snow(nise_path, imager_geolocation, surface, cyear, &
 
    ! Local variables
    real(kind=sreal), dimension(4)   :: snow_albedo, ice_albedo
-   integer(kind=1)                  :: north=0, south=0
-   integer(kind=4)                  :: stat,i,j,k,l,m,n,xi,yi,count
+   integer(kind=1)                  :: north = 0, south = 0
+   integer(kind=4)                  :: stat, i,j, k,l, m,n, xi, yi, count
    real(kind=dreal)                 :: easex, easey
    type(nise_t)                     :: nise
    real(kind=sreal), dimension(2,2) :: nise_tmp
@@ -282,27 +282,27 @@ subroutine correct_for_ice_snow(nise_path, imager_geolocation, surface, cyear, &
    read (cmonth,*) imonth
 
    ! Do we need to load both Northern and Southern Hemisphere data?
-   if (any(imager_geolocation%latitude .gt. 0)) north=1
-   if (any(imager_geolocation%latitude .le. 0)) south=1
+   if (any(imager_geolocation%latitude .gt. 0)) north = 1
+   if (any(imager_geolocation%latitude .le. 0)) south = 1
 
    ! Load ice/snow data
    if (assume_full_path) then
       nise_path_file = nise_path
    else
       if ((iyear .le. 2008) .or. (iyear .eq. 2009 .and. imonth .le. 8)) then
-         nise_path_file=trim(adjustl(nise_path))//'/'//'NISE_SSMIF13_'// &
-                        trim(adjustl(cyear))//trim(adjustl(cmonth))// &
-                        trim(adjustl(cday))//'.HDFEOS'
+         nise_path_file = trim(adjustl(nise_path))//'/'//'NISE_SSMIF13_'// &
+                          trim(adjustl(cyear))//trim(adjustl(cmonth))// &
+                          trim(adjustl(cday))//'.HDFEOS'
       else
-         nise_path_file=trim(adjustl(nise_path))//'/'//'NISE_SSMISF17_'// &
-                        trim(adjustl(cyear))//trim(adjustl(cmonth))// &
-                        trim(adjustl(cday))//'.HDFEOS'
+         nise_path_file = trim(adjustl(nise_path))//'/'//'NISE_SSMISF17_'// &
+                          trim(adjustl(cyear))//trim(adjustl(cmonth))// &
+                          trim(adjustl(cday))//'.HDFEOS'
       end if
    end if
    if (verbose) write(*,*)'nise_path_file: ', trim(nise_path_file)
 
-   source_atts%snow_file=trim(nise_path_file)
-   source_atts%sea_ice_file=trim(nise_path_file)
+   source_atts%snow_file = trim(nise_path_file)
+   source_atts%sea_ice_file = trim(nise_path_file)
 
    ! Check that the defined file exists and is readable
    inquire(file=trim(nise_path_file), exist=nise_file_exist, &
@@ -319,8 +319,8 @@ subroutine correct_for_ice_snow(nise_path, imager_geolocation, surface, cyear, &
 
    stat = read_nsidc_nise(nise_path_file, nise, north, south, verbose)
 
-   do i=imager_geolocation%startx,imager_geolocation%endx
-      do j=1,imager_geolocation%ny
+   do i = imager_geolocation%startx, imager_geolocation%endx
+      do j = 1, imager_geolocation%ny
 
          if (imager_geolocation%latitude (i,j) .eq. sreal_fill_value .or. &
               imager_geolocation%longitude(i,j) .eq. sreal_fill_value) &
@@ -359,8 +359,8 @@ subroutine correct_for_ice_snow(nise_path, imager_geolocation, surface, cyear, &
             ! * Assume the pole is always covered in ice
             ! * Interpolate the surrounding sea ice/snow cover for each coast
             !   point
-            do l=0,1
-               do k=0,1
+            do l = 0, 1
+               do k = 0, 1
                   ! Check if the current NISE pixel is flagged as coast
                   ! and that it is not at the edge of the data array.
                   if ((nise_tmp(k+1,l+1) .eq. 252.0) .and.           &
@@ -372,8 +372,8 @@ subroutine correct_for_ice_snow(nise_path, imager_geolocation, surface, cyear, &
                      ! Check the value of each neighbouring nise extent pixel
                      ! to the current coast one. If they aren't bad pixels
                      ! themselves, include them in the values to average.
-                     do m=-1,1
-                        do n=-1,1
+                     do m=-1, 1
+                        do n=-1, 1
                            if (nise%north%extent(xi+k+n,yi+l+m) .lt. 250.0) then
                               count = count+1
                               nise_tmp2(count) = &
@@ -399,7 +399,7 @@ subroutine correct_for_ice_snow(nise_path, imager_geolocation, surface, cyear, &
 
             call apply_ice_correction(real(easex-real(xi)), &
                  real(easey-real(yi)), nise_tmp, ice_albedo, snow_albedo, &
-                 surface%albedo(i,j,:),channel_info,surface%nise_mask(i,j), &
+                 surface%albedo(i,j,:), channel_info, surface%nise_mask(i,j), &
                  applied_flag)
 
          else ! Repeat for the Southern Hemisphere
@@ -430,8 +430,8 @@ subroutine correct_for_ice_snow(nise_path, imager_geolocation, surface, cyear, &
             ! * Assume the pole is always covered in snow
             ! * Interpolate the surrounding sea ice/snow cover for each coast
             !   point
-            do l=0,1
-               do k=0,1
+            do l = 0, 1
+               do k = 0, 1
                   ! Check if the current NISE pixel is flagged as coast
                   ! and that it is not at the edge of the data array.
                   if ((nise_tmp(k+1,l+1) .eq. 252.0) .and. &
@@ -443,8 +443,8 @@ subroutine correct_for_ice_snow(nise_path, imager_geolocation, surface, cyear, &
                      ! Check the value of each neighbouring nise extent pixel
                      ! to the current coast one. If they aren't bad pixels
                      ! themselves, include them in the values to average.
-                     do m=-1,1
-                        do n=-1,1
+                     do m=-1, 1
+                        do n=-1, 1
                            if (nise%south%extent(xi+k+n,yi+l+m) .lt. 250.0) then
                               count = count+1
                               nise_tmp2(count) = &
@@ -552,21 +552,21 @@ subroutine apply_ice_correction(x, y, nise, ice_albedo, snow_albedo, &
    if (snw_frac) then
       ! snow adjacent pixel assumed completely snowy
       applied_flag = .true.
-      do i=1,channel_info%nchannels_sw
+      do i = 1, channel_info%nchannels_sw
          pixel_ref(i) = snow_albedo(channel_info%map_ids_abs_to_snow_and_ice(i))
       end do
       nise_mask_flag = YES
    else if (pixel_ice(1).eq.1.) then
       ! completely icy
       applied_flag = .true.
-      do i=1,channel_info%nchannels_sw
+      do i = 1, channel_info%nchannels_sw
          pixel_ref(i) = ice_albedo (channel_info%map_ids_abs_to_snow_and_ice(i))
       end do
       nise_mask_flag = YES
    else if (pixel_ice(1).gt.0.) then
       ! somewhat icy
       applied_flag = .true.
-      do i=1,channel_info%nchannels_sw
+      do i = 1, channel_info%nchannels_sw
          if (pixel_ref(i) .ne. sreal_fill_value) pixel_ref(i) = &
               (1. - pixel_ice(1))*pixel_ref(i) + pixel_ice(1) * &
               ice_albedo(channel_info%map_ids_abs_to_snow_and_ice(i))
@@ -585,9 +585,9 @@ end subroutine apply_ice_correction
 !-------------------------------------------------------------------------------
 !------------------------------------------------------------------------------
 
-subroutine correct_for_ice_snow_ecmwf(ecmwf_HR_path,imager_geolocation, &
-     channel_info, imager_flags,preproc_dims,preproc_prtm,surface, &
-     include_full_brdf,source_atts,verbose)
+subroutine correct_for_ice_snow_ecmwf(ecmwf_HR_path, imager_geolocation, &
+     channel_info, imager_flags, preproc_dims, preproc_prtm, surface, &
+     include_full_brdf, source_atts, verbose)
 
    use channel_structures_m
    use constants_cloud_typing_pavolonis_m
@@ -614,8 +614,8 @@ subroutine correct_for_ice_snow_ecmwf(ecmwf_HR_path,imager_geolocation, &
 
    ! Local variables
    logical                        :: flag
-   integer(kind=4)                :: i,j,lon_i,lat_j
-   real(kind=sreal), dimension(:),allocatable :: tmp_albedo,tmp_snow,tmp_ice
+   integer(kind=4)                :: i, j,lon_i, lat_j
+   real(kind=sreal), dimension(:), allocatable :: tmp_albedo, tmp_snow, tmp_ice
    real(kind=sreal), dimension(4) :: snow_albedo, ice_albedo
    real(kind=sreal)               :: snow_threshold, ice_threshold
 
@@ -633,7 +633,7 @@ subroutine correct_for_ice_snow_ecmwf(ecmwf_HR_path,imager_geolocation, &
    source_atts%snow_file = trim(ecmwf_HR_path)
    source_atts%sea_ice_file = trim(ecmwf_HR_path)
 
-   do i=1,channel_info%nchannels_total
+   do i = 1, channel_info%nchannels_total
       if (channel_info%map_ids_abs_to_snow_and_ice(i) .le. 0) cycle
       tmp_snow(i) = get_snow_albedo(channel_info%channel_wl_abs(i))
       if (verbose) write(*,*) "Calculated snow albedo for", &
@@ -641,8 +641,8 @@ subroutine correct_for_ice_snow_ecmwf(ecmwf_HR_path,imager_geolocation, &
       tmp_ice(i) = ice_albedo(channel_info%map_ids_abs_to_snow_and_ice(i))
    end do
 
-   do j=1,imager_geolocation%ny
-      do i=imager_geolocation%startx,imager_geolocation%endx
+   do j = 1, imager_geolocation%ny
+      do i = imager_geolocation%startx, imager_geolocation%endx
 
          ! if geolocation isn't there, do nothing
          if (imager_geolocation%latitude(i,j) .eq. sreal_fill_value .or. &

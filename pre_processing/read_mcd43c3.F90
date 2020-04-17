@@ -50,19 +50,19 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, read_ws, read_bs, &
 
    ! Input variables
    character(len=*), intent(in) :: path_to_file
-   integer,                    intent(in) :: nbands
-   integer,                    intent(in) :: bands(:)
-   logical,                    intent(in) :: read_ws
-   logical,                    intent(in) :: read_bs
-   logical,                    intent(in) :: read_QC
-   logical,                    intent(in) :: verbose
+   integer,          intent(in) :: nbands
+   integer,          intent(in) :: bands(:)
+   logical,          intent(in) :: read_ws
+   logical,          intent(in) :: read_bs
+   logical,          intent(in) :: read_QC
+   logical,          intent(in) :: verbose
 
    ! Output variables
-   type(mcd43c3_t),           intent(out) :: mcd
-   integer*4,                 intent(out) :: stat
+   type(mcd43c3_t), intent(out) :: mcd
+   integer*4,       intent(out) :: stat
 
    ! Local variables
-   integer                    :: i,j,k
+   integer                    :: i, j, k
    integer*4                  :: fid, gid
    character(len=300)         :: gridlist
    integer*4                  :: gridlistlen
@@ -129,14 +129,14 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, read_ws, read_bs, &
 
    ! First off, find out what grids are in the file - there should only be one.
    ! We'll need it's name to "attach" to it and extract the data
-   if (verbose) write(*,*) 'Reading: ',trim(path_to_file)
+   if (verbose) write(*,*) 'Reading: ', trim(path_to_file)
    stat = gdinqgrid(path_to_file, gridlist, gridlistlen)
    if (stat .ne. 1) then
-      write(*,*) 'ERROR: read_mcd43c3(), problem with gdinqgrid(): ',stat
+      write(*,*) 'ERROR: read_mcd43c3(), problem with gdinqgrid(): ', stat
       stop error_stop_code
    end if
 
-   if (verbose) write(*,*) 'gridlist = ',trim(gridlist),' length = ',gridlistlen
+   if (verbose) write(*,*) 'gridlist = ', trim(gridlist), ' length = ', gridlistlen
 
    ! Open the datafile and get a file descriptor, and then attach to the grid
    ! (using the name returned above)
@@ -144,14 +144,14 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, read_ws, read_bs, &
 
    gid = gdattach(fid, trim(gridlist))
 
-   if (verbose) write(*,*) 'File and grid IDs are: ',fid, gid
+   if (verbose) write(*,*) 'File and grid IDs are: ', fid, gid
 
    ! Extract the projection and grid information from the supplied grid. For some
    ! reason C. Poulsen cannot run with this file called it does not seem critical
    ! so I have commented it out.
 !  stat = gdprojinfo(gid, proj, zone, sphere, param)
 !  if (stat .ne. 0) then
-!     write(*,*) 'ERROR: read_mcd43c3(), problem with gdprojinfo(): ',stat
+!     write(*,*) 'ERROR: read_mcd43c3(), problem with gdprojinfo(): ', stat
 !     stop error_stop_code
 !  end if
 
@@ -164,7 +164,7 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, read_ws, read_bs, &
 
    stat = gdgridinfo(gid, xdim, ydim, upleft, lowright)
    if (stat .ne. 0) then
-      write(*,*) 'ERROR: read_mcd43c3(), problem with gdgridinfo(): ',stat
+      write(*,*) 'ERROR: read_mcd43c3(), problem with gdgridinfo(): ', stat
       stop error_stop_code
    end if
 
@@ -172,8 +172,8 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, read_ws, read_bs, &
    ! can
    mcd%nlon = xdim
    mcd%nlat = ydim
-   mcd%lon_invdel = real(xdim,kind=8) / (lowright(1) - upleft(1))
-   mcd%lat_invdel = real(ydim,kind=8) / (lowright(2) - upleft(2))
+   mcd%lon_invdel = real(xdim, kind=8) / (lowright(1) - upleft(1))
+   mcd%lat_invdel = real(ydim, kind=8) / (lowright(2) - upleft(2))
    mcd%lon0 = upleft(1) + 0.5/mcd%lon_invdel
    mcd%lat0 = upleft(2) + 0.5/mcd%lat_invdel
 
@@ -197,7 +197,7 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, read_ws, read_bs, &
       stat = gdrdfld(gid, 'BRDF_Quality', start, stride, edge, &
                      mcd%quality)
       if (stat .ne. 0) then
-         write(*,*) 'ERROR: read_mcd43c3(), Error reading BRDF_Quality: ',stat
+         write(*,*) 'ERROR: read_mcd43c3(), Error reading BRDF_Quality: ', stat
          stop error_stop_code
       end if
 
@@ -212,14 +212,14 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, read_ws, read_bs, &
       stat = gdrdfld(gid, 'Percent_Inputs', start, stride, edge, &
                      mcd%percent_inputs)
       if (stat .ne. 0) then
-         write(*,*) 'ERROR: read_mcd43c3(), Error reading Percent_Inputs: ',stat
+         write(*,*) 'ERROR: read_mcd43c3(), Error reading Percent_Inputs: ', stat
          stop error_stop_code
       end if
 
       stat = gdrdfld(gid, 'Percent_Snow', start, stride, edge, &
                      mcd%percent_snow)
       if (stat .ne. 0) then
-         write(*,*) 'ERROR: read_mcd43c3(), Error reading Percent_Snow: ',stat
+         write(*,*) 'ERROR: read_mcd43c3(), Error reading Percent_Snow: ', stat
          stop error_stop_code
       end if
    else
@@ -252,7 +252,7 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, read_ws, read_bs, &
 
    fill = 32767
 
-   do i = 1,nbands
+   do i = 1, nbands
       ! Read the white sky albedo
       if (read_ws) then
          dataname = 'Albedo_WSA_' // trim(BandList(bands(i)))
@@ -260,22 +260,22 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, read_ws, read_bs, &
          if (verbose) write(*,*) 'Reading variable: ', trim(dataname)
          stat = gdrdfld(gid, trim(dataname), start, stride, edge, tmpdata)
          if (stat .ne. 0) then
-            write(*,*) 'ERROR: read_mcd43c3(), gdrdfld(): ',stat
+            write(*,*) 'ERROR: read_mcd43c3(), gdrdfld(): ', stat
             stop error_stop_code
          end if
 
          ! Extract the fill value
 !        stat = gdgetfill(gid, trim(dataname), fill)
 !        if (stat .ne. 0) then
-!           write(*,*) 'ERROR: read_mcd43c3(), gdgetfill(): ',stat
+!           write(*,*) 'ERROR: read_mcd43c3(), gdgetfill(): ', stat
 !           stop error_stop_code
 !        end if
 
          ! Use the scale and offset values defined (read?) above to convert the
          ! integer data into sensible floating point numbers, and replace the
          ! fill value
-         do j = 1,ydim
-            do k = 1,xdim
+         do j = 1, ydim
+            do k = 1, xdim
                if (tmpdata(k,j) .eq. fill) then
                   mcd%WSA(k,j,i) = sreal_fill_value
                else
@@ -293,22 +293,22 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, read_ws, read_bs, &
          write(*,*) 'Reading parameter: ', dataname
          stat = gdrdfld(gid, dataname, start, stride, edge, tmpdata)
          if (stat .ne. 0) then
-            write(*,*) 'ERROR: read_mcd43c3(), gdrdfld(): ',stat
+            write(*,*) 'ERROR: read_mcd43c3(), gdrdfld(): ', stat
             stop error_stop_code
          end if
 
          ! Extract the fill value
 !        stat = gdgetfill(gid, trim(dataname), fill)
 !        if (stat .ne. 0) then
-!           write(*,*) 'ERROR: read_mcd43c3(), gdgetfill(): ',stat
+!           write(*,*) 'ERROR: read_mcd43c3(), gdgetfill(): ', stat
 !           stop error_stop_code
 !        end if
 
          ! Use the scale and offset values defined (read?) above to convert the
          ! integer data into sensible floating point numbers, and replace the
          ! fill value
-         do j = 1,ydim
-            do k = 1,xdim
+         do j = 1, ydim
+            do k = 1, xdim
                if (tmpdata(k,j) .eq. fill) then
                   mcd%BSA(k,j,i) = sreal_fill_value
                else

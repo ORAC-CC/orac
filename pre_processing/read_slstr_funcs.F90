@@ -48,9 +48,9 @@ subroutine get_slstr_startend(imager_time, fname, ny)
 
    implicit none
 
-   type(imager_time_t),        intent(inout) :: imager_time
+   type(imager_time_t), intent(inout) :: imager_time
    character(len=*),    intent(in)    :: fname
-   integer,                    intent(in)    :: ny
+   integer,             intent(in)    :: ny
 
 
    integer(kind=sint)         :: year1, month1, day1
@@ -116,7 +116,7 @@ subroutine get_slstr_imnames(indir, inband, fname, fname_qa, bname, irradname)
    implicit none
 
    character(len=*), intent(in)  :: indir
-   integer,                     intent(in)  :: inband
+   integer,          intent(in)  :: inband
    character(len=*), intent(out) :: fname
    character(len=*), intent(out) :: fname_qa
    character(len=*), intent(out) :: bname
@@ -164,16 +164,16 @@ subroutine read_slstr_tirdata(indir, inband, outarr, sx, sy, nx, ny, inx, iny, &
    implicit none
 
    character(len=*), intent(in)  :: indir
-   integer,                    intent(in)  :: inband
-   integer,                    intent(in)  :: sx
-   integer,                    intent(in)  :: sy
-   integer,                    intent(in)  :: nx
-   integer,                    intent(in)  :: ny
-   integer,                    intent(in)  :: inx
-   integer,                    intent(in)  :: iny
-   integer,                    intent(in)  :: offset
-   integer,                    intent(in)  :: view
-   real(kind=sreal),           intent(out) :: outarr(:,:)
+   integer,          intent(in)  :: inband
+   integer,          intent(in)  :: sx
+   integer,          intent(in)  :: sy
+   integer,          intent(in)  :: nx
+   integer,          intent(in)  :: ny
+   integer,          intent(in)  :: inx
+   integer,          intent(in)  :: iny
+   integer,          intent(in)  :: offset
+   integer,          intent(in)  :: view
+   real(kind=sreal), intent(out) :: outarr(:,:)
 
    character(len=path_length) :: filename
    character(len=path_length) :: filename_qa
@@ -204,17 +204,17 @@ subroutine read_slstr_visdata(indir, inband, outarr, imager_angles, sx, sy, &
    implicit none
 
    character(len=*),      intent(in)  :: indir
-   integer,                     intent(in)  :: inband
-   integer,                     intent(in)  :: sx
-   integer,                     intent(in)  :: sy
-   integer,                     intent(in)  :: nx
-   integer,                     intent(in)  :: ny
-   integer,                     intent(in)  :: inx
-   integer,                     intent(in)  :: iny
-   integer,                     intent(in)  :: offset
-   integer,                     intent(in)  :: view
-   real(kind=sreal),            intent(out) :: outarr(:,:)
-   type(imager_angles_t),       intent(in)  :: imager_angles
+   integer,               intent(in)  :: inband
+   integer,               intent(in)  :: sx
+   integer,               intent(in)  :: sy
+   integer,               intent(in)  :: nx
+   integer,               intent(in)  :: ny
+   integer,               intent(in)  :: inx
+   integer,               intent(in)  :: iny
+   integer,               intent(in)  :: offset
+   integer,               intent(in)  :: view
+   real(kind=sreal),      intent(out) :: outarr(:,:)
+   type(imager_angles_t), intent(in)  :: imager_angles
 
    real, allocatable              :: data1(:,:)
    real(kind=sreal), allocatable  :: irradiances(:)
@@ -368,8 +368,8 @@ subroutine get_slstr_gridsize(indir, grid, nx, ny)
 
    character(len=*), intent(in)  :: indir
    character(len=*), intent(in)  :: grid
-   integer,                    intent(out) :: nx
-   integer,                    intent(out) :: ny
+   integer,          intent(out) :: nx
+   integer,          intent(out) :: ny
 
    character(len=path_length) :: geofile
    integer                    :: fid
@@ -391,13 +391,13 @@ subroutine slstr_get_interp(in_lons, tx_lons, nxt, nyt, nxi, nyi, interp)
 
    implicit none
 
-   integer,                    intent(in)  :: nxt
-   integer,                    intent(in)  :: nyt
-   integer,                    intent(in)  :: nxi
-   integer,                    intent(in)  :: nyi
-   real(kind=sreal),           intent(in)  :: in_lons(:,:) ! (nxi,nyi)
-   real(kind=sreal),           intent(in)  :: tx_lons(:,:) ! (nxt,nyt)
-   real(kind=sreal),           intent(out) :: interp(:,:,:) ! (nxi,nyi,3)
+   integer,          intent(in)  :: nxt
+   integer,          intent(in)  :: nyt
+   integer,          intent(in)  :: nxi
+   integer,          intent(in)  :: nyi
+   real(kind=sreal), intent(in)  :: in_lons(:,:) ! (nxi,nyi)
+   real(kind=sreal), intent(in)  :: tx_lons(:,:) ! (nxt,nyt)
+   real(kind=sreal), intent(out) :: interp(:,:,:) ! (nxi,nyi,3)
 
    integer          :: x, y
    real(kind=sreal) :: dists1(nxt), dists2(nxt)
@@ -532,15 +532,15 @@ subroutine read_slstr_satsol(indir, imager_angles, interp, txnx, txny, nx, ny, &
 
    implicit none
 
-   integer,                    intent(in)    :: view
-   integer,                    intent(in)    :: nx
-   integer,                    intent(in)    :: ny
-   integer,                    intent(in)    :: txnx
-   integer,                    intent(in)    :: txny
-   integer,                    intent(in)    :: startx
+   integer,               intent(in)    :: view
+   integer,               intent(in)    :: nx
+   integer,               intent(in)    :: ny
+   integer,               intent(in)    :: txnx
+   integer,               intent(in)    :: txny
+   integer,               intent(in)    :: startx
    character(len=*),      intent(in)    :: indir
    real(kind=sreal),      intent(in)    :: interp(:,:,:) ! (nx,ny,3)
-   type(imager_angles_t),      intent(inout) :: imager_angles
+   type(imager_angles_t), intent(inout) :: imager_angles
 
    character(len=path_length) :: geofile, vid
    integer                    :: fid
@@ -614,13 +614,13 @@ subroutine read_slstr_int_field(indir, file, procgrid, variable, &
 
    implicit none
 
-   character(len=*),           intent(in)  :: indir
-   character(len=*),           intent(in)  :: file
-   character(len=*),           intent(in)  :: procgrid
-   character(len=*),           intent(in)  :: variable
-   integer,                    intent(in)  :: startx
-   integer,                    intent(in)  :: starty
-   integer(kind=sint),         intent(out) :: data_arr(:,:)
+   character(len=*),   intent(in)  :: indir
+   character(len=*),   intent(in)  :: file
+   character(len=*),   intent(in)  :: procgrid
+   character(len=*),   intent(in)  :: variable
+   integer,            intent(in)  :: startx
+   integer,            intent(in)  :: starty
+   integer(kind=sint), intent(out) :: data_arr(:,:)
 
    character(len=path_length) :: geofile, var
    integer                    :: fid
@@ -644,13 +644,13 @@ subroutine read_slstr_field(indir, file, procgrid, variable, &
 
    implicit none
 
-   character(len=*),           intent(in)  :: indir
-   character(len=*),           intent(in)  :: file
-   character(len=*),           intent(in)  :: procgrid
-   character(len=*),           intent(in)  :: variable
-   integer,                    intent(in)  :: startx
-   integer,                    intent(in)  :: starty
-   real(kind=sreal),           intent(out) :: data_arr(:,:)
+   character(len=*), intent(in)  :: indir
+   character(len=*), intent(in)  :: file
+   character(len=*), intent(in)  :: procgrid
+   character(len=*), intent(in)  :: variable
+   integer,          intent(in)  :: startx
+   integer,          intent(in)  :: starty
+   real(kind=sreal), intent(out) :: data_arr(:,:)
 
    character(len=path_length) :: geofile, var
    integer                    :: fid

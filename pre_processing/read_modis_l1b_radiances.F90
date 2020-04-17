@@ -31,8 +31,8 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine read_modis_l1b_radiances(sensor,platform,path_to_l1b_file, &
-     imager_geolocation,imager_measurements,channel_info,verbose)
+subroutine read_modis_l1b_radiances(sensor, platform, path_to_l1b_file, &
+     imager_geolocation, imager_measurements, channel_info, verbose)
 
    use channel_structures_m
    use imager_structures_m
@@ -42,15 +42,15 @@ subroutine read_modis_l1b_radiances(sensor,platform,path_to_l1b_file, &
 
    include "hdf.f90"
 
-   integer(kind=lint) :: l1b_id, ix, jy,ich, err_code
+   integer(kind=lint) :: l1b_id, ix, jy, ich, err_code
 
    character(len=*),            intent(in)     :: sensor
    character(len=*),            intent(in)     :: platform
    character(len=*),            intent(in)     :: path_to_l1b_file
-   type(imager_geolocation_t),     intent(in)     :: imager_geolocation
-   type(imager_measurements_t),    intent(inout)  :: imager_measurements
-   type(channel_info_t),           intent(in)     :: channel_info
-   logical,                        intent(in)     :: verbose
+   type(imager_geolocation_t),  intent(in)     :: imager_geolocation
+   type(imager_measurements_t), intent(inout)  :: imager_measurements
+   type(channel_info_t),        intent(in)     :: channel_info
+   logical,                     intent(in)     :: verbose
 
    logical                       :: lrefl
    real(kind=sreal), allocatable :: temp(:,:)
@@ -63,13 +63,13 @@ subroutine read_modis_l1b_radiances(sensor,platform,path_to_l1b_file, &
    if (verbose) write(*,*) 'platform: ',         trim(platform)
    if (verbose) write(*,*) 'path_to_l1b_file: ', trim(path_to_l1b_file)
 
-   allocate(temp(imager_geolocation%startx:imager_geolocation%endx,&
+   allocate(temp(imager_geolocation%startx:imager_geolocation%endx, &
                  imager_geolocation%starty:imager_geolocation%endy))
 
    ! get file id
-   l1b_id = sfstart(path_to_l1b_file,DFACC_READ)
+   l1b_id = sfstart(path_to_l1b_file, DFACC_READ)
 
-   do ich=1,channel_info%nchannels_total
+   do ich = 1, channel_info%nchannels_total
       if (verbose) write(*,*) 'Read MODIS band: ', &
            channel_info%channel_ids_instr(ich)
 
@@ -78,19 +78,19 @@ subroutine read_modis_l1b_radiances(sensor,platform,path_to_l1b_file, &
            channel_info%channel_ids_instr(ich).eq.26
 
       call read_modis_l1b_radiances_2(l1b_id, &
-           channel_info%channel_ids_instr(ich),lrefl, &
-           imager_geolocation%startx,imager_geolocation%endx, &
-           imager_geolocation%starty,imager_geolocation%endy,temp,verbose)
+           channel_info%channel_ids_instr(ich), lrefl, &
+           imager_geolocation%startx, imager_geolocation%endx, &
+           imager_geolocation%starty, imager_geolocation%endy, temp, verbose)
 
       if (verbose) write(*,*) 'Band minimum and maximum values: ', &
-           minval(temp),maxval(temp)
+           minval(temp), maxval(temp)
 
       if (.not. lrefl) then
-         do ix=imager_geolocation%startx,imager_geolocation%endx
-            do jy=imager_geolocation%starty,imager_geolocation%endy
+         do ix = imager_geolocation%startx, imager_geolocation%endx
+            do jy = imager_geolocation%starty, imager_geolocation%endy
 
-               temp(ix,jy) = modis_bright(platform,temp(ix,jy), &
-                    channel_info%channel_ids_instr(ich),1)
+               temp(ix,jy) = modis_bright(platform, temp(ix,jy), &
+                    channel_info%channel_ids_instr(ich), 1)
 
             end do
          end do

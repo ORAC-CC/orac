@@ -52,8 +52,8 @@ subroutine get_trop_tp(preproc_prtm, preproc_dims)
    nz = preproc_dims%kdim
 
 
-   do x = preproc_dims%min_lon,preproc_dims%max_lon
-      do y = preproc_dims%min_lat,preproc_dims%max_lat
+   do x = preproc_dims%min_lon, preproc_dims%max_lon
+      do y = preproc_dims%min_lat, preproc_dims%max_lat
 
          k = nz
          t = preproc_prtm%temperature(x,y,:)
@@ -103,7 +103,7 @@ subroutine get_trop_tp(preproc_prtm, preproc_dims)
 end subroutine get_trop_tp
 
 subroutine get_cloud_emis(channel_info, imager_measurements, imager_geolocation, &
-     preproc_dims, preproc_geoloc, preproc_cld, preproc_prtm, imager_cloud, ecmwf,&
+     preproc_dims, preproc_geoloc, preproc_cld, preproc_prtm, imager_cloud, ecmwf, &
      sensor, verbose)
 
    use channel_structures_m
@@ -119,25 +119,25 @@ subroutine get_cloud_emis(channel_info, imager_measurements, imager_geolocation,
 
    implicit none
 
-   type(channel_info_t),         intent(in)    :: channel_info
-   type(imager_measurements_t),  intent(in)    :: imager_measurements
-   type(imager_geolocation_t),   intent(in)    :: imager_geolocation
-   type(preproc_dims_t),         intent(in)    :: preproc_dims
-   type(preproc_geoloc_t),       intent(in)    :: preproc_geoloc
-   type(preproc_cld_t),          intent(in)    :: preproc_cld
-   type(preproc_prtm_t),         intent(in)    :: preproc_prtm
-   type(imager_cloud_t),         intent(out)   :: imager_cloud
-   type(ecmwf_t),                intent(in)    :: ecmwf
-   character(len=*),            intent(in)    :: sensor
-   logical,                      intent(in)    :: verbose
+   type(channel_info_t),        intent(in)  :: channel_info
+   type(imager_measurements_t), intent(in)  :: imager_measurements
+   type(imager_geolocation_t),  intent(in)  :: imager_geolocation
+   type(preproc_dims_t),        intent(in)  :: preproc_dims
+   type(preproc_geoloc_t),      intent(in)  :: preproc_geoloc
+   type(preproc_cld_t),         intent(in)  :: preproc_cld
+   type(preproc_prtm_t),        intent(in)  :: preproc_prtm
+   type(imager_cloud_t),        intent(out) :: imager_cloud
+   type(ecmwf_t),               intent(in)  :: ecmwf
+   character(len=*),            intent(in)  :: sensor
+   logical,                     intent(in)  :: verbose
 
 #ifdef INCLUDE_SATWX
 
    real(kind=sreal), allocatable, dimension(:,:,:) :: indata
-   real(kind=sreal), allocatable, dimension(:,:) :: cldbt, clrbt
-   real(kind=sreal), allocatable, dimension(:,:) :: cldbtwv6, clrbtwv6
-   real(kind=sreal), allocatable, dimension(:,:) :: cldbtwv7, clrbtwv7
-   type(interpol_t), allocatable, dimension(:)   :: interp
+   real(kind=sreal), allocatable, dimension(:,:)   :: cldbt, clrbt
+   real(kind=sreal), allocatable, dimension(:,:)   :: cldbtwv6, clrbtwv6
+   real(kind=sreal), allocatable, dimension(:,:)   :: cldbtwv7, clrbtwv7
+   type(interpol_t), allocatable, dimension(:)     :: interp
    integer :: i, j
    integer :: chan_n, good_chan_lw, good_chan_all
    integer :: chanwv6_n, good_chanwv6_lw, good_chanwv6_all
@@ -240,16 +240,16 @@ subroutine get_cloud_emis(channel_info, imager_measurements, imager_geolocation,
    end do
 
    if (good_chan_all .lt. 0 .or. good_chan_lw .lt. 0) then
-      write(*,*) "ERROR: The longwave channel required for cloud emissivity (",chan_n,") is not available!"
+      write(*,*) "ERROR: The longwave channel required for cloud emissivity (", chan_n, ") is not available!"
       stop
    end if
    if (do_wv) then
       if (good_chanwv6_all .lt. 0 .or. good_chanwv6_lw .lt. 0) then
-         write(*,*) "ERROR: The water vapour channel required for cloud emissivity (",chanwv6_n,") is not available!"
+         write(*,*) "ERROR: The water vapour channel required for cloud emissivity (", chanwv6_n, ") is not available!"
          stop
       end if
       if (good_chanwv7_all .lt. 0 .or. good_chanwv7_lw .lt. 0) then
-         write(*,*) "ERROR: The water vapour channel required for cloud emissivity (",chanwv7_n,") is not available!"
+         write(*,*) "ERROR: The water vapour channel required for cloud emissivity (", chanwv7_n, ") is not available!"
          stop
       end if
    end if
@@ -264,7 +264,7 @@ subroutine get_cloud_emis(channel_info, imager_measurements, imager_geolocation,
 
          call bilinear_coef(preproc_geoloc%longitude, NLon, &
               preproc_geoloc%latitude, NLat, imager_geolocation%longitude(j,i), &
-              imager_geolocation%latitude(j,i), interp(1),Wrap)
+              imager_geolocation%latitude(j,i), interp(1), Wrap)
 
          ! Longwave channel (10.8 micron)
          call interp_field (preproc_cld%cloud_bt(:,:,good_chan_lw), &
@@ -305,7 +305,7 @@ subroutine get_cloud_emis(channel_info, imager_measurements, imager_geolocation,
    indata(:,:,2) = imager_measurements%data(:,:,good_chanwv6_all)
    indata(:,:,3) = imager_measurements%data(:,:,good_chanwv7_all)
 
-   call calc_cloud_emis(cldbt,clrbt,cldbtwv6,clrbtwv6,cldbtwv7,clrbtwv7,indata,imager_cloud%cloud_emis,extent,verbose)
+   call calc_cloud_emis(cldbt, clrbt, cldbtwv6, clrbtwv6, cldbtwv7, clrbtwv7, indata, imager_cloud%cloud_emis, extent, verbose)
 
         where (imager_geolocation%latitude .eq. sreal_fill_value)
                 imager_cloud%cloud_emis(:,:,1) = sreal_fill_value
@@ -354,13 +354,13 @@ subroutine do_cb_detect(channel_info, imager_measurements, imager_geolocation, &
 
    implicit none
 
-   type(channel_info_t),         intent(in)    :: channel_info
-   type(imager_measurements_t),  intent(in)    :: imager_measurements
-   type(imager_geolocation_t),   intent(in)    :: imager_geolocation
-   type(imager_cloud_t),         intent(in)    :: imager_cloud
-   type(imager_pavolonis_t),     intent(inout) :: imager_pavolonis
+   type(channel_info_t),        intent(in)    :: channel_info
+   type(imager_measurements_t), intent(in)    :: imager_measurements
+   type(imager_geolocation_t),  intent(in)    :: imager_geolocation
+   type(imager_cloud_t),        intent(in)    :: imager_cloud
+   type(imager_pavolonis_t),    intent(inout) :: imager_pavolonis
    character(len=*),            intent(in)    :: sensor
-   logical,                      intent(in)    :: verbose
+   logical,                     intent(in)    :: verbose
 
 #ifdef INCLUDE_SATWX
    integer                                      :: extent(4), n_chans

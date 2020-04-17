@@ -58,7 +58,7 @@ subroutine select_modis_albedo_file(cyear, cdoy, modis_surf_path, &
    character(len=*), intent(in)  :: cyear
    character(len=*), intent(in)  :: cdoy
    character(len=*), intent(in)  :: modis_surf_path
-   logical,                    intent(in)  :: include_full_brdf
+   logical,          intent(in)  :: include_full_brdf
    character(len=*), intent(out) :: modis_surf_path_file
 
    integer                                       :: nv

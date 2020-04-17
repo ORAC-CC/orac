@@ -35,7 +35,7 @@ module USGS_physiography_m
       integer(kind=byte), allocatable, dimension(:,:) :: lus
       integer(kind=sint), allocatable, dimension(:,:) :: dem, lsm
       !    Missing data value
-      real :: fill=sreal_fill_value
+      real :: fill = sreal_fill_value
    end type USGS_t
 
 contains
@@ -47,11 +47,11 @@ subroutine read_USGS_file(path_to_USGS_file, usgs, verbose)
    implicit none
 
    ! Input variables
-   character(len=*), intent(in) :: path_to_USGS_file
-   logical,                    intent(in) :: verbose
+   character(len=*), intent(in)  :: path_to_USGS_file
+   logical,          intent(in)  :: verbose
 
    ! Output variables
-   type(USGS_t), intent(out) :: usgs
+   type(USGS_t),     intent(out) :: usgs
 
    ! Local variables
    integer :: fid
@@ -92,12 +92,12 @@ subroutine read_predef_file_ahi(path_to_file, usgs, imager_geolocation, verbose)
    implicit none
 
    ! Input variables
-   character(len=*),           intent(in) :: path_to_file
-   type(imager_geolocation_t), intent(in) :: imager_geolocation
-   logical,                    intent(in) :: verbose
+   character(len=*),           intent(in)  :: path_to_file
+   type(imager_geolocation_t), intent(in)  :: imager_geolocation
+   logical,                    intent(in)  :: verbose
 
    ! Output variables
-   type(USGS_t), intent(out) :: usgs
+   type(USGS_t),               intent(out) :: usgs
 
    ! Local variables
    integer :: fid, start(2)
@@ -142,11 +142,11 @@ subroutine read_predef_file_sev(path_to_file, usgs, verbose)
    implicit none
 
    ! Input variables
-   character(len=*), intent(in) :: path_to_file
-   logical,                    intent(in) :: verbose
+   character(len=*), intent(in)  :: path_to_file
+   logical,          intent(in)  :: verbose
 
    ! Output variables
-   type(USGS_t), intent(out) :: usgs
+   type(USGS_t),     intent(out) :: usgs
 
    ! Local variables
    integer :: fid

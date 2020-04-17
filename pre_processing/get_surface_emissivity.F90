@@ -112,7 +112,7 @@ subroutine get_surface_emissivity(cyear, cdoy, cimss_emis_path, imager_flags, &
    integer,             allocatable, dimension(:)     :: ch_lw_index
    real(kind=sreal),    allocatable, dimension(:,:,:) :: transemis, summat
    real(kind=sreal),    allocatable, dimension(:,:)   :: counter
-   integer                                            :: i,j,k,lat,lon
+   integer                                            :: i, j, k, lat, lon
    integer                                            :: nland
    type(interpol_t)                                   :: interp
 
@@ -140,7 +140,7 @@ subroutine get_surface_emissivity(cyear, cdoy, cimss_emis_path, imager_flags, &
    allocate(ch_lw_index(n_chans))
    j = 1
    k = 1
-   do i=1, channel_info%nchannels_total
+   do i = 1, channel_info%nchannels_total
       if (channel_info%channel_lw_flag(i) == 1) then
          if (.true.) then
             ! Indices of desired channels wrt all channels
@@ -154,12 +154,12 @@ subroutine get_surface_emissivity(cyear, cdoy, cimss_emis_path, imager_flags, &
    end do
 
    if (verbose) write(*,*) 'n channels for land emissivity: ', &
-                           channel_info%nchannels_lw
+                            channel_info%nchannels_lw
 #ifndef __INTEL_COMPILER
    if (verbose) write(*,*) 'instrument bands for land emissivity: ', &
-                           channel_info%channel_ids_instr(ch_total_index)
+                            channel_info%channel_ids_instr(ch_total_index)
    if (verbose) write(*,*) 'instument wavelengths for land emissivity: ', &
-                           channel_info%channel_wl_abs(ch_total_index)
+                            channel_info%channel_wl_abs(ch_total_index)
 #endif
 
    ! Select correct modis file
@@ -186,14 +186,14 @@ subroutine get_surface_emissivity(cyear, cdoy, cimss_emis_path, imager_flags, &
    ! also a vaguely reasonable value for the water as well....
 
    allocate(transemis(emis%nlon,emis%nlat,emis%nbands))
-   do i=1,emis%nbands
+   do i = 1, emis%nbands
       transemis(:,:,i) = transpose(emis%emissivity(:,:,i))
    end do
    where(transemis .le. 0.0) transemis = 0.999
 
    ! Now interpolate this data onto the data grid
-   do j=1,imager_geolocation%ny
-      do i=imager_geolocation%startx,imager_geolocation%endx
+   do j = 1, imager_geolocation%ny
+      do i = imager_geolocation%startx, imager_geolocation%endx
          if (imager_flags%lsflag(i,j) .eq. 1 .and. &
               imager_geolocation%latitude(i,j) .ne. sreal_fill_value .and. &
               imager_geolocation%longitude(i,j) .ne. sreal_fill_value) then
@@ -201,7 +201,7 @@ subroutine get_surface_emissivity(cyear, cdoy, cimss_emis_path, imager_flags, &
                  emis%lat0, emis%lat_invdel, emis%nlat, &
                  imager_geolocation%longitude(i,j), &
                  imager_geolocation%latitude(i,j), interp)
-            do k=1,n_chans
+            do k = 1, n_chans
                call interp_field(transemis(:,:,k), &
                    surface%emissivity(i,j,ch_lw_index(k)), interp)
             end do
@@ -217,11 +217,11 @@ subroutine get_surface_emissivity(cyear, cdoy, cimss_emis_path, imager_flags, &
 
    counter = 0
    summat  = 0.
-   do j=1,emis%nlat
+   do j = 1, emis%nlat
       lat = floor((emis%lat0+(j-1)*emis%lat_del+preproc_dims%lat_offset)* &
             preproc_dims%dellat)+1
       if (lat.ge.preproc_dims%min_lat .and. lat.le.preproc_dims%max_lat) then
-         do i=1,emis%nlon
+         do i = 1, emis%nlon
             lon = floor((emis%lon0+(i-1)*emis%lon_del+preproc_dims%lon_offset)* &
                   preproc_dims%dellon)+1
             if (lon.ge.preproc_dims%min_lon .and. &
@@ -233,8 +233,8 @@ subroutine get_surface_emissivity(cyear, cdoy, cimss_emis_path, imager_flags, &
       end if
    end do
 
-   do j=preproc_dims%min_lat,preproc_dims%max_lat
-      do i=preproc_dims%min_lon,preproc_dims%max_lon
+   do j = preproc_dims%min_lat, preproc_dims%max_lat
+      do i = preproc_dims%min_lon, preproc_dims%max_lon
          if (counter(i,j) .gt. 0) then
             preproc_surf%emissivity(i,j,ch_lw_index) = summat(i,j,:) / &
                real(counter(i,j))
@@ -295,7 +295,7 @@ subroutine get_camel_emissivity(cyear, cmonth, camel_emis_path, imager_flags, &
    integer,             allocatable, dimension(:)     :: ch_lw_index
    real(kind=sreal),    allocatable, dimension(:,:,:) :: summat
    real(kind=sreal),    allocatable, dimension(:,:)   :: counter
-   integer                                            :: i,j,k,lat,lon
+   integer                                            :: i, j, k, lat, lon
    integer                                            :: nland
    type(interpol_t)                                   :: interp
 
@@ -304,7 +304,7 @@ subroutine get_camel_emissivity(cyear, cmonth, camel_emis_path, imager_flags, &
    if (verbose) write(*,*) 'cyear: ',           trim(cyear)
    if (verbose) write(*,*) 'cmonth: ',          trim(cmonth)
    if (verbose) write(*,*) 'camel emis_path: ', trim(camel_emis_path)
-   if (verbose) write(*,*) 'assume_full_path: ',assume_full_path
+   if (verbose) write(*,*) 'assume_full_path: ', assume_full_path
 
 
    ! Count the number of land and sea pixels, using the imager land/sea mask
@@ -323,7 +323,7 @@ subroutine get_camel_emissivity(cyear, cmonth, camel_emis_path, imager_flags, &
    allocate(ch_lw_index(n_chans))
    j = 1
    k = 1
-   do i=1, channel_info%nchannels_total
+   do i = 1, channel_info%nchannels_total
       if (channel_info%channel_lw_flag(i) == 1) then
          if (.true.) then
             ! Indices of desired channels wrt all channels
@@ -337,12 +337,12 @@ subroutine get_camel_emissivity(cyear, cmonth, camel_emis_path, imager_flags, &
    end do
 
    if (verbose) write(*,*) 'n channels for land emissivity: ', &
-                           channel_info%nchannels_lw
+                            channel_info%nchannels_lw
 #ifndef __INTEL_COMPILER
    if (verbose) write(*,*) 'instrument bands for land emissivity: ', &
-                           channel_info%channel_ids_instr(ch_total_index)
+                            channel_info%channel_ids_instr(ch_total_index)
    if (verbose) write(*,*) 'instument wavelengths for land emissivity: ', &
-                           channel_info%channel_wl_abs(ch_total_index)
+                            channel_info%channel_wl_abs(ch_total_index)
 #endif
 
    ! Select correct modis file
@@ -371,8 +371,8 @@ subroutine get_camel_emissivity(cyear, cmonth, camel_emis_path, imager_flags, &
    where(emis%emissivity .le. 0.0) emis%emissivity = 0.999
 
    ! Now interpolate this data onto the data grid
-   do j=1,imager_geolocation%ny
-      do i=imager_geolocation%startx,imager_geolocation%endx
+   do j = 1, imager_geolocation%ny
+      do i = imager_geolocation%startx, imager_geolocation%endx
          if (imager_flags%lsflag(i,j) .eq. 1 .and. &
               imager_geolocation%latitude(i,j) .ne. sreal_fill_value .and. &
               imager_geolocation%longitude(i,j) .ne. sreal_fill_value) then
@@ -380,7 +380,7 @@ subroutine get_camel_emissivity(cyear, cmonth, camel_emis_path, imager_flags, &
                  emis%lat0, emis%lat_invdel, emis%nlat, &
                  imager_geolocation%longitude(i,j), &
                  imager_geolocation%latitude(i,j), interp)
-            do k=1,n_chans
+            do k = 1, n_chans
                call interp_field(emis%emissivity(:,:,k), &
                    surface%emissivity(i,j,ch_lw_index(k)), interp)
             end do
@@ -396,11 +396,11 @@ subroutine get_camel_emissivity(cyear, cmonth, camel_emis_path, imager_flags, &
 
    counter = 0
    summat  = 0.
-   do j=1,emis%nlat
+   do j = 1, emis%nlat
       lat = floor((emis%lat0+(j-1)*emis%lat_del+preproc_dims%lat_offset)* &
             preproc_dims%dellat)+1
       if (lat.ge.preproc_dims%min_lat .and. lat.le.preproc_dims%max_lat) then
-         do i=1,emis%nlon
+         do i = 1, emis%nlon
             lon = floor((emis%lon0+(i-1)*emis%lon_del+preproc_dims%lon_offset)* &
                   preproc_dims%dellon)+1
             if (lon.ge.preproc_dims%min_lon .and. &
@@ -412,8 +412,8 @@ subroutine get_camel_emissivity(cyear, cmonth, camel_emis_path, imager_flags, &
       end if
    end do
 
-   do j=preproc_dims%min_lat,preproc_dims%max_lat
-      do i=preproc_dims%min_lon,preproc_dims%max_lon
+   do j = preproc_dims%min_lat, preproc_dims%max_lat
+      do i = preproc_dims%min_lon, preproc_dims%max_lon
          if (counter(i,j) .gt. 0) then
             preproc_surf%emissivity(i,j,ch_lw_index) = summat(i,j,:) / &
                real(counter(i,j))

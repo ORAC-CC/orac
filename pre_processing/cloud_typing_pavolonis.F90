@@ -273,27 +273,27 @@ subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
 
    ! Input variables
 
-   type(channel_info_t),           intent(in)    :: channel_info
+   type(channel_info_t),        intent(in)    :: channel_info
    character(len=*),            intent(in)    :: sensor
-   type(surface_t),                intent(in)    :: surface
-   type(imager_flags_t),           intent(in)    :: imager_flags
-   type(imager_angles_t),          intent(in)    :: imager_angles
-   type(imager_geolocation_t),     intent(in)    :: imager_geolocation
-   type(imager_measurements_t),    intent(inout) :: imager_measurements
-   type(imager_pavolonis_t),       intent(inout) :: imager_pavolonis
-   type(ecmwf_t),                  intent(in)    :: ecmwf
+   type(surface_t),             intent(in)    :: surface
+   type(imager_flags_t),        intent(in)    :: imager_flags
+   type(imager_angles_t),       intent(in)    :: imager_angles
+   type(imager_geolocation_t),  intent(in)    :: imager_geolocation
+   type(imager_measurements_t), intent(inout) :: imager_measurements
+   type(imager_pavolonis_t),    intent(inout) :: imager_pavolonis
+   type(ecmwf_t),               intent(in)    :: ecmwf
    character(len=*),            intent(in)    :: platform
-   integer(kind=sint),             intent(in)    :: doy
-   logical,                        intent(in)    :: do_ironly
-   logical,                        intent(inout) :: do_spectral_response_correction
-   logical,                        intent(in)    :: verbose
+   integer(kind=sint),          intent(in)    :: doy
+   logical,                     intent(in)    :: do_ironly
+   logical,                     intent(inout) :: do_spectral_response_correction
+   logical,                     intent(in)    :: verbose
 
    ! Local variables
 
    integer :: i, ii, j, cview, start_line, end_line, start_pix, end_pix, npix, &
               platform_index
    real                                              :: t4_filter_thresh
-   real(kind=sreal),   allocatable, dimension(:,:)   :: skint,snow_depth,sea_ice_cover
+   real(kind=sreal),   allocatable, dimension(:,:)   :: skint, snow_depth, sea_ice_cover
    real(kind=sreal),   allocatable, dimension(:,:,:) :: imager_data
    integer(kind=byte), allocatable, dimension(:,:)   :: snow_ice_mask
    type(interpol_t),   allocatable, dimension(:)     :: interp
@@ -359,20 +359,20 @@ subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
 
    allocate(skint(imager_geolocation%startx:imager_geolocation%endx, &
                        1:imager_geolocation%ny))
-   skint=sreal_fill_value
+   skint = sreal_fill_value
    allocate(snow_depth(imager_geolocation%startx:imager_geolocation%endx, &
                        1:imager_geolocation%ny))
-   snow_depth=sreal_fill_value
+   snow_depth = sreal_fill_value
    allocate(sea_ice_cover(imager_geolocation%startx:imager_geolocation%endx, &
                           1:imager_geolocation%ny))
-   sea_ice_cover=sreal_fill_value
+   sea_ice_cover = sreal_fill_value
    allocate(snow_ice_mask(imager_geolocation%startx:imager_geolocation%endx, &
                           1:imager_geolocation%ny))
-   snow_ice_mask=byte_fill_value
+   snow_ice_mask = byte_fill_value
    allocate(interp(1))
 
-   do i=1,imager_geolocation%ny
-      do j=imager_geolocation%startx,imager_geolocation%endx
+   do i = 1, imager_geolocation%ny
+      do j = imager_geolocation%startx, imager_geolocation%endx
          call bilinear_coef(ecmwf%lon, ecmwf%xdim, ecmwf%lat, &
               ecmwf%ydim, imager_geolocation%longitude(j,i), &
               imager_geolocation%latitude(j,i), interp(1))
@@ -420,7 +420,7 @@ subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
                            1:imager_geolocation%ny,1:channel_info%nchannels_total))
    end if
 
-   v_loop: do cview=1,imager_angles%nviews
+   v_loop: do cview = 1, imager_angles%nviews
       ! Determine channel indexes based on instrument channel number
       ch1 = 0
       ch2 = 0
@@ -430,242 +430,242 @@ subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
       ch6 = 0
       if (trim(adjustl(sensor)) .eq. 'AATSR' .or. &
           trim(adjustl(sensor)) .eq. 'ATSR2') then
-         do i=1,channel_info%nchannels_total
+         do i = 1, channel_info%nchannels_total
             ii = channel_info%map_ids_channel_to_sw(i)
             ! If we're not looking at the second view then assume it's the first
             ! (just in case somehow cview = 3+)
             if (cview .eq. 1) then
                select case (channel_info%channel_ids_instr(i))
                case(2)
-                  ch1=i
-                  sw1=ii
+                  ch1 = i
+                  sw1 = ii
                case(3)
-                  ch2=i
-                  sw2=ii
+                  ch2 = i
+                  sw2 = ii
                case(4)
-                  ch3=i
-                  sw3=ii
+                  ch3 = i
+                  sw3 = ii
                case(5)
-                  ch4=i
+                  ch4 = i
                case(6)
-                  ch5=i
+                  ch5 = i
                case(7)
-                  ch6=i
+                  ch6 = i
                end select
             else
                select case (channel_info%channel_ids_instr(i))
                case(9)
-                  ch1=i
-                  sw1=ii
+                  ch1 = i
+                  sw1 = ii
                case(10)
-                  ch2=i
-                  sw2=ii
+                  ch2 = i
+                  sw2 = ii
                case(11)
-                  ch3=i
-                  sw3=ii
+                  ch3 = i
+                  sw3 = ii
                case(12)
-                  ch4=i
+                  ch4 = i
                case(13)
-                  ch5=i
+                  ch5 = i
                case(14)
-                  ch6=i
+                  ch6 = i
                end select
             end if
          end do
       else if (trim(adjustl(sensor)) .eq. 'ABI') then
-         do i=1,channel_info%nchannels_total
+         do i = 1, channel_info%nchannels_total
             ii = channel_info%map_ids_channel_to_sw(i)
             select case (channel_info%channel_ids_instr(i))
             case(2)
-               ch1=i
-               sw1=ii
+               ch1 = i
+               sw1 = ii
             case(3)
-               ch2=i
-               sw2=ii
+               ch2 = i
+               sw2 = ii
             case(5)
-               ch3=i
-               sw3=ii
+               ch3 = i
+               sw3 = ii
             case(7)
-               ch4=i
+               ch4 = i
             case(14)
-               ch5=i
+               ch5 = i
             case(15)
-               ch6=i
+               ch6 = i
             end select
          end do
       else if (trim(adjustl(sensor)) .eq. 'AGRI') then
-         do i=1,channel_info%nchannels_total
+         do i = 1, channel_info%nchannels_total
             ii = channel_info%map_ids_channel_to_sw(i)
             select case (channel_info%channel_ids_instr(i))
             case(2)
-               ch1=i
-               sw1=ii
+               ch1 = i
+               sw1 = ii
             case(3)
-               ch2=i
-               sw2=ii
+               ch2 = i
+               sw2 = ii
             case(5)
-               ch3=i
-               sw3=ii
+               ch3 = i
+               sw3 = ii
             case(7)
-               ch4=i
+               ch4 = i
             case(11)
-               ch5=i
+               ch5 = i
             case(12)
-               ch6=i
+               ch6 = i
             end select
          end do
       else if (trim(adjustl(sensor)) .eq. 'AHI') then
-         do i=1,channel_info%nchannels_total
+         do i = 1, channel_info%nchannels_total
             ii = channel_info%map_ids_channel_to_sw(i)
             select case (channel_info%channel_ids_instr(i))
             case(3)
-               ch1=i
-               sw1=ii
+               ch1 = i
+               sw1 = ii
             case(4)
-               ch2=i
-               sw2=ii
+               ch2 = i
+               sw2 = ii
             case(5)
-               ch3=i
-               sw3=ii
+               ch3 = i
+               sw3 = ii
             case(7)
-               ch4=i
+               ch4 = i
             case(14)
-               ch5=i
+               ch5 = i
             case(15)
-               ch6=i
+               ch6 = i
             end select
          end do
       else if (trim(adjustl(sensor)) .eq. 'AVHRR') then
-         do i=1,channel_info%nchannels_total
+         do i = 1, channel_info%nchannels_total
             ii = channel_info%map_ids_channel_to_sw(i)
             select case (channel_info%channel_ids_instr(i))
             case(1)
-               ch1=i
-               sw1=ii
+               ch1 = i
+               sw1 = ii
             case(2)
-               ch2=i
-               sw2=ii
+               ch2 = i
+               sw2 = ii
             case(3)
-               ch3=i
-               sw3=ii
+               ch3 = i
+               sw3 = ii
             case(4)
-               ch4=i
+               ch4 = i
             case(5)
-               ch5=i
+               ch5 = i
             case(6)
-               ch6=i
+               ch6 = i
             end select
          end do
       else if (trim(adjustl(sensor)) .eq. 'MODIS') then
-         do i=1,channel_info%nchannels_total
+         do i = 1, channel_info%nchannels_total
             ii = channel_info%map_ids_channel_to_sw(i)
             select case (channel_info%channel_ids_instr(i))
             case(1)
-               ch1=i
-               sw1=ii
+               ch1 = i
+               sw1 = ii
             case(2)
-               ch2=i
-               sw2=ii
+               ch2 = i
+               sw2 = ii
             case(6)
-               ch3=i
-               sw3=ii
+               ch3 = i
+               sw3 = ii
             case(20)
-               ch4=i
+               ch4 = i
             case(31)
-               ch5=i
+               ch5 = i
             case(32)
-               ch6=i
+               ch6 = i
             end select
          end do
       else if (trim(adjustl(sensor)) .eq. 'SEVIRI') then
-         do i=1,channel_info%nchannels_total
+         do i = 1, channel_info%nchannels_total
             ii = channel_info%map_ids_channel_to_sw(i)
             select case (channel_info%channel_ids_instr(i))
             case(1)
-               ch1=i
-               sw1=ii
+               ch1 = i
+               sw1 = ii
             case(2)
-               ch2=i
-               sw2=ii
+               ch2 = i
+               sw2 = ii
             case(3)
-               ch3=i
-               sw3=ii
+               ch3 = i
+               sw3 = ii
             case(4)
-               ch4=i
+               ch4 = i
             case(9)
-               ch5=i
+               ch5 = i
             case(10)
-               ch6=i
+               ch6 = i
             end select
          end do
       else if (trim(adjustl(sensor)) .eq. 'SLSTR') then
-         do i=1,channel_info%nchannels_total
+         do i = 1, channel_info%nchannels_total
             ii = channel_info%map_ids_channel_to_sw(i)
             select case (channel_info%channel_ids_instr(i))
             case(2)
-               ch1=i
-               sw1=ii
+               ch1 = i
+               sw1 = ii
             case(3)
-               ch2=i
-               sw2=ii
+               ch2 = i
+               sw2 = ii
             case(5)
-               ch3=i
-               sw3=ii
+               ch3 = i
+               sw3 = ii
             case(7)
-               ch4=i
+               ch4 = i
             case(8)
-               ch5=i
+               ch5 = i
             case(9)
-               ch6=i
+               ch6 = i
             end select
          end do
       else if (trim(adjustl(sensor)) .eq. 'VIIRSI') then
-         do i=1,channel_info%nchannels_total
+         do i = 1, channel_info%nchannels_total
             ii = channel_info%map_ids_channel_to_sw(i)
             select case (channel_info%channel_ids_instr(i))
             case(1)
-               ch1=i
-               sw1=ii
+               ch1 = i
+               sw1 = ii
             case(2)
-               ch2=i
-               sw2=ii
+               ch2 = i
+               sw2 = ii
             case(3)
-               ch3=i
-               sw3=ii
+               ch3 = i
+               sw3 = ii
             case(4)
-               ch4=i
+               ch4 = i
             case(5)
-               ch5=i
-               ch6=i
+               ch5 = i
+               ch6 = i
             end select
          end do
       else if (trim(adjustl(sensor)) .eq. 'VIIRSM') then
-         do i=1,channel_info%nchannels_total
+         do i = 1, channel_info%nchannels_total
             ii = channel_info%map_ids_channel_to_sw(i)
             select case (channel_info%channel_ids_instr(i))
             case(5)
-               ch1=i
-               sw1=ii
+               ch1 = i
+               sw1 = ii
             case(7)
-               ch2=i
-               sw2=ii
+               ch2 = i
+               sw2 = ii
             case(10)
-               ch3=i
-               sw3=ii
+               ch3 = i
+               sw3 = ii
             case(12)
-               ch4=i
+               ch4 = i
             case(15)
-               ch5=i
+               ch5 = i
             case(16)
-               ch6=i
+               ch6 = i
             end select
          end do
       end if
 
       if (do_ironly) then
-         ch1=99
-         ch2=99
-         ch3=99
+         ch1 = 99
+         ch2 = 99
+         ch3 = 99
       end if
 
       if (.not. (ch1 .ne. 0 .and. ch2 .ne. 0 .and. (ch3 .ne. 0 .or. ch4 .ne. 0) &
@@ -756,10 +756,10 @@ subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
             coszen = cos(imager_angles%satzen(i,j,cview) * d2r)
 
             ! Determine box for filtering
-            start_line = max(1,j - n_box)
-            end_line   = min(imager_geolocation%ny,j + n_box)
-            start_pix  = max(imager_geolocation%startx,i - n_box)
-            end_pix    = min(imager_geolocation%endx,i + n_box)
+            start_line = max(1, j - n_box)
+            end_line   = min(imager_geolocation%ny, j + n_box)
+            start_pix  = max(imager_geolocation%startx, i - n_box)
+            end_pix    = min(imager_geolocation%endx, i + n_box)
             npix       = ((end_line - start_line) + 1)*((end_pix - start_pix) + 1)
 
 
@@ -1003,10 +1003,10 @@ subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
                   imager_measurements%data(i,j,ch5)
 
    ! Calculate spatial stddev of BT(11)
-   s_i = max(i-1,imager_geolocation%startx)
-   e_i = min(i+1,imager_geolocation%endx)
-   s_j = max(j-1,1)
-   e_j = min(j+1,imager_geolocation%ny)
+   s_i = max(i-1, imager_geolocation%startx)
+   e_i = min(i+1, imager_geolocation%endx)
+   s_j = max(j-1, 1)
+   e_j = min(j+1, imager_geolocation%ny)
    NNN = ( e_i - s_i +1) * ( e_j- s_j +1)
 
    MN_BT11 = SUM(imager_measurements%DATA(s_i:e_i,s_j:e_j,ch5)  ) / NNN
@@ -1052,9 +1052,9 @@ subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
    solzen  = imager_angles%solzen(i,j,cview)
 
    !-- Determine the viewing zenith angle bin.
-   index1 = min(7,max(1,int(imager_angles%SATZEN(i,j,cview)/10.0) + 1))
+   index1 = min(7, max(1, int(imager_angles%SATZEN(i,j,cview)/10.0) + 1))
    !-- Determine the solar zenith angle bin.
-   index2 = min(8,max(1,int(imager_angles%SOLZEN(i,j,cview)/10.0) + 1))
+   index2 = min(8, max(1, int(imager_angles%SOLZEN(i,j,cview)/10.0) + 1))
 
 
    ! If we're not using any VIS channels then fill ch1 and ch2
@@ -1093,7 +1093,7 @@ subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
        D1(index1)*imager_measurements%DATA(i,j,ch5)**3 + &
        E1(index1)*imager_measurements%DATA(i,j,ch5)**4
 
-   BTD1112_CIRRUS_THRES = max( 1.0,min(4.0,BTD1112_CIRRUS_THRES) )
+   BTD1112_CIRRUS_THRES = max( 1.0, min(4.0, BTD1112_CIRRUS_THRES) )
 
    desertflag = .false.
    if (imager_pavolonis%sfctype(i,j) == DESERT_FLAG) desertflag = .true.
@@ -1206,7 +1206,7 @@ subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
    ! introduce 2nd glint test / also possible dust using spatial
    ! variabilty in channel5
    if ( ( BTD_Ch4_Ch5 .ge. 0. ) .and. ( BTD_Ch4_Ch5 .le. 3. ) .and. &
-        ( ch2v/max(ch1v,0.01) .ge. 0.6 ) .and. (ch2v/max(ch1v,0.01) .le. 1. ) .and. &
+        ( ch2v/max(ch1v, 0.01) .ge. 0.6 ) .and. (ch2v/max(ch1v, 0.01) .le. 1. ) .and. &
         ( imager_measurements%DATA(i,j,ch5) .gt. 290.0 ) .and. &
         ( SD_BT11 .lt. 0.25 ) ) then
            imager_pavolonis%CLDMASK(i,j,cview) = CLEAR
@@ -1590,7 +1590,7 @@ subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
            D2(index1)*BTD_Ch4_Ch5**3 + &
            E2(index1)*BTD_Ch4_Ch5**4
 
-      BTD3811_PHASE_THRES = min(8.0,max(-2.0,BTD3811_PHASE_THRES))
+      BTD3811_PHASE_THRES = min(8.0, max(-2.0, BTD3811_PHASE_THRES))
 
       !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
       ! Set the 3.75 um thresholds used for phase determination.
@@ -1839,7 +1839,7 @@ end subroutine cloud_type_pixel
 !      from being typed as cirrus
 ! =====================================================================
 
-!   subroutine CLOUD_RETYPE(jmin,numj,cld_type_array)
+!   subroutine CLOUD_RETYPE(jmin, numj, cld_type_array)
 
 !     use COMMON_CONSTANTS
 !     use IMAGER_STRUCTURES
@@ -1943,15 +1943,15 @@ function plank_inv(input_platform, T)
 
    ! input variable
    character(len=*), intent(in) :: input_platform
-   real(kind=sreal),intent(in) :: T ! Kelvin
+   real(kind=sreal), intent(in) :: T ! Kelvin
 
    ! return variable
    real(kind=sreal), dimension(2) :: plank_inv !out
 
    ! local variables
    integer(kind=byte) :: index ! index of row containing platform-specific coefficients
-   real(kind=sreal),parameter :: Planck_C1 = 1.19104E-5 ! 2hc^2 in mW m-2 sr-1 (cm-1)-4
-   real(kind=sreal),parameter :: Planck_C2 = 1.43877 ! hc/k  in K (cm-1)-1
+   real(kind=sreal), parameter :: Planck_C1 = 1.19104E-5 ! 2hc^2 in mW m-2 sr-1 (cm-1)-4
+   real(kind=sreal), parameter :: Planck_C2 = 1.43877 ! hc/k  in K (cm-1)-1
    real(kind=sreal), dimension(4,25) :: coefficients ! coefficients containing variables
 
    ! select appropriate row of coefficient values

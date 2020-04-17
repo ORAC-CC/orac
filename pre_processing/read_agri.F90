@@ -49,9 +49,9 @@ subroutine read_agri_dimensions(fname, n_across_track, n_along_track, verbose)
 
    implicit none
 
-   character(len=*),   intent(in)    :: fname
-   integer(kind=lint), intent(out)   :: n_across_track, n_along_track
-   logical,                intent(in)    :: verbose
+   character(len=*),   intent(in)  :: fname
+   integer(kind=lint), intent(out) :: n_across_track, n_along_track
+   logical,            intent(in)  :: verbose
 
    integer :: fid
 
@@ -141,7 +141,7 @@ subroutine compute_time(ncid, imager_time, ny)
    slo = (jd2-jd1)/ny
 
    ! Put correct julian date into each location in the time array
-   do j=1,ny
+   do j = 1, ny
       imager_time%time(:,j) = jd1 + (slo*float(j))
    end do
 

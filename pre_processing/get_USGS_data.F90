@@ -25,7 +25,7 @@
 
 subroutine get_USGS_data(path_to_USGS_file, imager_flags, imager_geolocation, &
      usgs, assume_full_paths, use_l1_land_mask, source_atts, use_predef_lsm, &
-     sensor,verbose)
+     sensor, verbose)
 
    use constants_cloud_typing_pavolonis_m
    use imager_structures_m
@@ -36,20 +36,20 @@ subroutine get_USGS_data(path_to_USGS_file, imager_flags, imager_geolocation, &
    implicit none
 
    character(len=*),           intent(in)    :: path_to_USGS_file
-   type(imager_flags_t),        intent(inout) :: imager_flags
-   type(imager_geolocation_t),  intent(inout) :: imager_geolocation
-   logical,                     intent(in)    :: assume_full_paths
-   logical,                     intent(in)    :: use_l1_land_mask
-   type(source_attributes_t),   intent(inout) :: source_atts
-   logical,                     intent(in)    :: verbose
-   type(usgs_t),                intent(out)   :: usgs
-   logical,                     intent(in)    :: use_predef_lsm
+   type(imager_flags_t),       intent(inout) :: imager_flags
+   type(imager_geolocation_t), intent(inout) :: imager_geolocation
+   logical,                    intent(in)    :: assume_full_paths
+   logical,                    intent(in)    :: use_l1_land_mask
+   type(source_attributes_t),  intent(inout) :: source_atts
+   logical,                    intent(in)    :: verbose
+   type(usgs_t),               intent(out)   :: usgs
+   logical,                    intent(in)    :: use_predef_lsm
    character(len=*),           intent(in)    :: sensor
 
    logical                          :: USGS_file_exist
    character(len=7)                 :: USGS_file_read
-   integer(kind=4)                  :: i,j
-   integer(kind=sint), dimension(2) :: nearest_xy,maxcoord
+   integer(kind=4)                  :: i, j
+   integer(kind=sint), dimension(2) :: nearest_xy, maxcoord
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering get_USGS_data()'
 
    ! Check that the defined file exists and is readable
@@ -65,16 +65,16 @@ subroutine get_USGS_data(path_to_USGS_file, imager_flags, imager_geolocation, &
       stop error_stop_code
    end if
 
-   source_atts%usgs_file=path_to_USGS_file
+   source_atts%usgs_file = path_to_USGS_file
 
    ! Check if we're using the default USGS file or something else
    if (use_predef_lsm) then
       ! Read the data themselves, sensor dependent as SEV has a different scan geometry
       if (index(sensor, "SEVIRI") .gt. 0) then
          call read_predef_file_sev(path_to_USGS_file, usgs, verbose)
-         imager_geolocation%dem = usgs%dem(imager_geolocation%startx:imager_geolocation%endx,&
+         imager_geolocation%dem = usgs%dem(imager_geolocation%startx:imager_geolocation%endx, &
               imager_geolocation%starty:imager_geolocation%endy)
-         imager_flags%lusflag   = usgs%lus(imager_geolocation%startx:imager_geolocation%endx,&
+         imager_flags%lusflag   = usgs%lus(imager_geolocation%startx:imager_geolocation%endx, &
               imager_geolocation%starty:imager_geolocation%endy)
       else if (index(sensor, "AHI") .gt. 0) then
          call read_predef_file_ahi(path_to_USGS_file, usgs, imager_geolocation, verbose)
@@ -94,8 +94,8 @@ subroutine get_USGS_data(path_to_USGS_file, imager_flags, imager_geolocation, &
       ! Do collocation of imager pixels with USGS data
       !$OMP PARALLEL PRIVATE(i, j, nearest_xy)
       !$OMP DO SCHEDULE(GUIDED)
-      do i=imager_geolocation%startx,imager_geolocation%endx
-         do j=1,imager_geolocation%ny
+      do i = imager_geolocation%startx, imager_geolocation%endx
+         do j = 1, imager_geolocation%ny
 
             if (imager_geolocation%latitude(i,j) .eq. sreal_fill_value .or. &
                 imager_geolocation%longitude(i,j) .eq. sreal_fill_value) &

@@ -98,9 +98,9 @@ module setup_m
 
 contains
 
-subroutine setup_aatsr(l1b_path_file,geo_path_file,platform,sensor,year, &
-   month,day,doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute, &
-   channel_ids_user,channel_info,verbose)
+subroutine setup_aatsr(l1b_path_file, geo_path_file, platform, sensor, year, &
+   month, day, doy, hour, minute, cyear, cmonth, cday, cdoy, chour, cminute, &
+   channel_ids_user, channel_info, verbose)
 
    use calender_m
    use channel_structures_m
@@ -113,15 +113,15 @@ subroutine setup_aatsr(l1b_path_file,geo_path_file,platform,sensor,year, &
    character(len=*),     intent(in)    :: geo_path_file
    character(len=*),     intent(out)   :: platform
    character(len=*),     intent(in)    :: sensor
-   integer(kind=sint),             intent(out)   :: year,month,day,doy
-   integer(kind=sint),             intent(out)   :: hour,minute
-   character(len=*),     intent(out)   :: cyear,cmonth,cday
-   character(len=*),     intent(out)   :: cdoy,chour,cminute
-   integer, pointer,               intent(in)    :: channel_ids_user(:)
-   type(channel_info_t),           intent(inout) :: channel_info
-   logical,                        intent(in)    :: verbose
+   integer(kind=sint),   intent(out)   :: year, month, day, doy
+   integer(kind=sint),   intent(out)   :: hour, minute
+   character(len=*),     intent(out)   :: cyear, cmonth, cday
+   character(len=*),     intent(out)   :: cdoy, chour, cminute
+   integer, pointer,     intent(in)    :: channel_ids_user(:)
+   type(channel_info_t), intent(inout) :: channel_info
+   logical,              intent(in)    :: verbose
 
-   integer                                       :: index1
+   integer :: index1
 
 
    ! Static instrument channel definitions. (These should not be changed.)
@@ -213,19 +213,19 @@ subroutine setup_aatsr(l1b_path_file,geo_path_file,platform,sensor,year, &
    ! which aatsr are we processing?
 
    if (trim(adjustl(sensor)) .eq. 'AATSR') then
-      index1=index(l1b_path_file,'.N1',back=.true.)
-      platform='Envisat'
+      index1 = index(l1b_path_file, '.N1', back=.true.)
+      platform = 'Envisat'
    else
-      platform='ERS2'
-      index1=index(l1b_path_file,'.E2',back=.true.)
+      platform = 'ERS2'
+      index1 = index(l1b_path_file, '.E2', back=.true.)
    end if
 
    ! Get year, month, day, hour and minute as strings
-   cyear=trim(adjustl(l1b_path_file(index1-45:index1-42)))
-   cmonth=trim(adjustl(l1b_path_file(index1-41:index1-40)))
-   cday=trim(adjustl(l1b_path_file(index1-39:index1-38)))
-   chour=trim(adjustl(l1b_path_file(index1-36:index1-35)))
-   cminute=trim(adjustl(l1b_path_file(index1-34:index1-33)))
+   cyear = trim(adjustl(l1b_path_file(index1-45:index1-42)))
+   cmonth = trim(adjustl(l1b_path_file(index1-41:index1-40)))
+   cday = trim(adjustl(l1b_path_file(index1-39:index1-38)))
+   chour = trim(adjustl(l1b_path_file(index1-36:index1-35)))
+   cminute = trim(adjustl(l1b_path_file(index1-34:index1-33)))
 
    ! get year, month, day, hour and minute as integers
    read(cyear(1:len_trim(cyear)), '(I4)') year
@@ -254,9 +254,9 @@ subroutine setup_aatsr(l1b_path_file,geo_path_file,platform,sensor,year, &
 
 end subroutine setup_aatsr
 
-subroutine setup_abi(l1b_path_file,geo_path_file,platform,year,month,day, &
-   doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids_user, &
-   channel_info,verbose)
+subroutine setup_abi(l1b_path_file, geo_path_file, platform, year, month, day, &
+   doy, hour, minute, cyear, cmonth, cday, cdoy, chour, cminute, channel_ids_user, &
+   channel_info, verbose)
 
    use calender_m
    use channel_structures_m
@@ -268,15 +268,15 @@ subroutine setup_abi(l1b_path_file,geo_path_file,platform,year,month,day, &
    character(len=*),     intent(in)    :: l1b_path_file
    character(len=*),     intent(in)    :: geo_path_file
    character(len=*),     intent(out)   :: platform
-   integer(kind=sint),             intent(out)   :: year,month,day,doy
-   integer(kind=sint),             intent(out)   :: hour,minute
-   character(len=*),     intent(out)   :: cyear,cmonth,cday
-   character(len=*),     intent(out)   :: cdoy,chour,cminute
-   integer, pointer,               intent(in)    :: channel_ids_user(:)
-   type(channel_info_t),           intent(inout) :: channel_info
-   logical,                        intent(in)    :: verbose
+   integer(kind=sint),   intent(out)   :: year, month, day, doy
+   integer(kind=sint),   intent(out)   :: hour, minute
+   character(len=*),     intent(out)   :: cyear, cmonth, cday
+   character(len=*),     intent(out)   :: cdoy, chour, cminute
+   integer, pointer,     intent(in)    :: channel_ids_user(:)
+   type(channel_info_t), intent(inout) :: channel_info
+   logical,              intent(in)    :: verbose
 
-   integer :: index1,index2,index3
+   integer :: index1, index2, index3
 
 
    ! Static instrument channel definitions. (These should not be changed.)
@@ -351,8 +351,8 @@ subroutine setup_abi(l1b_path_file,geo_path_file,platform,year,month,day, &
    if (verbose) write(*,*) 'geo_path_file: ', trim(geo_path_file)
 
    ! check if l1b and geo file are of the same granule
-   index1=index(l1b_path_file,'/',back=.true.)
-   index2=index(geo_path_file,'/',back=.true.)
+   index1 = index(l1b_path_file, '/', back=.true.)
+   index2 = index(geo_path_file, '/', back=.true.)
 
    ! check if l1b and geo files identical
    if (trim(adjustl(l1b_path_file)) .ne. &
@@ -366,26 +366,26 @@ subroutine setup_abi(l1b_path_file,geo_path_file,platform,year,month,day, &
       stop error_stop_code
    end if
 
-   if (index(l1b_path_file,"G16_s") .gt. 0) then
-      index3 = index(l1b_path_file,"G16_s") + 5
-      platform="GOES-16"
-   else if(index(l1b_path_file,"G17_s") .gt. 0) then
-      index3 = index(l1b_path_file,"G17_s") + 5
-      platform="GOES-17"
+   if (index(l1b_path_file, "G16_s") .gt. 0) then
+      index3 = index(l1b_path_file, "G16_s") + 5
+      platform = "GOES-16"
+   else if(index(l1b_path_file, "G17_s") .gt. 0) then
+      index3 = index(l1b_path_file, "G17_s") + 5
+      platform = "GOES-17"
    else
-      write(*,*) "Unsupported GOES platform, ",l1b_path_file
+      write(*,*) "Unsupported GOES platform, ", l1b_path_file
       stop
    end if
 
-   if (verbose) write(*,*)"Satellite is: ",platform
+   if (verbose) write(*,*) "Satellite is: ", platform
 
-   index2=index(l1b_path_file,'ABI-L1b-')
+   index2 = index(l1b_path_file, 'ABI-L1b-')
 
    ! get year, doy, hour and minute as strings
-   cyear=trim(adjustl(l1b_path_file(index3:index3+3)))
-   cdoy=trim(adjustl(l1b_path_file(index3+4:index3+6)))
-   chour=trim(adjustl(l1b_path_file(index3+7:index3+8)))
-   cminute=trim(adjustl(l1b_path_file(index3+9:index3+10)))
+   cyear = trim(adjustl(l1b_path_file(index3:index3+3)))
+   cdoy = trim(adjustl(l1b_path_file(index3+4:index3+6)))
+   chour = trim(adjustl(l1b_path_file(index3+7:index3+8)))
+   cminute = trim(adjustl(l1b_path_file(index3+9:index3+10)))
    read(cyear(1:len_trim(cyear)), '(I4)') year
    read(cdoy(1:len_trim(cdoy)), '(I3)') doy
    read(chour(1:len_trim(chour)), '(I2)') hour
@@ -410,149 +410,9 @@ subroutine setup_abi(l1b_path_file,geo_path_file,platform,year,month,day, &
 
 end subroutine setup_abi
 
-subroutine setup_agri(l1b_path_file,geo_path_file,platform,year,month,day, &
-                      doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute, &
-                      channel_ids_user, channel_info,verbose)
-
-    use calender_m
-    use channel_structures_m
-    use preproc_constants_m
-    use preproc_structures_m
-
-    implicit none
-
-   character(len=*),     intent(in)    :: l1b_path_file
-   character(len=*),     intent(in)    :: geo_path_file
-   character(len=*),     intent(out)   :: platform
-    integer(kind=sint),             intent(out)   :: year,month,day,doy
-    integer(kind=sint),             intent(out)   :: hour,minute
-   character(len=*),     intent(out)   :: cyear,cmonth,cday
-   character(len=*),     intent(out)   :: cdoy,chour,cminute
-    integer, pointer,               intent(in)    :: channel_ids_user(:)
-    type(channel_info_t),           intent(inout) :: channel_info
-    logical,                        intent(in)    :: verbose
-
-    integer :: index3
-
-
-    ! Static instrument channel definitions. (These should not be changed.)
-    integer, parameter :: all_nchannels_total = 13
-
-       ! 1,       2,       3,       4,       5,       6,       7,       8
-    real,    parameter :: all_channel_wl_abs(all_nchannels_total) = &
-      (/ 0.469,   0.631,   0.819,   1.375,   1.607,   2.226,   3.715, &
-         6.231,  7.118,   8.588,   10.824,  12.071,  13.545 /)
-
-    integer, parameter :: all_channel_sw_flag(all_nchannels_total) = &
-      (/ 1,       1,       1,       1,       1,       1,       1,   &
-         0,       0,       0,       0,       0,       0     /)
-
-    integer, parameter :: all_channel_lw_flag(all_nchannels_total) = &
-      (/ 0,       0,       0,       0,       0,       0,       1,   &
-         1,       1,       1,       1,       1,       1     /)
-
-    integer, parameter :: all_channel_ids_rttov_coef_sw(all_nchannels_total) = &
-      (/ 1,       2,       3,       4,       5,       6,       7,   &
-         0,       0,       0,       0,       0,       0     /)
-
-    integer, parameter :: all_channel_ids_rttov_coef_lw(all_nchannels_total) = &
-      (/ 0,       0,       0,       0,       0,       0,       1,   &
-         2,       3,       4,       5,       6,       7      /)
-
-    integer, parameter :: all_map_ids_abs_to_ref_band_land(all_nchannels_total) = &
-      (/ 3,       1,       2,       5,       6,       7,       0,   &
-         0,       0,       0,       0,       0,       0      /)
-
-    integer, parameter :: all_map_ids_abs_to_ref_band_sea(all_nchannels_total) = &
-      (/ 1,       3,       4,       6,       7,       8,       9,   &
-         0,       0,       0,       0,       0,       0      /)
-
-    integer, parameter :: all_map_ids_abs_to_snow_and_ice(all_nchannels_total) = &
-      (/ 1,       1,       2,       3,       3,       3,       4,   &
-         0,       0,       0,       0,       0,       0      /)
-
-    integer, parameter :: all_map_ids_view_number(all_nchannels_total) = &
-      (/ 1,       1,       1,       1,       1,       1,       1,   &
-         1,       1,       1,       1,       1,       1      /)
-
-    real,    parameter :: all_channel_fractional_uncertainty(all_nchannels_total) = &
-      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0., &
-         0.,      0.,      0.,      0.,      0.,      0.     /)
-
-    real,    parameter :: all_channel_minimum_uncertainty(all_nchannels_total) = &
-      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0., &
-         0.,      0.,      0.,      0.,      0.,      0.     /)
-
-    real,    parameter :: all_channel_numerical_uncertainty(all_nchannels_total) = &
-      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0., &
-         0.,      0.,      0.,      0.,      0.,      0.     /)
-
-    real,    parameter :: all_channel_lnd_uncertainty(all_nchannels_total) = &
-      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0., &
-         0.,      0.,      0.,      0.,      0.,      0.     /)
-
-    real,    parameter :: all_channel_sea_uncertainty(all_nchannels_total) = &
-      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0., &
-         0.,      0.,      0.,      0.,      0.,      0.     /)
-
-    ! Only this below needs to be set to change the desired default channels. All
-    ! other channel related arrays/indexes are set automatically given the static
-    ! instrument channel definition above.
-    integer, parameter :: channel_ids_default(6) = (/ 2, 3, 5, 7, 11, 12 /)
-
-
-    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering setup_agri()'
-
-    if (verbose) write(*,*) 'l1b_path_file: ', trim(l1b_path_file)
-    if (verbose) write(*,*) 'geo_path_file: ', trim(geo_path_file)
-
-    if (index(l1b_path_file,"FY4A") .gt. 0) then
-      index3=index(l1b_path_file,'AGRI_FY4A_') + 10
-      platform="FY-4A"
-    else if(index(l1b_path_file,"FY4B") .gt. 0) then
-      index3=index(l1b_path_file,'AGRI_FY4A_') + 10
-      platform="FY-4B"
-    else
-      write(*,*) "Unsupported Fengyun platform, ",l1b_path_file
-      stop
-    end if
-
-    if (verbose) write(*,*)"Satellite is: ",platform
-
-    ! get year, doy, hour and minute as strings
-    cyear=trim(adjustl(l1b_path_file(index3:index3+3)))
-    cmonth=trim(adjustl(l1b_path_file(index3+4:index3+5)))
-    cday=trim(adjustl(l1b_path_file(index3+6:index3+7)))
-    chour=trim(adjustl(l1b_path_file(index3+8:index3+9)))
-    cminute=trim(adjustl(l1b_path_file(index3+10:index3+11)))
-
-    read(cyear(1:len_trim(cyear)), '(I4)') year
-    read(cmonth(1:len_trim(cmonth)), '(I2)') month
-    read(cday(1:len_trim(cday)), '(I2)') day
-    read(chour(1:len_trim(chour)), '(I2)') hour
-    read(cminute(1:len_trim(cminute)), '(I2)') minute
-
-    call GREG2DOY(year, month, day, doy)
-    write(cdoy, '(i3.3)') doy
-
-    ! now set up the channels
-    call common_setup(channel_info, channel_ids_user, channel_ids_default, &
-      all_channel_wl_abs, all_channel_sw_flag, all_channel_lw_flag, &
-      all_channel_ids_rttov_coef_sw, all_channel_ids_rttov_coef_lw, &
-      all_map_ids_abs_to_ref_band_land, all_map_ids_abs_to_ref_band_sea, &
-      all_map_ids_abs_to_snow_and_ice, all_map_ids_view_number, &
-      all_channel_fractional_uncertainty, all_channel_minimum_uncertainty, &
-      all_channel_numerical_uncertainty, all_channel_lnd_uncertainty, &
-      all_channel_sea_uncertainty, all_nchannels_total)
-
-    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_agri()'
-
-end subroutine setup_agri
-
-
-subroutine setup_ahi(l1b_path_file,geo_path_file,platform,year,month,day, &
-   doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids_user, &
-   channel_info,verbose)
+subroutine setup_agri(l1b_path_file, geo_path_file, platform, year, month, day, &
+                      doy, hour, minute, cyear, cmonth, cday, cdoy, chour, cminute, &
+                      channel_ids_user, channel_info, verbose)
 
    use calender_m
    use channel_structures_m
@@ -564,15 +424,155 @@ subroutine setup_ahi(l1b_path_file,geo_path_file,platform,year,month,day, &
    character(len=*),     intent(in)    :: l1b_path_file
    character(len=*),     intent(in)    :: geo_path_file
    character(len=*),     intent(out)   :: platform
-   integer(kind=sint),             intent(out)   :: year,month,day,doy
-   integer(kind=sint),             intent(out)   :: hour,minute
-   character(len=*),     intent(out)   :: cyear,cmonth,cday
-   character(len=*),     intent(out)   :: cdoy,chour,cminute
-   integer, pointer,               intent(in)    :: channel_ids_user(:)
-   type(channel_info_t),           intent(inout) :: channel_info
-   logical,                        intent(in)    :: verbose
+   integer(kind=sint),   intent(out)   :: year, month, day, doy
+   integer(kind=sint),   intent(out)   :: hour, minute
+   character(len=*),     intent(out)   :: cyear, cmonth, cday
+   character(len=*),     intent(out)   :: cdoy, chour, cminute
+   integer, pointer,     intent(in)    :: channel_ids_user(:)
+   type(channel_info_t), intent(inout) :: channel_info
+   logical,              intent(in)    :: verbose
 
-   integer :: index1,index2
+   integer :: index3
+
+
+   ! Static instrument channel definitions. (These should not be changed.)
+   integer, parameter :: all_nchannels_total = 13
+
+   ! 1,       2,       3,       4,       5,       6,       7,       8
+   real,    parameter :: all_channel_wl_abs(all_nchannels_total) = &
+      (/ 0.469,   0.631,   0.819,   1.375,   1.607,   2.226,   3.715, &
+         6.231,  7.118,   8.588,   10.824,  12.071,  13.545 /)
+
+   integer, parameter :: all_channel_sw_flag(all_nchannels_total) = &
+      (/ 1,       1,       1,       1,       1,       1,       1,   &
+         0,       0,       0,       0,       0,       0     /)
+
+   integer, parameter :: all_channel_lw_flag(all_nchannels_total) = &
+      (/ 0,       0,       0,       0,       0,       0,       1,   &
+         1,       1,       1,       1,       1,       1     /)
+
+   integer, parameter :: all_channel_ids_rttov_coef_sw(all_nchannels_total) = &
+      (/ 1,       2,       3,       4,       5,       6,       7,   &
+         0,       0,       0,       0,       0,       0     /)
+
+   integer, parameter :: all_channel_ids_rttov_coef_lw(all_nchannels_total) = &
+      (/ 0,       0,       0,       0,       0,       0,       1,   &
+         2,       3,       4,       5,       6,       7      /)
+
+   integer, parameter :: all_map_ids_abs_to_ref_band_land(all_nchannels_total) = &
+      (/ 3,       1,       2,       5,       6,       7,       0,   &
+         0,       0,       0,       0,       0,       0      /)
+
+   integer, parameter :: all_map_ids_abs_to_ref_band_sea(all_nchannels_total) = &
+      (/ 1,       3,       4,       6,       7,       8,       9,   &
+         0,       0,       0,       0,       0,       0      /)
+
+   integer, parameter :: all_map_ids_abs_to_snow_and_ice(all_nchannels_total) = &
+      (/ 1,       1,       2,       3,       3,       3,       4,   &
+         0,       0,       0,       0,       0,       0      /)
+
+   integer, parameter :: all_map_ids_view_number(all_nchannels_total) = &
+      (/ 1,       1,       1,       1,       1,       1,       1,   &
+         1,       1,       1,       1,       1,       1      /)
+
+   real,    parameter :: all_channel_fractional_uncertainty(all_nchannels_total) = &
+      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0., &
+         0.,      0.,      0.,      0.,      0.,      0.     /)
+
+   real,    parameter :: all_channel_minimum_uncertainty(all_nchannels_total) = &
+      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0., &
+         0.,      0.,      0.,      0.,      0.,      0.     /)
+
+   real,    parameter :: all_channel_numerical_uncertainty(all_nchannels_total) = &
+      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0., &
+         0.,      0.,      0.,      0.,      0.,      0.     /)
+
+   real,    parameter :: all_channel_lnd_uncertainty(all_nchannels_total) = &
+      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0., &
+         0.,      0.,      0.,      0.,      0.,      0.     /)
+
+   real,    parameter :: all_channel_sea_uncertainty(all_nchannels_total) = &
+      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0., &
+         0.,      0.,      0.,      0.,      0.,      0.     /)
+
+   ! Only this below needs to be set to change the desired default channels. All
+   ! other channel related arrays/indexes are set automatically given the static
+   ! instrument channel definition above.
+   integer, parameter :: channel_ids_default(6) = (/ 2, 3, 5, 7, 11, 12 /)
+
+
+   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering setup_agri()'
+
+   if (verbose) write(*,*) 'l1b_path_file: ', trim(l1b_path_file)
+   if (verbose) write(*,*) 'geo_path_file: ', trim(geo_path_file)
+
+   if (index(l1b_path_file, "FY4A") .gt. 0) then
+      index3 = index(l1b_path_file, 'AGRI_FY4A_') + 10
+      platform = "FY-4A"
+   else if(index(l1b_path_file, "FY4B") .gt. 0) then
+      index3 = index(l1b_path_file, 'AGRI_FY4A_') + 10
+      platform = "FY-4B"
+   else
+      write(*,*) "Unsupported Fengyun platform, ", l1b_path_file
+      stop
+   end if
+
+   if (verbose) write(*,*) "Satellite is: ", platform
+
+   ! get year, doy, hour and minute as strings
+   cyear = trim(adjustl(l1b_path_file(index3:index3+3)))
+   cmonth = trim(adjustl(l1b_path_file(index3+4:index3+5)))
+   cday = trim(adjustl(l1b_path_file(index3+6:index3+7)))
+   chour = trim(adjustl(l1b_path_file(index3+8:index3+9)))
+   cminute = trim(adjustl(l1b_path_file(index3+10:index3+11)))
+
+   read(cyear(1:len_trim(cyear)), '(I4)') year
+   read(cmonth(1:len_trim(cmonth)), '(I2)') month
+   read(cday(1:len_trim(cday)), '(I2)') day
+   read(chour(1:len_trim(chour)), '(I2)') hour
+   read(cminute(1:len_trim(cminute)), '(I2)') minute
+
+   call GREG2DOY(year, month, day, doy)
+   write(cdoy, '(i3.3)') doy
+
+   ! now set up the channels
+   call common_setup(channel_info, channel_ids_user, channel_ids_default, &
+        all_channel_wl_abs, all_channel_sw_flag, all_channel_lw_flag, &
+        all_channel_ids_rttov_coef_sw, all_channel_ids_rttov_coef_lw, &
+        all_map_ids_abs_to_ref_band_land, all_map_ids_abs_to_ref_band_sea, &
+        all_map_ids_abs_to_snow_and_ice, all_map_ids_view_number, &
+        all_channel_fractional_uncertainty, all_channel_minimum_uncertainty, &
+        all_channel_numerical_uncertainty, all_channel_lnd_uncertainty, &
+        all_channel_sea_uncertainty, all_nchannels_total)
+
+   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_agri()'
+
+end subroutine setup_agri
+
+
+subroutine setup_ahi(l1b_path_file, geo_path_file, platform, year, month, day, &
+   doy, hour, minute, cyear, cmonth, cday, cdoy, chour, cminute, channel_ids_user, &
+   channel_info, verbose)
+
+   use calender_m
+   use channel_structures_m
+   use preproc_constants_m
+   use preproc_structures_m
+
+   implicit none
+
+   character(len=*),     intent(in)    :: l1b_path_file
+   character(len=*),     intent(in)    :: geo_path_file
+   character(len=*),     intent(out)   :: platform
+   integer(kind=sint),   intent(out)   :: year, month, day, doy
+   integer(kind=sint),   intent(out)   :: hour, minute
+   character(len=*),     intent(out)   :: cyear, cmonth, cday
+   character(len=*),     intent(out)   :: cdoy, chour, cminute
+   integer, pointer,     intent(in)    :: channel_ids_user(:)
+   type(channel_info_t), intent(inout) :: channel_info
+   logical,              intent(in)    :: verbose
+
+   integer :: index1, index2
 
 
    ! Static instrument channel definitions. (These should not be changed.)
@@ -646,8 +646,8 @@ subroutine setup_ahi(l1b_path_file,geo_path_file,platform,year,month,day, &
    if (verbose) write(*,*) 'geo_path_file: ', trim(geo_path_file)
 
    ! check if l1b and geo file are of the same granule
-   index1=index(l1b_path_file,'/',back=.true.)
-   index2=index(geo_path_file,'/',back=.true.)
+   index1 = index(l1b_path_file, '/', back=.true.)
+   index2 = index(geo_path_file, '/', back=.true.)
 
    ! check if l1b and geo files identical
    if (trim(adjustl(l1b_path_file)) .ne. &
@@ -660,29 +660,29 @@ subroutine setup_ahi(l1b_path_file,geo_path_file,platform,year,month,day, &
 
       stop error_stop_code
    end if
-   if (index(l1b_path_file,"HS_H08") .gt. 0) then
-      platform="Himawari-8"
-   else if (index(l1b_path_file,"HS_H09") .gt. 0) then
-      platform="Himawari-9"
+   if (index(l1b_path_file, "HS_H08") .gt. 0) then
+      platform = "Himawari-8"
+   else if (index(l1b_path_file, "HS_H09") .gt. 0) then
+      platform = "Himawari-9"
    else
-      write(*,*) "Unidentified Himawari variant: ",trim(l1b_path_file)
+      write(*,*) "Unidentified Himawari variant: ", trim(l1b_path_file)
       stop
    end if
-   if (verbose) write(*,*)"Satellite is: ",platform
+   if (verbose) write(*,*) "Satellite is: ", platform
 
    ! The code below extracts date/time info from the segment name.
    ! Note that it requires the segment name to be in the generic format
    ! that's specified by the JMA. Weird filenames will break things.
 
-   index2=index(l1b_path_file,'HS_H')
+   index2 = index(l1b_path_file, 'HS_H')
 
    ! get year, doy, hour and minute as strings
-   index2=index2+7
-   cyear=trim(adjustl(l1b_path_file(index2:index2+3)))
-   cmonth=trim(adjustl(l1b_path_file(index2+4:index2+5)))
-   cday=trim(adjustl(l1b_path_file(index2+6:index2+7)))
-   chour=trim(adjustl(l1b_path_file(index2+9:index2+10)))
-   cminute=trim(adjustl(l1b_path_file(index2+11:index2+12)))
+   index2 = index2+7
+   cyear = trim(adjustl(l1b_path_file(index2:index2+3)))
+   cmonth = trim(adjustl(l1b_path_file(index2+4:index2+5)))
+   cday = trim(adjustl(l1b_path_file(index2+6:index2+7)))
+   chour = trim(adjustl(l1b_path_file(index2+9:index2+10)))
+   cminute = trim(adjustl(l1b_path_file(index2+11:index2+12)))
 
    ! get year, doy, hour and minute as integers
    read(cyear(1:len_trim(cyear)), '(I4)') year
@@ -709,9 +709,9 @@ subroutine setup_ahi(l1b_path_file,geo_path_file,platform,year,month,day, &
 end subroutine setup_ahi
 
 
-subroutine setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day, &
-   doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids_user, &
-   channel_info,verbose)
+subroutine setup_avhrr(l1b_path_file, geo_path_file, platform, year, month, day, &
+   doy, hour, minute, cyear, cmonth, cday, cdoy, chour, cminute, channel_ids_user, &
+   channel_info, verbose)
 
    use calender_m
    use channel_structures_m
@@ -723,17 +723,17 @@ subroutine setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day, &
    character(len=*),     intent(in)    :: l1b_path_file
    character(len=*),     intent(in)    :: geo_path_file
    character(len=*),     intent(out)   :: platform
-   integer(kind=sint),             intent(out)   :: year,month,day,doy
-   integer(kind=sint),             intent(out)   :: hour,minute
-   character(len=*),     intent(out)   :: cyear,cmonth,cday
-   character(len=*),     intent(out)   :: cdoy,chour,cminute
-   integer, pointer,               intent(in)    :: channel_ids_user(:)
-   type(channel_info_t),           intent(inout) :: channel_info
-   logical,                        intent(in)    :: verbose
+   integer(kind=sint),   intent(out)   :: year, month, day, doy
+   integer(kind=sint),   intent(out)   :: hour, minute
+   character(len=*),     intent(out)   :: cyear, cmonth, cday
+   character(len=*),     intent(out)   :: cdoy, chour, cminute
+   integer, pointer,     intent(in)    :: channel_ids_user(:)
+   type(channel_info_t), intent(inout) :: channel_info
+   logical,              intent(in)    :: verbose
 
-   integer                                       :: index1,index2
-   integer                                       :: i, j, k, l
-   character(len=path_length)                    :: str1, str2
+   integer                    :: index1, index2
+   integer                    :: i, j, k, l
+   character(len=path_length) :: str1, str2
 
 
    ! Static instrument channel definitions. (These should not be changed.)
@@ -794,15 +794,15 @@ subroutine setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day, &
    if (verbose) write(*,*) 'geo_path_file: ', trim(geo_path_file)
 
    ! check if old/new avhrr filename
-   i = index(l1b_path_file,'/', back=.true.)
+   i = index(l1b_path_file, '/', back=.true.)
 
    if (trim(adjustl(l1b_path_file(i+1:i+8))) .eq.'ECC_GAC_') then
 
       if (verbose) write(*,*) ' *** new avhrr input file'
 
       ! check if l1b and geo file are for the same orbit
-      index1=index(l1b_path_file,'ECC_GAC_avhrr',back=.true.)
-      index2=index(geo_path_file,'ECC_GAC_sunsatangles',back=.true.)
+      index1 = index(l1b_path_file, 'ECC_GAC_avhrr', back=.true.)
+      index2 = index(geo_path_file, 'ECC_GAC_sunsatangles', back=.true.)
 
       if (trim(adjustl(l1b_path_file(1:index1-1))) .ne. &
            trim(adjustl(geo_path_file(1:index2-1)))) then
@@ -816,26 +816,26 @@ subroutine setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day, &
       end if
 
       str1 = l1b_path_file
-      do k=1, 4
-         l=len_trim(str1)
-         j=index(str1,'_', back=.true.)
+      do k = 1, 4
+         l = len_trim(str1)
+         j = index(str1, '_', back=.true.)
 
-         str2=str1
-         str1=str1(1:j-1)
-         str2=str2(j+1:)
+         str2 = str1
+         str1 = str1(1:j-1)
+         str2 = str2(j+1:)
 
          if (k .eq. 2) then
             ! get year, month, day, hour and minute as strings
-            cyear=trim(adjustl(str2(1:4)))
-            cmonth=trim(adjustl(str2(5:6)))
-            cday=trim(adjustl(str2(7:8)))
-            chour=trim(adjustl(str2(10:11)))
-            cminute=trim(adjustl(str2(12:13)))
+            cyear = trim(adjustl(str2(1:4)))
+            cmonth = trim(adjustl(str2(5:6)))
+            cday = trim(adjustl(str2(7:8)))
+            chour = trim(adjustl(str2(10:11)))
+            cminute = trim(adjustl(str2(12:13)))
          end if
 
          if (k .eq. 4) then
             ! which avhrr are we processing?
-            platform=trim(adjustl(str2))
+            platform = trim(adjustl(str2))
          end if
       end do
 
@@ -851,8 +851,8 @@ subroutine setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day, &
       if (verbose) write(*,*) ' *** old avhrr input file'
 
       ! check if l1b and angles file are for the same orbit
-      index1=index(l1b_path_file,'_avhrr',back=.true.)
-      index2=index(geo_path_file,'_sunsatangles',back=.true.)
+      index1 = index(l1b_path_file, '_avhrr', back=.true.)
+      index2 = index(geo_path_file, '_sunsatangles', back=.true.)
 
       if (trim(adjustl(l1b_path_file(1:index1-1))) .ne. &
            trim(adjustl(geo_path_file(1:index2-1)))) then
@@ -866,34 +866,34 @@ subroutine setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day, &
       end if
 
       str1 = l1b_path_file
-      do k=1, 7
-         l=len_trim(str1)
-         j=index(str1,'_', back=.true.)
+      do k = 1, 7
+         l = len_trim(str1)
+         j = index(str1, '_', back=.true.)
 
-         str2=str1
-         str1=str1(1:j-1)
-         str2=str2(j+1:)
+         str2 = str1
+         str1 = str1(1:j-1)
+         str2 = str2(j+1:)
 
          if (k .eq. 6) then
             ! get hour and minute as strings
-            chour=trim(adjustl(str2(1:2)))
-            cminute=trim(adjustl(str2(3:4)))
+            chour = trim(adjustl(str2(1:2)))
+            cminute = trim(adjustl(str2(3:4)))
          end if
          if (k .eq. 7) then
             ! get year, month, day as strings
-            cyear=trim(adjustl(str2(1:4)))
-            cmonth=trim(adjustl(str2(5:6)))
-            cday=trim(adjustl(str2(7:8)))
+            cyear = trim(adjustl(str2(1:4)))
+            cmonth = trim(adjustl(str2(5:6)))
+            cday = trim(adjustl(str2(7:8)))
          end if
       end do
 
       ! one last time for platform
-      l=len_trim(str1)
-      j=index(str1,'/', back=.true.)
-      str2=str1
-      str1=str1(1:j-1)
-      str2=str2(j+1:)
-      platform=trim(adjustl(str2))
+      l = len_trim(str1)
+      j = index(str1, '/', back=.true.)
+      str2 = str1
+      str1 = str1(1:j-1)
+      str2 = str2(j+1:)
+      platform = trim(adjustl(str2))
 
       ! get year, month, day, hour and minute as integers
       read(cyear(1:len_trim(cyear)), '(I4)') year
@@ -904,7 +904,7 @@ subroutine setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day, &
    end if
 
    ! added doy calculation for avhrr
-   call GREG2DOY(year,month,day,doy)
+   call GREG2DOY(year, month, day, doy)
    write(cdoy, '(i3.3)') doy
 
    ! AVHRR only has a single viewing geometry
@@ -925,9 +925,9 @@ subroutine setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day, &
 end subroutine setup_avhrr
 
 
-subroutine setup_modis(l1b_path_file,geo_path_file,platform,year,month,day, &
-   doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids_user, &
-   channel_info,verbose)
+subroutine setup_modis(l1b_path_file, geo_path_file, platform, year, month, day, &
+   doy, hour, minute, cyear, cmonth, cday, cdoy, chour, cminute, channel_ids_user, &
+   channel_info, verbose)
 
    use calender_m
    use channel_structures_m
@@ -939,15 +939,15 @@ subroutine setup_modis(l1b_path_file,geo_path_file,platform,year,month,day, &
    character(len=*),     intent(in)    :: l1b_path_file
    character(len=*),     intent(in)    :: geo_path_file
    character(len=*),     intent(out)   :: platform
-   integer(kind=sint),             intent(out)   :: year,month,day,doy
-   integer(kind=sint),             intent(out)   :: hour,minute
-   character(len=*),     intent(out)   :: cyear,cmonth,cday
-   character(len=*),     intent(out)   :: cdoy,chour,cminute
-   integer, pointer,               intent(in)    :: channel_ids_user(:)
-   type(channel_info_t),           intent(inout) :: channel_info
-   logical,                        intent(in)    :: verbose
+   integer(kind=sint),   intent(out)   :: year, month, day, doy
+   integer(kind=sint),   intent(out)   :: hour, minute
+   character(len=*),     intent(out)   :: cyear, cmonth, cday
+   character(len=*),     intent(out)   :: cdoy, chour, cminute
+   integer, pointer,     intent(in)    :: channel_ids_user(:)
+   type(channel_info_t), intent(inout) :: channel_info
+   logical,              intent(in)    :: verbose
 
-   integer                                       :: index1,index2
+   integer :: index1, index2
 
 
    ! Static instrument channel definitions. (These should not be changed.)
@@ -1090,8 +1090,8 @@ subroutine setup_modis(l1b_path_file,geo_path_file,platform,year,month,day, &
    if (verbose) write(*,*) 'geo_path_file: ', trim(geo_path_file)
 
    ! check if l1b and geo file are of the same granule
-   index1=index(l1b_path_file,'/',back=.true.)
-   index2=index(geo_path_file,'/',back=.true.)
+   index1 = index(l1b_path_file, '/', back=.true.)
+   index2 = index(geo_path_file, '/', back=.true.)
 
    if (trim(adjustl(l1b_path_file(index1+10:index1+26))) .ne. &
        trim(adjustl(geo_path_file(index2+7:index2+23)))) then
@@ -1105,17 +1105,17 @@ subroutine setup_modis(l1b_path_file,geo_path_file,platform,year,month,day, &
    end if
 
    ! which modis are we processing?
-   index1=index(l1b_path_file,'1KM.')
+   index1 = index(l1b_path_file, '1KM.')
    if (trim(adjustl(l1b_path_file(index1-5:index1-3))) .eq. 'MYD') &
-        platform='AQUA'
+        platform = 'AQUA'
    if (trim(adjustl(l1b_path_file(index1-5:index1-3))) .eq. 'MOD') &
-        platform='TERRA'
+        platform = 'TERRA'
 
    ! get year, doy, hour and minute as strings
-   cyear=trim(adjustl(l1b_path_file(index1+5:index1+8)))
-   cdoy=trim(adjustl(l1b_path_file(index1+9:index1+11)))
-   chour=trim(adjustl(l1b_path_file(index1+13:index1+14)))
-   cminute=trim(adjustl(l1b_path_file(index1+15:index1+16)))
+   cyear = trim(adjustl(l1b_path_file(index1+5:index1+8)))
+   cdoy = trim(adjustl(l1b_path_file(index1+9:index1+11)))
+   chour = trim(adjustl(l1b_path_file(index1+13:index1+14)))
+   cminute = trim(adjustl(l1b_path_file(index1+15:index1+16)))
 
    ! get year, doy, hour and minute as integers
    read(cyear(1:len_trim(cyear)), '(I4)') year
@@ -1124,7 +1124,7 @@ subroutine setup_modis(l1b_path_file,geo_path_file,platform,year,month,day, &
    read(cminute(1:len_trim(cminute)), '(I2)') minute
 
    ! transform doy to date in year
-   call DOY2GREG(doy,year,month,day)
+   call DOY2GREG(doy, year, month, day)
 
    ! get month and day as text
    write(cmonth, '(i2.2)') month
@@ -1148,9 +1148,9 @@ subroutine setup_modis(l1b_path_file,geo_path_file,platform,year,month,day, &
 end subroutine setup_modis
 
 
-subroutine setup_seviri(l1b_path_file,geo_path_file,platform,year,month,day, &
-   doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids_user, &
-   channel_info,verbose)
+subroutine setup_seviri(l1b_path_file, geo_path_file, platform, year, month, day, &
+   doy, hour, minute, cyear, cmonth, cday, cdoy, chour, cminute, channel_ids_user, &
+   channel_info, verbose)
 
    use calender_m
    use channel_structures_m
@@ -1162,15 +1162,15 @@ subroutine setup_seviri(l1b_path_file,geo_path_file,platform,year,month,day, &
    character(len=*),     intent(in)    :: l1b_path_file
    character(len=*),     intent(in)    :: geo_path_file
    character(len=*),     intent(out)   :: platform
-   integer(kind=sint),             intent(out)   :: year,month,day,doy
-   integer(kind=sint),             intent(out)   :: hour,minute
-   character(len=*),     intent(out)   :: cyear,cmonth,cday
-   character(len=*),     intent(out)   :: cdoy,chour,cminute
-   integer, pointer,               intent(in)    :: channel_ids_user(:)
-   type(channel_info_t),           intent(inout) :: channel_info
-   logical,                        intent(in)    :: verbose
+   integer(kind=sint),   intent(out)   :: year, month, day, doy
+   integer(kind=sint),   intent(out)   :: hour, minute
+   character(len=*),     intent(out)   :: cyear, cmonth, cday
+   character(len=*),     intent(out)   :: cdoy, chour, cminute
+   integer, pointer,     intent(in)    :: channel_ids_user(:)
+   type(channel_info_t), intent(inout) :: channel_info
+   logical,              intent(in)    :: verbose
 
-   integer                                       :: index1,index2
+   integer :: index1, index2
 
 
    ! Static instrument channel definitions. (These should not be changed.)
@@ -1231,8 +1231,8 @@ subroutine setup_seviri(l1b_path_file,geo_path_file,platform,year,month,day, &
    if (verbose) write(*,*) 'geo_path_file: ', trim(geo_path_file)
 
    ! check if l1b and geo file are of the same granule
-   index1=index(l1b_path_file,'/',back=.true.)
-   index2=index(geo_path_file,'/',back=.true.)
+   index1 = index(l1b_path_file, '/', back=.true.)
+   index2 = index(geo_path_file, '/', back=.true.)
 
    ! check if l1b and geo files identical
    if (trim(adjustl(l1b_path_file)) .ne. &
@@ -1246,7 +1246,7 @@ subroutine setup_seviri(l1b_path_file,geo_path_file,platform,year,month,day, &
       stop error_stop_code
    end if
 
-   index1=index(l1b_path_file,'.h5')
+   index1 = index(l1b_path_file, '.h5')
 
    if (index1 .ne. 0) then
       index2 = index(l1b_path_file, "/", back=.true.)
@@ -1254,7 +1254,7 @@ subroutine setup_seviri(l1b_path_file,geo_path_file,platform,year,month,day, &
       call determine_seviri_platform_from_metoffice(l1b_path_file, platform)
    else
       ! Check if file is HRIT or NAT.
-      index1=index(l1b_path_file,'.nat')
+      index1 = index(l1b_path_file, '.nat')
 
       ! which MSG are we processing?
       !
@@ -1262,11 +1262,11 @@ subroutine setup_seviri(l1b_path_file,geo_path_file,platform,year,month,day, &
       ! H-000-MSG1__-MSG1________-_________-EPI______-200603031200-__
       !
       if (index1 .ne. 0) then
-         index2=index(l1b_path_file,'-')
-         platform=l1b_path_file(index2-4:index2-1)
+         index2 = index(l1b_path_file, '-')
+         platform = l1b_path_file(index2-4:index2-1)
       else
-         index2=index(l1b_path_file,'__-')
-         platform=l1b_path_file(index2+3:index2+6)
+         index2 = index(l1b_path_file, '__-')
+         platform = l1b_path_file(index2+3:index2+6)
       end if
       index2 = index2 + index(l1b_path_file(index2 + 1:), '-')
       index2 = index2 + index(l1b_path_file(index2 + 1:), '-')
@@ -1275,11 +1275,11 @@ subroutine setup_seviri(l1b_path_file,geo_path_file,platform,year,month,day, &
    end if
 
    ! get year, doy, hour and minute as strings
-   cyear=trim(adjustl(l1b_path_file(index2+1:index2+4)))
-   cmonth=trim(adjustl(l1b_path_file(index2+5:index2+6)))
-   cday=trim(adjustl(l1b_path_file(index2+7:index2+8)))
-   chour=trim(adjustl(l1b_path_file(index2+9:index2+10)))
-   cminute=trim(adjustl(l1b_path_file(index2+11:index2+12)))
+   cyear = trim(adjustl(l1b_path_file(index2+1:index2+4)))
+   cmonth = trim(adjustl(l1b_path_file(index2+5:index2+6)))
+   cday = trim(adjustl(l1b_path_file(index2+7:index2+8)))
+   chour = trim(adjustl(l1b_path_file(index2+9:index2+10)))
+   cminute = trim(adjustl(l1b_path_file(index2+11:index2+12)))
 
    ! get year, doy, hour and minute as integers
    read(cyear(1:len_trim(cyear)), '(I4)') year
@@ -1324,9 +1324,9 @@ subroutine setup_seviri(l1b_path_file,geo_path_file,platform,year,month,day, &
 end subroutine setup_seviri
 
 
-subroutine setup_slstr(l1b_path_file,geo_path_file,source_attributes,platform, &
-     year,month,day,doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute, &
-     channel_ids_user,channel_info,verbose)
+subroutine setup_slstr(l1b_path_file, geo_path_file, source_attributes, platform, &
+     year, month, day, doy, hour, minute, cyear, cmonth, cday, cdoy, chour, cminute, &
+     channel_ids_user, channel_info, verbose)
 
    use calender_m
    use channel_structures_m
@@ -1337,26 +1337,26 @@ subroutine setup_slstr(l1b_path_file,geo_path_file,source_attributes,platform, &
 
    implicit none
 
-   character(len=*),     intent(in)    :: l1b_path_file
-   character(len=*),     intent(in)    :: geo_path_file
-   type(source_attributes_t),      intent(inout) :: source_attributes
-   character(len=*),     intent(out)   :: platform
-   integer(kind=sint),             intent(out)   :: year,month,day,doy
-   integer(kind=sint),             intent(out)   :: hour,minute
-   character(len=*),     intent(out)   :: cyear,cmonth,cday
-   character(len=*),     intent(out)   :: cdoy,chour,cminute
-   integer, pointer,               intent(in)    :: channel_ids_user(:)
-   type(channel_info_t),           intent(inout) :: channel_info
-   logical,                        intent(in)    :: verbose
+   character(len=*),          intent(in)    :: l1b_path_file
+   character(len=*),          intent(in)    :: geo_path_file
+   type(source_attributes_t), intent(inout) :: source_attributes
+   character(len=*),          intent(out)   :: platform
+   integer(kind=sint),        intent(out)   :: year, month, day, doy
+   integer(kind=sint),        intent(out)   :: hour, minute
+   character(len=*),          intent(out)   :: cyear, cmonth, cday
+   character(len=*),          intent(out)   :: cdoy, chour, cminute
+   integer, pointer,          intent(in)    :: channel_ids_user(:)
+   type(channel_info_t),      intent(inout) :: channel_info
+   logical,                   intent(in)    :: verbose
 
-   integer :: index2,second
+   integer                    :: index2, second
    character(len=date_length) :: csecond
 
    ! Variables for dealing with netcdf files (required for timestamping)
-   integer fid,ierr
-   character(len=path_length) :: geo_start, l1b_start
+   integer                         :: fid, ierr
+   character(len=path_length)      :: geo_start, l1b_start
    character(len=attribute_length) :: l1b_source, l1b_institute, l1b_orbit_no_s
-   integer(kind=8) :: l1b_orbit_no
+   integer(kind=8)                 :: l1b_orbit_no
 
    ! Static instrument channel definitions. (These should not be changed.)
    integer, parameter :: all_nchannels_total = 18
@@ -1433,26 +1433,26 @@ subroutine setup_slstr(l1b_path_file,geo_path_file,source_attributes,platform, &
    call nc_open(fid, l1b_path_file, 'setup_slstr()')
    ierr = nf90_get_att(fid, nf90_global, "start_time", l1b_start)
    if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: setup_slstr(): Error getting start_time from file ',trim(l1b_path_file)
+      print*, 'ERROR: setup_slstr(): Error getting start_time from file ', trim(l1b_path_file)
       stop
    end if
    ! Extract level1 processing centre, processor version and absolute
    ! orbit number from l1b file
    ierr = nf90_get_att(fid, nf90_global, "institution", l1b_institute)
    if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: setup_slstr(): Error getting institution from file ', &
+      print*, 'ERROR: setup_slstr(): Error getting institution from file ', &
            trim(l1b_path_file)
       stop
    end if
    ierr = nf90_get_att(fid, nf90_global, "source", l1b_source)
    if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: setup_slstr(): Error getting source from file ', &
+      print*, 'ERROR: setup_slstr(): Error getting source from file ', &
            trim(l1b_path_file)
       stop
    end if
    ierr = nf90_get_att(fid, nf90_global, "absolute_orbit_number", l1b_orbit_no)
    if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: setup_slstr(): Error getting absolute_orbit_number from file ', &
+      print*, 'ERROR: setup_slstr(): Error getting absolute_orbit_number from file ', &
            trim(l1b_path_file)
       stop
    end if
@@ -1462,27 +1462,27 @@ subroutine setup_slstr(l1b_path_file,geo_path_file,source_attributes,platform, &
    call nc_open(fid, geo_path_file, 'setup_slstr()')
    ierr = nf90_get_att(fid, nf90_global, "start_time", geo_start)
    if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: setup_slstr(): Error getting start_time from file ', &
+      print*, 'ERROR: setup_slstr(): Error getting start_time from file ', &
            trim(geo_path_file)
       stop
    end if
    call nc_close(fid, 'setup_slstr(geo_path_file)')
    if (trim(l1b_start).ne.trim(geo_start)) then
-      print*,"ERROR: Start times for geo and image granules don't match: "
+      print*, "ERROR: Start times for geo and image granules don't match: "
       write(*,*) trim(l1b_start)
       write(*,*) trim(geo_start)
       stop
    end if
    index2 = 1
-   index2 = index(l1b_path_file,"S3A")
+   index2 = index(l1b_path_file, "S3A")
    if (index2 .gt. 1) then
       platform = "Sentinel3a"
    else
-      index2 = index(l1b_path_file,"S3B")
+      index2 = index(l1b_path_file, "S3B")
       if (index2 .gt. 1) then
          platform = "Sentinel3b"
       else
-         write(*,*)"ERROR: Platform must be S3A or S3B"
+         write(*,*) "ERROR: Platform must be S3A or S3B"
          stop
       end if
    end if
@@ -1493,24 +1493,24 @@ subroutine setup_slstr(l1b_path_file,geo_path_file,source_attributes,platform, &
         ', processing centre: '//trim(l1b_institute)
    ! The orbit number is stored as a 5-digit string. 100,000 orbits corresponds
    ! to approximately 18.25 years for LEO.
-   write(l1b_orbit_no_s,'(I5.5)') l1b_orbit_no
+   write(l1b_orbit_no_s, '(I5.5)') l1b_orbit_no
    source_attributes%level1b_orbit_number = trim(adjustl(l1b_orbit_no_s))
    if (verbose) then
-      write(*,*)"Satellite is: ",platform
-      write(*,*)"Source attribute is: ", trim(source_attributes%level1b_version)
-      write(*,*)"Orbit number is: ", trim(source_attributes%level1b_orbit_number)
+      write(*,*) "Satellite is: ", platform
+      write(*,*) "Source attribute is: ", trim(source_attributes%level1b_version)
+      write(*,*) "Orbit number is: ", trim(source_attributes%level1b_orbit_number)
    end if
 
    ! The code below extracts date/time info from the l1b start time.
 
    ! get year, doy, hour and minute as strings
-   index2=1
-   cyear=trim(adjustl(l1b_start(index2:index2+4)))
-   cmonth=trim(adjustl(l1b_start(index2+5:index2+6)))
-   cday=trim(adjustl(l1b_start(index2+8:index2+9)))
-   chour=trim(adjustl(l1b_start(index2+11:index2+12)))
-   cminute=trim(adjustl(l1b_start(index2+14:index2+15)))
-   csecond=trim(adjustl(l1b_start(index2+17:index2+18)))
+   index2 = 1
+   cyear = trim(adjustl(l1b_start(index2:index2+4)))
+   cmonth = trim(adjustl(l1b_start(index2+5:index2+6)))
+   cday = trim(adjustl(l1b_start(index2+8:index2+9)))
+   chour = trim(adjustl(l1b_start(index2+11:index2+12)))
+   cminute = trim(adjustl(l1b_start(index2+14:index2+15)))
+   csecond = trim(adjustl(l1b_start(index2+17:index2+18)))
 
    ! get year, doy, hour and minute as integers
    read(cyear(1:len_trim(cyear)), '(I4)') year
@@ -1522,16 +1522,16 @@ subroutine setup_slstr(l1b_path_file,geo_path_file,source_attributes,platform, &
    if (second .ge. 30) then
       minute = minute+1
       if (minute .ge. 60) then
-         minute=0
-         hour=hour+1
+         minute = 0
+         hour = hour+1
          if (hour .ge. 24) then
-            hour=0
+            hour = 0
             day = day+1
-            write(cday,'(i0.2)') day
+            write(cday, '(i0.2)') day
          end if
-         write(chour,'(i0.2)') hour
+         write(chour, '(i0.2)') hour
       end if
-      write(cminute,'(i0.2)') minute
+      write(cminute, '(i0.2)') minute
    end if
    call GREG2DOY(year, month, day, doy)
    write(cdoy, '(i3.3)') doy
@@ -1554,9 +1554,9 @@ subroutine setup_slstr(l1b_path_file,geo_path_file,source_attributes,platform, &
 end subroutine setup_slstr
 
 
-subroutine setup_viirs_mband(l1b_path_file,geo_path_file,platform,year,month,day, &
-   doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids_user, &
-   channel_info,verbose)
+subroutine setup_viirs_mband(l1b_path_file, geo_path_file, platform, year, month, day, &
+   doy, hour, minute, cyear, cmonth, cday, cdoy, chour, cminute, channel_ids_user, &
+   channel_info, verbose)
 
    use calender_m
    use channel_structures_m
@@ -1568,13 +1568,13 @@ subroutine setup_viirs_mband(l1b_path_file,geo_path_file,platform,year,month,day
    character(len=*),     intent(in)    :: l1b_path_file
    character(len=*),     intent(in)    :: geo_path_file
    character(len=*),     intent(out)   :: platform
-   integer(kind=sint),             intent(out)   :: year,month,day,doy
-   integer(kind=sint),             intent(out)   :: hour,minute
-   character(len=*),     intent(out)   :: cyear,cmonth,cday
-   character(len=*),     intent(out)   :: cdoy,chour,cminute
-   integer, pointer,               intent(in)    :: channel_ids_user(:)
-   type(channel_info_t),           intent(inout) :: channel_info
-   logical,                        intent(in)    :: verbose
+   integer(kind=sint),   intent(out)   :: year, month, day, doy
+   integer(kind=sint),   intent(out)   :: hour, minute
+   character(len=*),     intent(out)   :: cyear, cmonth, cday
+   character(len=*),     intent(out)   :: cdoy, chour, cminute
+   integer, pointer,     intent(in)    :: channel_ids_user(:)
+   type(channel_info_t), intent(inout) :: channel_info
+   logical,              intent(in)    :: verbose
 
    character(len=path_length) :: geo_dtstr, l1b_dtstr
 
@@ -1653,24 +1653,24 @@ subroutine setup_viirs_mband(l1b_path_file,geo_path_file,platform,year,month,day
    if (verbose) write(*,*) 'geo_path_file: ', trim(geo_path_file)
 
    ! Assume Suomi-NPP by default
-   platform="SuomiNPP"
+   platform = "SuomiNPP"
    ! check if l1b and geo file are of the same granule
-   index1=index(l1b_path_file,'npp_d',.true.)
-   index2=index(geo_path_file,'npp_d',.true.)
+   index1 = index(l1b_path_file, 'npp_d', .true.)
+   index2 = index(geo_path_file, 'npp_d', .true.)
 
    if (index1 .le. 0) then
-      index1=index(l1b_path_file,'j01_d',.true.)
-      index2=index(geo_path_file,'j01_d',.true.)
+      index1 = index(l1b_path_file, 'j01_d', .true.)
+      index2 = index(geo_path_file, 'j01_d', .true.)
       if (index1 .le. 0) then
          write(*,*)'ERROR: setup_viirs_iband(): Unsupported platform'
          stop error_stop_code
       end if
-      platform="NOAA20"
+      platform = "NOAA20"
    end if
 
 
-   l1b_dtstr=trim(adjustl(l1b_path_file(index2+5:index2+5+25)))
-   geo_dtstr=trim(adjustl(geo_path_file(index2+5:index2+5+25)))
+   l1b_dtstr = trim(adjustl(l1b_path_file(index2+5:index2+5+25)))
+   geo_dtstr = trim(adjustl(geo_path_file(index2+5:index2+5+25)))
 
    ! check if l1b and geo files identical
    if (trim(adjustl(l1b_dtstr)) .ne. &
@@ -1684,21 +1684,21 @@ subroutine setup_viirs_mband(l1b_path_file,geo_path_file,platform,year,month,day
       stop error_stop_code
    end if
 
-   if (verbose) write(*,*) "Satellite is: ",platform
+   if (verbose) write(*,*) "Satellite is: ", platform
 
    ! The code below extracts date/time info from the segment name.
    ! Note that it requires the segment name to be in the generic format
    ! that's specified by the NOAA. Weird filenames will break things.
 
-   index2=index(l1b_path_file,'npp_d')
+   index2 = index(l1b_path_file, 'npp_d')
 
    ! get year, doy, hour and minute as strings
-   index2=index2+5
-   cyear=trim(adjustl(l1b_path_file(index2:index2+4)))
-   cmonth=trim(adjustl(l1b_path_file(index2+4:index2+5)))
-   cday=trim(adjustl(l1b_path_file(index2+6:index2+7)))
-   chour=trim(adjustl(l1b_path_file(index2+10:index2+11)))
-   cminute=trim(adjustl(l1b_path_file(index2+12:index2+13)))
+   index2 = index2+5
+   cyear = trim(adjustl(l1b_path_file(index2:index2+4)))
+   cmonth = trim(adjustl(l1b_path_file(index2+4:index2+5)))
+   cday = trim(adjustl(l1b_path_file(index2+6:index2+7)))
+   chour = trim(adjustl(l1b_path_file(index2+10:index2+11)))
+   cminute = trim(adjustl(l1b_path_file(index2+12:index2+13)))
 
    ! get year, doy, hour and minute as integers
    read(cyear(1:len_trim(cyear)), '(I4)') year
@@ -1728,9 +1728,9 @@ end subroutine setup_viirs_mband
 
 
 
-subroutine setup_viirs_iband(l1b_path_file,geo_path_file,platform,year,month,day, &
-   doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids_user, &
-   channel_info,verbose)
+subroutine setup_viirs_iband(l1b_path_file, geo_path_file, platform, year, month, day, &
+   doy, hour, minute, cyear, cmonth, cday, cdoy, chour, cminute, channel_ids_user, &
+   channel_info, verbose)
 
    use calender_m
    use channel_structures_m
@@ -1742,13 +1742,13 @@ subroutine setup_viirs_iband(l1b_path_file,geo_path_file,platform,year,month,day
    character(len=*),     intent(in)    :: l1b_path_file
    character(len=*),     intent(in)    :: geo_path_file
    character(len=*),     intent(out)   :: platform
-   integer(kind=sint),             intent(out)   :: year,month,day,doy
-   integer(kind=sint),             intent(out)   :: hour,minute
-   character(len=*),     intent(out)   :: cyear,cmonth,cday
-   character(len=*),     intent(out)   :: cdoy,chour,cminute
-   integer, pointer,               intent(in)    :: channel_ids_user(:)
-   type(channel_info_t),           intent(inout) :: channel_info
-   logical,                        intent(in)    :: verbose
+   integer(kind=sint),   intent(out)   :: year, month, day, doy
+   integer(kind=sint),   intent(out)   :: hour, minute
+   character(len=*),     intent(out)   :: cyear, cmonth, cday
+   character(len=*),     intent(out)   :: cdoy, chour, cminute
+   integer, pointer,     intent(in)    :: channel_ids_user(:)
+   type(channel_info_t), intent(inout) :: channel_info
+   logical,              intent(in)    :: verbose
 
    character(len=path_length) :: geo_dtstr, l1b_dtstr
 
@@ -1813,24 +1813,24 @@ subroutine setup_viirs_iband(l1b_path_file,geo_path_file,platform,year,month,day
    if (verbose) write(*,*) 'geo_path_file: ', trim(geo_path_file)
 
    ! Assume Suomi-NPP by default
-   platform="SuomiNPP"
+   platform = "SuomiNPP"
    ! check if l1b and geo file are of the same granule
-   index1=index(l1b_path_file,'npp_d',.true.)
-   index2=index(geo_path_file,'npp_d',.true.)
+   index1 = index(l1b_path_file, 'npp_d', .true.)
+   index2 = index(geo_path_file, 'npp_d', .true.)
 
    if (index1 .le. 0) then
-      index1=index(l1b_path_file,'j01_d',.true.)
-      index2=index(geo_path_file,'j01_d',.true.)
+      index1 = index(l1b_path_file, 'j01_d', .true.)
+      index2 = index(geo_path_file, 'j01_d', .true.)
       if (index1 .le. 0) then
          write(*,*)'ERROR: setup_viirs_iband(): Unsupported platform'
          stop error_stop_code
       end if
-      platform="NOAA20"
+      platform = "NOAA20"
    end if
 
 
-   l1b_dtstr=trim(adjustl(l1b_path_file(index2+5:index2+5+25)))
-   geo_dtstr=trim(adjustl(geo_path_file(index2+5:index2+5+25)))
+   l1b_dtstr = trim(adjustl(l1b_path_file(index2+5:index2+5+25)))
+   geo_dtstr = trim(adjustl(geo_path_file(index2+5:index2+5+25)))
 
    ! check if l1b and geo files identical
    if (trim(adjustl(l1b_dtstr)) .ne. &
@@ -1844,16 +1844,16 @@ subroutine setup_viirs_iband(l1b_path_file,geo_path_file,platform,year,month,day
       stop error_stop_code
    end if
 
-   if (verbose) write(*,*) "Satellite is: ",platform
+   if (verbose) write(*,*) "Satellite is: ", platform
 
    ! The code below extracts date/time info from the segment name.
    ! Note that it requires the segment name to be in the generic format
    ! that's specified by the NOAA. Weird filenames will break things.
 
-   index2=index(l1b_path_file,'npp_d')
+   index2 = index(l1b_path_file, 'npp_d')
 
    if (index2 .le. 0) then
-      index2=index(l1b_path_file,'j01_d',.true.)
+      index2 = index(l1b_path_file, 'j01_d', .true.)
       if (index2 .le. 0) then
          write(*,*)'ERROR: setup_viirs_iband(): Unsupported platform'
          stop error_stop_code
@@ -1861,12 +1861,12 @@ subroutine setup_viirs_iband(l1b_path_file,geo_path_file,platform,year,month,day
    end if
 
    ! get year, doy, hour and minute as strings
-   index2=index2+5
-   cyear=trim(adjustl(l1b_path_file(index2:index2+4)))
-   cmonth=trim(adjustl(l1b_path_file(index2+4:index2+5)))
-   cday=trim(adjustl(l1b_path_file(index2+6:index2+7)))
-   chour=trim(adjustl(l1b_path_file(index2+10:index2+11)))
-   cminute=trim(adjustl(l1b_path_file(index2+12:index2+13)))
+   index2 = index2+5
+   cyear = trim(adjustl(l1b_path_file(index2:index2+4)))
+   cmonth = trim(adjustl(l1b_path_file(index2+4:index2+5)))
+   cday = trim(adjustl(l1b_path_file(index2+6:index2+7)))
+   chour = trim(adjustl(l1b_path_file(index2+10:index2+11)))
+   cminute = trim(adjustl(l1b_path_file(index2+12:index2+13)))
 
    ! get year, doy, hour and minute as integers
    read(cyear(1:len_trim(cyear)), '(I4)') year
@@ -1927,9 +1927,9 @@ subroutine common_setup(channel_info, channel_ids_user, channel_ids_default, &
    real,                 intent(in)    :: all_channel_sea_uncertainty(:)
    integer,              intent(in)    :: all_nchannels_total
 
-   integer, dimension(:),allocatable   :: unique_views
+   integer, dimension(:), allocatable  :: unique_views
 
-   integer :: i,j,n_views
+   integer :: i, j, n_views
    integer :: i_sw
    integer :: i_lw
 
@@ -1984,8 +1984,8 @@ subroutine common_setup(channel_info, channel_ids_user, channel_ids_default, &
    ! It loops over all channels to determine unique views
    n_views = 1
    unique_views(1) = channel_info%channel_view_ids(1)
-   first: do i=2,channel_info%nchannels_total
-      do j=1,n_views
+   first: do i = 2, channel_info%nchannels_total
+      do j = 1, n_views
          if (unique_views(j) == channel_info%channel_view_ids(i)) then
             cycle first
          end if
@@ -2038,7 +2038,7 @@ subroutine common_setup(channel_info, channel_ids_user, channel_ids_default, &
          ! select the equivalent RTTOV channel (in view = 1) for each of the
          ! actual instrument views (view > 1). For simplicity we also calculate
          ! for view = 1.
-         do j=1,channel_info%nchannels_total
+         do j = 1, channel_info%nchannels_total
             if ((channel_info%channel_view_ids(j) .eq. 1) .and. &
                 (channel_info%channel_wl_abs(j) .eq. channel_info%channel_wl_abs(i))) then
                channel_info%sw_rttov_viewone_id(i_sw) = j
@@ -2055,7 +2055,7 @@ subroutine common_setup(channel_info, channel_ids_user, channel_ids_default, &
 
          channel_info%lw_view_ids(i_lw) = channel_info%channel_view_ids(i)
 
-         do j=1,channel_info%nchannels_total
+         do j = 1, channel_info%nchannels_total
             if ((channel_info%channel_view_ids(j) .eq. 1) .and. &
                 (channel_info%channel_wl_abs(j) .eq. channel_info%channel_wl_abs(i))) then
                channel_info%lw_rttov_viewone_id(i_lw) = j

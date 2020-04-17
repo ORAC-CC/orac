@@ -76,9 +76,9 @@ subroutine read_himawari_dimensions(l1_5_file, n_across_track, n_along_track, &
 
    implicit none
 
-   character(len=*),   intent(in)    :: l1_5_file
-   integer(kind=lint), intent(out)   :: n_across_track, n_along_track
-   logical,                intent(in)    :: verbose
+   character(len=*),   intent(in)  :: l1_5_file
+   integer(kind=lint), intent(out) :: n_across_track, n_along_track
+   logical,            intent(in)  :: verbose
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< read_himawari_dimensions()'
 
@@ -115,7 +115,7 @@ end subroutine read_himawari_dimensions
 ! verbose             logical in   If true then print verbose information.
 !-------------------------------------------------------------------------------
 subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
-   imager_angles, imager_time, channel_info, use_predef_geo,geo_file_path, &
+   imager_angles, imager_time, channel_info, use_predef_geo, geo_file_path, &
    global_atts, verbose)
 
    use iso_c_binding
@@ -194,8 +194,8 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
                            'the himawari_read module'
    ! Load all the data
    if (AHI_Main_Read(trim(infile)//C_NULL_CHAR, &
-                     trim(geo_file_path)//C_NULL_CHAR, preproc, ahi_extent, n_bands,&
-                     band_ids, 0, 1, use_predef_geo, .false., .false.,global_atts%Satpos_Metadata, verbose) .ne. 0) then
+                     trim(geo_file_path)//C_NULL_CHAR, preproc, ahi_extent, n_bands, &
+                     band_ids, 0, 1, use_predef_geo, .false., .false., global_atts%Satpos_Metadata, verbose) .ne. 0) then
       write(*,*) 'ERROR: in read_himawari_read(), calling ' // &
                  'AHI_Main_Read(), filename = ', trim(infile)
       stop error_stop_code

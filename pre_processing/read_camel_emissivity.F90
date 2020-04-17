@@ -70,14 +70,14 @@ function read_camel_emissivity(path_to_file, emis, wavelengths, verbose, flag, &
 
    ! Input variables
    character(len=*), intent(in)               :: path_to_file
-   real,                       intent(in), dimension(:) :: wavelengths
-   logical,                    intent(in)               :: verbose
-   integer,                    intent(in), optional     :: flag
-   integer,                    intent(in), optional     :: wavenumber
+   real,             intent(in), dimension(:) :: wavelengths
+   logical,          intent(in)               :: verbose
+   integer,          intent(in), optional     :: flag
+   integer,          intent(in), optional     :: wavenumber
 
    ! Output variables
-   type(emis_t),               intent(out)              :: emis
-   integer(kind=sint)                                   :: stat
+   type(emis_t),     intent(out)              :: emis
+   integer(kind=sint)                         :: stat
 
    ! Local variables
    integer            :: i, j
@@ -87,7 +87,7 @@ function read_camel_emissivity(path_to_file, emis, wavelengths, verbose, flag, &
    integer            :: fid
    integer            :: xdim, ydim, zdim
    integer            :: nDim
-   real, dimension(nBands):: camel_wvl
+   real, dimension(nBands) :: camel_wvl
 
    real, allocatable, dimension(:,:,:) :: cache
 
@@ -98,7 +98,7 @@ function read_camel_emissivity(path_to_file, emis, wavelengths, verbose, flag, &
 
    n_wavelengths = size(wavelengths)
 
-   camel_wvl = (/ 3.6,4.3,5.0,5.8,7.6,8.3,8.6,9.1,10.6,10.8,11.3,12.1,14.3 /)
+   camel_wvl = (/ 3.6, 4.3, 5.0, 5.8, 7.6, 8.3, 8.6, 9.1, 10.6, 10.8, 11.3, 12.1, 14.3 /)
 
    ! Open NetCDF file
    call nc_open(fid, path_to_file, 'read_camel_emissivity()')
@@ -127,7 +127,7 @@ function read_camel_emissivity(path_to_file, emis, wavelengths, verbose, flag, &
    if (present(flag)) then
       if (flag .gt. 0) then
          allocate(emis%flag(ydim,xdim))
-         call nc_read_array(fid,'camel_qflag',emis%flag,verbose)
+         call nc_read_array(fid, 'camel_qflag', emis%flag, verbose)
       end if
    end if
 
@@ -135,10 +135,10 @@ function read_camel_emissivity(path_to_file, emis, wavelengths, verbose, flag, &
 
 
    allocate(cache(13,7200,3600))
-   call nc_read_array(fid,'camel_emis',cache,verbose)
+   call nc_read_array(fid, 'camel_emis', cache, verbose)
 
    ! Extract the data for each of the requested bands
-   do i=1,n_wavelengths
+   do i = 1, n_wavelengths
       if (wavelengths(i) .le. camel_wvl(1)) then
          emis%emissivity(:,:,i) = cache(1,:,:)
       else if (wavelengths(i) .ge. camel_wvl(nBands)) then

@@ -37,12 +37,12 @@ subroutine read_abi_dimensions(l1_5_file, n_across_track, n_along_track, verbose
 
    implicit none
 
-   character(len=*),   intent(in)    :: l1_5_file
-   integer(kind=lint), intent(out)   :: n_across_track, n_along_track
-   logical,                intent(in)    :: verbose
+   character(len=*),   intent(in)  :: l1_5_file
+   integer(kind=lint), intent(out) :: n_across_track, n_along_track
+   logical,            intent(in)  :: verbose
 
-   integer      :: fid, index2, band
-   integer      :: n_lines, n_cols
+   integer          :: fid, index2, band
+   integer          :: n_lines, n_cols
    character(len=2) :: cband
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< read_abi_dimensions()'
@@ -126,9 +126,9 @@ subroutine get_abi_data(infiles, imager_angles, imager_measurements, &
 
    allocate(tmpout(imager_geolocation%nx,imager_geolocation%ny))
 
-   do i=1, n_bands
+   do i = 1, n_bands
       if (band_ids(i) .lt. 7) then
-         tmpout(:,:)     =       sreal_fill_value
+         tmpout(:,:) = sreal_fill_value
          if (verbose) write(*,*) "Loading GOES visible band ", band_ids(i)
          if (band_ids(i) .eq. 1 .or. band_ids(i) .eq. 3 .or. band_ids(i) .eq. 5) then
             allocate(tmprad(imager_geolocation%nx*2,imager_geolocation%ny*2))
@@ -144,7 +144,7 @@ subroutine get_abi_data(infiles, imager_angles, imager_measurements, &
          end if
 
          tmpout = tmpout * irrad
-         where(imager_geolocation%latitude .eq. sreal_fill_value) tmpout=sreal_fill_value
+         where(imager_geolocation%latitude .eq. sreal_fill_value) tmpout = sreal_fill_value
          where(tmpout .lt. -0.1) tmpout = sreal_fill_value
          imager_measurements%data(:,:,i) = tmpout
 
@@ -225,9 +225,9 @@ subroutine read_abi_bin(infiles, imager_geolocation, imager_measurements, &
 
    goodf = -1
 
-   do i=1, channel_info%nchannels_total
+   do i = 1, channel_info%nchannels_total
       if(channel_info%channel_ids_instr(i) .eq. 4 .or. channel_info%channel_ids_instr(i) .gt. 6) then
-         goodf=i
+         goodf = i
          exit
       end if
    end do

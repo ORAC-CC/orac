@@ -20,7 +20,7 @@
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
-subroutine select_camel_emiss_file(cyear,cmonth,camel_emis_path, &
+subroutine select_camel_emiss_file(cyear, cmonth, camel_emis_path, &
      camel_emis_path_file)
 
    use preproc_structures_m
@@ -32,10 +32,10 @@ subroutine select_camel_emiss_file(cyear,cmonth,camel_emis_path, &
    character(len=*), intent(in)  :: camel_emis_path
    character(len=*), intent(out) :: camel_emis_path_file
 
-   logical                            :: camel_emis_file_exist
-   character(len=7)                   :: camel_emis_file_read
+   logical                       :: camel_emis_file_exist
+   character(len=7)              :: camel_emis_file_read
 
-   camel_emis_path_file=trim(adjustl(camel_emis_path))// &
+   camel_emis_path_file = trim(adjustl(camel_emis_path))// &
       '/CAM5K30EM_emis_'// &
       trim(adjustl(cyear))// &
       trim(adjustl(cmonth))//'_V001.nc'

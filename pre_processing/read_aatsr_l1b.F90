@@ -97,7 +97,7 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
            fsza, fiza, fsaz, fraz, fflg, fqul, fday, &
            fch1, fch2, fch3, fch4, fch5, fch6, fch7, &
            start_date, gc1_file, vc1_file, is_lut_drift_corrected) &
-           bind(C,name='read_aatsr_orbit')
+           bind(C, name='read_aatsr_orbit')
          use iso_c_binding ! technically Fortran 2003
          use preproc_constants_m
 
@@ -122,16 +122,16 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
 
    ! Fortran variables
    character(len=*),            intent(in)    :: l1b_file, drift_file
-   type(imager_geolocation_t),     intent(inout) :: imager_geolocation
-   type(imager_measurements_t),    intent(inout) :: imager_measurements
-   type(imager_angles_t),          intent(inout) :: imager_angles
-   type(imager_flags_t),           intent(inout) :: imager_flags
-   type(imager_time_t),            intent(inout) :: imager_time
-   type(channel_info_t),           intent(in)    :: channel_info
+   type(imager_geolocation_t),  intent(inout) :: imager_geolocation
+   type(imager_measurements_t), intent(inout) :: imager_measurements
+   type(imager_angles_t),       intent(inout) :: imager_angles
+   type(imager_flags_t),        intent(inout) :: imager_flags
+   type(imager_time_t),         intent(inout) :: imager_time
+   type(channel_info_t),        intent(in)    :: channel_info
    character(len=*),            intent(in)    :: sensor
-   logical,                        intent(in)    :: verbose
+   logical,                     intent(in)    :: verbose
 
-   integer                        :: i,ii,j,jj,status
+   integer                        :: i, ii, j, jj, status
    integer(kind=byte)             :: view_selection
    real(kind=sreal), dimension(4) :: A
    type(aatsr_drift_lut_t)        :: lut
@@ -144,7 +144,7 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
    character(kind=c_char, len=path_length) :: l1b_file_c
    character(kind=c_char, len=30)          :: start_date
    character(kind=c_char, len=62)          :: gc1_file, vc1_file
-   real(kind=c_double), allocatable, dimension(:)     :: nday, fday
+   real(kind=c_double),   allocatable, dimension(:)   :: nday, fday
    integer(kind=c_short), allocatable, dimension(:)   :: ch, view
    integer(kind=c_short), allocatable, dimension(:,:) :: nflg, fflg
    integer(kind=c_short), allocatable, dimension(:,:) :: nqul, fqul
@@ -202,7 +202,7 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
    ! assign geolocation and angle pointers
    lat = c_loc(imager_geolocation%latitude(startx,1))
    lon = c_loc(imager_geolocation%longitude(startx,1))
-   if (iand(view_selection,1_byte) .gt. 0) then
+   if (iand(view_selection, 1_byte) .gt. 0) then
       allocate(nflg(startx:imager_geolocation%endx,1:ny))
       allocate(nqul(startx:imager_geolocation%endx,1:ny))
       allocate(nday(1:ny))
@@ -215,7 +215,7 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
       allocate(nqul(1,1))
       allocate(nday(1))
    end if
-   if (iand(view_selection,2_byte) .gt. 0) then
+   if (iand(view_selection, 2_byte) .gt. 0) then
       allocate(fflg(startx:imager_geolocation%endx,1:ny))
       allocate(fqul(startx:imager_geolocation%endx,1:ny))
       allocate(fday(1:ny))
@@ -231,7 +231,7 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
 
    ! assign write pointers for required channels and views. Fortran pointers
    ! required for aatsr_apply_corrections as uncertain of last index
-   do i=1,nch
+   do i = 1, nch
       if (view(i) .eq. 1) then
          select case (ch(i))
          case (1)
@@ -249,8 +249,8 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
          case (7)
             nch7 = c_loc(imager_measurements%data(startx,1,i))
          case default
-            write(*,*) 'ERROR: read_aatsr_l1b(): Channel ',ch(i),', view ', &
-                       view(i),' not defined for AATSR.'
+            write(*,*) 'ERROR: read_aatsr_l1b(): Channel ', ch(i), ', view ', &
+                       view(i), ' not defined for AATSR.'
             stop error_stop_code
          end select
       else if (view(i) .eq. 2) then
@@ -271,20 +271,20 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
          case (7)
             fch7 = c_loc(imager_measurements%data(startx,1,i))
          case default
-            write(*,*) 'ERROR: read_aatsr_l1b(): Channel ',ch(i),', view ', &
-                       view(i),' not defined for AATSR.'
+            write(*,*) 'ERROR: read_aatsr_l1b(): Channel ', ch(i), ', view ', &
+                       view(i), ' not defined for AATSR.'
             stop error_stop_code
          end select
       else
-         write(*,*) 'ERROR: read_aatsr_l1b(): View ',view(i),' not defined ' // &
+         write(*,*) 'ERROR: read_aatsr_l1b(): View ', view(i), ' not defined ' // &
                     'for AATSR.'
          stop error_stop_code
       end if
    end do
 
    ! read data using C routine (correct starts to zero offset)
-   startx=startx-1
-   starty=starty-1
+   startx = startx-1
+   starty = starty-1
    l1b_file_c = trim(l1b_file)//C_NULL_CHAR
    if (verbose) write(*,*) 'Calling C function READ_AATSR_ORBIT with file ', &
         trim(l1b_file)
@@ -315,7 +315,7 @@ if (.not. is_lut_drift_corrected) then
    ! apply corrections
    if (verbose) write(*,*) 'apply calibration corrections'
 
-   do i=1,channel_info%nchannels_total
+   do i = 1, channel_info%nchannels_total
       j = int(ch(i))
 
       ! SW drift correction
@@ -329,7 +329,7 @@ if (.not. is_lut_drift_corrected) then
              'ATS_GC1_AXVIEC20020123_073430_20020101_000000_20200101_000000') then
             ! this correction acts on the voltage, which is -4.25*radiance
             A = pi/1.553 * (/ 1.0, -4.25, 18.0625, -76.765625 /) * &
-                 (/ -0.000027,-0.1093,0.009393,0.001013 /)
+                 (/ -0.000027, -0.1093, 0.009393, 0.001013 /)
             ! evaluate:
             ! pi*(A(1) + A(2)*volts + A(3)*volts**2 + A(4)*volts**3) / 1.553
             imager_measurements%data(:,:,i) = A(1) + &
@@ -343,8 +343,8 @@ if (.not. is_lut_drift_corrected) then
             ! drift = old correction / new correction
             call aatsr_drift_correction(start_date, vc1_file, lut, j, &
                  new_drift, old_drift, drift_var)
-            if (verbose) write(*,*) 'Corrections - new_drift:',new_drift, &
-                 'old_drift:',old_drift,'drift_var:',drift_var
+            if (verbose) write(*,*) 'Corrections - new_drift:', new_drift, &
+                 'old_drift:', old_drift, 'drift_var:', drift_var
             imager_measurements%data(:,:,i) = &
                  (old_drift/new_drift) * imager_measurements%data(:,:,i)
          end if
@@ -355,12 +355,12 @@ end if ! drift corrected
    ! This correction need to be applied to AATSR version 2.1/3.0
    ! NB might need to remove this in future versions
    if (trim(adjustl(sensor)) .eq. 'AATSR') then
-      do i=1,channel_info%nchannels_total
+      do i = 1, channel_info%nchannels_total
          j = int(ch(i))
          ! 12um nonlinearity_correction
          if (j .eq. 7) then
-            do ii=imager_geolocation%startx,imager_geolocation%endx
-               do jj=1,imager_geolocation%ny
+            do ii = imager_geolocation%startx, imager_geolocation%endx
+               do jj = 1, imager_geolocation%ny
                   imager_measurements%data(ii,jj,i) = &
                        imager_measurements%data(ii,jj,i) - &
                        aatsr_12um_nonlinearity_correction( &
@@ -372,7 +372,7 @@ end if ! drift corrected
    end if
 
 if (is_lut_drift_corrected) then
-   do i=1,channel_info%nchannels_total
+   do i = 1, channel_info%nchannels_total
       j = int(ch(i))
       if (j.le.4) then
          ! AATSR L1B reflectances are stored as percentage values, so scale to
@@ -384,16 +384,16 @@ end if
 
    ! copy time values into rows from nadir (which we're presumably viewing) and
    ! translate to Julian time
-   do i=1,imager_geolocation%ny
+   do i = 1, imager_geolocation%ny
       imager_time%time(:,i) = nday(i) + 2451544.5
    end do
 
    ! translate flags (THIS USED TO BE RATHER MORE COMPLICATED)
    if (iand(view_selection, 1_byte) .gt. 0_byte) then
-      do i=imager_geolocation%startx,imager_geolocation%endx
-         do j=1,imager_geolocation%ny
+      do i = imager_geolocation%startx, imager_geolocation%endx
+         do j = 1, imager_geolocation%ny
             imager_flags%lsflag(i,j) = iand(nflg(i,j), 1_c_short)
-            temp = iand(nflg(i,j),2_c_short)
+            temp = iand(nflg(i,j), 2_c_short)
             if (temp .gt. 0) then
                imager_flags%cflag(i,j,1) = 1
             else
@@ -403,8 +403,8 @@ end if
       end do
    end if
    if (iand(view_selection, 2_byte) .gt. 0_byte) then
-      do i=imager_geolocation%startx,imager_geolocation%endx
-         do j=1,imager_geolocation%ny
+      do i = imager_geolocation%startx, imager_geolocation%endx
+         do j = 1, imager_geolocation%ny
             temp = iand(fflg(i,j), 2_c_short)
             if (temp .gt. 0) then
                imager_flags%cflag(i,j,2) = 1

@@ -133,13 +133,13 @@ function read_oceancolour_cci(path_to_file, occci, wavelengths, verbose) &
    implicit none
 
    ! Input variables
-   character(len=*),  intent(in)               :: path_to_file
-   real,                       intent(in)               :: wavelengths(:)
-   logical,                    intent(in)               :: verbose
+   character(len=*),  intent(in)  :: path_to_file
+   real,              intent(in)  :: wavelengths(:)
+   logical,           intent(in)  :: verbose
 
    ! Output variables
-   type(occci_t),              intent(out)              :: occci
-   integer(kind=sint)                                   :: stat
+   type(occci_t),     intent(out) :: occci
+   integer(kind=sint)             :: stat
 
 
    ! Local variables
@@ -150,17 +150,17 @@ function read_oceancolour_cci(path_to_file, occci, wavelengths, verbose) &
         (/ 'atot_412', 'atot_443', 'atot_490', 'atot_510', &
            'atot_555', 'atot_670' /)
    character(len=7), parameter :: occci_bbpvar(occci_nwl) = &
-        (/ 'bbp_412', 'bbp_443', 'bbp_490', 'bbp_510','bbp_555', 'bbp_670' /)
+        (/ 'bbp_412', 'bbp_443', 'bbp_490', 'bbp_510', 'bbp_555', 'bbp_670' /)
 
-   integer                     :: i, j
-   integer                     :: nwl
-   logical                     :: occci_rd(occci_nwl)
-   integer                     :: fid
-   integer                     :: ntime, nlon ,nlat
-   integer, allocatable        :: iwavelength(:,:)
-   real(kind=dreal)            :: lonmin, latmin
-   real(kind=dreal)            :: lonres, latres
-   character(len=21)           :: slonres, slatres
+   integer                       :: i, j
+   integer                       :: nwl
+   logical                       :: occci_rd(occci_nwl)
+   integer                       :: fid
+   integer                       :: ntime, nlon , nlat
+   integer, allocatable          :: iwavelength(:,:)
+   real(kind=dreal)              :: lonmin, latmin
+   real(kind=dreal)              :: lonres, latres
+   character(len=21)             :: slonres, slatres
    real(kind=sreal), allocatable :: cache(:,:)
 
 
@@ -185,7 +185,7 @@ function read_oceancolour_cci(path_to_file, occci, wavelengths, verbose) &
    ntime = nc_dim_length(fid, 'time', 'read_oceancolour_cci()', .false.)
    nlon = nc_dim_length(fid, 'lon', 'read_oceancolour_cci()', .false.)
    nlat = nc_dim_length(fid, 'lat', 'read_oceancolour_cci()', .false.)
-   if (verbose) write(*,*) 'Dimensions are (time, lon, lat): ',ntime,nlon,nlat
+   if (verbose) write(*,*) 'Dimensions are (time, lon, lat): ', ntime, nlon, nlat
    if (ntime .gt. 1) then
       write(*,*) 'Error: read_oceancolour_cci(): Time dimension is not 1. ' // &
            'Not expecting multi-temporal data. Filename: ', &
@@ -233,12 +233,12 @@ function read_oceancolour_cci(path_to_file, occci, wavelengths, verbose) &
    ! so the calling routine can do the interpolation
    if (verbose) write(*,*) 'Selecting bands to read based on wavelength'
    occci_rd = .false.
-   do i = 1,nwl
-      j=1
+   do i = 1, nwl
+      j = 1
       do while ( (occci_wl(j) .le. wavelengths(i)) .and. (j .lt. occci_nwl) )
-         j=j+1
+         j = j+1
       end do
-      j=j-1
+      j = j-1
       occci_rd(j) = .true.
       iwavelength(:,i) = j
       if (j .eq.  occci_nwl) then
@@ -261,19 +261,19 @@ function read_oceancolour_cci(path_to_file, occci, wavelengths, verbose) &
    allocate(cache(nlon,nlat))
 
    ! Loop over the required data fields and read into the output structure
-   j=1
-   do i=1,occci_nwl
+   j = 1
+   do i = 1, occci_nwl
       if (occci_rd(i)) then
          occci%wavelength(j) = occci_wl(i)
          where(iwavelength .eq. i)
             occci%iwavelength = j
          end where
-         if (verbose) write(*,*) 'Reading data for Wvl: ',occci%wavelength(j)
+         if (verbose) write(*,*) 'Reading data for Wvl: ', occci%wavelength(j)
          call nc_read_array(fid, occci_atotvar(i), cache, verbose)
          occci%atot(:,:,j) = cache
          call nc_read_array(fid, occci_bbpvar(i), cache, verbose)
          occci%bbs(:,:,j) = cache
-         j=j+1
+         j = j+1
       end if
    end do
 
@@ -354,23 +354,23 @@ subroutine get_ocean_colour(cyear, cmonth, occci_path, lat, lon, &
    implicit none
 
    ! Input arguments
-   character(len=*),                  intent(in)  :: cyear
-   character(len=*),                  intent(in)  :: cmonth
-   character(len=*),                  intent(in)  :: occci_path
-   real(kind=sreal), intent(in)           :: lat(:)
-   real(kind=sreal), intent(in)           :: lon(:)
-   type(channel_info_t), intent(in)       :: channel_info
-   logical, intent(in)                    :: assume_full_path
-   logical, intent(in)                    :: verbose
+   character(len=*),     intent(in)  :: cyear
+   character(len=*),     intent(in)  :: cmonth
+   character(len=*),     intent(in)  :: occci_path
+   real(kind=sreal),     intent(in)  :: lat(:)
+   real(kind=sreal),     intent(in)  :: lon(:)
+   type(channel_info_t), intent(in)  :: channel_info
+   logical,              intent(in)  :: assume_full_path
+   logical,              intent(in)  :: verbose
 
    ! Output arguments
    type(ocean_colour_t), allocatable, intent(out) :: ocean_colour(:,:)
 
    ! Local variables
-   integer(kind=lint)              :: i,j,k,ii
+   integer(kind=lint)              :: i, j, k, ii
    integer                         :: nbands, nbands_occci
    integer(kind=lint)              :: nsea
-   real(kind=sreal), allocatable   :: wavelengths(:)
+   real(kind=sreal),   allocatable :: wavelengths(:)
    integer(kind=lint), allocatable :: have_data_idx(:)
    integer                         :: iyear, imonth
    character(len=4)                :: cyear2
@@ -378,13 +378,13 @@ subroutine get_ocean_colour(cyear, cmonth, occci_path, lat, lon, &
    character(len=path_length)      :: occci_path_full
    character(len=path_length)      :: occci_file_regex
    character(len=path_length)      :: occci_file
-   logical                         :: occci_file_exist=.false.
+   logical                         :: occci_file_exist = .false.
    character(len=7)                :: occci_file_read
    type(occci_t)                   :: occci
-   real(kind=sreal), allocatable   :: tmp_data(:,:), tmp_data2(:,:)
+   real(kind=sreal),   allocatable :: tmp_data(:,:), tmp_data2(:,:)
    real(kind=sreal)                :: tmp_val
    integer(kind=byte), allocatable :: fg_mask(:,:)
-   type(interpol_t), allocatable   :: interp(:)
+   type(interpol_t),   allocatable :: interp(:)
    real(kind=sreal)                :: dwl
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering get_ocean_colour()'
@@ -392,8 +392,8 @@ subroutine get_ocean_colour(cyear, cmonth, occci_path, lat, lon, &
    ! Generate the list of wavelengths required. We ignore multiple views
    ! here, as the read_oceancolour_cci ensures that the required data is
    ! only read once
-   nbands=channel_info%nchannels_sw
-   nsea=size(lat)
+   nbands = channel_info%nchannels_sw
+   nsea = size(lat)
 
    ! Allocate the output structure
    allocate(ocean_colour(nbands,nsea))
@@ -405,7 +405,7 @@ subroutine get_ocean_colour(cyear, cmonth, occci_path, lat, lon, &
    nbands_occci = count(channel_info%channel_wl_abs .lt. 0.8)
    allocate(wavelengths(nbands_occci))
    allocate(have_data_idx(nbands_occci))
-   ii=1
+   ii = 1
    do i = 1, nbands
       if (channel_info%channel_wl_abs(channel_info%map_ids_sw_to_channel(i)) &
            .lt. 0.8) then
@@ -450,7 +450,7 @@ subroutine get_ocean_colour(cyear, cmonth, occci_path, lat, lon, &
          occci_file_regex = 'ESACCI-OC-L3S-OC_PRODUCTS-MERGED-1M_MONTHLY_4km_GEO_..._OC._QAA-'//&
                             trim(adjustl(cyear2))//trim(adjustl(cmonth))//'-fv.\..\.nc'
          if (match_file(trim(occci_path_full), trim(occci_file_regex), occci_file) .ne. 0) then
-            write(*,*) 'ERROR: get_ocean_colour(): Unable to locate ', 'OceanColour_cci data: ',&
+            write(*,*) 'ERROR: get_ocean_colour(): Unable to locate ', 'OceanColour_cci data: ', &
                        trim(occci_path_full)//'/'//trim(occci_file_regex)
             stop error_stop_code
          end if
@@ -478,7 +478,7 @@ subroutine get_ocean_colour(cyear, cmonth, occci_path, lat, lon, &
    if (read_oceancolour_cci(occci_path_file, occci, wavelengths, verbose) .ne. &
        NF90_NOERR) then
       write(*,*) 'ERROR: read_oceancolour_cci: Problem encountered '// &
-           'reading OceanColour_cci file: ',trim(occci_path_file)
+           'reading OceanColour_cci file: ', trim(occci_path_file)
       stop error_stop_code
    end if
 
