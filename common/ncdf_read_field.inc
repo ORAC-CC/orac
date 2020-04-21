@@ -21,7 +21,12 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-   if (verbose) print*,'Reading variable: ',trim(name)
+   if (verbose) then
+      print*, 'Reading variable: ', trim(name)
+      print*, 'Start:  ', start_pos
+      print*, 'Count:  ', counter
+      print*, 'Stride: ', stride
+   end if
 
    ! read data
    ierr = nf90_get_var(ncid, vid, arr, start_pos, counter, stride)
@@ -45,7 +50,7 @@
 
    ! additional information for print out
    if (verbose) then
-      if (nf90_get_att(ncid,vid,'units',unit).eq.NF90_NOERR) then
+      if (nf90_get_att(ncid, vid, 'units', unit).eq.NF90_NOERR) then
            call c_to_f_str(unit)
            print*, 'Field units: ', trim(unit)
       end if
