@@ -94,11 +94,11 @@ subroutine write_solar_rttov(netcdf_info, coefs, idim, jdim, nlev, satza, &
    end if
 
    ! Write outputs
-   call nc_write_array(netcdf_info%ncid_swrtm, "tac_sw", &
+   call ncdf_write_array(netcdf_info%ncid_swrtm, "tac_sw", &
                        netcdf_info%vid_tac_sw, dummy_tac, &
                        1, chan_num, 1, 1, 1, nlev, &
                        1, idim, 1, 1, jdim, 1)
-   call nc_write_array(netcdf_info%ncid_swrtm, "tbc_sw", &
+   call ncdf_write_array(netcdf_info%ncid_swrtm, "tbc_sw", &
                        netcdf_info%vid_tbc_sw, dummy_tbc, &
                        1, chan_num, 1, 1, 1, nlev, &
                        1, idim, 1, 1, jdim, 1)

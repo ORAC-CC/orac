@@ -40,13 +40,13 @@ subroutine read_input_dimensions(fname, indexing, verbose)
 
    ! Open file
 
-   call nc_open(ncid, fname, 'read_input_dimensions()')
+   call ncdf_open(ncid, fname, 'read_input_dimensions()')
    call nullify_indexing(indexing)
 
-   indexing%Xdim   = nc_dim_length(ncid, 'across_track', 'read_input_dimensions()', verbose)
-   indexing%Ydim   = nc_dim_length(ncid, 'along_track', 'read_input_dimensions()',  verbose)
-   indexing%Ny     = nc_dim_length(ncid, 'channels', 'read_input_dimensions()',     verbose)
-   indexing%NViews = nc_dim_length(ncid, 'views', 'read_input_dimensions()',        verbose)
+   indexing%Xdim   = ncdf_dim_length(ncid, 'across_track', 'read_input_dimensions()', verbose)
+   indexing%Ydim   = ncdf_dim_length(ncid, 'along_track', 'read_input_dimensions()',  verbose)
+   indexing%Ny     = ncdf_dim_length(ncid, 'channels', 'read_input_dimensions()',     verbose)
+   indexing%NViews = ncdf_dim_length(ncid, 'views', 'read_input_dimensions()',        verbose)
 
    ! Read attributes that should eventually be dimensions
    ierr = nf90_get_att(ncid, NF90_GLOBAL, 'NState', indexing%Nx)
@@ -57,6 +57,6 @@ subroutine read_input_dimensions(fname, indexing, verbose)
    end if
 
    ! Close msi file
-   call nc_close(ncid, 'read_input_dimensions()')
+   call ncdf_close(ncid, 'read_input_dimensions()')
 
 end subroutine read_input_dimensions

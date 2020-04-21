@@ -208,7 +208,7 @@ subroutine netcdf_create_rtm(global_atts, source_atts, cyear, cmonth, cday, chou
          ! define 1-D variables
          dimids_1d(1) = netcdf_info%dimid_lw_channels
 
-         call nc_def_var_long_packed_long( &
+         call ncdf_def_var_long_packed_long( &
               netcdf_info%ncid_lwrtm, &
               dimids_1d, &
               'lw_channel_abs_ids', &
@@ -216,7 +216,7 @@ subroutine netcdf_create_rtm(global_atts, source_atts, cyear, cmonth, cday, chou
               verbose, &
               fill_value = lint_fill_value)
 
-         call nc_def_var_long_packed_long( &
+         call ncdf_def_var_long_packed_long( &
               netcdf_info%ncid_lwrtm, &
               dimids_1d, &
               'lw_channel_instr_ids', &
@@ -224,7 +224,7 @@ subroutine netcdf_create_rtm(global_atts, source_atts, cyear, cmonth, cday, chou
               verbose, &
               fill_value = lint_fill_value)
 
-         call nc_def_var_float_packed_float( &
+         call ncdf_def_var_float_packed_float( &
               netcdf_info%ncid_lwrtm, &
               dimids_1d, &
               'lw_channel_wvl', &
@@ -239,7 +239,7 @@ subroutine netcdf_create_rtm(global_atts, source_atts, cyear, cmonth, cday, chou
          dimids_3d(3) = netcdf_info%dimid_y_lw
 
          ! define emiss_lw
-         call nc_def_var_float_packed_float( &
+         call ncdf_def_var_float_packed_float( &
               netcdf_info%ncid_lwrtm, &
               dimids_3d, &
               'emiss_lw', &
@@ -257,7 +257,7 @@ subroutine netcdf_create_rtm(global_atts, source_atts, cyear, cmonth, cday, chou
          dimids_4d(4) = netcdf_info%dimid_y_lw
 
          ! define tac_lw
-         call nc_def_var_float_packed_float( &
+         call ncdf_def_var_float_packed_float( &
               netcdf_info%ncid_lwrtm, &
               dimids_4d, &
               'tac_lw', &
@@ -268,7 +268,7 @@ subroutine netcdf_create_rtm(global_atts, source_atts, cyear, cmonth, cday, chou
               fill_value = sreal_fill_value)
 
          ! define tbc_lw
-         call nc_def_var_float_packed_float( &
+         call ncdf_def_var_float_packed_float( &
               netcdf_info%ncid_lwrtm, &
               dimids_4d, &
               'tbc_lw', &
@@ -279,7 +279,7 @@ subroutine netcdf_create_rtm(global_atts, source_atts, cyear, cmonth, cday, chou
               fill_value = sreal_fill_value)
 
          ! define rbc_up_lw
-         call nc_def_var_float_packed_float( &
+         call ncdf_def_var_float_packed_float( &
               netcdf_info%ncid_lwrtm, &
               dimids_4d, &
               'rbc_up_lw', &
@@ -290,7 +290,7 @@ subroutine netcdf_create_rtm(global_atts, source_atts, cyear, cmonth, cday, chou
               fill_value = sreal_fill_value)
 
          ! define rac_up_lw
-         call nc_def_var_float_packed_float( &
+         call ncdf_def_var_float_packed_float( &
               netcdf_info%ncid_lwrtm, &
               dimids_4d, &
               'rac_up_lw', &
@@ -301,7 +301,7 @@ subroutine netcdf_create_rtm(global_atts, source_atts, cyear, cmonth, cday, chou
               fill_value = sreal_fill_value)
 
          ! define rac_down_lw
-         call nc_def_var_float_packed_float( &
+         call ncdf_def_var_float_packed_float( &
               netcdf_info%ncid_lwrtm, &
               dimids_4d, &
               'rac_down_lw', &
@@ -363,7 +363,7 @@ subroutine netcdf_create_rtm(global_atts, source_atts, cyear, cmonth, cday, chou
          ! define 1-D variables
          dimids_1d(1) = netcdf_info%dimid_sw_channels
 
-         call nc_def_var_long_packed_long( &
+         call ncdf_def_var_long_packed_long( &
               netcdf_info%ncid_swrtm, &
               dimids_1d, &
               'sw_channel_abs_ids', &
@@ -371,7 +371,7 @@ subroutine netcdf_create_rtm(global_atts, source_atts, cyear, cmonth, cday, chou
               verbose, &
               fill_value = lint_fill_value)
 
-         call nc_def_var_long_packed_long( &
+         call ncdf_def_var_long_packed_long( &
               netcdf_info%ncid_swrtm, &
               dimids_1d, &
               'sw_channel_instr_ids', &
@@ -379,7 +379,7 @@ subroutine netcdf_create_rtm(global_atts, source_atts, cyear, cmonth, cday, chou
               verbose, &
               fill_value = lint_fill_value)
 
-         call nc_def_var_float_packed_float( &
+         call ncdf_def_var_float_packed_float( &
               netcdf_info%ncid_swrtm, &
               dimids_1d, &
               'sw_channel_wvl', &
@@ -395,7 +395,7 @@ subroutine netcdf_create_rtm(global_atts, source_atts, cyear, cmonth, cday, chou
          dimids_4d(4) = netcdf_info%dimid_y_sw
 
          ! define tac_sw
-         call nc_def_var_float_packed_float( &
+         call ncdf_def_var_float_packed_float( &
               netcdf_info%ncid_swrtm, &
               dimids_4d, &
               'tac_sw', &
@@ -406,7 +406,7 @@ subroutine netcdf_create_rtm(global_atts, source_atts, cyear, cmonth, cday, chou
               fill_value = sreal_fill_value)
 
          ! define tbc_sw
-         call nc_def_var_float_packed_float( &
+         call ncdf_def_var_float_packed_float( &
               netcdf_info%ncid_swrtm, &
               dimids_4d, &
               'tbc_sw', &
@@ -459,7 +459,7 @@ subroutine netcdf_create_rtm(global_atts, source_atts, cyear, cmonth, cday, chou
       dimids_1d(1) = netcdf_info%dimid_x_pw
 
       ! define lon_rtm
-      call nc_def_var_float_packed_float( &
+      call ncdf_def_var_float_packed_float( &
            netcdf_info%ncid_prtm, &
            dimids_1d, &
            'lon_rtm', &
@@ -471,7 +471,7 @@ subroutine netcdf_create_rtm(global_atts, source_atts, cyear, cmonth, cday, chou
 
       ! define lat_rtm
       dimids_1d(1) = netcdf_info%dimid_y_pw
-      call nc_def_var_float_packed_float( &
+      call ncdf_def_var_float_packed_float( &
            netcdf_info%ncid_prtm, &
            dimids_1d, &
            'lat_rtm', &
@@ -487,7 +487,7 @@ subroutine netcdf_create_rtm(global_atts, source_atts, cyear, cmonth, cday, chou
       dimids_3d(3) = netcdf_info%dimid_y_pw
 
       ! define pprofile_rtm
-      call nc_def_var_float_packed_float( &
+      call ncdf_def_var_float_packed_float( &
            netcdf_info%ncid_prtm, &
            dimids_3d, &
            'pprofile_rtm', &
@@ -498,7 +498,7 @@ subroutine netcdf_create_rtm(global_atts, source_atts, cyear, cmonth, cday, chou
            fill_value = sreal_fill_value)
 
       ! define tprofile_rtm
-      call nc_def_var_float_packed_float( &
+      call ncdf_def_var_float_packed_float( &
            netcdf_info%ncid_prtm, &
            dimids_3d, &
            'tprofile_rtm', &
@@ -509,7 +509,7 @@ subroutine netcdf_create_rtm(global_atts, source_atts, cyear, cmonth, cday, chou
            fill_value = sreal_fill_value)
 
       ! define hprofile_rtm
-      call nc_def_var_float_packed_float( &
+      call ncdf_def_var_float_packed_float( &
            netcdf_info%ncid_prtm, &
            dimids_3d, &
            'hprofile_rtm', &
@@ -520,7 +520,7 @@ subroutine netcdf_create_rtm(global_atts, source_atts, cyear, cmonth, cday, chou
            fill_value = sreal_fill_value)
 
       ! define qprofile_rtm
-      call nc_def_var_float_packed_float( &
+      call ncdf_def_var_float_packed_float( &
            netcdf_info%ncid_prtm, &
            dimids_3d, &
            'qprofile_rtm', &
@@ -531,7 +531,7 @@ subroutine netcdf_create_rtm(global_atts, source_atts, cyear, cmonth, cday, chou
            fill_value = sreal_fill_value)
 
       ! define o3profile_rtm
-      call nc_def_var_float_packed_float( &
+      call ncdf_def_var_float_packed_float( &
            netcdf_info%ncid_prtm, &
            dimids_3d, &
            'o3profile_rtm', &
@@ -701,7 +701,7 @@ subroutine netcdf_create_swath(global_atts, source_atts, cyear, cmonth, cday, ch
       if (channel_info%nchannels_sw .ne. 0) then
          dimids_1d(1) = netcdf_info%dimid_c_alb
 
-         call nc_def_var_long_packed_long( &
+         call ncdf_def_var_long_packed_long( &
               netcdf_info%ncid_alb, &
               dimids_1d, &
               'alb_abs_ch_numbers', &
@@ -713,7 +713,7 @@ subroutine netcdf_create_swath(global_atts, source_atts, cyear, cmonth, cday, ch
       if (channel_info%nchannels_lw .ne. 0) then
          dimids_1d(1) = netcdf_info%dimid_c_emis
 
-         call nc_def_var_long_packed_long( &
+         call ncdf_def_var_long_packed_long( &
               netcdf_info%ncid_alb, &
               dimids_1d, &
               'emis_abs_ch_numbers', &
@@ -729,7 +729,7 @@ subroutine netcdf_create_swath(global_atts, source_atts, cyear, cmonth, cday, ch
          dimids_3d(3) = netcdf_info%dimid_c_alb
 
          ! define alb
-         call nc_def_var_float_packed_float( &
+         call ncdf_def_var_float_packed_float( &
               netcdf_info%ncid_alb, &
               dimids_3d, &
               'alb_data', &
@@ -740,7 +740,7 @@ subroutine netcdf_create_swath(global_atts, source_atts, cyear, cmonth, cday, ch
               fill_value = sreal_fill_value)
 
          if (include_full_brdf) then
-            call nc_def_var_float_packed_float( &
+            call ncdf_def_var_float_packed_float( &
                  netcdf_info%ncid_alb, &
                  dimids_3d, &
                  'rho_0v_data', &
@@ -750,7 +750,7 @@ subroutine netcdf_create_swath(global_atts, source_atts, cyear, cmonth, cday, ch
                  shuffle = shuffle_flag, &
                  fill_value = sreal_fill_value)
 
-            call nc_def_var_float_packed_float( &
+            call ncdf_def_var_float_packed_float( &
                  netcdf_info%ncid_alb, &
                  dimids_3d, &
                  'rho_0d_data', &
@@ -760,7 +760,7 @@ subroutine netcdf_create_swath(global_atts, source_atts, cyear, cmonth, cday, ch
                  shuffle = shuffle_flag, &
                  fill_value = sreal_fill_value)
 
-            call nc_def_var_float_packed_float( &
+            call ncdf_def_var_float_packed_float( &
                  netcdf_info%ncid_alb, &
                  dimids_3d, &
                  'rho_dv_data', &
@@ -770,7 +770,7 @@ subroutine netcdf_create_swath(global_atts, source_atts, cyear, cmonth, cday, ch
                  shuffle = shuffle_flag, &
                  fill_value = sreal_fill_value)
 
-            call nc_def_var_float_packed_float( &
+            call ncdf_def_var_float_packed_float( &
                  netcdf_info%ncid_alb, &
                  dimids_3d, &
                  'rho_dd_data', &
@@ -788,7 +788,7 @@ subroutine netcdf_create_swath(global_atts, source_atts, cyear, cmonth, cday, ch
          dimids_3d(3) = netcdf_info%dimid_c_emis
 
          ! define emis
-         call nc_def_var_float_packed_float( &
+         call ncdf_def_var_float_packed_float( &
               netcdf_info%ncid_alb, &
               dimids_3d, &
               'emis_data', &
@@ -848,7 +848,7 @@ subroutine netcdf_create_swath(global_atts, source_atts, cyear, cmonth, cday, ch
       dimids_3d(3) = netcdf_info%dimid_v_cf
 
       ! define cflag
-      call nc_def_var_byte_packed_byte( &
+      call ncdf_def_var_byte_packed_byte( &
            netcdf_info%ncid_clf, &
            dimids_3d, &
            'cflag', &
@@ -861,7 +861,7 @@ subroutine netcdf_create_swath(global_atts, source_atts, cyear, cmonth, cday, ch
       ! define cldemis variable
 #ifdef INCLUDE_SATWX
       if (do_cloud_emis) then
-         call nc_def_var_float_packed_float( &
+         call ncdf_def_var_float_packed_float( &
               netcdf_info%ncid_clf, &
               dimids_2d, &
               'cldemis_lw', &
@@ -870,7 +870,7 @@ subroutine netcdf_create_swath(global_atts, source_atts, cyear, cmonth, cday, ch
               deflate_level = deflate_level, &
               shuffle = shuffle_flag, &
               fill_value = sreal_fill_value)
-         call nc_def_var_float_packed_float( &
+         call ncdf_def_var_float_packed_float( &
               netcdf_info%ncid_clf, &
               dimids_2d, &
               'cldemis_wv_1', &
@@ -879,7 +879,7 @@ subroutine netcdf_create_swath(global_atts, source_atts, cyear, cmonth, cday, ch
               deflate_level = deflate_level, &
               shuffle = shuffle_flag, &
               fill_value = sreal_fill_value)
-         call nc_def_var_float_packed_float( &
+         call ncdf_def_var_float_packed_float( &
               netcdf_info%ncid_clf, &
               dimids_2d, &
               'cldemis_wv_2', &
@@ -888,7 +888,7 @@ subroutine netcdf_create_swath(global_atts, source_atts, cyear, cmonth, cday, ch
               deflate_level = deflate_level, &
               shuffle = shuffle_flag, &
               fill_value = sreal_fill_value)
-         call nc_def_var_float_packed_float( &
+         call ncdf_def_var_float_packed_float( &
               netcdf_info%ncid_clf, &
               dimids_2d, &
               'tropopause_pres', &
@@ -897,7 +897,7 @@ subroutine netcdf_create_swath(global_atts, source_atts, cyear, cmonth, cday, ch
               deflate_level = deflate_level, &
               shuffle = shuffle_flag, &
               fill_value = sreal_fill_value)
-         call nc_def_var_float_packed_float( &
+         call ncdf_def_var_float_packed_float( &
               netcdf_info%ncid_clf, &
               dimids_2d, &
               'tropopause_temp', &
@@ -906,7 +906,7 @@ subroutine netcdf_create_swath(global_atts, source_atts, cyear, cmonth, cday, ch
               deflate_level = deflate_level, &
               shuffle = shuffle_flag, &
               fill_value = sreal_fill_value)
-         call nc_def_var_float_packed_float( &
+         call ncdf_def_var_float_packed_float( &
               netcdf_info%ncid_clf, &
               dimids_2d, &
               'cape', &
@@ -919,7 +919,7 @@ subroutine netcdf_create_swath(global_atts, source_atts, cyear, cmonth, cday, ch
 #endif
 
       ! define cldtype variable
-      call nc_def_var_byte_packed_byte( &
+      call ncdf_def_var_byte_packed_byte( &
            netcdf_info%ncid_clf, &
            dimids_3d, &
            'cldtype', &
@@ -930,7 +930,7 @@ subroutine netcdf_create_swath(global_atts, source_atts, cyear, cmonth, cday, ch
            fill_value = byte_fill_value)
 
       ! define cldmask variable
-      call nc_def_var_byte_packed_byte( &
+      call ncdf_def_var_byte_packed_byte( &
            netcdf_info%ncid_clf, &
            dimids_3d, &
            'cldmask', &
@@ -941,7 +941,7 @@ subroutine netcdf_create_swath(global_atts, source_atts, cyear, cmonth, cday, ch
            fill_value = byte_fill_value)
 
       ! define cldmask_uncertainty variable
-      call nc_def_var_float_packed_float( &
+      call ncdf_def_var_float_packed_float( &
            netcdf_info%ncid_clf, &
            dimids_3d, &
            'cldmask_uncertainty', &
@@ -952,7 +952,7 @@ subroutine netcdf_create_swath(global_atts, source_atts, cyear, cmonth, cday, ch
            fill_value = sreal_fill_value)
 
       ! define cccot_pre variable
-      call nc_def_var_float_packed_float( &
+      call ncdf_def_var_float_packed_float( &
            netcdf_info%ncid_clf, &
            dimids_3d, &
            'cccot_pre', &
@@ -963,7 +963,7 @@ subroutine netcdf_create_swath(global_atts, source_atts, cyear, cmonth, cday, ch
            fill_value = sreal_fill_value)
 
       ! define ann cloud_phase variable
-      call nc_def_var_byte_packed_byte( &
+      call ncdf_def_var_byte_packed_byte( &
            netcdf_info%ncid_clf, &
            dimids_3d, &
            'ann_phase', &
@@ -974,7 +974,7 @@ subroutine netcdf_create_swath(global_atts, source_atts, cyear, cmonth, cday, ch
            fill_value = byte_fill_value)
 
       ! define ann cloud phase_uncertainty variable
-      call nc_def_var_float_packed_float( &
+      call ncdf_def_var_float_packed_float( &
            netcdf_info%ncid_clf, &
            dimids_3d, &
            'ann_phase_uncertainty', &
@@ -985,7 +985,7 @@ subroutine netcdf_create_swath(global_atts, source_atts, cyear, cmonth, cday, ch
            fill_value = sreal_fill_value)
 
       ! define cphcot variable
-      call nc_def_var_float_packed_float( &
+      call ncdf_def_var_float_packed_float( &
            netcdf_info%ncid_clf, &
            dimids_3d, &
            'cphcot', &
@@ -1040,7 +1040,7 @@ subroutine netcdf_create_swath(global_atts, source_atts, cyear, cmonth, cday, ch
       dimids_3d(3) = netcdf_info%dimid_v_geo
 
       ! define solzen
-      call nc_def_var_float_packed_float( &
+      call ncdf_def_var_float_packed_float( &
            netcdf_info%ncid_geo, &
            dimids_3d, &
            'solzen', &
@@ -1051,7 +1051,7 @@ subroutine netcdf_create_swath(global_atts, source_atts, cyear, cmonth, cday, ch
            fill_value = sreal_fill_value)
 
       ! define satzen
-      call nc_def_var_float_packed_float( &
+      call ncdf_def_var_float_packed_float( &
            netcdf_info%ncid_geo, &
            dimids_3d, &
            'satzen', &
@@ -1062,7 +1062,7 @@ subroutine netcdf_create_swath(global_atts, source_atts, cyear, cmonth, cday, ch
            fill_value = sreal_fill_value)
 
       ! define solaz
-      call nc_def_var_float_packed_float( &
+      call ncdf_def_var_float_packed_float( &
            netcdf_info%ncid_geo, &
            dimids_3d, &
            'solaz', &
@@ -1073,7 +1073,7 @@ subroutine netcdf_create_swath(global_atts, source_atts, cyear, cmonth, cday, ch
            fill_value = sreal_fill_value)
 
       ! define sataz
-      call nc_def_var_float_packed_float( &
+      call ncdf_def_var_float_packed_float( &
            netcdf_info%ncid_geo, &
            dimids_3d, &
            'sataz', &
@@ -1084,7 +1084,7 @@ subroutine netcdf_create_swath(global_atts, source_atts, cyear, cmonth, cday, ch
            fill_value = sreal_fill_value)
 
       ! define relazi
-      call nc_def_var_float_packed_float( &
+      call ncdf_def_var_float_packed_float( &
            netcdf_info%ncid_geo, &
            dimids_3d, &
            'relazi', &
@@ -1131,7 +1131,7 @@ subroutine netcdf_create_swath(global_atts, source_atts, cyear, cmonth, cday, ch
       dimids_2d(2) = netcdf_info%dimid_y_loc
 
       ! define lat
-      call nc_def_var_float_packed_float( &
+      call ncdf_def_var_float_packed_float( &
            netcdf_info%ncid_loc, &
            dimids_2d, &
            'lat', &
@@ -1142,7 +1142,7 @@ subroutine netcdf_create_swath(global_atts, source_atts, cyear, cmonth, cday, ch
            fill_value = sreal_fill_value)
 
       ! define lon
-      call nc_def_var_float_packed_float( &
+      call ncdf_def_var_float_packed_float( &
            netcdf_info%ncid_loc, &
            dimids_2d, &
            'lon', &
@@ -1188,7 +1188,7 @@ subroutine netcdf_create_swath(global_atts, source_atts, cyear, cmonth, cday, ch
       dimids_2d(2) = netcdf_info%dimid_y_lsf
 
       ! define lsflag
-      call nc_def_var_byte_packed_byte( &
+      call ncdf_def_var_byte_packed_byte( &
            netcdf_info%ncid_lsf, &
            dimids_2d, &
            'lsflag', &
@@ -1199,7 +1199,7 @@ subroutine netcdf_create_swath(global_atts, source_atts, cyear, cmonth, cday, ch
            fill_value = byte_fill_value)
 
       ! define lusflag variable
-      call nc_def_var_byte_packed_byte( &
+      call ncdf_def_var_byte_packed_byte( &
            netcdf_info%ncid_lsf, &
            dimids_2d, &
            'lusflag', &
@@ -1210,7 +1210,7 @@ subroutine netcdf_create_swath(global_atts, source_atts, cyear, cmonth, cday, ch
            fill_value = byte_fill_value)
 
       ! define dem variable
-      call nc_def_var_long_packed_long( &
+      call ncdf_def_var_long_packed_long( &
            netcdf_info%ncid_lsf, &
            dimids_2d, &
            'dem', &
@@ -1219,7 +1219,7 @@ subroutine netcdf_create_swath(global_atts, source_atts, cyear, cmonth, cday, ch
            fill_value = lint_fill_value)
 
       ! define nise_mask variable
-      call nc_def_var_byte_packed_byte( &
+      call ncdf_def_var_byte_packed_byte( &
            netcdf_info%ncid_lsf, &
            dimids_2d, &
            'nisemask', &
@@ -1281,7 +1281,7 @@ subroutine netcdf_create_swath(global_atts, source_atts, cyear, cmonth, cday, ch
       ! define some channel variables
       dimids_1d(1) = netcdf_info%dimid_c_msi
 
-      call nc_def_var_long_packed_long( &
+      call ncdf_def_var_long_packed_long( &
            netcdf_info%ncid_msi, &
            dimids_1d, &
            'msi_instr_ch_numbers', &
@@ -1289,7 +1289,7 @@ subroutine netcdf_create_swath(global_atts, source_atts, cyear, cmonth, cday, ch
            verbose, &
            fill_value = lint_fill_value)
 
-      call nc_def_var_float_packed_float( &
+      call ncdf_def_var_float_packed_float( &
            netcdf_info%ncid_msi, &
            dimids_1d, &
            'msi_abs_ch_wl', &
@@ -1297,7 +1297,7 @@ subroutine netcdf_create_swath(global_atts, source_atts, cyear, cmonth, cday, ch
            verbose, &
            fill_value = sreal_fill_value)
 
-      call nc_def_var_long_packed_long( &
+      call ncdf_def_var_long_packed_long( &
            netcdf_info%ncid_msi, &
            dimids_1d, &
            'msi_ch_swflag', &
@@ -1305,7 +1305,7 @@ subroutine netcdf_create_swath(global_atts, source_atts, cyear, cmonth, cday, ch
            verbose, &
            fill_value = lint_fill_value)
 
-      call nc_def_var_long_packed_long( &
+      call ncdf_def_var_long_packed_long( &
            netcdf_info%ncid_msi, &
            dimids_1d, &
            'msi_ch_lwflag', &
@@ -1313,7 +1313,7 @@ subroutine netcdf_create_swath(global_atts, source_atts, cyear, cmonth, cday, ch
            verbose, &
            fill_value = lint_fill_value)
 
-      call nc_def_var_long_packed_long( &
+      call ncdf_def_var_long_packed_long( &
            netcdf_info%ncid_msi, &
            dimids_1d, &
            'msi_ch_view', &
@@ -1326,7 +1326,7 @@ subroutine netcdf_create_swath(global_atts, source_atts, cyear, cmonth, cday, ch
       dimids_2d(2) = netcdf_info%dimid_y_msi
 
       ! define time_data
-      call nc_def_var_double_packed_double( &
+      call ncdf_def_var_double_packed_double( &
            netcdf_info%ncid_msi, &
            dimids_2d, &
            'time_data', &
@@ -1342,7 +1342,7 @@ subroutine netcdf_create_swath(global_atts, source_atts, cyear, cmonth, cday, ch
       dimids_3d(3) = netcdf_info%dimid_c_msi
 
       ! define msi_data
-      call nc_def_var_float_packed_float( &
+      call ncdf_def_var_float_packed_float( &
            netcdf_info%ncid_msi, &
            dimids_3d, &
            'msi_data', &
@@ -1353,7 +1353,7 @@ subroutine netcdf_create_swath(global_atts, source_atts, cyear, cmonth, cday, ch
            fill_value = sreal_fill_value)
 
       ! define msi_data
-      call nc_def_var_float_packed_float( &
+      call ncdf_def_var_float_packed_float( &
            netcdf_info%ncid_msi, &
            dimids_3d, &
            'sd_data', &
@@ -1544,7 +1544,7 @@ subroutine netcdf_create_config(global_atts, source_atts, cyear, cmonth, cday, &
 
    dimids_1d(1) = netcdf_info%dimid_c_config
 
-   call nc_def_var_long_packed_long( &
+   call ncdf_def_var_long_packed_long( &
         netcdf_info%ncid_config, &
         dimids_1d, &
         'msi_instr_ch_numbers', &
@@ -1552,7 +1552,7 @@ subroutine netcdf_create_config(global_atts, source_atts, cyear, cmonth, cday, &
         verbose, &
         fill_value = lint_fill_value)
 
-   call nc_def_var_float_packed_float( &
+   call ncdf_def_var_float_packed_float( &
         netcdf_info%ncid_config, &
         dimids_1d, &
         'msi_abs_ch_wl', &
@@ -1560,7 +1560,7 @@ subroutine netcdf_create_config(global_atts, source_atts, cyear, cmonth, cday, &
         verbose, &
         fill_value = sreal_fill_value)
 
-   call nc_def_var_long_packed_long( &
+   call ncdf_def_var_long_packed_long( &
         netcdf_info%ncid_config, &
         dimids_1d, &
         'msi_ch_swflag', &
@@ -1568,7 +1568,7 @@ subroutine netcdf_create_config(global_atts, source_atts, cyear, cmonth, cday, &
         verbose, &
         fill_value = lint_fill_value)
 
-   call nc_def_var_long_packed_long( &
+   call ncdf_def_var_long_packed_long( &
         netcdf_info%ncid_config, &
         dimids_1d, &
         'msi_ch_lwflag', &
@@ -1576,7 +1576,7 @@ subroutine netcdf_create_config(global_atts, source_atts, cyear, cmonth, cday, &
         verbose, &
         fill_value = lint_fill_value)
 
-   call nc_def_var_long_packed_long( &
+   call ncdf_def_var_long_packed_long( &
         netcdf_info%ncid_config, &
         dimids_1d, &
         'msi_ch_view', &
@@ -1586,7 +1586,7 @@ subroutine netcdf_create_config(global_atts, source_atts, cyear, cmonth, cday, &
 
    dimids_1d(1) = netcdf_info%dimid_c_config_alb
 
-   call nc_def_var_long_packed_long( &
+   call ncdf_def_var_long_packed_long( &
         netcdf_info%ncid_config, &
         dimids_1d, &
         'alb_abs_ch_numbers', &
@@ -1596,7 +1596,7 @@ subroutine netcdf_create_config(global_atts, source_atts, cyear, cmonth, cday, &
 
    dimids_1d(1) = netcdf_info%dimid_c_config_emis
 
-   call nc_def_var_long_packed_long( &
+   call ncdf_def_var_long_packed_long( &
         netcdf_info%ncid_config, &
         dimids_1d, &
         'emis_abs_ch_numbers', &
@@ -1697,7 +1697,7 @@ subroutine netcdf_put_common_attributes(ncid, global_atts, source_atts, title, &
 
    global_atts2%SVN_Version = 'xxx'
 
-   call nc_put_common_attributes(ncid, global_atts2, source_atts2)
+   call ncdf_put_common_attributes(ncid, global_atts2, source_atts2)
 
 
 end subroutine netcdf_put_common_attributes

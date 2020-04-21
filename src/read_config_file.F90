@@ -5,7 +5,7 @@
 ! Read contents of the configuration file, used to allocating data arrays.
 !
 ! Description and Algorithm details:
-! Use nc_read_array a few times.
+! Use ncdf_read_array a few times.
 !
 ! Arguments:
 ! Name              Type      In/Out/Both Description
@@ -60,32 +60,32 @@ subroutine read_config_file(Ctrl, channel_ids_instr, channel_sw_flag, &
    integer :: ncid
 
    ! Open config file for reading
-   call nc_open(ncid, Ctrl%FID%Config, 'read_config_file()')
+   call ncdf_open(ncid, Ctrl%FID%Config, 'read_config_file()')
 
-   if (Ctrl%Ind%Navail /= nc_dim_length(ncid, 'nc_conf', 'read_config_file()', Ctrl%verbose)) then
+   if (Ctrl%Ind%Navail /= ncdf_dim_length(ncid, 'nc_conf', 'read_config_file()', Ctrl%verbose)) then
       write(*,*) 'ERROR: read_config_file(): Driver incompatible with ', &
            'preprocessor files.'
       stop DriverFileIncompat
    end if
 
    allocate(channel_ids_instr(Ctrl%Ind%Navail))
-   call nc_read_array(ncid, "msi_instr_ch_numbers", channel_ids_instr, &
+   call ncdf_read_array(ncid, "msi_instr_ch_numbers", channel_ids_instr, &
                       Ctrl%verbose)
    if (Ctrl%verbose) write(*,*) 'msi channel numbers instr: ',channel_ids_instr
 
    allocate(channel_sw_flag(Ctrl%Ind%Navail))
-   call nc_read_array(ncid, "msi_ch_swflag", channel_sw_flag, Ctrl%verbose)
+   call ncdf_read_array(ncid, "msi_ch_swflag", channel_sw_flag, Ctrl%verbose)
    if (Ctrl%verbose) write(*,*) 'sw flag: ',channel_sw_flag
 
    allocate(channel_lw_flag(Ctrl%Ind%Navail))
-   call nc_read_array(ncid, "msi_ch_lwflag", channel_lw_flag, Ctrl%verbose)
+   call ncdf_read_array(ncid, "msi_ch_lwflag", channel_lw_flag, Ctrl%verbose)
    if (Ctrl%verbose) write(*,*) 'lw flag: ',channel_lw_flag
 
    allocate(channel_wvl(Ctrl%Ind%Navail))
-   call nc_read_array(ncid, "msi_abs_ch_wl", channel_wvl, Ctrl%verbose)
+   call ncdf_read_array(ncid, "msi_abs_ch_wl", channel_wvl, Ctrl%verbose)
 
    allocate(channel_view(Ctrl%Ind%Navail))
-   call nc_read_array(ncid, "msi_ch_view", channel_view, Ctrl%verbose)
+   call ncdf_read_array(ncid, "msi_ch_view", channel_view, Ctrl%verbose)
 
    if (nf90_get_att(ncid, NF90_GLOBAL, 'all_nchannels_total', &
         nall) .ne. NF90_NOERR) then
@@ -94,8 +94,8 @@ subroutine read_config_file(Ctrl, channel_ids_instr, channel_sw_flag, &
    end if
 
    ! Read global attributes
-   call nc_get_common_attributes(ncid, global_atts, source_atts)
+   call ncdf_get_common_attributes(ncid, global_atts, source_atts)
 
-   call nc_close(ncid, 'read_config_file()')
+   call ncdf_close(ncid, 'read_config_file()')
 
 end subroutine read_config_file

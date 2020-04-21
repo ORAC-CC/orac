@@ -123,7 +123,7 @@ subroutine Read_MSI_nc(Ctrl, MSI_Data, SAD_Chan)
 
    ! Open MSI file
    if (Ctrl%verbose) write(*,*) 'Imagery file: ', trim(Ctrl%FID%MSI)
-   call nc_open(ncid, Ctrl%FID%MSI, 'Read_MSI_nc()')
+   call ncdf_open(ncid, Ctrl%FID%MSI, 'Read_MSI_nc()')
 
    ! Read product date and time from netcdf global attributes
    if (nf90_get_att(ncid, NF90_GLOBAL, "Date_Created", prod_date) == &
@@ -154,19 +154,19 @@ subroutine Read_MSI_nc(Ctrl, MSI_Data, SAD_Chan)
    allocate(MSI_Data%MSI(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, Ctrl%Ind%Ny))
    allocate(MSI_Data%time(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))
 
-   call nc_read_array(ncid, "msi_data", MSI_Data%MSI, Ctrl%verbose, 3, Ctrl%Ind%ICh)
-   call nc_read_array(ncid, "time_data", MSI_Data%time, Ctrl%verbose)
+   call ncdf_read_array(ncid, "msi_data", MSI_Data%MSI, Ctrl%verbose, 3, Ctrl%Ind%ICh)
+   call ncdf_read_array(ncid, "time_data", MSI_Data%time, Ctrl%verbose)
 
    ! Read variance data if requested (for aerosol retrieval)
    if (Ctrl%EqMPN%SySelm == SelmMeas) then
       allocate(MSI_Data%SD(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, Ctrl%Ind%Ny))
-      call nc_read_array(ncid, "sd_data", MSI_Data%SD, Ctrl%verbose, &
+      call ncdf_read_array(ncid, "sd_data", MSI_Data%SD, Ctrl%verbose, &
                          3, Ctrl%Ind%ICh)
    end if
 
    ! Read channel view indices from file (all channels)
 !  allocate(Ctrl%Ind%View_Id(Ctrl%Ind%Ny))
-!  call nc_read_array(ncid, "msi_ch_view", Ctrl%Ind%View_Id, Ctrl%verbose, &
+!  call ncdf_read_array(ncid, "msi_ch_view", Ctrl%Ind%View_Id, Ctrl%verbose, &
 !                     1, Ctrl%Ind%ICh)
    if (minval(Ctrl%Ind%View_Id) < 1 .or. &
        maxval(Ctrl%Ind%View_Id) > Ctrl%Ind%NViews) then
@@ -175,7 +175,7 @@ subroutine Read_MSI_nc(Ctrl, MSI_Data, SAD_Chan)
    end if
 
    ! Close MSI input file
-   call nc_close(ncid, 'Read_MSI_nc()')
+   call ncdf_close(ncid, 'Read_MSI_nc()')
 
    ! Set values that are out of range to MissingXn
    do i = 1,Ctrl%Ind%Ny

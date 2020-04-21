@@ -49,7 +49,7 @@ subroutine Read_PRTM_nc(Ctrl, RTM)
 
 
    ! Open PRTM file
-   call nc_open(ncid, Ctrl%FID%PRTM, 'Read_PRTM_nc()')
+   call ncdf_open(ncid, Ctrl%FID%PRTM, 'Read_PRTM_nc()')
 
    ! Allocate arrays
    allocate(RTM%lat(RTM%Grid%NLon, RTM%Grid%NLat))
@@ -61,25 +61,25 @@ subroutine Read_PRTM_nc(Ctrl, RTM)
 
    ! Read data into arrays
    allocate(dummy1d(RTM%Grid%NLon))
-   call nc_read_array(ncid, "lon_rtm", dummy1d, Ctrl%verbose)
+   call ncdf_read_array(ncid, "lon_rtm", dummy1d, Ctrl%verbose)
    do i=1,RTM%Grid%NLon
       RTM%lon(i,:) = dummy1d(i)
    end do
    deallocate(dummy1d)
 
    allocate(dummy1d(RTM%Grid%NLat))
-   call nc_read_array(ncid, "lat_rtm", dummy1d, Ctrl%verbose)
+   call ncdf_read_array(ncid, "lat_rtm", dummy1d, Ctrl%verbose)
    do i=1,RTM%Grid%NLat
       RTM%lat(:,i) = dummy1d(i)
    end do
    deallocate(dummy1d)
 
-   call nc_read_array(ncid, "pprofile_rtm", RTM%P, Ctrl%verbose)
-   call nc_read_array(ncid, "tprofile_rtm", RTM%T, Ctrl%verbose)
-   call nc_read_array(ncid, "hprofile_rtm", RTM%H, Ctrl%verbose)
+   call ncdf_read_array(ncid, "pprofile_rtm", RTM%P, Ctrl%verbose)
+   call ncdf_read_array(ncid, "tprofile_rtm", RTM%T, Ctrl%verbose)
+   call ncdf_read_array(ncid, "hprofile_rtm", RTM%H, Ctrl%verbose)
 
    ! Close PRTM input file
-   call nc_close(ncid, 'Read_PwRTM_nc()')
+   call ncdf_close(ncid, 'Read_PwRTM_nc()')
 
    ! Calculate grid parameters
 

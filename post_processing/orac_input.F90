@@ -217,7 +217,7 @@ subroutine determine_channel_indexing(fname, indexing, verbose)
    integer       :: do_flags
    integer(byte) :: rho_flags(indexing%Ny)
 
-   call nc_open(ncid, fname, 'determine_channel_indexing()')
+   call ncdf_open(ncid, fname, 'determine_channel_indexing()')
 
    ! Read attributes
    ierr = nf90_get_att(ncid, NF90_GLOBAL, 'LUT_class', indexing%LUTClass)
@@ -239,12 +239,12 @@ subroutine determine_channel_indexing(fname, indexing, verbose)
    allocate(indexing%Y_Id(   indexing%Ny))
    allocate(indexing%View_Id(indexing%NViews))
    allocate(indexing%Ch_Is(  indexing%Ny))
-   call nc_read_array(ncid, "y_id",    indexing%Y_Id,    verbose)
-   call nc_read_array(ncid, "view_id", indexing%View_Id, verbose)
-   call nc_read_array(ncid, "ch_is",   indexing%Ch_Is,   verbose)
-   call nc_read_array(ncid, "rho_flags", rho_flags, verbose)
+   call ncdf_read_array(ncid, "y_id",    indexing%Y_Id,    verbose)
+   call ncdf_read_array(ncid, "view_id", indexing%View_Id, verbose)
+   call ncdf_read_array(ncid, "ch_is",   indexing%Ch_Is,   verbose)
+   call ncdf_read_array(ncid, "rho_flags", rho_flags, verbose)
 
-   call nc_close(ncid, 'determine_channel_indexing()')
+   call ncdf_close(ncid, 'determine_channel_indexing()')
 
    ! Allocate and form indexing arrays
    i0 = 0

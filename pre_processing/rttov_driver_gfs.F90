@@ -356,13 +356,13 @@ subroutine rttov_driver_gfs(coef_path, emiss_path, sensor, platform, &
          end if
       end do
 
-      call nc_write_array(netcdf_info%ncid_lwrtm, 'lw_channel_abs_ids', &
+      call ncdf_write_array(netcdf_info%ncid_lwrtm, 'lw_channel_abs_ids', &
               netcdf_info%vid_lw_channel_abs_ids, dummy_lint_1dveca, &
               1, 1, channel_info%nchannels_lw)
-      call nc_write_array(netcdf_info%ncid_lwrtm, 'lw_channel_instr_ids', &
+      call ncdf_write_array(netcdf_info%ncid_lwrtm, 'lw_channel_instr_ids', &
               netcdf_info%vid_lw_channel_instr_ids, dummy_lint_1dvecb, &
               1, 1, channel_info%nchannels_lw)
-      call nc_write_array(netcdf_info%ncid_lwrtm, 'lw_channel_wvl', &
+      call ncdf_write_array(netcdf_info%ncid_lwrtm, 'lw_channel_wvl', &
               netcdf_info%vid_lw_channel_wvl, dummy_sreal_1dveca, &
               1, 1, channel_info%nchannels_lw)
 
@@ -387,13 +387,13 @@ subroutine rttov_driver_gfs(coef_path, emiss_path, sensor, platform, &
          end if
       end do
 
-      call nc_write_array(netcdf_info%ncid_swrtm, 'sw_channel_abs_ids', &
+      call ncdf_write_array(netcdf_info%ncid_swrtm, 'sw_channel_abs_ids', &
               netcdf_info%vid_sw_channel_abs_ids, dummy_lint_1dveca, &
               1, 1, channel_info%nchannels_sw)
-      call nc_write_array(netcdf_info%ncid_swrtm, 'sw_channel_instr_ids', &
+      call ncdf_write_array(netcdf_info%ncid_swrtm, 'sw_channel_instr_ids', &
               netcdf_info%vid_sw_channel_instr_ids, dummy_lint_1dvecb, &
               1, 1, channel_info%nchannels_sw)
-      call nc_write_array(netcdf_info%ncid_swrtm, 'sw_channel_wvl', &
+      call ncdf_write_array(netcdf_info%ncid_swrtm, 'sw_channel_wvl', &
               netcdf_info%vid_sw_channel_wvl, dummy_sreal_1dveca, &
               1, 1, channel_info%nchannels_sw)
 
@@ -486,34 +486,34 @@ subroutine rttov_driver_gfs(coef_path, emiss_path, sensor, platform, &
          end if
 
          ! Write profiles structure to PRTM file (array operations needed to
-         ! recast structure in form nc_write_array recognises)
+         ! recast structure in form ncdf_write_array recognises)
          i_ = idim - preproc_dims%min_lon + 1
          j_ = jdim - preproc_dims%min_lat + 1
-         call nc_write_array(netcdf_info%ncid_prtm, 'lon_rtm', &
+         call ncdf_write_array(netcdf_info%ncid_prtm, 'lon_rtm', &
               netcdf_info%vid_lon_pw, &
               (/profiles(count)%longitude/), &
               1, i_, 1)
-         call nc_write_array(netcdf_info%ncid_prtm, 'lat_rtm', &
+         call ncdf_write_array(netcdf_info%ncid_prtm, 'lat_rtm', &
               netcdf_info%vid_lat_pw, &
               (/profiles(count)%latitude/), &
               1, j_, 1)
-         call nc_write_array(netcdf_info%ncid_prtm, 'pprofile_rtm', &
+         call ncdf_write_array(netcdf_info%ncid_prtm, 'pprofile_rtm', &
               netcdf_info%vid_pprofile_lev_pw, &
               reshape(profiles(count)%p, (/nlevels, 1, 1/)), &
               1, 1, nlevels, 1, i_, 1, 1, j_, 1)
-         call nc_write_array(netcdf_info%ncid_prtm, 'tprofile_rtm', &
+         call ncdf_write_array(netcdf_info%ncid_prtm, 'tprofile_rtm', &
               netcdf_info%vid_tprofile_lev_pw, &
               reshape(profiles(count)%t, (/nlevels, 1, 1/)), &
               1, 1, nlevels, 1, i_, 1, 1, j_, 1)
-         call nc_write_array(netcdf_info%ncid_prtm, 'hprofile_rtm', &
+         call ncdf_write_array(netcdf_info%ncid_prtm, 'hprofile_rtm', &
               netcdf_info%vid_hprofile_lev_pw, &
               reshape(preproc_prtm%phi_lev(idim, jdim,:), &
               (/nlevels, 1, 1/)), 1, 1, nlevels, 1, i_, 1, 1, j_, 1)
-         call nc_write_array(netcdf_info%ncid_prtm, 'qprofile_rtm', &
+         call ncdf_write_array(netcdf_info%ncid_prtm, 'qprofile_rtm', &
               netcdf_info%vid_qprofile_lev_pw, &
               reshape(profiles(count)%q, (/nlevels, 1, 1/)), &
               1, 1, nlevels, 1, i_, 1, 1, j_, 1)
-         call nc_write_array(netcdf_info%ncid_prtm, 'o3profile_rtm', &
+         call ncdf_write_array(netcdf_info%ncid_prtm, 'o3profile_rtm', &
               netcdf_info%vid_o3profile_lev_pw, &
               reshape(profiles(count)%o3, (/nlevels, 1, 1/)), &
               1, 1, nlevels, 1, i_, 1, 1, j_, 1)
@@ -521,7 +521,7 @@ subroutine rttov_driver_gfs(coef_path, emiss_path, sensor, platform, &
    end do
 
    ! Write fields not in profiles structure
-!  call nc_write_array(netcdf_info%ncid_prtm, 'lsf_rtm', &
+!  call ncdf_write_array(netcdf_info%ncid_prtm, 'lsf_rtm', &
 !       netcdf_info%vid_lsf_pw, &
 !       preproc_prtm%land_sea_mask, &
 !       1, 1, preproc_dims%xdim, 1, 1, preproc_dims%ydim)

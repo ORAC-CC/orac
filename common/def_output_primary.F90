@@ -7,7 +7,7 @@
 ! Variable names are also defined.
 !
 ! Description and Algorithm details:
-! 1) For each variable, use nc_def_var routine to define variable.
+! 1) For each variable, use ncdf_def_var routine to define variable.
 ! 2) Loop over views to define view geometry variables.
 !
 ! Arguments:
@@ -132,7 +132,7 @@ subroutine def_output_primary(ncid, dim3d_var, output_data, indexing, &
    !----------------------------------------------------------------------------
    input_dummy='days since -4712-01-01 12:00:00'
 
-   call nc_def_var_double_packed_double( &
+   call ncdf_def_var_double_packed_double( &
            ncid, &
            dims_var, &
            'time', &
@@ -152,7 +152,7 @@ subroutine def_output_primary(ncid, dim3d_var, output_data, indexing, &
    !----------------------------------------------------------------------------
    ! lat
    !----------------------------------------------------------------------------
-   call nc_def_var_float_packed_float( &
+   call ncdf_def_var_float_packed_float( &
            ncid, &
            dims_var, &
            'lat', &
@@ -172,7 +172,7 @@ subroutine def_output_primary(ncid, dim3d_var, output_data, indexing, &
    !----------------------------------------------------------------------------
    ! lon
    !----------------------------------------------------------------------------
-   call nc_def_var_float_packed_float( &
+   call ncdf_def_var_float_packed_float( &
            ncid, &
            dims_var, &
            'lon', &
@@ -202,7 +202,7 @@ subroutine def_output_primary(ncid, dim3d_var, output_data, indexing, &
       input_dummy='solar_zenith_view_no'//trim(adjustl(input_num))
       input_dummy2='solar zenith angle for view no '//trim(adjustl(input_num))
 
-      call nc_def_var_float_packed_float( &
+      call ncdf_def_var_float_packed_float( &
               ncid, &
               dims_var, &
               trim(adjustl(input_dummy)), &
@@ -225,7 +225,7 @@ subroutine def_output_primary(ncid, dim3d_var, output_data, indexing, &
       input_dummy='satellite_zenith_view_no'//trim(adjustl(input_num))
       input_dummy2='sensor zenith angle for view no '//trim(adjustl(input_num))
 
-      call nc_def_var_float_packed_float( &
+      call ncdf_def_var_float_packed_float( &
               ncid, &
               dims_var, &
               trim(adjustl(input_dummy)), &
@@ -249,7 +249,7 @@ subroutine def_output_primary(ncid, dim3d_var, output_data, indexing, &
       input_dummy2='relative azimuth angle for view no '// &
            trim(adjustl(input_num))
 
-      call nc_def_var_float_packed_float( &
+      call ncdf_def_var_float_packed_float( &
               ncid, &
               dims_var, &
               trim(adjustl(input_dummy)), &
@@ -274,7 +274,7 @@ subroutine def_output_primary(ncid, dim3d_var, output_data, indexing, &
       input_dummy2='satellite azimuth angle for view no '// &
            trim(adjustl(input_num))
 
-      call nc_def_var_float_packed_float( &
+      call ncdf_def_var_float_packed_float( &
               ncid, &
               dims_var, &
               trim(adjustl(input_dummy)), &
@@ -297,7 +297,7 @@ if (indexing%flags%do_aerosol) then
    !----------------------------------------------------------------------------
    ! aot550
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'aot550', &
@@ -318,7 +318,7 @@ if (indexing%flags%do_aerosol) then
    !----------------------------------------------------------------------------
    ! aot550_uncertainty
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'aot550_uncertainty', &
@@ -339,7 +339,7 @@ if (indexing%flags%do_aerosol) then
    !----------------------------------------------------------------------------
    ! aot870
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'aot870', &
@@ -360,7 +360,7 @@ if (indexing%flags%do_aerosol) then
    !----------------------------------------------------------------------------
    ! aot870_uncertainty
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'aot870_uncertainty', &
@@ -381,7 +381,7 @@ if (indexing%flags%do_aerosol) then
    !----------------------------------------------------------------------------
    ! aer
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'aer', &
@@ -401,7 +401,7 @@ if (indexing%flags%do_aerosol) then
    !----------------------------------------------------------------------------
    ! aer_uncertainty
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'aer_uncertainty', &
@@ -435,7 +435,7 @@ if (indexing%flags%do_rho) then
             call create_rho_field_name(j, 1, input_num, &
                  input_dummy2, input_dummy)
 
-            call nc_def_var_short_packed_float( &
+            call ncdf_def_var_short_packed_float( &
                  ncid, &
                  dims_var, &
                  trim(adjustl(input_dummy2)), &
@@ -470,7 +470,7 @@ if (indexing%flags%do_rho) then
             call create_rho_field_name(j, 2, input_num, &
                  input_dummy2, input_dummy)
 
-            call nc_def_var_short_packed_float( &
+            call ncdf_def_var_short_packed_float( &
                  ncid, &
                  dims_var, &
                  trim(adjustl(input_dummy2)), &
@@ -506,7 +506,7 @@ if (indexing%flags%do_swansea) then
                      'channel no '//trim(adjustl(input_num))
          input_dummy2='swansea_s_in_channel_no_'//trim(adjustl(input_num))
 
-         call nc_def_var_short_packed_float( &
+         call ncdf_def_var_short_packed_float( &
               ncid, &
               dims_var, &
               trim(adjustl(input_dummy2)), &
@@ -540,7 +540,7 @@ if (indexing%flags%do_swansea) then
          input_dummy2='swansea_s_uncertainty_in_channel_no_'// &
               trim(adjustl(input_num))
 
-         call nc_def_var_short_packed_float( &
+         call ncdf_def_var_short_packed_float( &
               ncid, &
               dims_var, &
               trim(adjustl(input_dummy2)), &
@@ -570,7 +570,7 @@ if (indexing%flags%do_swansea) then
                   'view no '//trim(adjustl(input_num))
       input_dummy2='swansea_p_in_view_no_'//trim(adjustl(input_num))
 
-      call nc_def_var_short_packed_float( &
+      call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            trim(adjustl(input_dummy2)), &
@@ -599,7 +599,7 @@ if (indexing%flags%do_swansea) then
                   'reflectance model in view no '//trim(adjustl(input_num))
       input_dummy2='swansea_p_uncertainty_in_view_no_'//trim(adjustl(input_num))
 
-      call nc_def_var_short_packed_float( &
+      call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            trim(adjustl(input_dummy2)), &
@@ -631,7 +631,7 @@ if (indexing%flags%do_swansea) then
               trim(adjustl(input_num))
          input_dummy2='diffuse_frac_in_channel_no_'//trim(adjustl(input_num))
 
-         call nc_def_var_short_packed_float( &
+         call ncdf_def_var_short_packed_float( &
               ncid, &
               dims_var, &
               trim(adjustl(input_dummy2)), &
@@ -665,7 +665,7 @@ if (indexing%flags%do_swansea) then
          input_dummy2='diffuse_frac_uncertainty_in_channel_no_'// &
               trim(adjustl(input_num))
 
-         call nc_def_var_short_packed_float( &
+         call ncdf_def_var_short_packed_float( &
               ncid, &
               dims_var, &
               trim(adjustl(input_dummy2)), &
@@ -689,7 +689,7 @@ if (indexing%flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! cot
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'cot', &
@@ -709,7 +709,7 @@ if (indexing%flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! cot_uncertainty
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'cot_uncertainty', &
@@ -729,7 +729,7 @@ if (indexing%flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! cer
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'cer', &
@@ -750,7 +750,7 @@ if (indexing%flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! cer_uncertainty
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'cer_uncertainty', &
@@ -770,7 +770,7 @@ if (indexing%flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! ctp
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'ctp', &
@@ -790,7 +790,7 @@ if (indexing%flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! ctp_uncertainty
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'ctp_uncertainty', &
@@ -810,7 +810,7 @@ if (indexing%flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! ctp_corrected
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'ctp_corrected', &
@@ -830,7 +830,7 @@ if (indexing%flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! ctp_corrected_uncertainty
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'ctp_corrected_uncertainty', &
@@ -850,7 +850,7 @@ if (indexing%flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! cc_total
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'cc_total', &
@@ -870,7 +870,7 @@ if (indexing%flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! cc_total_uncertainty
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'cc_total_uncertainty', &
@@ -892,7 +892,7 @@ if (indexing%flags%do_cloud_layer_2) then
    !----------------------------------------------------------------------------
    ! cot2
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'cot2', &
@@ -912,7 +912,7 @@ if (indexing%flags%do_cloud_layer_2) then
    !----------------------------------------------------------------------------
    ! cot2_uncertainty
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'cot2_uncertainty', &
@@ -932,7 +932,7 @@ if (indexing%flags%do_cloud_layer_2) then
    !----------------------------------------------------------------------------
    ! cer2
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'cer2', &
@@ -953,7 +953,7 @@ if (indexing%flags%do_cloud_layer_2) then
    !----------------------------------------------------------------------------
    ! cer2_uncertainty
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'cer2_uncertainty', &
@@ -973,7 +973,7 @@ if (indexing%flags%do_cloud_layer_2) then
    !----------------------------------------------------------------------------
    ! ctp2
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'ctp2', &
@@ -993,7 +993,7 @@ if (indexing%flags%do_cloud_layer_2) then
    !----------------------------------------------------------------------------
    ! ctp2_uncertainty
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'ctp2_uncertainty', &
@@ -1013,7 +1013,7 @@ if (indexing%flags%do_cloud_layer_2) then
    !----------------------------------------------------------------------------
    ! cc_total2
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'cc_total2', &
@@ -1033,7 +1033,7 @@ if (indexing%flags%do_cloud_layer_2) then
    !----------------------------------------------------------------------------
    ! cc_total2_uncertainty
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'cc_total2_uncertainty', &
@@ -1055,7 +1055,7 @@ if (indexing%flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! stemp
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'stemp', &
@@ -1075,7 +1075,7 @@ if (indexing%flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! stemp_uncertainty
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'stemp_uncertainty', &
@@ -1095,7 +1095,7 @@ if (indexing%flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! cth
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'cth', &
@@ -1115,7 +1115,7 @@ if (indexing%flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! cth_uncertainty
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'cth_uncertainty', &
@@ -1135,7 +1135,7 @@ if (indexing%flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! cth_corrected
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'cth_corrected', &
@@ -1155,7 +1155,7 @@ if (indexing%flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! cth_corrected_uncertainty
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'cth_corrected_uncertainty', &
@@ -1175,7 +1175,7 @@ if (indexing%flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! ctt
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'ctt', &
@@ -1195,7 +1195,7 @@ if (indexing%flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! ctt_uncertainty
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'ctt_uncertainty', &
@@ -1215,7 +1215,7 @@ if (indexing%flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! ctt_corrected
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'ctt_corrected', &
@@ -1235,7 +1235,7 @@ if (indexing%flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! ctt_corrected_uncertainty
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'ctt_corrected_uncertainty', &
@@ -1255,7 +1255,7 @@ if (indexing%flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! cwp
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'cwp', &
@@ -1275,7 +1275,7 @@ if (indexing%flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! cwp_uncertainty
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'cwp_uncertainty', &
@@ -1297,7 +1297,7 @@ if (indexing%flags%do_cloud_layer_2) then
    !----------------------------------------------------------------------------
    ! cth2
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'cth2', &
@@ -1317,7 +1317,7 @@ if (indexing%flags%do_cloud_layer_2) then
    !----------------------------------------------------------------------------
    ! cth2_uncertainty
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'cth2_uncertainty', &
@@ -1337,7 +1337,7 @@ if (indexing%flags%do_cloud_layer_2) then
    !----------------------------------------------------------------------------
    ! ctt2
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'ctt2', &
@@ -1357,7 +1357,7 @@ if (indexing%flags%do_cloud_layer_2) then
    !----------------------------------------------------------------------------
    ! ctt2_uncertainty
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'ctt2_uncertainty', &
@@ -1377,7 +1377,7 @@ if (indexing%flags%do_cloud_layer_2) then
    !----------------------------------------------------------------------------
    ! cwp2
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'cwp2', &
@@ -1398,7 +1398,7 @@ if (indexing%flags%do_cloud_layer_2) then
    !----------------------------------------------------------------------------
    ! cwp2_uncertainty
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'cwp2_uncertainty', &
@@ -1431,7 +1431,7 @@ if (indexing%flags%do_cloud) then
          input_dummy='cloud_albedo in channel no '//trim(adjustl(input_num))
          input_dummy2='cloud_albedo_in_channel_no_'//trim(adjustl(input_num))
 
-         call nc_def_var_short_packed_float( &
+         call ncdf_def_var_short_packed_float( &
               ncid, &
               dims_var, &
               trim(adjustl(input_dummy2)), &
@@ -1465,7 +1465,7 @@ if (indexing%flags%do_cloud) then
          input_dummy2='cloud_albedo_uncertainty_in_channel_no_'// &
               trim(adjustl(input_num))
 
-         call nc_def_var_short_packed_float( &
+         call ncdf_def_var_short_packed_float( &
               ncid, &
               dims_var, &
               trim(adjustl(input_dummy2)), &
@@ -1497,7 +1497,7 @@ if (indexing%flags%do_cloud) then
          input_dummy='cee in channel no '//trim(adjustl(input_num))
          input_dummy2='cee_in_channel_no_'//trim(adjustl(input_num))
 
-         call nc_def_var_short_packed_float( &
+         call ncdf_def_var_short_packed_float( &
               ncid, &
               dims_var, &
               trim(adjustl(input_dummy2)), &
@@ -1529,7 +1529,7 @@ if (indexing%flags%do_cloud) then
          input_dummy='cee_uncertainty in channel no '//trim(adjustl(input_num))
          input_dummy2='cee_uncertainty_in_channel_no_'//trim(adjustl(input_num))
 
-         call nc_def_var_short_packed_float( &
+         call ncdf_def_var_short_packed_float( &
               ncid, &
               dims_var, &
               trim(adjustl(input_dummy2)), &
@@ -1551,7 +1551,7 @@ if (indexing%flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! cccot_pre (cloud optical thickness)
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dim3d_var, &
            'cccot_pre', &
@@ -1573,7 +1573,7 @@ end if
    !----------------------------------------------------------------------------
    ! niter
    !----------------------------------------------------------------------------
-   call nc_def_var_byte_packed_byte( &
+   call ncdf_def_var_byte_packed_byte( &
            ncid, &
            dims_var, &
            'niter', &
@@ -1593,7 +1593,7 @@ end if
    !----------------------------------------------------------------------------
    ! costja
    !----------------------------------------------------------------------------
-   call nc_def_var_float_packed_float( &
+   call ncdf_def_var_float_packed_float( &
            ncid, &
            dims_var, &
            'costja', &
@@ -1613,7 +1613,7 @@ end if
    !----------------------------------------------------------------------------
    ! costjm
    !----------------------------------------------------------------------------
-   call nc_def_var_float_packed_float( &
+   call ncdf_def_var_float_packed_float( &
            ncid, &
            dims_var, &
            'costjm', &
@@ -1633,7 +1633,7 @@ end if
    !----------------------------------------------------------------------------
    ! qcflag
    !----------------------------------------------------------------------------
-   call nc_def_var_long_packed_long( &
+   call ncdf_def_var_long_packed_long( &
            ncid, &
            dims_var, &
            'qcflag', &
@@ -1655,7 +1655,7 @@ end if
    !----------------------------------------------------------------------------
    ! channels_used
    !----------------------------------------------------------------------------
-   call nc_def_var_dlong_packed_dlong( &
+   call ncdf_def_var_dlong_packed_dlong( &
            ncid, &
            dims_var, &
            'channels_used', &
@@ -1679,7 +1679,7 @@ end if
    !----------------------------------------------------------------------------
    ! variables_retrieved
    !----------------------------------------------------------------------------
-   call nc_def_var_dlong_packed_dlong( &
+   call ncdf_def_var_dlong_packed_dlong( &
            ncid, &
            dims_var, &
            'variables_retrieved', &
@@ -1701,7 +1701,7 @@ end if
    !----------------------------------------------------------------------------
    ! lsflag
    !----------------------------------------------------------------------------
-   call nc_def_var_byte_packed_byte( &
+   call ncdf_def_var_byte_packed_byte( &
            ncid, &
            dims_var, &
            'lsflag', &
@@ -1723,7 +1723,7 @@ end if
    !----------------------------------------------------------------------------
    ! lusflag
    !----------------------------------------------------------------------------
-   call nc_def_var_byte_packed_byte( &
+   call ncdf_def_var_byte_packed_byte( &
            ncid, &
            dims_var, &
            'lusflag', &
@@ -1772,7 +1772,7 @@ end if
    !----------------------------------------------------------------------------
    ! dem
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_short( &
+   call ncdf_def_var_short_packed_short( &
            ncid, &
            dims_var, &
            'dem', &
@@ -1792,7 +1792,7 @@ end if
    !----------------------------------------------------------------------------
    ! illum
    !----------------------------------------------------------------------------
-   call nc_def_var_byte_packed_byte( &
+   call ncdf_def_var_byte_packed_byte( &
            ncid, &
            dims_var, &
            'illum', &
@@ -1825,7 +1825,7 @@ end if
                'overlap ' // &
                'prob_opaque_ice'
 
-   call nc_def_var_byte_packed_byte( &
+   call ncdf_def_var_byte_packed_byte( &
            ncid, &
            dim3d_var, &
            'cldtype', &
@@ -1848,7 +1848,7 @@ if (indexing%flags%do_cldmask) then
    !----------------------------------------------------------------------------
    ! cldmask
    !----------------------------------------------------------------------------
-   call nc_def_var_byte_packed_byte( &
+   call ncdf_def_var_byte_packed_byte( &
            ncid, &
            dim3d_var, &
            'cldmask', &
@@ -1871,7 +1871,7 @@ if (indexing%flags%do_cldmask_uncertainty) then
    !----------------------------------------------------------------------------
    ! cldmask_uncertainty
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dim3d_var, &
            'cldmask_uncertainty', &
@@ -1894,7 +1894,7 @@ if (indexing%flags%do_ann_phase) then
    !----------------------------------------------------------------------------
    ! ann_phase
    !----------------------------------------------------------------------------
-   call nc_def_var_byte_packed_byte( &
+   call ncdf_def_var_byte_packed_byte( &
            ncid, &
            dim3d_var, &
            'ann_phase', &
@@ -1916,7 +1916,7 @@ if (indexing%flags%do_ann_phase) then
    !----------------------------------------------------------------------------
    ! cphcot (ANN phase cloud optical thickness)
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dim3d_var, &
            'cphcot', &
@@ -1939,7 +1939,7 @@ if (indexing%flags%do_ann_phase_uncertainty) then
    !----------------------------------------------------------------------------
    ! ann_phase_uncertainty
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dim3d_var, &
            'ann_phase_uncertainty', &
@@ -1976,7 +1976,7 @@ if (indexing%flags%do_phase) then
       input_dummy2 = '0b 1b 2b 3b'
    end if
 
-   call nc_def_var_byte_packed_byte( &
+   call ncdf_def_var_byte_packed_byte( &
            ncid, &
            dims_var, &
            'phase', &
@@ -2001,7 +2001,7 @@ if (indexing%flags%do_phase_pavolonis) then
    !----------------------------------------------------------------------------
    ! phase_pavolonis
    !----------------------------------------------------------------------------
-   call nc_def_var_byte_packed_byte( &
+   call ncdf_def_var_byte_packed_byte( &
            ncid, &
            dims_var, &
            'phase_pavolonis', &
@@ -2026,7 +2026,7 @@ if (indexing%flags%do_indexing .and. present(ch_var)) then
    !----------------------------------------------------------------------------
    ! y_id
    !----------------------------------------------------------------------------
-   call nc_def_var_byte_packed_byte( &
+   call ncdf_def_var_byte_packed_byte( &
            ncid, &
            ch_var, &
            'y_id', &
@@ -2045,7 +2045,7 @@ if (indexing%flags%do_indexing .and. present(ch_var)) then
    !----------------------------------------------------------------------------
    ! ch_is
    !----------------------------------------------------------------------------
-   call nc_def_var_byte_packed_byte( &
+   call ncdf_def_var_byte_packed_byte( &
            ncid, &
            ch_var, &
            'ch_is', &
@@ -2064,7 +2064,7 @@ if (indexing%flags%do_indexing .and. present(ch_var)) then
    !----------------------------------------------------------------------------
    ! rho_flags
    !----------------------------------------------------------------------------
-   call nc_def_var_byte_packed_byte( &
+   call ncdf_def_var_byte_packed_byte( &
            ncid, &
            ch_var, &
            'rho_flags', &
@@ -2085,7 +2085,7 @@ if (indexing%flags%do_indexing) then
    !----------------------------------------------------------------------------
    ! view_id
    !----------------------------------------------------------------------------
-   call nc_def_var_byte_packed_byte( &
+   call ncdf_def_var_byte_packed_byte( &
            ncid, &
            view_var, &
            'view_id', &

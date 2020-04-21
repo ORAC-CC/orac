@@ -1,4 +1,4 @@
-subroutine NC_WRITE_NAME_1D(ncid, name, varid, values, i1, start1, n1)
+subroutine NCDF_WRITE_NAME_1D(ncid, name, varid, values, i1, start1, n1)
 
    implicit none
 
@@ -6,7 +6,7 @@ subroutine NC_WRITE_NAME_1D(ncid, name, varid, values, i1, start1, n1)
    character(len=*), intent(in)  :: name
    integer,          intent(in)  :: varid
    integer,          intent(in)  :: i1, start1, n1
-   NC_WRITE_TYPE(kind=NC_WRITE_KIND), dimension(:), intent(in) :: values
+   NCDF_WRITE_TYPE(kind=NCDF_WRITE_KIND), dimension(:), intent(in) :: values
 
    integer               :: ierr
    integer, dimension(1) :: start, counter, stride
@@ -24,10 +24,10 @@ subroutine NC_WRITE_NAME_1D(ncid, name, varid, values, i1, start1, n1)
       stop error_stop_code
    end if
 
-end subroutine NC_WRITE_NAME_1D
+end subroutine NCDF_WRITE_NAME_1D
 
 
-subroutine NC_WRITE_NAME_2D(ncid, name, varid, values, i1, start1, n1, &
+subroutine NCDF_WRITE_NAME_2D(ncid, name, varid, values, i1, start1, n1, &
                             i2, start2, n2)
 
    implicit none
@@ -37,7 +37,7 @@ subroutine NC_WRITE_NAME_2D(ncid, name, varid, values, i1, start1, n1, &
    integer,          intent(in)  :: varid
    integer,          intent(in)  :: i1, start1, n1
    integer,          intent(in)  :: i2, start2, n2
-   NC_WRITE_TYPE(kind=NC_WRITE_KIND), dimension(:,:), intent(in) :: values
+   NCDF_WRITE_TYPE(kind=NCDF_WRITE_KIND), dimension(:,:), intent(in) :: values
 
    integer               :: ierr
    integer, dimension(2) :: start, counter, stride
@@ -57,10 +57,10 @@ subroutine NC_WRITE_NAME_2D(ncid, name, varid, values, i1, start1, n1, &
       stop error_stop_code
    end if
 
-end subroutine NC_WRITE_NAME_2D
+end subroutine NCDF_WRITE_NAME_2D
 
 
-subroutine NC_WRITE_NAME_3D(ncid, name, varid, values, i1, start1, n1, &
+subroutine NCDF_WRITE_NAME_3D(ncid, name, varid, values, i1, start1, n1, &
                             i2, start2, n2, i3, start3, n3)
 
    implicit none
@@ -71,7 +71,7 @@ subroutine NC_WRITE_NAME_3D(ncid, name, varid, values, i1, start1, n1, &
    integer,          intent(in)  :: i1, start1, n1
    integer,          intent(in)  :: i2, start2, n2
    integer,          intent(in)  :: i3, start3, n3
-   NC_WRITE_TYPE(kind=NC_WRITE_KIND), dimension(:,:,:), intent(in) :: values
+   NCDF_WRITE_TYPE(kind=NCDF_WRITE_KIND), dimension(:,:,:), intent(in) :: values
 
    integer               :: ierr
    integer, dimension(3) :: start, counter, stride
@@ -93,10 +93,10 @@ subroutine NC_WRITE_NAME_3D(ncid, name, varid, values, i1, start1, n1, &
       stop error_stop_code
    end if
 
-end subroutine NC_WRITE_NAME_3D
+end subroutine NCDF_WRITE_NAME_3D
 
 
-subroutine NC_WRITE_NAME_4D(ncid, name, varid, values, i1, start1, n1, &
+subroutine NCDF_WRITE_NAME_4D(ncid, name, varid, values, i1, start1, n1, &
                             i2, start2, n2, i3, start3, n3, i4, start4, n4)
 
    implicit none
@@ -108,7 +108,7 @@ subroutine NC_WRITE_NAME_4D(ncid, name, varid, values, i1, start1, n1, &
    integer,          intent(in)  :: i2, start2, n2
    integer,          intent(in)  :: i3, start3, n3
    integer,          intent(in)  :: i4, start4, n4
-   NC_WRITE_TYPE(kind=NC_WRITE_KIND), dimension(:,:,:,:), intent(in) :: values
+   NCDF_WRITE_TYPE(kind=NCDF_WRITE_KIND), dimension(:,:,:,:), intent(in) :: values
 
    integer               :: ierr
    integer, dimension(4) :: start, counter, stride
@@ -132,4 +132,4 @@ subroutine NC_WRITE_NAME_4D(ncid, name, varid, values, i1, start1, n1, &
       stop error_stop_code
    end if
 
-end subroutine NC_WRITE_NAME_4D
+end subroutine NCDF_WRITE_NAME_4D

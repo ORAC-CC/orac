@@ -1,15 +1,15 @@
 !-------------------------------------------------------------------------------
-! Name: orac_nc_utils.F90
+! Name: orac_ncdf_utils.F90
 !
 ! Purpose:
 ! File with ORAC specific NetCDF i/o convenience routines not appropriate for
-! the more general nc_* files.
+! the more general ncdf_* files.
 !
 !-------------------------------------------------------------------------------
 
 
 !-------------------------------------------------------------------------------
-! Name: nc_create
+! Name: ncdf_create
 !
 ! Purpose:
 !
@@ -27,12 +27,13 @@
 ! 2017/07/10, AP: Stop using CLASSIC_MODE such that int64 fields can be saved.
 ! 2017/10/05, GM: Add ann_phase_used attribute.
 ! 2018/06/08, SP: New global attribute to store satellite position information
+! 2020/04/21, AP: Renamed routines ncdf_ to avoid clobber of library routines.
 
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine nc_create(path, ncid, nx, ny, nview, dims_var, type, global_atts, &
+subroutine ncdf_create(path, ncid, nx, ny, nview, dims_var, type, global_atts, &
      source_atts, nch, ch_var, nstate, LUT_class, ann_phase_used, do_flags)
 
    use netcdf
@@ -166,7 +167,7 @@ subroutine nc_create(path, ncid, nx, ny, nview, dims_var, type, global_atts, &
       stop error_stop_code
    end if
 
-   call nc_put_common_attributes(ncid, global_atts,source_atts)
+   call ncdf_put_common_attributes(ncid, global_atts,source_atts)
 
 
    !----------------------------------------------------------------------------
@@ -178,11 +179,11 @@ subroutine nc_create(path, ncid, nx, ny, nview, dims_var, type, global_atts, &
       stop error_stop_code
    end if
 
-end subroutine nc_create
+end subroutine ncdf_create
 
 
 !-------------------------------------------------------------------------------
-! Name: nc_put_common_attributes
+! Name: ncdf_put_common_attributes
 !
 ! Purpose:
 !
@@ -209,7 +210,7 @@ end subroutine nc_create
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine nc_put_common_attributes(ncid, global_atts, source_atts)
+subroutine ncdf_put_common_attributes(ncid, global_atts, source_atts)
 
    use netcdf
 
@@ -542,11 +543,11 @@ subroutine nc_put_common_attributes(ncid, global_atts, source_atts)
       stop error_stop_code
    end if
 
-end subroutine nc_put_common_attributes
+end subroutine ncdf_put_common_attributes
 
 
 !-------------------------------------------------------------------------------
-! Name: nc_get_common_attributes
+! Name: ncdf_get_common_attributes
 !
 ! Purpose:
 !
@@ -569,7 +570,7 @@ end subroutine nc_put_common_attributes
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine nc_get_common_attributes(ncid, global_atts, source_atts)
+subroutine ncdf_get_common_attributes(ncid, global_atts, source_atts)
 
    use netcdf
 
@@ -904,7 +905,7 @@ subroutine nc_get_common_attributes(ncid, global_atts, source_atts)
       stop error_stop_code
    end if
 
-end subroutine nc_get_common_attributes
+end subroutine ncdf_get_common_attributes
 
 
 !-------------------------------------------------------------------------------

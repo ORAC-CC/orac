@@ -7,7 +7,7 @@
 ! Variable names are also defined.
 !
 ! Description and Algorithm details:
-! 1) For each variable, use nc_def_var routine to define variable.
+! 1) For each variable, use ncdf_def_var routine to define variable.
 ! 2) Loop over views to define measurement channel variables.
 !
 ! Arguments:
@@ -100,7 +100,7 @@ subroutine def_output_secondary(ncid, dim3d_var, output_data, indexing, &
    !----------------------------------------------------------------------------
    ! scanline_u
    !----------------------------------------------------------------------------
-   call nc_def_var_long_packed_long( &
+   call ncdf_def_var_long_packed_long( &
            ncid, &
            dims_var, &
            'scanline_u', &
@@ -119,7 +119,7 @@ subroutine def_output_secondary(ncid, dim3d_var, output_data, indexing, &
    !----------------------------------------------------------------------------
    ! scanline_v
    !----------------------------------------------------------------------------
-   call nc_def_var_long_packed_long( &
+   call ncdf_def_var_long_packed_long( &
            ncid, &
            dims_var, &
            'scanline_v', &
@@ -139,7 +139,7 @@ if (indexing%flags%do_aerosol) then
    !----------------------------------------------------------------------------
    ! aot550_ap
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'aot550_ap', &
@@ -159,7 +159,7 @@ if (indexing%flags%do_aerosol) then
    !----------------------------------------------------------------------------
    ! aot550_fg
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'aot550_fg', &
@@ -179,7 +179,7 @@ if (indexing%flags%do_aerosol) then
    !----------------------------------------------------------------------------
    ! aer_ap
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'aer_ap', &
@@ -198,7 +198,7 @@ if (indexing%flags%do_aerosol) then
    !----------------------------------------------------------------------------
    ! aer_fg
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'aer_fg', &
@@ -231,7 +231,7 @@ if (indexing%flags%do_rho) then
             call create_rho_field_name(j, 3, input_num, &
                  input_dummy, input_dummy2)
 
-            call nc_def_var_short_packed_float( &
+            call ncdf_def_var_short_packed_float( &
                  ncid, &
                  dims_var, &
                  trim(adjustl(input_dummy)), &
@@ -253,7 +253,7 @@ if (indexing%flags%do_rho) then
             call create_rho_field_name(j, 4, input_num, &
                  input_dummy, input_dummy2)
 
-            call nc_def_var_short_packed_float( &
+            call ncdf_def_var_short_packed_float( &
                  ncid, &
                  dims_var, &
                  trim(adjustl(input_dummy)), &
@@ -288,7 +288,7 @@ if (indexing%flags%do_swansea) then
               trim(adjustl(input_num))
          input_dummy='swansea_s_ap_in_channel_no_'//trim(adjustl(input_num))
 
-         call nc_def_var_short_packed_float( &
+         call ncdf_def_var_short_packed_float( &
               ncid, &
               dims_var, &
               trim(adjustl(input_dummy)), &
@@ -311,7 +311,7 @@ if (indexing%flags%do_swansea) then
               trim(adjustl(input_num))
          input_dummy='swansea_s_fg_in_channel_no_'//trim(adjustl(input_num))
 
-         call nc_def_var_short_packed_float( &
+         call ncdf_def_var_short_packed_float( &
               ncid, &
               dims_var, &
               trim(adjustl(input_dummy)), &
@@ -341,7 +341,7 @@ if (indexing%flags%do_swansea) then
            trim(adjustl(input_num))
       input_dummy='swansea_p_ap_in_view_no_'//trim(adjustl(input_num))
 
-      call nc_def_var_short_packed_float( &
+      call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            trim(adjustl(input_dummy)), &
@@ -364,7 +364,7 @@ if (indexing%flags%do_swansea) then
            trim(adjustl(input_num))
       input_dummy='swansea_p_fg_in_view_no_'//trim(adjustl(input_num))
 
-      call nc_def_var_short_packed_float( &
+      call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            trim(adjustl(input_dummy)), &
@@ -386,7 +386,7 @@ if (indexing%flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! cot_ap
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'cot_ap', &
@@ -406,7 +406,7 @@ if (indexing%flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! cot_fg
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'cot_fg', &
@@ -426,7 +426,7 @@ if (indexing%flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! cer_ap
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'cer_ap', &
@@ -447,7 +447,7 @@ if (indexing%flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! cer_fg
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'cer_fg', &
@@ -468,7 +468,7 @@ if (indexing%flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! ctp_ap
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'ctp_ap', &
@@ -488,7 +488,7 @@ if (indexing%flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! ctp_fg
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'ctp_fg', &
@@ -510,7 +510,7 @@ if (indexing%flags%do_cloud_layer_2) then
    !----------------------------------------------------------------------------
    ! cot2_ap
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'cot2_ap', &
@@ -530,7 +530,7 @@ if (indexing%flags%do_cloud_layer_2) then
    !----------------------------------------------------------------------------
    ! cot2_fg
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'cot2_fg', &
@@ -550,7 +550,7 @@ if (indexing%flags%do_cloud_layer_2) then
    !----------------------------------------------------------------------------
    ! cer2_ap
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'cer2_ap', &
@@ -571,7 +571,7 @@ if (indexing%flags%do_cloud_layer_2) then
    !----------------------------------------------------------------------------
    ! cer2_fg
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'cer2_fg', &
@@ -592,7 +592,7 @@ if (indexing%flags%do_cloud_layer_2) then
    !----------------------------------------------------------------------------
    ! ctp2_ap
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'ctp2_ap', &
@@ -612,7 +612,7 @@ if (indexing%flags%do_cloud_layer_2) then
    !----------------------------------------------------------------------------
    ! ctp2_fg
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'ctp2_fg', &
@@ -634,7 +634,7 @@ if (indexing%flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! stemp_ap
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'stemp_ap', &
@@ -654,7 +654,7 @@ if (indexing%flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! stemp_fg
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'stemp_fg', &
@@ -681,7 +681,7 @@ if (indexing%flags%do_cloud) then
       input_dummy='albedo_in_channel_no_'//trim(adjustl(input_num))
       input_dummy2='albedo in channel no '//trim(adjustl(input_num))
 
-      call nc_def_var_short_packed_float( &
+      call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            trim(adjustl(input_dummy)), &
@@ -719,7 +719,7 @@ end if
 
       end if
 
-      call nc_def_var_short_packed_float( &
+      call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            trim(adjustl(input_dummy)), &
@@ -758,7 +758,7 @@ end if
          input_dummy3='1'
       end if
 
-      call nc_def_var_short_packed_float( &
+      call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            trim(adjustl(input_dummy)), &
@@ -797,7 +797,7 @@ end if
          input_dummy3='1'
       end if
 
-      call nc_def_var_short_packed_float( &
+      call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            trim(adjustl(input_dummy)), &
@@ -818,7 +818,7 @@ end if
    !----------------------------------------------------------------------------
    ! degrees_of_freedom_signal
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
+   call ncdf_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'degrees_of_freedom_signal', &

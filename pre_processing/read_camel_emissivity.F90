@@ -101,7 +101,7 @@ function read_camel_emissivity(path_to_file, emis, wavelengths, verbose, flag, &
    camel_wvl = (/ 3.6, 4.3, 5.0, 5.8, 7.6, 8.3, 8.6, 9.1, 10.6, 10.8, 11.3, 12.1, 14.3 /)
 
    ! Open NetCDF file
-   call nc_open(fid, path_to_file, 'read_camel_emissivity()')
+   call ncdf_open(fid, path_to_file, 'read_camel_emissivity()')
 
    ! Extract information about the file
    stat = nf90_inquire(fid, nDim)
@@ -114,9 +114,9 @@ function read_camel_emissivity(path_to_file, emis, wavelengths, verbose, flag, &
    end if
 
    ! Extract the array dimensions
-   xdim = nc_dim_length(fid, 'latitude', 'read_camel_emissivity()', verbose)
-   ydim = nc_dim_length(fid, 'longitude', 'read_camel_emissivity()', verbose)
-   zdim = nc_dim_length(fid, 'spectra', 'read_camel_emissivity()', verbose)
+   xdim = ncdf_dim_length(fid, 'latitude', 'read_camel_emissivity()', verbose)
+   ydim = ncdf_dim_length(fid, 'longitude', 'read_camel_emissivity()', verbose)
+   zdim = ncdf_dim_length(fid, 'spectra', 'read_camel_emissivity()', verbose)
 
    ! Begin to populate the emis structure
    emis%nlat   = xdim
@@ -127,7 +127,7 @@ function read_camel_emissivity(path_to_file, emis, wavelengths, verbose, flag, &
    if (present(flag)) then
       if (flag .gt. 0) then
          allocate(emis%flag(ydim,xdim))
-         call nc_read_array(fid, 'camel_qflag', emis%flag, verbose)
+         call ncdf_read_array(fid, 'camel_qflag', emis%flag, verbose)
       end if
    end if
 
@@ -135,7 +135,7 @@ function read_camel_emissivity(path_to_file, emis, wavelengths, verbose, flag, &
 
 
    allocate(cache(13,7200,3600))
-   call nc_read_array(fid, 'camel_emis', cache, verbose)
+   call ncdf_read_array(fid, 'camel_emis', cache, verbose)
 
    ! Extract the data for each of the requested bands
    do i = 1, n_wavelengths
@@ -168,7 +168,7 @@ end if
    deallocate(cache)
 
    ! We are now finished with the main data file
-   call nc_close(fid, 'read_camel_emissivity()')
+   call ncdf_close(fid, 'read_camel_emissivity()')
 
    ! Commented out read/generation of lat/lon arrays. As the grid is regular,
    ! simply output its starting point and the inverse of the spacing

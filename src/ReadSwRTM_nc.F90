@@ -108,7 +108,7 @@ subroutine Read_SwRTM_nc(Ctrl, RTM)
    !----------------------------------------------------------------------------
 
    ! Open RTM data file
-   call nc_open(ncid, Ctrl%FID%SWRTM, 'Read_SwRTM_nc()')
+   call ncdf_open(ncid, Ctrl%FID%SWRTM, 'Read_SwRTM_nc()')
 
    ! Ensure instrument info matches the sensor being processed
    if (nf90_get_att(ncid, NF90_GLOBAL, "Sensor", sensor) /= NF90_NOERR .or.&
@@ -139,8 +139,8 @@ subroutine Read_SwRTM_nc(Ctrl, RTM)
 !  allocate(WvNumber(RTM%SW%NSWF))
 
    ! Read ChanID and WvNumber
-   call nc_read_array(ncid, "sw_channel_instr_ids", ChanID, Ctrl%verbose)
-!  call nc_read_array(ncid, "sw_channel_wvl", WvNumber, Ctrl%verbose)
+   call ncdf_read_array(ncid, "sw_channel_instr_ids", ChanID, Ctrl%verbose)
+!  call ncdf_read_array(ncid, "sw_channel_wvl", WvNumber, Ctrl%verbose)
 
    if (Ctrl%verbose) write(*,*) &
       'SW channel instrument ids for RTM in SW preprocessing file', ChanID
@@ -185,12 +185,12 @@ subroutine Read_SwRTM_nc(Ctrl, RTM)
       allocate(RTM%SW%Tac(Ctrl%Ind%NSolar, RTM%NP, RTM%Grid%NLon, &
          RTM%Grid%NLat))
 
-      call nc_read_array(ncid, "tac_sw", RTM%SW%Tac, Ctrl%verbose, 1, index)
-      call nc_read_array(ncid, "tbc_sw", RTM%SW%Tbc, Ctrl%verbose, 1, index)
+      call ncdf_read_array(ncid, "tac_sw", RTM%SW%Tac, Ctrl%verbose, 1, index)
+      call ncdf_read_array(ncid, "tbc_sw", RTM%SW%Tbc, Ctrl%verbose, 1, index)
    end if
 
    ! Close SwRTM input file
-   call nc_close(ncid, 'Read_SwRTM_nc()')
+   call ncdf_close(ncid, 'Read_SwRTM_nc()')
 
    if (allocated(index)) deallocate(index)
 !  if (allocated(WvNumber)) deallocate(WvNumber)

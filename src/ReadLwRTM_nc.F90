@@ -117,7 +117,7 @@ subroutine Read_LwRTM_nc(Ctrl, RTM)
 
 
    ! Open LwRTM data file
-   call nc_open(ncid, Ctrl%FID%LWRTM, 'Read_LwRTM_nc()')
+   call ncdf_open(ncid, Ctrl%FID%LWRTM, 'Read_LwRTM_nc()')
 
    ! Ensure instrument info matches the sensor being processed
    if (nf90_get_att(ncid, NF90_GLOBAL, "Sensor", sensor) /= NF90_NOERR .or.&
@@ -148,8 +148,8 @@ subroutine Read_LwRTM_nc(Ctrl, RTM)
 !  allocate(WvNumber(RTM%LW%NLWF))
 
    ! Read ChanID and WvNumber
-   call nc_read_array(ncid, "lw_channel_instr_ids", ChanID, Ctrl%verbose)
-!  call nc_read_array(ncid, "lw_channel_wvl", WvNumber, Ctrl%verbose)
+   call ncdf_read_array(ncid, "lw_channel_instr_ids", ChanID, Ctrl%verbose)
+!  call ncdf_read_array(ncid, "lw_channel_wvl", WvNumber, Ctrl%verbose)
 
    if (Ctrl%verbose) write(*,*) &
       'LW channel instrument ids for RTM in LW preprocessing file: ', ChanID
@@ -201,12 +201,12 @@ subroutine Read_LwRTM_nc(Ctrl, RTM)
          RTM%Grid%NLat))
 
       ! Read data into arrays
-      call nc_read_array(ncid, "emiss_lw", RTM%LW%Ems, Ctrl%verbose, 1, index)
-      call nc_read_array(ncid, "tac_lw", RTM%LW%Tac, Ctrl%verbose, 1, index)
-      call nc_read_array(ncid, "tbc_lw", RTM%LW%Tbc, Ctrl%verbose, 1, index)
-      call nc_read_array(ncid, "rbc_up_lw", RTM%LW%Rbc_up, Ctrl%verbose, 1, index)
-      call nc_read_array(ncid, "rac_up_lw", RTM%LW%Rac_up, Ctrl%verbose, 1, index)
-      call nc_read_array(ncid, "rac_down_lw", RTM%LW%Rac_dwn, Ctrl%verbose, 1, index)
+      call ncdf_read_array(ncid, "emiss_lw", RTM%LW%Ems, Ctrl%verbose, 1, index)
+      call ncdf_read_array(ncid, "tac_lw", RTM%LW%Tac, Ctrl%verbose, 1, index)
+      call ncdf_read_array(ncid, "tbc_lw", RTM%LW%Tbc, Ctrl%verbose, 1, index)
+      call ncdf_read_array(ncid, "rbc_up_lw", RTM%LW%Rbc_up, Ctrl%verbose, 1, index)
+      call ncdf_read_array(ncid, "rac_up_lw", RTM%LW%Rac_up, Ctrl%verbose, 1, index)
+      call ncdf_read_array(ncid, "rac_down_lw", RTM%LW%Rac_dwn, Ctrl%verbose, 1, index)
    end if
 
 !  if (allocated(WvNumber)) deallocate(WvNumber)
@@ -214,6 +214,6 @@ subroutine Read_LwRTM_nc(Ctrl, RTM)
    if (allocated(index))    deallocate(index)
 
    ! Close LwRTM input file
-   call nc_close(ncid, 'Read_LwRTM_nc()')
+   call ncdf_close(ncid, 'Read_LwRTM_nc()')
 
 end subroutine Read_LwRTM_nc

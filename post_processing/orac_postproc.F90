@@ -771,11 +771,11 @@ subroutine orac_postproc(mytask, ntasks, lower_bound, upper_bound, &
     indexing%Y0=1
 
     ! Open the netcdf output file
-    call nc_create(trim(adjustl(out_file_primary)), ncid_primary, &
+    call ncdf_create(trim(adjustl(out_file_primary)), ncid_primary, &
          indexing%Xdim, indexing%Ydim, indexing%NViews, dims_var, 1, &
          global_atts, source_atts)
     if (do_secondary) then
-       call nc_create(trim(adjustl(out_file_secondary)), ncid_secondary, &
+       call ncdf_create(trim(adjustl(out_file_secondary)), ncid_secondary, &
             indexing%Xdim, indexing%Ydim, indexing%NViews, dims_var, 2, &
             global_atts, source_atts)
     end if
@@ -823,9 +823,9 @@ subroutine orac_postproc(mytask, ntasks, lower_bound, upper_bound, &
     end if
 
     ! Close output file
-    call nc_close(ncid_primary, 'orac_postproc()')
+    call ncdf_close(ncid_primary, 'orac_postproc()')
     if (do_secondary) then
-       call nc_close(ncid_secondary, 'orac_postproc()')
+       call ncdf_close(ncid_secondary, 'orac_postproc()')
     end if
 
     ! Deallocate output structure

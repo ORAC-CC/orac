@@ -67,19 +67,19 @@ subroutine Read_Geometry_nc(Ctrl, MSI_Data)
 
    ! Open geometry file
    if (Ctrl%verbose) write(*,*) 'Geometry file: ', trim(Ctrl%FID%Geo)
-   call nc_open(ncid, Ctrl%FID%Geo, 'Read_Geometry_nc()')
+   call ncdf_open(ncid, Ctrl%FID%Geo, 'Read_Geometry_nc()')
 
    allocate(MSI_Data%Geometry%Sol(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, Ctrl%Ind%NViews))
    allocate(MSI_Data%Geometry%Sat(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, Ctrl%Ind%NViews))
    allocate(MSI_Data%Geometry%Azi(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, Ctrl%Ind%NViews))
    allocate(MSI_Data%Geometry%Saz(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, Ctrl%Ind%NViews))
 
-   call nc_read_array(ncid, "solzen", MSI_Data%Geometry%Sol, Ctrl%verbose)
-   call nc_read_array(ncid, "satzen", MSI_Data%Geometry%Sat, Ctrl%verbose)
-   call nc_read_array(ncid, "relazi", MSI_Data%Geometry%Azi, Ctrl%verbose)
-   call nc_read_array(ncid, "sataz", MSI_Data%Geometry%Saz, Ctrl%verbose)
+   call ncdf_read_array(ncid, "solzen", MSI_Data%Geometry%Sol, Ctrl%verbose)
+   call ncdf_read_array(ncid, "satzen", MSI_Data%Geometry%Sat, Ctrl%verbose)
+   call ncdf_read_array(ncid, "relazi", MSI_Data%Geometry%Azi, Ctrl%verbose)
+   call ncdf_read_array(ncid, "sataz", MSI_Data%Geometry%Saz, Ctrl%verbose)
 
    ! Close geometry file
-   call nc_close(ncid, 'read_geometry_nc()')
+   call ncdf_close(ncid, 'read_geometry_nc()')
 
 end subroutine Read_Geometry_nc
