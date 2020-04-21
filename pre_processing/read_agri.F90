@@ -58,12 +58,12 @@ subroutine read_agri_dimensions(fname, n_across_track, n_along_track, verbose)
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< read_agri_dimensions()'
 
    ! Open the file.
-   call nc_open(fid, fname, 'read_agri_dimensions()')
+   call ncdf_open(fid, fname, 'read_agri_dimensions()')
 
-   n_across_track = nc_dim_length(fid, 'lat', 'read_agri_dimensions()', verbose)
-   n_along_track = nc_dim_length(fid, 'lon', 'read_agri_dimensions()', verbose)
+   n_across_track = ncdf_dim_length(fid, 'lat', 'read_agri_dimensions()', verbose)
+   n_along_track = ncdf_dim_length(fid, 'lon', 'read_agri_dimensions()', verbose)
 
-   call nc_close(fid, 'read_agri_dimensions()')
+   call ncdf_close(fid, 'read_agri_dimensions()')
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> read_agri_dimensions()'
 
@@ -175,12 +175,12 @@ subroutine agri_retr_anc(ncid, imager_angles, imager_geolocation)
    type(imager_angles_t),      intent(out) :: imager_angles
    type(imager_geolocation_t), intent(out) :: imager_geolocation
 
-   call nc_read_array(ncid, 'latitude', imager_geolocation%latitude, .false.)
-   call nc_read_array(ncid, 'longitude', imager_geolocation%longitude, .false.)
-   call nc_read_array(ncid, 'SZA', imager_angles%solzen(:,:,1), .false.)
-   call nc_read_array(ncid, 'SAA', imager_angles%solazi(:,:,1), .false.)
-   call nc_read_array(ncid, 'VZA', imager_angles%satzen(:,:,1), .false.)
-   call nc_read_array(ncid, 'VAA', imager_angles%satazi(:,:,1), .false.)
+   call ncdf_read_array(ncid, 'latitude', imager_geolocation%latitude, .false.)
+   call ncdf_read_array(ncid, 'longitude', imager_geolocation%longitude, .false.)
+   call ncdf_read_array(ncid, 'SZA', imager_angles%solzen(:,:,1), .false.)
+   call ncdf_read_array(ncid, 'SAA', imager_angles%solazi(:,:,1), .false.)
+   call ncdf_read_array(ncid, 'VZA', imager_angles%satzen(:,:,1), .false.)
+   call ncdf_read_array(ncid, 'VAA', imager_angles%satazi(:,:,1), .false.)
 
    imager_angles%solzen(:,:,1) = abs(imager_angles%solzen(:,:,1))
    imager_angles%satzen(:,:,1) = abs(imager_angles%satzen(:,:,1))
@@ -260,7 +260,7 @@ subroutine agri_retr_band(ncid, band, iband, solband, imager_measurements)
    integer,                     intent(in)  :: solband
    type(imager_measurements_t), intent(out) :: imager_measurements
 
-   call nc_read_array(ncid, band, imager_measurements%data(:,:,iband), .false.)
+   call ncdf_read_array(ncid, band, imager_measurements%data(:,:,iband), .false.)
 
    ! If it's a solar band then we have to divide by 100 as Satpy refl is in range 0->100
    if (solband .eq. 1) then
@@ -346,7 +346,7 @@ subroutine read_agri_data(infile, imager_geolocation, imager_measurements, &
    band_ids = channel_info%channel_ids_instr
    allocate(band_units(n_bands))
 
-   call nc_open(ncid, infile, 'read_agri_data()')
+   call ncdf_open(ncid, infile, 'read_agri_data()')
 
    startx = imager_geolocation%startx
    nx = imager_geolocation%nx
@@ -364,7 +364,7 @@ subroutine read_agri_data(infile, imager_geolocation, imager_measurements, &
       call agri_retr_band(ncid, cur_band, i, channel_info%channel_sw_flag(i), imager_measurements)
    end do
 
-   call nc_close(ncid, 'read_agri_data()')
+   call ncdf_close(ncid, 'read_agri_data()')
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_agri_data()'
 

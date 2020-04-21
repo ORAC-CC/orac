@@ -26,22 +26,22 @@
 
 subroutine netcdf_output_close(netcdf_info)
 
-   use orac_ncdf_m, only: nc_close
+   use orac_ncdf_m, only: ncdf_close
    use preproc_constants_m
 
    implicit none
 
    type(netcdf_output_info_t), intent(in) :: netcdf_info
 
-   call nc_close(netcdf_info%ncid_alb, 'netcdf_create_config(): ".alb.nc"')
-   call nc_close(netcdf_info%ncid_clf, 'netcdf_create_config(): ".clf.nc"')
-   call nc_close(netcdf_info%ncid_config, 'netcdf_create_config(): ".config.nc"')
-   call nc_close(netcdf_info%ncid_geo, 'netcdf_create_config(): ".geo.nc"')
-   call nc_close(netcdf_info%ncid_loc, 'netcdf_create_config(): ".loc.nc"')
-   call nc_close(netcdf_info%ncid_lsf, 'netcdf_create_config(): ".lsf.nc"')
-   call nc_close(netcdf_info%ncid_lwrtm, 'netcdf_create_config(): ".lwrtm.nc"')
-   call nc_close(netcdf_info%ncid_msi, 'netcdf_create_config(): ".msi.nc"')
-   call nc_close(netcdf_info%ncid_prtm, 'netcdf_create_config(): ".prtm.nc"')
-   call nc_close(netcdf_info%ncid_swrtm, 'netcdf_create_config(): ".swrtm.nc"')
+   call ncdf_close(netcdf_info%ncid_alb, 'netcdf_create_config(): ".alb.nc"')
+   call ncdf_close(netcdf_info%ncid_clf, 'netcdf_create_config(): ".clf.nc"')
+   call ncdf_close(netcdf_info%ncid_config, 'netcdf_create_config(): ".config.nc"')
+   call ncdf_close(netcdf_info%ncid_geo, 'netcdf_create_config(): ".geo.nc"')
+   call ncdf_close(netcdf_info%ncid_loc, 'netcdf_create_config(): ".loc.nc"')
+   call ncdf_close(netcdf_info%ncid_lsf, 'netcdf_create_config(): ".lsf.nc"')
+   call ncdf_close(netcdf_info%ncid_lwrtm, 'netcdf_create_config(): ".lwrtm.nc"')
+   call ncdf_close(netcdf_info%ncid_msi, 'netcdf_create_config(): ".msi.nc"')
+   call ncdf_close(netcdf_info%ncid_prtm, 'netcdf_create_config(): ".prtm.nc"')
+   call ncdf_close(netcdf_info%ncid_swrtm, 'netcdf_create_config(): ".swrtm.nc"')
 
 end subroutine netcdf_output_close

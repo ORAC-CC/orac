@@ -111,7 +111,7 @@ subroutine read_ecmwf_wind_nc_file(ecmwf_path, ecmwf)
    logical                         :: verbose = .false.
 
    ! open file
-   call nc_open(fid, ecmwf_path, 'read_ecmwf_wind_nc_file()')
+   call ncdf_open(fid, ecmwf_path, 'read_ecmwf_wind_nc_file()')
 
    ! check field dimensions for consistency
    if (nf90_inquire(fid, ndim, nvar) .ne. 0) &
@@ -155,18 +155,18 @@ subroutine read_ecmwf_wind_nc_file(ecmwf_path, ecmwf)
       case('longitude', 'lon')
          if (.not.associated(ecmwf%lon)) then
             allocate(ecmwf%lon(ecmwf%xdim))
-            call nc_read_array(fid, name, ecmwf%lon, verbose)
+            call ncdf_read_array(fid, name, ecmwf%lon, verbose)
          end if
       case('latitude', 'lat')
          if (.not.associated(ecmwf%lat)) then
             allocate(ecmwf%lat(ecmwf%ydim))
-            call nc_read_array(fid, name, ecmwf%lat, verbose)
+            call ncdf_read_array(fid, name, ecmwf%lat, verbose)
          end if
       case('U10', 'U10M')
          if (.not.associated(ecmwf%u10)) then
             allocate(ecmwf%u10(ecmwf%xdim,ecmwf%ydim))
             allocate(val(ecmwf%xdim,ecmwf%ydim,1,1))
-            call nc_read_array(fid, name, val, verbose)
+            call ncdf_read_array(fid, name, val, verbose)
             ecmwf%u10 = val(:,:,1,1)
             deallocate(val)
          end if
@@ -174,7 +174,7 @@ subroutine read_ecmwf_wind_nc_file(ecmwf_path, ecmwf)
          if (.not.associated(ecmwf%v10)) then
             allocate(ecmwf%v10(ecmwf%xdim,ecmwf%ydim))
             allocate(val(ecmwf%xdim,ecmwf%ydim,1,1))
-            call nc_read_array(fid, name, val, verbose)
+            call ncdf_read_array(fid, name, val, verbose)
             ecmwf%v10 = val(:,:,1,1)
             deallocate(val)
          end if
@@ -182,7 +182,7 @@ subroutine read_ecmwf_wind_nc_file(ecmwf_path, ecmwf)
          if (.not.associated(ecmwf%skin_temp)) then
             allocate(ecmwf%skin_temp(ecmwf%xdim,ecmwf%ydim))
             allocate(val(ecmwf%xdim,ecmwf%ydim,1,1))
-            call nc_read_array(fid, name, val, verbose)
+            call ncdf_read_array(fid, name, val, verbose)
             ecmwf%skin_temp = val(:,:,1,1)
             deallocate(val)
          end if
@@ -190,7 +190,7 @@ subroutine read_ecmwf_wind_nc_file(ecmwf_path, ecmwf)
          if (.not.associated(ecmwf%snow_depth)) then
             allocate(ecmwf%snow_depth(ecmwf%xdim,ecmwf%ydim))
             allocate(val(ecmwf%xdim,ecmwf%ydim,1,1))
-            call nc_read_array(fid, name, val, verbose)
+            call ncdf_read_array(fid, name, val, verbose)
             ecmwf%snow_depth = val(:,:,1,1)
             deallocate(val)
          end if
@@ -198,13 +198,13 @@ subroutine read_ecmwf_wind_nc_file(ecmwf_path, ecmwf)
          if (.not.associated(ecmwf%sea_ice_cover)) then
             allocate(ecmwf%sea_ice_cover(ecmwf%xdim,ecmwf%ydim))
             allocate(val(ecmwf%xdim,ecmwf%ydim,1,1))
-            call nc_read_array(fid, name, val, verbose)
+            call ncdf_read_array(fid, name, val, verbose)
             ecmwf%sea_ice_cover = val(:,:,1,1)
             deallocate(val)
          end if
       end select
    end do
 
-   call nc_close(fid, 'read_wind_nc_file()')
+   call ncdf_close(fid, 'read_wind_nc_file()')
 
 end subroutine read_ecmwf_wind_nc_file

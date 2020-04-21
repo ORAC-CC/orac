@@ -2,7 +2,7 @@
 ! Name: ncdf_open_field.inc
 !
 ! Purpose:
-! Code shared by all version of nc_read_array function. See orac_ncdf.F90 for
+! Code shared by all version of ncdf_read_array function. See orac_ncdf.F90 for
 ! detailed header information.
 !
 ! Description and Algorithm details:
@@ -24,7 +24,7 @@
    ! locate variable in file
    ierr = nf90_inq_varid(ncid, name, vid)
    if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: nc_read_file(): Could not locate variable ', trim(name)
+      print*, 'ERROR: ncdf_read_file(): Could not locate variable ', trim(name)
       print*, trim(nf90_strerror(ierr))
       stop error_stop_code
    end if

@@ -1,4 +1,4 @@
-subroutine NC_DEF_VAR_NAME(ncid,dimids,name,varid,verbose,chunksizes, &
+subroutine NCDF_DEF_VAR_NAME(ncid,dimids,name,varid,verbose,chunksizes, &
    deflate_level,shuffle,long_name,standard_name,fill_value,scale_factor, &
    add_offset,valid_min,valid_max,units,flag_values,flag_masks,flag_meanings)
 
@@ -17,15 +17,15 @@ subroutine NC_DEF_VAR_NAME(ncid,dimids,name,varid,verbose,chunksizes, &
    logical,          intent(in), optional :: shuffle
    character(len=*), intent(in), optional :: long_name
    character(len=*), intent(in), optional :: standard_name
-   NC_DEF_VAR_TYPE_PACKED(kind=NC_DEF_VAR_KIND_PACKED), &
+   NCDF_DEF_VAR_TYPE_PACKED(kind=NCDF_DEF_VAR_KIND_PACKED), &
                      intent(in), optional :: fill_value
-   NC_DEF_VAR_TYPE_UNPACKED(kind=NC_DEF_VAR_KIND_UNPACKED), &
+   NCDF_DEF_VAR_TYPE_UNPACKED(kind=NCDF_DEF_VAR_KIND_UNPACKED), &
                      intent(in), optional :: scale_factor
-   NC_DEF_VAR_TYPE_UNPACKED(kind=NC_DEF_VAR_KIND_UNPACKED), &
+   NCDF_DEF_VAR_TYPE_UNPACKED(kind=NCDF_DEF_VAR_KIND_UNPACKED), &
                      intent(in), optional :: add_offset
-   NC_DEF_VAR_TYPE_PACKED(kind=NC_DEF_VAR_KIND_PACKED), &
+   NCDF_DEF_VAR_TYPE_PACKED(kind=NCDF_DEF_VAR_KIND_PACKED), &
                      intent(in), optional :: valid_min
-   NC_DEF_VAR_TYPE_PACKED(kind=NC_DEF_VAR_KIND_PACKED), &
+   NCDF_DEF_VAR_TYPE_PACKED(kind=NCDF_DEF_VAR_KIND_PACKED), &
                      intent(in), optional :: valid_max
    character(len=*), intent(in), optional :: units
    character(len=*), intent(in), optional :: flag_values
@@ -48,10 +48,10 @@ subroutine NC_DEF_VAR_NAME(ncid,dimids,name,varid,verbose,chunksizes, &
    end if
 
    if (.not. present(chunksizes)) then
-      ierr = nf90_def_var(ncid, name, NC_DEF_VAR_NF90_TYPE, dimids, varid, &
+      ierr = nf90_def_var(ncid, name, NCDF_DEF_VAR_NF90_TYPE, dimids, varid, &
                                 deflate_level=deflate_level2, shuffle=shuffle2)
    else
-      ierr = nf90_def_var(ncid, name, NC_DEF_VAR_NF90_TYPE, dimids, varid, &
+      ierr = nf90_def_var(ncid, name, NCDF_DEF_VAR_NF90_TYPE, dimids, varid, &
          chunksizes=chunksizes, deflate_level=deflate_level2, shuffle=shuffle2)
    end if
    if (ierr .ne. NF90_NOERR) then
@@ -174,4 +174,4 @@ subroutine NC_DEF_VAR_NAME(ncid,dimids,name,varid,verbose,chunksizes, &
       write(*,*) 'defining variable: ', trim(name)
    end if
 
-end subroutine NC_DEF_VAR_NAME
+end subroutine NCDF_DEF_VAR_NAME

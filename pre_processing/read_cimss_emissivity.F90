@@ -126,7 +126,7 @@ function read_cimss_emissivity(path_to_file, emis, wavelengths, verbose, flag, &
    n_wavelengths = size(wavelengths)
 
    ! Open NetCDF file
-   call nc_open(fid, path_to_file, 'read_cimss_emissivity()')
+   call ncdf_open(fid, path_to_file, 'read_cimss_emissivity()')
 
    ! Extract information about the file
    stat = nf90_inquire(fid, nDim)
@@ -142,9 +142,9 @@ function read_cimss_emissivity(path_to_file, emis, wavelengths, verbose, flag, &
    ! xdim = latitude (strange!)
    ! ydim = longitude
    ! zdim = wavelength = number of band variables
-   xdim = nc_dim_length(fid, 'xdim', 'read_cimss_emissivity()', verbose)
-   ydim = nc_dim_length(fid, 'ydim', 'read_cimss_emissivity()', verbose)
-   zdim = nc_dim_length(fid, 'zdim', 'read_cimss_emissivity()', verbose)
+   xdim = ncdf_dim_length(fid, 'xdim', 'read_cimss_emissivity()', verbose)
+   ydim = ncdf_dim_length(fid, 'ydim', 'read_cimss_emissivity()', verbose)
+   zdim = ncdf_dim_length(fid, 'zdim', 'read_cimss_emissivity()', verbose)
 
    ! Begin to populate the emis structure
    emis%nlat   = xdim
@@ -155,7 +155,7 @@ function read_cimss_emissivity(path_to_file, emis, wavelengths, verbose, flag, &
 !  if (present(wavenumber)) then
 !     if (wavenumber .gt. 0) then
          allocate(emis%wavenumber(nBands))
-         call nc_read_array(fid,'wavenumber',emis%wavenumber,verbose)
+         call ncdf_read_array(fid,'wavenumber',emis%wavenumber,verbose)
 !     end if
 !  end if
 
@@ -163,7 +163,7 @@ function read_cimss_emissivity(path_to_file, emis, wavelengths, verbose, flag, &
    if (present(flag)) then
       if (flag .gt. 0) then
          allocate(emis%flag(xdim,ydim))
-         call nc_read_array(fid,'emis_flag',emis%flag,verbose)
+         call ncdf_read_array(fid,'emis_flag',emis%flag,verbose)
       end if
    end if
 
@@ -180,13 +180,13 @@ function read_cimss_emissivity(path_to_file, emis, wavelengths, verbose, flag, &
       if (wavelengths(i) .le. 1.e4 / emis%wavenumber(1)) then
          if (.not. associated(cache(1)%a)) then
             allocate(cache(1)%a(xdim,ydim))
-            call nc_read_array(fid,bandList(1),cache(1)%a,verbose)
+            call ncdf_read_array(fid,bandList(1),cache(1)%a,verbose)
          end if
          emis%emissivity(:,:,i) = cache(1)%a
       else if (wavelengths(i) .ge. 1.e4 / emis%wavenumber(nBands)) then
          if (.not. associated(cache(nBands)%a)) then
             allocate(cache(nBands)%a(xdim,ydim))
-            call nc_read_array(fid,bandList(nBands),cache(nBands)%a,verbose)
+            call ncdf_read_array(fid,bandList(nBands),cache(nBands)%a,verbose)
          end if
          emis%emissivity(:,:,i) = cache(nBands)%a
       else
@@ -199,12 +199,12 @@ function read_cimss_emissivity(path_to_file, emis, wavelengths, verbose, flag, &
 
          if (.not. associated(cache(j)%a)) then
             allocate(cache(j)%a(xdim,ydim))
-            call nc_read_array(fid,bandList(j),cache(j)%a,verbose)
+            call ncdf_read_array(fid,bandList(j),cache(j)%a,verbose)
          end if
 
          if (.not. associated(cache(j+1)%a)) then
             allocate(cache(j+1)%a(xdim,ydim))
-            call nc_read_array(fid,bandList(j+1),cache(j+1)%a,verbose)
+            call ncdf_read_array(fid,bandList(j+1),cache(j+1)%a,verbose)
          end if
 
          a = (wavelengths(i) - 1.e4 / emis%wavenumber(j)) / &
@@ -227,7 +227,7 @@ end if
    deallocate(cache)
 
    ! We are now finished with the main data file
-   call nc_close(fid, 'read_cimss_emissivity()')
+   call ncdf_close(fid, 'read_cimss_emissivity()')
 
    ! Commented out read/generation of lat/lon arrays. As the grid is regular,
    ! simply output its starting point and the inverse of the spacing
@@ -245,8 +245,8 @@ end if
 !  if (present(loc)) then
 !     if (len_trim(loc) .gt. 1) then
 !        gen_loc = 0
-!        call nc_read_array(fid,'lat',emis%lat,verbose)
-!        call nc_read_array(fid,'lon',emis%lon,verbose)
+!        call ncdf_read_array(fid,'lat',emis%lat,verbose)
+!        call ncdf_read_array(fid,'lon',emis%lon,verbose)
 !     end if
 !  end if
 !   If the loc variable is null, or hasn't been specified,

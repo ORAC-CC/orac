@@ -41,7 +41,7 @@ subroutine get_use_ann_phase(in_files, n_in_files, use_ann_phase, ml_flag, verbo
    integer :: ann_phase_used, ann_phase_used2
 
    do i = 1, n_in_files
-      call nc_open(ncid, in_files(i), 'get_use_ann_phase()')
+      call ncdf_open(ncid, in_files(i), 'get_use_ann_phase()')
 
       ierr = nf90_get_att(ncid, NF90_GLOBAL, 'ANN_phase_used', ann_phase_used2)
       if (ierr /= NF90_NOERR) then
@@ -58,7 +58,7 @@ subroutine get_use_ann_phase(in_files, n_in_files, use_ann_phase, ml_flag, verbo
          stop error_stop_code
       end if
 
-      call nc_close(ncid, 'get_use_ann_phase()')
+      call ncdf_close(ncid, 'get_use_ann_phase()')
    end do
 
    if (ann_phase_used == 1) then

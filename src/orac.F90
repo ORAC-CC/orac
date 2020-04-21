@@ -620,18 +620,18 @@ subroutine orac(mytask,ntasks,lower_bound,upper_bound,drifile)
          end do
       end do
 
-      call nc_create(Ctrl%FID%L2_primary, ncid_primary, Ctrl%Ind%Xdim, &
+      call ncdf_create(Ctrl%FID%L2_primary, ncid_primary, Ctrl%Ind%Xdim, &
            Ctrl%Ind%Ydim, Ctrl%Ind%NViews, dims_var, 1, global_atts,  &
            source_atts, Ctrl%Ind%Ny, ch_var, Ctrl%Nx(IDay), &
            Ctrl%LUTClassLayers, Ctrl%use_ann_phase, bitmask)
    else
-      call nc_create(Ctrl%FID%L2_primary, ncid_primary, Ctrl%Ind%Xdim, &
+      call ncdf_create(Ctrl%FID%L2_primary, ncid_primary, Ctrl%Ind%Xdim, &
            Ctrl%Ind%Ydim, Ctrl%Ind%NViews, dims_var, 1, global_atts, source_atts)
    end if
 
 
    if (Ctrl%verbose) write(*,*) 'path2: ',trim(Ctrl%FID%L2_secondary)
-   call nc_create(Ctrl%FID%L2_secondary, ncid_secondary, Ctrl%Ind%Xdim, &
+   call ncdf_create(Ctrl%FID%L2_secondary, ncid_secondary, Ctrl%Ind%Xdim, &
         Ctrl%Ind%Ydim, Ctrl%Ind%NViews, dims_var, 2, global_atts, source_atts)
 
    ! Create NetCDF files and variables
@@ -701,8 +701,8 @@ subroutine orac(mytask,ntasks,lower_bound,upper_bound,drifile)
    call Dealloc_Ctrl(Ctrl)
 
    ! Close netcdf output files
-   call nc_close(ncid_primary, 'orac(primary)')
-   call nc_close(ncid_secondary, 'orac(secondary)')
+   call ncdf_close(ncid_primary, 'orac(primary)')
+   call ncdf_close(ncid_secondary, 'orac(secondary)')
 
    if (Ctrl%verbose) write(*,*) 'ORAC is ending successfully'
 

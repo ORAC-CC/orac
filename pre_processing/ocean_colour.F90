@@ -176,15 +176,15 @@ function read_oceancolour_cci(path_to_file, occci, wavelengths, verbose) &
    allocate(occci%iwavelength(2,nwl))! Holds index nos. wrt to OCCCI band actually read
 
    ! Open NetCDF file and extract information about it
-   call nc_open(fid, path_to_file, 'read_oceancolour_cci()')
+   call ncdf_open(fid, path_to_file, 'read_oceancolour_cci()')
 
    ! Variables needed: atot (total absorption), bbp (particulate backscatter)
    ! Available wavelengths: 412, 443, 490, 510, 555, 670 nm.
    if (verbose) write(*,*) 'Extracting dimension IDs'
    ! Extract the array dimensions
-   ntime = nc_dim_length(fid, 'time', 'read_oceancolour_cci()', .false.)
-   nlon = nc_dim_length(fid, 'lon', 'read_oceancolour_cci()', .false.)
-   nlat = nc_dim_length(fid, 'lat', 'read_oceancolour_cci()', .false.)
+   ntime = ncdf_dim_length(fid, 'time', 'read_oceancolour_cci()', .false.)
+   nlon = ncdf_dim_length(fid, 'lon', 'read_oceancolour_cci()', .false.)
+   nlat = ncdf_dim_length(fid, 'lat', 'read_oceancolour_cci()', .false.)
    if (verbose) write(*,*) 'Dimensions are (time, lon, lat): ', ntime, nlon, nlat
    if (ntime .gt. 1) then
       write(*,*) 'Error: read_oceancolour_cci(): Time dimension is not 1. ' // &
@@ -199,8 +199,8 @@ function read_oceancolour_cci(path_to_file, occci, wavelengths, verbose) &
    !allocate(occci%lon(nlon))
    !allocate(occci%lat(nlat))
    ! Read the data into these arrays
-   !call nc_read_array(fid, lon, occci%lon, verbose)
-   !call nc_read_array(fid, lat, occci%lat, verbose)
+   !call ncdf_read_array(fid, lon, occci%lon, verbose)
+   !call ncdf_read_array(fid, lat, occci%lat, verbose)
    ! Rather than reading (and storing) the entire lat/lon arrays, we
    ! assume we are dealing with a regular grid and simply calculate the
    ! grid spacing
@@ -269,16 +269,16 @@ function read_oceancolour_cci(path_to_file, occci, wavelengths, verbose) &
             occci%iwavelength = j
          end where
          if (verbose) write(*,*) 'Reading data for Wvl: ', occci%wavelength(j)
-         call nc_read_array(fid, occci_atotvar(i), cache, verbose)
+         call ncdf_read_array(fid, occci_atotvar(i), cache, verbose)
          occci%atot(:,:,j) = cache
-         call nc_read_array(fid, occci_bbpvar(i), cache, verbose)
+         call ncdf_read_array(fid, occci_bbpvar(i), cache, verbose)
          occci%bbs(:,:,j) = cache
          j = j+1
       end if
    end do
 
    ! Close the data file
-   call nc_close(fid, 'read_oceancolour_cci()')
+   call ncdf_close(fid, 'read_oceancolour_cci()')
 
    deallocate(cache)
 

@@ -81,19 +81,19 @@ subroutine Read_LSFlags_nc(Ctrl, MSI_Data)
 
    ! Open LSF file
    if (Ctrl%verbose) write(*,*) 'Land/sea flag file: ', trim(Ctrl%FID%LS)
-   call nc_open(ncid, Ctrl%FID%LS, 'Read_LSFlags_nc()')
+   call ncdf_open(ncid, Ctrl%FID%LS, 'Read_LSFlags_nc()')
 
    allocate(MSI_Data%LSFlags(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))
    allocate(MSI_Data%lusflags(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))
    allocate(MSI_Data%dem(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))
    allocate(MSI_Data%nisemask(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))
 
-   call nc_read_array(ncid, "lsflag", MSI_Data%LSFlags, Ctrl%verbose)
-   call nc_read_array(ncid, "lusflag", MSI_Data%lusflags, Ctrl%verbose)
-   call nc_read_array(ncid, "dem", MSI_Data%dem, Ctrl%verbose)
-   call nc_read_array(ncid, "nisemask", MSI_Data%nisemask, Ctrl%verbose)
+   call ncdf_read_array(ncid, "lsflag", MSI_Data%LSFlags, Ctrl%verbose)
+   call ncdf_read_array(ncid, "lusflag", MSI_Data%lusflags, Ctrl%verbose)
+   call ncdf_read_array(ncid, "dem", MSI_Data%dem, Ctrl%verbose)
+   call ncdf_read_array(ncid, "nisemask", MSI_Data%nisemask, Ctrl%verbose)
 
    ! Close LSF file
-   call nc_close(ncid, 'read_lsflags_nc()')
+   call ncdf_close(ncid, 'read_lsflags_nc()')
 
 end subroutine Read_LSFlags_nc

@@ -177,10 +177,10 @@ subroutine get_abi_geoloc(infile, imager_geolocation, imager_angles, &
    if (verbose) write(*,*) "Computing latitude and longitude for each pixel"
 
    ! Open the netCDF4 file for reading
-   call nc_open(fid, infile, 'get_abi_geoloc()')
+   call ncdf_open(fid, infile, 'get_abi_geoloc()')
 
-   call nc_read_array(fid, "x", x, verbose, start=[imager_geolocation%startx])
-   call nc_read_array(fid, "y", y, verbose, start=[imager_geolocation%starty])
+   call ncdf_read_array(fid, "x", x, verbose, start=[imager_geolocation%startx])
+   call ncdf_read_array(fid, "y", y, verbose, start=[imager_geolocation%starty])
 
    ! Read the various attributes required for building the geolocation model
    ierr = nf90_inq_varid(fid, "goes_imager_projection", gimpid)
@@ -223,7 +223,7 @@ subroutine get_abi_geoloc(infile, imager_geolocation, imager_angles, &
    end if
 
    ! Close the netCDF file, we have all we need
-   call nc_close(fid, 'get_abi_geoloc()')
+   call ncdf_close(fid, 'get_abi_geoloc()')
 
    ! We need the height above geoid centre, so sat altitude + earth radius
    h = sma + hproj
@@ -611,17 +611,17 @@ subroutine load_abi_band(infile, imager_geolocation, rad, kappa, bc1, bc2, fk1, 
    allocate(dqf(nx,ny))
 
    ! Open the netCDf4 file for access
-   call nc_open(fid, infile, 'load_abi_band()')
+   call ncdf_open(fid, infile, 'load_abi_band()')
 
-   call nc_read_array(fid, 'Rad', rad, verbose, start=[x0, y0])
-   call nc_read_array(fid, 'DQF', dqf, verbose, start=[x0, y0])
-   call nc_read_array(fid, 'kappa0', kappa, verbose)
-   call nc_read_array(fid, 'planck_bc1', bc1, verbose)
-   call nc_read_array(fid, 'planck_bc2', bc2, verbose)
-   call nc_read_array(fid, 'planck_fk1', fk1, verbose)
-   call nc_read_array(fid, 'planck_fk2', fk2, verbose)
+   call ncdf_read_array(fid, 'Rad', rad, verbose, start=[x0, y0])
+   call ncdf_read_array(fid, 'DQF', dqf, verbose, start=[x0, y0])
+   call ncdf_read_array(fid, 'kappa0', kappa, verbose)
+   call ncdf_read_array(fid, 'planck_bc1', bc1, verbose)
+   call ncdf_read_array(fid, 'planck_bc2', bc2, verbose)
+   call ncdf_read_array(fid, 'planck_fk1', fk1, verbose)
+   call ncdf_read_array(fid, 'planck_fk2', fk2, verbose)
 
-   call nc_close(fid, 'load_abi_band()')
+   call ncdf_close(fid, 'load_abi_band()')
 
    where(dqf .lt. 0 .or. dqf .gt. 1)
       rad = sreal_fill_value
@@ -663,7 +663,7 @@ subroutine get_abi_time(infile, imager_time, ny, verbose)
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering get_abi_time()'
 
    ! Read the time boundaries from the input file
-   call nc_open(fid, infile, 'get_abi_time()')
+   call ncdf_open(fid, infile, 'get_abi_time()')
 
    ierr = nf90_get_att(fid, NF90_GLOBAL, "time_coverage_start", start_coverage)
    if (ierr.ne.NF90_NOERR) then
@@ -677,7 +677,7 @@ subroutine get_abi_time(infile, imager_time, ny, verbose)
    end if
 
    ! Close the netCDF file, we have all we need
-   call nc_close(fid, 'get_abi_time()')
+   call ncdf_close(fid, 'get_abi_time()')
 
    ! Get year, doy, hour and minute as integers
    read(start_coverage, date_format) year1, month1, day1, hour1, minute1, second1

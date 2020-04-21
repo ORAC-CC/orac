@@ -5,7 +5,7 @@
 ! Determine dimensions of data before allocating arrays.
 !
 ! Description and Algorithm details:
-! Use nc_dim_length a few times.
+! Use ncdf_dim_length a few times.
 !
 ! Arguments:
 ! Name      Type    In/Out/Both Description
@@ -49,24 +49,24 @@ subroutine read_input_dimensions_msi(fname_msi, fname_geo, xdim, ydim, vdim, &
 
 
    ! Open msi file
-   call nc_open(ncid, fname_msi, 'read_input_dimensions_msi()')
+   call ncdf_open(ncid, fname_msi, 'read_input_dimensions_msi()')
 
-   xdim = nc_dim_length(ncid, 'nx_msi', 'read_input_dimensions_msi()', verbose)
-   ydim = nc_dim_length(ncid, 'ny_msi', 'read_input_dimensions_msi()', verbose)
-   !cdim = nc_dim_length(ncid, 'nc_msi', 'read_input_dimensions_msi()', verbose)
+   xdim = ncdf_dim_length(ncid, 'nx_msi', 'read_input_dimensions_msi()', verbose)
+   ydim = ncdf_dim_length(ncid, 'ny_msi', 'read_input_dimensions_msi()', verbose)
+   !cdim = ncdf_dim_length(ncid, 'nc_msi', 'read_input_dimensions_msi()', verbose)
 
    ! Close msi file
-   call nc_close(ncid, 'read_input_dimensions_msi(MSI)')
+   call ncdf_close(ncid, 'read_input_dimensions_msi(MSI)')
 
    ! Open geo file
-   call nc_open(ncid, fname_geo, 'read_input_dimensions_msi()')
+   call ncdf_open(ncid, fname_geo, 'read_input_dimensions_msi()')
 
-   !xdim = nc_dim_length(ncid, 'nx_geo', 'read_input_dimensions_msi()', verbose)
-   !ydim = nc_dim_length(ncid, 'ny_geo', 'read_input_dimensions_msi()', verbose)
-   vdim = nc_dim_length(ncid, 'nv_geo', 'read_input_dimensions_msi()', verbose)
+   !xdim = ncdf_dim_length(ncid, 'nx_geo', 'read_input_dimensions_msi()', verbose)
+   !ydim = ncdf_dim_length(ncid, 'ny_geo', 'read_input_dimensions_msi()', verbose)
+   vdim = ncdf_dim_length(ncid, 'nv_geo', 'read_input_dimensions_msi()', verbose)
 
    ! Close geo file
-   call nc_close(ncid, 'read_input_dimensions_msi(GEO)')
+   call ncdf_close(ncid, 'read_input_dimensions_msi(GEO)')
 
 end subroutine read_input_dimensions_msi
 
@@ -91,34 +91,34 @@ subroutine read_input_dimensions_rtm(fname_prtm,fname_lwrtm,fname_swrtm, &
 
 
    ! Open PRTM file
-   call nc_open(ncid, fname_prtm, 'read_input_dimensions_rtm()')
+   call ncdf_open(ncid, fname_prtm, 'read_input_dimensions_rtm()')
 
-   xdim = nc_dim_length(ncid, 'nlon_rtm', 'read_input_dimensions_rtm()', verbose)
-   ydim = nc_dim_length(ncid, 'nlat_rtm', 'read_input_dimensions_rtm()', verbose)
-   levdim = nc_dim_length(ncid, 'nlevels_rtm', 'read_input_dimensions_rtm()', verbose)
+   xdim = ncdf_dim_length(ncid, 'nlon_rtm', 'read_input_dimensions_rtm()', verbose)
+   ydim = ncdf_dim_length(ncid, 'nlat_rtm', 'read_input_dimensions_rtm()', verbose)
+   levdim = ncdf_dim_length(ncid, 'nlevels_rtm', 'read_input_dimensions_rtm()', verbose)
 
    ! Close PRTM file
-   call nc_close(ncid, 'read_input_dimensions_rtm(PRTM)')
+   call ncdf_close(ncid, 'read_input_dimensions_rtm(PRTM)')
 
 
    ! Open LWRTM file
-   call nc_open(ncid, fname_lwrtm, 'read_input_dimensions_rtm()')
+   call ncdf_open(ncid, fname_lwrtm, 'read_input_dimensions_rtm()')
 
-   channeldim_lw = nc_dim_length(ncid, 'nlw_channels', 'read_input_dimensions_rtm()', verbose)
+   channeldim_lw = ncdf_dim_length(ncid, 'nlw_channels', 'read_input_dimensions_rtm()', verbose)
 
    ! Close LWRTM file
-   call nc_close(ncid, 'read_input_dimensions_rtm(LWRTM)')
+   call ncdf_close(ncid, 'read_input_dimensions_rtm(LWRTM)')
 
 
    ! Open SWRTM file
-   call nc_open(ncid, fname_swrtm, 'read_input_dimensions_rtm()')
+   call ncdf_open(ncid, fname_swrtm, 'read_input_dimensions_rtm()')
    if (n_solar > 0) then
-      channeldim_sw = nc_dim_length(ncid, 'nsw_channels', 'read_input_dimensions_rtm()', verbose)
+      channeldim_sw = ncdf_dim_length(ncid, 'nsw_channels', 'read_input_dimensions_rtm()', verbose)
    else
       channeldim_sw = 0
    end if
 
    ! Close SWRTM file
-    call nc_close(ncid, 'read_input_dimensions_rtm(SWRTM)')
+    call ncdf_close(ncid, 'read_input_dimensions_rtm(SWRTM)')
 
 end subroutine read_input_dimensions_rtm

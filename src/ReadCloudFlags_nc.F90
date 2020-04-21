@@ -89,7 +89,7 @@ subroutine Read_CloudFlags_nc(Ctrl, MSI_Data)
 
    ! Open cloud flag file
    if (Ctrl%verbose) write(*,*) 'Cloud flag file: ', trim(Ctrl%FID%Cf)
-   call nc_open(ncid, Ctrl%FID%CF, 'Read_CloudFlags_nc()')
+   call ncdf_open(ncid, Ctrl%FID%CF, 'Read_CloudFlags_nc()')
 
    allocate(MSI_Data%Type(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))
    allocate(MSI_Data%cldtype(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, Ctrl%Ind%NViews))
@@ -102,16 +102,16 @@ subroutine Read_CloudFlags_nc(Ctrl, MSI_Data)
         Ctrl%Ind%NViews))
    allocate(MSI_Data%cphcot(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, Ctrl%Ind%NViews))
 
-!  call nc_read_array(ncid, "cflag", MSI_Data%CloudFlags, Ctrl%verbose)
-   call nc_read_array(ncid, "cldtype", MSI_Data%cldtype, Ctrl%verbose)
-   call nc_read_array(ncid, "cldmask", MSI_Data%cldmask, Ctrl%verbose)
-   call nc_read_array(ncid, "cldmask_uncertainty", &
+!  call ncdf_read_array(ncid, "cflag", MSI_Data%CloudFlags, Ctrl%verbose)
+   call ncdf_read_array(ncid, "cldtype", MSI_Data%cldtype, Ctrl%verbose)
+   call ncdf_read_array(ncid, "cldmask", MSI_Data%cldmask, Ctrl%verbose)
+   call ncdf_read_array(ncid, "cldmask_uncertainty", &
         MSI_Data%cldmask_uncertainty, Ctrl%verbose)
-   call nc_read_array(ncid, "cccot_pre", MSI_Data%cccot_pre, Ctrl%verbose)
-   call nc_read_array(ncid, "ann_phase", MSI_Data%ann_phase, Ctrl%verbose)
-   call nc_read_array(ncid, "ann_phase_uncertainty", &
+   call ncdf_read_array(ncid, "cccot_pre", MSI_Data%cccot_pre, Ctrl%verbose)
+   call ncdf_read_array(ncid, "ann_phase", MSI_Data%ann_phase, Ctrl%verbose)
+   call ncdf_read_array(ncid, "ann_phase_uncertainty", &
         MSI_Data%ann_phase_uncertainty, Ctrl%verbose)
-   call nc_read_array(ncid, "cphcot", MSI_Data%cphcot, Ctrl%verbose)
+   call ncdf_read_array(ncid, "cphcot", MSI_Data%cphcot, Ctrl%verbose)
 
    ! Merge various particle type flags (once aerosol is in)
    if (Ctrl%use_ann_phase) then
@@ -137,6 +137,6 @@ subroutine Read_CloudFlags_nc(Ctrl, MSI_Data)
    end if
 
    ! Close cloud flag file
-   call nc_close(ncid, 'read_cloudflags_nc()')
+   call ncdf_close(ncid, 'read_cloudflags_nc()')
 
 end subroutine Read_CloudFlags_nc

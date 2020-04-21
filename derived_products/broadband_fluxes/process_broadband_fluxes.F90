@@ -578,7 +578,7 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    !----------------------------------------------------------------------------
    ! Read TSI file
    !----------------------------------------------------------------------------
-   call nc_open(ncid, FTSI, 'process_broadband_fluxes()')
+   call ncdf_open(ncid, FTSI, 'process_broadband_fluxes()')
 
    ! Allocate arrays
    allocate(TSI_tsi_true_earth(nTSI))
@@ -588,14 +588,14 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    allocate(TSI_par_weight(nTSI))
 
    ! Read primary data
-   call nc_read_array(ncid, "tsi_true_earth", TSI_tsi_true_earth, verbose)
-   call nc_read_array(ncid, "tsi_1au", TSI_tsi_1au, verbose)
-   call nc_read_array(ncid, "year", TSI_year, verbose)
-   call nc_read_array(ncid, "jday", TSI_jday, verbose)
-   call nc_read_array(ncid, "par_weight", TSI_par_weight, verbose)
+   call ncdf_read_array(ncid, "tsi_true_earth", TSI_tsi_true_earth, verbose)
+   call ncdf_read_array(ncid, "tsi_1au", TSI_tsi_1au, verbose)
+   call ncdf_read_array(ncid, "year", TSI_year, verbose)
+   call ncdf_read_array(ncid, "jday", TSI_jday, verbose)
+   call ncdf_read_array(ncid, "par_weight", TSI_par_weight, verbose)
 
    ! Close file
-   call nc_close(ncid, 'process_broadband_fluxes(FTSI)')
+   call ncdf_close(ncid, 'process_broadband_fluxes(FTSI)')
 
    ! Get TSI that coincides with input date
    do i = 1, nTSI
@@ -629,37 +629,37 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    !----------------------------------------------------------------------------
    if (lut_mode .eq. 1) then
       ! Open LUT file
-      call nc_open(ncid, FToaSW, 'process_broadband_fluxes()')
+      call ncdf_open(ncid, FToaSW, 'process_broadband_fluxes()')
 
       ! Get LUT dimensions
-      nASFC = nc_dim_length(ncid, 'n_sfc_albedo', 'process_broadband_fluxes()', verbose)
-      nSOLZ = nc_dim_length(ncid, 'n_solar_zenith', 'process_broadband_fluxes()', verbose)
-      nRe   = nc_dim_length(ncid, 'n_effective_radius', 'process_broadband_fluxes()', verbose)
-      nTau  = nc_dim_length(ncid, 'n_optical_depth', 'process_broadband_fluxes()', verbose)
+      nASFC = ncdf_dim_length(ncid, 'n_sfc_albedo', 'process_broadband_fluxes()', verbose)
+      nSOLZ = ncdf_dim_length(ncid, 'n_solar_zenith', 'process_broadband_fluxes()', verbose)
+      nRe   = ncdf_dim_length(ncid, 'n_effective_radius', 'process_broadband_fluxes()', verbose)
+      nTau  = ncdf_dim_length(ncid, 'n_optical_depth', 'process_broadband_fluxes()', verbose)
 
       allocate(LUT_SFC_ALB(nASFC))
-      call nc_read_array(ncid, "surface_albedo", LUT_SFC_ALB, verbose)
+      call ncdf_read_array(ncid, "surface_albedo", LUT_SFC_ALB, verbose)
 
       allocate(LUT_SOLZ(nSOLZ))
-      call nc_read_array(ncid, "solar_zenith_angle", LUT_SOLZ, verbose)
+      call ncdf_read_array(ncid, "solar_zenith_angle", LUT_SOLZ, verbose)
 
       allocate(LUT_REF(nRe))
-      call nc_read_array(ncid, "cloud_effective_radius", LUT_REF, verbose)
+      call ncdf_read_array(ncid, "cloud_effective_radius", LUT_REF, verbose)
 
       allocate(LUT_COT(nTau))
-      call nc_read_array(ncid, "cloud_optical_thickness", LUT_COT, verbose)
+      call ncdf_read_array(ncid, "cloud_optical_thickness", LUT_COT, verbose)
 
       allocate(LUT_toa_sw_albedo(nASFC,nSOLZ,nRe,nTau))
-      call nc_read_array(ncid, "toa_sw_albedo", LUT_toa_sw_albedo, verbose)
+      call ncdf_read_array(ncid, "toa_sw_albedo", LUT_toa_sw_albedo, verbose)
 
       allocate(LUT_boa_sw_transmission(nASFC,nSOLZ,nRe,nTau))
-      call nc_read_array(ncid, "boa_sw_transmission", LUT_boa_sw_transmission, verbose)
+      call ncdf_read_array(ncid, "boa_sw_transmission", LUT_boa_sw_transmission, verbose)
 
       allocate(LUT_boa_sw_albedo(nASFC,nSOLZ,nRe,nTau))
-      call nc_read_array(ncid, "boa_sw_albedo", LUT_boa_sw_albedo, verbose)
+      call ncdf_read_array(ncid, "boa_sw_albedo", LUT_boa_sw_albedo, verbose)
 
       ! Close file
-      call nc_close(ncid, 'process_broadband_fluxes(FToaSW)')
+      call ncdf_close(ncid, 'process_broadband_fluxes(FToaSW)')
    end if
 
 
@@ -668,11 +668,11 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    !----------------------------------------------------------------------------
 
    ! Open primary file
-   call nc_open(ncid, Fprimary, 'process_broadband_fluxes()')
+   call ncdf_open(ncid, Fprimary, 'process_broadband_fluxes()')
 
    ! Get satellite dimensions
-   xN = nc_dim_length(ncid, 'across_track', 'process_broadband_fluxes()', verbose)
-   yN = nc_dim_length(ncid, 'along_track', 'process_broadband_fluxes()', verbose)
+   xN = ncdf_dim_length(ncid, 'across_track', 'process_broadband_fluxes()', verbose)
+   yN = ncdf_dim_length(ncid, 'along_track', 'process_broadband_fluxes()', verbose)
 
    ! Allocate arrays
    allocate(LAT(xN,yN))
@@ -689,24 +689,24 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    allocate(STEMP(xN,yN))
 
    ! Read primary data
-   call nc_read_array(ncid, "time", TIME, verbose)
-   call nc_read_array(ncid, "lat", LAT, verbose)
-   call nc_read_array(ncid, "lon", LON, verbose)
-   call nc_read_array(ncid, "cot", COT, verbose)
-   call nc_read_array(ncid, "cer", REF, verbose)
-   call nc_read_array(ncid, "cc_total", CC_TOT, verbose)
-   call nc_read_array(ncid, "phase", PHASE, verbose)
-   call nc_read_array(ncid, "solar_zenith_view_no1", SOLZ, verbose)
-   call nc_read_array(ncid, "stemp", STEMP, verbose)
+   call ncdf_read_array(ncid, "time", TIME, verbose)
+   call ncdf_read_array(ncid, "lat", LAT, verbose)
+   call ncdf_read_array(ncid, "lon", LON, verbose)
+   call ncdf_read_array(ncid, "cot", COT, verbose)
+   call ncdf_read_array(ncid, "cer", REF, verbose)
+   call ncdf_read_array(ncid, "cc_total", CC_TOT, verbose)
+   call ncdf_read_array(ncid, "phase", PHASE, verbose)
+   call ncdf_read_array(ncid, "solar_zenith_view_no1", SOLZ, verbose)
+   call ncdf_read_array(ncid, "stemp", STEMP, verbose)
    if (corrected_cth .eq. 0) then
-      call nc_read_array(ncid, "ctt", CTT, verbose)
-      call nc_read_array(ncid, "ctp", CTP, verbose)
-      call nc_read_array(ncid, "cth", CTH, verbose)
+      call ncdf_read_array(ncid, "ctt", CTT, verbose)
+      call ncdf_read_array(ncid, "ctp", CTP, verbose)
+      call ncdf_read_array(ncid, "cth", CTH, verbose)
    end if
    if (corrected_cth .eq. 1) then
-      call nc_read_array(ncid, "ctt_corrected", CTT, verbose)
-      call nc_read_array(ncid, "ctp_corrected", CTP, verbose)
-      call nc_read_array(ncid, "cth_corrected", CTH, verbose)
+      call ncdf_read_array(ncid, "ctt_corrected", CTT, verbose)
+      call ncdf_read_array(ncid, "ctp_corrected", CTP, verbose)
+      call ncdf_read_array(ncid, "cth_corrected", CTH, verbose)
    end if
 
    if (multi_layer .eq. 1) then
@@ -716,26 +716,26 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
       allocate(CTH2(xN,yN))
       allocate(CTT2(xN,yN))
       allocate(CTP2(xN,yN))
-      call nc_read_array(ncid, "cot2", COT2, verbose)
-      call nc_read_array(ncid, "cer2", REF2, verbose)
-      call nc_read_array(ncid, "cc_total2", CC_TOT2, verbose)
-      call nc_read_array(ncid, "ctt2", CTT2, verbose)
-      call nc_read_array(ncid, "ctp2", CTP2, verbose)
-      call nc_read_array(ncid, "cth2", CTH2, verbose)
+      call ncdf_read_array(ncid, "cot2", COT2, verbose)
+      call ncdf_read_array(ncid, "cer2", REF2, verbose)
+      call ncdf_read_array(ncid, "cc_total2", CC_TOT2, verbose)
+      call ncdf_read_array(ncid, "ctt2", CTT2, verbose)
+      call ncdf_read_array(ncid, "ctp2", CTP2, verbose)
+      call ncdf_read_array(ncid, "cth2", CTH2, verbose)
    end if
 
    ! Close file
-   call nc_close(ncid, 'process_broadband_fluxes(FPrimary)')
+   call ncdf_close(ncid, 'process_broadband_fluxes(FPrimary)')
 
    !----------------------------------------------------------------------------
 
    ! Open PRTM file
-   call nc_open(ncid, FPRTM, 'process_broadband_fluxes()')
+   call ncdf_open(ncid, FPRTM, 'process_broadband_fluxes()')
 
    ! Get PRTM dimensions
-   xdim_prtm = nc_dim_length(ncid, 'nlon_rtm', 'process_broadband_fluxes()', verbose)
-   ydim_prtm = nc_dim_length(ncid, 'nlat_rtm', 'process_broadband_fluxes()', verbose)
-   levdim_prtm = nc_dim_length(ncid, 'nlevels_rtm', 'process_broadband_fluxes()', verbose)
+   xdim_prtm = ncdf_dim_length(ncid, 'nlon_rtm', 'process_broadband_fluxes()', verbose)
+   ydim_prtm = ncdf_dim_length(ncid, 'nlat_rtm', 'process_broadband_fluxes()', verbose)
+   levdim_prtm = ncdf_dim_length(ncid, 'nlevels_rtm', 'process_broadband_fluxes()', verbose)
 
    ! Allocate arrays
    allocate(P(levdim_prtm, xdim_prtm, ydim_prtm))
@@ -749,17 +749,17 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    allocate(tlat_prtm(ydim_prtm))
 
    ! Read PRTM data
-   call nc_read_array(ncid, "pprofile_rtm", P, verbose)
-   call nc_read_array(ncid, "tprofile_rtm", T, verbose)
-   call nc_read_array(ncid, "hprofile_rtm", H, verbose)
-   call nc_read_array(ncid, "qprofile_rtm", Q, verbose)
-   call nc_read_array(ncid, "o3profile_rtm", O3, verbose)
-   call nc_read_array(ncid, "lon_rtm", tlon_prtm, verbose)
-   call nc_read_array(ncid, "lat_rtm", tlat_prtm, verbose)
+   call ncdf_read_array(ncid, "pprofile_rtm", P, verbose)
+   call ncdf_read_array(ncid, "tprofile_rtm", T, verbose)
+   call ncdf_read_array(ncid, "hprofile_rtm", H, verbose)
+   call ncdf_read_array(ncid, "qprofile_rtm", Q, verbose)
+   call ncdf_read_array(ncid, "o3profile_rtm", O3, verbose)
+   call ncdf_read_array(ncid, "lon_rtm", tlon_prtm, verbose)
+   call ncdf_read_array(ncid, "lat_rtm", tlat_prtm, verbose)
 
    ! Fill longitude array
    allocate(dummy1d(xdim_prtm))
-   call nc_read_array(ncid, "lon_rtm", dummy1d, verbose)
+   call ncdf_read_array(ncid, "lon_rtm", dummy1d, verbose)
    do i = 1, xdim_prtm
       lon_prtm(i,:) = dummy1d(i)
    end do
@@ -767,14 +767,14 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
 
    ! Fill latitude array
    allocate(dummy1d(ydim_prtm))
-   call nc_read_array(ncid, "lat_rtm", dummy1d, verbose)
+   call ncdf_read_array(ncid, "lat_rtm", dummy1d, verbose)
    do i = 1, ydim_prtm
       lat_prtm(i,:) = dummy1d(i)
    end do
    deallocate(dummy1d)
 
    ! Close file
-   call nc_close(ncid, 'process_broadband_fluxes(FPRTM)')
+   call ncdf_close(ncid, 'process_broadband_fluxes(FPRTM)')
 
    ! Set PRTM units
    H = (H/g_wmo)/1000. ! to put to km
@@ -782,11 +782,11 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    !----------------------------------------------------------------------------
 
    ! Open ALB file
-   call nc_open(ncid, FALB, 'process_broadband_fluxes()')
+   call ncdf_open(ncid, FALB, 'process_broadband_fluxes()')
 
    ! Get # Channels
-   nc_alb = nc_dim_length(ncid, 'nc_alb', 'process_broadband_fluxes()', verbose)
-   nc_emis = nc_dim_length(ncid, 'nc_emis', 'process_broadband_fluxes()', verbose)
+   nc_alb = ncdf_dim_length(ncid, 'nc_alb', 'process_broadband_fluxes()', verbose)
+   nc_emis = ncdf_dim_length(ncid, 'nc_emis', 'process_broadband_fluxes()', verbose)
 
    ! Allocate arrays
    allocate(rho_dd(xN, yN, nc_alb))
@@ -797,15 +797,15 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    allocate(emis_abs_ch_numbers(nc_emis))
 
    ! Read ALB data
-   call nc_read_array(ncid, "rho_dd_data", rho_dd, verbose)
-   call nc_read_array(ncid, "rho_0d_data", rho_0d, verbose)
-   call nc_read_array(ncid, "alb_data", alb_data, verbose)
-   call nc_read_array(ncid, "emis_data", emis_data, verbose)
-   call nc_read_array(ncid, "alb_abs_ch_numbers", alb_abs_ch_numbers, verbose)
-   call nc_read_array(ncid, "emis_abs_ch_numbers", emis_abs_ch_numbers, verbose)
+   call ncdf_read_array(ncid, "rho_dd_data", rho_dd, verbose)
+   call ncdf_read_array(ncid, "rho_0d_data", rho_0d, verbose)
+   call ncdf_read_array(ncid, "alb_data", alb_data, verbose)
+   call ncdf_read_array(ncid, "emis_data", emis_data, verbose)
+   call ncdf_read_array(ncid, "alb_abs_ch_numbers", alb_abs_ch_numbers, verbose)
+   call ncdf_read_array(ncid, "emis_abs_ch_numbers", emis_abs_ch_numbers, verbose)
 
    ! Close file
-   call nc_close(ncid, 'process_broadband_fluxes(FALB)')
+   call ncdf_close(ncid, 'process_broadband_fluxes(FALB)')
    ! Replace ALB_DATA WITH mean of rho_0d and rho_dd
    do i = 1, xN
       do j = 1, yN
@@ -821,10 +821,10 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
 
    ! Open Aerosol CCI file (optional)
    if (aerosol_processing_mode .ge. 2) then
-      call nc_open(ncid, Faerosol, 'process_broadband_fluxes()')
+      call ncdf_open(ncid, Faerosol, 'process_broadband_fluxes()')
 
       ! Get dimension
-      nc_aer = nc_dim_length(ncid, 'pixel_number', 'process_broadband_fluxes()', verbose)
+      nc_aer = ncdf_dim_length(ncid, 'pixel_number', 'process_broadband_fluxes()', verbose)
 
       ! Allocate arrays
       allocate(aerLon(nc_aer))
@@ -834,28 +834,28 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
       allocate(aerQflag(nc_aer))
 
       ! Read Aerosol data
-      call nc_read_array(ncid, "longitude", aerLon, verbose)
-      call nc_read_array(ncid, "latitude", aerLat, verbose)
-      call nc_read_array(ncid, "AOD550", aerAOD, verbose)
-      call nc_read_array(ncid, "REFF", aerREF, verbose)
-      call nc_read_array(ncid, "quality_flag", aerQflag, verbose)
+      call ncdf_read_array(ncid, "longitude", aerLon, verbose)
+      call ncdf_read_array(ncid, "latitude", aerLat, verbose)
+      call ncdf_read_array(ncid, "AOD550", aerAOD, verbose)
+      call ncdf_read_array(ncid, "REFF", aerREF, verbose)
+      call ncdf_read_array(ncid, "quality_flag", aerQflag, verbose)
 
       ! Close file
-      call nc_close(ncid, 'process_broadband_fluxes(Faerosol)')
+      call ncdf_close(ncid, 'process_broadband_fluxes(Faerosol)')
    end if
 
    ! Open Aerosol Primary File (optional)
    if (aerosol_processing_mode .eq. 1) then
       print*, trim(Faerosol)
-      call nc_open(ncid, Faerosol, 'process_broadband_fluxes()')
+      call ncdf_open(ncid, Faerosol, 'process_broadband_fluxes()')
 
       allocate(aerAOD1(xN,yN))
       allocate(aerREF1(xN,yN))
-      call nc_read_array(ncid, "aot550", aerAOD1, verbose)
-      call nc_read_array(ncid, "aer", aerREF1, verbose)
+      call ncdf_read_array(ncid, "aot550", aerAOD1, verbose)
+      call ncdf_read_array(ncid, "aer", aerREF1, verbose)
 
       ! Close file
-      call nc_close(ncid, 'process_broadband_fluxes(Faerosol)')
+      call ncdf_close(ncid, 'process_broadband_fluxes(Faerosol)')
    end if
 
 
@@ -968,12 +968,12 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
          ! Make collocation netcdf file
          !----------------------------------------------------------------------
          if (aerosol_processing_mode .eq. 3) then
-            call nc_open(ncid, Fprimary, 'process_broadband_fluxes()')
+            call ncdf_open(ncid, Fprimary, 'process_broadband_fluxes()')
 
             ! Get common attributes from primary file
-            call nc_get_common_attributes(ncid, global_atts, source_atts)
+            call ncdf_get_common_attributes(ncid, global_atts, source_atts)
 
-            call nc_close(ncid, 'process_broadband_fluxes(Fprimary)')
+            call ncdf_close(ncid, 'process_broadband_fluxes(Fprimary)')
             ! Dimensions
             ixstart = 1
             ixstop = xN
@@ -983,7 +983,7 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
             n_y = iystop - iystart + 1
             n_v = 1
             ! Create netcdf file
-            call nc_create(trim(Fcollocation), ncid, ixstop-ixstart+1, &
+            call ncdf_create(trim(Fcollocation), ncid, ixstop-ixstart+1, &
                  iystop-iystart+1, n_v, dim3d_var, 1, global_atts, source_atts)
             dims_var = dim3d_var(1:2)
 
@@ -996,7 +996,7 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
             !-------------------------------------------------------------------
             ! Aerosol Index
             !-------------------------------------------------------------------
-            call nc_def_var_long_packed_long( &
+            call ncdf_def_var_long_packed_long( &
                  ncid, &
                  dims_var, &
                  'aID', &
@@ -1013,11 +1013,11 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
             end if
 
             ! Write the array to the netcdf file
-            call nc_write_array(ncid,'aID', aID_vid,&
+            call ncdf_write_array(ncid,'aID', aID_vid,&
                  aID(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
             ! Close netcdf file
-            call nc_close(ncid, 'process_broadband_fluxes()')
+            call ncdf_close(ncid, 'process_broadband_fluxes()')
 
             print*, 'CREATED: '
             print*, trim(Fcollocation)
@@ -1029,13 +1029,13 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
          print*, 'Extracting data from:'
          write(*,*) trim(Fcollocation)
          ! Open Collocation file
-         call nc_open(ncid, Fcollocation, 'process_broadband_fluxes()')
+         call ncdf_open(ncid, Fcollocation, 'process_broadband_fluxes()')
 
          ! Read collocation data
-         call nc_read_array(ncid, "aID", aID, verbose)
+         call ncdf_read_array(ncid, "aID", aID, verbose)
 
          ! Close file
-         call nc_close(ncid, 'process_broadband_fluxes()')
+         call ncdf_close(ncid, 'process_broadband_fluxes()')
       end if !file there
 
       ! Fill arrays (aerosol index aID must exist by this point)
@@ -1368,12 +1368,12 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    !----------------------------------------------------------------------------
    ! Make output NetCDF file
    !----------------------------------------------------------------------------
-   call nc_open(ncid, Fprimary, 'process_broadband_fluxes()')
+   call ncdf_open(ncid, Fprimary, 'process_broadband_fluxes()')
 
    ! Get common attributes from primary file
-   call nc_get_common_attributes(ncid, global_atts, source_atts)
+   call ncdf_get_common_attributes(ncid, global_atts, source_atts)
 
-   call nc_close(ncid, 'process_broadband_fluxes()')
+   call ncdf_close(ncid, 'process_broadband_fluxes()')
 
    ! Dimensions
    ixstart = pxX0
@@ -1385,7 +1385,7 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    n_v = 1
 
    ! Create netcdf file
-   call nc_create(trim(fname), ncid, ixstop-ixstart+1, &
+   call ncdf_create(trim(fname), ncid, ixstop-ixstart+1, &
         iystop-iystart+1, n_v, dim3d_var, 1, global_atts, source_atts)
    dims_var = dim3d_var(1:2)
 
@@ -1398,7 +1398,7 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    !----------------------------------------------------------------------------
    ! time
    !----------------------------------------------------------------------------
-   call nc_def_var_double_packed_double( &
+   call ncdf_def_var_double_packed_double( &
         ncid, &
         dims_var, &
         'time', &
@@ -1418,7 +1418,7 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    !----------------------------------------------------------------------------
    ! latitude
    !----------------------------------------------------------------------------
-   call nc_def_var_float_packed_float( &
+   call ncdf_def_var_float_packed_float( &
         ncid, &
         dims_var, &
         'lat', &
@@ -1438,7 +1438,7 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    !----------------------------------------------------------------------------
    ! longitude
    !----------------------------------------------------------------------------
-    call nc_def_var_float_packed_float( &
+    call ncdf_def_var_float_packed_float( &
          ncid, &
          dims_var, &
          'lon', &
@@ -1458,7 +1458,7 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    !----------------------------------------------------------------------------
    ! retrieval flag
    !----------------------------------------------------------------------------
-   call nc_def_var_byte_packed_byte( &
+   call ncdf_def_var_byte_packed_byte( &
         ncid, &
         dims_var, &
         'retrflag', &
@@ -1480,7 +1480,7 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    !----------------------------------------------------------------------------
    ! toa_incoming_shortwave_flux
    !----------------------------------------------------------------------------
-   call nc_def_var_float_packed_float( &
+   call ncdf_def_var_float_packed_float( &
         ncid, &
         dims_var, &
         'toa_swdn', &
@@ -1500,7 +1500,7 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    !----------------------------------------------------------------------------
    ! toa_outgoing_shortwave_flux
    !----------------------------------------------------------------------------
-   call nc_def_var_float_packed_float( &
+   call ncdf_def_var_float_packed_float( &
         ncid, &
         dims_var, &
         'toa_swup', &
@@ -1520,7 +1520,7 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    !----------------------------------------------------------------------------
    ! toa_outgoing_longwave_flux
    !----------------------------------------------------------------------------
-   call nc_def_var_float_packed_float( &
+   call ncdf_def_var_float_packed_float( &
         ncid, &
         dims_var, &
         'toa_lwup', &
@@ -1540,7 +1540,7 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    !----------------------------------------------------------------------------
    ! surface_downwelling_shortwave_flux_in_air
    !----------------------------------------------------------------------------
-   call nc_def_var_float_packed_float( &
+   call ncdf_def_var_float_packed_float( &
         ncid, &
         dims_var, &
         'boa_swdn', &
@@ -1560,7 +1560,7 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    !----------------------------------------------------------------------------
    ! surface_upwelling_shortwave_flux_in_air
    !----------------------------------------------------------------------------
-   call nc_def_var_float_packed_float( &
+   call ncdf_def_var_float_packed_float( &
         ncid, &
         dims_var, &
         'boa_swup', &
@@ -1580,7 +1580,7 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    !----------------------------------------------------------------------------
    ! surface_upwelling_longwave_flux_in_air
    !----------------------------------------------------------------------------
-   call nc_def_var_float_packed_float( &
+   call ncdf_def_var_float_packed_float( &
         ncid, &
         dims_var, &
         'boa_lwup', &
@@ -1600,7 +1600,7 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    !----------------------------------------------------------------------------
    ! surface_downwelling_longwave_flux_in_air
    !----------------------------------------------------------------------------
-   call nc_def_var_float_packed_float( &
+   call ncdf_def_var_float_packed_float( &
         ncid, &
         dims_var, &
         'boa_lwdn', &
@@ -1620,7 +1620,7 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    !----------------------------------------------------------------------------
    ! toa_outgoing_shortwave_flux_assuming_clear_sky
    !----------------------------------------------------------------------------
-   call nc_def_var_float_packed_float( &
+   call ncdf_def_var_float_packed_float( &
         ncid, &
         dims_var, &
         'toa_swup_clr', &
@@ -1640,7 +1640,7 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    !----------------------------------------------------------------------------
    ! toa_outgoing_longwave_flux_assuming_clear_sky
    !----------------------------------------------------------------------------
-   call nc_def_var_float_packed_float( &
+   call ncdf_def_var_float_packed_float( &
         ncid, &
         dims_var, &
         'toa_lwup_clr', &
@@ -1660,7 +1660,7 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    !----------------------------------------------------------------------------
    ! boa_downwelling_shortwave_flux_in_air_assuming_clear_sky
    !----------------------------------------------------------------------------
-   call nc_def_var_float_packed_float( &
+   call ncdf_def_var_float_packed_float( &
         ncid, &
         dims_var, &
         'boa_swdn_clr', &
@@ -1680,7 +1680,7 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    !----------------------------------------------------------------------------
    ! boa_upwelling_shortwave_flux_in_air_assuming_clear_sky
    !----------------------------------------------------------------------------
-   call nc_def_var_float_packed_float( &
+   call ncdf_def_var_float_packed_float( &
         ncid, &
         dims_var, &
         'boa_swup_clr', &
@@ -1700,7 +1700,7 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    !----------------------------------------------------------------------------
    ! boa_upwelling_longwave_flux_in_air_assuming_clear_sky
    !----------------------------------------------------------------------------
-   call nc_def_var_float_packed_float( &
+   call ncdf_def_var_float_packed_float( &
         ncid, &
         dims_var, &
         'boa_lwup_clr', &
@@ -1720,7 +1720,7 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    !----------------------------------------------------------------------------
    ! boa_downwelling_longwave_flux_in_air_assuming_clear_sky
    !----------------------------------------------------------------------------
-   call nc_def_var_float_packed_float( &
+   call ncdf_def_var_float_packed_float( &
         ncid, &
         dims_var, &
         'boa_lwdn_clr', &
@@ -1740,7 +1740,7 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    !----------------------------------------------------------------------------
    ! surface_diffuse_downwelling_photosynthetic_radiative_flux_in_air
    !----------------------------------------------------------------------------
-   call nc_def_var_float_packed_float( &
+   call ncdf_def_var_float_packed_float( &
         ncid, &
         dims_var, &
         'boa_par_dif', &
@@ -1760,7 +1760,7 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    !----------------------------------------------------------------------------
    ! surface_downwelling_photosynthetic_radiative_flux_in_air
    !----------------------------------------------------------------------------
-   call nc_def_var_float_packed_float( &
+   call ncdf_def_var_float_packed_float( &
         ncid, &
         dims_var, &
         'boa_par_tot', &
@@ -1780,7 +1780,7 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    !----------------------------------------------------------------------------
    ! toa_incoming_photosynthetic_radiative_flux
    !----------------------------------------------------------------------------
-   call nc_def_var_float_packed_float( &
+   call ncdf_def_var_float_packed_float( &
         ncid, &
         dims_var, &
         'toa_par_tot', &
@@ -1800,7 +1800,7 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    !----------------------------------------------------------------------------
    ! surface_air_temperature
    !----------------------------------------------------------------------------
-   call nc_def_var_float_packed_float( &
+   call ncdf_def_var_float_packed_float( &
         ncid, &
         dims_var, &
         'boa_tsfc', &
@@ -1820,7 +1820,7 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    !----------------------------------------------------------------------------
    ! surface_air_pressure
    !----------------------------------------------------------------------------
-   call nc_def_var_float_packed_float( &
+   call ncdf_def_var_float_packed_float( &
         ncid, &
         dims_var, &
         'boa_psfc', &
@@ -1840,7 +1840,7 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    !----------------------------------------------------------------------------
    ! surface_specific_humidity
    !----------------------------------------------------------------------------
-   call nc_def_var_float_packed_float( &
+   call ncdf_def_var_float_packed_float( &
         ncid, &
         dims_var, &
         'boa_qsfc', &
@@ -1860,7 +1860,7 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    !----------------------------------------------------------------------------
    ! lower_troposphere_stability
    !----------------------------------------------------------------------------
-   call nc_def_var_float_packed_float( &
+   call ncdf_def_var_float_packed_float( &
         ncid, &
         dims_var, &
         'lts', &
@@ -1880,7 +1880,7 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    !----------------------------------------------------------------------------
    ! free_troposphere_humidity
    !----------------------------------------------------------------------------
-   call nc_def_var_float_packed_float( &
+   call ncdf_def_var_float_packed_float( &
         ncid, &
         dims_var, &
         'fth', &
@@ -1902,7 +1902,7 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    !----------------------------------------------------------------------------
    write(*,*) ncid, dims_var, 'colO3', colO3_vid, verbose, deflate_lv, shuffle_flag
 
-   call nc_def_var_float_packed_float( &
+   call ncdf_def_var_float_packed_float( &
         ncid, &
         dims_var, &
         'colO3', &
@@ -1922,7 +1922,7 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    !----------------------------------------------------------------------------
    ! Cloud_Base_Height
    !----------------------------------------------------------------------------
-   call nc_def_var_float_packed_float( &
+   call ncdf_def_var_float_packed_float( &
         ncid, &
         dims_var, &
         'cbh', &
@@ -1947,89 +1947,89 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    end if
 
    ! write the array to the netcdf file
-   call nc_write_array(ncid,'time', TIME_vid,&
+   call ncdf_write_array(ncid,'time', TIME_vid,&
         time_data(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
-   call nc_write_array(ncid,'lat', LAT_vid,&
+   call ncdf_write_array(ncid,'lat', LAT_vid,&
         lat_data(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
-   call nc_write_array(ncid,'lon', LON_vid,&
+   call ncdf_write_array(ncid,'lon', LON_vid,&
         lon_data(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
-   call nc_write_array(ncid,'retrflag', retrflag_vid,&
+   call ncdf_write_array(ncid,'retrflag', retrflag_vid,&
         retrflag(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
-   call nc_write_array(ncid,'toa_swdn', toa_swdn_vid,&
+   call ncdf_write_array(ncid,'toa_swdn', toa_swdn_vid,&
         toa_swdn(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
-   call nc_write_array(ncid,'toa_swup', toa_swup_vid,&
+   call ncdf_write_array(ncid,'toa_swup', toa_swup_vid,&
         toa_swup(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
-   call nc_write_array(ncid,'toa_lwup', toa_lwup_vid,&
+   call ncdf_write_array(ncid,'toa_lwup', toa_lwup_vid,&
         toa_lwup(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
-   call nc_write_array(ncid,'boa_swdn', boa_swdn_vid,&
+   call ncdf_write_array(ncid,'boa_swdn', boa_swdn_vid,&
         boa_swdn(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
-   call nc_write_array(ncid,'boa_swup', boa_swup_vid,&
+   call ncdf_write_array(ncid,'boa_swup', boa_swup_vid,&
         boa_swup(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
-   call nc_write_array(ncid,'boa_lwup', boa_lwup_vid,&
+   call ncdf_write_array(ncid,'boa_lwup', boa_lwup_vid,&
         boa_lwup(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
-   call nc_write_array(ncid,'boa_lwdn', boa_lwdn_vid,&
+   call ncdf_write_array(ncid,'boa_lwdn', boa_lwdn_vid,&
         boa_lwdn(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
-   call nc_write_array(ncid,'toa_swup_clr', toa_swup_clr_vid,&
+   call ncdf_write_array(ncid,'toa_swup_clr', toa_swup_clr_vid,&
         toa_swup_clr(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
-   call nc_write_array(ncid,'toa_lwup_clr', toa_lwup_clr_vid,&
+   call ncdf_write_array(ncid,'toa_lwup_clr', toa_lwup_clr_vid,&
         toa_lwup_clr(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
-   call nc_write_array(ncid,'boa_swdn_clr', boa_swdn_clr_vid,&
+   call ncdf_write_array(ncid,'boa_swdn_clr', boa_swdn_clr_vid,&
         boa_swdn_clr(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
-   call nc_write_array(ncid,'boa_swup_clr', boa_swup_clr_vid,&
+   call ncdf_write_array(ncid,'boa_swup_clr', boa_swup_clr_vid,&
         boa_swup_clr(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
-   call nc_write_array(ncid,'boa_lwup_clr', boa_lwup_clr_vid,&
+   call ncdf_write_array(ncid,'boa_lwup_clr', boa_lwup_clr_vid,&
         boa_lwup_clr(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
-   call nc_write_array(ncid,'boa_lwdn_clr', boa_lwdn_clr_vid,&
+   call ncdf_write_array(ncid,'boa_lwdn_clr', boa_lwdn_clr_vid,&
         boa_lwdn_clr(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
-   call nc_write_array(ncid,'boa_par_dif', boa_par_dif_vid,&
+   call ncdf_write_array(ncid,'boa_par_dif', boa_par_dif_vid,&
         boa_par_dif(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
-   call nc_write_array(ncid,'boa_par_tot', boa_par_tot_vid,&
+   call ncdf_write_array(ncid,'boa_par_tot', boa_par_tot_vid,&
         boa_par_tot(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
-   call nc_write_array(ncid,'toa_par_tot', toa_par_tot_vid,&
+   call ncdf_write_array(ncid,'toa_par_tot', toa_par_tot_vid,&
         toa_par_tot(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
-   call nc_write_array(ncid,'boa_tsfc', boa_tsfc_vid,&
+   call ncdf_write_array(ncid,'boa_tsfc', boa_tsfc_vid,&
         boa_tsfc(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
-   call nc_write_array(ncid,'boa_psfc', boa_psfc_vid,&
+   call ncdf_write_array(ncid,'boa_psfc', boa_psfc_vid,&
         boa_psfc(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
-   call nc_write_array(ncid,'boa_qsfc', boa_qsfc_vid,&
+   call ncdf_write_array(ncid,'boa_qsfc', boa_qsfc_vid,&
         boa_qsfc(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
-   call nc_write_array(ncid,'lts', lts_vid,&
+   call ncdf_write_array(ncid,'lts', lts_vid,&
         lts(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
-   call nc_write_array(ncid,'fth', fth_vid,&
+   call ncdf_write_array(ncid,'fth', fth_vid,&
         fth(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
-   call nc_write_array(ncid,'colO3', colO3_vid,&
+   call ncdf_write_array(ncid,'colO3', colO3_vid,&
         colO3(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
-   call nc_write_array(ncid,'cbh', cbh_vid,&
+   call ncdf_write_array(ncid,'cbh', cbh_vid,&
         cbh(ixstart:,iystart:), 1, 1, n_x, 1, 1, n_y)
 
    ! Close netcdf file
-   call nc_close(ncid, 'process_broadband_fluxes()')
+   call ncdf_close(ncid, 'process_broadband_fluxes()')
 
    print*, 'CREATED:'
    print*, TRIM(fname)

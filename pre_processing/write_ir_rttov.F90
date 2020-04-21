@@ -100,27 +100,27 @@ subroutine write_ir_rttov(netcdf_info, idim, jdim, nlev, emissivity, &
    end if
 
    ! Write outputs
-   call nc_write_array(netcdf_info%ncid_lwrtm, 'emiss_lw', &
+   call ncdf_write_array(netcdf_info%ncid_lwrtm, 'emiss_lw', &
                        netcdf_info%vid_emiss_lw, dummy_emis, &
                        1, chan_num, 1, &
                        1, idim, 1, 1, jdim, 1)
-   call nc_write_array(netcdf_info%ncid_lwrtm, 'tac_lw', &
+   call ncdf_write_array(netcdf_info%ncid_lwrtm, 'tac_lw', &
                        netcdf_info%vid_tac_lw, dummy_tac, &
                        1, chan_num, 1, 1, 1, nlev, &
                        1, idim, 1, 1, jdim, 1)
-   call nc_write_array(netcdf_info%ncid_lwrtm, 'tbc_lw', &
+   call ncdf_write_array(netcdf_info%ncid_lwrtm, 'tbc_lw', &
                        netcdf_info%vid_tbc_lw, dummy_tbc, &
                        1, chan_num, 1, 1, 1, nlev, &
                        1, idim, 1, 1, jdim, 1)
-   call nc_write_array(netcdf_info%ncid_lwrtm, 'rbc_up_lw', &
+   call ncdf_write_array(netcdf_info%ncid_lwrtm, 'rbc_up_lw', &
                        netcdf_info%vid_rbc_up_lw, dummy_rbc_up, &
                        1, chan_num, 1, 1, 1, nlev, &
                        1, idim, 1, 1, jdim, 1)
-   call nc_write_array(netcdf_info%ncid_lwrtm, 'rac_up_lw', &
+   call ncdf_write_array(netcdf_info%ncid_lwrtm, 'rac_up_lw', &
                        netcdf_info%vid_rac_up_lw, dummy_rac_up, &
                        1, chan_num, 1, 1, 1, nlev, &
                        1, idim, 1, 1, jdim, 1)
-   call nc_write_array(netcdf_info%ncid_lwrtm, 'rac_down_lw', &
+   call ncdf_write_array(netcdf_info%ncid_lwrtm, 'rac_down_lw', &
                        netcdf_info%vid_rac_down_lw, dummy_rac_down, &
                        1, chan_num, 1, 1, 1, nlev, &
                        1, idim, 1, 1, jdim, 1)

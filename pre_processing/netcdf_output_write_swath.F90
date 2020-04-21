@@ -91,34 +91,34 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
 
 
    ! config file
-   call nc_write_array( &
+   call ncdf_write_array( &
         netcdf_info%ncid_config, &
         'msi_instr_ch_numbers', &
         netcdf_info%vid_msi_instr_ch_numbers_config, &
         channel_info%channel_ids_instr, &
         1, 1, channel_info%nchannels_total)
 
-   call nc_write_array( &
+   call ncdf_write_array( &
         netcdf_info%ncid_config, &
         'msi_abs_ch_wl', &
         netcdf_info%vid_msi_abs_ch_wl_config, &
         channel_info%channel_wl_abs, &
         1, 1, channel_info%nchannels_total)
-   call nc_write_array( &
+   call ncdf_write_array( &
         netcdf_info%ncid_config, &
         'msi_ch_swflag', &
         netcdf_info%vid_msi_ch_swflag_config, &
         channel_info%channel_sw_flag, &
         1, 1, channel_info%nchannels_total)
 
-   call nc_write_array( &
+   call ncdf_write_array( &
         netcdf_info%ncid_config, &
         'msi_ch_lwflag', &
         netcdf_info%vid_msi_ch_lwflag_config, &
         channel_info%channel_lw_flag, &
         1, 1, channel_info%nchannels_total)
 
-   call nc_write_array( &
+   call ncdf_write_array( &
         netcdf_info%ncid_config, &
         'msi_ch_view', &
         netcdf_info%vid_msi_ch_view_config, &
@@ -136,7 +136,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
          end if
       end do
 
-      call nc_write_array( &
+      call ncdf_write_array( &
            netcdf_info%ncid_config, &
            'alb_abs_ch_numbers', &
            netcdf_info%vid_alb_abs_ch_numbers_config, &
@@ -156,7 +156,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
          end if
       end do
 
-      call nc_write_array( &
+      call ncdf_write_array( &
            netcdf_info%ncid_config, &
            'emis_abs_ch_numbers', &
            netcdf_info%vid_emis_abs_ch_numbers_config, &
@@ -179,7 +179,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
          end if
       end do
 
-      call nc_write_array( &
+      call ncdf_write_array( &
            netcdf_info%ncid_alb, &
            'alb_abs_ch_numbers', &
            netcdf_info%vid_alb_abs_ch_numbers, &
@@ -199,7 +199,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
          end if
       end do
 
-      call nc_write_array( &
+      call ncdf_write_array( &
            netcdf_info%ncid_alb, &
            'alb_emis_ch_numbers', &
            netcdf_info%vid_emis_abs_ch_numbers, &
@@ -209,7 +209,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
    end if
 
    if (channel_info%nchannels_sw .ne. 0) then
-      call nc_write_array( &
+      call ncdf_write_array( &
            netcdf_info%ncid_alb, &
            'alb_data', &
            netcdf_info%vid_alb_data, &
@@ -219,7 +219,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
            1, 1, channel_info%nchannels_sw)
 
       if (include_full_brdf) then
-         call nc_write_array( &
+         call ncdf_write_array( &
               netcdf_info%ncid_alb, &
               'rho_0v', &
               netcdf_info%vid_rho_0v_data, &
@@ -228,7 +228,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
               1, 1, imager_geolocation%ny, &
               1, 1, channel_info%nchannels_sw)
 
-         call nc_write_array( &
+         call ncdf_write_array( &
               netcdf_info%ncid_alb, &
               'rho_0d', &
               netcdf_info%vid_rho_0d_data, &
@@ -237,7 +237,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
               1, 1, imager_geolocation%ny, &
               1, 1, channel_info%nchannels_sw)
 
-         call nc_write_array( &
+         call ncdf_write_array( &
               netcdf_info%ncid_alb, &
               'rho_dv', &
               netcdf_info%vid_rho_dv_data, &
@@ -246,7 +246,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
               1, 1, imager_geolocation%ny, &
               1, 1, channel_info%nchannels_sw)
 
-         call nc_write_array( &
+         call ncdf_write_array( &
               netcdf_info%ncid_alb, &
               'rho_dd', &
               netcdf_info%vid_rho_dd_data, &
@@ -258,7 +258,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
    end if
 
    if (channel_info%nchannels_lw .ne. 0) then
-      call nc_write_array( &
+      call ncdf_write_array( &
            netcdf_info%ncid_alb, &
            'emis_data', &
            netcdf_info%vid_emis_data, &
@@ -271,7 +271,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
 
    ! clf file (cflag, cldtype, cldmask, cldmask_uncertainty, cccot_pre)
 
-   call nc_write_array( &
+   call ncdf_write_array( &
         netcdf_info%ncid_clf, &
         'cflag', &
         netcdf_info%vid_cflag, &
@@ -282,37 +282,37 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
 
 #ifdef INCLUDE_SATWX
    if (do_cloud_emis) then
-      call nc_write_array( &
+      call ncdf_write_array( &
            netcdf_info%ncid_clf, &
            'cldemis_lw', netcdf_info%vid_cemis_lw, &
            imager_cloud%cloud_emis(imager_geolocation%startx:,:,1), &
            1, 1, n_x, &
            1, 1, imager_geolocation%ny)
-      call nc_write_array( &
+      call ncdf_write_array( &
            netcdf_info%ncid_clf, &
            'cldemis_wv_1', netcdf_info%vid_cemis_wv1, &
            imager_cloud%cloud_emis(imager_geolocation%startx:,:,2), &
            1, 1, n_x, &
            1, 1, imager_geolocation%ny)
-      call nc_write_array( &
+      call ncdf_write_array( &
            netcdf_info%ncid_clf, &
            'cldemis_wv_2', netcdf_info%vid_cemis_wv2, &
            imager_cloud%cloud_emis(imager_geolocation%startx:,:,3), &
            1, 1, n_x, &
            1, 1, imager_geolocation%ny)
-      call nc_write_array( &
+      call ncdf_write_array( &
            netcdf_info%ncid_clf, &
            'trop_t', netcdf_info%vid_tropop_te, &
            imager_cloud%trop_t(imager_geolocation%startx:,:), &
            1, 1, n_x, &
            1, 1, imager_geolocation%ny)
-      call nc_write_array( &
+      call ncdf_write_array( &
            netcdf_info%ncid_clf, &
            'trop_p', netcdf_info%vid_tropop_pr, &
            imager_cloud%trop_p(imager_geolocation%startx:,:), &
            1, 1, n_x, &
            1, 1, imager_geolocation%ny)
-      call nc_write_array( &
+      call ncdf_write_array( &
            netcdf_info%ncid_clf, &
            'cape', netcdf_info%vid_cape, &
            imager_cloud%cape(imager_geolocation%startx:,:), &
@@ -321,7 +321,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
    end if
 #endif
 
-   call nc_write_array( &
+   call ncdf_write_array( &
         netcdf_info%ncid_clf, &
         'cldtype', &
         netcdf_info%vid_cldtype, &
@@ -330,7 +330,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
         1, 1, imager_geolocation%ny, &
         1, 1, channel_info%nviews)
 
-   call nc_write_array( &
+   call ncdf_write_array( &
         netcdf_info%ncid_clf, &
         'cldmask', &
         netcdf_info%vid_cldmask, &
@@ -339,7 +339,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
         1, 1, imager_geolocation%ny, &
         1, 1, channel_info%nviews)
 
-   call nc_write_array( &
+   call ncdf_write_array( &
         netcdf_info%ncid_clf, &
         'cldmask_uncertainty', &
         netcdf_info%vid_cldmask_unc, &
@@ -348,7 +348,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
         1, 1, imager_geolocation%ny, &
         1, 1, channel_info%nviews)
 
-   call nc_write_array( &
+   call ncdf_write_array( &
         netcdf_info%ncid_clf, &
         'cccot_pre', &
         netcdf_info%vid_cccot_pre, &
@@ -357,7 +357,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
         1, 1, imager_geolocation%ny, &
         1, 1, channel_info%nviews)
 
-   call nc_write_array( &
+   call ncdf_write_array( &
         netcdf_info%ncid_clf, &
         'ann_phase', &
         netcdf_info%vid_ann_phase, &
@@ -366,7 +366,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
         1, 1, imager_geolocation%ny, &
         1, 1, channel_info%nviews)
 
-   call nc_write_array( &
+   call ncdf_write_array( &
         netcdf_info%ncid_clf, &
         'ann_phase_uncertainty', &
         netcdf_info%vid_ann_phase_unc, &
@@ -375,7 +375,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
         1, 1, imager_geolocation%ny, &
         1, 1, channel_info%nviews)
 
-   call nc_write_array( &
+   call ncdf_write_array( &
         netcdf_info%ncid_clf, &
         'cphcot', &
         netcdf_info%vid_cphcot, &
@@ -386,7 +386,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
 
    ! geo file (solzen, satzen, solaz, relazi)
 
-   call nc_write_array( &
+   call ncdf_write_array( &
         netcdf_info%ncid_geo, &
         'solzen', &
         netcdf_info%vid_solzen, &
@@ -395,7 +395,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
         1, 1, imager_geolocation%ny, &
         1, 1, channel_info%nviews)
 
-   call nc_write_array( &
+   call ncdf_write_array( &
         netcdf_info%ncid_geo, &
         'satzen', &
         netcdf_info%vid_satzen, &
@@ -404,7 +404,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
         1, 1, imager_geolocation%ny, &
         1, 1, channel_info%nviews)
 
-   call nc_write_array( &
+   call ncdf_write_array( &
         netcdf_info%ncid_geo, &
         'sataz', &
         netcdf_info%vid_sataz, &
@@ -413,7 +413,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
         1, 1, imager_geolocation%ny, &
         1, 1, channel_info%nviews)
 
-   call nc_write_array( &
+   call ncdf_write_array( &
         netcdf_info%ncid_geo, &
         'solaz', &
         netcdf_info%vid_solaz, &
@@ -422,7 +422,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
         1, 1, imager_geolocation%ny, &
         1, 1, channel_info%nviews)
 
-   call nc_write_array( &
+   call ncdf_write_array( &
         netcdf_info%ncid_geo, &
         'relazi', &
         netcdf_info%vid_relazi, &
@@ -434,14 +434,14 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
 
    ! loc file (lat, lon)
 
-   call nc_write_array( &
+   call ncdf_write_array( &
         netcdf_info%ncid_loc, &
         'lat', netcdf_info%vid_lat, &
         imager_geolocation%latitude(imager_geolocation%startx:,:), &
         1, 1, n_x, &
         1, 1, imager_geolocation%ny)
 
-   call nc_write_array( &
+   call ncdf_write_array( &
         netcdf_info%ncid_loc, &
         'lon', &
         netcdf_info%vid_lon, &
@@ -452,7 +452,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
 
    ! lsf file (lsflag)
 
-   call nc_write_array( &
+   call ncdf_write_array( &
         netcdf_info%ncid_lsf, &
         'lsflag', &
         netcdf_info%vid_lsflag, &
@@ -460,7 +460,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
         1, 1, n_x, &
         1, 1, imager_geolocation%ny)
 
-   call nc_write_array( &
+   call ncdf_write_array( &
         netcdf_info%ncid_lsf, &
         'lusflag', &
         netcdf_info%vid_lusflag, &
@@ -468,7 +468,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
         1, 1, n_x, &
         1, 1, imager_geolocation%ny)
 
-   call nc_write_array( &
+   call ncdf_write_array( &
         netcdf_info%ncid_lsf, &
         'dem', &
         netcdf_info%vid_dem, &
@@ -476,7 +476,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
         1, 1, n_x, &
         1, 1, imager_geolocation%ny)
 
-   call nc_write_array( &
+   call ncdf_write_array( &
         netcdf_info%ncid_lsf, &
         'nisemask', &
         netcdf_info%vid_nisemask, &
@@ -486,42 +486,42 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
 
    ! msi file (indexes, time, measurements)
 
-   call nc_write_array( &
+   call ncdf_write_array( &
         netcdf_info%ncid_msi, &
         'msi_instr_ch_numbers', &
         netcdf_info%vid_msi_instr_ch_numbers, &
         channel_info%channel_ids_instr, &
         1, 1, channel_info%nchannels_total)
 
-   call nc_write_array( &
+   call ncdf_write_array( &
         netcdf_info%ncid_msi, &
         'msi_abs_ch_wl', &
         netcdf_info%vid_msi_abs_ch_wl, &
         channel_info%channel_wl_abs, &
         1, 1, channel_info%nchannels_total)
 
-   call nc_write_array( &
+   call ncdf_write_array( &
         netcdf_info%ncid_msi, &
         'msi_ch_swflag', &
         netcdf_info%vid_msi_ch_swflag, &
         channel_info%channel_sw_flag, &
         1, 1, channel_info%nchannels_total)
 
-   call nc_write_array( &
+   call ncdf_write_array( &
         netcdf_info%ncid_msi, &
         'msi_ch_lwflag', &
         netcdf_info%vid_msi_ch_lwflag, &
         channel_info%channel_lw_flag, &
         1, 1, channel_info%nchannels_total)
 
-   call nc_write_array( &
+   call ncdf_write_array( &
         netcdf_info%ncid_msi, &
         'msi_ch_view', &
         netcdf_info%vid_msi_ch_view, &
         channel_info%channel_view_ids, &
         1, 1, channel_info%nchannels_total)
 
-   call nc_write_array( &
+   call ncdf_write_array( &
         netcdf_info%ncid_msi, &
         'time', &
         netcdf_info%vid_time, &
@@ -529,7 +529,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
         1, 1, n_x, &
         1, 1, imager_geolocation%ny)
 
-   call nc_write_array( &
+   call ncdf_write_array( &
         netcdf_info%ncid_msi, &
         'msi_data', &
         netcdf_info%vid_msi_data, &
@@ -538,7 +538,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
         1, 1, imager_geolocation%ny, &
         1, 1, channel_info%nchannels_total)
 
-   call nc_write_array( &
+   call ncdf_write_array( &
         netcdf_info%ncid_msi, &
         'sd_data', &
         netcdf_info%vid_sd_data, &
