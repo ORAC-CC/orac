@@ -142,7 +142,14 @@ void read_aatsr_orbit(const char *l1b_file, const bool *verbose,
      // Shift the y coordinate to cell centres
      for (i=0; i<*ny-1; i++)
           y_out[i] += 0.5 * (y_out[i+1] - y_out[i]);
-     y_out[*ny-1] += 0.5 * (y_out[*ny-1] - y_out[*ny-2]);
+     // The last bin requires the next img_scan_y value
+     if (*starty+*ny < epr_get_scene_height(pid)) {
+          rec = epr_read_record(did, *ny + *starty, rec);
+          fid = epr_get_field(rec, "img_scan_y");
+          y_out[*ny-1] += 0.5 * (epr_get_field_elem_as_double(fid, 0) * 1e-3
+                                 - y_out[*ny-1]);
+     } else
+          y_out[*ny-1] += 0.5 * (y_out[*ny-1] - y_out[*ny-2]);
      epr_free_record(rec);
 
      // Read geolocation (view independent)
