@@ -190,6 +190,8 @@ def read_orac_library_file(filename):
         for raw_line in fhandle:
             if raw_line.startswith("#") or len(raw_line) < 2:
                 # Skip comment and empty lines
+                if not raw_line.startswith("#"):
+                    continuation = False
                 continue
 
             line = fill_in_variables(raw_line, contents)
