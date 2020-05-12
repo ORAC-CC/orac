@@ -23,9 +23,6 @@
 
    if (verbose) then
       print*, 'Reading variable: ', trim(name)
-      print*, 'Start:  ', start_pos
-      print*, 'Count:  ', counter
-      print*, 'Stride: ', stride
    end if
 
    ! read data
