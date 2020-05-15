@@ -31,7 +31,7 @@ def build_preproc_driver(args):
         nise_locations = (
             'NISE.005/%Y.%m.%d', 'NISE.004/%Y.%m.%d',
             'NISE.002/%Y.%m.%d', 'NISE.001/%Y.%m.%d',
-            '%Y', '%Y.%m.%d', '%Y_%m_d', '%Y-%m-%d',
+            '%Y', '%Y.%m.%d', '%Y_%m_d', '%Y-%m-%d', ''
         )
         nise_formats = (
             'NISE_SSMISF18_%Y%m%d.HDFEOS', 'NISE_SSMISF17_%Y%m%d.HDFEOS',
@@ -49,20 +49,29 @@ def build_preproc_driver(args):
     # Select previous surface reflectance and emissivity files
     if args.swansea:
         alb = _date_back_search(args.swansea_dir, args.File.time,
-                                'SW_SFC_PRMS_%m.nc', 'months')
+                                'SW_SFC_PRMS_%m.nc', 'years')
         brdf = None
     else:
-        alb = _date_back_search(args.mcd43c3_dir, args.File.time,
-                                'MCD43C3.A%Y%j.*.hdf', 'days')
-        brdf = None if args.lambertian else _date_back_search(
-            args.mcd43c1_dir, args.File.time, 'MCD43C1.A%Y%j.*.hdf', 'days'
-        )
+        for ver in (5, 6):
+            try:
+                alb = _date_back_search(args.mcd43c3_dir, args.File.time,
+                                        f'MCD43C3.A%Y%j.{ver:03d}.*.hdf', 'days')
+                brdf = None if args.lambertian else _date_back_search(
+                    args.mcd43c1_dir, args.File.time,
+                    f'MCD43C1.A%Y%j.{ver:03d}.*.hdf', 'days'
+                )
+                break
+            except FileMissing:
+                pass
+        else:
+            raise FileMissing('MODIS albedo', args.mcd43c3_dir)
+
     if args.use_modis_emis:
         emis = None
     elif args.use_camel_emis:
         emis = _date_back_search(
             args.camel_dir, args.File.time,
-            'CAM5K30EM_emis_%Y%m_V???.nc', 'months'
+            'CAM5K30EM_emis_%Y%m_V???.nc', 'years'
         )
     else:
         emis = _date_back_search(
@@ -504,7 +513,15 @@ def _date_back_search(fdr, date_in, pattern, interval):
     delta = relativedelta(**{interval: 1})
 
     date = copy(date_in)
-    while date > datetime(1995, 1, 1):
+    # We only want to look back so far, depending on the interval
+    if interval == 'days':
+        earliest = date - relativedelta(months=1)
+    elif interval == 'months':
+        earliest = date - relativedelta(years=1)
+    else:
+        earliest = datetime(1970, 1, 1)
+
+    while date > earliest:
         # Look for a file with the appropriate date
         files = glob(date.strftime(os.path.join(fdr, pattern)))
 
