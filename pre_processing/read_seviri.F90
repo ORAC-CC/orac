@@ -425,6 +425,14 @@ subroutine read_seviri_l1_5_nat_or_hrit(l1_5_file, imager_geolocation, &
       end if
    end do
 
+   if (verbose) then
+      if (do_gsics) then
+         write(*,*) 'Applying GSICS calibration coefficients'
+      else
+         write(*,*) 'Applying IMPF calibration coefficients'
+      end if
+   end if
+
    startx = imager_geolocation%startx
    nx     = imager_geolocation%nx
    starty = imager_geolocation%starty
@@ -435,7 +443,7 @@ subroutine read_seviri_l1_5_nat_or_hrit(l1_5_file, imager_geolocation, &
    column0 = startx - 1
    column1 = startx - 1 + nx - 1
 
-   if (.not. hrit_proc .or. (nx .eq. 3712 .and. ny .eq. 3712)) then
+   if (.not. hrit_proc .and. (nx .eq. 3712 .and. ny .eq. 3712)) then
 
       ! The SEVIRI reader has the option to assume that memory for the output
       ! image arrays has already been allocated. In this case we point these output
@@ -449,13 +457,30 @@ subroutine read_seviri_l1_5_nat_or_hrit(l1_5_file, imager_geolocation, &
       preproc%vaa  => imager_angles%satazi(startx:,:,1)
       preproc%data => imager_measurements%data(startx:,:,:)
 
-      if (verbose) then
-         if (do_gsics) then
-            write(*,*) 'Applying GSICS calibration coefficients'
-         else
-            write(*,*) 'Applying IMPF calibration coefficients'
-         end if
+      ! The main reader call which populates preproc (type seviri_preproc_t_f90)
+      if (verbose) write(*,*) 'Calling seviri_read_and_preproc_f90() from ' // &
+                              'the seviri_util module, FD w/o alloc'
+      if (seviri_read_and_preproc_f90(trim(l1_5_file)//C_NULL_CHAR, preproc, &
+          n_bands, band_ids, band_units, SEVIRI_BOUNDS_FULL_DISK, 0, 0, &
+          0, 0, 0.d0, 0.d0, 0.d0, 0.d0, do_gsics, global_atts%Satpos_Metadata, .true.) .ne. 0) then
+         write(*,*) 'ERROR: in read_seviri_l1_5(), calling ' // &
+                    'seviri_read_and_preproc_f90(), filename = ', trim(l1_5_file)
+         stop error_stop_code
       end if
+   else if (.false.) then
+      ! Because of the inversion of satazi, internal subsetting cannot be used
+
+      ! The SEVIRI reader has the option to assume that memory for the output
+      ! image arrays has already been allocated. In this case we point these output
+      ! array pointers to the already allocated imager arrays to avoid copying.
+      preproc%time => imager_time%time(startx:,:)
+      preproc%lat  => imager_geolocation%latitude(startx:,:)
+      preproc%lon  => imager_geolocation%longitude(startx:,:)
+      preproc%sza  => imager_angles%solzen(startx:,:,1)
+      preproc%saa  => imager_angles%solazi(startx:,:,1)
+      preproc%vza  => imager_angles%satzen(startx:,:,1)
+      preproc%vaa  => imager_angles%satazi(startx:,:,1)
+      preproc%data => imager_measurements%data(startx:,:,:)
 
       ! The main reader call which populates preproc (type seviri_preproc_t_f90)
       if (verbose) write(*,*) 'Calling seviri_read_and_preproc_f90() from ' // &
@@ -472,8 +497,8 @@ subroutine read_seviri_l1_5_nat_or_hrit(l1_5_file, imager_geolocation, &
       if (verbose) write(*,*) 'Calling seviri_read_and_preproc_f90() from ' // &
                               'the seviri_util module, FD'
       if (seviri_read_and_preproc_f90(trim(l1_5_file)//C_NULL_CHAR, preproc, &
-          n_bands, band_ids, band_units, SEVIRI_BOUNDS_FULL_DISK, 1, 3712, &
-          1, 3712, 0.d0, 0.d0, 0.d0, 0.d0, do_gsics, global_atts%Satpos_Metadata, .false.) .ne. 0) then
+          n_bands, band_ids, band_units, SEVIRI_BOUNDS_FULL_DISK, 0, 0, &
+          0, 0, 0.d0, 0.d0, 0.d0, 0.d0, do_gsics, global_atts%Satpos_Metadata, .false.) .ne. 0) then
          write(*,*) 'ERROR: in read_seviri_l1_5(), calling ' // &
                     'seviri_read_and_preproc_f90(), filename = ', trim(l1_5_file)
          stop error_stop_code
@@ -485,8 +510,11 @@ subroutine read_seviri_l1_5_nat_or_hrit(l1_5_file, imager_geolocation, &
       imager_angles%solzen(startx:,:,1)       = preproc%sza(column0+1:column1+1,line0+1:line1+1)
       imager_angles%solazi(startx:,:,1)       = preproc%saa(column0+1:column1+1,line0+1:line1+1)
       imager_angles%satzen(startx:,:,1)       = preproc%vza(column0+1:column1+1,line0+1:line1+1)
-      imager_angles%satazi(startx:,:,1)       = preproc%vaa(column0+1:column1+1,line0+1:line1+1)
+      !imager_angles%satazi(startx:,:,1)       = preproc%vaa(column0+1:column1+1,line0+1:line1+1)
       imager_measurements%data(startx:,:,:)   = preproc%data(column0+1:column1+1,line0+1:line1+1,:)
+
+      ! Offset subset for inversion of satazi
+      imager_angles%satazi(startx:,:,1)       = preproc%vaa(3712-column1:3712-column0,line0+1:line1+1)
    end if
 
    ! Remove underscores added by seviri_util (easy way of converting c-string to
