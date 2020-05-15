@@ -889,7 +889,6 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
       if ( trim(adjustl(sensor)) .eq. 'ABI'    .or. &
            trim(adjustl(sensor)) .eq. 'AGRI'   .or. &
            trim(adjustl(sensor)) .eq. 'AHI'    .or. &
-           trim(adjustl(sensor)) .eq. 'SLSTR'  .or. &
            trim(adjustl(sensor)) .eq. 'VIIRSI' .or. &
            trim(adjustl(sensor)) .eq. 'VIIRSM') then
          write(*,*) 'ERROR: subsetting not supported for ', trim(sensor)
