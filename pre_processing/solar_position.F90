@@ -44,6 +44,8 @@ subroutine get_day_of_year(day, month, year, dayj)
 end subroutine get_day_of_year
 
 subroutine sun_pos_calc(year, day, hour, lat, lon, el, az)
+
+   use system_utils_m
    implicit none
 !$acc routine seq
 
@@ -61,6 +63,10 @@ subroutine sun_pos_calc(year, day, hour, lat, lon, el, az)
    real :: delta, leap, jd, time
    real :: mnlon, mnanom, eclon, oblqec, num, den, ra
    real :: gmst, lmst, latrad
+   
+   real, parameter :: SMALL = 1.E-18
+   
+
 
    data twopi,pi,rad/6.2831853,3.1415927,.017453293/
 
@@ -89,7 +95,7 @@ subroutine sun_pos_calc(year, day, hour, lat, lon, el, az)
 
    num = cos(oblqec)*sin(eclon)
    den = cos(eclon)
-   ra = atan(num/den)
+   ra = atan(num/SIGN(MAX(ABS(den), SMALL), den))
    if (den .lt. 0) then
       ra = ra + pi
    else if (num .lt. 0) then
@@ -114,7 +120,7 @@ subroutine sun_pos_calc(year, day, hour, lat, lon, el, az)
    latrad = lat*rad
 
    el = asin(sin(dec)*sin(latrad) + cos(dec)*cos(latrad)*cos(ha))
-   az = asin(-cos(dec)*sin(ha)/cos(el))
+   az = asin(-cos(dec)*sin(ha)/SIGN(MAX(ABS(cos(el)), SMALL), cos(el)))
 
    if (sin(dec) - sin(el)*sin(latrad) .ge. 0.) then
       if (sin(az) .lt. 0.) az = az + twopi
@@ -124,7 +130,16 @@ subroutine sun_pos_calc(year, day, hour, lat, lon, el, az)
 
    el = 90 - el/rad
    az = az/rad
+  
+   if (az .lt. 0) then
+      az = 360. + az
+   endif
+
+   if (isnan(az) .and. lat .ge. -90. .and. lat .le. 90) then
+     az = 270.
+   endif
 
 end subroutine
+
 
 end module solar_position_m

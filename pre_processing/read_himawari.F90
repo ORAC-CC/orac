@@ -50,6 +50,65 @@ module read_himawari_m
 contains
 
 !-------------------------------------------------------------------------------
+! Name: AHI_Solpos
+!
+! Purpose: To compute the solar zenith and azimuth for a given AHI scene
+!
+! Description and Algorithm details:
+!
+! Arguments:
+! Name           Type    In/Out/Both Description
+! year           sreal   In          Year of sensing
+! month          sreal   In          Month of sensing
+! day            sreal   In          Day of sensing
+! hour           sreal   In          Hour of sensing
+! minute         sreal   In          Minute of sensing
+! lat            sreal   In          Pixel latitude
+! lon            sreal   In          Pixel longitude
+! sza            sreal   Out         Solar zenith angle
+! saa            sreal   Out         Solar azimuth angle
+!
+!-------------------------------------------------------------------------------
+subroutine Get_AHI_Solpos(year, doy, hour, minute, lat, lon, sza, saa)
+!$acc routine seq
+
+   use preproc_constants_m
+   use solar_position_m
+
+   implicit none
+
+   real(kind=sreal), intent(in)  :: year
+   real(kind=sreal), intent(in)  :: doy
+   real(kind=sreal), intent(in)  :: hour
+   real(kind=sreal), intent(in)  :: minute
+   real(kind=sreal), intent(in)  :: lat
+   real(kind=sreal), intent(in)  :: lon
+   real(kind=sreal), intent(out) :: sza
+   real(kind=sreal), intent(out) :: saa
+
+   saa    = 0.
+   sza    = 0.
+   call sun_pos_calc(year, doy, hour+minute/60., lat, lon, sza, saa)
+
+   if (saa .gt. 360.0) then
+      saa = sreal_fill_value
+   end if
+   if (saa .lt. 0.0) then
+      saa = sreal_fill_value
+   end if
+!   sza = abs(sza)
+   if (sza .gt. 180.0) then
+      sza = sreal_fill_value
+   end if
+   if (sza .lt. -180.0) then
+      sza = sreal_fill_value
+   end if
+
+   return
+
+end subroutine Get_AHI_Solpos
+
+!-------------------------------------------------------------------------------
 ! Name: read_himawari_dimensions
 !
 ! Purpose:
@@ -123,7 +182,9 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
    use global_attributes_m
    use imager_structures_m
    use preproc_constants_m
+   use solar_position_m
    use system_utils_m
+   use calender_m
 #ifdef INCLUDE_HIMAWARI_SUPPORT
    use himawari_readwrite
 #endif
@@ -150,13 +211,19 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
    integer(c_int), allocatable :: band_units(:)
    integer                     :: startx, nx
    integer                     :: starty, ny
+   integer                     :: x, y
    integer(c_int)              :: line0, line1
    integer(c_int)              :: column0, column1
 
-   real, allocatable           :: tmparr(:,:,:)
+   real(kind=sreal), dimension(:,:), allocatable :: tlat, tlon, tsza, tsaa
 
    type(himawari_t_data)       :: preproc
    type(himawari_t_extent)     :: ahi_extent
+   integer(kind=sint) :: iye, mon, idy, ihr, minu
+   real(kind=sreal)   :: rye, rhr, rminu
+   real(kind=sreal)   :: sza, saa, doy
+   real(kind=dreal)   :: dfr, tmphr
+   
 #endif
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_himawari_bin()'
 
@@ -193,14 +260,25 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
    if (verbose) write(*,*) 'Calling AHI_Main_Read() from ' // &
                            'the himawari_read module'
    ! Load all the data
-   if (AHI_Main_Read(trim(infile)//C_NULL_CHAR, &
-                     trim(geo_file_path)//C_NULL_CHAR, preproc, ahi_extent, n_bands, &
-                     band_ids, 0, 1, use_predef_geo, .false., .false., global_atts%Satpos_Metadata, verbose) .ne. 0) then
+   if (AHI_Main_Read(trim(infile)//C_NULL_CHAR, & ! Input filename
+                     trim(geo_file_path)//C_NULL_CHAR, & ! Geo data filename
+                     preproc, & ! Preprocessing data structure
+                     ahi_extent, & ! Image extent structure
+                     n_bands, & ! Number of bands to process
+                     band_ids, & ! Array of band numbers to process (1-16)
+                     0, & ! Flag indicating whether AHI reader needs to allocate array space
+                     1, & ! Flag indicating whether reader should retrieve geoinfo
+                     use_predef_geo, & ! Flag indicating whether an external geo file is being used
+                     .false., & ! Flag setting true color output. Currently unused and should be false anyway
+                     .false., & ! True = output as VIS channel resolution, False = Output at IR res .
+                     global_atts%Satpos_Metadata, & ! Struct to store the satellite position data, for parallax
+                     .false., & ! Flag specifying whether to compute solar angles, we calculate them internally in ORAC
+                     verbose) .ne. 0) then ! Verbosity flag.
       write(*,*) 'ERROR: in read_himawari_read(), calling ' // &
                  'AHI_Main_Read(), filename = ', trim(infile)
       stop error_stop_code
    end if
-
+   
    ! Copy arrays between the reader and ORAC. This could (should!) be done more efficiently.
    imager_time%time(:,:)             = preproc%time
    imager_geolocation%latitude(:,:)  = preproc%lat
@@ -209,8 +287,69 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
    imager_angles%solazi(:,:,1)       = preproc%saa
    imager_angles%satzen(:,:,1)       = preproc%vza
    imager_angles%satazi(:,:,1)       = preproc%vaa
-   imager_measurements%data(:,:,:)   = preproc%indata
+   imager_measurements%data(:,:,:)   = preproc%indata   
 
+   ! This section computes the solar geometry for each pixel in the image
+   allocate(tsza(imager_geolocation%startx:imager_geolocation%endx,1:imager_geolocation%ny))
+   allocate(tsaa(imager_geolocation%startx:imager_geolocation%endx,1:imager_geolocation%ny))
+
+   ! First test if openmp is being used
+#ifdef _OPENMP
+   if (verbose) write(*,*) "Computing solar geometry using OpenMP"
+   !$OMP PARALLEL DO PRIVATE(y, x, iye, mon, dfr, idy, doy, tmphr, ihr, minu, sza, saa, rye, rhr, rminu)
+#endif
+   ! Then check if ACC/PGI is active (preferred)
+#ifdef __ACC
+   if (verbose) write(*,*) "Computing solar geometry using PGI_ACC"
+!$acc data copyin(tlat) copyin(tlon) copyout(tsza) copyout(tsaa)
+!$acc parallel
+!$acc loop collapse(2) independent private(y, x, iye, doy, mon, dfr, idy, tmphr, ihr, minu, sza, saa, rye, rhr, rminu)
+#endif
+   ! Now loop over pixels to compute solar angles
+   do y = 1, imager_geolocation%ny
+      do x = imager_geolocation%startx, imager_geolocation%endx
+
+         ! We can now use this time to retrieve the actual solar geometry
+         if (imager_geolocation%latitude(x,y) .gt. -90. .and. &
+             imager_geolocation%latitude(x,y) .lt. 90. .and. &
+             imager_geolocation%longitude(x,y) .ge. -180. .and. &
+             imager_geolocation%longitude(x,y) .le. 180.) then
+               
+             call JD2GREG(imager_time%time(x, y), iye, mon, dfr)
+             idy = int(dfr)
+             tmphr = (dfr-idy)*24.
+             ihr = int(tmphr)
+             tmphr = (tmphr-ihr)*60.
+             minu = int(tmphr)
+
+             call get_day_of_year(float(idy), float(mon), float(iye), doy)
+
+             rye = float(iye)
+             rhr = float(ihr)
+             rminu = float(minu)
+             call Get_AHI_Solpos(rye, doy, rhr, rminu, imager_geolocation%latitude(x,y), imager_geolocation%longitude(x,y), sza, saa)
+             tsza(x,y) = sza
+             tsaa(x,y) = saa
+         else
+            tsza(x,y) = sreal_fill_value
+            tsaa(x,y) = sreal_fill_value
+         end if
+      end do
+   end do
+#ifdef _OPENMP
+   !$OMP END PARALLEL DO
+#endif
+#ifdef __ACC
+!$acc end parallel
+!$acc end data
+#endif
+
+   imager_angles%solzen(:, :, 1) = tsza
+   imager_angles%solazi(:, :, 1) = tsaa
+
+   deallocate(tsza)
+   deallocate(tsaa)
+   
    deallocate(band_ids)
    deallocate(band_units)
 
@@ -233,20 +372,6 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
    where(imager_angles%satazi(startx:,:,1)       .lt. -900) &
       imager_angles%satazi(startx:,:,1) = sreal_fill_value
 
-    ! Flip the VAA L/R and U/D
-    allocate(tmparr(1:imager_geolocation%nx,1:imager_geolocation%ny,1))
-    tmparr = imager_angles%satazi( &
-         imager_geolocation%endx:imager_geolocation%startx:-1, &
-         imager_geolocation%endy:imager_geolocation%starty:-1,:)
-    imager_angles%satazi = tmparr
-
-    ! rotate the solar azimuth by 180 degrees
-    tmparr(:,:,1) = imager_angles%solazi(:,:,1)
-    where (imager_angles%solazi(:,:,1) .gt. 180) &
-        tmparr(:,:,1) = tmparr(:,:,1) - 180.
-    where (imager_angles%solazi(:,:,1) .le. 180 .and. &
-        imager_angles%solazi(:,:,1) .ge. 0) tmparr(:,:,1) = tmparr(:,:,1) + 180.
-    imager_angles%solazi = tmparr
 
 #ifdef __PGI
    where(ieee_is_nan(imager_angles%solzen)) &
@@ -293,8 +418,6 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
       end where
       imager_angles%relazi(:,:,1) = abs(imager_angles%relazi(:,:,1) - 180.)
    end where
-
-   deallocate(tmparr)
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_himawari_bin()'
 #else
