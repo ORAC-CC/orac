@@ -247,18 +247,9 @@ subroutine read_slstr(infile, imager_geolocation, imager_measurements, &
       end if
 
       ! Apply some correction factors
-      if (band_ids(i) .eq. 1) then
-         imager_measurements%data(:,:,i) = imager_measurements%data(:,:,i) * 0.95
-      else if (band_ids(i) .eq. 5) then
-         imager_measurements%data(:,:,i) = imager_measurements%data(:,:,i) * 1.1
-      else if (band_ids(i) .eq. 6) then
-         imager_measurements%data(:,:,i) = imager_measurements%data(:,:,i) * 1.1
-      else if (band_ids(i) .eq. 10) then
-         imager_measurements%data(:,:,i) = imager_measurements%data(:,:,i) * 0.92
-      else if (band_ids(i) .eq. 11) then
-         imager_measurements%data(:,:,i) = imager_measurements%data(:,:,i) * 0.93
-      else if (band_ids(i) .eq. 12) then
-         imager_measurements%data(:,:,i) = imager_measurements%data(:,:,i) * 0.93
+      if (slstr_correction_factor(band_ids(i)) .gt. 0.0) then
+         imager_measurements%data(:,:,i) = imager_measurements%data(:,:,i) * &
+              slstr_correction_factor(band_ids(i))
       end if
 
       ! Other corrections have previously been applied in this code to minimise

@@ -38,11 +38,6 @@
 ! SLSTR colocation is poor. Aerosol retrieval unusable. Cloud retrieval suspect.
 !-------------------------------------------------------------------------------
 
-! When defined, the offset between the nadir and oblique views is assumed
-! to be constant. Otherwise, the two longitude fields are read and compared
-! to determine an appropriate offset.
-#define CONSTANT_OBLIQUE_OFFSET 548
-
 ! This function retrieves the start and end times for an SLSTR scene, then
 ! computes the per-pixel sensing time before saving the results in the
 ! imager_time%time array.

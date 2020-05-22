@@ -391,6 +391,7 @@ subroutine read_seviri_l1_5_nat_or_hrit(l1_5_file, imager_geolocation, &
    integer(c_int)              :: n_bands
    integer(c_int), allocatable :: band_ids(:)
    integer(c_int), allocatable :: band_units(:)
+   integer                     :: n_across_track, n_along_track
    integer                     :: startx, nx
    integer                     :: starty, ny
    integer(c_int)              :: line0, line1
@@ -408,6 +409,14 @@ subroutine read_seviri_l1_5_nat_or_hrit(l1_5_file, imager_geolocation, &
    else
       hrit_proc = .true.
    end if
+
+   ! Fetch image dimensions (start/nx are placeholders and overriden below)
+   startx = 0
+   nx = 0
+   starty = 0
+   ny = 0
+   call read_seviri_dimensions(l1_5_file, n_across_track, n_along_track, &
+        startx, nx, starty, ny, .false.)
 
    ! Setup some arguments to seviri_read_and_preproc_f90()
 
@@ -514,7 +523,7 @@ subroutine read_seviri_l1_5_nat_or_hrit(l1_5_file, imager_geolocation, &
       imager_measurements%data(startx:,:,:)   = preproc%data(column0+1:column1+1,line0+1:line1+1,:)
 
       ! Offset subset for inversion of satazi
-      imager_angles%satazi(startx:,:,1)       = preproc%vaa(3712-column1:3712-column0,line0+1:line1+1)
+      imager_angles%satazi(startx:,:,1)       = preproc%vaa(n_across_track-column1:n_across_track-column0,line0+1:line1+1)
    end if
 
    ! Remove underscores added by seviri_util (easy way of converting c-string to
