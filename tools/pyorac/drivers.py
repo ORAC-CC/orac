@@ -198,9 +198,11 @@ def build_preproc_driver(args):
 
     # RTTOV version number from small executable
     try:
+        rttov_version_exe = os.path.join(args.orac_dir, "common", "rttov_version")
+        if not os.path.isfile(rttov_version_exe):
+            rttov_version_exe = os.path.join(args.orac_dir, "rttov_version")
         rttov_version = check_output(
-            os.path.join(args.orac_dir, "common", "rttov_version"),
-            universal_newlines=True
+            rttov_version_exe, universal_newlines=True
         ).strip()
     except CalledProcessError:
         rttov_version = 'n/a'
