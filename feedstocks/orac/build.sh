@@ -52,6 +52,7 @@ make -j ${CPU_COUNT}
 
 find . -name "*.a" -exec mv {} ${PREFIX}/lib \;
 find . -name "*.mod" -exec mv {} ${PREFIX}/include \;
+mv common/rttov_version ${PREFIX}/bin
 mv pre_processing/orac_preproc ${PREFIX}/bin
 mv src/orac ${PREFIX}/bin
 mv post_processing/orac_postproc ${PREFIX}/bin

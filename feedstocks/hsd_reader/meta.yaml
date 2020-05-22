@@ -1,12 +1,13 @@
-{% set version = "1.0" %}
+{% set version = "1.1" %}
 
 package:
   name: hsd_reader
   version: {{ version }}
 
 source:
-  - url: https://groups.physics.ox.ac.uk/eodg/orac/orac_libraries/Himawari_HSD_Reader.{{ version }}.tar.gz
+  - git_url: https://github.com/simonrp84/Himawari_HSD_Reader
   - path: make.inc
+  - path: Makefile
 
 build:
   number: 0

@@ -14,7 +14,7 @@ source:
 build:
   # This might work if we ever set a release for ORAC
   #number: {{ GIT_DESCRIBE_NUMBER }}
-  number: 0
+  number: 1
   skip: True # [win]
   run_exports:
     - {{ pin_subpackage('orac', max_pin='x.x.x') }}
