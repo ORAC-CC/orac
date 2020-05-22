@@ -416,7 +416,6 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
       where (imager_angles%relazi(:,:,1) .gt. 180.)
          imager_angles%relazi(:,:,1) = 360. - imager_angles%relazi(:,:,1)
       end where
-      imager_angles%relazi(:,:,1) = abs(imager_angles%relazi(:,:,1) - 180.)
    end where
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_himawari_bin()'
