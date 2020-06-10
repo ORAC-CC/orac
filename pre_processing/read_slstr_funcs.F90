@@ -64,7 +64,7 @@ subroutine get_slstr_startend(imager_time, fname, ny)
 
    ! This ignores the 6dp on seconds and Z suffix
    character(len=var_length), parameter :: date_format = &
-        '(I4, T1, I2, T1, I2, T1, I2, T1, I2, T1, I2)'
+        '(I4, X, I2, X, I2, X, I2, X, I2, X, I2)'
 
    ! Convert start and end times to julian
 
