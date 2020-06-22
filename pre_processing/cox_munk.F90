@@ -446,10 +446,6 @@ subroutine cox_munk(bands, solza, satza, solaz, totbsc, totabs, relaz, u10, v10,
 
    rsolaz = 0.
 
-   ! Note that the relative azimuth used in Cox and Munk is the other way round
-   ! from the convention used in the rest of ORAC. Here backscattering equates
-   ! to a zero relative azimuth (i.e. if the satellite is looking away from the
-   ! sun, azi = 0). Hence the 180 degree correction.
    rrelaz = d2r * relaz ! relative azimuth
 
    ! Convert wind direction to be relative to solar azimuth
@@ -835,10 +831,6 @@ subroutine cox_munk2(i_band, solza, satza, solaz, relaz, totbsc, totabs, u10, v1
 
    rsolaz = 0.
 
-   ! Note that the relative azimuth used in Cox and Munk is the other way round
-   ! from the convention used in the rest of ORAC. Here backscattering equates
-   ! to a zero relative azimuth (i.e. if the satellite is looking away from the
-   ! sun, azi = 0). Hence the 180 degree correction.
    rrelaz = d2r * relaz ! relative azimuth
 
    ! Convert wind direction to be relative to solar azimuth
