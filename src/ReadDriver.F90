@@ -809,7 +809,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       Ctrl%r_e_chans = (/ 3, 4 /)
       allocate(Ctrl%ir_chans(3))
       Ctrl%ir_chans  = (/ 4, 9, 10 /)
-   else if (Ctrl%InstName(1:5) == 'VIIRS') then
+   else if (Ctrl%InstName(1:6) == 'VIIRSM') then
       Ctrl%Ind%Y_Id_legacy(I_legacy_0_6x) = 5
       Ctrl%Ind%Y_Id_legacy(I_legacy_0_8x) = 7
       Ctrl%Ind%Y_Id_legacy(I_legacy_1_6x) = 10
@@ -826,6 +826,22 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       Ctrl%r_e_chans = (/ 8, 10, 11, 12 /)
       allocate(Ctrl%ir_chans(4))
       Ctrl%ir_chans  = (/ 12, 15, 16, 14 /)
+   else if (Ctrl%InstName(1:6) == 'VIIRSI') then
+      Ctrl%Ind%Y_Id_legacy(I_legacy_0_6x) = 1
+      Ctrl%Ind%Y_Id_legacy(I_legacy_0_8x) = 2
+      Ctrl%Ind%Y_Id_legacy(I_legacy_1_6x) = 3
+      Ctrl%Ind%Y_Id_legacy(I_legacy_3_xx) = 4
+      Ctrl%Ind%Y_Id_legacy(I_legacy_11_x) = 5
+
+      allocate(Ctrl%ReChans(2))
+      Ctrl%ReChans = (/ 3, 4 /)
+
+      allocate(Ctrl%tau_chans(2))
+      Ctrl%tau_chans = (/ 2, 3 /)
+      allocate(Ctrl%r_e_chans(2))
+      Ctrl%r_e_chans = (/ 3, 4 /)
+      allocate(Ctrl%ir_chans(2))
+      Ctrl%ir_chans  = (/ 4, 5 /)
    else if (Ctrl%InstName(1:16) == 'SLSTR-Sentinel-3') then
       Ctrl%Ind%Y_Id_legacy(I_legacy_0_6x) = 2
       Ctrl%Ind%Y_Id_legacy(I_legacy_0_8x) = 3
