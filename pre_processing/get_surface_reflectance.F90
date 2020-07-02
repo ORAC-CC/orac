@@ -248,9 +248,9 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
    ! main processor won't use them anyway.  The code below should be uncommented
    ! for option 2. Otherwise, the case of solzen > maxsza_twi is checked at the
    ! BRDF code level.
-!  do k = 1, imager_angles%nviews
-!     mask = mask .and. imager_angles%solzen(:,:,k) .lt. maxsza_twi
-!  end do
+   do k = 1, imager_angles%nviews
+      mask = mask .and. imager_angles%solzen(:,:,k) .lt. maxsza_twi
+   end do
 
    ! Count the number of land and sea pixels, using the imager land/sea mask
    nsea  = count(mask .and. imager_flags%lsflag .eq. 0)
