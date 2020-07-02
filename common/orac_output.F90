@@ -273,7 +273,7 @@ module orac_output_m
       real(sreal)   :: cth_scale              = 0.01
       real(sreal)   :: cth_offset             = 0.0
       integer(sint) :: cth_vmin               = -1000
-      integer(sint) :: cth_vmax               = 2000
+      integer(sint) :: cth_vmax               = 3500
       real(sreal)   :: cth_uncertainty_scale  = 0.01
       real(sreal)   :: cth_uncertainty_offset = 0.0
       integer(sint) :: cth_uncertainty_vmin   = 0
