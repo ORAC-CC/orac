@@ -40,6 +40,7 @@ module ocean_colour_m
       real(kind=dreal)              :: lon0, lon_invdel
       real(kind=dreal)              :: lat0, lat_invdel
       integer                       :: nwavelength
+      real(kind=sreal)              :: fill_value
       integer, allocatable          :: iwavelength(:,:)
       real(kind=sreal), allocatable :: wavelength(:)
       real(kind=sreal), allocatable :: atot(:,:,:)
@@ -224,6 +225,10 @@ function read_oceancolour_cci(path_to_file, occci, wavelengths, verbose) &
       write(*,*) 'lon0, lon_invdel: ', occci%lon0, occci%lon_invdel
       write(*,*) 'lat0, lat_invdel: ', occci%lat0, occci%lat_invdel
    end if
+
+   ! Extract the fill value used in the OCCCI data
+   stat = nf90_inq_varid(fid, "atot_412", vid)
+   stat = nf90_get_att(fid, vid, "_FillValue", occci%fill_value)
 
    ! Now deal with the wavelengths requested. The approach here is to
    ! provide the extact wavelength if there is a match with what is
