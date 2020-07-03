@@ -875,6 +875,10 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
    ! We now have the number of viewing geometries. Put this in imager_angles
    imager_angles%nviews = channel_info%nviews
 
+   ! Add full scene size to the image geolocation structure
+   imager_geolocation%n_along_track  = n_along_track
+   imager_geolocation%n_across_track = n_across_track
+
    if (verbose) then
       write(*,*) 'WE ARE PROCESSING ', trim(platform), ' FOR ORBIT', &
            year, month, day, hour, minute
@@ -1044,12 +1048,14 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
       ! information, set paths and filenames to those required auxiliary /
       ! ancillary input...
       if (verbose) write(*,*) 'Carry out any preparatory steps'
-      call preparation(lwrtm_file, swrtm_file, prtm_file, config_file, msi_file, &
-           cf_file, lsf_file, geo_file, loc_file, alb_file, sensor, platform, &
-           preproc_opts%product_name, cyear, cmonth, cday, chour, cminute, &
-           source_atts%level1b_orbit_number, preproc_opts%ecmwf_path, preproc_opts%ecmwf_path_hr, &
-           preproc_opts%ecmwf_path2, preproc_opts%ecmwf_path3, preproc_opts%ecmwf_path_file, preproc_opts%ecmwf_HR_path_file, &
-           preproc_opts%ecmwf_path_file2, preproc_opts%ecmwf_path_file3, global_atts, ecmwf_flag, &
+      call preparation(lwrtm_file, swrtm_file, prtm_file, config_file, &
+           msi_file, cf_file, lsf_file, geo_file, loc_file, alb_file, sensor, &
+           platform, preproc_opts%product_name, cyear, cmonth, cday, chour, &
+           cminute, source_atts%level1b_orbit_number, preproc_opts%ecmwf_path, &
+           preproc_opts%ecmwf_path_hr, preproc_opts%ecmwf_path2, &
+           preproc_opts%ecmwf_path3, preproc_opts%ecmwf_path_file, &
+           preproc_opts%ecmwf_HR_path_file, preproc_opts%ecmwf_path_file2, &
+           preproc_opts%ecmwf_path_file3, global_atts, ecmwf_flag, &
            preproc_opts%ecmwf_time_int_method, imager_geolocation, imager_time, &
            i_chunk, ecmwf_time_int_fac, assume_full_paths, verbose)
 
@@ -1291,6 +1297,8 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
 
       ! perform RTTOV calculations
       if (verbose) write(*,*) 'Perform RTTOV calculations'
+
+!      do i=1,n_preproc_call
       if (ecmwf_flag .gt. 5 .and. ecmwf_flag .le. 8) then
          call rttov_driver_gfs(rttov_coef_path, rttov_emiss_path, sensor, &
               platform, preproc_dims, preproc_geoloc, preproc_geo, preproc_prtm, &
