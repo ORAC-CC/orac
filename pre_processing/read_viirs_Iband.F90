@@ -176,7 +176,7 @@ subroutine read_viirs_iband(infile, geofile, imager_geolocation, imager_measurem
 
    ! This ignores the last digit on seconds
    character(len=var_length), parameter :: date_format = &
-        '(T5, I4, I2, I2, T2, I2, I2, I2, T3, I2, I2, I2)'
+        '(5X, I4, I2, I2, 2X, I2, I2, I2, 3X, I2, I2, I2)'
 
    ! Figure out the channels to process
    n_bands = channel_info%nchannels_total

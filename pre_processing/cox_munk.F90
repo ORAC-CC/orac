@@ -446,11 +446,7 @@ subroutine cox_munk(bands, solza, satza, solaz, totbsc, totabs, relaz, u10, v10,
 
    rsolaz = 0.
 
-   ! Note that the relative azimuth used in Cox and Munk is the other way round
-   ! from the convention used in the rest of ORAC. Here backscattering equates
-   ! to a zero relative azimuth (i.e. if the satellite is looking away from the
-   ! sun, azi = 0). Hence the 180 degree correction.
-   rrelaz = d2r * (180. - relaz) ! relative azimuth
+   rrelaz = d2r * relaz ! relative azimuth
 
    ! Convert wind direction to be relative to solar azimuth
    wd(:) = rsolaz(:) - wd(:)
@@ -835,11 +831,7 @@ subroutine cox_munk2(i_band, solza, satza, solaz, relaz, totbsc, totabs, u10, v1
 
    rsolaz = 0.
 
-   ! Note that the relative azimuth used in Cox and Munk is the other way round
-   ! from the convention used in the rest of ORAC. Here backscattering equates
-   ! to a zero relative azimuth (i.e. if the satellite is looking away from the
-   ! sun, azi = 0). Hence the 180 degree correction.
-   rrelaz = d2r * (180. - relaz) ! relative azimuth
+   rrelaz = d2r * relaz ! relative azimuth
 
    ! Convert wind direction to be relative to solar azimuth
    wd = rsolaz - wd
@@ -1088,7 +1080,7 @@ subroutine cox_munk3_calc_shared_geo_wind(solza, satza, solaz, relaz, u10, v10, 
    ! When sun and satellite are on opposite sides of pixel RAA = 0
    ! When sun and satellite are on same side of pixel RAA = 180
    ! This is the opposite notation to the rest of ORAC! So we adjust here
-   crelaz = 180. - relaz
+   crelaz = relaz
 
    !----------------------------------------------------------------------------
    ! Precalculate trigonometric functions
@@ -1485,9 +1477,9 @@ subroutine cox_munk4_calc_shared_band_geo(i_band, solza, satza, solaz, relaz, &
 #else
    shared%sin_satza = sqrt(1. - shared%cos_satza * shared%cos_satza)
 #endif
-   shared%cos_relaz = cos((180. - relaz) * d2r)
+   shared%cos_relaz = cos(relaz * d2r)
 #ifdef COMPATIBILITY_MODE
-   shared%sin_relaz = sin((180. - relaz) * d2r)
+   shared%sin_relaz = sin(relaz * d2r)
 #else
    shared%sin_relaz = sqrt(1. - shared%cos_relaz * shared%cos_relaz)
 #endif

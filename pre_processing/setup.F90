@@ -1690,8 +1690,6 @@ subroutine setup_viirs_mband(l1b_path_file, geo_path_file, platform, year, month
    ! Note that it requires the segment name to be in the generic format
    ! that's specified by the NOAA. Weird filenames will break things.
 
-   index2 = index(l1b_path_file, 'npp_d')
-
    ! get year, doy, hour and minute as strings
    index2 = index2+5
    cyear = trim(adjustl(l1b_path_file(index2:index2+4)))
@@ -1699,7 +1697,6 @@ subroutine setup_viirs_mband(l1b_path_file, geo_path_file, platform, year, month
    cday = trim(adjustl(l1b_path_file(index2+6:index2+7)))
    chour = trim(adjustl(l1b_path_file(index2+10:index2+11)))
    cminute = trim(adjustl(l1b_path_file(index2+12:index2+13)))
-
    ! get year, doy, hour and minute as integers
    read(cyear(1:len_trim(cyear)), '(I4)') year
    read(cmonth(1:len_trim(cmonth)), '(I2)') month
