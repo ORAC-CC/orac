@@ -22,25 +22,18 @@ void read_aatsr_orbit(const char *l1b_file, const bool *verbose,
                       const short *view, const long *nx, const long *ny,
                       const long *startx, const long *starty, short *stat,
                       float **lat,  float **lon,
-                      float **nsza, float **niza, float **nsaz, float **nraz,
-                      short  *nflg, short  *nqul, double *nday,
+                      float **nsza, float **niza, float **nsaz, float **niaz,
+                      float **nraz, short  *nflg, short  *nqul, double *nday,
                       float **nch1, float **nch2, float **nch3, float **nch4,
                       float **nch5, float **nch6, float **nch7,
-                      float **fsza, float **fiza, float **fsaz, float **fraz,
-                      short  *fflg, short  *fqul, double *fday,
+                      float **fsza, float **fiza, float **fsaz, float **fiaz,
+                      float **fraz, short  *fflg, short  *fqul, double *fday,
                       float **fch1, float **fch2, float **fch3, float **fch4,
                       float **fch5, float **fch6, float **fch7,
                       char start_date[30], char gc1_file[62], char vc1_file[62],
                       bool *is_lut_drift_corrected)
 {
 #ifdef INCLUDE_ATSR_SUPPORT
-     float *iaz;
-     iaz = calloc(*nx * *ny, sizeof(float));
-     if (iaz == NULL) {
-          printf("ERROR: read_aatsr_orbit(): Insufficient memory available.\n");
-          exit(1);
-     }
-
      const char *geo_dataset, *geo_pts_name, *geo_label[2];
      const char *ax_dataset[2], *ax_pts_name, *ax_label[4];
      const char *ch_label[2][7], *fg_label[2][2], *dy_label[2];
@@ -50,8 +43,8 @@ void read_aatsr_orbit(const char *l1b_file, const bool *verbose,
 
      // Gather output array pointers into arrays for ease of use
      float *geo_array[2]   =   {*lat, *lon};
-     float *ax_array[2][5] = { {*nsza,*niza,*nsaz,iaz,*nraz},
-                               {*fsza,*fiza,*fsaz,iaz,*fraz} };
+     float *ax_array[2][5] = { {*nsza,*niza,*nsaz,*niaz,*nraz},
+                               {*fsza,*fiza,*fsaz,*fiaz,*fraz} };
      float *ch_array[2][7] = { {*nch1,*nch2,*nch3,*nch4,*nch5,*nch6,*nch7},
                                {*fch1,*fch2,*fch3,*fch4,*fch5,*fch6,*fch7} };
      short *fg_array[2][2] = { {nflg, nqul},
@@ -257,7 +250,6 @@ void read_aatsr_orbit(const char *l1b_file, const bool *verbose,
      // Close files
      *stat = epr_close_product(pid);
      epr_close_api();
-     free(iaz);
      return;
 #else
      printf("ERROR: the ORAC pre-processor has not been compiled with ");

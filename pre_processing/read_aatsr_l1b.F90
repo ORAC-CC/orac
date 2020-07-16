@@ -92,9 +92,9 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
    interface
      subroutine read_aatsr_orbit(l1b_file, verb, nch, ch, view, &
            nx, ny, startx, starty, stat, lat, lon, &
-           nsza, niza, nsaz, nraz, nflg, nqul, nday, &
+           nsza, niza, nsaz, niaz, nraz, nflg, nqul, nday, &
            nch1, nch2, nch3, nch4, nch5, nch6, nch7, &
-           fsza, fiza, fsaz, fraz, fflg, fqul, fday, &
+           fsza, fiza, fsaz, fiaz, fraz, fflg, fqul, fday, &
            fch1, fch2, fch3, fch4, fch5, fch6, fch7, &
            start_date, gc1_file, vc1_file, is_lut_drift_corrected) &
            bind(C, name='read_aatsr_orbit')
@@ -113,9 +113,9 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
          real(kind=c_double), dimension(ny)      :: nday, fday
          logical(kind=c_bool)                    :: verb, is_lut_drift_corrected
          type(c_ptr) :: lat, lon
-         type(c_ptr) :: nsza, niza, nsaz, nraz
+         type(c_ptr) :: nsza, niza, nsaz, niaz, nraz
          type(c_ptr) :: nch1, nch2, nch3, nch4, nch5, nch6, nch7
-         type(c_ptr) :: fsza, fiza, fsaz, fraz
+         type(c_ptr) :: fsza, fiza, fsaz, fiaz, fraz
          type(c_ptr) :: fch1, fch2, fch3, fch4, fch5, fch6, fch7
       end subroutine read_aatsr_orbit
    end interface
@@ -149,9 +149,9 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
    integer(kind=c_short), allocatable, dimension(:,:) :: nflg, fflg
    integer(kind=c_short), allocatable, dimension(:,:) :: nqul, fqul
    type(c_ptr) :: lat, lon
-   type(c_ptr) :: nsza, niza, nsaz, nraz
+   type(c_ptr) :: nsza, niza, nsaz, niaz, nraz
    type(c_ptr) :: nch1, nch2, nch3, nch4, nch5, nch6, nch7
-   type(c_ptr) :: fsza, fiza, fsaz, fraz
+   type(c_ptr) :: fsza, fiza, fsaz, fiaz, fraz
    type(c_ptr) :: fch1, fch2, fch3, fch4, fch5, fch6, fch7
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_aatsr_l1b()'
@@ -162,6 +162,7 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
    nsza = c_null_ptr
    niza = c_null_ptr
    nsaz = c_null_ptr
+   niaz = c_null_ptr
    nraz = c_null_ptr
    nch1 = c_null_ptr
    nch2 = c_null_ptr
@@ -173,6 +174,7 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
    fsza = c_null_ptr
    fiza = c_null_ptr
    fsaz = c_null_ptr
+   fiaz = c_null_ptr
    fraz = c_null_ptr
    fch1 = c_null_ptr
    fch2 = c_null_ptr
@@ -209,6 +211,7 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
       nsza = c_loc(imager_angles%solzen(startx,1,1))
       niza = c_loc(imager_angles%satzen(startx,1,1))
       nsaz = c_loc(imager_angles%solazi(startx,1,1))
+      niaz = c_loc(imager_angles%satazi(startx,1,1))
       nraz = c_loc(imager_angles%relazi(startx,1,1))
    else ! you have to pass something in Fortran
       allocate(nflg(1,1))
@@ -222,6 +225,7 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
       fsza = c_loc(imager_angles%solzen(startx,1,2))
       fiza = c_loc(imager_angles%satzen(startx,1,2))
       fsaz = c_loc(imager_angles%solazi(startx,1,2))
+      fiaz = c_loc(imager_angles%satazi(startx,1,2))
       fraz = c_loc(imager_angles%relazi(startx,1,2))
    else
       allocate(fflg(1,1))
@@ -290,9 +294,9 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
         trim(l1b_file)
    call read_aatsr_orbit(l1b_file_c, verb, nch, ch, view, &
         nx, ny, startx, starty, stat, lat, lon, &
-        nsza, niza, nsaz, nraz, nflg, nqul, nday, &
+        nsza, niza, nsaz, niaz, nraz, nflg, nqul, nday, &
         nch1, nch2, nch3, nch4, nch5, nch6, nch7, &
-        fsza, fiza, fsaz, fraz, fflg, fqul, fday, &
+        fsza, fiza, fsaz, fiaz, fraz, fflg, fqul, fday, &
         fch1, fch2, fch3, fch4, fch5, fch6, fch7, &
         start_date, gc1_file, vc1_file, is_lut_drift_corrected)
 
