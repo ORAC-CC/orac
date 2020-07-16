@@ -56,6 +56,7 @@ subroutine Nullify_Data(Ctrl, MSI_Data)
    nullify(MSI_Data%Geometry%Sol)
    nullify(MSI_Data%Geometry%Sat)
    nullify(MSI_Data%Geometry%Azi)
+   nullify(MSI_Data%Geometry%Saz)
 
    nullify(MSI_Data%Location%Lat)
    nullify(MSI_Data%Location%Lon)
