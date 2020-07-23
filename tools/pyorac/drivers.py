@@ -52,7 +52,7 @@ def build_preproc_driver(args):
                                 'SW_SFC_PRMS_%m.nc', 'years')
         brdf = None
     else:
-        for ver in (5, 6):
+        for ver in (6, 5):
             try:
                 alb = _date_back_search(args.mcd43c3_dir, args.File.time,
                                         f'MCD43C3.A%Y%j.{ver:03d}.*.hdf', 'days')
@@ -139,13 +139,13 @@ def build_preproc_driver(args):
     if args.use_oc:
         for oc_version in (4.2, 4.1, 4.0, 3.1, 3.0, 2.0, 1.0):
             occci = args.File.time.strftime(os.path.join(
-                args.occci_dir, f'ESACCI-OC-L3S-IOP-MERGED-1M_MONTHLY'
-                '_4km_GEO_PML_OCx_QAA-%Y%m-fv{oc_version:.1f}.nc'
+                args.occci_dir, 'ESACCI-OC-L3S-IOP-MERGED-1M_MONTHLY'
+                f'_4km_GEO_PML_OCx_QAA-%Y%m-fv{oc_version:.1f}.nc'
             ))
             if os.path.isfile(occci):
                 break
-            else:
-                raise FileMissing('Ocean Colour CCI', occci)
+        else:
+            raise FileMissing('Ocean Colour CCI', occci)
     else:
         occci = ''
 
