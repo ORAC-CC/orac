@@ -26,6 +26,8 @@
 ! 2020/04/13, AP: Have read_slstr_dimensions() use get_slstr_gridsize() so it
 !                 explictly checks the geodetic_in file, rather than whatever
 !                 file the user happened to pass as l1b_file.
+! 2020/04/14, AP: Add subsetting to the read functions. The entire tx grid is
+!                 read as it's difficult to predict how much will be needed.
 !
 ! Bugs:
 ! None known (in ORAC)
@@ -118,20 +120,18 @@ subroutine read_slstr(infile, imager_geolocation, imager_measurements, &
    integer(c_int)                :: n_bands
    integer(c_int), allocatable   :: band_ids(:)
    integer(c_int), allocatable   :: band_units(:)
-   integer                       :: startx, nx
+   integer                       :: startx, endx, nx
    integer                       :: starty, ny
 
    character(len=path_length)    :: indir
 
    real(kind=sreal), allocatable :: txlats(:,:)
    real(kind=sreal), allocatable :: txlons(:,:)
-   real(kind=sreal), allocatable :: oblats(:,:)
-   real(kind=sreal), allocatable :: oblons(:,:)
    real(kind=sreal), allocatable :: interp(:,:,:)
 
    integer(kind=sint)            :: surface_flag(imager_geolocation%nx,imager_geolocation%ny)
    integer                       :: txnx, txny
-   integer                       :: obnx, obny, obl_off
+   integer                       :: sx_nad, sx_obl, ex_nad, ex_obl
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< read_slstr()'
 
@@ -142,12 +142,13 @@ subroutine read_slstr(infile, imager_geolocation, imager_measurements, &
    allocate(band_units(n_bands))
 
    startx = imager_geolocation%startx
+   endx   = imager_geolocation%endx
    nx     = imager_geolocation%nx
    starty = imager_geolocation%starty
    ny     = imager_geolocation%ny
 
    ! Sort out the start and end times, place into the time array
-   call get_slstr_startend(imager_time, infile, ny)
+   call get_slstr_startend(imager_time, infile, starty, ny)
 
    j = index(infile, '/', .true.)
    indir = infile(1:j)
@@ -161,14 +162,7 @@ subroutine read_slstr(infile, imager_geolocation, imager_measurements, &
    allocate(txlats(txnx,txny))
    allocate(txlons(txnx,txny))
 
-   ! Then allocate arrays for oblique data
-   if (imager_angles%nviews .eq. 2) then
-      ! Find size of oblique view grid.
-      call get_slstr_gridsize(indir, 'io', obnx, obny)
-      allocate(oblats(obnx,obny))
-      allocate(oblons(obnx,obny))
-   end if
-   ! And one for the interpolation results
+   ! Then allocate arrays for the interpolation results
    allocate(interp(nx,ny,3))
 
    ! Read primary dem, lat and lon
@@ -180,25 +174,18 @@ subroutine read_slstr(infile, imager_geolocation, imager_measurements, &
         imager_geolocation%longitude)
 
    ! Read reduced grid lat/lon
-   call read_slstr_field(indir, 'geodetic', 'tx', 'latitude', startx, starty, &
-        txlats)
-   call read_slstr_field(indir, 'geodetic', 'tx', 'longitude', startx, starty, &
-        txlons)
+   call read_slstr_field(indir, 'geodetic', 'tx', 'latitude', 1, 1, txlats)
+   call read_slstr_field(indir, 'geodetic', 'tx', 'longitude', 1, 1, txlons)
 
-   ! Read oblique view lat/lon
    if (imager_angles%nviews .eq. 2) then
-      call read_slstr_field(indir, 'geodetic', 'io', 'latitude', startx, starty, &
-           oblats)
-      call read_slstr_field(indir, 'geodetic', 'io', 'longitude', startx, starty, &
-           oblons)
       ! Get alignment factor between oblique and nadir views
-      call slstr_get_alignment(nx, ny, obnx, obny, imager_geolocation%longitude, &
-           oblons, obl_off)
+      call slstr_get_alignment(indir, startx, endx, sx_nad, sx_obl, &
+           ex_nad, ex_obl)
    end if
 
    ! Get interpolation factors between reduced and TIR grid for each pixel
    call slstr_get_interp(imager_geolocation%longitude, txlons, txnx, txny, nx, ny, &
-        interp)
+        starty, interp)
 
    deallocate(txlats)
    deallocate(txlons)
@@ -206,10 +193,12 @@ subroutine read_slstr(infile, imager_geolocation, imager_measurements, &
    if (verbose) write(*,*) 'Reading geometry data for SLSTR geo grid'
 
    ! Read satellite and solar angles for the nadir viewing geometry
-   call read_slstr_satsol(indir, imager_angles, interp, txnx, txny, nx, ny, startx, 1)
+   call read_slstr_satsol(indir, imager_angles, interp, txnx, txny, nx, ny, &
+        startx, starty, 1)
    if (imager_angles%nviews .eq. 2) then
       ! Read satellite and solar angles for the oblique viewing geometry
-      call read_slstr_satsol(indir, imager_angles, interp, txnx, txny, nx, ny, startx, 2)
+      call read_slstr_satsol(indir, imager_angles, interp, txnx, txny, nx, ny, &
+           startx, starty, 2)
    end if
 
    deallocate(interp)
@@ -234,42 +223,50 @@ subroutine read_slstr(infile, imager_geolocation, imager_measurements, &
    end where
 
    ! This bit reads all the data.
-   do i=1, n_bands
+   do i = 1, n_bands
       if (verbose) write(*,*) 'Reading SLSTR data for band', band_ids(i)
       if (band_ids(i) .lt. 7) then
          call read_slstr_visdata(indir, band_ids(i), &
               imager_measurements%data(:,:,i), imager_angles, startx, starty, &
-              nx, ny, nx, ny, 0, 1)
+              nx, ny)
+         where(imager_angles%solzen(:,:,1) .eq. sreal_fill_value) &
+              imager_measurements%data(:,:,i) = sreal_fill_value
+
       else if (band_ids(i) .le. 9) then
          call read_slstr_tirdata(indir, band_ids(i), &
-              imager_measurements%data(:,:,i), &
-              startx, starty, nx, ny, nx, ny, 1, 1)
+              imager_measurements%data(:,:,i), startx, starty)
+
       else if (band_ids(i) .lt. 16) then
-         call read_slstr_visdata(indir, band_ids(i), &
-              imager_measurements%data(:,:,i), &
-              imager_angles, startx, starty, obnx, obny, nx, ny, obl_off-1, 2)
+         if (sx_nad .gt. 0 .and. ex_nad .gt. 0) then
+            call read_slstr_visdata(indir, band_ids(i), &
+                 imager_measurements%data(sx_nad:ex_nad,:,i), &
+                 imager_angles, sx_obl, starty, ex_obl-sx_obl+1, ny)
+            where(imager_angles%solzen(sx_nad:ex_nad,:,2) .eq. sreal_fill_value) &
+                 imager_measurements%data(sx_nad:ex_nad,:,i) = sreal_fill_value
+         end if
+
       else if (band_ids(i) .le. 18) then
-         call read_slstr_tirdata(indir, band_ids(i), &
-              imager_measurements%data(:,:,i), &
-              startx, starty, obnx, obny, nx, ny, obl_off, 2)
+         if (sx_nad .gt. 0 .and. ex_nad .gt. 0) then
+            call read_slstr_tirdata(indir, band_ids(i), &
+                 imager_measurements%data(sx_nad:ex_nad,:,i), sx_obl, starty)
+         end if
+
       else
          write(*,*) 'Invalid band_id! Must be in range 1->18', band_ids(i)
-         stop
+         stop error_stop_code
       end if
+
       ! Apply some correction factors
-      if (band_ids(i) .eq. 1) then
-        imager_measurements%data(:,:,i) = imager_measurements%data(:,:,i) * 0.95
-      else if (band_ids(i) .eq. 5) then
-        imager_measurements%data(:,:,i) = imager_measurements%data(:,:,i) * 1.1
-      else if (band_ids(i) .eq. 6) then
-        imager_measurements%data(:,:,i) = imager_measurements%data(:,:,i) * 1.1
-      else if (band_ids(i) .eq. 10) then
-        imager_measurements%data(:,:,i) = imager_measurements%data(:,:,i) * 0.92
-      else if (band_ids(i) .eq. 11) then
-        imager_measurements%data(:,:,i) = imager_measurements%data(:,:,i) * 0.93
-      else if (band_ids(i) .eq. 12) then
-        imager_measurements%data(:,:,i) = imager_measurements%data(:,:,i) * 0.93
+      if (slstr_correction_factor(band_ids(i)) .gt. 0.0) then
+         imager_measurements%data(:,:,i) = imager_measurements%data(:,:,i) * &
+              slstr_correction_factor(band_ids(i))
       end if
+
+      ! Other corrections have previously been applied in this code to minimise
+      ! problems with the geolocation, dynamic range, and calibration of SLSTR.
+      ! These have been removed at this point, as many are now included in the
+      ! L1B files but may still be necessary for earlier data. The main one is
+      ! channels 10-15 had a pixel offset one less than channels 16-18
    end do
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_slstr()'
 
