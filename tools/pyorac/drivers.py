@@ -31,7 +31,7 @@ def build_preproc_driver(args):
         nise_locations = (
             'NISE.005/%Y.%m.%d', 'NISE.004/%Y.%m.%d',
             'NISE.002/%Y.%m.%d', 'NISE.001/%Y.%m.%d',
-            '%Y', '%Y.%m.%d', '%Y_%m_d', '%Y-%m-%d',
+            '%Y', '%Y.%m.%d', '%Y_%m_d', '%Y-%m-%d', ''
         )
         nise_formats = (
             'NISE_SSMISF18_%Y%m%d.HDFEOS', 'NISE_SSMISF17_%Y%m%d.HDFEOS',
@@ -49,20 +49,29 @@ def build_preproc_driver(args):
     # Select previous surface reflectance and emissivity files
     if args.swansea:
         alb = _date_back_search(args.swansea_dir, args.File.time,
-                                'SW_SFC_PRMS_%m.nc', 'months')
+                                'SW_SFC_PRMS_%m.nc', 'years')
         brdf = None
     else:
-        alb = _date_back_search(args.mcd43c3_dir, args.File.time,
-                                'MCD43C3.A%Y%j.*.hdf', 'days')
-        brdf = None if args.lambertian else _date_back_search(
-            args.mcd43c1_dir, args.File.time, 'MCD43C1.A%Y%j.*.hdf', 'days'
-        )
+        for ver in (6, 5):
+            try:
+                alb = _date_back_search(args.mcd43c3_dir, args.File.time,
+                                        f'MCD43C3.A%Y%j.{ver:03d}.*.hdf', 'days')
+                brdf = None if args.lambertian else _date_back_search(
+                    args.mcd43c1_dir, args.File.time,
+                    f'MCD43C1.A%Y%j.{ver:03d}.*.hdf', 'days'
+                )
+                break
+            except FileMissing:
+                pass
+        else:
+            raise FileMissing('MODIS albedo', args.mcd43c3_dir)
+
     if args.use_modis_emis:
         emis = None
     elif args.use_camel_emis:
         emis = _date_back_search(
             args.camel_dir, args.File.time,
-            'CAM5K30EM_emis_%Y%m_V???.nc', 'months'
+            'CAM5K30EM_emis_%Y%m_V???.nc', 'years'
         )
     else:
         emis = _date_back_search(
@@ -131,12 +140,12 @@ def build_preproc_driver(args):
         for oc_version in (4.2, 4.1, 4.0, 3.1, 3.0, 2.0, 1.0):
             occci = args.File.time.strftime(os.path.join(
                 args.occci_dir, 'ESACCI-OC-L3S-IOP-MERGED-1M_MONTHLY'
-                '_4km_GEO_PML_OCx_QAA-%Y%m-fv{:.1f}.nc'.format(oc_version)
+                f'_4km_GEO_PML_OCx_QAA-%Y%m-fv{oc_version:.1f}.nc'
             ))
             if os.path.isfile(occci):
                 break
-            else:
-                raise FileMissing('Ocean Colour CCI', occci)
+        else:
+            raise FileMissing('Ocean Colour CCI', occci)
     else:
         occci = ''
 
@@ -162,7 +171,7 @@ def build_preproc_driver(args):
         except FileNotFoundError:
             continue
         except CalledProcessError:
-            raise OracError('ncdump does non-functional.')
+            raise OracError('ncdump is non-functional.')
 
         mat0 = search(r'netcdf library version (.+?) of', tmp0)
         if mat0:
@@ -173,7 +182,8 @@ def build_preproc_driver(args):
                           OracWarning, stacklevel=2)
         break
     else:
-        raise OracError('NetCDF lib improperly built as ncdump not present.')
+        raise OracError('NetCDF lib improperly built as ncdump not present. '
+                        'LD_LIBRARY_PATH=' + os.environ["LD_LIBRARY_PATH"])
 
     # Fetch ECMWF version from header of NCDF file
     if 0 <= args.ecmwf_flag <= 3:
@@ -222,136 +232,83 @@ def build_preproc_driver(args):
     finally:
         os.chdir(cwd)
 
-    file_version = 'R{}'.format(args.File.revision)
+    file_version = f'R{args.File.revision}'
+
+    chunk_flag = False # File chunking no longer required
+    assume_full_paths = True # We pass absolute paths
+    cldtype = not args.skip_cloud_type
+    include_full_brdf = not args.lambertian
+    use_ecmwf_hr = not args.skip_ecmwf_hr
 
     #------------------------------------------------------------------------
 
     # Write driver file
-    driver = """{sensor}
+    driver = f"""{args.File.sensor}
 {l1b}
 {geo}
-{usgs}
+{args.usgs_file}
 {ggam[0]}
-{coef}
-{atlas}
+{args.coef_dir}
+{args.atlas_dir}
 {nise}
 {alb}
 {brdf}
 {emis}
-{dellon}
-{dellat}
-{out_dir}
-{limit[0]}
-{limit[1]}
-{limit[2]}
-{limit[3]}
+{args.dellon}
+{args.dellat}
+{args.out_dir}
+{args.limit[0]}
+{args.limit[1]}
+{args.limit[2]}
+{args.limit[3]}
 {ncdf_version}
-{conventions}
-{institution}
-{l2_processor}
-{creator_email}
-{creator_url}
+{args.cfconvention}
+{args.institute}
+{args.processor}
+{args.email}
+{args.url}
 {file_version}
-{references}
-{history}
-{summary}
-{keywords}
-{comment}
-{project}
-{license}
-{uuid}
+{args.references}
+{args.history}
+{args.summary}
+{args.keywords}
+{args.comments}
+{args.project}
+{args.license}
+{uid}
 {production_time}
-{atsr_calib}
-{ecmwf_flag}
+{args.calib_file}
+{args.ecmwf_flag}
 {ggas[0]}
 {spam[0]}
 {chunk_flag}
-{day_flag}
-{verbose}
+{args.day_flag}
+{args.verbose}
 -
 {assume_full_paths}
 {include_full_brdf}
 {rttov_version}
 {ecmwf_version}
 {git_version}
-ECMWF_TIME_INT_METHOD={ecmwf_int_method}
+ECMWF_TIME_INT_METHOD={args.single_ecmwf}
 ECMWF_PATH_2={ggam[1]}
 ECMWF_PATH2_2={ggas[1]}
 ECMWF_PATH3_2={spam[1]}
 USE_HR_ECMWF={use_ecmwf_hr}
-ECMWF_PATH_HR={ecmwf_hr[0]}
-ECMWF_PATH_HR_2={ecmwf_hr[1]}
-USE_ECMWF_SNOW_AND_ICE={ecmwf_nise}
-USE_MODIS_EMIS_IN_RTTOV={modis_emis}
-ECMWF_NLEVELS={ecmwf_nlevels}
-USE_L1_LAND_MASK={l1_land_mask}
-USE_OCCCI={use_occci}
-OCCCI_PATH={occci_file}
-DISABLE_SNOW_ICE_CORR={no_snow}
-DO_CLOUD_EMIS={cld_emis}
-DO_IRONLY={ir_only}
+ECMWF_PATH_HR={hr_ecmwf[0]}
+ECMWF_PATH_HR_2={hr_ecmwf[1]}
+USE_ECMWF_SNOW_AND_ICE={args.use_ecmwf_snow}
+USE_MODIS_EMIS_IN_RTTOV={args.use_modis_emis}
+ECMWF_NLEVELS={args.ecmwf_nlevels}
+USE_L1_LAND_MASK={args.l1_land_mask}
+USE_OCCCI={args.use_oc}
+OCCCI_PATH={occci}
+DISABLE_SNOW_ICE_CORR={args.no_snow_corr}
+DO_CLOUD_EMIS={args.cloud_emis}
+DO_IRONLY={args.ir_only}
 DO_CLDTYPE={cldtype}
-USE_CAMEL_EMIS={camel}
-USE_SWANSEA_CLIMATOLOGY={swansea}""".format(
-    alb=alb,
-    assume_full_paths=True, # Above file searching returns paths nor dirs
-    atlas=args.atlas_dir,
-    atsr_calib=args.calib_file,
-    brdf=brdf,
-    camel=args.use_camel_emis,
-    chunk_flag=False, # File chunking no longer required
-    cldtype=not args.skip_cloud_type,
-    cld_emis=args.cloud_emis,
-    coef=args.coef_dir,
-    comment=args.comments,
-    conventions=args.cfconvention,
-    creator_email=args.email,
-    creator_url=args.url,
-    day_flag=args.day_flag, # 0=1=Day, 2=Night
-    dellat=args.dellat,
-    dellon=args.dellon,
-    ecmwf_flag=args.ecmwf_flag,
-    ecmwf_hr=hr_ecmwf,
-    ecmwf_int_method=args.single_ecmwf,
-    ecmwf_nise=args.use_ecmwf_snow,
-    ecmwf_nlevels=args.ecmwf_nlevels,
-    ecmwf_version=ecmwf_version,
-    emis=emis,
-    file_version=file_version,
-    geo=geo,
-    ggam=ggam,
-    ggas=ggas,
-    history=args.history,
-    include_full_brdf=not args.lambertian,
-    institution=args.institute,
-    ir_only=args.ir_only,
-    keywords=args.keywords,
-    l1_land_mask=args.l1_land_mask,
-    l1b=l1b,
-    l2_processor=args.processor,
-    license=args.license,
-    limit=args.limit,
-    modis_emis=args.use_modis_emis,
-    ncdf_version=ncdf_version,
-    nise=nise,
-    no_snow=args.no_snow_corr,
-    occci_file=occci,
-    out_dir=args.out_dir,
-    usgs=args.usgs_file,
-    production_time=production_time,
-    project=args.project,
-    references=args.references,
-    rttov_version=rttov_version,
-    sensor=args.File.sensor,
-    spam=spam,
-    summary=args.summary,
-    swansea=args.swansea,
-    git_version=git_version,
-    uuid=uid,
-    use_ecmwf_hr=not args.skip_ecmwf_hr,
-    use_occci=args.use_oc,
-    verbose=args.verbose,
-)
+USE_CAMEL_EMIS={args.use_camel_emis}
+USE_SWANSEA_CLIMATOLOGY={args.swansea}"""
 
     if args.available_channels is not None:
         driver += "\nN_CHANNELS={}".format(len(args.available_channels))
@@ -367,17 +324,17 @@ USE_SWANSEA_CLIMATOLOGY={swansea}""".format(
                 raise FileMissing('extra_lines_file', filename)
     for sec, key, val in args.additional:
         if sec == "pre":
-            driver += "\n{}={}".format(key, val)
+            driver += f"\n{key}={val}"
 
     if args.File.predef and not args.no_predef:
-        driver += """
+        driver += f"""
 USE_PREDEF_LSM=True
-EXT_LSM_PATH={lsm}
+EXT_LSM_PATH={args.prelsm_file}
 USE_PREDEF_GEO=True
-EXT_GEO_PATH={geo}""".format(lsm=args.prelsm_file, geo=args.pregeo_file)
+EXT_GEO_PATH={args.pregeo_file}"""
 
     if args.product_name is not None:
-        driver += "\nPRODUCT_NAME={}".format(args.product_name)
+        driver += f"\nPRODUCT_NAME={args.product_name}"
 
     return driver
 
@@ -450,7 +407,7 @@ Ctrl%Class2                 = {}""".format(
                 raise FileMissing('extra_lines_file', filename)
     for sec, key, val in args.additional:
         if sec == "main":
-            driver += "\n{} = {}".format(key, val)
+            driver += f"\n{key} = {val}"
 
     return driver
 
@@ -509,7 +466,7 @@ USE_NEW_BAYESIAN_SELECTION={bayesian}""".format(
                 raise FileMissing('extra_lines_file', filename)
     for sec, key, val in args.additional:
         if sec == "post":
-            driver += "\n{} = {}".format(key, val)
+            driver += f"\n{key} = {val}"
 
     return driver
 
@@ -558,7 +515,15 @@ def _date_back_search(fdr, date_in, pattern, interval):
     delta = relativedelta(**{interval: 1})
 
     date = copy(date_in)
-    while date > datetime(1995, 1, 1):
+    # We only want to look back so far, depending on the interval
+    if interval == 'days':
+        earliest = date - relativedelta(months=1)
+    elif interval == 'months':
+        earliest = date - relativedelta(years=1)
+    else:
+        earliest = datetime(1970, 1, 1)
+
+    while date > earliest:
         # Look for a file with the appropriate date
         files = glob(date.strftime(os.path.join(fdr, pattern)))
 

@@ -81,6 +81,7 @@ typedef void EPR_SProductId;
 ! nsza|fsza     float  Out Nadir|forward solar zenith angle.
 ! niza|fiza     float  Out Nadir|forward instrument zenith angle.
 ! nsaz|fsaz     float  Out Nadir|forward solar azimuth angle.
+! niaz|fiaz     float  Out Nadir|forward instrument azimuth angle.
 ! nraz|fraz     float  Out Nadir|forward relative azimuth angle.
 ! nflg|fflg     short  Out Nadir|forward cloud flag.
 ! nqul|fqul     short  Out Nadir|forward confid flags.
@@ -103,12 +104,12 @@ void read_aatsr_orbit(const char *l1b_file, const bool *verbose,
                       const short *view, const long *nx, const long *ny,
                       const long *startx, const long *starty, short *stat,
                       float **lat,  float **lon,
-                      float **nsza, float **niza, float **nsaz, float **nraz,
-                      short  *nflg, short  *nqul, double *nday,
+                      float **nsza, float **niza, float **nsaz, float **niaz,
+                      float **nraz, short  *nflg, short  *nqul, double *nday,
                       float **nch1, float **nch2, float **nch3, float **nch4,
                       float **nch5, float **nch6, float **nch7,
-                      float **fsza, float **fiza, float **fsaz, float **fraz,
-                      short  *fflg, short  *fqul, double *fday,
+                      float **fsza, float **fiza, float **fsaz, float **fiaz,
+                      float **fraz, short  *fflg, short  *fqul, double *fday,
                       float **fch1, float **fch2, float **fch3, float **fch4,
                       float **fch5, float **fch6, float **fch7,
                       char start_date[30], char gc1_file[62], char vc1_file[62],
