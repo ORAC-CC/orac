@@ -149,6 +149,7 @@ subroutine preparation(lwrtm_file, swrtm_file, prtm_file, config_file, msi_file,
 
    if (verbose) write(*,*) 'sensor: ',                trim(sensor)
    if (verbose) write(*,*) 'platform: ',              trim(platform)
+   if (verbose) write(*,*) 'product_name: ',          trim(product_name)
    if (verbose) write(*,*) 'cyear: ',                 trim(cyear)
    if (verbose) write(*,*) 'cmonth: ',                trim(cmonth)
    if (verbose) write(*,*) 'cday: ',                  trim(cday)
