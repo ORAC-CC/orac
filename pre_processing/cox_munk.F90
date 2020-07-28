@@ -114,6 +114,10 @@
 !      than chlorophyll concentration and cdom absorption
 ! 2017/08/09, GM: Switch from the NR routine gauleg() to the GPL compatible
 !    gauss_leg_quadx() for computing Gauss-Legendre quadrature.
+! 2020/07/16, AP: Invert the direction of Zy and the relative wd. The previous
+!    expressions oriented the y-axis with sunlight rather than point it towards
+!    the sun as ORAC would typically do. Details can be found at
+!    http://eodg.atm.ox.ac.uk/eodg/gray/2020Povey_relative-azimuth-surface.pdf
 !
 ! Bugs:
 ! As they aren't actually used by the code any more, the cox_munk() and
@@ -449,7 +453,7 @@ subroutine cox_munk(bands, solza, satza, solaz, relaz, totbsc, totabs, u10, v10,
    rrelaz = d2r * relaz ! relative azimuth
 
    ! Convert wind direction to be relative to solar azimuth
-   wd(:) = rsolaz(:) - wd(:)
+   wd(:) = wd(:) - rsolaz(:)
 
    where(wd .lt. 0.0) wd = 2.0*pi + wd
 
@@ -458,7 +462,7 @@ subroutine cox_munk(bands, solza, satza, solaz, relaz, totbsc, totabs, u10, v10,
 
    where (abs(dangle(:)) .gt. dither_more)
       Zx(:) = (-1.0*sin(rsatza(:)) * sin(rrelaz(:))) / dangle(:)
-      Zy(:) = (sin(rsolza(:)) + sin(rsatza(:)) * cos(rrelaz)) / dangle(:)
+      Zy(:) = -1.0 * (sin(rsolza(:)) + sin(rsatza(:)) * cos(rrelaz)) / dangle(:)
    else where
       Zx(:) = 0.0
       Zy(:) = 0.0
@@ -834,7 +838,7 @@ subroutine cox_munk2(i_band, solza, satza, solaz, relaz, totbsc, totabs, u10, v1
    rrelaz = d2r * relaz ! relative azimuth
 
    ! Convert wind direction to be relative to solar azimuth
-   wd = rsolaz - wd
+   wd = wd - rsolaz
 
    if (wd .lt. 0.0) wd = 2.0*pi + wd
 
@@ -843,7 +847,7 @@ subroutine cox_munk2(i_band, solza, satza, solaz, relaz, totbsc, totabs, u10, v1
 
    if (abs(dangle) .gt. dither_more) then
       Zx = (-1.0*sin(rsatza) * sin(rrelaz)) / dangle
-      Zy = (sin(rsolza) + sin(rsatza) * cos(rrelaz)) / dangle
+      Zy = -1.0 * (sin(rsolza) + sin(rsatza) * cos(rrelaz)) / dangle
    else
       Zx = 0.0
       Zy = 0.0
@@ -1122,8 +1126,7 @@ subroutine cox_munk3_calc_shared_geo_wind(solza, satza, solaz, relaz, u10, v10, 
    !----------------------------------------------------------------------------
 
    ! Convert wind direction to be relative to solar azimuth
-   wd = 0. - wd
-
+   wd = wd - 0.
    if (wd .lt. 0.0) wd = 2.0*pi + wd
 
    ! Define surface slopes
@@ -1131,7 +1134,7 @@ subroutine cox_munk3_calc_shared_geo_wind(solza, satza, solaz, relaz, u10, v10, 
 
    if (abs(dangle) .gt. dither_more) then
       Zx = (-1.0*shared%sin_satza * shared%sin_relaz) / dangle
-      Zy = (shared%sin_solza + shared%sin_satza*shared%cos_relaz) / dangle
+      Zy = -1.0 * (shared%sin_solza + shared%sin_satza*shared%cos_relaz) / dangle
    else
       Zx = 0.0
       Zy = 0.0
@@ -1374,7 +1377,7 @@ subroutine cox_munk4_calc_shared_wind(i_band, u10, v10, shared)
    if (u10 .lt. 0.0) shared%wd = -shared%wd ! Azimuth angle on -180 - 180 degree interval
 
    ! Convert wind direction to be relative to solar azimuth
-   shared%wd = 0. - shared%wd
+   shared%wd = shared%wd - 0.
 
    if (shared%wd .lt. 0.0) shared%wd = 2.0*pi + shared%wd
 
@@ -1485,7 +1488,7 @@ subroutine cox_munk4_calc_shared_band_geo(i_band, solza, satza, solaz, relaz, &
 
    if (abs(dangle) .gt. dither_more) then
       shared%Zx = (-1.0*shared%sin_satza * shared%sin_relaz) / dangle
-      shared%Zy = (shared%sin_solza + shared%sin_satza*shared%cos_relaz) / dangle
+      shared%Zy = -1.0 * (shared%sin_solza + shared%sin_satza*shared%cos_relaz) / dangle
    else
       shared%Zx = 0.0
       shared%Zy = 0.0
