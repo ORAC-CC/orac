@@ -86,8 +86,10 @@
 !    l1b_version and level1b_orbit_number attributes from the L1b file.
 !    Extending this change to the other supported instruments is worth
 !    considering...
-! 2019/8/14, SP: Add Fengyun-4A support.
-!
+! 2018/02/15, GT: Bug fix of format statement for SLSTR orbit number output
+! 2019/08/14, SP: Add Fengyun-4A support.
+! 2019/09/26, GT: Bug fix with orbit start-time extraction (file name time
+!                 strings are _rounded_ to nearest second).
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
@@ -1351,6 +1353,7 @@ subroutine setup_slstr(l1b_path_file, geo_path_file, source_attributes, platform
 
    integer                    :: index2, second
    character(len=date_length) :: csecond
+   real                       :: fsecond
 
    ! Variables for dealing with netcdf files (required for timestamping)
    integer                         :: fid, ierr
@@ -1510,7 +1513,7 @@ subroutine setup_slstr(l1b_path_file, geo_path_file, source_attributes, platform
    cday = trim(adjustl(l1b_start(index2+8:index2+9)))
    chour = trim(adjustl(l1b_start(index2+11:index2+12)))
    cminute = trim(adjustl(l1b_start(index2+14:index2+15)))
-   csecond = trim(adjustl(l1b_start(index2+17:index2+18)))
+   csecond = trim(adjustl(l1b_start(index2+17:index2+25)))
 
    ! get year, doy, hour and minute as integers
    read(cyear(1:len_trim(cyear)), '(I4)') year
@@ -1518,8 +1521,14 @@ subroutine setup_slstr(l1b_path_file, geo_path_file, source_attributes, platform
    read(cday(1:len_trim(cday)), '(I2)') day
    read(chour(1:len_trim(chour)), '(I2)') hour
    read(cminute(1:len_trim(cminute)), '(I2)') minute
-   read(csecond(1:len_trim(csecond)), '(I2)') second
-   if (second .ge. 30) then
+   ! SLSTR file times are rounded to the nearest second, whereas the attributes
+   ! are specified to a micro-second.
+   read(csecond(1:len_trim(csecond)), '(F9.6)') fsecond
+   second = NINT(fsecond)
+   ! Deal with the case where rounding the second carries up to a new minute
+   if (second .eq. 60) then
+      second = 0
+      csecond = '00'
       minute = minute+1
       if (minute .ge. 60) then
          minute = 0
@@ -1527,7 +1536,6 @@ subroutine setup_slstr(l1b_path_file, geo_path_file, source_attributes, platform
          if (hour .ge. 24) then
             hour = 0
             day = day+1
-            write(cday, '(i0.2)') day
          end if
          write(chour, '(i0.2)') hour
       end if
@@ -1535,6 +1543,12 @@ subroutine setup_slstr(l1b_path_file, geo_path_file, source_attributes, platform
    end if
    call GREG2DOY(year, month, day, doy)
    write(cdoy, '(i3.3)') doy
+   ! Recalculate the Gregorian date from the calculated doy, to catch the posibility
+   ! that rounding the second has caused us to cross to a new month/year
+   call DOY2GREG(doy, year, month, day)
+   write(cday,'(i0.2)') day
+   write(cmonth,'(i0.2)') month
+   write(cyear,'(i0.4)') year
 
    ! SLSTR has two views, nadir and oblique
    channel_info%nviews = 2
