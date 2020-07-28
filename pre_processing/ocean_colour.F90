@@ -129,6 +129,7 @@ function read_oceancolour_cci(path_to_file, occci, wavelengths, verbose) &
      result (stat)
 
    use orac_ncdf_m
+
    use preproc_constants_m
 
    implicit none
@@ -156,7 +157,7 @@ function read_oceancolour_cci(path_to_file, occci, wavelengths, verbose) &
    integer                       :: i, j
    integer                       :: nwl
    logical                       :: occci_rd(occci_nwl)
-   integer                       :: fid
+   integer                       :: fid, vid
    integer                       :: ntime, nlon , nlat
    integer, allocatable          :: iwavelength(:,:)
    real(kind=dreal)              :: lonmin, latmin
