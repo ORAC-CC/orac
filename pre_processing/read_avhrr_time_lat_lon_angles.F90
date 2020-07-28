@@ -26,6 +26,7 @@
 ! 2013/09/06, AP: tidying, removed array initialisations as read routines
 !    cover it
 ! 2015/04/22, OS: bug fix in calculating relative azimuth angle
+! 2020/07/28, GT: Adding valid range checking on Lat-Lon values.
 !
 ! Bugs:
 ! None known.
@@ -86,16 +87,24 @@ subroutine read_avhrr_time_lat_lon_angles(path_to_geo_file, imager_geolocation, 
         imager_time, refjulianday)
 
    !read latitude
-   call read_avhrr_lat_lon(geo_id, "where/lat", "data", "where/lat/what", &
-        imager_geolocation%startx, imager_geolocation%endx, &
-        imager_geolocation%starty, imager_geolocation%endy, temp)
-   imager_geolocation%latitude = temp
+   call read_avhrr_lat_lon(geo_id,"where/lat","data","where/lat/what", &
+        imager_geolocation%startx,imager_geolocation%endx, &
+        imager_geolocation%starty,imager_geolocation%endy,temp)
+   ! Check for bad values in latitude (as this is not done in read_avhrr_lat_lon)
+   where(temp .gt. 90.0 .or. temp .lt. -90.0)
+      temp = sreal_fill_value
+   end where
+   imager_geolocation%latitude=temp
 
    !read longitude
-   call read_avhrr_lat_lon(geo_id, "where/lon", "data", "where/lon/what", &
-        imager_geolocation%startx, imager_geolocation%endx, &
-        imager_geolocation%starty, imager_geolocation%endy, temp)
-   imager_geolocation%longitude = temp
+   call read_avhrr_lat_lon(geo_id,"where/lon","data","where/lon/what", &
+        imager_geolocation%startx,imager_geolocation%endx, &
+        imager_geolocation%starty,imager_geolocation%endy,temp)
+   ! Check for bad values in longitude (as this is not done in read_avhrr_lat_lon)
+   where(temp .gt. 180.0 .or. temp .lt. -180.0)
+      temp = sreal_fill_value
+   end where
+   imager_geolocation%longitude=temp
 
    !read solzen
    call read_avhrr_angles(geo_id, "image1", "data", "image1/what", &
