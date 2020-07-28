@@ -233,7 +233,7 @@ contains
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
-subroutine cox_munk(bands, solza, satza, solaz, totbsc, totabs, relaz, u10, v10, rho)
+subroutine cox_munk(bands, solza, satza, solaz, relaz, totbsc, totabs, u10, v10, rho)
 
    use preproc_constants_m
 
@@ -1063,9 +1063,6 @@ subroutine cox_munk3_calc_shared_geo_wind(solza, satza, solaz, relaz, u10, v10, 
    ! Wind speed and direction
    real(kind=sreal) :: ws, wd
 
-   ! Corrected relaz
-   real(kind=sreal) :: crelaz
-
    ! Sun-glint/Cox and Munk variables
    real(kind=sreal) :: dangle
    real(kind=sreal) :: Zx, Zy
@@ -1074,13 +1071,6 @@ subroutine cox_munk3_calc_shared_geo_wind(solza, satza, solaz, relaz, u10, v10, 
    real(kind=sreal) :: sigx, sigy
    real(kind=sreal) :: zeta, eta
    real(kind=sreal) :: cosomega
-
-   ! !!!!! IMPORTANT NOTE !!!!!
-   ! Cox-Munk assumes that:
-   ! When sun and satellite are on opposite sides of pixel RAA = 0
-   ! When sun and satellite are on same side of pixel RAA = 180
-   ! This is the opposite notation to the rest of ORAC! So we adjust here
-   crelaz = relaz
 
    !----------------------------------------------------------------------------
    ! Precalculate trigonometric functions
@@ -1099,9 +1089,9 @@ subroutine cox_munk3_calc_shared_geo_wind(solza, satza, solaz, relaz, u10, v10, 
 #else
    shared%sin_satza = sqrt(1. - shared%cos_satza * shared%cos_satza)
 #endif
-   shared%cos_relaz = cos(crelaz * d2r)
+   shared%cos_relaz = cos(relaz * d2r)
 #ifdef COMPATIBILITY_MODE
-   shared%sin_relaz = sin(crelaz * d2r)
+   shared%sin_relaz = sin(relaz * d2r)
 #else
    shared%sin_relaz = sqrt(1. - shared%cos_relaz * shared%cos_relaz)
 #endif

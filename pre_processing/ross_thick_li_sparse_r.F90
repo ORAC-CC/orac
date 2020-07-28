@@ -506,7 +506,6 @@ end subroutine
 ! n_bands integer In          Wavelength band index numbers
 ! solza   sreal   In          Array of solar zenith angles (in degrees)
 ! satza   sreal   In          Array of satellite zenith angles
-! solaz   sreal   In          Array of solar azimuth angles (from north)
 ! relaz   sreal   In          Array of relative azimuth angles (between sun and
 !                             satellite)
 ! f(3)    sreal   In          Ross-Thick_Li-Sparse_R weights
@@ -523,7 +522,7 @@ end subroutine
 ! Name Type Description
 !-------------------------------------------------------------------------------
 subroutine ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(n_bands, solza, satza, &
-   solaz, relaz, f, fill_value, rho_0v, rho_0d, rho_dv, rho_dd, verbose)
+   relaz, f, fill_value, rho_0v, rho_0d, rho_dv, rho_dd, verbose)
 
    use preproc_constants_m
    use gauss_leg_quad_m
@@ -534,7 +533,6 @@ subroutine ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(n_bands, solza, satza, &
    integer,          intent(in)    :: n_bands
    real(kind=sreal), intent(in)    :: solza(:)
    real(kind=sreal), intent(in)    :: satza(:)
-   real(kind=sreal), intent(in)    :: solaz(:)
    real(kind=sreal), intent(in)    :: relaz(:)
    real(kind=sreal), intent(in)    :: f(:, :, :)
    real(kind=sreal), intent(in)    :: fill_value
