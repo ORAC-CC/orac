@@ -94,7 +94,7 @@ subroutine Read_SAD_Chan(Ctrl, SAD_Chan)
    ! Local variables
 
    character(len=FilenameLen) :: chan_file        ! Name of channel description file
-   character(len=4)           :: chan_num         ! Channel number converted to a string
+   character(len=5)           :: chan_num         ! Channel number converted to a string
    integer                    :: c_lun            ! Unit number for channel desc file
    integer                    :: i, j             ! Loop counters
    integer                    :: ios              ! I/O status from file open/read
