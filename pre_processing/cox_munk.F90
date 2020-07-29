@@ -448,7 +448,7 @@ subroutine cox_munk(bands, solza, satza, solaz, relaz, totbsc, totabs, u10, v10,
    rsolza = d2r * solza
    rsatza = d2r * satza
 
-   rsolaz = 0.
+   rsolaz = d2r * solaz
 
    rrelaz = d2r * relaz ! relative azimuth
 
@@ -833,7 +833,7 @@ subroutine cox_munk2(i_band, solza, satza, solaz, relaz, totbsc, totabs, u10, v1
    rsolza = d2r * solza
    rsatza = d2r * satza
 
-   rsolaz = 0.
+   rsolaz = d2r * solaz
 
    rrelaz = d2r * relaz ! relative azimuth
 
@@ -1126,7 +1126,7 @@ subroutine cox_munk3_calc_shared_geo_wind(solza, satza, solaz, relaz, u10, v10, 
    !----------------------------------------------------------------------------
 
    ! Convert wind direction to be relative to solar azimuth
-   wd = wd - 0.
+   wd = wd - d2r * solaz
    if (wd .lt. 0.0) wd = 2.0*pi + wd
 
    ! Define surface slopes
@@ -1355,7 +1355,7 @@ end subroutine cox_munk3
 ! Local variables:
 ! Name Type Description
 !-------------------------------------------------------------------------------
-subroutine cox_munk4_calc_shared_wind(i_band, u10, v10, shared)
+subroutine cox_munk4_calc_shared_wind(i_band, solaz, u10, v10, shared)
 
    use preproc_constants_m
 
@@ -1363,7 +1363,7 @@ subroutine cox_munk4_calc_shared_wind(i_band, u10, v10, shared)
 
    ! Input arguments
    integer,                      intent(in)  :: i_band
-   real(kind=sreal),             intent(in)  :: u10, v10
+   real(kind=sreal),             intent(in)  :: solaz, u10, v10
 
    ! Output arguments
    type(cox_munk_shared_wind_t), intent(out) :: shared
@@ -1377,7 +1377,7 @@ subroutine cox_munk4_calc_shared_wind(i_band, u10, v10, shared)
    if (u10 .lt. 0.0) shared%wd = -shared%wd ! Azimuth angle on -180 - 180 degree interval
 
    ! Convert wind direction to be relative to solar azimuth
-   shared%wd = shared%wd - 0.
+   shared%wd = shared%wd - d2r * solaz
 
    if (shared%wd .lt. 0.0) shared%wd = 2.0*pi + shared%wd
 
@@ -1914,7 +1914,7 @@ subroutine cox_munk_rho_0v_0d_dv_and_dd(bands, solza, satza, solaz, relaz, &
          cycle
       end if
 
-      call cox_munk3_calc_shared_geo_wind(solza(i), satza(i), 0., relaz(i), &
+      call cox_munk3_calc_shared_geo_wind(solza(i), satza(i), solaz(i), relaz(i), &
                                           u10(i), v10(i), shared_geo_wind)
 
       do j = 1, n_bands
@@ -1953,7 +1953,7 @@ if (.true.) then
 
          do k = 1, n_quad_phi
             relaz2 = qx_phi(k) / d2r
-            call cox_munk3_calc_shared_geo_wind(solza(i), satza2, 0., relaz2, &
+            call cox_munk3_calc_shared_geo_wind(solza(i), satza2, solaz(i), relaz2, &
                                                 u10(i), v10(i), shared_geo_wind)
             do l = 1, n_bands
                ! If we have the Ocean_colour_cci data, then use it.
@@ -2019,7 +2019,7 @@ else
          end if
 
          solza2 = solza(j) * d2r
-         call cox_munk4_calc_shared_wind(bands(i), u10(j), v10(j), shared_wind)
+         call cox_munk4_calc_shared_wind(bands(i), solaz(j), u10(j), v10(j), shared_wind)
          do l = 1, n_quad_theta
             a = 0.
             do m = 1, n_quad_phi
@@ -2062,7 +2062,7 @@ if (.true.) then
          aa = 0.
          do k = 1, n_quad_phi
             relaz2 = qx_phi(k) / d2r
-            call cox_munk3_calc_shared_geo_wind(solza2, satza(i), 0., relaz2, &
+            call cox_munk3_calc_shared_geo_wind(solza2, satza(i), solaz(i), relaz2, &
                                                 u10(i), v10(i), shared_geo_wind)
             do l = 1, n_bands
                ! If we have the Ocean_colour_cci data, then use it. Otherwise ocean_colour
@@ -2119,7 +2119,7 @@ else
          end if
 
          satza2 = satza(j) * d2r
-         call cox_munk4_calc_shared_wind(bands(i), u10(j), v10(j), shared_wind)
+         call cox_munk4_calc_shared_wind(bands(i), solaz(j), u10(j), v10(j), shared_wind)
 
          ! If we have the Ocean_colour_cci data, then use it. Otherwise ocean_colour
          ! will just contain the default values for our bands.
@@ -2181,7 +2181,7 @@ end if
          end if
 
          call cox_munk4_calc_shared_wind(int(bands(i), kind=lint), &
-                                         u10(j), v10(j), shared_wind)
+                                         solaz(j), u10(j), v10(j), shared_wind)
 
          ! If we have the Ocean_colour_cci data, then use it. Otherwise ocean_colour
          ! will just contain the default values for our bands.
