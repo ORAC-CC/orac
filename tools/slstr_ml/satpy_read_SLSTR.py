@@ -1,4 +1,5 @@
 """Plot some useful images to help undertand and diagnose your results."""
+import click
 
 
 def norm(band):
@@ -171,10 +172,27 @@ def plot_slstr(filenames,
         plt.savefig(odir + 'False_NDSI.png')
 
 
-if __name__ == "__main__":
+@click.command()
+@click.option('--idir', default='./')
+@click.option('--odir', default=None)
+@click.option('--save', default=False)
+@click.option('--show', default=True)
+@click.option('--verbose', default=False)
+def main(idir, odir, save, show, verbose):
+    """To run from command line."""
     from glob import glob
-    import sys
 
-    indir = sys.argv[1]
-    filenames = glob(indir + '/*')
-    plot_slstr(filenames, save=True, odir='/home/proud/Desktop/')
+    filenames = glob(idir + '/*.nc')
+    if len(filenames) < 5:
+        print("ERROR: You must specify a valid Sentinel-3 directory.")
+        quit()
+
+    plot_slstr(filenames,
+               odir=odir,
+               save=save,
+               show=show,
+               verbose=verbose)
+
+
+if __name__ == "__main__":
+    main()
