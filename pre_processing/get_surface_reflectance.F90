@@ -545,7 +545,7 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
 
             allocate(tmprho(n_bands,nland,4))
             call ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(n_bands, &
-                 solza, satza, solaz, relaz, wgtlnd, sreal_fill_value, &
+                 solza, satza, relaz, wgtlnd, sreal_fill_value, &
                  tmprho(:,:,1), tmprho(:,:,2), tmprho(:,:,3), tmprho(:,:,4), &
                  verbose)
 

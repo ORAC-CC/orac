@@ -726,6 +726,7 @@ subroutine Read_SAD_LUT(Ctrl, SAD_Chan, SAD_LUT, i_layer)
    integer                :: i        ! Array counters
    character(len=FilenameLen) :: LUT_file ! Name of LUT file
    character(len=4)           :: chan_num ! Channel number converted to a string
+   real, allocatable      :: tmp(:)   ! Array for flipping RelAzi
 
    ! For each cloud class, construct the LUT filename from the instrument name,
    ! cloud class ID, variable name and channel number. Then call the appropriate
@@ -820,5 +821,13 @@ subroutine Read_SAD_LUT(Ctrl, SAD_Chan, SAD_LUT, i_layer)
    if (Ctrl%Ind%NThermal > 0) then
       SAD_LUT%Em = SAD_LUT%Em / 100.
    end if
+
+   ! Invert Relazi axis
+   allocate(tmp(SAD_LUT%Grid%nRelazi))
+   do i = 1, SAD_LUT%Grid%nRelazi
+      tmp(i) = SAD_LUT%Grid%Relazi(SAD_LUT%Grid%nRelazi - i + 1)
+   end do
+   SAD_LUT%Grid%Relazi(1:SAD_LUT%Grid%nRelazi) = tmp
+   deallocate(tmp)
 
 end subroutine Read_SAD_LUT
