@@ -32,6 +32,8 @@
 ! 2020/02/24, SP: Remove the S7/F1 correction, as new processing baseline makes
 !                 this harder to implement, but also makes it less necessary.
 !                 The S7 band now saturates at 312K rather than 305K.
+! 2020/04/14, AP: Add subsetting to the read functions.
+! 2020/16/07, AP: Relative azimuth should be 180 when looking into the sun.
 !
 ! Bugs:
 ! SLSTR colocation is poor. Aerosol retrieval unusable. Cloud retrieval suspect.
@@ -596,12 +598,6 @@ subroutine read_slstr_satsol(indir, imager_angles, interp, txnx, txny, nx, ny, &
       imager_angles%relazi(:,:,view) = 360. - imager_angles%relazi(:,:,view)
    end where
 
-   imager_angles%relazi(:,:,view) = abs(180. - imager_angles%relazi(:,:,view))
-
-   where (imager_angles%relazi(:,:,view) .lt. 0. .and. &
-          imager_angles%relazi(:,:,view) .ne. sreal_fill_value )
-      imager_angles%relazi(:,:,view) = 0. - imager_angles%relazi(:,:,view)
-   end where
 end subroutine read_slstr_satsol
 
 

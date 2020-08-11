@@ -114,6 +114,10 @@
 !      than chlorophyll concentration and cdom absorption
 ! 2017/08/09, GM: Switch from the NR routine gauleg() to the GPL compatible
 !    gauss_leg_quadx() for computing Gauss-Legendre quadrature.
+! 2020/07/16, AP: Invert the direction of Zy and the relative wd. The previous
+!    expressions oriented the y-axis with sunlight rather than point it towards
+!    the sun as ORAC would typically do. Details can be found at
+!    http://eodg.atm.ox.ac.uk/eodg/gray/2020Povey_relative-azimuth-surface.pdf
 !
 ! Bugs:
 ! As they aren't actually used by the code any more, the cox_munk() and
@@ -233,7 +237,7 @@ contains
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
-subroutine cox_munk(bands, solza, satza, solaz, totbsc, totabs, relaz, u10, v10, rho)
+subroutine cox_munk(bands, solza, satza, solaz, relaz, totbsc, totabs, u10, v10, rho)
 
    use preproc_constants_m
 
@@ -444,12 +448,12 @@ subroutine cox_munk(bands, solza, satza, solaz, totbsc, totabs, relaz, u10, v10,
    rsolza = d2r * solza
    rsatza = d2r * satza
 
-   rsolaz = 0.
+   rsolaz = d2r * solaz
 
    rrelaz = d2r * relaz ! relative azimuth
 
    ! Convert wind direction to be relative to solar azimuth
-   wd(:) = rsolaz(:) - wd(:)
+   wd(:) = wd(:) - rsolaz(:)
 
    where(wd .lt. 0.0) wd = 2.0*pi + wd
 
@@ -458,7 +462,7 @@ subroutine cox_munk(bands, solza, satza, solaz, totbsc, totabs, relaz, u10, v10,
 
    where (abs(dangle(:)) .gt. dither_more)
       Zx(:) = (-1.0*sin(rsatza(:)) * sin(rrelaz(:))) / dangle(:)
-      Zy(:) = (sin(rsolza(:)) + sin(rsatza(:)) * cos(rrelaz)) / dangle(:)
+      Zy(:) = -1.0 * (sin(rsolza(:)) + sin(rsatza(:)) * cos(rrelaz)) / dangle(:)
    else where
       Zx(:) = 0.0
       Zy(:) = 0.0
@@ -829,12 +833,12 @@ subroutine cox_munk2(i_band, solza, satza, solaz, relaz, totbsc, totabs, u10, v1
    rsolza = d2r * solza
    rsatza = d2r * satza
 
-   rsolaz = 0.
+   rsolaz = d2r * solaz
 
    rrelaz = d2r * relaz ! relative azimuth
 
    ! Convert wind direction to be relative to solar azimuth
-   wd = rsolaz - wd
+   wd = wd - rsolaz
 
    if (wd .lt. 0.0) wd = 2.0*pi + wd
 
@@ -843,7 +847,7 @@ subroutine cox_munk2(i_band, solza, satza, solaz, relaz, totbsc, totabs, u10, v1
 
    if (abs(dangle) .gt. dither_more) then
       Zx = (-1.0*sin(rsatza) * sin(rrelaz)) / dangle
-      Zy = (sin(rsolza) + sin(rsatza) * cos(rrelaz)) / dangle
+      Zy = -1.0 * (sin(rsolza) + sin(rsatza) * cos(rrelaz)) / dangle
    else
       Zx = 0.0
       Zy = 0.0
@@ -1063,9 +1067,6 @@ subroutine cox_munk3_calc_shared_geo_wind(solza, satza, solaz, relaz, u10, v10, 
    ! Wind speed and direction
    real(kind=sreal) :: ws, wd
 
-   ! Corrected relaz
-   real(kind=sreal) :: crelaz
-
    ! Sun-glint/Cox and Munk variables
    real(kind=sreal) :: dangle
    real(kind=sreal) :: Zx, Zy
@@ -1074,13 +1075,6 @@ subroutine cox_munk3_calc_shared_geo_wind(solza, satza, solaz, relaz, u10, v10, 
    real(kind=sreal) :: sigx, sigy
    real(kind=sreal) :: zeta, eta
    real(kind=sreal) :: cosomega
-
-   ! !!!!! IMPORTANT NOTE !!!!!
-   ! Cox-Munk assumes that:
-   ! When sun and satellite are on opposite sides of pixel RAA = 0
-   ! When sun and satellite are on same side of pixel RAA = 180
-   ! This is the opposite notation to the rest of ORAC! So we adjust here
-   crelaz = relaz
 
    !----------------------------------------------------------------------------
    ! Precalculate trigonometric functions
@@ -1099,9 +1093,9 @@ subroutine cox_munk3_calc_shared_geo_wind(solza, satza, solaz, relaz, u10, v10, 
 #else
    shared%sin_satza = sqrt(1. - shared%cos_satza * shared%cos_satza)
 #endif
-   shared%cos_relaz = cos(crelaz * d2r)
+   shared%cos_relaz = cos(relaz * d2r)
 #ifdef COMPATIBILITY_MODE
-   shared%sin_relaz = sin(crelaz * d2r)
+   shared%sin_relaz = sin(relaz * d2r)
 #else
    shared%sin_relaz = sqrt(1. - shared%cos_relaz * shared%cos_relaz)
 #endif
@@ -1132,8 +1126,7 @@ subroutine cox_munk3_calc_shared_geo_wind(solza, satza, solaz, relaz, u10, v10, 
    !----------------------------------------------------------------------------
 
    ! Convert wind direction to be relative to solar azimuth
-   wd = 0. - wd
-
+   wd = wd - d2r * solaz
    if (wd .lt. 0.0) wd = 2.0*pi + wd
 
    ! Define surface slopes
@@ -1141,7 +1134,7 @@ subroutine cox_munk3_calc_shared_geo_wind(solza, satza, solaz, relaz, u10, v10, 
 
    if (abs(dangle) .gt. dither_more) then
       Zx = (-1.0*shared%sin_satza * shared%sin_relaz) / dangle
-      Zy = (shared%sin_solza + shared%sin_satza*shared%cos_relaz) / dangle
+      Zy = -1.0 * (shared%sin_solza + shared%sin_satza*shared%cos_relaz) / dangle
    else
       Zx = 0.0
       Zy = 0.0
@@ -1362,7 +1355,7 @@ end subroutine cox_munk3
 ! Local variables:
 ! Name Type Description
 !-------------------------------------------------------------------------------
-subroutine cox_munk4_calc_shared_wind(i_band, u10, v10, shared)
+subroutine cox_munk4_calc_shared_wind(i_band, solaz, u10, v10, shared)
 
    use preproc_constants_m
 
@@ -1370,7 +1363,7 @@ subroutine cox_munk4_calc_shared_wind(i_band, u10, v10, shared)
 
    ! Input arguments
    integer,                      intent(in)  :: i_band
-   real(kind=sreal),             intent(in)  :: u10, v10
+   real(kind=sreal),             intent(in)  :: solaz, u10, v10
 
    ! Output arguments
    type(cox_munk_shared_wind_t), intent(out) :: shared
@@ -1384,7 +1377,7 @@ subroutine cox_munk4_calc_shared_wind(i_band, u10, v10, shared)
    if (u10 .lt. 0.0) shared%wd = -shared%wd ! Azimuth angle on -180 - 180 degree interval
 
    ! Convert wind direction to be relative to solar azimuth
-   shared%wd = 0. - shared%wd
+   shared%wd = shared%wd - d2r * solaz
 
    if (shared%wd .lt. 0.0) shared%wd = 2.0*pi + shared%wd
 
@@ -1495,7 +1488,7 @@ subroutine cox_munk4_calc_shared_band_geo(i_band, solza, satza, solaz, relaz, &
 
    if (abs(dangle) .gt. dither_more) then
       shared%Zx = (-1.0*shared%sin_satza * shared%sin_relaz) / dangle
-      shared%Zy = (shared%sin_solza + shared%sin_satza*shared%cos_relaz) / dangle
+      shared%Zy = -1.0 * (shared%sin_solza + shared%sin_satza*shared%cos_relaz) / dangle
    else
       shared%Zx = 0.0
       shared%Zy = 0.0
@@ -1921,7 +1914,7 @@ subroutine cox_munk_rho_0v_0d_dv_and_dd(bands, solza, satza, solaz, relaz, &
          cycle
       end if
 
-      call cox_munk3_calc_shared_geo_wind(solza(i), satza(i), 0., relaz(i), &
+      call cox_munk3_calc_shared_geo_wind(solza(i), satza(i), solaz(i), relaz(i), &
                                           u10(i), v10(i), shared_geo_wind)
 
       do j = 1, n_bands
@@ -1960,7 +1953,7 @@ if (.true.) then
 
          do k = 1, n_quad_phi
             relaz2 = qx_phi(k) / d2r
-            call cox_munk3_calc_shared_geo_wind(solza(i), satza2, 0., relaz2, &
+            call cox_munk3_calc_shared_geo_wind(solza(i), satza2, solaz(i), relaz2, &
                                                 u10(i), v10(i), shared_geo_wind)
             do l = 1, n_bands
                ! If we have the Ocean_colour_cci data, then use it.
@@ -2026,7 +2019,7 @@ else
          end if
 
          solza2 = solza(j) * d2r
-         call cox_munk4_calc_shared_wind(bands(i), u10(j), v10(j), shared_wind)
+         call cox_munk4_calc_shared_wind(bands(i), solaz(j), u10(j), v10(j), shared_wind)
          do l = 1, n_quad_theta
             a = 0.
             do m = 1, n_quad_phi
@@ -2069,7 +2062,7 @@ if (.true.) then
          aa = 0.
          do k = 1, n_quad_phi
             relaz2 = qx_phi(k) / d2r
-            call cox_munk3_calc_shared_geo_wind(solza2, satza(i), 0., relaz2, &
+            call cox_munk3_calc_shared_geo_wind(solza2, satza(i), solaz(i), relaz2, &
                                                 u10(i), v10(i), shared_geo_wind)
             do l = 1, n_bands
                ! If we have the Ocean_colour_cci data, then use it. Otherwise ocean_colour
@@ -2126,7 +2119,7 @@ else
          end if
 
          satza2 = satza(j) * d2r
-         call cox_munk4_calc_shared_wind(bands(i), u10(j), v10(j), shared_wind)
+         call cox_munk4_calc_shared_wind(bands(i), solaz(j), u10(j), v10(j), shared_wind)
 
          ! If we have the Ocean_colour_cci data, then use it. Otherwise ocean_colour
          ! will just contain the default values for our bands.
@@ -2188,7 +2181,7 @@ end if
          end if
 
          call cox_munk4_calc_shared_wind(int(bands(i), kind=lint), &
-                                         u10(j), v10(j), shared_wind)
+                                         solaz(j), u10(j), v10(j), shared_wind)
 
          ! If we have the Ocean_colour_cci data, then use it. Otherwise ocean_colour
          ! will just contain the default values for our bands.
