@@ -257,13 +257,14 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
    nland = count(mask .and. imager_flags%lsflag .eq. 1)
    if (verbose) write(*,*) 'nsea, nland: ', nsea, nland
 
-   if (nland .eq. 0 .and. nsea .eq. 0) then
-      write(*,*) 'ERROR: No land or sea pixels to process, something wrong with input.'
-      stop error_stop_code
-   end if
-
    source_atts%albedo_file = 'Not used (no SW channels or no pixels of land)'
    source_atts%brdf_file   = 'Not used (no SW channels or no pixels of land)'
+
+   if (nland .eq. 0 .and. nsea .eq. 0) then
+      if (verbose) write(*,*) 'WARNING: No land or sea pixels to process; ' // &
+           'something is wrong if daytime processing was expected.'
+      return
+   end if
 
    ! If there are no sw channels, we have nothing more to do.
    if (channel_info%nchannels_sw == 0) return
@@ -544,7 +545,7 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
 
             allocate(tmprho(n_bands,nland,4))
             call ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(n_bands, &
-                 solza, satza, solaz, relaz, wgtlnd, sreal_fill_value, &
+                 solza, satza, relaz, wgtlnd, sreal_fill_value, &
                  tmprho(:,:,1), tmprho(:,:,2), tmprho(:,:,3), tmprho(:,:,4), &
                  verbose)
 
