@@ -10,6 +10,7 @@ $(OBJS)/cloud_emis.o: $(OBJS)/channel_structures.o $(OBJS)/ecmwf.o \
         $(OBJS)/preproc_structures.o
 $(OBJS)/cloud_typing_pavolonis.o: $(OBJS)/channel_structures.o $(OBJS)/ecmwf.o \
         $(OBJS)/imager_structures.o $(OBJS)/neural_net_preproc.o \
+        $(OBJS)/seviri_neural_net_preproc.o \
         $(OBJS)/surface_structures.o pavolonis_fill_coefficients.inc
 $(OBJS)/correct_for_ice_snow.o: $(OBJS)/channel_structures.o \
         $(OBJS)/imager_structures.o $(OBJS)/nsidc_nise.o \
@@ -100,6 +101,8 @@ $(OBJS)/rttov_driver.o: $(OBJS)/channel_structures.o $(OBJS)/netcdf_output.o \
 $(OBJS)/rttov_driver_gfs.o: $(OBJS)/channel_structures.o $(OBJS)/netcdf_output.o \
         $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o \
         $(OBJS)/remove_rayleigh.o write_ir_rttov.F90 write_solar_rttov.F90
+$(OBJS)/seviri_neural_net_preproc.o: $(OBJS)/preproc_constants.o \
+        $(OBJS)/imager_structures.o
 $(OBJS)/setup.o: $(OBJS)/calender.o $(OBJS)/channel_structures.o \
         $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o
 $(OBJS)/surface_emissivity.o: $(OBJS)/channel_structures.o \

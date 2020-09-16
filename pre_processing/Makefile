@@ -26,7 +26,6 @@
 # 2017/02/07, SP: Added support for NOAA GFS atmosphere data (ExtWork)
 # 2017/03/29, SP: Add ability to calculate tropospheric cloud emissivity (ExtWork)
 # 2018/02/12, SP: Added the read_goes module.
-# 2019/8/14, SP: Add Fengyun-4A support.
 #
 # Notes:
 # It appears that -lopenjpeg needs to be included in the LIBS list since on some
@@ -36,11 +35,13 @@
 # Set files from which compiler, flags, and libraries are set. archfile also
 # defines the "$(OBJS)" variable, which places object and module files in a
 # subdirectory
-include $(ORAC_LIB)
-include $(ORAC_ARCH)
 
 ORAC_COMMON = ../common
+libfile=lib.ecmwf.cray
+archfile=arch.ecmwf.cray
 
+include $(archfile)
+include $(libfile)
 
 # Define object files to be linked.
 PREPROC_OBJ_F90 = $(OBJS)/aatsr_corrections.o \
@@ -70,8 +71,8 @@ PREPROC_OBJ_F90 = $(OBJS)/aatsr_corrections.o \
                   $(OBJS)/preproc_structures.o \
                   $(OBJS)/gauss_leg_quad.o \
                   $(OBJS)/read_aatsr.o \
-                  $(OBJS)/read_abi.o \
-                  $(OBJS)/read_agri.o \
+				  $(OBJS)/read_abi.o \
+				  $(OBJS)/read_agri.o \
                   $(OBJS)/read_avhrr.o \
                   $(OBJS)/read_camel_emissivity.o \
                   $(OBJS)/read_cimss_emissivity.o \
@@ -88,6 +89,7 @@ PREPROC_OBJ_F90 = $(OBJS)/aatsr_corrections.o \
                   $(OBJS)/rttov_driver.o \
                   $(OBJS)/rttov_driver_gfs.o \
                   $(OBJS)/setup.o \
+			   $(OBJS)/seviri_neural_net_preproc.o \
                   $(OBJS)/solar_position.o \
                   $(OBJS)/surface_emissivity.o \
                   $(OBJS)/surface_reflectance.o \
@@ -103,10 +105,10 @@ PREPROC_OBJ_MAIN = $(OBJS)/orac_preproc.o
 
 # Compilation rules
 $(OBJS)/%.o: %.f90 $(ORAC_COMMON)/liborac_common.a
-	$(F90) -o $@ -c $(FFLAGS) $(INC) -I$(ORAC_COMMON)/obj $(AUXFLAGS) $<
+	$(F90) -o $@ -c -DINCLUDE_SEVIRI_SUPPORT -DINCLUDE_SEVIRI_NEURALNET $(FFLAGS) $(INC) -I$(ORAC_COMMON)/obj $(AUXFLAGS) $<
 
 $(OBJS)/%.o: %.F90 $(ORAC_COMMON)/liborac_common.a
-	$(F90) -o $@ -c $(FFLAGS) $(INC) -I$(ORAC_COMMON)/obj $(AUXFLAGS) $<
+	$(F90) -o $@ -c -DINCLUDE_SEVIRI_SUPPORT -DINCLUDE_SEVIRI_NEURALNET $(FFLAGS) $(INC) -I$(ORAC_COMMON)/obj $(AUXFLAGS) $<
 
 $(OBJS)/%.o: %.c
 	$(CC) -o $@ -c $(CFLAGS) $(CINC) $<
@@ -124,8 +126,8 @@ orac_preproc: $(PREPROC_OBJ_MAIN) libpreproc.a $(ORAC_COMMON)/liborac_common.a M
 	$(F90) -o orac_preproc $(LFLAGS) $(PREPROC_OBJ_MAIN) libpreproc.a $(ORAC_COMMON)/liborac_common.a -I./$(OBJS) $(LIBS)
 
 # Main library build
-libpreproc.a: $(PREPROC_OBJ) Makefile
-	ar -rs libpreproc.a $(PREPROC_OBJ)
+libpreproc.a: $(PREPROC_OBJ) $(PREPROC_OBJ_MAIN) Makefile
+	ar -rs libpreproc.a $(PREPROC_OBJ) $(PREPROC_OBJ_MAIN)
 
 # Rebuild dependencies housed in dependencies.inc
 depend:
@@ -133,7 +135,6 @@ depend:
 
 clean tidy:
 	rm -f $(OBJS)/*.o $(OBJS)/*.mod *.a orac_preproc
-
 
 # Fortran 90 dependencies
 include dependencies.inc

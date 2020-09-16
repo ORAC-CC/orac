@@ -74,7 +74,6 @@ subroutine parse_optional(label, value, preproc_opts)
    character(len=*),     intent(in)    :: value
    type(preproc_opts_t), intent(inout) :: preproc_opts
 
-
    select case (label)
    case('N_CHANNELS')
       if (parse_string(value, preproc_opts%n_channels) /= 0) &
@@ -167,6 +166,9 @@ subroutine parse_optional(label, value, preproc_opts)
            call handle_parse_error(label)
    case('SWANSEA_GAMMA')
       if (parse_string(value, preproc_opts%swansea_gamma) /= 0) &
+           call handle_parse_error(label)
+   case('USE_SEVIRI_ANN')
+      if (parse_string(value, preproc_opts%use_seviri_ann) /= 0) &
            call handle_parse_error(label)
    case default
       write(*,*) 'ERROR: Unknown option: ', trim(label)

@@ -1,0 +1,30 @@
+#PATHS TO CPH/COT MODEL/SCALING FILES
+COT_SCALING_FILEPATH   =  /perm/ms/de/sf7/esa_cci_c_proc/orac_repository/orac_devel/orac/external_ml/seviri/data/SCALER_CMA_14_150_150_1_LOSS-MSE_OPT-ADAM_LR-0001_NE-300_BS-200_GSICS_THEANO.pkl
+
+CPH_SCALING_FILEPATH   =  /perm/ms/de/sf7/esa_cci_c_proc/orac_repository/orac_devel/orac/external_ml/seviri/data/SCALER_CPH_14_40_40_1_LOSS-MSE_OPT-ADAM_LR-0001_NE-300_BS-200_GSICS_THEANO.pkl
+
+COT_MODEL_FILEPATH     =  /perm/ms/de/sf7/esa_cci_c_proc/orac_repository/orac_devel/orac/external_ml/seviri/data/CMA_14_150_150_1_LOSS-MSE_OPT-ADAM_LR-0001_NE-300_BS-200_GSICS_THEANO__1.0.4__.h5
+
+CPH_MODEL_FILEPATH     =  /perm/ms/de/sf7/esa_cci_c_proc/orac_repository/orac_devel/orac/external_ml/seviri/data/CPH_14_40_40_1_LOSS-MSE_OPT-ADAM_LR-0001_NE-300_BS-200_GSICS_THEANO__1.0.4__.h5
+
+#ML BACKEND TO BE USED (THEANO/TENSORFLOW)
+BACKEND                =  THEANO
+
+# ONLY CHANGE IF YOU KNOW WHAT YOU ARE DOING
+COT_THRESHOLD          = 0.2
+CPH_THRESHOLD          = 0.5
+
+VALID_REGRESSION_MAX   = 1.0
+VALID_REGRESSION_MIN   = 0.0
+
+UNC_CLD_SLOPE          = -47.2582
+UNC_CLD_INTERCEPT      = 44.9588
+
+UNC_CLR_SLOPE          = 37.7028
+UNC_CLR_INTERCEPT      = 50.3358
+
+UNC_WAT_SLOPE          = 48.3502
+UNC_WAT_INTERCEPT      = 50.1769
+
+UNC_ICE_SLOPE          = -48.5771
+UNC_ICE_INTERCEPT      = 50.7718
