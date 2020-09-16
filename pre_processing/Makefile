@@ -26,7 +26,7 @@
 # 2017/02/07, SP: Added support for NOAA GFS atmosphere data (ExtWork)
 # 2017/03/29, SP: Add ability to calculate tropospheric cloud emissivity (ExtWork)
 # 2018/02/12, SP: Added the read_goes module.
-#
+# 2020/09/16, DP: Added seviri_neuralnet_preproc module
 # Notes:
 # It appears that -lopenjpeg needs to be included in the LIBS list since on some
 # systems RTTOV seems to require it.
@@ -89,7 +89,7 @@ PREPROC_OBJ_F90 = $(OBJS)/aatsr_corrections.o \
                   $(OBJS)/rttov_driver.o \
                   $(OBJS)/rttov_driver_gfs.o \
                   $(OBJS)/setup.o \
-			   $(OBJS)/seviri_neural_net_preproc.o \
+		    	  $(OBJS)/seviri_neural_net_preproc.o \
                   $(OBJS)/solar_position.o \
                   $(OBJS)/surface_emissivity.o \
                   $(OBJS)/surface_reflectance.o \
