@@ -3,9 +3,9 @@ COT_SCALING_FILEPATH   =  /perm/ms/de/sf7/esa_cci_c_proc/orac_repository/orac_de
 
 CPH_SCALING_FILEPATH   =  /perm/ms/de/sf7/esa_cci_c_proc/orac_repository/orac_devel/orac/external_ml/seviri/data/SCALER_CPH_14_40_40_1_LOSS-MSE_OPT-ADAM_LR-0001_NE-300_BS-200_GSICS_THEANO.pkl
 
-COT_MODEL_FILEPATH     =  /perm/ms/de/sf7/esa_cci_c_proc/orac_repository/orac_devel/orac/external_ml/seviri/data/CMA_14_150_150_1_LOSS-MSE_OPT-ADAM_LR-0001_NE-300_BS-200_GSICS_THEANO__1.0.4__.h5
+COT_MODEL_FILEPATH     =  /perm/ms/de/sf7/esa_cci_c_proc/orac_repository/orac_devel/orac/external_ml/seviri/data/MODEL_CMA_14_150_150_1_LOSS-MSE_OPT-ADAM_LR-0001_NE-300_BS-200_GSICS_THEANO__1.0.4__.h5
 
-CPH_MODEL_FILEPATH     =  /perm/ms/de/sf7/esa_cci_c_proc/orac_repository/orac_devel/orac/external_ml/seviri/data/CPH_14_40_40_1_LOSS-MSE_OPT-ADAM_LR-0001_NE-300_BS-200_GSICS_THEANO__1.0.4__.h5
+CPH_MODEL_FILEPATH     =  /perm/ms/de/sf7/esa_cci_c_proc/orac_repository/orac_devel/orac/external_ml/seviri/data/MODEL_CPH_14_40_40_1_LOSS-MSE_OPT-ADAM_LR-0001_NE-300_BS-200_GSICS_THEANO__1.0.4__.h5
 
 #ML BACKEND TO BE USED (THEANO/TENSORFLOW)
 BACKEND                =  THEANO
