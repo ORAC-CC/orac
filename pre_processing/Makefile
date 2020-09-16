@@ -105,10 +105,10 @@ PREPROC_OBJ_MAIN = $(OBJS)/orac_preproc.o
 
 # Compilation rules
 $(OBJS)/%.o: %.f90 $(ORAC_COMMON)/liborac_common.a
-	$(F90) -o $@ -c -DINCLUDE_SEVIRI_SUPPORT -DINCLUDE_SEVIRI_NEURALNET $(FFLAGS) $(INC) -I$(ORAC_COMMON)/obj $(AUXFLAGS) $<
+	$(F90) -o $@ -c $(FFLAGS) $(INC) -I$(ORAC_COMMON)/obj $(AUXFLAGS) $<
 
 $(OBJS)/%.o: %.F90 $(ORAC_COMMON)/liborac_common.a
-	$(F90) -o $@ -c -DINCLUDE_SEVIRI_SUPPORT -DINCLUDE_SEVIRI_NEURALNET $(FFLAGS) $(INC) -I$(ORAC_COMMON)/obj $(AUXFLAGS) $<
+	$(F90) -o $@ -c $(FFLAGS) $(INC) -I$(ORAC_COMMON)/obj $(AUXFLAGS) $<
 
 $(OBJS)/%.o: %.c
 	$(CC) -o $@ -c $(CFLAGS) $(CINC) $<
