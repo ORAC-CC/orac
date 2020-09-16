@@ -4,6 +4,7 @@
  * are stored in a 3d array in linear representation.
  *
  * 2020/09/15, DP: Initial version
+ * 2020/09/16, DP: Code cleanup and tabs to spaces conversion
  *
  * Bugs:
  * None known.
@@ -26,16 +27,16 @@ float *py_neural_net(void *vis006, void *vis008, void *nir016, void *ir039,
     import_array();
      
     npy_intp dims[2];
-	dims[0] = *nx;
-	dims[1] = *ny;
+    dims[0] = *nx;
+    dims[1] = *ny;
 	
     // declare PyObjects
-	PyObject *mName, *pModule, *pFunc, *args_var;
-	PyObject *vis006py, *vis008py, *nir016py, *ir039py, *ir062py, *ir073py; 
-	PyObject *ir087py, *ir108py, *ir120py, *ir134py, *lsmpy, *sktpy;
-	PyObject *res, *py_nx, *py_ny;
+    PyObject *mName, *pModule, *pFunc, *args_var;
+    PyObject *vis006py, *vis008py, *nir016py, *ir039py, *ir062py, *ir073py; 
+    PyObject *ir087py, *ir108py, *ir120py, *ir134py, *lsmpy, *sktpy;
+    PyObject *res, *py_nx, *py_ny;
 	
-	int  i, j, k, idx, res_length;
+    int  i, j, k, idx, res_length;
     const int nvars = 2;           // COT and CPH
     const int nparams = 3;         // regression, binary, uncertainty
     int ntot = nvars * nparams; 
@@ -67,19 +68,18 @@ float *py_neural_net(void *vis006, void *vis008, void *nir016, void *ir039,
 
 			// generate args tuple for function call
 			args_var = PyTuple_Pack(12, vis006py, vis008py, nir016py, ir039py, 
-							        ir062py, ir073py, ir087py, ir108py, ir120py,
+                                    ir062py, ir073py, ir087py, ir108py, ir120py,
 					                ir134py, lsmpy, sktpy);
                
 			// call python function for COT              
 			res = PyObject_CallObject(pFunc, args_var);
                              
-               /* Function call returns list in  the form of:
-                *  [COT_regression, COT_binary, COT_uncertainty,
-                *   CPH_regression, CPH_binary, CPH_uncertainty] */
-  
-                                   			               
-               /* assign 2D Python pointers for each of the 6 result arrays to 1D flattened 
-                *array using 3D linear representation indexing*/               
+            /* Function call returns list in  the form of:
+             *  [COT_regression, COT_binary, COT_uncertainty,
+             *   CPH_regression, CPH_binary, CPH_uncertainty] */
+                         			               
+            /* assign 2D Python pointers for each of the 6 result arrays to 1D flattened 
+             *array using 3D linear representation indexing*/               
 			if (res != NULL){
                    res_length = PyList_Size(res);
 			    for (i=0; i<res_length; i++){ 
@@ -93,7 +93,7 @@ float *py_neural_net(void *vis006, void *vis008, void *nir016, void *ir039,
 			        }
                 }
 
-				// decrement reference counter of this object
+                // decrement reference counter of this object
                 Py_DECREF(res);
                 //Py_DECREF(tmp_var);
                 Py_DECREF(args_var);
