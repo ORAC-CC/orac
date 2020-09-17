@@ -1,3 +1,4 @@
+!-------------------------------------------------------------------------------
 ! Module calling the library for the external SEVIRI neural network cloud
 ! detection and cloud phase determination. This module is the bridge 
 ! between ORAC and the external library in external_ml/seviri.
@@ -6,7 +7,7 @@
 !
 ! Bugs:
 ! None known.
-!
+!-------------------------------------------------------------------------------
 
 module seviri_neural_net_preproc_m
      
