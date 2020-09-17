@@ -1,4 +1,4 @@
-include make.config.ecmwf
+include make.config
 
 all: libsevann.a
 
