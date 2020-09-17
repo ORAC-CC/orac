@@ -1,3 +1,13 @@
+! Module calling the library for the external SEVIRI neural network cloud
+! detection and cloud phase determination. This module is the bridge 
+! between ORAC and the external library in external_ml/seviri.
+!
+! 2020/09/16, DP: Initial version.
+!
+! Bugs:
+! None known.
+!
+
 module seviri_neural_net_preproc_m
      
      implicit None
@@ -44,7 +54,7 @@ subroutine cma_cph_seviri(cview, imager_flags, imager_angles, imager_geolocation
 
 #ifdef INCLUDE_SEVIRI_NEURALNET
      write(*,*) "PREDICTING COT/CPH"     
-     ! run ANN for COT (CMA)
+     ! run external ANN
      call seviri_ann_cph_cot(imager_geolocation%nx, &  ! xdim for reshaping
                 imager_geolocation%ny, &               ! ydim for reshaping
                 imager_measurements%data(:,:,ch1), &   ! VIS006
