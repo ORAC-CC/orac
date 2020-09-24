@@ -173,24 +173,24 @@ def _thresholding(prediction, variable, opts):
     return bin
 
 
-def _unc_approx_cot_1(pred, th, unc_params):
+def _unc_approx_1(pred, th, unc_params):
     """ Calculate uncertainty for cloudy/ice pixels. """
-    norm_diff = (pred-th) / (1-th)
+    norm_diff = (pred-th) / (th - 1)
 
-    m = unc_params['m1']
-    b = unc_params['b1']
+    minunc = unc_params['min1']
+    maxunc = unc_params['max1']
+    
+    return (maxunc - minunc) * norm_diff + maxunc
 
-    return m * norm_diff + b
 
-
-def _unc_approx_cot_0(pred, th, unc_params):
+def _unc_approx_0(pred, th, unc_params):
     """ Calculate uncertainty for clear/water pixels """
     norm_diff = (pred-th) / th
     
-    m = unc_params['m0']
-    b = unc_params['b0']
+    minunc = unc_params['min0']
+    maxunc = unc_params['max0']
 
-    return m * norm_diff + b
+    return (maxunc - minunc) * norm_diff + maxunc
 
 
 def _uncertainty(prediction, binary, variable, opts):
@@ -202,21 +202,25 @@ def _uncertainty(prediction, binary, variable, opts):
         raise Exception(msg.format(variable))
 
     if variable == 'COT':
-        unc_params = {'m1': opts['UNC_CLD_SLOPE'],
-                      'b1': opts['UNC_CLD_INTERCEPT'],
-                      'm0': opts['UNC_CLR_SLOPE'],
-                      'b0': opts['UNC_CLR_INTERCEPT']
+        unc_params = {'min1': opts['UNC_CLD_MIN'],
+                      'max1': opts['UNC_CLD_MAX'],
+                      'min0': opts['UNC_CLR_MIN'],
+                      'max0': opts['UNC_CLR_MAX']
                           }
+        unc = np.where(binary > IS_CLEAR,
+                      _unc_approx_1(prediction, threshold, unc_params),  # where cloudy
+                      _unc_approx_0(prediction, threshold, unc_params)   # where clear
+                   )
     elif variable == 'CPH':
-        unc_params = {'m1': opts['UNC_WAT_SLOPE'],
-                      'b1': opts['UNC_WAT_INTERCEPT'],
-                      'm0': opts['UNC_ICE_SLOPE'],
-                      'b0': opts['UNC_ICE_INTERCEPT']
+        unc_params = {'min1': opts['UNC_ICE_MIN'],
+                      'max1': opts['UNC_ICE_MAX'],
+                      'min0': opts['UNC_WAT_MIN'],
+                      'max0': opts['UNC_WAT_MAX']
                      }
     
-    unc = np.where(binary > 0, 
-                   _unc_approx_cot_1(prediction, threshold, unc_params),  # where cloudy
-                   _unc_approx_cot_0(prediction, threshold, unc_params)   # where clear
+        unc = np.where(binary > IS_WATER, 
+                       _unc_approx_1(prediction, threshold, unc_params),  # where water
+                       _unc_approx_0(prediction, threshold, unc_params)   # where ice
                    )
 
     return unc.astype(SREAL)

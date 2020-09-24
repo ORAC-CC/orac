@@ -32,13 +32,13 @@ MANDATORY_OPTS = {'COT_SCALING_FILEPATH': 'PATH',
                   'CPH_THRESHOLD': 'FLOAT',
                   'VALID_REGRESSION_MIN': 'FLOAT',
                   'VALID_REGRESSION_MAX': 'FLOAT', 
-                  'UNC_CLD_SLOPE': 'FLOAT', 
-                  'UNC_CLD_INTERCEPT': 'FLOAT',
-                  'UNC_CLR_SLOPE': 'FLOAT', 
-                  'UNC_CLR_INTERCEPT': 'FLOAT',
-                  'UNC_WAT_SLOPE': 'FLOAT',
-                  'UNC_WAT_INTERCEPT': 'FLOAT',
-                  'UNC_ICE_SLOPE': 'FLOAT',
-                  'UNC_ICE_INTERCEPT': 'FLOAT'}
+                  'UNC_CLD_MIN': 'FLOAT', 
+                  'UNC_CLD_MAX': 'FLOAT',
+                  'UNC_CLR_MIN': 'FLOAT', 
+                  'UNC_CLR_MAX': 'FLOAT',
+                  'UNC_WAT_MIN': 'FLOAT',
+                  'UNC_WAT_MAX': 'FLOAT',
+                  'UNC_ICE_MIN': 'FLOAT',
+                  'UNC_ICE_MAX': 'FLOAT'}
 
 
