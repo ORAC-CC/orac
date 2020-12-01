@@ -12,156 +12,111 @@
 !
 ! History:
 ! 2020/07/20, DP: Initial version
-! 
+! 2020/09/30, DP: Moved assignment of NN results to Fortran arrays to C.
+!                 Fixed memory leak. Major Simplifications + improvements 
+!                 + cleanup. Revised subroutine header.
+!
 ! Bugs:
 ! None known.
 !------------------------------------------------------------------------------
 
 
 module seviri_neural_net_m
-     use iso_c_binding
+    use iso_c_binding
      
-     implicit none
+    implicit none
      
-     ! interface to C
-     interface
-          type(c_ptr) function py_neural_net(vis006, vis008, nir016, ir039, & 
-                                             ir062, ir073, ir087, ir108, &
-                                             ir120, ir134, lsm, skt, &
-                                             nx, ny) bind(C, name="py_neural_net")
-               import :: c_ptr
-               import :: c_int
-               type(c_ptr), value :: vis006
-               type(c_ptr), value :: vis008
-               type(c_ptr), value :: nir016
-               type(c_ptr), value :: ir039
-               type(c_ptr), value :: ir062
-               type(c_ptr), value :: ir073
-               type(c_ptr), value :: ir087
-               type(c_ptr), value :: ir108
-               type(c_ptr), value :: ir120
-               type(c_ptr), value :: ir134
-               type(c_ptr), value :: lsm
-               type(c_ptr), value :: skt
-               integer(c_int) :: nx, ny
-          end function
-     end interface
+    ! interface to C function py_neural_net
+    interface
+        subroutine py_neural_net(vis006, vis008, nir016, ir039, & 
+                                 ir062, ir073, ir087, ir108, ir120, &
+                                 ir134, lsm, skt, nx, ny, reg_cot, &
+                                 bin_cot, unc_cot, reg_cph, bin_cph, &
+                                 unc_cph) bind(C, name="py_neural_net")
+            import :: c_ptr
+            import :: c_int
+            import :: c_float
+            import :: c_char
+            type(c_ptr), value :: vis006
+            type(c_ptr), value :: vis008
+            type(c_ptr), value :: nir016
+            type(c_ptr), value :: ir039
+            type(c_ptr), value :: ir062
+            type(c_ptr), value :: ir073
+            type(c_ptr), value :: ir087
+            type(c_ptr), value :: ir108
+            type(c_ptr), value :: ir120
+            type(c_ptr), value :: ir134
+            type(c_ptr), value :: lsm
+            type(c_ptr), value :: skt
+            real(c_float), dimension(*), intent(out) :: reg_cot, unc_cot, &
+                                                        & reg_cph, unc_cph
+            integer(c_char), dimension(*), intent(out) :: bin_cot, bin_cph
+            integer(c_int) :: nx, ny
+        end subroutine py_neural_net
+    end interface
 contains
 
 
 !------------------------------------------------------------------------------
-! Name: seviri_ann
+! Name: seviri_ann_cph_cot
 !
-! Prupose:
-! Subroutine accepting neural network input data which are passed to C
-! and the Python neural network subsequently.
+! Purpose:
+! Subroutine accepting neural network input data from ORAC which are 
+! passed to C and the Python neural network subsequently. Calls the C 
+! interface function
+!
+! Arguments:
+! Name                 Type  I/O Description
 !------------------------------------------------------------------------------
+! nx                   int   In  Dimension in x direction
+! ny                   int   In  Dimension in y direction
+! vis006               2darr In  SEVIRI VIS006 measurements
+! vis008               2darr In  SEVIRI VIS008 measurements
+! nir016               2darr In  SEVIRI NIR016 measurements
+! ir039                2darr In  SEVIRI IR039 measurements
+! ir062                2darr In  SEVIRI IR062 measurements
+! ir073                2darr In  SEVIRI IR073 measurements
+! ir087                2darr In  SEVIRI IR087 measurements
+! ir108                2darr In  SEVIRI IR108 measurements
+! ir120                2darr In  SEVIRI IR120 measurements
+! ir134                2darr In  SEVIRI IR134 measurements
+! lsm                  2darr In  Land-sea mask
+! skt                  2darr In  Skin temperature
+! regression_cot       2darr Out COT NN regression value
+! binary_cot           2darr Out COT binary value after thresholding (CMA)
+! uncertainty_cot      2darr Out COT uncertainty of CMA
+! regression_cph       2darr Out CPH NN regression value
+! binary_cph           2darr Out CPH binary value after thresholding
+! uncertainty_cph      2darr Out CPH uncertainty of CPH
+!------------------------------------------------------------------------------
+
 subroutine seviri_ann_cph_cot(nx, ny, vis006, vis008, nir016, ir039, ir062, ir073, &
-                      ir087, ir108, ir120, ir134, lsm, skt, regression_out_cot, &
-                      binary_out_cot, uncertainty_out_cot, regression_out_cph, &
-                      binary_out_cph, uncertainty_out_cph)
-     use iso_c_binding
-     
-     ! data types and fill values
-     integer, parameter :: SREAL = 4
-     integer, parameter :: BYTE = 1
-     integer, parameter :: SREAL_FILL_VALUE = -999.0
-     integer, parameter :: BYTE_FILL_VALUE = -127
+                        ir087, ir108, ir120, ir134, lsm, skt, regression_cot, &
+                        binary_cot, uncertainty_cot, regression_cph, &
+                        binary_cph, uncertainty_cph)
+    use iso_c_binding
+    
+    ! output arrays 
+    real(c_float), intent(out) :: regression_cot(:,:), uncertainty_cot(:,:) 
+    real(c_float), intent(out) :: regression_cph(:,:), uncertainty_cph(:,:)
+    integer(c_char), intent(out) :: binary_cot(:,:), binary_cph(:,:)
 
-     ! cloud flags
-     integer, parameter :: IS_CLOUD = 1
-     integer, parameter :: IS_CLEAR = 0
-     
-     ! number of variables
-     integer, parameter :: nvars = 6
-
-     ! loop indices
-     integer :: i, j, k
-     ! indexing integer
-     integer ::  cidx
-     
-     ! internal 1d pointer containing neural network output
-	real(kind=SREAL), pointer :: output1d(:)
-     ! output arrays 
-     real(kind=SREAL), intent(out) :: regression_out_cot(:,:), uncertainty_out_cot(:,:)
-     real(kind=SREAL), intent(out) :: regression_out_cph(:,:), uncertainty_out_cph(:,:)
-     integer(kind=BYTE), intent(out) :: binary_out_cot(:,:), binary_out_cph(:,:)
-
-     ! C-types
-     integer(c_int) :: nx ,ny
-     integer(c_int) :: nv = nvars
-	real(c_float), dimension(nx,ny), target :: vis006, vis008, nir016, ir039, &
-                                                ir062, ir073, ir087, ir108, &
-                                                ir120, ir134, skt
-     integer(c_char), dimension(nx,ny), target :: lsm
-
-     type(c_ptr) :: cptr_vis006, cptr_vis008, cptr_nir016, cptr_ir039, & 
-                    cptr_ir062, cptr_ir073, cptr_ir087, cptr_ir108, &
-                    cptr_ir120, cptr_ir134, cptr_lsm, cptr_skt, cptr_out
-     
-     allocate(output1d(nvars*nx*ny))
-
-     cptr_vis006 = c_loc(vis006(1,1))
-     cptr_vis008 = c_loc(vis008(1,1))
-     cptr_nir016 = c_loc(nir016(1,1))
-     cptr_ir039 = c_loc(ir039(1,1))
-     cptr_ir062 = c_loc(ir062(1,1))
-     cptr_ir073 = c_loc(ir073(1,1))
-     cptr_ir087 = c_loc(ir087(1,1))
-     cptr_ir108 = c_loc(ir108(1,1))
-     cptr_ir120 = c_loc(ir120(1,1))
-     cptr_ir134 = c_loc(ir134(1,1))
-     cptr_lsm = c_loc(lsm(1,1))
-     cptr_skt = c_loc(skt(1,1))
-     
-     ! Call Python neural network via Python C-API
-     cptr_out = py_neural_net(cptr_vis006, cptr_vis008, cptr_nir016, &
-                              cptr_ir039, cptr_ir062, cptr_ir073, &
-                              cptr_ir087, cptr_ir108, cptr_ir120,&
-                              cptr_ir134, cptr_lsm, cptr_skt, &
-                              nx, ny)
-     
-     ! convert C to Fortran pointer
-     call c_f_pointer(cptr_out, output1d, shape=[nvars*nx*ny])
-
-     ! assign results to the correct output arrays:
-     ! k==1 -> COT regression
-     ! k==2 -> COT binary
-     ! k==3 -> COT uncertainty
-     ! k==4 -> CPH regression
-     ! k==5 -> CPH binary
-     ! k==6 -> CPH uncertainty
-     ! 
-     ! the C function returns a 1d array which is a flattened 3d array:
+    ! C-types
+    integer(c_int) :: nx ,ny
+    real(c_float), dimension(nx,ny), target :: vis006, vis008, nir016, ir039, &
+                                               & ir062, ir073, ir087, ir108, &
+                                               & ir120, ir134, skt
+    integer(c_char), dimension(nx,ny), target :: lsm
   
-     do k=1, nv            
-         do j=1,ny         
-             do i=1,nx     
-
-                 !3d index in linear representation for column-major 
-                 !ordering starting at index 1
-                 cidx = i + (j-1)*nx + (k-1)*nx*ny
-
-                 if (k == 1) then 
-                     regression_out_cot(i,j) = output1d(cidx)
-                 else if (k==2) then
-                     binary_out_cot(i,j) = int(output1d(cidx), BYTE)
-                 else if (k==3)  then
-                     uncertainty_out_cot(i,j) = output1d(cidx)
-                 else if (k==4) then
-                     regression_out_cph(i,j) = output1d(cidx)
-                 else if (k==5) then
-                     binary_out_cph(i,j) = int(output1d(cidx), BYTE)
-                 else if (k==6) then
-                     uncertainty_out_cph(i,j) = output1d(cidx)
-                 end if
-                  
-              end do
-          end do
-     end do
-
-     deallocate(output1d)
-
+    ! Call Python neural network via Python C-API
+    call py_neural_net(c_loc(vis006(1,1)), c_loc(vis008(1,1)), c_loc(nir016(1,1)), &
+                       c_loc(ir039(1,1)), c_loc(ir062(1,1)), c_loc(ir073(1,1)), &
+                       c_loc(ir087(1,1)), c_loc(ir108(1,1)), c_loc(ir120(1,1)), &
+                       c_loc(ir134(1,1)), c_loc(lsm(1,1)), c_loc(skt(1,1)), &
+                       nx, ny, regression_cot, binary_cot, uncertainty_cot, &
+                       regression_cph, binary_cph, uncertainty_cph)
+     
 end subroutine seviri_ann_cph_cot
 
 end module seviri_neural_net_m
