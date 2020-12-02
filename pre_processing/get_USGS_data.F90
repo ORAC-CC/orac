@@ -52,8 +52,6 @@ subroutine get_USGS_data(path_to_USGS_file, imager_flags, imager_geolocation, &
    character(len=7)                 :: USGS_file_read
    integer(kind=4)                  :: i, j
    integer(kind=sint), dimension(2) :: nearest_xy, maxcoord
-   ! DP: temporary array with flipped lat/lon for writing to disk
-   !real, allocatable :: tmparr2d(:,:)
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering get_USGS_data()'
 
