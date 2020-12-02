@@ -22,7 +22,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-!#define ASSUME_USGS_GRID
+#define ASSUME_USGS_GRID
 
 module USGS_physiography_m
 
