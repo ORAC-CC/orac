@@ -15,6 +15,8 @@
 ! 2014/09/23, OS: writes code to read data from USGS file.
 ! 2015/07/03, OS: added error status variable to nc_open call
 ! 2017/02/10, SP: Allow reading LSM, LUM, DEM from external file (ExtWork)
+! 2020/12/02, DP: Allow USGS grid to be upright (lat starts positive) or
+!                 upside down.
 !
 ! Bugs:
 ! None known.
@@ -176,7 +178,7 @@ subroutine read_predef_file_sev(path_to_file, usgs, verbose)
 end subroutine read_predef_file_sev
 
 !-----------------------------------------------------------------------------
-function nearest_USGS(imager_lat, imager_lon, usgs) &
+function nearest_USGS(imager_lat, imager_lon, usgs, usgs_grid_upright) &
      result(nearest_xy)
 
    implicit none
@@ -184,13 +186,20 @@ function nearest_USGS(imager_lat, imager_lon, usgs) &
    ! input variables
    real(kind=sreal),     intent(in) :: imager_lat, imager_lon
    type(USGS_t),         intent(in) :: usgs
+   logical,               intent(in) :: usgs_grid_upright
 
    ! output variable
    integer(kind=sint), dimension(2) :: nearest_xy
 
 #ifdef ASSUME_USGS_GRID
-   ! The USGS grid starts at (-179.975, 89.975)
-   nearest_xy(1) = floor((90. - imager_lat) / 180. * real(usgs%nlat)) + 1
+   if (usgs_grid_upright) then
+      ! The USGS grid starts at (-179.975, 89.975)
+      nearest_xy(1) = floor((90. - imager_lat) / 180. * real(usgs%nlat)) + 1
+   else
+      ! The USGS grid starts at (-179.975, -89.975)
+      nearest_xy(1) = (usgs%nlat - floor((90 - imager_lat) / 180. * real(usgs%nlat))) + 1
+   end if
+
    nearest_xy(2) = floor((imager_lon + 180.) / 360. * real(usgs%nlon)) + 1
 
 #else
