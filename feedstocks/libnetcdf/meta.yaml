@@ -1,22 +1,58 @@
-{% set version = "4.6.2" %}
+{% set version = "4.7.4" %}
+{% set build = 0 %}
+
+# recipe-lint fails if mpi is undefined
+{% set mpi = mpi or 'nompi' %}
+{% if mpi == "nompi" %}
+# prioritize nompi via build number
+{% set build = build + 100 %}
+{% endif %}
 
 package:
   name: libnetcdf
   version: {{ version }}
 
 source:
-  git_url: https://github.com/Unidata/netcdf-c
-  git_rev: {{ "v" + version }}
+  url: https://github.com/Unidata/netcdf-c/archive/v{{ version }}.tar.gz
+  sha256: 99930ad7b3c4c1a8e8831fb061cb02b2170fc8e5ccaeda733bd99c3b9d31666b
+  #git_url: https://github.com/Unidata/netcdf-c
+  #git_rev: {{ "v" + version }}
   patches:
-    - 0002-run_get_hdf4_files.sh-Use-curl-if-wget-fails-macOS-d.patch
+    #- 0002-run_get_hdf4_files.sh-Use-curl-if-wget-fails-macOS-d.patch
     - 0003-Add-find_package-Threads-REQUIRED-to-CMakeLists.txt.patch
     - 0004-Prefer-getenv-TOPSRCDIR-over-STRINGIFY-TOPSRCDIR.patch
+    - 0006-Fix-tests-for-Windows-VS2008-define-__func__-as-__FU.patch
+    - 0008-Finish-the-missing-code-to-handle-VS-in-test_common..patch
+    - 0009-topsrcdir.patch
+    - 0010-errant_s.patch
+    - fix-474-for-new-curl.patch
 
 build:
-  number: 0
-  skip: True  # [win and vc<14]
+  number: {{ build }}
+  {% if mpi != "nompi" %}
+  {% set mpi_prefix = "mpi_" + mpi %}
+  {% else %}
+  {% set mpi_prefix = "nompi" %}
+  {% endif %}
+  # add build string so packages can depend on
+  # mpi or nompi variants
+  # dependencies:
+  # `PKG_NAME * mpi_mpich_*` for mpich
+  # `PKG_NAME * mpi_*` for any mpi
+  # `PKG_NAME * nompi_*` for no mpi
+  string: {{ mpi_prefix }}_h{{ PKG_HASH }}_{{ build }}
+
+  # mpi builds require the right mpi
+  # non-mpi builds *do not* appear to require non-mpi builds
+  # at least not always
+
+  {% if mpi != 'nompi' %}
+  {% set build_pin = mpi_prefix + '_*' %}
+  {% else %}
+  {% set build_pin = '' %}
+  {% endif %}
   run_exports:
-    - {{ pin_subpackage('libnetcdf', max_pin='x.x.x') }}
+    - {{ pin_subpackage('libnetcdf', max_pin='x.x.x') }} {{ build_pin }}
 
 requirements:
   build:
@@ -25,22 +61,28 @@ requirements:
     - automake    # [not win]
     - autoconf    # [not win]
   host:
+    - {{ mpi }}  # [mpi != 'nompi']
     - bzip2
+    - curl
     - zlib
     - hdf4
+    # without this repeat reference, conda-smithy doesn't pin correctly
     - hdf5
+    - hdf5 * {{ mpi_prefix }}_*
     - jpeg
   run:
+    - {{ mpi }}  # [mpi != 'nompi']
     - bzip2
+    - curl
     - zlib
     - hdf4
-    - hdf5
+    - hdf5 * {{ mpi_prefix }}_*
     - jpeg
 
 test:
   commands:
     - test -f ${PREFIX}/lib/libnetcdf.a  # [not win]
-    - test -f ${PREFIX}/lib/libnetcdf${SHLIB_EXT}  # [not win]
+    - test -f ${PREFIX}/lib/libnetcdf.so  # [not win]
     - nc-config --all  # [not win]
 
 about:
@@ -57,3 +99,4 @@ extra:
     - mingwandroid
     - msarahan
     - beckermr
+    - xylar

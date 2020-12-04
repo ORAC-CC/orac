@@ -2,6 +2,19 @@ Subject: Don't hardcode the Interpolation table path.
 diff -upN libemos-4.4.9-Source/CMakeLists.txt libemos/CMakeLists.txt
 --- libemos-4.4.9-Source/CMakeLists.txt	2017-06-27 17:08:16.000000000 +0100
 +++ libemos/CMakeLists.txt	2019-01-31 16:58:46.002147315 +0000
+@@ -131,9 +131,9 @@
+                    DEFAULT ON )
+ 
+ if( HAVE_ECCODES)
+-  set( GRIB_API_INCLUDE_DIRS ${ECCODES_INCLUDE_DIRS} )
+-  set( GRIB_API_LIBRARIES    ${ECCODES_LIBRARIES} )
+-  set( GRIB_API_DEFINITIONS  ${ECCODES_DEFINITIONS} )
++  set( GRIB_API_INCLUDE_DIRS ${eccodes_BASE_DIR}/include )
++  set( GRIB_API_LIBRARIES    "eccodes;eccodes_f90;m;jpeg" )
++  set( GRIB_API_DEFINITIONS  "" )
+   set( grib_api_BASE_DIR     ${eccodes_BASE_DIR} )
+   set( grib_handling_pkg eccodes )
+ else()
 @@ -168,8 +168,6 @@ if( BUFR_TABLES_PATH )
  else()
    set( BUFR_TABLES_PATH "${CMAKE_INSTALL_PREFIX}/${INSTALL_DATA_DIR}/../bufrdc_tables/" )

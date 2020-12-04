@@ -1,0 +1,36 @@
+diff -Naur netcdf-c-4.7.3.orig/ncdap_test/t_dap3a.c netcdf-c-4.7.3/ncdap_test/t_dap3a.c
+--- netcdf-c-4.7.3.orig/ncdap_test/t_dap3a.c	2019-11-21 14:49:32.000000000 +0100
++++ netcdf-c-4.7.3/ncdap_test/t_dap3a.c	2019-11-21 14:49:45.521775202 +0100
+@@ -141,7 +141,7 @@
+
+     strlcat(url,"file://",sizeof(url));
+     strlcat(url,topsrcdir,sizeof(url));
+-    strlcat(url,"/ncdap_test/testdata3/test.02",sizeof(url));
++    strlcat(url,"/testdata3/test.02",sizeof(url));
+ 
+     printf("*** Test: var conversions on URL: %s\n",url);
+
+diff -Naur netcdf-c-4.7.3.orig/ncdap_test/test_cvt.c netcdf-c-4.7.3/ncdap_test/test_cvt.c
+--- netcdf-c-4.7.3.orig/ncdap_test/test_cvt.c	2019-11-21 14:49:32.000000000 +0100
++++ netcdf-c-4.7.3/ncdap_test/test_cvt.c	2019-11-21 14:49:45.521775202 +0100
+@@ -140,7 +140,7 @@
+ 
+     strlcat(url,"file://",sizeof(url));
+     strlcat(url,topsrcdir,sizeof(url));
+-    strlcat(url,"/ncdap_test/testdata3/test.02",sizeof(url));
++    strlcat(url,"/testdata3/test.02",sizeof(url));
+ 
+     printf("*** Test: var conversions on URL: %s\n",url);
+
+diff -Naur netcdf-c-4.7.3.orig/ncdap_test/test_vara.c netcdf-c-4.7.3/ncdap_test/test_vara.c
+--- netcdf-c-4.7.3.orig/ncdap_test/test_vara.c	2019-11-21 14:49:32.000000000 +0100
++++ netcdf-c-4.7.3/ncdap_test/test_vara.c	2019-11-21 14:49:45.521775202 +0100
+@@ -94,7 +94,7 @@
+ 
+     strncpy(url,"file://",sizeof(url));
+     strlcat(url,topsrcdir,sizeof(url));
+-    strlcat(url,"/ncdap_test/testdata3/test.06",sizeof(url));
++    strlcat(url,"/testdata3/test.06",sizeof(url));
+ 
+     printf("test_vara: url=%s\n",url);
+

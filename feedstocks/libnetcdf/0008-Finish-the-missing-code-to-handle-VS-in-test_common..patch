@@ -1,0 +1,95 @@
+diff -Naur netcdf-c-4.7.0.orig/CMakeLists.txt netcdf-c-4.7.0/CMakeLists.txt
+--- netcdf-c-4.7.0.orig/CMakeLists.txt	2019-04-29 13:54:26.000000000 -0300
++++ netcdf-c-4.7.0/CMakeLists.txt	2019-05-24 16:54:56.463280922 -0300
+@@ -2013,6 +2013,13 @@
+ SET(EXTRA_DIST ${EXTRA_DIST} ${CMAKE_CURRENT_SOURCE_DIR}/test_common.in)
+ SET(TOPSRCDIR "${CMAKE_CURRENT_SOURCE_DIR}")
+ SET(TOPBUILDDIR "${CMAKE_CURRENT_BINARY_DIR}")
++IF(MSVC)
++  # Seems this is always upper-case by this point :-(
++  SET(VS_CONFIGURATION "/${CMAKE_BUILD_TYPE}")
++ELSE()
++  SET(VS_CONFIGURATION "")
++ENDIF()
++
+ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/test_common.in ${CMAKE_CURRENT_BINARY_DIR}/test_common.sh @ONLY NEWLINE_STYLE LF)
+ 
+ #####
+diff -Naur netcdf-c-4.7.0.orig/configure.ac netcdf-c-4.7.0/configure.ac
+--- netcdf-c-4.7.0.orig/configure.ac	2019-04-29 13:54:26.000000000 -0300
++++ netcdf-c-4.7.0/configure.ac	2019-05-24 16:55:35.063263646 -0300
+@@ -1426,6 +1426,7 @@
+ AC_SUBST(HAS_JNA,[$enable_jna])
+ AC_SUBST(RELAX_COORD_BOUND,[$enable_zero_length_coord_bound])
+ AC_SUBST(HAS_ERANGE_FILL,[$enable_erange_fill])
++AC_SUBST(VS_CONFIGURATION,[])
+ AC_SUBST(HAS_BYTERANGE,[$enable_byterange])
+ 
+ # Include some specifics for netcdf on windows.
+diff -Naur netcdf-c-4.7.0.orig/examples/CDL/do_comps.sh netcdf-c-4.7.0/examples/CDL/do_comps.sh
+--- netcdf-c-4.7.0.orig/examples/CDL/do_comps.sh	2019-04-29 13:54:26.000000000 -0300
++++ netcdf-c-4.7.0/examples/CDL/do_comps.sh	2019-05-24 16:57:21.719448576 -0300
+@@ -9,6 +9,8 @@
+ # This shell script runs the cmp test on the example programs.
+ # $Id: do_comps.sh,v 1.1 2006/06/27 17:44:54 ed Exp $
+ 
++. ../../test_common.sh
++
+ set -e
+ 
+ ##
+@@ -18,13 +20,13 @@
+ echo ""
+ echo "*** Creating example data files from CDL scripts."
+ echo "*** creating simple_xy.nc..."
+-../../ncgen/ncgen -b -o simple_xy.nc $srcdir/simple_xy.cdl
++../../ncgen${VS}/ncgen -b -o simple_xy.nc $srcdir/simple_xy.cdl
+ 
+ echo "*** checking sfc_pres_temp.nc..."
+-../../ncgen/ncgen -b -o sfc_pres_temp.nc $srcdir/sfc_pres_temp.cdl
++../../ncgen${VS}/ncgen -b -o sfc_pres_temp.nc $srcdir/sfc_pres_temp.cdl
+ 
+ echo "*** checking pres_temp_4D.nc..."
+-../../ncgen/ncgen -b -o pres_temp_4D.nc $srcdir/pres_temp_4D.cdl
++../../ncgen${VS}/ncgen -b -o pres_temp_4D.nc $srcdir/pres_temp_4D.cdl
+ 
+ echo "*** All example creations worked!"
+ 
+diff -Naur netcdf-c-4.7.0.orig/ncdump/tst_netcdf4.sh netcdf-c-4.7.0/ncdump/tst_netcdf4.sh
+--- netcdf-c-4.7.0.orig/ncdump/tst_netcdf4.sh	2019-04-29 13:54:26.000000000 -0300
++++ netcdf-c-4.7.0/ncdump/tst_netcdf4.sh	2019-05-24 16:58:36.655755694 -0300
+@@ -89,7 +89,7 @@
+ diff -b tst_nans.cdl $srcdir/ref_tst_nans.cdl ; ERR
+ 
+ # Do unicode test only if it exists => BUILD_UTF8 is true
+-if test -f ./tst_unicode -o -f ./tst_unicode.exe ; then
++if test -f ./tst_unicode -o -f ./tst_unicode.exe -o -f ${execdir}/tst_unicode.exe; then
+   echo "*** dumping tst_unicode.nc to tst_unicode.cdl..."
+   ${execdir}/tst_unicode ; ERR
+ ${NCDUMP} tst_unicode.nc | sed 's/e+0/e+/g' > tst_unicode.cdl ; ERR
+diff -Naur netcdf-c-4.7.0.orig/test_common.in netcdf-c-4.7.0/test_common.in
+--- netcdf-c-4.7.0.orig/test_common.in	2019-04-29 13:54:26.000000000 -0300
++++ netcdf-c-4.7.0/test_common.in	2019-05-24 16:59:34.376077455 -0300
+@@ -66,8 +66,8 @@
+ top_srcdir="$TOPSRCDIR"
+ top_builddir="$TOPBUILDDIR"
+ 
+-# Currently not used, but left as a Visual Studio placeholder.
+-# VS=Debug
++# Only set via CMake builds, where it must contain a leading '/'
++export VS=@VS_CONFIGURATION@
+ 
+ # srcdir may or may not be defined, but if not, then create it
+ if test "x$srcdir" = x ; then
+@@ -84,6 +84,11 @@
+ # execdir is an alias for builddir
+ execdir="${builddir}"
+ 
++# VS build dir support
++if test -d "${execdir}${VS}"; then
++  execdir="${execdir}${VS}"
++fi
++
+ # pick off the last component as the relative name of this directory
+ thisdir=`basename $srcdir`
+ 

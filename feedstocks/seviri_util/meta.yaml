@@ -9,8 +9,7 @@ source:
   - path: make.inc
 
 build:
-  number: 0
-  skip: True # [win]
+  number: 1
   run_exports:
     - {{ pin_subpackage('seviri_util', max_pin='x.x.x') }}
 

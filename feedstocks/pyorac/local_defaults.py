@@ -42,9 +42,6 @@ auxiliaries = {
     'spam_dir' : '/badc/ecmwf-era-interim/data/sp/am/%Y/%m/%d',
     # Directory of high-resolution ECMWF files
     'hr_dir' : '/gws/nopw/j04/nceo_generic/cloud_ecv/data_in/ecmwf/%Y/%m/%d',
-    # Directory to store the EMOS interpolation file (CF_T0255_R0036000, which
-    # will be generated if not already present)
-    'emos_dir' : environ['PPDIR'],
     # Directory of NSIDC ice/snow extent maps
     'nise_dir' : '/gws/nopw/j04/nceo_generic/cloud_ecv/data_in/ice_snow',
     # Directory of Ocean Colour CCI retrievals
@@ -63,7 +60,12 @@ auxiliaries = {
     # Climatology of Swansea s and p parameters
     'swansea_dir' : ''
 }
-
+# Directory to store the EMOS interpolation file (CF_T0255_R0036000, which
+# will be generated if not already present)
+try:
+    auxiliaries['emos_dir'] = environ['PPDIR']
+except KeyError:
+    auxiliaries['emos_dir'] = environ['CONDA_PREFIX'] + '/share/libemos/tables'
 
 # ===== FILE HEADER INFORMATION =====
 
