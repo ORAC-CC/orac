@@ -79,7 +79,7 @@ conda create -y --override-channels -c local -c conda-forge -c anaconda \
 SCRIPT_DIR="$ROOT_PREFIX/envs/orac_git/etc/conda"
 for CHANGE in "activate" "deactivate"; do
     mkdir -p "${SCRIPT_DIR}/${CHANGE}.d"
-    cp "${FEED_DIR}/oract/${CHANGE}.sh" "${SCRIPT_DIR}/${CHANGE}.d/${CHANGE}-orac.sh"
+    cp "${FEED_DIR}/orac/${CHANGE}.sh" "${SCRIPT_DIR}/${CHANGE}.d/${CHANGE}-orac.sh"
 done
 cat <<EOF >> "$SCRIPT_DIR/activate.d/activate-orac.sh"
 # Point to this environment's libraries

@@ -1,5 +1,7 @@
-{% set version = "12.2" %}
-{% set build = 1 %}
+{% set version = "13.0" %}
+{% set build = 0 %}
+
+{% set mpi = mpi or 'nompi' %}
 
 package:
   name: rttov
@@ -8,8 +10,8 @@ package:
 source:
   # Can't use this as the contents change with each download
   #url: https://www.nwpsaf.eu/site/user/acpovey/?profiletab=downloadtab&fn=download&fname=RTTOV%20v12
-  url: http://groups.physics.ox.ac.uk/eodg/orac/orac_libraries/rttov122.tar.gz
-  sha256: 9f77f7cfc416e9b9d99712671995aa1fc67aba26168bad22789e0361eff48b3c
+  url: http://groups.physics.ox.ac.uk/eodg/orac/orac_libraries/rttov130.tar.xz
+  sha256: b287e9f114509acfedc6b37cca861d106945b1de0ecfc4cb9346bb4ee1bc86e4
   patches:
     - local.patch
     - arch.patch
