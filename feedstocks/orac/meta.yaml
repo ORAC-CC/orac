@@ -16,6 +16,8 @@ source:
   - git_url: https://github.com/ORAC-CC/orac
     patches:
       - make.patch
+  - path: activate.sh
+  - path: deactivate.sh
 
 build:
   # This might work if we ever set a release for ORAC

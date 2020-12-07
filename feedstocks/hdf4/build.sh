@@ -2,6 +2,11 @@
 
 set -e
 
+# Stop the build environment leaking into h4cc
+export FC=$(basename ${GFORTRAN})
+export CC=$(basename ${GCC})
+export CXX=$(basename ${GXX})
+
 autoreconf -vfi
 
 # Build static library the shared isn't compatible with Fortran and I haven't
