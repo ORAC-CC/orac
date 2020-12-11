@@ -29,6 +29,7 @@ mv post_processing/orac_postproc ${PREFIX}/bin
 mkdir -p ${PREFIX}/share/orac
 cp config/arch.gfortran.inc ${PREFIX}/share/orac
 cp config/lib.inc ${PREFIX}/share/orac
+sed -i 's/PREFIX/CONDA_PREFIX/g' ${PREFIX}/share/orac/lib.inc
 
 # Add the [de]activate scripts for environment variables
 for CHANGE in "activate" "deactivate"; do
