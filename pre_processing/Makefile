@@ -69,8 +69,8 @@ PREPROC_OBJ_F90 = $(OBJS)/aatsr_corrections.o \
                   $(OBJS)/preproc_structures.o \
                   $(OBJS)/gauss_leg_quad.o \
                   $(OBJS)/read_aatsr.o \
-				  $(OBJS)/read_abi.o \
-				  $(OBJS)/read_agri.o \
+		  $(OBJS)/read_abi.o \
+                  $(OBJS)/read_agri.o \
                   $(OBJS)/read_avhrr.o \
                   $(OBJS)/read_camel_emissivity.o \
                   $(OBJS)/read_cimss_emissivity.o \
@@ -87,7 +87,7 @@ PREPROC_OBJ_F90 = $(OBJS)/aatsr_corrections.o \
                   $(OBJS)/rttov_driver.o \
                   $(OBJS)/rttov_driver_gfs.o \
                   $(OBJS)/setup.o \
-				  $(OBJS)/seviri_neural_net_preproc.o \
+                  $(OBJS)/seviri_neural_net_preproc.o \
                   $(OBJS)/solar_position.o \
                   $(OBJS)/surface_emissivity.o \
                   $(OBJS)/surface_reflectance.o \
