@@ -26,7 +26,7 @@
 # 2017/02/07, SP: Added support for NOAA GFS atmosphere data (ExtWork)
 # 2017/03/29, SP: Add ability to calculate tropospheric cloud emissivity (ExtWork)
 # 2018/02/12, SP: Added the read_goes module.
-# 2019/8/14, SP: Add Fengyun-4A support.
+# 2021/01/25, DP: Added interface to external SEVIRI ANN for CMA and CPH
 #
 # Notes:
 # It appears that -lopenjpeg needs to be included in the LIBS list since on some
@@ -40,7 +40,6 @@ include $(ORAC_LIB)
 include $(ORAC_ARCH)
 
 ORAC_COMMON = ../common
-
 
 # Define object files to be linked.
 PREPROC_OBJ_F90 = $(OBJS)/aatsr_corrections.o \
@@ -70,8 +69,8 @@ PREPROC_OBJ_F90 = $(OBJS)/aatsr_corrections.o \
                   $(OBJS)/preproc_structures.o \
                   $(OBJS)/gauss_leg_quad.o \
                   $(OBJS)/read_aatsr.o \
-                  $(OBJS)/read_abi.o \
-                  $(OBJS)/read_agri.o \
+				  $(OBJS)/read_abi.o \
+				  $(OBJS)/read_agri.o \
                   $(OBJS)/read_avhrr.o \
                   $(OBJS)/read_camel_emissivity.o \
                   $(OBJS)/read_cimss_emissivity.o \
@@ -88,6 +87,7 @@ PREPROC_OBJ_F90 = $(OBJS)/aatsr_corrections.o \
                   $(OBJS)/rttov_driver.o \
                   $(OBJS)/rttov_driver_gfs.o \
                   $(OBJS)/setup.o \
+				  $(OBJS)/seviri_neural_net_preproc.o \
                   $(OBJS)/solar_position.o \
                   $(OBJS)/surface_emissivity.o \
                   $(OBJS)/surface_reflectance.o \
@@ -133,7 +133,6 @@ depend:
 
 clean tidy:
 	rm -f $(OBJS)/*.o $(OBJS)/*.mod *.a orac_preproc
-
 
 # Fortran 90 dependencies
 include dependencies.inc

@@ -86,6 +86,7 @@ module preproc_structures_m
       logical                    :: use_predef_geo
       logical                    :: use_predef_lsm
       logical                    :: use_swansea_climatology
+      logical                    :: use_seviri_ann
 
       character(len=path_length) :: ecmwf_path(2)
       character(len=path_length) :: ecmwf_path2(2)

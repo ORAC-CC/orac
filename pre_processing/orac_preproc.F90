@@ -517,6 +517,7 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
    preproc_opts%do_co2                    = .true.
    preproc_opts%use_swansea_climatology   = .false.
    preproc_opts%swansea_gamma             = 0.3
+   preproc_opts%use_seviri_ann            = .false.
 
    ! Initialise satellite position string
    global_atts%Satpos_Metadata = 'null'
@@ -589,7 +590,6 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
       else if (nargs .eq. -1) then
          index_space = index(driver_path_file, " ")
          driver_path_file = driver_path_file(1:(index_space-1))
-         write(*,*) 'inside preproc: ', trim(adjustl(driver_path_file))
       end if
 
       open(11, file=trim(adjustl(driver_path_file)), status='old', &
@@ -650,6 +650,7 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
 
       close(11)
    end if
+
    ! Set this since it was removed from the command line but not removed from
    ! the global attributes.
    global_atts%L2_Processor_Version = '1.0'
@@ -1208,12 +1209,14 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
                call cloud_type(channel_info, sensor, surface, imager_flags, &
                     imager_angles, imager_geolocation, imager_measurements, &
                     imager_pavolonis, ecmwf, platform, doy, preproc_opts%do_ironly, &
-                    do_spectral_response_correction, verbose)
+                    do_spectral_response_correction, preproc_opts%use_seviri_ann, &
+                    verbose)
             else
                call cloud_type(channel_info, sensor, surface, imager_flags, &
                     imager_angles, imager_geolocation, imager_measurements, &
                     imager_pavolonis, ecmwf_HR, platform, doy, preproc_opts%do_ironly, &
-                    do_spectral_response_correction, verbose)
+                    do_spectral_response_correction, preproc_opts%use_seviri_ann, &
+                    verbose)
             end if
          end if
       end if
