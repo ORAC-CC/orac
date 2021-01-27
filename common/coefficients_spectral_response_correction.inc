@@ -1,3 +1,26 @@
+!-------------------------------------------------------------------------------
+! Name: coefficients_spectral_response_correction.inc
+!
+! Purpose: 
+! Provide coefficients (slope/offset) for the spectral response correction
+! (aka. Spectral Band Adjustment SBA) of each sensor. Latest coefficients 
+! are the n19mimic array. As the CMA/CPH neural networks were developed and 
+! fine-tuned primarily based on NOAA19 AVHRR, adjustment factors 
+! (slope and offset) were inferred to make all considered AVHRR sensors 
+! mimic NOAA19 AVHRR.
+!
+! More information can be found in Appendix C of the Cloud_cci version 3
+! AVHRR-PM dataset paper:
+! https://essd.copernicus.org/articles/12/41/2020/
+! [Stengel et al. (2019)]
+!
+! History:
+! Initial file
+! 2021/01/27, DP: Added Sentinel-3a/Sentinel-3b SLSTR and MSG1/MSG2/MSG3/MSG4
+                  SEVIRI coefficients.
+!
+!-------------------------------------------------------------------------------
+
   ! dimensions:
   ! a=6: n channels
   ! b=2: slope/offset
