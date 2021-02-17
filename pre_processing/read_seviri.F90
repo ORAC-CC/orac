@@ -262,6 +262,9 @@ subroutine read_seviri_l1_5(l1_5_file, imager_geolocation, imager_measurements, 
       end where
    end where
 
+   ! Shift satazi range from [0,360] to [-180,180] to be consistent with ORAC
+   imager_angles%satazi = imager_angles%satazi - 180.
+
    deallocate(tmparr)
 
 end subroutine read_seviri_l1_5
