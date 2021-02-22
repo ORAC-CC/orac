@@ -658,7 +658,7 @@ subroutine get_abi_time(infile, imager_time, ny, verbose)
    real(kind=dreal)           :: dfrac1, dfrac2, jd1, jd2, slo
 
    character(len=var_length), parameter :: date_format = &
-        '(I4, X, I2, X, I2, X, I2, X, I2, X, I2)'
+        '(I4, T1, I2, T1, I2, T1, I2, T1, I2, T1, I2)'
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering get_abi_time()'
 
