@@ -244,7 +244,7 @@ class FileName:
                                         'ECC_GAC_sunsatangles_')
             return
 
-        # Attempt AHI L1B filename in HSD format
+        # Attempt Himawari/AHI L1B filename in HSD format
         mat = re.search(
             r'HS_H(?P<platform>\d{2})_(?P<year>\d{4})'
             r'(?P<month>\d{2})(?P<day>\d{2})_(?P<hour>\d{2})(?P<min>\d{2})'
