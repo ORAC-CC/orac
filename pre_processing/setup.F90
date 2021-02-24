@@ -640,7 +640,7 @@ subroutine setup_ahi(l1b_path_file, geo_path_file, platform, year, month, day, &
    integer, parameter :: channel_ids_default(6) = (/ 3, 4, 5, 7, 14, 15 /)
 
 
-   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering setup_himawari()'
+   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering setup_ahi()'
 
    if (verbose) write(*,*) 'l1b_path_file: ', trim(l1b_path_file)
    if (verbose) write(*,*) 'geo_path_file: ', trim(geo_path_file)
@@ -648,6 +648,10 @@ subroutine setup_ahi(l1b_path_file, geo_path_file, platform, year, month, day, &
    ! check if l1b and geo file are of the same granule
    index1 = index(l1b_path_file, '/', back=.true.)
    index2 = index(geo_path_file, '/', back=.true.)
+
+   ! CHECKING INDEX1 AND INDEX2 APRATA
+   write(*,*) 'l1b_path_file: ', index1
+   write(*,*) 'l1b_path_file: ', index2
 
    ! check if l1b and geo files identical
    if (trim(adjustl(l1b_path_file)) .ne. &

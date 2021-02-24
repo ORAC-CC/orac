@@ -31,6 +31,10 @@ def args_common(parser):
     key.add_argument('-c', '--available_channels', type=int, nargs='+',
                      metavar='#', default=None,
                      help='Channels to be evaluated.')
+    # Only relevant for Himawari HSD reader
+    key.add_argument('--available_segments', type=int, nargs='+',
+                     metavar='#', default=None,
+                     help='Segments to be evaluated.')
     key.add_argument('--batch', action='store_true',
                      help='Use batch processing for this call.')
     key.add_argument('--batch_script', default=defaults.batch_script,

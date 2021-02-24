@@ -251,7 +251,6 @@ class FileName:
             r'_(.*).DAT', filename
         )
         if mat:
-            print("*** --- THIS IS A TEST ---- ***")
             self.sensor = 'AHI'
             self.platform = 'Himawari'+mat.group('platform')
             self.inst = 'AHI-'+self.platform
