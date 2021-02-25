@@ -139,7 +139,7 @@ subroutine read_himawari_dimensions(l1_5_file, n_across_track, n_along_track, &
    integer(kind=lint), intent(out) :: n_across_track, n_along_track
    logical,            intent(in)  :: verbose
 
-   if (verbose) write(*,*) '<<<<<<<<<<<<<<< read_himawari_dimensions()'
+   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_himawari_dimensions()'
 
    ! These are constant for the full disk image.
    ! We process only on the lowest-res band size (IR, 2km). VIS bands
@@ -147,7 +147,7 @@ subroutine read_himawari_dimensions(l1_5_file, n_across_track, n_along_track, &
    n_along_track  = 5500
    n_across_track = 5500
 
-   if (verbose) write(*,*) '>>>>>>>>>>>>>>> read_himawari_dimensions()'
+   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_himawari_dimensions()'
 
 end subroutine read_himawari_dimensions
 
@@ -223,7 +223,7 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
    real(kind=sreal)   :: rye, rhr, rminu
    real(kind=sreal)   :: sza, saa, doy
    real(kind=dreal)   :: dfr, tmphr
-   
+
 #endif
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_himawari_bin()'
 
@@ -278,7 +278,7 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
                  'AHI_Main_Read(), filename = ', trim(infile)
       stop error_stop_code
    end if
-   
+
    ! Copy arrays between the reader and ORAC. This could (should!) be done more efficiently.
    imager_time%time(:,:)             = preproc%time
    imager_geolocation%latitude(:,:)  = preproc%lat
@@ -287,7 +287,7 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
    imager_angles%solazi(:,:,1)       = preproc%saa
    imager_angles%satzen(:,:,1)       = preproc%vza
    imager_angles%satazi(:,:,1)       = preproc%vaa
-   imager_measurements%data(:,:,:)   = preproc%indata   
+   imager_measurements%data(:,:,:)   = preproc%indata
 
    ! This section computes the solar geometry for each pixel in the image
    allocate(tsza(imager_geolocation%startx:imager_geolocation%endx,1:imager_geolocation%ny))
@@ -314,7 +314,7 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
              imager_geolocation%latitude(x,y) .lt. 90. .and. &
              imager_geolocation%longitude(x,y) .ge. -180. .and. &
              imager_geolocation%longitude(x,y) .le. 180.) then
-               
+
              call JD2GREG(imager_time%time(x, y), iye, mon, dfr)
              idy = int(dfr)
              tmphr = (dfr-idy)*24.
@@ -349,7 +349,7 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
 
    deallocate(tsza)
    deallocate(tsaa)
-   
+
    deallocate(band_ids)
    deallocate(band_units)
 
