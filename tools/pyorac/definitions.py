@@ -530,7 +530,10 @@ class ParticleType():
                 fdr_name = join(fdr, inst.sensor.lower() + "-" +
                                 inst.noaa + "_" + self.sad)
             else:
-                fdr_name = join(fdr, inst.sensor.lower() + "_" + self.sad)
+                # Apparently works on JASMIN -- haven't tested myself
+                #fdr_name = join(fdr, inst.sensor.lower() + "_" + self.sad)
+                # Works on Matin (Oxford)
+                fdr_name = join(fdr, inst.sensor.lower() + "/" + inst.platform.upper() + "/" + self.sad)
 
             file_name = "_".join((inst.sensor+"*", self.name, "RBD", "Ch*.sad"))
 
