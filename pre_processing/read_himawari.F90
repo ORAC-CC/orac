@@ -144,8 +144,8 @@ subroutine read_himawari_dimensions(l1_5_file, n_across_track, n_along_track, &
    ! These are constant for the full disk image.
    ! We process only on the lowest-res band size (IR, 2km). VIS bands
    ! are scaled from 0.5 or 1km to this 2km resolution.
-   n_along_track  = 5500
-   n_across_track = 5500
+   n_along_track  = 1650 ! 3 segments = 550 * 3 = 1650 (full disk = 5500)
+   n_across_track = 1650 ! 3 segments = 550 * 3 = 1650 (full disk = 5500)
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_himawari_dimensions()'
 
