@@ -252,7 +252,8 @@ class FileName:
         )
         if mat:
             self.sensor = 'AHI'
-            self.platform = 'Himawari'+mat.group('platform')
+            # Quick fix to get SAD files reading in correctly (will return 'Himawari-8' instead of 'Himawari08')
+            self.platform = 'Himawari-'+str(int(mat.group('platform')))
             self.inst = 'AHI-'+self.platform
             self.time = datetime.datetime(
                 int(mat.group('year')), int(mat.group('month')),
