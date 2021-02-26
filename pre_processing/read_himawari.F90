@@ -244,6 +244,11 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
    starty = imager_geolocation%starty
    ny     = imager_geolocation%ny
 
+   write(*,*) 'startx = ', startx
+   write(*,*) 'nx = ', nx
+   write(*,*) 'starty = ', starty
+   write(*,*) 'ny = ', ny
+
    line0   = startx - 1
    line1   = startx - 1 + ny - 1
    column0 = starty - 1
@@ -256,6 +261,14 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
    ahi_extent%x_min = column0 + 1
    ahi_extent%x_max = column1 + 1
    ahi_extent%x_size = column1-column0 +1
+
+   write(*,*) 'ahi_extent.y_min = ', ahi_extent%y_min
+   write(*,*) 'ahi_extent.y_max = ', ahi_extent%y_max
+   write(*,*) 'ahi_extent.y_size = ', ahi_extent%y_size
+
+   write(*,*) 'ahi_extent.x_min = ', ahi_extent%x_min
+   write(*,*) 'ahi_extent.x_max = ', ahi_extent%x_max
+   write(*,*) 'ahi_extent.x_size = ', ahi_extent%x_size
 
    if (verbose) write(*,*) 'Calling AHI_Main_Read() from ' // &
                            'the himawari_read module'
