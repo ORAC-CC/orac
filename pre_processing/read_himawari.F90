@@ -292,6 +292,8 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
       stop error_stop_code
    end if
 
+   write(*,*) ' --- SUCCESSFULLY LOADED AHI DATA --- '
+
    ! Copy arrays between the reader and ORAC. This could (should!) be done more efficiently.
    imager_time%time(:,:)             = preproc%time
    imager_geolocation%latitude(:,:)  = preproc%lat
