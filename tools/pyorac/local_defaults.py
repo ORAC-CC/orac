@@ -63,9 +63,11 @@ auxiliaries = {
                     'GAC_ori_0.05deg.nc',
     # Pre-defined geometry for geostationary imager
     'prelsm_file' : '/network/aopp/matin/eodg/shared/orac/data/predef_lsm/'
-                    'MSG_000E_LSM.nc',
+                    #'MSG_000E_LSM.nc',  # SEVIRI
+                    'AHI_141E_LSM.nc',  # AHI
     'pregeo_file' : '/network/aopp/matin/eodg/shared/orac/data/predef_lsm/'
-                    'MSG_000E_ANGLES.v01.nc',
+                    #'MSG_000E_ANGLES.v01.nc',  # SEVIRI
+                    'AHI_141E_ANGLES.nc',  # AHI
     # Climatology of Swansea s and p parameters
     'swansea_dir' : '/network/aopp/matin/eodg/atsr/swansea_cb'
 }
