@@ -281,7 +281,8 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
                      band_ids, & ! Array of band numbers to process (1-16)
                      0, & ! Flag indicating whether AHI reader needs to allocate array space
                      1, & ! Flag indicating whether reader should retrieve geoinfo
-                     use_predef_geo, & ! Flag indicating whether an external geo file is being used
+                    !use_predef_geo, & ! Flag indicating whether an external geo file is being used
+                     .false., & ! Set use_predef_geo to false to see if we can skip the geo being read in (expecting it to be computed by the fortran reader)
                      .false., & ! Flag setting true color output. Currently unused and should be false anyway
                      .false., & ! True = output as VIS channel resolution, False = Output at IR res .
                      global_atts%Satpos_Metadata, & ! Struct to store the satellite position data, for parallax
