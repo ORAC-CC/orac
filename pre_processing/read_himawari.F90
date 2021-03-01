@@ -144,8 +144,8 @@ subroutine read_himawari_dimensions(l1_5_file, n_across_track, n_along_track, &
    ! These are constant for the full disk image = 5500 x 5500.
    ! We process only on the lowest-res band size (IR, 2km). VIS bands
    ! are scaled from 0.5 or 1km to this 2km resolution.
-   n_along_track  = 1650 ! 3 segments in the y-dimension = 1650
-   n_across_track = 1650 ! full disk in x-dimension = 5500
+   n_along_track  = 250 ! y-dimension i.e. rows
+   n_across_track = 400 ! x-dimension i.e. cols
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_himawari_dimensions()'
 
@@ -238,6 +238,15 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
    do i = 1, n_bands
       band_units(i) = HIMAWARI_UNIT_RBT
    end do
+
+   ! startx = imager_geolocation%startx
+   ! nx     = imager_geolocation%nx
+   ! starty = imager_geolocation%starty
+   ! ny     = imager_geolocation%ny
+
+   ! WARNING HARD CODING SUBSETTING (THIS SHOULD BE CHANGED AT SOMEPOINT)
+   imager_geolocation%startx = 3100
+   imager_geolocation%starty = 400
 
    startx = imager_geolocation%startx
    nx     = imager_geolocation%nx
