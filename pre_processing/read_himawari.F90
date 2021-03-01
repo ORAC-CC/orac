@@ -259,9 +259,9 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
    write(*,*) 'ny = ', ny
 
    line0   = startx - 1
-   line1   = startx - 1 + ny - 1
+   line1   = startx - 1 + nx - 1  ! BUG: THIS WAS startx - 1 + ny - 1
    column0 = starty - 1
-   column1 = starty - 1 + nx - 1
+   column1 = starty - 1 + ny - 1  ! BUG: THIS WAS starty - 1 + nx - 1
 
    ahi_extent%y_min = line0 + 1
    ahi_extent%y_max = line1 + 1
