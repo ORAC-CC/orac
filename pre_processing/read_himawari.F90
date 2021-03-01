@@ -33,6 +33,7 @@
 ! 2016/08/04, SP: Set NaN values in angle arrays (deep space pixels) to fill.
 ! 2017/04/25, SP: Support for verbose mode. A multitude of speed-ups and fixes
 !                 such as passing lat/lon file info to himawari util. (ExtWork)
+! 2020/03/02, ATP: Add support for AHI subsetting.
 !
 ! Bugs:
 ! None known.
@@ -290,43 +291,7 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
    starty = imager_geolocation%starty
    ny     = imager_geolocation%ny
 
-   write(*,*) 'startx = ', startx
-   write(*,*) 'nx = ', nx
-   write(*,*) 'starty = ', starty
-   write(*,*) 'ny = ', ny
-
-   ! line0   = startx - 1
-   ! line1   = startx - 1 + ny - 1
-   ! column0 = starty - 1
-   ! column1 = starty - 1 + nx - 1
-
-   ! ahi_extent%y_min = line0 + 1
-   ! ahi_extent%y_max = line1 + 1
-   ! ahi_extent%y_size = line1-line0 +1
-
-   ! ahi_extent%x_min = column0 + 1
-   ! ahi_extent%x_max = column1 + 1
-   ! ahi_extent%x_size = column1-column0 +1
-
-   ! ahi_extent%y_min = startx - 1 + 1
-   ! ahi_extent%y_max = startx - 1 + ny - 1 + 1
-   ! ahi_extent%y_size = startx - 1 + ny - 1 - startx + 1 + 1
-
-   ! ahi_extent%x_min = starty - 1 + 1
-   ! ahi_extent%x_max = starty - 1 + nx - 1 + 1
-   ! ahi_extent%x_size = starty - 1 + nx - 1 - starty + 1 + 1
-
-
-   ! ahi_extent%y_min = startx
-   ! ahi_extent%y_max = startx + ny - 1
-   ! ahi_extent%y_size = ny
-
-   ! ahi_extent%x_min = starty
-   ! ahi_extent%x_max = starty + nx - 1
-   ! ahi_extent%x_size = nx
-
-   ! Not sure what the point of this line0, line1 business is... (see above)
-   ! Changed to simpler definitons for subsetting -- Andrew Prata 1 March 2021
+   ! Setup ahi_extent
    ahi_extent%y_min = starty
    ahi_extent%y_max = starty + ny - 1
    ahi_extent%y_size = ny
@@ -334,14 +299,6 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
    ahi_extent%x_min = startx
    ahi_extent%x_max = startx + nx - 1
    ahi_extent%x_size = nx
-
-   write(*,*) 'ahi_extent.y_min = ', ahi_extent%y_min
-   write(*,*) 'ahi_extent.y_max = ', ahi_extent%y_max
-   write(*,*) 'ahi_extent.y_size = ', ahi_extent%y_size
-
-   write(*,*) 'ahi_extent.x_min = ', ahi_extent%x_min
-   write(*,*) 'ahi_extent.x_max = ', ahi_extent%x_max
-   write(*,*) 'ahi_extent.x_size = ', ahi_extent%x_size
 
    if (verbose) write(*,*) 'Calling AHI_Main_Read() from ' // &
                            'the himawari_read module'
@@ -355,7 +312,6 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
                      0, & ! Flag indicating whether AHI reader needs to allocate array space
                      1, & ! Flag indicating whether reader should retrieve geoinfo
                      use_predef_geo, & ! Flag indicating whether an external geo file is being used
-                     !.false., & ! Set use_predef_geo to false to see if we can skip the geo being read in (expecting it to be computed by the fortran reader)
                      .false., & ! Flag setting true color output. Currently unused and should be false anyway
                      .false., & ! True = output as VIS channel resolution, False = Output at IR res .
                      global_atts%Satpos_Metadata, & ! Struct to store the satellite position data, for parallax
@@ -365,8 +321,6 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
                  'AHI_Main_Read(), filename = ', trim(infile)
       stop error_stop_code
    end if
-
-   write(*,*) ' --- SUCCESSFULLY LOADED AHI DATA --- '
 
    ! Copy arrays between the reader and ORAC. This could (should!) be done more efficiently.
    imager_time%time(:,:)             = preproc%time
