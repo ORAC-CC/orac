@@ -258,18 +258,28 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
    write(*,*) 'starty = ', starty
    write(*,*) 'ny = ', ny
 
-   line0   = startx - 1
-   line1   = startx - 1 + nx - 1  ! FIXED BUG: THIS WAS startx - 1 + ny - 1
-   column0 = starty - 1
-   column1 = starty - 1 + ny - 1  ! FIXED BUG: THIS WAS starty - 1 + nx - 1
+   ! line0   = startx - 1
+   ! line1   = startx - 1 + ny - 1
+   ! column0 = starty - 1
+   ! column1 = starty - 1 + nx - 1
 
-   ahi_extent%y_min = line0 + 1
-   ahi_extent%y_max = line1 + 1
-   ahi_extent%y_size = line1-line0 +1
+   ! ahi_extent%y_min = line0 + 1
+   ! ahi_extent%y_max = line1 + 1
+   ! ahi_extent%y_size = line1-line0 +1
 
-   ahi_extent%x_min = column0 + 1
-   ahi_extent%x_max = column1 + 1
-   ahi_extent%x_size = column1-column0 +1
+   ! ahi_extent%x_min = column0 + 1
+   ! ahi_extent%x_max = column1 + 1
+   ! ahi_extent%x_size = column1-column0 +1
+
+   ! Not sure what the point of this line0, line1 business is... (see above)
+   ! Changed to simpler definitons for subsetting -- Andrew Prata 1 March 2021
+   ahi_extent%y_min = starty
+   ahi_extent%y_max = starty + ny
+   ahi_extent%y_size = ny
+
+   ahi_extent%x_min = startx
+   ahi_extent%x_max = startx + nx
+   ahi_extent%x_size = nx
 
    write(*,*) 'ahi_extent.y_min = ', ahi_extent%y_min
    write(*,*) 'ahi_extent.y_max = ', ahi_extent%y_max
