@@ -128,7 +128,7 @@ end subroutine Get_AHI_Solpos
 !
 !-------------------------------------------------------------------------------
 subroutine read_himawari_dimensions(l1_5_file, n_across_track, n_along_track, &
-                                    verbose)
+                                    startx, endx, starty, endy, verbose)
 
    use iso_c_binding
    use preproc_constants_m
@@ -137,15 +137,61 @@ subroutine read_himawari_dimensions(l1_5_file, n_across_track, n_along_track, &
 
    character(len=*),   intent(in)  :: l1_5_file
    integer(kind=lint), intent(out) :: n_across_track, n_along_track
+   integer(kind=lint), intent(inout) :: startx, endx, starty, endy
    logical,            intent(in)  :: verbose
+
+   integer :: i_line, i_column
+   integer :: n_lines, n_columns
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_himawari_dimensions()'
 
    ! These are constant for the full disk image = 5500 x 5500.
    ! We process only on the lowest-res band size (IR, 2km). VIS bands
    ! are scaled from 0.5 or 1km to this 2km resolution.
-   n_along_track  = 250 ! y-dimension i.e. rows
-   n_across_track = 400 ! x-dimension i.e. cols
+   n_along_track  = 5500
+   n_across_track = 5500
+
+   ! Hard code Himawari HSD limits (no other format currently supported)
+   i_line    = 0
+   i_column  = 0
+   n_lines   = 5500
+   n_columns = 5500
+
+   if (startx .le. 0 .or. endx .le. 0 .or. starty .le. 0 .or. endy .le. 0) then
+      ! If start and end *are not* being used then set them to the start and end
+      ! of the actual image in the file.
+      starty = i_line + 1
+      endy   = i_line + n_lines
+      startx = i_column + 1
+      endx   = i_column + n_columns
+   else
+      ! If start and end *are* being used then check that they fall within the
+      ! actual image in the file relative to the full disk image.
+      if (starty - 1 .lt.  i_line) then
+         write(*,*) 'ERROR: user defined starty: ', starty, ', does not ' // &
+                    'fall within the actual AHI image starting at: ', &
+                    i_line + 1
+         stop error_stop_code
+      end if
+      if (endy - 1 .gt. i_line   + n_lines - 1) then
+         write(*,*) 'ERROR: user defined endy: ', endy, ', does not ' // &
+                    'fall within the actual AHI image ending at: ', &
+                    i_line   + n_lines
+         stop error_stop_code
+      end if
+      if (startx - 1 .lt.  i_column) then
+         write(*,*) 'ERROR: user defined startx: ', startx, ', does not ' // &
+                    'fall within the actual AHI image starting at: ', &
+                    i_column + 1
+         stop error_stop_code
+      end if
+      if (endx - 1 .gt. i_column + n_columns - 1) then
+         write(*,*) 'ERROR: user defined endx: ', endx, ', does not ' // &
+                    'fall within the actual AHI image ending at: ', &
+                    i_column + n_columns
+         stop error_stop_code
+      end if
+   end if
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_himawari_dimensions()'
 
@@ -238,15 +284,6 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
    do i = 1, n_bands
       band_units(i) = HIMAWARI_UNIT_RBT
    end do
-
-   ! startx = imager_geolocation%startx
-   ! nx     = imager_geolocation%nx
-   ! starty = imager_geolocation%starty
-   ! ny     = imager_geolocation%ny
-
-   ! WARNING HARD CODING SUBSETTING (THIS SHOULD BE CHANGED AT SOMEPOINT)
-   imager_geolocation%startx = 3100
-   imager_geolocation%starty = 400
 
    startx = imager_geolocation%startx
    nx     = imager_geolocation%nx
