@@ -141,11 +141,11 @@ subroutine read_himawari_dimensions(l1_5_file, n_across_track, n_along_track, &
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_himawari_dimensions()'
 
-   ! These are constant for the full disk image.
+   ! These are constant for the full disk image = 5500 x 5500.
    ! We process only on the lowest-res band size (IR, 2km). VIS bands
    ! are scaled from 0.5 or 1km to this 2km resolution.
-   n_along_track  = 5500 ! full disk = 5500
-   n_across_track = 5500 ! full disk = 5500
+   n_along_track  = 1650 ! 3 segments in the y-dimension = 1650
+   n_across_track = 1650 ! full disk in x-dimension = 5500
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_himawari_dimensions()'
 
@@ -281,8 +281,8 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
                      band_ids, & ! Array of band numbers to process (1-16)
                      0, & ! Flag indicating whether AHI reader needs to allocate array space
                      1, & ! Flag indicating whether reader should retrieve geoinfo
-                    !use_predef_geo, & ! Flag indicating whether an external geo file is being used
-                     .false., & ! Set use_predef_geo to false to see if we can skip the geo being read in (expecting it to be computed by the fortran reader)
+                     use_predef_geo, & ! Flag indicating whether an external geo file is being used
+                     !.false., & ! Set use_predef_geo to false to see if we can skip the geo being read in (expecting it to be computed by the fortran reader)
                      .false., & ! Flag setting true color output. Currently unused and should be false anyway
                      .false., & ! True = output as VIS channel resolution, False = Output at IR res .
                      global_atts%Satpos_Metadata, & ! Struct to store the satellite position data, for parallax
