@@ -138,9 +138,9 @@ cld_channels = {
     # 1.6 micron run (leave out 2.3 and 3.9 micron channels)
     #"AHI" : "--use_channels 1 2 3 4 5 9 10 11 12 13 14 15 16"
     # 2.3 micron run (leave out 1.6 and 3.9 micron channels)
-    "AHI" : "--use_channels 1 2 3 4 6 9 10 11 12 13 14 15 16"
+    #"AHI" : "--use_channels 1 2 3 4 6 9 10 11 12 13 14 15 16"
     # 3.9 micron run (leave out 1.6 and 2.3 micron channels)
-    #"AHI" : "--use_channels 1 2 3 4 7 9 10 11 12 13 14 15 16"
+    "AHI" : "--use_channels 1 2 3 4 7 9 10 11 12 13 14 15 16"
 }
 for sensor, channels in cld_channels.items():
     retrieval_settings[sensor + "_C"] = [
