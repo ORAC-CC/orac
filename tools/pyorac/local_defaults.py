@@ -211,9 +211,9 @@ for sensor in cld_channels.keys():
 
 # Experimenting with volcanic ash retrieveals
 ash_retrievals = {
-    "ash_cld" : "--phase EYJ --ret_class ClsCldEyj --approach AppCld1L "
+    "ash_cld" : "--phase EYJ --ret_class ClsAshEyj --approach AppCld1L "
                 "--sub_dir ash",
-    "wat_ash" : "--phase EYJ --ret_class ClsCldEyj --approach AppCld2L "
+    "wat_ash" : "--phase EYJ --ret_class ClsAshEyj --approach AppCld2L "
                 "--multilayer WAT ClsCldWat --sub_dir ash",
 #    "ice_ash" : "--phase EYJ --ret_class ClsCldEyj --approach AppCld2L "
 #                "--multilayer ICE ClsCldIce --sub_dir ash"
