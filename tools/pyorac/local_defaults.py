@@ -209,8 +209,38 @@ for sensor, channels in aer_single_channels.items():
 for sensor in cld_channels.keys():
     retrieval_settings[sensor] = retrieval_settings[sensor + "_C"]
 
+# Experimenting with volcanic ash retrieveals
+ash_retrievals = {
+    "ash_cld" : "--phase EYJ --ret_class ClsCldEyj --approach AppCld1L "
+                "--sub_dir ash",
+    "wat_ash" : "--phase EYJ --ret_class ClsCldEyj --approach AppCld2L "
+                "--multilayer WAT ClsCldWat --sub_dir ash",
+#    "ice_ash" : "--phase EYJ --ret_class ClsCldEyj --approach AppCld2L "
+#                "--multilayer ICE ClsCldIce --sub_dir ash"
+}
+ash_channels = {
+    # Use all AHI channels
+    #"AHI" : "--use_channels 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16"
+    # 1.6 micron run (leave out 2.3 and 3.9 micron channels)
+    #"AHI" : "--use_channels 1 2 3 4 5 8 9 10 11 12 13 14 15 16"
+    # 2.3 micron run (leave out 1.6 and 3.9 micron channels)
+    #"AHI" : "--use_channels 1 2 3 4 6 8 9 10 11 12 13 14 15 16"
+    # 3.9 micron run (leave out 1.6 and 2.3 micron channels)
+    #"AHI" : "--use_channels 1 2 3 4 7 8 9 10 11 12 13 14 15 16"
+    # 1.6 run without 7.3 micron (leave out 2.3, 3.9 and 7.3 micron channels)
+    "AHI" : "--use_channels 1 2 3 4 5 8 9 11 12 13 14 15 16"
+}
 
-print(retrieval_settings)
+for sensor, channels in ash_channels.items():
+    retrieval_settings[sensor + "_ASH"] = [
+        channels + " " + ret for ret in ash_retrievals.values()
+    ]
+#
+# 'AHI_ASH': ['--use_channels 1 2 3 4 5 8 9 11 12 13 14 15 16 --phase EYJ --ret_class ClsAshEyj --approach AppCld1l --sub_dir ash',
+# 						'--use_channels 1 2 3 4 5 8 9 11 12 13 14 15 16 --phase EYJ --ret_class ClsCldEyj --approach AppCld2L --multilayer WAT ClsCldWat --sub_dir ash',]
+# 						#'--use_channels 1 2 3 4 5 8 9 11 12 13 14 15 16 --phase EYJ --ret_class ClsCldEyj --approach AppCld2L --multilayer ICE ClsCldIce --sub_dir ash']
+
+print(retrieval_settings['AHI_ASH'])
 
 
 # ===== DEFAULT CHANNELS FOR EACH SENSOR =====
