@@ -20,7 +20,7 @@ except KeyError:
 
 # Directory of look-up tables
 sad_dirs = ['/network/aopp/apres/ORAC_LUTS',
-            '/network/aopp/matin/eodg/shared/SAD_Files',]
+            '/network/aopp/matin/eodg/shared/SAD_Files/HIM',]
 
 # Use ECMWF data from the BADC/CEMS archive
 ecmwf_flag  = 5
