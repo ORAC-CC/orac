@@ -215,8 +215,8 @@ ash_retrievals = {
                 "--sub_dir ash",
     "wat_ash" : "--phase EYJ --ret_class ClsAshEyj --approach AppCld2L "
                 "--multilayer WAT ClsCldWat --sub_dir ash",
-#    "ice_ash" : "--phase EYJ --ret_class ClsCldEyj --approach AppCld2L "
-#                "--multilayer ICE ClsCldIce --sub_dir ash"
+    "ice_ash" : "--phase EYJ --ret_class ClsCldEyj --approach AppCld2L "
+                "--multilayer ICE ClsCldIce --sub_dir ash"
 }
 ash_channels = {
     # Use all AHI channels
@@ -231,17 +231,31 @@ ash_channels = {
     "AHI" : "--use_channels 1 2 3 4 5 8 9 11 12 13 14 15 16"
 }
 
+# Set ash retrievals
 for sensor, channels in ash_channels.items():
     retrieval_settings[sensor + "_ASH"] = [
         channels + " " + ret for ret in ash_retrievals.values()
     ]
-#
+
+# Setup ash and cloud joint retrievals
+for sensor, channels in cld_channels.items():
+    retrieval_settings[sensor + "_ASH_J"] = [
+        channels + " " + ret for ret in cld_retrievals.values()
+    ]
+for sensor, channels in ash_channels.items():
+    retrieval_settings[sensor + "_ASH_J"].extend([
+        channels + " " + ret for ret in ash_retrievals.values()
+    ])
+
 # 'AHI_ASH': ['--use_channels 1 2 3 4 5 8 9 11 12 13 14 15 16 --phase EYJ --ret_class ClsAshEyj --approach AppCld1l --sub_dir ash',
 # 						'--use_channels 1 2 3 4 5 8 9 11 12 13 14 15 16 --phase EYJ --ret_class ClsCldEyj --approach AppCld2L --multilayer WAT ClsCldWat --sub_dir ash',]
 # 						#'--use_channels 1 2 3 4 5 8 9 11 12 13 14 15 16 --phase EYJ --ret_class ClsCldEyj --approach AppCld2L --multilayer ICE ClsCldIce --sub_dir ash']
 
-print(retrieval_settings['AHI_ASH'])
+# print('AHI_ASH')
+# print(retrieval_settings['AHI_ASH'])
 
+print('AHI_ASH_J')
+print(retrieval_settings['AHI_ASH_J'])
 
 # ===== DEFAULT CHANNELS FOR EACH SENSOR =====
 
