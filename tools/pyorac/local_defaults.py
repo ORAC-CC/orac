@@ -19,7 +19,8 @@ except KeyError:
     orac_lib = orac_dir + '/config/lib.inc'
 
 # Directory of look-up tables
-sad_dirs = ['/network/aopp/apres/ORAC_LUTS', ]
+sad_dirs = ['/network/aopp/apres/ORAC_LUTS',
+            '/network/aopp/matin/eodg/shared/SAD_Files',]
 
 # Use ECMWF data from the BADC/CEMS archive
 ecmwf_flag  = 5
@@ -207,6 +208,9 @@ for sensor, channels in aer_single_channels.items():
 # Default to cloud retrievals
 for sensor in cld_channels.keys():
     retrieval_settings[sensor] = retrieval_settings[sensor + "_C"]
+
+
+print(retrieval_settings)
 
 
 # ===== DEFAULT CHANNELS FOR EACH SENSOR =====
