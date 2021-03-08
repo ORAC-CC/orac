@@ -561,7 +561,7 @@ SETTINGS['ICE'] = ParticleType("ICE", sad="ICE_baum")
 
 # Special settings for volcanic ash
 SETTINGS['EYJ'] = ParticleType("EYJ", sad="EYJ", inv=(Invpar('ITau', ap=0.18, sx=1.5),
-                                                      Invpar('IRe', ap=0.7, sx=0.15))
+                                                      Invpar('IRe', ap=0.7, sx=0.15)))
 
 tau = Invpar('ITau', ap=-1.0, sx=1.5)
 SETTINGS['A70'] = ParticleType("A70", inv=(tau, Invpar('IRe', ap=0.0856, sx=0.15)))
