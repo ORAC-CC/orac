@@ -1,8 +1,8 @@
 !-------------------------------------------------------------------------------
-! Name: planck.F90
+! Name: cholesky.F90
 !
 ! Purpose:
-! Module for routines converting brightness temperature to radiance and back.
+! Module encapsulating the linear algebra for a Cholesky decomposition.
 !
 ! History:
 ! 2015/01/18, GM: Original version.
@@ -11,13 +11,13 @@
 ! None known.
 !---------------------------------------------------------------------
 
-module planck_m
+module Cholesky_m
 
    implicit none
 
 contains
 
-#include "t2r.F90"
-#include "r2t.F90"
+#include "invert_cholesky.F90"
+#include "solve_cholesky.F90"
 
-end module planck_m
+end module Cholesky_m

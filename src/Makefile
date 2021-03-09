@@ -169,30 +169,30 @@ ORAC_COMMON = ../common
 
 
 # Define object files to be linked.
-ORAC_OBJ = $(OBJS)/Cholesky.o \
-           $(OBJS)/Ctrl.o \
-           $(OBJS)/Data.o \
-           $(OBJS)/Diag.o \
-           $(OBJS)/FindLUN.o \
-           $(OBJS)/FMRoutines.o \
-           $(OBJS)/GZero.o \
-           $(OBJS)/IntRoutines.o \
-           $(OBJS)/InterpolRoutines.o \
-           $(OBJS)/IntLUTRoutines.o \
-           $(OBJS)/Inversion.o \
-           $(OBJS)/ORACConstants.o \
+ORAC_OBJ = $(OBJS)/cholesky.o \
+           $(OBJS)/ctrl.o \
+           $(OBJS)/data.o \
+           $(OBJS)/diag.o \
+           $(OBJS)/find_lun.o \
+           $(OBJS)/fm_routines.o \
+           $(OBJS)/gzero.o \
+           $(OBJS)/int_routines.o \
+           $(OBJS)/interpol_routines.o \
+           $(OBJS)/int_lut_routines.o \
+           $(OBJS)/inversion.o \
+           $(OBJS)/orac_constants.o \
            $(OBJS)/planck.o \
            $(OBJS)/prepare_output.o \
            $(OBJS)/read_utils.o \
-           $(OBJS)/ReadDriver.o \
-           $(OBJS)/ReadSAD.o \
-           $(OBJS)/RTM.o \
-           $(OBJS)/RTM_Pc.o \
-           $(OBJS)/SADChan.o \
-           $(OBJS)/SADLUT.o \
+           $(OBJS)/read_driver.o \
+           $(OBJS)/read_sad.o \
+           $(OBJS)/rtm.o \
+           $(OBJS)/rtm_pc.o \
+           $(OBJS)/sad_chan.o \
+           $(OBJS)/sad_lut.o \
            $(OBJS)/sad_util.o \
-           $(OBJS)/SPixel.o \
-           $(OBJS)/SPixel_routines.o
+           $(OBJS)/spixel.o \
+           $(OBJS)/spixel_routines.o
 
 ORAC_OBJ_MAIN = $(OBJS)/orac.o
 
@@ -219,13 +219,13 @@ PARSER_NAME     = read_ctrl
 PRINTER_NAME    = print_ctrl
 PARSER_SOURCE   = $(ORAC_COMMON)/common_constants.F90 \
                   $(ORAC_COMMON)/constants_cloud_typing_pavolonis.F90 \
-                  $(ORAC_COMMON)/orac_indexing.F90 ORACConstants.F90 Ctrl.F90
+                  $(ORAC_COMMON)/orac_indexing.F90 orac_constants.F90 ctrl.F90
 USE_STATEMENTS  = "use Ctrl_m; use ORAC_constants_m"
 PLACE           = $(OBJS)/$(PARSER_NAME)
 PARSER_INC      = -I$(ORAC_COMMON) -I../src/$(OBJ)
 include $(ORAC_COMMON)/Makefile_struct_parser
 $(OBJS)/ReadDriver.o: $(PLACE).f.o
-$(PLACE).f.o: $(OBJS)/ORACConstants.o $(OBJS)/Ctrl.o
+$(PLACE).f.o: $(OBJS)/orac_constants.o $(OBJS)/ctrl.o
 
 # Main program build
 orac: $(ORAC_OBJ_MAIN) liborac.a $(ORAC_COMMON)/liborac_common.a Makefile

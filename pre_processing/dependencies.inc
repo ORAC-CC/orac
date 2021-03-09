@@ -66,8 +66,9 @@ $(OBJS)/read_avhrr.o: $(OBJS)/calender.o $(OBJS)/channel_structures.o \
         read_avhrr_time.F90 read_avhrr_time_lat_lon_angles.F90
 $(OBJS)/read_camel_emissivity.o: $(OBJS)/preproc_constants.o
 $(OBJS)/read_cimss_emissivity.o: $(OBJS)/preproc_constants.o
-$(OBJS)/read_himawari.o: $(OBJS)/channel_structures.o \
-        $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o
+$(OBJS)/read_himawari.o: $(OBJS)/calender.o $(OBJS)/channel_structures.o \
+        $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o \
+        $(OBJS)/solar_position.o
 $(OBJS)/read_imager.o: $(OBJS)/channel_structures.o $(OBJS)/imager_structures.o \
         $(OBJS)/preproc_constants.o $(OBJS)/read_aatsr.o $(OBJS)/read_abi.o \
         $(OBJS)/read_agri.o $(OBJS)/read_avhrr.o $(OBJS)/read_himawari.o \
