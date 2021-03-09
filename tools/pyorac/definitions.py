@@ -567,8 +567,13 @@ SETTINGS['ICE'] = ParticleType("ICE", sad="ICE_baum")
 #    fg  - First guess of this value
 #    sx  - A priori uncertainty on this value
 
-SETTINGS['EYJ'] = ParticleType("EYJ", sad="EYJ", inv=(Invpar('ITau', ap=0.18, sx=1.5),
-                                                      Invpar('IRe', ap=0.7, sx=0.15)))
+# SETTINGS['EYJ'] = ParticleType("EYJ", sad="EYJ", inv=(Invpar('ITau', ap=0.18, sx=1.5),
+#                                                       Invpar('IRe', ap=0.7, sx=0.15)))
+
+# ap = log10(tau)
+SETTINGS['EYJ'] = ParticleType("EYJ", sad="EYJ", inv=(Invpar('ITau', ap=-0.3, sx=1e8),
+                                                      Invpar('IRe', ap=10, sx=1e8)))
+
 
 tau = Invpar('ITau', ap=-1.0, sx=1.5)
 SETTINGS['A70'] = ParticleType("A70", inv=(tau, Invpar('IRe', ap=0.0856, sx=0.15)))
