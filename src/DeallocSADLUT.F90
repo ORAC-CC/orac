@@ -109,10 +109,10 @@ subroutine Dealloc_SAD_LUT(Ctrl, SAD_LUT)
 
    if (Ctrl%Ind%NThermal > 0) then
       deallocate(SAD_LUT%Em)
-   end if
 
-   if (Ctrl%do_CTX_correction) then
-      deallocate(SAD_LUT%Bext)
+      if (Ctrl%do_CTX_correction .and. Ctrl%Class .eq. ClsCldIce) then
+         deallocate(SAD_LUT%Bext)
+      end if
    end if
 
    if (Ctrl%Approach == AppAerOx .or. Ctrl%Approach == AppAerSw .or. &
