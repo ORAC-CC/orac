@@ -176,17 +176,17 @@ function read_cimss_emissivity(path_to_file, emis, wavelengths, verbose, flag, &
    allocate(emis%emissivity(xdim,ydim,n_wavelengths))
 
    ! Extract the data for each of the requested bands
-   do i=1,n_wavelengths
+   do i = 1, n_wavelengths
       if (wavelengths(i) .le. 1.e4 / emis%wavenumber(1)) then
          if (.not. associated(cache(1)%a)) then
             allocate(cache(1)%a(xdim,ydim))
-            call ncdf_read_array(fid,bandList(1),cache(1)%a,verbose)
+            call ncdf_read_array(fid, bandList(1), cache(1)%a, verbose)
          end if
          emis%emissivity(:,:,i) = cache(1)%a
       else if (wavelengths(i) .ge. 1.e4 / emis%wavenumber(nBands)) then
          if (.not. associated(cache(nBands)%a)) then
             allocate(cache(nBands)%a(xdim,ydim))
-            call ncdf_read_array(fid,bandList(nBands),cache(nBands)%a,verbose)
+            call ncdf_read_array(fid, bandList(nBands), cache(nBands)%a, verbose)
          end if
          emis%emissivity(:,:,i) = cache(nBands)%a
       else

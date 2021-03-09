@@ -51,7 +51,7 @@
 ! status int        Out         Standard status code set by ORAC routines
 !
 ! History:
-! 2000/11/15, AS   15th Nov 2000, Andy Smith: Original version
+! 2000/11/15, AS: Original version
 ! 2000/12/01, AS: Renamed "Sol" instead of "Sun".
 !    Variables using Sun or Su also renamed Sol/So
 ! 2001/01/11, AS: Chans argument removed. Redundant.

@@ -225,7 +225,6 @@ function create_sad_filename2(Ctrl, chan_num, SAD_Dir, LUTClass, crp_name) &
    character(*),           intent(in) :: SAD_Dir
    character(*),           intent(in) :: LUTClass
    character(*), optional, intent(in) :: crp_name
-
    character(FilenameLen)             :: filename
 
    character(InstNameLen) :: InstName

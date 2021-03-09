@@ -92,7 +92,7 @@ subroutine Set_GZero(Tau, Re, Ctrl, SPixel, SAD_LUT, GZero, status)
    ! Set the "zero'th" array indices for the interpolations, i.e. find the array
    ! indices of the nearest neighbour grid points in each dimension. Use the
    ! 'locate' function
-   do i=1,SPixel%Ind%Ny
+   do i = 1, SPixel%Ind%Ny
       GZero%iT0(i) = &
          max(min(locate(SAD_LUT%Grid%Tau(1:SAD_LUT%Grid%nTau),Tau), &
                  SAD_LUT%Grid%nTau-1),1)
@@ -114,7 +114,7 @@ subroutine Set_GZero(Tau, Re, Ctrl, SPixel, SAD_LUT, GZero, status)
    end do
 
    ! This sets the upper bracketing index, the locate above set the lower index
-   do i=1,SPixel%Ind%Ny
+   do i = 1, SPixel%Ind%Ny
       GZero%iT1(i)      = GZero%iT0(i)   + 1
       GZero%iR1(i)      = GZero%iR0(i)   + 1
 
@@ -126,7 +126,7 @@ subroutine Set_GZero(Tau, Re, Ctrl, SPixel, SAD_LUT, GZero, status)
    end do
 
    ! This sets the next pair of bracketing indices around the primary one
-   do i=1,SPixel%Ind%Ny
+   do i = 1, SPixel%Ind%Ny
       if (GZero%iT0(i) == 1) then
          GZero%iTm1(i) = GZero%iT0(i)
          GZero%iTp1(i) = GZero%iT1(i)+1
@@ -155,7 +155,7 @@ subroutine Set_GZero(Tau, Re, Ctrl, SPixel, SAD_LUT, GZero, status)
    ! LUT grid steps.
 
    ! These variables are not used and could be removed? No, they are used!
-   do i=1,SPixel%Ind%Ny
+   do i = 1, SPixel%Ind%Ny
       GZero%dT(i) = (Tau - SAD_LUT%Grid%Tau(GZero%iT0(i))) / &
          (SAD_LUT%Grid%Tau(GZero%iT1(i)) - SAD_LUT%Grid%Tau(GZero%iT0(i)))
       GZero%dR(i) = (Re - SAD_LUT%Grid%Re(GZero%iR0(i))) / &
@@ -176,7 +176,7 @@ subroutine Set_GZero(Tau, Re, Ctrl, SPixel, SAD_LUT, GZero, status)
 
    ! Calculate 1.0 minus each of the d values above - used several times by the
    ! interpolation routines.
-   do i=1,SPixel%Ind%Ny
+   do i = 1, SPixel%Ind%Ny
       GZero%T1(i)    = 1.0 - GZero%dT(i)
       GZero%R1(i)    = 1.0 - GZero%dR(i)
       GZero%Sa1(i)   = 1.0 - GZero%dSaZ(i)

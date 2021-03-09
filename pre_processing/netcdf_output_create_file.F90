@@ -1352,7 +1352,7 @@ subroutine netcdf_create_swath(global_atts, source_atts, cyear, cmonth, cday, ch
            shuffle = shuffle_flag, &
            fill_value = sreal_fill_value)
 
-      ! define msi_data
+      ! define sd_data
       call ncdf_def_var_float_packed_float( &
            netcdf_info%ncid_msi, &
            dimids_3d, &

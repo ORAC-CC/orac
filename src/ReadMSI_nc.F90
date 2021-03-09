@@ -113,9 +113,8 @@ subroutine Read_MSI_nc(Ctrl, MSI_Data, SAD_Chan)
    type(SAD_Chan_t), intent(inout) :: SAD_Chan(:)
 
    ! Local variables
-
-   integer            :: i,j,k
-   integer            :: day, month
+   integer           :: i, j, k
+   integer           :: day, month
 
    ! NetCDF related
    integer           :: ncid
