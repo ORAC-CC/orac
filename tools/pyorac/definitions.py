@@ -559,7 +559,14 @@ SETTINGS = {}
 SETTINGS['WAT'] = ParticleType("WAT", sad="WAT")
 SETTINGS['ICE'] = ParticleType("ICE", sad="ICE_baum")
 
-# Special settings for volcanic ash
+# Settings for volcanic ash
+# Note: Invpar(var, ap=None, fg=None, sx=None)
+# where,
+#    var - Name of the element of the state vector
+#    ap  - A priori value to use
+#    fg  - First guess of this value
+#    sx  - A priori uncertainty on this value
+
 SETTINGS['EYJ'] = ParticleType("EYJ", sad="EYJ", inv=(Invpar('ITau', ap=0.18, sx=1.5),
                                                       Invpar('IRe', ap=0.7, sx=0.15)))
 
