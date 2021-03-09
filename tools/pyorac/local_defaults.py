@@ -230,12 +230,14 @@ ash_channels = {
     # 1.6 run without 7.3 micron (leave out 2.3, 3.9 and 7.3 micron channels)
     #"AHI" : "--use_channels 1 2 3 4 5 8 9 11 12 13 14 15 16"
     # Prata AT channel selections (10.4, 11.2, 12.4 and 13.3 micron)
-    "AHI" : "--use_channels 13 14 15 16"
+    #"AHI" : "--use_channels 13 14 15 16"
     # Francis et al. measurement vector (10.8, 12 and 13.4 micron)
     #"AHI" : "--use_channels 14 15 16"
     # Pavolonis et al. measurement vector (11, 11-12 and 11-13.3 micron)
     #"AHI" : "--use_channels ???" TODO: use channel BTDs in measurment vector
-}
+    # Thermal channels incl. 3.9 micron and 9.6 micron but no 7.3 and 8.6
+    "AHI" : "--use_channels 7 8 9 12 13 14 15 16"
+    }
 
 # Set ash retrievals
 for sensor, channels in ash_channels.items():
