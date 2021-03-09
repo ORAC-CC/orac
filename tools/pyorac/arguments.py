@@ -78,7 +78,8 @@ def args_preproc(parser):
                      'resolution. Default 1.38888889.')
     key.add_argument('-l', '--limit', type=int, nargs=4, default=(0, 0, 0, 0),
                      metavar=('X0', 'X1', 'Y0', 'Y1'),
-                     help='First/last pixel in across/along-track directions.')
+                     help='First/last pixel in across/along-track directions. '
+                     'FORTRAN 1-INDEXING, NOT PYTHON 0-INDEXING!')
     key.add_argument('--l1_land_mask', action='store_true',
                      help='Use the imager landmask rather than the USGS.')
     key.add_argument('--use_oc', action='store_true',
@@ -304,6 +305,8 @@ def check_args_common(args):
     if not os.path.isfile(args.orac_lib):
         raise FileMissing('ORAC library file', args.orac_lib)
 
+    return args
+
 
 def check_args_preproc(args):
     """Ensure preprocessor parser arguments are valid."""
@@ -375,6 +378,8 @@ def check_args_preproc(args):
     #if not os.path.isfile(args.usgs_file):
     #    raise FileMissing('USGS file', args.usgs_file)
 
+    return args
+
 
 def check_args_main(args):
     """Ensure main processor parser arguments are valid."""
@@ -393,6 +398,8 @@ def check_args_main(args):
         args.approach = "AppCld2L"
     # No error checking yet written for channel arguments
 
+    return args
+
 
 def check_args_postproc(args):
     """Ensure postprocessor parser arguments are valid."""
@@ -400,6 +407,8 @@ def check_args_postproc(args):
     for fdr in args.in_dir:
         if not os.path.isdir(fdr):
             raise FileMissing('Processed output directory', fdr)
+
+    return args
 
 
 def check_args_cc4cl(args):
@@ -414,20 +423,20 @@ def check_args_cc4cl(args):
     if args.batch and not os.path.isdir(log_path):
         os.makedirs(log_path, 0o774)
 
-    if args.preset_settings is not None:
-        # A procedure named in local_defaults
-        try:
-            args.settings = retrieval_settings[args.preset_settings]
-        except KeyError:
-            raise BadValue("preset settings", "not defined in local_defaults")
-
-    elif args.settings_file is not None:
+    if args.settings_file is not None:
         # A procedure outlined in a file
         try:
             with open(args.settings_file) as settings_file:
                 args.settings = settings_file.read().splitlines()
         except IOError:
             raise FileMissing('Description of settings', args.settings_file)
+
+    elif args.preset_settings is not None:
+        # A procedure named in local_defaults
+        try:
+            args.settings = retrieval_settings[args.preset_settings]
+        except KeyError:
+            raise BadValue("preset settings", "not defined in local_defaults")
 
     elif args.settings is None:
         if args.phase is None:
@@ -436,6 +445,8 @@ def check_args_cc4cl(args):
         else:
             # Process a single type
             args.settings = (" ", )
+
+    return args
 
 
 def check_args_regress(args):
@@ -451,3 +462,5 @@ def check_args_regress(args):
             args.tests = ['DAYMYDS', 'NITMYDS', 'DAYMODS', 'NITMODS',
                           'DAYAATSRS', 'NITAATSRS', 'DAYAVHRRS', 'NITAVHRRS',
                           'DAYSEVIRIS', 'NITSEVIRIS']
+
+    return args

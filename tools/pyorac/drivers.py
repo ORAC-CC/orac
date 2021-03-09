@@ -98,6 +98,7 @@ def build_preproc_driver(args):
         for form, ec_hour in (('C3D*%m%d%H*.nc', 3),
                               ('ECMWF_OPER_%Y%m%d_%H+00.nc', 6),
                               ('ECMWF_ERA5_%Y%m%d_%H_0.5.nc', 6),
+                              ('ECMWF_ERA_%Y%m%d_%H_0.5.nc', 6),
                               ('ECMWF_ERA_%Y%m%d_%H+00_0.5.nc', 6)):
             try:
                 bounds = _bound_time(args.File.time + args.File.dur//2, ec_hour)
@@ -533,9 +534,9 @@ def _date_back_search(fdr, date_in, pattern, interval):
             date -= delta
 
     # If we fail, try to find a climatological file
-    files = glob(date.strftime(os.path.join(fdr, pattern.replace('%Y','XXXX'))))
-    if len(files) >= 1:
-        return files[-1]
+    if 'XXXX' not in pattern:
+        return _date_back_search(fdr.replace('%Y','XXXX'), date_in,
+                                 pattern.replace('%Y','XXXX'), 'days')
     else:
         raise FileMissing(fdr, pattern)
 

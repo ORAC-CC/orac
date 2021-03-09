@@ -114,13 +114,16 @@ class FileName:
     noaa (str): The number of this AVHRR sensor (1, 2, or 3).
     """
 
-    def __init__(self, in_dirs, filename):
+    def __init__(self, in_dirs, filename=None):
         import datetime
         import os
         import re
 
         from netCDF4 import Dataset
         from dateutil import parser
+
+        if filename is None:
+            in_dirs, filename = os.path.split(in_dirs)
 
         if isinstance(in_dirs, tuple):
             self.folders = list(in_dirs)
@@ -291,7 +294,7 @@ class FileName:
         )
         if mat:
             self.sensor = 'SEVIRI'
-            for fdr in in_dirs:
+            for fdr in self.folders:
                 tmp = os.path.join(fdr, filename)
                 if os.path.isfile(tmp):
                     self.platform = _determine_platform_from_metoffice(tmp)
@@ -323,7 +326,7 @@ class FileName:
             self.dur = datetime.timedelta(seconds=int(mat.group('duration')))
             self.geo = os.path.join(filename, "geodetic_in.nc")
 
-            for fdr in in_dirs:
+            for fdr in self.folders:
                 try:
                     with Dataset(os.path.join(fdr, self.l1b)) as slstr_file:
                         # Round time to nearest minute

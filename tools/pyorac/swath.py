@@ -522,6 +522,7 @@ class Swath(Mappable):
 
     def flag_map(self, name):
         """Return a dict mapping a flag's values to their meanings."""
+        from collections import OrderedDict
 
         var = self.get_variable(name)
         try:
@@ -551,7 +552,7 @@ class Swath(Mappable):
                 err.args = (name+" does not have flag definitions.", )
                 raise
 
-        return dict(zip(nums, names))
+        return OrderedDict(zip(nums, names))
 
 
     # -------------------------------------------------------------------
