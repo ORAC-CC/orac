@@ -286,7 +286,7 @@ def linear_cell_corners(lat, lon, central_longitude=0.):
     lon_transform[lon_transform > 180.] -= 360.
     lon_transform[lon_transform < -180.] += 360.
 
-    return grid_corners(lat), grid_corners(lon_transform)
+    return grid_corners(lat), grid_corners(lon_transform) + central_longitude
 
 
 
