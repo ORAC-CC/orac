@@ -67,8 +67,8 @@ subroutine Read_Location(Ctrl, MSI_Data)
    allocate(MSI_Data%Location%Lat(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))
    allocate(MSI_Data%Location%Lon(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))
 
-   call ncdf_read_array(ncid, "lat", MSI_Data%Location%Lat, Ctrl%verbose)
-   call ncdf_read_array(ncid, "lon", MSI_Data%Location%Lon, Ctrl%verbose)
+   call ncdf_read_array(ncid, "lat", MSI_Data%Location%Lat)
+   call ncdf_read_array(ncid, "lon", MSI_Data%Location%Lon)
 
    ! Close location file
    call ncdf_close(ncid, 'read_location()')

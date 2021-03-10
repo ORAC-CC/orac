@@ -139,8 +139,8 @@ subroutine Read_SwRTM(Ctrl, RTM)
 !  allocate(WvNumber(RTM%SW%NSWF))
 
    ! Read ChanID and WvNumber
-   call ncdf_read_array(ncid, "sw_channel_instr_ids", ChanID, Ctrl%verbose)
-!  call ncdf_read_array(ncid, "sw_channel_wvl", WvNumber, Ctrl%verbose)
+   call ncdf_read_array(ncid, "sw_channel_instr_ids", ChanID)
+!  call ncdf_read_array(ncid, "sw_channel_wvl", WvNumber)
 
    if (Ctrl%verbose) write(*,*) &
       'SW channel instrument ids for RTM in SW preprocessing file', ChanID
@@ -185,8 +185,8 @@ subroutine Read_SwRTM(Ctrl, RTM)
       allocate(RTM%SW%Tac(Ctrl%Ind%NSolar, RTM%NP, RTM%Grid%NLon, &
          RTM%Grid%NLat))
 
-      call ncdf_read_array(ncid, "tac_sw", RTM%SW%Tac, Ctrl%verbose, 1, index)
-      call ncdf_read_array(ncid, "tbc_sw", RTM%SW%Tbc, Ctrl%verbose, 1, index)
+      call ncdf_read_array(ncid, "tac_sw", RTM%SW%Tac, 1, index)
+      call ncdf_read_array(ncid, "tbc_sw", RTM%SW%Tbc, 1, index)
    end if
 
    ! Close SwRTM input file

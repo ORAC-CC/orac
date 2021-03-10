@@ -102,16 +102,16 @@ subroutine Read_CloudFlags(Ctrl, MSI_Data)
         Ctrl%Ind%NViews))
    allocate(MSI_Data%cphcot(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, Ctrl%Ind%NViews))
 
-!  call ncdf_read_array(ncid, "cflag", MSI_Data%CloudFlags, Ctrl%verbose)
-   call ncdf_read_array(ncid, "cldtype", MSI_Data%cldtype, Ctrl%verbose)
-   call ncdf_read_array(ncid, "cldmask", MSI_Data%cldmask, Ctrl%verbose)
+!  call ncdf_read_array(ncid, "cflag", MSI_Data%CloudFlags)
+   call ncdf_read_array(ncid, "cldtype", MSI_Data%cldtype)
+   call ncdf_read_array(ncid, "cldmask", MSI_Data%cldmask)
    call ncdf_read_array(ncid, "cldmask_uncertainty", &
-        MSI_Data%cldmask_uncertainty, Ctrl%verbose)
-   call ncdf_read_array(ncid, "cccot_pre", MSI_Data%cccot_pre, Ctrl%verbose)
-   call ncdf_read_array(ncid, "ann_phase", MSI_Data%ann_phase, Ctrl%verbose)
+        MSI_Data%cldmask_uncertainty)
+   call ncdf_read_array(ncid, "cccot_pre", MSI_Data%cccot_pre)
+   call ncdf_read_array(ncid, "ann_phase", MSI_Data%ann_phase)
    call ncdf_read_array(ncid, "ann_phase_uncertainty", &
-        MSI_Data%ann_phase_uncertainty, Ctrl%verbose)
-   call ncdf_read_array(ncid, "cphcot", MSI_Data%cphcot, Ctrl%verbose)
+        MSI_Data%ann_phase_uncertainty)
+   call ncdf_read_array(ncid, "cphcot", MSI_Data%cphcot)
 
    ! Merge various particle type flags (once aerosol is in)
    if (Ctrl%use_ann_phase) then

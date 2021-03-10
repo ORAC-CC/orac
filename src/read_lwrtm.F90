@@ -148,8 +148,8 @@ subroutine Read_LwRTM(Ctrl, RTM)
 !  allocate(WvNumber(RTM%LW%NLWF))
 
    ! Read ChanID and WvNumber
-   call ncdf_read_array(ncid, "lw_channel_instr_ids", ChanID, Ctrl%verbose)
-!  call ncdf_read_array(ncid, "lw_channel_wvl", WvNumber, Ctrl%verbose)
+   call ncdf_read_array(ncid, "lw_channel_instr_ids", ChanID)
+!  call ncdf_read_array(ncid, "lw_channel_wvl", WvNumber)
 
    if (Ctrl%verbose) write(*,*) &
       'LW channel instrument ids for RTM in LW preprocessing file: ', ChanID
@@ -201,12 +201,12 @@ subroutine Read_LwRTM(Ctrl, RTM)
          RTM%Grid%NLat))
 
       ! Read data into arrays
-      call ncdf_read_array(ncid, "emiss_lw", RTM%LW%Ems, Ctrl%verbose, 1, index)
-      call ncdf_read_array(ncid, "tac_lw", RTM%LW%Tac, Ctrl%verbose, 1, index)
-      call ncdf_read_array(ncid, "tbc_lw", RTM%LW%Tbc, Ctrl%verbose, 1, index)
-      call ncdf_read_array(ncid, "rbc_up_lw", RTM%LW%Rbc_up, Ctrl%verbose, 1, index)
-      call ncdf_read_array(ncid, "rac_up_lw", RTM%LW%Rac_up, Ctrl%verbose, 1, index)
-      call ncdf_read_array(ncid, "rac_down_lw", RTM%LW%Rac_dwn, Ctrl%verbose, 1, index)
+      call ncdf_read_array(ncid, "emiss_lw", RTM%LW%Ems, 1, index)
+      call ncdf_read_array(ncid, "tac_lw", RTM%LW%Tac, 1, index)
+      call ncdf_read_array(ncid, "tbc_lw", RTM%LW%Tbc, 1, index)
+      call ncdf_read_array(ncid, "rbc_up_lw", RTM%LW%Rbc_up, 1, index)
+      call ncdf_read_array(ncid, "rac_up_lw", RTM%LW%Rac_up, 1, index)
+      call ncdf_read_array(ncid, "rac_down_lw", RTM%LW%Rac_dwn, 1, index)
    end if
 
 !  if (allocated(WvNumber)) deallocate(WvNumber)

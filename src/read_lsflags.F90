@@ -88,10 +88,10 @@ subroutine Read_LSFlags(Ctrl, MSI_Data)
    allocate(MSI_Data%dem(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))
    allocate(MSI_Data%nisemask(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))
 
-   call ncdf_read_array(ncid, "lsflag", MSI_Data%LSFlags, Ctrl%verbose)
-   call ncdf_read_array(ncid, "lusflag", MSI_Data%lusflags, Ctrl%verbose)
-   call ncdf_read_array(ncid, "dem", MSI_Data%dem, Ctrl%verbose)
-   call ncdf_read_array(ncid, "nisemask", MSI_Data%nisemask, Ctrl%verbose)
+   call ncdf_read_array(ncid, "lsflag", MSI_Data%LSFlags)
+   call ncdf_read_array(ncid, "lusflag", MSI_Data%lusflags)
+   call ncdf_read_array(ncid, "dem", MSI_Data%dem)
+   call ncdf_read_array(ncid, "nisemask", MSI_Data%nisemask)
 
    ! Close LSF file
    call ncdf_close(ncid, 'read_lsflags()')

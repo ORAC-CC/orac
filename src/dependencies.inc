@@ -56,7 +56,7 @@ $(OBJS)/spixel_routines.o: $(OBJS)/ctrl.o $(OBJS)/data.o $(OBJS)/fm_routines.o \
         $(OBJS)/sad_chan.o $(OBJS)/sad_lut.o $(OBJS)/spixel.o get_geometry.F90 \
         get_indexing.F90 get_location.F90 get_lsf.F90 get_lwswrtm.F90 \
         get_measurements.F90 get_rtm.F90 get_spixel.F90 get_surface.F90 \
-        int_ctp.F90 x_mdad.F90 x_sdad.F90
+        get_x.F90 int_ctp.F90 x_mdad.F90 x_sdad.F90
 $(OBJS)/orac.o: $(OBJS)/ctrl.o $(OBJS)/data.o $(OBJS)/diag.o $(OBJS)/inversion.o \
         $(OBJS)/orac_constants.o $(OBJS)/prepare_output.o $(OBJS)/read_driver.o \
         $(OBJS)/read_sad.o $(OBJS)/read_utils.o $(OBJS)/rtm.o $(OBJS)/rtm_pc.o \

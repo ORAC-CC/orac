@@ -74,10 +74,10 @@ subroutine Read_Geometry(Ctrl, MSI_Data)
    allocate(MSI_Data%Geometry%Azi(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, Ctrl%Ind%NViews))
    allocate(MSI_Data%Geometry%Saz(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, Ctrl%Ind%NViews))
 
-   call ncdf_read_array(ncid, "solzen", MSI_Data%Geometry%Sol, Ctrl%verbose)
-   call ncdf_read_array(ncid, "satzen", MSI_Data%Geometry%Sat, Ctrl%verbose)
-   call ncdf_read_array(ncid, "relazi", MSI_Data%Geometry%Azi, Ctrl%verbose)
-   call ncdf_read_array(ncid, "sataz", MSI_Data%Geometry%Saz, Ctrl%verbose)
+   call ncdf_read_array(ncid, "solzen", MSI_Data%Geometry%Sol)
+   call ncdf_read_array(ncid, "satzen", MSI_Data%Geometry%Sat)
+   call ncdf_read_array(ncid, "relazi", MSI_Data%Geometry%Azi)
+   call ncdf_read_array(ncid, "sataz", MSI_Data%Geometry%Saz)
 
    ! Close geometry file
    call ncdf_close(ncid, 'read_geometry()')

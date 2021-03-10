@@ -89,9 +89,9 @@ subroutine Read_ALB(Ctrl, MSI_Data)
    call ncdf_open(ncid, Ctrl%FID%Alb, 'Read_ALB()')
 
    ! Read instrument channel indices from file
-   NAlb = ncdf_dim_length(ncid, 'nc_alb', 'Read_ALB()', Ctrl%verbose)
+   NAlb = ncdf_dim_length(ncid, 'nc_alb', 'Read_ALB()')
    allocate(alb_instr_ch_numbers(NAlb))
-   call ncdf_read_array(ncid, "alb_abs_ch_numbers", alb_instr_ch_numbers, Ctrl%verbose)
+   call ncdf_read_array(ncid, "alb_abs_ch_numbers", alb_instr_ch_numbers)
 
    ! Find the subscripts Ctrl%Ind%ysolar within alb_abs_ch_numbers
    allocate(subs(Ctrl%Ind%NSolar))
@@ -108,7 +108,7 @@ subroutine Read_ALB(Ctrl, MSI_Data)
    allocate(MSI_Data%ALB(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, Ctrl%Ind%NSolar))
 
    ! Read solar channels from albedo field
-   call ncdf_read_array(ncid, "alb_data", MSI_Data%ALB, Ctrl%verbose, 3, subs)
+   call ncdf_read_array(ncid, "alb_data", MSI_Data%ALB, 3, subs)
 
    if (Ctrl%verbose) write(*,*) 'Max/Min Alb: ', maxval(MSI_Data%ALB), &
       minval(MSI_Data%ALB)
@@ -120,10 +120,10 @@ subroutine Read_ALB(Ctrl, MSI_Data)
       allocate(MSI_Data%rho_dv(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, Ctrl%Ind%NSolar))
       allocate(MSI_Data%rho_dd(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, Ctrl%Ind%NSolar))
 
-      call ncdf_read_array(ncid, "rho_0v_data", MSI_Data%rho_0v, Ctrl%verbose, 3, subs)
-      call ncdf_read_array(ncid, "rho_0d_data", MSI_Data%rho_0d, Ctrl%verbose, 3, subs)
-      call ncdf_read_array(ncid, "rho_dv_data", MSI_Data%rho_dv, Ctrl%verbose, 3, subs)
-      call ncdf_read_array(ncid, "rho_dd_data", MSI_Data%rho_dd, Ctrl%verbose, 3, subs)
+      call ncdf_read_array(ncid, "rho_0v_data", MSI_Data%rho_0v, 3, subs)
+      call ncdf_read_array(ncid, "rho_0d_data", MSI_Data%rho_0d, 3, subs)
+      call ncdf_read_array(ncid, "rho_dv_data", MSI_Data%rho_dv, 3, subs)
+      call ncdf_read_array(ncid, "rho_dd_data", MSI_Data%rho_dd, 3, subs)
    end if
 
 
@@ -131,17 +131,17 @@ subroutine Read_ALB(Ctrl, MSI_Data)
    if (Ctrl%RS%SRsSelm == SelmAux) then
       ! Read surface reflectance uncertainties
       allocate(MSI_Data%rho_dd_unc(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, Ctrl%Ind%NSolar))
-      call ncdf_read_array(ncid, "rho_dd_unc", MSI_Data%rho_dd_unc, Ctrl%verbose, 3, subs)
+      call ncdf_read_array(ncid, "rho_dd_unc", MSI_Data%rho_dd_unc, 3, subs)
 
       ! Read additional uncertainty terms (in RhoDD over land)
       allocate(MSI_Data%svd_unc(Ctrl%Ind%NSolar))
-      call ncdf_read_array(ncid, "svd_unc", MSI_Data%svd_unc, Ctrl%verbose, 1, subs)
+      call ncdf_read_array(ncid, "svd_unc", MSI_Data%svd_unc, 1, subs)
       allocate(MSI_Data%veg_unc(Ctrl%Ind%NSolar))
-      call ncdf_read_array(ncid, "veg_unc", MSI_Data%veg_unc, Ctrl%verbose, 1, subs)
+      call ncdf_read_array(ncid, "veg_unc", MSI_Data%veg_unc, 1, subs)
       allocate(MSI_Data%bare_unc(Ctrl%Ind%NSolar))
-      call ncdf_read_array(ncid, "bare_unc", MSI_Data%bare_unc, Ctrl%verbose, 1, subs)
+      call ncdf_read_array(ncid, "bare_unc", MSI_Data%bare_unc, 1, subs)
       allocate(MSI_Data%snow_unc(Ctrl%Ind%NSolar))
-      call ncdf_read_array(ncid, "snow_unc", MSI_Data%snow_unc, Ctrl%verbose, 1, subs)
+      call ncdf_read_array(ncid, "snow_unc", MSI_Data%snow_unc, 1, subs)
 
       ! Read surface reflectance correlations. The third dimension of this is
       ! every permutation of the Solar channels, so some work is necessary to
@@ -150,11 +150,11 @@ subroutine Read_ALB(Ctrl, MSI_Data)
       ! make a correlation matrix for ORAC.
 
       ! Read in the correlation data to a temporary array
-      NCor = ncdf_dim_length(ncid, 'nc_corr', 'Read_ALB()', Ctrl%verbose)
+      NCor = ncdf_dim_length(ncid, 'nc_corr', 'Read_ALB()')
       allocate(cor_ch_numbers(2, NCor))
-      call ncdf_read_array(ncid, "cor_abs_ch_numbers", cor_ch_numbers, Ctrl%verbose)
+      call ncdf_read_array(ncid, "cor_abs_ch_numbers", cor_ch_numbers)
       allocate(cor_temp(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, NCor))
-      call ncdf_read_array(ncid, "cor_data", cor_temp, Ctrl%verbose)
+      call ncdf_read_array(ncid, "cor_data", cor_temp)
 
       allocate(MSI_Data%rho_dd_cor(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, &
                                    Ctrl%Ind%NSolar, Ctrl%Ind%NSolar))

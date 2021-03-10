@@ -153,19 +153,18 @@ subroutine Read_MSI(Ctrl, MSI_Data, SAD_Chan)
    allocate(MSI_Data%MSI(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, Ctrl%Ind%Ny))
    allocate(MSI_Data%time(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))
 
-   call ncdf_read_array(ncid, "msi_data", MSI_Data%MSI, Ctrl%verbose, 3, Ctrl%Ind%ICh)
-   call ncdf_read_array(ncid, "time_data", MSI_Data%time, Ctrl%verbose)
+   call ncdf_read_array(ncid, "msi_data", MSI_Data%MSI, 3, Ctrl%Ind%ICh)
+   call ncdf_read_array(ncid, "time_data", MSI_Data%time)
 
-   ! Read variance data if requested (for aerosol retrieval)
+   ! Read variance data, if requested
    if (Ctrl%EqMPN%SySelm == SelmMeas) then
       allocate(MSI_Data%SD(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, Ctrl%Ind%Ny))
-      call ncdf_read_array(ncid, "sd_data", MSI_Data%SD, Ctrl%verbose, &
-                         3, Ctrl%Ind%ICh)
+      call ncdf_read_array(ncid, "sd_data", MSI_Data%SD, 3, Ctrl%Ind%ICh)
    end if
 
    ! Read channel view indices from file (all channels)
 !  allocate(Ctrl%Ind%View_Id(Ctrl%Ind%Ny))
-!  call ncdf_read_array(ncid, "msi_ch_view", Ctrl%Ind%View_Id, Ctrl%verbose, &
+!  call ncdf_read_array(ncid, "msi_ch_view", Ctrl%Ind%View_Id, &
 !                     1, Ctrl%Ind%ICh)
    if (minval(Ctrl%Ind%View_Id) < 1 .or. &
        maxval(Ctrl%Ind%View_Id) > Ctrl%Ind%NViews) then
