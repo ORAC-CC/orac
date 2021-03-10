@@ -210,18 +210,18 @@ function ncdf_dim_length(ncid, name, source_routine) result(len)
 
    ierr = nf90_inq_dimid(ncid, name, did)
    if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: ncdf_dim_length(): ', source_routine, &
-           ': Could not locate dimension ', trim(name)
-      print*, trim(nf90_strerror(ierr))
-      stop error_stop_code
-   end if
-
-   ierr = nf90_inquire_dimension(ncid, did, dname, len)
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: ncdf_dim_length(): ', source_routine, &
-           ': Could not read dimension ', trim(name)
-      print*, trim(nf90_strerror(ierr))
-      stop error_stop_code
+      len = 0
+   else
+      ierr = nf90_inquire_dimension(ncid, did, dname, len)
+      if (ierr.ne.NF90_NOERR) then
+         print*, 'ERROR: ncdf_dim_length(): ', source_routine, &
+              ': Could not read dimension ', trim(name)
+         print*, trim(nf90_strerror(ierr))
+         stop error_stop_code
+      end if
+#ifdef DEBUG
+      print*, trim(name),' dim length: ',len
+#endif
    end if
 
 end function ncdf_dim_length
