@@ -20,6 +20,7 @@
 ! 2016/07/01, GT: Added map_ids_sw_to_channel and map_ids_lw_to_channel.
 ! 2016/08/04, GM: Added map_ids_channel_to_sw and map_ids_channel_to_lw.
 ! 2017/07/05, AP: Add NAll to track the total number of channels.
+! 2021/03/09, AP: Add radiance bias corrections.
 !
 ! Bugs:
 ! None known.
@@ -97,6 +98,10 @@ module channel_structures_m
       real(kind=sreal),   dimension(:), pointer :: channel_minimum_uncertainty
       real(kind=sreal),   dimension(:), pointer :: channel_fm_lnd_uncertainty
       real(kind=sreal),   dimension(:), pointer :: channel_fm_sea_uncertainty
+
+      ! Bias correction for each channel
+      real(kind=sreal),   dimension(:), pointer :: channel_absolute_bias
+      real(kind=sreal),   dimension(:), pointer :: channel_relative_bias
 
    end type channel_info_t
 

@@ -75,4 +75,7 @@ subroutine allocate_channel_info(channel_info)
    allocate(channel_info%channel_fm_sea_uncertainty( &
         channel_info%nchannels_total))
 
+   allocate(channel_info%channel_absolute_bias(channel_info%nchannels_total))
+   allocate(channel_info%channel_relative_bias(channel_info%nchannels_total))
+
 end subroutine allocate_channel_info

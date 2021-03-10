@@ -86,7 +86,8 @@
 !    l1b_version and level1b_orbit_number attributes from the L1b file.
 !    Extending this change to the other supported instruments is worth
 !    considering...
-! 2019/8/14, SP: Add Fengyun-4A support.
+! 2019/08/14, SP: Add Fengyun-4A support.
+! 2021/03/09, AP: Add radiance bias corrections.
 !
 ! Bugs:
 ! None known.
@@ -187,6 +188,14 @@ subroutine setup_aatsr(l1b_path_file, geo_path_file, platform, sensor, year, &
       (/ 0.0200, 0.0236, 0.0263, 0.0461, 0.0, 0.0, 0.0, &
          0.0132, 0.0150, 0.0161, 0.0294, 0.0, 0.0, 0.0 /)
 
+   ! Bias correction
+   real,    parameter :: all_channel_absolute_bias(all_nchannels_total) = &
+      (/ 0.0,    0.0,    0.0,   0.0,    0.0,    0.0,    0.0, &
+         0.0,    0.0,    0.0,   0.0,    0.0,    0.0,    0.0 /)
+   real,    parameter :: all_channel_relative_bias(all_nchannels_total) = &
+      (/ 1.0,    1.0,    1.0,   1.0,    1.0,    1.0,    1.0, &
+         1.0,    1.0,    1.0,   1.0,    1.0,    1.0,    1.0 /)
+
    ! Only this below needs to be set to change the desired default channels. All
    ! other channel related arrays/indexes are set automatically given the static
    ! instrument channel definition above.
@@ -248,7 +257,7 @@ subroutine setup_aatsr(l1b_path_file, geo_path_file, platform, sensor, year, &
       all_map_ids_abs_to_snow_and_ice, all_map_ids_view_number, &
       all_channel_fractional_uncertainty, all_channel_minimum_uncertainty, &
       all_channel_numerical_uncertainty, all_channel_lnd_uncertainty, &
-      all_channel_sea_uncertainty, all_nchannels_total)
+      all_channel_sea_uncertainty, all_channel_absolute_bias, all_channel_relative_bias, all_nchannels_total)
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_aatsr()'
 
@@ -339,6 +348,14 @@ subroutine setup_abi(l1b_path_file, geo_path_file, platform, year, month, day, &
       (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0., &
          0.,      0.,      0.,      0.,      0.,      0.,      0.,      0. /)
 
+   ! Bias correction
+   real,    parameter :: all_channel_absolute_bias(all_nchannels_total) = &
+      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0., &
+         0.,      0.,      0.,      0.,      0.,      0.,      0.,      0. /)
+   real,    parameter :: all_channel_relative_bias(all_nchannels_total) = &
+      (/ 1.,      1.,      1.,      1.,      1.,      1.,      1.,      1., &
+         1.,      1.,      1.,      1.,      1.,      1.,      1.,      1. /)
+
    ! Only this below needs to be set to change the desired default channels. All
    ! other channel related arrays/indexes are set automatically given the static
    ! instrument channel definition above.
@@ -404,7 +421,7 @@ subroutine setup_abi(l1b_path_file, geo_path_file, platform, year, month, day, &
       all_map_ids_abs_to_snow_and_ice, all_map_ids_view_number, &
       all_channel_fractional_uncertainty, all_channel_minimum_uncertainty, &
       all_channel_numerical_uncertainty, all_channel_lnd_uncertainty, &
-      all_channel_sea_uncertainty, all_nchannels_total)
+      all_channel_sea_uncertainty, all_channel_absolute_bias, all_channel_relative_bias, all_nchannels_total)
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_abi()'
 
@@ -495,6 +512,14 @@ subroutine setup_agri(l1b_path_file, geo_path_file, platform, year, month, day, 
       (/ 0.,      0.,      0.,      0.,      0.,      0.,      0., &
          0.,      0.,      0.,      0.,      0.,      0.     /)
 
+   ! Bias correction
+   real,    parameter :: all_channel_absolute_bias(all_nchannels_total) = &
+      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0., &
+         0.,      0.,      0.,      0.,      0.,      0.     /)
+   real,    parameter :: all_channel_relative_bias(all_nchannels_total) = &
+      (/ 1.,      1.,      1.,      1.,      1.,      1.,      1., &
+         1.,      1.,      1.,      1.,      1.,      1.     /)
+
    ! Only this below needs to be set to change the desired default channels. All
    ! other channel related arrays/indexes are set automatically given the static
    ! instrument channel definition above.
@@ -537,13 +562,13 @@ subroutine setup_agri(l1b_path_file, geo_path_file, platform, year, month, day, 
 
    ! now set up the channels
    call common_setup(channel_info, channel_ids_user, channel_ids_default, &
-        all_channel_wl_abs, all_channel_sw_flag, all_channel_lw_flag, &
-        all_channel_ids_rttov_coef_sw, all_channel_ids_rttov_coef_lw, &
-        all_map_ids_abs_to_ref_band_land, all_map_ids_abs_to_ref_band_sea, &
-        all_map_ids_abs_to_snow_and_ice, all_map_ids_view_number, &
-        all_channel_fractional_uncertainty, all_channel_minimum_uncertainty, &
-        all_channel_numerical_uncertainty, all_channel_lnd_uncertainty, &
-        all_channel_sea_uncertainty, all_nchannels_total)
+      all_channel_wl_abs, all_channel_sw_flag, all_channel_lw_flag, &
+      all_channel_ids_rttov_coef_sw, all_channel_ids_rttov_coef_lw, &
+      all_map_ids_abs_to_ref_band_land, all_map_ids_abs_to_ref_band_sea, &
+      all_map_ids_abs_to_snow_and_ice, all_map_ids_view_number, &
+      all_channel_fractional_uncertainty, all_channel_minimum_uncertainty, &
+      all_channel_numerical_uncertainty, all_channel_lnd_uncertainty, &
+      all_channel_sea_uncertainty, all_channel_absolute_bias, all_channel_relative_bias, all_nchannels_total)
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_agri()'
 
@@ -634,6 +659,14 @@ subroutine setup_ahi(l1b_path_file, geo_path_file, platform, year, month, day, &
       (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0., &
          0.,      0.,      0.,      0.,      0.,      0.,      0.,      0. /)
 
+   ! Bias correction
+   real,    parameter :: all_channel_absolute_bias(all_nchannels_total) = &
+      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0., &
+         0.,      0.,      0.,      0.,      0.,      0.,      0.,      0. /)
+   real,    parameter :: all_channel_relative_bias(all_nchannels_total) = &
+      (/ 1.,      1.,      1.,      1.,      1.,      1.,      1.,      1., &
+         1.,      1.,      1.,      1.,      1.,      1.,      1.,      1. /)
+
    ! Only this below needs to be set to change the desired default channels. All
    ! other channel related arrays/indexes are set automatically given the static
    ! instrument channel definition above.
@@ -702,7 +735,7 @@ subroutine setup_ahi(l1b_path_file, geo_path_file, platform, year, month, day, &
       all_map_ids_abs_to_snow_and_ice, all_map_ids_view_number, &
       all_channel_fractional_uncertainty, all_channel_minimum_uncertainty, &
       all_channel_numerical_uncertainty, all_channel_lnd_uncertainty, &
-      all_channel_sea_uncertainty, all_nchannels_total)
+      all_channel_sea_uncertainty, all_channel_absolute_bias, all_channel_relative_bias, all_nchannels_total)
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_ahi()'
 
@@ -781,6 +814,12 @@ subroutine setup_avhrr(l1b_path_file, geo_path_file, platform, year, month, day,
 
    real,    parameter :: all_channel_sea_uncertainty(all_nchannels_total) = &
       (/ 0.,   0.,     0.,   0.,   0.,   0. /)
+
+   ! Bias correction
+   real,    parameter :: all_channel_absolute_bias(all_nchannels_total) = &
+      (/ 0.,   0.,     0.,   0.,   0.,   0. /)
+   real,    parameter :: all_channel_relative_bias(all_nchannels_total) = &
+      (/ 1.,   1.,     1.,   1.,   1.,   1. /)
 
    ! Only this below needs to be set to change the desired default channels. All
    ! other channel related arrays/indexes are set automatically given the static
@@ -918,7 +957,7 @@ subroutine setup_avhrr(l1b_path_file, geo_path_file, platform, year, month, day,
       all_map_ids_abs_to_snow_and_ice, all_map_ids_view_number, &
       all_channel_fractional_uncertainty, all_channel_minimum_uncertainty, &
       all_channel_numerical_uncertainty, all_channel_lnd_uncertainty, &
-      all_channel_sea_uncertainty, all_nchannels_total)
+      all_channel_sea_uncertainty, all_channel_absolute_bias, all_channel_relative_bias, all_nchannels_total)
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_avhrr()'
 
@@ -1078,6 +1117,22 @@ subroutine setup_modis(l1b_path_file, geo_path_file, platform, year, month, day,
          0.,        0.,        0.,        0.,        0.,        0., &
          0.,        0.,        0.,        0.,        0.,        0. /)
 
+   ! Bias correction
+   real,    parameter :: all_channel_absolute_bias(all_nchannels_total) = &
+      (/ 0.,        0.,        0.,        0.,        0.,        0., &
+         0.,        0.,        0.,        0.,        0.,        0., &
+         0.,        0.,        0.,        0.,        0.,        0., &
+         0.,        0.,        0.,        0.,        0.,        0., &
+         0.,        0.,        0.,        0.,        0.,        0., &
+         0.,        0.,        0.,        0.,        0.,        0. /)
+   real,    parameter :: all_channel_relative_bias(all_nchannels_total) = &
+      (/ 1.,        1.,        1.,        1.,        1.,        1., &
+         1.,        1.,        1.,        1.,        1.,        1., &
+         1.,        1.,        1.,        1.,        1.,        1., &
+         1.,        1.,        1.,        1.,        1.,        1., &
+         1.,        1.,        1.,        1.,        1.,        1., &
+         1.,        1.,        1.,        1.,        1.,        1. /)
+
    ! Only this below needs to be set to change the desired default channels. All
    ! other channel related arrays/indexes are set automatically given the static
    ! instrument channel definition above.
@@ -1141,7 +1196,7 @@ subroutine setup_modis(l1b_path_file, geo_path_file, platform, year, month, day,
       all_map_ids_abs_to_snow_and_ice, all_map_ids_view_number, &
       all_channel_fractional_uncertainty, all_channel_minimum_uncertainty, &
       all_channel_numerical_uncertainty, all_channel_lnd_uncertainty, &
-      all_channel_sea_uncertainty, all_nchannels_total)
+      all_channel_sea_uncertainty, all_channel_absolute_bias, all_channel_relative_bias, all_nchannels_total)
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_modis()'
 
@@ -1218,6 +1273,12 @@ subroutine setup_seviri(l1b_path_file, geo_path_file, platform, year, month, day
 
    real,    parameter :: all_channel_sea_uncertainty(all_nchannels_total) = &
       (/ 0.,    0.,   0.,   0.,   0.,   0.,   0.,   0.,   0.,    0.,    0. /)
+
+   ! Bias correction
+   real,    parameter :: all_channel_absolute_bias(all_nchannels_total) = &
+      (/ 0.,    0.,   0.,   0.,   0.,   0.,   0.,   0.,   0.,    0.,    0. /)
+   real,    parameter :: all_channel_relative_bias(all_nchannels_total) = &
+      (/ 1.,    1.,   1.,   1.,   1.,   1.,   1.,   1.,   1.,    1.,    1. /)
 
    ! Only this below needs to be set to change the desired default channels. All
    ! other channel related arrays/indexes are set automatically given the static
@@ -1317,7 +1378,7 @@ subroutine setup_seviri(l1b_path_file, geo_path_file, platform, year, month, day
       all_map_ids_abs_to_snow_and_ice, all_map_ids_view_number, &
       all_channel_fractional_uncertainty, all_channel_minimum_uncertainty, &
       all_channel_numerical_uncertainty, all_channel_lnd_uncertainty, &
-      all_channel_sea_uncertainty, all_nchannels_total)
+      all_channel_sea_uncertainty, all_channel_absolute_bias, all_channel_relative_bias, all_nchannels_total)
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_seviri()'
 
@@ -1416,6 +1477,17 @@ subroutine setup_slstr(l1b_path_file, geo_path_file, source_attributes, platform
    real,    parameter :: all_channel_sea_uncertainty(all_nchannels_total) = &
       (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0.,     0., &
          0.,      0.,      0.,      0.,      0.,      0.,      0.,      0.,     0. /)
+
+   ! Bias correction
+   ! The calibration of SLSTR is under ongoing revisions, such that the
+   ! application of empirical correction factors is currently required.
+   ! These are taken from the SLSTR User Guide and/or personal communications.
+   real,    parameter :: all_channel_absolute_bias(all_nchannels_total) = &
+      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0.,     0., &
+         0.,      0.,      0.,      0.,      0.,      0.,      0.,      0.,     0. /)
+   real,    parameter :: all_channel_relative_bias(all_nchannels_total) = &
+      (/ 0.95,    1.,      1.,      1.,      1.10,    1.10,    1.,      1.,     1., &
+         0.92,    0.93,    0.93,    1.,      1.,      1.,      1.,      1.,     1. /)
 
    ! Only this below needs to be set to change the desired default channels. All
    ! other channel related arrays/indexes are set automatically given the static
@@ -1547,7 +1619,7 @@ subroutine setup_slstr(l1b_path_file, geo_path_file, source_attributes, platform
       all_map_ids_abs_to_snow_and_ice, all_map_ids_view_number, &
       all_channel_fractional_uncertainty, all_channel_minimum_uncertainty, &
       all_channel_numerical_uncertainty, all_channel_lnd_uncertainty, &
-      all_channel_sea_uncertainty, all_nchannels_total)
+      all_channel_sea_uncertainty, all_channel_absolute_bias, all_channel_relative_bias, all_nchannels_total)
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_slstr()'
 
@@ -1641,6 +1713,14 @@ subroutine setup_viirs_mband(l1b_path_file, geo_path_file, platform, year, month
       (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0., &
          0.,      0.,      0.,      0.,      0.,      0.,      0.,      0. /)
 
+   ! Bias correction
+   real,    parameter :: all_channel_absolute_bias(all_nchannels_total) = &
+      (/ 0.,      0.,      0.,      0.,      0.,      0.,      0.,      0., &
+         0.,      0.,      0.,      0.,      0.,      0.,      0.,      0. /)
+   real,    parameter :: all_channel_relative_bias(all_nchannels_total) = &
+      (/ 1.,      1.,      1.,      1.,      1.,      1.,      1.,      1., &
+         1.,      1.,      1.,      1.,      1.,      1.,      1.,      1. /)
+
    ! Only this below needs to be set to change the desired default channels. All
    ! other channel related arrays/indexes are set automatically given the static
    ! instrument channel definition above.
@@ -1717,7 +1797,7 @@ subroutine setup_viirs_mband(l1b_path_file, geo_path_file, platform, year, month
       all_map_ids_abs_to_snow_and_ice, all_map_ids_view_number, &
       all_channel_fractional_uncertainty, all_channel_minimum_uncertainty, &
       all_channel_numerical_uncertainty, all_channel_lnd_uncertainty, &
-      all_channel_sea_uncertainty, all_nchannels_total)
+      all_channel_sea_uncertainty, all_channel_absolute_bias, all_channel_relative_bias, all_nchannels_total)
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_viirs_mband()'
 
@@ -1797,6 +1877,12 @@ subroutine setup_viirs_iband(l1b_path_file, geo_path_file, platform, year, month
 
    real,    parameter :: all_channel_sea_uncertainty(all_nchannels_total) = &
       (/ 0.,      0.,      0.,      0.,      0./)
+
+   ! Bias correction
+   real,    parameter :: all_channel_absolute_bias(all_nchannels_total) = &
+      (/ 0.,      0.,      0.,      0.,      0./)
+   real,    parameter :: all_channel_relative_bias(all_nchannels_total) = &
+      (/ 1.,      1.,      1.,      1.,      1./)
 
    ! Only this below needs to be set to change the desired default channels. All
    ! other channel related arrays/indexes are set automatically given the static
@@ -1885,7 +1971,7 @@ subroutine setup_viirs_iband(l1b_path_file, geo_path_file, platform, year, month
       all_map_ids_abs_to_snow_and_ice, all_map_ids_view_number, &
       all_channel_fractional_uncertainty, all_channel_minimum_uncertainty, &
       all_channel_numerical_uncertainty, all_channel_lnd_uncertainty, &
-      all_channel_sea_uncertainty, all_nchannels_total)
+      all_channel_sea_uncertainty, all_channel_absolute_bias, all_channel_relative_bias, all_nchannels_total)
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_viirs_iband()'
 
@@ -1899,7 +1985,7 @@ subroutine common_setup(channel_info, channel_ids_user, channel_ids_default, &
    all_map_ids_abs_to_snow_and_ice, all_map_ids_view_number, &
    all_channel_fractional_uncertainty, all_channel_minimum_uncertainty, &
    all_channel_numerical_uncertainty, all_channel_lnd_uncertainty, &
-   all_channel_sea_uncertainty, all_nchannels_total)
+   all_channel_sea_uncertainty, all_channel_absolute_bias, all_channel_relative_bias, all_nchannels_total)
 
    use channel_structures_m
 
@@ -1922,6 +2008,8 @@ subroutine common_setup(channel_info, channel_ids_user, channel_ids_default, &
    real,                 intent(in)    :: all_channel_numerical_uncertainty(:)
    real,                 intent(in)    :: all_channel_lnd_uncertainty(:)
    real,                 intent(in)    :: all_channel_sea_uncertainty(:)
+   real,                 intent(in)    :: all_channel_absolute_bias(:)
+   real,                 intent(in)    :: all_channel_relative_bias(:)
    integer,              intent(in)    :: all_nchannels_total
 
    integer, dimension(:), allocatable  :: unique_views
@@ -1975,6 +2063,11 @@ subroutine common_setup(channel_info, channel_ids_user, channel_ids_default, &
          all_channel_numerical_uncertainty(channel_info%channel_ids_instr(i)) + &
          all_channel_sea_uncertainty(channel_info%channel_ids_instr(i)) * &
          all_channel_sea_uncertainty(channel_info%channel_ids_instr(i)))
+
+      channel_info%channel_absolute_bias(i) = &
+         all_channel_absolute_bias(channel_info%channel_ids_instr(i))
+      channel_info%channel_relative_bias(i) = &
+         all_channel_relative_bias(channel_info%channel_ids_instr(i))
    end do
 
    ! This section computes the actual number of views in the scene

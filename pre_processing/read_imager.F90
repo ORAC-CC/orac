@@ -55,7 +55,8 @@
 !                 instead of IMPF (as previous). The new driver file option
 !                 USE_GSICS enables this to be disabled.
 ! 2018/06/08, SP: New global attribute to store satellite position information
-! 2019/8/14, SP: Add Fengyun-4A support.
+! 2019/08/14, SP: Add Fengyun-4A support.
+! 2021/03/09, AP: Add radiance bias corrections.
 !
 ! Bugs:
 ! None known.
@@ -255,7 +256,15 @@ subroutine read_imager(sensor, platform, path_to_l1b_file, path_to_geo_file, &
       stop error_stop_code
    end if
 
+   ! Bias correction (these are defined in the appropriate setup.F90 routine)
+   do k = 1, channel_info%nchannels_total
+      imager_measurements%data(:,:,k) = channel_info%channel_absolute_bias(k) + &
+           channel_info%channel_relative_bias(k) * &
+           imager_measurements%data(:,:,k)
+   end do
+
    ! Estimate measurement uncertainty
+   ! NOTE: Doing this here as instruments will eventually provide L1 uncs
    do k = 1, channel_info%nchannels_total
       do j = 1, imager_geolocation%ny
          do i = imager_geolocation%startx, imager_geolocation%endx
