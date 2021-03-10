@@ -33,6 +33,7 @@
 ! 2017/07/10, AP: Add int64 fields.
 ! 2020/02/02, AP: Added nc_close().
 ! 2020/04/21, AP: Renamed routines ncdf_ to avoid clobber of library routines.
+! 2020/09/30, AP: Move verbose option to DEBUG flag. Add 5 and 6D read functions.
 !-------------------------------------------------------------------------------
 
 module orac_ncdf_m
@@ -44,12 +45,18 @@ module orac_ncdf_m
 
    interface ncdf_read_array
       module procedure &
-         read_byte_0d,  read_byte_1d,  read_byte_2d,  read_byte_3d,  read_byte_4d, &
-         read_sint_0d,  read_sint_1d,  read_sint_2d,  read_sint_3d,  read_sint_4d, &
-         read_lint_0d,  read_lint_1d,  read_lint_2d,  read_lint_3d,  read_lint_4d, &
-         read_dint_0d,  read_dint_1d,  read_dint_2d,  read_dint_3d,  read_dint_4d, &
-         read_sreal_0d, read_sreal_1d, read_sreal_2d, read_sreal_3d, read_sreal_4d, &
-         read_dreal_0d, read_dreal_1d, read_dreal_2d, read_dreal_3d, read_dreal_4d
+         read_byte_0d,  read_byte_1d,  read_byte_2d,  read_byte_3d,  &
+         read_byte_4d,  read_byte_5d,  read_byte_6d, &
+         read_sint_0d,  read_sint_1d,  read_sint_2d,  read_sint_3d,  &
+         read_sint_4d,  read_sint_5d,  read_sint_6d, &
+         read_lint_0d,  read_lint_1d,  read_lint_2d,  read_lint_3d,  &
+         read_lint_4d,  read_lint_5d,  read_lint_6d, &
+         read_dint_0d,  read_dint_1d,  read_dint_2d,  read_dint_3d,  &
+         read_dint_4d,  read_dint_5d,  read_dint_6d, &
+         read_sreal_0d, read_sreal_1d, read_sreal_2d, read_sreal_3d, &
+         read_sreal_4d, read_sreal_5d, read_sreal_6d, &
+         read_dreal_0d, read_dreal_1d, read_dreal_2d, read_dreal_3d, &
+         read_dreal_4d, read_dreal_5d, read_dreal_6d
    end interface ncdf_read_array
 
    interface ncdf_write_array
@@ -65,7 +72,7 @@ module orac_ncdf_m
    interface ncdf_read_packed_array
       module procedure &
          read_packed_sreal_1d, read_packed_sreal_2d, read_packed_sreal_3d, &
-         read_packed_sreal_4d
+         read_packed_sreal_4d, read_packed_sreal_5d, read_packed_sreal_6d
    end interface ncdf_read_packed_array
 
 contains
@@ -394,6 +401,8 @@ end function ncdf_dim_length
 #define NCDF_READ_NAME_2D read_byte_2d
 #define NCDF_READ_NAME_3D read_byte_3d
 #define NCDF_READ_NAME_4D read_byte_4d
+#define NCDF_READ_NAME_5D read_byte_5d
+#define NCDF_READ_NAME_6D read_byte_6d
 #include "ncdf_read_template.inc"
 #undef NCDF_READ_TYPE
 #undef NCDF_READ_KIND
@@ -403,6 +412,8 @@ end function ncdf_dim_length
 #undef NCDF_READ_NAME_2D
 #undef NCDF_READ_NAME_3D
 #undef NCDF_READ_NAME_4D
+#undef NCDF_READ_NAME_5D
+#undef NCDF_READ_NAME_6D
 
 #define NCDF_READ_TYPE integer
 #define NCDF_READ_KIND sint
@@ -412,6 +423,8 @@ end function ncdf_dim_length
 #define NCDF_READ_NAME_2D read_sint_2d
 #define NCDF_READ_NAME_3D read_sint_3d
 #define NCDF_READ_NAME_4D read_sint_4d
+#define NCDF_READ_NAME_5D read_sint_5d
+#define NCDF_READ_NAME_6D read_sint_6d
 #include "ncdf_read_template.inc"
 #undef NCDF_READ_TYPE
 #undef NCDF_READ_KIND
@@ -421,6 +434,8 @@ end function ncdf_dim_length
 #undef NCDF_READ_NAME_2D
 #undef NCDF_READ_NAME_3D
 #undef NCDF_READ_NAME_4D
+#undef NCDF_READ_NAME_5D
+#undef NCDF_READ_NAME_6D
 
 #define NCDF_READ_TYPE integer
 #define NCDF_READ_KIND lint
@@ -430,6 +445,8 @@ end function ncdf_dim_length
 #define NCDF_READ_NAME_2D read_lint_2d
 #define NCDF_READ_NAME_3D read_lint_3d
 #define NCDF_READ_NAME_4D read_lint_4d
+#define NCDF_READ_NAME_5D read_lint_5d
+#define NCDF_READ_NAME_6D read_lint_6d
 #include "ncdf_read_template.inc"
 #undef NCDF_READ_TYPE
 #undef NCDF_READ_KIND
@@ -439,6 +456,8 @@ end function ncdf_dim_length
 #undef NCDF_READ_NAME_2D
 #undef NCDF_READ_NAME_3D
 #undef NCDF_READ_NAME_4D
+#undef NCDF_READ_NAME_5D
+#undef NCDF_READ_NAME_6D
 
 #define NCDF_READ_TYPE integer
 #define NCDF_READ_KIND dint
@@ -448,6 +467,8 @@ end function ncdf_dim_length
 #define NCDF_READ_NAME_2D read_dint_2d
 #define NCDF_READ_NAME_3D read_dint_3d
 #define NCDF_READ_NAME_4D read_dint_4d
+#define NCDF_READ_NAME_5D read_dint_5d
+#define NCDF_READ_NAME_6D read_dint_6d
 #include "ncdf_read_template.inc"
 #undef NCDF_READ_TYPE
 #undef NCDF_READ_KIND
@@ -457,6 +478,8 @@ end function ncdf_dim_length
 #undef NCDF_READ_NAME_2D
 #undef NCDF_READ_NAME_3D
 #undef NCDF_READ_NAME_4D
+#undef NCDF_READ_NAME_5D
+#undef NCDF_READ_NAME_6D
 
 #define NCDF_READ_TYPE real
 #define NCDF_READ_KIND sreal
@@ -468,10 +491,14 @@ end function ncdf_dim_length
 #define NCDF_READ_NAME_2D read_sreal_2d
 #define NCDF_READ_NAME_3D read_sreal_3d
 #define NCDF_READ_NAME_4D read_sreal_4d
+#define NCDF_READ_NAME_5D read_sreal_5d
+#define NCDF_READ_NAME_6D read_sreal_6d
 #define NCDF_READ_PACKED_NAME_1D read_packed_sreal_1d
 #define NCDF_READ_PACKED_NAME_2D read_packed_sreal_2d
 #define NCDF_READ_PACKED_NAME_3D read_packed_sreal_3d
 #define NCDF_READ_PACKED_NAME_4D read_packed_sreal_4d
+#define NCDF_READ_PACKED_NAME_5D read_packed_sreal_5d
+#define NCDF_READ_PACKED_NAME_6D read_packed_sreal_6d
 #include "ncdf_read_template.inc"
 #undef NCDF_READ_TYPE
 #undef NCDF_READ_KIND
@@ -483,10 +510,14 @@ end function ncdf_dim_length
 #undef NCDF_READ_NAME_2D
 #undef NCDF_READ_NAME_3D
 #undef NCDF_READ_NAME_4D
+#undef NCDF_READ_NAME_5D
+#undef NCDF_READ_NAME_6D
 #undef NCDF_READ_PACKED_NAME_1D
 #undef NCDF_READ_PACKED_NAME_2D
 #undef NCDF_READ_PACKED_NAME_3D
 #undef NCDF_READ_PACKED_NAME_4D
+#undef NCDF_READ_PACKED_NAME_5D
+#undef NCDF_READ_PACKED_NAME_6D
 
 #define NCDF_READ_TYPE real
 #define NCDF_READ_KIND dreal
@@ -496,6 +527,8 @@ end function ncdf_dim_length
 #define NCDF_READ_NAME_2D read_dreal_2d
 #define NCDF_READ_NAME_3D read_dreal_3d
 #define NCDF_READ_NAME_4D read_dreal_4d
+#define NCDF_READ_NAME_5D read_dreal_5d
+#define NCDF_READ_NAME_6D read_dreal_6d
 #include "ncdf_read_template.inc"
 #undef NCDF_READ_TYPE
 #undef NCDF_READ_KIND
@@ -505,6 +538,8 @@ end function ncdf_dim_length
 #undef NCDF_READ_NAME_2D
 #undef NCDF_READ_NAME_3D
 #undef NCDF_READ_NAME_4D
+#undef NCDF_READ_NAME_5D
+#undef NCDF_READ_NAME_6D
 
 !-------------------------------------------------------------------------------
 ! Name: ncdf_write_array
