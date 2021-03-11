@@ -209,14 +209,14 @@ for sensor, channels in aer_single_channels.items():
 for sensor in cld_channels.keys():
     retrieval_settings[sensor] = retrieval_settings[sensor + "_C"]
 
-# Experimenting with volcanic ash retrieveals
+# Experimenting with volcanic ash retrievals
 ash_retrievals = {
     "ash_cld" : "--phase EYJ --ret_class ClsAshEyj --approach AppCld1L "
                 "--sub_dir ash",
-    # "wat_ash" : "--phase EYJ --ret_class ClsAshEyj --approach AppCld2L "
-    #             "--multilayer WAT ClsCldWat --sub_dir ash",
-    # "ice_ash" : "--phase EYJ --ret_class ClsAshEyj --approach AppCld2L "
-    #             "--multilayer ICE ClsCldIce --sub_dir ash"
+    "wat_ash" : "--phase EYJ --ret_class ClsAshEyj --approach AppCld2L "
+                "--multilayer WAT ClsCldWat --sub_dir ash",
+    "ice_ash" : "--phase EYJ --ret_class ClsAshEyj --approach AppCld2L "
+                "--multilayer ICE ClsCldIce --sub_dir ash"
 }
 ash_channels = {
     # Use all AHI channels
@@ -235,7 +235,7 @@ ash_channels = {
     #"AHI" : "--use_channels 14 15 16"
     # Pavolonis et al. measurement vector (11, 11-12 and 11-13.3 micron)
     #"AHI" : "--use_channels ???" TODO: use channel BTDs in measurment vector
-    # Thermal channels incl. 3.9 micron and 9.6 micron but no 7.3 and 8.6
+    # Thermal channels except 7.3 micron and 8.6 micron
     "AHI" : "--use_channels 7 8 9 12 13 14 15 16"
     }
 
