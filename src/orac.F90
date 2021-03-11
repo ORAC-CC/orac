@@ -337,11 +337,11 @@ subroutine orac(mytask,ntasks,lower_bound,upper_bound,drifile)
            Ctrl%FID%SWRTM, RTM%Grid%NLon, RTM%Grid%NLat, RTM%NP, &
            RTM%LW%NLWF, RTM%SW%NSWF, Ctrl%Ind%NSolar, Ctrl%verbose)
 
-      call Read_PRTM_nc(Ctrl, RTM)
+      call Read_PRTM(Ctrl, RTM)
       if (Ctrl%Ind%NThermal > 0) &
-           call Read_LwRTM_nc(Ctrl, RTM)
+           call Read_LwRTM(Ctrl, RTM)
       if (Ctrl%Ind%NSolar > 0) &
-           call Read_SwRTM_nc(Ctrl, RTM)
+           call Read_SwRTM(Ctrl, RTM)
    end if
 
    !----------------------------------------------------------------------------
@@ -371,7 +371,7 @@ subroutine orac(mytask,ntasks,lower_bound,upper_bound,drifile)
 
 
    ! Read all the swath data
-   call Read_Data_nc(Ctrl, MSI_Data, SAD_Chan)
+   call Read_Data(Ctrl, MSI_Data, SAD_Chan)
 
    xstep = 1
    ystep = 1

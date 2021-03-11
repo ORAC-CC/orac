@@ -180,10 +180,10 @@ subroutine SEV_Retrieve_Predef_Geo(imager_geolocation, imager_angles, &
    start(2) = imager_geolocation%starty
 
    call ncdf_open(ncid, geofile, 'SEV_Retrieve_Predef_Geo()')
-   call ncdf_read_array(ncid, "Lat", imager_geolocation%latitude, verbose, start=start)
-   call ncdf_read_array(ncid, "Lon", imager_geolocation%longitude, verbose, start=start)
-   call ncdf_read_array(ncid, "VZA", imager_angles%satzen(:,:,1), verbose, start=start)
-   call ncdf_read_array(ncid, "VAA", imager_angles%satazi(:,:,1), verbose, start=start)
+   call ncdf_read_array(ncid, "Lat", imager_geolocation%latitude, start=start)
+   call ncdf_read_array(ncid, "Lon", imager_geolocation%longitude, start=start)
+   call ncdf_read_array(ncid, "VZA", imager_angles%satzen(:,:,1), start=start)
+   call ncdf_read_array(ncid, "VAA", imager_angles%satazi(:,:,1), start=start)
    call ncdf_close(ncid, 'SEV_Retrieve_Predef_Geo()')
 
 end subroutine SEV_Retrieve_Predef_Geo
