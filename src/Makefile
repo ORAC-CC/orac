@@ -220,11 +220,11 @@ PRINTER_NAME    = print_ctrl
 PARSER_SOURCE   = $(ORAC_COMMON)/common_constants.F90 \
                   $(ORAC_COMMON)/constants_cloud_typing_pavolonis.F90 \
                   $(ORAC_COMMON)/orac_indexing.F90 orac_constants.F90 ctrl.F90
-USE_STATEMENTS  = "use Ctrl_m; use ORAC_constants_m"
+USE_STATEMENTS  = "use ctrl_m; use orac_constants_m"
 PLACE           = $(OBJS)/$(PARSER_NAME)
 PARSER_INC      = -I$(ORAC_COMMON) -I../src/$(OBJ)
 include $(ORAC_COMMON)/Makefile_struct_parser
-$(OBJS)/ReadDriver.o: $(PLACE).f.o
+$(OBJS)/read_driver.o: $(PLACE).f.o
 $(PLACE).f.o: $(OBJS)/orac_constants.o $(OBJS)/ctrl.o
 
 # Main program build
