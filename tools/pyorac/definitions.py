@@ -532,17 +532,13 @@ class ParticleType():
                                 inst.noaa + "_" + self.sad)
             else:
                 # For JASMIN use this fdr_name
-                # fdr_name = join(fdr, inst.sensor.lower() + "_" + self.sad)
+                fdr_name = join(fdr, inst.sensor.lower() + "_" + self.sad)
 
-                # For matin use this fdr_name
-                fdr_name = join(fdr, inst.sensor.lower() + "/" +
-                                inst.platform.upper() + "/" + self.sad)
-
-            print(fdr_name)
+                # For MATIN use this fdr_name
+                # fdr_name = join(fdr, inst.sensor.lower() + "/" +
+                #                 inst.platform.upper() + "/" + self.sad)
 
             file_name = "_".join((inst.sensor+"*", self.name, "RBD", "Ch*.sad"))
-
-            print(file_name)
 
             # SAD files stored in subdirectories
             if glob(join(fdr_name, file_name)):
