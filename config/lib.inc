@@ -1,50 +1,45 @@
-# Base directory for all libraries and include files taken from the
-# environmental variable CONDA_PREFIX.
+# Directory for object files
+OBJS = obj
 
-# Set up libraries and includes
-LIBS = -L$(CONDA_PREFIX)/lib -lemosR64 -lemos -lfftw3 \
-       -lhdfeos -lGctp \
-       -leccodes_f90 -leccodes \
-       -lmfhdf -ldf \
-       -lnetcdff \
-       -lnetcdf \
-       -lrttov12_coef_io -lrttov12_emis_atlas -lrttov12_hdf \
-       -lrttov12_parallel -lrttov12_main -lrttov12_other \
-       -lhdf5 -lhdf5_fortran -lhdf5_hl -lhdf5hl_fortran \
-       -lsz \
-       -ljpeg -lm -lz -lstdc++ -lblas -llapack
+# Define Fortran 77 compiler
+F77 = gfortran
 
-INC = -I./ \
-      -I$(CONDA_PREFIX)/include \
-      -I$(CONDA_PREFIX)/mod
+# Define Fortran 90 compiler
+F90 = gfortran
 
-CINC = -I./ \
-       -I$(CONDA_PREFIX)/include
+# Define C compiler
+CC = gcc
 
+# Define C++ compiler
+CXX = g++
 
-# Configuration options
+# Define C preprocessor
+CPP = cpp
 
-# Uncomment if you want to enable OpenMP for RTTOV computations.
-INC  += -DINCLUDE_RTTOV_OPENMP
+# Set Fortran 77 compiler flags
+F77FLAGS  = -O3 -cpp -ffree-line-length-0 -g
+# Uncomment if extra warnings are required.  Take out -Werror if that annoys you.
+#FF77LAGS += -Wall -Werror -Wno-conversion -Wno-uninitialized -Wno-unused-dummy-argument -Wtabs
 
-# Uncomment if ATSR support is desired.
-LIBS += -lepr_api
-INC  += -DINCLUDE_ATSR_SUPPORT
-CINC += -DINCLUDE_ATSR_SUPPORT
+# Set Fortran 90 compiler flags
+FFLAGS    = -O3 -cpp -ffree-line-length-0 -g
+# Uncomment if OpenMP support is desired. Highly recommented.
+FFLAGS   += -fopenmp
+# Uncomment if extra warnings are required.  Take out -Werror if that annoys you.
+#FFLAGS   += -Wall -Werror -Wno-conversion -Wno-uninitialized -Wno-unused-dummy-argument -Wtabs
 
-# Uncomment if Numerical Recipes is available for cubic spline profile
-# interpolation and bilinear LUT interpolation.
-LIBS += -lnr
-INC  += -DINCLUDE_NR
+LFLAGS = -fopenmp
 
-# Uncomment if Fu_Liou support is desired for broadband fluxes.
-LIBS += -lEd3Fu_201212
-INC  += -DINCLUDE_FU_LIOU_SUPPORT
+# Set C compiler  flags
+CFLAGS = -O3 -g
+# Uncomment if extra warnings are required.
+#CFLAGS += -Wall -Werror
 
-# Uncomment if Himawari support is desired.
-LIBS += -lhimawari_util
-INC  += -DINCLUDE_HIMAWARI_SUPPORT
+AUXFLAGS = -J $(OBJS)
 
-# Uncomment if SEVIRI support is desired.
-LIBS += -lseviri_util
-INC  += -DINCLUDE_SEVIRI_SUPPORT
+# Set Bison/Flex parser flags
+FLEXFLAGS =
+BISONFLAGS =
+# Uncomment if debugging the parser
+#FLEXFLAGS += -d
+#BISONFLAGS += -t

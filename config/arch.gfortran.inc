@@ -2,16 +2,16 @@
 OBJS = obj
 
 # Define Fortran 77 compiler
-F77 = $(GFORTRAN)
+F77 = gfortran
 
 # Define Fortran 90 compiler
-F90 = $(GFORTRAN)
+F90 = gfortran
 
 # Define C compiler
-CC = $(GCC)
+CC = gcc
 
 # Define C++ compiler
-CXX = $(GXX)
+CXX = g++
 
 # Define C preprocessor
 CPP = cpp
