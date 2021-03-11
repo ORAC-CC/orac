@@ -54,8 +54,7 @@
 /src/read_ctrl.lex
 
 # /tools/
-# While developing on mulitple machines it's useful to track local_defaults.py
-# /tools/pyorac/local_defaults.py
+/tools/pyorac/local_defaults.py
 /tools/__pycache__
 /tools/*.pyc
 /tools/pyorac/__pycache__
