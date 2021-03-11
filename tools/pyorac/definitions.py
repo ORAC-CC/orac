@@ -247,6 +247,26 @@ class FileName:
                                         'ECC_GAC_sunsatangles_')
             return
 
+        # Attempt Himawari L1B filename in HSD format
+        mat = re.search(
+            r'HS_H(?P<platform>\d{2})_(?P<year>\d{4})'
+            r'(?P<month>\d{2})(?P<day>\d{2})_(?P<hour>\d{2})(?P<min>\d{2})'
+            r'_(.*).DAT', filename
+        )
+        if mat:
+            self.sensor = 'AHI'
+            self.platform = 'Himawari'+mat.group('platform')
+            self.inst = 'AHI-'+self.platform
+            self.time = datetime.datetime(
+                int(mat.group('year')), int(mat.group('month')),
+                int(mat.group('day')), int(mat.group('hour')),
+                int(mat.group('min')), 0, 0
+            )
+            self.dur = datetime.timedelta(seconds=600) # Approximately
+            self.geo = filename
+            self.predef = True
+            return
+
         # Attempt SEVIRI L1B filename in NAT format
         mat = re.search(
             r'MSG(?P<platform>\d{1})-SEVI-MSG(\d+)-(\d+)-NA-(?P<year>\d{4})'
