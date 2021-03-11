@@ -104,7 +104,7 @@ def call_exe(args, exe, driver, values=None):
             batch_params = defaults.batch_values.copy()
             if values:
                 batch_params.update(values)
-            batch_params.update({key : val for key, val in args.batch_settings})
+            batch_params.update({key: val for key, val in args.batch_settings})
 
             batch_params['procs'] = args.procs
 
@@ -164,10 +164,12 @@ def read_orac_library_file(filename):
 
     def fill_in_variables(text, libraries):
         """Replaces all $() with value from a dictionary or environment."""
+
         def parse_with_dict(dictionary):
             """Function called by re.sub to replace variables with their values
             http://stackoverflow.com/questions/7868554/python-re-subs-replace-
             function-doesnt-accept-extra-arguments-how-to-avoid"""
+
             def replace_var(matchobj):
                 """Fetch name from dictionary."""
                 from os import environ
@@ -179,6 +181,7 @@ def read_orac_library_file(filename):
                         return environ[name]
                 except (IndexError, KeyError):
                     return ""
+
             return replace_var
 
         return re.sub(r"\$\((.+?)\)", parse_with_dict(libraries), text)
