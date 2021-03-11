@@ -559,22 +559,13 @@ SETTINGS = {}
 SETTINGS['WAT'] = ParticleType("WAT", sad="WAT")
 SETTINGS['ICE'] = ParticleType("ICE", sad="ICE_baum")
 
-# Settings for volcanic ash
-# Note: Invpar(var, ap=None, fg=None, sx=None)
-# where,
-#    var - Name of the element of the state vector
-#    ap  - A priori value to use
-#    fg  - First guess of this value
-#    sx  - A priori uncertainty on this value
-
+# Settings for volcanic ash (note: ap = log10(tau))
 # SETTINGS['EYJ'] = ParticleType("EYJ", sad="EYJ", inv=(Invpar('ITau', ap=0.18, sx=1.5),
 #                                                       Invpar('IRe', ap=0.7, sx=0.15)))
-
-# ap = log10(tau)
 SETTINGS['EYJ'] = ParticleType("EYJ", sad="EYJ", inv=(Invpar('ITau', ap=-0.3, sx=1e8),
                                                       Invpar('IRe', ap=10, sx=1e8)))
 
-
+# Settings for aerosol
 tau = Invpar('ITau', ap=-1.0, sx=1.5)
 SETTINGS['A70'] = ParticleType("A70", inv=(tau, Invpar('IRe', ap=0.0856, sx=0.15)))
 SETTINGS['A71'] = ParticleType("A71", inv=(tau, Invpar('IRe', ap=-0.257, sx=0.15)))
@@ -586,6 +577,3 @@ SETTINGS['A76'] = ParticleType("A76", inv=(tau, Invpar('IRe', ap=0.0856, sx=0.15
 SETTINGS['A77'] = ParticleType("A77", inv=(tau, Invpar('IRe', ap=-0.0419, sx=0.15)))
 SETTINGS['A78'] = ParticleType("A78", inv=(tau, Invpar('IRe', ap=-0.257, sx=0.15)))
 SETTINGS['A79'] = ParticleType("A79", inv=(tau, Invpar('IRe', ap=-0.848, sx=0.15)))
-#SETTINGS['EYJ'] = ParticleType("EYJ", inv=(
-#    Invpar('ITau', ap=0.18, sx=1.5), Invpar('IRe', ap=0.7, sx=0.15)
-#))
