@@ -240,12 +240,16 @@ def args_cc4cl(parser):
                       help='Folder in which to store intermediate output.')
 
     phs = cccl.add_mutually_exclusive_group()
-    phs.add_argument('-s', '--settings', type=str, action='append',
-                     default=None, help='Parameters for each phase to be '
-                                        'processed. Each element is a string listing all the '
-                                        'arguments to be applied for that phase. This is processed '
-                                        'using the same parser so all arguments listed for the '
-                                        'main processor are available.')
+    phs.add_argument('-s',
+                     '--settings',
+                     type=str,
+                     action='append',
+                     default=None,
+                     help='Parameters for each phase to be processed.'
+                          ' Each element is a string listing all the '
+                          'arguments to be applied for that phase. This is'
+                          ' processed using the same parser so all arguments'
+                          ' listed for the main processor are available.')
     phs.add_argument('-S', '--preset_settings', type=str, default=None,
                      choices=defaults.retrieval_settings.keys(),
                      help='Use a predefined setting for --phases, defined '
