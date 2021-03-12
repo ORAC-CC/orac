@@ -451,7 +451,7 @@ class Swath(Mappable):
             stdev = np.ma.masked_invalid(np.sqrt(e_x2 - e_x * e_x))
             self._cldflag[stdev > 0.1] += CLDFLAG["stdev"]
 
-        def opening_test(data, ikernel, limit):
+        def opening_test(data, kern, limit):
             """Salt-and-pepper noise filters.
 
             Top Hat is the difference between the input and the opening of the
@@ -460,14 +460,14 @@ class Swath(Mappable):
 
             # tmp = np.floor(255 * data)
             tmp = data.filled(0.)
-            opening = morphologyEx(tmp, MORPH_TOPHAT, ikernel)
+            opening = morphologyEx(tmp, MORPH_TOPHAT, kern)
             test = opening >= limit
             return test
 
-        ikernel = np.ones((5, 5))
-        self._cldflag[opening_test(self["aot550"], ikernel, 80 / 255)] += CLDFLAG["openaot"]
-        self._cldflag[opening_test(self["aer"], ikernel, 300 / 255)] += CLDFLAG["openaer"]
-        self._cldflag[opening_test(self.ang, ikernel, 500 / 255)] += CLDFLAG["openang"]
+        kernel = np.ones((5, 5))
+        self._cldflag[opening_test(self["aot550"], kernel, 80 / 255)] += CLDFLAG["openaot"]
+        self._cldflag[opening_test(self["aer"], kernel, 300 / 255)] += CLDFLAG["openaer"]
+        self._cldflag[opening_test(self.ang, kernel, 500 / 255)] += CLDFLAG["openang"]
 
         # Ice/snow filter
         try:
