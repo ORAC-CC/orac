@@ -13,7 +13,6 @@ import numpy as np
 
 from pyorac.mappable import Mappable
 
-
 # Values used for features in the aerosol cloud flag
 CLDFLAG = {
     "cld": 1,
@@ -98,7 +97,7 @@ class Flux(Mappable):
             self._bug = Dataset(filename)
         except OSError as err:
             # Produce more comprehensible error message
-            err.args = ("Requested file unavailable: {}\n".format(filename), )
+            err.args = ("Requested file unavailable: {}\n".format(filename),)
             raise
 
         # Put an upper limit on all fields
@@ -167,7 +166,7 @@ class Flux(Mappable):
 
             return self.variable(name)
         except (KeyError, IndexError) as err:
-            err.args = (name + " not present in input file.\n", )
+            err.args = (name + " not present in input file.\n",)
             raise
 
 
@@ -218,7 +217,7 @@ class Swath(Mappable):
         try:
             self.try_open_file(self.primary, "pri")
         except OSError as err:
-            err.args = ("Requested file unavailable: {}".format(filename), )
+            err.args = ("Requested file unavailable: {}".format(filename),)
             raise
         try:
             self.try_open_file(self.secondary, "sec")
@@ -268,11 +267,10 @@ class Swath(Mappable):
         except OSError as err:
             pass
         try:
-            self._open_file(filename, label+".gz")
+            self._open_file(filename, label + ".gz")
         except OSError as err:
-            err.args = ("ORAC file unavailable: {}\n".format(filename), )
+            err.args = ("ORAC file unavailable: {}\n".format(filename),)
             raise
-
 
     # -------------------------------------------------------------------
     # Values derived from fields (that we only want to calculate once)
@@ -330,9 +328,9 @@ class Swath(Mappable):
             warnings.simplefilter("ignore")
             fac = np.log(87. / 55.)
             self._ang_unc = np.ma.sqrt((self["aot550_uncertainty"] /
-                                        self["aot550"])**2 +
+                                        self["aot550"]) ** 2 +
                                        (self["aot870_uncertainty"] /
-                                        self["aot870"])**2) / fac
+                                        self["aot870"]) ** 2) / fac
 
     @property
     def rs(self):
@@ -376,13 +374,13 @@ class Swath(Mappable):
             warnings.simplefilter("ignore")
 
             # Identify available channels
-            chs = set((int(k[k.rfind('_')+1:])
+            chs = set((int(k[k.rfind('_') + 1:])
                        for k in self.variables()
                        if 'in_channel_no' in k))
             self.ch = sorted(chs)
 
             # Make output array
-            rs_shape = (len(self.ch), ) + self.shape
+            rs_shape = (len(self.ch),) + self.shape
             self._rs = np.ma.masked_all(rs_shape)
 
             # Copy over Oxford surface retrievals
@@ -402,7 +400,7 @@ class Swath(Mappable):
                     data_in = self["swansea_s_in_channel_no_{}".format(ch)]
                     out.mask[~data_in.mask] = False
                     ss = data_in.compressed()
-                    out[~data_in.mask] = sg * ss / (1.0 - (1.0-sg)*ss)
+                    out[~data_in.mask] = sg * ss / (1.0 - (1.0 - sg) * ss)
             except BaseException as err:
                 if "not present" not in err.args[0]:
                     raise
@@ -450,26 +448,26 @@ class Swath(Mappable):
                              mode='same', boundary='symm') / num
             e_x2 = convolve2d(aot_tmp * aot_tmp, kernel,
                               mode='same', boundary='symm') / num
-            stdev = np.ma.masked_invalid(np.sqrt(e_x2 - e_x*e_x))
+            stdev = np.ma.masked_invalid(np.sqrt(e_x2 - e_x * e_x))
             self._cldflag[stdev > 0.1] += CLDFLAG["stdev"]
 
-        def opening_test(data, kernel, limit):
+        def opening_test(data, kern, limit):
             """Salt-and-pepper noise filters.
 
             Top Hat is the difference between the input and the opening of the
             image. The opening is erode followed by dilate."""
             from cv2 import morphologyEx, MORPH_TOPHAT
 
-            #tmp = np.floor(255 * data)
+            # tmp = np.floor(255 * data)
             tmp = data.filled(0.)
-            opening = morphologyEx(tmp, MORPH_TOPHAT, kernel)
+            opening = morphologyEx(tmp, MORPH_TOPHAT, kern)
             test = opening >= limit
             return test
 
         kernel = np.ones((5, 5))
-        self._cldflag[opening_test(self["aot550"], kernel, 80/255)] += CLDFLAG["openaot"]
-        self._cldflag[opening_test(self["aer"], kernel, 300/255)] += CLDFLAG["openaer"]
-        self._cldflag[opening_test(self.ang, kernel, 500/255)] += CLDFLAG["openang"]
+        self._cldflag[opening_test(self["aot550"], kernel, 80 / 255)] += CLDFLAG["openaot"]
+        self._cldflag[opening_test(self["aer"], kernel, 300 / 255)] += CLDFLAG["openaer"]
+        self._cldflag[opening_test(self.ang, kernel, 500 / 255)] += CLDFLAG["openang"]
 
         # Ice/snow filter
         try:
@@ -532,7 +530,7 @@ class Swath(Mappable):
                 # Aerosol CCI files use a different name for some reason
                 vals = var.flag_masks.split(" ")
             except AttributeError as err:
-                err.args = (name+" does not have flag definitions.", )
+                err.args = (name + " does not have flag definitions.",)
                 raise
 
         # Remove "b" from end of value terms
@@ -542,18 +540,17 @@ class Swath(Mappable):
             try:
                 keys = (var.flag_meanings + " ").split(": ")
             except AttributeError as err:
-                err.args = (name+" does not have flag definitions.", )
+                err.args = (name + " does not have flag definitions.",)
                 raise
             names = [k[:k.rfind(" ")] for k in keys[1:]]
         else:
             try:
                 names = var.flag_meanings.split(" ")
             except AttributeError as err:
-                err.args = (name+" does not have flag definitions.", )
+                err.args = (name + " does not have flag definitions.",)
                 raise
 
         return OrderedDict(zip(nums, names))
-
 
     # -------------------------------------------------------------------
     # Data formatting functions
@@ -582,15 +579,18 @@ class Swath(Mappable):
 
         return np.ma.masked_invalid(data)
 
-
     # -------------------------------------------------------------------
     # Masking functions
     # -------------------------------------------------------------------
-    def mask_cloud(self, allowing=[]):
+    def mask_cloud(self, allowing=None):
         """Bool array that is True where the aerosol cloud flag is non-zero.
 
         The allowing argument can be used to exempt a list of members of the
         orac.CLDFLAG bitmask."""
+        if allowing is None:
+            allowing = []
+        elif type(allowing) is str:
+            allowing = [allowing]
         flags = sum((v for k, v in CLDFLAG.items() if k not in allowing))
         cld_mask = np.bitwise_and(self.cldflag, flags) > 0
         qc_mask = self.qcflag != 0
@@ -667,7 +667,7 @@ class MergedSwath(Swath):
         # As there are multiple files, allow slice to select one.
         if isinstance(slices, tuple):
             name = slices[0]
-            keys = (slices[1], )
+            keys = (slices[1],)
         else:
             name = slices
             keys = self.nc_files.keys()
@@ -698,8 +698,7 @@ class MergedSwath(Swath):
                 except (KeyError, IndexError):
                     pass
 
-        raise KeyError(name+" not present in input files.")
-
+        raise KeyError(name + " not present in input files.")
 
     # -------------------------------------------------------------------
     # Values derived from fields (that we only want to calculate once)
