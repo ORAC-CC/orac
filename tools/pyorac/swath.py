@@ -589,6 +589,8 @@ class Swath(Mappable):
         orac.CLDFLAG bitmask."""
         if allowing is None:
             allowing = []
+        elif type(allowing) is str:
+            allowing = [allowing]
         flags = sum((v for k, v in CLDFLAG.items() if k not in allowing))
         cld_mask = np.bitwise_and(self.cldflag, flags) > 0
         qc_mask = self.qcflag != 0
