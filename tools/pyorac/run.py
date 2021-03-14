@@ -7,7 +7,6 @@ from pyorac.arguments import (check_args_common, check_args_preproc,
                               check_args_cc4cl)
 from pyorac.util import call_exe
 
-
 CLOBBER = OrderedDict([
     ('pre', 3),
     ('main', 2),
@@ -33,11 +32,11 @@ def process_pre(args, log_path, dependency=None, tag='pre'):
     out_file = os.path.join(args.out_dir, root_name + '.config.nc')
     if args.clobber >= CLOBBER['pre'] or not os.path.isfile(out_file):
         # Settings for batch processing
-        values = {'job_name' : job_name,
-                  'log_file' : os.path.join(log_path, job_name + '.log'),
-                  'err_file' : os.path.join(log_path, job_name + '.err'),
-                  'duration' : args.dur[0],
-                  'ram'      : args.ram[0]}
+        values = {'job_name': job_name,
+                  'log_file': os.path.join(log_path, job_name + '.log'),
+                  'err_file': os.path.join(log_path, job_name + '.err'),
+                  'duration': args.dur[0],
+                  'ram': args.ram[0]}
         if dependency is not None:
             values['depend'] = dependency
 
@@ -70,11 +69,11 @@ def process_main(args, log_path, tag='', dependency=None):
     out_file = os.path.join(args.out_dir, root_name + phase + '.primary.nc')
     if args.clobber >= CLOBBER['main'] or not os.path.isfile(out_file):
         # Settings for batch processing
-        values = {'job_name' : job_name,
-                  'log_file' : os.path.join(log_path, job_name + '.log'),
-                  'err_file' : os.path.join(log_path, job_name + '.err'),
-                  'duration' : args.dur[1],
-                  'ram'      : args.ram[1]}
+        values = {'job_name': job_name,
+                  'log_file': os.path.join(log_path, job_name + '.log'),
+                  'err_file': os.path.join(log_path, job_name + '.err'),
+                  'duration': args.dur[1],
+                  'ram': args.ram[1]}
         if dependency is not None:
             values['depend'] = dependency
 
@@ -121,11 +120,11 @@ def process_post(args, log_path, files=None, dependency=None, tag='post'):
     )
     if args.clobber >= CLOBBER['post'] or not os.path.isfile(out_file):
         # Settings for batch processing
-        values = {'job_name' : job_name,
-                  'log_file' : os.path.join(log_path, job_name + '.log'),
-                  'err_file' : os.path.join(log_path, job_name + '.err'),
-                  'duration' : args.dur[2],
-                  'ram'      : args.ram[2]}
+        values = {'job_name': job_name,
+                  'log_file': os.path.join(log_path, job_name + '.log'),
+                  'err_file': os.path.join(log_path, job_name + '.err'),
+                  'duration': args.dur[2],
+                  'ram': args.ram[2]}
         if dependency is not None:
             values['depend'] = dependency
 
@@ -179,7 +178,7 @@ def call_reformat(args, log_path, exe, out_file, dependency=None):
             batch_params['procs'] = 1
             if dependency is not None:
                 batch_params['depend'] = dependency
-            batch_params.update({key : val for key, val in args.batch_settings})
+            batch_params.update({key: val for key, val in args.batch_settings})
 
             # Form batch queue command and call batch queuing system
             cmd = defaults.batch.list_batch(batch_params,
@@ -219,7 +218,7 @@ def process_all(orig_args):
     log_path = os.path.join(orig_args.out_dir, log_dir)
     args = deepcopy(orig_args)
 
-    written_dirs = set() # The folders we actually wrote to
+    written_dirs = set()  # The folders we actually wrote to
 
     # Work out output filename
     args.out_dir = os.path.join(orig_args.out_dir, pre_dir)
@@ -228,13 +227,12 @@ def process_all(orig_args):
     if jid_pre is not None:
         written_dirs.add(args.out_dir)
 
-
     # Run main processor -------------------------------------------------------
     root_name = args.File.root_name(args.revision, args.processor, args.project,
                                     args.product_name)
     args.target = root_name + ".config.nc"
-    out_files = [] # All files that would be made (facilitates --dry_run)
-    jid_main = [] # ID no. for each queued job
+    out_files = []  # All files that would be made (facilitates --dry_run)
+    jid_main = []  # ID no. for each queued job
     args.in_dir = [args.out_dir]
     for sett in args.settings:
         phs_args = deepcopy(args)
@@ -251,7 +249,6 @@ def process_all(orig_args):
         if jid is not None:
             jid_main.append(jid)
             written_dirs.add(args.out_dir)
-
 
     # Run postprocessor if necessary
     if len(args.settings) > 1:

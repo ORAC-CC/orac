@@ -15,6 +15,8 @@
 !                 setting is ON, meaning that GSICS coefficients will be used
 !                 instead of IMPF (as previous). The new driver file option
 !                 USE_GSICS enables this to be disabled.
+! 2021/02/23, DP: Shifted satellite azimuth from [0,360] to [-180,180] range
+!                 to match ORAC definition.
 !
 ! Bugs:
 ! None known.
@@ -226,8 +228,6 @@ subroutine read_seviri_l1_5(l1_5_file, imager_geolocation, imager_measurements, 
    type(global_attributes_t),   intent(inout) :: global_atts
    logical,                     intent(in)    :: verbose
 
-   real, allocatable :: tmparr(:,:,:)
-
    integer :: startx
 
    if (determine_seviri_file_type(l1_5_file) == SEVIRI_TYPE_METOFF) then
@@ -240,12 +240,7 @@ subroutine read_seviri_l1_5(l1_5_file, imager_geolocation, imager_measurements, 
            do_gsics, global_atts, verbose)
    end if
 
-   allocate(tmparr(1:imager_geolocation%nx,1:imager_geolocation%ny,1))
-
    startx = imager_geolocation%startx
-
-   tmparr = imager_angles%satazi(imager_geolocation%endx:imager_geolocation%startx:-1,:,:)
-   imager_angles%satazi = tmparr
 
    where(imager_angles%solazi(startx:,:,1) .ne. sreal_fill_value .and. &
          imager_angles%satazi(startx:,:,1) .ne. sreal_fill_value)
@@ -262,7 +257,10 @@ subroutine read_seviri_l1_5(l1_5_file, imager_geolocation, imager_measurements, 
       end where
    end where
 
-   deallocate(tmparr)
+   ! Shift satazi range from [0,360] to [-180,180] to be consistent with ORAC
+   where (imager_angles%satazi .gt. 180)
+      imager_angles%satazi = imager_angles%satazi - 360.
+   end where
 
 end subroutine read_seviri_l1_5
 

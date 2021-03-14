@@ -6,6 +6,7 @@
 
 import numpy as np
 
+
 class Mappable(object):
     """A wrapper for data fields that share a lat.lon coordinate system. map()
     is a wrapper for matplotlib.pcolormesh while scatter() wraps
@@ -31,6 +32,7 @@ class Mappable(object):
             extent of the axes to increase plotting speed.
         slices (:obj:`slice`): Slice for all arrays (except data).
     """
+
     def __init__(self, lat, lon, **kwargs):
         from cartopy.crs import PlateCarree
 
@@ -159,7 +161,7 @@ class Mappable(object):
         """Plot field on map projection using pcolormesh()."""
         masked, sl_orig = self._plot_init(ax, data, kwargs)
         # Increment slices for corners
-        sl = tuple(slice(s.start, s.stop+1)
+        sl = tuple(slice(s.start, s.stop + 1)
                    if s.start is not None else slice(None) for s in sl_orig)
         im = ax.pcolormesh(self.crnrlon[sl], self.crnrlat[sl], masked, **kwargs)
         return im
@@ -208,7 +210,7 @@ class Mappable(object):
         kwargs["color"] = colour.reshape((4, masked.size)).T
 
         # Increment slices for corners
-        sl = tuple(slice(s.start, s.stop+1)
+        sl = tuple(slice(s.start, s.stop + 1)
                    if s.start is not None else slice(None) for s in sl_orig)
         im = ax.pcolormesh(self.crnrlon[sl], self.crnrlat[sl], masked, **kwargs)
         return im
@@ -221,13 +223,15 @@ def grid_cell_corners(lat, lon):
     Given the lat/lon of a regular 2D grid, calculate the coordinates of the
     cell corners.
     """
+
     def make_crnr(arr):
         """Perform operation."""
-        crnr = np.empty(len(arr)+1)
-        crnr[:-2] = 1.5*arr[:-1] - 0.5*arr[1:]
-        crnr[-2] = 0.5 *arr[-2]  + 0.5*arr[-1]
-        crnr[-1] = -0.5*arr[-2]  + 1.5*arr[-1]
+        crnr = np.empty(len(arr) + 1)
+        crnr[:-2] = 1.5 * arr[:-1] - 0.5 * arr[1:]
+        crnr[-2] = 0.5 * arr[-2] + 0.5 * arr[-1]
+        crnr[-1] = -0.5 * arr[-2] + 1.5 * arr[-1]
         return crnr
+
     return np.meshgrid(make_crnr(lon), make_crnr(lat))
 
 
@@ -260,17 +264,17 @@ def linear_cell_corners(lat, lon, central_longitude=0.):
 
     def extend_grid(g):
         """Extend lat/lon grid one pixel in all directions."""
-        out = np.empty((g.shape[0]+2, g.shape[1]+2))
+        out = np.empty((g.shape[0] + 2, g.shape[1] + 2))
 
         out[1:-1, 1:-1] = g
-        out[1:-1, 0] = 2. *g[:, 0]  - g[:, 1]
-        out[1:-1, -1] = 2.*g[:, -1] - g[:, -2]
-        out[0, 1:-1] = 2. *g[0, :]  - g[1, :]
-        out[-1, 1:-1] = 2.*g[-1, :] - g[-2, :]
-        out[0, 0] = 4. * g[0, 0]   - 2.*(g[0, 1]   + g[1, 0])   + g[1, 1]
-        out[-1, 0] = 4. *g[-1, 0]  - 2.*(g[-1, 1]  + g[-2, 0])  + g[-2, 1]
-        out[0, -1] = 4. *g[0, -1]  - 2.*(g[0, -2]  + g[1, -1])  + g[1, -2]
-        out[-1, -1] = 4.*g[-1, -1] - 2.*(g[-1, -2] + g[-2, -1]) + g[-2, -2]
+        out[1:-1, 0] = 2. * g[:, 0] - g[:, 1]
+        out[1:-1, -1] = 2. * g[:, -1] - g[:, -2]
+        out[0, 1:-1] = 2. * g[0, :] - g[1, :]
+        out[-1, 1:-1] = 2. * g[-1, :] - g[-2, :]
+        out[0, 0] = 4. * g[0, 0] - 2. * (g[0, 1] + g[1, 0]) + g[1, 1]
+        out[-1, 0] = 4. * g[-1, 0] - 2. * (g[-1, 1] + g[-2, 0]) + g[-2, 1]
+        out[0, -1] = 4. * g[0, -1] - 2. * (g[0, -2] + g[1, -1]) + g[1, -2]
+        out[-1, -1] = 4. * g[-1, -1] - 2. * (g[-1, -2] + g[-2, -1]) + g[-2, -2]
 
         return out
 
@@ -287,7 +291,6 @@ def linear_cell_corners(lat, lon, central_longitude=0.):
     lon_transform[lon_transform < -180.] += 360.
 
     return grid_corners(lat), grid_corners(lon_transform) + central_longitude
-
 
 
 def nvector_cell_corners(lat, lon):
@@ -321,7 +324,7 @@ def nvector_cell_corners(lat, lon):
     op_flags = [['writeonly'], ['readonly'], ['readonly']]
 
     # Build a larger array and convert all coords to nvectors
-    points = np.empty((lon.shape[0]+2, lon.shape[1]+2), dtype=nv.Nvector)
+    points = np.empty((lon.shape[0] + 2, lon.shape[1] + 2), dtype=nv.Nvector)
     for point, ln, lt in np.nditer([points[1:-1, 1:-1], lon, lat],
                                    flags=['refs_ok'], op_flags=op_flags):
         point[...] = wgs84.GeoPoint(lt, ln, degrees=True).to_nvector()
@@ -355,7 +358,7 @@ def nvector_cell_corners(lat, lon):
                                    points[-1, -2], points[-1, -3])
 
     # Form output arrays
-    shape = (lon.shape[0]+1, lon.shape[1]+1)
+    shape = (lon.shape[0] + 1, lon.shape[1] + 1)
     crnrlon = np.empty(shape)
     crnrlat = np.empty(shape)
 
@@ -367,7 +370,7 @@ def nvector_cell_corners(lat, lon):
         # Copy 2x2 box of points into container (it's a list of arrays)
         for k in range(3):
             nvecs.normal[k] = [pnt.normal[k]
-                               for pnt in points[i:i+2, j:j+2].flat]
+                               for pnt in points[i:i + 2, j:j + 2].flat]
 
         # Use nvector to find average of each square
         mean = nvecs.mean_horizontal_position().to_geo_point()
@@ -407,7 +410,7 @@ class SinGrid(object):
     """
 
     def __init__(
-        self, n_equator=4008, resolution=None, radius=6378.137, offset=(0., 0.)
+            self, n_equator=4008, resolution=None, radius=6378.137, offset=(0., 0.)
     ):
         """Define the sinusoidal grid.
 
@@ -441,7 +444,6 @@ class SinGrid(object):
         self.u0 = offset[0]
         self.v0 = offset[1]
 
-
     def to_sin(self, lat, lon, floating=False):
         """Convert lat/lon, in degrees, to sinusoidal coordinates.
 
@@ -458,14 +460,14 @@ class SinGrid(object):
         lam = radians(lon)
         try:
             # Arrays
-            lam[lam >= pi] -= 2.*pi
-            lam[lam < -pi] += 2.*pi
+            lam[lam >= pi] -= 2. * pi
+            lam[lam < -pi] += 2. * pi
         except TypeError:
             # Scalars
             if lam >= pi:
-                lam -= 2.*pi
+                lam -= 2. * pi
             elif lam < -pi:
-                lam += 2.*pi
+                lam += 2. * pi
 
         u = self.half_n * (lam / pi * cos(phi) + 1.) + self.u0
         v = self.half_n * (phi / pi + 0.5) + self.v0
@@ -479,7 +481,6 @@ class SinGrid(object):
             # If we were passed numpy arrays
             return u.astype(int), v.astype(int)
 
-
     def to_rect(self, u, v):
         """Convert sinusoidal coordiantes into lat/lon, in degrees."""
         from numpy import pi, degrees, cos
@@ -489,9 +490,9 @@ class SinGrid(object):
 
         return degrees(phi), degrees(lam)
 
-
     def to_1d(self, u_s, v_s):
         """Convert integer u,v pairs into scalar coordinates."""
+
         def _to_1d(u, v):
             try:
                 result = self.cumulative[v] + u - self.min_u[v]
@@ -512,9 +513,9 @@ class SinGrid(object):
             # Scalars
             return _to_1d(u_s, v_s)
 
-
     def to_2d(self, coords):
         """Convert an integer scalar coordinate into a u,v pair."""
+
         def _to_2d(coord):
             v = np.argmax(coord < self.cumulative) - 1
             u = coord - self.cumulative[v] + self.min_u[v]
