@@ -310,6 +310,7 @@
 !                 USE_GSICS enables this to be disabled.
 ! 2018/10/08, SP: Add support for the GOES-Imager series of sensors (G12-15)
 ! 2019/8/14, SP: Add Fengyun-4A support.
+! 2020/03/02, ATP: Add support for AHI subsetting.
 !
 ! Bugs:
 ! See http://proj.badc.rl.ac.uk/orac/report/1
@@ -783,9 +784,9 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
            channel_info, verbose)
 
       ! Get dimensions of the AHI image.
-      ! At present only full-disk images are supported
+      ! Subsetting AHI full-disk images are now supported
       call read_himawari_dimensions(geo_path_file, n_across_track, n_along_track, &
-           verbose)
+           startx, endx, starty, endy, verbose)
 
    else if (trim(adjustl(sensor)) .eq. 'AVHRR') then
       call setup_avhrr(l1b_path_file, geo_path_file, platform, year, month, day, &
@@ -888,7 +889,6 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
    if (startx.ge.1 .and. endx.ge.1 .and. starty.ge.1 .and. endy.ge.1) then
       if ( trim(adjustl(sensor)) .eq. 'ABI'    .or. &
            trim(adjustl(sensor)) .eq. 'AGRI'   .or. &
-           trim(adjustl(sensor)) .eq. 'AHI'    .or. &
            trim(adjustl(sensor)) .eq. 'SLSTR'  .or. &
            trim(adjustl(sensor)) .eq. 'VIIRSI' .or. &
            trim(adjustl(sensor)) .eq. 'VIIRSM') then
