@@ -142,9 +142,9 @@ function read_cimss_emissivity(path_to_file, emis, wavelengths, verbose, flag, &
    ! xdim = latitude (strange!)
    ! ydim = longitude
    ! zdim = wavelength = number of band variables
-   xdim = ncdf_dim_length(fid, 'xdim', 'read_cimss_emissivity()', verbose)
-   ydim = ncdf_dim_length(fid, 'ydim', 'read_cimss_emissivity()', verbose)
-   zdim = ncdf_dim_length(fid, 'zdim', 'read_cimss_emissivity()', verbose)
+   xdim = ncdf_dim_length(fid, 'xdim', 'read_cimss_emissivity()')
+   ydim = ncdf_dim_length(fid, 'ydim', 'read_cimss_emissivity()')
+   zdim = ncdf_dim_length(fid, 'zdim', 'read_cimss_emissivity()')
 
    ! Begin to populate the emis structure
    emis%nlat   = xdim
@@ -155,7 +155,7 @@ function read_cimss_emissivity(path_to_file, emis, wavelengths, verbose, flag, &
 !  if (present(wavenumber)) then
 !     if (wavenumber .gt. 0) then
          allocate(emis%wavenumber(nBands))
-         call ncdf_read_array(fid,'wavenumber',emis%wavenumber,verbose)
+         call ncdf_read_array(fid, 'wavenumber', emis%wavenumber)
 !     end if
 !  end if
 
@@ -163,7 +163,7 @@ function read_cimss_emissivity(path_to_file, emis, wavelengths, verbose, flag, &
    if (present(flag)) then
       if (flag .gt. 0) then
          allocate(emis%flag(xdim,ydim))
-         call ncdf_read_array(fid,'emis_flag',emis%flag,verbose)
+         call ncdf_read_array(fid, 'emis_flag', emis%flag)
       end if
    end if
 
@@ -180,13 +180,13 @@ function read_cimss_emissivity(path_to_file, emis, wavelengths, verbose, flag, &
       if (wavelengths(i) .le. 1.e4 / emis%wavenumber(1)) then
          if (.not. associated(cache(1)%a)) then
             allocate(cache(1)%a(xdim,ydim))
-            call ncdf_read_array(fid, bandList(1), cache(1)%a, verbose)
+            call ncdf_read_array(fid, bandList(1), cache(1)%a)
          end if
          emis%emissivity(:,:,i) = cache(1)%a
       else if (wavelengths(i) .ge. 1.e4 / emis%wavenumber(nBands)) then
          if (.not. associated(cache(nBands)%a)) then
             allocate(cache(nBands)%a(xdim,ydim))
-            call ncdf_read_array(fid, bandList(nBands), cache(nBands)%a, verbose)
+            call ncdf_read_array(fid, bandList(nBands), cache(nBands)%a)
          end if
          emis%emissivity(:,:,i) = cache(nBands)%a
       else
@@ -199,12 +199,12 @@ function read_cimss_emissivity(path_to_file, emis, wavelengths, verbose, flag, &
 
          if (.not. associated(cache(j)%a)) then
             allocate(cache(j)%a(xdim,ydim))
-            call ncdf_read_array(fid,bandList(j),cache(j)%a,verbose)
+            call ncdf_read_array(fid, bandList(j), cache(j)%a)
          end if
 
          if (.not. associated(cache(j+1)%a)) then
             allocate(cache(j+1)%a(xdim,ydim))
-            call ncdf_read_array(fid,bandList(j+1),cache(j+1)%a,verbose)
+            call ncdf_read_array(fid, bandList(j+1), cache(j+1)%a)
          end if
 
          a = (wavelengths(i) - 1.e4 / emis%wavenumber(j)) / &
@@ -245,17 +245,17 @@ end if
 !  if (present(loc)) then
 !     if (len_trim(loc) .gt. 1) then
 !        gen_loc = 0
-!        call ncdf_read_array(fid,'lat',emis%lat,verbose)
-!        call ncdf_read_array(fid,'lon',emis%lon,verbose)
+!        call ncdf_read_array(fid, 'lat', emis%lat)
+!        call ncdf_read_array(fid, 'lon', emis%lon)
 !     end if
 !  end if
 !   If the loc variable is null, or hasn't been specified,
 !   then we generate our own lat-lon grid.
 !  if (gen_loc .eq. 1) then
-!     do i=1,7200
+!     do i = 1, 7200
 !        emis%lon(i) = -180.025 + real(i)*0.05
 !     end do
-!     do i=1,3600
+!     do i = 1, 3600
 !        emis%lat(i) =   90.025 - real(i)*0.05
 !     end do
 !  end if

@@ -191,13 +191,12 @@ end subroutine ncdf_close
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
-function ncdf_dim_length(ncid, name, source_routine, verbose) result(len)
+function ncdf_dim_length(ncid, name, source_routine) result(len)
    implicit none
 
    integer,          intent(in) :: ncid
    character(len=*), intent(in) :: name
    character(len=*), intent(in) :: source_routine
-   logical,          intent(in) :: verbose
 
    integer :: did, ierr, len
    character(len=NF90_MAX_NAME) :: dname
@@ -217,8 +216,6 @@ function ncdf_dim_length(ncid, name, source_routine, verbose) result(len)
       print*, trim(nf90_strerror(ierr))
       stop error_stop_code
    end if
-
-   if (verbose) print*, trim(name),' dim length: ',len
 
 end function ncdf_dim_length
 
@@ -369,7 +366,6 @@ end function ncdf_dim_length
 ! name    string  In  Name of the data field to be returned
 ! val     real    Out Array into which the data will be written. The type and
 !                     size of this array determine the call used.
-! verbose logical In  T: print additional information; F: don't
 ! dim     integer In  Optional. If set, specifies the index of a dimension of
 !                     the field to be read that will only be partially read.
 ! ind     integer In  Optional. If set, specifies the indices of the dimension

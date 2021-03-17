@@ -114,9 +114,9 @@ function read_camel_emissivity(path_to_file, emis, wavelengths, verbose, flag, &
    end if
 
    ! Extract the array dimensions
-   xdim = ncdf_dim_length(fid, 'latitude', 'read_camel_emissivity()', verbose)
-   ydim = ncdf_dim_length(fid, 'longitude', 'read_camel_emissivity()', verbose)
-   zdim = ncdf_dim_length(fid, 'spectra', 'read_camel_emissivity()', verbose)
+   xdim = ncdf_dim_length(fid, 'latitude', 'read_camel_emissivity()')
+   ydim = ncdf_dim_length(fid, 'longitude', 'read_camel_emissivity()')
+   zdim = ncdf_dim_length(fid, 'spectra', 'read_camel_emissivity()')
 
    ! Begin to populate the emis structure
    emis%nlat   = xdim
@@ -127,7 +127,7 @@ function read_camel_emissivity(path_to_file, emis, wavelengths, verbose, flag, &
    if (present(flag)) then
       if (flag .gt. 0) then
          allocate(emis%flag(ydim,xdim))
-         call ncdf_read_array(fid, 'camel_qflag', emis%flag, verbose)
+         call ncdf_read_array(fid, 'camel_qflag', emis%flag)
       end if
    end if
 
@@ -135,7 +135,7 @@ function read_camel_emissivity(path_to_file, emis, wavelengths, verbose, flag, &
 
 
    allocate(cache(13,7200,3600))
-   call ncdf_read_array(fid, 'camel_emis', cache, verbose)
+   call ncdf_read_array(fid, 'camel_emis', cache)
 
    ! Extract the data for each of the requested bands
    do i = 1, n_wavelengths

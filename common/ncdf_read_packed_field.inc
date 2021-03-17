@@ -19,8 +19,9 @@
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
-
-   if (verbose) print*, 'Reading variable: ', trim(name)
+#ifdef DEBUG
+   print*, 'Reading variable: ', trim(name)
+#endif
 
    ! read data
    ierr = nf90_get_var(ncid, vid, arr_packed, start, counter, stride)
@@ -40,13 +41,13 @@
    where (arr_packed.ne.fv) arr = sf*arr_packed + of
 
    ! additional information for print out
-   if (verbose) then
-      if (nf90_get_att(ncid, vid, 'units', unit).eq.NF90_NOERR) then
-           call c_to_f_str(unit)
-           print*, 'Field units: ', trim(unit)
-      end if
-      if (vr_flag) then
-           print*, 'Field valid min: ', sf*vmin + of
-           print*, 'Field valid max: ', sf*vmax + of
-      end if
+#ifdef DEBUG
+   if (nf90_get_att(ncid, vid, 'units', unit).eq.NF90_NOERR) then
+      call c_to_f_str(unit)
+      print*, 'Field units: ', trim(unit)
    end if
+   if (vr_flag) then
+      print*, 'Field valid min: ', sf*vmin + of
+      print*, 'Field valid max: ', sf*vmax + of
+   end if
+#endif

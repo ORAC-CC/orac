@@ -189,7 +189,7 @@ subroutine read_slstr_tirdata(indir, inband, outarr, sx, sy, nx, ny, inx, iny, &
 
    ! Open the netcdf file
    call ncdf_open(fid, filename, 'read_slstr_tirdata()')
-   call ncdf_read_array(fid, bandname, outarr(offset:offset+nx-1,:), .false., start=[sx, sy])
+   call ncdf_read_array(fid, bandname, outarr(offset:offset+nx-1,:), start=[sx, sy])
    call ncdf_close(fid, 'read_slstr_tirdata()')
 
 end subroutine read_slstr_tirdata
@@ -242,17 +242,17 @@ subroutine read_slstr_visdata(indir, inband, outarr, imager_angles, sx, sy, &
 
    ! Open the netcdf file
    call ncdf_open(fid, filename, 'read_slstr_visdata()')
-   call ncdf_read_array(fid, bandname, data1, .false., start=[sx, sy])
+   call ncdf_read_array(fid, bandname, data1, start=[sx, sy])
    call ncdf_close(fid, 'read_slstr_visdata()')
 
    ! Now we deal with the solar irradiance dataset
    ! Open the netcdf file
    call ncdf_open(fid, filename_qa, 'read_slstr_visdata()')
    ! Get number of detectors, should be 4
-   ndet = ncdf_dim_length(fid, 'detectors', 'read_slstr_visdata()', .false.)
+   ndet = ncdf_dim_length(fid, 'detectors', 'read_slstr_visdata()')
    allocate(irradiances(ndet))
 
-   call ncdf_read_array(fid, irradname, irradiances, .false.)
+   call ncdf_read_array(fid, irradname, irradiances)
 
    call ncdf_close(fid, 'read_slstr_visdata()')
 
@@ -261,7 +261,7 @@ subroutine read_slstr_visdata(indir, inband, outarr, imager_angles, sx, sy, &
         nx, ny, sreal_fill_value)
 
    ! Convert from radiances to reflectances
-   where(outarr .ne.sreal_fill_value) &
+   where(outarr .ne. sreal_fill_value) &
         outarr = pi / irradiances(1) * outarr
 
    ! Fill where sza is bad
@@ -379,8 +379,8 @@ subroutine get_slstr_gridsize(indir, grid, nx, ny)
    geofile = trim(adjustl(indir))//'geodetic_'//trim(adjustl(grid))//'.nc'
 
    call ncdf_open(fid, geofile, 'get_slstr_gridsize()')
-   ny = ncdf_dim_length(fid, 'rows', 'get_slstr_gridsize()', .false.)
-   nx = ncdf_dim_length(fid, 'columns', 'get_slstr_gridsize()', .false.)
+   ny = ncdf_dim_length(fid, 'rows', 'get_slstr_gridsize()')
+   nx = ncdf_dim_length(fid, 'columns', 'get_slstr_gridsize()')
    call ncdf_close(fid, 'get_slstr_gridsize()')
 
 end subroutine get_slstr_gridsize
@@ -564,10 +564,10 @@ subroutine read_slstr_satsol(indir, imager_angles, interp, txnx, txny, nx, ny, &
    call ncdf_open(fid, geofile, 'read_slstr_geodata()')
 
    ! Retrieve each variable on the tx grid
-   call ncdf_read_array(fid, 'sat_azimuth_'//trim(vid), angles(:,:,1), .false.)
-   call ncdf_read_array(fid, 'sat_zenith_'//trim(vid), angles(:,:,2), .false.)
-   call ncdf_read_array(fid, 'solar_azimuth_'//trim(vid), angles(:,:,3), .false.)
-   call ncdf_read_array(fid, 'solar_zenith_'//trim(vid), angles(:,:,4), .false.)
+   call ncdf_read_array(fid, 'sat_azimuth_'//trim(vid), angles(:,:,1))
+   call ncdf_read_array(fid, 'sat_zenith_'//trim(vid), angles(:,:,2))
+   call ncdf_read_array(fid, 'solar_azimuth_'//trim(vid), angles(:,:,3))
+   call ncdf_read_array(fid, 'solar_zenith_'//trim(vid), angles(:,:,4))
 
    call ncdf_close(fid, 'read_slstr_geodata()')
 
@@ -625,7 +625,7 @@ subroutine read_slstr_int_field(indir, file, procgrid, variable, &
    var = trim(variable) // '_' // trim(procgrid)
 
    call ncdf_open(fid, geofile, 'read_slstr_field()')
-   call ncdf_read_array(fid, var, data_arr, .false., start=[startx, starty])
+   call ncdf_read_array(fid, var, data_arr, start=[startx, starty])
    call ncdf_close(fid, 'read_slstr_field()')
 
 end subroutine read_slstr_int_field
@@ -655,7 +655,7 @@ subroutine read_slstr_field(indir, file, procgrid, variable, &
    var = trim(variable) // '_' // trim(procgrid)
 
    call ncdf_open(fid, geofile, 'read_slstr_field()')
-   call ncdf_read_array(fid, var, data_arr, .false., start=[startx, starty])
+   call ncdf_read_array(fid, var, data_arr, start=[startx, starty])
    call ncdf_close(fid, 'read_slstr_field()')
 
 end subroutine read_slstr_field

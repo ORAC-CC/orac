@@ -6,37 +6,19 @@ calendar in 1582. No support for proleptic Gregorian/Julian calendars.
 :Website: http://github.com/jiffyclub
 """
 
-import math
+from math import log10, floor
 import datetime as dt
-
-# Note: The Python datetime module assumes an infinitely valid Gregorian calend\
-ar.
-#       The Gregorian calendar took effect after 10-15-1582 and the dates 10-05\
- through
-#       10-14-1582 never occurred. Python datetime objects will produce incorre\
-ct
-#       time deltas if one date is from before 10-15-1582.
-
-def mjd_to_jd(mjd):
-"""
-Functions for converting dates to/from JD and MJD. Assumes dates are historical
-dates, including the transition from the Julian calendar to the Gregorian
-calendar in 1582. No support for proleptic Gregorian/Julian calendars.
-:Author: Matt Davis
-:Website: http://github.com/jiffyclub
-"""
-
 import math
-import datetime as dt
+
 
 # Note: The Python datetime module assumes an infinitely valid Gregorian calendar.
 #       The Gregorian calendar took effect after 10-15-1582 and the dates 10-05 through
 #       10-14-1582 never occurred. Python datetime objects will produce incorrect
 #       time deltas if one date is from before 10-15-1582.
 
+
 def mjd_to_jd(mjd):
-    """
-    Convert Modified Julian Day to Julian Day.
+    """Convert Modified Julian Day to Julian Day..
         
     Parameters
     ----------
@@ -47,15 +29,13 @@ def mjd_to_jd(mjd):
     -------
     jd : float
         Julian Day
-    
-        
+
     """
     return mjd + 2400000.5
 
-    
+
 def jd_to_mjd(jd):
-    """
-    Convert Julian Day to Modified Julian Day
+    """Convert Julian Day to Modified Julian Day.
     
     Parameters
     ----------
@@ -70,10 +50,9 @@ def jd_to_mjd(jd):
     """
     return jd - 2400000.5
 
-    
-def date_to_jd(year,month,day):
-    """
-    Convert a date to Julian Day.
+
+def date_to_jd(year, month, day):
+    """Convert a date to Julian Day.
     
     Algorithm from 'Practical Astronomy with your Calculator or Spreadsheet', 
         4th ed., Duffet-Smith and Zwart, 2011.
@@ -99,7 +78,7 @@ def date_to_jd(year,month,day):
     --------
     Convert 6 a.m., February 17, 1985 to Julian Day
     
-    >>> date_to_jd(1985,2,17.25)
+    > date_to_jd(1985,2,17.25)
     2446113.75
     
     """
@@ -109,34 +88,33 @@ def date_to_jd(year,month,day):
     else:
         yearp = year
         monthp = month
-    
+
     # this checks where we are in relation to October 15, 1582, the beginning
     # of the Gregorian calendar.
     if ((year < 1582) or
-        (year == 1582 and month < 10) or
-        (year == 1582 and month == 10 and day < 15)):
+            (year == 1582 and month < 10) or
+            (year == 1582 and month == 10 and day < 15)):
         # before start of Gregorian calendar
-        B = 0
+        b = 0
     else:
         # after start of Gregorian calendar
-        A = math.trunc(yearp / 100.)
-        B = 2 - A + math.trunc(A / 4.)
-        
+        a = math.trunc(yearp / 100.)
+        b = 2 - a + math.trunc(a / 4.)
+
     if yearp < 0:
-        C = math.trunc((365.25 * yearp) - 0.75)
+        c = math.trunc((365.25 * yearp) - 0.75)
     else:
-        C = math.trunc(365.25 * yearp)
-        
-    D = math.trunc(30.6001 * (monthp + 1))
-    
-    jd = B + C + D + day + 1720994.5
-    
+        c = math.trunc(365.25 * yearp)
+
+    d = math.trunc(30.6001 * (monthp + 1))
+
+    jd = b + c + d + day + 1720994.5
+
     return jd
-    
-    
+
+
 def jd_to_date(jd):
-    """
-    Convert Julian Day to date.
+    """Convert Julian Day to date.
     
     Algorithm from 'Practical Astronomy with your Calculator or Spreadsheet', 
         4th ed., Duffet-Smith and Zwart, 2011.
@@ -162,55 +140,51 @@ def jd_to_date(jd):
     --------
     Convert Julian Day 2446113.75 to year, month, and day.
     
-    >>> jd_to_date(2446113.75)
+    > jd_to_date(2446113.75)
     (1985, 2, 17.25)
     
     """
     jd = jd + 0.5
-    
-    F, I = math.modf(jd)
-    I = int(I)
-    
-    A = math.trunc((I - 1867216.25)/36524.25)
-    
-    if I > 2299160:
-        B = I + 1 + A - math.trunc(A / 4.)
+
+    f, i = math.modf(jd)
+    i = int(i)
+
+    a = math.trunc((i - 1867216.25) / 36524.25)
+
+    if i > 2299160:
+        b = i + 1 + a - math.trunc(a / 4.)
     else:
-        B = I
-        
-    C = B + 1524
-    
-    D = math.trunc((C - 122.1) / 365.25)
-    
-    E = math.trunc(365.25 * D)
-    
-    G = math.trunc((C - E) / 30.6001)
-    
-    day = C - E + F - math.trunc(30.6001 * G)
-    
-    if G < 13.5:
-        month = G - 1
+        b = i
+
+    c = b + 1524
+    d = math.trunc((c - 122.1) / 365.25)
+    e = math.trunc(365.25 * d)
+    g = math.trunc((c - e) / 30.6001)
+
+    day = c - e + f - math.trunc(30.6001 * g)
+
+    if g < 13.5:
+        month = g - 1
     else:
-        month = G - 13
-        
+        month = g - 13
+
     if month > 2.5:
-        year = D - 4716
+        year = d - 4716
     else:
-        year = D - 4715
-        
+        year = d - 4715
+
     return year, month, day
-    
-    
-def hmsm_to_days(hour=0,min=0,sec=0,micro=0):
-    """
-    Convert hours, minutes, seconds, and microseconds to fractional days.
+
+
+def hmsm_to_days(hour=0, minu=0, sec=0, micro=0):
+    """    Convert hours, minutes, seconds, and microseconds to fractional days.
     
     Parameters
     ----------
     hour : int, optional
         Hour number. Defaults to 0.
     
-    min : int, optional
+    minu : int, optional
         Minute number. Defaults to 0.
     
     sec : int, optional
@@ -226,19 +200,19 @@ def hmsm_to_days(hour=0,min=0,sec=0,micro=0):
         
     Examples
     --------
-    >>> hmsm_to_days(hour=6)
+    > hmsm_to_days(hour=6)
     0.25
     
     """
     days = sec + (micro / 1.e6)
-    
-    days = min + (days / 60.)
-    
+
+    days = minu + (days / 60.)
+
     days = hour + (days / 60.)
-    
+
     return days / 24.
-    
-    
+
+
 def days_to_hmsm(days):
     """
     Convert fractional days to hours, minutes, seconds, and microseconds.
@@ -270,23 +244,23 @@ def days_to_hmsm(days):
         
     Examples
     --------
-    >>> days_to_hmsm(0.1)
+    > days_to_hmsm(0.1)
     (2, 24, 0, 0)
     
     """
     hours = days * 24.
     hours, hour = math.modf(hours)
-    
+
     mins = hours * 60.
-    mins, min = math.modf(mins)
-    
+    mins, minu = math.modf(mins)
+
     secs = mins * 60.
     secs, sec = math.modf(secs)
-    
+
     micro = round(secs * 1.e6)
-    
-    return int(hour), int(min), int(sec), int(micro)
-    
+
+    return int(hour), int(minu), int(sec), int(micro)
+
 
 def datetime_to_jd(date):
     """
@@ -303,18 +277,18 @@ def datetime_to_jd(date):
         
     Examples
     --------
-    >>> d = datetime.datetime(1985,2,17,6)  
-    >>> d
+    >d = dt.datetime(1985,2,17,6)
+    >d
     datetime.datetime(1985, 2, 17, 6, 0)
-    >>> jdutil.datetime_to_jd(d)
+    >jdutil.datetime_to_jd(d)
     2446113.75
     
     """
-    days = date.day + hmsm_to_days(date.hour,date.minute,date.second,date.microsecond)
-    
-    return date_to_jd(date.year,date.month,days)
-    
-    
+    days = date.day + hmsm_to_days(date.hour, date.minute, date.second, date.microsecond)
+
+    return date_to_jd(date.year, date.month, days)
+
+
 def jd_to_datetime(jd):
     """
     Convert a Julian Day to an `jdutil.datetime` object.
@@ -336,13 +310,13 @@ def jd_to_datetime(jd):
     
     """
     year, month, day = jd_to_date(jd)
-    
-    frac_days,day = math.modf(day)
+
+    frac_days, day = math.modf(day)
     day = int(day)
-    
-    hour,min,sec,micro = days_to_hmsm(frac_days)
-    
-    return datetime(year,month,day,hour,min,sec,micro)
+
+    hour, minu, sec, micro = days_to_hmsm(frac_days)
+
+    return datetime(year, month, day, hour, minu, sec, micro)
 
 
 def timedelta_to_days(td):
@@ -360,20 +334,20 @@ def timedelta_to_days(td):
         
     Examples
     --------
-    >>> td = datetime.timedelta(4.5)
-    >>> td
+    > td = dt.timedelta(4.5)
+    > td
     datetime.timedelta(4, 43200)
-    >>> timedelta_to_days(td)
+    > timedelta_to_days(td)
     4.5
     
     """
     seconds_in_day = 24. * 3600.
-    
+
     days = td.days + (td.seconds + (td.microseconds * 10.e6)) / seconds_in_day
-    
+
     return days
-    
-    
+
+
 class datetime(dt.datetime):
     """
     A subclass of `datetime.datetime` that performs math operations by first
@@ -389,70 +363,71 @@ class datetime(dt.datetime):
     datetime.datetime : Parent class.
     
     """
-    def __add__(self,other):
-        if not isinstance(other,dt.timedelta):
+
+    def __add__(self, other):
+        if not isinstance(other, dt.timedelta):
             s = "jdutil.datetime supports '+' only with datetime.timedelta"
             raise TypeError(s)
-        
+
         days = timedelta_to_days(other)
-        
+
         combined = datetime_to_jd(self) + days
-        
+
         return jd_to_datetime(combined)
-        
-    def __radd__(self,other):
-        if not isinstance(other,dt.timedelta):
+
+    def __radd__(self, other):
+        if not isinstance(other, dt.timedelta):
             s = "jdutil.datetime supports '+' only with datetime.timedelta"
             raise TypeError(s)
-        
+
         days = timedelta_to_days(other)
-        
+
         combined = datetime_to_jd(self) + days
-        
+
         return jd_to_datetime(combined)
-        
-    def __sub__(self,other):
-        if isinstance(other,dt.timedelta):
+
+    def __sub__(self, other):
+        if isinstance(other, dt.timedelta):
             days = timedelta_to_days(other)
-            
+
             combined = datetime_to_jd(self) - days
-            
+
             return jd_to_datetime(combined)
-            
-        elif isinstance(other, (datetime,dt.datetime)):
+
+        elif isinstance(other, (datetime, dt.datetime)):
             diff = datetime_to_jd(self) - datetime_to_jd(other)
-            
+
             return dt.timedelta(diff)
-            
+
         else:
             s = "jdutil.datetime supports '-' with: "
             s += "datetime.timedelta, jdutil.datetime and datetime.datetime"
             raise TypeError(s)
-            
-    def __rsub__(self,other):
-        if not isinstance(other, (datetime,dt.datetime)):
+
+    def __rsub__(self, other):
+        if not isinstance(other, (datetime, dt.datetime)):
             s = "jdutil.datetime supports '-' with: "
             s += "jdutil.datetime and datetime.datetime"
             raise TypeError(s)
-            
+
         diff = datetime_to_jd(other) - datetime_to_jd(self)
-            
+
         return dt.timedelta(diff)
-        
+
     def to_jd(self):
         """
         Return the date converted to Julian Day.
         
         """
         return datetime_to_jd(self)
-        
+
     def to_mjd(self):
         """
         Return the date converted to Modified Julian Day.
         
         """
         return jd_to_mjd(self.to_jd())
-    
-from math import log10, floor
+
+
 def round_sig(x, sig=2):
-    return round(x, sig-int(floor(log10(abs(x))))-1)
+    return round(x, sig - int(floor(log10(abs(x)))) - 1)

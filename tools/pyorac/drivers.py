@@ -80,7 +80,7 @@ def build_preproc_driver(args):
         )
 
     # Select ECMWF files
-    bounds = _bound_time(args.File.time + args.File.dur//2)
+    bounds = _bound_time(args.File.time + args.File.dur // 2)
     if args.ecmwf_flag == 0:
         ggam = _form_bound_filenames(bounds, args.ggam_dir,
                                      'ERA_Interim_an_%Y%m%d_%H+00.nc')
@@ -101,7 +101,7 @@ def build_preproc_driver(args):
                               ('ECMWF_ERA_%Y%m%d_%H_0.5.nc', 6),
                               ('ECMWF_ERA_%Y%m%d_%H+00_0.5.nc', 6)):
             try:
-                bounds = _bound_time(args.File.time + args.File.dur//2, ec_hour)
+                bounds = _bound_time(args.File.time + args.File.dur // 2, ec_hour)
                 ggam = _form_bound_filenames(bounds, args.ggam_dir, form)
                 break
             except FileMissing as tmp_err:
@@ -115,21 +115,21 @@ def build_preproc_driver(args):
         raise BadValue('ecmwf_flag', args.ecmwf_flag)
 
     if not args.skip_ecmwf_hr:
-        #hr_ecmwf = _form_bound_filenames(bounds, args.hr_dir,
+        # hr_ecmwf = _form_bound_filenames(bounds, args.hr_dir,
         #                                 'ERA_Interim_an_%Y%m%d_%H+00_HR.grb')
         # These files don't zero-pad the hour for some reason
-        bounds = _bound_time(args.File.time + args.File.dur//2, 6)
+        bounds = _bound_time(args.File.time + args.File.dur // 2, 6)
         hr_ecmwf = [
             time.strftime(
                 os.path.join(args.hr_dir, 'ERA_Interim_an_%Y%m%d_') +
-                '{:d}+00_HR.grb'.format(time.hour*100)
+                '{:d}+00_HR.grb'.format(time.hour * 100)
             ) for time in bounds
         ]
         if not os.path.isfile(hr_ecmwf[0]):
             hr_ecmwf = [
                 time.strftime(
                     os.path.join(args.hr_dir, 'ERA_Interim_an_%Y%m%d_') +
-                    '{:d}+00_HR.grb'.format(time.hour*100)
+                    '{:d}+00_HR.grb'.format(time.hour * 100)
                 ) for time in bounds]
         for filename in hr_ecmwf:
             if not os.path.isfile(filename):
@@ -141,7 +141,7 @@ def build_preproc_driver(args):
         for oc_version in (4.2, 4.1, 4.0, 3.1, 3.0, 2.0, 1.0):
             occci = args.File.time.strftime(os.path.join(
                 args.occci_dir, 'ESACCI-OC-L3S-IOP-MERGED-1M_MONTHLY'
-                f'_4km_GEO_PML_OCx_QAA-%Y%m-fv{oc_version:.1f}.nc'
+                                f'_4km_GEO_PML_OCx_QAA-%Y%m-fv{oc_version:.1f}.nc'
             ))
             if os.path.isfile(occci):
                 break
@@ -150,7 +150,7 @@ def build_preproc_driver(args):
     else:
         occci = ''
 
-    #------------------------------------------------------------------------
+    # ------------------------------------------------------------------------
 
     if args.uuid:
         uid = str(uuid4())
@@ -235,13 +235,13 @@ def build_preproc_driver(args):
 
     file_version = f'R{args.File.revision}'
 
-    chunk_flag = False # File chunking no longer required
-    assume_full_paths = True # We pass absolute paths
+    chunk_flag = False  # File chunking no longer required
+    assume_full_paths = True  # We pass absolute paths
     cldtype = not args.skip_cloud_type
     include_full_brdf = not args.lambertian
     use_ecmwf_hr = not args.skip_ecmwf_hr
 
-    #------------------------------------------------------------------------
+    # ------------------------------------------------------------------------
 
     # Write driver file
     driver = f"""{args.File.sensor}
@@ -358,20 +358,20 @@ Ctrl%Process_Cloudy_Only    = {cloudy}
 Ctrl%Process_Aerosol_Only   = {aerosoly}
 Ctrl%Verbose                = {verbose}
 Ctrl%RS%Use_Full_BRDF       = {use_brdf}""".format(
-    aerosoly=args.aerosol_only,
-    channels=','.join('1' if k in args.use_channels else '0'
-                      for k in args.available_channels),
-    cloudy=args.cloud_only,
-    fileroot=args.File.root_name(),
-    in_dir=args.in_dir[0],
-    nch=len(args.available_channels),
-    out_dir=args.out_dir,
-    phase=args.phase,
-    sad_dir=SETTINGS[args.phase].sad_dir(args.sad_dirs, args.File),
-    sensor=args.File.inst,
-    use_brdf=not (args.lambertian or args.approach == 'AppAerSw'),
-    verbose=args.verbose,
-)
+        aerosoly=args.aerosol_only,
+        channels=','.join('1' if k in args.use_channels else '0'
+                          for k in args.available_channels),
+        cloudy=args.cloud_only,
+        fileroot=args.File.root_name(),
+        in_dir=args.in_dir[0],
+        nch=len(args.available_channels),
+        out_dir=args.out_dir,
+        phase=args.phase,
+        sad_dir=SETTINGS[args.phase].sad_dir(args.sad_dirs, args.File),
+        sensor=args.File.inst,
+        use_brdf=not (args.lambertian or args.approach == 'AppAerSw'),
+        verbose=args.verbose,
+    )
 
     # Optional driver file lines
     if args.multilayer is not None:
@@ -379,14 +379,14 @@ Ctrl%RS%Use_Full_BRDF       = {use_brdf}""".format(
 Ctrl%LUTClass2              = "{}"
 Ctrl%FID%SAD_Dir2           = "{}"
 Ctrl%Class2                 = {}""".format(
-    args.multilayer[0],
-    SETTINGS[args.multilayer[0]].sad_dir(args.sad_dirs, args.File),
-    args.multilayer[1],
-)
+            args.multilayer[0],
+            SETTINGS[args.multilayer[0]].sad_dir(args.sad_dirs, args.File),
+            args.multilayer[1],
+        )
     if args.types:
         driver += "\nCtrl%NTypes_To_Process      = {:d}".format(len(args.types))
         driver += ("\nCtrl%Types_To_Process(1:{:d}) = ".format(len(args.types)) +
-                   ','.join(k+'_TYPE' for k in args.types))
+                   ','.join(k + '_TYPE' for k in args.types))
     if args.sabotage:
         driver += "\nCtrl%Sabotage_Inputs        = true"
     if args.approach:
@@ -435,22 +435,22 @@ VERBOSE={verbose}
 USE_CHUNKING={chunking}
 USE_NETCDF_COMPRESSION={compress}
 USE_NEW_BAYESIAN_SELECTION={bayesian}""".format(
-    bayesian=args.phases != ['WAT', 'ICE'],
-    chunking=args.chunking,
-    compress=args.compress,
-    cost_tsh=args.cost_thresh,
-    ice_pri=files[1],
-    ice_sec=files[1].replace('primary', 'secondary'),
-    multilayer=args.approach == 'AppCld2L',
-    opt_nght=not args.no_night_opt,
-    out_pri=args.target,
-    out_sec=args.target.replace('primary', 'secondary'),
-    prob_tsh=args.prob_thresh,
-    switch=args.switch_phase,
-    verbose=args.verbose,
-    wat_pri=files[0],
-    wat_sec=files[0].replace('primary', 'secondary'),
-)
+        bayesian=args.phases != ['WAT', 'ICE'],
+        chunking=args.chunking,
+        compress=args.compress,
+        cost_tsh=args.cost_thresh,
+        ice_pri=files[1],
+        ice_sec=files[1].replace('primary', 'secondary'),
+        multilayer=args.approach == 'AppCld2L',
+        opt_nght=not args.no_night_opt,
+        out_pri=args.target,
+        out_sec=args.target.replace('primary', 'secondary'),
+        prob_tsh=args.prob_thresh,
+        switch=args.switch_phase,
+        verbose=args.verbose,
+        wat_pri=files[0],
+        wat_sec=files[0].replace('primary', 'secondary'),
+    )
 
     # Add additional files
     for filename in files[2:]:
@@ -471,7 +471,8 @@ USE_NEW_BAYESIAN_SELECTION={bayesian}""".format(
 
     return driver
 
-#-----------------------------------------------------------------------------
+
+# -----------------------------------------------------------------------------
 
 def _bound_time(date=None, delta_hours=6):
     """Return timestamps divisible by some duration that bound a given time
@@ -494,10 +495,10 @@ def _bound_time(date=None, delta_hours=6):
     # Floor time to requested delta
     seconds = (date - date.min).seconds
     rounding = seconds // round_to * round_to
-    start = time + timedelta(0, rounding-seconds)
+    start = time + timedelta(0, rounding - seconds)
 
     # Output floor and ceil of time
-    return (start, start + date_delta)
+    return start, start + date_delta
 
 
 def _date_back_search(fdr, date_in, pattern, interval):
@@ -535,8 +536,8 @@ def _date_back_search(fdr, date_in, pattern, interval):
 
     # If we fail, try to find a climatological file
     if 'XXXX' not in pattern:
-        return _date_back_search(fdr.replace('%Y','XXXX'), date_in,
-                                 pattern.replace('%Y','XXXX'), 'days')
+        return _date_back_search(fdr.replace('%Y', 'XXXX'), date_in,
+                                 pattern.replace('%Y', 'XXXX'), 'days')
     else:
         raise FileMissing(fdr, pattern)
 
