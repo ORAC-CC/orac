@@ -13,16 +13,7 @@
 ! Arguments:
 ! Name             Type   In/Out/Both Description
 ! ------------------------------------------------------------------------------
-! lwrtm_file       string out Full path to output file LW RTM.
-! swrtm_file       string out Full path to output file SW RTM.
-! prtm_file        string out Full path to output file pressure RTM.
-! config_file      string out Full path to output file configuration data.
-! msi_file         string out Full path to output file multispectral imagery.
-! cf_file          string out Full path to output file cloud flag.
-! lsf_file         string out Full path to output file land/sea flag.
-! geo_file         string out Full path to output file geolocation.
-! loc_file         string out Full path to output file location.
-! alb_file         string out Full path to output file albedo.
+! paths            struct out  Paths to the ten ORAC preprocessor outputs.
 ! sensor           string in  Name of sensor.
 ! platform         string in  Name of satellite platform.
 ! hour             stint  in  Hour of day (0-59)
@@ -86,6 +77,7 @@
 ! 2018/02/01, GT: If a orbit number has been included in the source_attributes,
 !    it is now included in the output file names (between date/time and product
 !    version fields)
+! 2021/03/09, AP: Consolidate path arguments into structure
 !
 ! Bugs:
 ! None known.
@@ -99,8 +91,7 @@ contains
 
 #include "set_ecmwf.F90"
 
-subroutine preparation(lwrtm_file, swrtm_file, prtm_file, config_file, msi_file, &
-     cf_file, lsf_file, geo_file, loc_file, alb_file, sensor, platform, product_name, &
+subroutine preparation(paths, sensor, platform, product_name, &
      cyear, cmonth, cday, chour, cminute, orbit_number, ecmwf_path, ecmwf_hr_path, &
      ecmwf_path2, ecmwf_path3, ecmwf_path_file, ecmwf_hr_path_file, &
      ecmwf_path_file2, ecmwf_path_file3, global_atts, ecmwf_flag, &
@@ -110,13 +101,11 @@ subroutine preparation(lwrtm_file, swrtm_file, prtm_file, config_file, msi_file,
    use imager_structures_m
    use global_attributes_m
    use preproc_constants_m
+   use preproc_structures_m, only: preproc_paths_t
 
    implicit none
 
-   character(len=*),           intent(out) :: lwrtm_file, swrtm_file, &
-                                              prtm_file, config_file, &
-                                              msi_file, cf_file, lsf_file, &
-                                              geo_file, loc_file, alb_file
+   type(preproc_paths_t),      intent(out)   :: paths
    character(len=*),           intent(in)  :: sensor
    character(len=*),           intent(in)  :: platform
    character(len=*),           intent(in)  :: product_name
@@ -228,16 +217,16 @@ subroutine preparation(lwrtm_file, swrtm_file, prtm_file, config_file, msi_file,
    if (verbose) write(*,*) 'output file_base: ', trim(file_base)
 
    ! get preproc filenames
-   lwrtm_file = trim(adjustl(file_base))//'.lwrtm.nc'
-   swrtm_file = trim(adjustl(file_base))//'.swrtm.nc'
-   prtm_file = trim(adjustl(file_base))//'.prtm.nc'
-   config_file = trim(adjustl(file_base))//'.config.nc'
-   msi_file = trim(adjustl(file_base))//'.msi.nc'
-   cf_file = trim(adjustl(file_base))//'.clf.nc'
-   lsf_file = trim(adjustl(file_base))//'.lsf.nc'
-   geo_file = trim(adjustl(file_base))//'.geo.nc'
-   loc_file = trim(adjustl(file_base))//'.loc.nc'
-   alb_file = trim(adjustl(file_base))//'.alb.nc'
+   paths%lwrtm_file = trim(adjustl(file_base))//'.lwrtm.nc'
+   paths%swrtm_file = trim(adjustl(file_base))//'.swrtm.nc'
+   paths%prtm_file = trim(adjustl(file_base))//'.prtm.nc'
+   paths%config_file = trim(adjustl(file_base))//'.config.nc'
+   paths%msi_file = trim(adjustl(file_base))//'.msi.nc'
+   paths%cf_file = trim(adjustl(file_base))//'.clf.nc'
+   paths%lsf_file = trim(adjustl(file_base))//'.lsf.nc'
+   paths%geo_file = trim(adjustl(file_base))//'.geo.nc'
+   paths%loc_file = trim(adjustl(file_base))//'.loc.nc'
+   paths%alb_file = trim(adjustl(file_base))//'.alb.nc'
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving preparation()'
 

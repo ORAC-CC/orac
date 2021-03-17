@@ -136,6 +136,20 @@ module preproc_structures_m
       real(kind=sreal), dimension(:,:,:), pointer :: cloud_bt
    end type preproc_cld_t
 
+
+   type preproc_paths_t
+      character(len=file_length) :: alb_file    ! Surface albedo/BRDF
+      character(len=file_length) :: cf_file     ! Cloud flagging
+      character(len=file_length) :: config_file ! Configuration parameters
+      character(len=file_length) :: geo_file    ! Viewing angles and geolocation
+      character(len=file_length) :: loc_file    ! Lat/lon location
+      character(len=file_length) :: lsf_file    ! Land-sea flag
+      character(len=file_length) :: lwrtm_file  ! Longwave RTTOV inputs
+      character(len=file_length) :: msi_file    ! Radiances/brightness temps
+      character(len=file_length) :: prtm_file   ! Atmospheric RTTOV inputs
+      character(len=file_length) :: swrtm_file  ! Shortwave RTTOV inputs
+   end type preproc_paths_t
+
 contains
 
 #include "allocate_preproc_structures.F90"

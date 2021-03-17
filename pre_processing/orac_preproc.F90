@@ -433,9 +433,7 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
 
    character(len=date_length)       :: cyear, cmonth, cday, cdoy, chour, cminute
 
-   character(len=file_length)       :: lwrtm_file, swrtm_file, prtm_file
-   character(len=file_length)       :: msi_file, cf_file, lsf_file, config_file
-   character(len=file_length)       :: geo_file, loc_file, alb_file
+   type(preproc_paths_t)            :: out_paths
 
    type(channel_info_t)             :: channel_info
 
@@ -978,8 +976,7 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
       ! information, set paths and filenames to those required auxiliary /
       ! ancillary input...
       if (verbose) write(*,*) 'Carry out any preparatory steps'
-      call preparation(lwrtm_file, swrtm_file, prtm_file, config_file, msi_file, &
-           cf_file, lsf_file, geo_file, loc_file, alb_file, sensor, platform, &
+      call preparation(out_paths, sensor, platform, &
            preproc_opts%product_name, cyear, cmonth, cday, chour, cminute, &
            source_atts%level1b_orbit_number, preproc_opts%ecmwf_path, preproc_opts%ecmwf_path_hr, &
            preproc_opts%ecmwf_path2, preproc_opts%ecmwf_path3, preproc_opts%ecmwf_path_file, preproc_opts%ecmwf_HR_path_file, &
@@ -1217,8 +1214,7 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
       if (verbose) write(*,*) 'Create output netcdf files'
       if (verbose) write(*,*) 'output_path: ', trim(output_path)
 
-      call netcdf_output_create(output_path, lwrtm_file, swrtm_file, prtm_file, &
-           config_file, msi_file, cf_file, lsf_file, geo_file, loc_file, alb_file, &
+      call netcdf_output_create(output_path, out_paths, &
            platform, sensor, global_atts, source_atts, cyear, cmonth, cday, chour, &
            cminute, preproc_dims, imager_angles, imager_geolocation, netcdf_info, &
            channel_info, include_full_brdf, ecmwf_flag, preproc_opts%do_cloud_emis, verbose)
@@ -1282,9 +1278,7 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
 
          ! check whether output files are corrupt
          if (verbose) write(*,*)'Check whether output files are corrupt'
-         call netcdf_output_check(output_path, lwrtm_file, swrtm_file, prtm_file, &
-              config_file, msi_file, cf_file, lsf_file, geo_file, loc_file, alb_file, &
-              corrupt, verbose)
+         call netcdf_output_check(output_path, out_paths, corrupt, verbose)
 
          ! exit loop if output files are not corrupt, else try writing again
          if (.not. corrupt) then
@@ -1294,9 +1288,7 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
             write(*,*) 'A preprocessing output file is corrupt - ', &
                  'rewriting attempt no. ', check_output
             ! recreate output files if previous attempt produced corrupt files
-            call netcdf_output_create(output_path, lwrtm_file, swrtm_file, &
-                 prtm_file, config_file, msi_file, cf_file, lsf_file, geo_file, &
-                 loc_file, alb_file, platform, sensor, global_atts, source_atts, &
+            call netcdf_output_create(output_path, out_paths, platform, sensor, global_atts, source_atts, &
                  cyear, cmonth, cday, chour, cminute, preproc_dims, imager_angles, &
                  imager_geolocation, netcdf_info, channel_info, include_full_brdf, &
                  ecmwf_flag, preproc_opts%do_cloud_emis, verbose)
