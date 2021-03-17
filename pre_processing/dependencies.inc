@@ -44,7 +44,7 @@ $(OBJS)/ocean_colour.o: $(OBJS)/channel_structures.o \
         $(OBJS)/cox_munk_constants.o $(OBJS)/fill_grid.o \
         $(OBJS)/preproc_constants.o
 $(OBJS)/preparation.o: $(OBJS)/calender.o $(OBJS)/imager_structures.o \
-        $(OBJS)/preproc_constants.o set_ecmwf.F90
+        $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o set_ecmwf.F90
 $(OBJS)/preproc_structures.o: $(OBJS)/channel_structures.o \
         $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o \
         allocate_preproc_structures.F90 deallocate_preproc_structures.F90
@@ -102,7 +102,11 @@ $(OBJS)/rttov_driver_gfs.o: $(OBJS)/channel_structures.o $(OBJS)/netcdf_output.o
         $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o \
         $(OBJS)/remove_rayleigh.o write_ir_rttov.F90 write_solar_rttov.F90
 $(OBJS)/setup.o: $(OBJS)/calender.o $(OBJS)/channel_structures.o \
-        $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o
+        $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o \
+        $(OBJS)/read_aatsr.o $(OBJS)/read_abi.o $(OBJS)/read_agri.o \
+        $(OBJS)/read_avhrr.o $(OBJS)/read_himawari.o $(OBJS)/read_modis.o \
+        $(OBJS)/read_seviri.o $(OBJS)/read_slstr.o $(OBJS)/read_viirs_Iband.o \
+        $(OBJS)/read_viirs_Mband.o
 $(OBJS)/surface_emissivity.o: $(OBJS)/channel_structures.o \
         $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o \
         $(OBJS)/preproc_structures.o $(OBJS)/read_camel_emissivity.o \
@@ -126,10 +130,7 @@ $(OBJS)/orac_preproc.o: $(OBJS)/channel_structures.o $(OBJS)/cloud_emis.o \
         $(OBJS)/ecmwf.o $(OBJS)/imager_structures.o $(OBJS)/netcdf_output.o \
         $(OBJS)/preparation.o $(OBJS)/preproc_constants.o \
         $(OBJS)/preproc_structures.o $(OBJS)/read_USGS_file.o \
-        $(OBJS)/read_aatsr.o $(OBJS)/read_abi.o $(OBJS)/read_agri.o \
-        $(OBJS)/read_avhrr.o $(OBJS)/read_himawari.o $(OBJS)/read_imager.o \
-        $(OBJS)/read_modis.o $(OBJS)/read_seviri.o $(OBJS)/read_slstr.o \
-        $(OBJS)/read_viirs_Iband.o $(OBJS)/read_viirs_Mband.o \
-        $(OBJS)/rttov_driver.o $(OBJS)/rttov_driver_gfs.o $(OBJS)/setup.o \
-        $(OBJS)/surface_emissivity.o $(OBJS)/surface_reflectance.o \
-        $(OBJS)/surface_structures.o $(OBJS)/utils_for_main.o
+        $(OBJS)/read_imager.o $(OBJS)/rttov_driver.o $(OBJS)/rttov_driver_gfs.o \
+        $(OBJS)/setup.o $(OBJS)/surface_emissivity.o \
+        $(OBJS)/surface_reflectance.o $(OBJS)/surface_structures.o \
+        $(OBJS)/utils_for_main.o

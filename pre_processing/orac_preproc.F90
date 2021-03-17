@@ -338,18 +338,7 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
    use preparation_m
    use preproc_constants_m
    use preproc_structures_m
-   use read_aatsr_m
-   use read_abi_m
-   use read_agri_m
-   use read_avhrr_m
-   !use read_goes_imager_m
-   use read_himawari_m
    use read_imager_m
-   use read_modis_m
-   use read_seviri_m
-   use read_slstr_m
-   use read_viirs_iband_m
-   use read_viirs_mband_m
    use rttov_driver_m
    use rttov_driver_gfs_m
    use setup_m
@@ -683,127 +672,11 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
    source_atts%snow_file            = 'null'
    source_atts%sea_ice_file         = 'null'
 
-   if (trim(adjustl(sensor)) .eq. 'AATSR' .or. &
-       trim(adjustl(sensor)) .eq. 'ATSR2') then
-      call setup_aatsr(l1b_path_file, geo_path_file, platform, sensor, year, month, &
-           day, doy, hour, minute, cyear, cmonth, cday, cdoy, chour, cminute, &
-           preproc_opts%channel_ids, channel_info, verbose)
-
-      loc_limit = (/ -90.0, -180.0, 90.0, 180.0 /)
-
-      ! initialise the second length and offset variables
-
-      ! Get array dimensions and along-track offset for the daylight side. If
-      ! we're processing daylight data, we may want to chunk process after this.
-      call read_aatsr_dimensions(l1b_path_file, n_across_track, &
-           n_along_track, along_track_offset, day_night, loc_limit, &
-           n_along_track2, along_track_offset2, verbose)
-
-   else if (trim(adjustl(sensor)) .eq. 'ABI') then
-      call setup_abi(l1b_path_file, geo_path_file, platform, year, month, day, &
-           doy, hour, minute, cyear, cmonth, cday, cdoy, chour, cminute, preproc_opts%channel_ids, &
-           channel_info, verbose)
-
-      ! Get dimensions of the ABI image.
-      call read_abi_dimensions(geo_path_file, n_across_track, n_along_track, &
-           verbose)
-
-   else if (trim(adjustl(sensor)) .eq. 'AGRI') then
-      call setup_agri(l1b_path_file, geo_path_file, platform, year, month, day, &
-           doy, hour, minute, cyear, cmonth, cday, cdoy, chour, cminute, preproc_opts%channel_ids, &
-           channel_info, verbose)
-      ! Get dimensions of the AGRI image.
-      ! At present only full-disk images are supported
-      call read_agri_dimensions(geo_path_file, n_across_track, n_along_track, &
-           verbose)
-
-   else if (trim(adjustl(sensor)) .eq. 'AHI') then
-      call setup_ahi(l1b_path_file, geo_path_file, platform, year, month, day, &
-           doy, hour, minute, cyear, cmonth, cday, cdoy, chour, cminute, preproc_opts%channel_ids, &
-           channel_info, verbose)
-
-      ! Get dimensions of the AHI image.
-      ! Subsetting AHI full-disk images are now supported
-      call read_himawari_dimensions(geo_path_file, n_across_track, n_along_track, &
-           startx, endx, starty, endy, verbose)
-
-   else if (trim(adjustl(sensor)) .eq. 'AVHRR') then
-      call setup_avhrr(l1b_path_file, geo_path_file, platform, year, month, day, &
-           doy, hour, minute, cyear, cmonth, cday, cdoy, chour, cminute, preproc_opts%channel_ids, &
-           channel_info, verbose)
-
-      ! get dimensions of the avhrr orbit
-      call read_avhrr_dimensions(geo_path_file, n_across_track, n_along_track)
-!   else if (trim(adjustl(sensor)) .eq. 'GIMG') then
-!      call setup_goes_imager(l1b_path_file, geo_path_file, platform, year, month, day, &
-!           doy, hour, minute, cyear, cmonth, cday, cdoy, chour, cminute, preproc_opts%channel_ids, &
-!           channel_info, verbose)
-
-!      ! Get dimensions of the GOES-Imager image.
-!      call read_goes_imager_dimensions(geo_path_file, n_across_track, n_along_track, &
-!                                    startx, endx, starty, endy, verbose)
-
-   else if (trim(adjustl(sensor)) .eq. 'MODIS') then
-      call setup_modis(l1b_path_file, geo_path_file, platform, year, month, day, &
-           doy, hour, minute, cyear, cmonth, cday, cdoy, chour, cminute, preproc_opts%channel_ids, &
-           channel_info, verbose)
-
-      ! get dimensions of the modis granule
-      call read_modis_dimensions(geo_path_file, n_across_track, n_along_track)
-
-   else if (trim(adjustl(sensor)) .eq. 'SEVIRI') then
-      call setup_seviri(l1b_path_file, geo_path_file, platform, year, month, day, &
-           doy, hour, minute, cyear, cmonth, cday, cdoy, chour, cminute, preproc_opts%channel_ids, &
-           channel_info, verbose)
-
-      ! get dimensions of the seviri image.
-      ! For SEVIRI the native level 1.5 image data can come as a subimage of the
-      ! the full disk image. Regardless, n_across_track and n_along_track are
-      ! set to the constant dimensions of a full disk image as it is convenient
-      ! to operate relative to the full disk. startx, endx, starty, endy are
-      ! assumed to be given relative to the full disk. As a result, if they are
-      ! not being used (not all > 0) then they will be set to the actual image
-      ! in the image file and if they are being used (all > 0) then they need to
-      ! be checked independently relative to the actual image, both done in the
-      ! following call.
-      call read_seviri_dimensions(geo_path_file, n_across_track, n_along_track, &
-           startx, endx, starty, endy, verbose)
-
-   else if (trim(adjustl(sensor)) .eq. 'SLSTR') then
-      call setup_slstr(l1b_path_file, geo_path_file, source_atts, platform, &
-           year, month, day, doy, hour, minute, cyear, cmonth, cday, cdoy, chour, cminute, &
-           preproc_opts%channel_ids, channel_info, verbose)
-
-      ! Get dimensions of the SLSTR image.
-      ! At present the full scene will always be processed
-      call read_slstr_dimensions(l1b_path_file, n_across_track, n_along_track, &
-           verbose)
-
-   else if (trim(adjustl(sensor)) .eq. 'VIIRSI') then
-      call setup_viirs_iband(l1b_path_file, geo_path_file, platform, year, month, day, &
-           doy, hour, minute, cyear, cmonth, cday, cdoy, chour, cminute, preproc_opts%channel_ids, &
-           channel_info, verbose)
-
-      ! Get dimensions of the VIIRS image.
-      ! At present the full scene will always be processed
-      call read_viirs_iband_dimensions(geo_path_file, n_across_track, n_along_track, &
-           verbose)
-
-   else if (trim(adjustl(sensor)) .eq. 'VIIRSM') then
-      call setup_viirs_mband(l1b_path_file, geo_path_file, platform, year, month, day, &
-           doy, hour, minute, cyear, cmonth, cday, cdoy, chour, cminute, preproc_opts%channel_ids, &
-           channel_info, verbose)
-
-      ! Get dimensions of the VIIRS image.
-      ! At present the full scene will always be processed
-      call read_viirs_mband_dimensions(geo_path_file, n_across_track, n_along_track, &
-           verbose)
-
-   else
-      write(*,*) 'ERROR: Invalid sensor: ', trim(adjustl(sensor))
-      stop error_stop_code
-
-   end if ! end of sensor selection
+   call setup_imager(l1b_path_file, geo_path_file, sensor, platform, year, month, day, &
+        doy, hour, minute, cyear, cmonth, cday, cdoy, chour, cminute, &
+        n_across_track, n_along_track, along_track_offset, day_night, &
+        n_along_track2, along_track_offset2, startx, endx, starty, endy, &
+        preproc_opts%channel_ids, source_atts, channel_info, verbose)
 
    ! We now have the number of viewing geometries. Put this in imager_angles
    imager_angles%nviews = channel_info%nviews

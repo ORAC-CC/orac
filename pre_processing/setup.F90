@@ -2119,4 +2119,170 @@ subroutine determine_seviri_platform_from_metoffice(l1_file, platform)
 
 end subroutine determine_seviri_platform_from_metoffice
 
+
+subroutine setup_imager(l1b_path_file, geo_path_file, sensor, platform, &
+     year, month, day, doy, hour, minute, cyear, cmonth, cday, cdoy, chour, &
+     cminute, n_across_track, n_along_track, along_track_offset, day_night, &
+     n_along_track2, along_track_offset2, startx, endx, starty, endy, &
+     channel_ids, source_attributes, channel_info, verbose)
+
+   use channel_structures_m, only: channel_info_t
+   use common_constants_m
+   use read_aatsr_m
+   use read_abi_m
+   use read_agri_m
+   use read_avhrr_m
+   !use read_goes_imager_m
+   use read_himawari_m
+   use read_modis_m
+   use read_seviri_m
+   use read_slstr_m
+   use read_viirs_iband_m
+   use read_viirs_mband_m
+   use source_attributes_m, only: source_attributes_t
+
+   implicit none
+
+   character(len=*),     intent(in)    :: l1b_path_file
+   character(len=*),     intent(in)    :: geo_path_file, sensor
+   character(len=*),     intent(out)   :: platform
+   integer(kind=sint),   intent(out)   :: year, month, day, doy
+   integer(kind=sint),   intent(out)   :: hour, minute
+   character(len=*),     intent(out)   :: cyear, cmonth, cday
+   character(len=*),     intent(out)   :: cdoy, chour, cminute
+   integer,              intent(out)   :: n_across_track, n_along_track
+   integer,              intent(out)   :: along_track_offset
+   integer(kind=sint),   intent(out)   :: day_night
+   integer,              intent(out)   :: n_along_track2, along_track_offset2
+   integer,              intent(out)   :: startx, endx, starty, endy
+   integer, pointer,          intent(in)    :: channel_ids(:)
+   type(source_attributes_t), intent(inout) :: source_attributes
+   type(channel_info_t),      intent(inout) :: channel_info
+   logical,                   intent(in)    :: verbose
+
+   real(kind=sreal), parameter :: loc_limit(4) = (/ -90.0, -180.0, 90.0, 180.0 /)
+
+   select case (trim(adjustl(sensor)))
+   case('AATSR', 'ATSR2')
+      call setup_aatsr(l1b_path_file, geo_path_file, platform, sensor, year, month, &
+           day, doy, hour, minute, cyear, cmonth, cday, cdoy, chour, cminute, &
+           channel_ids, channel_info, verbose)
+
+      ! initialise the second length and offset variables
+
+      ! Get array dimensions and along-track offset for the daylight side. If
+      ! we're processing daylight data, we may want to chunk process after this.
+      call read_aatsr_dimensions(l1b_path_file, n_across_track, &
+           n_along_track, along_track_offset, day_night, loc_limit, &
+           n_along_track2, along_track_offset2, verbose)
+
+   case('ABI')
+      call setup_abi(l1b_path_file, geo_path_file, platform, year, month, day, &
+           doy, hour, minute, cyear, cmonth, cday, cdoy, chour, cminute, channel_ids, &
+           channel_info, verbose)
+
+      ! Get dimensions of the ABI image.
+      call read_abi_dimensions(geo_path_file, n_across_track, n_along_track, &
+           verbose)
+
+   case('AGRI')
+      call setup_agri(l1b_path_file, geo_path_file, platform, year, month, day, &
+           doy, hour, minute, cyear, cmonth, cday, cdoy, chour, cminute, channel_ids, &
+           channel_info, verbose)
+      ! Get dimensions of the AGRI image.
+      ! At present only full-disk images are supported
+      call read_agri_dimensions(geo_path_file, n_across_track, n_along_track, &
+           verbose)
+
+   case('AHI')
+      call setup_ahi(l1b_path_file, geo_path_file, platform, year, month, day, &
+           doy, hour, minute, cyear, cmonth, cday, cdoy, chour, cminute, channel_ids, &
+           channel_info, verbose)
+
+      ! Get dimensions of the AHI image.
+      ! Subsetting AHI full-disk images are now supported
+      call read_himawari_dimensions(geo_path_file, n_across_track, n_along_track, &
+           startx, endx, starty, endy, verbose)
+
+   case('AVHRR')
+      call setup_avhrr(l1b_path_file, geo_path_file, platform, year, month, day, &
+           doy, hour, minute, cyear, cmonth, cday, cdoy, chour, cminute, channel_ids, &
+           channel_info, verbose)
+
+      ! get dimensions of the avhrr orbit
+      call read_avhrr_dimensions(geo_path_file, n_across_track, n_along_track)
+
+!   case('GIMG')
+!      call setup_goes_imager(l1b_path_file, geo_path_file, platform, year, month, day, &
+!           doy, hour, minute, cyear, cmonth, cday, cdoy, chour, cminute, channel_ids, &
+!           channel_info, verbose)
+
+!      ! Get dimensions of the GOES-Imager image.
+!      call read_goes_imager_dimensions(geo_path_file, n_across_track, n_along_track, &
+!                                    startx, endx, starty, endy, verbose)
+
+   case('MODIS')
+      call setup_modis(l1b_path_file, geo_path_file, platform, year, month, day, &
+           doy, hour, minute, cyear, cmonth, cday, cdoy, chour, cminute, channel_ids, &
+           channel_info, verbose)
+
+      ! get dimensions of the modis granule
+      call read_modis_dimensions(geo_path_file, n_across_track, n_along_track)
+
+   case('SEVIRI')
+      call setup_seviri(l1b_path_file, geo_path_file, platform, year, month, day, &
+           doy, hour, minute, cyear, cmonth, cday, cdoy, chour, cminute, channel_ids, &
+           channel_info, verbose)
+
+      ! get dimensions of the seviri image.
+      ! For SEVIRI the native level 1.5 image data can come as a subimage of the
+      ! the full disk image. Regardless, n_across_track and n_along_track are
+      ! set to the constant dimensions of a full disk image as it is convenient
+      ! to operate relative to the full disk. startx, endx, starty, endy are
+      ! assumed to be given relative to the full disk. As a result, if they are
+      ! not being used (not all > 0) then they will be set to the actual image
+      ! in the image file and if they are being used (all > 0) then they need to
+      ! be checked independently relative to the actual image, both done in the
+      ! following call.
+      call read_seviri_dimensions(geo_path_file, n_across_track, n_along_track, &
+           startx, endx, starty, endy, verbose)
+
+   case('SLSTR')
+      call setup_slstr(l1b_path_file, geo_path_file, source_attributes, platform, &
+           year, month, day, doy, hour, minute, cyear, cmonth, cday, cdoy, chour, cminute, &
+           channel_ids, channel_info, verbose)
+
+      ! Get dimensions of the SLSTR image.
+      ! At present the full scene will always be processed
+      call read_slstr_dimensions(l1b_path_file, n_across_track, n_along_track, &
+           verbose)
+
+   case('VIIRSI')
+      call setup_viirs_iband(l1b_path_file, geo_path_file, platform, year, month, day, &
+           doy, hour, minute, cyear, cmonth, cday, cdoy, chour, cminute, channel_ids, &
+           channel_info, verbose)
+
+      ! Get dimensions of the VIIRS image.
+      ! At present the full scene will always be processed
+      call read_viirs_iband_dimensions(geo_path_file, n_across_track, n_along_track, &
+           verbose)
+
+   case('VIIRSM')
+      call setup_viirs_mband(l1b_path_file, geo_path_file, platform, year, month, day, &
+           doy, hour, minute, cyear, cmonth, cday, cdoy, chour, cminute, channel_ids, &
+           channel_info, verbose)
+
+      ! Get dimensions of the VIIRS image.
+      ! At present the full scene will always be processed
+      call read_viirs_mband_dimensions(geo_path_file, n_across_track, n_along_track, &
+           verbose)
+
+   case default
+      write(*,*) 'ERROR: Invalid sensor: ', trim(adjustl(sensor))
+      stop error_stop_code
+
+   end select
+
+end subroutine setup_imager
+
 end module setup_m
