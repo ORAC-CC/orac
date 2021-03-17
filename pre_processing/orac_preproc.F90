@@ -521,135 +521,76 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
    ! Initialise satellite position string
    global_atts%Satpos_Metadata = 'null'
 
-   ! if more than one argument passed, all inputs on command line
-   if (nargs .gt. 1) then
-      if (nargs .lt. 47) then
-         write(*,*) 'ERROR: not enough command line arguments: ', nargs
-         stop error_stop_code
-      end if
-
-      call get_command_argument(1, sensor)
-      call get_command_argument(2, l1b_path_file)
-      call get_command_argument(3, geo_path_file)
-      call get_command_argument(4, usgs_path_file)
-      call get_command_argument(5, preproc_opts%ecmwf_path(1))
-      call get_command_argument(6, rttov_coef_path)
-      call get_command_argument(7, rttov_emiss_path)
-      call get_command_argument(8, nise_ice_snow_path)
-      call get_command_argument(9, modis_albedo_path)
-      call get_command_argument(10, modis_brdf_path)
-      call get_command_argument(11, cimss_emiss_path)
-      call get_command_argument(12, cdellon)
-      call get_command_argument(13, cdellat)
-      call get_command_argument(14, output_path)
-      call get_command_argument(15, cstartx)
-      call get_command_argument(16, cendx)
-      call get_command_argument(17, cstarty)
-      call get_command_argument(18, cendy)
-      call get_command_argument(19, global_atts%NetCDF_Version)
-      call get_command_argument(20, global_atts%Conventions)
-      call get_command_argument(21, global_atts%institution)
-      call get_command_argument(22, global_atts%L2_Processor)
-      call get_command_argument(23, global_atts%Creator_Email)
-      call get_command_argument(24, global_atts%Creator_url)
-      call get_command_argument(25, global_atts%file_version)
-      call get_command_argument(26, global_atts%references)
-      call get_command_argument(27, global_atts%history)
-      call get_command_argument(28, global_atts%Summary)
-      call get_command_argument(29, global_atts%Keywords)
-      call get_command_argument(30, global_atts%comment)
-      call get_command_argument(31, global_atts%Project)
-      call get_command_argument(32, global_atts%License)
-      call get_command_argument(33, global_atts%UUID)
-      call get_command_argument(34, global_atts%Production_Time)
-      call get_command_argument(35, aatsr_calib_path_file)
-      call get_command_argument(36, cecmwf_flag)
-      call get_command_argument(37, preproc_opts%ecmwf_path2(1))
-      call get_command_argument(38, preproc_opts%ecmwf_path3(1))
-      call get_command_argument(39, cchunkproc)
-      call get_command_argument(40, cday_night)
-      call get_command_argument(41, cverbose)
-      call get_command_argument(42, cdummy_arg)
-      call get_command_argument(43, cassume_full_paths)
-      call get_command_argument(44, cinclude_full_brdf)
-      call get_command_argument(45, global_atts%rttov_version)
-      call get_command_argument(46, global_atts%ecmwf_version)
-      call get_command_argument(47, global_atts%svn_version)
-      do i = 48, nargs
-         call get_command_argument(i, line)
-         call parse_line(line, value, label)
-         call clean_driver_label(label)
-         call parse_optional(label, value, preproc_opts)
-      end do
+   if (nargs .eq. 1) then
+      ! if just one argument => this is a driver file
+      call get_command_argument(1, driver_path_file)
+   else if (nargs .eq. -1) then
+      index_space = index(driver_path_file, " ")
+      driver_path_file = driver_path_file(1:(index_space-1))
+      write(*,*) 'inside preproc: ', trim(adjustl(driver_path_file))
    else
-
-      if (nargs .eq. 1) then
-         ! if just one argument => this is a driver file
-         call get_command_argument(1, driver_path_file)
-      else if (nargs .eq. -1) then
-         index_space = index(driver_path_file, " ")
-         driver_path_file = driver_path_file(1:(index_space-1))
-         write(*,*) 'inside preproc: ', trim(adjustl(driver_path_file))
-      end if
-
-      open(11, file=trim(adjustl(driver_path_file)), status='old', &
-           form='formatted')
-
-      call parse_required(11, sensor,                      'sensor')
-      call parse_required(11, l1b_path_file,               'l1b_path_file')
-      call parse_required(11, geo_path_file,               'geo_path_file')
-      call parse_required(11, usgs_path_file,              'usgs_path_file')
-      call parse_required(11, preproc_opts%ecmwf_path(1),  'ecmwf_path')
-      call parse_required(11, rttov_coef_path,             'rttov_coef_path')
-      call parse_required(11, rttov_emiss_path,            'rttov_emiss_path')
-      call parse_required(11, nise_ice_snow_path,          'nise_ice_snow_path')
-      call parse_required(11, modis_albedo_path,           'modis_albedo_path')
-      call parse_required(11, modis_brdf_path,             'modis_brdf_path')
-      call parse_required(11, cimss_emiss_path,            'cimss_emiss_path')
-      call parse_required(11, cdellon,                     'cdellon')
-      call parse_required(11, cdellat,                     'cdellat')
-      call parse_required(11, output_path,                 'output_path')
-      call parse_required(11, cstartx,                     'cstartx')
-      call parse_required(11, cendx,                       'cendx')
-      call parse_required(11, cstarty,                     'cstarty')
-      call parse_required(11, cendy,                       'cendy')
-      call parse_required(11, global_atts%NetCDF_Version,  'NetCDF_Version')
-      call parse_required(11, global_atts%Conventions,     'Conventions')
-      call parse_required(11, global_atts%Institution,     'Institution')
-      call parse_required(11, global_atts%L2_Processor,    'L2_Processor')
-      call parse_required(11, global_atts%Creator_Email,   'Creator_Email')
-      call parse_required(11, global_atts%Creator_URL,     'Creator_URL')
-      call parse_required(11, global_atts%file_version,    'file_version')
-      call parse_required(11, global_atts%References,      'References')
-      call parse_required(11, global_atts%History,         'History')
-      call parse_required(11, global_atts%Summary,         'Summary')
-      call parse_required(11, global_atts%Keywords,        'Keywords')
-      call parse_required(11, global_atts%Comment,         'Comment')
-      call parse_required(11, global_atts%Project,         'Project')
-      call parse_required(11, global_atts%License,         'License')
-      call parse_required(11, global_atts%UUID,            'UUID')
-      call parse_required(11, global_atts%Production_Time, 'Production_Time')
-      call parse_required(11, aatsr_calib_path_file,       'aatsr_calib_path_file')
-      call parse_required(11, cecmwf_flag,                 'cecmwf_flag')
-      call parse_required(11, preproc_opts%ecmwf_path2(1), 'ecmwf_path2')
-      call parse_required(11, preproc_opts%ecmwf_path3(1), 'ecmwf_path3')
-      call parse_required(11, cchunkproc,                  'cchunkproc')
-      call parse_required(11, cday_night,                  'cday_night')
-      call parse_required(11, cverbose,                    'cverbose')
-      call parse_required(11, cdummy_arg,                  'cdummy_arg')
-      call parse_required(11, cassume_full_paths,          'cassume_full_paths')
-      call parse_required(11, cinclude_full_brdf,          'cinclude_full_brdf')
-      call parse_required(11, global_atts%RTTOV_Version,   'RTTOV_Version')
-      call parse_required(11, global_atts%ECMWF_Version,   'ECMWF_Version')
-      call parse_required(11, global_atts%SVN_Version,     'SVN_Version')
-
-      do while (parse_driver(11, value, label) == 0)
-        call clean_driver_label(label)
-        call parse_optional(label, value, preproc_opts)
-      end do
-
-      close(11)
+      write(*,*) 'ERROR: Only expected argument is the driver file path'
+      stop error_stop_code
    end if
+
+   open(11, file=trim(adjustl(driver_path_file)), status='old', &
+        form='formatted')
+
+   call parse_required(11, sensor,                      'sensor')
+   call parse_required(11, l1b_path_file,               'l1b_path_file')
+   call parse_required(11, geo_path_file,               'geo_path_file')
+   call parse_required(11, usgs_path_file,              'usgs_path_file')
+   call parse_required(11, preproc_opts%ecmwf_path(1),  'ecmwf_path')
+   call parse_required(11, rttov_coef_path,             'rttov_coef_path')
+   call parse_required(11, rttov_emiss_path,            'rttov_emiss_path')
+   call parse_required(11, nise_ice_snow_path,          'nise_ice_snow_path')
+   call parse_required(11, modis_albedo_path,           'modis_albedo_path')
+   call parse_required(11, modis_brdf_path,             'modis_brdf_path')
+   call parse_required(11, cimss_emiss_path,            'cimss_emiss_path')
+   call parse_required(11, cdellon,                     'cdellon')
+   call parse_required(11, cdellat,                     'cdellat')
+   call parse_required(11, output_path,                 'output_path')
+   call parse_required(11, cstartx,                     'cstartx')
+   call parse_required(11, cendx,                       'cendx')
+   call parse_required(11, cstarty,                     'cstarty')
+   call parse_required(11, cendy,                       'cendy')
+   call parse_required(11, global_atts%NetCDF_Version,  'NetCDF_Version')
+   call parse_required(11, global_atts%Conventions,     'Conventions')
+   call parse_required(11, global_atts%Institution,     'Institution')
+   call parse_required(11, global_atts%L2_Processor,    'L2_Processor')
+   call parse_required(11, global_atts%Creator_Email,   'Creator_Email')
+   call parse_required(11, global_atts%Creator_URL,     'Creator_URL')
+   call parse_required(11, global_atts%file_version,    'file_version')
+   call parse_required(11, global_atts%References,      'References')
+   call parse_required(11, global_atts%History,         'History')
+   call parse_required(11, global_atts%Summary,         'Summary')
+   call parse_required(11, global_atts%Keywords,        'Keywords')
+   call parse_required(11, global_atts%Comment,         'Comment')
+   call parse_required(11, global_atts%Project,         'Project')
+   call parse_required(11, global_atts%License,         'License')
+   call parse_required(11, global_atts%UUID,            'UUID')
+   call parse_required(11, global_atts%Production_Time, 'Production_Time')
+   call parse_required(11, aatsr_calib_path_file,       'aatsr_calib_path_file')
+   call parse_required(11, cecmwf_flag,                 'cecmwf_flag')
+   call parse_required(11, preproc_opts%ecmwf_path2(1), 'ecmwf_path2')
+   call parse_required(11, preproc_opts%ecmwf_path3(1), 'ecmwf_path3')
+   call parse_required(11, cchunkproc,                  'cchunkproc')
+   call parse_required(11, cday_night,                  'cday_night')
+   call parse_required(11, cverbose,                    'cverbose')
+   call parse_required(11, cdummy_arg,                  'cdummy_arg')
+   call parse_required(11, cassume_full_paths,          'cassume_full_paths')
+   call parse_required(11, cinclude_full_brdf,          'cinclude_full_brdf')
+   call parse_required(11, global_atts%RTTOV_Version,   'RTTOV_Version')
+   call parse_required(11, global_atts%ECMWF_Version,   'ECMWF_Version')
+   call parse_required(11, global_atts%SVN_Version,     'SVN_Version')
+
+   do while (parse_driver(11, value, label) == 0)
+      call clean_driver_label(label)
+      call parse_optional(label, value, preproc_opts)
+   end do
+
+   close(11)
+
    ! Set this since it was removed from the command line but not removed from
    ! the global attributes.
    global_atts%L2_Processor_Version = '1.0'
