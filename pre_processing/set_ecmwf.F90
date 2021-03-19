@@ -66,32 +66,23 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine set_ecmwf(cyear, cmonth, cday, chour, ecmwf_path, ecmwf_path2, &
-   ecmwf_path3, ecmwf_path_file, ecmwf_path_file2, ecmwf_path_file3, &
-   ecmwf_flag, imager_geolocation, imager_time, time_interp_method, &
-   time_int_fac, assume_full_path, ecmwf_hr_path, ecmwf_hr_path_file)
+subroutine set_ecmwf(granule, opts, ecmwf_flag, imager_geolocation, &
+   imager_time, time_int_fac, assume_full_path)
 
    use calender_m
    use imager_structures_m
    use preproc_constants_m
+   use preproc_structures_m, only: preproc_opts_t, setup_args_t
 
    implicit none
 
-   character(len=*),           intent(in)  :: cyear, cmonth, cday, chour
-   character(len=*),           intent(in)  :: ecmwf_path(:)
-   character(len=*),           intent(in)  :: ecmwf_path2(:)
-   character(len=*),           intent(in)  :: ecmwf_path3(:)
-   character(len=*),           intent(out) :: ecmwf_path_file(:)
-   character(len=*),           intent(out) :: ecmwf_path_file2(:)
-   character(len=*),           intent(out) :: ecmwf_path_file3(:)
+   type(setup_args_t),         intent(in)    :: granule
+   type(preproc_opts_t),       intent(inout) :: opts
    integer,                    intent(in)  :: ecmwf_flag
    type(imager_geolocation_t), intent(in)  :: imager_geolocation
    type(imager_time_t),        intent(in)  :: imager_time
-   integer,                    intent(in)  :: time_interp_method
    real,                       intent(out) :: time_int_fac
    logical,                    intent(in)  :: assume_full_path
-   character(len=*),           intent(in)  :: ecmwf_hr_path(:)
-   character(len=*),           intent(out) :: ecmwf_hr_path_file(:)
 
    integer       :: i_path1, i_path2
    integer(sint) :: year, month, day, hour
@@ -114,7 +105,7 @@ subroutine set_ecmwf(cyear, cmonth, cday, chour, ecmwf_path, ecmwf_path2, &
    ! Rather than deal with whether the next 6 hour file is in the next month,
    ! in the next year, or if the year is a leap year it is more straight
    ! forward to convert to Julian day space, then operate, then convert back.
-   if (time_interp_method .eq. 1 .or. time_interp_method .eq. 2) then
+   if (opts%ecmwf_time_int_method .eq. 1 .or. opts%ecmwf_time_int_method .eq. 2) then
       jday = find_center_time(imager_geolocation, imager_time)
 
       jday0 = floor(jday / time_fac           ) * time_fac
@@ -125,28 +116,27 @@ subroutine set_ecmwf(cyear, cmonth, cday, chour, ecmwf_path, ecmwf_path2, &
 
    if (assume_full_path) then
       ! for ecmwf_flag=2, ensure NCDF file is listed in ecmwf_pathout
-      if (index(ecmwf_path(1), '.nc') .gt. 0) then
-         ecmwf_path_file  = ecmwf_path
-         ecmwf_path_file2 = ecmwf_path2
-         ecmwf_path_file3 = ecmwf_path3
-      else if (index(ecmwf_path2(1), '.nc') .gt. 0) then
-         ecmwf_path_file  = ecmwf_path2
-         ecmwf_path_file2 = ecmwf_path
-         ecmwf_path_file3 = ecmwf_path3
-      else if (index(ecmwf_path3(1), '.nc') .gt. 0) then
-         ecmwf_path_file  = ecmwf_path3
-         ecmwf_path_file2 = ecmwf_path
-         ecmwf_path_file3 = ecmwf_path2
+      if (index(opts%ecmwf_path(1), '.nc') .gt. 0) then
+         opts%ecmwf_path_file  = opts%ecmwf_path
+         opts%ecmwf_path_file2 = opts%ecmwf_path2
+         opts%ecmwf_path_file3 = opts%ecmwf_path3
+      else if (index(opts%ecmwf_path2(1), '.nc') .gt. 0) then
+         opts%ecmwf_path_file  = opts%ecmwf_path2
+         opts%ecmwf_path_file2 = opts%ecmwf_path
+         opts%ecmwf_path_file3 = opts%ecmwf_path3
+      else if (index(opts%ecmwf_path3(1), '.nc') .gt. 0) then
+         opts%ecmwf_path_file  = opts%ecmwf_path3
+         opts%ecmwf_path_file2 = opts%ecmwf_path
+         opts%ecmwf_path_file3 = opts%ecmwf_path2
       else
-         ecmwf_path_file  = ecmwf_path
-         ecmwf_path_file2 = ecmwf_path2
-         ecmwf_path_file3 = ecmwf_path3
+         opts%ecmwf_path_file  = opts%ecmwf_path
+         opts%ecmwf_path_file2 = opts%ecmwf_path2
+         opts%ecmwf_path_file3 = opts%ecmwf_path3
       end if
    else
-      if (time_interp_method .eq. 0) then
+      if (opts%ecmwf_time_int_method .eq. 0) then
          ! pick last ERA interim file wrt sensor time (as on the same day)
-         read(chour, *) hour
-         select case (hour)
+         select case (granule%hour)
          case(0:5)
             cera_hour = '00'
          case(6:11)
@@ -161,10 +151,11 @@ subroutine set_ecmwf(cyear, cmonth, cday, chour, ecmwf_path, ecmwf_path2, &
 
          i_path1 = 1
 
-         call make_ecmwf_name(cyear, cmonth, cday, cera_hour, ecmwf_flag, &
-              ecmwf_path(1), ecmwf_path2(1), ecmwf_path3(1), &
-              ecmwf_path_file(1), ecmwf_path_file2(1), ecmwf_path_file3(1))
-      else if (time_interp_method .eq. 1) then
+         call make_ecmwf_name(granule%cyear, granule%cmonth, granule%cday, &
+              cera_hour, ecmwf_flag, opts%ecmwf_path(1), opts%ecmwf_path2(1), &
+              opts%ecmwf_path3(1), opts%ecmwf_path_file(1), &
+              opts%ecmwf_path_file2(1), opts%ecmwf_path_file3(1))
+      else if (opts%ecmwf_time_int_method .eq. 1) then
          ! Pick the closest ERA interim file wrt sensor time
          if (jday - jday0 .lt. jday1 - jday) then
             jday2 = jday0
@@ -193,10 +184,10 @@ subroutine set_ecmwf(cyear, cmonth, cday, chour, ecmwf_path, ecmwf_path2, &
          end if
 
          call make_ecmwf_name(cera_year, cera_month, cera_day, cera_hour, &
-              ecmwf_flag, ecmwf_path(i_path1), ecmwf_path2(i_path1), &
-              ecmwf_path3(i_path1), ecmwf_path_file(1), ecmwf_path_file2(1), &
-              ecmwf_path_file3(1))
-      else if (time_interp_method .eq. 2) then
+              ecmwf_flag, opts%ecmwf_path(i_path1), opts%ecmwf_path2(i_path1), &
+              opts%ecmwf_path3(i_path1), opts%ecmwf_path_file(1), &
+              opts%ecmwf_path_file2(1), opts%ecmwf_path_file3(1))
+      else if (opts%ecmwf_time_int_method .eq. 2) then
          ! Pick the ERA interim files before and after wrt sensor time
 
          call JD2GREG(jday0, year, month, day_real)
@@ -217,7 +208,7 @@ subroutine set_ecmwf(cyear, cmonth, cday, chour, ecmwf_path, ecmwf_path2, &
          write(cera_day2,   '(I2.2)') day2
          write(cera_hour2,  '(I2.2)') hour2
 
-         if (cera_day2 .eq. cday) then
+         if (cera_day2 .eq. granule%cday) then
             i_path1 = 1
          else
             ! The mid point is in the next day so the path to the first file is
@@ -226,9 +217,9 @@ subroutine set_ecmwf(cyear, cmonth, cday, chour, ecmwf_path, ecmwf_path2, &
          end if
 
          call make_ecmwf_name(cera_year, cera_month, cera_day, cera_hour, &
-              ecmwf_flag, ecmwf_path(i_path1), ecmwf_path2(i_path1), &
-              ecmwf_path3(i_path1), ecmwf_path_file(1), ecmwf_path_file2(1), &
-              ecmwf_path_file3(1))
+              ecmwf_flag, opts%ecmwf_path(i_path1), opts%ecmwf_path2(i_path1), &
+              opts%ecmwf_path3(i_path1), opts%ecmwf_path_file(1), &
+              opts%ecmwf_path_file2(1), opts%ecmwf_path_file3(1))
 
          ! now look at the next file
          day_before = day
@@ -253,35 +244,39 @@ subroutine set_ecmwf(cyear, cmonth, cday, chour, ecmwf_path, ecmwf_path2, &
          end if
 
          call make_ecmwf_name(cera_year, cera_month, cera_day, cera_hour, &
-              ecmwf_flag, ecmwf_path(i_path2), ecmwf_path2(i_path2), &
-              ecmwf_path3(i_path2), ecmwf_path_file(2), ecmwf_path_file2(2), &
-              ecmwf_path_file3(2))
+              ecmwf_flag, opts%ecmwf_path(i_path2), opts%ecmwf_path2(i_path2), &
+              opts%ecmwf_path3(i_path2), opts%ecmwf_path_file(2), &
+              opts%ecmwf_path_file2(2), opts%ecmwf_path_file3(2))
       else
          write(*,*) 'ERROR: invalid set_ecmwf() time_interp_method: ', &
-              time_interp_method
+              opts%ecmwf_time_int_method
          stop error_stop_code
       end if
    end if
 
-   if (ecmwf_hr_path(1) .eq. '') then
-      call build_ecmwf_HR_file_from_LR(ecmwf_path_file(1), ecmwf_hr_path_file(1))
-      if (time_interp_method .eq. 2) then
-         call build_ecmwf_HR_file_from_LR(ecmwf_path_file(2), &
-              ecmwf_hr_path_file(2))
+   if (opts%ecmwf_path_hr(1) .eq. '') then
+      call build_ecmwf_HR_file_from_LR(opts%ecmwf_path_file(1), &
+              opts%ecmwf_hr_path_file(1))
+      if (opts%ecmwf_time_int_method .eq. 2) then
+         call build_ecmwf_HR_file_from_LR(opts%ecmwf_path_file(2), &
+              opts%ecmwf_hr_path_file(2))
       end if
    else if (assume_full_path) then
-      ecmwf_hr_path_file(1) = ecmwf_hr_path(1)
-      if (time_interp_method .eq. 2) &
-           ecmwf_hr_path_file(2) = ecmwf_hr_path(2)
+      opts%ecmwf_hr_path_file(1) = opts%ecmwf_path_hr(1)
+      if (opts%ecmwf_time_int_method .eq. 2) &
+           opts%ecmwf_hr_path_file(2) = opts%ecmwf_path_hr(2)
    else
-      if (time_interp_method .ne. 2) then
-         call build_ecmwf_HR_file_from_LR2(ecmwf_path(i_path1), &
-            ecmwf_path_file(1), ecmwf_hr_path(1), ecmwf_hr_path_file(1))
+      if (opts%ecmwf_time_int_method .ne. 2) then
+         call build_ecmwf_HR_file_from_LR2(opts%ecmwf_path(i_path1), &
+              opts%ecmwf_path_file(1), opts%ecmwf_path_hr(1), &
+              opts%ecmwf_hr_path_file(1))
       else
-         call build_ecmwf_HR_file_from_LR2(ecmwf_path(i_path1), &
-            ecmwf_path_file(1), ecmwf_hr_path(1), ecmwf_hr_path_file(1))
-         call build_ecmwf_HR_file_from_LR2(ecmwf_path(i_path2), &
-            ecmwf_path_file(2), ecmwf_hr_path(1), ecmwf_hr_path_file(2))
+         call build_ecmwf_HR_file_from_LR2(opts%ecmwf_path(i_path1), &
+              opts%ecmwf_path_file(1), opts%ecmwf_path_hr(1), &
+              opts%ecmwf_hr_path_file(1))
+         call build_ecmwf_HR_file_from_LR2(opts%ecmwf_path(i_path2), &
+              opts%ecmwf_path_file(2), opts%ecmwf_path_hr(1), &
+              opts%ecmwf_hr_path_file(2))
       end if
    end if
 

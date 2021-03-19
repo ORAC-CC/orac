@@ -14,30 +14,18 @@
 ! Name             Type   In/Out/Both Description
 ! ------------------------------------------------------------------------------
 ! paths            struct out  Paths to the ten ORAC preprocessor outputs.
-! sensor           string in  Name of sensor.
-! platform         string in  Name of satellite platform.
-! hour             stint  in  Hour of day (0-59)
-! cyear            string in  Year, as a 4 character string
-! cmonth           string in  Month of year, as a 2 character string
-! cday             string in  Day of month, as a 2 character string
-! chour            string in  Hour of day, as a 2 character string
-! cminute          string in  Minute of day, as a 2 character string
-! ecmwf_path       string in  If badc, folder in which to find GGAM files.
-!                             Otherwise, folder in which to find GRB files.
-! ecmwf_path2      string in  If badc, folder in which to find GGAS files.
-! ecmwf_path3      string in  If badc, folder in which to find GPAM files.
-! ecmwf_path_file  string out If badc, full path to appropriate GGAM file.
-!                             Otherwise, full path to appropriate GRB file.
-! ecmwf_path_file2 string out If badc, full path to appropriate GGAS file.
-! ecmwf_path_file3 string out If badc, full path to appropriate GPAM file.
-! script_input     struct in  Summary of file header information.
-! ecmwf_flag       int    in  0: GRIB ECMWF files; 1: BADC NetCDF ECMWF files;
-!                             2: BADC GRIB files.
-! imager_geolocat  ion        struct both Summary of pixel positions
-! i_chunk          stint  in  The number of the current chunk (for AATSR).
-! assume_full_pat  h
-!                  logic  in  T: inputs are filenames; F: folder names
-! verbose          logic  in  T: print status information; F: don't
+! granule          struct in   Parameters of the swath file
+! opts             struct both Processing options
+! global_atts      struct in   Attributes for NCDF output
+! orbit_number     strint in   Number of SLSTR orbit
+! ecmwf_flag       int    in   0: GRIB ECMWF files; 1: BADC NetCDF ECMWF files;
+!                              2: BADC GRIB files.
+! imager_geolocation struct in Summary of pixel positions
+! imager_time      struct in   Time of observations
+! i_chunk          stint  in   The number of the current chunk (for AATSR).
+! time_int_fac     real   out  Value for interpolating between ECWMF fields
+! assume_full_path logic  in   T: inputs are filenames; F: folder names
+! verbose          logic  in   T: print status information; F: don't
 !
 ! History:
 ! 2011/12/12, MJ: produces draft code which sets up output file names
@@ -91,37 +79,24 @@ contains
 
 #include "set_ecmwf.F90"
 
-subroutine preparation(paths, sensor, platform, product_name, &
-     cyear, cmonth, cday, chour, cminute, orbit_number, ecmwf_path, ecmwf_hr_path, &
-     ecmwf_path2, ecmwf_path3, ecmwf_path_file, ecmwf_hr_path_file, &
-     ecmwf_path_file2, ecmwf_path_file3, global_atts, ecmwf_flag, &
-     ecmwf_time_int_method, imager_geolocation, imager_time, i_chunk, &
+subroutine preparation(paths, granule, opts, global_atts, orbit_number, &
+     ecmwf_flag, imager_geolocation, imager_time, i_chunk, &
      time_int_fac, assume_full_path, verbose)
 
    use imager_structures_m
    use global_attributes_m
    use preproc_constants_m
-   use preproc_structures_m, only: preproc_paths_t
+   use preproc_structures_m, only: preproc_opts_t, preproc_paths_t
+   use setup_m, only: setup_args_t
 
    implicit none
 
    type(preproc_paths_t),      intent(out)   :: paths
-   character(len=*),           intent(in)  :: sensor
-   character(len=*),           intent(in)  :: platform
-   character(len=*),           intent(in)  :: product_name
-   character(len=*),           intent(in)  :: cyear, cmonth, cday, chour, cminute
-   character(len=*),           intent(in)  :: orbit_number
-   character(len=*),           intent(in)  :: ecmwf_path(:), &
-                                              ecmwf_path2(:), &
-                                              ecmwf_path3(:)
-   character(len=*),           intent(in)  :: ecmwf_hr_path(:)
-   character(len=*),           intent(out) :: ecmwf_path_file(:), &
-                                              ecmwf_hr_path_file(:), &
-                                              ecmwf_path_file2(:), &
-                                              ecmwf_path_file3(:)
+   type(setup_args_t),         intent(in)    :: granule
+   type(preproc_opts_t),       intent(inout) :: opts
    type(global_attributes_t),  intent(in)  :: global_atts
+   character(len=*),           intent(in)    :: orbit_number
    integer,                    intent(in)  :: ecmwf_flag
-   integer,                    intent(in)  :: ecmwf_time_int_method
    type(imager_geolocation_t), intent(in)  :: imager_geolocation
    type(imager_time_t),        intent(in)  :: imager_time
    integer,                    intent(in)  :: i_chunk
@@ -134,52 +109,50 @@ subroutine preparation(paths, sensor, platform, product_name, &
    real                       :: startr, endr
    character(len=32)          :: startc, endc, chunkc
 
-   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering preparation()'
+   if (verbose) then
+      write(*,*) '<<<<<<<<<<<<<<< Entering preparation()'
 
-   if (verbose) write(*,*) 'sensor: ',                trim(sensor)
-   if (verbose) write(*,*) 'platform: ',              trim(platform)
-   if (verbose) write(*,*) 'cyear: ',                 trim(cyear)
-   if (verbose) write(*,*) 'cmonth: ',                trim(cmonth)
-   if (verbose) write(*,*) 'cday: ',                  trim(cday)
-   if (verbose) write(*,*) 'chour: ',                 trim(chour)
-   if (verbose) write(*,*) 'cminute: ',               trim(cminute)
-   if (verbose) write(*,*) 'orbit_number: ',          trim(orbit_number)
-   if (verbose) write(*,*) 'ecmwf_path(1): ',         trim(ecmwf_path(1))
-   if (verbose) write(*,*) 'ecmwf_hr_path(1): ',      trim(ecmwf_hr_path(1))
-   if (verbose) write(*,*) 'ecmwf_path2(1): ',        trim(ecmwf_path2(1))
-   if (verbose) write(*,*) 'ecmwf_path3(1): ',        trim(ecmwf_path3(1))
-   if (verbose) write(*,*) 'ecmwf_path(2): ',         trim(ecmwf_path(2))
-   if (verbose) write(*,*) 'ecmwf_hr_path(2): ',      trim(ecmwf_hr_path(2))
-   if (verbose) write(*,*) 'ecmwf_path2(2): ',        trim(ecmwf_path2(2))
-   if (verbose) write(*,*) 'ecmwf_path3(2): ',        trim(ecmwf_path3(2))
-   if (verbose) write(*,*) 'ecmwf_flag: ',            ecmwf_flag
-   if (verbose) write(*,*) 'ecmwf_time_int_method: ', ecmwf_time_int_method
-   if (verbose) write(*,*) 'i_chunk: ',               i_chunk
-   if (verbose) write(*,*) 'assume_full_path: ',      assume_full_path
+      write(*,*) 'sensor: ',                trim(granule%sensor)
+      write(*,*) 'platform: ',              trim(granule%platform)
+      write(*,*) 'cyear: ',                 trim(granule%cyear)
+      write(*,*) 'cmonth: ',                trim(granule%cmonth)
+      write(*,*) 'cday: ',                  trim(granule%cday)
+      write(*,*) 'chour: ',                 trim(granule%chour)
+      write(*,*) 'cminute: ',               trim(granule%cminute)
+      write(*,*) 'orbit_number: ',          trim(orbit_number)
+      write(*,*) 'ecmwf_path(1): ',         trim(opts%ecmwf_path(1))
+      write(*,*) 'ecmwf_path_hr(1): ',      trim(opts%ecmwf_path_hr(1))
+      write(*,*) 'ecmwf_path2(1): ',        trim(opts%ecmwf_path2(1))
+      write(*,*) 'ecmwf_path3(1): ',        trim(opts%ecmwf_path3(1))
+      write(*,*) 'ecmwf_path(2): ',         trim(opts%ecmwf_path(2))
+      write(*,*) 'ecmwf_path_hr(2): ',      trim(opts%ecmwf_path_hr(2))
+      write(*,*) 'ecmwf_path2(2): ',        trim(opts%ecmwf_path2(2))
+      write(*,*) 'ecmwf_path3(2): ',        trim(opts%ecmwf_path3(2))
+      write(*,*) 'ecmwf_flag: ',            ecmwf_flag
+      write(*,*) 'ecmwf_time_int_method: ', opts%ecmwf_time_int_method
+      write(*,*) 'i_chunk: ',               i_chunk
+      write(*,*) 'assume_full_path: ',      assume_full_path
+   end if
 
    ! determine ecmwf path/filename
-   call set_ecmwf(cyear, cmonth, cday, chour, &
-                  ecmwf_path, ecmwf_path2, ecmwf_path3, &
-                  ecmwf_path_file, ecmwf_path_file2, ecmwf_path_file3, &
-                  ecmwf_flag, imager_geolocation, imager_time, &
-                  ecmwf_time_int_method, time_int_fac, assume_full_path, &
-                  ecmwf_hr_path, ecmwf_hr_path_file)
+   call set_ecmwf(granule, opts, ecmwf_flag, imager_geolocation, imager_time, &
+        time_int_fac, assume_full_path)
 
    if (verbose) then
-      write(*,*) 'ecmwf_path_file:  ', trim(ecmwf_path_file(1))
-      write(*,*) 'ecmwf_path_file_2:  ', trim(ecmwf_path_file(2))
-      write(*,*) 'ecmwf_hr_path_file:  ', trim(ecmwf_hr_path_file(1))
-      write(*,*) 'ecmwf_hr_path_file2:  ', trim(ecmwf_hr_path_file(2))
+      write(*,*) 'ecmwf_path_file:  ', trim(opts%ecmwf_path_file(1))
+      write(*,*) 'ecmwf_path_file_2:  ', trim(opts%ecmwf_path_file(2))
+      write(*,*) 'ecmwf_hr_path_file:  ', trim(opts%ecmwf_hr_path_file(1))
+      write(*,*) 'ecmwf_hr_path_file2:  ', trim(opts%ecmwf_hr_path_file(2))
       if (ecmwf_flag .gt. 0.and.ecmwf_flag.lt.4) then
-         write(*,*) 'ecmwf_path_file2: ', trim(ecmwf_path_file2(1))
-         write(*,*) 'ecmwf_path_file3: ', trim(ecmwf_path_file3(1))
-         write(*,*) 'ecmwf_path_file2_2: ', trim(ecmwf_path_file2(2))
-         write(*,*) 'ecmwf_path_file3_2: ', trim(ecmwf_path_file3(2))
+         write(*,*) 'ecmwf_path_file2: ', trim(opts%ecmwf_path_file2(1))
+         write(*,*) 'ecmwf_path_file3: ', trim(opts%ecmwf_path_file3(1))
+         write(*,*) 'ecmwf_path_file2_2: ', trim(opts%ecmwf_path_file2(2))
+         write(*,*) 'ecmwf_path_file3_2: ', trim(opts%ecmwf_path_file3(2))
       end if
    end if
 
    ! deal with ATSR chunking in filename
-   if (sensor .eq. 'AATSR' .or. sensor .eq. 'ATSR2') then
+   if (granule%sensor .eq. 'AATSR' .or. granule%sensor .eq. 'ATSR2') then
       startr = imager_geolocation%latitude(imager_geolocation%startx, 1)
       endr = imager_geolocation%latitude(imager_geolocation%endx, &
              imager_geolocation%ny)
@@ -201,12 +174,13 @@ subroutine preparation(paths, sensor, platform, product_name, &
 
    ! put basic filename together
    file_base = trim(adjustl(global_atts%project))//'-'// &
-               trim(adjustl(product_name))//'-'// &
-               trim(adjustl(sensor))//'_'// &
+               trim(adjustl(opts%product_name))//'-'// &
+               trim(adjustl(granule%sensor))//'_'// &
                trim(adjustl(global_atts%l2_processor))//'_'// &
-               trim(adjustl(platform))//'_'// &
-               trim(adjustl(cyear))//trim(adjustl(cmonth))//trim(adjustl(cday))// &
-               trim(adjustl(chour))//trim(adjustl(cminute))//'_'
+               trim(adjustl(granule%platform))//'_'// &
+               trim(adjustl(granule%cyear))//trim(adjustl(granule%cmonth))// &
+               trim(adjustl(granule%cday))// &
+               trim(adjustl(granule%chour))//trim(adjustl(granule%cminute))//'_'
    ! If we have a orbit number attribute, include it in the output file name
    ! As of Feb-18, this only applies to SLSTR.
    if (trim(orbit_number) .ne. 'null') then

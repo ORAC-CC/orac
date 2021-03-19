@@ -44,7 +44,8 @@ $(OBJS)/ocean_colour.o: $(OBJS)/channel_structures.o \
         $(OBJS)/cox_munk_constants.o $(OBJS)/fill_grid.o \
         $(OBJS)/preproc_constants.o
 $(OBJS)/preparation.o: $(OBJS)/calender.o $(OBJS)/imager_structures.o \
-        $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o set_ecmwf.F90
+        $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o $(OBJS)/setup.o \
+        set_ecmwf.F90
 $(OBJS)/preproc_structures.o: $(OBJS)/channel_structures.o \
         $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o \
         allocate_preproc_structures.F90 deallocate_preproc_structures.F90
@@ -70,10 +71,11 @@ $(OBJS)/read_himawari.o: $(OBJS)/calender.o $(OBJS)/channel_structures.o \
         $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o \
         $(OBJS)/solar_position.o
 $(OBJS)/read_imager.o: $(OBJS)/channel_structures.o $(OBJS)/imager_structures.o \
-        $(OBJS)/preproc_constants.o $(OBJS)/read_aatsr.o $(OBJS)/read_abi.o \
-        $(OBJS)/read_agri.o $(OBJS)/read_avhrr.o $(OBJS)/read_himawari.o \
-        $(OBJS)/read_modis.o $(OBJS)/read_seviri.o $(OBJS)/read_slstr.o \
-        $(OBJS)/read_viirs_Iband.o $(OBJS)/read_viirs_Mband.o
+        $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o \
+        $(OBJS)/read_aatsr.o $(OBJS)/read_abi.o $(OBJS)/read_agri.o \
+        $(OBJS)/read_avhrr.o $(OBJS)/read_himawari.o $(OBJS)/read_modis.o \
+        $(OBJS)/read_seviri.o $(OBJS)/read_slstr.o $(OBJS)/read_viirs_Iband.o \
+        $(OBJS)/read_viirs_Mband.o
 $(OBJS)/read_modis.o: $(OBJS)/bright_m.o $(OBJS)/calender.o \
         $(OBJS)/channel_structures.o $(OBJS)/imager_structures.o \
         $(OBJS)/preproc_constants.o get_modis_time.F90 map_time_to_pixel.F90 \

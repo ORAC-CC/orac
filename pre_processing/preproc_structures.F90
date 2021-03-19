@@ -149,6 +149,30 @@ module preproc_structures_m
       character(len=file_length) :: prtm_file   ! Atmospheric RTTOV inputs
       character(len=file_length) :: swrtm_file  ! Shortwave RTTOV inputs
    end type preproc_paths_t
+ 
+
+   type setup_args_t
+      character(len=path_length)     :: l1b_file ! Path to satellite swath
+      character(len=path_length)     :: geo_file ! Path to geolocation data
+
+      character(len=sensor_length)   :: sensor   ! Name of instrument
+      character(len=platform_length) :: platform ! Name of satellite it is on
+      ! Date as strings
+      character(len=date_length)     :: cyear, cmonth, cday
+      character(len=date_length)     :: cdoy, chour, cminute, csecond
+      ! Date as numbers
+      integer(kind=sint)             :: doy, year, month, day
+      integer(kind=sint)             :: hour, minute, second
+      ! Start/end of requested subset
+      integer(kind=lint)             :: startx, endx, starty, endy
+      ! Dimensions of the satellite swath
+      integer(kind=lint)             :: n_across_track, n_along_track
+      ! Lengths and offsets for the second section of nighttime data in
+      ! an (A)ATSR orbit file
+      integer(kind=lint)             :: n_along_track2
+      integer(kind=lint)             :: along_track_offset, along_track_offset2
+      integer(kind=sint)             :: day_night
+   end type setup_args_t
 
 contains
 
