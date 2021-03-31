@@ -64,7 +64,6 @@
 subroutine Set_GZero(Tau, Re, Ctrl, SPixel, SAD_LUT, GZero, status)
 
    use Ctrl_m
-   use Int_Routines_m
    use SAD_LUT_m
    use SPixel_m
 
@@ -92,38 +91,26 @@ subroutine Set_GZero(Tau, Re, Ctrl, SPixel, SAD_LUT, GZero, status)
    ! Set the "zero'th" array indices for the interpolations, i.e. find the array
    ! indices of the nearest neighbour grid points in each dimension. Use the
    ! 'locate' function
+   GZero%iT0 = locate(SAD_LUT%Grid%Tau, Tau, .true.)
+   GZero%iR0 = locate(SAD_LUT%Grid%Re, Re, .true.)
    do i = 1, SPixel%Ind%Ny
-      GZero%iT0(i) = &
-         max(min(locate(SAD_LUT%Grid%Tau, Tau), &
-                 SAD_LUT%Grid%Tau%n-1),1)
-      GZero%iR0(i) = &
-         max(min(locate(SAD_LUT%Grid%Re, Re), &
-                 SAD_LUT%Grid%Re%n-1),1)
-      GZero%iSaZ0(i) = &
-         max(min(locate(SAD_LUT%Grid%SatZen, &
-                 SPixel%Geom%Satzen(SPixel%ViewIdx(i))),SAD_LUT%Grid%Satzen%n-1),1)
-      GZero%iSoZ0(i) = &
-         max(min(locate(SAD_LUT%Grid%SolZen, &
-                 SPixel%Geom%Solzen(SPixel%ViewIdx(i))),SAD_LUT%Grid%Solzen%n-1),1)
-      GZero%iSaZSoZ0(i) = &
-         max(min(locate(SAD_LUT%Grid%SolZen, &
-                 SPixel%Geom%Satzen(SPixel%ViewIdx(i))),SAD_LUT%Grid%Solzen%n-1),1)
-      GZero%iRA0(i) = &
-         max(min(locate(SAD_LUT%Grid%Relazi, &
-                 SPixel%Geom%Relazi(SPixel%ViewIdx(i))),SAD_LUT%Grid%Relazi%n-1),1)
+      GZero%iSaZ0(i) = locate(SAD_LUT%Grid%SatZen, &
+           SPixel%Geom%Satzen(SPixel%ViewIdx(i)), .true.)
+      GZero%iSoZ0(i) = locate(SAD_LUT%Grid%SolZen, &
+           SPixel%Geom%Solzen(SPixel%ViewIdx(i)), .true.)
+      GZero%ISaZSoZ0(i) = locate(SAD_LUT%Grid%SolZen, &
+           SPixel%Geom%Satzen(SPixel%ViewIdx(i)), .true.)
+      GZero%iRA0(i) = locate(SAD_LUT%Grid%Relazi, &
+           SPixel%Geom%Relazi(SPixel%ViewIdx(i)), .true.)
    end do
 
    ! This sets the upper bracketing index, the locate above set the lower index
-   do i = 1, SPixel%Ind%Ny
-      GZero%iT1(i)      = GZero%iT0(i)   + 1
-      GZero%iR1(i)      = GZero%iR0(i)   + 1
-
-      GZero%iSaZ1(i)    = GZero%iSaZ0(i) + 1
-      GZero%iSoZ1(i)    = GZero%iSoZ0(i) + 1
-      GZero%iRA1(i)     = GZero%iRA0(i)  + 1
-
-      GZero%iSaZSoZ1(i) = GZero%iSaZSoZ0(i) + 1
-   end do
+   GZero%iT1      = GZero%iT0   + 1
+   GZero%iR1      = GZero%iR0   + 1
+   GZero%iSaZ1    = GZero%iSaZ0 + 1
+   GZero%iSoZ1    = GZero%iSoZ0 + 1
+   GZero%iRA1     = GZero%iRA0  + 1
+   GZero%iSaZSoZ1 = GZero%iSaZSoZ0 + 1
 
    ! This sets the next pair of bracketing indices around the primary one
    do i = 1, SPixel%Ind%Ny

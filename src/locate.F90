@@ -19,19 +19,21 @@
 !
 ! History:
 ! 2017/10/02, GM: Original version
+! 2020/09/25, AP: Add bounded keyword, restricting output to [1, n-1]
 !
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
 
-function locate(grid, x) result(low)
+function locate(grid, x, bounded) result(low)
 
    implicit none
 
    type(LUT_Dimension_t), intent(in) :: grid
    real,                  intent(in) :: x
+   logical,               intent(in), optional :: bounded
 
-   logical :: ascending
+   logical :: ascending, bound
    integer :: low, mid, up
 
    if (grid%n .eq. 0) then
@@ -39,22 +41,43 @@ function locate(grid, x) result(low)
       return
    end if
 
+   if (present(bounded)) then
+      bound = bounded
+   else
+      bound = .false.
+   end if
    ascending = grid%x(1) .le. grid%x(grid%n)
 
    if (ascending) then
       if (x .lt. grid%x(1)) then
-         low = 0
+         if (bound) then
+            low = 1
+         else
+            low = 0
+         end if
          return
       else if (x .gt. grid%x(grid%n)) then
-         low = grid%n
+         if (bound) then
+            low = grid%n-1
+         else
+            low = grid%n
+         end if
          return
       end if
    else
       if (x .gt. grid%x(1)) then
-         low = 0
+         if (bound) then
+            low = 1
+         else
+            low = 0
+         end if
          return
       else if (x .lt. grid%x(grid%n)) then
-         low = grid%n
+         if (bound) then
+            low = grid%n-1
+         else
+            low = grid%n
+         end if
          return
       end if
    end if
