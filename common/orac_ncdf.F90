@@ -34,6 +34,7 @@
 ! 2020/02/02, AP: Added nc_close().
 ! 2020/04/21, AP: Renamed routines ncdf_ to avoid clobber of library routines.
 ! 2020/09/30, AP: Move verbose option to DEBUG flag. Add 5 and 6D read functions.
+! 2021/03/16, AP: Add routine to read string attributes.
 !-------------------------------------------------------------------------------
 
 module orac_ncdf_m
@@ -225,6 +226,72 @@ function ncdf_dim_length(ncid, name, source_routine) result(len)
    end if
 
 end function ncdf_dim_length
+
+!-------------------------------------------------------------------------------
+! Name: ncdf_get_string_att
+!
+! Purpose:
+! Read a single string from the attribute of a NetCDF file. This is not
+! natively supported by the netcdf-fortran library for $REASONS.
+!
+! Description and Algorithm details:
+! Interface with the C-library.
+!
+! Arguments:
+! Name           Type    In/Out/Both Description
+! ------------------------------------------------------------------------------
+! filename       string  In   Name of the NetCDF file to open
+! varname        string  In   Name of the variable to consider
+! attname        string  In   Name of the string attribute to open
+! contents       string  Out  Contents of the requested attribute
+!
+! History:
+! 2021/02/16, GM: Original version
+!
+! Bugs:
+! - This shouldn't need to exist.
+! - Doesn't consider global attributes.
+! - Only reads the first string, in the event the attribute is an array.
+!-------------------------------------------------------------------------------
+subroutine ncdf_get_string_att(filename, varname, attname, contents)
+
+   use common_constants_m
+   use iso_c_binding
+   use system_utils_m, only: c_to_fortran_str
+
+   implicit none
+
+   interface
+      subroutine nc_get_string_att(fname, vname, aname, str) &
+           bind(C, name='nc_get_string_att')
+
+         use common_constants_m
+         use iso_c_binding
+         implicit none
+
+         character(kind=c_char) :: fname(file_length), vname(var_length)
+         character(kind=c_char) :: aname(var_length), str(attribute_length)
+
+      end subroutine nc_get_string_att
+   end interface
+
+   character(len=*), intent(in)  :: filename, varname, attname
+   character(len=*), intent(out) :: contents
+
+   character(kind=c_char,len=file_length)      :: fname
+   character(kind=c_char,len=var_length)       :: vname
+   character(kind=c_char,len=var_length)       :: aname
+   character(kind=c_char,len=attribute_length) :: str
+
+   fname = trim(filename) // C_NULL_CHAR
+   vname = trim(varname) // C_NULL_CHAR
+   aname = trim(attname) // C_NULL_CHAR
+   call nc_get_string_att(fname, vname, aname, str)
+
+   call c_to_fortran_str(str)
+   contents = trim(adjustl(str))
+
+end subroutine ncdf_get_string_att
 
 !-------------------------------------------------------------------------------
 ! Name: ncdf_def_var
