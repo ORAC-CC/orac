@@ -84,7 +84,7 @@ subroutine grid_dimension_read(filename, n_name, d_name, v_name, lun, Grid)
          stop LUTFileReadErr
       end if
 
-      if (d2 .ne. Grid%d) then
+      if (d2 .ne. Grid%d .and. Grid%d .ne. 0) then
          write(*,*) 'ERROR: grid_dimension_read(): LUT grid dimension spacing for ', &
                     trim(v_name), ' is inconsistent between LUT files'
          stop LUTFileReadErr
@@ -102,6 +102,14 @@ subroutine grid_dimension_read(filename, n_name, d_name, v_name, lun, Grid)
       Grid%x   = x2
       Grid%Min = minval(x2(1:n2))
       Grid%Max = maxval(x2(1:n2))
+
+      ! Check if axis is evenly spaced
+      do i = 2, Grid%n
+         if ((x2(i) - x2(i-1)) .ne. d2) then
+            Grid%d = 0.
+            exit
+         end if
+      end do
    end if
 
 end subroutine grid_dimension_read

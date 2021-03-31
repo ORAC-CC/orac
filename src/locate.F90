@@ -19,6 +19,8 @@
 !
 ! History:
 ! 2017/10/02, GM: Original version
+! 2020/08/18, AP: Use dVariable = 0 to indicate unevenly spaced grids. Switch
+!    to using arithmetic index finding for evenly spaced grids.
 ! 2020/09/25, AP: Add bounded keyword, restricting output to [1, n-1]
 !
 ! Bugs:
@@ -47,6 +49,15 @@ function locate(grid, x, bounded) result(low)
       bound = .false.
    end if
    ascending = grid%x(1) .le. grid%x(grid%n)
+
+   if (grid%d .ne. 0.) then
+      low = int((x - grid%x(1)) / grid%d)
+      if (bound) then
+         if (low .lt. 1) low = 1
+         if (low .ge. grid%n) low = grid%n-1
+      end if
+      return
+   end if
 
    if (ascending) then
       if (x .lt. grid%x(1)) then
