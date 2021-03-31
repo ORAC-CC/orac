@@ -262,7 +262,10 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
    integer(c_int)              :: line0, line1
    integer(c_int)              :: column0, column1
 
-   real(kind=sreal), dimension(:,:), allocatable :: tlat, tlon, tsza, tsaa
+#ifdef __ACC
+   real(kind=sreal), dimension(:,:), allocatable :: tlat, tlon
+#endif
+   real(kind=sreal), dimension(:,:), allocatable :: tsza, tsaa
 
    type(himawari_t_data)       :: preproc
    type(himawari_t_extent)     :: ahi_extent
