@@ -157,59 +157,59 @@ subroutine Int_LUT_Common(Ctrl, NChans, Grid, GZero, G, FInt, FGrads, &
       ! Now call linint or the adapted Numerical Recipes BCuInt subroutine to
       ! perform the interpolation to our desired state vector
       if (Ctrl%LUTIntSelm .eq. LUTIntMethLinear) then
-         call linint(Y, Grid%Tau(GZero%iT0(ii2)), Grid%Tau(GZero%iT1(ii2)), &
-                        Grid%Re (GZero%iR0(ii2)), Grid%Re (GZero%iR1(ii2)), &
+         call linint(Y, Grid%Tau%x(GZero%iT0(ii2)), Grid%Tau%x(GZero%iT1(ii2)), &
+                        Grid%Re%x (GZero%iR0(ii2)), Grid%Re%x (GZero%iR1(ii2)), &
                         GZero%dT(ii2), GZero%dR(ii2), a1, a2, a3)
       else if (Ctrl%LUTIntSelm .eq. LUTIntMethBicubic) then
          ! WRT to Tau
          dYdTau(1) = (G(i,iX1,iX0) - G(i,iXm1,iX0)) / &
-                     (Grid%Tau(GZero%iT1 (ii2)) - Grid%Tau(GZero%iTm1(ii2)))
+                     (Grid%Tau%x(GZero%iT1 (ii2)) - Grid%Tau%x(GZero%iTm1(ii2)))
          dYdTau(2) = (G(i,iXp1,iX0) - G(i,iX0,iX0)) / &
-                     (Grid%Tau(GZero%iTp1(ii2)) - Grid%Tau(GZero%iT0 (ii2)))
+                     (Grid%Tau%x(GZero%iTp1(ii2)) - Grid%Tau%x(GZero%iT0 (ii2)))
          dYdTau(3) = (G(i,iXp1,iX1) - G(i,iX0,iX1)) / &
-                     (Grid%Tau(GZero%iTp1(ii2)) - Grid%Tau(GZero%iT0 (ii2)))
+                     (Grid%Tau%x(GZero%iTp1(ii2)) - Grid%Tau%x(GZero%iT0 (ii2)))
          dYdTau(4) = (G(i,iX1,iX1) - G(i,iXm1,iX1)) / &
-                     (Grid%Tau(GZero%iT1 (ii2)) - Grid%Tau(GZero%iTm1(ii2)))
+                     (Grid%Tau%x(GZero%iT1 (ii2)) - Grid%Tau%x(GZero%iTm1(ii2)))
 
          ! WRT to Re
          dYDRe(1)  = (G(i,iX0,iX1) - G(i,iX0,iXm1)) / &
-                     (Grid%Re (GZero%iR1 (ii2)) - Grid%Re (GZero%iRm1(ii2)))
+                     (Grid%Re%x (GZero%iR1 (ii2)) - Grid%Re%x (GZero%iRm1(ii2)))
          dYDRe(2)  = (G(i,iX1,iX1) - G(i,iX1,iXm1)) / &
-                     (Grid%Re (GZero%iR1 (ii2)) - Grid%Re (GZero%iRm1(ii2)))
+                     (Grid%Re%x (GZero%iR1 (ii2)) - Grid%Re%x (GZero%iRm1(ii2)))
          dYDRe(3)  = (G(i,iX1,iXp1) - G(i,iX1,iX0)) / &
-                     (Grid%Re (GZero%iRp1(ii2)) - Grid%Re (GZero%iR0 (ii2)))
+                     (Grid%Re%x (GZero%iRp1(ii2)) - Grid%Re%x (GZero%iR0 (ii2)))
          dYDRe(4)  = (G(i,iX0,iXp1) - G(i,iX0,iX0)) / &
-                     (Grid%Re (GZero%iRp1(ii2)) - Grid%Re (GZero%iR0 (ii2)))
+                     (Grid%Re%x (GZero%iRp1(ii2)) - Grid%Re%x (GZero%iR0 (ii2)))
 
          ! Cross derivatives (dY^2/dTaudRe)
          ddY(1) = (G(i,iX1,iX1) - G(i,iX1,iXm1) - &
                    G(i,iXm1,iX1) + G(i,iXm1,iXm1)) / &
-                  ((Grid%Tau(GZero%iT1 (ii2)) - Grid%Tau(GZero%iTm1(ii2))) * &
-                   (Grid%Re (GZero%iR1 (ii2)) - Grid%Re (GZero%iRm1(ii2))))
+                  ((Grid%Tau%x(GZero%iT1 (ii2)) - Grid%Tau%x(GZero%iTm1(ii2))) * &
+                   (Grid%Re%x (GZero%iR1 (ii2)) - Grid%Re%x (GZero%iRm1(ii2))))
          ddY(2) = (G(i,iXp1,iX1) - G(i,iXp1,iXm1) - &
                    G(i,iX0,iX1) + G(i,iX0,iXm1)) / &
-                  ((Grid%Tau(GZero%iTp1(ii2)) - Grid%Tau(GZero%iT0 (ii2))) * &
-                   (Grid%Re (GZero%iR1 (ii2)) - Grid%Re (GZero%iRm1(ii2))))
+                  ((Grid%Tau%x(GZero%iTp1(ii2)) - Grid%Tau%x(GZero%iT0 (ii2))) * &
+                   (Grid%Re%x (GZero%iR1 (ii2)) - Grid%Re%x (GZero%iRm1(ii2))))
          ddY(3) = (G(i,iXp1,iXp1) - G(i,iXp1,iX0) - &
                    G(i,iX0,iXp1) + G(i,iX0,iX0)) / &
-                  ((Grid%Tau(GZero%iTp1(ii2)) - Grid%Tau(GZero%iT0 (ii2))) * &
-                   (Grid%Re (GZero%iRp1(ii2)) - Grid%Re (GZero%iR0 (ii2))))
+                  ((Grid%Tau%x(GZero%iTp1(ii2)) - Grid%Tau%x(GZero%iT0 (ii2))) * &
+                   (Grid%Re%x (GZero%iRp1(ii2)) - Grid%Re%x (GZero%iR0 (ii2))))
          ddY(4) = (G(i,iX1,iXp1) - G(i,iX1,iX0) - &
                    G(i,iXm1,iXp1) + G(i,iXm1,iX0)) / &
-                  ((Grid%Tau(GZero%iT1 (ii2)) - Grid%Tau(GZero%iTm1(ii2))) * &
-                   (Grid%Re (GZero%iRp1(ii2)) - Grid%Re (GZero%iR0 (ii2))))
+                  ((Grid%Tau%x(GZero%iT1 (ii2)) - Grid%Tau%x(GZero%iTm1(ii2))) * &
+                   (Grid%Re%x (GZero%iRp1(ii2)) - Grid%Re%x (GZero%iR0 (ii2))))
 #ifdef INCLUDE_NR
          ! A hack to deal with the fact that upstream NR wants the point and not
          ! the gradient at that point.
 
-         a = GZero%dT(ii2) * (Grid%Tau(GZero%iT1(ii2)) - Grid%Tau(GZero%iT0(ii2))) + &
-             Grid%Tau(GZero%iT0(ii2))
-         b = GZero%dR(ii2) * (Grid%Re (GZero%iR1(ii2)) - Grid%Re (GZero%iR0(ii2))) + &
-             Grid%Re (GZero%iR0(ii2))
+         a = GZero%dT(ii2) * (Grid%Tau%x(GZero%iT1(ii2)) - Grid%Tau%x(GZero%iT0(ii2))) + &
+             Grid%Tau%x(GZero%iT0(ii2))
+         b = GZero%dR(ii2) * (Grid%Re%x (GZero%iR1(ii2)) - Grid%Re%x (GZero%iR0(ii2))) + &
+             Grid%Re%x (GZero%iR0(ii2))
 
          call bcuint(Y, dYdTau, dYdRe, ddY, &
-                     Grid%Tau(GZero%iT0(ii2)), Grid%Tau(GZero%iT1(ii2)), &
-                     Grid%Re(GZero%iR0(ii2)), Grid%Re(GZero%iR1(ii2)), &
+                     Grid%Tau%x(GZero%iT0(ii2)), Grid%Tau%x(GZero%iT1(ii2)), &
+                     Grid%Re%x (GZero%iR0(ii2)), Grid%Re%x (GZero%iR1(ii2)), &
                      a, b, a1, a2, a3)
 #else
       write(*, *) 'ERROR: Int_LUT_Common(): Numerical Recipes is ' // &

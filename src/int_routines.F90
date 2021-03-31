@@ -26,7 +26,6 @@ module Int_Routines_m
 contains
 
 #include "linint.F90"
-#include "locate.F90"
 
 
 !---------------------------------------------------------------------

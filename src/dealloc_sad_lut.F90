@@ -22,6 +22,7 @@
 ! 2015/10/19, GM: Added Bext for Ctrl%do_CTP_correction.
 ! 2017/01/17, GM: Eliminate the unnecessary indexing of the LUT grid wrt LUT
 !    type and channel.
+! 2021/03/08, AP: Gather grid dimensions into LUT_Grid_t
 !
 ! Bugs:
 ! None known.
@@ -52,11 +53,11 @@ subroutine Dealloc_LUT_Grid(LUT_Grid)
 
    type(LUT_Grid_t), intent(inout) :: LUT_Grid
 
-   deallocate(LUT_Grid%Tau)
-   deallocate(LUT_Grid%Re)
-   deallocate(LUT_Grid%Solzen)
-   deallocate(LUT_Grid%Satzen)
-   deallocate(LUT_Grid%Relazi)
+   deallocate(LUT_Grid%Tau%x)
+   deallocate(LUT_Grid%Re%x)
+   deallocate(LUT_Grid%Solzen%x)
+   deallocate(LUT_Grid%Satzen%x)
+   deallocate(LUT_Grid%Relazi%x)
 
 end subroutine Dealloc_LUT_Grid
 

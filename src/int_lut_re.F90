@@ -109,7 +109,7 @@ subroutine Int_LUT_Re(F, NChans, Grid, GZero, Ctrl, FInt, FGrads, status)
    ! Local variables
    integer :: i
    real    :: delta_r, delta_F, k0, k1, l0, l1
-   real    :: d2F_dr2(Grid%NMaxRe)
+   real    :: d2F_dr2(Grid%Re%NMax)
 
    status = 0
 
@@ -118,19 +118,19 @@ subroutine Int_LUT_Re(F, NChans, Grid, GZero, Ctrl, FInt, FGrads, status)
          FInt(i) = F(i,GZero%iR0(i)) * GZero%dR(i) + &
                     F(i,GZero%iR1(i)) * GZero%R1(i)
          FGrads(i) = (F(i,GZero%iR0(i)) - F(i,GZero%iR1(i))) / &
-                      (Grid%Re(GZero%iR1(i)) - Grid%Re(GZero%iR0(i)))
+                      (Grid%Re%x(GZero%iR1(i)) - Grid%Re%x(GZero%iR0(i)))
       else if (Ctrl%LUTIntSelm .eq. LUTIntMethBicubic) then
 #ifdef INCLUDE_NR
          ! Following the syntax of InterpolarSolar_spline.F90
-         call spline(Grid%Re(1:Grid%nRe), F(i,1:Grid%nRe), &
-                     Grid%nRe,1.e30,1.e30,d2F_dr2(1:Grid%nRe))
+         call spline(Grid%Re%x(1:Grid%Re%n), F(i,1:Grid%Re%n), &
+                     Grid%Re%n, 1.e30, 1.e30, d2F_dr2(1:Grid%Re%n))
 #else
          write(*, *) 'ERROR: Interpol_Solar_spline(): Numerical Recipes is ' // &
             'not available for cubic spline interpolation'
          stop error_stop_code
 #endif
          delta_F = F(i,GZero%iR1(i)) - F(i,GZero%iR0(i))
-         delta_r = Grid%Re(GZero%iR1(i)) - Grid%Re(GZero%iR0(i))
+         delta_r = Grid%Re%x(GZero%iR1(i)) - Grid%Re%x(GZero%iR0(i))
 
          k0 = (3.0*GZero%dR(i)*GZero%dR(i) - 1.0) / 6.0 * delta_r
          k1 = (3.0*GZero%R1(i)*GZero%R1(i) - 1.0) / 6.0 * delta_r

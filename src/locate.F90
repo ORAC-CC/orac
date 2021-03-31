@@ -24,49 +24,48 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-function locate(a,x) result(low)
+function locate(grid, x) result(low)
 
    implicit none
 
-   real, intent(in) :: a(:)
-   real, intent(in) :: x
+   type(LUT_Dimension_t), intent(in) :: grid
+   real,                  intent(in) :: x
 
    logical :: ascending
-   integer :: n, low, mid, up
+   integer :: low, mid, up
 
-   n = size(a)
-   if (n .eq. 0) then
+   if (grid%n .eq. 0) then
       low = 0
       return
    end if
 
-   ascending = a(1) .le. a(n)
+   ascending = grid%x(1) .le. grid%x(grid%n)
 
    if (ascending) then
-      if (x .lt. a(1)) then
+      if (x .lt. grid%x(1)) then
          low = 0
          return
-      else if (x .gt. a(n)) then
-         low = n
+      else if (x .gt. grid%x(grid%n)) then
+         low = grid%n
          return
       end if
    else
-      if (x .gt. a(1)) then
+      if (x .gt. grid%x(1)) then
          low = 0
          return
-      else if (x .lt. a(n)) then
-         low = n
+      else if (x .lt. grid%x(grid%n)) then
+         low = grid%n
          return
       end if
    end if
 
    low = 1
-   up  = n
+   up  = grid%n
 
    do while (low + 1 .lt. up)
       mid = (low + up) / 2
 
-      if (ascending .eqv. (a(mid) .le. x)) then
+      if (ascending .eqv. (grid%x(mid) .le. x)) then
          low = mid
       else
          up  = mid

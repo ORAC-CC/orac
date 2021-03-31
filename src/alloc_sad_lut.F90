@@ -10,6 +10,7 @@
 ! 2015/10/19, GM: Added Bext for Ctrl%do_CTP_correction.
 ! 2017/01/17, GM: Eliminate the unnecessary indexing of the LUT grid wrt LUT
 !    type and channel.
+! 2021/03/08, AP: Gather grid dimensions into LUT_Grid_t
 !
 ! Bugs:
 ! None known.
@@ -33,22 +34,25 @@
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
-subroutine Alloc_LUT_Grid(Ctrl, LUT_Grid)
-
-   use Ctrl_m
+subroutine Alloc_LUT_Grid(LUT_Grid)
 
    implicit none
 
    ! Declare arguments
 
-   type(Ctrl_t),     intent(in)  :: Ctrl
    type(LUT_Grid_t), intent(out) :: LUT_Grid
 
-   allocate(LUT_Grid%Tau(LUT_Grid%NMaxTau))
-   allocate(LUT_Grid%Re(LUT_Grid%NMaxRe))
-   allocate(LUT_Grid%Solzen(LUT_Grid%NMaxSolZen))
-   allocate(LUT_Grid%Satzen(LUT_Grid%NMaxSatZen))
-   allocate(LUT_Grid%Relazi(LUT_Grid%NMaxRelAzi))
+   LUT_Grid%Tau%NMax    = 20
+   LUT_Grid%Re%NMax     = 35
+   LUT_Grid%SolZen%NMax = 20
+   LUT_Grid%SatZen%NMax = 20
+   LUT_Grid%RelAzi%NMax = 20
+
+   allocate(LUT_Grid%Tau%x(LUT_Grid%Tau%NMax))
+   allocate(LUT_Grid%Re%x(LUT_Grid%Re%NMax))
+   allocate(LUT_Grid%Solzen%x(LUT_Grid%SolZen%NMax))
+   allocate(LUT_Grid%Satzen%x(LUT_Grid%SatZen%NMax))
+   allocate(LUT_Grid%Relazi%x(LUT_Grid%RelAzi%NMax))
 
 end subroutine Alloc_LUT_Grid
 
@@ -91,45 +95,45 @@ subroutine Alloc_SAD_LUT(Ctrl, SAD_LUT)
 
    allocate(SAD_LUT%Wavelength(Ctrl%Ind%Ny))
 
-   call Alloc_LUT_Grid(Ctrl, SAD_LUT%Grid)
+   call Alloc_LUT_Grid(SAD_LUT%Grid)
 
    if (Ctrl%do_CTX_correction) then
-      allocate(SAD_LUT%Bext(Ctrl%Ind%Ny, SAD_LUT%Grid%NMaxTau, &
-               SAD_LUT%Grid%NMaxRe))
+      allocate(SAD_LUT%Bext(Ctrl%Ind%Ny, SAD_LUT%Grid%Tau%NMax, &
+               SAD_LUT%Grid%Re%NMax))
    end if
 
-   allocate(SAD_LUT%Rd(Ctrl%Ind%Ny, SAD_LUT%Grid%NMaxTau, &
-            SAD_LUT%Grid%NMaxSatZen, SAD_LUT%Grid%NMaxRe))
-   allocate(SAD_LUT%Rfd(Ctrl%Ind%Ny, SAD_LUT%Grid%NMaxTau, &
-               SAD_LUT%Grid%NMaxRe))
-   allocate(SAD_LUT%Td(Ctrl%Ind%Ny, SAD_LUT%Grid%NMaxTau, &
-               SAD_LUT%Grid%NMaxSatZen, SAD_LUT%Grid%NMaxRe))
-   allocate(SAD_LUT%Tfd(Ctrl%Ind%Ny, SAD_LUT%Grid%NMaxTau, &
-               SAD_LUT%Grid%NMaxRe))
+   allocate(SAD_LUT%Rd(Ctrl%Ind%Ny, SAD_LUT%Grid%Tau%NMax, &
+                       SAD_LUT%Grid%SatZen%NMax, SAD_LUT%Grid%Re%NMax))
+   allocate(SAD_LUT%Rfd(Ctrl%Ind%Ny, SAD_LUT%Grid%Tau%NMax, &
+                        SAD_LUT%Grid%Re%NMax))
+   allocate(SAD_LUT%Td(Ctrl%Ind%Ny, SAD_LUT%Grid%Tau%NMax, &
+                       SAD_LUT%Grid%SatZen%NMax, SAD_LUT%Grid%Re%NMax))
+   allocate(SAD_LUT%Tfd(Ctrl%Ind%Ny, SAD_LUT%Grid%Tau%NMax, &
+                        SAD_LUT%Grid%Re%NMax))
 
    if (Ctrl%Ind%NSolar > 0) then
-      allocate(SAD_LUT%Rbd(Ctrl%Ind%Ny, SAD_LUT%Grid%NMaxTau, &
-               SAD_LUT%Grid%NMaxSatZen, SAD_LUT%Grid%NMaxSolzen, &
-               SAD_LUT%Grid%NMaxRelAzi, SAD_LUT%Grid%NMaxRe))
-      allocate(SAD_LUT%Rfbd(Ctrl%Ind%Ny, SAD_LUT%Grid%NMaxTau, &
-               SAD_LUT%Grid%NMaxSolZen, SAD_LUT%Grid%NMaxRe))
-      allocate(SAD_LUT%Tb(Ctrl%Ind%Ny, SAD_LUT%Grid%NMaxTau, &
-               SAD_LUT%Grid%NMaxSolZen, SAD_LUT%Grid%NMaxRe))
-      allocate(SAD_LUT%Tbd(Ctrl%Ind%Ny, SAD_LUT%Grid%NMaxTau, &
-               SAD_LUT%Grid%NMaxSatZen, SAD_LUT%Grid%NmaxSolzen, &
-               SAD_LUT%Grid%NMaxRelAzi, SAD_LUT%Grid%NMaxRe))
-      allocate(SAD_LUT%Tfbd(Ctrl%Ind%Ny, SAD_LUT%Grid%NMaxTau, &
-               SAD_LUT%Grid%NMaxSolZen, SAD_LUT%Grid%NMaxRe))
+      allocate(SAD_LUT%Rbd(Ctrl%Ind%Ny, SAD_LUT%Grid%Tau%NMax, &
+               SAD_LUT%Grid%SatZen%NMax, SAD_LUT%Grid%Solzen%NMax, &
+               SAD_LUT%Grid%RelAzi%NMax, SAD_LUT%Grid%Re%NMax))
+      allocate(SAD_LUT%Rfbd(Ctrl%Ind%Ny, SAD_LUT%Grid%Tau%NMax, &
+               SAD_LUT%Grid%SolZen%NMax, SAD_LUT%Grid%Re%NMax))
+      allocate(SAD_LUT%Tb(Ctrl%Ind%Ny, SAD_LUT%Grid%Tau%NMax, &
+               SAD_LUT%Grid%SolZen%NMax, SAD_LUT%Grid%Re%NMax))
+      allocate(SAD_LUT%Tbd(Ctrl%Ind%Ny, SAD_LUT%Grid%Tau%NMax, &
+               SAD_LUT%Grid%SatZen%NMax, SAD_LUT%Grid%Solzen%Nmax, &
+               SAD_LUT%Grid%RelAzi%NMax, SAD_LUT%Grid%Re%NMax))
+      allocate(SAD_LUT%Tfbd(Ctrl%Ind%Ny, SAD_LUT%Grid%Tau%NMax, &
+               SAD_LUT%Grid%SolZen%NMax, SAD_LUT%Grid%Re%NMax))
    end if
 
    if (Ctrl%Ind%NThermal > 0) then
-      allocate(SAD_LUT%Em(Ctrl%Ind%Ny, SAD_LUT%Grid%NMaxTau, &
-               SAD_LUT%Grid%NMaxSatZen, SAD_LUT%Grid%NMaxRe))
+      allocate(SAD_LUT%Em(Ctrl%Ind%Ny, SAD_LUT%Grid%Tau%NMax, &
+               SAD_LUT%Grid%SatZen%NMax, SAD_LUT%Grid%Re%NMax))
    end if
 
    if (Ctrl%Approach == AppAerOx .or. Ctrl%Approach == AppAerSw .or. &
        Ctrl%Approach == AppAerO1) then
-      allocate(SAD_LUT%BextRat(Ctrl%Ind%Ny, SAD_LUT%Grid%NMaxRe))
+      allocate(SAD_LUT%BextRat(Ctrl%Ind%Ny, SAD_LUT%Grid%Re%NMax))
    end if
 
 end subroutine Alloc_SAD_LUT

@@ -31,45 +31,30 @@ module SAD_LUT_m
 
    private
 
-   public :: LUT_Grid_t, &
+   public :: LUT_Dimension_t, &
+             LUT_Grid_t, &
              SAD_LUT_t, &
              Alloc_SAD_LUT, &
              Dealloc_SAD_LUT, &
-             Read_SAD_LUT
+             Read_SAD_LUT, &
+             locate
+
+   type LUT_Dimension_t
+      integer :: NMax
+      real    :: Max  ! Maximum value on grid
+      real    :: Min  ! Minimum value on grid
+      real    :: d    ! Grid spacing (0 for irregular)
+      integer :: n    ! Grid length
+
+      real, pointer :: x(:)
+   end type LUT_Dimension_t
 
    type LUT_Grid_t
-      integer :: NMaxTau    = 20
-      integer :: NMaxRe     = 35
-      integer :: NMaxSolZen = 20
-      integer :: NMaxSatZen = 20
-      integer :: NMaxRelAzi = 20
-
-      real     :: MaxTau    ! Optical depth grid max.
-      real     :: MinTau    !  - grid min
-      real     :: dTau      !  - grid spacing
-      integer  :: nTau      !  - no. of gridpoints
-      real     :: MaxRe     ! Particle size grid max.
-      real     :: MinRe     !  - grid min
-      real     :: dRe       !  - grid spacing
-      integer  :: nRe       !  - no. of gridpoints
-      real     :: MaxSatzen ! Satellite angle grid max.
-      real     :: MinSatzen !  - grid min
-      real     :: dSatzen   !  - grid spacing
-      integer  :: nSatzen   !  - no. of gridpoints
-      real     :: MaxSolzen ! Solar angle grid max.
-      real     :: MinSolzen !  - grid min
-      real     :: dSolzen   !  - grid spacing
-      integer  :: nSolzen   !  - no. of gridpoints
-      real     :: MaxRelazi ! Relative azimuth grid max.
-      real     :: MinRelazi !  - grid min
-      real     :: dRelazi   !  - grid spacing
-      integer  :: nRelazi   !  - no. of gridpoints
-
-      real, pointer  :: Tau(:)
-      real, pointer  :: Re(:)
-      real, pointer  :: Solzen(:)
-      real, pointer  :: Satzen(:)
-      real, pointer  :: Relazi(:)
+      type(LUT_Dimension_t) :: Tau    ! Optical depth
+      type(LUT_Dimension_t) :: Re     ! Particle size
+      type(LUT_Dimension_t) :: SatZen ! Satellite angle
+      type(LUT_Dimension_t) :: SolZen ! Solar angle
+      type(LUT_Dimension_t) :: RelAzi ! Relative azimuth
    end type LUT_Grid_t
 
 
@@ -134,5 +119,6 @@ contains
 #include "read_sad_lut.F90"
 #include "alloc_sad_lut.F90"
 #include "dealloc_sad_lut.F90"
+#include "locate.F90"
 
 end module SAD_LUT_m
