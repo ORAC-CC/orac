@@ -201,14 +201,15 @@ def args_postproc(parser):
     post.add_argument('--suffix', type=str,
                       help='Suffix to include in output filename.')
     post.add_argument('--phases', type=str, nargs='+', default=[],
-                      help='Phases to combine.')
+                      help='Phases to combine. ONLY USED BY SINGLE_PROCESS.PY')
     post.add_argument('--prob_thresh', type=float, nargs='?',
                       default=0.0, metavar='VALUE',
                       help='Minimum fractional probability to accept a pixel. '
                            'Default 0.')
-    post.add_argument('--switch_phase', action='store_true',
-                      help='With cloud processing, check if CTT is '
-                           'appropriate for the selected type.')
+    post.add_argument('--no_switch_phase', action='store_false',
+                      help='With cloud processing, do not check if CTT is '
+                           'appropriate for the selected type.. Only relevant '
+                           'when processing exclusively water and ice cloud.')
 
 
 def args_cc4cl(parser):
@@ -252,7 +253,7 @@ def args_cc4cl(parser):
                           ' listed for the main processor are available.')
     phs.add_argument('-S', '--preset_settings', type=str, default=None,
                      choices=defaults.retrieval_settings.keys(),
-                     help='Use a predefined setting for --phases, defined '
+                     help='Use a predefined input for --settings, defined '
                           'in the local_defaults.')
     phs.add_argument('--settings_file', type=str, default=None,
                      help='A file specifying the phases to run, one on '
