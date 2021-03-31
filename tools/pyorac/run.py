@@ -53,13 +53,14 @@ def process_pre(args, log_path, dependency=None, tag='pre'):
 
 def process_main(args, log_path, tag='', dependency=None):
     """Call sequence for main processor"""
+    from pyorac.definitions import SETTINGS
     from pyorac.drivers import build_main_driver
 
     args = check_args_main(args)
     if args.multilayer is not None:
-        phase = args.phase + "_" + args.multilayer[0]
+        phase = SETTINGS[args.phase].name + "_" + SETTINGS[args.multilayer[0]].name
     else:
-        phase = args.phase
+        phase = SETTINGS[args.phase].name
     job_name = args.File.job_name(tag=phase + tag)
     root_name = args.File.root_name(args.revision)
 
@@ -92,7 +93,7 @@ def process_post(args, log_path, files=None, dependency=None, tag='post'):
     """Call sequence for post processor"""
     from glob import glob
     from pyorac.drivers import build_postproc_driver
-    from pyorac.definitions import FileMissing
+    from pyorac.definitions import FileMissing, SETTINGS
 
     args = check_args_postproc(args)
     job_name = args.File.job_name(args.revision, tag)
@@ -107,7 +108,7 @@ def process_post(args, log_path, files=None, dependency=None, tag='post'):
         for phs in set(args.phases):
             for fdr in args.in_dir:
                 files.extend(glob(os.path.join(
-                    fdr, root_name + phs + '.primary.nc'
+                    fdr, root_name + SETTINGS[phs].name + '.primary.nc'
                 )))
 
     if len(files) < 2:
@@ -252,7 +253,7 @@ def process_all(orig_args):
 
     # Run postprocessor if necessary
     if len(args.settings) > 1:
-        args.target = root_name + phs_args.phase + ".primary.nc"
+        args.target = root_name + "NULL.primary.nc"
         args.in_dir = written_dirs
         args.out_dir = orig_args.out_dir
         jid, out_file = process_post(
