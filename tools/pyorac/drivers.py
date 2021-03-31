@@ -414,10 +414,11 @@ Ctrl%Class2                 = {}""".format(
 
 
 def build_postproc_driver(args, files):
-    """Prepare a driver file for the postprocessor.
+    """Prepare a driver file for the postprocessor."""
 
-    If the optional argument files is not specified, this will search args.in_dir
-    for primary files with name given by args.target and args.phases."""
+    # Use Bayesian type selection for all but standard Cloud CCI work
+    cci_cloud = (len(files) == 2 and "wat" in files[0].lower() and
+                 "ice" in files[1].lower())
 
     # Form driver file
     driver = """{multilayer}
@@ -435,7 +436,7 @@ VERBOSE={verbose}
 USE_CHUNKING={chunking}
 USE_NETCDF_COMPRESSION={compress}
 USE_NEW_BAYESIAN_SELECTION={bayesian}""".format(
-        bayesian=args.phases != ['WAT', 'ICE'],
+        bayesian=not cci_cloud,
         chunking=args.chunking,
         compress=args.compress,
         cost_tsh=args.cost_thresh,
