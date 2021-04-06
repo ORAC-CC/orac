@@ -101,6 +101,7 @@
 ! 2017/01/09, CP: Clarified definitions of ML layer definition.
 ! 2017/07/05, AP: Add NAll to track the total number of channels. New QC.
 ! 2017/10/04, GM: Add use_ann_phase.
+! 2021/04/06, AP: New LUT names.
 !
 ! Bugs:
 ! None known.
@@ -236,9 +237,9 @@ module Ctrl_m
                                                    ! class (liquid water, ice,
                                                    ! ash, aerosol, etc.)
       integer                :: Class2             ! Class for layer 2 (lower)
-      character(3)           :: LUTClass           ! Name of LUT to use
-      character(3)           :: LUTClass2          ! LUTClass for layer 2 (lower)
-      character(7)           :: LUTClassLayers     ! LUTClasses combined with '_'
+      character(40)          :: LUTClass           ! Name of LUT to use
+      character(40)          :: LUTClass2          ! LUTClass for layer 2 (lower)
+      character(81)          :: LUTClassLayers     ! LUTClasses combined with '_'
       integer                :: Approach           ! Controls manner of retrieval
                                                    ! performed. See ORACConstants.
 

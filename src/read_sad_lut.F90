@@ -17,7 +17,8 @@
 ! 2021/03/08, AP: Gather grid dimensions into LUT_Grid_t
 !
 ! Bugs:
-! None known.
+! - Arrays are allocated excessively large as dimensions of the text tables
+!   isn't known in advance.
 !-------------------------------------------------------------------------------
 
 !-------------------------------------------------------------------------------
@@ -822,3 +823,366 @@ subroutine Read_SAD_LUT(Ctrl, SAD_Chan, SAD_LUT, i_layer)
    deallocate(tmp)
 
 end subroutine Read_SAD_LUT
+
+
+!-------------------------------------------------------------------------------
+! Name: sad_nc_dimension_read
+!
+! Purpose:
+! Read parameters from a NCDF LUT file into the SAD structure
+!
+! Algorithm:
+!
+! Arguments:
+! Name Type In/Out/Both Description
+! fid  integer In   ID# for an open netCDF file
+! name string  In   Name of the dimension to open
+! n    integer Out  Length of the dimension
+! d    real    Out  Spacing of that dimension, if regular. Zero otherwise
+! Min  real    Out  Minimal value along the dimension
+! Max  real    Out  Maximal value along the dimension
+! x    real    Both Values at each point along dimension
+!
+! History:
+! 2020/08/18, AP: Original version
+!
+! Bugs:
+! Trusts that the spacing attribute is accurate. Which it ruddy should be.
+!-------------------------------------------------------------------------------
+subroutine sad_dimension_read_nc(fid, filename, name, Grid)
+   use orac_ncdf_m
+   use netcdf, only: nf90_get_att, NF90_NOERR
+
+   implicit none
+
+   integer,               intent(in)    :: fid
+   character(len=*),      intent(in)    :: filename
+   character(len=*),      intent(in)    :: name
+   type(LUT_Dimension_t), intent(inout) :: Grid
+
+   integer                         :: i
+   real                            :: delta
+   character(len=attribute_length) :: ax_spacing
+
+   ! Fetch axis spacing
+   call ncdf_get_string_att(filename, name, "spacing", ax_spacing)
+
+   Grid%n = ncdf_dim_length(fid, name, 'sad_nc_dimension_read')
+   allocate(Grid%x(1:Grid%n))
+   call ncdf_read_array(fid, name, Grid%x)
+
+   if (trim(adjustl(ax_spacing)) == "logarithmic") then
+      ! ORAC interpolates logarithmically spaced axis in log-space
+      Grid%x = log10(Grid%x)
+      Grid%d = Grid%x(2) - Grid%x(1)
+   else if (trim(adjustl(ax_spacing)) == "uneven_logarithmic") then
+      Grid%x = log10(Grid%x)
+      Grid%d = 0.
+   else if (trim(adjustl(ax_spacing)) == "linear") then
+      Grid%d = Grid%x(2) - Grid%x(1)
+   else if (trim(adjustl(ax_spacing)) == "uneven_linear") then
+      Grid%d = 0.
+   else if (trim(adjustl(ax_spacing)) == "unknown") then
+      ! Find out how it is spaced
+      Grid%d = Grid%x(2) - Grid%x(1)
+      do i = 3, Grid%n
+         delta = Grid%x(i) - Grid%x(i-1)
+         if (delta /= Grid%d) then
+            Grid%d = 0.
+            exit
+         end if
+      end do
+   else
+      Grid%d = 0.
+   end if
+   Grid%min = minval(Grid%x(1:Grid%n))
+   Grid%max = maxval(Grid%x(1:Grid%n))
+
+end subroutine sad_dimension_read_nc
+
+
+subroutine Read_NCDF_SAD_LUT(Ctrl, platform, LUTClass, SAD_LUT, SAD_Chan)
+
+   use Ctrl_m
+   use orac_ncdf_m
+   use SAD_Chan_m
+   use sad_util_m, only: map_ch_indices
+   use system_utils_m, only: lower
+
+   implicit none
+
+   type(Ctrl_t),               intent(in)    :: Ctrl
+   character(len=*),           intent(in)    :: platform
+   character(len=*),           intent(in)    :: LUTClass
+   type(SAD_LUT_t),            intent(inout) :: SAD_LUT
+   type(SAD_Chan_t), optional, intent(inout) :: SAD_Chan(:)
+
+   character(len=FilenameLen)         :: filename
+   integer, dimension(:), allocatable :: ch_numbers, solar_ch_numbers
+   integer, dimension(:), allocatable :: thermal_ch_numbers, mixed_ch_numbers
+
+   integer :: fid
+   integer :: nch, nsolar, nthermal, nmixed
+   integer :: ch_indices(Ctrl%Ind%Ny)
+   integer :: solar_indices(Ctrl%Ind%NSolar)
+   integer :: thermal_indices(Ctrl%Ind%NThermal)
+   integer :: mixed_indices(Ctrl%Ind%NMixed)
+
+   ! These should be removed once array ordering is sorted in IntRoutines
+   integer :: i, j, k, l, m
+   real, allocatable, dimension(:,:)         :: ext
+   real, allocatable, dimension(:,:,:)       :: R_dd, T_dd
+   real, allocatable, dimension(:,:,:,:)     :: R_dv, T_dv, R_0d, T_00, T_0d, E_md
+   real, allocatable, dimension(:,:,:,:,:,:) :: R_0v
+   real,    allocatable, dimension(:) :: chan_tmp_real
+   integer, allocatable, dimension(:) :: chan_tmp_int
+
+   ! Determine filename and open file
+   filename = trim(Ctrl%FID%SAD_Dir) // '/' // lower(trim(platform)) // '_' // &
+              lower(trim(Ctrl%InstName)) // '_' // trim(LUTClass) // '.nc'
+   if (Ctrl%verbose) print*, 'LUT filename: ', trim(filename)
+   call ncdf_open(fid, filename, 'Read_NCDF_SAD_LUT')
+
+   ! Read available channel numbers
+   nch = ncdf_dim_length(fid, 'channels', 'Read_NCDF_SAD_LUT')
+   allocate(ch_numbers(nch))
+   call ncdf_read_array(fid, "channel_id", ch_numbers)
+   call map_ch_indices(Ctrl%Ind%Ny, Ctrl%Ind%Y_id, nch, ch_numbers, ch_indices)
+
+   nsolar = ncdf_dim_length(fid, 'solar_channels', 'Read_NCDF_SAD_LUT')
+   if (nsolar > 0) then
+      allocate(solar_ch_numbers(nsolar))
+      call ncdf_read_array(fid, "solar_channel_id", solar_ch_numbers)
+      call map_ch_indices(Ctrl%Ind%NSolar, Ctrl%Ind%Y_id(Ctrl%Ind%YSolar), &
+           nsolar, solar_ch_numbers, solar_indices)
+   end if
+
+   nthermal = ncdf_dim_length(fid, 'thermal_channels', 'Read_NCDF_SAD_LUT')
+   if (nthermal > 0) then
+      allocate(thermal_ch_numbers(nthermal))
+      call ncdf_read_array(fid, "thermal_channel_id", thermal_ch_numbers)
+      call map_ch_indices(Ctrl%Ind%NThermal, Ctrl%Ind%Y_id(Ctrl%Ind%YThermal), &
+           nthermal, thermal_ch_numbers, thermal_indices)
+   end if
+
+   nmixed = ncdf_dim_length(fid, 'mixed_channels', 'Read_NCDF_SAD_LUT')
+   if (nmixed > 0) then
+      allocate(mixed_ch_numbers(nmixed))
+      call ncdf_read_array(fid, "mixed_channel_id", mixed_ch_numbers)
+      call map_ch_indices(Ctrl%Ind%NMixed, Ctrl%Ind%Y_id(Ctrl%Ind%YMixed), &
+           nmixed, mixed_ch_numbers, mixed_indices)
+   end if
+
+   ! Representative channel wavelengths
+   allocate(SAD_LUT%Wavelength(Ctrl%Ind%Ny))
+
+   ! Read dimensions into structure
+   call sad_dimension_read_nc(fid, filename, "optical_depth", SAD_LUT%Grid%Tau)
+   call sad_dimension_read_nc(fid, filename, "effective_radius", SAD_LUT%Grid%Re)
+   call sad_dimension_read_nc(fid, filename, "satellite_zenith", SAD_LUT%Grid%Satzen)
+   call sad_dimension_read_nc(fid, filename, "solar_zenith", SAD_LUT%Grid%Solzen)
+   call sad_dimension_read_nc(fid, filename, "relative_azimuth", SAD_LUT%Grid%Relazi)
+
+   ! Read tables into structure
+   allocate(SAD_LUT%Td(Ctrl%Ind%Ny, SAD_LUT%Grid%Tau%n, SAD_LUT%Grid%SatZen%n, &
+        SAD_LUT%Grid%Re%n))
+   allocate(T_dv(Ctrl%Ind%Ny, SAD_LUT%Grid%Re%n, SAD_LUT%Grid%Tau%n, &
+        SAD_LUT%Grid%SatZen%n))
+   call ncdf_read_array(fid, "T_dv", T_dv, 1, ch_indices)
+   do k = 1, SAD_LUT%Grid%SatZen%n
+      do j = 1, SAD_LUT%Grid%Re%n
+         do i = 1, Ctrl%Ind%Ny
+            SAD_LUT%Td(i,:,k,j) = T_dv(i,j,:,k)
+         end do
+      end do
+   end do
+   deallocate(T_dv)
+   allocate(SAD_LUT%Tfd(Ctrl%Ind%Ny, SAD_LUT%Grid%Tau%n, SAD_LUT%Grid%Re%n))
+   allocate(T_dd(Ctrl%Ind%Ny, SAD_LUT%Grid%Re%n, SAD_LUT%Grid%Tau%n))
+   call ncdf_read_array(fid, "T_dd", T_dd, 1, ch_indices)
+   do j = 1, SAD_LUT%Grid%Re%n
+      do i = 1, Ctrl%Ind%Ny
+         SAD_LUT%Tfd(i,:,j) = T_dd(i,j,:)
+      end do
+   end do
+   deallocate(T_dd)
+   allocate(SAD_LUT%Rd(Ctrl%Ind%Ny, SAD_LUT%Grid%Tau%n, SAD_LUT%Grid%SatZen%n, &
+        SAD_LUT%Grid%Re%n))
+   allocate(R_dv(Ctrl%Ind%Ny, SAD_LUT%Grid%Re%n, SAD_LUT%Grid%Tau%n, &
+        SAD_LUT%Grid%SatZen%n))
+   call ncdf_read_array(fid, "R_dv", R_dv, 1, ch_indices)
+   do k = 1, SAD_LUT%Grid%SatZen%n
+      do j = 1, SAD_LUT%Grid%Re%n
+         do i = 1, Ctrl%Ind%Ny
+            SAD_LUT%Rd(i,:,k,j) = R_dv(i,j,:,k)
+         end do
+      end do
+   end do
+   deallocate(R_dv)
+   allocate(SAD_LUT%Rfd(Ctrl%Ind%Ny, SAD_LUT%Grid%Tau%n, SAD_LUT%Grid%Re%n))
+   allocate(R_dd(Ctrl%Ind%Ny, SAD_LUT%Grid%Re%n, SAD_LUT%Grid%Tau%n))
+   call ncdf_read_array(fid, "R_dd", R_dd, 1, ch_indices)
+   do j = 1, SAD_LUT%Grid%Re%n
+      do i = 1, Ctrl%Ind%Ny
+         SAD_LUT%Rfd(i,:,j) = R_dd(i,j,:)
+      end do
+   end do
+   deallocate(R_dd)
+
+   if (Ctrl%Ind%NSolar > 0) then
+      allocate(SAD_LUT%Rbd(Ctrl%Ind%Ny, SAD_LUT%Grid%Tau%n, &
+           SAD_LUT%Grid%SatZen%n, SAD_LUT%Grid%SolZen%n, SAD_LUT%Grid%RelAzi%n, &
+           SAD_LUT%Grid%Re%n))
+      allocate(R_0v(Ctrl%Ind%NSolar, SAD_LUT%Grid%Re%n, SAD_LUT%Grid%Tau%n, &
+           SAD_LUT%Grid%SolZen%n, SAD_LUT%Grid%SatZen%n, SAD_LUT%Grid%RelAzi%n))
+      call ncdf_read_array(fid, "R_0v", R_0v, 1, solar_indices)
+      do m = 1, SAD_LUT%Grid%RelAzi%n
+         do l = 1, SAD_LUT%Grid%SatZen%n
+            do k = 1, SAD_LUT%Grid%SolZen%n
+               do j = 1, SAD_LUT%Grid%Re%n
+                  do i = 1, Ctrl%Ind%NSolar
+                     SAD_LUT%Rbd(Ctrl%Ind%YSolar(i),:,l,k,m,j) = R_0v(i,j,:,k,l,m)
+                  end do
+               end do
+            end do
+         end do
+      end do
+      deallocate(R_0v)
+      allocate(SAD_LUT%Rfbd(Ctrl%Ind%Ny, SAD_LUT%Grid%Tau%n, &
+           SAD_LUT%Grid%SolZen%n, SAD_LUT%Grid%Re%n))
+      allocate(R_0d(Ctrl%Ind%NSolar, SAD_LUT%Grid%Re%n, SAD_LUT%Grid%Tau%n, &
+           SAD_LUT%Grid%SolZen%n))
+      call ncdf_read_array(fid, "R_0d", R_0d, 1, solar_indices)
+      do k = 1, SAD_LUT%Grid%SolZen%n
+         do j = 1, SAD_LUT%Grid%Re%n
+            do i = 1, Ctrl%Ind%NSolar
+               SAD_LUT%Rfbd(Ctrl%Ind%YSolar(i),:,k,j) = R_0d(i,j,:,k)
+            end do
+         end do
+      end do
+      deallocate(R_0d)
+      allocate(SAD_LUT%Tfbd(Ctrl%Ind%Ny, SAD_LUT%Grid%Tau%n, &
+           SAD_LUT%Grid%SolZen%n, SAD_LUT%Grid%Re%n))
+      allocate(T_0d(Ctrl%Ind%NSolar, SAD_LUT%Grid%Re%n, SAD_LUT%Grid%Tau%n, &
+           SAD_LUT%Grid%SolZen%n))
+      call ncdf_read_array(fid, "T_0d", T_0d, 1, solar_indices)
+      do k = 1, SAD_LUT%Grid%SolZen%n
+         do j = 1, SAD_LUT%Grid%Re%n
+            do i = 1, Ctrl%Ind%NSolar
+               SAD_LUT%Tfbd(Ctrl%Ind%YSolar(i),:,k,j) = T_0d(i,j,:,k)
+            end do
+         end do
+      end do
+      deallocate(T_0d)
+      allocate(SAD_LUT%Tb(Ctrl%Ind%Ny, SAD_LUT%Grid%Tau%n, SAD_LUT%Grid%SolZen%n, &
+           SAD_LUT%Grid%Re%n))
+      allocate(T_00(Ctrl%Ind%NSolar, SAD_LUT%Grid%Re%n, SAD_LUT%Grid%Tau%n, &
+           SAD_LUT%Grid%SolZen%n))
+      call ncdf_read_array(fid, "T_00", T_00, 1, solar_indices)
+      do k = 1, SAD_LUT%Grid%SolZen%n
+         do j = 1, SAD_LUT%Grid%Re%n
+            do i = 1, Ctrl%Ind%NSolar
+               SAD_LUT%Td(Ctrl%Ind%YSolar(i),:,k,j) = T_00(i,j,:,k)
+            end do
+         end do
+      end do
+      deallocate(T_00)
+   end if
+
+   if (nthermal > 0) then
+      allocate(SAD_LUT%Em(Ctrl%Ind%Ny, SAD_LUT%Grid%Tau%n, SAD_LUT%Grid%SatZen%n, &
+           SAD_LUT%Grid%Re%n))
+      allocate(E_md(Ctrl%Ind%NThermal, SAD_LUT%Grid%Re%n, SAD_LUT%Grid%Tau%n, &
+           SAD_LUT%Grid%SatZen%n))
+      call ncdf_read_array(fid, "E_md", E_md, 1, thermal_indices)
+      SAD_LUT%Em(Ctrl%Ind%YThermal,:,:,:) = reshape(E_md, [Ctrl%Ind%NThermal, &
+           SAD_LUT%Grid%Tau%n, SAD_LUT%Grid%SatZen%n, SAD_LUT%Grid%Re%n], &
+           order=[1, 3, 4, 2])
+      do k = 1, SAD_LUT%Grid%SatZen%n
+         do j = 1, SAD_LUT%Grid%Re%n
+            do i = 1, Ctrl%Ind%NThermal
+               SAD_LUT%Em(Ctrl%Ind%YThermal(i),:,k,j) = E_md(i,j,:,k)
+            end do
+         end do
+      end do
+      deallocate(E_md)
+
+      if (Ctrl%do_CTX_correction .and. Ctrl%Class .eq. ClsCldIce) then
+         allocate(SAD_LUT%Bext(Ctrl%Ind%Ny, SAD_LUT%Grid%Tau%n, SAD_LUT%Grid%Re%n))
+         allocate(ext(Ctrl%Ind%Ny, SAD_LUT%Grid%Re%n))
+         call ncdf_read_array(fid, "extinction_coefficient", ext, &
+              1, ch_indices)
+         do i = 1, SAD_LUT%Grid%Tau%n
+            SAD_LUT%Bext(:,i,:) = ext
+         end do
+         deallocate(ext)
+      end if
+   end if
+
+   if (Ctrl%Approach == AppAerOx .or. Ctrl%Approach == AppAerSw .or. &
+        Ctrl%Approach == AppAerO1) then
+      allocate(SAD_LUT%BextRat(Ctrl%Ind%Ny, SAD_LUT%Grid%Re%n))
+      call ncdf_read_array(fid, "extinction_coefficient_ratio", &
+           SAD_LUT%BextRat, 1, ch_indices)
+   end if
+
+   ! Read SAD_Chan information
+   allocate(chan_tmp_real(nch))
+   call ncdf_read_array(fid, "central_wavenumber", chan_tmp_real)
+   do i = 1, Ctrl%Ind%Ny
+      SAD_Chan(i)%WvN = chan_tmp_real(ch_indices(i))
+   end do
+   deallocate(chan_tmp_real)
+
+   allocate(chan_tmp_int(nch))
+   call ncdf_read_array(fid, "infrared_channel_flag", chan_tmp_int)
+   do i = 1, Ctrl%Ind%Ny
+      SAD_Chan(i)%Thermal%Flag = int(chan_tmp_int(ch_indices(i)), kind=1)
+   end do
+   call ncdf_read_array(fid, "solar_channel_flag", chan_tmp_int)
+   do i = 1, Ctrl%Ind%Ny
+      SAD_Chan(i)%Solar%Flag = int(chan_tmp_int(ch_indices(i)), kind=1)
+   end do
+   deallocate(chan_tmp_int)
+
+   if (nthermal > 0) then
+      allocate(chan_tmp_real(nthermal))
+      call ncdf_read_array(fid, "B1", chan_tmp_real)
+      do i = 1, Ctrl%Ind%NThermal
+         SAD_Chan(i)%Thermal%B1 = chan_tmp_real(thermal_indices(i))
+      end do
+      call ncdf_read_array(fid, "B2", chan_tmp_real)
+      do i = 1, Ctrl%Ind%NThermal
+         SAD_Chan(i)%Thermal%B2 = chan_tmp_real(thermal_indices(i))
+      end do
+      call ncdf_read_array(fid, "T1", chan_tmp_real)
+      do i = 1, Ctrl%Ind%NThermal
+         SAD_Chan(i)%Thermal%T1 = chan_tmp_real(thermal_indices(i))
+      end do
+      call ncdf_read_array(fid, "T2", chan_tmp_real)
+      do i = 1, Ctrl%Ind%NThermal
+         SAD_Chan(i)%Thermal%T2 = chan_tmp_real(thermal_indices(i))
+      end do
+      deallocate(chan_tmp_real)
+   end if
+
+   if (nmixed > 0) then
+      allocate(chan_tmp_real(nmixed))
+      call ncdf_read_array(fid, "F0", chan_tmp_real)
+      do i = 1, Ctrl%Ind%NMixed
+         SAD_Chan(i)%Solar%F0 = chan_tmp_real(mixed_indices(i))
+      end do
+      call ncdf_read_array(fid, "F1", chan_tmp_real)
+      do i = 1, Ctrl%Ind%NMixed
+         SAD_Chan(i)%Solar%F1 = chan_tmp_real(mixed_indices(i))
+      end do
+      deallocate(chan_tmp_real)
+   end if
+
+   ! Close file
+   call ncdf_close(fid, 'Read_NCDF_SAD_LUT')
+   if (allocated(ch_numbers)) deallocate(ch_numbers)
+   if (allocated(solar_ch_numbers)) deallocate(solar_ch_numbers)
+   if (allocated(thermal_ch_numbers)) deallocate(thermal_ch_numbers)
+
+end subroutine Read_NCDF_SAD_LUT

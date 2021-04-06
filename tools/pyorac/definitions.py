@@ -549,10 +549,11 @@ class ParticleType:
             if "AVHRR" in inst.sensor:
                 fdr_name = join(fdr, inst.sensor.lower() + "-" +
                                 inst.noaa + "_" + self.sad)
+            if len(self.name) == 3:
+                file_name = "_".join((inst.inst, self.name, "RBD", "Ch*.sad"))
             else:
-                fdr_name = join(fdr, inst.sensor.lower() + "_" + self.sad)
-
-            file_name = "_".join((inst.sensor + "*", self.name, "RBD", "Ch*.sad"))
+                file_name = "_".join((inst.platform.lower(), inst.sensor.lower(),
+                                      self.name + ".nc"))
 
             # SAD files stored in subdirectories
             if glob(join(fdr_name, file_name)):

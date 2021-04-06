@@ -146,6 +146,7 @@
 !     Comparisons of lw fluxes to CERES confirm that this was necessary.
 ! 2018/09/30, SRP: Delete old driver read routines.
 ! 2019/08/14, SP: Add Fengyun4A support.
+! 2021/04/06, AP: New LUT names.
 !
 ! Bugs:
 ! None known.
@@ -390,19 +391,21 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
 
    if (Ctrl%Approach == -1) then
       ! Approach not set, so deduce from LUTClass
-      if (Ctrl%LUTClass(1:3) == 'WAT') then
+      if (Ctrl%LUTClass(1:3) == 'WAT' .or. &
+           Ctrl%LUTClass(1:12) == 'liquid-water') then
          Ctrl%Approach = AppCld1L
          Ctrl%Class    = ClsCldWat
-      else if (Ctrl%LUTClass(1:3) == 'ICE') then
+      else if (Ctrl%LUTClass(1:3) == 'ICE' .or. &
+           Ctrl%LUTClass(1:9) == 'water-ice') then
          Ctrl%Approach = AppCld1L
          Ctrl%Class    = ClsCldIce
-      else if (Ctrl%LUTClass(1:3) == 'ASO') then
+      else if (Ctrl%LUTClass(1:3) == 'ASO' .or. &
+           Ctrl%LUTClass(1:3) == 'EYJ' .or. &
+           Ctrl%LUTClass(1:12) == 'volcanic-ash') then
          Ctrl%Approach = AppCld1L
          Ctrl%Class    = ClsAshEyj
-      else if (Ctrl%LUTClass(1:3) == 'EYJ') then
-         Ctrl%Approach = AppCld1L
-         Ctrl%Class    = ClsAshEyj
-     else if (Ctrl%LUTClass(1:1) == 'A') then
+      else if (Ctrl%LUTClass(1:1) == 'A' .or. &
+           Ctrl%LUTClass(1:7) == 'aerosol') then
          Ctrl%Approach = AppAerOx
          Ctrl%Class    = ClsAerOx
       else
@@ -414,13 +417,15 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
 
    if (Ctrl%Class == -1) then
       ! Class not set, so deduce it from the LUTClass and/or Approach
-      if (Ctrl%Approach == AppCld1L .and. Ctrl%LUTClass(1:3) == 'WAT') then
+      if (Ctrl%Approach == AppCld1L .and. (Ctrl%LUTClass(1:3) == 'WAT' .or. &
+           Ctrl%LUTClass(1:12) == 'liquid-water')) then
          Ctrl%Class = ClsCldWat
-      else if (Ctrl%Approach == AppCld1L .and. Ctrl%LUTClass(1:3) == 'ICE') then
+      else if (Ctrl%Approach == AppCld1L .and. (Ctrl%LUTClass(1:3) == 'ICE' .or. &
+           Ctrl%LUTClass(1:9) == 'water-ice')) then
          Ctrl%Class = ClsCldIce
-      else if (Ctrl%Approach == AppCld1L .and. Ctrl%LUTClass(1:3) == 'ASO') then
-         Ctrl%Class = ClsAshEyj
-      else if (Ctrl%Approach == AppCld1L .and. Ctrl%LUTClass(1:3) == 'EYJ') then
+      else if (Ctrl%Approach == AppCld1L .and. (Ctrl%LUTClass(1:3) == 'ASO' .or. &
+           Ctrl%LUTClass(1:3) == 'EYJ' .or. &
+           Ctrl%LUTClass(1:12) == 'volcanic-ash')) then
          Ctrl%Class = ClsAshEyj
       else if (Ctrl%Approach == AppCld2L) then
          Ctrl%Class  = ClsCldIce
