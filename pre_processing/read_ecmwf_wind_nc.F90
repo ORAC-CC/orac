@@ -108,7 +108,6 @@ subroutine read_ecmwf_wind_nc_file(ecmwf_path, ecmwf)
    real, allocatable               :: val(:,:,:,:)
    integer                         :: fid, i, ndim, nvar, size
    character(len=var_length)       :: name
-   logical                         :: verbose = .false.
 
    ! open file
    call ncdf_open(fid, ecmwf_path, 'read_ecmwf_wind_nc_file()')

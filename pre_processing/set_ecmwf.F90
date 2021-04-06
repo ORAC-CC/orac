@@ -78,11 +78,11 @@ subroutine set_ecmwf(granule, opts, ecmwf_flag, imager_geolocation, &
 
    type(setup_args_t),         intent(in)    :: granule
    type(preproc_opts_t),       intent(inout) :: opts
-   integer,                    intent(in)  :: ecmwf_flag
-   type(imager_geolocation_t), intent(in)  :: imager_geolocation
-   type(imager_time_t),        intent(in)  :: imager_time
-   real,                       intent(out) :: time_int_fac
-   logical,                    intent(in)  :: assume_full_path
+   integer,                    intent(in)    :: ecmwf_flag
+   type(imager_geolocation_t), intent(in)    :: imager_geolocation
+   type(imager_time_t),        intent(in)    :: imager_time
+   real,                       intent(out)   :: time_int_fac
+   logical,                    intent(in)    :: assume_full_path
 
    integer       :: i_path1, i_path2
    integer(sint) :: year, month, day, hour

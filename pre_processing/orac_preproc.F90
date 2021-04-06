@@ -309,8 +309,10 @@
 !                 instead of IMPF (as previous). The new driver file option
 !                 USE_GSICS enables this to be disabled.
 ! 2018/10/08, SP: Add support for the GOES-Imager series of sensors (G12-15)
-! 2019/8/14, SP: Add Fengyun-4A support.
+! 2019/08/14, SP: Add Fengyun-4A support.
 ! 2020/03/02, ATP: Add support for AHI subsetting.
+! 2021/03/10, AP: Remove command line arguments.
+! 2021/03/14, AP: Move setup selection into a dedicated routine.
 !
 ! Bugs:
 ! See http://proj.badc.rl.ac.uk/orac/report/1
@@ -812,7 +814,7 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
 #ifdef WRAPPER
       ! do not process this orbit if no valid lat/lon data available
       mask =  imager_geolocation%latitude.gt.sreal_fill_value .and. &
-           imager_geolocation%longitude.gt.sreal_fill_value
+              imager_geolocation%longitude.gt.sreal_fill_value
       if (.not. any(mask)) then
          write(*,*) "any mask: ", any(mask)
          write(*,*) "maxval lat/lon:", maxval(imager_geolocation%latitude), &

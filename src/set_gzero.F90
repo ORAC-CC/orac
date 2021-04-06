@@ -56,6 +56,7 @@
 ! 2017/01/17, GM: Eliminate the unnecessary indexing of the GZero parameters wrt
 !    LUT type and changes related to similar indexing simplifications of the LUT
 !    grid.
+! 2020/09/25, AP: Move max(min()) into locate().
 !
 ! Bugs:
 ! None known.

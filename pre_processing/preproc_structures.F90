@@ -28,6 +28,8 @@
 ! 2018/07/18, DE: Add tropoopause temperature
 ! 2018/09/30, SP: New structure to store driver option variables, tidier than multi-var
 ! 2018/11/05, SP: Add CAPE
+! 2021/03/09, AP: Consolidate path arguments into preproc_paths_t structure
+! 2021/03/10, AP: Consolidate paths/dates into setup_args_t structure
 !
 ! Bugs:
 ! None known.
@@ -74,7 +76,7 @@ module preproc_structures_m
       logical                    :: do_ironly
       integer                    :: ecmwf_nlevels
       integer                    :: ecmwf_time_int_method
-      integer,pointer            :: channel_ids(:)
+      integer, pointer           :: channel_ids(:)
       integer(kind=lint)         :: n_channels
       real                       :: swansea_gamma
       logical                    :: use_camel_emis
@@ -104,23 +106,23 @@ module preproc_structures_m
 
    ! ecmwf profiles and surface fields (prtm data)
    type preproc_prtm_t
-      real(kind=sreal), dimension(:,:,:), pointer :: pressure,temperature, &
-                                                     spec_hum,ozone
-      real(kind=sreal), dimension(:,:,:), pointer :: phi_lev,phi_lay
+      real(kind=sreal), dimension(:,:,:), pointer :: pressure, temperature, &
+                                                     spec_hum, ozone
+      real(kind=sreal), dimension(:,:,:), pointer :: phi_lev, phi_lay
 
-      real(kind=sreal), dimension(:,:), pointer   :: geopot,lnsp
-      real(kind=sreal), dimension(:,:), pointer   :: u10,v10
+      real(kind=sreal), dimension(:,:), pointer   :: geopot, lnsp
+      real(kind=sreal), dimension(:,:), pointer   :: u10, v10
       real(kind=sreal), dimension(:,:), pointer   :: land_sea_mask
-      real(kind=sreal), dimension(:,:), pointer   :: temp2,skin_temp
-      real(kind=sreal), dimension(:,:), pointer   :: snow_albedo,snow_depth
-      real(kind=sreal), dimension(:,:), pointer   :: sst,sea_ice_cover
+      real(kind=sreal), dimension(:,:), pointer   :: temp2, skin_temp
+      real(kind=sreal), dimension(:,:), pointer   :: snow_albedo, snow_depth
+      real(kind=sreal), dimension(:,:), pointer   :: sst, sea_ice_cover
       real(kind=sreal), dimension(:,:), pointer   :: totcolwv
 
       ! New field for Convective Available Potential Energy
       real(kind=sreal), dimension(:,:), pointer   :: cape
 
       ! New fields for tropopause
-      real(kind=sreal), dimension(:,:), pointer   :: trop_p,trop_t
+      real(kind=sreal), dimension(:,:), pointer   :: trop_p, trop_t
    end type preproc_prtm_t
 
 
@@ -149,7 +151,7 @@ module preproc_structures_m
       character(len=file_length) :: prtm_file   ! Atmospheric RTTOV inputs
       character(len=file_length) :: swrtm_file  ! Shortwave RTTOV inputs
    end type preproc_paths_t
- 
+
 
    type setup_args_t
       character(len=path_length)     :: l1b_file ! Path to satellite swath

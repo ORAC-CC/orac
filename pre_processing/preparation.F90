@@ -94,15 +94,15 @@ subroutine preparation(paths, granule, opts, global_atts, orbit_number, &
    type(preproc_paths_t),      intent(out)   :: paths
    type(setup_args_t),         intent(in)    :: granule
    type(preproc_opts_t),       intent(inout) :: opts
-   type(global_attributes_t),  intent(in)  :: global_atts
+   type(global_attributes_t),  intent(in)    :: global_atts
    character(len=*),           intent(in)    :: orbit_number
-   integer,                    intent(in)  :: ecmwf_flag
-   type(imager_geolocation_t), intent(in)  :: imager_geolocation
-   type(imager_time_t),        intent(in)  :: imager_time
-   integer,                    intent(in)  :: i_chunk
-   real,                       intent(out) :: time_int_fac
-   logical,                    intent(in)  :: assume_full_path
-   logical,                    intent(in)  :: verbose
+   integer,                    intent(in)    :: ecmwf_flag
+   type(imager_geolocation_t), intent(in)    :: imager_geolocation
+   type(imager_time_t),        intent(in)    :: imager_time
+   integer,                    intent(in)    :: i_chunk
+   real,                       intent(out)   :: time_int_fac
+   logical,                    intent(in)    :: assume_full_path
+   logical,                    intent(in)    :: verbose
 
    character(len=file_length) :: range_name
    character(len=file_length) :: file_base
