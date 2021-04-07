@@ -177,6 +177,9 @@ if (indexing%flags%do_cloud_layer_2) then
    primary2%ctt2_uncertainty(i,j)       = primary1%ctt2_uncertainty(i,j)
    primary2%cwp2(i,j)                   = primary1%cwp2(i,j)
    primary2%cwp2_uncertainty(i,j)       = primary1%cwp2_uncertainty(i,j)
+!  primary2%cc_total2(i,j)              = primary1%cc_total2(i,j)
+!  primary2%cc_total2_uncertainty(i,j)  = primary1%cc_total2_uncertainty(i,j)
+
 end if
 
    primary2%niter(i,j)                 = primary1%niter(i,j)
@@ -194,6 +197,9 @@ if (do_secondary) then
    if (indexing%flags%do_aerosol) then
       secondary2%aot550_ap(i,j)        = secondary1%aot550_ap(i,j)
       secondary2%aot550_fg(i,j)        = secondary1%aot550_fg(i,j)
+
+      secondary2%aer_ap(i,j)           = secondary1%aer_ap(i,j)
+      secondary2%aer_fg(i,j)           = secondary1%aer_fg(i,j)
    end if
 
    if (indexing%flags%do_rho) then

@@ -26,6 +26,7 @@
 ! 2013/09/06, AP: tidying, removed array initialisations as read routines
 !    cover it
 ! 2015/04/22, OS: bug fix in calculating relative azimuth angle
+! 2020/05/28, AP: Relative azimuth should be 180 when looking into the sun.
 !
 ! Bugs:
 ! None known.
@@ -124,10 +125,7 @@ subroutine read_avhrr_time_lat_lon_angles(path_to_geo_file, imager_geolocation, 
 
    ! make rel azi
    ! Note: Relative azimuth is defined so that if the satellite is looking
-   ! towards the sun (i.e. forward scattering), relative azimuth is zero.
-!   temp2 = 180.0-temp2
-!   imager_angles%relazi(:,:,1) = 180.0 - &
-!        acos(cos((temp-temp2)*d2r))/d2r
+   ! towards the sun (i.e. forward scattering), relative azimuth is 180.
 
    where ( temp2 .ne. sreal_fill_value .AND. temp .ne. sreal_fill_value )
 
@@ -135,20 +133,8 @@ subroutine read_avhrr_time_lat_lon_angles(path_to_geo_file, imager_geolocation, 
       imager_angles%satazi(:,:,1) = temp
 
       where ( imager_angles%relazi(:,:,1) .gt. 180. )
-         imager_angles%relazi(:,:,1) = imager_angles%relazi(:,:,1) - 180.
-      else where
-         imager_angles%relazi(:,:,1) = 180. - imager_angles%relazi(:,:,1)
+         imager_angles%relazi(:,:,1) = 360. - imager_angles%relazi(:,:,1)
       end where
-
-!      where ( temp2 .lt. 0 )
-!         temp2 = temp2 + 180
-!      else where
-!         temp2 = temp2 - 180
-!      end where
-
-!      imager_angles%relazi(:,:,1) = abs( temp - temp2 )
-!      where ( imager_angles%relazi(:,:,1) .gt. 180 ) imager_angles%relazi(:,:,1) = 360. - imager_angles%relazi(:,:,1)
-!      imager_angles%relazi(:,:,1) = abs( imager_angles%relazi(:,:,1) )
 
    end where
 

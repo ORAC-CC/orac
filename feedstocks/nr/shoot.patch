@@ -1,0 +1,23 @@
+Subject: Routines need unique names in the library
+diff -rupN nr/shootf.for new/shootf.for
+--- nr/shootf.for	2020-09-10 11:14:00.758265737 +0100
++++ new/shootf.for	2002-05-10 10:54:13.000000000 +0100
+@@ -1,5 +1,5 @@
+-CU    SUBROUTINE shootf(n,v,f) is named "funcv" for use with "newt"
+-      SUBROUTINE funcv(n,v,f)
++      SUBROUTINE shootf(n,v,f)
++CU    SUBROUTINE funcv(n,v,f) is named "funcv" for use with "newt"
+       INTEGER n,nvar,nn2,kmax,kount,KMAXX,NMAX
+       REAL f(n),v(n),x1,x2,xf,dxsav,xp,yp,EPS
+       PARAMETER (NMAX=50,KMAXX=200,EPS=1.e-6)
+diff -rupN nr/shoot.for new/shoot.for
+--- nr/shoot.for	2020-09-10 11:13:32.414394352 +0100
++++ new/shoot.for	2002-05-10 10:54:13.000000000 +0100
+@@ -1,5 +1,5 @@
+-CU    SUBROUTINE shoot(n2,v,f) is named "funcv" for use with "newt"
+-      SUBROUTINE funcv(n2,v,f)
++      SUBROUTINE shoot(n2,v,f)
++CU    SUBROUTINE funcv(n2,v,f) is named "funcv" for use with "newt"
+       INTEGER n2,nvar,kmax,kount,KMAXX,NMAX
+       REAL f(n2),v(n2),x1,x2,dxsav,xp,yp,EPS
+       PARAMETER (NMAX=50,KMAXX=200,EPS=1.e-6)

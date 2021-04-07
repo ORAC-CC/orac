@@ -11,24 +11,27 @@ source:
     - makefile.patch
 
 build:
-  number: 0
-  skip: True  # [win]
+  number: 1
   run_exports:
     - {{ pin_subpackage('epr_api', max_pin='x.x.x') }}
 
 requirements:
   build:
     - {{ compiler('c') }}
-    - {{ compiler('cxx') }}
     - cmake
 
 test:
+  requires:
+    - {{ compiler('c') }}
+  files:
+    - write_bands.c
   commands:
     - test -f ${PREFIX}/lib/libepr_api.a
+    - ${GCC} -o example -I${PREFIX}/include write_bands.c -L${PREFIX}/lib -lepr_api
 
 about:
   home: http://github.com/bcdev/epr-api
-  license: GNU General Public License
+  license: GPL
   summary: 'Library supporting products of the ESA ENVISAT satellite'
 
 extra:

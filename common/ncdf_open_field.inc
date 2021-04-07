@@ -18,9 +18,9 @@
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
-
-   if (verbose) print*, 'Opening variable: ', trim(name)
-
+#ifdef DEBUG
+   print*, 'Opening variable: ', trim(name)
+#endif
    ! locate variable in file
    ierr = nf90_inq_varid(ncid, name, vid)
    if (ierr.ne.NF90_NOERR) then

@@ -1,0 +1,12 @@
+Subject: Properly define the version number
+--- rttov122/src/main/rttov_const.F90	2018-04-04 10:37:56.000000000 +0100
++++ rttov122/src/main/rttov_const.new.F90	2019-10-18 12:04:30.418477402 +0100
+@@ -25,7 +25,7 @@
+   ! -------
+   ! Version number of the current code
+   INTEGER(KIND=jpim), PARAMETER :: version = 12
+-  INTEGER(KIND=jpim), PARAMETER :: release = 1
++  INTEGER(KIND=jpim), PARAMETER :: release = 2
+   INTEGER(KIND=jpim), PARAMETER :: minor_version = 0
+ 
+   ! Min/max version numbers of compatible coefficient files:

@@ -309,7 +309,10 @@
 !                 instead of IMPF (as previous). The new driver file option
 !                 USE_GSICS enables this to be disabled.
 ! 2018/10/08, SP: Add support for the GOES-Imager series of sensors (G12-15)
-! 2019/8/14, SP: Add Fengyun-4A support.
+! 2019/08/14, SP: Add Fengyun-4A support.
+! 2020/03/02, ATP: Add support for AHI subsetting.
+! 2021/03/10, AP: Remove command line arguments.
+! 2021/03/14, AP: Move setup selection into a dedicated routine.
 !
 ! Bugs:
 ! See http://proj.badc.rl.ac.uk/orac/report/1
@@ -337,18 +340,7 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
    use preparation_m
    use preproc_constants_m
    use preproc_structures_m
-   use read_aatsr_m
-   use read_abi_m
-   use read_agri_m
-   use read_avhrr_m
-   !use read_goes_imager_m
-   use read_himawari_m
    use read_imager_m
-   use read_modis_m
-   use read_seviri_m
-   use read_slstr_m
-   use read_viirs_iband_m
-   use read_viirs_mband_m
    use rttov_driver_m
    use rttov_driver_gfs_m
    use setup_m
@@ -366,8 +358,6 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
    implicit none
 
    character(len=path_length)       :: driver_path_file
-   character(len=path_length)       :: l1b_path_file
-   character(len=path_length)       :: geo_path_file
    character(len=path_length)       :: usgs_path_file
    character(len=path_length)       :: rttov_coef_path
    character(len=path_length)       :: rttov_emiss_path
@@ -391,7 +381,6 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
    type(source_attributes_t)        :: source_atts
    integer                          :: ecmwf_flag
    logical                          :: chunkproc
-   integer(kind=sint)               :: day_night
    logical                          :: verbose
    logical                          :: assume_full_paths
    logical                          :: include_full_brdf
@@ -401,13 +390,7 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
    logical                          :: check
    integer                          :: nargs
 
-   integer                          :: i
-   character(len=path_length)       :: line, label, value
-
-
-   integer(kind=lint)               :: startx, endx, starty, endy
-   integer(kind=lint)               :: n_across_track, n_along_track
-   integer(kind=lint)               :: along_track_offset
+   character(len=path_length)       :: label, value
 
    integer(kind=lint)               :: along_pos
 
@@ -420,22 +403,8 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
    integer, allocatable             :: chunk_starts(:)
    integer, allocatable             :: chunk_ends(:)
 
-   real(kind=sreal), dimension(4)   :: loc_limit
-
-   ! The following are for lengths and offsets for the second section of
-   ! nighttime data in an (A)ATSR orbit file:
-   integer(kind=lint)               :: n_along_track2, along_track_offset2
-
-   character(len=sensor_length)     :: sensor
-   character(len=platform_length)   :: platform
-
-   integer(kind=sint)               :: doy, year, month, day, hour, minute
-
-   character(len=date_length)       :: cyear, cmonth, cday, cdoy, chour, cminute
-
-   character(len=file_length)       :: lwrtm_file, swrtm_file, prtm_file
-   character(len=file_length)       :: msi_file, cf_file, lsf_file, config_file
-   character(len=file_length)       :: geo_file, loc_file, alb_file
+   type(preproc_paths_t)            :: out_paths
+   type(setup_args_t)               :: granule
 
    type(channel_info_t)             :: channel_info
 
@@ -521,135 +490,76 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
    ! Initialise satellite position string
    global_atts%Satpos_Metadata = 'null'
 
-   ! if more than one argument passed, all inputs on command line
-   if (nargs .gt. 1) then
-      if (nargs .lt. 47) then
-         write(*,*) 'ERROR: not enough command line arguments: ', nargs
-         stop error_stop_code
-      end if
-
-      call get_command_argument(1, sensor)
-      call get_command_argument(2, l1b_path_file)
-      call get_command_argument(3, geo_path_file)
-      call get_command_argument(4, usgs_path_file)
-      call get_command_argument(5, preproc_opts%ecmwf_path(1))
-      call get_command_argument(6, rttov_coef_path)
-      call get_command_argument(7, rttov_emiss_path)
-      call get_command_argument(8, nise_ice_snow_path)
-      call get_command_argument(9, modis_albedo_path)
-      call get_command_argument(10, modis_brdf_path)
-      call get_command_argument(11, cimss_emiss_path)
-      call get_command_argument(12, cdellon)
-      call get_command_argument(13, cdellat)
-      call get_command_argument(14, output_path)
-      call get_command_argument(15, cstartx)
-      call get_command_argument(16, cendx)
-      call get_command_argument(17, cstarty)
-      call get_command_argument(18, cendy)
-      call get_command_argument(19, global_atts%NetCDF_Version)
-      call get_command_argument(20, global_atts%Conventions)
-      call get_command_argument(21, global_atts%institution)
-      call get_command_argument(22, global_atts%L2_Processor)
-      call get_command_argument(23, global_atts%Creator_Email)
-      call get_command_argument(24, global_atts%Creator_url)
-      call get_command_argument(25, global_atts%file_version)
-      call get_command_argument(26, global_atts%references)
-      call get_command_argument(27, global_atts%history)
-      call get_command_argument(28, global_atts%Summary)
-      call get_command_argument(29, global_atts%Keywords)
-      call get_command_argument(30, global_atts%comment)
-      call get_command_argument(31, global_atts%Project)
-      call get_command_argument(32, global_atts%License)
-      call get_command_argument(33, global_atts%UUID)
-      call get_command_argument(34, global_atts%Production_Time)
-      call get_command_argument(35, aatsr_calib_path_file)
-      call get_command_argument(36, cecmwf_flag)
-      call get_command_argument(37, preproc_opts%ecmwf_path2(1))
-      call get_command_argument(38, preproc_opts%ecmwf_path3(1))
-      call get_command_argument(39, cchunkproc)
-      call get_command_argument(40, cday_night)
-      call get_command_argument(41, cverbose)
-      call get_command_argument(42, cdummy_arg)
-      call get_command_argument(43, cassume_full_paths)
-      call get_command_argument(44, cinclude_full_brdf)
-      call get_command_argument(45, global_atts%rttov_version)
-      call get_command_argument(46, global_atts%ecmwf_version)
-      call get_command_argument(47, global_atts%svn_version)
-      do i = 48, nargs
-         call get_command_argument(i, line)
-         call parse_line(line, value, label)
-         call clean_driver_label(label)
-         call parse_optional(label, value, preproc_opts)
-      end do
+   if (nargs .eq. 1) then
+      ! if just one argument => this is a driver file
+      call get_command_argument(1, driver_path_file)
+   else if (nargs .eq. -1) then
+      index_space = index(driver_path_file, " ")
+      driver_path_file = driver_path_file(1:(index_space-1))
+      write(*,*) 'inside preproc: ', trim(adjustl(driver_path_file))
    else
-
-      if (nargs .eq. 1) then
-         ! if just one argument => this is a driver file
-         call get_command_argument(1, driver_path_file)
-      else if (nargs .eq. -1) then
-         index_space = index(driver_path_file, " ")
-         driver_path_file = driver_path_file(1:(index_space-1))
-         write(*,*) 'inside preproc: ', trim(adjustl(driver_path_file))
-      end if
-
-      open(11, file=trim(adjustl(driver_path_file)), status='old', &
-           form='formatted')
-
-      call parse_required(11, sensor,                      'sensor')
-      call parse_required(11, l1b_path_file,               'l1b_path_file')
-      call parse_required(11, geo_path_file,               'geo_path_file')
-      call parse_required(11, usgs_path_file,              'usgs_path_file')
-      call parse_required(11, preproc_opts%ecmwf_path(1),  'ecmwf_path')
-      call parse_required(11, rttov_coef_path,             'rttov_coef_path')
-      call parse_required(11, rttov_emiss_path,            'rttov_emiss_path')
-      call parse_required(11, nise_ice_snow_path,          'nise_ice_snow_path')
-      call parse_required(11, modis_albedo_path,           'modis_albedo_path')
-      call parse_required(11, modis_brdf_path,             'modis_brdf_path')
-      call parse_required(11, cimss_emiss_path,            'cimss_emiss_path')
-      call parse_required(11, cdellon,                     'cdellon')
-      call parse_required(11, cdellat,                     'cdellat')
-      call parse_required(11, output_path,                 'output_path')
-      call parse_required(11, cstartx,                     'cstartx')
-      call parse_required(11, cendx,                       'cendx')
-      call parse_required(11, cstarty,                     'cstarty')
-      call parse_required(11, cendy,                       'cendy')
-      call parse_required(11, global_atts%NetCDF_Version,  'NetCDF_Version')
-      call parse_required(11, global_atts%Conventions,     'Conventions')
-      call parse_required(11, global_atts%Institution,     'Institution')
-      call parse_required(11, global_atts%L2_Processor,    'L2_Processor')
-      call parse_required(11, global_atts%Creator_Email,   'Creator_Email')
-      call parse_required(11, global_atts%Creator_URL,     'Creator_URL')
-      call parse_required(11, global_atts%file_version,    'file_version')
-      call parse_required(11, global_atts%References,      'References')
-      call parse_required(11, global_atts%History,         'History')
-      call parse_required(11, global_atts%Summary,         'Summary')
-      call parse_required(11, global_atts%Keywords,        'Keywords')
-      call parse_required(11, global_atts%Comment,         'Comment')
-      call parse_required(11, global_atts%Project,         'Project')
-      call parse_required(11, global_atts%License,         'License')
-      call parse_required(11, global_atts%UUID,            'UUID')
-      call parse_required(11, global_atts%Production_Time, 'Production_Time')
-      call parse_required(11, aatsr_calib_path_file,       'aatsr_calib_path_file')
-      call parse_required(11, cecmwf_flag,                 'cecmwf_flag')
-      call parse_required(11, preproc_opts%ecmwf_path2(1), 'ecmwf_path2')
-      call parse_required(11, preproc_opts%ecmwf_path3(1), 'ecmwf_path3')
-      call parse_required(11, cchunkproc,                  'cchunkproc')
-      call parse_required(11, cday_night,                  'cday_night')
-      call parse_required(11, cverbose,                    'cverbose')
-      call parse_required(11, cdummy_arg,                  'cdummy_arg')
-      call parse_required(11, cassume_full_paths,          'cassume_full_paths')
-      call parse_required(11, cinclude_full_brdf,          'cinclude_full_brdf')
-      call parse_required(11, global_atts%RTTOV_Version,   'RTTOV_Version')
-      call parse_required(11, global_atts%ECMWF_Version,   'ECMWF_Version')
-      call parse_required(11, global_atts%SVN_Version,     'SVN_Version')
-
-      do while (parse_driver(11, value, label) == 0)
-        call clean_driver_label(label)
-        call parse_optional(label, value, preproc_opts)
-      end do
-
-      close(11)
+      write(*,*) 'ERROR: Only expected argument is the driver file path'
+      stop error_stop_code
    end if
+
+   open(11, file=trim(adjustl(driver_path_file)), status='old', &
+        form='formatted')
+
+   call parse_required(11, granule%sensor,              'sensor')
+   call parse_required(11, granule%l1b_file,            'l1b_path_file')
+   call parse_required(11, granule%geo_file,            'geo_path_file')
+   call parse_required(11, usgs_path_file,              'usgs_path_file')
+   call parse_required(11, preproc_opts%ecmwf_path(1),  'ecmwf_path')
+   call parse_required(11, rttov_coef_path,             'rttov_coef_path')
+   call parse_required(11, rttov_emiss_path,            'rttov_emiss_path')
+   call parse_required(11, nise_ice_snow_path,          'nise_ice_snow_path')
+   call parse_required(11, modis_albedo_path,           'modis_albedo_path')
+   call parse_required(11, modis_brdf_path,             'modis_brdf_path')
+   call parse_required(11, cimss_emiss_path,            'cimss_emiss_path')
+   call parse_required(11, cdellon,                     'cdellon')
+   call parse_required(11, cdellat,                     'cdellat')
+   call parse_required(11, output_path,                 'output_path')
+   call parse_required(11, cstartx,                     'cstartx')
+   call parse_required(11, cendx,                       'cendx')
+   call parse_required(11, cstarty,                     'cstarty')
+   call parse_required(11, cendy,                       'cendy')
+   call parse_required(11, global_atts%NetCDF_Version,  'NetCDF_Version')
+   call parse_required(11, global_atts%Conventions,     'Conventions')
+   call parse_required(11, global_atts%Institution,     'Institution')
+   call parse_required(11, global_atts%L2_Processor,    'L2_Processor')
+   call parse_required(11, global_atts%Creator_Email,   'Creator_Email')
+   call parse_required(11, global_atts%Creator_URL,     'Creator_URL')
+   call parse_required(11, global_atts%file_version,    'file_version')
+   call parse_required(11, global_atts%References,      'References')
+   call parse_required(11, global_atts%History,         'History')
+   call parse_required(11, global_atts%Summary,         'Summary')
+   call parse_required(11, global_atts%Keywords,        'Keywords')
+   call parse_required(11, global_atts%Comment,         'Comment')
+   call parse_required(11, global_atts%Project,         'Project')
+   call parse_required(11, global_atts%License,         'License')
+   call parse_required(11, global_atts%UUID,            'UUID')
+   call parse_required(11, global_atts%Production_Time, 'Production_Time')
+   call parse_required(11, aatsr_calib_path_file,       'aatsr_calib_path_file')
+   call parse_required(11, cecmwf_flag,                 'cecmwf_flag')
+   call parse_required(11, preproc_opts%ecmwf_path2(1), 'ecmwf_path2')
+   call parse_required(11, preproc_opts%ecmwf_path3(1), 'ecmwf_path3')
+   call parse_required(11, cchunkproc,                  'cchunkproc')
+   call parse_required(11, cday_night,                  'cday_night')
+   call parse_required(11, cverbose,                    'cverbose')
+   call parse_required(11, cdummy_arg,                  'cdummy_arg')
+   call parse_required(11, cassume_full_paths,          'cassume_full_paths')
+   call parse_required(11, cinclude_full_brdf,          'cinclude_full_brdf')
+   call parse_required(11, global_atts%RTTOV_Version,   'RTTOV_Version')
+   call parse_required(11, global_atts%ECMWF_Version,   'ECMWF_Version')
+   call parse_required(11, global_atts%SVN_Version,     'SVN_Version')
+
+   do while (parse_driver(11, value, label) == 0)
+      call clean_driver_label(label)
+      call parse_optional(label, value, preproc_opts)
+   end do
+
+   close(11)
+
    ! Set this since it was removed from the command line but not removed from
    ! the global attributes.
    global_atts%L2_Processor_Version = '1.0'
@@ -659,15 +569,15 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
       call handle_parse_error('dellon')
    if (parse_string(cdellat, preproc_dims%dellat) /= 0) &
       call handle_parse_error('dellat')
-   if (parse_string(cstartx, startx) /= 0) &
+   if (parse_string(cstartx, granule%startx) /= 0) &
       call handle_parse_error('startx')
-   if (parse_string(cendx, endx) /= 0) &
+   if (parse_string(cendx, granule%endx) /= 0) &
       call handle_parse_error('endx')
-   if (parse_string(cstarty, starty) /= 0) &
+   if (parse_string(cstarty, granule%starty) /= 0) &
       call handle_parse_error('starty')
-   if (parse_string(cendy, endy) /= 0) &
+   if (parse_string(cendy, granule%endy) /= 0) &
       call handle_parse_error('endy')
-   if (parse_string(cday_night, day_night)   /= 0) &
+   if (parse_string(cday_night, granule%day_night)   /= 0) &
       call handle_parse_error('day_night')
    if (parse_string(cecmwf_flag, ecmwf_flag) /= 0) &
       call handle_parse_error('ecmwf_flag')
@@ -711,27 +621,27 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
 !  stop
 
    ! initialise some counts, offset variables...
-   along_track_offset = 0
-   along_track_offset2 = 0
-   n_along_track2 = 0
+   granule%along_track_offset = 0
+   granule%along_track_offset2 = 0
+   granule%n_along_track2 = 0
    imager_angles%nviews = 1
 
    ! determine platform, day, time, check if l1b and geo match
    if (verbose) &
       write(*,*) 'Determine platform, day, time, check if l1b and geo match'
-   inquire(file=l1b_path_file, exist=check)
+   inquire(file=granule%l1b_file, exist=check)
    if (.not. check) then
-      write(*,*) 'ERROR: L1B file does not exist: ', trim(l1b_path_file)
+      write(*,*) 'ERROR: L1B file does not exist: ', trim(granule%l1b_file)
       stop error_stop_code
    end if
-   inquire(file=geo_path_file, exist=check)
+   inquire(file=granule%geo_file, exist=check)
    if (.not. check) then
-      write(*,*) 'ERROR: GEO file does not exist: ', trim(geo_path_file)
+      write(*,*) 'ERROR: GEO file does not exist: ', trim(granule%geo_file)
       stop error_stop_code
    end if
 
-   source_atts%level1b_file         = l1b_path_file
-   source_atts%geo_file             = geo_path_file
+   source_atts%level1b_file         = granule%l1b_file
+   source_atts%geo_file             = granule%geo_file
    ! Set default values for fields that some instruments setups do not set yet
    source_atts%level1b_version      = 'null'
    source_atts%level1b_orbit_number = 'null'
@@ -743,225 +653,108 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
    source_atts%snow_file            = 'null'
    source_atts%sea_ice_file         = 'null'
 
-   if (trim(adjustl(sensor)) .eq. 'AATSR' .or. &
-       trim(adjustl(sensor)) .eq. 'ATSR2') then
-      call setup_aatsr(l1b_path_file, geo_path_file, platform, sensor, year, month, &
-           day, doy, hour, minute, cyear, cmonth, cday, cdoy, chour, cminute, &
-           preproc_opts%channel_ids, channel_info, verbose)
-
-      loc_limit = (/ -90.0, -180.0, 90.0, 180.0 /)
-
-      ! initialise the second length and offset variables
-
-      ! Get array dimensions and along-track offset for the daylight side. If
-      ! we're processing daylight data, we may want to chunk process after this.
-      call read_aatsr_dimensions(l1b_path_file, n_across_track, &
-           n_along_track, along_track_offset, day_night, loc_limit, &
-           n_along_track2, along_track_offset2, verbose)
-
-   else if (trim(adjustl(sensor)) .eq. 'ABI') then
-      call setup_abi(l1b_path_file, geo_path_file, platform, year, month, day, &
-           doy, hour, minute, cyear, cmonth, cday, cdoy, chour, cminute, preproc_opts%channel_ids, &
-           channel_info, verbose)
-
-      ! Get dimensions of the ABI image.
-      call read_abi_dimensions(geo_path_file, n_across_track, n_along_track, &
-           verbose)
-
-   else if (trim(adjustl(sensor)) .eq. 'AGRI') then
-      call setup_agri(l1b_path_file, geo_path_file, platform, year, month, day, &
-           doy, hour, minute, cyear, cmonth, cday, cdoy, chour, cminute, preproc_opts%channel_ids, &
-           channel_info, verbose)
-      ! Get dimensions of the AGRI image.
-      ! At present only full-disk images are supported
-      call read_agri_dimensions(geo_path_file, n_across_track, n_along_track, &
-           verbose)
-
-   else if (trim(adjustl(sensor)) .eq. 'AHI') then
-      call setup_ahi(l1b_path_file, geo_path_file, platform, year, month, day, &
-           doy, hour, minute, cyear, cmonth, cday, cdoy, chour, cminute, preproc_opts%channel_ids, &
-           channel_info, verbose)
-
-      ! Get dimensions of the AHI image.
-      ! At present only full-disk images are supported
-      call read_himawari_dimensions(geo_path_file, n_across_track, n_along_track, &
-           verbose)
-
-   else if (trim(adjustl(sensor)) .eq. 'AVHRR') then
-      call setup_avhrr(l1b_path_file, geo_path_file, platform, year, month, day, &
-           doy, hour, minute, cyear, cmonth, cday, cdoy, chour, cminute, preproc_opts%channel_ids, &
-           channel_info, verbose)
-
-      ! get dimensions of the avhrr orbit
-      call read_avhrr_dimensions(geo_path_file, n_across_track, n_along_track)
-!   else if (trim(adjustl(sensor)) .eq. 'GIMG') then
-!      call setup_goes_imager(l1b_path_file, geo_path_file, platform, year, month, day, &
-!           doy, hour, minute, cyear, cmonth, cday, cdoy, chour, cminute, preproc_opts%channel_ids, &
-!           channel_info, verbose)
-
-!      ! Get dimensions of the GOES-Imager image.
-!      call read_goes_imager_dimensions(geo_path_file, n_across_track, n_along_track, &
-!                                    startx, endx, starty, endy, verbose)
-
-   else if (trim(adjustl(sensor)) .eq. 'MODIS') then
-      call setup_modis(l1b_path_file, geo_path_file, platform, year, month, day, &
-           doy, hour, minute, cyear, cmonth, cday, cdoy, chour, cminute, preproc_opts%channel_ids, &
-           channel_info, verbose)
-
-      ! get dimensions of the modis granule
-      call read_modis_dimensions(geo_path_file, n_across_track, n_along_track)
-
-   else if (trim(adjustl(sensor)) .eq. 'SEVIRI') then
-      call setup_seviri(l1b_path_file, geo_path_file, platform, year, month, day, &
-           doy, hour, minute, cyear, cmonth, cday, cdoy, chour, cminute, preproc_opts%channel_ids, &
-           channel_info, verbose)
-
-      ! get dimensions of the seviri image.
-      ! For SEVIRI the native level 1.5 image data can come as a subimage of the
-      ! the full disk image. Regardless, n_across_track and n_along_track are
-      ! set to the constant dimensions of a full disk image as it is convenient
-      ! to operate relative to the full disk. startx, endx, starty, endy are
-      ! assumed to be given relative to the full disk. As a result, if they are
-      ! not being used (not all > 0) then they will be set to the actual image
-      ! in the image file and if they are being used (all > 0) then they need to
-      ! be checked independently relative to the actual image, both done in the
-      ! following call.
-      call read_seviri_dimensions(geo_path_file, n_across_track, n_along_track, &
-           startx, endx, starty, endy, verbose)
-
-   else if (trim(adjustl(sensor)) .eq. 'SLSTR') then
-      call setup_slstr(l1b_path_file, geo_path_file, source_atts, platform, &
-           year, month, day, doy, hour, minute, cyear, cmonth, cday, cdoy, chour, cminute, &
-           preproc_opts%channel_ids, channel_info, verbose)
-
-      ! Get dimensions of the SLSTR image.
-      ! At present the full scene will always be processed
-      call read_slstr_dimensions(l1b_path_file, n_across_track, n_along_track, &
-           verbose)
-
-   else if (trim(adjustl(sensor)) .eq. 'VIIRSI') then
-      call setup_viirs_iband(l1b_path_file, geo_path_file, platform, year, month, day, &
-           doy, hour, minute, cyear, cmonth, cday, cdoy, chour, cminute, preproc_opts%channel_ids, &
-           channel_info, verbose)
-
-      ! Get dimensions of the VIIRS image.
-      ! At present the full scene will always be processed
-      call read_viirs_iband_dimensions(geo_path_file, n_across_track, n_along_track, &
-           verbose)
-
-   else if (trim(adjustl(sensor)) .eq. 'VIIRSM') then
-      call setup_viirs_mband(l1b_path_file, geo_path_file, platform, year, month, day, &
-           doy, hour, minute, cyear, cmonth, cday, cdoy, chour, cminute, preproc_opts%channel_ids, &
-           channel_info, verbose)
-
-      ! Get dimensions of the VIIRS image.
-      ! At present the full scene will always be processed
-      call read_viirs_mband_dimensions(geo_path_file, n_across_track, n_along_track, &
-           verbose)
-
-   else
-      write(*,*) 'ERROR: Invalid sensor: ', trim(adjustl(sensor))
-      stop error_stop_code
-
-   end if ! end of sensor selection
+   call setup_imager(granule, preproc_opts, source_atts, channel_info, verbose)
 
    ! We now have the number of viewing geometries. Put this in imager_angles
    imager_angles%nviews = channel_info%nviews
 
    if (verbose) then
-      write(*,*) 'WE ARE PROCESSING ', trim(platform), ' FOR ORBIT', &
-           year, month, day, hour, minute
+      write(*,*) 'WE ARE PROCESSING ', trim(granule%platform), ' FOR ORBIT', &
+           granule%year, granule%month, granule%day, granule%hour, granule%minute
       write(*,*) 'File dimensions determined:'
-      write(*,*) 'n_across_track:      ', n_across_track
-      write(*,*) 'along_track_offset:  ', along_track_offset
-      write(*,*) 'n_along_track:       ', n_along_track
-      if ((trim(adjustl(sensor)) .eq. 'AATSR' .or. &
-           trim(adjustl(sensor)) .eq. 'ATSR2') .and. day_night .eq. 2) then
-         write(*,*) 'along_track_offset2: ', along_track_offset2
-         write(*,*) 'n_along_track2:      ', n_along_track2
+      write(*,*) 'n_across_track:      ', granule%n_across_track
+      write(*,*) 'along_track_offset:  ', granule%along_track_offset
+      write(*,*) 'n_along_track:       ', granule%n_along_track
+      if ((trim(adjustl(granule%sensor)) .eq. 'AATSR' .or. &
+           trim(adjustl(granule%sensor)) .eq. 'ATSR2') .and. &
+           granule%day_night .eq. 2) then
+         write(*,*) 'along_track_offset2: ', granule%along_track_offset2
+         write(*,*) 'n_along_track2:      ', granule%n_along_track2
       end if
    end if
 
    ! determine processing chunks and their dimensions
    if (verbose) write(*,*) 'Determine processing chunks and their dimensions'
 
-   if (startx.ge.1 .and. endx.ge.1 .and. starty.ge.1 .and. endy.ge.1) then
-      if ( trim(adjustl(sensor)) .eq. 'ABI'    .or. &
-           trim(adjustl(sensor)) .eq. 'AGRI'   .or. &
-           trim(adjustl(sensor)) .eq. 'AHI'    .or. &
-           trim(adjustl(sensor)) .eq. 'VIIRSI' .or. &
-           trim(adjustl(sensor)) .eq. 'VIIRSM') then
-         write(*,*) 'ERROR: subsetting not supported for ', trim(sensor)
+   if (granule%startx.ge.1 .and. granule%endx.ge.1 .and. &
+        granule%starty.ge.1 .and. granule%endy.ge.1) then
+      if ( trim(adjustl(granule%sensor)) .eq. 'ABI'    .or. &
+           trim(adjustl(granule%sensor)) .eq. 'AGRI'   .or. &
+           trim(adjustl(granule%sensor)) .eq. 'VIIRSI' .or. &
+           trim(adjustl(granule%sensor)) .eq. 'VIIRSM') then
+         write(*,*) 'ERROR: subsetting not supported for ', trim(granule%sensor)
          stop error_stop_code
       end if
-      if (startx.gt.n_across_track) then
+      if (granule%startx.gt.granule%n_across_track) then
          write(*,*) 'ERROR: invalid startx (across track dimensions)'
-         write(*,*) '       Should be < ', n_across_track
+         write(*,*) '       Should be < ', granule%n_across_track
          stop error_stop_code
       end if
-      if (startx.gt.endx) then
+      if (granule%startx.gt.granule%endx) then
          write(*,*) 'ERROR: invalid startx (across track dimensions)'
-         write(*,*) '       Should be < endx', endx
+         write(*,*) '       Should be < endx', granule%endx
          stop error_stop_code
       end if
-      if (endx.gt.n_across_track) then
+      if (granule%endx.gt.granule%n_across_track) then
          write(*,*) 'ERROR: invalid endx (across track dimensions)'
-         write(*,*) '       Should be < ', n_across_track
+         write(*,*) '       Should be < ', granule%n_across_track
          stop error_stop_code
       end if
-      if ((trim(adjustl(sensor)) .eq. 'AATSR' .or. &
-           trim(adjustl(sensor)) .eq. 'ATSR2') .and. day_night .eq. 2) then
-         along_pos = along_track_offset2 + n_along_track2
+      if ((trim(adjustl(granule%sensor)) .eq. 'AATSR' .or. &
+           trim(adjustl(granule%sensor)) .eq. 'ATSR2') .and. &
+           granule%day_night .eq. 2) then
+         along_pos = granule%along_track_offset2 + granule%n_along_track2
       else
-         along_pos = along_track_offset + n_along_track
+         along_pos = granule%along_track_offset + granule%n_along_track
       end if
-      if (starty.gt.along_pos) then
+      if (granule%starty.gt.along_pos) then
          write(*,*) 'ERROR: invalid starty (along track dimensions)'
          write(*,*) '       Should be < ', along_pos
          stop error_stop_code
       end if
-       if (starty.gt.endy) then
+       if (granule%starty.gt.granule%endy) then
          write(*,*) 'ERROR: invalid starty (along track dimensions)'
-         write(*,*) '       Should be < endy ', endy
+         write(*,*) '       Should be < endy ', granule%endy
          stop error_stop_code
       end if
-     if (endy.gt.along_pos) then
+     if (granule%endy.gt.along_pos) then
          write(*,*) 'ERROR: invalid endy (along track dimensions)'
          write(*,*) '       Should be < ', along_pos
          stop error_stop_code
       end if
 
       ! use specified values
-      imager_geolocation%startx = startx
-      imager_geolocation%endx   = endx
+      imager_geolocation%startx = granule%startx
+      imager_geolocation%endx   = granule%endx
 
       n_chunks = 1
 
       allocate(chunk_starts(n_chunks))
       allocate(chunk_ends(n_chunks))
 
-      chunk_starts(1) = starty
-      chunk_ends(1)   = endy
+      chunk_starts(1) = granule%starty
+      chunk_ends(1)   = granule%endy
    else
       imager_geolocation%startx = 1
-      imager_geolocation%endx = n_across_track
+      imager_geolocation%endx = granule%n_across_track
 
       if (chunkproc) then
          chunksize = 4096
       else
-         chunksize = n_along_track + n_along_track2
+         chunksize = granule%n_along_track + granule%n_along_track2
       end if
 
       n_segments = 1
-      segment_starts(1) = along_track_offset + 1
-      segment_ends(1)   = along_track_offset + n_along_track
+      segment_starts(1) = granule%along_track_offset + 1
+      segment_ends(1)   = granule%along_track_offset + granule%n_along_track
 
-      if ((trim(adjustl(sensor)) .eq. 'AATSR' .or. &
-           trim(adjustl(sensor)) .eq. 'ATSR2') .and. day_night .eq. 2) then
+      if ((trim(adjustl(granule%sensor)) .eq. 'AATSR' .or. &
+           trim(adjustl(granule%sensor)) .eq. 'ATSR2') .and. &
+           granule%day_night .eq. 2) then
          n_segments = n_segments + 1
 
-         segment_starts(n_segments) = along_track_offset2 + 1
-         segment_ends(n_segments)   = along_track_offset2 + n_along_track2
+         segment_starts(n_segments) = granule%along_track_offset2 + 1
+         segment_ends(n_segments)   = granule%along_track_offset2 + granule%n_along_track2
       end if
 
       n_chunks = calc_n_chunks(n_segments, segment_starts, segment_ends, &
@@ -1013,16 +806,14 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
 
       ! read imager data:
       if (verbose) write(*,*) 'Read imager data'
-      call read_imager(sensor, platform, l1b_path_file, geo_path_file, &
-           aatsr_calib_path_file, preproc_opts%ext_geo_path, imager_geolocation, &
-           imager_angles, imager_flags, imager_time, imager_measurements, &
-           channel_info, n_along_track, preproc_opts%use_l1_land_mask, preproc_opts%use_predef_geo, &
-           preproc_opts%do_gsics, global_atts, verbose)
+      call read_imager(granule, preproc_opts, aatsr_calib_path_file, &
+           imager_geolocation, imager_angles, imager_flags, imager_time, &
+           imager_measurements, channel_info, global_atts, verbose)
 
 #ifdef WRAPPER
       ! do not process this orbit if no valid lat/lon data available
       mask =  imager_geolocation%latitude.gt.sreal_fill_value .and. &
-           imager_geolocation%longitude.gt.sreal_fill_value
+              imager_geolocation%longitude.gt.sreal_fill_value
       if (.not. any(mask)) then
          write(*,*) "any mask: ", any(mask)
          write(*,*) "maxval lat/lon:", maxval(imager_geolocation%latitude), &
@@ -1036,14 +827,9 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
       ! information, set paths and filenames to those required auxiliary /
       ! ancillary input...
       if (verbose) write(*,*) 'Carry out any preparatory steps'
-      call preparation(lwrtm_file, swrtm_file, prtm_file, config_file, msi_file, &
-           cf_file, lsf_file, geo_file, loc_file, alb_file, sensor, platform, &
-           preproc_opts%product_name, cyear, cmonth, cday, chour, cminute, &
-           source_atts%level1b_orbit_number, preproc_opts%ecmwf_path, preproc_opts%ecmwf_path_hr, &
-           preproc_opts%ecmwf_path2, preproc_opts%ecmwf_path3, preproc_opts%ecmwf_path_file, preproc_opts%ecmwf_HR_path_file, &
-           preproc_opts%ecmwf_path_file2, preproc_opts%ecmwf_path_file3, global_atts, ecmwf_flag, &
-           preproc_opts%ecmwf_time_int_method, imager_geolocation, imager_time, &
-           i_chunk, ecmwf_time_int_fac, assume_full_paths, verbose)
+      call preparation(out_paths, granule, preproc_opts, global_atts, &
+           source_atts%level1b_orbit_number, ecmwf_flag, imager_geolocation, &
+           imager_time, i_chunk, ecmwf_time_int_fac, assume_full_paths, verbose)
 
       ! read ECMWF fields and grid information
       if (verbose) then
@@ -1146,17 +932,17 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
       if (verbose) write(*,*) 'Reading USGS path: ', trim(usgs_path_file)
       call get_USGS_data(usgs_path_file, imager_flags, imager_geolocation, &
            usgs, assume_full_paths, preproc_opts%use_l1_land_mask, source_atts, &
-           preproc_opts%use_predef_lsm, sensor, verbose)
+           preproc_opts%use_predef_lsm, granule%sensor, verbose)
 
       ! select correct emissivity file and calculate the emissivity over land
       if (verbose) write(*,*) 'Get surface emissivity'
       if (.not. preproc_opts%use_camel_emis) then
-         call get_surface_emissivity(cyear, cdoy, cimss_emiss_path, imager_flags, &
-              imager_geolocation, channel_info, preproc_dims, &
+         call get_surface_emissivity(granule%cyear, granule%cdoy, cimss_emiss_path, &
+              imager_flags, imager_geolocation, channel_info, preproc_dims, &
               assume_full_paths, verbose, surface, preproc_surf, source_atts)
       else
-         call get_camel_emissivity(cyear, cmonth, cimss_emiss_path, imager_flags, &
-              imager_geolocation, channel_info, preproc_dims, &
+         call get_camel_emissivity(granule%cyear, granule%cmonth, cimss_emiss_path, &
+              imager_flags, imager_geolocation, channel_info, preproc_dims, &
               assume_full_paths, verbose, surface, preproc_surf, source_atts)
       end if
 
@@ -1164,7 +950,7 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
          ! select correct reflectance files and calculate surface reflectance
          ! over land and ocean
          if (verbose) write(*,*) 'Get surface reflectance'
-         call get_surface_reflectance(cyear, cdoy, cmonth, &
+         call get_surface_reflectance(granule%cyear, granule%cdoy, granule%cmonth, &
               modis_albedo_path, modis_brdf_path, preproc_opts%occci_path, imager_flags, &
               imager_geolocation, imager_angles, channel_info, ecmwf, &
               assume_full_paths, include_full_brdf, preproc_opts%use_occci, &
@@ -1178,7 +964,7 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
          if (.not. preproc_opts%disable_snow_ice_corr) then
             if (.not. preproc_opts%use_ecmwf_snow_and_ice) then
                call correct_for_ice_snow(nise_ice_snow_path, &
-                    imager_geolocation, surface, cyear, cmonth, cday, &
+                    imager_geolocation, surface, granule%cyear, granule%cmonth, granule%cday, &
                     channel_info, assume_full_paths, include_full_brdf, &
                     source_atts, verbose)
             else
@@ -1204,14 +990,14 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
               'resolution ERA surface data'
          if (preproc_opts%do_cloud_type) then
             if (.not. preproc_opts%use_hr_ecmwf) then
-               call cloud_type(channel_info, sensor, surface, imager_flags, &
+               call cloud_type(channel_info, granule%sensor, surface, imager_flags, &
                     imager_angles, imager_geolocation, imager_measurements, &
-                    imager_pavolonis, ecmwf, platform, doy, preproc_opts%do_ironly, &
+                    imager_pavolonis, ecmwf, granule%platform, granule%doy, preproc_opts%do_ironly, &
                     do_spectral_response_correction, verbose)
             else
-               call cloud_type(channel_info, sensor, surface, imager_flags, &
+               call cloud_type(channel_info, granule%sensor, surface, imager_flags, &
                     imager_angles, imager_geolocation, imager_measurements, &
-                    imager_pavolonis, ecmwf_HR, platform, doy, preproc_opts%do_ironly, &
+                    imager_pavolonis, ecmwf_HR, granule%platform, granule%doy, preproc_opts%do_ironly, &
                     do_spectral_response_correction, verbose)
             end if
          end if
@@ -1221,9 +1007,9 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
          ! A temporary hack for Aerosol_cci:
          ! Due to the cloud masking being very effective at detecting dust,
          ! we'll try and re-introduce it
-         if (trim(adjustl(sensor)) .eq. 'AATSR' .or. &
-            trim(adjustl(sensor)) .eq. 'ATSR2' .or. &
-            trim(adjustl(sensor)) .eq. 'SLSTR') then
+         if (trim(adjustl(granule%sensor)) .eq. 'AATSR' .or. &
+            trim(adjustl(granule%sensor)) .eq. 'ATSR2' .or. &
+            trim(adjustl(granule%sensor)) .eq. 'SLSTR') then
             if (1 .eq. 1 .and. &
                  minval(imager_geolocation%latitude)  .lt.  40.0 .and. &
                  maxval(imager_geolocation%latitude)  .gt.   0.0 .and. &
@@ -1275,42 +1061,45 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
       if (verbose) write(*,*) 'Create output netcdf files'
       if (verbose) write(*,*) 'output_path: ', trim(output_path)
 
-      call netcdf_output_create(output_path, lwrtm_file, swrtm_file, prtm_file, &
-           config_file, msi_file, cf_file, lsf_file, geo_file, loc_file, alb_file, &
-           platform, sensor, global_atts, source_atts, cyear, cmonth, cday, chour, &
-           cminute, preproc_dims, imager_angles, imager_geolocation, netcdf_info, &
-           channel_info, include_full_brdf, ecmwf_flag, preproc_opts%do_cloud_emis, verbose)
+      call netcdf_output_create(output_path, out_paths, granule, global_atts, &
+           source_atts, preproc_dims, imager_angles, imager_geolocation, &
+           netcdf_info, channel_info, include_full_brdf, ecmwf_flag, &
+           preproc_opts%do_cloud_emis, verbose)
 
       ! perform RTTOV calculations
       if (verbose) write(*,*) 'Perform RTTOV calculations'
       if (ecmwf_flag .gt. 5 .and. ecmwf_flag .le. 8) then
-         call rttov_driver_gfs(rttov_coef_path, rttov_emiss_path, sensor, &
-              platform, preproc_dims, preproc_geoloc, preproc_geo, preproc_prtm, &
-              preproc_surf, preproc_cld, netcdf_info, channel_info, year, month, &
-              day, preproc_opts%use_modis_emis_in_rttov, preproc_opts%do_cloud_emis, preproc_opts%do_co2, verbose)
+         call rttov_driver_gfs(rttov_coef_path, rttov_emiss_path, granule, &
+              preproc_dims, preproc_geoloc, preproc_geo, preproc_prtm, &
+              preproc_surf, preproc_cld, netcdf_info, channel_info, &
+              preproc_opts, verbose)
          ! Call cloud emissivity function
 #ifdef INCLUDE_SATWX
          if (preproc_opts%do_cloud_emis) then
             call get_cloud_emis(channel_info, imager_measurements, &
                   imager_geolocation, preproc_dims, preproc_geoloc, &
-                  preproc_cld, preproc_prtm, imager_cloud, ecmwf, sensor, verbose)
+                  preproc_cld, preproc_prtm, imager_cloud, ecmwf, &
+                  granule%sensor, verbose)
          end if
 #endif
       else
 #ifdef INCLUDE_SATWX
          if (preproc_opts%do_cloud_emis) call get_trop_tp(preproc_prtm, preproc_dims)
 #endif
-         call rttov_driver(rttov_coef_path, rttov_emiss_path, sensor, platform, &
+         call rttov_driver(rttov_coef_path, rttov_emiss_path, granule, &
               preproc_dims, preproc_geoloc, preproc_geo, preproc_prtm, &
-              preproc_surf, preproc_cld, netcdf_info, channel_info, year, month, day, &
-              preproc_opts%use_modis_emis_in_rttov, preproc_opts%do_cloud_emis, preproc_opts%do_co2, verbose)
+              preproc_surf, preproc_cld, netcdf_info, channel_info, &
+              preproc_opts, verbose)
          ! Call cloud emissivity function
          if (preproc_opts%do_cloud_emis) then
 #ifdef INCLUDE_SATWX
             call get_cloud_emis(channel_info, imager_measurements, &
                   imager_geolocation, preproc_dims, preproc_geoloc, &
-                  preproc_cld, preproc_prtm, imager_cloud, ecmwf, sensor, verbose)
-            call do_cb_detect(channel_info, imager_measurements, imager_geolocation, imager_cloud, imager_pavolonis, sensor, verbose)
+                  preproc_cld, preproc_prtm, imager_cloud, ecmwf, &
+                  granule%sensor, verbose)
+            call do_cb_detect(channel_info, imager_measurements, &
+                 imager_geolocation, imager_cloud, imager_pavolonis, &
+                 granule%sensor, verbose)
 #else
             write(*,*) "ERROR: Cannot compute cloud emissivity and CB locations without SatWx."
 #endif
@@ -1340,9 +1129,7 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
 
          ! check whether output files are corrupt
          if (verbose) write(*,*)'Check whether output files are corrupt'
-         call netcdf_output_check(output_path, lwrtm_file, swrtm_file, prtm_file, &
-              config_file, msi_file, cf_file, lsf_file, geo_file, loc_file, alb_file, &
-              corrupt, verbose)
+         call netcdf_output_check(output_path, out_paths, corrupt, verbose)
 
          ! exit loop if output files are not corrupt, else try writing again
          if (.not. corrupt) then
@@ -1352,12 +1139,11 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
             write(*,*) 'A preprocessing output file is corrupt - ', &
                  'rewriting attempt no. ', check_output
             ! recreate output files if previous attempt produced corrupt files
-            call netcdf_output_create(output_path, lwrtm_file, swrtm_file, &
-                 prtm_file, config_file, msi_file, cf_file, lsf_file, geo_file, &
-                 loc_file, alb_file, platform, sensor, global_atts, source_atts, &
-                 cyear, cmonth, cday, chour, cminute, preproc_dims, imager_angles, &
-                 imager_geolocation, netcdf_info, channel_info, include_full_brdf, &
-                 ecmwf_flag, preproc_opts%do_cloud_emis, verbose)
+            call netcdf_output_create(output_path, out_paths, granule, &
+                 global_atts, source_atts, preproc_dims, imager_angles, &
+                 imager_geolocation, netcdf_info, channel_info, &
+                 include_full_brdf, ecmwf_flag, preproc_opts%do_cloud_emis, &
+                 verbose)
 
          end if
 

@@ -62,30 +62,29 @@ subroutine read_config_file(Ctrl, channel_ids_instr, channel_sw_flag, &
    ! Open config file for reading
    call ncdf_open(ncid, Ctrl%FID%Config, 'read_config_file()')
 
-   if (Ctrl%Ind%Navail /= ncdf_dim_length(ncid, 'nc_conf', 'read_config_file()', Ctrl%verbose)) then
+   if (Ctrl%Ind%Navail /= ncdf_dim_length(ncid, 'nc_conf', 'read_config_file()')) then
       write(*,*) 'ERROR: read_config_file(): Driver incompatible with ', &
            'preprocessor files.'
       stop DriverFileIncompat
    end if
 
    allocate(channel_ids_instr(Ctrl%Ind%Navail))
-   call ncdf_read_array(ncid, "msi_instr_ch_numbers", channel_ids_instr, &
-                      Ctrl%verbose)
+   call ncdf_read_array(ncid, "msi_instr_ch_numbers", channel_ids_instr)
    if (Ctrl%verbose) write(*,*) 'msi channel numbers instr: ',channel_ids_instr
 
    allocate(channel_sw_flag(Ctrl%Ind%Navail))
-   call ncdf_read_array(ncid, "msi_ch_swflag", channel_sw_flag, Ctrl%verbose)
+   call ncdf_read_array(ncid, "msi_ch_swflag", channel_sw_flag)
    if (Ctrl%verbose) write(*,*) 'sw flag: ',channel_sw_flag
 
    allocate(channel_lw_flag(Ctrl%Ind%Navail))
-   call ncdf_read_array(ncid, "msi_ch_lwflag", channel_lw_flag, Ctrl%verbose)
+   call ncdf_read_array(ncid, "msi_ch_lwflag", channel_lw_flag)
    if (Ctrl%verbose) write(*,*) 'lw flag: ',channel_lw_flag
 
    allocate(channel_wvl(Ctrl%Ind%Navail))
-   call ncdf_read_array(ncid, "msi_abs_ch_wl", channel_wvl, Ctrl%verbose)
+   call ncdf_read_array(ncid, "msi_abs_ch_wl", channel_wvl)
 
    allocate(channel_view(Ctrl%Ind%Navail))
-   call ncdf_read_array(ncid, "msi_ch_view", channel_view, Ctrl%verbose)
+   call ncdf_read_array(ncid, "msi_ch_view", channel_view)
 
    if (nf90_get_att(ncid, NF90_GLOBAL, 'all_nchannels_total', &
         nall) .ne. NF90_NOERR) then

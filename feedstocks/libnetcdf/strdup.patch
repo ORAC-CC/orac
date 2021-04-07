@@ -1,0 +1,10 @@
+--- netcdf-c-4.7.0.orig/include/ncconfigure.h	2019-04-29 13:54:26.000000000 -0300
++++ netcdf-c-4.7.0/include/ncconfigure.h	2019-05-30 06:02:46.441567576 -0300
+@@ -7,6 +7,7 @@
+  */
+ /* "$Id: netcdf_par.h,v 1.1 2010/06/01 15:46:49 ed Exp $" */
+ 
++#include "config.h"
+ #ifndef NCCONFIGURE_H
+ #define NCCONFIGURE_H 1
+ 

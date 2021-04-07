@@ -7,16 +7,19 @@ package:
 source:
   - url: https://observer.gsfc.nasa.gov/ftp/edhs/hdfeos/latest_release/HDF-EOS{{ version }}v1.00.tar.Z
     sha256: cb0f900d2732ab01e51284d6c9e90d0e852d61bba9bce3b43af0430ab5414903
-    patches:
-      - SWapi.patch
-      - samples.patch
-      - configure.patch
+    # tar.Z is read-only and so cannot be patched; do in build script
+    #patches:
+    #  - SWapi.patch
+    #  - samples.patch
+    #  - 0001-fix-automake-files-for-linux-compatibility.patch
+  - path: SWapi.patch
+  - path: samples.patch
+  - path: 0001-fix-automake-files-for-linux-compatibility.patch
   - url: https://observer.gsfc.nasa.gov/ftp/edhs/hdfeos/latest_release/HDF-EOS{{ version }}v1.00_TestDriver.tar.Z
     sha256: 21bdbcd977c11b5a1779a82aebc0338b4adbc94107329e2c917a274924c20c5a
 
 build:
   number: 0
-  skip: True  # [win]
   run_exports:
     - {{ pin_subpackage('hdfeos2', max_pin='x.xx') }}
 
@@ -25,18 +28,16 @@ requirements:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ compiler('fortran') }}
-    - libtool     # [not win]
-    - automake    # [not win]
     - autoconf    # [not win]
+    - automake    # [not win]
+    - libtool     # [not win]
   host:
     - hdf4
     - zlib
-    - szip
     - jpeg
   run:
     - hdf4
     - zlib
-    - szip
     - jpeg
 
 test:
@@ -48,7 +49,7 @@ test:
 
 about:
   home: http://hdfeos.org/index.php
-  license: Public Domain
+  license: PUBLIC-DOMAIN
   summary: 'Earth Observing System HDF'
 
 extra:

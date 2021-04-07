@@ -182,9 +182,9 @@ function read_oceancolour_cci(path_to_file, occci, wavelengths, verbose) &
    ! Available wavelengths: 412, 443, 490, 510, 555, 670 nm.
    if (verbose) write(*,*) 'Extracting dimension IDs'
    ! Extract the array dimensions
-   ntime = ncdf_dim_length(fid, 'time', 'read_oceancolour_cci()', .false.)
-   nlon = ncdf_dim_length(fid, 'lon', 'read_oceancolour_cci()', .false.)
-   nlat = ncdf_dim_length(fid, 'lat', 'read_oceancolour_cci()', .false.)
+   ntime = ncdf_dim_length(fid, 'time', 'read_oceancolour_cci()')
+   nlon = ncdf_dim_length(fid, 'lon', 'read_oceancolour_cci()')
+   nlat = ncdf_dim_length(fid, 'lat', 'read_oceancolour_cci()')
    if (verbose) write(*,*) 'Dimensions are (time, lon, lat): ', ntime, nlon, nlat
    if (ntime .gt. 1) then
       write(*,*) 'Error: read_oceancolour_cci(): Time dimension is not 1. ' // &
@@ -199,8 +199,8 @@ function read_oceancolour_cci(path_to_file, occci, wavelengths, verbose) &
    !allocate(occci%lon(nlon))
    !allocate(occci%lat(nlat))
    ! Read the data into these arrays
-   !call ncdf_read_array(fid, lon, occci%lon, verbose)
-   !call ncdf_read_array(fid, lat, occci%lat, verbose)
+   !call ncdf_read_array(fid, lon, occci%lon)
+   !call ncdf_read_array(fid, lat, occci%lat)
    ! Rather than reading (and storing) the entire lat/lon arrays, we
    ! assume we are dealing with a regular grid and simply calculate the
    ! grid spacing
@@ -269,9 +269,9 @@ function read_oceancolour_cci(path_to_file, occci, wavelengths, verbose) &
             occci%iwavelength = j
          end where
          if (verbose) write(*,*) 'Reading data for Wvl: ', occci%wavelength(j)
-         call ncdf_read_array(fid, occci_atotvar(i), cache, verbose)
+         call ncdf_read_array(fid, occci_atotvar(i), cache)
          occci%atot(:,:,j) = cache
-         call ncdf_read_array(fid, occci_bbpvar(i), cache, verbose)
+         call ncdf_read_array(fid, occci_bbpvar(i), cache)
          occci%bbs(:,:,j) = cache
          j = j+1
       end if

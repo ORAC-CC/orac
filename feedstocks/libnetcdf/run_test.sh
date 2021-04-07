@@ -21,4 +21,4 @@ nc-config --has-cdf5     | grep -q yes
 nc-config --has-pnetcdf  | grep -q no
 
 # We cannot package szip due to its license
-nc-config --has-szlib    | grep -q yes
+nc-config --has-szlib    | grep -q no

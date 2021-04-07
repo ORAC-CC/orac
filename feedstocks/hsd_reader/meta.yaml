@@ -1,4 +1,12 @@
 {% set version = "1.1" %}
+{% set build = 1 %}
+
+# recipe-lint fails if mpi is undefined
+{% set mpi = mpi or 'nompi' %}
+{% if mpi == "nompi" %}
+# prioritize nompi via build number
+{% set build = build + 100 %}
+{% endif %}
 
 package:
   name: hsd_reader
@@ -10,23 +18,49 @@ source:
   - path: Makefile
 
 build:
-  number: 0
-  skip: True  # [win]
+  number: {{ build }}
+  {% if mpi != "nompi" %}
+  {% set mpi_prefix = "mpi_" + mpi %}
+  {% else %}
+  {% set mpi_prefix = "nompi" %}
+  {% endif %}
+  # add build string so packages can depend on
+  # mpi or nompi variants
+  # dependencies:
+  # `PKG_NAME * mpi_mpich_*` for mpich
+  # `PKG_NAME * mpi_*` for any mpi
+  # `PKG_NAME * nompi_*` for no mpi
+  string: {{ mpi_prefix }}_h{{ PKG_HASH }}_{{ build }}
+
+  # mpi builds require the right mpi
+  # non-mpi builds *do not* appear to require non-mpi builds
+  # at least not always
+
+  {% if mpi != 'nompi' %}
+  {% set build_pin = mpi_prefix + '_*' %}
+  {% else %}
+  {% set build_pin = '' %}
+  {% endif %}
   run_exports:
-    - {{ pin_subpackage('hsd_reader', max_pin='x.x') }}
+    - {{ pin_subpackage('hsd_reader', max_pin='x.x') }} {{ build_pin }}
 
 requirements:
   build:
     - {{ compiler('c') }}
     - {{ compiler('fortran') }}
   host:
+    - {{ mpi }}  # [mpi != 'nompi']
     - hdf5
+    - hdf5 * {{ mpi_prefix }}_*
     - libnetcdf
+    - libnetcdf * {{ mpi_prefix }}_*
     - netcdf-fortran
+    - netcdf-fortran * {{ mpi_prefix }}_*
   run:
-    - hdf5
-    - libnetcdf
-    - netcdf-fortran
+    - {{ mpi }}  # [mpi != 'nompi']
+    - hdf5 * {{ mpi_prefix }}_*
+    - libnetcdf * {{ mpi_prefix }}_*
+    - netcdf-fortran * {{ mpi_prefix }}_*
 
 test:
   commands:
@@ -36,7 +70,8 @@ test:
 
 about:
   home: https://github.com/simonrp84
-  license: Individual
+  license: CC
+  license_file: License.md
   summary: "A reader for data from Japan's Himawari satellite"
 
 extra:

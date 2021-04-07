@@ -2,7 +2,7 @@ Subject: Adapt config files to the anaconda environment.
 diff --git a/config/arch.gfortran.inc b/config/arch.gfortran.inc
 --- a/config/arch.gfortran.inc
 +++ b/config/arch.gfortran.inc
-@@ -2,16 +2,16 @@
+@@ -2,33 +2,33 @@
  OBJS = obj
  
  # Define Fortran 77 compiler
@@ -21,8 +21,29 @@ diff --git a/config/arch.gfortran.inc b/config/arch.gfortran.inc
 -CXX = g++
 +CXX = $(GXX)
  
+ # Define C preprocessor
+ CPP = cpp
+ 
  # Set Fortran 77 compiler flags
- F77FLAGS  = -O3 -cpp -ffree-line-length-0 -g
+-F77FLAGS  = -O3 -cpp -ffree-line-length-0 -g
++F77FLAGS  = $(FORTRANFLAGS) -O3 -cpp -ffree-line-length-0 -g
+ # Uncomment if extra warnings are required.  Take out -Werror if that annoys you.
+ #FF77LAGS += -Wall -Werror -Wno-conversion -Wno-uninitialized -Wno-unused-dummy-argument -Wtabs
+ 
+ # Set Fortran 90 compiler flags
+-FFLAGS    = -O3 -cpp -ffree-line-length-0 -g
++FFLAGS    += -O3 -cpp -ffree-line-length-0 -g
+ # Uncomment if OpenMP support is desired. Highly recommented.
+-FFLAGS   += -fopenmp
++#FFLAGS   += -fopenmp
+ # Uncomment if extra warnings are required.  Take out -Werror if that annoys you.
+ #FFLAGS   += -Wall -Werror -Wno-conversion -Wno-uninitialized -Wno-unused-dummy-argument -Wtabs
+ 
+-LFLAGS = -fopenmp
++LFLAGS = -fopenmp $(LDFLAGS)
+ 
+ # Set C compiler  flags
+ CFLAGS = -O3 -g
 diff --git a/config/lib.inc b/config/lib.inc
 index 626a9d2..d0937c7 100644
 --- a/config/lib.inc
@@ -89,7 +110,7 @@ index 626a9d2..d0937c7 100644
 -SEVIRI_UTIL_INCLUDE = $(LIBBASE_FORTRAN)/seviri_util
 -
 -SZLIB = $(LIBBASE)/szip/lib
-+# environmental variable CONDA_PREFIX.
++# environment variable PREFIX.
  
  # Set up libraries and includes
 -LIBS = -L$(EMOSLIB) -lemosR64 -lemos -lfftw3 \
@@ -102,7 +123,7 @@ index 626a9d2..d0937c7 100644
 -                     -lrttov12_parallel -lrttov12_main -lrttov12_other \
 -       -L$(HDF5LIB) -lhdf5 -lhdf5_fortran -lhdf5_hl -lhdf5hl_fortran \
 -       -L$(SZLIB) -lsz \
-+LIBS = -L$(CONDA_PREFIX)/lib -lemosR64 -lemos -lfftw3 \
++LIBS = -L$(PREFIX)/lib -lemosR64 -lemos -lfftw3 \
 +       -lhdfeos -lGctp \
 +       -leccodes_f90 -leccodes \
 +       -lmfhdf -ldf \
@@ -123,12 +144,12 @@ index 626a9d2..d0937c7 100644
 -      -I$(NCDF_FORTRAN_INCLUDE)  \
 -      -I$(RTTOVINCLUDE) \
 -      -I$(RTTOVMODULE)
-+      -I$(CONDA_PREFIX)/include \
-+      -I$(CONDA_PREFIX)/mod
++      -I$(PREFIX)/include \
++      -I$(PREFIX)/mod
  
 -CINC = -I./
 +CINC = -I./ \
-+       -I$(CONDA_PREFIX)/include
++       -I$(PREFIX)/include
  
  
  # Configuration options

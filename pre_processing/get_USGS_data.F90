@@ -18,6 +18,7 @@
 ! 2016/05/31, GT: Added use_l1_land_mask argument, which provides the option of
 !    not replacing the existing imager_flags%lsflag with DEM values
 ! 2017/02/11, SP: Allow reading LSM, LUM, DEM from external file (ExtWork)
+! 2020/12/02, DP: Check if USGS file is upright (lat starts positive) or not
 !
 ! Bugs:
 ! None known.
@@ -46,10 +47,12 @@ subroutine get_USGS_data(path_to_USGS_file, imager_flags, imager_geolocation, &
    logical,                    intent(in)    :: use_predef_lsm
    character(len=*),           intent(in)    :: sensor
 
+   logical                          :: usgs_grid_upright
    logical                          :: USGS_file_exist
    character(len=7)                 :: USGS_file_read
    integer(kind=4)                  :: i, j
    integer(kind=sint), dimension(2) :: nearest_xy, maxcoord
+
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering get_USGS_data()'
 
    ! Check that the defined file exists and is readable
@@ -86,8 +89,16 @@ subroutine get_USGS_data(path_to_USGS_file, imager_flags, imager_geolocation, &
       end if
 
    else
+
       ! Read the data themselves
       call read_USGS_file(path_to_USGS_file, usgs, verbose)
+
+      ! check if USGS file lat starts positive or negative
+      if (usgs%lat(1) < 0) then
+          usgs_grid_upright = .false.
+      else
+          usgs_grid_upright = .true.
+      end if
 
       maxcoord = shape(usgs%dem)
 
@@ -104,7 +115,7 @@ subroutine get_USGS_data(path_to_USGS_file, imager_flags, imager_geolocation, &
             ! Do nearest neighbour collocation for each imager pixel with USGS
             ! data, applying a search window radius of +-0.25 degree lat/lon
             nearest_xy = nearest_USGS(imager_geolocation%latitude(i,j), &
-                 imager_geolocation%longitude(i,j), usgs)
+                 imager_geolocation%longitude(i,j), usgs, usgs_grid_upright)
 
             if (nearest_xy(2) .gt. maxcoord(1)) nearest_xy(2) = nearest_xy(2) - maxcoord(1)
             if (nearest_xy(1) .gt. maxcoord(2)) nearest_xy(1) = nearest_xy(1) - maxcoord(2)

@@ -30,17 +30,16 @@
 ! ------------------------------------------------------------------------------
 ! coef_path      string in   Folder containing RTTOV coefficient files
 ! emiss_path     string in   Folder containing MODIS monthly average emissivity
-! sensor         string in   Name of sensor.
-! platform       string in   Name of satellite platform.
-! preproc_dims   struct both Summary of preprocessing grid definitions
+! granule        struct in   Parameters of the swath file
+! preproc_dims   struct in   Summary of preprocessing grid definitions
 ! preproc_geoloc struct in   Summary of preprocessing lat/lon
 ! preproc_geo    struct in   Summary of preprocessing geometry
-! preproc_prtm   struct both Summary of profiles and surface fields
+! preproc_prtm   struct both Summary of profiles
+! preproc_surf   struct in   Summary of surface fields
+! preproc_cld    struct both Summary of cloud fields
 ! netcdf_info    struct both Summary of NCDF file properties.
 ! channel_info   struct in   Structure summarising the channels to be processed
-! year           sint   in   Year of observation (4 digit)
-! month          sint   in   Month of year (1-12)
-! day            siny   in   Day of month (1-31)
+! pre_opts       struct in   Processing options
 ! verbose        logic  in   T: print status information; F: don't
 !
 ! History:
@@ -68,10 +67,9 @@ implicit none
 
 contains
 
-subroutine rttov_driver_gfs(coef_path, emiss_path, sensor, platform, &
-     preproc_dims, preproc_geoloc, preproc_geo, preproc_prtm, preproc_surf, &
-     preproc_cld, netcdf_info, channel_info, year, month, day, use_modis_emis, &
-     do_cloud_emis, do_co2, verbose)
+subroutine rttov_driver_gfs(coef_path, emiss_path, granule, preproc_dims, &
+     preproc_geoloc, preproc_geo, preproc_prtm, preproc_surf, preproc_cld, &
+     netcdf_info, channel_info, pre_opts, verbose)
 
    use channel_structures_m
    use netcdf_output_m
@@ -125,8 +123,7 @@ subroutine rttov_driver_gfs(coef_path, emiss_path, sensor, platform, &
    ! Arguments
    character(len=*),           intent(in)    :: coef_path
    character(len=*),           intent(in)    :: emiss_path
-   character(len=*),           intent(in)    :: sensor
-   character(len=*),           intent(in)    :: platform
+   type(setup_args_t),         intent(in)    :: granule
    type(preproc_dims_t),       intent(in)    :: preproc_dims
    type(preproc_geoloc_t),     intent(in)    :: preproc_geoloc
    type(preproc_geo_t),        intent(in)    :: preproc_geo
@@ -135,10 +132,7 @@ subroutine rttov_driver_gfs(coef_path, emiss_path, sensor, platform, &
    type(preproc_cld_t),        intent(inout) :: preproc_cld
    type(netcdf_output_info_t), intent(inout) :: netcdf_info
    type(channel_info_t),       intent(in)    :: channel_info
-   integer(kind=sint),         intent(in)    :: year, month, day
-   logical,                    intent(in)    :: use_modis_emis
-   logical,                    intent(in)    :: do_cloud_emis
-   logical,                    intent(in)    :: do_co2
+   type(preproc_opts_t),       intent(in)    :: pre_opts
    logical,                    intent(in)    :: verbose
 
    ! RTTOV in/outputs
@@ -194,124 +188,124 @@ subroutine rttov_driver_gfs(coef_path, emiss_path, sensor, platform, &
 
    if (verbose) write(*,*) 'coef_path: ', trim(coef_path)
    if (verbose) write(*,*) 'emiss_path: ', trim(emiss_path)
-   if (verbose) write(*,*) 'sensor: ', trim(sensor)
-   if (verbose) write(*,*) 'platform: ', trim(platform)
-   if (verbose) write(*,*) 'Date: ', year, month, day
+   if (verbose) write(*,*) 'sensor: ', trim(granule%sensor)
+   if (verbose) write(*,*) 'platform: ', trim(granule%platform)
+   if (verbose) write(*,*) 'Date: ', granule%year, granule%month, granule%day
 
    ! Determine coefficient filename (Vis/IR distinction made later)
-   select case (trim(sensor))
+   select case (trim(granule%sensor))
    case('ATSR2')
       coef_file = 'rtcoef_ers_2_atsr.dat'
    case('AATSR')
       coef_file = 'rtcoef_envisat_1_atsr.dat'
    case('ABI')
-      if (trim(platform) == 'GOES-16') then
+      if (trim(granule%platform) == 'GOES-16') then
          coef_file = 'rtcoef_goes_16_abi.dat'
-      else if (trim(platform) == 'GOES-17') then
+      else if (trim(granule%platform) == 'GOES-17') then
          coef_file = 'rtcoef_goes_17_abi.dat'
       else
          write(*,*) 'ERROR: rttov_driver(): Invalid GOES platform: ', &
-                    trim(platform)
+                    trim(granule%platform)
          stop error_stop_code
       end if
    case('AGRI')
-      if (trim(platform) == 'FY-4A') then
+      if (trim(granule%platform) == 'FY-4A') then
          coef_file = 'rtcoef_fy4_1_agri.dat'
-      else if (trim(platform) == 'FY-4B') then
+      else if (trim(granule%platform) == 'FY-4B') then
          coef_file = 'rtcoef_fy4_2_agri.dat'
       else
          write(*,*) 'ERROR: rttov_driver(): Invalid Fengyun-4 platform: ', &
-                    trim(platform)
+                    trim(granule%platform)
          stop error_stop_code
       end if
    case('AHI')
-      if (trim(platform) == 'Himawari-8') then
+      if (trim(granule%platform) == 'Himawari-8') then
          coef_file = 'rtcoef_himawari_8_ahi.dat'
-      else if (trim(platform) == 'Himawari-9') then
+      else if (trim(granule%platform) == 'Himawari-9') then
          coef_file = 'rtcoef_himawari_9_ahi.dat'
       else
          write(*,*) 'ERROR: rttov_driver(): Invalid HIMAWARI platform: ', &
-                    trim(platform)
+                    trim(granule%platform)
          stop error_stop_code
       end if
    case('AVHRR')
-      if (index(platform, 'noaa') >= 1) then
-         if(platform(5:5) == '1') then
-            coef_file = 'rtcoef_noaa_'//platform(5:6)//'_avhrr.dat'
+      if (index(granule%platform, 'noaa') >= 1) then
+         if(granule%platform(5:5) == '1') then
+            coef_file = 'rtcoef_noaa_'//granule%platform(5:6)//'_avhrr.dat'
           else
-            coef_file = 'rtcoef_noaa_'//platform(5:5)//'_avhrr.dat'
+            coef_file = 'rtcoef_noaa_'//granule%platform(5:5)//'_avhrr.dat'
           end if
-       else if (index(platform, 'metop') >= 1) then
-          if (platform(6:6) == "a") then
+       else if (index(granule%platform, 'metop') >= 1) then
+          if (granule%platform(6:6) == "a") then
              coef_file = 'rtcoef_metop_2_avhrr.dat'
-          else if (platform(6:6) == "b") then
+          else if (granule%platform(6:6) == "b") then
              coef_file = 'rtcoef_metop_1_avhrr.dat'
           else
              write(*,*) 'ERROR: rttov_driver(): Invalid Metop platform: ', &
-                  trim(platform)
+                  trim(granule%platform)
              stop error_stop_code
           end if
       else
          write(*,*) 'ERROR: rttov_driver(): Invalid AVHRR platform: ', &
-                    trim(platform)
+                    trim(granule%platform)
          stop error_stop_code
       end if
    case('MODIS')
-      if (trim(platform) == 'TERRA') then
+      if (trim(granule%platform) == 'TERRA') then
          coef_file = 'rtcoef_eos_1_modis.dat'
-      else if (trim(platform) == 'AQUA') then
+      else if (trim(granule%platform) == 'AQUA') then
          coef_file = 'rtcoef_eos_2_modis.dat'
       else
          write(*,*) 'ERROR: rttov_driver(): Invalid MODIS platform: ', &
-                    trim(platform)
+                    trim(granule%platform)
          stop error_stop_code
       end if
    case('SEVIRI')
-      if (trim(platform) == 'MSG1') then
+      if (trim(granule%platform) == 'MSG1') then
          coef_file = 'rtcoef_msg_1_seviri.dat'
-      else if (trim(platform) == 'MSG2') then
+      else if (trim(granule%platform) == 'MSG2') then
          coef_file = 'rtcoef_msg_2_seviri.dat'
-      else if (trim(platform) == 'MSG3') then
+      else if (trim(granule%platform) == 'MSG3') then
          coef_file = 'rtcoef_msg_3_seviri.dat'
-      else if (trim(platform) == 'MSG4') then
+      else if (trim(granule%platform) == 'MSG4') then
          coef_file = 'rtcoef_msg_4_seviri.dat'
       else
          write(*,*) 'ERROR: rttov_driver(): Invalid SEVIRI platform: ', &
-                    trim(platform)
+                    trim(granule%platform)
          stop error_stop_code
       end if
    case('SLSTR')
-      if (trim(platform) == 'Sentinel3a') then
+      if (trim(granule%platform) == 'Sentinel3a') then
          coef_file = 'rtcoef_sentinel3_1_slstr.dat'
-      else if (trim(platform) == 'Sentinel3b') then
+      else if (trim(granule%platform) == 'Sentinel3b') then
          coef_file = 'rtcoef_sentinel3_2_slstr.dat'
       else
          write(*,*) 'ERROR: rttov_driver(): Invalid SLSTR platform: ', &
-                    trim(platform)
+                    trim(granule%platform)
          stop error_stop_code
       end if
    case('VIIRSI')
-      if (trim(platform) == 'SuomiNPP') then
+      if (trim(granule%platform) == 'SuomiNPP') then
          coef_file = 'rtcoef_jpss_0_viirs.dat'
-      else if (trim(platform) == 'NOAA20') then
+      else if (trim(granule%platform) == 'NOAA20') then
          coef_file = 'rtcoef_noaa_20_viirs.dat'
       else
          write(*,*) 'ERROR: rttov_driver(): Invalid VIIRS platform: ', &
-                    trim(platform)
+                    trim(granule%platform)
          stop error_stop_code
       end if
    case('VIIRSM')
-      if (trim(platform) == 'SuomiNPP') then
+      if (trim(granule%platform) == 'SuomiNPP') then
          coef_file = 'rtcoef_jpss_0_viirs.dat'
-      else if (trim(platform) == 'NOAA20') then
+      else if (trim(granule%platform) == 'NOAA20') then
          coef_file = 'rtcoef_noaa_20_viirs.dat'
       else
          write(*,*) 'ERROR: rttov_driver(): Invalid VIIRS platform: ', &
-                    trim(platform)
+                    trim(granule%platform)
          stop error_stop_code
       end if
    case default
-      write(*,*) 'ERROR: rttov_driver(): Invalid sensor: ', trim(sensor)
+      write(*,*) 'ERROR: rttov_driver(): Invalid sensor: ', trim(granule%sensor)
       stop error_stop_code
    end select
 
@@ -332,7 +326,7 @@ subroutine rttov_driver_gfs(coef_path, emiss_path, sensor, platform, &
    opts % rt_all % addrefrac = .true.  ! Include refraction in path calc
    opts % rt_ir % addsolar   = .false. ! Do not include reflected solar
    opts % rt_ir % ozone_data = .true.  ! Include ozone profile
-   if (do_co2) then
+   if (pre_opts%do_co2) then
       opts % rt_ir % co2_data   = .true.  ! Include CO2 profile
    else
       opts % rt_ir % co2_data   = .true.  ! Include CO2 profile
@@ -423,7 +417,7 @@ subroutine rttov_driver_gfs(coef_path, emiss_path, sensor, platform, &
    ! Compute the appropriate CO2 value for this scene
    ! This is taken from Martin's addition to the driver_for_bugsrad.f90 file
    ! Note: CO2 profile is assumed constant
-   yrfrac  = year + (month / 12.0) + ((day/30.)/12.0)
+   yrfrac  = granule%year + (granule%month / 12.0) + ((granule%day/30.)/12.0)
    co2_val = 380.0+(yrfrac-2006.)*1.7
    co2_val = co2_val * 1e-6 * 44.0095 / 28.9644
 
@@ -445,7 +439,7 @@ subroutine rttov_driver_gfs(coef_path, emiss_path, sensor, platform, &
          profiles(count)%o3(:) = preproc_prtm%ozone(idim,jdim,:)
 
          ! Add CO2 in kg/kg for each level
-         if (do_co2) profiles(count)%co2(:) = co2_val
+         if (pre_opts%do_co2) profiles(count)%co2(:) = co2_val
 
          ! Surface information
          profiles(count)%s2m%p = exp(preproc_prtm%lnsp(idim,jdim))*pa2hpa
@@ -467,9 +461,9 @@ subroutine rttov_driver_gfs(coef_path, emiss_path, sensor, platform, &
          profiles(count)%skin%surftype  = 0
          profiles(count)%skin%watertype = 1
 
-         profiles(count)%date(1) = year
-         profiles(count)%date(2) = month
-         profiles(count)%date(3) = day
+         profiles(count)%date(1) = granule%year
+         profiles(count)%date(2) = granule%month
+         profiles(count)%date(3) = granule%day
          profiles(count)%elevation = 0. ! One day, we will do something here
          profiles(count)%latitude  = preproc_geoloc%latitude(jdim)
          ! Manual may say this is 0-360, but src/emsi_atlas/mod_iratlas.F90
@@ -642,7 +636,7 @@ subroutine rttov_driver_gfs(coef_path, emiss_path, sensor, platform, &
          end if
 
          if (verbose) write(*,*) 'Fetch emissivity atlas'
-         imonth = month
+         imonth = granule%month
          call rttov_setup_emis_atlas(stat, opts, imonth, atlas_type_ir, &
               emis_atlas, coefs=coefs, path=emiss_path)
          if (stat /= errorstatus_success) then
@@ -686,7 +680,7 @@ subroutine rttov_driver_gfs(coef_path, emiss_path, sensor, platform, &
                   emissivity%emis_in = emis_data
 
                   ! Fetch emissivity from the MODIS CIMSS emissivity product
-                  if (i_coef == 1 .and. use_modis_emis) then
+                  if (i_coef == 1 .and. pre_opts%use_modis_emis_in_rttov) then
                      where (preproc_surf%emissivity(idim,jdim,:) /= &
                           sreal_fill_value)
                         emissivity%emis_in = &
@@ -746,7 +740,7 @@ subroutine rttov_driver_gfs(coef_path, emiss_path, sensor, platform, &
          end do
 
          ! Loop again for cloud radiance
-         if (do_cloud_emis) then
+         if (pre_opts%do_cloud_emis) then
             count = 0
             if (i_coef .eq. 1) then
 #ifdef INCLUDE_RTTOV_OPENMP

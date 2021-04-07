@@ -188,7 +188,7 @@ def compare_orac_out(file0, file1):
         pass
 
     finally:
-        if ('dat0' in locals() or 'dat0' in globals()):
+        if 'dat0' in locals() or 'dat0' in globals():
             dat0.close()
-        if ('dat1' in locals() or 'dat1' in globals()):
+        if 'dat1' in locals() or 'dat1' in globals():
             dat1.close()

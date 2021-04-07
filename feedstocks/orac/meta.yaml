@@ -1,4 +1,12 @@
 {% set version = "4.10" %}
+{% set build = 2 %}
+
+# recipe-lint fails if mpi is undefined
+{% set mpi = mpi or 'nompi' %}
+{% if mpi == "nompi" %}
+# prioritize nompi via build number
+{% set build = build + 100 %}
+{% endif %}
 
 package:
   name: orac
@@ -8,16 +16,37 @@ source:
   - git_url: https://github.com/ORAC-CC/orac
     patches:
       - make.patch
-  - path: local_defaults.py
-    folder: tools/pyorac/local_defaults.py
+  - path: activate.sh
+  - path: deactivate.sh
 
 build:
   # This might work if we ever set a release for ORAC
   #number: {{ GIT_DESCRIBE_NUMBER }}
-  number: 1
-  skip: True # [win]
+  number: {{ build }}
+  {% if mpi != "nompi" %}
+  {% set mpi_prefix = "mpi_" + mpi %}
+  {% else %}
+  {% set mpi_prefix = "nompi" %}
+  {% endif %}
+  # add build string so packages can depend on
+  # mpi or nompi variants
+  # dependencies:
+  # `PKG_NAME * mpi_mpich_*` for mpich
+  # `PKG_NAME * mpi_*` for any mpi
+  # `PKG_NAME * nompi_*` for no mpi
+  string: {{ mpi_prefix }}_h{{ PKG_HASH }}_{{ build }}
+
+  # mpi builds require the right mpi
+  # non-mpi builds *do not* appear to require non-mpi builds
+  # at least not always
+
+  {% if mpi != 'nompi' %}
+  {% set build_pin = mpi_prefix + '_*' %}
+  {% else %}
+  {% set build_pin = '' %}
+  {% endif %}
   run_exports:
-    - {{ pin_subpackage('orac', max_pin='x.x.x') }}
+    - {{ pin_subpackage('orac', max_pin='x.x.x') }} {{ build_pin }}
 
 requirements:
   build:
@@ -26,40 +55,38 @@ requirements:
     - {{ compiler('fortran') }}
     - bison
     - flex
-    - python
+    - make
   host:
-    - python
-    - nr
+    - {{ mpi }}  # [mpi != 'nompi']
+    - eccodes
     - epr_api
     - fu_liou
     - hdfeos2
+    # without this repeat reference, conda-smithy doesn't pin correctly
     - hdf5
-    - netcdf-fortran
-    - eccodes
-    - seviri_util
+    - hdf5 * {{ mpi_prefix }}_*
     - hsd_reader
+    - hsd_reader * {{ mpi_prefix }}_*
     - libemos
+    - netcdf-fortran
+    - netcdf-fortran * {{ mpi_prefix }}_*
+    - nr
     - rttov
+    - rttov * {{ mpi_prefix }}_*
+    - seviri_util
   run:
-    - python
-    - netcdf4
-    - h5py
-    - cf_units
-    - scipy
-    - opencv
-    - cartopy
-    - matplotlib
-    - nr
+    - {{ mpi }}  # [mpi != 'nompi']
+    - eccodes
     - epr_api
     - fu_liou
     - hdfeos2
-    - hdf5
-    - netcdf-fortran
-    - eccodes
-    - seviri_util
-    - hsd_reader
+    - hdf5 * {{ mpi_prefix }}_*
+    - hsd_reader * {{ mpi_prefix }}_*
     - libemos
-    - rttov
+    - netcdf-fortran * {{ mpi_prefix }}_*
+    - nr
+    - rttov * {{ mpi_prefix }}_*
+    - seviri_util
 
 test:
   commands:
@@ -73,7 +100,8 @@ test:
 
 about:
   home: https://github.com/ORAC-CC/orac/wiki
-  license: COPYING
+  license: CC
+  license_file: COPYING
   summary: 'Retrieval of aerosol and cloud properties from satellite imagery'
 
 extra:

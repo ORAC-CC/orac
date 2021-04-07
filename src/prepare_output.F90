@@ -192,7 +192,7 @@ subroutine build_flag_masks(Ctrl, data)
                            '1: Approach = 2 layer cloud ' // &
                            '2: Approach = Oxford surface aerosol ' // &
                            '3: Approach = Swansea surface aerosol ' // &
-                           '4: Approach = Single-view aerosol' // &
+                           '4: Approach = Single-view aerosol ' // &
                            '5-7: Reserved ' // &
                            '8:  Class = water cloud ' // &
                            '16: Class = ice cloud ' // &
