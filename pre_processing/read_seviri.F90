@@ -257,11 +257,6 @@ subroutine read_seviri_l1_5(l1_5_file, imager_geolocation, imager_measurements, 
       end where
    end where
 
-   ! Shift satazi range from [0,360] to [-180,180] to be consistent with ORAC
-   where (imager_angles%satazi .gt. 180)
-      imager_angles%satazi = imager_angles%satazi - 360.
-   end where
-
 end subroutine read_seviri_l1_5
 
 subroutine read_seviri_l1_5_metoff(l1_5_file, imager_geolocation, &
@@ -450,9 +445,7 @@ subroutine read_seviri_l1_5_nat_or_hrit(l1_5_file, imager_geolocation, &
    column0 = startx - 1
    column1 = startx - 1 + nx - 1
 
-   if (.not. hrit_proc .and. (nx .eq. nx_full .and. ny .eq. ny_full)) then
-      ! Because of the inversion of satazi, internal subsetting cannot be used
-
+   if (.not. hrit_proc) then
       ! The SEVIRI reader has the option to assume that memory for the output
       ! image arrays has already been allocated. In this case we point these output
       ! array pointers to the already allocated imager arrays to avoid copying.
@@ -493,13 +486,8 @@ subroutine read_seviri_l1_5_nat_or_hrit(l1_5_file, imager_geolocation, &
       imager_angles%solzen(startx:,:,1)       = preproc%sza(column0+1:column1+1,line0+1:line1+1)
       imager_angles%solazi(startx:,:,1)       = preproc%saa(column0+1:column1+1,line0+1:line1+1)
       imager_angles%satzen(startx:,:,1)       = preproc%vza(column0+1:column1+1,line0+1:line1+1)
-      !imager_angles%satazi(startx:,:,1)       = preproc%vaa(column0+1:column1+1,line0+1:line1+1)
+      imager_angles%satazi(startx:,:,1)       = preproc%vaa(column0+1:column1+1,line0+1:line1+1)
       imager_measurements%data(startx:,:,:)   = preproc%data(column0+1:column1+1,line0+1:line1+1,:)
-
-      ! Offset subset for inversion of satazi
-      ! NOTE: THIS SHOULD BE REMOVED ONCE THE EXTERNAL LIBRARY OUTPUTS
-      ! THE SATELLITE AZIMUTH IN THE CORRECT ORIENTATION
-      imager_angles%satazi(startx:,:,1)       = preproc%vaa(n_across_track-column1:n_across_track-column0,line0+1:line1+1)
    end if
 
    ! Remove underscores added by seviri_util (easy way of converting c-string to
