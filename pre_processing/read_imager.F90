@@ -274,6 +274,15 @@ subroutine read_imager(granule, opts, path_to_aatsr_drift_table, &
       end do
    end do
 
+   ! Some sensors define azimuth on [0, 360] while we want [-180, 180]
+   where (imager_angles%solazi .gt. 180.)
+      imager_angles%solazi = imager_angles%solazi - 360.
+   end where
+
+   where (imager_angles%satazi .gt. 180.)
+      imager_angles%satazi = imager_angles%satazi - 360.
+   end where
+
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_imager()'
 
 end subroutine read_imager
