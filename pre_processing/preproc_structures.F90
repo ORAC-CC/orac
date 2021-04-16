@@ -78,6 +78,7 @@ module preproc_structures_m
       integer                    :: ecmwf_time_int_method
       integer, pointer           :: channel_ids(:)
       integer(kind=lint)         :: n_channels
+      integer                    :: slstr_alignment
       real                       :: swansea_gamma
       logical                    :: use_camel_emis
       logical                    :: use_ecmwf_snow_and_ice

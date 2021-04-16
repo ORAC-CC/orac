@@ -487,6 +487,14 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
    preproc_opts%use_swansea_climatology   = .false.
    preproc_opts%swansea_gamma             = 0.3
 
+   ! When defined, the offset between the nadir and oblique views is assumed
+   ! to be constant. Otherwise, the two longitude fields are read and compared
+   ! to determine an appropriate offset. The value below is the mode of running
+   ! slstr_get_alignment() on each row of 1000 random SLSTR (A) images. 548 was
+   ! returned in 1e5 cases. 546-551 were returned O(1e3) times, while other
+   ! values in the range 530-570 each appeared < 1e2 times.
+   preproc_opts%slstr_alignment = 548
+
    ! Initialise satellite position string
    global_atts%Satpos_Metadata = 'null'
 
@@ -812,8 +820,8 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
 
 #ifdef WRAPPER
       ! do not process this orbit if no valid lat/lon data available
-      mask =  imager_geolocation%latitude.gt.sreal_fill_value .and. &
-              imager_geolocation%longitude.gt.sreal_fill_value
+      mask = imager_geolocation%latitude.gt.sreal_fill_value .and. &
+             imager_geolocation%longitude.gt.sreal_fill_value
       if (.not. any(mask)) then
          write(*,*) "any mask: ", any(mask)
          write(*,*) "maxval lat/lon:", maxval(imager_geolocation%latitude), &

@@ -96,7 +96,7 @@ end subroutine read_slstr_dimensions
 ! verbose             logical in   If true then print verbose information.
 !-------------------------------------------------------------------------------
 subroutine read_slstr(infile, imager_geolocation, imager_measurements, &
-   imager_angles, imager_time, imager_flags, channel_info, verbose)
+   imager_angles, imager_time, imager_flags, channel_info, alignment, verbose)
 
    use iso_c_binding
    use calender_m
@@ -114,6 +114,7 @@ subroutine read_slstr(infile, imager_geolocation, imager_measurements, &
    type(imager_time_t),         intent(inout) :: imager_time
    type(imager_flags_t),        intent(inout) :: imager_flags
    type(channel_info_t),        intent(in)    :: channel_info
+   integer,                     intent(in)    :: alignment
    logical,                     intent(in)    :: verbose
 
    integer                       :: i, j
@@ -179,7 +180,7 @@ subroutine read_slstr(infile, imager_geolocation, imager_measurements, &
 
    if (imager_angles%nviews .eq. 2) then
       ! Get alignment factor between oblique and nadir views
-      call slstr_get_alignment(indir, startx, endx, sx_nad, sx_obl, &
+      call slstr_get_alignment(indir, startx, endx, alignment, sx_nad, sx_obl, &
            ex_nad, ex_obl)
    end if
 

@@ -216,7 +216,7 @@ subroutine read_imager(granule, opts, path_to_aatsr_drift_table, &
       ! imager_geolocation
       call read_slstr(granule%l1b_file, &
            imager_geolocation, imager_measurements, imager_angles, imager_time, &
-           imager_flags, channel_info, verbose)
+           imager_flags, channel_info, opts%slstr_alignment, verbose)
 
       ! In absence of proper mask set everything to "1" for cloud mask
       imager_flags%cflag = 1

@@ -317,8 +317,8 @@ subroutine slstr_resample_vis_to_tir(inarr, outarr, nx, ny, fill)
 
 end subroutine slstr_resample_vis_to_tir
 
-subroutine slstr_get_alignment(indir, startx, endx, sx_nad, sx_obl, &
-     ex_nad, ex_obl)
+subroutine slstr_get_alignment(indir, startx, endx, given_alignment, &
+     sx_nad, sx_obl, ex_nad, ex_obl)
 
    use preproc_constants_m
 
@@ -327,6 +327,7 @@ subroutine slstr_get_alignment(indir, startx, endx, sx_nad, sx_obl, &
    character(len=*), intent(in)  :: indir
    integer,          intent(in)  :: startx
    integer,          intent(in)  :: endx
+   integer,          intent(in)  :: given_alignment
    integer,          intent(out) :: sx_nad
    integer,          intent(out) :: sx_obl
    integer,          intent(out) :: ex_nad
@@ -334,48 +335,45 @@ subroutine slstr_get_alignment(indir, startx, endx, sx_nad, sx_obl, &
 
    integer :: nx, ny, obnx, obny, alignment
 
-#ifndef CONSTANT_OBLIQUE_OFFSET
    real(kind=sreal), allocatable :: ndlons(:,:)
    real(kind=sreal), allocatable :: oblons(:,:)
 
    integer :: x
    real    :: bdiff, total
-#endif
 
    call get_slstr_gridsize(indir, 'in', nx, ny)
    call get_slstr_gridsize(indir, 'io', obnx, obny)
 
-#ifdef CONSTANT_OBLIQUE_OFFSET
-   ! Assume constant offset between nadir and oblique grids.
-   alignment = CONSTANT_OBLIQUE_OFFSET
-#else
-   ! Determine offset between nadir and oblique grids as the point which
-   ! minimises the difference between their full longitude fields.
-   allocate(ndlons(nx,ny))
-   allocate(oblons(obnx,obny))
+   if (given_alignment >= 0) then
+      alignment = given_alignment
+   else
+      ! Determine offset between nadir and oblique grids as the point which
+      ! minimises the difference between their full longitude fields.
+      allocate(ndlons(nx,ny))
+      allocate(oblons(obnx,obny))
 
-   call read_slstr_field(indir, 'geodetic', 'in', 'longitude', 1, 1, ndlons)
-   call read_slstr_field(indir, 'geodetic', 'io', 'longitude', 1, 1, oblons)
+      call read_slstr_field(indir, 'geodetic', 'in', 'longitude', 1, 1, ndlons)
+      call read_slstr_field(indir, 'geodetic', 'io', 'longitude', 1, 1, oblons)
 
-   bdiff = 9e15
+      bdiff = 9e15
 
-   do x = 1, nx-obnx
-      total = sum(abs(ndlons(x:x+obnx-1,:) - oblons))
-      if (total .lt. bdiff) then
-         bdiff = total
-         alignment = x
+      do x = 1, nx-obnx
+         total = sum(abs(ndlons(x:x+obnx-1,:) - oblons))
+         if (total .lt. bdiff) then
+            bdiff = total
+            alignment = x
+         end if
+      end do
+      ! There should be a better way of doing this, seeing as
+      ! 545 < alignment < 551 and the cost function appears to be smooth.
+
+      if (bdiff .eq. 9e15) then
+         write(*,*) 'ERROR: slstr_get_alignment(): unable to determine alignment.'
+         stop error_stop_code
       end if
-   end do
-   ! There should be a better way of doing this, seeing as 545 < alignment < 551
-   ! and the cost function appears to be smooth.
-
-   if (bdiff .eq. 9e15) then
-      write(*,*) 'ERROR: slstr_get_alignment(): unable to determine alignment.'
-      stop error_stop_code
+      deallocate(ndlons)
+      deallocate(oblons)
    end if
-   deallocate(ndlons)
-   deallocate(oblons)
-#endif
 
    ! Determine start/end of orbit segment in the oblique view
    if (startx .lt. alignment) then
