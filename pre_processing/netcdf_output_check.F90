@@ -18,26 +18,22 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine netcdf_output_check(output_path, lwrtm_file, swrtm_file, prtm_file, &
-   config_file, msi_file, cf_file, lsf_file, geo_file, loc_file, alb_file, corrupt, &
-   verbose)
+subroutine netcdf_output_check(output_path, paths, corrupt, verbose)
 
    use netcdf, only: nf90_close, nf90_open, NF90_NOERR, NF90_NOWRITE
    use preproc_constants_m
+   use preproc_structures_m, only: preproc_paths_t
 
    implicit none
 
-   character(len=*), intent(in)    :: output_path
-   character(len=*), intent(in)    :: lwrtm_file, swrtm_file, &
-                                      prtm_file, config_file, &
-                                      msi_file, cf_file, lsf_file, &
-                                      geo_file, loc_file, alb_file
-   logical,          intent(inout) :: corrupt
-   logical,          intent(in)    :: verbose
-   integer                         :: ncid
+   character(len=*),      intent(in)    :: output_path
+   type(preproc_paths_t), intent(in)    :: paths
+   logical,               intent(inout) :: corrupt
+   logical,               intent(in)    :: verbose
+   integer                              :: ncid
 
-   if (verbose) write(*,*) 'Albedo file: ', trim(alb_file)
-   if (nf90_open(path=trim(adjustl(output_path))//'/'//trim(adjustl(alb_file)), &
+   if (verbose) write(*,*) 'Albedo file: ', trim(paths%alb_file)
+   if (nf90_open(path=trim(adjustl(output_path))//'/'//trim(adjustl(paths%alb_file)), &
                  mode=NF90_NOWRITE, ncid=ncid) .ne. NF90_NOERR) then
       write (*,*) 'ERROR: netcdf_output_check(): nf90_open(): ".alb.nc"'
       corrupt = .true.
@@ -49,8 +45,8 @@ subroutine netcdf_output_check(output_path, lwrtm_file, swrtm_file, prtm_file, &
       end if
    end if
 
-   if (verbose) write(*,*) 'Cloud flag file: ', trim(cf_file)
-   if (nf90_open(path=trim(adjustl(output_path))//'/'//trim(adjustl(cf_file)), &
+   if (verbose) write(*,*) 'Cloud flag file: ', trim(paths%cf_file)
+   if (nf90_open(path=trim(adjustl(output_path))//'/'//trim(adjustl(paths%cf_file)), &
                  mode=NF90_NOWRITE, ncid=ncid) .ne. NF90_NOERR) then
       write (*,*) 'ERROR: netcdf_output_check(): nf90_open(): ".clf.nc"'
       corrupt = .true.
@@ -62,8 +58,8 @@ subroutine netcdf_output_check(output_path, lwrtm_file, swrtm_file, prtm_file, &
       end if
    end if
 
-   if (verbose) write(*,*) 'Config file: ', trim(config_file)
-   if (nf90_open(path=trim(adjustl(output_path))//'/'//trim(adjustl(config_file)), &
+   if (verbose) write(*,*) 'Config file: ', trim(paths%config_file)
+   if (nf90_open(path=trim(adjustl(output_path))//'/'//trim(adjustl(paths%config_file)), &
                  mode=NF90_NOWRITE, ncid=ncid) .ne. NF90_NOERR) then
       write (*,*) 'ERROR: netcdf_output_check(): nf90_open(): ".config.nc"'
       corrupt = .true.
@@ -75,8 +71,8 @@ subroutine netcdf_output_check(output_path, lwrtm_file, swrtm_file, prtm_file, &
       end if
    end if
 
-   if (verbose) write(*,*) 'Geometry file: ', trim(geo_file)
-   if (nf90_open(path=trim(adjustl(output_path))//'/'//trim(adjustl(geo_file)), &
+   if (verbose) write(*,*) 'Geometry file: ', trim(paths%geo_file)
+   if (nf90_open(path=trim(adjustl(output_path))//'/'//trim(adjustl(paths%geo_file)), &
                  mode=NF90_NOWRITE, ncid=ncid) .ne. NF90_NOERR) then
       write (*,*) 'ERROR: netcdf_output_check(): nf90_open(): ".geo.nc"'
       corrupt = .true.
@@ -88,8 +84,8 @@ subroutine netcdf_output_check(output_path, lwrtm_file, swrtm_file, prtm_file, &
       end if
    end if
 
-   if (verbose) write(*,*) 'Location file: ', trim(loc_file)
-   if (nf90_open(path=trim(adjustl(output_path))//'/'//trim(adjustl(loc_file)), &
+   if (verbose) write(*,*) 'Location file: ', trim(paths%loc_file)
+   if (nf90_open(path=trim(adjustl(output_path))//'/'//trim(adjustl(paths%loc_file)), &
                  mode=NF90_NOWRITE, ncid=ncid) .ne. NF90_NOERR) then
       write (*,*) 'ERROR: netcdf_output_check(): nf90_open(): ".loc.nc"'
       corrupt = .true.
@@ -101,8 +97,8 @@ subroutine netcdf_output_check(output_path, lwrtm_file, swrtm_file, prtm_file, &
       end if
    end if
 
-   if (verbose) write(*,*) 'Land/sea file: ', trim(lsf_file)
-   if (nf90_open(path=trim(adjustl(output_path))//'/'//trim(adjustl(lsf_file)), &
+   if (verbose) write(*,*) 'Land/sea file: ', trim(paths%lsf_file)
+   if (nf90_open(path=trim(adjustl(output_path))//'/'//trim(adjustl(paths%lsf_file)), &
                  mode=NF90_NOWRITE, ncid=ncid) .ne. NF90_NOERR) then
       write (*,*) 'ERROR: netcdf_output_check(): nf90_open(): ".lsf.nc"'
       corrupt = .true.
@@ -114,8 +110,8 @@ subroutine netcdf_output_check(output_path, lwrtm_file, swrtm_file, prtm_file, &
       end if
    end if
 
-   if (verbose) write(*,*) 'LwRTM file: ', trim(lwrtm_file)
-   if (nf90_open(path=trim(adjustl(output_path))//'/'//trim(adjustl(lwrtm_file)), &
+   if (verbose) write(*,*) 'LwRTM file: ', trim(paths%lwrtm_file)
+   if (nf90_open(path=trim(adjustl(output_path))//'/'//trim(adjustl(paths%lwrtm_file)), &
                  mode=NF90_NOWRITE, ncid=ncid) .ne. NF90_NOERR) then
       write (*,*) 'ERROR: netcdf_output_check(): nf90_open(): ".lwrtm.nc"'
       corrupt = .true.
@@ -127,8 +123,8 @@ subroutine netcdf_output_check(output_path, lwrtm_file, swrtm_file, prtm_file, &
       end if
    end if
 
-   if (verbose) write(*,*) 'Imagery file: ', trim(msi_file)
-   if (nf90_open(path=trim(adjustl(output_path))//'/'//trim(adjustl(msi_file)), &
+   if (verbose) write(*,*) 'Imagery file: ', trim(paths%msi_file)
+   if (nf90_open(path=trim(adjustl(output_path))//'/'//trim(adjustl(paths%msi_file)), &
                  mode=NF90_NOWRITE, ncid=ncid) .ne. NF90_NOERR) then
       write (*,*) 'ERROR: netcdf_output_check(): nf90_open(): ".msi.nc"'
       corrupt = .true.
@@ -140,8 +136,8 @@ subroutine netcdf_output_check(output_path, lwrtm_file, swrtm_file, prtm_file, &
       end if
    end if
 
-   if (verbose) write(*,*) 'Prtm file: ', trim(prtm_file)
-   if (nf90_open(path=trim(adjustl(output_path))//'/'//trim(adjustl(prtm_file)), &
+   if (verbose) write(*,*) 'Prtm file: ', trim(paths%prtm_file)
+   if (nf90_open(path=trim(adjustl(output_path))//'/'//trim(adjustl(paths%prtm_file)), &
                  mode=NF90_NOWRITE, ncid=ncid) .ne. NF90_NOERR) then
       write (*,*) 'ERROR: netcdf_output_check(): nf90_open(): ".prtm.nc"'
       corrupt = .true.
@@ -153,8 +149,8 @@ subroutine netcdf_output_check(output_path, lwrtm_file, swrtm_file, prtm_file, &
       end if
    end if
 
-   if (verbose) write(*,*) 'SwRTM file: ', trim(swrtm_file)
-   if (nf90_open(path=trim(adjustl(output_path))//'/'//trim(adjustl(swrtm_file)), &
+   if (verbose) write(*,*) 'SwRTM file: ', trim(paths%swrtm_file)
+   if (nf90_open(path=trim(adjustl(output_path))//'/'//trim(adjustl(paths%swrtm_file)), &
                  mode=NF90_NOWRITE, ncid=ncid) .ne. NF90_NOERR) then
       write (*,*) 'ERROR: netcdf_output_check(): nf90_open(): ".swrtm.nc"'
       corrupt = .true.

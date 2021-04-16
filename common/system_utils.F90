@@ -5,6 +5,7 @@
 !
 ! History:
 ! 2015/10/05, GM: Original version.
+! 2020/09/25, AP: Added upper,lower() for string manipulation
 !-------------------------------------------------------------------------------
 
 module system_utils_m
@@ -15,7 +16,9 @@ module system_utils_m
 
    public :: match_file, &
              is_nan, &
-             c_to_fortran_str
+             c_to_fortran_str, &
+             lower, &
+             upper
 contains
 
 !-------------------------------------------------------------------------------
@@ -104,5 +107,45 @@ subroutine c_to_fortran_str(str)
 
    str(i:len(str)) = ' '
 end subroutine c_to_fortran_str
+
+function upper(str_in) result (str_out)
+
+   implicit none
+
+   character(len=*)           :: str_in
+   character(len=len(str_in)) :: str_out
+
+   character :: ch
+   integer   :: i
+
+   integer, parameter :: step = ichar('A') - ichar('a')
+
+   do i = 1, len(str_in)
+      ch = str_in(i:i)
+      if (ch >= 'a' .and. ch <= 'z') ch = char(ichar(ch) + step)
+      str_out(i:i) = ch
+   end do
+
+end function upper
+
+function lower(str_in) result (str_out)
+
+   implicit none
+
+   character(len=*)           :: str_in
+   character(len=len(str_in)) :: str_out
+
+   character :: ch
+   integer   :: i
+
+   integer, parameter :: step = ichar('A') - ichar('a')
+
+   do i = 1, len(str_in)
+      ch = str_in(i:i)
+      if (ch >= 'A' .and. ch <= 'Z') ch = char(ichar(ch) - step)
+      str_out(i:i) = ch
+   end do
+
+end function lower
 
 end module system_utils_m

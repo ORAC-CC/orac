@@ -1,4 +1,4 @@
-{% set version = "1.0" %}
+{% set version = "1.01" %}
 
 package:
   name: seviri_util
@@ -9,7 +9,7 @@ source:
   - path: make.inc
 
 build:
-  number: 1
+  number: 0
   run_exports:
     - {{ pin_subpackage('seviri_util', max_pin='x.x.x') }}
 

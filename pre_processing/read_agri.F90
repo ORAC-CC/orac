@@ -60,8 +60,8 @@ subroutine read_agri_dimensions(fname, n_across_track, n_along_track, verbose)
    ! Open the file.
    call ncdf_open(fid, fname, 'read_agri_dimensions()')
 
-   n_across_track = ncdf_dim_length(fid, 'lat', 'read_agri_dimensions()', verbose)
-   n_along_track = ncdf_dim_length(fid, 'lon', 'read_agri_dimensions()', verbose)
+   n_across_track = ncdf_dim_length(fid, 'lat', 'read_agri_dimensions()')
+   n_along_track = ncdf_dim_length(fid, 'lon', 'read_agri_dimensions()')
 
    call ncdf_close(fid, 'read_agri_dimensions()')
 
@@ -175,12 +175,12 @@ subroutine agri_retr_anc(ncid, imager_angles, imager_geolocation)
    type(imager_angles_t),      intent(out) :: imager_angles
    type(imager_geolocation_t), intent(out) :: imager_geolocation
 
-   call ncdf_read_array(ncid, 'latitude', imager_geolocation%latitude, .false.)
-   call ncdf_read_array(ncid, 'longitude', imager_geolocation%longitude, .false.)
-   call ncdf_read_array(ncid, 'SZA', imager_angles%solzen(:,:,1), .false.)
-   call ncdf_read_array(ncid, 'SAA', imager_angles%solazi(:,:,1), .false.)
-   call ncdf_read_array(ncid, 'VZA', imager_angles%satzen(:,:,1), .false.)
-   call ncdf_read_array(ncid, 'VAA', imager_angles%satazi(:,:,1), .false.)
+   call ncdf_read_array(ncid, 'latitude', imager_geolocation%latitude)
+   call ncdf_read_array(ncid, 'longitude', imager_geolocation%longitude)
+   call ncdf_read_array(ncid, 'SZA', imager_angles%solzen(:,:,1))
+   call ncdf_read_array(ncid, 'SAA', imager_angles%solazi(:,:,1))
+   call ncdf_read_array(ncid, 'VZA', imager_angles%satzen(:,:,1))
+   call ncdf_read_array(ncid, 'VAA', imager_angles%satazi(:,:,1))
 
    imager_angles%solzen(:,:,1) = abs(imager_angles%solzen(:,:,1))
    imager_angles%satzen(:,:,1) = abs(imager_angles%satzen(:,:,1))
@@ -260,7 +260,7 @@ subroutine agri_retr_band(ncid, band, iband, solband, imager_measurements)
    integer,                     intent(in)  :: solband
    type(imager_measurements_t), intent(out) :: imager_measurements
 
-   call ncdf_read_array(ncid, band, imager_measurements%data(:,:,iband), .false.)
+   call ncdf_read_array(ncid, band, imager_measurements%data(:,:,iband))
 
    ! If it's a solar band then we have to divide by 100 as Satpy refl is in range 0->100
    if (solband .eq. 1) then

@@ -162,8 +162,8 @@ subroutine read_ecmwf_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
 #ifdef WRAPPER
       if(ivar .eq. 1) then
 
-        call ncdf_read_array(fid, 'lon', ecmwf_lon, verbose)
-        call ncdf_read_array(fid, 'lat', ecmwf_lat, verbose)
+        call ncdf_read_array(fid, 'lon', ecmwf_lon)
+        call ncdf_read_array(fid, 'lat', ecmwf_lat)
 
         where(ecmwf_lon .gt. 180.) ecmwf_lon = ecmwf_lon-360.
 
@@ -241,9 +241,9 @@ subroutine read_ecmwf_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
            call h_e_e('nc', 'NF VAR INQUIRE failed.')
       if (three_d) then
          if (ecmwf_flag.ne.4 .and. ecmwf_flag .ne. 5) then
-            call ncdf_read_array(fid, name, dummy3d, verbose)
+            call ncdf_read_array(fid, name, dummy3d)
          else
-            call ncdf_read_array(fid, name, dummy3d_2, verbose)
+            call ncdf_read_array(fid, name, dummy3d_2)
          end if
          do k = 1, ecmwf%kdim
             old_len = n
@@ -280,7 +280,7 @@ subroutine read_ecmwf_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
          if (verbose) print*, trim(name), ') Min: ', minval(array3d), &
               ', Max: ', maxval(array3d)
       else
-         call ncdf_read_array(fid, name, dummy2d, verbose)
+         call ncdf_read_array(fid, name, dummy2d)
          old_len = n
          old_data(1:n) = reshape(real(dummy2d, kind=8), [n])
 

@@ -26,7 +26,8 @@ COMMON_OBJ_F90 = $(OBJS)/chunk_utils.o \
                  $(OBJS)/source_attributes.o \
                  $(OBJS)/system_utils.o
 
-COMMON_OBJ_C = $(OBJS)/struct_parser_utils.o \
+COMMON_OBJ_C = $(OBJS)/nc_get_string_att.o \
+               $(OBJS)/struct_parser_utils.o \
                $(OBJS)/system_utils_c.o
 
 COMMON_OBJ   = $(COMMON_OBJ_F90) $(COMMON_OBJ_C)

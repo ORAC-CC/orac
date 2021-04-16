@@ -63,20 +63,20 @@ subroutine read_USGS_file(path_to_USGS_file, usgs, verbose)
    call ncdf_open(fid, path_to_USGS_file, 'read_USGS_file()')
 
    ! Extract the array dimensions
-   usgs%nlon = ncdf_dim_length(fid, 'lon', 'read_USGS_file()', verbose)
-   usgs%nlat = ncdf_dim_length(fid, 'lat', 'read_USGS_file()', verbose)
+   usgs%nlon = ncdf_dim_length(fid, 'lon', 'read_USGS_file()')
+   usgs%nlat = ncdf_dim_length(fid, 'lat', 'read_USGS_file()')
 
    ! Read data for each variable
    allocate(usgs%lon(usgs%nlon))
-   call ncdf_read_array(fid, 'lon', usgs%lon, verbose)
+   call ncdf_read_array(fid, 'lon', usgs%lon)
    allocate(usgs%lat(usgs%nlat))
-   call ncdf_read_array(fid, 'lat', usgs%lat, verbose)
+   call ncdf_read_array(fid, 'lat', usgs%lat)
    allocate(usgs%dem(usgs%nlon, usgs%nlat))
-   call ncdf_read_array(fid, 'dem', usgs%dem, verbose)
+   call ncdf_read_array(fid, 'dem', usgs%dem)
    allocate(usgs%lus(usgs%nlon, usgs%nlat))
-   call ncdf_read_array(fid, 'lus', usgs%lus, verbose)
+   call ncdf_read_array(fid, 'lus', usgs%lus)
    allocate(usgs%lsm(usgs%nlon, usgs%nlat))
-   call ncdf_read_array(fid, 'lsm', usgs%lsm, verbose)
+   call ncdf_read_array(fid, 'lsm', usgs%lsm)
 
    ! We are now finished with the main data file
    call ncdf_close(fid, 'read_USGS_file()')
@@ -116,9 +116,9 @@ subroutine read_predef_file_ahi(path_to_file, usgs, imager_geolocation, verbose)
    allocate(usgs%lus(imager_geolocation%nx, imager_geolocation%ny))
    allocate(usgs%lsm(imager_geolocation%nx, imager_geolocation%ny))
 
-   call ncdf_read_array(fid, "Elevation_Mask", usgs%dem, .false., start=start)
-   call ncdf_read_array(fid, "Land_Use_Mask", usgs%lus, .false., start=start)
-   call ncdf_read_array(fid, "Land_Sea_Mask", usgs%lsm, .false., start=start)
+   call ncdf_read_array(fid, "Elevation_Mask", usgs%dem, start=start)
+   call ncdf_read_array(fid, "Land_Use_Mask", usgs%lus, start=start)
+   call ncdf_read_array(fid, "Land_Sea_Mask", usgs%lsm, start=start)
 
    ! We are now finished with the main data file
    call ncdf_close(fid, 'read_predef_file_ahi()')
@@ -158,17 +158,17 @@ subroutine read_predef_file_sev(path_to_file, usgs, verbose)
    call ncdf_open(fid, path_to_file, 'read_predef_file_sev()')
 
    ! Extract the array dimensions
-   usgs%nlon = ncdf_dim_length(fid, 'x', 'read_USGS_file()', verbose)
-   usgs%nlat = ncdf_dim_length(fid, 'y', 'read_USGS_file()', verbose)
+   usgs%nlon = ncdf_dim_length(fid, 'x', 'read_USGS_file()')
+   usgs%nlat = ncdf_dim_length(fid, 'y', 'read_USGS_file()')
 
    ! Read data for each variable
    allocate(usgs%dem(usgs%nlon, usgs%nlat))
    allocate(usgs%lus(usgs%nlon, usgs%nlat))
    allocate(usgs%lsm(usgs%nlon, usgs%nlat))
 
-   call ncdf_read_array(fid, 'Elevation_Mask', usgs%dem, verbose)
-   call ncdf_read_array(fid, 'Land_Use_Mask', usgs%lus, verbose)
-   call ncdf_read_array(fid, 'Land_Sea_Mask', usgs%lsm, verbose)
+   call ncdf_read_array(fid, 'Elevation_Mask', usgs%dem)
+   call ncdf_read_array(fid, 'Land_Use_Mask', usgs%lus)
+   call ncdf_read_array(fid, 'Land_Sea_Mask', usgs%lsm)
 
    ! We are now finished with the main data file
    call ncdf_close(fid, 'read_predef_file_sev()')

@@ -17,7 +17,7 @@ module planck_m
 
 contains
 
-#include "T2R.F90"
-#include "R2T.F90"
+#include "t2r.F90"
+#include "r2t.F90"
 
 end module planck_m

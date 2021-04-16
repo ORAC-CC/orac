@@ -68,16 +68,15 @@ implicit none
 
 contains
 
-subroutine read_imager(sensor, platform, path_to_l1b_file, path_to_geo_file, &
-     path_to_aatsr_drift_table, geo_file_path, imager_geolocation, &
-     imager_angles, imager_flags, imager_time, imager_measurements, &
-     channel_info, n_along_track, use_l1_land_mask, use_predef_geo, do_gsics, &
-     global_atts, verbose)
+subroutine read_imager(granule, opts, path_to_aatsr_drift_table, &
+     imager_geolocation, imager_angles, imager_flags, imager_time, &
+     imager_measurements, channel_info, global_atts, verbose)
 
    use channel_structures_m
    use global_attributes_m
    use imager_structures_m
    use preproc_constants_m
+   use preproc_structures_m, only: preproc_opts_t, setup_args_t
    use read_aatsr_m
    use read_abi_m
    use read_agri_m
@@ -91,22 +90,15 @@ subroutine read_imager(sensor, platform, path_to_l1b_file, path_to_geo_file, &
 
    implicit none
 
-   character(len=*),            intent(in)    :: sensor
-   character(len=*),            intent(in)    :: platform
-   character(len=*),            intent(in)    :: path_to_l1b_file
-   character(len=*),            intent(in)    :: path_to_geo_file
+   type(setup_args_t),          intent(in)    :: granule
+   type(preproc_opts_t),        intent(in)    :: opts
    character(len=*),            intent(in)    :: path_to_aatsr_drift_table
-   character(len=*),            intent(in)    :: geo_file_path
    type(imager_geolocation_t),  intent(inout) :: imager_geolocation
    type(imager_angles_t),       intent(inout) :: imager_angles
    type(imager_flags_t),        intent(inout) :: imager_flags
    type(imager_time_t),         intent(inout) :: imager_time
    type(imager_measurements_t), intent(inout) :: imager_measurements
    type(channel_info_t),        intent(in)    :: channel_info
-   integer(kind=lint),          intent(in)    :: n_along_track
-   logical,                     intent(in)    :: use_l1_land_mask
-   logical,                     intent(in)    :: use_predef_geo
-   logical,                     intent(in)    :: do_gsics
    type(global_attributes_t),   intent(inout) :: global_atts
    logical,                     intent(in)    :: verbose
 
@@ -117,144 +109,143 @@ subroutine read_imager(sensor, platform, path_to_l1b_file, path_to_geo_file, &
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_imager()'
 
-   if (verbose) write(*,*) 'sensor: ',           trim(sensor)
-   if (verbose) write(*,*) 'platform: ',         trim(platform)
-   if (verbose) write(*,*) 'path_to_l1b_file: ', trim(path_to_l1b_file)
-   if (verbose) write(*,*) 'path_to_geo_file: ', trim(path_to_geo_file)
+   if (verbose) write(*,*) 'sensor: ',           trim(granule%sensor)
+   if (verbose) write(*,*) 'platform: ',         trim(granule%platform)
+   if (verbose) write(*,*) 'path_to_l1b_file: ', trim(granule%l1b_file)
+   if (verbose) write(*,*) 'path_to_geo_file: ', trim(granule%geo_file)
    ! Not all instruments provide a geo file, and if a string is nothing by
    ! blank characters, then trim doesn't work
-   if ((verbose) .and. (len_trim(geo_file_path) .ne. path_length)) &
-        write(*,*) 'geo_file_path:    ', trim(geo_file_path)
+   if ((verbose) .and. (len_trim(opts%ext_geo_path) .ne. path_length)) &
+        write(*,*) 'geo_file_path:    ', trim(opts%ext_geo_path)
 
    ! Set satellite position metadata to blank by default
    ! Currently this is only used by geosats for parallax correction (postproc)
    global_atts%Satpos_Metadata = ""
 
    !branches for the sensors
-   if (trim(adjustl(sensor)) .eq. 'AATSR' .or. &
-       trim(adjustl(sensor)) .eq. 'ATSR2') then
+   select case (trim(granule%sensor))
+   case('AATSR', 'ATSR2')
       if (verbose) write(*,*) 'path_to_aatsr_drift_table: ', &
                               trim(path_to_aatsr_drift_table)
 
       ! Read the L1B data, according to the dimensions and offsets specified in
       ! imager_geolocation
 
-      call read_aatsr_l1b(path_to_l1b_file, path_to_aatsr_drift_table, &
+      call read_aatsr_l1b(granule%l1b_file, path_to_aatsr_drift_table, &
            imager_geolocation, imager_measurements, imager_angles, &
-           imager_flags, imager_time, channel_info, sensor, verbose)
+           imager_flags, imager_time, channel_info, granule%sensor, verbose)
 
-   else if (trim(adjustl(sensor)) .eq. 'ABI') then
-
+   case('ABI')
       ! Assemble the filenames required for ABI data
       allocate(abi_filenames(channel_info%nchannels_total))
-      call get_abi_path(path_to_l1b_file, platform, abi_filenames, &
+      call get_abi_path(granule%l1b_file, granule%platform, abi_filenames, &
            channel_info%nchannels_total, channel_info%channel_ids_instr)
 
       ! Read the L1B data, according to the dimensions and offsets specified in
       ! imager_geolocation
       call read_abi_bin(abi_filenames, imager_geolocation, &
            imager_measurements, imager_angles, imager_time, channel_info, &
-           use_predef_geo, geo_file_path, global_atts, verbose)
+           opts%use_predef_geo, opts%ext_geo_path, global_atts, verbose)
 
       !in absence of proper mask set everything to "1" for cloud mask
       imager_flags%cflag = 1
 
       deallocate(abi_filenames)
 
-   else if (trim(adjustl(sensor)) .eq. 'AGRI') then
+   case('AGRI')
       ! Read the L1B data, according to the dimensions and offsets specified in
       ! imager_geolocation
-      call read_agri_data(path_to_l1b_file, imager_geolocation, &
+      call read_agri_data(granule%l1b_file, imager_geolocation, &
            imager_measurements, imager_angles, imager_time, channel_info, &
            global_atts, verbose)
       !in absence of proper mask set everything to "1" for cloud mask
       imager_flags%cflag = 1
 
-   else if (trim(adjustl(sensor)) .eq. 'AHI') then
+   case('AHI')
       ! Read the L1B data, according to the dimensions and offsets specified in
       ! imager_geolocation
-      call read_himawari_bin(path_to_l1b_file, imager_geolocation, &
+      call read_himawari_bin(granule%l1b_file, imager_geolocation, &
            imager_measurements, imager_angles, imager_time, channel_info, &
-           use_predef_geo, geo_file_path, global_atts, verbose)
+           opts%use_predef_geo, opts%ext_geo_path, global_atts, verbose)
 
       !in absence of proper mask set everything to "1" for cloud mask
       imager_flags%cflag = 1
 
-   else if (trim(adjustl(sensor)) .eq. 'AVHRR') then
+   case('AVHRR')
       !  Read the angles and lat/lon info of the orbit
-      call read_avhrr_time_lat_lon_angles(path_to_geo_file, imager_geolocation, &
-           imager_angles, imager_time, n_along_track, verbose)
+      call read_avhrr_time_lat_lon_angles(granule%geo_file, imager_geolocation, &
+           imager_angles, imager_time, granule%n_along_track, verbose)
 
-      if (use_l1_land_mask) &
-           call read_avhrr_land_sea_mask(path_to_geo_file, imager_geolocation, &
+      if (opts%use_l1_land_mask) &
+           call read_avhrr_land_sea_mask(granule%geo_file, imager_geolocation, &
                 imager_flags)
 
       ! Read the (subset) of the orbit etc. SW:reflectances, LW:brightness temp
-      call read_avhrr_l1b_radiances(sensor, platform, path_to_l1b_file, &
+      call read_avhrr_l1b_radiances(granule%sensor, granule%platform, granule%l1b_file, &
            imager_geolocation, imager_measurements, channel_info, verbose)
 
       ! In absence of proper mask set everything to "1" for cloud mask
       imager_flags%cflag = 1
 
-   else if (trim(adjustl(sensor)) .eq. 'MODIS') then
-      call read_modis_time_lat_lon_angles(path_to_geo_file, imager_geolocation, &
-           imager_angles, imager_flags, imager_time, n_along_track, verbose)
+   case('MODIS')
+      call read_modis_time_lat_lon_angles(granule%geo_file, imager_geolocation, &
+           imager_angles, imager_flags, imager_time, granule%n_along_track, verbose)
 
       ! Read MODIS L1b data. SW:reflectances, LW:brightness temperatures
-      call read_modis_l1b_radiances(sensor, platform, path_to_l1b_file, &
+      call read_modis_l1b_radiances(granule%sensor, granule%platform, granule%l1b_file, &
            imager_geolocation, imager_measurements, channel_info, verbose)
 
       ! In absence of proper mask set everything to "1" for cloud mask
       imager_flags%cflag = 1
 
-   else if (trim(adjustl(sensor)) .eq. 'SEVIRI') then
+   case('SEVIRI')
       ! Read the L1B data, according to the dimensions and offsets specified in
       ! imager_geolocation
-      call read_seviri_l1_5(path_to_l1b_file, &
+      call read_seviri_l1_5(granule%l1b_file, &
            imager_geolocation, imager_measurements, imager_angles, &
-           imager_time, channel_info, do_gsics, global_atts, verbose)
+           imager_time, channel_info, opts%do_gsics, global_atts, verbose)
 
       ! Temporary function for use until seviri_util predef geo is fixed. INEFFICIENT.
-      if (use_predef_geo) call SEV_Retrieve_Predef_Geo(imager_geolocation, &
-           imager_angles, geo_file_path, verbose)
+      if (opts%use_predef_geo) call SEV_Retrieve_Predef_Geo(imager_geolocation, &
+           imager_angles, opts%ext_geo_path, verbose)
 
       ! In absence of proper mask set everything to "1" for cloud mask
       imager_flags%cflag = 1
 
-   else if (trim(adjustl(sensor)) .eq. 'SLSTR') then
+   case('SLSTR')
       ! Read the L1B data, according to the dimensions and offsets specified in
       ! imager_geolocation
-      call read_slstr(path_to_l1b_file, &
-           imager_geolocation, imager_measurements, imager_angles, &
-           imager_time, imager_flags, channel_info, verbose)
+      call read_slstr(granule%l1b_file, &
+           imager_geolocation, imager_measurements, imager_angles, imager_time, &
+           imager_flags, channel_info, verbose)
 
       ! In absence of proper mask set everything to "1" for cloud mask
       imager_flags%cflag = 1
 
-   else if (trim(adjustl(sensor)) .eq. 'VIIRSI') then
+   case('VIIRSI')
       ! Read the L1B data, according to the dimensions and offsets specified in
       ! imager_geolocation
-      call read_viirs_iband(path_to_l1b_file, path_to_geo_file, &
-           imager_geolocation, imager_measurements, imager_angles, &
-           imager_time, channel_info, verbose)
-
-      ! In absence of proper mask set everything to "1" for cloud mask
-      imager_flags%cflag = 1
-
-   else if (trim(adjustl(sensor)) .eq. 'VIIRSM') then
-      ! Read the L1B data, according to the dimensions and offsets specified in
-      ! imager_geolocation
-      call read_viirs_mband(path_to_l1b_file, path_to_geo_file, &
+      call read_viirs_iband(granule%l1b_file, granule%geo_file, &
            imager_geolocation, imager_measurements, imager_angles, &
            imager_time, channel_info, verbose)
 
       ! In absence of proper mask set everything to "1" for cloud mask
       imager_flags%cflag = 1
 
-   else
-      write(*,*) 'ERROR: read_imager(): Invalid sensor: ', trim(adjustl(sensor))
+   case('VIIRSM')
+      ! Read the L1B data, according to the dimensions and offsets specified in
+      ! imager_geolocation
+      call read_viirs_mband(granule%l1b_file, granule%geo_file, &
+           imager_geolocation, imager_measurements, imager_angles, &
+           imager_time, channel_info, verbose)
+
+      ! In absence of proper mask set everything to "1" for cloud mask
+      imager_flags%cflag = 1
+
+   case default
+      write(*,*) 'ERROR: read_imager(): Invalid sensor: ', trim(adjustl(granule%sensor))
       stop error_stop_code
-   end if
+   end select
 
    ! Bias correction (these are defined in the appropriate setup.F90 routine)
    do k = 1, channel_info%nchannels_total

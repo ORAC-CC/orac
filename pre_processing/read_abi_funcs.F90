@@ -179,8 +179,8 @@ subroutine get_abi_geoloc(infile, imager_geolocation, imager_angles, &
    ! Open the netCDF4 file for reading
    call ncdf_open(fid, infile, 'get_abi_geoloc()')
 
-   call ncdf_read_array(fid, "x", x, verbose, start=[imager_geolocation%startx])
-   call ncdf_read_array(fid, "y", y, verbose, start=[imager_geolocation%starty])
+   call ncdf_read_array(fid, "x", x, start=[imager_geolocation%startx])
+   call ncdf_read_array(fid, "y", y, start=[imager_geolocation%starty])
 
    ! Read the various attributes required for building the geolocation model
    ierr = nf90_inq_varid(fid, "goes_imager_projection", gimpid)
@@ -613,13 +613,13 @@ subroutine load_abi_band(infile, imager_geolocation, rad, kappa, bc1, bc2, fk1, 
    ! Open the netCDf4 file for access
    call ncdf_open(fid, infile, 'load_abi_band()')
 
-   call ncdf_read_array(fid, 'Rad', rad, verbose, start=[x0, y0])
-   call ncdf_read_array(fid, 'DQF', dqf, verbose, start=[x0, y0])
-   call ncdf_read_array(fid, 'kappa0', kappa, verbose)
-   call ncdf_read_array(fid, 'planck_bc1', bc1, verbose)
-   call ncdf_read_array(fid, 'planck_bc2', bc2, verbose)
-   call ncdf_read_array(fid, 'planck_fk1', fk1, verbose)
-   call ncdf_read_array(fid, 'planck_fk2', fk2, verbose)
+   call ncdf_read_array(fid, 'Rad', rad, start=[x0, y0])
+   call ncdf_read_array(fid, 'DQF', dqf, start=[x0, y0])
+   call ncdf_read_array(fid, 'kappa0', kappa)
+   call ncdf_read_array(fid, 'planck_bc1', bc1)
+   call ncdf_read_array(fid, 'planck_bc2', bc2)
+   call ncdf_read_array(fid, 'planck_fk1', fk1)
+   call ncdf_read_array(fid, 'planck_fk2', fk2)
 
    call ncdf_close(fid, 'load_abi_band()')
 

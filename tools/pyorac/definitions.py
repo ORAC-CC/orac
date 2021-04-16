@@ -1,9 +1,8 @@
 """Variables and classes used throughout the ORAC scripts."""
 
-
-#-----------------------------------------------------------------------------
-#----- GLOBAL VARIABLES ------------------------------------------------------
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# ----- GLOBAL VARIABLES ------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 # Names of the possible Pavolonis cloud classes
 ALL_TYPES = ('CLEAR', 'SWITCHED_TO_WATER', 'FOG', 'WATER', 'SUPERCOOLED',
@@ -12,44 +11,53 @@ ALL_TYPES = ('CLEAR', 'SWITCHED_TO_WATER', 'FOG', 'WATER', 'SUPERCOOLED',
 
 # Colours used when printing to screen
 COLOURING = {
-    'pass'    : 'green',
-    'warning' : 'light yellow',
-    'error'   : 'red',
-    'text'    : 'cyan',
-    'header'  : 'light cyan',
-    'timing'  : 'magenta'
+    'pass': 'green',
+    'warning': 'light yellow',
+    'error': 'red',
+    'text': 'cyan',
+    'header': 'light cyan',
+    'timing': 'magenta'
 }
 
-#-----------------------------------------------------------------------------
-#----- EXCEPTIONS AND WARNINGS -----------------------------------------------
-#-----------------------------------------------------------------------------
+
+# -----------------------------------------------------------------------------
+# ----- EXCEPTIONS AND WARNINGS -----------------------------------------------
+# -----------------------------------------------------------------------------
+
 
 class OracError(Exception):
     """Copy of Exception class to differentiate script errors from system."""
     pass
 
+
 class FileMissing(OracError):
     """Error when a required file could not be found."""
+
     def __init__(self, desc, filename):
         OracError.__init__(self, 'Could not locate {:s}: {:s}'.format(desc,
                                                                       filename))
         self.desc = desc
         self.filename = filename
 
+
 class BadValue(OracError):
     """Error when an out-of-range value is provided."""
+
     def __init__(self, variable, value):
         OracError.__init__(self, 'Invalid value for {}: {}'.format(variable,
                                                                    value))
         self.variable = variable
         self.value = value
 
+
 class OracWarning(UserWarning):
     """Copy of UserWarning class to regression warnings from system."""
     pass
 
+
 class Regression(OracWarning):
     """A field has changed during a regression test."""
+
     def __init__(self, filename, variable, col, desc):
         import re
         import sys
@@ -63,34 +71,42 @@ class Regression(OracWarning):
                 regex.group(3), variable, desc)
         OracWarning.__init__(self, text, 'text')
 
+
 class InconsistentDim(Regression):
     """The dimensions of a field have changed."""
+
     def __init__(self, filename, variable, dim0, dim1):
         Regression.__init__(self, filename, variable, 'error', 'Inconsistent '
-                            'dimensions ({:d} vs {:d})'.format(dim0, dim1))
+                                                               'dimensions ({:d} vs {:d})'.format(dim0, dim1))
+
 
 class FieldMissing(Regression):
     """A field is missing from one of the files evaluated."""
+
     def __init__(self, filename, variable):
         Regression.__init__(self, filename, variable, 'warning',
                             'Field not present in one file')
 
+
 class RoundingError(Regression):
     """A value has changed in a field."""
+
     def __init__(self, filename, variable):
         Regression.__init__(self, filename, variable, 'error',
                             'Unequal elements')
 
+
 class Acceptable(Regression):
     """A value has changed by a small increment in a field."""
+
     def __init__(self, filename, variable):
         Regression.__init__(self, filename, variable, 'pass',
                             'Acceptable variation')
 
 
-#-----------------------------------------------------------------------------
-#----- CONVIENIENCE CLASSES --------------------------------------------------
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# ----- CONVIENIENCE CLASSES --------------------------------------------------
+# -----------------------------------------------------------------------------
 class FileName:
     """Parses L1B or ORAC filenames to determine the instrument and
     measurement time.
@@ -148,8 +164,8 @@ class FileName:
         )
         if mat:
             self.sensor = 'AATSR'
-            self.platform = 'Envisat' # For preprocessor
-            self.inst = 'AATSR'   # For main processor
+            self.platform = 'Envisat'  # For preprocessor
+            self.inst = 'AATSR'  # For main processor
             self.time = datetime.datetime(
                 int(mat.group('year')), int(mat.group('month')),
                 int(mat.group('day')), int(mat.group('hour')),
@@ -170,7 +186,7 @@ class FileName:
         if mat:
             self.sensor = 'ATSR2'
             self.platform = 'ERS2'  # For preprocessor
-            self.inst = 'ATSR2' # For main processor
+            self.inst = 'ATSR2'  # For main processor
             self.time = datetime.datetime(
                 int(mat.group('year')), int(mat.group('month')),
                 int(mat.group('day')), int(mat.group('hour')),
@@ -189,16 +205,16 @@ class FileName:
         if mat:
             self.sensor = 'MODIS'
             if mat.group('platform') == 'O':
-                self.platform = 'TERRA'       # For preprocessor
-                self.inst = 'MODIS-TERRA' # For main processor
-            else: # == 'Y'
+                self.platform = 'TERRA'  # For preprocessor
+                self.inst = 'MODIS-TERRA'  # For main processor
+            else:  # == 'Y'
                 self.platform = 'AQUA'
                 self.inst = 'MODIS-AQUA'
             self.time = (datetime.datetime(
                 int(mat.group('year')), 1, 1, int(mat.group('hour')),
                 int(mat.group('min')), 0, 0
             ) + datetime.timedelta(days=int(mat.group('doy')) - 1))
-            self.dur = datetime.timedelta(minutes=5) # Approximately
+            self.dur = datetime.timedelta(minutes=5)  # Approximately
             self.geo = ('M' + mat.group('platform') + 'D03.A' + mat.group('year') +
                         mat.group('doy') + '.' + mat.group('hour') +
                         mat.group('min') + '.' + mat.group('collection') + '.*hdf')
@@ -219,7 +235,7 @@ class FileName:
                 int(mat.group('day')), int(mat.group('hour')),
                 int(mat.group('min')), 0, 0
             )
-            self.dur = datetime.timedelta(seconds=6555) # Approximately
+            self.dur = datetime.timedelta(seconds=6555)  # Approximately
             # The following may be problematic with interesting dir names
             self.geo = filename.replace('_avhrr.h5', '_sunsatangles.h5')
             return
@@ -242,9 +258,29 @@ class FileName:
                 int(mat.group('day')), int(mat.group('hour')),
                 int(mat.group('min')), 0, 0
             )
-            self.dur = datetime.timedelta(seconds=6555) # Approximately
+            self.dur = datetime.timedelta(seconds=6555)  # Approximately
             self.geo = filename.replace('ECC_GAC_avhrr_',
                                         'ECC_GAC_sunsatangles_')
+            return
+
+        # Attempt Himawari L1B filename in HSD format
+        mat = re.search(
+            r'HS_H(?P<platform>\d{2})_(?P<year>\d{4})'
+            r'(?P<month>\d{2})(?P<day>\d{2})_(?P<hour>\d{2})(?P<min>\d{2})'
+            r'_(.*).DAT', filename
+        )
+        if mat:
+            self.sensor = 'AHI'
+            self.platform = 'Himawari-'+str(int(mat.group('platform')))
+            self.inst = 'AHI-'+self.platform
+            self.time = datetime.datetime(
+                int(mat.group('year')), int(mat.group('month')),
+                int(mat.group('day')), int(mat.group('hour')),
+                int(mat.group('min')), 0, 0
+            )
+            self.dur = datetime.timedelta(seconds=600)  # Approximately
+            self.geo = filename
+            self.predef = True
             return
 
         # Attempt SEVIRI L1B filename in NAT format
@@ -255,14 +291,14 @@ class FileName:
         )
         if mat:
             self.sensor = 'SEVIRI'
-            self.platform = 'MSG'+mat.group('platform')
-            self.inst = 'SEVIRI-'+self.platform
+            self.platform = 'MSG' + mat.group('platform')
+            self.inst = 'SEVIRI-' + self.platform
             self.time = datetime.datetime(
                 int(mat.group('year')), int(mat.group('month')),
                 int(mat.group('day')), int(mat.group('hour')),
                 int(mat.group('min')), round(float(mat.group('sec'))), 0
             )
-            self.dur = datetime.timedelta(seconds=900) # Approximately
+            self.dur = datetime.timedelta(seconds=900)  # Approximately
             self.geo = filename
             self.predef = True
             return
@@ -275,14 +311,14 @@ class FileName:
         )
         if mat:
             self.sensor = 'SEVIRI'
-            self.platform = 'MSG'+mat.group('platform')
-            self.inst = 'SEVIRI-'+self.platform
+            self.platform = 'MSG' + mat.group('platform')
+            self.inst = 'SEVIRI-' + self.platform
             self.time = datetime.datetime(
                 int(mat.group('year')), int(mat.group('month')),
                 int(mat.group('day')), int(mat.group('hour')),
                 int(mat.group('min')), 0, 0
             )
-            self.dur = datetime.timedelta(seconds=900) # Approximately
+            self.dur = datetime.timedelta(seconds=900)  # Approximately
             self.geo = filename
             self.predef = True
             return
@@ -298,13 +334,13 @@ class FileName:
                 tmp = os.path.join(fdr, filename)
                 if os.path.isfile(tmp):
                     self.platform = _determine_platform_from_metoffice(tmp)
-            self.inst = 'SEVIRI-'+self.platform
+            self.inst = 'SEVIRI-' + self.platform
             self.time = datetime.datetime(
                 int(mat.group('year')), int(mat.group('month')),
                 int(mat.group('day')), int(mat.group('hour')),
                 int(mat.group('min')), 0, 0
             )
-            self.dur = datetime.timedelta(seconds=900) # Approximately
+            self.dur = datetime.timedelta(seconds=900)  # Approximately
             self.geo = filename
             self.predef = True
             return
@@ -321,8 +357,8 @@ class FileName:
         if mat:
             self.l1b = os.path.join(filename, "geodetic_in.nc")
             self.sensor = 'SLSTR'
-            self.platform = 'Sentinel3'+mat.group('platform').lower()
-            self.inst = 'SLSTR-Sentinel-3'+mat.group('platform').lower()
+            self.platform = 'Sentinel3' + mat.group('platform').lower()
+            self.inst = 'SLSTR-Sentinel-3' + mat.group('platform').lower()
             self.dur = datetime.timedelta(seconds=int(mat.group('duration')))
             self.geo = os.path.join(filename, "geodetic_in.nc")
 
@@ -334,7 +370,7 @@ class FileName:
                         sec = (time - time.min).seconds
                         rounding = (sec + 30) // 60 * 60
                         self.time = time + datetime.timedelta(
-                            0, rounding-sec, -time.microsecond
+                            0, rounding - sec, -time.microsecond
                         )
 
                         self.orbit_num = "{:05d}".format(
@@ -417,7 +453,7 @@ class FileName:
         except AttributeError as err:
             terms = err.args[0].split("'")
             raise ValueError("A default root name can only be determined "
-                             "for ORAC filenames. Please specify "+terms[-2])
+                             "for ORAC filenames. Please specify " + terms[-2])
 
         parts = [
             self.sensor, processor, self.platform,
@@ -439,7 +475,7 @@ class FileName:
         elif plat in (15, 16, 17, 18, 19):
             return '3'
         else:
-            raise ValueError("Unknown AVHRR platform: "+self.platform)
+            raise ValueError("Unknown AVHRR platform: " + self.platform)
 
 
 def _determine_platform_from_metoffice(filename):
@@ -453,11 +489,12 @@ def _determine_platform_from_metoffice(filename):
 
     return "MSG{}".format(platform - 320)
 
-#-----------------------------------------------------------------------------
-#----- INSTRUMENT/CLASS DEFINITIONS ------------------------------------------
-#-----------------------------------------------------------------------------
 
-class Invpar():
+# -----------------------------------------------------------------------------
+# ----- INSTRUMENT/CLASS DEFINITIONS ------------------------------------------
+# -----------------------------------------------------------------------------
+
+class Invpar:
     """Container for settings to pass to an ORAC retrieval
     Member variables:
     var - Name of the element of the state vector
@@ -480,16 +517,16 @@ class Invpar():
     def driver(self):
         """Output lines for a driver file to specify these settings"""
         driver = ''
-        if self.ap != None:
+        if self.ap is not None:
             driver += "\nCtrl%XB[{:s}] = {}".format(self.var, self.ap)
-        if self.fg != None:
+        if self.fg is not None:
             driver += "\nCtrl%X0[{:s}] = {}".format(self.var, self.fg)
-        if self.sx != None:
+        if self.sx is not None:
             driver += "\nCtrl%Sx[{:s}] = {}".format(self.var, self.sx)
         return driver
 
 
-class ParticleType():
+class ParticleType:
     """Container for an ORAC particle type
     Member variables:
     inv - Tuple of Invpars giving settings to pass to retrieval
@@ -515,7 +552,7 @@ class ParticleType():
             else:
                 fdr_name = join(fdr, inst.sensor.lower() + "_" + self.sad)
 
-            file_name = "_".join((inst.sensor+"*", self.name, "RBD", "Ch*.sad"))
+            file_name = "_".join((inst.sensor + "*", self.name, "RBD", "Ch*.sad"))
 
             # SAD files stored in subdirectories
             if glob(join(fdr_name, file_name)):
@@ -526,6 +563,7 @@ class ParticleType():
                 return fdr
 
         raise FileMissing("Sad Files", str(sad_dirs))
+
 
 # Using non-imager LUTs and Baum properties at Greg's recommendation
 SETTINGS = {}
