@@ -659,8 +659,8 @@ subroutine alloc_output_data_secondary(ind, data)
 
 
    ! Set scale/offset/vmin/vmax dynamically as required
-   data%scanline_u_vmax = ind%X1 - ind%X0 + 1
-   data%scanline_v_vmax = ind%Y1 - ind%Y0 + 1
+   data%scanline_u_vmax = ind%Y1 - ind%Y0 + 1
+   data%scanline_v_vmax = ind%X1 - ind%X0 + 1
 
    do i = 1, ind%Ny
       if (btest(ind%Ch_Is(i), ThermalBit)) then

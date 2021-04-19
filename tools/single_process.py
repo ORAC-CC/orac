@@ -36,8 +36,8 @@ args_postproc(pars)
 args = pars.parse_args()
 
 
-check_args_common(args)
-check_args_cc4cl(args)
+args = check_args_common(args)
+args = check_args_cc4cl(args)
 log_path = os.path.join(args.out_dir, log_dir)
 
 try:

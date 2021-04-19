@@ -1,4 +1,5 @@
 {% set version = "4.5.5" %}
+# TODO: This can support OMP
 
 package:
   name: libemos
@@ -12,20 +13,17 @@ source:
     - cmake.patch
 
 build:
-  number: 0
+  number: 1
   skip: True  # [win]
   detect_binary_files_with_prefix: True
-  run_exports:
-    - eccodes
-    - fftw
   run_exports:
     - {{ pin_subpackage('libemos', max_pin='x.x.x') }}
 
 requirements:
   build:
     - {{ compiler('c') }}
-    - {{ compiler('cxx') }}
     - {{ compiler('fortran') }}
+    - cmake
   host:
     - eccodes
     - fftw
@@ -46,7 +44,7 @@ test:
 about:
   doc_url: https://software.ecmwf.int/wiki/display/EMOS/Using+EMOSLIB
   home: https://software.ecmwf.int/wiki/display/EMOS/Releases
-  license: 'Apache License, Version 2.0'
+  license: APACHE
   license_file: LICENSE
   summary: 'Interpolation library'
 

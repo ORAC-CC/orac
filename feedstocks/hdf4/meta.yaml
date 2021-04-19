@@ -14,6 +14,10 @@ source:
 build:
   number: 0
   skip: True  # [win]
+  has_prefix_files:
+    - bin/h4cc
+    - bin/h4fc
+    - lib/libhdf4.settings
   run_exports:
     - {{ pin_subpackage('hdf4', max_pin='x.x.x') }}
 
@@ -24,17 +28,16 @@ requirements:
     - {{ compiler('fortran') }}
     - bison       # [not win]
     - flex        # [not win]
+    - make        # [not win]
     - libtool     # [not win]
     - automake    # [not win]
     - autoconf    # [not win]
   host:
     - zlib
     - jpeg
-    - szip
   run:
     - zlib
     - jpeg
-    - szip
 
 test:
   requires:

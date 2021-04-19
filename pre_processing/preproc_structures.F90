@@ -28,6 +28,8 @@
 ! 2018/07/18, DE: Add tropoopause temperature
 ! 2018/09/30, SP: New structure to store driver option variables, tidier than multi-var
 ! 2018/11/05, SP: Add CAPE
+! 2021/03/09, AP: Consolidate path arguments into preproc_paths_t structure
+! 2021/03/10, AP: Consolidate paths/dates into setup_args_t structure
 !
 ! Bugs:
 ! None known.
@@ -74,7 +76,7 @@ module preproc_structures_m
       logical                    :: do_ironly
       integer                    :: ecmwf_nlevels
       integer                    :: ecmwf_time_int_method
-      integer,pointer            :: channel_ids(:)
+      integer, pointer           :: channel_ids(:)
       integer(kind=lint)         :: n_channels
       real                       :: swansea_gamma
       logical                    :: use_camel_emis
@@ -104,23 +106,23 @@ module preproc_structures_m
 
    ! ecmwf profiles and surface fields (prtm data)
    type preproc_prtm_t
-      real(kind=sreal), dimension(:,:,:), pointer :: pressure,temperature, &
-                                                     spec_hum,ozone
-      real(kind=sreal), dimension(:,:,:), pointer :: phi_lev,phi_lay
+      real(kind=sreal), dimension(:,:,:), pointer :: pressure, temperature, &
+                                                     spec_hum, ozone
+      real(kind=sreal), dimension(:,:,:), pointer :: phi_lev, phi_lay
 
-      real(kind=sreal), dimension(:,:), pointer   :: geopot,lnsp
-      real(kind=sreal), dimension(:,:), pointer   :: u10,v10
+      real(kind=sreal), dimension(:,:), pointer   :: geopot, lnsp
+      real(kind=sreal), dimension(:,:), pointer   :: u10, v10
       real(kind=sreal), dimension(:,:), pointer   :: land_sea_mask
-      real(kind=sreal), dimension(:,:), pointer   :: temp2,skin_temp
-      real(kind=sreal), dimension(:,:), pointer   :: snow_albedo,snow_depth
-      real(kind=sreal), dimension(:,:), pointer   :: sst,sea_ice_cover
+      real(kind=sreal), dimension(:,:), pointer   :: temp2, skin_temp
+      real(kind=sreal), dimension(:,:), pointer   :: snow_albedo, snow_depth
+      real(kind=sreal), dimension(:,:), pointer   :: sst, sea_ice_cover
       real(kind=sreal), dimension(:,:), pointer   :: totcolwv
 
       ! New field for Convective Available Potential Energy
       real(kind=sreal), dimension(:,:), pointer   :: cape
 
       ! New fields for tropopause
-      real(kind=sreal), dimension(:,:), pointer   :: trop_p,trop_t
+      real(kind=sreal), dimension(:,:), pointer   :: trop_p, trop_t
    end type preproc_prtm_t
 
 
@@ -135,6 +137,44 @@ module preproc_structures_m
       real(kind=sreal), dimension(:,:,:), pointer :: clear_bt
       real(kind=sreal), dimension(:,:,:), pointer :: cloud_bt
    end type preproc_cld_t
+
+
+   type preproc_paths_t
+      character(len=file_length) :: alb_file    ! Surface albedo/BRDF
+      character(len=file_length) :: cf_file     ! Cloud flagging
+      character(len=file_length) :: config_file ! Configuration parameters
+      character(len=file_length) :: geo_file    ! Viewing angles and geolocation
+      character(len=file_length) :: loc_file    ! Lat/lon location
+      character(len=file_length) :: lsf_file    ! Land-sea flag
+      character(len=file_length) :: lwrtm_file  ! Longwave RTTOV inputs
+      character(len=file_length) :: msi_file    ! Radiances/brightness temps
+      character(len=file_length) :: prtm_file   ! Atmospheric RTTOV inputs
+      character(len=file_length) :: swrtm_file  ! Shortwave RTTOV inputs
+   end type preproc_paths_t
+
+
+   type setup_args_t
+      character(len=path_length)     :: l1b_file ! Path to satellite swath
+      character(len=path_length)     :: geo_file ! Path to geolocation data
+
+      character(len=sensor_length)   :: sensor   ! Name of instrument
+      character(len=platform_length) :: platform ! Name of satellite it is on
+      ! Date as strings
+      character(len=date_length)     :: cyear, cmonth, cday
+      character(len=date_length)     :: cdoy, chour, cminute, csecond
+      ! Date as numbers
+      integer(kind=sint)             :: doy, year, month, day
+      integer(kind=sint)             :: hour, minute, second
+      ! Start/end of requested subset
+      integer(kind=lint)             :: startx, endx, starty, endy
+      ! Dimensions of the satellite swath
+      integer(kind=lint)             :: n_across_track, n_along_track
+      ! Lengths and offsets for the second section of nighttime data in
+      ! an (A)ATSR orbit file
+      integer(kind=lint)             :: n_along_track2
+      integer(kind=lint)             :: along_track_offset, along_track_offset2
+      integer(kind=sint)             :: day_night
+   end type setup_args_t
 
 contains
 

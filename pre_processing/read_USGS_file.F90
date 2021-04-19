@@ -15,6 +15,8 @@
 ! 2014/09/23, OS: writes code to read data from USGS file.
 ! 2015/07/03, OS: added error status variable to nc_open call
 ! 2017/02/10, SP: Allow reading LSM, LUM, DEM from external file (ExtWork)
+! 2020/12/02, DP: Allow USGS grid to be upright (lat starts positive) or
+!                 upside down.
 !
 ! Bugs:
 ! None known.
@@ -61,20 +63,20 @@ subroutine read_USGS_file(path_to_USGS_file, usgs, verbose)
    call ncdf_open(fid, path_to_USGS_file, 'read_USGS_file()')
 
    ! Extract the array dimensions
-   usgs%nlon = ncdf_dim_length(fid, 'lon', 'read_USGS_file()', verbose)
-   usgs%nlat = ncdf_dim_length(fid, 'lat', 'read_USGS_file()', verbose)
+   usgs%nlon = ncdf_dim_length(fid, 'lon', 'read_USGS_file()')
+   usgs%nlat = ncdf_dim_length(fid, 'lat', 'read_USGS_file()')
 
    ! Read data for each variable
    allocate(usgs%lon(usgs%nlon))
-   call ncdf_read_array(fid, 'lon', usgs%lon, verbose)
+   call ncdf_read_array(fid, 'lon', usgs%lon)
    allocate(usgs%lat(usgs%nlat))
-   call ncdf_read_array(fid, 'lat', usgs%lat, verbose)
+   call ncdf_read_array(fid, 'lat', usgs%lat)
    allocate(usgs%dem(usgs%nlon, usgs%nlat))
-   call ncdf_read_array(fid, 'dem', usgs%dem, verbose)
+   call ncdf_read_array(fid, 'dem', usgs%dem)
    allocate(usgs%lus(usgs%nlon, usgs%nlat))
-   call ncdf_read_array(fid, 'lus', usgs%lus, verbose)
+   call ncdf_read_array(fid, 'lus', usgs%lus)
    allocate(usgs%lsm(usgs%nlon, usgs%nlat))
-   call ncdf_read_array(fid, 'lsm', usgs%lsm, verbose)
+   call ncdf_read_array(fid, 'lsm', usgs%lsm)
 
    ! We are now finished with the main data file
    call ncdf_close(fid, 'read_USGS_file()')
@@ -114,9 +116,9 @@ subroutine read_predef_file_ahi(path_to_file, usgs, imager_geolocation, verbose)
    allocate(usgs%lus(imager_geolocation%nx, imager_geolocation%ny))
    allocate(usgs%lsm(imager_geolocation%nx, imager_geolocation%ny))
 
-   call ncdf_read_array(fid, "Elevation_Mask", usgs%dem, .false., start=start)
-   call ncdf_read_array(fid, "Land_Use_Mask", usgs%lus, .false., start=start)
-   call ncdf_read_array(fid, "Land_Sea_Mask", usgs%lsm, .false., start=start)
+   call ncdf_read_array(fid, "Elevation_Mask", usgs%dem, start=start)
+   call ncdf_read_array(fid, "Land_Use_Mask", usgs%lus, start=start)
+   call ncdf_read_array(fid, "Land_Sea_Mask", usgs%lsm, start=start)
 
    ! We are now finished with the main data file
    call ncdf_close(fid, 'read_predef_file_ahi()')
@@ -156,17 +158,17 @@ subroutine read_predef_file_sev(path_to_file, usgs, verbose)
    call ncdf_open(fid, path_to_file, 'read_predef_file_sev()')
 
    ! Extract the array dimensions
-   usgs%nlon = ncdf_dim_length(fid, 'x', 'read_USGS_file()', verbose)
-   usgs%nlat = ncdf_dim_length(fid, 'y', 'read_USGS_file()', verbose)
+   usgs%nlon = ncdf_dim_length(fid, 'x', 'read_USGS_file()')
+   usgs%nlat = ncdf_dim_length(fid, 'y', 'read_USGS_file()')
 
    ! Read data for each variable
    allocate(usgs%dem(usgs%nlon, usgs%nlat))
    allocate(usgs%lus(usgs%nlon, usgs%nlat))
    allocate(usgs%lsm(usgs%nlon, usgs%nlat))
 
-   call ncdf_read_array(fid, 'Elevation_Mask', usgs%dem, verbose)
-   call ncdf_read_array(fid, 'Land_Use_Mask', usgs%lus, verbose)
-   call ncdf_read_array(fid, 'Land_Sea_Mask', usgs%lsm, verbose)
+   call ncdf_read_array(fid, 'Elevation_Mask', usgs%dem)
+   call ncdf_read_array(fid, 'Land_Use_Mask', usgs%lus)
+   call ncdf_read_array(fid, 'Land_Sea_Mask', usgs%lsm)
 
    ! We are now finished with the main data file
    call ncdf_close(fid, 'read_predef_file_sev()')
@@ -176,7 +178,7 @@ subroutine read_predef_file_sev(path_to_file, usgs, verbose)
 end subroutine read_predef_file_sev
 
 !-----------------------------------------------------------------------------
-function nearest_USGS(imager_lat, imager_lon, usgs) &
+function nearest_USGS(imager_lat, imager_lon, usgs, usgs_grid_upright) &
      result(nearest_xy)
 
    implicit none
@@ -184,13 +186,20 @@ function nearest_USGS(imager_lat, imager_lon, usgs) &
    ! input variables
    real(kind=sreal),     intent(in) :: imager_lat, imager_lon
    type(USGS_t),         intent(in) :: usgs
+   logical,               intent(in) :: usgs_grid_upright
 
    ! output variable
    integer(kind=sint), dimension(2) :: nearest_xy
 
 #ifdef ASSUME_USGS_GRID
-   ! The USGS grid starts at (-179.975, 89.975)
-   nearest_xy(1) = floor((90. - imager_lat) / 180. * real(usgs%nlat)) + 1
+   if (usgs_grid_upright) then
+      ! The USGS grid starts at (-179.975, 89.975)
+      nearest_xy(1) = floor((90. - imager_lat) / 180. * real(usgs%nlat)) + 1
+   else
+      ! The USGS grid starts at (-179.975, -89.975)
+      nearest_xy(1) = (usgs%nlat - floor((90 - imager_lat) / 180. * real(usgs%nlat))) + 1
+   end if
+
    nearest_xy(2) = floor((imager_lon + 180.) / 360. * real(usgs%nlon)) + 1
 
 #else

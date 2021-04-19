@@ -121,6 +121,7 @@ subroutine read_mcd43c1(path_to_file, mcd, nbands, bands, read_params, &
    ! First off, find out what grids are in the file - there should only be one.
    ! We'll need it's name to "attach" to it and extract the data
    if (verbose) write(*,*) 'Reading: ', trim(path_to_file)
+   stat = 0
    stat = gdinqgrid(path_to_file, gridlist, gridlistlen)
    if (stat .ne. 1) then
       write(*,*) 'ERROR: read_mcd43c1(), problem with gdinqgrid(): ', stat

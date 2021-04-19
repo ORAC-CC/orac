@@ -1,0 +1,54 @@
+{% set version = "3.01" %}
+
+package:
+  name: pyorac
+  version: {{ version }}
+
+source:
+  - git_url: https://github.com/ORAC-CC/orac
+  - path: local_defaults.py
+    folder: tools/pyorac/local_defaults.py
+
+build:
+  number: 0
+  script: cd tools && {{ PYTHON }} -m pip install . -vv
+  run_exports:
+    - {{ pin_subpackage('pyorac', max_pin='x.x.x') }}
+
+requirements:
+  host:
+    - python
+    - cartopy
+    - cf-units
+    - h5py
+    - matplotlib
+    - netcdf4
+    - numpy
+    - opencv
+    - scipy
+  run:
+    - python
+    - cartopy
+    - cf-units
+    - h5py
+    - matplotlib
+    - netcdf4
+    - numpy
+    - opencv
+    - scipy
+
+test:
+  commands:
+    - orac.py -h
+    - regression.py -h
+    - single_process.py -h
+
+about:
+  home: https://github.com/ORAC-CC/orac/wiki
+  license: CC
+  license_file: COPYING
+  summary: 'Scripts to call the Optimal Retrieval of Aerosol and Cloud'
+
+extra:
+  recipe-maintainers:
+    - orac_cc

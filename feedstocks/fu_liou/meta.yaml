@@ -5,28 +5,34 @@ package:
   version: {{ version }}
 
 source:
-  url: https://www-cave.larc.nasa.gov/LFLcode/Ed4_LaRC_FuLiou201501.tar.gz
-  sha256: b297efd0150407a4be764b4cb17f45bf8ec9a5b3d992912bd4bd3c213b2dd45b
-  patches:
-    - block.patch
+  - url: https://cloudsgate2.larc.nasa.gov/fuliou/LFLCODE/Ed4_LaRC_FuLiou201501.tar.gz
+    sha256: 85840956d4bd70b2c76d50bb795acaa4d9ac4cc92ce517e906928fcbb947bfbc
+    patches:
+      - block.patch
 
 build:
   number: 0
-  skip: True  # [win]
   run_exports:
     - {{ pin_subpackage('fu_liou', max_pin='x.x.x') }}
 
 requirements:
   build:
     - {{ compiler('fortran') }}
+    - make
 
 test:
-  commands:
-    - test -f ${PREFIX}/lib/libEd3Fu_201212.a
+  requires:
+    - {{ compiler('fortran') }}
+  source_files:
+    - Ed4_LaRC_FuLiou/testatms
+    - Ed4_LaRC_FuLiou/src/simple/simple.f90
+  files:
+    simple.txt
 
 about:
   home: https://www-cave.larc.nasa.gov/cgi-bin/lflcode/accesslfl.cgi
-  license: NASA Open Source Agreement
+  license: OTHER
+  license_file: CERESRadiativeTransferModel-OS.pdf
   summary: "Computers broadband shortwave and longwave profiles of flux"
 
 extra:

@@ -1,11 +1,11 @@
 # C compiler and C compiler flags
 
-#CC      = $(GCC)
+CC      = $(GCC)
 CCFLAGS = $(CFLAGS)
 
 # Fortran compiler and Fortan compiler flags (required for the Fortran
 # interface)
-#F90      = $(GFORTRAN)
+F90      = $(GFORTRAN)
 F90FLAGS = $(FFLAGS)
 
 LINKS = $(LDFLAGS) -lm

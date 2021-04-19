@@ -2,26 +2,10 @@
 
 set -e
 
-# Ensure the build path doesn't leak into our build
+# Stop the build environment leaking into h4cc
 export FC=$(basename ${GFORTRAN})
-export F77="${FC}"
-export F90="${FC}"
 export CC=$(basename ${GCC})
 export CXX=$(basename ${GXX})
-
-# Don't use OpenMP on JASMIN. Do use it everywhere else.
-#export FFLAGS="${FFLAGS//-fopenmp}"
-export CFLAGS="${CFLAGS} -fopenmp"
-export CXXFLAGS="${CXXFLAGS} -fopenmp"
-
-# Turn off warnings
-export FFLAGS="${FFLAGS} -w -I${PREFIX}/include"
-export F77FLAGS="${FFLAGS}"
-export CFLAGS="${CFLAGS} -w"
-export CXXFLAGS="${CXXFLAGS} -w"
-export CPPFLAGS="${CPPFLAGS} -I${PREFIX}/include"
-export LDFLAGS="${LDFLAGS} -L${PREFIX}/lib"
-export LD_LIBRARY_PATH="${PREFIX}/lib:${LD_LIBRARY_PATH}"
 
 autoreconf -vfi
 
@@ -32,7 +16,6 @@ autoreconf -vfi
             --enable-silent-rules \
             --with-ssl \
             --with-zlib="${PREFIX}" \
-            --with-szlib="${PREFIX}" \
             --with-jpeg="${PREFIX}" \
             --disable-netcdf \
             --enable-fortran \
@@ -49,3 +32,6 @@ rm -rf ${PREFIX}/share
 # Avoid clashing names with netcdf.
 mv ${PREFIX}/bin/ncdump ${PREFIX}/bin/h4_ncdump
 mv ${PREFIX}/bin/ncgen ${PREFIX}/bin/h4_ncgen
+
+# People usually Google these.
+rm -rf ${PREFIX}/examples
