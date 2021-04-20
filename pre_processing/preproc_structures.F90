@@ -70,6 +70,7 @@ module preproc_structures_m
    type preproc_opts_t
       logical                    :: do_co2
       logical                    :: do_gsics
+      logical                    :: do_nasa
       logical                    :: disable_snow_ice_corr
       logical                    :: do_cloud_emis
       logical                    :: do_cloud_type

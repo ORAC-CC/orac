@@ -202,7 +202,7 @@ subroutine read_imager(granule, opts, path_to_aatsr_drift_table, &
       ! imager_geolocation
       call read_seviri_l1_5(granule%l1b_file, &
            imager_geolocation, imager_measurements, imager_angles, &
-           imager_time, channel_info, opts%do_gsics, global_atts, verbose)
+           imager_time, channel_info, opts%do_gsics, opts%do_nasa, global_atts, verbose)
 
       ! Temporary function for use until seviri_util predef geo is fixed. INEFFICIENT.
       if (opts%use_predef_geo) call SEV_Retrieve_Predef_Geo(imager_geolocation, &

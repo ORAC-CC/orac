@@ -159,6 +159,9 @@ subroutine parse_optional(label, value, preproc_opts)
    case('USE_GSICS')
       if (parse_string(value, preproc_opts%do_gsics) /= 0) &
            call handle_parse_error(label)
+   case('USE_NASA_SEVCALIB')
+      if (parse_string(value, preproc_opts%do_nasa) /= 0) &
+           call handle_parse_error(label)
    case('USE_CO2')
       if (parse_string(value, preproc_opts%do_co2) /= 0) &
            call handle_parse_error(label)
