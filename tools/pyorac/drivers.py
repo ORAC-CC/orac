@@ -52,7 +52,7 @@ def build_preproc_driver(args):
                                 'SW_SFC_PRMS_%m.nc', 'years')
         brdf = None
     else:
-        for ver in (6, 5):
+        for ver in (61, 6, 5):
             try:
                 alb = _date_back_search(args.mcd43c3_dir, args.File.time,
                                         f'MCD43C3.A%Y%j.{ver:03d}.*.hdf', 'days')
