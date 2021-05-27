@@ -319,6 +319,9 @@ module Ctrl_m
       integer                :: X(MaxStateVar,MaxIllum)  ! State vector elements
                                                          !   to be retrieved
       integer                :: XJ(MaxStateVar,MaxIllum) ! " included in Jacobian
+      
+      ! Enable or disable extrapolation of tropospheric lapse rate into stratosphere
+      logical                :: extrap_temp_prof
    end type Ctrl_t
 
 contains

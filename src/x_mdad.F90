@@ -125,6 +125,7 @@ subroutine X_MDAD(Ctrl, SPixel, index, X, status, Err)
    real, parameter :: FGOP(11) = [0.1, 0.3, 0.65, 0.8, 1.0, 1.15, 1.3, 1.5, &
                                   1.7, 2.0, 2.4] ! First guess optical depth
    real            :: Ref_o
+   real            :: x_dump
    integer         :: iFGOP
    integer         :: Y_Id(SPixel%Ind%Ny)
    integer         :: i_spixel_06, i_spixel_11, i_spixel_06_solar
@@ -138,6 +139,7 @@ subroutine X_MDAD(Ctrl, SPixel, index, X, status, Err)
 
    i_spixel_06_solar = find_in_array(SPixel%Ind%YSolar(1:SPixel%Ind%NSolar), &
                                      i_spixel_06)
+   call Int_CTP(SPixel, Ctrl, SPixel%Ym(i_spixel_11), X_dump, status)
 
    ! Parameters supported are Tau, Pc and f.
    select case (index)
@@ -172,7 +174,8 @@ subroutine X_MDAD(Ctrl, SPixel, index, X, status, Err)
       if (i_spixel_11 > 0) then
          if (SPixel%Ym(i_spixel_11) /= MissingXn) then
             ! Interpolate for the BT to the rad. profile to get Pc FG/AP
-            call Int_CTP(SPixel, Ctrl, SPixel%Ym(i_spixel_11), X, status)
+            !call Int_CTP(SPixel, Ctrl, SPixel%Ym(i_spixel_11), X, status)
+            X = X_dump
             if (present(Err)) Err = MDADErrPc
          else
             ! Invalid data available

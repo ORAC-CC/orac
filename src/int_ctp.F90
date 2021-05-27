@@ -105,73 +105,78 @@ subroutine Int_CTP(SPixel, Ctrl, BT, CTP, status)
    ! Estimate vertical height with the geopotential divided by gravity
    h  = (0.001 / g_wmo) * SPixel%RTM%H(1:nz)
 
+   if (Ctrl%extrap_temp_prof) then
+       !----------------------- CORRECT TEMPERATURE PROFILE ------------------------
 
-   !----------------------- CORRECT TEMPERATURE PROFILE ------------------------
+       ! Search for temperature inversions within the troposphere, starting
+       ! at the lowest *atmospheric* level we can extrapolate from.
+       k = nz-2
 
-   ! Search for temperature inversions within the troposphere, starting
-   ! at the lowest *atmospheric* level we can extrapolate from.
-   k = nz-2
+       ! Ignore surface inversion (as there isn't an obvious way to remove them)
+       do while (t(k-1) > t(k) .and. k > 1)
+          k = k-1
+       end do
 
-   ! Ignore surface inversion (as there isn't an obvious way to remove them)
-   do while (t(k-1) > t(k) .and. k > 1)
-      k = k-1
-   end do
+       ! Search for inversions within the 'boundary layer'. This is defined as the
+       ! region where we aren't looking for the tropopause.
+       do while (p(k) > max_tropopause .and. k > 1)
+          ! An inversion is a level which has temperature lower than that above it
+          if (t(k-1) > t(k)) then
+             ! Due to atmospheric transmission, the 11um BT will be an underestimate
+             ! of the actual CTT. We compensate using the EUMETSAT procedure to
+             ! extrapolate the lapse rate beneath the inversion through to two levels
+             ! above the inversion. We could, theoretically, just use the Tac field
+             ! from RTM%LW to correct the t profile, but that gives a very flat
+             ! profile near the surface.
 
-   ! Search for inversions within the 'boundary layer'. This is defined as the
-   ! region where we aren't looking for the tropopause.
-   do while (p(k) > max_tropopause .and. k > 1)
-      ! An inversion is a level which has temperature lower than that above it
-      if (t(k-1) > t(k)) then
-         ! Due to atmospheric transmission, the 11um BT will be an underestimate
-         ! of the actual CTT. We compensate using the EUMETSAT procedure to
-         ! extrapolate the lapse rate beneath the inversion through to two levels
-         ! above the inversion. We could, theoretically, just use the Tac field
-         ! from RTM%LW to correct the t profile, but that gives a very flat
-         ! profile near the surface.
+             ! Find top of inversion
+             l = k-2
+             do while (t(l) < t(l-1) .and. l > 1)
+                l = l-1
+             end do
+             l = l - depth ! Add levels
 
-         ! Find top of inversion
-         l = k-2
-         do while (t(l) < t(l-1) .and. l > 1)
-            l = l-1
-         end do
-         l = l - depth ! Add levels
+             ! Extrapolate lapse rate from the two levels beneath the inversion
+             gradient = (t(k+2) - t(k+1)) / (p(k+2) - p(k+1))
+             t(l:k) = t(k+1) + gradient * (p(l:k) - p(k+1))
 
-         ! Extrapolate lapse rate from the two levels beneath the inversion
-         gradient = (t(k+2) - t(k+1)) / (p(k+2) - p(k+1))
-         t(l:k) = t(k+1) + gradient * (p(l:k) - p(k+1))
+             ! Continue searching above where we have just corrected
+             k = l-1
+          else
+             ! Continue to the next level up
+             k = k-1
+          end if
+       end do
 
-         ! Continue searching above where we have just corrected
-         k = l-1
-      else
-         ! Continue to the next level up
-         k = k-1
-      end if
-   end do
+       ! Locate the tropopause
+       do while (p(k) > min_tropopause .and. k > 1)
+          ! The tropopause is defined as the lowest level with a lapse rate
+          ! less than 2 K km^-1
+          if ((t(k) - t(k-1)) / (h(k-1) - h(k)) < 2.) then
+             ! Find the first level at least 2 km above the identified level
+             l = k-1
+             do while (h(l) - h(k) < 2. .and. l > 1)
+                l = l-1
+             end do
 
-   ! Locate the tropopause
-   do while (p(k) > min_tropopause .and. k > 1)
-      ! The tropopause is defined as the lowest level with a lapse rate
-      ! less than 2 K km^-1
-      if ((t(k) - t(k-1)) / (h(k-1) - h(k)) < 2.) then
-         ! Find the first level at least 2 km above the identified level
-         l = k-1
-         do while (h(l) - h(k) < 2. .and. l > 1)
-            l = l-1
-         end do
+             ! We also require that the lapse rate remain this low in the 2km above
+             ! the tropopause
+             if ((t(k) - t(l)) / (h(l) - h(k)) < 2.) exit
+          end if
 
-         ! We also require that the lapse rate remain this low in the 2km above
-         ! the tropopause
-         if ((t(k) - t(l)) / (h(l) - h(k)) < 2.) exit
-      end if
+          ! Continue to the next level up
+          k = k-1
+       end do
 
-      ! Continue to the next level up
-      k = k-1
-   end do
+       ! Alter temperatures within the stratosphere by extrapolating the lapse
+       ! rate immediately beneath the tropopause upwards
+       gradient = (t(k+1) - t(k+2)) / (p(k+1) - p(k+2))
+       t(1:k) = t(k+1) + gradient * (p(1:k) - p(k+1))
 
-   ! Alter temperatures within the stratosphere by extrapolating the lapse
-   ! rate immediately beneath the tropopause upwards
-   gradient = (t(k+1) - t(k+2)) / (p(k+1) - p(k+2))
-   t(1:k) = t(k+1) + gradient * (p(1:k) - p(k+1))
+       ! Overwrite RTM profile with that extrapolated. (Later used to determine
+       ! RTM_Pc%LW%B for the forward model.)
+       SPixel%RTM%T(1:nz)=t
+   endif
 
 
    !----------------- INTERPOLATE BT ONTO TEMPERATURE PROFILE ------------------
@@ -222,9 +227,5 @@ subroutine Int_CTP(SPixel, Ctrl, BT, CTP, status)
       CTP = Ctrl%Invpar%XULim(IPc)
       status = XMDADBounds
    end if
-
-   ! Overwrite RTM profile with that extrapolated. (Later used to determine
-   ! RTM_Pc%LW%B for the forward model.)
-   SPixel%RTM%T(1:nz)=t
 
 end subroutine Int_CTP
