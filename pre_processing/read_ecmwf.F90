@@ -69,33 +69,20 @@ subroutine read_ecmwf_wind(nwp_flag, nwp_path_file, &
       call read_ecmwf_wind_grib(nwp_path_file, ecmwf, .false., nwp_flag)
       if (verbose) write(*,*)'ecmwf_dims grib: ', ecmwf%xdim, ecmwf%ydim
    case(1)
-      call read_ecmwf_wind_nc(ecmwf, nwp_path_file, nwp_flag, nwp_path_file2, &
-           nwp_path_file3)
+      call read_ecmwf_wind_nc(ecmwf, nwp_path_file, nwp_flag)
       if (verbose) write(*,*)'ecmwf_dims ncdf: ', ecmwf%xdim, ecmwf%ydim
    case(2)
-      call read_ecmwf_wind_badc(nwp_path_file, nwp_path_file2, &
-           nwp_path_file3, ecmwf)
-      if (verbose) write(*,*)'ecmwf_dims badc: ', ecmwf%xdim, ecmwf%ydim
+      call read_ecmwf_wind_nc(ecmwf, nwp_path_file, nwp_flag)
+      if (verbose) write(*,*)'ecmwf_dims ncdf: ', ecmwf%xdim, ecmwf%ydim
    case(3)
       call read_ecmwf_wind_nc(ecmwf, nwp_path_file, nwp_flag)
       if (verbose) write(*,*)'ecmwf_dims ncdf: ', ecmwf%xdim, ecmwf%ydim, ecmwf%kdim
    case(4)
-      call read_ecmwf_wind_nc(ecmwf, nwp_path_file, nwp_flag)
-      if (verbose) write(*,*)'ecmwf_dims ncdf: ', ecmwf%xdim, ecmwf%ydim
-   case(5)
-      call read_ecmwf_wind_nc(ecmwf, nwp_path_file, nwp_flag)
-      if (verbose) write(*,*)'ecmwf_dims ncdf: ', ecmwf%xdim, ecmwf%ydim
-   case(6)
-      call read_ecmwf_wind_grib(nwp_path_file, ecmwf, .false., nwp_flag)
-      if (verbose) write(*,*)'ecmwf_dims grib: ', ecmwf%xdim, ecmwf%ydim
-   case(7)
-      call read_ecmwf_wind_grib(nwp_path_file, ecmwf, .false., nwp_flag)
-      if (verbose) write(*,*)'ecmwf_dims grib: ', ecmwf%xdim, ecmwf%ydim
-   case(8)
-      call read_ecmwf_wind_nc(ecmwf, nwp_path_file, nwp_flag)
-      if (verbose) write(*,*)'ecmwf_dims grib: ', ecmwf%xdim, ecmwf%ydim
+      call read_ecmwf_wind_badc(nwp_path_file, nwp_path_file2, &
+           nwp_path_file3, ecmwf)
+      if (verbose) write(*,*)'ecmwf_dims badc: ', ecmwf%xdim, ecmwf%ydim
    case default
-      write(*,*) "Incorrect ECMWF flag, must be between 0-8."
+      write(*,*) "Incorrect ECMWF flag, must be between 0-4."
       stop
    end select
    if (verbose) then
@@ -159,22 +146,22 @@ subroutine read_ecmwf(nwp_flag, nwp_path_file, nwp_path_file2, &
 
    select case (nwp_flag)
    case(0)
-      if (verbose) write(*,*) 'Reading ecmwf path: ', trim(nwp_path_file)
-      call read_ecmwf_grib(nwp_path_file, preproc_dims, preproc_geoloc, &
+      if (verbose) write(*,*) 'Reading gfs path: ', trim(nwp_path_file)
+      call read_gfs_grib(nwp_path_file, preproc_dims, preproc_geoloc, &
            preproc_prtm, verbose)
    case(1)
+      if (verbose) write(*,*) 'Reading ECMWF path: ', trim(nwp_path_file)
+      call read_ecmwf_nc(nwp_path_file, ecmwf, preproc_dims, preproc_geoloc, &
+           preproc_prtm, verbose, nwp_flag)
+   case(2)
+      if (verbose) write(*,*) 'Reading JASMIN ERA5 path: ', trim(nwp_path_file)
+      call read_ecmwf_nc(nwp_path_file, ecmwf, preproc_dims, preproc_geoloc, &
+           preproc_prtm, verbose, nwp_flag)
+   case(3)
       if (verbose) write(*,*) 'Reading ecmwf path: ', trim(nwp_path_file)
       call read_ecmwf_nc(nwp_path_file, ecmwf, preproc_dims, preproc_geoloc, &
            preproc_prtm, verbose, nwp_flag)
-
-      if (verbose) write(*,*) 'Reading ecmwf path: ', trim(nwp_path_file2)
-      call read_ecmwf_nc(nwp_path_file2, ecmwf, preproc_dims, preproc_geoloc, &
-           preproc_prtm, verbose, nwp_flag)
-
-      if (verbose) write(*,*) 'Reading ecmwf path: ', trim(nwp_path_file3)
-      call read_ecmwf_nc(nwp_path_file3, ecmwf, preproc_dims, preproc_geoloc, &
-           preproc_prtm, verbose, nwp_flag)
-   case(2)
+   case(4)
       if (verbose) write(*,*) 'Reading ecmwf path: ', trim(nwp_path_file)
       call read_ecmwf_nc(nwp_path_file, ecmwf, preproc_dims, preproc_geoloc, &
            preproc_prtm, verbose, nwp_flag)
@@ -186,30 +173,6 @@ subroutine read_ecmwf(nwp_flag, nwp_path_file, nwp_path_file2, &
       if (verbose) write(*,*) 'Reading ecmwf path: ', trim(nwp_path_file3)
       call read_ecmwf_grib(nwp_path_file3, preproc_dims, preproc_geoloc, &
            preproc_prtm, verbose)
-   case(3)
-      if (verbose) write(*,*) 'Reading ecmwf path: ', trim(nwp_path_file)
-      call read_ecmwf_nc(nwp_path_file, ecmwf, preproc_dims, preproc_geoloc, &
-           preproc_prtm, verbose, nwp_flag)
-   case(4)
-      if (verbose) write(*,*) 'Reading OPER path: ', trim(nwp_path_file)
-      call read_ecmwf_nc(nwp_path_file, ecmwf, preproc_dims, preproc_geoloc, &
-           preproc_prtm, verbose, nwp_flag)
-   case(5)
-      if (verbose) write(*,*) 'Reading ERA5 path: ', trim(nwp_path_file)
-      call read_ecmwf_nc(nwp_path_file, ecmwf, preproc_dims, preproc_geoloc, &
-           preproc_prtm, verbose, nwp_flag)
-   case(6)
-      if (verbose) write(*,*) 'Reading gfs path: ', trim(nwp_path_file)
-      call read_gfs_grib(nwp_path_file, preproc_dims, preproc_geoloc, &
-           preproc_prtm, verbose)
-   case(7)
-      if (verbose) write(*,*) 'Reading gfs path: ', trim(nwp_path_file)
-      call read_gfs_grib(nwp_path_file, preproc_dims, preproc_geoloc, &
-           preproc_prtm, verbose)
-   case(8)
-      if (verbose) write(*,*) 'Reading gfs path: ', trim(nwp_path_file)
-      call read_gfs_nc(nwp_path_file, ecmwf, preproc_dims, preproc_geoloc, &
-           preproc_prtm, verbose, nwp_flag)
    end select
 
 

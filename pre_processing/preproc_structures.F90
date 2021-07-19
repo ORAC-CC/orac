@@ -78,7 +78,6 @@ module preproc_structures_m
       character(len=path_length) :: q_f(2)       ! Specific humidity on model levels
       character(len=path_length) :: t_f(2)       ! Temperature on model levels
       character(len=path_length) :: o3_f(2)      ! Ozone on model levels
-      character(len=path_length) :: p_f(2)       ! Pressure on model levels
       character(len=path_length) :: u_f(2)       ! U-compoonent of wind on model levels
       character(len=path_length) :: v_f(2)       ! V-component of wind on model levels
       character(len=path_length) :: z_f(2)       ! Geopotential at surface
@@ -92,7 +91,6 @@ module preproc_structures_m
       character(len=path_length) :: t2_f(2)      ! 2m air temperature
       character(len=path_length) :: skt_f(2)     ! Skin temperature
       character(len=path_length) :: sstk_f(2)    ! Sea surface temperature
-      character(len=path_length) :: al_f(2)      ! Surface albedo
       character(len=path_length) :: cape_f(2)    ! Convective available potential energy
    
    end type preproc_nwp_fnames_t

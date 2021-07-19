@@ -52,6 +52,7 @@ contains
 #include "deallocate_ecmwf_structures.F90"
 #include "compute_geopot_coordinate.F90"
 #include "read_ecmwf.F90"
+#include "read_era5_jasmin.F90"
 #include "read_ecmwf_wind_nc.F90"
 #include "read_ecmwf_wind_grib.F90"
 #include "read_ecmwf_wind_badc.F90"

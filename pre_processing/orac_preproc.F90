@@ -460,10 +460,10 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
    preproc_opts%ecmwf_time_int_method     = 2
    preproc_opts%use_ecmwf_snow_and_ice    = .true.
    preproc_opts%use_modis_emis_in_rttov   = .false.
-   preproc_nwp_fnames%nwp_path(2)             = ' '
-   preproc_nwp_fnames%nwp_path2(2)            = ' '
-   preproc_nwp_fnames%nwp_path3(2)            = ' '
-   preproc_opts%nwp_nlevels             = 0
+   preproc_nwp_fnames%nwp_path(2)         = ' '
+   preproc_nwp_fnames%nwp_path2(2)        = ' '
+   preproc_nwp_fnames%nwp_path3(2)        = ' '
+   preproc_opts%nwp_nlevels               = 0
    preproc_opts%nwp_time_factor           = 6.
    preproc_opts%use_l1_land_mask          = .false.
    preproc_opts%use_occci                 = .false.
