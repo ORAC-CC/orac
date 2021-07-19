@@ -82,7 +82,6 @@ module preproc_structures_m
       real                       :: swansea_gamma
       logical                    :: use_camel_emis
       logical                    :: use_ecmwf_snow_and_ice
-      logical                    :: use_hr_ecmwf
       logical                    :: use_l1_land_mask
       logical                    :: use_modis_emis_in_rttov
       logical                    :: use_occci
@@ -93,8 +92,6 @@ module preproc_structures_m
       character(len=path_length) :: ecmwf_path(2)
       character(len=path_length) :: ecmwf_path2(2)
       character(len=path_length) :: ecmwf_path3(2)
-      character(len=path_length) :: ecmwf_path_hr(2)
-      character(len=path_length) :: ecmwf_HR_path_file(2)
       character(len=path_length) :: ecmwf_path_file(2)
       character(len=path_length) :: ecmwf_path_file2(2)
       character(len=path_length) :: ecmwf_path_file3(2)

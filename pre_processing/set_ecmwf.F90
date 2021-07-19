@@ -254,32 +254,6 @@ subroutine set_ecmwf(granule, opts, ecmwf_flag, imager_geolocation, &
       end if
    end if
 
-   if (opts%ecmwf_path_hr(1) .eq. '') then
-      call build_ecmwf_HR_file_from_LR(opts%ecmwf_path_file(1), &
-              opts%ecmwf_hr_path_file(1))
-      if (opts%ecmwf_time_int_method .eq. 2) then
-         call build_ecmwf_HR_file_from_LR(opts%ecmwf_path_file(2), &
-              opts%ecmwf_hr_path_file(2))
-      end if
-   else if (assume_full_path) then
-      opts%ecmwf_hr_path_file(1) = opts%ecmwf_path_hr(1)
-      if (opts%ecmwf_time_int_method .eq. 2) &
-           opts%ecmwf_hr_path_file(2) = opts%ecmwf_path_hr(2)
-   else
-      if (opts%ecmwf_time_int_method .ne. 2) then
-         call build_ecmwf_HR_file_from_LR2(opts%ecmwf_path(i_path1), &
-              opts%ecmwf_path_file(1), opts%ecmwf_path_hr(1), &
-              opts%ecmwf_hr_path_file(1))
-      else
-         call build_ecmwf_HR_file_from_LR2(opts%ecmwf_path(i_path1), &
-              opts%ecmwf_path_file(1), opts%ecmwf_path_hr(1), &
-              opts%ecmwf_hr_path_file(1))
-         call build_ecmwf_HR_file_from_LR2(opts%ecmwf_path(i_path2), &
-              opts%ecmwf_path_file(2), opts%ecmwf_path_hr(1), &
-              opts%ecmwf_hr_path_file(2))
-      end if
-   end if
-
 end subroutine set_ecmwf
 
 #ifdef __PGI

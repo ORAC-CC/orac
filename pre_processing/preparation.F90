@@ -121,11 +121,9 @@ subroutine preparation(paths, granule, opts, global_atts, orbit_number, &
       write(*,*) 'cminute: ',               trim(granule%cminute)
       write(*,*) 'orbit_number: ',          trim(orbit_number)
       write(*,*) 'ecmwf_path(1): ',         trim(opts%ecmwf_path(1))
-      write(*,*) 'ecmwf_path_hr(1): ',      trim(opts%ecmwf_path_hr(1))
       write(*,*) 'ecmwf_path2(1): ',        trim(opts%ecmwf_path2(1))
       write(*,*) 'ecmwf_path3(1): ',        trim(opts%ecmwf_path3(1))
       write(*,*) 'ecmwf_path(2): ',         trim(opts%ecmwf_path(2))
-      write(*,*) 'ecmwf_path_hr(2): ',      trim(opts%ecmwf_path_hr(2))
       write(*,*) 'ecmwf_path2(2): ',        trim(opts%ecmwf_path2(2))
       write(*,*) 'ecmwf_path3(2): ',        trim(opts%ecmwf_path3(2))
       write(*,*) 'ecmwf_flag: ',            ecmwf_flag
@@ -141,8 +139,6 @@ subroutine preparation(paths, granule, opts, global_atts, orbit_number, &
    if (verbose) then
       write(*,*) 'ecmwf_path_file:  ', trim(opts%ecmwf_path_file(1))
       write(*,*) 'ecmwf_path_file_2:  ', trim(opts%ecmwf_path_file(2))
-      write(*,*) 'ecmwf_hr_path_file:  ', trim(opts%ecmwf_hr_path_file(1))
-      write(*,*) 'ecmwf_hr_path_file2:  ', trim(opts%ecmwf_hr_path_file(2))
       if (ecmwf_flag .gt. 0.and.ecmwf_flag.lt.4) then
          write(*,*) 'ecmwf_path_file2: ', trim(opts%ecmwf_path_file2(1))
          write(*,*) 'ecmwf_path_file3: ', trim(opts%ecmwf_path_file3(1))

@@ -87,9 +87,6 @@ subroutine parse_optional(label, value, preproc_opts)
       end if
       if (parse_string(value, preproc_opts%channel_ids) /= 0) &
          call handle_parse_error(label)
-   case('USE_HR_ECMWF')
-      if (parse_string(value, preproc_opts%use_hr_ecmwf) /= 0) &
-         call handle_parse_error(label)
    case('ECMWF_TIME_INT_METHOD')
       if (parse_string(value, preproc_opts%ecmwf_time_int_method) /= 0) &
          call handle_parse_error(label)
@@ -107,12 +104,6 @@ subroutine parse_optional(label, value, preproc_opts)
          call handle_parse_error(label)
    case('ECMWF_PATH3_2')
       if (parse_string(value, preproc_opts%ecmwf_path3(2)) /= 0) &
-         call handle_parse_error(label)
-   case('ECMWF_PATH_HR')
-      if (parse_string(value, preproc_opts%ecmwf_path_hr(1)) /= 0) &
-         call handle_parse_error(label)
-   case('ECMWF_PATH_HR_2')
-      if (parse_string(value, preproc_opts%ecmwf_path_hr(2)) /= 0) &
          call handle_parse_error(label)
    case('ECMWF_NLEVELS')
       if (parse_string(value, preproc_opts%ecmwf_nlevels) /= 0) &
