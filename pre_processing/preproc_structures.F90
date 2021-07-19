@@ -75,10 +75,11 @@ module preproc_structures_m
       logical                    :: do_cloud_emis
       logical                    :: do_cloud_type
       logical                    :: do_ironly
-      integer                    :: ecmwf_nlevels
+      integer                    :: nwp_nlevels
       integer                    :: ecmwf_time_int_method
       integer, pointer           :: channel_ids(:)
       integer(kind=lint)         :: n_channels
+      integer                    :: nwp_time_factor
       real                       :: swansea_gamma
       logical                    :: use_camel_emis
       logical                    :: use_ecmwf_snow_and_ice
@@ -89,12 +90,12 @@ module preproc_structures_m
       logical                    :: use_predef_lsm
       logical                    :: use_swansea_climatology
 
-      character(len=path_length) :: ecmwf_path(2)
-      character(len=path_length) :: ecmwf_path2(2)
-      character(len=path_length) :: ecmwf_path3(2)
-      character(len=path_length) :: ecmwf_path_file(2)
-      character(len=path_length) :: ecmwf_path_file2(2)
-      character(len=path_length) :: ecmwf_path_file3(2)
+      character(len=path_length) :: nwp_path(2)
+      character(len=path_length) :: nwp_path2(2)
+      character(len=path_length) :: nwp_path3(2)
+      character(len=path_length) :: nwp_path_file(2)
+      character(len=path_length) :: nwp_path_file2(2)
+      character(len=path_length) :: nwp_path_file3(2)
       character(len=path_length) :: ext_lsm_path
       character(len=path_length) :: ext_geo_path
       character(len=path_length) :: occci_path

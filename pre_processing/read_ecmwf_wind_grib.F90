@@ -17,7 +17,7 @@
 ! Arguments:
 ! Name       Type   In/Out/Both Description
 ! ------------------------------------------------------------------------------
-! ecmwf_path string in   Full path to ECMWF NCDF file to read.
+! nwp_path string in   Full path to ECMWF NCDF file to read.
 ! ecmwf      struct both Structure summarising contents of ECMWF files.
 !
 ! History:
@@ -31,23 +31,23 @@
 ! 2016/05/26, GT: Moved ecmwf%kdim=nk statement inside if (.not. high_res) block,
 !    as nk is undefined in the high_res case
 ! 2017/02/07, SP: Added support for NOAA GFS atmosphere data (ExtWork)
-! 2017/04/11, SP: Added ecmwf_flag=6, for working with GFS analysis files.
+! 2017/04/11, SP: Added nwp_flag=6, for working with GFS analysis files.
 !
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf, high_res, ecmwf_flag)
+subroutine read_ecmwf_wind_grib(nwp_path, ecmwf, high_res, nwp_flag)
 
    use grib_api
    use preproc_constants_m
 
    implicit none
 
-   character(len=*), intent(in)    :: ecmwf_path
+   character(len=*), intent(in)    :: nwp_path
    type(ecmwf_t),    intent(inout) :: ecmwf
    logical,          intent(in)    :: high_res
-   integer,          intent(in)    :: ecmwf_flag
+   integer,          intent(in)    :: nwp_flag
 
    real, allocatable, dimension(:) :: pv, lat, lon, val
    integer                         :: fid, gid, stat
@@ -56,20 +56,20 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf, high_res, ecmwf_flag)
    integer                         :: param, level, nlevels
    character(len=100)              :: ltype, lname
 
-   if (len_trim(ecmwf_path) .gt. 1024) call h_e_e('wind_grib', &
-         'Filename argument string ecmwf_path is too long.  It must be ' // &
+   if (len_trim(nwp_path) .gt. 1024) call h_e_e('wind_grib', &
+         'Filename argument string nwp_path is too long.  It must be ' // &
          'limited to a length of 1024 due to a bug in grib_api.')
 
    ! open file
-   call grib_open_file(fid, trim(ecmwf_path), 'r', stat)
+   call grib_open_file(fid, trim(nwp_path), 'r', stat)
    if (stat .ne. 0) call h_e_e('wind_grib', 'Error opening GRIB file. '// &
-        trim(ecmwf_path))
+        trim(nwp_path))
    call grib_new_from_file(fid, gid, stat)
    if (stat .ne. 0) call h_e_e('wind_grib', 'Error getting GRIB_ID. '// &
-        trim(ecmwf_path))
+        trim(nwp_path))
    if (gid .eq. GRIB_END_OF_FILE) call h_e_e('wind_grib', 'Empty GRIB file.')
 
-   if ((.not. high_res) .and. (ecmwf_flag .ne. 6 .and. ecmwf_flag .ne. 7 .and. ecmwf_flag .ne. 8)) then
+   if ((.not. high_res) .and. (nwp_flag .ne. 6 .and. nwp_flag .ne. 7 .and. nwp_flag .ne. 8)) then
       ! ensure it contains the expected fields
       call grib_get(gid, 'PVPresent', PVPresent)
       if (stat .ne. 0) call h_e_e('wind_grib', 'Error getting PVPresent.')
@@ -107,7 +107,7 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf, high_res, ecmwf_flag)
    allocate(ecmwf%lat(nj))
 
    if (.not. high_res) then
-      if (ecmwf_flag .le. 5 .or. ecmwf_flag .gt. 8) then
+      if (nwp_flag .le. 5 .or. nwp_flag .gt. 8) then
          allocate(ecmwf%avec(nk+1))
          allocate(ecmwf%bvec(nk+1))
       else
@@ -194,7 +194,7 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf, high_res, ecmwf_flag)
          where (ecmwf%snow_depth .eq. 9999.) ecmwf%snow_depth = sreal_fill_value
       case(130)
          if (trim(ltype) .eq. 'surface') then
-            if (ecmwf_flag .eq. 6 .or. ecmwf_flag .eq. 7  .or. ecmwf_flag .eq. 8) then
+            if (nwp_flag .eq. 6 .or. nwp_flag .eq. 7  .or. nwp_flag .eq. 8) then
                ! skin temp (GFS) - proxied by surface temp
                call grib_get_data(gid, lat, lon, val, stat)
                if (stat .ne. 0) call h_e_e('wind_grib', &
@@ -223,7 +223,7 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf, high_res, ecmwf_flag)
 
    ecmwf%xdim = ni
    ecmwf%ydim = nj
-   if (.not. high_res .and. (ecmwf_flag .le. 5 .or. ecmwf_flag .gt. 8)) then
+   if (.not. high_res .and. (nwp_flag .le. 5 .or. nwp_flag .gt. 8)) then
       ecmwf%kdim = nk
       if (nk .ne. nlevels) &
            call h_e_e('wind_grib', 'Inconsistent vertical levels.')
@@ -232,7 +232,7 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf, high_res, ecmwf_flag)
    end if
 
    ! clean-up
-   if (.not. high_res .and. (ecmwf_flag .le. 5 .or. ecmwf_flag .gt. 8)) then
+   if (.not. high_res .and. (nwp_flag .le. 5 .or. nwp_flag .gt. 8)) then
       deallocate(pv)
    end if
    deallocate(lat)

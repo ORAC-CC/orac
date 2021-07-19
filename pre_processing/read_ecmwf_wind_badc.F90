@@ -16,7 +16,7 @@
 ! Arguments:
 ! Name       Type   In/Out/Both Description
 ! ------------------------------------------------------------------------------
-! ecmwf_path string in   Full path to a ECMWF NCDF file to read.
+! nwp_path string in   Full path to a ECMWF NCDF file to read.
 ! ecmwf2path string in   "
 ! ecmwf3path string in   "
 ! ecmwf      struct both Structure summarising contents of ECMWF files.
@@ -29,20 +29,20 @@
 ! 2016/02/02, OS: Now reads into HR ERA structure if flag is set.
 ! 2016/04/04, SP: Add option to process ECMWF forecast in single NetCDF4 file
 !    Note: This should work with either the OPER or FCST streams from ECMWF.
-! 2016/04/26, AP: Moved refences to ecmwf_flag and high_res up a level.
+! 2016/04/26, AP: Moved refences to nwp_flag and high_res up a level.
 !
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine read_ecmwf_wind_badc(ecmwf_path, ecmwf2path, ecmwf3path, ecmwf)
+subroutine read_ecmwf_wind_badc(nwp_path, ecmwf2path, ecmwf3path, ecmwf)
 
    use grib_api
    use preproc_constants_m
 
    implicit none
 
-   character(len=*), intent(in)    :: ecmwf_path
+   character(len=*), intent(in)    :: nwp_path
    character(len=*), intent(in)    :: ecmwf2path, ecmwf3path
    type(ecmwf_t),    intent(inout) :: ecmwf
 
@@ -62,7 +62,7 @@ subroutine read_ecmwf_wind_badc(ecmwf_path, ecmwf2path, ecmwf3path, ecmwf)
    call ecmwf_wind_init(ecmwf)
 
    ! ggas NCDF file, giving U10,V10,lat,lon
-   call read_ecmwf_wind_nc_file(ecmwf_path,ecmwf)
+   call read_ecmwf_wind_nc_file(nwp_path,ecmwf)
 
    ! loop over GRIB files for vertical coordinate
    do i=1,2

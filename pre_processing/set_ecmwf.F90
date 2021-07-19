@@ -17,15 +17,15 @@
 ! cmonth         string in  Month of year, as a 2 character string
 ! cday           string in  Day of month, as a 2 character string
 ! chour          string in  Hour of day, as a 2 character string
-! ecmwf_path     string in  If badc, folder in which to find GGAM files.
+! nwp_path     string in  If badc, folder in which to find GGAM files.
 !                           Otherwise, folder in which to find GRB files.
-! ecmwf_path2    string in  If badc, folder in which to find GGAS files.
-! ecmwf_path3    string in  If badc, folder in which to find GPAM files.
-! ecmwf_pathout  string out If badc, full path to appropriate GGAM file.
+! nwp_path2    string in  If badc, folder in which to find GGAS files.
+! nwp_path3    string in  If badc, folder in which to find GPAM files.
+! nwp_pathout  string out If badc, full path to appropriate GGAM file.
 !                           Otherwise, full path to appropriate GRB file.
-! ecmwf_path2out string out If badc, full path to appropriate GGAS file.
-! ecmwf_path3out string out If badc, full path to appropriate GPAM file.
-! ecmwf_flag     int    in  0: A single GRB file; 1: 3 NCDF files; 2: BADC files
+! nwp_path2out string out If badc, full path to appropriate GGAS file.
+! nwp_path3out string out If badc, full path to appropriate GPAM file.
+! nwp_flag     int    in  0: A single GRB file; 1: 3 NCDF files; 2: BADC files
 !                           4: One ECMWF forecast GRB file, 5 and 6 NOAA GFS grib
 ! assume_full_path
 !                logic  in  T: inputs are filenames; F: folder names
@@ -48,7 +48,7 @@
 ! 2014/05/02, AP: Replaced code with CASE statements. Added third option.
 ! 2015/11/26, GM: Changes to support temporal interpolation between ecmwf files.
 ! 2016/01/22, GM: If assume_full_path = .false. and a file from the next day is
-!    required use ecmwf_path_file*(2).
+!    required use nwp_path_file*(2).
 ! 2016/01/22, GM: Bug fix: time_int_fac was not being computed for
 !    assume_full_path=.true.
 ! 2016/04/03, SP: Add option to process ECMWF forecast in single NetCDF4 file
@@ -57,16 +57,16 @@
 !    of the HR ERA data (copied from changes made, but committed to R3970
 !    version of code by CP).
 ! 2016/07/31, GM: Tidying of the code drop above.
-! 2017/01/31, SP: Add ecmwf_flag=5, for reading NOAA GFS forecast (ExtWork)
-! 2017/04/11, SP: Added ecmwf_flag=6, for working with GFS analysis files.
-! 2017/07/05, SP: Added ecmwf_flag=7, for working with new format GFS (ExtWork)
+! 2017/01/31, SP: Add nwp_flag=5, for reading NOAA GFS forecast (ExtWork)
+! 2017/04/11, SP: Added nwp_flag=6, for working with GFS analysis files.
+! 2017/07/05, SP: Added nwp_flag=7, for working with new format GFS (ExtWork)
 ! 2019/29/01, MC: Bug fix: input ECMWF file name structure was incorrect for BADC
 !
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine set_ecmwf(granule, opts, ecmwf_flag, imager_geolocation, &
+subroutine set_ecmwf(granule, opts, nwp_flag, imager_geolocation, &
    imager_time, time_int_fac, assume_full_path)
 
    use calender_m
@@ -78,7 +78,7 @@ subroutine set_ecmwf(granule, opts, ecmwf_flag, imager_geolocation, &
 
    type(setup_args_t),         intent(in)    :: granule
    type(preproc_opts_t),       intent(inout) :: opts
-   integer,                    intent(in)    :: ecmwf_flag
+   integer,                    intent(in)    :: nwp_flag
    type(imager_geolocation_t), intent(in)    :: imager_geolocation
    type(imager_time_t),        intent(in)    :: imager_time
    real,                       intent(out)   :: time_int_fac
@@ -93,45 +93,36 @@ subroutine set_ecmwf(granule, opts, ecmwf_flag, imager_geolocation, &
    character     :: cera_year*4, cera_month*2, cera_day*2, cera_hour*2
    character     :: cera_year2*4, cera_month2*2, cera_day2*2, cera_hour2*2
 
-   real(dreal)   :: time_fac
-
-   ! Use 3-hourly NOAA GFS data, otherwise use 6-hourly ECMWF data
-   if (ecmwf_flag .eq. 6 .or. ecmwf_flag .eq. 7 .or. ecmwf_flag .eq. 8) then
-      time_fac = 3._dreal / 24._dreal
-   else
-      time_fac = 6._dreal / 24._dreal
-   end if
-
    ! Rather than deal with whether the next 6 hour file is in the next month,
    ! in the next year, or if the year is a leap year it is more straight
    ! forward to convert to Julian day space, then operate, then convert back.
    if (opts%ecmwf_time_int_method .eq. 1 .or. opts%ecmwf_time_int_method .eq. 2) then
       jday = find_center_time(imager_geolocation, imager_time)
 
-      jday0 = floor(jday / time_fac           ) * time_fac
-      jday1 = floor(jday / time_fac + 1._dreal) * time_fac
+      jday0 = floor(jday / opts%nwp_time_factor           ) * opts%nwp_time_factor
+      jday1 = floor(jday / opts%nwp_time_factor + 1._dreal) * opts%nwp_time_factor
 
       time_int_fac = (jday - jday0) / (jday1 - jday0)
    end if
 
    if (assume_full_path) then
-      ! for ecmwf_flag=2, ensure NCDF file is listed in ecmwf_pathout
-      if (index(opts%ecmwf_path(1), '.nc') .gt. 0) then
-         opts%ecmwf_path_file  = opts%ecmwf_path
-         opts%ecmwf_path_file2 = opts%ecmwf_path2
-         opts%ecmwf_path_file3 = opts%ecmwf_path3
-      else if (index(opts%ecmwf_path2(1), '.nc') .gt. 0) then
-         opts%ecmwf_path_file  = opts%ecmwf_path2
-         opts%ecmwf_path_file2 = opts%ecmwf_path
-         opts%ecmwf_path_file3 = opts%ecmwf_path3
-      else if (index(opts%ecmwf_path3(1), '.nc') .gt. 0) then
-         opts%ecmwf_path_file  = opts%ecmwf_path3
-         opts%ecmwf_path_file2 = opts%ecmwf_path
-         opts%ecmwf_path_file3 = opts%ecmwf_path2
+      ! for nwp_flag=2, ensure NCDF file is listed in nwp_pathout
+      if (index(opts%nwp_path(1), '.nc') .gt. 0) then
+         opts%nwp_path_file  = opts%nwp_path
+         opts%nwp_path_file2 = opts%nwp_path2
+         opts%nwp_path_file3 = opts%nwp_path3
+      else if (index(opts%nwp_path2(1), '.nc') .gt. 0) then
+         opts%nwp_path_file  = opts%nwp_path2
+         opts%nwp_path_file2 = opts%nwp_path
+         opts%nwp_path_file3 = opts%nwp_path3
+      else if (index(opts%nwp_path3(1), '.nc') .gt. 0) then
+         opts%nwp_path_file  = opts%nwp_path3
+         opts%nwp_path_file2 = opts%nwp_path
+         opts%nwp_path_file3 = opts%nwp_path2
       else
-         opts%ecmwf_path_file  = opts%ecmwf_path
-         opts%ecmwf_path_file2 = opts%ecmwf_path2
-         opts%ecmwf_path_file3 = opts%ecmwf_path3
+         opts%nwp_path_file  = opts%nwp_path
+         opts%nwp_path_file2 = opts%nwp_path2
+         opts%nwp_path_file3 = opts%nwp_path3
       end if
    else
       if (opts%ecmwf_time_int_method .eq. 0) then
@@ -152,9 +143,9 @@ subroutine set_ecmwf(granule, opts, ecmwf_flag, imager_geolocation, &
          i_path1 = 1
 
          call make_ecmwf_name(granule%cyear, granule%cmonth, granule%cday, &
-              cera_hour, ecmwf_flag, opts%ecmwf_path(1), opts%ecmwf_path2(1), &
-              opts%ecmwf_path3(1), opts%ecmwf_path_file(1), &
-              opts%ecmwf_path_file2(1), opts%ecmwf_path_file3(1))
+              cera_hour, nwp_flag, opts%nwp_path(1), opts%nwp_path2(1), &
+              opts%nwp_path3(1), opts%nwp_path_file(1), &
+              opts%nwp_path_file2(1), opts%nwp_path_file3(1))
       else if (opts%ecmwf_time_int_method .eq. 1) then
          ! Pick the closest ERA interim file wrt sensor time
          if (jday - jday0 .lt. jday1 - jday) then
@@ -184,9 +175,9 @@ subroutine set_ecmwf(granule, opts, ecmwf_flag, imager_geolocation, &
          end if
 
          call make_ecmwf_name(cera_year, cera_month, cera_day, cera_hour, &
-              ecmwf_flag, opts%ecmwf_path(i_path1), opts%ecmwf_path2(i_path1), &
-              opts%ecmwf_path3(i_path1), opts%ecmwf_path_file(1), &
-              opts%ecmwf_path_file2(1), opts%ecmwf_path_file3(1))
+              nwp_flag, opts%nwp_path(i_path1), opts%nwp_path2(i_path1), &
+              opts%nwp_path3(i_path1), opts%nwp_path_file(1), &
+              opts%nwp_path_file2(1), opts%nwp_path_file3(1))
       else if (opts%ecmwf_time_int_method .eq. 2) then
          ! Pick the ERA interim files before and after wrt sensor time
 
@@ -217,9 +208,9 @@ subroutine set_ecmwf(granule, opts, ecmwf_flag, imager_geolocation, &
          end if
 
          call make_ecmwf_name(cera_year, cera_month, cera_day, cera_hour, &
-              ecmwf_flag, opts%ecmwf_path(i_path1), opts%ecmwf_path2(i_path1), &
-              opts%ecmwf_path3(i_path1), opts%ecmwf_path_file(1), &
-              opts%ecmwf_path_file2(1), opts%ecmwf_path_file3(1))
+              nwp_flag, opts%nwp_path(i_path1), opts%nwp_path2(i_path1), &
+              opts%nwp_path3(i_path1), opts%nwp_path_file(1), &
+              opts%nwp_path_file2(1), opts%nwp_path_file3(1))
 
          ! now look at the next file
          day_before = day
@@ -244,9 +235,9 @@ subroutine set_ecmwf(granule, opts, ecmwf_flag, imager_geolocation, &
          end if
 
          call make_ecmwf_name(cera_year, cera_month, cera_day, cera_hour, &
-              ecmwf_flag, opts%ecmwf_path(i_path2), opts%ecmwf_path2(i_path2), &
-              opts%ecmwf_path3(i_path2), opts%ecmwf_path_file(2), &
-              opts%ecmwf_path_file2(2), opts%ecmwf_path_file3(2))
+              nwp_flag, opts%nwp_path(i_path2), opts%nwp_path2(i_path2), &
+              opts%nwp_path3(i_path2), opts%nwp_path_file(2), &
+              opts%nwp_path_file2(2), opts%nwp_path_file3(2))
       else
          write(*,*) 'ERROR: invalid set_ecmwf() time_interp_method: ', &
               opts%ecmwf_time_int_method
@@ -299,77 +290,77 @@ real(dreal) function find_center_time(imager_geolocation, imager_time) &
 end function find_center_time
 
 
-subroutine make_ecmwf_name(cyear, cmonth, cday, chour, ecmwf_flag, ecmwf_path, &
-   ecmwf_path2, ecmwf_path3, ecmwf_path_file, ecmwf_path_file2, ecmwf_path_file3)
+subroutine make_ecmwf_name(cyear, cmonth, cday, chour, nwp_flag, nwp_path, &
+   nwp_path2, nwp_path3, nwp_path_file, nwp_path_file2, nwp_path_file3)
 
    use preproc_constants_m
 
    implicit none
 
    character(len=*), intent(in)  :: cyear, cmonth, cday, chour
-   character(len=*), intent(in)  :: ecmwf_path
-   character(len=*), intent(in)  :: ecmwf_path2
-   character(len=*), intent(in)  :: ecmwf_path3
-   character(len=*), intent(out) :: ecmwf_path_file
-   character(len=*), intent(out) :: ecmwf_path_file2
-   character(len=*), intent(out) :: ecmwf_path_file3
-   integer,          intent(in)  :: ecmwf_flag
+   character(len=*), intent(in)  :: nwp_path
+   character(len=*), intent(in)  :: nwp_path2
+   character(len=*), intent(in)  :: nwp_path3
+   character(len=*), intent(out) :: nwp_path_file
+   character(len=*), intent(out) :: nwp_path_file2
+   character(len=*), intent(out) :: nwp_path_file3
+   integer,          intent(in)  :: nwp_flag
 
-   select case (ecmwf_flag)
+   select case (nwp_flag)
    case(0)
-      ecmwf_path_file = trim(adjustl(ecmwf_path))//'/ERA_Interim_an_'// &
+      nwp_path_file = trim(adjustl(nwp_path))//'/ERA_Interim_an_'// &
            trim(adjustl(cyear))//trim(adjustl(cmonth))// &
            trim(adjustl(cday))//'_'//trim(adjustl(chour))//'+00.grb'
    case(1)
-      ecmwf_path_file = trim(adjustl(ecmwf_path))//'/ggas/'// &
+      nwp_path_file = trim(adjustl(nwp_path))//'/ggas/'// &
            trim(adjustl(cyear))//'/'//trim(adjustl(cmonth))//'/'// &
            trim(adjustl(cday))//'/'//'ggas'// &
            trim(adjustl(cyear))//trim(adjustl(cmonth))// &
            trim(adjustl(cday))//trim(adjustl(chour))//'00.nc'
-      ecmwf_path_file2 = trim(adjustl(ecmwf_path2))//'/ggam/'// &
+      nwp_path_file2 = trim(adjustl(nwp_path2))//'/ggam/'// &
            trim(adjustl(cyear))//'/'//trim(adjustl(cmonth))//'/'// &
            trim(adjustl(cday))//'/'//'ggam'// &
            trim(adjustl(cyear))//trim(adjustl(cmonth))// &
            trim(adjustl(cday))//trim(adjustl(chour))//'00.nc'
-      ecmwf_path_file3 = trim(adjustl(ecmwf_path3))//'/spam/'// &
+      nwp_path_file3 = trim(adjustl(nwp_path3))//'/spam/'// &
            trim(adjustl(cyear))//'/'//trim(adjustl(cmonth))//'/'// &
            trim(adjustl(cday))//'/'//'spam'// &
            trim(adjustl(cyear))//trim(adjustl(cmonth))// &
            trim(adjustl(cday))//trim(adjustl(chour))//'00.nc'
    case(2)
-      ecmwf_path_file = trim(adjustl(ecmwf_path2))//'/gg/as/'// &
+      nwp_path_file = trim(adjustl(nwp_path2))//'/gg/as/'// &
            trim(adjustl(cyear))//'/'//trim(adjustl(cmonth))//'/'// &
            trim(adjustl(cday))//'/'//'ggas'// &
            trim(adjustl(cyear))//trim(adjustl(cmonth))// &
            trim(adjustl(cday))//trim(adjustl(chour))//'00.nc'
-      ecmwf_path_file2 = trim(adjustl(ecmwf_path))//'/gg/am/'// &
+      nwp_path_file2 = trim(adjustl(nwp_path))//'/gg/am/'// &
            trim(adjustl(cyear))//'/'//trim(adjustl(cmonth))//'/'// &
            trim(adjustl(cday))//'/'//'ggam'// &
            trim(adjustl(cyear))//trim(adjustl(cmonth))// &
            trim(adjustl(cday))//trim(adjustl(chour))//'00.grb'
-      ecmwf_path_file3 = trim(adjustl(ecmwf_path3))//'/sp/am/'// &
+      nwp_path_file3 = trim(adjustl(nwp_path3))//'/sp/am/'// &
            trim(adjustl(cyear))//'/'//trim(adjustl(cmonth))//'/'// &
            trim(adjustl(cday))//'/'//'spam'// &
            trim(adjustl(cyear))//trim(adjustl(cmonth))// &
            trim(adjustl(cday))//trim(adjustl(chour))//'00.grb'
    case(4)
-      ecmwf_path_file = trim(adjustl(ecmwf_path))//'/ECMWF_OPER_'// &
+      nwp_path_file = trim(adjustl(nwp_path))//'/ECMWF_OPER_'// &
            trim(adjustl(cyear))//trim(adjustl(cmonth))// &
            trim(adjustl(cday))//'_'//trim(adjustl(chour))//'+00.nc'
    case(5)
-      ecmwf_path_file = trim(adjustl(ecmwf_path))//'/ECMWF_ERA5_'// &
+      nwp_path_file = trim(adjustl(nwp_path))//'/ECMWF_ERA5_'// &
            trim(adjustl(cyear))//trim(adjustl(cmonth))// &
            trim(adjustl(cday))//'_'//trim(adjustl(chour))//'_0.5.nc'
    case(6)
-      ecmwf_path_file = trim(adjustl(ecmwf_path))//'/gfs_4_'// &
+      nwp_path_file = trim(adjustl(nwp_path))//'/gfs_4_'// &
            trim(adjustl(cyear))//trim(adjustl(cmonth))// &
            trim(adjustl(cday))//'_'//trim(adjustl(chour))//'00_000.grb2'
    case(7)
-      ecmwf_path_file = trim(adjustl(ecmwf_path))//'/GFS_'// &
+      nwp_path_file = trim(adjustl(nwp_path))//'/GFS_'// &
            trim(adjustl(cyear))//trim(adjustl(cmonth))// &
            trim(adjustl(cday))//trim(adjustl(chour))//'00.grb'
    case(8)
-      ecmwf_path_file = trim(adjustl(ecmwf_path))//'/GFS_'// &
+      nwp_path_file = trim(adjustl(nwp_path))//'/GFS_'// &
            trim(adjustl(cyear))//trim(adjustl(cmonth))// &
            trim(adjustl(cday))//trim(adjustl(chour))//'00.grb.nc'
    case default
@@ -381,36 +372,36 @@ subroutine make_ecmwf_name(cyear, cmonth, cday, chour, ecmwf_flag, ecmwf_path, &
 end subroutine make_ecmwf_name
 
 
-subroutine build_ecmwf_HR_file_from_LR(ecmwf_path_file, ecmwf_hr_path_file)
+subroutine build_ecmwf_HR_file_from_LR(nwp_path_file, ecmwf_hr_path_file)
 
    use preproc_constants_m
 
    implicit none
 
-   character(len=*), intent(in)  :: ecmwf_path_file
+   character(len=*), intent(in)  :: nwp_path_file
    character(len=*), intent(out) :: ecmwf_hr_path_file
 
    character(len=path_length) :: base, suffix
-   integer :: cut_off, ecmwf_path_file_length
+   integer :: cut_off, nwp_path_file_length
 
-   cut_off = index(ecmwf_path_file, '.', back=.true.)
-   ecmwf_path_file_length = len_trim(ecmwf_path_file)
-   base = trim(adjustl(ecmwf_path_file(1:(cut_off-1))))
-   suffix = trim(adjustl(ecmwf_path_file((cut_off+1):ecmwf_path_file_length)))
+   cut_off = index(nwp_path_file, '.', back=.true.)
+   nwp_path_file_length = len_trim(nwp_path_file)
+   base = trim(adjustl(nwp_path_file(1:(cut_off-1))))
+   suffix = trim(adjustl(nwp_path_file((cut_off+1):nwp_path_file_length)))
    ecmwf_hr_path_file = trim(adjustl(base)) // '_HR.' // trim(adjustl(suffix))
 
 end subroutine build_ecmwf_HR_file_from_LR
 
 
-subroutine build_ecmwf_HR_file_from_LR2(ecmwf_path, ecmwf_path_file, &
+subroutine build_ecmwf_HR_file_from_LR2(nwp_path, nwp_path_file, &
                                         ecmwf_hr_path, ecmwf_hr_path_file)
 
    use preproc_constants_m
 
    implicit none
 
-   character(len=*), intent(in)  :: ecmwf_path
-   character(len=*), intent(in)  :: ecmwf_path_file
+   character(len=*), intent(in)  :: nwp_path
+   character(len=*), intent(in)  :: nwp_path_file
    character(len=*), intent(in)  :: ecmwf_hr_path
    character(len=*), intent(out) :: ecmwf_hr_path_file
 
@@ -419,8 +410,8 @@ subroutine build_ecmwf_HR_file_from_LR2(ecmwf_path, ecmwf_path_file, &
    integer                    :: cut_off, ecmwf_file_length
    character                  :: yyyy*4, mm*2, dd*2, hh*2
 
-   temp_file = ecmwf_path_file
-   ecmwf_file_length = len_trim(ecmwf_path)
+   temp_file = nwp_path_file
+   ecmwf_file_length = len_trim(nwp_path)
    cut_off = index(temp_file, '.', back=.true.)
 
    yyyy = trim(adjustl(temp_file(ecmwf_file_length+6:(cut_off-9))))

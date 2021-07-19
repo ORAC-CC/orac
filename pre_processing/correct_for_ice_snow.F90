@@ -585,7 +585,7 @@ end subroutine apply_ice_correction
 !-------------------------------------------------------------------------------
 !------------------------------------------------------------------------------
 
-subroutine correct_for_ice_snow_ecmwf(ecmwf_path, imager_geolocation, &
+subroutine correct_for_ice_snow_ecmwf(nwp_path, imager_geolocation, &
      channel_info, imager_flags, preproc_dims, preproc_prtm, surface, &
      include_full_brdf, source_atts, verbose)
 
@@ -600,7 +600,7 @@ subroutine correct_for_ice_snow_ecmwf(ecmwf_path, imager_geolocation, &
    implicit none
 
    ! Arguments
-   character(len=*),           intent(in)    :: ecmwf_path
+   character(len=*),           intent(in)    :: nwp_path
    type(imager_geolocation_t), intent(in)    :: imager_geolocation
    type(channel_info_t),       intent(in)    :: channel_info
    type(imager_flags_t),       intent(in)    :: imager_flags
@@ -630,8 +630,8 @@ subroutine correct_for_ice_snow_ecmwf(ecmwf_path, imager_geolocation, &
    snow_threshold = 0.01 ! I belive this is 1cm
    ice_threshold = 0.15 ! I believe this is 15%
 
-   source_atts%snow_file = trim(ecmwf_path)
-   source_atts%sea_ice_file = trim(ecmwf_path)
+   source_atts%snow_file = trim(nwp_path)
+   source_atts%sea_ice_file = trim(nwp_path)
 
    do i = 1, channel_info%nchannels_total
       if (channel_info%map_ids_abs_to_snow_and_ice(i) .le. 0) cycle
