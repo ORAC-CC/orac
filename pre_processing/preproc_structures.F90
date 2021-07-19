@@ -64,6 +64,38 @@ module preproc_structures_m
    type preproc_geo_t
       real(kind=sreal), dimension(:,:,:), pointer :: solza,solazi,satza,satazi,relazi
    end type preproc_geo_t
+   
+   ! NWP filenames
+   type preproc_nwp_fnames_t
+
+      character(len=path_length) :: nwp_path(2)
+      character(len=path_length) :: nwp_path2(2)
+      character(len=path_length) :: nwp_path3(2)
+      character(len=path_length) :: nwp_path_file(2)
+      character(len=path_length) :: nwp_path_file2(2)
+      character(len=path_length) :: nwp_path_file3(2)
+      
+      character(len=path_length) :: q_f(2)       ! Specific humidity on model levels
+      character(len=path_length) :: t_f(2)       ! Temperature on model levels
+      character(len=path_length) :: o3_f(2)      ! Ozone on model levels
+      character(len=path_length) :: p_f(2)       ! Pressure on model levels
+      character(len=path_length) :: u_f(2)       ! U-compoonent of wind on model levels
+      character(len=path_length) :: v_f(2)       ! V-component of wind on model levels
+      character(len=path_length) :: z_f(2)       ! Geopotential at surface
+      character(len=path_length) :: lnsp_f(2)    ! Logarithm of surface pressure
+      character(len=path_length) :: ci_f(2)      ! Sea ice fraction
+      character(len=path_length) :: asn_f(2)     ! Snow albedo
+      character(len=path_length) :: tcwv_f(2)    ! Total column water vapor
+      character(len=path_length) :: sd_f(2)      ! Snow depth
+      character(len=path_length) :: u10_f(2)     ! 10m U-component of wind speed
+      character(len=path_length) :: v10_f(2)     ! 10m V-component of wind speed
+      character(len=path_length) :: t2_f(2)      ! 2m air temperature
+      character(len=path_length) :: skt_f(2)     ! Skin temperature
+      character(len=path_length) :: sstk_f(2)    ! Sea surface temperature
+      character(len=path_length) :: al_f(2)      ! Surface albedo
+      character(len=path_length) :: cape_f(2)    ! Convective available potential energy
+   
+   end type preproc_nwp_fnames_t
 
 
    ! optional processing variables, typically defined through the driver file
@@ -89,13 +121,7 @@ module preproc_structures_m
       logical                    :: use_predef_geo
       logical                    :: use_predef_lsm
       logical                    :: use_swansea_climatology
-
-      character(len=path_length) :: nwp_path(2)
-      character(len=path_length) :: nwp_path2(2)
-      character(len=path_length) :: nwp_path3(2)
-      character(len=path_length) :: nwp_path_file(2)
-      character(len=path_length) :: nwp_path_file2(2)
-      character(len=path_length) :: nwp_path_file3(2)
+      
       character(len=path_length) :: ext_lsm_path
       character(len=path_length) :: ext_geo_path
       character(len=path_length) :: occci_path

@@ -426,6 +426,7 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
    type(preproc_geo_t)              :: preproc_geo
    type(preproc_geoloc_t)           :: preproc_geoloc
    type(preproc_opts_t)             :: preproc_opts
+   type(preproc_nwp_fnames_t)       :: preproc_nwp_fnames
    type(preproc_prtm_t)             :: preproc_prtm, preproc_prtm1, preproc_prtm2
    type(preproc_surf_t)             :: preproc_surf
    type(preproc_cld_t)              :: preproc_cld
@@ -459,9 +460,9 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
    preproc_opts%ecmwf_time_int_method     = 2
    preproc_opts%use_ecmwf_snow_and_ice    = .true.
    preproc_opts%use_modis_emis_in_rttov   = .false.
-   preproc_opts%nwp_path(2)             = ' '
-   preproc_opts%nwp_path2(2)            = ' '
-   preproc_opts%nwp_path3(2)            = ' '
+   preproc_nwp_fnames%nwp_path(2)             = ' '
+   preproc_nwp_fnames%nwp_path2(2)            = ' '
+   preproc_nwp_fnames%nwp_path3(2)            = ' '
    preproc_opts%nwp_nlevels             = 0
    preproc_opts%nwp_time_factor           = 6.
    preproc_opts%use_l1_land_mask          = .false.
@@ -506,7 +507,7 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
    call parse_required(11, granule%l1b_file,            'l1b_path_file')
    call parse_required(11, granule%geo_file,            'geo_path_file')
    call parse_required(11, usgs_path_file,              'usgs_path_file')
-   call parse_required(11, preproc_opts%nwp_path(1),  'nwp_path')
+   call parse_required(11, preproc_nwp_fnames%nwp_path(1),  'nwp_path')
    call parse_required(11, rttov_coef_path,             'rttov_coef_path')
    call parse_required(11, rttov_emiss_path,            'rttov_emiss_path')
    call parse_required(11, nise_ice_snow_path,          'nise_ice_snow_path')
@@ -538,8 +539,8 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
    call parse_required(11, global_atts%Production_Time, 'Production_Time')
    call parse_required(11, aatsr_calib_path_file,       'aatsr_calib_path_file')
    call parse_required(11, cnwp_flag,                 'cnwp_flag')
-   call parse_required(11, preproc_opts%nwp_path2(1), 'nwp_path2')
-   call parse_required(11, preproc_opts%nwp_path3(1), 'nwp_path3')
+   call parse_required(11, preproc_nwp_fnames%nwp_path2(1), 'nwp_path2')
+   call parse_required(11, preproc_nwp_fnames%nwp_path3(1), 'nwp_path3')
    call parse_required(11, cchunkproc,                  'cchunkproc')
    call parse_required(11, cday_night,                  'cday_night')
    call parse_required(11, cverbose,                    'cverbose')
@@ -552,7 +553,7 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
 
    do while (parse_driver(11, value, label) == 0)
       call clean_driver_label(label)
-      call parse_optional(label, value, preproc_opts)
+      call parse_optional(label, value, preproc_opts, preproc_nwp_fnames)
    end do
 
    close(11)
@@ -603,9 +604,9 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
    ! If we're using an external land-sea file, place that into USGS filename var
    if (preproc_opts%use_predef_lsm) usgs_path_file = preproc_opts%ext_lsm_path
 
-   if (preproc_opts%nwp_path(2) .eq. '')  preproc_opts%nwp_path(2) =  preproc_opts%nwp_path(1)
-   if (preproc_opts%nwp_path2(2) .eq. '') preproc_opts%nwp_path2(2) = preproc_opts%nwp_path2(1)
-   if (preproc_opts%nwp_path3(2) .eq. '') preproc_opts%nwp_path3(2) = preproc_opts%nwp_path3(1)
+   if (preproc_nwp_fnames%nwp_path(2) .eq. '')  preproc_nwp_fnames%nwp_path(2) =  preproc_nwp_fnames%nwp_path(1)
+   if (preproc_nwp_fnames%nwp_path2(2) .eq. '') preproc_nwp_fnames%nwp_path2(2) = preproc_nwp_fnames%nwp_path2(1)
+   if (preproc_nwp_fnames%nwp_path3(2) .eq. '') preproc_nwp_fnames%nwp_path3(2) = preproc_nwp_fnames%nwp_path3(1)
 
    ! get the NetCDF version
    global_atts%netcdf_version = nf90_inq_libvers()
@@ -825,7 +826,7 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
       ! information, set paths and filenames to those required auxiliary /
       ! ancillary input...
       if (verbose) write(*,*) 'Carry out any preparatory steps'
-      call preparation(out_paths, granule, preproc_opts, global_atts, &
+      call preparation(out_paths, granule, preproc_opts,  preproc_nwp_fnames, global_atts, &
            source_atts%level1b_orbit_number, nwp_flag, imager_geolocation, &
            imager_time, i_chunk, ecmwf_time_int_fac, assume_full_paths, verbose)
 
@@ -833,10 +834,10 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
       if (verbose) then
          write(*,*) 'Start reading meteorological data file'
          write(*,*) 'nwp_flag: ', nwp_flag
-         write(*,*) 'nwp_path_file: ', trim(preproc_opts%nwp_path_file(1))
+         write(*,*) 'nwp_path_file: ', trim(preproc_nwp_fnames%nwp_path_file(1))
          if (nwp_flag.gt.0.and.nwp_flag.lt.4) then
-            write(*,*) 'nwp_path_file2: ', trim(preproc_opts%nwp_path_file2(1))
-            write(*,*) 'nwp_path_file3: ', trim(preproc_opts%nwp_path_file3(1))
+            write(*,*) 'nwp_path_file2: ', trim(preproc_nwp_fnames%nwp_path_file2(1))
+            write(*,*) 'nwp_path_file3: ', trim(preproc_nwp_fnames%nwp_path_file3(1))
          end if
       end if
 
@@ -845,10 +846,10 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
 
       ! read surface wind fields and ECMWF dimensions
       if (preproc_opts%ecmwf_time_int_method .ne. 2) then
-         call read_ecmwf_wind(nwp_flag, preproc_opts%nwp_path_file(1), preproc_opts%nwp_path_file2(1), preproc_opts%nwp_path_file3(1), ecmwf, preproc_opts%nwp_nlevels, verbose)
+         call read_ecmwf_wind(nwp_flag, preproc_nwp_fnames%nwp_path_file(1), preproc_nwp_fnames%nwp_path_file2(1), preproc_nwp_fnames%nwp_path_file3(1), ecmwf, preproc_opts%nwp_nlevels, verbose)
       else
-         call read_ecmwf_wind(nwp_flag, preproc_opts%nwp_path_file(1), preproc_opts%nwp_path_file2(1), preproc_opts%nwp_path_file3(1), ecmwf1, preproc_opts%nwp_nlevels, verbose)
-         call read_ecmwf_wind(nwp_flag, preproc_opts%nwp_path_file(2), preproc_opts%nwp_path_file2(2), preproc_opts%nwp_path_file3(2), ecmwf2, preproc_opts%nwp_nlevels, verbose)
+         call read_ecmwf_wind(nwp_flag, preproc_nwp_fnames%nwp_path_file(1), preproc_nwp_fnames%nwp_path_file2(1), preproc_nwp_fnames%nwp_path_file3(1), ecmwf1, preproc_opts%nwp_nlevels, verbose)
+         call read_ecmwf_wind(nwp_flag, preproc_nwp_fnames%nwp_path_file(2), preproc_nwp_fnames%nwp_path_file2(2), preproc_nwp_fnames%nwp_path_file3(2), ecmwf2, preproc_opts%nwp_nlevels, verbose)
 
          call dup_ecmwf_allocation(ecmwf1, ecmwf)
 
@@ -878,18 +879,18 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
       ! read ecmwf era interim file
       if (verbose) write(*,*) 'Read and interpolate NWP / Reanalysis data.'
       if (preproc_opts%ecmwf_time_int_method .ne. 2) then
-         call read_ecmwf(nwp_flag, preproc_opts%nwp_path_file(1), preproc_opts%nwp_path_file2(1), &
-              preproc_opts%nwp_path_file3(1), ecmwf, preproc_dims, preproc_geoloc, &
+         call read_ecmwf(nwp_flag, preproc_nwp_fnames%nwp_path_file(1), preproc_nwp_fnames%nwp_path_file2(1), &
+              preproc_nwp_fnames%nwp_path_file3(1), ecmwf, preproc_dims, preproc_geoloc, &
               preproc_prtm, verbose)
       else
          call allocate_preproc_prtm(preproc_dims, preproc_prtm1)
-         call read_ecmwf(nwp_flag, preproc_opts%nwp_path_file(1), preproc_opts%nwp_path_file2(1), &
-              preproc_opts%nwp_path_file3(1), ecmwf, preproc_dims, preproc_geoloc, &
+         call read_ecmwf(nwp_flag, preproc_nwp_fnames%nwp_path_file(1), preproc_nwp_fnames%nwp_path_file2(1), &
+              preproc_nwp_fnames%nwp_path_file3(1), ecmwf, preproc_dims, preproc_geoloc, &
               preproc_prtm1, verbose)
 
          call allocate_preproc_prtm(preproc_dims, preproc_prtm2)
-         call read_ecmwf(nwp_flag, preproc_opts%nwp_path_file(2), preproc_opts%nwp_path_file2(2), &
-              preproc_opts%nwp_path_file3(2), ecmwf, preproc_dims, preproc_geoloc, &
+         call read_ecmwf(nwp_flag, preproc_nwp_fnames%nwp_path_file(2), preproc_nwp_fnames%nwp_path_file2(2), &
+              preproc_nwp_fnames%nwp_path_file3(2), ecmwf, preproc_dims, preproc_geoloc, &
               preproc_prtm2, verbose)
 
          call linearly_combine_prtms(1.-ecmwf_time_int_fac, ecmwf_time_int_fac, &
@@ -947,7 +948,7 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
                     channel_info, assume_full_paths, include_full_brdf, &
                     source_atts, verbose)
             else
-               call correct_for_ice_snow_ecmwf(preproc_opts%nwp_path_file(1), &
+               call correct_for_ice_snow_ecmwf(preproc_nwp_fnames%nwp_path_file(1), &
                     imager_geolocation, channel_info, imager_flags, preproc_dims, &
                     preproc_prtm, surface, include_full_brdf, source_atts, &
                     verbose)

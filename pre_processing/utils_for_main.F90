@@ -62,7 +62,7 @@ subroutine parse_required(lun, value, name)
 end subroutine parse_required
 
 
-subroutine parse_optional(label, value, preproc_opts)
+subroutine parse_optional(label, value, preproc_opts, nwp_fnames)
 
    use parsing_m
    use preproc_constants_m
@@ -73,6 +73,7 @@ subroutine parse_optional(label, value, preproc_opts)
    character(len=*),     intent(in)    :: label
    character(len=*),     intent(in)    :: value
    type(preproc_opts_t), intent(inout) :: preproc_opts
+   type(preproc_nwp_fnames_t), intent(inout) :: nwp_fnames
 
 
    select case (label)
@@ -97,13 +98,13 @@ subroutine parse_optional(label, value, preproc_opts)
       if (parse_string(value, preproc_opts%use_modis_emis_in_rttov) /= 0) &
          call handle_parse_error(label)
    case('ECMWF_PATH_2')
-      if (parse_string(value, preproc_opts%nwp_path(2)) /= 0) &
+      if (parse_string(value, nwp_fnames%nwp_path(2)) /= 0) &
          call handle_parse_error(label)
    case('ECMWF_PATH2_2')
-      if (parse_string(value, preproc_opts%nwp_path2(2)) /= 0) &
+      if (parse_string(value, nwp_fnames%nwp_path2(2)) /= 0) &
          call handle_parse_error(label)
    case('ECMWF_PATH3_2')
-      if (parse_string(value, preproc_opts%nwp_path3(2)) /= 0) &
+      if (parse_string(value, nwp_fnames%nwp_path3(2)) /= 0) &
          call handle_parse_error(label)
    case('ECMWF_NLEVELS')
       if (parse_string(value, preproc_opts%nwp_nlevels) /= 0) &
