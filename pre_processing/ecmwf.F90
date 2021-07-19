@@ -300,13 +300,12 @@ subroutine ecmwf_wind_init(ecmwf)
 end subroutine ecmwf_wind_init
 
 
-subroutine dup_ecmwf_allocation(ecmwf, ecmwf2, low_res)
+subroutine dup_ecmwf_allocation(ecmwf, ecmwf2)
 
    implicit none
 
    type(ecmwf_t), intent(in)  :: ecmwf
    type(ecmwf_t), intent(inout) :: ecmwf2
-   logical,       intent(in)  :: low_res
 
    ecmwf2%xdim = ecmwf%xdim
    ecmwf2%ydim = ecmwf%ydim
@@ -314,12 +313,10 @@ subroutine dup_ecmwf_allocation(ecmwf, ecmwf2, low_res)
 
    allocate(ecmwf2%lon(ecmwf%xdim))
    allocate(ecmwf2%lat(ecmwf%ydim))
-   if (low_res) then
-      allocate(ecmwf2%avec(ecmwf%kdim+1))
-      allocate(ecmwf2%bvec(ecmwf%kdim+1))
-      allocate(ecmwf2%u10(ecmwf%xdim,ecmwf%ydim))
-      allocate(ecmwf2%v10(ecmwf%xdim,ecmwf%ydim))
-   end if
+   allocate(ecmwf2%avec(ecmwf%kdim+1))
+   allocate(ecmwf2%bvec(ecmwf%kdim+1))
+   allocate(ecmwf2%u10(ecmwf%xdim,ecmwf%ydim))
+   allocate(ecmwf2%v10(ecmwf%xdim,ecmwf%ydim))
    allocate(ecmwf2%skin_temp(ecmwf%xdim,ecmwf%ydim))
    allocate(ecmwf2%snow_depth(ecmwf%xdim,ecmwf%ydim))
    allocate(ecmwf2%sea_ice_cover(ecmwf%xdim,ecmwf%ydim))
@@ -327,7 +324,7 @@ subroutine dup_ecmwf_allocation(ecmwf, ecmwf2, low_res)
 end subroutine dup_ecmwf_allocation
 
 
-subroutine linearly_combine_ecmwfs(a, b, ecmwf1, ecmwf2, ecmwf, low_res)
+subroutine linearly_combine_ecmwfs(a, b, ecmwf1, ecmwf2, ecmwf)
 
    implicit none
 
@@ -336,16 +333,15 @@ subroutine linearly_combine_ecmwfs(a, b, ecmwf1, ecmwf2, ecmwf, low_res)
    type(ecmwf_t), intent(in)  :: ecmwf1
    type(ecmwf_t), intent(in)  :: ecmwf2
    type(ecmwf_t), intent(inout) :: ecmwf
-   logical,       intent(in)  :: low_res
 
-   ecmwf%lat               = a * ecmwf1%lat        + b * ecmwf2%lat
-   ecmwf%lon               = a * ecmwf1%lon        + b * ecmwf2%lon
-   if (low_res) ecmwf%avec = a * ecmwf1%avec       + b * ecmwf2%avec
-   if (low_res) ecmwf%bvec = a * ecmwf1%bvec       + b * ecmwf2%bvec
-   if (low_res) ecmwf%u10  = a * ecmwf1%u10        + b * ecmwf2%u10
-   if (low_res) ecmwf%v10  = a * ecmwf1%v10        + b * ecmwf2%v10
-   ecmwf%skin_temp         = a * ecmwf1%skin_temp  + b * ecmwf2%skin_temp
-   ecmwf%snow_depth        = a * ecmwf1%snow_depth + b * ecmwf2%snow_depth
+   ecmwf%lat  = a * ecmwf1%lat        + b * ecmwf2%lat
+   ecmwf%lon  = a * ecmwf1%lon        + b * ecmwf2%lon
+   ecmwf%avec = a * ecmwf1%avec       + b * ecmwf2%avec
+   ecmwf%bvec = a * ecmwf1%bvec       + b * ecmwf2%bvec
+   ecmwf%u10  = a * ecmwf1%u10        + b * ecmwf2%u10
+   ecmwf%v10  = a * ecmwf1%v10        + b * ecmwf2%v10
+   ecmwf%skin_temp = a * ecmwf1%skin_temp  + b * ecmwf2%skin_temp
+   ecmwf%snow_depth = a * ecmwf1%snow_depth + b * ecmwf2%snow_depth
 
    ecmwf%sea_ice_cover = sreal_fill_value
    where (ecmwf1%sea_ice_cover .ne. sreal_fill_value .and. &

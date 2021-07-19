@@ -419,8 +419,6 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
    type(USGS_t)                     :: usgs
 
    type(ecmwf_t)                    :: ecmwf, ecmwf1, ecmwf2
-   type(ecmwf_t)                    :: ecmwf_HR, ecmwf_HR1, ecmwf_HR2
-   logical                          :: low_res = .true., high_res = .false.
 
    type(surface_t)                  :: surface
 
@@ -458,15 +456,12 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
    ! Set defaults for optional arguments/fields
    nullify(preproc_opts%channel_ids)
    preproc_opts%n_channels                = 0
-   preproc_opts%use_hr_ecmwf              = .true.
    preproc_opts%ecmwf_time_int_method     = 2
    preproc_opts%use_ecmwf_snow_and_ice    = .true.
    preproc_opts%use_modis_emis_in_rttov   = .false.
    preproc_opts%ecmwf_path(2)             = ' '
    preproc_opts%ecmwf_path2(2)            = ' '
    preproc_opts%ecmwf_path3(2)            = ' '
-   preproc_opts%ecmwf_path_hr(1)          = ' '
-   preproc_opts%ecmwf_path_hr(2)          = ' '
    preproc_opts%ecmwf_nlevels             = 0
    preproc_opts%use_l1_land_mask          = .false.
    preproc_opts%use_occci                 = .false.
@@ -838,7 +833,6 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
          write(*,*) 'Start reading meteorological data file'
          write(*,*) 'ecmwf_flag: ', ecmwf_flag
          write(*,*) 'ecmwf_path_file: ', trim(preproc_opts%ecmwf_path_file(1))
-         write(*,*) 'ecmwf_HR_path_file: ', trim(preproc_opts%ecmwf_HR_path_file(1))
          if (ecmwf_flag.gt.0.and.ecmwf_flag.lt.4) then
             write(*,*) 'ecmwf_path_file2: ', trim(preproc_opts%ecmwf_path_file2(1))
             write(*,*) 'ecmwf_path_file3: ', trim(preproc_opts%ecmwf_path_file3(1))
@@ -847,39 +841,21 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
 
       ! NOAA GFS has limited (pressure) levels and no HR, so set these.
       if (ecmwf_flag .gt. 5 .and. ecmwf_flag .le. 8) preproc_opts%ecmwf_nlevels = 31
-      if (ecmwf_flag .gt. 5 .and. ecmwf_flag .le. 8) preproc_opts%use_hr_ecmwf = .false.
 
       ! read surface wind fields and ECMWF dimensions
       if (preproc_opts%ecmwf_time_int_method .ne. 2) then
-         call read_ecmwf_wind(ecmwf_flag, preproc_opts%ecmwf_path_file(1), &
-              preproc_opts%ecmwf_HR_path_file(1), preproc_opts%ecmwf_path_file2(1), preproc_opts%ecmwf_path_file3(1), &
-              ecmwf, ecmwf_HR, preproc_opts%use_hr_ecmwf, preproc_opts%ecmwf_nlevels, verbose)
+         call read_ecmwf_wind(ecmwf_flag, preproc_opts%ecmwf_path_file(1), preproc_opts%ecmwf_path_file2(1), preproc_opts%ecmwf_path_file3(1), ecmwf, preproc_opts%ecmwf_nlevels, verbose)
       else
-         call read_ecmwf_wind(ecmwf_flag, preproc_opts%ecmwf_path_file(1), &
-              preproc_opts%ecmwf_HR_path_file(1), preproc_opts%ecmwf_path_file2(1), preproc_opts%ecmwf_path_file3(1), &
-              ecmwf1, ecmwf_HR1, preproc_opts%use_hr_ecmwf, preproc_opts%ecmwf_nlevels, verbose)
-         call read_ecmwf_wind(ecmwf_flag, preproc_opts%ecmwf_path_file(2), &
-              preproc_opts%ecmwf_HR_path_file(2), preproc_opts%ecmwf_path_file2(2), preproc_opts%ecmwf_path_file3(2), &
-              ecmwf2, ecmwf_HR2, preproc_opts%use_hr_ecmwf, preproc_opts%ecmwf_nlevels, verbose)
+         call read_ecmwf_wind(ecmwf_flag, preproc_opts%ecmwf_path_file(1), preproc_opts%ecmwf_path_file2(1), preproc_opts%ecmwf_path_file3(1), ecmwf1, preproc_opts%ecmwf_nlevels, verbose)
+         call read_ecmwf_wind(ecmwf_flag, preproc_opts%ecmwf_path_file(2), preproc_opts%ecmwf_path_file2(2), preproc_opts%ecmwf_path_file3(2), ecmwf2, preproc_opts%ecmwf_nlevels, verbose)
 
-         call dup_ecmwf_allocation(ecmwf1, ecmwf, low_res)
-         if (preproc_opts%use_hr_ecmwf) then
-            call dup_ecmwf_allocation(ecmwf_HR1, ecmwf_HR, high_res)
-         end if
+         call dup_ecmwf_allocation(ecmwf1, ecmwf)
 
          call linearly_combine_ecmwfs(1.-ecmwf_time_int_fac, &
-              ecmwf_time_int_fac, ecmwf1, ecmwf2, ecmwf, low_res)
-         if (preproc_opts%use_hr_ecmwf) then
-            call linearly_combine_ecmwfs(1.-ecmwf_time_int_fac, &
-                 ecmwf_time_int_fac, ecmwf_HR1, ecmwf_HR2, ecmwf_HR, high_res)
-         end if
+              ecmwf_time_int_fac, ecmwf1, ecmwf2, ecmwf)
 
-         call deallocate_ecmwf_structures(ecmwf1, low_res)
-         call deallocate_ecmwf_structures(ecmwf2, low_res)
-         if (preproc_opts%use_hr_ecmwf) then
-            call deallocate_ecmwf_structures(ecmwf_HR1, high_res)
-            call deallocate_ecmwf_structures(ecmwf_HR2, high_res)
-         end if
+         call deallocate_ecmwf_structures(ecmwf1)
+         call deallocate_ecmwf_structures(ecmwf2)
       end if
 
       ! define preprocessing grid from user grid spacing and satellite limits
@@ -970,7 +946,7 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
                     channel_info, assume_full_paths, include_full_brdf, &
                     source_atts, verbose)
             else
-               call correct_for_ice_snow_ecmwf(preproc_opts%ecmwf_HR_path_file(1), &
+               call correct_for_ice_snow_ecmwf(preproc_opts%ecmwf_path_file(1), &
                     imager_geolocation, channel_info, imager_flags, preproc_dims, &
                     preproc_prtm, surface, include_full_brdf, source_atts, &
                     verbose)
@@ -991,17 +967,10 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
          if (verbose) write(*,*) 'Calculate Pavolonis cloud phase with high '// &
               'resolution ERA surface data'
          if (preproc_opts%do_cloud_type) then
-            if (.not. preproc_opts%use_hr_ecmwf) then
-               call cloud_type(channel_info, granule%sensor, surface, imager_flags, &
-                    imager_angles, imager_geolocation, imager_measurements, &
-                    imager_pavolonis, ecmwf, granule%platform, granule%doy, preproc_opts%do_ironly, &
-                    do_spectral_response_correction, verbose)
-            else
-               call cloud_type(channel_info, granule%sensor, surface, imager_flags, &
-                    imager_angles, imager_geolocation, imager_measurements, &
-                    imager_pavolonis, ecmwf_HR, granule%platform, granule%doy, preproc_opts%do_ironly, &
-                    do_spectral_response_correction, verbose)
-            end if
+           call cloud_type(channel_info, granule%sensor, surface, imager_flags, &
+                imager_angles, imager_geolocation, imager_measurements, &
+                imager_pavolonis, ecmwf, granule%platform, granule%doy, preproc_opts%do_ironly, &
+                do_spectral_response_correction, verbose)
          end if
       end if
 
@@ -1168,10 +1137,7 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
 
       ! deallocate the array parts of the structures
       if (verbose) write(*,*) 'Deallocate chunk specific structures'
-      call deallocate_ecmwf_structures(ecmwf, low_res)
-      if (preproc_opts%use_hr_ecmwf) then
-         call deallocate_ecmwf_structures(ecmwf_HR, high_res)
-      end if
+      call deallocate_ecmwf_structures(ecmwf)
       call deallocate_preproc_structures(preproc_dims, preproc_geoloc, &
            preproc_geo, preproc_prtm, preproc_surf, preproc_cld)
       call deallocate_imager_structures(imager_geolocation, imager_angles, &
