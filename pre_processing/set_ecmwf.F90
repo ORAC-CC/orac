@@ -361,8 +361,6 @@ subroutine determine_jasmin_filenames_era5(nwp_fnames, cyear, cmonth, cday, chou
     
     character(len=path_length)                :: ml_dir, sfc_dir
     
-    print*,cyear, ' ', cmonth, ' ', cday, ' ', chour
-    
     ml_dir = trim(adjustl(nwp_fnames%nwp_path(idx)))//'an_ml/'// &
              trim(adjustl(cyear))//'/'// &
              trim(adjustl(cmonth))//'/'// &
@@ -370,7 +368,7 @@ subroutine determine_jasmin_filenames_era5(nwp_fnames, cyear, cmonth, cday, chou
              trim(adjustl(cyear))// &
              trim(adjustl(cmonth))// &
              trim(adjustl(cday))// &
-             trim(adjustl(chour))//'.'
+             trim(adjustl(chour))//'00.'
              
     sfc_dir = trim(adjustl(nwp_fnames%nwp_path(idx)))//'an_sfc/'// &
               trim(adjustl(cyear))//'/'// &
@@ -379,7 +377,7 @@ subroutine determine_jasmin_filenames_era5(nwp_fnames, cyear, cmonth, cday, chou
               trim(adjustl(cyear))// &
               trim(adjustl(cmonth))// &
               trim(adjustl(cday))// &
-              trim(adjustl(chour))//'.'
+              trim(adjustl(chour))//'00.'
     
     ! Set up surface variables   
     nwp_fnames%ci_f(idx) = trim(adjustl(sfc_dir))//'ci.nc'
@@ -400,30 +398,6 @@ subroutine determine_jasmin_filenames_era5(nwp_fnames, cyear, cmonth, cday, chou
     nwp_fnames%lnsp_f(idx) = trim(adjustl(ml_dir))//'lnsp.nc'
     nwp_fnames%u_f(idx) = trim(adjustl(ml_dir))//'u.nc'
     nwp_fnames%v_f(idx) = trim(adjustl(ml_dir))//'v.nc'
-    nwp_fnames%z_f(idx) = trim(adjustl(ml_dir))//'z.nc'
-    
-    print*, trim(nwp_fnames%ci_f(idx))
-    print*, trim(nwp_fnames%asn_f(idx))
-    print*, trim(nwp_fnames%tcwv_f(idx))
-    print*, trim(nwp_fnames%sd_f(idx))
-    print*, trim(nwp_fnames%u10_f(idx))
-    print*, trim(nwp_fnames%v10_f(idx))
-    print*, trim(nwp_fnames%t2_f(idx))
-    print*, trim(nwp_fnames%skt_f(idx))
-    print*, trim(nwp_fnames%sstk_f(idx))
-    print*, trim(nwp_fnames%cape_f(idx))
-      
-    ! Set up model level variables
-    print*, trim(nwp_fnames%q_f(idx))
-    print*, trim(nwp_fnames%t_f(idx))
-    print*, trim(nwp_fnames%o3_f(idx))
-    print*, trim(nwp_fnames%lnsp_f(idx))
-    print*, trim(nwp_fnames%u_f(idx))
-    print*, trim(nwp_fnames%v_f(idx))
-    print*, trim(nwp_fnames%z_f(idx))
-    
-    stop
-
-    
+    nwp_fnames%z_f(idx) = trim(adjustl(ml_dir))//'z.nc'    
    
 end subroutine determine_jasmin_filenames_era5

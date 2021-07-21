@@ -846,10 +846,10 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
 
       ! read surface wind fields and ECMWF dimensions
       if (preproc_opts%ecmwf_time_int_method .ne. 2) then
-         call read_ecmwf_wind(nwp_flag, preproc_nwp_fnames%nwp_path_file(1), preproc_nwp_fnames%nwp_path_file2(1), preproc_nwp_fnames%nwp_path_file3(1), ecmwf, preproc_opts%nwp_nlevels, verbose)
+         call read_ecmwf_wind(nwp_flag, preproc_nwp_fnames, 1, ecmwf, preproc_opts%nwp_nlevels, verbose)
       else
-         call read_ecmwf_wind(nwp_flag, preproc_nwp_fnames%nwp_path_file(1), preproc_nwp_fnames%nwp_path_file2(1), preproc_nwp_fnames%nwp_path_file3(1), ecmwf1, preproc_opts%nwp_nlevels, verbose)
-         call read_ecmwf_wind(nwp_flag, preproc_nwp_fnames%nwp_path_file(2), preproc_nwp_fnames%nwp_path_file2(2), preproc_nwp_fnames%nwp_path_file3(2), ecmwf2, preproc_opts%nwp_nlevels, verbose)
+         call read_ecmwf_wind(nwp_flag, preproc_nwp_fnames, 1, ecmwf1, preproc_opts%nwp_nlevels, verbose)
+         call read_ecmwf_wind(nwp_flag, preproc_nwp_fnames, 2, ecmwf2, preproc_opts%nwp_nlevels, verbose)
 
          call dup_ecmwf_allocation(ecmwf1, ecmwf)
 
@@ -879,18 +879,15 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
       ! read ecmwf era interim file
       if (verbose) write(*,*) 'Read and interpolate NWP / Reanalysis data.'
       if (preproc_opts%ecmwf_time_int_method .ne. 2) then
-         call read_ecmwf(nwp_flag, preproc_nwp_fnames%nwp_path_file(1), preproc_nwp_fnames%nwp_path_file2(1), &
-              preproc_nwp_fnames%nwp_path_file3(1), ecmwf, preproc_dims, preproc_geoloc, &
+         call read_ecmwf(nwp_flag, preproc_nwp_fnames, 1, ecmwf, preproc_dims, preproc_geoloc, &
               preproc_prtm, verbose)
       else
          call allocate_preproc_prtm(preproc_dims, preproc_prtm1)
-         call read_ecmwf(nwp_flag, preproc_nwp_fnames%nwp_path_file(1), preproc_nwp_fnames%nwp_path_file2(1), &
-              preproc_nwp_fnames%nwp_path_file3(1), ecmwf, preproc_dims, preproc_geoloc, &
+         call read_ecmwf(nwp_flag, preproc_nwp_fnames, 1, ecmwf, preproc_dims, preproc_geoloc, &
               preproc_prtm1, verbose)
 
          call allocate_preproc_prtm(preproc_dims, preproc_prtm2)
-         call read_ecmwf(nwp_flag, preproc_nwp_fnames%nwp_path_file(2), preproc_nwp_fnames%nwp_path_file2(2), &
-              preproc_nwp_fnames%nwp_path_file3(2), ecmwf, preproc_dims, preproc_geoloc, &
+         call read_ecmwf(nwp_flag, preproc_nwp_fnames, 2, ecmwf, preproc_dims, preproc_geoloc, &
               preproc_prtm2, verbose)
 
          call linearly_combine_prtms(1.-ecmwf_time_int_fac, ecmwf_time_int_fac, &

@@ -34,22 +34,20 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine read_ecmwf_wind(nwp_flag, nwp_path_file, &
-   nwp_path_file2, nwp_path_file3, ecmwf, &
+subroutine read_ecmwf_wind(nwp_flag, nwp_fnames, idx, ecmwf, &
    nwp_nlevels, verbose)
 
    use preproc_structures_m
 
    implicit none
 
-   integer,          intent(in)    :: nwp_flag
-   character(len=*), intent(in)    :: nwp_path_file
-   character(len=*), intent(in)    :: nwp_path_file2
-   character(len=*), intent(in)    :: nwp_path_file3
-   type(ecmwf_t),    intent(inout) :: ecmwf
-   integer,          intent(in)    :: nwp_nlevels
-   logical,          intent(in)    :: verbose
-
+   integer,          intent(in)              :: nwp_flag
+   type(preproc_nwp_fnames_t), intent(inout) :: nwp_fnames
+   integer,          intent(in)              :: idx
+   type(ecmwf_t),    intent(inout)           :: ecmwf
+   integer,          intent(in)              :: nwp_nlevels
+   logical,          intent(in)              :: verbose
+   
    ! Set the number of levels in the input file, defaults to 61
    select case(nwp_nlevels)
    case(31)
@@ -66,20 +64,20 @@ subroutine read_ecmwf_wind(nwp_flag, nwp_path_file, &
 
    select case (nwp_flag)
    case(0)
-      call read_ecmwf_wind_grib(nwp_path_file, ecmwf, .false., nwp_flag)
+      call read_ecmwf_wind_grib(nwp_fnames%nwp_path_file(idx), ecmwf, .false., nwp_flag)
       if (verbose) write(*,*)'ecmwf_dims grib: ', ecmwf%xdim, ecmwf%ydim
    case(1)
-      call read_ecmwf_wind_nc(ecmwf, nwp_path_file, nwp_flag)
+      call read_ecmwf_wind_nc(ecmwf, nwp_fnames%nwp_path_file(idx), nwp_flag)
       if (verbose) write(*,*)'ecmwf_dims ncdf: ', ecmwf%xdim, ecmwf%ydim
    case(2)
-      call read_ecmwf_wind_nc(ecmwf, nwp_path_file, nwp_flag)
+      call read_era5_jasmin_wind_nc(ecmwf, nwp_fnames, idx, nwp_flag)
       if (verbose) write(*,*)'ecmwf_dims ncdf: ', ecmwf%xdim, ecmwf%ydim
    case(3)
-      call read_ecmwf_wind_nc(ecmwf, nwp_path_file, nwp_flag)
+      call read_ecmwf_wind_nc(ecmwf, nwp_fnames%nwp_path_file(idx), nwp_flag)
       if (verbose) write(*,*)'ecmwf_dims ncdf: ', ecmwf%xdim, ecmwf%ydim, ecmwf%kdim
    case(4)
-      call read_ecmwf_wind_badc(nwp_path_file, nwp_path_file2, &
-           nwp_path_file3, ecmwf)
+      call read_ecmwf_wind_badc(nwp_fnames%nwp_path_file(idx), nwp_fnames%nwp_path_file2(idx), &
+           nwp_fnames%nwp_path_file3(idx), ecmwf)
       if (verbose) write(*,*)'ecmwf_dims badc: ', ecmwf%xdim, ecmwf%ydim
    case default
       write(*,*) "Incorrect ECMWF flag, must be between 0-4."
@@ -127,51 +125,50 @@ end subroutine read_ecmwf_wind
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine read_ecmwf(nwp_flag, nwp_path_file, nwp_path_file2, &
-   nwp_path_file3, ecmwf, preproc_dims, preproc_geoloc, preproc_prtm, verbose)
+subroutine read_ecmwf(nwp_flag,nwp_fnames, idx, ecmwf, preproc_dims, &
+                      preproc_geoloc, preproc_prtm, verbose)
 
    use preproc_structures_m
 
    implicit none
 
-   integer,                intent(in)    :: nwp_flag
-   character(len=*),       intent(in)    :: nwp_path_file
-   character(len=*),       intent(in)    :: nwp_path_file2
-   character(len=*),       intent(in)    :: nwp_path_file3
-   type(ecmwf_t),          intent(in)    :: ecmwf
-   type(preproc_dims_t),   intent(in)    :: preproc_dims
-   type(preproc_geoloc_t), intent(in)    :: preproc_geoloc
-   type(preproc_prtm_t),   intent(inout) :: preproc_prtm
-   logical,                intent(in)    :: verbose
+   integer,                intent(in)        :: nwp_flag
+   type(preproc_nwp_fnames_t), intent(inout) :: nwp_fnames
+   integer,          intent(in)              :: idx
+   type(ecmwf_t),          intent(in)        :: ecmwf
+   type(preproc_dims_t),   intent(in)        :: preproc_dims
+   type(preproc_geoloc_t), intent(in)        :: preproc_geoloc
+   type(preproc_prtm_t),   intent(inout)     :: preproc_prtm
+   logical,                intent(in)        :: verbose
 
    select case (nwp_flag)
    case(0)
-      if (verbose) write(*,*) 'Reading gfs path: ', trim(nwp_path_file)
-      call read_gfs_grib(nwp_path_file, preproc_dims, preproc_geoloc, &
+      if (verbose) write(*,*) 'Reading gfs path: ', trim(nwp_fnames%nwp_path_file(idx))
+      call read_gfs_grib(nwp_fnames%nwp_path_file(idx), preproc_dims, preproc_geoloc, &
            preproc_prtm, verbose)
    case(1)
-      if (verbose) write(*,*) 'Reading ECMWF path: ', trim(nwp_path_file)
-      call read_ecmwf_nc(nwp_path_file, ecmwf, preproc_dims, preproc_geoloc, &
+      if (verbose) write(*,*) 'Reading ECMWF path: ', trim(nwp_fnames%nwp_path_file(idx))
+      call read_ecmwf_nc(nwp_fnames%nwp_path_file(idx), ecmwf, preproc_dims, preproc_geoloc, &
            preproc_prtm, verbose, nwp_flag)
    case(2)
-      if (verbose) write(*,*) 'Reading JASMIN ERA5 path: ', trim(nwp_path_file)
-      call read_ecmwf_nc(nwp_path_file, ecmwf, preproc_dims, preproc_geoloc, &
+      if (verbose) write(*,*) 'Reading JASMIN ERA5 path: ', trim(nwp_fnames%nwp_path_file(idx))
+      call read_era5_jasmin_nc(nwp_fnames, idx, ecmwf, preproc_dims, preproc_geoloc, &
            preproc_prtm, verbose, nwp_flag)
    case(3)
-      if (verbose) write(*,*) 'Reading ecmwf path: ', trim(nwp_path_file)
-      call read_ecmwf_nc(nwp_path_file, ecmwf, preproc_dims, preproc_geoloc, &
+      if (verbose) write(*,*) 'Reading ecmwf path: ', trim(nwp_fnames%nwp_path_file(idx))
+      call read_ecmwf_nc(nwp_fnames%nwp_path_file(idx), ecmwf, preproc_dims, preproc_geoloc, &
            preproc_prtm, verbose, nwp_flag)
    case(4)
-      if (verbose) write(*,*) 'Reading ecmwf path: ', trim(nwp_path_file)
-      call read_ecmwf_nc(nwp_path_file, ecmwf, preproc_dims, preproc_geoloc, &
+      if (verbose) write(*,*) 'Reading ecmwf path: ', trim(nwp_fnames%nwp_path_file(idx))
+      call read_ecmwf_nc(nwp_fnames%nwp_path_file(idx), ecmwf, preproc_dims, preproc_geoloc, &
            preproc_prtm, verbose, nwp_flag)
 
-      if (verbose) write(*,*) 'Reading ecmwf path: ', trim(nwp_path_file2)
-      call read_ecmwf_grib(nwp_path_file2, preproc_dims, preproc_geoloc, &
+      if (verbose) write(*,*) 'Reading ecmwf path: ', trim(nwp_fnames%nwp_path_file2(idx))
+      call read_ecmwf_grib(nwp_fnames%nwp_path_file2(idx), preproc_dims, preproc_geoloc, &
            preproc_prtm, verbose)
 
-      if (verbose) write(*,*) 'Reading ecmwf path: ', trim(nwp_path_file3)
-      call read_ecmwf_grib(nwp_path_file3, preproc_dims, preproc_geoloc, &
+      if (verbose) write(*,*) 'Reading ecmwf path: ', trim(nwp_fnames%nwp_path_file3(idx))
+      call read_ecmwf_grib(nwp_fnames%nwp_path_file3(idx), preproc_dims, preproc_geoloc, &
            preproc_prtm, verbose)
    end select
 

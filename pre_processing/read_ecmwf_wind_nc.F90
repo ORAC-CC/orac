@@ -161,7 +161,7 @@ subroutine read_ecmwf_wind_nc_file(nwp_path, ecmwf)
             allocate(ecmwf%lat(ecmwf%ydim))
             call ncdf_read_array(fid, name, ecmwf%lat)
          end if
-      case('U10', 'U10M')
+      case('U10', 'U10M', 'u10')
          if (.not.associated(ecmwf%u10)) then
             allocate(ecmwf%u10(ecmwf%xdim,ecmwf%ydim))
             allocate(val(ecmwf%xdim,ecmwf%ydim,1,1))
@@ -169,7 +169,7 @@ subroutine read_ecmwf_wind_nc_file(nwp_path, ecmwf)
             ecmwf%u10 = val(:,:,1,1)
             deallocate(val)
          end if
-      case('V10', 'V10M')
+      case('V10', 'V10M', 'v10')
          if (.not.associated(ecmwf%v10)) then
             allocate(ecmwf%v10(ecmwf%xdim,ecmwf%ydim))
             allocate(val(ecmwf%xdim,ecmwf%ydim,1,1))
@@ -177,7 +177,7 @@ subroutine read_ecmwf_wind_nc_file(nwp_path, ecmwf)
             ecmwf%v10 = val(:,:,1,1)
             deallocate(val)
          end if
-      case('SKT')
+      case('SKT', 'skt')
          if (.not.associated(ecmwf%skin_temp)) then
             allocate(ecmwf%skin_temp(ecmwf%xdim,ecmwf%ydim))
             allocate(val(ecmwf%xdim,ecmwf%ydim,1,1))
@@ -193,7 +193,7 @@ subroutine read_ecmwf_wind_nc_file(nwp_path, ecmwf)
             ecmwf%snow_depth = val(:,:,1,1)
             deallocate(val)
          end if
-      case('CI', 'ci')
+      case('CI', 'ci', 'siconc')
          if (.not.associated(ecmwf%sea_ice_cover)) then
             allocate(ecmwf%sea_ice_cover(ecmwf%xdim,ecmwf%ydim))
             allocate(val(ecmwf%xdim,ecmwf%ydim,1,1))
