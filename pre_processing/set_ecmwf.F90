@@ -360,7 +360,7 @@ subroutine determine_jasmin_filenames_era5(nwp_fnames, cyear, cmonth, cday, chou
     
     character(len=path_length)                :: ml_dir, sfc_dir
     
-    ml_dir = trim(adjustl(nwp_fnames%nwp_path(idx)))//'an_ml/'// &
+    ml_dir = trim(adjustl(nwp_fnames%nwp_path(idx)))//'/an_ml/'// &
              trim(adjustl(cyear))//'/'// &
              trim(adjustl(cmonth))//'/'// &
              trim(adjustl(cday))//'/ecmwf-era5_oper_an_ml_'// &
@@ -369,7 +369,7 @@ subroutine determine_jasmin_filenames_era5(nwp_fnames, cyear, cmonth, cday, chou
              trim(adjustl(cday))// &
              trim(adjustl(chour))//'00.'
              
-    sfc_dir = trim(adjustl(nwp_fnames%nwp_path(idx)))//'an_sfc/'// &
+    sfc_dir = trim(adjustl(nwp_fnames%nwp_path(idx)))//'/an_sfc/'// &
               trim(adjustl(cyear))//'/'// &
               trim(adjustl(cmonth))//'/'// &
               trim(adjustl(cday))//'/ecmwf-era5_oper_an_sfc_'// &

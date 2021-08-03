@@ -70,127 +70,113 @@ subroutine read_era5_jasmin_nc(nwp_fnames, idx, ecmwf, preproc_dims, preproc_geo
 
     ! open file
     ! Do temperature on model levels
-    array3d => preproc_prtm%temperature
-    call ncdf_open(fid, nwp_fnames%t_f(idx), 'read_era5_jasmin_nc_t()')
-    call ncdf_read_array(fid, 't', dummy3d_2)
-    call preproc_3d_var(dummy3d_2, ecmwf, preproc_dims, preproc_geoloc, array3d)
-    if (verbose) print*, 'T)     Min: ', minval(array3d), ', Max: ', maxval(array3d)
-    call ncdf_close(fid, 'read_era5_jasmin_t()')
+    call load_era5_netcdf_3d(nwp_fnames%t_f(idx), 't', dummy3d_2)
+    call preproc_3d_var(dummy3d_2, ecmwf, preproc_dims, preproc_geoloc, preproc_prtm%temperature)
+    if (verbose) print*, 'T)     Min: ', minval(preproc_prtm%temperature), ', Max: ', maxval(preproc_prtm%temperature)
     
     ! Do specific humidity on model levels
-    array3d => preproc_prtm%spec_hum
-    call ncdf_open(fid, nwp_fnames%q_f(idx), 'read_era5_jasmin_nc_q()')
-    call ncdf_read_array(fid, 'q', dummy3d_2)
-    call preproc_3d_var(dummy3d_2, ecmwf, preproc_dims, preproc_geoloc, array3d)
-    if (verbose) print*, 'Q)     Min: ', minval(array3d), ', Max: ', maxval(array3d)
-    call ncdf_close(fid, 'read_era5_jasmin_q()')
+    call load_era5_netcdf_3d(nwp_fnames%q_f(idx), 'q', dummy3d_2)
+    call preproc_3d_var(dummy3d_2, ecmwf, preproc_dims, preproc_geoloc, preproc_prtm%spec_hum)
+    if (verbose) print*, 'Q)     Min: ', minval(preproc_prtm%spec_hum), ', Max: ', maxval(preproc_prtm%spec_hum)
     
     ! Do ozone on model levels
-    array3d => preproc_prtm%ozone
-    call ncdf_open(fid, nwp_fnames%o3_f(idx), 'read_era5_jasmin_nc_o3()')
-    call ncdf_read_array(fid, 'o3', dummy3d_2)
-    call preproc_3d_var(dummy3d_2, ecmwf, preproc_dims, preproc_geoloc, array3d)
-    if (verbose) print*, 'O3)    Min: ', minval(array3d), ', Max: ', maxval(array3d)
-    call ncdf_close(fid, 'read_era5_jasmin_o3()')
+    call load_era5_netcdf_3d(nwp_fnames%o3_f(idx), 'o3', dummy3d_2)
+    call preproc_3d_var(dummy3d_2, ecmwf, preproc_dims, preproc_geoloc, preproc_prtm%ozone)
+    if (verbose) print*, 'O3)    Min: ', minval(preproc_prtm%ozone), ', Max: ', maxval(preproc_prtm%ozone)
     
     ! Do logarithm of surface pressure
-    array2d => preproc_prtm%lnsp
-    call ncdf_open(fid, nwp_fnames%lnsp_f(idx), 'read_era5_jasmin_nc_lnsp()')
-    call ncdf_read_array(fid, 'lnsp', dummy2d)
-    call preproc_2d_var(dummy2d, ecmwf, preproc_dims, preproc_geoloc, array2d)
-    if (verbose) print*, 'LNSP)  Min: ', minval(array2d), ', Max: ', maxval(array2d)
-    call ncdf_close(fid, 'read_era5_jasmin_lnsp()')
+    call load_era5_netcdf_2d(nwp_fnames%lnsp_f(idx), 'lnsp', dummy2d)
+    call preproc_2d_var(dummy2d, ecmwf, preproc_dims, preproc_geoloc, preproc_prtm%lnsp)
+    if (verbose) print*, 'LNSP)  Min: ', minval(preproc_prtm%lnsp), ', Max: ', maxval(preproc_prtm%lnsp)
     
     ! Do geopotential
-    array2d => preproc_prtm%geopot
-    call ncdf_open(fid, nwp_fnames%z_f(idx), 'read_era5_jasmin_nc_z()')
-    call ncdf_read_array(fid, 'z', dummy2d)
-    call preproc_2d_var(dummy2d, ecmwf, preproc_dims, preproc_geoloc, array2d)
-    if (verbose) print*, 'GEOP)  Min: ', minval(array2d), ', Max: ', maxval(array2d)
-    call ncdf_close(fid, 'read_era5_jasmin_z()')
+    call load_era5_netcdf_2d(nwp_fnames%z_f(idx), 'z', dummy2d)
+    call preproc_2d_var(dummy2d, ecmwf, preproc_dims, preproc_geoloc, preproc_prtm%geopot)
+    if (verbose) print*, 'GEOP)  Min: ', minval(preproc_prtm%geopot), ', Max: ', maxval(preproc_prtm%geopot)
     
     ! Do sea ice fraction
-    array2d => preproc_prtm%sea_ice_cover
-    call ncdf_open(fid, nwp_fnames%ci_f(idx), 'read_era5_jasmin_nc()')
-    call ncdf_read_array(fid, 'siconc', dummy2d)
-    call preproc_2d_var(dummy2d, ecmwf, preproc_dims, preproc_geoloc, array2d)
-    if (verbose) print*, 'CI)    Min: ', minval(array2d), ', Max: ', maxval(array2d)
-    call ncdf_close(fid, 'read_era5_jasmin()')
+    call load_era5_netcdf_2d(nwp_fnames%ci_f(idx), 'siconc', dummy2d)
+    call preproc_2d_var(dummy2d, ecmwf, preproc_dims, preproc_geoloc, preproc_prtm%sea_ice_cover)
+    if (verbose) print*, 'CI)    Min: ', minval(preproc_prtm%sea_ice_cover), ', Max: ', maxval(preproc_prtm%sea_ice_cover)
     
     ! Do snow albedo
-    array2d => preproc_prtm%snow_albedo
-    call ncdf_open(fid, nwp_fnames%asn_f(idx), 'read_era5_jasmin_nc_asn()')
-    call ncdf_read_array(fid, 'asn', dummy2d)
-    call preproc_2d_var(dummy2d, ecmwf, preproc_dims, preproc_geoloc, array2d)
-    if (verbose) print*, 'ASN)   Min: ', minval(array2d), ', Max: ', maxval(array2d)
-    call ncdf_close(fid, 'read_era5_jasmin_asn()')
+    call load_era5_netcdf_2d(nwp_fnames%asn_f(idx), 'asn', dummy2d)
+    call preproc_2d_var(dummy2d, ecmwf, preproc_dims, preproc_geoloc, preproc_prtm%snow_albedo)
+    if (verbose) print*, 'ASN)   Min: ', minval(preproc_prtm%snow_albedo), ', Max: ', maxval(preproc_prtm%snow_albedo)
     
     ! Do total column water vapour
-    array2d => preproc_prtm%totcolwv
-    call ncdf_open(fid, nwp_fnames%tcwv_f(idx), 'read_era5_jasmin_nc_tcwv()')
-    call ncdf_read_array(fid, 'tcwv', dummy2d)
-    call preproc_2d_var(dummy2d, ecmwf, preproc_dims, preproc_geoloc, array2d)
-    if (verbose) print*, 'TCWV)  Min: ', minval(array2d), ', Max: ', maxval(array2d)
-    call ncdf_close(fid, 'read_era5_jasmin_tcwv()')
+    call load_era5_netcdf_2d(nwp_fnames%tcwv_f(idx), 'tcwv', dummy2d)
+    call preproc_2d_var(dummy2d, ecmwf, preproc_dims, preproc_geoloc, preproc_prtm%totcolwv)
+    if (verbose) print*, 'TCWV)  Min: ', minval(preproc_prtm%totcolwv), ', Max: ', maxval(preproc_prtm%totcolwv)
     
     ! Do snow depth
-    array2d => preproc_prtm%snow_depth
-    call ncdf_open(fid, nwp_fnames%sd_f(idx), 'read_era5_jasmin_nc_sd()')
-    call ncdf_read_array(fid, 'sd', dummy2d)
-    call preproc_2d_var(dummy2d, ecmwf, preproc_dims, preproc_geoloc, array2d)
-    if (verbose) print*, 'SD)    Min: ', minval(array2d), ', Max: ', maxval(array2d)
-    call ncdf_close(fid, 'read_era5_jasmin_sd()')
+    call load_era5_netcdf_2d(nwp_fnames%sd_f(idx), 'sd', dummy2d)
+    call preproc_2d_var(dummy2d, ecmwf, preproc_dims, preproc_geoloc, preproc_prtm%snow_depth)
+    if (verbose) print*, 'SD)    Min: ', minval(preproc_prtm%snow_depth), ', Max: ', maxval(preproc_prtm%snow_depth)
     
     ! Do U-component of 10m wind
-    array2d => preproc_prtm%u10
-    call ncdf_open(fid, nwp_fnames%u10_f(idx), 'read_era5_jasmin_nc_10u()')
-    call ncdf_read_array(fid, 'u10', dummy2d)
-    call preproc_2d_var(dummy2d, ecmwf, preproc_dims, preproc_geoloc, array2d)
-    if (verbose) print*, 'U10)    Min: ', minval(array2d), ', Max: ', maxval(array2d)
-    call ncdf_close(fid, 'read_era5_jasmin_nc_10u()')
+    call load_era5_netcdf_2d(nwp_fnames%u10_f(idx), 'u10', dummy2d)
+    call preproc_2d_var(dummy2d, ecmwf, preproc_dims, preproc_geoloc, preproc_prtm%u10)
+    if (verbose) print*, 'U10)    Min: ', minval(preproc_prtm%u10), ', Max: ', maxval(preproc_prtm%u10)
     
     ! Do V-component of 10m wind
-    array2d => preproc_prtm%v10
-    call ncdf_open(fid, nwp_fnames%v10_f(idx), 'read_era5_jasmin_nc_10v()')
-    call ncdf_read_array(fid, 'v10', dummy2d)
-    call preproc_2d_var(dummy2d, ecmwf, preproc_dims, preproc_geoloc, array2d)
-    if (verbose) print*, 'V10)    Min: ', minval(array2d), ', Max: ', maxval(array2d)
-    call ncdf_close(fid, 'read_era5_jasmin_nc_10v()')
+    call load_era5_netcdf_2d(nwp_fnames%v10_f(idx), 'v10', dummy2d)
+    call preproc_2d_var(dummy2d, ecmwf, preproc_dims, preproc_geoloc, preproc_prtm%v10)
+    if (verbose) print*, 'V10)    Min: ', minval(preproc_prtm%v10), ', Max: ', maxval(preproc_prtm%v10)
     
     ! Do 2m temperature
-    array2d => preproc_prtm%temp2
-    call ncdf_open(fid, nwp_fnames%t2_f(idx), 'read_era5_jasmin_nc_t2()')
-    call ncdf_read_array(fid, 't2m', dummy2d)
-    call preproc_2d_var(dummy2d, ecmwf, preproc_dims, preproc_geoloc, array2d)
-    if (verbose) print*, 'T2)     Min: ', minval(array2d), ', Max: ', maxval(array2d)
-    call ncdf_close(fid, 'read_era5_jasmin_nc_t2()')
+    call load_era5_netcdf_2d(nwp_fnames%t2_f(idx), 't2m', dummy2d)
+    call preproc_2d_var(dummy2d, ecmwf, preproc_dims, preproc_geoloc, preproc_prtm%temp2)
+    if (verbose) print*, 'T2)     Min: ', minval(preproc_prtm%temp2), ', Max: ', maxval(preproc_prtm%temp2)
     
     ! Do skin temperature
-    array2d => preproc_prtm%skin_temp
-    call ncdf_open(fid, nwp_fnames%skt_f(idx), 'read_era5_jasmin_nc_skt()')
-    call ncdf_read_array(fid, 'skt', dummy2d)
-    call preproc_2d_var(dummy2d, ecmwf, preproc_dims, preproc_geoloc, array2d)
-    if (verbose) print*, 'SKT)     Min: ', minval(array2d), ', Max: ', maxval(array2d)
-    call ncdf_close(fid, 'read_era5_jasmin_nc_skt()')
+    call load_era5_netcdf_2d(nwp_fnames%skt_f(idx), 'skt', dummy2d)
+    call preproc_2d_var(dummy2d, ecmwf, preproc_dims, preproc_geoloc, preproc_prtm%skin_temp)
+    if (verbose) print*, 'SKT)     Min: ', minval(preproc_prtm%skin_temp), ', Max: ', maxval(preproc_prtm%skin_temp)
     
     ! Do sea surface temperature
-    array2d => preproc_prtm%sst
-    call ncdf_open(fid, nwp_fnames%sstk_f(idx), 'read_era5_jasmin_nc_sst()')
-    call ncdf_read_array(fid, 'sst', dummy2d)
-    call preproc_2d_var(dummy2d, ecmwf, preproc_dims, preproc_geoloc, array2d)
-    if (verbose) print*, 'SST)     Min: ', minval(array2d), ', Max: ', maxval(array2d)
-    call ncdf_close(fid, 'read_era5_jasmin_nc_sst()')
+    call load_era5_netcdf_2d(nwp_fnames%sstk_f(idx), 'sst', dummy2d)
+    call preproc_2d_var(dummy2d, ecmwf, preproc_dims, preproc_geoloc, preproc_prtm%sst)
+    if (verbose) print*, 'SST)     Min: ', minval(preproc_prtm%sst), ', Max: ', maxval(preproc_prtm%sst)
     
 #ifdef INCLUDE_SATWX
     ! Do convective available potential energy
-    array2d => preproc_prtm%cape
-    call ncdf_open(fid, nwp_fnames%cape_f(idx), 'read_era5_jasmin_nc_cape()')
-    call ncdf_read_array(fid, 'cape', dummy2d)
-    call preproc_2d_var(dummy2d, ecmwf, preproc_dims, preproc_geoloc, array2d)
-    if (verbose) print*, 'CAPE)    Min: ', minval(array2d), ', Max: ', maxval(array2d)
-    call ncdf_close(fid, 'read_era5_jasmin_nc_cape()')
+    call load_era5_netcdf_2d(nwp_fnames%cape_f(idx), 'cape', dummy2d)
+    call preproc_2d_var(dummy2d, ecmwf, preproc_dims, preproc_geoloc, preproc_prtm%cape)
+    if (verbose) print*, 'CAPE)    Min: ', minval(preproc_prtm%cape), ', Max: ', maxval(preproc_prtm%cape)
 #endif
 end subroutine read_era5_jasmin_nc
+
+
+subroutine load_era5_netcdf_3d(fname, varname, data_arr)
+    use orac_ncdf_m
+    implicit none
+    
+    character(len=*), intent(in)                 :: fname
+    character(len=*), intent(in)                 :: varname
+    real(sreal), dimension(:,:,:), intent(inout) :: data_arr
+    integer(4)                                   :: fid
+    
+    call ncdf_open(fid, trim(adjustl(fname)), 'read_era5_jasmin_nc_'//trim(adjustl(varname))//'()')
+    call ncdf_read_array(fid, trim(adjustl(varname)), data_arr)
+    call ncdf_close(fid, 'read_era5_jasmin_nc_'//trim(adjustl(varname))//'()')
+
+end subroutine load_era5_netcdf_3d
+
+subroutine load_era5_netcdf_2d(fname, varname, data_arr)
+    use orac_ncdf_m
+    implicit none
+    
+    character(len=*), intent(in)               :: fname
+    character(len=*), intent(in)               :: varname
+    real(sreal), dimension(:,:), intent(inout) :: data_arr
+    integer(4)                                 :: fid
+    
+    call ncdf_open(fid, trim(adjustl(fname)), 'read_era5_jasmin_nc_'//trim(adjustl(varname))//'()')
+    call ncdf_read_array(fid, trim(adjustl(varname)), data_arr)
+    call ncdf_close(fid, 'read_era5_jasmin_nc_'//trim(adjustl(varname))//'()')
+
+end subroutine load_era5_netcdf_2d
 
 subroutine preproc_3d_var(dummy_in, ecmwf, preproc_dims, preproc_geoloc, out_arr3d)
 
