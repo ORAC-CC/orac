@@ -124,6 +124,7 @@ module preproc_structures_m
       character(len=path_length) :: ext_geo_path
       character(len=path_length) :: occci_path
       character(len=path_length) :: product_name
+      type(preproc_nwp_fnames_t) :: nwp_fnames
 
    end type preproc_opts_t
 

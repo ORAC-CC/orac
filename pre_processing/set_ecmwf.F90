@@ -66,19 +66,18 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine set_ecmwf(granule, opts, nwp_fnames, nwp_flag, imager_geolocation, &
+subroutine set_ecmwf(granule, opts, nwp_flag, imager_geolocation, &
    imager_time, time_int_fac, assume_full_path)
 
    use calender_m
    use imager_structures_m
    use preproc_constants_m
-   use preproc_structures_m, only: preproc_nwp_fnames_t, preproc_opts_t, setup_args_t
+   use preproc_structures_m, only: preproc_opts_t, setup_args_t
 
    implicit none
 
    type(setup_args_t),         intent(in)    :: granule
    type(preproc_opts_t),       intent(inout) :: opts
-   type(preproc_nwp_fnames_t), intent(inout) :: nwp_fnames
    integer,                    intent(in)    :: nwp_flag
    type(imager_geolocation_t), intent(in)    :: imager_geolocation
    type(imager_time_t),        intent(in)    :: imager_time
@@ -109,22 +108,22 @@ subroutine set_ecmwf(granule, opts, nwp_fnames, nwp_flag, imager_geolocation, &
 
    if (assume_full_path) then
       ! for nwp_flag=2, ensure NCDF file is listed in nwp_pathout
-      if (index(nwp_fnames%nwp_path(1), '.nc') .gt. 0) then
-         nwp_fnames%nwp_path_file  = nwp_fnames%nwp_path
-         nwp_fnames%nwp_path_file2 = nwp_fnames%nwp_path2
-         nwp_fnames%nwp_path_file3 = nwp_fnames%nwp_path3
-      else if (index(nwp_fnames%nwp_path2(1), '.nc') .gt. 0) then
-         nwp_fnames%nwp_path_file  = nwp_fnames%nwp_path2
-         nwp_fnames%nwp_path_file2 = nwp_fnames%nwp_path
-         nwp_fnames%nwp_path_file3 = nwp_fnames%nwp_path3
-      else if (index(nwp_fnames%nwp_path3(1), '.nc') .gt. 0) then
-         nwp_fnames%nwp_path_file  = nwp_fnames%nwp_path3
-         nwp_fnames%nwp_path_file2 = nwp_fnames%nwp_path
-         nwp_fnames%nwp_path_file3 = nwp_fnames%nwp_path2
+      if (index(opts%nwp_fnames%nwp_path(1), '.nc') .gt. 0) then
+         opts%nwp_fnames%nwp_path_file  = opts%nwp_fnames%nwp_path
+         opts%nwp_fnames%nwp_path_file2 = opts%nwp_fnames%nwp_path2
+         opts%nwp_fnames%nwp_path_file3 = opts%nwp_fnames%nwp_path3
+      else if (index(opts%nwp_fnames%nwp_path2(1), '.nc') .gt. 0) then
+         opts%nwp_fnames%nwp_path_file  = opts%nwp_fnames%nwp_path2
+         opts%nwp_fnames%nwp_path_file2 = opts%nwp_fnames%nwp_path
+         opts%nwp_fnames%nwp_path_file3 = opts%nwp_fnames%nwp_path3
+      else if (index(opts%nwp_fnames%nwp_path3(1), '.nc') .gt. 0) then
+         opts%nwp_fnames%nwp_path_file  = opts%nwp_fnames%nwp_path3
+         opts%nwp_fnames%nwp_path_file2 = opts%nwp_fnames%nwp_path
+         opts%nwp_fnames%nwp_path_file3 = opts%nwp_fnames%nwp_path2
       else
-         nwp_fnames%nwp_path_file  = nwp_fnames%nwp_path
-         nwp_fnames%nwp_path_file2 = nwp_fnames%nwp_path2
-         nwp_fnames%nwp_path_file3 = nwp_fnames%nwp_path3
+         opts%nwp_fnames%nwp_path_file  = opts%nwp_fnames%nwp_path
+         opts%nwp_fnames%nwp_path_file2 = opts%nwp_fnames%nwp_path2
+         opts%nwp_fnames%nwp_path_file3 = opts%nwp_fnames%nwp_path3
       end if
    else
       if (opts%ecmwf_time_int_method .eq. 0) then
@@ -141,7 +140,7 @@ subroutine set_ecmwf(granule, opts, nwp_fnames, nwp_flag, imager_geolocation, &
          i_path1 = 1
 
          call make_ecmwf_name(granule%cyear, granule%cmonth, granule%cday, &
-              cera_hour, nwp_flag, nwp_fnames, 1, 1)
+              cera_hour, nwp_flag, opts%nwp_fnames, 1, 1)
       else if (opts%ecmwf_time_int_method .eq. 1) then
          ! Pick the closest ERA interim file wrt sensor time
          if (jday - jday0 .lt. jday1 - jday) then
@@ -171,7 +170,7 @@ subroutine set_ecmwf(granule, opts, nwp_fnames, nwp_flag, imager_geolocation, &
          end if
 
          call make_ecmwf_name(cera_year, cera_month, cera_day, cera_hour, &
-              nwp_flag, nwp_fnames, i_path1, 1)
+              nwp_flag, opts%nwp_fnames, i_path1, 1)
       else if (opts%ecmwf_time_int_method .eq. 2) then
          ! Pick the ERA interim files before and after wrt sensor time
 
@@ -202,7 +201,7 @@ subroutine set_ecmwf(granule, opts, nwp_fnames, nwp_flag, imager_geolocation, &
          end if
 
          call make_ecmwf_name(cera_year, cera_month, cera_day, cera_hour, &
-              nwp_flag, nwp_fnames, i_path1, 1)
+              nwp_flag, opts%nwp_fnames, i_path1, 1)
 
          ! now look at the next file
          day_before = day
@@ -227,7 +226,7 @@ subroutine set_ecmwf(granule, opts, nwp_fnames, nwp_flag, imager_geolocation, &
          end if
 
          call make_ecmwf_name(cera_year, cera_month, cera_day, cera_hour, &
-              nwp_flag, nwp_fnames, i_path2, 2)
+              nwp_flag, opts%nwp_fnames, i_path2, 2)
       else
          write(*,*) 'ERROR: invalid set_ecmwf() time_interp_method: ', &
               opts%ecmwf_time_int_method

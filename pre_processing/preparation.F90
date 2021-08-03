@@ -79,14 +79,14 @@ contains
 
 #include "set_ecmwf.F90"
 
-subroutine preparation(paths, granule, opts, nwp_fnames, global_atts, orbit_number, &
+subroutine preparation(paths, granule, opts, global_atts, orbit_number, &
      nwp_flag, imager_geolocation, imager_time, i_chunk, &
      time_int_fac, assume_full_path, verbose)
 
    use imager_structures_m
    use global_attributes_m
    use preproc_constants_m
-   use preproc_structures_m, only: preproc_nwp_fnames_t, preproc_opts_t, preproc_paths_t
+   use preproc_structures_m, only: preproc_opts_t, preproc_paths_t
    use setup_m, only: setup_args_t
 
    implicit none
@@ -94,7 +94,6 @@ subroutine preparation(paths, granule, opts, nwp_fnames, global_atts, orbit_numb
    type(preproc_paths_t),      intent(out)   :: paths
    type(setup_args_t),         intent(in)    :: granule
    type(preproc_opts_t),       intent(inout) :: opts
-   type(preproc_nwp_fnames_t), intent(inout) :: nwp_fnames
    type(global_attributes_t),  intent(in)    :: global_atts
    character(len=*),           intent(in)    :: orbit_number
    integer,                    intent(in)    :: nwp_flag
@@ -121,12 +120,12 @@ subroutine preparation(paths, granule, opts, nwp_fnames, global_atts, orbit_numb
       write(*,*) 'chour: ',                 trim(granule%chour)
       write(*,*) 'cminute: ',               trim(granule%cminute)
       write(*,*) 'orbit_number: ',          trim(orbit_number)
-      write(*,*) 'nwp_path(1): ',         trim(nwp_fnames%nwp_path(1))
-      write(*,*) 'nwp_path2(1): ',        trim(nwp_fnames%nwp_path2(1))
-      write(*,*) 'nwp_path3(1): ',        trim(nwp_fnames%nwp_path3(1))
-      write(*,*) 'nwp_path(2): ',         trim(nwp_fnames%nwp_path(2))
-      write(*,*) 'nwp_path2(2): ',        trim(nwp_fnames%nwp_path2(2))
-      write(*,*) 'nwp_path3(2): ',        trim(nwp_fnames%nwp_path3(2))
+      write(*,*) 'nwp_path(1): ',         trim(opts%nwp_fnames%nwp_path(1))
+      write(*,*) 'nwp_path2(1): ',        trim(opts%nwp_fnames%nwp_path2(1))
+      write(*,*) 'nwp_path3(1): ',        trim(opts%nwp_fnames%nwp_path3(1))
+      write(*,*) 'nwp_path(2): ',         trim(opts%nwp_fnames%nwp_path(2))
+      write(*,*) 'nwp_path2(2): ',        trim(opts%nwp_fnames%nwp_path2(2))
+      write(*,*) 'nwp_path3(2): ',        trim(opts%nwp_fnames%nwp_path3(2))
       write(*,*) 'nwp_flag: ',            nwp_flag
       write(*,*) 'ecmwf_time_int_method: ', opts%ecmwf_time_int_method
       write(*,*) 'i_chunk: ',               i_chunk
@@ -134,17 +133,17 @@ subroutine preparation(paths, granule, opts, nwp_fnames, global_atts, orbit_numb
    end if
 
    ! determine ecmwf path/filename
-   call set_ecmwf(granule, opts, nwp_fnames, nwp_flag, imager_geolocation, imager_time, &
+   call set_ecmwf(granule, opts, nwp_flag, imager_geolocation, imager_time, &
         time_int_fac, assume_full_path)
 
    if (verbose) then
-      write(*,*) 'nwp_path_file:  ', trim(nwp_fnames%nwp_path_file(1))
-      write(*,*) 'nwp_path_file_2:  ', trim(nwp_fnames%nwp_path_file(2))
+      write(*,*) 'nwp_path_file:  ', trim(opts%nwp_fnames%nwp_path_file(1))
+      write(*,*) 'nwp_path_file_2:  ', trim(opts%nwp_fnames%nwp_path_file(2))
       if (nwp_flag .gt. 0.and.nwp_flag.lt.4) then
-         write(*,*) 'nwp_path_file2: ', trim(nwp_fnames%nwp_path_file2(1))
-         write(*,*) 'nwp_path_file3: ', trim(nwp_fnames%nwp_path_file3(1))
-         write(*,*) 'nwp_path_file2_2: ', trim(nwp_fnames%nwp_path_file2(2))
-         write(*,*) 'nwp_path_file3_2: ', trim(nwp_fnames%nwp_path_file3(2))
+         write(*,*) 'nwp_path_file2: ', trim(opts%nwp_fnames%nwp_path_file2(1))
+         write(*,*) 'nwp_path_file3: ', trim(opts%nwp_fnames%nwp_path_file3(1))
+         write(*,*) 'nwp_path_file2_2: ', trim(opts%nwp_fnames%nwp_path_file2(2))
+         write(*,*) 'nwp_path_file3_2: ', trim(opts%nwp_fnames%nwp_path_file3(2))
       end if
    end if
 
