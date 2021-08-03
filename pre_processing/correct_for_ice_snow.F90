@@ -585,7 +585,7 @@ end subroutine apply_ice_correction
 !-------------------------------------------------------------------------------
 !------------------------------------------------------------------------------
 
-subroutine correct_for_ice_snow_ecmwf(nwp_path, imager_geolocation, &
+subroutine correct_for_ice_snow_nwp(nwp_path, imager_geolocation, &
      channel_info, imager_flags, preproc_dims, preproc_prtm, surface, &
      include_full_brdf, source_atts, verbose)
 
@@ -714,6 +714,6 @@ subroutine correct_for_ice_snow_ecmwf(nwp_path, imager_geolocation, &
    deallocate(tmp_snow)
    deallocate(tmp_ice)
 
-end subroutine correct_for_ice_snow_ecmwf
+end subroutine correct_for_ice_snow_nwp
 
 end module correct_for_ice_snow_m

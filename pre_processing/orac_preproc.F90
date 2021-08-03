@@ -945,7 +945,7 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
                     channel_info, assume_full_paths, include_full_brdf, &
                     source_atts, verbose)
             else
-               call correct_for_ice_snow_ecmwf(preproc_nwp_fnames%nwp_path_file(1), &
+               call correct_for_ice_snow_nwp(preproc_nwp_fnames%nwp_path_file(1), &
                     imager_geolocation, channel_info, imager_flags, preproc_dims, &
                     preproc_prtm, surface, include_full_brdf, source_atts, &
                     verbose)
