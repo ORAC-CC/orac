@@ -844,7 +844,7 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
       end if
 
       ! NOAA GFS has limited (pressure) levels and no HR, so set these.
-      if (nwp_flag .gt. 5 .and. nwp_flag .le. 8) preproc_opts%nwp_nlevels = 31
+      if (nwp_flag .eq. 0) preproc_opts%nwp_nlevels = 31
 
       ! read surface wind fields and ECMWF dimensions
       if (preproc_opts%ecmwf_time_int_method .ne. 2) then
