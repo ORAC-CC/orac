@@ -105,8 +105,7 @@ subroutine set_ecmwf(granule, opts, nwp_flag, imager_geolocation, &
 
       time_int_fac = (jday - jday0) / (jday1 - jday0)
    end if
-
-   if (assume_full_path) then
+   if (assume_full_path .and. nwp_flag .ne. 2) then
       ! for nwp_flag=2, ensure NCDF file is listed in nwp_pathout
       if (index(opts%nwp_fnames%nwp_path(1), '.nc') .gt. 0) then
          opts%nwp_fnames%nwp_path_file  = opts%nwp_fnames%nwp_path
