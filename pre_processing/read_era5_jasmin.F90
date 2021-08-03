@@ -23,7 +23,7 @@ subroutine read_era5_jasmin_wind_nc(ecmwf, nwp_fnames, idx, nwp_flag)
    call ecmwf_wind_init(ecmwf)
    call ecmwf_abvec_init(ecmwf)
 
-   ! loop over given files
+   ! Read given files
    call read_ecmwf_wind_nc_file(nwp_fnames%ci_f(idx), ecmwf)
    call read_ecmwf_wind_nc_file(nwp_fnames%u10_f(idx), ecmwf)
    call read_ecmwf_wind_nc_file(nwp_fnames%v10_f(idx), ecmwf)
