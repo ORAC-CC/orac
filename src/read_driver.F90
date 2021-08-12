@@ -236,6 +236,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%do_CTX_correction      = .true.
    Ctrl%process_cloudy_only    = .true.
    Ctrl%process_aerosol_only   = .false.
+   Ctrl%force_nighttime_retrieval = .false.
 
 
    !----------------------------------------------------------------------------

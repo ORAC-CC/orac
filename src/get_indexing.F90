@@ -125,6 +125,11 @@ subroutine Get_Indexing(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
       end if
    end do
 
+   ! Force nighttime retrieval
+   if (Ctrl%force_nighttime_retrieval) then
+      SPixel%Illum(:) = INight
+   end if
+
    ! Find which channels are either not used based on illumination conditions
    ! and/or are flagged as missing.
    is_not_used_or_missing = .false.
