@@ -112,36 +112,34 @@ subroutine Get_Indexing(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
    ! Initialise Approach and Class bits
    SPixel%variables_retrieved = (Ctrl%Approach-1) + 8*(Ctrl%Class-1)
 
-
-   ! If the views have different illumination conditions then skip this pixel
-   do i_view = 1, Ctrl%Ind%NViews
-      SPixel%illum(i_view) = MSI_Data%illum(SPixel%Loc%X0, SPixel%Loc%Y0, i_view)
-
-      if ((i_view > 1) .and. (.not. Ctrl%all_channels_same_view)) then
-         if (SPixel%illum(i_view - 1) /= SPixel%illum(i_view)) then
-            status = SPixelIndexing
-            return
-         end if
-      end if
-   end do
-
    ! Force nighttime retrieval
    if (Ctrl%force_nighttime_retrieval) then
-      SPixel%Illum(:) = INight
+      SPixel%Illum = INight
+   else
+      ! If the views have different illumination conditions then skip this pixel
+      do i_view = 1, Ctrl%Ind%NViews
+         SPixel%Illum = MSI_Data%illum(SPixel%Loc%X0, SPixel%Loc%Y0, i_view)
+         if ((i_view > 1) .and. (.not. Ctrl%all_channels_same_view)) then
+            if (MSI_Data%Illum(SPixel%Loc%X0, SPixel%Loc%Y0, i_view-1) /= SPixel%Illum) then
+               status = SPixelIndexing
+               return
+            end if
+         end if
+      end do
    end if
 
    ! Find which channels are either not used based on illumination conditions
    ! and/or are flagged as missing.
    is_not_used_or_missing = .false.
 
-   if (SPixel%Illum(1) .eq. IDay) then
+   if (Spixel%Illum .eq. IDay) then
       ! All channels are used
       do i_chan = 1, Ctrl%Ind%Ny
          if (MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%Y0, i_chan) == sreal_fill_value) then
             is_not_used_or_missing(i_chan) = .true.
          end if
       end do
-   else if (SPixel%Illum(1) .eq. ITwi)  then
+   else if (Spixel%Illum .eq. ITwi)  then
       ! Only pure thermal channels (no mixed) are used
       do i_chan = 1, Ctrl%Ind%Ny
          if (btest(Ctrl%Ind%Ch_Is(i_chan), SolarBit) .or. &
@@ -149,7 +147,7 @@ subroutine Get_Indexing(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
             is_not_used_or_missing(i_chan) = .true.
          end if
       end do
-   else if (SPixel%Illum(1) .eq. INight) then
+   else if (Spixel%Illum .eq. INight) then
       ! All thermal channels (including mixed) are used
       do i_chan = 1, Ctrl%Ind%Ny
          if (.not. btest(Ctrl%Ind%Ch_Is(i_chan), ThermalBit) .or. &
@@ -166,7 +164,7 @@ subroutine Get_Indexing(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
    select case (Ctrl%Approach)
    case (AppCld1L)
       if (.not. Ctrl%do_new_night_retrieval &
-          .or. SPixel%Illum(1) .eq. IDay .or. SPixel%Illum(1) .eq. ITwi) then
+          .or. Spixel%Illum .eq. IDay .or. Spixel%Illum .eq. ITwi) then
          call cloud_indexing_logic(Ctrl, SPixel, is_not_used_or_missing, &
                                    X, XJ, XI, status)
       else
@@ -214,8 +212,8 @@ subroutine Get_Indexing(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
    end if
 
    ! Set the illumination-dependent first guess and a priori
-   SPixel%FG = Ctrl%FG(:,SPixel%Illum(1))
-   SPixel%AP = Ctrl%AP(:,SPixel%Illum(1))
+   SPixel%FG = Ctrl%FG(:,Spixel%Illum)
+   SPixel%AP = Ctrl%AP(:,Spixel%Illum)
 
    ! Set up all the channel indexes
    call setup_indexes(Ctrl, SAD_Chan, SPixel, is_not_used_or_missing)
@@ -269,13 +267,13 @@ subroutine setup_indexes(Ctrl, SAD_Chan, SPixel, is_not_used_or_missing)
          SPixel%Ind%Ny = SPixel%Ind%Ny + 1
 
          if (btest(Ctrl%Ind%Ch_Is(i), SolarBit) .and. &
-             SPixel%illum(1) .eq. IDay .and. &
+             Spixel%Illum .eq. IDay .and. &
              btest(Ctrl%Ind%Ch_Is(i), ThermalBit)) then
             SPixel%Ind%NMixed   = SPixel%Ind%NMixed + 1
          end if
 
          if (btest(Ctrl%Ind%Ch_Is(i), SolarBit) .and. &
-             SPixel%illum(1) .eq. IDay) then
+             Spixel%Illum .eq. IDay) then
             SPixel%Ind%NSolar   = SPixel%Ind%NSolar + 1
          end if
 
@@ -317,7 +315,7 @@ subroutine setup_indexes(Ctrl, SAD_Chan, SPixel, is_not_used_or_missing)
          cycle
 
       if (btest(Ctrl%Ind%Ch_Is(i), SolarBit) .and. &
-          SPixel%illum(1) .eq. IDay .and. &
+          Spixel%Illum .eq. IDay .and. &
           btest(Ctrl%Ind%Ch_Is(i), ThermalBit)) then
          ! Mixed channels out of those to be retrieved
          SPixel%Ind%YMixed(i2) = ii
@@ -327,7 +325,7 @@ subroutine setup_indexes(Ctrl, SAD_Chan, SPixel, is_not_used_or_missing)
       end if
 
       if (btest(Ctrl%Ind%Ch_Is(i), SolarBit) .and. &
-          SPixel%illum(1) .eq. IDay) then
+          Spixel%Illum .eq. IDay) then
          ! Solar channels out of those to be used
          SPixel%Ind%YSolar(i0) = ii
          SPixel%spixel_y_solar_to_ctrl_y_index(i0) = i
@@ -491,7 +489,7 @@ subroutine cloud_indexing_logic(Ctrl, SPixel, is_not_used_or_missing, &
    ! channels then pick the first one in Ctrl%ReChans that matches and set the
    ! rest of the Ctrl%ReChans that match to missing.  If Ctrl%ReChans is not
    ! associated it is assumed that all available r_e channels should be used.
-   if (SPixel%Illum(1) .eq. IDay .and. associated(Ctrl%ReChans)) then
+   if (Spixel%Illum .eq. IDay .and. associated(Ctrl%ReChans)) then
       i_r_e_chan = 0
       do i_chan = 1, size(Ctrl%ReChans)
          ii_chan = find_in_array(Ctrl%r_e_chans, Ctrl%ReChans(i_chan))
@@ -552,29 +550,29 @@ subroutine cloud_indexing_logic(Ctrl, SPixel, is_not_used_or_missing, &
    ii_xi = 0
    n_ir_chans2 = n_ir_chans
    ! Retrieve Tau if sufficient appropriate channels are available
-   call Add_to_State_Vector(Ctrl, SPixel%Illum(1), ITau, X, ii_x, XJ, ii_xj, &
+   call Add_to_State_Vector(Ctrl, Spixel%Illum, ITau, X, ii_x, XJ, ii_xj, &
         XI, ii_xi, SPixel%variables_retrieved, &
         active = n_tau_chans .ge. min_tau_chans)
    ! Retrieve Re if sufficient appropriate channels are available (if thermal
    ! channels used, decrement the IR channel counter)
    if (re_thermal) then
-      call Add_to_State_Vector(Ctrl, SPixel%Illum(1), IRe, X, ii_x, XJ, ii_xj, &
+      call Add_to_State_Vector(Ctrl, Spixel%Illum, IRe, X, ii_x, XJ, ii_xj, &
            XI, ii_xi, SPixel%variables_retrieved, &
            active = n_r_e_chans .ge. min_r_e_chans, ch_available = n_ir_chans2)
    else
-      call Add_to_State_Vector(Ctrl, SPixel%Illum(1), IRe, X, ii_x, XJ, ii_xj, &
+      call Add_to_State_Vector(Ctrl, Spixel%Illum, IRe, X, ii_x, XJ, ii_xj, &
            XI, ii_xi, SPixel%variables_retrieved, &
            active = n_r_e_chans .ge. min_r_e_chans)
    end if
    ! Pc, Ts, Fr retreved for all illumination. n_ir_chans2 ensures there aren't
    ! more things retrieved than there are measurements
-   call Add_to_State_Vector(Ctrl, SPixel%Illum(1), IPc, X, ii_x, XJ, ii_xj, &
+   call Add_to_State_Vector(Ctrl, Spixel%Illum, IPc, X, ii_x, XJ, ii_xj, &
         XI, ii_xi, SPixel%variables_retrieved, &
         active = n_ir_chans2 .ge. min_ir_chans, ch_available = n_ir_chans2)
-   call Add_to_State_Vector(Ctrl, SPixel%Illum(1), ITs, X, ii_x, XJ, ii_xj, &
+   call Add_to_State_Vector(Ctrl, Spixel%Illum, ITs, X, ii_x, XJ, ii_xj, &
         XI, ii_xi, SPixel%variables_retrieved, &
         active = n_ir_chans2 .ge. min_ir_chans, ch_available = n_ir_chans2)
-   call Add_to_State_Vector(Ctrl, SPixel%Illum(1), IFr, X, ii_x, XJ, ii_xj, &
+   call Add_to_State_Vector(Ctrl, Spixel%Illum, IFr, X, ii_x, XJ, ii_xj, &
         XI, ii_xi, SPixel%variables_retrieved, &
         active = n_ir_chans2 .ge. min_ir_chans, ch_available = n_ir_chans2)
 
@@ -584,7 +582,7 @@ subroutine cloud_indexing_logic(Ctrl, SPixel, is_not_used_or_missing, &
    else
       min_rho = MaxRho_XX
    end if
-   call Identify_BRDF_Terms(Ctrl, SPixel%Illum(1), 1, min_rho, &
+   call Identify_BRDF_Terms(Ctrl, Spixel%Illum, 1, min_rho, &
         is_not_used_or_missing, X, ii_x, XJ, ii_xj, XI, ii_xi, &
         SPixel%variables_retrieved, .false.)
 
@@ -655,44 +653,44 @@ subroutine cloud_indexing_logic_night(Ctrl, SPixel, is_not_used_or_missing, &
    ii_xi = 0
 
    if (n_chans .eq. 1) then
-      call Add_to_State_Vector(Ctrl, SPixel%Illum(1), ITau, X, ii_x, XJ, ii_xj, &
+      call Add_to_State_Vector(Ctrl, Spixel%Illum, ITau, X, ii_x, XJ, ii_xj, &
            XI, ii_xi, SPixel%variables_retrieved, active = .false.)
-      call Add_to_State_Vector(Ctrl, SPixel%Illum(1), IRe,  X, ii_x, XJ, ii_xj, &
+      call Add_to_State_Vector(Ctrl, Spixel%Illum, IRe,  X, ii_x, XJ, ii_xj, &
            XI, ii_xi, SPixel%variables_retrieved, active = .false.)
-      call Add_to_State_Vector(Ctrl, SPixel%Illum(1), IPc,  X, ii_x, XJ, ii_xj, &
+      call Add_to_State_Vector(Ctrl, Spixel%Illum, IPc,  X, ii_x, XJ, ii_xj, &
            XI, ii_xi, SPixel%variables_retrieved, active = .true.)
-      call Add_to_State_Vector(Ctrl, SPixel%Illum(1), ITs,  X, ii_x, XJ, ii_xj, &
+      call Add_to_State_Vector(Ctrl, Spixel%Illum, ITs,  X, ii_x, XJ, ii_xj, &
            XI, ii_xi, SPixel%variables_retrieved, active = .false.)
    else if (n_chans .eq. 2) then
-      call Add_to_State_Vector(Ctrl, SPixel%Illum(1), ITau, X, ii_x, XJ, ii_xj, &
+      call Add_to_State_Vector(Ctrl, Spixel%Illum, ITau, X, ii_x, XJ, ii_xj, &
            XI, ii_xi, SPixel%variables_retrieved, active = .false.)
-      call Add_to_State_Vector(Ctrl, SPixel%Illum(1), IRe,  X, ii_x, XJ, ii_xj, &
+      call Add_to_State_Vector(Ctrl, Spixel%Illum, IRe,  X, ii_x, XJ, ii_xj, &
            XI, ii_xi, SPixel%variables_retrieved, active = .false.)
-      call Add_to_State_Vector(Ctrl, SPixel%Illum(1), IPc,  X, ii_x, XJ, ii_xj, &
+      call Add_to_State_Vector(Ctrl, Spixel%Illum, IPc,  X, ii_x, XJ, ii_xj, &
            XI, ii_xi, SPixel%variables_retrieved, active = .true.)
-      call Add_to_State_Vector(Ctrl, SPixel%Illum(1), ITs,  X, ii_x, XJ, ii_xj, &
+      call Add_to_State_Vector(Ctrl, Spixel%Illum, ITs,  X, ii_x, XJ, ii_xj, &
            XI, ii_xi, SPixel%variables_retrieved, active = .true.)
    else if (n_chans .eq. 3) then
-      call Add_to_State_Vector(Ctrl, SPixel%Illum(1), ITau, X, ii_x, XJ, ii_xj, &
+      call Add_to_State_Vector(Ctrl, Spixel%Illum, ITau, X, ii_x, XJ, ii_xj, &
            XI, ii_xi, SPixel%variables_retrieved, active = .true.)
-      call Add_to_State_Vector(Ctrl, SPixel%Illum(1), IRe,  X, ii_x, XJ, ii_xj, &
+      call Add_to_State_Vector(Ctrl, Spixel%Illum, IRe,  X, ii_x, XJ, ii_xj, &
            XI, ii_xi, SPixel%variables_retrieved, active = .true.)
-      call Add_to_State_Vector(Ctrl, SPixel%Illum(1), IPc,  X, ii_x, XJ, ii_xj, &
+      call Add_to_State_Vector(Ctrl, Spixel%Illum, IPc,  X, ii_x, XJ, ii_xj, &
            XI, ii_xi, SPixel%variables_retrieved, active = .true.)
-      call Add_to_State_Vector(Ctrl, SPixel%Illum(1), ITs,  X, ii_x, XJ, ii_xj, &
+      call Add_to_State_Vector(Ctrl, Spixel%Illum, ITs,  X, ii_x, XJ, ii_xj, &
            XI, ii_xi, SPixel%variables_retrieved, active = .true.)
    else if (n_chans .ge. 4) then
-      call Add_to_State_Vector(Ctrl, SPixel%Illum(1), ITau, X, ii_x, XJ, ii_xj, &
+      call Add_to_State_Vector(Ctrl, Spixel%Illum, ITau, X, ii_x, XJ, ii_xj, &
            XI, ii_xi, SPixel%variables_retrieved, active = .true.)
-      call Add_to_State_Vector(Ctrl, SPixel%Illum(1), IRe,  X, ii_x, XJ, ii_xj, &
+      call Add_to_State_Vector(Ctrl, Spixel%Illum, IRe,  X, ii_x, XJ, ii_xj, &
            XI, ii_xi, SPixel%variables_retrieved, active = .true.)
-      call Add_to_State_Vector(Ctrl, SPixel%Illum(1), IPc,  X, ii_x, XJ, ii_xj, &
+      call Add_to_State_Vector(Ctrl, Spixel%Illum, IPc,  X, ii_x, XJ, ii_xj, &
            XI, ii_xi, SPixel%variables_retrieved, active = .true.)
-      call Add_to_State_Vector(Ctrl, SPixel%Illum(1), ITs,  X, ii_x, XJ, ii_xj, &
+      call Add_to_State_Vector(Ctrl, Spixel%Illum, ITs,  X, ii_x, XJ, ii_xj, &
            XI, ii_xi, SPixel%variables_retrieved, active = .true.)
    end if
 
-   call Add_to_State_Vector(Ctrl, SPixel%Illum(1), IFr,  X, ii_x, XJ, ii_xj, &
+   call Add_to_State_Vector(Ctrl, Spixel%Illum, IFr,  X, ii_x, XJ, ii_xj, &
         XI, ii_xi, SPixel%variables_retrieved, active = .false.)
 
    ! Add BRDF terms to parameter vector
@@ -701,7 +699,7 @@ subroutine cloud_indexing_logic_night(Ctrl, SPixel, is_not_used_or_missing, &
    else
       min_rho = MaxRho_XX
    end if
-   call Identify_BRDF_Terms(Ctrl, SPixel%Illum(1), 1, min_rho, &
+   call Identify_BRDF_Terms(Ctrl, Spixel%Illum, 1, min_rho, &
         is_not_used_or_missing, X, ii_x, XJ, ii_xj, XI, ii_xi, &
         SPixel%variables_retrieved, .false.)
 
@@ -765,24 +763,24 @@ subroutine cloud_indexing_logic_two_layer(Ctrl, SPixel, is_not_used_or_missing, 
    ii_xj = 0
    ii_xi = 0
 
-   call Add_to_State_Vector(Ctrl, SPixel%Illum(1), ITau,  X, ii_x, XJ, ii_xj, &
+   call Add_to_State_Vector(Ctrl, Spixel%Illum, ITau,  X, ii_x, XJ, ii_xj, &
         XI, ii_xi, SPixel%variables_retrieved, active = .true.)
-   call Add_to_State_Vector(Ctrl, SPixel%Illum(1), IRe,   X, ii_x, XJ, ii_xj, &
+   call Add_to_State_Vector(Ctrl, Spixel%Illum, IRe,   X, ii_x, XJ, ii_xj, &
         XI, ii_xi, SPixel%variables_retrieved, active = .true.)
-   call Add_to_State_Vector(Ctrl, SPixel%Illum(1), IPc,   X, ii_x, XJ, ii_xj, &
+   call Add_to_State_Vector(Ctrl, Spixel%Illum, IPc,   X, ii_x, XJ, ii_xj, &
         XI, ii_xi, SPixel%variables_retrieved, active = .true.)
-   call Add_to_State_Vector(Ctrl, SPixel%Illum(1), ITau2, X, ii_x, XJ, ii_xj, &
+   call Add_to_State_Vector(Ctrl, Spixel%Illum, ITau2, X, ii_x, XJ, ii_xj, &
         XI, ii_xi, SPixel%variables_retrieved, active = .true.)
-   call Add_to_State_Vector(Ctrl, SPixel%Illum(1), IRe2,  X, ii_x, XJ, ii_xj, &
+   call Add_to_State_Vector(Ctrl, Spixel%Illum, IRe2,  X, ii_x, XJ, ii_xj, &
         XI, ii_xi, SPixel%variables_retrieved, active = .true.)
-   call Add_to_State_Vector(Ctrl, SPixel%Illum(1), IPc2,  X, ii_x, XJ, ii_xj, &
+   call Add_to_State_Vector(Ctrl, Spixel%Illum, IPc2,  X, ii_x, XJ, ii_xj, &
         XI, ii_xi, SPixel%variables_retrieved, active = .true.)
-   call Add_to_State_Vector(Ctrl, SPixel%Illum(1), ITs,   X, ii_x, XJ, ii_xj, &
+   call Add_to_State_Vector(Ctrl, Spixel%Illum, ITs,   X, ii_x, XJ, ii_xj, &
         XI, ii_xi, SPixel%variables_retrieved, active = .true.)
 
-   call Add_to_State_Vector(Ctrl, SPixel%Illum(1), IFr,   X, ii_x, XJ, ii_xj, &
+   call Add_to_State_Vector(Ctrl, Spixel%Illum, IFr,   X, ii_x, XJ, ii_xj, &
         XI, ii_xi, SPixel%variables_retrieved, active = .false.)
-   call Add_to_State_Vector(Ctrl, SPixel%Illum(1), IFr2,  X, ii_x, XJ, ii_xj, &
+   call Add_to_State_Vector(Ctrl, Spixel%Illum, IFr2,  X, ii_x, XJ, ii_xj, &
         XI, ii_xi, SPixel%variables_retrieved, active = .false.)
 
    ! Add BRDF terms to parameter vector
@@ -791,7 +789,7 @@ subroutine cloud_indexing_logic_two_layer(Ctrl, SPixel, is_not_used_or_missing, 
    else
       min_rho = MaxRho_XX
    end if
-   call Identify_BRDF_Terms(Ctrl, SPixel%Illum(1), 1, min_rho, &
+   call Identify_BRDF_Terms(Ctrl, Spixel%Illum, 1, min_rho, &
         is_not_used_or_missing, X, ii_x, XJ, ii_xj, XI, ii_xi, &
         SPixel%variables_retrieved, .false.)
 
@@ -846,7 +844,7 @@ subroutine aer_indexing_logic(Ctrl, SPixel, is_not_used_or_missing, &
 
 
    ! Daytime only
-   if (SPixel%Illum(1) /= IDay) then
+   if (Spixel%Illum /= IDay) then
       status = SPixelIndexing
       return
    end if
@@ -936,7 +934,7 @@ subroutine swan_indexing_logic(Ctrl, SPixel, is_not_used_or_missing, &
 
 
    ! Daytime only
-   if (SPixel%Illum(1) /= IDay) then
+   if (Spixel%Illum /= IDay) then
       status = SPixelIndexing
       return
    end if
@@ -1069,7 +1067,7 @@ subroutine aer_indexing_logic_1view(Ctrl, SPixel, is_not_used_or_missing, &
    integer, parameter :: min_view = 1 ! Only using a single view.
 
    ! Daytime only
-   if (SPixel%Illum(1) /= IDay) then
+   if (Spixel%Illum /= IDay) then
       status = SPixelIndexing
       return
    end if
