@@ -51,11 +51,11 @@ auxiliaries = {
     'calib_file' : '/gws/nopw/j04/nceo_generic/cloud_ecv/data_in/'
         'AATSR_VIS_DRIFT_V03-00.DAT',
     # File containing the USGS land-use map
-    'usgs_file' : '/group_workspaces/jasmin2/cloud_ecv/data_in2/global_lsm.nc',
+    'usgs_file' : '/gws/nopw/j04/cloud_ecv/data_in2/global_lsm.nc',
     # Pre-defined geometry for geostationary imager
-    'prelsm_file' : '/group_workspaces/jasmin2/cloud_ecv/data_in2/'
+    'prelsm_file' : '/gws/nopw/j04/cloud_ecv/data_in2/'
         'MSG_000E_LSM.nc',
-    'pregeo_file' : '/group_workspaces/jasmin2/cloud_ecv/data_in2/'
+    'pregeo_file' : '/gws/nopw/j04/cloud_ecv/data_in2/'
         'MSG_000E_ANGLES.nc',
     # Climatology of Swansea s and p parameters
     'swansea_dir' : ''
