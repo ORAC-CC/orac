@@ -627,7 +627,7 @@ class MergedSwath(Swath):
                 self.try_open_file(this_file, "col")
                 self.indices = self.nc_files["col"]["aerosol_10km_index"][...]
 
-            elif "bugsrad" in this_file:
+            elif "bugsrad" in this_file or "RAD_PRODUCTS" in this_file:
                 self.try_open_file(this_file, "flx")
 
             elif "AEROSOL-AER" in this_file:
