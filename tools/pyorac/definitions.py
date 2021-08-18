@@ -437,7 +437,7 @@ class FileName:
         """Returns a formatted description of this orbit."""
         if revision is None:
             revision = self.revision
-        return self.time.strftime('{}_%M-%H-%d-%m-%Y_R{}_{}'.format(
+        return self.time.strftime('{}_%Y-%m-%d-%H-%M_R{}_{}'.format(
             self.inst, revision, tag
         ))
 
