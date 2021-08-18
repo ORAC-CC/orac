@@ -351,7 +351,7 @@ class FileName:
             r'S3(?P<platform>[AB])_SL_1_RBT____(?P<year>\d{4})(?P<month>\d{2})'
             r'(?P<day>\d{2})T(?P<hour>\d{2})(?P<min>\d{2})(?P<sec>\d{2})_'
             r'\d{8}T\d{6}_\d{8}T\d{6}_(?P<duration>\d{4})_(?P<cycle>\d{3})_'
-            r'(?P<orbit>\d{3})_(?P<frame>\d{4})_(?P<centre>[A-Za-z0-9]{3})_'
+            r'(?P<orbit>\d{3})_(?P<frame>.{4})_(?P<centre>[A-Za-z0-9]{3})_'
             r'(?P<class>[OFDR])_(?P<timeliness>[NS][RT])_(?P<version>\d{3}).'
             r'SEN3', filename
         )
