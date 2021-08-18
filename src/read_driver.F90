@@ -592,7 +592,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
 
    !----------------------- Ctrl%QC -----------------------
    Ctrl%QC%MaxJ         = switch_app(a, Default=100.0, Aer=3.0)
-   Ctrl%QC%MaxDoFN      = switch_app(a, Default=2.0)
+   Ctrl%QC%MaxDoFN      = switch_app(a, Default=1.0)
    Ctrl%QC%MaxElevation = switch_app(a, Default=1500.0)
 
    !------------------- Ctrl START/END POINT --------------
