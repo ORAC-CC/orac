@@ -1070,7 +1070,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
             X_Dy(Nx_Dy) = ISS(i)
          end if
       end do
-      do i = 1, Ctrl%Ind%NViews
+      do i = 2, Ctrl%Ind%NViews
          Nx_Dy = Nx_Dy+1
          X_Dy(Nx_Dy) = ISP(i)
       end do
