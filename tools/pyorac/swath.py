@@ -383,8 +383,7 @@ class Swath(Mappable):
             try:
                 for out, ch in zip(self._rs, self.ch):
                     rho = self["rho_DD_in_channel_no_{}".format(ch)]
-                    out.mask[~rho.mask] = False
-                    out[~rho.mask] = rho.compressed()
+                    out[~np.ma.getmaskarray(rho)] = rho.compressed()
             except BaseException as err:
                 if "not present" not in err.args[0]:
                     raise
@@ -394,9 +393,8 @@ class Swath(Mappable):
                 sg = 0.3
                 for out, ch in zip(self._rs, self.ch):
                     data_in = self["swansea_s_in_channel_no_{}".format(ch)]
-                    out.mask[~data_in.mask] = False
                     ss = data_in.compressed()
-                    out[~data_in.mask] = sg * ss / (1.0 - (1.0 - sg) * ss)
+                    out[~np.ma.getmaskarray(data_in)] = sg * ss / (1.0 - (1.0 - sg) * ss)
             except BaseException as err:
                 if "not present" not in err.args[0]:
                     raise
