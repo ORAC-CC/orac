@@ -137,6 +137,7 @@ class FileName:
 
         from netCDF4 import Dataset
         from dateutil import parser
+        from warnings import warn
 
         if filename is None:
             in_dirs, filename = os.path.split(in_dirs)
@@ -379,6 +380,8 @@ class FileName:
                         break
                 except FileNotFoundError:
                     pass
+            else:
+                warn(OracWarning("SLSTR start time unknown."))
 
             return
 
