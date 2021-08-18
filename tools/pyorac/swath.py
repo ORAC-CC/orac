@@ -55,7 +55,7 @@ class OracTime(object):
 
     def __getitem__(self, slic):
         """Converts an ORAC time into a datetime object."""
-        from cf_units import julian_day2date
+        from cftime import datetime
 
         orac_time = self._time[slic]
 
@@ -66,11 +66,7 @@ class OracTime(object):
         # Some versions of ORAC buggered up the time calculation
         time = orac_time / 2. if orac_time > 4e6 else orac_time
 
-        # Work-around a bug in cf_units
-        try:
-            return julian_day2date(time, "standard")
-        except ValueError:
-            return julian_day2date(time + 1e-6, "standard")
+        return datetime.fromordinal(time, "standard")
 
 
 class Flux(Mappable):
