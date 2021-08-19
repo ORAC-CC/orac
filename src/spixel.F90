@@ -234,7 +234,7 @@ module SPixel_m
       integer(byte)       :: Type         ! Particle type in pixel
       type(Surface_t)     :: Surface      ! Super-pixel surface flag info
       type(SPixel_Ind_t)  :: Ind          ! Numbers and indices of channels
-      integer, pointer    :: Illum(:)     ! Illumination flag (day,twi, night)
+      integer             :: Illum        ! Illumination flag (IDay, ITwi or INight)
       real,    pointer    :: f0(:)        ! Solar constant
       integer             :: FG(MaxStateVar)
                                           ! Methods for setting first guess
