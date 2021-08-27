@@ -37,7 +37,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine read_ecmwf_wind_grib(nwp_path, ecmwf, high_res, nwp_flag)
+subroutine read_ecmwf_wind_grib(nwp_path, ecmwf, nwp_flag)
 
    use grib_api
    use preproc_constants_m
@@ -46,7 +46,6 @@ subroutine read_ecmwf_wind_grib(nwp_path, ecmwf, high_res, nwp_flag)
 
    character(len=*), intent(in)    :: nwp_path
    type(ecmwf_t),    intent(inout) :: ecmwf
-   logical,          intent(in)    :: high_res
    integer,          intent(in)    :: nwp_flag
 
    real, allocatable, dimension(:) :: pv, lat, lon, val
@@ -69,7 +68,7 @@ subroutine read_ecmwf_wind_grib(nwp_path, ecmwf, high_res, nwp_flag)
         trim(nwp_path))
    if (gid .eq. GRIB_END_OF_FILE) call h_e_e('wind_grib', 'Empty GRIB file.')
 
-   if ((.not. high_res) .and. (nwp_flag .ne. 6 .and. nwp_flag .ne. 7 .and. nwp_flag .ne. 8)) then
+   if (nwp_flag .ne. 0) then
       ! ensure it contains the expected fields
       call grib_get(gid, 'PVPresent', PVPresent)
       if (stat .ne. 0) call h_e_e('wind_grib', 'Error getting PVPresent.')
@@ -105,18 +104,15 @@ subroutine read_ecmwf_wind_grib(nwp_path, ecmwf, high_res, nwp_flag)
    ! allocate permanent arrays
    allocate(ecmwf%lon(ni))
    allocate(ecmwf%lat(nj))
-
-   if (.not. high_res) then
-      if (nwp_flag .le. 5 .or. nwp_flag .gt. 8) then
-         allocate(ecmwf%avec(nk+1))
-         allocate(ecmwf%bvec(nk+1))
-      else
-         allocate(ecmwf%avec(ecmwf%kdim))
-         allocate(ecmwf%bvec(ecmwf%kdim))
-      end if
-      allocate(ecmwf%u10(ni,nj))
-      allocate(ecmwf%v10(ni,nj))
+   if (nwp_flag .gt. 0) then
+      allocate(ecmwf%avec(nk+1))
+      allocate(ecmwf%bvec(nk+1))
+   else
+      allocate(ecmwf%avec(ecmwf%kdim))
+      allocate(ecmwf%bvec(ecmwf%kdim))
    end if
+   allocate(ecmwf%u10(ni,nj))
+   allocate(ecmwf%v10(ni,nj))
    allocate(ecmwf%skin_temp(ni,nj))
    allocate(ecmwf%snow_depth(ni,nj))
    allocate(ecmwf%sea_ice_cover(ni,nj))
@@ -148,21 +144,17 @@ subroutine read_ecmwf_wind_grib(nwp_path, ecmwf, high_res, nwp_flag)
 
       select case (param)
       case(165)
-         if (.not. high_res) then
-            ! 10m zonal wind component, latitude, and longitude
-            call grib_get(gid, 'values', val, stat)
-            if (stat .ne. 0) call h_e_e('wind_grib', 'Error reading U10.')
+         ! 10m zonal wind component, latitude, and longitude
+         call grib_get(gid, 'values', val, stat)
+         if (stat .ne. 0) call h_e_e('wind_grib', 'Error reading U10.')
 
-            ecmwf%u10 = reshape(val, (/ni, nj/))
-         end if
+         ecmwf%u10 = reshape(val, (/ni, nj/)) 
       case(166)
-         if (.not. high_res) then
-            ! 10 m meriodional wind component
-            call grib_get(gid, 'values', val, stat)
-            if (stat .ne. 0) call h_e_e('wind_grib', 'Error reading V10.')
+         ! 10 m meriodional wind component
+         call grib_get(gid, 'values', val, stat)
+         if (stat .ne. 0) call h_e_e('wind_grib', 'Error reading V10.')
 
-            ecmwf%v10 = reshape(val, (/ni, nj/))
-         end if
+         ecmwf%v10 = reshape(val, (/ni, nj/))
       case(235)
          ! skin temperature
          call grib_get_data(gid, lat, lon, val, stat)
@@ -194,7 +186,7 @@ subroutine read_ecmwf_wind_grib(nwp_path, ecmwf, high_res, nwp_flag)
          where (ecmwf%snow_depth .eq. 9999.) ecmwf%snow_depth = sreal_fill_value
       case(130)
          if (trim(ltype) .eq. 'surface') then
-            if (nwp_flag .eq. 6 .or. nwp_flag .eq. 7  .or. nwp_flag .eq. 8) then
+            if (nwp_flag .eq. 0) then
                ! skin temp (GFS) - proxied by surface temp
                call grib_get_data(gid, lat, lon, val, stat)
                if (stat .ne. 0) call h_e_e('wind_grib', &
@@ -223,18 +215,16 @@ subroutine read_ecmwf_wind_grib(nwp_path, ecmwf, high_res, nwp_flag)
 
    ecmwf%xdim = ni
    ecmwf%ydim = nj
-   if (.not. high_res .and. (nwp_flag .le. 5 .or. nwp_flag .gt. 8)) then
+   if (nwp_flag .gt. 0) then
       ecmwf%kdim = nk
       if (nk .ne. nlevels) &
            call h_e_e('wind_grib', 'Inconsistent vertical levels.')
       ecmwf%avec = pv(1:nk+1)
       ecmwf%bvec = pv(nk+2:)
+      deallocate(pv)
    end if
 
    ! clean-up
-   if (.not. high_res .and. (nwp_flag .le. 5 .or. nwp_flag .gt. 8)) then
-      deallocate(pv)
-   end if
    deallocate(lat)
    deallocate(lon)
    deallocate(val)

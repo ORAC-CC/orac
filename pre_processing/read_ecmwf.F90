@@ -64,7 +64,7 @@ subroutine read_ecmwf_wind(nwp_flag, nwp_fnames, idx, ecmwf, &
 
    select case (nwp_flag)
    case(0)
-      call read_ecmwf_wind_grib(nwp_fnames%nwp_path_file(idx), ecmwf, .false., nwp_flag)
+      call read_ecmwf_wind_grib(nwp_fnames%nwp_path_file(idx), ecmwf, nwp_flag)
       if (verbose) write(*,*)'ecmwf_dims grib: ', ecmwf%xdim, ecmwf%ydim
    case(1)
       call read_ecmwf_wind_nc(ecmwf, nwp_fnames%nwp_path_file(idx), nwp_flag)
