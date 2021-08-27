@@ -18,7 +18,7 @@
 ! opts             struct both Processing options
 ! global_atts      struct in   Attributes for NCDF output
 ! orbit_number     strint in   Number of SLSTR orbit
-! ecmwf_flag       int    in   0: GRIB ECMWF files; 1: BADC NetCDF ECMWF files;
+! nwp_flag       int    in   0: GRIB ECMWF files; 1: BADC NetCDF ECMWF files;
 !                              2: BADC GRIB files.
 ! imager_geolocation struct in Summary of pixel positions
 ! imager_time      struct in   Time of observations
@@ -44,7 +44,7 @@
 ! 2014/02/03, AP: made badc a logical variable
 ! 2014/04/21, GM: Added logical option assume_full_path.
 ! 2014/05/01, GM: Reordered data/time arguments into a logical order.
-! 2014/05/02, AP: Made badc into ecmwf_flag.
+! 2014/05/02, AP: Made badc into nwp_flag.
 ! 2014/05/02, CP: Changed AATSR file naming
 ! 2015/08/08, CP: Added functionality for ATSR-2
 ! 2015/11/17, OS: Building high resolution ERA-Interim file name from low
@@ -59,7 +59,7 @@
 !    of the HR ERA data (copied from changes made, but committed to R3970
 !    version of code by CP).
 ! 2016/07/31, GM: Tidying of the code drop above.
-! 2017/04/11, SP: Added ecmwf_flag=6, for working with GFS analysis files.
+! 2017/04/11, SP: Added nwp_flag=6, for working with GFS analysis files.
 ! 2017/09/14, GT: Added product_name argument, which replaces the
 !    '-L2-CLOUD-CLD-' string in the output filenames
 ! 2018/02/01, GT: If a orbit number has been included in the source_attributes,
@@ -80,7 +80,7 @@ contains
 #include "set_ecmwf.F90"
 
 subroutine preparation(paths, granule, opts, global_atts, orbit_number, &
-     ecmwf_flag, imager_geolocation, imager_time, i_chunk, &
+     nwp_flag, imager_geolocation, imager_time, i_chunk, &
      time_int_fac, assume_full_path, verbose)
 
    use imager_structures_m
@@ -96,7 +96,7 @@ subroutine preparation(paths, granule, opts, global_atts, orbit_number, &
    type(preproc_opts_t),       intent(inout) :: opts
    type(global_attributes_t),  intent(in)    :: global_atts
    character(len=*),           intent(in)    :: orbit_number
-   integer,                    intent(in)    :: ecmwf_flag
+   integer,                    intent(in)    :: nwp_flag
    type(imager_geolocation_t), intent(in)    :: imager_geolocation
    type(imager_time_t),        intent(in)    :: imager_time
    integer,                    intent(in)    :: i_chunk
@@ -120,34 +120,30 @@ subroutine preparation(paths, granule, opts, global_atts, orbit_number, &
       write(*,*) 'chour: ',                 trim(granule%chour)
       write(*,*) 'cminute: ',               trim(granule%cminute)
       write(*,*) 'orbit_number: ',          trim(orbit_number)
-      write(*,*) 'ecmwf_path(1): ',         trim(opts%ecmwf_path(1))
-      write(*,*) 'ecmwf_path_hr(1): ',      trim(opts%ecmwf_path_hr(1))
-      write(*,*) 'ecmwf_path2(1): ',        trim(opts%ecmwf_path2(1))
-      write(*,*) 'ecmwf_path3(1): ',        trim(opts%ecmwf_path3(1))
-      write(*,*) 'ecmwf_path(2): ',         trim(opts%ecmwf_path(2))
-      write(*,*) 'ecmwf_path_hr(2): ',      trim(opts%ecmwf_path_hr(2))
-      write(*,*) 'ecmwf_path2(2): ',        trim(opts%ecmwf_path2(2))
-      write(*,*) 'ecmwf_path3(2): ',        trim(opts%ecmwf_path3(2))
-      write(*,*) 'ecmwf_flag: ',            ecmwf_flag
+      write(*,*) 'nwp_path(1): ',         trim(opts%nwp_fnames%nwp_path(1))
+      write(*,*) 'nwp_path2(1): ',        trim(opts%nwp_fnames%nwp_path2(1))
+      write(*,*) 'nwp_path3(1): ',        trim(opts%nwp_fnames%nwp_path3(1))
+      write(*,*) 'nwp_path(2): ',         trim(opts%nwp_fnames%nwp_path(2))
+      write(*,*) 'nwp_path2(2): ',        trim(opts%nwp_fnames%nwp_path2(2))
+      write(*,*) 'nwp_path3(2): ',        trim(opts%nwp_fnames%nwp_path3(2))
+      write(*,*) 'nwp_flag: ',            nwp_flag
       write(*,*) 'ecmwf_time_int_method: ', opts%ecmwf_time_int_method
       write(*,*) 'i_chunk: ',               i_chunk
       write(*,*) 'assume_full_path: ',      assume_full_path
    end if
 
    ! determine ecmwf path/filename
-   call set_ecmwf(granule, opts, ecmwf_flag, imager_geolocation, imager_time, &
+   call set_ecmwf(granule, opts, nwp_flag, imager_geolocation, imager_time, &
         time_int_fac, assume_full_path)
 
    if (verbose) then
-      write(*,*) 'ecmwf_path_file:  ', trim(opts%ecmwf_path_file(1))
-      write(*,*) 'ecmwf_path_file_2:  ', trim(opts%ecmwf_path_file(2))
-      write(*,*) 'ecmwf_hr_path_file:  ', trim(opts%ecmwf_hr_path_file(1))
-      write(*,*) 'ecmwf_hr_path_file2:  ', trim(opts%ecmwf_hr_path_file(2))
-      if (ecmwf_flag .gt. 0.and.ecmwf_flag.lt.4) then
-         write(*,*) 'ecmwf_path_file2: ', trim(opts%ecmwf_path_file2(1))
-         write(*,*) 'ecmwf_path_file3: ', trim(opts%ecmwf_path_file3(1))
-         write(*,*) 'ecmwf_path_file2_2: ', trim(opts%ecmwf_path_file2(2))
-         write(*,*) 'ecmwf_path_file3_2: ', trim(opts%ecmwf_path_file3(2))
+      write(*,*) 'nwp_path_file:  ', trim(opts%nwp_fnames%nwp_path_file(1))
+      write(*,*) 'nwp_path_file_2:  ', trim(opts%nwp_fnames%nwp_path_file(2))
+      if (nwp_flag .gt. 0.and.nwp_flag.lt.4) then
+         write(*,*) 'nwp_path_file2: ', trim(opts%nwp_fnames%nwp_path_file2(1))
+         write(*,*) 'nwp_path_file3: ', trim(opts%nwp_fnames%nwp_path_file3(1))
+         write(*,*) 'nwp_path_file2_2: ', trim(opts%nwp_fnames%nwp_path_file2(2))
+         write(*,*) 'nwp_path_file3_2: ', trim(opts%nwp_fnames%nwp_path_file3(2))
       end if
    end if
 
