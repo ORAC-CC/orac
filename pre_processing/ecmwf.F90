@@ -4,33 +4,15 @@
 ! Purpose:
 ! Define module of variables types which hold the ecmwf input data.
 !
-! History:
-! 2012/01/10, MJ: Writes sample code for ERA Interim data.
-! 2012/08/02, CP: Changed to accommodate badc netcdf files with different
-!    dimensions
-! 2013/10/23, AP: Tidying
-! 2014/02/10, AP: Removed _nc_ structures as redundant. Shortened DIM names.
-! 2014/05/06, AP: Simplified to just one structure.
-! 2014/11/04, OS: Added skin temperature to ecmwf structure.
-! 2014/11/19, GM: C #includes should use double quotes.
-! 2014/02/04, OS: Added include of read_ecmwf_wind_dwd.F90.
-! 2014/02/04, OS: Added snow_depth and sea_ice_cover fields for high res ERA
-!    data.
-! 2015/11/26, GM: Added dup_ecmwf_allocation() and linearly_combine_ecmwfs() to
-!    facilitate linear interpolation between ecmwf_t structures.
-! 2015/12/17, OS: Added low_res flag.
-! 2016/02/03, GM: Added parameter arrays avec and bvec as they were being
-!    duplicated in subroutines.
-! 2016/02/03, GM: Check for fill_value in sea_ice_cover during linear
-!    combination.
-! 2016/04/03, SP: Add option to process ECMWF forecast in single NetCDF4 file
-!    Three new arrays added, these store the hybrid level (60,91,137)
-!    conversions.
-! 2017/02/07, SP: Added support for NOAA GFS atmosphere data (ExtWork)
-! 2017/06/21, OS: inout declaration bug fix for cray-fortran compiler
 !
-! Bugs:
-! None known.
+! NOTES:
+! The nwp_flag option allows the user to set what type of NWP data to use.
+! There are five options for this flag:
+! 0: NOAA GFS data in a single GRIB file.
+! 1: ECMWF Operational or ERA5 data as a single netCDF4 file
+! 2: ECMWF ERA5 data in JASMIN format (GRIB, one file per variable)
+! 3: DWD format (unknown details)
+! 4: ERA-Interim in JASMIN format, three files.
 !-------------------------------------------------------------------------------
 
 module ecmwf_m

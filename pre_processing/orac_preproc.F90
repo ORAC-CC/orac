@@ -316,6 +316,17 @@
 !
 ! Bugs:
 ! See http://proj.badc.rl.ac.uk/orac/report/1
+! 
+! 
+! 
+! NOTES:
+! The nwp_flag option allows the user to set what type of NWP data to use.
+! There are five options for this flag:
+! 0: NOAA GFS data in a single GRIB file.
+! 1: ECMWF Operational or ERA5 data as a single netCDF4 file
+! 2: ECMWF ERA5 data in JASMIN format (GRIB, one file per variable)
+! 3: DWD format (unknown details)
+! 4: ERA-Interim in JASMIN format, three files.
 !-------------------------------------------------------------------------------
 
 #ifndef WRAPPER
