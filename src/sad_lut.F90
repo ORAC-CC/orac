@@ -37,6 +37,7 @@ module SAD_LUT_m
              Alloc_SAD_LUT, &
              Dealloc_SAD_LUT, &
              Read_SAD_LUT, &
+             Read_NCDF_SAD_LUT, &
              locate
 
    type LUT_Dimension_t

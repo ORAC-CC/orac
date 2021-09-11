@@ -47,7 +47,7 @@ module orac_input_m
    implicit none
 
    type, extends(common_indices_t) :: input_indices_t
-      character(len=7) :: LUTClass
+      character(len=81) :: LUTClass
 
       integer, pointer :: loop_to_main_index(:)
       integer, pointer :: ysolar_loop_to_main_index(:)

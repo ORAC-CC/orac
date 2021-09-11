@@ -104,7 +104,7 @@ subroutine Dealloc_SAD_LUT(Ctrl, SAD_LUT)
       deallocate(SAD_LUT%Rbd)
       deallocate(SAD_LUT%Rfbd)
       deallocate(SAD_LUT%Tb)
-      deallocate(SAD_LUT%Tbd)
+      if (associated(SAD_LUT%Tbd)) deallocate(SAD_LUT%Tbd)
       deallocate(SAD_LUT%Tfbd)
    end if
 
