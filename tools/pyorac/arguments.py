@@ -126,10 +126,6 @@ def args_preproc(parser):
                        help='Do not interpolate ECMWF data.')
     ecmwf.add_argument('--skip_ecmwf_hr', action='store_true',
                        help='Ignore high resolution ECMWF files.')
-    ecmwf.add_argument('--ecmwf_nlevels', type=int, nargs='?',
-                       choices=(60, 91, 137), default=60,
-                       help='Number of levels in the ECMWF file used. '
-                            'Default 50.')
     ice = ecmwf.add_mutually_exclusive_group()
     ice.add_argument('--use_ecmwf_snow', action='store_true',
                      help='Use ECMWF snow/ice fields rather than NISE.')

@@ -82,14 +82,18 @@ def build_preproc_driver(args):
     # Select ECMWF files
     bounds = _bound_time(args.File.time + args.File.dur // 2)
     if args.ecmwf_flag == 0:
+        ecmwf_nlevels = 91
         raise NotImplementedError('Filename syntax for --ecmwf_flag 0 unknown')
     elif args.ecmwf_flag == 4:
+        ecmwf_nlevels = 60
         ggam = _form_bound_filenames(bounds, args.ggam_dir, 'ggam%Y%m%d%H%M.grb')
         ggas = _form_bound_filenames(bounds, args.ggas_dir, 'ggas%Y%m%d%H%M.nc')
         spam = _form_bound_filenames(bounds, args.spam_dir, 'spam%Y%m%d%H%M.grb')
     elif args.ecmwf_flag == 3:
+        ecmwf_nlevels = 60
         raise NotImplementedError('Filename syntax for --ecmwf_flag 3 unknown')
     elif args.ecmwf_flag == 1:
+        ecmwf_nlevels = 137
         for form, ec_hour in (('C3D*%m%d%H*.nc', 3),
                               ('ECMWF_OPER_%Y%m%d_%H+00.nc', 6),
                               ('ECMWF_ERA5_%Y%m%d_%H_0.5.nc', 6),
@@ -107,6 +111,7 @@ def build_preproc_driver(args):
         ggas = ["", ""]
         spam = ["", ""]
     elif args.ecmwf_flag == 2:
+        ecmwf_nlevels = 137
         # Interpolation is done in the code
         ggam = [args.ggam_dir, args.ggam_dir]
         ggas = ["", ""]
@@ -273,7 +278,7 @@ ECMWF_PATH2_2={ggas[1]}
 ECMWF_PATH3_2={spam[1]}
 USE_ECMWF_SNOW_AND_ICE={args.use_ecmwf_snow}
 USE_MODIS_EMIS_IN_RTTOV={args.use_modis_emis}
-ECMWF_NLEVELS={args.ecmwf_nlevels}
+ECMWF_NLEVELS={ecmwf_nlevels}
 USE_L1_LAND_MASK={args.l1_land_mask}
 USE_OCCCI={args.use_oc}
 OCCCI_PATH={occci}
