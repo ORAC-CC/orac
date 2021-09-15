@@ -20,7 +20,7 @@ def call_exe(args, exe, driver, values=None):
     :str exe: Name of the executable.
     :str driver: Contents of the driver file to pass.
     :dict values: Arguments for the batch queueing system."""
-    import pyorac.local_defaults as defaults
+    from pyorac.local_defaults import BATCH, BATCH_VALUES
 
     from pyorac.colour_print import colour_print
     from pyorac.definitions import OracError, COLOURING
@@ -89,7 +89,7 @@ def call_exe(args, exe, driver, values=None):
             ghandle.write("export PPDIR=" + args.emos_dir + "\n")
         except AttributeError:
             pass
-        defaults.batch.add_openmp_to_script(ghandle)
+        BATCH.add_openmp_to_script(ghandle)
 
         # Call executable and give the script permission to execute
         ghandle.write(exe + ' ' + driver_file + "\n")
@@ -101,7 +101,7 @@ def call_exe(args, exe, driver, values=None):
 
         try:
             # Collect batch settings from defaults, command line, and script
-            batch_params = defaults.batch_values.copy()
+            batch_params = BATCH_VALUES.copy()
             if values:
                 batch_params.update(values)
             batch_params.update({key: val for key, val in args.batch_settings})
@@ -109,14 +109,14 @@ def call_exe(args, exe, driver, values=None):
             batch_params['procs'] = args.procs
 
             # Form batch queue command and call batch queuing system
-            cmd = defaults.batch.list_batch(batch_params, exe=script_file)
+            cmd = BATCH.list_batch(batch_params, exe=script_file)
 
             if args.verbose or args.script_verbose:
                 colour_print(' '.join(cmd), COLOURING['header'])
             out = check_output(cmd, universal_newlines=True)
 
             # Parse job ID # and return it to the caller
-            jid = defaults.batch.parse_out(out, 'ID')
+            jid = BATCH.parse_out(out, 'ID')
             return jid
         except CalledProcessError as err:
             raise OracError('Failed to queue job ' + exe)
@@ -126,28 +126,28 @@ def call_exe(args, exe, driver, values=None):
 
 def extract_orac_libraries(lib_dict=None):
     """Return list of libraries ORAC should link to."""
-    from pyorac.local_defaults import orac_lib
+    from pyorac.local_defaults import ORAC_LIB
     from re import findall
 
     if lib_dict is None:
         try:
             lib_dict = read_orac_library_file(os.environ["ORAC_LIB"])
         except KeyError:
-            lib_dict = read_orac_library_file(orac_lib)
+            lib_dict = read_orac_library_file(ORAC_LIB)
 
     return [m[0] for m in findall(r"-L(.+?)(\s|$)", lib_dict["LIBS"])]
 
 
 def get_repository_revision():
     """Call git to determine repository revision number"""
-    from pyorac.local_defaults import orac_dir
+    from pyorac.local_defaults import ORAC_DIR
     from subprocess import check_output
 
     fdr = os.getcwd()
     try:
         os.chdir(os.environ["ORACDIR"])
     except KeyError:
-        os.chdir(orac_dir)
+        os.chdir(ORAC_DIR)
     try:
         tmp = check_output(["git", "rev-list", "--count", "HEAD"],
                            universal_newlines=True)

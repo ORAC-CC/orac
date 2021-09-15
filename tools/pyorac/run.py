@@ -17,6 +17,7 @@ CLOBBER = OrderedDict([
 def process_pre(args, log_path, dependency=None, tag='pre'):
     """Call sequence for pre processor"""
     from pyorac.drivers import build_preproc_driver
+    from pyorac.local_defaults import DIR_PERMISSIONS
 
     args = check_args_preproc(args)
     driver = build_preproc_driver(args)
@@ -27,7 +28,7 @@ def process_pre(args, log_path, dependency=None, tag='pre'):
                                     args.product_name)
 
     if not os.path.isdir(args.out_dir):
-        os.makedirs(args.out_dir, 0o774)
+        os.makedirs(args.out_dir, DIR_PERMISSIONS)
 
     out_file = os.path.join(args.out_dir, root_name + '.config.nc')
     if args.clobber >= CLOBBER['pre'] or not os.path.isfile(out_file):
@@ -55,6 +56,7 @@ def process_main(args, log_path, tag='', dependency=None):
     """Call sequence for main processor"""
     from pyorac.definitions import SETTINGS
     from pyorac.drivers import build_main_driver
+    from pyorac.local_defaults import DIR_PERMISSIONS
 
     args = check_args_main(args)
     if args.multilayer is not None:
@@ -65,7 +67,7 @@ def process_main(args, log_path, tag='', dependency=None):
     root_name = args.File.root_name(args.revision)
 
     if not os.path.isdir(args.out_dir):
-        os.makedirs(args.out_dir, 0o774)
+        os.makedirs(args.out_dir, DIR_PERMISSIONS)
 
     out_file = os.path.join(args.out_dir, root_name + phase + '.primary.nc')
     if args.clobber >= CLOBBER['main'] or not os.path.isfile(out_file):
@@ -94,13 +96,14 @@ def process_post(args, log_path, files=None, dependency=None, tag='post'):
     from glob import glob
     from pyorac.drivers import build_postproc_driver
     from pyorac.definitions import FileMissing, SETTINGS
+    from pyorac.local_defaults import DIR_PERMISSIONS
 
     args = check_args_postproc(args)
     job_name = args.File.job_name(args.revision, tag)
     root_name = args.File.root_name(args.revision)
 
     if not os.path.isdir(args.out_dir):
-        os.makedirs(args.out_dir, 0o774)
+        os.makedirs(args.out_dir, DIR_PERMISSIONS)
 
     if files is None:
         # Find all primary files of requested phases in given input folders.
@@ -144,7 +147,7 @@ def process_post(args, log_path, files=None, dependency=None, tag='post'):
 
 def call_reformat(args, log_path, exe, out_file, dependency=None):
     """Reformat outputs using the script provided."""
-    import pyorac.local_defaults as defaults
+    from pyorac.local_defaults import BATCH, BATCH_VALUES
 
     from pyorac.colour_print import colour_print
     from pyorac.definitions import OracError, COLOURING
@@ -170,7 +173,7 @@ def call_reformat(args, log_path, exe, out_file, dependency=None):
     else:
         try:
             # Collect batch settings from defaults, command line, and script
-            batch_params = defaults.batch_values.copy()
+            batch_params = BATCH_VALUES.copy()
             batch_params['job_name'] = job_name
             batch_params['log_file'] = os.path.join(log_path, job_name + '.log')
             batch_params['err_file'] = os.path.join(log_path, job_name + '.err')
@@ -182,15 +185,14 @@ def call_reformat(args, log_path, exe, out_file, dependency=None):
             batch_params.update({key: val for key, val in args.batch_settings})
 
             # Form batch queue command and call batch queuing system
-            cmd = defaults.batch.list_batch(batch_params,
-                                            exe=[exe, out_file, "1"])
+            cmd = BATCH.list_batch(batch_params, exe=[exe, out_file, "1"])
 
             if args.verbose or args.script_verbose:
                 colour_print(' '.join(cmd), COLOURING['header'])
             out = check_output(cmd, universal_newlines=True)
 
             # Parse job ID # and return it to the caller
-            jid = defaults.batch.parse_out(out, 'ID')
+            jid = BATCH.parse_out(out, 'ID')
             return jid
         except CalledProcessError as err:
             raise OracError('Failed to queue job ' + exe)
@@ -203,7 +205,7 @@ def process_all(orig_args):
     from argparse import ArgumentParser
     from copy import deepcopy
     from pyorac.arguments import args_common, args_main
-    from pyorac.local_defaults import log_dir, pre_dir
+    from pyorac.local_defaults import LOG_DIR, PRE_DIR
 
     # Generate main-processor-only parser
     pars = ArgumentParser()
@@ -216,13 +218,13 @@ def process_all(orig_args):
     # Copy input arguments as we'll need to fiddle with them
     orig_args = check_args_common(orig_args)
     orig_args = check_args_cc4cl(orig_args)
-    log_path = os.path.join(orig_args.out_dir, log_dir)
+    log_path = os.path.join(orig_args.out_dir, LOG_DIR)
     args = deepcopy(orig_args)
 
     written_dirs = set()  # The folders we actually wrote to
 
     # Work out output filename
-    args.out_dir = os.path.join(orig_args.out_dir, pre_dir)
+    args.out_dir = os.path.join(orig_args.out_dir, PRE_DIR)
 
     jid_pre, _ = process_pre(args, log_path, tag="pre{}".format(args.label))
     if jid_pre is not None:

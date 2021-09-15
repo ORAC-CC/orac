@@ -21,7 +21,6 @@ from pyorac.colour_print import colour_print
 from pyorac.definitions import (Acceptable, BadValue, COLOURING, FieldMissing,
                                 FileMissing, FileName, InconsistentDim,
                                 OracError, Regression, RoundingError)
-from pyorac.local_defaults import log_dir
 from pyorac.regression_tests import REGRESSION_TESTS
 from pyorac.run import process_all, run_regression
 from pyorac.util import get_repository_revision, warning_format
@@ -29,7 +28,7 @@ from pyorac.util import get_repository_revision, warning_format
 
 # Calibrate how regression warnings are displayed
 warnings.formatwarning = warning_format
-for key, item in defaults.warn_filt.items():
+for key, item in defaults.WARN_FILT.items():
     warnings.simplefilter(item, locals()[key])
 
 
@@ -45,12 +44,7 @@ orig_args = pars.parse_args()
 
 orig_args = check_args_regress(orig_args)
 
-if orig_args.in_dir is None:
-    orig_args.in_dir = [defaults.data_dir + '/testinput']
-if orig_args.out_dir:
-    base_out_dir = orig_args.out_dir
-else:
-    base_out_dir = defaults.data_dir +'/testoutput'
+base_out_dir = deepcopy(orig_args.out_dir)
 
 # Increment version number (as this is usually run on uncommited code)
 if orig_args.revision is None:
@@ -75,7 +69,7 @@ try:
         args.preset_settings += "_" + args.test_type
 
         jid, out_file = process_all(args)
-        log_path = os.path.join(args.out_dir, log_dir)
+        log_path = os.path.join(args.out_dir, defaults.LOG_DIR)
 
         # Check for regressions
         if not args.benchmark and not args.dry_run:
@@ -89,10 +83,10 @@ try:
                     colour_print('REGRESSION) ' + str(err), COLOURING['error'])
 
             else:
-                if os.path.isdir(os.path.join(defaults.orac_dir, "tools")):
-                    path = [os.path.join(defaults.orac_dir, "tools"), ]
+                if os.path.isdir(os.path.join(defaults.ORAC_DIR, "tools")):
+                    path = [os.path.join(defaults.ORAC_DIR, "tools"), ]
                 else:
-                    path = [defaults.orac_dir, ]
+                    path = [defaults.ORAC_DIR, ]
                 path.extend(filter(None, sys.path))
 
                 job_name = inst.job_name(tag='regression')
@@ -112,7 +106,7 @@ try:
                 f.close()
                 os.chmod(script_file, 0o700)
 
-                values = defaults.batch_values.copy()
+                values = defaults.BATCH_VALUES.copy()
                 values.update({key : val for key, val in args.batch_settings})
                 values['job_name'] = job_name
                 values['log_file'] = os.path.join(log_path, job_name + '.log')
@@ -121,14 +115,14 @@ try:
                 values['duration'] = '00:05'
                 values['ram'] = '1000'
 
-                cmd = defaults.batch.list_batch(values, exe=script_file)
+                cmd = defaults.BATCH.list_batch(values, exe=script_file)
                 if args.verbose or args.script_verbose:
                     colour_print(' '.join(cmd), COLOURING['header'])
                 out = check_output(cmd, universal_newlines=True)
 
                 if args.verbose or args.script_verbose:
                     print("Job queued with ID {}".format(
-                        defaults.batch.parse_out(out, 'ID')
+                        defaults.BATCH.parse_out(out, 'ID')
                     ))
 
 except OracError as err:

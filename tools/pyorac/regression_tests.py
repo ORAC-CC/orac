@@ -75,7 +75,7 @@ def compare_nc_atts(dat0, dat1, filename, var):
             continue
 
         if (dat0.__dict__[key] != dat1.__dict__[key] and
-                key not in defaults.atts_to_ignore):
+                key not in defaults.ATTS_TO_IGNORE):
             warn(Regression(
                 filename, var + ', ' + key, 'warning',
                 'Changed attribute ({} vs {})'.format(
@@ -153,22 +153,22 @@ def compare_orac_out(file0, file1):
                 # For floats, check if variation is acceptable
                 if att0.dtype.kind == 'f':
                     test = np.allclose(
-                        att0, att1, equal_nan=True, rtol=defaults.rtol,
-                        atol=defaults.atol
+                        att0, att1, equal_nan=True, rtol=defaults.RTOL,
+                        atol=defaults.ATOL
                     )
                 else:
                     try:
                         if isinstance(att0.scale_factor, np.floating):
                             # Packed floats consider the scale factor
                             test = np.allclose(
-                                att0, att1, equal_nan=True, rtol=defaults.rtol,
-                                atol=max(att0.scale_factor, defaults.atol)
+                                att0, att1, equal_nan=True, rtol=defaults.RTOL,
+                                atol=max(att0.scale_factor, defaults.ATOL)
                             )
                     except AttributeError:
                         # If there is no scale factor, treat as an integer
                         pass
 
-                if test or key in defaults.vars_to_accept:
+                if test or key in defaults.VARS_TO_ACCEPT:
                     warn(Acceptable(file1, key), stacklevel=2)
                 else:
                     warn(RoundingError(file1, key), stacklevel=2)
