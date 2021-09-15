@@ -74,7 +74,8 @@
 !    l1b_version and level1b_orbit_number attributes from the L1b file.
 !    Extending this change to the other supported instruments is worth
 !    considering...
-! 2019/8/14, SP: Add Fengyun-4A support.
+! 2019/08/14, SP: Add Fengyun-4A support.
+! 2021/03/10, AP: Gather setup calls into a single routine.
 !
 ! Bugs:
 ! None known.

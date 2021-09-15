@@ -31,12 +31,11 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine rearrange_ecmwf(ecmwf,highRes)
+subroutine rearrange_ecmwf(ecmwf)
 
    implicit none
 
    type(ecmwf_t), intent(inout) :: ecmwf
-   logical,       intent(in)    :: highRes
 
    integer                      :: date, ind, i
    real(kind=sreal), allocatable, dimension(:,:) :: u, v
@@ -52,16 +51,14 @@ subroutine rearrange_ecmwf(ecmwf,highRes)
    ind = ecmwf%xdim + 1 - date
 
    ! Swap the left and right halfs into a temp array
-   if (.not. highRes) then
-      ! Wind fields are not contained in high resolution data
-      allocate(u(ecmwf%xdim,ecmwf%ydim))
-      u(1:ind,:)  = ecmwf%u10(date:,:)
-      u(ind+1:,:) = ecmwf%u10(1:date-1,:)
-
-      allocate(v(ecmwf%xdim,ecmwf%ydim))
-      v(1:ind,:)  = ecmwf%v10(date:,:)
-      v(ind+1:,:) = ecmwf%v10(1:date-1,:)
-   end if
+   ! Wind fields are not contained in high resolution data
+   allocate(u(ecmwf%xdim,ecmwf%ydim))
+   u(1:ind,:)  = ecmwf%u10(date:,:)
+   u(ind+1:,:) = ecmwf%u10(1:date-1,:)
+ 
+   allocate(v(ecmwf%xdim,ecmwf%ydim))
+   v(1:ind,:)  = ecmwf%v10(date:,:)
+   v(ind+1:,:) = ecmwf%v10(1:date-1,:)
 
    allocate(skint(ecmwf%xdim,ecmwf%ydim))
    skint(1:ind,:)  = ecmwf%skin_temp(date:,:)
@@ -84,10 +81,8 @@ subroutine rearrange_ecmwf(ecmwf,highRes)
 
    ! flip in the y direction from the temp to the original
    do i=1,ecmwf%ydim
-      if (.not. highRes) then
-         ecmwf%u10(:,ecmwf%ydim+1-i) = u(:,i)
-         ecmwf%v10(:,ecmwf%ydim+1-i) = v(:,i)
-      end if
+      ecmwf%u10(:,ecmwf%ydim+1-i) = u(:,i)
+      ecmwf%v10(:,ecmwf%ydim+1-i) = v(:,i)
       ecmwf%skin_temp(:,ecmwf%ydim+1-i)     = skint(:,i)
       ecmwf%snow_depth(:,ecmwf%ydim+1-i)    = snow_depth(:,i)
       ecmwf%sea_ice_cover(:,ecmwf%ydim+1-i) = sea_ice_cover(:,i)
@@ -97,10 +92,8 @@ subroutine rearrange_ecmwf(ecmwf,highRes)
    ecmwf%lon = lon
    ecmwf%lat = lat
 
-   if (.not. highRes) then
-      deallocate(u)
-      deallocate(v)
-   end if
+   deallocate(u)
+   deallocate(v)
    deallocate(skint)
    deallocate(snow_depth)
    deallocate(sea_ice_cover)

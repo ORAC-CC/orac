@@ -247,7 +247,7 @@ def process_all(orig_args):
         phs_args.out_dir = os.path.join(orig_args.out_dir, phs_args.sub_dir)
 
         jid, out = process_main(phs_args, log_path, dependency=jid_pre,
-                                tag=args.sub_dir + args.label)
+                                tag=phs_args.sub_dir + phs_args.label)
         out_files.append(out)
         if jid is not None:
             jid_main.append(jid)

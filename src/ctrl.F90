@@ -300,6 +300,7 @@ module Ctrl_m
                                                    ! in an order of decreasing
                                                    ! priority.
       logical                :: do_new_night_retrieval
+      logical                :: force_nighttime_retrieval  ! Sets SPixel%Illum = INight
       logical                :: do_CTX_correction
       real                   :: CTP_correction_limit
 

@@ -14,11 +14,11 @@ else
 fi
 REL_PATH=`python -c "import os.path; print(os.path.relpath('$PREFIX', '$PWD'))"`
 
-# Point to local coefficients directory
-rm -rf rtcoef_rttov12
-ln -s $RTTOV_FILES rtcoef_rttov12
+# Point to local copies of coefficients directory and test inputs
 rm -rf rtcoef_rttov13
-ln -s $RTTOV_FILES/../rtcoef_rttov13 rtcoef_rttov13
+ln -s $RTTOV_FILES/rtcoef_rttov13 rtcoef_rttov13
+rm -rf rttov_test
+cp -r $RTTOV_FILES/rttov_test .
 
 export LD_LIBRARY_PATH="${PREFIX}/lib:${LD_LIBRARY_PATH}"
 cd rttov_test

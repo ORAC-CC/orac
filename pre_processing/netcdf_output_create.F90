@@ -22,7 +22,7 @@
 ! netcdf_info    struct  both Summary of NCDF file properties.
 ! channel_info   struct  in   Structure summarising the channels to be processed
 ! include_full_brdf logic in  T: Use BRDF surface; F: Use Lambertian surface.
-! ecmwf_flag     logic   in   See set_ecmwf.F90
+! nwp_flag     logic   in   See set_ecmwf.F90
 ! do_cloud_emis  logic   in   T: Output cloud emissivity; F: Don't.
 ! use_chunking   logic   in   T: Chunk output file; F: Don't.
 !
@@ -54,7 +54,7 @@
 
 subroutine netcdf_output_create(output_path, paths, granule, global_atts, &
    source_atts, preproc_dims, imager_angles, imager_geolocation, netcdf_info, &
-   channel_info, include_full_brdf, ecmwf_flag, do_cloud_emis, verbose)
+   channel_info, include_full_brdf, nwp_flag, do_cloud_emis, verbose)
 
    use channel_structures_m
    use global_attributes_m
@@ -80,7 +80,7 @@ subroutine netcdf_output_create(output_path, paths, granule, global_atts, &
 
    type(channel_info_t),       intent(in)    :: channel_info
    logical,                    intent(in)    :: include_full_brdf
-   integer,                    intent(in)    :: ecmwf_flag
+   integer,                    intent(in)    :: nwp_flag
    logical,                    intent(in)    :: do_cloud_emis
    logical,                    intent(in)    :: verbose
 
@@ -101,7 +101,7 @@ subroutine netcdf_output_create(output_path, paths, granule, global_atts, &
         granule%cminute, granule%platform, granule%sensor, &
         trim(adjustl(output_path))//'/'//trim(adjustl(paths%prtm_file)), &
         NETCDF_OUTPUT_FILE_PRTM, preproc_dims, netcdf_info, channel_info, &
-        ecmwf_flag, verbose)
+        nwp_flag, verbose)
 
    ! create lwrtm file
    call netcdf_create_rtm(global_atts, source_atts, granule%cyear, &
@@ -109,7 +109,7 @@ subroutine netcdf_output_create(output_path, paths, granule, global_atts, &
         granule%cminute, granule%platform, granule%sensor, &
         trim(adjustl(output_path))//'/'//trim(adjustl(paths%lwrtm_file)), &
         NETCDF_OUTPUT_FILE_LWRTM, preproc_dims, netcdf_info, channel_info, &
-        ecmwf_flag, verbose)
+        nwp_flag, verbose)
 
    ! create swrtm file
    call netcdf_create_rtm(global_atts, source_atts, granule%cyear, &
@@ -117,7 +117,7 @@ subroutine netcdf_output_create(output_path, paths, granule, global_atts, &
         granule%cminute, granule%platform, granule%sensor, &
         trim(adjustl(output_path))//'/'//trim(adjustl(paths%swrtm_file)), &
         NETCDF_OUTPUT_FILE_SWRTM, preproc_dims, netcdf_info, channel_info, &
-        ecmwf_flag, verbose)
+        nwp_flag, verbose)
 
 
    ! Create swath based files

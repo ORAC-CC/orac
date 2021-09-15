@@ -57,7 +57,7 @@
 ! l1b_path_file    string in Full path to level 1B data
 ! geo_path_file    string in Full path to geolocation data (identical to above
 !                            for AATSR)
-! ecmwf_path       string in Folder containing ECMWF files
+! nwp_path       string in Folder containing ECMWF files
 ! rttov_coef_path  string in Folder containing RTTOV coefficient files
 ! rttov_emiss_path string in Folder containing RTTOV emissivity files
 ! nise_ice_snow_path
@@ -96,10 +96,10 @@
 ! exec_time        string in Date/time string for when this file was generated
 ! aatsr_calib_path_file
 !                  string in Full path to the AATSR calibration file
-! ecmwf_flag       int    in 0: GRIB ECMWF files; 1: BADC NetCDF ECMWF files;
+! nwp_flag       int    in 0: GRIB ECMWF files; 1: BADC NetCDF ECMWF files;
 !                            2: BADC GRIB files.
-! ecmwf_path2      string in Folder containing ECMWF files (?)
-! ecmwf_path3      string in Folder containing ECMWF files (?)
+! nwp_path2      string in Folder containing ECMWF files (?)
+! nwp_path3      string in Folder containing ECMWF files (?)
 ! chunkproc        logic  in T: split AATSR orbit in 4096 row chunks, F: don't
 ! day_night        int    in 2: process only night data; 1: day (default)
 ! verbose          logic  in F: minimise information printed to screen; T: don't
@@ -262,7 +262,7 @@
 ! 2016/02/02, OS: High resolution ERA-Interim data now used by default. Snow/ice
 !    mask is now built from ERA-Interim data instead of NISE.
 ! 2016/02/02, CP: Input optional path to high resolution ECMWF files otherwise
-!    use ecmwf_path.
+!    use nwp_path.
 ! 2016/02/02, GM: Make use of the high resolution ECMWF input optional.
 ! 2016/02/02, GM: Make use of the ECMWF ice and snow mask (rather than NISE)
 !    optional.
@@ -289,7 +289,7 @@
 ! 2017/03/29, SP: Add ability to calculate tropospheric cloud emissivity
 !    (ExtWork)
 ! 2017/04/08, SP: New flag to disable VIS processing, saves proc time (ExtWork)
-! 2017/04/11, SP: Added ecmwf_flag=6, for working with GFS analysis files.
+! 2017/04/11, SP: Added nwp_flag=6, for working with GFS analysis files.
 ! 2017/04/26, SP: Support for loading geoinfo (lat/lon/vza/vaa) from an external
 !    file. Supported by AHI, not yet by SEVIRI (ExtWork)
 ! 2017/06/21, OS: added spectral response correction flag, which defaults to
@@ -309,11 +309,24 @@
 !                 instead of IMPF (as previous). The new driver file option
 !                 USE_GSICS enables this to be disabled.
 ! 2018/10/08, SP: Add support for the GOES-Imager series of sensors (G12-15)
-! 2019/8/14, SP: Add Fengyun-4A support.
+! 2019/08/14, SP: Add Fengyun-4A support.
 ! 2020/03/02, ATP: Add support for AHI subsetting.
+! 2021/03/10, AP: Remove command line arguments.
+! 2021/03/14, AP: Move setup selection into a dedicated routine.
 !
 ! Bugs:
 ! See http://proj.badc.rl.ac.uk/orac/report/1
+! 
+! 
+! 
+! NOTES:
+! The nwp_flag option allows the user to set what type of NWP data to use.
+! There are five options for this flag:
+! 0: NOAA GFS data in a single GRIB file.
+! 1: ECMWF Operational or ERA5 data as a single netCDF4 file
+! 2: ECMWF ERA5 data in JASMIN format (GRIB, one file per variable)
+! 3: DWD format (unknown details)
+! 4: ERA-Interim in JASMIN format, three files.
 !-------------------------------------------------------------------------------
 
 #ifndef WRAPPER
@@ -367,7 +380,7 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
    character(len=path_length)       :: output_path
    character(len=cmd_arg_length)    :: cstartx, cendx, cstarty, cendy
    character(len=path_length)       :: aatsr_calib_path_file
-   character(len=cmd_arg_length)    :: cecmwf_flag
+   character(len=cmd_arg_length)    :: cnwp_flag
    character(len=cmd_arg_length)    :: cchunkproc
    character(len=cmd_arg_length)    :: cday_night
    character(len=cmd_arg_length)    :: cverbose
@@ -377,7 +390,7 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
 
    type(global_attributes_t)        :: global_atts
    type(source_attributes_t)        :: source_atts
-   integer                          :: ecmwf_flag
+   integer                          :: nwp_flag
    logical                          :: chunkproc
    logical                          :: verbose
    logical                          :: assume_full_paths
@@ -417,8 +430,6 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
    type(USGS_t)                     :: usgs
 
    type(ecmwf_t)                    :: ecmwf, ecmwf1, ecmwf2
-   type(ecmwf_t)                    :: ecmwf_HR, ecmwf_HR1, ecmwf_HR2
-   logical                          :: low_res = .true., high_res = .false.
 
    type(surface_t)                  :: surface
 
@@ -455,35 +466,34 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
 
    ! Set defaults for optional arguments/fields
    nullify(preproc_opts%channel_ids)
-   preproc_opts%n_channels                = 0
-   preproc_opts%use_hr_ecmwf              = .true.
-   preproc_opts%ecmwf_time_int_method     = 2
-   preproc_opts%use_ecmwf_snow_and_ice    = .true.
-   preproc_opts%use_modis_emis_in_rttov   = .false.
-   preproc_opts%ecmwf_path(2)             = ' '
-   preproc_opts%ecmwf_path2(2)            = ' '
-   preproc_opts%ecmwf_path3(2)            = ' '
-   preproc_opts%ecmwf_path_hr(1)          = ' '
-   preproc_opts%ecmwf_path_hr(2)          = ' '
-   preproc_opts%ecmwf_nlevels             = 0
-   preproc_opts%use_l1_land_mask          = .false.
-   preproc_opts%use_occci                 = .false.
-   preproc_opts%occci_path                = ' '
-   preproc_opts%use_predef_lsm            = .false.
-   preproc_opts%ext_lsm_path              = ' '
-   preproc_opts%use_predef_geo            = .false.
-   preproc_opts%ext_geo_path              = ' '
-   preproc_opts%disable_snow_ice_corr     = .false.
-   preproc_opts%do_cloud_emis             = .false.
-   preproc_opts%do_ironly                 = .false.
-   preproc_opts%do_cloud_type             = .true.
-   preproc_opts%product_name              = 'L2-CLOUD-CLD'
-   do_spectral_response_correction        = .false.
-   preproc_opts%use_camel_emis            = .false.
-   preproc_opts%do_gsics                  = .true.
-   preproc_opts%do_co2                    = .true.
-   preproc_opts%use_swansea_climatology   = .false.
-   preproc_opts%swansea_gamma             = 0.3
+   preproc_opts%n_channels               = 0
+   preproc_opts%ecmwf_time_int_method    = 2
+   preproc_opts%use_ecmwf_snow_and_ice   = .true.
+   preproc_opts%use_modis_emis_in_rttov  = .false.
+   preproc_opts%nwp_fnames%nwp_path(2)   = ' '
+   preproc_opts%nwp_fnames%nwp_path2(2)  = ' '
+   preproc_opts%nwp_fnames%nwp_path3(2)  = ' '
+   preproc_opts%nwp_nlevels              = 0
+   preproc_opts%nwp_time_factor          = 6.
+   preproc_opts%use_l1_land_mask         = .false.
+   preproc_opts%use_occci                = .false.
+   preproc_opts%occci_path               = ' '
+   preproc_opts%use_predef_lsm           = .false.
+   preproc_opts%ext_lsm_path             = ' '
+   preproc_opts%use_predef_geo           = .false.
+   preproc_opts%ext_geo_path             = ' '
+   preproc_opts%disable_snow_ice_corr    = .false.
+   preproc_opts%do_cloud_emis            = .false.
+   preproc_opts%do_ironly                = .false.
+   preproc_opts%do_cloud_type            = .true.
+   preproc_opts%product_name             = 'L2-CLOUD-CLD'
+   do_spectral_response_correction       = .false.
+   preproc_opts%use_camel_emis           = .false.
+   preproc_opts%do_gsics                 = .true.
+   preproc_opts%do_nasa                  = .false.
+   preproc_opts%do_co2                   = .true.
+   preproc_opts%use_swansea_climatology  = .false.
+   preproc_opts%swansea_gamma            = 0.3
 
    ! Initialise satellite position string
    global_atts%Satpos_Metadata = 'null'
@@ -503,53 +513,53 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
    open(11, file=trim(adjustl(driver_path_file)), status='old', &
         form='formatted')
 
-   call parse_required(11, granule%sensor,              'sensor')
-   call parse_required(11, granule%l1b_file,            'l1b_path_file')
-   call parse_required(11, granule%geo_file,            'geo_path_file')
-   call parse_required(11, usgs_path_file,              'usgs_path_file')
-   call parse_required(11, preproc_opts%ecmwf_path(1),  'ecmwf_path')
-   call parse_required(11, rttov_coef_path,             'rttov_coef_path')
-   call parse_required(11, rttov_emiss_path,            'rttov_emiss_path')
-   call parse_required(11, nise_ice_snow_path,          'nise_ice_snow_path')
-   call parse_required(11, modis_albedo_path,           'modis_albedo_path')
-   call parse_required(11, modis_brdf_path,             'modis_brdf_path')
-   call parse_required(11, cimss_emiss_path,            'cimss_emiss_path')
-   call parse_required(11, cdellon,                     'cdellon')
-   call parse_required(11, cdellat,                     'cdellat')
-   call parse_required(11, output_path,                 'output_path')
-   call parse_required(11, cstartx,                     'cstartx')
-   call parse_required(11, cendx,                       'cendx')
-   call parse_required(11, cstarty,                     'cstarty')
-   call parse_required(11, cendy,                       'cendy')
-   call parse_required(11, global_atts%NetCDF_Version,  'NetCDF_Version')
-   call parse_required(11, global_atts%Conventions,     'Conventions')
-   call parse_required(11, global_atts%Institution,     'Institution')
-   call parse_required(11, global_atts%L2_Processor,    'L2_Processor')
-   call parse_required(11, global_atts%Creator_Email,   'Creator_Email')
-   call parse_required(11, global_atts%Creator_URL,     'Creator_URL')
-   call parse_required(11, global_atts%file_version,    'file_version')
-   call parse_required(11, global_atts%References,      'References')
-   call parse_required(11, global_atts%History,         'History')
-   call parse_required(11, global_atts%Summary,         'Summary')
-   call parse_required(11, global_atts%Keywords,        'Keywords')
-   call parse_required(11, global_atts%Comment,         'Comment')
-   call parse_required(11, global_atts%Project,         'Project')
-   call parse_required(11, global_atts%License,         'License')
-   call parse_required(11, global_atts%UUID,            'UUID')
-   call parse_required(11, global_atts%Production_Time, 'Production_Time')
-   call parse_required(11, aatsr_calib_path_file,       'aatsr_calib_path_file')
-   call parse_required(11, cecmwf_flag,                 'cecmwf_flag')
-   call parse_required(11, preproc_opts%ecmwf_path2(1), 'ecmwf_path2')
-   call parse_required(11, preproc_opts%ecmwf_path3(1), 'ecmwf_path3')
-   call parse_required(11, cchunkproc,                  'cchunkproc')
-   call parse_required(11, cday_night,                  'cday_night')
-   call parse_required(11, cverbose,                    'cverbose')
-   call parse_required(11, cdummy_arg,                  'cdummy_arg')
-   call parse_required(11, cassume_full_paths,          'cassume_full_paths')
-   call parse_required(11, cinclude_full_brdf,          'cinclude_full_brdf')
-   call parse_required(11, global_atts%RTTOV_Version,   'RTTOV_Version')
-   call parse_required(11, global_atts%ECMWF_Version,   'ECMWF_Version')
-   call parse_required(11, global_atts%SVN_Version,     'SVN_Version')
+   call parse_required(11, granule%sensor,                       'sensor')
+   call parse_required(11, granule%l1b_file,                     'l1b_path_file')
+   call parse_required(11, granule%geo_file,                     'geo_path_file')
+   call parse_required(11, usgs_path_file,                       'usgs_path_file')
+   call parse_required(11, preproc_opts%nwp_fnames%nwp_path(1),  'nwp_path')
+   call parse_required(11, rttov_coef_path,                      'rttov_coef_path')
+   call parse_required(11, rttov_emiss_path,                     'rttov_emiss_path')
+   call parse_required(11, nise_ice_snow_path,                   'nise_ice_snow_path')
+   call parse_required(11, modis_albedo_path,                    'modis_albedo_path')
+   call parse_required(11, modis_brdf_path,                      'modis_brdf_path')
+   call parse_required(11, cimss_emiss_path,                     'cimss_emiss_path')
+   call parse_required(11, cdellon,                              'cdellon')
+   call parse_required(11, cdellat,                              'cdellat')
+   call parse_required(11, output_path,                          'output_path')
+   call parse_required(11, cstartx,                              'cstartx')
+   call parse_required(11, cendx,                                'cendx')
+   call parse_required(11, cstarty,                              'cstarty')
+   call parse_required(11, cendy,                                'cendy')
+   call parse_required(11, global_atts%NetCDF_Version,           'NetCDF_Version')
+   call parse_required(11, global_atts%Conventions,              'Conventions')
+   call parse_required(11, global_atts%Institution,              'Institution')
+   call parse_required(11, global_atts%L2_Processor,             'L2_Processor')
+   call parse_required(11, global_atts%Creator_Email,            'Creator_Email')
+   call parse_required(11, global_atts%Creator_URL,              'Creator_URL')
+   call parse_required(11, global_atts%file_version,             'file_version')
+   call parse_required(11, global_atts%References,               'References')
+   call parse_required(11, global_atts%History,                  'History')
+   call parse_required(11, global_atts%Summary,                  'Summary')
+   call parse_required(11, global_atts%Keywords,                 'Keywords')
+   call parse_required(11, global_atts%Comment,                  'Comment')
+   call parse_required(11, global_atts%Project,                  'Project')
+   call parse_required(11, global_atts%License,                  'License')
+   call parse_required(11, global_atts%UUID,                     'UUID')
+   call parse_required(11, global_atts%Production_Time,          'Production_Time')
+   call parse_required(11, aatsr_calib_path_file,                'aatsr_calib_path_file')
+   call parse_required(11, cnwp_flag,                            'cnwp_flag')
+   call parse_required(11, preproc_opts%nwp_fnames%nwp_path2(1), 'nwp_path2')
+   call parse_required(11, preproc_opts%nwp_fnames%nwp_path3(1), 'nwp_path3')
+   call parse_required(11, cchunkproc,                           'cchunkproc')
+   call parse_required(11, cday_night,                           'cday_night')
+   call parse_required(11, cverbose,                             'cverbose')
+   call parse_required(11, cdummy_arg,                           'cdummy_arg')
+   call parse_required(11, cassume_full_paths,                   'cassume_full_paths')
+   call parse_required(11, cinclude_full_brdf,                   'cinclude_full_brdf')
+   call parse_required(11, global_atts%RTTOV_Version,            'RTTOV_Version')
+   call parse_required(11, global_atts%ECMWF_Version,            'ECMWF_Version')
+   call parse_required(11, global_atts%SVN_Version,              'SVN_Version')
 
    do while (parse_driver(11, value, label) == 0)
       call clean_driver_label(label)
@@ -577,8 +587,8 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
       call handle_parse_error('endy')
    if (parse_string(cday_night, granule%day_night)   /= 0) &
       call handle_parse_error('day_night')
-   if (parse_string(cecmwf_flag, ecmwf_flag) /= 0) &
-      call handle_parse_error('ecmwf_flag')
+   if (parse_string(cnwp_flag, nwp_flag) /= 0) &
+      call handle_parse_error('nwp_flag')
 
    ! Still use the old parse_logical() here at supports 0 and 1
    if (parse_logical(cchunkproc, chunkproc) /= 0) &
@@ -604,9 +614,12 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
    ! If we're using an external land-sea file, place that into USGS filename var
    if (preproc_opts%use_predef_lsm) usgs_path_file = preproc_opts%ext_lsm_path
 
-   if (preproc_opts%ecmwf_path(2) .eq. '')  preproc_opts%ecmwf_path(2) =  preproc_opts%ecmwf_path(1)
-   if (preproc_opts%ecmwf_path2(2) .eq. '') preproc_opts%ecmwf_path2(2) = preproc_opts%ecmwf_path2(1)
-   if (preproc_opts%ecmwf_path3(2) .eq. '') preproc_opts%ecmwf_path3(2) = preproc_opts%ecmwf_path3(1)
+   if (preproc_opts%nwp_fnames%nwp_path(2) .eq. '') &
+      preproc_opts%nwp_fnames%nwp_path(2) =  preproc_opts%nwp_fnames%nwp_path(1)
+   if (preproc_opts%nwp_fnames%nwp_path2(2) .eq. '') &
+      preproc_opts%nwp_fnames%nwp_path2(2) = preproc_opts%nwp_fnames%nwp_path2(1)
+   if (preproc_opts%nwp_fnames%nwp_path3(2) .eq. '') &
+      preproc_opts%nwp_fnames%nwp_path3(2) = preproc_opts%nwp_fnames%nwp_path3(1)
 
    ! get the NetCDF version
    global_atts%netcdf_version = nf90_inq_libvers()
@@ -812,7 +825,7 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
 #ifdef WRAPPER
       ! do not process this orbit if no valid lat/lon data available
       mask =  imager_geolocation%latitude.gt.sreal_fill_value .and. &
-           imager_geolocation%longitude.gt.sreal_fill_value
+              imager_geolocation%longitude.gt.sreal_fill_value
       if (.not. any(mask)) then
          write(*,*) "any mask: ", any(mask)
          write(*,*) "maxval lat/lon:", maxval(imager_geolocation%latitude), &
@@ -827,56 +840,37 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
       ! ancillary input...
       if (verbose) write(*,*) 'Carry out any preparatory steps'
       call preparation(out_paths, granule, preproc_opts, global_atts, &
-           source_atts%level1b_orbit_number, ecmwf_flag, imager_geolocation, &
+           source_atts%level1b_orbit_number, nwp_flag, imager_geolocation, &
            imager_time, i_chunk, ecmwf_time_int_fac, assume_full_paths, verbose)
 
       ! read ECMWF fields and grid information
       if (verbose) then
          write(*,*) 'Start reading meteorological data file'
-         write(*,*) 'ecmwf_flag: ', ecmwf_flag
-         write(*,*) 'ecmwf_path_file: ', trim(preproc_opts%ecmwf_path_file(1))
-         write(*,*) 'ecmwf_HR_path_file: ', trim(preproc_opts%ecmwf_HR_path_file(1))
-         if (ecmwf_flag.gt.0.and.ecmwf_flag.lt.4) then
-            write(*,*) 'ecmwf_path_file2: ', trim(preproc_opts%ecmwf_path_file2(1))
-            write(*,*) 'ecmwf_path_file3: ', trim(preproc_opts%ecmwf_path_file3(1))
+         write(*,*) 'nwp_flag: ', nwp_flag
+         write(*,*) 'nwp_path_file: ', trim(preproc_opts%nwp_fnames%nwp_path_file(1))
+         if (nwp_flag.gt.0.and.nwp_flag.lt.4) then
+            write(*,*) 'nwp_path_file2: ', trim(preproc_opts%nwp_fnames%nwp_path_file2(1))
+            write(*,*) 'nwp_path_file3: ', trim(preproc_opts%nwp_fnames%nwp_path_file3(1))
          end if
       end if
 
       ! NOAA GFS has limited (pressure) levels and no HR, so set these.
-      if (ecmwf_flag .gt. 5 .and. ecmwf_flag .le. 8) preproc_opts%ecmwf_nlevels = 31
-      if (ecmwf_flag .gt. 5 .and. ecmwf_flag .le. 8) preproc_opts%use_hr_ecmwf = .false.
+      if (nwp_flag .eq. 0) preproc_opts%nwp_nlevels = 31
 
       ! read surface wind fields and ECMWF dimensions
       if (preproc_opts%ecmwf_time_int_method .ne. 2) then
-         call read_ecmwf_wind(ecmwf_flag, preproc_opts%ecmwf_path_file(1), &
-              preproc_opts%ecmwf_HR_path_file(1), preproc_opts%ecmwf_path_file2(1), preproc_opts%ecmwf_path_file3(1), &
-              ecmwf, ecmwf_HR, preproc_opts%use_hr_ecmwf, preproc_opts%ecmwf_nlevels, verbose)
+         call read_ecmwf_wind(nwp_flag, preproc_opts%nwp_fnames, 1, ecmwf, preproc_opts%nwp_nlevels, verbose)
       else
-         call read_ecmwf_wind(ecmwf_flag, preproc_opts%ecmwf_path_file(1), &
-              preproc_opts%ecmwf_HR_path_file(1), preproc_opts%ecmwf_path_file2(1), preproc_opts%ecmwf_path_file3(1), &
-              ecmwf1, ecmwf_HR1, preproc_opts%use_hr_ecmwf, preproc_opts%ecmwf_nlevels, verbose)
-         call read_ecmwf_wind(ecmwf_flag, preproc_opts%ecmwf_path_file(2), &
-              preproc_opts%ecmwf_HR_path_file(2), preproc_opts%ecmwf_path_file2(2), preproc_opts%ecmwf_path_file3(2), &
-              ecmwf2, ecmwf_HR2, preproc_opts%use_hr_ecmwf, preproc_opts%ecmwf_nlevels, verbose)
+         call read_ecmwf_wind(nwp_flag, preproc_opts%nwp_fnames, 1, ecmwf1, preproc_opts%nwp_nlevels, verbose)
+         call read_ecmwf_wind(nwp_flag, preproc_opts%nwp_fnames, 2, ecmwf2, preproc_opts%nwp_nlevels, verbose)
 
-         call dup_ecmwf_allocation(ecmwf1, ecmwf, low_res)
-         if (preproc_opts%use_hr_ecmwf) then
-            call dup_ecmwf_allocation(ecmwf_HR1, ecmwf_HR, high_res)
-         end if
+         call dup_ecmwf_allocation(ecmwf1, ecmwf)
 
          call linearly_combine_ecmwfs(1.-ecmwf_time_int_fac, &
-              ecmwf_time_int_fac, ecmwf1, ecmwf2, ecmwf, low_res)
-         if (preproc_opts%use_hr_ecmwf) then
-            call linearly_combine_ecmwfs(1.-ecmwf_time_int_fac, &
-                 ecmwf_time_int_fac, ecmwf_HR1, ecmwf_HR2, ecmwf_HR, high_res)
-         end if
+              ecmwf_time_int_fac, ecmwf1, ecmwf2, ecmwf)
 
-         call deallocate_ecmwf_structures(ecmwf1, low_res)
-         call deallocate_ecmwf_structures(ecmwf2, low_res)
-         if (preproc_opts%use_hr_ecmwf) then
-            call deallocate_ecmwf_structures(ecmwf_HR1, high_res)
-            call deallocate_ecmwf_structures(ecmwf_HR2, high_res)
-         end if
+         call deallocate_ecmwf_structures(ecmwf1)
+         call deallocate_ecmwf_structures(ecmwf2)
       end if
 
       ! define preprocessing grid from user grid spacing and satellite limits
@@ -898,18 +892,15 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
       ! read ecmwf era interim file
       if (verbose) write(*,*) 'Read and interpolate NWP / Reanalysis data.'
       if (preproc_opts%ecmwf_time_int_method .ne. 2) then
-         call read_ecmwf(ecmwf_flag, preproc_opts%ecmwf_path_file(1), preproc_opts%ecmwf_path_file2(1), &
-              preproc_opts%ecmwf_path_file3(1), ecmwf, preproc_dims, preproc_geoloc, &
+         call read_ecmwf(nwp_flag, preproc_opts%nwp_fnames, 1, ecmwf, preproc_dims, preproc_geoloc, &
               preproc_prtm, verbose)
       else
          call allocate_preproc_prtm(preproc_dims, preproc_prtm1)
-         call read_ecmwf(ecmwf_flag, preproc_opts%ecmwf_path_file(1), preproc_opts%ecmwf_path_file2(1), &
-              preproc_opts%ecmwf_path_file3(1), ecmwf, preproc_dims, preproc_geoloc, &
+         call read_ecmwf(nwp_flag, preproc_opts%nwp_fnames, 1, ecmwf, preproc_dims, preproc_geoloc, &
               preproc_prtm1, verbose)
 
          call allocate_preproc_prtm(preproc_dims, preproc_prtm2)
-         call read_ecmwf(ecmwf_flag, preproc_opts%ecmwf_path_file(2), preproc_opts%ecmwf_path_file2(2), &
-              preproc_opts%ecmwf_path_file3(2), ecmwf, preproc_dims, preproc_geoloc, &
+         call read_ecmwf(nwp_flag, preproc_opts%nwp_fnames, 2, ecmwf, preproc_dims, preproc_geoloc, &
               preproc_prtm2, verbose)
 
          call linearly_combine_prtms(1.-ecmwf_time_int_fac, ecmwf_time_int_fac, &
@@ -922,7 +913,7 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
       if (verbose) write(*,*) 'Compute geopotential vertical coords'
       ! compute geopotential vertical coordinate from pressure coordinate
       ! First check that we're not processing a GFS file
-      if (ecmwf_flag .le. 5 .or. ecmwf_flag .gt. 8) call &
+      if (nwp_flag .le. 5 .or. nwp_flag .gt. 8) call &
          compute_geopot_coordinate(preproc_prtm, preproc_dims, ecmwf)
 
       ! read USGS physiography file, including land use and DEM data
@@ -967,7 +958,7 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
                     channel_info, assume_full_paths, include_full_brdf, &
                     source_atts, verbose)
             else
-               call correct_for_ice_snow_ecmwf(preproc_opts%ecmwf_HR_path_file(1), &
+               call correct_for_ice_snow_nwp(preproc_opts%nwp_fnames%nwp_path_file(1), &
                     imager_geolocation, channel_info, imager_flags, preproc_dims, &
                     preproc_prtm, surface, include_full_brdf, source_atts, &
                     verbose)
@@ -988,17 +979,10 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
          if (verbose) write(*,*) 'Calculate Pavolonis cloud phase with high '// &
               'resolution ERA surface data'
          if (preproc_opts%do_cloud_type) then
-            if (.not. preproc_opts%use_hr_ecmwf) then
-               call cloud_type(channel_info, granule%sensor, surface, imager_flags, &
-                    imager_angles, imager_geolocation, imager_measurements, &
-                    imager_pavolonis, ecmwf, granule%platform, granule%doy, preproc_opts%do_ironly, &
-                    do_spectral_response_correction, verbose)
-            else
-               call cloud_type(channel_info, granule%sensor, surface, imager_flags, &
-                    imager_angles, imager_geolocation, imager_measurements, &
-                    imager_pavolonis, ecmwf_HR, granule%platform, granule%doy, preproc_opts%do_ironly, &
-                    do_spectral_response_correction, verbose)
-            end if
+           call cloud_type(channel_info, granule%sensor, surface, imager_flags, &
+                imager_angles, imager_geolocation, imager_measurements, &
+                imager_pavolonis, ecmwf, granule%platform, granule%doy, preproc_opts%do_ironly, &
+                do_spectral_response_correction, verbose)
          end if
       end if
 
@@ -1048,9 +1032,9 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
                   imager_pavolonis%cldmask(:,:,1) = 0
                   imager_pavolonis%cldmask(:,:,2) = 0
                end where
-               write(*,*) 'Total clouds after correction: ', &
+               if (verbose) write(*,*) 'Total clouds after correction: ', &
                     count(imager_pavolonis%cldmask(:,:,1) .gt. 0), &
-                    count(imager_pavolonis%cldmask(:,:,1) .gt. 0)
+                    count(imager_pavolonis%cldmask(:,:,2) .gt. 0)
                deallocate(tot_cldmask_uncertainty)
             end if
          end if
@@ -1062,12 +1046,12 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
 
       call netcdf_output_create(output_path, out_paths, granule, global_atts, &
            source_atts, preproc_dims, imager_angles, imager_geolocation, &
-           netcdf_info, channel_info, include_full_brdf, ecmwf_flag, &
+           netcdf_info, channel_info, include_full_brdf, nwp_flag, &
            preproc_opts%do_cloud_emis, verbose)
 
       ! perform RTTOV calculations
       if (verbose) write(*,*) 'Perform RTTOV calculations'
-      if (ecmwf_flag .gt. 5 .and. ecmwf_flag .le. 8) then
+      if (nwp_flag .gt. 5 .and. nwp_flag .le. 8) then
          call rttov_driver_gfs(rttov_coef_path, rttov_emiss_path, granule, &
               preproc_dims, preproc_geoloc, preproc_geo, preproc_prtm, &
               preproc_surf, preproc_cld, netcdf_info, channel_info, &
@@ -1141,7 +1125,7 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
             call netcdf_output_create(output_path, out_paths, granule, &
                  global_atts, source_atts, preproc_dims, imager_angles, &
                  imager_geolocation, netcdf_info, channel_info, &
-                 include_full_brdf, ecmwf_flag, preproc_opts%do_cloud_emis, &
+                 include_full_brdf, nwp_flag, preproc_opts%do_cloud_emis, &
                  verbose)
 
          end if
@@ -1165,10 +1149,7 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
 
       ! deallocate the array parts of the structures
       if (verbose) write(*,*) 'Deallocate chunk specific structures'
-      call deallocate_ecmwf_structures(ecmwf, low_res)
-      if (preproc_opts%use_hr_ecmwf) then
-         call deallocate_ecmwf_structures(ecmwf_HR, high_res)
-      end if
+      call deallocate_ecmwf_structures(ecmwf)
       call deallocate_preproc_structures(preproc_dims, preproc_geoloc, &
            preproc_geo, preproc_prtm, preproc_surf, preproc_cld)
       call deallocate_imager_structures(imager_geolocation, imager_angles, &

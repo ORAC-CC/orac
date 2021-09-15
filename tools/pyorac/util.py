@@ -191,9 +191,10 @@ def read_orac_library_file(filename):
     continuation = False
     with open(filename, 'r') as fhandle:
         for raw_line in fhandle:
-            if raw_line.startswith("#") or len(raw_line) < 2:
+            strip_line = raw_line.strip()
+            if strip_line.startswith("#") or len(strip_line) < 2:
                 # Skip comment and empty lines
-                if not raw_line.startswith("#"):
+                if not strip_line.startswith("#"):
                     continuation = False
                 continue
 

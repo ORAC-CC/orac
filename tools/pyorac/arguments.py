@@ -118,18 +118,12 @@ def args_preproc(parser):
                      help='Revision (version) number for file.')
 
     ecmwf = parser.add_argument_group('ECMWF settings')
-    ecmwf.add_argument('--ecmwf_flag', type=int, choices=range(9),
-                       default=defaults.ECMWF_FLAG,
+    ecmwf.add_argument('--nwp_flag', type=int, choices=range(9),
+                       default=defaults.NWP_FLAG,
                        help='Type of ECMWF data to read in.')
     ecmwf.add_argument('--single_ecmwf', action='store_const',
                        default=2, const=0,
                        help='Do not interpolate ECMWF data.')
-    ecmwf.add_argument('--skip_ecmwf_hr', action='store_true',
-                       help='Ignore high resolution ECMWF files.')
-    ecmwf.add_argument('--ecmwf_nlevels', type=int, nargs='?',
-                       choices=(60, 91, 137), default=60,
-                       help='Number of levels in the ECMWF file used. '
-                            'Default 50.')
     ice = ecmwf.add_mutually_exclusive_group()
     ice.add_argument('--use_ecmwf_snow', action='store_true',
                      help='Use ECMWF snow/ice fields rather than NISE.')

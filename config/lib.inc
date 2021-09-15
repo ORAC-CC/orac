@@ -67,8 +67,8 @@ LIBS = -L$(EMOSLIB) -lemosR64 -lemos -lfftw3 \
        -L$(HDFLIB) -lmfhdf -ldf \
        -L$(NCDF_FORTRAN_LIB) -lnetcdff \
        -L$(NCDFLIB) -lnetcdf \
-       -L$(RTTOVLIB) -lrttov12_coef_io -lrttov12_emis_atlas -lrttov12_hdf \
-                     -lrttov12_parallel -lrttov12_main -lrttov12_other \
+       -L$(RTTOVLIB) -lrttov13_coef_io -lrttov13_emis_atlas -lrttov13_hdf \
+                     -lrttov13_parallel -lrttov13_main -lrttov13_other \
        -L$(HDF5LIB) -lhdf5 -lhdf5_fortran -lhdf5_hl -lhdf5hl_fortran \
        -L$(SZLIB) -lsz \
        -ljpeg -lm -lz -lstdc++ -lblas -llapack

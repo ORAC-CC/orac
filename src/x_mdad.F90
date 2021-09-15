@@ -144,7 +144,7 @@ subroutine X_MDAD(Ctrl, SPixel, index, X, status, Err)
 
    case (ITau, ITau2) ! Cloud optical depth, Tau
 
-      if (SPixel%Illum(1) == IDay .and. i_spixel_06_solar > 0) then
+      if (SPixel%Illum == IDay .and. i_spixel_06_solar > 0) then
          ! Calculate overcast reflectance (assuming fully cloudy pixel).
          ! Uses channel nearest 0.67 microns, index Ctrl%Ind%MDAD_SW.
          Ref_o = SPixel%Ym(i_spixel_06) - SPixel%Surface%Rs(i_spixel_06_solar)

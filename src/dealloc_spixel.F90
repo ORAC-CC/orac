@@ -116,7 +116,6 @@ subroutine Dealloc_SPixel(Ctrl, SPixel)
 
    ! Super-pixel active and inactive state vectors, measurements and errors.
 
-   deallocate(SPixel%illum)
    deallocate(SPixel%Ym)
    deallocate(SPixel%Sy)
    deallocate(SPixel%ViewIdx)

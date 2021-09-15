@@ -55,7 +55,7 @@ class OracTime(object):
 
     def __getitem__(self, slic):
         """Converts an ORAC time into a datetime object."""
-        from cf_units import julian_day2date
+        from cftime import datetime
 
         orac_time = self._time[slic]
 
@@ -66,11 +66,7 @@ class OracTime(object):
         # Some versions of ORAC buggered up the time calculation
         time = orac_time / 2. if orac_time > 4e6 else orac_time
 
-        # Work-around a bug in cf_units
-        try:
-            return julian_day2date(time, "standard")
-        except ValueError:
-            return julian_day2date(time + 1e-6, "standard")
+        return datetime.fromordinal(time, "standard")
 
 
 class Flux(Mappable):
@@ -387,8 +383,7 @@ class Swath(Mappable):
             try:
                 for out, ch in zip(self._rs, self.ch):
                     rho = self["rho_DD_in_channel_no_{}".format(ch)]
-                    out.mask[~rho.mask] = False
-                    out[~rho.mask] = rho.compressed()
+                    out[~np.ma.getmaskarray(rho)] = rho.compressed()
             except BaseException as err:
                 if "not present" not in err.args[0]:
                     raise
@@ -398,9 +393,8 @@ class Swath(Mappable):
                 sg = 0.3
                 for out, ch in zip(self._rs, self.ch):
                     data_in = self["swansea_s_in_channel_no_{}".format(ch)]
-                    out.mask[~data_in.mask] = False
                     ss = data_in.compressed()
-                    out[~data_in.mask] = sg * ss / (1.0 - (1.0 - sg) * ss)
+                    out[~np.ma.getmaskarray(data_in)] = sg * ss / (1.0 - (1.0 - sg) * ss)
             except BaseException as err:
                 if "not present" not in err.args[0]:
                     raise
@@ -631,7 +625,7 @@ class MergedSwath(Swath):
                 self.try_open_file(this_file, "col")
                 self.indices = self.nc_files["col"]["aerosol_10km_index"][...]
 
-            elif "bugsrad" in this_file:
+            elif "bugsrad" in this_file or "RAD_PRODUCTS" in this_file:
                 self.try_open_file(this_file, "flx")
 
             elif "AEROSOL-AER" in this_file:

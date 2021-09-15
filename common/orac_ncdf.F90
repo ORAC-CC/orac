@@ -195,6 +195,7 @@ end subroutine ncdf_close
 !
 ! History:
 ! 2014/08/06, AP: Original version
+! 2020/09/24, AP: Now returns 0 for non-existent dimensions.
 !
 ! Bugs:
 ! None known.
