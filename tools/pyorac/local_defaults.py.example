@@ -52,19 +52,13 @@ except KeyError
 SAD_DIRS = ['/local/storage/orac_luts', ]
 
 # Indicates the format of meteorological data used. The values are:
-# 0. A single ERA Interim GRIB file, as would be downloaded directly from ECMWF.
-#    https://apps.ecmwf.int/datasets/data/interim-full-daily/levtype=sfc/
-# 1. Three ERA Interim NCDF files, preprocessed by RAL from the JASMIN repo.
-# 2. Three ERA Interim files (1 NCDF, 2 GRIB) as found on JASMIN
-#    /badc/ecmwf-era-interim/data.
-# 3. A single ERA Interim NCDF file, preprocessed by RAL from an ECMWF download.
-# 4. A single operational ECMWF NCDF file.
-# 5. A single ERA5 NCDF file.
-# 6. A single GFS4 forecast file.
-# 7. A single GFS reanalysis GRIB file.
-# 8. A single GFS reanalysis NCDF file.
+# 0. NOAA GFS data in a single GRIB file.
+# 1. ECMWF Operational or ERA5 data as a single netCDF4 file
+# 2. ECMWF ERA5 data in JASMIN format (GRIB, one file per variable)
+# 3. DWD format (unknown details)
+# 4. ERA-Interim in JASMIN format, three files (1 NCDF, 2 GRIB).
 # This will be driven by the data you have access to but we recommend ERA5.
-ECMWF_FLAG = 5
+NWP_FLAG = 2
 
 # The remaining paths are gathered in a dictionary. They can be changed for a
 # single script call using the --aux/-x keyword, with default values here.
@@ -93,23 +87,14 @@ AUXILIARIES = {
     'mcd43c1_dir': '/local/storage/modis/mcd43cX/%Y',
     'mcd43c3_dir': '/local/storage/modis/mcd43cX/%Y',
 
-    # To use ECMWF data from the BADC/CEMS archive (ecmwf_flag == 2), specify
+    # To use ECMWF data from the BADC/CEMS archive (ecmwf_flag == 4), specify
     # where each of the three types of file are stored
-    'ggam_dir': '/local/storage/ecmwf/era_interim/%Y/%m/%d',
-    'ggas_dir': '/local/storage/ecmwf/era_interim/%Y/%m/%d',
-    'spam_dir': '/local/storage/ecmwf/era_interim/%Y/%m/%d',
+    #'ggam_dir': '/local/storage/ecmwf/era_interim/%Y/%m/%d',
+    #'ggas_dir': '/local/storage/ecmwf/era_interim/%Y/%m/%d',
+    #'spam_dir': '/local/storage/ecmwf/era_interim/%Y/%m/%d',
 
-    # To use a single ECMWF file (ecmwf_flag == 0), specify their location
-    #'ecmwf_dir': '/local/storage/ecmwf/era_interim/%Y/%m/%d',
     # To use ERA5 (ecmwf_flag == 5), specify
     'ecmwf_dir': '/local/storage/era5/%Y/%m/%d',
-
-    # Directory of high-resolution ECMWF files. During Cloud CCI, 0.72deg
-    # reanalyses were used and found to produce unrealistic results at coasts
-    # and lake edges. Using a 0.36deg analysis for the wind speeds was found
-    # to improve this, so two files would be read in. This feature is
-    # unneccesary for any other meteorological input (e.g. ERA5 or GFS).
-    'hr_dir': '/local/storage/ecmwf/era_hr',
 
     # Directory to store the EMOS interpolation file. LibEmos will put a file,
     # CF_T0255_R0036000, in your home directory unless the environment variable
