@@ -81,18 +81,18 @@ def build_preproc_driver(args):
 
     # Select ECMWF files
     bounds = _bound_time(args.File.time + args.File.dur // 2)
-    if args.ecmwf_flag == 0:
+    if args.nwp_flag == 0:
         ecmwf_nlevels = 91
-        raise NotImplementedError('Filename syntax for --ecmwf_flag 0 unknown')
-    elif args.ecmwf_flag == 4:
+        raise NotImplementedError('Filename syntax for --nwp_flag 0 unknown')
+    elif args.nwp_flag == 4:
         ecmwf_nlevels = 60
         ggam = _form_bound_filenames(bounds, args.ggam_dir, 'ggam%Y%m%d%H%M.grb')
         ggas = _form_bound_filenames(bounds, args.ggas_dir, 'ggas%Y%m%d%H%M.nc')
         spam = _form_bound_filenames(bounds, args.spam_dir, 'spam%Y%m%d%H%M.grb')
-    elif args.ecmwf_flag == 3:
+    elif args.nwp_flag == 3:
         ecmwf_nlevels = 60
-        raise NotImplementedError('Filename syntax for --ecmwf_flag 3 unknown')
-    elif args.ecmwf_flag == 1:
+        raise NotImplementedError('Filename syntax for --nwp_flag 3 unknown')
+    elif args.nwp_flag == 1:
         ecmwf_nlevels = 137
         for form, ec_hour in (('C3D*%m%d%H*.nc', 3),
                               ('ECMWF_OPER_%Y%m%d_%H+00.nc', 6),
@@ -110,14 +110,14 @@ def build_preproc_driver(args):
 
         ggas = ["", ""]
         spam = ["", ""]
-    elif args.ecmwf_flag == 2:
+    elif args.nwp_flag == 2:
         ecmwf_nlevels = 137
         # Interpolation is done in the code
         ggam = [args.ggam_dir, args.ggam_dir]
         ggas = ["", ""]
         spam = ["", ""]
     else:
-        raise BadValue('ecmwf_flag', args.ecmwf_flag)
+        raise BadValue('nwp_flag', args.nwp_flag)
 
     if args.use_oc:
         for oc_version in (4.2, 4.1, 4.0, 3.1, 3.0, 2.0, 1.0):
@@ -169,7 +169,7 @@ def build_preproc_driver(args):
                         'LD_LIBRARY_PATH=' + os.environ["LD_LIBRARY_PATH"])
 
     # Fetch ECMWF version from header of NCDF file
-    if 3 <= args.ecmwf_flag <= 4:
+    if 3 <= args.nwp_flag <= 4:
         try:
             ecmwf_check_file = ggam[0] if ggam[0].endswith('nc') else ggas[0]
             tmp1 = check_output([ncdf_exe, "-h", ecmwf_check_file],
@@ -183,7 +183,7 @@ def build_preproc_driver(args):
             ecmwf_version = 'n/a'
             warnings.warn('Header of ECMWF file may have changed.', OracWarning,
                           stacklevel=2)
-    elif args.ecmwf_flag == 2:
+    elif args.nwp_flag == 2:
         ecmwf_version = 'ERA5'
     else:
         # TODO: Fetch version information from GFS files
@@ -260,7 +260,7 @@ def build_preproc_driver(args):
 {uid}
 {production_time}
 {args.calib_file}
-{args.ecmwf_flag}
+{args.nwp_flag}
 {ggas[0]}
 {spam[0]}
 {chunk_flag}
