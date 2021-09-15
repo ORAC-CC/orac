@@ -1032,9 +1032,9 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
                   imager_pavolonis%cldmask(:,:,1) = 0
                   imager_pavolonis%cldmask(:,:,2) = 0
                end where
-               write(*,*) 'Total clouds after correction: ', &
+               if (verbose) write(*,*) 'Total clouds after correction: ', &
                     count(imager_pavolonis%cldmask(:,:,1) .gt. 0), &
-                    count(imager_pavolonis%cldmask(:,:,1) .gt. 0)
+                    count(imager_pavolonis%cldmask(:,:,2) .gt. 0)
                deallocate(tot_cldmask_uncertainty)
             end if
          end if
