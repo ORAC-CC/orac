@@ -80,6 +80,8 @@
 ! 2017/07/08, GM: Much needed tidying.
 ! 2017/12/20, GT: Changed Sentinel-3 platform name to Sentinel3a or Sentinel3b
 ! 2019/8/14, SP: Add Fengyun-4A support.
+! 2021/1/21, DP: Added spectral response correction for MSG1/MSG2/MSG3/MSG4
+!                SEVIRI and Sentinal-3A/Sentinel-3B SLSTR.
 !
 ! Bugs:
 ! None known.
@@ -412,7 +414,9 @@ subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
    if (trim(adjustl(sensor)) .eq. 'AATSR' .or. &
        trim(adjustl(sensor)) .eq. 'ATSR2' .or. &
        trim(adjustl(sensor)) .eq. 'AVHRR' .or. &
-       trim(adjustl(sensor)) .eq. 'MODIS') &
+       trim(adjustl(sensor)) .eq. 'MODIS' .or. &
+       trim(adjustl(sensor)) .eq. 'SEVIRI' .or. &
+       trim(adjustl(sensor)) .eq. 'SLSTR') &
       do_spectral_response_correction = .true.
 
    if (do_spectral_response_correction) then
@@ -2146,9 +2150,21 @@ function get_platform_index(input_platform)
       index = 21
    case ("Envisat")
       index = 22
+   case ("MSG1")
+      index = 23
+   case ("MSG2")
+      index = 24
+   case ("MSG3")
+      index = 25
+   case ("MSG4")
+      index = 26
+   case ("Sentinel3a")
+      index = 27
+   case ("Sentinel3b")
+      index = 28
    case ("default")
-      ! 14 = NOAA18, the baseline, for which slopes = 1 and intercepts = 0
-      index = 14
+      ! 15 = NOAA19, the baseline, for which slopes = 1 and intercepts = 0
+      index = 15
    case default
       write(*,*) "Error: platform name does not match local string in subroutine scale_to_N18"
       write(*,*) "Input platform name = ", input_platform
