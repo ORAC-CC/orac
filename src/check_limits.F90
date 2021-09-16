@@ -66,8 +66,10 @@ subroutine Check_Limits(Ctrl, X, SPixel, status)
    do i = 1, SPixel%Nx
       if (X(SPixel%X(i)) > SPixel%XULim(SPixel%X(i))) then
           X(SPixel%X(i)) = SPixel%XULim(SPixel%X(i))
+          status = LimitHitUpper
        else if (X(SPixel%X(i)) < SPixel%XLLim(SPixel%X(i))) then
           X(SPixel%X(i)) = SPixel%XLLim(SPixel%X(i))
+          status = LimitHitLower
        end if
    end do
 
@@ -84,6 +86,7 @@ subroutine Check_Limits(Ctrl, X, SPixel, status)
                   P_mid = (X(IPc) + X(IPc2)) / 2.
                   X(IPc)  = P_mid - Ctrl%Invpar%Pc_dmz / 2.
                   X(IPc2) = P_mid + Ctrl%Invpar%Pc_dmz / 2.
+                  status = LimitHitClose
                end if
                exit L1
             end if

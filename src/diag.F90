@@ -38,6 +38,7 @@ module Diag_m
                                     ! - bits 1 to SPixel%Nx: set to 1 if
                                     !   parameter's estimated retrieval
                                     !   uncertainty too large
+      integer       :: LimitHit     ! Has the retrieval ever hit a limit?
       integer       :: Iterations   ! Number of iterations taken by inversion
                                     ! scheme to reach convergence
       real          :: Jm           ! Cost at solution due to measurements
