@@ -257,7 +257,7 @@ subroutine read_slstr_visdata(indir, inband, outarr, imager_angles, sx, sy, &
    call ncdf_close(fid, 'read_slstr_visdata()')
 
    ! Resample the data to the TIR grid size.
-   call slstr_resample_vis_to_tir(data1, outarr(offset:offset+nx-1,:), &
+   call slstr_resample_vis_to_tir(data1, outarr(offset+1:offset+nx,:), &
         nx, ny, sreal_fill_value)
 
    ! Convert from radiances to reflectances
