@@ -300,9 +300,9 @@ subroutine make_ecmwf_name(cyear, cmonth, cday, chour, nwp_flag, nwp_fnames, idx
     select case (nwp_flag)
     case(0)
     ! NOAA GFS
-        nwp_fnames%nwp_path_file(idx_2) = trim(adjustl(nwp_path))//'/gfs_4_'// &
-           trim(adjustl(cyear))//trim(adjustl(cmonth))// &
-           trim(adjustl(cday))//'_'//trim(adjustl(chour))//'00_000.grb2'
+        nwp_fnames%nwp_path_file(idx_2) = trim(adjustl(nwp_path))//'/gfs.t'// &
+           trim(adjustl(cyear))//trim(adjustl(cmonth))//trim(adjustl(cday))// &
+           '_'//trim(adjustl(chour))//'z.pgrb2b.0p25.grib'
     case(1)
     ! ECMWF OPER or ERA5 as single netCDF4 file
         nwp_fnames%nwp_path_file(idx_2) = trim(adjustl(nwp_path))//'/ECMWF_OPER_'// &

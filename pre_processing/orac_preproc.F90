@@ -854,8 +854,8 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
          end if
       end if
 
-      ! NOAA GFS has limited (pressure) levels and no HR, so set these.
-      if (nwp_flag .eq. 0) preproc_opts%nwp_nlevels = 31
+      ! NOAA GFS has limited (pressure) levels, so set these.
+      if (nwp_flag .eq. 0) preproc_opts%nwp_nlevels = 41
 
       ! read surface wind fields and ECMWF dimensions
       if (preproc_opts%ecmwf_time_int_method .ne. 2) then
@@ -864,13 +864,13 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
          call read_ecmwf_wind(nwp_flag, preproc_opts%nwp_fnames, 1, ecmwf1, preproc_opts%nwp_nlevels, verbose)
          call read_ecmwf_wind(nwp_flag, preproc_opts%nwp_fnames, 2, ecmwf2, preproc_opts%nwp_nlevels, verbose)
 
-         call dup_ecmwf_allocation(ecmwf1, ecmwf)
+         call dup_ecmwf_allocation(ecmwf1, ecmwf, nwp_flag)
 
          call linearly_combine_ecmwfs(1.-ecmwf_time_int_fac, &
-              ecmwf_time_int_fac, ecmwf1, ecmwf2, ecmwf)
+              ecmwf_time_int_fac, ecmwf1, ecmwf2, ecmwf, nwp_flag)
 
-         call deallocate_ecmwf_structures(ecmwf1)
-         call deallocate_ecmwf_structures(ecmwf2)
+         call deallocate_ecmwf_structures(ecmwf1, nwp_flag)
+         call deallocate_ecmwf_structures(ecmwf2, nwp_flag)
       end if
 
       ! define preprocessing grid from user grid spacing and satellite limits
@@ -913,7 +913,7 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
       if (verbose) write(*,*) 'Compute geopotential vertical coords'
       ! compute geopotential vertical coordinate from pressure coordinate
       ! First check that we're not processing a GFS file
-      if (nwp_flag .le. 5 .or. nwp_flag .gt. 8) call &
+      if (nwp_flag .gt. 0) call &
          compute_geopot_coordinate(preproc_prtm, preproc_dims, ecmwf)
 
       ! read USGS physiography file, including land use and DEM data
@@ -1051,7 +1051,7 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
 
       ! perform RTTOV calculations
       if (verbose) write(*,*) 'Perform RTTOV calculations'
-      if (nwp_flag .gt. 5 .and. nwp_flag .le. 8) then
+      if (nwp_flag .eq. 0) then
          call rttov_driver_gfs(rttov_coef_path, rttov_emiss_path, granule, &
               preproc_dims, preproc_geoloc, preproc_geo, preproc_prtm, &
               preproc_surf, preproc_cld, netcdf_info, channel_info, &
@@ -1149,7 +1149,7 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
 
       ! deallocate the array parts of the structures
       if (verbose) write(*,*) 'Deallocate chunk specific structures'
-      call deallocate_ecmwf_structures(ecmwf)
+      call deallocate_ecmwf_structures(ecmwf, nwp_flag)
       call deallocate_preproc_structures(preproc_dims, preproc_geoloc, &
            preproc_geo, preproc_prtm, preproc_surf, preproc_cld)
       call deallocate_imager_structures(imager_geolocation, imager_angles, &

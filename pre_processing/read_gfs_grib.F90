@@ -89,11 +89,11 @@ subroutine read_gfs_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
    real(sreal), dimension(:),   allocatable :: val
    real(sreal), dimension(:,:), pointer     :: array
 
-   integer(lint),dimension(31)              :: gfs_levlist
-
-
-   gfs_levlist = (/1,2,3,5,7,10,20,30,50,70,100,150,200,250,300,350, &
-                   400,450,500,550,600,650,700,750,800,850,900,925,950,975,1000/)
+   integer(lint),dimension(33)              :: gfs_levlist
+                   
+   gfs_levlist = (/1,2,3,5,7,10,15,20,30,40,50,70,100,150,200,250,&
+                   300,350,400, 450, 500, 550, 600, 650, 700, 750,&
+                   800, 850, 900, 925, 950, 975, 1000/)
 
    ! Initialise level count, needed for GFS files
    tlev=1
@@ -395,11 +395,11 @@ subroutine sort_gfs_levels(preproc_prtm,verbose)
             pl(nl) = pl(stoplev) + interp * (pl(stoplev+1)-pl(stoplev))
 
             ! Move all other data down, so profile is by surface
-            p(nl-stoplev:nl) = p(1:stoplev)
-            t(nl-stoplev:nl) = t(1:stoplev)
-            q(nl-stoplev:nl) = q(1:stoplev)
-            o(nl-stoplev:nl) = o(1:stoplev)
-            pl(nl-stoplev:nl) = pl(1:stoplev)
+            p(nl-stoplev:nl) = p(1:stoplev + 1)
+            t(nl-stoplev:nl) = t(1:stoplev + 1)
+            q(nl-stoplev:nl) = q(1:stoplev + 1)
+            o(nl-stoplev:nl) = o(1:stoplev + 1)
+            pl(nl-stoplev:nl) = pl(1:stoplev + 1)
 
             ! Fill upper levels with repeating data from final valid layer
             do l=nl-stoplev-1,1,-1

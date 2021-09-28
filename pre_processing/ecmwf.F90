@@ -40,7 +40,6 @@ contains
 #include "read_ecmwf_wind_badc.F90"
 #include "read_ecmwf_nc.F90"
 #include "read_ecmwf_grib.F90"
-#include "read_gfs_nc.F90"
 #include "read_gfs_grib.F90"
 #include "rearrange_ecmwf.F90"
 
@@ -283,12 +282,13 @@ subroutine ecmwf_wind_init(ecmwf)
 end subroutine ecmwf_wind_init
 
 
-subroutine dup_ecmwf_allocation(ecmwf, ecmwf2)
+subroutine dup_ecmwf_allocation(ecmwf, ecmwf2, nwp_flag)
 
    implicit none
 
    type(ecmwf_t), intent(in)  :: ecmwf
    type(ecmwf_t), intent(inout) :: ecmwf2
+   integer, intent(in) :: nwp_flag
 
    ecmwf2%xdim = ecmwf%xdim
    ecmwf2%ydim = ecmwf%ydim
@@ -296,8 +296,10 @@ subroutine dup_ecmwf_allocation(ecmwf, ecmwf2)
 
    allocate(ecmwf2%lon(ecmwf%xdim))
    allocate(ecmwf2%lat(ecmwf%ydim))
-   allocate(ecmwf2%avec(ecmwf%kdim+1))
-   allocate(ecmwf2%bvec(ecmwf%kdim+1))
+   if (nwp_flag .gt. 0) then
+       allocate(ecmwf2%avec(ecmwf%kdim+1))
+       allocate(ecmwf2%bvec(ecmwf%kdim+1))
+   endif
    allocate(ecmwf2%u10(ecmwf%xdim,ecmwf%ydim))
    allocate(ecmwf2%v10(ecmwf%xdim,ecmwf%ydim))
    allocate(ecmwf2%skin_temp(ecmwf%xdim,ecmwf%ydim))
@@ -307,7 +309,7 @@ subroutine dup_ecmwf_allocation(ecmwf, ecmwf2)
 end subroutine dup_ecmwf_allocation
 
 
-subroutine linearly_combine_ecmwfs(a, b, ecmwf1, ecmwf2, ecmwf)
+subroutine linearly_combine_ecmwfs(a, b, ecmwf1, ecmwf2, ecmwf, nwp_flag)
 
    implicit none
 
@@ -316,11 +318,15 @@ subroutine linearly_combine_ecmwfs(a, b, ecmwf1, ecmwf2, ecmwf)
    type(ecmwf_t), intent(in)  :: ecmwf1
    type(ecmwf_t), intent(in)  :: ecmwf2
    type(ecmwf_t), intent(inout) :: ecmwf
-
+   integer, intent(in) :: nwp_flag
+   
    ecmwf%lat  = a * ecmwf1%lat        + b * ecmwf2%lat
    ecmwf%lon  = a * ecmwf1%lon        + b * ecmwf2%lon
-   ecmwf%avec = a * ecmwf1%avec       + b * ecmwf2%avec
-   ecmwf%bvec = a * ecmwf1%bvec       + b * ecmwf2%bvec
+   if (nwp_flag .gt. 0) then
+        ecmwf%avec = a * ecmwf1%avec       + b * ecmwf2%avec
+        ecmwf%bvec = a * ecmwf1%bvec       + b * ecmwf2%bvec
+   endif
+
    ecmwf%u10  = a * ecmwf1%u10        + b * ecmwf2%u10
    ecmwf%v10  = a * ecmwf1%v10        + b * ecmwf2%v10
    ecmwf%skin_temp = a * ecmwf1%skin_temp  + b * ecmwf2%skin_temp

@@ -813,6 +813,27 @@ subroutine rttov_driver(coef_path, emiss_path, granule, preproc_dims, &
                   end if
 
                   calcemis = emissivity%emis_in <= dither
+                  if (idim .eq. 361 .and. jdim .eq. 181) then
+                    print*, "S2p", profiles(count)%s2m%p
+                    print*, "S2t", profiles(count)%s2m%t
+                    print*, "S2u", profiles(count)%s2m%u
+                    print*, "S2v", profiles(count)%s2m%v
+                    print*, "SKIN", profiles(count)%skin%t
+                    print*, "DATE", profiles(count)%date(1), profiles(count)%date(2), profiles(count)%date(3)
+                    print*, "PRES", profiles(count)%p(:)
+                    print*, "TEMP", profiles(count)%t(:)
+                    print*, "RELH", profiles(count)%q(:)
+                    print*, "OZON", profiles(count)%o3(:)
+                    print*, "ELEV", profiles(count)%elevation
+                    print*, "LATI", profiles(count)%longitude
+                    print*, "LONI", profiles(count)%latitude
+                    print*, "SNOD", profiles(count)%skin%snow_fraction
+                    print*, "SATZ", profiles(count)%zenangle
+                    print*, "SATA", profiles(count)%azangle
+                    print*, "SUNZ", profiles(count)%sunzenangle
+                    print*, "SUNA", profiles(count)%sunazangle
+                    
+                  endif
 
                   if (preproc_dims%counter_lw(idim,jdim,cview) .gt. 0) then
                      ! Call RTTOV for this profile

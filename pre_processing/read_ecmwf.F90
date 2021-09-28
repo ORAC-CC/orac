@@ -50,8 +50,8 @@ subroutine read_ecmwf_wind(nwp_flag, nwp_fnames, idx, ecmwf, &
    
    ! Set the number of levels in the input file, defaults to 61
    select case(nwp_nlevels)
-   case(31)
-      ecmwf%kdim = 31
+   case(41)
+      ecmwf%kdim = 33
    case(60)
       ecmwf%kdim = 60
    case(91)

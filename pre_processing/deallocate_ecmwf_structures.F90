@@ -23,18 +23,21 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine deallocate_ecmwf_structures(ecmwf)
+subroutine deallocate_ecmwf_structures(ecmwf, nwp_flag)
 
    use preproc_constants_m
 
    implicit none
 
    type(ecmwf_t), intent(inout) :: ecmwf
+   integer, intent(in) :: nwp_flag
 
    deallocate(ecmwf%lon)
    deallocate(ecmwf%lat)
-   deallocate(ecmwf%avec)
-   deallocate(ecmwf%bvec)
+   if (nwp_flag .ne. 0) then
+       deallocate(ecmwf%avec)
+       deallocate(ecmwf%bvec)
+   endif
    deallocate(ecmwf%u10)
    deallocate(ecmwf%v10)
    deallocate(ecmwf%skin_temp)

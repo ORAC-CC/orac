@@ -340,8 +340,8 @@ subroutine rttov_driver_gfs(coef_path, emiss_path, granule, preproc_dims, &
    ! Initialise options structure (leaving default settings be)
    opts % interpolation % addinterp = .true. ! Interpolate input profile
    ! Removed as occassionally returns negative ozone at 0.005 hPa
-   ! opts % interpolation % reg_limit_extrap = .true. ! Extrapolate to 0.5 Pa
-   opts % config % do_checkinput = .false. ! necessary due to negative
+   opts % interpolation % reg_limit_extrap = .true. ! Extrapolate to 0.5 Pa
+   opts % config % do_checkinput = .true. ! necessary due to negative
    ! extrapolated values; from RTTOV 11 homepage: turns off RTTOV's internal
    ! checking for unphysical profile values and values outside the
    ! regression limits (NB by doing this the extrapolated values outside
@@ -356,7 +356,7 @@ subroutine rttov_driver_gfs(coef_path, emiss_path, granule, preproc_dims, &
    else
       opts % rt_all % co2_data   = .true.  ! Include CO2 profile
    end if
-   opts % config % verbose   = .false. ! Display only fatal error messages
+   opts % config % verbose   = .true. ! Display only fatal error messages
 
    if (verbose) write(*,*) 'Write static information to the output files'
 
