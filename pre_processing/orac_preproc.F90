@@ -316,9 +316,9 @@
 !
 ! Bugs:
 ! See http://proj.badc.rl.ac.uk/orac/report/1
-! 
-! 
-! 
+!
+!
+!
 ! NOTES:
 ! The nwp_flag option allows the user to set what type of NWP data to use.
 ! There are five options for this flag:

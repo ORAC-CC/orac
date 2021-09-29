@@ -55,7 +55,7 @@ subroutine rearrange_ecmwf(ecmwf)
    allocate(u(ecmwf%xdim,ecmwf%ydim))
    u(1:ind,:)  = ecmwf%u10(date:,:)
    u(ind+1:,:) = ecmwf%u10(1:date-1,:)
- 
+
    allocate(v(ecmwf%xdim,ecmwf%ydim))
    v(1:ind,:)  = ecmwf%v10(date:,:)
    v(ind+1:,:) = ecmwf%v10(1:date-1,:)

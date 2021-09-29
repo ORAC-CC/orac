@@ -64,7 +64,7 @@ module preproc_structures_m
    type preproc_geo_t
       real(kind=sreal), dimension(:,:,:), pointer :: solza,solazi,satza,satazi,relazi
    end type preproc_geo_t
-   
+
    ! NWP filenames
    type preproc_nwp_fnames_t
 
@@ -74,7 +74,7 @@ module preproc_structures_m
       character(len=path_length) :: nwp_path_file(2)
       character(len=path_length) :: nwp_path_file2(2)
       character(len=path_length) :: nwp_path_file3(2)
-      
+
       character(len=path_length) :: q_f(2)       ! Specific humidity on model levels
       character(len=path_length) :: t_f(2)       ! Temperature on model levels
       character(len=path_length) :: o3_f(2)      ! Ozone on model levels
