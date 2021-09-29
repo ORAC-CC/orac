@@ -259,8 +259,6 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
    integer                     :: startx, nx
    integer                     :: starty, ny
    integer                     :: x, y
-   integer(c_int)              :: line0, line1
-   integer(c_int)              :: column0, column1
 
 #ifdef __ACC
    real(kind=sreal), dimension(:,:), allocatable :: tlat, tlon

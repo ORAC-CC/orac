@@ -54,18 +54,7 @@ subroutine read_era5_jasmin_nc(nwp_fnames, idx, ecmwf, preproc_dims, preproc_geo
     integer(lint),     external            :: INTIN, INTOUT, INTF
     integer(lint),     parameter           :: BUFFER = 2000000
 
-    integer(lint),            dimension(1) :: intv, old_grib, new_grib
-    real(dreal)                            :: grid(2), area(4)
-    character(len=20),        dimension(1) :: charv
-
-    real(sreal),       pointer             :: array2d(:,:), array3d(:,:,:)
-    integer(4)                             :: n, ni, nj, i, j, k, ivar
-    integer(4)                             :: fid, nvar
-    integer(4)                             :: old_len, new_len
-    character(len=20)                      :: name
-    logical                                :: three_d
     real(sreal)   :: dummy2d(ecmwf%xdim,ecmwf%ydim)
-    real(sreal)   :: dummy3d(ecmwf%xdim,ecmwf%ydim,ecmwf%kdim,1)
     real(sreal)   :: dummy3d_2(ecmwf%xdim,ecmwf%ydim,ecmwf%kdim)
 
     ! open file
@@ -196,7 +185,7 @@ subroutine preproc_3d_var(dummy_in, ecmwf, preproc_dims, preproc_geoloc, out_arr
     real(dreal)                            :: grid(2), area(4)
     real(dreal), allocatable, dimension(:) :: old_data, new_data
 
-    integer(4)                             :: n, ni, nj, i, j, k, ivar
+    integer(4)                             :: n, ni, nj, i, j, k
     integer(4)                             :: old_len, new_len
 
     n = ecmwf%xdim*ecmwf%ydim
@@ -274,7 +263,7 @@ subroutine preproc_2d_var(dummy_in, ecmwf, preproc_dims, preproc_geoloc, out_arr
     real(dreal)                            :: grid(2), area(4)
     real(dreal), allocatable, dimension(:) :: old_data, new_data
 
-    integer(4)                             :: n, ni, nj, i, j, ivar
+    integer(4)                             :: n, ni, nj, i, j
     integer(4)                             :: old_len, new_len
 
     n = ecmwf%xdim*ecmwf%ydim
