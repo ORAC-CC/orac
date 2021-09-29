@@ -323,9 +323,10 @@ def check_args_preproc(args):
 
     try:
         # When using ecmwf_dir to set a single directory
-        args.ggam_dir = args.ecmwf_dir
-        args.ggas_dir = args.ecmwf_dir
-        args.spam_dir = args.ecmwf_dir
+        if os.path.isdir(args.ecmwf_dir):
+            args.ggam_dir = args.ecmwf_dir
+            args.ggas_dir = args.ecmwf_dir
+            args.spam_dir = args.ecmwf_dir
     except AttributeError:
         pass
 
