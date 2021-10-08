@@ -631,6 +631,35 @@ subroutine read_slstr_int_field(indir, file, procgrid, variable, &
 end subroutine read_slstr_int_field
 
 
+subroutine read_slstr_lint_field(indir, file, procgrid, variable, &
+     startx, starty, data_arr)
+
+   use orac_ncdf_m
+   use preproc_constants_m
+
+   implicit none
+
+   character(len=*),   intent(in)  :: indir
+   character(len=*),   intent(in)  :: file
+   character(len=*),   intent(in)  :: procgrid
+   character(len=*),   intent(in)  :: variable
+   integer,            intent(in)  :: startx
+   integer,            intent(in)  :: starty
+   integer(kind=lint), intent(out) :: data_arr(:,:)
+
+   character(len=path_length) :: geofile, var
+   integer                    :: fid
+
+   geofile = trim(indir) // trim(file) // '_' // trim(procgrid) // '.nc'
+   var = trim(variable) // '_' // trim(procgrid)
+
+   call ncdf_open(fid, geofile, 'read_slstr_field()')
+   call ncdf_read_array(fid, var, data_arr, start=[startx, starty])
+   call ncdf_close(fid, 'read_slstr_field()')
+
+end subroutine read_slstr_lint_field
+
+
 ! Reads an arbitrary variable from a specified SLSTR file
 subroutine read_slstr_field(indir, file, procgrid, variable, &
      startx, starty, data_arr)

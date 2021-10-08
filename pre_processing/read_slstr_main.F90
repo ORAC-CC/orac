@@ -129,7 +129,7 @@ subroutine read_slstr(infile, imager_geolocation, imager_measurements, &
    real(kind=sreal), allocatable :: oblons(:,:)
    real(kind=sreal), allocatable :: interp(:,:,:)
 
-   integer(kind=sint)            :: surface_flag(imager_geolocation%nx,imager_geolocation%ny)
+   integer(kind=lint)            :: surface_flag(imager_geolocation%nx,imager_geolocation%ny)
    integer                       :: txnx, txny
    integer                       :: obnx, obny, obl_off
 
@@ -225,7 +225,7 @@ subroutine read_slstr(infile, imager_geolocation, imager_measurements, &
    !   128: spare            32768: summary_pointing
    ! To be consistent with read_modis_time-lat_lon_angles(), we accept
    ! only classes 2 and 16 as sea.
-   call read_slstr_int_field(indir, 'flags', 'in', 'confidence', startx, starty, &
+   call read_slstr_lint_field(indir, 'flags', 'in', 'confidence', startx, starty, &
         surface_flag)
    where (btest(surface_flag, 1) .or. btest(surface_flag, 4))
       imager_flags%lsflag = 0
