@@ -13,7 +13,7 @@
 ! Arguments:
 ! Name       Type   In/Out/Both Description
 ! ------------------------------------------------------------------------------
-! ecmwf_path string in   Full path to a ECMWF NCDF file to read.
+! nwp_path string in   Full path to a ECMWF NCDF file to read.
 ! ecmwf2path string in   "
 ! ecmwf3path string in   "
 ! ecmwf      struct both Structure summarising contents of ECMWF files.
@@ -36,20 +36,20 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine read_ecmwf_wind_nc(ecmwf, ecmwf_path, ecmwf_flag, ecmwf2path, ecmwf3path)
+subroutine read_ecmwf_wind_nc(ecmwf, nwp_path, nwp_flag, ecmwf2path, ecmwf3path)
 
    use preproc_constants_m
 
    implicit none
 
    type(ecmwf_t),    intent(inout)        :: ecmwf
-   character(len=*), intent(in)           :: ecmwf_path
-   integer,          intent(in)           :: ecmwf_flag
+   character(len=*), intent(in)           :: nwp_path
+   integer,          intent(in)           :: nwp_flag
    character(len=*), intent(in), optional :: ecmwf2path
    character(len=*), intent(in), optional :: ecmwf3path
 
    call ecmwf_wind_init(ecmwf)
-   if (ecmwf_flag .le. 5 .or. ecmwf_flag .gt. 8) then
+   if (nwp_flag .le. 5 .or. nwp_flag .gt. 8) then
       call ecmwf_abvec_init(ecmwf)
    else
       allocate(ecmwf%avec(ecmwf%kdim))
@@ -57,7 +57,7 @@ subroutine read_ecmwf_wind_nc(ecmwf, ecmwf_path, ecmwf_flag, ecmwf2path, ecmwf3p
    end if
 
    ! loop over given files (order not necessarily known)
-   call read_ecmwf_wind_nc_file(ecmwf_path, ecmwf)
+   call read_ecmwf_wind_nc_file(nwp_path, ecmwf)
    if (present(ecmwf2path)) call read_ecmwf_wind_nc_file(ecmwf2path, ecmwf)
    if (present(ecmwf3path)) call read_ecmwf_wind_nc_file(ecmwf3path, ecmwf)
 
@@ -82,7 +82,7 @@ end subroutine read_ecmwf_wind_nc
 ! Arguments:
 ! Name       Type   In/Out/Both Description
 ! ------------------------------------------------------------------------------
-! ecmwf_path string in   Full path to a ECMWF NCDF file to read.
+! nwp_path string in   Full path to a ECMWF NCDF file to read.
 ! ecmwf      struct both Structure summarising contents of ECMWF files.
 !
 ! History:
@@ -95,14 +95,14 @@ end subroutine read_ecmwf_wind_nc
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine read_ecmwf_wind_nc_file(ecmwf_path, ecmwf)
+subroutine read_ecmwf_wind_nc_file(nwp_path, ecmwf)
 
    use orac_ncdf_m
    use preproc_constants_m
 
    implicit none
 
-   character(len=*), intent(in)    :: ecmwf_path
+   character(len=*), intent(in)    :: nwp_path
    type(ecmwf_t),    intent(inout) :: ecmwf
 
    real, allocatable               :: val(:,:,:,:)
@@ -110,7 +110,7 @@ subroutine read_ecmwf_wind_nc_file(ecmwf_path, ecmwf)
    character(len=var_length)       :: name
 
    ! open file
-   call ncdf_open(fid, ecmwf_path, 'read_ecmwf_wind_nc_file()')
+   call ncdf_open(fid, nwp_path, 'read_ecmwf_wind_nc_file()')
 
    ! check field dimensions for consistency
    if (nf90_inquire(fid, ndim, nvar) .ne. 0) &
@@ -161,7 +161,7 @@ subroutine read_ecmwf_wind_nc_file(ecmwf_path, ecmwf)
             allocate(ecmwf%lat(ecmwf%ydim))
             call ncdf_read_array(fid, name, ecmwf%lat)
          end if
-      case('U10', 'U10M')
+      case('U10', 'u10')
          if (.not.associated(ecmwf%u10)) then
             allocate(ecmwf%u10(ecmwf%xdim,ecmwf%ydim))
             allocate(val(ecmwf%xdim,ecmwf%ydim,1,1))
@@ -169,7 +169,7 @@ subroutine read_ecmwf_wind_nc_file(ecmwf_path, ecmwf)
             ecmwf%u10 = val(:,:,1,1)
             deallocate(val)
          end if
-      case('V10', 'V10M')
+      case('V10', 'v10')
          if (.not.associated(ecmwf%v10)) then
             allocate(ecmwf%v10(ecmwf%xdim,ecmwf%ydim))
             allocate(val(ecmwf%xdim,ecmwf%ydim,1,1))
@@ -177,7 +177,7 @@ subroutine read_ecmwf_wind_nc_file(ecmwf_path, ecmwf)
             ecmwf%v10 = val(:,:,1,1)
             deallocate(val)
          end if
-      case('SKT')
+      case('SKT', 'skt')
          if (.not.associated(ecmwf%skin_temp)) then
             allocate(ecmwf%skin_temp(ecmwf%xdim,ecmwf%ydim))
             allocate(val(ecmwf%xdim,ecmwf%ydim,1,1))
@@ -193,7 +193,7 @@ subroutine read_ecmwf_wind_nc_file(ecmwf_path, ecmwf)
             ecmwf%snow_depth = val(:,:,1,1)
             deallocate(val)
          end if
-      case('CI', 'ci')
+      case('CI', 'ci', 'siconc')
          if (.not.associated(ecmwf%sea_ice_cover)) then
             allocate(ecmwf%sea_ice_cover(ecmwf%xdim,ecmwf%ydim))
             allocate(val(ecmwf%xdim,ecmwf%ydim,1,1))

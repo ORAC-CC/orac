@@ -8,9 +8,9 @@
 !    module produced interfaces.
 ! 2015/09/14, GM: Move handle_parse_error() to trunk/common/parsing.F90.
 ! 2015/10/19, GM: Add use_modis_emis_in_rttov to parse_optional().
-! 2015/11/26, GM: Add ecmwf_time_int_method, ecmwf_path_file, ecmwf_path_file2,
-!    and ecmwf_path_file3 to parse_optional().
-! 2016/02/02, CP: Add ecmwf_path_hr.
+! 2015/11/26, GM: Add ecmwf_time_int_method, nwp_path_file, nwp_path_file2,
+!    and nwp_path_file3 to parse_optional().
+! 2016/02/02, CP: Add nwp_path_hr.
 ! 2016/02/02, GM: Add use_hr_ecmwf.
 ! 2016/02/02, GM: Add use_ecmwf_snow_and_ice.
 ! 2016/04/05, SP: Added ECMWF_NLEVELS option to choose between 60,91 and 137
@@ -87,9 +87,6 @@ subroutine parse_optional(label, value, preproc_opts)
       end if
       if (parse_string(value, preproc_opts%channel_ids) /= 0) &
          call handle_parse_error(label)
-   case('USE_HR_ECMWF')
-      if (parse_string(value, preproc_opts%use_hr_ecmwf) /= 0) &
-         call handle_parse_error(label)
    case('ECMWF_TIME_INT_METHOD')
       if (parse_string(value, preproc_opts%ecmwf_time_int_method) /= 0) &
          call handle_parse_error(label)
@@ -100,22 +97,16 @@ subroutine parse_optional(label, value, preproc_opts)
       if (parse_string(value, preproc_opts%use_modis_emis_in_rttov) /= 0) &
          call handle_parse_error(label)
    case('ECMWF_PATH_2')
-      if (parse_string(value, preproc_opts%ecmwf_path(2)) /= 0) &
+      if (parse_string(value, preproc_opts%nwp_fnames%nwp_path(2)) /= 0) &
          call handle_parse_error(label)
    case('ECMWF_PATH2_2')
-      if (parse_string(value, preproc_opts%ecmwf_path2(2)) /= 0) &
+      if (parse_string(value, preproc_opts%nwp_fnames%nwp_path2(2)) /= 0) &
          call handle_parse_error(label)
    case('ECMWF_PATH3_2')
-      if (parse_string(value, preproc_opts%ecmwf_path3(2)) /= 0) &
-         call handle_parse_error(label)
-   case('ECMWF_PATH_HR')
-      if (parse_string(value, preproc_opts%ecmwf_path_hr(1)) /= 0) &
-         call handle_parse_error(label)
-   case('ECMWF_PATH_HR_2')
-      if (parse_string(value, preproc_opts%ecmwf_path_hr(2)) /= 0) &
+      if (parse_string(value, preproc_opts%nwp_fnames%nwp_path3(2)) /= 0) &
          call handle_parse_error(label)
    case('ECMWF_NLEVELS')
-      if (parse_string(value, preproc_opts%ecmwf_nlevels) /= 0) &
+      if (parse_string(value, preproc_opts%nwp_nlevels) /= 0) &
          call handle_parse_error(label)
    case('USE_L1_LAND_MASK')
       if (parse_string(value, preproc_opts%use_l1_land_mask) /= 0) &
@@ -125,6 +116,9 @@ subroutine parse_optional(label, value, preproc_opts)
            call handle_parse_error(label)
    case('OCCCI_PATH')
       if (parse_string(value, preproc_opts%occci_path) /= 0) &
+           call handle_parse_error(label)
+   case('NWP_TIME_FACTOR')
+      if (parse_string(value, preproc_opts%nwp_time_factor) /= 0) &
            call handle_parse_error(label)
    case('USE_PREDEF_LSM')
       if (parse_string(value, preproc_opts%use_predef_lsm) /= 0) &
@@ -158,6 +152,9 @@ subroutine parse_optional(label, value, preproc_opts)
            call handle_parse_error(label)
    case('USE_GSICS')
       if (parse_string(value, preproc_opts%do_gsics) /= 0) &
+           call handle_parse_error(label)
+   case('USE_NASA_SEVCALIB')
+      if (parse_string(value, preproc_opts%do_nasa) /= 0) &
            call handle_parse_error(label)
    case('USE_CO2')
       if (parse_string(value, preproc_opts%do_co2) /= 0) &

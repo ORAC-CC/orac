@@ -17,12 +17,12 @@ dependencies:
  - fu_liou
  - hdf4
  - hdfeos2
- - hdf5 * openmpi_*
- - libnetcdf * openmpi_*
- - netcdf-fortran * openmpi_*
+ - hdf5 * mpi_openmpi_*
+ - libnetcdf * mpi_openmpi_*
+ - netcdf-fortran * mpi_openmpi_*
  - eccodes
  - seviri_util
- - hsd_reader * openmpi_*
+ - hsd_reader * mpi_openmpi_*
  - libemos
  - rttov<=12.2
  - numpy

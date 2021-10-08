@@ -52,7 +52,7 @@ def build_preproc_driver(args):
                                 'SW_SFC_PRMS_%m.nc', 'years')
         brdf = None
     else:
-        for ver in (6, 5):
+        for ver in (61, 6, 5):
             try:
                 alb = _date_back_search(args.mcd43c3_dir, args.File.time,
                                         f'MCD43C3.A%Y%j.{ver:03d}.*.hdf', 'days')
@@ -81,20 +81,19 @@ def build_preproc_driver(args):
 
     # Select ECMWF files
     bounds = _bound_time(args.File.time + args.File.dur // 2)
-    if args.ecmwf_flag == 0:
-        ggam = _form_bound_filenames(bounds, args.ggam_dir,
-                                     'ERA_Interim_an_%Y%m%d_%H+00.nc')
-    elif args.ecmwf_flag == 1:
-        ggam = _form_bound_filenames(bounds, args.ggam_dir, 'ggam%Y%m%d%H%M.nc')
-        ggas = _form_bound_filenames(bounds, args.ggas_dir, 'ggas%Y%m%d%H%M.nc')
-        spam = _form_bound_filenames(bounds, args.spam_dir, 'gpam%Y%m%d%H%M.nc')
-    elif args.ecmwf_flag == 2:
+    if args.nwp_flag == 0:
+        ecmwf_nlevels = 91
+        raise NotImplementedError('Filename syntax for --nwp_flag 0 unknown')
+    elif args.nwp_flag == 4:
+        ecmwf_nlevels = 60
         ggam = _form_bound_filenames(bounds, args.ggam_dir, 'ggam%Y%m%d%H%M.grb')
         ggas = _form_bound_filenames(bounds, args.ggas_dir, 'ggas%Y%m%d%H%M.nc')
         spam = _form_bound_filenames(bounds, args.spam_dir, 'spam%Y%m%d%H%M.grb')
-    elif args.ecmwf_flag == 3:
-        raise NotImplementedError('Filename syntax for --ecmwf_flag 3 unknown')
-    elif 4 <= args.ecmwf_flag <= 5:
+    elif args.nwp_flag == 3:
+        ecmwf_nlevels = 60
+        raise NotImplementedError('Filename syntax for --nwp_flag 3 unknown')
+    elif args.nwp_flag == 1:
+        ecmwf_nlevels = 137
         for form, ec_hour in (('C3D*%m%d%H*.nc', 3),
                               ('ECMWF_OPER_%Y%m%d_%H+00.nc', 6),
                               ('ECMWF_ERA5_%Y%m%d_%H_0.5.nc', 6),
@@ -109,33 +108,16 @@ def build_preproc_driver(args):
         else:
             raise err
 
-        ggas = ggam
-        spam = ggam
+        ggas = ["", ""]
+        spam = ["", ""]
+    elif args.nwp_flag == 2:
+        ecmwf_nlevels = 137
+        # Interpolation is done in the code
+        ggam = [args.ggam_dir, args.ggam_dir]
+        ggas = ["", ""]
+        spam = ["", ""]
     else:
-        raise BadValue('ecmwf_flag', args.ecmwf_flag)
-
-    if not args.skip_ecmwf_hr:
-        # hr_ecmwf = _form_bound_filenames(bounds, args.hr_dir,
-        #                                 'ERA_Interim_an_%Y%m%d_%H+00_HR.grb')
-        # These files don't zero-pad the hour for some reason
-        bounds = _bound_time(args.File.time + args.File.dur // 2, 6)
-        hr_ecmwf = [
-            time.strftime(
-                os.path.join(args.hr_dir, 'ERA_Interim_an_%Y%m%d_') +
-                '{:d}+00_HR.grb'.format(time.hour * 100)
-            ) for time in bounds
-        ]
-        if not os.path.isfile(hr_ecmwf[0]):
-            hr_ecmwf = [
-                time.strftime(
-                    os.path.join(args.hr_dir, 'ERA_Interim_an_%Y%m%d_') +
-                    '{:d}+00_HR.grb'.format(time.hour * 100)
-                ) for time in bounds]
-        for filename in hr_ecmwf:
-            if not os.path.isfile(filename):
-                raise FileMissing('HR ECMWF', filename)
-    else:
-        hr_ecmwf = ['', '']
+        raise BadValue('nwp_flag', args.nwp_flag)
 
     if args.use_oc:
         for oc_version in (4.2, 4.1, 4.0, 3.1, 3.0, 2.0, 1.0):
@@ -187,7 +169,7 @@ def build_preproc_driver(args):
                         'LD_LIBRARY_PATH=' + os.environ["LD_LIBRARY_PATH"])
 
     # Fetch ECMWF version from header of NCDF file
-    if 0 <= args.ecmwf_flag <= 3:
+    if 3 <= args.nwp_flag <= 4:
         try:
             ecmwf_check_file = ggam[0] if ggam[0].endswith('nc') else ggas[0]
             tmp1 = check_output([ncdf_exe, "-h", ecmwf_check_file],
@@ -201,7 +183,7 @@ def build_preproc_driver(args):
             ecmwf_version = 'n/a'
             warnings.warn('Header of ECMWF file may have changed.', OracWarning,
                           stacklevel=2)
-    elif 4 <= args.ecmwf_flag <= 5:
+    elif args.nwp_flag == 2:
         ecmwf_version = 'ERA5'
     else:
         # TODO: Fetch version information from GFS files
@@ -239,7 +221,6 @@ def build_preproc_driver(args):
     assume_full_paths = True  # We pass absolute paths
     cldtype = not args.skip_cloud_type
     include_full_brdf = not args.lambertian
-    use_ecmwf_hr = not args.skip_ecmwf_hr
 
     # ------------------------------------------------------------------------
 
@@ -279,7 +260,7 @@ def build_preproc_driver(args):
 {uid}
 {production_time}
 {args.calib_file}
-{args.ecmwf_flag}
+{args.nwp_flag}
 {ggas[0]}
 {spam[0]}
 {chunk_flag}
@@ -295,12 +276,9 @@ ECMWF_TIME_INT_METHOD={args.single_ecmwf}
 ECMWF_PATH_2={ggam[1]}
 ECMWF_PATH2_2={ggas[1]}
 ECMWF_PATH3_2={spam[1]}
-USE_HR_ECMWF={use_ecmwf_hr}
-ECMWF_PATH_HR={hr_ecmwf[0]}
-ECMWF_PATH_HR_2={hr_ecmwf[1]}
 USE_ECMWF_SNOW_AND_ICE={args.use_ecmwf_snow}
 USE_MODIS_EMIS_IN_RTTOV={args.use_modis_emis}
-ECMWF_NLEVELS={args.ecmwf_nlevels}
+ECMWF_NLEVELS={ecmwf_nlevels}
 USE_L1_LAND_MASK={args.l1_land_mask}
 USE_OCCCI={args.use_oc}
 OCCCI_PATH={occci}

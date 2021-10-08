@@ -63,9 +63,9 @@ subroutine sun_pos_calc(year, day, hour, lat, lon, el, az)
    real :: delta, leap, jd, time
    real :: mnlon, mnanom, eclon, oblqec, num, den, ra
    real :: gmst, lmst, latrad
-   
+
    real, parameter :: SMALL = 1.E-18
-   
+
 
 
    data twopi,pi,rad/6.2831853,3.1415927,.017453293/
@@ -130,7 +130,7 @@ subroutine sun_pos_calc(year, day, hour, lat, lon, el, az)
 
    el = 90 - el/rad
    az = az/rad
-  
+
    if (az .lt. 0) then
       az = 360. + az
    endif

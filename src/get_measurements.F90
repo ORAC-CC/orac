@@ -191,7 +191,7 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
          end if
 
          ! Daylight
-         if (SPixel%Illum(1) .ne. INight .and. SPixel%Illum(1) .ne. ITwi) then
+         if (SPixel%Illum .ne. INight .and. SPixel%Illum .ne. ITwi) then
             if (SAD_Chan(ii)%Solar%Flag /= 0) then
                if (SAD_Chan(ii)%Thermal%Flag /= 0) then
                   ! Both solar and thermal => mixed
@@ -228,7 +228,7 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
          ii = SPixel%spixel_y_to_ctrl_y_index(i)
 
          ! Daylight
-         if (SPixel%Illum(1) == IDay) then
+         if (SPixel%Illum == IDay) then
             if (SAD_Chan(ii)%Solar%Flag /= 0) then
                if (SAD_Chan(ii)%Thermal%Flag /= 0) then
                   ! both solar and thermal => mixed

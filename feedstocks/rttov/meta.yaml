@@ -1,5 +1,5 @@
 {% set version = "13.0" %}
-{% set build = 0 %}
+{% set build = 1 %}
 
 {% set mpi = mpi or 'nompi' %}
 
@@ -65,7 +65,6 @@ requirements:
 test:
   requires:
     - perl
-  source_files: rttov_test
   script_env:
     - RTTOV_FILES
 

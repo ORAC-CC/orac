@@ -165,6 +165,7 @@ fi
 export OMP_NUM_THREADS=$omp_threads
 """,
     {'duration': '--time={}:00'.format,
+     'estimated': '--time-min={};00'.format,
      'email': '--mail-user={}'.format,
      'err_file': '--error={}'.format,
      'job_name': '--job-name={}'.format,
@@ -174,5 +175,8 @@ export OMP_NUM_THREADS=$omp_threads
      'queue': '--partition={}'.format,
      'ram': '--mem={}M'.format,
      'exclude': '--exclude={}'.format,
-     }
+     'project': '--comment={}'.format,
+     'account': '--account={}'.format,
+     'environ': '--export={}'.format,
+    }
 )

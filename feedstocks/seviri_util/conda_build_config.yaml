@@ -24,6 +24,8 @@ jpeg:
   - 9
 libnetcdf:
   - 4.7.4
+libtiff:
+  - 4.1.0
 mpi:
   - nompi
   - openmpi
