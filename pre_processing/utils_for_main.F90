@@ -165,8 +165,8 @@ subroutine parse_optional(label, value, preproc_opts)
    case('SWANSEA_GAMMA')
       if (parse_string(value, preproc_opts%swansea_gamma) /= 0) &
            call handle_parse_error(label)
-   case('SLSTR_ALIGNMENT')
-      if (parse_string(value, preproc_opts%slstr_alignment) /= 0) &
+   case('CALCULATE_SLSTR_ALIGNMENT')
+      if (parse_string(value, preproc_opts%calculate_slstr_alignment) /= 0) &
            call handle_parse_error(label)
    case default
       write(*,*) 'ERROR: Unknown option: ', trim(label)

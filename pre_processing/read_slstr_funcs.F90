@@ -317,7 +317,7 @@ subroutine slstr_resample_vis_to_tir(inarr, outarr, nx, ny, fill)
 
 end subroutine slstr_resample_vis_to_tir
 
-subroutine slstr_get_alignment(indir, startx, endx, given_alignment, &
+subroutine slstr_get_alignment(indir, startx, endx, calculate_alignment, &
      sx_nad, sx_obl, ex_nad, ex_obl)
 
    use preproc_constants_m
@@ -327,7 +327,7 @@ subroutine slstr_get_alignment(indir, startx, endx, given_alignment, &
    character(len=*), intent(in)  :: indir
    integer,          intent(in)  :: startx
    integer,          intent(in)  :: endx
-   integer,          intent(in)  :: given_alignment
+   logical,          intent(in)  :: calculate_alignment
    integer,          intent(out) :: sx_nad
    integer,          intent(out) :: sx_obl
    integer,          intent(out) :: ex_nad
@@ -338,15 +338,13 @@ subroutine slstr_get_alignment(indir, startx, endx, given_alignment, &
    real(kind=sreal), allocatable :: ndlons(:,:)
    real(kind=sreal), allocatable :: oblons(:,:)
 
-   integer :: x
+   integer :: x, ndoff, oboff
    real    :: bdiff, total
 
    call get_slstr_gridsize(indir, 'in', nx, ny)
    call get_slstr_gridsize(indir, 'io', obnx, obny)
 
-   if (given_alignment >= 0) then
-      alignment = given_alignment
-   else
+   if (calculate_alignment) then
       ! Determine offset between nadir and oblique grids as the point which
       ! minimises the difference between their full longitude fields.
       allocate(ndlons(nx,ny))
@@ -373,6 +371,10 @@ subroutine slstr_get_alignment(indir, startx, endx, given_alignment, &
       end if
       deallocate(ndlons)
       deallocate(oblons)
+   else
+      call read_slstr_global_attribute(indir, 'geodetic', 'in', 'track_offset', ndoff)
+      call read_slstr_global_attribute(indir, 'geodetic', 'io', 'track_offset', oboff)
+      alignment = ndoff - oboff
    end if
 
    ! Determine start/end of orbit segment in the oblique view
@@ -745,3 +747,33 @@ subroutine read_slstr_field(indir, file, procgrid, variable, &
    call ncdf_close(fid, 'read_slstr_field()')
 
 end subroutine read_slstr_field
+
+
+subroutine read_slstr_global_attribute(indir, file, procgrid, name, val)
+
+   use orac_ncdf_m
+   use preproc_constants_m, only: path_length, error_stop_code
+
+   implicit none
+
+   character(len=*), intent(in)  :: indir
+   character(len=*), intent(in)  :: file
+   character(len=*), intent(in)  :: procgrid
+   character(len=*), intent(in)  :: name
+   integer,          intent(out) :: val
+
+   character(len=path_length) :: geofile
+   integer                    :: fid, ierr
+
+   geofile = trim(indir) // trim(file) // '_' // trim(procgrid) // '.nc'
+
+   call ncdf_open(fid, geofile, 'read_slstr_global_attribute()')
+   ierr = nf90_get_att(fid, NF90_GLOBAL, name, val)
+   if (ierr /= NF90_NOERR) then
+      write(*,*) 'ERROR: read_slstr_global_attribute(), ', &
+           trim(nf90_strerror(ierr)), ', attribute name: ', trim(name)
+      stop error_stop_code
+   end if
+   call ncdf_close(fid, 'read_slstr_global_attribute()')
+
+end subroutine read_slstr_global_attribute
