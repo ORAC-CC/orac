@@ -533,12 +533,62 @@ class ParticleType:
     wvl - Wavelengths used (negative implies the second view)
     sad - SAD file directory to use
     ls  - If true, process land and sea separately
+    mb  - 'm' for monochromatic calculation or 'b' for band calculation
+           weighted by the spectral response function
+    atmospheric_model - code denoting the atmospheric model where
+                         00: cloud, no Rayleigh scattering
+                         01: cloud, includes Rayleigh scattering
+                         1X: aerosol, where X denotes the gaseous model where
+                                1 = Tropical Atmosphere
+                                2 = Midlatitude Summer
+                                3 = Midlatitude Winter
+                                4 = Subarctic Summer
+                                5 = Subarctic Winter
+                                6 = 1976 US Standard
+    microphysical_model - Three digit code to represent particle microphysics.
+                          Backwards compatible with old LUT naming
+                          e.g. a70 for aerosol dust model
+    version - LUT version
     """
 
-    def __init__(self, name, inv=(), sad="CCI_A70-A79"):
+    def __init__(self, name, inv=(),
+                 sad="CCI_A70-A79",
+                 mb='m',
+                 atmospheric_model='01',
+                 microphysical_model='old',
+                 version='06'):
         self.name = name
         self.inv = inv
         self.sad = sad
+        self.mb = mb
+        self.atmospheric_model = atmospheric_model
+        self.microphysical_model = microphysical_model
+        self.version = version
+
+    def sad_filename(self, inst):
+        """Return the filename of the SAD files."""
+        if self.sad == 'netcdf':
+            platform_name = inst.platform.lower()
+            sensor_name = inst.sensor.lower()
+            if sensor_name == 'seviri':
+                if platform_name == 'msg1':
+                    platform_name = 'meteosat-8'
+                if platform_name == 'msg2':
+                    platform_name = 'meteosat-9'
+                if platform_name == 'msg3':
+                    platform_name = 'meteosat-10'
+                if platform_name == 'msg4':
+                    platform_name = 'meteosat-11'
+            file_name = '_'.join((platform_name,
+                                  sensor_name,
+                                  self.mb,
+                                  self.name,
+                                  'a' + self.atmospheric_model,
+                                  'p' + self.microphysical_model,
+                                  'v' + self.version + '.nc'))
+        else:
+            file_name = "_".join((inst.inst, self.name, "RBD", "Ch*.sad"))
+        return file_name
 
     def sad_dir(self, sad_dirs, inst):
         """Return the path to the SAD files."""
@@ -549,11 +599,16 @@ class ParticleType:
             if "AVHRR" in inst.sensor:
                 fdr_name = join(fdr, inst.sensor.lower() + "-" +
                                 inst.noaa + "_" + self.sad)
-            if len(self.name) == 3:
-                file_name = "_".join((inst.inst, self.name, "RBD", "Ch*.sad"))
             else:
-                file_name = "_".join((inst.platform.lower(), inst.sensor.lower(),
-                                      self.name + ".nc"))
+                # Folder structure on JASMIN
+                # fdr_name = join(fdr, inst.sensor.lower() + "_" + self.sad)
+
+                # Folder structure on local
+                fdr_name = join(fdr, inst.sensor.lower() + "/" +
+                                inst.platform.upper() + "/" + self.sad)
+
+            # Determine SAD file name
+            file_name = self.sad_filename(inst)
 
             # SAD files stored in subdirectories
             if glob(join(fdr_name, file_name)):
@@ -570,6 +625,12 @@ class ParticleType:
 SETTINGS = {}
 SETTINGS['WAT'] = ParticleType("WAT", sad="WAT")
 SETTINGS['ICE'] = ParticleType("ICE", sad="ICE_baum")
+
+# Uncomment to use new netcdf LUTs
+SETTINGS['WAT'] = ParticleType("liquid-water", sad='netcdf')
+SETTINGS['ICE'] = ParticleType("water-ice", sad='netcdf',
+                               microphysical_model='agg')
+
 
 tau = Invpar('ITau', ap=-1.0, sx=1.5)
 SETTINGS['A70'] = ParticleType("A70", inv=(tau, Invpar('IRe', ap=0.0856, sx=0.15)))
