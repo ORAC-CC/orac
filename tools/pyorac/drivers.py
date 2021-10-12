@@ -52,7 +52,7 @@ def build_preproc_driver(args):
                                 'SW_SFC_PRMS_%m.nc', 'years')
         brdf = None
     else:
-        for ver in (6, 5):
+        for ver in (61, 6, 5):
             try:
                 alb = _date_back_search(args.mcd43c3_dir, args.File.time,
                                         f'MCD43C3.A%Y%j.{ver:03d}.*.hdf', 'days')
@@ -329,9 +329,9 @@ USE_SWANSEA_CLIMATOLOGY={args.swansea}"""
 
     if args.File.predef and not args.no_predef:
         driver += f"""
-USE_PREDEF_LSM=True
+USE_PREDEF_LSM=False
 EXT_LSM_PATH={args.prelsm_file}
-USE_PREDEF_GEO=True
+USE_PREDEF_GEO=False
 EXT_GEO_PATH={args.pregeo_file}"""
 
     if args.product_name is not None:
@@ -372,17 +372,28 @@ Ctrl%RS%Use_Full_BRDF       = {use_brdf}""".format(
         use_brdf=not (args.lambertian or args.approach == 'AppAerSw'),
         verbose=args.verbose,
     )
+    # If a netcdf LUT is being used then write NCDF LUT filename
+    if SETTINGS[args.phase].sad == 'netcdf':
+        driver += """
+Ctrl%FID%NCDF_LUT_Filename = "{ncdf_lut_filename}"
+        """.format(ncdf_lut_filename=SETTINGS[args.phase].sad_filename(args.File))
 
     # Optional driver file lines
     if args.multilayer is not None:
+        if SETTINGS[args.phase].sad == 'netcdf':
+            driver += """
+Ctrl%FID%NCDF_LUT_Filename2 = "{ncdf_lut_filename}"
+        """.format(ncdf_lut_filename=SETTINGS[args.multilayer[0]].sad_filename(args.File))
         driver += """
 Ctrl%LUTClass2              = "{}"
 Ctrl%FID%SAD_Dir2           = "{}"
 Ctrl%Class2                 = {}""".format(
-            args.multilayer[0],
+            SETTINGS[args.multilayer[0]].name,
             SETTINGS[args.multilayer[0]].sad_dir(args.sad_dirs, args.File),
             args.multilayer[1],
         )
+        for var in SETTINGS[args.multilayer[0]].inv:
+            driver += var.driver()
     if args.types:
         driver += "\nCtrl%NTypes_To_Process      = {:d}".format(len(args.types))
         driver += ("\nCtrl%Types_To_Process(1:{:d}) = ".format(len(args.types)) +

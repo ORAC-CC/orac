@@ -102,6 +102,7 @@
 ! 2017/07/05, AP: Add NAll to track the total number of channels. New QC.
 ! 2017/10/04, GM: Add use_ann_phase.
 ! 2021/04/06, AP: New LUT names.
+! 2021/10/12, ATP: Add new LUT netcdf filenames.
 !
 ! Bugs:
 ! None known.
@@ -122,6 +123,8 @@ module Ctrl_m
       character(FilenameLen) :: SAD_Dir2           ! Directory of SAD files
       character(FilenameLen) :: Filename           ! Basename of input files
       character(FilenameLen) :: Config             ! Configuration
+      character(FilenameLen) :: NCDF_LUT_Filename  ! Filename of NCDF LUT
+      character(FilenameLen) :: NCDF_LUT_Filename2 ! Filename of NCDF LUT (multi-layer)
       character(FilenameLen) :: MSI                ! Multi-Spectral Image
       character(FilenameLen) :: LWRTM              ! LW Rad Trans Model results
       character(FilenameLen) :: SWRTM              ! SW Rad Trans Model results

@@ -328,8 +328,7 @@ subroutine orac(mytask,ntasks,lower_bound,upper_bound,drifile)
    ! parameters and read the SAD values.
    allocate(SAD_Chan(Ctrl%Ind%Ny))
 
-   call Read_SAD(Ctrl, global_atts%platform, SAD_Chan, SAD_LUT)
-
+   call Read_SAD(Ctrl, SAD_Chan, SAD_LUT)
 
    ! Make read in rttov data in one go, no more segment reads
    if (Ctrl%RTMIntSelm /= RTMIntMethNone) then

@@ -901,7 +901,7 @@ subroutine sad_dimension_read_nc(fid, filename, name, Grid)
 end subroutine sad_dimension_read_nc
 
 
-subroutine Read_NCDF_SAD_LUT(Ctrl, platform, LUTClass, SAD_LUT, SAD_Chan)
+subroutine Read_NCDF_SAD_LUT(Ctrl, LUTFilename, SAD_Chan, SAD_LUT)
 
    use Ctrl_m
    use orac_ncdf_m
@@ -912,8 +912,7 @@ subroutine Read_NCDF_SAD_LUT(Ctrl, platform, LUTClass, SAD_LUT, SAD_Chan)
    implicit none
 
    type(Ctrl_t),               intent(in)    :: Ctrl
-   character(len=*),           intent(in)    :: platform
-   character(len=*),           intent(in)    :: LUTClass
+   character(len=*),           intent(in)    :: LUTFilename
    type(SAD_LUT_t),            intent(inout) :: SAD_LUT
    type(SAD_Chan_t), optional, intent(inout) :: SAD_Chan(:)
 
@@ -938,8 +937,7 @@ subroutine Read_NCDF_SAD_LUT(Ctrl, platform, LUTClass, SAD_LUT, SAD_Chan)
    integer, allocatable, dimension(:) :: chan_tmp_int
 
    ! Determine filename and open file
-   filename = trim(Ctrl%FID%SAD_Dir) // '/' // lower(trim(platform)) // '_' // &
-              lower(trim(Ctrl%InstName)) // '_' // trim(LUTClass) // '.nc'
+   filename = trim(Ctrl%FID%SAD_Dir) // '/' // trim(LUTFilename)
    if (Ctrl%verbose) print*, 'LUT filename: ', trim(filename)
    call ncdf_open(fid, filename, 'Read_NCDF_SAD_LUT')
 
@@ -950,7 +948,7 @@ subroutine Read_NCDF_SAD_LUT(Ctrl, platform, LUTClass, SAD_LUT, SAD_Chan)
    call map_ch_indices(Ctrl%Ind%Ny, Ctrl%Ind%Y_id, nch, ch_numbers, ch_indices)
 
    nsolar = ncdf_dim_length(fid, 'solar_channels', 'Read_NCDF_SAD_LUT')
-   if (nsolar > 0) then
+   if (nsolar > 0 .and. Ctrl%Ind%NSolar > 0) then
       allocate(solar_ch_numbers(nsolar))
       call ncdf_read_array(fid, "solar_channel_id", solar_ch_numbers)
       call map_ch_indices(Ctrl%Ind%NSolar, Ctrl%Ind%Y_id(Ctrl%Ind%YSolar), &
@@ -958,7 +956,7 @@ subroutine Read_NCDF_SAD_LUT(Ctrl, platform, LUTClass, SAD_LUT, SAD_Chan)
    end if
 
    nthermal = ncdf_dim_length(fid, 'thermal_channels', 'Read_NCDF_SAD_LUT')
-   if (nthermal > 0) then
+   if (nthermal > 0 .and. Ctrl%Ind%NThermal > 0) then
       allocate(thermal_ch_numbers(nthermal))
       call ncdf_read_array(fid, "thermal_channel_id", thermal_ch_numbers)
       call map_ch_indices(Ctrl%Ind%NThermal, Ctrl%Ind%Y_id(Ctrl%Ind%YThermal), &
@@ -966,7 +964,7 @@ subroutine Read_NCDF_SAD_LUT(Ctrl, platform, LUTClass, SAD_LUT, SAD_Chan)
    end if
 
    nmixed = ncdf_dim_length(fid, 'mixed_channels', 'Read_NCDF_SAD_LUT')
-   if (nmixed > 0) then
+   if (nmixed > 0 .and. Ctrl%Ind%NMixed > 0) then
       allocate(mixed_ch_numbers(nmixed))
       call ncdf_read_array(fid, "mixed_channel_id", mixed_ch_numbers)
       call map_ch_indices(Ctrl%Ind%NMixed, Ctrl%Ind%Y_id(Ctrl%Ind%YMixed), &
@@ -1082,14 +1080,14 @@ subroutine Read_NCDF_SAD_LUT(Ctrl, platform, LUTClass, SAD_LUT, SAD_Chan)
       do k = 1, SAD_LUT%Grid%SolZen%n
          do j = 1, SAD_LUT%Grid%Re%n
             do i = 1, Ctrl%Ind%NSolar
-               SAD_LUT%Td(Ctrl%Ind%YSolar(i),:,k,j) = T_00(i,j,:,k)
+               SAD_LUT%Tb(Ctrl%Ind%YSolar(i),:,k,j) = T_00(i,j,:,k)
             end do
          end do
       end do
       deallocate(T_00)
    end if
 
-   if (nthermal > 0) then
+   if (nthermal > 0 .and. Ctrl%Ind%NThermal > 0) then
       allocate(SAD_LUT%Em(Ctrl%Ind%Ny, SAD_LUT%Grid%Tau%n, SAD_LUT%Grid%SatZen%n, &
            SAD_LUT%Grid%Re%n))
       allocate(E_md(Ctrl%Ind%NThermal, SAD_LUT%Grid%Re%n, SAD_LUT%Grid%Tau%n, &
@@ -1135,7 +1133,7 @@ subroutine Read_NCDF_SAD_LUT(Ctrl, platform, LUTClass, SAD_LUT, SAD_Chan)
    deallocate(chan_tmp_real)
 
    allocate(chan_tmp_int(nch))
-   call ncdf_read_array(fid, "infrared_channel_flag", chan_tmp_int)
+   call ncdf_read_array(fid, "thermal_channel_flag", chan_tmp_int)
    do i = 1, Ctrl%Ind%Ny
       SAD_Chan(i)%Thermal%Flag = int(chan_tmp_int(ch_indices(i)), kind=1)
    end do
@@ -1145,36 +1143,83 @@ subroutine Read_NCDF_SAD_LUT(Ctrl, platform, LUTClass, SAD_LUT, SAD_Chan)
    end do
    deallocate(chan_tmp_int)
 
-   if (nthermal > 0) then
+   ! Initialise thermal and solar constants with zeros
+   SAD_Chan(:)%Thermal%B1 = 0.0
+   SAD_Chan(:)%Thermal%B2 = 0.0
+   SAD_Chan(:)%Thermal%T1 = 0.0
+   SAD_Chan(:)%Thermal%T2 = 0.0
+   SAD_Chan(:)%Solar%F0 = 0.0
+
+   if (nthermal > 0 .and. Ctrl%Ind%NThermal > 0) then
       allocate(chan_tmp_real(nthermal))
       call ncdf_read_array(fid, "B1", chan_tmp_real)
       do i = 1, Ctrl%Ind%NThermal
-         SAD_Chan(i)%Thermal%B1 = chan_tmp_real(thermal_indices(i))
+         SAD_Chan(Ctrl%Ind%YThermal(i))%Thermal%B1 = &
+                 chan_tmp_real(thermal_indices(i))
       end do
       call ncdf_read_array(fid, "B2", chan_tmp_real)
       do i = 1, Ctrl%Ind%NThermal
-         SAD_Chan(i)%Thermal%B2 = chan_tmp_real(thermal_indices(i))
+         SAD_Chan(Ctrl%Ind%YThermal(i))%Thermal%B2 = &
+         chan_tmp_real(thermal_indices(i))
       end do
       call ncdf_read_array(fid, "T1", chan_tmp_real)
       do i = 1, Ctrl%Ind%NThermal
-         SAD_Chan(i)%Thermal%T1 = chan_tmp_real(thermal_indices(i))
+         SAD_Chan(Ctrl%Ind%YThermal(i))%Thermal%T1 = &
+                 chan_tmp_real(thermal_indices(i))
       end do
       call ncdf_read_array(fid, "T2", chan_tmp_real)
       do i = 1, Ctrl%Ind%NThermal
-         SAD_Chan(i)%Thermal%T2 = chan_tmp_real(thermal_indices(i))
+         SAD_Chan(Ctrl%Ind%YThermal(i))%Thermal%T2 = &
+                 chan_tmp_real(thermal_indices(i))
       end do
       deallocate(chan_tmp_real)
    end if
 
-   if (nmixed > 0) then
-      allocate(chan_tmp_real(nmixed))
+   ! Read in F0 for solar channels
+   if (nsolar > 0 .and. Ctrl%Ind%NSolar > 0) then
+      allocate(chan_tmp_real(nsolar))
       call ncdf_read_array(fid, "F0", chan_tmp_real)
-      do i = 1, Ctrl%Ind%NMixed
-         SAD_Chan(i)%Solar%F0 = chan_tmp_real(mixed_indices(i))
+      do i = 1, Ctrl%Ind%NSolar
+         SAD_Chan(Ctrl%Ind%YSolar(i))%Solar%F0 = &
+                 chan_tmp_real(solar_indices(i))
       end do
-      call ncdf_read_array(fid, "F1", chan_tmp_real)
-      do i = 1, Ctrl%Ind%NMixed
-         SAD_Chan(i)%Solar%F1 = chan_tmp_real(mixed_indices(i))
+      deallocate(chan_tmp_real)
+   end if
+
+   ! Read in NEBT and NEDR
+   ! Note: NEBT and NEDR are squared later when they are read into
+   ! the error covariance matrix, SPixel%Sy, in get_measurements.F90.
+
+   ! Initialise uncertainty arrays with zero
+   SAD_Chan(:)%Thermal%NEBT = 0.0
+   SAD_Chan(:)%Thermal%T0 = 0.0
+   SAD_Chan(:)%Solar%NEDR = 0.0
+   SAD_Chan(:)%Solar%SNR = 0.0
+
+   if (nthermal > 0 .and. Ctrl%Ind%NThermal > 0) then
+      allocate(chan_tmp_real(nthermal))
+      call ncdf_read_array(fid, "nedt", chan_tmp_real)
+      do i = 1, Ctrl%Ind%NThermal
+         SAD_Chan(Ctrl%Ind%YThermal(i))%Thermal%NEBT = &
+                 chan_tmp_real(thermal_indices(i))
+      end do
+      ! Read in reference brightness temperature (T0) to enable
+      ! brightness temperature-varying uncertainty.
+      call ncdf_read_array(fid, "refbt", chan_tmp_real)
+      do i = 1, Ctrl%Ind%NThermal
+         SAD_Chan(Ctrl%Ind%YThermal(i))%Thermal%T0 = &
+                 chan_tmp_real(thermal_indices(i))
+      end do
+      deallocate(chan_tmp_real)
+   end if
+
+   ! Read signal-to-noise ratio
+   if (nsolar > 0 .and. Ctrl%Ind%NSolar > 0) then
+      allocate(chan_tmp_real(nsolar))
+      call ncdf_read_array(fid, "snr", chan_tmp_real)
+      do i = 1, Ctrl%Ind%NSolar
+         SAD_Chan(Ctrl%Ind%YSolar(i))%Solar%SNR = &
+                 chan_tmp_real(solar_indices(i))
       end do
       deallocate(chan_tmp_real)
    end if

@@ -44,7 +44,7 @@ implicit none
 
 contains
 
-subroutine Read_SAD(Ctrl, platform, SAD_Chan, SAD_LUT)
+subroutine Read_SAD(Ctrl, SAD_Chan, SAD_LUT)
 
    use Ctrl_m
    use ORAC_Constants_m
@@ -55,13 +55,12 @@ subroutine Read_SAD(Ctrl, platform, SAD_Chan, SAD_LUT)
 
    ! Argument declarations
    type(Ctrl_t),     intent(in)    :: Ctrl
-   character(len=*), intent(in)    :: platform
    type(SAD_Chan_t), intent(inout) :: SAD_Chan(:)
    type(SAD_LUT_t),  intent(inout) :: SAD_LUT(:)
 
    if (Ctrl%verbose) write(*,*) 'Reading SAD files'
 
-   if (len_trim(Ctrl%LUTClass) <= 3) then
+   if (len_trim(Ctrl%LUTClass) == 3) then
       ! Read channel sad files
       call Read_SAD_Chan(Ctrl, SAD_Chan)
 
@@ -72,9 +71,11 @@ subroutine Read_SAD(Ctrl, platform, SAD_Chan, SAD_LUT)
       end if
    else
       ! New NetCDF LUTs
-      call Read_NCDF_SAD_LUT(Ctrl, platform, Ctrl%LUTClass, SAD_LUT(1), SAD_Chan)
+      call Read_NCDF_SAD_LUT(Ctrl, Ctrl%FID%NCDF_LUT_Filename, &
+              SAD_Chan, SAD_LUT(1))
       if (Ctrl%Approach == AppCld2L) then
-         call Read_NCDF_SAD_LUT(Ctrl, platform, Ctrl%LUTClass2, SAD_LUT(2))
+         call Read_NCDF_SAD_LUT(Ctrl, Ctrl%FID%NCDF_LUT_Filename2, &
+                 SAD_Chan, SAD_LUT(2))
       end if
    end if
 
