@@ -109,6 +109,7 @@ module preproc_structures_m
       integer                    :: ecmwf_time_int_method
       integer, pointer           :: channel_ids(:)
       integer(kind=lint)         :: n_channels
+      logical                    :: calculate_slstr_alignment
       integer                    :: nwp_time_factor
       real                       :: swansea_gamma
       logical                    :: use_camel_emis

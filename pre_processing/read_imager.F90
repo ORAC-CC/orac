@@ -216,7 +216,7 @@ subroutine read_imager(granule, opts, path_to_aatsr_drift_table, &
       ! imager_geolocation
       call read_slstr(granule%l1b_file, &
            imager_geolocation, imager_measurements, imager_angles, imager_time, &
-           imager_flags, channel_info, verbose)
+           imager_flags, channel_info, opts%calculate_slstr_alignment, verbose)
 
       ! In absence of proper mask set everything to "1" for cloud mask
       imager_flags%cflag = 1
@@ -273,6 +273,15 @@ subroutine read_imager(granule, opts, path_to_aatsr_drift_table, &
          end do
       end do
    end do
+
+   ! Some sensors define azimuth on [0, 360] while we want [-180, 180]
+   where (imager_angles%solazi .gt. 180.)
+      imager_angles%solazi = imager_angles%solazi - 360.
+   end where
+
+   where (imager_angles%satazi .gt. 180.)
+      imager_angles%satazi = imager_angles%satazi - 360.
+   end where
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_imager()'
 
