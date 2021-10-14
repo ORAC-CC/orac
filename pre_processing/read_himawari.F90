@@ -259,8 +259,6 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
    integer                     :: startx, nx
    integer                     :: starty, ny
    integer                     :: x, y
-   integer(c_int)              :: line0, line1
-   integer(c_int)              :: column0, column1
 
 #ifdef __ACC
    real(kind=sreal), dimension(:,:), allocatable :: tlat, tlon
@@ -317,7 +315,7 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
                      .false., & ! Flag setting true color output. Currently unused and should be false anyway
                      .false., & ! True = output as VIS channel resolution, False = Output at IR res .
                      global_atts%Satpos_Metadata, & ! Struct to store the satellite position data, for parallax
-                     .false., & ! Flag specifying whether to compute solar angles, we calculate them internally in ORAC
+                     .true., & ! Compute or not the solar angles in the reader.
                      verbose) .ne. 0) then ! Verbosity flag.
       write(*,*) 'ERROR: in read_himawari_read(), calling ' // &
                  'AHI_Main_Read(), filename = ', trim(infile)

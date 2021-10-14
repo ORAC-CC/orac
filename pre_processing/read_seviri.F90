@@ -210,7 +210,7 @@ end subroutine SEV_Retrieve_Predef_Geo
 ! verbose             logical in   If true then print verbose information.
 !-------------------------------------------------------------------------------
 subroutine read_seviri_l1_5(l1_5_file, imager_geolocation, imager_measurements, &
-   imager_angles, imager_time, channel_info, do_gsics, global_atts, verbose)
+   imager_angles, imager_time, channel_info, do_gsics, do_nasa, global_atts, verbose)
 
    use channel_structures_m
    use global_attributes_m
@@ -225,6 +225,7 @@ subroutine read_seviri_l1_5(l1_5_file, imager_geolocation, imager_measurements, 
    type(imager_time_t),         intent(inout) :: imager_time
    type(channel_info_t),        intent(in)    :: channel_info
    logical,                     intent(in)    :: do_gsics
+   logical,                     intent(in)    :: do_nasa
    type(global_attributes_t),   intent(inout) :: global_atts
    logical,                     intent(in)    :: verbose
 
@@ -237,7 +238,7 @@ subroutine read_seviri_l1_5(l1_5_file, imager_geolocation, imager_measurements, 
    else
       call read_seviri_l1_5_nat_or_hrit(l1_5_file, imager_geolocation, &
            imager_measurements, imager_angles, imager_time, channel_info, &
-           do_gsics, global_atts, verbose)
+           do_gsics, do_nasa, global_atts, verbose)
    end if
 
    startx = imager_geolocation%startx
@@ -255,11 +256,6 @@ subroutine read_seviri_l1_5(l1_5_file, imager_geolocation, imager_measurements, 
       where (imager_angles%relazi(:,:,1) .gt. 180.)
          imager_angles%relazi(:,:,1) = 360. - imager_angles%relazi(:,:,1)
       end where
-   end where
-
-   ! Shift satazi range from [0,360] to [-180,180] to be consistent with ORAC
-   where (imager_angles%satazi .gt. 180)
-      imager_angles%satazi = imager_angles%satazi - 360.
    end where
 
 end subroutine read_seviri_l1_5
@@ -362,7 +358,7 @@ end subroutine read_seviri_l1_5_metoff
 
 subroutine read_seviri_l1_5_nat_or_hrit(l1_5_file, imager_geolocation, &
    imager_measurements, imager_angles, imager_time, channel_info, do_gsics, &
-   global_atts, verbose)
+   do_nasa, global_atts, verbose)
 
    use iso_c_binding
    use channel_structures_m
@@ -382,6 +378,7 @@ subroutine read_seviri_l1_5_nat_or_hrit(l1_5_file, imager_geolocation, &
    type(imager_time_t),         intent(inout) :: imager_time
    type(channel_info_t),        intent(in)    :: channel_info
    logical,                     intent(in)    :: do_gsics
+   logical,                     intent(in)    :: do_nasa
    type(global_attributes_t),   intent(inout) :: global_atts
    logical,                     intent(in)    :: verbose
 
@@ -389,8 +386,9 @@ subroutine read_seviri_l1_5_nat_or_hrit(l1_5_file, imager_geolocation, &
    integer(c_int)              :: n_bands
    integer(c_int), allocatable :: band_ids(:)
    integer(c_int), allocatable :: band_units(:)
-   integer                     :: startx, nx
-   integer                     :: starty, ny
+   integer                     :: n_across_track, n_along_track
+   integer                     :: startx, nx, nx_full
+   integer                     :: starty, ny, ny_full
    integer(c_int)              :: line0, line1
    integer(c_int)              :: column0, column1
    logical                     :: hrit_proc
@@ -406,6 +404,14 @@ subroutine read_seviri_l1_5_nat_or_hrit(l1_5_file, imager_geolocation, &
    else
       hrit_proc = .true.
    end if
+
+   ! Fetch image dimensions (startx/y are placeholders and overriden below)
+   startx = 0
+   nx_full = 0
+   starty = 0
+   ny_full = 0
+   call read_seviri_dimensions(l1_5_file, n_across_track, n_along_track, &
+        startx, nx_full, starty, ny_full, .false.)
 
    ! Setup some arguments to seviri_read_and_preproc_f90()
 
@@ -423,6 +429,14 @@ subroutine read_seviri_l1_5_nat_or_hrit(l1_5_file, imager_geolocation, &
       end if
    end do
 
+   if (verbose) then
+      if (do_gsics) then
+         write(*,*) 'Applying GSICS calibration coefficients'
+      else
+         write(*,*) 'Applying IMPF calibration coefficients'
+      end if
+   end if
+
    startx = imager_geolocation%startx
    nx     = imager_geolocation%nx
    starty = imager_geolocation%starty
@@ -433,8 +447,7 @@ subroutine read_seviri_l1_5_nat_or_hrit(l1_5_file, imager_geolocation, &
    column0 = startx - 1
    column1 = startx - 1 + nx - 1
 
-   if (.not. hrit_proc .or. (nx .eq. 3712 .and. ny .eq. 3712)) then
-
+   if (.not. hrit_proc) then
       ! The SEVIRI reader has the option to assume that memory for the output
       ! image arrays has already been allocated. In this case we point these output
       ! array pointers to the already allocated imager arrays to avoid copying.
@@ -447,20 +460,12 @@ subroutine read_seviri_l1_5_nat_or_hrit(l1_5_file, imager_geolocation, &
       preproc%vaa  => imager_angles%satazi(startx:,:,1)
       preproc%data => imager_measurements%data(startx:,:,:)
 
-      if (verbose) then
-         if (do_gsics) then
-            write(*,*) 'Applying GSICS calibration coefficients'
-         else
-            write(*,*) 'Applying IMPF calibration coefficients'
-         end if
-      end if
-
       ! The main reader call which populates preproc (type seviri_preproc_t_f90)
       if (verbose) write(*,*) 'Calling seviri_read_and_preproc_f90() from ' // &
                               'the seviri_util module, LC'
       if (seviri_read_and_preproc_f90(trim(l1_5_file)//C_NULL_CHAR, preproc, &
           n_bands, band_ids, band_units, SEVIRI_BOUNDS_LINE_COLUMN, line0, line1, &
-          column0, column1, 0.d0, 0.d0, 0.d0, 0.d0, do_gsics, global_atts%Satpos_Metadata, .true.) .ne. 0) then
+          column0, column1, 0.d0, 0.d0, 0.d0, 0.d0, do_gsics, do_nasa, global_atts%Satpos_Metadata, .true.) .ne. 0) then
          write(*,*) 'ERROR: in read_seviri_l1_5(), calling ' // &
                     'seviri_read_and_preproc_f90(), filename = ', trim(l1_5_file)
          stop error_stop_code
@@ -471,7 +476,7 @@ subroutine read_seviri_l1_5_nat_or_hrit(l1_5_file, imager_geolocation, &
                               'the seviri_util module, FD'
       if (seviri_read_and_preproc_f90(trim(l1_5_file)//C_NULL_CHAR, preproc, &
           n_bands, band_ids, band_units, SEVIRI_BOUNDS_FULL_DISK, 1, 3712, &
-          1, 3712, 0.d0, 0.d0, 0.d0, 0.d0, do_gsics, global_atts%Satpos_Metadata, .false.) .ne. 0) then
+          1, 3712, 0.d0, 0.d0, 0.d0, 0.d0, do_gsics, do_nasa, global_atts%Satpos_Metadata, .false.) .ne. 0) then
          write(*,*) 'ERROR: in read_seviri_l1_5(), calling ' // &
                     'seviri_read_and_preproc_f90(), filename = ', trim(l1_5_file)
          stop error_stop_code

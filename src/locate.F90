@@ -51,7 +51,11 @@ function locate(grid, x, bounded) result(low)
    ascending = grid%x(1) .le. grid%x(grid%n)
 
    if (grid%d .ne. 0.) then
-      low = int((x - grid%x(1)) / grid%d)
+      if (ascending) then
+         low = int((x - grid%x(1)) / grid%d) + 1
+      else
+         low = int((grid%x(1) - x) / grid%d) + 1
+      end if
       if (bound) then
          if (low .lt. 1) low = 1
          if (low .ge. grid%n) low = grid%n-1

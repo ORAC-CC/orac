@@ -118,18 +118,12 @@ def args_preproc(parser):
                      help='Revision (version) number for file.')
 
     ecmwf = parser.add_argument_group('ECMWF settings')
-    ecmwf.add_argument('--ecmwf_flag', type=int, choices=range(9),
+    ecmwf.add_argument('--nwp_flag', type=int, choices=range(9),
                        default=defaults.ecmwf_flag,
                        help='Type of ECMWF data to read in.')
     ecmwf.add_argument('--single_ecmwf', action='store_const',
                        default=2, const=0,
                        help='Do not interpolate ECMWF data.')
-    ecmwf.add_argument('--skip_ecmwf_hr', action='store_true',
-                       help='Ignore high resolution ECMWF files.')
-    ecmwf.add_argument('--ecmwf_nlevels', type=int, nargs='?',
-                       choices=(60, 91, 137), default=60,
-                       help='Number of levels in the ECMWF file used. '
-                            'Default 50.')
     ice = ecmwf.add_mutually_exclusive_group()
     ice.add_argument('--use_ecmwf_snow', action='store_true',
                      help='Use ECMWF snow/ice fields rather than NISE.')
@@ -329,9 +323,10 @@ def check_args_preproc(args):
 
     try:
         # When using ecmwf_dir to set a single directory
-        args.ggam_dir = args.ecmwf_dir
-        args.ggas_dir = args.ecmwf_dir
-        args.spam_dir = args.ecmwf_dir
+        if os.path.isdir(args.ecmwf_dir):
+            args.ggam_dir = args.ecmwf_dir
+            args.ggas_dir = args.ecmwf_dir
+            args.spam_dir = args.ecmwf_dir
     except AttributeError:
         pass
 
@@ -468,6 +463,7 @@ def check_args_regress(args):
         else:
             args.tests = ['DAYMYDS', 'NITMYDS', 'DAYMODS', 'NITMODS',
                           'DAYAATSRS', 'NITAATSRS', 'DAYAVHRRS', 'NITAVHRRS',
+                          'DAYSLSTRAS', 'NITSLSTRAS', 'DAYSLSTRBS', 'NITSLSTRBS',
                           'DAYSEVIRIS', 'NITSEVIRIS']
 
     return args

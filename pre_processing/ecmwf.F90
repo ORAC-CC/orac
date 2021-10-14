@@ -4,33 +4,15 @@
 ! Purpose:
 ! Define module of variables types which hold the ecmwf input data.
 !
-! History:
-! 2012/01/10, MJ: Writes sample code for ERA Interim data.
-! 2012/08/02, CP: Changed to accommodate badc netcdf files with different
-!    dimensions
-! 2013/10/23, AP: Tidying
-! 2014/02/10, AP: Removed _nc_ structures as redundant. Shortened DIM names.
-! 2014/05/06, AP: Simplified to just one structure.
-! 2014/11/04, OS: Added skin temperature to ecmwf structure.
-! 2014/11/19, GM: C #includes should use double quotes.
-! 2014/02/04, OS: Added include of read_ecmwf_wind_dwd.F90.
-! 2014/02/04, OS: Added snow_depth and sea_ice_cover fields for high res ERA
-!    data.
-! 2015/11/26, GM: Added dup_ecmwf_allocation() and linearly_combine_ecmwfs() to
-!    facilitate linear interpolation between ecmwf_t structures.
-! 2015/12/17, OS: Added low_res flag.
-! 2016/02/03, GM: Added parameter arrays avec and bvec as they were being
-!    duplicated in subroutines.
-! 2016/02/03, GM: Check for fill_value in sea_ice_cover during linear
-!    combination.
-! 2016/04/03, SP: Add option to process ECMWF forecast in single NetCDF4 file
-!    Three new arrays added, these store the hybrid level (60,91,137)
-!    conversions.
-! 2017/02/07, SP: Added support for NOAA GFS atmosphere data (ExtWork)
-! 2017/06/21, OS: inout declaration bug fix for cray-fortran compiler
 !
-! Bugs:
-! None known.
+! NOTES:
+! The nwp_flag option allows the user to set what type of NWP data to use.
+! There are five options for this flag:
+! 0: NOAA GFS data in a single GRIB file.
+! 1: ECMWF Operational or ERA5 data as a single netCDF4 file
+! 2: ECMWF ERA5 data in JASMIN format (GRIB, one file per variable)
+! 3: DWD format (unknown details)
+! 4: ERA-Interim in JASMIN format, three files.
 !-------------------------------------------------------------------------------
 
 module ecmwf_m
@@ -52,6 +34,7 @@ contains
 #include "deallocate_ecmwf_structures.F90"
 #include "compute_geopot_coordinate.F90"
 #include "read_ecmwf.F90"
+#include "read_era5_jasmin.F90"
 #include "read_ecmwf_wind_nc.F90"
 #include "read_ecmwf_wind_grib.F90"
 #include "read_ecmwf_wind_badc.F90"
@@ -300,13 +283,12 @@ subroutine ecmwf_wind_init(ecmwf)
 end subroutine ecmwf_wind_init
 
 
-subroutine dup_ecmwf_allocation(ecmwf, ecmwf2, low_res)
+subroutine dup_ecmwf_allocation(ecmwf, ecmwf2)
 
    implicit none
 
    type(ecmwf_t), intent(in)  :: ecmwf
    type(ecmwf_t), intent(inout) :: ecmwf2
-   logical,       intent(in)  :: low_res
 
    ecmwf2%xdim = ecmwf%xdim
    ecmwf2%ydim = ecmwf%ydim
@@ -314,12 +296,10 @@ subroutine dup_ecmwf_allocation(ecmwf, ecmwf2, low_res)
 
    allocate(ecmwf2%lon(ecmwf%xdim))
    allocate(ecmwf2%lat(ecmwf%ydim))
-   if (low_res) then
-      allocate(ecmwf2%avec(ecmwf%kdim+1))
-      allocate(ecmwf2%bvec(ecmwf%kdim+1))
-      allocate(ecmwf2%u10(ecmwf%xdim,ecmwf%ydim))
-      allocate(ecmwf2%v10(ecmwf%xdim,ecmwf%ydim))
-   end if
+   allocate(ecmwf2%avec(ecmwf%kdim+1))
+   allocate(ecmwf2%bvec(ecmwf%kdim+1))
+   allocate(ecmwf2%u10(ecmwf%xdim,ecmwf%ydim))
+   allocate(ecmwf2%v10(ecmwf%xdim,ecmwf%ydim))
    allocate(ecmwf2%skin_temp(ecmwf%xdim,ecmwf%ydim))
    allocate(ecmwf2%snow_depth(ecmwf%xdim,ecmwf%ydim))
    allocate(ecmwf2%sea_ice_cover(ecmwf%xdim,ecmwf%ydim))
@@ -327,7 +307,7 @@ subroutine dup_ecmwf_allocation(ecmwf, ecmwf2, low_res)
 end subroutine dup_ecmwf_allocation
 
 
-subroutine linearly_combine_ecmwfs(a, b, ecmwf1, ecmwf2, ecmwf, low_res)
+subroutine linearly_combine_ecmwfs(a, b, ecmwf1, ecmwf2, ecmwf)
 
    implicit none
 
@@ -336,16 +316,15 @@ subroutine linearly_combine_ecmwfs(a, b, ecmwf1, ecmwf2, ecmwf, low_res)
    type(ecmwf_t), intent(in)  :: ecmwf1
    type(ecmwf_t), intent(in)  :: ecmwf2
    type(ecmwf_t), intent(inout) :: ecmwf
-   logical,       intent(in)  :: low_res
 
-   ecmwf%lat               = a * ecmwf1%lat        + b * ecmwf2%lat
-   ecmwf%lon               = a * ecmwf1%lon        + b * ecmwf2%lon
-   if (low_res) ecmwf%avec = a * ecmwf1%avec       + b * ecmwf2%avec
-   if (low_res) ecmwf%bvec = a * ecmwf1%bvec       + b * ecmwf2%bvec
-   if (low_res) ecmwf%u10  = a * ecmwf1%u10        + b * ecmwf2%u10
-   if (low_res) ecmwf%v10  = a * ecmwf1%v10        + b * ecmwf2%v10
-   ecmwf%skin_temp         = a * ecmwf1%skin_temp  + b * ecmwf2%skin_temp
-   ecmwf%snow_depth        = a * ecmwf1%snow_depth + b * ecmwf2%snow_depth
+   ecmwf%lat  = a * ecmwf1%lat        + b * ecmwf2%lat
+   ecmwf%lon  = a * ecmwf1%lon        + b * ecmwf2%lon
+   ecmwf%avec = a * ecmwf1%avec       + b * ecmwf2%avec
+   ecmwf%bvec = a * ecmwf1%bvec       + b * ecmwf2%bvec
+   ecmwf%u10  = a * ecmwf1%u10        + b * ecmwf2%u10
+   ecmwf%v10  = a * ecmwf1%v10        + b * ecmwf2%v10
+   ecmwf%skin_temp = a * ecmwf1%skin_temp  + b * ecmwf2%skin_temp
+   ecmwf%snow_depth = a * ecmwf1%snow_depth + b * ecmwf2%snow_depth
 
    ecmwf%sea_ice_cover = sreal_fill_value
    where (ecmwf1%sea_ice_cover .ne. sreal_fill_value .and. &

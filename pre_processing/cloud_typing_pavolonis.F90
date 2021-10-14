@@ -506,11 +506,11 @@ subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
             case(5)
                ch3 = i
                sw3 = ii
-            case(7)
+            case(8)
                ch4 = i
-            case(11)
-               ch5 = i
             case(12)
+               ch5 = i
+            case(13)
                ch6 = i
             end select
          end do

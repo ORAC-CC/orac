@@ -12,7 +12,7 @@ ORAC_DIR="$2"
 # RTTOV_FILES points to where the coefficient files are stored
 export RTTOV_FILES="$3"
 
-FEED_DIR="$ORACDIR/feedstocks"
+FEED_DIR="$ORAC_DIR/feedstocks"
 
 # Download, install and start Miniconda
 TMPDIR=$(mktemp -d)

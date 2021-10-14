@@ -164,8 +164,7 @@ subroutine Alloc_SPixel(Ctrl, RTM, SPixel)
    SPixel%Ind%NSolar = 0
    SPixel%Ind%NThermal = 0
    SPixel%Ind%NMixed = 0
-
-   allocate(SPixel%Illum(Ctrl%Ind%NViews))
+   SPixel%Illum = 0
 
    ! These are reallocated in GetMeasurements
    allocate(SPixel%Ym(1))

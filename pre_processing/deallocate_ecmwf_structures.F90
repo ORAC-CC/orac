@@ -23,23 +23,20 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine deallocate_ecmwf_structures(ecmwf, low_res)
+subroutine deallocate_ecmwf_structures(ecmwf)
 
    use preproc_constants_m
 
    implicit none
 
    type(ecmwf_t), intent(inout) :: ecmwf
-   logical,       intent(in)    :: low_res
 
    deallocate(ecmwf%lon)
    deallocate(ecmwf%lat)
-   if (low_res) then
-      deallocate(ecmwf%avec)
-      deallocate(ecmwf%bvec)
-      deallocate(ecmwf%u10)
-      deallocate(ecmwf%v10)
-   end if
+   deallocate(ecmwf%avec)
+   deallocate(ecmwf%bvec)
+   deallocate(ecmwf%u10)
+   deallocate(ecmwf%v10)
    deallocate(ecmwf%skin_temp)
    deallocate(ecmwf%snow_depth)
    deallocate(ecmwf%sea_ice_cover)

@@ -137,6 +137,7 @@ class FileName:
 
         from netCDF4 import Dataset
         from dateutil import parser
+        from warnings import warn
 
         if filename is None:
             in_dirs, filename = os.path.split(in_dirs)
@@ -350,7 +351,7 @@ class FileName:
             r'S3(?P<platform>[AB])_SL_1_RBT____(?P<year>\d{4})(?P<month>\d{2})'
             r'(?P<day>\d{2})T(?P<hour>\d{2})(?P<min>\d{2})(?P<sec>\d{2})_'
             r'\d{8}T\d{6}_\d{8}T\d{6}_(?P<duration>\d{4})_(?P<cycle>\d{3})_'
-            r'(?P<orbit>\d{3})_(?P<frame>\d{4})_(?P<centre>[A-Za-z0-9]{3})_'
+            r'(?P<orbit>\d{3})_(?P<frame>.{4})_(?P<centre>[A-Za-z0-9]{3})_'
             r'(?P<class>[OFDR])_(?P<timeliness>[NS][RT])_(?P<version>\d{3}).'
             r'SEN3', filename
         )
@@ -379,6 +380,8 @@ class FileName:
                         break
                 except FileNotFoundError:
                     pass
+            else:
+                warn(OracWarning("SLSTR start time unknown."))
 
             return
 
@@ -434,7 +437,7 @@ class FileName:
         """Returns a formatted description of this orbit."""
         if revision is None:
             revision = self.revision
-        return self.time.strftime('{}_%M-%H-%d-%m-%Y_R{}_{}'.format(
+        return self.time.strftime('{}_%Y-%m-%d-%H-%M_R{}_{}'.format(
             self.inst, revision, tag
         ))
 

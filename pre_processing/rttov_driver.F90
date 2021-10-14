@@ -255,7 +255,7 @@ subroutine rttov_driver(coef_path, emiss_path, granule, preproc_dims, &
    integer(kind=lint)                   :: idim, jdim
 
    ! Coefficient file selection
-   character(len=file_length)           :: coef_file
+   character(len=file_length)           :: coef_file_vis, coef_file_ir
    character(len=path_length)           :: coef_full_path
 
    ! Scratch variables
@@ -274,7 +274,6 @@ subroutine rttov_driver(coef_path, emiss_path, granule, preproc_dims, &
    real(kind=sreal)                     :: co2_val
    real(kind=sreal)                     :: yrfrac
 
-
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering rttov_driver()'
 
    if (verbose) write(*,*) 'coef_path: ', trim(coef_path)
@@ -286,14 +285,18 @@ subroutine rttov_driver(coef_path, emiss_path, granule, preproc_dims, &
    ! Determine coefficient filename (Vis/IR distinction made later)
    select case (trim(granule%sensor))
    case('ATSR2')
-      coef_file = 'rtcoef_ers_2_atsr.dat'
+      coef_file_vis = 'rtcoef_ers_2_atsr_o3co2.dat'
+      coef_file_ir = 'rtcoef_ers_2_atsr_o3co2_ironly.dat'
    case('AATSR')
-      coef_file = 'rtcoef_envisat_1_atsr.dat'
+      coef_file_vis = 'rtcoef_envisat_1_atsr-shifted_o3co2.dat'
+      coef_file_ir = 'rtcoef_envisat_1_atsr-shifted_o3co2_ironly.dat'
    case('ABI')
       if (trim(granule%platform) == 'GOES-16') then
-         coef_file = 'rtcoef_goes_16_abi.dat'
+          coef_file_vis = 'rtcoef_goes_16_abi_o3co2.dat'
+          coef_file_ir = 'rtcoef_goes_16_abi_o3co2_ironly.dat'
       else if (trim(granule%platform) == 'GOES-17') then
-         coef_file = 'rtcoef_goes_17_abi.dat'
+          coef_file_vis = 'rtcoef_goes_17_abi_o3co2.dat'
+          coef_file_ir = 'rtcoef_goes_17_abi_o3co2_ironly.dat'
       else
          write(*,*) 'ERROR: rttov_driver(): Invalid GOES platform: ', &
                     trim(granule%platform)
@@ -301,9 +304,11 @@ subroutine rttov_driver(coef_path, emiss_path, granule, preproc_dims, &
       end if
    case('AGRI')
       if (trim(granule%platform) == 'FY-4A') then
-         coef_file = 'rtcoef_fy4_1_agri.dat'
+         coef_file_vis = 'rtcoef_fy4_1_agri_o3co2.dat'
+         coef_file_ir = 'rtcoef_fy4_2_agri_o3co2_ironly.dat'
       else if (trim(granule%platform) == 'FY-4B') then
-         coef_file = 'rtcoef_fy4_2_agri.dat'
+         coef_file_vis = 'rtcoef_fy4_2_agri_o3co2.dat'
+         coef_file_ir = 'rtcoef_fy4_2_agri_o3co2_ironly.dat'
       else
          write(*,*) 'ERROR: rttov_driver(): Invalid Fengyun-4 platform: ', &
                     trim(granule%platform)
@@ -311,9 +316,11 @@ subroutine rttov_driver(coef_path, emiss_path, granule, preproc_dims, &
       end if
    case('AHI')
       if (trim(granule%platform) == 'Himawari-8') then
-         coef_file = 'rtcoef_himawari_8_ahi.dat'
+        coef_file_vis = 'rtcoef_himawari_8_ahi_o3co2.dat'
+        coef_file_ir = 'rtcoef_himawari_8_ahi_o3co2_ironly.dat'
       else if (trim(granule%platform) == 'Himawari-9') then
-         coef_file = 'rtcoef_himawari_9_ahi.dat'
+        coef_file_vis = 'rtcoef_himawari_9_ahi_o3co2.dat'
+        coef_file_ir = 'rtcoef_himawari_9_ahi_o3co2_ironly.dat'
       else
          write(*,*) 'ERROR: rttov_driver(): Invalid HIMAWARI platform: ', &
                     trim(granule%platform)
@@ -322,15 +329,19 @@ subroutine rttov_driver(coef_path, emiss_path, granule, preproc_dims, &
    case('AVHRR')
       if (index(granule%platform, 'noaa') >= 1) then
          if(granule%platform(5:5) == '1') then
-            coef_file = 'rtcoef_noaa_'//granule%platform(5:6)//'_avhrr.dat'
+            coef_file_vis = 'rtcoef_noaa_'//granule%platform(5:6)//'_avhrr_o3co2.dat'
+            coef_file_ir = 'rtcoef_noaa_'//granule%platform(5:6)//'_avhrr_o3co2_ironly.dat'
           else
-            coef_file = 'rtcoef_noaa_'//granule%platform(5:5)//'_avhrr.dat'
+            coef_file_vis = 'rtcoef_noaa_'//granule%platform(5:5)//'_avhrr_o3co2.dat'
+            coef_file_ir = 'rtcoef_noaa_'//granule%platform(5:5)//'_avhrr_o3co2_ironly.dat'
           end if
        else if (index(granule%platform, 'metop') >= 1) then
           if (granule%platform(6:6) == "a") then
-             coef_file = 'rtcoef_metop_2_avhrr.dat'
+             coef_file_vis = 'rtcoef_metop_2_avhrr_o3co2.dat'
+             coef_file_ir = 'rtcoef_metop_2_avhrr_o3co2_ironly.dat'
           else if (granule%platform(6:6) == "b") then
-             coef_file = 'rtcoef_metop_1_avhrr.dat'
+             coef_file_vis = 'rtcoef_metop_1_avhrr_o3co2.dat'
+             coef_file_ir = 'rtcoef_metop_1_avhrr_o3co2_ironly.dat'
           else
              write(*,*) 'ERROR: rttov_driver(): Invalid Metop platform: ', &
                   trim(granule%platform)
@@ -343,9 +354,11 @@ subroutine rttov_driver(coef_path, emiss_path, granule, preproc_dims, &
       end if
    case('MODIS')
       if (trim(granule%platform) == 'TERRA') then
-         coef_file = 'rtcoef_eos_1_modis.dat'
+         coef_file_vis = 'rtcoef_eos_1_modis-shifted_o3co2.dat'
+         coef_file_ir = 'rtcoef_eos_1_modis-shifted_o3co2_ironly.dat'
       else if (trim(granule%platform) == 'AQUA') then
-         coef_file = 'rtcoef_eos_2_modis.dat'
+         coef_file_vis = 'rtcoef_eos_2_modis-shifted_o3co2.dat'
+         coef_file_ir = 'rtcoef_eos_2_modis-shifted_o3co2_ironly.dat'
       else
          write(*,*) 'ERROR: rttov_driver(): Invalid MODIS platform: ', &
                     trim(granule%platform)
@@ -353,13 +366,17 @@ subroutine rttov_driver(coef_path, emiss_path, granule, preproc_dims, &
       end if
    case('SEVIRI')
       if (trim(granule%platform) == 'MSG1') then
-         coef_file = 'rtcoef_msg_1_seviri.dat'
+         coef_file_vis = 'rtcoef_msg_1_seviri_o3co2.dat'
+         coef_file_ir = 'rtcoef_msg_1_seviri_o3co2_ironly.dat'
       else if (trim(granule%platform) == 'MSG2') then
-         coef_file = 'rtcoef_msg_2_seviri.dat'
+         coef_file_vis = 'rtcoef_msg_2_seviri_o3co2.dat'
+         coef_file_ir = 'rtcoef_msg_2_seviri_o3co2_ironly.dat'
       else if (trim(granule%platform) == 'MSG3') then
-         coef_file = 'rtcoef_msg_3_seviri.dat'
+         coef_file_vis = 'rtcoef_msg_3_seviri_o3co2.dat'
+         coef_file_ir = 'rtcoef_msg_3_seviri_o3co2_ironly.dat'
       else if (trim(granule%platform) == 'MSG4') then
-         coef_file = 'rtcoef_msg_4_seviri.dat'
+         coef_file_vis = 'rtcoef_msg_4_seviri_o3co2.dat'
+         coef_file_ir = 'rtcoef_msg_4_seviri_o3co2_ironly.dat'
       else
          write(*,*) 'ERROR: rttov_driver(): Invalid SEVIRI platform: ', &
                     trim(granule%platform)
@@ -367,9 +384,11 @@ subroutine rttov_driver(coef_path, emiss_path, granule, preproc_dims, &
       end if
    case('SLSTR')
       if (trim(granule%platform) == 'Sentinel3a') then
-         coef_file = 'rtcoef_sentinel3_1_slstr.dat'
+         coef_file_vis = 'rtcoef_sentinel3_1_slstr_o3co2.dat'
+         coef_file_ir = 'rtcoef_sentinel3_1_slstr_o3co2_ironly.dat'
       else if (trim(granule%platform) == 'Sentinel3b') then
-         coef_file = 'rtcoef_sentinel3_2_slstr.dat'
+         coef_file_vis = 'rtcoef_sentinel3_2_slstr_o3co2.dat'
+         coef_file_ir = 'rtcoef_sentinel3_2_slstr_o3co2_ironly.dat'
       else
          write(*,*) 'ERROR: rttov_driver(): Invalid SLSTR platform: ', &
                     trim(granule%platform)
@@ -377,9 +396,11 @@ subroutine rttov_driver(coef_path, emiss_path, granule, preproc_dims, &
       end if
    case('VIIRSI')
       if (trim(granule%platform) == 'SuomiNPP') then
-         coef_file = 'rtcoef_jpss_0_viirs.dat'
+         coef_file_vis = 'rtcoef_jpss_0_viirs_o3co2.dat'
+         coef_file_ir = 'rtcoef_jpss_0_viirs_o3co2_ironly.dat'
       else if (trim(granule%platform) == 'NOAA20') then
-         coef_file = 'rtcoef_noaa_20_viirs.dat'
+         coef_file_vis = 'rtcoef_noaa_20_viirs_o3co2.dat'
+         coef_file_ir = 'rtcoef_noaa_20_viirs_o3co2_ironly.dat'
       else
          write(*,*) 'ERROR: rttov_driver(): Invalid VIIRS platform: ', &
                     trim(granule%platform)
@@ -387,9 +408,11 @@ subroutine rttov_driver(coef_path, emiss_path, granule, preproc_dims, &
       end if
    case('VIIRSM')
       if (trim(granule%platform) == 'SuomiNPP') then
-         coef_file = 'rtcoef_jpss_0_viirs.dat'
+         coef_file_vis = 'rtcoef_jpss_0_viirs_o3co2.dat'
+         coef_file_ir = 'rtcoef_jpss_0_viirs_o3co2_ironly.dat'
       else if (trim(granule%platform) == 'NOAA20') then
-         coef_file = 'rtcoef_noaa_20_viirs.dat'
+         coef_file_vis = 'rtcoef_noaa_20_viirs_o3co2.dat'
+         coef_file_ir = 'rtcoef_noaa_20_viirs_o3co2_ironly.dat'
       else
          write(*,*) 'ERROR: rttov_driver(): Invalid VIIRS platform: ', &
                     trim(granule%platform)
@@ -400,8 +423,8 @@ subroutine rttov_driver(coef_path, emiss_path, granule, preproc_dims, &
       stop error_stop_code
    end select
 
-   if (verbose) write(*,*) 'RTTOV coef file: ', trim(coef_file)
-
+   if (verbose) write(*,*) 'RTTOV VIS coef file: ', trim(coef_file_vis)
+   if (verbose) write(*,*) 'RTTOV IR coef file: ', trim(coef_file_ir)
 
    ! Initialise options structure (leaving default settings be)
    opts % interpolation % addinterp = .true. ! Interpolate input profile
@@ -416,11 +439,11 @@ subroutine rttov_driver(coef_path, emiss_path, granule, preproc_dims, &
    opts % rt_all % use_q2m   = .false. ! Do not use surface humidity
    opts % rt_all % addrefrac = .true.  ! Include refraction in path calc
    opts % rt_ir % addsolar   = .true.  ! Do not include reflected solar
-   opts % rt_ir % ozone_data = .true.  ! Include ozone profile
+   opts % rt_all % ozone_data = .true.  ! Include ozone profile
    if (pre_opts%do_co2) then
-      opts % rt_ir % co2_data   = .true.  ! Include CO2 profile
+      opts % rt_all % co2_data   = .true.  ! Include CO2 profile
    else
-      opts % rt_ir % co2_data   = .true.  ! Include CO2 profile
+      opts % rt_all % co2_data   = .false.  ! Include CO2 profile
    end if
    opts % config % verbose   = .false. ! Display only fatal error messages
 
@@ -522,9 +545,9 @@ subroutine rttov_driver(coef_path, emiss_path, granule, preproc_dims, &
          ! Check to see if the ECMWF data read in includes ozone
          ! profiles: forecast data does not
          if (maxval(preproc_prtm%ozone(idim,jdim,:)) == 0.0) then
-            opts % rt_ir % ozone_data = .false. ! No valid ozone profiles!
+            opts % rt_all % ozone_data = .false. ! No valid ozone profiles!
          else
-            opts % rt_ir % ozone_data = .true.
+            opts % rt_all % ozone_data = .true.
          end if
 
          ! set gas units to 1, specifying gas input in kg/kg
@@ -668,8 +691,8 @@ subroutine rttov_driver(coef_path, emiss_path, granule, preproc_dims, &
             end do
 
             ! This assumes the recommended structure of the RTTOV coef library
-            coef_full_path = trim(adjustl(coef_path))//'/rttov7pred54L/'// &
-                 trim(adjustl(coef_file))
+            coef_full_path = trim(adjustl(coef_path))//'/rttov13pred54L/'// &
+                 trim(adjustl(coef_file_ir))
          else
             ! Shortwave
             nchan = 0
@@ -693,8 +716,8 @@ subroutine rttov_driver(coef_path, emiss_path, granule, preproc_dims, &
                end if
             end do
 
-            coef_full_path = trim(adjustl(coef_path))//'/rttov9pred54L/'// &
-                 trim(adjustl(coef_file))
+            coef_full_path = trim(adjustl(coef_path))//'/rttov13pred54L/'// &
+                 trim(adjustl(coef_file_vis))
          end if
 
          if (verbose) write(*,*) 'Read coefficients'

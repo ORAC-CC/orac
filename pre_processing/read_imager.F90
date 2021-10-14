@@ -202,7 +202,7 @@ subroutine read_imager(granule, opts, path_to_aatsr_drift_table, &
       ! imager_geolocation
       call read_seviri_l1_5(granule%l1b_file, &
            imager_geolocation, imager_measurements, imager_angles, &
-           imager_time, channel_info, opts%do_gsics, global_atts, verbose)
+           imager_time, channel_info, opts%do_gsics, opts%do_nasa, global_atts, verbose)
 
       ! Temporary function for use until seviri_util predef geo is fixed. INEFFICIENT.
       if (opts%use_predef_geo) call SEV_Retrieve_Predef_Geo(imager_geolocation, &
@@ -216,7 +216,7 @@ subroutine read_imager(granule, opts, path_to_aatsr_drift_table, &
       ! imager_geolocation
       call read_slstr(granule%l1b_file, &
            imager_geolocation, imager_measurements, imager_angles, imager_time, &
-           imager_flags, channel_info, verbose)
+           imager_flags, channel_info, opts%calculate_slstr_alignment, verbose)
 
       ! In absence of proper mask set everything to "1" for cloud mask
       imager_flags%cflag = 1
@@ -273,6 +273,15 @@ subroutine read_imager(granule, opts, path_to_aatsr_drift_table, &
          end do
       end do
    end do
+
+   ! Some sensors define azimuth on [0, 360] while we want [-180, 180]
+   where (imager_angles%solazi .gt. 180.)
+      imager_angles%solazi = imager_angles%solazi - 360.
+   end where
+
+   where (imager_angles%satazi .gt. 180.)
+      imager_angles%satazi = imager_angles%satazi - 360.
+   end where
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_imager()'
 

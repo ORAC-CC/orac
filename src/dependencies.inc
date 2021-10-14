@@ -10,8 +10,8 @@ $(OBJS)/fm_routines.o: $(OBJS)/ctrl.o $(OBJS)/gzero.o $(OBJS)/int_lut_routines.o
         $(OBJS)/interpol_routines.o $(OBJS)/orac_constants.o $(OBJS)/planck.o \
         $(OBJS)/rtm_pc.o $(OBJS)/sad_chan.o $(OBJS)/sad_lut.o $(OBJS)/spixel.o \
         fm.F90 fm_solar.F90 fm_thermal.F90 set_crp_solar.F90 set_crp_thermal.F90
-$(OBJS)/gzero.o: $(OBJS)/ctrl.o $(OBJS)/int_routines.o $(OBJS)/orac_constants.o \
-        $(OBJS)/sad_lut.o $(OBJS)/spixel.o set_gzero.F90
+$(OBJS)/gzero.o: $(OBJS)/ctrl.o $(OBJS)/orac_constants.o $(OBJS)/sad_lut.o \
+        $(OBJS)/spixel.o set_gzero.F90
 $(OBJS)/int_routines.o: $(OBJS)/orac_constants.o find_in_array.inc linint.F90
 $(OBJS)/interpol_routines.o: $(OBJS)/ctrl.o $(OBJS)/int_routines.o \
         $(OBJS)/orac_constants.o $(OBJS)/planck.o $(OBJS)/rtm_pc.o \

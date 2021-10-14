@@ -237,6 +237,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%do_CTX_correction      = .true.
    Ctrl%process_cloudy_only    = .true.
    Ctrl%process_aerosol_only   = .false.
+   Ctrl%force_nighttime_retrieval = .false.
 
 
    !----------------------------------------------------------------------------
@@ -615,7 +616,10 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
 
    !----------------------- Ctrl SWITCHES -----------------
    Ctrl%i_equation_form  = switch_cls(c, Default=3, AerOx=1, AerSw=0, AerBR=1)
-   Ctrl%LUTIntSelm       = switch_app(a, Default=LUTIntMethLinear)
+   ! Bicubic interpolation (LUTIntMethBicubic) is the default LUT
+   ! interpolation method in ORAC. For a faster but less accurate LUT
+   ! interpolation method you could use LUTIntMethLinear.
+   Ctrl%LUTIntSelm       = switch_app(a, Default=LUTIntMethBicubic)
    Ctrl%RTMIntSelm       = switch_app(a, Default=RTMIntMethLinear, Aer=RTMIntMethNone)
    Ctrl%CloudType        = switch_app(a, Default=1,                Aer=2)
    Ctrl%Max_SDAD         = 10.0

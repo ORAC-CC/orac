@@ -147,7 +147,6 @@ subroutine get_cloud_emis(channel_info, imager_measurements, imager_geolocation,
    ! Interpolation variables
    real            :: Lat0, Lon0, LatN, LonN, MinLon, MaxLon
    real            :: delta_lat, delta_lon
-   real            :: rad_clr, rad_cld, rad_obs, t1, t2, emis
    real, parameter :: c1  = 1.191042e8
    real, parameter :: c2  = 1.4387752e4
    real, parameter :: lam1 = 10.8
