@@ -215,7 +215,7 @@ subroutine rttov_driver_gfs(coef_path, emiss_path, granule, preproc_dims, &
    case('AGRI')
       if (trim(granule%platform) == 'FY-4A') then
          coef_file_vis = 'rtcoef_fy4_1_agri_o3co2.dat'
-         coef_file_ir = 'rtcoef_fy4_2_agri_o3co2_ironly.dat'
+         coef_file_ir = 'rtcoef_fy4_1_agri_o3co2_ironly.dat'
       else if (trim(granule%platform) == 'FY-4B') then
          coef_file_vis = 'rtcoef_fy4_2_agri_o3co2.dat'
          coef_file_ir = 'rtcoef_fy4_2_agri_o3co2_ironly.dat'
