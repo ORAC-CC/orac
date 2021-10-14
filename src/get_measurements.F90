@@ -213,7 +213,7 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
                ! Convert radiance uncertainty to reflectance uncertainty
                ! then square it to convert to reflectance variance
                SPixel%Sy(i,i) = ((Pi * dLx) / &
-                                (cos(SPixel%Geom%SolZen(i) * d2r) * &
+                                (cos(SPixel%Geom%SolZen(j) * d2r) * &
                                  SAD_Chan(ii)%Solar%F0)) ** 2
             end if
          end if
