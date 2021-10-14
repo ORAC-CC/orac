@@ -177,10 +177,10 @@ subroutine agri_retr_anc(ncid, imager_angles, imager_geolocation)
 
    call ncdf_read_array(ncid, 'latitude', imager_geolocation%latitude)
    call ncdf_read_array(ncid, 'longitude', imager_geolocation%longitude)
-   call ncdf_read_array(ncid, 'SZA', imager_angles%solzen(:,:,1))
-   call ncdf_read_array(ncid, 'SAA', imager_angles%solazi(:,:,1))
-   call ncdf_read_array(ncid, 'VZA', imager_angles%satzen(:,:,1))
-   call ncdf_read_array(ncid, 'VAA', imager_angles%satazi(:,:,1))
+   call ncdf_read_array(ncid, 'solar_zenith_angle', imager_angles%solzen(:,:,1))
+   call ncdf_read_array(ncid, 'solar_azimuth_angle', imager_angles%solazi(:,:,1))
+   call ncdf_read_array(ncid, 'satellite_zenith_angle', imager_angles%satzen(:,:,1))
+   call ncdf_read_array(ncid, 'satellite_azimuth_angle', imager_angles%satazi(:,:,1))
 
    imager_angles%solzen(:,:,1) = abs(imager_angles%solzen(:,:,1))
    imager_angles%satzen(:,:,1) = abs(imager_angles%satzen(:,:,1))
@@ -360,7 +360,7 @@ subroutine read_agri_data(infile, imager_geolocation, imager_measurements, &
    call agri_retr_anc(ncid, imager_angles, imager_geolocation)
 
    do i = 1, n_bands
-      write(cur_band, '("C",i2)') band_ids(i)
+      write(cur_band, '("C",i2.2)') band_ids(i)
       call agri_retr_band(ncid, cur_band, i, channel_info%channel_sw_flag(i), imager_measurements)
    end do
 
