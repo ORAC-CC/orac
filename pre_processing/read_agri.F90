@@ -325,11 +325,13 @@ subroutine read_agri_data(infile, imager_geolocation, imager_measurements, &
    type(global_attributes_t),   intent(inout) :: global_atts
    logical,                     intent(in)    :: verbose
 
-   integer(c_int)              :: n_bands
-   integer(c_int), allocatable :: band_ids(:)
-   integer(c_int), allocatable :: band_units(:)
-   integer                     :: startx, nx
-   integer                     :: starty, ny
+
+   real(sreal), allocatable     :: in_slopes(:)
+   integer(c_int)               :: n_bands
+   integer(c_int), allocatable  :: band_ids(:)
+   integer(c_int), allocatable  :: band_units(:)
+   integer                      :: startx, nx
+   integer                      :: starty, ny
 
    ! netCDF stuff
    integer                     :: ncid
@@ -345,6 +347,9 @@ subroutine read_agri_data(infile, imager_geolocation, imager_measurements, &
    allocate(band_ids(n_bands))
    band_ids = channel_info%channel_ids_instr
    allocate(band_units(n_bands))
+   
+   ! Temporary array for calibration slopes
+   allocate(in_slopes(channel_info%all_nchannels_total))
 
    call ncdf_open(ncid, infile, 'read_agri_data()')
 
@@ -358,11 +363,19 @@ subroutine read_agri_data(infile, imager_geolocation, imager_measurements, &
 
    ! Now we load the ancillary data
    call agri_retr_anc(ncid, imager_angles, imager_geolocation)
-
+   
+   ! Load the full calibration slopes array from input data
+   call ncdf_read_array(ncid, 'CAL_Slope', in_slopes)
+   
+   ! Loop over bands and load data
    do i = 1, n_bands
       write(cur_band, '("C",i2.2)') band_ids(i)
       call agri_retr_band(ncid, cur_band, i, channel_info%channel_sw_flag(i), imager_measurements)
+      ! Store the correct calibration slope from the input file.
+      imager_measurements%cal_slope(i) = in_slopes(band_ids(i))
    end do
+   
+   deallocate(in_slopes)
 
    call ncdf_close(ncid, 'read_agri_data()')
 
