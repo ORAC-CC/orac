@@ -695,7 +695,6 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
    if (granule%startx.ge.1 .and. granule%endx.ge.1 .and. &
         granule%starty.ge.1 .and. granule%endy.ge.1) then
       if ( trim(adjustl(granule%sensor)) .eq. 'ABI'    .or. &
-           trim(adjustl(granule%sensor)) .eq. 'AGRI'   .or. &
            trim(adjustl(granule%sensor)) .eq. 'VIIRSI' .or. &
            trim(adjustl(granule%sensor)) .eq. 'VIIRSM') then
          write(*,*) 'ERROR: subsetting not supported for ', trim(granule%sensor)
