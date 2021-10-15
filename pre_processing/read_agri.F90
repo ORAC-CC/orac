@@ -214,8 +214,6 @@ subroutine agri_retr_anc(ncid, imager_angles, imager_geolocation)
          imager_angles%relazi(:,:,1) = 360. - imager_angles%relazi(:,:,1)
       end where
 
-      imager_angles%relazi(:,:,1) = 180. - imager_angles%relazi(:,:,1)
-
       imager_angles%solazi(:,:,1) = imager_angles%solazi(:,:,1) + 180.
       where (imager_angles%solazi(:,:,1) .gt. 360.)
          imager_angles%solazi(:,:,1) = imager_angles%solazi(:,:,1) - 360.
@@ -229,7 +227,7 @@ subroutine agri_retr_anc(ncid, imager_angles, imager_geolocation)
 end subroutine agri_retr_anc
 
 
-subroutine agri_retr_band(ncid, band, iband, solband, imager_measurements)
+subroutine agri_retr_band(ncid, band, iband, irband, imager_measurements)
 !-----------------------------------------------------------------------------
 ! Name: agri_retr_band
 !
@@ -243,7 +241,7 @@ subroutine agri_retr_band(ncid, band, iband, solband, imager_measurements)
 ! ncid                int     in   The ID of the netCDF file open for reading
 ! band                str     in   The in-file band variable name
 ! iband               int     in   The band location in the output struct
-! solband             int     in   Switch for solar bands
+! irband              int     in   Switch for infrared bands
 ! imager_measurements struct  out  The struct storing the actual data
 !-----------------------------------------------------------------------------
 
@@ -257,13 +255,13 @@ subroutine agri_retr_band(ncid, band, iband, solband, imager_measurements)
    integer,                     intent(in)  :: ncid
    character(len=*),            intent(in)  :: band
    integer,                     intent(in)  :: iband
-   integer,                     intent(in)  :: solband
+   integer,                     intent(in)  :: irband
    type(imager_measurements_t), intent(out) :: imager_measurements
 
    call ncdf_read_array(ncid, band, imager_measurements%data(:,:,iband))
 
-   ! If it's a solar band then we have to divide by 100 as Satpy refl is in range 0->100
-   if (solband .eq. 1) then
+   ! If it's a non-IR band then we have to divide by 100 as Satpy refl is in range 0->100
+   if (irband .eq. 0) then
       imager_measurements%data(:,:,iband) = imager_measurements%data(:,:,iband) / 100
       ! Check units to remove anything that's out-of-range for solar bands
       where(imager_measurements%data(:,:,iband)  .gt. 2) &
@@ -370,9 +368,13 @@ subroutine read_agri_data(infile, imager_geolocation, imager_measurements, &
    ! Loop over bands and load data
    do i = 1, n_bands
       write(cur_band, '("C",i2.2)') band_ids(i)
+<<<<<<< HEAD
       call agri_retr_band(ncid, cur_band, i, channel_info%channel_sw_flag(i), imager_measurements)
       ! Store the correct calibration slope from the input file.
       imager_measurements%cal_slope(i) = in_slopes(band_ids(i))
+=======
+      call agri_retr_band(ncid, cur_band, i, channel_info%channel_lw_flag(i), imager_measurements)
+>>>>>>> master
    end do
    
    deallocate(in_slopes)
