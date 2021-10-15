@@ -368,13 +368,9 @@ subroutine read_agri_data(infile, imager_geolocation, imager_measurements, &
    ! Loop over bands and load data
    do i = 1, n_bands
       write(cur_band, '("C",i2.2)') band_ids(i)
-<<<<<<< HEAD
       call agri_retr_band(ncid, cur_band, i, channel_info%channel_sw_flag(i), imager_measurements)
       ! Store the correct calibration slope from the input file.
       imager_measurements%cal_slope(i) = in_slopes(band_ids(i))
-=======
-      call agri_retr_band(ncid, cur_band, i, channel_info%channel_lw_flag(i), imager_measurements)
->>>>>>> master
    end do
    
    deallocate(in_slopes)
