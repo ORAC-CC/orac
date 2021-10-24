@@ -166,9 +166,11 @@ subroutine Read_MSI(Ctrl, MSI_Data, SAD_Chan)
    ! Allocate Data%MSI structure size to match image segments to be used.
    allocate(MSI_Data%MSI(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, Ctrl%Ind%Ny))
    allocate(MSI_Data%time(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))
+   allocate(MSI_Data%cal_gain(Ctrl%Ind%Ny))
 
    call ncdf_read_array(ncid, "msi_data", MSI_Data%MSI, 3, Ctrl%Ind%ICh)
    call ncdf_read_array(ncid, "time_data", MSI_Data%time)
+   call ncdf_read_array(ncid, "cal_data", MSI_Data%cal_gain)
 
    ! Read variance data, if requested
    if (Ctrl%EqMPN%SySelm == SelmMeas) then

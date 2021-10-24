@@ -733,9 +733,9 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       Ctrl%Ind%Y_Id_legacy(I_legacy_0_6x) = 2
       Ctrl%Ind%Y_Id_legacy(I_legacy_0_8x) = 3
       Ctrl%Ind%Y_Id_legacy(I_legacy_1_6x) = 5
-      Ctrl%Ind%Y_Id_legacy(I_legacy_3_xx) = 7
-      Ctrl%Ind%Y_Id_legacy(I_legacy_11_x) = 11
-      Ctrl%Ind%Y_Id_legacy(I_legacy_12_x) = 12
+      Ctrl%Ind%Y_Id_legacy(I_legacy_3_xx) = 8
+      Ctrl%Ind%Y_Id_legacy(I_legacy_11_x) = 12
+      Ctrl%Ind%Y_Id_legacy(I_legacy_12_x) = 13
 
       allocate(Ctrl%ReChans(3))
       Ctrl%ReChans = (/ 5, 7, 6 /)

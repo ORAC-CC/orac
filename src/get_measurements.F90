@@ -125,7 +125,6 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
    ! Define variables for computing reflectance varying NEDR
    real    :: Lx        ! Radiance measurement
    real    :: dLx       ! Radiance uncertainty
-   real    :: gain(11)  ! Radiance gain for MSG3 SEVIRI tests (TO BE REMOVED).
 
    ! Define variables for computing brightness temperature-varying NEBT.
    real    :: dR_dT0(1) ! Gradient of Rad w.r.t. reference temperature.
@@ -174,11 +173,6 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
                           MSI_Data%SD(SPixel%Loc%X0, SPixel%Loc%Y0, ii)
       end do
    case(SelmAux)
-      ! These are gains from the header of SEVIRI MSG3 *.nat files
-      ! read in using Satpy for the nominal calibration.
-      gain(:) = (/0.02142, 0.02829, 0.02370, &
-                 0., 0., 0., 0., 0., 0., 0., 0./)
-
       ! Use values read from SAD_Chan files
       do i = 1, SPixel%Ind%Ny
          ii = SPixel%spixel_y_to_ctrl_y_index(i)
@@ -186,7 +180,7 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
             if (len_trim(Ctrl%LUTClass) == 3) then
                ! Old LUTs approach (fixed uncertainty)
                ! Note: NEBT is already squared when old LUT is read in.
-               SPixel%Sy(i,i) = SAD_Chan(ii)%Thermal%NEBT
+               SPixel%Sy(i,i) = SAD_Chan(ii)%Thermal%NEBT ** 2
             else
                ! New LUTs approach (varying uncertainty)
                ! Note: NEBT is NOT squared when new LUT is read in.
@@ -200,7 +194,7 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
             if (len_trim(Ctrl%LUTClass) == 3) then
                ! Old LUTs approach (fixed uncertainty)
                ! Note: NEDR is squared when old LUT is read in.
-               SPixel%Sy(i,i) = SAD_Chan(ii)%Solar%NEDR
+               SPixel%Sy(i,i) = SAD_Chan(ii)%Solar%NEDR ** 2
             else
                ! New LUTs approach (varying uncertainty)
                ! Convert reflectance to radiance
@@ -209,7 +203,7 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
                      SAD_Chan(ii)%Solar%F0) / Pi
                ! Compute uncertainty in terms of radiance
                dLx = sqrt((Lx / SAD_Chan(ii)%Solar%SNR ) ** 2 + &
-                           2 * ((gain(ii) * (1.0 / sqrt(12.0))) ** 2))
+                           2 * ((MSI_Data%cal_gain(i) * (1.0 / sqrt(12.0))) ** 2))
                ! Convert radiance uncertainty to reflectance uncertainty
                ! then square it to convert to reflectance variance
                SPixel%Sy(i,i) = ((Pi * dLx) / &

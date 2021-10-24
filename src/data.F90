@@ -87,6 +87,7 @@ module Data_m
       integer(byte),      pointer :: nisemask(:,:)
       real(dreal),        pointer :: time(:,:)
       real,               pointer :: MSI(:,:,:)
+      real,               pointer :: cal_gain(:)
       integer,            pointer :: illum(:,:,:)
 
       ! SelmAux surface reflectance uncertainty terms

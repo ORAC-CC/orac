@@ -374,7 +374,7 @@ subroutine read_agri_data(infile, imager_geolocation, imager_measurements, &
       write(cur_band, '("C",i2.2)') band_ids(i)
       call agri_retr_band(ncid, cur_band, i, channel_info%channel_lw_flag(i), startx, starty, imager_measurements)
       ! Store the correct calibration slope from the input file.
-      imager_measurements%cal_slope(i) = in_slopes(band_ids(i))
+      imager_measurements%cal_gain(i) = in_slopes(band_ids(i))
    end do
    
    deallocate(in_slopes)

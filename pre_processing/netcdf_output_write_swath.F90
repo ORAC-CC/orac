@@ -551,7 +551,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
         netcdf_info%ncid_msi, &
         'cal_data', &
         netcdf_info%vid_cal_data, &
-        imager_measurements%cal_slope(:), &
+        imager_measurements%cal_gain(:), &
         1, 1, channel_info%nchannels_total)
 
 
