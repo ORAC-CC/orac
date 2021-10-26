@@ -494,9 +494,6 @@ subroutine read_seviri_l1_5_nat_or_hrit(l1_5_file, imager_geolocation, &
       imager_measurements%cal_gain(:)         = preproc%cal_slope(:)
    end if
 
-   ! Set the VIS channel gains read from HSD files
-   imager_measurements%cal_gain = preproc%cal_slope
-
    ! Remove underscores added by seviri_util (easy way of converting c-string to
    ! f-string).
    i = index(global_atts%Satpos_Metadata, '_')
