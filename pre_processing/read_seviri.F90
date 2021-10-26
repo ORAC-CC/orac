@@ -459,6 +459,7 @@ subroutine read_seviri_l1_5_nat_or_hrit(l1_5_file, imager_geolocation, &
       preproc%vza  => imager_angles%satzen(startx:,:,1)
       preproc%vaa  => imager_angles%satazi(startx:,:,1)
       preproc%data => imager_measurements%data(startx:,:,:)
+      preproc%cal_slope => imager_measurements%cal_gain(:)
 
       ! The main reader call which populates preproc (type seviri_preproc_t_f90)
       if (verbose) write(*,*) 'Calling seviri_read_and_preproc_f90() from ' // &
@@ -490,7 +491,11 @@ subroutine read_seviri_l1_5_nat_or_hrit(l1_5_file, imager_geolocation, &
       imager_angles%satzen(startx:,:,1)       = preproc%vza(column0+1:column1+1,line0+1:line1+1)
       imager_angles%satazi(startx:,:,1)       = preproc%vaa(column0+1:column1+1,line0+1:line1+1)
       imager_measurements%data(startx:,:,:)   = preproc%data(column0+1:column1+1,line0+1:line1+1,:)
+      imager_measurements%cal_gain(:)         = preproc%cal_slope(:)
    end if
+
+   ! Set the VIS channel gains read from HSD files
+   imager_measurements%cal_gain = preproc%cal_slope
 
    ! Remove underscores added by seviri_util (easy way of converting c-string to
    ! f-string).
