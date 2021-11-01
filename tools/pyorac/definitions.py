@@ -559,7 +559,7 @@ class ParticleType:
                  mb='m',
                  atmospheric_model='01',
                  microphysical_model='old',
-                 version='06'):
+                 version='07'):
         self.name = name
         self.inv = inv
         self.sad = sad

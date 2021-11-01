@@ -180,7 +180,7 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
             if (len_trim(Ctrl%LUTClass) == 3) then
                ! Old LUTs approach (fixed uncertainty)
                ! Note: NEBT is already squared when old LUT is read in.
-               SPixel%Sy(i,i) = SAD_Chan(ii)%Thermal%NEBT ** 2
+               SPixel%Sy(i,i) = SAD_Chan(ii)%Thermal%NEBT
             else
                ! New LUTs approach (varying uncertainty)
                ! Note: NEBT is NOT squared when new LUT is read in.
@@ -194,7 +194,7 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
             if (len_trim(Ctrl%LUTClass) == 3) then
                ! Old LUTs approach (fixed uncertainty)
                ! Note: NEDR is squared when old LUT is read in.
-               SPixel%Sy(i,i) = SAD_Chan(ii)%Solar%NEDR ** 2
+               SPixel%Sy(i,i) = SAD_Chan(ii)%Solar%NEDR
             else
                ! New LUTs approach (varying uncertainty)
                ! Convert reflectance to radiance
