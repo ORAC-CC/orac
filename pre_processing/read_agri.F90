@@ -148,7 +148,7 @@ subroutine compute_time(ncid, imager_time, ny)
 end subroutine compute_time
 
 
-subroutine agri_retr_anc(ncid, imager_angles, imager_geolocation)
+subroutine agri_retr_anc(ncid, imager_angles, startx, starty, imager_geolocation)
 !-----------------------------------------------------------------------------
 ! Name: agri_retr_anc
 !
@@ -172,15 +172,17 @@ subroutine agri_retr_anc(ncid, imager_angles, imager_geolocation)
    implicit none
 
    integer,                    intent(in)  :: ncid
+   integer,                    intent(in)  :: startx
+   integer,                    intent(in)  :: starty
    type(imager_angles_t),      intent(out) :: imager_angles
    type(imager_geolocation_t), intent(out) :: imager_geolocation
 
-   call ncdf_read_array(ncid, 'latitude', imager_geolocation%latitude)
-   call ncdf_read_array(ncid, 'longitude', imager_geolocation%longitude)
-   call ncdf_read_array(ncid, 'solar_zenith_angle', imager_angles%solzen(:,:,1))
-   call ncdf_read_array(ncid, 'solar_azimuth_angle', imager_angles%solazi(:,:,1))
-   call ncdf_read_array(ncid, 'satellite_zenith_angle', imager_angles%satzen(:,:,1))
-   call ncdf_read_array(ncid, 'satellite_azimuth_angle', imager_angles%satazi(:,:,1))
+   call ncdf_read_array(ncid, 'latitude', imager_geolocation%latitude, start=[startx, starty])
+   call ncdf_read_array(ncid, 'longitude', imager_geolocation%longitude, start=[startx, starty])
+   call ncdf_read_array(ncid, 'solar_zenith_angle', imager_angles%solzen(:,:,1), start=[startx, starty])
+   call ncdf_read_array(ncid, 'solar_azimuth_angle', imager_angles%solazi(:,:,1), start=[startx, starty])
+   call ncdf_read_array(ncid, 'satellite_zenith_angle', imager_angles%satzen(:,:,1), start=[startx, starty])
+   call ncdf_read_array(ncid, 'satellite_azimuth_angle', imager_angles%satazi(:,:,1), start=[startx, starty])
 
    imager_angles%solzen(:,:,1) = abs(imager_angles%solzen(:,:,1))
    imager_angles%satzen(:,:,1) = abs(imager_angles%satzen(:,:,1))
@@ -227,7 +229,7 @@ subroutine agri_retr_anc(ncid, imager_angles, imager_geolocation)
 end subroutine agri_retr_anc
 
 
-subroutine agri_retr_band(ncid, band, iband, irband, imager_measurements)
+subroutine agri_retr_band(ncid, band, iband, irband, startx, starty, imager_measurements)
 !-----------------------------------------------------------------------------
 ! Name: agri_retr_band
 !
@@ -256,9 +258,11 @@ subroutine agri_retr_band(ncid, band, iband, irband, imager_measurements)
    character(len=*),            intent(in)  :: band
    integer,                     intent(in)  :: iband
    integer,                     intent(in)  :: irband
+   integer,                    intent(in)   :: startx
+   integer,                    intent(in)   :: starty
    type(imager_measurements_t), intent(out) :: imager_measurements
 
-   call ncdf_read_array(ncid, band, imager_measurements%data(:,:,iband))
+   call ncdf_read_array(ncid, band, imager_measurements%data(:,:,iband), start=[startx, starty])
 
    ! If it's a non-IR band then we have to divide by 100 as Satpy refl is in range 0->100
    if (irband .eq. 0) then
@@ -323,11 +327,13 @@ subroutine read_agri_data(infile, imager_geolocation, imager_measurements, &
    type(global_attributes_t),   intent(inout) :: global_atts
    logical,                     intent(in)    :: verbose
 
-   integer(c_int)              :: n_bands
-   integer(c_int), allocatable :: band_ids(:)
-   integer(c_int), allocatable :: band_units(:)
-   integer                     :: startx, nx
-   integer                     :: starty, ny
+
+   real(sreal), allocatable     :: in_slopes(:)
+   integer(c_int)               :: n_bands
+   integer(c_int), allocatable  :: band_ids(:)
+   integer(c_int), allocatable  :: band_units(:)
+   integer                      :: startx, nx
+   integer                      :: starty, ny
 
    ! netCDF stuff
    integer                     :: ncid
@@ -343,6 +349,9 @@ subroutine read_agri_data(infile, imager_geolocation, imager_measurements, &
    allocate(band_ids(n_bands))
    band_ids = channel_info%channel_ids_instr
    allocate(band_units(n_bands))
+   
+   ! Temporary array for calibration slopes
+   allocate(in_slopes(channel_info%all_nchannels_total))
 
    call ncdf_open(ncid, infile, 'read_agri_data()')
 
@@ -355,12 +364,20 @@ subroutine read_agri_data(infile, imager_geolocation, imager_measurements, &
    call compute_time(ncid, imager_time, ny)
 
    ! Now we load the ancillary data
-   call agri_retr_anc(ncid, imager_angles, imager_geolocation)
-
+   call agri_retr_anc(ncid, imager_angles, startx, starty, imager_geolocation)
+   
+   ! Load the full calibration slopes array from input data
+   call ncdf_read_array(ncid, 'CAL_Slope', in_slopes)
+   
+   ! Loop over bands and load data
    do i = 1, n_bands
       write(cur_band, '("C",i2.2)') band_ids(i)
-      call agri_retr_band(ncid, cur_band, i, channel_info%channel_lw_flag(i), imager_measurements)
+      call agri_retr_band(ncid, cur_band, i, channel_info%channel_lw_flag(i), startx, starty, imager_measurements)
+      ! Store the correct calibration slope from the input file.
+      imager_measurements%cal_gain(i) = in_slopes(band_ids(i))
    end do
+   
+   deallocate(in_slopes)
 
    call ncdf_close(ncid, 'read_agri_data()')
 

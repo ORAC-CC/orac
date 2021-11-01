@@ -71,6 +71,9 @@ subroutine allocate_imager_structures(imager_geolocation,imager_angles, &
         1:imager_geolocation%ny,1:channel_info%nchannels_total))
    imager_measurements%uncertainty=sreal_fill_value
 
+   allocate(imager_measurements%cal_gain(1:channel_info%nchannels_total))
+   imager_measurements%cal_gain=sreal_fill_value
+
    allocate(imager_geolocation%latitude( &
         imager_geolocation%startx:imager_geolocation%endx, &
         1:imager_geolocation%ny))

@@ -322,6 +322,9 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
       stop error_stop_code
    end if
 
+   ! Set the VIS channel gains read from HSD files
+   imager_measurements%cal_gain = preproc%cal_slope
+
    ! Copy arrays between the reader and ORAC. This could (should!) be done more efficiently.
    imager_time%time(:,:)             = preproc%time
    imager_geolocation%latitude(:,:)  = preproc%lat

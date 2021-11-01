@@ -75,4 +75,62 @@ subroutine make_sad_chan_num(Ctrl, i_chan, chan_num)
 
 end subroutine make_sad_chan_num
 
+!-------------------------------------------------------------------------------
+! Name: map_ch_indices
+!
+! Purpose:
+! Returns the indices of provided_ind that have the same value as each
+! element of required_ind.
+!
+! Algorithm:
+! 1) For an element of required_ind, loop over provided_ind looking for
+!    the same value.
+! 2) Store that element in map.
+! 3) Repeat for all elements of required_ind.
+!
+! Arguments:
+! Name         Type    In/Out/Both Description
+! ------------------------------------------------------------------------------
+! nreq         integer In      Length of required_ind
+! required_ind integer In      Array of desired values
+! npro         integer In      Length of provided_ind
+! provided_ind integer In      Array of available values
+! map          integer Out     Indices that map provided onto required
+!
+! History:
+! 2020/08/18, AP: Original version.
+!
+! Bugs:
+! None known.
+!-------------------------------------------------------------------------------
+subroutine map_ch_indices(nreq, required_ind, npro, provided_ind, map)
+   use common_constants_m, only: error_stop_code
+
+   implicit none
+
+   integer, intent(in)    :: nreq
+   integer, intent(in)    :: required_ind(:)
+   integer, intent(in)    :: npro
+   integer, intent(in)    :: provided_ind(:)
+   integer, intent(inout) :: map(:)
+   integer :: i, j
+
+   map = 0
+   do i = 1, nreq
+      do j = 1, npro
+         if (required_ind(i) == provided_ind(j)) then
+            map(i) = j
+            exit
+         end if
+      end do
+
+      if (map(i) == 0) then
+         print*, 'ERROR: map_ch_indices(): Cannot locate channel ', &
+              required_ind(i), ' in ', provided_ind
+         stop error_stop_code
+      end if
+   end do
+
+end subroutine map_ch_indices
+
 end module sad_util_m

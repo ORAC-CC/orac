@@ -18,6 +18,8 @@
 ! 2015/08/14, AP: Replace Find_MDAD() with generalised Find_Channel().
 ! 2015/08/21, AP: Move make_sad_filename() here from ReadSADLUT.
 ! 2017/06/21, OS: string name fix for METOP
+! 2021/10/12, ATP: Add reference brightness temperature (T0) to
+!    Thermal type and signal-to-noise ratio (SNR) to Solar type.
 !
 ! Bugs:
 ! None known.
@@ -46,6 +48,7 @@ module SAD_Chan_m
       real        :: NeCoreg(MaxCloudType) ! Coregistration noise
       real        :: NedR        ! Noise equivalent delta radiance
       real        :: Rs(2)       ! 'Typical' land/sea reflectance
+      real        :: SNR         ! Signal-to-noise ratio
    end type Solar_t
 
    type Thermal_t
@@ -54,6 +57,7 @@ module SAD_Chan_m
       real        :: B2          ! Planck function coefficient
       real        :: T1          ! Planck function coefficient
       real        :: T2          ! Planck function coefficient
+      real        :: T0          ! Reference temperature for NEBT
       real        :: NeHomog(MaxCloudType) ! Homogeneity noise
       real        :: NeCoreg(MaxCloudType) ! Coregistration noise
       real        :: NEBT        ! Noise equivalent brightness temperature

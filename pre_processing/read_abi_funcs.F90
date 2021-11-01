@@ -506,9 +506,6 @@ subroutine goes_resample_vis_to_tir(inarr, outarr, nx, ny, fill, scl, verbose)
    real(kind=sreal), intent(in)  :: inarr(:,:)
    real(kind=sreal), intent(out) :: outarr(:,:)
 
-#ifdef _OPENMP
-   integer :: n_threads
-#endif
    integer :: x, y
    integer :: outx, outy
 
