@@ -330,7 +330,6 @@ subroutine orac(mytask,ntasks,lower_bound,upper_bound,drifile)
 
    call Read_SAD(Ctrl, SAD_Chan, SAD_LUT)
 
-
    ! Make read in rttov data in one go, no more segment reads
    if (Ctrl%RTMIntSelm /= RTMIntMethNone) then
       call read_input_dimensions_rtm(Ctrl%FID%PRTM, Ctrl%FID%LWRTM, &
