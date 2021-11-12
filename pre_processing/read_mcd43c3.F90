@@ -131,7 +131,7 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, read_ws, read_bs, &
    ! We'll need it's name to "attach" to it and extract the data
    if (verbose) write(*,*) 'Reading: ', trim(path_to_file)
    stat = 0
-   stat = gdinqgrid(path_to_file, gridlist, gridlistlen)
+   stat = gdinqgrid(trim(adjustl(path_to_file)), gridlist, gridlistlen)
    if (stat .ne. 1) then
       write(*,*) 'ERROR: read_mcd43c3(), problem with gdinqgrid(): ', stat
       stop error_stop_code
@@ -143,7 +143,7 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, read_ws, read_bs, &
    ! (using the name returned above)
    fid = gdopen(path_to_file, DFACC_READ)
 
-   gid = gdattach(fid, trim(gridlist))
+   gid = gdattach(fid, trim(adjustl(gridlist)))
 
    if (verbose) write(*,*) 'File and grid IDs are: ', fid, gid
 
@@ -259,7 +259,7 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, read_ws, read_bs, &
          dataname = 'Albedo_WSA_' // trim(BandList(bands(i)))
 
          if (verbose) write(*,*) 'Reading variable: ', trim(dataname)
-         stat = gdrdfld(gid, trim(dataname), start, stride, edge, tmpdata)
+         stat = gdrdfld(gid, trim(adjustl(dataname)), start, stride, edge, tmpdata)
          if (stat .ne. 0) then
             write(*,*) 'ERROR: read_mcd43c3(), gdrdfld(): ', stat
             stop error_stop_code
@@ -292,7 +292,7 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, read_ws, read_bs, &
          dataname = 'Albedo_BSA_' // trim(BandList(bands(i)))
 
          write(*,*) 'Reading parameter: ', dataname
-         stat = gdrdfld(gid, dataname, start, stride, edge, tmpdata)
+         stat = gdrdfld(gid, trim(adjustl(dataname)), start, stride, edge, tmpdata)
          if (stat .ne. 0) then
             write(*,*) 'ERROR: read_mcd43c3(), gdrdfld(): ', stat
             stop error_stop_code

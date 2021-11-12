@@ -211,13 +211,13 @@ subroutine read_ecmwf_nc(nwp_path, ecmwf, preproc_dims, preproc_geoloc, &
       case('SD', 'sd')
          three_d = .false.
          array2d => preproc_prtm%snow_depth
-      case('U10', 'u10')
+      case('U10', 'u10', 'U10M')
          three_d = .false.
          array2d => preproc_prtm%u10
-      case('V10', 'v10')
+      case('V10', 'v10', 'V10M')
          three_d = .false.
          array2d => preproc_prtm%v10
-      case('T2', 't2')
+      case('T2', 't2', 'T2M')
          three_d = .false.
          array2d => preproc_prtm%temp2
       case('SKT', 'skt')
