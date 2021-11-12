@@ -161,7 +161,7 @@ subroutine read_ecmwf_wind_nc_file(nwp_path, ecmwf)
             allocate(ecmwf%lat(ecmwf%ydim))
             call ncdf_read_array(fid, name, ecmwf%lat)
          end if
-      case('U10', 'u10')
+      case('U10', 'u10', 'U10M')
          if (.not.associated(ecmwf%u10)) then
             allocate(ecmwf%u10(ecmwf%xdim,ecmwf%ydim))
             allocate(val(ecmwf%xdim,ecmwf%ydim,1,1))
@@ -169,7 +169,7 @@ subroutine read_ecmwf_wind_nc_file(nwp_path, ecmwf)
             ecmwf%u10 = val(:,:,1,1)
             deallocate(val)
          end if
-      case('V10', 'v10')
+      case('V10', 'v10', 'V10M')
          if (.not.associated(ecmwf%v10)) then
             allocate(ecmwf%v10(ecmwf%xdim,ecmwf%ydim))
             allocate(val(ecmwf%xdim,ecmwf%ydim,1,1))
