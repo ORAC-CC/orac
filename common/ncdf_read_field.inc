@@ -38,6 +38,7 @@
 
    ! replace file's fill value and out of range values with our own and apply
    ! scale factor/offset
+   if (.not. fv_flag) fv = fill
    if (vr_flag) then
       where (arr.ne.fv .and. arr.lt.vmin) arr = fv
       where (arr.ne.fv .and. arr.gt.vmax) arr = fv
