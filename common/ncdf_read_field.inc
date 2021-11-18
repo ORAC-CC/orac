@@ -38,14 +38,16 @@
 
    ! replace file's fill value and out of range values with our own and apply
    ! scale factor/offset
-   if (fv_flag) &
-      where (arr.eq.fv) arr = fill
    if (vr_flag) then
-      where (arr.ne.fill .and. arr.lt.vmin) arr = fill
-      where (arr.ne.fill .and. arr.gt.vmax) arr = fill
+      where (arr.ne.fv .and. arr.lt.vmin) arr = fv
+      where (arr.ne.fv .and. arr.gt.vmax) arr = fv
    end if
    if (sf .ne. 1.0 .or. of .ne. 0.0) then
-      where (arr.ne.fill) arr = sf*arr + of
+      where (arr.ne.fv)
+        arr = sf*arr + of
+      elsewhere
+        arr = fill
+      endwhere
    end if
 
    ! additional information for print out
