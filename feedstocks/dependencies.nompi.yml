@@ -5,7 +5,6 @@ name: orac_git
 channels:
  - local
  - conda-forge
- - anaconda
 dependencies:
  - gcc_linux-64
  - gxx_linux-64

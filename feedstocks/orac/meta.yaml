@@ -1,5 +1,5 @@
 {% set version = "4.10" %}
-{% set build = 2 %}
+{% set build = 4 %}
 
 # recipe-lint fails if mpi is undefined
 {% set mpi = mpi or 'nompi' %}
@@ -65,15 +65,15 @@ requirements:
     # without this repeat reference, conda-smithy doesn't pin correctly
     - hdf5
     - hdf5 * {{ mpi_prefix }}_*
-    - hsd_reader
-    - hsd_reader * {{ mpi_prefix }}_*
+    - hsd_reader >=1.12
+    - hsd_reader >=1.12 {{ mpi_prefix }}_*
     - libemos
     - netcdf-fortran
     - netcdf-fortran * {{ mpi_prefix }}_*
     - nr
     - rttov
     - rttov * {{ mpi_prefix }}_*
-    - seviri_util
+    - seviri_util >=1.02
   run:
     - {{ mpi }}  # [mpi != 'nompi']
     - eccodes
@@ -81,12 +81,12 @@ requirements:
     - fu_liou
     - hdfeos2
     - hdf5 * {{ mpi_prefix }}_*
-    - hsd_reader * {{ mpi_prefix }}_*
+    - hsd_reader >=1.12 {{ mpi_prefix }}_*
     - libemos
     - netcdf-fortran * {{ mpi_prefix }}_*
     - nr
     - rttov * {{ mpi_prefix }}_*
-    - seviri_util
+    - seviri_util >=1.02
 
 test:
   commands:

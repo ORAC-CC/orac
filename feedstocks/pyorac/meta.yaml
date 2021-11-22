@@ -1,4 +1,4 @@
-{% set version = "3.01" %}
+{% set version = "3.02" %}
 
 package:
   name: pyorac
