@@ -118,7 +118,7 @@ def args_preproc(parser):
                      help='Revision (version) number for file.')
 
     ecmwf = parser.add_argument_group('ECMWF settings')
-    ecmwf.add_argument('--nwp_flag', type=int, choices=range(9),
+    ecmwf.add_argument('--nwp_flag', type=int, choices=range(5),
                        default=defaults.ecmwf_flag,
                        help='Type of ECMWF data to read in.')
     ecmwf.add_argument('--single_ecmwf', action='store_const',
@@ -321,14 +321,10 @@ def check_args_preproc(args):
     auxiliaries.update({key: val for key, val in args.aux})
     args.__dict__.update(auxiliaries)
 
-    try:
-        # When using ecmwf_dir to set a single directory
-        if os.path.isdir(args.ecmwf_dir):
-            args.ggam_dir = args.ecmwf_dir
-            args.ggas_dir = args.ecmwf_dir
-            args.spam_dir = args.ecmwf_dir
-    except AttributeError:
-        pass
+    if os.path.isdir(args.ggam_dir) and not os.path.isdir(args.ggas_dir):
+        args.ggas_dir = args.ggam_dir
+    if os.path.isdir(args.ggam_dir) and not os.path.isdir(args.spam_dir):
+        args.spam_dir = args.ggam_dir
 
     # Limit should either be all zero or all non-zero.
     limit_check = args.limit[0] == 0

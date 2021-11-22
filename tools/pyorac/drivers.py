@@ -101,7 +101,7 @@ def build_preproc_driver(args):
                               ('ECMWF_ERA_%Y%m%d_%H+00_0.5.nc', 6)):
             try:
                 bounds = _bound_time(args.File.time + args.File.dur // 2, ec_hour)
-                ggam = _form_bound_filenames(bounds, args.ggam_dir, form)
+                ggam = _form_bound_filenames(bounds, args.ecmwf_dir, form)
                 break
             except FileMissing as tmp_err:
                 err = tmp_err
@@ -113,7 +113,7 @@ def build_preproc_driver(args):
     elif args.nwp_flag == 2:
         ecmwf_nlevels = 137
         # Interpolation is done in the code
-        ggam = [args.ggam_dir, args.ggam_dir]
+        ggam = [args.ecmwf_dir, args.ecmwf_dir]
         ggas = ["", ""]
         spam = ["", ""]
     else:
