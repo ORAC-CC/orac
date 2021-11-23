@@ -189,7 +189,7 @@ function nearest_USGS(imager_lat, imager_lon, usgs, usgs_grid_upright) &
    logical,               intent(in) :: usgs_grid_upright
 
    ! output variable
-   integer(kind=sint), dimension(2) :: nearest_xy
+   integer(kind=lint), dimension(2) :: nearest_xy
 
 #ifdef ASSUME_USGS_GRID
    if (usgs_grid_upright) then
