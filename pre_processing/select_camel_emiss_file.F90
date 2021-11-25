@@ -38,7 +38,7 @@ subroutine select_camel_emiss_file(cyear, cmonth, camel_emis_path, &
    camel_emis_path_file = trim(adjustl(camel_emis_path))// &
       '/CAM5K30EM_emis_'// &
       trim(adjustl(cyear))// &
-      trim(adjustl(cmonth))//'_V001.nc'
+      trim(adjustl(cmonth))//'_V002.nc'
 
    ! Check that the defined file exists and is readable
    inquire(file=trim(camel_emis_path_file), exist=camel_emis_file_exist, &
@@ -47,7 +47,7 @@ subroutine select_camel_emiss_file(cyear, cmonth, camel_emis_path, &
       camel_emis_path_file = trim(adjustl(camel_emis_path))// &
       '/CAM5K30EM_emis_'// &
       trim(adjustl(cyear))// &
-      trim(adjustl(cmonth))//'_V002.nc'
+      trim(adjustl(cmonth))//'_V001.nc'
        inquire(file=trim(camel_emis_path_file), exist=camel_emis_file_exist, &
           read=camel_emis_file_read)
        if (.not.camel_emis_file_exist) then
