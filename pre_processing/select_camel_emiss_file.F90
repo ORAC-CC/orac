@@ -56,7 +56,8 @@ subroutine select_camel_emiss_file(cyear, cmonth, camel_emis_path, &
                      trim(camel_emis_path_file)
           stop error_stop_code
        endif
-   else if (trim(camel_emis_file_read).eq.'NO') then
+   endif
+   if (trim(camel_emis_file_read).eq.'NO') then
       write(*,*) 'ERROR: select_camel_emiss_file(): camel surface ' // &
                  'emissivity file exists but is not readable, filename: ', &
                  trim(camel_emis_path_file)
