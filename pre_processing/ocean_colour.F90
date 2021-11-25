@@ -430,7 +430,7 @@ subroutine get_ocean_colour(cyear, cmonth, occci_path, lat, lon, &
    ! Check that our data is within the OceanColour_cci data record
    if ((iyear .lt. 1997) .or. &
        ((iyear .eq. 1997) .and. (imonth .lt. 9)) .or. &
-       (iyear .gt. 2013)) then
+       (iyear .gt. 2020)) then
       cyear2 = 'XXXX'
    else
       cyear2 = cyear
@@ -441,10 +441,7 @@ subroutine get_ocean_colour(cyear, cmonth, occci_path, lat, lon, &
       occci_path_file = occci_path
    else
       occci_path_full = trim(adjustl(occci_path))//'/'//trim(adjustl(cyear2))
-      occci_file_regex = 'ESACCI-OC-L3S-IOP-MERGED-1M_MONTHLY_4km_GEO_..._OC.v._QAA-'// &
-           trim(adjustl(cyear2))//trim(adjustl(cmonth))//'-fv.\..\.nc'
-
-      occci_file_regex = 'ESACCI-OC-L3S-OC_PRODUCTS-MERGED-1M_MONTHLY_4km_GEO_..._OC._QAA-'// &
+      occci_file_regex = 'ESACCI-OC-L3S-IOP-MERGED-1M_MONTHLY_4km_GEO_..._OCx_QAA-'// &
            trim(adjustl(cyear2))//trim(adjustl(cmonth))//'-fv.\..\.nc'
       if (match_file(trim(occci_path_full), trim(occci_file_regex), occci_file) .ne. 0) then
          occci_file_regex = 'ESACCI-OC-L3S-OC_PRODUCTS-MERGED-1M_MONTHLY_4km_GEO_..._OC._QAA-'//&
