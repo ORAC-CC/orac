@@ -451,7 +451,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
 
    ! Output filenames
    outname = trim(Ctrl%FID%Out_Dir)//'/'//trim(Ctrl%FID%Filename)// &
-            trim(Ctrl%LUTClassLayers)
+            trim(Ctrl%LUTClassLayers)//'_'//trim(Ctrl%FID%L2_comment)
    Ctrl%FID%L2_primary   = trim(outname)//'.primary.nc'
    Ctrl%FID%L2_secondary = trim(outname)//'.secondary.nc'
 

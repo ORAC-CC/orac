@@ -136,6 +136,7 @@ module Ctrl_m
       character(FilenameLen) :: Alb                ! Surface albedo, emissivity
       character(FilenameLen) :: L2_primary         ! Primary output file
       character(FilenameLen) :: L2_secondary       ! Secondary output file
+      character(FilenameLen) :: L2_comment         ! Additional text for output filename
    end type FID_t
 
    ! Indices: channel indexing and spatial grid definitions
