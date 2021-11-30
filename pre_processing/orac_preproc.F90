@@ -494,6 +494,7 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
    preproc_opts%do_co2                   = .true.
    preproc_opts%use_swansea_climatology  = .false.
    preproc_opts%swansea_gamma            = 0.3
+   preproc_opts%mcd43_max_qaflag         = 5
 
    ! When true, the offset between the nadir and oblique views is read from
    ! the track_offset global attribute. Otherwise, the two longitude fields are
@@ -947,7 +948,7 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
               imager_geolocation, imager_angles, channel_info, ecmwf, &
               assume_full_paths, include_full_brdf, preproc_opts%use_occci, &
               preproc_opts%use_swansea_climatology, preproc_opts%swansea_gamma, verbose, &
-              surface, source_atts)
+              preproc_opts%mcd43_max_qaflag, surface, source_atts)
 
          ! Use the Near-real-time Ice and Snow Extent (NISE) data from the National
          ! Snow and Ice Data Center to detect ice and snow pixels, and correct the

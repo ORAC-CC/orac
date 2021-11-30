@@ -120,7 +120,8 @@
 subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
      modis_brdf_path, occci_path, imager_flags, imager_geolocation, &
      imager_angles, channel_info, ecmwf, assume_full_path, include_full_brdf, &
-     use_occci, use_swansea_climatology, swan_g, verbose, surface, source_atts)
+     use_occci, use_swansea_climatology, swan_g, verbose, mcd43_maxqa, &
+     surface, source_atts)
 
    use channel_structures_m
    use cox_munk_m
@@ -158,6 +159,7 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
    logical,                    intent(in)    :: use_swansea_climatology
    real,                       intent(in)    :: swan_g
    logical,                    intent(in)    :: verbose
+   integer,                    intent(in)    :: mcd43_maxqa
    type(surface_t),            intent(inout) :: surface
    type(source_attributes_t),  intent(inout) :: source_atts
 
@@ -407,11 +409,11 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
               mcdc3)
       else
          call read_mcd43c3(modis_surf_path_file, mcdc3, n_bands, bands, &
-              .true., .false., .false., verbose, stat)
+              .true., .false., .true., mcd43_maxqa, verbose, stat)
 
          if (include_full_brdf) then
             call read_mcd43c1(modis_brdf_path_file, mcdc1, n_bands, bands, &
-                 .true., .false., verbose, stat)
+                 .true., .true., mcd43_maxqa, verbose, stat)
          end if
       end if
 
