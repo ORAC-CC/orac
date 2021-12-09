@@ -316,6 +316,7 @@ subroutine read_himawari_bin(infile, imager_geolocation, imager_measurements, &
                      .false., & ! True = output as VIS channel resolution, False = Output at IR res .
                      global_atts%Satpos_Metadata, & ! Struct to store the satellite position data, for parallax
                      .true., & ! Compute or not the solar angles in the reader.
+                     .true., & ! Use updated (block 6, true) or original (block 5, false) VIS calibration
                      verbose) .ne. 0) then ! Verbosity flag.
       write(*,*) 'ERROR: in read_himawari_read(), calling ' // &
                  'AHI_Main_Read(), filename = ', trim(infile)
