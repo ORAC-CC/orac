@@ -2,8 +2,9 @@ $(OBJS)/cholesky.o: invert_cholesky.F90 solve_cholesky.F90
 $(OBJS)/ctrl.o: $(OBJS)/orac_constants.o dealloc_ctrl.F90
 $(OBJS)/data.o: $(OBJS)/ctrl.o $(OBJS)/int_routines.o $(OBJS)/orac_constants.o \
         $(OBJS)/sad_chan.o dealloc_data.F90 determine_illum.F90 nullify_data.F90 \
-        read_alb.F90 read_cloudflags.F90 read_data.F90 read_geometry.F90 \
-        read_location.F90 read_lsflags.F90 read_msi.F90 sabotage_inputs.F90
+        read_alb.F90 read_cloudflags.F90 read_ctp.F90 read_data.F90 \
+        read_geometry.F90 read_location.F90 read_lsflags.F90 read_msi.F90 \
+        sabotage_inputs.F90
 $(OBJS)/diag.o: $(OBJS)/ctrl.o $(OBJS)/data.o $(OBJS)/orac_constants.o \
         $(OBJS)/spixel.o set_diag.F90 zero_diag.F90
 $(OBJS)/fm_routines.o: $(OBJS)/ctrl.o $(OBJS)/gzero.o $(OBJS)/int_lut_routines.o \

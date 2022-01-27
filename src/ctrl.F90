@@ -103,6 +103,7 @@
 ! 2017/10/04, GM: Add use_ann_phase.
 ! 2021/04/06, AP: New LUT names.
 ! 2021/10/12, ATP: Add new LUT netcdf filenames.
+! 2022/01/27, GT: Add prior CTP filename to FID structure.
 !
 ! Bugs:
 ! None known.
@@ -134,6 +135,7 @@ module Ctrl_m
       character(FilenameLen) :: Geo                ! Geometry (sun-satellite)
       character(FilenameLen) :: Loc                ! Location (latitudes/longs)
       character(FilenameLen) :: Alb                ! Surface albedo, emissivity
+      character(FilenameLen) :: CTP                ! A priori cloud-top pressure
       character(FilenameLen) :: L2_primary         ! Primary output file
       character(FilenameLen) :: L2_secondary       ! Secondary output file
    end type FID_t

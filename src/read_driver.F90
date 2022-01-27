@@ -147,6 +147,7 @@
 ! 2018/09/30, SRP: Delete old driver read routines.
 ! 2019/08/14, SP: Add Fengyun4A support.
 ! 2021/04/06, AP: New LUT names.
+! 2022/01/27, GT: Added CTP input file to Ctrl%FID structure.
 !
 ! Bugs:
 ! None known.
@@ -309,6 +310,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%FID%Geo    = trim(root_filename)//'.geo.nc'
    Ctrl%FID%Loc    = trim(root_filename)//'.loc.nc'
    Ctrl%FID%Alb    = trim(root_filename)//'.alb.nc'
+   Ctrl%FID%CTP    = trim(root_filename)//'.ctp.nc'
 
    ! Read channel related info
    call read_config_file(Ctrl, channel_ids_instr, channel_sw_flag, &
@@ -1393,9 +1395,9 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
             end if
 
          case (SelmAux)
-            if (i /= ITs .and. .not. any(i == ISP) .and. .not. any(i == IRs)) then
+            if (i /= IPc .and. i /= ITs .and. .not. any(i == ISP) .and. .not. any(i == IRs)) then
                write(*,*) 'ERROR: Read_Driver(): AUX method ONLY supported ' // &
-                    'for setting first guess Ts, SP and Rs'
+                    'for setting first guess CTP, Ts, SP and Rs'
                stop FGMethErr
             end if
             if (any(i == ISP) .and. .not. Ctrl%RS%read_full_brdf) then
@@ -1427,9 +1429,9 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
             end if
 
          case (SelmAux)
-            if (i /= ITs .and. .not. any(i == ISP) .and. .not. any(i == IRs)) then
+            if (i /= IPc .and. i /= ITs .and. .not. any(i == ISP) .and. .not. any(i == IRs)) then
                write(*,*) 'ERROR: Read_Driver(): AUX method ONLY supported ' // &
-                    'for setting a priori Ts, Rs, and S'
+                    'for setting a priori CTP, Ts, Rs, and S'
                stop APMethErr
             end if
             if (any(i == ISP) .and. .not. Ctrl%RS%read_full_brdf) then
