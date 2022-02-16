@@ -138,7 +138,7 @@ def compare_orac_out(file0, file1):
             dat1.variables.keys()
         )
         if variables:
-            warn(FieldMissing(file1, ', '.join(vars)), stacklevel=2)
+            warn(FieldMissing(file1, ', '.join(variables)), stacklevel=2)
 
         # Check if any variables changed
         for key in dat0.variables.keys():
