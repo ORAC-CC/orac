@@ -15,6 +15,7 @@ autoreconf -vfi
             --enable-linux-lfs \
             --enable-silent-rules \
             --with-ssl \
+            --with-szlib="${PREFIX}" \
             --with-zlib="${PREFIX}" \
             --with-jpeg="${PREFIX}" \
             --disable-netcdf \

@@ -34,9 +34,11 @@ requirements:
     - autoconf    # [not win]
   host:
     - zlib
+    - libaec
     - jpeg
   run:
     - zlib
+    - libaec
     - jpeg
 
 test:

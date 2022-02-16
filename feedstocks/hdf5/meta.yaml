@@ -25,10 +25,10 @@ requirements:
     - autoconf    # [not win]
   host:
     - zlib
-    - szip
+    - libaec
   run:
     - zlib
-    - szip
+    - libaec
 
 test:
   requires:

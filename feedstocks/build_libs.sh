@@ -36,6 +36,7 @@ conda install -y conda-build conda-verify
 conda-build --no-anaconda-upload "$FEED_DIR/nr"
 #conda-build --no-anaconda-upload "$FEED_DIR/fftw"
 #conda-build --no-anaconda-upload "$FEED_DIR/szip"
+conda-build --no-anaconda-upload "$FEED_DIR/libaec"
 conda-build --no-anaconda-upload "$FEED_DIR/epr_api"
 conda-build --no-anaconda-upload "$FEED_DIR/fu_liou"
 
