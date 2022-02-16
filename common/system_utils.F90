@@ -78,19 +78,14 @@ end function match_file
 
 
 elemental function is_nan(x) result(res)
-#ifndef __GFORTRAN__
    use ieee_arithmetic, only : ieee_is_nan
-#endif
+
    implicit none
 
    real, intent(in) :: x
    logical          :: res
 
-#ifndef __GFORTRAN__
    res = ieee_is_nan(x)
-#else
-   res = isnan(x)
-#endif
 end function
 
 subroutine c_to_fortran_str(str)

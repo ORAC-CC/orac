@@ -61,7 +61,7 @@ $(PLACE).c.o:
 # use of more modern operators. (The cpp used by gfortran is too old to deal
 # with some of the statements in struct_parser.F90.)
 $(PLACE).f.o:
-ifneq (,$(findstring gfortran,$(F90)))
+ifneq (,$(findstring gfortran,$(subst pg,nv,$(F90))))
 	$(CPP) -std=c89 $(FLAGS) $(PARSER_INC) $(ORAC_COMMON)/struct_parser.F90 > \
 	    $(PARSER_NAME).F90
 	$(F90) -o $@ -c -nocpp $(FLAGS) $(FFLAGS) $(INC) -I$(ORAC_COMMON)/obj $(AUXFLAGS) $(PARSER_NAME).F90
