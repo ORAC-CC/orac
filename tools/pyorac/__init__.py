@@ -5,7 +5,6 @@ import pyorac.definitions
 import pyorac.drivers
 import pyorac.local_defaults
 import pyorac.mappable
-import pyorac.regression_tests
 import pyorac.run
 import pyorac.swath
 import pyorac.util
