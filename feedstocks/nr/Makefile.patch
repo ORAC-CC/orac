@@ -5,6 +5,6 @@ diff -rupN nr/Makefile new/Makefile
 @@ -1,4 +1,4 @@
 -F77 = gfortran
 +F77 = ${GFORTRAN}
- 
  F77FLAGS = -O3 -Dfloat=double -std=legacy -Wno-conversion -fno-range-check \
-            -Wno-unused-dummy-argument -Wno-unused-function
+            -Wno-unused-dummy-argument -Wno-unused-function -fopenmp
+

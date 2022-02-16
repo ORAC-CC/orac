@@ -2,19 +2,13 @@
 
 set -e
 
-chmod -R 0700 .
-# Patch code after fixing permissions
-patch -p1 < SWapi.patch
-patch -p1 < samples.patch
-patch -p1 <  0001-fix-automake-files-for-linux-compatibility.patch
-
 autoreconf -vfi
 
 ./configure --prefix="${PREFIX}" \
-            --build="${BUILD}" \
             --with-hdf4="${PREFIX}" \
-            --with-zlib="${PREFIX}" \
-            --with-jpeg="${PREFIX}" \
+            --with-zlib="${PREFIX}/lib" \
+            --with-szlib="${PREFIX}/lib" \
+            --with-jpeg="${PREFIX}/lib" \
             --enable-install-include \
             CC="${PREFIX}/bin/h4cc" \
             FC="${PREFIX}/bin/h4fc" \

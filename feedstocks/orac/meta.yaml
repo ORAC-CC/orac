@@ -65,8 +65,8 @@ requirements:
     # without this repeat reference, conda-smithy doesn't pin correctly
     - hdf5
     - hdf5 * {{ mpi_prefix }}_*
-    - hsd_reader >=1.12
-    - hsd_reader >=1.12 {{ mpi_prefix }}_*
+    - hsd_reader >=1.13
+    - hsd_reader >=1.13 {{ mpi_prefix }}_*
     - libemos
     - netcdf-fortran
     - netcdf-fortran * {{ mpi_prefix }}_*
@@ -81,7 +81,7 @@ requirements:
     - fu_liou
     - hdfeos2
     - hdf5 * {{ mpi_prefix }}_*
-    - hsd_reader >=1.12 {{ mpi_prefix }}_*
+    - hsd_reader >=1.13 {{ mpi_prefix }}_*
     - libemos
     - netcdf-fortran * {{ mpi_prefix }}_*
     - nr

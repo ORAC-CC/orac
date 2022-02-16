@@ -42,6 +42,6 @@ python:
   - 3.6.* *_cpython    # [not (osx and arm64)]
   - 3.8.* *_cpython
 rttov:
-  - 12.2
+  - 13.0
 zlib:
   - 1.2
