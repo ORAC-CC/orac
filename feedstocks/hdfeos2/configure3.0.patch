@@ -1,0 +1,50 @@
+Subject: Rename libdf to libhdf
+diff -upNr a/configure.ac b/configure.ac
+--- a/configure.ac	2021-12-07 10:34:40.180380733 +0000
++++ b/configure.ac	2021-12-07 10:33:54.456438283 +0000
+@@ -419,7 +419,7 @@ AS_IF(
+         CPPFLAGS="-I$hdf4_inc $CPPFLAGS"
+         LDFLAGS="-L$hdf4_lib $LDFLAGS"
+ 
+-        AC_CHECK_LIB([df],[Hopen])
++        AC_CHECK_LIB([hdf],[Hopen])
+         AC_CHECK_LIB([mfhdf],[hdf_close])
+         AC_CHECK_HEADERS([hdf.h])
+         AC_CHECK_HEADERS([mfhdf.h])
+--- a/m4/hdf4.m4	2021-05-18 12:55:16.000000000 +0100
++++ b/m4/hdf4.m4	2021-12-07 10:33:05.040500516 +0000
+@@ -9,13 +9,13 @@ AC_DEFUN(
+         m4_foreach([path], [$1], [
+             lib_path=path
+             saved_LDFLAGS="$LDFLAGS"
+-            HDFSTATE="x$ac_cv_lib_df_Hopen x$ac_cv_lib_mfhdf_hdf_close"
++            HDFSTATE="x$ac_cv_lib_hdf_Hopen x$ac_cv_lib_mfhdf_hdf_close"
+             AS_IF([test -n "$lib_path"], [LDFLAGS="-L$lib_path $LDFLAGS"])
+ 
+             AS_IF(
+-                [test "x$ac_cv_lib_df_Hopen" != "xyes"],
++                [test "x$ac_cv_lib_hdf_Hopen" != "xyes"],
+                 [
+-                    unset ac_cv_lib_df_Hopen
++                    unset ac_cv_lib_hdf_Hopen
+                     AC_CHECK_LIB([df],[Hopen])
+                 ])
+             AS_IF(
+@@ -26,7 +26,7 @@ AC_DEFUN(
+                 ])
+ 
+             AS_IF(
+-                [test "$HDFSTATE" == "x$ac_cv_lib_df_Hopen x$ac_cv_lib_mfhdf_hdf_close"],
++                [test "$HDFSTATE" == "x$ac_cv_lib_hdf_Hopen x$ac_cv_lib_mfhdf_hdf_close"],
+                 [
+                     # We found nothing extra, do revert LDFLAGS
+                     LDFLAGS="$saved_LDFLAGS"
+@@ -78,7 +78,7 @@ AC_DEFUN(
+             [AC_MSG_ERROR([HDF4 header file mfhdf.h not found])]
+         )
+         AS_IF(
+-            [test "x$ac_cv_lib_df_Hopen" != xyes],
++            [test "x$ac_cv_lib_hdf_Hopen" != xyes],
+             [AC_MSG_ERROR([HDF4 library 'df' not found])]
+         )
+         AS_IF(

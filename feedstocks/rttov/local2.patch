@@ -1,0 +1,50 @@
+--- rttov13.0/build/Makefile.local	2020-11-30 15:56:52.756666069 +0000
++++ rttov/build/Makefile.local	2019-01-24 14:32:12.251215319 +0000
+@@ -37,12 +37,12 @@
+ #    $ ../build/Makefile.PL RTTOV_HDF=1
+ # ------------------------------------------------------------------------------
+ 
+-HDF5_PREFIX  = path-to-hdf-install
++HDF5_PREFIX  = $(LIB_DIR)
+ 
+ # --- Uncomment one FFLAGS_HDF5 line:
+ 
+ # For most compilers:
+-# FFLAGS_HDF5  = -D_RTTOV_HDF $(FFLAG_MOD)$(HDF5_PREFIX)/include
++FFLAGS_HDF5  = -D_RTTOV_HDF $(FFLAG_MOD)$(HDF5_PREFIX)/include/shared
+ 
+ # For xlf on AIX:
+ # FFLAGS_HDF5  = -WF,-D_RTTOV_HDF $(FFLAG_MOD)$(HDF5_PREFIX)/include
+@@ -54,7 +54,7 @@
+ 
+ # But you may find that you must also specify libz:
+ # (NB for NAG Fortran you may also need to add -ldl)
+-# LDFLAGS_HDF5 = -L$(HDF5_PREFIX)/lib -lhdf5hl_fortran -lhdf5_hl -lhdf5_fortran -lhdf5 -lz
++LDFLAGS_HDF5 = -L$(HDF5_PREFIX)/lib -lhdf5_hl_fortran -lhdf5_hl -lhdf5_fortran -lhdf5 -lz
+ 
+ 
+ 
+@@ -68,12 +68,12 @@
+ # the HDF5 library as above.
+ # ------------------------------------------------------------------------------
+ 
+-NETCDF_PREFIX  = path-to-netcdf-install
++NETCDF_PREFIX  = $(LIB_DIR)/netcdf-fortran
+ 
+ # --- Uncomment one FFLAGS_NETCDF line:
+ 
+ # For most compilers:
+-# FFLAGS_NETCDF  = -D_RTTOV_NETCDF -I$(NETCDF_PREFIX)/include
++FFLAGS_NETCDF  = -D_RTTOV_NETCDF -I$(NETCDF_PREFIX)/include
+ 
+ # For xlf on AIX:
+ # FFLAGS_NETCDF  = -WF,-D_RTTOV_NETCDF -I$(NETCDF_PREFIX)/include
+@@ -84,7 +84,7 @@
+ # LDFLAGS_NETCDF = -L$(NETCDF_PREFIX)/lib -lnetcdff -lnetcdf
+ 
+ # For NetCDF v4.2 and later:
+-# LDFLAGS_NETCDF = -L$(NETCDF_PREFIX)/lib -lnetcdff
++LDFLAGS_NETCDF = -L$(NETCDF_PREFIX)/lib -lnetcdff
+ 
+ 
+ 
