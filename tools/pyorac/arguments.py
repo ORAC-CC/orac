@@ -21,10 +21,10 @@ def args_common(parser):
     out.add_argument('-o', '--out_dir', type=str, metavar='DIR',
                      help='Path for output.')
     out.add_argument('--orac_dir', type=str, nargs='?', metavar='DIR',
-                     default=defaults.orac_dir,
+                     default=defaults.ORAC_DIR,
                      help='Path to ORAC community code repository.')
     out.add_argument('--orac_lib', type=str, nargs='?', metavar='PATH',
-                     default=defaults.orac_lib,
+                     default=defaults.ORAC_LIB,
                      help='Name and path of ORAC library specification.')
 
     key = parser.add_argument_group('Common keyword arguments')
@@ -33,13 +33,13 @@ def args_common(parser):
                      help='Channels to be evaluated.')
     key.add_argument('--batch', action='store_true',
                      help='Use batch processing for this call.')
-    key.add_argument('--batch_script', default=defaults.batch_script,
+    key.add_argument('--batch_script', default=defaults.BATCH_SCRIPT,
                      help='Execution script to use in batch processing.')
     key.add_argument('-b', '--batch_settings', type=str, nargs=2, default=[],
-                     metavar=('KEY', 'VALUE'),
-                     action='append', help='Settings to pass to the batch '
-                                           'processing system. Passed as KEY VALUE pairs, where KEY '
-                                           'is one of ' + ', '.join(defaults.batch.args.keys()))
+                     metavar=('KEY', 'VALUE'), action='append',
+                     help='Settings to pass to the batch processing system. '
+                          'Passed as KEY VALUE pairs, where KEY is one of ' +
+                          ', '.join(defaults.BATCH.args.keys()))
     key.add_argument('--procs', type=int, default=1, metavar='#',
                      help='Number of processors to use. Default 1.')
     key.add_argument('-d', '--dry_run', action='store_true',
@@ -88,7 +88,7 @@ def args_preproc(parser):
                      default=[], metavar=('KEY', 'VALUE'),
                      help='Location of auxilliary files. Passed as KEY VALUE '
                           'pairs, where KEY is one of ' +
-                          ', '.join(defaults.auxiliaries.keys()))
+                          ', '.join(defaults.AUXILIARIES.keys()))
     key.add_argument('--no_predef', action='store_true',
                      help='For geostationary sensors, calculate geolocation '
                           'online, rather than load a predefined file.')
@@ -111,7 +111,7 @@ def args_preproc(parser):
                      default=[], metavar=('KEY', 'VALUE'),
                      help='Values for NCDF global attributes. Passed as KEY '
                           'VALUE pairs, where KEY is one of ' +
-                          ', '.join(defaults.global_attributes.keys()))
+                          ', '.join(defaults.GLOBAL_ATTRIBUTES.keys()))
     att.add_argument('--uuid', action='store_true',
                      help='Produce a unique identifier number for output.')
     att.add_argument('-r', '--revision', type=int, nargs='?', metavar='#',
@@ -119,7 +119,7 @@ def args_preproc(parser):
 
     ecmwf = parser.add_argument_group('ECMWF settings')
     ecmwf.add_argument('--nwp_flag', type=int, choices=range(5),
-                       default=defaults.ecmwf_flag,
+                       default=defaults.NWP_FLAG,
                        help='Type of ECMWF data to read in.')
     ecmwf.add_argument('--single_ecmwf', action='store_const',
                        default=2, const=0,
@@ -153,7 +153,7 @@ def args_main(parser):
     main.add_argument('--sabotage', action='store_true',
                       help='Sabotage inputs during processing.')
     main.add_argument('--sad_dirs', type=str, nargs='+', metavar='DIR',
-                      default=defaults.sad_dirs,
+                      default=defaults.SAD_DIRS,
                       help='Path to SAD and LUT files.')
     main.add_argument('--types', type=str, nargs='+',
                       choices=ALL_TYPES, default=ALL_TYPES,
@@ -202,7 +202,7 @@ def args_postproc(parser):
                            'Default 0.')
     post.add_argument('--no_switch_phase', action='store_false',
                       help='With cloud processing, do not check if CTT is '
-                           'appropriate for the selected type.. Only relevant '
+                           'appropriate for the selected type. Only relevant '
                            'when processing exclusively water and ice cloud.')
 
 
@@ -246,7 +246,7 @@ def args_cc4cl(parser):
                           ' processed using the same parser so all arguments'
                           ' listed for the main processor are available.')
     phs.add_argument('-S', '--preset_settings', type=str, default=None,
-                     choices=defaults.retrieval_settings.keys(),
+                     choices=defaults.RETRIEVAL_SETTINGS.keys(),
                      help='Use a predefined input for --settings, defined '
                           'in the local_defaults.')
     phs.add_argument('--settings_file', type=str, default=None,
@@ -276,15 +276,13 @@ def args_regress(parser):
 
 def check_args_common(args):
     """Ensure common parser arguments are valid."""
-    from os import makedirs
-    from os.path import dirname, basename
     from pyorac.definitions import FileName
-    from pyorac.local_defaults import channels
+    from pyorac.local_defaults import CHANNELS, DIR_PERMISSIONS
 
     # If not explicitly given, assume input folder is in target definition
     if args.in_dir is None:
-        args.in_dir = [dirname(args.target), ]
-        args.target = basename(args.target)
+        args.in_dir = [os.path.dirname(args.target), ]
+        args.target = os.path.basename(args.target)
     else:
         if "/" in args.target:
             raise BadValue("file target", "contains a /")
@@ -294,13 +292,13 @@ def check_args_common(args):
     args.File = FileName(args.in_dir, args.target)
 
     if args.available_channels is None:
-        args.available_channels = channels[args.File.sensor]
+        args.available_channels = CHANNELS[args.File.sensor]
 
     for fdr in args.in_dir:
         if not os.path.isdir(fdr):
             raise FileMissing('in_dir', fdr)
     if not os.path.isdir(args.out_dir):
-        makedirs(args.out_dir, 0o774)
+        os.makedirs(args.out_dir, DIR_PERMISSIONS)
     if not os.path.isdir(args.orac_dir):
         raise FileMissing('ORAC repository directory', args.orac_dir)
     if not os.path.isfile(args.orac_lib):
@@ -311,20 +309,24 @@ def check_args_common(args):
 
 def check_args_preproc(args):
     """Ensure preprocessor parser arguments are valid."""
-    from pyorac.local_defaults import auxiliaries, global_attributes
+    from pyorac.local_defaults import AUXILIARIES, GLOBAL_ATTRIBUTES
 
     # Add global attributes
-    global_attributes.update({key: val for key, val in args.global_att})
-    args.__dict__.update(global_attributes)
+    GLOBAL_ATTRIBUTES.update({key: val for key, val in args.global_att})
+    args.__dict__.update(GLOBAL_ATTRIBUTES)
 
     # Insert auxilliary locations
-    auxiliaries.update({key: val for key, val in args.aux})
-    args.__dict__.update(auxiliaries)
+    AUXILIARIES.update({key: val for key, val in args.aux})
+    args.__dict__.update(AUXILIARIES)
 
-    if os.path.isdir(args.ggam_dir) and not os.path.isdir(args.ggas_dir):
-        args.ggas_dir = args.ggam_dir
-    if os.path.isdir(args.ggam_dir) and not os.path.isdir(args.spam_dir):
-        args.spam_dir = args.ggam_dir
+    try:
+        # When using ecmwf_dir to set a single directory
+        if os.path.isdir(args.ecmwf_dir):
+            args.ggam_dir = args.ecmwf_dir
+            args.ggas_dir = args.ecmwf_dir
+            args.spam_dir = args.ecmwf_dir
+    except AttributeError:
+        pass
 
     # Limit should either be all zero or all non-zero.
     limit_check = args.limit[0] == 0
@@ -411,15 +413,16 @@ def check_args_postproc(args):
 
 def check_args_cc4cl(args):
     """Ensure ORAC suite wrapper parser arguments are valid."""
-    from pyorac.local_defaults import log_dir, extra_lines, retrieval_settings
+    from pyorac.local_defaults import (DIR_PERMISSIONS, EXTRA_LINES, LOG_DIR,
+                                       RETRIEVAL_SETTINGS)
 
     # Add extra lines files
-    extra_lines.update({key + '_extra': val for key, val in args.extra_lines})
-    args.__dict__.update(extra_lines)
+    EXTRA_LINES.update({key + '_extra': val for key, val in args.extra_lines})
+    args.__dict__.update(EXTRA_LINES)
 
-    log_path = os.path.join(args.out_dir, log_dir)
+    log_path = os.path.join(args.out_dir, LOG_DIR)
     if args.batch and not os.path.isdir(log_path):
-        os.makedirs(log_path, 0o774)
+        os.makedirs(log_path, DIR_PERMISSIONS)
 
     if args.settings_file is not None:
         # A procedure outlined in a file
@@ -432,14 +435,14 @@ def check_args_cc4cl(args):
     elif args.preset_settings is not None:
         # A procedure named in local_defaults
         try:
-            args.settings = retrieval_settings[args.preset_settings]
+            args.settings = RETRIEVAL_SETTINGS[args.preset_settings]
         except KeyError:
             raise BadValue("preset settings", "not defined in local_defaults")
 
     elif args.settings is None:
         if args.phase is None:
             # Default procedure for this sensor from local_defaults
-            args.settings = retrieval_settings[args.File.sensor]
+            args.settings = RETRIEVAL_SETTINGS[args.File.sensor]
         else:
             # Process a single type
             args.settings = (" ",)
@@ -449,6 +452,15 @@ def check_args_cc4cl(args):
 
 def check_args_regress(args):
     """Ensure regression test arguments are valid."""
+    from pyorac.local_defaults import REGRESS_IN_DIR, REGRESS_OUT_DIR
+
+    if args.in_dir is None:
+        args.in_dir = [REGRESS_IN_DIR, ]
+    for fdr in args.in_dir:
+        if not os.path.isdir(fdr):
+            raise FileMissing('Regression L1 input directory', fdr)
+    if args.out_dir is None:
+        args.out_dir = REGRESS_OUT_DIR
 
     # Default tests
     if len(args.tests) == 0:
