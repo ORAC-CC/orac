@@ -120,7 +120,7 @@ def build_preproc_driver(args):
         raise BadValue('nwp_flag', args.nwp_flag)
 
     if args.use_oc:
-        for oc_version in (4.2, 4.1, 4.0, 3.1, 3.0, 2.0, 1.0):
+        for oc_version in (5.0, 4.2, 4.1, 4.0, 3.1, 3.0, 2.0, 1.0):
             occci = args.File.time.strftime(os.path.join(
                 args.occci_dir, 'ESACCI-OC-L3S-IOP-MERGED-1M_MONTHLY'
                                 f'_4km_GEO_PML_OCx_QAA-%Y%m-fv{oc_version:.1f}.nc'
