@@ -550,20 +550,12 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    !----------------------------------------------------------------------------
    ! Read time string from file
    !----------------------------------------------------------------------------
-#ifndef WRAPPER
+
    index1 = index(Fprimary,'_', back=.true.)
-   cyear = trim(adjustl(Fprimary(index1-12:index1-9)))
-   cmonth = trim(adjustl(Fprimary(index1-8:index1-7)))
-   cday = trim(adjustl(Fprimary(index1-6:index1-4)))
-#else
-   index1 = index(Fprimary,'/', back=.true.)
    cyear = trim(adjustl(Fprimary(index1+1:index1+4)))
    cmonth = trim(adjustl(Fprimary(index1+5:index1+6)))
    cday = trim(adjustl(Fprimary(index1+7:index1+8)))
-#endif
-   print*, cyear
-   print*, cmonth
-   print*, cday
+
    read(cyear,'(I4)') value
    pxYear = value
    read(cmonth,'(I2)') value
@@ -573,7 +565,6 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    ! Get calendar day
    call greg2jul(pxYear, pxMonth, pxDay, pxJday)
    print*, pxYear, pxMonth, pxDay, pxJday
-
 
    !----------------------------------------------------------------------------
    ! Read TSI file
@@ -1104,13 +1095,13 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    print*, 'y-start = ', pxY0
    print*, 'x-end = ', pxX1
    print*, 'y-end = ', pxY1
-   print*, 'Across Track # = ', xN
-   print*, 'Along Track #  = ', yN
+   print*, 'Across Track # = ', pxX1 - pxX0
+   print*, 'Along Track #  = ', pxY1 - pxY0
 
    ! loop over cross-track dimension
    do i = pxX0, pxX1
       call cpu_time(cpuFinish)
-      print*, 'complete: ', i*100./(xN*1.),'%   i=', i, cpuFinish-cpuStart,' seconds elapsed'
+      print*, 'complete: ', (i-pxX0)*100./((pxX1-pxX0)*1.),'%   i=', i, cpuFinish-cpuStart,' seconds elapsed'
 
       ! loop over along-track dimension
       do j = pxY0, pxY1
