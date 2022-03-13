@@ -550,11 +550,20 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    !----------------------------------------------------------------------------
    ! Read time string from file
    !----------------------------------------------------------------------------
-
+#ifndef WRAPPER
    index1 = index(Fprimary,'_', back=.true.)
+   cyear = trim(adjustl(Fprimary(index1-12:index1-9)))
+   cmonth = trim(adjustl(Fprimary(index1-8:index1-7)))
+   cday = trim(adjustl(Fprimary(index1-6:index1-4)))
+#else
+   index1 = index(Fprimary,'/', back=.true.)
    cyear = trim(adjustl(Fprimary(index1+1:index1+4)))
    cmonth = trim(adjustl(Fprimary(index1+5:index1+6)))
    cday = trim(adjustl(Fprimary(index1+7:index1+8)))
+#endif
+   print*, cyear
+   print*, cmonth
+   print*, cday
 
    read(cyear,'(I4)') value
    pxYear = value
