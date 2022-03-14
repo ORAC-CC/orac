@@ -926,6 +926,7 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    boa_tsfc(:,:) = sreal_fill_value
    boa_psfc(:,:) = sreal_fill_value
    boa_qsfc(:,:) = sreal_fill_value
+   cbh(:,:) = sreal_fill_value
 
    ! Re-grid PRTM vertical profile to match bugsrad resolution (NLS)
    do i = 1, NLS
