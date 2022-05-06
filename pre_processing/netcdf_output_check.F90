@@ -18,7 +18,8 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine netcdf_output_check(output_path, paths, corrupt, verbose)
+subroutine netcdf_output_check(output_path, paths, corrupt, use_seviri_ann_ctp_fg, &
+                               verbose)
 
    use netcdf, only: nf90_close, nf90_open, NF90_NOERR, NF90_NOWRITE
    use preproc_constants_m
@@ -31,6 +32,7 @@ subroutine netcdf_output_check(output_path, paths, corrupt, verbose)
    logical,               intent(inout) :: corrupt
    logical,               intent(in)    :: verbose
    integer                              :: ncid
+   logical,               intent(in)    :: use_seviri_ann_ctp_fg
 
    if (verbose) write(*,*) 'Albedo file: ', trim(paths%alb_file)
    if (nf90_open(path=trim(adjustl(output_path))//'/'//trim(adjustl(paths%alb_file)), &
@@ -161,5 +163,22 @@ subroutine netcdf_output_check(output_path, paths, corrupt, verbose)
          stop error_stop_code
       end if
    end if
+
+#ifdef INCLUDE_SEVIRI_NEURALNET
+   if (use_seviri_ann_ctp_fg) then
+       if (verbose) write(*,*) 'CTP file: ', trim(paths%ctp_file)
+       if (nf90_open(path=trim(adjustl(output_path))//'/'//trim(adjustl(paths%ctp_file)), &
+                     mode=NF90_NOWRITE, ncid=ncid) .ne. NF90_NOERR) then
+          write (*,*) 'ERROR: netcdf_output_check(): nf90_open(): ".ctp.nc"'
+          corrupt = .true.
+          return
+       else
+          if (nf90_close(ncid) .ne. NF90_NOERR) then
+             write (*,*) 'ERROR: netcdf_create_config(): nf90_close(): ".ctp.nc"'
+             stop error_stop_code
+          end if
+       end if
+   end if
+#endif
 
  end subroutine netcdf_output_check

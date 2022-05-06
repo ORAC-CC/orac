@@ -32,6 +32,7 @@
 !                 instead of IMPF (as previous). The new driver file option
 !                 USE_GSICS enables this to be disabled.
 ! 2018/08/30, SP: Allow variable CO2 in RTTOV, linear scaling from 2006 value
+! 2021/12/14, DP: Added SEVIRI external ANN option 
 !
 ! Bugs:
 ! None known.
@@ -167,6 +168,15 @@ subroutine parse_optional(label, value, preproc_opts)
            call handle_parse_error(label)
    case('CALCULATE_SLSTR_ALIGNMENT')
       if (parse_string(value, preproc_opts%calculate_slstr_alignment) /= 0) &
+           call handle_parse_error(label)
+   case('USE_SEVIRI_ANN_CMA_CPH')
+      if (parse_string(value, preproc_opts%use_seviri_ann_cma_cph) /= 0) &
+           call handle_parse_error(label)
+   case('USE_SEVIRI_ANN_CTP_FG')
+      if (parse_string(value, preproc_opts%use_seviri_ann_ctp_fg) /= 0) &
+           call handle_parse_error(label)
+   case('USE_SEVIRI_ANN_MLAY')
+      if (parse_string(value, preproc_opts%use_seviri_ann_mlay) /= 0) &
            call handle_parse_error(label)
    case default
       write(*,*) 'ERROR: Unknown option: ', trim(label)
