@@ -40,12 +40,13 @@ module netcdf_output_m
    integer, parameter :: NETCDF_OUTPUT_FILE_MSI    = 8
    integer, parameter :: NETCDF_OUTPUT_FILE_PRTM   = 9
    integer, parameter :: NETCDF_OUTPUT_FILE_SWRTM  = 10
+   integer, parameter :: NETCDF_OUTPUT_FILE_CTP    = 11
 
    type netcdf_output_info_t
 
       ! file ids
       integer :: ncid_alb, ncid_clf, ncid_config, ncid_geo, ncid_loc, ncid_lsf
-      integer :: ncid_lwrtm, ncid_msi, ncid_prtm, ncid_swrtm
+      integer :: ncid_lwrtm, ncid_msi, ncid_prtm, ncid_swrtm, ncid_ctp
 
       ! fundamental dimensions ids for the different dimensions in the different
       ! files
@@ -60,6 +61,7 @@ module netcdf_output_m
       integer :: dimid_x_msi, dimid_y_msi, dimid_v_msi
       integer :: dimid_x_pw,  dimid_y_pw
       integer :: dimid_x_sw,  dimid_y_sw,  dimid_v_sw
+      integer :: dimid_x_ctp, dimid_y_ctp, dimid_v_ctp
 
       integer :: dimid_xy_lw, dimid_xy_pw, dimid_xy_sw
 
@@ -86,6 +88,7 @@ module netcdf_output_m
                  vid_cldmask_unc
       integer :: vid_tropop_pr, vid_tropop_te, vid_cape
       integer :: vid_ann_phase, vid_cphcot, vid_ann_phase_unc
+      integer :: vid_mlay_prob, vid_mlay_flag, vid_mlay_unc
 
       ! config file:
       integer :: vid_msi_instr_ch_numbers_config, &
@@ -127,6 +130,9 @@ module netcdf_output_m
       integer :: vid_sw_channel_wvl
       integer :: vid_tac_sw, vid_tbc_sw
       integer :: vid_solza_sw, vid_satza_sw, vid_relazi_sw
+
+      ! ctp file:
+      integer :: vid_ctp_fg, vid_ctp_fg_unc
 
    end type netcdf_output_info_t
 
