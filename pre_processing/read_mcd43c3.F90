@@ -141,7 +141,7 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, read_ws, read_bs, &
 
    ! Open the datafile and get a file descriptor, and then attach to the grid
    ! (using the name returned above)
-   fid = gdopen(path_to_file, DFACC_READ)
+   fid = gdopen(trim(adjustl(path_to_file)), DFACC_READ)
 
    gid = gdattach(fid, trim(adjustl(gridlist)))
 
