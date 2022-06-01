@@ -225,12 +225,6 @@ subroutine ctp_fg_seviri(cview, imager_flags, imager_angles, &
                 msg_index, &
                 undo_true_reflectances)
 
-     ! mask clearsky pixels in ctp 
-     !where(imager_pavolonis%cldmask(:,:,cview) .lt. 1)
-     !    imager_pavolonis%ctp_fg(:,:,cview) = sreal_fill_value
-     !    imager_pavolonis%ctp_fg_unc(:,:,cview) = sreal_fill_value
-     !end where
-
      ! convert standard deviation to variance
      where(imager_pavolonis%ctp_fg_unc(:,:,cview) .ne. sreal_fill_value)
          imager_pavolonis%ctp_fg_unc(:,:,cview) = & 
@@ -311,7 +305,7 @@ subroutine mlay_seviri(cview, imager_flags, imager_angles, &
      end if
 
 #ifdef INCLUDE_SEVIRI_NEURALNET
-     write(*,*) "PREDICTING CTP for first guess"
+     write(*,*) "PREDICTING Multilayer flag"
      ! run external ANN
      call seviri_ann_mlay(imager_geolocation%nx, &      ! xdim for reshaping
                 imager_geolocation%ny, &               ! ydim for reshaping
@@ -335,13 +329,6 @@ subroutine mlay_seviri(cview, imager_flags, imager_angles, &
                 imager_pavolonis%cldmask(:,:,cview), &
                 msg_index, &
                 undo_true_reflectances)
-
-     ! mask clearsky pixels in ctp
-     !where(imager_pavolonis%cldmask(:,:,cview) .lt. 1)
-     !    imager_pavolonis%mlay_prob(:,:,cview) = sreal_fill_value
-     !    imager_pavolonis%mlay_flag(:,:,cview) = byte_fill_value
-     !    imager_pavolonis%mlay_unc(:,:,cview) = sreal_fill_value
-     !end where
 
 #else
      write(*,*) 'ERROR: ORAC has been compiled without SEVIRI neural &
