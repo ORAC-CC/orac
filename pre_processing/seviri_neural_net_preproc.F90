@@ -82,7 +82,7 @@ subroutine cma_cph_seviri(cview, imager_flags, imager_angles, &
 #ifdef INCLUDE_SEVIRI_NEURALNET
      write(*,*) "PREDICTING COT/CPH"
      ! run external ANN
-     call seviri_ann_cph_cot(imager_geolocation%nx, &  ! xdim for reshaping
+     call seviri_ann_cma(imager_geolocation%nx, &  ! xdim for reshaping
                 imager_geolocation%ny, &               ! ydim for reshaping
                 imager_measurements%data(:,:,ch1), &   ! VIS006
                 imager_measurements%data(:,:,ch2), &   ! VIS008
@@ -101,12 +101,31 @@ subroutine cma_cph_seviri(cview, imager_flags, imager_angles, &
                 imager_pavolonis%cccot_pre(:,:,cview), &
                 imager_pavolonis%cldmask(:,:,cview), &
                 imager_pavolonis%cldmask_uncertainty(:,:,cview), &
-                imager_pavolonis%cphcot(:,:,cview), &
-                imager_pavolonis%ann_phase(:,:,cview), &
-                imager_pavolonis%ann_phase_uncertainty(:,:,cview), &
                 msg_index, &
                 undo_true_reflectances)
 
+     call seviri_ann_cph(imager_geolocation%nx, &  ! xdim for reshaping
+                imager_geolocation%ny, &               ! ydim for reshaping
+                imager_measurements%data(:,:,ch1), &   ! VIS006
+                imager_measurements%data(:,:,ch2), &   ! VIS008
+                imager_measurements%data(:,:,ch3), &   ! NIR016
+                imager_measurements%data(:,:,ch4), &   ! IR039
+                imager_measurements%data(:,:,ch5), &   ! IR062
+                imager_measurements%data(:,:,ch6), &   ! IR073
+                imager_measurements%data(:,:,ch7), &   ! IR087
+                imager_measurements%data(:,:,ch9), &   ! IR108
+                imager_measurements%data(:,:,ch10), &  ! IR120
+                imager_measurements%data(:,:,ch11), &  ! IR134
+                imager_flags%lsflag, &                 ! Land-sea mask
+                skt, &                                 ! ECMWF skin temp
+                imager_angles%solzen(:,:,cview), &    ! Solar Zenith Angle
+                imager_angles%satzen(:,:,cview), &    ! Satellite Zenith Angle
+                imager_pavolonis%cphcot(:,:,cview), &
+                imager_pavolonis%ann_phase(:,:,cview), &
+                imager_pavolonis%ann_phase_uncertainty(:,:,cview), &
+                imager_pavolonis%cldmask(:,:,cview), &
+                msg_index, &
+                undo_true_reflectances)
 #else
      write(*,*) 'ERROR: ORAC has been compiled without SEVIRI neural &
                 &network support. (1) Compile the SEVIRI neural &
@@ -148,7 +167,6 @@ subroutine ctp_fg_seviri(cview, imager_flags, imager_angles, &
      logical(kind=1) :: undo_true_reflectances = .false.
      integer :: ch1, ch2, ch3, ch4, ch5, ch6, ch7, ch9, ch10, ch11
 
-     write(*,*) "Fortran SKT minmax: ", minval(skt), " ", maxval(skt)
 
      ! channel indices
      ch1 = 1
@@ -203,14 +221,15 @@ subroutine ctp_fg_seviri(cview, imager_flags, imager_angles, &
                 imager_angles%satzen(:,:,cview), &     ! Satellite Zenith Angle
                 imager_pavolonis%ctp_fg(:,:,cview), &   ! CTP first guess
                 imager_pavolonis%ctp_fg_unc(:,:,cview), &  ! CTP first guess unc
+                imager_pavolonis%cldmask(:,:,cview), &
                 msg_index, &
                 undo_true_reflectances)
 
      ! mask clearsky pixels in ctp 
-     where(imager_pavolonis%cldmask(:,:,cview) .lt. 1)
-         imager_pavolonis%ctp_fg(:,:,cview) = sreal_fill_value
-         imager_pavolonis%ctp_fg_unc(:,:,cview) = sreal_fill_value
-     end where
+     !where(imager_pavolonis%cldmask(:,:,cview) .lt. 1)
+     !    imager_pavolonis%ctp_fg(:,:,cview) = sreal_fill_value
+     !    imager_pavolonis%ctp_fg_unc(:,:,cview) = sreal_fill_value
+     !end where
 
      ! convert standard deviation to variance
      where(imager_pavolonis%ctp_fg_unc(:,:,cview) .ne. sreal_fill_value)
@@ -258,8 +277,6 @@ subroutine mlay_seviri(cview, imager_flags, imager_angles, &
      integer(kind=1) :: msg_index
      logical(kind=1) :: undo_true_reflectances = .false.
      integer :: ch1, ch2, ch3, ch4, ch5, ch6, ch7, ch9, ch10, ch11
-
-     write(*,*) "Fortran SKT minmax: ", minval(skt), " ", maxval(skt)
 
      ! channel indices
      ch1 = 1
@@ -315,15 +332,16 @@ subroutine mlay_seviri(cview, imager_flags, imager_angles, &
                 imager_pavolonis%mlay_prob(:,:,cview), &   ! Multilayer probability
                 imager_pavolonis%mlay_flag(:,:,cview), &   ! Multilayer flag
                 imager_pavolonis%mlay_unc(:,:,cview), &    ! Multilayer uncertainty
+                imager_pavolonis%cldmask(:,:,cview), &
                 msg_index, &
                 undo_true_reflectances)
 
      ! mask clearsky pixels in ctp
-     where(imager_pavolonis%cldmask(:,:,cview) .lt. 1)
-         imager_pavolonis%mlay_prob(:,:,cview) = sreal_fill_value
-         imager_pavolonis%mlay_flag(:,:,cview) = byte_fill_value
-         imager_pavolonis%mlay_unc(:,:,cview) = sreal_fill_value
-     end where
+     !where(imager_pavolonis%cldmask(:,:,cview) .lt. 1)
+     !    imager_pavolonis%mlay_prob(:,:,cview) = sreal_fill_value
+     !    imager_pavolonis%mlay_flag(:,:,cview) = byte_fill_value
+     !    imager_pavolonis%mlay_unc(:,:,cview) = sreal_fill_value
+     !end where
 
 #else
      write(*,*) 'ERROR: ORAC has been compiled without SEVIRI neural &
