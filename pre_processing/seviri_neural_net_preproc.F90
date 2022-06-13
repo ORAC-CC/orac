@@ -17,6 +17,51 @@ module seviri_neural_net_preproc_m
      contains
 
 
+subroutine map_seviri_channels(ch1, ch2, ch3, ch4, ch5, ch6, ch7, &
+                               ch9, ch10, ch11)
+    integer, intent(inout) :: ch1, ch2, ch3, ch4, ch5, ch6, ch7, &
+                              & ch9, ch10, ch11
+
+    ! channel indices
+    ch1 = 1
+    ch2 = 2
+    ch3 = 3
+    ch4 = 4
+    ch5 = 5
+    ch6 = 6
+    ch7 = 7
+    ch9 = 9
+    ch10 = 10
+    ch11 = 11
+end subroutine map_seviri_channels
+
+subroutine get_msg_idx(msg_index, platform, do_nasa)
+    character(len=*), intent(in)    :: platform
+    integer(kind=1),  intent(inout) :: msg_index
+    logical,          intent(in)    :: do_nasa
+
+    select case (trim(platform))
+        case ("MSG1")
+            msg_index = 1
+        case ("MSG2")
+            msg_index = 2
+        case ("MSG3")
+            msg_index = 3
+        case ("MSG4")
+            msg_index = 4
+        case default
+            write(*,*) "Platform ", platform, " not supported with seviri_ml."
+            stop
+    end select
+
+    ! if VIS calibration is not NASA (IMPF) do not apply NASA-to-IMPF
+    ! conversion for ANNs
+    if (.not. do_nasa) then
+        msg_index = 0
+    end if
+end subroutine get_msg_idx
+
+
 subroutine cma_cph_seviri(cview, imager_flags, imager_angles, &
                           imager_geolocation, imager_measurements, &
                           imager_pavolonis, skt, channel_info, platform, &
@@ -47,42 +92,15 @@ subroutine cma_cph_seviri(cview, imager_flags, imager_angles, &
      logical(kind=1) :: undo_true_reflectances = .false.
      integer :: ch1, ch2, ch3, ch4, ch5, ch6, ch7, ch9, ch10, ch11
 
-     ! channel indices
-     ch1 = 1
-     ch2 = 2
-     ch3 = 3
-     ch4 = 4
-     ch5 = 5
-     ch6 = 6
-     ch7 = 7
-     ch9 = 9
-     ch10 = 10
-     ch11 = 11
-
-     select case (trim(platform))
-     case ("MSG1")
-         msg_index = 1
-     case ("MSG2")
-         msg_index = 2
-     case ("MSG3")
-         msg_index = 3
-     case ("MSG4")
-         msg_index = 4
-     case default
-         write(*,*) "Platform ", platform, " not supported with seviri_ml."
-         stop
-     end select
-
-     ! if VIS calibration is not NASA (IMPF) do not apply NASA-to-IMPF
-     ! conversion for ANNs
-     if (.not. do_nasa) then
-         msg_index = 0
-     end if
+     ! map the channel number to the ORAC array indices
+     call map_seviri_channels(ch1, ch2, ch3, ch4, ch5, ch6, ch7, ch9, ch10, ch11)
+     ! get Meteosat number from platform string
+     call get_msg_idx(msg_index, platform, do_nasa)
 
 #ifdef INCLUDE_SEVIRI_NEURALNET
      write(*,*) "PREDICTING COT/CPH"
      ! run external ANN
-     call seviri_ann_cma(imager_geolocation%nx, &  ! xdim for reshaping
+     call seviri_ann_cma(imager_geolocation%nx, &      ! xdim for reshaping
                 imager_geolocation%ny, &               ! ydim for reshaping
                 imager_measurements%data(:,:,ch1), &   ! VIS006
                 imager_measurements%data(:,:,ch2), &   ! VIS008
@@ -96,15 +114,15 @@ subroutine cma_cph_seviri(cview, imager_flags, imager_angles, &
                 imager_measurements%data(:,:,ch11), &  ! IR134
                 imager_flags%lsflag, &                 ! Land-sea mask
                 skt, &                                 ! ECMWF skin temp
-                imager_angles%solzen(:,:,cview), &    ! Solar Zenith Angle
-                imager_angles%satzen(:,:,cview), &    ! Satellite Zenith Angle
+                imager_angles%solzen(:,:,cview), &     ! Solar Zenith Angle
+                imager_angles%satzen(:,:,cview), &     ! Satellite Zenith Angle
                 imager_pavolonis%cccot_pre(:,:,cview), &
                 imager_pavolonis%cldmask(:,:,cview), &
                 imager_pavolonis%cldmask_uncertainty(:,:,cview), &
                 msg_index, &
                 undo_true_reflectances)
 
-     call seviri_ann_cph(imager_geolocation%nx, &  ! xdim for reshaping
+     call seviri_ann_cph(imager_geolocation%nx, &      ! xdim for reshaping
                 imager_geolocation%ny, &               ! ydim for reshaping
                 imager_measurements%data(:,:,ch1), &   ! VIS006
                 imager_measurements%data(:,:,ch2), &   ! VIS008
@@ -118,8 +136,8 @@ subroutine cma_cph_seviri(cview, imager_flags, imager_angles, &
                 imager_measurements%data(:,:,ch11), &  ! IR134
                 imager_flags%lsflag, &                 ! Land-sea mask
                 skt, &                                 ! ECMWF skin temp
-                imager_angles%solzen(:,:,cview), &    ! Solar Zenith Angle
-                imager_angles%satzen(:,:,cview), &    ! Satellite Zenith Angle
+                imager_angles%solzen(:,:,cview), &     ! Solar Zenith Angle
+                imager_angles%satzen(:,:,cview), &     ! Satellite Zenith Angle
                 imager_pavolonis%cphcot(:,:,cview), &
                 imager_pavolonis%ann_phase(:,:,cview), &
                 imager_pavolonis%ann_phase_uncertainty(:,:,cview), &
@@ -167,61 +185,33 @@ subroutine ctp_fg_seviri(cview, imager_flags, imager_angles, &
      logical(kind=1) :: undo_true_reflectances = .false.
      integer :: ch1, ch2, ch3, ch4, ch5, ch6, ch7, ch9, ch10, ch11
 
-
-     ! channel indices
-     ch1 = 1
-     ch2 = 2
-     ch3 = 3
-     ch4 = 4
-     ch5 = 5
-     ch6 = 6
-     ch7 = 7
-     ch9 = 9
-     ch10 = 10
-     ch11 = 11
-
-     select case (trim(platform))
-     case ("MSG1")
-         msg_index = 1
-     case ("MSG2")
-         msg_index = 2
-     case ("MSG3")
-         msg_index = 3
-     case ("MSG4")
-         msg_index = 4
-     case default
-         write(*,*) "Platform ", platform, " not supported with seviri_ml."
-         stop
-     end select
-
-     ! if VIS calibration is not NASA (IMPF) do not apply NASA-to-IMPF
-     ! conversion for ANNs
-     if (.not. do_nasa) then
-         msg_index = 0
-     end if
+     ! map the channel number to the ORAC array indices
+     call map_seviri_channels(ch1, ch2, ch3, ch4, ch5, ch6, ch7, ch9, ch10, ch11)
+     ! get Meteosat number from platform string
+     call get_msg_idx(msg_index, platform, do_nasa)
 
 #ifdef INCLUDE_SEVIRI_NEURALNET
      write(*,*) "PREDICTING CTP for first guess"
      ! run external ANN
-     call seviri_ann_ctp(imager_geolocation%nx, &      ! xdim for reshaping
-                imager_geolocation%ny, &               ! ydim for reshaping
-                imager_measurements%data(:,:,ch1), &   ! VIS006
-                imager_measurements%data(:,:,ch2), &   ! VIS008
-                imager_measurements%data(:,:,ch3), &   ! NIR016
-                imager_measurements%data(:,:,ch4), &   ! IR039
-                imager_measurements%data(:,:,ch5), &   ! IR062
-                imager_measurements%data(:,:,ch6), &   ! IR073
-                imager_measurements%data(:,:,ch7), &   ! IR087
-                imager_measurements%data(:,:,ch9), &   ! IR108
-                imager_measurements%data(:,:,ch10), &  ! IR120
-                imager_measurements%data(:,:,ch11), &  ! IR134
-                imager_flags%lsflag, &                 ! Land-sea mask
-                skt, &                                 ! ECMWF skin temp
-                imager_angles%solzen(:,:,cview), &     ! Solar Zenith Angle
-                imager_angles%satzen(:,:,cview), &     ! Satellite Zenith Angle
-                imager_pavolonis%ctp_fg(:,:,cview), &   ! CTP first guess
-                imager_pavolonis%ctp_fg_unc(:,:,cview), &  ! CTP first guess unc
-                imager_pavolonis%cldmask(:,:,cview), &
+     call seviri_ann_ctp(imager_geolocation%nx, &         ! xdim for reshaping
+                imager_geolocation%ny, &                  ! ydim for reshaping
+                imager_measurements%data(:,:,ch1), &      ! VIS006
+                imager_measurements%data(:,:,ch2), &      ! VIS008
+                imager_measurements%data(:,:,ch3), &      ! NIR016
+                imager_measurements%data(:,:,ch4), &      ! IR039
+                imager_measurements%data(:,:,ch5), &      ! IR062
+                imager_measurements%data(:,:,ch6), &      ! IR073
+                imager_measurements%data(:,:,ch7), &      ! IR087
+                imager_measurements%data(:,:,ch9), &      ! IR108
+                imager_measurements%data(:,:,ch10), &     ! IR120
+                imager_measurements%data(:,:,ch11), &     ! IR134
+                imager_flags%lsflag, &                    ! Land-sea mask
+                skt, &                                    ! ECMWF skin temp
+                imager_angles%solzen(:,:,cview), &        ! Solar Zenith Angle
+                imager_angles%satzen(:,:,cview), &        ! Satellite Zenith Angle
+                imager_pavolonis%ctp_fg(:,:,cview), &     ! CTP first guess
+                imager_pavolonis%ctp_fg_unc(:,:,cview), & ! CTP first guess unc
+                imager_pavolonis%cldmask(:,:,cview), &    ! Cloud mask
                 msg_index, &
                 undo_true_reflectances)
 
@@ -272,64 +262,36 @@ subroutine mlay_seviri(cview, imager_flags, imager_angles, &
      logical(kind=1) :: undo_true_reflectances = .false.
      integer :: ch1, ch2, ch3, ch4, ch5, ch6, ch7, ch9, ch10, ch11
 
-     ! channel indices
-     ch1 = 1
-     ch2 = 2
-     ch3 = 3
-     ch4 = 4
-     ch5 = 5
-     ch6 = 6
-     ch7 = 7
-     ch9 = 9
-     ch10 = 10
-     ch11 = 11
-
-     select case (trim(platform))
-     case ("MSG1")
-         msg_index = 1
-     case ("MSG2")
-         msg_index = 2
-     case ("MSG3")
-         msg_index = 3
-     case ("MSG4")
-         msg_index = 4
-     case default
-         write(*,*) "Platform ", platform, " not supported with seviri_ml."
-         stop
-     end select
-
-     ! if VIS calibration is not NASA (IMPF) do not apply NASA-to-IMPF
-     ! conversion for ANNs
-     if (.not. do_nasa) then
-         msg_index = 0
-     end if
+     ! map the channel number to the ORAC array indices
+     call map_seviri_channels(ch1, ch2, ch3, ch4, ch5, ch6, ch7, ch9, ch10, ch11)
+     ! get Meteosat number from platform string
+     call get_msg_idx(msg_index, platform, do_nasa)
 
 #ifdef INCLUDE_SEVIRI_NEURALNET
-     write(*,*) "PREDICTING Multilayer flag"
+     write(*,*) "PREDICTING CTP for first guess"
      ! run external ANN
-     call seviri_ann_mlay(imager_geolocation%nx, &      ! xdim for reshaping
-                imager_geolocation%ny, &               ! ydim for reshaping
-                imager_measurements%data(:,:,ch1), &   ! VIS006
-                imager_measurements%data(:,:,ch2), &   ! VIS008
-                imager_measurements%data(:,:,ch3), &   ! NIR016
-                imager_measurements%data(:,:,ch4), &   ! IR039
-                imager_measurements%data(:,:,ch5), &   ! IR062
-                imager_measurements%data(:,:,ch6), &   ! IR073
-                imager_measurements%data(:,:,ch7), &   ! IR087
-                imager_measurements%data(:,:,ch9), &   ! IR108
-                imager_measurements%data(:,:,ch10), &  ! IR120
-                imager_measurements%data(:,:,ch11), &  ! IR134
-                imager_flags%lsflag, &                 ! Land-sea mask
-                skt, &                                 ! ECMWF skin temp
-                imager_angles%solzen(:,:,cview), &     ! Solar Zenith Angle
-                imager_angles%satzen(:,:,cview), &     ! Satellite Zenith Angle
-                imager_pavolonis%mlay_prob(:,:,cview), &   ! Multilayer probability
-                imager_pavolonis%mlay_flag(:,:,cview), &   ! Multilayer flag
-                imager_pavolonis%mlay_unc(:,:,cview), &    ! Multilayer uncertainty
-                imager_pavolonis%cldmask(:,:,cview), &
+     call seviri_ann_mlay(imager_geolocation%nx, &       ! xdim for reshaping
+                imager_geolocation%ny, &                 ! ydim for reshaping
+                imager_measurements%data(:,:,ch1), &     ! VIS006
+                imager_measurements%data(:,:,ch2), &     ! VIS008
+                imager_measurements%data(:,:,ch3), &     ! NIR016
+                imager_measurements%data(:,:,ch4), &     ! IR039
+                imager_measurements%data(:,:,ch5), &     ! IR062
+                imager_measurements%data(:,:,ch6), &     ! IR073
+                imager_measurements%data(:,:,ch7), &     ! IR087
+                imager_measurements%data(:,:,ch9), &     ! IR108
+                imager_measurements%data(:,:,ch10), &    ! IR120
+                imager_measurements%data(:,:,ch11), &    ! IR134
+                imager_flags%lsflag, &                   ! Land-sea mask
+                skt, &                                   ! ECMWF skin temp
+                imager_angles%solzen(:,:,cview), &       ! Solar Zenith Angle
+                imager_angles%satzen(:,:,cview), &       ! Satellite Zenith Angle
+                imager_pavolonis%mlay_prob(:,:,cview), & ! Multilayer probability
+                imager_pavolonis%mlay_flag(:,:,cview), & ! Multilayer flag
+                imager_pavolonis%mlay_unc(:,:,cview), &  ! Multilayer uncertainty
+                imager_pavolonis%cldmask(:,:,cview), &   ! Cloud mask
                 msg_index, &
                 undo_true_reflectances)
-
 #else
      write(*,*) 'ERROR: ORAC has been compiled without SEVIRI neural &
                 &network support. (1) Compile the SEVIRI neural &
