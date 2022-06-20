@@ -483,6 +483,111 @@ class Swath(Mappable):
         self._qcflag[self["niter"] >= iter_limit] += QCFLAG["iter"]
         self._qcflag[self["costjm"] >= cost_limit] += QCFLAG["cost"]
 
+    def cdnc(self, how="quaas", **kwargs):
+        """Cloud droplet number density for a semi-adiabatic cloud
+
+        Kwds:
+        how) Equation to use. Options are,
+            quaas: Use the constant relationship of Quaas 2006
+            gry: Use the temperature-dependent eqn of Gryspeerdt 2016
+            acp: Use the temp and pressure-dependent eqn of ACPovey
+
+        If how=acp,
+        es_A,B,C,PA,PB: Coefficients of the saturated vapour pressure of
+            moist air. Defaults taken from Eq. 21-22 of doi:
+            10.1175/1520-0450(1996)035<0601:IMFAOS>2.0.CO;2
+        L0,1: Specific enthalpy of vaporisation for water at 0 C and its
+            gradient with temperature. Defaults taken from
+            https://www.engineeringtoolbox.com/enthalpy-moist-air-d_683.html
+        k: Ratio of volumetric and effective radii in cloud. For droplets
+            conforming to a modified gamma distribution, this equals
+            (1-v)(1-2v) where v is the effective variance of the distribution.
+            Default value is for droplets with v=0.111 as used in MODIS
+            and ORAC retrievals.
+        Q_ext: Extinction coefficient of droplets. Default is for liquid
+            droplets much smaller than the observed wavelength.
+        f_ab: Adiabatic fraction of the cloud. Default value is from S2.3.3 of
+            doi:10.1029/2017RG000593
+        """
+        if how == "quaas":
+            return _cdnc_quaas(self["cot"], self["cer"]*1e-6)
+        elif how == "gry" or how == "gryspeerdt":
+            return _cdnc_gryspeerdt(self["cot"], self["cer"]*1e-6, self["ctt"])
+        elif how == "acp":
+            return _cdnc_acp(self["cot"], self["cer"]*1e-6, self["ctt"],
+                             self["ctp"]*1e2, **kwargs)
+        else:
+            raise TypeError("how must be one of quaas, gry, or acp "
+                            f"(given {how})")
+
+    def cdnc_qcflag(self, phase="ann_phase", temp_min=268., solzen_max=65.,
+                    satzen_max=41.4, cot_min=0., cer_min=None,
+                    cer_max=None):
+        """Quality flag for cdnc product, seeking homogeneous liquid cloud.
+
+        If the keyword for a test is set to None, that test is skipped.
+
+        Kwargs:
+        phase: Name of variable to read for the cloud phase. Should be one
+            of phase, ann_phase, or phase_pavolonis. Liquid cloud assumed == 1.
+        temp_min: Minimum cloud top temperature of liquid cloud. Default 268.
+        solzen_max: Maximum solar zenith angle. Default 65 from Gryspeerdt.
+        satzen_max: Maximum satellite zenith angle. Default 41.4 from same.
+        cot_min: Minimum cloud optical depth. Default 0 but 4 is good.
+        cer_min: Minimum cloud effective radius. Default None but 4 is good.
+        cer_max: Maximum cloud effective radius. Default None but 15 is good.
+        """
+
+        keep = ~np.ma.getmaskarray(self["cer"])
+        # Non-liquid clouds
+        keep &= np.all(self["cldtype"] == 3, axis=0)
+        try:
+            keep &= np.all(self[phase] == 1, axis=0)
+        except TypeError:
+            pass
+        except KeyError:
+            if phase:
+                raise ValueError(
+                    f"{phase} is no a valid variable name. Choose one of "
+                    "phase, ann_phase, or phase_pavolonis."
+                )
+        if temp_min:
+            keep &= self["ctt"] > temp_min
+        # Multilayer clouds
+        try:
+            keep &= np.logical_not(self["cot2"] > 0.)
+        except KeyError:
+            pass
+        # Ed's viewing requirements
+        if solzen_max:
+            keep &= self["solar_zenith_view_no1"] < solzen_max
+        if satzen_max:
+            keep &= self["satellite_zenith_view_no1"] < satzen_max
+        # Cloud requirements
+        if cot_min:
+            keep &= self["cot"] > cot_min
+        if cer_min:
+            keep &= self["cer"] > cer_min
+        if cer_max:
+            keep &= self["cer"] < cer_max
+
+        return np.logical_not(keep)
+
+    def thickness(self, how="quaas", k=0.692, Q_ext=2., **kwargs):
+        """Liquid cloud physical thickness
+
+        Writing the CDNC equations is the easiest way to make it clear where
+        they came from. This expression needs c_w and, though I could have
+        written the CDNC functions in terms of c_w, I'll instead just work
+        out H from CDNC here.
+        """
+        kwargs["how"] = how
+        if how == "acp":
+            kwargs["k"] = k
+            kwargs["Q_ext"] = Q_ext
+        cdnc = self.cdnc(**kwargs)
+        return cdnc, 5. / (3 * np.pi * k * Q_ext) * self["cot"] / (self["cer"]*1e-6)**2 / cdnc
+
     # -------------------------------------------------------------------
     # Housekeeping functions
     # -------------------------------------------------------------------
@@ -757,3 +862,91 @@ class MergedSwath(Swath):
             data[i, :] = tmp
 
         return data
+
+
+# -------------------------------------------------------------------
+# CALCULATIONS OF CLOUD DROPLET NUMBER CONCENTRATION
+# -------------------------------------------------------------------
+def _cdnc_quaas(tau, r_e):
+    """Cloud droplet number density for a semi-adiabatic cloud
+
+    Uses Eq. 1 of doi:10.5194/acp-6-947-2006
+
+    Args:
+    tau: Cloud optical thickness.
+    r_e: Cloud effective radius, in m.
+    """
+    return 1.37e-5 * np.sqrt(tau / r_e**5)
+
+
+def _cdnc_gryspeerdt(tau, r_e, T):
+    """Cloud droplet number density for a semi-adiabatic cloud
+
+    Uses Eq. 2 of doi:10.1002/2015JD023744
+
+    Args:
+    tau: Cloud optical thickness.
+    r_e: Cloud effective radius, in m.
+    T: Representative temperature of cloud, in K.
+    """
+    return 1.37e-5 * (0.0192 * T - 4.293) * np.sqrt(tau / r_e**5)
+
+
+def _cdnc_acp(tau, r_e, T, p,
+              es_A=610.94, es_B=17.625, es_C=243.04, es_PA=1.00071, es_PB=4.5e-8,
+              L0=2.501e6, L1=1.86e3, k=0.692, Q_ext=2., f_ab=0.66):
+    """Cloud droplet number density for a semi-adiabatic cloud
+
+    Uses A.C. Povey's derivation for variable lapse rate and including the
+    moist-air-correction to the saturation vapour pressure.
+
+    Args:
+    tau: Cloud optical thickness.
+    r_e: Cloud effective radius, in m.
+    T: Representative temperature of cloud, in K.
+    p: Representative pressure of cloud, in Pa.
+
+    Kwds:
+    es_A,B,C,PA,PB: Coefficients of the saturated vapour pressure of
+        moist air. Defaults taken from Eq. 21-22 of doi:
+        10.1175/1520-0450(1996)035<0601:IMFAOS>2.0.CO;2
+    L0,1: Specific enthalpy of vaporisation for water at 0 C and its
+        gradient with temperature. Defaults taken from
+        https://www.engineeringtoolbox.com/enthalpy-moist-air-d_683.html
+    k: Ratio of volumetric and effective radii in cloud. For droplets
+        conforming to a modified gamma distribution, this equals
+        (1-v)(1-2v) where v is the effective variance of the distribution.
+        Default value is for droplets with v=0.111 as used in MODIS
+        and ORAC retrievals.
+    Q_ext: Extinction coefficient of droplets. Default is for liquid
+        droplets much smaller than the observed wavelength.
+    f_ab: Adiabatic fraction of the cloud. Default value is from S2.3.3 of
+        doi:10.1029/2017RG000593
+    """
+    # Fundamental constants
+    epsilon = 0.622
+    R = 8.314
+    M_a = 28.96e-3
+    g = 9.807
+    c_p = 1.004e3
+    rho_w = 997.
+    R_a = R / M_a
+
+    celsius = T - 273.15
+    # Specific latent heat of vaporisation
+    L = L0 + L1 * celsius
+    # Magnus equation for saturated vapour pressure
+    e_s = es_A * np.exp(es_B * celsius / (celsius + es_C))
+    # Correction from vapour to moist air
+    e_s *= es_PA * np.exp(es_PB * p)
+    # Partial pressure of dry air
+    p_res = p - e_s
+
+    alpha_fac = 5. * f_ab * g * epsilon
+    alpha_fac /= 4. * (np.pi * k)**2 * Q_ext * rho_w * R_a
+
+    denom0 = epsilon * L * p - c_p * p_res * T
+    denom1 = R_a * c_p * (p_res * T)**2 + (epsilon * L)**2 * e_s * p
+    alpha = alpha_fac * e_s * p_res * denom0 / (T * denom1)
+
+    return np.sqrt(alpha * tau / r_e**5)
