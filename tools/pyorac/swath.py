@@ -588,6 +588,10 @@ class Swath(Mappable):
         cdnc = self.cdnc(**kwargs)
         return cdnc, 5. / (3 * np.pi * k * Q_ext) * self["cot"] / (self["cer"]*1e-6)**2 / cdnc
 
+    @property
+    def extent(self):
+        return (self.lon.min(), self.lon.max(), self.lat.min(), self.lat.max())
+
     # -------------------------------------------------------------------
     # Housekeeping functions
     # -------------------------------------------------------------------
