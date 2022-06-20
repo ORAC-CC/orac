@@ -593,35 +593,42 @@ class ParticleType:
             file_name = "_".join((inst.inst, self.name, "RBD", "Ch*.sad"))
         return file_name
 
-    def sad_dir(self, sad_dirs, inst):
+    def sad_dir(self, sad_dirs, inst, rayleigh=True):
         """Return the path to the SAD files."""
         from glob import glob
         from os.path import join
 
-        for fdr in sad_dirs:
-            if "AVHRR" in inst.sensor:
-                fdr_name = join(fdr, inst.sensor.lower() + "-" +
-                                inst.noaa + "_" + self.sad)
-            else:
-                # Folder structure on JASMIN
-                # fdr_name = join(fdr, inst.sensor.lower() + "_" + self.sad)
+        try:
+            for fdr in sad_dirs:
+                if "AVHRR" in inst.sensor:
+                    fdr_name = join(fdr, inst.sensor.lower() + "-" +
+                                    inst.noaa + "_" + self.sad)
+                else:
+                    # Folder structure on JASMIN
+                    # fdr_name = join(fdr, inst.sensor.lower() + "_" + self.sad)
 
-                # Folder structure on local
-                fdr_name = join(fdr, inst.sensor.lower() + "/" +
-                                inst.platform.upper() + "/" + self.sad)
+                    # Folder structure on local
+                    fdr_name = join(fdr, inst.sensor.lower(),
+                                    inst.platform.upper(), self.sad)
+                if not rayleigh:
+                    fdr_name += "_no_ray"
 
-            # Determine SAD file name
-            file_name = self.sad_filename(inst)
+                # Determine SAD file name
+                file_name = self.sad_filename(inst)
 
-            # SAD files stored in subdirectories
-            if glob(join(fdr_name, file_name)):
-                return fdr_name
+                # SAD files stored in subdirectories
+                if glob(join(fdr_name, file_name)):
+                    return fdr_name
 
-            # All files in one directory
-            if glob(join(fdr, file_name)):
-                return fdr
+                # All files in one directory
+                if glob(join(fdr, file_name)):
+                    return fdr
 
-        raise FileMissing("Sad Files", str(sad_dirs))
+            raise FileMissing("Sad Files", str(sad_dirs))
+        except FileMissing:
+            # If _no_ray is missing, try to find the normal table
+            if not rayleigh:
+                return self.sad_dir(sad_dirs, inst)
 
 
 # Using non-imager LUTs and Baum properties at Greg's recommendation
