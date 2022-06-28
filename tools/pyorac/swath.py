@@ -250,7 +250,10 @@ class Swath(Mappable):
             self.nc_files[label] = ncdf
             self.tmp_files[label] = tmp
         else:
-            ncdf = Dataset(filename)
+            try:
+                ncdf = Dataset(filename)
+            except OSError as err:
+                raise FileNotFoundError(filename) from err
             self.nc_files[label] = ncdf
 
     def try_open_file(self, filename, label):
