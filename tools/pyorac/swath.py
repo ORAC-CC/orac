@@ -607,6 +607,9 @@ class Swath(Mappable):
     def __len__(self):
         return self.size
 
+    def __contains__(self, item):
+        return item in self.variables()
+
     def close(self):
         """Close all open files."""
         for handle in (h for lst in
