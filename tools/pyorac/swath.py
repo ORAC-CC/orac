@@ -680,10 +680,11 @@ class Swath(Mappable):
     def __getitem__(self, name):
         """Returns an arbitrary data field, ensuring it's a MaskedArray."""
         data = self.get_variable(name)[...]
-        if isinstance(data, np.ma.MaskedArray):
-            return data
+        if not isinstance(data, np.ma.MaskedArray):
+            data = np.ma.masked_invalid(data)
 
-        return np.ma.masked_invalid(data)
+        data[self.mask] = np.ma.masked
+        return data
 
     # -------------------------------------------------------------------
     # Masking functions
@@ -700,13 +701,27 @@ class Swath(Mappable):
         flags = sum((v for k, v in CLDFLAG.items() if k not in allowing))
         cld_mask = np.bitwise_and(self.cldflag, flags) > 0
         qc_mask = self.qcflag != 0
-        return np.logical_or(cld_mask, qc_mask)
+        self._mask = np.logical_or(cld_mask, qc_mask)
+        return self._mask
 
     def mask_clear(self):
         """Bool array that is True where the cloud mask is not 1."""
         cld_mask = self.cldmask != 1
         qc_mask = self.qcflag != 0
-        return np.logical_or(cld_mask, qc_mask)
+        self._mask = np.logical_or(cld_mask, qc_mask)
+        return self._mask
+
+    @property
+    def mask(self):
+        """Mask applied to all __getitem__ reads"""
+        try:
+            return self._mask
+        except AttributeError:
+            return np.ma.nomask
+
+    @mask.setter
+    def mask(self, value):
+        self._mask = value
 
 
 class MergedSwath(Swath):
