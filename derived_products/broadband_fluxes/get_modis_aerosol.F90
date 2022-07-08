@@ -20,8 +20,6 @@ subroutine get_modis_aerosol(fileIN,Nx,Ny,AREF,AOD550)
 
    implicit none
 
-   include "hdf.f90"
-
    ! Input arguments
    character(len=*), intent(in) :: fileIN  ! MODIS aerosol file
    integer(kind=lint), intent(in) :: Nx,Ny ! Satellite 1-km dimensions

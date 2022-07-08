@@ -38,8 +38,6 @@ subroutine read_modis_angles(fid,SDS_name,ixstart,ixstop,iystart,iystop,rtemp)
 
    implicit none
 
-   include "hdf.f90"
-
    integer,            intent(in)  :: fid
    character(len=*),   intent(in)  :: SDS_name
    integer(kind=lint), intent(in)  :: ixstart, ixstop, iystart, iystop

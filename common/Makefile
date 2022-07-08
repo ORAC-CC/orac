@@ -19,6 +19,7 @@ COMMON_OBJ_F90 = $(OBJS)/chunk_utils.o \
                  $(OBJS)/constants_cloud_typing_pavolonis.o \
                  $(OBJS)/global_attributes.o \
                  $(OBJS)/interpol.o \
+                 $(OBJS)/hdf.o \
                  $(OBJS)/orac_indexing.o \
                  $(OBJS)/orac_ncdf.o \
                  $(OBJS)/orac_output.o \
@@ -34,6 +35,9 @@ COMMON_OBJ   = $(COMMON_OBJ_F90) $(COMMON_OBJ_C)
 
 
 # Compilation rules
+$(OBJS)/%.o: %.f
+	$(F77) -o $@ -c $(FFLAGS) $(INC) $(AUXFLAGS) $<
+
 $(OBJS)/%.o: %.f90
 	$(F90) -o $@ -c $(FFLAGS) $(INC) $(AUXFLAGS) $<
 

@@ -35,10 +35,9 @@ subroutine read_mcd43c1(path_to_file, mcd, nbands, bands, read_params, &
                         read_QC, verbose, stat)
 
    use preproc_constants_m
+   use hdf_m, only: DFACC_READ
 
    implicit none
-
-   include "hdf.f90"
 
    ! Input variables
    character(len=*), intent(in) :: path_to_file

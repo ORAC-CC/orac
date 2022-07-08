@@ -172,8 +172,6 @@ function read_nsidc_nise(path_to_file, nise, north, south, verbose) &
 
    implicit none
 
-   include "hdf.f90"
-
    ! Input variables
    character(len=*), intent(in)  :: path_to_file
    integer(kind=1),  intent(in)  :: north
