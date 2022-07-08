@@ -205,10 +205,20 @@ class Swath(Mappable):
             no reading. Many class methods will not function until _init1() is
             called as the lat-lon coords are not defined.
         """
+        self.ch = None
         self.primary = filename
         self.secondary = filename.replace('primary', 'secondary')
         self.nc_files = {}
         self.tmp_files = {}
+
+
+        self._ang = None
+        self._ang_unc = None
+        self._cldflag = None
+        self._cldmask = None
+        self._mask = None
+        self._qcflag = None
+        self._rs = None
 
         try:
             self.try_open_file(self.primary, "pri")
@@ -576,7 +586,7 @@ class Swath(Mappable):
 
         return np.logical_not(keep)
 
-    def thickness(self, how="quaas", k=0.692, Q_ext=2., **kwargs):
+    def thickness(self, how="quaas", k=0.692, q_ext=2., **kwargs):
         """Liquid cloud physical thickness
 
         Writing the CDNC equations is the easiest way to make it clear where
@@ -587,13 +597,13 @@ class Swath(Mappable):
         kwargs["how"] = how
         if how == "acp":
             kwargs["k"] = k
-            kwargs["Q_ext"] = Q_ext
+            kwargs["Q_ext"] = q_ext
         cdnc = self.cdnc(**kwargs)
-        return cdnc, 5. / (3 * np.pi * k * Q_ext) * self["cot"] / (self["cer"]*1e-6)**2 / cdnc
+        return cdnc, 5. / (3 * np.pi * k * q_ext) * self["cot"] / (self["cer"]*1e-6)**2 / cdnc
 
     @property
     def extent(self):
-        return (self.lon.min(), self.lon.max(), self.lat.min(), self.lat.max())
+        return self.lon.min(), self.lon.max(), self.lat.min(), self.lat.max()
 
     # -------------------------------------------------------------------
     # Housekeeping functions

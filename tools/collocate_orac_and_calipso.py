@@ -20,7 +20,8 @@ print('narg', narg)
 if narg > 1:
     SLSTR_filename = sys.argv[1]
 else:
-    SLSTR_filename = '/g/data//k10/cp2786/cci_data/l2/2008/06/ESACCI-L2-CLOUD-CLD-AATSR_CC4CL_Envisat_200806201027_fv20.0.primary.nc'
+    SLSTR_filename = \
+        '/g/data//k10/cp2786/cci_data/l2/2008/06/ESACCI-L2-CLOUD-CLD-AATSR_CC4CL_Envisat_200806201027_fv20.0.primary.nc'
 if narg > 2:
     Cfilename = sys.argv[2]
 else:
@@ -72,7 +73,6 @@ satsatz = nc.variables['satellite_zenith_view_no1'][:, :]
 sattime = nc.variables['time'][:, :]
 cost_ja = nc.variables['costja'][:, :]
 cost_jm = nc.variables['costjm'][:, :]
-satcost = cost_jm * 0.
 satcost = cost_ja + cost_jm
 
 nc.close()
@@ -85,6 +85,8 @@ for mm in range(0, nlon):
 
 # Now read in the active calipso data
 print('end loop')
+
+file = None
 
 if Cfilename.endswith('f'):
 
@@ -103,7 +105,10 @@ clat = sds_obj.get()  # get sds data
 sds_obj = file.select('Longitude')  # select sds
 clon = sds_obj.get()  # get sds data
 # Profile_Time
-# Time, expressed in International Atomic Time (TAI). Units are in seconds, starting from January 1, 1993. For the 5 km profile products, three values are reportsed: the time for the first pulse included in the 15 shot average; the time at the temporal midpoint (i.e., at the 8th of 15 consecutive laser shots); and the time for the final pulse.
+# Time, expressed in International Atomic Time (TAI). Units are in seconds, starting from January 1, 1993.
+# For the 5 km profile products, three values are reportsed: the time for the first pulse included in the 15
+# shot average; the time at the temporal midpoint (i.e., at the 8th of 15 consecutive laser shots);
+# and the time for the final pulse.
 sds_obj = file.select('Solar_Zenith_Angle')
 calsol = sds_obj.get()
 sds_obj = file.select('IGBP_Surface_Type')
