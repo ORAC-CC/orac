@@ -632,10 +632,12 @@ class ParticleType:
 
 
 # Using non-imager LUTs and Baum properties at Greg's recommendation
-SETTINGS = {'WAT': ParticleType("liquid-water", sad='netcdf'),
-            'ICE': ParticleType("water-ice", sad='netcdf', microphysical_model='agg')}
+SETTINGS = {'WAT': ParticleType("WAT", sad="WAT"),
+            'ICE': ParticleType("ICE", sad="ICE_baum")}
 
 # Uncomment to use new netcdf LUTs
+#SETTINGS = {'WAT': ParticleType("liquid-water", sad='netcdf'),
+#            'ICE': ParticleType("water-ice", sad='netcdf', microphysical_model='agg')}
 
 
 tau = Invpar('ITau', ap=-1.0, sx=1.5)
