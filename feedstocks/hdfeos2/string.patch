@@ -1,0 +1,11 @@
+--- hdfeos/samples/writefields.f     2012-03-12 17:34:20.000000000 +0000
++++ hdfeos/samples/writefields.new.f 2019-01-22 10:20:37.000000000 +0000
+@@ -31,7 +31,7 @@
+ c     Open the HDF swath file, "SwathFile.hdf"
+ c 
+ 
+-	swfid = swopen("SwathFile_created_with_hadeos_sample_file_writer"//
++	swfid = swopen("SwathFile_created_with_hadeos_sample_file_writer
+      1_of_HDFEOS2_version_219_or_higher_release.hdf", DFACC_RDWR)
+ 
+ 

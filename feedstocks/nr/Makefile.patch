@@ -8,3 +8,8 @@ diff -rupN nr/Makefile new/Makefile
  F77FLAGS = -O3 -Dfloat=double -std=legacy -Wno-conversion -fno-range-check \
             -Wno-unused-dummy-argument -Wno-unused-function -fopenmp
 
+@@ -230,3 +230,2 @@
+            probks.o \
+-           psdes.o \
+            pwt.o \
+
