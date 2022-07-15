@@ -6,14 +6,14 @@
 -#CC      = $(CC)
 -CCFLAGS = $(CFLAGS) -O3 -cpp -I. -fopenmp
 +CC      = $(GCC)
-+CCFLAGS = $(CFLAGS)
++CCFLAGS = $(CFLAGS) -cpp -I. -fopenmp
  
  # Fortran compiler and Fortan compiler flags (required for the Fortran
  # interface)
 -F90      = $(FC)
 -F90FLAGS = $(FFLAGS) -O3 -I. -ffree-line-length-0 -cpp -fcheck=bounds -fopenmp
 +F90      = $(GFORTRAN)
-+F90FLAGS = $(FFLAGS)
++F90FLAGS = $(FFLAGS) -I. -ffree-line-length-0 -cpp -fcheck=bounds -fopenmp
  
 -LINKS = $(LDFLAGS) -lm -fopenmp
 +LINKS = $(LDFLAGS) -lm
