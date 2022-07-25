@@ -367,7 +367,7 @@ Ctrl%LUTClass2              = "{}"
 Ctrl%FID%SAD_Dir2           = "{}"
 Ctrl%Class2                 = {}""".format(
             SETTINGS[args.multilayer[0]].name,
-            SETTINGS[args.multilayer[0]].sad_dir(args.sad_dirs, args.File),
+            SETTINGS[args.multilayer[0]].sad_dir(args.sad_dirs, args.File, rayleigh=False),
             args.multilayer[1],
         )
         for var in SETTINGS[args.multilayer[0]].inv:

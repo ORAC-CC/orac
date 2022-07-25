@@ -50,7 +50,7 @@ if orig_args.in_dir is None:
 if orig_args.out_dir:
     base_out_dir = orig_args.out_dir
 else:
-    base_out_dir = defaults.data_dir +'/testoutput'
+    base_out_dir = defaults.data_dir + '/testoutput'
 
 # Increment version number (as this is usually run on uncommited code)
 if orig_args.revision is None:
@@ -113,7 +113,7 @@ try:
                 os.chmod(script_file, 0o700)
 
                 values = defaults.batch_values.copy()
-                values.update({key : val for key, val in args.batch_settings})
+                values.update({key: val for key, val in args.batch_settings})
                 values['job_name'] = job_name
                 values['log_file'] = os.path.join(log_path, job_name + '.log')
                 values['err_file'] = os.path.join(log_path, job_name + '.log')

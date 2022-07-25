@@ -94,7 +94,7 @@ def colour_format(text_in, start=None, reset=True):
     if reset:
         text += '\033[0m'
 
-    return sub(r'\\C\{(.+?)\}', cprint_sub, text)
+    return sub(r'\\C{(.+?)}', cprint_sub, text)
 
 
 def colour_print(text, start=None, reset=True):
