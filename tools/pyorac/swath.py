@@ -216,7 +216,7 @@ class Swath(Mappable):
         self._ang_unc = None
         self._cldflag = None
         self._cldmask = None
-        self._mask = None
+        self._mask = np.ma.nomask
         self._qcflag = None
         self._rs = None
 
@@ -287,7 +287,7 @@ class Swath(Mappable):
     @property
     def cldmask(self):
         """Combined-view cloud mask"""
-        if "_cldmask" not in self.__dict__:
+        if self._cldmask is None:
             self.set_cldmask()
         return self._cldmask
 
@@ -313,7 +313,7 @@ class Swath(Mappable):
     @property
     def ang(self):
         """Angstrom exponent"""
-        if "_ang" not in self.__dict__:
+        if self._ang is None:
             self.set_ang()
         return self._ang
 
@@ -327,7 +327,7 @@ class Swath(Mappable):
     @property
     def ang_unc(self):
         """Angstrom exponent uncertainty"""
-        if "_ang_unc" not in self.__dict__:
+        if self._ang_unc is None:
             self.set_ang_unc()
         return self._ang_unc
 
@@ -348,7 +348,7 @@ class Swath(Mappable):
         When working with 10km retrievals in a MergedSwath instance, it's
         necessary to use awkward indexing such as orac.rs[ch][1:2, 3:4].
         """
-        if "_rs" not in self.__dict__:
+        if self._rs is None:
             self.set_rs()
         return self._rs
 
@@ -415,7 +415,7 @@ class Swath(Mappable):
     @property
     def cldflag(self):
         """Cloud flag for aerosol retrievals"""
-        if "_cldflag" not in self.__dict__:
+        if self._cldflag is None:
             self.set_cldflag(low_res=len(self.shape) != 2)
         return self._cldflag
 
@@ -486,7 +486,7 @@ class Swath(Mappable):
     @property
     def qcflag(self):
         """Quality flag for all retrievals"""
-        if "_qcflag" not in self.__dict__:
+        if self._qcflag is None:
             self.set_qcflag()
         return self._qcflag
 
@@ -727,14 +727,18 @@ class Swath(Mappable):
     @property
     def mask(self):
         """Mask applied to all __getitem__ reads"""
-        try:
-            return self._mask
-        except AttributeError:
-            return np.ma.nomask
+        return self._mask
 
     @mask.setter
     def mask(self, value):
-        self._mask = value
+        if value is None:
+            self._mask = np.ma.nomask
+        else:
+            try:
+                _ = self.lat[value]
+                self._mask = value
+            except IndexError as err:
+                raise ValueError("Invalid mask for this data") from err
 
 
 class MergedSwath(Swath):
