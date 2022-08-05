@@ -1,0 +1,33 @@
+{% set version = "1.0.6" %}
+
+package:
+  name: libaec
+  version: {{ version }}
+
+source:
+  - git_url: https://gitlab.dkrz.de/k202009/libaec.git
+    git_rev: v{{ version }}
+
+build:
+  number: 0
+
+requirements:
+  build:
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
+    - cmake
+
+test:
+  commands:
+    - test -f ${PREFIX}/lib/libsz.so
+    - test -f ${PREFIX}/lib/libaec.so
+
+about:
+  home: https://www.dkrz.de/redmine/projects/aec
+  license: BSD
+  license_file: LICENSE.txt
+  summary: 'Adaptive Entropy Coding library'
+
+extra:
+  recipe_maintainers:
+    - orac_cc

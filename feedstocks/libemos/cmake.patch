@@ -1,4 +1,4 @@
-Subject: Don't hardcode the Interpolation table path.
+Subject: Help cmake find ecCodes
 diff -upN libemos-4.4.9-Source/CMakeLists.txt libemos/CMakeLists.txt
 --- libemos-4.4.9-Source/CMakeLists.txt	2017-06-27 17:08:16.000000000 +0100
 +++ libemos/CMakeLists.txt	2019-01-31 16:58:46.002147315 +0000
@@ -15,36 +15,3 @@ diff -upN libemos-4.4.9-Source/CMakeLists.txt libemos/CMakeLists.txt
    set( grib_api_BASE_DIR     ${eccodes_BASE_DIR} )
    set( grib_handling_pkg eccodes )
  else()
-@@ -168,8 +168,6 @@ if( BUFR_TABLES_PATH )
- else()
-   set( BUFR_TABLES_PATH "${CMAKE_INSTALL_PREFIX}/${INSTALL_DATA_DIR}/../bufrdc_tables/" )
- endif()
--add_definitions( -DBUFR_TABLES_PATH="${BUFR_TABLES_PATH}" )
--message( STATUS "BUFR_TABLES_PATH: ${BUFR_TABLES_PATH}" )
- 
- # get_directory_property( LIBEMOS_DEFINITIONS COMPILE_DEFINITIONS ) # don't export libemos definitions
- 
-diff -upN libemos-4.4.9-Source/libemos-sp/CMakeLists.txt libemos/libemos-dp/CMakeLists.txt
---- libemos-4.4.9-Source/libemos-sp/CMakeLists.txt	2018-02-16 13:29:59.000000000 +0000
-+++ libemos/libemos-dp/CMakeLists.txt	2019-01-31 18:06:40.931471207 +0000
-@@ -34,7 +34,7 @@ ecbuild_add_library(
-   TYPE        ${LIB_TYPE}
-   TARGET      emos_sp
-   OUTPUT_NAME "emos"
--  DEFINITIONS ${LIBEMOS_DEFINITIONS} ${emos_interpol_tables_def}
-+  DEFINITIONS ${LIBEMOS_DEFINITIONS}
-   LIBS        "${GRIB_API_LIBRARIES}" "${FFTW_LIB}" "${FORTRAN_LIBRARIES}"
-   SOURCES     ../libemos_version.c ${emos_sp_srcs}
-   GENERATED   ../libemos_version.c )
-diff -upN libemos-4.4.9-Source/libemos-dp/CMakeLists.txt libemos/libemos-dp/CMakeLists.txt
---- libemos-4.4.9-Source/libemos-dp/CMakeLists.txt	2018-02-16 13:29:59.000000000 +0000
-+++ libemos/libemos-dp/CMakeLists.txt	2019-01-31 18:05:27.977437881 +0000
-@@ -31,7 +31,7 @@ ecbuild_add_library(
-   TYPE        ${LIB_TYPE}
-   TARGET      emos
-   OUTPUT_NAME "emosR64"
--  DEFINITIONS ${LIBEMOS_DEFINITIONS} ${emos_interpol_tables_def}
-+  DEFINITIONS ${LIBEMOS_DEFINITIONS}
-   LIBS        "${GRIB_API_LIBRARIES}" "${FFTW_LIB}" ${FORTRAN_LIBRARIES}
-   SOURCES     ../libemos_version.c ${emos_dp_srcs}
-   GENERATED   ../libemos_version.c )

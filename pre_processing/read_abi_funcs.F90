@@ -493,74 +493,66 @@ end subroutine get_abi_solgeom
 ! To resample we simply average a NxN region of VIS into a 1x1 pixel of TIR.
 subroutine goes_resample_vis_to_tir(inarr, outarr, nx, ny, fill, scl, verbose)
 
-   use omp_lib
-   use preproc_constants_m
+    use omp_lib
+    use preproc_constants_m
 
-   implicit none
+    implicit none
 
-   integer,          intent(in)  :: nx
-   integer,          intent(in)  :: ny
-   real,             intent(in)  :: fill
-   integer,          intent(in)  :: scl
-   logical,          intent(in)  :: verbose
-   real(kind=sreal), intent(in)  :: inarr(:,:)
-   real(kind=sreal), intent(out) :: outarr(:,:)
+    integer,          intent(in)  :: nx
+    integer,          intent(in)  :: ny
+    real,             intent(in)  :: fill
+    integer,          intent(in)  :: scl
+    logical,          intent(in)  :: verbose
+    real(kind=sreal), intent(in)  :: inarr(:,:)
+    real(kind=sreal), intent(out) :: outarr(:,:)
 
+    integer :: x, y
+    integer :: outx, outy
+
+    integer :: i, j
+    real    :: val
+    integer :: inpix
+
+    outarr(:, :) = fill
+   
 #ifdef _OPENMP
-   integer :: n_threads
-#endif
-   integer :: x, y
-   integer :: outx, outy
-
-   integer :: i, j
-   real    :: val
-   integer :: inpix
-
-   outarr(:, :) = 0
-#ifdef _OPENMP
-   if (verbose) write(*,*) "Resampling VIS grid to IR grid using OpenMP"
-   !$OMP PARALLEL DO PRIVATE(y, x, outx, outy, val, inpix)
+    if (verbose) write(*,*) "Resampling VIS grid to IR grid using OpenMP"
+    !$OMP PARALLEL DO PRIVATE(y, x, outx, outy, val, inpix, i, j)
 #endif
 #ifdef __ACC
-   if (verbose) write(*,*) "Resampling VIS grid to IR grid using PGI_ACC"
-!$acc data copyin(inarr(1:nx*scl,1:ny*scl))  copyout(outarr(1:nx,1:ny))
-!$acc parallel
-!$acc loop collapse(2) independent private(x, y, outx, outy, val, inpix,i,j)
+    if (verbose) write(*,*) "Resampling VIS grid to IR grid using PGI_ACC"
+    !$acc data copyin(inarr(1:nx*scl,1:ny*scl))  copyout(outarr(1:nx,1:ny))
+    !$acc parallel
+    !$acc loop collapse(2) independent private(x, y, outx, outy, val, inpix,i, j)
 #endif
-   do x = 1, (nx*scl)-scl
-      do y = 1, (ny*scl)-scl
-         outx = int(x/scl)+1
-         outy = int(y/scl)+1
-         val = 0
-         inpix= 0
-         !$acc loop collapse(2)
-         do i = 1, scl
-            do j = 1, scl
-               if (inarr(x+i, y+j) .gt. sreal_fill_value) then
-                  val = val + inarr(x+i, y+j)
-                  inpix= inpix + 1
-               end if
+    do x = 1, (nx * scl) - scl + 1, scl ! Outer x loop
+        outx = 1 + x / scl
+        do y = 1, (ny * scl) - scl + 1, scl ! Outer y loop
+            outy = 1 + y / scl
+            val = 0
+            inpix = 0
+            do i = 0, scl - 1 ! Inner x loop
+                do j = 0, scl - 1 ! Inner y loop
+                    if (inarr(x+i, y+j).ne. fill) then
+                        val = val + inarr(x+i, y+j)
+                        inpix = inpix+1
+                    end if
+                end do
             end do
-         end do
-         val = val/inpix
-         if (outx .le. 0 .or. outx .ge. nx .or. &
-              outy .le. 0 .or. outy .ge. ny) then
-            cycle
-         end if
-
-         if (outarr(outx, outy).le. 0) then
-            outarr(outx, outy) = val
-         end if
-      end do
-
-   end do
+            if (inpix > 0) then
+                outarr(outx, outy) = val / inpix
+            else
+                outarr(outx, outy) = fill
+            end if
+        end do ! End outer y loop
+    end do ! End outer x loop
 
 #ifdef _OPENMP
-   !$OMP END PARALLEL DO
+    !$OMP END PARALLEL DO
 #endif
 #ifdef __ACC
-!$acc end parallel
-!$acc end data
+    !$acc end parallel
+    !$acc end data
 #endif
 
 end subroutine goes_resample_vis_to_tir
@@ -658,7 +650,7 @@ subroutine get_abi_time(infile, imager_time, ny, verbose)
    real(kind=dreal)           :: dfrac1, dfrac2, jd1, jd2, slo
 
    character(len=var_length), parameter :: date_format = &
-        '(I4, T1, I2, T1, I2, T1, I2, T1, I2, T1, I2)'
+        '(I4, X, I2, X, I2, X, I2, X, I2, X, I2)'
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering get_abi_time()'
 

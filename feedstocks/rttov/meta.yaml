@@ -37,9 +37,9 @@ requirements:
     - {{ compiler('c') }}
     - {{ compiler('fortran') }}
     - make
-    - numpy
+    - numpy {{ numpy }}
     - perl
-    - python
+    - python {{ python }}
   host:
     - lapack
     - python

@@ -564,6 +564,7 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    print*, cyear
    print*, cmonth
    print*, cday
+
    read(cyear,'(I4)') value
    pxYear = value
    read(cmonth,'(I2)') value
@@ -573,7 +574,6 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    ! Get calendar day
    call greg2jul(pxYear, pxMonth, pxDay, pxJday)
    print*, pxYear, pxMonth, pxDay, pxJday
-
 
    !----------------------------------------------------------------------------
    ! Read TSI file
@@ -926,6 +926,7 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    boa_tsfc(:,:) = sreal_fill_value
    boa_psfc(:,:) = sreal_fill_value
    boa_qsfc(:,:) = sreal_fill_value
+   cbh(:,:) = sreal_fill_value
 
    ! Re-grid PRTM vertical profile to match bugsrad resolution (NLS)
    do i = 1, NLS
@@ -1104,13 +1105,13 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    print*, 'y-start = ', pxY0
    print*, 'x-end = ', pxX1
    print*, 'y-end = ', pxY1
-   print*, 'Across Track # = ', xN
-   print*, 'Along Track #  = ', yN
+   print*, 'Across Track # = ', pxX1 - pxX0
+   print*, 'Along Track #  = ', pxY1 - pxY0
 
    ! loop over cross-track dimension
    do i = pxX0, pxX1
       call cpu_time(cpuFinish)
-      print*, 'complete: ', i*100./(xN*1.),'%   i=', i, cpuFinish-cpuStart,' seconds elapsed'
+      print*, 'complete: ', (i-pxX0)*100./((pxX1-pxX0)*1.),'%   i=', i, cpuFinish-cpuStart,' seconds elapsed'
 
       ! loop over along-track dimension
       do j = pxY0, pxY1
@@ -1470,7 +1471,7 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
         scale_factor  = int(1, byte), &
         add_offset    = int(0, byte), &
         valid_min     = int(1, byte), &
-        valid_max     = int(4, byte), &
+        valid_max     = int(6, byte), &
         units         = '1', &
         flag_values   = '1b 2b 3b 4b 5b 6b', &
         flag_meanings = 'oc_liq-cld oc_ice-cld clear-AOD clear_no_AOD joint_aod-liq_cld joint_aod-ice_cld', &

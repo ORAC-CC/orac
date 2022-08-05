@@ -148,7 +148,7 @@ subroutine read_ecmwf_wind_grib(nwp_path, ecmwf, nwp_flag)
          call grib_get(gid, 'values', val, stat)
          if (stat .ne. 0) call h_e_e('wind_grib', 'Error reading U10.')
 
-         ecmwf%u10 = reshape(val, (/ni, nj/)) 
+         ecmwf%u10 = reshape(val, (/ni, nj/))
       case(166)
          ! 10 m meriodional wind component
          call grib_get(gid, 'values', val, stat)

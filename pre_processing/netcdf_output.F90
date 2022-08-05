@@ -114,7 +114,7 @@ module netcdf_output_m
       integer :: vid_msi_instr_ch_numbers,vid_msi_abs_ch_wl
       integer :: vid_msi_ch_swflag,vid_msi_ch_lwflag,vid_msi_ch_view
       integer :: vid_time
-      integer :: vid_msi_data, vid_sd_data
+      integer :: vid_msi_data, vid_sd_data, vid_cal_data
 
       ! prtm file:
       integer :: vid_lon_pw, vid_lat_pw

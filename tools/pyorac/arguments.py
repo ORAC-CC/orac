@@ -118,7 +118,7 @@ def args_preproc(parser):
                      help='Revision (version) number for file.')
 
     ecmwf = parser.add_argument_group('ECMWF settings')
-    ecmwf.add_argument('--nwp_flag', type=int, choices=range(9),
+    ecmwf.add_argument('--nwp_flag', type=int, choices=range(5),
                        default=defaults.NWP_FLAG,
                        help='Type of ECMWF data to read in.')
     ecmwf.add_argument('--single_ecmwf', action='store_const',
@@ -321,9 +321,10 @@ def check_args_preproc(args):
 
     try:
         # When using ecmwf_dir to set a single directory
-        args.ggam_dir = args.ecmwf_dir
-        args.ggas_dir = args.ecmwf_dir
-        args.spam_dir = args.ecmwf_dir
+        if os.path.isdir(args.ecmwf_dir):
+            args.ggam_dir = args.ecmwf_dir
+            args.ggas_dir = args.ecmwf_dir
+            args.spam_dir = args.ecmwf_dir
     except AttributeError:
         pass
 
@@ -470,6 +471,7 @@ def check_args_regress(args):
         else:
             args.tests = ['DAYMYDS', 'NITMYDS', 'DAYMODS', 'NITMODS',
                           'DAYAATSRS', 'NITAATSRS', 'DAYAVHRRS', 'NITAVHRRS',
+                          'DAYSLSTRAS', 'NITSLSTRAS', 'DAYSLSTRBS', 'NITSLSTRBS',
                           'DAYSEVIRIS', 'NITSEVIRIS']
 
     return args

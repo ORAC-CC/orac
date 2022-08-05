@@ -107,7 +107,7 @@ try:
                 os.chmod(script_file, 0o700)
 
                 values = defaults.BATCH_VALUES.copy()
-                values.update({key : val for key, val in args.batch_settings})
+                values.update({key: val for key, val in args.batch_settings})
                 values['job_name'] = job_name
                 values['log_file'] = os.path.join(log_path, job_name + '.log')
                 values['err_file'] = os.path.join(log_path, job_name + '.log')

@@ -85,6 +85,7 @@ subroutine Dealloc_Data(Ctrl, MSI_Data)
 
    if (associated(MSI_Data%MSI))          deallocate(MSI_Data%MSI)
    if (associated(MSI_Data%SD))           deallocate(MSI_Data%SD)
+   if (associated(MSI_Data%cal_gain))     deallocate(MSI_Data%cal_gain)
    if (associated(MSI_Data%rho_dd_cor))   deallocate(MSI_Data%rho_dd_cor)
    if (associated(MSI_Data%rho_dd_unc))   deallocate(MSI_Data%rho_dd_unc)
    if (associated(MSI_Data%svd_unc))      deallocate(MSI_Data%svd_unc)

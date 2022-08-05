@@ -45,6 +45,7 @@ end subroutine get_day_of_year
 
 subroutine sun_pos_calc(year, day, hour, lat, lon, el, az)
 
+   use ieee_arithmetic, only : ieee_is_nan
    use system_utils_m
    implicit none
 !$acc routine seq
@@ -63,9 +64,9 @@ subroutine sun_pos_calc(year, day, hour, lat, lon, el, az)
    real :: delta, leap, jd, time
    real :: mnlon, mnanom, eclon, oblqec, num, den, ra
    real :: gmst, lmst, latrad
-   
+
    real, parameter :: SMALL = 1.E-18
-   
+
 
 
    data twopi,pi,rad/6.2831853,3.1415927,.017453293/
@@ -130,12 +131,12 @@ subroutine sun_pos_calc(year, day, hour, lat, lon, el, az)
 
    el = 90 - el/rad
    az = az/rad
-  
+
    if (az .lt. 0) then
       az = 360. + az
    endif
 
-   if (isnan(az) .and. lat .ge. -90. .and. lat .le. 90) then
+   if (ieee_is_nan(az) .and. lat .ge. -90. .and. lat .le. 90) then
      az = 270.
    endif
 

@@ -60,13 +60,23 @@ subroutine Read_SAD(Ctrl, SAD_Chan, SAD_LUT)
 
    if (Ctrl%verbose) write(*,*) 'Reading SAD files'
 
-   ! Read channel sad files
-   call Read_SAD_Chan(Ctrl, SAD_Chan)
+   if (len_trim(Ctrl%LUTClass) == 3) then
+      ! Read channel sad files
+      call Read_SAD_Chan(Ctrl, SAD_Chan)
 
-   ! Read Look up tables
-   call Read_SAD_LUT (Ctrl, SAD_Chan, SAD_LUT(1), 1)
-   if (Ctrl%Approach == AppCld2L) then
-      call Read_SAD_LUT (Ctrl, SAD_Chan, SAD_LUT(2), 2)
+      ! Read Look up tables
+      call Read_SAD_LUT(Ctrl, SAD_Chan, SAD_LUT(1), 1)
+      if (Ctrl%Approach == AppCld2L) then
+         call Read_SAD_LUT(Ctrl, SAD_Chan, SAD_LUT(2), 2)
+      end if
+   else
+      ! New NetCDF LUTs
+      call Read_NCDF_SAD_LUT(Ctrl, Ctrl%FID%NCDF_LUT_Filename, &
+              SAD_Chan, SAD_LUT(1))
+      if (Ctrl%Approach == AppCld2L) then
+         call Read_NCDF_SAD_LUT(Ctrl, Ctrl%FID%NCDF_LUT_Filename2, &
+                 SAD_Chan, SAD_LUT(2))
+      end if
    end if
 
 end subroutine Read_SAD

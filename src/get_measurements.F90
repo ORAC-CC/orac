@@ -91,7 +91,9 @@
 ! 2015/01/30, AP: Replace YSeg0 with Y0 as superpixeling removed.
 ! 2015/08/19, AP: Sy may now be drawn from the MSI data files (SelmMeas), the
 !    SAD files (SelmAux), or taken to be constant (SelmCtrl).
-!
+! 2021/10/12, ATP: Implement NEBT and NEDR that vary with the measurements.
+!    This requires the new (netcdf) LUTs. When using netcdf LUTs,
+!    Homog and Coreg noise are independent of LUT being used.
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
@@ -107,7 +109,6 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
    implicit none
 
    ! Define arguments
-
    type(Ctrl_t),     intent(in)    :: Ctrl
    type(SAD_Chan_t), intent(in)    :: SAD_Chan(:)
    type(SPixel_t),   intent(inout) :: SPixel
@@ -115,13 +116,27 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
    integer,          intent(out)   :: status
 
    ! Define local variables
-
    integer :: i, ii, j, jj
-   real    :: Rad(1)   ! Radiance calculated from noise equivalent brightness
-                       ! temperature used in setting Sy for mixed thermal /
-                       ! solar channels.
-   real    :: dR_dT(1) ! Gradient of Rad w.r.t temp.
+   real    :: Rad(1)    ! Radiance calculated from noise equivalent brightness
+                        ! temperature used in setting Sy for mixed thermal /
+                        ! solar channels.
+   real    :: dR_dT(1)  ! Gradient of Rad w.r.t temp.
 
+   ! Define variables for computing reflectance varying NEDR
+   real    :: Lx        ! Radiance measurement
+   real    :: dLx       ! Radiance uncertainty
+
+   ! Define variables for computing brightness temperature-varying NEBT.
+   real    :: dR_dT0(1) ! Gradient of Rad w.r.t. reference temperature.
+   real    :: dR_dTm(1) ! Gradient of Rad w.r.t. measured temperature.
+   real    :: R0(1)     ! Radiance calculated reference temperature.
+   real    :: Rm(1)     ! Radiance calculated measured temperature.
+
+   ! Homogeneity (Homog) and Co-registration (Coreg) noise
+   real    :: ThermalNeHomog   ! Homog noise for thermal channels
+   real    :: SolarNeHomog     ! Homog noise for solar channels
+   real    :: ThermalNeCoreg   ! Coreg noise for thermal channels
+   real    :: SolarNeCoreg     ! Coreg noise for solar channels
 
    status = 0
 
@@ -162,9 +177,39 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
       do i = 1, SPixel%Ind%Ny
          ii = SPixel%spixel_y_to_ctrl_y_index(i)
          if (SAD_Chan(ii)%Thermal%Flag > 0) then
-            SPixel%Sy(i,i) = SAD_Chan(ii)%Thermal%NEBT
+            if (len_trim(Ctrl%LUTClass) == 3) then
+               ! Old LUTs approach (fixed uncertainty)
+               ! Note: NEBT is already squared when old LUT is read in.
+               SPixel%Sy(i,i) = SAD_Chan(ii)%Thermal%NEBT
+            else
+               ! New LUTs approach (varying uncertainty)
+               ! Note: NEBT is NOT squared when new LUT is read in.
+               call T2R(1, SAD_Chan(ii:ii), SAD_Chan(ii:ii)%Thermal%T0, R0, dR_dT0, status)
+               call T2R(1, SAD_Chan(ii:ii), SPixel%Ym(i:i), Rm, dR_dTm, status)
+               ! Convert to variance by squaring uncertainty
+               SPixel%Sy(i,i) = (SAD_Chan(ii)%Thermal%NEBT * &
+                                 (dR_dT0(1) / dR_dTm(1))) ** 2
+            end if
          else
-            SPixel%Sy(i,i) = SAD_Chan(ii)%Solar%NedR
+            if (len_trim(Ctrl%LUTClass) == 3) then
+               ! Old LUTs approach (fixed uncertainty)
+               ! Note: NEDR is squared when old LUT is read in.
+               SPixel%Sy(i,i) = SAD_Chan(ii)%Solar%NEDR
+            else
+               ! New LUTs approach (varying uncertainty)
+               ! Convert reflectance to radiance
+               j = Ctrl%Ind%View_Id(SPixel%spixel_y_to_ctrl_y_index(i))
+               Lx = (SPixel%Ym(i) * cos(SPixel%Geom%SolZen(j) * d2r) * &
+                     SAD_Chan(ii)%Solar%F0) / Pi
+               ! Compute uncertainty in terms of radiance
+               dLx = sqrt((Lx / SAD_Chan(ii)%Solar%SNR ) ** 2 + &
+                           2 * ((MSI_Data%cal_gain(i) * (1.0 / sqrt(12.0))) ** 2))
+               ! Convert radiance uncertainty to reflectance uncertainty
+               ! then square it to convert to reflectance variance
+               SPixel%Sy(i,i) = ((Pi * dLx) / &
+                                (cos(SPixel%Geom%SolZen(j) * d2r) * &
+                                 SAD_Chan(ii)%Solar%F0)) ** 2
+            end if
          end if
       end do
    case(SelmCtrl)
@@ -183,6 +228,21 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
    ! thermal and solar contributions).
 
    if (Ctrl%EqMPN%Homog) then
+      ! Set values for cloud homogeneity noise to account for errors due
+      ! to the plane-parallel cloud assumption. Values are taken from
+      ! Table 4 in Watts et al. (2011) and were originally calculated
+      ! for a pre-launch SEVIRI using ASTR-2 data (Watts et al., 1998).
+      ! Originally, 5 different values were set for each cloud type.
+      ! However, as we do not classify clouds by type, only a single
+      ! value is used. Currently, we take the maximum value reported
+      ! in Table 4 of Watts et al. (2011) for thermal and solar channels,
+      ! acknowledging that these values need revision in the future.
+      ! In addition, these values are now set independent of the
+      ! instrument as they are forward model errors. Legacy values for
+      ! Homog can be found in the old *.sad files for each instrument.
+      ThermalNeHomog = 0.50  ! K (absolute error)
+      SolarNeHomog = 1.0 ! % of total signal (fractional error)
+
       do i = 1, SPixel%Ind%Ny
          ii = SPixel%spixel_y_to_ctrl_y_index(i)
 
@@ -196,34 +256,73 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
                if (SAD_Chan(ii)%Thermal%Flag /= 0) then
                   ! Both solar and thermal => mixed
 
-                  ! Convert NedR to brightness temperature and add to Sy
-                  ! Also add in the thermal contribution to Sy
+                  ! Compute partial derivative of Planck function w.r.t.
+                  ! T, evaluated at the measured BT and wavelength of
+                  ! mixed channel and store result in dR_dT(1).
                   call T2R(1, SAD_Chan(ii:ii), SPixel%Ym(i:i), Rad, dR_dT, status)
-                  SPixel%Sy(i,i) = SPixel%Sy(i,i) + &
-                     SAD_Chan(ii)%Thermal%NeHomog(Ctrl%CloudType) + &
-                     SAD_Chan(ii)%Solar%NeHomog(Ctrl%CloudType) * &
-                     SAD_Chan(ii)%Solar%f0*SAD_Chan(ii)%Solar%f0 / &
-                     (dR_dT(1)*dR_dT(1))
+                  if (len_trim(Ctrl%LUTClass) == 3) then
+                     ! Old LUTs approach reads homog from sad files.
+                     SPixel%Sy(i,i) = SPixel%Sy(i,i) + &
+                             SAD_Chan(ii)%Thermal%NeHomog(Ctrl%CloudType) + &
+                             SAD_Chan(ii)%Solar%NeHomog(Ctrl%CloudType) * &
+                             SAD_Chan(ii)%Solar%f0*SAD_Chan(ii)%Solar%f0 / &
+                             (dR_dT(1)*dR_dT(1))
+                  else
+                     ! New LUTs approach uses homog value hard-coded above.
+                     ! Add solar and thermal contributions of homog noise
+                     ! in units of Kelvin^2 to Sy by multiplying
+                     ! solar contribution by (F0/dR_dT)^2.
+                     SPixel%Sy(i,i) = SPixel%Sy(i,i) + ThermalNeHomog ** 2 &
+                             + ((SolarNeHomog/100.) * SAD_Chan(ii)%Solar%F0 / dR_dT(1)) ** 2
+                  end if
 
                else
-                  ! Pure solar channel, just add the solar NedR contribution
-                  SPixel%Sy(i,i) = SPixel%Sy(i,i) + &
-                     SAD_Chan(ii)%Solar%NeHomog(Ctrl%CloudType) * &
-                     SPixel%Ym(i) * SPixel%Ym(i)
+                  ! Pure solar channel, just add the solar NedR contribution.
+                  if (len_trim(Ctrl%LUTClass) == 3) then
+                     ! Old LUTs approach reads homog from sad files.
+                     SPixel%Sy(i,i) = SPixel%Sy(i,i) + &
+                             SAD_Chan(ii)%Solar%NeHomog(Ctrl%CloudType) * &
+                             SPixel%Ym(i) * SPixel%Ym(i)
+                  else
+                     ! New LUTs approach uses homog value hard-coded above.
+                     SPixel%Sy(i,i) = SPixel%Sy(i,i) + &
+                             ((SolarNeHomog/100.) * SPixel%Ym(i)) ** 2
+                  end if
                end if
             end if
-
-         ! Night/twilight, only thermal channel info required
          else
+            ! Night/twilight, only thermal channel info required
             if (SAD_Chan(ii)%Thermal%Flag /= 0) then
-               SPixel%Sy(i,i) = SPixel%Sy(i,i) + &
-                  SAD_Chan(ii)%Thermal%NeHomog(Ctrl%CloudType)
+               ! Pure thermal channel, add the thermal contribution to
+               ! Sy by squaring absolute uncertainties.
+               if (len_trim(Ctrl%LUTClass) == 3) then
+                  ! Old LUTs approach reads homog from sad files.
+                  SPixel%Sy(i,i) = SPixel%Sy(i,i) + &
+                          SAD_Chan(ii)%Thermal%NeHomog(Ctrl%CloudType)
+               else
+                  ! New LUTs approach uses homog value hard-coded above.
+                  SPixel%Sy(i,i) = SPixel%Sy(i,i) + ThermalNeHomog ** 2
+               end if
             end if
          end if
       end do
    end if ! End of Homog noise section
 
    if (Ctrl%EqMPN%Coreg) then
+      ! Set values for co-registration noise to account for errors due
+      ! to different IFOVs between channels. Currently, we take the
+      ! maximum value reported in Table 4 of Watts et al. (2011)
+      ! for thermal and solar channels. In the future, these values
+      ! should vary based on channel and be reported as a pixel offset
+      ! in metres or pixel fraction and then converted to a BT or
+      ! reflectance by applying the associated pixel shifts as in
+      ! Watts et al. (1998). This approach would allow Coreg noise to
+      ! be scene and instrument dependent and would therefore not be
+      ! considered a forward model error. Legacy values for Coreg can
+      ! be found in the old *.sad files for each instrument.
+      ThermalNeCoreg = 0.15  ! K (absolute error)
+      SolarNeCoreg = 2.0 ! % of total signal (fractional error)
+
       do i = 1, SPixel%Ind%Ny
          ii = SPixel%spixel_y_to_ctrl_y_index(i)
 
@@ -231,29 +330,55 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
          if (SPixel%Illum == IDay) then
             if (SAD_Chan(ii)%Solar%Flag /= 0) then
                if (SAD_Chan(ii)%Thermal%Flag /= 0) then
-                  ! both solar and thermal => mixed
+                  ! Both solar and thermal => mixed
 
-                  ! Convert NedR to brightness temperature and add to Sy
-                  ! Also add in the thermal contribution to Sy
+                  ! Compute partial derivative of Planck function w.r.t.
+                  ! T, evaluated at the measured BT and wavelength of
+                  ! mixed channel and store result in dR_dT(1).
                   call T2R(1, SAD_Chan(ii:ii), SPixel%Ym(i:i), Rad, dR_dT, status)
-                  SPixel%Sy(i,i) = SPixel%Sy(i,i) + &
-                     SAD_Chan(ii)%Thermal%NeCoreg(Ctrl%CloudType) + &
-                     SAD_Chan(ii)%Solar%NeCoreg(Ctrl%CloudType) * &
-                      SAD_Chan(ii)%Solar%f0*SAD_Chan(ii)%Solar%f0 / &
-                      (dR_dT(1)*dR_dT(1))
+                  if (len_trim(Ctrl%LUTClass) == 3) then
+                     ! Old LUTs approach reads coreg from sad files.
+                     SPixel%Sy(i,i) = SPixel%Sy(i,i) + &
+                             SAD_Chan(ii)%Thermal%NeCoreg(Ctrl%CloudType) + &
+                             SAD_Chan(ii)%Solar%NeCoreg(Ctrl%CloudType) * &
+                             SAD_Chan(ii)%Solar%f0*SAD_Chan(ii)%Solar%f0 / &
+                             (dR_dT(1)*dR_dT(1))
+                  else
+                     ! New LUTs approach uses coreg value hard-coded above.
+                     ! Add solar and thermal contributions of coreg noise
+                     ! in units of Kelvin^2 to Sy by multiplying
+                     ! solar contribution by (F0/dR_dT)^2.
+                     SPixel%Sy(i,i) = SPixel%Sy(i,i) + ThermalNeCoreg ** 2 &
+                             + ((SolarNeCoreg/100.) * SAD_Chan(ii)%Solar%F0 / dR_dT(1)) ** 2
+                  end if
 
-               else ! Pure solar channel, just add the solar NedR contribution
-                  SPixel%Sy(i,i) = SPixel%Sy(i,i) + &
-                     SAD_Chan(ii)%Solar%NeCoreg(Ctrl%CloudType) * &
-                     SPixel%Ym(i) * SPixel%Ym(i)
+               else
+                  ! Pure solar channel, just add the solar NedR contribution.
+                  if (len_trim(Ctrl%LUTClass) == 3) then
+                     ! Old LUTs approach reads coreg from sad files.
+                     SPixel%Sy(i,i) = SPixel%Sy(i,i) + &
+                             SAD_Chan(ii)%Solar%NeCoreg(Ctrl%CloudType) * &
+                                     SPixel%Ym(i) * SPixel%Ym(i)
+                  else
+                     ! New LUTs approach uses coreg value hard-coded above.
+                     SPixel%Sy(i,i) = SPixel%Sy(i,i) + &
+                             ((SolarNeCoreg/100.) * SPixel%Ym(i)) ** 2
+                  end if
                end if
             end if
-
-         ! Night/twilight, only thermal channel info required
          else
+            ! Night/twilight, only thermal channel info required
             if (SAD_Chan(ii)%Thermal%Flag /= 0) then
-               SPixel%Sy(i,i) = SPixel%Sy(i,i) + &
-                  SAD_Chan(ii)%Thermal%NeCoreg(Ctrl%CloudType)
+               ! Pure thermal channel, add the thermal contribution to
+               ! Sy by squaring absolute uncertainties.
+               if (len_trim(Ctrl%LUTClass) == 3) then
+                  ! Old LUTs approach reads coreg from sad files.
+                  SPixel%Sy(i,i) = SPixel%Sy(i,i) + &
+                          SAD_Chan(ii)%Thermal%NeCoreg(Ctrl%CloudType)
+               else
+                  ! New LUTs approach uses coreg value hard-coded above.
+                  SPixel%Sy(i,i) = SPixel%Sy(i,i) + ThermalNeCoreg ** 2
+               end if
             end if
          end if
       end do

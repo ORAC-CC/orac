@@ -5,7 +5,6 @@ name: orac_git
 channels:
  - local
  - conda-forge
- - anaconda
 dependencies:
  - gcc_linux-64
  - gxx_linux-64
@@ -24,7 +23,7 @@ dependencies:
  - seviri_util
  - hsd_reader * nompi_*
  - libemos
- - rttov<=12.2
+ - rttov
  - numpy
  - scipy
  - netcdf4

@@ -1,12 +1,12 @@
-{% set version = "4.2.13" %}
+{% set version = "4.2.15" %}
 
 package:
   name: hdf4
   version: {{ version }}
 
 source:
-  url: http://www.hdfgroup.org/ftp/HDF/HDF_Current/src/hdf-{{ version }}.tar.bz2
-  sha256: 55d3a42313bda0aba7b0463687caf819a970e0ba206f5ed2c23724f80d2ae0f3
+  url: http://support.hdfgroup.org/ftp/HDF/releases/HDF{{ version }}/src/hdf-{{ version }}.tar.gz
+  sha256: dbeeef525af7c2d01539906c28953f0fdab7dba603d1bc1ec4a5af60d002c459
   patches:
     - max_files.patch
     - configure.patch
@@ -34,9 +34,11 @@ requirements:
     - autoconf    # [not win]
   host:
     - zlib
+    - libaec
     - jpeg
   run:
     - zlib
+    - libaec
     - jpeg
 
 test:

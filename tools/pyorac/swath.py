@@ -205,10 +205,20 @@ class Swath(Mappable):
             no reading. Many class methods will not function until _init1() is
             called as the lat-lon coords are not defined.
         """
+        self.ch = None
         self.primary = filename
         self.secondary = filename.replace('primary', 'secondary')
         self.nc_files = {}
         self.tmp_files = {}
+
+
+        self._ang = None
+        self._ang_unc = None
+        self._cldflag = None
+        self._cldmask = None
+        self._mask = np.ma.nomask
+        self._qcflag = None
+        self._rs = None
 
         try:
             self.try_open_file(self.primary, "pri")
@@ -250,7 +260,10 @@ class Swath(Mappable):
             self.nc_files[label] = ncdf
             self.tmp_files[label] = tmp
         else:
-            ncdf = Dataset(filename)
+            try:
+                ncdf = Dataset(filename)
+            except OSError as err:
+                raise FileNotFoundError(filename) from err
             self.nc_files[label] = ncdf
 
     def try_open_file(self, filename, label):
@@ -274,7 +287,7 @@ class Swath(Mappable):
     @property
     def cldmask(self):
         """Combined-view cloud mask"""
-        if "_cldmask" not in self.__dict__:
+        if self._cldmask is None:
             self.set_cldmask()
         return self._cldmask
 
@@ -300,7 +313,7 @@ class Swath(Mappable):
     @property
     def ang(self):
         """Angstrom exponent"""
-        if "_ang" not in self.__dict__:
+        if self._ang is None:
             self.set_ang()
         return self._ang
 
@@ -314,7 +327,7 @@ class Swath(Mappable):
     @property
     def ang_unc(self):
         """Angstrom exponent uncertainty"""
-        if "_ang_unc" not in self.__dict__:
+        if self._ang_unc is None:
             self.set_ang_unc()
         return self._ang_unc
 
@@ -335,7 +348,7 @@ class Swath(Mappable):
         When working with 10km retrievals in a MergedSwath instance, it's
         necessary to use awkward indexing such as orac.rs[ch][1:2, 3:4].
         """
-        if "_rs" not in self.__dict__:
+        if self._rs is None:
             self.set_rs()
         return self._rs
 
@@ -402,7 +415,7 @@ class Swath(Mappable):
     @property
     def cldflag(self):
         """Cloud flag for aerosol retrievals"""
-        if "_cldflag" not in self.__dict__:
+        if self._cldflag is None:
             self.set_cldflag(low_res=len(self.shape) != 2)
         return self._cldflag
 
@@ -473,7 +486,7 @@ class Swath(Mappable):
     @property
     def qcflag(self):
         """Quality flag for all retrievals"""
-        if "_qcflag" not in self.__dict__:
+        if self._qcflag is None:
             self.set_qcflag()
         return self._qcflag
 
@@ -482,6 +495,115 @@ class Swath(Mappable):
         self._qcflag = np.zeros(self.shape)
         self._qcflag[self["niter"] >= iter_limit] += QCFLAG["iter"]
         self._qcflag[self["costjm"] >= cost_limit] += QCFLAG["cost"]
+
+    def cdnc(self, how="quaas", **kwargs):
+        """Cloud droplet number density for a semi-adiabatic cloud
+
+        Kwds:
+        how) Equation to use. Options are,
+            quaas: Use the constant relationship of Quaas 2006
+            gry: Use the temperature-dependent eqn of Gryspeerdt 2016
+            acp: Use the temp and pressure-dependent eqn of ACPovey
+
+        If how=acp,
+        es_A,B,C,PA,PB: Coefficients of the saturated vapour pressure of
+            moist air. Defaults taken from Eq. 21-22 of doi:
+            10.1175/1520-0450(1996)035<0601:IMFAOS>2.0.CO;2
+        L0,1: Specific enthalpy of vaporisation for water at 0 C and its
+            gradient with temperature. Defaults taken from
+            https://www.engineeringtoolbox.com/enthalpy-moist-air-d_683.html
+        k: Ratio of volumetric and effective radii in cloud. For droplets
+            conforming to a modified gamma distribution, this equals
+            (1-v)(1-2v) where v is the effective variance of the distribution.
+            Default value is for droplets with v=0.111 as used in MODIS
+            and ORAC retrievals.
+        Q_ext: Extinction coefficient of droplets. Default is for liquid
+            droplets much smaller than the observed wavelength.
+        f_ab: Adiabatic fraction of the cloud. Default value is from S2.3.3 of
+            doi:10.1029/2017RG000593
+        """
+        if how == "quaas":
+            return _cdnc_quaas(self["cot"], self["cer"]*1e-6)
+        elif how == "gry" or how == "gryspeerdt":
+            return _cdnc_gryspeerdt(self["cot"], self["cer"]*1e-6, self["ctt"])
+        elif how == "acp":
+            return _cdnc_acp(self["cot"], self["cer"]*1e-6, self["ctt"],
+                             self["ctp"]*1e2, **kwargs)
+        else:
+            raise TypeError("how must be one of quaas, gry, or acp "
+                            f"(given {how})")
+
+    def cdnc_qcflag(self, phase="ann_phase", temp_min=268., solzen_max=65.,
+                    satzen_max=41.4, cot_min=0., cer_min=None,
+                    cer_max=None):
+        """Quality flag for cdnc product, seeking homogeneous liquid cloud.
+
+        If the keyword for a test is set to None, that test is skipped.
+
+        Kwargs:
+        phase: Name of variable to read for the cloud phase. Should be one
+            of phase, ann_phase, or phase_pavolonis. Liquid cloud assumed == 1.
+        temp_min: Minimum cloud top temperature of liquid cloud. Default 268.
+        solzen_max: Maximum solar zenith angle. Default 65 from Gryspeerdt.
+        satzen_max: Maximum satellite zenith angle. Default 41.4 from same.
+        cot_min: Minimum cloud optical depth. Default 0 but 4 is good.
+        cer_min: Minimum cloud effective radius. Default None but 4 is good.
+        cer_max: Maximum cloud effective radius. Default None but 15 is good.
+        """
+
+        keep = ~np.ma.getmaskarray(self["cer"])
+        # Non-liquid clouds
+        keep &= np.all(self["cldtype"] == 3, axis=0)
+        try:
+            keep &= np.all(self[phase] == 1, axis=0)
+        except TypeError:
+            pass
+        except KeyError:
+            if phase:
+                raise ValueError(
+                    f"{phase} is no a valid variable name. Choose one of "
+                    "phase, ann_phase, or phase_pavolonis."
+                )
+        if temp_min:
+            keep &= self["ctt"] > temp_min
+        # Multilayer clouds
+        try:
+            keep &= np.logical_not(self["cot2"] > 0.)
+        except KeyError:
+            pass
+        # Ed's viewing requirements
+        if solzen_max:
+            keep &= self["solar_zenith_view_no1"] < solzen_max
+        if satzen_max:
+            keep &= self["satellite_zenith_view_no1"] < satzen_max
+        # Cloud requirements
+        if cot_min:
+            keep &= self["cot"] > cot_min
+        if cer_min:
+            keep &= self["cer"] > cer_min
+        if cer_max:
+            keep &= self["cer"] < cer_max
+
+        return np.logical_not(keep)
+
+    def thickness(self, how="quaas", k=0.692, q_ext=2., **kwargs):
+        """Liquid cloud physical thickness
+
+        Writing the CDNC equations is the easiest way to make it clear where
+        they came from. This expression needs c_w and, though I could have
+        written the CDNC functions in terms of c_w, I'll instead just work
+        out H from CDNC here.
+        """
+        kwargs["how"] = how
+        if how == "acp":
+            kwargs["k"] = k
+            kwargs["Q_ext"] = q_ext
+        cdnc = self.cdnc(**kwargs)
+        return cdnc, 5. / (3 * np.pi * k * q_ext) * self["cot"] / (self["cer"]*1e-6)**2 / cdnc
+
+    @property
+    def extent(self):
+        return self.lon.min(), self.lon.max(), self.lat.min(), self.lat.max()
 
     # -------------------------------------------------------------------
     # Housekeeping functions
@@ -494,6 +616,9 @@ class Swath(Mappable):
 
     def __len__(self):
         return self.size
+
+    def __contains__(self, item):
+        return item in self.variables()
 
     def close(self):
         """Close all open files."""
@@ -568,10 +693,11 @@ class Swath(Mappable):
     def __getitem__(self, name):
         """Returns an arbitrary data field, ensuring it's a MaskedArray."""
         data = self.get_variable(name)[...]
-        if isinstance(data, np.ma.MaskedArray):
-            return data
+        if not isinstance(data, np.ma.MaskedArray):
+            data = np.ma.masked_invalid(data)
 
-        return np.ma.masked_invalid(data)
+        data[self.mask] = np.ma.masked
+        return data
 
     # -------------------------------------------------------------------
     # Masking functions
@@ -588,13 +714,31 @@ class Swath(Mappable):
         flags = sum((v for k, v in CLDFLAG.items() if k not in allowing))
         cld_mask = np.bitwise_and(self.cldflag, flags) > 0
         qc_mask = self.qcflag != 0
-        return np.logical_or(cld_mask, qc_mask)
+        self._mask = np.logical_or(cld_mask, qc_mask)
+        return self._mask
 
     def mask_clear(self):
         """Bool array that is True where the cloud mask is not 1."""
         cld_mask = self.cldmask != 1
         qc_mask = self.qcflag != 0
-        return np.logical_or(cld_mask, qc_mask)
+        self._mask = np.logical_or(cld_mask, qc_mask)
+        return self._mask
+
+    @property
+    def mask(self):
+        """Mask applied to all __getitem__ reads"""
+        return self._mask
+
+    @mask.setter
+    def mask(self, value):
+        if value is None:
+            self._mask = np.ma.nomask
+        else:
+            try:
+                _ = self.lat[value]
+                self._mask = value
+            except IndexError as err:
+                raise ValueError("Invalid mask for this data") from err
 
 
 class MergedSwath(Swath):
@@ -757,3 +901,91 @@ class MergedSwath(Swath):
             data[i, :] = tmp
 
         return data
+
+
+# -------------------------------------------------------------------
+# CALCULATIONS OF CLOUD DROPLET NUMBER CONCENTRATION
+# -------------------------------------------------------------------
+def _cdnc_quaas(tau, r_e):
+    """Cloud droplet number density for a semi-adiabatic cloud
+
+    Uses Eq. 1 of doi:10.5194/acp-6-947-2006
+
+    Args:
+    tau: Cloud optical thickness.
+    r_e: Cloud effective radius, in m.
+    """
+    return 1.37e-5 * np.sqrt(tau / r_e**5)
+
+
+def _cdnc_gryspeerdt(tau, r_e, T):
+    """Cloud droplet number density for a semi-adiabatic cloud
+
+    Uses Eq. 2 of doi:10.1002/2015JD023744
+
+    Args:
+    tau: Cloud optical thickness.
+    r_e: Cloud effective radius, in m.
+    T: Representative temperature of cloud, in K.
+    """
+    return 1.37e-5 * (0.0192 * T - 4.293) * np.sqrt(tau / r_e**5)
+
+
+def _cdnc_acp(tau, r_e, T, p,
+              es_A=610.94, es_B=17.625, es_C=243.04, es_PA=1.00071, es_PB=4.5e-8,
+              L0=2.501e6, L1=1.86e3, k=0.692, Q_ext=2., f_ab=0.66):
+    """Cloud droplet number density for a semi-adiabatic cloud
+
+    Uses A.C. Povey's derivation for variable lapse rate and including the
+    moist-air-correction to the saturation vapour pressure.
+
+    Args:
+    tau: Cloud optical thickness.
+    r_e: Cloud effective radius, in m.
+    T: Representative temperature of cloud, in K.
+    p: Representative pressure of cloud, in Pa.
+
+    Kwds:
+    es_A,B,C,PA,PB: Coefficients of the saturated vapour pressure of
+        moist air. Defaults taken from Eq. 21-22 of doi:
+        10.1175/1520-0450(1996)035<0601:IMFAOS>2.0.CO;2
+    L0,1: Specific enthalpy of vaporisation for water at 0 C and its
+        gradient with temperature. Defaults taken from
+        https://www.engineeringtoolbox.com/enthalpy-moist-air-d_683.html
+    k: Ratio of volumetric and effective radii in cloud. For droplets
+        conforming to a modified gamma distribution, this equals
+        (1-v)(1-2v) where v is the effective variance of the distribution.
+        Default value is for droplets with v=0.111 as used in MODIS
+        and ORAC retrievals.
+    Q_ext: Extinction coefficient of droplets. Default is for liquid
+        droplets much smaller than the observed wavelength.
+    f_ab: Adiabatic fraction of the cloud. Default value is from S2.3.3 of
+        doi:10.1029/2017RG000593
+    """
+    # Fundamental constants
+    epsilon = 0.622
+    R = 8.314
+    M_a = 28.96e-3
+    g = 9.807
+    c_p = 1.004e3
+    rho_w = 997.
+    R_a = R / M_a
+
+    celsius = T - 273.15
+    # Specific latent heat of vaporisation
+    L = L0 + L1 * celsius
+    # Magnus equation for saturated vapour pressure
+    e_s = es_A * np.exp(es_B * celsius / (celsius + es_C))
+    # Correction from vapour to moist air
+    e_s *= es_PA * np.exp(es_PB * p)
+    # Partial pressure of dry air
+    p_res = p - e_s
+
+    alpha_fac = 5. * f_ab * g * epsilon
+    alpha_fac /= 4. * (np.pi * k)**2 * Q_ext * rho_w * R_a
+
+    denom0 = epsilon * L * p - c_p * p_res * T
+    denom1 = R_a * c_p * (p_res * T)**2 + (epsilon * L)**2 * e_s * p
+    alpha = alpha_fac * e_s * p_res * denom0 / (T * denom1)
+
+    return np.sqrt(alpha * tau / r_e**5)

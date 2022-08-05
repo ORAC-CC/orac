@@ -1,4 +1,3 @@
-Subject: Adapt the Makefile to the conda environment, with optional features.
 --- rttov13.0/build/Makefile.local	2020-11-30 15:56:52.756666069 +0000
 +++ rttov/build/Makefile.local	2019-01-24 14:32:12.251215319 +0000
 @@ -37,12 +37,12 @@
@@ -6,13 +5,13 @@ Subject: Adapt the Makefile to the conda environment, with optional features.
  # ------------------------------------------------------------------------------
  
 -HDF5_PREFIX  = path-to-hdf-install
-+HDF5_PREFIX  = $(PREFIX)
++HDF5_PREFIX  = $(LIB_DIR)
  
  # --- Uncomment one FFLAGS_HDF5 line:
  
  # For most compilers:
 -# FFLAGS_HDF5  = -D_RTTOV_HDF $(FFLAG_MOD)$(HDF5_PREFIX)/include
-+FFLAGS_HDF5  = -D_RTTOV_HDF $(FFLAG_MOD)$(HDF5_PREFIX)/include
++FFLAGS_HDF5  = -D_RTTOV_HDF $(FFLAG_MOD)$(HDF5_PREFIX)/include/shared
  
  # For xlf on AIX:
  # FFLAGS_HDF5  = -WF,-D_RTTOV_HDF $(FFLAG_MOD)$(HDF5_PREFIX)/include
@@ -21,7 +20,7 @@ Subject: Adapt the Makefile to the conda environment, with optional features.
  # But you may find that you must also specify libz:
  # (NB for NAG Fortran you may also need to add -ldl)
 -# LDFLAGS_HDF5 = -L$(HDF5_PREFIX)/lib -lhdf5hl_fortran -lhdf5_hl -lhdf5_fortran -lhdf5 -lz
-+LDFLAGS_HDF5 = -L$(HDF5_PREFIX)/lib -lhdf5hl_fortran -lhdf5_hl -lhdf5_fortran -lhdf5 -lz
++LDFLAGS_HDF5 = -L$(HDF5_PREFIX)/lib -lhdf5_hl_fortran -lhdf5_hl -lhdf5_fortran -lhdf5 -lz
  
  
  
@@ -30,7 +29,7 @@ Subject: Adapt the Makefile to the conda environment, with optional features.
  # ------------------------------------------------------------------------------
  
 -NETCDF_PREFIX  = path-to-netcdf-install
-+NETCDF_PREFIX  = $(PREFIX)
++NETCDF_PREFIX  = $(LIB_DIR)/netcdf-fortran
  
  # --- Uncomment one FFLAGS_NETCDF line:
  
@@ -46,23 +45,6 @@ Subject: Adapt the Makefile to the conda environment, with optional features.
  # For NetCDF v4.2 and later:
 -# LDFLAGS_NETCDF = -L$(NETCDF_PREFIX)/lib -lnetcdff
 +LDFLAGS_NETCDF = -L$(NETCDF_PREFIX)/lib -lnetcdff
- 
- 
- 
-@@ -98,13 +98,13 @@
- # RTTOV_USER_LAPACK=1 to exclude lapack.f from the Makefiles.
- # ------------------------------------------------------------------------------
- 
--LAPACK_PREFIX = path-to-lapack-install
-+LAPACK_PREFIX = $(PREFIX)
- 
- # --- Uncomment the FFLAGS_LAPACK and LDFLAGS_LAPACK lines and edit as
- #     required for your installation:
- 
--# FFLAGS_LAPACK  = $(FFLAG_MOD)$(LAPACK_PREFIX)/include
--# LDFLAGS_LAPACK = -L$(LAPACK_PREFIX)/lib -llapack
-+FFLAGS_LAPACK  = $(FFLAG_MOD)$(LAPACK_PREFIX)/include
-+LDFLAGS_LAPACK = -L$(LAPACK_PREFIX)/lib -llapack
  
  
  

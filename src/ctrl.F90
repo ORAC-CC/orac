@@ -101,6 +101,8 @@
 ! 2017/01/09, CP: Clarified definitions of ML layer definition.
 ! 2017/07/05, AP: Add NAll to track the total number of channels. New QC.
 ! 2017/10/04, GM: Add use_ann_phase.
+! 2021/04/06, AP: New LUT names.
+! 2021/10/12, ATP: Add new LUT netcdf filenames.
 !
 ! Bugs:
 ! None known.
@@ -121,6 +123,8 @@ module Ctrl_m
       character(FilenameLen) :: SAD_Dir2           ! Directory of SAD files
       character(FilenameLen) :: Filename           ! Basename of input files
       character(FilenameLen) :: Config             ! Configuration
+      character(FilenameLen) :: NCDF_LUT_Filename  ! Filename of NCDF LUT
+      character(FilenameLen) :: NCDF_LUT_Filename2 ! Filename of NCDF LUT (multi-layer)
       character(FilenameLen) :: MSI                ! Multi-Spectral Image
       character(FilenameLen) :: LWRTM              ! LW Rad Trans Model results
       character(FilenameLen) :: SWRTM              ! SW Rad Trans Model results
@@ -236,9 +240,9 @@ module Ctrl_m
                                                    ! class (liquid water, ice,
                                                    ! ash, aerosol, etc.)
       integer                :: Class2             ! Class for layer 2 (lower)
-      character(3)           :: LUTClass           ! Name of LUT to use
-      character(3)           :: LUTClass2          ! LUTClass for layer 2 (lower)
-      character(7)           :: LUTClassLayers     ! LUTClasses combined with '_'
+      character(40)          :: LUTClass           ! Name of LUT to use
+      character(40)          :: LUTClass2          ! LUTClass for layer 2 (lower)
+      character(81)          :: LUTClassLayers     ! LUTClasses combined with '_'
       integer                :: Approach           ! Controls manner of retrieval
                                                    ! performed. See ORACConstants.
 

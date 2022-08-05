@@ -8,8 +8,8 @@ diff -Ewbur  numerical_recipes/psdes.for nr_f/psdes.for
        SAVE c1,c2
 -      DATA c1 /16#BAA96887,16#1E17D32C,16#03BCDC3C,16#0F33D1B2/, c2 
 -     */16#4B0F3B58,16#E874F0C3,16#6955C5A6, 16#55A7CA46/
-+      DATA c1 /X'BAA96887',X'1E17D32C',X'03BCDC3C',X'0F33D1B2'/, c2
-+     */X'4B0F3B58',X'E874F0C3',X'6955C5A6',X'55A7CA46'/
++      DATA c1 /Z'BAA96887',Z'1E17D32C',Z'03BCDC3C',Z'0F33D1B2'/, c2
++     */Z'4B0F3B58',Z'E874F0C3',Z'6955C5A6',Z'55A7CA46'/
        do 11 i=1,NITER
          iswap=irword
          ia=ieor(irword,c1(i))
@@ -21,7 +21,7 @@ diff -Ewbur  numerical_recipes/ran4.for nr_f/ran4.for
        EQUIVALENCE (itemp,ftemp)
        SAVE idums,jflone,jflmsk
 -      DATA idums /0/, jflone /16#3F800000/, jflmsk /16#007FFFFF/
-+      DATA idums /0/, jflone /X'3F800000'/, jflmsk /X'007FFFFF'/
++      DATA idums /0/, jflone /Z'3F800000'/, jflmsk /Z'007FFFFF'/
        if(idum.lt.0)then
          idums=-idum
          idum=1

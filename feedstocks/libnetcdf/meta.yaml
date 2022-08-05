@@ -1,4 +1,4 @@
-{% set version = "4.7.4" %}
+{% set version = "4.8.1" %}
 {% set build = 0 %}
 
 # recipe-lint fails if mpi is undefined
@@ -14,18 +14,15 @@ package:
 
 source:
   url: https://github.com/Unidata/netcdf-c/archive/v{{ version }}.tar.gz
-  sha256: 99930ad7b3c4c1a8e8831fb061cb02b2170fc8e5ccaeda733bd99c3b9d31666b
+  sha256: bc018cc30d5da402622bf76462480664c6668b55eb16ba205a0dfb8647161dd0
   #git_url: https://github.com/Unidata/netcdf-c
   #git_rev: {{ "v" + version }}
   patches:
-    #- 0002-run_get_hdf4_files.sh-Use-curl-if-wget-fails-macOS-d.patch
-    - 0003-Add-find_package-Threads-REQUIRED-to-CMakeLists.txt.patch
     - 0004-Prefer-getenv-TOPSRCDIR-over-STRINGIFY-TOPSRCDIR.patch
     - 0006-Fix-tests-for-Windows-VS2008-define-__func__-as-__FU.patch
     - 0008-Finish-the-missing-code-to-handle-VS-in-test_common..patch
     - 0009-topsrcdir.patch
-    - 0010-errant_s.patch
-    - fix-474-for-new-curl.patch
+    - strdup.patch
 
 build:
   number: {{ build }}

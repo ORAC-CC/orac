@@ -398,69 +398,70 @@ subroutine setup_agri(args, channel_ids_user, channel_info, verbose)
 
 
    ! Static instrument channel definitions. (These should not be changed.)
-   integer, parameter :: all_nchannels_total = 13
+   integer, parameter :: all_nchannels_total = 14
 
-   ! 1,       2,       3,       4,       5,       6,       7,       8
+   !     1,       2,       3,       4,       5,       6,       7,
+   !     8,       9,       10,      11,      12,      13,      14
    real,    parameter :: all_channel_wl_abs(all_nchannels_total) = &
       (/ 0.469,   0.631,   0.819,   1.375,   1.607,   2.226,   3.715, &
-         6.231,  7.118,   8.588,   10.824,  12.071,  13.545 /)
+         3.715,   6.231,   7.118,   8.588,   10.824,  12.071,  13.545 /)
 
    integer, parameter :: all_channel_sw_flag(all_nchannels_total) = &
       (/ 1,       1,       1,       1,       1,       1,       1,   &
-         0,       0,       0,       0,       0,       0     /)
+         1,       0,       0,       0,       0,       0,       0     /)
 
    integer, parameter :: all_channel_lw_flag(all_nchannels_total) = &
       (/ 0,       0,       0,       0,       0,       0,       1,   &
-         1,       1,       1,       1,       1,       1     /)
+         1,       1,       1,       1,       1,       1,       1     /)
 
    integer, parameter :: all_channel_ids_rttov_coef_sw(all_nchannels_total) = &
       (/ 1,       2,       3,       4,       5,       6,       7,   &
-         0,       0,       0,       0,       0,       0     /)
+         7,       0,       0,       0,       0,       0,       0     /)
 
    integer, parameter :: all_channel_ids_rttov_coef_lw(all_nchannels_total) = &
       (/ 0,       0,       0,       0,       0,       0,       1,   &
-         2,       3,       4,       5,       6,       7      /)
+         1,       2,       3,       4,       5,       6,       7      /)
 
    integer, parameter :: all_map_ids_abs_to_ref_band_land(all_nchannels_total) = &
       (/ 3,       1,       2,       5,       6,       7,       0,   &
-         0,       0,       0,       0,       0,       0      /)
+         0,       0,       0,       0,       0,       0,       0      /)
 
    integer, parameter :: all_map_ids_abs_to_ref_band_sea(all_nchannels_total) = &
       (/ 1,       3,       4,       6,       7,       8,       9,   &
-         0,       0,       0,       0,       0,       0      /)
+         9,       0,       0,       0,       0,       0,       0      /)
 
    integer, parameter :: all_map_ids_abs_to_snow_and_ice(all_nchannels_total) = &
       (/ 1,       1,       2,       3,       3,       3,       4,   &
-         0,       0,       0,       0,       0,       0      /)
+         4,       0,       0,       0,       0,       0,       0      /)
 
    integer, parameter :: all_map_ids_view_number(all_nchannels_total) = &
       (/ 1,       1,       1,       1,       1,       1,       1,   &
-         1,       1,       1,       1,       1,       1      /)
+         1,       1,       1,       1,       1,       1,       1      /)
 
    real,    parameter :: all_channel_fractional_uncertainty(all_nchannels_total) = &
       (/ 0.,      0.,      0.,      0.,      0.,      0.,      0., &
-         0.,      0.,      0.,      0.,      0.,      0.     /)
+         0.,      0.,      0.,      0.,      0.,      0.,      0.     /)
 
    real,    parameter :: all_channel_minimum_uncertainty(all_nchannels_total) = &
       (/ 0.,      0.,      0.,      0.,      0.,      0.,      0., &
-         0.,      0.,      0.,      0.,      0.,      0.     /)
+         0.,      0.,      0.,      0.,      0.,      0.,      0.     /)
 
    real,    parameter :: all_channel_numerical_uncertainty(all_nchannels_total) = &
       (/ 0.,      0.,      0.,      0.,      0.,      0.,      0., &
-         0.,      0.,      0.,      0.,      0.,      0.     /)
+         0.,      0.,      0.,      0.,      0.,      0.,      0.     /)
 
    real,    parameter :: all_channel_lnd_uncertainty(all_nchannels_total) = &
       (/ 0.,      0.,      0.,      0.,      0.,      0.,      0., &
-         0.,      0.,      0.,      0.,      0.,      0.     /)
+         0.,      0.,      0.,      0.,      0.,      0.,      0.     /)
 
    real,    parameter :: all_channel_sea_uncertainty(all_nchannels_total) = &
       (/ 0.,      0.,      0.,      0.,      0.,      0.,      0., &
-         0.,      0.,      0.,      0.,      0.,      0.     /)
+         0.,      0.,      0.,      0.,      0.,      0.,      0.     /)
 
    ! Only this below needs to be set to change the desired default channels. All
    ! other channel related arrays/indexes are set automatically given the static
    ! instrument channel definition above.
-   integer, parameter :: channel_ids_default(6) = (/ 2, 3, 5, 7, 11, 12 /)
+   integer, parameter :: channel_ids_default(6) = (/ 2, 3, 5, 8, 12, 13 /)
 
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering setup_agri()'

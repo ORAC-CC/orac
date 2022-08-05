@@ -289,9 +289,9 @@ subroutine make_ecmwf_name(cyear, cmonth, cday, chour, nwp_flag, nwp_fnames, idx
     type(preproc_nwp_fnames_t), intent(inout) :: nwp_fnames
     integer,          intent(in)              :: idx_1
     integer,          intent(in)              :: idx_2
-    
+
     logical :: f_tester
-    
+
     character(len=path_length) :: nwp_path, nwp_path2, nwp_path3
 
     nwp_path = nwp_fnames%nwp_path(idx_1)
@@ -309,13 +309,13 @@ subroutine make_ecmwf_name(cyear, cmonth, cday, chour, nwp_flag, nwp_fnames, idx
            trim(adjustl(cyear))//trim(adjustl(cmonth))// &
            trim(adjustl(cday))//'_'//trim(adjustl(chour))//'+00.nc'
         inquire(file=trim(nwp_fnames%nwp_path_file(idx_2)), exist=f_tester)
-        if (.not. f_tester) then 
+        if (.not. f_tester) then
             nwp_fnames%nwp_path_file(idx_2) = trim(adjustl(nwp_path))//'/ECMWF_ERA5_'// &
                trim(adjustl(cyear))//trim(adjustl(cmonth))// &
                trim(adjustl(cday))//'_'//trim(adjustl(chour))//'_0.5.nc'
             inquire(file=trim(nwp_fnames%nwp_path_file(idx_2)), exist=f_tester)
         endif
-        if (.not. f_tester) then 
+        if (.not. f_tester) then
             print*,"ERROR: NWP data not found: ", trim(nwp_fnames%nwp_path_file(idx_2))
             stop
         endif
@@ -356,9 +356,9 @@ subroutine determine_jasmin_filenames_era5(nwp_fnames, cyear, cmonth, cday, chou
     type(preproc_nwp_fnames_t), intent(inout) :: nwp_fnames
     character(len=*), intent(in)              :: cyear, cmonth, cday, chour
     integer, intent(in)                       :: idx
-    
+
     character(len=path_length)                :: ml_dir, sfc_dir
-    
+
     ml_dir = trim(adjustl(nwp_fnames%nwp_path(idx)))//'/an_ml/'// &
              trim(adjustl(cyear))//'/'// &
              trim(adjustl(cmonth))//'/'// &
@@ -367,7 +367,7 @@ subroutine determine_jasmin_filenames_era5(nwp_fnames, cyear, cmonth, cday, chou
              trim(adjustl(cmonth))// &
              trim(adjustl(cday))// &
              trim(adjustl(chour))//'00.'
-             
+
     sfc_dir = trim(adjustl(nwp_fnames%nwp_path(idx)))//'/an_sfc/'// &
               trim(adjustl(cyear))//'/'// &
               trim(adjustl(cmonth))//'/'// &
@@ -376,8 +376,8 @@ subroutine determine_jasmin_filenames_era5(nwp_fnames, cyear, cmonth, cday, chou
               trim(adjustl(cmonth))// &
               trim(adjustl(cday))// &
               trim(adjustl(chour))//'00.'
-    
-    ! Set up surface variables   
+
+    ! Set up surface variables
     nwp_fnames%ci_f(idx) = trim(adjustl(sfc_dir))//'ci.nc'
     nwp_fnames%asn_f(idx) = trim(adjustl(sfc_dir))//'asn.nc'
     nwp_fnames%tcwv_f(idx) = trim(adjustl(sfc_dir))//'tcwv.nc'
@@ -387,8 +387,8 @@ subroutine determine_jasmin_filenames_era5(nwp_fnames, cyear, cmonth, cday, chou
     nwp_fnames%t2_f(idx) = trim(adjustl(sfc_dir))//'2t.nc'
     nwp_fnames%skt_f(idx) =  trim(adjustl(sfc_dir))//'skt.nc'
     nwp_fnames%sstk_f(idx) = trim(adjustl(sfc_dir))//'sst.nc'
-    nwp_fnames%cape_f(idx) = trim(adjustl(sfc_dir))//'cape.nc'    
-      
+    nwp_fnames%cape_f(idx) = trim(adjustl(sfc_dir))//'cape.nc'
+
     ! Set up model level variables
     nwp_fnames%q_f(idx) = trim(adjustl(ml_dir))//'q.nc'
     nwp_fnames%t_f(idx) = trim(adjustl(ml_dir))//'t.nc'
@@ -396,6 +396,6 @@ subroutine determine_jasmin_filenames_era5(nwp_fnames, cyear, cmonth, cday, chou
     nwp_fnames%lnsp_f(idx) = trim(adjustl(ml_dir))//'lnsp.nc'
     nwp_fnames%u_f(idx) = trim(adjustl(ml_dir))//'u.nc'
     nwp_fnames%v_f(idx) = trim(adjustl(ml_dir))//'v.nc'
-    nwp_fnames%z_f(idx) = trim(adjustl(ml_dir))//'z.nc'    
-   
+    nwp_fnames%z_f(idx) = trim(adjustl(ml_dir))//'z.nc'
+
 end subroutine determine_jasmin_filenames_era5

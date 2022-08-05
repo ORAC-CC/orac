@@ -1360,6 +1360,17 @@ subroutine netcdf_create_swath(global_atts, source_atts, cyear, cmonth, cday, ch
            deflate_level = deflate_level, &
            shuffle = shuffle_flag, &
            fill_value = sreal_fill_value)
+
+      ! define cal_gain data
+      call ncdf_def_var_float_packed_float( &
+           netcdf_info%ncid_msi, &
+           dimids_1d, &
+           'cal_data', &
+           netcdf_info%vid_cal_data, &
+           verbose, &
+           deflate_level = deflate_level, &
+           shuffle = shuffle_flag, &
+           fill_value = sreal_fill_value)
    end if
 
    ! set up attributes common to all output files

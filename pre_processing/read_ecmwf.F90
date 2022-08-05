@@ -47,7 +47,7 @@ subroutine read_ecmwf_wind(nwp_flag, nwp_fnames, idx, ecmwf, &
    type(ecmwf_t),    intent(inout)           :: ecmwf
    integer,          intent(in)              :: nwp_nlevels
    logical,          intent(in)              :: verbose
-   
+
    ! Set the number of levels in the input file, defaults to 61
    select case(nwp_nlevels)
    case(31)

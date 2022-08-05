@@ -75,6 +75,7 @@ subroutine deallocate_imager_structures(imager_geolocation,imager_angles, &
    deallocate(imager_pavolonis%cphcot)
    deallocate(imager_pavolonis%cirrus_quality)
    deallocate(imager_pavolonis%emis_ch3b)
+   deallocate(imager_measurements%cal_gain)
 #ifdef INCLUDE_SATWX
    deallocate(imager_cloud%cloud_emis)
    deallocate(imager_cloud%trop_p)

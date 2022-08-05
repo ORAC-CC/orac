@@ -1,7 +1,7 @@
 Subject: Increase the number of files that can be opened at once.
---- hdf-4.2.11/hdf/src/hlimits.h	2014-02-10 02:28:49.000000000 +0000
-+++ hdf/src/hlimits.h	2014-09-02 14:07:48.015297738 +0100
-@@ -88,7 +88,7 @@
+--- a/hdf/src/hlimits.h	2014-02-10 02:28:49.000000000 +0000
++++ b/hdf/src/hlimits.h	2014-09-02 14:07:48.015297738 +0100
+@@ -90,7 +90,7 @@
  /* ------------------------- Constants for hfile.c --------------------- */
  /* Maximum number of files (number of slots for file records) */
  #ifndef MAX_FILE

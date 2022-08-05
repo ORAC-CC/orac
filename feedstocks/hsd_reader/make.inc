@@ -1,16 +1,16 @@
 # C compiler and C compiler flags
 
-CC      = $(GCC)
-CCFLAGS = $(CFLAGS)
+#CC      = $(CC)
+CCFLAGS = $(CFLAGS) -O3 -cpp -I. -fopenmp
 
 # Fortran compiler and Fortan compiler flags (required for the Fortran
 # interface)
-F90      = $(GFORTRAN)
-F90FLAGS = $(FFLAGS)
+F90      = $(FC)
+F90FLAGS = $(FFLAGS) -O3 -I. -ffree-line-length-0 -cpp -fcheck=bounds -fopenmp
 
-LINKS = $(LDFLAGS) -lm
+LINKS = $(LDFLAGS) -lm -fopenmp
 
-# Include and lib directories for non standard locations required by SEVIRI_util
-INCDIRS  += -I$(PREFIX)/include -I.
-LIBDIRS  += -L$(PREFIX)/lib
-LINKS    += -lhdf5 -lhdf5_fortran -lhdf5hl_fortran -lnetcdff -lnetcdf
+# Include and lib directories for non standard locations required by hsd_reader
+INCDIRS  += -I$(LIB_DIR)/include
+LIBDIRS  += -L$(LIB_DIR)/lib
+LINKS    += -lhdf5 -lhdf5_fortran -lhdf5_hl_fortran -lnetcdff -lnetcdf

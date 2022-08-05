@@ -1,4 +1,4 @@
-{% set version = "1.10.4" %}
+{% set version = "1.12.1" %}
 {% set maj_min_ver = ".".join(version.split(".")[:2]) %}
 
 package:
@@ -7,7 +7,7 @@ package:
 
 source:
   url: https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-{{ maj_min_ver }}/hdf5-{{ version }}/src/hdf5-{{ version }}.tar.gz
-  sha256: 8f60dc4dd6ab5fcd23c750d1dc5bca3d0453bdce5c8cdaf0a4a61a9d1122adb2
+  sha256: 79c66ff67e666665369396e9c90b32e238e501f345afd2234186bfb8331081ca
 
 build:
   number: 0
@@ -25,10 +25,10 @@ requirements:
     - autoconf    # [not win]
   host:
     - zlib
-    - szip
+    - libaec
   run:
     - zlib
-    - szip
+    - libaec
 
 test:
   requires:

@@ -316,9 +316,9 @@
 !
 ! Bugs:
 ! See http://proj.badc.rl.ac.uk/orac/report/1
-! 
-! 
-! 
+!
+!
+!
 ! NOTES:
 ! The nwp_flag option allows the user to set what type of NWP data to use.
 ! There are five options for this flag:
@@ -494,6 +494,11 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
    preproc_opts%do_co2                   = .true.
    preproc_opts%use_swansea_climatology  = .false.
    preproc_opts%swansea_gamma            = 0.3
+
+   ! When true, the offset between the nadir and oblique views is read from
+   ! the track_offset global attribute. Otherwise, the two longitude fields are
+   ! read and compared to determine an appropriate offset.
+   preproc_opts%calculate_slstr_alignment = .false.
 
    ! Initialise satellite position string
    global_atts%Satpos_Metadata = 'null'
@@ -689,10 +694,7 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
 
    if (granule%startx.ge.1 .and. granule%endx.ge.1 .and. &
         granule%starty.ge.1 .and. granule%endy.ge.1) then
-      if ( trim(adjustl(granule%sensor)) .eq. 'ABI'    .or. &
-           trim(adjustl(granule%sensor)) .eq. 'AGRI'   .or. &
-           trim(adjustl(granule%sensor)) .eq. 'SLSTR'  .or. &
-           trim(adjustl(granule%sensor)) .eq. 'VIIRSI' .or. &
+      if ( trim(adjustl(granule%sensor)) .eq. 'VIIRSI' .or. &
            trim(adjustl(granule%sensor)) .eq. 'VIIRSM') then
          write(*,*) 'ERROR: subsetting not supported for ', trim(granule%sensor)
          stop error_stop_code
@@ -824,8 +826,8 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
 
 #ifdef WRAPPER
       ! do not process this orbit if no valid lat/lon data available
-      mask =  imager_geolocation%latitude.gt.sreal_fill_value .and. &
-              imager_geolocation%longitude.gt.sreal_fill_value
+      mask = imager_geolocation%latitude.gt.sreal_fill_value .and. &
+             imager_geolocation%longitude.gt.sreal_fill_value
       if (.not. any(mask)) then
          write(*,*) "any mask: ", any(mask)
          write(*,*) "maxval lat/lon:", maxval(imager_geolocation%latitude), &

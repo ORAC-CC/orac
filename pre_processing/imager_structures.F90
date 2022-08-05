@@ -44,6 +44,7 @@ module imager_structures_m
 
       real(kind=sreal), dimension(:,:,:), pointer :: data
       real(kind=sreal), dimension(:,:,:), pointer :: uncertainty
+      real(kind=sreal), dimension(:),     pointer :: cal_gain
 
    end type imager_measurements_t
 

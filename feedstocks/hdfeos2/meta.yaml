@@ -1,22 +1,17 @@
-{% set version = "2.20" %}
+{% set version = "3.0" %}
 
 package:
   name: hdfeos2
   version: {{ version }}
 
 source:
-  - url: https://observer.gsfc.nasa.gov/ftp/edhs/hdfeos/latest_release/HDF-EOS{{ version }}v1.00.tar.Z
-    sha256: cb0f900d2732ab01e51284d6c9e90d0e852d61bba9bce3b43af0430ab5414903
-    # tar.Z is read-only and so cannot be patched; do in build script
-    #patches:
-    #  - SWapi.patch
-    #  - samples.patch
-    #  - 0001-fix-automake-files-for-linux-compatibility.patch
-  - path: SWapi.patch
-  - path: samples.patch
-  - path: 0001-fix-automake-files-for-linux-compatibility.patch
-  - url: https://observer.gsfc.nasa.gov/ftp/edhs/hdfeos/latest_release/HDF-EOS{{ version }}v1.00_TestDriver.tar.Z
-    sha256: 21bdbcd977c11b5a1779a82aebc0338b4adbc94107329e2c917a274924c20c5a
+  # Actual source doesn't work beause you need to login
+  #- url: https://git.earthdata.nasa.gov/projects/DAS/repos/hdfeos/raw/hdf-eos2-{{ version }}-src.tar.gz
+  - url: https://groups.physics.ox.ac.uk/eodg/orac/orac_libraries/hdf-eos2-{{ version }}-src.tar.gz
+    sha256: 3a5564b4d69b541139ff7dfdad948696cf31d9d1a6ea8af290c91a4c0ee37188
+    patches:
+      - SWapi.patch
+      - 0001-fix-automake-files-for-linux-compatibility.patch
 
 build:
   number: 0
@@ -33,14 +28,18 @@ requirements:
     - libtool     # [not win]
   host:
     - hdf4
+    - libaec
     - zlib
     - jpeg
   run:
     - hdf4
+    - libaec
     - zlib
     - jpeg
 
 test:
+  requires:
+    - conda-build
   commands:
     - test -f ${PREFIX}/lib/libGctp.a  # [not win]
     - test -f ${PREFIX}/lib/libhdfeos.a  # [not win]

@@ -89,6 +89,9 @@
 ! 2015/08/26, AP: Correct name of date attribute.
 ! 2015/08/31, AP: Check if ViewIdx have valid values.
 ! 2015/09/07, AP: Allow verbose to be controlled from the driver file.
+! 2021/10/12, ATP: Add new approximation for F0 variation throughout
+!    the year. This is needed for new LUTs as F1 is not provided in
+!    the netcdf LUTs.
 !
 ! Bugs:
 ! The DOY calculation does not account for leap years. This produces fractional
@@ -141,9 +144,20 @@ subroutine Read_MSI(Ctrl, MSI_Data, SAD_Chan)
       ! Calculate solar constant based on day of year using the mean and
       ! amplitude of variation.
       do i = 1, Ctrl%Ind%Ny
-         if (SAD_Chan(i)%Solar%Flag > 0) &
-              SAD_Chan(i)%Solar%F0 = SAD_Chan(i)%Solar%F0 + &
-              (SAD_Chan(i)%Solar%F1 * cos(2. * Pi * Ctrl%DOY / 365.))
+         if (SAD_Chan(i)%Solar%Flag > 0) then
+            if (len_trim(Ctrl%LUTClass) == 3) then
+               ! Old approximation for F0 variation throughout the year.
+               SAD_Chan(i)%Solar%F0 = SAD_Chan(i)%Solar%F0 + &
+                       (SAD_Chan(i)%Solar%F1 * cos(2. * Pi * Ctrl%DOY / 365.))
+            else
+               ! New (better) approximation for F0 variation throughout the year.
+               ! Note this approximation must be used for newluts because
+               ! F1 is not supplied in netcdfs.
+               SAD_Chan(i)%Solar%F0 = SAD_Chan(i)%Solar%F0 / &
+                       (1. - 0.0167086 * cos((2.* Pi * (Ctrl%DOY - 4.)) / &
+                               365.256363))**2
+            end if
+         end if
       end do
    end if
 
@@ -152,9 +166,11 @@ subroutine Read_MSI(Ctrl, MSI_Data, SAD_Chan)
    ! Allocate Data%MSI structure size to match image segments to be used.
    allocate(MSI_Data%MSI(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, Ctrl%Ind%Ny))
    allocate(MSI_Data%time(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))
+   allocate(MSI_Data%cal_gain(Ctrl%Ind%Ny))
 
    call ncdf_read_array(ncid, "msi_data", MSI_Data%MSI, 3, Ctrl%Ind%ICh)
    call ncdf_read_array(ncid, "time_data", MSI_Data%time)
+   call ncdf_read_array(ncid, "cal_data", MSI_Data%cal_gain)
 
    ! Read variance data, if requested
    if (Ctrl%EqMPN%SySelm == SelmMeas) then
