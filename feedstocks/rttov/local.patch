@@ -29,7 +29,7 @@
  # ------------------------------------------------------------------------------
  
 -NETCDF_PREFIX  = path-to-netcdf-install
-+NETCDF_PREFIX  = $(LIB_DIR)/netcdf-fortran
++NETCDF_PREFIX  = $(LIB_DIR)
  
  # --- Uncomment one FFLAGS_NETCDF line:
  

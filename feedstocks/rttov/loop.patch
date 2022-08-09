@@ -1,0 +1,27 @@
+Subject: gfortran v10+ takes a very long time with these
+--- a/src/other/rttov_bpr_init.F90	2020-09-17 17:42:27.000000000 +0100
++++ b/src/other/rttov_bpr_init.F90	2022-08-04 16:38:10.218427096 +0100
+@@ -96,9 +96,20 @@ SUBROUTINE RTTOV_BPR_INIT( ERR, PHANGLE
+   ! 10-6 cos=0.999920, 0.992500  ~angle 0.70, 7.00 degree
+   ! 10-7 cos=0.999999, 0.999920  ~angle 0.08, 0.70 degree
+   ! 10-8 cos=1.000000, 0.999999  ~angle 0.00, 0.08 degree
+-  TACOS1      = ACOS( (/ (I, I=       0,     6400) /)     /10000.0_JPRB)
+-  TACOS2      = ACOS( (/ (I, I=   64000,    99250) /)    /100000.0_JPRB)
+-  TACOS3      = ACOS( (/ (I, I=  992500,   999920) /)   /1000000.0_JPRB)
++
++  ! TACOS1      = ACOS( (/ (I, I=       0,     6400) /)     /10000.0_JPRB)
++  ! TACOS2      = ACOS( (/ (I, I=   64000,    99250) /)    /100000.0_JPRB)
++  ! TACOS3      = ACOS( (/ (I, I=  992500,   999920) /)   /1000000.0_JPRB)
++  ! gfortran v10 takes a very long time to compile the above lines
++  DO I = 0, 6400
++    TACOS1(I) = ACOS(REAL(I, KIND=JPRB) / 10000.0_JPRB)
++  ENDDO
++  DO I = 64000, 99250
++    TACOS2(I-64000) = ACOS(REAL(I, KIND=JPRB) / 100000.0_JPRB)
++  ENDDO
++  DO I = 992500, 999920
++    TACOS3(I-992500) = ACOS(REAL(I, KIND=JPRB) / 1000000.0_JPRB)
++  ENDDO
+   TACOS4      = ACOS( (/ (I, I= 9999200,  9999990) /)  /10000000.0_JPRB)
+   TACOS5      = ACOS( (/ (I, I=99999900,100000000) /) /100000000.0_JPRB)
+ 
