@@ -1,0 +1,12 @@
+Subject: Turn off openmp
+diff -rupN nr/Makefile new/Makefile
+--- nr/Makefile	2021-11-30 16:40:20.000000000 +0000
++++ new/Makefile	2022-07-06 16:52:13.027626717 +0100
+@@ -1,6 +1,6 @@
+ F77 = gfortran
+ F77FLAGS = -O3 -Dfloat=double -std=legacy -Wno-conversion -fno-range-check \
+-           -Wno-unused-dummy-argument -Wno-unused-function -fopenmp
++           -Wno-unused-dummy-argument -Wno-unused-function
+ 
+ OBJECTS  = addint.o \
+            airy.o \
