@@ -1,4 +1,4 @@
-{% set version = "4.5.5" %}
+{% set version = "4.5.9" %}
 # TODO: This can support OMP
 
 package:
@@ -7,13 +7,14 @@ package:
 
 source:
   url: https://confluence.ecmwf.int/download/attachments/3473472/libemos-{{ version }}-Source.tar.gz
-  sha256: 88e3ca91268df5ae2db1909460445ed43e95de035d62b02cab26ce159851a4c1
+  sha256: e57e02c636dc8f5ccb862a103789b1e927bc985b1e0f2b05abf4f64e86d2f67f
   patches:
     - init.patch
     - cmake.patch
+    - tables.patch
 
 build:
-  number: 1
+  number: 0
   skip: True  # [win]
   detect_binary_files_with_prefix: True
   run_exports:
