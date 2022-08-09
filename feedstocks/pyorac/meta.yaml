@@ -13,7 +13,7 @@ build:
   number: 0
   script: cd tools && {{ PYTHON }} -m pip install . -vv
   run_exports:
-    - {{ pin_subpackage('pyorac', max_pin='x.x.x') }}
+    - {{ pin_subpackage('pyorac', max_pin='x.x') }}
 
 requirements:
   host:
@@ -33,7 +33,7 @@ requirements:
     - h5py
     - matplotlib
     - netcdf4
-    - numpy
+    - {{ pin_compatible('numpy') }}
     - opencv
     - scipy
 

@@ -19,7 +19,7 @@ source:
 build:
   number: {{ build }}
   run_exports:
-    - {{ pin_subpackage('rttov', max_pin='x.x.x') }}
+    - {{ pin_subpackage('rttov', max_pin='x.x') }}
   {% if mpi != 'nompi' %}
   {% set mpi_prefix = "mpi_" + mpi %}
   {% else %}
@@ -56,7 +56,7 @@ requirements:
   run:
     - lapack
     - python
-    - numpy
+    - {{ pin_compatible('numpy') }}
     - {{ mpi }} # [mpi != 'nompi']
     - hdf5 * {{ mpi_prefix }}_*
     - libnetcdf * {{ mpi_prefix }}_*

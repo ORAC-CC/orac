@@ -16,7 +16,7 @@ source:
 build:
   number: 0
   run_exports:
-    - {{ pin_subpackage('hdfeos2', max_pin='x.xx') }}
+    - {{ pin_subpackage('hdfeos2', max_pin='x.x') }}
 
 requirements:
   build:

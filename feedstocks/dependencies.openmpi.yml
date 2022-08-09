@@ -11,7 +11,7 @@ dependencies:
  - gfortran_linux-64
  - bison
  - flex
- - nr
+ - nr * mpi_openmpi_*
  - epr_api
  - fu_liou
  - hdf4
@@ -23,7 +23,7 @@ dependencies:
  - seviri_util
  - hsd_reader * mpi_openmpi_*
  - libemos
- - rttov
+ - rttov * mpi_openmpi_*
  - numpy
  - scipy
  - netcdf4

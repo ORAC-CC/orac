@@ -46,7 +46,7 @@ build:
   {% set build_pin = '' %}
   {% endif %}
   run_exports:
-    - {{ pin_subpackage('orac', max_pin='x.x.x') }} {{ build_pin }}
+    - {{ pin_subpackage('orac', max_pin='x.x') }} {{ build_pin }}
 
 requirements:
   build:
@@ -65,15 +65,16 @@ requirements:
     # without this repeat reference, conda-smithy doesn't pin correctly
     - hdf5
     - hdf5 * {{ mpi_prefix }}_*
-    - hsd_reader >=1.13
-    - hsd_reader >=1.13 {{ mpi_prefix }}_*
+    - hsd_reader
+    - hsd_reader * {{ mpi_prefix }}_*
     - libemos
     - netcdf-fortran
     - netcdf-fortran * {{ mpi_prefix }}_*
     - nr
+    - nr * {{ mpi_prefix }}_*
     - rttov
     - rttov * {{ mpi_prefix }}_*
-    - seviri_util >=1.02
+    - seviri_util
   run:
     - {{ mpi }}  # [mpi != 'nompi']
     - eccodes
@@ -81,12 +82,12 @@ requirements:
     - fu_liou
     - hdfeos2
     - hdf5 * {{ mpi_prefix }}_*
-    - hsd_reader >=1.13 {{ mpi_prefix }}_*
+    - hsd_reader * {{ mpi_prefix }}_*
     - libemos
     - netcdf-fortran * {{ mpi_prefix }}_*
-    - nr
+    - nr * {{ mpi_prefix }}_*
     - rttov * {{ mpi_prefix }}_*
-    - seviri_util >=1.02
+    - seviri_util
 
 test:
   commands:
