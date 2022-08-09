@@ -15,7 +15,7 @@ dependencies:
  - epr_api
  - fu_liou
  - hdf4
- - hdfeos2
+ - hdfeos2 * fortran_*
  - hdf5 * nompi_*
  - libnetcdf * nompi_*
  - netcdf-fortran * nompi_*

@@ -15,7 +15,7 @@ dependencies:
  - epr_api
  - fu_liou
  - hdf4
- - hdfeos2
+ - hdfeos2 * fortran_*
  - hdf5 * mpi_openmpi_*
  - libnetcdf * mpi_openmpi_*
  - netcdf-fortran * mpi_openmpi_*
