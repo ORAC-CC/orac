@@ -76,4 +76,4 @@ python_impl:
 seviri_util:
   - 1.0.2
 rttov:
-  - 13.0
+  - 13.1
