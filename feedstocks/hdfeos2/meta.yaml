@@ -15,14 +15,14 @@ source:
   - url: https://eodg.atm.ox.ac.uk/user/povey/HDF-EOS2.20v1.00.tar.Z
     sha256: 97c3576067c16ae4f31b5e97d8626b34bfde09b2db55bfa73a9e67ba132d04bf
     patches:
-      - conda_cmake.patch
+      - cmake.patch
       - string.patch
       # https://lists.gnu.org/archive/html/guix-devel/2016-09/msg02110.html
       - 0001-fix-automake-files-for-linux-compatibility.patch
   - url: https://eodg.atm.ox.ac.uk/user/povey/HDF-EOS2.20v1.00_TestDriver.tar.Z
     sha256: 3fbc3197dea1f5e4e57622aa039ad7438bfc15a174a8b71fb1460a58f316d644
     patches:
-      - conda_test.patch
+      - test.patch
 
 build:
   number: {{ build }}

@@ -28,9 +28,9 @@ build:
   {% endif %}
   # add build string so packages can depend on
   # mpi or nompi variants explicitly:
-  # `netcdf-fortran * mpi_mpich_*` for mpich
-  # `netcdf-fortran * mpi_*` for any mpi
-  # `netcdf-fortran * nompi_*` for no mpi
+  # `rttov * mpi_mpich_*` for mpich
+  # `rttov * mpi_*` for any mpi
+  # `rttov * nompi_*` for no mpi
   string: {{ mpi_prefix }}_h{{ PKG_HASH }}_{{ build }}
 
 requirements:
