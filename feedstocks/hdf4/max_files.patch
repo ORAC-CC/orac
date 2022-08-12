@@ -10,3 +10,14 @@ Subject: Increase the number of files that can be opened at once.
  #endif /* MAX_FILE */
  
  /* Maximum length of external filename(s) (used in hextelt.c) */
+--- a/mfhdf/fortran/hdftest1.f	2020-03-03 17:40:09.137769820 +0100
++++ b/mfhdf/fortran/hdftest1.f	2022-08-04 12:41:10.913235020 +0100
+@@ -65,7 +65,7 @@ C=======================================
+       parameter (NUM_FILES_LOW=35)
+       integer fids(NUM_FILES_LOW)
+       integer H4_MAX_NC_OPEN 
+-      parameter (H4_MAX_NC_OPEN=32)
++      parameter (H4_MAX_NC_OPEN=4096)
+       integer flen_out
+       character*2 ichr2
+       integer i, curr_opened

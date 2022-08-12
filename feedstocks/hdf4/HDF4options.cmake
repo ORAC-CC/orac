@@ -43,3 +43,5 @@ set(ADD_BUILD_OPTIONS "${ADD_BUILD_OPTIONS} -DHDF4_NO_PACKAGES:BOOL=ON")
 #set(ADD_BUILD_OPTIONS "${ADD_BUILD_OPTIONS} -DHDF4_PACKAGE_EXTLIBS:BOOL=ON")
 
 #############################################################################################
+### import conda environmment
+set(ADD_BUILD_OPTIONS "${ADD_BUILD_OPTIONS} ${CMAKE_ARGS}")

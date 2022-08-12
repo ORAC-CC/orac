@@ -33,7 +33,7 @@ cmake -DCMAKE_PREFIX_PATH:PATH="${PREFIX}" \
       -DZLIB_PACKAGE_NAME:STRING="zlib" \
       -DSZIP_PACKAGE_NAME:STRING="sz" \
       -DJPEG_PACKAGE_NAME:STRING="jpeg" \
-      -G "Unix Makefiles" -Wno-dev ..
+      -G "Unix Makefiles" -Wno-dev ${CMAKE_ARGS} ..
 
 make -j ${CPU_COUNT}
 make test

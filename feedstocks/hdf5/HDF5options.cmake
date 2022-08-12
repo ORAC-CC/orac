@@ -106,3 +106,5 @@ set (ADD_BUILD_OPTIONS "${ADD_BUILD_OPTIONS} -DHDF5_NO_PACKAGES:BOOL=ON")
 #set (ADD_BUILD_OPTIONS "${ADD_BUILD_OPTIONS} -DCMAKE_TOOLCHAIN_FILE:STRING=config/toolchain/intel.cmake")
 
 #############################################################################################
+### import conda environmment
+set(ADD_BUILD_OPTIONS "${ADD_BUILD_OPTIONS} ${CMAKE_ARGS}")
