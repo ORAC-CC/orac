@@ -121,12 +121,22 @@ def build_preproc_driver(args):
 
     if args.use_oc:
         for oc_version in (5.0, 4.2, 4.1, 4.0, 3.1, 3.0, 2.0, 1.0):
-            occci = args.File.time.strftime(os.path.join(
-                args.occci_dir, 'ESACCI-OC-L3S-IOP-MERGED-1M_MONTHLY'
-                                f'_4km_GEO_PML_OCx_QAA-%Y%m-fv{oc_version:.1f}.nc'
-            ))
-            if os.path.isfile(occci):
+            try:
+                occci = _date_back_search(
+                    args.occci_dir, args.File.time,
+                    '%Y/ESACCI-OC-L3S-IOP-MERGED-1M_MONTHLY'
+                    f'_4km_GEO_PML_OCx_QAA-%Y%m-fv{oc_version:.1f}.nc',
+                    'years'
+                )
                 break
+            except FileMissing:
+                pass
+#            occci = args.File.time.strftime(os.path.join(
+#                args.occci_dir, 'ESACCI-OC-L3S-IOP-MERGED-1M_MONTHLY'
+#                                f'_4km_GEO_PML_OCx_QAA-%Y%m-fv{oc_version:.1f}.nc'
+#            ))
+#            if os.path.isfile(occci):
+#                break
         else:
             raise FileMissing('Ocean Colour CCI', occci)
     else:
