@@ -17,6 +17,7 @@ source:
     patches:
       - cmake.patch
       - string.patch
+      - SWapi.patch
       # https://lists.gnu.org/archive/html/guix-devel/2016-09/msg02110.html
       - 0001-fix-automake-files-for-linux-compatibility.patch
   - url: https://eodg.atm.ox.ac.uk/user/povey/HDF-EOS2.20v1.00_TestDriver.tar.Z

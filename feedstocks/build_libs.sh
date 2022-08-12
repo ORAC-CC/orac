@@ -30,12 +30,12 @@ conda update -y --all
 export PATH=$PATH:.
 
 # Install the building tools
-conda install -y conda-build conda-verify
+conda install -y mamba
+mamba install -y boa conda-verify
 
 # Packages without dependencies
 conda mambabuild --no-anaconda-upload "$FEED_DIR/nr"
 #conda mambabuild --no-anaconda-upload "$FEED_DIR/fftw"
-#conda mambabuild --no-anaconda-upload "$FEED_DIR/szip"
 #conda mambabuild --no-anaconda-upload "$FEED_DIR/libaec"
 conda mambabuild --no-anaconda-upload "$FEED_DIR/epr_api"
 conda mambabuild --no-anaconda-upload "$FEED_DIR/fu_liou"
