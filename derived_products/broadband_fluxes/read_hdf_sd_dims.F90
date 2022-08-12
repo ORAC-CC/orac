@@ -17,10 +17,9 @@
 subroutine read_hdf_sd_dims(filename,SDS_name,nX,nY)
 
    use common_constants_m
+   use hdf_m, only: DFACC_READ
 
    implicit none
-
-   include "hdf.f90"
 
    ! Input arguments
    character(len=*), intent(in) :: filename

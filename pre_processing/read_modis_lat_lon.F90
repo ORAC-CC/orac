@@ -36,8 +36,6 @@ subroutine read_modis_lat_lon(fid,SDS_name,startx,stopx,starty,stopy,temp)
 
    implicit none
 
-   include "hdf.f90"
-
    integer,            intent(in)  :: fid
    character(len=*),   intent(in)  :: SDS_name
    integer(kind=lint), intent(in)  :: startx, stopx, starty, stopy

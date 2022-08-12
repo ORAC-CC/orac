@@ -37,10 +37,9 @@ subroutine read_modis_l1b_radiances(sensor, platform, path_to_l1b_file, &
    use channel_structures_m
    use imager_structures_m
    use preproc_constants_m
+   use hdf_m, only: DFACC_READ
 
    implicit none
-
-   include "hdf.f90"
 
    integer(kind=lint) :: l1b_id, ix, jy, ich, err_code
 
