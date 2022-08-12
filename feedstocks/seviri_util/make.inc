@@ -15,6 +15,6 @@ OBJECTS          += seviri_util_f90.o
 OPTIONAL_TARGETS += example_f90
 
 # Include and lib directories for non standard locations required by SEVIRI_util
-INCDIRS           += -I${LIB_DIR}/include
-LIBDIRS           += -L${LIB_DIR}/lib
+INCDIRS           += -I${PREFIX}/include
+LIBDIRS           += -L${PREFIX}/lib
 LINKS             += $(LDFLAGS) -lhdf5 -lnetcdf -ltiff -lm
