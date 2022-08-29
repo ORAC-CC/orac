@@ -35,8 +35,6 @@ subroutine read_modis_land_sea_mask(fid,SDS_name,ixstart,ixstop,iystart,iystop,b
 
    implicit none
 
-   include "hdf.f90"
-
    integer,            intent(in)  :: fid
    character(len=*),   intent(in)  :: SDS_name
    integer,            intent(in)  :: ixstart, ixstop, iystart, iystop

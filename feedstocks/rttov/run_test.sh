@@ -27,3 +27,6 @@ cd rttov_test
 ./test_solar.sh ARCH=$ARCH BIN=$REL_PATH/bin
 #./test_coef_io.sh ARCH=$ARCH BIN=$REL_PATH/bin
 #./test_coef_io_hdf.sh ARCH=$ARCH BIN=$REL_PATH/bin
+
+# Check pyRTTOV loads
+PYTHONPATH=$PREFIX/lib python -c "import pyrttov"

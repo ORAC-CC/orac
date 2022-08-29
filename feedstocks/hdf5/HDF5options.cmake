@@ -48,7 +48,7 @@ set (ADD_BUILD_OPTIONS "${ADD_BUILD_OPTIONS} -DHDF5_BUILD_JAVA:BOOL=OFF")
 
 #############################################################################################
 ### change install prefix (default use INSTALLDIR value)
-set (ADD_BUILD_OPTIONS "${ADD_BUILD_OPTIONS} -DCMAKE_INSTALL_PREFIX:PATH=${LIB_DIR}")
+set (ADD_BUILD_OPTIONS "${ADD_BUILD_OPTIONS} -DCMAKE_INSTALL_PREFIX:PATH=${PREFIX}")
 
 #############################################################################################
 ####      ext libraries       ####
@@ -59,8 +59,8 @@ set (ADD_BUILD_OPTIONS "${ADD_BUILD_OPTIONS} -DCMAKE_INSTALL_PREFIX:PATH=${LIB_D
 #set (ADD_BUILD_OPTIONS "${ADD_BUILD_OPTIONS} -DHDF5_ALLOW_EXTERNAL_SUPPORT:STRING=GIT")
 ### ext libs on system
 set (ADD_BUILD_OPTIONS "${ADD_BUILD_OPTIONS} -DHDF5_ALLOW_EXTERNAL_SUPPORT:STRING=NO")
-#set (ADD_BUILD_OPTIONS "${ADD_BUILD_OPTIONS} -DZLIB_LIBRARY:FILEPATH=${LIB_DIR}/lib/libz.a -DZLIB_INCLUDE_DIR:PATH=${LIB_DIR}/include")
-set (ADD_BUILD_OPTIONS "${ADD_BUILD_OPTIONS} -DSZIP_LIBRARY:FILEPATH=${LIB_DIR}/lib/libsz.a -DSZIP_INCLUDE_DIR:PATH=${LIB_DIR}/include")
+#set (ADD_BUILD_OPTIONS "${ADD_BUILD_OPTIONS} -DZLIB_LIBRARY:FILEPATH=${PREFIX}/lib/libz.a -DZLIB_INCLUDE_DIR:PATH=${PREFIX}/include")
+set (ADD_BUILD_OPTIONS "${ADD_BUILD_OPTIONS} -DSZIP_LIBRARY:FILEPATH=${PREFIX}/lib/libsz.so -DSZIP_INCLUDE_DIR:PATH=${PREFIX}/include")
 
 ### disable using ext zlib
 #set (ADD_BUILD_OPTIONS "${ADD_BUILD_OPTIONS} -DHDF5_ENABLE_Z_LIB_SUPPORT:BOOL=OFF")
@@ -106,3 +106,5 @@ set (ADD_BUILD_OPTIONS "${ADD_BUILD_OPTIONS} -DHDF5_NO_PACKAGES:BOOL=ON")
 #set (ADD_BUILD_OPTIONS "${ADD_BUILD_OPTIONS} -DCMAKE_TOOLCHAIN_FILE:STRING=config/toolchain/intel.cmake")
 
 #############################################################################################
+### import conda environmment
+set(ADD_BUILD_OPTIONS "${ADD_BUILD_OPTIONS} ${CMAKE_ARGS}")

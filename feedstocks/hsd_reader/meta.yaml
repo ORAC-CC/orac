@@ -1,5 +1,5 @@
 {% set version = "1.13" %}
-{% set build = 0 %}
+{% set build = 1 %}
 
 # recipe-lint fails if mpi is undefined
 {% set mpi = mpi or 'nompi' %}
@@ -15,6 +15,12 @@ package:
 source:
   - git_url: https://github.com/simonrp84/Himawari_HSD_Reader
   - path: make.inc
+    patches:
+  {% if mpi != "nompi" %}
+      - env.patch
+  {% else %}
+      - env_nompi.patch
+  {% endif %}
   - path: Makefile
 
 build:

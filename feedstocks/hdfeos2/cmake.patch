@@ -1,13 +1,14 @@
---- hdfeos/CMakeLists.txt     2014-02-06 16:09:40.000000000 +0000
-+++ hdfeos/CMakeLists.new.txt 2019-10-17 17:26:44.410294417 +0100
+Subject: Repairs to the cmake build
+--- a/CMakeLists.txt	2014-02-06 16:09:40.000000000 +0000
++++ b/CMakeLists.txt	2019-10-17 17:26:44.410294417 +0100
 @@ -480,4 +480,5 @@
      SET (HDF4_INCLUDE_DIR_GEN ${HDF4_INCLUDE_DIR}${HDF_PACKAGE_EXT})
      SET (HDF4_INCLUDE_DIRS ${HDF4_INCLUDE_DIR})
-+    SET (HDF4_LIBRARIES "mfhdf;hdf;jpeg;sz;z")
++    SET (HDF4_LIBRARIES "mfhdf;mfhdf_fortran;mfhdf_fcstub;hdf;hdf_fcstub;jpeg;sz;z")
    ELSE (HDF4_FOUND)
      IF (HDFEOS_ALLOW_EXTERNAL_SUPPORT MATCHES "SVN" OR HDFEOS_ALLOW_EXTERNAL_SUPPORT MATCHES "TGZ")
---- hdfeos/config/cmake/ConfigureChecks.cmake     2014-02-06 16:09:46.000000000 +0000
-+++ hdfeos/config/cmake/ConfigureChecks.new.cmake 2019-10-17 17:23:17.632382556 +0100
+--- a/config/cmake/ConfigureChecks.cmake	2014-02-06 16:09:46.000000000 +0000
++++ b/config/cmake/ConfigureChecks.cmake	2019-10-17 17:23:17.632382556 +0100
 @@ -218,5 +218,5 @@
      SET (EOS_EXTRA_FLAGS -D_BSD_SOURCE)
    ELSE (CYGWIN)
@@ -15,25 +16,22 @@
 +    SET (EOS_EXTRA_FLAGS -D_POSIX_SOURCE -D_DEFAULT_SOURCE)
    ENDIF (CYGWIN)
    OPTION (EOS_ENABLE_LARGE_FILE "Enable support for large (64-bit) files on Linux." ON)
-atmlxdt054:/data/povey/libraries/hdfeos/build$ 
---- hdfeos/samples/CMakeLists.txt     2014-02-06 16:10:13.000000000 +0000
-+++ hdfeos/samples/CMakeLists.new.txt 2019-10-17 17:09:50.588011736 +0100
+--- a/samples/CMakeLists.txt	2014-02-06 16:10:13.000000000 +0000
++++ b/samples/CMakeLists.txt	2019-10-17 17:09:50.588011736 +0100
 @@ -8,4 +8,5 @@
      ${HDFEOS_SRC_BINARY_DIR}
      ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
-+    $ENV{LIB_DIR}/lib
++    $ENV{PREFIX}/lib
  )
  
---- hdfeos/src/CMakeLists.txt     2014-02-06 16:10:13.000000000 +0000
-+++ hdfeos/src/CMakeLists.new.txt 2019-10-17 17:09:50.588011736 +0100
+--- a/src/CMakeLists.txt	2014-02-06 16:10:13.000000000 +0000
++++ b/src/CMakeLists.txt	2019-10-17 17:09:50.588011736 +0100
 @@ -8,4 +8,5 @@
      ${HDFEOS_SRC_BINARY_DIR}
      ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
-+    $ENV{LIB_DIR}/lib
++    $ENV{PREFIX}/lib
  )
  
---- hdfeos/src/CMakeLists.txt     2014-02-06 16:10:13.000000000 +0000
-+++ hdfeos/src/CMakeLists.new.txt 2019-10-17 11:13:24.500830605 +0100
 @@ -33,5 +33,5 @@
  IF (MSVC)
    TARGET_LINK_LIBRARIES (${HDFEOS_SRC_LIB_TARGET} "ws2_32.lib")
@@ -41,11 +39,11 @@ atmlxdt054:/data/povey/libraries/hdfeos/build$
 +ELSEIF (APPLE)
    SET_TARGET_PROPERTIES (${HDFEOS_SRC_LIB_TARGET} PROPERTIES LINK_FLAGS "-Wl,-single_module")
  ENDIF (MSVC)
---- hdfeos/gctp/src/CMakeLists.txt     2014-02-06 16:10:13.000000000 +0000
-+++ hdfeos/gctp/src/CMakeLists.new.txt 2019-10-17 17:09:50.588011736 +0100
+--- a/gctp/src/CMakeLists.txt	2014-02-06 16:10:13.000000000 +0000
++++ b/gctp/src/CMakeLists.txt	2019-10-17 17:09:50.588011736 +0100
 @@ -8,4 +8,5 @@
      ${GCTP_SRC_BINARY_DIR}
      ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
-+    $ENV{LIB_DIR}/lib
++    $ENV{PREFIX}/lib
  )
  

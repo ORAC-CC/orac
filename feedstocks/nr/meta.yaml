@@ -1,20 +1,44 @@
-{% set version = "2.0" %}
+{% set version = "2.0.1" %}
+{% set build = 0 %}
+
+{% set mpi = mpi or 'nompi' %}
+{% if mpi == "nompi" %}
+# deprioritize nompi via build number
+{% set build = build + 100 %}
+{% endif %}
 
 package:
   name: nr
   version: {{ version }}
 
 source:
-  - url: https://groups.physics.ox.ac.uk/eodg/orac/orac_libraries/nr.tar.gz
-    sha256: 75ca64651af0e43d37bfeecf4166d161759233dfaacbb2baaf700bcdf4c60db5
+  - url: https://eodg.atm.ox.ac.uk/user/povey/nr.tar.gz
+    sha256: 71d2a21132742b458e05b88dedc4489bb0c160a3d7883add03a18109ed93c25e
     patches:
       - data.patch
       - shoot.patch
-  - path: ../../patches/nr/Makefile
-    patches: Makefile.patch
+      - Makefile.patch
+  {% if mpi == 'nompi' %}
+      - nompi.patch
+  {% endif %}
 
 build:
-  number: 1
+  number: {{ build }}
+  run_exports:
+    - {{ pin_subpackage('nr', max_pin='x.x.x') }}
+
+  # add build string so packages can depend on
+  # mpi or nompi variants explicitly:
+  # `netcdf-fortran * mpi_mpich_*` for mpich
+  # `netcdf-fortran * mpi_*` for any mpi
+  # `netcdf-fortran * nompi_*` for no mpi
+
+  {% if mpi != 'nompi' %}
+  {% set mpi_prefix = "mpi_" + mpi %}
+  {% else %}
+  {% set mpi_prefix = "nompi" %}
+  {% endif %}
+  string: {{ mpi_prefix }}_h{{ PKG_HASH }}_{{ build }}
 
 requirements:
   build:

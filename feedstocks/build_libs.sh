@@ -30,41 +30,39 @@ conda update -y --all
 export PATH=$PATH:.
 
 # Install the building tools
-conda install -y conda-build conda-verify
+conda install -y mamba
+mamba install -y boa conda-verify
 
 # Packages without dependencies
-conda-build --no-anaconda-upload "$FEED_DIR/nr"
-#conda-build --no-anaconda-upload "$FEED_DIR/fftw"
-#conda-build --no-anaconda-upload "$FEED_DIR/szip"
-conda-build --no-anaconda-upload "$FEED_DIR/libaec"
-conda-build --no-anaconda-upload "$FEED_DIR/epr_api"
-conda-build --no-anaconda-upload "$FEED_DIR/fu_liou"
+conda mambabuild --no-anaconda-upload "$FEED_DIR/nr"
+#conda mambabuild --no-anaconda-upload "$FEED_DIR/fftw"
+#conda mambabuild --no-anaconda-upload "$FEED_DIR/libaec"
+conda mambabuild --no-anaconda-upload "$FEED_DIR/epr_api"
+conda mambabuild --no-anaconda-upload "$FEED_DIR/fu_liou"
 
-# NOTE: We have to build these because the conda-forge repo contains the
+# NOTE: We have to build this because the conda-forge repo contains the
 # shared libraries, which can't be built at the same time as the Fortran ones
-# we use. Arguably, we should rewrite our interface to drop the Fortran links
-# but that's a lot of work for minimal gain. If bored, one should look into
-# how to build both alongside each other
-conda-build --no-anaconda-upload "$FEED_DIR/hdf4"
-conda-build --no-anaconda-upload "$FEED_DIR/hdfeos2"
+# we use. I've offered a PR to fix that
+conda mambabuild --no-anaconda-upload "$FEED_DIR/hdf4"
+# NOTE: We have to build this as the conda-forge version doesn't contain
+# Fortran-friendly function names
+conda mambabuild --no-anaconda-upload "$FEED_DIR/hdfeos2"
 
-#conda-build --no-anaconda-upload "$FEED_DIR/hdf5"
+#conda mambabuild --no-anaconda-upload "$FEED_DIR/hdf5"
+#conda mambabuild --no-anaconda-upload "$FEED_DIR/libnetcdf"
+#conda mambabuild --no-anaconda-upload "$FEED_DIR/netcdf-fortran"
+#conda mambabuild --no-anaconda-upload "$FEED_DIR/eccodes"
 
-# NOTE: Have to build these as well as they depend on the HDF4 library
-conda-build --no-anaconda-upload "$FEED_DIR/libnetcdf"
-conda-build --no-anaconda-upload "$FEED_DIR/netcdf-fortran"
+conda mambabuild --no-anaconda-upload "$FEED_DIR/seviri_util"
+conda mambabuild --no-anaconda-upload "$FEED_DIR/hsd_reader"
 
-#conda-build --no-anaconda-upload "$FEED_DIR/eccodes"
-conda-build --no-anaconda-upload "$FEED_DIR/seviri_util"
-conda-build --no-anaconda-upload "$FEED_DIR/hsd_reader"
-
-conda-build --no-anaconda-upload "$FEED_DIR/libemos"
+conda mambabuild --no-anaconda-upload "$FEED_DIR/libemos"
 
 # Requires the RTTOV_FILE variable to be exported
-conda-build --no-anaconda-upload "$FEED_DIR/rttov"
+conda mambabuild --no-anaconda-upload "$FEED_DIR/rttov"
 
-conda-build --no-anaconda-upload "$FEED_DIR/orac"
-conda-build --no-anaconda-upload "$FEED_DIR/pyorac"
+conda mambabuild --no-anaconda-upload "$FEED_DIR/orac"
+conda mambabuild --no-anaconda-upload "$FEED_DIR/pyorac"
 
 # Install the release version of ORAC
 conda create -y --override-channels -c local -c conda-forge -c anaconda \

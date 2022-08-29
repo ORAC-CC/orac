@@ -11,11 +11,11 @@ dependencies:
  - gfortran_linux-64
  - bison
  - flex
- - nr
+ - nr * nompi_*
  - epr_api
  - fu_liou
  - hdf4
- - hdfeos2
+ - hdfeos2 * fortran_*
  - hdf5 * nompi_*
  - libnetcdf * nompi_*
  - netcdf-fortran * nompi_*
@@ -23,7 +23,7 @@ dependencies:
  - seviri_util
  - hsd_reader * nompi_*
  - libemos
- - rttov
+ - rttov * nompi_*
  - numpy
  - scipy
  - netcdf4

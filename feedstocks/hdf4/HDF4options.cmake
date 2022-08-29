@@ -13,8 +13,8 @@
 ####      ext libraries       ####
 
 ### ext libs on system
-set(ADD_BUILD_OPTIONS "${ADD_BUILD_OPTIONS} -DCMAKE_PREFIX_PATH:FILEPATH=${LIB_DIR}")
-set(ADD_BUILD_OPTIONS "${ADD_BUILD_OPTIONS} -DSZIP_LIBRARY:FILEPATH=${LIB_DIR}/lib/libsz.a -DSZIP_INCLUDE_DIR:PATH=${LIB_DIR}/include")
+set(ADD_BUILD_OPTIONS "${ADD_BUILD_OPTIONS} -DCMAKE_PREFIX_PATH:FILEPATH=${PREFIX}")
+set(ADD_BUILD_OPTIONS "${ADD_BUILD_OPTIONS} -DSZIP_LIBRARY:FILEPATH=${PREFIX}/lib/libsz.so -DSZIP_INCLUDE_DIR:PATH=${PREFIX}/include")
 
 ##############################################################################################
 ### disable test program builds
@@ -22,7 +22,7 @@ set(ADD_BUILD_OPTIONS "${ADD_BUILD_OPTIONS} -DSZIP_LIBRARY:FILEPATH=${LIB_DIR}/l
 
 #############################################################################################
 ### change install prefix (default use INSTALLDIR value)
-set(ADD_BUILD_OPTIONS "${ADD_BUILD_OPTIONS} -DCMAKE_INSTALL_PREFIX:PATH=${LIB_DIR}")
+set(ADD_BUILD_OPTIONS "${ADD_BUILD_OPTIONS} -DCMAKE_INSTALL_PREFIX:PATH=${PREFIX}")
 
 #############################################################################################
 ### disable netcdf
@@ -43,3 +43,5 @@ set(ADD_BUILD_OPTIONS "${ADD_BUILD_OPTIONS} -DHDF4_NO_PACKAGES:BOOL=ON")
 #set(ADD_BUILD_OPTIONS "${ADD_BUILD_OPTIONS} -DHDF4_PACKAGE_EXTLIBS:BOOL=ON")
 
 #############################################################################################
+### import conda environmment
+set(ADD_BUILD_OPTIONS "${ADD_BUILD_OPTIONS} ${CMAKE_ARGS}")

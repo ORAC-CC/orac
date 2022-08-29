@@ -7,13 +7,12 @@ package:
 source:
   git_url: https://github.com/bcdev/epr-api
   patches:
-    - atsr2.patch
     - makefile.patch
 
 build:
   number: 1
   run_exports:
-    - {{ pin_subpackage('epr_api', max_pin='x.x.x') }}
+    - {{ pin_subpackage('epr_api', max_pin='x.x') }}
 
 requirements:
   build:

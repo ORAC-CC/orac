@@ -1,8 +1,19 @@
+From f173ecba7134c10824487edeeb8d28c86cfb64be Mon Sep 17 00:00:00 2001
+From: Michael Sarahan <msarahan@gmail.com>
+Date: Thu, 30 Nov 2017 22:11:20 -0600
 Subject: [PATCH] fix automake files for linux compatibility
---- a/configure.ac	2021-05-18 12:55:16.000000000 +0100
-+++ b/configure.ac	2021-12-02 14:41:17.970040499 +0000
-@@ -16,6 +16,35 @@
- AM_MAINTAINER_MODE
+
+---
+ configure.ac    | 29 +++++++++++++++++++++++++++++
+ src/Makefile.am |  9 ++++++++-
+ 2 files changed, 37 insertions(+), 1 deletion(-)
+
+diff --git a/configure.ac b/configure.ac
+index 921f90f..aed32b9 100755
+--- a/configure.ac
++++ b/configure.ac
+@@ -20,6 +20,35 @@ AC_DISABLE_SHARED
+ AM_PROG_LIBTOOL
  
  
 +# AC_CANONICAL_HOST is needed to access the 'host_os' variable
@@ -34,37 +45,18 @@ Subject: [PATCH] fix automake files for linux compatibility
 +AM_CONDITIONAL([OSX], [test "$build_mac" = "yes"])
 +
 +
- ## Note we disable shared libraries otherwise gfortran fails linking against the resulting
- ## libX.la files. With shared libraries disables, libtool links gfortran against the static
- ## library libX.a. If fortran is disabled, this can be overridden using --enabled-shared
-@@ -91,10 +120,6 @@
- # we only need to find the libary, not the header files.
- 
- HDF_CHECK_LIB([jpeg],[jpeg],[jpeg_set_defaults],[,/usr/local/lib,/opt/local/lib,/usr/lib64])
--AS_IF(
--    [test -z "$HAVE_LIBJPEG"],
--    [AC_MSG_ERROR(unable to find libjpeg)]
--)
- 
- 
- 
-@@ -106,10 +131,6 @@
- # we only need to find the libary, not the header files.
- 
- HDF_CHECK_LIB([zlib],[z],[compress2],[,/usr/local/lib,/opt/local/lib,/usr/lib64])
--AS_IF(
--    [test -z "$HAVE_LIBZ"],
--    [AC_MSG_ERROR(unable to find libz)]
--)
- 
- 
- 
+ dnl --------------------------------------------------
+ dnl Set prefix default (install directory) to a directory
+ dnl in the build area.
+diff --git a/src/Makefile.am b/src/Makefile.am
+index f87d373..65036b8 100755
 --- a/src/Makefile.am
 +++ b/src/Makefile.am
-@@ -19,7 +19,14 @@
+@@ -6,7 +6,14 @@ include $(top_srcdir)/config/include.am
+ INCLUDES=-I$(top_srcdir)/include/
  
  # Set LDFLAGS to alow the HDF-EOS library to use extern variables from HDF4
--#LDFLAGS=-Wl,-single_module
+-LDFLAGS=-Wl,-single_module
 +if LINUX
 +LDFLAGS+= -shrext .so
 +LIBS+= -lm
@@ -74,4 +66,7 @@ Subject: [PATCH] fix automake files for linux compatibility
 +LDFLAGS+= -Wl,-single_module
 +endif
  
- 
+ # Build HDF-EOS2
+ lib_LTLIBRARIES=libhdfeos.la
+-- 
+2.11.1

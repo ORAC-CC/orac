@@ -1,4 +1,4 @@
-{% set version = "13.0" %}
+{% set version = "13.1" %}
 {% set build = 1 %}
 
 {% set mpi = mpi or 'nompi' %}
@@ -10,16 +10,17 @@ package:
 source:
   # Can't use this as the contents change with each download
   #url: https://www.nwpsaf.eu/site/user/acpovey/?profiletab=downloadtab&fn=download&fname=RTTOV%20v12
-  url: http://groups.physics.ox.ac.uk/eodg/orac/orac_libraries/rttov130.tar.xz
-  sha256: b287e9f114509acfedc6b37cca861d106945b1de0ecfc4cb9346bb4ee1bc86e4
+  url: http://eodg.atm.ox.ac.uk/user/povey/rttov{{ version|replace('.','') }}.tar.xz
+  sha256: f3bec1ca3ba952bc49e19d851144f9d51126bfe59f473be4992eac0b3366dbb2
   patches:
-    - local.patch
+    - conda.patch
     - arch.patch
+    - loop.patch
 
 build:
   number: {{ build }}
   run_exports:
-    - {{ pin_subpackage('rttov', max_pin='x.x.x') }}
+    - {{ pin_subpackage('rttov', max_pin='x.x') }}
   {% if mpi != 'nompi' %}
   {% set mpi_prefix = "mpi_" + mpi %}
   {% else %}
@@ -27,9 +28,9 @@ build:
   {% endif %}
   # add build string so packages can depend on
   # mpi or nompi variants explicitly:
-  # `netcdf-fortran * mpi_mpich_*` for mpich
-  # `netcdf-fortran * mpi_*` for any mpi
-  # `netcdf-fortran * nompi_*` for no mpi
+  # `rttov * mpi_mpich_*` for mpich
+  # `rttov * mpi_*` for any mpi
+  # `rttov * nompi_*` for no mpi
   string: {{ mpi_prefix }}_h{{ PKG_HASH }}_{{ build }}
 
 requirements:
@@ -41,7 +42,6 @@ requirements:
     - perl
     - python {{ python }}
   host:
-    - lapack
     - python
     - numpy
     # need to list hdf5 and libnetcdf twice to get version pinning from
@@ -54,9 +54,8 @@ requirements:
     - netcdf-fortran
     - netcdf-fortran * {{ mpi_prefix }}_*
   run:
-    - lapack
     - python
-    - numpy
+    - {{ pin_compatible('numpy') }}
     - {{ mpi }} # [mpi != 'nompi']
     - hdf5 * {{ mpi_prefix }}_*
     - libnetcdf * {{ mpi_prefix }}_*

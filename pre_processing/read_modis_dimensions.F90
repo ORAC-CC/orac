@@ -29,10 +29,9 @@
 subroutine read_modis_dimensions(path_to_geo_file, n_across_track, n_along_track)
 
    use preproc_constants_m
+   use hdf_m, only: DFACC_READ
 
    implicit none
-
-   include "hdf.f90"
 
    character(len=*),   intent(in)  :: path_to_geo_file
    integer(kind=lint), intent(out) :: n_across_track, n_along_track

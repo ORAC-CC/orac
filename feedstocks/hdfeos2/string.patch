@@ -1,11 +1,157 @@
---- hdfeos/samples/writefields.f     2012-03-12 17:34:20.000000000 +0000
-+++ hdfeos/samples/writefields.new.f 2019-01-22 10:20:37.000000000 +0000
-@@ -31,7 +31,7 @@
+Subject: Fix laxy use of continuation lines in strings
+--- a/samples/definefields.f	2012-03-12 17:34:02.000000000 +0000
++++ b/samples/definefields.f	2022-08-08 16:43:28.194517812 +0100
+@@ -24,8 +24,8 @@
+ c	routine returns the swath fileid, swfid, which is used to
+ c	identify the file in subsequent routines.
+ 
+-	swfid = swopen("SwathFile_created_with_hadeos_sample_file_writer
+-     1_of_HDFEOS2_version_219_or_higher_release.hdf", DFACC_RDWR)
++	swfid = swopen("SwathFile_created_with_hadeos_sample_file_wr"//
++     1"iter_of_HDFEOS2_version_219_or_higher_release.hdf", DFACC_RDWR)
+ 
+ 
+ c
+--- a/samples/definelevels.f	2012-03-12 17:34:04.000000000 +0000
++++ b/samples/definelevels.f	2022-08-08 16:42:59.562166987 +0100
+@@ -32,8 +32,8 @@
+ c	routine returns the point fileid, ptfid, which is used to
+ c	identify the file in subsequent routines.
+ 
+-	ptfid = ptopen("PointFile_created_with_hadeos_sample_file_writer
+-     1_of_HDFEOS2_version_219_or_higher_release.hdf", DFACC_RDWR)
++	ptfid = ptopen("PointFile_created_with_hadeos_sample_file_wr"//
++     1"iter_of_HDFEOS2_version_219_or_higher_release.hdf", DFACC_RDWR)
+ 
+ 
+ c
+--- a/samples/inquireswath.f	2012-03-12 17:34:07.000000000 +0000
++++ b/samples/inquireswath.f	2022-08-08 16:43:40.366667000 +0100
+@@ -24,8 +24,8 @@
+ c	Open the Swath File for read only access
+ c
+ 
+-	swfid = swopen("SwathFile_created_with_hadeos_sample_file_writer
+-     1_of_HDFEOS2_version_219_or_higher_release.hdf", DFACC_READ)
++	swfid = swopen("SwathFile_created_with_hadeos_sample_file_wr"//
++     1"iter_of_HDFEOS2_version_219_or_higher_release.hdf", DFACC_READ)
+ 
+     
+ 	if (swfid .NE. -1) then
+--- a/samples/readdimscaleswath.f	2012-03-12 17:34:30.000000000 +0000
++++ b/samples/readdimscaleswath.f	2022-08-08 16:43:49.786782475 +0100
+@@ -33,8 +33,8 @@
+ !     * id, swfid, which is used to identify the file in subsequent routines.
+ !     */
+ 
+-	swfid = swopen("SwathFile_created_with_hadeos_sample_file_writer
+-     1_of_HDFEOS2_version_219_or_higher_release.hdf", DFACC_RDWR)
++	swfid = swopen("SwathFile_created_with_hadeos_sample_file_wr"//
++     1"iter_of_HDFEOS2_version_219_or_higher_release.hdf", DFACC_RDWR)
+ 
+ !    /*
+ !     * If the swath file cannot be found, swopen will return -1 for the file
+--- a/samples/readfields.f	2012-03-12 17:34:08.000000000 +0000
++++ b/samples/readfields.f	2022-08-08 16:44:00.086908755 +0100
+@@ -21,8 +21,8 @@
+ c     Open the HDF swath file, "SwathFile.hdf"
+ c 
+ 
+-	swfid = swopen("SwathFile_created_with_hadeos_sample_file_writer
+-     1_of_HDFEOS2_version_219_or_higher_release.hdf", DFACC_READ)
++	swfid = swopen("SwathFile_created_with_hadeos_sample_file_wr"//
++     1"iter_of_HDFEOS2_version_219_or_higher_release.hdf", DFACC_READ)
+ 
+ 
+ 	if (swfid .NE. -1) then
+--- a/samples/readlevels.f	2012-03-12 17:34:10.000000000 +0000
++++ b/samples/readlevels.f	2022-08-08 16:44:07.755002779 +0100
+@@ -36,8 +36,8 @@
+ c     Open the HDF swath file, "PointFile.hdf".
+ c
+ 
+-	ptfid = ptopen("PointFile_created_with_hadeos_sample_file_writer
+-     1_of_HDFEOS2_version_219_or_higher_release.hdf", DFACC_READ)
++	ptfid = ptopen("PointFile_created_with_hadeos_sample_file_wr"//
++     1"iter_of_HDFEOS2_version_219_or_higher_release.hdf", DFACC_READ)
+ 
+ c
+ c    Read Simple Point
+--- a/samples/setupgrid.f	2022-08-08 15:37:23.220833649 +0100
++++ b/samples/setupgrid.f	2022-08-08 16:44:37.159363416 +0100
+@@ -34,8 +34,8 @@
+ c      file id, gdfid, which is used to identify the file in subsequent
+ c      routines in the library.
+ c
+-      gdfid = gdopen('GridFile_created_with_hadeos_sample_file_writer_of
+-     1_HDFEOS2_version_219_or_higher_release.hdf',DFACC_CREATE)
++      gdfid = gdopen("GridFile_created_with_hadeos_sample_file_wr"//
++     1"iter_of_HDFEOS2_version_219_or_higher_release.hdf",DFACC_CREATE)
+ 
+ c    
+ c     Create UTM Grid
+--- a/samples/subsetpoint.f	2012-03-12 17:34:16.000000000 +0000
++++ b/samples/subsetpoint.f	2022-08-08 16:44:45.227462396 +0100
+@@ -21,8 +21,8 @@
+ c     Open the HDF point file, "PointFile.hdf"
+ c 
+ 
+-	ptfid = ptopen("PointFile_created_with_hadeos_sample_file_writer
+-     1_of_HDFEOS2_version_219_or_higher_release.hdf", DFACC_READ)
++	ptfid = ptopen("PointFile_created_with_hadeos_sample_file_wr"//
++     1"iter_of_HDFEOS2_version_219_or_higher_release.hdf", DFACC_READ)
+ 
+ 	if (ptfid .NE. -1) then
+ 
+--- a/samples/subsetswath.f	2012-03-12 17:34:17.000000000 +0000
++++ b/samples/subsetswath.f	2022-08-08 16:44:53.011557901 +0100
+@@ -28,8 +28,8 @@
+ c     Open the HDF swath file, "SwathFile.hdf"
+ c 
+ 
+-	swfid = swopen("SwathFile_created_with_hadeos_sample_file_writer
+-     1_of_HDFEOS2_version_219_or_higher_release.hdf", DFACC_READ)
++	swfid = swopen("SwathFile_created_with_hadeos_sample_file_wr"//
++     1"iter_of_HDFEOS2_version_219_or_higher_release.hdf", DFACC_READ)
+ 
+ 	if (swfid .NE. -1) then
+ 
+d--- a/samples/updatelevels.f	2012-03-12 17:34:19.000000000 +0000
++++ b/samples/updatelevels.f	2022-08-08 16:45:00.875654398 +0100
+@@ -17,8 +17,8 @@
+ c     Open the HDF point file, "PointFile.hdf".
+ c
+ 
+-	ptfid = ptopen("PointFile_created_with_hadeos_sample_file_writer
+-     1_of_HDFEOS2_version_219_or_higher_release.hdf", DFACC_RDWR)
++	ptfid = ptopen("PointFile_created_with_hadeos_sample_file_wr"//
++     1"iter_of_HDFEOS2_version_219_or_higher_release.hdf", DFACC_RDWR)
+ 
+ 	ptid1 = ptattach(ptfid, "Simple Point")
+ 	ptid2 = ptattach(ptfid, "FixedBuoy Point")
+--- a/samples/writefields.f	2022-08-08 15:37:22.892829603 +0100
++++ b/samples/writefields.f	2022-08-08 16:45:10.239769380 +0100
+@@ -31,8 +31,8 @@
  c     Open the HDF swath file, "SwathFile.hdf"
  c 
  
 -	swfid = swopen("SwathFile_created_with_hadeos_sample_file_writer"//
-+	swfid = swopen("SwathFile_created_with_hadeos_sample_file_writer
-      1_of_HDFEOS2_version_219_or_higher_release.hdf", DFACC_RDWR)
+-     1_of_HDFEOS2_version_219_or_higher_release.hdf", DFACC_RDWR)
++	swfid = swopen("SwathFile_created_with_hadeos_sample_file_wr"//
++     1"iter_of_HDFEOS2_version_219_or_higher_release.hdf", DFACC_RDWR)
  
  
+ 	if (swfid .NE. -1) then
+--- a/samples/writelevels.f	2012-03-12 17:34:22.000000000 +0000
++++ b/samples/writelevels.f	2022-08-08 16:45:17.063853513 +0100
+@@ -32,8 +32,8 @@
+ c     Open the HDF point file, "PointFile.hdf".
+ c
+ 
+-	ptfid = ptopen("PointFile_created_with_hadeos_sample_file_writer
+-     1_of_HDFEOS2_version_219_or_higher_release.hdf", DFACC_RDWR)
++	ptfid = ptopen("PointFile_created_with_hadeos_sample_file_wr"//
++     1"iter_of_HDFEOS2_version_219_or_higher_release.hdf", DFACC_RDWR)
+ 
+ 
+ c

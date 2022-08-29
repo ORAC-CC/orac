@@ -5,7 +5,7 @@
  # ------------------------------------------------------------------------------
  
 -HDF5_PREFIX  = path-to-hdf-install
-+HDF5_PREFIX  = $(LIB_DIR)
++HDF5_PREFIX  = $(PREFIX)
  
  # --- Uncomment one FFLAGS_HDF5 line:
  
@@ -29,7 +29,7 @@
  # ------------------------------------------------------------------------------
  
 -NETCDF_PREFIX  = path-to-netcdf-install
-+NETCDF_PREFIX  = $(LIB_DIR)/netcdf-fortran
++NETCDF_PREFIX  = $(PREFIX)
  
  # --- Uncomment one FFLAGS_NETCDF line:
  

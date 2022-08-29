@@ -57,8 +57,6 @@ subroutine read_modis_l1b_radiances_2(fid, band, Cal_type_is_refl, &
 
    implicit none
 
-   include "hdf.f90"
-
    integer(kind=lint), intent(in)  :: fid
    integer,            intent(in)  :: band
    logical,            intent(in)  :: Cal_type_is_refl

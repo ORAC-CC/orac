@@ -2,6 +2,14 @@
 
 set -e
 
+# They use implicit casting, which newer gfortran doesn't allow
+cat > optiontest.f90 <<EOF
+end
+EOF
+${GFORTRAN} ${FFLAGS} -fallow-argument-mismatch -fsyntax-only optiontest.f90 \
+            2> /dev/null && export FFLAGS="${FFLAGS} -fallow-argument-mismatch"
+rm optiontest.f90
+
 rm -rf build
 mkdir build
 cd build

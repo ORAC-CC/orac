@@ -1,40 +1,52 @@
-{% set version = "3.0" %}
+{% set version = "2.20" %}
+{% set build = 1 %}
 
 package:
   name: hdfeos2
   version: {{ version }}
 
 source:
-  # Actual source doesn't work beause you need to login
-  #- url: https://git.earthdata.nasa.gov/projects/DAS/repos/hdfeos/raw/hdf-eos2-{{ version }}-src.tar.gz
-  - url: https://groups.physics.ox.ac.uk/eodg/orac/orac_libraries/hdf-eos2-{{ version }}-src.tar.gz
-    sha256: 3a5564b4d69b541139ff7dfdad948696cf31d9d1a6ea8af290c91a4c0ee37188
+  # links can obtained from https://wiki.earthdata.nasa.gov/display/DAS/Toolkit+Downloads
+  #- url: https://git.earthdata.nasa.gov/rest/git-lfs/storage/DAS/hdfeos/cb0f900d2732ab01e51284d6c9e90d0e852d61bba9bce3b43af0430ab5414903?response-content-disposition=attachment%3B%20filename%3D%22HDF-EOS2.20v1.00.tar.Z%22%3B%20filename*%3Dutf-8%27%27HDF-EOS2.20v1.00.tar.Z
+  #  sha256: cb0f900d2732ab01e51284d6c9e90d0e852d61bba9bce3b43af0430ab5414903
+  #- url: https://git.earthdata.nasa.gov/rest/git-lfs/storage/DAS/hdfeos/21bdbcd977c11b5a1779a82aebc0338b4adbc94107329e2c917a274924c20c5a?response-content-disposition=attachment%3B%20filename%3D%22HDF-EOS2.20v1.00_TestDriver.tar.Z%22%3B%20filename*%3Dutf-8%27%27HDF-EOS2.20v1.00_TestDriver.tar.Z
+  #  sha256: 21bdbcd977c11b5a1779a82aebc0338b4adbc94107329e2c917a274924c20c5a
+  # Use my copy to avoid problem patching read-only files
+  - url: https://eodg.atm.ox.ac.uk/user/povey/HDF-EOS2.20v1.00.tar.Z
+    sha256: 97c3576067c16ae4f31b5e97d8626b34bfde09b2db55bfa73a9e67ba132d04bf
     patches:
+      - cmake.patch
+      - string.patch
       - SWapi.patch
+      # https://lists.gnu.org/archive/html/guix-devel/2016-09/msg02110.html
       - 0001-fix-automake-files-for-linux-compatibility.patch
+  - url: https://eodg.atm.ox.ac.uk/user/povey/HDF-EOS2.20v1.00_TestDriver.tar.Z
+    sha256: 3fbc3197dea1f5e4e57622aa039ad7438bfc15a174a8b71fb1460a58f316d644
+    patches:
+      - test.patch
 
 build:
-  number: 0
+  number: {{ build }}
+  string: fortran_h{{ PKG_HASH }}_{{ build }}
   run_exports:
-    - {{ pin_subpackage('hdfeos2', max_pin='x.xx') }}
+    - {{ pin_subpackage('hdfeos2', max_pin='x.x') }}
 
 requirements:
   build:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ compiler('fortran') }}
-    - autoconf    # [not win]
-    - automake    # [not win]
-    - libtool     # [not win]
+    - make        # [not win]
+    - cmake
   host:
     - hdf4
-    - libaec
     - zlib
+    - libaec
     - jpeg
   run:
     - hdf4
-    - libaec
     - zlib
+    - libaec
     - jpeg
 
 test:

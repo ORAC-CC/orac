@@ -2,8 +2,8 @@
 
 set -e
 
-export ORAC_LIB=${SRC_DIR}/config/lib.inc
-export ORAC_ARCH=${SRC_DIR}/config/arch.gfortran.inc
+export ORAC_LIB=${SRC_DIR}/config/lib.conda.inc
+export ORAC_ARCH=${SRC_DIR}/config/arch.conda.inc
 
 if [ ! -d common/obj ]; then
     mkdir common/obj
