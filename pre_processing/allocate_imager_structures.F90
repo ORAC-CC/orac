@@ -44,7 +44,7 @@
 
 subroutine allocate_imager_structures(imager_geolocation,imager_angles, &
      imager_flags,imager_time,imager_measurements,imager_pavolonis, &
-     imager_cloud, channel_info)
+     imager_cloud, channel_info, use_seviri_ann_ctp_fg, use_seviri_ann_mlay)
 
 
    use channel_structures_m
@@ -60,6 +60,8 @@ subroutine allocate_imager_structures(imager_geolocation,imager_angles, &
    type(imager_pavolonis_t),    intent(out)   :: imager_pavolonis
    type(imager_cloud_t),        intent(out)   :: imager_cloud
    type(channel_info_t),        intent(in)    :: channel_info
+   logical,                     intent(in)    :: use_seviri_ann_ctp_fg
+   logical,                     intent(in)    :: use_seviri_ann_mlay
 
    allocate(imager_measurements%data( &
         imager_geolocation%startx:imager_geolocation%endx, &
@@ -183,6 +185,37 @@ subroutine allocate_imager_structures(imager_geolocation,imager_angles, &
         imager_geolocation%startx:imager_geolocation%endx, &
         1:imager_geolocation%ny,imager_angles%nviews))
    imager_pavolonis%emis_ch3b=sreal_fill_value
+
+#ifdef INCLUDE_SEVIRI_NEURALNET
+   if (use_seviri_ann_ctp_fg) then
+      allocate(imager_pavolonis%ctp_fg( &
+           imager_geolocation%startx:imager_geolocation%endx, &
+           1:imager_geolocation%ny, imager_angles%nviews))
+      imager_pavolonis%ctp_fg = sreal_fill_value
+
+      allocate(imager_pavolonis%ctp_fg_unc( &
+           imager_geolocation%startx:imager_geolocation%endx, &
+           1:imager_geolocation%ny, imager_angles%nviews))
+      imager_pavolonis%ctp_fg_unc = sreal_fill_value
+   end if
+
+   if (use_seviri_ann_mlay) then
+      allocate(imager_pavolonis%mlay_prob( &
+           imager_geolocation%startx:imager_geolocation%endx, &
+           1:imager_geolocation%ny, imager_angles%nviews))
+      imager_pavolonis%mlay_prob = sreal_fill_value
+
+      allocate(imager_pavolonis%mlay_unc( &
+           imager_geolocation%startx:imager_geolocation%endx, &
+           1:imager_geolocation%ny, imager_angles%nviews))
+      imager_pavolonis%mlay_unc = sreal_fill_value
+
+      allocate(imager_pavolonis%mlay_flag( &
+           imager_geolocation%startx:imager_geolocation%endx, &
+           1:imager_geolocation%ny, imager_angles%nviews))
+      imager_pavolonis%mlay_flag = byte_fill_value
+   end if
+#endif
 
 #ifdef INCLUDE_SATWX
    allocate(imager_cloud%cloud_emis( &

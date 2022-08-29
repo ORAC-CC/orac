@@ -102,6 +102,11 @@ module imager_structures_m
       integer(kind=byte), dimension(:,:,:), pointer :: ann_phase
       real(kind=sreal),   dimension(:,:,:), pointer :: ann_phase_uncertainty
       real(kind=sreal),   dimension(:,:,:), pointer :: cphcot
+      real(kind=sreal),   dimension(:,:,:), pointer :: ctp_fg
+      real(kind=sreal),   dimension(:,:,:), pointer :: ctp_fg_unc
+      real(kind=sreal),   dimension(:,:,:), pointer :: mlay_prob
+      integer(kind=byte), dimension(:,:,:), pointer :: mlay_flag
+      real(kind=sreal),   dimension(:,:,:), pointer :: mlay_unc
       integer(kind=byte), dimension(:,:,:), pointer :: cirrus_quality
       real(kind=sreal),   dimension(:,:,:), pointer :: emis_ch3b
 
