@@ -836,11 +836,13 @@ subroutine rttov_driver(coef_path, emiss_path, granule, preproc_dims, &
 #ifdef INCLUDE_RTTOV_OPENMP
                      call rttov_parallel_direct(stat, chanprof, opts, &
                           profiles(count:count), coefs, transmission, radiance, &
-                          radiance2, calcemis, emissivity, calcrefl, reflectance, traj=traj)
+                          radiance2, calcemis, emissivity, calcrefl, reflectance, &
+                          traj=traj)
 #else
                      call rttov_direct(stat, chanprof, opts, &
                           profiles(count:count), coefs, transmission, radiance, &
-                          radiance2, calcemis, emissivity, calcrefl, reflectance, traj=traj)
+                          radiance2, calcemis, emissivity, calcrefl, reflectance, &
+                          traj=traj)
 #endif
 
                      if (stat /= errorstatus_success) then
@@ -903,11 +905,13 @@ subroutine rttov_driver(coef_path, emiss_path, granule, preproc_dims, &
 #ifdef INCLUDE_RTTOV_OPENMP
                      call rttov_parallel_direct(stat, chanprof, opts, &
                           profiles(count:count), coefs, transmission, radiance, &
-                          radiance2, calcemis, emissivity, calcrefl, reflectance, traj=traj)
+                          radiance2, calcemis, emissivity, calcrefl, reflectance, &
+                          traj=traj)
 #else
                      call rttov_direct(stat, chanprof, opts, &
                           profiles(count:count), coefs, transmission, radiance, &
-                          radiance2, calcemis, emissivity, calcrefl, reflectance, traj=traj)
+                          radiance2, calcemis, emissivity, calcrefl, reflectance, &
+                          traj=traj)
 #endif
 
                      ! Save into the appropriate arrays
