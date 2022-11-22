@@ -851,7 +851,7 @@ subroutine rttov_driver(coef_path, emiss_path, granule, preproc_dims, &
                      ! Remove the Rayleigh component from the RTTOV tranmittances only if RTTOV
                      ! ran with Rayleigh scattering switched on.
                      if (i_coef == 2) then
-                        if (opts%rt_ir%rayleigh_max_wavelength > dither_more) then
+                        if (opts%rt_ir%rayleigh_max_wavelength > dither) then
                            call remove_rayleigh(nchan, nlevels, dummy_sreal_1dveca, &
                                 profiles(count)%zenangle, profiles(count)%p, &
                                 transmission%tau_levels, transmission%tau_total)
