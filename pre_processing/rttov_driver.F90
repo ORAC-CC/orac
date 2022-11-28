@@ -443,11 +443,10 @@ subroutine rttov_driver(coef_path, emiss_path, granule, preproc_dims, &
    ! regression limits (NB by doing this the extrapolated values outside
    ! the regression limits will be reset to the limits: it will not result
    ! in unphysical extrapolated profile values being used)
-   opts % rt_all % use_q2m                = .false. ! Do not use surface humidity
-   opts % rt_all % addrefrac              = .true.  ! Include refraction in path calc
-   opts % rt_ir % addsolar                = .true.  ! Do not include reflected solar
-   opts % rt_ir % rayleigh_max_wavelength = 0.      ! Do not run Rayleigh in RTTOV
-   opts % rt_all % ozone_data             = .true.  ! Include ozone profile
+   opts % rt_all % use_q2m         = .false. ! Do not use surface humidity
+   opts % rt_all % addrefrac       = .true.  ! Include refraction in path calc
+   opts % rt_ir % addsolar         = .true.  ! Do not include reflected solar
+   opts % rt_all % ozone_data      = .true.  ! Include ozone profile
    if (pre_opts%do_co2) then
       opts % rt_all % co2_data   = .true.  ! Include CO2 profile
    else
@@ -853,11 +852,9 @@ subroutine rttov_driver(coef_path, emiss_path, granule, preproc_dims, &
                      ! Remove the Rayleigh component from the RTTOV tranmittances only if RTTOV
                      ! ran with Rayleigh scattering switched on.
                      if (i_coef == 2) then
-                        if (opts%rt_ir%rayleigh_max_wavelength > dither) then
-                           call remove_rayleigh(nchan, nlevels, dummy_sreal_1dveca, &
-                                profiles(count)%zenangle, profiles(count)%p, &
-                                transmission%tau_levels, transmission%tau_total)
-                         end if
+                        call remove_rayleigh(nchan, nlevels, dummy_sreal_1dveca, &
+                             profiles(count)%zenangle, profiles(count)%p, &
+                             transmission%tau_levels, transmission%tau_total)
                      end if
 
                   end if
