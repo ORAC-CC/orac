@@ -446,7 +446,7 @@ subroutine rttov_driver(coef_path, emiss_path, granule, preproc_dims, &
    opts % rt_all % use_q2m            = .false. ! Do not use surface humidity
    opts % rt_all % addrefrac          = .true.  ! Include refraction in path calc
    opts % rt_ir % addsolar            = .true.  ! Do not include reflected solar
-   opts%rt_ir%rayleigh_max_wavelength = 0. ! Do not run RTTOV Rayleigh scattering
+   opts%rt_ir%rayleigh_max_wavelength = 0.      ! Do not run RTTOV Rayleigh scattering
    opts % rt_all % ozone_data         = .true.  ! Include ozone profile
    if (pre_opts%do_co2) then
       opts % rt_all % co2_data   = .true.  ! Include CO2 profile
