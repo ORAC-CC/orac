@@ -419,6 +419,11 @@ def build_postproc_driver(args, files):
     cci_cloud = (len(files) == 2 and "wat" in files[0].lower() and
                  "ice" in files[1].lower())
 
+    try:
+        multilayer = args.approach == 'AppCld2L'
+    except AttributeError:
+        multilayer = any("_" in typ for typ in args.phases)
+
     # Form driver file
     driver = """{multilayer}
 {wat_pri}
@@ -441,7 +446,7 @@ USE_NEW_BAYESIAN_SELECTION={bayesian}""".format(
         cost_tsh=args.cost_thresh,
         ice_pri=files[1],
         ice_sec=files[1].replace('primary', 'secondary'),
-        multilayer=args.approach == 'AppCld2L',
+        multilayer=multilayer,
         opt_nght=not args.no_night_opt,
         out_pri=args.target,
         out_sec=args.target.replace('primary', 'secondary'),
