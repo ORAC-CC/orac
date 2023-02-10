@@ -590,7 +590,7 @@ class ParticleType:
                                   'p' + self.microphysical_model,
                                   'v' + self.version + '.nc'))
         else:
-            file_name = "_".join((inst.inst, self.name, "RBD", "Ch*.sad"))
+            file_name = "_".join((inst.inst, self.name, "RD", "Ch*.sad"))
         return file_name
 
     def sad_dir(self, sad_dirs, inst, rayleigh=True):
