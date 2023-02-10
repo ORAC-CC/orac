@@ -168,6 +168,9 @@ subroutine parse_optional(label, value, preproc_opts)
    case('CALCULATE_SLSTR_ALIGNMENT')
       if (parse_string(value, preproc_opts%calculate_slstr_alignment) /= 0) &
            call handle_parse_error(label)
+   case('MCD43_MAX_QAFLAG')
+      if (parse_string(value, preproc_opts%mcd43_max_qaflag) /= 0) &
+           call handle_parse_error(label)
    case default
       write(*,*) 'ERROR: Unknown option: ', trim(label)
       stop error_stop_code

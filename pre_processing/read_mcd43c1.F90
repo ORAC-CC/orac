@@ -32,7 +32,7 @@
 !-------------------------------------------------------------------------------
 
 subroutine read_mcd43c1(path_to_file, mcd, nbands, bands, read_params, &
-                        read_QC, verbose, stat)
+                        read_QC, mcd43_maxqa, verbose, stat)
 
    use preproc_constants_m
    use hdf_m, only: DFACC_READ
@@ -45,6 +45,7 @@ subroutine read_mcd43c1(path_to_file, mcd, nbands, bands, read_params, &
    integer,          intent(in) :: bands(:)
    logical,          intent(in) :: read_params
    logical,          intent(in) :: read_QC
+   integer,          intent(in) :: mcd43_maxqa
    logical,          intent(in) :: verbose
 
    ! Output variables
@@ -219,7 +220,7 @@ subroutine read_mcd43c1(path_to_file, mcd, nbands, bands, read_params, &
       allocate(mcd%percent_snow(1,1))
       allocate(mcd%percent_inputs(1,1))
 
-      mcd%quality(1,1) = 127
+      mcd%quality(1,1) = 0
       mcd%local_solar_noon(1,1) = 127
       mcd%percent_snow(1,1) = 127
       mcd%percent_inputs(1,1) = 127
@@ -315,9 +316,14 @@ subroutine read_mcd43c1(path_to_file, mcd, nbands, bands, read_params, &
                end if
             end do
          end do
-
+         
+         ! Apply QA filtering if desired. Pixels with QA worse than threshold are set to fill
+         if (read_QC) then
+           where (mcd%quality .gt. mcd43_maxqa) mcd%brdf_albedo_params(:,:,1,i) = sreal_fill_value
+           where (mcd%quality .gt. mcd43_maxqa) mcd%brdf_albedo_params(:,:,2,i) = sreal_fill_value
+           where (mcd%quality .gt. mcd43_maxqa) mcd%brdf_albedo_params(:,:,3,i) = sreal_fill_value
+         endif
       end do
-
 
       deallocate(tmpdata)
    else

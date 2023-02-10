@@ -40,7 +40,7 @@
 !-------------------------------------------------------------------------------
 
 subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, read_ws, read_bs, &
-                        read_QC, verbose, stat)
+                        read_QC, mcd43_maxqa, verbose, stat)
 
    use preproc_constants_m
    use hdf_m, only: DFACC_READ
@@ -54,6 +54,7 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, read_ws, read_bs, &
    logical,          intent(in) :: read_ws
    logical,          intent(in) :: read_bs
    logical,          intent(in) :: read_QC
+   integer,          intent(in) :: mcd43_maxqa
    logical,          intent(in) :: verbose
 
    ! Output variables
@@ -228,7 +229,7 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, read_ws, read_bs, &
       allocate(mcd%percent_snow(1,1))
       allocate(mcd%percent_inputs(1,1))
 
-      mcd%quality(1,1) = 127
+      mcd%quality(1,1) = 0
       mcd%local_solar_noon(1,1) = 127
       mcd%percent_snow(1,1) = 127
       mcd%percent_inputs(1,1) = 127
@@ -283,7 +284,11 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, read_ws, read_bs, &
                end if
             end do
          end do
-
+         
+         ! Apply QA filtering if desired. Pixels with QA worse than threshold are set to fill
+         if (read_QC) then
+           where (mcd%quality .gt. mcd43_maxqa) mcd%WSA(:,:,i) = sreal_fill_value
+         endif
       end if
 
       ! Read the black sky albedo
@@ -316,7 +321,11 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, read_ws, read_bs, &
                end if
             end do
          end do
-
+         
+         ! Apply QA filtering if desired. Pixels with QA worse than threshold are set to fill
+         if (read_QC) then
+           where (mcd%quality .gt. mcd43_maxqa) mcd%WSA(:,:,i) = sreal_fill_value
+         endif
       end if
    end do
 
