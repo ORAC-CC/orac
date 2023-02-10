@@ -277,7 +277,6 @@ def args_regress(parser):
 def check_args_common(args):
     """Ensure common parser arguments are valid."""
     from pyorac.definitions import FileName
-    from pyorac.local_defaults import CHANNELS, DIR_PERMISSIONS
 
     # If not explicitly given, assume input folder is in target definition
     if args.in_dir is None:
@@ -292,13 +291,13 @@ def check_args_common(args):
     args.File = FileName(args.in_dir, args.target)
 
     if args.available_channels is None:
-        args.available_channels = CHANNELS[args.File.sensor]
+        args.available_channels = defaults.CHANNELS[args.File.sensor]
 
     for fdr in args.in_dir:
         if not os.path.isdir(fdr):
             raise FileMissing('in_dir', fdr)
     if not os.path.isdir(args.out_dir):
-        os.makedirs(args.out_dir, DIR_PERMISSIONS)
+        os.makedirs(args.out_dir, defaults.DIR_PERMISSIONS)
     if not os.path.isdir(args.orac_dir):
         raise FileMissing('ORAC repository directory', args.orac_dir)
     if not os.path.isfile(args.orac_lib):
@@ -309,15 +308,14 @@ def check_args_common(args):
 
 def check_args_preproc(args):
     """Ensure preprocessor parser arguments are valid."""
-    from pyorac.local_defaults import AUXILIARIES, GLOBAL_ATTRIBUTES
 
     # Add global attributes
-    GLOBAL_ATTRIBUTES.update({key: val for key, val in args.global_att})
-    args.__dict__.update(GLOBAL_ATTRIBUTES)
+    defaults.GLOBAL_ATTRIBUTES.update({key: val for key, val in args.global_att})
+    args.__dict__.update(defaults.GLOBAL_ATTRIBUTES)
 
     # Insert auxilliary locations
-    AUXILIARIES.update({key: val for key, val in args.aux})
-    args.__dict__.update(AUXILIARIES)
+    defaults.AUXILIARIES.update({key: val for key, val in args.aux})
+    args.__dict__.update(defaults.AUXILIARIES)
 
     try:
         # When using ecmwf_dir to set a single directory
@@ -413,16 +411,14 @@ def check_args_postproc(args):
 
 def check_args_cc4cl(args):
     """Ensure ORAC suite wrapper parser arguments are valid."""
-    from pyorac.local_defaults import (DIR_PERMISSIONS, EXTRA_LINES, LOG_DIR,
-                                       RETRIEVAL_SETTINGS)
 
     # Add extra lines files
-    EXTRA_LINES.update({key + '_extra': val for key, val in args.extra_lines})
-    args.__dict__.update(EXTRA_LINES)
+    defaults.EXTRA_LINES.update({key + '_extra': val for key, val in args.extra_lines})
+    args.__dict__.update(defaults.EXTRA_LINES)
 
-    log_path = os.path.join(args.out_dir, LOG_DIR)
+    log_path = os.path.join(args.out_dir, defaults.LOG_DIR)
     if args.batch and not os.path.isdir(log_path):
-        os.makedirs(log_path, DIR_PERMISSIONS)
+        os.makedirs(log_path, defaults.DIR_PERMISSIONS)
 
     if args.settings_file is not None:
         # A procedure outlined in a file
@@ -435,14 +431,14 @@ def check_args_cc4cl(args):
     elif args.preset_settings is not None:
         # A procedure named in local_defaults
         try:
-            args.settings = RETRIEVAL_SETTINGS[args.preset_settings]
+            args.settings = defaults.RETRIEVAL_SETTINGS[args.preset_settings]
         except KeyError:
             raise BadValue("preset settings", "not defined in local_defaults")
 
     elif args.settings is None:
         if args.phase is None:
             # Default procedure for this sensor from local_defaults
-            args.settings = RETRIEVAL_SETTINGS[args.File.sensor]
+            args.settings = defaults.RETRIEVAL_SETTINGS[args.File.sensor]
         else:
             # Process a single type
             args.settings = (" ",)
@@ -452,15 +448,14 @@ def check_args_cc4cl(args):
 
 def check_args_regress(args):
     """Ensure regression test arguments are valid."""
-    from pyorac.local_defaults import REGRESS_IN_DIR, REGRESS_OUT_DIR
 
     if args.in_dir is None:
-        args.in_dir = [REGRESS_IN_DIR, ]
+        args.in_dir = [defaults.REGRESS_IN_DIR, ]
     for fdr in args.in_dir:
         if not os.path.isdir(fdr):
             raise FileMissing('Regression L1 input directory', fdr)
     if args.out_dir is None:
-        args.out_dir = REGRESS_OUT_DIR
+        args.out_dir = defaults.REGRESS_OUT_DIR
 
     # Default tests
     if len(args.tests) == 0:
