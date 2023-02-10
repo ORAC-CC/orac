@@ -25,6 +25,7 @@ test:
   files:
     - write_bands.c
   commands:
+    # TODO: Use epr_api/test.sh
     - test -f ${PREFIX}/lib/libepr_api.a
     - ${GCC} -o example -I${PREFIX}/include write_bands.c -L${PREFIX}/lib -lepr_api
 

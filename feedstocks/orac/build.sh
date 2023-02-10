@@ -24,6 +24,7 @@ mv common/rttov_version ${PREFIX}/bin
 mv pre_processing/orac_preproc ${PREFIX}/bin
 mv src/orac ${PREFIX}/bin
 mv post_processing/orac_postproc ${PREFIX}/bin
+mv derived_products/broadband_fluxes/process_broadband_fluxes ${PREFIX}/bin
 
 # Add configuration files, as the Python scripts use them to load libraries
 mkdir -p ${PREFIX}/share/orac

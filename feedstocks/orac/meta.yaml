@@ -1,5 +1,5 @@
-{% set version = "4.10" %}
-{% set build = 4 %}
+{% set version = "4.11" %}
+{% set build = 1 %}
 
 # recipe-lint fails if mpi is undefined
 {% set mpi = mpi or 'nompi' %}
@@ -15,7 +15,14 @@ package:
 source:
   - git_url: https://github.com/ORAC-CC/orac
     patches:
+      - 79.patch
+      - tmp.patch
+      - bugsrad.patch
+    {% if mpi != "nompi" %}
       - make.patch
+    {% else %}
+      - nompi.patch
+    {% endif %}
   - path: activate.sh
   - path: deactivate.sh
 
