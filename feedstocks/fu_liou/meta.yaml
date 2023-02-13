@@ -9,6 +9,7 @@ source:
     sha256: 85840956d4bd70b2c76d50bb795acaa4d9ac4cc92ce517e906928fcbb947bfbc
     patches:
       - block.patch
+      - ar.patch
 
 build:
   number: 0
