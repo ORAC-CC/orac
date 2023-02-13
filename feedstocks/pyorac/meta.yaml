@@ -10,7 +10,7 @@ source:
     folder: tools/pyorac/local_defaults.py
 
 build:
-  number: 0
+  number: 1
   script: cd tools && {{ PYTHON }} -m pip install . -vv
   run_exports:
     - {{ pin_subpackage('pyorac', max_pin='x.x') }}
@@ -35,6 +35,7 @@ requirements:
     - netcdf4
     - {{ pin_compatible('numpy') }}
     - opencv
+    - orac
     - scipy
 
 test:
