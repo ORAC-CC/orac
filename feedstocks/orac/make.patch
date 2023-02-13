@@ -29,17 +29,16 @@ Subject: Adapt config files to the anaconda environment.
 +# environmental variable PREFIX.
  
  # Set up libraries and includes
--   LIBS = -L$(CONDA_PREFIX)/lib \
-+   LIBS = -L$(PREFIX)/lib \
+-LIBS = -L$(CONDA_PREFIX)/lib \
++LIBS = -L$(PREFIX)/lib \
         -lemosR64 -lemos -lfftw3 \
         -lhdfeos -lGctp \
         -leccodes_f90 -leccodes \
-@@ -16,12 +16,11 @@
+@@ -16,11 +16,10 @@
         -ljpeg -lm -lz -lstdc++ -lblas -llapack
  
  INC = -I./ \
 -      -I$(CONDA_PREFIX)/include \
--      -I$(CONDA_PREFIX)/include/shared \
 -      -I$(CONDA_PREFIX)/mod
 +      -I$(PREFIX)/include \
 +      -I$(PREFIX)/mod
