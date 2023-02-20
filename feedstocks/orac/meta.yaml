@@ -67,9 +67,12 @@ requirements:
     - {{ mpi }}  # [mpi != 'nompi']
     - eccodes
     - epr_api
+    # without this repeat reference, conda-smithy doesn't pin correctly
+    - fftw
+    - fftw * {{ mpi_prefix }}_*
+    # fftw comes from libemos, which doesn't have mpi so doesn't bind this
     - fu_liou
     - hdfeos2
-    # without this repeat reference, conda-smithy doesn't pin correctly
     - hdf5
     - hdf5 * {{ mpi_prefix }}_*
     - hsd_reader
@@ -86,6 +89,7 @@ requirements:
     - {{ mpi }}  # [mpi != 'nompi']
     - eccodes
     - epr_api
+    - fftw * {{ mpi_prefix }}_*
     - fu_liou
     - hdfeos2
     - hdf5 * {{ mpi_prefix }}_*

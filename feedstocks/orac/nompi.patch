@@ -28,7 +28,7 @@ Subject: Adapt config files to the anaconda environment without openmp.
         -lemosR64 -lemos -lfftw3 \
         -lhdfeos -lGctp \
         -leccodes_f90 -leccodes \
-@@ -16,17 +16,16 @@
+@@ -16,17 +16,17 @@
         -ljpeg -lm -lz -lstdc++ -lblas -llapack
  
  INC = -I./ \

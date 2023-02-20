@@ -28,8 +28,8 @@ mv derived_products/broadband_fluxes/process_broadband_fluxes ${PREFIX}/bin
 
 # Add configuration files, as the Python scripts use them to load libraries
 mkdir -p ${PREFIX}/share/orac
-cp config/arch.gfortran.inc ${PREFIX}/share/orac
-cp config/lib.inc ${PREFIX}/share/orac
+cp config/arch.conda.inc ${PREFIX}/share/orac/arch.inc
+cp config/lib.conda.inc ${PREFIX}/share/orac/lib.inc
 sed -i 's/PREFIX/CONDA_PREFIX/g' ${PREFIX}/share/orac/lib.inc
 
 # Add the [de]activate scripts for environment variables

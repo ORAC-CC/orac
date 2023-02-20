@@ -34,7 +34,7 @@ Subject: Adapt config files to the anaconda environment.
         -lemosR64 -lemos -lfftw3 \
         -lhdfeos -lGctp \
         -leccodes_f90 -leccodes \
-@@ -16,11 +16,10 @@
+@@ -16,11 +16,11 @@
         -ljpeg -lm -lz -lstdc++ -lblas -llapack
  
  INC = -I./ \
