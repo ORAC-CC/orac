@@ -381,7 +381,13 @@ class FileName:
                 except FileNotFoundError:
                     pass
             else:
-                warn(OracWarning("SLSTR start time unknown."))
+                warn(OracWarning("SLSTR start time approximated"))
+                self.time = datetime.datetime(
+                    int(mat.group('year')), int(mat.group('month')),
+                    int(mat.group('day')), int(mat.group('hour')),
+                    int(mat.group('min')), int(mat.group('sec'))
+                )
+                self.orbit_num = 0
 
             return
 
