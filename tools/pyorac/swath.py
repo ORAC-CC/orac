@@ -671,6 +671,31 @@ class Swath(Mappable):
 
         return OrderedDict(zip(nums, names))
 
+    def summary_statistics(self):
+        qcf = self["qcflag"]
+        stats = dict(n_not_converged=np.bitwise_and(qcf, 1).sum(),
+                     n_qc_cleared=np.sum(qcf == 0))
+
+        for var in ("costjm", "niter", "cot", "cer", "cth", "aot550", "aer"):
+            try:
+                data = self[var].copy()
+            except KeyError:
+                continue
+            data[qcf > 0] = np.ma.masked
+            stats[var] = data.mean()
+
+        return stats
+
+    def __print__(self):
+        from os.path import basename
+
+        print("ORAC file " + basename(self.filename))
+        print("{:0d}x{:0d} ".format(*self.shape) +
+              "swath starting at {:%Y-%m-%d %H:%M:%S} ".format(self.time[0,0]) +
+              "covering [{:0.2f}E, {:0.2f}E], [{:0.2f}N, {:0.2f}N]".format(*self.extent))
+        for key, val in self.summary_statistics().items():
+            print(f"{key:>20s}: {val:0.2f}")
+
     # -------------------------------------------------------------------
     # Data formatting functions
     # -------------------------------------------------------------------
