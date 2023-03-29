@@ -521,14 +521,12 @@ class Invpar:
 
     def __init__(self, var, ap=None, fg=None, sx=None):
         self.var = var
-        if ap:
-            self.ap = ap
-            if fg is None:
-                self.fg = ap
-        if fg:
+        self.ap = ap
+        if fg is None:
+            self.fg = ap
+        else:
             self.fg = fg
-        if sx:
-            self.sx = sx
+        self.sx = sx
 
     def driver(self):
         """Output lines for a driver file to specify these settings"""
