@@ -358,7 +358,7 @@ class FileName:
         if mat:
             self.l1b = os.path.join(filename, "geodetic_in.nc")
             self.sensor = 'SLSTR'
-            self.platform = 'Sentinel3' + mat.group('platform').lower()
+            self.platform = 'Sentinel-3' + mat.group('platform').lower()
             self.inst = 'SLSTR-Sentinel-3' + mat.group('platform').lower()
             self.dur = datetime.timedelta(seconds=int(mat.group('duration')))
             self.geo = os.path.join(filename, "geodetic_in.nc")
@@ -472,7 +472,7 @@ class FileName:
                              "for ORAC filenames. Please specify " + terms[-2])
 
         parts = [
-            self.sensor, processor, self.platform,
+            self.sensor, processor, self.platform.replace("Sentinel-3", "Sentinel3"),
             self.time.strftime('%Y%m%d%H%M'), "R{}".format(revision)
         ]
         if self.orbit_num:
