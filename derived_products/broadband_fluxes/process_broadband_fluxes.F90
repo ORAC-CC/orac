@@ -136,6 +136,9 @@
 !    allowing single-layer aerosol retreival in clear sky pixels. Updated
 !    spectral total solar irradiance input file. Included option to calculate
 !    TSI from earth-sun distance relationship and constant TSI at 1 AU if not provided by LUT.
+! 2022/04/28, GT: Added a check for the existence of the "par_weight"
+!    parameter in the TSI dataset, as it is not included/needed in the new NOAA
+!    TSI CDRs.
 !
 ! Bugs:
 ! None known.
@@ -592,12 +595,18 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    call ncdf_read_array(ncid, "tsi_1au", TSI_tsi_1au)
    call ncdf_read_array(ncid, "year", TSI_year)
    call ncdf_read_array(ncid, "jday", TSI_jday)
-   call ncdf_read_array(ncid, "par_weight", TSI_par_weight)
+   ! Check if we have a PAR weights in the TSI file
+   if (nf90_inq_varid(ncid, "par_weight", i) .eq. NF90_NOERR) then
+      call ncdf_read_array(ncid, "par_weight", TSI_par_weight)
+   else
+      TSI_par_weight(:) = 1.0
+   endif
 
    ! Close file
    call ncdf_close(ncid, 'process_broadband_fluxes(FTSI)')
 
    ! Get TSI that coincides with input date
+   pxTSI = 0.0
    do i = 1, nTSI
       if (TSI_year(i) .eq. pxYear .and. TSI_jday(i) .eq. pxJday) &
          pxTSI = TSI_tsi_true_earth(i)
@@ -1105,8 +1114,8 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    print*, 'y-start = ', pxY0
    print*, 'x-end = ', pxX1
    print*, 'y-end = ', pxY1
-   print*, 'Across Track # = ', pxX1 - pxX0
-   print*, 'Along Track #  = ', pxY1 - pxY0
+   print*, 'Across Track # = ', pxX1 - pxX0 + 2
+   print*, 'Along Track #  = ', pxY1 - pxY0 + 1
 
    ! loop over cross-track dimension
    do i = pxX0, pxX1
