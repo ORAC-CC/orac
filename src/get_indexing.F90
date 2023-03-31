@@ -89,7 +89,7 @@ subroutine Get_Indexing(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
 
    ! Define local variables
 
-   integer :: i_view, i_chan
+   integer :: i_chan
    logical :: is_not_used_or_missing(Ctrl%Ind%Ny)
    integer, dimension(MaxStateVar) :: X, XJ, XI
 
@@ -116,16 +116,17 @@ subroutine Get_Indexing(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
    if (Ctrl%force_nighttime_retrieval) then
       SPixel%Illum = INight
    else
-      ! If the views have different illumination conditions then skip this pixel
-      do i_view = 1, Ctrl%Ind%NViews
-         SPixel%Illum = MSI_Data%illum(SPixel%Loc%X0, SPixel%Loc%Y0, i_view)
-         if ((i_view > 1) .and. (.not. Ctrl%all_channels_same_view)) then
-            if (MSI_Data%Illum(SPixel%Loc%X0, SPixel%Loc%Y0, i_view-1) /= SPixel%Illum) then
-               status = SPixelIndexing
-               return
-            end if
-         end if
-      end do
+      ! Output the 'worst' illumination available
+      if (any(MSI_Data%Illum(SPixel%Loc%X0, SPixel%Loc%Y0, :) == ITwi)) then
+         SPixel%Illum = ITwi
+      else if (any(MSI_Data%Illum(SPixel%Loc%X0, SPixel%Loc%Y0, :) == INight)) then
+         SPixel%Illum = INight
+      else if (any(MSI_Data%Illum(SPixel%Loc%X0, SPixel%Loc%Y0, :) == IDay)) then
+         SPixel%Illum = IDay
+      else
+         status = SPixelIndexing
+         return
+      end if
    end if
 
    ! Find which channels are either not used based on illumination conditions
