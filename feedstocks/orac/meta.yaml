@@ -15,9 +15,6 @@ package:
 source:
   - git_url: https://github.com/ORAC-CC/orac
     patches:
-      - 79.patch
-      - tmp.patch
-      - bugsrad.patch
     {% if mpi != "nompi" %}
       - make.patch
     {% else %}
