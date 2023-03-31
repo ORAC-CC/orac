@@ -593,6 +593,10 @@ class ParticleType:
                     platform_name = 'meteosat-10'
                 if platform_name == 'msg4':
                     platform_name = 'meteosat-11'
+            elif sensor_name == 'avhrr':
+                sensor_name += '1'
+                if platform_name.startswith("noaa"):
+                    platform_name = "noaa-" + platform_name[4:]
             file_name = '_'.join((platform_name,
                                   sensor_name,
                                   self.mb,
