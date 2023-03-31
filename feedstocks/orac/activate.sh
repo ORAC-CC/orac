@@ -1,9 +1,5 @@
 #!/bin/bash
 
-# Ensure executables can find our libraries
-export LD_LIBRARY_PATH_SAVE="${LD_LIBRARY_PATH}"
-export LD_LIBRARY_PATH="${CONDA_PREFIX}/lib:${LD_LIBRARY_PATH}"
-
 # Put the EMOS temporary file somewhere sensible
 if [ -z "${PPDIR}" ]; then
     export PPDIR="${CONDA_PREFIX}/share/libemos/tables"

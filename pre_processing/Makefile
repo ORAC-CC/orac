@@ -125,7 +125,7 @@ orac_preproc: $(PREPROC_OBJ_MAIN) libpreproc.a $(ORAC_COMMON)/liborac_common.a M
 
 # Main library build
 libpreproc.a: $(PREPROC_OBJ) Makefile
-	ar -rs libpreproc.a $(PREPROC_OBJ)
+	$(AR) -rs libpreproc.a $(PREPROC_OBJ)
 
 # Rebuild dependencies housed in dependencies.inc
 depend:

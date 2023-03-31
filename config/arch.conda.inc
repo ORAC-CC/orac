@@ -13,6 +13,8 @@ CC = $(GCC)
 # Define C++ compiler
 CXX = $(GXX)
 
+# Linker already defined by conda environment
+
 # Set Fortran 77 compiler flags
 F77FLAGS  = -O3 -cpp -ffree-line-length-0 -g -fcheck=bounds -fallow-argument-mismatch
 # Uncomment if extra warnings are required.  Take out -Werror if that annoys you.

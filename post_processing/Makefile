@@ -51,7 +51,7 @@ orac_postproc: $(POSTPROC_OBJ_MAIN) libpostproc.a $(ORAC_COMMON)/liborac_common.
 
 # Main library build
 libpostproc.a: $(POSTPROC_OBJ) Makefile
-	ar -rs libpostproc.a $(POSTPROC_OBJ)
+	$(AR) -rs libpostproc.a $(POSTPROC_OBJ)
 
 # Rebuild dependencies housed in dependencies.inc
 depend:
