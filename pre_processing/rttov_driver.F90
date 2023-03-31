@@ -146,6 +146,11 @@
 ! 2019/08/15, SP: Add check for good pixels, meaning we don't run RTTOV on
 !                 those we don't care about. This gives a big speedup to
 !                 processing instruments that cross the dateline.
+! 2022/11/22, DP: Default behaviour switches RTTOV Rayleigh scattering off
+!                 and thus ORAC does not need to call remove_rayleigh(). 
+!                 Additionally pass calcrefl(:)=.false. and 
+!                 reflectance%refl_in=0. vectors to RTTOV to overcome the RTTOV 
+!                 error with some compilers when opts%rt_ir%addsolar=.true..
 !
 ! Bugs:
 ! - BRDF not yet implemented here, so RTTOV internal calculation used.
@@ -235,6 +240,8 @@ subroutine rttov_driver(coef_path, emiss_path, granule, preproc_dims, &
    logical(kind=jplm),      allocatable :: calcemis(:)
    type(rttov_emissivity),  allocatable :: emissivity(:)
    real(kind=jprb),         allocatable :: emis_data(:)
+   logical(kind=jplm),      allocatable :: calcrefl(:)
+   type(rttov_reflectance), allocatable :: reflectance(:)
    type(rttov_transmission)             :: transmission
    type(rttov_radiance)                 :: radiance
    type(rttov_radiance2)                :: radiance2
@@ -436,10 +443,11 @@ subroutine rttov_driver(coef_path, emiss_path, granule, preproc_dims, &
    ! regression limits (NB by doing this the extrapolated values outside
    ! the regression limits will be reset to the limits: it will not result
    ! in unphysical extrapolated profile values being used)
-   opts % rt_all % use_q2m   = .false. ! Do not use surface humidity
-   opts % rt_all % addrefrac = .true.  ! Include refraction in path calc
-   opts % rt_ir % addsolar   = .true.  ! Do not include reflected solar
-   opts % rt_all % ozone_data = .true.  ! Include ozone profile
+   opts % rt_all % use_q2m            = .false. ! Do not use surface humidity
+   opts % rt_all % addrefrac          = .true.  ! Include refraction in path calc
+   opts % rt_ir % addsolar            = .true.  ! Do not include reflected solar
+   opts%rt_ir%rayleigh_max_wavelength = 0.      ! Do not run RTTOV Rayleigh scattering
+   opts % rt_all % ozone_data         = .true.  ! Include ozone profile
    if (pre_opts%do_co2) then
       opts % rt_all % co2_data   = .true.  ! Include CO2 profile
    else
@@ -736,6 +744,15 @@ subroutine rttov_driver(coef_path, emiss_path, granule, preproc_dims, &
          allocate(emissivity(nchan))
          allocate(emis_data(nchan))
          allocate(calcemis(nchan))
+         allocate(reflectance(nchan))
+         allocate(calcrefl(nchan))
+         
+         ! These arrays are needed when running with opts%rt_ir%addsolar
+         ! as RTTOV throws and error with some compilers. Set reflectance
+         ! vector to 0. as the surface reflecatance is explicitly handled
+         ! by the foreward model.
+         reflectance(:)%refl_in = 0.
+         calcrefl(:) = .false.
 
          chanprof%prof = 1
          do j = 1, nchan
@@ -819,11 +836,13 @@ subroutine rttov_driver(coef_path, emiss_path, granule, preproc_dims, &
 #ifdef INCLUDE_RTTOV_OPENMP
                      call rttov_parallel_direct(stat, chanprof, opts, &
                           profiles(count:count), coefs, transmission, radiance, &
-                          radiance2, calcemis, emissivity, traj=traj)
+                          radiance2, calcemis, emissivity, calcrefl, reflectance, &
+                          traj=traj)
 #else
                      call rttov_direct(stat, chanprof, opts, &
                           profiles(count:count), coefs, transmission, radiance, &
-                          radiance2, calcemis, emissivity, traj=traj)
+                          radiance2, calcemis, emissivity, calcrefl, reflectance, &
+                          traj=traj)
 #endif
 
                      if (stat /= errorstatus_success) then
@@ -831,11 +850,14 @@ subroutine rttov_driver(coef_path, emiss_path, granule, preproc_dims, &
                         stop error_stop_code
                      end if
 
-                     ! Remove the Rayleigh component from the RTTOV tranmittances.
+                     ! Remove the Rayleigh component from the RTTOV tranmittances only if RTTOV
+                     ! ran with Rayleigh scattering switched on.
                      if (i_coef == 2) then
-                        call remove_rayleigh(nchan, nlevels, dummy_sreal_1dveca, &
-                             profiles(count)%zenangle, profiles(count)%p, &
-                             transmission%tau_levels, transmission%tau_total)
+                        if (opts%rt_ir%rayleigh_max_wavelength > dither) then
+                           call remove_rayleigh(nchan, nlevels, dummy_sreal_1dveca, &
+                                profiles(count)%zenangle, profiles(count)%p, &
+                                transmission%tau_levels, transmission%tau_total)
+                        end if
                      end if
 
                   end if
@@ -883,11 +905,13 @@ subroutine rttov_driver(coef_path, emiss_path, granule, preproc_dims, &
 #ifdef INCLUDE_RTTOV_OPENMP
                      call rttov_parallel_direct(stat, chanprof, opts, &
                           profiles(count:count), coefs, transmission, radiance, &
-                          radiance2, calcemis, emissivity, traj=traj)
+                          radiance2, calcemis, emissivity, calcrefl, reflectance, &
+                          traj=traj)
 #else
                      call rttov_direct(stat, chanprof, opts, &
                           profiles(count:count), coefs, transmission, radiance, &
-                          radiance2, calcemis, emissivity, traj=traj)
+                          radiance2, calcemis, emissivity, calcrefl, reflectance, &
+                          traj=traj)
 #endif
 
                      ! Save into the appropriate arrays
@@ -917,6 +941,8 @@ subroutine rttov_driver(coef_path, emiss_path, granule, preproc_dims, &
          deallocate(emis_data)
          deallocate(calcemis)
          deallocate(chan_pos)
+         deallocate(calcrefl)
+         deallocate(reflectance)
       end do !coef loop
    end do  !view loop
 
