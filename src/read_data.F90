@@ -75,11 +75,11 @@ subroutine Read_Data(Ctrl, MSI_Data, SAD_Chan)
    if (Ctrl%verbose) write(*,*) 'Reading LS Flag data'
    call Read_LSFlags(Ctrl, MSI_Data)
 
-   if ( ANY(Ctrl%AP(IPc,:) == SelmAux) .or. ANY(Ctrl%FG(IPc,:) == SelmAux) ) then
+   if (any(Ctrl%AP(IPc,:) == SelmAux) .or. any(Ctrl%FG(IPc,:) == SelmAux)) then
       if (Ctrl%verbose) write(*,*) 'Reading a priori CTP data'
       call Read_CTP(Ctrl, MSI_Data)
    end if
-   
+
    if (Ctrl%verbose) write(*,*) 'Reading MSI data'
    call Read_MSI(Ctrl, MSI_Data, SAD_Chan)
 
