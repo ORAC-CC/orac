@@ -143,7 +143,7 @@ subroutine build_flag_masks(Ctrl, data)
    character(len=8)  :: state_label
 
    data%qc_flag_masks    = '1b'
-   do i = 1, 6
+   do i = 1, 7
       write(temp_str, '(I14)') 2_dint**i
       data%qc_flag_masks = trim(data%qc_flag_masks) // ' ' // &
            trim(adjustl(temp_str)) // 'b'
@@ -166,7 +166,8 @@ subroutine build_flag_masks(Ctrl, data)
    write(temp_str,"(f14.1)") Ctrl%MinRelAzi
    data%qc_flag_meanings = trim(data%qc_flag_meanings) // ' ' // &
                            '64: Sun glint (relative azimuth < ' // &
-                                trim(adjustl(temp_str)) // ' deg)'
+                                trim(adjustl(temp_str)) // ' deg) ' // &
+                           '128: Retrieval hit an imposed limit'
 
    data%ch_flag_masks    = '2b'
    data%ch_flag_meanings = 'Ch1_used'

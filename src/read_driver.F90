@@ -600,7 +600,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
 
    !----------------------- Ctrl%QC -----------------------
    Ctrl%QC%MaxJ         = switch_app(a, Default=100.0, Aer=3.0)
-   Ctrl%QC%MaxDoFN      = switch_app(a, Default=2.0)
+   Ctrl%QC%MaxDoFN      = switch_app(a, Default=1.0)
    Ctrl%QC%MaxElevation = switch_app(a, Default=1500.0)
 
    !------------------- Ctrl START/END POINT --------------
@@ -1078,7 +1078,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
             X_Dy(Nx_Dy) = ISS(i)
          end if
       end do
-      do i = 1, Ctrl%Ind%NViews
+      do i = 2, Ctrl%Ind%NViews
          Nx_Dy = Nx_Dy+1
          X_Dy(Nx_Dy) = ISP(i)
       end do
