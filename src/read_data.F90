@@ -31,6 +31,7 @@
 ! 2015/02/04, GM: Changes related to the new missing channel, illumination, and
 !    channel selection code.
 ! 2015/09/07, AP: Allow verbose to be controlled from the driver file.
+! 2022/01/27, GT: Added call to read a priori CTP data
 !
 ! Bugs:
 ! None known.
@@ -73,6 +74,11 @@ subroutine Read_Data(Ctrl, MSI_Data, SAD_Chan)
 
    if (Ctrl%verbose) write(*,*) 'Reading LS Flag data'
    call Read_LSFlags(Ctrl, MSI_Data)
+
+   if (any(Ctrl%AP(IPc,:) == SelmAux) .or. any(Ctrl%FG(IPc,:) == SelmAux)) then
+      if (Ctrl%verbose) write(*,*) 'Reading a priori CTP data'
+      call Read_CTP(Ctrl, MSI_Data)
+   end if
 
    if (Ctrl%verbose) write(*,*) 'Reading MSI data'
    call Read_MSI(Ctrl, MSI_Data, SAD_Chan)

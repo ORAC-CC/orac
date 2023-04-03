@@ -35,6 +35,8 @@
 ! 2016/04/28, AP: Add multiple views.
 ! 2017/06/21, OS: Added ANN phase variables.
 ! 2018/06/08, SP: Add satellite azimuth angle to output.
+! 2022/01/27, GT: Add State type, to hold a priori/first guess state parameters
+!    read from auxiliary files. So far, it only holds CTP.
 !
 ! Bugs:
 ! None known.
@@ -49,6 +51,7 @@ module Data_m
    public :: Geometry_t, &
              Location_t, &
              Scan_t, &
+             State_t, &
              Data_t, &
              Dealloc_Data, &
              Read_Data
@@ -64,6 +67,11 @@ module Data_m
       real, pointer :: Lat(:,:)
       real, pointer :: Lon(:,:)
    end type Location_t
+
+   type State_t
+      real, pointer :: CTP(:,:)
+      real, pointer :: CTP_var(:,:)
+   end type State_t
 
    type Data_t
       real,               pointer :: ALB(:,:,:)
@@ -81,6 +89,7 @@ module Data_m
       real,               pointer :: cphcot(:,:,:)
       type(Geometry_t)            :: Geometry
       type(Location_t)            :: Location
+      type(State_t)               :: State
       integer(byte),      pointer :: LSFlags(:,:)
       integer(byte),      pointer :: lusflags(:,:)
       integer(sint),      pointer :: dem(:,:)
@@ -116,6 +125,7 @@ contains
 #include "read_lsflags.F90"
 #include "read_location.F90"
 #include "read_msi.F90"
+#include "read_ctp.F90"
 
 #include "sabotage_inputs.F90"
 

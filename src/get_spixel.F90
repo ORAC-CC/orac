@@ -190,6 +190,8 @@
 !    Get_Surface for Swansea model.
 ! 2015/12/17, GM: Get rid of the secant of the solar zenith angle division of
 !    surface reflectance.
+! 2022/01/27, GT: Added MSI_Data as an argument to Get_X (needed if using
+!    SelmAUX to set a priori/first guess)
 !
 ! Bugs:
 ! None known.
@@ -337,7 +339,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, SAD_LUT, MSI_Data, RTM, SPixel, status)
       end if ! End of NSolar > 0
    end if ! End of RTMIntMeth /= RTMIntMethNone
 
-   call Get_X(Ctrl, SPixel, status)
+   call Get_X(Ctrl, SPixel, MSI_Data, status)
 !  if (status /= 0) go to 99 ! Skip further data reading
 
    ! If stat indicates a "super-pixel fatal" condition set the quality
