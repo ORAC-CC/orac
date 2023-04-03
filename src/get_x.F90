@@ -262,7 +262,7 @@ subroutine Get_State(mode, i, Ctrl, SPixel, MSI_Data, flag, X, status, Err)
       else if (i == IPc) then ! Cloud-top pressure
          X = MSI_Data%State%CTP(SPixel%Loc%X0, SPixel%Loc%Y0)
          ! Check the prior CTP value to make sure it is non-null and physically reasonable
-         if (X .gt. 10) then
+         if (X .gt. MinPriorCTP) then
             ! Set the prior CTP error from the value in the file.
             if (present(Err)) Err(i,i) = MSI_Data%State%CTP_var(SPixel%Loc%X0, SPixel%Loc%Y0)
          else

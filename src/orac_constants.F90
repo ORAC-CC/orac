@@ -150,6 +150,7 @@ module ORAC_constants_m
                                                     ! up to nearest 100th
    real, parameter    :: EmsMin           = 0.0
    real, parameter    :: EmsMax           = 1.0
+   real, parameter    :: MinPriorCTP      = 10.0
 
    ! Missing data (fill) values
    real, parameter    :: MissingXn        = -999.   ! Value for "missing data" used as output when a SPixel is not processed.
