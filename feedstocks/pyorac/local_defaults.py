@@ -1,27 +1,28 @@
 # Definitions of default values/paths for your local system
 
-from os import environ
+import os
+
 
 # ===== PATHS =====
 
 # Location of source code trunk from ORAC repository
-ORAC_DIR = environ['CONDA_PREFIX'] + '/bin'
+ORAC_DIR = os.environ['CONDA_PREFIX'] + '/bin'
 # Location of data directory from ORAC repository
-REGRESS_IN_DIR = '/group_workspaces/jasmin2/aerosol_cci/orac_testbed/data'
+REGRESS_IN_DIR = '/gws/pw/j07/nceo_aerosolfire/acpovey/orac_test/testinput'
 REGRESS_OUT_DIR = ''
 # Path to library file used to compile ORAC
-ORAC_LIB = environ['CONDA_PREFIX'] + '/share/orac/lib.inc'
+ORAC_LIB = os.environ['CONDA_PREFIX'] + '/share/orac/lib.inc'
 
 # Directory of look-up tables
 SAD_DIRS = [
     '/gws/nopw/j04/nceo_generic/cloud_ecv/data_in/sad_dir2',
     '/gws/nopw/j04/aerosol_cci/aux/luts/orac_luts/cci_aerosol_A7X_upd',
     '/gws/nopw/j04/aerosol_cci/aux/luts/orac_luts/cci_aerosol_A7X_atsr2',
-
-    '/group_workspaces/jasmin2/aerosol_cci/aux/luts/orac_luts',
+    '/gws/nopw/j04/aerosol_cci/aux/luts/orac_luts',
+    '/gws/nopw/j04/oracluts/public'
 ]
 
-# Use ECMWF data from the BADC/CEMS archive
+# Use ECMWF data from the CEDA ERA5 archive
 NWP_FLAG = 2
 
 # If any of these directories contain subdirectories named by date, please use
@@ -44,9 +45,11 @@ AUXILIARIES = {
     #'ggam_dir': '/badc/ecmwf-era-interim/data/gg/am/%Y/%m/%d',
     #'ggas_dir': '/badc/ecmwf-era-interim/data/gg/as/%Y/%m/%d',
     #'spam_dir': '/badc/ecmwf-era-interim/data/sp/am/%Y/%m/%d',
-    'ecmwf_dir': '/gws/nopw/j04/nceo_generic/cloud_ecv/data_in/era5',
-    # Directory of high-resolution ECMWF files
-    #'hr_dir': '/gws/nopw/j04/nceo_generic/cloud_ecv/data_in/ecmwf/%Y/%m/%d',
+    # To use ERA5 (ecmwf_flag == 0), specify their location
+    'ecmwf_dir': '/gws/nopw/j04/cloud_ecv/data_in/era5',
+    # Directory to store the EMOS interpolation file (CF_T0255_R0036000, which
+    # will be generated if not already present)
+    'emos_dir': os.environ['PPDIR'],
     # Directory of NSIDC ice/snow extent maps
     'nise_dir': '/gws/nopw/j04/nceo_generic/cloud_ecv/data_in/ice_snow',
     # Directory of Ocean Colour CCI retrievals
@@ -71,9 +74,9 @@ AUXILIARIES = {
 # Directory to store the EMOS interpolation file (CF_T0255_R0036000, which
 # will be generated if not already present)
 try:
-    AUXILIARIES['emos_dir'] = environ['PPDIR']
+    AUXILIARIES['emos_dir'] = os.environ['PPDIR']
 except KeyError:
-    AUXILIARIES['emos_dir'] = environ['CONDA_PREFIX'] + '/share/libemos/tables'
+    AUXILIARIES['emos_dir'] = os.environ['CONDA_PREFIX'] + '/share/libemos/tables'
 
 # ===== FILE HEADER INFORMATION =====
 
@@ -185,6 +188,16 @@ for sensor, channels in _AER_SINGLE_CHANNELS.items():
         channels + " " + ret.format(phs)
         for ret in _AER_SINGLE_RETRIEVALS.values() for phs in _AER_PHASES
     ])
+
+# TEMPORARY removal of multilayer where no-ray tables don't exist
+del RETRIEVAL_SETTINGS["ATSR2_C"][2]
+del RETRIEVAL_SETTINGS["AATSR_C"][2]
+del RETRIEVAL_SETTINGS["AVHRR_C"][2]
+del RETRIEVAL_SETTINGS["SLSTR_C"][2]
+del RETRIEVAL_SETTINGS["ATSR2_J"][2]
+del RETRIEVAL_SETTINGS["AATSR_J"][2]
+del RETRIEVAL_SETTINGS["AVHRR_J"][2]
+del RETRIEVAL_SETTINGS["SLSTR_J"][2]
 
 # Default to cloud retrievals
 for sensor in _CLD_CHANNELS.keys():
