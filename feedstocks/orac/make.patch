@@ -1,7 +1,7 @@
 Subject: Adapt config files to the anaconda environment.
 --- a/config/arch.conda.inc	2022-08-12 13:18:54.203033707 +0100
 +++ b/config/arch.conda.inc	2022-08-12 16:30:41.874308585 +0100
-@@ -15,10 +15,10 @@
+@@ -17,10 +17,10 @@
  
  # Set Fortran 77 compiler flags
 -F77FLAGS  = -O3 -cpp -ffree-line-length-0 -g -fcheck=bounds -fallow-argument-mismatch
@@ -14,7 +14,7 @@ Subject: Adapt config files to the anaconda environment.
 +FFLAGS    = -O3 -cpp -ffree-line-length-0 -fcheck=bounds -fallow-argument-mismatch
  # Uncomment if OpenMP support is desired. Highly recommented.
  FFLAGS   += -fopenmp
-@@ -29,5 +29,5 @@
+@@ -31,5 +31,5 @@
  
  # Set C compiler  flags
 -CFLAGS = -O3 -g

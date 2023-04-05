@@ -12,7 +12,7 @@ diff -rupN nr/Makefile new/Makefile
             probks.o \
 -           psdes.o \
             pwt.o \
-@@ -362,3 +362,3 @@
+@@ -362,3 +361,3 @@
  libnr.a: ${OBJECTS}
 -	ar -r libnr.a ${OBJECTS}
 +	${AR} -r libnr.a ${OBJECTS}

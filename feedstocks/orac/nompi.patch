@@ -1,9 +1,17 @@
 Subject: Adapt config files to the anaconda environment without openmp.
 --- a/config/arch.conda.inc	2022-08-12 13:18:54.203033707 +0100
 +++ b/config/arch.conda.inc	2022-08-12 16:30:41.874308585 +0100
-@@ -21,11 +21,11 @@ F77FLAGS  = -O3 -cpp -ffree-line-length-
+@@ -17,19 +17,19 @@
+ 
+ # Set Fortran 77 compiler flags
+-F77FLAGS  = -O3 -cpp -ffree-line-length-0 -g -fcheck=bounds -fallow-argument-mismatch
++F77FLAGS  = -O3 -cpp -ffree-line-length-0 -fcheck=bounds -fallow-argument-mismatch
+ # Uncomment if extra warnings are required.  Take out -Werror if that annoys you.
+ #FF77LAGS += -Wall -Werror -Wno-conversion -Wno-uninitialized -Wno-unused-dummy-argument -Wtabs
+ 
  # Set Fortran 90 compiler flags
- FFLAGS    = -O3 -cpp -ffree-line-length-0 -g -fcheck=bounds -fallow-argument-mismatch
+-FFLAGS    = -O3 -cpp -ffree-line-length-0 -g -fcheck=bounds -fallow-argument-mismatch
++FFLAGS    = -O3 -cpp -ffree-line-length-0 -fcheck=bounds -fallow-argument-mismatch
  # Uncomment if OpenMP support is desired. Highly recommented.
 -FFLAGS   += -fopenmp
 +#FFLAGS   += -fopenmp
@@ -14,7 +22,10 @@ Subject: Adapt config files to the anaconda environment without openmp.
 +LFLAGS =
  
  # Set C compiler  flags
- CFLAGS = -O3 -g
+-CFLAGS = -O3 -g
++CFLAGS = -O3
+ # Uncomment if extra warnings are required.
+ #CFLAGS += -Wall -Werror
 --- a/config/lib.conda.inc	2022-08-12 13:18:54.203033707 +0100
 +++ b/config/lib.conda.inc	2022-08-12 16:31:17.946772047 +0100
 @@ -1,8 +1,8 @@

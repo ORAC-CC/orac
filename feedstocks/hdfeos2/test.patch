@@ -2,7 +2,7 @@ Subject: Repairs to the cmake build
 --- a/testdrivers/grid/CMakeLists.txt	2014-02-06 16:10:13.000000000 +0000
 +++ b/testdrivers/grid/CMakeLists.txt	2019-10-17 17:09:50.588011736 +0100
 @@ -8,4 +8,5 @@
-     ${GCTP_SRC_BINARY_DIR}
+     ${HDFEOS_SRC_BINARY_DIR}
      ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
 +    $ENV{PREFIX}/lib
  )
@@ -10,7 +10,7 @@ Subject: Repairs to the cmake build
 --- a/testdrivers/point/CMakeLists.txt	2014-02-06 16:10:13.000000000 +0000
 +++ b/testdrivers/point/CMakeLists.txt	2019-10-17 17:09:50.588011736 +0100
 @@ -8,4 +8,5 @@
-     ${GCTP_SRC_BINARY_DIR}
+     ${HDFEOS_SRC_BINARY_DIR}
      ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
 +    $ENV{PREFIX}/lib
  )
@@ -18,7 +18,7 @@ Subject: Repairs to the cmake build
 --- a/testdrivers/swath/CMakeLists.txt	2014-02-06 16:10:13.000000000 +0000
 +++ b/testdrivers/swath/CMakeLists.txt	2019-10-17 17:09:50.588011736 +0100
 @@ -8,4 +8,5 @@
-     ${GCTP_SRC_BINARY_DIR}
+     ${HDFEOS_SRC_BINARY_DIR}
      ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
 +    $ENV{PREFIX}/lib
  )
