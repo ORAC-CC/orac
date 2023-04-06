@@ -109,7 +109,10 @@ subroutine Int_LUT_Re(F, NChans, Grid, GZero, Ctrl, FInt, FGrads, status)
    ! Local variables
    integer :: i
    real    :: delta_r, delta_F, k0, k1, l0, l1
-   real    :: d2F_dr2(Grid%Re%NMax)
+   real    :: d2F_dr2(Grid%Re%n)
+#ifdef INCLUDE_NR
+   real, dimension(Grid%Re%n) :: tmp_x, tmp_f
+#endif
 
    status = 0
 
@@ -122,8 +125,9 @@ subroutine Int_LUT_Re(F, NChans, Grid, GZero, Ctrl, FInt, FGrads, status)
       else if (Ctrl%LUTIntSelm .eq. LUTIntMethBicubic) then
 #ifdef INCLUDE_NR
          ! Following the syntax of InterpolarSolar_spline.F90
-         call spline(Grid%Re%x(1:Grid%Re%n), F(i,1:Grid%Re%n), &
-                     Grid%Re%n, 1.e30, 1.e30, d2F_dr2(1:Grid%Re%n))
+         tmp_x = Grid%Re%x(1:Grid%Re%n)
+         tmp_f = F(i,1:Grid%Re%n)
+         call spline(tmp_x, tmp_f, Grid%Re%n, 1.e30, 1.e30, d2F_dr2)
 #else
          write(*, *) 'ERROR: Interpol_Solar_spline(): Numerical Recipes is ' // &
             'not available for cubic spline interpolation'
