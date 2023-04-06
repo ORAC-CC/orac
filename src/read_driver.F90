@@ -705,15 +705,15 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       Ctrl%Ind%Y_Id_legacy(I_legacy_11_x) = 6
       Ctrl%Ind%Y_Id_legacy(I_legacy_12_x) = 7
 
-      allocate(Ctrl%ReChans(2))
-      Ctrl%ReChans = (/ 5, 4 /)
+      allocate(Ctrl%ReChans(4))
+      Ctrl%ReChans = (/ 5, 4, 12, 11 /)
 
-      allocate(Ctrl%tau_chans(3))
-      Ctrl%tau_chans = (/ 1, 2, 3 /)
-      allocate(Ctrl%r_e_chans(2))
-      Ctrl%r_e_chans = (/ 4, 5 /)
-      allocate(Ctrl%ir_chans(3))
-      Ctrl%ir_chans  = (/ 5, 6, 7 /)
+      allocate(Ctrl%tau_chans(6))
+      Ctrl%tau_chans = (/ 1, 2, 3, 8, 9, 10 /)
+      allocate(Ctrl%r_e_chans(4))
+      Ctrl%r_e_chans = (/ 4, 5, 11, 12 /)
+      allocate(Ctrl%ir_chans(6))
+      Ctrl%ir_chans  = (/ 5, 6, 7, 12, 13, 14 /)
    else if (Ctrl%InstName(1:3) == 'ABI') then
       Ctrl%Ind%Y_Id_legacy(I_legacy_0_6x) = 2
       Ctrl%Ind%Y_Id_legacy(I_legacy_0_8x) = 3
@@ -861,15 +861,15 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       Ctrl%Ind%Y_Id_legacy(I_legacy_11_x) = 8
       Ctrl%Ind%Y_Id_legacy(I_legacy_12_x) = 9
 
-      allocate(Ctrl%ReChans(3))
-      Ctrl%ReChans = (/ 7, 5, 6 /)
+      allocate(Ctrl%ReChans(6))
+      Ctrl%ReChans = (/ 7, 5, 6, 16, 14, 15 /)
 
-      allocate(Ctrl%tau_chans(3))
-      Ctrl%tau_chans = (/ 1, 2, 3 /)
-      allocate(Ctrl%r_e_chans(3))
-      Ctrl%r_e_chans = (/ 5, 6, 7 /)
-      allocate(Ctrl%ir_chans(3))
-      Ctrl%ir_chans  = (/ 7, 8, 9 /)
+      allocate(Ctrl%tau_chans(6))
+      Ctrl%tau_chans = (/ 1, 2, 3, 10, 11, 12 /)
+      allocate(Ctrl%r_e_chans(6))
+      Ctrl%r_e_chans = (/ 5, 6, 7, 14, 15, 16 /)
+      allocate(Ctrl%ir_chans(6))
+      Ctrl%ir_chans  = (/ 7, 8, 9, 16, 17, 18 /)
    else
       write(*,*) 'ERROR: Read_Driver(): Unrecognised sensor/platform: ', &
                    trim(Ctrl%InstName)
