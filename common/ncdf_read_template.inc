@@ -7,7 +7,9 @@ subroutine NCDF_READ_NAME_0D(ncid, name, val)
 
    integer                                  :: ierr, vid
    logical                                  :: fv_flag, vr_flag
+#ifdef DEBUG
    character(len=unitlength)                :: unit
+#endif
    NCDF_READ_TYPE(kind=NCDF_READ_KIND)      :: fv, sf, of, vmin, vmax
    NCDF_READ_TYPE(kind=NCDF_READ_KIND)      :: fill=NCDF_READ_FILL_VALUE
 
@@ -63,7 +65,9 @@ subroutine NCDF_READ_NAME_1D(ncid, name, val, dim, ind, start)
    integer                                      :: ierr, vid, i
    integer, dimension(1)                        :: start_pos, counter, stride
    logical                                      :: fv_flag, vr_flag
+#ifdef DEBUG
    character(len=unitlength)                    :: unit
+#endif
    NCDF_READ_TYPE(kind=NCDF_READ_KIND)          :: fv, sf, of, vmin, vmax
    NCDF_READ_TYPE(kind=NCDF_READ_KIND), pointer :: arr(:)
    NCDF_READ_TYPE(kind=NCDF_READ_KIND)          :: fill=NCDF_READ_FILL_VALUE
@@ -108,7 +112,9 @@ subroutine NCDF_READ_NAME_2D(ncid, name, val, dim, ind, start)
    integer                                      :: ierr, vid, i
    integer, dimension(2)                        :: start_pos, counter, stride
    logical                                      :: fv_flag, vr_flag
+#ifdef DEBUG
    character(len=unitlength)                    :: unit
+#endif
    NCDF_READ_TYPE(kind=NCDF_READ_KIND)          :: fv, sf, of, vmin, vmax
    NCDF_READ_TYPE(kind=NCDF_READ_KIND), pointer :: arr(:,:)
    NCDF_READ_TYPE(kind=NCDF_READ_KIND)          :: fill=NCDF_READ_FILL_VALUE
@@ -159,7 +165,9 @@ subroutine NCDF_READ_NAME_3D(ncid, name, val, dim, ind, start)
    integer                                      :: ierr, vid, i
    integer, dimension(3)                        :: start_pos, counter, stride
    logical                                      :: fv_flag, vr_flag
+#ifdef DEBUG
    character(len=unitlength)                    :: unit
+#endif
    NCDF_READ_TYPE(kind=NCDF_READ_KIND)          :: fv, sf, of, vmin, vmax
    NCDF_READ_TYPE(kind=NCDF_READ_KIND), pointer :: arr(:,:,:)
    NCDF_READ_TYPE(kind=NCDF_READ_KIND)          :: fill=NCDF_READ_FILL_VALUE
@@ -213,7 +221,9 @@ subroutine NCDF_READ_NAME_4D(ncid, name, val, dim, ind, start)
    integer                                      :: ierr, vid, i
    integer, dimension(4)                        :: start_pos, counter, stride
    logical                                      :: fv_flag, vr_flag
+#ifdef DEBUG
    character(len=unitlength)                    :: unit
+#endif
    NCDF_READ_TYPE(kind=NCDF_READ_KIND)          :: fv, sf, of, vmin, vmax
    NCDF_READ_TYPE(kind=NCDF_READ_KIND), pointer :: arr(:,:,:,:)
    NCDF_READ_TYPE(kind=NCDF_READ_KIND)          :: fill=NCDF_READ_FILL_VALUE
@@ -270,7 +280,9 @@ subroutine NCDF_READ_NAME_5D(ncid, name, val, dim, ind, start)
    integer                                      :: ierr, vid, i
    integer, dimension(5)                        :: start_pos, counter, stride
    logical                                      :: fv_flag, vr_flag
+#ifdef DEBUG
    character(len=unitlength)                    :: unit
+#endif
    NCDF_READ_TYPE(kind=NCDF_READ_KIND)          :: fv, sf, of, vmin, vmax
    NCDF_READ_TYPE(kind=NCDF_READ_KIND), pointer :: arr(:,:,:,:,:)
    NCDF_READ_TYPE(kind=NCDF_READ_KIND)          :: fill=NCDF_READ_FILL_VALUE
@@ -330,7 +342,9 @@ subroutine NCDF_READ_NAME_6D(ncid, name, val, dim, ind, start)
    integer                                      :: ierr, vid, i
    integer, dimension(6)                        :: start_pos, counter, stride
    logical                                      :: fv_flag, vr_flag
+#ifdef DEBUG
    character(len=unitlength)                    :: unit
+#endif
    NCDF_READ_TYPE(kind=NCDF_READ_KIND)          :: fv, sf, of, vmin, vmax
    NCDF_READ_TYPE(kind=NCDF_READ_KIND), pointer :: arr(:,:,:,:,:,:)
    NCDF_READ_TYPE(kind=NCDF_READ_KIND)          :: fill=NCDF_READ_FILL_VALUE
@@ -395,7 +409,9 @@ subroutine NCDF_READ_PACKED_NAME_1D(ncid, name, val, dim, ind, start)
    integer                                      :: ierr, vid, i
    integer, dimension(1)                        :: start_pos, counter, stride
    logical                                      :: fv_flag, vr_flag
+#ifdef DEBUG
    character(len=unitlength)                    :: unit
+#endif
    NCDF_RD_P_TYPE(kind=NCDF_RD_P_KIND)          :: fv, vmin, vmax
    NCDF_RD_P_TYPE(kind=NCDF_RD_P_KIND)          :: arr_packed(1)
    NCDF_READ_TYPE(kind=NCDF_READ_KIND)          :: sf, of
@@ -442,7 +458,9 @@ subroutine NCDF_READ_PACKED_NAME_2D(ncid, name, val, dim, ind, start)
    integer                                          :: ierr, vid, i
    integer, dimension(2)                            :: start_pos, counter, stride
    logical                                          :: fv_flag, vr_flag
+#ifdef DEBUG
    character(len=unitlength)                        :: unit
+#endif
    NCDF_RD_P_TYPE(kind=NCDF_RD_P_KIND)              :: fv, vmin, vmax
    NCDF_RD_P_TYPE(kind=NCDF_RD_P_KIND), allocatable :: arr_packed(:,:)
    NCDF_READ_TYPE(kind=NCDF_READ_KIND)              :: sf, of
@@ -506,7 +524,9 @@ subroutine NCDF_READ_PACKED_NAME_3D(ncid, name, val, dim, ind, start)
    integer                                          :: ierr, vid, i
    integer, dimension(3)                            :: start_pos, counter, stride
    logical                                          :: fv_flag, vr_flag
+#ifdef DEBUG
    character(len=unitlength)                        :: unit
+#endif
    NCDF_RD_P_TYPE(kind=NCDF_RD_P_KIND)              :: fv, vmin, vmax
    NCDF_RD_P_TYPE(kind=NCDF_RD_P_KIND), allocatable :: arr_packed(:,:,:)
    NCDF_READ_TYPE(kind=NCDF_READ_KIND)              :: sf, of
@@ -575,7 +595,9 @@ subroutine NCDF_READ_PACKED_NAME_4D(ncid, name, val, dim, ind, start)
    integer                                          :: ierr, vid, i
    integer, dimension(4)                            :: start_pos, counter, stride
    logical                                          :: fv_flag, vr_flag
+#ifdef DEBUG
    character(len=unitlength)                        :: unit
+#endif
    NCDF_RD_P_TYPE(kind=NCDF_RD_P_KIND)              :: fv, vmin, vmax
    NCDF_RD_P_TYPE(kind=NCDF_RD_P_KIND), allocatable :: arr_packed(:,:,:,:)
    NCDF_READ_TYPE(kind=NCDF_READ_KIND)              :: sf, of
@@ -648,7 +670,9 @@ subroutine NCDF_READ_PACKED_NAME_5D(ncid, name, val, dim, ind, start)
    integer                                          :: ierr, vid, i
    integer, dimension(5)                            :: start_pos, counter, stride
    logical                                          :: fv_flag, vr_flag
+#ifdef DEBUG
    character(len=unitlength)                        :: unit
+#endif
    NCDF_RD_P_TYPE(kind=NCDF_RD_P_KIND)              :: fv, vmin, vmax
    NCDF_RD_P_TYPE(kind=NCDF_RD_P_KIND), allocatable :: arr_packed(:,:,:,:,:)
    NCDF_READ_TYPE(kind=NCDF_READ_KIND)              :: sf, of
@@ -726,7 +750,9 @@ subroutine NCDF_READ_PACKED_NAME_6D(ncid, name, val, dim, ind, start)
    integer                                          :: ierr, vid, i
    integer, dimension(6)                            :: start_pos, counter, stride
    logical                                          :: fv_flag, vr_flag
+#ifdef DEBUG
    character(len=unitlength)                        :: unit
+#endif
    NCDF_RD_P_TYPE(kind=NCDF_RD_P_KIND)              :: fv, vmin, vmax
    NCDF_RD_P_TYPE(kind=NCDF_RD_P_KIND), allocatable :: arr_packed(:,:,:,:,:,:)
    NCDF_READ_TYPE(kind=NCDF_READ_KIND)              :: sf, of
