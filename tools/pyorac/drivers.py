@@ -131,14 +131,10 @@ def build_preproc_driver(args):
                 break
             except FileMissing:
                 pass
-#            occci = args.File.time.strftime(os.path.join(
-#                args.occci_dir, 'ESACCI-OC-L3S-IOP-MERGED-1M_MONTHLY'
-#                                f'_4km_GEO_PML_OCx_QAA-%Y%m-fv{oc_version:.1f}.nc'
-#            ))
-#            if os.path.isfile(occci):
-#                break
         else:
-            raise FileMissing('Ocean Colour CCI', occci)
+            raise FileMissing('Ocean Colour CCI', args.occci_dir +
+                              'ESACCI-OC-L3S-IOP-MERGED-1M_MONTHLY'
+                              '_4km_GEO_PML_OCx_QAA-%Y%m-fvVV.nc')
     else:
         occci = ''
 
