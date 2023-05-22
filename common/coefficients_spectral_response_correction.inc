@@ -1,12 +1,12 @@
 !-------------------------------------------------------------------------------
 ! Name: coefficients_spectral_response_correction.inc
 !
-! Purpose: 
+! Purpose:
 ! Provide coefficients (slope/offset) for the spectral response correction
-! (aka. Spectral Band Adjustment SBA) of each sensor. Latest coefficients 
-! are the n19mimic array. As the CMA/CPH neural networks were developed and 
-! fine-tuned primarily based on NOAA19 AVHRR, adjustment factors 
-! (slope and offset) were inferred to make all considered AVHRR sensors 
+! (aka. Spectral Band Adjustment SBA) of each sensor. Latest coefficients
+! are the n19mimic array. As the CMA/CPH neural networks were developed and
+! fine-tuned primarily based on NOAA19 AVHRR, adjustment factors
+! (slope and offset) were inferred to make all considered AVHRR sensors
 ! mimic NOAA19 AVHRR.
 !
 ! More information can be found in Appendix C of the Cloud_cci version 3
@@ -17,7 +17,7 @@
 ! History:
 ! Initial file
 ! 2021/01/27, DP: Added Sentinel-3a/Sentinel-3b SLSTR and MSG1/MSG2/MSG3/MSG4
-                  SEVIRI coefficients.
+!                 SEVIRI coefficients.
 !
 !-------------------------------------------------------------------------------
 
@@ -314,8 +314,8 @@
        0.00000, 0.00000, 0.00000,-0.18492, 0.23179,-0.82334   & ! envisat_1_aatsr (twilight & night)
        /), &
        shape(n19mimic_old), order=(/1, 2, 3, 4/))
-       
-       
+
+
   ! dimensions:
   ! a=6: n channels
   ! b=2: slope/offset
@@ -437,8 +437,3 @@
         0.00000, 0.00000, 0.00000,-1.85533, 0.08510, 0.40281 & ! sent3b_slstr (twilight & night) -------- end new sats 21.01.2021
        /), &
        shape(n19mimic), order=(/1, 2, 3, 4/))
-
-
-       
-       
-       
