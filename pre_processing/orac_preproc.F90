@@ -681,10 +681,6 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
    ! We now have the number of viewing geometries. Put this in imager_angles
    imager_angles%nviews = channel_info%nviews
 
-   ! Add full scene size to the image geolocation structure
-   imager_geolocation%n_along_track  = n_along_track
-   imager_geolocation%n_across_track = n_across_track
-
    if (verbose) then
       write(*,*) 'WE ARE PROCESSING ', trim(granule%platform), ' FOR ORBIT', &
            granule%year, granule%month, granule%day, granule%hour, granule%minute
@@ -1064,21 +1060,11 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
 
       ! perform RTTOV calculations
       if (verbose) write(*,*) 'Perform RTTOV calculations'
-<<<<<<< HEAD
-
-!      do i=1,n_preproc_call
-      if (ecmwf_flag .gt. 5 .and. ecmwf_flag .le. 8) then
-         call rttov_driver_gfs(rttov_coef_path, rttov_emiss_path, sensor, &
-              platform, preproc_dims, preproc_geoloc, preproc_geo, preproc_prtm, &
-              preproc_surf, preproc_cld, netcdf_info, channel_info, year, month, &
-              day, preproc_opts%use_modis_emis_in_rttov, preproc_opts%do_cloud_emis, preproc_opts%do_co2, verbose)
-=======
       if (nwp_flag .gt. 5 .and. nwp_flag .le. 8) then
          call rttov_driver_gfs(rttov_coef_path, rttov_emiss_path, granule, &
               preproc_dims, preproc_geoloc, preproc_geo, preproc_prtm, &
               preproc_surf, preproc_cld, netcdf_info, channel_info, &
               preproc_opts, verbose)
->>>>>>> cb387fc7ef59f80adacd7dee985787946b808316
          ! Call cloud emissivity function
 #ifdef INCLUDE_SATWX
          if (preproc_opts%do_cloud_emis) then

@@ -853,7 +853,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       Ctrl%r_e_chans = (/ 3, 4 /)
       allocate(Ctrl%ir_chans(2))
       Ctrl%ir_chans  = (/ 4, 5 /)
-   else if (Ctrl%InstName(1:16) == 'SLSTR-Sentinel-3') then
+   else if (Ctrl%InstName(1:16) == 'SLSTR-Sentinel-3' .or. &
+        Ctrl%InstName(1:15) == 'SLSTR-Sentinel3') then
       Ctrl%Ind%Y_Id_legacy(I_legacy_0_6x) = 2
       Ctrl%Ind%Y_Id_legacy(I_legacy_0_8x) = 3
       Ctrl%Ind%Y_Id_legacy(I_legacy_1_6x) = 5

@@ -72,6 +72,7 @@
 ! 2015/07/10, OS: undo previous commit
 ! 2015/08/10, CP: added in ATSR-2 capability
 ! 2017/06/21, OS: string name adaptations for METOPA/B
+! 2023/06/02, GT: Fix for Sentinel-3 platform string
 !
 ! Bugs:
 ! None known.
@@ -116,6 +117,10 @@ subroutine Read_SwRTM(Ctrl, RTM)
       write(*,*) 'ERROR: Read_SwRTM(): Could not read global attributes: ', &
                  Ctrl%FID%SWRTM
       stop error_stop_code
+   end if
+   ! for Sentinel-3 we need to remove the "-" from the platform name
+   if (platform(1:10) == 'Sentinel-3') then
+      platform = platform(1:8)//platform(10:11)
    end if
    if (sensor =='AATSR' .or. sensor =='ATSR2' ) then
       instname = trim(adjustl(sensor))
