@@ -80,7 +80,6 @@
 !                 strings are _rounded_ to nearest second).
 ! 2021/03/10, AP: Gather setup calls into a single routine.
 !
->>>>>>> cb387fc7ef59f80adacd7dee985787946b808316
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
