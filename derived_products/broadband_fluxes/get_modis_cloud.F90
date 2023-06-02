@@ -20,8 +20,6 @@ subroutine get_modis_cloud(fileIN,Nx,Ny,CTT,CTP,CTH,phase,REF,COT,cc_tot)
 
    implicit none
 
-   include "hdf.f90"
-
    ! Input arguments
    character(len=*), intent(in) :: fileIN  ! MODIS Cloud File
    integer(kind=lint), intent(in) :: Nx,Ny ! Satellite 1-km dimensions

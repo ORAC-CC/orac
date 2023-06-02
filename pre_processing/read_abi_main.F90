@@ -55,8 +55,8 @@ subroutine read_abi_dimensions(l1_5_file, n_across_track, n_along_track, verbose
    call ncdf_open(fid, l1_5_file, 'read_abi_dimensions()')
 
    ! Read actual size of the netCDF4 file
-   n_cols  = ncdf_dim_length(fid, 'x', 'read_abi_dimensions()', .false.)
-   n_lines = ncdf_dim_length(fid, 'y', 'read_abi_dimensions()', .false.)
+   n_cols  = ncdf_dim_length(fid, 'x', 'read_abi_dimensions()')
+   n_lines = ncdf_dim_length(fid, 'y', 'read_abi_dimensions()')
 
    ! Make sure we account for the fact that some bands are hi-res
    if (band .eq. 1 .or. band .eq. 3 .or. band .eq. 5) then

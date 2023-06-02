@@ -17,10 +17,9 @@
 subroutine read_hdf_sd_data(filename,SDS_name,elm3d,nX,nY,temp_out)
 
    use common_constants_m
+   use hdf_m, only: DFACC_READ
 
    implicit none
-
-   include "hdf.f90"
 
    ! Input arguments
    character(len=*), intent(in) :: filename

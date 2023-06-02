@@ -13,7 +13,7 @@ $(OBJS)/two_rt_lw.o: $(OBJS)/kinds.o
 $(OBJS)/two_rt_lw_iter.o: $(OBJS)/kinds.o
 $(OBJS)/two_rt_lw_ocastrndm.o: $(OBJS)/kinds.o
 $(OBJS)/two_rt_lw_sel.o: $(OBJS)/kinds.o
-$(OBJS)/two_rt_sw_bs.o: $(OBJS)/kinds.o
+$(OBJS)/two_rt_sw_bs.o: $(OBJS)/kinds.o $(OBJS)/bandsolve.o
 $(OBJS)/two_rt_sw.o: $(OBJS)/kinds.o
 $(OBJS)/two_rt_sw_ocastrndm.o: $(OBJS)/kinds.o
 $(OBJS)/comscp1.o: $(OBJS)/kinds.o

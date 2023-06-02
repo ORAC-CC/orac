@@ -179,8 +179,8 @@ subroutine get_abi_geoloc(infile, imager_geolocation, imager_angles, &
    ! Open the netCDF4 file for reading
    call ncdf_open(fid, infile, 'get_abi_geoloc()')
 
-   call ncdf_read_array(fid, "x", x, verbose, start=[imager_geolocation%startx])
-   call ncdf_read_array(fid, "y", y, verbose, start=[imager_geolocation%starty])
+   call ncdf_read_array(fid, "x", x, start=[imager_geolocation%startx])
+   call ncdf_read_array(fid, "y", y, start=[imager_geolocation%starty])
 
    ! Read the various attributes required for building the geolocation model
    ierr = nf90_inq_varid(fid, "goes_imager_projection", gimpid)
@@ -493,74 +493,66 @@ end subroutine get_abi_solgeom
 ! To resample we simply average a NxN region of VIS into a 1x1 pixel of TIR.
 subroutine goes_resample_vis_to_tir(inarr, outarr, nx, ny, fill, scl, verbose)
 
-   use omp_lib
-   use preproc_constants_m
+    use omp_lib
+    use preproc_constants_m
 
-   implicit none
+    implicit none
 
-   integer,          intent(in)  :: nx
-   integer,          intent(in)  :: ny
-   real,             intent(in)  :: fill
-   integer,          intent(in)  :: scl
-   logical,          intent(in)  :: verbose
-   real(kind=sreal), intent(in)  :: inarr(:,:)
-   real(kind=sreal), intent(out) :: outarr(:,:)
+    integer,          intent(in)  :: nx
+    integer,          intent(in)  :: ny
+    real,             intent(in)  :: fill
+    integer,          intent(in)  :: scl
+    logical,          intent(in)  :: verbose
+    real(kind=sreal), intent(in)  :: inarr(:,:)
+    real(kind=sreal), intent(out) :: outarr(:,:)
 
+    integer :: x, y
+    integer :: outx, outy
+
+    integer :: i, j
+    real    :: val
+    integer :: inpix
+
+    outarr(:, :) = fill
+   
 #ifdef _OPENMP
-   integer :: n_threads
-#endif
-   integer :: x, y
-   integer :: outx, outy
-
-   integer :: i, j
-   real    :: val
-   integer :: inpix
-
-   outarr(:, :) = 0
-#ifdef _OPENMP
-   if (verbose) write(*,*) "Resampling VIS grid to IR grid using OpenMP"
-   !$OMP PARALLEL DO PRIVATE(y, x, outx, outy, val, inpix)
+    if (verbose) write(*,*) "Resampling VIS grid to IR grid using OpenMP"
+    !$OMP PARALLEL DO PRIVATE(y, x, outx, outy, val, inpix, i, j)
 #endif
 #ifdef __ACC
-   if (verbose) write(*,*) "Resampling VIS grid to IR grid using PGI_ACC"
-!$acc data copyin(inarr(1:nx*scl,1:ny*scl))  copyout(outarr(1:nx,1:ny))
-!$acc parallel
-!$acc loop collapse(2) independent private(x, y, outx, outy, val, inpix,i,j)
+    if (verbose) write(*,*) "Resampling VIS grid to IR grid using PGI_ACC"
+    !$acc data copyin(inarr(1:nx*scl,1:ny*scl))  copyout(outarr(1:nx,1:ny))
+    !$acc parallel
+    !$acc loop collapse(2) independent private(x, y, outx, outy, val, inpix,i, j)
 #endif
-   do x = 1, (nx*scl)-scl
-      do y = 1, (ny*scl)-scl
-         outx = int(x/scl)+1
-         outy = int(y/scl)+1
-         val = 0
-         inpix= 0
-         !$acc loop collapse(2)
-         do i = 1, scl
-            do j = 1, scl
-               if (inarr(x+i, y+j) .gt. sreal_fill_value) then
-                  val = val + inarr(x+i, y+j)
-                  inpix= inpix + 1
-               end if
+    do x = 1, (nx * scl) - scl + 1, scl ! Outer x loop
+        outx = 1 + x / scl
+        do y = 1, (ny * scl) - scl + 1, scl ! Outer y loop
+            outy = 1 + y / scl
+            val = 0
+            inpix = 0
+            do i = 0, scl - 1 ! Inner x loop
+                do j = 0, scl - 1 ! Inner y loop
+                    if (inarr(x+i, y+j).ne. fill) then
+                        val = val + inarr(x+i, y+j)
+                        inpix = inpix+1
+                    end if
+                end do
             end do
-         end do
-         val = val/inpix
-         if (outx .le. 0 .or. outx .ge. nx .or. &
-              outy .le. 0 .or. outy .ge. ny) then
-            cycle
-         end if
-
-         if (outarr(outx, outy).le. 0) then
-            outarr(outx, outy) = val
-         end if
-      end do
-
-   end do
+            if (inpix > 0) then
+                outarr(outx, outy) = val / inpix
+            else
+                outarr(outx, outy) = fill
+            end if
+        end do ! End outer y loop
+    end do ! End outer x loop
 
 #ifdef _OPENMP
-   !$OMP END PARALLEL DO
+    !$OMP END PARALLEL DO
 #endif
 #ifdef __ACC
-!$acc end parallel
-!$acc end data
+    !$acc end parallel
+    !$acc end data
 #endif
 
 end subroutine goes_resample_vis_to_tir
@@ -613,13 +605,13 @@ subroutine load_abi_band(infile, imager_geolocation, rad, kappa, bc1, bc2, fk1, 
    ! Open the netCDf4 file for access
    call ncdf_open(fid, infile, 'load_abi_band()')
 
-   call ncdf_read_array(fid, 'Rad', rad, verbose, start=[x0, y0])
-   call ncdf_read_array(fid, 'DQF', dqf, verbose, start=[x0, y0])
-   call ncdf_read_array(fid, 'kappa0', kappa, verbose)
-   call ncdf_read_array(fid, 'planck_bc1', bc1, verbose)
-   call ncdf_read_array(fid, 'planck_bc2', bc2, verbose)
-   call ncdf_read_array(fid, 'planck_fk1', fk1, verbose)
-   call ncdf_read_array(fid, 'planck_fk2', fk2, verbose)
+   call ncdf_read_array(fid, 'Rad', rad, start=[x0, y0])
+   call ncdf_read_array(fid, 'DQF', dqf, start=[x0, y0])
+   call ncdf_read_array(fid, 'kappa0', kappa)
+   call ncdf_read_array(fid, 'planck_bc1', bc1)
+   call ncdf_read_array(fid, 'planck_bc2', bc2)
+   call ncdf_read_array(fid, 'planck_fk1', fk1)
+   call ncdf_read_array(fid, 'planck_fk2', fk2)
 
    call ncdf_close(fid, 'load_abi_band()')
 
@@ -658,7 +650,7 @@ subroutine get_abi_time(infile, imager_time, ny, verbose)
    real(kind=dreal)           :: dfrac1, dfrac2, jd1, jd2, slo
 
    character(len=var_length), parameter :: date_format = &
-        '(I4, T1, I2, T1, I2, T1, I2, T1, I2, T1, I2)'
+        '(I4, X, I2, X, I2, X, I2, X, I2, X, I2)'
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering get_abi_time()'
 

@@ -5,6 +5,15 @@ diff -rupN nr/Makefile new/Makefile
 @@ -1,4 +1,4 @@
 -F77 = gfortran
 +F77 = ${GFORTRAN}
- 
  F77FLAGS = -O3 -Dfloat=double -std=legacy -Wno-conversion -fno-range-check \
-            -Wno-unused-dummy-argument -Wno-unused-function
+            -Wno-unused-dummy-argument -Wno-unused-function -fopenmp
+
+@@ -230,3 +230,2 @@
+            probks.o \
+-           psdes.o \
+            pwt.o \
+@@ -362,3 +361,3 @@
+ libnr.a: ${OBJECTS}
+-	ar -r libnr.a ${OBJECTS}
++	${AR} -r libnr.a ${OBJECTS}
+ 

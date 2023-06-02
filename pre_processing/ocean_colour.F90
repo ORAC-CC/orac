@@ -101,7 +101,7 @@ end subroutine deallocate_occci
 ! - if the requested wavelength is less than the lowest OCCCI wavelength
 !   (412 nm), the lowest two wavelength bands will be returned.
 ! - if the requested wavelength is larger then the highest OCCCI wavelength
-!   (670 nm), the highest two wavelength bands will be returned.
+!   (665 nm), the highest two wavelength bands will be returned.
 ! - For bandss between these two extremes, the pair of bands the bracket the
 !   requested wavelength will be choosen.
 ! The required OCCCI bands are marked for reading with a boolean flag, and the
@@ -147,12 +147,12 @@ function read_oceancolour_cci(path_to_file, occci, wavelengths, verbose) &
    ! Local variables
    integer,          parameter :: occci_nwl = 6
    real(kind=sreal), parameter :: occci_wl(occci_nwl) = &
-        (/ 0.412, 0.443, 0.490, 0.510, 0.555, 0.670 /)
+        (/ 0.412, 0.443, 0.490, 0.510, 0.560, 0.665 /)
    character(len=8), parameter :: occci_atotvar(occci_nwl) = &
         (/ 'atot_412', 'atot_443', 'atot_490', 'atot_510', &
-           'atot_555', 'atot_670' /)
+           'atot_560', 'atot_665' /)
    character(len=7), parameter :: occci_bbpvar(occci_nwl) = &
-        (/ 'bbp_412', 'bbp_443', 'bbp_490', 'bbp_510', 'bbp_555', 'bbp_670' /)
+        (/ 'bbp_412', 'bbp_443', 'bbp_490', 'bbp_510', 'bbp_560', 'bbp_665' /)
 
    integer                       :: i, j
    integer                       :: nwl
@@ -181,12 +181,12 @@ function read_oceancolour_cci(path_to_file, occci, wavelengths, verbose) &
    call ncdf_open(fid, path_to_file, 'read_oceancolour_cci()')
 
    ! Variables needed: atot (total absorption), bbp (particulate backscatter)
-   ! Available wavelengths: 412, 443, 490, 510, 555, 670 nm.
+   ! Available wavelengths: 412, 443, 490, 510, 560, 665 nm.
    if (verbose) write(*,*) 'Extracting dimension IDs'
    ! Extract the array dimensions
-   ntime = ncdf_dim_length(fid, 'time', 'read_oceancolour_cci()', .false.)
-   nlon = ncdf_dim_length(fid, 'lon', 'read_oceancolour_cci()', .false.)
-   nlat = ncdf_dim_length(fid, 'lat', 'read_oceancolour_cci()', .false.)
+   ntime = ncdf_dim_length(fid, 'time', 'read_oceancolour_cci()')
+   nlon = ncdf_dim_length(fid, 'lon', 'read_oceancolour_cci()')
+   nlat = ncdf_dim_length(fid, 'lat', 'read_oceancolour_cci()')
    if (verbose) write(*,*) 'Dimensions are (time, lon, lat): ', ntime, nlon, nlat
    if (ntime .gt. 1) then
       write(*,*) 'Error: read_oceancolour_cci(): Time dimension is not 1. ' // &
@@ -201,8 +201,8 @@ function read_oceancolour_cci(path_to_file, occci, wavelengths, verbose) &
    !allocate(occci%lon(nlon))
    !allocate(occci%lat(nlat))
    ! Read the data into these arrays
-   !call ncdf_read_array(fid, lon, occci%lon, verbose)
-   !call ncdf_read_array(fid, lat, occci%lat, verbose)
+   !call ncdf_read_array(fid, lon, occci%lon)
+   !call ncdf_read_array(fid, lat, occci%lat)
    ! Rather than reading (and storing) the entire lat/lon arrays, we
    ! assume we are dealing with a regular grid and simply calculate the
    ! grid spacing
@@ -275,9 +275,9 @@ function read_oceancolour_cci(path_to_file, occci, wavelengths, verbose) &
             occci%iwavelength = j
          end where
          if (verbose) write(*,*) 'Reading data for Wvl: ', occci%wavelength(j)
-         call ncdf_read_array(fid, occci_atotvar(i), cache, verbose)
+         call ncdf_read_array(fid, occci_atotvar(i), cache)
          occci%atot(:,:,j) = cache
-         call ncdf_read_array(fid, occci_bbpvar(i), cache, verbose)
+         call ncdf_read_array(fid, occci_bbpvar(i), cache)
          occci%bbs(:,:,j) = cache
          j = j+1
       end if
@@ -436,7 +436,7 @@ subroutine get_ocean_colour(cyear, cmonth, occci_path, lat, lon, &
    ! Check that our data is within the OceanColour_cci data record
    if ((iyear .lt. 1997) .or. &
        ((iyear .eq. 1997) .and. (imonth .lt. 9)) .or. &
-       (iyear .gt. 2013)) then
+       (iyear .gt. 2020)) then
       cyear2 = 'XXXX'
    else
       cyear2 = cyear
@@ -447,10 +447,7 @@ subroutine get_ocean_colour(cyear, cmonth, occci_path, lat, lon, &
       occci_path_file = occci_path
    else
       occci_path_full = trim(adjustl(occci_path))//'/'//trim(adjustl(cyear2))
-      occci_file_regex = 'ESACCI-OC-L3S-IOP-MERGED-1M_MONTHLY_4km_GEO_..._OC.v._QAA-'// &
-           trim(adjustl(cyear2))//trim(adjustl(cmonth))//'-fv.\..\.nc'
-
-      occci_file_regex = 'ESACCI-OC-L3S-OC_PRODUCTS-MERGED-1M_MONTHLY_4km_GEO_..._OC._QAA-'// &
+      occci_file_regex = 'ESACCI-OC-L3S-IOP-MERGED-1M_MONTHLY_4km_GEO_..._OCx_QAA-'// &
            trim(adjustl(cyear2))//trim(adjustl(cmonth))//'-fv.\..\.nc'
       if (match_file(trim(occci_path_full), trim(occci_file_regex), occci_file) .ne. 0) then
          occci_file_regex = 'ESACCI-OC-L3S-OC_PRODUCTS-MERGED-1M_MONTHLY_4km_GEO_..._OC._QAA-'//&

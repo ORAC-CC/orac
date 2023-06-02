@@ -40,13 +40,12 @@
 !-------------------------------------------------------------------------------
 
 subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, read_ws, read_bs, &
-                        read_QC, verbose, stat)
+                        read_QC, mcd43_maxqa, verbose, stat)
 
    use preproc_constants_m
+   use hdf_m, only: DFACC_READ
 
    implicit none
-
-   include "hdf.f90"
 
    ! Input variables
    character(len=*), intent(in) :: path_to_file
@@ -55,6 +54,7 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, read_ws, read_bs, &
    logical,          intent(in) :: read_ws
    logical,          intent(in) :: read_bs
    logical,          intent(in) :: read_QC
+   integer,          intent(in) :: mcd43_maxqa
    logical,          intent(in) :: verbose
 
    ! Output variables
@@ -130,7 +130,8 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, read_ws, read_bs, &
    ! First off, find out what grids are in the file - there should only be one.
    ! We'll need it's name to "attach" to it and extract the data
    if (verbose) write(*,*) 'Reading: ', trim(path_to_file)
-   stat = gdinqgrid(path_to_file, gridlist, gridlistlen)
+   stat = 0
+   stat = gdinqgrid(trim(adjustl(path_to_file)), gridlist, gridlistlen)
    if (stat .ne. 1) then
       write(*,*) 'ERROR: read_mcd43c3(), problem with gdinqgrid(): ', stat
       stop error_stop_code
@@ -142,7 +143,7 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, read_ws, read_bs, &
    ! (using the name returned above)
    fid = gdopen(path_to_file, DFACC_READ)
 
-   gid = gdattach(fid, trim(gridlist))
+   gid = gdattach(fid, trim(adjustl(gridlist)))
 
    if (verbose) write(*,*) 'File and grid IDs are: ', fid, gid
 
@@ -228,7 +229,7 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, read_ws, read_bs, &
       allocate(mcd%percent_snow(1,1))
       allocate(mcd%percent_inputs(1,1))
 
-      mcd%quality(1,1) = 127
+      mcd%quality(1,1) = 0
       mcd%local_solar_noon(1,1) = 127
       mcd%percent_snow(1,1) = 127
       mcd%percent_inputs(1,1) = 127
@@ -258,7 +259,7 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, read_ws, read_bs, &
          dataname = 'Albedo_WSA_' // trim(BandList(bands(i)))
 
          if (verbose) write(*,*) 'Reading variable: ', trim(dataname)
-         stat = gdrdfld(gid, trim(dataname), start, stride, edge, tmpdata)
+         stat = gdrdfld(gid, trim(adjustl(dataname)), start, stride, edge, tmpdata)
          if (stat .ne. 0) then
             write(*,*) 'ERROR: read_mcd43c3(), gdrdfld(): ', stat
             stop error_stop_code
@@ -283,7 +284,11 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, read_ws, read_bs, &
                end if
             end do
          end do
-
+         
+         ! Apply QA filtering if desired. Pixels with QA worse than threshold are set to fill
+         if (read_QC) then
+           where (mcd%quality .gt. mcd43_maxqa) mcd%WSA(:,:,i) = sreal_fill_value
+         endif
       end if
 
       ! Read the black sky albedo
@@ -291,7 +296,7 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, read_ws, read_bs, &
          dataname = 'Albedo_BSA_' // trim(BandList(bands(i)))
 
          write(*,*) 'Reading parameter: ', dataname
-         stat = gdrdfld(gid, dataname, start, stride, edge, tmpdata)
+         stat = gdrdfld(gid, trim(adjustl(dataname)), start, stride, edge, tmpdata)
          if (stat .ne. 0) then
             write(*,*) 'ERROR: read_mcd43c3(), gdrdfld(): ', stat
             stop error_stop_code
@@ -316,7 +321,11 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, read_ws, read_bs, &
                end if
             end do
          end do
-
+         
+         ! Apply QA filtering if desired. Pixels with QA worse than threshold are set to fill
+         if (read_QC) then
+           where (mcd%quality .gt. mcd43_maxqa) mcd%WSA(:,:,i) = sreal_fill_value
+         endif
       end if
    end do
 

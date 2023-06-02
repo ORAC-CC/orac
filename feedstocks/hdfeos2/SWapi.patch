@@ -1,8 +1,8 @@
 Subject: Fix use of uninitialised pointer.
-diff -upN hdfeos/src/SWapi.c hdfeos2/src/SWapi.c'
---- hdfeos/src/SWapi.c	2019-02-11 13:01:30.721040054 +0000
-+++ hdfeos2/src/SWapi.c	2019-02-11 12:55:20.371945678 +0000
-@@ -14073,7 +14073,7 @@ SWllmapedidxinfo(int32 swathID, const ch
+diff -upN hdfeos/src/SWapi.c hdfeos2/src/SWapi.c
+--- a/src/SWapi.c	2019-02-11 13:01:30.721040054 +0000
++++ b/src/SWapi.c	2019-02-11 12:55:20.371945678 +0000
+@@ -13976,7 +13976,7 @@ SWllmapedidxinfo(int32 swathID, const ch
    char            dimname0[HDFE_DIMBUFSIZE],dimname1[HDFE_DIMBUFSIZE];
    char            geodim[256];   /* Geolocation field dimension list */
    char            geodimbuf[256];/* Geolocation field dimension list */
@@ -11,8 +11,8 @@ diff -upN hdfeos/src/SWapi.c hdfeos2/src/SWapi.c'
    int32           slen[64],slen2[64];       /* String length array  */
    char           *ptr[64],*ptr2[64];	    /* String pointer array */
    int32           dumdims[8];	     /* Dimensions from SWfieldinfo */
-@@ -14116,7 +14116,7 @@ SWllmapedidxinfo(int32 swathID, const ch
-       l_index[iDim] = 0;
+@@ -14019,7 +14019,7 @@ SWllmapedidxinfo(int32 swathID, const ch
+       index[iDim] = 0;
      }
  
 -  for(iDim=0; iDim<8; iDim++)
@@ -20,7 +20,7 @@ diff -upN hdfeos/src/SWapi.c hdfeos2/src/SWapi.c'
      {
        
        if(ptr[iDim] == NULL) break;
-@@ -14130,12 +14130,12 @@ SWllmapedidxinfo(int32 swathID, const ch
+@@ -14033,12 +14033,12 @@ SWllmapedidxinfo(int32 swathID, const ch
  
        /* Parse Data Field Dimlist & find mapping */
        /* --------------------------------------- */
@@ -35,7 +35,7 @@ diff -upN hdfeos/src/SWapi.c hdfeos2/src/SWapi.c'
  	{
  	  memcpy(utlbuf, ptr2[i], slen2[i]);
  	  utlbuf[slen2[i]] = 0;
-@@ -14184,7 +14184,7 @@ SWllmapedidxinfo(int32 swathID, const ch
+@@ -14087,7 +14087,7 @@ SWllmapedidxinfo(int32 swathID, const ch
  	  
  	  /* Loop through all dimensions and search for mapping */
  	  /* -------------------------------------------------- */

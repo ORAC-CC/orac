@@ -547,5 +547,12 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
         1, 1, imager_geolocation%ny, &
         1, 1, channel_info%nchannels_total)
 
+   call ncdf_write_array( &
+        netcdf_info%ncid_msi, &
+        'cal_data', &
+        netcdf_info%vid_cal_data, &
+        imager_measurements%cal_gain(:), &
+        1, 1, channel_info%nchannels_total)
+
 
 end subroutine netcdf_output_write_swath

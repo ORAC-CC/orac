@@ -52,9 +52,8 @@ subroutine read_swansea_climatology(swansea_surf_path, nbands, bands, &
 
    use mcd43c_m
    use orac_ncdf_m
-#ifdef __PGI
    use ieee_arithmetic
-#endif
+
    implicit none
 
    character(len=*),   intent(in)  :: swansea_surf_path
@@ -97,13 +96,13 @@ subroutine read_swansea_climatology(swansea_surf_path, nbands, bands, &
 
    ! Read edges of grid
    allocate(dim_values(data%nlon))
-   call ncdf_read_array(fid, 'lon', dim_values, .false.)
+   call ncdf_read_array(fid, 'lon', dim_values)
    data%lon0 = dim_values(1)
    data%lon_invdel = 1.0 / (dim_values(2) - dim_values(1))
    deallocate(dim_values)
 
    allocate(dim_values(data%nlat))
-   call ncdf_read_array(fid, 'lat', dim_values, .false.)
+   call ncdf_read_array(fid, 'lat', dim_values)
    data%lat0 = dim_values(1)
    data%lat_invdel = 1.0 / (dim_values(2) - dim_values(1))
    deallocate(dim_values)
@@ -111,25 +110,16 @@ subroutine read_swansea_climatology(swansea_surf_path, nbands, bands, &
    ! Read Swansea s climatology fields
    allocate(data%wsa(data%nlon, data%nlat, data%nbands))
    do i = 1, data%nbands
-      call ncdf_read_array(fid, swan_s_band_names(bands(i)), &
-           data%wsa(:,:,i), .false.)
+      call ncdf_read_array(fid, swan_s_band_names(bands(i)), data%wsa(:,:,i))
    end do
-#ifdef __PGI
    where (ieee_is_nan(data%wsa)) data%wsa = sreal_fill_value
-#else
-   where (isnan(data%wsa)) data%wsa = sreal_fill_value
-#endif
 
    ! Read Seansea p climatology fields
    allocate(data%bsa(data%nlon, data%nlat, n_swanviews))
    do i = 1, n_swanviews
-      call ncdf_read_array(fid, swan_p_band_names(i), data%bsa(:,:,i), .false.)
+      call ncdf_read_array(fid, swan_p_band_names(i), data%bsa(:,:,i))
    end do
-#ifdef __PGI
     where (ieee_is_nan(data%bsa)) data%bsa = sreal_fill_value
-#else
-   where (isnan(data%bsa)) data%bsa = sreal_fill_value
-#endif
 
    ! Placeholders because we're borrowing variables from mcd43c3
    allocate(data%quality(1,1))

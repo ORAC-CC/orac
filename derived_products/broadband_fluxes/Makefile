@@ -80,7 +80,7 @@ process_broadband_fluxes: $(ORAC_OBJ_MAIN) libprocess_broadband_fluxes.a $(ORAC_
 	$(F90) -o process_broadband_fluxes $(LFLAGS) $(ORAC_OBJ_MAIN) libprocess_broadband_fluxes.a $(ORAC_COMMON)/liborac_common.a -I./$(OBJS) $(LIBS)
 
 libprocess_broadband_fluxes.a: $(ORAC_OBJ) Makefile
-	ar -rs libprocess_broadband_fluxes.a $(ORAC_OBJ)
+	$(AR) -rs libprocess_broadband_fluxes.a $(ORAC_OBJ)
 
 # Rebuild dependencies housed in dependencies.inc
 depend:

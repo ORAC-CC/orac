@@ -31,8 +31,6 @@ subroutine read_modis_time(fid,SDS_name,startyy,stopyy,temp)
 
    implicit none
 
-   include "hdf.f90"
-
    integer,            intent(in)  :: fid
    character(len=*),   intent(in)  :: SDS_name
    integer(kind=lint), intent(in)  :: startyy, stopyy

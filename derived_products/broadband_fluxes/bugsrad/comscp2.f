@@ -94,10 +94,10 @@
             end if
             wccld(i,l) = min(.999999_dbl_kind,wccld(i,l))
 
-     	   end do
-	end do
+         end do
+      end do
 
-	return
-	end subroutine comscp2
+      return
+      end subroutine comscp2
 
 c-----------------------------------------------------------------------

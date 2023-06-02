@@ -21,9 +21,12 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-   if (verbose) then
-      print*, 'Reading variable: ', trim(name)
-   end if
+#ifdef DEBUG
+   print*, 'Reading variable: ', trim(name)
+   print*, 'Start:  ', start_pos
+   print*, 'Count:  ', counter
+   print*, 'Stride: ', stride
+#endif
 
    ! read data
    ierr = nf90_get_var(ncid, vid, arr, start_pos, counter, stride)
@@ -35,24 +38,40 @@
 
    ! replace file's fill value and out of range values with our own and apply
    ! scale factor/offset
-   if (fv_flag) &
-      where (arr.eq.fv) arr = fill
-   if (vr_flag) then
-      where (arr.ne.fill .and. arr.lt.vmin) arr = fill
-      where (arr.ne.fill .and. arr.gt.vmax) arr = fill
-   end if
-   if (sf .ne. 1.0 .or. of .ne. 0.0) then
-      where (arr.ne.fill) arr = sf*arr + of
+   if (fv_flag) then
+      if (vr_flag) then
+         where (arr.ne.fv .and. arr.lt.vmin) arr = fv
+         where (arr.ne.fv .and. arr.gt.vmax) arr = fv
+      end if
+      if (sf .ne. 1.0 .or. of .ne. 0.0) then
+         where (arr.ne.fv)
+            arr = sf*arr + of
+         elsewhere
+            arr = fill
+         endwhere
+      end if
+   else
+      if (sf .ne. 1.0 .or. of .ne. 0.0) then
+         if (vr_flag) then
+            where(arr.ge.vmin .and. arr.le.vmax)
+               arr = sf*arr + of
+            elsewhere
+               arr = fill
+            endwhere
+         else
+            arr = sf*arr + of
+         end if
+      end if
    end if
 
    ! additional information for print out
-   if (verbose) then
-      if (nf90_get_att(ncid, vid, 'units', unit).eq.NF90_NOERR) then
-           call c_to_f_str(unit)
-           print*, 'Field units: ', trim(unit)
-      end if
-      if (vr_flag) then
-           print*, 'Field valid min: ', sf*vmin + of
-           print*, 'Field valid max: ', sf*vmax + of
-      end if
+#ifdef DEBUG
+   if (nf90_get_att(ncid, vid, 'units', unit).eq.NF90_NOERR) then
+      call c_to_f_str(unit)
+      print*, 'Field units: ', trim(unit)
    end if
+   if (vr_flag) then
+      print*, 'Field valid min: ', sf*vmin + of
+      print*, 'Field valid max: ', sf*vmax + of
+   end if
+#endif

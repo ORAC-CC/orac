@@ -1,4 +1,4 @@
-{% set version = "1.0" %}
+{% set version = "1.0.2" %}
 
 package:
   name: seviri_util
@@ -6,11 +6,11 @@ package:
 
 source:
   - git_url: https://github.com/gmcgarragh/seviri_util
+    patches: make.patch
   - path: make.inc
 
 build:
-  number: 0
-  skip: True # [win]
+  number: 1
   run_exports:
     - {{ pin_subpackage('seviri_util', max_pin='x.x.x') }}
 

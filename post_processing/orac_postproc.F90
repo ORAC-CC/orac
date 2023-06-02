@@ -511,20 +511,21 @@ subroutine orac_postproc(mytask, ntasks, lower_bound, upper_bound, &
              end if
           end do
        else ! Use traditional selection method
+          ! Load only the cost values from input files
+          do i = 1, n_in_files
+             call alloc_input_data_only_cost(loop_ind(i), input_primary(i), &
+                  input_secondary(i))
+             call read_input_primary_class(in_files_primary(i), &
+                  input_primary(i), loop_ind(i), .True., chunk_starts(i_chunk), &
+                  verbose)
+          end do
+
           ! Allocate a primary array to store temporary input data
           call alloc_input_data_primary_all(indexing, input_primary(1))
 
           if (do_secondary) then
              call alloc_input_data_secondary_all(indexing, input_secondary(1))
           end if
-
-          ! Load only the cost values from input files
-          do i = 1, n_in_files
-             call alloc_input_data_only_cost(loop_ind(i), input_primary(i))
-             call read_input_primary_class(in_files_primary(i), &
-                  input_primary(i), loop_ind(i), .True., chunk_starts(i_chunk), &
-                  verbose)
-          end do
 
           ! Find the input file with the lowest cost for each pixel
           do j=indexing%Y0, indexing%Y1
@@ -735,11 +736,23 @@ subroutine orac_postproc(mytask, ntasks, lower_bound, upper_bound, &
 
 
        ! Deallocate all input structures except for the first one
-       do i = 1, n_in_files
-          call dealloc_input_data_primary_class(input_primary(i))
+       if (.not. use_new_bayesian_selection) then
+          do i = 1, n_in_files
+             call dealloc_input_data_primary_class(input_primary(i))
+             if (do_secondary)  &
+                  call dealloc_input_data_secondary_class(input_secondary(i))
+          end do
+       else
+          call dealloc_input_data_primary_all(input_primary(1))
           if (do_secondary)  &
-               call dealloc_input_data_secondary_class(input_secondary(i))
-       end do
+               call dealloc_input_data_secondary_all(input_secondary(1))
+
+          do i = 2, n_in_files
+             call dealloc_input_data_primary_class(input_primary(i))
+             if (do_secondary)  &
+                  call dealloc_input_data_secondary_class(input_secondary(i))
+          end do
+       end if
 
 
        ! If parallax correction is enabled then correct parallax
@@ -835,6 +848,9 @@ subroutine orac_postproc(mytask, ntasks, lower_bound, upper_bound, &
     end if
 
     call dealloc_common_indices(indexing%common_indices_t)
+
+    deallocate(chunk_starts)
+    deallocate(chunk_ends)
 
 #ifdef WRAPPER
 end subroutine orac_postproc

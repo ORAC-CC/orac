@@ -1,0 +1,13 @@
+diff --git a/libdispatch/dhttp.c b/libdispatch/dhttp.c
+index b0cc9012..9489546c 100644
+--- a/libdispatch/dhttp.c
++++ b/libdispatch/dhttp.c
+@@ -307,7 +307,7 @@ execute(NC_HTTP_STATE* state, int headcmd)
+     if(httpcodep) *httpcodep = httpcode;
+ 
+     if(headcmd) {
+-        cstat = CURLERR(curl_easy_setopt(curl, CURLOPT_NOBODY, 0L));
++        cstat = CURLERR(curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L));
+         if(cstat != CURLE_OK) goto fail;
+     }
+ 

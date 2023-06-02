@@ -993,7 +993,7 @@ module gases_ckd
 contains
 
 subroutine gases  ( ncol ,   nlm ,    ib ,    ig   &
-     ,                pp ,    dp ,    tt ,  rmix   &
+     ,               ppl ,    dp ,    tt ,  rmix   &
      ,             o3mix , umco2 , umch4 , umn2o   &
      ,                hk ,    tg ,   pkd ,   ip1   &
      ,               ip2                           &
@@ -1020,14 +1020,12 @@ subroutine gases  ( ncol ,   nlm ,    ib ,    ig   &
    ,umn2o        !Concentration of N2O                          (???).
 
    real (kind=dbl_kind), intent(in), dimension(ncol,nlm):: &
-    dp          &!Layer Thickness                               (hPa).
+    ppl         &!Layer Pressure                                (hPa).
+   ,dp          &!Layer Thickness                               (hPa).
    ,tt          &!Layer Temperature                               (K).
    ,rmix        &!Layer Water Vapor Mixing Ratio              (kg/kg).
    ,o3mix       &!Layer Ozone Mixing Ratio                    (kg/kg).
    ,pkd          !Used in conjunction with pressure weighting     (-).
-
-   real (kind=dbl_kind), intent(in), dimension(ncol,nlm+1):: &
-    pp           !Level Pressure                                (hPa).
 
    ! OUTPUT ARGUMENTS:
    real (kind=dbl_kind), intent(out):: &
@@ -1150,10 +1148,10 @@ subroutine gases  ( ncol ,   nlm ,    ib ,    ig   &
       ! (800-670 cm^-1):  overlapping absorption by H2O and CO2
       ! using approach two of Fu(1991).
 
-      where (pp .ge. 63.1)
+      where (ppl .ge. 63.1)
          pq = rmix
       elsewhere
-        pq = 0._dbl_kind
+         pq = 0._dbl_kind
       end where
 
       call qk(ncol,nlm,c14hca(:,:,ig),tt,fkga,pkd,ip1,ip2)
@@ -1167,10 +1165,10 @@ subroutine gases  ( ncol ,   nlm ,    ib ,    ig   &
       ! (670-540 cm^-1):  overlapping absorption by H2O and CO2
       ! using approach two of Fu(1991).
 
-      where (pp .ge. 63.1)
+      where (ppl .ge. 63.1)
          pq = rmix
       elsewhere
-        pq = 0._dbl_kind
+         pq = 0._dbl_kind
       end where
       call qk(ncol,nlm,c15hca(:,:,ig),tt,fkga,pkd,ip1,ip2)
       call qk(ncol,nlm,c15hcb(:,:,ig),tt,fkgb,pkd,ip1,ip2)

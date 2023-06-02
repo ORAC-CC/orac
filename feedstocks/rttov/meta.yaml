@@ -1,4 +1,7 @@
-{% set version = "12.2" %}
+{% set version = "13.1" %}
+{% set build = 2 %}
+
+{% set mpi = mpi or 'nompi' %}
 
 package:
   name: rttov
@@ -7,59 +10,66 @@ package:
 source:
   # Can't use this as the contents change with each download
   #url: https://www.nwpsaf.eu/site/user/acpovey/?profiletab=downloadtab&fn=download&fname=RTTOV%20v12
-  url: http://groups.physics.ox.ac.uk/eodg/orac/orac_libraries/rttov122.tar.gz
-  sha256: 9f77f7cfc416e9b9d99712671995aa1fc67aba26168bad22789e0361eff48b3c
+  url: http://eodg.atm.ox.ac.uk/user/povey/rttov{{ version|replace('.','') }}.tar.xz
+  sha256: f3bec1ca3ba952bc49e19d851144f9d51126bfe59f473be4992eac0b3366dbb2
   patches:
-    - local.patch
+    - conda.patch
     - arch.patch
+    - loop.patch
 
 build:
-  number: 0
-  skip: True  # [win]
-  script_env:
-    - RTTOV_FILES
+  number: {{ build }}
   run_exports:
-    - {{ pin_subpackage('rttov', max_pin='x.x.x') }}
+    - {{ pin_subpackage('rttov', max_pin='x.x') }}
+  {% if mpi != 'nompi' %}
+  {% set mpi_prefix = "mpi_" + mpi %}
+  {% else %}
+  {% set mpi_prefix = "nompi" %}
+  {% endif %}
+  # add build string so packages can depend on
+  # mpi or nompi variants explicitly:
+  # `rttov * mpi_mpich_*` for mpich
+  # `rttov * mpi_*` for any mpi
+  # `rttov * nompi_*` for no mpi
+  string: {{ mpi_prefix }}_h{{ PKG_HASH }}_{{ build }}
 
 requirements:
   build:
     - {{ compiler('c') }}
-    - {{ compiler('cxx') }}
     - {{ compiler('fortran') }}
+    - make
+    - numpy {{ numpy }}
     - perl
-    - python >=3.6
-    - numpy x.x
+    - python {{ python }}
   host:
+    - python
+    - numpy
+    # need to list hdf5 and libnetcdf twice to get version pinning from
+    # conda_build_config and build pinning from {{ mpi_prefix }}
+    - {{ mpi }} # [mpi != 'nompi']
     - hdf5
+    - hdf5 * {{ mpi_prefix }}_*
+    - libnetcdf
+    - libnetcdf * {{ mpi_prefix }}_*
     - netcdf-fortran
-    - lapack
-    - python >=3.6
-    - numpy x.x
-    - scipy
-    - matplotlib
-    - h5py
-    - wxpython
+    - netcdf-fortran * {{ mpi_prefix }}_*
   run:
-    - hdf5
-    - netcdf-fortran
-    - lapack
-    - python >=3.6
-    - numpy x.x
-    - scipy
-    - matplotlib
-    - h5py
-    - wxpython
+    - python
+    - {{ pin_compatible('numpy') }}
+    - {{ mpi }} # [mpi != 'nompi']
+    - hdf5 * {{ mpi_prefix }}_*
+    - libnetcdf * {{ mpi_prefix }}_*
+    - netcdf-fortran * {{ mpi_prefix }}_*
 
 test:
-  commands:
-    - test -f ${PREFIX}/lib/librttov12_brdf_atlas.a # [not win]
-    - test -f ${PREFIX}/lib/librttov12_coef_io.a # [not win]
-    - test -f ${PREFIX}/lib/librttov12_emis_atlas.a # [not win]
-    - test -f ${PREFIX}/lib/librttov12_main.a # [not win]
+  requires:
+    - perl
+  script_env:
+    - RTTOV_FILES
 
 about:
   home: https://www.nwpsaf.eu/site/software/rttov/
-  license: Free for individual use on application
+  license: PROPRIETARY
   summary: 'A very fast radiative transfer model for spectrometers and interferometers'
 
 extra:

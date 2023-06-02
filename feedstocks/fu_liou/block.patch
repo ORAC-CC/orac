@@ -20,7 +20,8 @@ diff -upN Ed4_LaRC_FuLiou/lib/src/aerosols_200511.f LaRC_FuLiou/lib/src/aerosols
 +      integer, parameter :: mbx = 21, naer = 29, nrh = 8
        integer i,j
  !      parameter (nrh=8,mbx=21,naer=29)	 
-       real, dimension(mbx,nrh,naer)::a_ssax,a_extx,a_asyx diff -rupN Ed4_LaRC_FuLiou/lib/src/cloud_optics.f LaRC_FuLiou/lib/src/cloud_optics.f
+       real, dimension(mbx,nrh,naer)::a_ssax,a_extx,a_asyx 
+diff -rupN Ed4_LaRC_FuLiou/lib/src/cloud_optics.f LaRC_FuLiou/lib/src/cloud_optics.f
 --- Ed4_LaRC_FuLiou/lib/src/cloud_optics.f	2010-10-13 14:51:26.000000000 +0100
 +++ LaRC_FuLiou/lib/src/cloud_optics.f	2019-02-05 17:49:06.937670489 +0000
 @@ -90,9 +90,9 @@ c  *************************************

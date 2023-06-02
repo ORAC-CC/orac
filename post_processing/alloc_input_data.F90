@@ -46,17 +46,128 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine alloc_input_data_only_cost(ind,data)
+subroutine alloc_input_data_only_cost(ind, data, empty)
 
    implicit none
 
-   type(input_indices_t),      intent(in)    :: ind
-   type(input_data_primary_t), intent(inout) :: data
+   type(input_indices_t),        intent(in)    :: ind
+   type(input_data_primary_t),   intent(inout) :: data
+   type(input_data_secondary_t), intent(inout) :: empty
 
    allocate(data%costja(ind%X0:ind%X1, ind%Y0:ind%Y1))
    data%costja = sreal_fill_value
    allocate(data%costjm(ind%X0:ind%X1, ind%Y0:ind%Y1))
    data%costjm = sreal_fill_value
+
+   nullify(data%aot550)
+   nullify(data%aot550_uncertainty)
+   nullify(data%aot870)
+   nullify(data%aot870_uncertainty)
+   nullify(data%aer)
+   nullify(data%aer_uncertainty)
+   nullify(data%rho)
+   nullify(data%rho_uncertainty)
+   nullify(data%swansea_s)
+   nullify(data%swansea_s_uncertainty)
+   nullify(data%swansea_p)
+   nullify(data%swansea_p_uncertainty)
+   nullify(data%diffuse_frac)
+   nullify(data%diffuse_frac_uncertainty)
+   nullify(data%cot)
+   nullify(data%cot_uncertainty)
+   nullify(data%cer)
+   nullify(data%cer_uncertainty)
+   nullify(data%ctp)
+   nullify(data%ctp_uncertainty)
+   nullify(data%ctp_corrected)
+   nullify(data%ctp_corrected_uncertainty)
+   nullify(data%cc_total)
+   nullify(data%cc_total_uncertainty)
+   nullify(data%stemp)
+   nullify(data%stemp_uncertainty)
+   nullify(data%cth)
+   nullify(data%cth_uncertainty)
+   nullify(data%cth_corrected)
+   nullify(data%cth_corrected_uncertainty)
+   nullify(data%ctt)
+   nullify(data%ctt_uncertainty)
+   nullify(data%ctt_corrected)
+   nullify(data%ctt_corrected_uncertainty)
+   nullify(data%cwp)
+   nullify(data%cwp_uncertainty)
+   nullify(data%cloud_albedo)
+   nullify(data%cloud_albedo_uncertainty)
+   nullify(data%cee)
+   nullify(data%cee_uncertainty)
+   nullify(data%cot2)
+   nullify(data%cot2_uncertainty)
+   nullify(data%cer2)
+   nullify(data%cer2_uncertainty)
+   nullify(data%ctp2)
+   nullify(data%ctp2_uncertainty)
+   nullify(data%cth2)
+   nullify(data%cth2_uncertainty)
+   nullify(data%ctt2)
+   nullify(data%ctt2_uncertainty)
+   nullify(data%cwp2)
+   nullify(data%cwp2_uncertainty)
+
+   nullify(data%cccot_pre)
+   nullify(data%cldmask)
+   nullify(data%cldmask_uncertainty)
+   nullify(data%ann_phase)
+   nullify(data%cphcot)
+   nullify(data%ann_phase_uncertainty)
+   nullify(data%phase)
+   nullify(data%phase_pavolonis)
+
+   nullify(data%time)
+   nullify(data%lat)
+   nullify(data%lon)
+   nullify(data%sol_zen)
+   nullify(data%sat_zen)
+   nullify(data%rel_azi)
+   nullify(data%sat_azi)
+   nullify(data%niter)
+   nullify(data%qcflag)
+   nullify(data%channels_used)
+   nullify(data%variables_retrieved)
+   nullify(data%lsflag)
+   nullify(data%lusflag)
+   nullify(data%dem)
+   nullify(data%illum)
+   nullify(data%cldtype)
+
+   nullify(empty%aot550_ap)
+   nullify(empty%aot550_fg)
+   nullify(empty%aer_ap)
+   nullify(empty%aer_fg)
+   nullify(empty%rho_ap)
+   nullify(empty%rho_fg)
+   nullify(empty%swansea_s_ap)
+   nullify(empty%swansea_s_fg)
+   nullify(empty%swansea_p_ap)
+   nullify(empty%swansea_p_fg)
+   nullify(empty%cot_ap)
+   nullify(empty%cot_fg)
+   nullify(empty%cer_ap)
+   nullify(empty%cer_fg)
+   nullify(empty%ctp_ap)
+   nullify(empty%ctp_fg)
+   nullify(empty%stemp_fg)
+   nullify(empty%stemp_ap)
+   nullify(empty%cot2_ap)
+   nullify(empty%cot2_fg)
+   nullify(empty%cer2_ap)
+   nullify(empty%cer2_fg)
+   nullify(empty%ctp2_ap)
+   nullify(empty%ctp2_fg)
+
+   nullify(empty%albedo)
+   nullify(empty%channels)
+   nullify(empty%y0)
+   nullify(empty%residuals)
+   nullify(empty%ds)
 
 end subroutine alloc_input_data_only_cost
 
@@ -395,6 +506,28 @@ subroutine alloc_input_data_primary_class(ind, data)
 
    call alloc_input_data_primary_common(ind, data)
 
+   nullify(data%cccot_pre)
+   nullify(data%cldmask)
+   nullify(data%cldmask_uncertainty)
+   nullify(data%ann_phase)
+   nullify(data%cphcot)
+   nullify(data%ann_phase_uncertainty)
+   nullify(data%phase)
+   nullify(data%phase_pavolonis)
+
+   nullify(data%time)
+   nullify(data%lat)
+   nullify(data%lon)
+   nullify(data%sol_zen)
+   nullify(data%sat_zen)
+   nullify(data%rel_azi)
+   nullify(data%sat_azi)
+   nullify(data%lsflag)
+   nullify(data%lusflag)
+   nullify(data%dem)
+   nullify(data%illum)
+   nullify(data%cldtype)
+
 end subroutine alloc_input_data_primary_class
 
 
@@ -548,5 +681,8 @@ subroutine alloc_input_data_secondary_class(ind, data)
    type(input_data_secondary_t), intent(inout) :: data
 
    call alloc_input_data_secondary_common(ind, data)
+
+   nullify(data%channels)
+   nullify(data%albedo)
 
 end subroutine alloc_input_data_secondary_class

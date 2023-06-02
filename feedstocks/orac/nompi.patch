@@ -1,0 +1,63 @@
+Subject: Adapt config files to the anaconda environment without openmp.
+--- a/config/arch.conda.inc	2022-08-12 13:18:54.203033707 +0100
++++ b/config/arch.conda.inc	2022-08-12 16:30:41.874308585 +0100
+@@ -17,19 +17,19 @@
+ 
+ # Set Fortran 77 compiler flags
+-F77FLAGS  = -O3 -cpp -ffree-line-length-0 -g -fcheck=bounds -fallow-argument-mismatch
++F77FLAGS  = -O3 -cpp -ffree-line-length-0 -fcheck=bounds -fallow-argument-mismatch
+ # Uncomment if extra warnings are required.  Take out -Werror if that annoys you.
+ #FF77LAGS += -Wall -Werror -Wno-conversion -Wno-uninitialized -Wno-unused-dummy-argument -Wtabs
+ 
+ # Set Fortran 90 compiler flags
+-FFLAGS    = -O3 -cpp -ffree-line-length-0 -g -fcheck=bounds -fallow-argument-mismatch
++FFLAGS    = -O3 -cpp -ffree-line-length-0 -fcheck=bounds -fallow-argument-mismatch
+ # Uncomment if OpenMP support is desired. Highly recommented.
+-FFLAGS   += -fopenmp
++#FFLAGS   += -fopenmp
+ # Uncomment if extra warnings are required.  Take out -Werror if that annoys you.
+ #FFLAGS   += -Wall -Werror -Wno-conversion -Wno-uninitialized -Wno-unused-dummy-argument -Wtabs
+ 
+-LFLAGS = -fopenmp
++LFLAGS =
+ 
+ # Set C compiler  flags
+-CFLAGS = -O3 -g
++CFLAGS = -O3
+ # Uncomment if extra warnings are required.
+ #CFLAGS += -Wall -Werror
+--- a/config/lib.conda.inc	2022-08-12 13:18:54.203033707 +0100
++++ b/config/lib.conda.inc	2022-08-12 16:31:17.946772047 +0100
+@@ -1,8 +1,8 @@
+ # Base directory for all libraries and include files taken from the
+-# environmental variable CONDA_PREFIX.
++# environmental variable PREFIX.
+ 
+ # Set up libraries and includes
+-LIBS = -L$(CONDA_PREFIX)/lib \
++LIBS = -L$(PREFIX)/lib \
+        -lemosR64 -lemos -lfftw3 \
+        -lhdfeos -lGctp \
+        -leccodes_f90 -leccodes \
+@@ -16,17 +16,17 @@
+        -ljpeg -lm -lz -lstdc++ -lblas -llapack
+ 
+ INC = -I./ \
+-      -I$(CONDA_PREFIX)/include \
+-      -I$(CONDA_PREFIX)/mod
++      -I$(PREFIX)/include \
++      -I$(PREFIX)/mod
+ 
+ CINC = -I./ \
+-       -I$(CONDA_PREFIX)/include
++       -I$(PREFIX)/include
+ 
+ 
+ # Configuration options
+ 
+ # Uncomment if you want to enable OpenMP for RTTOV computations.
+-INC  += -DINCLUDE_RTTOV_OPENMP
++#INC  += -DINCLUDE_RTTOV_OPENMP
+ 
+ # Uncomment if ATSR support is desired.
+ LIBS += -lepr_api

@@ -32,13 +32,12 @@
 !-------------------------------------------------------------------------------
 
 subroutine read_mcd43c1(path_to_file, mcd, nbands, bands, read_params, &
-                        read_QC, verbose, stat)
+                        read_QC, mcd43_maxqa, verbose, stat)
 
    use preproc_constants_m
+   use hdf_m, only: DFACC_READ
 
    implicit none
-
-   include "hdf.f90"
 
    ! Input variables
    character(len=*), intent(in) :: path_to_file
@@ -46,6 +45,7 @@ subroutine read_mcd43c1(path_to_file, mcd, nbands, bands, read_params, &
    integer,          intent(in) :: bands(:)
    logical,          intent(in) :: read_params
    logical,          intent(in) :: read_QC
+   integer,          intent(in) :: mcd43_maxqa
    logical,          intent(in) :: verbose
 
    ! Output variables
@@ -121,7 +121,8 @@ subroutine read_mcd43c1(path_to_file, mcd, nbands, bands, read_params, &
    ! First off, find out what grids are in the file - there should only be one.
    ! We'll need it's name to "attach" to it and extract the data
    if (verbose) write(*,*) 'Reading: ', trim(path_to_file)
-   stat = gdinqgrid(path_to_file, gridlist, gridlistlen)
+   stat = 0
+   stat = gdinqgrid(trim(adjustl(path_to_file)), gridlist, gridlistlen)
    if (stat .ne. 1) then
       write(*,*) 'ERROR: read_mcd43c1(), problem with gdinqgrid(): ', stat
       stop error_stop_code
@@ -131,9 +132,9 @@ subroutine read_mcd43c1(path_to_file, mcd, nbands, bands, read_params, &
 
    ! Open the datafile and get a file descriptor, and then attach to the grid
    ! (using the name returned above)
-   fid = gdopen(path_to_file, DFACC_READ)
+   fid = gdopen(trim(adjustl(path_to_file)), DFACC_READ)
 
-   gid = gdattach(fid, trim(gridlist))
+   gid = gdattach(fid, trim(adjustl(gridlist)))
 
    if (verbose) write(*,*) 'File and grid IDs are: ', fid, gid
 
@@ -219,7 +220,7 @@ subroutine read_mcd43c1(path_to_file, mcd, nbands, bands, read_params, &
       allocate(mcd%percent_snow(1,1))
       allocate(mcd%percent_inputs(1,1))
 
-      mcd%quality(1,1) = 127
+      mcd%quality(1,1) = 0
       mcd%local_solar_noon(1,1) = 127
       mcd%percent_snow(1,1) = 127
       mcd%percent_inputs(1,1) = 127
@@ -236,7 +237,7 @@ subroutine read_mcd43c1(path_to_file, mcd, nbands, bands, read_params, &
          dataname = 'BRDF_Albedo_Parameter1_' // trim(BandList(bands(i)))
 
          if (verbose) write(*,*) 'Reading parameter: ', trim(dataname)
-         stat = gdrdfld(gid, trim(dataname), start, stride, edge, tmpdata)
+         stat = gdrdfld(gid, trim(adjustl(dataname)), start, stride, edge, tmpdata)
          if (stat .ne. 0) then
             write(*,*) 'ERROR: read_mcd43c1(), gdrdfld(): ', stat
             stop error_stop_code
@@ -274,7 +275,7 @@ subroutine read_mcd43c1(path_to_file, mcd, nbands, bands, read_params, &
          dataname = 'BRDF_Albedo_Parameter2_' // trim(BandList(bands(i)))
 
          if (verbose) write(*,*) 'Reading parameter: ', trim(dataname)
-         stat = gdrdfld(gid, trim(dataname), start, stride, edge, tmpdata)
+         stat = gdrdfld(gid, trim(adjustl(dataname)), start, stride, edge, tmpdata)
          if (stat .ne. 0) then
             write(*,*) 'ERROR: read_mcd43c1(), gdrdfld(): ', stat
             stop error_stop_code
@@ -297,7 +298,7 @@ subroutine read_mcd43c1(path_to_file, mcd, nbands, bands, read_params, &
          dataname = 'BRDF_Albedo_Parameter3_' // trim(BandList(bands(i)))
 
          if (verbose) write(*,*) 'Reading parameter: ', trim(dataname)
-         stat = gdrdfld(gid, trim(dataname), start, stride, edge, tmpdata)
+         stat = gdrdfld(gid, trim(adjustl(dataname)), start, stride, edge, tmpdata)
          if (stat .ne. 0) then
             write(*,*) 'ERROR: read_mcd43c1(), gdrdfld(): ', stat
             stop error_stop_code
@@ -315,9 +316,14 @@ subroutine read_mcd43c1(path_to_file, mcd, nbands, bands, read_params, &
                end if
             end do
          end do
-
+         
+         ! Apply QA filtering if desired. Pixels with QA worse than threshold are set to fill
+         if (read_QC) then
+           where (mcd%quality .gt. mcd43_maxqa) mcd%brdf_albedo_params(:,:,1,i) = sreal_fill_value
+           where (mcd%quality .gt. mcd43_maxqa) mcd%brdf_albedo_params(:,:,2,i) = sreal_fill_value
+           where (mcd%quality .gt. mcd43_maxqa) mcd%brdf_albedo_params(:,:,3,i) = sreal_fill_value
+         endif
       end do
-
 
       deallocate(tmpdata)
    else

@@ -25,6 +25,18 @@ REGRESSION_TESTS = {
                   (1, 409, 5190, 5194), 'AVHRR'),
     'NITAVHRRS': ('noaa18_20080620_0050_99999_satproj_00000_13111_avhrr.h5',
                   (1, 409, 10150, 10154), 'AVHRR'),
+    'DAYSLSTRAS': ('S3A_SL_1_RBT____20181221T010953_20181221T011253_'
+                   '20181222T091030_0180_039_202_3240_LN2_O_NT_003.SEN3',
+                   (250, 799, 430, 434), 'SLSTR'),
+    'NITSLSTRAS': ('S3A_SL_1_RBT____20181221T133848_20181221T134148_'
+                   '20181222T201511_0179_039_209_5760_LN2_O_NT_003.SEN3',
+                   (100, 899, 280, 284), 'SLSTR'),
+    'DAYSLSTRBS': ('S3B_SL_1_RBT____20181221T002724_20181221T003024_'
+                   '20181222T080855_0179_020_059_3060_LN2_O_NT_003.SEN3',
+                   (400, 1099, 790, 794), 'SLSTR'),
+    'NITSLSTRBS': ('S3B_SL_1_RBT____20181221T125919_20181221T130219_'
+                   '20181222T201449_0179_020_066_5760_LN2_O_NT_003.SEN3',
+                   (200, 1099, 555, 559), 'SLSTR'),
     'DAYSEVIRIS': ('MSG3-SEVI-MSG15-0100-NA-20170620055740.316000000Z-'
                    '20170620055758-1314114-37.nat',
                    (300, 799, 1196, 1200), 'SEVIRI'),
@@ -75,7 +87,7 @@ def compare_nc_atts(dat0, dat1, filename, var):
             continue
 
         if (dat0.__dict__[key] != dat1.__dict__[key] and
-                key not in defaults.atts_to_ignore):
+                key not in defaults.ATTS_TO_IGNORE):
             warn(Regression(
                 filename, var + ', ' + key, 'warning',
                 'Changed attribute ({} vs {})'.format(
@@ -126,7 +138,7 @@ def compare_orac_out(file0, file1):
             dat1.variables.keys()
         )
         if variables:
-            warn(FieldMissing(file1, ', '.join(vars)), stacklevel=2)
+            warn(FieldMissing(file1, ', '.join(variables)), stacklevel=2)
 
         # Check if any variables changed
         for key in dat0.variables.keys():
@@ -153,22 +165,22 @@ def compare_orac_out(file0, file1):
                 # For floats, check if variation is acceptable
                 if att0.dtype.kind == 'f':
                     test = np.allclose(
-                        att0, att1, equal_nan=True, rtol=defaults.rtol,
-                        atol=defaults.atol
+                        att0, att1, equal_nan=True, rtol=defaults.RTOL,
+                        atol=defaults.ATOL
                     )
                 else:
                     try:
                         if isinstance(att0.scale_factor, np.floating):
                             # Packed floats consider the scale factor
                             test = np.allclose(
-                                att0, att1, equal_nan=True, rtol=defaults.rtol,
-                                atol=max(att0.scale_factor, defaults.atol)
+                                att0, att1, equal_nan=True, rtol=defaults.RTOL,
+                                atol=max(att0.scale_factor, defaults.ATOL)
                             )
                     except AttributeError:
                         # If there is no scale factor, treat as an integer
                         pass
 
-                if test or key in defaults.vars_to_accept:
+                if test or key in defaults.VARS_TO_ACCEPT:
                     warn(Acceptable(file1, key), stacklevel=2)
                 else:
                     warn(RoundingError(file1, key), stacklevel=2)
@@ -176,7 +188,7 @@ def compare_orac_out(file0, file1):
         pass
 
     finally:
-        if ('dat0' in locals() or 'dat0' in globals()):
+        if 'dat0' in locals() or 'dat0' in globals():
             dat0.close()
-        if ('dat1' in locals() or 'dat1' in globals()):
+        if 'dat1' in locals() or 'dat1' in globals():
             dat1.close()

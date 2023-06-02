@@ -1029,8 +1029,8 @@ subroutine ann_cloud_phase(channel1, channel2, channel3a, channel3b, &
          norm_diff_cc_th = ( cphcot - threshold_used ) / threshold_used
          phase_uncertainty = ( LIQUID_UNC_MAX - LIQUID_UNC_MIN ) * norm_diff_cc_th + LIQUID_UNC_MAX
       elseif ( phase_flag .eq. ICE ) then
-         norm_diff_cc_th = ( cphcot - threshold_used ) / ( 1 - threshold_used )
-         phase_uncertainty = ( ICE_UNC_MAX - ICE_UNC_MIN ) * (norm_diff_cc_th -1 ) + ICE_UNC_MAX
+         norm_diff_cc_th = ( cphcot - threshold_used ) / ( threshold_used - 1 )
+         phase_uncertainty = ( ICE_UNC_MAX - ICE_UNC_MIN ) * norm_diff_cc_th + ICE_UNC_MAX
       else
          phase_uncertainty = sreal_fill_value
       end if

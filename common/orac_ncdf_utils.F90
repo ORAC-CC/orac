@@ -839,6 +839,8 @@ subroutine ncdf_get_common_attributes(ncid, global_atts, source_atts)
               ', name: absolute_orbit_number'
          stop error_stop_code
       end if
+   else
+      source_atts%level1b_orbit_number = 'null'
    end if
 
    ierr = nf90_get_att(ncid, NF90_GLOBAL, 'Albedo_File', &

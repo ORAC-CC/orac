@@ -34,8 +34,6 @@ subroutine get_modis_time(geo_id,imager_geolocation,imager_time,n_along_track)
 
    implicit none
 
-   include "hdf.f90"
-
    integer(kind=lint),         intent(in)    :: geo_id
    type(imager_geolocation_t), intent(in)    :: imager_geolocation
    type(imager_time_t),        intent(inout) :: imager_time

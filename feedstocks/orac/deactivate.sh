@@ -1,8 +1,5 @@
 #!/bin/bash
 
-export LD_LIBRARY_PATH="${LD_LIBRARY_PATH_SAVE}"
-unset LD_LIBRARY_PATH_SAVE
-
 if [ "${PPDIR}" == "${CONDA_PREFIX}/share/libemos/tables" ]; then
     unset PPDIR
 fi

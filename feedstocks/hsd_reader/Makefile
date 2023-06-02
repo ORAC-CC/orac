@@ -26,10 +26,10 @@ all: solar.a \
 	libhimawari_util.a
 
 solar.a: $(SOLOBS)
-	ar -rs solar_util.a $(SOLOBS)
+	$(AR) -rs solar_util.a $(SOLOBS)
 
 libhimawari_util.a: $(OBJECTS) $(SOLOBS)
-	ar -rs libhimawari_util.a $(OBJECTS) $(SOLOBS)
+	$(AR) -rs libhimawari_util.a $(OBJECTS) $(SOLOBS)
 
 AHI: himawari.o himawari_headerinfo.o himawari_readheader.o himawari_utils.o himawari_nav.o himawari_readwrite.o AHI_Example.o libhimawari_util.a solar_util.a
 	$(F90) -o AHI himawari.o $(F90FLAGS) himawari_headerinfo.o himawari_readheader.o himawari_utils.o himawari_nav.o himawari_readwrite.o  AHI_Example.o libhimawari_util.a solar_util.a  $(INCDIRS) $(LIBDIRS) $(LINKS)

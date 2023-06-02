@@ -1,0 +1,84 @@
+diff -Naur netcdf-c-4.8.0.orig/CMakeLists.txt netcdf-c-4.8.0/CMakeLists.txt
+--- netcdf-c-4.8.0.orig/CMakeLists.txt	2021-03-30 17:23:10.000000000 -0300
++++ netcdf-c-4.8.0/CMakeLists.txt	2021-03-31 16:20:58.354763274 -0300
+@@ -2247,6 +2247,13 @@
+ SET(TOPSRCDIR "${CMAKE_CURRENT_SOURCE_DIR}")
+ SET(TOPBUILDDIR "${CMAKE_CURRENT_BINARY_DIR}")
+ SET(ISMSVC "${MSVC}")
++IF(MSVC)
++  # Seems this is always upper-case by this point :-(
++  SET(VS_CONFIGURATION "/${CMAKE_BUILD_TYPE}")
++ELSE()
++  SET(VS_CONFIGURATION "")
++ENDIF()
++
+ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/test_common.in ${CMAKE_CURRENT_BINARY_DIR}/test_common.sh @ONLY NEWLINE_STYLE LF)
+ 
+ 
+diff -Naur netcdf-c-4.8.0.orig/configure.ac netcdf-c-4.8.0/configure.ac
+--- netcdf-c-4.8.0.orig/configure.ac	2021-03-30 17:23:10.000000000 -0300
++++ netcdf-c-4.8.0/configure.ac	2021-03-31 15:37:39.403933822 -0300
+@@ -1618,6 +1618,7 @@
+ AC_SUBST(HAS_MMAP,[$enable_mmap])
+ AC_SUBST(HAS_JNA,[$enable_jna])
+ AC_SUBST(HAS_ERANGE_FILL,[$enable_erange_fill])
++AC_SUBST(VS_CONFIGURATION,[])
+ AC_SUBST(HAS_BYTERANGE,[$enable_byterange])
+ AC_SUBST(RELAX_COORD_BOUND,[yes])
+ AC_SUBST([HAS_PAR_FILTERS], [$hdf5_supports_par_filters])
+diff -Naur netcdf-c-4.8.0.orig/examples/CDL/do_comps.sh netcdf-c-4.8.0/examples/CDL/do_comps.sh
+--- netcdf-c-4.8.0.orig/examples/CDL/do_comps.sh	2021-03-30 17:23:10.000000000 -0300
++++ netcdf-c-4.8.0/examples/CDL/do_comps.sh	2021-03-31 16:18:03.592941903 -0300
+@@ -9,6 +9,8 @@
+ # This shell script runs the cmp test on the example programs.
+ # $Id: do_comps.sh,v 1.1 2006/06/27 17:44:54 ed Exp $
+ 
++. ../../test_common.sh
++
+ set -e
+ 
+ ##
+@@ -18,13 +20,13 @@
+ echo ""
+ echo "*** Creating example data files from CDL scripts."
+ echo "*** creating simple_xy.nc..."
+-../../ncgen/ncgen -b -o simple_xy.nc $srcdir/simple_xy.cdl
++../../ncgen${VS}/ncgen -b -o simple_xy.nc $srcdir/simple_xy.cdl
+ 
+ echo "*** checking sfc_pres_temp.nc..."
+-../../ncgen/ncgen -b -o sfc_pres_temp.nc $srcdir/sfc_pres_temp.cdl
++../../ncgen${VS}/ncgen -b -o sfc_pres_temp.nc $srcdir/sfc_pres_temp.cdl
+ 
+ echo "*** checking pres_temp_4D.nc..."
+-../../ncgen/ncgen -b -o pres_temp_4D.nc $srcdir/pres_temp_4D.cdl
++../../ncgen${VS}/ncgen -b -o pres_temp_4D.nc $srcdir/pres_temp_4D.cdl
+ 
+ echo "*** All example creations worked!"
+ 
+diff -Naur netcdf-c-4.8.0.orig/test_common.in netcdf-c-4.8.0/test_common.in
+--- netcdf-c-4.8.0.orig/test_common.in	2021-03-30 17:23:10.000000000 -0300
++++ netcdf-c-4.8.0/test_common.in	2021-03-31 16:20:05.514199909 -0300
+@@ -77,8 +77,8 @@
+ top_srcdir="$TOPSRCDIR"
+ top_builddir="$TOPBUILDDIR"
+ 
+-# Currently not used, but left as a Visual Studio placeholder.
+-# VS=Debug
++# Only set via CMake builds, where it must contain a leading '/'
++export VS=@VS_CONFIGURATION@
+ 
+ # srcdir may or may not be defined, but if not, then create it
+ if test "x$srcdir" = x ; then
+@@ -95,6 +95,12 @@
+ # execdir is an alias for builddir
+ execdir="${builddir}"
+ 
++# VS build dir support
++if test -d "${execdir}${VS}"; then
++  execdir="${execdir}${VS}"
++fi
++
++
+ # pick off the last component as the relative name of this directory
+ thisdir=`basename $srcdir`
+ 

@@ -37,9 +37,11 @@ from that dictionary to return (usually 'ID').
 
 import re
 
-#-----------------------------------------------------------------------------
-#----- CLASS DEFINITION AND ITS METHODS --------------------------------------
-#-----------------------------------------------------------------------------
+
+# -----------------------------------------------------------------------------
+# ----- CLASS DEFINITION AND ITS METHODS --------------------------------------
+# -----------------------------------------------------------------------------
+
 
 class BatchSystem:
     """Container for syntax to call a batch queuing system.
@@ -108,49 +110,51 @@ class BatchSystem:
         """Include OpenMP control within this script."""
         file_obj.write(self.openmp)
 
-#-----------------------------------------------------------------------------
-#----- BATCH PROCESSING SYSTEM DEFINITIONS -----------------------------------
-#-----------------------------------------------------------------------------
+
+# -----------------------------------------------------------------------------
+# ----- BATCH PROCESSING SYSTEM DEFINITIONS -----------------------------------
+# -----------------------------------------------------------------------------
+
 
 # QSUB, used by the Oxford Yau cluster
-qsub = BatchSystem(
+QSUB = BatchSystem(
     'qsub',
     r'Your job (?P<ID>\d+) \("(?P<job_name>[\w\.-]+)"\) has been submitted',
     '-hold_jid%%{}', ',', '',
-    {'duration' : '-l%%h_rt={}:00'.format,
-     'email'    : '-M%%{}'.format,
-     'err_file' : '-e%%{}'.format,
-     'job_name' : '-N%%{}'.format,
-     'log_file' : '-o%%{}'.format,
-     'priority' : '-p%%{}'.format,
-     'procs'    : '-n%%num_proc={}'.format,
-     'queue'    : '-q%%{}'.format,
-     'ram'      : '-l%%h_vmem={}M'.format,
-    }
+    {'duration': '-l%%h_rt={}:00'.format,
+     'email': '-M%%{}'.format,
+     'err_file': '-e%%{}'.format,
+     'job_name': '-N%%{}'.format,
+     'log_file': '-o%%{}'.format,
+     'priority': '-p%%{}'.format,
+     'procs': '-n%%num_proc={}'.format,
+     'queue': '-q%%{}'.format,
+     'ram': '-l%%h_vmem={}M'.format,
+     }
 )
 
 # BSUB, used by the JASMIN cluster at RAL
-bsub = BatchSystem(
+BSUB = BatchSystem(
     'bsub',
     r'Job <(?P<ID>\d+)> is submitted to (?P<desc>[\w\s]*)queue '
     r'<(?P<queue>[\w\.-]+)>.', '-w%%ended({})', ')&&ended(', '',
-    {'duration' : '-W%%{}'.format,
-     'email'    : '-u%%{}'.format,
-     'err_file' : '-e%%{}'.format,
-     'err_clob' : '-eo%%{}'.format,
-     'job_name' : '-J%%{}'.format,
-     'log_file' : '-o%%{}'.format,
-     'log_clob' : '-oo%%{}'.format,
-     'order'    : '-R%%order[{}]'.format,
-     'procs'    : '-n%%{}'.format,
-     'priority' : '-p%%{}'.format,
-     'queue'    : '-q%%{}'.format,
-     'ram'      : '-R%%rusage[mem={0}]%%-M%%{0}000'.format,
-    }
+    {'duration': '-W%%{}'.format,
+     'email': '-u%%{}'.format,
+     'err_file': '-e%%{}'.format,
+     'err_clob': '-eo%%{}'.format,
+     'job_name': '-J%%{}'.format,
+     'log_file': '-o%%{}'.format,
+     'log_clob': '-oo%%{}'.format,
+     'order': '-R%%order[{}]'.format,
+     'procs': '-n%%{}'.format,
+     'priority': '-p%%{}'.format,
+     'queue': '-q%%{}'.format,
+     'ram': '-R%%rusage[mem={0}]%%-M%%{0}000'.format,
+     }
 )
 
 # SLURM, the new Oxford queuing system
-slurm = BatchSystem(
+SLURM = BatchSystem(
     'sbatch',
     r'Submitted batch job (?P<ID>\d+)', '--dependency=afterok:{}', ':', """
 if [ -n "$SLURM_CPUS_PER_TASK" ]; then
@@ -160,15 +164,19 @@ else
 fi
 export OMP_NUM_THREADS=$omp_threads
 """,
-    {'duration' : '--time={}:00'.format,
-     'email'    : '--mail-user={}'.format,
-     'err_file' : '--error={}'.format,
-     'job_name' : '--job-name={}'.format,
-     'log_file' : '--output={}'.format,
-     'priority' : '--nice={}'.format,
-     'procs'    : '--cpus-per-task={}'.format,
-     'queue'    : '--partition={}'.format,
-     'ram'      : '--mem={}M'.format,
-     'exclude'  : '--exclude={}'.format,
-    }
+    {'duration': '--time={}:00'.format,
+     'estimated': '--time-min={};00'.format,
+     'email': '--mail-user={}'.format,
+     'err_file': '--error={}'.format,
+     'job_name': '--job-name={}'.format,
+     'log_file': '--output={}'.format,
+     'priority': '--nice={}'.format,
+     'procs': '--cpus-per-task={}'.format,
+     'queue': '--partition={}'.format,
+     'ram': '--mem={}M'.format,
+     'exclude': '--exclude={}'.format,
+     'project': '--comment={}'.format,
+     'account': '--account={}'.format,
+     'environ': '--export={}'.format,
+     }
 )

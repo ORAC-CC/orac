@@ -29,17 +29,16 @@
 ! ------------------------------------------------------------------------------
 ! coef_path      string in   Folder containing RTTOV coefficient files
 ! emiss_path     string in   Folder containing MODIS monthly average emissivity
-! sensor         string in   Name of sensor.
-! platform       string in   Name of satellite platform.
-! preproc_dims   struct both Summary of preprocessing grid definitions
+! granule        struct in   Parameters of the swath file
+! preproc_dims   struct in   Summary of preprocessing grid definitions
 ! preproc_geoloc struct in   Summary of preprocessing lat/lon
 ! preproc_geo    struct in   Summary of preprocessing geometry
-! preproc_prtm   struct both Summary of profiles and surface fields
+! preproc_prtm   struct both Summary of profiles
+! preproc_surf   struct in   Summary of surface fields
+! preproc_cld    struct both Summary of cloud fields
 ! netcdf_info    struct both Summary of NCDF file properties.
 ! channel_info   struct in   Structure summarising the channels to be processed
-! year           sint   in   Year of observation (4 digit)
-! month          sint   in   Month of year (1-12)
-! day            siny   in   Day of month (1-31)
+! pre_opts       struct in   Processing options
 ! verbose        logic  in   T: print status information; F: don't
 !
 ! History:
@@ -147,6 +146,11 @@
 ! 2019/08/15, SP: Add check for good pixels, meaning we don't run RTTOV on
 !                 those we don't care about. This gives a big speedup to
 !                 processing instruments that cross the dateline.
+! 2022/11/22, DP: Default behaviour switches RTTOV Rayleigh scattering off
+!                 and thus ORAC does not need to call remove_rayleigh(). 
+!                 Additionally pass calcrefl(:)=.false. and 
+!                 reflectance%refl_in=0. vectors to RTTOV to overcome the RTTOV 
+!                 error with some compilers when opts%rt_ir%addsolar=.true..
 !
 ! Bugs:
 ! - BRDF not yet implemented here, so RTTOV internal calculation used.
@@ -159,9 +163,9 @@ implicit none
 
 contains
 
-subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
-     preproc_geoloc, preproc_geo, preproc_prtm, preproc_surf, preproc_cld, netcdf_info, &
-     channel_info, year, month, day, use_modis_emis, do_cloud_emis, do_co2, verbose)
+subroutine rttov_driver(coef_path, emiss_path, granule, preproc_dims, &
+     preproc_geoloc, preproc_geo, preproc_prtm, preproc_surf, preproc_cld, &
+     netcdf_info, channel_info, pre_opts, verbose)
 
    use channel_structures_m
    use netcdf_output_m
@@ -215,8 +219,7 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
    ! Arguments
    character(len=*),           intent(in)    :: coef_path
    character(len=*),           intent(in)    :: emiss_path
-   character(len=*),           intent(in)    :: sensor
-   character(len=*),           intent(in)    :: platform
+   type(setup_args_t),         intent(in)    :: granule
    type(preproc_dims_t),       intent(in)    :: preproc_dims
    type(preproc_geoloc_t),     intent(in)    :: preproc_geoloc
    type(preproc_geo_t),        intent(in)    :: preproc_geo
@@ -225,10 +228,7 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
    type(preproc_cld_t),        intent(inout) :: preproc_cld
    type(netcdf_output_info_t), intent(inout) :: netcdf_info
    type(channel_info_t),       intent(in)    :: channel_info
-   integer(kind=sint),         intent(in)    :: year, month, day
-   logical,                    intent(in)    :: use_modis_emis
-   logical,                    intent(in)    :: do_cloud_emis
-   logical,                    intent(in)    :: do_co2
+   type(preproc_opts_t),       intent(in)    :: pre_opts
    logical,                    intent(in)    :: verbose
 
    ! RTTOV in/outputs
@@ -240,6 +240,8 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
    logical(kind=jplm),      allocatable :: calcemis(:)
    type(rttov_emissivity),  allocatable :: emissivity(:)
    real(kind=jprb),         allocatable :: emis_data(:)
+   logical(kind=jplm),      allocatable :: calcrefl(:)
+   type(rttov_reflectance), allocatable :: reflectance(:)
    type(rttov_transmission)             :: transmission
    type(rttov_radiance)                 :: radiance
    type(rttov_radiance2)                :: radiance2
@@ -260,7 +262,7 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
    integer(kind=lint)                   :: idim, jdim
 
    ! Coefficient file selection
-   character(len=file_length)           :: coef_file
+   character(len=file_length)           :: coef_file_vis, coef_file_ir
    character(len=path_length)           :: coef_full_path
 
    ! Scratch variables
@@ -279,134 +281,157 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
    real(kind=sreal)                     :: co2_val
    real(kind=sreal)                     :: yrfrac
 
-
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering rttov_driver()'
 
    if (verbose) write(*,*) 'coef_path: ', trim(coef_path)
    if (verbose) write(*,*) 'emiss_path: ', trim(emiss_path)
-   if (verbose) write(*,*) 'sensor: ', trim(sensor)
-   if (verbose) write(*,*) 'platform: ', trim(platform)
-   if (verbose) write(*,*) 'Date: ', year, month, day
+   if (verbose) write(*,*) 'sensor: ', trim(granule%sensor)
+   if (verbose) write(*,*) 'platform: ', trim(granule%platform)
+   if (verbose) write(*,*) 'Date: ', granule%year, granule%month, granule%day
 
    ! Determine coefficient filename (Vis/IR distinction made later)
-   select case (trim(sensor))
+   select case (trim(granule%sensor))
    case('ATSR2')
-      coef_file = 'rtcoef_ers_2_atsr.dat'
+      coef_file_vis = 'rtcoef_ers_2_atsr_o3co2.dat'
+      coef_file_ir = 'rtcoef_ers_2_atsr_o3co2_ironly.dat'
    case('AATSR')
-      coef_file = 'rtcoef_envisat_1_atsr.dat'
+      coef_file_vis = 'rtcoef_envisat_1_atsr-shifted_o3co2.dat'
+      coef_file_ir = 'rtcoef_envisat_1_atsr-shifted_o3co2_ironly.dat'
    case('ABI')
-      if (trim(platform) == 'GOES-16') then
-         coef_file = 'rtcoef_goes_16_abi.dat'
-      else if (trim(platform) == 'GOES-17') then
-         coef_file = 'rtcoef_goes_17_abi.dat'
+      if (trim(granule%platform) == 'GOES-16') then
+          coef_file_vis = 'rtcoef_goes_16_abi_o3co2.dat'
+          coef_file_ir = 'rtcoef_goes_16_abi_o3co2_ironly.dat'
+      else if (trim(granule%platform) == 'GOES-17') then
+          coef_file_vis = 'rtcoef_goes_17_abi_o3co2.dat'
+          coef_file_ir = 'rtcoef_goes_17_abi_o3co2_ironly.dat'
       else
          write(*,*) 'ERROR: rttov_driver(): Invalid GOES platform: ', &
-                    trim(platform)
+                    trim(granule%platform)
          stop error_stop_code
       end if
    case('AGRI')
-      if (trim(platform) == 'FY-4A') then
-         coef_file = 'rtcoef_fy4_1_agri.dat'
-      else if (trim(platform) == 'FY-4B') then
-         coef_file = 'rtcoef_fy4_2_agri.dat'
+      if (trim(granule%platform) == 'FY-4A') then
+         coef_file_vis = 'rtcoef_fy4_1_agri_o3co2.dat'
+         coef_file_ir = 'rtcoef_fy4_1_agri_o3co2_ironly.dat'
+      else if (trim(granule%platform) == 'FY-4B') then
+         coef_file_vis = 'rtcoef_fy4_2_agri_o3co2.dat'
+         coef_file_ir = 'rtcoef_fy4_2_agri_o3co2_ironly.dat'
       else
          write(*,*) 'ERROR: rttov_driver(): Invalid Fengyun-4 platform: ', &
-                    trim(platform)
+                    trim(granule%platform)
          stop error_stop_code
       end if
    case('AHI')
-      if (trim(platform) == 'Himawari-8') then
-         coef_file = 'rtcoef_himawari_8_ahi.dat'
-      else if (trim(platform) == 'Himawari-9') then
-         coef_file = 'rtcoef_himawari_9_ahi.dat'
+      if (trim(granule%platform) == 'Himawari-8') then
+        coef_file_vis = 'rtcoef_himawari_8_ahi_o3co2.dat'
+        coef_file_ir = 'rtcoef_himawari_8_ahi_o3co2_ironly.dat'
+      else if (trim(granule%platform) == 'Himawari-9') then
+        coef_file_vis = 'rtcoef_himawari_9_ahi_o3co2.dat'
+        coef_file_ir = 'rtcoef_himawari_9_ahi_o3co2_ironly.dat'
       else
          write(*,*) 'ERROR: rttov_driver(): Invalid HIMAWARI platform: ', &
-                    trim(platform)
+                    trim(granule%platform)
          stop error_stop_code
       end if
    case('AVHRR')
-      if (index(platform, 'noaa') >= 1) then
-         if(platform(5:5) == '1') then
-            coef_file = 'rtcoef_noaa_'//platform(5:6)//'_avhrr.dat'
+      if (index(granule%platform, 'noaa') >= 1) then
+         if(granule%platform(5:5) == '1') then
+            coef_file_vis = 'rtcoef_noaa_'//granule%platform(5:6)//'_avhrr_o3co2.dat'
+            coef_file_ir = 'rtcoef_noaa_'//granule%platform(5:6)//'_avhrr_o3co2_ironly.dat'
           else
-            coef_file = 'rtcoef_noaa_'//platform(5:5)//'_avhrr.dat'
+            coef_file_vis = 'rtcoef_noaa_'//granule%platform(5:5)//'_avhrr_o3co2.dat'
+            coef_file_ir = 'rtcoef_noaa_'//granule%platform(5:5)//'_avhrr_o3co2_ironly.dat'
           end if
-       else if (index(platform, 'metop') >= 1) then
-          if (platform(6:6) == "a") then
-             coef_file = 'rtcoef_metop_2_avhrr.dat'
-          else if (platform(6:6) == "b") then
-             coef_file = 'rtcoef_metop_1_avhrr.dat'
+       else if (index(granule%platform, 'metop') >= 1) then
+          if (granule%platform(6:6) == "a") then
+             coef_file_vis = 'rtcoef_metop_2_avhrr_o3co2.dat'
+             coef_file_ir = 'rtcoef_metop_2_avhrr_o3co2_ironly.dat'
+          else if (granule%platform(6:6) == "b") then
+             coef_file_vis = 'rtcoef_metop_1_avhrr_o3co2.dat'
+             coef_file_ir = 'rtcoef_metop_1_avhrr_o3co2_ironly.dat'
           else
              write(*,*) 'ERROR: rttov_driver(): Invalid Metop platform: ', &
-                  trim(platform)
+                  trim(granule%platform)
              stop error_stop_code
           end if
       else
          write(*,*) 'ERROR: rttov_driver(): Invalid AVHRR platform: ', &
-                    trim(platform)
+                    trim(granule%platform)
          stop error_stop_code
       end if
    case('MODIS')
-      if (trim(platform) == 'TERRA') then
-         coef_file = 'rtcoef_eos_1_modis.dat'
-      else if (trim(platform) == 'AQUA') then
-         coef_file = 'rtcoef_eos_2_modis.dat'
+      if (trim(granule%platform) == 'TERRA') then
+         coef_file_vis = 'rtcoef_eos_1_modis-shifted_o3co2.dat'
+         coef_file_ir = 'rtcoef_eos_1_modis-shifted_o3co2_ironly.dat'
+      else if (trim(granule%platform) == 'AQUA') then
+         coef_file_vis = 'rtcoef_eos_2_modis-shifted_o3co2.dat'
+         coef_file_ir = 'rtcoef_eos_2_modis-shifted_o3co2_ironly.dat'
       else
          write(*,*) 'ERROR: rttov_driver(): Invalid MODIS platform: ', &
-                    trim(platform)
+                    trim(granule%platform)
          stop error_stop_code
       end if
    case('SEVIRI')
-      if (trim(platform) == 'MSG1') then
-         coef_file = 'rtcoef_msg_1_seviri.dat'
-      else if (trim(platform) == 'MSG2') then
-         coef_file = 'rtcoef_msg_2_seviri.dat'
-      else if (trim(platform) == 'MSG3') then
-         coef_file = 'rtcoef_msg_3_seviri.dat'
-      else if (trim(platform) == 'MSG4') then
-         coef_file = 'rtcoef_msg_4_seviri.dat'
+      if (trim(granule%platform) == 'MSG1') then
+         coef_file_vis = 'rtcoef_msg_1_seviri_o3co2.dat'
+         coef_file_ir = 'rtcoef_msg_1_seviri_o3co2_ironly.dat'
+      else if (trim(granule%platform) == 'MSG2') then
+         coef_file_vis = 'rtcoef_msg_2_seviri_o3co2.dat'
+         coef_file_ir = 'rtcoef_msg_2_seviri_o3co2_ironly.dat'
+      else if (trim(granule%platform) == 'MSG3') then
+         coef_file_vis = 'rtcoef_msg_3_seviri_o3co2.dat'
+         coef_file_ir = 'rtcoef_msg_3_seviri_o3co2_ironly.dat'
+      else if (trim(granule%platform) == 'MSG4') then
+         coef_file_vis = 'rtcoef_msg_4_seviri_o3co2.dat'
+         coef_file_ir = 'rtcoef_msg_4_seviri_o3co2_ironly.dat'
       else
          write(*,*) 'ERROR: rttov_driver(): Invalid SEVIRI platform: ', &
-                    trim(platform)
+                    trim(granule%platform)
          stop error_stop_code
       end if
    case('SLSTR')
-      if (trim(platform) == 'Sentinel3a') then
-         coef_file = 'rtcoef_sentinel3_1_slstr.dat'
-      else if (trim(platform) == 'Sentinel3b') then
-         coef_file = 'rtcoef_sentinel3_2_slstr.dat'
+      if (trim(granule%platform) == 'Sentinel3a') then
+         coef_file_vis = 'rtcoef_sentinel3_1_slstr_o3co2.dat'
+         coef_file_ir = 'rtcoef_sentinel3_1_slstr_o3co2_ironly.dat'
+      else if (trim(granule%platform) == 'Sentinel3b') then
+         coef_file_vis = 'rtcoef_sentinel3_2_slstr_o3co2.dat'
+         coef_file_ir = 'rtcoef_sentinel3_2_slstr_o3co2_ironly.dat'
       else
          write(*,*) 'ERROR: rttov_driver(): Invalid SLSTR platform: ', &
-                    trim(platform)
+                    trim(granule%platform)
          stop error_stop_code
       end if
    case('VIIRSI')
-      if (trim(platform) == 'SuomiNPP') then
-         coef_file = 'rtcoef_jpss_0_viirs.dat'
-      else if (trim(platform) == 'NOAA20') then
-         coef_file = 'rtcoef_noaa_20_viirs.dat'
+      if (trim(granule%platform) == 'SuomiNPP') then
+         coef_file_vis = 'rtcoef_jpss_0_viirs_o3co2.dat'
+         coef_file_ir = 'rtcoef_jpss_0_viirs_o3co2_ironly.dat'
+      else if (trim(granule%platform) == 'NOAA20') then
+         coef_file_vis = 'rtcoef_noaa_20_viirs_o3co2.dat'
+         coef_file_ir = 'rtcoef_noaa_20_viirs_o3co2_ironly.dat'
       else
          write(*,*) 'ERROR: rttov_driver(): Invalid VIIRS platform: ', &
-                    trim(platform)
+                    trim(granule%platform)
          stop error_stop_code
       end if
    case('VIIRSM')
-      if (trim(platform) == 'SuomiNPP') then
-         coef_file = 'rtcoef_jpss_0_viirs.dat'
-      else if (trim(platform) == 'NOAA20') then
-         coef_file = 'rtcoef_noaa_20_viirs.dat'
+      if (trim(granule%platform) == 'SuomiNPP') then
+         coef_file_vis = 'rtcoef_jpss_0_viirs_o3co2.dat'
+         coef_file_ir = 'rtcoef_jpss_0_viirs_o3co2_ironly.dat'
+      else if (trim(granule%platform) == 'NOAA20') then
+         coef_file_vis = 'rtcoef_noaa_20_viirs_o3co2.dat'
+         coef_file_ir = 'rtcoef_noaa_20_viirs_o3co2_ironly.dat'
       else
          write(*,*) 'ERROR: rttov_driver(): Invalid VIIRS platform: ', &
-                    trim(platform)
+                    trim(granule%platform)
          stop error_stop_code
       end if
    case default
-      write(*,*) 'ERROR: rttov_driver(): Invalid sensor: ', trim(sensor)
+      write(*,*) 'ERROR: rttov_driver(): Invalid sensor: ', trim(granule%sensor)
       stop error_stop_code
    end select
 
-   if (verbose) write(*,*) 'RTTOV coef file: ', trim(coef_file)
-
+   if (verbose) write(*,*) 'RTTOV VIS coef file: ', trim(coef_file_vis)
+   if (verbose) write(*,*) 'RTTOV IR coef file: ', trim(coef_file_ir)
 
    ! Initialise options structure (leaving default settings be)
    opts % interpolation % addinterp = .true. ! Interpolate input profile
@@ -418,14 +443,15 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
    ! regression limits (NB by doing this the extrapolated values outside
    ! the regression limits will be reset to the limits: it will not result
    ! in unphysical extrapolated profile values being used)
-   opts % rt_all % use_q2m   = .false. ! Do not use surface humidity
-   opts % rt_all % addrefrac = .true.  ! Include refraction in path calc
-   opts % rt_ir % addsolar   = .true.  ! Do not include reflected solar
-   opts % rt_ir % ozone_data = .true.  ! Include ozone profile
-   if (do_co2) then
-      opts % rt_ir % co2_data   = .true.  ! Include CO2 profile
+   opts % rt_all % use_q2m            = .false. ! Do not use surface humidity
+   opts % rt_all % addrefrac          = .true.  ! Include refraction in path calc
+   opts % rt_ir % addsolar            = .true.  ! Do not include reflected solar
+   opts%rt_ir%rayleigh_max_wavelength = 0.      ! Do not run RTTOV Rayleigh scattering
+   opts % rt_all % ozone_data         = .true.  ! Include ozone profile
+   if (pre_opts%do_co2) then
+      opts % rt_all % co2_data   = .true.  ! Include CO2 profile
    else
-      opts % rt_ir % co2_data   = .true.  ! Include CO2 profile
+      opts % rt_all % co2_data   = .false.  ! Include CO2 profile
    end if
    opts % config % verbose   = .false. ! Display only fatal error messages
 
@@ -513,7 +539,7 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
    ! Compute the appropriate CO2 value for this scene
    ! This is taken from Martin's addition to the driver_for_bugsrad.f90 file
    ! Note: CO2 profile is assumed constant
-   yrfrac  = year + (month / 12.0) + ((day/30.)/12.0)
+   yrfrac  = granule%year + (granule%month / 12.0) + ((granule%day/30.)/12.0)
    co2_val = 380.0+(yrfrac-2006.)*1.7
    co2_val = co2_val * 1e-6 * 44.0095 / 28.9644
 
@@ -527,9 +553,9 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
          ! Check to see if the ECMWF data read in includes ozone
          ! profiles: forecast data does not
          if (maxval(preproc_prtm%ozone(idim,jdim,:)) == 0.0) then
-            opts % rt_ir % ozone_data = .false. ! No valid ozone profiles!
+            opts % rt_all % ozone_data = .false. ! No valid ozone profiles!
          else
-            opts % rt_ir % ozone_data = .true.
+            opts % rt_all % ozone_data = .true.
          end if
 
          ! set gas units to 1, specifying gas input in kg/kg
@@ -543,7 +569,7 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
          profiles(count)%o3(:nlayers) = preproc_prtm%ozone(idim,jdim,:)
 
          ! Add CO2 in kg/kg for each level
-         if (do_co2) profiles(count)%co2(:) = co2_val
+         if (pre_opts%do_co2) profiles(count)%co2(:) = co2_val
 
          ! Surface information
          profiles(count)%s2m%p = exp(preproc_prtm%lnsp(idim,jdim)) * pa2hpa
@@ -568,9 +594,9 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
          profiles(count)%skin%surftype  = 0
          profiles(count)%skin%watertype = 1
 
-         profiles(count)%date(1) = year
-         profiles(count)%date(2) = month
-         profiles(count)%date(3) = day
+         profiles(count)%date(1) = granule%year
+         profiles(count)%date(2) = granule%month
+         profiles(count)%date(3) = granule%day
          profiles(count)%elevation = 0. ! One day, we will do something here
          profiles(count)%latitude  = preproc_geoloc%latitude(jdim)
          ! Manual may say this is 0-360, but src/emsi_atlas/mod_iratlas.F90
@@ -673,8 +699,8 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
             end do
 
             ! This assumes the recommended structure of the RTTOV coef library
-            coef_full_path = trim(adjustl(coef_path))//'/rttov7pred54L/'// &
-                 trim(adjustl(coef_file))
+            coef_full_path = trim(adjustl(coef_path))//'/rttov13pred54L/'// &
+                 trim(adjustl(coef_file_ir))
          else
             ! Shortwave
             nchan = 0
@@ -698,8 +724,8 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
                end if
             end do
 
-            coef_full_path = trim(adjustl(coef_path))//'/rttov9pred54L/'// &
-                 trim(adjustl(coef_file))
+            coef_full_path = trim(adjustl(coef_path))//'/rttov13pred54L/'// &
+                 trim(adjustl(coef_file_vis))
          end if
 
          if (verbose) write(*,*) 'Read coefficients'
@@ -718,6 +744,15 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
          allocate(emissivity(nchan))
          allocate(emis_data(nchan))
          allocate(calcemis(nchan))
+         allocate(reflectance(nchan))
+         allocate(calcrefl(nchan))
+         
+         ! These arrays are needed when running with opts%rt_ir%addsolar
+         ! as RTTOV throws and error with some compilers. Set reflectance
+         ! vector to 0. as the surface reflecatance is explicitly handled
+         ! by the foreward model.
+         reflectance(:)%refl_in = 0.
+         calcrefl(:) = .false.
 
          chanprof%prof = 1
          do j = 1, nchan
@@ -745,7 +780,7 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
          end if
 
          if (verbose) write(*,*) 'Fetch emissivity atlas'
-         imonth = month
+         imonth = granule%month
          call rttov_setup_emis_atlas(stat, opts, imonth, atlas_type_ir, &
               emis_atlas, coefs=coefs, path=emiss_path)
          if (stat /= errorstatus_success) then
@@ -786,7 +821,7 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
                   emissivity%emis_in = emis_data
 
                   ! Fetch emissivity from the MODIS CIMSS emissivity product
-                  if (i_coef == 1 .and. use_modis_emis) then
+                  if (i_coef == 1 .and. pre_opts%use_modis_emis_in_rttov) then
                      where (preproc_surf%emissivity(idim,jdim,:) /= &
                           sreal_fill_value)
                         emissivity%emis_in = &
@@ -801,11 +836,13 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
 #ifdef INCLUDE_RTTOV_OPENMP
                      call rttov_parallel_direct(stat, chanprof, opts, &
                           profiles(count:count), coefs, transmission, radiance, &
-                          radiance2, calcemis, emissivity, traj=traj)
+                          radiance2, calcemis, emissivity, calcrefl, reflectance, &
+                          traj=traj)
 #else
                      call rttov_direct(stat, chanprof, opts, &
                           profiles(count:count), coefs, transmission, radiance, &
-                          radiance2, calcemis, emissivity, traj=traj)
+                          radiance2, calcemis, emissivity, calcrefl, reflectance, &
+                          traj=traj)
 #endif
 
                      if (stat /= errorstatus_success) then
@@ -813,11 +850,14 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
                         stop error_stop_code
                      end if
 
-                     ! Remove the Rayleigh component from the RTTOV tranmittances.
+                     ! Remove the Rayleigh component from the RTTOV tranmittances only if RTTOV
+                     ! ran with Rayleigh scattering switched on.
                      if (i_coef == 2) then
-                        call remove_rayleigh(nchan, nlevels, dummy_sreal_1dveca, &
-                             profiles(count)%zenangle, profiles(count)%p, &
-                             transmission%tau_levels, transmission%tau_total)
+                        if (opts%rt_ir%rayleigh_max_wavelength > dither) then
+                           call remove_rayleigh(nchan, nlevels, dummy_sreal_1dveca, &
+                                profiles(count)%zenangle, profiles(count)%p, &
+                                transmission%tau_levels, transmission%tau_total)
+                        end if
                      end if
 
                   end if
@@ -847,7 +887,7 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
          end do
 
          ! Loop again for cloud radiance
-         if (do_cloud_emis) then
+         if (pre_opts%do_cloud_emis) then
             count = 0
             if (i_coef .eq. 1) then
 #ifdef INCLUDE_RTTOV_OPENMP
@@ -865,11 +905,13 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
 #ifdef INCLUDE_RTTOV_OPENMP
                      call rttov_parallel_direct(stat, chanprof, opts, &
                           profiles(count:count), coefs, transmission, radiance, &
-                          radiance2, calcemis, emissivity, traj=traj)
+                          radiance2, calcemis, emissivity, calcrefl, reflectance, &
+                          traj=traj)
 #else
                      call rttov_direct(stat, chanprof, opts, &
                           profiles(count:count), coefs, transmission, radiance, &
-                          radiance2, calcemis, emissivity, traj=traj)
+                          radiance2, calcemis, emissivity, calcrefl, reflectance, &
+                          traj=traj)
 #endif
 
                      ! Save into the appropriate arrays
@@ -899,6 +941,8 @@ subroutine rttov_driver(coef_path, emiss_path, sensor, platform, preproc_dims, &
          deallocate(emis_data)
          deallocate(calcemis)
          deallocate(chan_pos)
+         deallocate(calcrefl)
+         deallocate(reflectance)
       end do !coef loop
    end do  !view loop
 

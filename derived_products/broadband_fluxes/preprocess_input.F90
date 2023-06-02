@@ -113,7 +113,7 @@ subroutine preprocess_input(cMASK,aREF,AOD,cPHASE, &
 
    ! CLEAR - DEFINITE
 !  if (cMASK .eq. 0) phaseFlag=0 ! CLEAR
-   if (cPHASE .eq. 0) phaseFlag=0 ! CLEAR
+   if (cPHASE .le. 0) phaseFlag=0 ! CLEAR
 
 !  print*,'phaseFlag = ',phaseFlag
 

@@ -1,0 +1,34 @@
+# This file may be used to create an environment using:
+# $ conda create --name <env> --file <this file>
+# platform: linux-64
+name: orac_git
+channels:
+ - local
+ - conda-forge
+dependencies:
+ - gcc_linux-64
+ - gxx_linux-64
+ - gfortran_linux-64
+ - bison
+ - flex
+ - nr * mpi_openmpi_*
+ - epr_api
+ - fu_liou
+ - hdf4
+ - hdfeos2 * fortran_*
+ - hdf5 * mpi_openmpi_*
+ - libnetcdf * mpi_openmpi_*
+ - netcdf-fortran * mpi_openmpi_*
+ - eccodes
+ - seviri_util
+ - hsd_reader * mpi_openmpi_*
+ - libemos
+ - rttov * mpi_openmpi_*
+ - numpy
+ - scipy
+ - netcdf4
+ - h5py
+ - cf-units
+ - opencv
+ - matplotlib
+ - cartopy

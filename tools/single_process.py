@@ -15,7 +15,7 @@ from pyorac.arguments import (args_common, args_cc4cl, args_preproc,
                               check_args_cc4cl)
 from pyorac.colour_print import colour_print
 from pyorac.definitions import COLOURING, FileName, OracError, OracWarning
-from pyorac.local_defaults import log_dir
+from pyorac.local_defaults import LOG_DIR
 from pyorac.run import process_post, process_pre, process_main
 from pyorac.util import warning_format
 
@@ -36,9 +36,9 @@ args_postproc(pars)
 args = pars.parse_args()
 
 
-check_args_common(args)
-check_args_cc4cl(args)
-log_path = os.path.join(args.out_dir, log_dir)
+args = check_args_common(args)
+args = check_args_cc4cl(args)
+log_path = os.path.join(args.out_dir, LOG_DIR)
 
 try:
     inst = FileName(args.in_dir, args.target)

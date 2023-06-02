@@ -33,6 +33,8 @@
 ! 2017/07/10, AP: Add int64 fields.
 ! 2020/02/02, AP: Added nc_close().
 ! 2020/04/21, AP: Renamed routines ncdf_ to avoid clobber of library routines.
+! 2020/09/30, AP: Move verbose option to DEBUG flag. Add 5 and 6D read functions.
+! 2021/03/16, AP: Add routine to read string attributes.
 !-------------------------------------------------------------------------------
 
 module orac_ncdf_m
@@ -44,12 +46,18 @@ module orac_ncdf_m
 
    interface ncdf_read_array
       module procedure &
-         read_byte_0d,  read_byte_1d,  read_byte_2d,  read_byte_3d,  read_byte_4d, &
-         read_sint_0d,  read_sint_1d,  read_sint_2d,  read_sint_3d,  read_sint_4d, &
-         read_lint_0d,  read_lint_1d,  read_lint_2d,  read_lint_3d,  read_lint_4d, &
-         read_dint_0d,  read_dint_1d,  read_dint_2d,  read_dint_3d,  read_dint_4d, &
-         read_sreal_0d, read_sreal_1d, read_sreal_2d, read_sreal_3d, read_sreal_4d, &
-         read_dreal_0d, read_dreal_1d, read_dreal_2d, read_dreal_3d, read_dreal_4d
+         read_byte_0d,  read_byte_1d,  read_byte_2d,  read_byte_3d,  &
+         read_byte_4d,  read_byte_5d,  read_byte_6d, &
+         read_sint_0d,  read_sint_1d,  read_sint_2d,  read_sint_3d,  &
+         read_sint_4d,  read_sint_5d,  read_sint_6d, &
+         read_lint_0d,  read_lint_1d,  read_lint_2d,  read_lint_3d,  &
+         read_lint_4d,  read_lint_5d,  read_lint_6d, &
+         read_dint_0d,  read_dint_1d,  read_dint_2d,  read_dint_3d,  &
+         read_dint_4d,  read_dint_5d,  read_dint_6d, &
+         read_sreal_0d, read_sreal_1d, read_sreal_2d, read_sreal_3d, &
+         read_sreal_4d, read_sreal_5d, read_sreal_6d, &
+         read_dreal_0d, read_dreal_1d, read_dreal_2d, read_dreal_3d, &
+         read_dreal_4d, read_dreal_5d, read_dreal_6d
    end interface ncdf_read_array
 
    interface ncdf_write_array
@@ -65,7 +73,7 @@ module orac_ncdf_m
    interface ncdf_read_packed_array
       module procedure &
          read_packed_sreal_1d, read_packed_sreal_2d, read_packed_sreal_3d, &
-         read_packed_sreal_4d
+         read_packed_sreal_4d, read_packed_sreal_5d, read_packed_sreal_6d
    end interface ncdf_read_packed_array
 
 contains
@@ -187,40 +195,104 @@ end subroutine ncdf_close
 !
 ! History:
 ! 2014/08/06, AP: Original version
+! 2020/09/24, AP: Now returns 0 for non-existent dimensions.
 !
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
-function ncdf_dim_length(ncid, name, source_routine, verbose) result(len)
+function ncdf_dim_length(ncid, name, source_routine) result(len)
    implicit none
 
    integer,          intent(in) :: ncid
    character(len=*), intent(in) :: name
    character(len=*), intent(in) :: source_routine
-   logical,          intent(in) :: verbose
 
    integer :: did, ierr, len
    character(len=NF90_MAX_NAME) :: dname
 
    ierr = nf90_inq_dimid(ncid, name, did)
    if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: ncdf_dim_length(): ', source_routine, &
-           ': Could not locate dimension ', trim(name)
-      print*, trim(nf90_strerror(ierr))
-      stop error_stop_code
+      len = 0
+   else
+      ierr = nf90_inquire_dimension(ncid, did, dname, len)
+      if (ierr.ne.NF90_NOERR) then
+         print*, 'ERROR: ncdf_dim_length(): ', source_routine, &
+              ': Could not read dimension ', trim(name)
+         print*, trim(nf90_strerror(ierr))
+         stop error_stop_code
+      end if
+#ifdef DEBUG
+      print*, trim(name),' dim length: ',len
+#endif
    end if
-
-   ierr = nf90_inquire_dimension(ncid, did, dname, len)
-   if (ierr.ne.NF90_NOERR) then
-      print*, 'ERROR: ncdf_dim_length(): ', source_routine, &
-           ': Could not read dimension ', trim(name)
-      print*, trim(nf90_strerror(ierr))
-      stop error_stop_code
-   end if
-
-   if (verbose) print*, trim(name),' dim length: ',len
 
 end function ncdf_dim_length
+
+!-------------------------------------------------------------------------------
+! Name: ncdf_get_string_att
+!
+! Purpose:
+! Read a single string from the attribute of a NetCDF file. This is not
+! natively supported by the netcdf-fortran library for $REASONS.
+!
+! Description and Algorithm details:
+! Interface with the C-library.
+!
+! Arguments:
+! Name           Type    In/Out/Both Description
+! ------------------------------------------------------------------------------
+! filename       string  In   Name of the NetCDF file to open
+! varname        string  In   Name of the variable to consider
+! attname        string  In   Name of the string attribute to open
+! contents       string  Out  Contents of the requested attribute
+!
+! History:
+! 2021/02/16, GM: Original version
+!
+! Bugs:
+! - This shouldn't need to exist.
+! - Doesn't consider global attributes.
+! - Only reads the first string, in the event the attribute is an array.
+!-------------------------------------------------------------------------------
+subroutine ncdf_get_string_att(filename, varname, attname, contents)
+
+   use common_constants_m
+   use iso_c_binding
+   use system_utils_m, only: c_to_fortran_str
+
+   implicit none
+
+   interface
+      subroutine nc_get_string_att(fname, vname, aname, str) &
+           bind(C, name='nc_get_string_att')
+
+         use common_constants_m
+         use iso_c_binding
+         implicit none
+
+         character(kind=c_char) :: fname(file_length), vname(var_length)
+         character(kind=c_char) :: aname(var_length), str(attribute_length)
+
+      end subroutine nc_get_string_att
+   end interface
+
+   character(len=*), intent(in)  :: filename, varname, attname
+   character(len=*), intent(out) :: contents
+
+   character(kind=c_char,len=file_length)      :: fname
+   character(kind=c_char,len=var_length)       :: vname
+   character(kind=c_char,len=var_length)       :: aname
+   character(kind=c_char,len=attribute_length) :: str
+
+   fname = trim(filename) // C_NULL_CHAR
+   vname = trim(varname) // C_NULL_CHAR
+   aname = trim(attname) // C_NULL_CHAR
+   call nc_get_string_att(fname, vname, aname, str)
+
+   call c_to_fortran_str(str)
+   contents = trim(adjustl(str))
+
+end subroutine ncdf_get_string_att
 
 !-------------------------------------------------------------------------------
 ! Name: ncdf_def_var
@@ -369,7 +441,6 @@ end function ncdf_dim_length
 ! name    string  In  Name of the data field to be returned
 ! val     real    Out Array into which the data will be written. The type and
 !                     size of this array determine the call used.
-! verbose logical In  T: print additional information; F: don't
 ! dim     integer In  Optional. If set, specifies the index of a dimension of
 !                     the field to be read that will only be partially read.
 ! ind     integer In  Optional. If set, specifies the indices of the dimension
@@ -398,6 +469,8 @@ end function ncdf_dim_length
 #define NCDF_READ_NAME_2D read_byte_2d
 #define NCDF_READ_NAME_3D read_byte_3d
 #define NCDF_READ_NAME_4D read_byte_4d
+#define NCDF_READ_NAME_5D read_byte_5d
+#define NCDF_READ_NAME_6D read_byte_6d
 #include "ncdf_read_template.inc"
 #undef NCDF_READ_TYPE
 #undef NCDF_READ_KIND
@@ -407,6 +480,8 @@ end function ncdf_dim_length
 #undef NCDF_READ_NAME_2D
 #undef NCDF_READ_NAME_3D
 #undef NCDF_READ_NAME_4D
+#undef NCDF_READ_NAME_5D
+#undef NCDF_READ_NAME_6D
 
 #define NCDF_READ_TYPE integer
 #define NCDF_READ_KIND sint
@@ -416,6 +491,8 @@ end function ncdf_dim_length
 #define NCDF_READ_NAME_2D read_sint_2d
 #define NCDF_READ_NAME_3D read_sint_3d
 #define NCDF_READ_NAME_4D read_sint_4d
+#define NCDF_READ_NAME_5D read_sint_5d
+#define NCDF_READ_NAME_6D read_sint_6d
 #include "ncdf_read_template.inc"
 #undef NCDF_READ_TYPE
 #undef NCDF_READ_KIND
@@ -425,6 +502,8 @@ end function ncdf_dim_length
 #undef NCDF_READ_NAME_2D
 #undef NCDF_READ_NAME_3D
 #undef NCDF_READ_NAME_4D
+#undef NCDF_READ_NAME_5D
+#undef NCDF_READ_NAME_6D
 
 #define NCDF_READ_TYPE integer
 #define NCDF_READ_KIND lint
@@ -434,6 +513,8 @@ end function ncdf_dim_length
 #define NCDF_READ_NAME_2D read_lint_2d
 #define NCDF_READ_NAME_3D read_lint_3d
 #define NCDF_READ_NAME_4D read_lint_4d
+#define NCDF_READ_NAME_5D read_lint_5d
+#define NCDF_READ_NAME_6D read_lint_6d
 #include "ncdf_read_template.inc"
 #undef NCDF_READ_TYPE
 #undef NCDF_READ_KIND
@@ -443,6 +524,8 @@ end function ncdf_dim_length
 #undef NCDF_READ_NAME_2D
 #undef NCDF_READ_NAME_3D
 #undef NCDF_READ_NAME_4D
+#undef NCDF_READ_NAME_5D
+#undef NCDF_READ_NAME_6D
 
 #define NCDF_READ_TYPE integer
 #define NCDF_READ_KIND dint
@@ -452,6 +535,8 @@ end function ncdf_dim_length
 #define NCDF_READ_NAME_2D read_dint_2d
 #define NCDF_READ_NAME_3D read_dint_3d
 #define NCDF_READ_NAME_4D read_dint_4d
+#define NCDF_READ_NAME_5D read_dint_5d
+#define NCDF_READ_NAME_6D read_dint_6d
 #include "ncdf_read_template.inc"
 #undef NCDF_READ_TYPE
 #undef NCDF_READ_KIND
@@ -461,6 +546,8 @@ end function ncdf_dim_length
 #undef NCDF_READ_NAME_2D
 #undef NCDF_READ_NAME_3D
 #undef NCDF_READ_NAME_4D
+#undef NCDF_READ_NAME_5D
+#undef NCDF_READ_NAME_6D
 
 #define NCDF_READ_TYPE real
 #define NCDF_READ_KIND sreal
@@ -472,10 +559,14 @@ end function ncdf_dim_length
 #define NCDF_READ_NAME_2D read_sreal_2d
 #define NCDF_READ_NAME_3D read_sreal_3d
 #define NCDF_READ_NAME_4D read_sreal_4d
+#define NCDF_READ_NAME_5D read_sreal_5d
+#define NCDF_READ_NAME_6D read_sreal_6d
 #define NCDF_READ_PACKED_NAME_1D read_packed_sreal_1d
 #define NCDF_READ_PACKED_NAME_2D read_packed_sreal_2d
 #define NCDF_READ_PACKED_NAME_3D read_packed_sreal_3d
 #define NCDF_READ_PACKED_NAME_4D read_packed_sreal_4d
+#define NCDF_READ_PACKED_NAME_5D read_packed_sreal_5d
+#define NCDF_READ_PACKED_NAME_6D read_packed_sreal_6d
 #include "ncdf_read_template.inc"
 #undef NCDF_READ_TYPE
 #undef NCDF_READ_KIND
@@ -487,10 +578,14 @@ end function ncdf_dim_length
 #undef NCDF_READ_NAME_2D
 #undef NCDF_READ_NAME_3D
 #undef NCDF_READ_NAME_4D
+#undef NCDF_READ_NAME_5D
+#undef NCDF_READ_NAME_6D
 #undef NCDF_READ_PACKED_NAME_1D
 #undef NCDF_READ_PACKED_NAME_2D
 #undef NCDF_READ_PACKED_NAME_3D
 #undef NCDF_READ_PACKED_NAME_4D
+#undef NCDF_READ_PACKED_NAME_5D
+#undef NCDF_READ_PACKED_NAME_6D
 
 #define NCDF_READ_TYPE real
 #define NCDF_READ_KIND dreal
@@ -500,6 +595,8 @@ end function ncdf_dim_length
 #define NCDF_READ_NAME_2D read_dreal_2d
 #define NCDF_READ_NAME_3D read_dreal_3d
 #define NCDF_READ_NAME_4D read_dreal_4d
+#define NCDF_READ_NAME_5D read_dreal_5d
+#define NCDF_READ_NAME_6D read_dreal_6d
 #include "ncdf_read_template.inc"
 #undef NCDF_READ_TYPE
 #undef NCDF_READ_KIND
@@ -509,6 +606,8 @@ end function ncdf_dim_length
 #undef NCDF_READ_NAME_2D
 #undef NCDF_READ_NAME_3D
 #undef NCDF_READ_NAME_4D
+#undef NCDF_READ_NAME_5D
+#undef NCDF_READ_NAME_6D
 
 !-------------------------------------------------------------------------------
 ! Name: ncdf_write_array

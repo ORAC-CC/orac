@@ -1,3 +1,26 @@
+!-------------------------------------------------------------------------------
+! Name: coefficients_spectral_response_correction.inc
+!
+! Purpose:
+! Provide coefficients (slope/offset) for the spectral response correction
+! (aka. Spectral Band Adjustment SBA) of each sensor. Latest coefficients
+! are the n19mimic array. As the CMA/CPH neural networks were developed and
+! fine-tuned primarily based on NOAA19 AVHRR, adjustment factors
+! (slope and offset) were inferred to make all considered AVHRR sensors
+! mimic NOAA19 AVHRR.
+!
+! More information can be found in Appendix C of the Cloud_cci version 3
+! AVHRR-PM dataset paper:
+! https://essd.copernicus.org/articles/12/41/2020/
+! [Stengel et al. (2019)]
+!
+! History:
+! Initial file
+! 2021/01/27, DP: Added Sentinel-3a/Sentinel-3b SLSTR and MSG1/MSG2/MSG3/MSG4
+!                 SEVIRI coefficients.
+!
+!-------------------------------------------------------------------------------
+
   ! dimensions:
   ! a=6: n channels
   ! b=2: slope/offset
@@ -291,14 +314,14 @@
        0.00000, 0.00000, 0.00000,-0.18492, 0.23179,-0.82334   & ! envisat_1_aatsr (twilight & night)
        /), &
        shape(n19mimic_old), order=(/1, 2, 3, 4/))
-       
-       
+
+
   ! dimensions:
   ! a=6: n channels
   ! b=2: slope/offset
   ! c=2: day/night_tw
-  ! d=22: satellite
-  real, DIMENSION(6,2,2,22) :: n19mimic = reshape( &
+  ! d=28: satellite
+  real, DIMENSION(6,2,2,28) :: n19mimic = reshape( &
     (/ &
         1.00863, 1.01129, 1.00000, 0.98519, 0.99932, 1.00000 ,& ! noaa_5_avhrr (day)------------- begin new 25.09.2017
         -0.17359,-0.10159, 0.00000, 3.68068, 0.23559, 0.00000 ,& ! noaa_5_avhrr (day)
@@ -387,11 +410,30 @@
         0.95572, 0.89283, 1.00000, 1.00529, 0.99908, 1.00343 ,& ! envisat_1_aatsr (day)
         0.25860,-0.01339, 0.00000,-1.76380, 0.26791,-0.75256 ,& ! envisat_1_aatsr (day)
         1.00000, 1.00000, 1.00000, 1.00208, 0.99906, 1.00309 ,& ! envisat_1_aatsr (twilight & night)
-        0.00000, 0.00000, 0.00000,-0.54811, 0.26531,-0.66652  & ! envisat_1_aatsr (twilight & night)------------- end new 25.09.2017
+        0.00000, 0.00000, 0.00000,-0.54811, 0.26531,-0.66652 ,& ! envisat_1_aatsr (twilight & night)------------- end new 25.09.2017
+        0.99684, 0.94524, 1.00000, 1.01510, 1.00059, 0.99153 ,& ! msg_1_seviri (day) --------- start new sats 21.01.2021
+        0.00895,-0.14918, 0.00000, 0.86427,-0.14880, 1.98450 ,& ! msg_1_seviri (day)
+        1.00000, 1.00000, 1.00000, 1.03613, 1.00056, 0.99243 ,& ! msg_1_seviri (twilight & night)
+        0.00000, 0.00000, 0.00000,-8.29568,-0.13765, 1.78321 ,& ! msg_1_seviri (twilight & night)
+        0.99650, 0.94585, 1.00000, 1.00755, 1.00107, 0.99445 ,& ! msg_2_seviri (day)
+        0.00995,-0.16314, 0.00000, 2.87526,-0.27128, 1.31065 ,& ! msg_2_seviri (day)
+        1.00000, 1.00000, 1.00000, 1.03219, 1.00097, 0.99505 ,& ! msg_2_seviri (twilight & night)
+        0.00000, 0.00000, 0.00000,-7.44470,-0.23777, 1.17786 ,& ! msg_2_seviri (twilight & night)
+        1.00022, 0.94544, 1.00000, 1.00969, 1.00073, 0.99250 ,& ! msg_3_seviri (day)
+        -0.01487,-0.16666, 0.00000,2.36694,-0.16617, 1.76030 ,& ! msg_3_seviri (day)
+        1.00000, 1.00000, 1.00000, 1.03357, 1.00062, 0.99329 ,& ! msg_3_seviri (twilight & night)
+        0.00000, 0.00000, 0.00000,-7.71935,-0.13251, 1.58527 ,& ! msg_3_seviri (twilight & night)
+        0.99726, 0.94555, 1.00000, 1.00386, 1.00118, 0.99186 ,& ! msg_4_seviri (day)
+        0.00446,-0.16415, 0.00000, 3.51216,-0.28346, 1.91390 ,& ! msg_4_seviri (day)
+        1.00000, 1.00000, 1.00000, 1.02807, 1.00101, 0.99273 ,& ! msg_4_seviri (twilight & night)
+        0.00000, 0.00000, 0.00000,-6.58719,-0.23055, 1.72230 ,& ! msg_4_seviri (twilight & night)
+        0.95630, 0.89590, 1.00000, 1.01103, 0.99927, 0.99752 ,& ! sent3a_slstr (day)
+        0.25770,-0.00870, 0.00000,-2.29855, 0.21854, 0.61070 ,& ! sent3a_slstr (day)
+        1.00000, 1.00000, 1.00000, 1.01035, 0.99922, 0.99784 ,& ! sent3a_slstr (twilight & night)
+        0.00000, 0.00000, 0.00000,-2.28595, 0.22393, 0.54088 ,& ! sent3a_slstr (twilight & night)
+        0.95536, 0.89584, 1.00000, 1.00937, 0.99954, 0.99816 ,& ! sent3b_slstr (day)
+        0.25849,-0.00880, 0.00000,-1.97560, 0.10900, 0.46436 ,& ! sent3b_slstr (day)
+        1.00000, 1.00000, 1.00000, 1.00859, 0.99961, 0.99843 ,& ! sent3b_slstr (twilight & night)
+        0.00000, 0.00000, 0.00000,-1.85533, 0.08510, 0.40281 & ! sent3b_slstr (twilight & night) -------- end new sats 21.01.2021
        /), &
        shape(n19mimic), order=(/1, 2, 3, 4/))
-
-
-       
-       
-       

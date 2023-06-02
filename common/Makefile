@@ -19,6 +19,7 @@ COMMON_OBJ_F90 = $(OBJS)/chunk_utils.o \
                  $(OBJS)/constants_cloud_typing_pavolonis.o \
                  $(OBJS)/global_attributes.o \
                  $(OBJS)/interpol.o \
+                 $(OBJS)/hdf.o \
                  $(OBJS)/orac_indexing.o \
                  $(OBJS)/orac_ncdf.o \
                  $(OBJS)/orac_output.o \
@@ -26,13 +27,17 @@ COMMON_OBJ_F90 = $(OBJS)/chunk_utils.o \
                  $(OBJS)/source_attributes.o \
                  $(OBJS)/system_utils.o
 
-COMMON_OBJ_C = $(OBJS)/struct_parser_utils.o \
+COMMON_OBJ_C = $(OBJS)/nc_get_string_att.o \
+               $(OBJS)/struct_parser_utils.o \
                $(OBJS)/system_utils_c.o
 
 COMMON_OBJ   = $(COMMON_OBJ_F90) $(COMMON_OBJ_C)
 
 
 # Compilation rules
+$(OBJS)/%.o: %.f
+	$(F77) -o $@ -c $(FFLAGS) $(INC) $(AUXFLAGS) $<
+
 $(OBJS)/%.o: %.f90
 	$(F90) -o $@ -c $(FFLAGS) $(INC) $(AUXFLAGS) $<
 
@@ -54,7 +59,7 @@ parser: generate_parser struct_parser.tab.cc
 
 # Main library build
 liborac_common.a: $(COMMON_OBJ) Makefile
-	ar -rs liborac_common.a $(OBJS)/*.o
+	$(AR) -rs liborac_common.a $(OBJS)/*.o
 
 # Small program to report the full version number of RTTOV used
 rttov_version: $(OBJS)/rttov_version.o

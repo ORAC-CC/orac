@@ -1,0 +1,79 @@
+c_compiler:
+  - gcc
+c_compiler_version:
+  - 11
+  - 12
+cxx_compiler:
+  - gxx
+cxx_compiler_version:
+  - 11
+  - 12
+channel_sources:
+  - local,conda-forge,anaconda
+fortran_compiler:
+  - gfortran
+fortran_compiler_version:
+  - 11
+  - 12
+
+# Tie the versions together
+zip_keys:
+  -                             # [unix]
+    - c_compiler_version        # [unix]
+    - cxx_compiler_version      # [unix]
+    - fortran_compiler_version  # [unix]
+  -
+    - python
+    - numpy
+    - python_impl
+
+epr_epi:
+  - 2.3
+fftw:
+  - 3
+fu_liou:
+  - 4.0.0
+hdf4:
+  - 4.2.15
+hdf5:
+  - 1.12.1
+hdfeos2:
+  - 2.20
+hsd_reader:
+  - 1.13
+libemos:
+  - 4.5.9
+libnetcdf:
+  - 4.8.1
+libtiff:
+  - 4
+mpi:
+  - nompi
+  - openmpi
+netcdf_fortran:
+  - 4.5
+nr:
+  - 2.0.1
+numpy:
+  # part of a zip_keys: python, python_impl, numpy
+  - 1.19   # [not (osx and arm64)]
+  - 1.19
+  - 1.19
+openmpi:
+  - 4
+perl:
+  - 5.32.1
+python:
+  # part of a zip_keys: python, python_impl, numpy
+  - 3.7.* *_cpython    # [not (osx and arm64)]
+  - 3.8.* *_cpython
+  - 3.9.* *_cpython
+python_impl:
+  # part of a zip_keys: python, python_impl, numpy
+  - cpython   # [not (osx and arm64)]
+  - cpython
+  - cpython
+seviri_util:
+  - 1.0.2
+rttov:
+  - 13.1

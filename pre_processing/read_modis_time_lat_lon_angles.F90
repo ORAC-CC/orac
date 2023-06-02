@@ -44,10 +44,9 @@ subroutine read_modis_time_lat_lon_angles(path_to_geo_file, imager_geolocation, 
 
    use imager_structures_m
    use preproc_constants_m
+   use hdf_m, only: DFACC_READ
 
    implicit none
-
-   include "hdf.f90"
 
    character(len=*),           intent(in)    :: path_to_geo_file
    type(imager_geolocation_t), intent(inout) :: imager_geolocation

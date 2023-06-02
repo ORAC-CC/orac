@@ -136,6 +136,9 @@
 !    allowing single-layer aerosol retreival in clear sky pixels. Updated
 !    spectral total solar irradiance input file. Included option to calculate
 !    TSI from earth-sun distance relationship and constant TSI at 1 AU if not provided by LUT.
+! 2022/04/28, GT: Added a check for the existence of the "par_weight"
+!    parameter in the TSI dataset, as it is not included/needed in the new NOAA
+!    TSI CDRs.
 !
 ! Bugs:
 ! None known.
@@ -564,6 +567,7 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    print*, cyear
    print*, cmonth
    print*, cday
+
    read(cyear,'(I4)') value
    pxYear = value
    read(cmonth,'(I2)') value
@@ -573,7 +577,6 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    ! Get calendar day
    call greg2jul(pxYear, pxMonth, pxDay, pxJday)
    print*, pxYear, pxMonth, pxDay, pxJday
-
 
    !----------------------------------------------------------------------------
    ! Read TSI file
@@ -588,16 +591,22 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    allocate(TSI_par_weight(nTSI))
 
    ! Read primary data
-   call ncdf_read_array(ncid, "tsi_true_earth", TSI_tsi_true_earth, verbose)
-   call ncdf_read_array(ncid, "tsi_1au", TSI_tsi_1au, verbose)
-   call ncdf_read_array(ncid, "year", TSI_year, verbose)
-   call ncdf_read_array(ncid, "jday", TSI_jday, verbose)
-   call ncdf_read_array(ncid, "par_weight", TSI_par_weight, verbose)
+   call ncdf_read_array(ncid, "tsi_true_earth", TSI_tsi_true_earth)
+   call ncdf_read_array(ncid, "tsi_1au", TSI_tsi_1au)
+   call ncdf_read_array(ncid, "year", TSI_year)
+   call ncdf_read_array(ncid, "jday", TSI_jday)
+   ! Check if we have a PAR weights in the TSI file
+   if (nf90_inq_varid(ncid, "par_weight", i) .eq. NF90_NOERR) then
+      call ncdf_read_array(ncid, "par_weight", TSI_par_weight)
+   else
+      TSI_par_weight(:) = 1.0
+   endif
 
    ! Close file
    call ncdf_close(ncid, 'process_broadband_fluxes(FTSI)')
 
    ! Get TSI that coincides with input date
+   pxTSI = 0.0
    do i = 1, nTSI
       if (TSI_year(i) .eq. pxYear .and. TSI_jday(i) .eq. pxJday) &
          pxTSI = TSI_tsi_true_earth(i)
@@ -632,31 +641,31 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
       call ncdf_open(ncid, FToaSW, 'process_broadband_fluxes()')
 
       ! Get LUT dimensions
-      nASFC = ncdf_dim_length(ncid, 'n_sfc_albedo', 'process_broadband_fluxes()', verbose)
-      nSOLZ = ncdf_dim_length(ncid, 'n_solar_zenith', 'process_broadband_fluxes()', verbose)
-      nRe   = ncdf_dim_length(ncid, 'n_effective_radius', 'process_broadband_fluxes()', verbose)
-      nTau  = ncdf_dim_length(ncid, 'n_optical_depth', 'process_broadband_fluxes()', verbose)
+      nASFC = ncdf_dim_length(ncid, 'n_sfc_albedo', 'process_broadband_fluxes()')
+      nSOLZ = ncdf_dim_length(ncid, 'n_solar_zenith', 'process_broadband_fluxes()')
+      nRe   = ncdf_dim_length(ncid, 'n_effective_radius', 'process_broadband_fluxes()')
+      nTau  = ncdf_dim_length(ncid, 'n_optical_depth', 'process_broadband_fluxes()')
 
       allocate(LUT_SFC_ALB(nASFC))
-      call ncdf_read_array(ncid, "surface_albedo", LUT_SFC_ALB, verbose)
+      call ncdf_read_array(ncid, "surface_albedo", LUT_SFC_ALB)
 
       allocate(LUT_SOLZ(nSOLZ))
-      call ncdf_read_array(ncid, "solar_zenith_angle", LUT_SOLZ, verbose)
+      call ncdf_read_array(ncid, "solar_zenith_angle", LUT_SOLZ)
 
       allocate(LUT_REF(nRe))
-      call ncdf_read_array(ncid, "cloud_effective_radius", LUT_REF, verbose)
+      call ncdf_read_array(ncid, "cloud_effective_radius", LUT_REF)
 
       allocate(LUT_COT(nTau))
-      call ncdf_read_array(ncid, "cloud_optical_thickness", LUT_COT, verbose)
+      call ncdf_read_array(ncid, "cloud_optical_thickness", LUT_COT)
 
       allocate(LUT_toa_sw_albedo(nASFC,nSOLZ,nRe,nTau))
-      call ncdf_read_array(ncid, "toa_sw_albedo", LUT_toa_sw_albedo, verbose)
+      call ncdf_read_array(ncid, "toa_sw_albedo", LUT_toa_sw_albedo)
 
       allocate(LUT_boa_sw_transmission(nASFC,nSOLZ,nRe,nTau))
-      call ncdf_read_array(ncid, "boa_sw_transmission", LUT_boa_sw_transmission, verbose)
+      call ncdf_read_array(ncid, "boa_sw_transmission", LUT_boa_sw_transmission)
 
       allocate(LUT_boa_sw_albedo(nASFC,nSOLZ,nRe,nTau))
-      call ncdf_read_array(ncid, "boa_sw_albedo", LUT_boa_sw_albedo, verbose)
+      call ncdf_read_array(ncid, "boa_sw_albedo", LUT_boa_sw_albedo)
 
       ! Close file
       call ncdf_close(ncid, 'process_broadband_fluxes(FToaSW)')
@@ -671,8 +680,8 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    call ncdf_open(ncid, Fprimary, 'process_broadband_fluxes()')
 
    ! Get satellite dimensions
-   xN = ncdf_dim_length(ncid, 'across_track', 'process_broadband_fluxes()', verbose)
-   yN = ncdf_dim_length(ncid, 'along_track', 'process_broadband_fluxes()', verbose)
+   xN = ncdf_dim_length(ncid, 'across_track', 'process_broadband_fluxes()')
+   yN = ncdf_dim_length(ncid, 'along_track', 'process_broadband_fluxes()')
 
    ! Allocate arrays
    allocate(LAT(xN,yN))
@@ -689,24 +698,24 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    allocate(STEMP(xN,yN))
 
    ! Read primary data
-   call ncdf_read_array(ncid, "time", TIME, verbose)
-   call ncdf_read_array(ncid, "lat", LAT, verbose)
-   call ncdf_read_array(ncid, "lon", LON, verbose)
-   call ncdf_read_array(ncid, "cot", COT, verbose)
-   call ncdf_read_array(ncid, "cer", REF, verbose)
-   call ncdf_read_array(ncid, "cc_total", CC_TOT, verbose)
-   call ncdf_read_array(ncid, "phase", PHASE, verbose)
-   call ncdf_read_array(ncid, "solar_zenith_view_no1", SOLZ, verbose)
-   call ncdf_read_array(ncid, "stemp", STEMP, verbose)
+   call ncdf_read_array(ncid, "time", TIME)
+   call ncdf_read_array(ncid, "lat", LAT)
+   call ncdf_read_array(ncid, "lon", LON)
+   call ncdf_read_array(ncid, "cot", COT)
+   call ncdf_read_array(ncid, "cer", REF)
+   call ncdf_read_array(ncid, "cc_total", CC_TOT)
+   call ncdf_read_array(ncid, "phase", PHASE)
+   call ncdf_read_array(ncid, "solar_zenith_view_no1", SOLZ)
+   call ncdf_read_array(ncid, "stemp", STEMP)
    if (corrected_cth .eq. 0) then
-      call ncdf_read_array(ncid, "ctt", CTT, verbose)
-      call ncdf_read_array(ncid, "ctp", CTP, verbose)
-      call ncdf_read_array(ncid, "cth", CTH, verbose)
+      call ncdf_read_array(ncid, "ctt", CTT)
+      call ncdf_read_array(ncid, "ctp", CTP)
+      call ncdf_read_array(ncid, "cth", CTH)
    end if
    if (corrected_cth .eq. 1) then
-      call ncdf_read_array(ncid, "ctt_corrected", CTT, verbose)
-      call ncdf_read_array(ncid, "ctp_corrected", CTP, verbose)
-      call ncdf_read_array(ncid, "cth_corrected", CTH, verbose)
+      call ncdf_read_array(ncid, "ctt_corrected", CTT)
+      call ncdf_read_array(ncid, "ctp_corrected", CTP)
+      call ncdf_read_array(ncid, "cth_corrected", CTH)
    end if
 
    if (multi_layer .eq. 1) then
@@ -716,12 +725,12 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
       allocate(CTH2(xN,yN))
       allocate(CTT2(xN,yN))
       allocate(CTP2(xN,yN))
-      call ncdf_read_array(ncid, "cot2", COT2, verbose)
-      call ncdf_read_array(ncid, "cer2", REF2, verbose)
-      call ncdf_read_array(ncid, "cc_total2", CC_TOT2, verbose)
-      call ncdf_read_array(ncid, "ctt2", CTT2, verbose)
-      call ncdf_read_array(ncid, "ctp2", CTP2, verbose)
-      call ncdf_read_array(ncid, "cth2", CTH2, verbose)
+      call ncdf_read_array(ncid, "cot2", COT2)
+      call ncdf_read_array(ncid, "cer2", REF2)
+      call ncdf_read_array(ncid, "cc_total2", CC_TOT2)
+      call ncdf_read_array(ncid, "ctt2", CTT2)
+      call ncdf_read_array(ncid, "ctp2", CTP2)
+      call ncdf_read_array(ncid, "cth2", CTH2)
    end if
 
    ! Close file
@@ -733,9 +742,9 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    call ncdf_open(ncid, FPRTM, 'process_broadband_fluxes()')
 
    ! Get PRTM dimensions
-   xdim_prtm = ncdf_dim_length(ncid, 'nlon_rtm', 'process_broadband_fluxes()', verbose)
-   ydim_prtm = ncdf_dim_length(ncid, 'nlat_rtm', 'process_broadband_fluxes()', verbose)
-   levdim_prtm = ncdf_dim_length(ncid, 'nlevels_rtm', 'process_broadband_fluxes()', verbose)
+   xdim_prtm = ncdf_dim_length(ncid, 'nlon_rtm', 'process_broadband_fluxes()')
+   ydim_prtm = ncdf_dim_length(ncid, 'nlat_rtm', 'process_broadband_fluxes()')
+   levdim_prtm = ncdf_dim_length(ncid, 'nlevels_rtm', 'process_broadband_fluxes()')
 
    ! Allocate arrays
    allocate(P(levdim_prtm, xdim_prtm, ydim_prtm))
@@ -749,17 +758,17 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    allocate(tlat_prtm(ydim_prtm))
 
    ! Read PRTM data
-   call ncdf_read_array(ncid, "pprofile_rtm", P, verbose)
-   call ncdf_read_array(ncid, "tprofile_rtm", T, verbose)
-   call ncdf_read_array(ncid, "hprofile_rtm", H, verbose)
-   call ncdf_read_array(ncid, "qprofile_rtm", Q, verbose)
-   call ncdf_read_array(ncid, "o3profile_rtm", O3, verbose)
-   call ncdf_read_array(ncid, "lon_rtm", tlon_prtm, verbose)
-   call ncdf_read_array(ncid, "lat_rtm", tlat_prtm, verbose)
+   call ncdf_read_array(ncid, "pprofile_rtm", P)
+   call ncdf_read_array(ncid, "tprofile_rtm", T)
+   call ncdf_read_array(ncid, "hprofile_rtm", H)
+   call ncdf_read_array(ncid, "qprofile_rtm", Q)
+   call ncdf_read_array(ncid, "o3profile_rtm", O3)
+   call ncdf_read_array(ncid, "lon_rtm", tlon_prtm)
+   call ncdf_read_array(ncid, "lat_rtm", tlat_prtm)
 
    ! Fill longitude array
    allocate(dummy1d(xdim_prtm))
-   call ncdf_read_array(ncid, "lon_rtm", dummy1d, verbose)
+   call ncdf_read_array(ncid, "lon_rtm", dummy1d)
    do i = 1, xdim_prtm
       lon_prtm(i,:) = dummy1d(i)
    end do
@@ -767,7 +776,7 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
 
    ! Fill latitude array
    allocate(dummy1d(ydim_prtm))
-   call ncdf_read_array(ncid, "lat_rtm", dummy1d, verbose)
+   call ncdf_read_array(ncid, "lat_rtm", dummy1d)
    do i = 1, ydim_prtm
       lat_prtm(i,:) = dummy1d(i)
    end do
@@ -785,8 +794,8 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    call ncdf_open(ncid, FALB, 'process_broadband_fluxes()')
 
    ! Get # Channels
-   nc_alb = ncdf_dim_length(ncid, 'nc_alb', 'process_broadband_fluxes()', verbose)
-   nc_emis = ncdf_dim_length(ncid, 'nc_emis', 'process_broadband_fluxes()', verbose)
+   nc_alb = ncdf_dim_length(ncid, 'nc_alb', 'process_broadband_fluxes()')
+   nc_emis = ncdf_dim_length(ncid, 'nc_emis', 'process_broadband_fluxes()')
 
    ! Allocate arrays
    allocate(rho_dd(xN, yN, nc_alb))
@@ -797,12 +806,12 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    allocate(emis_abs_ch_numbers(nc_emis))
 
    ! Read ALB data
-   call ncdf_read_array(ncid, "rho_dd_data", rho_dd, verbose)
-   call ncdf_read_array(ncid, "rho_0d_data", rho_0d, verbose)
-   call ncdf_read_array(ncid, "alb_data", alb_data, verbose)
-   call ncdf_read_array(ncid, "emis_data", emis_data, verbose)
-   call ncdf_read_array(ncid, "alb_abs_ch_numbers", alb_abs_ch_numbers, verbose)
-   call ncdf_read_array(ncid, "emis_abs_ch_numbers", emis_abs_ch_numbers, verbose)
+   call ncdf_read_array(ncid, "rho_dd_data", rho_dd)
+   call ncdf_read_array(ncid, "rho_0d_data", rho_0d)
+   call ncdf_read_array(ncid, "alb_data", alb_data)
+   call ncdf_read_array(ncid, "emis_data", emis_data)
+   call ncdf_read_array(ncid, "alb_abs_ch_numbers", alb_abs_ch_numbers)
+   call ncdf_read_array(ncid, "emis_abs_ch_numbers", emis_abs_ch_numbers)
 
    ! Close file
    call ncdf_close(ncid, 'process_broadband_fluxes(FALB)')
@@ -824,7 +833,7 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
       call ncdf_open(ncid, Faerosol, 'process_broadband_fluxes()')
 
       ! Get dimension
-      nc_aer = ncdf_dim_length(ncid, 'pixel_number', 'process_broadband_fluxes()', verbose)
+      nc_aer = ncdf_dim_length(ncid, 'pixel_number', 'process_broadband_fluxes()')
 
       ! Allocate arrays
       allocate(aerLon(nc_aer))
@@ -834,11 +843,11 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
       allocate(aerQflag(nc_aer))
 
       ! Read Aerosol data
-      call ncdf_read_array(ncid, "longitude", aerLon, verbose)
-      call ncdf_read_array(ncid, "latitude", aerLat, verbose)
-      call ncdf_read_array(ncid, "AOD550", aerAOD, verbose)
-      call ncdf_read_array(ncid, "REFF", aerREF, verbose)
-      call ncdf_read_array(ncid, "quality_flag", aerQflag, verbose)
+      call ncdf_read_array(ncid, "longitude", aerLon)
+      call ncdf_read_array(ncid, "latitude", aerLat)
+      call ncdf_read_array(ncid, "AOD550", aerAOD)
+      call ncdf_read_array(ncid, "REFF", aerREF)
+      call ncdf_read_array(ncid, "quality_flag", aerQflag)
 
       ! Close file
       call ncdf_close(ncid, 'process_broadband_fluxes(Faerosol)')
@@ -851,8 +860,8 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
 
       allocate(aerAOD1(xN,yN))
       allocate(aerREF1(xN,yN))
-      call ncdf_read_array(ncid, "aot550", aerAOD1, verbose)
-      call ncdf_read_array(ncid, "aer", aerREF1, verbose)
+      call ncdf_read_array(ncid, "aot550", aerAOD1)
+      call ncdf_read_array(ncid, "aer", aerREF1)
 
       ! Close file
       call ncdf_close(ncid, 'process_broadband_fluxes(Faerosol)')
@@ -926,6 +935,7 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    boa_tsfc(:,:) = sreal_fill_value
    boa_psfc(:,:) = sreal_fill_value
    boa_qsfc(:,:) = sreal_fill_value
+   cbh(:,:) = sreal_fill_value
 
    ! Re-grid PRTM vertical profile to match bugsrad resolution (NLS)
    do i = 1, NLS
@@ -1032,7 +1042,7 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
          call ncdf_open(ncid, Fcollocation, 'process_broadband_fluxes()')
 
          ! Read collocation data
-         call ncdf_read_array(ncid, "aID", aID, verbose)
+         call ncdf_read_array(ncid, "aID", aID)
 
          ! Close file
          call ncdf_close(ncid, 'process_broadband_fluxes()')
@@ -1104,13 +1114,13 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
    print*, 'y-start = ', pxY0
    print*, 'x-end = ', pxX1
    print*, 'y-end = ', pxY1
-   print*, 'Across Track # = ', xN
-   print*, 'Along Track #  = ', yN
+   print*, 'Across Track # = ', pxX1 - pxX0 + 2
+   print*, 'Along Track #  = ', pxY1 - pxY0 + 1
 
    ! loop over cross-track dimension
    do i = pxX0, pxX1
       call cpu_time(cpuFinish)
-      print*, 'complete: ', i*100./(xN*1.),'%   i=', i, cpuFinish-cpuStart,' seconds elapsed'
+      print*, 'complete: ', (i-pxX0)*100./((pxX1-pxX0)*1.),'%   i=', i, cpuFinish-cpuStart,' seconds elapsed'
 
       ! loop over along-track dimension
       do j = pxY0, pxY1
@@ -1470,7 +1480,7 @@ subroutine process_broadband_fluxes(Fprimary, FPRTM, FALB, FTSI, fname,&
         scale_factor  = int(1, byte), &
         add_offset    = int(0, byte), &
         valid_min     = int(1, byte), &
-        valid_max     = int(4, byte), &
+        valid_max     = int(6, byte), &
         units         = '1', &
         flag_values   = '1b 2b 3b 4b 5b 6b', &
         flag_meanings = 'oc_liq-cld oc_ice-cld clear-AOD clear_no_AOD joint_aod-liq_cld joint_aod-ice_cld', &

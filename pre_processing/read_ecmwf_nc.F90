@@ -17,7 +17,7 @@
 ! Arguments:
 ! Name            Type In/Out/Both Description
 ! ------------------------------------------------------------------------------
-! ecmwf_path     string  In   NetCDF ECMWF file to be opened.
+! nwp_path     string  In   NetCDF ECMWF file to be opened.
 ! ecmwf          struct  both Structure summarising contents of ECMWF files.
 ! preproc_dims   struct  In   Dimensions of the preprocessing grid.
 ! preproc_prtm   struct  Both Pressure-level information for RTTOV.
@@ -75,8 +75,8 @@
 !   consistent across files for example the variable name could be lnsp or LNSP
 !-------------------------------------------------------------------------------
 
-subroutine read_ecmwf_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
-     preproc_prtm, verbose, ecmwf_flag)
+subroutine read_ecmwf_nc(nwp_path, ecmwf, preproc_dims, preproc_geoloc, &
+     preproc_prtm, verbose, nwp_flag)
 
    use orac_ncdf_m
    use preproc_constants_m
@@ -84,13 +84,13 @@ subroutine read_ecmwf_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
 
    implicit none
 
-   character(len=*),        intent(in)    :: ecmwf_path
+   character(len=*),        intent(in)    :: nwp_path
    type(ecmwf_t),           intent(in)    :: ecmwf
    type(preproc_dims_t),    intent(in)    :: preproc_dims
    type(preproc_geoloc_t),  intent(in)    :: preproc_geoloc
    type(preproc_prtm_t),    intent(inout) :: preproc_prtm
    logical,                 intent(in)    :: verbose
-   integer,                 intent(in)    :: ecmwf_flag
+   integer,                 intent(in)    :: nwp_flag
 
    integer(lint),     external            :: INTIN, INTOUT, INTF
    integer(lint),     parameter           :: BUFFER = 2000000
@@ -148,7 +148,7 @@ subroutine read_ecmwf_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
    nj = ceiling((area(1)+90.)/grid(2)) - floor((area(3)+90.)/grid(2)) + 1
 
    ! open file
-   call ncdf_open(fid, ecmwf_path, 'read_ecmwf_nc()')
+   call ncdf_open(fid, nwp_path, 'read_ecmwf_nc()')
    if (nf90_inquire(fid, nVariables=nvar) .ne. 0) &
         call h_e_e('nc', 'NF INQ failed.')
 
@@ -162,8 +162,8 @@ subroutine read_ecmwf_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
 #ifdef WRAPPER
       if(ivar .eq. 1) then
 
-        call ncdf_read_array(fid, 'lon', ecmwf_lon, verbose)
-        call ncdf_read_array(fid, 'lat', ecmwf_lat, verbose)
+        call ncdf_read_array(fid, 'lon', ecmwf_lon)
+        call ncdf_read_array(fid, 'lat', ecmwf_lat)
 
         where(ecmwf_lon .gt. 180.) ecmwf_lon = ecmwf_lon-360.
 
@@ -240,14 +240,14 @@ subroutine read_ecmwf_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
       if (nf90_inquire_variable(fid, ivar, name) .ne. 0) &
            call h_e_e('nc', 'NF VAR INQUIRE failed.')
       if (three_d) then
-         if (ecmwf_flag.ne.4 .and. ecmwf_flag .ne. 5) then
-            call ncdf_read_array(fid, name, dummy3d, verbose)
+         if (nwp_flag .ne. 4 .and. nwp_flag .ne. 5) then
+            call ncdf_read_array(fid, name, dummy3d)
          else
-            call ncdf_read_array(fid, name, dummy3d_2, verbose)
+            call ncdf_read_array(fid, name, dummy3d_2)
          end if
          do k = 1, ecmwf%kdim
             old_len = n
-            if (ecmwf_flag.ne.4 .and. ecmwf_flag .ne. 5) then
+            if (nwp_flag .ne. 4 .and. nwp_flag .ne. 5) then
                old_data(1:n) = reshape(real(dummy3d(:,:,k,1), kind=8), [n])
             else
                old_data(1:n) = reshape(real(dummy3d_2(:,:,k), kind=8), [n])
@@ -280,7 +280,7 @@ subroutine read_ecmwf_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
          if (verbose) print*, trim(name), ') Min: ', minval(array3d), &
               ', Max: ', maxval(array3d)
       else
-         call ncdf_read_array(fid, name, dummy2d, verbose)
+         call ncdf_read_array(fid, name, dummy2d)
          old_len = n
          old_data(1:n) = reshape(real(dummy2d, kind=8), [n])
 

@@ -115,12 +115,31 @@
 !
 ! Bugs:
 ! None known.
+!
+!
+! Notes:
+! The `mcd43_maxqa` variable allows the user to select the desired 'worst-case'
+! QA flag for the MODIS BRDF input data. Any data with a QA flag *greater* than
+! this value will be filtered out and replaced with a fill value.
+! The default value for `mcd43_maxqa` is 5, which means all input data will be
+! used.
+! MODIS QA values are:
+! 0: best quality, 100% with full inversions
+! 1: good quality, 75% or more with best full inversions and 90% with 
+!    full inversions
+! 2: relative good quality, 75% or more with full inversions
+! 3: mixed, 75% or less full inversions and 25% or less fill values
+! 4: all magnitude iversions or 50% or less fill values
+! 5: 50% or more fill values
+! 255: fill value
+! To set the desired value, pass MCD43_MAX_QAFLAG= via the driver file.
 !-------------------------------------------------------------------------------
 
 subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
      modis_brdf_path, occci_path, imager_flags, imager_geolocation, &
      imager_angles, channel_info, ecmwf, assume_full_path, include_full_brdf, &
-     use_occci, use_swansea_climatology, swan_g, verbose, surface, source_atts)
+     use_occci, use_swansea_climatology, swan_g, verbose, mcd43_maxqa, &
+     surface, source_atts)
 
    use channel_structures_m
    use cox_munk_m
@@ -158,6 +177,7 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
    logical,                    intent(in)    :: use_swansea_climatology
    real,                       intent(in)    :: swan_g
    logical,                    intent(in)    :: verbose
+   integer,                    intent(in)    :: mcd43_maxqa
    type(surface_t),            intent(inout) :: surface
    type(source_attributes_t),  intent(inout) :: source_atts
 
@@ -169,6 +189,7 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
    integer                           :: nsea, nland
    integer                           :: seacount
    integer                           :: lndcount
+   logical                           :: read_qa
    logical,            allocatable   :: mask(:,:)
    integer,            allocatable   :: bands(:)
    integer,            allocatable   :: band_to_sw_index(:)
@@ -223,6 +244,13 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
    if (verbose) write(*,*) 'include_full_brdf: ', include_full_brdf
    if (verbose) write(*,*) 'use_occci: ',         use_occci
    if (verbose) write(*,*) 'use_swansea_clim: ',  use_swansea_climatology, swan_g
+   
+   ! Determine if we need to read the QA data
+   if (mcd43_maxqa .lt. 5) then
+      read_qa = .true.
+   else
+      read_qa = .false.
+   endif
 
 
    ! Mask out pixels set to fill_value and out of BRDF angular range
@@ -407,11 +435,11 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
               mcdc3)
       else
          call read_mcd43c3(modis_surf_path_file, mcdc3, n_bands, bands, &
-              .true., .false., .false., verbose, stat)
+              .true., .false., read_qa, mcd43_maxqa, verbose, stat)
 
          if (include_full_brdf) then
             call read_mcd43c1(modis_brdf_path_file, mcdc1, n_bands, bands, &
-                 .true., .false., verbose, stat)
+                 .true., read_qa, mcd43_maxqa, verbose, stat)
          end if
       end if
 
