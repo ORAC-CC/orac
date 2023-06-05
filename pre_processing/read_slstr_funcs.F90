@@ -191,8 +191,11 @@ subroutine read_slstr_tirdata(indir, inband, outarr, sx, sy)
 
 end subroutine read_slstr_tirdata
 
-! Read the nadir-view visible grid data from SLSTR. Need to update with oblique view
-! This assumes that VIS data is twice resolution of TIR (should be correct, 0.5km)
+! Read the nadir-view visible grid data from SLSTR. Need to update with
+! oblique view. This no-longer assumes that VIS data is twice
+! resolution of TIR. In theory (and usually in practice) this is true,
+! as vis data is a 0.5 km resolution, rather than 1 km like TIR, but
+! sometimes we're a pixel out!
 subroutine read_slstr_visdata(indir, inband, outarr, imager_angles, &
      sx, sy, nx, ny)
 
@@ -220,6 +223,7 @@ subroutine read_slstr_visdata(indir, inband, outarr, imager_angles, &
    character(len=path_length)     :: irradname
 
    integer :: fid, ndet
+   integer :: nx1, nxr, ny1, nyr
 
    if (inband .lt. 1 .or. inband .gt. 18) then
       print*, 'SLSTR input band must be in range 1-18. Here we have', inband
@@ -229,13 +233,31 @@ subroutine read_slstr_visdata(indir, inband, outarr, imager_angles, &
    ! Find the filename required for this channel
    call get_slstr_imnames(indir, inband, filename, filename_qa, bandname, irradname)
 
-   allocate(data1(nx*2,ny*2))
+   ! Open the netcdf file
+   call ncdf_open(fid, filename, 'read_slstr_visdata()')
+   ! Determin the actual size of the data array (which should be
+   ! nx*2,ny*2, but sometimes isn't). Ensure the data array is at
+   ! least nx*2, ny*2 in size
+   ny1 = ncdf_dim_length(fid, 'rows', 'read_slstr_visdata()')
+   nx1 = ncdf_dim_length(fid, 'columns', 'read_slstr_visdata()')
+   if (ny1 .gt. ny*2) then
+      nyr = ny1
+   else
+      nyr = ny*2
+   end if
+   if (nx1 .gt. nx*2) then
+      nxr = nx1
+   else
+      nxr = nx*2
+   end if
+
+   allocate(data1(nxr,nyr))
 
    data1(:,:) = sreal_fill_value
 
    ! Open the netcdf file
-   call ncdf_open(fid, filename, 'read_slstr_visdata()')
-   call ncdf_read_array(fid, bandname, data1, start=[sx*2-1, sy*2-1])
+   call ncdf_read_array(fid, bandname, data1(1:nx1,1:ny1), &
+        start=[sx*2-1, sy*2-1])
    call ncdf_close(fid, 'read_slstr_visdata()')
 
    ! Now we deal with the solar irradiance dataset
@@ -250,7 +272,10 @@ subroutine read_slstr_visdata(indir, inband, outarr, imager_angles, &
    call ncdf_close(fid, 'read_slstr_visdata()')
 
    ! Resample the data to the TIR grid size.
-   call slstr_resample_vis_to_tir(data1, outarr, nx, ny, sreal_fill_value)
+   ! Ensure that the array passed to the resampling routine is the
+   ! expected size
+   call slstr_resample_vis_to_tir(data1(1:nx*2,1:ny*2), outarr, &
+        nx, ny, sreal_fill_value)
 
    ! Convert from radiances to reflectances
    where(outarr .ne. sreal_fill_value) &
