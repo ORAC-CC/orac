@@ -244,18 +244,18 @@ subroutine read_slstr_visdata(indir, inband, outarr, imager_angles, &
    ! than nx*2 or ny*2
    ny1 = ncdf_dim_length(fid, 'rows', 'read_slstr_visdata()')
    nx1 = ncdf_dim_length(fid, 'columns', 'read_slstr_visdata()')
-   if (ny1 .lt. ny*2 + sy*2 - 1) then
+   if (ny1 .lt. (ny + sy - 1)*2) then
       nyr = ny*2 - 1
    else
       nyr = ny*2
    end if
-   if (nx1 .lt. nx*2 + sx*2 - 1) then
+   if (nx1 .lt. (nx + sx - 1)*2) then
       nxr = nx*2 - 1
    else
       nxr = nx*2
    end if
 
-   allocate(data1(nx*2,nyr*2))
+   allocate(data1(nx*2,ny*2))
 
    data1(:,:) = sreal_fill_value
 
