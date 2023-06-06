@@ -34,6 +34,9 @@
 !                 The S7 band now saturates at 312K rather than 305K.
 ! 2020/04/14, AP: Add subsetting to the read functions.
 ! 2020/16/07, AP: Relative azimuth should be 180 when looking into the sun.
+! 2023/06/06, GT: Added code to deal with frames where there is one extra
+!                 row of both thermal and vis data than the normal (i.e. one
+!                 less row of vis data than code would anticipate).
 !
 ! Bugs:
 ! SLSTR colocation is poor. Aerosol retrieval unusable. Cloud retrieval suspect.
@@ -235,28 +238,28 @@ subroutine read_slstr_visdata(indir, inband, outarr, imager_angles, &
 
    ! Open the netcdf file
    call ncdf_open(fid, filename, 'read_slstr_visdata()')
-   ! Determin the actual size of the data array (which should be
-   ! nx*2,ny*2, but sometimes isn't). Ensure the data array is at
-   ! least nx*2, ny*2 in size
+   ! Determine the actual size of the data array (which should be
+   ! nx*2,ny*2, but sometimes isn't). Calculate the number of columns
+   ! and rows we can actually read. It is possible to have one less
+   ! than nx*2 or ny*2
    ny1 = ncdf_dim_length(fid, 'rows', 'read_slstr_visdata()')
    nx1 = ncdf_dim_length(fid, 'columns', 'read_slstr_visdata()')
-   if (ny1 .gt. ny*2) then
-      nyr = ny1
+   if (ny1 .lt. ny*2 + sy*2 - 1) then
+      nyr = ny*2 - 1
    else
       nyr = ny*2
    end if
-   if (nx1 .gt. nx*2) then
-      nxr = nx1
+   if (nx1 .lt. nx*2 + sx*2 - 1) then
+      nxr = nx*2 - 1
    else
       nxr = nx*2
    end if
 
-   allocate(data1(nxr,nyr))
+   allocate(data1(nx*2,nyr*2))
 
    data1(:,:) = sreal_fill_value
 
-   ! Open the netcdf file
-   call ncdf_read_array(fid, bandname, data1(1:nx1,1:ny1), &
+   call ncdf_read_array(fid, bandname, data1(1:nxr,1:nyr), &
         start=[sx*2-1, sy*2-1])
    call ncdf_close(fid, 'read_slstr_visdata()')
 

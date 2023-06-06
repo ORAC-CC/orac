@@ -83,7 +83,7 @@ subroutine read_aatsr_dimensions(path_to_l1b_file,n_across_track, &
    logical,                        intent(in)  :: verbose
 
    character(len=path_length,kind=c_char) :: l1b_file_C
-   integer(c_short)                       :: tmp_dynght, half_orbit, c_dynght
+   integer(c_short)                       :: half_orbit, c_dynght
    real(c_float), dimension(4)            :: tmp_limit
    integer(c_short)                       :: err_code
    logical(c_bool)                        :: verb
@@ -99,7 +99,6 @@ subroutine read_aatsr_dimensions(path_to_l1b_file,n_across_track, &
 
    ! Check for the presence of the optional day_night and lat-lon limit
    ! input variables and set defaults if not present.
-   tmp_dynght = day_night
    tmp_limit = loc_limit
 
    ! If we are dealing with night time data, we need to call
@@ -108,10 +107,10 @@ subroutine read_aatsr_dimensions(path_to_l1b_file,n_across_track, &
    ! "n_along_track2" and "along_track_offset2"
    ! If, however, the option 4 or 5 have been passed for day_night, then we
    ! only read either the start OR end of the orbit.
-   if (tmp_dynght .eq. 2 .or. tmp_dynght .eq. 4) then
+   if (day_night .eq. 2 .or. day_night .eq. 4) then
       half_orbit = 1
    else
-      if (tmp_dynght .eq. 5) then
+      if (day_night .eq. 5) then
          half_orbit = 2
       else
          half_orbit = 0
@@ -119,9 +118,9 @@ subroutine read_aatsr_dimensions(path_to_l1b_file,n_across_track, &
    end if
    ! Redefine the dynht variable, so that it is either 0 (everything),
    ! 1 (daylight) or 2 (night)
-   if (tmp_dynght .eq. 2 .or. tmp_dynght .eq. 4 .or. tmp_dynght .eq. 5) then
+   if (day_night .eq. 2 .or. day_night .eq. 4 .or. day_night .eq. 5) then
       c_dynght = 2
-   else if (tmp_dynght .eq. 1) then
+   else if (day_night .eq. 1) then
       c_dynght = 1
    else
       c_dynght = 0
@@ -149,7 +148,7 @@ subroutine read_aatsr_dimensions(path_to_l1b_file,n_across_track, &
    end if
 
    ! make second call for second night time chunk
-   if (tmp_dynght .eq. 2) then
+   if (day_night .eq. 2) then
       half_orbit = 2
       call get_aatsr_dimension(l1b_file_C, c_dynght, tmp_limit, &
            half_orbit, tmp_nx, tmp_ny, tmp_miny, err_code, verb)
