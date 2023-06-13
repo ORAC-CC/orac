@@ -96,13 +96,15 @@
 !    Homog and Coreg noise are independent of LUT being used.
 ! 2023/06/13, AP: Add alternative calculation of uncertainty in mixed channels
 !    that uses the observed radiance rather than the solar constant to convert
-!    Solar%NeHomog/Coreg from reflectance into radiance.
+!    Solar%NeHomog/Coreg from reflectance into radiance. Additionally, add
+!    Thermal%NeHomog/Coreg to IDay pixels as well.
 !
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
 
 #define USE_OLD_MIXED_UNCERTAINTY .false.
+#define THERMAL_ALWAYS_HAS_HOMOG_COREG .true.
 
 subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
 
@@ -277,7 +279,6 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
                if (len_trim(Ctrl%LUTClass) == 3) then
                   ! Old LUTs approach reads homog from sad files.
                   SPixel%Sy(i,i) = SPixel%Sy(i,i) + &
-                       SAD_Chan(ii)%Thermal%NeHomog(Ctrl%CloudType) + &
                        SAD_Chan(ii)%Solar%NeHomog(Ctrl%CloudType) * &
                        Rad(1) * Rad(1) / &
                        (dR_dT(1)*dR_dT(1))
@@ -286,7 +287,7 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
                   ! Add solar and thermal contributions of homog noise
                   ! in units of Kelvin^2 to Sy by multiplying
                   ! solar contribution by (F0/dR_dT)^2.
-                  SPixel%Sy(i,i) = SPixel%Sy(i,i) + ThermalNeHomog ** 2 + &
+                  SPixel%Sy(i,i) = SPixel%Sy(i,i) + &
                        ((SolarNeHomog/100.) * Rad(1) / dR_dT(1)) ** 2
                end if
 
@@ -305,7 +306,9 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
             end if
          end if
          ! Night/twilight, only thermal channel info required
-         if (SPixel%Illum /= IDay .and. SAD_Chan(ii)%Thermal%Flag /= 0) then
+         if (SAD_Chan(ii)%Thermal%Flag /= 0 .and. &
+              (THERMAL_ALWAYS_HAS_HOMOG_COREG .or. SPixel%Illum /= IDay .or. &
+              SAD_Chan(ii)%Solar%Flag /= 0)) then
             ! Pure thermal channel, add the thermal contribution to
             ! Sy by squaring absolute uncertainties.
             if (len_trim(Ctrl%LUTClass) == 3) then
@@ -351,7 +354,6 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
                if (len_trim(Ctrl%LUTClass) == 3) then
                   ! Old LUTs approach reads coreg from sad files.
                   SPixel%Sy(i,i) = SPixel%Sy(i,i) + &
-                       SAD_Chan(ii)%Thermal%NeCoreg(Ctrl%CloudType) + &
                        SAD_Chan(ii)%Solar%NeCoreg(Ctrl%CloudType) * &
                        Rad(1) * Rad(1) / &
                        (dR_dT(1)*dR_dT(1))
@@ -360,7 +362,7 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
                   ! Add solar and thermal contributions of coreg noise
                   ! in units of Kelvin^2 to Sy by multiplying
                   ! solar contribution by (F0/dR_dT)^2.
-                  SPixel%Sy(i,i) = SPixel%Sy(i,i) + ThermalNeCoreg ** 2 + &
+                  SPixel%Sy(i,i) = SPixel%Sy(i,i) + &
                        ((SolarNeCoreg/100.) * Rad(1) / dR_dT(1)) ** 2
                end if
 
@@ -379,7 +381,9 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
             end if
          end if
          ! Add thermal channel info
-         if (SPixel%Illum /= IDay .and. SAD_Chan(ii)%Thermal%Flag /= 0) then
+         if (SAD_Chan(ii)%Thermal%Flag /= 0 .and. &
+              (THERMAL_ALWAYS_HAS_HOMOG_COREG .or. SPixel%Illum /= IDay .or. &
+              SAD_Chan(ii)%Solar%Flag /= 0)) then
             ! Pure thermal channel, add the thermal contribution to
             ! Sy by squaring absolute uncertainties.
             if (len_trim(Ctrl%LUTClass) == 3) then
