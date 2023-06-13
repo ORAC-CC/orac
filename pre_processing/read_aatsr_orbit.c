@@ -11,6 +11,7 @@
       and 512.
    2016/10/26, GT: Fixed a bug whereby measurement time was always being read
       from first row of orbit regardless of starty value.
+   2020/05/11, GT: Fixed bug in selection of day/night data in get_aatsr_dimension.
 **/
 
 #include "read_aatsr_orbit.h"

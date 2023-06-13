@@ -309,7 +309,10 @@
 !                 instead of IMPF (as previous). The new driver file option
 !                 USE_GSICS enables this to be disabled.
 ! 2018/10/08, SP: Add support for the GOES-Imager series of sensors (G12-15)
-! 2019/08/14, SP: Add Fengyun-4A support.
+! 2019/05/21, GT: Added code to run ECMWF data reading and RTTOV running
+!                 separately for East and West portions of an image that
+!                 crosses the date line, rather than populating the entire
+!                 lat-lon range.
 ! 2020/03/02, ATP: Add support for AHI subsetting.
 ! 2021/03/10, AP: Remove command line arguments.
 ! 2021/03/14, AP: Move setup selection into a dedicated routine.
@@ -463,6 +466,9 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
    ! get number of arguments
    nargs = command_argument_count()
 #endif
+
+   ! Minimal output to notify start and end of programme
+   write(*,*) 'Beginning orac_preproc'
 
    ! Set defaults for optional arguments/fields
    nullify(preproc_opts%channel_ids)
@@ -1172,6 +1178,10 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
 
    ! deallocate optional arguments
    if (associated(preproc_opts%channel_ids)) deallocate(preproc_opts%channel_ids)
+
+   ! Notify of sucessful completion
+   write(*,*) 'orac_preproc is complete. Output written to:'
+   Write(*,*) trim(output_path)
 
 #ifdef WRAPPER
 end subroutine orac_preproc

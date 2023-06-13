@@ -62,8 +62,8 @@ subroutine define_preprop_grid(imager_geolocation,preproc_dims,verbose)
         preproc_dims%dellon + 1.
 
    ! only consider valid lat/lon values
-   mask =  imager_geolocation%latitude.gt.sreal_fill_value .and. &
-        imager_geolocation%longitude.gt.sreal_fill_value
+   mask =  imager_geolocation%latitude.ne.sreal_fill_value .and. &
+        imager_geolocation%longitude.ne.sreal_fill_value
 
    ! take one more pixel than is required for interpolation
    ymax = nint(2.*preproc_dims%lat_offset*preproc_dims%dellat,kind=lint)

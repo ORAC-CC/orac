@@ -25,6 +25,9 @@
 ! 2017/03/29, SP: Add new variable for tropopause cloud emissivity (ExtWork)
 ! 2017/06/21, OS: added ann phase variables
 ! 2017/11/15, SP: Add feature to give access to sensor azimuth angle
+! 2018/02/02, GT: Added total number of pixels across and along track to
+!    imager_geolocation (in addition to the nx and ny values, which reflect
+!    user specified start and end coordinates)
 ! 2018/11/05, SP: Add CAPE
 !
 ! Bugs:

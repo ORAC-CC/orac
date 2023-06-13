@@ -85,6 +85,7 @@
 ! 2015/08/08, CP: added in ATSR2 capability
 ! 2015/09/07, AP: Allow verbose to be controlled from the driver file.
 ! 2017/06/21, OS: string name fix for METOP
+! 2023/06/02, GT: Fix for Sentinel-3 platform string
 !
 ! Bugs:
 ! None known.
@@ -125,6 +126,10 @@ subroutine Read_LwRTM(Ctrl, RTM)
       write(*,*) 'ERROR: Read_LwRTM(): Could not read global attributes: ', &
                  Ctrl%FID%LWRTM
       stop error_stop_code
+   end if
+   ! for Sentinel-3 we need to remove the "-" from the platform name
+   if (platform(1:10) == 'Sentinel-3') then
+      platform = platform(1:8)//platform(10:11)
    end if
    if (sensor =='AATSR' .or. sensor =='ATSR2' ) then
       instname = trim(adjustl(sensor))
