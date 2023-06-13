@@ -1522,7 +1522,18 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       end if
    end if
 
-
+   ! If running an aerosol retrieval, we should ensure that we have the
+   ! channel which corresponds to the second AOT wavelength active in
+   ! the measurement vector. Should we consider checking for the
+   ! primary AOD channels as well?
+   if (Ctrl%Approach == AppAerOx .or. Ctrl%Approach == AppAerSw .or. &
+        Ctrl%Approach == AppAerO1) then
+      if (ALL(Ctrl%Ind%Y_Id .ne. Ctrl%second_aot_ch(1))) then
+         write(*,*) 'ERROR: Second AOD channel is not active: ', Ctrl%second_aot_ch(1)
+         stop error_stop_code
+      end if
+   end if
+   
    !----------------------------------------------------------------------------
    ! Clean up
    !----------------------------------------------------------------------------

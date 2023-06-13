@@ -791,10 +791,6 @@ subroutine Read_SAD_LUT(Ctrl, SAD_Chan, SAD_LUT, i_layer)
    ! Read AOD conversion table
    if (Ctrl%Approach == AppAerOx .or. Ctrl%Approach == AppAerSw .or. &
        Ctrl%Approach == AppAerO1) then
-      if (ALL(Ctrl%Ind%Y_Id .ne. Ctrl%second_aot_ch(1))) then
-         write(*,*) 'ERROR: Second AOD channel is not active: ', Ctrl%second_aot_ch(1)
-         stop LUTFileOpenErr
-      end if
       call make_sad_chan_num(Ctrl, Ctrl%second_aot_ch(1), chan_num)
       LUT_File = create_sad_filename(Ctrl, chan_num, i_layer, 'BextRat')
       call Read_LUT_rat(Ctrl, LUT_File, SAD_LUT, 1, IBextRat, "BextRat", &
