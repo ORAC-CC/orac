@@ -1290,7 +1290,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    ! a compensating effect and is therefore required as is.  This is very likely
    ! the reason this problem went unnoticed until the reciprocity-obeying form
    ! (equations 3 and 4) were introduced.
-   if (Ctrl%i_equation_form == 3 .or. Ctrl%i_equation_form == 4) then
+   if ((Ctrl%i_equation_form == 3 .or. Ctrl%i_equation_form == 4) .and. &
+        len(trim(Ctrl%LUTClass)) == 3) then
       Ctrl%get_T_dv_from_T_0d = .true.
    else
       Ctrl%get_T_dv_from_T_0d = .false.
