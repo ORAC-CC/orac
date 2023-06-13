@@ -198,12 +198,12 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
             else
                ! New LUTs approach (varying uncertainty)
                ! Convert reflectance to radiance
-               j = Ctrl%Ind%View_Id(SPixel%spixel_y_to_ctrl_y_index(i))
+               j = SPixel%ViewIdx(i)
                Lx = (SPixel%Ym(i) * cos(SPixel%Geom%SolZen(j) * d2r) * &
                      SAD_Chan(ii)%Solar%F0) / Pi
                ! Compute uncertainty in terms of radiance
-               dLx = sqrt((Lx / SAD_Chan(ii)%Solar%SNR ) ** 2 + &
-                           2 * ((MSI_Data%cal_gain(i) * (1.0 / sqrt(12.0))) ** 2))
+               dLx = sqrt((Lx / SAD_Chan(ii)%Solar%SNR) ** 2 + &
+                           2 * ((MSI_Data%cal_gain(ii) * (1.0 / sqrt(12.0))) ** 2))
                ! Convert radiance uncertainty to reflectance uncertainty
                ! then square it to convert to reflectance variance
                SPixel%Sy(i,i) = ((Pi * dLx) / &
