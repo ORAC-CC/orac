@@ -259,58 +259,55 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
          end if
 
          ! Daylight
-         if (SPixel%Illum .ne. INight .and. SPixel%Illum .ne. ITwi) then
-            if (SAD_Chan(ii)%Solar%Flag /= 0) then
-               if (SAD_Chan(ii)%Thermal%Flag /= 0) then
-                  ! Both solar and thermal => mixed
-
-                  ! Compute partial derivative of Planck function w.r.t.
-                  ! T, evaluated at the measured BT and wavelength of
-                  ! mixed channel and store result in dR_dT(1).
-                  call T2R(1, SAD_Chan(ii:ii), SPixel%Ym(i:i), Rad, dR_dT, status)
-                  if (len_trim(Ctrl%LUTClass) == 3) then
-                     ! Old LUTs approach reads homog from sad files.
-                     SPixel%Sy(i,i) = SPixel%Sy(i,i) + &
-                             SAD_Chan(ii)%Thermal%NeHomog(Ctrl%CloudType) + &
-                             SAD_Chan(ii)%Solar%NeHomog(Ctrl%CloudType) * &
-                             SAD_Chan(ii)%Solar%f0*SAD_Chan(ii)%Solar%f0 / &
-                             (dR_dT(1)*dR_dT(1))
-                  else
-                     ! New LUTs approach uses homog value hard-coded above.
-                     ! Add solar and thermal contributions of homog noise
-                     ! in units of Kelvin^2 to Sy by multiplying
-                     ! solar contribution by (F0/dR_dT)^2.
-                     SPixel%Sy(i,i) = SPixel%Sy(i,i) + ThermalNeHomog ** 2 &
-                             + ((SolarNeHomog/100.) * SAD_Chan(ii)%Solar%F0 / dR_dT(1)) ** 2
-                  end if
-
-               else
-                  ! Pure solar channel, just add the solar NedR contribution.
-                  if (len_trim(Ctrl%LUTClass) == 3) then
-                     ! Old LUTs approach reads homog from sad files.
-                     SPixel%Sy(i,i) = SPixel%Sy(i,i) + &
-                             SAD_Chan(ii)%Solar%NeHomog(Ctrl%CloudType) * &
-                             SPixel%Ym(i) * SPixel%Ym(i)
-                  else
-                     ! New LUTs approach uses homog value hard-coded above.
-                     SPixel%Sy(i,i) = SPixel%Sy(i,i) + &
-                             ((SolarNeHomog/100.) * SPixel%Ym(i)) ** 2
-                  end if
-               end if
-            end if
-         else
-            ! Night/twilight, only thermal channel info required
+         if (SPixel%Illum == IDay .and. SAD_Chan(ii)%Solar%Flag /= 0) then
             if (SAD_Chan(ii)%Thermal%Flag /= 0) then
-               ! Pure thermal channel, add the thermal contribution to
-               ! Sy by squaring absolute uncertainties.
+               ! Both solar and thermal => mixed
+
+               ! Compute partial derivative of Planck function w.r.t.
+               ! T, evaluated at the measured BT and wavelength of
+               ! mixed channel and store result in dR_dT(1).
+               call T2R(1, SAD_Chan(ii:ii), SPixel%Ym(i:i), Rad, dR_dT, status)
                if (len_trim(Ctrl%LUTClass) == 3) then
                   ! Old LUTs approach reads homog from sad files.
                   SPixel%Sy(i,i) = SPixel%Sy(i,i) + &
-                          SAD_Chan(ii)%Thermal%NeHomog(Ctrl%CloudType)
+                       SAD_Chan(ii)%Thermal%NeHomog(Ctrl%CloudType) + &
+                       SAD_Chan(ii)%Solar%NeHomog(Ctrl%CloudType) * &
+                       SAD_Chan(ii)%Solar%f0*SAD_Chan(ii)%Solar%f0 / &
+                       (dR_dT(1)*dR_dT(1))
                else
                   ! New LUTs approach uses homog value hard-coded above.
-                  SPixel%Sy(i,i) = SPixel%Sy(i,i) + ThermalNeHomog ** 2
+                  ! Add solar and thermal contributions of homog noise
+                  ! in units of Kelvin^2 to Sy by multiplying
+                  ! solar contribution by (F0/dR_dT)^2.
+                  SPixel%Sy(i,i) = SPixel%Sy(i,i) + ThermalNeHomog ** 2 + &
+                       ((SolarNeHomog/100.) * SAD_Chan(ii)%Solar%F0 / dR_dT(1)) ** 2
                end if
+
+            else
+               ! Pure solar channel, just add the solar NedR contribution.
+               if (len_trim(Ctrl%LUTClass) == 3) then
+                  ! Old LUTs approach reads homog from sad files.
+                  SPixel%Sy(i,i) = SPixel%Sy(i,i) + &
+                       SAD_Chan(ii)%Solar%NeHomog(Ctrl%CloudType) * &
+                       SPixel%Ym(i) * SPixel%Ym(i)
+               else
+                  ! New LUTs approach uses homog value hard-coded above.
+                  SPixel%Sy(i,i) = SPixel%Sy(i,i) + &
+                       ((SolarNeHomog/100.) * SPixel%Ym(i)) ** 2
+               end if
+            end if
+         end if
+         ! Night/twilight, only thermal channel info required
+         if (SPixel%Illum /= IDay .and. SAD_Chan(ii)%Thermal%Flag /= 0) then
+            ! Pure thermal channel, add the thermal contribution to
+            ! Sy by squaring absolute uncertainties.
+            if (len_trim(Ctrl%LUTClass) == 3) then
+               ! Old LUTs approach reads homog from sad files.
+               SPixel%Sy(i,i) = SPixel%Sy(i,i) + &
+                    SAD_Chan(ii)%Thermal%NeHomog(Ctrl%CloudType)
+            else
+               ! New LUTs approach uses homog value hard-coded above.
+               SPixel%Sy(i,i) = SPixel%Sy(i,i) + ThermalNeHomog ** 2
             end if
          end if
       end do
@@ -335,58 +332,55 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
          ii = SPixel%spixel_y_to_ctrl_y_index(i)
 
          ! Daylight
-         if (SPixel%Illum == IDay) then
-            if (SAD_Chan(ii)%Solar%Flag /= 0) then
-               if (SAD_Chan(ii)%Thermal%Flag /= 0) then
-                  ! Both solar and thermal => mixed
-
-                  ! Compute partial derivative of Planck function w.r.t.
-                  ! T, evaluated at the measured BT and wavelength of
-                  ! mixed channel and store result in dR_dT(1).
-                  call T2R(1, SAD_Chan(ii:ii), SPixel%Ym(i:i), Rad, dR_dT, status)
-                  if (len_trim(Ctrl%LUTClass) == 3) then
-                     ! Old LUTs approach reads coreg from sad files.
-                     SPixel%Sy(i,i) = SPixel%Sy(i,i) + &
-                             SAD_Chan(ii)%Thermal%NeCoreg(Ctrl%CloudType) + &
-                             SAD_Chan(ii)%Solar%NeCoreg(Ctrl%CloudType) * &
-                             SAD_Chan(ii)%Solar%f0*SAD_Chan(ii)%Solar%f0 / &
-                             (dR_dT(1)*dR_dT(1))
-                  else
-                     ! New LUTs approach uses coreg value hard-coded above.
-                     ! Add solar and thermal contributions of coreg noise
-                     ! in units of Kelvin^2 to Sy by multiplying
-                     ! solar contribution by (F0/dR_dT)^2.
-                     SPixel%Sy(i,i) = SPixel%Sy(i,i) + ThermalNeCoreg ** 2 &
-                             + ((SolarNeCoreg/100.) * SAD_Chan(ii)%Solar%F0 / dR_dT(1)) ** 2
-                  end if
-
-               else
-                  ! Pure solar channel, just add the solar NedR contribution.
-                  if (len_trim(Ctrl%LUTClass) == 3) then
-                     ! Old LUTs approach reads coreg from sad files.
-                     SPixel%Sy(i,i) = SPixel%Sy(i,i) + &
-                             SAD_Chan(ii)%Solar%NeCoreg(Ctrl%CloudType) * &
-                             SPixel%Ym(i) * SPixel%Ym(i)
-                  else
-                     ! New LUTs approach uses coreg value hard-coded above.
-                     SPixel%Sy(i,i) = SPixel%Sy(i,i) + &
-                             ((SolarNeCoreg/100.) * SPixel%Ym(i)) ** 2
-                  end if
-               end if
-            end if
-         else
-            ! Night/twilight, only thermal channel info required
+         if (SPixel%Illum == IDay .and. SAD_Chan(ii)%Solar%Flag /= 0) then
             if (SAD_Chan(ii)%Thermal%Flag /= 0) then
-               ! Pure thermal channel, add the thermal contribution to
-               ! Sy by squaring absolute uncertainties.
+               ! Both solar and thermal => mixed
+
+               ! Compute partial derivative of Planck function w.r.t.
+               ! T, evaluated at the measured BT and wavelength of
+               ! mixed channel and store result in dR_dT(1).
+               call T2R(1, SAD_Chan(ii:ii), SPixel%Ym(i:i), Rad, dR_dT, status)
                if (len_trim(Ctrl%LUTClass) == 3) then
                   ! Old LUTs approach reads coreg from sad files.
                   SPixel%Sy(i,i) = SPixel%Sy(i,i) + &
-                          SAD_Chan(ii)%Thermal%NeCoreg(Ctrl%CloudType)
+                       SAD_Chan(ii)%Thermal%NeCoreg(Ctrl%CloudType) + &
+                       SAD_Chan(ii)%Solar%NeCoreg(Ctrl%CloudType) * &
+                       SAD_Chan(ii)%Solar%f0*SAD_Chan(ii)%Solar%f0 / &
+                       (dR_dT(1)*dR_dT(1))
                else
                   ! New LUTs approach uses coreg value hard-coded above.
-                  SPixel%Sy(i,i) = SPixel%Sy(i,i) + ThermalNeCoreg ** 2
+                  ! Add solar and thermal contributions of coreg noise
+                  ! in units of Kelvin^2 to Sy by multiplying
+                  ! solar contribution by (F0/dR_dT)^2.
+                  SPixel%Sy(i,i) = SPixel%Sy(i,i) + ThermalNeCoreg ** 2 &
+                       ((SolarNeCoreg/100.) * SAD_Chan(ii)%Solar%F0 / dR_dT(1)) ** 2
                end if
+
+            else
+               ! Pure solar channel, just add the solar NedR contribution.
+               if (len_trim(Ctrl%LUTClass) == 3) then
+                  ! Old LUTs approach reads coreg from sad files.
+                  SPixel%Sy(i,i) = SPixel%Sy(i,i) + &
+                       SAD_Chan(ii)%Solar%NeCoreg(Ctrl%CloudType) * &
+                       SPixel%Ym(i) * SPixel%Ym(i)
+               else
+                  ! New LUTs approach uses coreg value hard-coded above.
+                  SPixel%Sy(i,i) = SPixel%Sy(i,i) + &
+                       ((SolarNeCoreg/100.) * SPixel%Ym(i)) ** 2
+               end if
+            end if
+         end if
+         ! Add thermal channel info
+         if (SPixel%Illum /= IDay .and. SAD_Chan(ii)%Thermal%Flag /= 0) then
+            ! Pure thermal channel, add the thermal contribution to
+            ! Sy by squaring absolute uncertainties.
+            if (len_trim(Ctrl%LUTClass) == 3) then
+               ! Old LUTs approach reads coreg from sad files.
+               SPixel%Sy(i,i) = SPixel%Sy(i,i) + &
+                    SAD_Chan(ii)%Thermal%NeCoreg(Ctrl%CloudType)
+            else
+               ! New LUTs approach uses coreg value hard-coded above.
+               SPixel%Sy(i,i) = SPixel%Sy(i,i) + ThermalNeCoreg ** 2
             end if
          end if
       end do
