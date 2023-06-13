@@ -54,7 +54,6 @@ module imager_structures_m
    type imager_geolocation_t
 
       integer(kind=lint) :: nx,ny,startx,starty,endx,endy
-      integer(kind=lint) :: n_across_track,n_along_track
 
       real(kind=sreal), dimension(:,:), pointer :: latitude
       real(kind=sreal), dimension(:,:), pointer :: longitude
