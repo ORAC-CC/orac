@@ -202,8 +202,16 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
                Lx = (SPixel%Ym(i) * cos(SPixel%Geom%SolZen(j) * d2r) * &
                      SAD_Chan(ii)%Solar%F0) / Pi
                ! Compute uncertainty in terms of radiance
-               dLx = sqrt((Lx / SAD_Chan(ii)%Solar%SNR) ** 2 + &
-                           2 * ((MSI_Data%cal_gain(ii) * (1.0 / sqrt(12.0))) ** 2))
+               if (SAD_Chan(ii)%Solar%SNR > 0.0) then
+                  ! variance = (Lx / SNR)**2 + 2(gain / sqrt(12))**2
+                  dLx = sqrt((Lx / SAD_Chan(ii)%Solar%SNR) ** 2 + &
+                             MSI_Data%cal_gain(ii) ** 2 / 6.0)
+               else
+                  ! variance = a**2 Lx**2 + b**2 Lx + c**2
+                  dLx = sqrt(SAD_Chan(ii)%Solar%ru2(1) * Lx * Lx + &
+                             SAD_Chan(ii)%Solar%ru2(2) * Lx + &
+                             SAD_Chan(ii)%Solar%ru2(3))
+               end if
                ! Convert radiance uncertainty to reflectance uncertainty
                ! then square it to convert to reflectance variance
                SPixel%Sy(i,i) = ((Pi * dLx) / &
@@ -358,7 +366,7 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
                      ! Old LUTs approach reads coreg from sad files.
                      SPixel%Sy(i,i) = SPixel%Sy(i,i) + &
                              SAD_Chan(ii)%Solar%NeCoreg(Ctrl%CloudType) * &
-                                     SPixel%Ym(i) * SPixel%Ym(i)
+                             SPixel%Ym(i) * SPixel%Ym(i)
                   else
                      ! New LUTs approach uses coreg value hard-coded above.
                      SPixel%Sy(i,i) = SPixel%Sy(i,i) + &
