@@ -151,6 +151,9 @@
 !                 Additionally pass calcrefl(:)=.false. and 
 !                 reflectance%refl_in=0. vectors to RTTOV to overcome the RTTOV 
 !                 error with some compilers when opts%rt_ir%addsolar=.true..
+! 2023/06/13, GT: Bug fix: Changed dimensions of transmission array to be
+!                 nlevels x nchan to match allocation statement (was
+!                 nlevels x nevals!)
 !
 ! Bugs:
 ! - BRDF not yet implemented here, so RTTOV internal calculation used.
@@ -929,7 +932,7 @@ subroutine rttov_driver(coef_path, emiss_path, granule, preproc_dims, &
          call rttov_deallocate_emis_atlas(emis_atlas)
          call rttov_alloc_traj(stat, 1, nchan, opts, nlevels, coefs, DEALLOC, &
               traj)
-         call rttov_alloc_transmission(stat, transmission, nlevels, nevals, &
+         call rttov_alloc_transmission(stat, transmission, nlevels, nchan, &
               DEALLOC)
          call rttov_alloc_rad(stat, nevals, radiance, nlevels, DEALLOC, &
               radiance2)
