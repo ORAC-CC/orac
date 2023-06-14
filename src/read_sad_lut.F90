@@ -100,6 +100,7 @@ subroutine grid_dimension_read(filename, n_name, d_name, v_name, lun, Grid)
       ! This is the first time this dimension has been encountered
       Grid%n   = n2
       Grid%d   = d2
+      Grid%log = x2(1) < 0
       Grid%x   = x2
       Grid%Min = minval(x2(1:n2))
       Grid%Max = maxval(x2(1:n2))
@@ -718,7 +719,6 @@ subroutine Read_SAD_LUT(Ctrl, SAD_Chan, SAD_LUT, i_layer)
    integer                    :: i        ! Array counters
    character(len=FilenameLen) :: LUT_file ! Name of LUT file
    character(len=5)           :: chan_num ! Channel number converted to a string
-   real, allocatable          :: tmp(:)   ! Array for flipping RelAzi
 
 
    ! For each cloud class, construct the LUT filename from the instrument name,
@@ -815,13 +815,8 @@ subroutine Read_SAD_LUT(Ctrl, SAD_Chan, SAD_LUT, i_layer)
       SAD_LUT%Em = SAD_LUT%Em / 100.
    end if
 
-   ! Invert Relazi axis
-   allocate(tmp(SAD_LUT%Grid%Relazi%n))
-   do i = 1, SAD_LUT%Grid%Relazi%n
-      tmp(i) = SAD_LUT%Grid%Relazi%x(SAD_LUT%Grid%Relazi%n - i + 1)
-   end do
-   SAD_LUT%Grid%Relazi%x(1:SAD_LUT%Grid%Relazi%n) = tmp
-   deallocate(tmp)
+   ! Invert direction of relazi
+   SAD_LUT%Grid%Relazi%x = 180.0 - SAD_LUT%Grid%Relazi%x
 
 end subroutine Read_SAD_LUT
 
@@ -876,13 +871,17 @@ subroutine sad_dimension_read_nc(fid, filename, name, Grid)
       ! ORAC interpolates logarithmically spaced axis in log-space
       Grid%x = log10(Grid%x)
       Grid%d = Grid%x(2) - Grid%x(1)
+      Grid%log = .true.
    else if (trim(adjustl(ax_spacing)) == "uneven_logarithmic") then
       Grid%x = log10(Grid%x)
       Grid%d = 0.
+      Grid%log = .true.
    else if (trim(adjustl(ax_spacing)) == "linear") then
       Grid%d = Grid%x(2) - Grid%x(1)
+      Grid%log = .false.
    else if (trim(adjustl(ax_spacing)) == "uneven_linear") then
       Grid%d = 0.
+      Grid%log = .false.
    else if (trim(adjustl(ax_spacing)) == "unknown") then
       ! Find out how it is spaced
       Grid%d = Grid%x(2) - Grid%x(1)
@@ -895,6 +894,7 @@ subroutine sad_dimension_read_nc(fid, filename, name, Grid)
       end do
    else
       Grid%d = 0.
+      Grid%log = .false.
    end if
    Grid%min = minval(Grid%x(1:Grid%n))
    Grid%max = maxval(Grid%x(1:Grid%n))

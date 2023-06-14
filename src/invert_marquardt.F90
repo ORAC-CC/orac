@@ -301,6 +301,32 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
    call Set_Limits(Ctrl, SPixel, stat)
    if (stat /= 0) go to 99 ! Terminate processing this pixel
 
+   ! Check for logarithmic LUT axes
+   if (SAD_LUT(1)%Grid%Tau%log) then
+      SPixel%XLLim(ITau) = log10(SPixel%XLLim(ITau))
+      SPixel%XULim(ITau) = log10(SPixel%XULim(ITau))
+      SPixel%XB(ITau) = log10(SPixel%XB(ITau))
+      SPixel%X0(ITau) = log10(SPixel%X0(ITau))
+   end if
+   if (Ctrl%Approach == AppCld2L .and. SAD_LUT(2)%Grid%Tau%log) then
+      SPixel%XLLim(ITau2) = log10(SPixel%XLLim(ITau2))
+      SPixel%XULim(ITau2) = log10(SPixel%XULim(ITau2))
+      SPixel%XB(ITau2) = log10(SPixel%XB(ITau2))
+      SPixel%X0(ITau2) = log10(SPixel%X0(ITau2))
+   end if
+   if (SAD_LUT(1)%Grid%Re%log) then
+      SPixel%XLLim(IRe) = log10(SPixel%XLLim(IRe))
+      SPixel%XULim(IRe) = log10(SPixel%XULim(IRe))
+      SPixel%XB(IRe) = log10(SPixel%XB(IRe))
+      SPixel%X0(IRe) = log10(SPixel%X0(IRe))
+   end if
+   if (Ctrl%Approach == AppCld2L .and. SAD_LUT(2)%Grid%Re%log) then
+      SPixel%XLLim(IRe2) = log10(SPixel%XLLim(IRe2))
+      SPixel%XULim(IRe2) = log10(SPixel%XULim(IRe2))
+      SPixel%XB(IRe2) = log10(SPixel%XB(IRe2))
+      SPixel%X0(IRe2) = log10(SPixel%X0(IRe2))
+   end if
+
    ! Invert a priori covariance matrix
    error_matrix = SPixel%Sx(SPixel%X, SPixel%X)
    call Invert_Cholesky(error_matrix, SxInv, SPixel%Nx, stat)
