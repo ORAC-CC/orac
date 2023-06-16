@@ -237,19 +237,19 @@ subroutine rttov_driver_gfs(coef_path, emiss_path, granule, preproc_dims, &
          stop error_stop_code
       end if
    case('AVHRR')
-      if (index(granule%platform, 'noaa') >= 1) then
-         if(granule%platform(5:5) == '1') then
-            coef_file_vis = 'rtcoef_noaa_'//granule%platform(5:6)//'_avhrr_o3co2.dat'
-            coef_file_ir = 'rtcoef_noaa_'//granule%platform(5:6)//'_avhrr_o3co2_ironly.dat'
+      if (granule%platform(1:4) == 'NOAA') then
+         if (len_trim(granule%platform(6:)) > 1) then
+            coef_file_vis = 'rtcoef_noaa_'//granule%platform(6:7)//'_avhrr_o3co2.dat'
+            coef_file_ir = 'rtcoef_noaa_'//granule%platform(6:7)//'_avhrr_o3co2_ironly.dat'
           else
-            coef_file_vis = 'rtcoef_noaa_'//granule%platform(5:5)//'_avhrr_o3co2.dat'
-            coef_file_ir = 'rtcoef_noaa_'//granule%platform(5:5)//'_avhrr_o3co2_ironly.dat'
+            coef_file_vis = 'rtcoef_noaa_'//granule%platform(6:6)//'_avhrr_o3co2.dat'
+            coef_file_ir = 'rtcoef_noaa_'//granule%platform(6:6)//'_avhrr_o3co2_ironly.dat'
           end if
-       else if (index(granule%platform, 'metop') >= 1) then
-          if (granule%platform(6:6) == "a") then
+       else if (granule%platform(1:5) == 'Metop') then
+          if (granule%platform(7:7) == "A") then
              coef_file_vis = 'rtcoef_metop_2_avhrr_o3co2.dat'
              coef_file_ir = 'rtcoef_metop_2_avhrr_o3co2_ironly.dat'
-          else if (granule%platform(6:6) == "b") then
+          else if (granule%platform(7:7) == "B") then
              coef_file_vis = 'rtcoef_metop_1_avhrr_o3co2.dat'
              coef_file_ir = 'rtcoef_metop_1_avhrr_o3co2_ironly.dat'
           else
@@ -275,16 +275,16 @@ subroutine rttov_driver_gfs(coef_path, emiss_path, granule, preproc_dims, &
          stop error_stop_code
       end if
    case('SEVIRI')
-      if (trim(granule%platform) == 'MSG1') then
+      if (trim(granule%platform) == 'MSG-1') then
          coef_file_vis = 'rtcoef_msg_1_seviri_o3co2.dat'
          coef_file_ir = 'rtcoef_msg_1_seviri_o3co2_ironly.dat'
-      else if (trim(granule%platform) == 'MSG2') then
+      else if (trim(granule%platform) == 'MSG-2') then
          coef_file_vis = 'rtcoef_msg_2_seviri_o3co2.dat'
          coef_file_ir = 'rtcoef_msg_2_seviri_o3co2_ironly.dat'
-      else if (trim(granule%platform) == 'MSG3') then
+      else if (trim(granule%platform) == 'MSG-3') then
          coef_file_vis = 'rtcoef_msg_3_seviri_o3co2.dat'
          coef_file_ir = 'rtcoef_msg_3_seviri_o3co2_ironly.dat'
-      else if (trim(granule%platform) == 'MSG4') then
+      else if (trim(granule%platform) == 'MSG-4') then
          coef_file_vis = 'rtcoef_msg_4_seviri_o3co2.dat'
          coef_file_ir = 'rtcoef_msg_4_seviri_o3co2_ironly.dat'
       else
@@ -293,10 +293,10 @@ subroutine rttov_driver_gfs(coef_path, emiss_path, granule, preproc_dims, &
          stop error_stop_code
       end if
    case('SLSTR')
-      if (trim(granule%platform) == 'Sentinel3a') then
+      if (trim(granule%platform) == 'Sentinel-3a') then
          coef_file_vis = 'rtcoef_sentinel3_1_slstr_o3co2.dat'
          coef_file_ir = 'rtcoef_sentinel3_1_slstr_o3co2_ironly.dat'
-      else if (trim(granule%platform) == 'Sentinel3b') then
+      else if (trim(granule%platform) == 'Sentinel-3b') then
          coef_file_vis = 'rtcoef_sentinel3_2_slstr_o3co2.dat'
          coef_file_ir = 'rtcoef_sentinel3_2_slstr_o3co2_ironly.dat'
       else
@@ -305,10 +305,10 @@ subroutine rttov_driver_gfs(coef_path, emiss_path, granule, preproc_dims, &
          stop error_stop_code
       end if
    case('VIIRSI')
-      if (trim(granule%platform) == 'SuomiNPP') then
+      if (trim(granule%platform) == 'Suomi-NPP') then
          coef_file_vis = 'rtcoef_jpss_0_viirs_o3co2.dat'
          coef_file_ir = 'rtcoef_jpss_0_viirs_o3co2_ironly.dat'
-      else if (trim(granule%platform) == 'NOAA20') then
+      else if (trim(granule%platform) == 'NOAA-20') then
          coef_file_vis = 'rtcoef_noaa_20_viirs_o3co2.dat'
          coef_file_ir = 'rtcoef_noaa_20_viirs_o3co2_ironly.dat'
       else
@@ -317,10 +317,10 @@ subroutine rttov_driver_gfs(coef_path, emiss_path, granule, preproc_dims, &
          stop error_stop_code
       end if
    case('VIIRSM')
-      if (trim(granule%platform) == 'SuomiNPP') then
+      if (trim(granule%platform) == 'Suomi-NPP') then
          coef_file_vis = 'rtcoef_jpss_0_viirs_o3co2.dat'
          coef_file_ir = 'rtcoef_jpss_0_viirs_o3co2_ironly.dat'
-      else if (trim(granule%platform) == 'NOAA20') then
+      else if (trim(granule%platform) == 'NOAA-20') then
          coef_file_vis = 'rtcoef_noaa_20_viirs_o3co2.dat'
          coef_file_ir = 'rtcoef_noaa_20_viirs_o3co2_ironly.dat'
       else

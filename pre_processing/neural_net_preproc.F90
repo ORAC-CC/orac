@@ -193,8 +193,8 @@ subroutine ann_cloud_mask(channel1, channel2, channel3a, channel3b, &
          !Use Night ANN w/o BT3.7 at daytime
          !The early morning Noaa sats have very strong glint dependencies
          !at high viewing angles which is not captured by any ANN training.
-         if ( (trim(adjustl(platform)) .eq. 'noaa6') .or. (trim(adjustl(platform)) .eq. 'noaa8') .or. &
-              (trim(adjustl(platform)) .eq. 'noaa10') .or. (trim(adjustl(platform)) .eq. 'noaa12') .or. (trim(adjustl(platform)) .eq. 'noaa15') ) illum_nn = 6
+         if ( (trim(adjustl(platform)) .eq. 'NOAA-6') .or. (trim(adjustl(platform)) .eq. 'NOAA-8') .or. &
+              (trim(adjustl(platform)) .eq. 'NOAA-10') .or. (trim(adjustl(platform)) .eq. 'NOAA-12') .or. (trim(adjustl(platform)) .eq. 'NOAA-15') ) illum_nn = 6
       end if
    elseif (solzen  .gt. 90)  then
       illum_nn = 3                                    ! use ANN with BT3.7
@@ -649,7 +649,7 @@ subroutine ann_cloud_mask(channel1, channel2, channel3a, channel3b, &
 
    if (correct_w_unc) then
       ! do this at least for noaa12
-      if (trim(adjustl(platform)) .eq. 'noaa12') then
+      if (trim(adjustl(platform)) .eq. 'NOAA-12') then
          if ( (cldflag .eq. CLOUDY) .and. (cld_uncertainty .gt. 35.) ) cldflag = CLEAR
          !            if   (cld_uncertainty .gt. 35.) cldflag = byte_fill_value
       end if
