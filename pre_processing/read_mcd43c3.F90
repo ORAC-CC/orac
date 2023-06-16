@@ -284,7 +284,7 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, read_ws, read_bs, &
                end if
             end do
          end do
-         
+
          ! Apply QA filtering if desired. Pixels with QA worse than threshold are set to fill
          if (read_QC) then
            where (mcd%quality .gt. mcd43_maxqa) mcd%WSA(:,:,i) = sreal_fill_value
@@ -321,7 +321,7 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, read_ws, read_bs, &
                end if
             end do
          end do
-         
+
          ! Apply QA filtering if desired. Pixels with QA worse than threshold are set to fill
          if (read_QC) then
            where (mcd%quality .gt. mcd43_maxqa) mcd%WSA(:,:,i) = sreal_fill_value

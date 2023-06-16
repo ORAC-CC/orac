@@ -147,9 +147,9 @@
 !                 those we don't care about. This gives a big speedup to
 !                 processing instruments that cross the dateline.
 ! 2022/11/22, DP: Default behaviour switches RTTOV Rayleigh scattering off
-!                 and thus ORAC does not need to call remove_rayleigh(). 
-!                 Additionally pass calcrefl(:)=.false. and 
-!                 reflectance%refl_in=0. vectors to RTTOV to overcome the RTTOV 
+!                 and thus ORAC does not need to call remove_rayleigh().
+!                 Additionally pass calcrefl(:)=.false. and
+!                 reflectance%refl_in=0. vectors to RTTOV to overcome the RTTOV
 !                 error with some compilers when opts%rt_ir%addsolar=.true..
 !
 ! Bugs:
@@ -746,7 +746,7 @@ subroutine rttov_driver(coef_path, emiss_path, granule, preproc_dims, &
          allocate(calcemis(nchan))
          allocate(reflectance(nchan))
          allocate(calcrefl(nchan))
-         
+
          ! These arrays are needed when running with opts%rt_ir%addsolar
          ! as RTTOV throws and error with some compilers. Set reflectance
          ! vector to 0. as the surface reflecatance is explicitly handled
