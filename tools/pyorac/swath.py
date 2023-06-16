@@ -691,15 +691,17 @@ class Swath(Mappable):
 
         return stats
 
-    def __print__(self):
+    def __str__(self):
         from os.path import basename
 
-        print("ORAC file " + basename(self.filename))
-        print("{:0d}x{:0d} ".format(*self.shape) +
+        s = "ORAC file " + basename(self.primary) + "\n"
+        s += ("{:0d}x{:0d} ".format(*self.shape) +
               "swath starting at {:%Y-%m-%d %H:%M:%S} ".format(self.time[0,0]) +
               "covering [{:0.2f}E, {:0.2f}E], [{:0.2f}N, {:0.2f}N]".format(*self.extent))
         for key, val in self.summary_statistics().items():
-            print(f"{key:>20s}: {val:0.2f}")
+            s += f"\n{key:>20s}: {val:0.2f}"
+
+        return s
 
     # -------------------------------------------------------------------
     # Data formatting functions
