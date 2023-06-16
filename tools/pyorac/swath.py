@@ -637,8 +637,10 @@ class Swath(Mappable):
             names.update(handle.variables.keys())
         return sorted(names)
 
-    def flag_map(self, name):
-        """Return a dict mapping a flag's values to their meanings."""
+    def flag_map(self, name, value_to_label=True):
+        """Return a dict mapping a flag's values to their meanings.
+
+        Set value_to_label=False to instead map flag labels onto their value."""
         from collections import OrderedDict
 
         var = self.get_variable(name)
@@ -669,7 +671,10 @@ class Swath(Mappable):
                 err.args = (name + " does not have flag definitions.",)
                 raise
 
-        return OrderedDict(zip(nums, names))
+        if value:
+            return OrderedDict(zip(nums, names))
+        else:
+            return OrderedDict(zip(names, nums))
 
     def summary_statistics(self):
         qcf = self["qcflag"]
