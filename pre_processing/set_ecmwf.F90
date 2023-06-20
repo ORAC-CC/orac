@@ -365,7 +365,8 @@ subroutine determine_jasmin_filenames_era5(nwp_fnames, cyear, cmonth, cday, chou
     character(len=*), intent(in)              :: cyear, cmonth, cday, chour
     integer, intent(in)                       :: idx
 
-    character(len=path_length)                :: ml_dir, sfc_dir
+    character(len=path_length)                :: ml_dir, sfc_dir, filebase
+    logical                                   :: f_tester
 
     ml_dir = trim(adjustl(nwp_fnames%nwp_path(idx)))//'/an_ml/'// &
              trim(adjustl(cyear))//'/'// &
