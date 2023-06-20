@@ -790,6 +790,8 @@ subroutine setup_avhrr(args, channel_ids_user, channel_info, verbose)
                args%platform = 'Metop-A'
             else if (str2(1:6) == 'metopb' .or. str2(1:7) == 'metop01') then
                args%platform = 'Metop-B'
+            else if (str2(1:6) == 'metopc' .or. str2(1:7) == 'metop03') then
+               args%platform = 'Metop-C'
             else
                args%platform = trim(str2)
             end if
@@ -856,6 +858,8 @@ subroutine setup_avhrr(args, channel_ids_user, channel_info, verbose)
          args%platform = 'Metop-A'
       else if (str2(1:6) == 'metopb' .or. str2(1:7) == 'metop01') then
          args%platform = 'Metop-B'
+      else if (str2(1:6) == 'metobc' .or. str2(1:7) == 'metop03') then
+         args%platform = 'Metop-C'
       else
          args%platform = trim(str2)
       end if

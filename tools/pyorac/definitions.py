@@ -492,6 +492,8 @@ class FileName:
             return "Metop2"
         if self.platform == "Metop-B":
             return "Metop1"
+        if self.platform == "Metop-C":
+            return "Metop3"
         if self.platform.startswith("MSG") or self.platform.startswith("Suomi"):
             return self.platform.replace("-", "")
         return self.platform

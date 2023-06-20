@@ -2002,9 +2002,9 @@ function plank_inv(input_platform, T)
       index = 20
    case ("Himawari-8", "Himawari-9")
       index = 21
-   case ("GOES-16", "GOES-17")
+   case ("GOES-16", "GOES-17", "GOES-18")
       index = 22
-   case ("Suomi-NPP", "NOAA-20")
+   case ("Suomi-NPP", "NOAA-20", "NOAA-21")
       index = 23
    case ("Sentinel-3a", "Sentinel-3b")
       index = 24
