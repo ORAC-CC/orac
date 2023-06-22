@@ -394,7 +394,7 @@ class FileName:
             for label in ("FY", "GOES", "Himawari", "Metop", "MSG", "NOAA",
                           "Sentinel", "Suomi"):
                 if self.platform.startswith(label):
-                    self.platform = label + "-" + self.platform[len(label)+1:]
+                    self.platform = label + "-" + self.platform[len(label):]
                     break
 
             self.time = datetime.datetime(
@@ -598,7 +598,7 @@ class ParticleType:
             sensor_name = inst.sensor.lower()
             if sensor_name == 'avhrr':
                 sensor_name += '1'
-            file_name = '_'.join((self.ncdf_sad_platform,
+            file_name = '_'.join((inst.ncdf_sad_platform,
                                   sensor_name,
                                   self.mb,
                                   self.name,
