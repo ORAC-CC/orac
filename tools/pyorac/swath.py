@@ -671,7 +671,6 @@ class Swath(Mappable):
                 err.args = (name + " does not have flag definitions.",)
                 raise
 
-
         if value_to_label:
             return OrderedDict(zip(nums, names))
         else:
