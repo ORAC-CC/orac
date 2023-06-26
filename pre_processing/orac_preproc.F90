@@ -316,6 +316,8 @@
 ! 2020/03/02, ATP: Add support for AHI subsetting.
 ! 2021/03/10, AP: Remove command line arguments.
 ! 2021/03/14, AP: Move setup selection into a dedicated routine.
+! 2023/06/26, GT: Added a 1-hour default for the NWP time factor for BADC
+!                 ERA5 data (nwp_flag = 2).
 !
 ! Bugs:
 ! See http://proj.badc.rl.ac.uk/orac/report/1
@@ -480,7 +482,13 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
    preproc_opts%nwp_fnames%nwp_path2(2)  = ' '
    preproc_opts%nwp_fnames%nwp_path3(2)  = ' '
    preproc_opts%nwp_nlevels              = 0
-   preproc_opts%nwp_time_factor          = 6.
+   ! If we're reading BADC ERA5 data, we default to one file every hour,
+   ! otherwise assume it's one every six hours.
+   if (nwp_flag .eq. 2) then
+      preproc_opts%nwp_time_factor       = 1.
+   else
+      preproc_opts%nwp_time_factor       = 6.
+   end if
    preproc_opts%use_l1_land_mask         = .false.
    preproc_opts%use_occci                = .false.
    preproc_opts%occci_path               = ' '
