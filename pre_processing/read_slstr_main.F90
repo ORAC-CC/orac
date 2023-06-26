@@ -81,7 +81,7 @@ end subroutine read_slstr_dimensions
 ! Name: read_slstr
 !
 ! Purpose:
-! To read the requested VIIRS data from HDF5-format files.
+! To read the requested SLSTR data from NetCDF-4 files.
 !
 ! Description and Algorithm details:
 !

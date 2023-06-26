@@ -74,7 +74,10 @@
 !    l1b_version and level1b_orbit_number attributes from the L1b file.
 !    Extending this change to the other supported instruments is worth
 !    considering...
+! 2018/02/15, GT: Bug fix of format statement for SLSTR orbit number output
 ! 2019/08/14, SP: Add Fengyun-4A support.
+! 2019/09/26, GT: Bug fix with orbit start-time extraction (file name time
+!                 strings are _rounded_ to nearest second).
 ! 2021/03/10, AP: Gather setup calls into a single routine.
 !
 ! Bugs:
@@ -1388,6 +1391,7 @@ subroutine setup_slstr(args, source_attributes, channel_ids_user, &
    logical,                   intent(in)    :: verbose
 
    integer                    :: index2
+   real                       :: fsecond
 
    ! Variables for dealing with netcdf files (required for timestamping)
    integer                         :: fid, ierr
@@ -1547,7 +1551,7 @@ subroutine setup_slstr(args, source_attributes, channel_ids_user, &
    args%cday = trim(adjustl(l1b_start(index2+8:index2+9)))
    args%chour = trim(adjustl(l1b_start(index2+11:index2+12)))
    args%cminute = trim(adjustl(l1b_start(index2+14:index2+15)))
-   args%csecond = trim(adjustl(l1b_start(index2+17:index2+18)))
+   args%csecond = trim(adjustl(l1b_start(index2+17:index2+25)))
 
    ! get year, doy, hour and minute as integers
    read(args%cyear, '(I4)') args%year
@@ -1555,8 +1559,13 @@ subroutine setup_slstr(args, source_attributes, channel_ids_user, &
    read(args%cday, '(I2)') args%day
    read(args%chour, '(I2)') args%hour
    read(args%cminute, '(I2)') args%minute
-   read(args%csecond, '(I2)') args%second
-   if (args%second .ge. 30) then
+   ! SLSTR file times are rounded to the nearest second, whereas the attributes
+   ! are specified to a micro-second.
+   read(args%csecond(1:len_trim(args%csecond)), '(F9.6)') fsecond
+   args%second = NINT(fsecond)
+   ! Deal with the case where rounding the second carries up to a new minute
+   if (args%second .eq. 60) then
+      args%second = 0
       args%minute = args%minute+1
       if (args%minute .ge. 60) then
          args%minute = 0
@@ -1572,6 +1581,12 @@ subroutine setup_slstr(args, source_attributes, channel_ids_user, &
    end if
    call GREG2DOY(args%year, args%month, args%day, args%doy)
    write(args%cdoy, '(i3.3)') args%doy
+   ! Recalculate the Gregorian date from the calculated doy, to catch the posibility
+   ! that rounding the second has caused us to cross to a new month/year
+   call DOY2GREG(args%doy, args%year, args%month, args%day)
+   write(args%cday,'(i0.2)') args%day
+   write(args%cmonth,'(i0.2)') args%month
+   write(args%cyear,'(i0.4)') args%year
 
    ! SLSTR has two views, nadir and oblique
    channel_info%nviews = 2

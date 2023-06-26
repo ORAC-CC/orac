@@ -853,7 +853,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       Ctrl%r_e_chans = (/ 3, 4 /)
       allocate(Ctrl%ir_chans(2))
       Ctrl%ir_chans  = (/ 4, 5 /)
-   else if (Ctrl%InstName(1:16) == 'SLSTR-Sentinel-3') then
+   else if (Ctrl%InstName(1:16) == 'SLSTR-Sentinel-3' .or. &
+        Ctrl%InstName(1:15) == 'SLSTR-Sentinel3') then
       Ctrl%Ind%Y_Id_legacy(I_legacy_0_6x) = 2
       Ctrl%Ind%Y_Id_legacy(I_legacy_0_8x) = 3
       Ctrl%Ind%Y_Id_legacy(I_legacy_1_6x) = 5
@@ -1289,7 +1290,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    ! a compensating effect and is therefore required as is.  This is very likely
    ! the reason this problem went unnoticed until the reciprocity-obeying form
    ! (equations 3 and 4) were introduced.
-   if (Ctrl%i_equation_form == 3 .or. Ctrl%i_equation_form == 4) then
+   if ((Ctrl%i_equation_form == 3 .or. Ctrl%i_equation_form == 4) .and. &
+        len(trim(Ctrl%LUTClass)) == 3) then
       Ctrl%get_T_dv_from_T_0d = .true.
    else
       Ctrl%get_T_dv_from_T_0d = .false.
@@ -1521,6 +1523,17 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       end if
    end if
 
+   ! If running an aerosol retrieval, we should ensure that we have the
+   ! channel which corresponds to the second AOT wavelength active in
+   ! the measurement vector. Should we consider checking for the
+   ! primary AOD channels as well?
+   if (Ctrl%Approach == AppAerOx .or. Ctrl%Approach == AppAerSw .or. &
+        Ctrl%Approach == AppAerO1) then
+      if (ALL(Ctrl%Ind%Y_Id .ne. Ctrl%second_aot_ch(1))) then
+         write(*,*) 'ERROR: Second AOD channel is not active: ', Ctrl%second_aot_ch(1)
+         stop error_stop_code
+      end if
+   end if
 
    !----------------------------------------------------------------------------
    ! Clean up

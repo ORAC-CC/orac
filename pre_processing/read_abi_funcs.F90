@@ -514,7 +514,7 @@ subroutine goes_resample_vis_to_tir(inarr, outarr, nx, ny, fill, scl, verbose)
     integer :: inpix
 
     outarr(:, :) = fill
-   
+
 #ifdef _OPENMP
     if (verbose) write(*,*) "Resampling VIS grid to IR grid using OpenMP"
     !$OMP PARALLEL DO PRIVATE(y, x, outx, outy, val, inpix, i, j)

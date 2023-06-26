@@ -717,8 +717,9 @@ subroutine Read_SAD_LUT(Ctrl, SAD_Chan, SAD_LUT, i_layer)
 
    integer                    :: i        ! Array counters
    character(len=FilenameLen) :: LUT_file ! Name of LUT file
-   character(len=4)           :: chan_num ! Channel number converted to a string
+   character(len=5)           :: chan_num ! Channel number converted to a string
    real, allocatable          :: tmp(:)   ! Array for flipping RelAzi
+
 
    ! For each cloud class, construct the LUT filename from the instrument name,
    ! cloud class ID, variable name and channel number. Then call the appropriate
@@ -1195,6 +1196,9 @@ subroutine Read_NCDF_SAD_LUT(Ctrl, LUTFilename, SAD_Chan, SAD_LUT)
    SAD_Chan(:)%Thermal%T0 = 0.0
    SAD_Chan(:)%Solar%NEDR = 0.0
    SAD_Chan(:)%Solar%SNR = 0.0
+   SAD_Chan(:)%Solar%ru2(1) = 0.0
+   SAD_Chan(:)%Solar%ru2(2) = 0.0
+   SAD_Chan(:)%Solar%ru2(3) = 0.0
 
    if (nthermal > 0 .and. Ctrl%Ind%NThermal > 0) then
       allocate(chan_tmp_real(nthermal))
@@ -1216,11 +1220,23 @@ subroutine Read_NCDF_SAD_LUT(Ctrl, LUTFilename, SAD_Chan, SAD_LUT)
    ! Read signal-to-noise ratio
    if (nsolar > 0 .and. Ctrl%Ind%NSolar > 0) then
       allocate(chan_tmp_real(nsolar))
-      call ncdf_read_array(fid, "snr", chan_tmp_real)
-      do i = 1, Ctrl%Ind%NSolar
-         SAD_Chan(Ctrl%Ind%YSolar(i))%Solar%SNR = &
+      if (Ctrl%InstName(1:5) == "AATSR" .or. Ctrl%InstName(1:5) == "SLSTR") then
+         do j = 1, 3
+            ! Uncertainty = a**2 L**2 + b**2 L + c**2
+            call ncdf_read_array(fid, "ru"//char(j+96), chan_tmp_real)
+            do i = 1, Ctrl%Ind%NSolar
+               SAD_Chan(Ctrl%Ind%YSolar(i))%Solar%ru2(j) = &
+                    chan_tmp_real(solar_indices(i)) ** 2
+            end do
+         end do
+      else
+         ! Uncertainty = L / SNR
+         call ncdf_read_array(fid, "snr", chan_tmp_real)
+         do i = 1, Ctrl%Ind%NSolar
+            SAD_Chan(Ctrl%Ind%YSolar(i))%Solar%SNR = &
                  chan_tmp_real(solar_indices(i))
-      end do
+         end do
+      end if
       deallocate(chan_tmp_real)
    end if
 
