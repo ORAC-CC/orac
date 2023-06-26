@@ -154,6 +154,11 @@
 ! 2023/06/13, GT: Bug fix: Changed dimensions of transmission array to be
 !                 nlevels x nchan to match allocation statement (was
 !                 nlevels x nevals!)
+! 2023/06/26, GT: Also changed nevals to nchan for deallocation of
+!                 radiance arrays to match allocation statement (and
+!                 RTTOV documentation). Removed declaration on nevals
+!                 as it is not used anywhere else (and never had a
+!                 value assigned to it)!
 !
 ! Bugs:
 ! - BRDF not yet implemented here, so RTTOV internal calculation used.
@@ -252,7 +257,7 @@ subroutine rttov_driver(coef_path, emiss_path, granule, preproc_dims, &
 
    ! RTTOV variables
    integer(kind=jpim)                   :: stat
-   integer(kind=jpim)                   :: nprof, nevals, imonth
+   integer(kind=jpim)                   :: nprof, imonth
    integer(kind=jpim)                   :: nlevels, nlayers
    integer(kind=jpim),      allocatable :: input_chan(:)
    logical                              :: write_rttov
@@ -934,7 +939,7 @@ subroutine rttov_driver(coef_path, emiss_path, granule, preproc_dims, &
               traj)
          call rttov_alloc_transmission(stat, transmission, nlevels, nchan, &
               DEALLOC)
-         call rttov_alloc_rad(stat, nevals, radiance, nlevels, DEALLOC, &
+         call rttov_alloc_rad(stat, nchan, radiance, nlevels, DEALLOC, &
               radiance2)
          call rttov_dealloc_coefs(stat, coefs)
 
