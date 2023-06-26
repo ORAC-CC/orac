@@ -65,6 +65,8 @@
 !                 using BADC ERA5.
 !                 Also added code to automatically check for BADC provisional
 !                 ERA5 data if the standard BADC ERA5 data isn't found.
+! 2023/06/26, GT: nwp_time_factor change for BADC ERA5 is now changed in
+!                 orac_preproc.F90, so it can be overriden by the driver file.
 !
 ! Bugs:
 ! None known.
@@ -98,10 +100,6 @@ subroutine set_ecmwf(granule, opts, nwp_flag, imager_geolocation, &
    character     :: cera_year*4, cera_month*2, cera_day*2, cera_hour*2
    character     :: cera_year2*4, cera_month2*2, cera_day2*2, cera_hour2*2
 
-   ! If we're reading BADC ERA5 data, we default to one file every hour,
-   ! rather than 6-hours 
-   if (nwp_flag .eq. 2) opts%nwp_time_factor = 1.0
-   
    ! Rather than deal with whether the next n_hour file is in the next month,
    ! in the next year, or if the year is a leap year it is more straight
    ! forward to convert to Julian day space, then operate, then convert back.
