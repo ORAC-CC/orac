@@ -46,6 +46,9 @@ subroutine allocate_surface_structures(surface,imager_geolocation,channel_info, 
    type(channel_info_t),       intent(in)  :: channel_info
    logical,                    intent(in)  :: include_full_brdf
 
+   print*,"HI"
+   print*,  imager_geolocation%startx, imager_geolocation%endx, 1, imager_geolocation%ny
+
    allocate(surface%nise_mask(&
             imager_geolocation%startx:imager_geolocation%endx, &
             1:imager_geolocation%ny))

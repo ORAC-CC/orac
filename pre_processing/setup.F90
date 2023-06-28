@@ -1092,22 +1092,22 @@ subroutine setup_python(args, channel_ids_user, channel_info, verbose)
 
    use calender_m
    use orac_ncdf_m
+   use parsing_m
    use channel_structures_m
    use preproc_constants_m
 
    implicit none
 
    type(setup_args_t),   intent(inout) :: args
-   integer, pointer,     intent(in)    :: channel_ids_user(:)
+   integer, pointer,     intent(inout) :: channel_ids_user(:)
    type(channel_info_t), intent(inout) :: channel_info
    logical,              intent(in)    :: verbose
 
-   integer :: nchans
+   integer :: nchans, nchans_total
    integer :: fid
    integer :: status
 
    character(attribute_length_long) :: start_time, end_time
-
 
    integer, dimension(6) :: channel_ids_default
 
@@ -1117,51 +1117,49 @@ subroutine setup_python(args, channel_ids_user, channel_info, verbose)
    integer, dimension(:), allocatable :: all_map_ids_abs_to_ref_band_land, all_map_ids_abs_to_ref_band_sea, all_map_ids_abs_to_snow_and_ice
    integer, dimension(:), allocatable :: all_map_ids_view_number
 
+   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering setup_python()'
+
    call ncdf_open(fid, args%l1b_file, 'setup_python()')
    ! Read actual size of the netCDF4 file
    nchans  = ncdf_dim_length(fid, 'nc', 'setup_python()')  
+   call ncdf_get_single_attribute_int(fid, 'max_chan_count', nchans_total)
+
+   allocate(channel_ids_user(nchans))
 
    args%n_across_track  = ncdf_dim_length(fid, 'nx', 'setup_python()')
    args%n_along_track = ncdf_dim_length(fid, 'ny', 'setup_python()')
 
+   call ncdf_get_arr_attribute_int(fid, 'channel_ids_default', channel_ids_default)
+   call ncdf_get_arr_attribute_int(fid, 'channel_ids', channel_ids_user)
+
    ! Read the start and end time of the file
-   call ncdf_get_single_attribute(fid, 'start_time', start_time)
-   call ncdf_get_single_attribute(fid, 'end_time', end_time)
+   call ncdf_get_single_attribute_str(fid, 'start_time', start_time)
+   call ncdf_get_single_attribute_str(fid, 'end_time', end_time)
 
-   allocate(all_channel_wl_abs(nchans))
-   allocate(all_channel_lnd_uncertainty(nchans))
-   allocate(all_channel_sea_uncertainty(nchans))
-   allocate(all_channel_sw_flag(nchans))
-   allocate(all_channel_lw_flag(nchans))
-   allocate(all_channel_ids_rttov_coef_sw(nchans))
-   allocate(all_channel_ids_rttov_coef_lw(nchans))
-   allocate(all_map_ids_abs_to_ref_band_land(nchans))
-   allocate(all_map_ids_abs_to_ref_band_sea(nchans))
-   allocate(all_map_ids_abs_to_snow_and_ice(nchans))
-   allocate(all_map_ids_view_number(nchans))
-   allocate(all_channel_fractional_uncertainty(nchans))
-   allocate(all_channel_minimum_uncertainty(nchans))
-   allocate(all_channel_numerical_uncertainty(nchans))
+   allocate(all_channel_wl_abs(nchans_total))
+   allocate(all_channel_lnd_uncertainty(nchans_total))
+   allocate(all_channel_sea_uncertainty(nchans_total))
+   allocate(all_channel_sw_flag(nchans_total))
+   allocate(all_channel_lw_flag(nchans_total))
+   allocate(all_channel_ids_rttov_coef_sw(nchans_total))
+   allocate(all_channel_ids_rttov_coef_lw(nchans_total))
+   allocate(all_map_ids_abs_to_ref_band_land(nchans_total))
+   allocate(all_map_ids_abs_to_ref_band_sea(nchans_total))
+   allocate(all_map_ids_abs_to_snow_and_ice(nchans_total))
+   allocate(all_map_ids_view_number(nchans_total))
+   allocate(all_channel_fractional_uncertainty(nchans_total))
+   allocate(all_channel_minimum_uncertainty(nchans_total))
+   allocate(all_channel_numerical_uncertainty(nchans_total))
 
-   call ncdf_get_single_attribute(fid, 'platform', args%platform)
-   call ncdf_get_single_attribute(fid, 'sensor', args%sensor)
-
-   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering setup_python()'
 
    if (verbose) write(*,*) 'args%l1b_file: ', trim(args%l1b_file)
    if (verbose) write(*,*) 'args%geo_file: ', trim(args%geo_file)
-
-   print*,"STUFF"
-   print*,args%platform
-   print*,args%sensor
-   print*,start_time
-   print*,end_time
 
    ! check if l1b and geo files identical
    if (trim(adjustl(args%l1b_file)) .ne. &
        trim(adjustl(args%geo_file))) then
       write(*,*)
-      write(*,*) 'ERROR: setup_abi(): Geolocation and L1b files are ' // &
+      write(*,*) 'ERROR: setup_python(): Geolocation and L1b files are ' // &
            'for different times'
       write(*,*) 'args%l1b_file: ', trim(adjustl(args%l1b_file))
       write(*,*) 'args%geo_file: ', trim(adjustl(args%geo_file))
@@ -1169,24 +1167,44 @@ subroutine setup_python(args, channel_ids_user, channel_info, verbose)
       stop error_stop_code
    end if
 
+   ! Read platform and sensor names.
+   call ncdf_get_single_attribute_str(fid, 'platform', args%platform)
+   call ncdf_get_single_attribute_str(fid, 'sensor', args%sensor)
+
    if (verbose) write(*,*) "Satellite is: ", args%platform
 
-
+   ! Get channel attributes
+   call ncdf_get_arr_attribute_real(fid, 'all_channel_wl_abs', all_channel_wl_abs)
+   call ncdf_get_arr_attribute_real(fid, 'all_channel_lnd_uncertainty', all_channel_lnd_uncertainty)
+   call ncdf_get_arr_attribute_real(fid, 'all_channel_sea_uncertainty', all_channel_sea_uncertainty)
+   call ncdf_get_arr_attribute_int(fid, 'all_channel_sw_flag', all_channel_sw_flag)
+   call ncdf_get_arr_attribute_int(fid, 'all_channel_lw_flag', all_channel_lw_flag)
+   call ncdf_get_arr_attribute_int(fid, 'all_channel_ids_rttov_coef_sw', all_channel_ids_rttov_coef_sw)
+   call ncdf_get_arr_attribute_int(fid, 'all_channel_ids_rttov_coef_lw', all_channel_ids_rttov_coef_lw)
+   call ncdf_get_arr_attribute_int(fid, 'all_map_ids_abs_to_ref_band_land', all_map_ids_abs_to_ref_band_land)
+   call ncdf_get_arr_attribute_int(fid, 'all_map_ids_abs_to_ref_band_sea', all_map_ids_abs_to_ref_band_sea)
+   call ncdf_get_arr_attribute_int(fid, 'all_map_ids_abs_to_snow_and_ice', all_map_ids_abs_to_snow_and_ice)
+   call ncdf_get_arr_attribute_int(fid, 'all_map_ids_view_number', all_map_ids_view_number)
+   call ncdf_get_arr_attribute_real(fid, 'all_channel_fractional_uncertainty', all_channel_fractional_uncertainty)
+   call ncdf_get_arr_attribute_real(fid, 'all_channel_minimum_uncertainty', all_channel_minimum_uncertainty)
+   call ncdf_get_arr_attribute_real(fid, 'all_channel_numerical_uncertainty', all_channel_numerical_uncertainty)
+   
    ! get year, doy, hour and minute as strings
-   args%cyear = "2023"
-   args%cdoy = "006"
-   args%chour = "01"
-   args%cminute = "02"
+   args%cyear = start_time(1:5)
+   args%cmonth = start_time(6:7)
+   args%cday = start_time(9:10)
+   args%chour = start_time(12:13)
+   args%cminute = start_time(15:16)
+
    read(args%cyear, '(I4)') args%year
-   read(args%cdoy, '(I3)') args%doy
+   read(args%cmonth, '(I2)') args%month
+   read(args%cday, '(I2)') args%day
    read(args%chour, '(I2)') args%hour
    read(args%cminute, '(I2)') args%minute
 
-   call DOY2GREG(args%doy, args%year, args%month, args%day)
-
-   write(args%cmonth, '(i2.2)') args%month
-   write(args%cday, '(i2.2)') args%day
-
+   call GREG2DOY(args%year, args%month, args%day, args%doy)
+   write(args%cdoy, '(i3.3)') args%doy
+   
    ! now set up the channels
    call common_setup(channel_info, channel_ids_user, channel_ids_default, &
       all_channel_wl_abs, all_channel_sw_flag, all_channel_lw_flag, &
@@ -1196,10 +1214,9 @@ subroutine setup_python(args, channel_ids_user, channel_info, verbose)
       all_channel_fractional_uncertainty, all_channel_minimum_uncertainty, &
       all_channel_numerical_uncertainty, all_channel_lnd_uncertainty, &
       all_channel_sea_uncertainty, nchans)
-
       
    ! Close the netCDF4 file
-   call ncdf_close(fid, 'read_python_dimensions()')
+   call ncdf_close(fid, 'setup_python()')
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_python()'
 
@@ -2174,7 +2191,7 @@ subroutine setup_imager(args, opts, source_attributes, channel_info, verbose)
    implicit none
 
    type(setup_args_t),        intent(inout) :: args
-   type(preproc_opts_t),      intent(in)    :: opts
+   type(preproc_opts_t),      intent(inout) :: opts
    type(source_attributes_t), intent(inout) :: source_attributes
    type(channel_info_t),      intent(inout) :: channel_info
    logical,                   intent(in)    :: verbose
@@ -2284,7 +2301,7 @@ subroutine setup_imager(args, opts, source_attributes, channel_info, verbose)
 
    end select
 
-   stop
+   !stop
 
 end subroutine setup_imager
 

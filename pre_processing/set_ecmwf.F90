@@ -378,6 +378,7 @@ subroutine determine_jasmin_filenames_era5(nwp_fnames, cyear, cmonth, cday, chou
     ! Now check if we can find files matching this pattern. If not, we
     ! redefine filenase for the provisional ERA5 data record and try
     ! again
+    print*,trim(adjustl(ml_dir))//'q.nc'
     inquire(file=trim(adjustl(ml_dir))//'q.nc', exist=f_tester)
     if (.not. f_tester) then
        !print*,"Standard ERA5 data not found, trying provisional ERA5"
