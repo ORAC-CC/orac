@@ -280,6 +280,24 @@ subroutine rttov_driver_gfs(coef_path, emiss_path, granule, preproc_dims, &
                     trim(granule%platform)
          stop error_stop_code
       end if
+   case('FCI')
+      if (trim(granule%platform) == 'MTG-I1') then
+         coef_file_vis = 'rtcoef_mtg_1_fci_o3co2.dat'
+         coef_file_ir = 'rtcoef_mtg_1_fci_o3co2_ironly.dat'
+      else if (trim(granule%platform) == 'MTG-I2') then
+         coef_file_vis = 'rtcoef_mtg_2_fci_o3co2.dat'
+         coef_file_ir = 'rtcoef_mtg_2_fci_o3co2_ironly.dat'
+      else if (trim(granule%platform) == 'MTG-I3') then
+         coef_file_vis = 'rtcoef_mtg_3_fci_o3co2.dat'
+         coef_file_ir = 'rtcoef_mtg_3_fci_o3co2_ironly.dat'
+      else if (trim(granule%platform) == 'MTG-I4') then
+         coef_file_vis = 'rtcoef_mtg_4_fci_o3co2.dat'
+         coef_file_ir = 'rtcoef_mtg_4_fci_o3co2_ironly.dat'
+      else
+         write(*,*) 'ERROR: rttov_driver(): Invalid FCI platform: ', &
+                    trim(granule%platform)
+         stop error_stop_code
+      endif
    case('SEVIRI')
       if (trim(granule%platform) == 'MSG1') then
          coef_file_vis = 'rtcoef_msg_1_seviri_o3co2.dat'
