@@ -408,12 +408,10 @@ subroutine read_viirs_iband(infile, geofile, imager_geolocation, imager_measurem
          imager_angles%satazi(startx:,:,1) .ne. sreal_fill_value)
       imager_angles%relazi(:,:,1) = abs(imager_angles%solazi(startx:,:,1) - &
                                         imager_angles%satazi(startx:,:,1))
+   end where
 
-      where (imager_angles%relazi(:,:,1) .gt. 180.)
-         imager_angles%relazi(:,:,1) = imager_angles%relazi(:,:,1) - 180.
-      else where
-         imager_angles%relazi(:,:,1) = 180. - imager_angles%relazi(:,:,1)
-      end where
+   where (imager_angles%relazi(:,:,1) .gt. 180.)
+      imager_angles%relazi(:,:,1) = 360. - imager_angles%relazi(:,:,1)
    end where
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_viirs()'
