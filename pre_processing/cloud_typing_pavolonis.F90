@@ -1960,77 +1960,55 @@ function plank_inv(input_platform, T)
 
    ! select appropriate row of coefficient values
    select case (input_platform)
-   case ("noaa5")
+   case ("NOAA-5")
       index = 1
-   case ("noaa6")
+   case ("NOAA-6")
       index = 2
-   case ("noaa7")
+   case ("NOAA-7")
       index = 3
-   case ("noaa8")
+   case ("NOAA-8")
       index = 4
-   case ("noaa9")
+   case ("NOAA-9")
       index = 5
-   case ("noaa10")
+   case ("NOAA-10")
       index = 6
-   case ("noaa11")
+   case ("NOAA-11")
       index = 7
-   case ("noaa12")
+   case ("NOAA-12")
       index = 8
-   case ("noaa14")
+   case ("NOAA-14")
       index = 9
-   case ("noaa15")
+   case ("NOAA-15")
       index = 10
-   case ("noaa16")
+   case ("NOAA-16")
       index = 11
-   case ("noaa17")
+   case ("NOAA-17")
       index = 12
-   case ("noaa18")
+   case ("NOAA-18")
       index = 13
-   case ("noaa19")
+   case ("NOAA-19")
       index = 14
-   case ("metop01")
+   case ("Metop-B")
       index = 15
-   case ("metopb")
-      index = 15
-   case ("metop02")
-      index = 16
-   case ("metopa")
+   case ("Metop-A")
       index = 16
    case ("TERRA")
       index = 17
    case ("AQUA")
       index = 18
-   case ("Envisat")
+   case ("Envisat", "ERS2")
       index = 19
-   case ("ERS2")
-      index = 19
-   case ("MSG1")
+   case ("MSG-1", "MSG-2", "MSG-3", "MSG-4")
       index = 20
-   case ("MSG2")
-      index = 20
-   case ("MSG3")
-      index = 20
-   case ("MSG4")
-      index = 20
-   case ("Himawari-8")
+   case ("Himawari-8", "Himawari-9")
       index = 21
-   case ("Himawari-9")
-      index = 21
-   case ("GOES-16")
+   case ("GOES-16", "GOES-17", "GOES-18")
       index = 22
-   case ("GOES-17")
-      index = 22
-   case ("SuomiNPP")
+   case ("Suomi-NPP", "NOAA-20", "NOAA-21")
       index = 23
-   case ("NOAA20")
-      index = 23
-   case ("Sentinel3a")
+   case ("Sentinel-3a", "Sentinel-3b")
       index = 24
-   case ("Sentinel3b")
-      index = 24
-   case ("FY-4A")
-      index = 25
-   case ("FY-4B")
+   case ("FY-4A", "FY-4B")
       index = 25
    case ("default")
       index = 26
@@ -2106,41 +2084,41 @@ function get_platform_index(input_platform)
 
    ! select appropriate row of coefficient values
    select case (input_platform)
-   case ("noaa5")
+   case ("NOAA-5")
       index = 1
-   case ("noaa6")
+   case ("NOAA-6")
       index = 2
-   case ("noaa7")
+   case ("NOAA-7")
       index = 3
-   case ("noaa8")
+   case ("NOAA-8")
       index = 4
-   case ("noaa9")
+   case ("NOAA-9")
       index = 5
-   case ("noaa10")
+   case ("NOAA-10")
       index = 6
-   case ("noaa11")
+   case ("NOAA-11")
       index = 7
-   case ("noaa12")
+   case ("NOAA-12")
       index = 8
-   case ("noaa13")
+   case ("NOAA-13")
       index = 9
-   case ("noaa14")
+   case ("NOAA-14")
       index = 10
-   case ("noaa15")
+   case ("NOAA-15")
       index = 11
-   case ("noaa16")
+   case ("NOAA-16")
       index = 12
-   case ("noaa17")
+   case ("NOAA-17")
       index = 13
-   case ("noaa18")
+   case ("NOAA-18")
       index = 14
-   case ("noaa19")
+   case ("NOAA-19")
       index = 15
-   case ("noaa20")
+   case ("NOAA-20")
       index = 16
-   case ("metopa")
+   case ("Metop-B")
       index = 17
-   case ("metop02")
+   case ("Metop-A")
       index = 18
    case ("TERRA")
       index = 19
@@ -2150,17 +2128,17 @@ function get_platform_index(input_platform)
       index = 21
    case ("Envisat")
       index = 22
-   case ("MSG1")
+   case ("MSG-1")
       index = 23
-   case ("MSG2")
+   case ("MSG-2")
       index = 24
-   case ("MSG3")
+   case ("MSG-3")
       index = 25
-   case ("MSG4")
+   case ("MSG-4")
       index = 26
-   case ("Sentinel3a")
+   case ("Sentinel-3a")
       index = 27
-   case ("Sentinel3b")
+   case ("Sentinel-3b")
       index = 28
    case ("default")
       ! 15 = NOAA19, the baseline, for which slopes = 1 and intercepts = 0

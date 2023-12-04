@@ -1667,7 +1667,6 @@ subroutine netcdf_put_common_attributes(ncid, global_atts, source_atts, title, &
    character(len=*),          intent(in) :: chour
    character(len=*),          intent(in) :: cminute
 
-   character(len=platform_length) :: PLATFORM_UPPER_CASE
    integer                        :: position, length
    type(global_attributes_t)      :: global_atts2
    type(source_attributes_t)      :: source_atts2
@@ -1690,13 +1689,7 @@ subroutine netcdf_put_common_attributes(ncid, global_atts, source_atts, title, &
    global_atts2%Date_Created = trim(cyear)//trim(cmonth)//trim(cday)// &
         trim(chour)//trim(cminute)
 
-   PLATFORM_UPPER_CASE = platform
-   if (platform(1:4) .eq. 'noaa') PLATFORM_UPPER_CASE(1:4) = 'NOAA'
-   if (platform(1:9) .eq. 'Sentinel3') then
-      PLATFORM_UPPER_CASE(1:10) = 'Sentinel-3'
-      PLATFORM_UPPER_CASE(11:12) = platform(10:11)
-   end if
-   global_atts2%Platform = trim(PLATFORM_UPPER_CASE)
+   global_atts2%Platform = trim(platform)
    global_atts2%Sensor   = trim(sensor)
 
    global_atts2%AATSR_Processing_Version = ' '

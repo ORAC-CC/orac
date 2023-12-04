@@ -352,7 +352,7 @@ Ctrl%RS%Use_Full_BRDF       = {use_brdf}""".format(
         out_dir=args.out_dir,
         phase=SETTINGS[args.phase].name,
         sad_dir=SETTINGS[args.phase].sad_dir(args.sad_dirs, args.File),
-        sensor=args.File.inst,
+        sensor=args.File.sensor + '-' + args.File.platform,
         use_brdf=not (args.lambertian or args.approach == 'AppAerSw'),
         verbose=args.verbose,
     )
