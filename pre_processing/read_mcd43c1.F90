@@ -316,7 +316,7 @@ subroutine read_mcd43c1(path_to_file, mcd, nbands, bands, read_params, &
                end if
             end do
          end do
-         
+
          ! Apply QA filtering if desired. Pixels with QA worse than threshold are set to fill
          if (read_QC) then
            where (mcd%quality .gt. mcd43_maxqa) mcd%brdf_albedo_params(:,:,1,i) = sreal_fill_value

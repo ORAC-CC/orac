@@ -366,13 +366,12 @@ class FileName:
             for fdr in self.folders:
                 try:
                     with Dataset(os.path.join(fdr, self.l1b)) as slstr_file:
-                        # Round time to nearest minute
+                        # Round time to nearest second
                         time = parser.parse(slstr_file.start_time).replace(tzinfo=None)
-                        sec = (time - time.min).seconds
-                        rounding = (sec + 30) // 60 * 60
-                        self.time = time + datetime.timedelta(
-                            0, rounding - sec, -time.microsecond
-                        )
+                        if time.microsecond < 500000:
+                            self.time = time - datetime.timedelta(0, 0, time.microsecond)
+                        else:
+                            self.time = time + datetime.timedelta(0, 0, 1000000-time.microsecond)
 
                         self.orbit_num = "{:05d}".format(
                             slstr_file.absolute_orbit_number

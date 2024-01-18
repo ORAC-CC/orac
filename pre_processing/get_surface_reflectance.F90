@@ -125,7 +125,7 @@
 ! used.
 ! MODIS QA values are:
 ! 0: best quality, 100% with full inversions
-! 1: good quality, 75% or more with best full inversions and 90% with 
+! 1: good quality, 75% or more with best full inversions and 90% with
 !    full inversions
 ! 2: relative good quality, 75% or more with full inversions
 ! 3: mixed, 75% or less full inversions and 25% or less fill values
@@ -244,7 +244,7 @@ subroutine get_surface_reflectance(cyear, cdoy, cmonth, modis_surf_path, &
    if (verbose) write(*,*) 'include_full_brdf: ', include_full_brdf
    if (verbose) write(*,*) 'use_occci: ',         use_occci
    if (verbose) write(*,*) 'use_swansea_clim: ',  use_swansea_climatology, swan_g
-   
+
    ! Determine if we need to read the QA data
    if (mcd43_maxqa .lt. 5) then
       read_qa = .true.

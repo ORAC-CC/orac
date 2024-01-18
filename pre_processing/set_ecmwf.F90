@@ -61,6 +61,12 @@
 ! 2017/04/11, SP: Added nwp_flag=6, for working with GFS analysis files.
 ! 2017/07/05, SP: Added nwp_flag=7, for working with new format GFS (ExtWork)
 ! 2019/29/01, MC: Bug fix: input ECMWF file name structure was incorrect for BADC
+! 2022/01/19, GT: Added a line to set nwp_time_factor to 1.0 hours if we're
+!                 using BADC ERA5.
+!                 Also added code to automatically check for BADC provisional
+!                 ERA5 data if the standard BADC ERA5 data isn't found.
+! 2023/06/26, GT: nwp_time_factor change for BADC ERA5 is now changed in
+!                 orac_preproc.F90, so it can be overriden by the driver file.
 !
 ! Bugs:
 ! None known.
@@ -357,7 +363,8 @@ subroutine determine_jasmin_filenames_era5(nwp_fnames, cyear, cmonth, cday, chou
     character(len=*), intent(in)              :: cyear, cmonth, cday, chour
     integer, intent(in)                       :: idx
 
-    character(len=path_length)                :: ml_dir, sfc_dir
+    character(len=path_length)                :: ml_dir, sfc_dir, filebase
+    logical                                   :: f_tester
 
     ml_dir = trim(adjustl(nwp_fnames%nwp_path(idx)))//'/an_ml/'// &
              trim(adjustl(cyear))//'/'// &
@@ -368,6 +375,31 @@ subroutine determine_jasmin_filenames_era5(nwp_fnames, cyear, cmonth, cday, chou
              trim(adjustl(cday))// &
              trim(adjustl(chour))//'00.'
 
+    ! Now check if we can find files matching this pattern. If not, we
+    ! redefine filenase for the provisional ERA5 data record and try
+    ! again
+    inquire(file=trim(adjustl(ml_dir))//'q.nc', exist=f_tester)
+    if (.not. f_tester) then
+       !print*,"Standard ERA5 data not found, trying provisional ERA5"
+       filebase = '/ecmwf-era5t_oper_an_'
+       
+       ml_dir = trim(adjustl(nwp_fnames%nwp_path(idx)))//'an_ml/'// &
+             trim(adjustl(cyear))//'/'// &
+             trim(adjustl(cmonth))//'/'// &
+             trim(adjustl(cday))//trim(adjustl(filebase))//'ml_'// &
+             trim(adjustl(cyear))// &
+             trim(adjustl(cmonth))// &
+             trim(adjustl(cday))// &
+             trim(adjustl(chour))//'00.'
+       
+       inquire(file=trim(adjustl(ml_dir))//'q.nc', exist=f_tester)
+       if (.not. f_tester) then 
+          print*,"ERROR: NWP data not found: ", trim(ml_dir)
+          stop
+       end if
+    end if
+
+    ! Set up surface path
     sfc_dir = trim(adjustl(nwp_fnames%nwp_path(idx)))//'/an_sfc/'// &
               trim(adjustl(cyear))//'/'// &
               trim(adjustl(cmonth))//'/'// &

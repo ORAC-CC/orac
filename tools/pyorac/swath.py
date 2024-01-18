@@ -637,8 +637,10 @@ class Swath(Mappable):
             names.update(handle.variables.keys())
         return sorted(names)
 
-    def flag_map(self, name):
-        """Return a dict mapping a flag's values to their meanings."""
+    def flag_map(self, name, value_to_label=True):
+        """Return a dict mapping a flag's values to their meanings.
+
+        Set value_to_label=False to instead map flag labels onto their value."""
         from collections import OrderedDict
 
         var = self.get_variable(name)
@@ -669,7 +671,10 @@ class Swath(Mappable):
                 err.args = (name + " does not have flag definitions.",)
                 raise
 
-        return OrderedDict(zip(nums, names))
+        if value_to_label:
+            return OrderedDict(zip(nums, names))
+        else:
+            return OrderedDict(zip(names, nums))
 
     def summary_statistics(self):
         qcf = self["qcflag"]
@@ -686,15 +691,17 @@ class Swath(Mappable):
 
         return stats
 
-    def __print__(self):
+    def __str__(self):
         from os.path import basename
 
-        print("ORAC file " + basename(self.filename))
-        print("{:0d}x{:0d} ".format(*self.shape) +
+        s = "ORAC file " + basename(self.primary) + "\n"
+        s += ("{:0d}x{:0d} ".format(*self.shape) +
               "swath starting at {:%Y-%m-%d %H:%M:%S} ".format(self.time[0,0]) +
               "covering [{:0.2f}E, {:0.2f}E], [{:0.2f}N, {:0.2f}N]".format(*self.extent))
         for key, val in self.summary_statistics().items():
-            print(f"{key:>20s}: {val:0.2f}")
+            s += f"\n{key:>20s}: {val:0.2f}"
+
+        return s
 
     # -------------------------------------------------------------------
     # Data formatting functions
