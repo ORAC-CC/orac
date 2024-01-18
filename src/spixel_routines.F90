@@ -136,13 +136,14 @@ subroutine convert_state_element_to_log(SPixel, index)
 
    real :: sx_correction
 
-   sx_correction = 1.0 / (SPixel%XB(index) * log(10.0))
+   sx_correction = 1.0 / (SPixel%XB(index) * alog(10.0))
    SPixel%Sx(index,:) = SPixel%Sx(index,:) * sx_correction
    SPixel%Sx(:,index) = SPixel%Sx(:,index) * sx_correction
-   SPixel%XB(index) = log10(SPixel%XB(index))
-   SPixel%X0(index) = log10(SPixel%X0(index))
-   SPixel%XLLim(index) = log10(SPixel%XLLim(index))
-   SPixel%XULim(index) = log10(SPixel%XULim(index))
+
+   SPixel%XB(index) = alog10(SPixel%XB(index))
+   SPixel%X0(index) = alog10(SPixel%X0(index))
+   SPixel%XLLim(index) = alog10(SPixel%XLLim(index))
+   SPixel%XULim(index) = alog10(SPixel%XULim(index))
 
 end subroutine convert_state_element_to_log
 
