@@ -87,24 +87,6 @@ subroutine Set_Limits(Ctrl, SPixel, SAD_LUT, status)
    if (Ctrl%RTMIntSelm /= RTMIntMethNone) &
         SPixel%XULim(IPc) = SPixel%RTM%P(SPixel%RTM%Np)
 
-   ! Check for logarithmic LUT axes
-   if (SAD_LUT(1)%Grid%Tau%log) then
-      SPixel%XLLim(ITau) = log10(SPixel%XLLim(ITau))
-      SPixel%XULim(ITau) = log10(SPixel%XULim(ITau))
-   end if
-   if (Ctrl%Approach == AppCld2L .and. SAD_LUT(2)%Grid%Tau%log) then
-      SPixel%XLLim(ITau2) = log10(SPixel%XLLim(ITau2))
-      SPixel%XULim(ITau2) = log10(SPixel%XULim(ITau2))
-   end if
-   if (SAD_LUT(1)%Grid%Re%log) then
-      SPixel%XLLim(IRe) = log10(SPixel%XLLim(IRe))
-      SPixel%XULim(IRe) = log10(SPixel%XULim(IRe))
-   end if
-   if (Ctrl%Approach == AppCld2L .and. SAD_LUT(2)%Grid%Re%log) then
-      SPixel%XLLim(IRe2) = log10(SPixel%XLLim(IRe2))
-      SPixel%XULim(IRe2) = log10(SPixel%XULim(IRe2))
-   end if
-
    ! Ensure retrieval does not go outside the LUT grid
    if (SPixel%XLLim(ITau) < SAD_LUT(1)%Grid%Tau%Min) &
         SPixel%XLLim(ITau) = SAD_LUT(1)%Grid%Tau%Min

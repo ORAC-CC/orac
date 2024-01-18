@@ -340,7 +340,22 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, SAD_LUT, MSI_Data, RTM, SPixel, status)
    end if ! End of RTMIntMeth /= RTMIntMethNone
 
    call Get_X(Ctrl, SPixel, MSI_Data, status)
-!  if (status /= 0) go to 99 ! Skip further data reading
+
+   ! Check for logarithmic LUT axes
+   if (SAD_LUT(1)%Grid%Tau%log) then
+      call convert_state_element_to_log(SPixel, ITau)
+   end if
+   if (Ctrl%Approach == AppCld2L .and. SAD_LUT(2)%Grid%Tau%log) then
+      call convert_state_element_to_log(SPixel, ITau2)
+   end if
+   if (SAD_LUT(1)%Grid%Re%log) then
+      call convert_state_element_to_log(SPixel, IRe)
+   end if
+   if (Ctrl%Approach == AppCld2L .and. SAD_LUT(2)%Grid%Re%log) then
+      call convert_state_element_to_log(SPixel, IRe2)
+   end if
+
+   call Set_Limits(Ctrl, SPixel, SAD_LUT, status)
 
    ! If stat indicates a "super-pixel fatal" condition set the quality
    ! control flag bit to indicate no processing.

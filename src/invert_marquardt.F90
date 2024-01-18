@@ -297,28 +297,6 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
 
    huge_value = huge(1.0)/Ctrl%Invpar%MqStep
 
-   ! Set state variable limits
-   call Set_Limits(Ctrl, SPixel, SAD_LUT, stat)
-   if (stat /= 0) go to 99 ! Terminate processing this pixel
-
-   ! Check for logarithmic LUT axes
-   if (SAD_LUT(1)%Grid%Tau%log) then
-      SPixel%XB(ITau) = log10(SPixel%XB(ITau))
-      SPixel%X0(ITau) = log10(SPixel%X0(ITau))
-   end if
-   if (Ctrl%Approach == AppCld2L .and. SAD_LUT(2)%Grid%Tau%log) then
-      SPixel%XB(ITau2) = log10(SPixel%XB(ITau2))
-      SPixel%X0(ITau2) = log10(SPixel%X0(ITau2))
-   end if
-   if (SAD_LUT(1)%Grid%Re%log) then
-      SPixel%XB(IRe) = log10(SPixel%XB(IRe))
-      SPixel%X0(IRe) = log10(SPixel%X0(IRe))
-   end if
-   if (Ctrl%Approach == AppCld2L .and. SAD_LUT(2)%Grid%Re%log) then
-      SPixel%XB(IRe2) = log10(SPixel%XB(IRe2))
-      SPixel%X0(IRe2) = log10(SPixel%X0(IRe2))
-   end if
-
    ! Invert a priori covariance matrix
    error_matrix = SPixel%Sx(SPixel%X, SPixel%X)
    call Invert_Cholesky(error_matrix, SxInv, SPixel%Nx, stat)
@@ -570,7 +548,6 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
    ! inactive variables, Sn is set to the a priori error (squared). De-scale
    ! (by XScale squared, i.e. the product of the XScale factors for the two
    ! state variables contributing to each element).
-   SPixel%Sn = 0.0
    if (SPixel%NXI > 0 .and. .not. Ctrl%Invpar%disable_Ss) then
       SPixel%Sn(SPixel%XI, SPixel%XI) = SPixel%Sx(SPixel%XI, SPixel%XI)
 
