@@ -167,16 +167,16 @@ subroutine Set_State(i, Ctrl, SPixel, MSI_Data, status)
 
    ! Check for internal consistency with the cloud class limits. Set the a
    ! priori or first guess values equal to any limit they exceed.
-   if (SPixel%Xb(i) > Ctrl%Invpar%xUlim(i)) then
-      SPixel%Xb(i) = Ctrl%Invpar%xUlim(i)
-   else if (SPixel%Xb(i) < Ctrl%Invpar%xLlim(i)) then
-      SPixel%Xb(i) = Ctrl%Invpar%xLlim(i)
+   if (SPixel%Xb(i) > Ctrl%Invpar%XULim(i)) then
+      SPixel%Xb(i) = Ctrl%Invpar%XULim(i)
+   else if (SPixel%Xb(i) < Ctrl%Invpar%XLLim(i)) then
+      SPixel%Xb(i) = Ctrl%Invpar%XLLim(i)
    end if
 
-   if (SPixel%X0(i) > Ctrl%Invpar%xUlim(i)) then
-      SPixel%X0(i) = Ctrl%Invpar%xUlim(i)
-   else if (SPixel%X0(i) < Ctrl%Invpar%xLlim(i)) then
-      SPixel%X0(i) = Ctrl%Invpar%xLlim(i)
+   if (SPixel%X0(i) > Ctrl%Invpar%XULim(i)) then
+      SPixel%X0(i) = Ctrl%Invpar%XULim(i)
+   else if (SPixel%X0(i) < Ctrl%Invpar%XLLim(i)) then
+      SPixel%X0(i) = Ctrl%Invpar%XLLim(i)
    end if
 
 end subroutine Set_State

@@ -100,7 +100,7 @@ subroutine grid_dimension_read(filename, n_name, d_name, v_name, lun, Grid)
       ! This is the first time this dimension has been encountered
       Grid%n   = n2
       Grid%d   = d2
-      Grid%log = x2(1) < 0
+      Grid%log = x2(1) < 0 ! This is an assumption but works for all text tables as of 18/01/2024
       Grid%x   = x2
       Grid%Min = minval(x2(1:n2))
       Grid%Max = maxval(x2(1:n2))

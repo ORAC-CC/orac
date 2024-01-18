@@ -84,10 +84,12 @@ subroutine Set_Limits(Ctrl, SPixel, SAD_LUT, status)
 
    ! Dynamically set upper limit of cloud top pressure to lowest profile
    ! pressure of current pixel.
+
    if (Ctrl%RTMIntSelm /= RTMIntMethNone) &
         SPixel%XULim(IPc) = SPixel%RTM%P(SPixel%RTM%Np)
 
    ! Ensure retrieval does not go outside the LUT grid
+
    if (SPixel%XLLim(ITau) < SAD_LUT(1)%Grid%Tau%Min) &
         SPixel%XLLim(ITau) = SAD_LUT(1)%Grid%Tau%Min
    if (Ctrl%Approach == AppCld2L .and. SPixel%XLLim(ITau2) < SAD_LUT(2)%Grid%Tau%Min) &
