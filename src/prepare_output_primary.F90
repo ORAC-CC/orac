@@ -98,7 +98,7 @@ subroutine prepare_output_primary(Ctrl, i, j, MSI_Data, SPixel, RTM_Pc, Diag, &
 
    integer            :: k, kk, l, i_rho
    integer(kind=sint) :: temp_short_ctp_uncertainty
-   real(kind=sreal)   :: temp_real, temp_real_ot, temp_real_ctp_uncertainty
+   real(kind=sreal)   :: temp_real, temp_real_ctp_uncertainty
 
 
    !----------------------------------------------------------------------------
@@ -155,15 +155,14 @@ if (Ctrl%Ind%flags%do_aerosol) then
    !----------------------------------------------------------------------------
    ! aot, aot_uncertainty
    !----------------------------------------------------------------------------
-   temp_real_ot = 10.0**SPixel%Xn(ITau)
    call prepare_short_packed_float( &
-        temp_real_ot, output_data%aot550(i,j), &
+        SPixel%Xn(ITau), output_data%aot550(i,j), &
         output_data%aot550_scale, output_data%aot550_offset, &
         output_data%aot550_vmin, output_data%aot550_vmax, &
         MissingXn, output_data%aot550_vmax, &
         control=SPixel%Xn(ITau))
 
-   temp_real = sqrt(SPixel%Sn(ITau,ITau)) * temp_real_ot * alog(10.0)
+   temp_real = sqrt(SPixel%Sn(ITau,ITau))
    call prepare_short_packed_float( &
         temp_real, output_data%aot550_uncertainty(i,j), &
         output_data%aot550_uncertainty_scale, &
@@ -173,15 +172,14 @@ if (Ctrl%Ind%flags%do_aerosol) then
         MissingSn, output_data%aot550_uncertainty_vmax, &
         control=SPixel%Sn(ITau,ITau))
 
-   temp_real_ot = 10.0**Diag%aot870
    call prepare_short_packed_float( &
-        temp_real_ot, output_data%aot870(i,j), &
+        Diag%aot870, output_data%aot870(i,j), &
         output_data%aot870_scale, output_data%aot870_offset, &
         output_data%aot870_vmin, output_data%aot870_vmax, &
         MissingXn, output_data%aot870_vmax, &
         control=SPixel%Xn(ITau))
 
-   temp_real = sqrt(Diag%aot870_uncertainty) * temp_real_ot * alog(10.0)
+   temp_real = sqrt(Diag%aot870_uncertainty)
    call prepare_short_packed_float( &
         temp_real, output_data%aot870_uncertainty(i,j), &
         output_data%aot870_uncertainty_scale, &
@@ -194,15 +192,14 @@ if (Ctrl%Ind%flags%do_aerosol) then
    !----------------------------------------------------------------------------
    ! aer, aer_uncertainty
    !----------------------------------------------------------------------------
-   temp_real_ot = 10.0**SPixel%Xn(IRe)
    call prepare_short_packed_float( &
-        temp_real_ot, output_data%aer(i,j), &
+        SPixel%Xn(IRe), output_data%aer(i,j), &
         output_data%aer_scale, output_data%aer_offset, &
         output_data%aer_vmin, output_data%aer_vmax, &
         MissingXn, output_data%aer_vmax, &
         control=SPixel%Xn(IRe))
 
-   temp_real = sqrt(SPixel%Sn(IRe,IRe)) * temp_real_ot * alog(10.0)
+   temp_real = sqrt(SPixel%Sn(IRe,IRe))
    call prepare_short_packed_float( &
         temp_real, output_data%aer_uncertainty(i,j), &
         output_data%aer_uncertainty_scale, output_data%aer_uncertainty_offset, &
@@ -322,15 +319,14 @@ if (Ctrl%Ind%flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! cot, cot_uncertainty
    !----------------------------------------------------------------------------
-   temp_real_ot = 10.0**SPixel%Xn(ITau)
    call prepare_short_packed_float( &
-        temp_real_ot, output_data%cot(i,j), &
+        SPixel%Xn(ITau), output_data%cot(i,j), &
         output_data%cot_scale, output_data%cot_offset, &
         output_data%cot_vmin, output_data%cot_vmax, &
         MissingXn, output_data%cot_vmax, &
         control=SPixel%Xn(ITau))
 
-   temp_real = sqrt(SPixel%Sn(ITau,ITau)) * temp_real_ot * alog(10.0)
+   temp_real = sqrt(SPixel%Sn(ITau,ITau))
    call prepare_short_packed_float( &
         temp_real, output_data%cot_uncertainty(i,j), &
         output_data%cot_uncertainty_scale, output_data%cot_uncertainty_offset, &
@@ -605,15 +601,14 @@ if (Ctrl%Ind%flags%do_cloud_layer_2) then
    !----------------------------------------------------------------------------
    ! cot2, cot2_uncertainty
    !----------------------------------------------------------------------------
-   temp_real_ot = 10.0**SPixel%Xn(ITau2)
    call prepare_short_packed_float( &
-        temp_real_ot, output_data%cot2(i,j), &
+        SPixel%Xn(ITau2), output_data%cot2(i,j), &
         output_data%cot_scale, output_data%cot_offset, &
         output_data%cot_vmin, output_data%cot_vmax, &
         MissingXn, output_data%cot_vmax, &
         control=SPixel%Xn(ITau2))
 
-   temp_real = sqrt(SPixel%Sn(ITau2,ITau2)) * temp_real_ot * alog(10.0)
+   temp_real = sqrt(SPixel%Sn(ITau2,ITau2))
    call prepare_short_packed_float( &
         temp_real, output_data%cot2_uncertainty(i,j), &
         output_data%cot_uncertainty_scale, output_data%cot_uncertainty_offset, &

@@ -663,10 +663,22 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
            BextRat, d_BextRat, stat)
       if (stat /= 0) go to 99
 
-      Diag%aot870 = SPixel%Xn(ITau) + log10(BextRat(1))
+      if (SAD_LUT(1)%Grid%Tau%log) then
+         Diag%aot870 = 10.0**SPixel%Xn(ITau) * BextRat(1)
 
-      Diag%aot870_uncertainty = Spixel%Sn(ITau,ITau) + &
-           (d_BextRat(1) / (BextRat(1) * log(10.0)))**2 * SPixel%Sn(IRe,IRe)
+         ! \sigma_{\log\tau_870}^2 = \sigma_{\log\tau_550}^2 +
+         !    \sigma_re^2 ((dB/dr_e) / (B log(10)))^2
+         ! Then \sigma_{\tau_870} = \sigma_{\log\tau_870} * \tau_870 * log(10)
+         Diag%aot870_uncertainty = (SPixel%Sn(ITau,ITau) * alog(10.0)**2 + &
+              (d_BextRat(1) / BextRat(1))**2 * SPixel%Sn(IRe,IRe)) * &
+              Diag%aot870**2
+      else
+         Diag%aot870 = SPixel%Xn(ITau) * BextRat(1)
+
+         Diag%aot870_uncertainty = BextRat(1)**2 * Spixel%Sn(ITau,ITau) + &
+              (d_BextRat(1) * SPixel%Xn(ITau))**2 * SPixel%Sn(IRe,IRe)
+      end if
+
    end if
 
    call Deallocate_GZero(GZero)
@@ -678,6 +690,20 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
    ! Set averaging kernel [d2J_dX2-SxInv = matmul(KxT_SyI, Kx)]
    d2J_dX2 = d2J_dX2 - SxInv
    Diag%AK(SPixel%X, SPixel%X) = matmul(St_temp, d2J_dX2)
+
+   ! Check for logarithmic LUT axes (see also AOD870 calculation above)
+   if (SAD_LUT(1)%Grid%Tau%log) then
+      call convert_state_element_to_linear(SPixel, ITau)
+   end if
+   if (Ctrl%Approach == AppCld2L .and. SAD_LUT(2)%Grid%Tau%log) then
+      call convert_state_element_to_linear(SPixel, ITau2)
+   end if
+   if (SAD_LUT(1)%Grid%Re%log) then
+      call convert_state_element_to_linear(SPixel, IRe)
+   end if
+   if (Ctrl%Approach == AppCld2L .and. SAD_LUT(2)%Grid%Re%log) then
+      call convert_state_element_to_linear(SPixel, IRe2)
+   end if
 
 
    ! Void the outputs for failed superpixels
