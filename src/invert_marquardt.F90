@@ -761,3 +761,49 @@ function average_hessian(n, Hessian, scale) result(alpha)
    alpha   = scale * Av_Hess
 
 end function average_hessian
+
+
+!-------------------------------------------------------------------------------
+! Name: convert_state_element_to_linear
+!
+! Purpose:
+! Performs mathematical manipulations to change an element of the state vector
+! from log into linear space.
+!
+! Algorithm:
+! For the value: take 10 to power of the value
+! For the uncertainty: sigma_log = sigma_lin * value * log(10)
+!    Thus, multiply the requested row and column of Sx by (value * log(10)).
+!    This is an approximation, using the largest of two unequal bounds.
+!
+! Arguments:
+! Name   Type     In/Out/Both Description
+! SPixel SPixel_t Both        The pixel to be manipulated
+! index  int      In          Index of the state vector to be converted
+!
+! History:
+! 2024/02/08, AP: Original version.
+!
+! Bugs:
+! The conversion of covariance from log to linear space is *not* Gaussian.
+! Optimal estimation requires Gaussian errors, so this is strictly an
+! inappropriate operation. However, it is much more intuitive for the user.
+!-------------------------------------------------------------------------------
+subroutine convert_state_element_to_linear(SPixel, index)
+
+   use SPixel_m, only: SPixel_t
+
+   implicit none
+
+   type(SPixel_t), intent(inout) :: SPixel
+   integer,        intent(in)    :: index
+
+   real :: sx_correction
+
+   SPixel%Xn(index) = 10.0**SPixel%Xn(index)
+
+   sx_correction = SPixel%Xn(index) * alog(10.0)
+   SPixel%Sn(index,:) = SPixel%Sn(index,:) * sx_correction
+   SPixel%Sn(:,index) = SPixel%Sn(:,index) * sx_correction
+
+end subroutine convert_state_element_to_linear

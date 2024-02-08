@@ -70,6 +70,21 @@ subroutine Set_Limits(Ctrl, SPixel, SAD_LUT, status)
    SPixel%XLLim = Ctrl%Invpar%XLLim
    SPixel%XULim = Ctrl%Invpar%XULim
 
+   ! Check for logarithmic LUT axes
+
+   if (SAD_LUT(1)%Grid%Tau%log) then
+      call convert_state_element_to_log(SPixel, ITau)
+   end if
+   if (Ctrl%Approach == AppCld2L .and. SAD_LUT(2)%Grid%Tau%log) then
+      call convert_state_element_to_log(SPixel, ITau2)
+   end if
+   if (SAD_LUT(1)%Grid%Re%log) then
+      call convert_state_element_to_log(SPixel, IRe)
+   end if
+   if (Ctrl%Approach == AppCld2L .and. SAD_LUT(2)%Grid%Re%log) then
+      call convert_state_element_to_log(SPixel, IRe2)
+   end if
+
    ! Set surface temperature values separately. Firstly, determine whether Ts is
    ! an active state variable. If so, set the range to 3 standard deviations
    ! away from the a priori Ts value.
