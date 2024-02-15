@@ -121,6 +121,9 @@ module preproc_structures_m
       logical                    :: use_predef_lsm
       logical                    :: use_swansea_climatology
       integer                    :: mcd43_max_qaflag
+      logical                    :: use_seviri_ann_cma_cph
+      logical                    :: use_seviri_ann_ctp_fg
+      logical                    :: use_seviri_ann_mlay
 
       character(len=path_length) :: ext_lsm_path
       character(len=path_length) :: ext_geo_path
@@ -176,6 +179,7 @@ module preproc_structures_m
       character(len=file_length) :: msi_file    ! Radiances/brightness temps
       character(len=file_length) :: prtm_file   ! Atmospheric RTTOV inputs
       character(len=file_length) :: swrtm_file  ! Shortwave RTTOV inputs
+      character(len=file_length) :: ctp_file    ! CTP for first guess
    end type preproc_paths_t
 
 
