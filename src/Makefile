@@ -233,7 +233,7 @@ orac: $(ORAC_OBJ_MAIN) liborac.a $(ORAC_COMMON)/liborac_common.a Makefile
 
 # Main library build
 liborac.a: $(ORAC_OBJ) $(PARSER_OBJ) Makefile
-	ar -rs liborac.a $(ORAC_OBJ) $(PARSER_OBJ)
+	$(AR) -rs liborac.a $(ORAC_OBJ) $(PARSER_OBJ)
 
 # Rebuild dependencies housed in dependencies.inc
 depend:

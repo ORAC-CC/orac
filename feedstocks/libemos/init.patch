@@ -94,7 +94,7 @@ diff -rupN libemos-4.5.5-Source/gribex/handleLocalDefinitions.c libemos/gribex/h
    exit(1);
  }
  
-@@ -1253,41 +1253,41 @@ grib_octet_t* packedLengthValue = (b->pa
+@@ -1253,42 +1253,42 @@ grib_octet_t* packedLengthValue = (b->pa
  /*==========================================================*/
  
  static op_code codes[] = {
@@ -172,6 +172,7 @@ diff -rupN libemos-4.5.5-Source/gribex/handleLocalDefinitions.c libemos/gribex/h
 +  { "ENDLIST", initemosENDLIST, packENDLIST, unpackENDLIST, },
  };
  
+ action* createLocalDefinitionHandler(grib_int_t definitionNumber) {
 @@ -1384,7 +1384,7 @@ char* next = NULL;
              exit(1);
            }

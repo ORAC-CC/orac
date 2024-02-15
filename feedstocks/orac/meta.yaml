@@ -1,5 +1,5 @@
-{% set version = "4.10" %}
-{% set build = 4 %}
+{% set version = "4.11" %}
+{% set build = 2 %}
 
 # recipe-lint fails if mpi is undefined
 {% set mpi = mpi or 'nompi' %}
@@ -15,7 +15,11 @@ package:
 source:
   - git_url: https://github.com/ORAC-CC/orac
     patches:
+    {% if mpi != "nompi" %}
       - make.patch
+    {% else %}
+      - nompi.patch
+    {% endif %}
   - path: activate.sh
   - path: deactivate.sh
 
@@ -60,9 +64,12 @@ requirements:
     - {{ mpi }}  # [mpi != 'nompi']
     - eccodes
     - epr_api
+    # without this repeat reference, conda-smithy doesn't pin correctly
+    - fftw
+    - fftw * {{ mpi_prefix }}_*
+    # fftw comes from libemos, which doesn't have mpi so doesn't bind this
     - fu_liou
     - hdfeos2
-    # without this repeat reference, conda-smithy doesn't pin correctly
     - hdf5
     - hdf5 * {{ mpi_prefix }}_*
     - hsd_reader
@@ -79,6 +86,7 @@ requirements:
     - {{ mpi }}  # [mpi != 'nompi']
     - eccodes
     - epr_api
+    - fftw * {{ mpi_prefix }}_*
     - fu_liou
     - hdfeos2
     - hdf5 * {{ mpi_prefix }}_*

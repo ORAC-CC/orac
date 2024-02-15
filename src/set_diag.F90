@@ -121,6 +121,7 @@ subroutine Set_Diag(Ctrl, SPixel, MSI_Data, Diag)
    if (any(SPixel%Geom%RelAzi < Ctrl%MinRelAzi) .and. &
         .not. (Ctrl%Approach == AppCld1L .or. Ctrl%Approach == AppCld2L)) &
                                      Diag%QCFlag = ibset(Diag%QCFlag, GlintBit)
+   if (Diag%LimitHit /= 0)           Diag%QCFlag = ibset(Diag%QCFlag, LimitBit)
    ! Cirrus contamination
    ! Case 2 waters
    ! Shadows

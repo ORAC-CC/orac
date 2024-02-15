@@ -32,6 +32,7 @@
 ! 2015/04/28, AP: Added fields for surface uncertainty and correlation.
 ! 2017/06/21, OS: added ann phase variables
 ! 2018/06/08, SP: Add satellite azimuth angle to output.
+! 2022/01/27, GT: Added CTP prior data.
 !
 ! Bugs:
 ! None known.
@@ -94,5 +95,9 @@ subroutine Dealloc_Data(Ctrl, MSI_Data)
    if (associated(MSI_Data%snow_unc))     deallocate(MSI_Data%snow_unc)
 
    if (associated(MSI_Data%illum))        deallocate(MSI_Data%illum)
+
+   if (associated(MSI_Data%State%CTP))    deallocate(MSI_Data%State%CTP)
+   if (associated(MSI_Data%State%CTP_var)) &
+                                          deallocate(MSI_Data%State%CTP_var)
 
 end subroutine Dealloc_Data

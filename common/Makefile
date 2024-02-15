@@ -59,7 +59,7 @@ parser: generate_parser struct_parser.tab.cc
 
 # Main library build
 liborac_common.a: $(COMMON_OBJ) Makefile
-	ar -rs liborac_common.a $(OBJS)/*.o
+	$(AR) -rs liborac_common.a $(OBJS)/*.o
 
 # Small program to report the full version number of RTTOV used
 rttov_version: $(OBJS)/rttov_version.o

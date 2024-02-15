@@ -190,6 +190,8 @@
 !    Get_Surface for Swansea model.
 ! 2015/12/17, GM: Get rid of the secant of the solar zenith angle division of
 !    surface reflectance.
+! 2022/01/27, GT: Added MSI_Data as an argument to Get_X (needed if using
+!    SelmAUX to set a priori/first guess)
 !
 ! Bugs:
 ! None known.
@@ -226,15 +228,17 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, SAD_LUT, MSI_Data, RTM, SPixel, status)
 
    SPixel%Type = MSI_Data%Type(SPixel%Loc%X0, SPixel%Loc%Y0)
 
-   if (.not. any(Ctrl%Types_to_process(1:Ctrl%NTypes_to_process) == &
-                 SPixel%Type)) then
-      ! Incorrect particle type in SPixel. Don't process.
-      status = SPixelType
+   if (Ctrl%NTypes_to_process > 0) then
+      if (.not. any(Ctrl%Types_to_process(1:Ctrl%NTypes_to_process) == &
+                    SPixel%Type)) then
+         ! Incorrect particle type in SPixel. Don't process.
+         status = SPixelType
 #ifdef DEBUG
-      write(*, *) 'WARNING: Get_SPixel(): Incorrect particle type in  ' // &
-                  'pixel starting at:', SPixel%Loc%X0, SPixel%Loc%Y0
+         write(*, *) 'WARNING: Get_SPixel(): Incorrect particle type in  ' // &
+                     'pixel starting at:', SPixel%Loc%X0, SPixel%Loc%Y0
 #endif
-      go to 99 ! Skip further data reading
+         go to 99 ! Skip further data reading
+      end if
    end if
 
    ! Call 'Get_' subroutines. Non-zero stat flags fatal error for superpixel
@@ -335,7 +339,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, SAD_LUT, MSI_Data, RTM, SPixel, status)
       end if ! End of NSolar > 0
    end if ! End of RTMIntMeth /= RTMIntMethNone
 
-   call Get_X(Ctrl, SPixel, status)
+   call Get_X(Ctrl, SPixel, MSI_Data, status)
 !  if (status /= 0) go to 99 ! Skip further data reading
 
    ! If stat indicates a "super-pixel fatal" condition set the quality

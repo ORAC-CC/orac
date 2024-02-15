@@ -20,6 +20,7 @@
 ! along_track_offset  lint   out Pixel number at which reading should begin
 !                                (generally where daylight begins)
 ! day_night           stint  in  1: daytime data; 2: night data; 3: everything
+!                                4: 1st half of night; 5: 2nd half of night
 ! loc_limit           sreal  in  (/ minimum latitude, minimum
 !                                longitude, maximum latitude, maximum
 !                                longitude /)
@@ -41,6 +42,8 @@
 ! 2013/01/24, MJ: removed "optionality" of some arguments
 ! 2015/09/15, CP: Put a stop in if reads too narrow swath this is a bug fix to
 !    prevent zero files being created
+! 2019/06/21, GT: Added day_night options 4 and 5, which allow either the first
+!    or second parts of the night-side (ascending) orbit to be read.
 !
 ! Bugs:
 ! None known.
@@ -80,7 +83,7 @@ subroutine read_aatsr_dimensions(path_to_l1b_file,n_across_track, &
    logical,                        intent(in)  :: verbose
 
    character(len=path_length,kind=c_char) :: l1b_file_C
-   integer(c_short)                       :: tmp_dynght, half_orbit
+   integer(c_short)                       :: half_orbit, c_dynght
    real(c_float), dimension(4)            :: tmp_limit
    integer(c_short)                       :: err_code
    logical(c_bool)                        :: verb
@@ -96,17 +99,31 @@ subroutine read_aatsr_dimensions(path_to_l1b_file,n_across_track, &
 
    ! Check for the presence of the optional day_night and lat-lon limit
    ! input variables and set defaults if not present.
-   tmp_dynght = day_night
    tmp_limit = loc_limit
 
    ! If we are dealing with night time data, we need to call
    ! get_aatsr_dimension_ctof90 twice; once for the start of the orbit
    ! and once for the end. We also populate the optional output parameters
    ! "n_along_track2" and "along_track_offset2"
-   if (tmp_dynght .eq. 2) then
+   ! If, however, the option 4 or 5 have been passed for day_night, then we
+   ! only read either the start OR end of the orbit.
+   if (day_night .eq. 2 .or. day_night .eq. 4) then
       half_orbit = 1
    else
-      half_orbit = 0
+      if (day_night .eq. 5) then
+         half_orbit = 2
+      else
+         half_orbit = 0
+      end if
+   end if
+   ! Redefine the dynht variable, so that it is either 0 (everything),
+   ! 1 (daylight) or 2 (night)
+   if (day_night .eq. 2 .or. day_night .eq. 4 .or. day_night .eq. 5) then
+      c_dynght = 2
+   else if (day_night .eq. 1) then
+      c_dynght = 1
+   else
+      c_dynght = 0
    end if
 
    ! This is a wrapper function for C code using the EPR_API from
@@ -117,7 +134,7 @@ subroutine read_aatsr_dimensions(path_to_l1b_file,n_across_track, &
       verb = .false.
    end if
    l1b_file_C = trim(path_to_l1b_file)//C_NULL_CHAR
-   call get_aatsr_dimension(l1b_file_C, tmp_dynght, tmp_limit, &
+   call get_aatsr_dimension(l1b_file_C, c_dynght, tmp_limit, &
         half_orbit, tmp_nx, tmp_ny, tmp_miny, err_code, verb)
 
    n_across_track = tmp_nx
@@ -131,9 +148,9 @@ subroutine read_aatsr_dimensions(path_to_l1b_file,n_across_track, &
    end if
 
    ! make second call for second night time chunk
-   if (tmp_dynght .eq. 2) then
+   if (day_night .eq. 2) then
       half_orbit = 2
-      call get_aatsr_dimension(l1b_file_C, tmp_dynght, tmp_limit, &
+      call get_aatsr_dimension(l1b_file_C, c_dynght, tmp_limit, &
            half_orbit, tmp_nx, tmp_ny, tmp_miny, err_code, verb)
 
       n_along_track2  = tmp_ny

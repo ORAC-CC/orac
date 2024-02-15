@@ -1,0 +1,12 @@
+# Subject: Use conda's ar not the system's
+--- a/Makefile	2022-08-12 13:29:36.975770552 +0100
++++ b/Makefile	2023-02-13 10:01:32.181740803 +0000
+@@ -24,7 +24,7 @@
+      $(OPTIONAL_TARGETS)
+ 
+ libseviri_util.a: $(OBJECTS)
+-	ar -rs libseviri_util.a $(OBJECTS)
++	$(AR) -rs libseviri_util.a $(OBJECTS)
+ 
+ seviri_util_f90.o: seviri_util_f90.f90
+ 

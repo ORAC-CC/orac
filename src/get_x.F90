@@ -77,21 +77,25 @@
 ! 2015/08/20, GM: Fix SelmCtrl setting of SPixel%X0.
 ! 2016/01/02, AP: Ctrl%RS%diagonal_SRs produces a diagonal covariance matrix.
 ! 2016/10/21, AP: Add AppAerSw to SelmAux.
+! 2022/01/27, GT: Added Cloud top pressure SelmAux selection method of
+!    Get_State()
 !
 ! Bugs:
 ! Does not facilitate correlation between surface reflectance terms.
 !-------------------------------------------------------------------------------
 
-subroutine Get_X(Ctrl, SPixel, status)
+subroutine Get_X(Ctrl, SPixel, MSI_Data, status)
 
    use Ctrl_m
    use ORAC_Constants_m
+   use Data_m
 
    implicit none
 
    ! Declare arguments
    type(Ctrl_t),     intent(in)    :: Ctrl
    type(SPixel_t),   intent(inout) :: SPixel
+   type(Data_t),     intent(in)    :: MSI_Data
    integer,          intent(out)   :: status
 
    ! Local variables
@@ -102,13 +106,13 @@ subroutine Get_X(Ctrl, SPixel, status)
    ! Set all required state vector elements
    SPixel%Sx = 0.
    do i = 1, SPixel%Nx
-      call Set_State(SPixel%X(i), Ctrl, SPixel, status)
+      call Set_State(SPixel%X(i), Ctrl, SPixel, MSI_Data, status)
    end do
    do i = 1, SPixel%NXJ
-      call Set_State(SPixel%XJ(i), Ctrl, SPixel, status)
+      call Set_State(SPixel%XJ(i), Ctrl, SPixel, MSI_Data, status)
    end do
    do i = 1, SPixel%NXI
-      call Set_State(SPixel%XI(i), Ctrl, SPixel, status)
+      call Set_State(SPixel%XI(i), Ctrl, SPixel, MSI_Data, status)
    end do
 
 end subroutine Get_X
@@ -133,10 +137,11 @@ end subroutine Get_X
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
-subroutine Set_State(i, Ctrl, SPixel, status)
+subroutine Set_State(i, Ctrl, SPixel, MSI_Data, status)
 
    use Ctrl_m
    use ORAC_Constants_m
+   use Data_m
 
    implicit none
 
@@ -144,19 +149,20 @@ subroutine Set_State(i, Ctrl, SPixel, status)
    integer,          intent(in)    :: i
    type(Ctrl_t),     intent(in)    :: Ctrl
    type(SPixel_t),   intent(inout) :: SPixel
+   type(Data_t),     intent(in)    :: MSI_Data
    integer,          intent(out)   :: status
 
 
    ! Set a priori
-   call Get_State(SPixel%AP(i), i, Ctrl, SPixel, 0, SPixel%Xb(i), &
-                  status, SPixel%Sx)
+   call Get_State(SPixel%AP(i), i, Ctrl, SPixel, MSI_Data, 0, &
+                  SPixel%Xb(i), status, SPixel%Sx)
 
    ! Set first guess
    if (SPixel%FG(i) /= SelmCtrl .and. SPixel%FG(i) == SPixel%AP(i)) then
       SPixel%X0(i) = SPixel%Xb(i)
    else
-      call Get_State(SPixel%FG(i), i, Ctrl, SPixel, 1, SPixel%X0(i), &
-                     status)
+      call Get_State(SPixel%FG(i), i, Ctrl, SPixel, MSI_Data, 1, &
+                     SPixel%X0(i), status)
    end if
 
    ! Check for internal consistency with the cloud class limits. Set the a
@@ -197,10 +203,11 @@ end subroutine Set_State
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
-subroutine Get_State(mode, i, Ctrl, SPixel, flag, X, status, Err)
+subroutine Get_State(mode, i, Ctrl, SPixel, MSI_Data, flag, X, status, Err)
 
    use Ctrl_m
    use ORAC_Constants_m
+   use Data_m
 
    implicit none
 
@@ -209,6 +216,7 @@ subroutine Get_State(mode, i, Ctrl, SPixel, flag, X, status, Err)
    integer,          intent(in)    :: i
    type(Ctrl_t),     intent(in)    :: Ctrl
    type(SPixel_t),   intent(inout) :: SPixel
+   type(Data_t),     intent(in)    :: MSI_Data
    integer,          intent(in)    :: flag
    real,             intent(out)   :: X
    integer,          intent(out)   :: status
@@ -249,6 +257,18 @@ subroutine Get_State(mode, i, Ctrl, SPixel, flag, X, status, Err)
             else
                Err(i,i) = AUXErrTsSea * AUXErrTsSea * Scale2
             end if
+         end if
+
+      else if (i == IPc) then ! Cloud-top pressure
+         X = MSI_Data%State%CTP(SPixel%Loc%X0, SPixel%Loc%Y0)
+         ! Check the prior CTP value to make sure it is non-null and physically reasonable
+         if (X .gt. MinPriorCTP) then
+            ! Set the prior CTP error from the value in the file.
+            if (present(Err)) Err(i,i) = MSI_Data%State%CTP_var(SPixel%Loc%X0, SPixel%Loc%Y0)
+         else
+            ! If the prior CTP isn't reasonable, set status non-zero, which will cause Ctrl
+            ! value to be used (see below).
+            status = 1
          end if
 
       else if (any(i == ISP)) then

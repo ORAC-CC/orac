@@ -49,6 +49,7 @@ module SAD_Chan_m
       real        :: NedR        ! Noise equivalent delta radiance
       real        :: Rs(2)       ! 'Typical' land/sea reflectance
       real        :: SNR         ! Signal-to-noise ratio
+      real        :: ru2(3)      ! Quadratic noise model
    end type Solar_t
 
    type Thermal_t

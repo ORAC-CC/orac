@@ -147,6 +147,7 @@
 ! 2018/09/30, SRP: Delete old driver read routines.
 ! 2019/08/14, SP: Add Fengyun4A support.
 ! 2021/04/06, AP: New LUT names.
+! 2022/01/27, GT: Added CTP input file to Ctrl%FID structure.
 !
 ! Bugs:
 ! None known.
@@ -309,6 +310,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%FID%Geo    = trim(root_filename)//'.geo.nc'
    Ctrl%FID%Loc    = trim(root_filename)//'.loc.nc'
    Ctrl%FID%Alb    = trim(root_filename)//'.alb.nc'
+   Ctrl%FID%CTP    = trim(root_filename)//'.ctp.nc'
 
    ! Read channel related info
    call read_config_file(Ctrl, channel_ids_instr, channel_sw_flag, &
@@ -598,7 +600,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
 
    !----------------------- Ctrl%QC -----------------------
    Ctrl%QC%MaxJ         = switch_app(a, Default=100.0, Aer=3.0)
-   Ctrl%QC%MaxDoFN      = switch_app(a, Default=2.0)
+   Ctrl%QC%MaxDoFN      = switch_app(a, Default=1.0)
    Ctrl%QC%MaxElevation = switch_app(a, Default=1500.0)
 
    !------------------- Ctrl START/END POINT --------------
@@ -703,15 +705,15 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       Ctrl%Ind%Y_Id_legacy(I_legacy_11_x) = 6
       Ctrl%Ind%Y_Id_legacy(I_legacy_12_x) = 7
 
-      allocate(Ctrl%ReChans(2))
-      Ctrl%ReChans = (/ 5, 4 /)
+      allocate(Ctrl%ReChans(4))
+      Ctrl%ReChans = (/ 5, 4, 12, 11 /)
 
-      allocate(Ctrl%tau_chans(3))
-      Ctrl%tau_chans = (/ 1, 2, 3 /)
-      allocate(Ctrl%r_e_chans(2))
-      Ctrl%r_e_chans = (/ 4, 5 /)
-      allocate(Ctrl%ir_chans(3))
-      Ctrl%ir_chans  = (/ 5, 6, 7 /)
+      allocate(Ctrl%tau_chans(6))
+      Ctrl%tau_chans = (/ 1, 2, 3, 8, 9, 10 /)
+      allocate(Ctrl%r_e_chans(4))
+      Ctrl%r_e_chans = (/ 4, 5, 11, 12 /)
+      allocate(Ctrl%ir_chans(6))
+      Ctrl%ir_chans  = (/ 5, 6, 7, 12, 13, 14 /)
    else if (Ctrl%InstName(1:3) == 'ABI') then
       Ctrl%Ind%Y_Id_legacy(I_legacy_0_6x) = 2
       Ctrl%Ind%Y_Id_legacy(I_legacy_0_8x) = 3
@@ -851,7 +853,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       Ctrl%r_e_chans = (/ 3, 4 /)
       allocate(Ctrl%ir_chans(2))
       Ctrl%ir_chans  = (/ 4, 5 /)
-   else if (Ctrl%InstName(1:16) == 'SLSTR-Sentinel-3') then
+   else if (Ctrl%InstName(1:16) == 'SLSTR-Sentinel-3' .or. &
+        Ctrl%InstName(1:15) == 'SLSTR-Sentinel3') then
       Ctrl%Ind%Y_Id_legacy(I_legacy_0_6x) = 2
       Ctrl%Ind%Y_Id_legacy(I_legacy_0_8x) = 3
       Ctrl%Ind%Y_Id_legacy(I_legacy_1_6x) = 5
@@ -859,15 +862,15 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       Ctrl%Ind%Y_Id_legacy(I_legacy_11_x) = 8
       Ctrl%Ind%Y_Id_legacy(I_legacy_12_x) = 9
 
-      allocate(Ctrl%ReChans(3))
-      Ctrl%ReChans = (/ 7, 5, 6 /)
+      allocate(Ctrl%ReChans(6))
+      Ctrl%ReChans = (/ 7, 5, 6, 16, 14, 15 /)
 
-      allocate(Ctrl%tau_chans(3))
-      Ctrl%tau_chans = (/ 1, 2, 3 /)
-      allocate(Ctrl%r_e_chans(3))
-      Ctrl%r_e_chans = (/ 5, 6, 7 /)
-      allocate(Ctrl%ir_chans(3))
-      Ctrl%ir_chans  = (/ 7, 8, 9 /)
+      allocate(Ctrl%tau_chans(6))
+      Ctrl%tau_chans = (/ 1, 2, 3, 10, 11, 12 /)
+      allocate(Ctrl%r_e_chans(6))
+      Ctrl%r_e_chans = (/ 5, 6, 7, 14, 15, 16 /)
+      allocate(Ctrl%ir_chans(6))
+      Ctrl%ir_chans  = (/ 7, 8, 9, 16, 17, 18 /)
    else
       write(*,*) 'ERROR: Read_Driver(): Unrecognised sensor/platform: ', &
                    trim(Ctrl%InstName)
@@ -1076,7 +1079,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
             X_Dy(Nx_Dy) = ISS(i)
          end if
       end do
-      do i = 1, Ctrl%Ind%NViews
+      do i = 2, Ctrl%Ind%NViews
          Nx_Dy = Nx_Dy+1
          X_Dy(Nx_Dy) = ISP(i)
       end do
@@ -1287,7 +1290,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    ! a compensating effect and is therefore required as is.  This is very likely
    ! the reason this problem went unnoticed until the reciprocity-obeying form
    ! (equations 3 and 4) were introduced.
-   if (Ctrl%i_equation_form == 3 .or. Ctrl%i_equation_form == 4) then
+   if ((Ctrl%i_equation_form == 3 .or. Ctrl%i_equation_form == 4) .and. &
+        len(trim(Ctrl%LUTClass)) == 3) then
       Ctrl%get_T_dv_from_T_0d = .true.
    else
       Ctrl%get_T_dv_from_T_0d = .false.
@@ -1393,9 +1397,9 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
             end if
 
          case (SelmAux)
-            if (i /= ITs .and. .not. any(i == ISP) .and. .not. any(i == IRs)) then
+            if (i /= IPc .and. i /= ITs .and. .not. any(i == ISP) .and. .not. any(i == IRs)) then
                write(*,*) 'ERROR: Read_Driver(): AUX method ONLY supported ' // &
-                    'for setting first guess Ts, SP and Rs'
+                    'for setting first guess CTP, Ts, SP and Rs'
                stop FGMethErr
             end if
             if (any(i == ISP) .and. .not. Ctrl%RS%read_full_brdf) then
@@ -1427,9 +1431,9 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
             end if
 
          case (SelmAux)
-            if (i /= ITs .and. .not. any(i == ISP) .and. .not. any(i == IRs)) then
+            if (i /= IPc .and. i /= ITs .and. .not. any(i == ISP) .and. .not. any(i == IRs)) then
                write(*,*) 'ERROR: Read_Driver(): AUX method ONLY supported ' // &
-                    'for setting a priori Ts, Rs, and S'
+                    'for setting a priori CTP, Ts, Rs, and S'
                stop APMethErr
             end if
             if (any(i == ISP) .and. .not. Ctrl%RS%read_full_brdf) then
@@ -1519,6 +1523,17 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       end if
    end if
 
+   ! If running an aerosol retrieval, we should ensure that we have the
+   ! channel which corresponds to the second AOT wavelength active in
+   ! the measurement vector. Should we consider checking for the
+   ! primary AOD channels as well?
+   if (Ctrl%Approach == AppAerOx .or. Ctrl%Approach == AppAerSw .or. &
+        Ctrl%Approach == AppAerO1) then
+      if (ALL(Ctrl%Ind%Y_Id .ne. Ctrl%second_aot_ch(1))) then
+         write(*,*) 'ERROR: Second AOD channel is not active: ', Ctrl%second_aot_ch(1)
+         stop error_stop_code
+      end if
+   end if
 
    !----------------------------------------------------------------------------
    ! Clean up

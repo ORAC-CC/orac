@@ -150,6 +150,7 @@ module ORAC_constants_m
                                                     ! up to nearest 100th
    real, parameter    :: EmsMin           = 0.0
    real, parameter    :: EmsMax           = 1.0
+   real, parameter    :: MinPriorCTP      = 10.0
 
    ! Missing data (fill) values
    real, parameter    :: MissingXn        = -999.   ! Value for "missing data" used as output when a SPixel is not processed.
@@ -268,7 +269,7 @@ module ORAC_constants_m
    integer, parameter :: DoFNBit          = 4
    integer, parameter :: ElevBit          = 5
    integer, parameter :: GlintBit         = 6
-
+   integer, parameter :: LimitBit         = 7
 
    ! Retrieval classes (for Ctrl%Class)
    integer, parameter :: ClsCldWat        = 1
@@ -431,5 +432,10 @@ module ORAC_constants_m
 
    ! Shuffling to improve compression
    logical, parameter :: shuffle_flag  = .False.
+
+   ! Indicator that the retrieval hit a limit
+   integer, parameter :: LimitHitUpper = 1
+   integer, parameter :: LimitHitLower = 2
+   integer, parameter :: LimitHitClose = 3
 
 end module ORAC_constants_m

@@ -2,7 +2,7 @@ Subject: Anaconda compilers are called from environment variables.
 diff -rupN rttov121/build/arch/gfortran rttov/build/arch/gfortran
 --- rttov121/build/arch/gfortran	2017-02-16 12:00:26.000000000 +0000
 +++ rttov/build/arch/gfortran	2019-01-24 16:00:39.661079562 +0000
-@@ -1,6 +1,6 @@
+@@ -1,10 +1,10 @@
 -FC=gfortran
 -FC77=gfortran
 -CC=gcc
@@ -12,10 +12,15 @@ diff -rupN rttov121/build/arch/gfortran rttov/build/arch/gfortran
  LDFLAGS_ARCH=
  CFLAGS_ARCH=
  FFLAGS_ARCH=-fPIC -O3 -ffree-line-length-none
+-AR=ar r
++AR=${CONDA_AR} r
+ 
+ F2PY=f2py --fcompiler=gnu95
+ F2PYFLAGS_ARCH="-fPIC"
 diff -rupN rttov121/build/arch/gfortran-openmp rttov/build/arch/gfortran-openmp
 --- rttov121/build/arch/gfortran-openmp	2017-02-16 12:00:26.000000000 +0000
 +++ rttov/build/arch/gfortran-openmp	2019-01-24 16:00:39.661079562 +0000
-@@ -1,6 +1,6 @@
+@@ -1,10 +1,10 @@
 -FC=gfortran
 -FC77=gfortran
 -CC=gcc
@@ -25,3 +30,8 @@ diff -rupN rttov121/build/arch/gfortran-openmp rttov/build/arch/gfortran-openmp
  LDFLAGS_ARCH=-fopenmp
  CFLAGS_ARCH=
  FFLAGS_ARCH=-fPIC -O3 -fopenmp -ffree-line-length-none
+-AR=ar r
++AR=${CONDA_AR} r
+ 
+ F2PY=f2py --fcompiler=gnu95
+ F2PYFLAGS_ARCH="-fPIC"

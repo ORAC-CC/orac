@@ -358,7 +358,7 @@ class FileName:
         if mat:
             self.l1b = os.path.join(filename, "geodetic_in.nc")
             self.sensor = 'SLSTR'
-            self.platform = 'Sentinel3' + mat.group('platform').lower()
+            self.platform = 'Sentinel-3' + mat.group('platform').lower()
             self.inst = 'SLSTR-Sentinel-3' + mat.group('platform').lower()
             self.dur = datetime.timedelta(seconds=int(mat.group('duration')))
             self.geo = os.path.join(filename, "geodetic_in.nc")
@@ -366,13 +366,12 @@ class FileName:
             for fdr in self.folders:
                 try:
                     with Dataset(os.path.join(fdr, self.l1b)) as slstr_file:
-                        # Round time to nearest minute
+                        # Round time to nearest second
                         time = parser.parse(slstr_file.start_time).replace(tzinfo=None)
-                        sec = (time - time.min).seconds
-                        rounding = (sec + 30) // 60 * 60
-                        self.time = time + datetime.timedelta(
-                            0, rounding - sec, -time.microsecond
-                        )
+                        if time.microsecond < 500000:
+                            self.time = time - datetime.timedelta(0, 0, time.microsecond)
+                        else:
+                            self.time = time + datetime.timedelta(0, 0, 1000000-time.microsecond)
 
                         self.orbit_num = "{:05d}".format(
                             slstr_file.absolute_orbit_number
@@ -381,7 +380,13 @@ class FileName:
                 except FileNotFoundError:
                     pass
             else:
-                warn(OracWarning("SLSTR start time unknown."))
+                warn(OracWarning("SLSTR start time approximated"))
+                self.time = datetime.datetime(
+                    int(mat.group('year')), int(mat.group('month')),
+                    int(mat.group('day')), int(mat.group('hour')),
+                    int(mat.group('min')), int(mat.group('sec'))
+                )
+                self.orbit_num = 0
 
             return
 
@@ -395,12 +400,19 @@ class FileName:
         )
         if mat:
             self.sensor = mat.group('sensor')
-            self.platform = mat.group('platform')
-            if 'ATSR' in mat.group('sensor'):
-                # SAD file names don't include platform for ATSR instruments
-                self.inst = mat.group('sensor')
+            if self.sensor == 'SLSTR':
+                # SLSTR uses its own hyphening
+                self.platform = 'Sentinel-3' + mat.group('platform')[-1].lower()
             else:
-                self.inst = mat.group('sensor') + '-' + mat.group('platform').upper()
+                self.platform = mat.group('platform')
+            if 'ATSR' in self.sensor:
+                # SAD file names don't include platform for ATSR instruments
+                self.inst = self.sensor
+            elif self.sensor == 'SLSTR':
+                # SLSTR doesn't capitalise the platform name
+                self.inst = self.sensor + '-' + self.platform
+            else:
+                self.inst = self.sensor + '-' + self.platform.upper()
             self.time = datetime.datetime(
                 int(mat.group('year')), int(mat.group('month')),
                 int(mat.group('day')), int(mat.group('hour')),
@@ -459,7 +471,7 @@ class FileName:
                              "for ORAC filenames. Please specify " + terms[-2])
 
         parts = [
-            self.sensor, processor, self.platform,
+            self.sensor, processor, self.platform.replace("Sentinel-3", "Sentinel3"),
             self.time.strftime('%Y%m%d%H%M'), "R{}".format(revision)
         ]
         if self.orbit_num:
@@ -508,14 +520,12 @@ class Invpar:
 
     def __init__(self, var, ap=None, fg=None, sx=None):
         self.var = var
-        if ap:
-            self.ap = ap
-            if fg is None:
-                self.fg = ap
-        if fg:
+        self.ap = ap
+        if fg is None:
+            self.fg = ap
+        else:
             self.fg = fg
-        if sx:
-            self.sx = sx
+        self.sx = sx
 
     def driver(self):
         """Output lines for a driver file to specify these settings"""
@@ -582,6 +592,10 @@ class ParticleType:
                     platform_name = 'meteosat-10'
                 if platform_name == 'msg4':
                     platform_name = 'meteosat-11'
+            elif sensor_name == 'avhrr':
+                sensor_name += '1'
+                if platform_name.startswith("noaa"):
+                    platform_name = "noaa-" + platform_name[4:]
             file_name = '_'.join((platform_name,
                                   sensor_name,
                                   self.mb,
@@ -590,7 +604,7 @@ class ParticleType:
                                   'p' + self.microphysical_model,
                                   'v' + self.version + '.nc'))
         else:
-            file_name = "_".join((inst.inst, self.name, "RBD", "Ch*.sad"))
+            file_name = "_".join((inst.inst, self.name, "RD", "Ch*.sad"))
         return file_name
 
     def sad_dir(self, sad_dirs, inst, rayleigh=True):
@@ -598,37 +612,37 @@ class ParticleType:
         from glob import glob
         from os.path import join
 
-        try:
-            for fdr in sad_dirs:
-                if "AVHRR" in inst.sensor:
-                    fdr_name = join(fdr, inst.sensor.lower() + "-" +
-                                    inst.noaa + "_" + self.sad)
-                else:
-                    # Folder structure on JASMIN
-                    # fdr_name = join(fdr, inst.sensor.lower() + "_" + self.sad)
+        # Determine SAD file name
+        file_name = self.sad_filename(inst)
 
-                    # Folder structure on local
-                    fdr_name = join(fdr, inst.sensor.lower(),
-                                    inst.platform.upper(), self.sad)
-                if not rayleigh:
-                    fdr_name += "_no_ray"
+        for fdr in sad_dirs:
+            if "AVHRR" in inst.sensor:
+                fdr_name = join(fdr, inst.sensor.lower() + "-" +
+                                inst.noaa + "_" + self.sad)
+            else:
+                # Folder structure on JASMIN
+                fdr_name = join(fdr, inst.sensor.lower() + "_" + self.sad)
 
-                # Determine SAD file name
-                file_name = self.sad_filename(inst)
+                # Folder structure on local
+                # fdr_name = join(fdr, inst.sensor.lower(),
+                #                 inst.platform.upper(), self.sad)
+            if not rayleigh:
+                fdr_name += "_no_ray"
 
-                # SAD files stored in subdirectories
-                if glob(join(fdr_name, file_name)):
-                    return fdr_name
+            # SAD files stored in subdirectories
+            if glob(join(fdr_name, file_name)):
+                return fdr_name
 
-                # All files in one directory
-                if glob(join(fdr, file_name)):
-                    return fdr
+            # All files in one directory
+            if glob(join(fdr, file_name)):
+                return fdr
 
-            raise FileMissing("Sad Files", str(sad_dirs))
-        except FileMissing:
+        else:
             # If _no_ray is missing, try to find the normal table
             if not rayleigh:
                 return self.sad_dir(sad_dirs, inst)
+
+        raise FileMissing("Sad Files", str(list(sad_dirs) + [file_name]))
 
 
 # Using non-imager LUTs and Baum properties at Greg's recommendation

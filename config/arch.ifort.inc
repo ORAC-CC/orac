@@ -16,6 +16,9 @@ CXX = icpc
 # Define C preprocessor
 CPP = cpp
 
+# Define linker
+AR = ar
+
 # Set Fortran 77 compiler flags
 F77FLAGS = -O3 -cpp -g
 

@@ -271,6 +271,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
                                   ! "Model parameter" error covariance.
    real    :: St_temp(SPixel%Nx, SPixel%Nx)
                                   ! Array temporary for Diag%St
+   integer :: limit_hit           ! Indicates if state vector hits a limit
    real, dimension(SPixel%Ind%NSolar)    :: CRP, T_00, T_0d, T_all
    real, dimension(SPixel%Ind%NSolar, 2) :: d_CRP, d_T_00, d_T_0d
    real    :: CRP_thermal(SPixel%Ind%NThermal)
@@ -410,8 +411,8 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
 
       ! Check bounds for active state variables - does delta_X take any state
       ! variable outside it's range? (If so, freeze it at the boundary).
-      call Check_Limits(Ctrl, Xplus_dX, SPixel, stat)
-      if (stat /= 0) go to 99 ! Terminate processing this pixel
+      call Check_Limits(Ctrl, Xplus_dX, SPixel, limit_hit)
+      if (limit_hit /= 0) Diag%LimitHit = limit_hit
 
       ! ************ START EVALUATE FORWARD MODEL ************
       call FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Xplus_dX, Y, dY_dX, stat)

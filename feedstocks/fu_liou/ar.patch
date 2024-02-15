@@ -1,0 +1,12 @@
+Subject: Use the conda linker rather than the system's
+--- a/Ed4_LaRC_FuLiou/lib/src/Makefile	2014-03-07 14:26:48.000000000 +0000
++++ b/Ed4_LaRC_FuLiou/lib/src/Makefile	2023-02-10 15:59:03.635360677 +0000
+@@ -52,7 +52,7 @@ INC_FLAG =
+ all: $(FULIB) 
+ 
+ $(FULIB): $(OBJS) $(OBJS_F)  $(OBJS_C)
+-	 ar -rcv $(FULIB) $(OBJS) $(OBJS_F) $(OBJS_C) 
++	 ${AR} -rcv $(FULIB) $(OBJS) $(OBJS_F) $(OBJS_C) 
+ 	-\cp *.mod ../mod 
+ 	-\cp $(FULIB) ../ 
+ tidy:

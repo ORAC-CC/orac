@@ -55,6 +55,7 @@ subroutine Zero_Diag(Ctrl, Diag)
 
    Diag%Converged          = .false.
    Diag%QCFlag             = -1
+   Diag%LimitHit           = 0
    Diag%Iterations         = 0
    Diag%Jm                 = MissingSn
    Diag%Ja                 = MissingSn

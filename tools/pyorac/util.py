@@ -45,20 +45,22 @@ def call_exe(args, exe, driver, values=None):
 
     if not args.batch:
         # Form processing environment
-        os.environ["LD_LIBRARY_PATH"] = build_orac_library_path()
-
-        # Define a directory for EMOS to put it's gridding
+        env = dict(LD_LIBRARY_PATH=build_orac_library_path(),
+                   OPENBLAS_NUM_THREADS="1", OMP_NUM_THREADS=str(args.procs))
+        env["EMOSLIB_FILES"] = os.environ.get("EMOSLIB_FILES", "")
+        env["LOCAL_DEFINITION_TEMPLATES"] = os.environ.get("LOCAL_DEFINITION_TEMPLATES", "")
+        env["ECMWF_LOCAL_TABLE_PATH"] = os.environ.get("ECMWF_LOCAL_TABLE_PATH", "")
+        env["BUFR_TABLE"] = os.environ.get("BUFR_TABLE", "")
         try:
-            os.environ["PPDIR"] = args.emos_dir
-            os.environ["OPENBLAS_NUM_THREADS"] = "1"
-            os.environ["OMP_NUM_THREADS"] = str(args.procs)
+            # This is only defined for the preprocessor
+            env["PPDIR"] = args.emos_dir
         except AttributeError:
             pass
 
         # Call program
         try:
             start_time = time()
-            check_call([exe, driver_file])
+            check_call([exe, driver_file], env=env)
             if args.timing:
                 colour_print(exe + ' took {:f}s'.format(time() - start_time),
                              COLOURING['timing'])

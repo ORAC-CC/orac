@@ -12,15 +12,15 @@ diff -upN hdfeos/src/SWapi.c hdfeos2/src/SWapi.c
    char           *ptr[64],*ptr2[64];	    /* String pointer array */
    int32           dumdims[8];	     /* Dimensions from SWfieldinfo */
 @@ -14019,7 +14019,7 @@ SWllmapedidxinfo(int32 swathID, const ch
-       l_index[iDim] = 0;
+       index[iDim] = 0;
      }
  
 -  for(iDim=0; iDim<8; iDim++)
 +  for(iDim=0; iDim<nDim; iDim++)
      {
- 
+       
        if(ptr[iDim] == NULL) break;
-@@ -14034,12 +14034,12 @@ SWllmapedidxinfo(int32 swathID, const ch
+@@ -14033,12 +14033,12 @@ SWllmapedidxinfo(int32 swathID, const ch
  
        /* Parse Data Field Dimlist & find mapping */
        /* --------------------------------------- */
@@ -36,7 +36,7 @@ diff -upN hdfeos/src/SWapi.c hdfeos2/src/SWapi.c
  	  memcpy(utlbuf, ptr2[i], slen2[i]);
  	  utlbuf[slen2[i]] = 0;
 @@ -14087,7 +14087,7 @@ SWllmapedidxinfo(int32 swathID, const ch
-  	  
+ 	  
  	  /* Loop through all dimensions and search for mapping */
  	  /* -------------------------------------------------- */
 -	  for (i = 0; i < nDim; i++)

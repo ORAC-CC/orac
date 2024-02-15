@@ -71,6 +71,7 @@ subroutine Nullify_Data(Ctrl, MSI_Data)
 
    nullify(MSI_Data%MSI)
    nullify(MSI_Data%SD)
+   nullify(MSI_Data%cal_gain)
    nullify(MSI_Data%rho_dd_cor)
    nullify(MSI_Data%rho_dd_unc)
    nullify(MSI_Data%svd_unc)
@@ -79,5 +80,7 @@ subroutine Nullify_Data(Ctrl, MSI_Data)
    nullify(MSI_Data%snow_unc)
 
    nullify(MSI_Data%illum)
+   nullify(MSI_Data%State%CTP)
+   nullify(MSI_Data%State%CTP_var)
 
 end subroutine Nullify_Data

@@ -97,11 +97,6 @@ subroutine Alloc_SAD_LUT(Ctrl, SAD_LUT)
 
    call Alloc_LUT_Grid(SAD_LUT%Grid)
 
-   if (Ctrl%do_CTX_correction) then
-      allocate(SAD_LUT%Bext(Ctrl%Ind%Ny, SAD_LUT%Grid%Tau%NMax, &
-               SAD_LUT%Grid%Re%NMax))
-   end if
-
    allocate(SAD_LUT%Rd(Ctrl%Ind%Ny, SAD_LUT%Grid%Tau%NMax, &
                        SAD_LUT%Grid%SatZen%NMax, SAD_LUT%Grid%Re%NMax))
    allocate(SAD_LUT%Rfd(Ctrl%Ind%Ny, SAD_LUT%Grid%Tau%NMax, &
@@ -129,6 +124,11 @@ subroutine Alloc_SAD_LUT(Ctrl, SAD_LUT)
    if (Ctrl%Ind%NThermal > 0) then
       allocate(SAD_LUT%Em(Ctrl%Ind%Ny, SAD_LUT%Grid%Tau%NMax, &
                SAD_LUT%Grid%SatZen%NMax, SAD_LUT%Grid%Re%NMax))
+
+      if (Ctrl%do_CTX_correction .and. Ctrl%Class .eq. ClsCldIce) then
+         allocate(SAD_LUT%Bext(Ctrl%Ind%Ny, SAD_LUT%Grid%Tau%NMax, &
+                  SAD_LUT%Grid%Re%NMax))
+      end if
    end if
 
    if (Ctrl%Approach == AppAerOx .or. Ctrl%Approach == AppAerSw .or. &

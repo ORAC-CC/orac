@@ -17,8 +17,7 @@ cd build
 cmake -DCMAKE_INSTALL_PREFIX="${PREFIX}" \
       -DCMAKE_LIBRARY_PATH="${PREFIX}/lib" \
       -DENABLE_GRIBEX_ABORT=OFF \
-      -DFFTW_USE_STATIC_LIBS=ON \
-      -DFFTW_PATH="${PREFIX}" \
+      -DFFTW_PATH="${PREFIX}/lib" \
       -G "Unix Makefiles" -Wno-dev ..
 
 make -j ${CPU_COUNT}

@@ -92,7 +92,7 @@ module preproc_structures_m
       character(len=path_length) :: skt_f(2)     ! Skin temperature
       character(len=path_length) :: sstk_f(2)    ! Sea surface temperature
       character(len=path_length) :: cape_f(2)    ! Convective available potential energy
-   
+
    end type preproc_nwp_fnames_t
 
 
@@ -123,7 +123,8 @@ module preproc_structures_m
       logical                    :: use_seviri_ann_cma_cph
       logical                    :: use_seviri_ann_ctp_fg
       logical                    :: use_seviri_ann_mlay
-      
+      integer                    :: mcd43_max_qaflag
+
       character(len=path_length) :: ext_lsm_path
       character(len=path_length) :: ext_geo_path
       character(len=path_length) :: occci_path

@@ -2,7 +2,7 @@
 # environmental variable CONDA_PREFIX.
 
 # Set up libraries and includes
-   LIBS = -L$(CONDA_PREFIX)/lib \
+LIBS = -L$(CONDA_PREFIX)/lib \
        -lemosR64 -lemos -lfftw3 \
        -lhdfeos -lGctp \
        -leccodes_f90 -leccodes \
@@ -17,7 +17,6 @@
 
 INC = -I./ \
       -I$(CONDA_PREFIX)/include \
-      -I$(CONDA_PREFIX)/include/shared \
       -I$(CONDA_PREFIX)/mod
 
 CINC = -I./ \
