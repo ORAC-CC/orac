@@ -80,6 +80,7 @@
 ! 2017/07/08, GM: Much needed tidying.
 ! 2017/12/20, GT: Changed Sentinel-3 platform name to Sentinel3a or Sentinel3b
 ! 2019/8/14, SP: Add Fengyun-4A support.
+! 2021/12/14, DP: Added external SEVIRI ANN
 ! 2021/1/21, DP: Added spectral response correction for MSG1/MSG2/MSG3/MSG4
 !                SEVIRI and Sentinal-3A/Sentinel-3B SLSTR.
 !
@@ -262,7 +263,9 @@ contains
 
 subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
      imager_angles, imager_geolocation, imager_measurements, imager_pavolonis, &
-     ecmwf, platform, doy, do_ironly, do_spectral_response_correction, verbose)
+     ecmwf, platform, doy, do_ironly, do_spectral_response_correction, &
+     use_seviri_ann_cma_cph, use_seviri_ann_ctp_fg, use_seviri_ann_mlay, do_nasa, &
+     verbose)
 
    use channel_structures_m
    use common_constants_m
@@ -272,7 +275,7 @@ subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
    use constants_cloud_typing_pavolonis_m
    use interpol_m
    use ecmwf_m, only : ecmwf_t
-
+   use seviri_neural_net_preproc_m
    ! Input variables
 
    type(channel_info_t),        intent(in)    :: channel_info
@@ -288,6 +291,10 @@ subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
    integer(kind=sint),          intent(in)    :: doy
    logical,                     intent(in)    :: do_ironly
    logical,                     intent(inout) :: do_spectral_response_correction
+   logical,                     intent(in)    :: use_seviri_ann_cma_cph
+   logical,                     intent(in)    :: use_seviri_ann_ctp_fg
+   logical,                     intent(in)    :: use_seviri_ann_mlay
+   logical,                     intent(in)    :: do_nasa
    logical,                     intent(in)    :: verbose
 
    ! Local variables
@@ -418,6 +425,11 @@ subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
        trim(adjustl(sensor)) .eq. 'SEVIRI' .or. &
        trim(adjustl(sensor)) .eq. 'SLSTR') &
       do_spectral_response_correction = .true.
+
+   ! do not apply NOAA19 mimic when using SEVIRI neural network
+   if (trim(adjustl(sensor)) .eq. 'SEVIRI' .and. use_seviri_ann_cma_cph) then
+      do_spectral_response_correction = .false.
+   end if
 
    if (do_spectral_response_correction) then
       allocate(imager_data(imager_geolocation%startx:imager_geolocation%endx, &
@@ -721,6 +733,16 @@ subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
          end do
       end if
 
+      ! call SEVIRI neural network (Python) cloud detection and cloud phase
+      ! determination for whole SEVIRI disc (outside loop)
+      if (trim(adjustl(sensor)) .eq. 'SEVIRI' .and. use_seviri_ann_cma_cph) then
+         if (verbose) write(*,*) 'Using SEVIRI-specific neural net'
+            call cma_cph_seviri(cview, imager_flags, imager_angles, &
+                                imager_geolocation, imager_measurements, &
+                                imager_pavolonis, skint, channel_info, &
+                                platform, do_nasa)
+      end if
+
 
       !-------------------------------------------------------------------------
       ! Begin cloud typing
@@ -737,7 +759,8 @@ subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
              call cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
                   sw1, sw2, sw3, imager_flags, surface, imager_angles, &
                   imager_geolocation, imager_measurements, imager_pavolonis, &
-                  sensor, platform, doy, do_ironly, verbose, skint, snow_ice_mask)
+                  sensor, platform, doy, do_ironly, verbose, skint, snow_ice_mask, &
+                  use_seviri_ann_cma_cph)
          end do j_loop
       end do i_loop
 
@@ -822,6 +845,22 @@ subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
          imager_measurements%data = imager_data
       end if
 
+      if (trim(adjustl(sensor)) .eq. 'SEVIRI' .and. use_seviri_ann_ctp_fg) then
+          if (verbose) write(*,*) 'Producing SEVIRI ANN-based CTP first guess'
+          call ctp_fg_seviri(cview, imager_flags, imager_angles, &
+                         imager_geolocation, imager_measurements, &
+                         imager_pavolonis, skint, channel_info, &
+                         platform, do_nasa)
+      end if
+
+      if (trim(adjustl(sensor)) .eq. 'SEVIRI' .and. use_seviri_ann_mlay) then
+          if (verbose) write(*,*) 'Producing SEVIRI Multilayer flag'
+          call mlay_seviri(cview, imager_flags, imager_angles, &
+                         imager_geolocation, imager_measurements, &
+                         imager_pavolonis, skint, channel_info, &
+                         platform, do_nasa)
+      end if
+
    end do v_loop
 
    if (do_spectral_response_correction) then
@@ -838,7 +877,7 @@ end subroutine cloud_type
 subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
    sw1, sw2, sw3, imager_flags, surface, imager_angles, imager_geolocation, &
    imager_measurements, imager_pavolonis, sensor, platform, doy, do_ironly, &
-   verbose, skint, snow_ice_mask)
+   verbose, skint, snow_ice_mask, use_seviri_ann_cma_cph)
 
    use constants_cloud_typing_pavolonis_m
    use imager_structures_m
@@ -861,6 +900,7 @@ subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
    integer(kind=sint),             intent(in)    :: doy
    logical,                        intent(in)    :: do_ironly
    logical,                        intent(in)    :: verbose
+   logical,                        intent(in)    :: use_seviri_ann_cma_cph
    real(kind=sreal),               intent(in)    :: &
       skint(imager_geolocation%startx:imager_geolocation%endx, &
             1:imager_geolocation%ny)
@@ -1102,34 +1142,36 @@ subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
    desertflag = .false.
    if (imager_pavolonis%sfctype(i,j) == DESERT_FLAG) desertflag = .true.
 
-   ! NEURAL_NET_PREPROC subroutine
-   ! If one of the (future) ANN's expects true reflectances this will be handled
-   ! internally in ann_cloud_mask.
-   call ann_cloud_mask(&
-        ch1v, & ! Not "True" reflectances expected
-        ch2v, & ! Not "True" reflectances expected
-        ch3v, &
-        bt_ch3b, &
-        ref_ch3b*mu0, & ! Not "True" reflectances expected
-        imager_measurements%data(i,j,ch5), &
-        imager_measurements%data(i,j,ch6), &
-        solzen, &
-        imager_angles%satzen(i,j,cview), &
-        snow_ice_mask(i,j), &
-        imager_flags%lsflag(i,j), &
-        desertflag, &
-        alb1, &
-        alb2, &
-        alb3, &
-        imager_pavolonis%cccot_pre(i,j,cview), &
-        imager_pavolonis%cldmask(i,j,cview) , &
-        imager_pavolonis%cldmask_uncertainty(i,j,cview) , &
-        skint(i,j) , &
-        ch3a_on_avhrr_flag, &
-        glint_angle, &
-        sensor, &
-        platform, &
-        verbose)
+   if (.not. use_seviri_ann_cma_cph) then
+       ! NEURAL_NET_PREPROC subroutine
+       ! If one of the (future) ANN's expects true reflectances this will be handled
+       ! internally in ann_cloud_mask.
+       call ann_cloud_mask(&
+            ch1v, & ! Not "True" reflectances expected
+            ch2v, & ! Not "True" reflectances expected
+            ch3v, &
+            bt_ch3b, &
+            ref_ch3b*mu0, & ! Not "True" reflectances expected
+            imager_measurements%data(i,j,ch5), &
+            imager_measurements%data(i,j,ch6), &
+            solzen, &
+            imager_angles%satzen(i,j,cview), &
+            snow_ice_mask(i,j), &
+            imager_flags%lsflag(i,j), &
+            desertflag, &
+            alb1, &
+            alb2, &
+            alb3, &
+            imager_pavolonis%cccot_pre(i,j,cview), &
+            imager_pavolonis%cldmask(i,j,cview) , &
+            imager_pavolonis%cldmask_uncertainty(i,j,cview) , &
+            skint(i,j) , &
+            ch3a_on_avhrr_flag, &
+            glint_angle, &
+            sensor, &
+            platform, &
+            verbose)
+   end if
 
    ! Return if clear, as no need to define cloud type
    if ( imager_pavolonis%cldmask(i,j,cview) == CLEAR) then
@@ -1222,33 +1264,34 @@ subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
    ! From here all sensors have their decisions made only when cloudy is allowed
 
    ! Start ANN phase
-
-   ! NEURAL_NET_PREPROC subroutine
-   ! If one of the (future) ANN's expects true reflectances this will be handled
-   ! internally in ann_cloud_phase.
-   call ann_cloud_phase(&
-        ch1v, & ! Not "True" reflectances expected
-        ch2v, & ! Not "True" reflectances expected
-        ch3v, &
-        bt_ch3b, &
-        ref_ch3b*mu0, & ! Not "True" reflectances expected
-        imager_measurements%data(i,j,ch5), &
-        imager_measurements%data(i,j,ch6), &
-        solzen, &
-        imager_angles%satzen(i,j,cview), &
-        snow_ice_mask(i,j), imager_flags%lsflag(i,j), &
-        desertflag , &
-        alb1, &
-        alb2, &
-        alb3, &
-        imager_pavolonis%CPHCOT(i,j,cview), &
-        imager_pavolonis%ANN_PHASE(i,j,cview) , &
-        imager_pavolonis%ANN_PHASE_UNCERTAINTY(i,j,cview) , &
-        ch3a_on_avhrr_flag, &
-        sensor, &
-        platform, &
-        skint(i,j) , &
-        verbose)
+   if (.not. use_seviri_ann_cma_cph) then
+       ! NEURAL_NET_PREPROC subroutine
+       ! If one of the (future) ANN's expects true reflectances this will be handled
+       ! internally in ann_cloud_phase.
+       call ann_cloud_phase(&
+            ch1v, & ! Not "True" reflectances expected
+            ch2v, & ! Not "True" reflectances expected
+            ch3v, &
+            bt_ch3b, &
+            ref_ch3b*mu0, & ! Not "True" reflectances expected
+            imager_measurements%data(i,j,ch5), &
+            imager_measurements%data(i,j,ch6), &
+            solzen, &
+            imager_angles%satzen(i,j,cview), &
+            snow_ice_mask(i,j), imager_flags%lsflag(i,j), &
+            desertflag , &
+            alb1, &
+            alb2, &
+            alb3, &
+            imager_pavolonis%CPHCOT(i,j,cview), &
+            imager_pavolonis%ANN_PHASE(i,j,cview) , &
+            imager_pavolonis%ANN_PHASE_UNCERTAINTY(i,j,cview) , &
+            ch3a_on_avhrr_flag, &
+            sensor, &
+            platform, &
+            skint(i,j) , &
+            verbose)
+   end if
 
    ! neither ch3a nor ch3b available
    if (trim(adjustl(sensor)) .eq. 'AVHRR') then
@@ -2166,7 +2209,7 @@ function get_platform_index(input_platform)
       ! 15 = NOAA19, the baseline, for which slopes = 1 and intercepts = 0
       index = 15
    case default
-      write(*,*) "Error: platform name does not match local string in subroutine scale_to_N18"
+      write(*,*) "Error: platform name does not match local string in subroutine scale_to_N19"
       write(*,*) "Input platform name = ", input_platform
       stop
    end select

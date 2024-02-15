@@ -24,7 +24,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine netcdf_output_close(netcdf_info)
+subroutine netcdf_output_close(netcdf_info, use_seviri_ann_ctp_fg)
 
    use orac_ncdf_m, only: ncdf_close
    use preproc_constants_m
@@ -32,6 +32,7 @@ subroutine netcdf_output_close(netcdf_info)
    implicit none
 
    type(netcdf_output_info_t), intent(in) :: netcdf_info
+   logical, intent(in) :: use_seviri_ann_ctp_fg
 
    call ncdf_close(netcdf_info%ncid_alb, 'netcdf_create_config(): ".alb.nc"')
    call ncdf_close(netcdf_info%ncid_clf, 'netcdf_create_config(): ".clf.nc"')
@@ -43,5 +44,10 @@ subroutine netcdf_output_close(netcdf_info)
    call ncdf_close(netcdf_info%ncid_msi, 'netcdf_create_config(): ".msi.nc"')
    call ncdf_close(netcdf_info%ncid_prtm, 'netcdf_create_config(): ".prtm.nc"')
    call ncdf_close(netcdf_info%ncid_swrtm, 'netcdf_create_config(): ".swrtm.nc"')
+#ifdef INCLUDE_SEVIRI_NEURALNET
+   if (use_seviri_ann_ctp_fg) then
+       call ncdf_close(netcdf_info%ncid_ctp, 'netcdf_create_config(): ".ctp.nc"')
+   end if
+#endif
 
 end subroutine netcdf_output_close

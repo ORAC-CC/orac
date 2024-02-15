@@ -58,6 +58,14 @@ HIMAWARI_HSD_READER_INCLUDE = $(LIBBASE_FORTRAN)/Himawari_HSD_Reader
 SEVIRI_UTIL_LIB = $(LIBBASE_FORTRAN)/seviri_util
 SEVIRI_UTIL_INCLUDE = $(LIBBASE_FORTRAN)/seviri_util
 
+# seviri_ml
+# run seviri_ml/get_py_config.sh to obtain your SEVIRI_ML_PYTHON_LIB 
+# and SEVIRI_ML_PYTHON_INCLUDE
+SEVIRI_ML_LIB = $(LIBBASE_FORTRAN)/seviri_ml
+SEVIRI_ML_INCLUDE = $(LIBBASE_FORTRAN)/seviri_ml
+SEVIRI_ML_PYTHON_LIB = /path/to/your/python/lib
+SEVIRI_ML_PYTHON_INCLUDE = /path/to/your/python/include
+
 SZLIB = $(LIBBASE)/szip/lib
 
 # Set up libraries and includes
@@ -112,3 +120,8 @@ CINC = -I./
 # Uncomment if SEVIRI support is desired.
 #LIBS += -L$(SEVIRI_UTIL_LIB) -lseviri_util
 #INC  += -I$(SEVIRI_UTIL_INCLUDE) -DINCLUDE_SEVIRI_SUPPORT
+
+# Uncomment if SEVIRI_ML support is desired.
+# Please modify Python -lpython3.X to your Python version.
+#LIBS += -L$(SEVIRI_ML_LIB) -lsevann -L$(SEVIRI_ML_PYTHON_LIB) -lpython3.X
+#INC  += -I$(SEVIRI_ML_INCLUDE) -I$(PYTHON_INCLUDE) -DINCLUDE_SEVIRI_NEURALNET
