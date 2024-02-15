@@ -508,10 +508,10 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
    preproc_opts%do_co2                   = .true.
    preproc_opts%use_swansea_climatology  = .false.
    preproc_opts%swansea_gamma            = 0.3
-   preproc_opts%mcd43_max_qaflag         = 5
    preproc_opts%use_seviri_ann_cma_cph   = .false.
    preproc_opts%use_seviri_ann_ctp_fg    = .false.
    preproc_opts%use_seviri_ann_mlay      = .false.
+   preproc_opts%mcd43_max_qaflag         = 5
 
    ! When true, the offset between the nadir and oblique views is read from
    ! the track_offset global attribute. Otherwise, the two longitude fields are

@@ -120,10 +120,10 @@ module preproc_structures_m
       logical                    :: use_predef_geo
       logical                    :: use_predef_lsm
       logical                    :: use_swansea_climatology
-      integer                    :: mcd43_max_qaflag
       logical                    :: use_seviri_ann_cma_cph
       logical                    :: use_seviri_ann_ctp_fg
       logical                    :: use_seviri_ann_mlay
+      integer                    :: mcd43_max_qaflag
 
       character(len=path_length) :: ext_lsm_path
       character(len=path_length) :: ext_geo_path

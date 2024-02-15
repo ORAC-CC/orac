@@ -80,9 +80,9 @@
 ! 2017/07/08, GM: Much needed tidying.
 ! 2017/12/20, GT: Changed Sentinel-3 platform name to Sentinel3a or Sentinel3b
 ! 2019/8/14, SP: Add Fengyun-4A support.
+! 2021/12/14, DP: Added external SEVIRI ANN
 ! 2021/1/21, DP: Added spectral response correction for MSG1/MSG2/MSG3/MSG4
 !                SEVIRI and Sentinal-3A/Sentinel-3B SLSTR.
-! 2021/12/14, DP: Added external SEVIRI ANN
 !
 ! Bugs:
 ! None known.
