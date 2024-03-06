@@ -217,7 +217,7 @@ subroutine orac_postproc(mytask, ntasks, lower_bound, upper_bound, &
          in_files_secondary(MaxInFiles)
 
     real                         :: bayesian_weights(MaxInFiles)
-    
+
     character(len=path_length)   :: out_file_primary, out_file_secondary
 
     integer                      :: ncid_primary, ncid_secondary, dims_var(3)
@@ -308,7 +308,7 @@ subroutine orac_postproc(mytask, ntasks, lower_bound, upper_bound, &
 
     ! Set a defaut weighting of 1.0 for each class for bayesian selection
     bayesian_weights(:) = 1.0
-    
+
     ! Optional arguments and additional files
     do while (parse_driver(11, value, label) == 0)
        call clean_driver_label(label)
@@ -512,7 +512,7 @@ subroutine orac_postproc(mytask, ntasks, lower_bound, upper_bound, &
             chunk_starts(i_chunk), use_ml, verbose)
        ! Initialise output phase to the fill value
        input_primary(0)%phase(:,:) = byte_fill_value
-       
+
        if (do_secondary) then
           call alloc_input_data_secondary_all(indexing, input_secondary(0))
           call read_input_secondary_once(n_in_files, in_files_secondary, &
@@ -533,7 +533,7 @@ subroutine orac_postproc(mytask, ntasks, lower_bound, upper_bound, &
           call alloc_input_data_classify(loop_ind(i), input_primary(i), &
                use_bayesian_selection, switch_phases)
        end do
-       
+
        ! Read data needed to determine phase/type from input data
        do i = 1, n_in_files
           call read_input_primary_classify(in_files_primary(i), &
@@ -541,9 +541,9 @@ subroutine orac_postproc(mytask, ntasks, lower_bound, upper_bound, &
                use_bayesian_selection, switch_phases, & ! Selects which data to read
                chunk_starts(i_chunk), verbose)
        end do
-       
-       do j=indexing%Y0, indexing%Y1
-          do i=indexing%X0, indexing%X1
+
+       do j = indexing%Y0, indexing%Y1
+          do i = indexing%X0, indexing%X1
              if (use_bayesian_selection) then
                 ! Find the input file with the lowest cost for each pixel
                 sum_prob = 0.0
@@ -561,7 +561,6 @@ subroutine orac_postproc(mytask, ntasks, lower_bound, upper_bound, &
                          a_max_prob   = a_prob
                          i_min_costjm = k
                       end if
-                      !write(*,*) k, exp(-input_primary(k)%costjm(i,j) / 2.), a_prob, a_max_prob
                    end if
                 end do
                 if (a_min_cost >= cost_thresh .and. i_min_costjm /= 0 .and. &
@@ -569,25 +568,25 @@ subroutine orac_postproc(mytask, ntasks, lower_bound, upper_bound, &
                    input_primary(0)%phase(i,j) = i_min_costjm
                 end if
              end if ! End of Bayesian selection
-       
+
              if ((.not. use_bayesian_selection) .or. use_pavalonis_phase) then
                 ! Default is ICE wins, meaning only ice structure is copied to
                 ! output.
-                
+
                 ! Information of Pavolonis cloud type
                 ! C,N,F,W,S,M,I,Ci,O
-                
+
                 ! Liquid cloud phase comprises the following categories:
                 ! 0? Clear
                 ! 2? fog
                 ! 3? warm liquid water clouds
                 ! 4? supercooled-mixed-phased clouds
-                
+
                 ! Ice cloud phase comprises the following categories:
                 ! 6? opaque ice clouds/deep convection
                 ! 7? nonopaque high ice clouds (e.g. cirrus)
                 ! 8? cloud overlap 4 (e.g. multiple cloud layers)
-                
+
                 ! Apply Pavolonis phase information to select retrieval phase
                 ! variables select water type overwrite ice
                 if (use_ann_phase) then
@@ -639,8 +638,8 @@ subroutine orac_postproc(mytask, ntasks, lower_bound, upper_bound, &
                         input_primary(IIce)%ctt(i,j) < switch_ice_limit))) then
                       phase_flag = 2_byte
                       input_primary(0)%cldtype(i,j,1) = SWITCHED_TO_ICE_TYPE
-                      ! ice to water
-                   elseif ((phase_flag == 2_byte) .and. &
+                   ! ice to water
+                   else if ((phase_flag == 2_byte) .and. &
                         ((input_primary(IWat)%ctt(i,j) /= sreal_fill_value .and. &
                         input_primary(IWat)%ctt(i,j) >= switch_wat_limit) .and. &
                         (input_primary(IIce)%ctt(i,j) /= sreal_fill_value .and. &
@@ -649,7 +648,7 @@ subroutine orac_postproc(mytask, ntasks, lower_bound, upper_bound, &
                       input_primary(0)%cldtype(i,j,1) = SWITCHED_TO_WATER_TYPE
                    end if
                 end if
-          
+  
                 ! Once phase is selected fill in the values 1st for wat then for
                 ! ice.
                 ! Now fill in the phase values in the data structure
@@ -673,22 +672,22 @@ subroutine orac_postproc(mytask, ntasks, lower_bound, upper_bound, &
                         input_primary(0)%phase(i,j) .eq. byte_fill_value) &
                         input_primary(0)%phase(i,j) = IPhaseClU
                 end if
-                             
+
              end if ! End of Pavalonis phase selection
           end do ! End of loop over pixel column (X)
        end do ! End of loop over pixel row (Y)
 
-       
+
        ! Now we have completed the phase/type selection, we read in all data
        ! from each input file and populate the our temporary output structure
        do k = 1, n_in_files
           if (verbose) write(*,*) '********************************'
           if (verbose) write(*,*) 'read: ', trim(in_files_primary(k))
-          
+
           call read_input_primary_class(in_files_primary(k), &
                input_primary(1), loop_ind(k), .False., &
                chunk_starts(i_chunk), verbose)
-          
+
           if (do_secondary) then
              if (verbose) write(*,*) 'read: ', trim(in_files_secondary(k))
              call read_input_secondary_class(in_files_secondary(k), &
@@ -696,8 +695,8 @@ subroutine orac_postproc(mytask, ntasks, lower_bound, upper_bound, &
                   verbose)
           end if
 
-          do j=indexing%Y0, indexing%Y1
-             do i=indexing%X0, indexing%X1
+          do j = indexing%Y0, indexing%Y1
+             do i = indexing%X0, indexing%X1
                 if (input_primary(0)%phase(i,j) .eq. k) then
                    call copy_class_specific_inputs(i, j, loop_ind(k), &
                         input_primary(0), input_primary(1), &
@@ -729,8 +728,8 @@ subroutine orac_postproc(mytask, ntasks, lower_bound, upper_bound, &
             global_atts, verbose)
 
        ! Put results in final output arrays with final datatypes
-       do j=indexing%Y0, indexing%Y1
-          do i=indexing%X0, indexing%X1
+       do j = indexing%Y0, indexing%Y1
+          do i = indexing%X0, indexing%X1
              call prepare_output_primary_pp(i, j, indexing%common_indices_t, &
                   input_primary(0), output_primary, &
                   output_optical_props_at_night)
@@ -748,7 +747,7 @@ subroutine orac_postproc(mytask, ntasks, lower_bound, upper_bound, &
           end if
        end if
 
-    end do !End of chunking loop
+    end do ! End of chunking loop
 
     indexing%Y0=1
 
