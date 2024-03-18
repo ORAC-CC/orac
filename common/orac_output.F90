@@ -45,6 +45,7 @@
 ! 2018/01/19, GT: Removed QCFlag scale and offset values, as these should only
 !    be used for packed floating point data (not straight integers like QCFlag).
 ! 2018/06/08, SP: Add satellite azimuth angle to output.
+! 2023/10/10, GT: Added measurement uncertainties to secondary output.
 !
 ! Bugs:
 ! None known.
@@ -600,6 +601,7 @@ module orac_output_m
       integer          :: vid_scanline_v
 
       integer, pointer :: vid_channels(:)
+      integer, pointer :: vid_Sy(:)
       integer, pointer :: vid_y0(:)
       integer, pointer :: vid_residuals(:)
 
@@ -707,6 +709,11 @@ module orac_output_m
       integer(sint), pointer :: channels_vmin(:)
       integer(sint), pointer :: channels_vmax(:)
 
+      real(sreal),   pointer :: Sy_scale(:)
+      real(sreal),   pointer :: Sy_offset(:)
+      integer(sint), pointer :: Sy_vmin(:)
+      integer(sint), pointer :: Sy_vmax(:)
+
       real(sreal),   pointer :: y0_scale(:)
       real(sreal),   pointer :: y0_offset(:)
       integer(sint), pointer :: y0_vmin(:)
@@ -759,6 +766,7 @@ module orac_output_m
       integer(sint), pointer :: albedo(:,:,:)
 
       integer(sint), pointer :: channels(:,:,:)
+      integer(sint), pointer :: Sy(:,:,:)
       integer(sint), pointer :: y0(:,:,:)
       integer(sint), pointer :: residuals(:,:,:)
 

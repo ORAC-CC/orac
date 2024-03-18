@@ -60,6 +60,7 @@
 !    to identify thermal channels rather than dealing with Ch_Is.
 ! 2016/03/04, AP: Homogenisation of I/O modules.
 ! 2016/07/08, GM: Add fields for cloud layer 2.
+! 2023/10/10, GT: Added optional output of measurement uncertainties
 !
 ! Bugs:
 ! None known.
@@ -736,6 +737,46 @@ end if
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
    end do
+
+   !----------------------------------------------------------------------------
+   ! measurement uncertainty _in_channel_no_*
+   !----------------------------------------------------------------------------
+   if (indexing%flags%do_meas_error) then
+      do i=1,indexing%Ny
+         
+         write(input_num,"(i4)") indexing%Y_Id(i)
+         
+         if (btest(indexing%Ch_Is(i), ThermalBit)) then
+            input_dummy='measurement_uncertainty_in_channel_no_'// &
+                 trim(adjustl(input_num))
+            input_dummy2='measurement uncertainty in channel no '// &
+                 trim(adjustl(input_num))
+            input_dummy3='kelvin'
+         else
+            input_dummy='measurement_uncertainty_in_channel_no_'// &
+                 trim(adjustl(input_num))
+            input_dummy2='measurement uncertainty in channel no '// &
+                 trim(adjustl(input_num))
+            input_dummy3='1'
+         end if
+         call ncdf_def_var_short_packed_float( &
+              ncid, &
+              dims_var, &
+              trim(adjustl(input_dummy)), &
+              output_data%vid_Sy(i), &
+              verbose, &
+              long_name     = trim(adjustl(input_dummy2)), &
+              standard_name = trim(adjustl(input_dummy)), &
+              fill_value    = sint_fill_value, &
+              scale_factor  = output_data%Sy_scale(i), &
+              add_offset    = output_data%Sy_offset(i), &
+              valid_min     = output_data%Sy_vmin(i), &
+              valid_max     = output_data%Sy_vmax(i), &
+              units         = trim(adjustl(input_dummy3)), &
+              deflate_level = deflate_level, &
+              shuffle       = shuffle_flag)
+      end do
+   end if
 
    !----------------------------------------------------------------------------
    ! firstguess reflectance and brightness temperature _in_channel_no_*

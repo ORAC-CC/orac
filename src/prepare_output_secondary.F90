@@ -45,6 +45,7 @@
 ! 2016/03/04, AP: Tidy prepare_*_packed_float. Make MissingXn the only value
 !    checked for in X, X0, Xb (sreal_fill_value had been ocassionally checked).
 ! 2016/07/27, GM: Add output fields for the multilayer retrieval.
+! 2023/10/10, GT: Added optional output of measurement uncertainties
 !
 ! Bugs:
 ! None known.
@@ -329,6 +330,44 @@ end if
            output_data%channels_vmin(k), output_data%channels_vmax(k), &
            sreal_fill_value, sint_fill_value)
    end do
+
+   !----------------------------------------------------------------------------
+   ! Measurement error (diagonals)
+   !----------------------------------------------------------------------------
+   if (Ctrl%Ind%flags%do_meas_error) then
+      ! Check if a valid Sy is available for output.
+      ! This is a little messy, because of the way SPixel%Sy is allocated and
+      ! deallocated for each SPixel. We need to check:
+      ! * If we have a measurement count (Ny) - this is reset for each pixel,
+      !   and can be zero if the spixel is skipped early on.
+      ! * If Sy array has actually been defined - as Sy is deallocated and
+      !   then reallocated for each pixel, it is possible that, if the first
+      !   pixel is skipped _after_ Ny has been defined, Sy will not be
+      !   allocated.
+      ! * If the Sy array has the correct dimension. If we have missing
+      !   channels and skipped pixels, it is also possible at Ny ends up
+      !   being larger than Sy, at this point in the code.
+      if (SPixel%Ind%Ny .gt. 1 .and. size(SPixel%Sy) .gt. 1 .and. &
+           SPixel%Ind%Ny*SPixel%Ind%Ny .le. size(SPixel%Sy)) then
+         do k=1,SPixel%Ind%Ny
+            !write(*,"(e9.2)", advance="no") sqrt(SPixel%Sy(k,k))
+            call prepare_short_packed_float( &
+                 sqrt(SPixel%Sy(k,k)), output_data%Sy(i,j,k), &
+                 output_data%Sy_scale(k), output_data%Sy_offset(k), &
+                 output_data%Sy_vmin(k), output_data%Sy_vmax(k), &
+                 sreal_fill_value, sint_fill_value)
+         end do
+         !write(*,*) '.'
+      else
+         do k=1,SPixel%Ind%Ny
+            call prepare_short_packed_float( &
+                 sreal_fill_value, output_data%Sy(i,j,k), &
+                 output_data%Sy_scale(k), output_data%Sy_offset(k), &
+                 output_data%Sy_vmin(k), output_data%Sy_vmax(k), &
+                 sreal_fill_value, sint_fill_value)
+         end do
+      end if
+   end if
 
    !----------------------------------------------------------------------------
    ! y0
