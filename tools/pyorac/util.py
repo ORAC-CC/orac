@@ -2,6 +2,73 @@
 import os
 
 
+def bound_grid(grid, point, wrap=None):
+    """Determine distance point is between grid cells, possibly with wrapping"""
+    from numpy import digitize
+
+    right = digitize(point, grid)
+    if wrap and right == 0:
+        left = grid.size-1
+        return left, right, (grid[right] - point) / (grid[right] - grid[left] + wrap)
+    if wrap and right == grid.size:
+        left, right = grid.size-1, 0
+        return left, right, (point - grid[left]) / (grid[right] - grid[left] + wrap)
+    if right == 0:
+        right = 1
+    elif right == grid.size:
+        right = grid.size-1
+    left = right-1
+    return left, right, (point - grid[left]) / (grid[right] - grid[left])
+
+
+def bilinear_coefficients(x_grid, x_value, y_grid, y_value, field_mask):
+    y0, y1, y_frac = bound_grid(y_grid, y_value)
+    x0, x1, x_frac = bound_grid(
+        x_grid, x_value, wrap=360. if abs(x_grid[-1] - x_grid[0]) > 358. else None
+    )
+
+    mask = field_mask[[y0,y1,y0,y1],[x0,x0,x1,x1]]
+    if mask.sum() == 0:
+        # Bilinear interpolation
+        coef = [(1.-x_frac) * (1.-y_frac), x_frac * (1.-y_frac),
+                (1.-x_frac) * y_frac, x_frac * y_frac]
+    elif mask.sum() == 1:
+        # Triangular interpolation
+        if mask[0]:
+            coef = [0., 1.-y_frac, 1.-x_frac, y_frac+x_frac-1.]
+        elif mask[1]:
+            coef = [1.-y_frac, 0., y_frac-x_frac, x_frac]
+        elif mask[2]:
+            coef = [1.-x_frac, x_frac-y_frac, 0., y_frac]
+        else: # mask[3]
+            coef = [1.-x_frac-y_frac, x_frac, y_frac, 0.]
+    elif mask.sum() == 2:
+        # Linear interpolation
+        if mask[0] and mask[1]:
+            coef = [0., 0., 1.-x_frac, x_frac]
+        elif mask[0] and mask[2]:
+            coef = [0., 1.-y_frac, 0., y_frac]
+        elif mask[0] and mask[3]:
+            diag_frac = 0.5*(1. + y_frac - x_frac)
+            coef = [0., 1-diag_frac, diag_frac, 0.]
+        elif mask[1] and mask[2]:
+            diag_frac = 0.5*(x_frac - y_frac)
+            coef = [1.-diag_frac, 0., 0., diag_frac]
+        elif mask[1] and mask[3]:
+            coef = [1.-y_frac, 0., y_frac, 0.]
+        else: # mask[2] and mask[3]
+            coef = [1.-x_frac, x_frac, 0., 0.]
+    elif mask.sum() == 3:
+        # Only neighbour
+        coef = np.zeros(4)
+        coef[~mask] = 1.
+    else:
+        # Nothing
+        coef = np.ma.masked_all(4)
+
+    return y0, y1, x0, x1, coef
+
+
 def build_orac_library_path(lib_dict=None, lib_list=None):
     """Build required LD_LIBRARY_PATH variable."""
 
