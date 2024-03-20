@@ -557,12 +557,12 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%Invpar%XScale(ISP)            = switch_app(a, Default=1.0)
    Ctrl%Invpar%XScale(ISG)            = switch_app(a, Default=1.0)
    ! Lower limit
-   Ctrl%Invpar%XLLim(ITau)            = switch_cls(c, Default=-3.0, Aer=-2.0)
-   Ctrl%Invpar%XLLim(IRe)             = switch_cls(c, Default=0.1,  Aer=-2.0, &
+   Ctrl%Invpar%XLLim(ITau)            = switch_cls(c, Default=0.001, Aer=0.01)
+   Ctrl%Invpar%XLLim(IRe)             = switch_cls(c, Default=0.1,  Aer=0.01, &
                                                                     AshEyj=0.01)
    Ctrl%Invpar%XLLim(IPc)             = switch_cls(c, Default=10.0)
    Ctrl%Invpar%XLLim(IFr)             = switch_cls(c, Default=0.0)
-   Ctrl%Invpar%XLLim(ITau2)           = switch_cls(c2,Default=-3.0)
+   Ctrl%Invpar%XLLim(ITau2)           = switch_cls(c2,Default=0.001)
    Ctrl%Invpar%XLLim(IRe2)            = switch_cls(c2,Default=0.1)
    Ctrl%Invpar%XLLim(IPc2)            = switch_cls(c2,Default=10.0)
    Ctrl%Invpar%XLLim(IFr2)            = switch_cls(c2,Default=0.0)
@@ -574,13 +574,13 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%Invpar%XLLim(ISP)             = switch_app(a, Default=0.00001)
    Ctrl%Invpar%XLLim(ISG)             = switch_app(a, Default=0.00001)
    ! Upper limit
-   Ctrl%Invpar%XULim(ITau)            = switch_cls(c, Default=2.408, Aer=0.7)
-   Ctrl%Invpar%XULim(IRe)             = switch_cls(c, Default=1.0,   AshEyj=20.0, &
+   Ctrl%Invpar%XULim(ITau)            = switch_cls(c, Default=256.0, Aer=5.0)
+   Ctrl%Invpar%XULim(IRe)             = switch_cls(c, Default=10.0,  AshEyj=20.0, &
                                                                      CldWat=35.0, &
                                                                      CldIce=100.0)
    Ctrl%Invpar%XULim(IPc)             = switch_cls(c, Default=1200.0)
    Ctrl%Invpar%XULim(IFr)             = switch_cls(c, Default=1.0)
-   Ctrl%Invpar%XULim(ITau2)           = switch_cls(c2,Default=2.408, Aer=0.7)
+   Ctrl%Invpar%XULim(ITau2)           = switch_cls(c2,Default=256.0, Aer=5.0)
    Ctrl%Invpar%XULim(IRe2)            = switch_cls(c2,Default=1.0,   AshEyj=20.0, &
                                                                      CldWat=35.0, &
                                                                      CldIce=100.0)
@@ -926,9 +926,9 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    !----------- Ctrl PRESCRIBED STATE VECTORS -------------
    ! A priori values
    if (Ctrl%Approach /= AppCld2L) then
-      Ctrl%XB(ITau)        = switch_cls(c, Default=0.8,   AerOx=-1.5,  AerSw=-0.3, &
+      Ctrl%XB(ITau)        = switch_cls(c, Default=6.3,   AerOx=0.032,  AerSw=0.50, &
                                                           AshEyj=0.18)
-      Ctrl%XB(IRe)         = switch_cls(c, Default=-0.07, AshEyj=0.7, &
+      Ctrl%XB(IRe)         = switch_cls(c, Default=0.85,  AshEyj=0.7, &
                                                           CldWat=12.,  CldIce=30.)
       Ctrl%XB(IPc)         = switch_cls(c, Default=900.,  AshEyj=600., CldIce=400.)
       Ctrl%XB(IFr)         = switch_cls(c, Default=1.0)
@@ -937,11 +937,11 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       Ctrl%XB(IPc2)        = Ctrl%XB(IPc)
       Ctrl%XB(IFr2)        = Ctrl%XB(IFr)
    else
-      Ctrl%XB(ITau)        = switch_cls(c, Default=0.1)
+      Ctrl%XB(ITau)        = switch_cls(c, Default=1.3)
       Ctrl%XB(IRe)         = switch_cls(c, Default=30.0, AshEyj=0.7, CldWat=12.)
       Ctrl%XB(IPc)         = switch_cls(c, Default=245.0)
       Ctrl%XB(IFr)         = switch_cls(c, Default=1.0)
-      Ctrl%XB(ITau2)       = switch_cls(c2,Default=0.8)
+      Ctrl%XB(ITau2)       = switch_cls(c2,Default=6.3)
       Ctrl%XB(IRe2)        = switch_cls(c2,Default=12.0, AshEyj=0.7, CldIce=30.)
       Ctrl%XB(IPc2)        = switch_cls(c2,Default=800.0)
       Ctrl%XB(IFr2)        = switch_cls(c2,Default=1.0)
@@ -956,9 +956,9 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
 
    ! First guess values
    if (Ctrl%Approach /= AppCld2L) then
-      Ctrl%X0(ITau)        = switch_cls(c, Default=0.8,   AerOx=-1.5,  AerSw=-0.3, &
-                                        AshEyj=0.18)
-      Ctrl%X0(IRe)         = switch_cls(c, Default=-0.07, AshEyj=0.7, &
+      Ctrl%X0(ITau)        = switch_cls(c, Default=6.3,   AerOx=0.032,  AerSw=0.50, &
+                                        AshEyj=1.5)
+      Ctrl%X0(IRe)         = switch_cls(c, Default=0.85, AshEyj=0.7, &
                                         CldWat=12.,  CldIce=30.)
       Ctrl%X0(IPc)         = switch_cls(c, Default=900.,  AshEyj=600., CldIce=400.)
       Ctrl%X0(IFr)         = switch_cls(c, Default=1.0)
@@ -967,11 +967,11 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       Ctrl%X0(IPc2)        = Ctrl%X0(IPc)
       Ctrl%X0(IFr2)        = Ctrl%X0(IFr)
    else
-      Ctrl%X0(ITau)        = switch_cls(c, Default=0.1)
+      Ctrl%X0(ITau)        = switch_cls(c, Default=1.3)
       Ctrl%X0(IRe)         = switch_cls(c, Default=30.0, AshEyj=0.7, CldWat=12.)
       Ctrl%X0(IPc)         = switch_cls(c, Default=245.0)
       Ctrl%X0(IFr)         = switch_cls(c, Default=1.0)
-      Ctrl%X0(ITau2)       = switch_cls(c2,Default=0.8)
+      Ctrl%X0(ITau2)       = switch_cls(c2,Default=6.3)
       Ctrl%X0(IRe2)        = switch_cls(c2,Default=12.0, AshEyj=0.7, CldIce=30.)
       Ctrl%X0(IPc2)        = switch_cls(c2,Default=800.0)
       Ctrl%X0(IFr2)        = switch_cls(c2,Default=1.0)
