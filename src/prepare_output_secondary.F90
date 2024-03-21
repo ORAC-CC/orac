@@ -70,7 +70,7 @@ subroutine prepare_output_secondary(Ctrl, i, j, MSI_Data, SPixel, Diag, &
    type(Diag_t),                  intent(in)    :: Diag
    type(output_data_secondary_t), intent(inout) :: output_data
 
-   integer          :: k, kk, l, i_rho
+   integer          :: k, kk, l, ll, i_rho
    real(kind=sreal) :: dummyreal
 
 
@@ -335,38 +335,15 @@ end if
    ! Measurement error (diagonals)
    !----------------------------------------------------------------------------
    if (Ctrl%Ind%flags%do_meas_error) then
-      ! Check if a valid Sy is available for output.
-      ! This is a little messy, because of the way SPixel%Sy is allocated and
-      ! deallocated for each SPixel. We need to check:
-      ! * If we have a measurement count (Ny) - this is reset for each pixel,
-      !   and can be zero if the spixel is skipped early on.
-      ! * If Sy array has actually been defined - as Sy is deallocated and
-      !   then reallocated for each pixel, it is possible that, if the first
-      !   pixel is skipped _after_ Ny has been defined, Sy will not be
-      !   allocated.
-      ! * If the Sy array has the correct dimension. If we have missing
-      !   channels and skipped pixels, it is also possible at Ny ends up
-      !   being larger than Sy, at this point in the code.
-      if (SPixel%Ind%Ny .gt. 1 .and. size(SPixel%Sy) .gt. 1 .and. &
-           SPixel%Ind%Ny*SPixel%Ind%Ny .le. size(SPixel%Sy)) then
-         do k=1,SPixel%Ind%Ny
-            !write(*,"(e9.2)", advance="no") sqrt(SPixel%Sy(k,k))
-            call prepare_short_packed_float( &
-                 sqrt(SPixel%Sy(k,k)), output_data%Sy(i,j,k), &
-                 output_data%Sy_scale(k), output_data%Sy_offset(k), &
-                 output_data%Sy_vmin(k), output_data%Sy_vmax(k), &
-                 sreal_fill_value, sint_fill_value)
-         end do
-         !write(*,*) '.'
-      else
-         do k=1,SPixel%Ind%Ny
-            call prepare_short_packed_float( &
-                 sreal_fill_value, output_data%Sy(i,j,k), &
-                 output_data%Sy_scale(k), output_data%Sy_offset(k), &
-                 output_data%Sy_vmin(k), output_data%Sy_vmax(k), &
-                 sreal_fill_value, sint_fill_value)
-         end do
-      end if
+      do k = 1, SPixel%Ind%Ny
+         kk = SPixel%spixel_y_to_ctrl_y_index(k)
+
+         call prepare_short_packed_float( &
+              sqrt(SPixel%Sy(k,k)), output_data%Sy(i,j,kk), &
+              output_data%Sy_scale(kk), output_data%Sy_offset(kk), &
+              output_data%Sy_vmin(kk), output_data%Sy_vmax(kk), &
+              sreal_fill_value, sint_fill_value)
+      end do
    end if
 
    !----------------------------------------------------------------------------
@@ -420,9 +397,11 @@ end if
    !----------------------------------------------------------------------------
 if (Ctrl%Ind%flags%do_covariance) then
    do k = 1, SPixel%Nx
+      kk = SPixel%spixel_y_to_ctrl_y_index(k)
       do l = 1, SPixel%Nx
+         ll = SPixel%spixel_y_to_ctrl_y_index(l)
          call prepare_float_packed_float( &
-             real(SPixel%Sn(k,l), kind=sreal), output_data%covariance(i,j,k,l), &
+             real(SPixel%Sn(k,l), kind=sreal), output_data%covariance(i,j,kk,ll), &
              1._sreal, 0._sreal, 0._sreal, huge(dummyreal), &
              sreal_fill_value, sreal_fill_value)
       end do
