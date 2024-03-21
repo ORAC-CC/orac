@@ -231,14 +231,6 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, SAD_LUT, MSI_Data, RTM, SPixel, status)
 
    SPixel%Type = MSI_Data%Type(SPixel%Loc%X0, SPixel%Loc%Y0)
 
-   ! Redefine some key SPixel%Ind values here, so that _if_ the current
-   ! pixel is skipped, it is apparent that the data contained within
-   ! SPixel is not valid for the current pixel
-   SPixel%Ind%Ny = 0
-   SPixel%Ind%NSolar = 0
-   SPixel%INd%NThermal = 0 
-   SPixel%Ind%NMixed = 0
-
    if (Ctrl%NTypes_to_process > 0) then
       if (.not. any(Ctrl%Types_to_process(1:Ctrl%NTypes_to_process) == &
                     SPixel%Type)) then
@@ -354,19 +346,13 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, SAD_LUT, MSI_Data, RTM, SPixel, status)
    call Get_X(Ctrl, SPixel, MSI_Data, status)
 !  if (status /= 0) go to 99 ! Skip further data reading
 
-   ! It seems that it is possible that an invalid pixel, with no
-   ! defined measurement, can reach this point without causing a
-   ! SPixel status. Check for this condition here
-   if (SPixel%Ind%Ny == 0) then
-#ifdef DEBUG
-      write(*,*) 'WARNING: Get_SPixel() No SPixel defined'
-#endif
-      status = SPixelSkip
-   end if
-
-   ! If stat indicates a "super-pixel fatal" condition set the quality
-   ! control flag bit to indicate no processing.
+   ! If stat indicates a "super-pixel fatal" condition set the channel
+   ! counts to zero to prevent output of various arrays.
 99 if (status /= 0) then
+      SPixel%Ind%Ny = 0
+      SPixel%Ind%NSolar = 0
+      SPixel%Ind%NThermal = 0
+      SPixel%Ind%NMixed = 0
 #ifdef DEBUG
      write(*,*) 'WARNING: Get_SPixel() error status', status
 #endif
