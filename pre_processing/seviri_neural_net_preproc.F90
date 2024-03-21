@@ -30,9 +30,9 @@ subroutine map_seviri_channels(ch1, ch2, ch3, ch4, ch5, ch6, ch7, &
     ch5 = 5
     ch6 = 6
     ch7 = 7
-    ch9 = 9
-    ch10 = 10
-    ch11 = 11
+    ch9 = 8
+    ch10 = 9
+    ch11 = 10
 end subroutine map_seviri_channels
 
 subroutine get_msg_idx(msg_index, platform, do_nasa)
@@ -96,7 +96,6 @@ subroutine cma_cph_seviri(cview, imager_flags, imager_angles, &
      call map_seviri_channels(ch1, ch2, ch3, ch4, ch5, ch6, ch7, ch9, ch10, ch11)
      ! get Meteosat number from platform string
      call get_msg_idx(msg_index, platform, do_nasa)
-
 #ifdef INCLUDE_SEVIRI_NEURALNET
      write(*,*) "PREDICTING COT/CPH"
      ! run external ANN

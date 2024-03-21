@@ -291,7 +291,7 @@ subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
    integer(kind=sint),          intent(in)    :: doy
    logical,                     intent(in)    :: do_ironly
    logical,                     intent(inout) :: do_spectral_response_correction
-   logical,                     intent(in)    :: use_seviri_ann_cma_cph
+   logical,                     intent(inout)    :: use_seviri_ann_cma_cph
    logical,                     intent(in)    :: use_seviri_ann_ctp_fg
    logical,                     intent(in)    :: use_seviri_ann_mlay
    logical,                     intent(in)    :: do_nasa
@@ -311,6 +311,8 @@ subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
 
    real(kind=sreal)   :: coszen
    integer            :: ch1, ch2, ch3, ch4, ch5, ch6, sw1, sw2, sw3
+   integer            :: mlch1, mlch2, mlch3, mlch4, mlch5, mlch6, mlch7, &
+                         mlch9, mlch10, mlch11
    integer            :: legacy_channels(6)
 
    !--------------------------------------------------------------------
@@ -425,6 +427,58 @@ subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
        trim(adjustl(sensor)) .eq. 'SEVIRI' .or. &
        trim(adjustl(sensor)) .eq. 'SLSTR') &
       do_spectral_response_correction = .true.
+
+   ! Check if all channels, required for the seviri-specific neural network, are used
+   mlch1 = 0
+   mlch2 = 0
+   mlch3 = 0
+   mlch4 = 0
+   mlch5 = 0
+   mlch6 = 0
+   mlch7 = 0
+   mlch9 = 0
+   mlch10 = 0
+   mlch11 = 0
+   if (trim(adjustl(sensor)) .eq. 'SEVIRI' .and. use_seviri_ann_cma_cph) then
+         do i = 1, channel_info%nchannels_total
+            write(*,*) channel_info%channel_ids_instr(i)
+            select case (channel_info%channel_ids_instr(i))
+            case(1)
+               mlch1 = i
+            case(2)
+               mlch2 = i
+            case(3)
+               mlch3 = i
+            case(4)
+               mlch4 = i
+            case(5)
+               mlch5 = i
+            case(6)
+               mlch6 = i
+            case(7)
+               mlch7 = i
+            case(9)
+               mlch9 = i
+            case(10)
+               mlch10 = i
+            case(11)
+               mlch11 = i
+            end select
+         end do
+         write(*,*) mlch1, mlch2, mlch3, mlch4, mlch5, mlch6, mlch7, mlch9, mlch10, mlch11
+         if (.not. (mlch1 .ne. 0 .and. mlch2 .ne. 0 .and. mlch3 .ne. 0 .and. mlch4 .ne. 0 &
+             .and. mlch5 .ne. 0 .and. mlch6 .ne. 0 .and. mlch7 .ne. 0 .and. mlch9 .ne. 0 &
+             .and. mlch10 .ne. 0 .and. mlch11 .ne. 0)) then
+            write(*,*) 'WARNING: Not using correct channels for SEVIRI-specific neural net!', &
+                       ' Instead running general ANN!'
+            use_seviri_ann_cma_cph = .false.
+            write(*,*) use_seviri_ann_cma_cph
+         end if
+      
+      end if
+         
+         
+      
 
    ! do not apply NOAA19 mimic when using SEVIRI neural network
    if (trim(adjustl(sensor)) .eq. 'SEVIRI' .and. use_seviri_ann_cma_cph) then
@@ -735,7 +789,8 @@ subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
 
       ! call SEVIRI neural network (Python) cloud detection and cloud phase
       ! determination for whole SEVIRI disc (outside loop)
-      if (trim(adjustl(sensor)) .eq. 'SEVIRI' .and. use_seviri_ann_cma_cph) then
+      
+      if (trim(adjustl(sensor)) .eq. 'SEVIRI' .and. use_seviri_ann_cma_cph) then  
          if (verbose) write(*,*) 'Using SEVIRI-specific neural net'
             call cma_cph_seviri(cview, imager_flags, imager_angles, &
                                 imager_geolocation, imager_measurements, &
