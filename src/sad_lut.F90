@@ -46,6 +46,7 @@ module SAD_LUT_m
       real    :: Min  ! Minimum value on grid
       real    :: d    ! Grid spacing (0 for irregular)
       integer :: n    ! Grid length
+      logical :: log  ! Logarithmic grid
 
       real, pointer :: x(:)
    end type LUT_Dimension_t

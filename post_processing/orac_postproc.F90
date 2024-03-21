@@ -26,34 +26,23 @@
 ! orac_postproc
 !
 ! Purpose:
-! Read in level2 ORAC output and apply post processing to select cloudmask
-! and phase.
+! Read in level2 ORAC output and apply post processing to select cloud-phase
+! and/or aerosol type.
 !
 ! Description and Algorithm details:
 !
-! select min cost for each pixel after applying ranges
+! If USE_BAYESIAN_SELECTION = .true.
+!    Select preferred type based on maximum a posteriori probability (= minimum
+!    cost), after applying an optional weighting, using a priori probability of
+!    each phase/type (set with the BAYESIAN_WEIGHTS option).
+! If USE_BAYESIAN_SELECTION = .false OR USE_PAVALONIS_PHASE = .true.
+!    (i.e. the default) Select cloud phase based on the Pavalonis cloud-type
+!    (calculated during ORAC pre-processing). If USE_BAYESIAN_SELECTION is set to
+!    true, and USE_PAVALONIS_PHASE is true, then the Bayesian selection of the
+!    first two types will be over-written by the Pavalonis cloud-phase.
 !
-!    ci=cost(*,ip)
-!    ri=cre(*,ip)
-!    oi=lopd(*,ip)
-!    wh=where(ri lt rmin or ri gt rmax or oi lt omin or oi gt omax,nw)
-!    if nw gt 0 then ci(wh)=1d9
-!
-! deselect ice cloud if cost similar to liquid and TC is high
-!
-!    if nl eq 1 and ni eq 1 then
-!       if ci(il) lt ci(ii)*1.5 or ci(il) lt ny*1.5 and tc(ip) gt 273 then
-!          ci(ii)=1e9
-!    end if
-!
-! deselect ash if cost similar to liquid or ice or very low altitude
-!
-!    if nv eq 1 and ni eq 1 then if ci(ii) lt ci(iv)*1.1 then ci(iv)=1e9
-!    if nv eq 1 and nl eq 1 then if ci(il) lt ci(iv)*1.1 then ci(iv)=1e9
-!    iphase(ip)=(where(ci eq min(ci)))(0)
-!
-!    cloud mask selected if retrieval has converged and if optical depth >
-!       cot_thres
+!    NOTE: It is assumed that cloud-retrievals are the first ORAC outputs
+!    provided to the Postproc, with any aerosol files following!
 !
 ! Arguments:
 ! Name Type In/Out/Both Description
@@ -148,6 +137,18 @@
 !    ML post processing.
 ! 2017/10/05, GM: Get the value of use_ann_phase from the input files.
 ! 2018/06/08, SP: Add ability to parallax correct the data.
+! 2023/11/21, GT: Extensive rewrite:
+!                 - Removed duplication of Bayesian selection code (and
+!                   depreciated USE_NEW_BAYESIAN_SELECTION option)
+!                 - Only one input file worth of data is stored in memory at a
+!                   time, regardless of which selection approach is used.
+!                 - Added the ability to run both Bayesian (for aerosol) and
+!                   Pavalonis (for cloud) selections (for combining both cloud
+!                   and aerosol files into a single product).
+!                 - Added the option to apply a simple weighting to the
+!                   Bayesian selection method. The weights are passed via the
+!                   BAYESIAN_WEIGHTS option in the driver file, and are treated
+!                   as an a priori probability for each phase/type.
 !
 ! Bugs:
 ! - Use of input_primary%cldtype is hardwired to view element 1.
@@ -183,6 +184,7 @@ subroutine orac_postproc(mytask, ntasks, lower_bound, upper_bound, &
     integer, parameter           :: IMul = 3
 
     integer                      :: i, j, k
+    integer                      :: stat
 
     integer                      :: nargs
 #ifdef WRAPPER
@@ -203,8 +205,9 @@ subroutine orac_postproc(mytask, ntasks, lower_bound, upper_bound, &
     logical                      :: use_netcdf_compression = .true.
     logical                      :: corr_plx = .false.
     logical                      :: verbose = .true.
-
+    logical                      :: use_pavalonis_phase = .true.
     logical                      :: use_ml
+    logical                      :: cloud_cci = .true.
 
     integer                      :: n_in_files
 
@@ -212,6 +215,8 @@ subroutine orac_postproc(mytask, ntasks, lower_bound, upper_bound, &
 
     character(len=path_length)   :: in_files_primary(MaxInFiles), &
          in_files_secondary(MaxInFiles)
+
+    real                         :: bayesian_weights(MaxInFiles)
 
     character(len=path_length)   :: out_file_primary, out_file_secondary
 
@@ -221,7 +226,7 @@ subroutine orac_postproc(mytask, ntasks, lower_bound, upper_bound, &
     type(source_attributes_t)    :: source_atts
 
     type(input_data_primary_t)   :: input_primary(0:MaxInFiles)
-    type(input_data_secondary_t) :: input_secondary(0:MaxInFiles)
+    type(input_data_secondary_t) :: input_secondary(0:1)
 
     type(output_data_primary_t)  :: output_primary
     type(output_data_secondary_t):: output_secondary
@@ -301,6 +306,9 @@ subroutine orac_postproc(mytask, ntasks, lower_bound, upper_bound, &
 
     if (out_file_secondary /= '') do_secondary = .true.
 
+    ! Set a defaut weighting of 1.0 for each class for bayesian selection
+    bayesian_weights(:) = 1.0
+
     ! Optional arguments and additional files
     do while (parse_driver(11, value, label) == 0)
        call clean_driver_label(label)
@@ -320,6 +328,10 @@ subroutine orac_postproc(mytask, ntasks, lower_bound, upper_bound, &
        case('USE_NEW_BAYESIAN_SELECTION')
           if (parse_string(value, use_new_bayesian_selection) /= 0) &
                call handle_parse_error(label)
+          write(*,*) 'Note "USE_NEW_BAYESIAN_SELECTION" is depreciated. Use USE_BAYESIAN_SELECTION instead'
+       case('USE_PAVALONIS_PHASE')
+          if (parse_string(value, use_pavalonis_phase) /= 0) &
+               call handle_parse_error(label)
        case('USE_CHUNKING')
           if (parse_string(value, use_chunks) /= 0) &
                call handle_parse_error(label)
@@ -328,6 +340,15 @@ subroutine orac_postproc(mytask, ntasks, lower_bound, upper_bound, &
                call handle_parse_error(label)
        case('CORRECT_PARALLAX')
           if (parse_string(value, corr_plx) /= 0) &
+               call handle_parse_error(label)
+       case('BAYESIAN_WEIGHTS')
+          ! Note that we expect the bayesian_weights array to have more elements
+          ! than given in the driver file!
+          stat = parse_string(value, bayesian_weights)
+          if (stat /= 0 .and. stat /= PARSE_ERR_TOO_MANY) &
+               call handle_parse_error(label)
+       case('CLOUD_CCI')
+          if (parse_string(value, cloud_cci) /= 0) &
                call handle_parse_error(label)
        case('VERBOSE')
           if (parse_string(value, verbose) /= 0) &
@@ -353,7 +374,8 @@ subroutine orac_postproc(mytask, ntasks, lower_bound, upper_bound, &
        stop
     end if
 
-    ! If using new bayesian selection then ensure both bayesian flags are true
+    ! If use_new_bayesian_selection has been set, pass this on to the
+    ! use_bayesian_selection flag.
     if (use_new_bayesian_selection) then
        use_bayesian_selection = .true.
     end if
@@ -376,6 +398,10 @@ subroutine orac_postproc(mytask, ntasks, lower_bound, upper_bound, &
        write(*,*) 'switch_phases = ', switch_phases
        write(*,*) 'use_chunks = ', use_chunks
        write(*,*) 'use_ml = ', use_ml
+       write(*,*) 'use_bayesian_selection = ', use_bayesian_selection
+       write(*,*) 'use_pavalonis_phase = ', use_pavalonis_phase
+       write(*,*) 'cloud_cci = ', cloud_cci
+       write(*,*) 'bayesian_weights = ', bayesian_weights(1:n_in_files)
     end if
 
     ! Find which non-Bayesian selection to use
@@ -484,6 +510,8 @@ subroutine orac_postproc(mytask, ntasks, lower_bound, upper_bound, &
        call read_input_primary_once(n_in_files, in_files_primary, &
             input_primary(0), indexing, loop_ind, global_atts, source_atts, &
             chunk_starts(i_chunk), use_ml, verbose)
+       ! Initialise output phase to the fill value
+       input_primary(0)%phase(:,:) = byte_fill_value
 
        if (do_secondary) then
           call alloc_input_data_secondary_all(indexing, input_secondary(0))
@@ -492,54 +520,43 @@ subroutine orac_postproc(mytask, ntasks, lower_bound, upper_bound, &
                verbose)
        end if
 
-       ! Read fields that vary from file to file
-       if (.not. use_new_bayesian_selection) then
-          do i = 1, n_in_files
-             if (verbose) write(*,*) '********************************'
-             if (verbose) write(*,*) 'read: ', trim(in_files_primary(i))
-             call alloc_input_data_primary_class(loop_ind(i), input_primary(i))
-             call read_input_primary_class(in_files_primary(i), &
-                  input_primary(i), loop_ind(i), .False., &
-                  chunk_starts(i_chunk), verbose)
-             if (do_secondary) then
-                if (verbose) write(*,*) 'read: ', trim(in_files_secondary(i))
-                call alloc_input_data_secondary_class(loop_ind(i), &
-                     input_secondary(i))
-                call read_input_secondary_class(in_files_secondary(i), &
-                     input_secondary(i), loop_ind(i), chunk_starts(i_chunk), &
-                     verbose)
-             end if
-          end do
-       else ! Use traditional selection method
-          ! Load only the cost values from input files
-          do i = 1, n_in_files
-             call alloc_input_data_only_cost(loop_ind(i), input_primary(i), &
-                  input_secondary(i))
-             call read_input_primary_class(in_files_primary(i), &
-                  input_primary(i), loop_ind(i), .True., chunk_starts(i_chunk), &
-                  verbose)
-          end do
+       ! Allocate space for temporary storage of input primary data
+       call alloc_input_data_primary_all(indexing, input_primary(1))
+       ! ... and secondary data
+       if (do_secondary) then
+          call alloc_input_data_secondary_all(indexing, input_secondary(1))
+       end if
 
-          ! Allocate a primary array to store temporary input data
-          call alloc_input_data_primary_all(indexing, input_primary(1))
+       ! The rest of the input data array only needs those fields use for
+       ! phase/type clasification to be allocated
+       do i = 2, n_in_files
+          call alloc_input_data_classify(loop_ind(i), input_primary(i), &
+               use_bayesian_selection, switch_phases)
+       end do
 
-          if (do_secondary) then
-             call alloc_input_data_secondary_all(indexing, input_secondary(1))
-          end if
+       ! Read data needed to determine phase/type from input data
+       do i = 1, n_in_files
+          call read_input_primary_classify(in_files_primary(i), &
+               input_primary(i), loop_ind(i), &
+               use_bayesian_selection, switch_phases, & ! Selects which data to read
+               chunk_starts(i_chunk), verbose)
+       end do
 
-          ! Find the input file with the lowest cost for each pixel
-          do j=indexing%Y0, indexing%Y1
-             do i=indexing%X0, indexing%X1
-                sum_prob = 0.
-                a_min_cost   = huge(a_min_cost)
+       do j = indexing%Y0, indexing%Y1
+          do i = indexing%X0, indexing%X1
+             if (use_bayesian_selection) then
+                ! Find the input file with the lowest cost for each pixel
+                sum_prob = 0.0
+                a_max_prob = 0.0
                 i_min_costjm = 0
                 do k = 1, n_in_files
                    if (input_primary(k)%costjm(i,j) /= sreal_fill_value) then
                       a_cost = input_primary(k)%costjm(i,j)
-                      a_prob = exp(-input_primary(k)%costjm(i,j) / 2.)
+                      a_prob = exp(-input_primary(k)%costjm(i,j) / 2.) &
+                           * bayesian_weights(k)
                       sum_prob = sum_prob + a_prob
 
-                      if (a_cost < a_min_cost) then
+                      if (a_prob > a_max_prob) then
                          a_min_cost   = a_cost
                          a_max_prob   = a_prob
                          i_min_costjm = k
@@ -550,50 +567,9 @@ subroutine orac_postproc(mytask, ntasks, lower_bound, upper_bound, &
                      a_max_prob / sum_prob >= norm_prob_thresh) then
                    input_primary(0)%phase(i,j) = i_min_costjm
                 end if
-             end do
-          end do
+             end if ! End of Bayesian selection
 
-          do k = 1, n_in_files
-             if (verbose) write(*,*) '********************************'
-             if (verbose) write(*,*) 'read: ', trim(in_files_primary(k))
-
-             call read_input_primary_class(in_files_primary(k), &
-                  input_primary(1), loop_ind(k), .False., &
-                  chunk_starts(i_chunk), verbose)
-
-             if (do_secondary) then
-                if (verbose) write(*,*) 'read: ', trim(in_files_secondary(k))
-                call read_input_secondary_class(in_files_secondary(k), &
-                     input_secondary(1), loop_ind(k), chunk_starts(i_chunk), &
-                     verbose)
-             end if
-
-             do j=indexing%Y0, indexing%Y1
-                do i=indexing%X0, indexing%X1
-                   if (input_primary(0)%phase(i,j) .eq. k) then
-                      call copy_class_specific_inputs(i, j, loop_ind(k), &
-                           input_primary(0), input_primary(1), &
-                           input_secondary(0), input_secondary(1), &
-                           do_secondary)
-                      input_primary(0)%phase(i,j) = k
-                   end if
-                end do
-             end do
-          end do
-       end if
-
-       if (verbose) then
-          write(*,*) 'Processing limits:'
-          write(*,*) indexing%X0, indexing%X1
-          write(*,*) indexing%Y0, indexing%Y1
-       end if
-
-       do j=indexing%Y0, indexing%Y1
-
-          do i=indexing%X0, indexing%X1
-
-             ! Cloud CCI selection
-             if (.not. use_bayesian_selection) then
+             if ((.not. use_bayesian_selection) .or. use_pavalonis_phase) then
                 ! Default is ICE wins, meaning only ice structure is copied to
                 ! output.
 
@@ -615,7 +591,7 @@ subroutine orac_postproc(mytask, ntasks, lower_bound, upper_bound, &
                 ! variables select water type overwrite ice
                 if (use_ann_phase) then
                    if (use_ml .and. &
-                       input_primary(0)%cldtype(i,j,1) == OVERLAP_TYPE) then
+                        input_primary(0)%cldtype(i,j,1) == OVERLAP_TYPE) then
                       phase_flag = 3_byte
                    else
                       select case (input_primary(0)%ann_phase(i,j,1))
@@ -642,7 +618,7 @@ subroutine orac_postproc(mytask, ntasks, lower_bound, upper_bound, &
                       if (use_ml .and. &
                            ! only set if ML cost is less than SL cost
                            (input_primary(IMul)%costjm(i,j) <= &
-                            input_primary(IIce)%costjm(i,j))) then
+                           input_primary(IIce)%costjm(i,j))) then
                          phase_flag = 3_byte
                       else
                          phase_flag = 2_byte
@@ -656,14 +632,14 @@ subroutine orac_postproc(mytask, ntasks, lower_bound, upper_bound, &
                 if (switch_phases) then
                    ! water to ice
                    if ((phase_flag == 1_byte) .and. &
-                       ((input_primary(IWat)%ctt(i,j) /= sreal_fill_value .and. &
-                         input_primary(IWat)%ctt(i,j) < switch_wat_limit) .and. &
+                        ((input_primary(IWat)%ctt(i,j) /= sreal_fill_value .and. &
+                        input_primary(IWat)%ctt(i,j) < switch_wat_limit) .and. &
                         (input_primary(IIce)%ctt(i,j) /= sreal_fill_value .and. &
-                         input_primary(IIce)%ctt(i,j) < switch_ice_limit))) then
+                        input_primary(IIce)%ctt(i,j) < switch_ice_limit))) then
                       phase_flag = 2_byte
                       input_primary(0)%cldtype(i,j,1) = SWITCHED_TO_ICE_TYPE
                    ! ice to water
-                   elseif ((phase_flag == 2_byte) .and. &
+                   else if ((phase_flag == 2_byte) .and. &
                         ((input_primary(IWat)%ctt(i,j) /= sreal_fill_value .and. &
                         input_primary(IWat)%ctt(i,j) >= switch_wat_limit) .and. &
                         (input_primary(IIce)%ctt(i,j) /= sreal_fill_value .and. &
@@ -672,95 +648,88 @@ subroutine orac_postproc(mytask, ntasks, lower_bound, upper_bound, &
                       input_primary(0)%cldtype(i,j,1) = SWITCHED_TO_WATER_TYPE
                    end if
                 end if
-
+  
                 ! Once phase is selected fill in the values 1st for wat then for
                 ! ice.
-
-                if (phase_flag == 1_byte) then
-                   call copy_class_specific_inputs(i, j, loop_ind(IWat), &
-                        input_primary(0), input_primary(IWat), &
-                        input_secondary(0), input_secondary(IWat), do_secondary)
+                ! Now fill in the phase values in the data structure
+                if (phase_flag == 1_byte) then ! Liquid water
                    input_primary(0)%phase(i,j) = IPhaseWat
-                else if (phase_flag == 2_byte) then
-                   call copy_class_specific_inputs(i, j, loop_ind(IIce), &
-                        input_primary(0), input_primary(IIce), &
-                        input_secondary(0), input_secondary(IIce), do_secondary)
+                else if (phase_flag == 2_byte) then ! Ice
                    input_primary(0)%phase(i,j) = IPhaseIce
-                else if (phase_flag == 3_byte) then
-                   ! Multilayer cloud
-                   call copy_class_specific_inputs(i, j, loop_ind(IMul), &
-                        input_primary(0), input_primary(IMul),&
-                        input_secondary(0), input_secondary(IMul), do_secondary)
+                else if (phase_flag == 3_byte) then ! Multilayer cloud
                    input_primary(0)%phase(i,j) = IPhaseMul
                 end if
 
-                ! Overwrite cc_total with cldmask for Cloud CCI
-                input_primary(0)%cc_total(i,j) = input_primary(0)%cldmask(i,j,1)
-                input_primary(0)%cc_total_uncertainty(i,j) = &
-                     input_primary(0)%cldmask_uncertainty(i,j,1)
-
-                if (input_primary(0)%cc_total(i,j) == 0.0) then
-                   ! Set phase to clear/unknown
-                   input_primary(0)%phase(i,j) = IPhaseClU
+                ! Now apply cloud_cci specific changes
+                if (cloud_cci) then
+                   ! Overwrite cc_total with cldmask
+                   input_primary(0)%cc_total(i,j) = input_primary(0)%cldmask(i,j,1)
+                   input_primary(0)%cc_total_uncertainty(i,j) = &
+                        input_primary(0)%cldmask_uncertainty(i,j,1)
+                   ! Set non-cloud pixels to Pavalonis clear/unknown phase, if
+                   ! they don't already have an aerosol phase assigned.
+                   if (input_primary(0)%cldmask(i,j,1) .eq. 0 .and. &
+                        input_primary(0)%phase(i,j) .eq. byte_fill_value) &
+                        input_primary(0)%phase(i,j) = IPhaseClU
                 end if
 
-                ! Bayesian based selection
-             else if (.not. use_new_bayesian_selection) then
-                sum_prob = 0.
-                a_min_cost = huge(a_min_cost)
-                i_min_costjm = 0.
-                do k = 1, n_in_files
-                   if (input_primary(k)%costjm(i,j) /= sreal_fill_value) then
-                      a_cost = input_primary(k)%costjm(i,j)
-                      a_prob = exp(-input_primary(k)%costjm(i,j) / 2.)
-                      sum_prob = sum_prob + a_prob
-                      if (a_cost < a_min_cost) then
-                         a_min_cost   = a_cost
-                         a_max_prob   = a_prob
-                         i_min_costjm = k
-                      end if
-                   end if
-                end do
+             end if ! End of Pavalonis phase selection
+          end do ! End of loop over pixel column (X)
+       end do ! End of loop over pixel row (Y)
 
-                if (a_min_cost >= cost_thresh .and. i_min_costjm /= 0 .and. &
-                     a_max_prob / sum_prob >= norm_prob_thresh) then
-                   call copy_class_specific_inputs(i, j, &
-                        loop_ind(i_min_costjm), input_primary(0), &
-                        input_primary(i_min_costjm), input_secondary(0), &
-                        input_secondary(i_min_costjm), do_secondary)
-                   input_primary(0)%phase(i,j) = i_min_costjm
+
+       ! Now we have completed the phase/type selection, we read in all data
+       ! from each input file and populate the our temporary output structure
+       do k = 1, n_in_files
+          if (verbose) write(*,*) '********************************'
+          if (verbose) write(*,*) 'read: ', trim(in_files_primary(k))
+
+          call read_input_primary_class(in_files_primary(k), &
+               input_primary(1), loop_ind(k), .False., &
+               chunk_starts(i_chunk), verbose)
+
+          if (do_secondary) then
+             if (verbose) write(*,*) 'read: ', trim(in_files_secondary(k))
+             call read_input_secondary_class(in_files_secondary(k), &
+                  input_secondary(1), loop_ind(k), chunk_starts(i_chunk), &
+                  verbose)
+          end if
+
+          do j = indexing%Y0, indexing%Y1
+             do i = indexing%X0, indexing%X1
+                if (input_primary(0)%phase(i,j) .eq. k) then
+                   call copy_class_specific_inputs(i, j, loop_ind(k), &
+                        input_primary(0), input_primary(1), &
+                        input_secondary(0), input_secondary(1), &
+                        do_secondary)
+                   input_primary(0)%phase(i,j) = k
                 end if
-             end if
+             end do
           end do
-       end do
+       end do ! End of copying data from input files
 
-
-       ! Deallocate all input structures except for the first one
-       if (.not. use_new_bayesian_selection) then
-          do i = 1, n_in_files
-             call dealloc_input_data_primary_class(input_primary(i))
-             if (do_secondary)  &
-                  call dealloc_input_data_secondary_class(input_secondary(i))
-          end do
-       else
-          call dealloc_input_data_primary_all(input_primary(1))
-          if (do_secondary)  &
-               call dealloc_input_data_secondary_all(input_secondary(1))
-
-          do i = 2, n_in_files
-             call dealloc_input_data_primary_class(input_primary(i))
-             if (do_secondary)  &
-                  call dealloc_input_data_secondary_class(input_secondary(i))
-          end do
+       if (verbose) then
+          write(*,*) 'Processing limits:'
+          write(*,*) indexing%X0, indexing%X1
+          write(*,*) indexing%Y0, indexing%Y1
        end if
 
+       ! Deallocate all input structures except for the 0th one
+       call dealloc_input_data_primary_all(input_primary(1))
+       if (do_secondary)  &
+            call dealloc_input_data_secondary_all(input_secondary(1))
+       
+       do i = 2, n_in_files
+          call dealloc_input_data_primary_classify(input_primary(i))
+       end do
 
        ! If parallax correction is enabled then correct parallax
-       if (corr_plx) call correct_parallax(input_primary(0), indexing, global_atts, verbose)
+       if (corr_plx) call correct_parallax(input_primary(0), indexing, &
+            global_atts, verbose)
 
        ! Put results in final output arrays with final datatypes
-       do j=indexing%Y0, indexing%Y1
-          do i=indexing%X0, indexing%X1
+       do j = indexing%Y0, indexing%Y1
+          do i = indexing%X0, indexing%X1
              call prepare_output_primary_pp(i, j, indexing%common_indices_t, &
                   input_primary(0), output_primary, &
                   output_optical_props_at_night)
@@ -770,7 +739,6 @@ subroutine orac_postproc(mytask, ntasks, lower_bound, upper_bound, &
           end do
        end do
 
-
        if (i_chunk .lt. n_chunks) then
           ! Deallocate the first input structure
           call dealloc_input_data_primary_all(input_primary(0))
@@ -779,11 +747,11 @@ subroutine orac_postproc(mytask, ntasks, lower_bound, upper_bound, &
           end if
        end if
 
-    end do !Chunking
+    end do ! End of chunking loop
 
     indexing%Y0=1
 
-    ! Open the netcdf output file
+    ! Open the netcdf output files
     call ncdf_create(trim(adjustl(out_file_primary)), ncid_primary, &
          indexing%Xdim, indexing%Ydim, indexing%NViews, dims_var, 1, &
          global_atts, source_atts)

@@ -783,7 +783,18 @@ subroutine setup_avhrr(args, channel_ids_user, channel_info, verbose)
 
          if (k .eq. 4) then
             ! which avhrr are we processing?
-            args%platform = trim(adjustl(str2))
+            str2 = adjustl(str2)
+            if (str2(1:4) == 'noaa') then
+               args%platform = 'NOAA-' // trim(str2(5:))
+            else if (str2(1:6) == 'metopa' .or. str2(1:7) == 'metop02') then
+               args%platform = 'Metop-A'
+            else if (str2(1:6) == 'metopb' .or. str2(1:7) == 'metop01') then
+               args%platform = 'Metop-B'
+            else if (str2(1:6) == 'metopc' .or. str2(1:7) == 'metop03') then
+               args%platform = 'Metop-C'
+            else
+               args%platform = trim(str2)
+            end if
          end if
       end do
 
@@ -840,8 +851,18 @@ subroutine setup_avhrr(args, channel_ids_user, channel_info, verbose)
       j = index(str1, '/', back=.true.)
       str2 = str1
       str1 = str1(1:j-1)
-      str2 = str2(j+1:)
-      args%platform = trim(adjustl(str2))
+      str2 = adjustl(str2(j+1:))
+      if (str2(1:4) == 'noaa') then
+         args%platform = 'NOAA-' // trim(str2(5:))
+      else if (str2(1:6) == 'metopa' .or. str2(1:7) == 'metop02') then
+         args%platform = 'Metop-A'
+      else if (str2(1:6) == 'metopb' .or. str2(1:7) == 'metop01') then
+         args%platform = 'Metop-B'
+      else if (str2(1:6) == 'metobc' .or. str2(1:7) == 'metop03') then
+         args%platform = 'Metop-C'
+      else
+         args%platform = trim(str2)
+      end if
 
       ! get year, month, day, hour and minute as integers
       read(args%cyear, '(I4)') args%year
@@ -1193,10 +1214,10 @@ subroutine setup_seviri(args, channel_ids_user, channel_info, verbose)
       !
       if (index1 .ne. 0) then
          index2 = index(args%l1b_file, '-')
-         args%platform = args%l1b_file(index2-4:index2-1)
+         args%platform = 'MSG-' // args%l1b_file(index2-1:index2-1)
       else
          index2 = index(args%l1b_file, '__-')
-         args%platform = args%l1b_file(index2+3:index2+6)
+         args%platform = 'MSG-' // args%l1b_file(index2+6:index2+6)
       end if
       index2 = index2 + index(args%l1b_file(index2 + 1:), '-')
       index2 = index2 + index(args%l1b_file(index2 + 1:), '-')
@@ -1398,11 +1419,11 @@ subroutine setup_slstr(args, source_attributes, channel_ids_user, &
    index2 = 1
    index2 = index(args%l1b_file, "S3A")
    if (index2 .gt. 1) then
-      args%platform = "Sentinel3a"
+      args%platform = "Sentinel-3a"
    else
       index2 = index(args%l1b_file, "S3B")
       if (index2 .gt. 1) then
-         args%platform = "Sentinel3b"
+         args%platform = "Sentinel-3b"
       else
          write(*,*) "ERROR: Platform must be S3A or S3B"
          stop
@@ -1577,7 +1598,7 @@ subroutine setup_viirs_mband(args, channel_ids_user, channel_info, verbose)
    if (verbose) write(*,*) 'args%geo_file: ', trim(args%geo_file)
 
    ! Assume Suomi-NPP by default
-   args%platform = "SuomiNPP"
+   args%platform = "Suomi-NPP"
    ! check if l1b and geo file are of the same granule
    index1 = index(args%l1b_file, 'npp_d', .true.)
    index2 = index(args%geo_file, 'npp_d', .true.)
@@ -1589,7 +1610,7 @@ subroutine setup_viirs_mband(args, channel_ids_user, channel_info, verbose)
          write(*,*)'ERROR: setup_viirs_iband(): Unsupported platform'
          stop error_stop_code
       end if
-      args%platform = "NOAA20"
+      args%platform = "NOAA-20"
    end if
 
 
@@ -1725,7 +1746,7 @@ subroutine setup_viirs_iband(args, channel_ids_user, channel_info, verbose)
    if (verbose) write(*,*) 'args%geo_file: ', trim(args%geo_file)
 
    ! Assume Suomi-NPP by default
-   args%platform = "SuomiNPP"
+   args%platform = "Suomi-NPP"
    ! check if l1b and geo file are of the same granule
    index1 = index(args%l1b_file, 'npp_d', .true.)
    index2 = index(args%geo_file, 'npp_d', .true.)
@@ -1737,7 +1758,7 @@ subroutine setup_viirs_iband(args, channel_ids_user, channel_info, verbose)
          write(*,*)'ERROR: setup_viirs_iband(): Unsupported platform'
          stop error_stop_code
       end if
-      args%platform = "NOAA20"
+      args%platform = "NOAA-20"
    end if
 
 
@@ -2020,13 +2041,13 @@ subroutine determine_seviri_platform_from_metoffice(l1_file, platform)
    ! https://github.com/pytroll/mpop/blob/master/mpop/satin/msg_seviri_hdf.py#L30
    select case (platform_number)
    case(321)
-      platform = "MSG1"
+      platform = "MSG-1"
    case(322)
-      platform = "MSG2"
+      platform = "MSG-2"
    case(323)
-      platform = "MSG3"
+      platform = "MSG-3"
    case(324)
-      platform = "MSG4"
+      platform = "MSG-4"
    case default
       write(*,*) "ERROR: Unrecognised platform number ", platform_number
       stop error_stop_code

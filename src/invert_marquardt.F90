@@ -297,10 +297,6 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
 
    huge_value = huge(1.0)/Ctrl%Invpar%MqStep
 
-   ! Set state variable limits
-   call Set_Limits(Ctrl, SPixel, stat)
-   if (stat /= 0) go to 99 ! Terminate processing this pixel
-
    ! Invert a priori covariance matrix
    error_matrix = SPixel%Sx(SPixel%X, SPixel%X)
    call Invert_Cholesky(error_matrix, SxInv, SPixel%Nx, stat)
@@ -552,7 +548,6 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
    ! inactive variables, Sn is set to the a priori error (squared). De-scale
    ! (by XScale squared, i.e. the product of the XScale factors for the two
    ! state variables contributing to each element).
-   SPixel%Sn = 0.0
    if (SPixel%NXI > 0 .and. .not. Ctrl%Invpar%disable_Ss) then
       SPixel%Sn(SPixel%XI, SPixel%XI) = SPixel%Sx(SPixel%XI, SPixel%XI)
 
@@ -668,10 +663,22 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
            BextRat, d_BextRat, stat)
       if (stat /= 0) go to 99
 
-      Diag%aot870 = SPixel%Xn(ITau) + log10(BextRat(1))
+      if (SAD_LUT(1)%Grid%Tau%log) then
+         Diag%aot870 = 10.0**SPixel%Xn(ITau) * BextRat(1)
 
-      Diag%aot870_uncertainty = Spixel%Sn(ITau,ITau) + &
-           (d_BextRat(1) / (BextRat(1) * log(10.0)))**2 * SPixel%Sn(IRe,IRe)
+         ! \sigma_{\log\tau_870}^2 = \sigma_{\log\tau_550}^2 +
+         !    \sigma_re^2 ((dB/dr_e) / (B log(10)))^2
+         ! Then \sigma_{\tau_870} = \sigma_{\log\tau_870} * \tau_870 * log(10)
+         Diag%aot870_uncertainty = (SPixel%Sn(ITau,ITau) * alog(10.0)**2 + &
+              (d_BextRat(1) / BextRat(1))**2 * SPixel%Sn(IRe,IRe)) * &
+              Diag%aot870**2
+      else
+         Diag%aot870 = SPixel%Xn(ITau) * BextRat(1)
+
+         Diag%aot870_uncertainty = BextRat(1)**2 * Spixel%Sn(ITau,ITau) + &
+              (d_BextRat(1) * SPixel%Xn(ITau))**2 * SPixel%Sn(IRe,IRe)
+      end if
+
    end if
 
    call Deallocate_GZero(GZero)
@@ -683,6 +690,20 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
    ! Set averaging kernel [d2J_dX2-SxInv = matmul(KxT_SyI, Kx)]
    d2J_dX2 = d2J_dX2 - SxInv
    Diag%AK(SPixel%X, SPixel%X) = matmul(St_temp, d2J_dX2)
+
+   ! Check for logarithmic LUT axes (see also AOD870 calculation above)
+   if (SAD_LUT(1)%Grid%Tau%log) then
+      call convert_state_element_to_linear(SPixel, ITau)
+   end if
+   if (Ctrl%Approach == AppCld2L .and. SAD_LUT(2)%Grid%Tau%log) then
+      call convert_state_element_to_linear(SPixel, ITau2)
+   end if
+   if (SAD_LUT(1)%Grid%Re%log) then
+      call convert_state_element_to_linear(SPixel, IRe)
+   end if
+   if (Ctrl%Approach == AppCld2L .and. SAD_LUT(2)%Grid%Re%log) then
+      call convert_state_element_to_linear(SPixel, IRe2)
+   end if
 
 
    ! Void the outputs for failed superpixels
@@ -740,3 +761,49 @@ function average_hessian(n, Hessian, scale) result(alpha)
    alpha   = scale * Av_Hess
 
 end function average_hessian
+
+
+!-------------------------------------------------------------------------------
+! Name: convert_state_element_to_linear
+!
+! Purpose:
+! Performs mathematical manipulations to change an element of the state vector
+! from log into linear space.
+!
+! Algorithm:
+! For the value: take 10 to power of the value
+! For the uncertainty: sigma_log = sigma_lin * value * log(10)
+!    Thus, multiply the requested row and column of Sx by (value * log(10)).
+!    This is an approximation, using the largest of two unequal bounds.
+!
+! Arguments:
+! Name   Type     In/Out/Both Description
+! SPixel SPixel_t Both        The pixel to be manipulated
+! index  int      In          Index of the state vector to be converted
+!
+! History:
+! 2024/02/08, AP: Original version.
+!
+! Bugs:
+! The conversion of covariance from log to linear space is *not* Gaussian.
+! Optimal estimation requires Gaussian errors, so this is strictly an
+! inappropriate operation. However, it is much more intuitive for the user.
+!-------------------------------------------------------------------------------
+subroutine convert_state_element_to_linear(SPixel, index)
+
+   use SPixel_m, only: SPixel_t
+
+   implicit none
+
+   type(SPixel_t), intent(inout) :: SPixel
+   integer,        intent(in)    :: index
+
+   real :: sx_correction
+
+   SPixel%Xn(index) = 10.0**SPixel%Xn(index)
+
+   sx_correction = SPixel%Xn(index) * alog(10.0)
+   SPixel%Sn(index,:) = SPixel%Sn(index,:) * sx_correction
+   SPixel%Sn(:,index) = SPixel%Sn(:,index) * sx_correction
+
+end subroutine convert_state_element_to_linear

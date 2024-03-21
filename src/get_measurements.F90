@@ -211,9 +211,14 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
                      SAD_Chan(ii)%Solar%F0) / Pi
                ! Compute uncertainty in terms of radiance
                if (SAD_Chan(ii)%Solar%SNR > 0.0) then
-                  ! variance = (Lx / SNR)**2 + 2(gain / sqrt(12))**2
-                  dLx = sqrt((Lx / SAD_Chan(ii)%Solar%SNR) ** 2 + &
-                             MSI_Data%cal_gain(ii) ** 2 / 6.0)
+                  if (MSI_Data%cal_gain(ii) > 0.0) then
+                     ! variance = (Lx / SNR)**2 + 2(gain / sqrt(12))**2
+                     dLx = sqrt((Lx / SAD_Chan(ii)%Solar%SNR) ** 2 + &
+                              MSI_Data%cal_gain(ii) ** 2 / 6.0)
+                  else
+                     ! Sensor does not report gain so switch to 2nd order version of below
+                     dLx = Lx / SAD_Chan(ii)%Solar%SNR
+                  end if
                else
                   ! variance = a**2 Lx**2 + b**2 Lx + c**2
                   dLx = sqrt(SAD_Chan(ii)%Solar%ru2(1) * Lx * Lx + &

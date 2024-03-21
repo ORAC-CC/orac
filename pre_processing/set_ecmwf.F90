@@ -67,6 +67,9 @@
 !                 ERA5 data if the standard BADC ERA5 data isn't found.
 ! 2023/06/26, GT: nwp_time_factor change for BADC ERA5 is now changed in
 !                 orac_preproc.F90, so it can be overriden by the driver file.
+! 2024/03/12, GT: Bug-fix to ensure that, if needed, provisional ERA5t filename
+!                 is correctly set for surface parameters, when reading BADC
+!                 ERA5 data.
 !
 ! Bugs:
 ! None known.
@@ -366,10 +369,11 @@ subroutine determine_jasmin_filenames_era5(nwp_fnames, cyear, cmonth, cday, chou
     character(len=path_length)                :: ml_dir, sfc_dir, filebase
     logical                                   :: f_tester
 
+    filebase = '/ecmwf-era5_oper_an_'
     ml_dir = trim(adjustl(nwp_fnames%nwp_path(idx)))//'/an_ml/'// &
              trim(adjustl(cyear))//'/'// &
              trim(adjustl(cmonth))//'/'// &
-             trim(adjustl(cday))//'/ecmwf-era5_oper_an_ml_'// &
+             trim(adjustl(cday))//trim(adjustl(filebase))//'ml_'// &
              trim(adjustl(cyear))// &
              trim(adjustl(cmonth))// &
              trim(adjustl(cday))// &
@@ -403,7 +407,7 @@ subroutine determine_jasmin_filenames_era5(nwp_fnames, cyear, cmonth, cday, chou
     sfc_dir = trim(adjustl(nwp_fnames%nwp_path(idx)))//'/an_sfc/'// &
               trim(adjustl(cyear))//'/'// &
               trim(adjustl(cmonth))//'/'// &
-              trim(adjustl(cday))//'/ecmwf-era5_oper_an_sfc_'// &
+              trim(adjustl(cday))//trim(adjustl(filebase))//'sfc_'// &
               trim(adjustl(cyear))// &
               trim(adjustl(cmonth))// &
               trim(adjustl(cday))// &

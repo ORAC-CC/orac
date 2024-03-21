@@ -340,7 +340,8 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, SAD_LUT, MSI_Data, RTM, SPixel, status)
    end if ! End of RTMIntMeth /= RTMIntMethNone
 
    call Get_X(Ctrl, SPixel, MSI_Data, status)
-!  if (status /= 0) go to 99 ! Skip further data reading
+
+   call Set_Limits(Ctrl, SPixel, SAD_LUT, status)
 
    ! If stat indicates a "super-pixel fatal" condition set the quality
    ! control flag bit to indicate no processing.
