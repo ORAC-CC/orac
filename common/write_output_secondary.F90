@@ -127,7 +127,7 @@ if (ind%flags%do_cloud) then
 
    do i = 1, ind%NSolar
       write(input_num,"(i4)") ind%Y_Id(i)
-      input_dummy='albedo_in_channel_no_'//trim(adjustl(input_num))
+      input_dummy = 'albedo_in_channel_no_'//trim(adjustl(input_num))
 
       call ncdf_write_array(ncid, trim(adjustl(input_dummy)), &
            output_data%vid_albedo(i), output_data%albedo(ind%X0:,:,i), &
@@ -154,7 +154,7 @@ end if
 
    do i = 1, ind%Ny
       write(input_num,"(i4)") ind%Y_Id(i)
-      input_dummy='radiance_in_channel_no_'//trim(adjustl(input_num))
+      input_dummy = 'radiance_in_channel_no_'//trim(adjustl(input_num))
 
       call ncdf_write_array(ncid, trim(adjustl(input_dummy)), &
            output_data%vid_channels(i), output_data%channels(ind%X0:,:,i), &
@@ -164,7 +164,7 @@ end if
    if (ind%flags%do_meas_error) then
       do i = 1, ind%Ny
          write(input_num,"(i4)") ind%Y_Id(i)
-         input_dummy='measurement_uncertainty_in_channel_no_'//trim(adjustl(input_num))
+         input_dummy = 'measurement_uncertainty_in_channel_no_'//trim(adjustl(input_num))
          call ncdf_write_array(ncid, trim(adjustl(input_dummy)), &
               output_data%vid_Sy(i), output_data%Sy(ind%X0:,:,i), &
               1, 1, ind%Xdim, 1, 1, ind%Ydim)
@@ -173,7 +173,7 @@ end if
 
    do i = 1, ind%Ny
       write(input_num,"(i4)") ind%Y_Id(i)
-      input_dummy='firstguess_radiance_in_channel_no_'//trim(adjustl(input_num))
+      input_dummy = 'firstguess_radiance_in_channel_no_'//trim(adjustl(input_num))
 
       call ncdf_write_array(ncid, trim(adjustl(input_dummy)), &
            output_data%vid_y0(i), output_data%y0(ind%X0:,:,i), &
@@ -182,7 +182,7 @@ end if
 
    do i = 1, ind%Ny
       write(input_num,"(i4)") ind%Y_Id(i)
-      input_dummy='radiance_residual_in_channel_no_'//trim(adjustl(input_num))
+      input_dummy = 'radiance_residual_in_channel_no_'//trim(adjustl(input_num))
 
       call ncdf_write_array(ncid, trim(adjustl(input_dummy)), &
            output_data%vid_residuals(i), output_data%residuals(ind%X0:,:,i), &
@@ -197,7 +197,7 @@ if (ind%flags%do_covariance) then
       do j = 1, ind%Nx
          write(input_num1,"(i4)") i
          write(input_num2,"(i4)") j
-         input_dummy='covariance_matrix_element_' // &
+         input_dummy = 'covariance_matrix_element_' // &
               trim(adjustl(input_num1))//trim(adjustl(input_num2))
          call ncdf_write_array(ncid, input_dummy, &
               output_data%vid_covariance(i,j), &

@@ -278,4 +278,3 @@ subroutine dealloc_input_data_secondary_class(data)
    call dealloc_input_data_secondary_common(data)
 
 end subroutine dealloc_input_data_secondary_class
-

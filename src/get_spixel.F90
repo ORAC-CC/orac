@@ -247,7 +247,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, SAD_LUT, MSI_Data, RTM, SPixel, status)
 #ifdef DEBUG
          write(*, *) 'WARNING: Get_SPixel(): Incorrect particle type in  ' // &
                      'pixel starting at:', SPixel%Loc%X0, SPixel%Loc%Y0
-         write(*,*)  'Type: ',SPixelType
+         write(*,*)  'Type: ', SPixelType
 #endif
          go to 99 ! Skip further data reading
       end if

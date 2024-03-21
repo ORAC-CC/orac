@@ -74,7 +74,7 @@ subroutine alloc_input_data_classify(ind, data, read_cost, read_ctt)
    else
       nullify(data%ctt)
    end if
-   
+
    nullify(data%aot550)
    nullify(data%aot550_uncertainty)
    nullify(data%aot870)
