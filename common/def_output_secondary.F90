@@ -60,6 +60,7 @@
 !    to identify thermal channels rather than dealing with Ch_Is.
 ! 2016/03/04, AP: Homogenisation of I/O modules.
 ! 2016/07/08, GM: Add fields for cloud layer 2.
+! 2023/10/10, GT: Added optional output of measurement uncertainties
 !
 ! Bugs:
 ! None known.
@@ -217,11 +218,11 @@ end if
 
 if (indexing%flags%do_rho) then
    i_rho = 0
-   do i=1,indexing%NSolar
+   do i = 1, indexing%NSolar
 
       write(input_num,"(i4)") indexing%Y_Id(indexing%YSolar(i))
 
-      do j=1,MaxRho_XX
+      do j = 1, MaxRho_XX
          if (indexing%rho_terms(i,j)) then
             i_rho = i_rho + 1
 
@@ -275,7 +276,7 @@ end if
 
 if (indexing%flags%do_swansea) then
    i_rho = 0
-   do i=1,indexing%NSolar
+   do i = 1, indexing%NSolar
       if (indexing%ss_terms(i)) then
          i_rho = i_rho + 1
 
@@ -284,9 +285,9 @@ if (indexing%flags%do_swansea) then
    !----------------------------------------------------------------------------
    ! swansea_s_ap_in_channel_no_*
    !----------------------------------------------------------------------------
-         input_dummy2='s parameter a priori in channel no '// &
+         input_dummy2 = 's parameter a priori in channel no '// &
               trim(adjustl(input_num))
-         input_dummy='swansea_s_ap_in_channel_no_'//trim(adjustl(input_num))
+         input_dummy = 'swansea_s_ap_in_channel_no_'//trim(adjustl(input_num))
 
          call ncdf_def_var_short_packed_float( &
               ncid, &
@@ -307,9 +308,9 @@ if (indexing%flags%do_swansea) then
    !----------------------------------------------------------------------------
    ! swansea_s_fg_in_channel_no_*
    !----------------------------------------------------------------------------
-         input_dummy2='s parameter first guess in channel no '// &
+         input_dummy2 = 's parameter first guess in channel no '// &
               trim(adjustl(input_num))
-         input_dummy='swansea_s_fg_in_channel_no_'//trim(adjustl(input_num))
+         input_dummy = 'swansea_s_fg_in_channel_no_'//trim(adjustl(input_num))
 
          call ncdf_def_var_short_packed_float( &
               ncid, &
@@ -330,16 +331,16 @@ if (indexing%flags%do_swansea) then
    end do
 
 
-   do i=1,indexing%NViews
+   do i = 1, indexing%NViews
 
       write(input_num,"(i4)") i
 
    !----------------------------------------------------------------------------
    ! swansea_p_ap_in_channel_no_*
    !----------------------------------------------------------------------------
-      input_dummy2='p parameter a priori in channel no '//&
+      input_dummy2 = 'p parameter a priori in channel no '//&
            trim(adjustl(input_num))
-      input_dummy='swansea_p_ap_in_view_no_'//trim(adjustl(input_num))
+      input_dummy = 'swansea_p_ap_in_view_no_'//trim(adjustl(input_num))
 
       call ncdf_def_var_short_packed_float( &
            ncid, &
@@ -360,9 +361,9 @@ if (indexing%flags%do_swansea) then
    !----------------------------------------------------------------------------
    ! swansea_p_fg_in_channel_no_*
    !----------------------------------------------------------------------------
-      input_dummy2='p parameter first guess in channel no '//&
+      input_dummy2 = 'p parameter first guess in channel no '//&
            trim(adjustl(input_num))
-      input_dummy='swansea_p_fg_in_view_no_'//trim(adjustl(input_num))
+      input_dummy = 'swansea_p_fg_in_view_no_'//trim(adjustl(input_num))
 
       call ncdf_def_var_short_packed_float( &
            ncid, &
@@ -674,12 +675,12 @@ if (indexing%flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! albedo_in_channel_no_*
    !----------------------------------------------------------------------------
-   do i=1,indexing%NSolar
+   do i = 1, indexing%NSolar
 
       write(input_num,"(i4)") indexing%Y_Id(indexing%YSolar(i))
 
-      input_dummy='albedo_in_channel_no_'//trim(adjustl(input_num))
-      input_dummy2='albedo in channel no '//trim(adjustl(input_num))
+      input_dummy = 'albedo_in_channel_no_'//trim(adjustl(input_num))
+      input_dummy2 = 'albedo in channel no '//trim(adjustl(input_num))
 
       call ncdf_def_var_short_packed_float( &
            ncid, &
@@ -702,21 +703,20 @@ end if
    !----------------------------------------------------------------------------
    ! reflectance and brightness temperature _in_channel_no_*
    !----------------------------------------------------------------------------
-   do i=1,indexing%Ny
+   do i = 1, indexing%Ny
 
       write(input_num,"(i4)") indexing%Y_Id(i)
 
       if (btest(indexing%Ch_Is(i), ThermalBit)) then
-         input_dummy='brightness_temperature_in_channel_no_'// &
+         input_dummy = 'brightness_temperature_in_channel_no_'// &
               trim(adjustl(input_num))
-         input_dummy2='brightness temperature in channel no '// &
+         input_dummy2 = 'brightness temperature in channel no '// &
               trim(adjustl(input_num))
-         input_dummy3='kelvin'
+         input_dummy3 = 'kelvin'
       else
-         input_dummy='reflectance_in_channel_no_'//trim(adjustl(input_num))
-         input_dummy2='reflectance in channel no '//trim(adjustl(input_num))
-         input_dummy3='1'
-
+         input_dummy = 'reflectance_in_channel_no_'//trim(adjustl(input_num))
+         input_dummy2 = 'reflectance in channel no '//trim(adjustl(input_num))
+         input_dummy3 = '1'
       end if
 
       call ncdf_def_var_short_packed_float( &
@@ -738,24 +738,60 @@ end if
    end do
 
    !----------------------------------------------------------------------------
+   ! measurement uncertainty _in_channel_no_*
+   !----------------------------------------------------------------------------
+   if (indexing%flags%do_meas_error) then
+      do i = 1, indexing%Ny
+
+         write(input_num,"(i4)") indexing%Y_Id(i)
+
+         input_dummy = 'measurement_uncertainty_in_channel_no_'// &
+              trim(adjustl(input_num))
+         input_dummy2 = 'measurement uncertainty in channel no '// &
+              trim(adjustl(input_num))
+         if (btest(indexing%Ch_Is(i), ThermalBit)) then
+            input_dummy3 = 'kelvin'
+         else
+            input_dummy3 = '1'
+         end if
+         call ncdf_def_var_short_packed_float( &
+              ncid, &
+              dims_var, &
+              trim(adjustl(input_dummy)), &
+              output_data%vid_Sy(i), &
+              verbose, &
+              long_name     = trim(adjustl(input_dummy2)), &
+              standard_name = trim(adjustl(input_dummy)), &
+              fill_value    = sint_fill_value, &
+              scale_factor  = output_data%Sy_scale(i), &
+              add_offset    = output_data%Sy_offset(i), &
+              valid_min     = output_data%Sy_vmin(i), &
+              valid_max     = output_data%Sy_vmax(i), &
+              units         = trim(adjustl(input_dummy3)), &
+              deflate_level = deflate_level, &
+              shuffle       = shuffle_flag)
+      end do
+   end if
+
+   !----------------------------------------------------------------------------
    ! firstguess reflectance and brightness temperature _in_channel_no_*
    !----------------------------------------------------------------------------
-   do i=1,indexing%Ny
+   do i = 1, indexing%Ny
 
       write(input_num,"(i4)") indexing%Y_Id(i)
 
       if (btest(indexing%Ch_Is(i), ThermalBit)) then
-         input_dummy='firstguess_brightness_temperature_in_channel_no_'// &
+         input_dummy = 'firstguess_brightness_temperature_in_channel_no_'// &
               trim(adjustl(input_num))
-         input_dummy2='firstguess brightness temperature in channel no '// &
+         input_dummy2 = 'firstguess brightness temperature in channel no '// &
               trim(adjustl(input_num))
-         input_dummy3='kelvin'
+         input_dummy3 = 'kelvin'
       else
-         input_dummy='firstguess_reflectance_in_channel_no_'// &
+         input_dummy = 'firstguess_reflectance_in_channel_no_'// &
               trim(adjustl(input_num))
-         input_dummy2='firstguess reflectance in channel no '// &
+         input_dummy2 = 'firstguess reflectance in channel no '// &
               trim(adjustl(input_num))
-         input_dummy3='1'
+         input_dummy3 = '1'
       end if
 
       call ncdf_def_var_short_packed_float( &
@@ -779,22 +815,22 @@ end if
    !----------------------------------------------------------------------------
    ! reflectances and brightness temperature _residual_in_channel_no_*
    !----------------------------------------------------------------------------
-   do i=1,indexing%Ny
+   do i = 1, indexing%Ny
 
       write(input_num,"(i4)") indexing%Y_Id(i)
 
       if (btest(indexing%Ch_Is(i), ThermalBit)) then
-         input_dummy='brightness_temperature_residual_in_channel_no_'// &
+         input_dummy = 'brightness_temperature_residual_in_channel_no_'// &
               trim(adjustl(input_num))
-         input_dummy2='brightness temperature residual in channel no '// &
+         input_dummy2 = 'brightness temperature residual in channel no '// &
               trim(adjustl(input_num))
-         input_dummy3='kelvin'
+         input_dummy3 = 'kelvin'
       else
-         input_dummy='reflectance_residual_in_channel_no_'// &
+         input_dummy = 'reflectance_residual_in_channel_no_'// &
               trim(adjustl(input_num))
-         input_dummy2='reflectance residual in channel no '// &
+         input_dummy2 = 'reflectance residual in channel no '// &
               trim(adjustl(input_num))
-         input_dummy3='1'
+         input_dummy3 = '1'
       end if
 
       call ncdf_def_var_short_packed_float( &

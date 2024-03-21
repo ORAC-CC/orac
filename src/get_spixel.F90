@@ -192,6 +192,9 @@
 !    surface reflectance.
 ! 2022/01/27, GT: Added MSI_Data as an argument to Get_X (needed if using
 !    SelmAUX to set a priori/first guess)
+! 2023/10/01, GT: Added some initial zeroing of channel counts, so that if the
+!    current pixel is skipped, it is apparent that SPixel data is not valid for
+!    the current pixel.
 !
 ! Bugs:
 ! None known.
@@ -236,6 +239,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, SAD_LUT, MSI_Data, RTM, SPixel, status)
 #ifdef DEBUG
          write(*, *) 'WARNING: Get_SPixel(): Incorrect particle type in  ' // &
                      'pixel starting at:', SPixel%Loc%X0, SPixel%Loc%Y0
+         write(*,*)  'Type: ', SPixelType
 #endif
          go to 99 ! Skip further data reading
       end if
@@ -343,9 +347,13 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, SAD_LUT, MSI_Data, RTM, SPixel, status)
 
    call Set_Limits(Ctrl, SPixel, SAD_LUT, status)
 
-   ! If stat indicates a "super-pixel fatal" condition set the quality
-   ! control flag bit to indicate no processing.
+   ! If stat indicates a "super-pixel fatal" condition set the channel
+   ! counts to zero to prevent output of various arrays.
 99 if (status /= 0) then
+      SPixel%Ind%Ny = 0
+      SPixel%Ind%NSolar = 0
+      SPixel%Ind%NThermal = 0
+      SPixel%Ind%NMixed = 0
 #ifdef DEBUG
      write(*,*) 'WARNING: Get_SPixel() error status', status
 #endif

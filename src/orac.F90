@@ -323,6 +323,7 @@ subroutine orac(mytask,ntasks,lower_bound,upper_bound,drifile)
    Ctrl%Ind%flags%do_ann_phase_uncertainty = .true.
    Ctrl%Ind%flags%do_phase               = .false.
    Ctrl%Ind%flags%do_covariance          = .false.
+   Ctrl%Ind%flags%do_meas_error          = .true.
 
    ! Set the size of the SAD_Chan and Cloud Class arrays based on the Ctrl
    ! parameters and read the SAD values.

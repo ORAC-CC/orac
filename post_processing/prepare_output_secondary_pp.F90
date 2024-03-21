@@ -20,6 +20,7 @@
 ! 2015/12/30, AP: Have all albedo fields use the same values.
 ! 2016/03/04, AP: Tidy prepare_*_packed_float.
 ! 2017/01/09, CP: ML additions.
+! 2023/10/10, GT: Added optional output of measurement uncertainties
 !
 ! Bugs:
 ! None known.
@@ -80,8 +81,8 @@ if (indexing%flags%do_rho) then
    ! rho_ap, rho_fg
    !----------------------------------------------------------------------------
    i_rho = 0
-   do k=1,indexing%NSolar
-      do l=1,MaxRho_XX
+   do k = 1, indexing%NSolar
+      do l = 1, MaxRho_XX
          if (indexing%rho_terms(k,l)) then
             i_rho = i_rho + 1
 
@@ -106,7 +107,7 @@ if (indexing%flags%do_swansea) then
    ! swansea_s_ap, swansea_s_fg
    !----------------------------------------------------------------------------
    i_rho = 0
-   do k=1,indexing%NSolar
+   do k = 1,indexing%NSolar
       if (indexing%ss_terms(k)) then
          i_rho = i_rho + 1
 
@@ -130,7 +131,7 @@ if (indexing%flags%do_swansea) then
       end if
    end do
 
-   do k=1,indexing%NViews
+   do k = 1, indexing%NViews
       call prepare_short_packed_float( &
            input_data%swansea_p_ap(i,j,k), output_data%swansea_p_ap(i,j,k), &
            output_data%swansea_p_ap_scale, output_data%swansea_p_ap_offset, &
@@ -209,7 +210,7 @@ if (indexing%flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! albedo
    !----------------------------------------------------------------------------
-   do k=1,indexing%NSolar
+   do k = 1, indexing%NSolar
       call prepare_short_packed_float( &
            input_data%albedo(i,j,k), output_data%albedo(i,j,k), &
            output_data%albedo_scale, output_data%albedo_offset, &
@@ -270,7 +271,7 @@ end if
    !----------------------------------------------------------------------------
    ! channels
    !----------------------------------------------------------------------------
-   do k=1,indexing%Ny
+   do k = 1, indexing%Ny
       call prepare_short_packed_float( &
            input_data%channels(i,j,k), output_data%channels(i,j,k), &
            output_data%channels_scale(k), output_data%channels_offset(k), &
@@ -279,9 +280,22 @@ end if
    end do
 
    !----------------------------------------------------------------------------
+   ! Measurement error (diagonals)
+   !----------------------------------------------------------------------------
+   if (indexing%flags%do_meas_error) then
+      do k = 1, indexing%Ny
+         call prepare_short_packed_float( &
+              input_data%Sy(i,j,k), output_data%Sy(i,j,k), &
+              output_data%Sy_scale(k), output_data%Sy_offset(k), &
+              output_data%Sy_vmin(k), output_data%Sy_vmax(k), &
+              sreal_fill_value, sint_fill_value)
+      end do
+   end if
+
+   !----------------------------------------------------------------------------
    ! y0
    !----------------------------------------------------------------------------
-   do k=1,indexing%Ny
+   do k = 1, indexing%Ny
       call prepare_short_packed_float( &
            input_data%y0(i,j,k), output_data%y0(i,j,k), &
            output_data%y0_scale(k), output_data%y0_offset(k), &
@@ -292,7 +306,7 @@ end if
    !----------------------------------------------------------------------------
    ! residuals
    !----------------------------------------------------------------------------
-   do k=1,indexing%Ny
+   do k = 1, indexing%Ny
       call prepare_short_packed_float( &
            input_data%residuals(i,j,k), output_data%residuals(i,j,k), &
            output_data%residuals_scale(k), output_data%residuals_offset(k), &

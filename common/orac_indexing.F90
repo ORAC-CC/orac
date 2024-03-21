@@ -12,6 +12,7 @@
 ! 2016/07/19, AP: Reduce rho and swansea_s to only contain terms that were
 !    retrieved. This is indicated by the rho|ss_terms array (and Nrho|Nss).
 ! 2017/05/17, OS: Added ann phase variables
+! 2023/10/10, GT: Added do_meas_error flag
 !
 ! Bugs:
 ! None known.
@@ -42,6 +43,7 @@ module orac_indexing_m
 
       ! Secondary file flags
       logical :: do_covariance          ! Output the final covariance matrix
+      logical :: do_meas_error          ! Measurement uncertainties (diagonal)
    end type common_file_flags_t
 
 
@@ -97,6 +99,7 @@ module orac_indexing_m
    integer, parameter :: ann_phase_u_bit   = 10
    integer, parameter :: phase_bit         = 11
    integer, parameter :: covariance_bit    = 12
+   integer, parameter :: meas_error_bit    = 13
 
 
 contains
@@ -122,6 +125,7 @@ subroutine make_bitmask_from_common_file_flags(flags, bitmask)
    if (flags%do_ann_phase_uncertainty) bitmask = ibset(bitmask, ann_phase_u_bit)
    if (flags%do_phase)               bitmask = ibset(bitmask, phase_bit)
    if (flags%do_covariance)          bitmask = ibset(bitmask, covariance_bit)
+   if (flags%do_meas_error)          bitmask = ibset(bitmask, meas_error_bit)
 
 end subroutine make_bitmask_from_common_file_flags
 
@@ -146,6 +150,7 @@ subroutine set_common_file_flags_from_bitmask(bitmask, flags)
    flags%do_ann_phase_uncertainty = btest(bitmask, ann_phase_u_bit)
    flags%do_phase               = btest(bitmask, phase_bit)
    flags%do_covariance          = btest(bitmask, covariance_bit)
+   flags%do_meas_error          = btest(bitmask, meas_error_bit)
 
 end subroutine set_common_file_flags_from_bitmask
 

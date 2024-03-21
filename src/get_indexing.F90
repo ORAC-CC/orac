@@ -161,6 +161,8 @@ subroutine Get_Indexing(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
       return
    end if
 
+   if (all(is_not_used_or_missing)) status = SPixelSkip
+
    ! Select appropriate logic for channel selection
    select case (Ctrl%Approach)
    case (AppCld1L)
