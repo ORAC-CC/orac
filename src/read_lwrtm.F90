@@ -127,21 +127,7 @@ subroutine Read_LwRTM(Ctrl, RTM)
                  Ctrl%FID%LWRTM
       stop error_stop_code
    end if
-   ! for Sentinel-3 we need to remove the "-" from the platform name
-   if (platform(1:10) == 'Sentinel-3') then
-      platform = platform(1:8)//platform(10:11)
-   end if
-   if (sensor =='AATSR' .or. sensor =='ATSR2' ) then
-      instname = trim(adjustl(sensor))
-   else
-      instname = trim(adjustl(sensor))//'-'//trim(adjustl(platform))
-   end if
-   ! for metop, sensor name needs to be capitalized
-   if (platform(1:6) == 'metopa') then
-      instname = 'AVHRR-METOPA'
-   elseif (platform(1:6) == 'metopb') then
-      instname = 'AVHRR-METOPB'
-   end if
+   instname = trim(adjustl(sensor))//'-'//trim(adjustl(platform))
 
    if (trim(adjustl(instname)) /= trim(adjustl(Ctrl%InstName))) then
       write(*,*) 'ERROR: Read_LwRTM(): Instrument in LWRTM header inconsistent: ', &

@@ -22,7 +22,6 @@ contains
 #include "check_limits.F90"
 #include "invert_marquardt.F90"
 #include "set_kx.F90"
-#include "set_limits.F90"
 #include "set_sy.F90"
 
 end module Inversion_m

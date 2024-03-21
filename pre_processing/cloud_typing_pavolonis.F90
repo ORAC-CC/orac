@@ -83,6 +83,9 @@
 ! 2021/12/14, DP: Added external SEVIRI ANN
 ! 2021/1/21, DP: Added spectral response correction for MSG1/MSG2/MSG3/MSG4
 !                SEVIRI and Sentinal-3A/Sentinel-3B SLSTR.
+! 2024/03/13, GT: Added a check for missing values in the 11 micron band before
+!                 attempting cloud masking/typing. This catches pixels which
+!                 exist and are geolocated, but have no data.
 !
 ! Bugs:
 ! None known.
@@ -811,11 +814,24 @@ subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
       !$OMP DO SCHEDULE(GUIDED)
       i_loop: do  i = imager_geolocation%startx, imager_geolocation%endx
          j_loop: do j = 1, imager_geolocation%ny
-             call cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
+             ! Check for pixels with no valid data in the 11 micron band,
+             ! skipping cloud-typing for these data (usually the case at
+             ! the edge of SLSTR swaths, for instance)
+             if (imager_measurements%data(i,j,ch5) .lt. 0.0) then
+                imager_pavolonis%cldtype(i,j,cview) = BYTE_FILL_VALUE
+                imager_pavolonis%cldmask(i,j,cview) = BYTE_FILL_VALUE
+                imager_pavolonis%cldmask_uncertainty(i,j,cview) = SREAL_FILL_VALUE
+                imager_pavolonis%cccot_pre(i,j,cview) = SREAL_FILL_VALUE
+                imager_pavolonis%ann_phase(i,j,cview) = BYTE_FILL_VALUE
+                imager_pavolonis%ann_phase_uncertainty(i,j,cview) = SREAL_FILL_VALUE
+                imager_pavolonis%cphcot(i,j,cview) = SREAL_FILL_VALUE
+             else
+                call cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
                   sw1, sw2, sw3, imager_flags, surface, imager_angles, &
                   imager_geolocation, imager_measurements, imager_pavolonis, &
                   sensor, platform, doy, do_ironly, verbose, skint, snow_ice_mask, &
                   use_seviri_ann_cma_cph)
+             end if
          end do j_loop
       end do i_loop
 
@@ -2058,77 +2074,55 @@ function plank_inv(input_platform, T)
 
    ! select appropriate row of coefficient values
    select case (input_platform)
-   case ("noaa5")
+   case ("NOAA-5")
       index = 1
-   case ("noaa6")
+   case ("NOAA-6")
       index = 2
-   case ("noaa7")
+   case ("NOAA-7")
       index = 3
-   case ("noaa8")
+   case ("NOAA-8")
       index = 4
-   case ("noaa9")
+   case ("NOAA-9")
       index = 5
-   case ("noaa10")
+   case ("NOAA-10")
       index = 6
-   case ("noaa11")
+   case ("NOAA-11")
       index = 7
-   case ("noaa12")
+   case ("NOAA-12")
       index = 8
-   case ("noaa14")
+   case ("NOAA-14")
       index = 9
-   case ("noaa15")
+   case ("NOAA-15")
       index = 10
-   case ("noaa16")
+   case ("NOAA-16")
       index = 11
-   case ("noaa17")
+   case ("NOAA-17")
       index = 12
-   case ("noaa18")
+   case ("NOAA-18")
       index = 13
-   case ("noaa19")
+   case ("NOAA-19")
       index = 14
-   case ("metop01")
+   case ("Metop-B")
       index = 15
-   case ("metopb")
-      index = 15
-   case ("metop02")
-      index = 16
-   case ("metopa")
+   case ("Metop-A")
       index = 16
    case ("TERRA")
       index = 17
    case ("AQUA")
       index = 18
-   case ("Envisat")
+   case ("Envisat", "ERS2")
       index = 19
-   case ("ERS2")
-      index = 19
-   case ("MSG1")
+   case ("MSG-1", "MSG-2", "MSG-3", "MSG-4")
       index = 20
-   case ("MSG2")
-      index = 20
-   case ("MSG3")
-      index = 20
-   case ("MSG4")
-      index = 20
-   case ("Himawari-8")
+   case ("Himawari-8", "Himawari-9")
       index = 21
-   case ("Himawari-9")
-      index = 21
-   case ("GOES-16")
+   case ("GOES-16", "GOES-17", "GOES-18")
       index = 22
-   case ("GOES-17")
-      index = 22
-   case ("SuomiNPP")
+   case ("Suomi-NPP", "NOAA-20", "NOAA-21")
       index = 23
-   case ("NOAA20")
-      index = 23
-   case ("Sentinel3a")
+   case ("Sentinel-3a", "Sentinel-3b")
       index = 24
-   case ("Sentinel3b")
-      index = 24
-   case ("FY-4A")
-      index = 25
-   case ("FY-4B")
+   case ("FY-4A", "FY-4B")
       index = 25
    case ("default")
       index = 26
@@ -2204,41 +2198,41 @@ function get_platform_index(input_platform)
 
    ! select appropriate row of coefficient values
    select case (input_platform)
-   case ("noaa5")
+   case ("NOAA-5")
       index = 1
-   case ("noaa6")
+   case ("NOAA-6")
       index = 2
-   case ("noaa7")
+   case ("NOAA-7")
       index = 3
-   case ("noaa8")
+   case ("NOAA-8")
       index = 4
-   case ("noaa9")
+   case ("NOAA-9")
       index = 5
-   case ("noaa10")
+   case ("NOAA-10")
       index = 6
-   case ("noaa11")
+   case ("NOAA-11")
       index = 7
-   case ("noaa12")
+   case ("NOAA-12")
       index = 8
-   case ("noaa13")
+   case ("NOAA-13")
       index = 9
-   case ("noaa14")
+   case ("NOAA-14")
       index = 10
-   case ("noaa15")
+   case ("NOAA-15")
       index = 11
-   case ("noaa16")
+   case ("NOAA-16")
       index = 12
-   case ("noaa17")
+   case ("NOAA-17")
       index = 13
-   case ("noaa18")
+   case ("NOAA-18")
       index = 14
-   case ("noaa19")
+   case ("NOAA-19")
       index = 15
-   case ("noaa20")
+   case ("NOAA-20")
       index = 16
-   case ("metopa")
+   case ("Metop-B")
       index = 17
-   case ("metop02")
+   case ("Metop-A")
       index = 18
    case ("TERRA")
       index = 19
@@ -2248,17 +2242,17 @@ function get_platform_index(input_platform)
       index = 21
    case ("Envisat")
       index = 22
-   case ("MSG1")
+   case ("MSG-1")
       index = 23
-   case ("MSG2")
+   case ("MSG-2")
       index = 24
-   case ("MSG3")
+   case ("MSG-3")
       index = 25
-   case ("MSG4")
+   case ("MSG-4")
       index = 26
-   case ("Sentinel3a")
+   case ("Sentinel-3a")
       index = 27
-   case ("Sentinel3b")
+   case ("Sentinel-3b")
       index = 28
    case ("default")
       ! 15 = NOAA19, the baseline, for which slopes = 1 and intercepts = 0

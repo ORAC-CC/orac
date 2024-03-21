@@ -39,10 +39,11 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine Set_Limits(Ctrl, SPixel, status)
+subroutine Set_Limits(Ctrl, SPixel, SAD_LUT, status)
 
    use Ctrl_m
    use ORAC_Constants_m
+   use SAD_LUT_m
    use SPixel_m
 
    implicit none
@@ -51,6 +52,7 @@ subroutine Set_Limits(Ctrl, SPixel, status)
 
    type(Ctrl_t),   intent(in)    :: Ctrl
    type(SPixel_t), intent(inout) :: SPixel
+   type(SAD_LUT_t),intent(in)    :: SAD_LUT(:)
    integer,        intent(out)   :: status
 
    ! Local variable declarations
@@ -68,6 +70,21 @@ subroutine Set_Limits(Ctrl, SPixel, status)
    SPixel%XLLim = Ctrl%Invpar%XLLim
    SPixel%XULim = Ctrl%Invpar%XULim
 
+   ! Check for logarithmic LUT axes
+
+   if (SAD_LUT(1)%Grid%Tau%log) then
+      call convert_state_element_to_log(SPixel, ITau)
+   end if
+   if (Ctrl%Approach == AppCld2L .and. SAD_LUT(2)%Grid%Tau%log) then
+      call convert_state_element_to_log(SPixel, ITau2)
+   end if
+   if (SAD_LUT(1)%Grid%Re%log) then
+      call convert_state_element_to_log(SPixel, IRe)
+   end if
+   if (Ctrl%Approach == AppCld2L .and. SAD_LUT(2)%Grid%Re%log) then
+      call convert_state_element_to_log(SPixel, IRe2)
+   end if
+
    ! Set surface temperature values separately. Firstly, determine whether Ts is
    ! an active state variable. If so, set the range to 3 standard deviations
    ! away from the a priori Ts value.
@@ -82,7 +99,27 @@ subroutine Set_Limits(Ctrl, SPixel, status)
 
    ! Dynamically set upper limit of cloud top pressure to lowest profile
    ! pressure of current pixel.
+
    if (Ctrl%RTMIntSelm /= RTMIntMethNone) &
         SPixel%XULim(IPc) = SPixel%RTM%P(SPixel%RTM%Np)
+
+   ! Ensure retrieval does not go outside the LUT grid
+
+   if (SPixel%XLLim(ITau) < SAD_LUT(1)%Grid%Tau%Min) &
+        SPixel%XLLim(ITau) = SAD_LUT(1)%Grid%Tau%Min
+   if (Ctrl%Approach == AppCld2L .and. SPixel%XLLim(ITau2) < SAD_LUT(2)%Grid%Tau%Min) &
+        SPixel%XLLim(ITau2) = SAD_LUT(2)%Grid%Tau%Min
+   if (SPixel%XULim(ITau) > SAD_LUT(1)%Grid%Tau%Max) &
+        SPixel%XULim(ITau) = SAD_LUT(1)%Grid%Tau%Max
+   if (Ctrl%Approach == AppCld2L .and. SPixel%XULim(ITau2) > SAD_LUT(2)%Grid%Tau%Max) &
+        SPixel%XULim(ITau2) = SAD_LUT(2)%Grid%Tau%Max
+   if (SPixel%XLLim(IRe) < SAD_LUT(1)%Grid%Re%Min) &
+        SPixel%XLLim(IRe) = SAD_LUT(1)%Grid%Re%Min
+   if (Ctrl%Approach == AppCld2L .and. SPixel%XLLim(IRe2) < SAD_LUT(2)%Grid%Re%Min) &
+        SPixel%XLLim(IRe2) = SAD_LUT(2)%Grid%Re%Min
+   if (SPixel%XULim(IRe) > SAD_LUT(1)%Grid%Re%Max) &
+        SPixel%XULim(IRe) = SAD_LUT(1)%Grid%Re%Max
+   if (Ctrl%Approach == AppCld2L .and. SPixel%XULim(IRe2) > SAD_LUT(2)%Grid%Re%Max) &
+        SPixel%XULim(IRe2) = SAD_LUT(2)%Grid%Re%Max
 
 end subroutine Set_Limits

@@ -39,6 +39,7 @@
 ! 2017/06/22, OS: Added phase variables.
 ! 2017/07/05, AP: Add channels_used, variables_retrieved. New QC.
 ! 2018/06/08, SP: Add satellite azimuth angle to output.
+! 2023/11/21, GT: Added dealloc_input_data_primary_classify subroutine.
 !
 ! Bugs:
 ! None known.
@@ -196,6 +197,18 @@ subroutine dealloc_input_data_primary_class(data)
 end subroutine dealloc_input_data_primary_class
 
 
+subroutine dealloc_input_data_primary_classify(data)
+
+   implicit none
+
+   type(input_data_primary_t), intent(inout) :: data
+
+   call dealloc_input_data_primary_common(data)
+
+end subroutine dealloc_input_data_primary_classify
+
+
+
 subroutine dealloc_input_data_secondary_common(data)
 
    implicit none
@@ -232,7 +245,6 @@ subroutine dealloc_input_data_secondary_common(data)
    if (associated(data%ctp2_ap))       deallocate(data%ctp2_ap)
    if (associated(data%ctp2_fg))       deallocate(data%ctp2_fg)
 
-
    if (associated(data%y0))            deallocate(data%y0)
    if (associated(data%residuals))     deallocate(data%residuals)
    if (associated(data%ds))            deallocate(data%ds)
@@ -264,3 +276,4 @@ subroutine dealloc_input_data_secondary_class(data)
    call dealloc_input_data_secondary_common(data)
 
 end subroutine dealloc_input_data_secondary_class
+
