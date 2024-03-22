@@ -149,7 +149,7 @@ subroutine Int_LUT_TauRe(F, NChans, Grid, GZero, Ctrl, FInt, FGrads, &
 
    ! Construct the input to Int_LUT_Common(): Function values at four LUT points
    ! around our X
-   do i=1,NChans
+   do i = 1, NChans
       ii = chan_to_ctrl_index(i)
       ii2 = chan_to_spixel_index(i)
 

@@ -9,7 +9,7 @@
 ! 2000/08/03, AS: Original version
 ! 2000/11/23, AS: Rs in Solar is now an array of 2 values rather than a single
 !    real.
-! 2001/01/19, KS:Added SRs and CRs fields to the Solar type.
+! 2001/01/19, KS: Added SRs and CRs fields to the Solar type.
 ! 2001/01/29, KS: Removed SRs and CRs fields - now taken from Ctrl.
 ! 2001/07/11, AS: Added f1 to solar struct. Allows for calculation of f0 based
 !    on the day of year rather than just using an annual mean value.

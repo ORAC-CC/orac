@@ -48,7 +48,7 @@
 ! Name Type In/Out/Both Description
 !
 ! History:
-! 09/02/2012, CP: Original version. Needs modifying to work with AATSR/AVHRR
+! 2012/02/09, CP: Original version. Needs modifying to work with AATSR/AVHRR
 !    does not output covariance information into secondary output file.  Have
 !    not included cloud mask at present.
 ! 2012/03/18, CP: Modified to add cloud flag
@@ -648,7 +648,7 @@ subroutine orac_postproc(mytask, ntasks, lower_bound, upper_bound, &
                       input_primary(0)%cldtype(i,j,1) = SWITCHED_TO_WATER_TYPE
                    end if
                 end if
-  
+
                 ! Once phase is selected fill in the values 1st for wat then for
                 ! ice.
                 ! Now fill in the phase values in the data structure
@@ -718,7 +718,7 @@ subroutine orac_postproc(mytask, ntasks, lower_bound, upper_bound, &
        call dealloc_input_data_primary_all(input_primary(1))
        if (do_secondary)  &
             call dealloc_input_data_secondary_all(input_secondary(1))
-       
+
        do i = 2, n_in_files
           call dealloc_input_data_primary_classify(input_primary(i))
        end do

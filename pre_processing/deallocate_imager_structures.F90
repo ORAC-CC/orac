@@ -36,8 +36,8 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine deallocate_imager_structures(imager_geolocation,imager_angles, &
-     imager_flags,imager_time,imager_measurements,imager_pavolonis, &
+subroutine deallocate_imager_structures(imager_geolocation, imager_angles, &
+     imager_flags, imager_time, imager_measurements, imager_pavolonis, &
      imager_cloud, use_seviri_ann_ctp_fg, use_seviri_ann_mlay)
 
    use preproc_constants_m

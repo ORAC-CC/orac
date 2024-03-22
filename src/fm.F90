@@ -361,7 +361,7 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
          ! calculated in the previous call to R2T to convert dR_dX to
          ! dT_dX (i.e. dY_dX). Write result into appropriate part of
          ! dY_dX array.
-         do i=1,MaxStateVar
+         do i = 1, MaxStateVar
             dY_dX(SPixel%Ind%YMixed,i) = (d_Rad(itherm,i) + &
                  SPixel%f0(isolar) * d_Ref(isolar,i)) * dT_dR
          end do

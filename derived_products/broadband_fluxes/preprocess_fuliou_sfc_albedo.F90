@@ -54,15 +54,15 @@ subroutine preprocess_fuliou_sfc_albedo(nc_alb,rho_0d,rho_dd,rho0d_fuliou, &
    ! Full MODIS spectral channel range
    if (nc_alb .EQ. 8) then
       ! center location of each MODIS band
-      modBand=[0.67,0.87,0.47,0.55,1.24,1.6,2.13,3.7]
+      modBand = [0.67,0.87,0.47,0.55,1.24,1.6,2.13,3.7]
 
       ! neighboring MODIS bands to interpolate to BUGSrad
-      modID1=[1,1,1,1,1,1,1,3,3,4,1,1,2,2,5,6,7,7]
-      modID2=[1,1,1,1,1,1,1,4,4,1,2,2,5,5,6,7,8,8]
+      modID1 = [1,1,1,1,1,1,1,3,3,4,1,1,2,2,5,6,7,7]
+      modID2 = [1,1,1,1,1,1,1,4,4,1,2,2,5,5,6,7,8,8]
 
       ! rho_0d
       rho0d_fuliou(1:7) = rho_0d(3)
-      do I=8,18
+      do I = 8, 18
          m = (rho_0d(modID2(I)) - rho_0d(modID1(I))) / &
              (modBand(modID2(I)) - modBand(modID1(I)))
          b = rho_0d(modID1(I)) - m*modBand(modID1(I))
@@ -73,7 +73,7 @@ subroutine preprocess_fuliou_sfc_albedo(nc_alb,rho_0d,rho_dd,rho0d_fuliou, &
 
       ! rho_dd
       rhodd_fuliou(1:7) = rho_dd(3)
-      do I=8,18
+      do I = 8, 18
          m = (rho_dd(modID2(I)) - rho_dd(modID1(I))) / &
              (modBand(modID2(I)) - modBand(modID1(I)))
          b = rho_dd(modID1(I)) - m*modBand(modID1(I))
@@ -84,14 +84,14 @@ subroutine preprocess_fuliou_sfc_albedo(nc_alb,rho_0d,rho_dd,rho0d_fuliou, &
 
    ! Heritage spectral channel range
    if (nc_alb .EQ. 4) then
-      modBand=[0.67,0.87,1.6,3.7]
+      modBand = [0.67,0.87,1.6,3.7]
 
       ! Neighboring MODIS bands to interpolate to Fu-Liou
-      modID1=[1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,3,3,3]
-      modID2=[1,1,1,1,1,1,1,1,1,1,2,2,3,3,3,4,4,4]
+      modID1 = [1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,3,3,3]
+      modID2 = [1,1,1,1,1,1,1,1,1,1,2,2,3,3,3,4,4,4]
       ! rho_0d
       rho0d_fuliou(1:10) = rho_0d(1)
-      do I=11,18
+      do I = 11, 18
          m = (rho_0d(modID2(I)) - rho_0d(modID1(I))) / &
              (modBand(modID2(I)) - modBand(modID1(I)))
          b = rho_0d(modID1(I)) - m*modBand(modID1(I))
@@ -102,7 +102,7 @@ subroutine preprocess_fuliou_sfc_albedo(nc_alb,rho_0d,rho_dd,rho0d_fuliou, &
 
       ! rho_dd
       rhodd_fuliou(1:10) = rho_dd(1)
-      do I=11,18
+      do I = 11, 18
          m = (rho_dd(modID2(I)) - rho_dd(modID1(I))) / &
              (modBand(modID2(I)) - modBand(modID1(I)))
          b = rho_dd(modID1(I)) - m*modBand(modID1(I))

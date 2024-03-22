@@ -129,11 +129,11 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
    if (channel_info%nchannels_sw .ne. 0) then
       allocate(dummy_chan_vec1d(channel_info%nchannels_sw))
       dummy_chan_vec1d=0_lint
-      ii=1
-      do i=1,channel_info%nchannels_total
+      ii = 1
+      do i = 1, channel_info%nchannels_total
          if (channel_info%channel_sw_flag(i) .eq. 1) then
             dummy_chan_vec1d(ii)=i
-            ii=ii+1
+            ii = ii+1
          end if
       end do
 
@@ -149,11 +149,11 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
    if (channel_info%nchannels_lw .ne. 0) then
       allocate(dummy_chan_vec1d(channel_info%nchannels_lw))
       dummy_chan_vec1d=0_lint
-      ii=1
-      do i=1,channel_info%nchannels_total
+      ii = 1
+      do i = 1, channel_info%nchannels_total
          if (channel_info%channel_lw_flag(i) .eq. 1) then
             dummy_chan_vec1d(ii)=i
-            ii=ii+1
+            ii = ii+1
          end if
       end do
 
@@ -172,11 +172,11 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
    if (channel_info%nchannels_sw .ne. 0) then
       allocate(dummy_chan_vec1d(channel_info%nchannels_sw))
       dummy_chan_vec1d=0_lint
-      ii=1
-      do i=1,channel_info%nchannels_total
+      ii = 1
+      do i = 1, channel_info%nchannels_total
          if (channel_info%channel_sw_flag(i) .eq. 1) then
             dummy_chan_vec1d(ii)=i
-            ii=ii+1
+            ii = ii+1
          end if
       end do
 
@@ -192,11 +192,11 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
    if (channel_info%nchannels_lw .ne. 0) then
       allocate(dummy_chan_vec1d(channel_info%nchannels_lw))
       dummy_chan_vec1d=0_lint
-      ii=1
-      do i=1,channel_info%nchannels_total
+      ii = 1
+      do i = 1, channel_info%nchannels_total
          if (channel_info%channel_lw_flag(i) .eq. 1) then
             dummy_chan_vec1d(ii)=i
-            ii=ii+1
+            ii = ii+1
          end if
       end do
 

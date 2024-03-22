@@ -79,10 +79,10 @@
 !    giving them module scope.
 ! 2017/07/08, GM: Much needed tidying.
 ! 2017/12/20, GT: Changed Sentinel-3 platform name to Sentinel3a or Sentinel3b
-! 2019/8/14, SP: Add Fengyun-4A support.
+! 2019/08/14, SP: Add Fengyun-4A support.
 ! 2021/12/14, DP: Added external SEVIRI ANN
-! 2021/1/21, DP: Added spectral response correction for MSG1/MSG2/MSG3/MSG4
-!                SEVIRI and Sentinal-3A/Sentinel-3B SLSTR.
+! 2021/01/21, DP: Added spectral response correction for MSG1/MSG2/MSG3/MSG4
+!                 SEVIRI and Sentinel-3A/Sentinel-3B SLSTR.
 ! 2024/03/13, GT: Added a check for missing values in the 11 micron band before
 !                 attempting cloud masking/typing. This catches pixels which
 !                 exist and are geolocated, but have no data.
@@ -294,7 +294,7 @@ subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
    integer(kind=sint),          intent(in)    :: doy
    logical,                     intent(in)    :: do_ironly
    logical,                     intent(inout) :: do_spectral_response_correction
-   logical,                     intent(inout)    :: use_seviri_ann_cma_cph
+   logical,                     intent(inout) :: use_seviri_ann_cma_cph
    logical,                     intent(in)    :: use_seviri_ann_ctp_fg
    logical,                     intent(in)    :: use_seviri_ann_mlay
    logical,                     intent(in)    :: do_nasa
@@ -372,7 +372,7 @@ subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
    !--------------------------------------------------------------------
 
    allocate(skint(imager_geolocation%startx:imager_geolocation%endx, &
-                       1:imager_geolocation%ny))
+                  1:imager_geolocation%ny))
    skint = sreal_fill_value
    allocate(snow_depth(imager_geolocation%startx:imager_geolocation%endx, &
                        1:imager_geolocation%ny))
@@ -420,7 +420,7 @@ subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
 
    ! Initialize cloud mask as cloudy
 !  where (imager_pavolonis%cldmask .eq. byte_fill_value)
-!  imager_pavolonis%cldmask = CLOUDY
+!     imager_pavolonis%cldmask = CLOUDY
 !  end where
 
    if (trim(adjustl(sensor)) .eq. 'AATSR' .or. &
@@ -429,7 +429,7 @@ subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
        trim(adjustl(sensor)) .eq. 'MODIS' .or. &
        trim(adjustl(sensor)) .eq. 'SEVIRI' .or. &
        trim(adjustl(sensor)) .eq. 'SLSTR') &
-      do_spectral_response_correction = .true.
+        do_spectral_response_correction = .true.
 
    ! Check if all channels, required for the seviri-specific neural network, are used
    mlch1 = 0
@@ -443,45 +443,41 @@ subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
    mlch10 = 0
    mlch11 = 0
    if (trim(adjustl(sensor)) .eq. 'SEVIRI' .and. use_seviri_ann_cma_cph) then
-         do i = 1, channel_info%nchannels_total
-            write(*,*) channel_info%channel_ids_instr(i)
-            select case (channel_info%channel_ids_instr(i))
-            case(1)
-               mlch1 = i
-            case(2)
-               mlch2 = i
-            case(3)
-               mlch3 = i
-            case(4)
-               mlch4 = i
-            case(5)
-               mlch5 = i
-            case(6)
-               mlch6 = i
-            case(7)
-               mlch7 = i
-            case(9)
-               mlch9 = i
-            case(10)
-               mlch10 = i
-            case(11)
-               mlch11 = i
-            end select
-         end do
-         write(*,*) mlch1, mlch2, mlch3, mlch4, mlch5, mlch6, mlch7, mlch9, mlch10, mlch11
-         if (.not. (mlch1 .ne. 0 .and. mlch2 .ne. 0 .and. mlch3 .ne. 0 .and. mlch4 .ne. 0 &
-             .and. mlch5 .ne. 0 .and. mlch6 .ne. 0 .and. mlch7 .ne. 0 .and. mlch9 .ne. 0 &
-             .and. mlch10 .ne. 0 .and. mlch11 .ne. 0)) then
-            write(*,*) 'WARNING: Not using correct channels for SEVIRI-specific neural net!', &
-                       ' Instead running general ANN!'
-            use_seviri_ann_cma_cph = .false.
-            write(*,*) use_seviri_ann_cma_cph
-         end if
-      
+      do i = 1, channel_info%nchannels_total
+         select case (channel_info%channel_ids_instr(i))
+         case(1)
+            mlch1 = i
+         case(2)
+            mlch2 = i
+         case(3)
+            mlch3 = i
+         case(4)
+            mlch4 = i
+         case(5)
+            mlch5 = i
+         case(6)
+            mlch6 = i
+         case(7)
+            mlch7 = i
+         case(9)
+            mlch9 = i
+         case(10)
+            mlch10 = i
+         case(11)
+            mlch11 = i
+         end select
+      end do
+      if (.not. (mlch1 .ne. 0 .and. mlch2 .ne. 0 .and. mlch3 .ne. 0 .and. mlch4 .ne. 0 &
+           .and. mlch5 .ne. 0 .and. mlch6 .ne. 0 .and. mlch7 .ne. 0 .and. mlch9 .ne. 0 &
+           .and. mlch10 .ne. 0 .and. mlch11 .ne. 0)) then
+         write(*,*) 'WARNING: Not using correct channels for SEVIRI-specific neural net!', &
+              ' Instead running general ANN!'
+         use_seviri_ann_cma_cph = .false.
       end if
-         
-         
-      
+   end if
+
+
+
 
    ! do not apply NOAA19 mimic when using SEVIRI neural network
    if (trim(adjustl(sensor)) .eq. 'SEVIRI' .and. use_seviri_ann_cma_cph) then
@@ -792,13 +788,13 @@ subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
 
       ! call SEVIRI neural network (Python) cloud detection and cloud phase
       ! determination for whole SEVIRI disc (outside loop)
-      
-      if (trim(adjustl(sensor)) .eq. 'SEVIRI' .and. use_seviri_ann_cma_cph) then  
+
+      if (trim(adjustl(sensor)) .eq. 'SEVIRI' .and. use_seviri_ann_cma_cph) then
          if (verbose) write(*,*) 'Using SEVIRI-specific neural net'
-            call cma_cph_seviri(cview, imager_flags, imager_angles, &
-                                imager_geolocation, imager_measurements, &
-                                imager_pavolonis, skint, channel_info, &
-                                platform, do_nasa)
+         call cma_cph_seviri(cview, imager_flags, imager_angles, &
+              imager_geolocation, imager_measurements, &
+              imager_pavolonis, skint, channel_info, &
+              platform, do_nasa)
       end if
 
 
@@ -814,24 +810,24 @@ subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
       !$OMP DO SCHEDULE(GUIDED)
       i_loop: do  i = imager_geolocation%startx, imager_geolocation%endx
          j_loop: do j = 1, imager_geolocation%ny
-             ! Check for pixels with no valid data in the 11 micron band,
-             ! skipping cloud-typing for these data (usually the case at
-             ! the edge of SLSTR swaths, for instance)
-             if (imager_measurements%data(i,j,ch5) .lt. 0.0) then
-                imager_pavolonis%cldtype(i,j,cview) = BYTE_FILL_VALUE
-                imager_pavolonis%cldmask(i,j,cview) = BYTE_FILL_VALUE
-                imager_pavolonis%cldmask_uncertainty(i,j,cview) = SREAL_FILL_VALUE
-                imager_pavolonis%cccot_pre(i,j,cview) = SREAL_FILL_VALUE
-                imager_pavolonis%ann_phase(i,j,cview) = BYTE_FILL_VALUE
-                imager_pavolonis%ann_phase_uncertainty(i,j,cview) = SREAL_FILL_VALUE
-                imager_pavolonis%cphcot(i,j,cview) = SREAL_FILL_VALUE
-             else
-                call cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
-                  sw1, sw2, sw3, imager_flags, surface, imager_angles, &
-                  imager_geolocation, imager_measurements, imager_pavolonis, &
-                  sensor, platform, doy, do_ironly, verbose, skint, snow_ice_mask, &
-                  use_seviri_ann_cma_cph)
-             end if
+            ! Check for pixels with no valid data in the 11 micron band,
+            ! skipping cloud-typing for these data (usually the case at
+            ! the edge of SLSTR swaths, for instance)
+            if (imager_measurements%data(i,j,ch5) .lt. 0.0) then
+               imager_pavolonis%cldtype(i,j,cview) = BYTE_FILL_VALUE
+               imager_pavolonis%cldmask(i,j,cview) = BYTE_FILL_VALUE
+               imager_pavolonis%cldmask_uncertainty(i,j,cview) = SREAL_FILL_VALUE
+               imager_pavolonis%cccot_pre(i,j,cview) = SREAL_FILL_VALUE
+               imager_pavolonis%ann_phase(i,j,cview) = BYTE_FILL_VALUE
+               imager_pavolonis%ann_phase_uncertainty(i,j,cview) = SREAL_FILL_VALUE
+               imager_pavolonis%cphcot(i,j,cview) = SREAL_FILL_VALUE
+            else
+               call cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
+                    sw1, sw2, sw3, imager_flags, surface, imager_angles, &
+                    imager_geolocation, imager_measurements, imager_pavolonis, &
+                    sensor, platform, doy, do_ironly, verbose, skint, snow_ice_mask, &
+                    use_seviri_ann_cma_cph)
+            end if
          end do j_loop
       end do i_loop
 
@@ -917,19 +913,19 @@ subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
       end if
 
       if (trim(adjustl(sensor)) .eq. 'SEVIRI' .and. use_seviri_ann_ctp_fg) then
-          if (verbose) write(*,*) 'Producing SEVIRI ANN-based CTP first guess'
-          call ctp_fg_seviri(cview, imager_flags, imager_angles, &
-                         imager_geolocation, imager_measurements, &
-                         imager_pavolonis, skint, channel_info, &
-                         platform, do_nasa)
+         if (verbose) write(*,*) 'Producing SEVIRI ANN-based CTP first guess'
+         call ctp_fg_seviri(cview, imager_flags, imager_angles, &
+              imager_geolocation, imager_measurements, &
+              imager_pavolonis, skint, channel_info, &
+              platform, do_nasa)
       end if
 
       if (trim(adjustl(sensor)) .eq. 'SEVIRI' .and. use_seviri_ann_mlay) then
-          if (verbose) write(*,*) 'Producing SEVIRI Multilayer flag'
-          call mlay_seviri(cview, imager_flags, imager_angles, &
-                         imager_geolocation, imager_measurements, &
-                         imager_pavolonis, skint, channel_info, &
-                         platform, do_nasa)
+         if (verbose) write(*,*) 'Producing SEVIRI Multilayer flag'
+         call mlay_seviri(cview, imager_flags, imager_angles, &
+              imager_geolocation, imager_measurements, &
+              imager_pavolonis, skint, channel_info, &
+              platform, do_nasa)
       end if
 
    end do v_loop
@@ -946,9 +942,9 @@ end subroutine cloud_type
 
 
 subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
-   sw1, sw2, sw3, imager_flags, surface, imager_angles, imager_geolocation, &
-   imager_measurements, imager_pavolonis, sensor, platform, doy, do_ironly, &
-   verbose, skint, snow_ice_mask, use_seviri_ann_cma_cph)
+     sw1, sw2, sw3, imager_flags, surface, imager_angles, imager_geolocation, &
+     imager_measurements, imager_pavolonis, sensor, platform, doy, do_ironly, &
+     verbose, skint, snow_ice_mask, use_seviri_ann_cma_cph)
 
    use constants_cloud_typing_pavolonis_m
    use imager_structures_m
@@ -966,26 +962,26 @@ subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
    type(imager_geolocation_t),     intent(in)    :: imager_geolocation
    type(imager_measurements_t),    intent(inout) :: imager_measurements
    type(imager_pavolonis_t),       intent(inout) :: imager_pavolonis
-   character(len=*),             intent(in)    :: sensor
-   character(len=*),             intent(in)    :: platform
+   character(len=*),             intent(in)      :: sensor
+   character(len=*),             intent(in)      :: platform
    integer(kind=sint),             intent(in)    :: doy
    logical,                        intent(in)    :: do_ironly
    logical,                        intent(in)    :: verbose
    logical,                        intent(in)    :: use_seviri_ann_cma_cph
    real(kind=sreal),               intent(in)    :: &
-      skint(imager_geolocation%startx:imager_geolocation%endx, &
-            1:imager_geolocation%ny)
+        skint(imager_geolocation%startx:imager_geolocation%endx, &
+              1:imager_geolocation%ny)
    integer(kind=byte),             intent(in)    :: &
-      snow_ice_mask(imager_geolocation%startx:imager_geolocation%endx, &
-                    1:imager_geolocation%ny)
+        snow_ice_mask(imager_geolocation%startx:imager_geolocation%endx, &
+                      1:imager_geolocation%ny)
 
    ! Local variables
 
-   real (kind=sreal) :: NIR_PHASE_THRES, NIR_CIRRUS_THRES, NIR_OVER_THRES,  &
-                        BTD3811_PHASE_THRES, EMS38_PHASE_THRES,             &
-                        BTD1112_DOVERLAP_THRES, BTD1112_CIRRUS_THRES,       &
-                        BTD1112_NOVERLAP_THRES_L, BTD1112_NOVERLAP_THRES_H, &
-                        EMS38_NOVERLAP_THRES_L, EMS38_NOVERLAP_THRES_H
+   real (kind=sreal)  :: NIR_PHASE_THRES, NIR_CIRRUS_THRES, NIR_OVER_THRES,  &
+                         BTD3811_PHASE_THRES, EMS38_PHASE_THRES,             &
+                         BTD1112_DOVERLAP_THRES, BTD1112_CIRRUS_THRES,       &
+                         BTD1112_NOVERLAP_THRES_L, BTD1112_NOVERLAP_THRES_H, &
+                         EMS38_NOVERLAP_THRES_L, EMS38_NOVERLAP_THRES_H
    real               :: nir_ref
    integer            :: index1, index2, wflg
    integer(kind=sint) :: ch3a_on_avhrr_flag
@@ -1202,11 +1198,11 @@ subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
    !   semitransparent cirrus clouds is greater at 12 than 11 micron
 
    BTD1112_CIRRUS_THRES = &
-       A1(index1) + &
-       B1(index1)*imager_measurements%DATA(i,j,ch5) + &
-       C1(index1)*imager_measurements%DATA(i,j,ch5)**2 + &
-       D1(index1)*imager_measurements%DATA(i,j,ch5)**3 + &
-       E1(index1)*imager_measurements%DATA(i,j,ch5)**4
+        A1(index1) + &
+        B1(index1)*imager_measurements%DATA(i,j,ch5) + &
+        C1(index1)*imager_measurements%DATA(i,j,ch5)**2 + &
+        D1(index1)*imager_measurements%DATA(i,j,ch5)**3 + &
+        E1(index1)*imager_measurements%DATA(i,j,ch5)**4
 
    BTD1112_CIRRUS_THRES = max( 1.0, min(4.0, BTD1112_CIRRUS_THRES) )
 
@@ -1214,54 +1210,54 @@ subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
    if (imager_pavolonis%sfctype(i,j) == DESERT_FLAG) desertflag = .true.
 
    if (.not. use_seviri_ann_cma_cph) then
-       ! NEURAL_NET_PREPROC subroutine
-       ! If one of the (future) ANN's expects true reflectances this will be handled
-       ! internally in ann_cloud_mask.
-       call ann_cloud_mask(&
-            ch1v, & ! Not "True" reflectances expected
-            ch2v, & ! Not "True" reflectances expected
-            ch3v, &
-            bt_ch3b, &
-            ref_ch3b*mu0, & ! Not "True" reflectances expected
-            imager_measurements%data(i,j,ch5), &
-            imager_measurements%data(i,j,ch6), &
-            solzen, &
-            imager_angles%satzen(i,j,cview), &
-            snow_ice_mask(i,j), &
-            imager_flags%lsflag(i,j), &
-            desertflag, &
-            alb1, &
-            alb2, &
-            alb3, &
-            imager_pavolonis%cccot_pre(i,j,cview), &
-            imager_pavolonis%cldmask(i,j,cview) , &
-            imager_pavolonis%cldmask_uncertainty(i,j,cview) , &
-            skint(i,j) , &
-            ch3a_on_avhrr_flag, &
-            glint_angle, &
-            sensor, &
-            platform, &
-            verbose)
+      ! NEURAL_NET_PREPROC subroutine
+      ! If one of the (future) ANN's expects true reflectances this will be handled
+      ! internally in ann_cloud_mask.
+      call ann_cloud_mask(&
+           ch1v, & ! Not "True" reflectances expected
+           ch2v, & ! Not "True" reflectances expected
+           ch3v, &
+           bt_ch3b, &
+           ref_ch3b*mu0, & ! Not "True" reflectances expected
+           imager_measurements%data(i,j,ch5), &
+           imager_measurements%data(i,j,ch6), &
+           solzen, &
+           imager_angles%satzen(i,j,cview), &
+           snow_ice_mask(i,j), &
+           imager_flags%lsflag(i,j), &
+           desertflag, &
+           alb1, &
+           alb2, &
+           alb3, &
+           imager_pavolonis%cccot_pre(i,j,cview), &
+           imager_pavolonis%cldmask(i,j,cview) , &
+           imager_pavolonis%cldmask_uncertainty(i,j,cview) , &
+           skint(i,j) , &
+           ch3a_on_avhrr_flag, &
+           glint_angle, &
+           sensor, &
+           platform, &
+           verbose)
    end if
 
    ! Return if clear, as no need to define cloud type
    if ( imager_pavolonis%cldmask(i,j,cview) == CLEAR) then
-        if ( ( BTD_Ch4_Ch5 > (BTD1112_CIRRUS_THRES-0.2)  ) .and. &
+      if ( ( BTD_Ch4_Ch5 > (BTD1112_CIRRUS_THRES-0.2)  ) .and. &
            ( imager_measurements%DATA(i,j,ch5) < 295.0 ) .and. &
            ( snow_ice_mask(i,j) .eq. NO ) ) then
-           imager_pavolonis%CLDMASK(i,j,cview) = CLOUDY
-           imager_pavolonis%CLDMASK_UNCERTAINTY(i,j,cview) = 99 !100. - imager_pavolonis%CLDMASK_UNCERTAINTY(i,j,cview)
+         imager_pavolonis%CLDMASK(i,j,cview) = CLOUDY
+         imager_pavolonis%CLDMASK_UNCERTAINTY(i,j,cview) = 99 !100. - imager_pavolonis%CLDMASK_UNCERTAINTY(i,j,cview)
 !          imager_pavolonis%CLDTYPE(i,j,cview) = CIRRUS_TYPE
 !          imager_pavolonis%cirrus_quality(i,j,cview) = 1
 !          imager_pavolonis%ANN_PHASE(i,j,cview) = ICE
 !          imager_pavolonis%ANN_PHASE_UNCERTAINTY(i,j,cview) = 99
 !          cycle
-        else
-           imager_pavolonis%cldtype(i,j,cview) = CLEAR_TYPE
-           imager_pavolonis%ANN_PHASE(i,j,cview) = CLEAR_TYPE
-           if (trim(adjustl(sensor)) .ne. 'AATSR' .and. &
-               trim(adjustl(sensor)) .ne. 'ATSR2') return
-        end if
+      else
+         imager_pavolonis%cldtype(i,j,cview) = CLEAR_TYPE
+         imager_pavolonis%ANN_PHASE(i,j,cview) = CLEAR_TYPE
+         if (trim(adjustl(sensor)) .ne. 'AATSR' .and. &
+             trim(adjustl(sensor)) .ne. 'ATSR2') return
+      end if
    end if
 
    ! Implement extra tests for AATSR
@@ -1326,42 +1322,42 @@ subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
         ( ch2v/max(ch1v, 0.01) .ge. 0.6 ) .and. (ch2v/max(ch1v, 0.01) .le. 1. ) .and. &
         ( imager_measurements%DATA(i,j,ch5) .gt. 290.0 ) .and. &
         ( SD_BT11 .lt. 0.25 ) ) then
-           imager_pavolonis%CLDMASK(i,j,cview) = CLEAR
-           imager_pavolonis%CLDMASK_UNCERTAINTY(i,j,cview) = 99 !100. - imager_pavolonis%CLDMASK_UNCERTAINTY(i,j,cview)
-           imager_pavolonis%CLDTYPE(i,j,cview) = CLEAR_TYPE
-           return
+      imager_pavolonis%CLDMASK(i,j,cview) = CLEAR
+      imager_pavolonis%CLDMASK_UNCERTAINTY(i,j,cview) = 99 !100. - imager_pavolonis%CLDMASK_UNCERTAINTY(i,j,cview)
+      imager_pavolonis%CLDTYPE(i,j,cview) = CLEAR_TYPE
+      return
    end if
 
    ! From here all sensors have their decisions made only when cloudy is allowed
 
    ! Start ANN phase
    if (.not. use_seviri_ann_cma_cph) then
-       ! NEURAL_NET_PREPROC subroutine
-       ! If one of the (future) ANN's expects true reflectances this will be handled
-       ! internally in ann_cloud_phase.
-       call ann_cloud_phase(&
-            ch1v, & ! Not "True" reflectances expected
-            ch2v, & ! Not "True" reflectances expected
-            ch3v, &
-            bt_ch3b, &
-            ref_ch3b*mu0, & ! Not "True" reflectances expected
-            imager_measurements%data(i,j,ch5), &
-            imager_measurements%data(i,j,ch6), &
-            solzen, &
-            imager_angles%satzen(i,j,cview), &
-            snow_ice_mask(i,j), imager_flags%lsflag(i,j), &
-            desertflag , &
-            alb1, &
-            alb2, &
-            alb3, &
-            imager_pavolonis%CPHCOT(i,j,cview), &
-            imager_pavolonis%ANN_PHASE(i,j,cview) , &
-            imager_pavolonis%ANN_PHASE_UNCERTAINTY(i,j,cview) , &
-            ch3a_on_avhrr_flag, &
-            sensor, &
-            platform, &
-            skint(i,j) , &
-            verbose)
+      ! NEURAL_NET_PREPROC subroutine
+      ! If one of the (future) ANN's expects true reflectances this will be handled
+      ! internally in ann_cloud_phase.
+      call ann_cloud_phase(&
+           ch1v, & ! Not "True" reflectances expected
+           ch2v, & ! Not "True" reflectances expected
+           ch3v, &
+           bt_ch3b, &
+           ref_ch3b*mu0, & ! Not "True" reflectances expected
+           imager_measurements%data(i,j,ch5), &
+           imager_measurements%data(i,j,ch6), &
+           solzen, &
+           imager_angles%satzen(i,j,cview), &
+           snow_ice_mask(i,j), imager_flags%lsflag(i,j), &
+           desertflag , &
+           alb1, &
+           alb2, &
+           alb3, &
+           imager_pavolonis%CPHCOT(i,j,cview), &
+           imager_pavolonis%ANN_PHASE(i,j,cview) , &
+           imager_pavolonis%ANN_PHASE_UNCERTAINTY(i,j,cview) , &
+           ch3a_on_avhrr_flag, &
+           sensor, &
+           platform, &
+           skint(i,j) , &
+           verbose)
    end if
 
    ! neither ch3a nor ch3b available
@@ -1757,7 +1753,7 @@ subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
                EMS38_NOVERLAP_THRES_L = 1.05
 
             end if
-               ! All other surface types
+            ! All other surface types
          else
 
             if ((imager_geolocation%latitude(i,j) > -30.0) .and. &
@@ -1802,7 +1798,7 @@ subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
          EMS38_NOVERLAP_THRES_H = -99.0
          EMS38_NOVERLAP_THRES_L = 999.0
 
-       end if
+      end if
 
 
       !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1813,13 +1809,13 @@ subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
 
       if (imager_measurements%data(i,j,ch5) <= 233.16) then
 
-          imager_pavolonis%cldtype(i,j,cview) = OPAQUE_ICE_TYPE
-          wflg = 0
+         imager_pavolonis%cldtype(i,j,cview) = OPAQUE_ICE_TYPE
+         wflg = 0
 
       else if ((imager_measurements%data(i,j,ch5) > 233.16) .and. &
                (imager_measurements%data(i,j,ch5) <= 253.16)) then
 
-          imager_pavolonis%cldtype(i,j,cview) = OPAQUE_ICE_TYPE
+         imager_pavolonis%cldtype(i,j,cview) = OPAQUE_ICE_TYPE
 
       else if ((imager_measurements%data(i,j,ch5) > 253.16) .and. &
                (imager_measurements%data(i,j,ch5) <= 273.16)) then
@@ -1839,22 +1835,22 @@ subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
       ! solar contamination check disabled
 !     if (SOLAR_CONTAMINATION_MASK(i,j) == NO) then
 
-         if ((imager_pavolonis%cldtype(i,j,cview) == SUPERCOOLED_TYPE) .and. &
-             (imager_pavolonis%emis_ch3b(i,j,cview) >= EMS38_PHASE_THRES) .and. &
-             (imager_measurements%data(i,j,ch5) < 263.16)) then
+      if ((imager_pavolonis%cldtype(i,j,cview) == SUPERCOOLED_TYPE) .and. &
+           (imager_pavolonis%emis_ch3b(i,j,cview) >= EMS38_PHASE_THRES) .and. &
+           (imager_measurements%data(i,j,ch5) < 263.16)) then
 
-            imager_pavolonis%cldtype(i,j,cview) = OPAQUE_ICE_TYPE
+         imager_pavolonis%cldtype(i,j,cview) = OPAQUE_ICE_TYPE
 
-         end if
+      end if
 
 
-         if ((imager_pavolonis%cldtype(i,j,cview) == OPAQUE_ICE_TYPE) .and. &
-             (wflg == 1) .and. &
-             (imager_pavolonis%emis_ch3b(i,j,cview) < EMS38_PHASE_THRES)) then
+      if ((imager_pavolonis%cldtype(i,j,cview) == OPAQUE_ICE_TYPE) .and. &
+           (wflg == 1) .and. &
+           (imager_pavolonis%emis_ch3b(i,j,cview) < EMS38_PHASE_THRES)) then
 
-            imager_pavolonis%cldtype(i,j,cview) = SUPERCOOLED_TYPE
+         imager_pavolonis%cldtype(i,j,cview) = SUPERCOOLED_TYPE
 
-         end if
+      end if
 
 !     end if
 
@@ -1899,24 +1895,24 @@ subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
       ! solar contamination check disabled
 !     if (SOLAR_CONTAMINATION_MASK(i,j) == NO) then
 
-         if ((imager_pavolonis%cldtype(i,j,cview) /= OVERLAP_TYPE) .and. &
-              (imager_pavolonis%cldtype(i,j,cview) /= OPAQUE_ICE_TYPE) .and. &
-              (imager_pavolonis%emis_ch3b(i,j,cview) > 1.10) .and. &
-              (imager_measurements%data(i,j,ch5) < 300.0)) then
+      if ((imager_pavolonis%cldtype(i,j,cview) /= OVERLAP_TYPE) .and. &
+           (imager_pavolonis%cldtype(i,j,cview) /= OPAQUE_ICE_TYPE) .and. &
+           (imager_pavolonis%emis_ch3b(i,j,cview) > 1.10) .and. &
+           (imager_measurements%data(i,j,ch5) < 300.0)) then
 
-            imager_pavolonis%cldtype(i,j,cview) = CIRRUS_TYPE
+         imager_pavolonis%cldtype(i,j,cview) = CIRRUS_TYPE
 
-         end if
+      end if
 
-         if (((imager_pavolonis%emis_ch3b(i,j,cview) > 1.6)       .and. &
-              (imager_measurements%data(i,j,ch5) < 300.0)) .or. &
-              ((imager_pavolonis%emis_ch3b(i,j,cview) > 1.4)       .and. &
-              (imager_measurements%data(i,j,ch5) < 300.0)   .and. &
-              (BTD_Ch4_Ch5 > BTD1112_CIRRUS_THRES))) then
+      if (((imager_pavolonis%emis_ch3b(i,j,cview) > 1.6)       .and. &
+           (imager_measurements%data(i,j,ch5) < 300.0)) .or. &
+           ((imager_pavolonis%emis_ch3b(i,j,cview) > 1.4)       .and. &
+           (imager_measurements%data(i,j,ch5) < 300.0)   .and. &
+           (BTD_Ch4_Ch5 > BTD1112_CIRRUS_THRES))) then
 
-            imager_pavolonis%cirrus_quality(i,j,cview) = 1
+         imager_pavolonis%cirrus_quality(i,j,cview) = 1
 
-         end if
+      end if
 
 !     end if
 
@@ -1931,7 +1927,7 @@ subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
 
          imager_pavolonis%cldtype(i,j,cview) = FOG_TYPE
 
-       end if
+      end if
 
    end if
 
