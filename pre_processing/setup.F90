@@ -2301,8 +2301,6 @@ subroutine setup_imager(args, opts, source_attributes, channel_info, verbose)
 
    end select
 
-   !stop
-
 end subroutine setup_imager
 
 end module setup_m
