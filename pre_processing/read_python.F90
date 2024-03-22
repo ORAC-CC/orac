@@ -67,14 +67,14 @@ module read_python_m
    ! Read the geolocation data
    call ncdf_read_array(ncid, "latitude", imager_geolocation%latitude)
    where(imager_geolocation%latitude(:,:)  .gt. 100) &
-   imager_geolocation%latitude(:,:) = sreal_fill_value
+      imager_geolocation%latitude(:,:) = sreal_fill_value
    where(imager_geolocation%latitude(:,:)  .lt. -100) &
-   imager_geolocation%latitude(:,:) = sreal_fill_value
+      imager_geolocation%latitude(:,:) = sreal_fill_value
    call ncdf_read_array(ncid, "longitude", imager_geolocation%longitude)
    where(imager_geolocation%longitude(:,:)  .gt. 200) &
-   imager_geolocation%longitude(:,:) = sreal_fill_value
+      imager_geolocation%longitude(:,:) = sreal_fill_value
    where(imager_geolocation%longitude(:,:)  .lt. -200) &
-   imager_geolocation%longitude(:,:) = sreal_fill_value
+      imager_geolocation%longitude(:,:) = sreal_fill_value
 
    ! Read solar and satellite angle data
    call ncdf_read_array(ncid, "relative_azimuth_angle", imager_angles%relazi)
