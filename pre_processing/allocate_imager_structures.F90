@@ -61,8 +61,6 @@ subroutine allocate_imager_structures(imager_geolocation,imager_angles, &
    type(imager_cloud_t),        intent(out)   :: imager_cloud
    type(channel_info_t),        intent(in)    :: channel_info
 
-   print*,imager_geolocation%startx,imager_geolocation%endx,1,imager_geolocation%ny,1,channel_info%nchannels_total
-
    allocate(imager_measurements%data( &
         imager_geolocation%startx:imager_geolocation%endx, &
         1:imager_geolocation%ny,1:channel_info%nchannels_total))
