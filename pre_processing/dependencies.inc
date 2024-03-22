@@ -107,8 +107,8 @@ $(OBJS)/setup.o: $(OBJS)/calender.o $(OBJS)/channel_structures.o \
         $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o \
         $(OBJS)/read_aatsr.o $(OBJS)/read_abi.o $(OBJS)/read_agri.o \
         $(OBJS)/read_avhrr.o $(OBJS)/read_himawari.o $(OBJS)/read_modis.o \
-        $(OBJS)/read_seviri.o $(OBJS)/read_slstr.o $(OBJS)/read_viirs_Iband.o \
-        $(OBJS)/read_viirs_Mband.o
+        $(OBJS)/read_python.o $(OBJS)/read_seviri.o $(OBJS)/read_slstr.o \
+        $(OBJS)/read_viirs_Iband.o $(OBJS)/read_viirs_Mband.o
 $(OBJS)/surface_emissivity.o: $(OBJS)/channel_structures.o \
         $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o \
         $(OBJS)/preproc_structures.o $(OBJS)/read_camel_emissivity.o \
