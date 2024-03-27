@@ -49,7 +49,7 @@ subroutine cma_cph_seviri(cview, imager_flags, imager_angles, &
                           do_nasa)
 
 #ifdef INCLUDE_SEVIRI_NEURALNET
-     use SEVIRI_NEURAL_NET_M
+     use seviri_neural_net_m
 #endif
      use preproc_constants_m
      use imager_structures_m
@@ -139,7 +139,7 @@ subroutine ctp_fg_seviri(cview, imager_flags, imager_angles, &
                          do_nasa)
 
 #ifdef INCLUDE_SEVIRI_NEURALNET
-     use SEVIRI_NEURAL_NET_M
+     use seviri_neural_net_m
 #endif
      use preproc_constants_m
      use imager_structures_m
@@ -214,7 +214,7 @@ subroutine mlay_seviri(cview, imager_flags, imager_angles, &
                        do_nasa)
 
 #ifdef INCLUDE_SEVIRI_NEURALNET
-     use SEVIRI_NEURAL_NET_M
+     use seviri_neural_net_m
 #endif
      use preproc_constants_m
      use imager_structures_m
