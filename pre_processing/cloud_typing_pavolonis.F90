@@ -796,7 +796,7 @@ subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
             call cma_cph_seviri(cview, imager_flags, imager_angles, &
                                 imager_geolocation, imager_measurements, ml_channels, &
                                 imager_pavolonis, skint, channel_info, &
-                                platform, do_nasa)
+                                platform, do_nasa, verbose)
       end if
 
 
@@ -906,7 +906,7 @@ subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
           call ctp_fg_seviri(cview, imager_flags, imager_angles, &
                          imager_geolocation, imager_measurements, ml_channels,&
                          imager_pavolonis, skint, channel_info, &
-                         platform, do_nasa)
+                         platform, do_nasa, verbose)
       end if
 
       if (trim(adjustl(sensor)) .eq. 'SEVIRI' .and. use_seviri_ann_mlay) then
@@ -914,7 +914,7 @@ subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
           call mlay_seviri(cview, imager_flags, imager_angles, &
                          imager_geolocation, imager_measurements, ml_channels,&
                          imager_pavolonis, skint, channel_info, &
-                         platform, do_nasa)
+                         platform, do_nasa, verbose)
       end if
 
    end do v_loop

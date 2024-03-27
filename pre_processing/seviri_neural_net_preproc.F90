@@ -46,7 +46,7 @@ end subroutine get_msg_idx
 subroutine cma_cph_seviri(cview, imager_flags, imager_angles, &
                           imager_geolocation, imager_measurements, ml_channels, &
                           imager_pavolonis, skt, channel_info, platform, &
-                          do_nasa)
+                          do_nasa, verbose)
 
 #ifdef INCLUDE_SEVIRI_NEURALNET
      use seviri_neural_net_m
@@ -69,6 +69,7 @@ subroutine cma_cph_seviri(cview, imager_flags, imager_angles, &
               1:imager_geolocation%ny)
      character(len=*),             intent(in)     :: platform
      logical,                     intent(in)     :: do_nasa
+     logical,                     intent(in)    :: verbose
 
      integer(kind=1) :: msg_index
      logical(kind=1) :: undo_true_reflectances = .false.
@@ -76,7 +77,7 @@ subroutine cma_cph_seviri(cview, imager_flags, imager_angles, &
      ! get Meteosat number from platform string
      call get_msg_idx(msg_index, platform, do_nasa)
 #ifdef INCLUDE_SEVIRI_NEURALNET
-     write(*,*) "PREDICTING COT/CPH"
+     if (verbose) write(*,*) "PREDICTING COT/CPH"
      ! run external ANN
      call seviri_ann_cma(imager_geolocation%nx, &      ! xdim for reshaping
                 imager_geolocation%ny, &               ! ydim for reshaping
@@ -136,7 +137,7 @@ end subroutine cma_cph_seviri
 subroutine ctp_fg_seviri(cview, imager_flags, imager_angles, &
                          imager_geolocation, imager_measurements, ml_channels, &
                          imager_pavolonis, skt, channel_info, platform, &
-                         do_nasa)
+                         do_nasa, verbose)
 
 #ifdef INCLUDE_SEVIRI_NEURALNET
      use seviri_neural_net_m
@@ -159,6 +160,7 @@ subroutine ctp_fg_seviri(cview, imager_flags, imager_angles, &
               1:imager_geolocation%ny)
      character(len=*),             intent(in)     :: platform
      logical,                     intent(in)     :: do_nasa
+     logical,                     intent(in)    :: verbose
 
      integer(kind=1) :: msg_index
      logical(kind=1) :: undo_true_reflectances = .false.
@@ -167,7 +169,7 @@ subroutine ctp_fg_seviri(cview, imager_flags, imager_angles, &
      call get_msg_idx(msg_index, platform, do_nasa)
 
 #ifdef INCLUDE_SEVIRI_NEURALNET
-     write(*,*) "PREDICTING CTP for first guess"
+     if (verbose) write(*,*) "PREDICTING CTP for first guess"
      ! run external ANN
      call seviri_ann_ctp(imager_geolocation%nx, &         ! xdim for reshaping
                 imager_geolocation%ny, &                  ! ydim for reshaping
@@ -211,7 +213,7 @@ end subroutine ctp_fg_seviri
 subroutine mlay_seviri(cview, imager_flags, imager_angles, &
                        imager_geolocation, imager_measurements, ml_channels, &
                        imager_pavolonis, skt, channel_info, platform, &
-                       do_nasa)
+                       do_nasa, verbose)
 
 #ifdef INCLUDE_SEVIRI_NEURALNET
      use seviri_neural_net_m
@@ -234,6 +236,7 @@ subroutine mlay_seviri(cview, imager_flags, imager_angles, &
               1:imager_geolocation%ny)
      character(len=*),             intent(in)     :: platform
      logical,                     intent(in)     :: do_nasa
+     logical,                     intent(in)    :: verbose
 
      integer(kind=1) :: msg_index
      logical(kind=1) :: undo_true_reflectances = .false.
@@ -242,7 +245,7 @@ subroutine mlay_seviri(cview, imager_flags, imager_angles, &
      call get_msg_idx(msg_index, platform, do_nasa)
 
 #ifdef INCLUDE_SEVIRI_NEURALNET
-     write(*,*) "PREDICTING CTP for first guess"
+     if (verbose) write(*,*) "PREDICTING CTP for first guess"
      ! run external ANN
      call seviri_ann_mlay(imager_geolocation%nx, &       ! xdim for reshaping
                 imager_geolocation%ny, &                 ! ydim for reshaping
