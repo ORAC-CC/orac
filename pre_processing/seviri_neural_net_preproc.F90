@@ -245,7 +245,7 @@ subroutine mlay_seviri(cview, imager_flags, imager_angles, &
      call get_msg_idx(msg_index, platform, do_nasa)
 
 #ifdef INCLUDE_SEVIRI_NEURALNET
-     if (verbose) write(*,*) "PREDICTING CTP for first guess"
+     if (verbose) write(*,*) "PREDICTING MLAY for first guess"
      ! run external ANN
      call seviri_ann_mlay(imager_geolocation%nx, &       ! xdim for reshaping
                 imager_geolocation%ny, &                 ! ydim for reshaping
