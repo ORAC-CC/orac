@@ -16,25 +16,6 @@ module seviri_neural_net_preproc_m
 
      contains
 
-
-subroutine map_seviri_channels(ch1, ch2, ch3, ch4, ch5, ch6, ch7, &
-                               ch9, ch10, ch11)
-    integer, intent(inout) :: ch1, ch2, ch3, ch4, ch5, ch6, ch7, &
-                              & ch9, ch10, ch11
-
-    ! channel indices
-    ch1 = 1
-    ch2 = 2
-    ch3 = 3
-    ch4 = 4
-    ch5 = 5
-    ch6 = 6
-    ch7 = 7
-    ch9 = 9
-    ch10 = 10
-    ch11 = 11
-end subroutine map_seviri_channels
-
 subroutine get_msg_idx(msg_index, platform, do_nasa)
     character(len=*), intent(in)    :: platform
     integer(kind=1),  intent(inout) :: msg_index
@@ -63,7 +44,7 @@ end subroutine get_msg_idx
 
 
 subroutine cma_cph_seviri(cview, imager_flags, imager_angles, &
-                          imager_geolocation, imager_measurements, &
+                          imager_geolocation, imager_measurements, ml_channels, &
                           imager_pavolonis, skt, channel_info, platform, &
                           do_nasa)
 
@@ -80,6 +61,7 @@ subroutine cma_cph_seviri(cview, imager_flags, imager_angles, &
      type(imager_angles_t),       intent(in)     :: imager_angles
      type(imager_geolocation_t),  intent(in)     :: imager_geolocation
      type(imager_measurements_t), intent(in)     :: imager_measurements
+     integer,                     intent(in)     :: ml_channels(10)
      type(imager_pavolonis_t),    intent(inout)  :: imager_pavolonis
      type(channel_info_t),        intent(in)     :: channel_info
      real(kind=sreal),            intent(in)     :: &
@@ -90,28 +72,24 @@ subroutine cma_cph_seviri(cview, imager_flags, imager_angles, &
 
      integer(kind=1) :: msg_index
      logical(kind=1) :: undo_true_reflectances = .false.
-     integer :: ch1, ch2, ch3, ch4, ch5, ch6, ch7, ch9, ch10, ch11
-
-     ! map the channel number to the ORAC array indices
-     call map_seviri_channels(ch1, ch2, ch3, ch4, ch5, ch6, ch7, ch9, ch10, ch11)
+     
      ! get Meteosat number from platform string
      call get_msg_idx(msg_index, platform, do_nasa)
-
 #ifdef INCLUDE_SEVIRI_NEURALNET
      write(*,*) "PREDICTING COT/CPH"
      ! run external ANN
      call seviri_ann_cma(imager_geolocation%nx, &      ! xdim for reshaping
                 imager_geolocation%ny, &               ! ydim for reshaping
-                imager_measurements%data(:,:,ch1), &   ! VIS006
-                imager_measurements%data(:,:,ch2), &   ! VIS008
-                imager_measurements%data(:,:,ch3), &   ! NIR016
-                imager_measurements%data(:,:,ch4), &   ! IR039
-                imager_measurements%data(:,:,ch5), &   ! IR062
-                imager_measurements%data(:,:,ch6), &   ! IR073
-                imager_measurements%data(:,:,ch7), &   ! IR087
-                imager_measurements%data(:,:,ch9), &   ! IR108
-                imager_measurements%data(:,:,ch10), &  ! IR120
-                imager_measurements%data(:,:,ch11), &  ! IR134
+                imager_measurements%data(:,:,ml_channels(1)), &   ! VIS006
+                imager_measurements%data(:,:,ml_channels(2)), &   ! VIS008
+                imager_measurements%data(:,:,ml_channels(3)), &   ! NIR016
+                imager_measurements%data(:,:,ml_channels(4)), &   ! IR039
+                imager_measurements%data(:,:,ml_channels(5)), &   ! IR062
+                imager_measurements%data(:,:,ml_channels(6)), &   ! IR073
+                imager_measurements%data(:,:,ml_channels(7)), &   ! IR087
+                imager_measurements%data(:,:,ml_channels(8)), &   ! IR108
+                imager_measurements%data(:,:,ml_channels(9)), &   ! IR120
+                imager_measurements%data(:,:,ml_channels(10)), &  ! IR134
                 imager_flags%lsflag, &                 ! Land-sea mask
                 skt, &                                 ! ECMWF skin temp
                 imager_angles%solzen(:,:,cview), &     ! Solar Zenith Angle
@@ -124,16 +102,16 @@ subroutine cma_cph_seviri(cview, imager_flags, imager_angles, &
 
      call seviri_ann_cph(imager_geolocation%nx, &      ! xdim for reshaping
                 imager_geolocation%ny, &               ! ydim for reshaping
-                imager_measurements%data(:,:,ch1), &   ! VIS006
-                imager_measurements%data(:,:,ch2), &   ! VIS008
-                imager_measurements%data(:,:,ch3), &   ! NIR016
-                imager_measurements%data(:,:,ch4), &   ! IR039
-                imager_measurements%data(:,:,ch5), &   ! IR062
-                imager_measurements%data(:,:,ch6), &   ! IR073
-                imager_measurements%data(:,:,ch7), &   ! IR087
-                imager_measurements%data(:,:,ch9), &   ! IR108
-                imager_measurements%data(:,:,ch10), &  ! IR120
-                imager_measurements%data(:,:,ch11), &  ! IR134
+                imager_measurements%data(:,:,ml_channels(1)), &   ! VIS006
+                imager_measurements%data(:,:,ml_channels(2)), &   ! VIS008
+                imager_measurements%data(:,:,ml_channels(3)), &   ! NIR016
+                imager_measurements%data(:,:,ml_channels(4)), &   ! IR039
+                imager_measurements%data(:,:,ml_channels(5)), &   ! IR062
+                imager_measurements%data(:,:,ml_channels(6)), &   ! IR073
+                imager_measurements%data(:,:,ml_channels(7)), &   ! IR087
+                imager_measurements%data(:,:,ml_channels(8)), &   ! IR108
+                imager_measurements%data(:,:,ml_channels(9)), &   ! IR120
+                imager_measurements%data(:,:,ml_channels(10)), &  ! IR134
                 imager_flags%lsflag, &                 ! Land-sea mask
                 skt, &                                 ! ECMWF skin temp
                 imager_angles%solzen(:,:,cview), &     ! Solar Zenith Angle
@@ -156,7 +134,7 @@ end subroutine cma_cph_seviri
 
 
 subroutine ctp_fg_seviri(cview, imager_flags, imager_angles, &
-                         imager_geolocation, imager_measurements, &
+                         imager_geolocation, imager_measurements, ml_channels, &
                          imager_pavolonis, skt, channel_info, platform, &
                          do_nasa)
 
@@ -173,6 +151,7 @@ subroutine ctp_fg_seviri(cview, imager_flags, imager_angles, &
      type(imager_angles_t),       intent(in)     :: imager_angles
      type(imager_geolocation_t),  intent(in)     :: imager_geolocation
      type(imager_measurements_t), intent(in)     :: imager_measurements
+     integer,                     intent(in)     :: ml_channels(10)
      type(imager_pavolonis_t),    intent(inout)  :: imager_pavolonis
      type(channel_info_t),        intent(in)     :: channel_info
      real(kind=sreal),            intent(in)     :: &
@@ -183,10 +162,7 @@ subroutine ctp_fg_seviri(cview, imager_flags, imager_angles, &
 
      integer(kind=1) :: msg_index
      logical(kind=1) :: undo_true_reflectances = .false.
-     integer :: ch1, ch2, ch3, ch4, ch5, ch6, ch7, ch9, ch10, ch11
-
-     ! map the channel number to the ORAC array indices
-     call map_seviri_channels(ch1, ch2, ch3, ch4, ch5, ch6, ch7, ch9, ch10, ch11)
+     
      ! get Meteosat number from platform string
      call get_msg_idx(msg_index, platform, do_nasa)
 
@@ -195,16 +171,16 @@ subroutine ctp_fg_seviri(cview, imager_flags, imager_angles, &
      ! run external ANN
      call seviri_ann_ctp(imager_geolocation%nx, &         ! xdim for reshaping
                 imager_geolocation%ny, &                  ! ydim for reshaping
-                imager_measurements%data(:,:,ch1), &      ! VIS006
-                imager_measurements%data(:,:,ch2), &      ! VIS008
-                imager_measurements%data(:,:,ch3), &      ! NIR016
-                imager_measurements%data(:,:,ch4), &      ! IR039
-                imager_measurements%data(:,:,ch5), &      ! IR062
-                imager_measurements%data(:,:,ch6), &      ! IR073
-                imager_measurements%data(:,:,ch7), &      ! IR087
-                imager_measurements%data(:,:,ch9), &      ! IR108
-                imager_measurements%data(:,:,ch10), &     ! IR120
-                imager_measurements%data(:,:,ch11), &     ! IR134
+                imager_measurements%data(:,:,ml_channels(1)), &   ! VIS006
+                imager_measurements%data(:,:,ml_channels(2)), &   ! VIS008
+                imager_measurements%data(:,:,ml_channels(3)), &   ! NIR016
+                imager_measurements%data(:,:,ml_channels(4)), &   ! IR039
+                imager_measurements%data(:,:,ml_channels(5)), &   ! IR062
+                imager_measurements%data(:,:,ml_channels(6)), &   ! IR073
+                imager_measurements%data(:,:,ml_channels(7)), &   ! IR087
+                imager_measurements%data(:,:,ml_channels(8)), &   ! IR108
+                imager_measurements%data(:,:,ml_channels(9)), &   ! IR120
+                imager_measurements%data(:,:,ml_channels(10)), &  ! IR134
                 imager_flags%lsflag, &                    ! Land-sea mask
                 skt, &                                    ! ECMWF skin temp
                 imager_angles%solzen(:,:,cview), &        ! Solar Zenith Angle
@@ -233,7 +209,7 @@ end subroutine ctp_fg_seviri
 
 
 subroutine mlay_seviri(cview, imager_flags, imager_angles, &
-                       imager_geolocation, imager_measurements, &
+                       imager_geolocation, imager_measurements, ml_channels, &
                        imager_pavolonis, skt, channel_info, platform, &
                        do_nasa)
 
@@ -250,6 +226,7 @@ subroutine mlay_seviri(cview, imager_flags, imager_angles, &
      type(imager_angles_t),       intent(in)     :: imager_angles
      type(imager_geolocation_t),  intent(in)     :: imager_geolocation
      type(imager_measurements_t), intent(in)     :: imager_measurements
+     integer,                     intent(in)     :: ml_channels(10)
      type(imager_pavolonis_t),    intent(inout)  :: imager_pavolonis
      type(channel_info_t),        intent(in)     :: channel_info
      real(kind=sreal),            intent(in)     :: &
@@ -260,10 +237,7 @@ subroutine mlay_seviri(cview, imager_flags, imager_angles, &
 
      integer(kind=1) :: msg_index
      logical(kind=1) :: undo_true_reflectances = .false.
-     integer :: ch1, ch2, ch3, ch4, ch5, ch6, ch7, ch9, ch10, ch11
-
-     ! map the channel number to the ORAC array indices
-     call map_seviri_channels(ch1, ch2, ch3, ch4, ch5, ch6, ch7, ch9, ch10, ch11)
+     
      ! get Meteosat number from platform string
      call get_msg_idx(msg_index, platform, do_nasa)
 
@@ -272,16 +246,16 @@ subroutine mlay_seviri(cview, imager_flags, imager_angles, &
      ! run external ANN
      call seviri_ann_mlay(imager_geolocation%nx, &       ! xdim for reshaping
                 imager_geolocation%ny, &                 ! ydim for reshaping
-                imager_measurements%data(:,:,ch1), &     ! VIS006
-                imager_measurements%data(:,:,ch2), &     ! VIS008
-                imager_measurements%data(:,:,ch3), &     ! NIR016
-                imager_measurements%data(:,:,ch4), &     ! IR039
-                imager_measurements%data(:,:,ch5), &     ! IR062
-                imager_measurements%data(:,:,ch6), &     ! IR073
-                imager_measurements%data(:,:,ch7), &     ! IR087
-                imager_measurements%data(:,:,ch9), &     ! IR108
-                imager_measurements%data(:,:,ch10), &    ! IR120
-                imager_measurements%data(:,:,ch11), &    ! IR134
+                imager_measurements%data(:,:,ml_channels(1)), &   ! VIS006
+                imager_measurements%data(:,:,ml_channels(2)), &   ! VIS008
+                imager_measurements%data(:,:,ml_channels(3)), &   ! NIR016
+                imager_measurements%data(:,:,ml_channels(4)), &   ! IR039
+                imager_measurements%data(:,:,ml_channels(5)), &   ! IR062
+                imager_measurements%data(:,:,ml_channels(6)), &   ! IR073
+                imager_measurements%data(:,:,ml_channels(7)), &   ! IR087
+                imager_measurements%data(:,:,ml_channels(8)), &   ! IR108
+                imager_measurements%data(:,:,ml_channels(9)), &   ! IR120
+                imager_measurements%data(:,:,ml_channels(10)), &  ! IR134
                 imager_flags%lsflag, &                   ! Land-sea mask
                 skt, &                                   ! ECMWF skin temp
                 imager_angles%solzen(:,:,cview), &       ! Solar Zenith Angle
