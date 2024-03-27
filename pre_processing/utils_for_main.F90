@@ -169,6 +169,9 @@ subroutine parse_optional(label, value, preproc_opts)
    case('CALCULATE_SLSTR_ALIGNMENT')
       if (parse_string(value, preproc_opts%calculate_slstr_alignment) /= 0) &
            call handle_parse_error(label)
+   case('MCD43_MAX_QAFLAG')
+      if (parse_string(value, preproc_opts%mcd43_max_qaflag) /= 0) &
+           call handle_parse_error(label)
    case('USE_SEVIRI_ANN_CMA_CPH')
       if (parse_string(value, preproc_opts%use_seviri_ann_cma_cph) /= 0) &
            call handle_parse_error(label)
@@ -177,8 +180,6 @@ subroutine parse_optional(label, value, preproc_opts)
            call handle_parse_error(label)
    case('USE_SEVIRI_ANN_MLAY')
       if (parse_string(value, preproc_opts%use_seviri_ann_mlay) /= 0) &
-   case('MCD43_MAX_QAFLAG')
-      if (parse_string(value, preproc_opts%mcd43_max_qaflag) /= 0) &
            call handle_parse_error(label)
    case default
       write(*,*) 'ERROR: Unknown option: ', trim(label)

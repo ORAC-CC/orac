@@ -833,7 +833,6 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
            imager_flags, imager_time, imager_measurements, imager_pavolonis, &
            imager_cloud, channel_info, preproc_opts%use_seviri_ann_ctp_fg, &
            preproc_opts%use_seviri_ann_mlay)
-
       call allocate_surface_structures(surface, imager_geolocation, channel_info, &
            include_full_brdf)
 
@@ -842,7 +841,6 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
       call read_imager(granule, preproc_opts, aatsr_calib_path_file, &
            imager_geolocation, imager_angles, imager_flags, imager_time, &
            imager_measurements, channel_info, global_atts, verbose)
-
 #ifdef WRAPPER
       ! do not process this orbit if no valid lat/lon data available
       mask = imager_geolocation%latitude.gt.sreal_fill_value .and. &
