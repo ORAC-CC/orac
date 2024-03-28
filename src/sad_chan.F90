@@ -234,7 +234,7 @@ function create_sad_filename2(Ctrl, chan_num, SAD_Dir, LUTClass, crp_name) &
 
    character(InstNameLen) :: InstName
 
-   InstName = Ctrl%InstName
+  InstName = Ctrl%InstName
    ! Remove hyphen as required
    if (InstName(1:10) == 'AVHRR-NOAA') then
       ! NOAA files use (I0) formatting in their filename; LUT files use (I2).
@@ -254,7 +254,7 @@ function create_sad_filename2(Ctrl, chan_num, SAD_Dir, LUTClass, crp_name) &
          stop error_stop_code
       end if
    else if (InstName(1:10) == 'SEVIRI-MSG') then
-      InstName = 'SEVIRI-MSG' // InstName(12:12)
+      InstName = 'SEVIRI-MSG' // InstName(11:12)
    else if (InstName(8:16) == 'Suomi-NPP') then
       InstName = InstName(1:7) // 'SuomiNPP'
    else if (InstName(1:5) == 'ATSR2' .or. InstName(1:5) == 'AATSR') then
@@ -279,7 +279,6 @@ function create_sad_filename2(Ctrl, chan_num, SAD_Dir, LUTClass, crp_name) &
          filename = trim(SAD_Dir) // '/' // trim(InstName) // '.sad'
       end if
    end if
-
 end function create_sad_filename2
 
 
