@@ -12,9 +12,9 @@
 !
 ! History:
 ! 2012/02/03, MJ: Cleans out prototype code to prepare repository upload.
-! 15/02/2012, CP: To do level 2 post processing
-! 07/03/2012, MS: Added missing stemp_ap
-! 07/03/2012, CP: Cleaned up
+! 2012/02/15, CP: To do level 2 post processing
+! 2012/03/07, MS: Added missing stemp_ap
+! 2012/03/07, CP: Cleaned up
 ! 2012/03/18, CP: Modified to add cloud flag
 ! 2012/06/20, CP: Added albedo
 ! 2012/07/04, MJ: Fixed several data type bugs
@@ -39,6 +39,7 @@
 ! 2017/06/22, OS: Added phase variables.
 ! 2017/07/05, AP: Add channels_used, variables_retrieved. New QC.
 ! 2018/06/08, SP: Add satellite azimuth angle to output.
+! 2023/11/21, GT: Added dealloc_input_data_primary_classify subroutine.
 !
 ! Bugs:
 ! None known.
@@ -196,6 +197,18 @@ subroutine dealloc_input_data_primary_class(data)
 end subroutine dealloc_input_data_primary_class
 
 
+subroutine dealloc_input_data_primary_classify(data)
+
+   implicit none
+
+   type(input_data_primary_t), intent(inout) :: data
+
+   call dealloc_input_data_primary_common(data)
+
+end subroutine dealloc_input_data_primary_classify
+
+
+
 subroutine dealloc_input_data_secondary_common(data)
 
    implicit none
@@ -231,7 +244,6 @@ subroutine dealloc_input_data_secondary_common(data)
    if (associated(data%cer2_fg))       deallocate(data%cer2_fg)
    if (associated(data%ctp2_ap))       deallocate(data%ctp2_ap)
    if (associated(data%ctp2_fg))       deallocate(data%ctp2_fg)
-
 
    if (associated(data%y0))            deallocate(data%y0)
    if (associated(data%residuals))     deallocate(data%residuals)

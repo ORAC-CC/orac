@@ -424,11 +424,11 @@ if (indexing%flags%do_rho) then
    ! rho_in_channel_no_*
    !----------------------------------------------------------------------------
    i_rho = 0
-   do i=1,indexing%NSolar
+   do i = 1, indexing%NSolar
 
       write(input_num,"(i4)") indexing%Y_Id(indexing%YSolar(i))
 
-      do j=1,MaxRho_XX
+      do j = 1, MaxRho_XX
          if (indexing%rho_terms(i,j)) then
             i_rho = i_rho + 1
 
@@ -459,11 +459,11 @@ if (indexing%flags%do_rho) then
    ! rho_uncertainty_in_channel_no_*
    !----------------------------------------------------------------------------
    i_rho = 0
-   do i=1,indexing%NSolar
+   do i = 1, indexing%NSolar
 
       write(input_num,"(i4)") indexing%Y_Id(indexing%YSolar(i))
 
-      do j=1,MaxRho_XX
+      do j = 1, MaxRho_XX
          if (indexing%rho_terms(i,j)) then
             i_rho = i_rho + 1
 
@@ -496,7 +496,7 @@ if (indexing%flags%do_swansea) then
    ! swansea_s_in_channel_no_*
    !----------------------------------------------------------------------------
    i_rho = 0
-   do i=1,indexing%NSolar
+   do i = 1, indexing%NSolar
       if (indexing%ss_terms(i)) then
          i_rho = i_rho + 1
 
@@ -529,7 +529,7 @@ if (indexing%flags%do_swansea) then
    ! swansea_s_uncertainty_in_channel_no_*
    !----------------------------------------------------------------------------
    i_rho = 0
-   do i=1,indexing%NSolar
+   do i = 1, indexing%NSolar
       if (indexing%ss_terms(i)) then
          i_rho = i_rho + 1
 
@@ -562,7 +562,7 @@ if (indexing%flags%do_swansea) then
    !----------------------------------------------------------------------------
    ! swansea_p_in_view_no_*
    !----------------------------------------------------------------------------
-   do i_view=1,indexing%NViews
+   do i_view = 1, indexing%NViews
 
       write(input_num,"(i4)") i_view
 
@@ -591,7 +591,7 @@ if (indexing%flags%do_swansea) then
    !----------------------------------------------------------------------------
    ! swansea_p_uncertainty_in_view_no_*
    !----------------------------------------------------------------------------
-   do i_view=1,indexing%NViews
+   do i_view = 1, indexing%NViews
 
       write(input_num,"(i4)") i_view
 
@@ -621,7 +621,7 @@ if (indexing%flags%do_swansea) then
    ! diffuse_frac_in_channel_no_*
    !----------------------------------------------------------------------------
    i_rho = 0
-   do i=1,indexing%NSolar
+   do i = 1, indexing%NSolar
       if (indexing%ss_terms(i)) then
          i_rho = i_rho + 1
 
@@ -654,7 +654,7 @@ if (indexing%flags%do_swansea) then
    ! diffuse_frac_uncertainty_in_channel_no_*
    !----------------------------------------------------------------------------
    i_rho = 0
-   do i=1,indexing%NSolar
+   do i = 1, indexing%NSolar
       if (indexing%ss_terms(i)) then
          i_rho = i_rho + 1
 
@@ -1422,7 +1422,7 @@ if (indexing%flags%do_cloud) then
    ! cloud_albedo_in_channel_no_*
    !----------------------------------------------------------------------------
    i_rho = 0
-   do i=1,indexing%NSolar
+   do i = 1, indexing%NSolar
       if (indexing%alb_terms(i)) then
          i_rho = i_rho + 1
 
@@ -1454,7 +1454,7 @@ if (indexing%flags%do_cloud) then
    ! cloud_albedo_uncertainty_in_channel_no_*
    !----------------------------------------------------------------------------
    i_rho = 0
-   do i=1,indexing%NSolar
+   do i = 1, indexing%NSolar
       if (indexing%alb_terms(i)) then
          i_rho = i_rho + 1
 
@@ -1488,7 +1488,7 @@ if (indexing%flags%do_cloud) then
    ! cee_in_channel_no_*
    !----------------------------------------------------------------------------
    i_rho = 0
-   do i=1,indexing%NThermal
+   do i = 1, indexing%NThermal
       if (indexing%cee_terms(i)) then
          i_rho = i_rho + 1
 
@@ -1520,7 +1520,7 @@ if (indexing%flags%do_cloud) then
    ! cee_uncertainty_in_channel_no_*
    !----------------------------------------------------------------------------
    i_rho = 0
-   do i=1,indexing%NThermal
+   do i = 1, indexing%NThermal
       if (indexing%cee_terms(i)) then
          i_rho = i_rho + 1
 

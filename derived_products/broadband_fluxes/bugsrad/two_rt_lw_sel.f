@@ -94,7 +94,7 @@
           fu(i,nlm+1) = bf(i,nlm+1)*es(i,ibms)
           fd(i,1) = 0.
 
-          do l=1,nlm
+          do l = 1, nlm
             exptau(l) = exp(-2*tauclr(i,l))
             if(tauclr(i,l) .lt. .8e-2) then
               sigu(l) = (bf(i,l)+bf(i,l+1))*tauclr(i,l)
@@ -110,7 +110,7 @@
             fd(i,l+1) = sigd(l) + exptau(l) * fd(i,l)
           end do
 
-          do l=nlm,1,-1
+          do l = nlm, 1, -1
             fu(i,l) = sigu(l) + exptau(l) * fu(i,l+1)
           end do
 

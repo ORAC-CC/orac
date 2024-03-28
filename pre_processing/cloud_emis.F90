@@ -13,7 +13,7 @@
 ! 2018/05/24, SP: Updates to better calculate tropopause pressure (from IntCTP.F90)
 ! 2018/07/18, DE: Add tropopause temperature
 ! 2018/11/05, SP: Add CAPE
-! 2019/8/14, SP: Add Fengyun-4A support.
+! 2019/08/14, SP: Add Fengyun-4A support.
 !
 ! Bugs:
 ! None known.

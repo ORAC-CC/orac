@@ -39,6 +39,7 @@
 ! 2017/06/22, OS: Added phase variables.
 ! 2017/07/05, AP: Add channels_used, variables_retrieved. New QC.
 ! 2018/06/08, SP: Add satellite azimuth angle to output.
+! 2021/11/21, GT: Added read_input_primary_classify subroutine
 !
 ! Bugs:
 ! None known.
@@ -95,10 +96,10 @@ end if
 
 if (indexing%flags%do_rho) then
    i_rho = 0
-   do i=1,indexing%NSolar
+   do i = 1, indexing%NSolar
       write(input_num, "(i4)") indexing%Y_Id(indexing%YSolar(i))
 
-      do j=1,MaxRho_XX
+      do j = 1, MaxRho_XX
          if (indexing%rho_terms(i,j)) then
             i_rho = i_rho + 1
 
@@ -116,7 +117,7 @@ end if
 
 if (indexing%flags%do_swansea) then
    i_rho = 0
-   do i=1,indexing%NSolar
+   do i = 1, indexing%NSolar
       if (indexing%ss_terms(i)) then
          i_rho = i_rho + 1
 
@@ -142,7 +143,7 @@ if (indexing%flags%do_swansea) then
       end if
    end do
 
-   do i=1,indexing%NViews
+   do i = 1, indexing%NViews
       write(input_num, "(i4)") i
 
       input_dummy='swansea_p_in_view_no_'//trim(adjustl(input_num))
@@ -209,7 +210,7 @@ if (indexing%flags%do_cloud) then
    call ncdf_read_packed_array(ncid, "cwp_uncertainty", &
         input_data%cwp_uncertainty, start = [1, sval])
 
-   do i=1,indexing%NSolar
+   do i = 1, indexing%NSolar
       write(input_num,"(i4)") indexing%Y_Id(indexing%YSolar(i))
 
       input_dummy='cloud_albedo_in_channel_no_'//trim(adjustl(input_num))
@@ -223,7 +224,7 @@ if (indexing%flags%do_cloud) then
            start = [1, sval])
    end do
 
-   do i=1,indexing%NThermal
+   do i = 1, indexing%NThermal
       write(input_num,"(i4)") indexing%Y_Id(indexing%YThermal(i))
 
       input_dummy='cee_in_channel_no_'//trim(adjustl(input_num))
@@ -305,7 +306,7 @@ subroutine read_input_primary_optional(ncid, input_data, indexing, read_flags, &
    character(len=32)  :: input_num
    character(len=512) :: input_dummy
 
-   do i=1,indexing%NViews
+   do i = 1, indexing%NViews
       if (indexing%read_optional_view_field(i)) then
          write(input_num,"(i1)") i
          ii = indexing%view_loop_to_main_index(i)
@@ -493,7 +494,7 @@ subroutine read_input_primary_once(nfile, fname, input_data, indexing, &
 
    call ncdf_close(ncid, 'read_input_primary_once()')
 
-   do i=2,nfile
+   do i = 2, nfile
       call ncdf_open(ncid, fname(i), 'read_input_primary_once()')
       call read_input_primary_optional(ncid, input_data, loop_ind(i), &
            read_flags, sval, verbose)
@@ -524,6 +525,7 @@ subroutine read_input_primary_class(fname, input_data, indexing, costonly, &
    if (.not. costonly) then
       call read_input_primary_common(ncid, input_data, indexing, sval, verbose)
    else
+
       call read_input_primary_cost_only(ncid, input_data, sval, verbose)
    end if
 
@@ -531,3 +533,37 @@ subroutine read_input_primary_class(fname, input_data, indexing, costonly, &
    call ncdf_close(ncid, 'read_input_primary_class()')
 
 end subroutine read_input_primary_class
+
+subroutine read_input_primary_classify(fname, input_data, indexing, read_cost, &
+     read_ctt, sval, verbose)
+
+   use orac_ncdf_m
+
+   implicit none
+
+   character(len=*),           intent(in)    :: fname
+   type(input_data_primary_t), intent(inout) :: input_data
+   type(input_indices_t),      intent(in)    :: indexing
+   logical,                    intent(in)    :: read_cost
+   logical,                    intent(in)    :: read_ctt
+   integer,                    intent(in)    :: sval
+   logical,                    intent(in)    :: verbose
+
+   integer :: ncid
+
+   if (verbose) write(*,*) 'Opening primary input file: ', trim(fname)
+   call ncdf_open(ncid, fname, 'read_input_primary_classify()')
+
+   if (read_cost) then
+      call ncdf_read_array(ncid, "costja", input_data%costja, start = [1, sval])
+      call ncdf_read_array(ncid, "costjm", input_data%costjm, start = [1, sval])
+   end if
+
+   if (read_ctt) then
+      call ncdf_read_array(ncid, "ctt", input_data%ctt, start = [1, sval])
+   end if
+
+   if (verbose) write(*,*) 'Closing primary input file.'
+   call ncdf_close(ncid, 'read_input_primary_class()')
+
+end subroutine read_input_primary_classify

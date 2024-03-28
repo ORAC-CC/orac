@@ -75,7 +75,7 @@ subroutine driver_for_bugsrad(nlm,tsi,theta, &
 
    integer, intent(in) :: &
       pxYEAR
-   
+
    ! Column quantities
    real, intent(in) :: &
       tsi      ,&  ! total solar irradiance               (W/m2).
@@ -187,7 +187,7 @@ subroutine driver_for_bugsrad(nlm,tsi,theta, &
 !  pxP(3) = pxP(3)+3.5
 
    ! Calculate mid-layer quantities
-   do l=1,nlm
+   do l = 1, nlm
       pl(1,l) = pxP(l+1) - ( pxP(l+1)-pxP(l) ) / 2.
       tl(1,l) = pxT(l+1) - ( pxT(l+1)-pxT(l) ) / 2.
       ql(1,l) = pxQ(l+1) - ( pxQ(l+1)-pxQ(l) ) / 2.
@@ -204,19 +204,19 @@ subroutine driver_for_bugsrad(nlm,tsi,theta, &
 !  print*,dpl
 
    ! Read surface quantities
-   ts(1)=tsfc
-   amu0(1)=theta
-   alvdr(1)=asfcswrdr
-   alndr(1)=asfcnirdr
-   alvdf(1)=asfcswrdf
-   alndf(1)=asfcnirdf
+   ts(1) = tsfc
+   amu0(1) = theta
+   alvdr(1) = asfcswrdr
+   alndr(1) = asfcnirdr
+   alvdf(1) = asfcswrdf
+   alndf(1) = asfcnirdf
 
    ! Read trace gas quantities
    !umco2(1)=380.
    !introducting time dependent co2 with 380 representing the year 2006
-   umco2(1)=380.0+(pxYEAR-2006.)*1.7
-   umch4(1)=1.80
-   umn2o(1)=0.26
+   umco2(1) = 380.0+(pxYEAR-2006.)*1.7
+   umch4(1) = 1.80
+   umn2o(1) = 0.26
 
    ! Clouds
    ! Initialize profile
@@ -226,22 +226,22 @@ subroutine driver_for_bugsrad(nlm,tsi,theta, &
    qril(1,:) = 0.0 ! snow mixing ratio
    acld(1,:) = 0.0 ! layer cloud fraction
 
-   do i=1,nlayers
+   do i = 1, nlayers
       ! Assign cloud to vertical layer
       acld(1,hctopID(i):hcbaseID(i)) = 1.0
 
       ! Compute cloud water mixing ratio
       if (phaseflag(i) .eq. 1) then
-         LWP=((5./9.)*cref(i)*ccot(i)) * (5./6.)
-         CWC=LWP/((hctop(i)-hcbase(i))*1000.)
+         LWP = ((5./9.)*cref(i)*ccot(i)) * (5./6.)
+         CWC = LWP/((hctop(i)-hcbase(i))*1000.)
 !        mixing ratio = CWC / density of air (density = p/RT)
-         qcwl(1,hctopID(i):hcbaseID(i))=(CWC/(pl(1,hctopID(i):hcbaseID(i)) &
+         qcwl(1,hctopID(i):hcbaseID(i)) = (CWC/(pl(1,hctopID(i):hcbaseID(i)) &
             *100./(287.*tl(1,hctopID(i):hcbaseID(i)))))/1000.
       end if
       if (phaseflag(i) .eq. 2) then
-         LWP=((5./9.)*cref(i)*ccot(i)) * (5./6.)
-         CWC=LWP/((hctop(i)-hcbase(i))*1000.)
-         qcil(1,hctopID(i):hcbaseID(i))=(CWC/( pl(1,hctopID(i):hcbaseID(i)) &
+         LWP = ((5./9.)*cref(i)*ccot(i)) * (5./6.)
+         CWC = LWP/((hctop(i)-hcbase(i))*1000.)
+         qcil(1,hctopID(i):hcbaseID(i)) = (CWC/( pl(1,hctopID(i):hcbaseID(i)) &
             *100./(287.*tl(1,hctopID(i):hcbaseID(i)))))/1000.
       end if
    end do

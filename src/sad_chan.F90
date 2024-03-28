@@ -9,7 +9,7 @@
 ! 2000/08/03, AS: Original version
 ! 2000/11/23, AS: Rs in Solar is now an array of 2 values rather than a single
 !    real.
-! 2001/01/19, KS:Added SRs and CRs fields to the Solar type.
+! 2001/01/19, KS: Added SRs and CRs fields to the Solar type.
 ! 2001/01/29, KS: Removed SRs and CRs fields - now taken from Ctrl.
 ! 2001/07/11, AS: Added f1 to solar struct. Allows for calculation of f0 based
 !    on the day of year rather than just using an annual mean value.
@@ -235,24 +235,31 @@ function create_sad_filename2(Ctrl, chan_num, SAD_Dir, LUTClass, crp_name) &
    character(InstNameLen) :: InstName
 
    InstName = Ctrl%InstName
-   ! NOAA files use (I0) formatting in their filename; LUT files use (I2).
+   ! Remove hyphen as required
    if (InstName(1:10) == 'AVHRR-NOAA') then
-      if (len_trim(InstName(11:)) == 1) then
-         InstName(12:12) = InstName(11:11)
-         InstName(11:11) = '0'
+      ! NOAA files use (I0) formatting in their filename; LUT files use (I2).
+      if (len_trim(InstName(12:)) == 1) then
+         InstName(11:) = '0' // InstName(12:12)
+      else
+         InstName(11:) = trim(InstName(12:))
       end if
-   else if (InstName(1:11) == 'AVHRR-METOP') then
-      ! For Metop, only platform name's first letter is capitalized
-      InstName(8:11) = 'etop'
-      ! Replace MetopA with Metop2 and MetopB with Metop1
-      if (InstName(12:12) == 'A') then
-         InstName(12:12) = '2'
-      else if (InstName(12:12) == 'B') then
-         InstName(12:12) = '1'
+   else if (InstName(1:11) == 'AVHRR-Metop') then
+      ! Replace MetopA with Metop2 and MetopB with Metop1; remove hyphen
+      if (InstName(13:13) == 'A') then
+         InstName(12:) = '2'
+      else if (InstName(13:13) == 'B') then
+         InstName(12:) = '1'
       else
          write(*,*) 'ERROR: SADChan(): METOP platform name not one of METOPA or METOPB'
          stop error_stop_code
       end if
+   else if (InstName(1:10) == 'SEVIRI-MSG') then
+      InstName = 'SEVIRI-MSG' // InstName(12:12)
+   else if (InstName(8:16) == 'Suomi-NPP') then
+      InstName = InstName(1:7) // 'SuomiNPP'
+   else if (InstName(1:5) == 'ATSR2' .or. InstName(1:5) == 'AATSR') then
+      ! ATSR2/AATSR skip the platform in their filenames
+      InstName = trim(InstName(1:5))
    end if
 
    if (present(chan_num)) then

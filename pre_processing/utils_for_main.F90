@@ -32,7 +32,7 @@
 !                 instead of IMPF (as previous). The new driver file option
 !                 USE_GSICS enables this to be disabled.
 ! 2018/08/30, SP: Allow variable CO2 in RTTOV, linear scaling from 2006 value
-! 2021/12/14, DP: Added SEVIRI external ANN option 
+! 2021/12/14, DP: Added SEVIRI external ANN option
 !
 ! Bugs:
 ! None known.

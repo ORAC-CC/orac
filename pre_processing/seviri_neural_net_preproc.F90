@@ -21,14 +21,15 @@ subroutine get_msg_idx(msg_index, platform, do_nasa)
     integer(kind=1),  intent(inout) :: msg_index
     logical,          intent(in)    :: do_nasa
 
+    write(*,*) 'platform ', platform, 'trimmed ', trim(platform), 'adjusted ', trim(adjustl(platform)), 'done'
     select case (trim(platform))
-        case ("MSG1")
+        case ("MSG1","MSG-1")
             msg_index = 1
-        case ("MSG2")
+        case ("MSG2","MSG-2")
             msg_index = 2
-        case ("MSG3")
+        case ("MSG3","MSG-3")
             msg_index = 3
-        case ("MSG4")
+        case ("MSG4","MSG-4")
             msg_index = 4
         case default
             write(*,*) "Platform ", platform, " not supported with seviri_ml."

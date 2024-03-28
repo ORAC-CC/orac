@@ -36,9 +36,9 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine deallocate_imager_structures(imager_geolocation,imager_angles, &
-     imager_flags,imager_time,imager_measurements,imager_pavolonis, &
-     imager_cloud, use_seviri_ann_ctp_fg, use_seviri_ann_mlay)
+subroutine deallocate_imager_structures(imager_geolocation, imager_angles, &
+     imager_flags, imager_time, imager_measurements, imager_pavolonis, &
+     imager_cloud)
 
    use preproc_constants_m
 
@@ -51,8 +51,6 @@ subroutine deallocate_imager_structures(imager_geolocation,imager_angles, &
    type(imager_measurements_t), intent(inout) :: imager_measurements
    type(imager_pavolonis_t),    intent(inout) :: imager_pavolonis
    type(imager_cloud_t),        intent(inout) :: imager_cloud
-   logical,                     intent(in)    :: use_seviri_ann_ctp_fg
-   logical,                     intent(in)    :: use_seviri_ann_mlay
 
    deallocate(imager_geolocation%latitude)
    deallocate(imager_geolocation%longitude)
@@ -80,18 +78,17 @@ subroutine deallocate_imager_structures(imager_geolocation,imager_angles, &
    deallocate(imager_pavolonis%emis_ch3b)
 
 #ifdef INCLUDE_SEVIRI_NEURALNET
-   if (use_seviri_ann_ctp_fg) then
-       deallocate(imager_pavolonis%ctp_fg)
-       deallocate(imager_pavolonis%ctp_fg_unc)
-   end if
-#endif
+   if (allocated(imager_pavolonis%ctp_fg)) &
+        deallocate(imager_pavolonis%ctp_fg)
+   if (allocated(imager_pavolonis%ctp_fg_unc)) &
+        deallocate(imager_pavolonis%ctp_fg_unc)
 
-#ifdef INCLUDE_SEVIRI_NEURALNET
-   if (use_seviri_ann_mlay) then
-       deallocate(imager_pavolonis%mlay_prob)
-       deallocate(imager_pavolonis%mlay_flag)
-       deallocate(imager_pavolonis%mlay_unc)
-   end if
+   if (allocated(imager_pavolonis%mlay_prob)) &
+        deallocate(imager_pavolonis%mlay_prob)
+   if (allocated(imager_pavolonis%mlay_flag)) &
+        deallocate(imager_pavolonis%mlay_flag)
+   if (allocated(imager_pavolonis%mlay_unc)) &
+        deallocate(imager_pavolonis%mlay_unc)
 #endif
 
    deallocate(imager_measurements%cal_gain)

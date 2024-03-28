@@ -173,7 +173,7 @@
             trcld(l) = (1.-rinf**2)*eggtau/denom
             rrcld(l) = rinf*(1.-eggtau**2)/denom
 
-            if(taus .lt. .8e-2) then
+            if (taus .lt. .8e-2) then
                sigucld(l) = cldamt(i,l)*0.5*diffac*(bf(i,l)+
      *                      bf(i,l+1))*taus
                sigdcld(l) = cldamt(i,l)*sigucld(l)
@@ -203,7 +203,7 @@
             trclr(l) = (1.-rinf**2)*eggtau/denom
             rrclr(l) = rinf*(1.-eggtau**2)/denom
 
-            if(taus .lt. .8e-2) then
+            if (taus .lt. .8e-2) then
                siguclr(l) = (1.0-cldamt(i,l))*0.5*diffac*(bf(i,l)+
      *                      bf(i,l+1))*taus
                sigdclr(l) = (1.0-cldamt(i,l))*siguclr(l)
@@ -247,7 +247,7 @@
         smx(8) = -rrclr(1) * b2(i,1)
         nir(4) = 2
 
-        do l = 1,nlm-1
+        do l = 1, nlm-1
           n = (l-1)*16 + 9
           ir = 4*l
 
@@ -298,7 +298,7 @@
         nir(ir+2) = 1
 
         b(:) = 0.0
-        do l = 1,nlm
+        do l = 1, nlm
           b(l*4-3) = sigucld(l)
           b(l*4-2) = siguclr(l)
           b(l*4-1) = sigdcld(l)
@@ -315,11 +315,11 @@
 
         fvc(:) = b(:)
 
-        do iter=1,200
+        do iter = 1, 200
            kk = 1
-           do ii=1,nsr
+           do ii = 1, nsr
              t = 0.0
-             do j=1,nir(ii)
+             do j = 1, nir(ii)
                jj = idc(kk)
                t = t + smx(kk) * fvc(jj)
                kk = kk + 1
@@ -337,10 +337,10 @@
 
 
 !---- 3. SUM CLEAR AND CLOUDY FLUXES
-        do l = 1,nlm+1
+        do l = 1, nlm+1
           fu(i,l) = fvc(l*4-3)+fvc(l*4-2)
         end do
-        do l = 1,nlm
+        do l = 1, nlm
           fd(i,l+1) = fvc(l*4-1)+fvc(l*4)
         end do
 
