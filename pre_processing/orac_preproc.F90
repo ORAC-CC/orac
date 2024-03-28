@@ -1178,7 +1178,7 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
            preproc_geo, preproc_prtm, preproc_surf, preproc_cld)
       call deallocate_imager_structures(imager_geolocation, imager_angles, &
            imager_flags, imager_time, imager_measurements, imager_pavolonis, &
-           imager_cloud, preproc_opts%use_seviri_ann_ctp_fg, preproc_opts%use_seviri_ann_mlay)
+           imager_cloud)
       call deallocate_surface_structures(surface, channel_info, &
            include_full_brdf)
 

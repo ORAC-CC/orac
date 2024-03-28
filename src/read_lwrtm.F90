@@ -119,7 +119,6 @@ subroutine Read_LwRTM(Ctrl, RTM)
 
    ! Open LwRTM data file
    call ncdf_open(ncid, Ctrl%FID%LWRTM, 'Read_LwRTM()')
-
    ! Ensure instrument info matches the sensor being processed
    if (nf90_get_att(ncid, NF90_GLOBAL, "Sensor", sensor) /= NF90_NOERR .or.&
        nf90_get_att(ncid, NF90_GLOBAL, "Platform", platform) /= NF90_NOERR) then
@@ -128,7 +127,9 @@ subroutine Read_LwRTM(Ctrl, RTM)
       stop error_stop_code
    end if
    instname = trim(adjustl(sensor))//'-'//trim(adjustl(platform))
-
+   if (instname(1:10) == 'SEVIRI-MSG') then
+      instname = 'SEVIRI-MSG' // instname(12:12)
+   endif
    if (trim(adjustl(instname)) /= trim(adjustl(Ctrl%InstName))) then
       write(*,*) 'ERROR: Read_LwRTM(): Instrument in LWRTM header inconsistent: ', &
                  trim(adjustl(instname)), ' /= ', trim(adjustl(Ctrl%InstName))

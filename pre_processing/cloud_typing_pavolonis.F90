@@ -316,6 +316,7 @@ subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
    integer            :: ch1, ch2, ch3, ch4, ch5, ch6, sw1, sw2, sw3
    integer            :: mlch1, mlch2, mlch3, mlch4, mlch5, mlch6, mlch7, &
                          mlch9, mlch10, mlch11
+   integer            :: ml_channels(10)
    integer            :: legacy_channels(6)
 
    !--------------------------------------------------------------------
@@ -443,41 +444,45 @@ subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
    mlch10 = 0
    mlch11 = 0
    if (trim(adjustl(sensor)) .eq. 'SEVIRI' .and. use_seviri_ann_cma_cph) then
-      do i = 1, channel_info%nchannels_total
-         select case (channel_info%channel_ids_instr(i))
-         case(1)
-            mlch1 = i
-         case(2)
-            mlch2 = i
-         case(3)
-            mlch3 = i
-         case(4)
-            mlch4 = i
-         case(5)
-            mlch5 = i
-         case(6)
-            mlch6 = i
-         case(7)
-            mlch7 = i
-         case(9)
-            mlch9 = i
-         case(10)
-            mlch10 = i
-         case(11)
-            mlch11 = i
-         end select
-      end do
-      if (.not. (mlch1 .ne. 0 .and. mlch2 .ne. 0 .and. mlch3 .ne. 0 .and. mlch4 .ne. 0 &
-           .and. mlch5 .ne. 0 .and. mlch6 .ne. 0 .and. mlch7 .ne. 0 .and. mlch9 .ne. 0 &
-           .and. mlch10 .ne. 0 .and. mlch11 .ne. 0)) then
-         write(*,*) 'WARNING: Not using correct channels for SEVIRI-specific neural net!', &
-              ' Instead running general ANN!'
-         use_seviri_ann_cma_cph = .false.
+         do i = 1, channel_info%nchannels_total
+            select case (channel_info%channel_ids_instr(i))
+            case(1)
+               mlch1 = i
+            case(2)
+               mlch2 = i
+            case(3)
+               mlch3 = i
+            case(4)
+               mlch4 = i
+            case(5)
+               mlch5 = i
+            case(6)
+               mlch6 = i
+            case(7)
+               mlch7 = i
+            case(9)
+               mlch9 = i
+            case(10)
+               mlch10 = i
+            case(11)
+               mlch11 = i
+            end select
+         end do
+         ml_channels = (/mlch1, mlch2, mlch3, mlch4, mlch5, mlch6, mlch7, mlch9, mlch10, mlch11/)
+         
+         if (.not. (mlch1 .ne. 0 .and. mlch2 .ne. 0 .and. mlch3 .ne. 0 .and. mlch4 .ne. 0 &
+             .and. mlch5 .ne. 0 .and. mlch6 .ne. 0 .and. mlch7 .ne. 0 .and. mlch9 .ne. 0 &
+             .and. mlch10 .ne. 0 .and. mlch11 .ne. 0)) then
+            write(*,*) 'WARNING: Not using correct channels for SEVIRI-specific neural net!', &
+                       ' Instead running general ANN!'
+            use_seviri_ann_cma_cph = .false.
+            write(*,*) use_seviri_ann_cma_cph
+         end if
+      
       end if
-   end if
-
-
-
+         
+         
+      
 
    ! do not apply NOAA19 mimic when using SEVIRI neural network
    if (trim(adjustl(sensor)) .eq. 'SEVIRI' .and. use_seviri_ann_cma_cph) then
@@ -788,13 +793,12 @@ subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
 
       ! call SEVIRI neural network (Python) cloud detection and cloud phase
       ! determination for whole SEVIRI disc (outside loop)
-
       if (trim(adjustl(sensor)) .eq. 'SEVIRI' .and. use_seviri_ann_cma_cph) then
          if (verbose) write(*,*) 'Using SEVIRI-specific neural net'
          call cma_cph_seviri(cview, imager_flags, imager_angles, &
-              imager_geolocation, imager_measurements, &
+              imager_geolocation, imager_measurements, ml_channels, &
               imager_pavolonis, skint, channel_info, &
-              platform, do_nasa)
+              platform, do_nasa, verbose)
       end if
 
 
@@ -915,17 +919,18 @@ subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
       if (trim(adjustl(sensor)) .eq. 'SEVIRI' .and. use_seviri_ann_ctp_fg) then
          if (verbose) write(*,*) 'Producing SEVIRI ANN-based CTP first guess'
          call ctp_fg_seviri(cview, imager_flags, imager_angles, &
-              imager_geolocation, imager_measurements, &
+              imager_geolocation, imager_measurements, ml_channels, &
               imager_pavolonis, skint, channel_info, &
-              platform, do_nasa)
+              platform, do_nasa, verbose)
       end if
 
       if (trim(adjustl(sensor)) .eq. 'SEVIRI' .and. use_seviri_ann_mlay) then
          if (verbose) write(*,*) 'Producing SEVIRI Multilayer flag'
          call mlay_seviri(cview, imager_flags, imager_angles, &
-              imager_geolocation, imager_measurements, &
+              imager_geolocation, imager_measurements, ml_channels, &
               imager_pavolonis, skint, channel_info, &
-              platform, do_nasa)
+              platform, do_nasa, verbose)
+
       end if
 
    end do v_loop
