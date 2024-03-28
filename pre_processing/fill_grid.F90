@@ -66,8 +66,8 @@ subroutine fill_grid(grid, fillval, mask)
    allocate(Z(nx,ny))
    Z = grid
 
-   do j = 1,ny
-      do i=1,nx
+   do j = 1, ny
+      do i = 1, nx
          if (mask(i,j) .ne. 0) then
             if (grid(i,j) .eq. fillval) then
                m = 0
@@ -75,7 +75,7 @@ subroutine fill_grid(grid, fillval, mask)
                count=8
                do while (flag .eq. 0 .and. m .lt. 4)
                   m = m+1
-                  do k=1,count
+                  do k = 1, count
                      a1 = i + int(real(m)*isearch(k))
                      b1 = j + int(real(m)*jsearch(k))
                      if (a1 .lt. 1.0) a1 = 1
@@ -84,11 +84,11 @@ subroutine fill_grid(grid, fillval, mask)
                      if (b1 .gt. ny) b1 = ny
                      if (z(a1,b1) .ne. fillval) then
                         grid(i,j) = z(a1,b1)
-                        flag=1
+                        flag = 1
                         exit
                      end if
                   end do ! k loop
-                  count=16
+                  count = 16
                end do ! do while
             end if ! if (grid(i,j) eq fillval)
          end if ! if (skip(i,j) eq 0)

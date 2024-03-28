@@ -90,33 +90,33 @@ subroutine collocate_aerosol2cloud(anum,aLon,aLat,xdim,ydim,cLon,cLat,aID)
    !----------------------------------------------------------------------------
 
    call cpu_time(start)
-   print*,'COLLOCATING AEROSOL (10KM) TO CLOUD (1KM)'
+   print*, 'COLLOCATING AEROSOL (10KM) TO CLOUD (1KM)'
    ! Method 1 (~12 mins) (construct index based on each satellite row)
-   do iY=11,ydim-11 ! loop over each scanline
-!  do iY=13499,13501 ! loop over each scanline
+   do iY = 11, ydim-11 ! loop over each scanline
+!  do iY = 13499, 13501 ! loop over each scanline
       ! longitude minimum & maximum over across scan pixels
-      lonmin=minval(cLon(:,iY-10:iY+10))
-      lonmax=maxval(cLon(:,iY-10:iY+10))
-      Wrap=0
+      lonmin = minval(cLon(:,iY-10:iY+10))
+      lonmax = maxval(cLon(:,iY-10:iY+10))
+      Wrap = 0
       ! international dateline fix
       if (abs(lonmin) .gt. 175. .or. abs(lonmax) .gt. 175.) Wrap=1
 
 
       ! latitude min&max over across scan pixels
-      latmin=minval(cLat(:,iY-10:iY+10))
-      latmax=maxval(cLat(:,iY-10:iY+10))
+      latmin = minval(cLat(:,iY-10:iY+10))
+      latmax = maxval(cLat(:,iY-10:iY+10))
 
       ! Loop over all cci aerosol pixels to find the range of points that lie
       ! within the geographic region of the scanline - equivalent where
       ! statement in IDL
-      tID(:)=-1 ! set temporary index to -1
-      tct=1
-      do k=1,anum
+      tID(:) = -1 ! set temporary index to -1
+      tct = 1
+      do k = 1, anum
          if (Wrap .eq. 0) then
             if (aLat(k) .ge. latmin-0.15 .and. aLat(k) .le. latmax+0.15 .and. &
                 aLon(k) .ge. lonmin-0.15 .and. aLon(k) .le. lonmax+0.15) then
                tID(tct) = k
-               tct=tct+1
+               tct = tct+1
             end if
          end if
 
@@ -125,18 +125,18 @@ subroutine collocate_aerosol2cloud(anum,aLon,aLat,xdim,ydim,cLon,cLat,aID)
             if ((aLat(k) .ge. latmin-0.15 .and. aLat(k) .le. latmax+0.15) .and. &
                 (aLon(k) .lt. -175. .or. aLon(k) .gt. 175.) ) then
                tID(tct) = k
-               tct=tct+1
+               tct = tct+1
             end if
          end if
       end do
 
       if (tct .gt. 1) then
          ! loop over each scan pixel
-         do iX=1,xdim
-            act2=1
+         do iX = 1, xdim
+            act2 = 1
 !           print*,iY,iX,': 3',tct
 
-            do k=1,tct-1 !loop over each aerosol within known range (from above)
+            do k = 1, tct-1 !loop over each aerosol within known range (from above)
 !           if (iY .eq. 1491) &
 !              print*,iY,iX,': 4',k,cLat(iX,iY),cLon(iX,iY) !,aLat(tID(k)),aLon(tID(k))
 
@@ -149,7 +149,7 @@ subroutine collocate_aerosol2cloud(anum,aLon,aLat,xdim,ydim,cLon,cLat,aID)
             if (d .le. 15.) then
                aID2(act2) = tID(k)
                aDist2(act2) = d
-               act2=act2+1
+               act2 = act2+1
             end if ! within 15 km
 
 !           if (iY .eq. 1491) print*,iY,iX,': 6',k,d,act2
@@ -178,46 +178,46 @@ subroutine collocate_aerosol2cloud(anum,aLon,aLat,xdim,ydim,cLon,cLat,aID)
    if (4 .gt. 5) then
       ! Grid aerosol lat/lon to 1x1 degree grid
       ! 3 composites for treatment of boundaries
-      print*,'GRIDDING DATA FOR COLLOCATION ~15 seconds'
-      do i=1,360
-         do j=1,180
+      print*, 'GRIDDING DATA FOR COLLOCATION ~15 seconds'
+      do i = 1, 360
+         do j = 1, 180
             lonmin = i-181
             lonmax = i-180
             latmin = j-91
             latmax = j-90
             lonID(i) = i-181
             latID(j) = j-91
-            Wrap=0
+            Wrap = 0
             if (lonmin .eq. -180. .or. lonmax .eq. 180.) then
-               Wrap=1
+               Wrap = 1
                lonmin = 178.5
                lonmax = -178.5
             end if
 
-            strct=1
-            trct=1
-            hilattrct=1
-            do k=1,anum
+            strct = 1
+            trct = 1
+            hilattrct = 1
+            do k = 1, anum
                ! 3 Gridded composites
                ! Smaller definitely inside box
                if (aLat(k) .ge. latmin .and. aLat(k) .lt. latmax .and. &
                    aLon(k) .ge. lonmin .and. aLon(k) .lt. lonmax) then
-                  srID(i,j,strct)=k
-                  strct=strct+1
+                  srID(i,j,strct) = k
+                  strct = strct+1
                end if
 
                ! Could be outside box
                if (aLat(k) .ge. latmin-0.135 .and. aLat(k) .lt. latmax+0.135 .and. &
                    aLon(k) .ge. lonmin-0.5 .and. aLon(k) .lt. lonmax+0.5) then
-                  rID(i,j,trct)=k
-                  trct=trct+1
+                  rID(i,j,trct) = k
+                  trct = trct+1
                end if
 
                ! Probably outside box high/latitudes
                if (aLat(k) .ge. latmin-1.35 .and. aLat(k) .lt. latmax+1.35 .and. &
                    aLon(k) .ge. lonmin-1.5 .and. aLon(k) .lt. lonmax+1.5) then
-                  hilatID(i,j,hilattrct)=k
-                  hilattrct=hilattrct+1
+                  hilatID(i,j,hilattrct) = k
+                  hilattrct = hilattrct+1
                end if
             end do
             rct(i,j) = trct
@@ -227,23 +227,23 @@ subroutine collocate_aerosol2cloud(anum,aLon,aLat,xdim,ydim,cLon,cLat,aID)
       end do
 
       ! Maximum pixels in a grid-box
-      print*,maxval(rct)
-      print*,maxval(srct)
-      print*,maxval(hilatct)
+      print*, maxval(rct)
+      print*, maxval(srct)
+      print*, maxval(hilatct)
 
-      print*,'collocating ~1min'
+      print*, 'collocating ~1min'
 
-      do iX=1,xdim ! loop over satellite-X
-         print*,iX
-         do iY=1,ydim ! loop over satellite-Y
-            tct=1
+      do iX = 1, xdim ! loop over satellite-X
+         print*, iX
+         do iY = 1, ydim ! loop over satellite-Y
+            tct = 1
             !get index for current region
             tXID = int(cLon(iX,iY))+181
             tYID = int(cLat(iX,iY))+91
             tct  = rct(tXID,tYID)
             if (tct .gt. 1) then ! aerosol data needs to exist;
                                  ! it won't in twilight/dark regions
-               flag=0
+               flag = 0
 
                ! Low-latitude pixel
                if (abs(cLat(iX,iY)) .lt. 75.) then
@@ -252,9 +252,9 @@ subroutine collocate_aerosol2cloud(anum,aLon,aLat,xdim,ydim,cLon,cLat,aID)
                   ! Use composite 1 (faster collocation over smaller number of points)
                   if (abs(cLon(iX,iY)-lonID(int(cLon(iX,iY))+181)) .gt. 0.15 .and. &
                       abs(cLat(iX,iY)-latID(int(cLat(iX,iY))+181)) .gt. 0.15 ) then
-                     flag=2
-                     tct=srct(tXID,tYID)
-                     do k=1,tct
+                     flag = 2
+                     tct = srct(tXID,tYID)
+                     do k = 1, tct
                         call haversine(cLat(iX,iY),cLon(iX,iY), &
                              aLat(srID(tXID,tYID,k)),aLon(srID(tXID,tYID,k)),d)
                         ! Choose the very first aerosol pixel that is within 10
@@ -272,9 +272,9 @@ subroutine collocate_aerosol2cloud(anum,aLon,aLat,xdim,ydim,cLon,cLat,aID)
                   ! points that can exist outside of grid-box)
                   if (abs(cLon(iX,iY)-lonID(int(cLon(iX,iY))+181)) .lt. 0.15 .or. &
                       abs(cLat(iX,iY)-latID(int(cLat(iX,iY))+181)) .lt. 0.15 ) then
-                     flag=1
+                     flag = 1
                      tct  = rct(tXID,tYID)
-                     do k=1,tct
+                     do k = 1, tct
                         call haversine(cLat(iX,iY),cLon(iX,iY), &
                              aLat(rID(tXID,tYID,k)),aLon(rID(tXID,tYID,k)),d)
 !                       print*,k,cLat(iX,iY),cLon(iX,iY), &
@@ -292,9 +292,9 @@ subroutine collocate_aerosol2cloud(anum,aLon,aLat,xdim,ydim,cLon,cLat,aID)
 
                ! High-latitude
                if (abs(cLat(iX,iY)) .ge. 75. .and. abs(cLat(iX,iY)) .lt. 85.) then
-                  flag=3
-                  tct=hilatct(tXID,tYID)
-                  do k=1,tct
+                  flag = 3
+                  tct = hilatct(tXID,tYID)
+                  do k = 1, tct
                      call haversine(cLat(iX,iY),cLon(iX,iY), &
                           aLat(hilatID(tXID,tYID,k)),aLon(hilatID(tXID,tYID,k)),d)
                      ! Choose the very first aerosol pixel that is within 10 km
@@ -309,17 +309,17 @@ subroutine collocate_aerosol2cloud(anum,aLon,aLat,xdim,ydim,cLon,cLat,aID)
 
                ! Over-the-pole
                if (abs(cLat(iX,iY)) .ge. 85.) then
-                  flag=4
+                  flag = 4
                   ! needs to be coded
                end if
 
                if (flag .eq. 0) then
-                  print*,cLon(iX,iY),cLat(iX,iY)
-                  print*,int(cLon(iX,iY))+181,int(cLat(iX,iY))+91
-                  print*,lonID(int(cLon(iX,iY))+181),latID(int(cLat(iX,iY))+91)
-                  print*,rct(tXID,tYID),srct(tXID,tYID)
-                  print*,''
-                  print*,'flag = 0; something went wrong!'
+                  print*, cLon(iX,iY),cLat(iX,iY)
+                  print*, int(cLon(iX,iY))+181,int(cLat(iX,iY))+91
+                  print*, lonID(int(cLon(iX,iY))+181),latID(int(cLat(iX,iY))+91)
+                  print*, rct(tXID,tYID),srct(tXID,tYID)
+                  print*, ''
+                  print*, 'flag = 0; something went wrong!'
                   stop
                end if
             end if ! data in region
@@ -329,7 +329,7 @@ subroutine collocate_aerosol2cloud(anum,aLon,aLat,xdim,ydim,cLon,cLat,aID)
 
    call cpu_time(finish)
 
-   print*,finish-start,' seconds elapsed'
+   print*, finish-start,' seconds elapsed'
 
    return
 end subroutine collocate_aerosol2cloud

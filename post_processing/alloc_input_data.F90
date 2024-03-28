@@ -12,9 +12,9 @@
 !
 ! History:
 ! 2012/02/03, MJ: Cleans out prototype code to prepare repository upload.
-! 15/02/2012, CP: To do level 2 post processing
-! 07/03/2012, MS: Added missing stemp_ap
-! 07/03/2012, CP: Cleaned up
+! 2012/02/15, CP: To do level 2 post processing
+! 2012/03/07, MS: Added missing stemp_ap
+! 2012/03/07, CP: Cleaned up
 ! 2012/03/18, CP: Modified to add cloud flag
 ! 2012/06/20, CP: Added albedo
 ! 2012/07/04, MJ: Fixed several data type bugs
@@ -73,7 +73,7 @@ subroutine alloc_input_data_classify(ind, data, read_cost, read_ctt)
    else
       nullify(data%ctt)
    end if
-   
+
    nullify(data%aot550)
    nullify(data%aot550_uncertainty)
    nullify(data%aot870)

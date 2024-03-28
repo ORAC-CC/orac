@@ -217,11 +217,11 @@ end if
 
 if (indexing%flags%do_rho) then
    i_rho = 0
-   do i=1,indexing%NSolar
+   do i = 1, indexing%NSolar
 
       write(input_num,"(i4)") indexing%Y_Id(indexing%YSolar(i))
 
-      do j=1,MaxRho_XX
+      do j = 1, MaxRho_XX
          if (indexing%rho_terms(i,j)) then
             i_rho = i_rho + 1
 
@@ -275,7 +275,7 @@ end if
 
 if (indexing%flags%do_swansea) then
    i_rho = 0
-   do i=1,indexing%NSolar
+   do i = 1, indexing%NSolar
       if (indexing%ss_terms(i)) then
          i_rho = i_rho + 1
 
@@ -330,7 +330,7 @@ if (indexing%flags%do_swansea) then
    end do
 
 
-   do i=1,indexing%NViews
+   do i = 1, indexing%NViews
 
       write(input_num,"(i4)") i
 
@@ -674,7 +674,7 @@ if (indexing%flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! albedo_in_channel_no_*
    !----------------------------------------------------------------------------
-   do i=1,indexing%NSolar
+   do i = 1, indexing%NSolar
 
       write(input_num,"(i4)") indexing%Y_Id(indexing%YSolar(i))
 
@@ -702,7 +702,7 @@ end if
    !----------------------------------------------------------------------------
    ! reflectance and brightness temperature _in_channel_no_*
    !----------------------------------------------------------------------------
-   do i=1,indexing%Ny
+   do i = 1, indexing%Ny
 
       write(input_num,"(i4)") indexing%Y_Id(i)
 
@@ -740,7 +740,7 @@ end if
    !----------------------------------------------------------------------------
    ! firstguess reflectance and brightness temperature _in_channel_no_*
    !----------------------------------------------------------------------------
-   do i=1,indexing%Ny
+   do i = 1, indexing%Ny
 
       write(input_num,"(i4)") indexing%Y_Id(i)
 
@@ -779,7 +779,7 @@ end if
    !----------------------------------------------------------------------------
    ! reflectances and brightness temperature _residual_in_channel_no_*
    !----------------------------------------------------------------------------
-   do i=1,indexing%Ny
+   do i = 1, indexing%Ny
 
       write(input_num,"(i4)") indexing%Y_Id(i)
 

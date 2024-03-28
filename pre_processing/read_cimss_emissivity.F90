@@ -46,7 +46,7 @@
 ! 2014/10/15, GM: Changes related to supporting an arbitrary set of LW channels.
 ! 2015/03/04, GM: Changes related to supporting channels in arbitrary order.
 ! 2015/07/03, OS: added error status variable to nc_open call
-! 10/07/2015, OS: undo previous commit
+! 2015/07/10, OS: undo previous commit
 !
 ! Bugs:
 ! None known.

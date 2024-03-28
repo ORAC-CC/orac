@@ -124,10 +124,10 @@ if (Ctrl%Ind%flags%do_rho) then
    ! rho_ap, rho_fg
    !----------------------------------------------------------------------------
    i_rho = 0
-   do k=1,SPixel%Ind%NSolar
+   do k = 1, SPixel%Ind%NSolar
       kk = SPixel%spixel_y_solar_to_ctrl_y_solar_index(k)
 
-      do l=1,MaxRho_XX
+      do l = 1, MaxRho_XX
          if (Ctrl%Ind%rho_terms(kk,l)) then
             i_rho = i_rho + 1
 
@@ -152,7 +152,7 @@ if (Ctrl%Ind%flags%do_swansea) then
    ! swansea_s_ap, swansea_s_fg
    !----------------------------------------------------------------------------
    i_rho = 0
-   do k=1,SPixel%Ind%NSolar
+   do k = 1, SPixel%Ind%NSolar
       kk = SPixel%spixel_y_solar_to_ctrl_y_solar_index(k)
 
       if (Ctrl%Ind%ss_terms(kk)) then
@@ -172,7 +172,7 @@ if (Ctrl%Ind%flags%do_swansea) then
       end if
    end do
 
-   do k=1,Ctrl%Ind%NViews
+   do k = 1, Ctrl%Ind%NViews
       if (any(SPixel%X .eq. ISP(k))) then
          call prepare_short_packed_float( &
               SPixel%Xb(ISP(k)), output_data%swansea_p_ap(i,j,k), &
@@ -257,7 +257,7 @@ if (Ctrl%Ind%flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! albedo
    !----------------------------------------------------------------------------
-   do k=1,Ctrl%Ind%NSolar
+   do k = 1, Ctrl%Ind%NSolar
       call prepare_short_packed_float( &
            MSI_Data%ALB(SPixel%Loc%X0,SPixel%Loc%Y0,k), &
            output_data%albedo(i,j,k), &
@@ -321,7 +321,7 @@ end if
    !----------------------------------------------------------------------------
    ! channels
    !----------------------------------------------------------------------------
-   do k=1,Ctrl%Ind%Ny
+   do k = 1, Ctrl%Ind%Ny
       call prepare_short_packed_float( &
            MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%Y0, k), &
            output_data%channels(i,j,k), &
@@ -333,7 +333,7 @@ end if
    !----------------------------------------------------------------------------
    ! y0
    !----------------------------------------------------------------------------
-   do k=1,SPixel%Ind%Ny
+   do k = 1, SPixel%Ind%Ny
       kk = SPixel%spixel_y_to_ctrl_y_index(k)
 
       call prepare_short_packed_float( &
@@ -346,7 +346,7 @@ end if
    !----------------------------------------------------------------------------
    ! residuals
    !----------------------------------------------------------------------------
-   do k=1,SPixel%Ind%Ny
+   do k = 1, SPixel%Ind%Ny
       kk = SPixel%spixel_y_to_ctrl_y_index(k)
 
       call prepare_short_packed_float( &
@@ -366,7 +366,7 @@ end if
    else
       dummyreal = 0.0
 
-      do k=1,SPixel%Nx
+      do k = 1, SPixel%Nx
          dummyreal = dummyreal + Diag%AK(SPixel%X(k),SPixel%X(k))
       end do
    end if
@@ -380,8 +380,8 @@ end if
    ! covariance
    !----------------------------------------------------------------------------
 if (Ctrl%Ind%flags%do_covariance) then
-   do k=1,SPixel%Nx
-      do l=1,SPixel%Nx
+   do k = 1, SPixel%Nx
+      do l = 1, SPixel%Nx
         call prepare_float_packed_float( &
              real(SPixel%Sn(k,l),kind=sreal), output_data%covariance(i,j,k,l), &
              1._sreal, 0._sreal, 0._sreal, huge(dummyreal), &

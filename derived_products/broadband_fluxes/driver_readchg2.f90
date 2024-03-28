@@ -171,7 +171,7 @@ subroutine driver_read(tsi,theta,asfcswr,asfcnir, &
 
 !  call midlatsum1(pxZ,pxP,pxT,pxQ,pxO3,NLS)
    pl2(1,:) = pxP(1:)
-   do l=1,nlm
+   do l = 1, nlm
     pl(1,l) = pxP(l) + ( pxP(l+1)-pxP(l) ) / 2.
    end do
    pl2(1,:) = pxP(1:)
@@ -186,23 +186,23 @@ subroutine driver_read(tsi,theta,asfcswr,asfcnir, &
    qril(1,1:nlm) = 0.
    acld(1,1:nlm) = 0.
 
-   ts(1)=257.
-   amu0(1)=theta
-   alvdr(1)=asfcswr
-   alndr(1)=asfcnir
-   alvdf(1)=asfcswr
-   alndf(1)=asfcnir
-   umco2(1)=380.
-   umch4(1)=1.80
-   umn2o(1)=0.26
+   ts(1) = 257.
+   amu0(1) = theta
+   alvdr(1) = asfcswr
+   alndr(1) = asfcnir
+   alvdf(1) = asfcswr
+   alndf(1) = asfcnir
+   umco2(1) = 380.
+   umch4(1) = 1.80
+   umn2o(1) = 0.26
 
-   do l=1,nlm
+   do l = 1, nlm
      dpl(1,l) = pl2(1,l+1)-pl2(1,l)
    end do
 
    ! Clouds? Hardcoded here, can read in if you want to.
-   LWP=((5./9.)*cref*ccot)
-   CWC=LWP/((hctop-hcbase)*1000.)
+   LWP = ((5./9.)*cref*ccot)
+   CWC = LWP/((hctop-hcbase)*1000.)
 
    ! Initialize
    qcwl(1,:) = 0.0 ! cloud water mixing ratio (kg/kg)
@@ -229,7 +229,7 @@ subroutine driver_read(tsi,theta,asfcswr,asfcnir, &
    ! Copy profile to all columns
    ! Copy the same column to all columns (only useful if testing multiple
    ! identical columns for timing, otherwise, it doesn't hurt)
-   do i=1,nlen
+   do i = 1, nlen
       pl2(i,:) = pl2(1,:)
       pl(i,:) = pl(1,:)
       dpl(i,:) = dpl(1,:)

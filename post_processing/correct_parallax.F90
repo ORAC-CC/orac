@@ -26,7 +26,7 @@
 !       3) Shift all pixels to compensate for this effect
 !
 ! History:
-!   2018/06/08, SP: Original version
+! 2018/06/08, SP: Original version
 !
 ! Bugs:
 !    Satellite height is assumed based upon the instrument. Ideally it should be
@@ -356,8 +356,8 @@ subroutine correct_parallax(primary, indexing, global_atts, verbose)
    !$OMP PARALLEL &
    !$OMP PRIVATE(i,j)
    !$OMP DO SCHEDULE(GUIDED)
-   do j=indexing%Y0+1,indexing%Y1-1
-      do i=indexing%X0+1,indexing%X1-1
+   do j = indexing%Y0+1, indexing%Y1-1
+      do i = indexing%X0+1, indexing%X1-1
          if (ncth(i,j) .lt. 0 .and. orig_cth(i,j) .gt. 0) then
             primary%cth(i,j)             = get_ave_real(ncth(i-1:i+1,j-1:j+1))
             primary%cth_uncertainty(i,j) = get_ave_real(ncthu(i-1:i+1,j-1:j+1))

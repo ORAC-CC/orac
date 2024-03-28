@@ -55,7 +55,7 @@
 !                 instead of IMPF (as previous). The new driver file option
 !                 USE_GSICS enables this to be disabled.
 ! 2018/06/08, SP: New global attribute to store satellite position information
-! 2019/8/14, SP: Add Fengyun-4A support.
+! 2019/08/14, SP: Add Fengyun-4A support.
 !
 ! Bugs:
 ! None known.

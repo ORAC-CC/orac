@@ -607,7 +607,8 @@ end subroutine netcdf_create_rtm
 
 subroutine netcdf_create_swath(global_atts, source_atts, cyear, cmonth, cday, chour, &
      cminute, platform, sensor, path, type, imager_geolocation, imager_angles, &
-     netcdf_info, channel_info, include_full_brdf, do_cloud_emis, verbose)
+     netcdf_info, channel_info, include_full_brdf, do_cloud_emis, use_seviri_ann_mlay, &
+     verbose)
 
    use netcdf
 
@@ -639,6 +640,7 @@ subroutine netcdf_create_swath(global_atts, source_atts, cyear, cmonth, cday, ch
    logical,                    intent(in)    :: include_full_brdf
    logical,                    intent(in)    :: do_cloud_emis
    logical,                    intent(in)    :: verbose
+   logical,                    intent(in)    :: use_seviri_ann_mlay
 
    ! Local
    character(len=file_length) :: ctitle
@@ -993,6 +995,41 @@ subroutine netcdf_create_swath(global_atts, source_atts, cyear, cmonth, cday, ch
            shuffle = shuffle_flag, &
            fill_value = sreal_fill_value)
 
+#ifdef INCLUDE_SEVIRI_NEURALNET
+      if (use_seviri_ann_mlay) then
+         ! define multilayer probability
+         call ncdf_def_var_float_packed_float( &
+              netcdf_info%ncid_clf, &
+              dimids_3d, &
+              'mlay_prob', &
+              netcdf_info%vid_mlay_prob, &
+              verbose, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
+              fill_value = sreal_fill_value)
+                  ! define multilayer probability
+         call ncdf_def_var_float_packed_float( &
+              netcdf_info%ncid_clf, &
+              dimids_3d, &
+              'mlay_unc', &
+              netcdf_info%vid_mlay_unc, &
+              verbose, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
+              fill_value = sreal_fill_value)
+
+         call ncdf_def_var_byte_packed_byte( &
+              netcdf_info%ncid_clf, &
+              dimids_3d, &
+              'mlay_flag', &
+              netcdf_info%vid_mlay_flag, &
+              verbose, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
+              fill_value = byte_fill_value)
+      end if
+
+#endif
 
    else if (type .eq. NETCDF_OUTPUT_FILE_GEO) then
 
@@ -1371,6 +1408,70 @@ subroutine netcdf_create_swath(global_atts, source_atts, cyear, cmonth, cday, ch
            deflate_level = deflate_level, &
            shuffle = shuffle_flag, &
            fill_value = sreal_fill_value)
+
+   else if (type .eq. NETCDF_OUTPUT_FILE_CTP) then
+
+       ctitle = 'ORAC Preprocessing ctp output file'
+
+      ! create file
+      if (nf90_create(path, IOR(NF90_HDF5, NF90_CLASSIC_MODEL), &
+                      netcdf_info%ncid_ctp) .ne. NF90_NOERR) then
+         write(*,*) 'ERROR: netcdf_create_swath(5), nf90_create(), filename: ', &
+              path
+         stop error_stop_code
+      end if
+
+
+      ! define dimensions
+      if (nf90_def_dim(netcdf_info%ncid_ctp, 'nx_ctp', &
+                       imager_geolocation%endx-imager_geolocation%startx+1, &
+                       netcdf_info%dimid_x_ctp) .ne. NF90_NOERR) then
+         write(*,*) 'ERROR: netcdf_create_swath(5), nf90_create(), ' // &
+              'dimension name: nx_ctp'
+         stop error_stop_code
+      end if
+
+      if (nf90_def_dim(netcdf_info%ncid_ctp, 'ny_ctp', &
+                       imager_geolocation%endy-imager_geolocation%starty+1, &
+                       netcdf_info%dimid_y_ctp) .ne. NF90_NOERR) then
+         write(*,*) 'ERROR: netcdf_create_swath(5), nf90_create(), ' // &
+              'dimension name: ny_ctp'
+         stop error_stop_code
+      end if
+
+      if (nf90_def_dim(netcdf_info%ncid_ctp, 'nv_ctp', imager_angles%nviews, &
+                       netcdf_info%dimid_v_ctp) .ne. NF90_NOERR) then
+         write(*,*) 'ERROR: netcdf_create_swath(3), nf90_create(), ' // &
+              'dimension name: nv_ctp'
+         stop error_stop_code
+      end if
+
+      dimids_3d(1) = netcdf_info%dimid_x_ctp
+      dimids_3d(2) = netcdf_info%dimid_y_ctp
+      dimids_3d(3) = netcdf_info%dimid_v_ctp
+
+      ! define ctp_fg variable
+      call ncdf_def_var_float_packed_float( &
+              netcdf_info%ncid_ctp, &
+              dimids_3d, &
+              'ctp', &
+              netcdf_info%vid_ctp_fg, &
+              verbose, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
+              fill_value = sreal_fill_value)
+
+      ! define ctp_fg_unc variable
+      call ncdf_def_var_float_packed_float( &
+              netcdf_info%ncid_ctp, &
+              dimids_3d, &
+              'ctp_var', &
+              netcdf_info%vid_ctp_fg_unc, &
+              verbose, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
+              fill_value = sreal_fill_value)
+
    end if
 
    ! set up attributes common to all output files
@@ -1380,6 +1481,7 @@ subroutine netcdf_create_swath(global_atts, source_atts, cyear, cmonth, cday, ch
    if (type .eq. NETCDF_OUTPUT_FILE_LOC) ncid = netcdf_info%ncid_loc
    if (type .eq. NETCDF_OUTPUT_FILE_LSF) ncid = netcdf_info%ncid_lsf
    if (type .eq. NETCDF_OUTPUT_FILE_MSI) ncid = netcdf_info%ncid_msi
+   if (type .eq. NETCDF_OUTPUT_FILE_CTP) ncid = netcdf_info%ncid_ctp
 
    call netcdf_put_common_attributes(ncid, global_atts, source_atts, ctitle, &
         platform, sensor, path, cyear, cmonth, cday, &

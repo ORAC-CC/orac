@@ -44,7 +44,7 @@ subroutine rearrange_ecmwf(ecmwf)
    real(kind=sreal), allocatable, dimension(:)   :: lon,lat
 
    ! find dateline
-   date=1
+   date = 1
    do while (ecmwf%lon(date) .lt. 180.)
       date = date + 1
    end do
@@ -80,7 +80,7 @@ subroutine rearrange_ecmwf(ecmwf)
    ecmwf%lon = lon
 
    ! flip in the y direction from the temp to the original
-   do i=1,ecmwf%ydim
+   do i = 1, ecmwf%ydim
       ecmwf%u10(:,ecmwf%ydim+1-i) = u(:,i)
       ecmwf%v10(:,ecmwf%ydim+1-i) = v(:,i)
       ecmwf%skin_temp(:,ecmwf%ydim+1-i)     = skint(:,i)

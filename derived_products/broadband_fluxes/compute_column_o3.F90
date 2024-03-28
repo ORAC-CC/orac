@@ -38,7 +38,7 @@ subroutine compute_column_o3(nlm,H,O3,colO3)
 
    colO3 = 0.
    ! Integrate over each level
-   do i=1,nlm-1
+   do i = 1, nlm-1
 !     print*,H(i),H(i)-H(i+1)
       colO3 = colO3+((O3(i)+O3(i+1))/2.) * (H(i)-H(i+1))*1000000.
 !     print*,((O3(i)+O3(i+1))/2.) * (H(i)-H(i+1)),colO3

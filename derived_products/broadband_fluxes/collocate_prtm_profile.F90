@@ -32,18 +32,18 @@ subroutine collocate_prtm_profile(lonval,latval,xdim,ydim,lonarr,latarr,lonid, &
    real, dimension(20) :: all_lonID,all_latID,all_dist
    integer :: i,j,ct,minid(1)
 
-   all_lonID(:)=0.0
-   all_latID(:)=0.0
-   all_dist(:)=900000.
-   ct=1
-   do i=1,xdim
+   all_lonID(:) = 0.0
+   all_latID(:) = 0.0
+   all_dist(:) = 900000.
+   ct = 1
+   do i = 1, xdim
       if (abs(lonval-lonarr(i)) .lt. 0.5) then
-         do j=1,ydim
+         do j = 1, ydim
             if (abs(latval-latarr(j)) .lt. 0.5) then
-               all_lonID(ct)=i
-               all_latID(ct)=j
-               all_dist(ct)=sqrt( (lonval-lonarr(i))**2. + (latval-latarr(j))**2.)
-               ct=ct+1
+               all_lonID(ct) = i
+               all_latID(ct) = j
+               all_dist(ct) = sqrt( (lonval-lonarr(i))**2. + (latval-latarr(j))**2.)
+               ct = ct+1
 !              print*,i,j
             end if
          end do

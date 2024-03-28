@@ -58,12 +58,12 @@ subroutine midlatsum1(z,P,T,rh2o,ro3,NLS)
              3.6E-04,3.6E-04,3.4E-04,3.2E-04,3.0E-04,2.0E-04,9.2E-05,&
              4.1E-05,1.3E-05,4.3E-06/
 
-   do i=1,NLS
-      z(i)=ZZ(NLS-i+1)
-      P(i)=PP(NLS-i+1)
-      T(i)=TT(NLS-i+1)
-      rh2o(i)=rrh20(NLS-i+1)
-      ro3(i)=rro3(NLS-i+1)
+   do i = 1, NLS
+      z(i) = ZZ(NLS-i+1)
+      P(i) = PP(NLS-i+1)
+      T(i) = TT(NLS-i+1)
+      rh2o(i) = rrh20(NLS-i+1)
+      ro3(i) = rro3(NLS-i+1)
    end do
 
 end subroutine midlatsum1

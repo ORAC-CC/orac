@@ -93,7 +93,7 @@ subroutine read_ecmwf_nc(nwp_path, ecmwf, preproc_dims, preproc_geoloc, &
    integer,                 intent(in)    :: nwp_flag
 
    integer(lint),     external            :: INTIN, INTOUT, INTF
-   integer(lint),     parameter           :: BUFFER = 2000000
+   integer(lint),     parameter           :: BUFFER = 4000000
 
    integer(lint),            dimension(1) :: intv, old_grib, new_grib
    real(dreal)                            :: grid(2), area(4)

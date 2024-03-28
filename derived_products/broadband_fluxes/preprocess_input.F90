@@ -114,6 +114,8 @@ subroutine preprocess_input(cMASK,aREF,AOD,cPHASE, &
    ! CLEAR - DEFINITE
 !  if (cMASK .eq. 0) phaseFlag=0 ! CLEAR
    if (cPHASE .le. 0) phaseFlag=0 ! CLEAR
+!  Temporary setting to force aerosol phase values to be marked as clear
+   if (cPHASE .gt. 2) phaseFlag=0
 
 !  print*,'phaseFlag = ',phaseFlag
 
