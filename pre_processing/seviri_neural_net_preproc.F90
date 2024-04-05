@@ -21,7 +21,6 @@ subroutine get_msg_idx(msg_index, platform, do_nasa)
     integer(kind=1),  intent(inout) :: msg_index
     logical,          intent(in)    :: do_nasa
 
-    write(*,*) 'platform ', platform, 'trimmed ', trim(platform), 'adjusted ', trim(adjustl(platform)), 'done'
     select case (trim(platform))
         case ("MSG1","MSG-1")
             msg_index = 1
