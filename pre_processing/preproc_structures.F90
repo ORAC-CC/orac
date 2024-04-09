@@ -180,11 +180,12 @@ module preproc_structures_m
 
 
    type setup_args_t
-      character(len=path_length)     :: l1b_file ! Path to satellite swath
-      character(len=path_length)     :: geo_file ! Path to geolocation data
+      character(len=path_length)     :: l1b_file     ! Path to satellite swath
+      character(len=path_length)     :: geo_file     ! Path to geolocation data
 
-      character(len=sensor_length)   :: sensor   ! Name of instrument
-      character(len=platform_length) :: platform ! Name of satellite it is on
+      character(len=sensor_length)   :: sensor       ! Name of instrument
+      character(len=sensor_length)   :: sensor_rdr   ! Name of data reader
+      character(len=platform_length) :: platform     ! Name of satellite it is on
       ! Date as strings
       character(len=date_length)     :: cyear, cmonth, cday
       character(len=date_length)     :: cdoy, chour, cminute, csecond
