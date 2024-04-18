@@ -41,6 +41,7 @@
 ! 2017/06/22, OS: Added phase variables.
 ! 2017/07/05, AP: Add channels_used, variables_retrieved. New QC.
 ! 2018/06/08, SP: Add satellite azimuth angle to output.
+! 2023/10/10, GT: Added measurement uncertainties to secondary data
 ! 2023/11/21, GT: Added alloc_input_data_classify() subroutine.
 ! 2024/03/07, GT: Removed unused alloc_input_data_only_cost() subroutine.
 !
@@ -73,7 +74,7 @@ subroutine alloc_input_data_classify(ind, data, read_cost, read_ctt)
    else
       nullify(data%ctt)
    end if
-   
+
    nullify(data%aot550)
    nullify(data%aot550_uncertainty)
    nullify(data%aot870)
@@ -620,6 +621,13 @@ subroutine alloc_input_data_secondary_common(ind, data)
       nullify(data%cer2_fg)
       nullify(data%ctp2_ap)
       nullify(data%ctp2_fg)
+   end if
+
+   if (ind%flags%do_meas_error) then
+      allocate(data%Sy(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%Ny))
+      data%Sy = sreal_fill_value
+   else
+      nullify(data%Sy)
    end if
 
    allocate(data%y0(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%Ny))

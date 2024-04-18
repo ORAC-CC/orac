@@ -45,6 +45,7 @@
 ! 2016/03/04, AP: Tidy prepare_*_packed_float. Make MissingXn the only value
 !    checked for in X, X0, Xb (sreal_fill_value had been ocassionally checked).
 ! 2016/07/27, GM: Add output fields for the multilayer retrieval.
+! 2023/10/10, GT: Added optional output of measurement uncertainties
 !
 ! Bugs:
 ! None known.
@@ -69,15 +70,15 @@ subroutine prepare_output_secondary(Ctrl, i, j, MSI_Data, SPixel, Diag, &
    type(Diag_t),                  intent(in)    :: Diag
    type(output_data_secondary_t), intent(inout) :: output_data
 
-   integer          :: k, kk, l, i_rho
+   integer          :: k, kk, l, ll, i_rho
    real(kind=sreal) :: dummyreal
 
 
    !----------------------------------------------------------------------------
    ! scanline_u, scanline_v
    !----------------------------------------------------------------------------
-   output_data%scanline_u(i,j)=i
-   output_data%scanline_v(i,j)=j
+   output_data%scanline_u(i,j) = i
+   output_data%scanline_v(i,j) = j
 
 if (Ctrl%Ind%flags%do_aerosol) then
    !----------------------------------------------------------------------------
@@ -124,10 +125,10 @@ if (Ctrl%Ind%flags%do_rho) then
    ! rho_ap, rho_fg
    !----------------------------------------------------------------------------
    i_rho = 0
-   do k=1,SPixel%Ind%NSolar
+   do k = 1, SPixel%Ind%NSolar
       kk = SPixel%spixel_y_solar_to_ctrl_y_solar_index(k)
 
-      do l=1,MaxRho_XX
+      do l = 1, MaxRho_XX
          if (Ctrl%Ind%rho_terms(kk,l)) then
             i_rho = i_rho + 1
 
@@ -152,7 +153,7 @@ if (Ctrl%Ind%flags%do_swansea) then
    ! swansea_s_ap, swansea_s_fg
    !----------------------------------------------------------------------------
    i_rho = 0
-   do k=1,SPixel%Ind%NSolar
+   do k = 1, SPixel%Ind%NSolar
       kk = SPixel%spixel_y_solar_to_ctrl_y_solar_index(k)
 
       if (Ctrl%Ind%ss_terms(kk)) then
@@ -172,7 +173,7 @@ if (Ctrl%Ind%flags%do_swansea) then
       end if
    end do
 
-   do k=1,Ctrl%Ind%NViews
+   do k = 1, Ctrl%Ind%NViews
       if (any(SPixel%X .eq. ISP(k))) then
          call prepare_short_packed_float( &
               SPixel%Xb(ISP(k)), output_data%swansea_p_ap(i,j,k), &
@@ -257,7 +258,7 @@ if (Ctrl%Ind%flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! albedo
    !----------------------------------------------------------------------------
-   do k=1,Ctrl%Ind%NSolar
+   do k = 1, Ctrl%Ind%NSolar
       call prepare_short_packed_float( &
            MSI_Data%ALB(SPixel%Loc%X0,SPixel%Loc%Y0,k), &
            output_data%albedo(i,j,k), &
@@ -321,7 +322,7 @@ end if
    !----------------------------------------------------------------------------
    ! channels
    !----------------------------------------------------------------------------
-   do k=1,Ctrl%Ind%Ny
+   do k = 1, Ctrl%Ind%Ny
       call prepare_short_packed_float( &
            MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%Y0, k), &
            output_data%channels(i,j,k), &
@@ -331,9 +332,24 @@ end if
    end do
 
    !----------------------------------------------------------------------------
+   ! Measurement error (diagonals)
+   !----------------------------------------------------------------------------
+   if (Ctrl%Ind%flags%do_meas_error) then
+      do k = 1, SPixel%Ind%Ny
+         kk = SPixel%spixel_y_to_ctrl_y_index(k)
+
+         call prepare_short_packed_float( &
+              sqrt(SPixel%Sy(k,k)), output_data%Sy(i,j,kk), &
+              output_data%Sy_scale(kk), output_data%Sy_offset(kk), &
+              output_data%Sy_vmin(kk), output_data%Sy_vmax(kk), &
+              sreal_fill_value, sint_fill_value)
+      end do
+   end if
+
+   !----------------------------------------------------------------------------
    ! y0
    !----------------------------------------------------------------------------
-   do k=1,SPixel%Ind%Ny
+   do k = 1, SPixel%Ind%Ny
       kk = SPixel%spixel_y_to_ctrl_y_index(k)
 
       call prepare_short_packed_float( &
@@ -346,7 +362,7 @@ end if
    !----------------------------------------------------------------------------
    ! residuals
    !----------------------------------------------------------------------------
-   do k=1,SPixel%Ind%Ny
+   do k = 1, SPixel%Ind%Ny
       kk = SPixel%spixel_y_to_ctrl_y_index(k)
 
       call prepare_short_packed_float( &
@@ -366,7 +382,7 @@ end if
    else
       dummyreal = 0.0
 
-      do k=1,SPixel%Nx
+      do k = 1, SPixel%Nx
          dummyreal = dummyreal + Diag%AK(SPixel%X(k),SPixel%X(k))
       end do
    end if
@@ -380,10 +396,12 @@ end if
    ! covariance
    !----------------------------------------------------------------------------
 if (Ctrl%Ind%flags%do_covariance) then
-   do k=1,SPixel%Nx
-      do l=1,SPixel%Nx
-        call prepare_float_packed_float( &
-             real(SPixel%Sn(k,l),kind=sreal), output_data%covariance(i,j,k,l), &
+   do k = 1, SPixel%Nx
+      kk = SPixel%spixel_y_to_ctrl_y_index(k)
+      do l = 1, SPixel%Nx
+         ll = SPixel%spixel_y_to_ctrl_y_index(l)
+         call prepare_float_packed_float( &
+             real(SPixel%Sn(k,l), kind=sreal), output_data%covariance(i,j,kk,ll), &
              1._sreal, 0._sreal, 0._sreal, huge(dummyreal), &
              sreal_fill_value, sreal_fill_value)
       end do
