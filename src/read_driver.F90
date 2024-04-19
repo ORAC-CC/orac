@@ -148,6 +148,8 @@
 ! 2019/08/14, SP: Add Fengyun4A support.
 ! 2021/04/06, AP: New LUT names.
 ! 2022/01/27, GT: Added CTP input file to Ctrl%FID structure.
+! 2023/10/10, GT: Added a check to override an attempt to use the new-LUT
+!                 uncertainty calculation with old text-based LUTs.
 !
 ! Bugs:
 ! None known.
@@ -239,6 +241,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%process_cloudy_only    = .true.
    Ctrl%process_aerosol_only   = .false.
    Ctrl%force_nighttime_retrieval = .false.
+   Ctrl%use_new_meas_error     = .true.
 
 
    !----------------------------------------------------------------------------
@@ -418,10 +421,19 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       end if
    end if
 
+   ! Check if we're using the old text-based LUTs, which do not include
+   ! the new measurement uncertainty characterisation
+   if (len_trim(Ctrl%LUTClass) == 3 .and. Ctrl%use_new_meas_error) then
+      Ctrl%use_new_meas_error     = .false.
+      write(*,*) 'Warning: Using old text-LUTs. Old uncertainty characterisation forced.'
+   end if
+   if (Ctrl%verbose) &
+        write(*,*) 'use_new_meas_error: ', Ctrl%use_new_meas_error
+   
    if (Ctrl%Class == -1) then
       ! Class not set, so deduce it from the LUTClass and/or Approach
       if (Ctrl%Approach == AppCld1L .and. (Ctrl%LUTClass(1:3) == 'WAT' .or. &
-           Ctrl%LUTClass(1:12) == 'liquid-water')) then
+           index(Ctrl%LUTClass, 'liquid-water') .gt. 0)) then
          Ctrl%Class = ClsCldWat
       else if (Ctrl%Approach == AppCld1L .and. (Ctrl%LUTClass(1:3) == 'ICE' .or. &
            Ctrl%LUTClass(1:9) == 'water-ice')) then
@@ -519,8 +531,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
 
    !----------------------- Ctrl%EqMPN --------------------
    Ctrl%EqMPN%SySelm = switch_app(a, Default=SelmAux)
-   Ctrl%EqMPN%Homog  = switch_app(a, Default=.true.,  Aer=.false.)
-   Ctrl%EqMPN%Coreg  = switch_app(a, Default=.true.,  Aer=.false.)
+   Ctrl%EqMPN%Homog  = switch_app(a, Default=.true., Aer=.false.)
+   Ctrl%EqMPN%Coreg  = switch_app(a, Default=.true., Aer=.false.)
 
    !----------------------- Ctrl%Invpar -------------------
    Ctrl%Invpar%ConvTest           = switch_app(a, Default=.false., Aer=.true.)

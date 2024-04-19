@@ -750,9 +750,17 @@ end if
          input_dummy2 = 'measurement uncertainty in channel no '// &
               trim(adjustl(input_num))
          if (btest(indexing%Ch_Is(i), ThermalBit)) then
-            input_dummy3 = 'kelvin'
+            input_dummy='measurement_uncertainty_in_channel_no_'// &
+                 trim(adjustl(input_num))
+            input_dummy2='measurement uncertainty in channel no '// &
+                 trim(adjustl(input_num))
+            input_dummy3='kelvin'
          else
-            input_dummy3 = '1'
+            input_dummy='measurement_uncertainty_in_channel_no_'// &
+                 trim(adjustl(input_num))
+            input_dummy2='measurement uncertainty in channel no '// &
+                 trim(adjustl(input_num))
+            input_dummy3='1'
          end if
          call ncdf_def_var_short_packed_float( &
               ncid, &

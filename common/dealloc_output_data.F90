@@ -272,6 +272,15 @@ subroutine dealloc_output_data_secondary(data)
    deallocate(data%channels_vmax)
    deallocate(data%channels)
 
+   if (associated(data%Sy)) then
+      deallocate(data%Sy)
+      deallocate(data%vid_Sy)
+      deallocate(data%Sy_scale)
+      deallocate(data%Sy_offset)
+      deallocate(data%Sy_vmin)
+      deallocate(data%Sy_vmax)
+   end if
+
    deallocate(data%vid_y0)
    deallocate(data%y0_scale)
    deallocate(data%y0_offset)
