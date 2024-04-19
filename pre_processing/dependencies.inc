@@ -22,9 +22,10 @@ $(OBJS)/define_preprop_grid.o: $(OBJS)/imager_structures.o \
         $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o
 $(OBJS)/ecmwf.o: $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o \
         compute_geopot_coordinate.F90 deallocate_ecmwf_structures.F90 \
-        read_ecmwf.F90 read_era5_jasmin.F90 read_ecmwf_grib.F90 read_ecmwf_nc.F90 \
+        read_ecmwf.F90 read_ecmwf_grib.F90 read_ecmwf_nc.F90 \
         read_ecmwf_wind_badc.F90 read_ecmwf_wind_grib.F90 read_ecmwf_wind_nc.F90 \
-        read_gfs_grib.F90 read_gfs_nc.F90 rearrange_ecmwf.F90
+        read_era5_jasmin.F90 read_gfs_grib.F90 read_gfs_nc.F90 \
+        rearrange_ecmwf.F90
 $(OBJS)/fill_grid.o: $(OBJS)/preproc_constants.o
 $(OBJS)/get_USGS_data.o: $(OBJS)/imager_structures.o $(OBJS)/read_USGS_file.o
 $(OBJS)/imager_structures.o: $(OBJS)/channel_structures.o \
@@ -74,8 +75,8 @@ $(OBJS)/read_imager.o: $(OBJS)/channel_structures.o $(OBJS)/imager_structures.o 
         $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o \
         $(OBJS)/read_aatsr.o $(OBJS)/read_abi.o $(OBJS)/read_agri.o \
         $(OBJS)/read_avhrr.o $(OBJS)/read_himawari.o $(OBJS)/read_modis.o \
-        $(OBJS)/read_seviri.o $(OBJS)/read_slstr.o $(OBJS)/read_viirs_Iband.o \
-        $(OBJS)/read_viirs_Mband.o
+        $(OBJS)/read_python.o $(OBJS)/read_seviri.o $(OBJS)/read_slstr.o \
+        $(OBJS)/read_viirs_Iband.o $(OBJS)/read_viirs_Mband.o
 $(OBJS)/read_modis.o: $(OBJS)/bright_m.o $(OBJS)/calender.o \
         $(OBJS)/channel_structures.o $(OBJS)/imager_structures.o \
         $(OBJS)/preproc_constants.o get_modis_time.F90 map_time_to_pixel.F90 \
@@ -83,6 +84,8 @@ $(OBJS)/read_modis.o: $(OBJS)/bright_m.o $(OBJS)/calender.o \
         read_modis_l1b_radiances.F90 read_modis_l1b_radiances_2.F90 \
         read_modis_land_sea_mask.F90 read_modis_lat_lon.F90 read_modis_time.F90 \
         read_modis_time_lat_lon_angles.F90
+$(OBJS)/read_python.o: $(OBJS)/calender.o $(OBJS)/channel_structures.o \
+        $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o
 $(OBJS)/read_seviri.o: $(OBJS)/channel_structures.o $(OBJS)/imager_structures.o \
         $(OBJS)/preproc_constants.o
 $(OBJS)/read_slstr.o: $(OBJS)/calender.o $(OBJS)/channel_structures.o \
@@ -107,8 +110,8 @@ $(OBJS)/setup.o: $(OBJS)/calender.o $(OBJS)/channel_structures.o \
         $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o \
         $(OBJS)/read_aatsr.o $(OBJS)/read_abi.o $(OBJS)/read_agri.o \
         $(OBJS)/read_avhrr.o $(OBJS)/read_himawari.o $(OBJS)/read_modis.o \
-        $(OBJS)/read_python.o $(OBJS)/read_seviri.o $(OBJS)/read_slstr.o \
-        $(OBJS)/read_viirs_Iband.o $(OBJS)/read_viirs_Mband.o
+        $(OBJS)/read_seviri.o $(OBJS)/read_slstr.o $(OBJS)/read_viirs_Iband.o \
+        $(OBJS)/read_viirs_Mband.o
 $(OBJS)/surface_emissivity.o: $(OBJS)/channel_structures.o \
         $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o \
         $(OBJS)/preproc_structures.o $(OBJS)/read_camel_emissivity.o \
