@@ -39,6 +39,7 @@
 ! 2017/06/22, OS: Added phase variables.
 ! 2017/07/05, AP: Add channels_used, variables_retrieved. New QC.
 ! 2018/06/08, SP: Add satellite azimuth angle to output.
+! 2023/10/10, GT: Added measurement uncertainties to secondary data
 ! 2023/11/21, GT: Added dealloc_input_data_primary_classify subroutine.
 !
 ! Bugs:
@@ -245,6 +246,7 @@ subroutine dealloc_input_data_secondary_common(data)
    if (associated(data%ctp2_ap))       deallocate(data%ctp2_ap)
    if (associated(data%ctp2_fg))       deallocate(data%ctp2_fg)
 
+   if (associated(data%Sy))            deallocate(data%Sy)
    if (associated(data%y0))            deallocate(data%y0)
    if (associated(data%residuals))     deallocate(data%residuals)
    if (associated(data%ds))            deallocate(data%ds)

@@ -40,6 +40,7 @@
 ! 2017/05/17, OS: Added ann phase variables.
 ! 2017/07/05, AP: Add channels_used, variables_retrieved. New QC.
 ! 2018/06/08, SP: Add satellite azimuth angle to output.
+! 2023/10/10, GT: Added optional measurement uncertainties to secondary output
 !
 ! Bugs:
 ! None known.
@@ -617,6 +618,28 @@ subroutine alloc_output_data_secondary(ind, data)
    allocate(data%channels(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%Ny))
    data%channels = sint_fill_value
 
+   if (ind%flags%do_meas_error) then
+      allocate(data%vid_Sy(ind%Ny))
+      data%vid_Sy = 0
+      allocate(data%Sy_scale(ind%Ny))
+      data%Sy_scale = sreal_fill_value
+      allocate(data%Sy_offset(ind%Ny))
+      data%Sy_offset = sreal_fill_value
+      allocate(data%Sy_vmin(ind%Ny))
+      data%Sy_vmin = sint_fill_value
+      allocate(data%Sy_vmax(ind%Ny))
+      data%Sy_vmax = sint_fill_value
+      allocate(data%Sy(ind%X0:ind%X1, ind%Y0:ind%Y1, ind%Ny))
+      data%Sy = sint_fill_value
+   else
+      nullify(data%vid_Sy)
+      nullify(data%Sy_scale)
+      nullify(data%Sy_offset)
+      nullify(data%Sy_vmin)
+      nullify(data%Sy_vmax)
+      nullify(data%Sy)
+   end if
+
    allocate(data%vid_y0(ind%Ny))
    data%vid_y0 = 0
    allocate(data%y0_scale(ind%Ny))
@@ -669,6 +692,13 @@ subroutine alloc_output_data_secondary(ind, data)
          data%channels_vmin(i) = 0
          data%channels_vmax(i) = 32000
 
+         if (ind%flags%do_meas_error) then
+            data%Sy_scale(i) = 0.001
+            data%Sy_offset(i) = 32.0
+            data%Sy_vmin(i) = -32000
+            data%Sy_vmax(i) = 32000
+         end if
+
          data%y0_scale(i) = 0.01
          data%y0_offset(i) = 100.0
          data%y0_vmin(i) = 0
@@ -683,6 +713,13 @@ subroutine alloc_output_data_secondary(ind, data)
          data%channels_offset(i) = 0.0
          data%channels_vmin(i) = 0
          data%channels_vmax(i) = 10000
+
+         if (ind%flags%do_meas_error) then
+            data%Sy_scale(i) = 0.00001 ! Max uncertainty of 0.32 in reflectance
+            data%Sy_offset(i) = 0.0
+            data%Sy_vmin(i) = 0
+            data%Sy_vmax(i) = 32765
+         end if
 
          data%y0_scale(i) = 0.0001
          data%y0_offset(i) = 0.0

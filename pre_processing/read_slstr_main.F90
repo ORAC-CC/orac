@@ -96,7 +96,8 @@ end subroutine read_slstr_dimensions
 ! verbose             logical in   If true then print verbose information.
 !-------------------------------------------------------------------------------
 subroutine read_slstr(infile, imager_geolocation, imager_measurements, &
-   imager_angles, imager_time, imager_flags, channel_info, calculate_alignment, verbose)
+   imager_angles, imager_time, imager_flags, channel_info, calculate_alignment, &
+   verbose)
 
    use iso_c_binding
    use calender_m

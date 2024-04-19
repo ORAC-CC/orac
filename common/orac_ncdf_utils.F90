@@ -911,6 +911,152 @@ end subroutine ncdf_get_common_attributes
 
 
 !-------------------------------------------------------------------------------
+! Name: ncdf_get_single_attribute_str
+!
+! Purpose: To retrieve a named netcdf string global attribute from a file.
+!
+! Description and Algorithm details:
+!
+! Arguments:
+! Name           Type    In/Out/Both Description
+! ------------------------------------------------------------------------------
+!
+! History:
+! 2023/06/16, SRP: Original version
+! Bugs:
+! None known.
+!-------------------------------------------------------------------------------
+subroutine ncdf_get_single_attribute_str(ncid, attr_name, attr_val)
+
+     use netcdf
+  
+     implicit none
+  
+     integer, intent(in) :: ncid
+     character(len=*), intent(in) :: attr_name
+     character(len=*), intent(out) :: attr_val
+  
+     integer :: ierr
+
+     ierr = nf90_get_att(ncid, NF90_GLOBAL, trim(attr_name), attr_val)
+     if (ierr.ne.NF90_NOERR) then
+        write(*,*) 'ERROR: nf90_get_att(), ', trim(nf90_strerror(ierr)), ', name: ', attr_name
+        stop error_stop_code
+     end if
+
+end subroutine ncdf_get_single_attribute_str
+
+!-------------------------------------------------------------------------------
+! Name: ncdf_get_single_attribute_int
+!
+! Purpose: To retrieve a named netcdf integer global attribute from a file.
+!
+! Description and Algorithm details:
+!
+! Arguments:
+! Name           Type    In/Out/Both Description
+! ------------------------------------------------------------------------------
+!
+! History:
+! 2023/06/16, SRP: Original version
+! Bugs:
+! None known.
+!-------------------------------------------------------------------------------
+subroutine ncdf_get_single_attribute_int(ncid, attr_name, attr_val)
+
+     use netcdf
+  
+     implicit none
+  
+     integer, intent(in) :: ncid
+     character(len=*), intent(in) :: attr_name
+     integer, intent(out) :: attr_val
+  
+     integer :: ierr
+
+     ierr = nf90_get_att(ncid, NF90_GLOBAL, trim(attr_name), attr_val)
+     if (ierr.ne.NF90_NOERR) then
+        write(*,*) 'ERROR: nf90_get_att(), ', trim(nf90_strerror(ierr)), ', name: ', attr_name
+        stop error_stop_code
+     end if
+
+end subroutine ncdf_get_single_attribute_int
+
+
+!-------------------------------------------------------------------------------
+! Name: ncdf_get_arr_attribute_real
+!
+! Purpose: To retrieve a named netcdf real global attribute from a file.
+!
+! Description and Algorithm details:
+!
+! Arguments:
+! Name           Type    In/Out/Both Description
+! ------------------------------------------------------------------------------
+!
+! History:
+! 2023/06/16, SRP: Original version
+! Bugs:
+! None known.
+!-------------------------------------------------------------------------------
+subroutine ncdf_get_arr_attribute_real(ncid, attr_name, attr_val)
+
+     use netcdf
+  
+     implicit none
+  
+     integer, intent(in) :: ncid
+     character(len=*), intent(in) :: attr_name
+     real, dimension(:), intent(out) :: attr_val
+  
+     integer :: ierr
+
+     ierr = nf90_get_att(ncid, NF90_GLOBAL, trim(attr_name), attr_val)
+     if (ierr.ne.NF90_NOERR) then
+        write(*,*) 'ERROR: nf90_get_att(), ', trim(nf90_strerror(ierr)), ', name: ', attr_name
+        stop error_stop_code
+     end if
+
+end subroutine ncdf_get_arr_attribute_real
+
+
+!-------------------------------------------------------------------------------
+! Name: ncdf_get_arr_attribute_int
+!
+! Purpose: To retrieve a named netcdf integer global attribute from a file.
+!
+! Description and Algorithm details:
+!
+! Arguments:
+! Name           Type    In/Out/Both Description
+! ------------------------------------------------------------------------------
+!
+! History:
+! 2023/06/16, SRP: Original version
+! Bugs:
+! None known.
+!-------------------------------------------------------------------------------
+subroutine ncdf_get_arr_attribute_int(ncid, attr_name, attr_val)
+
+     use netcdf
+  
+     implicit none
+  
+     integer, intent(in) :: ncid
+     character(len=*), intent(in) :: attr_name
+     integer, dimension(:), intent(out) :: attr_val
+  
+     integer :: ierr
+
+     ierr = nf90_get_att(ncid, NF90_GLOBAL, trim(attr_name), attr_val)
+     if (ierr.ne.NF90_NOERR) then
+        write(*,*) 'ERROR: nf90_get_att(), ', trim(nf90_strerror(ierr)), ', name: ', attr_name
+        stop error_stop_code
+     end if
+
+end subroutine ncdf_get_arr_attribute_int
+
+!-------------------------------------------------------------------------------
 ! Name: prepare_<type>_packed_<type>
 !
 ! Purpose:

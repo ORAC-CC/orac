@@ -45,6 +45,7 @@
 ! 2016/03/04, AP: Tidy prepare_*_packed_float. Make MissingXn the only value
 !    checked for in X, X0, Xb (sreal_fill_value had been ocassionally checked).
 ! 2016/07/27, GM: Add output fields for the multilayer retrieval.
+! 2023/10/10, GT: Added optional output of measurement uncertainties
 !
 ! Bugs:
 ! None known.
@@ -69,15 +70,15 @@ subroutine prepare_output_secondary(Ctrl, i, j, MSI_Data, SPixel, Diag, &
    type(Diag_t),                  intent(in)    :: Diag
    type(output_data_secondary_t), intent(inout) :: output_data
 
-   integer          :: k, kk, l, i_rho
+   integer          :: k, kk, l, ll, i_rho
    real(kind=sreal) :: dummyreal
 
 
    !----------------------------------------------------------------------------
    ! scanline_u, scanline_v
    !----------------------------------------------------------------------------
-   output_data%scanline_u(i,j)=i
-   output_data%scanline_v(i,j)=j
+   output_data%scanline_u(i,j) = i
+   output_data%scanline_v(i,j) = j
 
 if (Ctrl%Ind%flags%do_aerosol) then
    !----------------------------------------------------------------------------
@@ -331,6 +332,21 @@ end if
    end do
 
    !----------------------------------------------------------------------------
+   ! Measurement error (diagonals)
+   !----------------------------------------------------------------------------
+   if (Ctrl%Ind%flags%do_meas_error) then
+      do k = 1, SPixel%Ind%Ny
+         kk = SPixel%spixel_y_to_ctrl_y_index(k)
+
+         call prepare_short_packed_float( &
+              sqrt(SPixel%Sy(k,k)), output_data%Sy(i,j,kk), &
+              output_data%Sy_scale(kk), output_data%Sy_offset(kk), &
+              output_data%Sy_vmin(kk), output_data%Sy_vmax(kk), &
+              sreal_fill_value, sint_fill_value)
+      end do
+   end if
+
+   !----------------------------------------------------------------------------
    ! y0
    !----------------------------------------------------------------------------
    do k = 1, SPixel%Ind%Ny
@@ -381,9 +397,11 @@ end if
    !----------------------------------------------------------------------------
 if (Ctrl%Ind%flags%do_covariance) then
    do k = 1, SPixel%Nx
+      kk = SPixel%spixel_y_to_ctrl_y_index(k)
       do l = 1, SPixel%Nx
-        call prepare_float_packed_float( &
-             real(SPixel%Sn(k,l),kind=sreal), output_data%covariance(i,j,k,l), &
+         ll = SPixel%spixel_y_to_ctrl_y_index(l)
+         call prepare_float_packed_float( &
+             real(SPixel%Sn(k,l), kind=sreal), output_data%covariance(i,j,kk,ll), &
              1._sreal, 0._sreal, 0._sreal, huge(dummyreal), &
              sreal_fill_value, sreal_fill_value)
       end do
