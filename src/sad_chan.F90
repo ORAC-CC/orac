@@ -254,7 +254,7 @@ function create_sad_filename2(Ctrl, chan_num, SAD_Dir, LUTClass, crp_name) &
          stop error_stop_code
       end if
    else if (InstName(1:10) == 'SEVIRI-MSG') then
-      InstName = 'SEVIRI-MSG' // InstName(11:12)
+      InstName = 'SEVIRI-MSG' // InstName(12:12)
    else if (InstName(8:16) == 'Suomi-NPP') then
       InstName = InstName(1:7) // 'SuomiNPP'
    else if (InstName(1:5) == 'ATSR2' .or. InstName(1:5) == 'AATSR') then
