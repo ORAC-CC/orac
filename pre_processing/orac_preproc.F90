@@ -482,13 +482,6 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
    preproc_opts%nwp_fnames%nwp_path2(2)  = ' '
    preproc_opts%nwp_fnames%nwp_path3(2)  = ' '
    preproc_opts%nwp_nlevels              = 0
-   ! If we're reading BADC ERA5 data, we default to one file every hour,
-   ! otherwise assume it's one every six hours.
-   if (nwp_flag .eq. 2) then
-      preproc_opts%nwp_time_factor       = 1.
-   else
-      preproc_opts%nwp_time_factor       = 6.
-   end if
    preproc_opts%use_l1_land_mask         = .false.
    preproc_opts%use_occci                = .false.
    preproc_opts%occci_path               = ' '
@@ -589,6 +582,9 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
       call parse_optional(label, value, preproc_opts)
    end do
 
+   ! Ensure sensor name and reader name match
+   granule%sensor_rdr = granule%sensor
+
    close(11)
 
    ! Set this since it was removed from the command line but not removed from
@@ -627,6 +623,14 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
    if (preproc_opts%n_channels .ne. 0 .and. .not. associated(preproc_opts%channel_ids)) then
       write(*,*) 'ERROR: options n_channels and channel_ids must be used together'
       stop error_stop_code
+   end if
+
+   ! If we're reading BADC ERA5 data, we default to one file every hour,
+   ! otherwise assume it's one every six hours.
+   if (nwp_flag .eq. 2) then
+      preproc_opts%nwp_time_factor       = 1.
+   else
+      preproc_opts%nwp_time_factor       = 6.
    end if
 
    ! Check if SatWx is available, if not then don't do cloud emissivity stuff
@@ -712,8 +716,9 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
 
    if (granule%startx.ge.1 .and. granule%endx.ge.1 .and. &
         granule%starty.ge.1 .and. granule%endy.ge.1) then
-      if ( trim(adjustl(granule%sensor)) .eq. 'VIIRSI' .or. &
-           trim(adjustl(granule%sensor)) .eq. 'VIIRSM') then
+      if ( trim(adjustl(granule%sensor_rdr)) .eq. 'VIIRSI' .or. &
+           trim(adjustl(granule%sensor_rdr)) .eq. 'VIIRSM' .or. &
+           trim(adjustl(granule%sensor_rdr)) .eq. 'PYTHON') then
          write(*,*) 'ERROR: subsetting not supported for ', trim(granule%sensor)
          stop error_stop_code
       end if

@@ -20,6 +20,7 @@
 ! 2015/12/30, AP: Have all albedo fields use the same values.
 ! 2016/03/04, AP: Tidy prepare_*_packed_float.
 ! 2017/01/09, CP: ML additions.
+! 2023/10/10, GT: Added optional output of measurement uncertainties
 !
 ! Bugs:
 ! None known.
@@ -277,6 +278,19 @@ end if
            output_data%channels_vmin(k), output_data%channels_vmax(k), &
            sreal_fill_value, sint_fill_value)
    end do
+
+   !----------------------------------------------------------------------------
+   ! Measurement error (diagonals)
+   !----------------------------------------------------------------------------
+   if (indexing%flags%do_meas_error) then
+      do k = 1, indexing%Ny
+         call prepare_short_packed_float( &
+              input_data%Sy(i,j,k), output_data%Sy(i,j,k), &
+              output_data%Sy_scale(k), output_data%Sy_offset(k), &
+              output_data%Sy_vmin(k), output_data%Sy_vmax(k), &
+              sreal_fill_value, sint_fill_value)
+      end do
+   end if
 
    !----------------------------------------------------------------------------
    ! y0
