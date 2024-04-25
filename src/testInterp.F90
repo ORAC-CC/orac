@@ -33,10 +33,10 @@ program testInterp
    nx = 5
    ny = 5
 
-   do i=1,5
+   do i = 1, 5
       xGrid(i) = real(i)
       yGrid(i) = real(2.0*i)
-      do j=1,5
+      do j = 1, 5
          F(1,i,j) = real(i*j)
       end do
    end do

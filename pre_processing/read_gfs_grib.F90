@@ -96,10 +96,10 @@ subroutine read_gfs_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
                    400,450,500,550,600,650,700,750,800,850,900,925,950,975,1000/)
 
    ! Initialise level count, needed for GFS files
-   tlev=1
-   qlev=1
-   olev=1
-   glev=1
+   tlev = 1
+   qlev = 1
+   olev = 1
+   glev = 1
 
    ! Initialise some arrays, prevents issues with missing GFS values
    ! (only some levels)
@@ -276,8 +276,8 @@ subroutine read_gfs_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
       ! b) we're only taking every other point to read cell centres
       ! c) there will be an odd # of lats as it contains 0N but an even # of
       !    lons as 180 wraps to -180
-      do j=1,nj,2
-         do i=1,ni,2
+      do j = 1, nj, 2
+         do i = 1, ni, 2
             array(1+i/2,1+(nj-j)/2) = val(i+(j-1)*ni)
          end do
       end do
@@ -341,14 +341,14 @@ subroutine sort_gfs_levels(preproc_prtm,verbose)
    if (verbose)write(*,*)">>>>>>Sort_gfs_levels>>>>>>"
 
    ! Get the array bounds
-   sh=shape(preproc_prtm%pressure)
-   nl=sh(3)
-   lb=lbound(preproc_prtm%pressure)
-   ub=ubound(preproc_prtm%pressure)
-   i_0=lb(1)
-   i_1=ub(1)
-   j_0=lb(2)
-   j_1=ub(2)
+   sh = shape(preproc_prtm%pressure)
+   nl = sh(3)
+   lb = lbound(preproc_prtm%pressure)
+   ub = ubound(preproc_prtm%pressure)
+   i_0 = lb(1)
+   i_1 = ub(1)
+   j_0 = lb(2)
+   j_1 = ub(2)
 
    ! Allocate temporary arrays
    allocate(p(nl))
@@ -358,27 +358,27 @@ subroutine sort_gfs_levels(preproc_prtm,verbose)
    allocate(pl(nl))
 
    ! Loop over each element
-   do i=i_0,i_1
-      do j=j_0,j_1
+   do i = i_0, i_1
+      do j = j_0, j_1
          stopper = .false.
-         stoplev=0
+         stoplev = 0
 
          ! Get level arrays for all data, plus surf pres
-         surfp=exp(preproc_prtm%lnsp(i,j))*pa2hpa
-         p=preproc_prtm%pressure(i,j,:)
-         t=preproc_prtm%temperature(i,j,:)
-         q=preproc_prtm%spec_hum(i,j,:)
-         o=preproc_prtm%ozone(i,j,:)
-         pl=preproc_prtm%phi_lev(i,j,:)
+         surfp = exp(preproc_prtm%lnsp(i,j))*pa2hpa
+         p = preproc_prtm%pressure(i,j,:)
+         t = preproc_prtm%temperature(i,j,:)
+         q = preproc_prtm%spec_hum(i,j,:)
+         o = preproc_prtm%ozone(i,j,:)
+         pl = preproc_prtm%phi_lev(i,j,:)
 
          ! Loop over all levels to find last level above surface
-         do l=2,nl
+         do l = 2, nl
             if (p(l) .gt. surfp) then
                if (.not. stopper) then
-                  stopper=.true.
+                  stopper = .true.
                   ! Compute interp factor to ensure last lev = surface
-                  interp=(surfp-p(l-1))/(p(l)-p(l-1))
-                  stoplev=l-1
+                  interp = (surfp-p(l-1))/(p(l)-p(l-1))
+                  stoplev = l-1
                end if
             end if
          end do
@@ -402,7 +402,7 @@ subroutine sort_gfs_levels(preproc_prtm,verbose)
             pl(nl-stoplev:nl) = pl(1:stoplev)
 
             ! Fill upper levels with repeating data from final valid layer
-            do l=nl-stoplev-1,1,-1
+            do l = nl-stoplev-1, 1, -1
                p(l)=p(l+1)-(0.01*p(l+1))
                t(l)=t(l+1)-(0.01*t(l+1))
                q(l)=q(l+1)-(0.01*q(l+1))
@@ -427,7 +427,7 @@ subroutine sort_gfs_levels(preproc_prtm,verbose)
    deallocate(o)
    deallocate(pl)
 
-   if (verbose)write(*,*)"<<<<<<Sort_gfs_levels<<<<<<"
+   if (verbose) write(*,*)"<<<<<<Sort_gfs_levels<<<<<<"
 
 end subroutine sort_gfs_levels
 

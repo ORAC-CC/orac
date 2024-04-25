@@ -136,7 +136,7 @@ subroutine Read_MSI(Ctrl, MSI_Data, SAD_Chan)
 
       ! Compute DOY for present day
       Ctrl%DOY = 0
-      do i=1,month-1
+      do i = 1, month-1
          Ctrl%DOY = Ctrl%DOY + days_in_month(i)
       end do
       Ctrl%DOY = Ctrl%DOY + day

@@ -4,7 +4,7 @@
 ! 3, and available at http://cimss.ssec.wisc.edu/imapp/.
 !
 ! History (relative to upstream):
-! 08/12/2016, CP: For ifort compilation add end function statements.
+! 2016/12/08, CP: For ifort compilation add end function statements.
 !-----------------------------------------------------------------------
 
 

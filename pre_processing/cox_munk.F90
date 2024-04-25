@@ -375,7 +375,7 @@ subroutine cox_munk(bands, solza, satza, solaz, relaz, totbsc, totabs, u10, v10,
    wcfrac = 2.951e-6 * (ws**3.52)
    where(wcfrac .gt. 1.0) wcfrac = 1.0
 
-   do i=1,nbands
+   do i = 1, nbands
       ! White-cap contribution to the reflectance
       rhowc(i,:) = wcfrac*Rwc(bands(i))
    end do
@@ -393,7 +393,7 @@ subroutine cox_munk(bands, solza, satza, solaz, relaz, totbsc, totabs, u10, v10,
    !----------------------------------------------------------------------------
 !  totbsc = 0.5*basebsc + chlbsc * 0.3*chlconc**0.62
 
-   do i=1,nbands
+   do i = 1, nbands
       ! The so-called "coefficient of R"
       eta_oc = 0.5*basebsc(bands(i)) / totbsc(i,:)
       f = 0.6279 - (0.2227*eta_oc(bands(i))) - &
@@ -500,7 +500,7 @@ subroutine cox_munk(bands, solza, satza, solaz, relaz, totbsc, totabs, u10, v10,
    ! the "ergodic cap"
    ergodic(:) = zeisse_ba(rsatza(:), ws(:))
 
-   do i=1,nbands
+   do i = 1, nbands
       ! Snell's law
       wprime(:) = asin(n_air*sin(w(:)) / nr(bands(i)))
 
@@ -529,7 +529,7 @@ subroutine cox_munk(bands, solza, satza, solaz, relaz, totbsc, totabs, u10, v10,
    !----------------------------------------------------------------------------
    ! Add all the reflectance terms to produce the full surface reflectance
    !----------------------------------------------------------------------------
-   do i=1,npts
+   do i = 1, npts
       rho(:,i) = rhowc(:,i) + (1-wcfrac(i))*(rhogl(:,i) + rhoul(:,i))
    end do
 

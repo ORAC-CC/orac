@@ -53,14 +53,14 @@ subroutine preprocess_bugsrad_sfc_albedo(nc_alb,rho_0d,rho_dd,rho0d_bugsrad, &
    ! Full MODIS spectral channel range
    if (nc_alb .EQ. 8) then
       ! center location of each MODIS band
-      modBand=[0.67,0.87,0.47,0.55,1.24,1.6,2.13,3.7]
+      modBand = [0.67,0.87,0.47,0.55,1.24,1.6,2.13,3.7]
 
       ! Neighboring MODIS bands to interpolate to BUGSrad
-      modID1=[3,2,5,6,7,7]
-      modID2=[1,5,6,7,8,8]
+      modID1 = [3,2,5,6,7,7]
+      modID2 = [1,5,6,7,8,8]
 
       ! rho_0d
-      do I=2,6
+      do I = 2, 6
          m = (rho_0d(modID2(I)) - rho_0d(modID1(I))) / &
              (modBand(modID2(I)) - modBand(modID1(I)))
          b = rho_0d(modID1(I)) - m*modBand(modID1(I))
@@ -71,7 +71,7 @@ subroutine preprocess_bugsrad_sfc_albedo(nc_alb,rho_0d,rho_dd,rho0d_bugsrad, &
 !     print*,'rho_0d = ',rho_0d_bugs_sfc_albedo
 
       ! rho_dd
-      do I=2,6
+      do I = 2, 6
          m = (rho_dd(modID2(I)) - rho_dd(modID1(I))) / &
              (modBand(modID2(I)) - modBand(modID1(I)))
          b = rho_dd(modID1(I)) - m*modBand(modID1(I))
@@ -84,13 +84,13 @@ subroutine preprocess_bugsrad_sfc_albedo(nc_alb,rho_0d,rho_dd,rho0d_bugsrad, &
 
    ! Heritage spectral channel range
    if (nc_alb .EQ. 4) then
-      modBand=[0.67,0.87,1.6,3.7]
+      modBand = [0.67,0.87,1.6,3.7]
 
       ! Neighboring MODIS bands to interpolate to BUGSrad
-      modID1=[1,2,2,3,3,3]
-      modID2=[1,3,3,4,4,4]
+      modID1 = [1,2,2,3,3,3]
+      modID2 = [1,3,3,4,4,4]
       ! rho_0d
-      do I=2,6
+      do I = 2, 6
          m = (rho_0d(modID2(I)) - rho_0d(modID1(I))) / &
              (modBand(modID2(I)) - modBand(modID1(I)))
          b = rho_0d(modID1(I)) - m*modBand(modID1(I))
@@ -100,7 +100,7 @@ subroutine preprocess_bugsrad_sfc_albedo(nc_alb,rho_0d,rho_dd,rho0d_bugsrad, &
       rho0d_bugsrad(1) = rho_0d(1)
 
       ! rho_dd
-      do I=2,6
+      do I = 2, 6
          m = (rho_dd(modID2(I)) - rho_dd(modID1(I))) / &
              (modBand(modID2(I)) - modBand(modID1(I)))
          b = rho_dd(modID1(I)) - m*modBand(modID1(I))

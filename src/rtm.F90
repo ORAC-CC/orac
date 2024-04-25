@@ -25,7 +25,7 @@
 !    variables that are the same as LWRTM
 ! 2012/09/04, CP: Added skipt and sp variable.
 ! 2014/05/27, GM: Some cleanup.
-! 2014/08/13, AP:Adding Wrap flag to save repeated calculation in GetLwSwRTM.
+! 2014/08/13, AP: Adding Wrap flag to save repeated calculation in GetLwSwRTM.
 ! 2015/01/19, GM: Put ReadSwRTM_nc.F90 and ReadLwRTM_nc.F90 into this module.
 ! 2015/01/30, AP: Eliminate redundant fields.
 ! 2015/04/27, AP: Moved PRTM code into its own routine.

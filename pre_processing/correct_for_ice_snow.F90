@@ -372,8 +372,8 @@ subroutine correct_for_ice_snow(nise_path, imager_geolocation, surface, cyear, &
                      ! Check the value of each neighbouring nise extent pixel
                      ! to the current coast one. If they aren't bad pixels
                      ! themselves, include them in the values to average.
-                     do m=-1, 1
-                        do n=-1, 1
+                     do m = -1, 1
+                        do n = -1, 1
                            if (nise%north%extent(xi+k+n,yi+l+m) .lt. 250.0) then
                               count = count+1
                               nise_tmp2(count) = &
@@ -443,8 +443,8 @@ subroutine correct_for_ice_snow(nise_path, imager_geolocation, surface, cyear, &
                      ! Check the value of each neighbouring nise extent pixel
                      ! to the current coast one. If they aren't bad pixels
                      ! themselves, include them in the values to average.
-                     do m=-1, 1
-                        do n=-1, 1
+                     do m = -1, 1
+                        do n = -1, 1
                            if (nise%south%extent(xi+k+n,yi+l+m) .lt. 250.0) then
                               count = count+1
                               nise_tmp2(count) = &

@@ -501,6 +501,9 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
    preproc_opts%do_co2                   = .true.
    preproc_opts%use_swansea_climatology  = .false.
    preproc_opts%swansea_gamma            = 0.3
+   preproc_opts%use_seviri_ann_cma_cph   = .false.
+   preproc_opts%use_seviri_ann_ctp_fg    = .false.
+   preproc_opts%use_seviri_ann_mlay      = .false.
    preproc_opts%mcd43_max_qaflag         = 5
 
    ! When true, the offset between the nadir and oblique views is read from
@@ -833,8 +836,8 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
       if (verbose) write(*,*) 'Allocate imager and surface structures'
       call allocate_imager_structures(imager_geolocation, imager_angles, &
            imager_flags, imager_time, imager_measurements, imager_pavolonis, &
-           imager_cloud, channel_info)
-
+           imager_cloud, channel_info, preproc_opts%use_seviri_ann_ctp_fg, &
+           preproc_opts%use_seviri_ann_mlay)
       call allocate_surface_structures(surface, imager_geolocation, channel_info, &
            include_full_brdf)
 
@@ -843,7 +846,6 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
       call read_imager(granule, preproc_opts, aatsr_calib_path_file, &
            imager_geolocation, imager_angles, imager_flags, imager_time, &
            imager_measurements, channel_info, global_atts, verbose)
-
 #ifdef WRAPPER
       ! do not process this orbit if no valid lat/lon data available
       mask = imager_geolocation%latitude.gt.sreal_fill_value .and. &
@@ -1004,7 +1006,9 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
            call cloud_type(channel_info, granule%sensor, surface, imager_flags, &
                 imager_angles, imager_geolocation, imager_measurements, &
                 imager_pavolonis, ecmwf, granule%platform, granule%doy, preproc_opts%do_ironly, &
-                do_spectral_response_correction, verbose)
+                do_spectral_response_correction, preproc_opts%use_seviri_ann_cma_cph, &
+                preproc_opts%use_seviri_ann_ctp_fg, preproc_opts%use_seviri_ann_mlay, &
+                preproc_opts%do_nasa, verbose)
          end if
       end if
 
@@ -1069,7 +1073,8 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
       call netcdf_output_create(output_path, out_paths, granule, global_atts, &
            source_atts, preproc_dims, imager_angles, imager_geolocation, &
            netcdf_info, channel_info, include_full_brdf, nwp_flag, &
-           preproc_opts%do_cloud_emis, verbose)
+           preproc_opts%do_cloud_emis, preproc_opts%use_seviri_ann_ctp_fg, &
+           preproc_opts%use_seviri_ann_mlay, verbose)
 
       ! perform RTTOV calculations
       if (verbose) write(*,*) 'Perform RTTOV calculations'
@@ -1126,7 +1131,8 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
          call netcdf_output_write_swath(imager_flags, imager_angles, &
               imager_geolocation, imager_measurements, imager_cloud, imager_time, &
               imager_pavolonis, netcdf_info, channel_info, surface, &
-              include_full_brdf, preproc_opts%do_cloud_emis)
+              include_full_brdf, preproc_opts%do_cloud_emis, &
+              preproc_opts%use_seviri_ann_ctp_fg, preproc_opts%use_seviri_ann_mlay)
 
          ! close output netcdf files
          if (verbose) write(*,*)'Close netcdf output files'
@@ -1161,11 +1167,12 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
       call netcdf_output_write_swath(imager_flags, imager_angles, &
            imager_geolocation, imager_measurements, imager_cloud, imager_time, &
            imager_pavolonis, netcdf_info, channel_info, surface, include_full_brdf, &
-           preproc_opts%do_cloud_emis)
+           preproc_opts%do_cloud_emis, preproc_opts%use_seviri_ann_ctp_fg, &
+           preproc_opts%use_seviri_ann_mlay)
 
       ! close output netcdf files
       if (verbose) write(*,*)'Close netcdf output files'
-      call netcdf_output_close(netcdf_info)
+      call netcdf_output_close(netcdf_info, preproc_opts%use_seviri_ann_ctp_fg)
 
 #endif
 
