@@ -105,6 +105,7 @@ module preproc_structures_m
       logical                    :: do_cloud_emis
       logical                    :: do_cloud_type
       logical                    :: do_ironly
+      logical                    :: do_dust_correction
       integer                    :: nwp_nlevels
       integer                    :: ecmwf_time_int_method
       integer, pointer           :: channel_ids(:)
