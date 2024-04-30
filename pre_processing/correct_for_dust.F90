@@ -74,6 +74,10 @@ subroutine correct_for_dust(channel_info, imager_measurements, imager_angles, &
      end where
      ! Now do perform the an opening transform on our new mask, which should
      ! remove scattered false positives
+     write(*,*) size(dustmask, 1), size(dustmask,2)
+     write(*,*) lbound(dustmask,1), lbound(dustmask,2), ubound(dustmask,1), ubound(dustmask,2)
+     write(*,*) size(imager_pavolonis%cldmask, 1), size(imager_pavolonis%cldmask,2)
+     write(*,*) lbound(imager_pavolonis%cldmask,1), lbound(imager_pavolonis%cldmask,2), ubound(imager_pavolonis%cldmask,1), ubound(imager_pavolonis%cldmask,2)
      write(*,*) count(dustmask .eq. 1),' pixels flagged as dust before open'
      dustmask = morph_open(dustmask, kernel)
 
@@ -82,7 +86,7 @@ subroutine correct_for_dust(channel_info, imager_measurements, imager_angles, &
      ! two new values to the Pavalonis cloud-type mask, one indicating where
      ! we think a clear pixel is dust, and where previously flagged cloud
      ! has been switched to dust
-     do i=imager_geolocation%startx, size(imager_pavolonis%cldmask,1)
+     do i=imager_geolocation%startx, imager_geolocation%endx
         do j=1, size(imager_pavolonis%cldmask,2)
            if (dustmask(i,j) .eq. 1)  then 
               if (maxval(imager_pavolonis%cldmask(i,j,:)) .eq. 1) then
