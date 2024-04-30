@@ -116,6 +116,8 @@ module constants_cloud_typing_pavolonis_m
    integer(sint), parameter :: OVERLAP_TYPE = 8
    integer(sint), parameter :: PROB_OPAQUE_ICE_TYPE = 9 ! missing ch3.7 due to low S/N
    integer(sint), parameter :: PROB_CLEAR_TYPE = 10 ! cold antarctic
+   integer(sint), parameter :: DUST_CLEAR_TYPE = 11 
+   integer(sint), parameter :: DUST_SWITCHED_FROM_CLOUD_TYPE = 12 
 
    !--- used for sunglint_mask, nise_mask
    integer(sint), parameter :: NO = 0
