@@ -60,6 +60,7 @@
 ! 2016/12/07, GT: Replaced call to INTF with INTF2, as INTF requires the GRIBEX
 !    subroutine from EMOSLIB when interpolating from or to a GRIB field, which
 !    is no-longer supported (or it appears functional) from v4.1.1 of the EMOSLIB
+! 2024/07/01, DH: Change indexing to use preproc_dims for all dimensions
 !
 ! Bugs:
 ! - If you're having problems with INTF, set the environment variable JDCNDBG=1
@@ -113,10 +114,10 @@ subroutine read_ecmwf_grib(ecmwf_file, preproc_dims, preproc_geoloc, &
    grid(2) = 0.5 / preproc_dims%dellat
    if (INTOUT('grid', iblank, grid, charv) .ne. 0) &
       call h_e_e('grib', 'INTOUT grid failed.')
-   area(1) = preproc_geoloc%latitude(preproc_dims%max_lat) + 0.01*grid(2)
-   area(2) = preproc_geoloc%longitude(preproc_dims%min_lon) + 0.01*grid(1)
-   area(3) = preproc_geoloc%latitude(preproc_dims%min_lat) + 0.01*grid(2)
-   area(4) = preproc_geoloc%longitude(preproc_dims%max_lon) + 0.01*grid(1)
+   area(1) = preproc_geoloc%latitude(preproc_dims%ydim) + 0.01*grid(2)
+   area(2) = preproc_geoloc%longitude(1) + 0.01*grid(1)
+   area(3) = preproc_geoloc%latitude(1) + 0.01*grid(2)
+   area(4) = preproc_geoloc%longitude(preproc_dims%xdim) + 0.01*grid(1)
    if (INTOUT('area', iblank, area, charv) .ne. 0) &
         call h_e_e('grib', 'INTOUT area failed.')
 
@@ -178,64 +179,64 @@ subroutine read_ecmwf_grib(ecmwf_file, preproc_dims, preproc_geoloc, &
       select case (param)
       case(130)
          array => preproc_prtm%temperature( &
-              preproc_dims%min_lon:preproc_dims%max_lon, &
-              preproc_dims%min_lat:preproc_dims%max_lat,level)
+                 1:preproc_dims%xdim, &
+                 1:preproc_dims%ydim,level)
       case(133)
          array => preproc_prtm%spec_hum( &
-              preproc_dims%min_lon:preproc_dims%max_lon, &
-              preproc_dims%min_lat:preproc_dims%max_lat,level)
+                 1:preproc_dims%xdim, &
+                 1:preproc_dims%ydim,level)
       case(203)
          array => preproc_prtm%ozone( &
-              preproc_dims%min_lon:preproc_dims%max_lon, &
-              preproc_dims%min_lat:preproc_dims%max_lat,level)
+                 1:preproc_dims%xdim, &
+                 1:preproc_dims%ydim,level)
       case(129)
          array => preproc_prtm%geopot( &
-              preproc_dims%min_lon:preproc_dims%max_lon, &
-              preproc_dims%min_lat:preproc_dims%max_lat)
+                 1:preproc_dims%xdim, & 
+                 1:preproc_dims%ydim)
       case(152)
          array => preproc_prtm%lnsp( &
-              preproc_dims%min_lon:preproc_dims%max_lon, &
-              preproc_dims%min_lat:preproc_dims%max_lat)
+                 1:preproc_dims%xdim, & 
+                 1:preproc_dims%ydim)
       case(31)
-         array => preproc_prtm%sea_ice_cover( &
-              preproc_dims%min_lon:preproc_dims%max_lon, &
-              preproc_dims%min_lat:preproc_dims%max_lat)
+         array => preproc_prtm%sea_ice_cover(  &
+                 1:preproc_dims%xdim, &
+                 1:preproc_dims%ydim)
       case(32)
-         array => preproc_prtm%snow_albedo( &
-              preproc_dims%min_lon:preproc_dims%max_lon, &
-              preproc_dims%min_lat:preproc_dims%max_lat)
+         array => preproc_prtm%snow_albedo(  &
+                 1:preproc_dims%xdim, &
+                 1:preproc_dims%ydim)
       case(34)
-         array => preproc_prtm%sst( &
-              preproc_dims%min_lon:preproc_dims%max_lon, &
-              preproc_dims%min_lat:preproc_dims%max_lat)
+         array => preproc_prtm%sst(  &
+                 1:preproc_dims%xdim, &
+                 1:preproc_dims%ydim)
       case(137)
-         array => preproc_prtm%totcolwv( &
-              preproc_dims%min_lon:preproc_dims%max_lon, &
-              preproc_dims%min_lat:preproc_dims%max_lat)
+         array => preproc_prtm%totcolwv(  &
+                 1:preproc_dims%xdim, &
+                 1:preproc_dims%ydim)
       case(141)
-         array => preproc_prtm%snow_depth( &
-              preproc_dims%min_lon:preproc_dims%max_lon, &
-              preproc_dims%min_lat:preproc_dims%max_lat)
+         array => preproc_prtm%snow_depth(  &
+                 1:preproc_dims%xdim, &
+                 1:preproc_dims%ydim)
       case(165)
-         array => preproc_prtm%u10( &
-              preproc_dims%min_lon:preproc_dims%max_lon, &
-              preproc_dims%min_lat:preproc_dims%max_lat)
+         array => preproc_prtm%u10(  &
+                 1:preproc_dims%xdim, &
+                 1:preproc_dims%ydim)
       case(166)
-         array => preproc_prtm%v10( &
-              preproc_dims%min_lon:preproc_dims%max_lon, &
-              preproc_dims%min_lat:preproc_dims%max_lat)
+         array => preproc_prtm%v10(  &
+                 1:preproc_dims%xdim, &
+                 1:preproc_dims%ydim)
       case(167)
-         array => preproc_prtm%temp2( &
-              preproc_dims%min_lon:preproc_dims%max_lon, &
-              preproc_dims%min_lat:preproc_dims%max_lat)
+         array => preproc_prtm%temp2(  &
+                 1:preproc_dims%xdim, &
+                 1:preproc_dims%ydim)
       case(172)
-         array => preproc_prtm%land_sea_mask( &
-              preproc_dims%min_lon:preproc_dims%max_lon, &
-              preproc_dims%min_lat:preproc_dims%max_lat)
+         array => preproc_prtm%land_sea_mask(  &
+                 1:preproc_dims%xdim, &
+                 1:preproc_dims%ydim)
       case(235)
-         array => preproc_prtm%skin_temp( &
-              preproc_dims%min_lon:preproc_dims%max_lon, &
-              preproc_dims%min_lat:preproc_dims%max_lat)
+         array => preproc_prtm%skin_temp(  &
+                 1:preproc_dims%xdim, &
+                 1:preproc_dims%ydim)
       case default
          cycle
       end select
