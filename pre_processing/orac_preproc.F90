@@ -450,6 +450,7 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
 
    integer                          :: index_space
    real                             :: ecmwf_time_int_fac
+   integer                          :: date, ind
 
    ! Temporary variables for the aerosol_cci dust mask hack
    !real(kind=sreal), allocatable    :: tot_cldmask_uncertainty(:,:)
@@ -506,6 +507,7 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
    preproc_opts%use_seviri_ann_mlay      = .false.
    preproc_opts%mcd43_max_qaflag         = 5
    preproc_opts%do_dust_correction       = .true.
+   preproc_opts%use_ecmwf_preproc_grid   = .false.
 
    ! When true, the offset between the nadir and oblique views is read from
    ! the track_offset global attribute. Otherwise, the two longitude fields are
@@ -878,16 +880,15 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
             write(*,*) 'nwp_path_file3: ', trim(preproc_opts%nwp_fnames%nwp_path_file3(1))
          end if
       end if
-
       ! NOAA GFS has limited (pressure) levels and no HR, so set these.
       if (nwp_flag .eq. 0) preproc_opts%nwp_nlevels = 31
 
       ! read surface wind fields and ECMWF dimensions
       if (preproc_opts%ecmwf_time_int_method .ne. 2) then
-         call read_ecmwf_wind(nwp_flag, preproc_opts%nwp_fnames, 1, ecmwf, preproc_opts%nwp_nlevels, verbose)
+         call read_ecmwf_wind(nwp_flag, preproc_opts%nwp_fnames, 1, ecmwf, preproc_opts%nwp_nlevels, date, ind, verbose)
       else
-         call read_ecmwf_wind(nwp_flag, preproc_opts%nwp_fnames, 1, ecmwf1, preproc_opts%nwp_nlevels, verbose)
-         call read_ecmwf_wind(nwp_flag, preproc_opts%nwp_fnames, 2, ecmwf2, preproc_opts%nwp_nlevels, verbose)
+         call read_ecmwf_wind(nwp_flag, preproc_opts%nwp_fnames, 1, ecmwf1, preproc_opts%nwp_nlevels, date, ind, verbose)
+         call read_ecmwf_wind(nwp_flag, preproc_opts%nwp_fnames, 2, ecmwf2, preproc_opts%nwp_nlevels, date, ind, verbose)
 
          call dup_ecmwf_allocation(ecmwf1, ecmwf)
 
@@ -897,42 +898,55 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
          call deallocate_ecmwf_structures(ecmwf1)
          call deallocate_ecmwf_structures(ecmwf2)
       end if
-
+      
       ! define preprocessing grid from user grid spacing and satellite limits
       if (verbose) write(*,*) 'Define preprocessing grid'
-      preproc_dims%kdim = ecmwf%kdim
-      call define_preprop_grid(imager_geolocation, preproc_dims, verbose)
+      if (preproc_opts%use_ecmwf_preproc_grid) then
+         call define_preproc_grid_ecmwf(imager_geolocation, preproc_dims, ecmwf, verbose)
+      else
+         preproc_dims%kdim = ecmwf%kdim
+         call define_preprop_grid(imager_geolocation, preproc_dims, verbose)
+
+      end if 
 
       ! allocate preprocessing structures
       if (verbose) write(*,*) 'Allocate preprocessing structures'
       call allocate_preproc_structures(imager_angles, preproc_dims, &
            preproc_geoloc, preproc_geo, preproc_prtm, preproc_surf, preproc_cld, &
            channel_info)
-
       ! now read the actual data and interpolate it to the preprocessing grid
       if (verbose) write(*,*) 'Build preprocessing grid'
       call build_preproc_fields(preproc_dims, preproc_geoloc, preproc_geo, &
-           imager_geolocation, imager_angles)
+           imager_geolocation, imager_angles, ecmwf, preproc_opts%use_ecmwf_preproc_grid)
 
       ! read ecmwf era interim file
       if (verbose) write(*,*) 'Read and interpolate NWP / Reanalysis data.'
-      if (preproc_opts%ecmwf_time_int_method .ne. 2) then
-         call read_ecmwf(nwp_flag, preproc_opts%nwp_fnames, 1, ecmwf, preproc_dims, preproc_geoloc, &
-              preproc_prtm, verbose)
+
+      if (preproc_opts%use_ecmwf_preproc_grid.and.nwp_flag.gt.0.and.nwp_flag.lt.4) then
+         if (verbose) write(*,*) 'Using ECMWF as preproc grid'
+         call ecmwf_for_preproc_structures(preproc_opts, ecmwf, preproc_geoloc, &
+              preproc_prtm, preproc_dims, verbose, ecmwf_time_int_fac, date, ind, &
+              nwp_flag)
       else
-         call allocate_preproc_prtm(preproc_dims, preproc_prtm1)
-         call read_ecmwf(nwp_flag, preproc_opts%nwp_fnames, 1, ecmwf, preproc_dims, preproc_geoloc, &
-              preproc_prtm1, verbose)
+         if (preproc_opts%ecmwf_time_int_method .ne. 2) then
+            call read_ecmwf(nwp_flag, preproc_opts%nwp_fnames, 1, ecmwf, preproc_dims, &
+                 preproc_geoloc, preproc_prtm, preproc_opts, date, ind, verbose)
+         else
+            call allocate_preproc_prtm(preproc_dims, preproc_prtm1)
+            call read_ecmwf(nwp_flag, preproc_opts%nwp_fnames, 1, ecmwf, preproc_dims,  &
+                 preproc_geoloc, preproc_prtm1, preproc_opts, date, ind, verbose)
 
-         call allocate_preproc_prtm(preproc_dims, preproc_prtm2)
-         call read_ecmwf(nwp_flag, preproc_opts%nwp_fnames, 2, ecmwf, preproc_dims, preproc_geoloc, &
-              preproc_prtm2, verbose)
+            call allocate_preproc_prtm(preproc_dims, preproc_prtm2)
+            call read_ecmwf(nwp_flag, preproc_opts%nwp_fnames, 2, ecmwf, preproc_dims,  &
+                 preproc_geoloc, preproc_prtm2, preproc_opts, date, ind, verbose)
 
-         call linearly_combine_prtms(1.-ecmwf_time_int_fac, ecmwf_time_int_fac, &
-              preproc_prtm1, preproc_prtm2, preproc_prtm)
+            call linearly_combine_prtms(1.-ecmwf_time_int_fac, ecmwf_time_int_fac, &
+                 preproc_prtm1, preproc_prtm2, preproc_prtm)
 
-         call deallocate_preproc_prtm(preproc_prtm1)
-         call deallocate_preproc_prtm(preproc_prtm2)
+            call deallocate_preproc_prtm(preproc_prtm1)
+            call deallocate_preproc_prtm(preproc_prtm2)
+         end if
+
       end if
 
       if (verbose) write(*,*) 'Compute geopotential vertical coords'
@@ -953,11 +967,11 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
       if (verbose) write(*,*) 'Get surface emissivity'
       if (.not. preproc_opts%use_camel_emis) then
          call get_surface_emissivity(granule%cyear, granule%cdoy, cimss_emiss_path, &
-              imager_flags, imager_geolocation, channel_info, preproc_dims, &
+              imager_flags, imager_geolocation, channel_info, preproc_dims, preproc_geoloc, &
               assume_full_paths, verbose, surface, preproc_surf, source_atts)
       else
          call get_camel_emissivity(granule%cyear, granule%cmonth, cimss_emiss_path, &
-              imager_flags, imager_geolocation, channel_info, preproc_dims, &
+              imager_flags, imager_geolocation, channel_info, preproc_dims, preproc_geoloc, &
               assume_full_paths, verbose, surface, preproc_surf, source_atts)
       end if
 
@@ -985,7 +999,7 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
             else
                call correct_for_ice_snow_nwp(preproc_opts%nwp_fnames%nwp_path_file(1), &
                     imager_geolocation, channel_info, imager_flags, preproc_dims, &
-                    preproc_prtm, surface, include_full_brdf, source_atts, &
+                    preproc_prtm, preproc_geoloc, surface, include_full_brdf, source_atts, &
                     verbose)
             end if
          end if
@@ -1096,7 +1110,7 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
          if (preproc_opts%do_cloud_emis) then
             call get_cloud_emis(channel_info, imager_measurements, &
                   imager_geolocation, preproc_dims, preproc_geoloc, &
-                  preproc_cld, preproc_prtm, imager_cloud, ecmwf, &
+                  preproc_cld, preproc_prtm, imager_cloud, &
                   granule%sensor, verbose)
          end if
 #endif
@@ -1113,7 +1127,7 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
 #ifdef INCLUDE_SATWX
             call get_cloud_emis(channel_info, imager_measurements, &
                   imager_geolocation, preproc_dims, preproc_geoloc, &
-                  preproc_cld, preproc_prtm, imager_cloud, ecmwf, &
+                  preproc_cld, preproc_prtm, imager_cloud, &
                   granule%sensor, verbose)
             call do_cb_detect(channel_info, imager_measurements, &
                  imager_geolocation, imager_cloud, imager_pavolonis, &
