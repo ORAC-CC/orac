@@ -35,7 +35,7 @@
 !-------------------------------------------------------------------------------
 
 subroutine read_ecmwf_wind(nwp_flag, nwp_fnames, idx, ecmwf, &
-   nwp_nlevels, verbose)
+   nwp_nlevels, date, ind, verbose)
 
    use preproc_structures_m
 
@@ -47,6 +47,7 @@ subroutine read_ecmwf_wind(nwp_flag, nwp_fnames, idx, ecmwf, &
    type(ecmwf_t),    intent(inout)           :: ecmwf
    integer,          intent(in)              :: nwp_nlevels
    logical,          intent(in)              :: verbose
+   integer,          intent(out)              :: date, ind
 
    ! Set the number of levels in the input file, defaults to 61
    select case(nwp_nlevels)
@@ -95,7 +96,7 @@ subroutine read_ecmwf_wind(nwp_flag, nwp_fnames, idx, ecmwf, &
    where (ecmwf%sea_ice_cover .lt. 0.0 .or. ecmwf%sea_ice_cover .gt. 1.0) &
       ecmwf%sea_ice_cover = sreal_fill_value
 
-   call rearrange_ecmwf(ecmwf)
+   call rearrange_ecmwf(ecmwf, date, ind)
 
 end subroutine read_ecmwf_wind
 
@@ -126,7 +127,7 @@ end subroutine read_ecmwf_wind
 !-------------------------------------------------------------------------------
 
 subroutine read_ecmwf(nwp_flag,nwp_fnames, idx, ecmwf, preproc_dims, &
-                      preproc_geoloc, preproc_prtm, verbose)
+                      preproc_geoloc, preproc_prtm, preproc_opts, date, ind, verbose)
 
    use preproc_structures_m
 
@@ -135,11 +136,13 @@ subroutine read_ecmwf(nwp_flag,nwp_fnames, idx, ecmwf, preproc_dims, &
    integer,                intent(in)        :: nwp_flag
    type(preproc_nwp_fnames_t), intent(inout) :: nwp_fnames
    integer,          intent(in)              :: idx
-   type(ecmwf_t),          intent(in)        :: ecmwf
+   type(ecmwf_t),          intent(inout)        :: ecmwf
    type(preproc_dims_t),   intent(in)        :: preproc_dims
    type(preproc_geoloc_t), intent(in)        :: preproc_geoloc
    type(preproc_prtm_t),   intent(inout)     :: preproc_prtm
+   type(preproc_opts_t), intent(inout)    :: preproc_opts
    logical,                intent(in)        :: verbose
+   integer,          intent(in)          :: date, ind
 
    select case (nwp_flag)
    case(0)
@@ -153,7 +156,7 @@ subroutine read_ecmwf(nwp_flag,nwp_fnames, idx, ecmwf, preproc_dims, &
    case(2)
       if (verbose) write(*,*) 'Reading JASMIN ERA5 path: ', trim(nwp_fnames%nwp_path_file(idx))
       call read_era5_jasmin_nc(nwp_fnames, idx, ecmwf, preproc_dims, preproc_geoloc, &
-           preproc_prtm, verbose, nwp_flag)
+           preproc_prtm, preproc_opts, verbose, nwp_flag, date, ind)
    case(3)
       if (verbose) write(*,*) 'Reading ecmwf path: ', trim(nwp_fnames%nwp_path_file(idx))
       call read_ecmwf_nc(nwp_fnames%nwp_path_file(idx), ecmwf, preproc_dims, preproc_geoloc, &
@@ -172,5 +175,75 @@ subroutine read_ecmwf(nwp_flag,nwp_fnames, idx, ecmwf, preproc_dims, &
            preproc_prtm, verbose)
    end select
 
-
 end subroutine read_ecmwf
+
+!-------------------------------------------------------------------------------
+! Name: read_ecmwf
+!
+! Purpose:
+!
+! Description and Algorithm details:
+!
+! Arguments:
+! Name Type In/Out/Both Description
+
+! Return value:
+! Name Type Description
+! ------------------------------------------------------------------------------
+!
+! History:
+! 2024/07/01, DH: Variation on the read_ecmwf subroutine when using the ecmwf 
+!    grid as the preprocessing grid, as no interpolation is needed.
+!
+! Bugs:
+! - only works for nwp_flag=1-3, not implemented for ERA-Interim and NOAA GFS
+!-------------------------------------------------------------------------------
+
+subroutine ecmwf_for_preproc_structures(preproc_opts, ecmwf, preproc_geoloc, preproc_prtm, preproc_dims, verbose, ecmwf_time_int_fac, date, ind, nwp_flag)
+   use orac_ncdf_m
+   use preproc_constants_m
+   use preproc_structures_m
+
+   implicit none
+
+
+   type(preproc_opts_t), intent(inout)    :: preproc_opts
+   type(ecmwf_t),           intent(inout)    :: ecmwf
+   type(preproc_geoloc_t),  intent(inout) :: preproc_geoloc
+   type(preproc_prtm_t),    intent(inout) :: preproc_prtm
+   type(preproc_dims_t),    intent(inout) :: preproc_dims
+   real,                    intent(in)    :: ecmwf_time_int_fac
+   type(preproc_prtm_t)                   :: preproc_prtm1
+   type(preproc_prtm_t)                   :: preproc_prtm2
+   integer,          intent(in)          :: date, ind
+   logical,                 intent(in)    :: verbose
+   integer,                intent(in)        :: nwp_flag
+
+select case (nwp_flag)
+   case(1)
+      if (verbose) write(*,*) 'Reading ECMWF path: ', trim(preproc_opts%nwp_fnames%nwp_path_file(1))
+      call ecmwf_nc_for_preproc_structures(preproc_opts, ecmwf, preproc_geoloc, &
+            preproc_prtm, preproc_dims, verbose, ecmwf_time_int_fac, date, ind)
+   case(2)
+      if (verbose) write(*,*) 'Reading JASMIN ERA5'
+      if (preproc_opts%ecmwf_time_int_method .ne. 2) then
+         call read_era5_jasmin_nc(preproc_opts%nwp_fnames, 1, ecmwf, preproc_dims, preproc_geoloc, preproc_prtm, preproc_opts, verbose, nwp_flag, date, ind)
+      else 
+         call allocate_preproc_prtm(preproc_dims, preproc_prtm1)
+         call read_era5_jasmin_nc(preproc_opts%nwp_fnames, 1, ecmwf, preproc_dims, preproc_geoloc, preproc_prtm1, preproc_opts, verbose, nwp_flag, date, ind)
+         call allocate_preproc_prtm(preproc_dims, preproc_prtm2)
+         call read_era5_jasmin_nc(preproc_opts%nwp_fnames, 2, ecmwf, preproc_dims, preproc_geoloc, preproc_prtm2, preproc_opts, verbose, nwp_flag, date, ind)
+         call linearly_combine_prtms(1.-ecmwf_time_int_fac, ecmwf_time_int_fac, &
+                 preproc_prtm1, preproc_prtm2, preproc_prtm)
+
+         call deallocate_preproc_prtm(preproc_prtm1)
+         call deallocate_preproc_prtm(preproc_prtm2)
+
+      end if
+   case(3)
+      if (verbose) write(*,*) 'Reading ecmwf path: ', trim(preproc_opts%nwp_fnames%nwp_path_file(1))
+      call ecmwf_nc_for_preproc_structures(preproc_opts, ecmwf, preproc_geoloc, &
+            preproc_prtm, preproc_dims, verbose, ecmwf_time_int_fac, date, ind)
+   end select
+
+end subroutine ecmwf_for_preproc_structures
