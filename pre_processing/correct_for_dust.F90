@@ -74,10 +74,6 @@ subroutine correct_for_dust(channel_info, imager_measurements, imager_angles, &
      end where
      ! Now do perform the an opening transform on our new mask, which should
      ! remove scattered false positives
-     write(*,*) size(dustmask, 1), size(dustmask,2)
-     write(*,*) lbound(dustmask,1), lbound(dustmask,2), ubound(dustmask,1), ubound(dustmask,2)
-     write(*,*) size(imager_pavolonis%cldmask, 1), size(imager_pavolonis%cldmask,2)
-     write(*,*) lbound(imager_pavolonis%cldmask,1), lbound(imager_pavolonis%cldmask,2), ubound(imager_pavolonis%cldmask,1), ubound(imager_pavolonis%cldmask,2)
      write(*,*) count(dustmask .eq. 1),' pixels flagged as dust before open'
      dustmask = morph_open(dustmask, kernel)
 
