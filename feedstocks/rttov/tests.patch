@@ -1,0 +1,40 @@
+Remove tests for instruments that ORAC doesn't run
+--- a/rttov_test/test_fwd.sh	2021-11-09 13:30:18.000000000 +0000
++++ b/rttov_test/test_fwd.sh	2024-08-14 13:16:32.819196558 +0100
+@@ -24,20 +24,8 @@
+ ./rttov_test.pl SESSION=$SESSION $WHAT $CHECK ARCH=$ARCH $OPTS -- << EOF
+   TEST_LIST=abi/501 SOLAR=1
+   TEST_LIST=ahi/501 SOLAR=1
+-  TEST_LIST=airs/401,airs/561 SOLAR=1
+-  TEST_LIST=amsre/301
+-  TEST_LIST=amsua/301,amsua/321clw,amsua/399
+-  TEST_LIST=amsub/301
+   TEST_LIST=atsr/501,atsr/502,atsr/503s SOLAR=1
+   TEST_LIST=avhrr/416,avhrr/417,avhrr/418 SOLAR=1
+-  TEST_LIST=hirs/417,hirs/517
+-  TEST_LIST=iasi/401,iasi/561
+-  TEST_LIST=mhs/301
+   TEST_LIST=modis/401,modis/521 SOLAR=1
+-  TEST_LIST=msu/301
+   TEST_LIST=seviri/404,seviri/524,seviri/599 SOLAR=1
+-  TEST_LIST=ssmi/308
+-  TEST_LIST=ssmis/303,ssmis/321
+-  TEST_LIST=tmi/301
+-  TEST_LIST=windsat/301,windsat/321
+ EOF
+--- a/rttov_test/test_rttov13.sh	2021-11-09 13:30:18.000000000 +0000
++++ b/rttov_test/test_rttov13.sh	2024-08-14 13:16:50.943161403 +0100
+@@ -22,13 +22,6 @@
+ CHECK="CHECK=1 TEST_REF=$SESSION.2"
+ 
+ ./rttov_test.pl SESSION=$SESSION $WHAT $CHECK ARCH=$ARCH $OPTS -- << EOF
+-  TEST_LIST=amsre/301
+-  TEST_LIST=amsua/301,amsua/321clw
+-  TEST_LIST=amsub/301
+-  TEST_LIST=msu/301
+-  TEST_LIST=ssmis/301,ssmis/321
+-  TEST_LIST=windsat/301
+-  TEST_LIST=hirs/517                APPLY_REG_LIMITS=1
+   TEST_LIST=modis/401               SOLAR=1
+   TEST_LIST=seviri/524              SOLAR=1
+ EOF

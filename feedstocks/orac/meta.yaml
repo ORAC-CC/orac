@@ -70,6 +70,7 @@ requirements:
     # fftw comes from libemos, which doesn't have mpi so doesn't bind this
     - fu_liou
     - hdfeos2
+    - hdfeos2 * fortran_*
     - hdf5
     - hdf5 * {{ mpi_prefix }}_*
     - hsd_reader
@@ -88,7 +89,7 @@ requirements:
     - epr_api
     - fftw * {{ mpi_prefix }}_*
     - fu_liou
-    - hdfeos2
+    - hdfeos2 * fortran_*
     - hdf5 * {{ mpi_prefix }}_*
     - hsd_reader * {{ mpi_prefix }}_*
     - libemos

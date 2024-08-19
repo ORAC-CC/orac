@@ -11,10 +11,10 @@ dependencies:
  - gfortran_linux-64
  - bison
  - flex
+ - fftw * nompi_*
  - nr * nompi_*
  - epr_api
  - fu_liou
- - hdf4
  - hdfeos2 * fortran_*
  - hdf5 * nompi_*
  - libnetcdf * nompi_*

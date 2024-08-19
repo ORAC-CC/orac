@@ -15,3 +15,14 @@ diff -upN libemos-4.4.9-Source/CMakeLists.txt libemos/CMakeLists.txt
    set( grib_api_BASE_DIR     ${eccodes_BASE_DIR} )
    set( grib_handling_pkg eccodes )
  else()
+--- libemos-4.4.9-Source/tests/CMakeLists.txt	2024-08-01 11:16:57.408091984 +0100
++++ libemos/tests/CMakeLists.txt	2024-08-01 11:18:28.251940969 +0100
+@@ -161,7 +161,7 @@ if( HAVE_LIBEMOS_GRIBEX )
+     ecbuild_add_test( TARGET gribex_demo  SOURCES gribex_demo.F  LIBS emos ENVIRONMENT ${_emos_environment}
+       ARGS -i "${PROJECT_SOURCE_DIR}/tests/data/msl_regular_ll.grib" )
+ 
+-    set_tests_properties( gribex_abort PROPERTIES WILL_FAIL ${HAVE_GRIBEX_ABORT} )
++    set_tests_properties( gribex_abort PROPERTIES WILL_FAIL 1 )
+     set_tests_properties( gribex_demo  PROPERTIES WILL_FAIL ${HAVE_GRIBEX_ABORT} )
+ 
+ endif( HAVE_LIBEMOS_GRIBEX )

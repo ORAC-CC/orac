@@ -26,14 +26,15 @@ requirements:
     - {{ compiler('fortran') }}
     - cmake
   host:
-    - eccodes
+    - eccodes <2.28.0
     - fftw
+    - jpeg
     - libnetcdf
     - netcdf-fortran
     - hdf4
     - hdf5
   run:
-    - eccodes
+    - eccodes <2.28.0
     - fftw
 
 test:

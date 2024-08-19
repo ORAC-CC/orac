@@ -1,0 +1,13 @@
+Workaround an old tensorflow import problem
+--- a/helperfuncs.py	2024-08-16 12:19:16.469006627 +0100
++++ b/helperfuncs.py	2024-08-16 12:26:53.504298121 +0100
+@@ -130,6 +130,9 @@
+     Check if installed Tensorflow version matches the
+     Tensorflow version used for training.
+     """
++    import sys
++    if not hasattr(sys, "argv") or not sys.argv:
++        sys.argv = [""]
+     import tensorflow
+     cot_version = modelpath.split('__')[1]
+     curr_version = tensorflow.__version__
