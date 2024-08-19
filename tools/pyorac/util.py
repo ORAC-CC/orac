@@ -5,11 +5,15 @@ import os
 def build_orac_library_path(lib_dict=None, lib_list=None):
     """Build required LD_LIBRARY_PATH variable."""
 
+    try:
+        libs = os.environ["LD_LIBRARY_PATH"].split(':')
+    except (KeyError, AttributeError):
+        libs = []
+
     if lib_list is None:
         lib_list = extract_orac_libraries(lib_dict)
 
-    libs = os.environ["LD_LIBRARY_PATH"].split(':') + lib_list
-    return ':'.join(filter(None, libs))
+    return ':'.join(filter(None, libs + lib_list))
 
 
 def call_exe(args, exe, driver, values=None):
