@@ -724,12 +724,17 @@ class Swath(Mappable):
 
     def __getitem__(self, name):
         """Returns an arbitrary data field, ensuring it's a MaskedArray."""
-        data = self.get_variable(name)[...]
-        if not isinstance(data, np.ma.MaskedArray):
-            data = np.ma.masked_invalid(data)
+        try:
+            data = self.get_variable(name)[...]
+            if not isinstance(data, np.ma.MaskedArray):
+                data = np.ma.masked_invalid(data)
 
-        data[self.mask] = np.ma.masked
-        return data
+            data[self.mask] = np.ma.masked
+            return data
+        except IndexError:
+            # The above assumes data.shape == self.mask.shape
+            # TODO: Generalise that to channel-indexed fields
+            return self.get_variable(name)[...]
 
     # -------------------------------------------------------------------
     # Masking functions
