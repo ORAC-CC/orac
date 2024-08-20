@@ -298,7 +298,7 @@ subroutine c_to_fortran_str(str)
    character(*), intent(inout) :: str
    integer :: i
 
-   do i=1,len(str)
+   do i = 1, len(str)
       if (str(i:i) == C_NULL_CHAR) exit
    end do
 

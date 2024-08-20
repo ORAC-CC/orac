@@ -89,6 +89,7 @@ PREPROC_OBJ_F90 = $(OBJS)/aatsr_corrections.o \
                   $(OBJS)/rttov_driver.o \
                   $(OBJS)/rttov_driver_gfs.o \
                   $(OBJS)/setup.o \
+		  $(OBJS)/seviri_neural_net_preproc.o \
                   $(OBJS)/solar_position.o \
                   $(OBJS)/surface_emissivity.o \
                   $(OBJS)/surface_reflectance.o \

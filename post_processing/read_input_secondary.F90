@@ -64,10 +64,10 @@ end if
 
 if (indexing%flags%do_rho) then
    i_rho = 0
-   do i=1,indexing%NSolar
+   do i = 1, indexing%NSolar
       write(input_num, "(i4)") indexing%Y_Id(indexing%YSolar(i))
 
-      do j=1,MaxRho_XX
+      do j = 1, MaxRho_XX
          if (indexing%rho_terms(i,j)) then
             i_rho = i_rho + 1
 
@@ -84,7 +84,7 @@ end if
 
 if (indexing%flags%do_swansea) then
    i_rho = 0
-   do i=1,indexing%NSolar
+   do i = 1, indexing%NSolar
       if (indexing%ss_terms(i)) then
          i_rho = i_rho + 1
 
@@ -99,7 +99,7 @@ if (indexing%flags%do_swansea) then
       end if
    end do
 
-   do i=1,indexing%NViews
+   do i = 1, indexing%NViews
       write(input_num, "(i4)") i
 
       input_dummy='swansea_p_ap_in_view_no_'//trim(adjustl(input_num))
@@ -133,7 +133,7 @@ if (indexing%flags%do_cloud) then
         start = [1, sval])
 end if
 
-   do i=1,indexing%Ny
+   do i = 1, indexing%Ny
       write(input_num, "(i4)") indexing%Y_Id(i)
 
       if (btest(indexing%Ch_Is(i), ThermalBit)) then
@@ -178,7 +178,7 @@ subroutine read_input_secondary_optional(ncid, input_data, indexing, &
    character(len=32)  :: input_num
    character(len=512) :: input_dummy
 
-   do i=1,indexing%Ny
+   do i = 1, indexing%Ny
       if (indexing%read_optional_channel_field(i)) then
          write(input_num, "(i4)") indexing%Y_Id(i)
 
@@ -195,7 +195,7 @@ subroutine read_input_secondary_optional(ncid, input_data, indexing, &
    end do
 
 if (indexing%flags%do_cloud .and. read_flags%do_cloud) then
-   do i=1,indexing%NSolar
+   do i = 1, indexing%NSolar
       if (indexing%read_optional_channel_field(indexing%YSolar(i))) then
          write(input_num, "(i4)") indexing%Y_Id(indexing%YSolar(i))
 
@@ -239,7 +239,7 @@ subroutine read_input_secondary_once(nfile, fname, input_data, indexing, &
 
    call ncdf_close(ncid, 'read_input_secondary_once()')
 
-   do i=2,nfile
+   do i = 2, nfile
       call ncdf_open(ncid, fname(i), 'read_input_secondary_once()')
       call read_input_secondary_optional(ncid, input_data, loop_ind(i), &
            read_flags, sval, verbose)

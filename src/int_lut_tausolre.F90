@@ -71,7 +71,7 @@
 ! 2014/01/23, GM: Performance improvements.  Primarily through elimination of
 !    unused memory references and computations especially when setting local
 !    variable G.
-! 2014/10/16, GM:Moved a large amount of code that was common to all IntLUT*
+! 2014/10/16, GM: Moved a large amount of code that was common to all IntLUT*
 !    subroutines into Int_LUT_Common()
 ! 2015/01/13, AP: Switch to array-based channel indexing rather than using
 !    offsets.

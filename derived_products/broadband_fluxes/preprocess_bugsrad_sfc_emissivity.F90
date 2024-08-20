@@ -46,15 +46,15 @@ subroutine preprocess_bugsrad_sfc_emissivity(nc_emis,emis_data,emis_bugsrad)
    ! Full MODIS spectral channel range
    if (nc_emis .EQ. 13) then
       ! Center location of each MODIS band
-      modBand=[3.7,4.46,4.516,6.715,7.325,8.55,9.73,11.017,12.032,13.34,13.63, &
+      modBand = [3.7,4.46,4.516,6.715,7.325,8.55,9.73,11.017,12.032,13.34,13.63, &
                13.94,14.23]
 
       ! Neighboring MODIS bands to interpolate to the BUGSrad
-      modID1=[3,3,3,5,5,6,8,11,12,13,13,13]
-      modID2=[4,4,4,6,6,7,9,12,13,13,13,13]
+      modID1 = [3,3,3,5,5,6,8,11,12,13,13,13]
+      modID2 = [4,4,4,6,6,7,9,12,13,13,13,13]
 
       ! Interpolate emissivity
-      do I=1,8
+      do I = 1, 8
          m = (emis_data(modID2(I)) - emis_data(modID1(I))) / &
              (modBand(modID2(I)) - modBand(modID1(I)))
          b = emis_data(modID1(I)) - m*modBand(modID1(I))
@@ -70,16 +70,16 @@ subroutine preprocess_bugsrad_sfc_emissivity(nc_emis,emis_data,emis_bugsrad)
    ! Heritage spectral channel range
    if (nc_emis .EQ. 3) then
       ! Center location of each MODIS band
-      modBand=[3.7,11.017,12.032]
+      modBand = [3.7,11.017,12.032]
 
       ! Neighboring MODIS bands to interpolate to the BUGSrad
-      modID1=[1,1,1,1,1,1,2,3,3,3,3,3]
-      modID2=[2,2,2,2,2,2,3,3,3,3,3,3]
+      modID1 = [1,1,1,1,1,1,2,3,3,3,3,3]
+      modID2 = [2,2,2,2,2,2,3,3,3,3,3,3]
 
 !     print*,emis_data
 
       ! Interpolate emissivity
-      do I=1,7
+      do I = 1, 7
          m = (emis_data(modID2(I)) - emis_data(modID1(I))) / &
              (modBand(modID2(I)) - modBand(modID1(I)))
          b = emis_data(modID1(I)) - m*modBand(modID1(I))

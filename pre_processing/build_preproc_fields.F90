@@ -62,7 +62,7 @@ subroutine build_preproc_fields(preproc_dims, preproc_geoloc, preproc_geo, &
    fac = 1. / preproc_dims%dellat
    preproc_geoloc%latitude(preproc_dims%min_lat) = &
         (preproc_dims%min_lat-0.5)*fac - real(preproc_dims%lat_offset,sreal)
-   do i=preproc_dims%min_lat+1,preproc_dims%max_lat
+   do i = preproc_dims%min_lat+1, preproc_dims%max_lat
       preproc_geoloc%latitude(i) = preproc_geoloc%latitude(i-1) + fac
    end do
 
@@ -70,43 +70,43 @@ subroutine build_preproc_fields(preproc_dims, preproc_geoloc, preproc_geo, &
    fac = 1. / preproc_dims%dellon
    preproc_geoloc%longitude(preproc_dims%min_lon) = &
         (preproc_dims%min_lon-0.5)*fac - real(preproc_dims%lon_offset,sreal)
-   do i=preproc_dims%min_lon+1,preproc_dims%max_lon
+   do i = preproc_dims%min_lon+1, preproc_dims%max_lon
       preproc_geoloc%longitude(i) = preproc_geoloc%longitude(i-1) + fac
    end do
 
    ! imager resolution is always higher than preprocessing resolution
    ! =>average imager properties to this coarser resolution grid.
 
-   preproc_dims%counter_sw=0
-   preproc_dims%counter_lw=0
+   preproc_dims%counter_sw = 0
+   preproc_dims%counter_lw = 0
 
    ! loop over imager data
-   do j=1,imager_geolocation%ny
-      do i=imager_geolocation%startx,imager_geolocation%endx
+   do j = 1, imager_geolocation%ny
+      do i = imager_geolocation%startx, imager_geolocation%endx
 
          ! if geolocation isn't there, do nothing
          if (imager_geolocation%latitude(i,j) .eq. sreal_fill_value .or. &
               imager_geolocation%longitude(i,j) .eq. sreal_fill_value) cycle
 
          ! find grid cell coordinates into which L1b pixel falls
-         lon_i=floor((imager_geolocation%longitude(i,j) + &
+         lon_i = floor((imager_geolocation%longitude(i,j) + &
               preproc_dims%lon_offset)*preproc_dims%dellon, kind=lint) + 1
-         lat_j=floor((imager_geolocation%latitude(i,j) + &
+         lat_j = floor((imager_geolocation%latitude(i,j) + &
               preproc_dims%lat_offset)*preproc_dims%dellat, kind=lint) + 1
 
-         if (lon_i .lt. preproc_dims%min_lon) lon_i=preproc_dims%min_lon
-         if (lat_j .lt. preproc_dims%min_lat) lat_j=preproc_dims%min_lat
-         if (lon_i .gt. preproc_dims%max_lon) lon_i=preproc_dims%max_lon
-         if (lat_j .gt. preproc_dims%max_lat) lat_j=preproc_dims%max_lat
+         if (lon_i .lt. preproc_dims%min_lon) lon_i = preproc_dims%min_lon
+         if (lat_j .lt. preproc_dims%min_lat) lat_j = preproc_dims%min_lat
+         if (lon_i .gt. preproc_dims%max_lon) lon_i = preproc_dims%max_lon
+         if (lat_j .gt. preproc_dims%max_lat) lat_j = preproc_dims%max_lat
 
-         do k=1,imager_angles%nviews
+         do k = 1, imager_angles%nviews
             if (imager_angles%satzen(i,j,k) .ne. sreal_fill_value) then
                preproc_geo%satza(lon_i,lat_j,k) = &
                     preproc_geo%satza(lon_i,lat_j,k) + &
                     imager_angles%satzen(i,j,k)
 
                ! count the number of L1 pixels which fall in this pixel
-               preproc_dims%counter_lw(lon_i,lat_j,k)= &
+               preproc_dims%counter_lw(lon_i,lat_j,k) = &
                     preproc_dims%counter_lw(lon_i,lat_j,k)+1
             end if
 
@@ -114,13 +114,13 @@ subroutine build_preproc_fields(preproc_dims, preproc_geoloc, preproc_geo, &
                  imager_angles%solazi(i,j,k) .gt. sreal_fill_value .and. &
                  imager_angles%relazi(i,j,k) .gt. sreal_fill_value) then
 
-               preproc_geo%solza(lon_i,lat_j,k)= &
+               preproc_geo%solza(lon_i,lat_j,k) = &
                     preproc_geo%solza(lon_i,lat_j,k)+imager_angles%solzen(i,j,k)
-               preproc_geo%satazi(lon_i,lat_j,k)= &
+               preproc_geo%satazi(lon_i,lat_j,k) = &
                     preproc_geo%satazi(lon_i,lat_j,k)+imager_angles%satazi(i,j,k)
-               preproc_geo%relazi(lon_i,lat_j,k)= &
+               preproc_geo%relazi(lon_i,lat_j,k) = &
                     preproc_geo%relazi(lon_i,lat_j,k)+imager_angles%relazi(i,j,k)
-               preproc_geo%solazi(lon_i,lat_j,k)=&
+               preproc_geo%solazi(lon_i,lat_j,k) = &
                     preproc_geo%solazi(lon_i,lat_j,k)+imager_angles%solazi(i,j,k)
 
                ! count the number of L1b pixels which fall in this pixel
@@ -132,34 +132,34 @@ subroutine build_preproc_fields(preproc_dims, preproc_geoloc, preproc_geo, &
    end do
 
    ! loop over preprocessor data i.e reduced resolution
-   do j=preproc_dims%min_lat,preproc_dims%max_lat
-      do i=preproc_dims%min_lon,preproc_dims%max_lon
-         do k=1,imager_angles%nviews
+   do j = preproc_dims%min_lat, preproc_dims%max_lat
+      do i = preproc_dims%min_lon, preproc_dims%max_lon
+         do k = 1, imager_angles%nviews
             if (preproc_dims%counter_lw(i,j,k) .gt. 0) then
                ! if this is a good preprocessing pixel, calculate the average
-               preproc_geo%satza(i,j,k)=preproc_geo%satza(i,j,k)/ &
+               preproc_geo%satza(i,j,k) = preproc_geo%satza(i,j,k)/ &
                     preproc_dims%counter_lw(i,j,k)
             else
                ! if not set fill value
-               preproc_geo%satza(i,j,k)=sreal_fill_value
+               preproc_geo%satza(i,j,k) = sreal_fill_value
             end if
 
             if (preproc_dims%counter_sw(i,j,k) .gt. 0) then
                ! if this is a good preprocessing pixel, calculate the average
-               preproc_geo%solza(i,j,k)=preproc_geo%solza(i,j,k)/ &
+               preproc_geo%solza(i,j,k) = preproc_geo%solza(i,j,k)/ &
                     preproc_dims%counter_sw(i,j,k)
-               preproc_geo%satazi(i,j,k)=preproc_geo%satazi(i,j,k)/ &
+               preproc_geo%satazi(i,j,k) = preproc_geo%satazi(i,j,k)/ &
                     preproc_dims%counter_sw(i,j,k)
-               preproc_geo%relazi(i,j,k)=preproc_geo%relazi(i,j,k)/ &
+               preproc_geo%relazi(i,j,k) = preproc_geo%relazi(i,j,k)/ &
                     preproc_dims%counter_sw(i,j,k)
-               preproc_geo%solazi(i,j,k)=preproc_geo%solazi(i,j,k)/ &
+               preproc_geo%solazi(i,j,k) = preproc_geo%solazi(i,j,k)/ &
                     preproc_dims%counter_sw(i,j,k)
             else
                ! if not set fill value
-               preproc_geo%solza(i,j,k)=sreal_fill_value
-               preproc_geo%satazi(i,j,k)=sreal_fill_value
-               preproc_geo%relazi(i,j,k)=sreal_fill_value
-               preproc_geo%solazi(i,j,k)=sreal_fill_value
+               preproc_geo%solza(i,j,k) = sreal_fill_value
+               preproc_geo%satazi(i,j,k) = sreal_fill_value
+               preproc_geo%relazi(i,j,k) = sreal_fill_value
+               preproc_geo%solazi(i,j,k) = sreal_fill_value
             end if
          end do
       end do

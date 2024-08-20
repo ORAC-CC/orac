@@ -58,7 +58,7 @@
 subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
      imager_geolocation,imager_measurements,imager_cloud,imager_time, &
      imager_pavolonis,netcdf_info,channel_info,surface,include_full_brdf, &
-     do_cloud_emis)
+     do_cloud_emis, use_seviri_ann_ctp_fg, use_seviri_ann_mlay)
 
    use channel_structures_m
    use imager_structures_m
@@ -80,6 +80,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
    type(surface_t),             intent(in) :: surface
    logical,                     intent(in) :: include_full_brdf
    logical,                     intent(in) :: do_cloud_emis
+   logical,                     intent(in) :: use_seviri_ann_ctp_fg, use_seviri_ann_mlay
 
 
    integer(kind=lint)                            :: i, ii
@@ -128,11 +129,11 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
    if (channel_info%nchannels_sw .ne. 0) then
       allocate(dummy_chan_vec1d(channel_info%nchannels_sw))
       dummy_chan_vec1d=0_lint
-      ii=1
-      do i=1,channel_info%nchannels_total
+      ii = 1
+      do i = 1, channel_info%nchannels_total
          if (channel_info%channel_sw_flag(i) .eq. 1) then
             dummy_chan_vec1d(ii)=i
-            ii=ii+1
+            ii = ii+1
          end if
       end do
 
@@ -148,11 +149,11 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
    if (channel_info%nchannels_lw .ne. 0) then
       allocate(dummy_chan_vec1d(channel_info%nchannels_lw))
       dummy_chan_vec1d=0_lint
-      ii=1
-      do i=1,channel_info%nchannels_total
+      ii = 1
+      do i = 1, channel_info%nchannels_total
          if (channel_info%channel_lw_flag(i) .eq. 1) then
             dummy_chan_vec1d(ii)=i
-            ii=ii+1
+            ii = ii+1
          end if
       end do
 
@@ -171,11 +172,11 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
    if (channel_info%nchannels_sw .ne. 0) then
       allocate(dummy_chan_vec1d(channel_info%nchannels_sw))
       dummy_chan_vec1d=0_lint
-      ii=1
-      do i=1,channel_info%nchannels_total
+      ii = 1
+      do i = 1, channel_info%nchannels_total
          if (channel_info%channel_sw_flag(i) .eq. 1) then
             dummy_chan_vec1d(ii)=i
-            ii=ii+1
+            ii = ii+1
          end if
       end do
 
@@ -191,11 +192,11 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
    if (channel_info%nchannels_lw .ne. 0) then
       allocate(dummy_chan_vec1d(channel_info%nchannels_lw))
       dummy_chan_vec1d=0_lint
-      ii=1
-      do i=1,channel_info%nchannels_total
+      ii = 1
+      do i = 1, channel_info%nchannels_total
          if (channel_info%channel_lw_flag(i) .eq. 1) then
             dummy_chan_vec1d(ii)=i
-            ii=ii+1
+            ii = ii+1
          end if
       end do
 
@@ -384,6 +385,37 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
         1, 1, imager_geolocation%ny, &
         1, 1, channel_info%nviews)
 
+#ifdef INCLUDE_SEVIRI_NEURALNET
+       if (use_seviri_ann_mlay) then
+           call ncdf_write_array( &
+                netcdf_info%ncid_clf, &
+                'mlay_prob', &
+                netcdf_info%vid_mlay_prob, &
+                imager_pavolonis%mlay_prob(imager_geolocation%startx:,:,:), &
+                1, 1, n_x, &
+                1, 1, imager_geolocation%ny, &
+                1, 1, channel_info%nviews)
+
+           call ncdf_write_array( &
+                netcdf_info%ncid_clf, &
+                'mlay_flag', &
+                netcdf_info%vid_mlay_flag, &
+                imager_pavolonis%mlay_flag(imager_geolocation%startx:,:,:), &
+                1, 1, n_x, &
+                1, 1, imager_geolocation%ny, &
+                1, 1, channel_info%nviews)
+
+           call ncdf_write_array( &
+                netcdf_info%ncid_clf, &
+                'mlay_unc', &
+                netcdf_info%vid_mlay_unc, &
+                imager_pavolonis%mlay_unc(imager_geolocation%startx:,:,:), &
+                1, 1, n_x, &
+                1, 1, imager_geolocation%ny, &
+                1, 1, channel_info%nviews)
+       end if
+#endif
+
    ! geo file (solzen, satzen, solaz, relazi)
 
    call ncdf_write_array( &
@@ -554,5 +586,29 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles, &
         imager_measurements%cal_gain(:), &
         1, 1, channel_info%nchannels_total)
 
+
+   ! ctp file
+
+#ifdef INCLUDE_SEVIRI_NEURALNET
+   if (use_seviri_ann_ctp_fg) then
+      call ncdf_write_array( &
+           netcdf_info%ncid_ctp, &
+           'ctp', &
+           netcdf_info%vid_ctp_fg, &
+           imager_pavolonis%ctp_fg(imager_geolocation%startx:,:,:), &
+           1, 1, n_x, &
+           1, 1, imager_geolocation%ny, &
+           1, 1, channel_info%nviews)
+
+       call ncdf_write_array( &
+           netcdf_info%ncid_ctp, &
+           'ctp_var', &
+           netcdf_info%vid_ctp_fg_unc, &
+           imager_pavolonis%ctp_fg_unc(imager_geolocation%startx:,:,:), &
+           1, 1, n_x, &
+           1, 1, imager_geolocation%ny, &
+           1, 1, channel_info%nviews)
+   end if
+#endif
 
 end subroutine netcdf_output_write_swath

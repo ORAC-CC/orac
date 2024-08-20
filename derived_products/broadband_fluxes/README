@@ -6,12 +6,12 @@ INTRODUCTION:
 The information presented here assumes the complete compilation of ORAC pre, post, and derived products as the output files from these products is required to run ORAC-FLX. The main executable to run ORAC-FLX  is: process_broadband_fluxes.F90.
 
 RADIATION MODELS:
-1. BUGSrad 
-Developed by G. Stephens at CSU originally implemented this scheme for the CAM (Community Atmosphere Model) in the 90's. The code is based on the Fu and Liou model (1992) which uses a correlated-K distribution method for aborption and and two-stream approximation for scattering. The most recent version of the code is used to compute vertical profiles of fluxes for CloudSat data (2B-FLXHR). ORAC is currently using a variant of 2B-FLXHR. More information can be obtained from the CloudSat Data Processing Center. 
+1. BUGSrad
+Developed by G. Stephens at CSU originally implemented this scheme for the CAM (Community Atmosphere Model) in the 90's. The code is based on the Fu and Liou model (1992) which uses a correlated-K distribution method for aborption and and two-stream approximation for scattering. The most recent version of the code is used to compute vertical profiles of fluxes for CloudSat data (2B-FLXHR). ORAC is currently using a variant of 2B-FLXHR. More information can be obtained from the CloudSat Data Processing Center.
 Source code: biocycle.atmos.colostate.edu/shiny/BUGSrad.
 
 2. Fu-Liou
-Functionality of this code is more extensive than BUGSrad. It uses 18 spectral bands across the shortwave thereby providing bands relating to UVA, UVB, PAR, and total Shortwave fluxes, and 12 bands (which is the same as BUGSrad) across the thermal infrared. 
+Functionality of this code is more extensive than BUGSrad. It uses 18 spectral bands across the shortwave thereby providing bands relating to UVA, UVB, PAR, and total Shortwave fluxes, and 12 bands (which is the same as BUGSrad) across the thermal infrared.
 Options:
 Shortwave - 2-stream, 4-stream, or gamma-weighted 2-stream
 Aerosol - 25 input types (currently disabled)
@@ -76,4 +76,3 @@ AATSR WITH AEROSOL
 
 SEVIRI
 ./process_broadband_fluxes /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/postproc/ESACCI-L2-CLOUD-CLD-SEVIRI_ORAC_MSG2_201004161312_V1.0.primary.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/ESACCI-L2-CLOUD-CLD-SEVIRI_ORAC_MSG2_201004161312_V1.0.prtm.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/ESACCI-L2-CLOUD-CLD-SEVIRI_ORAC_MSG2_201004161312_V1.0.alb.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/data/tsi_soho_sorce_1978_2015.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/derived_products/ESACCI-L2-CLOUD-CLD-SEVIRI_ORAC_MSG2_201004161312_V1.0.bugsradTEST.nc '1'
-

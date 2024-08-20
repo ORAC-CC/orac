@@ -129,7 +129,7 @@ subroutine Read_CloudFlags(Ctrl, MSI_Data)
 
    if (Ctrl%process_aerosol_only) then
       ! Invalidate cloudy pixels to 0 ot avoid their processing
-      do i=1,Ctrl%Ind%NViews
+      do i = 1, Ctrl%Ind%NViews
          where (MSI_Data%cldmask(:,:,i) .ne. 0)
             MSI_Data%Type = byte_fill_value
          end where

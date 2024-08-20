@@ -132,7 +132,7 @@ subroutine driver_for_fuliou(nlm,tsi,theta, &
    ! bands_fuliou_lw = [4.54,5.26,5.88,7.14,8.,9.09,10.2,12.5,14.9,18.5,25.,35.7,10000.]
 
    ! Assign missing values input variables
-   do k=1,4
+   do k = 1, 4
       fo(k)%exist      = .false. ! I think this is the only one that is actually needed
       fo(k)%fuwn       =-999.
       fo(k)%fdwn       =-999.
@@ -275,7 +275,7 @@ subroutine driver_for_fuliou(nlm,tsi,theta, &
       fi%fc(1)%dpi%ldpi = .false.
       fi%fc(1)%novl     =   nlayers
       fi%fc(1)%cldfrac  = 1.00000 ! Cloud Fraction (0-1)
-      do i=i,nlayers
+      do i = i, nlayers
 
           FI%VD%cldpres(1, 1,i) = pxP(hctopID(i))
           FI%VD%cldpres(2, 1,i) = pxP(hcbaseID(i))
@@ -297,7 +297,7 @@ subroutine driver_for_fuliou(nlm,tsi,theta, &
    fi%fc(1)%cldfrac  = 1.00000 ! Cloud Fraction (0-1)
 
    ! Cloud top and bottom pressure
-   do i=1,nlayers
+   do i = 1, nlayers
       FI%VD%cldpres(1,1,i) = pxP(hctopID(i)) ! top pressure (hPa)
       FI%VD%cldpres(2,1,i) = pxP(hcbaseID(i)) ! bottom pressure (hPa)
       fi%fc(1)%rphase(i)   =  phaseflag(i) ! Cloud Phase 1=Water 2=Ice

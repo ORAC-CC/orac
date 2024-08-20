@@ -10,7 +10,8 @@ $(OBJS)/cloud_emis.o: $(OBJS)/channel_structures.o $(OBJS)/ecmwf.o \
         $(OBJS)/preproc_structures.o
 $(OBJS)/cloud_typing_pavolonis.o: $(OBJS)/channel_structures.o $(OBJS)/ecmwf.o \
         $(OBJS)/imager_structures.o $(OBJS)/neural_net_preproc.o \
-        $(OBJS)/surface_structures.o pavolonis_fill_coefficients.inc
+        $(OBJS)/seviri_neural_net_preproc.o $(OBJS)/surface_structures.o \
+        pavolonis_fill_coefficients.inc
 $(OBJS)/correct_for_ice_snow.o: $(OBJS)/channel_structures.o \
         $(OBJS)/imager_structures.o $(OBJS)/nsidc_nise.o \
         $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o \
@@ -112,6 +113,8 @@ $(OBJS)/setup.o: $(OBJS)/calender.o $(OBJS)/channel_structures.o \
         $(OBJS)/read_avhrr.o $(OBJS)/read_himawari.o $(OBJS)/read_modis.o \
         $(OBJS)/read_seviri.o $(OBJS)/read_slstr.o $(OBJS)/read_viirs_Iband.o \
         $(OBJS)/read_viirs_Mband.o
+$(OBJS)/seviri_neural_net_preproc.o: $(OBJS)/channel_structures.o \
+        $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o
 $(OBJS)/surface_emissivity.o: $(OBJS)/channel_structures.o \
         $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o \
         $(OBJS)/preproc_structures.o $(OBJS)/read_camel_emissivity.o \

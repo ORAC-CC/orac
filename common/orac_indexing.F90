@@ -167,30 +167,30 @@ subroutine make_bitmask_from_terms(ind, bitmask)
    bitmask = 0
 
    if (associated(ind%ss_terms)) then
-      do i=1,ind%NSolar
+      do i = 1, ind%NSolar
          ii = ind%YSolar(i)
          if (ind%ss_terms(i)) bitmask(ii) = ibset(bitmask(ii), 0)
       end do
    end if
 
    if (associated(ind%rho_terms)) then
-      do i=1,ind%NSolar
+      do i = 1, ind%NSolar
          ii = ind%YSolar(i)
-         do j=1,MaxRho_XX
+         do j = 1, MaxRho_XX
             if (ind%rho_terms(i,j)) bitmask(ii) = ibset(bitmask(ii), j)
          end do
       end do
    end if
 
    if (associated(ind%alb_terms)) then
-      do i=1,ind%NSolar
+      do i = 1, ind%NSolar
          ii = ind%YSolar(i)
          if (ind%alb_terms(i)) bitmask(ii) = ibset(bitmask(ii), MaxRho_XX+1)
       end do
    end if
 
    if (associated(ind%cee_terms)) then
-      do i=1,ind%NThermal
+      do i = 1, ind%NThermal
          ii = ind%YThermal(i)
          if (ind%cee_terms(i)) bitmask(ii) = ibset(bitmask(ii), MaxRho_XX+2)
       end do
@@ -208,19 +208,19 @@ subroutine set_terms_from_bitmask(bitmask, ind)
 
    integer :: i, j, ii
 
-   do i=1,ind%NSolar
+   do i = 1, ind%NSolar
       ii = ind%YSolar(i)
 
       ind%ss_terms(i) = btest(bitmask(ii), 0)
 
-      do j=1,MaxRho_XX
+      do j = 1, MaxRho_XX
          ind%rho_terms(i,j) = btest(bitmask(ii), j)
       end do
 
       ind%alb_terms(i) = btest(bitmask(ii), MaxRho_XX+1)
    end do
 
-   do i=1,ind%NThermal
+   do i = 1, ind%NThermal
       ii = ind%YThermal(i)
 
       ind%cee_terms(i) = btest(bitmask(ii), MaxRho_XX+2)

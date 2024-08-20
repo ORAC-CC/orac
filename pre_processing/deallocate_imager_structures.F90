@@ -36,8 +36,9 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine deallocate_imager_structures(imager_geolocation,imager_angles, &
-     imager_flags,imager_time,imager_measurements,imager_pavolonis,imager_cloud)
+subroutine deallocate_imager_structures(imager_geolocation, imager_angles, &
+     imager_flags, imager_time, imager_measurements, imager_pavolonis, &
+     imager_cloud)
 
    use preproc_constants_m
 
@@ -75,7 +76,23 @@ subroutine deallocate_imager_structures(imager_geolocation,imager_angles, &
    deallocate(imager_pavolonis%cphcot)
    deallocate(imager_pavolonis%cirrus_quality)
    deallocate(imager_pavolonis%emis_ch3b)
+
+#ifdef INCLUDE_SEVIRI_NEURALNET
+   if (associated(imager_pavolonis%ctp_fg)) &
+        deallocate(imager_pavolonis%ctp_fg)
+   if (associated(imager_pavolonis%ctp_fg_unc)) &
+        deallocate(imager_pavolonis%ctp_fg_unc)
+
+   if (associated(imager_pavolonis%mlay_prob)) &
+        deallocate(imager_pavolonis%mlay_prob)
+   if (associated(imager_pavolonis%mlay_flag)) &
+        deallocate(imager_pavolonis%mlay_flag)
+   if (associated(imager_pavolonis%mlay_unc)) &
+        deallocate(imager_pavolonis%mlay_unc)
+#endif
+
    deallocate(imager_measurements%cal_gain)
+
 #ifdef INCLUDE_SATWX
    deallocate(imager_cloud%cloud_emis)
    deallocate(imager_cloud%trop_p)

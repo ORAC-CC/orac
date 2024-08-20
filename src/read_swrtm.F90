@@ -119,7 +119,6 @@ subroutine Read_SwRTM(Ctrl, RTM)
       stop error_stop_code
    end if
    instname = trim(adjustl(sensor))//'-'//trim(adjustl(platform))
-
    if (trim(adjustl(instname)) /= trim(adjustl(Ctrl%InstName))) then
       write(*,*) 'ERROR: Read_SwRTM(): Instrument in SWRTM header inconsistent: ', &
                  trim(adjustl(instname)), ' /= ', trim(adjustl(Ctrl%InstName))

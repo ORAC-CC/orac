@@ -610,8 +610,8 @@ subroutine orac(mytask,ntasks,lower_bound,upper_bound,drifile)
       ! Form a list of all the views available in this file
       ! (forseeing the eventual desire to process arbitrary views)
       m = 0
-      do i=1,MaxNumViews
-         do j=1,Ctrl%Ind%Ny
+      do i = 1, MaxNumViews
+         do j = 1, Ctrl%Ind%Ny
             if (Ctrl%Ind%View_Id(j) == i) then
                m = m + 1
                output_data_1%view_id(m) = i

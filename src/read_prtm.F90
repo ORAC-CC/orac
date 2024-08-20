@@ -62,14 +62,14 @@ subroutine Read_PRTM(Ctrl, RTM)
    ! Read data into arrays
    allocate(dummy1d(RTM%Grid%NLon))
    call ncdf_read_array(ncid, "lon_rtm", dummy1d)
-   do i=1,RTM%Grid%NLon
+   do i = 1, RTM%Grid%NLon
       RTM%lon(i,:) = dummy1d(i)
    end do
    deallocate(dummy1d)
 
    allocate(dummy1d(RTM%Grid%NLat))
    call ncdf_read_array(ncid, "lat_rtm", dummy1d)
-   do i=1,RTM%Grid%NLat
+   do i = 1, RTM%Grid%NLat
       RTM%lat(:,i) = dummy1d(i)
    end do
    deallocate(dummy1d)

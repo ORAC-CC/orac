@@ -11,9 +11,9 @@
 ! Name Type In/Out/Both Description
 !
 ! History:
-! xx/xx/xxxx, MJ: Original version
-! 05/01/2012, CP: Add in reflectances and brightness temperature
-! 15/01/2012, CP: Changed how offset was applied
+! xxxx/xx/xx, MJ: Original version
+! 2012/01/05, CP: Add in reflectances and brightness temperature
+! 2012/01/15, CP: Changed how offset was applied
 ! 2015/07/16, GM: Major cleanup.
 ! 2015/10/07, OS: Renamed to *_pp.F90, as we have to avoid duplicate subroutine
 !    names for wrapper
@@ -107,7 +107,7 @@ if (indexing%flags%do_swansea) then
    ! swansea_s_ap, swansea_s_fg
    !----------------------------------------------------------------------------
    i_rho = 0
-   do k = 1,indexing%NSolar
+   do k = 1, indexing%NSolar
       if (indexing%ss_terms(k)) then
          i_rho = i_rho + 1
 
