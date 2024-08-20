@@ -1,22 +1,22 @@
-{% set version = "13.1" %}
-{% set build = 2 %}
+{% set version = "1.0" %}
+{% set build = 0 %}
 
 {% set mpi = mpi or 'nompi' %}
 
 package:
-  name: rttov
+  name: seviri_ml
   version: {{ version }}
 
 source:
-  # Can't use this as the contents change with each download
-  #url: https://www.nwpsaf.eu/site/user/acpovey/?profiletab=downloadtab&fn=download&fname=RTTOV%20v12
-  url: http://eodg.atm.ox.ac.uk/user/povey/rttov{{ version|replace('.','') }}.tar.xz
-  sha256: f3bec1ca3ba952bc49e19d851144f9d51126bfe59f473be4992eac0b3366dbb2
-  patches:
-    - conda.patch
-    - arch.patch
-    - loop.patch
-    - tests.patch
+  - git_url: https://github.com/danielphilipp/seviri_ml
+    patches:
+      - make.patch
+      - tensor_import.patch
+      - test.patch
+      - module.patch
+  - path: __init__.py
+  - path: setup.py
+  - path: run_test.sh
 
 build:
   number: {{ build }}
@@ -42,48 +42,52 @@ build:
   {% endif %}
 
   run_exports:
-    - {{ pin_subpackage('rttov', max_pin='x.x') }} {{ build_pin }}
+    - {{ pin_subpackage('seviri_ml', max_pin='x.x') }}
 
 requirements:
   build:
     - {{ compiler('c') }}
     - {{ compiler('fortran') }}
     - python
-    - numpy
     - make
-    - perl
   host:
+    - {{ mpi }}  # [mpi != 'nompi']
     - python
     - numpy
-    # need to list hdf5 and libnetcdf twice to get version pinning from
-    # conda_build_config and build pinning from {{ mpi_prefix }}
-    - {{ mpi }} # [mpi != 'nompi']
-    - hdf5
-    - hdf5 * {{ mpi_prefix }}_*
     - libnetcdf
     - libnetcdf * {{ mpi_prefix }}_*
     - netcdf-fortran
     - netcdf-fortran * {{ mpi_prefix }}_*
     - libxcrypt
   run:
+    - {{ mpi }}  # [mpi != 'nompi']
     - python
     - {{ pin_compatible('numpy') }}
-    - {{ mpi }} # [mpi != 'nompi']
-    - hdf5 * {{ mpi_prefix }}_*
     - libnetcdf * {{ mpi_prefix }}_*
     - netcdf-fortran * {{ mpi_prefix }}_*
+    - dask
+    - joblib
+    - scikit-learn
+    - scipy
+    - tensorflow >=2.4.1,<2.13.0
 
 test:
+  source_files:
+    - test/py_test.py
+    - test/seviri_ml_test_201907011200.nc
   requires:
-    - perl
-  script_env:
-    - RTTOV_FILES
+    - cartopy
+    - hdf5
+    - matplotlib
+    - netcdf4
+    - xarray
 
 about:
-  home: https://www.nwpsaf.eu/site/software/rttov/
-  license: PROPRIETARY
-  summary: 'A very fast radiative transfer model for spectrometers and interferometers'
+  home: https://github.com/danielphilipp/seviri_ml
+  license: CC
+  summary: 'Machine learning module to derive cloud properties from SEVIRI'
 
 extra:
   recipe-maintainers:
     - orac_cc
+    - adamcpovey

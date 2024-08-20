@@ -1,0 +1,146 @@
+Use Python 3 syntax for importing routines within a module
+diff --git a/helperfuncs.py b/helperfuncs.py
+--- a/helperfuncs.py
++++ b/helperfuncs.py
+@@ -3,14 +3,14 @@
+ import logging
+ import shutil
+ import os
+-import readdriver
+-from definitions import CMACPHVersion1Constants
+-from definitions import CMACPHVersion2Constants
+-from definitions import CMACPHVersion3Constants
+-from definitions import CTPVersion3Constants
+-from definitions import CTTVersion3Constants
+-from definitions import CBHVersion3Constants
+-from definitions import MLAYVersion3Constants
++from . import readdriver
++from .definitions import (CMACPHVersion1Constants,
++                          CMACPHVersion2Constants,
++                          CMACPHVersion3Constants,
++                          CTPVersion3Constants,
++                          CTTVersion3Constants,
++                          CBHVersion3Constants,
++                          MLAYVersion3Constants)
+ 
+ fmt = '%(levelname)s : %(filename)s : %(message)s'
+ logger = logging.getLogger(__name__)
+diff --git a/neuralnet.py b/neuralnet.py
+--- a/neuralnet.py
++++ b/neuralnet.py
+@@ -18,7 +18,7 @@
+ import os
+ import joblib
+ import warnings
+-import helperfuncs as hf
++from . import helperfuncs as hf
+ import logging
+ 
+ fmt = '%(levelname)s : %(filename)s : %(message)s'
+diff --git a/prediction_funcs.py b/prediction_funcs.py
+--- a/prediction_funcs.py
++++ b/prediction_funcs.py
+@@ -8,8 +8,8 @@
+ import time
+ import os
+ import logging
+-import helperfuncs as hf
+-import seviri_ml_core
++from . import helperfuncs as hf
++from . import seviri_ml_core
+ 
+ fmt = '%(levelname)s : %(filename)s : %(message)s'
+ logger = logging.getLogger(__name__)
+diff --git a/readdriver.py b/readdriver.py
+--- a/readdriver.py
++++ b/readdriver.py
+@@ -2,10 +2,10 @@
+ 
+ import os
+ import pathlib
+-from definitions import MANDATORY_OPTS
+-from definitions import TRUE_OPTS, FALSE_OPTS
+-from definitions import (ModelSetupCMA, ModelSetupCPH, ModelSetupCTP,
+-                         ModelSetupMLAY, ModelSetupCTT, ModelSetupCBH)
++from .definitions import (MANDATORY_OPTS,
++                          TRUE_OPTS, FALSE_OPTS,
++                          ModelSetupCMA, ModelSetupCPH, ModelSetupCTP,
++                          ModelSetupMLAY, ModelSetupCTT, ModelSetupCBH)
+ 
+ 
+ def _set_default_filepath():
+diff --git a/seviri_ml_core.py b/seviri_ml_core.py
+--- a/seviri_ml_core.py
++++ b/seviri_ml_core.py
+@@ -1,10 +1,10 @@
+-import helperfuncs as hf
++from . import helperfuncs as hf
+ import numpy as np
+-from definitions import (SREAL_FILL_VALUE, BYTE_FILL_VALUE, SREAL,
++from .definitions import (SREAL_FILL_VALUE, BYTE_FILL_VALUE, SREAL,
+                          BYTE, IS_CLEAR, IS_CLOUD, IS_WATER, IS_ICE,
+                          IS_MLAY, IS_SLAY)
+-from nasa_impf_correction import correct_nasa_impf
+-import neuralnet
++from .nasa_impf_correction import correct_nasa_impf
++from . import neuralnet
+ import logging
+ 
+ fmt = '%(levelname)s : %(filename)s : %(message)s'
+diff --git a/py2c.c b/py2c.c
+--- a/py2c.c
++++ b/py2c.c
+@@ -49,7 +49,7 @@ void py_ann_mlay(void *vis006, void *vis008, void *nir016, void *ir039,
+     PyObject *res;
+ 
+     // define and import Python module
+-    pModule = PyImport_ImportModule("prediction_funcs");
++    pModule = PyImport_ImportModule("seviri_ml.prediction_funcs");
+ 
+     if (pModule != NULL){
+         // define function name
+@@ -201,7 +201,7 @@ void py_ann_ctp(void *vis006, void *vis008, void *nir016, void *ir039,
+     PyObject *solzenpy, *satzenpy, *cldmaskpy;
+     PyObject *res;
+    
+-    pModule = PyImport_ImportModule("prediction_funcs");
++    pModule = PyImport_ImportModule("seviri_ml.prediction_funcs");
+ 
+     if (pModule != NULL){
+         // define function name
+@@ -347,7 +347,7 @@ void py_ann_ctt(void *vis006, void *vis008, void *nir016, void *ir039,
+     PyObject *solzenpy, *satzenpy, *cldmaskpy;
+     PyObject *res;
+ 
+-    pModule = PyImport_ImportModule("prediction_funcs");
++    pModule = PyImport_ImportModule("seviri_ml.prediction_funcs");
+ 
+     if (pModule != NULL){
+         // define function name
+@@ -481,7 +481,7 @@ void py_ann_cbh(void *ir108, void *ir120, void *ir134, void *solzen, void *satze
+     PyObject *solzenpy, *satzenpy, *cldmaskpy;
+     PyObject *res;
+ 
+-   pModule = PyImport_ImportModule("prediction_funcs");
++   pModule = PyImport_ImportModule("seviri_ml.prediction_funcs");
+ 
+     if (pModule != NULL){
+         // define function name
+@@ -601,7 +601,7 @@ void py_ann_cma(void *vis006, void *vis008, void *nir016, void *ir039,
+     PyObject *res;
+               
+     // define and import Python module 
+-    pModule = PyImport_ImportModule("prediction_funcs");
++    pModule = PyImport_ImportModule("seviri_ml.prediction_funcs");
+ 
+     if (pModule != NULL){
+         // define function name
+@@ -752,7 +752,7 @@ void py_ann_cph(void *vis006, void *vis008, void *nir016, void *ir039,
+     PyObject *res;
+ 
+     // define and import Python module
+-    pModule = PyImport_ImportModule("prediction_funcs");
++    pModule = PyImport_ImportModule("seviri_ml.prediction_funcs");
+ 
+     if (pModule != NULL){
+         // define function name

@@ -1,0 +1,76 @@
+The test environment doesn't compile
+diff --git a/py2c.h b/py2c.h
+--- a/py2c.h
++++ b/py2c.h
+@@ -2,24 +2,11 @@
+ #ifndef PY2C_H
+ #define PY2C_H
+ 
+-#if PY_MAJOR_VERSION >=3
+-int init_numpy()
+-{
+-    if(PyArray_API == NULL)
+-    {
+-        import_array();
+-    }
+-}
++#if(PY_MAJOR_VERSION >=3)
++int init_numpy();
+ #else
+-void init_numpy()
+-{
+-    if(PyArray_API == NULL)
+-    {
+-        import_array();
+-    }
+-}
++void init_numpy();
+ #endif
+-
+ void py_ann_mlay(void *vis006, void *vis008, void *nir016, void *ir039,
+                     void *ir062, void *ir073, void *ir087, void *ir108,
+                     void *ir120, void *ir134, void *lsm, void *skt,
+diff --git a/py2c.c b/py2c.c
+--- a/py2c.c
++++ b/py2c.c
+@@ -9,9 +9,27 @@
+ #include <Python.h>
+ #include <stdlib.h>
+ #include <arrayobject.h>
+-#include <stdbool.h>
+ #include <py2c.h>
+ 
++#if(PY_MAJOR_VERSION >=3)
++int init_numpy()
++{
++    if(PyArray_API == NULL)
++    {
++        import_array1(0);
++    }
++    return 0;
++}
++#else
++void init_numpy()
++{
++    if(PyArray_API == NULL)
++    {
++        import_array();
++    }
++}
++#endif
++
+ 
+ void py_ann_mlay(void *vis006, void *vis008, void *nir016, void *ir039,
+                     void *ir062, void *ir073, void *ir087, void *ir108,
+diff --git a/test/py2c.h b/test/py2c.h
+--- a/test/c_test.c
++++ b/test/c_test.c
+@@ -28,7 +28,7 @@ int main() {
+     int nx = NX, ny = NY;
+     int retval;
+     bool undo_true_refl=false;
+-    float meanval;
++    float meanval=0.0;
+ 
+     /* Open netCDF file */
+     if ((retval = nc_open(FILE_NAME, NC_NOWRITE, &ncid)))

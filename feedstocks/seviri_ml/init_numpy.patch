@@ -1,0 +1,61 @@
+Prevent double definition of init_numpy() by moving out of header
+diff --git a/py2c.c b/py2c.c
+--- a/py2c.c
++++ b/py2c.c
+@@ -9,9 +9,27 @@
+ #include <Python.h>
+ #include <stdlib.h>
+ #include <arrayobject.h>
+-#include <stdbool.h>
+ #include <py2c.h>
+ 
++#if(PY_MAJOR_VERSION >=3)
++int init_numpy()
++{
++    if(PyArray_API == NULL)
++    {
++        import_array1(0);
++    }
++    return 0;
++}
++#else
++void init_numpy()
++{
++    if(PyArray_API == NULL)
++    {
++        import_array();
++    }
++}
++#endif
++
+ 
+ void py_ann_mlay(void *vis006, void *vis008, void *nir016, void *ir039,
+                     void *ir062, void *ir073, void *ir087, void *ir108,
+--- a/py2c.h
++++ b/py2c.h
+@@ -2,22 +2,10 @@
+ #ifndef PY2C_H
+ #define PY2C_H
+ 
+-#if PY_MAJOR_VERSION >=3
+-int init_numpy()
+-{
+-    if(PyArray_API == NULL)
+-    {
+-        import_array();
+-    }
+-}
++#if(PY_MAJOR_VERSION >=3)
++int init_numpy();
+ #else
+-void init_numpy()
+-{
+-    if(PyArray_API == NULL)
+-    {
+-        import_array();
+-    }
+-}
++void init_numpy();
+ #endif
+ 
+ void py_ann_mlay(void *vis006, void *vis008, void *nir016, void *ir039,
