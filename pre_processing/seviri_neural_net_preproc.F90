@@ -68,12 +68,12 @@ subroutine cma_cph_seviri(cview, imager_flags, imager_angles, &
           skt(imager_geolocation%startx:imager_geolocation%endx, &
               1:imager_geolocation%ny)
      character(len=*),             intent(in)     :: platform
-     logical,                     intent(in)     :: do_nasa
-     logical,                     intent(in)    :: verbose
+     logical,                      intent(in)     :: do_nasa
+     logical,                      intent(in)     :: verbose
 
      integer(kind=1) :: msg_index
      logical(kind=1) :: undo_true_reflectances = .false.
-     
+
      ! get Meteosat number from platform string
      call get_msg_idx(msg_index, platform, do_nasa)
 #ifdef INCLUDE_SEVIRI_NEURALNET
@@ -159,12 +159,12 @@ subroutine ctp_fg_seviri(cview, imager_flags, imager_angles, &
           skt(imager_geolocation%startx:imager_geolocation%endx, &
               1:imager_geolocation%ny)
      character(len=*),             intent(in)     :: platform
-     logical,                     intent(in)     :: do_nasa
-     logical,                     intent(in)    :: verbose
+     logical,                      intent(in)     :: do_nasa
+     logical,                      intent(in)     :: verbose
 
      integer(kind=1) :: msg_index
      logical(kind=1) :: undo_true_reflectances = .false.
-     
+
      ! get Meteosat number from platform string
      call get_msg_idx(msg_index, platform, do_nasa)
 
@@ -195,7 +195,7 @@ subroutine ctp_fg_seviri(cview, imager_flags, imager_angles, &
 
      ! convert standard deviation to variance
      where(imager_pavolonis%ctp_fg_unc(:,:,cview) .ne. sreal_fill_value)
-         imager_pavolonis%ctp_fg_unc(:,:,cview) = & 
+         imager_pavolonis%ctp_fg_unc(:,:,cview) = &
          imager_pavolonis%ctp_fg_unc(:,:,cview) * imager_pavolonis%ctp_fg_unc(:,:,cview)
      end where
 #else
@@ -235,12 +235,12 @@ subroutine mlay_seviri(cview, imager_flags, imager_angles, &
           skt(imager_geolocation%startx:imager_geolocation%endx, &
               1:imager_geolocation%ny)
      character(len=*),             intent(in)     :: platform
-     logical,                     intent(in)     :: do_nasa
-     logical,                     intent(in)    :: verbose
+     logical,                      intent(in)     :: do_nasa
+     logical,                      intent(in)     :: verbose
 
      integer(kind=1) :: msg_index
      logical(kind=1) :: undo_true_reflectances = .false.
-     
+
      ! get Meteosat number from platform string
      call get_msg_idx(msg_index, platform, do_nasa)
 

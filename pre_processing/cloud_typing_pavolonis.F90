@@ -469,21 +469,21 @@ subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
             end select
          end do
          ml_channels = (/mlch1, mlch2, mlch3, mlch4, mlch5, mlch6, mlch7, mlch9, mlch10, mlch11/)
-         
-         if (.not. (mlch1 .ne. 0 .and. mlch2 .ne. 0 .and. mlch3 .ne. 0 .and. mlch4 .ne. 0 &
-             .and. mlch5 .ne. 0 .and. mlch6 .ne. 0 .and. mlch7 .ne. 0 .and. mlch9 .ne. 0 &
-             .and. mlch10 .ne. 0 .and. mlch11 .ne. 0)) then
+
+         if (mlch1 == 0 .or. mlch2 == 0 .or. mlch3 == 0 .or. mlch4 == 0 &
+             .or. mlch5 == 0 .or. mlch6 == 0 .or. mlch7 == 0 .or. mlch9 == 0 &
+             .or. mlch10 == 0 .or. mlch11 == 0) then
             write(*,*) 'WARNING: Not using correct channels for SEVIRI-specific neural net!', &
                        ' Instead running general ANN!'
             use_seviri_ann_cma_cph = .false.
             use_seviri_ann_ctp_fg = .false.
             use_seviri_ann_mlay = .false.
          end if
-      
+
       end if
-         
-         
-      
+
+
+
 
    ! do not apply NOAA19 mimic when using SEVIRI neural network
    if (trim(adjustl(sensor)) .eq. 'SEVIRI' .and. use_seviri_ann_cma_cph) then
@@ -764,8 +764,8 @@ subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
          ch3 = 99
       end if
 
-      if (.not. (ch1 .ne. 0 .and. ch2 .ne. 0 .and. (ch3 .ne. 0 .or. ch4 .ne. 0) &
-          .and. ch5 .ne. 0 .and. ch6 .ne. 0)) then
+      if (ch1 == 0 .or. ch2 == 0 .or. (ch3 == 0 .and. ch4 == 0) &
+          .or. ch5 == 0 .or. ch6 == 0) then
          write(*,*) 'WARNING: Pavolonis cloud typing skipped due to an ' // &
               'insufficient channel selection.'
          cycle v_loop
@@ -869,8 +869,8 @@ subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
       i_loop2: do  i = imager_geolocation%startx, imager_geolocation%endx
          j_loop2: do j = 1, imager_geolocation%ny
 
-            if (imager_pavolonis%cldtype(i,j,cview) .ne. CIRRUS_TYPE .and. &
-                imager_pavolonis%cldtype(i,j,cview) .ne. OVERLAP_TYPE) cycle
+            if (imager_pavolonis%cldtype(i,j,cview) /= CIRRUS_TYPE .and. &
+                imager_pavolonis%cldtype(i,j,cview) /= OVERLAP_TYPE) cycle
 
             ! coszen = cosine of the solar zenith angle
             coszen = cos(imager_angles%satzen(i,j,cview) * d2r)
@@ -1114,9 +1114,9 @@ subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
    ! Check for sunglint and save result:
 
    ! In PATMOS sunglint calculation:
-   if (imager_angles%solzen(i,j,cview) .ne. sreal_fill_value .and. &
-       imager_angles%satzen(i,j,cview) .ne. sreal_fill_value .and. &
-       imager_angles%RELAZI(i,j,cview) .ne. sreal_fill_value) then
+   if (imager_angles%solzen(i,j,cview) /= sreal_fill_value .and. &
+       imager_angles%satzen(i,j,cview) /= sreal_fill_value .and. &
+       imager_angles%RELAZI(i,j,cview) /= sreal_fill_value) then
 
       glint_angle = cos(imager_angles%solzen(i,j,cview) * d2r) * &
                     cos(imager_angles%satzen(i,j,cview) * d2r) + &
@@ -1282,8 +1282,8 @@ subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
       else
          imager_pavolonis%cldtype(i,j,cview) = CLEAR_TYPE
          imager_pavolonis%ANN_PHASE(i,j,cview) = CLEAR_TYPE
-         if (trim(adjustl(sensor)) .ne. 'AATSR' .and. &
-             trim(adjustl(sensor)) .ne. 'ATSR2') return
+         if (trim(adjustl(sensor)) /= 'AATSR' .and. &
+             trim(adjustl(sensor)) /= 'ATSR2') return
       end if
    end if
 
