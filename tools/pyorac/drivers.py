@@ -304,7 +304,7 @@ USE_SWANSEA_CLIMATOLOGY={args.swansea}"""
         if part == "pre" and filename != "":
             try:
                 with open(filename, "r") as extra:
-                    driver += "\n" + extra.read()
+                    driver += "\n" + extra.read().rstrip('\n')
             except IOError:
                 raise FileMissing('extra_lines_file', filename)
     for sec, key, val in args.additional:
@@ -312,8 +312,7 @@ USE_SWANSEA_CLIMATOLOGY={args.swansea}"""
             driver += f"\n{key}={val}"
 
     if args.File.predef and not args.no_predef:
-        driver += f"""
-USE_PREDEF_LSM=False
+        driver += f"""\nUSE_PREDEF_LSM=False
 EXT_LSM_PATH={args.prelsm_file}
 USE_PREDEF_GEO=False
 EXT_GEO_PATH={args.pregeo_file}"""
