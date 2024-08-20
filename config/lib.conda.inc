@@ -49,3 +49,8 @@ INC  += -DINCLUDE_HIMAWARI_SUPPORT
 # Uncomment if SEVIRI support is desired.
 LIBS += -lseviri_util
 INC  += -DINCLUDE_SEVIRI_SUPPORT
+
+# Uncomment if SEVIRI_ML support is desired.
+# Please modify Python -lpython3.X to your Python version.
+LIBS += -lsevann -lpython3.10
+INC  += -DINCLUDE_SEVIRI_NEURALNET
