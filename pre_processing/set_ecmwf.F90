@@ -386,8 +386,8 @@ subroutine determine_jasmin_filenames_era5(nwp_fnames, cyear, cmonth, cday, chou
     if (.not. f_tester) then
        !print*,"Standard ERA5 data not found, trying provisional ERA5"
        filebase = '/ecmwf-era5t_oper_an_'
-       
-       ml_dir = trim(adjustl(nwp_fnames%nwp_path(idx)))//'an_ml/'// &
+
+       ml_dir = trim(adjustl(nwp_fnames%nwp_path(idx)))//'/an_ml/'// &
              trim(adjustl(cyear))//'/'// &
              trim(adjustl(cmonth))//'/'// &
              trim(adjustl(cday))//trim(adjustl(filebase))//'ml_'// &
@@ -395,10 +395,10 @@ subroutine determine_jasmin_filenames_era5(nwp_fnames, cyear, cmonth, cday, chou
              trim(adjustl(cmonth))// &
              trim(adjustl(cday))// &
              trim(adjustl(chour))//'00.'
-       
+
        inquire(file=trim(adjustl(ml_dir))//'q.nc', exist=f_tester)
-       if (.not. f_tester) then 
-          print*,"ERROR: NWP data not found: ", trim(ml_dir)
+       if (.not. f_tester) then
+          print*,"ERROR: JASMIN NWP data not found: ", trim(ml_dir)
           stop
        end if
     end if
