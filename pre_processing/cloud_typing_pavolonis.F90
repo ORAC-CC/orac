@@ -295,8 +295,8 @@ subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
    logical,                     intent(in)    :: do_ironly
    logical,                     intent(inout) :: do_spectral_response_correction
    logical,                     intent(inout) :: use_seviri_ann_cma_cph
-   logical,                     intent(in)    :: use_seviri_ann_ctp_fg
-   logical,                     intent(in)    :: use_seviri_ann_mlay
+   logical,                     intent(inout) :: use_seviri_ann_ctp_fg
+   logical,                     intent(inout) :: use_seviri_ann_mlay
    logical,                     intent(in)    :: do_nasa
    logical,                     intent(in)    :: verbose
 
@@ -476,7 +476,8 @@ subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
             write(*,*) 'WARNING: Not using correct channels for SEVIRI-specific neural net!', &
                        ' Instead running general ANN!'
             use_seviri_ann_cma_cph = .false.
-            write(*,*) use_seviri_ann_cma_cph
+            use_seviri_ann_ctp_fg = .false.
+            use_seviri_ann_mlay = .false.
          end if
       
       end if
