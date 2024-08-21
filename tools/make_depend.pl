@@ -106,7 +106,7 @@ foreach my $source_file (@source_file_list) {
         die("Unable to open source file: $source_file");
     while (<FILE>) {
         /^\s*module\s+([^\s!]+)/i &&
-        ($module_to_mod_base{lc($1)} = $source_file) =~ s/\.($ext_regex_f90)$//;
+        ($module_to_mod_base{lc($1)} = $source_file) =~ s/\.($ext_regex_fxx)$//;
     }
     close(FILE);
 }
@@ -194,7 +194,7 @@ sub get_file_depencies {
 
         # If the module is local include it as a dependency
         foreach (@mod_bases) {
-            if ("$_.f90" ~~ @source_file_list or "$_.F90" ~~ @source_file_list) {
+            if ("$_.f" ~~ @source_file_list or "$_.f90" ~~ @source_file_list or "$_.F90" ~~ @source_file_list) {
                 s{.*/}{};
                 push(@dependencies, "$objects_path$_.o");
             }
