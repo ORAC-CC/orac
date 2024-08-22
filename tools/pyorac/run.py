@@ -282,7 +282,7 @@ def run_regression(in_file):
     from copy import copy
     from glob import iglob
     from pyorac.definitions import OracWarning
-    from pyorac.regression_tests import compare_orac_out
+    from pyorac.utils import compare_orac_out
     from warnings import warn
 
     regex = re.compile(r"_R(\d+)")

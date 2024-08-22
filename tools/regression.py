@@ -21,7 +21,7 @@ from pyorac.colour_print import colour_print
 from pyorac.definitions import (Acceptable, BadValue, COLOURING, FieldMissing,
                                 FileMissing, FileName, InconsistentDim,
                                 OracError, Regression, RoundingError)
-from pyorac.regression_tests import REGRESSION_TESTS
+from pyorac.processing_settings import REGRESSION_TESTS
 from pyorac.run import process_all, run_regression
 from pyorac.util import get_repository_revision, warning_format
 

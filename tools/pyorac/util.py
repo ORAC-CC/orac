@@ -130,6 +130,134 @@ def call_exe(args, exe, driver, values=None):
             raise OracError(str(err))
 
 
+def compare_nc_atts(dat0, dat1, filename, var):
+    """Report if the attributes of a NCDF file or variable have changed."""
+    from warnings import warn
+    from pyorac.definitions import FieldMissing, Regression
+    from pyorac.local_defaults import ATTS_TO_IGNORE
+
+    # Check if any attributes added/removed
+    atts = set(dat0.ncattrs()).symmetric_difference(dat1.ncattrs())
+    if atts:
+        warn(FieldMissing(filename, ', '.join(atts)), stacklevel=3)
+
+    # Check if any attributes changed
+    for key in dat0.ncattrs():
+        if key in atts:
+            continue
+
+        if (dat0.__dict__[key] != dat1.__dict__[key] and
+                key not in ATTS_TO_IGNORE):
+            warn(Regression(
+                filename, var + ', ' + key, 'warning',
+                'Changed attribute ({} vs {})'.format(
+                    dat0.__dict__[key], dat1.__dict__[key]
+                )
+            ), stacklevel=3)
+
+
+def compare_orac_out(file0, file1):
+    """Compare two NCDF files"""
+    import numpy as np
+    from warnings import warn
+    from pyorac.definitions import (Acceptable, FieldMissing, InconsistentDim,
+                                    OracWarning, Regression, RoundingError)
+    from pyorac.local_defaults import ATTS_TO_IGNORE
+
+    try:
+        from netCDF4 import Dataset
+    except ImportError:
+        warn('Skipping regression tests as netCDF4 unavailable',
+             OracWarning, stacklevel=2)
+        return
+
+    try:
+        # Open files
+        dat0 = Dataset(file0, 'r')
+        dat1 = Dataset(file1, 'r')
+
+        # Check if any dimensions added/removed
+        dims = set(dat0.dimensions.keys()).symmetric_difference(
+            dat1.dimensions.keys()
+        )
+        if dims:
+            # Not bothering to identify which file contains the errant field
+            warn(FieldMissing(file1, ', '.join(dims)), stacklevel=2)
+
+        # Check if any dimensions changed
+        for key in dat0.dimensions.keys():
+            if key in dims:
+                continue
+
+            if dat0.dimensions[key].size != dat1.dimensions[key].size:
+                warn(InconsistentDim(file1, key, dat0.dimensions[key].size,
+                                     dat1.dimensions[key].size),
+                     stacklevel=2)
+
+            # Check attributes
+            compare_nc_atts(dat0, dat1, file1, key)
+
+        # Check if any variables added/removed
+        variables = set(dat0.variables.keys()).symmetric_difference(
+            dat1.variables.keys()
+        )
+        if variables:
+            warn(FieldMissing(file1, ', '.join(variables)), stacklevel=2)
+
+        # Check if any variables changed
+        for key in dat0.variables.keys():
+            if key in variables:
+                continue
+
+            att0 = dat0.variables[key]
+            att1 = dat1.variables[key]
+
+            # Turn off masking, so completely NaN fields can be equal
+            att0.set_auto_mask(False)
+            att1.set_auto_mask(False)
+
+            compare_nc_atts(att0, att1, file1, key)
+
+            if att0.size != att1.size:
+                warn(InconsistentDim(file1, key, att0.size, att1.size), stacklevel=2)
+                continue
+
+            # Check if there has been any change
+            if not np.allclose(att0, att1, equal_nan=True, rtol=0, atol=0):
+                test = False
+
+                # For floats, check if variation is acceptable
+                if att0.dtype.kind == 'f':
+                    test = np.allclose(
+                        att0, att1, equal_nan=True, rtol=defaults.RTOL,
+                        atol=defaults.ATOL
+                    )
+                else:
+                    try:
+                        if isinstance(att0.scale_factor, np.floating):
+                            # Packed floats consider the scale factor
+                            test = np.allclose(
+                                att0, att1, equal_nan=True, rtol=defaults.RTOL,
+                                atol=max(att0.scale_factor, defaults.ATOL)
+                            )
+                    except AttributeError:
+                        # If there is no scale factor, treat as an integer
+                        pass
+
+                if test or key in defaults.VARS_TO_ACCEPT:
+                    warn(Acceptable(file1, key), stacklevel=2)
+                else:
+                    warn(RoundingError(file1, key), stacklevel=2)
+    except IOError:
+        pass
+
+    finally:
+        if 'dat0' in locals() or 'dat0' in globals():
+            dat0.close()
+        if 'dat1' in locals() or 'dat1' in globals():
+            dat1.close()
+
+
 def extract_orac_libraries(lib_dict=None):
     """Return list of libraries ORAC should link to."""
     from pyorac.local_defaults import ORAC_LIB

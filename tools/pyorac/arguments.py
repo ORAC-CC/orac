@@ -256,7 +256,7 @@ def args_cc4cl(parser):
 
 def args_regress(parser):
     """Define arguments for the regression test script."""
-    from pyorac.regression_tests import REGRESSION_TESTS
+    from pyorac.processing_settings import REGRESSION_TESTS
 
     reg = parser.add_argument_group('Keywords for ORAC regression tests')
     reg.add_argument('-B', '--benchmark', action='store_true',
