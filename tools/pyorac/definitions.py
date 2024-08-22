@@ -30,7 +30,7 @@ class OracError(Exception):
     pass
 
 
-class FileMissing(OracError):
+class FileMissing(OracError, FileNotFoundError):
     """Error when a required file could not be found."""
 
     def __init__(self, desc, filename):
@@ -40,7 +40,7 @@ class FileMissing(OracError):
         self.filename = filename
 
 
-class BadValue(OracError):
+class BadValue(OracError, ValueError):
     """Error when an out-of-range value is provided."""
 
     def __init__(self, variable, value):
