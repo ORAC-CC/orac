@@ -5,6 +5,7 @@
 """
 
 import numpy as np
+from cartopy.crs import PlateCarree
 
 
 class Mappable(object):
@@ -34,7 +35,6 @@ class Mappable(object):
     """
 
     def __init__(self, lat, lon, **kwargs):
-        from cartopy.crs import PlateCarree
 
         # Evaluate arguments
         central_longitude = kwargs.pop('central_longitude', 0.)
@@ -88,7 +88,6 @@ class Mappable(object):
 
     @central_longitude.setter
     def central_longitude(self, central_longitude):
-        from cartopy.crs import PlateCarree
 
         # Inform user of stupidity
         if len(self.lat.shape) == 1:
@@ -423,23 +422,21 @@ class SinGrid(object):
                 km. Used with resolution to determine half_n.
                 Default 6,378.137 km.
         """
-        from numpy import pi, cos, floor, ceil, arange, cumsum, \
-            insert
 
         if resolution is None:
             self.n_equator = int(n_equator)
             self.half_n = n_equator / 2.
         else:
-            self.half_n = ceil(2. * pi * radius / resolution) / 2.
+            self.half_n = np.ceil(2. * np.pi * radius / resolution) / 2.
             self.n_equator = int(self.half_n * 2)
 
         # Set up the 1D coordinate system
-        v = arange(self.half_n)
-        cos_phi = cos(pi * (v / self.half_n - 0.5))
-        self.min_u = floor(self.half_n * (1. - cos_phi)).astype("int32")
-        self.max_u = ceil(self.half_n * (1. + cos_phi)).astype("int32")
-        self.cumulative = insert(
-            cumsum(self.max_u - self.min_u + 1), 0, 0
+        v = np.arange(self.half_n)
+        cos_phi = np.cos(np.pi * (v / self.half_n - 0.5))
+        self.min_u = np.floor(self.half_n * (1. - cos_phi)).astype("int32")
+        self.max_u = np.ceil(self.half_n * (1. + cos_phi)).astype("int32")
+        self.cumulative = np.insert(
+            np.cumsum(self.max_u - self.min_u + 1), 0, 0
         )
         self.u0 = offset[0]
         self.v0 = offset[1]
@@ -454,23 +451,22 @@ class SinGrid(object):
                 floating point coordinates rather than rounding down
                 to ints, the default behaviour.
         """
-        from numpy import pi, radians, cos
 
-        phi = radians(lat)
-        lam = radians(lon)
+        phi = np.radians(lat)
+        lam = np.radians(lon)
         try:
             # Arrays
-            lam[lam >= pi] -= 2. * pi
-            lam[lam < -pi] += 2. * pi
+            lam[lam >= np.pi] -= 2. * np.pi
+            lam[lam < -np.pi] += 2. * np.pi
         except TypeError:
             # Scalars
-            if lam >= pi:
-                lam -= 2. * pi
-            elif lam < -pi:
-                lam += 2. * pi
+            if lam >= np.pi:
+                lam -= 2. * np.pi
+            elif lam < -np.pi:
+                lam += 2. * np.pi
 
-        u = self.half_n * (lam / pi * cos(phi) + 1.) + self.u0
-        v = self.half_n * (phi / pi + 0.5) + self.v0
+        u = self.half_n * (lam / np.pi * np.cos(phi) + 1.) + self.u0
+        v = self.half_n * (phi / np.pi + 0.5) + self.v0
 
         if floating:
             return u, v
@@ -483,12 +479,11 @@ class SinGrid(object):
 
     def to_rect(self, u, v):
         """Convert sinusoidal coordiantes into lat/lon, in degrees."""
-        from numpy import pi, degrees, cos
 
-        phi = ((v - self.v0) / self.half_n - 0.5) * pi
-        lam = ((u - self.u0) / self.half_n - 1.) * pi / cos(phi)
+        phi = ((v - self.v0) / self.half_n - 0.5) * np.pi
+        lam = ((u - self.u0) / self.half_n - 1.) * np.pi / np.cos(phi)
 
-        return degrees(phi), degrees(lam)
+        return np.degrees(phi), np.degrees(lam)
 
     def to_1d(self, u_s, v_s):
         """Convert integer u,v pairs into scalar coordinates."""

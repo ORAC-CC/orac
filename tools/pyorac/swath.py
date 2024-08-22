@@ -421,6 +421,7 @@ class Swath(Mappable):
 
     def set_cldflag(self, size=3, low_res=False, cld_limit=3):
         """GET's cloud clearing algorithm from ORAC 3.02."""
+        from cv2 import morphologyEx, MORPH_TOPHAT
         from scipy.signal import convolve2d
 
         self._cldflag = np.zeros(self.shape, dtype='int')
@@ -463,7 +464,6 @@ class Swath(Mappable):
 
             Top Hat is the difference between the input and the opening of the
             image. The opening is erode followed by dilate."""
-            from cv2 import morphologyEx, MORPH_TOPHAT
 
             # tmp = np.floor(255 * data)
             tmp = data.filled(0.)

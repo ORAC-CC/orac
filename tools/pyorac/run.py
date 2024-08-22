@@ -1,10 +1,12 @@
 """Routines to run an ORAC component."""
 import os
+import pyorac.arguments as oracarg
+import pyorac.definitions as defin
+import pyorac.local_defaults as defaults
 
+from copy import deepcopy
 from collections import OrderedDict
-from pyorac.arguments import (check_args_common, check_args_preproc,
-                              check_args_main, check_args_postproc,
-                              check_args_cc4cl)
+from glob import glob
 from pyorac.util import call_exe
 
 CLOBBER = OrderedDict([
@@ -17,9 +19,8 @@ CLOBBER = OrderedDict([
 def process_pre(args, log_path, dependency=None, tag='pre'):
     """Call sequence for pre processor"""
     from pyorac.drivers import build_preproc_driver
-    from pyorac.local_defaults import DIR_PERMISSIONS
 
-    args = check_args_preproc(args)
+    args = oracarg.check_args_preproc(args)
     driver = build_preproc_driver(args)
 
     # This must be called after building the driver as revision is unknown
@@ -28,7 +29,7 @@ def process_pre(args, log_path, dependency=None, tag='pre'):
                                     args.product_name)
 
     if not os.path.isdir(args.out_dir):
-        os.makedirs(args.out_dir, DIR_PERMISSIONS)
+        os.makedirs(args.out_dir, defaults.DIR_PERMISSIONS)
 
     out_file = os.path.join(args.out_dir, root_name + '.config.nc')
     if args.clobber >= CLOBBER['pre'] or not os.path.isfile(out_file):
@@ -54,20 +55,18 @@ def process_pre(args, log_path, dependency=None, tag='pre'):
 
 def process_main(args, log_path, tag='', dependency=None):
     """Call sequence for main processor"""
-    from pyorac.definitions import SETTINGS
     from pyorac.drivers import build_main_driver
-    from pyorac.local_defaults import DIR_PERMISSIONS
 
-    args = check_args_main(args)
+    args = oracarg.check_args_main(args)
     if args.multilayer is not None:
-        phase = SETTINGS[args.lut_name].label + "_" + SETTINGS[args.multilayer[0]].label
+        phase = defin.SETTINGS[args.lut_name].label + "_" + defin.SETTINGS[args.multilayer[0]].label
     else:
-        phase = SETTINGS[args.lut_name].label
+        phase = defin.SETTINGS[args.lut_name].label
     job_name = args.File.job_name(tag=phase + tag)
     root_name = args.File.root_name(args.revision)
 
     if not os.path.isdir(args.out_dir):
-        os.makedirs(args.out_dir, DIR_PERMISSIONS)
+        os.makedirs(args.out_dir, defaults.DIR_PERMISSIONS)
 
     out_file = os.path.join(args.out_dir, root_name + phase + '.primary.nc')
     if args.clobber >= CLOBBER['main'] or not os.path.isfile(out_file):
@@ -93,17 +92,14 @@ def process_main(args, log_path, tag='', dependency=None):
 
 def process_post(args, log_path, files=None, dependency=None, tag='post'):
     """Call sequence for post processor"""
-    from glob import glob
     from pyorac.drivers import build_postproc_driver
-    from pyorac.definitions import FileMissing, SETTINGS
-    from pyorac.local_defaults import DIR_PERMISSIONS
 
-    args = check_args_postproc(args)
+    args = oracarg.check_args_postproc(args)
     job_name = args.File.job_name(args.revision, tag)
     root_name = args.File.root_name(args.revision)
 
     if not os.path.isdir(args.out_dir):
-        os.makedirs(args.out_dir, DIR_PERMISSIONS)
+        os.makedirs(args.out_dir, defaults.DIR_PERMISSIONS)
 
     if files is None:
         # Find all primary files of requested phases in given input folders.
@@ -111,11 +107,11 @@ def process_post(args, log_path, files=None, dependency=None, tag='post'):
         for phs in set(args.lut_names):
             for fdr in args.in_dir:
                 files.extend(glob(os.path.join(
-                    fdr, root_name + SETTINGS[phs].name + '.primary.nc'
+                    fdr, root_name + defin.SETTINGS[phs].name + '.primary.nc'
                 )))
 
     if len(files) < 2:
-        raise FileMissing('sufficient processed files', args.target)
+        raise defin.FileMissing('sufficient processed files', args.target)
 
     out_file = os.path.join(
         args.out_dir, '.'.join(filter(
@@ -147,15 +143,12 @@ def process_post(args, log_path, files=None, dependency=None, tag='post'):
 
 def call_reformat(args, log_path, exe, out_file, dependency=None):
     """Reformat outputs using the script provided."""
-    from pyorac.local_defaults import BATCH, BATCH_VALUES
-
     from pyorac.colour_print import colour_print
-    from pyorac.definitions import OracError, COLOURING
     from subprocess import check_call, check_output, CalledProcessError
 
     # Optionally print command and driver file contents to StdOut
     if args.verbose or args.script_verbose or args.dry_run:
-        colour_print('{} {} 1 <<<'.format(exe, out_file), COLOURING['header'])
+        colour_print('{} {} 1 <<<'.format(exe, out_file), defin.COLOURING['header'])
 
     if args.dry_run:
         return -1
@@ -166,14 +159,14 @@ def call_reformat(args, log_path, exe, out_file, dependency=None):
         try:
             check_call([exe, out_file, "1"])
         except CalledProcessError as err:
-            raise OracError('{:s} failed with error code {:d}. {}'.format(
+            raise defin.OracError('{:s} failed with error code {:d}. {}'.format(
                 ' '.join(err.cmd), err.returncode, err.output
             ))
 
     else:
         try:
             # Collect batch settings from defaults, command line, and script
-            batch_params = BATCH_VALUES.copy()
+            batch_params = defaults.BATCH_VALUES.copy()
             batch_params['job_name'] = job_name
             batch_params['log_file'] = os.path.join(log_path, job_name + '.log')
             batch_params['err_file'] = os.path.join(log_path, job_name + '.err')
@@ -185,46 +178,43 @@ def call_reformat(args, log_path, exe, out_file, dependency=None):
             batch_params.update({key: val for key, val in args.batch_settings})
 
             # Form batch queue command and call batch queuing system
-            cmd = BATCH.list_batch(batch_params, exe=[exe, out_file, "1"])
+            cmd = defaults.BATCH.list_batch(batch_params, exe=[exe, out_file, "1"])
 
             if args.verbose or args.script_verbose:
-                colour_print(' '.join(cmd), COLOURING['header'])
+                colour_print(' '.join(cmd), defin.COLOURING['header'])
             out = check_output(cmd, universal_newlines=True)
 
             # Parse job ID # and return it to the caller
-            jid = BATCH.parse_out(out, 'ID')
+            jid = defaults.BATCH.parse_out(out, 'ID')
             return jid
         except CalledProcessError as err:
-            raise OracError('Failed to queue job ' + exe)
+            raise defin.OracError('Failed to queue job ' + exe)
         except SyntaxError as err:
-            raise OracError(str(err))
+            raise defin.OracError(str(err))
 
 
 def process_all(orig_args):
     """Run the ORAC pre, main, and post processors on a file."""
     from argparse import ArgumentParser
-    from copy import deepcopy
-    from pyorac.arguments import args_common, args_main
-    from pyorac.local_defaults import LOG_DIR, PRE_DIR
 
     # Generate main-processor-only parser
     pars = ArgumentParser()
-    args_common(pars)
-    args_main(pars)
+    oracarg.args_common(pars)
+    oracarg.args_main(pars)
     # We need one argument from args_cc4cl()
     pars.add_argument("--sub_dir", default="")
     compare = pars.parse_args("")
 
     # Copy input arguments as we'll need to fiddle with them
-    orig_args = check_args_common(orig_args)
-    orig_args = check_args_cc4cl(orig_args)
-    log_path = os.path.join(orig_args.out_dir, LOG_DIR)
+    orig_args = oracarg.check_args_common(orig_args)
+    orig_args = oracarg.check_args_cc4cl(orig_args)
+    log_path = os.path.join(orig_args.out_dir, defaults.LOG_DIR)
     args = deepcopy(orig_args)
 
     written_dirs = set()  # The folders we actually wrote to
 
     # Work out output filename
-    args.out_dir = os.path.join(orig_args.out_dir, PRE_DIR)
+    args.out_dir = os.path.join(orig_args.out_dir, defaults.PRE_DIR)
 
     jid_pre, _ = process_pre(args, log_path, tag="pre{}".format(args.label))
     if jid_pre is not None:
@@ -279,9 +269,6 @@ def run_regression(in_file):
     """Run the regression test on a set of ORAC files."""
     import re
 
-    from copy import copy
-    from glob import iglob
-    from pyorac.definitions import OracWarning
     from pyorac.utils import compare_orac_out
     from warnings import warn
 
@@ -289,20 +276,20 @@ def run_regression(in_file):
 
     this_revision = int(in_file.revision)
     for fdr in in_file.folders:
-        for this_file in iglob(os.path.join(
+        for this_file in glob(os.path.join(
                 fdr, "**", in_file.root_name() + "*nc"
         ), recursive=True):
             # Find previous file version
             old_revision = 0
             old_file = None
-            for filename in iglob(regex.sub("_R[0-9][0-9][0-9][0-9]", this_file)):
+            for filename in glob(regex.sub("_R[0-9][0-9][0-9][0-9]", this_file)):
                 rev = int(regex.search(filename).group(1))
                 if old_revision < rev < this_revision:
-                    old_revision = copy(rev)
-                    old_file = copy(filename)
+                    old_revision = deepcopy(rev)
+                    old_file = deepcopy(filename)
 
             if old_file is None:
-                warn("Could not locate previous file: " + this_file, OracWarning)
+                warn("Could not locate previous file: " + this_file, defin.OracWarning)
                 continue
 
             compare_orac_out(this_file, old_file)

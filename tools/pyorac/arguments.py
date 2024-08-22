@@ -4,11 +4,11 @@ import warnings
 
 import pyorac.local_defaults as defaults
 from pyorac.definitions import BadValue, FileMissing, OracWarning, SETTINGS
+from pyorac.util import str2bool
 
 
 def args_common(parser):
     """Define arguments common to all ORAC scripts."""
-    from pyorac.util import str2bool
 
     # Add boolean parsing function to register (type='bool', not type=bool)
     # http://stackoverflow.com/questions/15008758/parsing-boolean-values-with-argparse
@@ -134,7 +134,6 @@ def args_preproc(parser):
 def args_main(parser):
     """Define arguments for main processor script."""
     from pyorac.definitions import ALL_TYPES
-    from pyorac.util import str2bool
 
     if 'bool' not in parser._registries['type']:
         parser.register('type', 'bool', str2bool)

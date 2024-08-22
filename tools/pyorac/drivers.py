@@ -2,7 +2,9 @@
 import os
 import warnings
 
+from copy import copy
 from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
 from glob import glob
 from pyorac.definitions import OracError, OracWarning, FileMissing
 
@@ -510,8 +512,6 @@ def _date_back_search(fdr, date_in, pattern, interval):
     :str pattern: strftime format string used to parse filename.
     :str interval: Keyword of relativedelta indicating interval to step back.
     """
-    from copy import copy
-    from dateutil.relativedelta import relativedelta
 
     # Step forward one day, month, or year
     delta = relativedelta(**{interval: 1})

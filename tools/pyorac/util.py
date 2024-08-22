@@ -1,5 +1,6 @@
 """Utility functions for working with ORAC scripts and outputs."""
 import os
+import re
 
 
 def build_orac_library_path(lib_dict=None, lib_list=None):
@@ -261,7 +262,6 @@ def compare_orac_out(file0, file1):
 def extract_orac_libraries(lib_dict=None):
     """Return list of libraries ORAC should link to."""
     from pyorac.local_defaults import ORAC_LIB
-    from re import findall
 
     if lib_dict is None:
         try:
@@ -269,7 +269,7 @@ def extract_orac_libraries(lib_dict=None):
         except KeyError:
             lib_dict = read_orac_library_file(ORAC_LIB)
 
-    return [m[0] for m in findall(r"-L(.+?)(\s|$)", lib_dict["LIBS"])]
+    return [m[0] for m in re.findall(r"-L(.+?)(\s|$)", lib_dict["LIBS"])]
 
 
 def get_repository_revision():
@@ -294,7 +294,6 @@ def get_repository_revision():
 
 def read_orac_library_file(filename):
     """Read the ORAC library definitions into a Python dictionary"""
-    import re
 
     def fill_in_variables(text, libraries):
         """Replaces all $() with value from a dictionary or environment."""
@@ -306,13 +305,12 @@ def read_orac_library_file(filename):
 
             def replace_var(matchobj):
                 """Fetch name from dictionary."""
-                from os import environ
                 try:
                     name = matchobj.group(1)
                     try:
                         return dictionary[name]
                     except KeyError:
-                        return environ[name]
+                        return os.environ[name]
                 except (IndexError, KeyError):
                     return ""
 
