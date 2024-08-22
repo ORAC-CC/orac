@@ -336,7 +336,7 @@ Ctrl%FID%SAD_Dir            = "{sad_dir}"
 Ctrl%InstName               = "{sensor}"
 Ctrl%Ind%NAvail             = {nch}
 Ctrl%Ind%Channel_Proc_Flag  = {channels}
-Ctrl%LUTClass               = "{phase}"
+Ctrl%LUTClass               = "{particle}"
 Ctrl%Process_Cloudy_Only    = {cloudy}
 Ctrl%Process_Aerosol_Only   = {aerosoly}
 Ctrl%Verbose                = {verbose}
@@ -349,21 +349,21 @@ Ctrl%RS%Use_Full_BRDF       = {use_brdf}""".format(
         in_dir=args.in_dir[0],
         nch=len(args.available_channels),
         out_dir=args.out_dir,
-        phase=SETTINGS[args.phase].name,
-        sad_dir=SETTINGS[args.phase].sad_dir(args.sad_dirs, args.File),
+        phase=SETTINGS[args.lut_name].name,
+        sad_dir=SETTINGS[args.lut_name].sad_dir(args.sad_dirs, args.File),
         sensor=args.File.sensor + '-' + args.File.platform,
         use_brdf=not (args.lambertian or args.approach == 'AppAerSw'),
         verbose=args.verbose,
     )
     # If a netcdf LUT is being used then write NCDF LUT filename
-    if SETTINGS[args.phase].sad == 'netcdf':
+    if SETTINGS[args.lut_name].sad == 'netcdf':
         driver += """
 Ctrl%FID%NCDF_LUT_Filename = "{ncdf_lut_filename}"
-        """.format(ncdf_lut_filename=SETTINGS[args.phase].sad_filename(args.File))
+        """.format(ncdf_lut_filename=SETTINGS[args.lut_name].sad_filename(args.File))
 
     # Optional driver file lines
     if args.multilayer is not None:
-        if SETTINGS[args.phase].sad == 'netcdf':
+        if SETTINGS[args.lut_name].sad == 'netcdf':
             driver += """
 Ctrl%FID%NCDF_LUT_Filename2 = "{ncdf_lut_filename}"
         """.format(ncdf_lut_filename=SETTINGS[args.multilayer[0]].sad_filename(args.File))
@@ -417,7 +417,7 @@ def build_postproc_driver(args, files):
     try:
         multilayer = args.approach == 'AppCld2L'
     except AttributeError:
-        multilayer = any("_" in typ for typ in args.phases)
+        multilayer = any("_" in typ for typ in args.lut_names)
 
     # Form driver file
     driver = """{multilayer}

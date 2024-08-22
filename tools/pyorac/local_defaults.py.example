@@ -177,7 +177,7 @@ EXTRA_LINES = {
 
 # ===================== DEFAULT RETRIEVAL SETTINGS ========================
 """This section outlines the default arguments for retrievals as a function
-of the particle phase and instrument. Inexperienced users should not edit this.
+of the lut name and instrument. Inexperienced users should not edit this.
 
 The RETRIEVAL_SETTINGS dictionary is used by the Python scripts to interpret
 command line arguments. When the script is called with `-S tag`, the script
@@ -190,16 +190,16 @@ and a tag. C tags cloud retrievals, A aerosol retrievals, and J a joint aerosol-
 cloud run.
 
 For example, RETRIEVAL_SETTINGS["MODIS_C"] = [
-    '--use_channels 1 2 6 20 31 32 --phase WAT --ret_class ClsCldWat --approach AppCld1L --sub_dir cld',
-    '--use_channels 1 2 6 20 31 32 --phase ICE --ret_class ClsCldIce --approach AppCld1L --sub_dir cld',
-    '--use_channels 1 2 6 20 31 32 --phase WAT --ret_class ClsCldWat --approach AppCld2L --multilayer ICE ClsCldIce --sub_dir cld'
+    '--use_channels 1 2 6 20 31 32 --lut_name WAT --ret_class ClsCldWat --approach AppCld1L --sub_dir cld',
+    '--use_channels 1 2 6 20 31 32 --lut_name ICE --ret_class ClsCldIce --approach AppCld1L --sub_dir cld',
+    '--use_channels 1 2 6 20 31 32 --lut_name WAT --ret_class ClsCldWat --approach AppCld2L --multilayer ICE ClsCldIce --sub_dir cld'
 ]
 Thus, if you call orac.py -S MODIS_C $SOME_MODIS_FILE, the ORAC processor will be
 called 3 times as there are three elements in this array. Each line contains,
 '--use_channels 1 2 6 20 31 32' to specify 6 channels to use in the retrieval
 and '--sub_dir cld' to indicate that output files should be stored in a
 subdirectory called 'cld'. Then, the first call will consider single-layer water
-cloud and the second single-later ice cloud (from the --phase argument). The
+cloud and the second single-later ice cloud (from the --lut_name argument). The
 third call will evaluate a layer of ice cloud (--multilayer) above water.
 """
 
@@ -207,13 +207,13 @@ RETRIEVAL_SETTINGS = {}
 
 # Permute a set of standard cloud retrievals over each sensor
 _CLD_RETRIEVALS = {
-    "wat_cld": "--phase WAT --ret_class ClsCldWat --approach AppCld1L "
+    "wat_cld": "--lut_name WAT --ret_class ClsCldWat --approach AppCld1L "
                "--sub_dir cld",
-    "ice_cld": "--phase ICE --ret_class ClsCldIce --approach AppCld1L "
+    "ice_cld": "--lut_name ICE --ret_class ClsCldIce --approach AppCld1L "
                "--sub_dir cld",
-    "wat_ice": "--phase ICE --ret_class ClsCldIce --approach AppCld2L "
+    "wat_ice": "--lut_name ICE --ret_class ClsCldIce --approach AppCld2L "
                "--multilayer WAT ClsCldWat --sub_dir cld",
-#    "ice_ice": "--phase ICE --ret_class ClsCldIce --approach AppCld2L "
+#    "ice_ice": "--lut_name ICE --ret_class ClsCldIce --approach AppCld2L "
 #               "--multilayer ICE ClsCldIce --sub_dir cld"
 }
 _CLD_CHANNELS = {
@@ -232,9 +232,9 @@ for sensor, channels in _CLD_CHANNELS.items():
 # Permute dual-view aerosol retrievals
 _AER_PHASES = range(70, 80)
 _AER_DUAL_RETRIEVALS = {
-    "aer_ox": "--phase A{:02d} --ret_class ClsAerOx --approach AppAerOx "
+    "aer_ox": "--lut_name A{:02d} --ret_class ClsAerOx --approach AppAerOx "
               "--no_land --sub_dir sea",
-    "aer_sw": "--phase A{:02d} --ret_class ClsAerSw --approach AppAerSw "
+    "aer_sw": "--lut_name A{:02d} --ret_class ClsAerSw --approach AppAerSw "
               "--no_sea --sub_dir land",
 }
 _AER_DUAL_CHANNELS = {
@@ -250,7 +250,7 @@ for sensor, channels in _AER_DUAL_CHANNELS.items():
 
 # Permute single-view aerosol retrievals
 _AER_SINGLE_RETRIEVALS = {
-    "aer_o1": "--phase A{:02d} --ret_class ClsAerOx --approach AppAerO1 "
+    "aer_o1": "--lut_name A{:02d} --ret_class ClsAerOx --approach AppAerO1 "
                "--no_land --sub_dir sea",
 }
 _AER_SINGLE_CHANNELS = {

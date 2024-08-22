@@ -60,9 +60,9 @@ def process_main(args, log_path, tag='', dependency=None):
 
     args = check_args_main(args)
     if args.multilayer is not None:
-        phase = SETTINGS[args.phase].name + "_" + SETTINGS[args.multilayer[0]].name
+        phase = SETTINGS[args.lut_name].label + "_" + SETTINGS[args.multilayer[0]].label
     else:
-        phase = SETTINGS[args.phase].name
+        phase = SETTINGS[args.lut_name].label
     job_name = args.File.job_name(tag=phase + tag)
     root_name = args.File.root_name(args.revision)
 
@@ -108,7 +108,7 @@ def process_post(args, log_path, files=None, dependency=None, tag='post'):
     if files is None:
         # Find all primary files of requested phases in given input folders.
         files = []
-        for phs in set(args.phases):
+        for phs in set(args.lut_names):
             for fdr in args.in_dir:
                 files.extend(glob(os.path.join(
                     fdr, root_name + SETTINGS[phs].name + '.primary.nc'

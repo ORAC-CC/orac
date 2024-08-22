@@ -148,8 +148,8 @@ def args_main(parser):
                       choices=('ClsCldWat', 'ClsCldIce', 'ClsAerOx',
                                'ClsAerSw', 'ClsAerBR', 'ClsAshEyj'),
                       help='Retrieval class to be used (for layer 1).')
-    main.add_argument('--phase', type=str, choices=list(SETTINGS.keys()),
-                      help='Label of look-up table to use in retrieval.')
+    main.add_argument('--lut_name', type=str, choices=list(SETTINGS.keys()),
+                      help='User-defined label for  look-up table to use.')
     main.add_argument('--sabotage', action='store_true',
                       help='Sabotage inputs during processing.')
     main.add_argument('--sad_dirs', type=str, nargs='+', metavar='DIR',
@@ -162,9 +162,9 @@ def args_main(parser):
                       default=None,
                       help='Channels to be evaluated by main processor.')
     main.add_argument('--multilayer', type=str, nargs=2,
-                      metavar=('PHS', 'CLS'),
+                      metavar=('LUT', 'CLS'),
                       help='Do a two-layer retrieval, where these two args '
-                           'specify the phase and class used for near-surface layer.')
+                           'specify the LUT and class used for near-surface layer.')
 
     landsea = main.add_mutually_exclusive_group()
     landsea.add_argument('--no_land', action='store_true',
@@ -194,8 +194,8 @@ def args_postproc(parser):
                       help='Do not output optical properties at night.')
     post.add_argument('--suffix', type=str,
                       help='Suffix to include in output filename.')
-    post.add_argument('--phases', type=str, nargs='+', default=[],
-                      help='Phases to combine. ONLY USED BY SINGLE_PROCESS.PY')
+    post.add_argument('--lut_names', type=str, nargs='+', default=[],
+                      help='LUTs to combine. ONLY USED BY SINGLE_PROCESS.PY')
     post.add_argument('--prob_thresh', type=float, nargs='?',
                       default=0.0, metavar='VALUE',
                       help='Minimum fractional probability to accept a pixel. '
@@ -240,9 +240,9 @@ def args_cc4cl(parser):
                      type=str,
                      action='append',
                      default=None,
-                     help='Parameters for each phase to be processed.'
+                     help='Parameters for each LUT to be processed.'
                           ' Each element is a string listing all the '
-                          'arguments to be applied for that phase. This is'
+                          'arguments to be applied for that LUT. This is'
                           ' processed using the same parser so all arguments'
                           ' listed for the main processor are available.')
     phs.add_argument('-S', '--preset_settings', type=str, default=None,
@@ -250,7 +250,7 @@ def args_cc4cl(parser):
                      help='Use a predefined input for --settings, defined '
                           'in the local_defaults.')
     phs.add_argument('--settings_file', type=str, default=None,
-                     help='A file specifying the phases to run, one on '
+                     help='A file specifying the LUTs to run, one on '
                           'each line.')
 
 
@@ -436,7 +436,7 @@ def check_args_cc4cl(args):
             raise BadValue("preset settings", "not defined in local_defaults")
 
     elif args.settings is None:
-        if args.phase is None:
+        if args.lut_name is None:
             # Default procedure for this sensor from local_defaults
             args.settings = defaults.RETRIEVAL_SETTINGS[args.File.sensor]
         else:
