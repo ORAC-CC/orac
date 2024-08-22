@@ -344,7 +344,7 @@ subroutine orac_postproc(mytask, ntasks, lower_bound, upper_bound, &
        case('BAYESIAN_WEIGHTS')
           ! Note that we expect the bayesian_weights array to have more elements
           ! than given in the driver file!
-          stat = parse_string(value, bayesian_weights)
+          stat = parse_string(value, bayesian_weights, n_in=n_in_files)
           if (stat /= 0 .and. stat /= PARSE_ERR_TOO_MANY) &
                call handle_parse_error(label)
        case('CLOUD_CCI')
