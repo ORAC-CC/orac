@@ -12,15 +12,10 @@ from copy import deepcopy
 from subprocess import check_output, CalledProcessError
 from tempfile import mkstemp
 
-import pyorac.local_defaults as defaults
-from pyorac.arguments import (args_common, args_regress, args_cc4cl,
-                              args_preproc, args_main, args_postproc,
-                              check_args_regress, check_args_common,
-                              check_args_preproc)
+from pyorac import defaults
+import pyorac.arguments as arguments
 from pyorac.colour_print import colour_print
-from pyorac.definitions import (Acceptable, BadValue, COLOURING, FieldMissing,
-                                FileMissing, FileName, InconsistentDim,
-                                OracError, Regression, RoundingError)
+import pyorac.definitions as defin
 from pyorac.processing_settings import REGRESSION_TESTS
 from pyorac.run import process_all, run_regression
 from pyorac.util import get_repository_revision, warning_format
@@ -29,20 +24,20 @@ from pyorac.util import get_repository_revision, warning_format
 # Calibrate how regression warnings are displayed
 warnings.formatwarning = warning_format
 for key, item in defaults.WARN_FILT.items():
-    warnings.simplefilter(item, locals()[key])
+    warnings.simplefilter(item, getattr(defin, key))
 
 
 # Define parser
 pars = ArgumentParser(description='Run ORAC regression tests.')
-args_common(pars)
-args_regress(pars)
-args_cc4cl(pars)
-args_preproc(pars)
-args_main(pars)
-args_postproc(pars)
+arguments.args_common(pars)
+arguments.args_regress(pars)
+arguments.args_cc4cl(pars)
+arguments.args_preproc(pars)
+arguments.args_main(pars)
+arguments.args_postproc(pars)
 orig_args = pars.parse_args()
 
-orig_args = check_args_regress(orig_args)
+orig_args = arguments.check_args_regress(orig_args)
 
 base_out_dir = deepcopy(orig_args.out_dir)
 
@@ -56,7 +51,7 @@ if orig_args.revision is None:
 
 try:
     for test in orig_args.tests:
-        colour_print(test, COLOURING['header'])
+        colour_print(test, defin.COLOURING['header'])
         args = deepcopy(orig_args)
 
         # Set filename to be processed and output folder
@@ -64,7 +59,7 @@ try:
         try:
             args.target, args.limit, args.preset_settings = REGRESSION_TESTS[test]
         except KeyError:
-            raise OracError("Invalid regression test for given phases.")
+            raise defin.OracError("Invalid regression test for given phases.")
 
         args.preset_settings += "_" + args.test_type
 
@@ -73,14 +68,14 @@ try:
 
         # Check for regressions
         if not args.benchmark and not args.dry_run:
-            inst = FileName(args.out_dir, out_file)
+            inst = defin.FileName(args.out_dir, out_file)
             if not args.batch:
-                args = check_args_common(args)
-                args = check_args_preproc(args)
+                args = arguments.check_args_common(args)
+                args = arguments.check_args_preproc(args)
                 try:
                     run_regression(inst)
                 except Regression as err:
-                    colour_print('REGRESSION) ' + str(err), COLOURING['error'])
+                    colour_print('REGRESSION) ' + str(err), defin.COLOURING['error'])
 
             else:
                 if os.path.isdir(os.path.join(defaults.ORAC_DIR, "tools")):
@@ -117,7 +112,7 @@ try:
 
                 cmd = defaults.BATCH.list_batch(values, exe=script_file)
                 if args.verbose or args.script_verbose:
-                    colour_print(' '.join(cmd), COLOURING['header'])
+                    colour_print(' '.join(cmd), defin.COLOURING['header'])
                 out = check_output(cmd, universal_newlines=True)
 
                 if args.verbose or args.script_verbose:
@@ -125,10 +120,10 @@ try:
                         defaults.BATCH.parse_out(out, 'ID')
                     ))
 
-except OracError as err:
-    colour_print('ERROR) ' + str(err), COLOURING['error'])
+except defin.OracError as err:
+    colour_print('ERROR) ' + str(err), defin.COLOURING['error'])
 except KeyboardInterrupt:
-    colour_print('Execution halted by user.', COLOURING['error'])
+    colour_print('Execution halted by user.', defin.COLOURING['error'])
 except CalledProcessError as err:
     colour_print('{:s} failed with error code {:d}. {:s}'.format(
         ' '.join(err.cmd), err.returncode, err.output

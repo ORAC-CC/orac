@@ -2,7 +2,7 @@
 import os
 import warnings
 
-import pyorac.local_defaults as defaults
+from pyorac import defaults
 from pyorac.definitions import BadValue, FileMissing, OracWarning, SETTINGS
 from pyorac.util import str2bool
 

@@ -1,6 +1,7 @@
 """Utility functions for working with ORAC scripts and outputs."""
 import os
 import re
+from pyorac import defaults
 
 
 def build_orac_library_path(lib_dict=None, lib_list=None):
@@ -25,7 +26,6 @@ def call_exe(args, exe, driver, values=None):
     :str exe: Name of the executable.
     :str driver: Contents of the driver file to pass.
     :dict values: Arguments for the batch queueing system."""
-    from pyorac.local_defaults import BATCH, BATCH_VALUES
 
     from pyorac.colour_print import colour_print
     from pyorac.definitions import OracError, COLOURING
@@ -96,7 +96,7 @@ def call_exe(args, exe, driver, values=None):
             ghandle.write("export PPDIR=" + args.emos_dir + "\n")
         except AttributeError:
             pass
-        BATCH.add_openmp_to_script(ghandle)
+        defaults.BATCH.add_openmp_to_script(ghandle)
 
         # Call executable and give the script permission to execute
         ghandle.write(exe + ' ' + driver_file + "\n")
@@ -108,7 +108,7 @@ def call_exe(args, exe, driver, values=None):
 
         try:
             # Collect batch settings from defaults, command line, and script
-            batch_params = BATCH_VALUES.copy()
+            batch_params = defaults.BATCH_VALUES.copy()
             if values:
                 batch_params.update(values)
             batch_params.update({key: val for key, val in args.batch_settings})
@@ -116,14 +116,14 @@ def call_exe(args, exe, driver, values=None):
             batch_params['procs'] = args.procs
 
             # Form batch queue command and call batch queuing system
-            cmd = BATCH.list_batch(batch_params, exe=script_file)
+            cmd = defaults.BATCH.list_batch(batch_params, exe=script_file)
 
             if args.verbose or args.script_verbose:
                 colour_print(' '.join(cmd), COLOURING['header'])
             out = check_output(cmd, universal_newlines=True)
 
             # Parse job ID # and return it to the caller
-            jid = BATCH.parse_out(out, 'ID')
+            jid = defaults.BATCH.parse_out(out, 'ID')
             return jid
         except CalledProcessError as err:
             raise OracError('Failed to queue job ' + exe)
@@ -135,7 +135,6 @@ def compare_nc_atts(dat0, dat1, filename, var):
     """Report if the attributes of a NCDF file or variable have changed."""
     from warnings import warn
     from pyorac.definitions import FieldMissing, Regression
-    from pyorac.local_defaults import ATTS_TO_IGNORE
 
     # Check if any attributes added/removed
     atts = set(dat0.ncattrs()).symmetric_difference(dat1.ncattrs())
@@ -148,7 +147,7 @@ def compare_nc_atts(dat0, dat1, filename, var):
             continue
 
         if (dat0.__dict__[key] != dat1.__dict__[key] and
-                key not in ATTS_TO_IGNORE):
+                key not in defaults.ATTS_TO_IGNORE):
             warn(Regression(
                 filename, var + ', ' + key, 'warning',
                 'Changed attribute ({} vs {})'.format(
@@ -163,7 +162,6 @@ def compare_orac_out(file0, file1):
     from warnings import warn
     from pyorac.definitions import (Acceptable, FieldMissing, InconsistentDim,
                                     OracWarning, Regression, RoundingError)
-    from pyorac.local_defaults import ATTS_TO_IGNORE
 
     try:
         from netCDF4 import Dataset
@@ -261,27 +259,25 @@ def compare_orac_out(file0, file1):
 
 def extract_orac_libraries(lib_dict=None):
     """Return list of libraries ORAC should link to."""
-    from pyorac.local_defaults import ORAC_LIB
 
     if lib_dict is None:
         try:
             lib_dict = read_orac_library_file(os.environ["ORAC_LIB"])
         except KeyError:
-            lib_dict = read_orac_library_file(ORAC_LIB)
+            lib_dict = read_orac_library_file(defaults.ORAC_LIB)
 
     return [m[0] for m in re.findall(r"-L(.+?)(\s|$)", lib_dict["LIBS"])]
 
 
 def get_repository_revision():
     """Call git to determine repository revision number"""
-    from pyorac.local_defaults import ORAC_DIR
     from subprocess import check_output
 
     fdr = os.getcwd()
     try:
         os.chdir(os.environ["ORACDIR"])
     except KeyError:
-        os.chdir(ORAC_DIR)
+        os.chdir(defaults.ORAC_DIR)
     try:
         tmp = check_output(["git", "rev-list", "--count", "HEAD"],
                            universal_newlines=True)

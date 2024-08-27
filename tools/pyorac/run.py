@@ -2,11 +2,11 @@
 import os
 import pyorac.arguments as oracarg
 import pyorac.definitions as defin
-import pyorac.local_defaults as defaults
 
 from copy import deepcopy
 from collections import OrderedDict
 from glob import glob
+from pyorac import defaults
 from pyorac.util import call_exe
 
 CLOBBER = OrderedDict([
@@ -269,7 +269,7 @@ def run_regression(in_file):
     """Run the regression test on a set of ORAC files."""
     import re
 
-    from pyorac.utils import compare_orac_out
+    from pyorac.util import compare_orac_out
     from warnings import warn
 
     regex = re.compile(r"_R(\d+)")

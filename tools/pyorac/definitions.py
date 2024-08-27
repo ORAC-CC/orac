@@ -30,22 +30,21 @@ class OracError(Exception):
     pass
 
 
-class FileMissing(OracError, FileNotFoundError):
+class FileMissing(FileNotFoundError, OracError):
     """Error when a required file could not be found."""
 
     def __init__(self, desc, filename):
-        OracError.__init__(self, 'Could not locate {:s}: {:s}'.format(desc,
-                                                                      filename))
-        self.desc = desc
-        self.filename = filename
+        super().__init__(None, f'Could not locate {desc}', filename)
+
+    def __str__(self):
+        return self.strerror + ': ' + self.filename
 
 
-class BadValue(OracError, ValueError):
+class BadValue(ValueError, OracError):
     """Error when an out-of-range value is provided."""
 
     def __init__(self, variable, value):
-        OracError.__init__(self, 'Invalid value for {}: {}'.format(variable,
-                                                                   value))
+        super().__init__(f'Invalid value for {variable}: {value}')
         self.variable = variable
         self.value = value
 
