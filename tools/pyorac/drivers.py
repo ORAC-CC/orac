@@ -126,7 +126,7 @@ def build_preproc_driver(args):
             try:
                 occci = _date_back_search(
                     args.occci_dir, args.File.time,
-                    '%Y/ESACCI-OC-L3S-IOP-MERGED-1M_MONTHLY'
+                    'ESACCI-OC-L3S-IOP-MERGED-1M_MONTHLY'
                     f'_4km_GEO_PML_OCx_QAA-%Y%m-fv{oc_version:.1f}.nc',
                     'years'
                 )
@@ -134,9 +134,9 @@ def build_preproc_driver(args):
             except FileMissing:
                 pass
         else:
-            raise FileMissing('Ocean Colour CCI', args.occci_dir +
+            raise FileMissing('Ocean Colour CCI', os.path.join(args.occci_dir,
                               'ESACCI-OC-L3S-IOP-MERGED-1M_MONTHLY'
-                              '_4km_GEO_PML_OCx_QAA-%Y%m-fvVV.nc')
+                              '_4km_GEO_PML_OCx_QAA-%Y%m-fvVV.nc'))
     else:
         occci = ''
 
