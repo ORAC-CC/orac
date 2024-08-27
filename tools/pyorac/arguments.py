@@ -222,10 +222,9 @@ def args_cc4cl(parser):
                       help='Maximal memory (in Mb) used by the pre, main and '
                            'post processors. Default 11000.')
     cccl.add_argument('-e', '--extra_lines', nargs=2, action='append',
-                      metavar=('SECTION', 'VALUE'),
+                      metavar=('SECTION', 'LINE'),
                       default=[], help='Path to a file giving extra lines for '
-                                       'main processing. Passed as SECTION VALUE pairs, where '
-                                       'KEY is lnd, sea, or cld to specify the particle type.')
+                                       'main processing. Passed as SECTION LINE pairs.')
     cccl.add_argument('--label', type=str, help="Description for job name.",
                       default="")
     cccl.add_argument('--reformat', type=str, default="", metavar='PATH',
