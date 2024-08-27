@@ -59,9 +59,9 @@ def process_main(args, log_path, tag='', dependency=None):
 
     args = oracarg.check_args_main(args)
     if args.multilayer is not None:
-        phase = defin.SETTINGS[args.lut_name].label + "_" + defin.SETTINGS[args.multilayer[0]].label
+        phase = args.lut_name + "_" + args.multilayer[0]
     else:
-        phase = defin.SETTINGS[args.lut_name].label
+        phase = args.lut_name
     job_name = args.File.job_name(tag=phase + tag)
     root_name = args.File.root_name(args.revision)
 
@@ -107,7 +107,7 @@ def process_post(args, log_path, files=None, dependency=None, tag='post'):
         for phs in set(args.lut_names):
             for fdr in args.in_dir:
                 files.extend(glob(os.path.join(
-                    fdr, root_name + defin.SETTINGS[phs].name + '.primary.nc'
+                    fdr, root_name + phs + '.primary.nc'
                 )))
 
     if len(files) < 2:

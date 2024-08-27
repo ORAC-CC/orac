@@ -327,7 +327,13 @@ EXT_GEO_PATH={args.pregeo_file}"""
 
 def build_main_driver(args):
     """Prepare a driver file for the main processor."""
-    from pyorac.definitions import SETTINGS
+    from pyorac.local_defaults import LUT_LOOKUP
+    from pyorac.processing_settings import APRIORI_LOOKUP
+
+    # Evaluate requested LUT path and name for this instrument
+    sad_dir, sad_file, particle, prior = LUT_LOOKUP[args.lut_name](args.File, True)
+    if not os.path.isdir(sad_dir):
+        raise FileMissing('LUT directory', sad_dir)
 
     # Form mandatory driver file lines
     driver = """# ORAC New Driver File
@@ -351,34 +357,43 @@ Ctrl%RS%Use_Full_BRDF       = {use_brdf}""".format(
         in_dir=args.in_dir[0],
         nch=len(args.available_channels),
         out_dir=args.out_dir,
-        phase=SETTINGS[args.lut_name].name,
-        sad_dir=SETTINGS[args.lut_name].sad_dir(args.sad_dirs, args.File),
+        particle=particle,
+        sad_dir=sad_dir,
         sensor=args.File.sensor + '-' + args.File.platform,
         use_brdf=not (args.lambertian or args.approach == 'AppAerSw'),
         verbose=args.verbose,
     )
     # If a netcdf LUT is being used then write NCDF LUT filename
-    if SETTINGS[args.lut_name].sad == 'netcdf':
-        driver += """
-Ctrl%FID%NCDF_LUT_Filename = "{ncdf_lut_filename}"
-        """.format(ncdf_lut_filename=SETTINGS[args.lut_name].sad_filename(args.File))
+    if sad_file is not None:
+        if not os.path.isfile(os.path.join(sad_dir, sad_file)):
+            raise FileMissing('LUT file', os.path.join(sad_dir, sad_file))
+        driver += f"\nCtrl%FID%NCDF_LUT_Filename = \"{sad_file}\""
+
+    for state_index, priors in APRIORI_LOOKUP[prior].items():
+        for variable_name, value in priors.items():
+            driver += _format_driver_line(variable_name, state_index, value)
 
     # Optional driver file lines
     if args.multilayer is not None:
-        if SETTINGS[args.lut_name].sad == 'netcdf':
-            driver += """
-Ctrl%FID%NCDF_LUT_Filename2 = "{ncdf_lut_filename}"
-        """.format(ncdf_lut_filename=SETTINGS[args.multilayer[0]].sad_filename(args.File))
-        driver += """
-Ctrl%LUTClass2              = "{}"
-Ctrl%FID%SAD_Dir2           = "{}"
-Ctrl%Class2                 = {}""".format(
-            SETTINGS[args.multilayer[0]].name,
-            SETTINGS[args.multilayer[0]].sad_dir(args.sad_dirs, args.File, rayleigh=False),
-            args.multilayer[1],
-        )
-        for var in SETTINGS[args.multilayer[0]].inv:
-            driver += var.driver()
+        sad_dir2, sad_file2, particle2, prior2 = LUT_LOOKUP[args.multilayer[0]](args.File, False)
+        if not os.path.isdir(sad_dir2):
+            raise FileMissing('LUT2 directory', sad_dir2)
+
+        driver += f"\nCtrl%LUTClass2              = \"{particle2}\""
+        driver += f"\nCtrl%FID%SAD_Dir2           = \"{sad_dir2}\""
+        driver += f"\nCtrl%Class2                 = {args.multilayer[1]}"
+        if sad_file2 is not None:
+            if not os.path.isfile(os.path.join(sad_dir2, sad_file2)):
+                raise FileMissing('LUT2 file', os.path.join(sad_dir2, sad_file2))
+            driver += f"\nCtrl%FID%NCDF_LUT_Filename = \"{sad_file2}\""
+
+        # TODO: Lower level prior preferably set from surrounding obs
+        for state_index, priors in APRIORI_LOOKUP[prior].items():
+            # Add 2 to text state vector index to hit second layer
+            if state_index[0] in 'iI':
+                state_index += '2'
+            for variable_name, value in priors.items():
+                driver += _format_driver_line(variable_name, state_index, value)
     if args.types:
         driver += "\nCtrl%NTypes_To_Process      = {:d}".format(len(args.types))
         driver += ("\nCtrl%Types_To_Process(1:{:d}) = ".format(len(args.types)) +
@@ -393,8 +408,6 @@ Ctrl%Class2                 = {}""".format(
         driver += "\nCtrl%Surfaces_To_Skip       = ISea"
     elif args.no_land:
         driver += "\nCtrl%Surfaces_To_Skip       = ILand"
-    for var in SETTINGS[args.phase].inv:
-        driver += var.driver()
     for part, filename in args.extra_lines:
         if part == "main" and filename != "":
             try:
@@ -559,6 +572,18 @@ def _form_bound_filenames(bounds, fdr, form):
         except IndexError:
             raise FileMissing('ECMWF file', path)
     return out
+
+
+def _format_driver_line(variable_name, index, value):
+    """Appropriately formats human-readable apriori information"""
+    if variable_name == 'AP':
+        return f"\nCtrl%XB[{index}] = {value}"
+    if variable_name == 'FG':
+        return f"\nCtrl%X0[{index}] = {value}"
+    if variable_name == 'SX':
+        return f"\nCtrl%SX[{index}] = {value}"
+
+    return f"\n{variable_name}[{index}] = {value}"
 
 
 def _glob_dirs(dirs, path, desc):

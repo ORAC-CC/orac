@@ -10,6 +10,10 @@ REGRESSION_TESTS
     Test names follow the convention that,
     - suffix S indicates a short test of a few hundred pixels;
     - prefix DAY/NIT indicates a full day/night granule or test;
+
+APRIORI_LOOKUP
+    dict of dicts providing first guess, apriori value and uncertainty
+    as a function of particle type
 """
 
 
@@ -77,4 +81,33 @@ REGRESSION_TESTS = {
                   (0, 0, 0, 0), 'SLSTR'),
     'SEVIRI': ('MSG3-SEVI-MSG15-0100-NA-20170620055740.316000000Z-'
                '20170620055758-1314114-37.nat', (0, 0, 0, 0), 'SEVIRI'),
+}
+
+
+# Things that are used by lots of particles
+_standard_aerosol_optical_depth_prior = {'AP': 0.10, 'FG': 0.10, 'SX': 1.5}
+
+# Set priors for all particle types
+APRIORI_LOOKUP = {
+    None: {},
+    "large_clean_aerosol": {
+        'ITau': _standard_aerosol_optical_depth_prior,
+        'IRe': {'AP': 1.22, 'FG': 1.22, 'SX': 0.15},
+    },
+    "small_natural_aerosol": {
+        'ITau': _standard_aerosol_optical_depth_prior,
+        'IRe': {'AP': 0.553, 'FG': 0.553, 'SX': 0.15},
+    },
+    "manmade_aerosol": {
+        'ITau': _standard_aerosol_optical_depth_prior,
+        'IRe': {'AP': 0.908, 'FG': 0.908, 'SX': 0.15},
+    },
+    "biomass_burning": {
+        'ITau': _standard_aerosol_optical_depth_prior,
+        'IRe': {'AP': 0.142, 'FG': 0.142, 'SX': 0.15},
+    },
+    "eyja_ash": {
+        'ITau': {'AP': 1.51, 'FG': 1.51, 'SX': 1.5},
+        'IRe': {'AP': 0.7, 'FG': 0.7, 'SX': 1.5},
+    },
 }

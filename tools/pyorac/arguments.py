@@ -3,7 +3,7 @@ import os
 import warnings
 
 from pyorac import defaults
-from pyorac.definitions import BadValue, FileMissing, OracWarning, SETTINGS
+from pyorac.definitions import BadValue, FileMissing, OracWarning
 from pyorac.util import str2bool
 
 
@@ -147,13 +147,11 @@ def args_main(parser):
                       choices=('ClsCldWat', 'ClsCldIce', 'ClsAerOx',
                                'ClsAerSw', 'ClsAerBR', 'ClsAshEyj'),
                       help='Retrieval class to be used (for layer 1).')
-    main.add_argument('--lut_name', type=str, choices=list(SETTINGS.keys()),
+    main.add_argument('--lut_name', type=str,
+                      choices=list(defaults.LUT_LOOKUP.keys()),
                       help='User-defined label for  look-up table to use.')
     main.add_argument('--sabotage', action='store_true',
                       help='Sabotage inputs during processing.')
-    main.add_argument('--sad_dirs', type=str, nargs='+', metavar='DIR',
-                      default=defaults.SAD_DIRS,
-                      help='Path to SAD and LUT files.')
     main.add_argument('--types', type=str, nargs='+',
                       choices=ALL_TYPES, default=ALL_TYPES,
                       help='Pavolonis cloud types to process.')
@@ -385,9 +383,6 @@ def check_args_main(args):
                       OracWarning, stacklevel=2)
     if not os.path.isdir(args.in_dir[0]):
         raise FileMissing('Preprocessed directory', args.in_dir[0])
-    for fdr in args.sad_dirs:
-        if not os.path.isdir(fdr):
-            raise FileMissing('sad_dirs', fdr)
     if args.use_channels is None:
         args.use_channels = args.available_channels
     if args.multilayer is not None:
