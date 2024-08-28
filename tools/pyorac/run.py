@@ -58,10 +58,10 @@ def process_main(args, log_path, tag='', dependency=None):
     from pyorac.drivers import build_main_driver
 
     args = oracarg.check_args_main(args)
+    _, _, phase, _ = defaults.LUT_LOOKUP[args.lut_name](args.File, True)
     if args.multilayer is not None:
-        phase = args.lut_name + "_" + args.multilayer[0]
-    else:
-        phase = args.lut_name
+        _, _, phase2, _ = defaults.LUT_LOOKUP[args.multilayer[0]](args.File, False)
+        phase += "_" + phase2
     job_name = args.File.job_name(tag=phase + tag)
     root_name = args.File.root_name(args.revision)
 
