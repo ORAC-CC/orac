@@ -15,6 +15,9 @@
 !    grids consistent in dimension size, spacing and vertex values.
 ! 2017/03/16, GT: Changes for single-view aerosol retrieval mode.
 ! 2021/03/08, AP: Gather grid dimensions into LUT_Grid_t
+! 2023/10/10, GT: Added calculation of old NedR (solar channel noise
+!    equivalent radiance) Read_NCDF_SAD_LUT(), to allow use of old
+!    uncertainty calculation with new LUTs.
 !
 ! Bugs:
 ! - Arrays are allocated excessively large as dimensions of the text tables
@@ -1225,8 +1228,12 @@ subroutine Read_NCDF_SAD_LUT(Ctrl, LUTFilename, SAD_Chan, SAD_LUT)
             ! Uncertainty = a**2 L**2 + b**2 L + c**2
             call ncdf_read_array(fid, "ru"//char(j+96), chan_tmp_real)
             do i = 1, Ctrl%Ind%NSolar
+               ! ru values stored in LUT already squared?!
                SAD_Chan(Ctrl%Ind%YSolar(i))%Solar%ru2(j) = &
-                    chan_tmp_real(solar_indices(i)) ** 2
+                    chan_tmp_real(solar_indices(i)) !** 2
+               ! Ensure SNR is explicitly set to 0 (used to determine if ru2
+               ! should be used in get_measurments)
+               SAD_Chan(Ctrl%Ind%YSolar(i))%Solar%SNR = 0.0
             end do
          end do
       else
@@ -1237,6 +1244,13 @@ subroutine Read_NCDF_SAD_LUT(Ctrl, LUTFilename, SAD_Chan, SAD_LUT)
                  chan_tmp_real(solar_indices(i))
          end do
       end if
+      call ncdf_read_array(fid, "oldnefr", chan_tmp_real)
+      do i = 1, Ctrl%Ind%NSolar
+         SAD_Chan(Ctrl%Ind%YSolar(i))%Solar%NedR = &
+              ( chan_tmp_real(solar_indices(i)) / &
+                SAD_Chan(Ctrl%Ind%YSolar(i))%Solar%F0 )**2
+      end do
+
       deallocate(chan_tmp_real)
    end if
 
