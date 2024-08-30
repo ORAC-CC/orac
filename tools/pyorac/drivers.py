@@ -385,7 +385,7 @@ Ctrl%RS%Use_Full_BRDF       = {use_brdf}""".format(
         if sad_file2 is not None:
             if not os.path.isfile(os.path.join(sad_dir2, sad_file2)):
                 raise FileMissing('LUT2 file', os.path.join(sad_dir2, sad_file2))
-            driver += f"\nCtrl%FID%NCDF_LUT_Filename = \"{sad_file2}\""
+            driver += f"\nCtrl%FID%NCDF_LUT_Filename2 = \"{sad_file2}\""
 
         # TODO: Lower level prior preferably set from surrounding obs
         for state_index, priors in APRIORI_LOOKUP[prior].items():

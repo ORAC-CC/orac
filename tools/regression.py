@@ -74,7 +74,7 @@ try:
                 args = arguments.check_args_preproc(args)
                 try:
                     run_regression(inst)
-                except Regression as err:
+                except defin.Regression as err:
                     colour_print('REGRESSION) ' + str(err), defin.COLOURING['error'])
 
             else:
