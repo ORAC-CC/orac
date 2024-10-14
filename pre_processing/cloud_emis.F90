@@ -14,6 +14,7 @@
 ! 2018/07/18, DE: Add tropopause temperature
 ! 2018/11/05, SP: Add CAPE
 ! 2019/08/14, SP: Add Fengyun-4A support.
+! 2024/07/01, DH: Change indexing to use preproc_dims for all dimensions
 !
 ! Bugs:
 ! None known.
@@ -38,7 +39,7 @@ subroutine get_trop_tp(preproc_prtm, preproc_dims)
    real,    parameter :: max_tropopause = 450.0 ! Lowest p allowed for trop
    integer, parameter :: depth          = 2     ! # layers added to inversions
 
-   integer                            :: nx, ny, nz ! Number of vertical levels, pixels
+   integer                            :: nz         ! Number of vertical levels, pixels
    integer                            :: x, y       ! Looping variables over preproc
    integer                            :: k, l       ! Indexing variables
    integer                            :: step       ! Direction of search
@@ -47,13 +48,11 @@ subroutine get_trop_tp(preproc_prtm, preproc_dims)
    real, dimension(preproc_dims%kdim) :: h          ! Height profile
 
 
-   nx = preproc_dims%xdim
-   ny = preproc_dims%ydim
    nz = preproc_dims%kdim
 
 
-   do x = preproc_dims%min_lon, preproc_dims%max_lon
-      do y = preproc_dims%min_lat, preproc_dims%max_lat
+   do x = 1,  preproc_dims%xdim
+      do y = 1,  preproc_dims%ydim
 
          k = nz
          t = preproc_prtm%temperature(x,y,:)
@@ -103,7 +102,7 @@ subroutine get_trop_tp(preproc_prtm, preproc_dims)
 end subroutine get_trop_tp
 
 subroutine get_cloud_emis(channel_info, imager_measurements, imager_geolocation, &
-     preproc_dims, preproc_geoloc, preproc_cld, preproc_prtm, imager_cloud, ecmwf, &
+     preproc_dims, preproc_geoloc, preproc_cld, preproc_prtm, imager_cloud, &
      sensor, verbose)
 
    use channel_structures_m
@@ -127,7 +126,6 @@ subroutine get_cloud_emis(channel_info, imager_measurements, imager_geolocation,
    type(preproc_cld_t),         intent(in)  :: preproc_cld
    type(preproc_prtm_t),        intent(in)  :: preproc_prtm
    type(imager_cloud_t),        intent(out) :: imager_cloud
-   type(ecmwf_t),               intent(in)  :: ecmwf
    character(len=*),            intent(in)  :: sensor
    logical,                     intent(in)  :: verbose
 
@@ -188,12 +186,12 @@ subroutine get_cloud_emis(channel_info, imager_measurements, imager_geolocation,
    allocate(interp(1))
 
    ! Needed for grid interpolation, adapted from ../src/ReadPRTM_nc.F90
-   NLat = abs(preproc_dims%min_lat - preproc_dims%max_lat)
-   NLon = abs(preproc_dims%min_lon - preproc_dims%max_lon)
-   Lat0 = real(preproc_geoloc%latitude(preproc_dims%min_lat), kind=8)
-   LatN = real(preproc_geoloc%latitude(preproc_dims%max_lat), kind=8)
-   Lon0 = real(preproc_geoloc%longitude(preproc_dims%min_lon), kind=8)
-   LonN = real(preproc_geoloc%longitude(preproc_dims%max_lon), kind=8)
+   NLat = preproc_dims%ydim
+   NLon = preproc_dims%xdim
+   Lat0 = real(preproc_geoloc%latitude(1), kind=8)
+   LatN = real(preproc_geoloc%latitude(preproc_dims%ydim), kind=8)
+   Lon0 = real(preproc_geoloc%longitude(1), kind=8)
+   LonN = real(preproc_geoloc%longitude(preproc_dims%xdim), kind=8)
 
    ! Grid spacing and inverse
    delta_Lat = (LatN - Lat0) / (NLat-1)
