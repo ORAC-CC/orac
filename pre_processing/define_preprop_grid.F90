@@ -142,10 +142,12 @@ subroutine define_preproc_grid_ecmwf(imager_geolocation, preproc_dims, ecmwf, ve
    integer :: min_lon_ind, max_lon_ind, min_lat_ind, max_lat_ind
 
       ! get the ecmwf index of min and max lat and lon
-      min_lon_ind = minloc(abs(ecmwf%lon - minval(imager_geolocation%longitude)),1)
+      min_lon_ind = minloc(abs(ecmwf%lon - minval(merge(imager_geolocation%longitude, HUGE(0.0), imager_geolocation%longitude /= -999))),1)
       max_lon_ind = minloc(abs(ecmwf%lon - maxval(imager_geolocation%longitude)),1)
-      min_lat_ind = minloc(abs(ecmwf%lat - minval(imager_geolocation%latitude)),1)
+      min_lat_ind = minloc(abs(ecmwf%lat - minval(merge(imager_geolocation%latitude, HUGE(0.0), imager_geolocation%latitude /= -999))),1)
       max_lat_ind = minloc(abs(ecmwf%lat - maxval(imager_geolocation%latitude)),1)
+      
+      
 
       ! use ecmwf grid for preproc grid
       preproc_dims%kdim = ecmwf%kdim
