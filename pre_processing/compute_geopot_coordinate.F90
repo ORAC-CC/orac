@@ -21,7 +21,6 @@
 ! 2014/05/08, AP: Updated to new ecmwf structure.
 ! 2019/05/23, GT: Added check for valid data in each grid cell before doing
 !    calculation
-! 2024/07/01, DH: Change indexing to use preproc_dims for all dimensions
 !
 ! Bugs:
 ! None known.
@@ -47,8 +46,8 @@ subroutine compute_geopot_coordinate(preproc_prtm, preproc_dims, ecmwf)
    ! compute the summation terms of the sum in (2.21) and necessary terms in
    ! (2.22) & (2.23) from TOA down (index ik represents cell centers and cell
    ! upper boundaries (wrt height))
-   do ij=1, preproc_dims%ydim
-      do ii=1, preproc_dims%xdim
+   do ij=preproc_dims%min_lat,preproc_dims%max_lat
+      do ii=preproc_dims%min_lon,preproc_dims%max_lon
          ! Check to see we have data for this particular pixel
          if (preproc_prtm%lnsp(ii,ij) .ne. sreal_fill_value) then
             ! this is the lowest level=surface, it also has the surface pressure

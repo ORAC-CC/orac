@@ -109,7 +109,7 @@ module ORAC_constants_m
    integer, parameter :: MaxNumThermal    = 16      ! Max no. of thermal channels
    integer, parameter :: MaxCloudType     = 5       ! Max no. of cloud types to be
    integer, parameter :: MaxCRProps       = 14      ! Max no. of properties in SAD_LUT arrays
-   integer, parameter :: MaxTypes         = 13      ! Number of possible cloud/aerosol types
+   integer, parameter :: MaxTypes         = 11      ! Number of possible cloud/aerosol types
 
 
    ! Tolerance values

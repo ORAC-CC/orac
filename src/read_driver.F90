@@ -670,7 +670,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
          if (Ctrl%verbose) write(*,*) 'WARNING: Read_Driver(): '// &
               'Ctrl%use_ann_phase=true with Ctrl%Approach=AppCld2L '// &
               'processes all pixels.'
-         Ctrl%NTypes_to_process    = 13
+         Ctrl%NTypes_to_process    = 11
          Ctrl%Types_to_process(1)  = CLEAR_TYPE
          Ctrl%Types_to_process(2)  = SWITCHED_TO_WATER_TYPE
          Ctrl%Types_to_process(3)  = FOG_TYPE
@@ -682,8 +682,6 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
          Ctrl%Types_to_process(9)  = OVERLAP_TYPE
          Ctrl%Types_to_process(10) = PROB_OPAQUE_ICE_TYPE
          Ctrl%Types_to_process(11) = PROB_CLEAR_TYPE
-         Ctrl%Types_to_process(12) = DUST_CLEAR_TYPE
-         Ctrl%Types_to_process(13) = DUST_SWITCHED_FROM_CLOUD_TYPE
 
    else if (.not. Ctrl%use_ann_phase .and. Ctrl%Approach == AppCld2L) then
       Ctrl%NTypes_to_process   = 1

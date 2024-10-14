@@ -26,21 +26,18 @@
 ! 2014/11/04, OS: Added skin temperature.
 ! 2015/11/17, OS: Added rearrangement of high resolution ERA-Interim data.
 ! 2018/07/26, AP: Switch to dynamic allocation to reduce stack requirements.
-! 2024/07/01, DH: Keep dateline information for ecmwf grid, needed when using 
-!    ecmwf grid as preproc grid
 !
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine rearrange_ecmwf(ecmwf, date, ind)
+subroutine rearrange_ecmwf(ecmwf)
 
    implicit none
 
    type(ecmwf_t), intent(inout) :: ecmwf
 
-   integer, intent(out)         :: date, ind
-   integer                      :: i
+   integer                      :: date, ind, i
    real(kind=sreal), allocatable, dimension(:,:) :: u, v
    real(kind=sreal), allocatable, dimension(:,:) :: skint, snow_depth
    real(kind=sreal), allocatable, dimension(:,:) :: sea_ice_cover
@@ -104,40 +101,3 @@ subroutine rearrange_ecmwf(ecmwf, date, ind)
    deallocate(lat)
 
 end subroutine rearrange_ecmwf
-
-subroutine rearrange_ecmwf_var2d(ecmwf, dummy2d, date, ind)
-
-   implicit none
-
-   type(ecmwf_t), intent(inout) :: ecmwf
-   real(sreal), intent(inout)   :: dummy2d(ecmwf%xdim,ecmwf%ydim) 
-   real(sreal)                  :: dummy2d_new(ecmwf%xdim,ecmwf%ydim) 
-   integer, intent(in)         :: date, ind
-   integer          :: i
-   
-   dummy2d_new(1:ind,:) = dummy2d(date:,:)
-   dummy2d_new(ind+1:,:)= dummy2d(1:date-1,:)
-   
-   do i = 1, ecmwf%ydim
-      dummy2d(:,ecmwf%ydim+1-i)     = dummy2d_new(:,i)
-   end do
-end subroutine rearrange_ecmwf_var2d
-
-subroutine rearrange_ecmwf_var3d(ecmwf, dummy3d, date, ind)
-
-   implicit none
-
-   type(ecmwf_t), intent(inout) :: ecmwf
-   real(sreal), intent(inout)   :: dummy3d(ecmwf%xdim,ecmwf%ydim, ecmwf%kdim) 
-   real(sreal)                  :: dummy3d_new(ecmwf%xdim,ecmwf%ydim, ecmwf%kdim) 
-   integer, intent(in)         :: date, ind
-   integer          :: i
-   
-   dummy3d_new(1:ind,:, :) = dummy3d(date:,:, :)
-   dummy3d_new(ind+1:,:, :)= dummy3d(1:date-1,:, :)
-   
-   do i = 1, ecmwf%ydim
-      dummy3d(:,ecmwf%ydim+1-i, :)     = dummy3d_new(:,i, :)
-   end do
-end subroutine rearrange_ecmwf_var3d
-

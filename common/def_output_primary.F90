@@ -83,9 +83,6 @@
 ! 2018/01/19, GT: Removed QCFlag scale_factor and add_offset values, as these
 !    should only be used for packed floating point data.
 ! 2018/06/08, SP: Add satellite azimuth angle to output.
-! 2024/03/13, GT: Updated cldtype to include dust values and removed
-!                 scale_factor and add_offset from the various cloud mask/type
-!                 variables
 !
 ! Bugs:
 ! None known.
@@ -1826,10 +1823,7 @@ end if
                'opaque_ice ' // &
                'cirrus ' // &
                'overlap ' // &
-               'prob_opaque_ice ' // &
-               'N/A ' // &
-               'dust_clear ' // &
-               'dust_switched_from_cloud'
+               'prob_opaque_ice'
 
    call ncdf_def_var_byte_packed_byte( &
            ncid, &
@@ -1845,7 +1839,7 @@ end if
            valid_min     = output_data%cldtype_vmin, &
            valid_max     = output_data%cldtype_vmax, &
            units         = '1', &
-           flag_values   = '0b 1b 2b 3b 4b 5b 6b 7b 8b 9b 10b 11b 12b', &
+           flag_values   = '0b 1b 2b 3b 4b 5b 6b 7b 8b 9b', &
            flag_meanings = trim(adjustl(input_dummy)), &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)

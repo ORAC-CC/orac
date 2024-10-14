@@ -18,7 +18,6 @@ COMMON_OBJ_F90 = $(OBJS)/chunk_utils.o \
                  $(OBJS)/common_constants.o \
                  $(OBJS)/constants_cloud_typing_pavolonis.o \
                  $(OBJS)/global_attributes.o \
-		             $(OBJS)/morphology.o \
                  $(OBJS)/interpol.o \
                  $(OBJS)/hdf.o \
                  $(OBJS)/orac_indexing.o \

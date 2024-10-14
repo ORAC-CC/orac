@@ -34,7 +34,7 @@ end subroutine read_era5_jasmin_wind_nc
 
 
 subroutine read_era5_jasmin_nc(nwp_fnames, idx, ecmwf, preproc_dims, preproc_geoloc, &
-     preproc_prtm, preproc_opts, verbose, nwp_flag, date, ind)
+     preproc_prtm, verbose, nwp_flag)
 
     use orac_ncdf_m
     use preproc_constants_m
@@ -42,16 +42,14 @@ subroutine read_era5_jasmin_nc(nwp_fnames, idx, ecmwf, preproc_dims, preproc_geo
 
     implicit none
 
-    type(preproc_opts_t), intent(inout)    :: preproc_opts
     type(preproc_nwp_fnames_t), intent(in)    :: nwp_fnames
     integer,                    intent(in)    :: idx
-    type(ecmwf_t),              intent(inout)    :: ecmwf
+    type(ecmwf_t),              intent(in)    :: ecmwf
     type(preproc_dims_t),       intent(in)    :: preproc_dims
     type(preproc_geoloc_t),     intent(in)    :: preproc_geoloc
     type(preproc_prtm_t),       intent(inout) :: preproc_prtm
     logical,                    intent(in)    :: verbose
     integer,                    intent(in)    :: nwp_flag
-    integer,          intent(in)          :: date, ind
 
     integer(lint),     external            :: INTIN, INTOUT, INTF
     integer(lint),     parameter           :: BUFFER = 2000000
@@ -62,169 +60,78 @@ subroutine read_era5_jasmin_nc(nwp_fnames, idx, ecmwf, preproc_dims, preproc_geo
     ! open file
     ! Do temperature on model levels
     call load_era5_netcdf_3d(nwp_fnames%t_f(idx), 't', dummy3d_2)
-    if (verbose) print*, trim(adjustl(nwp_fnames%t_f(idx)))
-    if (.not. preproc_opts%use_ecmwf_preproc_grid) then
-       call preproc_3d_var(dummy3d_2, ecmwf, preproc_dims, preproc_geoloc, preproc_prtm%temperature)
-    else
-       call rearrange_ecmwf_var3d(ecmwf, dummy3d_2, date, ind)
-       preproc_prtm%temperature =dummy3d_2(preproc_dims%min_lon_ind:preproc_dims%max_lon_ind, &
-                                           preproc_dims%min_lat_ind:preproc_dims%max_lat_ind, :) 
-    end if 
+    call preproc_3d_var(dummy3d_2, ecmwf, preproc_dims, preproc_geoloc, preproc_prtm%temperature)
     if (verbose) print*, 'T)     Min: ', minval(preproc_prtm%temperature), ', Max: ', maxval(preproc_prtm%temperature)
 
     ! Do specific humidity on model levels
     call load_era5_netcdf_3d(nwp_fnames%q_f(idx), 'q', dummy3d_2)
-    if (.not. preproc_opts%use_ecmwf_preproc_grid) then
-       call preproc_3d_var(dummy3d_2, ecmwf, preproc_dims, preproc_geoloc, preproc_prtm%spec_hum)
-    else
-       call rearrange_ecmwf_var3d(ecmwf, dummy3d_2, date, ind)
-       preproc_prtm%spec_hum = dummy3d_2(preproc_dims%min_lon_ind:preproc_dims%max_lon_ind, &
-                                       preproc_dims%min_lat_ind:preproc_dims%max_lat_ind, :) 
-    end if
+    call preproc_3d_var(dummy3d_2, ecmwf, preproc_dims, preproc_geoloc, preproc_prtm%spec_hum)
     if (verbose) print*, 'Q)     Min: ', minval(preproc_prtm%spec_hum), ', Max: ', maxval(preproc_prtm%spec_hum)
 
     ! Do ozone on model levels
     call load_era5_netcdf_3d(nwp_fnames%o3_f(idx), 'o3', dummy3d_2)
-    if (.not. preproc_opts%use_ecmwf_preproc_grid) then
-       call preproc_3d_var(dummy3d_2, ecmwf, preproc_dims, preproc_geoloc, preproc_prtm%ozone)
-    else
-       call rearrange_ecmwf_var3d(ecmwf, dummy3d_2, date, ind)
-       preproc_prtm%ozone =dummy3d_2(preproc_dims%min_lon_ind:preproc_dims%max_lon_ind, &
-                                           preproc_dims%min_lat_ind:preproc_dims%max_lat_ind, :) 
-    end if 
+    call preproc_3d_var(dummy3d_2, ecmwf, preproc_dims, preproc_geoloc, preproc_prtm%ozone)
     if (verbose) print*, 'O3)    Min: ', minval(preproc_prtm%ozone), ', Max: ', maxval(preproc_prtm%ozone)
 
     ! Do logarithm of surface pressure
     call load_era5_netcdf_2d(nwp_fnames%lnsp_f(idx), 'lnsp', dummy2d)
-    if (.not. preproc_opts%use_ecmwf_preproc_grid) then
-       call preproc_2d_var(dummy2d, ecmwf, preproc_dims, preproc_geoloc, preproc_prtm%lnsp)
-    else
-       call rearrange_ecmwf_var2d(ecmwf, dummy2d, date, ind)
-       preproc_prtm%lnsp =dummy2d(preproc_dims%min_lon_ind:preproc_dims%max_lon_ind, &
-                                           preproc_dims%min_lat_ind:preproc_dims%max_lat_ind) 
-    end if 
+    call preproc_2d_var(dummy2d, ecmwf, preproc_dims, preproc_geoloc, preproc_prtm%lnsp)
     if (verbose) print*, 'LNSP)  Min: ', minval(preproc_prtm%lnsp), ', Max: ', maxval(preproc_prtm%lnsp)
 
     ! Do geopotential
     call load_era5_netcdf_2d(nwp_fnames%z_f(idx), 'z', dummy2d)
-    if (.not. preproc_opts%use_ecmwf_preproc_grid) then
-       call preproc_2d_var(dummy2d, ecmwf, preproc_dims, preproc_geoloc, preproc_prtm%geopot)
-    else
-       call rearrange_ecmwf_var2d(ecmwf, dummy2d, date, ind)
-       preproc_prtm%geopot =dummy2d(preproc_dims%min_lon_ind:preproc_dims%max_lon_ind, &
-                                           preproc_dims%min_lat_ind:preproc_dims%max_lat_ind) 
-    end if 
+    call preproc_2d_var(dummy2d, ecmwf, preproc_dims, preproc_geoloc, preproc_prtm%geopot)
     if (verbose) print*, 'GEOP)  Min: ', minval(preproc_prtm%geopot), ', Max: ', maxval(preproc_prtm%geopot)
 
     ! Do sea ice fraction
     call load_era5_netcdf_2d(nwp_fnames%ci_f(idx), 'siconc', dummy2d)
-    if (.not. preproc_opts%use_ecmwf_preproc_grid) then
-       call preproc_2d_var(dummy2d, ecmwf, preproc_dims, preproc_geoloc, preproc_prtm%sea_ice_cover)
-    else
-       call rearrange_ecmwf_var2d(ecmwf, dummy2d, date, ind)
-       preproc_prtm%sea_ice_cover =dummy2d(preproc_dims%min_lon_ind:preproc_dims%max_lon_ind, &
-                                           preproc_dims%min_lat_ind:preproc_dims%max_lat_ind) 
-    end if 
+    call preproc_2d_var(dummy2d, ecmwf, preproc_dims, preproc_geoloc, preproc_prtm%sea_ice_cover)
     if (verbose) print*, 'CI)    Min: ', minval(preproc_prtm%sea_ice_cover), ', Max: ', maxval(preproc_prtm%sea_ice_cover)
 
     ! Do snow albedo
     call load_era5_netcdf_2d(nwp_fnames%asn_f(idx), 'asn', dummy2d)
-    if (.not. preproc_opts%use_ecmwf_preproc_grid) then
-       call preproc_2d_var(dummy2d, ecmwf, preproc_dims, preproc_geoloc, preproc_prtm%snow_albedo)
-    else
-       call rearrange_ecmwf_var2d(ecmwf, dummy2d, date, ind)
-       preproc_prtm%snow_albedo =dummy2d(preproc_dims%min_lon_ind:preproc_dims%max_lon_ind, &
-                                           preproc_dims%min_lat_ind:preproc_dims%max_lat_ind) 
-    end if 
+    call preproc_2d_var(dummy2d, ecmwf, preproc_dims, preproc_geoloc, preproc_prtm%snow_albedo)
     if (verbose) print*, 'ASN)   Min: ', minval(preproc_prtm%snow_albedo), ', Max: ', maxval(preproc_prtm%snow_albedo)
 
     ! Do total column water vapour
     call load_era5_netcdf_2d(nwp_fnames%tcwv_f(idx), 'tcwv', dummy2d)
-    if (.not. preproc_opts%use_ecmwf_preproc_grid) then
-       call preproc_2d_var(dummy2d, ecmwf, preproc_dims, preproc_geoloc, preproc_prtm%totcolwv)
-    else
-       call rearrange_ecmwf_var2d(ecmwf, dummy2d, date, ind)
-       preproc_prtm%totcolwv =dummy2d(preproc_dims%min_lon_ind:preproc_dims%max_lon_ind, &
-                                           preproc_dims%min_lat_ind:preproc_dims%max_lat_ind) 
-    end if 
+    call preproc_2d_var(dummy2d, ecmwf, preproc_dims, preproc_geoloc, preproc_prtm%totcolwv)
     if (verbose) print*, 'TCWV)  Min: ', minval(preproc_prtm%totcolwv), ', Max: ', maxval(preproc_prtm%totcolwv)
 
     ! Do snow depth
     call load_era5_netcdf_2d(nwp_fnames%sd_f(idx), 'sd', dummy2d)
-    if (.not. preproc_opts%use_ecmwf_preproc_grid) then
-       call preproc_2d_var(dummy2d, ecmwf, preproc_dims, preproc_geoloc, preproc_prtm%snow_depth)
-    else
-       call rearrange_ecmwf_var2d(ecmwf, dummy2d, date, ind)
-       preproc_prtm%snow_depth =dummy2d(preproc_dims%min_lon_ind:preproc_dims%max_lon_ind, &
-                                           preproc_dims%min_lat_ind:preproc_dims%max_lat_ind)  
-    end if 
+    call preproc_2d_var(dummy2d, ecmwf, preproc_dims, preproc_geoloc, preproc_prtm%snow_depth)
     if (verbose) print*, 'SD)    Min: ', minval(preproc_prtm%snow_depth), ', Max: ', maxval(preproc_prtm%snow_depth)
 
     ! Do U-component of 10m wind
     call load_era5_netcdf_2d(nwp_fnames%u10_f(idx), 'u10', dummy2d)
-    if (.not. preproc_opts%use_ecmwf_preproc_grid) then
-       call preproc_2d_var(dummy2d, ecmwf, preproc_dims, preproc_geoloc, preproc_prtm%u10)
-    else
-       call rearrange_ecmwf_var2d(ecmwf, dummy2d, date, ind)
-       preproc_prtm%u10 =dummy2d(preproc_dims%min_lon_ind:preproc_dims%max_lon_ind, &
-                                           preproc_dims%min_lat_ind:preproc_dims%max_lat_ind) 
-    end if 
+    call preproc_2d_var(dummy2d, ecmwf, preproc_dims, preproc_geoloc, preproc_prtm%u10)
     if (verbose) print*, 'U10)    Min: ', minval(preproc_prtm%u10), ', Max: ', maxval(preproc_prtm%u10)
 
     ! Do V-component of 10m wind
     call load_era5_netcdf_2d(nwp_fnames%v10_f(idx), 'v10', dummy2d)
-    if (.not. preproc_opts%use_ecmwf_preproc_grid) then
-       call preproc_2d_var(dummy2d, ecmwf, preproc_dims, preproc_geoloc, preproc_prtm%v10)
-    else
-       call rearrange_ecmwf_var2d(ecmwf, dummy2d, date, ind)
-       preproc_prtm%v10 =dummy2d(preproc_dims%min_lon_ind:preproc_dims%max_lon_ind, &
-                                           preproc_dims%min_lat_ind:preproc_dims%max_lat_ind) 
-    end if 
+    call preproc_2d_var(dummy2d, ecmwf, preproc_dims, preproc_geoloc, preproc_prtm%v10)
     if (verbose) print*, 'V10)    Min: ', minval(preproc_prtm%v10), ', Max: ', maxval(preproc_prtm%v10)
 
     ! Do 2m temperature
     call load_era5_netcdf_2d(nwp_fnames%t2_f(idx), 't2m', dummy2d)
-    if (.not. preproc_opts%use_ecmwf_preproc_grid) then
-       call preproc_2d_var(dummy2d, ecmwf, preproc_dims, preproc_geoloc, preproc_prtm%temp2)
-    else
-       call rearrange_ecmwf_var2d(ecmwf, dummy2d, date, ind)
-       preproc_prtm%temp2 =dummy2d(preproc_dims%min_lon_ind:preproc_dims%max_lon_ind, &
-                                           preproc_dims%min_lat_ind:preproc_dims%max_lat_ind) 
-    end if 
+    call preproc_2d_var(dummy2d, ecmwf, preproc_dims, preproc_geoloc, preproc_prtm%temp2)
     if (verbose) print*, 'T2)     Min: ', minval(preproc_prtm%temp2), ', Max: ', maxval(preproc_prtm%temp2)
 
     ! Do skin temperature
     call load_era5_netcdf_2d(nwp_fnames%skt_f(idx), 'skt', dummy2d)
-    if (.not. preproc_opts%use_ecmwf_preproc_grid) then
-       call preproc_2d_var(dummy2d, ecmwf, preproc_dims, preproc_geoloc, preproc_prtm%skin_temp)
-    else
-       call rearrange_ecmwf_var2d(ecmwf, dummy2d, date, ind)
-       preproc_prtm%skin_temp =dummy2d(preproc_dims%min_lon_ind:preproc_dims%max_lon_ind, &
-                                           preproc_dims%min_lat_ind:preproc_dims%max_lat_ind) 
-    end if 
+    call preproc_2d_var(dummy2d, ecmwf, preproc_dims, preproc_geoloc, preproc_prtm%skin_temp)
     if (verbose) print*, 'SKT)     Min: ', minval(preproc_prtm%skin_temp), ', Max: ', maxval(preproc_prtm%skin_temp)
 
     ! Do sea surface temperature
     call load_era5_netcdf_2d(nwp_fnames%sstk_f(idx), 'sst', dummy2d)
-    if (.not. preproc_opts%use_ecmwf_preproc_grid) then
-       call preproc_2d_var(dummy2d, ecmwf, preproc_dims, preproc_geoloc, preproc_prtm%sst)
-    else
-       call rearrange_ecmwf_var2d(ecmwf, dummy2d, date, ind)
-       preproc_prtm%sst =dummy2d(preproc_dims%min_lon_ind:preproc_dims%max_lon_ind, &
-                                           preproc_dims%min_lat_ind:preproc_dims%max_lat_ind) 
-    end if 
+    call preproc_2d_var(dummy2d, ecmwf, preproc_dims, preproc_geoloc, preproc_prtm%sst)
     if (verbose) print*, 'SST)     Min: ', minval(preproc_prtm%sst), ', Max: ', maxval(preproc_prtm%sst)
 
 #ifdef INCLUDE_SATWX
     ! Do convective available potential energy
     call load_era5_netcdf_2d(nwp_fnames%cape_f(idx), 'cape', dummy2d)
-    if (.not. preproc_opts%use_ecmwf_preproc_grid) then
-       call preproc_2d_var(dummy2d, ecmwf, preproc_dims, preproc_geoloc, preproc_prtm%cape)
-    else
-       call rearrange_ecmwf_var2d(ecmwf, dummy2d, date, ind)
-       preproc_prtm%cape =dummy2d(preproc_dims%min_lon_ind:preproc_dims%max_lon_ind, &
-                                           preproc_dims%min_lat_ind:preproc_dims%max_lat_ind) 
-    end if 
+    call preproc_2d_var(dummy2d, ecmwf, preproc_dims, preproc_geoloc, preproc_prtm%cape)
     if (verbose) print*, 'CAPE)    Min: ', minval(preproc_prtm%cape), ', Max: ', maxval(preproc_prtm%cape)
 #endif
 end subroutine read_era5_jasmin_nc
@@ -300,10 +207,10 @@ subroutine preproc_3d_var(dummy_in, ecmwf, preproc_dims, preproc_geoloc, out_arr
     grid(2) = 0.5 / preproc_dims%dellat
     if (INTOUT('grid', intv, grid, charv) .ne. 0) &
         call h_e_e('nc', 'INTOUT grid failed.')
-    area(1) = preproc_geoloc%latitude(preproc_dims%ydim) + 0.01*grid(2)
-    area(2) = preproc_geoloc%longitude(1) + 0.01*grid(1)
-    area(3) = preproc_geoloc%latitude(1) + 0.01*grid(2)
-    area(4) = preproc_geoloc%longitude(preproc_dims%xdim) + 0.01*grid(1)
+    area(1) = preproc_geoloc%latitude(preproc_dims%max_lat) + 0.01*grid(2)
+    area(2) = preproc_geoloc%longitude(preproc_dims%min_lon) + 0.01*grid(1)
+    area(3) = preproc_geoloc%latitude(preproc_dims%min_lat) + 0.01*grid(2)
+    area(4) = preproc_geoloc%longitude(preproc_dims%max_lon) + 0.01*grid(1)
     if (INTOUT('area', intv, area, charv) .ne. 0) &
         call h_e_e('nc', 'INTOUT area failed.')
 
@@ -327,7 +234,7 @@ subroutine preproc_3d_var(dummy_in, ecmwf, preproc_dims, preproc_geoloc, out_arr
         ! copy data into preprocessing grid
         do j = 1, nj, 2
             do i = 1, ni, 2
-                out_arr3d(1+i/2,1+(nj-j)/2, k) = real(new_data(i+(j-1)*ni), kind=4)
+                out_arr3d(preproc_dims%min_lon+i/2, preproc_dims%min_lat+(nj-j)/2, k) = real(new_data(i+(j-1)*ni), kind=4)
             end do
         end do
     end do
@@ -378,10 +285,10 @@ subroutine preproc_2d_var(dummy_in, ecmwf, preproc_dims, preproc_geoloc, out_arr
     grid(2) = 0.5 / preproc_dims%dellat
     if (INTOUT('grid', intv, grid, charv) .ne. 0) &
         call h_e_e('nc', 'INTOUT grid failed.')
-    area(1) = preproc_geoloc%latitude(preproc_dims%ydim) + 0.01*grid(2)
-    area(2) = preproc_geoloc%longitude(1) + 0.01*grid(1)
-    area(3) = preproc_geoloc%latitude(1) + 0.01*grid(2)
-    area(4) = preproc_geoloc%longitude(preproc_dims%xdim) + 0.01*grid(1)
+    area(1) = preproc_geoloc%latitude(preproc_dims%max_lat) + 0.01*grid(2)
+    area(2) = preproc_geoloc%longitude(preproc_dims%min_lon) + 0.01*grid(1)
+    area(3) = preproc_geoloc%latitude(preproc_dims%min_lat) + 0.01*grid(2)
+    area(4) = preproc_geoloc%longitude(preproc_dims%max_lon) + 0.01*grid(1)
     if (INTOUT('area', intv, area, charv) .ne. 0) &
         call h_e_e('nc', 'INTOUT area failed.')
 
@@ -404,7 +311,7 @@ subroutine preproc_2d_var(dummy_in, ecmwf, preproc_dims, preproc_geoloc, out_arr
     ! copy data into preprocessing grid
          do j = 1, nj, 2
             do i = 1, ni, 2
-               out_arr2d(1+i/2,1+(nj-j)/2) = real(new_data(i+(j-1)*ni), kind=4)
+               out_arr2d(preproc_dims%min_lon+i/2, preproc_dims%min_lat+(nj-j)/2) = real(new_data(i+(j-1)*ni), kind=4)
             end do
          end do
 

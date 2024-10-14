@@ -25,7 +25,6 @@
 !
 ! History:
 ! 2017/07/20, SP: Initial version, cloned from read_ecmwf_nc.F90
-! 2024/07/01, DH: Change indexing to use preproc_dims for all dimensions
 !
 ! Bugs:
 ! - you need to be careful with parameter naming as the variable names are not
@@ -94,10 +93,10 @@ subroutine read_gfs_nc(nwp_path, ecmwf, preproc_dims, preproc_geoloc, &
    grid(2) = 0.5 / preproc_dims%dellat
    if (INTOUT('grid', intv, grid, charv) .ne. 0) &
         call h_e_e('nc', 'INTOUT grid failed.')
-   area(1) = preproc_geoloc%latitude(preproc_dims%ydim) + 0.01*grid(2)
-   area(2) = preproc_geoloc%longitude(1) + 0.01*grid(1)
-   area(3) = preproc_geoloc%latitude(1) + 0.01*grid(2)
-   area(4) = preproc_geoloc%longitude(preproc_dims%xdim) + 0.01*grid(1)
+   area(1) = preproc_geoloc%latitude(preproc_dims%max_lat) + 0.01*grid(2)
+   area(2) = preproc_geoloc%longitude(preproc_dims%min_lon) + 0.01*grid(1)
+   area(3) = preproc_geoloc%latitude(preproc_dims%min_lat) + 0.01*grid(2)
+   area(4) = preproc_geoloc%longitude(preproc_dims%max_lon) + 0.01*grid(1)
    if (INTOUT('area', intv, area, charv) .ne. 0) &
         call h_e_e('nc', 'INTOUT area failed.')
    ni = ceiling((area(4)+180.)/grid(1)) - floor((area(2)+180.)/grid(1)) + 1
@@ -187,7 +186,8 @@ subroutine read_gfs_nc(nwp_path, ecmwf, preproc_dims, preproc_geoloc, &
             ! copy data into preprocessing grid
             do j = 1, nj, 2
                do i = 1, ni, 2
-                  array3d(1+i/2,1+(nj-j)/2, k) = &
+                  array3d(preproc_dims%min_lon+i/2, &
+                     preproc_dims%min_lat+(nj-j)/2, k) = &
                      real(new_data(i+(j-1)*ni), kind=4)
                end do
             end do
@@ -208,7 +208,8 @@ subroutine read_gfs_nc(nwp_path, ecmwf, preproc_dims, preproc_geoloc, &
          ! copy data into preprocessing grid
          do j = 1, nj, 2
             do i = 1, ni, 2
-               array2d(1+i/2,1+(nj-j)/2) = &
+               array2d(preproc_dims%min_lon+i/2, &
+                  preproc_dims%min_lat+(nj-j)/2) = &
                   real(new_data(i+(j-1)*ni), kind=4)
             end do
          end do

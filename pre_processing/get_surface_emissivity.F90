@@ -22,7 +22,6 @@
 !                                 channel counts
 ! preproc_dims       struct  in   Preprocessing dimensions, including sw and lw
 !                                 channel counts
-! preproc_geoloc     struct  in   Summary of preprocessing lat/lon
 ! assume_full_path   logic   in   T: inputs are filenames; F: folder names
 ! verbose            logic   in   T: print status information; F: don't
 ! surface            struct  both Surface properties structure
@@ -71,14 +70,13 @@
 ! 2015/01/13, AP: Alter channel indexing to allow channels in arbitrary order.
 ! 2015/10/19, GM: Turn back on reading of unused emissivity fields which are now
 !    optionally required.
-! 2024/07/01, DH: Change indexing to use preproc_dims for all dimensions
 !
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
 
 subroutine get_surface_emissivity(cyear, cdoy, cimss_emis_path, imager_flags, &
-           imager_geolocation, channel_info, preproc_dims, preproc_geoloc, &
+           imager_geolocation, channel_info, preproc_dims, &
            assume_full_path, verbose, surface, preproc_surf, source_atts)
 
    use channel_structures_m
@@ -100,7 +98,6 @@ subroutine get_surface_emissivity(cyear, cdoy, cimss_emis_path, imager_flags, &
    type(imager_geolocation_t), intent(in)    :: imager_geolocation
    type(channel_info_t),       intent(in)    :: channel_info
    type(preproc_dims_t),       intent(in)    :: preproc_dims
-   type(preproc_geoloc_t),     intent(in)    :: preproc_geoloc
    logical,                    intent(in)    :: assume_full_path
    logical,                    intent(in)    :: verbose
    type(surface_t),            intent(inout) :: surface
@@ -213,30 +210,31 @@ subroutine get_surface_emissivity(cyear, cdoy, cimss_emis_path, imager_flags, &
    end do
 
    ! calculate the mean emissivity in each preproc grid
-   allocate(counter(1:preproc_dims%xdim, &
-        1:preproc_dims%ydim))
-   allocate(summat(1:preproc_dims%xdim, &
-        1:preproc_dims%ydim, n_chans))
+   allocate(counter(preproc_dims%min_lon:preproc_dims%max_lon, &
+        preproc_dims%min_lat:preproc_dims%max_lat))
+   allocate(summat(preproc_dims%min_lon:preproc_dims%max_lon, &
+        preproc_dims%min_lat:preproc_dims%max_lat, n_chans))
 
    counter = 0
    summat  = 0.
    do j = 1, emis%nlat
-      if ((emis%lat0+(j-1)*emis%lat_del).ge.minval(preproc_geoloc%latitude) .and. &
-           (emis%lat0+(j-1)*emis%lat_del).le.maxval(preproc_geoloc%latitude)) then
-         lat = minloc(abs(preproc_geoloc%latitude - (emis%lat0+(j-1)*emis%lat_del)),1)
+      lat = floor((emis%lat0+(j-1)*emis%lat_del+preproc_dims%lat_offset)* &
+            preproc_dims%dellat)+1
+      if (lat.ge.preproc_dims%min_lat .and. lat.le.preproc_dims%max_lat) then
          do i = 1, emis%nlon
-            if ((emis%lon0+(i-1)*emis%lon_del).ge.minval(preproc_geoloc%longitude) .and. &
-                 (emis%lon0+(i-1)*emis%lon_del).le.maxval(preproc_geoloc%longitude)) then
-               lon = minloc(abs(preproc_geoloc%longitude - (emis%lon0+(i-1)*emis%lon_del)),1)
+            lon = floor((emis%lon0+(i-1)*emis%lon_del+preproc_dims%lon_offset)* &
+                  preproc_dims%dellon)+1
+            if (lon.ge.preproc_dims%min_lon .and. &
+                 lon.le.preproc_dims%max_lon) then
                summat(lon,lat,:) = summat(lon,lat,:)+transemis(i,j,:)
-               counter(lon,lat)  = counter(lon,lat)+1 
+               counter(lon,lat)  = counter(lon,lat)+1
             end if
          end do
       end if
    end do
 
-   do j = 1, preproc_dims%ydim
-      do i = 1, preproc_dims%xdim
+   do j = preproc_dims%min_lat, preproc_dims%max_lat
+      do i = preproc_dims%min_lon, preproc_dims%max_lon
          if (counter(i,j) .gt. 0) then
             preproc_surf%emissivity(i,j,ch_lw_index) = summat(i,j,:) / &
                real(counter(i,j))
@@ -261,7 +259,7 @@ end subroutine get_surface_emissivity
 !-------------------------------------------------------------------------------
 
 subroutine get_camel_emissivity(cyear, cmonth, camel_emis_path, imager_flags, &
-           imager_geolocation, channel_info, preproc_dims, preproc_geoloc, &
+           imager_geolocation, channel_info, preproc_dims, &
            assume_full_path, verbose, surface, preproc_surf, source_atts)
 
    use channel_structures_m
@@ -283,7 +281,6 @@ subroutine get_camel_emissivity(cyear, cmonth, camel_emis_path, imager_flags, &
    type(imager_geolocation_t), intent(in)    :: imager_geolocation
    type(channel_info_t),       intent(in)    :: channel_info
    type(preproc_dims_t),       intent(in)    :: preproc_dims
-   type(preproc_geoloc_t),     intent(in)    :: preproc_geoloc
    logical,                    intent(in)    :: assume_full_path
    logical,                    intent(in)    :: verbose
    type(surface_t),            intent(inout) :: surface
@@ -392,21 +389,22 @@ subroutine get_camel_emissivity(cyear, cmonth, camel_emis_path, imager_flags, &
    end do
 
    ! calculate the mean emissivity in each preproc grid
-   allocate(counter(1:preproc_dims%xdim, &
-        1:preproc_dims%ydim))
-   allocate(summat(1:preproc_dims%xdim, &
-        1:preproc_dims%ydim, n_chans))
+   allocate(counter(preproc_dims%min_lon:preproc_dims%max_lon, &
+        preproc_dims%min_lat:preproc_dims%max_lat))
+   allocate(summat(preproc_dims%min_lon:preproc_dims%max_lon, &
+        preproc_dims%min_lat:preproc_dims%max_lat, n_chans))
 
    counter = 0
    summat  = 0.
    do j = 1, emis%nlat
-      if ((emis%lat0+(j-1)*emis%lat_del).ge.minval(preproc_geoloc%latitude) .and. &
-           (emis%lat0+(j-1)*emis%lat_del).le.maxval(preproc_geoloc%latitude)) then
-         lat = minloc(abs(preproc_geoloc%latitude - (emis%lat0+(j-1)*emis%lat_del)),1)
+      lat = floor((emis%lat0+(j-1)*emis%lat_del+preproc_dims%lat_offset)* &
+            preproc_dims%dellat)+1
+      if (lat.ge.preproc_dims%min_lat .and. lat.le.preproc_dims%max_lat) then
          do i = 1, emis%nlon
-            if ((emis%lon0+(i-1)*emis%lon_del).ge.minval(preproc_geoloc%longitude) .and. &
-                 (emis%lon0+(i-1)*emis%lon_del).le.maxval(preproc_geoloc%longitude)) then
-               lon = minloc(abs(preproc_geoloc%longitude - (emis%lon0+(i-1)*emis%lon_del)),1)
+            lon = floor((emis%lon0+(i-1)*emis%lon_del+preproc_dims%lon_offset)* &
+                  preproc_dims%dellon)+1
+            if (lon.ge.preproc_dims%min_lon .and. &
+                 lon.le.preproc_dims%max_lon) then
                summat(lon,lat,:) = summat(lon,lat,:)+emis%emissivity(i,j,:)
                counter(lon,lat)  = counter(lon,lat)+1
             end if
@@ -414,12 +412,11 @@ subroutine get_camel_emissivity(cyear, cmonth, camel_emis_path, imager_flags, &
       end if
    end do
 
-   do j = 1, preproc_dims%ydim
-      do i = 1, preproc_dims%xdim
+   do j = preproc_dims%min_lat, preproc_dims%max_lat
+      do i = preproc_dims%min_lon, preproc_dims%max_lon
          if (counter(i,j) .gt. 0) then
             preproc_surf%emissivity(i,j,ch_lw_index) = summat(i,j,:) / &
                real(counter(i,j))
-            print*,preproc_surf%emissivity(i,j,ch_lw_index)
          end if
       end do
    end do

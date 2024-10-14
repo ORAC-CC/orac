@@ -33,20 +33,17 @@
 ! 2015/21/01, OS: bug fix in setting lon_i/lat_i min/max limits
 ! 2015/01/30, AP: Remove uscan and vscan as unnecessary.
 ! 2017/11/15, SP: Add feature to give access to sensor azimuth angle
-! 2024/07/01, DH: Change indexing to use preproc_dims for all dimensions and
-!    use native grid of ECMWF
 !
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
 
 subroutine build_preproc_fields(preproc_dims, preproc_geoloc, preproc_geo, &
-     imager_geolocation, imager_angles, ecmwf, use_ecmwf_preproc_grid)
+     imager_geolocation, imager_angles)
 
    use imager_structures_m
    use preproc_constants_m
    use preproc_structures_m
-   use ecmwf_m
 
    implicit none
 
@@ -55,34 +52,27 @@ subroutine build_preproc_fields(preproc_dims, preproc_geoloc, preproc_geo, &
    type(preproc_geo_t),        intent(inout) :: preproc_geo
    type(imager_geolocation_t), intent(inout) :: imager_geolocation
    type(imager_angles_t),      intent(inout) :: imager_angles
-   type(ecmwf_t),              intent(inout)    :: ecmwf
-   logical,                    intent(inout)    :: use_ecmwf_preproc_grid
+
    integer(kind=lint)         :: i,j,k,lon_i,lat_j
    real(sreal)                :: fac
 
-
-   
    ! build the arrays for the regular grid
-   if (use_ecmwf_preproc_grid) then
-      preproc_geoloc%latitude=ecmwf%lat(preproc_dims%min_lat_ind:preproc_dims%max_lat_ind)
-      preproc_geoloc%longitude=ecmwf%lon(preproc_dims%min_lon_ind:preproc_dims%max_lon_ind)
-   else
-       ! create grid resolution lat
-      fac = 1. / preproc_dims%dellat
-      preproc_geoloc%latitude(1) = &
-           (preproc_dims%min_lat-0.5)*fac - real(preproc_dims%lat_offset,sreal)
-      do i = 2, preproc_dims%ydim
-         preproc_geoloc%latitude(i) = preproc_geoloc%latitude(i-1) + fac
-      end do
 
-      ! create grid resolution lon
-      fac = 1. / preproc_dims%dellon
-      preproc_geoloc%longitude(1) = &
-           (preproc_dims%min_lon-0.5)*fac - real(preproc_dims%lon_offset,sreal)
-      do i = 2, preproc_dims%xdim
-         preproc_geoloc%longitude(i) = preproc_geoloc%longitude(i-1) + fac
-      end do      
-   end if
+   ! create grid resolution lat
+   fac = 1. / preproc_dims%dellat
+   preproc_geoloc%latitude(preproc_dims%min_lat) = &
+        (preproc_dims%min_lat-0.5)*fac - real(preproc_dims%lat_offset,sreal)
+   do i = preproc_dims%min_lat+1, preproc_dims%max_lat
+      preproc_geoloc%latitude(i) = preproc_geoloc%latitude(i-1) + fac
+   end do
+
+   ! create grid resolution lon
+   fac = 1. / preproc_dims%dellon
+   preproc_geoloc%longitude(preproc_dims%min_lon) = &
+        (preproc_dims%min_lon-0.5)*fac - real(preproc_dims%lon_offset,sreal)
+   do i = preproc_dims%min_lon+1, preproc_dims%max_lon
+      preproc_geoloc%longitude(i) = preproc_geoloc%longitude(i-1) + fac
+   end do
 
    ! imager resolution is always higher than preprocessing resolution
    ! =>average imager properties to this coarser resolution grid.
@@ -99,13 +89,16 @@ subroutine build_preproc_fields(preproc_dims, preproc_geoloc, preproc_geo, &
               imager_geolocation%longitude(i,j) .eq. sreal_fill_value) cycle
 
          ! find grid cell coordinates into which L1b pixel falls
-         lat_j = minloc(abs(preproc_geoloc%latitude - imager_geolocation%latitude(i,j)),1)
-         lon_i = minloc(abs(preproc_geoloc%longitude - imager_geolocation%longitude(i,j)),1)
+         lon_i = floor((imager_geolocation%longitude(i,j) + &
+              preproc_dims%lon_offset)*preproc_dims%dellon, kind=lint) + 1
+         lat_j = floor((imager_geolocation%latitude(i,j) + &
+              preproc_dims%lat_offset)*preproc_dims%dellat, kind=lint) + 1
 
-         if (imager_geolocation%longitude(i,j) .lt. minval(preproc_geoloc%longitude)) lon_i = 1
-         if (imager_geolocation%latitude(i,j) .lt. minval(preproc_geoloc%latitude)) lat_j = 1
-         if (imager_geolocation%longitude(i,j) .gt. maxval(preproc_geoloc%longitude)) lon_i = preproc_dims%xdim
-         if (imager_geolocation%latitude(i,j) .gt. maxval(preproc_geoloc%latitude)) lat_j = preproc_dims%ydim
+         if (lon_i .lt. preproc_dims%min_lon) lon_i = preproc_dims%min_lon
+         if (lat_j .lt. preproc_dims%min_lat) lat_j = preproc_dims%min_lat
+         if (lon_i .gt. preproc_dims%max_lon) lon_i = preproc_dims%max_lon
+         if (lat_j .gt. preproc_dims%max_lat) lat_j = preproc_dims%max_lat
+
          do k = 1, imager_angles%nviews
             if (imager_angles%satzen(i,j,k) .ne. sreal_fill_value) then
                preproc_geo%satza(lon_i,lat_j,k) = &
@@ -139,8 +132,8 @@ subroutine build_preproc_fields(preproc_dims, preproc_geoloc, preproc_geo, &
    end do
 
    ! loop over preprocessor data i.e reduced resolution
-   do j = 1,preproc_dims%ydim
-      do i = 1,preproc_dims%xdim
+   do j = preproc_dims%min_lat, preproc_dims%max_lat
+      do i = preproc_dims%min_lon, preproc_dims%max_lon
          do k = 1, imager_angles%nviews
             if (preproc_dims%counter_lw(i,j,k) .gt. 0) then
                ! if this is a good preprocessing pixel, calculate the average

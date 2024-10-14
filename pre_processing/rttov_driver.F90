@@ -159,7 +159,6 @@
 !                 RTTOV documentation). Removed declaration on nevals
 !                 as it is not used anywhere else (and never had a
 !                 value assigned to it)!
-! 2024/07/01, DH: Change indexing to use preproc_dims for all dimensions
 !
 ! Bugs:
 ! - BRDF not yet implemented here, so RTTOV internal calculation used.
@@ -560,6 +559,7 @@ subroutine rttov_driver(coef_path, emiss_path, granule, preproc_dims, &
       write(*,*) 'ERROR: rttov_alloc_prof(), errorstatus = ', stat
       stop error_stop_code
    end if
+
    profiles%id = 'standard'
 
    ! Compute the appropriate CO2 value for this scene
@@ -572,9 +572,10 @@ subroutine rttov_driver(coef_path, emiss_path, granule, preproc_dims, &
    ! Copy preprocessing grid data into RTTOV profile structure
    ! Create a lowest layer from the surface properties
    count = 0
-   do jdim = 1, preproc_dims%ydim
-      do idim = 1, preproc_dims%xdim
+   do jdim = preproc_dims%min_lat, preproc_dims%max_lat
+      do idim = preproc_dims%min_lon, preproc_dims%max_lon
          count = count + 1
+
          ! Check to see if the ECMWF data read in includes ozone
          ! profiles: forecast data does not
          if (maxval(preproc_prtm%ozone(idim,jdim,:)) == 0.0) then
@@ -592,6 +593,7 @@ subroutine rttov_driver(coef_path, emiss_path, granule, preproc_dims, &
          profiles(count)%t(:nlayers) = preproc_prtm%temperature(idim,jdim,:)
          profiles(count)%q(:nlayers) = preproc_prtm%spec_hum(idim,jdim,:)
          profiles(count)%o3(:nlayers) = preproc_prtm%ozone(idim,jdim,:)
+
          ! Add CO2 in kg/kg for each level
          if (pre_opts%do_co2) profiles(count)%co2(:) = co2_val
 
@@ -638,8 +640,8 @@ subroutine rttov_driver(coef_path, emiss_path, granule, preproc_dims, &
 
          ! Write profiles structure to PRTM file (array operations needed to
          ! recast structure in form ncdf_write_array recognises)
-         i_ = idim
-         j_ = jdim
+         i_ = idim - preproc_dims%min_lon + 1
+         j_ = jdim - preproc_dims%min_lat + 1
          call ncdf_write_array(netcdf_info%ncid_prtm, 'lon_rtm', &
               netcdf_info%vid_lon_pw, &
               (/profiles(count)%longitude/), &
@@ -686,8 +688,8 @@ subroutine rttov_driver(coef_path, emiss_path, granule, preproc_dims, &
       if (verbose) write(*,*) ' - Calculating for viewing geometry number', cview
 
       count = 0
-      do jdim = 1, preproc_dims%ydim
-         do idim = 1, preproc_dims%xdim
+      do jdim = preproc_dims%min_lat, preproc_dims%max_lat
+         do idim = preproc_dims%min_lon, preproc_dims%max_lon
 
             count = count + 1
             profiles(count)%zenangle = preproc_geo%satza(idim,jdim,cview)
@@ -820,9 +822,11 @@ subroutine rttov_driver(coef_path, emiss_path, granule, preproc_dims, &
 #else
          if (verbose) write(*,*) 'Run RTTOV'
 #endif
-         do jdim = 1, preproc_dims%ydim
-            do idim = 1, preproc_dims%xdim
+         do jdim = preproc_dims%min_lat, preproc_dims%max_lat
+            do idim = preproc_dims%min_lon, preproc_dims%max_lon
+
                count = count + 1
+
                ! Process points that contain information and satisfy the zenith
                ! angle restrictions of the coefficient file
                if ((i_coef == 1 .and. &
@@ -831,6 +835,7 @@ subroutine rttov_driver(coef_path, emiss_path, granule, preproc_dims, &
                    (i_coef == 2 .and. &
                     preproc_dims%counter_sw(idim,jdim,cview) > 0 .and. &
                     profiles(count)%zenangle <= zenmaxv9)) then
+
                   ! Fetch emissivity from atlas
                   call rttov_get_emis(stat, opts, chanprof, &
                        profiles(count:count), coefs, emis_atlas, emis_data)
@@ -840,6 +845,7 @@ subroutine rttov_driver(coef_path, emiss_path, granule, preproc_dims, &
                      stop error_stop_code
                   end if
                   emissivity%emis_in = emis_data
+
                   ! Fetch emissivity from the MODIS CIMSS emissivity product
                   if (i_coef == 1 .and. pre_opts%use_modis_emis_in_rttov) then
                      where (preproc_surf%emissivity(idim,jdim,:) /= &
@@ -848,7 +854,9 @@ subroutine rttov_driver(coef_path, emiss_path, granule, preproc_dims, &
                              preproc_surf%emissivity(idim,jdim,chan_pos)
                      end where
                   end if
+
                   calcemis = emissivity%emis_in <= dither
+
                   if (preproc_dims%counter_lw(idim,jdim,cview) .gt. 0) then
                      ! Call RTTOV for this profile
 #ifdef INCLUDE_RTTOV_OPENMP
@@ -867,6 +875,7 @@ subroutine rttov_driver(coef_path, emiss_path, granule, preproc_dims, &
                         write(*,*) 'ERROR: rttov_direct(), errorstatus = ', stat
                         stop error_stop_code
                      end if
+
                      ! Remove the Rayleigh component from the RTTOV tranmittances only if RTTOV
                      ! ran with Rayleigh scattering switched on.
                      if (i_coef == 2) then
@@ -886,23 +895,23 @@ subroutine rttov_driver(coef_path, emiss_path, granule, preproc_dims, &
                if (i_coef == 1) then
                   do i_ = 1, nchan
                      call write_ir_rttov(netcdf_info, &
-                          idim, &
-                          jdim, &
+                          idim-preproc_dims%min_lon+1, &
+                          jdim-preproc_dims%min_lat+1, &
                           profiles(count)%nlevels, emissivity, transmission, &
                           radiance, radiance2, write_rttov, chan_pos(i_), i_)
                   end do
                else
                   do i_ = 1, nchan
                      call write_solar_rttov(netcdf_info, coefs, &
-                          idim, &
-                          jdim, &
+                          idim-preproc_dims%min_lon+1, &
+                          jdim-preproc_dims%min_lat+1, &
                           profiles(count)%nlevels, profiles(count)%zenangle, &
                           transmission, write_rttov, chan_pos(i_), i_)
                   end do
                end if
             end do
          end do
-         
+
          ! Loop again for cloud radiance
          if (pre_opts%do_cloud_emis) then
             count = 0
@@ -912,8 +921,8 @@ subroutine rttov_driver(coef_path, emiss_path, granule, preproc_dims, &
 #else
             if (verbose) write(*,*) 'Run RTTOV for cloud'
 #endif
-               do jdim = 1, preproc_dims%ydim
-                  do idim = 1, preproc_dims%xdim
+               do jdim = preproc_dims%min_lat, preproc_dims%max_lat
+                  do idim = preproc_dims%min_lon, preproc_dims%max_lon
                      count = count + 1
                      profiles(count)%cfraction = 1.
                      profiles(count)%ctp = preproc_prtm%trop_p(idim,jdim)
