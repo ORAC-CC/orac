@@ -419,7 +419,6 @@ subroutine get_camel_emissivity(cyear, cmonth, camel_emis_path, imager_flags, &
          if (counter(i,j) .gt. 0) then
             preproc_surf%emissivity(i,j,ch_lw_index) = summat(i,j,:) / &
                real(counter(i,j))
-            print*,preproc_surf%emissivity(i,j,ch_lw_index)
          end if
       end do
    end do

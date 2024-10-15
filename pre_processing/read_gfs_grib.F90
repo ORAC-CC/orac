@@ -166,8 +166,6 @@ subroutine read_gfs_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
            call h_e_e('grib', 'INTF2 failed.')
       out_words = out_bytes/lint
 
-!      print*,shape(out_data)
-!      print*,out_words,out_bytes,lint
 !      stop
       ! load grib data into grib_api
       call grib_new_from_message(gid,out_data(1:out_bytes),stat)
