@@ -40,7 +40,7 @@
 !    preproc_lwrtm%phi_lay and preproc_lwrtm%phi_lev
 ! 2013/10/16, CP: removed kdim_pre and removed ecmwf_dims form subroutine call,
 !    hanged array definition of players and plev
-! 2013/11/08, GM: Removed double allocations (allocated twice in a row) of
+! 2013/11/08, GM: Removed double allocations (associated twice in a row) of
 !    preproc_prtm%temperature through preproc_prtm%ozone.
 ! 2014/02/10, AP: Simplifying variable names
 ! 2014/05/01, GM: Add some allocations that were being done outside.
@@ -53,6 +53,7 @@
 ! 2017/03/29, SP: Add ability to calculate tropospheric cloud emissivity (ExtWork)
 ! 2017/11/15, SP: Add feature to give access to sensor azimuth angle
 ! 2018/07/18, DE: Add tropoopause temperature
+! 2024/07/01, DH: Change indexing to use preproc_dims for all dimensions
 !
 ! Bugs:
 ! None known.
@@ -67,67 +68,60 @@ subroutine allocate_preproc_prtm(preproc_dims, preproc_prtm)
    type(preproc_dims_t), intent(in)  :: preproc_dims
    type(preproc_prtm_t), intent(out) :: preproc_prtm
 
-   integer :: sx, ex, sy, ey
-
-   sx=preproc_dims%min_lon
-   ex=preproc_dims%max_lon
-   sy=preproc_dims%min_lat
-   ey=preproc_dims%max_lat
-
-   allocate(preproc_prtm%pressure(sx:ex,sy:ey,preproc_dims%kdim))
+   allocate(preproc_prtm%pressure(preproc_dims%xdim,preproc_dims%ydim,preproc_dims%kdim))
    preproc_prtm%pressure=sreal_fill_value
-   allocate(preproc_prtm%temperature(sx:ex,sy:ey,preproc_dims%kdim))
+   allocate(preproc_prtm%temperature(preproc_dims%xdim,preproc_dims%ydim,preproc_dims%kdim))
    preproc_prtm%temperature=sreal_fill_value
-   allocate(preproc_prtm%spec_hum(sx:ex,sy:ey,preproc_dims%kdim))
+   allocate(preproc_prtm%spec_hum(preproc_dims%xdim,preproc_dims%ydim,preproc_dims%kdim))
    preproc_prtm%spec_hum=sreal_fill_value
-   allocate(preproc_prtm%ozone(sx:ex,sy:ey,preproc_dims%kdim))
+   allocate(preproc_prtm%ozone(preproc_dims%xdim,preproc_dims%ydim,preproc_dims%kdim))
    preproc_prtm%ozone=sreal_fill_value
 
-   allocate(preproc_prtm%phi_lay(sx:ex,sy:ey,preproc_dims%kdim))
+   allocate(preproc_prtm%phi_lay(preproc_dims%xdim,preproc_dims%ydim,preproc_dims%kdim))
    preproc_prtm%phi_lay=sreal_fill_value
-   allocate(preproc_prtm%phi_lev(sx:ex,sy:ey,preproc_dims%kdim+1))
+   allocate(preproc_prtm%phi_lev(preproc_dims%xdim,preproc_dims%ydim,preproc_dims%kdim+1))
    preproc_prtm%phi_lev=sreal_fill_value
-
-   allocate(preproc_prtm%geopot(sx:ex,sy:ey))
+   
+   allocate(preproc_prtm%geopot(preproc_dims%xdim,preproc_dims%ydim))
    preproc_prtm%geopot=sreal_fill_value
-   allocate(preproc_prtm%lnsp(sx:ex,sy:ey))
+   allocate(preproc_prtm%lnsp(preproc_dims%xdim,preproc_dims%ydim))
    preproc_prtm%lnsp=sreal_fill_value
-
-   allocate(preproc_prtm%u10(sx:ex,sy:ey))
+   
+   allocate(preproc_prtm%u10(preproc_dims%xdim,preproc_dims%ydim))
    preproc_prtm%u10=sreal_fill_value
-   allocate(preproc_prtm%v10(sx:ex,sy:ey))
+   allocate(preproc_prtm%v10(preproc_dims%xdim,preproc_dims%ydim))
    preproc_prtm%v10=sreal_fill_value
-
-   allocate(preproc_prtm%land_sea_mask(sx:ex,sy:ey))
+   
+   allocate(preproc_prtm%land_sea_mask(preproc_dims%xdim,preproc_dims%ydim))
    preproc_prtm%land_sea_mask=sreal_fill_value
-
-   allocate(preproc_prtm%temp2(sx:ex,sy:ey))
+   
+   allocate(preproc_prtm%temp2(preproc_dims%xdim,preproc_dims%ydim))
    preproc_prtm%temp2=sreal_fill_value
-   allocate(preproc_prtm%skin_temp(sx:ex,sy:ey))
+   allocate(preproc_prtm%skin_temp(preproc_dims%xdim,preproc_dims%ydim))
    preproc_prtm%skin_temp=sreal_fill_value
 
-   allocate(preproc_prtm%snow_albedo(sx:ex,sy:ey))
+   allocate(preproc_prtm%snow_albedo(preproc_dims%xdim,preproc_dims%ydim))
    preproc_prtm%snow_albedo=sreal_fill_value
-   allocate(preproc_prtm%snow_depth(sx:ex,sy:ey))
+   allocate(preproc_prtm%snow_depth(preproc_dims%xdim,preproc_dims%ydim))
    preproc_prtm%snow_depth=sreal_fill_value
 
-   allocate(preproc_prtm%sst(sx:ex,sy:ey))
+   allocate(preproc_prtm%sst(preproc_dims%xdim,preproc_dims%ydim))
    preproc_prtm%sst=sreal_fill_value
-   allocate(preproc_prtm%sea_ice_cover(sx:ex,sy:ey))
-   preproc_prtm%sea_ice_cover=sreal_fill_value
+   allocate(preproc_prtm%sea_ice_cover(preproc_dims%xdim,preproc_dims%ydim))
+      preproc_prtm%sea_ice_cover=sreal_fill_value
 
-   allocate(preproc_prtm%totcolwv(sx:ex,sy:ey))
+   allocate(preproc_prtm%totcolwv(preproc_dims%xdim,preproc_dims%ydim))
    preproc_prtm%totcolwv=sreal_fill_value
 
 #ifdef INCLUDE_SATWX
-   allocate(preproc_prtm%trop_p(sx:ex,sy:ey))
+   allocate(preproc_prtm%trop_p(preproc_dims%xdim,preproc_dims%ydim))
    preproc_prtm%trop_p=sreal_fill_value
 
-   allocate(preproc_prtm%trop_t(sx:ex,sy:ey))
+   allocate(preproc_prtm%trop_t(preproc_dims%xdim,preproc_dims%ydim))
    preproc_prtm%trop_t=sreal_fill_value
 
 
-   allocate(preproc_prtm%cape(sx:ex,sy:ey))
+   allocate(preproc_prtm%cape(preproc_dims%xdim,preproc_dims%ydim))
    preproc_prtm%cape=sreal_fill_value
 #endif
 
@@ -153,50 +147,46 @@ subroutine allocate_preproc_structures(imager_angles,preproc_dims, &
    type(preproc_cld_t),    intent(out)   :: preproc_cld
    type(channel_info_t),   intent(inout) :: channel_info
 
-   integer :: nchan_sw, nchan_lw, sx, ex, sy, ey
+   integer :: nchan_sw, nchan_lw
 
    nchan_sw=channel_info%nchannels_sw
    nchan_lw=channel_info%nchannels_lw
-   sx=preproc_dims%min_lon
-   ex=preproc_dims%max_lon
-   sy=preproc_dims%min_lat
-   ey=preproc_dims%max_lat
 
    ! preproc_dims
-   allocate(preproc_dims%counter_sw(sx:ex,sy:ey,imager_angles%nviews))
+   allocate(preproc_dims%counter_sw(preproc_dims%xdim,preproc_dims%ydim,imager_angles%nviews))
    preproc_dims%counter_sw=0
-   allocate(preproc_dims%counter_lw(sx:ex,sy:ey,imager_angles%nviews))
+   allocate(preproc_dims%counter_lw(preproc_dims%xdim,preproc_dims%ydim,imager_angles%nviews))
    preproc_dims%counter_lw=0
 
    ! preproc_geoloc
-   allocate(preproc_geoloc%longitude(sx:ex))
+   allocate(preproc_geoloc%longitude(preproc_dims%xdim))
    preproc_geoloc%longitude=sreal_fill_value
-   allocate(preproc_geoloc%latitude(sy:ey))
+   allocate(preproc_geoloc%latitude(preproc_dims%ydim))
    preproc_geoloc%latitude=sreal_fill_value
 
    ! preproc_geo (init to 0 as used for summation in build_preproc_fields)
-   allocate(preproc_geo%solza(sx:ex,sy:ey,imager_angles%nviews))
+   allocate(preproc_geo%solza(preproc_dims%xdim,preproc_dims%ydim,imager_angles%nviews))
    preproc_geo%solza=0.0
-   allocate(preproc_geo%solazi(sx:ex,sy:ey,imager_angles%nviews))
+   allocate(preproc_geo%solazi(preproc_dims%xdim,preproc_dims%ydim,imager_angles%nviews))
    preproc_geo%solazi=0.0
-   allocate(preproc_geo%satza(sx:ex,sy:ey,imager_angles%nviews))
+   allocate(preproc_geo%satza(preproc_dims%xdim,preproc_dims%ydim,imager_angles%nviews))
    preproc_geo%satza=0.0
-   allocate(preproc_geo%satazi(sx:ex,sy:ey,imager_angles%nviews))
+   allocate(preproc_geo%satazi(preproc_dims%xdim,preproc_dims%ydim,imager_angles%nviews))
    preproc_geo%satazi=0.0
-   allocate(preproc_geo%relazi(sx:ex,sy:ey,imager_angles%nviews))
+   allocate(preproc_geo%relazi(preproc_dims%xdim,preproc_dims%ydim,imager_angles%nviews))
    preproc_geo%relazi=0.0
 
    ! preproc_prtm
    call allocate_preproc_prtm(preproc_dims, preproc_prtm)
 
    ! preproc_surf
-   allocate(preproc_surf%emissivity(sx:ex,sy:ey,nchan_lw))
+   allocate(preproc_surf%emissivity(preproc_dims%xdim,preproc_dims%ydim,nchan_lw))
    preproc_surf%emissivity=sreal_fill_value
 
    ! preproc_cld
-   allocate(preproc_cld%clear_bt(sx:ex,sy:ey,nchan_lw))
+   allocate(preproc_cld%clear_bt(preproc_dims%xdim,preproc_dims%ydim,nchan_lw))
    preproc_cld%clear_bt=0.0
-   allocate(preproc_cld%cloud_bt(sx:ex,sy:ey,nchan_lw))
+   allocate(preproc_cld%cloud_bt(preproc_dims%xdim,preproc_dims%ydim,nchan_lw))
    preproc_cld%cloud_bt=0.0
 
 end subroutine allocate_preproc_structures

@@ -405,7 +405,7 @@ module orac_output_m
       integer(byte) :: cldtype_scale  = 1
       integer(byte) :: cldtype_offset = 0
       integer(byte) :: cldtype_vmin   = 0
-      integer(byte) :: cldtype_vmax   = 9
+      integer(byte) :: cldtype_vmax   = 12
 
       integer(byte) :: cldmask_scale  = 1
       integer(byte) :: cldmask_offset = 0
