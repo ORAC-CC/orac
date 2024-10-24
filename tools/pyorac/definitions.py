@@ -276,6 +276,26 @@ class FileName:
             self.predef = True
             return
 
+        # Attempt GOES ABI filename in NetCDF format
+        mat = re.search(
+            r'OR_ABI-L1b-RadF-M6C(?P<band>\d{2})_G(?P<platform>\d{2})'
+            r'_s(?P<year>\d{4})(?P<doy>\d{3})'
+            r'(?P<hour>\d{2})(?P<min>\d{2})(\d{3})_e(\d{14})_c(\d{14})'
+            r'(-\d{6}_\d)?'
+            r'\.nc', filename
+        )
+
+        if mat:
+            self.sensor = 'ABI'
+            self.platform = 'GOES-'+str(int(mat.group('platform')))
+            self.time = (datetime.datetime(
+                int(mat.group('year')), 1, 1, int(mat.group('hour')),
+                int(mat.group('min')), 0, 0
+            ) + datetime.timedelta(days=int(mat.group('doy')) - 1))
+            self.dur = datetime.timedelta(seconds=600)  # Approximately
+            self.geo = filename
+            return
+
         # Attempt SEVIRI L1B filename in NAT format
         mat = re.search(
             r'MSG(?P<platform>\d{1})-SEVI-MSG(\d+)-(\d+)-NA-(?P<year>\d{4})'
