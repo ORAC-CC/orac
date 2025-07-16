@@ -28,6 +28,11 @@
 !    fac**2 factor.  Then reformulated the computation in the form of standard
 !    propagation of COT and CER uncertainty through the CWP computation.
 ! 2016/07/27, GM: Changes for the multilayer retrieval.
+! 2025/07/08, DR: COT is actually in linear space when using the new LUTs at this 
+!                 point, so if we try to convert it back to linear space through 
+!                 10**Tau, we end up with massive values of CWP. Changed to be in 
+!                 linear space and corrected the associated uncertainty. Not tested
+!                 with old LUTs, but all processing should now be done with new LUTs.
 !
 ! Bugs:
 ! None known.
@@ -80,7 +85,6 @@ subroutine Calc_CWP2(Ctrl, SPixel, Class, ITauX, IReX, CWP, CWP_uncertainty)
    ! Local variable declarations
 
    real :: fac
-   real :: tenpcot
    real :: dcwp_dtau
    real :: dcwp_dr_e
 
@@ -94,12 +98,10 @@ subroutine Calc_CWP2(Ctrl, SPixel, Class, ITauX, IReX, CWP, CWP_uncertainty)
       return
    end if
 
-   tenpcot = 10.**SPixel%Xn(ITauX)
+   CWP = fac * SPixel%Xn(ITauX) * SPixel%Xn(IReX)
 
-   CWP = fac * tenpcot * SPixel%Xn(IReX)
-
-   dcwp_dtau = fac * tenpcot * log(10.) * SPixel%Xn(IReX)
-   dcwp_dr_e = fac * tenpcot
+   dcwp_dtau = fac * SPixel%Xn(IReX)
+   dcwp_dr_e = fac * SPixel%Xn(ITauX)
 
    CWP_uncertainty = dcwp_dtau * dcwp_dtau * SPixel%Sn(ITauX,ITauX) + &
                      dcwp_dtau * dcwp_dr_e * SPixel%Sn(IReX,ITauX) + &
