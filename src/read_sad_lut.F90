@@ -15,6 +15,9 @@
 !    grids consistent in dimension size, spacing and vertex values.
 ! 2017/03/16, GT: Changes for single-view aerosol retrieval mode.
 ! 2021/03/08, AP: Gather grid dimensions into LUT_Grid_t
+! 2023/10/10, GT: Added calculation of old NedR (solar channel noise
+!    equivalent radiance) Read_NCDF_SAD_LUT(), to allow use of old
+!    uncertainty calculation with new LUTs.
 !
 ! Bugs:
 ! - Arrays are allocated excessively large as dimensions of the text tables
@@ -927,15 +930,21 @@ subroutine Read_NCDF_SAD_LUT(Ctrl, LUTFilename, SAD_Chan, SAD_LUT)
    integer :: solar_indices(Ctrl%Ind%NSolar)
    integer :: thermal_indices(Ctrl%Ind%NThermal)
    integer :: mixed_indices(Ctrl%Ind%NMixed)
+   integer :: tmpid ! Var to hold ID number of SurfP dimension, if it exists
+   ! Flag for lookup tables which contain a surface-pressure dimension.
+   ! Currently only there to support reading such LUTs - only the values for the
+   ! first surface pressure are passed to the LUT structures.
+   logical :: HaveSurfP=.false.
 
    ! These should be removed once array ordering is sorted in IntRoutines
    integer :: i, j, k, l, m
-   real, allocatable, dimension(:,:)         :: ext
-   real, allocatable, dimension(:,:,:)       :: R_dd, T_dd
-   real, allocatable, dimension(:,:,:,:)     :: R_dv, T_dv, R_0d, T_00, T_0d, E_md
-   real, allocatable, dimension(:,:,:,:,:,:) :: R_0v
-   real,    allocatable, dimension(:) :: chan_tmp_real
-   integer, allocatable, dimension(:) :: chan_tmp_int
+   real, allocatable, dimension(:,:)           :: ext
+   real, allocatable, dimension(:,:,:,:)       :: R_dd, T_dd
+   real, allocatable, dimension(:,:,:,:,:)     :: R_dv, T_dv, R_0d, T_00, T_0d, &
+                                                  E_md
+   real, allocatable, dimension(:,:,:,:,:,:,:) :: R_0v
+   real,    allocatable, dimension(:)          :: chan_tmp_real
+   integer, allocatable, dimension(:)          :: chan_tmp_int
 
    ! Determine filename and open file
    filename = trim(Ctrl%FID%SAD_Dir) // '/' // trim(LUTFilename)
@@ -982,106 +991,206 @@ subroutine Read_NCDF_SAD_LUT(Ctrl, LUTFilename, SAD_Chan, SAD_LUT)
    call sad_dimension_read_nc(fid, filename, "solar_zenith", SAD_LUT%Grid%Solzen)
    call sad_dimension_read_nc(fid, filename, "relative_azimuth", SAD_LUT%Grid%Relazi)
 
+   ! Check if the tables contain a surface pressure dimension
+   if (nf90_inq_dimid(fid, "surface_pressure", tmpid) == nf90_noerr) then
+      call sad_dimension_read_nc(fid, filename, "surface_pressure", SAD_LUT%Grid%SurfP)
+      HaveSurfP = .true.
+   end if
+
    ! Read tables into structure
+   ! Note that we check for the existence of the surface-pressure dimension in
+   ! the LUTs, but we don't actually use it - we just store the values for the
+   ! first surface pressure in the SAD_LUT structure.
+   ! Diffuse transmission to/from a particular direction T_dv
    allocate(SAD_LUT%Td(Ctrl%Ind%Ny, SAD_LUT%Grid%Tau%n, SAD_LUT%Grid%SatZen%n, &
         SAD_LUT%Grid%Re%n))
-   allocate(T_dv(Ctrl%Ind%Ny, SAD_LUT%Grid%Re%n, SAD_LUT%Grid%Tau%n, &
-        SAD_LUT%Grid%SatZen%n))
+   if (HaveSurfP) then
+      allocate(T_dv(Ctrl%Ind%Ny, SAD_LUT%Grid%SurfP%n, SAD_LUT%Grid%Re%n, &
+           SAD_LUT%Grid%Tau%n, SAD_LUT%Grid%SatZen%n))
+   else
+      allocate(T_dv(Ctrl%Ind%Ny, SAD_LUT%Grid%Re%n, SAD_LUT%Grid%Tau%n, &
+           SAD_LUT%Grid%SatZen%n, 1))
+   end if
    call ncdf_read_array(fid, "T_dv", T_dv, 1, ch_indices)
    do k = 1, SAD_LUT%Grid%SatZen%n
       do j = 1, SAD_LUT%Grid%Re%n
          do i = 1, Ctrl%Ind%Ny
-            SAD_LUT%Td(i,:,k,j) = T_dv(i,j,:,k)
+            if (HaveSurfP) then
+               SAD_LUT%Td(i,:,k,j) = T_dv(i,1,j,:,k)
+            else
+               SAD_LUT%Td(i,:,k,j) = T_dv(i,j,:,k,1)
+            end if
          end do
       end do
    end do
    deallocate(T_dv)
+
+   ! Diffuse transmission of diffuse light T_dd
    allocate(SAD_LUT%Tfd(Ctrl%Ind%Ny, SAD_LUT%Grid%Tau%n, SAD_LUT%Grid%Re%n))
-   allocate(T_dd(Ctrl%Ind%Ny, SAD_LUT%Grid%Re%n, SAD_LUT%Grid%Tau%n))
+   if (HaveSurfP) then
+      allocate(T_dd(Ctrl%Ind%Ny, SAD_LUT%Grid%SurfP%n, SAD_LUT%Grid%Re%n, &
+           SAD_LUT%Grid%Tau%n))
+   else
+      allocate(T_dd(Ctrl%Ind%Ny, SAD_LUT%Grid%Re%n, SAD_LUT%Grid%Tau%n, 1))
+   end if
    call ncdf_read_array(fid, "T_dd", T_dd, 1, ch_indices)
    do j = 1, SAD_LUT%Grid%Re%n
       do i = 1, Ctrl%Ind%Ny
-         SAD_LUT%Tfd(i,:,j) = T_dd(i,j,:)
+         if (HaveSurfP) then
+            SAD_LUT%Tfd(i,:,j) = T_dd(i,1,j,:)
+         else
+            SAD_LUT%Tfd(i,:,j) = T_dd(i,j,:,1)
+         endif
       end do
    end do
    deallocate(T_dd)
+
+   ! Reflection of diffuse light to a particular direction / diffuse reflection
+   ! of direct light R_dv
    allocate(SAD_LUT%Rd(Ctrl%Ind%Ny, SAD_LUT%Grid%Tau%n, SAD_LUT%Grid%SatZen%n, &
         SAD_LUT%Grid%Re%n))
-   allocate(R_dv(Ctrl%Ind%Ny, SAD_LUT%Grid%Re%n, SAD_LUT%Grid%Tau%n, &
-        SAD_LUT%Grid%SatZen%n))
+   if (HaveSurfP) then
+      allocate(R_dv(Ctrl%Ind%Ny, SAD_LUT%Grid%SurfP%n, SAD_LUT%Grid%Re%n, &
+           SAD_LUT%Grid%Tau%n, SAD_LUT%Grid%SatZen%n))
+   else
+      allocate(R_dv(Ctrl%Ind%Ny, SAD_LUT%Grid%Re%n, SAD_LUT%Grid%Tau%n, &
+           SAD_LUT%Grid%SatZen%n, 1))
+   end if
    call ncdf_read_array(fid, "R_dv", R_dv, 1, ch_indices)
    do k = 1, SAD_LUT%Grid%SatZen%n
       do j = 1, SAD_LUT%Grid%Re%n
          do i = 1, Ctrl%Ind%Ny
-            SAD_LUT%Rd(i,:,k,j) = R_dv(i,j,:,k)
+            if (HaveSurfP) then
+               SAD_LUT%Rd(i,:,k,j) = R_dv(i,1,j,:,k)
+            else
+               SAD_LUT%Rd(i,:,k,j) = R_dv(i,j,:,k,1)
+            end if
          end do
       end do
    end do
    deallocate(R_dv)
+
+   ! Diffuse reflection of diffuse light R_dd
    allocate(SAD_LUT%Rfd(Ctrl%Ind%Ny, SAD_LUT%Grid%Tau%n, SAD_LUT%Grid%Re%n))
-   allocate(R_dd(Ctrl%Ind%Ny, SAD_LUT%Grid%Re%n, SAD_LUT%Grid%Tau%n))
+   if (HaveSurfP) then
+      allocate(R_dd(Ctrl%Ind%Ny, SAD_LUT%Grid%SurfP%n, SAD_LUT%Grid%Re%n, &
+           SAD_LUT%Grid%Tau%n))
+   else
+      allocate(R_dd(Ctrl%Ind%Ny, SAD_LUT%Grid%Re%n, SAD_LUT%Grid%Tau%n, 1))
+   end if
    call ncdf_read_array(fid, "R_dd", R_dd, 1, ch_indices)
    do j = 1, SAD_LUT%Grid%Re%n
       do i = 1, Ctrl%Ind%Ny
-         SAD_LUT%Rfd(i,:,j) = R_dd(i,j,:)
+         if (HaveSurfP) then
+            SAD_LUT%Rfd(i,:,j) = R_dd(i,1,j,:)
+         else
+            SAD_LUT%Rfd(i,:,j) = R_dd(i,j,:,1)
+         end if
       end do
    end do
    deallocate(R_dd)
 
    if (Ctrl%Ind%NSolar > 0) then
+      ! Bi-directional reflection R_0v
       allocate(SAD_LUT%Rbd(Ctrl%Ind%Ny, SAD_LUT%Grid%Tau%n, &
            SAD_LUT%Grid%SatZen%n, SAD_LUT%Grid%SolZen%n, SAD_LUT%Grid%RelAzi%n, &
            SAD_LUT%Grid%Re%n))
-      allocate(R_0v(Ctrl%Ind%NSolar, SAD_LUT%Grid%Re%n, SAD_LUT%Grid%Tau%n, &
-           SAD_LUT%Grid%SolZen%n, SAD_LUT%Grid%SatZen%n, SAD_LUT%Grid%RelAzi%n))
+      if (HaveSurfP) then
+         allocate(R_0v(Ctrl%Ind%NSolar, SAD_LUT%Grid%SurfP%n, SAD_LUT%Grid%Re%n, &
+              SAD_LUT%Grid%Tau%n, SAD_LUT%Grid%SolZen%n, SAD_LUT%Grid%SatZen%n, &
+              SAD_LUT%Grid%RelAzi%n))
+      else
+         allocate(R_0v(Ctrl%Ind%NSolar, SAD_LUT%Grid%Re%n, SAD_LUT%Grid%Tau%n, &
+              SAD_LUT%Grid%SolZen%n, SAD_LUT%Grid%SatZen%n, &
+              SAD_LUT%Grid%RelAzi%n, 1))
+      end if
       call ncdf_read_array(fid, "R_0v", R_0v, 1, solar_indices)
       do m = 1, SAD_LUT%Grid%RelAzi%n
          do l = 1, SAD_LUT%Grid%SatZen%n
             do k = 1, SAD_LUT%Grid%SolZen%n
                do j = 1, SAD_LUT%Grid%Re%n
                   do i = 1, Ctrl%Ind%NSolar
-                     SAD_LUT%Rbd(Ctrl%Ind%YSolar(i),:,l,k,m,j) = R_0v(i,j,:,k,l,m)
+                     if (HaveSurfP) then
+                        SAD_LUT%Rbd(Ctrl%Ind%YSolar(i),:,l,k,m,j) = &
+                             R_0v(i,1,j,:,k,l,m)
+                     else
+                        SAD_LUT%Rbd(Ctrl%Ind%YSolar(i),:,l,k,m,j) = &
+                             R_0v(i,j,:,k,l,m,1)
+                     end if
                   end do
                end do
             end do
          end do
       end do
       deallocate(R_0v)
+
+      ! Diffuse reflectance of the direct solar beam R_0d
       allocate(SAD_LUT%Rfbd(Ctrl%Ind%Ny, SAD_LUT%Grid%Tau%n, &
            SAD_LUT%Grid%SolZen%n, SAD_LUT%Grid%Re%n))
-      allocate(R_0d(Ctrl%Ind%NSolar, SAD_LUT%Grid%Re%n, SAD_LUT%Grid%Tau%n, &
-           SAD_LUT%Grid%SolZen%n))
+      if (HaveSurfP) then
+         allocate(R_0d(Ctrl%Ind%NSolar, SAD_LUT%Grid%SurfP%n, SAD_LUT%Grid%Re%n, &
+              SAD_LUT%Grid%Tau%n, SAD_LUT%Grid%SolZen%n))
+      else
+         allocate(R_0d(Ctrl%Ind%NSolar, SAD_LUT%Grid%Re%n, SAD_LUT%Grid%Tau%n, &
+              SAD_LUT%Grid%SolZen%n, 1))
+      end if
       call ncdf_read_array(fid, "R_0d", R_0d, 1, solar_indices)
       do k = 1, SAD_LUT%Grid%SolZen%n
          do j = 1, SAD_LUT%Grid%Re%n
             do i = 1, Ctrl%Ind%NSolar
-               SAD_LUT%Rfbd(Ctrl%Ind%YSolar(i),:,k,j) = R_0d(i,j,:,k)
+               if (HaveSurfP) then
+                  SAD_LUT%Rfbd(Ctrl%Ind%YSolar(i),:,k,j) = R_0d(i,1,j,:,k)
+               else
+                  SAD_LUT%Rfbd(Ctrl%Ind%YSolar(i),:,k,j) = R_0d(i,j,:,k,1)
+               end if
             end do
          end do
       end do
       deallocate(R_0d)
+
+      ! Diffuse transmission of the direct solar beam T_0d
       allocate(SAD_LUT%Tfbd(Ctrl%Ind%Ny, SAD_LUT%Grid%Tau%n, &
            SAD_LUT%Grid%SolZen%n, SAD_LUT%Grid%Re%n))
-      allocate(T_0d(Ctrl%Ind%NSolar, SAD_LUT%Grid%Re%n, SAD_LUT%Grid%Tau%n, &
-           SAD_LUT%Grid%SolZen%n))
+      if (HaveSurfP) then
+         allocate(T_0d(Ctrl%Ind%NSolar, SAD_LUT%Grid%SurfP%n, SAD_LUT%Grid%Re%n, &
+              SAD_LUT%Grid%Tau%n, SAD_LUT%Grid%SolZen%n))
+      else
+         allocate(T_0d(Ctrl%Ind%NSolar, SAD_LUT%Grid%Re%n, SAD_LUT%Grid%Tau%n, &
+              SAD_LUT%Grid%SolZen%n, 1))
+      end if
       call ncdf_read_array(fid, "T_0d", T_0d, 1, solar_indices)
       do k = 1, SAD_LUT%Grid%SolZen%n
          do j = 1, SAD_LUT%Grid%Re%n
             do i = 1, Ctrl%Ind%NSolar
-               SAD_LUT%Tfbd(Ctrl%Ind%YSolar(i),:,k,j) = T_0d(i,j,:,k)
+               if (HaveSurfP) then
+                  SAD_LUT%Tfbd(Ctrl%Ind%YSolar(i),:,k,j) = T_0d(i,1,j,:,k)
+               else
+                  SAD_LUT%Tfbd(Ctrl%Ind%YSolar(i),:,k,j) = T_0d(i,j,:,k,1)
+               end if
             end do
          end do
       end do
       deallocate(T_0d)
+
+      ! Direct transmission of the solar beam T_00
       allocate(SAD_LUT%Tb(Ctrl%Ind%Ny, SAD_LUT%Grid%Tau%n, SAD_LUT%Grid%SolZen%n, &
            SAD_LUT%Grid%Re%n))
-      allocate(T_00(Ctrl%Ind%NSolar, SAD_LUT%Grid%Re%n, SAD_LUT%Grid%Tau%n, &
-           SAD_LUT%Grid%SolZen%n))
+      if (HaveSurfP) then
+         allocate(T_00(Ctrl%Ind%NSolar, SAD_LUT%Grid%SurfP%n, SAD_LUT%Grid%Re%n, &
+              SAD_LUT%Grid%Tau%n, SAD_LUT%Grid%SolZen%n))
+      else
+         allocate(T_00(Ctrl%Ind%NSolar, SAD_LUT%Grid%Re%n, SAD_LUT%Grid%Tau%n, &
+              SAD_LUT%Grid%SolZen%n, 1))
+      end if
       call ncdf_read_array(fid, "T_00", T_00, 1, solar_indices)
       do k = 1, SAD_LUT%Grid%SolZen%n
          do j = 1, SAD_LUT%Grid%Re%n
             do i = 1, Ctrl%Ind%NSolar
-               SAD_LUT%Tb(Ctrl%Ind%YSolar(i),:,k,j) = T_00(i,j,:,k)
+               if (HaveSurfP) then
+                  SAD_LUT%Tb(Ctrl%Ind%YSolar(i),:,k,j) = T_00(i,1,j,:,k)
+               else
+                  SAD_LUT%Tb(Ctrl%Ind%YSolar(i),:,k,j) = T_00(i,j,:,k,1)
+               end if
             end do
          end do
       end do
@@ -1089,23 +1198,34 @@ subroutine Read_NCDF_SAD_LUT(Ctrl, LUTFilename, SAD_Chan, SAD_LUT)
    end if
 
    if (nthermal > 0 .and. Ctrl%Ind%NThermal > 0) then
+      ! Diffuse emissivity E_md
       allocate(SAD_LUT%Em(Ctrl%Ind%Ny, SAD_LUT%Grid%Tau%n, SAD_LUT%Grid%SatZen%n, &
            SAD_LUT%Grid%Re%n))
-      allocate(E_md(Ctrl%Ind%NThermal, SAD_LUT%Grid%Re%n, SAD_LUT%Grid%Tau%n, &
-           SAD_LUT%Grid%SatZen%n))
+      if (HaveSurfP) then
+         allocate(E_md(Ctrl%Ind%NThermal, SAD_LUT%Grid%SurfP%n, &
+              SAD_LUT%Grid%Re%n, SAD_LUT%Grid%Tau%n, SAD_LUT%Grid%SatZen%n))
+      else
+         allocate(E_md(Ctrl%Ind%NThermal, SAD_LUT%Grid%Re%n, &
+              SAD_LUT%Grid%Tau%n, SAD_LUT%Grid%SatZen%n, 1))
+      end if
       call ncdf_read_array(fid, "E_md", E_md, 1, thermal_indices)
-      SAD_LUT%Em(Ctrl%Ind%YThermal,:,:,:) = reshape(E_md, [Ctrl%Ind%NThermal, &
-           SAD_LUT%Grid%Tau%n, SAD_LUT%Grid%SatZen%n, SAD_LUT%Grid%Re%n], &
-           order=[1, 3, 4, 2])
+!      SAD_LUT%Em(Ctrl%Ind%YThermal,:,:,:) = reshape(E_md, [Ctrl%Ind%NThermal, &
+!           SAD_LUT%Grid%Tau%n, SAD_LUT%Grid%SatZen%n, SAD_LUT%Grid%Re%n], &
+!           order=[1, 3, 4, 2])
       do k = 1, SAD_LUT%Grid%SatZen%n
          do j = 1, SAD_LUT%Grid%Re%n
             do i = 1, Ctrl%Ind%NThermal
-               SAD_LUT%Em(Ctrl%Ind%YThermal(i),:,k,j) = E_md(i,j,:,k)
+               if (HaveSurfP) then
+                  SAD_LUT%Em(Ctrl%Ind%YThermal(i),:,k,j) = E_md(i,1,j,:,k)
+               else
+                  SAD_LUT%Em(Ctrl%Ind%YThermal(i),:,k,j) = E_md(i,j,:,k,1)
+               end if
             end do
          end do
       end do
       deallocate(E_md)
 
+      ! Extinction coefficient
       if (Ctrl%do_CTX_correction .and. Ctrl%Class .eq. ClsCldIce) then
          allocate(SAD_LUT%Bext(Ctrl%Ind%Ny, SAD_LUT%Grid%Tau%n, SAD_LUT%Grid%Re%n))
          allocate(ext(Ctrl%Ind%Ny, SAD_LUT%Grid%Re%n))
@@ -1118,6 +1238,7 @@ subroutine Read_NCDF_SAD_LUT(Ctrl, LUTFilename, SAD_Chan, SAD_LUT)
       end if
    end if
 
+   ! Ratio of extinction coefficient to that at 550 nm
    if (Ctrl%Approach == AppAerOx .or. Ctrl%Approach == AppAerSw .or. &
         Ctrl%Approach == AppAerO1) then
       allocate(SAD_LUT%BextRat(Ctrl%Ind%Ny, SAD_LUT%Grid%Re%n))
@@ -1184,6 +1305,7 @@ subroutine Read_NCDF_SAD_LUT(Ctrl, LUTFilename, SAD_Chan, SAD_LUT)
          SAD_Chan(Ctrl%Ind%YSolar(i))%Solar%F0 = &
                  chan_tmp_real(solar_indices(i))
       end do
+      print *, chan_tmp_real
       deallocate(chan_tmp_real)
    end if
 
@@ -1225,8 +1347,12 @@ subroutine Read_NCDF_SAD_LUT(Ctrl, LUTFilename, SAD_Chan, SAD_LUT)
             ! Uncertainty = a**2 L**2 + b**2 L + c**2
             call ncdf_read_array(fid, "ru"//char(j+96), chan_tmp_real)
             do i = 1, Ctrl%Ind%NSolar
+               ! ru values stored in LUT already squared?!
                SAD_Chan(Ctrl%Ind%YSolar(i))%Solar%ru2(j) = &
-                    chan_tmp_real(solar_indices(i)) ** 2
+                    chan_tmp_real(solar_indices(i)) !** 2
+               ! Ensure SNR is explicitly set to 0 (used to determine if ru2
+               ! should be used in get_measurments)
+               SAD_Chan(Ctrl%Ind%YSolar(i))%Solar%SNR = 0.0
             end do
          end do
       else
@@ -1237,6 +1363,13 @@ subroutine Read_NCDF_SAD_LUT(Ctrl, LUTFilename, SAD_Chan, SAD_LUT)
                  chan_tmp_real(solar_indices(i))
          end do
       end if
+      call ncdf_read_array(fid, "oldnefr", chan_tmp_real)
+      do i = 1, Ctrl%Ind%NSolar
+         SAD_Chan(Ctrl%Ind%YSolar(i))%Solar%NedR = &
+              ( chan_tmp_real(solar_indices(i)) / &
+                SAD_Chan(Ctrl%Ind%YSolar(i))%Solar%F0 )**2
+      end do
+
       deallocate(chan_tmp_real)
    end if
 

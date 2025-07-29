@@ -20,6 +20,7 @@
 ! 2017/01/17, GM: Eliminate the unnecessary indexing of the LUT grid wrt LUT
 !    type and channel.
 ! 2017/03/16, GT: Increased maximum size of effective radius LUT dimension.
+! 2024/06/19, GT: Added SurfP to LUT_Grid_t (surface pressure dimension)
 !
 ! Bugs:
 ! None known.
@@ -57,6 +58,7 @@ module SAD_LUT_m
       type(LUT_Dimension_t) :: SatZen ! Satellite angle
       type(LUT_Dimension_t) :: SolZen ! Solar angle
       type(LUT_Dimension_t) :: RelAzi ! Relative azimuth
+      type(LUT_Dimension_t) :: SurfP  ! Surface pressure
    end type LUT_Grid_t
 
 
