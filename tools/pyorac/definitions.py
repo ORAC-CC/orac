@@ -153,7 +153,7 @@ class FileName:
         self.oractype = None
         self.predef = False
         self.orbit_num = None
-
+        
         # Attempt AATSR L1B filename
         mat = re.search(
             r'ATS_TOA_1P([A-Za-z]{4})(?P<year>\d{4})(?P<month>\d{2})'
@@ -257,6 +257,26 @@ class FileName:
                                         'ECC_GAC_sunsatangles_')
             return
 
+        # Attempt ISCCP-NG GeoRing filename in netCDF format; several seperate files in a folder
+        mat = re.search(
+            r'ISCCP-NG_L1g_demo_v2_res_0_05deg__(.*)um__(?P<year>\d{4})(?P<month>\d{2})'
+            r'(?P<day>\d{2})T(?P<hour>\d{2})(?P<min>\d{2}).nc', filename
+        )
+        if mat:
+            # Need to build the filenames
+            self.sensor = 'ISCCPNG'
+            self.platform = 'ISCCPNG'
+            self.time = datetime.datetime(
+                int(mat.group('year')), int(mat.group('month')),
+                int(mat.group('day')), int(mat.group('hour')),
+                int(mat.group('min')), 0, 0
+            )
+            self.dur = datetime.timedelta(seconds=30*60)  # Approximately 30 min temporal res
+            self.geo = filename
+            self.predef = True
+            
+            return
+
         # Attempt Himawari L1B filename in HSD format
         mat = re.search(
             r'HS_H(?P<platform>\d{2})_(?P<year>\d{4})'
@@ -274,26 +294,6 @@ class FileName:
             self.dur = datetime.timedelta(seconds=600)  # Approximately
             self.geo = filename
             self.predef = True
-            return
-
-        # Attempt GOES ABI filename in NetCDF format
-        mat = re.search(
-            r'OR_ABI-L1b-RadF-M6C(?P<band>\d{2})_G(?P<platform>\d{2})'
-            r'_s(?P<year>\d{4})(?P<doy>\d{3})'
-            r'(?P<hour>\d{2})(?P<min>\d{2})(\d{3})_e(\d{14})_c(\d{14})'
-            r'(-\d{6}_\d)?'
-            r'\.nc', filename
-        )
-
-        if mat:
-            self.sensor = 'ABI'
-            self.platform = 'GOES-'+str(int(mat.group('platform')))
-            self.time = (datetime.datetime(
-                int(mat.group('year')), 1, 1, int(mat.group('hour')),
-                int(mat.group('min')), 0, 0
-            ) + datetime.timedelta(days=int(mat.group('doy')) - 1))
-            self.dur = datetime.timedelta(seconds=600)  # Approximately
-            self.geo = filename
             return
 
         # Attempt SEVIRI L1B filename in NAT format
@@ -397,15 +397,43 @@ class FileName:
                 self.orbit_num = 0
 
             return
+        
+        # Attempt FCI L1C filename
+        mat = re.search( # W_XX-EUMETSAT-Darmstadt,IMG+SAT,MTI1+FCI-1C-RRAD-FDHSI-FD--CHK-BODY---NC4E_C_EUMT_20240924122358_IDPFI_OPE_20240924122007_20240924122023_N__C_0075_0001.nc
+            r'W_XX-EUMETSAT-Darmstadt,IMG\+SAT,MTI1\+FCI-1C-RRAD-FDHSI-FD--CHK-BODY---NC4E_C_EUMT_'
+            r'(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2})'
+            r'(?P<hour>\d{2})(?P<min>\d{2})(?P<sec>\d{2})'
+            r'.orac-compatible.nc', filename
+        )
+        if mat:
+            self.sensor = 'PYTHON' # But we want to use the sensor; this is just to handle Simon's work-around 
+            self.platform = 'MTG'
+            self.time = datetime.datetime(
+                int(mat.group('year')), int(mat.group('month')),
+                int(mat.group('day')), int(mat.group('hour')),
+                int(mat.group('min')), int(mat.group('sec')), 0
+            )
+            self.dur = datetime.timedelta(seconds=600)  # Approximately
+            self.geo = filename
+            self.predef = True
+            return
 
         # Processed ORAC output
-        mat = re.search(
-            r'(?P<project>\w+)-(?P<product>.+)-(?P<sensor>\w+)_'
-            r'(?P<processor>\w+)_(?P<platform>\w+)_(?P<year>\d{4})'
-            r'(?P<month>\d{2})(?P<day>\d{2})(?P<hour>\d{2})(?P<min>\d{2})'
-            r'(?:_(?P<orbit_num>\d{5}))?_R'
-            r'(?P<revision>\d+)(?P<phase>\w*)\.(?P<filetype>\w+)\.nc', filename
+        pattern = (
+            r'(?P<project>[^-]+)-'
+            r'(?P<product>.+)-'
+            r'(?P<sensor>[^_]+)_'
+            r'(?P<processor>[^_]+)_'
+            r'(?P<platform>[^_]+)_'
+            r'(?P<year>\d{4})'
+            r'(?P<month>\d{2})'
+            r'(?P<day>\d{2})'
+            r'(?P<hour>\d{2})'
+            r'(?P<min>\d{2})'
+            r'_R(?P<revision>\d+)(?P<phase>[\w-]*)'
+            r'\.(?P<filetype>\w+)\.nc'
         )
+        mat = re.search(pattern, filename)
         if mat:
             self.sensor = mat.group('sensor')
             self.platform = mat.group('platform')
@@ -428,7 +456,8 @@ class FileName:
             self.revision = mat.group('revision')
             self.project = mat.group('project')
             self.product_name = mat.group('product')
-            self.orbit_num = mat.group('orbit_num')
+            if 'orbit_num' in mat.groups():
+                self.orbit_num = mat.group('orbit_num')
             return
 
         raise OracError('Unexpected filename format - ' + filename)
@@ -523,6 +552,12 @@ class FileName:
             return "meteosat-{:d}".format(int(self.platform[4:]) + 7)
         if self.platform.startswith("FY"):
             return "fengyun-" + self.platform[3:].lower()
+        if self.platform.startswith("MTG"):
+            try:
+                platform_number = int(self.platform[4:])
+            except Exception:
+                platform_number = 1 # Assume we're dealing with MTG1 if there's no trailing number
+            return "meteosat-{:d}".format(platform_number + 11)
         return self.platform.lower()
 
 
