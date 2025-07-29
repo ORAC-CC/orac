@@ -5,6 +5,8 @@
 ! between ORAC and the external library in external_ml/seviri.
 !
 ! 2020/09/16, DP: Initial version.
+! 2025/07/04, DR: Added support for ISCCP-NG GeoRing assuming data is spectrally
+!                 adjusted to match SEVIRI on MSG4.
 !
 ! Bugs:
 ! None known.
@@ -28,7 +30,7 @@ subroutine get_msg_idx(msg_index, platform, do_nasa)
             msg_index = 2
         case ("MSG3","MSG-3")
             msg_index = 3
-        case ("MSG4","MSG-4")
+        case ("MSG4","MSG-4", "GeoRing")
             msg_index = 4
         case default
             write(*,*) "Platform ", platform, " not supported with seviri_ml."

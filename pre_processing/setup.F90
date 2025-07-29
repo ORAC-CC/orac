@@ -79,6 +79,11 @@
 ! 2019/09/26, GT: Bug fix with orbit start-time extraction (file name time
 !                 strings are _rounded_ to nearest second).
 ! 2021/03/10, AP: Gather setup calls into a single routine.
+! 2024/10/14, DR: Fixed call of nchans in PYTHON case; changed dimension name from nc to channels.
+! 2024/11/25, DR: Added Martin Stengel's ISCCP support to read ISCCP-NG GeoRing
+!                 data as SEVIRI.
+! 2025/04/24, DR: Fixed platfrom, date and time read for SEVIRI .nat format; was looking through
+!                 full path, rather than just the filename.
 !
 ! Bugs:
 ! None known.
@@ -1107,7 +1112,121 @@ subroutine setup_modis(args, channel_ids_user, channel_info, verbose)
 
 end subroutine setup_modis
 
+subroutine setup_isccpng(args, channel_ids_user, channel_info, verbose)
+! for the time being this routine assumes that all isccpng data is made SEVIRI-like
 
+   use calender_m
+   use channel_structures_m
+   use preproc_constants_m
+
+   implicit none
+
+   type(setup_args_t),   intent(inout) :: args
+   integer, pointer,     intent(in)    :: channel_ids_user(:)
+   type(channel_info_t), intent(inout) :: channel_info
+   logical,              intent(in)    :: verbose
+
+   integer :: index1, index2
+
+
+   ! Static instrument channel definitions. (These should not be changed.)                                                                                                                                       
+   integer, parameter :: all_nchannels_total = 11
+
+         ! 1,     2,    3,    4,    5,    6,    7,    8,    9,     10,    11                                                                                                                                       
+   real,    parameter :: all_channel_wl_abs(all_nchannels_total) = &
+      (/ 0.635, 0.81, 1.64, 3.92, 6.25, 7.35, 8.70, 9.66, 10.80, 12.00, 13.40 /)
+
+   integer, parameter :: all_channel_sw_flag(all_nchannels_total) = &
+      (/ 1,     1,    1,    1,    0,    0,    0,    0,    0,     0,     0 /)
+
+   integer, parameter :: all_channel_lw_flag(all_nchannels_total) = &
+      (/ 0,     0,    0,    1,    1,    1,    1,    1,    1,     1,     1 /)
+
+   integer, parameter :: all_channel_ids_rttov_coef_sw(all_nchannels_total) = &
+      (/ 1,     2,    3,    4,    0,    0,    0,    0,    0,     0,     0 /)
+
+   integer, parameter :: all_channel_ids_rttov_coef_lw(all_nchannels_total) = &
+      (/ 0,     0,    0,    1,    2,    3,    4,    5,    6,     7,     8 /)
+
+   integer, parameter :: all_map_ids_abs_to_ref_band_land(all_nchannels_total) = &
+      (/ 1,     2,    6,    0,    0,    0,    0,    0,    0,     0,     0 /)
+
+   integer, parameter :: all_map_ids_abs_to_ref_band_sea(all_nchannels_total) = &
+      (/ 3,     4,    7,    9,    0,    0,    0,    0,    0,     0,     0 /)
+
+   integer, parameter :: all_map_ids_abs_to_snow_and_ice(all_nchannels_total) = &
+      (/ 1,     2,    3,    4,    0,    0,    0,    0,    0,     0,     0 /)
+
+   integer, parameter :: all_map_ids_view_number(all_nchannels_total) = &
+      (/ 1,     1,    1,    1,    1,    1,    1,    1,    1,     1,     1 /)
+
+   real,    parameter :: all_channel_fractional_uncertainty(all_nchannels_total) = &
+      (/ 0.,    0.,   0.,   0.,   0.,   0.,   0.,   0.,   0.,    0.,    0. /)
+
+   real,    parameter :: all_channel_minimum_uncertainty(all_nchannels_total) = &
+      (/ 0.,    0.,   0.,   0.,   0.,   0.,   0.,   0.,   0.,    0.,    0. /)
+
+   real,    parameter :: all_channel_numerical_uncertainty(all_nchannels_total) = &
+      (/ 0.,    0.,   0.,   0.,   0.,   0.,   0.,   0.,   0.,    0.,    0. /)
+
+   real,    parameter :: all_channel_lnd_uncertainty(all_nchannels_total) = &
+      (/ 0.,    0.,   0.,   0.,   0.,   0.,   0.,   0.,   0.,    0.,    0. /)
+
+   real,    parameter :: all_channel_sea_uncertainty(all_nchannels_total) = &
+      (/ 0.,    0.,   0.,   0.,   0.,   0.,   0.,   0.,   0.,    0.,    0. /)
+
+   ! Only this below needs to be set to change the desired default channels. All                                                                                                                                   ! other channel related arrays/indexes are set automatically given the static                                                                                                                                   ! instrument channel definition above.                                                                                                                                                                        
+   integer, parameter :: channel_ids_default(6) = (/ 1, 2, 3, 4, 9, 10 /)
+
+   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering setup_isccpng()'
+
+   if (verbose) write(*,*) 'args%l1b_file: ', trim(args%l1b_file)
+   if (verbose) write(*,*) 'args%geo_file: ', trim(args%geo_file)
+
+   ! check if l1b and geo file are of the same granule                                                                                                                                          
+
+   args%platform = 'GeoRing'
+
+   index1 = index(args%l1b_file, '/', back=.true.)
+   index2 = index(args%geo_file, '/', back=.true.)
+
+   index2 = index(args%l1b_file, 'um__')
+   index2=index2+3
+
+   ! get year, doy, hour and minute as strings                                                                                                                                                                  
+
+   args%cyear = trim(adjustl(args%l1b_file(index2+1:index2+4)))
+   args%cmonth = trim(adjustl(args%l1b_file(index2+5:index2+6)))
+   args%cday = trim(adjustl(args%l1b_file(index2+7:index2+8)))
+   args%chour = trim(adjustl(args%l1b_file(index2+10:index2+11)))
+   args%cminute = trim(adjustl(args%l1b_file(index2+12:index2+13)))
+
+   ! get year, doy, hour and minute as integers                                                                                                                                                                  
+   read(args%cyear, '(I4)') args%year
+   read(args%cmonth, '(I2)') args%month
+   read(args%cday, '(I2)') args%day
+   read(args%chour, '(I2)') args%hour
+   read(args%cminute, '(I2)') args%minute
+
+   call GREG2DOY(args%year, args%month, args%day, args%doy)
+   write(args%cdoy, '(i3.3)') args%doy
+
+   ! only use first layer of ISCCP-NG L1g, thus one single viewing geometry                                                                                          
+   channel_info%nviews = 1
+
+   ! now set up the channels                                                                                                                                                                                     
+   call common_setup(channel_info, channel_ids_user, channel_ids_default, &
+      all_channel_wl_abs, all_channel_sw_flag, all_channel_lw_flag, &
+      all_channel_ids_rttov_coef_sw, all_channel_ids_rttov_coef_lw, &
+      all_map_ids_abs_to_ref_band_land, all_map_ids_abs_to_ref_band_sea, &
+      all_map_ids_abs_to_snow_and_ice, all_map_ids_view_number, &
+      all_channel_fractional_uncertainty, all_channel_minimum_uncertainty, &
+      all_channel_numerical_uncertainty, all_channel_lnd_uncertainty, &
+      all_channel_sea_uncertainty, all_nchannels_total)
+
+   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_isccpng()'
+
+end subroutine setup_isccpng
 
 subroutine setup_python(args, channel_ids_user, channel_info, verbose)
 
@@ -1142,7 +1261,7 @@ subroutine setup_python(args, channel_ids_user, channel_info, verbose)
 
    call ncdf_open(fid, args%l1b_file, 'setup_python()')
    ! Read actual size of the netCDF4 file
-   nchans  = ncdf_dim_length(fid, 'nc', 'setup_python()')  
+   nchans  = ncdf_dim_length(fid, 'channels', 'setup_python()')  
    call ncdf_get_single_attribute_int(fid, 'max_chan_count', nchans_total)
 
    allocate(channel_ids_user(nchans))
@@ -1211,6 +1330,7 @@ subroutine setup_python(args, channel_ids_user, channel_info, verbose)
    call ncdf_get_arr_attribute_real(fid, 'all_channel_numerical_uncertainty', all_channel_numerical_uncertainty)
    
    ! get year, doy, hour and minute as strings
+   ! This is meant to read in the <start_time> as YYYY-MM-DDTHH:MM:SS
    args%cyear = start_time(1:5)
    args%cmonth = start_time(6:7)
    args%cday = start_time(9:10)
@@ -1349,7 +1469,8 @@ subroutine setup_seviri(args, channel_ids_user, channel_info, verbose)
       ! H-000-MSG1__-MSG1________-_________-EPI______-200603031200-__
       !
       if (index1 .ne. 0) then
-         index2 = index(args%l1b_file, '-')
+         index2 = index(args%l1b_file, "/", back=.true.)
+         index2 = index2 + index(args%l1b_file(index2 + 1:), '-')
          args%platform = 'MSG-' // args%l1b_file(index2-1:index2-1)
       else
          index2 = index(args%l1b_file, '__-')
@@ -1367,6 +1488,14 @@ subroutine setup_seviri(args, channel_ids_user, channel_info, verbose)
    args%cday = trim(adjustl(args%l1b_file(index2+7:index2+8)))
    args%chour = trim(adjustl(args%l1b_file(index2+9:index2+10)))
    args%cminute = trim(adjustl(args%l1b_file(index2+11:index2+12)))
+
+   ! Check the times; we get a bad read for .nat files
+   ! print *, args%platform
+   ! print *, args%cyear
+   ! print *, args%cmonth
+   ! print *, args%cday
+   ! print *, args%chour
+   ! print *, args%cminute
 
    ! get year, doy, hour and minute as integers
    read(args%cyear, '(I4)') args%year
@@ -2021,8 +2150,8 @@ subroutine common_setup(channel_info, channel_ids_user, channel_ids_default, &
    end if
 
    do i = 1, channel_info%nchannels_total
-      channel_info%channel_wl_abs (i) = &
-         all_channel_wl_abs (channel_info%channel_ids_instr(i))
+      channel_info%channel_wl_abs(i) = &
+         all_channel_wl_abs(channel_info%channel_ids_instr(i))
 
       channel_info%channel_sw_flag(i) = &
          all_channel_sw_flag(channel_info%channel_ids_instr(i))
@@ -2134,6 +2263,7 @@ subroutine common_setup(channel_info, channel_ids_user, channel_ids_default, &
          i_lw = i_lw + 1
       end if
    end do
+   print *,'Ending common setup...'
 
 end subroutine common_setup
 
@@ -2203,6 +2333,7 @@ subroutine setup_imager(args, opts, source_attributes, channel_info, verbose)
    !use read_goes_imager_m
    use read_himawari_m
    use read_modis_m
+   use read_isccpng_m
    use read_seviri_m
    use read_slstr_m
    use read_viirs_iband_m
@@ -2270,6 +2401,14 @@ subroutine setup_imager(args, opts, source_attributes, channel_info, verbose)
 
       ! get dimensions of the modis granule
       call read_modis_dimensions(args%geo_file, args%n_across_track, args%n_along_track)
+
+   case('ISCCPNG')
+      print*,'Setting up ISCCP...'
+      call setup_isccpng(args, opts%channel_ids, channel_info, verbose)
+
+      call read_isccpng_dimensions(args%geo_file, args%n_across_track, &
+           args%n_along_track, args%startx, args%endx, &
+           args%starty, args%endy, verbose)
 
    case('PYTHON')
       call setup_python(args, opts%channel_ids, channel_info, verbose)

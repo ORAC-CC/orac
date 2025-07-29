@@ -86,6 +86,10 @@
 ! 2024/03/13, GT: Added a check for missing values in the 11 micron band before
 !                 attempting cloud masking/typing. This catches pixels which
 !                 exist and are geolocated, but have no data.
+! 2024/12/03, DR: Added support for ISCCP-NG; uses SEVIRI set-up following
+!                 Martin Stengel's approach.
+! 2025/07/04, DR: Fixed support fot ISCCP-NG and allowed for use of SEVIRI
+!                 ANN with ISCCP-NG inputs.
 !
 ! Bugs:
 ! None known.
@@ -443,7 +447,7 @@ subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
    mlch9 = 0
    mlch10 = 0
    mlch11 = 0
-   if (trim(adjustl(sensor)) .eq. 'SEVIRI' .and. use_seviri_ann_cma_cph) then
+   if (((trim(adjustl(sensor)) .eq. 'SEVIRI') .or. (trim(adjustl(sensor)) .eq. 'ISCCPNG')) .and. use_seviri_ann_cma_cph) then
          do i = 1, channel_info%nchannels_total
             select case (channel_info%channel_ids_instr(i))
             case(1)
@@ -486,7 +490,7 @@ subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
 
 
    ! do not apply NOAA19 mimic when using SEVIRI neural network
-   if (trim(adjustl(sensor)) .eq. 'SEVIRI' .and. use_seviri_ann_cma_cph) then
+   if (((trim(adjustl(sensor)) .eq. 'SEVIRI') .or. (trim(adjustl(sensor)) .eq. 'ISCCPNG')) .and. use_seviri_ann_cma_cph) then
       do_spectral_response_correction = .false.
    end if
 
@@ -628,6 +632,27 @@ subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
             case(5)
                ch5 = i
             case(6)
+               ch6 = i
+            end select
+         end do
+      else if (trim(adjustl(sensor)) .eq. 'ISCCPNG') then
+         do i = 1, channel_info%nchannels_total
+            ii = channel_info%map_ids_channel_to_sw(i)
+            select case (channel_info%channel_ids_instr(i))
+            case(1)
+               ch1 = i
+               sw1 = ii
+            case(2)
+               ch2 = i
+               sw2 = ii
+            case(3)
+               ch3 = i
+               sw3 = ii
+            case(4)
+               ch4 = i
+            case(9)
+               ch5 = i
+            case(10)
                ch6 = i
             end select
          end do
@@ -792,8 +817,11 @@ subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
       ! data should be used.
       if (do_spectral_response_correction) then
          imager_data = imager_measurements%data
-
-         platform_index = get_platform_index(platform)
+         if (platform .eq. 'GeoRing') then ! Wee need to override the GeoRing data to use MSG-4 SEVIRI coefficients instead
+            platform_index = get_platform_index('MSG-4')
+         else
+            platform_index = get_platform_index(platform)
+         end if
          n19mimic(1:3,2,:,:) = n19mimic(1:3,2,:,:) / 100.
          do i = 1, 6
             ! do not apply correction for channel3b, which is not yet available
@@ -815,7 +843,7 @@ subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
 
       ! call SEVIRI neural network (Python) cloud detection and cloud phase
       ! determination for whole SEVIRI disc (outside loop)
-      if (trim(adjustl(sensor)) .eq. 'SEVIRI' .and. use_seviri_ann_cma_cph) then
+      if (((trim(adjustl(sensor)) .eq. 'SEVIRI') .or. (trim(adjustl(sensor)) .eq. 'ISCCPNG')) .and. use_seviri_ann_cma_cph) then
          if (verbose) write(*,*) 'Using SEVIRI-specific neural net'
          call cma_cph_seviri(cview, imager_flags, imager_angles, &
               imager_geolocation, imager_measurements, ml_channels, &
@@ -938,7 +966,7 @@ subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
          imager_measurements%data = imager_data
       end if
 
-      if (trim(adjustl(sensor)) .eq. 'SEVIRI' .and. use_seviri_ann_ctp_fg) then
+      if (((trim(adjustl(sensor)) .eq. 'SEVIRI') .or. (trim(adjustl(sensor)) .eq. 'ISCCPNG')) .and. use_seviri_ann_ctp_fg) then
          if (verbose) write(*,*) 'Producing SEVIRI ANN-based CTP first guess'
          call ctp_fg_seviri(cview, imager_flags, imager_angles, &
               imager_geolocation, imager_measurements, ml_channels, &
@@ -946,7 +974,7 @@ subroutine cloud_type(channel_info, sensor, surface, imager_flags, &
               platform, do_nasa, verbose)
       end if
 
-      if (trim(adjustl(sensor)) .eq. 'SEVIRI' .and. use_seviri_ann_mlay) then
+      if (((trim(adjustl(sensor)) .eq. 'SEVIRI') .or. (trim(adjustl(sensor)) .eq. 'ISCCPNG')) .and. use_seviri_ann_mlay) then
          if (verbose) write(*,*) 'Producing SEVIRI Multilayer flag'
          call mlay_seviri(cview, imager_flags, imager_angles, &
               imager_geolocation, imager_measurements, ml_channels, &
@@ -1151,10 +1179,17 @@ subroutine cloud_type_pixel(cview, i, j, ch1, ch2, ch3, ch4, ch5, ch6, &
    SD_BT11 = SQRT (SUM((imager_measurements%DATA(s_i:e_i,s_j:e_j,ch5) - MN_BT11)**2) / (NNN - 1))
 
    ! Calculate ch3b radiance and emissivity
-   plank_inv_out  = plank_inv(platform, imager_measurements%data(i,j,ch4))
-   rad_ch3b       = plank_inv_out(1)
-   solcon_ch3b    = plank_inv_out(2)
-   plank_inv_out  = plank_inv(platform, imager_measurements%data(i,j,ch5))
+   if (trim(adjustl(sensor)) .eq. 'ISCCPNG') then
+      plank_inv_out  = plank_inv('MSG-4', imager_measurements%data(i,j,ch4))
+      rad_ch3b       = plank_inv_out(1)
+      solcon_ch3b    = plank_inv_out(2)
+      plank_inv_out  = plank_inv('MSG-4', imager_measurements%data(i,j,ch5))
+   else
+      plank_inv_out  = plank_inv(platform, imager_measurements%data(i,j,ch4))
+      rad_ch3b       = plank_inv_out(1)
+      solcon_ch3b    = plank_inv_out(2)
+      plank_inv_out  = plank_inv(platform, imager_measurements%data(i,j,ch5))
+   end if
    rad_ch3b_emis  = plank_inv_out(1)
    mu0            = cos (imager_angles%solzen(i,j,cview) * d2r)
    esd            = 1.0 - 0.0167 * cos(2.0 * pi * (doy - 3) / 365.0)

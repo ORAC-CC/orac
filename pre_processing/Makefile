@@ -26,7 +26,9 @@
 # 2017/02/07, SP: Added support for NOAA GFS atmosphere data (ExtWork)
 # 2017/03/29, SP: Add ability to calculate tropospheric cloud emissivity (ExtWork)
 # 2018/02/12, SP: Added the read_goes module.
-# 2019/8/14, SP: Add Fengyun-4A support.
+# 2019/08/14, SP: Add Fengyun-4A support.
+# 2024/11/25, DR: Added Martin Stengel's ISCCP support to read ISCCP-NG GeoRing
+#                 data as SEVIRI.
 #
 # Notes:
 # It appears that -lopenjpeg needs to be included in the LIBS list since on some
@@ -51,6 +53,7 @@ PREPROC_OBJ_F90 = $(OBJS)/aatsr_corrections.o \
                   $(OBJS)/cloud_emis.o \
                   $(OBJS)/cloud_typing_pavolonis.o \
                   $(OBJS)/correct_for_ice_snow.o \
+                  $(OBJS)/correct_for_dust.o \
                   $(OBJS)/cox_munk.o \
                   $(OBJS)/cox_munk_constants.o \
                   $(OBJS)/define_preprop_grid.o \
@@ -77,6 +80,7 @@ PREPROC_OBJ_F90 = $(OBJS)/aatsr_corrections.o \
                   $(OBJS)/read_cimss_emissivity.o \
                   $(OBJS)/read_himawari.o \
                   $(OBJS)/read_imager.o \
+                  $(OBJS)/read_isccpng.o \
                   $(OBJS)/read_modis.o \
                   $(OBJS)/read_python.o \
                   $(OBJS)/read_seviri.o \
@@ -89,7 +93,7 @@ PREPROC_OBJ_F90 = $(OBJS)/aatsr_corrections.o \
                   $(OBJS)/rttov_driver.o \
                   $(OBJS)/rttov_driver_gfs.o \
                   $(OBJS)/setup.o \
-		  $(OBJS)/seviri_neural_net_preproc.o \
+		          $(OBJS)/seviri_neural_net_preproc.o \
                   $(OBJS)/solar_position.o \
                   $(OBJS)/surface_emissivity.o \
                   $(OBJS)/surface_reflectance.o \

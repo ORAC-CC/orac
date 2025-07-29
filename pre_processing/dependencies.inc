@@ -16,6 +16,8 @@ $(OBJS)/correct_for_ice_snow.o: $(OBJS)/channel_structures.o \
         $(OBJS)/imager_structures.o $(OBJS)/nsidc_nise.o \
         $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o \
         $(OBJS)/surface_structures.o
+$(OBJS)/correct_for_dust.o: $(OBJS)/channel_structures.o \
+        $(OBJS)/imager_structures.o
 $(OBJS)/cox_munk.o: $(OBJS)/cox_munk_constants.o $(OBJS)/gauss_leg_quad.o \
         $(OBJS)/ocean_colour.o $(OBJS)/preproc_constants.o
 $(OBJS)/cox_munk_constants.o: $(OBJS)/preproc_constants.o
@@ -75,9 +77,12 @@ $(OBJS)/read_himawari.o: $(OBJS)/calender.o $(OBJS)/channel_structures.o \
 $(OBJS)/read_imager.o: $(OBJS)/channel_structures.o $(OBJS)/imager_structures.o \
         $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o \
         $(OBJS)/read_aatsr.o $(OBJS)/read_abi.o $(OBJS)/read_agri.o \
-        $(OBJS)/read_avhrr.o $(OBJS)/read_himawari.o $(OBJS)/read_modis.o \
-        $(OBJS)/read_python.o $(OBJS)/read_seviri.o $(OBJS)/read_slstr.o \
-        $(OBJS)/read_viirs_Iband.o $(OBJS)/read_viirs_Mband.o
+        $(OBJS)/read_avhrr.o $(OBJS)/read_himawari.o $(OBJS)/read_isccpng.o \
+        $(OBJS)/read_modis.o $(OBJS)/read_python.o $(OBJS)/read_seviri.o \
+        $(OBJS)/read_slstr.o $(OBJS)/read_viirs_Iband.o \
+        $(OBJS)/read_viirs_Mband.o
+$(OBJS)/read_isccpng.o: $(OBJS)/calender.o $(OBJS)/channel_structures.o \
+        $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o
 $(OBJS)/read_modis.o: $(OBJS)/bright_m.o $(OBJS)/calender.o \
         $(OBJS)/channel_structures.o $(OBJS)/imager_structures.o \
         $(OBJS)/preproc_constants.o get_modis_time.F90 map_time_to_pixel.F90 \
@@ -110,9 +115,9 @@ $(OBJS)/rttov_driver_gfs.o: $(OBJS)/channel_structures.o $(OBJS)/netcdf_output.o
 $(OBJS)/setup.o: $(OBJS)/calender.o $(OBJS)/channel_structures.o \
         $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o \
         $(OBJS)/read_aatsr.o $(OBJS)/read_abi.o $(OBJS)/read_agri.o \
-        $(OBJS)/read_avhrr.o $(OBJS)/read_himawari.o $(OBJS)/read_modis.o \
-        $(OBJS)/read_seviri.o $(OBJS)/read_slstr.o $(OBJS)/read_viirs_Iband.o \
-        $(OBJS)/read_viirs_Mband.o
+        $(OBJS)/read_avhrr.o $(OBJS)/read_himawari.o $(OBJS)/read_isccpng.o \
+        $(OBJS)/read_modis.o $(OBJS)/read_seviri.o $(OBJS)/read_slstr.o \
+        $(OBJS)/read_viirs_Iband.o $(OBJS)/read_viirs_Mband.o
 $(OBJS)/seviri_neural_net_preproc.o: $(OBJS)/channel_structures.o \
         $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o
 $(OBJS)/surface_emissivity.o: $(OBJS)/channel_structures.o \

@@ -452,7 +452,7 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
    real                             :: ecmwf_time_int_fac
 
 ! Temporary variables for the aerosol_cci dust mask hack
-   real(kind=sreal), allocatable    :: tot_cldmask_uncertainty(:,:)
+!   real(kind=sreal), allocatable    :: tot_cldmask_uncertainty(:,:)
 
 !  integer, dimension(8)            :: values
 
@@ -505,6 +505,7 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
    preproc_opts%use_seviri_ann_ctp_fg    = .false.
    preproc_opts%use_seviri_ann_mlay      = .false.
    preproc_opts%mcd43_max_qaflag         = 5
+   preproc_opts%do_dust_correction       = .true.
 
    ! When true, the offset between the nadir and oblique views is read from
    ! the track_offset global attribute. Otherwise, the two longitude fields are
@@ -793,7 +794,10 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
          segment_starts(n_segments) = granule%along_track_offset2 + 1
          segment_ends(n_segments)   = granule%along_track_offset2 + granule%n_along_track2
       end if
-
+      print *,'Are we breaking here???',n_segments
+      print *,segment_starts
+      print *,segment_ends
+      print *,chunksize
       n_chunks = calc_n_chunks(n_segments, segment_starts, segment_ends, &
                                chunksize)
 
@@ -1012,59 +1016,66 @@ subroutine orac_preproc(mytask, ntasks, lower_bound, upper_bound, driver_path_fi
          end if
       end if
 
-      if (imager_angles%nviews .gt. 1) then
-         ! A temporary hack for Aerosol_cci:
-         ! Due to the cloud masking being very effective at detecting dust,
-         ! we'll try and re-introduce it
-         if (trim(adjustl(granule%sensor)) .eq. 'AATSR' .or. &
-            trim(adjustl(granule%sensor)) .eq. 'ATSR2' .or. &
-            trim(adjustl(granule%sensor)) .eq. 'SLSTR') then
-            if (1 .eq. 1 .and. &
-                 minval(imager_geolocation%latitude)  .lt.  40.0 .and. &
-                 maxval(imager_geolocation%latitude)  .gt.   0.0 .and. &
-                 minval(imager_geolocation%longitude) .lt.  75.0 .and. &
-                 maxval(imager_geolocation%longitude) .gt. -40.0) then
-               if (verbose) write(*,*) 'Aerosol_cci dust correction hack is underway'
-               allocate(tot_cldmask_uncertainty( &
-                    imager_geolocation%startx:imager_geolocation%endx, &
-                    1:imager_geolocation%ny) )
-               ! product a smoothed version of the cldmask uncertainty
-               if (verbose) then
-                  write(*,*) minval(imager_pavolonis%cldmask_uncertainty(:,:,1)), &
-                       maxval(imager_pavolonis%cldmask_uncertainty(:,:,1))
-                  write(*,*) minval(imager_pavolonis%cldmask_uncertainty(:,:,2)), &
-                       maxval(imager_pavolonis%cldmask_uncertainty(:,:,2))
-               end if
-
-               tot_cldmask_uncertainty(:,:) = &
-                    imager_pavolonis%cldmask_uncertainty(:,:,1) + &
-                    imager_pavolonis%cldmask_uncertainty(:,:,2)
-
-               if (verbose) write(*,*) 'Total cldmask uncertainty: min-max', minval(tot_cldmask_uncertainty), maxval(tot_cldmask_uncertainty)
-               ! Now use this smoothed mask, and the pavolonis cloud type
-               ! to "de-mask" possibly dust-filled pixels
-               ! Note that we leave the cldtype  alone, so we can still tell
-               ! that the pixels were originally flagged as cloud
-               if (verbose) write(*,*) 'Total clouds before correction: ', &
-                    count(imager_pavolonis%cldmask(:,:,1) .gt. 0), &
-                    count(imager_pavolonis%cldmask(:,:,2) .gt. 0)
-               where(tot_cldmask_uncertainty .gt. 70          .and. &
-                    (imager_pavolonis%cldtype(:,:,1) .eq. 3  .or. &
-                    imager_pavolonis%cldtype(:,:,2) .eq. 3) .and. &
-                    imager_geolocation%latitude .gt.    0.0  .and. &
-                    imager_geolocation%latitude .lt.   40.0  .and. &
-                    imager_geolocation%longitude .gt. -40.0  .and. &
-                    imager_geolocation%longitude .lt.  75.0)
-                  imager_pavolonis%cldmask(:,:,1) = 0
-                  imager_pavolonis%cldmask(:,:,2) = 0
-               end where
-               if (verbose) write(*,*) 'Total clouds after correction: ', &
-                    count(imager_pavolonis%cldmask(:,:,1) .gt. 0), &
-                    count(imager_pavolonis%cldmask(:,:,2) .gt. 0)
-               deallocate(tot_cldmask_uncertainty)
-            end if
-         end if
+      if (preproc_opts%do_dust_correction) then
+         if (verbose) write(*,*) 'Apply dust-detection correction to cloud mask'
+         call correct_for_dust(channel_info, imager_measurements, imager_angles, &
+              imager_geolocation, imager_pavolonis, verbose)
       end if
+
+!!$      if (imager_angles%nviews .gt. 1) then
+!!$         ! A temporary hack for Aerosol_cci:
+!!$         ! Due to the cloud masking being very effective at detecting dust,
+!!$         ! we'll try and re-introduce it
+!!$         if (trim(adjustl(granule%sensor)) .eq. 'AATSR' .or. &
+!!$            trim(adjustl(granule%sensor)) .eq. 'ATSR2' .or. &
+!!$            trim(adjustl(granule%sensor)) .eq. 'SLSTR') then
+!!$            if (1 .eq. 1 .and. &
+!!$                 minval(imager_geolocation%latitude)  .lt.  40.0 .and. &
+!!$                 maxval(imager_geolocation%latitude)  .gt.   0.0 .and. &
+!!$                 minval(imager_geolocation%longitude) .lt.  75.0 .and. &
+!!$                 maxval(imager_geolocation%longitude) .gt. -40.0) then
+!!$               if (verbose) write(*,*) 'Aerosol_cci dust correction hack is underway'
+!!$               allocate(tot_cldmask_uncertainty( &
+!!$                    imager_geolocation%startx:imager_geolocation%endx, &
+!!$                    1:imager_geolocation%ny) )
+!!$               ! product a smoothed version of the cldmask uncertainty
+!!$               if (verbose) then
+!!$                  write(*,*) minval(imager_pavolonis%cldmask_uncertainty(:,:,1)), &
+!!$                       maxval(imager_pavolonis%cldmask_uncertainty(:,:,1))
+!!$                  write(*,*) minval(imager_pavolonis%cldmask_uncertainty(:,:,2)), &
+!!$                       maxval(imager_pavolonis%cldmask_uncertainty(:,:,2))
+!!$               end if
+!!$
+!!$               tot_cldmask_uncertainty(:,:) = &
+!!$                    imager_pavolonis%cldmask_uncertainty(:,:,1) + &
+!!$                    imager_pavolonis%cldmask_uncertainty(:,:,2)
+!!$
+!!$               if (verbose) write(*,*) 'Total cldmask uncertainty: min-max', &
+!!$                    minval(tot_cldmask_uncertainty), maxval(tot_cldmask_uncertainty)
+!!$               ! Now use this smoothed mask, and the pavolonis cloud type
+!!$               ! to "de-mask" possibly dust-filled pixels
+!!$               ! Note that we leave the cldtype  alone, so we can still tell
+!!$               ! that the pixels were originally flagged as cloud
+!!$               if (verbose) write(*,*) 'Total clouds before correction: ', &
+!!$                    count(imager_pavolonis%cldmask(:,:,1) .gt. 0), &
+!!$                    count(imager_pavolonis%cldmask(:,:,2) .gt. 0)
+!!$               where(tot_cldmask_uncertainty .gt. 70          .and. &
+!!$                    (imager_pavolonis%cldtype(:,:,1) .eq. 3  .or. &
+!!$                    imager_pavolonis%cldtype(:,:,2) .eq. 3) .and. &
+!!$                    imager_geolocation%latitude .gt.    0.0  .and. &
+!!$                    imager_geolocation%latitude .lt.   40.0  .and. &
+!!$                    imager_geolocation%longitude .gt. -40.0  .and. &
+!!$                    imager_geolocation%longitude .lt.  75.0)
+!!$                  imager_pavolonis%cldmask(:,:,1) = 0
+!!$                  imager_pavolonis%cldmask(:,:,2) = 0
+!!$               end where
+!!$               if (verbose) write(*,*) 'Total clouds after correction: ', &
+!!$                    count(imager_pavolonis%cldmask(:,:,1) .gt. 0), &
+!!$                    count(imager_pavolonis%cldmask(:,:,2) .gt. 0)
+!!$               deallocate(tot_cldmask_uncertainty)
+!!$            end if
+!!$         end if
+!!$      end if
 
       ! create output netcdf files.
       if (verbose) write(*,*) 'Create output netcdf files'
