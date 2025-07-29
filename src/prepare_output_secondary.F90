@@ -46,6 +46,7 @@
 !    checked for in X, X0, Xb (sreal_fill_value had been ocassionally checked).
 ! 2016/07/27, GM: Add output fields for the multilayer retrieval.
 ! 2023/10/10, GT: Added optional output of measurement uncertainties
+! 2025/07/29, DR: Minor bug fix for check in ds.
 !
 ! Bugs:
 ! None known.
@@ -376,6 +377,8 @@ end if
    ! ds
    !----------------------------------------------------------------------------
    if (SPixel%Nx .eq. 0) then
+      dummyreal = sreal_fill_value
+   else if (size(SPixel%X) == 1 .and. SPixel%X(1) == 0) then
       dummyreal = sreal_fill_value
    else if (any(Diag%AK(SPixel%X, SPixel%X) .eq. MissingXn)) then
       dummyreal = sreal_fill_value

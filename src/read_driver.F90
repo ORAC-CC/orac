@@ -148,6 +148,8 @@
 ! 2019/08/14, SP: Add Fengyun4A support.
 ! 2021/04/06, AP: New LUT names.
 ! 2022/01/27, GT: Added CTP input file to Ctrl%FID structure.
+! 2024/10/15, DR: Added support for FCI
+! 2024/12/03, DR: Added support for ISCCP-NG GeoRing
 !
 ! Bugs:
 ! None known.
@@ -786,6 +788,40 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       Ctrl%r_e_chans = (/ 3, 4 /)
       allocate(Ctrl%ir_chans(3))
       Ctrl%ir_chans  = (/ 4, 5, 6 /)
+   else if (Ctrl%InstName(1:3) == 'FCI') then
+      Ctrl%Ind%Y_Id_legacy(I_legacy_0_6x) = 3
+      Ctrl%Ind%Y_Id_legacy(I_legacy_0_8x) = 4
+      Ctrl%Ind%Y_Id_legacy(I_legacy_1_6x) = 7
+      Ctrl%Ind%Y_Id_legacy(I_legacy_3_xx) = 9
+      Ctrl%Ind%Y_Id_legacy(I_legacy_11_x) = 14
+      Ctrl%Ind%Y_Id_legacy(I_legacy_12_x) = 15
+
+      allocate(Ctrl%ReChans(3))
+      Ctrl%ReChans = (/ 9, 7, 8 /)
+
+      allocate(Ctrl%tau_chans(4))
+      Ctrl%tau_chans = (/ 3, 4, 1, 2 /)
+      allocate(Ctrl%r_e_chans(3))
+      Ctrl%r_e_chans = (/ 7, 8, 9 /)
+      allocate(Ctrl%ir_chans(3))
+      Ctrl%ir_chans  = (/ 9, 14, 15 /)
+   else if (Ctrl%InstName(1:7) == 'ISCCPNG') then
+      Ctrl%Ind%Y_Id_legacy(I_legacy_0_6x) = 1
+      Ctrl%Ind%Y_Id_legacy(I_legacy_0_8x) = 2
+      Ctrl%Ind%Y_Id_legacy(I_legacy_1_6x) = 3
+      Ctrl%Ind%Y_Id_legacy(I_legacy_3_xx) = 4
+      Ctrl%Ind%Y_Id_legacy(I_legacy_11_x) = 9
+      Ctrl%Ind%Y_Id_legacy(I_legacy_12_x) = 10
+
+      allocate(Ctrl%ReChans(2))
+      Ctrl%ReChans = (/ 4, 3 /)
+
+      allocate(Ctrl%tau_chans(2))
+      Ctrl%tau_chans = (/ 1, 2 /)
+      allocate(Ctrl%r_e_chans(2))
+      Ctrl%r_e_chans = (/ 3, 4 /)
+      allocate(Ctrl%ir_chans(3))
+      Ctrl%ir_chans  = (/ 4, 9, 10 /)
    else if (Ctrl%InstName(1:5) == 'MODIS') then
       Ctrl%Ind%Y_Id_legacy(I_legacy_0_6x) = 1
       Ctrl%Ind%Y_Id_legacy(I_legacy_0_8x) = 2
