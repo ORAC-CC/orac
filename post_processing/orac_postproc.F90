@@ -149,6 +149,8 @@
 !                   Bayesian selection method. The weights are passed via the
 !                   BAYESIAN_WEIGHTS option in the driver file, and are treated
 !                   as an a priori probability for each phase/type.
+! 2025/05/21, DR: Bug fix for case OVERLAP_TYPE without use_ml being True, where 
+!                 a check needed a 3rd file, even though only 2 are available.
 !
 ! Bugs:
 ! - Use of input_primary%cldtype is hardwired to view element 1.
@@ -615,13 +617,14 @@ subroutine orac_postproc(mytask, ntasks, lower_bound, upper_bound, &
                         PROB_CLEAR_TYPE)
                       phase_flag = 2_byte
                    case(OVERLAP_TYPE)
-                      if (use_ml .and. &
+                      if (use_ml) then
                            ! only set if ML cost is less than SL cost
-                           (input_primary(IMul)%costjm(i,j) <= &
-                           input_primary(IIce)%costjm(i,j))) then
-                         phase_flag = 3_byte
-                      else
-                         phase_flag = 2_byte
+                        if ((input_primary(IMul)%costjm(i,j) <= &
+                        input_primary(IIce)%costjm(i,j))) then
+                           phase_flag = 3_byte
+                        else
+                           phase_flag = 2_byte
+                        end if
                       end if
                    case default
                       phase_flag = 0_byte
