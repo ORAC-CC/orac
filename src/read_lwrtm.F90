@@ -86,6 +86,7 @@
 ! 2015/09/07, AP: Allow verbose to be controlled from the driver file.
 ! 2017/06/21, OS: string name fix for METOP
 ! 2023/06/02, GT: Fix for Sentinel-3 platform string
+! 2025/07/29, DR: Bug fix for MTG series naming
 !
 ! Bugs:
 ! None known.
@@ -111,7 +112,7 @@ subroutine Read_LwRTM(Ctrl, RTM)
    ! become real(8). The parameter arrays read in via buf, and the lat/lons
    ! etc are explicitly written as real(4) in order to reduce the file size.
 
-   integer                    :: ncid, chan_found, i, j
+   integer                    :: ncid, chan_found, i, j, k, l
    character(len=InstNameLen) :: platform, sensor, instname
    integer, allocatable       :: index(:), ChanID(:)
 !  real(4), allocatable       :: WvNumber(:)
@@ -126,6 +127,21 @@ subroutine Read_LwRTM(Ctrl, RTM)
                  Ctrl%FID%LWRTM
       stop error_stop_code
    end if
+   ! Apply fix for MTG series; officially it has a hyphen between MTG and either 
+   ! IX or SX for the Imager or Sounder satellites, where X is the series number,
+   ! i.e. 1, 2, 3 or 4.
+   if (trim(sensor) == 'FCI') then
+      ! Check over the string for the hyphen and drop it
+      l = 1
+      do k = 1, len_trim(platform)
+         if (platform(k:k) /= '-') then
+               platform(l:l) = platform(k:k)  ! Copy character if it's not a hyphen
+               l = l + 1
+         end if
+      end do
+      platform = trim(platform(1:l-1)) ! The new platform len will be 1 too long; adjust to the right length
+   end if
+   ! Assign correct name
    instname = trim(adjustl(sensor))//'-'//trim(adjustl(platform))
    if (trim(adjustl(instname)) /= trim(adjustl(Ctrl%InstName))) then
       write(*,*) 'ERROR: Read_LwRTM(): Instrument in LWRTM header inconsistent: ', &
