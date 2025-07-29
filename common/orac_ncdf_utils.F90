@@ -1048,6 +1048,7 @@ subroutine ncdf_get_arr_attribute_int(ncid, attr_name, attr_val)
   
      integer :: ierr
 
+     print *, 'Size of attr_val:', size(attr_val)
      ierr = nf90_get_att(ncid, NF90_GLOBAL, trim(attr_name), attr_val)
      if (ierr.ne.NF90_NOERR) then
         write(*,*) 'ERROR: nf90_get_att(), ', trim(nf90_strerror(ierr)), ', name: ', attr_name
