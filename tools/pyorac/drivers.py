@@ -82,6 +82,17 @@ def build_preproc_driver(args):
         )
 
     # Select ECMWF files
+    # Need to override ECMWF dir on JASMIN depending on if it's within the last ~3 months or not
+    switch_datetime = datetime(2024,1,1) # datetime.now() - relativedelta(months = 2)
+    switch_datetime = datetime(
+        switch_datetime.year,
+        switch_datetime.month,
+        1
+    )
+    if (args.File.time >= switch_datetime) and ('era5/' in args.ecmwf_dir):
+        args.ecmwf_dir = args.ecmwf_dir.replace("era5/", "era5t/")
+    if (args.File.time < switch_datetime) and ('era5t/' in args.ecmwf_dir):
+        args.ecmwf_dir = args.ecmwf_dir.replace("era5t/", "era5/")
     bounds = _bound_time(args.File.time + args.File.dur // 2)
     if args.nwp_flag == 0:
         ecmwf_nlevels = 91
@@ -295,7 +306,8 @@ DO_CLOUD_EMIS={args.cloud_emis}
 DO_IRONLY={args.ir_only}
 DO_CLDTYPE={cldtype}
 USE_CAMEL_EMIS={args.use_camel_emis}
-USE_SWANSEA_CLIMATOLOGY={args.swansea}"""
+USE_SWANSEA_CLIMATOLOGY={args.swansea}
+USE_SEVIRI_ANN_CMA_CPH={args.use_seviri_ml}"""
 
     if args.available_channels is not None:
         driver += "\nN_CHANNELS={}".format(len(args.available_channels))
@@ -443,29 +455,31 @@ def build_postproc_driver(args, files):
 {out_pri}
 {out_sec}
 {switch}
-COST_THRESH={cost_tsh}
-NORM_PROB_THRESH={prob_tsh}
+COST_THRESH=0.0
+NORM_PROB_THRESH=0.0
 OUTPUT_OPTICAL_PROPS_AT_NIGHT={opt_nght}
 VERBOSE={verbose}
 USE_CHUNKING={chunking}
 USE_NETCDF_COMPRESSION={compress}
-USE_BAYESIAN_SELECTION={bayesian}""".format(
-        bayesian=not cci_cloud,
+USE_BAYESIAN_SELECTION=True""".format(
+        # bayesian=not cci_cloud,
         chunking=args.chunking,
         compress=args.compress,
-        cost_tsh=args.cost_thresh,
+        # cost_tsh=args.cost_thresh,
         ice_pri=files[1],
         ice_sec=files[1].replace('primary', 'secondary'),
         multilayer=multilayer,
         opt_nght=not args.no_night_opt,
         out_pri=args.target,
         out_sec=args.target.replace('primary', 'secondary'),
-        prob_tsh=args.prob_thresh,
+        # prob_tsh=args.prob_thresh,
         switch=not args.no_switch_phase,
         verbose=args.verbose,
         wat_pri=files[0],
         wat_sec=files[0].replace('primary', 'secondary'),
     )
+
+    print(files)
 
     # Add additional files
     for filename in files[2:]:
@@ -492,7 +506,7 @@ USE_BAYESIAN_SELECTION={bayesian}""".format(
 def _bound_time(date=None, delta_hours=6):
     """Return timestamps divisible by some duration that bound a given time
 
-    https://stackoverflow.com/questions/3463930/how-to-round-the-minute-of-a-datetime-object-python/10854034
+    http://stackoverflow.com/questions/3463930/how-to-round-the-minute-of-a-datetime-object-python/10854034
 
     Args:
     :datetime dt: Initial time.

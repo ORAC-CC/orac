@@ -96,20 +96,26 @@ def process_post(args, log_path, files=None, dependency=None, tag='post'):
 
     args = oracarg.check_args_postproc(args)
     job_name = args.File.job_name(args.revision, tag)
-    root_name = args.File.root_name(args.revision)
+    root_name = args.File.root_name(args.revision) # Never seen orbit number in a primary file name; drop it here
+    # root_name = '_'.join(root_name.split('_')[:-2] + [root_name.split('_')[-1]])
 
     if not os.path.isdir(args.out_dir):
         os.makedirs(args.out_dir, defaults.DIR_PERMISSIONS)
-
+    print(root_name)
     if files is None:
         # Find all primary files of requested phases in given input folders.
         files = []
-        for phs in set(args.lut_names):
+        for phs in list(args.lut_names):
+            print(phs)
             for fdr in args.in_dir:
-                files.extend(glob(os.path.join(
+                _fname = os.path.join(
                     fdr, root_name + phs + '.primary.nc'
-                )))
-
+                )
+                # print(_fname)
+                _fname = glob(_fname)
+                # print(_fname)
+                files += _fname
+    # print(files)
     if len(files) < 2:
         raise defin.FileMissing('sufficient processed files', args.target)
 

@@ -90,6 +90,26 @@ _standard_aerosol_optical_depth_prior = {'AP': 0.10, 'FG': 0.10, 'SX': 1.5}
 # Set priors for all particle types
 APRIORI_LOOKUP = {
     None: {},
+    "dust": { # a70; re from ORAC_model_strategies.pdf
+        'ITau': _standard_aerosol_optical_depth_prior,
+        'IRe': {'AP': 1.22, 'FG': 1.22, 'SX': 0.15},
+    },
+    "northern_background": { # a75; re from ORAC_model_strategies.pdf
+        'ITau': _standard_aerosol_optical_depth_prior,
+        'IRe': {'AP': 0.91, 'FG': 0.91, 'SX': 0.15},
+    },
+    "maritime": { # a76; re from ORAC_model_strategies.pdf
+        'ITau': _standard_aerosol_optical_depth_prior,
+        'IRe': {'AP': 1.22, 'FG': 1.22, 'SX': 0.15},
+    },
+    "dirty_maritime": { # a77; re from ORAC_model_strategies.pdf
+        'ITau': _standard_aerosol_optical_depth_prior,
+        'IRe': {'AP': 0.91, 'FG': 0.91, 'SX': 0.15},
+    },
+    "smoke": { # a79; re from ORAC_model_strategies.pdf
+        'ITau': _standard_aerosol_optical_depth_prior,
+        'IRe': {'AP': 0.142, 'FG': 0.142, 'SX': 0.15},
+    },
     "large_clean_aerosol": {
         'ITau': _standard_aerosol_optical_depth_prior,
         'IRe': {'AP': 1.22, 'FG': 1.22, 'SX': 0.15},

@@ -100,6 +100,8 @@ def args_preproc(parser):
                      help='Skip the Pavolonis cloud typing.')
     key.add_argument('--swansea', action='store_true',
                      help='Use the Swansea climatology instead of MODIS BRDF.')
+    key.add_argument('--use_seviri_ml', action='store_true',
+                     help='Use the SEVIRI ML cloud mask and phase.')
     emis = key.add_mutually_exclusive_group()
     emis.add_argument('--use_modis_emis', action='store_true',
                       help='Use MODIS surface emissivity rather than RTTOV.')
