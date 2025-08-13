@@ -1,0 +1,56 @@
+#!/bin/bash
+
+cd $ORACDIR
+
+# Make directories
+mkdir common/obj
+mkdir pre_processing/obj
+mkdir src/obj
+mkdir post_processing/obj
+mkdir derived_products/broadband_fluxes/obj
+mkdir derived_products/broadband_fluxes/obj/bugsrad
+mkdir derived_products/broadband_fluxes/obj/fu_liou
+
+# Overwrite activate and deactivate for orac_git
+SCRIPT_DIR=${CONDA_PREFIX}/etc/conda
+for CHANGE in "activate" "deactivate"; do
+    mkdir -p "${SCRIPT_DIR}/${CHANGE}.d"
+    cp "${ORACDIR}/feedstocks/orac/${CHANGE}.sh" "${SCRIPT_DIR}/${CHANGE}.d/${CHANGE}-orac.sh"
+done
+cat <<EOF >> $SCRIPT_DIR/activate.d/activate-orac.sh
+# Point to this environment's libraries
+if [ -n "\${ORAC_LIB}" ]; then
+    export ORAC_LIB_SAVE="\${ORAC_LIB}"
+fi
+export ORAC_LIB="\${ORACDIR}/config/lib.conda.inc"
+if [ -n "\${ORAC_ARCH}" ]; then
+    export ORAC_ARCH_SAVE="\${ORAC_ARCH}"
+fi
+export ORAC_ARCH="\${ORACDIR}/config/arch.conda.inc"
+
+if [ -n "\${PYTHONPATH}" ]; then
+    export PYTHONPATH_SAVE="\${PYTHONPATH}"
+fi
+export PYTHONPATH="\${ORACDIR}/tools:\${CONDA_PREFIX}/lib:\${PYTHONPATH}"
+EOF
+cat <<EOF >> $SCRIPT_DIR/deactivate.d/deactivate-orac.sh
+if [ -n "\${ORAC_LIB_SAVE}" ]; then
+    export ORAC_LIB="\${ORAC_LIB_SAVE}"
+    unset ORAC_LIB_SAVE
+else
+    unset ORAC_LIB
+fi
+if [ -n "\${ORAC_ARCH_SAVE}" ]; then
+    export ORAC_ARCH="\${ORAC_ARCH_SAVE}"
+    unset ORAC_ARCH_SAVE
+else
+    unset ORAC_ARCH
+fi
+
+if [ -n "\${PYTHONPATH_SAVE}" ]; then
+    export PYTHONPATH="\${PYTHONPATH_SAVE}"
+    unset PYTHONPATH_SAVE
+else
+    unset PYTHONPATH
+fi
+EOF
