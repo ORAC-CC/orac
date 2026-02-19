@@ -39,7 +39,7 @@
 !                 less row of vis data than code would anticipate).
 !
 ! Bugs:
-! SLSTR colocation is poor. Aerosol retrieval unusable. Cloud retrieval suspect.
+! None know.
 !-------------------------------------------------------------------------------
 
 ! This function retrieves the start and end times for an SLSTR scene, then
