@@ -232,7 +232,7 @@ subroutine read_slstr(infile, imager_geolocation, imager_measurements, &
          call read_slstr_visdata(indir, band_ids(i), &
               imager_measurements%data(:,:,i), imager_angles, startx, starty, &
               nx, ny)
-         where(imager_angles%solzen(:,:,1) .eq. sreal_fill_value) &
+         where (imager_angles%solzen(:,:,1) .eq. sreal_fill_value) &
               imager_measurements%data(:,:,i) = sreal_fill_value
 
       else if (band_ids(i) .le. 9) then
@@ -244,7 +244,7 @@ subroutine read_slstr(infile, imager_geolocation, imager_measurements, &
             call read_slstr_visdata(indir, band_ids(i), &
                  imager_measurements%data(sx_nad:ex_nad,:,i), &
                  imager_angles, sx_obl, starty, ex_obl-sx_obl+1, ny)
-            where(imager_angles%solzen(sx_nad:ex_nad,:,2) .eq. sreal_fill_value) &
+            where (imager_angles%solzen(sx_nad:ex_nad,:,2) .eq. sreal_fill_value) &
                  imager_measurements%data(sx_nad:ex_nad,:,i) = sreal_fill_value
          end if
 
@@ -261,7 +261,8 @@ subroutine read_slstr(infile, imager_geolocation, imager_measurements, &
 
       ! Apply some correction factors
       if (slstr_correction_factor(band_ids(i)) .gt. 0.0) then
-         imager_measurements%data(:,:,i) = imager_measurements%data(:,:,i) * &
+         where (imager_measurements%data(:,:,i) .ne. sreal_fill_value) &
+              imager_measurements%data(:,:,i) = imager_measurements%data(:,:,i) * &
               slstr_correction_factor(band_ids(i))
       end if
 
