@@ -33,6 +33,7 @@
 !                 USE_GSICS enables this to be disabled.
 ! 2018/08/30, SP: Allow variable CO2 in RTTOV, linear scaling from 2006 value
 ! 2021/12/14, DP: Added SEVIRI external ANN option
+! 2024/07/01, DH: Added option to use native ECMWF grid for preprocessing
 !
 ! Bugs:
 ! None known.
@@ -180,6 +181,9 @@ subroutine parse_optional(label, value, preproc_opts)
            call handle_parse_error(label)
    case('USE_SEVIRI_ANN_MLAY')
       if (parse_string(value, preproc_opts%use_seviri_ann_mlay) /= 0) &
+           call handle_parse_error(label)
+   case('USE_ECMWF_PREPROC_GRID')
+      if (parse_string(value, preproc_opts%use_ecmwf_preproc_grid) /= 0) &
            call handle_parse_error(label)
    case default
       write(*,*) 'ERROR: Unknown option: ', trim(label)

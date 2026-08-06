@@ -51,6 +51,7 @@
 !                 over high altitude land regions (Tibet, f.ex) (ExtWork)
 ! 2017/03/30, SP: Add ability to calculate tropospheric cloud emissivity (ExtWork)
 ! 2017/06/21, OS: line continuation symbol set to &
+! 2024/07/01, DH: Change indexing to use preproc_dims for all dimensions
 !
 ! Bugs:
 ! - If you're having problems with INTF, set the environment variable JDCNDBG=1
@@ -72,8 +73,10 @@ subroutine read_gfs_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
    type(preproc_prtm_t),       intent(inout) :: preproc_prtm
    logical,                    intent(in)    :: verbose
 
+#ifdef INCLUDE_EMOS
    integer(lint), parameter                 :: BUFFER = 3000000
    integer(lint), external                  :: INTIN,INTOUT,INTF2
+#endif
    integer(lint)                            :: fu,stat,nbytes
    integer(lint)                            :: out_bytes, out_words
    integer(lint), allocatable, dimension(:) :: in_data,out_data
@@ -92,6 +95,7 @@ subroutine read_gfs_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
    integer(lint),dimension(31)              :: gfs_levlist
 
 
+#ifdef INCLUDE_EMOS
    gfs_levlist = (/1,2,3,5,7,10,20,30,50,70,100,150,200,250,300,350, &
                    400,450,500,550,600,650,700,750,800,850,900,925,950,975,1000/)
 
@@ -122,10 +126,10 @@ subroutine read_gfs_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
    grid(2) = 0.5 / preproc_dims%dellat
    if (INTOUT('grid',iblank,grid,charv) .ne. 0) &
         call h_e_e('grib', 'INTOUT grid failed.')
-   area(1) = preproc_geoloc%latitude(preproc_dims%max_lat) + 0.01*grid(2)
-   area(2) = preproc_geoloc%longitude(preproc_dims%min_lon) + 0.01*grid(1)
-   area(3) = preproc_geoloc%latitude(preproc_dims%min_lat) + 0.01*grid(2)
-   area(4) = preproc_geoloc%longitude(preproc_dims%max_lon) + 0.01*grid(1)
+   area(1) = preproc_geoloc%latitude(preproc_dims%ydim) + 0.01*grid(2)
+   area(2) = preproc_geoloc%longitude(1) + 0.01*grid(1)
+   area(3) = preproc_geoloc%latitude(1) + 0.01*grid(2)
+   area(4) = preproc_geoloc%longitude(preproc_dims%xdim) + 0.01*grid(1)
    if (INTOUT('area',iblank,area,charv) .ne. 0) &
         call h_e_e('grib', 'INTOUT area failed.')
 
@@ -165,8 +169,6 @@ subroutine read_gfs_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
            call h_e_e('grib', 'INTF2 failed.')
       out_words = out_bytes/lint
 
-!      print*,shape(out_data)
-!      print*,out_words,out_bytes,lint
 !      stop
       ! load grib data into grib_api
       call grib_new_from_message(gid,out_data(1:out_bytes),stat)
@@ -203,8 +205,8 @@ subroutine read_gfs_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
          if (any(level .eq. gfs_levlist) .and. &
              trim(ltype) .eq. 'isobaricInhPa') then
             array => preproc_prtm%temperature( &
-                 preproc_dims%min_lon:preproc_dims%max_lon, &
-                 preproc_dims%min_lat:preproc_dims%max_lat,tlev)
+                 1:preproc_dims%xdim, &
+                 1:preproc_dims%ydim,tlev)
             preproc_prtm%pressure(:,:,tlev)=level
             tlev=tlev+1
          else
@@ -215,58 +217,58 @@ subroutine read_gfs_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
              trim(ltype) .ne. 'isobaricInhPa') cycle
          ! Relative humidity
          array => preproc_prtm%spec_hum( &
-              preproc_dims%min_lon:preproc_dims%max_lon, &
-              preproc_dims%min_lat:preproc_dims%max_lat,qlev)
+                 1:preproc_dims%xdim, &
+                 1:preproc_dims%ydim,qlev)
          qlev=qlev+1
       case(156)
          if (all(level .ne. gfs_levlist) .or. &
              trim(ltype) .ne. 'isobaricInhPa') cycle
          ! Geopotential
          array => preproc_prtm%phi_lev( &
-              preproc_dims%min_lon:preproc_dims%max_lon, &
-              preproc_dims%min_lat:preproc_dims%max_lat,glev)
+                 1:preproc_dims%xdim, &
+                 1:preproc_dims%ydim,glev)
          glev=glev+1
       case(260131)
          ! Ozone
          if (all(level .ne. gfs_levlist) .or. &
              trim(ltype) .ne. 'isobaricInhPa') cycle
          array => preproc_prtm%ozone( &
-              preproc_dims%min_lon:preproc_dims%max_lon, &
-              preproc_dims%min_lat:preproc_dims%max_lat,olev)
+                 1:preproc_dims%xdim, &
+                 1:preproc_dims%ydim,olev)
          olev=olev+1
       case(134)
          array => preproc_prtm%lnsp( &
-              preproc_dims%min_lon:preproc_dims%max_lon, &
-              preproc_dims%min_lat:preproc_dims%max_lat)
+                 1:preproc_dims%xdim, &
+                 1:preproc_dims%ydim)
       case(31)
          array => preproc_prtm%sea_ice_cover( &
-              preproc_dims%min_lon:preproc_dims%max_lon, &
-              preproc_dims%min_lat:preproc_dims%max_lat)
+                 1:preproc_dims%xdim, &
+                 1:preproc_dims%ydim)
       case(3066)
          array => preproc_prtm%snow_depth( &
-              preproc_dims%min_lon:preproc_dims%max_lon, &
-              preproc_dims%min_lat:preproc_dims%max_lat)
+                 1:preproc_dims%xdim, &
+                 1:preproc_dims%ydim)
       case(165)
          array => preproc_prtm%u10( &
-              preproc_dims%min_lon:preproc_dims%max_lon, &
-              preproc_dims%min_lat:preproc_dims%max_lat)
+                 1:preproc_dims%xdim, &
+                 1:preproc_dims%ydim)
       case(166)
          array => preproc_prtm%v10( &
-              preproc_dims%min_lon:preproc_dims%max_lon, &
-              preproc_dims%min_lat:preproc_dims%max_lat)
+                 1:preproc_dims%xdim, &
+                 1:preproc_dims%ydim)
       case(167)
          array => preproc_prtm%temp2( &
-              preproc_dims%min_lon:preproc_dims%max_lon, &
-              preproc_dims%min_lat:preproc_dims%max_lat)
+                 1:preproc_dims%xdim, &
+                 1:preproc_dims%ydim)
       case(172)
          array => preproc_prtm%land_sea_mask( &
-              preproc_dims%min_lon:preproc_dims%max_lon, &
-              preproc_dims%min_lat:preproc_dims%max_lat)
+                 1:preproc_dims%xdim, &
+                 1:preproc_dims%ydim)
       case(54)
          if (trim(ltype) .ne. 'tropopause') cycle
          array => preproc_prtm%trop_p( &
-              preproc_dims%min_lon:preproc_dims%max_lon, &
-              preproc_dims%min_lat:preproc_dims%max_lat)
+                 1:preproc_dims%xdim, &
+                 1:preproc_dims%ydim)
       case default
          cycle
       end select
@@ -314,6 +316,10 @@ subroutine read_gfs_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
 
    ! Refactor all the GFS levels so that below-surface contributions are removed.
    call sort_gfs_levels(preproc_prtm,verbose)
+#else
+   write(*,*) 'ERROR: read_gfs_grib(): LIBEMOS is required for ' // &
+        'use_ecmwf_preproc_grid = .false.'
+#endif
 
 end subroutine read_gfs_grib
 
@@ -321,7 +327,7 @@ end subroutine read_gfs_grib
 ! This function transforms the GFS fixed pressure levels into surface-relative
 ! levels that are more similar to those from ECMWF. Needed to prevent below-
 ! surface contributions to the transmission and radiances.
-subroutine sort_gfs_levels(preproc_prtm,verbose)
+subroutine sort_gfs_levels(preproc_prtm, verbose)
 
    use preproc_constants_m
    use preproc_structures_m
@@ -331,14 +337,14 @@ subroutine sort_gfs_levels(preproc_prtm,verbose)
    type(preproc_prtm_t), intent(inout) :: preproc_prtm
    logical,              intent(in)    :: verbose
 
-   integer          :: sh(3),lb(3),ub(3),i_0,i_1,j_0,j_1,nl
-   integer          :: i,j,l,stoplev
+   integer          :: sh(3), lb(3), ub(3), i_0, i_1, j_0, j_1, nl
+   integer          :: i, j, l, stoplev
 
-   real(dreal)      :: surfp,interp
-   real,allocatable :: p(:),t(:),q(:),o(:),pl(:)
+   real(dreal)      :: surfp, interp
+   real,allocatable :: p(:), t(:), q(:), o(:), pl(:)
    logical          :: stopper
 
-   if (verbose)write(*,*)">>>>>>Sort_gfs_levels>>>>>>"
+   if (verbose) write(*,*) ">>>>>>Sort_gfs_levels>>>>>>"
 
    ! Get the array bounds
    sh = shape(preproc_prtm%pressure)

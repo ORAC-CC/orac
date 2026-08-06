@@ -59,7 +59,7 @@ SEVIRI_UTIL_LIB = $(LIBBASE_FORTRAN)/seviri_util
 SEVIRI_UTIL_INCLUDE = $(LIBBASE_FORTRAN)/seviri_util
 
 # seviri_ml
-# run seviri_ml/get_py_config.sh to obtain your SEVIRI_ML_PYTHON_LIB 
+# run seviri_ml/get_py_config.sh to obtain your SEVIRI_ML_PYTHON_LIB
 # and SEVIRI_ML_PYTHON_INCLUDE
 SEVIRI_ML_LIB = $(LIBBASE_FORTRAN)/seviri_ml
 SEVIRI_ML_INCLUDE = $(LIBBASE_FORTRAN)/seviri_ml
@@ -69,8 +69,7 @@ SEVIRI_ML_PYTHON_INCLUDE = /path/to/your/python/include
 SZLIB = $(LIBBASE)/szip/lib
 
 # Set up libraries and includes
-LIBS = -L$(EMOSLIB) -lemosR64 -lemos -lfftw3 \
-       -L$(EOSLIB) -lhdfeos -lGctp \
+LIBS = -L$(EOSLIB) -lhdfeos -lGctp \
        -L$(GRIBLIB) -leccodes_f90 -leccodes \
        -L$(HDFLIB) -lmfhdf -ldf \
        -L$(NCDF_FORTRAN_LIB) -lnetcdff \
@@ -108,6 +107,10 @@ CINC = -I./
 # interpolation and bilinear LUT interpolation.
 #LIBS += -L$(NRLIB) -lnr
 #INC  += -I$(NRINCLUDE) -DINCLUDE_NR
+
+# Uncomment if LIBEMOS is available for meteorological field interpolation.
+#LIBS += -L$(EMOSLIB) -lemosR64 -lemos -lfftw3
+#INC  += -DINCLUDE_EMOS
 
 # Uncomment if Fu_Liou support is desired for broadband fluxes.
 #LIBS += -L$(FULIOULIB) -lEd3Fu_201212
