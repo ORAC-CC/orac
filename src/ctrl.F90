@@ -285,6 +285,8 @@ module Ctrl_m
       logical                :: process_aerosol_only
       logical                :: all_channels_same_view
       logical                :: use_ann_phase
+      logical                :: use_new_meas_error ! Enable or disable new LUT
+                                                   ! uncertainty characterisation
       integer                :: NTypes_to_process  ! # of valid values in above
       integer(byte)          :: Types_to_process(MaxTypes) ! Pavolonis (or other)
                                                    ! type codes for pixels to
