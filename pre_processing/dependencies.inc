@@ -1,6 +1,6 @@
 $(OBJS)/aatsr_corrections.o: $(OBJS)/calender.o $(OBJS)/preproc_constants.o
 $(OBJS)/bright_m.o: fundamental_constants.inc
-$(OBJS)/build_preproc_fields.o: $(OBJS)/imager_structures.o \
+$(OBJS)/build_preproc_fields.o: $(OBJS)/ecmwf.o $(OBJS)/imager_structures.o \
         $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o
 $(OBJS)/calender.o: $(OBJS)/preproc_constants.o
 $(OBJS)/channel_structures.o: $(OBJS)/preproc_constants.o \
@@ -16,10 +16,12 @@ $(OBJS)/correct_for_ice_snow.o: $(OBJS)/channel_structures.o \
         $(OBJS)/imager_structures.o $(OBJS)/nsidc_nise.o \
         $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o \
         $(OBJS)/surface_structures.o
+$(OBJS)/correct_for_dust.o: $(OBJS)/channel_structures.o \
+        $(OBJS)/imager_structures.o
 $(OBJS)/cox_munk.o: $(OBJS)/cox_munk_constants.o $(OBJS)/gauss_leg_quad.o \
         $(OBJS)/ocean_colour.o $(OBJS)/preproc_constants.o
 $(OBJS)/cox_munk_constants.o: $(OBJS)/preproc_constants.o
-$(OBJS)/define_preprop_grid.o: $(OBJS)/imager_structures.o \
+$(OBJS)/define_preprop_grid.o: $(OBJS)/ecmwf.o $(OBJS)/imager_structures.o \
         $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o
 $(OBJS)/ecmwf.o: $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o \
         compute_geopot_coordinate.F90 deallocate_ecmwf_structures.F90 \

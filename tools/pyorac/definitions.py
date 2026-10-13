@@ -7,7 +7,7 @@
 # Names of the possible Pavolonis cloud classes
 ALL_TYPES = ('CLEAR', 'SWITCHED_TO_WATER', 'FOG', 'WATER', 'SUPERCOOLED',
              'SWITCHED_TO_ICE', 'OPAQUE_ICE', 'CIRRUS', 'OVERLAP',
-             'PROB_OPAQUE_ICE', 'PROB_CLEAR')
+             'PROB_OPAQUE_ICE', 'PROB_CLEAR', 'DUST_CLEAR', 'DUST_SWITCHED_FROM_CLOUD')
 
 # Colours used when printing to screen
 COLOURING = {

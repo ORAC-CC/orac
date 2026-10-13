@@ -30,6 +30,7 @@
 ! 2018/11/05, SP: Add CAPE
 ! 2021/03/09, AP: Consolidate path arguments into preproc_paths_t structure
 ! 2021/03/10, AP: Consolidate paths/dates into setup_args_t structure
+! 2024/07/01, DH: Add option for using native ecmwf grid for preprocessing
 !
 ! Bugs:
 ! None known.
@@ -45,6 +46,7 @@ module preproc_structures_m
       integer(kind=lint) :: xdim, ydim, kdim
       integer(kind=lint) :: nchan_sw, nchan_lw
       integer(kind=lint) :: min_lat, max_lat, min_lon, max_lon
+      integer(kind=lint) :: min_lat_ind, max_lat_ind, min_lon_ind, max_lon_ind
       real(kind=sreal)   :: dellon, dellat
 
       real(kind=sreal)   :: lat_offset=90.0, lon_offset=180.0
@@ -105,6 +107,7 @@ module preproc_structures_m
       logical                    :: do_cloud_emis
       logical                    :: do_cloud_type
       logical                    :: do_ironly
+      logical                    :: do_dust_correction
       integer                    :: nwp_nlevels
       integer                    :: ecmwf_time_int_method
       integer, pointer           :: channel_ids(:)
@@ -123,6 +126,7 @@ module preproc_structures_m
       logical                    :: use_seviri_ann_cma_cph
       logical                    :: use_seviri_ann_ctp_fg
       logical                    :: use_seviri_ann_mlay
+      logical                    :: use_ecmwf_preproc_grid
       integer                    :: mcd43_max_qaflag
 
       character(len=path_length) :: ext_lsm_path
