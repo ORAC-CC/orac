@@ -1191,15 +1191,16 @@ subroutine setup_isccpng(args, channel_ids_user, channel_info, verbose)
    index2 = index(args%geo_file, '/', back=.true.)
 
    index2 = index(args%l1b_file, 'um__')
-   index2=index2+3
+   index2=index2+4
+   print *, trim(adjustl(args%l1b_file(index2:index2+3)))
 
-   ! get year, doy, hour and minute as strings                                                                                                                                                                  
+   ! get year, doy, hour and minute as strings                                                                                                                                                     
 
-   args%cyear = trim(adjustl(args%l1b_file(index2+1:index2+4)))
-   args%cmonth = trim(adjustl(args%l1b_file(index2+5:index2+6)))
-   args%cday = trim(adjustl(args%l1b_file(index2+7:index2+8)))
-   args%chour = trim(adjustl(args%l1b_file(index2+10:index2+11)))
-   args%cminute = trim(adjustl(args%l1b_file(index2+12:index2+13)))
+   args%cyear = trim(adjustl(args%l1b_file(index2:index2+3)))
+   args%cmonth = trim(adjustl(args%l1b_file(index2+4:index2+5)))
+   args%cday = trim(adjustl(args%l1b_file(index2+6:index2+7)))
+   args%chour = trim(adjustl(args%l1b_file(index2+9:index2+10)))
+   args%cminute = trim(adjustl(args%l1b_file(index2+11:index2+12)))
 
    ! get year, doy, hour and minute as integers                                                                                                                                                                  
    read(args%cyear, '(I4)') args%year
@@ -1261,7 +1262,7 @@ subroutine setup_python(args, channel_ids_user, channel_info, verbose)
 
    call ncdf_open(fid, args%l1b_file, 'setup_python()')
    ! Read actual size of the netCDF4 file
-   nchans  = ncdf_dim_length(fid, 'channels', 'setup_python()')  
+   nchans  = ncdf_dim_length(fid, 'nc', 'setup_python()')  
    call ncdf_get_single_attribute_int(fid, 'max_chan_count', nchans_total)
 
    allocate(channel_ids_user(nchans))
@@ -1330,7 +1331,6 @@ subroutine setup_python(args, channel_ids_user, channel_info, verbose)
    call ncdf_get_arr_attribute_real(fid, 'all_channel_numerical_uncertainty', all_channel_numerical_uncertainty)
    
    ! get year, doy, hour and minute as strings
-   ! This is meant to read in the <start_time> as YYYY-MM-DDTHH:MM:SS
    args%cyear = start_time(1:5)
    args%cmonth = start_time(6:7)
    args%cday = start_time(9:10)
@@ -1469,8 +1469,7 @@ subroutine setup_seviri(args, channel_ids_user, channel_info, verbose)
       ! H-000-MSG1__-MSG1________-_________-EPI______-200603031200-__
       !
       if (index1 .ne. 0) then
-         index2 = index(args%l1b_file, "/", back=.true.)
-         index2 = index2 + index(args%l1b_file(index2 + 1:), '-')
+         index2 = index(args%l1b_file, '-')
          args%platform = 'MSG-' // args%l1b_file(index2-1:index2-1)
       else
          index2 = index(args%l1b_file, '__-')
@@ -1488,14 +1487,6 @@ subroutine setup_seviri(args, channel_ids_user, channel_info, verbose)
    args%cday = trim(adjustl(args%l1b_file(index2+7:index2+8)))
    args%chour = trim(adjustl(args%l1b_file(index2+9:index2+10)))
    args%cminute = trim(adjustl(args%l1b_file(index2+11:index2+12)))
-
-   ! Check the times; we get a bad read for .nat files
-   ! print *, args%platform
-   ! print *, args%cyear
-   ! print *, args%cmonth
-   ! print *, args%cday
-   ! print *, args%chour
-   ! print *, args%cminute
 
    ! get year, doy, hour and minute as integers
    read(args%cyear, '(I4)') args%year
@@ -2150,8 +2141,8 @@ subroutine common_setup(channel_info, channel_ids_user, channel_ids_default, &
    end if
 
    do i = 1, channel_info%nchannels_total
-      channel_info%channel_wl_abs(i) = &
-         all_channel_wl_abs(channel_info%channel_ids_instr(i))
+      channel_info%channel_wl_abs (i) = &
+         all_channel_wl_abs (channel_info%channel_ids_instr(i))
 
       channel_info%channel_sw_flag(i) = &
          all_channel_sw_flag(channel_info%channel_ids_instr(i))
@@ -2263,7 +2254,6 @@ subroutine common_setup(channel_info, channel_ids_user, channel_ids_default, &
          i_lw = i_lw + 1
       end if
    end do
-   print *,'Ending common setup...'
 
 end subroutine common_setup
 

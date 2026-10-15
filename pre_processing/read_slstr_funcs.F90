@@ -37,7 +37,22 @@
 ! 2023/06/06, GT: Added code to deal with frames where there is one extra
 !                 row of both thermal and vis data than the normal (i.e. one
 !                 less row of vis data than code would anticipate).
-!
+! 2025/05/22, GT: Made changes to allow the U. Reading-produced SLSTR-lite L1
+!                 data to be read:
+!                 * SLSTR-lite does not include the DEM in the geodetic file.
+!                   Added the "allow_missing" optional argument to
+!                   "read_slstr_in_field", which allows the code to skip over
+!                   DEM reading (L1 DEM is set to fill value).
+!                 * Visible radiance data is now on the 1 km i-grid (i.e.
+!                   it's been sub-sampled to the same resolution as the IR
+!                   channels). "get_slstr_imnames" now checks for radiance files
+!                   on the i-grid and sets the file names appropriately if they
+!                   are found.
+!                 * "read_slstr_visdata" now checks if the dimensions of the
+!                   data in a vis-channel are the same as the output dimensions
+!                   (which are set by the IR channels i-grid). If they are, it
+!                   sets a "visIRgrid" flag to true, causing all of the code
+!                   dealing with the hi-res a/b grids to be skipped. 
 ! Bugs:
 ! SLSTR colocation is poor. Aerosol retrieval unusable. Cloud retrieval suspect.
 !-------------------------------------------------------------------------------
@@ -133,7 +148,8 @@ subroutine get_slstr_imnames(indir, inband, fname, fname_qa, bname, irradname)
 
    character(len=3) :: band
    character(len=3) :: vid
-
+   
+   logical          :: file_exists
    integer          :: mod_inb
 
    if (inband .le. 9) then
@@ -146,10 +162,26 @@ subroutine get_slstr_imnames(indir, inband, fname, fname_qa, bname, irradname)
 
    write (band, '(I1)') mod_inb
    if (mod_inb .le. 6) then
-      fname       = trim(indir)//'S'//trim(band)//'_radiance_a'//trim(vid)//'.nc'
-      fname_qa    = trim(indir)//'S'//trim(band)//'_quality_a'//trim(vid)//'.nc'
-      bname       = 'S'//trim(band)//'_radiance_a'//trim(vid)
-      irradname   = 'S'//trim(band)//'_solar_irradiance_a'//trim(vid)
+      ! First, check if the radiance data exists on the "i" grid - i.e. on the
+      ! 1 km infra-channel grid. If so, then we're probably dealing with
+      ! "slstr-lite" data, which means we don't need to regrid vis radiances
+      ! onto the infared grid
+      fname       = trim(indir)//'S'//trim(band)//'_radiance_i'//trim(vid)//'.nc'
+      inquire(file=fname, exist=file_exists)
+      if (file_exists .eqv. .true.) then
+         ! The channel "quality" information, including TOA irradiance, is still
+         ! "on" the a-grid
+         fname_qa    = trim(indir)//'S'//trim(band)//'_quality_a'//trim(vid)//'.nc'
+         bname       = 'S'//trim(band)//'_radiance_i'//trim(vid)
+         irradname   = 'S'//trim(band)//'_solar_irradiance_a'//trim(vid)
+      else
+         ! We don't have visible data already on the IR grid, so set the
+         ! file-name for the a-grid
+         fname       = trim(indir)//'S'//trim(band)//'_radiance_a'//trim(vid)//'.nc'
+         fname_qa    = trim(indir)//'S'//trim(band)//'_quality_a'//trim(vid)//'.nc'
+         bname       = 'S'//trim(band)//'_radiance_a'//trim(vid)
+         irradname   = 'S'//trim(band)//'_solar_irradiance_a'//trim(vid)
+      end if
    else if (mod_inb .le. 9) then
       fname       = trim(indir)//'S'//trim(band)//'_BT_i'//trim(vid)//'.nc'
       fname_qa    = trim(indir)//'S'//trim(band)//'_quality_i'//trim(vid)//'.nc'
@@ -227,6 +259,7 @@ subroutine read_slstr_visdata(indir, inband, outarr, imager_angles, &
 
    integer :: fid, ndet
    integer :: nx1, nxr, ny1, nyr
+   logical :: visIRgrid
 
    if (inband .lt. 1 .or. inband .gt. 18) then
       print*, 'SLSTR input band must be in range 1-18. Here we have', inband
@@ -238,24 +271,31 @@ subroutine read_slstr_visdata(indir, inband, outarr, imager_angles, &
 
    ! Open the netcdf file
    call ncdf_open(fid, filename, 'read_slstr_visdata()')
-   ! Determine the actual size of the data array (which should be
-   ! nx*2,ny*2, but sometimes isn't). Calculate the number of columns
-   ! and rows we can actually read. It is possible to have one less
-   ! than nx*2 or ny*2
+   ! Determine the actual size of the data array. In the case of "slstr-lite"
+   ! this should be the same as the IR-grid, which is (nx,ny).
+   ! If we're dealing with full-res SLSTR data, it should be (nx*2,ny*2), but
+   ! sometimes isn't. It is possible to have one less than nx*2 or ny*2
    ny1 = ncdf_dim_length(fid, 'rows', 'read_slstr_visdata()')
    nx1 = ncdf_dim_length(fid, 'columns', 'read_slstr_visdata()')
-   if (ny1 .lt. (ny + sy - 1)*2) then
-      nyr = ny*2 - 1
+   if ((ny1 .eq. ny) .and. (nx1 .eq. nx)) then
+      visIRgrid = .true.
+      nyr = ny
+      nxr = nx
+      allocate(data1(nx,ny))
    else
-      nyr = ny*2
+      visIRgrid = .false.
+      if (ny1 .lt. (ny + sy - 1)*2) then
+         nyr = ny*2 - 1
+      else
+         nyr = ny*2
+      end if
+      if (nx1 .lt. (nx + sx - 1)*2) then
+         nxr = nx*2 - 1
+      else
+         nxr = nx*2
+      end if
+      allocate(data1(nx*2,ny*2))
    end if
-   if (nx1 .lt. (nx + sx - 1)*2) then
-      nxr = nx*2 - 1
-   else
-      nxr = nx*2
-   end if
-
-   allocate(data1(nx*2,ny*2))
 
    data1(:,:) = sreal_fill_value
 
@@ -274,12 +314,16 @@ subroutine read_slstr_visdata(indir, inband, outarr, imager_angles, &
 
    call ncdf_close(fid, 'read_slstr_visdata()')
 
-   ! Resample the data to the TIR grid size.
-   ! Ensure that the array passed to the resampling routine is the
-   ! expected size
-   call slstr_resample_vis_to_tir(data1(1:nx*2,1:ny*2), outarr, &
-        nx, ny, sreal_fill_value)
-
+   if (visIRgrid .eqv. .false.) then
+      ! Resample the data to the TIR grid size.
+      ! Ensure that the array passed to the resampling routine is the
+      ! expected size
+      call slstr_resample_vis_to_tir(data1(1:nx*2, 1:ny*2), outarr, &
+           nx, ny, sreal_fill_value)
+   else
+      outarr = data1
+   end if
+      
    ! Convert from radiances to reflectances
    where(outarr .ne. sreal_fill_value) &
         outarr = pi / irradiances(1) * outarr
@@ -690,9 +734,10 @@ end subroutine read_slstr_satsol
 
 ! Reads an arbitrary variable from a specified SLSTR file
 subroutine read_slstr_int_field(indir, file, procgrid, variable, &
-     startx, starty, data_arr)
+     startx, starty, data_arr, allow_missing)
 
    use orac_ncdf_m
+   use common_constants_m
    use preproc_constants_m
 
    implicit none
@@ -704,6 +749,7 @@ subroutine read_slstr_int_field(indir, file, procgrid, variable, &
    integer,            intent(in)  :: startx
    integer,            intent(in)  :: starty
    integer(kind=sint), intent(out) :: data_arr(:,:)
+   logical, optional,  intent(in)  :: allow_missing
 
    character(len=path_length) :: geofile, var
    integer                    :: fid
@@ -712,6 +758,17 @@ subroutine read_slstr_int_field(indir, file, procgrid, variable, &
    var = trim(variable) // '_' // trim(procgrid)
 
    call ncdf_open(fid, geofile, 'read_slstr_field()')
+
+   ! Check if we should quietly deal with a missing variable, or
+   ! throw and error (when ncdf_read_array is called)
+   if (present(allow_missing)) then
+      if ( (allow_missing .eqv. .true.) .and. &
+           (ncdf_check_var(fid, var, 'read_slstr_in_field') .eqv. .false.)) then
+         data_arr = sint_fill_value
+         return
+      end if
+   end if
+   
    call ncdf_read_array(fid, var, data_arr, start=[startx, starty])
    call ncdf_close(fid, 'read_slstr_field()')
 
@@ -805,3 +862,27 @@ subroutine read_slstr_global_attribute(indir, file, procgrid, name, val)
    call ncdf_close(fid, 'read_slstr_global_attribute()')
 
 end subroutine read_slstr_global_attribute
+
+subroutine read_slstr_global_attribute_str(infile, name, val)
+
+   use orac_ncdf_m
+   use preproc_constants_m, only: error_stop_code
+
+   implicit none
+
+   character(len=*), intent(in)    :: infile
+   character(len=*), intent(in)    :: name
+   character(len=*), intent(inout) :: val
+
+   integer                         :: fid, ierr
+
+   call ncdf_open(fid, infile, 'read_slstr_global_attribute_str()')
+   ierr = nf90_get_att(fid, NF90_GLOBAL, name, val)
+   if (ierr /= NF90_NOERR) then
+      write(*,*) 'ERROR: read_slstr_global_attribute_str(), ', &
+           trim(nf90_strerror(ierr)), ', attribute name: ', trim(name)
+      stop error_stop_code
+   end if
+   call ncdf_close(fid, 'read_slstr_global_attribute()')
+
+end subroutine read_slstr_global_attribute_str

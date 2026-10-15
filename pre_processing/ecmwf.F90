@@ -26,7 +26,9 @@ module ecmwf_m
       real(kind=sreal), dimension(:),   pointer :: lat,lon
       real(kind=sreal), dimension(:),   pointer :: avec,bvec
       real(kind=sreal), dimension(:,:), pointer :: u10,v10,skin_temp, &
-                                                   snow_depth,sea_ice_cover
+                                                   snow_depth,sea_ice_cover 
+      real(kind=sreal), dimension(:,:,:), pointer :: spec_hum, ozone, phi_lev, &
+                                                     temperature, pressure
    end type ecmwf_t
 
 contains
@@ -44,7 +46,7 @@ contains
 #include "read_gfs_grib.F90"
 #include "rearrange_ecmwf.F90"
 
-subroutine ecmwf_abvec_init(ecmwf)
+subroutine ecmwf_abvec_init(ecmwf, nwp_flag)
 
    ! Set up the A and B vectors based upon the number
    ! of model levels. Should be input through the driver
@@ -53,11 +55,20 @@ subroutine ecmwf_abvec_init(ecmwf)
 
    implicit none
    type(ecmwf_t), intent(inout) :: ecmwf
+   integer,       intent(in)    :: nwp_flag
+   integer                      :: kdim
 
-   select case(ecmwf%kdim)
+
+   if (nwp_flag .eq. 0) then
+      kdim = 137
+   else
+      kdim = ecmwf%kdim
+   endif
+   
+   select case(kdim)
    case(60)
-      allocate(ecmwf%avec(ecmwf%kdim+1))
-      allocate(ecmwf%bvec(ecmwf%kdim+1))
+      allocate(ecmwf%avec(kdim+1))
+      allocate(ecmwf%bvec(kdim+1))
       ecmwf%avec =&
       [0.000000,     2.000000E+01, 3.842534E+01, 6.364780E+01, &
        9.563696E+01, 1.344833E+02, 1.805844E+02, 2.347791E+02, &
@@ -93,8 +104,8 @@ subroutine ecmwf_abvec_init(ecmwf)
        0.9796627,     0.9882701,     0.9940194,     0.9976301,     &
        1.0000000 ]
    case(91)
-      allocate(ecmwf%avec(ecmwf%kdim+1))
-      allocate(ecmwf%bvec(ecmwf%kdim+1))
+      allocate(ecmwf%avec(kdim+1))
+      allocate(ecmwf%bvec(kdim+1))
       ecmwf%avec =&
       [0.0000000,    2.00004,      3.980832,     7.387186,     &
        12.908319,    21.413612,    33.952858,    51.746601,    &
@@ -145,8 +156,8 @@ subroutine ecmwf_abvec_init(ecmwf)
        0.989153,     0.994204,     0.99763,      1.0]
 
    case(137)
-      allocate(ecmwf%avec(ecmwf%kdim+1))
-      allocate(ecmwf%bvec(ecmwf%kdim+1))
+      allocate(ecmwf%avec(kdim+1))
+      allocate(ecmwf%bvec(kdim+1))
       ecmwf%avec = &
       [0.0000000,    2.000365,     3.102241,     4.666084,     &
        6.827977,     9.746966,     13.605424,    18.608931,    &

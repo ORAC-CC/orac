@@ -99,6 +99,7 @@
 ! 2018/04/29, SP: Add cloud emissivity support for ECMWF profiles (ExtWork)
 ! 2018/07/18, DE: Add tropoopause temperature
 ! 2018/11/05, SP: Add CAPE
+! 2024/07/01, DH: Change indexing to use preproc_dims for all dimensions
 !
 ! Bugs:
 ! None known.
@@ -148,13 +149,12 @@ subroutine netcdf_create_rtm(global_atts, source_atts, cyear, cmonth, cday, chou
    integer(lint)              :: nlon, nlat, kdim
 
 
-   nlon = preproc_dims%max_lon-preproc_dims%min_lon+1
-   nlat = preproc_dims%max_lat-preproc_dims%min_lat+1
+   nlon = preproc_dims%xdim
+   nlat = preproc_dims%ydim
 
 
    ! Set number of vertical levels/layers here, as GFS is different to ECMWF
    kdim = preproc_dims%kdim+1
-   if (nwp_flag .eq. 0) kdim = kdim-1
 
    if (type .eq. NETCDF_OUTPUT_FILE_LWRTM) then
 

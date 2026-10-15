@@ -25,6 +25,7 @@
 !
 ! History:
 ! 2017/07/20, SP: Initial version, cloned from read_ecmwf_nc.F90
+! 2024/07/01, DH: Change indexing to use preproc_dims for all dimensions
 !
 ! Bugs:
 ! - you need to be careful with parameter naming as the variable names are not
@@ -41,15 +42,17 @@ subroutine read_gfs_nc(nwp_path, ecmwf, preproc_dims, preproc_geoloc, &
    implicit none
 
    character(len=*),        intent(in)    :: nwp_path
-   type(ecmwf_t),           intent(in)    :: ecmwf
+   type(ecmwf_t),           intent(inout)    :: ecmwf
    type(preproc_dims_t),    intent(in)    :: preproc_dims
    type(preproc_geoloc_t),  intent(in)    :: preproc_geoloc
    type(preproc_prtm_t),    intent(inout) :: preproc_prtm
    logical,                 intent(in)    :: verbose
    integer,                 intent(in)    :: nwp_flag
 
+#ifdef INCLUDE_EMOS
    integer(lint),     external            :: INTIN, INTOUT, INTF
    integer(lint),     parameter           :: BUFFER = 3000000
+#endif
 
    integer(lint),            dimension(1) :: intv, old_grib, new_grib
    real(dreal)                            :: grid(2), area(4)
@@ -67,6 +70,7 @@ subroutine read_gfs_nc(nwp_path, ecmwf, preproc_dims, preproc_geoloc, &
 
    integer(lint), dimension(31)           :: gfs_levlist
 
+#ifdef INCLUDE_EMOS
    gfs_levlist = (/1,2,3,5,7,10,20,30,50,70,100,150,200,250,300,350, &
                    400,450,500,550,600,650,700,750,800,850,900,925,950,975,1000/)
 
@@ -93,10 +97,10 @@ subroutine read_gfs_nc(nwp_path, ecmwf, preproc_dims, preproc_geoloc, &
    grid(2) = 0.5 / preproc_dims%dellat
    if (INTOUT('grid', intv, grid, charv) .ne. 0) &
         call h_e_e('nc', 'INTOUT grid failed.')
-   area(1) = preproc_geoloc%latitude(preproc_dims%max_lat) + 0.01*grid(2)
-   area(2) = preproc_geoloc%longitude(preproc_dims%min_lon) + 0.01*grid(1)
-   area(3) = preproc_geoloc%latitude(preproc_dims%min_lat) + 0.01*grid(2)
-   area(4) = preproc_geoloc%longitude(preproc_dims%max_lon) + 0.01*grid(1)
+   area(1) = preproc_geoloc%latitude(preproc_dims%ydim) + 0.01*grid(2)
+   area(2) = preproc_geoloc%longitude(1) + 0.01*grid(1)
+   area(3) = preproc_geoloc%latitude(1) + 0.01*grid(2)
+   area(4) = preproc_geoloc%longitude(preproc_dims%xdim) + 0.01*grid(1)
    if (INTOUT('area', intv, area, charv) .ne. 0) &
         call h_e_e('nc', 'INTOUT area failed.')
    ni = ceiling((area(4)+180.)/grid(1)) - floor((area(2)+180.)/grid(1)) + 1
@@ -186,8 +190,7 @@ subroutine read_gfs_nc(nwp_path, ecmwf, preproc_dims, preproc_geoloc, &
             ! copy data into preprocessing grid
             do j = 1, nj, 2
                do i = 1, ni, 2
-                  array3d(preproc_dims%min_lon+i/2, &
-                     preproc_dims%min_lat+(nj-j)/2, k) = &
+                  array3d(1+i/2,1+(nj-j)/2, k) = &
                      real(new_data(i+(j-1)*ni), kind=4)
                end do
             end do
@@ -208,8 +211,7 @@ subroutine read_gfs_nc(nwp_path, ecmwf, preproc_dims, preproc_geoloc, &
          ! copy data into preprocessing grid
          do j = 1, nj, 2
             do i = 1, ni, 2
-               array2d(preproc_dims%min_lon+i/2, &
-                  preproc_dims%min_lat+(nj-j)/2) = &
+               array2d(1+i/2,1+(nj-j)/2) = &
                   real(new_data(i+(j-1)*ni), kind=4)
             end do
          end do
@@ -223,20 +225,18 @@ subroutine read_gfs_nc(nwp_path, ecmwf, preproc_dims, preproc_geoloc, &
 
    preproc_prtm%phi_lev   = preproc_prtm%phi_lev*g_wmo
 
-   ! GFS provides humidity as relative humidity (%), we need specific humidity
-   ! (kg/kg). This will convert from one to the other.
-   call conv_rh_q(preproc_prtm%spec_hum, preproc_prtm%temperature, &
-                  preproc_prtm%pressure, verbose)
-
    ! GFS has no snow mask, so use snow depth instead. 0.1m threshold arbitrary
    where(preproc_prtm%snow_depth .gt. 0.1) preproc_prtm%snow_albedo = 0.98
 
    deallocate(old_data)
    deallocate(new_data)
 
-   ! Refactor all the GFS levels so that below-surface contributions are removed.
-   call sort_gfs_levels(preproc_prtm, verbose)
+   call interpolate_gfs_levels(preproc_prtm, preproc_dims, ecmwf, nwp_flag, verbose)
 
    call ncdf_close(fid, 'read_gfs_nc()')
+#else
+   write(*,*) 'ERROR: read_gfs_nc(): LIBEMOS is required for ' // &
+        'use_ecmwf_preproc_grid = .false.'
+#endif
 
 end subroutine read_gfs_nc

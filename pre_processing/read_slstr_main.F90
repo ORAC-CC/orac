@@ -28,6 +28,22 @@
 !                 file the user happened to pass as l1b_file.
 ! 2020/04/14, AP: Add subsetting to the read functions. The entire tx grid is
 !                 read as it's difficult to predict how much will be needed.
+! 2025/05/22, GT: Made changes to allow the U. Reading-produced SLSTR-lite L1
+!                 data to be read:
+!                 * SLSTR-lite does not include the DEM in the geodetic file.
+!                   Added the "allow_missing" optional argument to
+!                   "read_slstr_in_field", which allows the code to skip over
+!                   DEM reading (L1 DEM is set to fill value).
+!                 * Visible radiance data is now on the 1 km i-grid (i.e.
+!                   it's been sub-sampled to the same resolution as the IR
+!                   channels). "get_slstr_imnames" now checks for radiance files
+!                   on the i-grid and sets the file names appropriately if they
+!                   are found.
+!                 * "read_slstr_visdata" now checks if the dimensions of the
+!                   data in a vis-channel are the same as the output dimensions
+!                   (which are set by the IR channels i-grid). If they are, it
+!                   sets a "visIRgrid" flag to true, causing all of the code
+!                   dealing with the hi-res a/b grids to be skipped. 
 !
 ! Bugs:
 ! None known (in ORAC)
@@ -126,7 +142,9 @@ subroutine read_slstr(infile, imager_geolocation, imager_measurements, &
    integer                       :: starty, ny
 
    character(len=path_length)    :: indir
+   character(len=path_length)    :: baseline
 
+   real(kind=sreal)              :: rbaseline
    real(kind=sreal), allocatable :: txlats(:,:)
    real(kind=sreal), allocatable :: txlons(:,:)
    real(kind=sreal), allocatable :: interp(:,:,:)
@@ -149,6 +167,17 @@ subroutine read_slstr(infile, imager_geolocation, imager_measurements, &
    starty = imager_geolocation%starty
    ny     = imager_geolocation%ny
 
+   ! Get the processing baseline version number, which determines if
+   ! calibration corrections need to be applied
+   if (verbose) write(*,*) 'Extracting processing baseline for SLSTR file'
+   baseline = 'Hello?'
+   ! call read_slstr_global_attribute_str(infile, 'processing_baseline', baseline)
+   ! Convert the version string into a floating point value for comparison
+   ! read(baseline(9:14),*) rbaseline
+   baseline = '4'
+   rbaseline = 4
+
+   
    ! Sort out the start and end times, place into the time array
    call get_slstr_startend(imager_time, infile, starty, ny)
 
@@ -168,8 +197,9 @@ subroutine read_slstr(infile, imager_geolocation, imager_measurements, &
    allocate(interp(nx,ny,3))
 
    ! Read primary dem, lat and lon
+   ! Note that we allow for non-existant DEM data - not included in "slstr-lite"
    call read_slstr_int_field(indir, 'geodetic', 'in', 'elevation', startx, starty, &
-        imager_geolocation%dem)
+        imager_geolocation%dem, allow_missing=.true.)
    call read_slstr_field(indir, 'geodetic', 'in', 'latitude', startx, starty, &
         imager_geolocation%latitude)
    call read_slstr_field(indir, 'geodetic', 'in', 'longitude', startx, starty, &
@@ -260,7 +290,9 @@ subroutine read_slstr(infile, imager_geolocation, imager_measurements, &
       end if
 
       ! Apply some correction factors
-      if (slstr_correction_factor(band_ids(i)) .gt. 0.0) then
+      if (slstr_correction_factor(band_ids(i)) .gt. 0.0 .and. &
+           rbaseline .lt. 5.0 ) then
+         if (verbose) write(*,*) 'Applying manual SW calibration corrections'
          imager_measurements%data(:,:,i) = imager_measurements%data(:,:,i) * &
               slstr_correction_factor(band_ids(i))
       end if

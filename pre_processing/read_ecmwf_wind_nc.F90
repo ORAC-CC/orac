@@ -50,7 +50,7 @@ subroutine read_ecmwf_wind_nc(ecmwf, nwp_path, nwp_flag, ecmwf2path, ecmwf3path)
 
    call ecmwf_wind_init(ecmwf)
    if (nwp_flag .le. 5 .or. nwp_flag .gt. 8) then
-      call ecmwf_abvec_init(ecmwf)
+      call ecmwf_abvec_init(ecmwf, nwp_flag)
    else
       allocate(ecmwf%avec(ecmwf%kdim))
       allocate(ecmwf%bvec(ecmwf%kdim))

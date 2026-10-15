@@ -56,7 +56,12 @@
 !                 USE_GSICS enables this to be disabled.
 ! 2018/06/08, SP: New global attribute to store satellite position information
 ! 2019/08/14, SP: Add Fengyun-4A support.
+! 2024/10/07, DR: Added FCI support via Python and tools/satpy_reader.py
+! 2024/11/25, DR: Added Martin Stengel's ISCCP support to read ISCCP-NG GeoRing
+!                 data as SEVIRI.
 !
+! 2025/02/17, DR: Added second method for ISCCP that relies on using induvidual
+!                 LUTs for each instrument available in the L1G product.
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
@@ -83,6 +88,7 @@ subroutine read_imager(granule, opts, path_to_aatsr_drift_table, &
    use read_himawari_m
    use read_modis_m
    use read_python_m
+   use read_isccpng_m
    use read_seviri_m
    use read_slstr_m
    use read_viirs_iband_m
@@ -204,6 +210,23 @@ subroutine read_imager(granule, opts, path_to_aatsr_drift_table, &
         call read_python(granule%l1b_file, imager_geolocation, &
                          imager_measurements, imager_angles, imager_time, channel_info, &
                          global_atts, verbose)
+
+     case('FCI')
+        ! Read the L1B data, according to the dimensions and offsets specified in
+        ! imager_geolocation
+        call read_python(granule%l1b_file, imager_geolocation, &
+                         imager_measurements, imager_angles, imager_time, channel_info, &
+                         global_atts, verbose)
+
+     case('ISCCPNG')
+                                                                                                                                                                                                   
+          call read_isccpng_l1_5(granule%l1b_file, &
+               imager_geolocation, imager_measurements, imager_angles, &
+               imager_time, channel_info, opts%do_gsics, opts%do_nasa, global_atts, verbose)
+     
+          ! In absence of proper mask set everything to "1" for cloud mask
+     
+          imager_flags%cflag = 1
 
      case('SEVIRI')
         ! Read the L1B data, according to the dimensions and offsets specified in

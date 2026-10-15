@@ -15,6 +15,7 @@
 !                struct      (defined in imager_structures)
 ! preproc_dims   struct in   Preprocessing dimensions, including sw and
 !                            lw channel counts
+! preproc_geoloc struct in   Summary of preprocessing lat/lon
 ! surface        struct both Surface properties structure
 ! cyear          string in   Year, as a 4 character string.
 ! cmonth         string in   Month of year, as a 2 character string.
@@ -92,6 +93,8 @@
 ! 2016/02/18, OS: ECMWF snow/ice mask now corrected by USGS land/sea mask
 ! 2016/02/23, OS: previous commit on ECMWF snow/ice mask was incomplete
 ! 2018/10/01, SP: Introduce a more comprehensive snow albedo dataset
+! 2024/07/01, DH: Change indexing to use preproc_dims for all dimensions
+! 2026/04/20; DR: Added full treatment of snow and ice.
 !
 ! Bugs:
 ! None known.
@@ -586,7 +589,7 @@ end subroutine apply_ice_correction
 !------------------------------------------------------------------------------
 
 subroutine correct_for_ice_snow_nwp(nwp_path, imager_geolocation, &
-     channel_info, imager_flags, preproc_dims, preproc_prtm, surface, &
+     channel_info, imager_flags, preproc_dims, preproc_prtm, preproc_geoloc, surface, &
      include_full_brdf, source_atts, verbose)
 
    use channel_structures_m
@@ -606,6 +609,7 @@ subroutine correct_for_ice_snow_nwp(nwp_path, imager_geolocation, &
    type(imager_flags_t),       intent(in)    :: imager_flags
    type(preproc_dims_t),       intent(in)    :: preproc_dims
    type(preproc_prtm_t),       intent(in)    :: preproc_prtm
+   type(preproc_geoloc_t),     intent(in)    :: preproc_geoloc
    logical,                    intent(in)    :: include_full_brdf
    type(source_attributes_t),  intent(inout) :: source_atts
    logical,                    intent(in)    :: verbose
@@ -614,7 +618,7 @@ subroutine correct_for_ice_snow_nwp(nwp_path, imager_geolocation, &
 
    ! Local variables
    logical                        :: flag
-   integer(kind=4)                :: i, j,lon_i, lat_j
+   integer(kind=4)                :: i, j, lon_i, lat_j
    real(kind=sreal), dimension(:), allocatable :: tmp_albedo, tmp_snow, tmp_ice
    real(kind=sreal), dimension(4) :: snow_albedo, ice_albedo
    real(kind=sreal)               :: snow_threshold, ice_threshold
@@ -649,15 +653,12 @@ subroutine correct_for_ice_snow_nwp(nwp_path, imager_geolocation, &
               imager_geolocation%longitude(i,j) .eq. sreal_fill_value) cycle
 
          ! find grid cell coordinates into which L1b pixel falls
-         lon_i = floor((imager_geolocation%longitude(i,j) + &
-              preproc_dims%lon_offset)*preproc_dims%dellon, kind=lint) + 1
-         lat_j = floor((imager_geolocation%latitude(i,j) + &
-              preproc_dims%lat_offset)*preproc_dims%dellat, kind=lint) + 1
-
-         if (lon_i .lt. preproc_dims%min_lon) lon_i = preproc_dims%min_lon
-         if (lat_j .lt. preproc_dims%min_lat) lat_j = preproc_dims%min_lat
-         if (lon_i .gt. preproc_dims%max_lon) lon_i = preproc_dims%max_lon
-         if (lat_j .gt. preproc_dims%max_lat) lat_j = preproc_dims%max_lat
+         lat_j = minloc(abs(preproc_geoloc%latitude - imager_geolocation%latitude(i,j)),1)
+         lon_i = minloc(abs(preproc_geoloc%longitude - imager_geolocation%longitude(i,j)),1)
+         if (imager_geolocation%longitude(i,j) .lt. minval(preproc_geoloc%longitude)) lon_i = 1
+         if (imager_geolocation%latitude(i,j) .lt. minval(preproc_geoloc%latitude)) lat_j = 1
+         if (imager_geolocation%longitude(i,j) .gt. maxval(preproc_geoloc%longitude)) lon_i = preproc_dims%xdim
+         if (imager_geolocation%latitude(i,j) .gt. maxval(preproc_geoloc%latitude)) lat_j = preproc_dims%ydim
 
          tmp_albedo = surface%albedo(i,j,:)
 
@@ -715,5 +716,153 @@ subroutine correct_for_ice_snow_nwp(nwp_path, imager_geolocation, &
    deallocate(tmp_ice)
 
 end subroutine correct_for_ice_snow_nwp
+
+!-------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
+
+subroutine correct_for_ice_snow_ecmwf(ecmwf_HR_path, imager_geolocation, &
+     channel_info, imager_flags, preproc_dims, preproc_prtm, preproc_geoloc, surface, &
+     include_full_brdf, source_atts, verbose)
+
+   use channel_structures_m
+   use constants_cloud_typing_pavolonis_m
+   use imager_structures_m
+   use preproc_constants_m
+   use preproc_structures_m
+   use source_attributes_m
+   use surface_structures_m
+
+   implicit none
+
+   ! Arguments
+   character(len=path_length), intent(in)    :: ecmwf_HR_path
+   type(imager_geolocation_t), intent(in)    :: imager_geolocation
+   type(channel_info_t),       intent(in)    :: channel_info
+   type(imager_flags_t),       intent(in)    :: imager_flags
+   type(preproc_dims_t),       intent(in)    :: preproc_dims
+   type(preproc_prtm_t),       intent(in)    :: preproc_prtm
+   type(preproc_geoloc_t),     intent(in)    :: preproc_geoloc
+   logical,                    intent(in)    :: include_full_brdf
+   type(source_attributes_t),  intent(inout) :: source_atts
+   logical,                    intent(in)    :: verbose
+
+   type(surface_t),            intent(inout) :: surface
+
+   ! Local variables
+   logical                        :: flag
+   integer(kind=4)                :: i, j, lon_i, lat_j
+   real(kind=sreal), dimension(:), allocatable :: tmp_albedo, tmp_snow, tmp_ice
+   real(kind=sreal), dimension(4) :: snow_albedo, ice_albedo
+   real(kind=sreal)               :: snow_threshold, ice_threshold
+
+   !MST
+   real(kind=sreal)               :: snow_alb_fraction
+
+   allocate(tmp_albedo(channel_info%nchannels_sw))
+   allocate(tmp_snow(channel_info%nchannels_sw))
+   allocate(tmp_ice(channel_info%nchannels_sw))
+
+   write(*,*) channel_info%nchannels_sw
+   
+   ! lambda         0.67   0.87   1.6     3.7
+   snow_albedo = (/ 0.958, 0.868, 0.0364, 0.0 /)
+   ! ice_albedo = (/ 0.958, 0.868, 0.0364, 0.0 /)
+   ice_albedo  = snow_albedo*0.85
+   
+   snow_threshold=0.01 ! I belive this is 1cm
+   ice_threshold=0.15 ! I believe this is 15%
+
+   source_atts%snow_file=trim(ecmwf_HR_path)
+   source_atts%sea_ice_file=trim(ecmwf_HR_path)
+
+   do i = 1, channel_info%nchannels_total
+      if (channel_info%map_ids_abs_to_snow_and_ice(i) .le. 0) cycle
+      tmp_snow(i) = get_snow_albedo(channel_info%channel_wl_abs(i))
+      if (verbose) write(*,*) "Calculated snow albedo for", &
+           channel_info%channel_wl_abs(i), "micron is", tmp_snow(i)
+      tmp_ice(i) = ice_albedo(channel_info%map_ids_abs_to_snow_and_ice(i))
+   end do
+
+   do j=1,imager_geolocation%ny
+      do i=imager_geolocation%startx,imager_geolocation%endx
+
+         ! if geolocation isn't there, do nothing
+         if (imager_geolocation%latitude(i,j) .eq. sreal_fill_value .or. &
+              imager_geolocation%longitude(i,j) .eq. sreal_fill_value) cycle
+
+         ! find grid cell coordinates into which L1b pixel falls
+         lat_j = minloc(abs(preproc_geoloc%latitude - imager_geolocation%latitude(i,j)),1)
+         lon_i = minloc(abs(preproc_geoloc%longitude - imager_geolocation%longitude(i,j)),1)
+         if (imager_geolocation%longitude(i,j) .lt. minval(preproc_geoloc%longitude)) lon_i = 1
+         if (imager_geolocation%latitude(i,j) .lt. minval(preproc_geoloc%latitude)) lat_j = 1
+         if (imager_geolocation%longitude(i,j) .gt. maxval(preproc_geoloc%longitude)) lon_i = preproc_dims%xdim
+         if (imager_geolocation%latitude(i,j) .gt. maxval(preproc_geoloc%latitude)) lat_j = preproc_dims%ydim
+
+         ! ! find grid cell coordinates into which L1b pixel falls
+         ! lon_i=floor((imager_geolocation%longitude(i,j) + &
+         !      preproc_dims%lon_offset)*preproc_dims%dellon, kind=lint) + 1
+         ! lat_j=floor((imager_geolocation%latitude(i,j) + &
+         !      preproc_dims%lat_offset)*preproc_dims%dellat, kind=lint) + 1
+
+         ! if (lon_i .lt. preproc_dims%min_lon) lon_i=preproc_dims%min_lon
+         ! if (lat_j .lt. preproc_dims%min_lat) lat_j=preproc_dims%min_lat
+         ! if (lon_i .gt. preproc_dims%max_lon) lon_i=preproc_dims%max_lon
+         ! if (lat_j .gt. preproc_dims%max_lat) lat_j=preproc_dims%max_lat
+
+         tmp_albedo=surface%albedo(i,j,:)
+
+         if ( &
+              ((preproc_prtm%snow_depth(lon_i,lat_j)    .gt. snow_threshold) .and. &
+               (imager_flags%lsflag(i,j)         .eq. 1_byte)) .or. &
+              ((preproc_prtm%snow_depth(lon_i,lat_j)    .gt. snow_threshold) .and. &
+                (imager_geolocation%latitude(i,j) .lt. -60.00)) .or. &
+              ((preproc_prtm%sea_ice_cover(lon_i,lat_j) .gt. ice_threshold)  .and. &
+                (imager_flags%lsflag(i,j)         .eq. 0_byte)) &
+            ) then
+           surface%nise_mask(i,j)=YES
+         else
+           surface%nise_mask(i,j)=NO
+         end if
+
+         flag = .false.
+
+         ! calculate albedo according to fraction of sea ice
+         if ((surface%nise_mask(i,j) .eq. YES) .and. &
+             (preproc_prtm%snow_depth(lon_i,lat_j) .lt. snow_threshold)) then
+             flag = .true.
+             surface%albedo(i,j,:) = &
+             tmp_ice*preproc_prtm%sea_ice_cover(lon_i,lat_j) + &
+             tmp_albedo*(1.-preproc_prtm%sea_ice_cover(lon_i,lat_j))
+
+         ! same as before but with snow cover on sea ice part
+         else if ((preproc_prtm%sea_ice_cover(lon_i,lat_j) .gt. ice_threshold) .and. &
+             (preproc_prtm%snow_depth(lon_i,lat_j) .gt. snow_threshold) .and. &
+             (surface%nise_mask(i,j) .eq. YES)) then
+             flag = .true.
+             surface%albedo(i,j,:) = &
+             tmp_snow*preproc_prtm%sea_ice_cover(lon_i,lat_j) + &
+             tmp_albedo*(1.-preproc_prtm%sea_ice_cover(lon_i,lat_j))
+
+         ! calculate albedo for snowy pixels in absence of sea ice
+         else if ((preproc_prtm%sea_ice_cover(lon_i,lat_j) .lt. ice_threshold) .and. &
+             (surface%nise_mask(i,j) .eq. YES)) then
+             flag = .true.
+             !MST surface%albedo(i,j,:) = snow_albedo
+             snow_alb_fraction = min(1.,max(0.,(preproc_prtm%snow_depth(lon_i,lat_j)-0.01)/0.18))
+             surface%albedo(i,j,:) = tmp_snow*snow_alb_fraction + &
+                                     tmp_albedo*(1.-snow_alb_fraction)
+             
+         end if
+
+         if (include_full_brdf .and. flag) then
+            surface%rho_0v(i,j,:) = surface%albedo(i,j,:)
+            surface%rho_0d(i,j,:) = surface%albedo(i,j,:)
+            surface%rho_dv(i,j,:) = surface%albedo(i,j,:)
+            surface%rho_dd(i,j,:) = surface%albedo(i,j,:)
+         end if
+      end do
+    end do
+
+end subroutine correct_for_ice_snow_ecmwf
 
 end module correct_for_ice_snow_m

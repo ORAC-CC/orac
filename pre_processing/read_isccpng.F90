@@ -20,6 +20,8 @@
 ! 2025/02/17, DR: Added second subroutine that adds in all the channels without
 !                 the spectral adjustment. This relies on using the correct LUTs
 !                 for each instrument, rather than just using the SEVIRI LUTs.
+! 2026/07/09, DR: Added EUMETSAT compatible version of the spectral adjustment
+!                 method, which doesn't use WMO IDs.
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
@@ -182,9 +184,9 @@ subroutine read_isccpng_geo(imager_geolocation, imager_angles, &
    !call ncdf_read_array(ncid, "satellite_zenith", imager_angles%satzen(:,:,1), start=start)
    !call ncdf_read_array(ncid, "VAA", imager_angles%satazi(:,:,1), start=start)
    call ncdf_close(ncid, 'ISCCPNG_Retrieve_Predef_Geo()')
-   print*,'O',shape(imager_geolocation%longitude)
-   print*,'A',minval(imager_geolocation%latitude),maxval(imager_geolocation%latitude)
-   print*,'B',minval(imager_geolocation%longitude),maxval(imager_geolocation%longitude)
+   !print*,'O',shape(imager_geolocation%longitude)
+   !print*,'A',minval(imager_geolocation%latitude),maxval(imager_geolocation%latitude)
+   !print*,'B',minval(imager_geolocation%longitude),maxval(imager_geolocation%longitude)
 
    
 
@@ -228,18 +230,36 @@ subroutine read_isccpng_l1_5(l1_5_file, imager_geolocation, imager_measurements,
    logical,                     intent(in)    :: do_nasa
    type(global_attributes_t),   intent(inout) :: global_atts
    logical,                     intent(in)    :: verbose
-
+   
    integer :: startx
+   character(len=256) :: product
+   integer :: p1, p2
 
 ! Spectral Adjustment Method
-!   call read_isccpng_l1_5_nc_spectral(l1_5_file, imager_geolocation, &
-!           imager_measurements, imager_angles, imager_time, channel_info, &
-!           do_gsics, do_nasa, global_atts, verbose)
+   ! Find "_L1g_v"; use this to identify the product we're dealing with
+   p1 = index(l1_5_file, "_L1g_v")
+   ! Find the last "/" before "_L1g_v"
+   p2 = index(l1_5_file(:p1-1), "/", back=.true.)
+   if (p2 > 0) then
+      product = trim(l1_5_file(p2+1:p1-1))
+   else
+      product = trim(l1_5_file(:p1-1))
+   end if
+   if (trim(product) == "ISCCP-NG") then
+      call read_isccpng_l1_5_nc_spectral(l1_5_file, imager_geolocation, &
+            imager_measurements, imager_angles, imager_time, channel_info, &
+            do_gsics, do_nasa, global_atts, verbose)
+   else ! Assuume it's the new EUMETSAT version
+      call read_eumetsat_l1_5_nc_spectral(l1_5_file, imager_geolocation, &
+            imager_measurements, imager_angles, imager_time, channel_info, &
+            do_gsics, do_nasa, global_atts, verbose)
+   end if
+
 
 ! Induvidual LUT Method
-   call read_isccpng_l1_5_nc(l1_5_file, imager_geolocation, &
-           imager_measurements, imager_angles, imager_time, channel_info, &
-           do_gsics, do_nasa, global_atts, verbose)
+!   call read_isccpng_l1_5_nc(l1_5_file, imager_geolocation, &
+!           imager_measurements, imager_angles, imager_time, channel_info, &
+!           do_gsics, do_nasa, global_atts, verbose)
    
 
    startx = imager_geolocation%startx
@@ -592,6 +612,341 @@ end do
 
 end subroutine read_isccpng_l1_5_nc_spectral
 
+subroutine read_eumetsat_l1_5_nc_spectral(l1_5_file, imager_geolocation, &
+   imager_measurements, imager_angles, imager_time, channel_info, do_gsics, &
+   do_nasa, global_atts, verbose)
+
+   use iso_c_binding
+   use channel_structures_m
+   use common_constants_m, only: error_stop_code
+   use global_attributes_m
+   use imager_structures_m
+   use preproc_constants_m
+   use orac_ncdf_m
+   use calender_m
+
+   implicit none
+
+   character(len=*),            intent(in)    :: l1_5_file
+   type(imager_geolocation_t),  intent(inout) :: imager_geolocation
+   type(imager_measurements_t), intent(inout) :: imager_measurements
+   type(imager_angles_t),       intent(inout) :: imager_angles
+   type(imager_time_t),         intent(inout) :: imager_time
+   type(channel_info_t),        intent(in)    :: channel_info
+   logical,                     intent(in)    :: do_gsics
+   logical,                     intent(in)    :: do_nasa
+   type(global_attributes_t),   intent(inout) :: global_atts
+   logical,                     intent(in)    :: verbose
+
+   integer                     :: i,index1,index2
+   integer(c_int)              :: n_bands
+   integer(c_int), allocatable :: band_ids(:)
+   integer(c_int), allocatable :: band_units(:)
+   integer                     :: n_across_track, n_along_track
+   integer                     :: startx, nx, nx_full
+   integer                     :: starty, ny, ny_full
+   integer(c_int)              :: line0, line1
+   integer(c_int)              :: column0, column1
+   integer(kind=sint)          :: iyear, imonth, iday, ihour, iminute
+   real(kind=8)                :: jday
+   logical                     :: hrit_proc
+   integer                     :: ncid, start(2)
+   character(len=300)          :: tmpfile
+   character(len=12)           :: chstr
+   real(kind=4), allocatable   :: tmplat(:),tmplon(:)
+   integer, allocatable        :: sensor_flag(:,:)
+   real(kind=4), allocatable   :: rad_tmp(:,:)
+   character(len=3)            :: sat_ids(4)
+   real(kind=4)                :: sba_slope(4,2,11),sba_offset(4,2,11)
+ 
+   start(1) = imager_geolocation%startx
+   start(2) = imager_geolocation%starty
+
+   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_isccpng_l1_5_nc()'
+
+   ! Fetch image dimensions (startx/y are placeholders and overriden below)
+   startx = 0
+   nx_full = 7200
+   starty = 0
+   ny_full = 3600
+   call read_isccpng_dimensions(l1_5_file, n_across_track, n_along_track, &
+        startx, nx_full, starty, ny_full, .false.)
+
+   ! Setup some arguments to seviri_read_and_preproc_f90()
+
+   n_bands = channel_info%nchannels_total
+   print *,'Number of bands available: ',n_bands
+
+   allocate(band_ids(n_bands))
+   band_ids = channel_info%channel_ids_instr
+
+   allocate(band_units(n_bands))
+!   do i = 1, n_bands
+!      if (channel_info%channel_lw_flag(i) .eq. 0) then
+!         band_units(i) = SEVIRI_UNIT_REF
+!      else
+!         band_units(i) = SEVIRI_UNIT_BT
+!      end if
+!   end do
+
+   if (verbose) then
+      if (do_gsics) then
+         write(*,*) 'Applying GSICS calibration coefficients'
+      else
+         write(*,*) 'Applying IMPF calibration coefficients'
+      end if
+   end if
+
+   startx = imager_geolocation%startx
+   nx     = imager_geolocation%nx
+   starty = imager_geolocation%starty
+   ny     = imager_geolocation%ny
+
+   line0   = starty - 1
+   line1   = starty - 1 + ny - 1
+   column0 = startx - 1
+   column1 = startx - 1 + nx - 1
+
+   ! imager_time%time(startx:,:)             = 200.
+   ! imager_geolocation%latitude(startx:,:)  = 200.
+   ! imager_geolocation%longitude(startx:,:) = 200.
+   !imager_angles%solzen(startx:,:,1)       = 40.
+   !imager_angles%solazi(startx:,:,1)       = 40.
+   !imager_angles%satzen(startx:,:,1)       = 40.
+   !imager_angles%satazi(startx:,:,1)       = 40.
+   !imager_measurements%data(startx:,:,:)   = 200.
+   !imager_measurements%cal_gain(:)         = 200.
+
+
+!/cmsaf/cloud_cci/ISCCP_NG/L1g/demo_20211115/20200701T0500/ISCCP-NG_L1g_demo_A1_v1_res_0_10deg__refl_00_65um_20200701T0500.nc
+   index1 = index(l1_5_file, 'deg__', back=.true.)
+   index2 = index(l1_5_file, 'um_', back=.true.)
+
+! Need to assign time at the pixel level
+   tmpfile=l1_5_file(1:index1+4)//'pixel_time'//l1_5_file(index2+2:)
+   print*,tmpfile
+   call ncdf_open(ncid, trim(tmpfile), 'ISCCPNG_Retrieve_Predef_Geo()')
+   call ncdf_read_array(ncid, 'pixel_time', imager_time%time(startx:,:), start=[startx, starty])
+   ! pixel_time for EUMETSAT is set as milliseconds since 1970-01-01, so need to convert to julian days.
+   !read(l1_5_file(index2+4:index2+7), *) iyear
+   !read(l1_5_file(index2+8:index2+9), *) imonth
+   !read(l1_5_file(index2+10:index2+11), *) iday
+   !read(l1_5_file(index2+13:index2+14), *) ihour
+   !read(l1_5_file(index2+15:index2+16), *) iminute
+   !call GREG2JD(iyear, imonth, iday, jday)
+   imager_time%time(startx:,:) = 2440587.5 + imager_time%time(startx:,:)/86400000.
+   call ncdf_close(ncid, 'ISCCPNG_Retrieve_Predef_Geo()')
+
+! Then we can assign the 0.65um reflectances
+   chstr='refl_00_65um'
+   tmpfile=l1_5_file(1:index1+4)//chstr//l1_5_file(index2+2:)
+   print*,tmpfile
+   allocate(tmplat(ny))
+   allocate(tmplon(nx))
+   allocate(sensor_flag(nx,ny))
+   allocate(rad_tmp(nx,ny))
+
+
+   call ncdf_open(ncid, trim(tmpfile), 'ISCCPNG_Retrieve_Predef_Geo()')
+   if(n_across_track .eq. 7200 .and. n_along_track .eq. 3600) then
+      call ncdf_read_array(ncid, "latitude", tmplat, start=[starty])!imager_geolocation%latitude(1,:), start=[1,starty])
+      call ncdf_read_array(ncid, "longitude", tmplon, start=[startx])!imager_geolocation%longitude(:,1), start=[startx,1])
+   else 
+      call ncdf_read_array(ncid, "lat", tmplat, start=[starty])
+      call ncdf_read_array(ncid, "lon", tmplon, start=[startx])
+   end if
+call ncdf_read_array(ncid, chstr, imager_measurements%data(:,:,1), start=[startx, starty])
+   imager_measurements%data(:,:,1)=imager_measurements%data(:,:,1)/100.
+   call ncdf_close(ncid, 'ISCCPNG_Retrieve_Predef_Geo()')
+print*,minval(tmplon),maxval(tmplon)
+print*,minval(tmplat),maxval(tmplat)
+
+   chstr='refl_00_86um'
+   tmpfile=l1_5_file(1:index1+4)//chstr//l1_5_file(index2+2:)
+   print*,tmpfile
+   call ncdf_open(ncid, trim(tmpfile), 'ISCCPNG_Retrieve_Predef_Geo()')
+   call ncdf_read_array(ncid, chstr, imager_measurements%data(:,:,2), start=[startx, starty])
+   imager_measurements%data(:,:,2)=imager_measurements%data(:,:,2)/100.
+   call ncdf_close(ncid, 'ISCCPNG_Retrieve_Predef_Geo()')
+
+   chstr='refl_01_60um'
+   tmpfile=l1_5_file(1:index1+4)//chstr//l1_5_file(index2+2:)
+   print*,tmpfile
+   call ncdf_open(ncid, trim(tmpfile), 'ISCCPNG_Retrieve_Predef_Geo()')
+   call ncdf_read_array(ncid, chstr, imager_measurements%data(:,:,3), start=[startx, starty])
+   imager_measurements%data(:,:,3)=imager_measurements%data(:,:,3)/100.
+   call ncdf_close(ncid, 'ISCCPNG_Retrieve_Predef_Geo()')
+
+   chstr='temp_03_80um'
+   tmpfile=l1_5_file(1:index1+4)//chstr//l1_5_file(index2+2:)
+   print*,tmpfile
+   call ncdf_open(ncid, trim(tmpfile), 'ISCCPNG_Retrieve_Predef_Geo()')
+   call ncdf_read_array(ncid, chstr, imager_measurements%data(:,:,4), start=[startx, starty])
+   call ncdf_close(ncid, 'ISCCPNG_Retrieve_Predef_Geo()')
+
+   chstr='temp_06_20um'
+   tmpfile=l1_5_file(1:index1+4)//chstr//l1_5_file(index2+2:)
+   print*,tmpfile
+   call ncdf_open(ncid, trim(tmpfile), 'ISCCPNG_Retrieve_Predef_Geo()')
+   call ncdf_read_array(ncid, chstr, imager_measurements%data(:,:,5), start=[startx, starty])
+   call ncdf_close(ncid, 'ISCCPNG_Retrieve_Predef_Geo()')
+
+   chstr='temp_07_30um'
+   tmpfile=l1_5_file(1:index1+4)//chstr//l1_5_file(index2+2:)
+   print*,tmpfile
+   call ncdf_open(ncid, trim(tmpfile), 'ISCCPNG_Retrieve_Predef_Geo()')
+   call ncdf_read_array(ncid, chstr, imager_measurements%data(:,:,6), start=[startx, starty])
+   call ncdf_close(ncid, 'ISCCPNG_Retrieve_Predef_Geo()')
+
+   !chstr='temp_08_70um'
+   chstr='temp_08_60um'
+   tmpfile=l1_5_file(1:index1+4)//chstr//l1_5_file(index2+2:)
+   print*,tmpfile
+   call ncdf_open(ncid, trim(tmpfile), 'ISCCPNG_Retrieve_Predef_Geo()')
+   call ncdf_read_array(ncid, chstr, imager_measurements%data(:,:,7), start=[startx, starty])
+   call ncdf_close(ncid, 'ISCCPNG_Retrieve_Predef_Geo()')
+
+   !chstr='temp_08_50um'
+   !tmpfile=l1_5_file(1:index1+4)//chstr//l1_5_file(index2+2:)
+   !print*,tmpfile
+   !call ncdf_open(ncid, trim(tmpfile), 'ISCCPNG_Retrieve_Predef_Geo()')
+   !call ncdf_read_array(ncid, chstr, rad_tmp, start=[startx, starty])
+   !call ncdf_close(ncid, 'ISCCPNG_Retrieve_Predef_Geo()')
+
+   !where (imager_measurements%data(:,:,7) .lt. 0.) imager_measurements%data(:,:,7)=rad_tmp
+
+
+   chstr='temp_11_00um'
+   tmpfile=l1_5_file(1:index1+4)//chstr//l1_5_file(index2+2:)
+   print*,tmpfile
+   call ncdf_open(ncid, trim(tmpfile), 'ISCCPNG_Retrieve_Predef_Geo()')
+   call ncdf_read_array(ncid, chstr, imager_measurements%data(:,:,9), start=[startx, starty])
+   call ncdf_close(ncid, 'ISCCPNG_Retrieve_Predef_Geo()')
+
+   chstr='temp_12_00um'
+   tmpfile=l1_5_file(1:index1+4)//chstr//l1_5_file(index2+2:)
+   print*,tmpfile
+   call ncdf_open(ncid, trim(tmpfile), 'ISCCPNG_Retrieve_Predef_Geo()')
+   call ncdf_read_array(ncid, chstr, imager_measurements%data(:,:,10), start=[startx, starty])
+   call ncdf_close(ncid, 'ISCCPNG_Retrieve_Predef_Geo()')
+
+   chstr='temp_13_30um'
+   tmpfile=l1_5_file(1:index1+4)//chstr//l1_5_file(index2+2:)
+   print*,tmpfile
+   call ncdf_open(ncid, trim(tmpfile), 'ISCCPNG_Retrieve_Predef_Geo()')
+   call ncdf_read_array(ncid, chstr, imager_measurements%data(:,:,11), start=[startx, starty])
+   call ncdf_close(ncid, 'ISCCPNG_Retrieve_Predef_Geo()')
+   
+   tmpfile=l1_5_file(1:index1+4)//'sensor_flag'//l1_5_file(index2+2:)
+   call ncdf_open(ncid, trim(tmpfile), 'ISCCPNG_Retrieve_Predef_Geo()')
+   call ncdf_read_array(ncid, 'sensor_flag', sensor_flag, start=[startx, starty])
+   call ncdf_close(ncid, 'ISCCPNG_Retrieve_Predef_Geo()')
+
+!sat_ids(4)
+!sba_slope(4,2,11),sba_offset(4,2,11)
+
+!wmo_id:satellite_names = "270=GOES-16;271=GOES-17;173=Himawari-8;55=Meteosat-8;70=Meteosat-11" ;
+!sensor_flag:"MISSING ABI_GOES_16 ABI_GOES_17 ABI_GOES_18 ABI_GOES_19 AHI_HIMAWARI_08 AHI_HIMAWARI_09 SEVIRI_METEOSAT_08 SEVIRI_METEOSAT_09 SEVIRI_METEOSAT_10 SEVIRI_METEOSAT_11 FCI_METEOSAT_12"
+
+!sat_ids(1)='270'
+sat_ids(1)='1'
+sba_slope(1,1,:)=(/1.00166,0.948021,1.00000,0.926764,0.991329,0.999300,1.01977,1.03453,0.996781,1.02343,0.863748/)
+sba_slope(1,2,:)=(/1.00000,1.00000,1.00000,0.940848,0.990431,1.00483,1.01947,1.01835,0.996272,1.02239,0.890045/)
+sba_offset(1,1,:)=(/-0.00207069,0.161403,0.00000,18.4795,1.58729,-0.0312020,-4.93224,-7.83331,1.13395,-5.51940,30.5574/)
+sba_offset(1,2,:)=(/0.00000,0.00000,0.00000,14.4615,1.80946,-1.50406,-4.94939,-3.61878,1.23287,-5.28908,23.4361/)
+
+!sat_ids(2)='271'
+sat_ids(2)='2'
+sba_slope(2,1,:)=(/1.00313,0.947739,1.00000,0.928358,0.991436,0.999576,1.01939,1.03306,0.996656,1.02405,0.894260/)
+sba_slope(2,2,:)=(/1.00000,1.00000,1.00000,0.939285,0.990504,1.00481,1.01907,1.01759,0.996129,1.02298,0.917607/)
+sba_offset(2,1,:)=(/-0.0107727,0.161054,0.00000,17.7929,1.57229,-0.0877037,-4.83326,-7.49875,1.17318,-5.66102,23.6271/)
+sba_offset(2,2,:)=(/0.00000,0.00000,0.00000,14.7561,1.80263,-1.48189,-4.84116,-3.46801,1.27653,-5.42165,17.3323/)
+
+!sat_ids(3)='173'
+sat_ids(3)='5'
+sba_slope(3,1,:)=(/1.00169,0.945509,1.00000,0.929371,1.00905,1.00090,1.01065,1.02516,0.996015,1.02885,0.871186/)
+sba_slope(3,2,:)=(/1.00000,1.00000,1.00000,0.938706,1.00526,1.00413,1.01050,1.01338,0.995399,1.02742,0.896835/)
+sba_offset(3,1,:)=(/-0.00100716,0.162379,0.00000,17.3952,-2.21718,-0.347357,-2.62520,-5.68860,1.37321,-6.76384,28.8614/)
+sba_offset(3,2,:)=(/0.00000,0.00000,0.00000,14.8503,-1.29354,-1.20664,-2.63734,-2.61762,1.49858,-6.43452,21.9239/)
+
+!sat_ids(4)='55'
+sat_ids(4)='7'
+sba_slope(4,1,:)=(/0.999577,0.999643,1.00000,1.01192,1.00193,1.00093,1.00202,0.998663,0.999412,0.999663,0.945356/)
+sba_slope(4,2,:)=(/1.00000,1.00000,1.00000,1.00882,1.00146,1.00121,1.00194,0.999321,0.999513,0.999684,0.955400/)
+sba_offset(4,1,:)=(/0.00444712,0.0162967,0.00000,-2.83943,-0.417072,-0.181784,-0.486767,0.304194,0.134653,0.0706959,12.3763/)
+sba_offset(4,2,:)=(/0.00000,0.00000,0.00000,-1.94343,-0.302762,-0.259928,-0.471424,0.131567,0.104622,0.0658078,9.71430/)
+
+!print*,minval(wmo_id),maxval(wmo_id)
+print*,'shape: ',shape(imager_measurements%data)
+!stop
+do i=1,11
+   where (sensor_flag.eq.1) imager_measurements%data(:,:,i)=imager_measurements%data(:,:,i)*sba_slope(1,2,i)+sba_offset(1,2,i)
+   where (sensor_flag.eq.2) imager_measurements%data(:,:,i)=imager_measurements%data(:,:,i)*sba_slope(2,2,i)+sba_offset(2,2,i)
+   where (sensor_flag.eq.5) imager_measurements%data(:,:,i)=imager_measurements%data(:,:,i)*sba_slope(3,2,i)+sba_offset(3,2,i)
+   where (sensor_flag.eq.7) imager_measurements%data(:,:,i)=imager_measurements%data(:,:,i)*sba_slope(4,2,i)+sba_offset(4,2,i)
+end do
+   tmpfile=l1_5_file(1:index1+4)//'sensor_zenith_angle'//l1_5_file(index2+2:)
+   print*,tmpfile
+   call ncdf_open(ncid, trim(tmpfile), 'ISCCPNG_Retrieve_Predef_Geo()')
+   call ncdf_read_array(ncid, 'sensor_zenith_angle', imager_angles%satzen(startx:,:,1), start=[startx, starty])
+   call ncdf_close(ncid, 'ISCCPNG_Retrieve_Predef_Geo()')
+
+   tmpfile=l1_5_file(1:index1+4)//'sensor_azimuth_angle'//l1_5_file(index2+2:)
+   print*,tmpfile
+   call ncdf_open(ncid, trim(tmpfile), 'ISCCPNG_Retrieve_Predef_Geo()')
+   call ncdf_read_array(ncid, 'sensor_azimuth_angle', imager_angles%satazi(startx:,:,1), start=[startx, starty])
+   call ncdf_close(ncid, 'ISCCPNG_Retrieve_Predef_Geo()')
+
+   tmpfile=l1_5_file(1:index1+4)//'solar_zenith_angle'//l1_5_file(index2+2:)
+   print*,tmpfile
+   call ncdf_open(ncid, trim(tmpfile), 'ISCCPNG_Retrieve_Predef_Geo()')
+   call ncdf_read_array(ncid, 'solar_zenith_angle', imager_angles%solzen(startx:,:,1), start=[startx, starty])
+   call ncdf_close(ncid, 'ISCCPNG_Retrieve_Predef_Geo()')
+
+   tmpfile=l1_5_file(1:index1+4)//'solar_azimuth_angle'//l1_5_file(index2+2:)
+   print*,tmpfile
+   call ncdf_open(ncid, trim(tmpfile), 'ISCCPNG_Retrieve_Predef_Geo()')
+   call ncdf_read_array(ncid, 'solar_azimuth_angle', imager_angles%solazi(startx:,:,1), start=[startx, starty])
+   call ncdf_close(ncid, 'ISCCPNG_Retrieve_Predef_Geo()')
+
+
+   !imager_angles%solazi(startx:,:,1)=imager_angles%solazi(startx:,:,1)-90.
+   !where(imager_angles%solazi(startx:,:,1) .lt. -180.)
+   !   imager_angles%solazi(startx:,:,1)=imager_angles%solazi(startx:,:,1)+360.
+   !end where
+
+   where (imager_angles%solazi(startx:,:,1) .gt. 180.)
+      imager_angles%solazi(startx:,:,1) = imager_angles%solazi(startx:,:,1) - 360.
+   end where
+
+   where (imager_angles%satazi(startx:,:,1) .gt. 180.)
+      imager_angles%satazi(startx:,:,1) = imager_angles%satazi(startx:,:,1) - 360.
+   end where
+
+   do i=1,nx
+      imager_geolocation%latitude(startx+i-1,:)=tmplat(:)
+   end do
+   do i=1,ny
+      imager_geolocation%longitude(startx:,i)=tmplon(:)
+   end do
+
+   deallocate(tmplat)
+   deallocate(tmplon)
+   deallocate(sensor_flag)
+   deallocate(rad_tmp)
+
+   ! Remove underscores added by seviri_util (easy way of converting c-string to
+   ! f-string).
+   i = index(global_atts%Satpos_Metadata, '_')
+   global_atts%Satpos_Metadata = global_atts%Satpos_Metadata(1:i-1)
+
+   deallocate(band_ids)
+   deallocate(band_units)
+
+   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_eumetsat_l1_5_nc_spectral()'
+
+end subroutine read_eumetsat_l1_5_nc_spectral
+
 ! UPDATED SUBROUTINE FOR READING DATA AS SINGLE INSTRUMENT
 subroutine read_isccpng_l1_5_nc(l1_5_file, imager_geolocation, &
    imager_measurements, imager_angles, imager_time, channel_info, do_gsics, &
@@ -715,7 +1070,7 @@ subroutine read_isccpng_l1_5_nc(l1_5_file, imager_geolocation, &
    read(l1_5_file(index2+13:index2+14), *) ihour
    read(l1_5_file(index2+15:index2+16), *) iminute
    call GREG2JD(iyear, imonth, iday, jday)
-   imager_time%time(startx:,:) = jday + iminute + imager_time%time(startx:,:)/60.
+   imager_time%time(startx:,:) = jday + (iminute + imager_time%time(startx:,:)/60.)/86400.
    call ncdf_close(ncid, 'ISCCPNG_Retrieve_Predef_Geo()')
 
 ! Then we can assign the 0.65um reflectances
